@@ -1,0 +1,89 @@
+name: Release
+
+# Publishing pipeline: runs the lint/typecheck/build/test gate then publishes to
+# public npm via OIDC Trusted Publishing. Wired to tag pushes only. The sibling
+# ci.yml runs the same checks WITHOUT publishing on pull_request / push:main.
+# Publishing only ever happens from this release.yml (which is what npm Trusted
+# Publishing matches).
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Lint, Typecheck, Build, Test
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Format check
+        run: pnpm run format:check
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Test
+        run: pnpm run test
+
+  publish:
+    name: Publish to public npm (Trusted Publishing)
+    # Publishes only on tag pushes; a workflow_dispatch run builds via verify but
+    # this job is skipped. Tokenless OIDC — needs no NPM token, just id-token: write.
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [verify]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22" # OIDC Trusted Publishing requires Node >= 22.14
+          cache: pnpm
+
+      - name: Upgrade npm for Trusted Publishing
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Inject version from tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          jq --arg v "$VERSION" '.version=$v' package.json > tmp && mv tmp package.json
+
+      # Public npm via OIDC: route @agent-ix at registry.npmjs.org with no auth
+      # token; `npm publish` performs the tokenless OIDC token exchange.
+      - name: Configure npm for public npm
+        # provenance=false keeps the publish working whether or not the repo is
+        # public (provenance attestations require a public repo).
+        run: printf 'registry=https://registry.npmjs.org/\n@agent-ix:registry=https://registry.npmjs.org/\nprovenance=false\n' > "$HOME/.npmrc"
+
+      - name: Publish to public npm
+        run: npm publish --ignore-scripts

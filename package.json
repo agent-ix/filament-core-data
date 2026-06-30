@@ -1,0 +1,57 @@
+{
+	"name": "@agent-ix/filament-core-data",
+	"version": "0.1.0",
+	"description": "Shared Avro-generated core data contract for Filament IDE, core service, parser, and sync packages.",
+	"author": "Agent IX",
+	"license": "AGPL-3.0-only",
+	"type": "module",
+	"packageManager": "pnpm@10.33.4",
+	"main": "./dist/generated.js",
+	"module": "./dist/generated.js",
+	"types": "./dist/generated.d.ts",
+	"files": [
+		"dist/",
+		"schema/",
+		"fixtures/",
+		"src/",
+		"agent_ix_core_data/",
+		"LICENSE",
+		"README.md",
+		"pyproject.toml"
+	],
+	"exports": {
+		".": {
+			"types": "./dist/generated.d.ts",
+			"default": "./dist/generated.js"
+		},
+		"./generated": {
+			"types": "./dist/generated.d.ts",
+			"default": "./dist/generated.js"
+		},
+		"./schema": "./schema/avro/core-data.avpr",
+		"./fixtures": "./fixtures/representative-core-payloads.json"
+	},
+	"scripts": {
+		"generate": "node scripts/generate-core-data-schema.mjs",
+		"build": "tsc -p tsconfig.build.json",
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"format": "biome format --write .",
+		"format:check": "biome format .",
+		"prepublishOnly": "pnpm run build"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.1",
+		"@types/node": "^22.10.0",
+		"typescript": "^5.9.3",
+		"vitest": "^1.4.0"
+	},
+	"publishConfig": {
+		"registry": "https://registry.npmjs.org/",
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/agent-ix/filament-core-data.git"
+	}
+}
