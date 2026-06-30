@@ -1,0 +1,17 @@
+name: CI
+
+# Shared test/lint/audit gate (no publish). Publishing only ever happens from
+# release.yml. Mirrors the agent-ix/nodejs-actions house pattern.
+
+on:
+  push:
+    tags: ['*.*.*']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ci:
+    uses: agent-ix/nodejs-actions/.github/workflows/build-test.yml@main
+    # npm_registry defaults to https://npm.pkg.github.com (private GitHub Packages).
+    secrets:
+      NPM_REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
