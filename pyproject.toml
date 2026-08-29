@@ -1,6 +1,8 @@
 [project]
 name = "agent-ix-core-data"
 dynamic = ["version"]
+license = "AGPL-3.0-only"
+license-files = ["LICENSE"]
 
 [tool.poetry]
 name = "agent-ix-core-data"
