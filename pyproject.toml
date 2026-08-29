@@ -4,7 +4,7 @@ dynamic = ["version"]
 
 [tool.poetry]
 name = "agent-ix-core-data"
-version = "0.1.0"
+version = "0.1.0"  # Placeholder, dynamically replaced
 description = "Shared Avro-generated core data contract for Filament IDE, core service, parser, and sync packages."
 authors = ["Agent IX <engineering@agent-ix.com>"]
 packages = [{ include = "agent_ix_core_data" }]
@@ -18,8 +18,23 @@ python = ">=3.13,<3.14"
 
 [tool.poetry.group.dev.dependencies]
 black = "^26.1.0"
+poethepoet = "^0.41.0"
+poetry-dynamic-versioning = "^1.10.0"
 pytest = "^9.0.2"
 ruff = "^0.14.13"
+
+[tool.poetry.scripts]
+build-tools = "scripts.build_tools:main"
+
+[tool.poe.tasks]
+
+[tool.poe.tasks.version]
+cmd = "build-tools version"
+help = "Print computed version"
+
+[tool.poe.tasks.info]
+cmd = "build-tools info"
+help = "Show git and version info"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -36,6 +51,10 @@ ignore = ["E203"]
 [tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
 
+[tool.poetry-dynamic-versioning]
+enable = true
+style = "pep440"
+
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
