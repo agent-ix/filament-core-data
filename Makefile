@@ -42,13 +42,20 @@ generate:
 # -----------------------------------------------------------------------------
 # The TypeScript binding ships to npm from release.yml; the Python binding ships
 # to internal-pypi from python-release.yml. agent-ix/python-service-actions calls
-# `make version` to resolve the version to publish, so this target is the Python
-# side's contract with that action.
+# `make version` to resolve what to publish, so this target is the Python side's
+# contract with that action.
 #
-# The version is static in pyproject.toml on purpose: this repo has no git tags,
-# so the house poetry-dynamic-versioning pattern would resolve every build to the
-# same 0.0.0. Bump [tool.poetry] version by hand before republishing.
+# Versioning is the house dynamic pattern: build-tools derives the version from
+# the latest git tag, so publishing a new version means tagging, not editing
+# pyproject.toml. The [tool.poetry] version is a placeholder.
+
+POETRY = poetry
+POE = $(POETRY) run poe
 
 .PHONY: version
 version:
-	@python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['tool']['poetry']['version'])"
+	@$(POE) version
+
+.PHONY: info
+info:
+	@$(POE) info
