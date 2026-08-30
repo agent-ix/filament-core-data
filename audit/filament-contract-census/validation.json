@@ -1,0 +1,73 @@
+{
+	"schemaVersion": "1.0.0",
+	"generatedAt": "2026-08-30T00:59:00Z",
+	"scope": "Issue #10 audit evidence only; no migration or promotion approval",
+	"fingerprintedFiles": [
+		"snapshot.json",
+		"inventory.json",
+		"parity.json",
+		"conflicts.json",
+		"missing-contracts.json",
+		"impact.json",
+		"signoff-refresh.json"
+	],
+	"normalization": "Recursively sort JSON object keys; preserve array order; hash sorted filename, NUL, canonical JSON, NUL with SHA-256.",
+	"normalizedFingerprint": "35787388cfdeb051cde6284427655f2e00ad57ce91483f7ccf946a2859fe0265",
+	"repeatNormalizedFingerprint": "35787388cfdeb051cde6284427655f2e00ad57ce91483f7ccf946a2859fe0265",
+	"evidence": {
+		"repositories": 8,
+		"contractFamilies": 15,
+		"inventoryRecords": 24,
+		"conceptComparisons": 11,
+		"conflicts": 11,
+		"missingOrExtensionContracts": 7,
+		"sourceLocusChecks": 24,
+		"issue10MatrixCases": 35
+	},
+	"runs": [
+		{
+			"command": "pnpm run format:check",
+			"result": "passed",
+			"purpose": "repository formatting gate"
+		},
+		{
+			"command": "pnpm run typecheck",
+			"result": "passed",
+			"purpose": "TypeScript static gate"
+		},
+		{
+			"command": "pnpm run build",
+			"result": "passed",
+			"purpose": "package compilation gate without publication"
+		},
+		{
+			"command": "pnpm test (run 1)",
+			"result": "passed: 22/22",
+			"purpose": "complete regression and evidence gate"
+		},
+		{
+			"command": "pnpm test (run 2)",
+			"result": "passed: 22/22",
+			"purpose": "unchanged-input repeat gate"
+		},
+		{
+			"command": "quire 0.30.2 validate with explicit spec-artifacts-iso and installed spec-artifacts-process modules",
+			"result": "passed",
+			"purpose": "34 specification, 10 Plan-002, and 5 root review documents structurally valid with zero grammar findings"
+		},
+		{
+			"command": "git diff --check",
+			"result": "passed",
+			"purpose": "patch integrity"
+		}
+	],
+	"externalRepositoryMutations": 0,
+	"existingRuntimeOrContractMutations": 0,
+	"packagePublications": 0,
+	"catalogChanges": 0,
+	"enforcementChanges": 0,
+	"databaseChanges": 0,
+	"corpusChanges": 0,
+	"weakenedRequirements": 0,
+	"releaseDisposition": "audit-evidence-ready; all consumer, database, wire-format, publication, enforcement, and retirement gates remain hold"
+}

@@ -1,0 +1,602 @@
+{
+	"schemaVersion": "1.0.0",
+	"generatedAt": "2026-08-30T00:18:21Z",
+	"scope": {
+		"program": "agent-ix/filament-core-data#3",
+		"ticket": "agent-ix/filament-core-data#10",
+		"selectionRule": "Shared contract owner, named Filament consumer, Quire extraction owner, Quoin catalog owner, or governed corpus baseline named by the program epics.",
+		"excluded": [
+			{
+				"group": "legacy Electron filament-ide and renderer libraries",
+				"reason": "Project 17 names filament-ide-rs as the migration consumer; legacy retirement is gated separately."
+			},
+			{
+				"group": "default semantic-module repositories",
+				"reason": "Their complete type-fit census is owned by companion issue agent-ix/quoin#288; this audit records only Quoin pins and Quire-facing boundaries."
+			}
+		]
+	},
+	"tools": [
+		{
+			"name": "git",
+			"version": "2.50.1 (Apple Git-155)",
+			"method": "read-only local repository metadata and source inspection"
+		},
+		{
+			"name": "gh",
+			"version": "2.92.0",
+			"method": "authenticated read-only issue, pull-request, and Projects v2 queries"
+		},
+		{
+			"name": "rg",
+			"version": "available on PATH",
+			"method": "read-only source and contract-locus enumeration"
+		},
+		{
+			"name": "quire",
+			"version": "0.7.3",
+			"method": "local artifact validation"
+		},
+		{
+			"name": "quoin",
+			"version": "0.5.4",
+			"method": "authoring-contract discovery only"
+		},
+		{ "name": "node", "version": "24.15.0", "method": "audit contract tests" },
+		{
+			"name": "pnpm",
+			"version": "10.33.4",
+			"method": "audit contract test runner"
+		}
+	],
+	"repositories": [
+		{
+			"id": "filament-core-data",
+			"canonicalUrl": "https://github.com/agent-ix/filament-core-data",
+			"localPath": "/Users/peter/dev/filament-core-data",
+			"defaultBranch": "main",
+			"inspectedBranch": "audit/10-filament-contract-census",
+			"head": "c542b341500b69e6f391da9d5cd641eec8a9effd",
+			"dirty": true,
+			"dirtyEntryCount": 44,
+			"worktrees": [
+				"/Users/peter/dev/filament-core-data@audit/10-filament-contract-census"
+			],
+			"status": "available-dirty-audit-work",
+			"consequence": "Committed contract loci are read at c542b34; uncommitted issue #10 files are audit output and are not treated as source contracts.",
+			"confidence": "high"
+		},
+		{
+			"id": "filament-domain-events",
+			"canonicalUrl": "https://github.com/agent-ix/filament-domain-events",
+			"localPath": "/Users/peter/dev/filament-domain-events",
+			"defaultBranch": "main",
+			"inspectedBranch": "main",
+			"head": "c01b69906a550e6a8110046d08a0ebe4da04e8ee",
+			"dirty": false,
+			"dirtyEntryCount": 0,
+			"worktrees": ["/Users/peter/dev/filament-domain-events@main"],
+			"status": "available-clean",
+			"consequence": "Source files correspond exactly to the recorded HEAD.",
+			"confidence": "high"
+		},
+		{
+			"id": "filament-core-service",
+			"canonicalUrl": "https://github.com/agent-ix/filament-core-service",
+			"localPath": "/Users/peter/dev/filament-core-service",
+			"defaultBranch": "main",
+			"inspectedBranch": "main",
+			"head": "a50e8998a75ef75cf872b05afb617b7456e0b1db",
+			"dirty": true,
+			"dirtyEntryCount": 2,
+			"worktrees": ["/Users/peter/dev/filament-core-service@main"],
+			"status": "available-dirty-user-work",
+			"consequence": "pyproject.toml and tests/test_core_data_contract.py are excluded from source-contract claims unless explicitly cited as active overlap; committed models are read at a50e899.",
+			"confidence": "medium"
+		},
+		{
+			"id": "filament-parser-lib",
+			"canonicalUrl": "https://github.com/agent-ix/filament-parser-lib",
+			"localPath": "/Users/peter/dev/filament-parser-lib",
+			"defaultBranch": "main",
+			"inspectedBranch": "task-8-quire-core-data-shim",
+			"head": "8ef01289ad08938d741b69966bf17dc9815513cf",
+			"dirty": false,
+			"dirtyEntryCount": 0,
+			"worktrees": [
+				"/Users/peter/dev/filament-parser-lib@task-8-quire-core-data-shim"
+			],
+			"status": "available-clean-inflight-branch",
+			"consequence": "The audit measures the issue #8 compatibility-shim branch, not main; its unmerged status remains an implementation dependency.",
+			"confidence": "high"
+		},
+		{
+			"id": "filament-ide-rs",
+			"canonicalUrl": "https://github.com/agent-ix/filament-ide-rs",
+			"localPath": "/Users/peter/dev/filament-ide-rs",
+			"defaultBranch": "main",
+			"inspectedBranch": "main",
+			"head": "b63141f9edd69cddb966cd601ed1954955276845",
+			"dirty": false,
+			"dirtyEntryCount": 0,
+			"worktrees": [
+				"/Users/peter/dev/filament-ide-rs@main",
+				"/Users/peter/dev/filament-ide-rs/.gittree/480-retrieval-reference@task/480-retrieval-reference",
+				"/Users/peter/dev/filament-ide-rs/.gittree/assurance-onboarding@feat/512-assurance-onboarding",
+				"/Users/peter/dev/filament-ide-rs/.gittree/fix-red-matrices@fix/red-test-matrices",
+				"/Users/peter/dev/filament-ide-rs/.gittree/phase-c-labels@task/expand-seeding",
+				"/Users/peter/dev/filament-ide-rs/.gittree/task-550-core-primitives@task/550-core-primitives",
+				"/Users/peter/dev/filament-ide-rs/.gittree/task-551-ui-test-evidence@task/551-ui-test-evidence"
+			],
+			"status": "available-clean-with-active-worktrees",
+			"consequence": "Main is the source baseline; six active worktrees are overlap evidence and may change graph, assurance, core primitive, or UI contract surfaces.",
+			"confidence": "high"
+		},
+		{
+			"id": "quire-rs",
+			"canonicalUrl": "https://github.com/agent-ix/quire-rs",
+			"localPath": "/Users/peter/dev/quire-rs",
+			"defaultBranch": "main",
+			"inspectedBranch": "main",
+			"head": "0f4cc5fb94a344ef44a0ad66864bcd445c5db521",
+			"dirty": true,
+			"dirtyEntryCount": 1,
+			"worktrees": ["/Users/peter/dev/quire-rs@main"],
+			"status": "available-dirty-untracked",
+			"consequence": "The untracked logo path is not a contract source; committed extraction/corpus files are read at 0f4cc5f.",
+			"confidence": "high"
+		},
+		{
+			"id": "quoin",
+			"canonicalUrl": "https://github.com/agent-ix/quoin",
+			"localPath": "/Users/peter/dev/quoin",
+			"defaultBranch": "main",
+			"inspectedBranch": "task/309-fix-spec-fuzz-frontmatter",
+			"head": "1a0092ffc41756e5ccaa76103277343685f14fe4",
+			"dirty": true,
+			"dirtyEntryCount": 3,
+			"worktrees": [
+				"/Users/peter/dev/quoin@task/309-fix-spec-fuzz-frontmatter",
+				"/Users/peter/dev/quoin-plugin-api@feat/plugin-library-api",
+				"/Users/peter/dev/quoin/.worktrees/268-intervention-experiment-spec@task/268-intervention-experiment-spec"
+			],
+			"status": "available-dirty-inflight-branches",
+			"consequence": "Committed default-modules.yaml is read at 1a0092f; spec-fuzz and intervention-experiment changes are active overlap, not accepted catalog contracts.",
+			"confidence": "medium"
+		},
+		{
+			"id": "quire-corpus",
+			"canonicalUrl": "https://github.com/agent-ix/quire-corpus",
+			"localPath": "/Users/peter/dev/quire-corpus",
+			"defaultBranch": "main",
+			"inspectedBranch": "main",
+			"head": "68eb2c7d93973adf36b2478c70176f3b89fbd5b0",
+			"dirty": false,
+			"dirtyEntryCount": 0,
+			"worktrees": ["/Users/peter/dev/quire-corpus@main"],
+			"status": "available-clean-governed-baseline",
+			"consequence": "The complete-graph truth-set files correspond exactly to the revision delivered by quire-rs#385.",
+			"confidence": "high"
+		}
+	],
+	"contractFamilies": [
+		{
+			"id": "avro-schema",
+			"description": "Shared Avro protocol and compatibility contract"
+		},
+		{
+			"id": "python-domain-model",
+			"description": "Pydantic cross-service domain DTOs"
+		},
+		{
+			"id": "python-persistence",
+			"description": "SQLModel/PostgreSQL entities"
+		},
+		{
+			"id": "python-parser-extraction",
+			"description": "Python loader, registry, DSL, and extraction results"
+		},
+		{
+			"id": "rust-extraction-dto",
+			"description": "Rust/Serde/Specta extraction payloads"
+		},
+		{
+			"id": "rust-persistence",
+			"description": "Rust database entities and migrations"
+		},
+		{
+			"id": "rust-wire-ipc",
+			"description": "Rust backend/service request and response envelopes"
+		},
+		{
+			"id": "typescript-binding",
+			"description": "Generated or handwritten TypeScript consumer contracts"
+		},
+		{
+			"id": "json-fixture",
+			"description": "Golden and representative JSON payloads"
+		},
+		{ "id": "json-lines", "description": "NDJSON backend transport envelope" },
+		{
+			"id": "markdown-extraction",
+			"description": "Quire typed-Markdown parse/extraction contracts"
+		},
+		{
+			"id": "module-catalog",
+			"description": "Quoin module manifests, pins, and loading metadata"
+		},
+		{
+			"id": "governed-corpus",
+			"description": "Pinned complete-graph truth-set contract"
+		},
+		{
+			"id": "analytical-projection",
+			"description": "Arrow/Parquet or equivalent accumulated QA projection"
+		},
+		{ "id": "protobuf", "description": "Protocol Buffers wire contract" }
+	],
+	"pins": [
+		{
+			"id": "architecture-baseline",
+			"kind": "git-commit",
+			"value": "c542b341500b69e6f391da9d5cd641eec8a9effd",
+			"source": "filament-core-data issue #8 / PR #16",
+			"immutable": true,
+			"status": "available",
+			"consequence": "Issue #10 is stacked on the unmerged architecture record.",
+			"confidence": "high"
+		},
+		{
+			"id": "governed-quire-corpus",
+			"kind": "git-commit",
+			"value": "68eb2c7d93973adf36b2478c70176f3b89fbd5b0",
+			"source": "agent-ix/quire-corpus main delivered by quire-rs#385",
+			"immutable": true,
+			"status": "available",
+			"consequence": "Used as the complete-graph truth-set boundary, not as the semantic-module corpus itself.",
+			"confidence": "high"
+		},
+		{
+			"id": "parser-shim",
+			"kind": "git-commit",
+			"value": "8ef01289ad08938d741b69966bf17dc9815513cf",
+			"source": "filament-parser-lib task-8-quire-core-data-shim",
+			"immutable": true,
+			"status": "in-review",
+			"consequence": "Final parser compatibility disposition remains open.",
+			"confidence": "high"
+		},
+		{
+			"id": "engineering-assurance",
+			"kind": "module-git-commit",
+			"value": "4e6522fc32f82cac82a3489a4192e17a94f539c3",
+			"source": "quoin/default-modules.yaml:18-25",
+			"immutable": true,
+			"status": "available",
+			"consequence": "Exact commit pin is used.",
+			"confidence": "high"
+		},
+		{
+			"id": "spec-artifacts-iso",
+			"kind": "module-tag",
+			"value": "v0.18.0",
+			"source": "quoin/default-modules.yaml:27-34",
+			"immutable": true,
+			"status": "available",
+			"consequence": "Tag pin is treated as the catalog revision.",
+			"confidence": "high"
+		},
+		{
+			"id": "spec-artifacts-app",
+			"kind": "module-tag",
+			"value": "v0.5.0",
+			"source": "quoin/default-modules.yaml:36-43",
+			"immutable": true,
+			"status": "available",
+			"consequence": "Tag pin is treated as the catalog revision.",
+			"confidence": "high"
+		},
+		{
+			"id": "spec-artifacts-process",
+			"kind": "module-git-commit",
+			"value": "d605caad70a8c09884ef22525d532e01330f763f",
+			"source": "quoin/default-modules.yaml:45-52",
+			"immutable": true,
+			"status": "available",
+			"consequence": "Exact commit pin is used.",
+			"confidence": "high"
+		},
+		{
+			"id": "spec-objects-business",
+			"kind": "module-tag",
+			"value": "v0.6.0",
+			"source": "quoin/default-modules.yaml:54-61",
+			"immutable": true,
+			"status": "available",
+			"consequence": "Type-fit review belongs to quoin#288.",
+			"confidence": "high"
+		},
+		{
+			"id": "spec-objects-architecture",
+			"kind": "module-tag",
+			"value": "v0.6.0",
+			"source": "quoin/default-modules.yaml:63-70",
+			"immutable": true,
+			"status": "available",
+			"consequence": "Type-fit review belongs to quoin#288.",
+			"confidence": "high"
+		},
+		{
+			"id": "spec-objects-enterprise",
+			"kind": "module-tag",
+			"value": "v0.5.0",
+			"source": "quoin/default-modules.yaml:72-79",
+			"immutable": true,
+			"status": "available",
+			"consequence": "Type-fit review belongs to quoin#288.",
+			"confidence": "high"
+		},
+		{
+			"id": "spec-objects-operational",
+			"kind": "module-tag",
+			"value": "v0.6.0",
+			"source": "quoin/default-modules.yaml:81-88",
+			"immutable": true,
+			"status": "available",
+			"consequence": "Type-fit review belongs to quoin#288.",
+			"confidence": "high"
+		},
+		{
+			"id": "spec-objects-security",
+			"kind": "module-tag",
+			"value": "v0.7.0",
+			"source": "quoin/default-modules.yaml:90-97",
+			"immutable": true,
+			"status": "available",
+			"consequence": "Type-fit review belongs to quoin#288.",
+			"confidence": "high"
+		},
+		{
+			"id": "spec-objects-safety",
+			"kind": "module-tag",
+			"value": "v0.4.0",
+			"source": "quoin/default-modules.yaml:99-106",
+			"immutable": true,
+			"status": "available",
+			"consequence": "Type-fit review belongs to quoin#288.",
+			"confidence": "high"
+		}
+	],
+	"externalCollections": [
+		{
+			"id": "project-17-items",
+			"source": "https://github.com/orgs/agent-ix/projects/17",
+			"method": "gh project item-list 17 --owner agent-ix --format json --limit 200",
+			"toolVersion": "gh 2.92.0",
+			"accessStatus": "available",
+			"enumerationStatus": "incomplete",
+			"pagesObserved": 1,
+			"recordsObserved": 200,
+			"consequence": "The project has at least 200 items; active-work completeness cannot be inferred from this capped collection, so named issue/worktree queries provide the audit evidence and confidence is reduced.",
+			"confidence": "low"
+		},
+		{
+			"id": "project-18-items",
+			"source": "https://github.com/orgs/agent-ix/projects/18",
+			"method": "gh project item-list 18 --owner agent-ix --format json --limit 200",
+			"toolVersion": "gh 2.92.0",
+			"accessStatus": "available",
+			"enumerationStatus": "incomplete",
+			"pagesObserved": 1,
+			"recordsObserved": 200,
+			"consequence": "The project has at least 200 items; named epic, issue, and local-branch queries are used and ecosystem-wide active-work confidence remains reduced.",
+			"confidence": "low"
+		},
+		{
+			"id": "core-data-open-prs",
+			"source": "https://github.com/agent-ix/filament-core-data/pulls",
+			"method": "gh pr list --state open --limit 100 plus gh pr view 16",
+			"toolVersion": "gh 2.92.0",
+			"accessStatus": "available",
+			"enumerationStatus": "complete",
+			"pagesObserved": 1,
+			"recordsObserved": 1,
+			"consequence": "PR #16 is the only open pull request returned and is directly inspected.",
+			"confidence": "high"
+		},
+		{
+			"id": "parser-shim-prs",
+			"source": "https://github.com/agent-ix/filament-parser-lib/pulls",
+			"method": "gh pr list --head task-8-quire-core-data-shim --state all --limit 10",
+			"toolVersion": "gh 2.92.0",
+			"accessStatus": "available",
+			"enumerationStatus": "complete",
+			"pagesObserved": 1,
+			"recordsObserved": 0,
+			"consequence": "Issue #8 is In review but the inspected branch has no pull request; merge disposition is therefore unknown.",
+			"confidence": "high"
+		},
+		{
+			"id": "named-program-issues",
+			"source": "filament-core-data#3/#8/#10, quoin#286/#268/#309, quire-rs#385, filament-parser-lib#8, filament-ide-rs#511",
+			"method": "gh issue view for each named dependency",
+			"toolVersion": "gh 2.92.0",
+			"accessStatus": "available",
+			"enumerationStatus": "complete",
+			"pagesObserved": 1,
+			"recordsObserved": 9,
+			"consequence": "Complete only for the explicitly named program and active-branch issue set.",
+			"confidence": "high"
+		},
+		{
+			"id": "local-worktrees",
+			"source": "/Users/peter/dev repositories",
+			"method": "git worktree list --porcelain for each in-scope repository",
+			"toolVersion": "git 2.50.1",
+			"accessStatus": "available",
+			"enumerationStatus": "complete",
+			"pagesObserved": 1,
+			"recordsObserved": 16,
+			"consequence": "Every local worktree reported by Git for the eight repositories is retained in the repository records.",
+			"confidence": "high"
+		}
+	],
+	"activeWork": [
+		{
+			"id": "AW-001",
+			"repository": "filament-core-data",
+			"kind": "pull-request",
+			"number": 16,
+			"state": "open-review-required",
+			"url": "https://github.com/agent-ix/filament-core-data/pull/16",
+			"affectedFamilies": [
+				"avro-schema",
+				"typescript-binding",
+				"python-domain-model"
+			],
+			"sequencingConsequence": "Issue #10 remains stacked on the architecture commit until independent review allows #16 to merge.",
+			"owner": "agent-ix maintainers",
+			"evidence": "gh pr view 16 at 2026-08-30T00:18:21Z"
+		},
+		{
+			"id": "AW-002",
+			"repository": "filament-core-data",
+			"kind": "issue",
+			"number": 10,
+			"state": "implementation",
+			"url": "https://github.com/agent-ix/filament-core-data/issues/10",
+			"affectedFamilies": [
+				"avro-schema",
+				"python-domain-model",
+				"python-persistence",
+				"python-parser-extraction",
+				"rust-extraction-dto",
+				"rust-persistence",
+				"rust-wire-ipc",
+				"typescript-binding",
+				"json-lines",
+				"markdown-extraction"
+			],
+			"sequencingConsequence": "Read-only audit evidence may proceed; implementation findings require later tickets.",
+			"owner": "semantic-data program",
+			"evidence": "Project 17 item PVTI_lADOCLENp84BcVvfzg4kCgE"
+		},
+		{
+			"id": "AW-003",
+			"repository": "filament-parser-lib",
+			"kind": "issue-and-local-branch",
+			"number": 8,
+			"state": "in-review-without-pr",
+			"url": "https://github.com/agent-ix/filament-parser-lib/issues/8",
+			"affectedFamilies": ["python-parser-extraction", "markdown-extraction"],
+			"sequencingConsequence": "Parser migration planning must use the branch contract and retain a final compatibility disposition gate.",
+			"owner": "filament-parser-lib maintainers",
+			"evidence": "branch task-8-quire-core-data-shim at 8ef0128; Project status In review"
+		},
+		{
+			"id": "AW-004",
+			"repository": "filament-ide-rs",
+			"kind": "epic",
+			"number": 511,
+			"state": "specify",
+			"url": "https://github.com/agent-ix/filament-ide-rs/issues/511",
+			"affectedFamilies": [
+				"rust-extraction-dto",
+				"rust-persistence",
+				"typescript-binding",
+				"governed-corpus"
+			],
+			"sequencingConsequence": "Graph-baseline and semantic schema planning must converge before any DTO or persistence migration.",
+			"owner": "Project 17 graph-assurance work",
+			"evidence": "gh issue view 511; local assurance/core worktrees"
+		},
+		{
+			"id": "AW-005",
+			"repository": "filament-ide-rs",
+			"kind": "local-worktree",
+			"number": 480,
+			"state": "active-local",
+			"url": "https://github.com/agent-ix/filament-ide-rs/issues/480",
+			"affectedFamilies": ["rust-wire-ipc", "typescript-binding"],
+			"sequencingConsequence": "Retrieval reference changes may alter request/result DTO assumptions; re-audit before consumer migration.",
+			"owner": "unknown",
+			"evidence": "task/480-retrieval-reference at b3de9b8"
+		},
+		{
+			"id": "AW-006",
+			"repository": "filament-ide-rs",
+			"kind": "local-worktree",
+			"number": 512,
+			"state": "active-local",
+			"url": "https://github.com/agent-ix/filament-ide-rs/issues/512",
+			"affectedFamilies": ["governed-corpus", "typescript-binding"],
+			"sequencingConsequence": "Assurance onboarding may introduce evidence/run vocabulary; coordinate with companion corpus review.",
+			"owner": "unknown",
+			"evidence": "feat/512-assurance-onboarding at f817fb6"
+		},
+		{
+			"id": "AW-007",
+			"repository": "filament-ide-rs",
+			"kind": "local-worktree",
+			"number": 550,
+			"state": "active-local",
+			"url": "https://github.com/agent-ix/filament-ide-rs/issues/550",
+			"affectedFamilies": [
+				"rust-extraction-dto",
+				"rust-persistence",
+				"rust-wire-ipc"
+			],
+			"sequencingConsequence": "Core primitive work is a direct shared-contract overlap and must be stable before migration design.",
+			"owner": "unknown",
+			"evidence": "task/550-core-primitives at 2741e79"
+		},
+		{
+			"id": "AW-008",
+			"repository": "filament-ide-rs",
+			"kind": "local-worktree",
+			"number": 551,
+			"state": "active-local",
+			"url": "https://github.com/agent-ix/filament-ide-rs/issues/551",
+			"affectedFamilies": ["typescript-binding", "json-fixture"],
+			"sequencingConsequence": "UI evidence work may consume binding shapes; generated package adoption must wait for its stable boundary.",
+			"owner": "unknown",
+			"evidence": "task/551-ui-test-evidence at 3addb91"
+		},
+		{
+			"id": "AW-009",
+			"repository": "filament-core-service",
+			"kind": "dirty-worktree",
+			"number": 0,
+			"state": "uncommitted-unknown-owner",
+			"url": "https://github.com/agent-ix/filament-core-service",
+			"affectedFamilies": ["avro-schema", "python-persistence"],
+			"sequencingConsequence": "Uncommitted pyproject.toml and tests/test_core_data_contract.py overlap the core-data compatibility surface and are excluded from baseline claims.",
+			"owner": "unknown",
+			"evidence": "git status: two dirty entries"
+		},
+		{
+			"id": "AW-010",
+			"repository": "quoin",
+			"kind": "issue-and-local-worktree",
+			"number": 268,
+			"state": "specify",
+			"url": "https://github.com/agent-ix/quoin/issues/268",
+			"affectedFamilies": ["module-catalog", "governed-corpus"],
+			"sequencingConsequence": "Intervention experiment evidence semantics are input to the later run/result/evidence model and must not be duplicated by this audit.",
+			"owner": "Quoin maintainers",
+			"evidence": "task/268-intervention-experiment-spec at 1a0092f"
+		},
+		{
+			"id": "AW-011",
+			"repository": "quoin",
+			"kind": "issue-and-local-branch",
+			"number": 309,
+			"state": "implementation",
+			"url": "https://github.com/agent-ix/quoin/issues/309",
+			"affectedFamilies": ["module-catalog", "markdown-extraction"],
+			"sequencingConsequence": "Spec-fuzz skill metadata changes do not alter default module pins but keep the repository dirty and reduce snapshot confidence.",
+			"owner": "Quoin maintainers",
+			"evidence": "task/309-fix-spec-fuzz-frontmatter at 1a0092f"
+		}
+	]
+}

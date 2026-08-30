@@ -1,9 +1,9 @@
 ---
 id: SR-004
-title: "Dependency review of the semantic data architecture requirements"
+title: "Dependency review of the semantic architecture and contract census"
 type: SpecReview
 analysis: dependency
-scope: "StR-001, FR-001..008, NFR-001..003"
+scope: "StR-001, FR-001..013, NFR-001..005"
 review_set: all
 ---
 # Dependency review
@@ -11,9 +11,9 @@ review_set: all
 ## Summary
 
 All stakeholder, functional, and non-functional requirements have one logical
-classification and form an acyclic prerequisite graph. The implementation order
-establishes navigation, authority, and ownership before derived models,
-representations, gates, and final ADR reconciliation.
+classification and form an acyclic prerequisite graph. The issue #10 path starts
+only after the architecture foundation, then snapshots inputs before inventory,
+parity, impact, and final review.
 
 ## Findings
 
@@ -37,6 +37,13 @@ representations, gates, and final ADR reconciliation.
 | NFR-001 | Cross-cutting | Constrains traceability across the record. |
 | NFR-002 | Cross-cutting | Constrains readability across the record. |
 | NFR-003 | Cross-cutting | Constrains every issue #8 change to documentation and evidence. |
+| FR-009 | Enablement | Pins and qualifies every source used by the census. |
+| FR-010 | Enablement | Builds the source-cited contract inventory used by all analysis. |
+| FR-011 | Feature | Produces parity, conflict, and missing-contract dispositions. |
+| FR-012 | Feature | Produces repository and concept impact recommendations. |
+| FR-013 | Feature | Publishes the navigable acceptance review. |
+| NFR-004 | Cross-cutting | Constrains census evidence to reproducible, validated output. |
+| NFR-005 | Cross-cutting | Constrains all census work to read-only behavior. |
 
 ## Dependency Graph
 
@@ -59,6 +66,20 @@ graph TD
   FR-001 --> NFR-002
   FR-007 --> NFR-003
   FR-008 --> NFR-003
+  StR-001 --> FR-009
+  FR-009 --> FR-010
+  FR-010 --> FR-011
+  FR-010 --> FR-012
+  FR-011 --> FR-012
+  FR-009 --> FR-013
+  FR-011 --> FR-013
+  FR-012 --> FR-013
+  FR-009 --> NFR-004
+  FR-010 --> NFR-004
+  FR-011 --> NFR-004
+  FR-012 --> NFR-004
+  FR-009 --> NFR-005
+  FR-013 --> NFR-005
 ```
 
 ## Topological Order
@@ -66,7 +87,11 @@ graph TD
 1. FR-001, FR-002, and FR-003.
 2. FR-004 and FR-007.
 3. FR-005 and FR-006.
-4. FR-008 and the integrated NFR verification gates.
+4. FR-008 and the issue #8 NFR verification gates.
+5. FR-009, after the governed corpus baseline is pinned.
+6. FR-010.
+7. FR-011, then FR-012.
+8. FR-013 with NFR-004 and NFR-005 as final issue #10 gates.
 
 ## Cycles
 

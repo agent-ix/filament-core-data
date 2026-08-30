@@ -3,6 +3,10 @@ id: NFR-001
 title: "Architecture record remains traceable and internally consistent"
 type: NFR
 quality_attribute: maintainability
+verification_method: test
+evidence:
+  - kind: test_case
+    ref: "test/semantic-architecture.test.ts"
 relationships:
   - target: "ix://agent-ix/filament-core-data/spec/functional/FR-001"
     type: "constrains"
