@@ -1,0 +1,8 @@
+{
+  "command": "pnpm exec tsp compile spikes/typespec-feasibility/main.tsp --emit @agent-ix/typespec-semantic-ir-emitter-spike",
+  "compilerVersion": "1.15.0",
+  "result": "passed",
+  "typeCount": 18,
+  "extensionSurface": "one JavaScript $onEmit entry point using compiler semantic walker, naming, location, and emitFile APIs",
+  "limitation": "TypeSpec documents the emitter framework as experimental and TypeScript/JavaScript as its best-supported extension language"
+}

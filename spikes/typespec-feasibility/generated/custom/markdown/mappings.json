@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0.0",
+  "rendererOwner": "none",
+  "authority": "derived-text-mapping",
+  "roundTrip": "semantic; presentation ordering and comments remain representation-local",
+  "lossiness": "declared per mapping",
+  "provenance": "mapping version plus source repository, revision, path, and semantic identity",
+  "mappings": [
+    {
+      "id": "markdown-artifact",
+      "sourceType": "AgentIx.Semantic.Core.Artifact",
+      "target": "markdown",
+      "authority": "authored-definition",
+      "roundTrip": "semantic",
+      "lossiness": "presentation ordering and comments are representation-local",
+      "provenance": "retain source repository/revision/path and mapping version",
+      "locations": {
+        "id": "frontmatter.id",
+        "artifactType": "frontmatter.type",
+        "title": "heading[1]",
+        "summary": "section.Summary",
+        "objects": "frontmatter.objects plus extracted body tables"
+      }
+    }
+  ]
+}

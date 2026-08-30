@@ -1,0 +1,3 @@
+model InvalidArtifact {
+  id: MissingSemanticId;
+}

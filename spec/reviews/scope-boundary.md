@@ -1,9 +1,9 @@
 ---
 id: SR-007
-title: "Scope and boundary review of the semantic architecture and contract census"
+title: "Scope review of the architecture, census, and TypeSpec gate"
 type: SpecReview
 analysis: scope-boundary
-scope: "spec/spec.md, StR-001, FR-001..013, NFR-001..005"
+scope: "spec/spec.md, StR-001, FR-001..018, NFR-001..007"
 review_set: all
 ---
 # Scope and boundary review
@@ -11,7 +11,8 @@ review_set: all
 ## Summary
 
 The system under specification is the architecture record and read-only census
-in `filament-core-data`, not the future compiler or any consumer migration.
+in `filament-core-data`, plus one isolated disposable feasibility compiler—not
+the future production compiler or any consumer migration.
 Every requirement has one owner; external repositories supply pinned evidence
 and remain unchanged.
 
@@ -21,6 +22,7 @@ and remain unchanged.
 |---|---|---|---|
 | FND-008 | low | No ownership ambiguity remains; external repository behavior is referenced as dated evidence or an assumed contract and is not reimplemented by issue #8. | FR-003, NFR-003 |
 | FND-014 | low | Issue #10 owns evidence schemas, audit tooling, inventories, and review only; all examined contract definitions and operational systems remain external and unchanged. | FR-009..013, NFR-005 |
+| FND-022 | low | Issue #4 owns experimental source/emitter/output/evidence only; official TypeSpec/native tools remain external and generated spike packages cannot become production or published by implication. | FR-014..018, NFR-006 |
 
 ## System Context
 
@@ -31,15 +33,17 @@ flowchart LR
   quoin[Quoin catalog and workflows]
   modules[Domain module repositories]
   consumers[Filament consumers]
-  subgraph record[filament-core-data issues #8 and #10]
+  subgraph record[filament-core-data issues #8, #10, and #4]
     requirements[Requirements and Test Matrix]
     architecture[Architecture record and ADRs]
     census[Read-only contract census]
     evidence[Validation and reviews]
+    spike[Isolated TypeSpec experiment]
   end
   maintainers --> architecture
   requirements --> architecture --> evidence
   requirements --> census --> evidence
+  requirements --> spike --> evidence
   quire -. pinned extraction evidence .-> census
   modules -. pinned contract evidence .-> census
   consumers -. pinned DTO, wire, and persistence evidence .-> census
@@ -59,6 +63,11 @@ flowchart LR
   completeness without modifying their sources.
 - Publish validated inventory, parity, conflict, impact, and acceptance-review
   evidence with explicit unknowns and confidence.
+- Compile a pinned representative TypeSpec slice through official and disposable
+  custom paths; retain native, golden, diagnostic, deterministic, compatibility,
+  projection, cost, and recommendation evidence.
+- Keep ADR promotion, production compiler selection, publication, consumer
+  adoption, and migration outside the spike.
 
 ## External Dependencies
 
@@ -67,7 +76,8 @@ flowchart LR
 | Quire behavior and ADR corpus | Repository boundary | Assumed from dated source snapshot | quire-rs ADR-0003..0005, FR-002, FR-031, docs/USAGE.md |
 | Quoin module/workflow ownership | Repository boundary | Assumed from dated source snapshot | quoin#289 and installed module contracts |
 | Current Avro consumers | Compatibility boundary | Guaranteed only by existing repository tests | schema/avro/core-data.avpr and test/schema.test.ts |
-| TypeSpec capability | Tool feasibility | Not yet guaranteed | filament-core-data#4 with JSON Schema fallback |
+| TypeSpec compiler/official emitters | Tool feasibility boundary | Guaranteed only at exact tested versions and for retained outputs | filament-core-data#4 with JSON Schema fallback |
+| Native Rust/TypeScript/Python toolchains | External compiler boundary | Guaranteed only by exact command/version and successful spike build | FR-017, NFR-006 |
 | Corpus fitness | Program evidence | Not yet guaranteed | filament-core-data#10 and quoin#288 |
 | Repository and worktree state | Git source evidence | Assumed at recorded immutable HEAD; dirty state recorded separately | FR-009 snapshot |
 | GitHub issues, PRs, and projects | Authenticated API evidence | Guaranteed only when access and complete enumeration are recorded | FR-009-AC-6, TC-088 |
@@ -96,3 +106,10 @@ flowchart LR
 | FR-013 | Contract-census SpecReview | core |
 | NFR-004 | Contract-census validation evidence | cross-cutting |
 | NFR-005 | Issue #10 merge gate | cross-cutting |
+| FR-014 | TypeSpec source/package fixture and toolchain inventory | infrastructure |
+| FR-015 | Official JSON Schema/Protobuf compilation and diagnostics | infrastructure |
+| FR-016 | Disposable semantic IR/native/projection emitter | core experiment |
+| FR-017 | Determinism/native/golden/compatibility validation | integration |
+| FR-018 | Feasibility report and proposed ADR resolution | decision evidence |
+| NFR-006 | Issue #4 isolation/non-publication gate | cross-cutting |
+| NFR-007 | Adverse-result evidence gate | cross-cutting |

@@ -499,8 +499,14 @@ describe("Filament contract census", () => {
 		];
 		const inheritedArchitecture = [
 			"README.md",
+			"biome.json",
+			"package.json",
+			"pnpm-lock.yaml",
 			"docs/semantic-data-system/",
 			"plan/Plan-001-semantic-data-architecture-record/",
+			"plan/Plan-003-typespec-feasibility/",
+			"spikes/typespec-feasibility/",
+			"test/typespec-feasibility.test.ts",
 		];
 		for (const path of changedPaths()) {
 			expect(

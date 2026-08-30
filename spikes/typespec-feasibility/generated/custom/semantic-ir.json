@@ -1,0 +1,1811 @@
+{
+  "schemaVersion": "1.0.0",
+  "generator": "@agent-ix/typespec-semantic-ir-emitter-spike@0.0.0",
+  "types": [
+    {
+      "id": "AgentIx.Semantic.Assurance.DomainEvent",
+      "name": "DomainEvent",
+      "package": "AgentIx.Semantic.Assurance",
+      "kind": "model",
+      "role": "occurrence",
+      "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:11",
+      "constraints": {},
+      "discriminator": null,
+      "versioning": {
+        "packageVersions": [],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "base": null,
+      "fields": [
+        {
+          "name": "id",
+          "type": "AgentIx.Semantic.Core.SemanticId",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:12",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "eventType",
+          "type": "AgentIx.Semantic.Core.SemanticId",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:13",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "subjectId",
+          "type": "AgentIx.Semantic.Core.SemanticId",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:14",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "occurredAt",
+          "type": "utcDateTime",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:15",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "causationId",
+          "type": "AgentIx.Semantic.Core.SemanticId | null",
+          "optional": true,
+          "nullable": true,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:16",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "correlationId",
+          "type": "AgentIx.Semantic.Core.SemanticId",
+          "optional": true,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:17",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "payload",
+          "type": "Record<string>",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": true,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:18",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "provenance",
+          "type": "AgentIx.Semantic.Core.Provenance",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:19",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        }
+      ]
+    },
+    {
+      "id": "AgentIx.Semantic.Assurance.Evidence",
+      "name": "Evidence",
+      "package": "AgentIx.Semantic.Assurance",
+      "kind": "model",
+      "role": "observation",
+      "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:32",
+      "constraints": {},
+      "discriminator": null,
+      "versioning": {
+        "packageVersions": [],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "base": null,
+      "fields": [
+        {
+          "name": "id",
+          "type": "AgentIx.Semantic.Core.SemanticId",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:33",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "runId",
+          "type": "AgentIx.Semantic.Core.SemanticId",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:34",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "evidenceType",
+          "type": "AgentIx.Semantic.Core.SemanticId",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:35",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "uri",
+          "type": "string",
+          "optional": true,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:36",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "digest",
+          "type": "string",
+          "optional": true,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:37",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "observedAt",
+          "type": "utcDateTime",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:38",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "attributes",
+          "type": "Record<string>",
+          "optional": true,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": true,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:39",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "provenance",
+          "type": "AgentIx.Semantic.Core.Provenance",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:40",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        }
+      ]
+    },
+    {
+      "id": "AgentIx.Semantic.Assurance.FailedResult",
+      "name": "FailedResult",
+      "package": "AgentIx.Semantic.Assurance",
+      "kind": "model",
+      "role": "observation",
+      "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:54",
+      "constraints": {},
+      "discriminator": null,
+      "versioning": {
+        "packageVersions": [],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "base": "AgentIx.Semantic.Assurance.VerificationResult",
+      "fields": [
+        {
+          "name": "status",
+          "type": "\"failed\"",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:55",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "findingIds",
+          "type": "AgentIx.Semantic.Core.SemanticId[]",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:56",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:57",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        }
+      ]
+    },
+    {
+      "id": "AgentIx.Semantic.Assurance.NotComputedResult",
+      "name": "NotComputedResult",
+      "package": "AgentIx.Semantic.Assurance",
+      "kind": "model",
+      "role": "observation",
+      "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:60",
+      "constraints": {},
+      "discriminator": null,
+      "versioning": {
+        "packageVersions": [],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "base": "AgentIx.Semantic.Assurance.VerificationResult",
+      "fields": [
+        {
+          "name": "status",
+          "type": "\"not-computed\"",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:61",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:62",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "missingInput",
+          "type": "string | null",
+          "optional": true,
+          "nullable": true,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:63",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        }
+      ]
+    },
+    {
+      "id": "AgentIx.Semantic.Assurance.PassedResult",
+      "name": "PassedResult",
+      "package": "AgentIx.Semantic.Assurance",
+      "kind": "model",
+      "role": "observation",
+      "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:49",
+      "constraints": {},
+      "discriminator": null,
+      "versioning": {
+        "packageVersions": [],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "base": "AgentIx.Semantic.Assurance.VerificationResult",
+      "fields": [
+        {
+          "name": "status",
+          "type": "\"passed\"",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:50",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "evidenceIds",
+          "type": "AgentIx.Semantic.Core.SemanticId[]",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:51",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        }
+      ]
+    },
+    {
+      "id": "AgentIx.Semantic.Assurance.VerificationResult",
+      "name": "VerificationResult",
+      "package": "AgentIx.Semantic.Assurance",
+      "kind": "model",
+      "role": "observation",
+      "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:44",
+      "constraints": {},
+      "discriminator": "status",
+      "versioning": {
+        "packageVersions": [],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "base": null,
+      "fields": [
+        {
+          "name": "status",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:45",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "runId",
+          "type": "AgentIx.Semantic.Core.SemanticId",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:46",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        }
+      ]
+    },
+    {
+      "id": "AgentIx.Semantic.Assurance.VerificationRun",
+      "name": "VerificationRun",
+      "package": "AgentIx.Semantic.Assurance",
+      "kind": "model",
+      "role": "observation",
+      "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:22",
+      "constraints": {},
+      "discriminator": null,
+      "versioning": {
+        "packageVersions": [],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "base": null,
+      "fields": [
+        {
+          "name": "id",
+          "type": "AgentIx.Semantic.Core.SemanticId",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:23",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "targetId",
+          "type": "AgentIx.Semantic.Core.SemanticId",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:24",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "profileId",
+          "type": "AgentIx.Semantic.Core.SemanticId",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:25",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "startedAt",
+          "type": "utcDateTime",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:26",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "completedAt",
+          "type": "utcDateTime | null",
+          "optional": true,
+          "nullable": true,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:27",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "evidenceIds",
+          "type": "AgentIx.Semantic.Core.SemanticId[]",
+          "optional": true,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:28",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "provenance",
+          "type": "AgentIx.Semantic.Core.Provenance",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/assurance/main.tsp:29",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        }
+      ]
+    },
+    {
+      "id": "AgentIx.Semantic.Core.Artifact",
+      "name": "Artifact",
+      "package": "AgentIx.Semantic.Core",
+      "kind": "model",
+      "role": "definition",
+      "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:70",
+      "constraints": {},
+      "discriminator": null,
+      "versioning": {
+        "packageVersions": [
+          {
+            "name": "v1",
+            "value": "v1",
+            "index": 0
+          },
+          {
+            "name": "v2",
+            "value": "v2",
+            "index": 1
+          }
+        ],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "base": null,
+      "fields": [
+        {
+          "name": "id",
+          "type": "AgentIx.Semantic.Core.SemanticId",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:71",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "kind",
+          "type": "AgentIx.Semantic.Core.StructuralKind.artifact",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:72",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "role",
+          "type": "AgentIx.Semantic.Core.SemanticRole.definition",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:73",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "artifactType",
+          "type": "AgentIx.Semantic.Core.SemanticId",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:74",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:75",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "summary",
+          "type": "string",
+          "optional": true,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:76",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "explicitNullNote",
+          "type": "string | null",
+          "optional": false,
+          "nullable": true,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:77",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "objects",
+          "type": "AgentIx.Semantic.Core.SemanticObject[]",
+          "optional": true,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:78",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "relations",
+          "type": "AgentIx.Semantic.Core.Relation[]",
+          "optional": true,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:79",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "extensions",
+          "type": "Record<string>",
+          "optional": true,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": true,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:80",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "provenance",
+          "type": "AgentIx.Semantic.Core.Provenance",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:81",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "legacyLabel",
+          "type": "string",
+          "optional": true,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:85",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [
+              {
+                "name": "v2",
+                "value": "v2",
+                "index": 1
+              }
+            ],
+            "removed": []
+          },
+          "deprecated": "Use extensions with a versioned vocabulary."
+        }
+      ]
+    },
+    {
+      "id": "AgentIx.Semantic.Core.Provenance",
+      "name": "Provenance",
+      "package": "AgentIx.Semantic.Core",
+      "kind": "model",
+      "role": "definition",
+      "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:42",
+      "constraints": {},
+      "discriminator": null,
+      "versioning": {
+        "packageVersions": [
+          {
+            "name": "v1",
+            "value": "v1",
+            "index": 0
+          },
+          {
+            "name": "v2",
+            "value": "v2",
+            "index": 1
+          }
+        ],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "base": null,
+      "fields": [
+        {
+          "name": "source",
+          "type": "AgentIx.Semantic.Core.SourceLocus",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:43",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "producer",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:44",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "producerVersion",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:45",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "generatedAt",
+          "type": "utcDateTime | null",
+          "optional": true,
+          "nullable": true,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:46",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        }
+      ]
+    },
+    {
+      "id": "AgentIx.Semantic.Core.Relation",
+      "name": "Relation",
+      "package": "AgentIx.Semantic.Core",
+      "kind": "model",
+      "role": "definition",
+      "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:49",
+      "constraints": {},
+      "discriminator": null,
+      "versioning": {
+        "packageVersions": [
+          {
+            "name": "v1",
+            "value": "v1",
+            "index": 0
+          },
+          {
+            "name": "v2",
+            "value": "v2",
+            "index": 1
+          }
+        ],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "base": null,
+      "fields": [
+        {
+          "name": "id",
+          "type": "AgentIx.Semantic.Core.SemanticId",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:50",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "relationType",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:51",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "targetId",
+          "type": "AgentIx.Semantic.Core.SemanticId",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:52",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "related",
+          "type": "AgentIx.Semantic.Core.Relation[]",
+          "optional": true,
+          "nullable": false,
+          "recursive": true,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:53",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "metadata",
+          "type": "Record<string> | null",
+          "optional": true,
+          "nullable": true,
+          "recursive": false,
+          "extensionPoint": true,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:54",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        }
+      ]
+    },
+    {
+      "id": "AgentIx.Semantic.Core.SemanticId",
+      "name": "SemanticId",
+      "package": "AgentIx.Semantic.Core",
+      "kind": "scalar",
+      "role": "definition",
+      "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:16",
+      "constraints": {
+        "pattern": "^[a-z][a-z0-9-]*:[^\\s]+$"
+      },
+      "discriminator": null,
+      "versioning": {
+        "packageVersions": [
+          {
+            "name": "v1",
+            "value": "v1",
+            "index": 0
+          },
+          {
+            "name": "v2",
+            "value": "v2",
+            "index": 1
+          }
+        ],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "base": "string"
+    },
+    {
+      "id": "AgentIx.Semantic.Core.SemanticObject",
+      "name": "SemanticObject",
+      "package": "AgentIx.Semantic.Core",
+      "kind": "model",
+      "role": "definition",
+      "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:58",
+      "constraints": {},
+      "discriminator": null,
+      "versioning": {
+        "packageVersions": [
+          {
+            "name": "v1",
+            "value": "v1",
+            "index": 0
+          },
+          {
+            "name": "v2",
+            "value": "v2",
+            "index": 1
+          }
+        ],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "base": null,
+      "fields": [
+        {
+          "name": "id",
+          "type": "AgentIx.Semantic.Core.SemanticId",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:59",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "kind",
+          "type": "AgentIx.Semantic.Core.StructuralKind.object",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:60",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "role",
+          "type": "AgentIx.Semantic.Core.SemanticRole",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:61",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "typeId",
+          "type": "AgentIx.Semantic.Core.SemanticId",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:62",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:63",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "relations",
+          "type": "AgentIx.Semantic.Core.Relation[]",
+          "optional": true,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:64",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "extensions",
+          "type": "Record<string>",
+          "optional": true,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": true,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:65",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "provenance",
+          "type": "AgentIx.Semantic.Core.Provenance",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:66",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        }
+      ]
+    },
+    {
+      "id": "AgentIx.Semantic.Core.SemanticRole",
+      "name": "SemanticRole",
+      "package": "AgentIx.Semantic.Core",
+      "kind": "enum",
+      "role": "definition",
+      "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:28",
+      "constraints": {},
+      "discriminator": null,
+      "versioning": {
+        "packageVersions": [
+          {
+            "name": "v1",
+            "value": "v1",
+            "index": 0
+          },
+          {
+            "name": "v2",
+            "value": "v2",
+            "index": 1
+          }
+        ],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "members": [
+        {
+          "name": "definition",
+          "value": "definition"
+        },
+        {
+          "name": "occurrence",
+          "value": "occurrence"
+        },
+        {
+          "name": "observation",
+          "value": "observation"
+        },
+        {
+          "name": "projectedView",
+          "value": "projectedView"
+        }
+      ]
+    },
+    {
+      "id": "AgentIx.Semantic.Core.SourceLocus",
+      "name": "SourceLocus",
+      "package": "AgentIx.Semantic.Core",
+      "kind": "model",
+      "role": "definition",
+      "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:35",
+      "constraints": {},
+      "discriminator": null,
+      "versioning": {
+        "packageVersions": [
+          {
+            "name": "v1",
+            "value": "v1",
+            "index": 0
+          },
+          {
+            "name": "v2",
+            "value": "v2",
+            "index": 1
+          }
+        ],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "base": null,
+      "fields": [
+        {
+          "name": "repository",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:36",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "revision",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:37",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:38",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "line",
+          "type": "int32",
+          "optional": true,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:39",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        }
+      ]
+    },
+    {
+      "id": "AgentIx.Semantic.Core.StructuralKind",
+      "name": "StructuralKind",
+      "package": "AgentIx.Semantic.Core",
+      "kind": "enum",
+      "role": "definition",
+      "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:18",
+      "constraints": {},
+      "discriminator": null,
+      "versioning": {
+        "packageVersions": [
+          {
+            "name": "v1",
+            "value": "v1",
+            "index": 0
+          },
+          {
+            "name": "v2",
+            "value": "v2",
+            "index": 1
+          }
+        ],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "members": [
+        {
+          "name": "artifact",
+          "value": "artifact"
+        },
+        {
+          "name": "object",
+          "value": "object"
+        },
+        {
+          "name": "relation",
+          "value": "relation"
+        },
+        {
+          "name": "event",
+          "value": "event"
+        },
+        {
+          "name": "run",
+          "value": "run"
+        },
+        {
+          "name": "evidence",
+          "value": "evidence"
+        },
+        {
+          "name": "result",
+          "value": "result"
+        }
+      ]
+    },
+    {
+      "id": "AgentIx.Semantic.Core.Versions",
+      "name": "Versions",
+      "package": "AgentIx.Semantic.Core",
+      "kind": "enum",
+      "role": "definition",
+      "source": "spikes/typespec-feasibility/packages/semantic-core/main.tsp:10",
+      "constraints": {},
+      "discriminator": null,
+      "versioning": {
+        "packageVersions": [
+          {
+            "name": "v1",
+            "value": "v1",
+            "index": 0
+          },
+          {
+            "name": "v2",
+            "value": "v2",
+            "index": 1
+          }
+        ],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "members": [
+        {
+          "name": "v1",
+          "value": "v1"
+        },
+        {
+          "name": "v2",
+          "value": "v2"
+        }
+      ]
+    },
+    {
+      "id": "AgentIx.Semantic.Wire.ArtifactMessage",
+      "name": "ArtifactMessage",
+      "package": "AgentIx.Semantic.Wire",
+      "kind": "model",
+      "role": "projection",
+      "source": "spikes/typespec-feasibility/packages/wire/main.tsp:9",
+      "constraints": {},
+      "discriminator": null,
+      "versioning": {
+        "packageVersions": [],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "base": null,
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/wire/main.tsp:10",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "artifact_type",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/wire/main.tsp:11",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/wire/main.tsp:12",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "summary",
+          "type": "string",
+          "optional": true,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/wire/main.tsp:13",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "provenance_json",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/wire/main.tsp:14",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        }
+      ]
+    },
+    {
+      "id": "AgentIx.Semantic.Wire.EventMessage",
+      "name": "EventMessage",
+      "package": "AgentIx.Semantic.Wire",
+      "kind": "model",
+      "role": "projection",
+      "source": "spikes/typespec-feasibility/packages/wire/main.tsp:17",
+      "constraints": {},
+      "discriminator": null,
+      "versioning": {
+        "packageVersions": [],
+        "added": [],
+        "removed": []
+      },
+      "deprecated": null,
+      "base": null,
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/wire/main.tsp:18",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "event_type",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/wire/main.tsp:19",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "subject_id",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/wire/main.tsp:20",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "occurred_at",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/wire/main.tsp:21",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "payload_json",
+          "type": "string",
+          "optional": false,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/wire/main.tsp:22",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        },
+        {
+          "name": "correlation_id",
+          "type": "string",
+          "optional": true,
+          "nullable": false,
+          "recursive": false,
+          "extensionPoint": false,
+          "source": "spikes/typespec-feasibility/packages/wire/main.tsp:23",
+          "constraints": {},
+          "discriminator": null,
+          "versioning": {
+            "packageVersions": [],
+            "added": [],
+            "removed": []
+          },
+          "deprecated": null
+        }
+      ]
+    }
+  ]
+}

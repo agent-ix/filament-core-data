@@ -1,0 +1,15 @@
+{
+	"name": "@agent-ix/assurance-typespec-spike",
+	"version": "0.1.0",
+	"private": true,
+	"license": "AGPL-3.0-only",
+	"dependencies": {
+		"@agent-ix/semantic-core-typespec-spike": "0.1.0"
+	},
+	"tspMain": "main.tsp",
+	"exports": {
+		".": {
+			"typespec": "./main.tsp"
+		}
+	}
+}
