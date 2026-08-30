@@ -2,6 +2,12 @@
 id: FR-007
 title: "Compatibility, feasibility, review, and program gates"
 type: FR
+verification_method: inspection
+evidence:
+  - kind: inspection_checklist
+    ref: "spec/reviews/risk-complexity.md"
+  - kind: test_case
+    ref: "test/semantic-architecture.test.ts"
 relationships:
   - target: "ix://agent-ix/filament-core-data/spec/usecase/US-002"
     type: "implements"

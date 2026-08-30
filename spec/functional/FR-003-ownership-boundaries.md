@@ -2,6 +2,10 @@
 id: FR-003
 title: "Repository and subsystem ownership boundaries"
 type: FR
+verification_method: inspection
+evidence:
+  - kind: inspection_checklist
+    ref: "spec/reviews/scope-boundary.md"
 relationships:
   - target: "ix://agent-ix/filament-core-data/spec/usecase/US-001"
     type: "implements"

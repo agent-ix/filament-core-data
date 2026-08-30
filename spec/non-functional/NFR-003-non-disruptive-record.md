@@ -3,6 +3,10 @@ id: NFR-003
 title: "Architecture-record delivery is non-disruptive"
 type: NFR
 quality_attribute: compatibility
+verification_method: inspection
+evidence:
+  - kind: inspection_checklist
+    ref: "reviews/2026-08-29-semantic-data-architecture-code-review.md"
 relationships:
   - target: "ix://agent-ix/filament-core-data/spec/functional/FR-007"
     type: "constrains"
