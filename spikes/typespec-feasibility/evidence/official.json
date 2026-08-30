@@ -1,0 +1,11 @@
+{
+  "commands": [
+    "pnpm exec tsp compile spikes/typespec-feasibility/main.tsp --config spikes/typespec-feasibility/tspconfig.yaml",
+    "protobufjs.parse(generated/official/protobuf/semantic.proto)"
+  ],
+  "compilerVersion": "1.15.0",
+  "jsonSchemaEmitterVersion": "1.15.0",
+  "protobufEmitterVersion": "0.85.0",
+  "result": "passed",
+  "measurement": "official compile and both emitters complete in less than one second on the recorded workstation"
+}

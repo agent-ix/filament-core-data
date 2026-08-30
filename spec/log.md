@@ -9,3 +9,4 @@ description: "Chronological log of structural changes to the requirements bundle
 
 * **2026-08-29** — Initialized the semantic data architecture requirements bundle for issue #8.
 * **2026-08-29** — Added the read-only Filament contract-census requirements for issue #10.
+* **2026-08-29** — Added the pinned, isolated TypeSpec feasibility and structural-schema decision requirements for issue #4.

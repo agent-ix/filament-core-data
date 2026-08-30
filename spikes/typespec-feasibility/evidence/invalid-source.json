@@ -1,0 +1,5 @@
+{
+  "exitCode": 1,
+  "source": "fixtures/invalid/main.tsp:2",
+  "diagnostic": "spikes/typespec-feasibility/fixtures/invalid/main.tsp:2:7 - error invalid-ref: Unknown identifier MissingSemanticId"
+}

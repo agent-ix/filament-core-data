@@ -315,14 +315,20 @@ describe("semantic data architecture record", () => {
 	it("limits issue #8 changes to documentation, plans, reviews, and tests", () => {
 		const allowed = [
 			"README.md",
+			"biome.json",
+			"package.json",
+			"pnpm-lock.yaml",
 			"audit/filament-contract-census/",
 			"docs/semantic-data-system/",
 			"plan/Plan-001-semantic-data-architecture-record/",
 			"plan/Plan-002-filament-contract-census/",
+			"plan/Plan-003-typespec-feasibility/",
 			"reviews/",
 			"spec/",
+			"spikes/typespec-feasibility/",
 			"test/contract-census.test.ts",
 			"test/semantic-architecture.test.ts",
+			"test/typespec-feasibility.test.ts",
 		];
 		for (const path of changedPaths()) {
 			expect(

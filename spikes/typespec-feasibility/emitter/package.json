@@ -1,0 +1,12 @@
+{
+	"name": "@agent-ix/typespec-semantic-ir-emitter-spike",
+	"version": "0.0.0",
+	"private": true,
+	"license": "AGPL-3.0-only",
+	"type": "module",
+	"main": "./index.mjs",
+	"peerDependencies": {
+		"@typespec/compiler": "1.15.0",
+		"@typespec/versioning": "0.85.0"
+	}
+}

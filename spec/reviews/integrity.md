@@ -14,6 +14,9 @@ The expanded specification is complete, internally consistent, atomic at the
 observable obligation level, and fully mapped to verification. The audit adds no
 authority conflict: it measures current contracts while preserving the
 architecture and all implementation gates.
+The feasibility requirements preserve that authority: an experimental emitter
+can demonstrate a path but cannot make itself production or turn a partial P0
+result into a pass.
 
 ## Findings
 
@@ -21,6 +24,7 @@ architecture and all implementation gates.
 |---|---|---|---|
 | FND-004 | low | No blocking integrity defect remains after expanding structured StR traceability and mapping every named constraint and new failure-domain criterion. | StR-001, FR-001..008, NFR-001..003, TM-001 |
 | FND-012 | low | Resolved during review: API/tool version, access failure, pagination, caps, and rate-limit completeness are explicit, so an external lookup cannot silently return an apparently complete census. | FR-009-AC-6, NFR-004, TC-088 |
+| FND-018 | low | The issue #4 slice is atomic, fully mapped, and consistent with ADR-0004: TypeSpec remains conditional, JSON Schema is the failure fallback, Avro remains the current bridge, and human promotion is mandatory. | US-004, FR-014..018, NFR-006..007, TC-089..129 |
 
 ## Traceability Result
 
@@ -29,10 +33,12 @@ architecture and all implementation gates.
 | US-001 authority and ownership | FR-002, FR-003, FR-004, FR-006 | StR-001 | TC-005..016, TC-021..024, TC-034..035, TC-049..052 |
 | US-002 safe adoption | FR-001, FR-005, FR-007, FR-008 | StR-001 | TC-001..004, TC-017..020, TC-025..032, TC-036..037, TC-053 |
 | US-003 contract-fit assessment | FR-009..FR-013 | StR-001 | TC-054..088 |
+| US-004 structural-source evaluation | FR-014..FR-018 | StR-001 | TC-089..129 |
 
 NFR-001 constrains navigation and decisions, NFR-002 constrains standalone
 readability, NFR-003 constrains issue #8, NFR-004 constrains census
-reproducibility, and NFR-005 constrains issue #10 to read-only work. Each has a
+reproducibility, NFR-005 constrains issue #10 to read-only work, NFR-006 isolates
+the spike, and NFR-007 preserves adverse evidence. Each has a
 declared scope, measurable threshold, method, evidence, and mapped test cases.
 
 External tool and authenticated/paginated API probes apply to volatile census
@@ -41,3 +47,7 @@ enumeration are mandatory, and every failure becomes an incomplete observation.
 Concurrent collection and interactive scaffolding are not required. The audit
 does not depend on a package or service that lacks an explicit pinned or
 unavailable disposition.
+
+The spike invokes external compilers and native toolchains only through exact
+recorded commands. Missing tools, incompatible versions, failed compiles, and
+unsupported constructs are capability outcomes and cannot become empty success.

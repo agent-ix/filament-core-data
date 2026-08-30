@@ -43,6 +43,11 @@ The second delivery is a read-only, revision-pinned census of current Filament
 contracts. It records source facts, parity, conflicts, impact, uncertainty, and
 active-work overlap without changing the measured systems.
 
+The third delivery is an isolated, unpublished TypeSpec feasibility experiment.
+It compiles one representative semantic slice through official and custom emitter
+paths, exercises ordinary native consumers, and produces retained evidence for a
+human schema-source decision.
+
 ## 2. Scope
 
 ### 2.1 In Scope
@@ -63,17 +68,27 @@ active-work overlap without changing the measured systems.
   pinned to inspected revisions.
 - A validated contract-census SpecReview that preserves unknown and
   low-confidence findings.
+- A pinned TypeSpec vertical slice covering package identity, core semantic
+  objects, events, verification evidence, recursion, extensions, optionality,
+  nullability, versioning, and deprecation.
+- Experimental JSON Schema, Protobuf, semantic IR, Rust, TypeScript, Python,
+  Arrow, and Markdown outputs with compile, golden, diagnostic, determinism,
+  compatibility, and maintenance-cost evidence.
+- A go/no-go recommendation that applies the existing pass rule and retains the
+  human ADR-0004 promotion gate.
 
 ### 2.2 Out of Scope
 
-- Implementing the semantic compiler or any emitter.
+- Implementing the production semantic compiler or production emitter framework;
+  issue #4 may implement only an isolated disposable experimental emitter.
 - Generating, publishing, or consuming new Rust, TypeScript, or Python packages.
 - Changing Avro, database, API, Tauri, Protobuf, Arrow, Parquet, or Markdown
   runtime behavior.
 - Modifying Quire parsing, validation, extraction, or byte-splice behavior.
 - Modifying Quoin catalog installation or module enforcement.
 - Migrating persisted data, rewriting the corpus, or removing legacy contracts.
-- Selecting TypeSpec as final before its separately ticketed feasibility gate.
+- Self-promoting TypeSpec or the fallback without human review of the issue #4
+  feasibility report.
 - Correcting any contract finding while the issue #10 census is being collected.
 - Approving consumer, database, wire-format, package, enforcement, or retirement
   changes from audit recommendations alone.
@@ -124,9 +139,9 @@ Authority is assigned by concern:
 | Class | Artifacts | Purpose |
 |---|---|---|
 | Stakeholder | [StR-001](./stakeholder/StR-001-durable-semantic-data-governance.md) | Durable governance need |
-| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-003](./usecase/US-003-assess-contract-fit.md) | Reader, implementer, and migration-review outcomes |
-| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-013](./functional/FR-013-publish-contract-census-review.md) | Required architecture-record and contract-census behavior |
-| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-005](./non-functional/NFR-005-read-only-contract-audit.md) | Traceability, readability, reproducibility, and non-disruption |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-004](./usecase/US-004-evaluate-structural-schema-source.md) | Reader, implementer, migration-review, and tool-selection outcomes |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-018](./functional/FR-018-resolve-structural-schema-source.md) | Architecture, census, and feasibility-gate behavior |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-007](./non-functional/NFR-007-honest-feasibility-evidence.md) | Traceability, readability, reproducibility, isolation, honesty, and non-disruption |
 
 ## 6. Decision Status Model
 
@@ -149,6 +164,9 @@ remain provisional until their owning tickets pass.
 - Machine-readable census artifacts are schema-validated and checked for stable
   identifiers, resolvable evidence loci, deterministic ordering, and complete
   dispositions.
+- TypeSpec feasibility uses pinned compilation, native consumer builds, shared
+  golden fixtures, invalid-source diagnostics, clean-run fingerprints,
+  compatibility examples, and an independent evidence review.
 
 ## 8. Program Relationships
 
