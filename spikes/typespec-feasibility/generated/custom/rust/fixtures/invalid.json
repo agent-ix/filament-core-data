@@ -1,0 +1,20 @@
+{
+  "artifact": {
+    "id": "not-a-semantic-id",
+    "kind": "artifact",
+    "role": "definition",
+    "artifactType": "type:specification",
+    "explicitNullNote": null,
+    "provenance": {
+      "source": {
+        "repository": "agent-ix/example",
+        "revision": "abc123",
+        "path": "spec/example.md",
+        "line": 7
+      },
+      "producer": "typespec-feasibility-spike",
+      "producerVersion": "0.0.0",
+      "generatedAt": null
+    }
+  }
+}

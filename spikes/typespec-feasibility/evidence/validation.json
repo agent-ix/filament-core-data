@@ -1,0 +1,43 @@
+{
+  "fingerprintedFiles": [
+    "generated/official/json-schema/semantic.json",
+    "generated/official/protobuf/semantic.proto",
+    "generated/custom/semantic-ir.json",
+    "generated/custom/typescript/index.ts",
+    "generated/custom/python/input.schema.json",
+    "generated/custom/python/models.py",
+    "generated/custom/python/models_dataclass.py",
+    "generated/custom/rust/src/lib.rs",
+    "generated/custom/arrow/schema.json",
+    "generated/custom/markdown/mappings.json",
+    "generated/custom/protobuf/mapping.json",
+    "generated/fixtures/representative.json",
+    "generated/fixtures/invalid.json"
+  ],
+  "normalizedFingerprint": "052f4448da7ac46aa61f343df881a4e3ee2c1f41f5feaa0116d5d7bca32c1e9f",
+  "repeatNormalizedFingerprint": "052f4448da7ac46aa61f343df881a4e3ee2c1f41f5feaa0116d5d7bca32c1e9f",
+  "native": {
+    "typescript": {
+      "compile": "passed",
+      "consumer": "passed"
+    },
+    "python": {
+      "compile": "passed",
+      "consumer": "passed",
+      "families": "pydantic-v2-basemodel-and-stdlib-dataclass"
+    },
+    "rust": {
+      "compile": "passed",
+      "consumer": "passed"
+    }
+  },
+  "goldenAgreement": "passed-positive-and-negative",
+  "invalidGoldenAgreement": "passed",
+  "jsonSchemaValidation": "passed-after-declared-record-uri-alias-normalization; raw-bundle-partial",
+  "protobufSyntaxValidation": "passed-with-protobufjs; native-protoc-unavailable",
+  "arrowConstruction": "passed",
+  "packagePublications": 0,
+  "currentSchemaMutations": 0,
+  "consumerMutations": 0,
+  "externalRepositoryMutations": 0
+}

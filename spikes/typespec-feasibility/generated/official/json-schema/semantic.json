@@ -1,0 +1,563 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "semantic",
+    "$defs": {
+        "SourceLocus": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://schemas.agent-ix.org/semantic-core/0.1.0/SourceLocus.json",
+            "type": "object",
+            "properties": {
+                "repository": {
+                    "type": "string"
+                },
+                "revision": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "line": {
+                    "type": "integer",
+                    "minimum": -2147483648,
+                    "maximum": 2147483647
+                }
+            },
+            "required": [
+                "repository",
+                "revision",
+                "path"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "Provenance": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://schemas.agent-ix.org/semantic-core/0.1.0/Provenance.json",
+            "type": "object",
+            "properties": {
+                "source": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SourceLocus.json"
+                },
+                "producer": {
+                    "type": "string"
+                },
+                "producerVersion": {
+                    "type": "string"
+                },
+                "generatedAt": {
+                    "anyOf": [
+                        {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "source",
+                "producer",
+                "producerVersion"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "Relation": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://schemas.agent-ix.org/semantic-core/0.1.0/Relation.json",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "relationType": {
+                    "type": "string"
+                },
+                "targetId": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "related": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/Relation.json"
+                    }
+                },
+                "metadata": {
+                    "anyOf": [
+                        {
+                            "$ref": "RecordString.json"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "id",
+                "relationType",
+                "targetId"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "SemanticId": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json",
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*:[^\\s]+$"
+        },
+        "RecordString": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "RecordString.json",
+            "type": "object",
+            "properties": {},
+            "unevaluatedProperties": {
+                "type": "string"
+            }
+        },
+        "semantic-object": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://schemas.agent-ix.org/semantic-core/0.1.0/semantic-object",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "kind": {
+                    "type": "string",
+                    "const": "object"
+                },
+                "role": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticRole.json"
+                },
+                "typeId": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "relations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/Relation.json"
+                    }
+                },
+                "extensions": {
+                    "$ref": "RecordString.json"
+                },
+                "provenance": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/Provenance.json"
+                }
+            },
+            "required": [
+                "id",
+                "kind",
+                "role",
+                "typeId",
+                "name",
+                "provenance"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "SemanticRole": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticRole.json",
+            "type": "string",
+            "enum": [
+                "definition",
+                "occurrence",
+                "observation",
+                "projectedView"
+            ]
+        },
+        "artifact": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://schemas.agent-ix.org/semantic-core/0.1.0/artifact",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "kind": {
+                    "type": "string",
+                    "const": "artifact"
+                },
+                "role": {
+                    "type": "string",
+                    "const": "definition"
+                },
+                "artifactType": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "summary": {
+                    "type": "string"
+                },
+                "explicitNullNote": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "objects": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/semantic-object"
+                    }
+                },
+                "relations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/Relation.json"
+                    }
+                },
+                "extensions": {
+                    "$ref": "RecordString.json"
+                },
+                "provenance": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/Provenance.json"
+                },
+                "legacyLabel": {
+                    "type": "string",
+                    "deprecated": true
+                }
+            },
+            "required": [
+                "id",
+                "kind",
+                "role",
+                "artifactType",
+                "title",
+                "explicitNullNote",
+                "provenance"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "Versions": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://schemas.agent-ix.org/semantic-core/0.1.0/Versions.json",
+            "type": "string",
+            "enum": [
+                "v1",
+                "v2"
+            ]
+        },
+        "StructuralKind": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://schemas.agent-ix.org/semantic-core/0.1.0/StructuralKind.json",
+            "type": "string",
+            "enum": [
+                "artifact",
+                "object",
+                "relation",
+                "event",
+                "run",
+                "evidence",
+                "result"
+            ]
+        },
+        "DomainEvent": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://schemas.agent-ix.org/assurance/0.1.0/DomainEvent.json",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "eventType": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "subjectId": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "causationId": {
+                    "anyOf": [
+                        {
+                            "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "correlationId": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "payload": {
+                    "$ref": "RecordString.json"
+                },
+                "provenance": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/Provenance.json"
+                }
+            },
+            "required": [
+                "id",
+                "eventType",
+                "subjectId",
+                "occurredAt",
+                "payload",
+                "provenance"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "VerificationRun": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://schemas.agent-ix.org/assurance/0.1.0/VerificationRun.json",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "targetId": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "profileId": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "startedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "completedAt": {
+                    "anyOf": [
+                        {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "evidenceIds": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                    }
+                },
+                "provenance": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/Provenance.json"
+                }
+            },
+            "required": [
+                "id",
+                "targetId",
+                "profileId",
+                "startedAt",
+                "provenance"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "Evidence": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://schemas.agent-ix.org/assurance/0.1.0/Evidence.json",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "runId": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "evidenceType": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "uri": {
+                    "type": "string"
+                },
+                "digest": {
+                    "type": "string"
+                },
+                "observedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "attributes": {
+                    "$ref": "RecordString.json"
+                },
+                "provenance": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/Provenance.json"
+                }
+            },
+            "required": [
+                "id",
+                "runId",
+                "evidenceType",
+                "observedAt",
+                "provenance"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "VerificationResult": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://schemas.agent-ix.org/assurance/0.1.0/VerificationResult.json",
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string"
+                },
+                "runId": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                }
+            },
+            "required": [
+                "status",
+                "runId"
+            ],
+            "oneOf": [
+                {
+                    "$ref": "https://schemas.agent-ix.org/assurance/0.1.0/PassedResult.json"
+                },
+                {
+                    "$ref": "https://schemas.agent-ix.org/assurance/0.1.0/FailedResult.json"
+                },
+                {
+                    "$ref": "https://schemas.agent-ix.org/assurance/0.1.0/NotComputedResult.json"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "status": {
+                            "type": "string",
+                            "not": {
+                                "enum": [
+                                    "passed",
+                                    "failed",
+                                    "not-computed"
+                                ]
+                            }
+                        },
+                        "runId": {
+                            "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                        }
+                    },
+                    "required": [
+                        "status",
+                        "runId"
+                    ]
+                }
+            ]
+        },
+        "PassedResult": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://schemas.agent-ix.org/assurance/0.1.0/PassedResult.json",
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "const": "passed"
+                },
+                "runId": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "evidenceIds": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                    }
+                }
+            },
+            "required": [
+                "status",
+                "runId",
+                "evidenceIds"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "FailedResult": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://schemas.agent-ix.org/assurance/0.1.0/FailedResult.json",
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "const": "failed"
+                },
+                "runId": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "findingIds": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                    }
+                },
+                "reason": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "status",
+                "runId",
+                "findingIds",
+                "reason"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "NotComputedResult": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://schemas.agent-ix.org/assurance/0.1.0/NotComputedResult.json",
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "const": "not-computed"
+                },
+                "runId": {
+                    "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "missingInput": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "status",
+                "runId",
+                "reason"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        }
+    }
+}

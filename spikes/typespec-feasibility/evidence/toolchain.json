@@ -1,0 +1,64 @@
+{
+  "tools": [
+    {
+      "name": "node",
+      "version": "24.15.0",
+      "command": "node --version"
+    },
+    {
+      "name": "pnpm",
+      "version": "10.33.4",
+      "command": "pnpm --version"
+    },
+    {
+      "name": "TypeSpec compiler",
+      "version": "1.15.0",
+      "command": "pnpm exec tsp --version"
+    },
+    {
+      "name": "TypeSpec JSON Schema emitter",
+      "version": "1.15.0",
+      "command": "package lock"
+    },
+    {
+      "name": "TypeSpec Protobuf emitter",
+      "version": "0.85.0",
+      "command": "package lock"
+    },
+    {
+      "name": "TypeScript",
+      "version": "5.9.3",
+      "command": "pnpm exec tsc --version"
+    },
+    {
+      "name": "Pydantic",
+      "version": "2.12.5",
+      "command": "spikes/typespec-feasibility/.venv/bin/python -c import-pydantic-version"
+    },
+    {
+      "name": "datamodel-code-generator",
+      "version": "0.76.0",
+      "command": "python -m datamodel_code_generator --input normalized.schema.json --output models.py"
+    },
+    {
+      "name": "rustc",
+      "version": "1.95.0",
+      "command": "rustc --version"
+    },
+    {
+      "name": "cargo",
+      "version": "1.95.0",
+      "command": "cargo --version"
+    },
+    {
+      "name": "serde",
+      "version": "1.0.229",
+      "command": "generated/custom/rust/Cargo.lock"
+    },
+    {
+      "name": "Python",
+      "version": "3.14.7",
+      "command": "python3 --version"
+    }
+  ]
+}

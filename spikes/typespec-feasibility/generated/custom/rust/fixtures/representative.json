@@ -1,0 +1,96 @@
+{
+  "artifact": {
+    "id": "artifact:example",
+    "kind": "artifact",
+    "role": "definition",
+    "artifactType": "type:specification",
+    "title": "Representative artifact",
+    "summary": "One shared golden value.",
+    "explicitNullNote": null,
+    "objects": [],
+    "relations": [],
+    "extensions": {
+      "profile": "assurance"
+    },
+    "provenance": {
+      "source": {
+        "repository": "agent-ix/example",
+        "revision": "abc123",
+        "path": "spec/example.md",
+        "line": 7
+      },
+      "producer": "typespec-feasibility-spike",
+      "producerVersion": "0.0.0",
+      "generatedAt": null
+    }
+  },
+  "domainEvent": {
+    "id": "event:example",
+    "eventType": "event:verification-started",
+    "subjectId": "artifact:example",
+    "occurredAt": "2026-08-29T12:00:00Z",
+    "causationId": null,
+    "correlationId": "correlation:example",
+    "payload": {},
+    "provenance": {
+      "source": {
+        "repository": "agent-ix/example",
+        "revision": "abc123",
+        "path": "spec/example.md",
+        "line": 7
+      },
+      "producer": "typespec-feasibility-spike",
+      "producerVersion": "0.0.0",
+      "generatedAt": null
+    }
+  },
+  "verificationRun": {
+    "id": "run:example",
+    "targetId": "artifact:example",
+    "profileId": "profile:default",
+    "startedAt": "2026-08-29T12:00:00Z",
+    "completedAt": null,
+    "evidenceIds": [
+      "evidence:example"
+    ],
+    "provenance": {
+      "source": {
+        "repository": "agent-ix/example",
+        "revision": "abc123",
+        "path": "spec/example.md",
+        "line": 7
+      },
+      "producer": "typespec-feasibility-spike",
+      "producerVersion": "0.0.0",
+      "generatedAt": null
+    }
+  },
+  "evidence": {
+    "id": "evidence:example",
+    "runId": "run:example",
+    "evidenceType": "evidence:test-output",
+    "uri": "file:///tmp/test-output.json",
+    "digest": "sha256:example",
+    "observedAt": "2026-08-29T12:01:00Z",
+    "attributes": {},
+    "provenance": {
+      "source": {
+        "repository": "agent-ix/example",
+        "revision": "abc123",
+        "path": "spec/example.md",
+        "line": 7
+      },
+      "producer": "typespec-feasibility-spike",
+      "producerVersion": "0.0.0",
+      "generatedAt": null
+    }
+  },
+  "result": {
+    "status": "failed",
+    "runId": "run:example",
+    "findingIds": [
+      "finding:example"
+    ],
+    "reason": "Representative failure"
+  }
+}

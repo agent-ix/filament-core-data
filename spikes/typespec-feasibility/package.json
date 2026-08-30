@@ -1,0 +1,23 @@
+{
+	"name": "@agent-ix/typespec-feasibility-spike",
+	"version": "0.0.0-private",
+	"private": true,
+	"description": "Unpublished issue #4 TypeSpec feasibility evidence",
+	"license": "AGPL-3.0-only",
+	"type": "module",
+	"dependencies": {
+		"@agent-ix/typespec-semantic-ir-emitter-spike": "file:./emitter",
+		"@typespec/compiler": "1.15.0",
+		"@typespec/json-schema": "1.15.0",
+		"@typespec/protobuf": "0.85.0",
+		"@typespec/versioning": "0.85.0",
+		"ajv": "8.20.0",
+		"ajv-formats": "3.0.1",
+		"apache-arrow": "21.2.0",
+		"protobufjs": "8.8.0"
+	},
+	"scripts": {
+		"generate": "node scripts/run-experiment.mjs",
+		"check": "node scripts/run-experiment.mjs --check"
+	}
+}

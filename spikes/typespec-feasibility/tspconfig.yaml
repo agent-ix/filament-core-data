@@ -1,0 +1,12 @@
+emit:
+  - "@typespec/json-schema"
+  - "@typespec/protobuf"
+options:
+  "@typespec/json-schema":
+    file-type: json
+    emitAllRefs: true
+    seal-object-schemas: true
+    polymorphic-models-strategy: oneOf
+    bundleId: semantic
+  "@typespec/protobuf":
+    omit-unreachable-types: false

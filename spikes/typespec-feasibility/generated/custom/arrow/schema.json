@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0.0",
+  "authority": "derived-analytical-projection",
+  "roundTrip": "none",
+  "lossiness": "recursive relations are replaced by identifiers; extensions are canonical JSON",
+  "provenance": "run_id, result variant, source fingerprint, and projection version retained per row",
+  "fields": [
+    {
+      "name": "run_id",
+      "type": "utf8",
+      "nullable": false
+    },
+    {
+      "name": "status",
+      "type": "utf8",
+      "nullable": false
+    },
+    {
+      "name": "source_fingerprint",
+      "type": "utf8",
+      "nullable": false
+    },
+    {
+      "name": "projection_version",
+      "type": "utf8",
+      "nullable": false
+    },
+    {
+      "name": "payload_json",
+      "type": "utf8",
+      "nullable": true
+    }
+  ]
+}

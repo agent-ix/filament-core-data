@@ -1,9 +1,9 @@
 ---
 id: SR-005
-title: "Evidence-method review of the semantic architecture and contract census"
+title: "Evidence-method review of the architecture, census, and TypeSpec gate"
 type: SpecReview
 analysis: evidence
-scope: "StR-001, FR-001..013, NFR-001..005, spec/tests.md"
+scope: "StR-001, FR-001..018, NFR-001..007, spec/tests.md"
 review_set: all
 ---
 # Evidence-method review
@@ -14,6 +14,9 @@ Every stakeholder, functional, and non-functional requirement now declares a
 verification method and at least one concrete or queued evidence artifact.
 Machine-checkable census records use tests, semantic parity and impact judgments
 use analysis, and both non-disruption boundaries use diff/release inspection.
+The feasibility slice adds official/custom compiler output, native builds, shared
+goldens, diagnostics, deterministic regeneration, compatibility fixtures,
+maintenance analysis, and human promotion inspection.
 
 ## Findings
 
@@ -21,6 +24,7 @@ use analysis, and both non-disruption boundaries use diff/release inspection.
 |---|---|---|---|
 | FND-006 | medium | The pinned Quoin 0.21.9 advisor, run with Quire 0.30.2, stopped because no active module in scope declares a traceability model; methods were confirmed by documented judgment and the advisor must be rerun after the governed module baseline lands. | quire-rs#385, TM-001 |
 | FND-013 | low | Resolved: explicit `verification_method` and `evidence` metadata now covers StR-001, FR-001..013, and NFR-001..005; issue #10 test and report paths are queued by the complete matrix. | StR-001, FR-001..013, NFR-001..005, TM-001 |
+| FND-020 | low | All issue #4 P0 capabilities require retained raw/generated/native evidence; no recommendation-only criterion can substitute for compile or golden proof. | FR-014..018, NFR-006..007, TC-089..129 |
 
 ## Method Disposition
 
@@ -35,6 +39,11 @@ use analysis, and both non-disruption boundaries use diff/release inspection.
 | Parity, conflict, and missing-contract disposition | Analysis | `parity.json`, `conflicts.json`, TC-064..068 |
 | Repository/concept impact and active overlap | Analysis | `impact.json`, TC-069..072 |
 | Reproducibility and read-only delivery | Test / inspection | `validation.json`, final census SpecReview, TC-078..085 |
+| Pinned representative semantic slice | Test | TypeSpec sources, toolchain inventory, TC-089..096 |
+| Official schema/wire and diagnostics | Test / analysis | JSON Schema/Protobuf outputs, captured diagnostics, TC-097..103 |
+| Semantic IR and native/projection outputs | Test / analysis | Generated IR/Rust/TypeScript/Python/Arrow/Markdown artifacts, TC-104..112 |
+| Determinism, native compatibility, and change classification | Property / test | Two clean runs, native builds, golden fixtures, compatibility cases, TC-113..118 |
+| Tool recommendation and fallback | Analysis / inspection | Feasibility report, capability ledger, ADR promotion review, TC-119..129 |
 
 The historical advisor gap does not relax evidence and is not presented as an
 independent advisor pass. Direct metadata inspection and the matrix confirm zero

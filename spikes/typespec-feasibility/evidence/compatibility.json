@@ -1,0 +1,20 @@
+{
+  "classifier": "required-property removal/addition is breaking; optional addition is additive; no structural change is patch",
+  "examples": [
+    {
+      "id": "documentation-only",
+      "expected": "patch",
+      "actual": "patch"
+    },
+    {
+      "id": "optional-field",
+      "expected": "additive",
+      "actual": "additive"
+    },
+    {
+      "id": "required-field",
+      "expected": "breaking",
+      "actual": "breaking"
+    }
+  ]
+}

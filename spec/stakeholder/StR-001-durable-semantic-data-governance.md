@@ -10,6 +10,8 @@ evidence:
     ref: "spec/tests.md#tc-033"
   - kind: test_case
     ref: "spec/tests.md#tc-086"
+  - kind: test_case
+    ref: "spec/tests.md#tc-129"
 relationships:
   - target: "ix://agent-ix/filament-core-data/spec/functional/FR-001"
     type: "satisfied_by"
@@ -36,6 +38,16 @@ relationships:
   - target: "ix://agent-ix/filament-core-data/spec/functional/FR-013"
     type: "satisfied_by"
   - target: "ix://agent-ix/filament-core-data/spec/functional/FR-008"
+    type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-014"
+    type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-015"
+    type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-016"
+    type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-017"
+    type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-018"
     type: "satisfied_by"
 ---
 # [StR-001] Durable semantic data governance
@@ -102,4 +114,8 @@ need is not met.
 
 This need drives the architecture-record requirements in
 [FR-001](../functional/FR-001-indexed-architecture-record.md) through
-[FR-008](../functional/FR-008-decision-and-conflict-records.md).
+[FR-008](../functional/FR-008-decision-and-conflict-records.md), the census
+requirements [FR-009](../functional/FR-009-snapshot-audit-inputs.md) through
+[FR-013](../functional/FR-013-publish-contract-census-review.md), and the
+feasibility requirements [FR-014](../functional/FR-014-pin-typespec-experiment.md)
+through [FR-018](../functional/FR-018-resolve-structural-schema-source.md).

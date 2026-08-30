@@ -1,0 +1,30 @@
+{
+	"schemaVersion": "1.0.0",
+	"mappings": [
+		{
+			"id": "markdown-artifact",
+			"sourceType": "AgentIx.Semantic.Core.Artifact",
+			"target": "markdown",
+			"authority": "authored-definition",
+			"roundTrip": "semantic",
+			"lossiness": "presentation ordering and comments are representation-local",
+			"provenance": "retain source repository/revision/path and mapping version",
+			"locations": {
+				"id": "frontmatter.id",
+				"artifactType": "frontmatter.type",
+				"title": "heading[1]",
+				"summary": "section.Summary",
+				"objects": "frontmatter.objects plus extracted body tables"
+			}
+		},
+		{
+			"id": "arrow-verification-result",
+			"sourceType": "AgentIx.Semantic.Assurance.VerificationResult",
+			"target": "arrow",
+			"authority": "derived-analytical-projection",
+			"roundTrip": "none",
+			"lossiness": "recursive relations are replaced by source and target identifiers; extensions are canonical JSON",
+			"provenance": "every row retains run_id, result variant, source fingerprint, and projection version"
+		}
+	]
+}

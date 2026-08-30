@@ -1,0 +1,546 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:agent-ix:typespec-feasibility:python-input:1",
+  "$defs": {
+    "SourceLocus": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        }
+      },
+      "required": [
+        "repository",
+        "revision",
+        "path"
+      ],
+      "unevaluatedProperties": {
+        "not": {}
+      },
+      "title": "SourceLocus"
+    },
+    "Provenance": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "$ref": "#/$defs/SourceLocus"
+        },
+        "producer": {
+          "type": "string"
+        },
+        "producerVersion": {
+          "type": "string"
+        },
+        "generatedAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "source",
+        "producer",
+        "producerVersion"
+      ],
+      "unevaluatedProperties": {
+        "not": {}
+      },
+      "title": "Provenance"
+    },
+    "Relation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "relationType": {
+          "type": "string"
+        },
+        "targetId": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "related": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Relation"
+          }
+        },
+        "metadata": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RecordString"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "relationType",
+        "targetId"
+      ],
+      "unevaluatedProperties": {
+        "not": {}
+      },
+      "title": "Relation"
+    },
+    "SemanticId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*:[^\\s]+$",
+      "title": "SemanticId"
+    },
+    "RecordString": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "RecordString"
+    },
+    "semantic-object": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "kind": {
+          "type": "string",
+          "const": "object"
+        },
+        "role": {
+          "$ref": "#/$defs/SemanticRole"
+        },
+        "typeId": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "name": {
+          "type": "string"
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Relation"
+          }
+        },
+        "extensions": {
+          "$ref": "#/$defs/RecordString"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "role",
+        "typeId",
+        "name",
+        "provenance"
+      ],
+      "unevaluatedProperties": {
+        "not": {}
+      },
+      "title": "SemanticObject"
+    },
+    "SemanticRole": {
+      "type": "string",
+      "enum": [
+        "definition",
+        "occurrence",
+        "observation",
+        "projectedView"
+      ],
+      "title": "SemanticRole"
+    },
+    "artifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "kind": {
+          "type": "string",
+          "const": "artifact"
+        },
+        "role": {
+          "type": "string",
+          "const": "definition"
+        },
+        "artifactType": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "title": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "explicitNullNote": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "objects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/semantic-object"
+          }
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Relation"
+          }
+        },
+        "extensions": {
+          "$ref": "#/$defs/RecordString"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "legacyLabel": {
+          "type": "string",
+          "deprecated": true
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "role",
+        "artifactType",
+        "title",
+        "explicitNullNote",
+        "provenance"
+      ],
+      "unevaluatedProperties": {
+        "not": {}
+      },
+      "title": "Artifact"
+    },
+    "Versions": {
+      "type": "string",
+      "enum": [
+        "v1",
+        "v2"
+      ],
+      "title": "Versions"
+    },
+    "StructuralKind": {
+      "type": "string",
+      "enum": [
+        "artifact",
+        "object",
+        "relation",
+        "event",
+        "run",
+        "evidence",
+        "result"
+      ],
+      "title": "StructuralKind"
+    },
+    "DomainEvent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "eventType": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "subjectId": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "occurredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "causationId": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SemanticId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "correlationId": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "payload": {
+          "$ref": "#/$defs/RecordString"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        }
+      },
+      "required": [
+        "id",
+        "eventType",
+        "subjectId",
+        "occurredAt",
+        "payload",
+        "provenance"
+      ],
+      "unevaluatedProperties": {
+        "not": {}
+      },
+      "title": "DomainEvent"
+    },
+    "VerificationRun": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "targetId": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "profileId": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidenceIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SemanticId"
+          }
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        }
+      },
+      "required": [
+        "id",
+        "targetId",
+        "profileId",
+        "startedAt",
+        "provenance"
+      ],
+      "unevaluatedProperties": {
+        "not": {}
+      },
+      "title": "VerificationRun"
+    },
+    "Evidence": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "runId": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "evidenceType": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "uri": {
+          "type": "string"
+        },
+        "digest": {
+          "type": "string"
+        },
+        "observedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "attributes": {
+          "$ref": "#/$defs/RecordString"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        }
+      },
+      "required": [
+        "id",
+        "runId",
+        "evidenceType",
+        "observedAt",
+        "provenance"
+      ],
+      "unevaluatedProperties": {
+        "not": {}
+      },
+      "title": "Evidence"
+    },
+    "VerificationResult": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "runId": {
+          "$ref": "#/$defs/SemanticId"
+        }
+      },
+      "required": [
+        "status",
+        "runId"
+      ],
+      "oneOf": [
+        {
+          "$ref": "#/$defs/PassedResult"
+        },
+        {
+          "$ref": "#/$defs/FailedResult"
+        },
+        {
+          "$ref": "#/$defs/NotComputedResult"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "not": {
+                "enum": [
+                  "passed",
+                  "failed",
+                  "not-computed"
+                ]
+              }
+            },
+            "runId": {
+              "$ref": "#/$defs/SemanticId"
+            }
+          },
+          "required": [
+            "status",
+            "runId"
+          ]
+        }
+      ],
+      "title": "VerificationResult"
+    },
+    "PassedResult": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "const": "passed"
+        },
+        "runId": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "evidenceIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SemanticId"
+          }
+        }
+      },
+      "required": [
+        "status",
+        "runId",
+        "evidenceIds"
+      ],
+      "unevaluatedProperties": {
+        "not": {}
+      },
+      "title": "PassedResult"
+    },
+    "FailedResult": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "const": "failed"
+        },
+        "runId": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "findingIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SemanticId"
+          }
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "runId",
+        "findingIds",
+        "reason"
+      ],
+      "unevaluatedProperties": {
+        "not": {}
+      },
+      "title": "FailedResult"
+    },
+    "NotComputedResult": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "const": "not-computed"
+        },
+        "runId": {
+          "$ref": "#/$defs/SemanticId"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "missingInput": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "status",
+        "runId",
+        "reason"
+      ],
+      "unevaluatedProperties": {
+        "not": {}
+      },
+      "title": "NotComputedResult"
+    }
+  }
+}

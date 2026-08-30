@@ -1,0 +1,7 @@
+{
+  "authority": "wire-projection",
+  "source": "AgentIx.Semantic.Wire",
+  "officialArtifact": "generated/official/protobuf/semantic.proto",
+  "fieldNumberPolicy": "explicit @field values; removed values must be reserved",
+  "lossiness": "nested semantic payloads encoded as canonical JSON where declared"
+}

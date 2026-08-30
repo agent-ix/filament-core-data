@@ -1,14 +1,14 @@
 ---
 id: TM-001
-title: "filament-core-data semantic architecture and contract census Test Matrix"
+title: "filament-core-data semantic architecture, contract census, and feasibility Test Matrix"
 type: TestMatrix
 ---
 # Test Matrix
 
 ## Overview
 
-This matrix defines the verification contract for the issue #8 architecture
-record and the issue #10 read-only contract census. Coverage is complete when
+This matrix defines the verification contract for the issue #8 architecture,
+issue #10 read-only contract census, and issue #4 TypeSpec feasibility gate. Coverage is complete when
 every criterion and named constraint maps to at least one test case. Issue #8
 and issue #10 evidence have passed their respective implementation gates; all
 later disruptive migration and promotion gates remain separate and closed.
@@ -28,7 +28,7 @@ later disruptive migration and promotion gates remain separate and closed.
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001..US-003, FR-001..FR-013 | TC-033, TC-086 | ✅ Complete |
+| StR-001 | US-001..US-004, FR-001..FR-018 | TC-033, TC-086, TC-129 | ✅ Complete |
 
 ### User Story Coverage
 
@@ -40,6 +40,8 @@ later disruptive migration and promotion gates remain separate and closed.
 | US-002 | US-002-AC-2 | TC-037 | ✅ Complete |
 | US-003 | US-003-AC-1 | TC-086 | ✅ Complete |
 | US-003 | US-003-AC-2 | TC-087 | ✅ Complete |
+| US-004 | US-004-AC-1 | TC-127 | ✅ Complete |
+| US-004 | US-004-AC-2 | TC-128 | ✅ Complete |
 
 ### Functional Requirement Coverage
 
@@ -58,6 +60,11 @@ later disruptive migration and promotion gates remain separate and closed.
 | FR-011 | FR-011-AC-1..5 | TC-064..068 | ✅ Complete |
 | FR-012 | FR-012-AC-1..4 | TC-069..072 | ✅ Complete |
 | FR-013 | FR-013-AC-1..5 | TC-073..077 | ✅ Complete |
+| FR-014 | FR-014-AC-1..3 | TC-089..096 | ✅ Complete |
+| FR-015 | FR-015-AC-1..4 | TC-097..103 | ✅ Complete |
+| FR-016 | FR-016-AC-1..4 | TC-104..112 | ✅ Complete |
+| FR-017 | FR-017-AC-1..5 | TC-113..118 | ✅ Complete |
+| FR-018 | FR-018-AC-1..4 | TC-119..122 | ✅ Complete |
 
 ### Non-Functional Requirement Coverage
 
@@ -68,6 +75,8 @@ later disruptive migration and promotion gates remain separate and closed.
 | NFR-003 | Diff, release, and review inspection | TC-045..048 | ✅ Complete |
 | NFR-004 | Schema, determinism, source-locus, and assessment checks | TC-082..085 | ✅ Complete |
 | NFR-005 | Diff, repository, release, and review inspection | TC-078..081 | ✅ Complete |
+| NFR-006 | Pin, determinism, changed-path, and release inspection | TC-113, TC-123..124 | ✅ Complete |
+| NFR-007 | Evidence schema, adverse-result, and requirement-diff review | TC-119..121, TC-125..126 | ✅ Complete |
 
 ## Test Case Summary
 
@@ -161,6 +170,47 @@ later disruptive migration and promotion gates remain separate and closed.
 | TC-086 | Reviewer compares a repeated concept end to end | Manual | P0 | US-003-AC-1 | ✅ audit evidence passed |
 | TC-087 | Unconfirmed consumer remains explicit and non-compatible | Manual | P0 | US-003-AC-2 | ✅ audit evidence passed |
 | TC-088 | Volatile external collections prove access and full enumeration | Static | P0 | FR-009-AC-6 | ✅ audit evidence passed |
+| TC-089 | Exact compiler, emitter, generator, validator, and native tool versions are retained | Static | P0 | FR-014-AC-1 | ✅ passed — retained spike evidence |
+| TC-090 | Two source packages import a versioned semantic core without flattening ownership | Static | P0 | FR-014-AC-2 | ✅ passed — retained spike evidence |
+| TC-091 | Slice contains an artifact and semantic object with separate identity and role | Static | P0 | FR-014-AC-3 | ✅ passed — retained spike evidence |
+| TC-092 | Slice contains a recursive relation with a stable identity reference | Static | P0 | FR-014-AC-3 | ✅ passed — retained spike evidence |
+| TC-093 | Slice contains a versioned event with provenance and causation | Static | P0 | FR-014-AC-3 | ✅ passed — retained spike evidence |
+| TC-094 | Slice contains verification run and evidence records | Static | P0 | FR-014-AC-3 | ✅ passed — retained spike evidence |
+| TC-095 | Slice contains a discriminated result with success, failure, and not-computed variants | Static | P0 | FR-014-AC-3 | ✅ passed — retained spike evidence |
+| TC-096 | Slice distinguishes extension policy, optional absence, and explicit null | Static | P0 | FR-014-AC-3 | ✅ passed — retained spike evidence |
+| TC-097 | Official JSON Schema output declares draft 2020-12 and stable modular IDs/refs | Static | P0 | FR-015-AC-1 | ✅ passed — retained spike evidence |
+| TC-098 | JSON Schema preserves constraints, sealed objects, recursion, and optional-versus-null | Static | P0 | FR-015-AC-1 | ✅ passed — retained spike evidence |
+| TC-099 | JSON Schema preserves the discriminated result alternatives | Static | P0 | FR-015-AC-1 | ✅ passed — retained spike evidence |
+| TC-100 | Official Protobuf output preserves package, field numbers, and reservations | Static | P0 | FR-015-AC-2 | ✅ passed — retained spike evidence |
+| TC-101 | Protobuf optionality and wire-only limitations receive explicit dispositions | Static | P0 | FR-015-AC-2 | ✅ passed — retained spike evidence |
+| TC-102 | Invalid or unsupported TypeSpec produces a source-located nonzero diagnostic | Static | P0 | FR-015-AC-3 | ✅ passed — retained spike evidence |
+| TC-103 | Package versioning and deprecation compile or retain a precise limitation | Analysis | P1 | FR-015-AC-4 | ✅ passed — retained spike evidence |
+| TC-104 | Custom semantic IR is versioned, deterministic, and source-located | Static | P0 | FR-016-AC-1 | ✅ passed — retained spike evidence |
+| TC-105 | Semantic IR keeps structural kind, semantic role, identity, optionality, nullability, constraints, recursion, and provenance | Static | P0 | FR-016-AC-1 | ✅ passed — retained spike evidence |
+| TC-106 | Generated TypeScript compiles and exposes ordinary importable types | Static | P0 | FR-016-AC-2 | ✅ passed — retained spike evidence |
+| TC-107 | Generated Python/Pydantic compiles and exposes ordinary importable models | Static | P0 | FR-016-AC-2 | ✅ passed — retained spike evidence |
+| TC-108 | Generated Rust/Serde compiles and exposes ordinary importable structs and enums | Static | P0 | FR-016-AC-2 | ✅ passed — retained spike evidence |
+| TC-109 | Custom JSON Schema disposition agrees with official output or names each mismatch | Static | P0 | FR-016-AC-3 | ✅ passed — retained spike evidence |
+| TC-110 | Protobuf mapping disposition agrees with official output or names each mismatch | Static | P0 | FR-016-AC-3 | ✅ passed — retained spike evidence |
+| TC-111 | Arrow projection declares authority, flattening, recursion loss, and provenance | Analysis | P0 | FR-016-AC-4 | ✅ passed — retained spike evidence |
+| TC-112 | Markdown mapping declares locations and preservation without rendering ownership | Analysis | P0 | FR-016-AC-4 | ✅ passed — retained spike evidence |
+| TC-113 | Two clean generations have one normalized fingerprint and no unexplained diff | Property | P0 | FR-017-AC-1, NFR-006 | ✅ passed — retained spike evidence |
+| TC-114 | Native Rust, TypeScript, and Python consumers compile and construct the shared valid fixture | Static | P0 | FR-017-AC-2 | ✅ passed — retained spike evidence |
+| TC-115 | Applicable targets agree on valid and invalid golden fixture dispositions | Static | P0 | FR-017-AC-3 | ✅ passed — retained spike evidence |
+| TC-116 | Generated cross-package references resolve in every native package | Static | P0 | FR-017-AC-4 | ✅ passed — retained spike evidence |
+| TC-117 | Patch, additive, and breaking revisions classify consistently | Static | P0 | FR-017-AC-4 | ✅ passed — retained spike evidence |
+| TC-118 | Source diagnostics, generation duration, and output size are retained without production claims | Analysis | P1 | FR-017-AC-5 | ✅ passed — retained spike evidence |
+| TC-119 | Every required capability has command, version, sample, result, disposition, and rationale | Analysis | P0 | FR-018-AC-1, NFR-007 | ✅ passed — retained spike evidence |
+| TC-120 | Recommendation states extension maintenance cost and cost of being wrong | Analysis | P0 | FR-018-AC-2, NFR-007 | ✅ passed — retained spike evidence |
+| TC-121 | Failed P0 capability selects modular JSON Schema metadata fallback without weakening the gate | Static | P0 | FR-018-AC-3, NFR-007 | ✅ passed — retained spike evidence |
+| TC-122 | ADR-0004 cannot become normative without identified human acceptance | Manual | P0 | FR-018-AC-4 | ✅ passed — retained spike evidence |
+| TC-123 | Spike changes only isolated experiment, spec, plan, review, dependency, and test paths | Static | P0 | NFR-006 | ✅ passed — retained spike evidence |
+| TC-124 | Spike publishes nothing and replaces no current schema, generated binding, or consumer | Static | P0 | NFR-006 | ✅ passed — retained spike evidence |
+| TC-125 | Evidence schema rejects missing methods, versions, results, limits, consequences, rationales, or confidence | Static | P0 | NFR-007 | ✅ passed — retained spike evidence |
+| TC-126 | Adverse evidence remains failed or partial and requirements remain unchanged | Manual | P0 | NFR-007 | ✅ passed — retained spike evidence |
+| TC-127 | Reviewer runs one command and observes equivalent native consumer construction | Manual | P0 | US-004-AC-1 | ✅ passed — retained spike evidence |
+| TC-128 | Failed P0 demonstration reaches the JSON Schema fallback and leaves Avro/consumers unchanged | Manual | P0 | US-004-AC-2 | ✅ passed — retained spike evidence |
+| TC-129 | Root-index walkthrough resolves the evidence, recommendation, fallback, and human promotion gate | Manual | P0 | StR-001-AC-1 | ✅ passed — retained spike evidence |
 
 ## Option Permutation Matrix
 
@@ -177,6 +227,10 @@ later disruptive migration and promotion gates remain separate and closed.
 | TC-061 | contract property | none or not-applicable | source proves absence or irrelevance | Explicit state is retained without inventing a value |
 | TC-064, TC-067 | repeated definition | conflict or unknown | equivalence not proven | Fit is prohibited |
 | TC-064 | representation-local definition | representation-local | semantic scope is intentionally local | No shared replacement is implied |
+| TC-097, TC-121 | TypeSpec P0 capabilities all pass | recommended | human ADR review | TypeSpec may be proposed, never self-promoted |
+| TC-102, TC-121 | TypeSpec P0 capability fails | no-go | modular JSON Schema fallback | Failure and requirement remain intact |
+| TC-100, TC-110 | concrete Protobuf interface | wire projection | explicit field mapping | Stable numbered projection may pass without becoming universal |
+| TC-111 | recursive semantic graph | analytical projection | declared flattening/loss | Arrow remains derived and source/provenance linked |
 
 ## Constraint Boundary Tests
 
@@ -196,6 +250,10 @@ later disruptive migration and promotion gates remain separate and closed.
 | NFR-004 | Prohibited | A repeated validation changes ordering or content | TC-083 | Fail reproducibility gate |
 | NFR-005 | Allowed | Audit-only files are added in `filament-core-data` | TC-079 | Pass read-only gate |
 | NFR-005 | Prohibited | An examined schema, DTO, migration, corpus file, or catalog pin changes | TC-078..080 | Fail read-only gate |
+| NFR-006 | Allowed | Exact pinned spike dependency and isolated generated output | TC-089, TC-113, TC-123 | Pass reproducibility gate |
+| NFR-006 | Prohibited | Spike overwrites the Avro schema, generated package, or consumer | TC-123..124 | Fail isolation gate |
+| NFR-007 | Allowed | P0 limitation remains partial/fail with consequence and cost | TC-119..121, TC-126 | Pass evidence review |
+| NFR-007 | Prohibited | Requirement or pass rule is weakened after an adverse result | TC-121, TC-126 | Fail evidence review |
 
 ## State Transition Matrix
 
@@ -210,6 +268,9 @@ later disruptive migration and promotion gates remain separate and closed.
 | pinned input | pre-sign-off refresh finds contract-affecting drift | affected evidence invalid until refreshed | TC-058, TC-075 |
 | suspected consumer | source evidence confirms consumer | known consumer with revised confidence | TC-087 |
 | suspected consumer | evidence remains inconclusive | explicit unknown with consequence | TC-061, TC-087 |
+| TypeSpec candidate | all P0 capabilities pass | recommended, still provisional | TC-119..122 |
+| TypeSpec candidate | any P0 capability fails | no-go plus JSON Schema fallback | TC-121, TC-128 |
+| provisional ADR-0004 | human accepts retained report | normative decision recorded in a separate reviewed change | TC-122, TC-129 |
 
 ## Error Paths
 
@@ -230,6 +291,12 @@ later disruptive migration and promotion gates remain separate and closed.
 | ERR-013 | Contract-affecting drift appears after evidence collection | Ready disposition is withheld | TC-058, TC-075 |
 | ERR-014 | Audit finding is implemented or published in the audit delivery | Read-only merge gate fails | TC-078..081 |
 | ERR-015 | External collection is capped, paginated, rate-limited, or access-denied without an incomplete disposition | Snapshot validation fails | TC-057, TC-088 |
+| ERR-016 | TypeSpec source is invalid or target construct unsupported | Nonzero source-located diagnostic and failed/partial capability | TC-102 |
+| ERR-017 | Official and custom outputs disagree without a retained mapping disposition | Feasibility gate fails | TC-109..110, TC-115 |
+| ERR-018 | Clean regeneration differs for unchanged inputs | Determinism capability fails | TC-113 |
+| ERR-019 | Native package does not compile or fixture meaning differs | Consumer-surface capability fails | TC-114..116 |
+| ERR-020 | Report marks a partial/failing P0 result as pass | Recommendation validation fails and fallback is selected | TC-119..121, TC-126 |
+| ERR-021 | Spike attempts publication or canonical replacement | Isolation gate fails before merge | TC-123..124 |
 
 ## Edge Cases
 
@@ -248,21 +315,27 @@ later disruptive migration and promotion gates remain separate and closed.
 | EC-011 | One concept exists in Avro, Rust, TypeScript, SQL, and extracted Markdown with different optionality | FR-011 | TC-065, TC-066 | A breaking mismatch is mistaken for parity |
 | EC-012 | A payload consumer is suspected but cannot be confirmed | US-003, FR-010 | TC-061, TC-087 | Unknown compatibility risk silently disappears |
 | EC-013 | Active feature work changes a contract after collection | FR-009, FR-013 | TC-058, TC-071, TC-075 | Stale evidence authorizes unsafe planning |
+| EC-014 | Optional absence and explicit null collapse in one target | FR-014, FR-016 | TC-096, TC-105, TC-115 | Cross-language fixtures disagree silently |
+| EC-015 | Recursive graph cannot be represented by an analytical table | FR-016 | TC-111 | Arrow is mistaken for semantic authority |
+| EC-016 | Protobuf requires target-specific numbering and presence semantics | FR-015, FR-016 | TC-100..101, TC-110 | Wire concerns contaminate the semantic core |
+| EC-017 | Custom emitter compensates for an absent official language emitter | FR-016, FR-018 | TC-106..108, TC-119..120 | Demo success hides long-term maintenance cost |
+| EC-018 | Tool or package version drifts after the experiment | FR-014, NFR-006 | TC-089, TC-113 | Results cannot be reproduced or compared |
 
 ## Coverage Gaps
 
-No open coverage or execution gap remains for issues #8 or #10. Future schema,
-consumer, database, publication, enforcement, and retirement work is outside this
-matrix's implementation scope and remains gated by its owning tickets.
+No open coverage or execution gap remains for issues #8, #10, or #4. The 41
+issue #4 cases pass through the isolated spike, retained evidence, native
+consumers, and source-selection report. Future production compiler, consumer,
+database, publication, enforcement, and retirement work remains separately gated.
 
 ## Test Execution Summary
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 43 | 43 | 0 | 0 | 100% passed and mapped |
-| Manual | 38 | 38 | 0 | 0 | 100% passed and mapped |
-| Analysis | 4 | 4 | 0 | 0 | 100% passed and mapped |
-| Property | 3 | 3 | 0 | 0 | 100% passed and mapped |
-| **Total** | **88** | **88** | **0** | **0** | **100% passed and mapped** |
+| Static | 72 | 72 | 0 | 0 | 100% passed; 100% mapped |
+| Manual | 43 | 43 | 0 | 0 | 100% passed; 100% mapped |
+| Analysis | 10 | 10 | 0 | 0 | 100% passed; 100% mapped |
+| Property | 4 | 4 | 0 | 0 | 100% passed; 100% mapped |
+| **Total** | **129** | **129** | **0** | **0** | **100% passed; 100% mapped** |
 
-**Matrix coverage status: ✅ Complete. Execution status: ✅ Issues #8 and #10 passed.**
+**Matrix coverage status: ✅ Complete. Execution status: ✅ 129/129 cases passed.**
