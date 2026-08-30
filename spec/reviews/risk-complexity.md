@@ -1,19 +1,19 @@
 ---
 id: SR-006
-title: "Risk and complexity review of the semantic data architecture requirements"
+title: "Risk and complexity review of the semantic architecture and contract census"
 type: SpecReview
 analysis: risk-complexity
-scope: "StR-001, FR-001..008, NFR-001..003"
+scope: "StR-001, FR-001..013, NFR-001..005"
 review_set: all
 ---
 # Risk and complexity review
 
 ## Summary
 
-Issue #8 has low runtime risk because it is documentation-only, but FR-004,
-FR-005, FR-006, and FR-007 carry architectural or policy volatility that could
-misdirect later implementation. Provisional status, feasibility fallback, corpus
-review, compatibility retention, and human promotion gates mitigate that risk.
+Issues #8 and #10 have low runtime risk because they are documentation/read-only,
+but the breadth and volatility of the contract census can create false
+completeness. Immutable pins, explicit incomplete states, deterministic evidence,
+fresh drift checks, and a no-migration boundary mitigate that risk.
 
 ## Findings
 
@@ -37,16 +37,24 @@ review, compatibility retention, and human promotion gates mitigate that risk.
 | NFR-001 | Low | Low | Traceability drift | Automated index, link, and status checks |
 | NFR-002 | Low | Low | Context loss | Standalone-review demonstration |
 | NFR-003 | Low | Low | Accidental disruption | Documentation-only diff and no-publication gate |
+| FR-009 | Medium | High | Branch, board, PR, corpus, auth, and API state changes during collection | Immutable revisions, complete-enumeration evidence, and pre-sign-off refresh |
+| FR-010 | Medium | Medium | Heterogeneous schema/DTO/generated/persisted surfaces | Typed inventory records, explicit state enum, source-locus validation |
+| FR-011 | Medium | Medium | Semantic equivalence and lossiness require judgment | Field parity, conflict default, rationale and confidence |
+| FR-012 | Medium | High | Effort and migration sequencing overlap active work | Source-cited overlaps, separate human promotion decision |
+| FR-013 | Low | Medium | Stale or incomplete evidence could look accepted | Drift invalidation and unresolved-decision register |
+| NFR-004 | Medium | Low | Reproducibility across volatile/manual evidence | Deterministic normalization and explicit manual-assessment metadata |
+| NFR-005 | Low | Low | Audit changes measured systems | Zero-change diff, repository, release, and catalog gate |
 
 ## Top Hazards
 
-1. FR-007 — an unproven TypeSpec or migration choice is presented as final.
-2. FR-005 — generated packages accidentally absorb application framework concerns.
-3. FR-004 — identity or extension semantics become coupled to one representation.
-4. FR-003 — Quire, Quoin, module, compiler, and consumer ownership overlap.
+1. FR-009 — volatile or access-limited sources appear complete.
+2. FR-011 — unproven equivalence is classified as fit.
+3. FR-012 — audit recommendations are mistaken for migration approval.
+4. FR-007 — an unproven TypeSpec or migration choice is presented as final.
+5. NFR-005 — evidence collection changes the measured baseline.
 
 ## Failure-Domain Gaps
 
-No open failure-domain gap remains in this issue; see
+No open failure-domain gap remains in these issues; see
 [failure-domain.md](./failure-domain.md). Runtime failure behavior remains for
-the compiler specification and is not silently allocated here.
+the compiler specification and is not silently allocated to the census.

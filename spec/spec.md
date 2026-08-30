@@ -29,14 +29,19 @@ title: "Master Requirements Specification"
 
 ## 1. Purpose
 
-This specification governs the durable architecture record for the Agent IX
-semantic data system. The record defines how semantic data, authored knowledge,
-runtime state, generated language types, storage formats, wire formats, and
-presentation forms relate without treating any one representation as universal.
+This specification governs the durable architecture record and pre-migration
+contract evidence for the Agent IX semantic data system. The record defines how
+semantic data, authored knowledge, runtime state, generated language types,
+storage formats, wire formats, and presentation forms relate without treating
+any one representation as universal.
 
 The first delivery governed by this specification is documentation-only. It
 records accepted principles, provisional decisions, ownership boundaries, and
 the evidence gates that later compiler and migration tickets must satisfy.
+
+The second delivery is a read-only, revision-pinned census of current Filament
+contracts. It records source facts, parity, conflicts, impact, uncertainty, and
+active-work overlap without changing the measured systems.
 
 ## 2. Scope
 
@@ -52,6 +57,12 @@ the evidence gates that later compiler and migration tickets must satisfy.
 - Explicit ownership boundaries among `filament-core-data`, Quire, Quoin,
   module repositories, and downstream Filament consumers.
 - Compatibility dispositions for existing Quire architectural decisions.
+- A source-cited inventory of Filament schemas, DTOs, database entities, wire
+  payloads, generated bindings, JSON-lines records, and Quire extraction contracts.
+- Field-level parity, conflict, missing-contract, and repository impact evidence
+  pinned to inspected revisions.
+- A validated contract-census SpecReview that preserves unknown and
+  low-confidence findings.
 
 ### 2.2 Out of Scope
 
@@ -63,6 +74,9 @@ the evidence gates that later compiler and migration tickets must satisfy.
 - Modifying Quoin catalog installation or module enforcement.
 - Migrating persisted data, rewriting the corpus, or removing legacy contracts.
 - Selecting TypeSpec as final before its separately ticketed feasibility gate.
+- Correcting any contract finding while the issue #10 census is being collected.
+- Approving consumer, database, wire-format, package, enforcement, or retirement
+  changes from audit recommendations alone.
 
 ## 3. System Overview
 
@@ -110,9 +124,9 @@ Authority is assigned by concern:
 | Class | Artifacts | Purpose |
 |---|---|---|
 | Stakeholder | [StR-001](./stakeholder/StR-001-durable-semantic-data-governance.md) | Durable governance need |
-| User | [US-001](./usecase/US-001-understand-data-authority.md), [US-002](./usecase/US-002-plan-safe-adoption.md) | Reader and implementer outcomes |
-| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-008](./functional/FR-008-decision-and-conflict-records.md) | Required architecture-record content |
-| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-003](./non-functional/NFR-003-non-disruptive-record.md) | Traceability, readability, and non-disruption |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-003](./usecase/US-003-assess-contract-fit.md) | Reader, implementer, and migration-review outcomes |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-013](./functional/FR-013-publish-contract-census-review.md) | Required architecture-record and contract-census behavior |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-005](./non-functional/NFR-005-read-only-contract-audit.md) | Traceability, readability, reproducibility, and non-disruption |
 
 ## 6. Decision Status Model
 
@@ -132,6 +146,9 @@ remain provisional until their owning tickets pass.
 - Inspection checks ownership, status labeling, and conflict dispositions.
 - The Test Matrix maps every acceptance criterion to an explicit verification
   case before this ticket enters specification review.
+- Machine-readable census artifacts are schema-validated and checked for stable
+  identifiers, resolvable evidence loci, deterministic ordering, and complete
+  dispositions.
 
 ## 8. Program Relationships
 

@@ -1,6 +1,6 @@
 ---
 id: SR-008
-title: "EARS conformance review of the semantic data architecture requirements"
+title: "EARS conformance review of the semantic architecture and contract census"
 type: SpecReview
 analysis: ears-conformance
 scope: "spec/stakeholder, spec/functional, spec/non-functional"
@@ -10,16 +10,17 @@ review_set: all
 
 ## Summary
 
-The current Quire strict grammar pass reports all requirement documents clean.
-One passive-agent statement in FR-006 and earlier multi-`shall` statements were
-rewritten before this review was recorded; semantic inspection found no remaining
-trigger or response ambiguity.
+The current Quire grammar pass reports all 19 requirement-bearing documents clean
+(100 percent, zero EARS findings). Semantic inspection of the new audit
+obligations found no event/state confusion, vague response, or compound
+requirement that would prevent one-to-one test mapping.
 
 ## Findings
 
 | ID | Severity | Summary | Refs |
 |---|---|---|---|
 | FND-009 | low | No EARS defect remains after naming the representation-guidance subject and splitting compound obligations into atomic statements. | FR-001, FR-005, FR-006, FR-007 |
+| FND-015 | low | No EARS defect remains in the contract-census slice after canonicalizing collection start and keeping drift/access failure subjects on one atomic statement. | FR-009, FR-013 |
 
 ## Semantic Judgment
 
@@ -31,3 +32,5 @@ trigger or response ambiguity.
   Test Matrix.
 - No vague performance, robustness, support, or handling claim appears in the
   requirement-bearing artifacts.
+- Audit collection start uses `When`, continuous compatibility boundaries remain
+  ubiquitous, and access/drift failures use explicit unwanted-condition forms.

@@ -1,0 +1,166 @@
+{
+	"schemaVersion": "1.0.0",
+	"concepts": [
+		{
+			"id": "PAR-001",
+			"concept": "core-data Avro and generated compatibility surface",
+			"contractIds": ["INV-001", "INV-002", "INV-003", "INV-004"],
+			"comparisonStatus": "compared",
+			"dimensions": "Record/type names and JSON values agree with the Avro protocol and representative fixtures; TypeScript preserves property types, while Python exposes dictionaries plus validation rather than generated classes.",
+			"disposition": "fit",
+			"equivalenceComplete": true,
+			"rationale": "All three language/fixture surfaces are generated from or tested against the same Avro protocol. The Python ergonomic gap does not change wire validity but is relevant to future well-typed package generation.",
+			"confidence": "high",
+			"evidence": "schema/avro/core-data.avpr; src/generated.ts; agent_ix_core_data/core_data.py; test/schema.test.ts"
+		},
+		{
+			"id": "PAR-002",
+			"concept": "Document, Artifact, ObjectType, GraphNode, and GraphEdge across domain, persistence, extraction, service, and UI",
+			"contractIds": [
+				"INV-005",
+				"INV-006",
+				"INV-011",
+				"INV-012",
+				"INV-014",
+				"INV-016"
+			],
+			"comparisonStatus": "compared",
+			"dimensions": "Domain/service persistence uses UUID plus tenant/container scope; core-data Avro uses string projectId; extraction uses frontmatter/ref identity; service/UI payloads use purpose-specific refs. Python and SQL preserve structured dict/JSONB while Avro often uses JSON strings. Optionality, timestamps, and provenance differ by plane.",
+			"disposition": "split-required",
+			"equivalenceComplete": false,
+			"rationale": "The names overlap but the records serve definition, extraction, persistence, and presentation/wire planes. A single replacement DTO would erase authority and lifecycle differences; the semantic model needs shared identity/kernel types plus explicit projection mappings.",
+			"confidence": "high",
+			"evidence": "filament_events/document.py:16-62; filament_core_service/models/document.py:15-57; crates/filament-extraction/src/dto.rs:147-249; crates/filament-data/src/entities.rs:25-154; crates/filament-service/src/dto.rs:674-738; ui/src/bindings.ts"
+		},
+		{
+			"id": "PAR-003",
+			"concept": "domain event publication",
+			"contractIds": ["INV-007"],
+			"comparisonStatus": "single-representation",
+			"dimensions": "Publisher accepts arbitrary BaseModel plus event_type and optional correlation_id; no required event id, occurred-at, producer, schema version, causation, or payload discriminator envelope exists.",
+			"disposition": "fit-with-extension",
+			"equivalenceComplete": false,
+			"rationale": "The publisher is valid local infrastructure but does not yet satisfy a reusable versioned semantic event contract. Extending it requires a separately reviewed consumer census and compatibility bridge.",
+			"confidence": "high",
+			"evidence": "filament_core_service/events.py:1-83"
+		},
+		{
+			"id": "PAR-004",
+			"concept": "Markdown loading and semantic extraction",
+			"contractIds": ["INV-008", "INV-017", "INV-018"],
+			"comparisonStatus": "compared",
+			"dimensions": "filament-parser-lib supplies orchestration/compatibility types; quire-rs owns parsing, registry validation, extraction, immutable corpus identity, diagnostics, and byte-preserving Markdown access. The Python LoadedDocument/GraphRef shapes are a narrower adapter projection.",
+			"disposition": "fit-with-extension",
+			"equivalenceComplete": false,
+			"rationale": "The issue #8 branch correctly points Tier 2 to Quire and should remain a compatibility shim. Python adapter types still need versioned mapping evidence before they can be generated from a shared package.",
+			"confidence": "high",
+			"evidence": "filament-parser-lib CLAUDE.md; filament_parser/types.py; quire-rs/src/extract/mod.rs; quire-rs/src/corpus/walk.rs"
+		},
+		{
+			"id": "PAR-005",
+			"concept": "semantic module mapping, registry, and catalog",
+			"contractIds": ["INV-009", "INV-019", "INV-020", "INV-021"],
+			"comparisonStatus": "compared",
+			"dimensions": "Python and Rust encode related extraction DSL/registry concepts; Quoin separately owns exact package pins and CLI config. Type names, version location, and collision behavior are spread across runtime and distribution layers.",
+			"disposition": "split-required",
+			"equivalenceComplete": false,
+			"rationale": "Ownership is intentionally split—module vocabulary/mappings, Quire runtime compilation, and Quoin distribution must remain distinct. The semantic module manifest/package contract in quoin#293 should unify metadata without moving runtime generation into Quire.",
+			"confidence": "high",
+			"evidence": "filament_parser/dsl/schema.py; filament_parser/registry.py; quire-rs/src/registry.rs; quoin/default-modules.yaml; quoin/src/config-schema.ts"
+		},
+		{
+			"id": "PAR-006",
+			"concept": "legacy ISO parsed domain objects",
+			"contractIds": ["INV-010"],
+			"comparisonStatus": "single-representation",
+			"dimensions": "ParsedDomainObject/Process/Event/StateMachine/Trigger shapes predate the Quire registry and do not uniformly preserve source identity, version, or projection provenance.",
+			"disposition": "replacement-candidate",
+			"equivalenceComplete": false,
+			"rationale": "Repository guidance forbids extending spec_parser_lib; retirement still requires caller and parity evidence, so it remains readable until the parser cutover gate passes.",
+			"confidence": "high",
+			"evidence": "filament-parser-lib/CLAUDE.md; spec_parser_lib/models.py"
+		},
+		{
+			"id": "PAR-007",
+			"concept": "database schema migration history",
+			"contractIds": ["INV-013"],
+			"comparisonStatus": "single-representation",
+			"dimensions": "Eight ordered migration modules own physical nullability, defaults, constraints, indexes, and data evolution for the Rust application database.",
+			"disposition": "representation-local",
+			"equivalenceComplete": false,
+			"rationale": "Physical schema evolution belongs to the database owner and should be generated/mapped only where safe. It cannot become the universal semantic authority.",
+			"confidence": "high",
+			"evidence": "filament-ide-rs/crates/filament-data/src/migrations/mod.rs"
+		},
+		{
+			"id": "PAR-008",
+			"concept": "daemon/client NDJSON envelope",
+			"contractIds": ["INV-015"],
+			"comparisonStatus": "single-representation",
+			"dimensions": "Tagged request/response variants, session bindings, hello/health, admin, and service payloads form a local IPC protocol optimized for daemon clients.",
+			"disposition": "representation-local",
+			"equivalenceComplete": false,
+			"rationale": "NDJSON is the correct current local transport. Shared semantic package types may be projected into it, but replacing the envelope with Protobuf is neither required nor justified by the census.",
+			"confidence": "high",
+			"evidence": "filament-ide-rs/crates/filament-backend-api/src/envelope.rs"
+		},
+		{
+			"id": "PAR-009",
+			"concept": "complete-graph governed truth set",
+			"contractIds": ["INV-022"],
+			"comparisonStatus": "compared",
+			"dimensions": "Corpus case identity, source inputs, expected present/absent graph facts, producer criteria, and corpus_revision are explicit; unsupported query families remain not-computed.",
+			"disposition": "fit",
+			"equivalenceComplete": true,
+			"rationale": "The corpus satisfies its graph-correctness purpose and should be consumed as pinned evidence. It does not replace semantic module or business-domain schemas.",
+			"confidence": "high",
+			"evidence": "quire-corpus README.md; corpus.yaml; digest.py; producers/quire-code-rs.criteria.yaml"
+		},
+		{
+			"id": "PAR-010",
+			"concept": "Protocol Buffers wire contract",
+			"contractIds": ["INV-023"],
+			"comparisonStatus": "single-representation",
+			"dimensions": "No .proto schema, generated binding, package, consumer, or mapping profile exists in scope.",
+			"disposition": "missing",
+			"equivalenceComplete": false,
+			"rationale": "Protobuf remains a best-fit option for selected stable RPC/stream boundaries after schemas stabilize; it is not the mandatory second wire format and is not needed for current PostgreSQL/Tauri/NDJSON paths.",
+			"confidence": "high",
+			"evidence": "scoped repository search; architecture representation guidance"
+		},
+		{
+			"id": "PAR-011",
+			"concept": "Arrow/Parquet accumulated QA projection",
+			"contractIds": ["INV-024"],
+			"comparisonStatus": "single-representation",
+			"dimensions": "No Arrow schema, Parquet writer/reader, run/result/evidence column mapping, source fingerprint, or analytical consumer exists in scope.",
+			"disposition": "missing",
+			"equivalenceComplete": false,
+			"rationale": "The need is real for accumulated QA and report analysis, but it depends on the run/result/evidence semantic contract and remains owned by filament-core-data#13.",
+			"confidence": "high",
+			"evidence": "scoped repository search; filament-core-data#13"
+		}
+	],
+	"dynamicSchemaIssues": [
+		{
+			"number": 1,
+			"url": "https://github.com/agent-ix/filament-core-service/issues/1",
+			"disposition": "Existing dynamic-schema work; reuse as source input for open ObjectType registry and do not duplicate."
+		},
+		{
+			"number": 2,
+			"url": "https://github.com/agent-ix/filament-core-service/issues/2",
+			"disposition": "Existing dynamic-schema work; preserve its service ownership and reconcile under semantic IR planning."
+		},
+		{
+			"number": 3,
+			"url": "https://github.com/agent-ix/filament-core-service/issues/3",
+			"disposition": "Existing dynamic-schema work; map its contract rather than mint a competing Filament-only schema."
+		},
+		{
+			"number": 4,
+			"url": "https://github.com/agent-ix/filament-core-service/issues/4",
+			"disposition": "Existing dynamic-schema work; retain as the implementation locus until the shared package contract is accepted."
+		}
+	]
+}

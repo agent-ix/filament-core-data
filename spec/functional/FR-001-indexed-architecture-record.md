@@ -2,6 +2,10 @@
 id: FR-001
 title: "Indexed architecture record with explicit status"
 type: FR
+verification_method: test
+evidence:
+  - kind: test_case
+    ref: "test/semantic-architecture.test.ts"
 relationships:
   - target: "ix://agent-ix/filament-core-data/spec/usecase/US-002"
     type: "implements"

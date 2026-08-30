@@ -3,6 +3,10 @@ id: NFR-002
 title: "Architecture record is standalone and unambiguous"
 type: NFR
 quality_attribute: usability
+verification_method: demonstration
+evidence:
+  - kind: inspection_checklist
+    ref: "spec/reviews/base.md"
 relationships:
   - target: "ix://agent-ix/filament-core-data/spec/functional/FR-001"
     type: "constrains"

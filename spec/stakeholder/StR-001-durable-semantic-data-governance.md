@@ -2,6 +2,14 @@
 id: StR-001
 title: "Durable semantic data governance"
 type: StR
+verification_method: analysis
+evidence:
+  - kind: analysis_report
+    ref: "spec/reviews/integrity.md"
+  - kind: test_case
+    ref: "spec/tests.md#tc-033"
+  - kind: test_case
+    ref: "spec/tests.md#tc-086"
 relationships:
   - target: "ix://agent-ix/filament-core-data/spec/functional/FR-001"
     type: "satisfied_by"
@@ -16,6 +24,16 @@ relationships:
   - target: "ix://agent-ix/filament-core-data/spec/functional/FR-006"
     type: "satisfied_by"
   - target: "ix://agent-ix/filament-core-data/spec/functional/FR-007"
+    type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-009"
+    type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-010"
+    type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-011"
+    type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-012"
+    type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-013"
     type: "satisfied_by"
   - target: "ix://agent-ix/filament-core-data/spec/functional/FR-008"
     type: "satisfied_by"

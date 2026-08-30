@@ -2,6 +2,12 @@
 id: FR-004
 title: "Semantic metamodel and data planes"
 type: FR
+verification_method: analysis
+evidence:
+  - kind: analysis_report
+    ref: "spec/reviews/failure-domain.md"
+  - kind: test_case
+    ref: "test/semantic-architecture.test.ts"
 relationships:
   - target: "ix://agent-ix/filament-core-data/spec/usecase/US-001"
     type: "implements"

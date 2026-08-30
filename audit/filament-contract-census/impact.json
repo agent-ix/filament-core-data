@@ -1,0 +1,522 @@
+{
+	"schemaVersion": "1.0.0",
+	"policy": "Every entry is a planning recommendation with approvalStatus=not-approved. Disruptive entries name affected systems, additive compatibility controls, and a separate gate.",
+	"repositories": [
+		{
+			"id": "filament-core-data",
+			"effort": "XL",
+			"risk": "high",
+			"migrationWave": "waves 2-4",
+			"confidence": "high",
+			"method": "source inventory plus program dependency analysis",
+			"rationale": "Owns provisional schema-source decision, semantic IR/compiler, language emitters, compatibility diffing, and published shared packages.",
+			"dependencies": [
+				"PR #16 review",
+				"issue #4 TypeSpec decision",
+				"issue #9 semantic IR",
+				"issue #5 compiler",
+				"issue #11 packages"
+			],
+			"disruptive": true,
+			"affectedSystems": [
+				{ "name": "all generated language packages" },
+				{ "name": "Avro consumers" },
+				{ "name": "downstream module packages" }
+			],
+			"compatibilityControls": [
+				{ "name": "additive schema evolution" },
+				{ "name": "deterministic golden fixtures" },
+				{ "name": "retain Avro bridge" }
+			],
+			"gate": "filament-core-data#7 cross-language/Avro gate and #12 consumer-readiness gate",
+			"recommendation": "Finish TypeSpec/JSON Schema decision and semantic IR before compiler code; publish nothing from the census.",
+			"approvalStatus": "not-approved"
+		},
+		{
+			"id": "filament-domain-events",
+			"effort": "L",
+			"risk": "high",
+			"migrationWave": "wave 5",
+			"confidence": "high",
+			"method": "Pydantic model and consumer-boundary inspection",
+			"rationale": "Twenty-one strict Python DTOs overlap core concepts and event publication lacks a versioned envelope.",
+			"dependencies": [
+				"filament-core-data#11 generated Python package",
+				"filament-domain-events#5",
+				"event consumer census"
+			],
+			"disruptive": true,
+			"affectedSystems": [
+				{ "name": "Python publishers" },
+				{ "name": "event bus consumers" },
+				{ "name": "filament-core-service" }
+			],
+			"compatibilityControls": [
+				{ "name": "generated models coexist with current Pydantic models" },
+				{ "name": "additive DomainEvent envelope" },
+				{ "name": "dual decode fixtures" }
+			],
+			"gate": "filament-domain-events#5 pre-merge consumer and compatibility gate",
+			"recommendation": "Map existing UUID/tenant models into generated packages and add an envelope only after consumers are known.",
+			"approvalStatus": "not-approved"
+		},
+		{
+			"id": "filament-core-service",
+			"effort": "XL",
+			"risk": "high",
+			"migrationWave": "wave 5 after database gate",
+			"confidence": "medium",
+			"method": "committed SQLModel/service inspection with dirty-worktree limitation",
+			"rationale": "Sixteen persisted entities, services, JSON/JSONB fields, and generic event publication overlap the shared semantic model; local compatibility work is uncommitted.",
+			"dependencies": [
+				"filament-core-service#1-#4",
+				"filament-core-service#20",
+				"generated Python package",
+				"database migration evidence"
+			],
+			"disruptive": true,
+			"affectedSystems": [
+				{ "name": "PostgreSQL tables" },
+				{ "name": "REST/MCP services" },
+				{ "name": "event publication" }
+			],
+			"compatibilityControls": [
+				{ "name": "model adapters" },
+				{ "name": "dual-read/dual-write if physical columns change" },
+				{ "name": "idempotent backfill and rollback rehearsal" }
+			],
+			"gate": "filament-core-service#20 persistence alignment plus database row-count/backup/backfill/rollback evidence",
+			"recommendation": "Keep SQLModel and server defaults authoritative until an additive mapping is proven; do not normalize dirty user work.",
+			"approvalStatus": "not-approved"
+		},
+		{
+			"id": "filament-parser-lib",
+			"effort": "M",
+			"risk": "medium",
+			"migrationWave": "wave 5 after shim disposition",
+			"confidence": "high",
+			"method": "issue #8 branch and Python adapter inspection",
+			"rationale": "The branch correctly delegates Tier 2 to Quire, but live adapter types and frozen legacy models still need consumer/parity evidence.",
+			"dependencies": [
+				"filament-parser-lib#8",
+				"quire-rs#388",
+				"generated Python module packages"
+			],
+			"disruptive": true,
+			"affectedSystems": [
+				{ "name": "filament_parser callers" },
+				{ "name": "legacy spec_parser_lib callers" },
+				{ "name": "Quire PyO3 boundary" }
+			],
+			"compatibilityControls": [
+				{ "name": "retain shim" },
+				{ "name": "byte/field parity fixtures" },
+				{ "name": "deprecation before legacy removal" }
+			],
+			"gate": "filament-parser-lib#13 after issue #8 compatibility disposition",
+			"recommendation": "Merge/resolve the current shim separately; later replace handwritten adapter DTOs additively.",
+			"approvalStatus": "not-approved"
+		},
+		{
+			"id": "filament-ide-rs",
+			"effort": "XL",
+			"risk": "high",
+			"migrationWave": "waves 5-6 after Project 17 stabilization",
+			"confidence": "high",
+			"method": "Rust/TS source, migration, project, and worktree analysis",
+			"rationale": "The application has the richest extraction, persistence, service, NDJSON, and generated TS contracts plus six active worktrees and an unfinished graph-baseline epic.",
+			"dependencies": [
+				"filament-ide-rs#511",
+				"filament-ide-rs#567",
+				"filament-ide-rs#566",
+				"filament-core-data#12"
+			],
+			"disruptive": true,
+			"affectedSystems": [
+				{ "name": "Rust extraction and service crates" },
+				{ "name": "PostgreSQL schema" },
+				{ "name": "NDJSON daemon clients" },
+				{ "name": "React renderer bindings" }
+			],
+			"compatibilityControls": [
+				{ "name": "adapter-first generated types" },
+				{ "name": "Rust/TS golden fixtures" },
+				{ "name": "no envelope change during DTO adoption" },
+				{ "name": "separate database dual-read/backfill gate" }
+			],
+			"gate": "filament-ide-rs#567 DTO gate and #566 database migration gate",
+			"recommendation": "Freeze shared DTO boundary only after #511 and active core/assurance work stabilize; preserve NDJSON as best-fit transport.",
+			"approvalStatus": "not-approved"
+		},
+		{
+			"id": "quire-rs",
+			"effort": "L",
+			"risk": "medium",
+			"migrationWave": "Project 18 waves 3-4",
+			"confidence": "high",
+			"method": "Rust extraction/corpus/registry and architecture inspection",
+			"rationale": "Quire already owns the right parser/validator/extractor boundary; work is mainly stable semantic extraction/export mapping, not rendering or cross-language generation.",
+			"dependencies": [
+				"quoin#289",
+				"quoin#293",
+				"quire-rs#388",
+				"stable module manifest"
+			],
+			"disruptive": true,
+			"affectedSystems": [
+				{ "name": "Quire Registry" },
+				{ "name": "PyO3 extraction" },
+				{ "name": "Filament indexers" }
+			],
+			"compatibilityControls": [
+				{ "name": "additive extraction fields" },
+				{ "name": "unknown version diagnostics" },
+				{ "name": "byte-preserving Markdown behavior" }
+			],
+			"gate": "quire-rs#388 compatibility fixtures and Project 18 advisory gate",
+			"recommendation": "Add semantic extraction metadata only after the module package contract; keep generation outside Quire.",
+			"approvalStatus": "not-approved"
+		},
+		{
+			"id": "quoin",
+			"effort": "L",
+			"risk": "high",
+			"migrationWave": "Project 18 waves 1-3",
+			"confidence": "medium",
+			"method": "catalog pin, config, issue, and dirty-worktree analysis",
+			"rationale": "Quoin owns distribution and exact pins, while active intervention-evidence/spec-fuzz work overlaps evidence/module semantics and the board collection is capped.",
+			"dependencies": [
+				"quoin#289",
+				"quoin#293",
+				"quoin#287",
+				"quoin#268",
+				"Project 17 semantic IR"
+			],
+			"disruptive": true,
+			"affectedSystems": [
+				{ "name": "default module installs" },
+				{ "name": "catalog locks" },
+				{ "name": "workflow consumers" }
+			],
+			"compatibilityControls": [
+				{ "name": "versioned manifest" },
+				{ "name": "exact source fingerprint" },
+				{ "name": "advisory-first module validation" }
+			],
+			"gate": "quoin#290 human publication/enforcement promotion",
+			"recommendation": "Record architecture and manifest semantics first; do not change pins or publish enforcing releases from this audit.",
+			"approvalStatus": "not-approved"
+		},
+		{
+			"id": "quire-corpus",
+			"effort": "S",
+			"risk": "low",
+			"migrationWave": "continuous evidence input",
+			"confidence": "high",
+			"method": "governed corpus contract/revision inspection",
+			"rationale": "The complete-graph truth set is fit and pinned; it is an evidence dependency, not a semantic business schema.",
+			"dependencies": ["quire-rs#385 complete", "producer criteria pins"],
+			"disruptive": false,
+			"affectedSystems": [],
+			"compatibilityControls": [],
+			"gate": "No migration gate; pin corpus_revision for every comparison",
+			"recommendation": "Reuse the corpus as graph-correctness evidence and keep semantic-module type fit in quoin#288.",
+			"approvalStatus": "not-approved"
+		}
+	],
+	"concepts": [
+		{
+			"id": "PAR-001",
+			"effort": "S",
+			"risk": "low",
+			"migrationWave": "bridge retained through wave 7",
+			"confidence": "high",
+			"method": "generated-source and fixture comparison",
+			"rationale": "Current Avro/TS/Python/fixture surface is internally consistent, though Python lacks generated classes.",
+			"dependencies": ["filament-core-data#7", "filament-core-data#11"],
+			"disruptive": false,
+			"affectedSystems": [],
+			"compatibilityControls": [],
+			"gate": "Avro compatibility gate before any source-of-truth change",
+			"recommendation": "Retain as compatibility baseline and generate richer packages beside it.",
+			"approvalStatus": "not-approved"
+		},
+		{
+			"id": "PAR-002",
+			"effort": "XL",
+			"risk": "high",
+			"migrationWave": "waves 2-6",
+			"confidence": "high",
+			"method": "field-level cross-language/source comparison",
+			"rationale": "Core nouns span definition, extraction, persistence, wire, and presentation planes with incompatible identity and JSON boundaries.",
+			"dependencies": [
+				"filament-core-data#9",
+				"quoin#293",
+				"consumer readiness #12"
+			],
+			"disruptive": true,
+			"affectedSystems": [
+				{ "name": "all core data producers/consumers" },
+				{ "name": "PostgreSQL" },
+				{ "name": "generated packages" }
+			],
+			"compatibilityControls": [
+				{ "name": "shared kernel identity types" },
+				{ "name": "explicit per-plane projections" },
+				{ "name": "additive adapters and golden fixtures" }
+			],
+			"gate": "semantic IR acceptance plus per-consumer migration gates",
+			"recommendation": "Model definition/occurrence and stable identity explicitly; never replace all records with one universal entity.",
+			"approvalStatus": "not-approved"
+		},
+		{
+			"id": "PAR-003",
+			"effort": "L",
+			"risk": "high",
+			"migrationWave": "wave 5",
+			"confidence": "high",
+			"method": "event publisher contract inspection",
+			"rationale": "No versioned event envelope or known consumer set exists.",
+			"dependencies": ["filament-domain-events#5", "event consumer census"],
+			"disruptive": true,
+			"affectedSystems": [
+				{ "name": "event publishers" },
+				{ "name": "AMQP consumers" }
+			],
+			"compatibilityControls": [
+				{ "name": "additive envelope" },
+				{ "name": "dual decode" },
+				{ "name": "event identity/version fixtures" }
+			],
+			"gate": "domain-events adoption consumer gate",
+			"recommendation": "Specify event identity/provenance before implementation.",
+			"approvalStatus": "not-approved"
+		},
+		{
+			"id": "PAR-004",
+			"effort": "M",
+			"risk": "medium",
+			"migrationWave": "Project 18 wave 3 / Project 17 wave 5",
+			"confidence": "high",
+			"method": "Python/Rust parser boundary comparison",
+			"rationale": "Ownership is correct but adapter field parity and versioning are handwritten.",
+			"dependencies": ["filament-parser-lib#8", "quire-rs#388"],
+			"disruptive": true,
+			"affectedSystems": [
+				{ "name": "Python parser consumers" },
+				{ "name": "Quire PyO3" }
+			],
+			"compatibilityControls": [
+				{ "name": "retain shim" },
+				{ "name": "cross-language extraction fixtures" }
+			],
+			"gate": "parser shim compatibility disposition",
+			"recommendation": "Generate adapter types only after stable semantic extraction contract.",
+			"approvalStatus": "not-approved"
+		},
+		{
+			"id": "PAR-005",
+			"effort": "L",
+			"risk": "high",
+			"migrationWave": "Project 18 waves 1-3",
+			"confidence": "high",
+			"method": "DSL/registry/catalog ownership comparison",
+			"rationale": "Four representations cover complementary responsibilities but lack one accepted module package/export/mapping contract.",
+			"dependencies": ["quoin#289", "quoin#293", "filament-core-data#4/#9"],
+			"disruptive": true,
+			"affectedSystems": [
+				{ "name": "module repositories" },
+				{ "name": "Quire registry" },
+				{ "name": "Quoin catalog" }
+			],
+			"compatibilityControls": [
+				{ "name": "versioned package manifest" },
+				{ "name": "dynamic/static coexistence" },
+				{ "name": "advisory-first schema completion" }
+			],
+			"gate": "Project 18 architecture and semantic-module contract review",
+			"recommendation": "Unify metadata, not subsystem ownership.",
+			"approvalStatus": "not-approved"
+		},
+		{
+			"id": "PAR-006",
+			"effort": "M",
+			"risk": "medium",
+			"migrationWave": "final parser cutover",
+			"confidence": "high",
+			"method": "legacy model and repository policy inspection",
+			"rationale": "Frozen legacy objects lack source/provenance completeness but may still have unknown callers.",
+			"dependencies": ["filament-parser-lib#8/#13", "caller census"],
+			"disruptive": true,
+			"affectedSystems": [{ "name": "spec_parser_lib callers" }],
+			"compatibilityControls": [
+				{ "name": "deprecation window" },
+				{ "name": "parity fixtures" },
+				{ "name": "retained read path" }
+			],
+			"gate": "legacy retirement human cutover",
+			"recommendation": "Do not extend; retire only after callers and parity are proven.",
+			"approvalStatus": "not-approved"
+		},
+		{
+			"id": "PAR-007",
+			"effort": "XL",
+			"risk": "high",
+			"migrationWave": "database gate only",
+			"confidence": "high",
+			"method": "migration/source inspection without database execution",
+			"rationale": "Physical migrations are representation-local and any semantic alignment could require backfill or index changes.",
+			"dependencies": ["filament-ide-rs#566"],
+			"disruptive": true,
+			"affectedSystems": [{ "name": "Filament PostgreSQL data" }],
+			"compatibilityControls": [
+				{ "name": "backup/restore" },
+				{ "name": "idempotent backfill" },
+				{ "name": "dual read/write" },
+				{ "name": "rollback rehearsal" }
+			],
+			"gate": "database migration human gate",
+			"recommendation": "No database change during schema/compiler work.",
+			"approvalStatus": "not-approved"
+		},
+		{
+			"id": "PAR-008",
+			"effort": "S",
+			"risk": "low",
+			"migrationWave": "retain",
+			"confidence": "high",
+			"method": "backend envelope inspection",
+			"rationale": "NDJSON is a suitable local daemon transport with typed Rust envelopes and known clients.",
+			"dependencies": ["backend API compatibility"],
+			"disruptive": false,
+			"affectedSystems": [],
+			"compatibilityControls": [],
+			"gate": "Normal backend protocol compatibility review",
+			"recommendation": "Keep NDJSON; project shared types into it where useful.",
+			"approvalStatus": "not-approved"
+		},
+		{
+			"id": "PAR-009",
+			"effort": "S",
+			"risk": "low",
+			"migrationWave": "continuous",
+			"confidence": "high",
+			"method": "corpus contract/digest inspection",
+			"rationale": "The truth set is well versioned and explicit about unsupported computations.",
+			"dependencies": ["producer pins"],
+			"disruptive": false,
+			"affectedSystems": [],
+			"compatibilityControls": [],
+			"gate": "Pin corpus_revision per run",
+			"recommendation": "Reuse without redefining it as semantic module authority.",
+			"approvalStatus": "not-approved"
+		},
+		{
+			"id": "PAR-010",
+			"effort": "L",
+			"risk": "medium",
+			"migrationWave": "optional post-stabilization wire optimization",
+			"confidence": "high",
+			"method": "scoped absence search and interface-fit analysis",
+			"rationale": "No current interface requires Protobuf and introducing it now adds a second generated contract prematurely.",
+			"dependencies": [
+				"stable semantic package",
+				"concrete RPC/stream requirement"
+			],
+			"disruptive": true,
+			"affectedSystems": [{ "name": "future RPC clients/servers only" }],
+			"compatibilityControls": [
+				{ "name": "additive new endpoint" },
+				{ "name": "cross-language golden fixtures" }
+			],
+			"gate": "interface-specific feasibility and consumer gate",
+			"recommendation": "Choose Protobuf only per interface; do not standardize it universally.",
+			"approvalStatus": "not-approved"
+		},
+		{
+			"id": "PAR-011",
+			"effort": "L",
+			"risk": "medium",
+			"migrationWave": "wave 6",
+			"confidence": "medium",
+			"method": "scoped absence search plus QA accumulation needs analysis",
+			"rationale": "Arrow/Parquet is useful for accumulated results but its source semantics are not yet stable.",
+			"dependencies": [
+				"filament-core-data#13",
+				"quoin#267/#268",
+				"engineering-assurance#5"
+			],
+			"disruptive": true,
+			"affectedSystems": [
+				{ "name": "QA/report producers" },
+				{ "name": "analytical consumers" }
+			],
+			"compatibilityControls": [
+				{ "name": "derived-only status" },
+				{ "name": "source/mapping fingerprints" },
+				{ "name": "loss declaration" }
+			],
+			"gate": "analytical projection specification and golden round-trip gate",
+			"recommendation": "Implement only after run/result/evidence reconciliation; never treat columnar output as source authority.",
+			"approvalStatus": "not-approved"
+		}
+	],
+	"activeOverlaps": [
+		{
+			"id": "OVERLAP-001",
+			"source": "filament-core-data PR #16",
+			"owner": "agent-ix maintainers",
+			"overlap": "Shared authority, package, projection, and compatibility architecture",
+			"sequencingConsequence": "Issue #10 PR must depend on or follow #16; no independent conflicting architecture edits."
+		},
+		{
+			"id": "OVERLAP-002",
+			"source": "filament-core-service dirty pyproject.toml and tests/test_core_data_contract.py",
+			"owner": "unknown",
+			"overlap": "Avro/Python compatibility dependency and tests",
+			"sequencingConsequence": "Do not edit or absorb uncommitted files; refresh service disposition before migration planning."
+		},
+		{
+			"id": "OVERLAP-003",
+			"source": "filament-parser-lib#8 / task-8-quire-core-data-shim",
+			"owner": "parser maintainers",
+			"overlap": "Python/Quire extraction boundary",
+			"sequencingConsequence": "Resolve shim review before parser adoption ticket starts."
+		},
+		{
+			"id": "OVERLAP-004",
+			"source": "filament-ide-rs#511",
+			"owner": "Project 17 graph assurance",
+			"overlap": "Graph/corpus/evidence baseline",
+			"sequencingConsequence": "Freeze semantic identity and graph mapping only after a stable #511 boundary."
+		},
+		{
+			"id": "OVERLAP-005",
+			"source": "filament-ide-rs worktrees #480/#512/#550/#551",
+			"owner": "unknown",
+			"overlap": "Retrieval, assurance, core primitive, and UI binding contracts",
+			"sequencingConsequence": "Re-snapshot each branch and owner before DTO migration; do not rebase or modify these worktrees."
+		},
+		{
+			"id": "OVERLAP-006",
+			"source": "quoin#268",
+			"owner": "Quoin maintainers",
+			"overlap": "Run/result/evidence and experiment attribution semantics",
+			"sequencingConsequence": "Use as semantic input for analytical projections instead of defining a parallel Filament evidence record."
+		},
+		{
+			"id": "OVERLAP-007",
+			"source": "quoin#309 and dirty spec-fuzz files",
+			"owner": "Quoin maintainers",
+			"overlap": "Module/skill frontmatter validation",
+			"sequencingConsequence": "Keep current catalog pin source read-only and refresh after active branch resolution."
+		},
+		{
+			"id": "OVERLAP-008",
+			"source": "Project 17/18 item-list 200-item caps",
+			"owner": "GitHub project maintainers",
+			"overlap": "Unknown contract work beyond enumerated page",
+			"sequencingConsequence": "Migration-readiness review must use paginated GraphQL or remain incomplete; this audit cannot certify no other overlaps."
+		}
+	]
+}

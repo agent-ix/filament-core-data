@@ -1,6 +1,6 @@
 ---
 id: TM-001
-title: "filament-core-data semantic architecture Test Matrix"
+title: "filament-core-data semantic architecture and contract census Test Matrix"
 type: TestMatrix
 ---
 # Test Matrix
@@ -8,9 +8,10 @@ type: TestMatrix
 ## Overview
 
 This matrix defines the verification contract for the issue #8 architecture
-record. Coverage is complete when every criterion and named constraint maps to
-at least one test case; execution remains pending until the architecture bundle
-and its validation tests are implemented.
+record and the issue #10 read-only contract census. Coverage is complete when
+every criterion and named constraint maps to at least one test case. Issue #8
+and issue #10 evidence have passed their respective implementation gates; all
+later disruptive migration and promotion gates remain separate and closed.
 
 ## Test Matrix Rules
 
@@ -27,7 +28,7 @@ and its validation tests are implemented.
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001, US-002, FR-001..FR-008 | TC-033 | ✅ Complete |
+| StR-001 | US-001..US-003, FR-001..FR-013 | TC-033, TC-086 | ✅ Complete |
 
 ### User Story Coverage
 
@@ -37,6 +38,8 @@ and its validation tests are implemented.
 | US-001 | US-001-AC-2 | TC-035 | ✅ Complete |
 | US-002 | US-002-AC-1 | TC-036 | ✅ Complete |
 | US-002 | US-002-AC-2 | TC-037 | ✅ Complete |
+| US-003 | US-003-AC-1 | TC-086 | ✅ Complete |
+| US-003 | US-003-AC-2 | TC-087 | ✅ Complete |
 
 ### Functional Requirement Coverage
 
@@ -50,6 +53,11 @@ and its validation tests are implemented.
 | FR-006 | FR-006-AC-1..6 | TC-021..024, TC-051..052 | ✅ Complete |
 | FR-007 | FR-007-AC-1..4, FR-007-CON-1..2 | TC-025..028 | ✅ Complete |
 | FR-008 | FR-008-AC-1..4 | TC-029..032 | ✅ Complete |
+| FR-009 | FR-009-AC-1..6 | TC-054..058, TC-088 | ✅ Complete |
+| FR-010 | FR-010-AC-1..5 | TC-059..063 | ✅ Complete |
+| FR-011 | FR-011-AC-1..5 | TC-064..068 | ✅ Complete |
+| FR-012 | FR-012-AC-1..4 | TC-069..072 | ✅ Complete |
+| FR-013 | FR-013-AC-1..5 | TC-073..077 | ✅ Complete |
 
 ### Non-Functional Requirement Coverage
 
@@ -58,6 +66,8 @@ and its validation tests are implemented.
 | NFR-001 | Static tests and review | TC-038..041 | ✅ Complete |
 | NFR-002 | Structured review | TC-042..044 | ✅ Complete |
 | NFR-003 | Diff, release, and review inspection | TC-045..048 | ✅ Complete |
+| NFR-004 | Schema, determinism, source-locus, and assessment checks | TC-082..085 | ✅ Complete |
+| NFR-005 | Diff, repository, release, and review inspection | TC-078..081 | ✅ Complete |
 
 ## Test Case Summary
 
@@ -116,6 +126,41 @@ and its validation tests are implemented.
 | TC-051 | Transformation failures remain explicit and non-authoritative | Manual | P0 | FR-006-AC-5 | ✅ architecture review passed |
 | TC-052 | Transformation declarations expose purity and external effects | Manual | P1 | FR-006-AC-6 | ✅ architecture review passed |
 | TC-053 | Supersession cycles fail without arbitrary resolution | Property | P0 | FR-001-AC-5 | ✅ property fixture passed |
+| TC-054 | Repository snapshot fields are complete | Static | P0 | FR-009-AC-1 | ✅ audit evidence passed |
+| TC-055 | Corpus and module pins are immutable and complete | Static | P0 | FR-009-AC-2 | ✅ audit evidence passed |
+| TC-056 | In-flight contract work is source-cited | Analysis | P0 | FR-009-AC-3 | ✅ audit evidence passed |
+| TC-057 | Unavailable and unstable inputs retain consequences | Static | P0 | FR-009-AC-4 | ✅ audit evidence passed |
+| TC-058 | Pre-sign-off drift is explicitly recorded | Static | P0 | FR-009-AC-5 | ✅ audit evidence passed |
+| TC-059 | Every repository and contract family has a disposition | Static | P0 | FR-010-AC-1 | ✅ audit evidence passed |
+| TC-060 | Every contract resolves to source or generated evidence | Static | P0 | FR-010-AC-2 | ✅ audit evidence passed |
+| TC-061 | Unknown and unavailable contract properties stay explicit | Static | P0 | FR-010-AC-3 | ✅ audit evidence passed |
+| TC-062 | Contract representations retain their data-plane role | Static | P1 | FR-010-AC-4 | ✅ audit evidence passed |
+| TC-063 | Inventory IDs and evidence references are valid | Static | P0 | FR-010-AC-5 | ✅ audit evidence passed |
+| TC-064 | Every contract has one allowed fit disposition | Static | P0 | FR-011-AC-1 | ✅ audit evidence passed |
+| TC-065 | Repeated concepts have parity or not-comparable evidence | Static | P0 | FR-011-AC-2 | ✅ audit evidence passed |
+| TC-066 | Field and semantic mismatches reach the conflict ledger | Analysis | P0 | FR-011-AC-3 | ✅ audit evidence passed |
+| TC-067 | Unproven equivalence cannot be classified fit | Static | P0 | FR-011-AC-4 | ✅ audit evidence passed |
+| TC-068 | Dynamic-schema findings reuse existing issues | Manual | P1 | FR-011-AC-5 | ✅ audit evidence passed |
+| TC-069 | Repository and concept impacts are complete | Static | P0 | FR-012-AC-1 | ✅ audit evidence passed |
+| TC-070 | Disruptive findings name controls and gates | Analysis | P0 | FR-012-AC-2 | ✅ audit evidence passed |
+| TC-071 | Active-work overlaps include sequencing consequences | Manual | P0 | FR-012-AC-3 | ✅ audit evidence passed |
+| TC-072 | Recommendations never imply migration approval | Static | P0 | FR-012-AC-4 | ✅ audit evidence passed |
+| TC-073 | SpecReview links all required evidence artifacts | Static | P0 | FR-013-AC-1 | ✅ audit evidence passed |
+| TC-074 | Issue acceptance criteria receive source-cited dispositions | Analysis | P0 | FR-013-AC-2 | ✅ audit evidence passed |
+| TC-075 | Contract-affecting drift prevents ready status | Static | P0 | FR-013-AC-3 | ✅ audit evidence passed |
+| TC-076 | Remaining program gates are named | Manual | P0 | FR-013-AC-4 | ✅ audit evidence passed |
+| TC-077 | Unknown and low-confidence findings remain visible | Manual | P0 | FR-013-AC-5 | ✅ audit evidence passed |
+| TC-078 | External repository source changes remain zero | Static | P0 | NFR-005-AC-1 | ✅ audit evidence passed |
+| TC-079 | Existing runtime and contract source changes remain zero | Static | P0 | NFR-005-AC-2 | ✅ audit evidence passed |
+| TC-080 | Publication, catalog, and enforcement changes remain zero | Manual | P0 | NFR-005-AC-3 | ✅ audit evidence passed |
+| TC-081 | Requirements remain intact when findings are adverse | Manual | P0 | NFR-005-AC-4 | ✅ audit evidence passed |
+| TC-082 | Every machine-readable evidence artifact validates | Static | P0 | NFR-004 | ✅ audit evidence passed |
+| TC-083 | Unchanged pinned inputs produce identical normalized evidence | Property | P0 | NFR-004 | ✅ audit evidence passed |
+| TC-084 | Evidence references resolve at recorded revisions | Static | P0 | NFR-004 | ✅ audit evidence passed |
+| TC-085 | Manual assessments carry method, rationale, and confidence | Manual | P1 | NFR-004 | ✅ audit evidence passed |
+| TC-086 | Reviewer compares a repeated concept end to end | Manual | P0 | US-003-AC-1 | ✅ audit evidence passed |
+| TC-087 | Unconfirmed consumer remains explicit and non-compatible | Manual | P0 | US-003-AC-2 | ✅ audit evidence passed |
+| TC-088 | Volatile external collections prove access and full enumeration | Static | P0 | FR-009-AC-6 | ✅ audit evidence passed |
 
 ## Option Permutation Matrix
 
@@ -128,6 +173,10 @@ and its validation tests are implemented.
 | TC-003, TC-036 | candidate mechanism | provisional | named resolution ticket | Candidate cannot be presented as final |
 | TC-004 | superseded decision | historical | one current successor | History remains linked but non-normative |
 | TC-028, TC-037 | disruptive migration | blocked | unmet human gate | Cutover cannot be promoted |
+| TC-061, TC-087 | suspected consumer | unknown | incomplete source evidence | Unknown remains explicit and lowers confidence |
+| TC-061 | contract property | none or not-applicable | source proves absence or irrelevance | Explicit state is retained without inventing a value |
+| TC-064, TC-067 | repeated definition | conflict or unknown | equivalence not proven | Fit is prohibited |
+| TC-064 | representation-local definition | representation-local | semantic scope is intentionally local | No shared replacement is implied |
 
 ## Constraint Boundary Tests
 
@@ -143,6 +192,10 @@ and its validation tests are implemented.
 | FR-007-CON-1 | Prohibited | Avro removed before all consumers pass cutover | TC-025 | Fail compatibility review |
 | FR-007-CON-2 | Allowed | High corpus failure pauses promotion | TC-028 | Hold gate remains closed |
 | FR-007-CON-2 | Prohibited | Contract weakens automatically after high failure | TC-028 | Fail safety review |
+| NFR-004 | Allowed | Two validations of identical pinned inputs produce byte-equivalent normalized evidence | TC-083 | Pass reproducibility gate |
+| NFR-004 | Prohibited | A repeated validation changes ordering or content | TC-083 | Fail reproducibility gate |
+| NFR-005 | Allowed | Audit-only files are added in `filament-core-data` | TC-079 | Pass read-only gate |
+| NFR-005 | Prohibited | An examined schema, DTO, migration, corpus file, or catalog pin changes | TC-078..080 | Fail read-only gate |
 
 ## State Transition Matrix
 
@@ -153,6 +206,10 @@ and its validation tests are implemented.
 | normative | successor ADR is accepted | historical with one current successor | TC-004 |
 | historical chain | a successor points to its predecessor | validation failure | TC-053 |
 | blocked migration | all named gates pass and a human promotes it | eligible for later implementation | TC-028, TC-037 |
+| pinned input | pre-sign-off refresh finds no contract-affecting drift | evidence remains current | TC-058, TC-075 |
+| pinned input | pre-sign-off refresh finds contract-affecting drift | affected evidence invalid until refreshed | TC-058, TC-075 |
+| suspected consumer | source evidence confirms consumer | known consumer with revised confidence | TC-087 |
+| suspected consumer | evidence remains inconclusive | explicit unknown with consequence | TC-061, TC-087 |
 
 ## Error Paths
 
@@ -166,6 +223,13 @@ and its validation tests are implemented.
 | ERR-006 | TypeSpec feasibility fails without a fallback | Review fails | TC-026, TC-036 |
 | ERR-007 | Transformation cannot satisfy its declared preservation level | Explicit non-authoritative outcome | TC-024, TC-051 |
 | ERR-008 | Decision supersession graph contains a cycle | Validation fails | TC-053 |
+| ERR-009 | Repository or corpus input has no immutable revision | Input is marked unpinned with consequence and reduced confidence | TC-055, TC-057 |
+| ERR-010 | Contract record has no resolvable source or generated locus | Inventory validation fails | TC-060, TC-063 |
+| ERR-011 | Contract property is blank where evidence is unknown | Inventory validation fails | TC-061 |
+| ERR-012 | Repeated contracts are labeled fit without equivalence evidence | Parity validation fails | TC-066, TC-067 |
+| ERR-013 | Contract-affecting drift appears after evidence collection | Ready disposition is withheld | TC-058, TC-075 |
+| ERR-014 | Audit finding is implemented or published in the audit delivery | Read-only merge gate fails | TC-078..081 |
+| ERR-015 | External collection is capped, paginated, rate-limited, or access-denied without an incomplete disposition | Snapshot validation fails | TC-057, TC-088 |
 
 ## Edge Cases
 
@@ -179,20 +243,26 @@ and its validation tests are implemented.
 | EC-006 | Existing Avro consumers outlive the new schema source | FR-007 | TC-025 | Active integrations break during adoption |
 | EC-007 | An artifact moves while preserving the same semantic definition | FR-004 | TC-050 | File identity is confused with semantic identity |
 | EC-008 | A chain of superseded decisions accidentally points backward | FR-001 | TC-053 | Resolution loops or chooses stale guidance |
+| EC-009 | A repository is locally dirty before the audit starts | FR-009 | TC-054, TC-057 | User work is mistaken for the pinned baseline |
+| EC-010 | A generated contract has no checked-in source line | FR-010 | TC-060, TC-084 | Generated behavior becomes unverifiable |
+| EC-011 | One concept exists in Avro, Rust, TypeScript, SQL, and extracted Markdown with different optionality | FR-011 | TC-065, TC-066 | A breaking mismatch is mistaken for parity |
+| EC-012 | A payload consumer is suspected but cannot be confirmed | US-003, FR-010 | TC-061, TC-087 | Unknown compatibility risk silently disappears |
+| EC-013 | Active feature work changes a contract after collection | FR-009, FR-013 | TC-058, TC-071, TC-075 | Stale evidence authorizes unsafe planning |
 
 ## Coverage Gaps
 
-| Gap ID | Description | Risk Level | Mitigation |
-|---|---|---|---|
-| None | All criteria and named constraints have completed verification evidence. | Low | Preserve the automated contract and review artifacts on every architecture change. |
+No open coverage or execution gap remains for issues #8 or #10. Future schema,
+consumer, database, publication, enforcement, and retirement work is outside this
+matrix's implementation scope and remains gated by its owning tickets.
 
 ## Test Execution Summary
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 22 | 22 | 0 | 0 | 100% passed |
-| Manual | 29 | 29 | 0 | 0 | 100% passed |
-| Property | 2 | 2 | 0 | 0 | 100% passed |
-| **Total** | **53** | **53** | **0** | **0** | **100% passed** |
+| Static | 43 | 43 | 0 | 0 | 100% passed and mapped |
+| Manual | 38 | 38 | 0 | 0 | 100% passed and mapped |
+| Analysis | 4 | 4 | 0 | 0 | 100% passed and mapped |
+| Property | 3 | 3 | 0 | 0 | 100% passed and mapped |
+| **Total** | **88** | **88** | **0** | **0** | **100% passed and mapped** |
 
-**Matrix status: ✅ Complete and verified.**
+**Matrix coverage status: ✅ Complete. Execution status: ✅ Issues #8 and #10 passed.**

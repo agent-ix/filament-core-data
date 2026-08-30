@@ -1,0 +1,68 @@
+{
+	"schemaVersion": "1.0.0",
+	"missing": [
+		{
+			"id": "MISSING-001",
+			"concept": "Protocol Buffers package/mapping",
+			"disposition": "missing",
+			"evidence": "INV-023/PAR-010",
+			"owner": "best-fit interface ticket after semantic IR",
+			"gate": "No implementation until a concrete interface justifies it and compatibility/golden fixtures pass.",
+			"confidence": "high"
+		},
+		{
+			"id": "MISSING-002",
+			"concept": "Arrow/Parquet QA projection",
+			"disposition": "missing",
+			"evidence": "INV-024/PAR-011",
+			"owner": "filament-core-data#13",
+			"gate": "Wait for run/result/evidence semantics and analytical projection specification.",
+			"confidence": "high"
+		},
+		{
+			"id": "MISSING-003",
+			"concept": "Versioned DomainEvent envelope",
+			"disposition": "fit-with-extension",
+			"evidence": "INV-007/PAR-003/CONFLICT-006",
+			"owner": "filament-domain-events#5",
+			"gate": "Consumer census and additive bridge before event payload changes.",
+			"confidence": "high"
+		},
+		{
+			"id": "MISSING-004",
+			"concept": "Generated typed Python classes from the shared schema",
+			"disposition": "fit-with-extension",
+			"evidence": "INV-003/PAR-001",
+			"owner": "filament-core-data#11",
+			"gate": "Compiler and cross-language golden compatibility gate.",
+			"confidence": "high"
+		},
+		{
+			"id": "MISSING-005",
+			"concept": "Uniform transformation provenance envelope",
+			"disposition": "split-required",
+			"evidence": "CONFLICT-005",
+			"owner": "semantic IR/package specification #9",
+			"gate": "Define plane-specific provenance and mapping profiles before migration.",
+			"confidence": "high"
+		},
+		{
+			"id": "MISSING-006",
+			"concept": "Accepted semantic-module package/export/mapping manifest",
+			"disposition": "split-required",
+			"evidence": "PAR-005/CONFLICT-008",
+			"owner": "quoin#293",
+			"gate": "Project 18 architecture #289 and shared TypeSpec/JSON Schema decision #4.",
+			"confidence": "high"
+		},
+		{
+			"id": "MISSING-007",
+			"concept": "Complete active-work enumeration from Projects v2",
+			"disposition": "missing",
+			"evidence": "snapshot externalCollections project-17-items/project-18-items",
+			"owner": "audit limitation",
+			"gate": "Re-run with paginated GraphQL or retain incomplete status before any migration readiness claim.",
+			"confidence": "high"
+		}
+	]
+}
