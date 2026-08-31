@@ -1,0 +1,47 @@
+{
+	"contractVersion": "1.0.0",
+	"package": { "identity": "agent-ix/assurance", "version": "1.0.0" },
+	"schemaDialect": "https://json-schema.org/draft/2020-12/schema",
+	"sourceRoots": ["schema/"],
+	"exports": [
+		{
+			"name": "Artifact",
+			"typeIdentity": "ix://agent-ix/assurance/type/Artifact",
+			"visibility": "public"
+		},
+		{
+			"name": "InternalNote",
+			"typeIdentity": "ix://agent-ix/assurance/type/InternalNote",
+			"visibility": "private"
+		}
+	],
+	"imports": [
+		{
+			"packageIdentity": "agent-ix/core",
+			"versionConstraint": "^1.0.0",
+			"exports": ["SemanticId"],
+			"capabilities": ["semantic-identity-v1"]
+		}
+	],
+	"profiles": [
+		{
+			"name": "rust-and-text",
+			"version": "1.0.0",
+			"exports": ["Artifact"],
+			"targets": ["rust", "markdown"],
+			"mappings": ["ix://agent-ix/assurance/mapping/artifact-markdown"],
+			"options": { "unknownModules": "preserve" },
+			"compatibilityPosture": "strict"
+		}
+	],
+	"targets": ["rust", "markdown"],
+	"mappings": ["ix://agent-ix/assurance/mapping/artifact-markdown"],
+	"extensions": [
+		{
+			"identity": "ix://example.org/package/ext/maintainer",
+			"version": "1.0.0",
+			"required": false,
+			"payload": { "team": "assurance" }
+		}
+	]
+}

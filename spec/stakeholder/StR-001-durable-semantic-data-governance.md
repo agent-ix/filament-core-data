@@ -49,6 +49,22 @@ relationships:
     type: "satisfied_by"
   - target: "ix://agent-ix/filament-core-data/spec/functional/FR-018"
     type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-019"
+    type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-020"
+    type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-021"
+    type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-022"
+    type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-023"
+    type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-024"
+    type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-025"
+    type: "satisfied_by"
+  - target: "ix://agent-ix/filament-core-data/spec/functional/FR-026"
+    type: "satisfied_by"
 ---
 # [StR-001] Durable semantic data governance
 
@@ -69,16 +85,9 @@ contract changes.
 
 ## Validation Criteria
 
-This need is satisfied when a reader can start at one index, identify the
-authority and owner for each concern, distinguish accepted principles from
-provisional mechanisms, trace conflicts to explicit dispositions, and find the
-gate that prevents every disruptive adoption step.
-
-## Acceptance Criteria
-
-| ID | Criteria | Verification |
+| ID | Criteria | Validation |
 |---|---|---|
-| StR-001-AC-1 | Starting from the root index, a reader can identify concern-specific authority and ownership, decision status, conflict dispositions, and every disruptive adoption gate. | Review (TC-033) |
+| StR-001-VC-1 | Starting from the root index, a reader can identify concern-specific authority and ownership, decision status, conflict dispositions, and every disruptive adoption gate. | Demonstration |
 
 ## Stakeholders
 
@@ -118,4 +127,7 @@ This need drives the architecture-record requirements in
 requirements [FR-009](../functional/FR-009-snapshot-audit-inputs.md) through
 [FR-013](../functional/FR-013-publish-contract-census-review.md), and the
 feasibility requirements [FR-014](../functional/FR-014-pin-typespec-experiment.md)
-through [FR-018](../functional/FR-018-resolve-structural-schema-source.md).
+through [FR-018](../functional/FR-018-resolve-structural-schema-source.md), and
+the shared semantic-contract requirements
+[FR-019](../functional/FR-019-select-v1-structural-source-and-ir.md) through
+[FR-026](../functional/FR-026-preserve-dynamic-and-legacy-boundaries.md).

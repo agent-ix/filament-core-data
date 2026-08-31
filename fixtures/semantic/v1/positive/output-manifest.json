@@ -1,0 +1,16 @@
+{
+	"contractVersion": "1.0.0",
+	"requestFingerprint": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
+	"backend": "ix://agent-ix/semantic-compiler/backend/rust",
+	"state": "success",
+	"files": [
+		{
+			"path": "src/lib.rs",
+			"digest": "sha256:7777777777777777777777777777777777777777777777777777777777777777",
+			"mediaType": "text/x-rust",
+			"semanticIdentities": ["ix://agent-ix/assurance/type/Artifact"]
+		}
+	],
+	"diagnostics": [],
+	"normalizedFingerprint": "sha256:8888888888888888888888888888888888888888888888888888888888888888"
+}

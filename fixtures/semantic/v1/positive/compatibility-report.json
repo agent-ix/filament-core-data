@@ -1,0 +1,25 @@
+{
+	"contractVersion": "1.0.0",
+	"oldFingerprint": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
+	"newFingerprint": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+	"consumerEvidenceStatus": "current",
+	"changes": [
+		{
+			"identity": "ix://agent-ix/assurance/field/summary",
+			"family": "field",
+			"surface": "semantic",
+			"disposition": "additive",
+			"rationale": "Optional field is preserved or surfaced by every selected target and known consumer.",
+			"affectedConsumers": ["quire", "quoin"],
+			"targetResults": [
+				{ "target": "rust", "disposition": "additive" },
+				{ "target": "typescript", "disposition": "additive" },
+				{ "target": "python", "disposition": "additive" },
+				{ "target": "avro-v1-reader", "disposition": "additive" }
+			]
+		}
+	],
+	"aggregateDisposition": "additive",
+	"requiredGates": ["known-consumer compatibility"],
+	"retainedBridges": ["avro-v1", "quoin-manifest-legacy-v1"]
+}

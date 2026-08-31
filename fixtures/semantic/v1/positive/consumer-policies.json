@@ -1,0 +1,34 @@
+[
+	{
+		"contractVersion": "1.0.0",
+		"consumer": "ix://agent-ix/quire/consumer/dynamic",
+		"mode": "dynamic",
+		"exports": [],
+		"unknownModules": "preserve",
+		"unknownExtensions": "preserve",
+		"identityPlanes": [
+			"package",
+			"type",
+			"field",
+			"profile",
+			"mapping",
+			"fingerprint"
+		]
+	},
+	{
+		"contractVersion": "1.0.0",
+		"consumer": "ix://agent-ix/filament/consumer/generated",
+		"mode": "generated",
+		"exports": ["ix://agent-ix/assurance/type/Artifact"],
+		"unknownModules": "surface",
+		"unknownExtensions": "preserve",
+		"identityPlanes": [
+			"package",
+			"type",
+			"field",
+			"profile",
+			"mapping",
+			"fingerprint"
+		]
+	}
+]

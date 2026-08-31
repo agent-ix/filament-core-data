@@ -1,0 +1,62 @@
+{
+	"sourceRepository": "https://github.com/agent-ix/quoin",
+	"sourceCommit": "eae8a2495136961aba8ec0fe71b5463e5d1f1a02",
+	"profile": "quoin-manifest-legacy-v1",
+	"captureMethod": "complete sorted corpus/modules/**/manifest.yaml enumeration",
+	"manifests": [
+		{
+			"path": "corpus/modules/ecosystem/spec-artifacts-iso/manifest.yaml",
+			"digest": "sha256:f88971dfd4fa86e873c1216a8f607beee79258d2e88e78631a591050580249f0",
+			"rewritten": false,
+			"valid": true
+		},
+		{
+			"path": "corpus/modules/ecosystem/spec-artifacts-process/manifest.yaml",
+			"digest": "sha256:a6137609d7855ce7b434e55bb81be429419c1656de884d4dba8357a9bb1006e8",
+			"rewritten": false,
+			"valid": true
+		},
+		{
+			"path": "corpus/modules/variants/dead-coverage-vocabulary/manifest.yaml",
+			"digest": "sha256:4e155f9b1b99209c9bfd7fc7493839570f4667242827814d90b1a04c8403d7bc",
+			"rewritten": false,
+			"valid": true
+		},
+		{
+			"path": "corpus/modules/variants/live-coverage-vocabulary/manifest.yaml",
+			"digest": "sha256:43975ca114b90e72b5c67cec95f5bdd5bd5a6912f8b69e1db026bb3f26b80c06",
+			"rewritten": false,
+			"valid": true
+		},
+		{
+			"path": "corpus/modules/variants/no-implements-declaration/manifest.yaml",
+			"digest": "sha256:4049b8b586e98ad93cc6beae33cda1f5085a237916d1ff7f131ebf10637439a5",
+			"rewritten": false,
+			"valid": true
+		},
+		{
+			"path": "corpus/modules/variants/no-trace-targets/manifest.yaml",
+			"digest": "sha256:757247285db0cd715f3f446bbb26897fe59890c90faccf3fb04014342f7b5cab",
+			"rewritten": false,
+			"valid": true
+		},
+		{
+			"path": "corpus/modules/variants/one-trace-target/manifest.yaml",
+			"digest": "sha256:f3ce835baa90f73678bbdd44e2971e7a7d7b39a163f6a009d52f9e4e56d8fe03",
+			"rewritten": false,
+			"valid": true
+		},
+		{
+			"path": "corpus/modules/variants/optional-target-section/manifest.yaml",
+			"digest": "sha256:18cb0d56e21dbc1ecc938b6056563559802d749cb20f09da3600d2618f7fe116",
+			"rewritten": false,
+			"valid": true
+		},
+		{
+			"path": "corpus/modules/variants/reference-postures/manifest.yaml",
+			"digest": "sha256:b662cc0ca46607e80169ecff550bf5285496b0dc2875fd184227153bdadf2a33",
+			"rewritten": false,
+			"valid": true
+		}
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"source": "schema/avro/core-data.avpr",
+	"positiveFixtures": "fixtures/representative-core-payloads.json",
+	"adapter": "ix://agent-ix/filament-core-data/adapter/avro-v1",
+	"authority": "compatibility-representation",
+	"semanticWideningAllowed": false,
+	"retirementGate": "all-known-reader-readiness-and-named-retirement-approval"
+}

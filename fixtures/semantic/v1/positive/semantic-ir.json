@@ -1,0 +1,284 @@
+{
+	"contractVersion": "1.0.0",
+	"source": {
+		"identity": "ix://agent-ix/filament-core-data/source/core",
+		"version": "1.0.0",
+		"dialect": "https://json-schema.org/draft/2020-12/schema",
+		"digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+	},
+	"package": {
+		"identity": "agent-ix/assurance",
+		"version": "1.0.0",
+		"manifestDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+		"mappingVersions": ["1.0.0"],
+		"profileVersions": ["1.0.0"],
+		"lockDigest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+	},
+	"types": [
+		{
+			"identity": "ix://agent-ix/assurance/type/Text",
+			"displayName": "Text",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/core",
+					"path": "types/text.schema.json",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "string"
+		},
+		{
+			"identity": "ix://agent-ix/assurance/type/Artifact",
+			"displayName": "Artifact",
+			"kind": "record",
+			"roles": ["agent-ix:entity", "agent-ix:evidence", "agent-ix:report"],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/core",
+					"path": "types/artifact.schema.json",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [
+				{
+					"identity": "ix://example.org/assurance/ext/review",
+					"version": "1.0.0",
+					"required": false,
+					"capability": "review-metadata",
+					"payload": { "owner": "qa" }
+				}
+			],
+			"unknownPolicy": "preserve",
+			"fields": [
+				{
+					"identity": "ix://agent-ix/assurance/field/artifact-id",
+					"name": "id",
+					"typeRef": "ix://agent-ix/assurance/type/ArtifactId",
+					"presence": "required",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/core",
+							"path": "types/artifact.schema.json",
+							"startLine": 8,
+							"startColumn": 5
+						}
+					},
+					"extensions": []
+				},
+				{
+					"identity": "ix://agent-ix/assurance/field/summary",
+					"name": "summary",
+					"typeRef": "ix://agent-ix/assurance/type/Text",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/core",
+							"path": "types/artifact.schema.json",
+							"startLine": 15,
+							"startColumn": 5
+						}
+					},
+					"extensions": []
+				},
+				{
+					"identity": "ix://agent-ix/assurance/field/note",
+					"name": "note",
+					"typeRef": "ix://agent-ix/assurance/type/Text",
+					"presence": "required",
+					"nullable": true,
+					"defaultKind": "semantic",
+					"defaultValue": null,
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/core",
+							"path": "types/artifact.schema.json",
+							"startLine": 22,
+							"startColumn": 5
+						}
+					},
+					"extensions": []
+				}
+			]
+		},
+		{
+			"identity": "ix://agent-ix/assurance/type/Status",
+			"displayName": "Status",
+			"kind": "enum",
+			"roles": ["agent-ix:observation"],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/core",
+					"path": "types/status.schema.json",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "surface",
+			"variants": [
+				{
+					"identity": "ix://agent-ix/assurance/variant/pass",
+					"name": "pass",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/core",
+							"path": "types/status.schema.json",
+							"startLine": 5,
+							"startColumn": 3
+						}
+					}
+				},
+				{
+					"identity": "ix://agent-ix/assurance/variant/fail",
+					"name": "fail",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/core",
+							"path": "types/status.schema.json",
+							"startLine": 6,
+							"startColumn": 3
+						}
+					}
+				}
+			]
+		},
+		{
+			"identity": "ix://agent-ix/assurance/type/Result",
+			"displayName": "Result",
+			"kind": "union",
+			"roles": ["agent-ix:event"],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/core",
+					"path": "types/result.schema.json",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"variants": [
+				{
+					"identity": "ix://agent-ix/assurance/variant/result-pass",
+					"name": "passed",
+					"payloadType": "ix://agent-ix/assurance/type/Artifact",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/core",
+							"path": "types/result.schema.json",
+							"startLine": 5,
+							"startColumn": 3
+						}
+					}
+				},
+				{
+					"identity": "ix://agent-ix/assurance/variant/result-fail",
+					"name": "failed",
+					"payloadType": "ix://agent-ix/assurance/type/Artifact",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/core",
+							"path": "types/result.schema.json",
+							"startLine": 6,
+							"startColumn": 3
+						}
+					}
+				}
+			]
+		},
+		{
+			"identity": "ix://agent-ix/assurance/type/ArtifactId",
+			"displayName": "ArtifactId",
+			"kind": "alias",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/core",
+					"path": "types/artifact-id.schema.json",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"target": "ix://agent-ix/assurance/type/Text"
+		},
+		{
+			"identity": "ix://agent-ix/assurance/type/Artifacts",
+			"displayName": "Artifacts",
+			"kind": "sequence",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/core",
+					"path": "types/artifacts.schema.json",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"items": "ix://agent-ix/assurance/type/Artifact"
+		},
+		{
+			"identity": "ix://agent-ix/assurance/type/ArtifactMap",
+			"displayName": "ArtifactMap",
+			"kind": "map",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://agent-ix/filament-core-data/generator/example",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": ["ix://agent-ix/assurance/type/Artifact"]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"values": "ix://agent-ix/assurance/type/Artifact"
+		},
+		{
+			"identity": "ix://agent-ix/assurance/type/RelatedArtifact",
+			"displayName": "RelatedArtifact",
+			"kind": "reference",
+			"roles": ["agent-ix:relationship"],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/core",
+					"path": "types/relation.schema.json",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"target": "ix://agent-ix/assurance/type/Artifact"
+		}
+	],
+	"occurrences": [
+		{
+			"identity": "ix://agent-ix/assurance/occurrence/example-artifact",
+			"definition": "ix://agent-ix/assurance/type/Artifact",
+			"observedAt": "2026-08-30T00:00:00Z",
+			"value": { "id": "artifact-1", "summary": "example", "note": null }
+		}
+	],
+	"extensions": []
+}
