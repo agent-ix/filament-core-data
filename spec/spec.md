@@ -48,6 +48,11 @@ It compiles one representative semantic slice through official and custom emitte
 paths, exercises ordinary native consumers, and produces retained evidence for a
 human schema-source decision.
 
+The fourth delivery is the versioned semantic IR, package, mapping, profile,
+compatibility, and generated-target contract. It adopts modular JSON Schema
+2020-12 as the proposed v1 structural source from the issue #4 evidence while
+retaining a named human decision before that contract becomes normative.
+
 ## 2. Scope
 
 ### 2.1 In Scope
@@ -76,6 +81,14 @@ human schema-source decision.
   compatibility, and maintenance-cost evidence.
 - A go/no-go recommendation that applies the existing pass rule and retains the
   human ADR-0004 promotion gate.
+- A complete source-independent semantic IR and type-system contract.
+- Versioned package/import/export/profile/lock and fingerprint contracts.
+- Representation mapping and transformation contracts for Markdown, JSON,
+  PostgreSQL, Protobuf, Avro, Arrow, Parquet, CSV, and TSV.
+- Generated Rust, TypeScript, Python, and JSON Schema target contracts without
+  selecting an unqualified implementation backend.
+- Cross-target compatibility, determinism, portability, security, legacy bridge,
+  dynamic-module, and non-disruption requirements.
 
 ### 2.2 Out of Scope
 
@@ -92,6 +105,8 @@ human schema-source decision.
 - Correcting any contract finding while the issue #10 census is being collected.
 - Approving consumer, database, wire-format, package, enforcement, or retirement
   changes from audit recommendations alone.
+- Implementing or publishing the production compiler, custom codegen, generated
+  packages, module-manifest adoption, or consumer migrations as part of issue #9.
 
 ## 3. System Overview
 
@@ -139,9 +154,9 @@ Authority is assigned by concern:
 | Class | Artifacts | Purpose |
 |---|---|---|
 | Stakeholder | [StR-001](./stakeholder/StR-001-durable-semantic-data-governance.md) | Durable governance need |
-| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-004](./usecase/US-004-evaluate-structural-schema-source.md) | Reader, implementer, migration-review, and tool-selection outcomes |
-| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-018](./functional/FR-018-resolve-structural-schema-source.md) | Architecture, census, and feasibility-gate behavior |
-| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-007](./non-functional/NFR-007-honest-feasibility-evidence.md) | Traceability, readability, reproducibility, isolation, honesty, and non-disruption |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-005](./usecase/US-005-author-portable-semantic-packages.md) | Reader, implementer, migration-review, tool-selection, and schema-author outcomes |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-026](./functional/FR-026-preserve-dynamic-and-legacy-boundaries.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, and compatibility behavior |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-012](./non-functional/NFR-012-non-disruptive-contract-specification.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, and non-disruption |
 
 ## 6. Decision Status Model
 
@@ -150,9 +165,10 @@ Authority is assigned by concern:
 - **Informative** content explains context and carries no requirement.
 - **Historical** content records a retired decision and is normative of nothing.
 
-The architecture principles are normative. Exact metamodel fields, TypeSpec
-adoption, generated package registry names, and individual migration dispositions
-remain provisional until their owning tickets pass.
+The architecture principles are normative. The issue #4 evidence recommends
+modular JSON Schema 2020-12 for v1 while TypeSpec remains non-authoritative; the
+source decision, exact metamodel fields, generated package registry names, and
+individual migration dispositions remain provisional until their named gates pass.
 
 ## 7. Verification Strategy
 

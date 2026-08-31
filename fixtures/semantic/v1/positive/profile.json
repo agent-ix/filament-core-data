@@ -1,0 +1,14 @@
+{
+	"contractVersion": "1.0.0",
+	"identity": "ix://agent-ix/assurance/profile/authored-markdown",
+	"version": "1.0.0",
+	"authority": "authored-representation",
+	"editDirection": "bidirectional",
+	"roundTrip": "semantic-lossless",
+	"unknownPolicy": "preserve",
+	"allowedOmissions": [],
+	"enrichment": false,
+	"materializationLifetime": "durable",
+	"options": { "headingDepth": 2 },
+	"extensions": []
+}

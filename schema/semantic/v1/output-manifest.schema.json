@@ -1,0 +1,67 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/filament-core-data/v1/output-manifest.schema.json",
+	"title": "Filament compiler output manifest v1",
+	"type": "object",
+	"required": [
+		"contractVersion",
+		"requestFingerprint",
+		"backend",
+		"state",
+		"files",
+		"diagnostics",
+		"normalizedFingerprint"
+	],
+	"properties": {
+		"contractVersion": { "const": "1.0.0" },
+		"requestFingerprint": { "$ref": "common.schema.json#/$defs/sha256" },
+		"backend": { "$ref": "common.schema.json#/$defs/semanticIdentity" },
+		"state": { "$ref": "common.schema.json#/$defs/resultState" },
+		"files": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": ["path", "digest", "mediaType", "semanticIdentities"],
+				"properties": {
+					"path": {
+						"type": "string",
+						"minLength": 1,
+						"pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\u0000]+$"
+					},
+					"digest": { "$ref": "common.schema.json#/$defs/sha256" },
+					"mediaType": { "type": "string", "minLength": 1 },
+					"semanticIdentities": {
+						"type": "array",
+						"minItems": 1,
+						"items": { "$ref": "common.schema.json#/$defs/semanticIdentity" },
+						"uniqueItems": true
+					}
+				},
+				"additionalProperties": false
+			}
+		},
+		"diagnostics": {
+			"type": "array",
+			"items": { "$ref": "common.schema.json#/$defs/diagnostic" }
+		},
+		"normalizedFingerprint": { "$ref": "common.schema.json#/$defs/sha256" }
+	},
+	"allOf": [
+		{
+			"if": {
+				"type": "object",
+				"properties": {
+					"state": { "enum": ["invalid", "unsupported", "unavailable"] }
+				}
+			},
+			"then": {
+				"type": "object",
+				"properties": {
+					"files": { "type": "array", "maxItems": 0 },
+					"diagnostics": { "type": "array", "minItems": 1 }
+				}
+			}
+		}
+	],
+	"additionalProperties": false
+}

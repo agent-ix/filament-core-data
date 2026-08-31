@@ -1,6 +1,6 @@
 ---
 id: TM-001
-title: "filament-core-data semantic architecture, contract census, and feasibility Test Matrix"
+title: "filament-core-data semantic architecture, census, feasibility, and semantic-contract Test Matrix"
 type: TestMatrix
 ---
 # Test Matrix
@@ -8,10 +8,13 @@ type: TestMatrix
 ## Overview
 
 This matrix defines the verification contract for the issue #8 architecture,
-issue #10 read-only contract census, and issue #4 TypeSpec feasibility gate. Coverage is complete when
-every criterion and named constraint maps to at least one test case. Issue #8
-and issue #10 evidence have passed their respective implementation gates; all
-later disruptive migration and promotion gates remain separate and closed.
+issue #10 read-only contract census, issue #4 TypeSpec feasibility gate, and
+issue #9 semantic IR/package/projection specification. Coverage is complete when
+every criterion, metric, and named constraint maps to at least one test case.
+Issues #8, #10, and #4 have passed their implementation gates. Issue #9 is fully
+mapped and its 72 automated, static, analysis, property, integration, fuzz, and
+snapshot cases pass. The named schema-source decision at TC-199 remains blocked;
+all later disruptive migration and promotion gates remain separate.
 
 ## Test Matrix Rules
 
@@ -28,7 +31,7 @@ later disruptive migration and promotion gates remain separate and closed.
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001..US-004, FR-001..FR-018 | TC-033, TC-086, TC-129 | ✅ Complete |
+| StR-001 | US-001..US-005, FR-001..FR-026 | TC-033, TC-086, TC-129, TC-130..202 | ✅ Complete |
 
 ### User Story Coverage
 
@@ -42,6 +45,7 @@ later disruptive migration and promotion gates remain separate and closed.
 | US-003 | US-003-AC-2 | TC-087 | ✅ Complete |
 | US-004 | US-004-AC-1 | TC-127 | ✅ Complete |
 | US-004 | US-004-AC-2 | TC-128 | ✅ Complete |
+| US-005 | Informal story outcome implemented by FR-019..FR-026 | TC-130..176 | ✅ Complete |
 
 ### Functional Requirement Coverage
 
@@ -65,6 +69,14 @@ later disruptive migration and promotion gates remain separate and closed.
 | FR-016 | FR-016-AC-1..4 | TC-104..112 | ✅ Complete |
 | FR-017 | FR-017-AC-1..5 | TC-113..118 | ✅ Complete |
 | FR-018 | FR-018-AC-1..4 | TC-119..122 | ✅ Complete |
+| FR-019 | FR-019-AC-1..5, FR-019-CON-1..2 | TC-130..134 | ✅ Complete |
+| FR-020 | FR-020-AC-1..6, FR-020-CON-1..2 | TC-135..140 | ✅ Complete |
+| FR-021 | FR-021-AC-1..7 | TC-141..146, TC-201 | ✅ Complete |
+| FR-022 | FR-022-AC-1..6 | TC-147..152 | ✅ Complete |
+| FR-023 | FR-023-AC-1..6 | TC-153..158 | ✅ Complete |
+| FR-024 | FR-024-AC-1..7 | TC-159..164, TC-200 | ✅ Complete |
+| FR-025 | FR-025-AC-1..6 | TC-165..170 | ✅ Complete |
+| FR-026 | FR-026-AC-1..6 | TC-171..176 | ✅ Complete |
 
 ### Non-Functional Requirement Coverage
 
@@ -77,6 +89,11 @@ later disruptive migration and promotion gates remain separate and closed.
 | NFR-005 | Diff, repository, release, and review inspection | TC-078..081 | ✅ Complete |
 | NFR-006 | Pin, determinism, changed-path, and release inspection | TC-113, TC-123..124 | ✅ Complete |
 | NFR-007 | Evidence schema, adverse-result, and requirement-diff review | TC-119..121, TC-125..126 | ✅ Complete |
+| NFR-008 | Reproducible build, sandbox, manifest, and path checks | TC-177..180 | ✅ Complete |
+| NFR-009 | Cross-language conformance, round-trip, adverse, and API checks | TC-181..184 | ✅ Complete |
+| NFR-010 | Sandboxed path, network, execution, dependency, security, and bounded-resource checks | TC-185..189, TC-202 | ✅ Complete |
+| NFR-011 | Public schema, independent reader, extension, capability, and preservation checks | TC-190..194 | ✅ Complete |
+| NFR-012 | Diff, unchanged-suite, registry, downstream-gate, and human-decision checks | TC-195..199 | 🚧 TC-199 human gate pending |
 
 ## Test Case Summary
 
@@ -114,7 +131,7 @@ later disruptive migration and promotion gates remain separate and closed.
 | TC-030 | Every known Quire conflict has a disposition | Manual | P0 | FR-008-AC-2 | ✅ architecture review passed |
 | TC-031 | ADRs keep rendering and generation outside Quire core | Static | P0 | FR-008-AC-3 | ✅ automated contract passed |
 | TC-032 | Conditional TypeSpec ADR links fallback and resolution ticket | Static | P0 | FR-008-AC-4 | ✅ automated contract passed |
-| TC-033 | Root-index walkthrough satisfies the stakeholder governance need | Manual | P0 | StR-001-AC-1 | ✅ standalone review passed |
+| TC-033 | Root-index walkthrough satisfies the stakeholder governance need | Manual | P0 | StR-001-VC-1 | ✅ standalone review passed |
 | TC-034 | Authored requirement resolves to Markdown authority | Manual | P0 | US-001-AC-1 | ✅ standalone review passed |
 | TC-035 | Verification run resolves to runtime authority and report projection | Manual | P0 | US-001-AC-2 | ✅ standalone review passed |
 | TC-036 | Unpassed TypeSpec gate resolves to provisional plus fallback | Manual | P0 | US-002-AC-1 | ✅ standalone review passed |
@@ -210,7 +227,80 @@ later disruptive migration and promotion gates remain separate and closed.
 | TC-126 | Adverse evidence remains failed or partial and requirements remain unchanged | Manual | P0 | NFR-007 | ✅ passed — retained spike evidence |
 | TC-127 | Reviewer runs one command and observes equivalent native consumer construction | Manual | P0 | US-004-AC-1 | ✅ passed — retained spike evidence |
 | TC-128 | Failed P0 demonstration reaches the JSON Schema fallback and leaves Avro/consumers unchanged | Manual | P0 | US-004-AC-2 | ✅ passed — retained spike evidence |
-| TC-129 | Root-index walkthrough resolves the evidence, recommendation, fallback, and human promotion gate | Manual | P0 | StR-001-AC-1 | ✅ passed — retained spike evidence |
+| TC-129 | Root-index walkthrough resolves the evidence, recommendation, fallback, and human promotion gate | Manual | P0 | StR-001-VC-1 | ✅ passed — retained spike evidence |
+| TC-130 | V1 contract names modular JSON Schema 2020-12 and the human source-decision gate | Static | P0 | FR-019-AC-1 | ✅ passed — semantic contract v1 |
+| TC-131 | Source, IR, package, mapping, profile, and lock identities and versions remain distinct | Static | P0 | FR-019-AC-2 | ✅ passed — semantic contract v1 |
+| TC-132 | Every semantic IR node retains stable identity and source or generated origin | Unit | P0 | FR-019-AC-3, FR-019-CON-1 | ✅ passed — semantic contract v1 |
+| TC-133 | Unknown source or IR contract version emits diagnostics and zero target artifacts | Unit | P0 | FR-019-AC-4, FR-019-CON-2 | ✅ passed — semantic contract v1 |
+| TC-134 | V1 source selection changes neither current Avro nor TypeSpec authority implicitly | Static | P0 | FR-019-AC-5 | ✅ passed — semantic contract v1 |
+| TC-135 | Every structural kind has one normative IR shape and valid/invalid fixtures | Static | P0 | FR-020-AC-1 | ✅ passed — semantic contract v1 |
+| TC-136 | Structural kind and namespaced semantic roles vary independently | Unit | P0 | FR-020-AC-2 | ✅ passed — semantic contract v1 |
+| TC-137 | Required, optional, nullable, and defaulted states remain distinct across core targets | Property | P0 | FR-020-AC-3 | ✅ passed — semantic contract v1 |
+| TC-138 | Generated-name and source-path renames preserve stable semantic identities | Property | P0 | FR-020-AC-4, FR-020-CON-1 | ✅ passed — semantic contract v1 |
+| TC-139 | Recursive references and namespaced extensions preserve graph identity | Property | P0 | FR-020-AC-5 | ✅ passed — semantic contract v1 |
+| TC-140 | Open and closed unknown values never become known zero/default values | Unit | P0 | FR-020-AC-6, FR-020-CON-2 | ✅ passed — semantic contract v1 |
+| TC-141 | Compatible package graphs resolve to one order-independent transitive lock | Property | P0 | FR-021-AC-1 | ✅ passed — semantic contract v1 |
+| TC-142 | Identity, version, digest, export, and cycle conflicts report every locus | Unit | P0 | FR-021-AC-2 | ✅ passed — semantic contract v1 |
+| TC-143 | Profile selection never mutates semantic definitions | Property | P0 | FR-021-AC-3 | ✅ passed — semantic contract v1 |
+| TC-144 | Unknown manifest keys fail while namespaced extension keys preserve | Unit | P0 | FR-021-AC-4 | ✅ passed — semantic contract v1 |
+| TC-145 | Dynamic and static consumption share one locked identity graph | Analysis | P0 | FR-021-AC-5 | ✅ passed — semantic contract v1 |
+| TC-146 | Shared package contract excludes Quoin registry transport and install policy | Static | P0 | FR-021-AC-6 | ✅ passed — semantic contract v1 |
+| TC-147 | Exports, targets, mappings, and profile options validate independently | Unit | P0 | FR-022-AC-1 | ✅ passed — semantic contract v1 |
+| TC-148 | Every transformation kind has distinct required fields and semantics | Static | P0 | FR-022-AC-2 | ✅ passed — semantic contract v1 |
+| TC-149 | Lossy output requires profile permission and complete omission identities | Unit | P0 | FR-022-AC-3 | ✅ passed — semantic contract v1 |
+| TC-150 | Bidirectional mappings satisfy declared get/put lens laws | Property | P0 | FR-022-AC-4 | ✅ passed — semantic contract v1 |
+| TC-151 | Pure transforms cannot hide external effects and effectful transforms record provenance | Unit | P0 | FR-022-AC-5 | ✅ passed — semantic contract v1 |
+| TC-152 | Invalid, unsupported, unavailable, partial, and lossy outcomes remain distinct | Unit | P0 | FR-022-AC-6 | ✅ passed — semantic contract v1 |
+| TC-153 | Every representation declares mapping fields, fit/non-use, and compatibility method | Static | P0 | FR-023-AC-1 | ✅ passed — semantic contract v1 |
+| TC-154 | Markdown fixtures cover semantic loci and an unrepresentable construct | Snapshot | P0 | FR-023-AC-2 | ✅ passed — semantic contract v1 |
+| TC-155 | Removed Protobuf names/numbers stay reserved and declaration order never assigns them | Unit | P0 | FR-023-AC-3 | ✅ passed — semantic contract v1 |
+| TC-156 | SQL mapping cannot claim physical DDL or migration state as semantic source | Static | P0 | FR-023-AC-4 | ✅ passed — semantic contract v1 |
+| TC-157 | Columnar and delimited fixtures reject undeclared loss and implicit type inference | Unit | P0 | FR-023-AC-5 | ✅ passed — semantic contract v1 |
+| TC-158 | Specialized formats remain unselected without a concrete measured boundary | Analysis | P0 | FR-023-AC-6 | ✅ passed — semantic contract v1 |
+| TC-159 | Independent backends consume one IR and return one output/diagnostic envelope | Integration | P0 | FR-024-AC-1 | ✅ passed — semantic contract v1 |
+| TC-160 | Core target contracts define native API and runtime validation behavior | Static | P0 | FR-024-AC-2 | ✅ passed — semantic contract v1 |
+| TC-161 | Generated semantic packages contain no application/framework dependency | Static | P0 | FR-024-AC-3 | ✅ passed — semantic contract v1 |
+| TC-162 | Unsupported target features cannot degrade to any, generic maps, or empty models | Unit | P0 | FR-024-AC-4 | ✅ passed — semantic contract v1 |
+| TC-163 | Backend qualification distinguishes upstream generation from custom retention | Analysis | P0 | FR-024-AC-5 | ✅ passed — semantic contract v1 |
+| TC-164 | Agent IX custom compiler and codegen source contract requires AGPL-3.0-or-later | Static | P0 | FR-024-AC-6 | ✅ passed — semantic contract v1 |
+| TC-165 | Compatibility corpus covers every change family and disposition | Unit | P0 | FR-025-AC-1 | ✅ passed — semantic contract v1 |
+| TC-166 | Cross-target disagreement yields the most restrictive disposition | Property | P0 | FR-025-AC-2 | ✅ passed — semantic contract v1 |
+| TC-167 | Open/closed enum and unknown-field policies control compatibility explicitly | Unit | P0 | FR-025-AC-3 | ✅ passed — semantic contract v1 |
+| TC-168 | Authority and loss changes can break identical structural schemas | Unit | P0 | FR-025-AC-4 | ✅ passed — semantic contract v1 |
+| TC-169 | Unknown and stale consumers remain visible and block promotion | Unit | P0 | FR-025-AC-5 | ✅ passed — semantic contract v1 |
+| TC-170 | Avro readers remain compatibility inputs until their retirement gate | Static | P0 | FR-025-AC-6 | ✅ passed — semantic contract v1 |
+| TC-171 | Dynamic and generated consumers agree on one fixture and fingerprint | Integration | P0 | FR-026-AC-1 | ✅ passed — semantic contract v1 |
+| TC-172 | Static consumers apply preserve/reject/surface unknown-module policy exactly | Unit | P0 | FR-026-AC-2 | ✅ passed — semantic contract v1 |
+| TC-173 | Every current Quoin manifest passes the legacy profile unchanged | Integration | P0 | FR-026-AC-3 | ✅ passed — semantic contract v1 |
+| TC-174 | Existing Avro positive and negative fixtures cross the bridge without widening | Integration | P0 | FR-026-AC-4 | ✅ passed — semantic contract v1 |
+| TC-175 | Missing versions, imports, adapters, and identity conflicts emit no empty model | Unit | P0 | FR-026-AC-5 | ✅ passed — semantic contract v1 |
+| TC-176 | Quire, Quoin, module, compiler, and consumer ownership remains allocated | Static | P0 | FR-026-AC-6 | ✅ passed — semantic contract v1 |
+| TC-177 | Two isolated locked contract-normalization passes have byte-identical normalized fingerprints | Property | P0 | NFR-008 | ✅ passed — semantic contract v1 |
+| TC-178 | Locked contract validation resolves only declared local inputs and refuses undeclared acquisition | Integration | P0 | NFR-008 | ✅ passed — semantic contract v1 |
+| TC-179 | Every emitted file is reconciled by exactly one output-manifest entry | Static | P0 | NFR-008 | ✅ passed — semantic contract v1 |
+| TC-180 | Retained output contains no environment-specific absolute path | Static | P0 | NFR-008 | ✅ passed — semantic contract v1 |
+| TC-181 | All core target contracts declare the same verdict for each shared conformance fixture | Integration | P0 | NFR-009 | ✅ passed — semantic contract v1 |
+| TC-182 | Accepted fixture expectations normalize to one canonical semantic value across target contracts | Property | P0 | NFR-009 | ✅ passed — semantic contract v1 |
+| TC-183 | No core target contract permits an unsupported feature to widen silently | Unit | P0 | NFR-009 | ✅ passed — semantic contract v1 |
+| TC-184 | Every target contract requires generated API elements to link to stable semantic identity metadata | Static | P0 | NFR-009 | ✅ passed — semantic contract v1 |
+| TC-185 | Compiler request and output contracts reject hostile names, absolute paths, and traversal outside the output root | Integration | P0 | NFR-010 | ✅ passed — semantic contract v1 |
+| TC-186 | Locked contract validation has zero undeclared remote references or acquisition paths | Integration | P0 | NFR-010 | ✅ passed — semantic contract v1 |
+| TC-187 | Hostile schema, template, example, and option fixtures remain inert data during contract validation | Fuzz | P0 | NFR-010 | ✅ passed — semantic contract v1 |
+| TC-188 | Issue #9 adds no executable generator dependency; future generator contracts require exact locks and provenance | Static | P0 | NFR-010 | ✅ passed — semantic contract v1 |
+| TC-189 | Target and compiler contracts require explicit disposition of high/critical generator dependency findings | Static | P0 | NFR-010 | ✅ passed — semantic contract v1 |
+| TC-190 | Every public contract has a versioned schema and positive/negative examples | Static | P0 | NFR-011 | ✅ passed — semantic contract v1 |
+| TC-191 | Independent reader passes core fixtures without private compiler state | Integration | P0 | NFR-011 | ✅ passed — semantic contract v1 |
+| TC-192 | Extension keys require namespaced identity and version | Static | P0 | NFR-011 | ✅ passed — semantic contract v1 |
+| TC-193 | Unknown required capabilities fail before target generation | Unit | P0 | NFR-011 | ✅ passed — semantic contract v1 |
+| TC-194 | Unknown preservable extensions survive a no-op round trip unchanged | Property | P0 | NFR-011 | ✅ passed — semantic contract v1 |
+| TC-195 | Issue #9 changed-path gate excludes runtime and consumer source | Static | P0 | NFR-012 | ✅ passed — semantic contract v1 |
+| TC-196 | Current Avro, package, and module fixture suites remain unchanged and passing | Integration | P0 | NFR-012 | ✅ passed — semantic contract v1 |
+| TC-197 | Issue #9 publishes no package and changes no catalog pin | Static | P0 | NFR-012 | ✅ passed — semantic contract v1 |
+| TC-198 | Every compiler, publication, enforcement, database, migration, and retirement action retains its own gate | Static | P0 | NFR-012, NFR-012-AC-2 | ✅ passed — semantic contract v1 |
+| TC-199 | Named human accepts or holds the modular JSON Schema v1 source before merge | Manual | P0 | NFR-012-AC-1 | 🚧 human decision gate |
+| TC-200 | Independent adapters and backends share stable diagnostic codes and causal envelopes | Unit | P0 | FR-024-AC-7 | ✅ passed — semantic contract v1 |
+| TC-201 | Fingerprints ignore excluded ordering but change for every included semantic-byte change | Property | P0 | FR-021-AC-7 | ✅ passed — semantic contract v1 |
+| TC-202 | Oversized and cyclic hostile inputs terminate at declared resource limits | Fuzz | P0 | NFR-010 | ✅ passed — semantic contract v1 |
 
 ## Option Permutation Matrix
 
@@ -231,6 +321,12 @@ later disruptive migration and promotion gates remain separate and closed.
 | TC-102, TC-121 | TypeSpec P0 capability fails | no-go | modular JSON Schema fallback | Failure and requirement remain intact |
 | TC-100, TC-110 | concrete Protobuf interface | wire projection | explicit field mapping | Stable numbered projection may pass without becoming universal |
 | TC-111 | recursive semantic graph | analytical projection | declared flattening/loss | Arrow remains derived and source/provenance linked |
+| TC-137 | field state | required/optional | nullable/non-null/defaulted | Every valid combination retains a distinct semantic state |
+| TC-143 | same semantic definitions | profile A/B | exports/targets/mappings differ | Definitions and stable identities remain byte-equivalent |
+| TC-149, TC-154 | authored Markdown | byte/structure/semantic/lossy | mapping permits or forbids loss | Outcome and edit authority follow the selected profile |
+| TC-155, TC-158 | concrete service boundary absent | Protobuf unselected | no descriptor mapping | Wire format remains absent without speculative generation |
+| TC-167 | enum/record evolution | open/closed | preserve/ignore/reject unknown | Compatibility follows declared capability, not language default |
+| TC-171, TC-172 | module known/unknown | dynamic/static consumer | preserve/reject/surface policy | Same identity graph, policy-specific handling |
 
 ## Constraint Boundary Tests
 
@@ -254,6 +350,18 @@ later disruptive migration and promotion gates remain separate and closed.
 | NFR-006 | Prohibited | Spike overwrites the Avro schema, generated package, or consumer | TC-123..124 | Fail isolation gate |
 | NFR-007 | Allowed | P0 limitation remains partial/fail with consequence and cost | TC-119..121, TC-126 | Pass evidence review |
 | NFR-007 | Prohibited | Requirement or pass rule is weakened after an adverse result | TC-121, TC-126 | Fail evidence review |
+| FR-019-CON-1 | Allowed | Source adapter preserves exactly source and package semantics | TC-132 | Pass semantic-origin check |
+| FR-019-CON-1 | Prohibited | Adapter invents role, default, identity, or constraint | TC-132 | Fail IR construction |
+| FR-019-CON-2 | Allowed | Known source and IR contract versions | TC-133 | Continue to target validation |
+| FR-019-CON-2 | Prohibited | Unknown source or IR version | TC-133 | Diagnostic and zero target output |
+| FR-020-CON-1 | Allowed | Target identifier changes while stable identity stays fixed | TC-138 | Non-semantic or target-local change |
+| FR-020-CON-1 | Prohibited | Generated identifier becomes semantic identity | TC-138 | Fail identity validation |
+| FR-020-CON-2 | Allowed | Unsupported feature is rejected or declared lossy | TC-140, TC-162 | Explicit outcome |
+| FR-020-CON-2 | Prohibited | Unsupported feature coerces silently | TC-140, TC-162 | Fail target conformance |
+| NFR-008 | Allowed | Same lock and tools under different paths/locales | TC-177..180 | Byte-identical normalized output |
+| NFR-008 | Prohibited | Network, host path, or ordering changes output | TC-177..180 | Fail reproducibility gate |
+| NFR-010 | Allowed | Writes remain in a new regular-file output root | TC-185 | Pass sandbox check |
+| NFR-010 | Prohibited | Traversal, symlink, template, or option escapes sandbox | TC-185, TC-187 | Reject with source-located diagnostic |
 
 ## State Transition Matrix
 
@@ -271,6 +379,14 @@ later disruptive migration and promotion gates remain separate and closed.
 | TypeSpec candidate | all P0 capabilities pass | recommended, still provisional | TC-119..122 |
 | TypeSpec candidate | any P0 capability fails | no-go plus JSON Schema fallback | TC-121, TC-128 |
 | provisional ADR-0004 | human accepts retained report | normative decision recorded in a separate reviewed change | TC-122, TC-129 |
+| proposed JSON Schema v1 contract | named human holds source decision | specification remains provisional and unmerged | TC-130, TC-199 |
+| proposed JSON Schema v1 contract | named human accepts source decision after composite review | contract becomes eligible for merge, not implementation | TC-130, TC-199 |
+| unlocked package graph | successful deterministic resolution | immutable transitive lock | TC-141..142 |
+| locked package graph | any identity/version/digest conflict | failed resolution with all loci | TC-142 |
+| known extension capability | no-op dynamic/static processing | payload preserved according to profile | TC-144, TC-194 |
+| unknown required capability | load or compile attempt | explicit unsupported diagnostic and no target output | TC-193 |
+| current legacy manifest | legacy profile validation | accepted unchanged and advisory | TC-173 |
+| legacy manifest | later human enforcement promotion | native v1 validation may become required in the later ticket | TC-173, TC-198 |
 
 ## Error Paths
 
@@ -297,6 +413,16 @@ later disruptive migration and promotion gates remain separate and closed.
 | ERR-019 | Native package does not compile or fixture meaning differs | Consumer-surface capability fails | TC-114..116 |
 | ERR-020 | Report marks a partial/failing P0 result as pass | Recommendation validation fails and fallback is selected | TC-119..121, TC-126 |
 | ERR-021 | Spike attempts publication or canonical replacement | Isolation gate fails before merge | TC-123..124 |
+| ERR-022 | Structural-source or semantic-IR version is unknown | Source-located diagnostic and zero target output | TC-133 |
+| ERR-023 | Package graph has unresolved import, duplicate identity, cycle, version, or digest conflict | Resolution fails and lists every conflicting locus | TC-142 |
+| ERR-024 | Manifest uses an unknown non-namespaced key | Manifest validation fails | TC-144 |
+| ERR-025 | Mapping claims lossless behavior but omits a semantic identity | Qualification fails as undeclared loss | TC-149 |
+| ERR-026 | Bidirectional mapping violates a get/put law | Lens qualification fails | TC-150 |
+| ERR-027 | Target backend lacks an IR feature | Explicit unsupported/lossy result; never any/map/empty-model widening | TC-162, TC-183 |
+| ERR-028 | Compatibility evidence is incomplete or a consumer is stale | Conditional/unknown result and promotion remains gated | TC-169 |
+| ERR-029 | Legacy adapter, version, or identity is missing/contradictory | Explicit failure and zero-value success prohibited | TC-175 |
+| ERR-030 | Locked generation attempts network access or filesystem escape | Sandbox terminates generation and records the offending locus | TC-178, TC-185..187 |
+| ERR-031 | Required extension capability is unknown | Package load/compile fails before emission | TC-193 |
 
 ## Edge Cases
 
@@ -320,22 +446,35 @@ later disruptive migration and promotion gates remain separate and closed.
 | EC-016 | Protobuf requires target-specific numbering and presence semantics | FR-015, FR-016 | TC-100..101, TC-110 | Wire concerns contaminate the semantic core |
 | EC-017 | Custom emitter compensates for an absent official language emitter | FR-016, FR-018 | TC-106..108, TC-119..120 | Demo success hides long-term maintenance cost |
 | EC-018 | Tool or package version drifts after the experiment | FR-014, NFR-006 | TC-089, TC-113 | Results cannot be reproduced or compared |
+| EC-019 | Optional non-null, required nullable, and defaulted absence collapse in a target | FR-020, NFR-009 | TC-137, TC-181..183 | Consumers accept different value domains |
+| EC-020 | Source or generated identifier changes while semantic identity does not | FR-020, FR-025 | TC-138, TC-166 | Compatible rename is misclassified breaking or vice versa |
+| EC-021 | A recursive graph crosses a lossy flat profile | FR-022, FR-023 | TC-149, TC-157 | Omitted relations appear to round-trip |
+| EC-022 | Removed Protobuf field is later reintroduced under a new meaning | FR-023, FR-025 | TC-155, TC-165 | Old bytes deserialize with corrupted semantics |
+| EC-023 | Same schema shape changes authored authority or allowed loss | FR-022, FR-025 | TC-168 | Structural diff misses a semantic break |
+| EC-024 | Dynamic consumer receives a module absent from static generated exports | FR-021, FR-026 | TC-145, TC-171..172 | Open ecosystem is accidentally closed or data silently discarded |
+| EC-025 | Malicious schema name resolves outside output root through traversal or symlink | NFR-010 | TC-185, TC-187 | Generator overwrites user or repository data |
+| EC-026 | Extension is optional to one backend but required to another | NFR-009, NFR-011 | TC-181, TC-193..194 | Cross-language success masks capability disagreement |
 
 ## Coverage Gaps
 
-No open coverage or execution gap remains for issues #8, #10, or #4. The 41
-issue #4 cases pass through the isolated spike, retained evidence, native
-consumers, and source-selection report. Future production compiler, consumer,
+No open mapping gap remains for issues #8, #10, #4, or #9. The 41 issue #4 cases
+pass through the isolated spike, retained evidence, native consumers, and
+source-selection report. Issue #9 has 72 passing contract-conformance cases and
+one intentional manual merge gate, TC-199. Production compiler, consumer,
 database, publication, enforcement, and retirement work remains separately gated.
 
 ## Test Execution Summary
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 72 | 72 | 0 | 0 | 100% passed; 100% mapped |
-| Manual | 43 | 43 | 0 | 0 | 100% passed; 100% mapped |
-| Analysis | 10 | 10 | 0 | 0 | 100% passed; 100% mapped |
-| Property | 4 | 4 | 0 | 0 | 100% passed; 100% mapped |
-| **Total** | **129** | **129** | **0** | **0** | **100% passed; 100% mapped** |
+| Static | 96 | 96 | 0 | 0 | 100% mapped |
+| Manual | 43 | 42 | 0 | 1 | 100% mapped |
+| Analysis | 13 | 13 | 0 | 0 | 100% mapped |
+| Property | 15 | 15 | 0 | 0 | 100% mapped |
+| Unit | 22 | 22 | 0 | 0 | 100% mapped |
+| Integration | 10 | 10 | 0 | 0 | 100% mapped |
+| Fuzz | 2 | 2 | 0 | 0 | 100% mapped |
+| Snapshot | 1 | 1 | 0 | 0 | 100% mapped |
+| **Total** | **202** | **201** | **0** | **1** | **100% mapped** |
 
-**Matrix coverage status: ✅ Complete. Execution status: ✅ 129/129 cases passed.**
+**Matrix coverage status: ✅ Complete. Execution status: 🚧 201 passed; TC-199 is the sole blocked human gate.**

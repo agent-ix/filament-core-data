@@ -1,0 +1,112 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/filament-core-data/v1/compatibility-report.schema.json",
+	"title": "Filament semantic compatibility report v1",
+	"type": "object",
+	"required": [
+		"contractVersion",
+		"oldFingerprint",
+		"newFingerprint",
+		"consumerEvidenceStatus",
+		"changes",
+		"aggregateDisposition",
+		"requiredGates",
+		"retainedBridges"
+	],
+	"properties": {
+		"contractVersion": { "const": "1.0.0" },
+		"oldFingerprint": { "$ref": "common.schema.json#/$defs/sha256" },
+		"newFingerprint": { "$ref": "common.schema.json#/$defs/sha256" },
+		"consumerEvidenceStatus": { "enum": ["current", "stale", "unknown"] },
+		"changes": {
+			"type": "array",
+			"minItems": 1,
+			"items": {
+				"type": "object",
+				"required": [
+					"identity",
+					"family",
+					"surface",
+					"disposition",
+					"rationale",
+					"affectedConsumers",
+					"targetResults"
+				],
+				"properties": {
+					"identity": { "$ref": "common.schema.json#/$defs/semanticIdentity" },
+					"family": {
+						"enum": [
+							"documentation",
+							"field",
+							"type",
+							"enum",
+							"union",
+							"identity",
+							"constraint",
+							"unknown-policy",
+							"mapping",
+							"profile",
+							"authority",
+							"loss",
+							"protobuf-reservation",
+							"generated-api"
+						]
+					},
+					"surface": {
+						"enum": [
+							"semantic",
+							"profile",
+							"mapping",
+							"representation",
+							"target"
+						]
+					},
+					"disposition": { "$ref": "#/$defs/disposition" },
+					"rationale": { "type": "string", "minLength": 1 },
+					"affectedConsumers": {
+						"type": "array",
+						"items": { "type": "string", "minLength": 1 },
+						"uniqueItems": true
+					},
+					"targetResults": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"required": ["target", "disposition"],
+							"properties": {
+								"target": { "type": "string", "minLength": 1 },
+								"disposition": { "$ref": "#/$defs/disposition" }
+							},
+							"additionalProperties": false
+						}
+					}
+				},
+				"additionalProperties": false
+			}
+		},
+		"aggregateDisposition": { "$ref": "#/$defs/disposition" },
+		"requiredGates": {
+			"type": "array",
+			"items": { "type": "string", "minLength": 1 },
+			"uniqueItems": true
+		},
+		"retainedBridges": {
+			"type": "array",
+			"items": { "enum": ["avro-v1", "quoin-manifest-legacy-v1"] },
+			"uniqueItems": true
+		}
+	},
+	"additionalProperties": false,
+	"$defs": {
+		"disposition": {
+			"enum": [
+				"patch",
+				"additive",
+				"conditional",
+				"breaking",
+				"unknown",
+				"invalid"
+			]
+		}
+	}
+}

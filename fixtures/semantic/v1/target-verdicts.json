@@ -1,0 +1,88 @@
+{
+	"contractVersion": "1.0.0",
+	"targets": [
+		"json-schema",
+		"rust",
+		"typescript",
+		"python-pydantic-v2",
+		"python-dataclass"
+	],
+	"cases": [
+		{
+			"id": "required-non-null-present",
+			"value": { "id": "artifact-1", "note": null },
+			"canonicalSemanticValue": { "id": "artifact-1", "note": null },
+			"verdicts": {
+				"json-schema": "accept",
+				"rust": "accept",
+				"typescript": "accept",
+				"python-pydantic-v2": "accept",
+				"python-dataclass": "accept"
+			}
+		},
+		{
+			"id": "missing-required-id",
+			"value": { "note": null },
+			"diagnosticCode": "agent-ix.conformance.MISSING_REQUIRED",
+			"verdicts": {
+				"json-schema": "reject",
+				"rust": "reject",
+				"typescript": "reject",
+				"python-pydantic-v2": "reject",
+				"python-dataclass": "reject"
+			}
+		},
+		{
+			"id": "unknown-closed-variant",
+			"value": { "status": "maybe" },
+			"diagnosticCode": "agent-ix.conformance.UNKNOWN_CLOSED_VARIANT",
+			"verdicts": {
+				"json-schema": "reject",
+				"rust": "reject",
+				"typescript": "reject",
+				"python-pydantic-v2": "reject",
+				"python-dataclass": "reject"
+			}
+		},
+		{
+			"id": "unknown-preservable-extension",
+			"value": {
+				"identity": "ix://example.org/ext/future",
+				"version": "2.0.0",
+				"required": false,
+				"payload": { "opaque": [1, 2, 3] }
+			},
+			"canonicalSemanticValue": {
+				"identity": "ix://example.org/ext/future",
+				"payload": { "opaque": [1, 2, 3] },
+				"required": false,
+				"version": "2.0.0"
+			},
+			"verdicts": {
+				"json-schema": "accept",
+				"rust": "accept",
+				"typescript": "accept",
+				"python-pydantic-v2": "accept",
+				"python-dataclass": "accept"
+			}
+		},
+		{
+			"id": "unknown-required-capability",
+			"value": {
+				"identity": "ix://example.org/ext/future",
+				"version": "2.0.0",
+				"required": true,
+				"capability": "not-supported",
+				"payload": {}
+			},
+			"diagnosticCode": "agent-ix.conformance.UNKNOWN_REQUIRED_CAPABILITY",
+			"verdicts": {
+				"json-schema": "reject",
+				"rust": "reject",
+				"typescript": "reject",
+				"python-pydantic-v2": "reject",
+				"python-dataclass": "reject"
+			}
+		}
+	]
+}

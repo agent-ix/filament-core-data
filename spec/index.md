@@ -14,6 +14,7 @@ okf_version: "0.1"
 * [US-002: Plan safe semantic-data adoption](./usecase/US-002-plan-safe-adoption.md) - Implementer outcome for gates and provisional decisions.
 * [US-003: Assess Filament contract fit](./usecase/US-003-assess-contract-fit.md) - Migration reviewer outcome for the read-only contract census.
 * [US-004: Evaluate the structural schema source](./usecase/US-004-evaluate-structural-schema-source.md) - Compiler owner outcome for the isolated TypeSpec gate.
-* [Functional requirements](./functional/) - Required architecture-record, contract-census, and feasibility behavior and content.
-* [Non-functional requirements](./non-functional/) - Traceability, readability, reproducibility, evidence honesty, isolation, and safety qualities.
+* [US-005: Author portable semantic packages](./usecase/US-005-author-portable-semantic-packages.md) - Schema-owner outcome for the semantic IR, packages, mappings, and generated targets.
+* [Functional requirements](./functional/) - Required architecture-record, census, feasibility, semantic-contract, package, projection, and compatibility behavior.
+* [Non-functional requirements](./non-functional/) - Traceability, reproducibility, parity, security, portability, evidence honesty, isolation, and safety qualities.
 * [Update log](./log.md) - Chronological bundle changes.

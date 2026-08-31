@@ -310,11 +310,15 @@ describe("TypeSpec feasibility gate", () => {
 			"plan/Plan-001-semantic-data-architecture-record/",
 			"plan/Plan-002-filament-contract-census/",
 			"plan/Plan-003-typespec-feasibility/",
+			"plan/Plan-004-semantic-package-contract/",
 			"reviews/",
+			"schema/semantic/v1/",
 			"spec/",
 			"test/typespec-feasibility.test.ts",
 			"test/semantic-architecture.test.ts",
 			"test/contract-census.test.ts",
+			"fixtures/semantic/v1/",
+			"test/semantic-contract.test.ts",
 		];
 		for (const path of changedPaths()) {
 			expect(

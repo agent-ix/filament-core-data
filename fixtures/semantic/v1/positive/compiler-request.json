@@ -1,0 +1,29 @@
+{
+	"contractVersion": "1.0.0",
+	"lockFingerprint": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+	"ir": { "$fixture": "semantic-ir.json" },
+	"profile": { "$fixture": "profile.json" },
+	"mappings": [{ "$fixture": "mapping.json" }],
+	"backend": {
+		"identity": "ix://agent-ix/semantic-compiler/backend/rust",
+		"version": "1.0.0",
+		"supportedIrVersions": ["1.0.0"],
+		"supportedFeatures": [
+			"record",
+			"enum",
+			"union",
+			"newtype",
+			"recursion",
+			"extensions"
+		],
+		"options": { "serde": true }
+	},
+	"outputRoot": "generated/rust",
+	"limits": {
+		"maxInputBytes": 10485760,
+		"maxDepth": 64,
+		"maxNodes": 10000,
+		"maxCollectionItems": 1000,
+		"maxDiagnostics": 1000
+	}
+}

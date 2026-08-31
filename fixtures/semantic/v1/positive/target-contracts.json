@@ -1,0 +1,138 @@
+[
+	{
+		"contractVersion": "1.0.0",
+		"target": "json-schema",
+		"nativeApi": ["modular schemas", "stable $id and $ref"],
+		"runtimeValidation": "JSON Schema 2020-12 validator with explicit format policy",
+		"identityMetadata": "$id plus x-agent-ix-semantic-id",
+		"unsupportedFeaturePolicy": "fail",
+		"prohibitedDependencies": [
+			"ui",
+			"orm",
+			"sqlalchemy",
+			"tauri",
+			"network-client",
+			"database-migration",
+			"application-service"
+		],
+		"runtimeDependencies": [],
+		"executableGeneratorDependencies": [],
+		"securityFindings": [],
+		"backendQualification": "upstream-qualified",
+		"qualificationEvidence": "spikes/typespec-feasibility/evidence/official.json",
+		"customSourceLicense": "AGPL-3.0-or-later"
+	},
+	{
+		"contractVersion": "1.0.0",
+		"target": "rust",
+		"nativeApi": [
+			"struct",
+			"enum",
+			"newtype",
+			"tagged union",
+			"Serde",
+			"framework-neutral validation"
+		],
+		"runtimeValidation": "fallible constructors and serde boundary validation",
+		"identityMetadata": "generated constants per type and field",
+		"unsupportedFeaturePolicy": "fail",
+		"prohibitedDependencies": [
+			"ui",
+			"orm",
+			"sqlalchemy",
+			"tauri",
+			"network-client",
+			"database-migration",
+			"application-service"
+		],
+		"runtimeDependencies": ["serde"],
+		"executableGeneratorDependencies": [],
+		"securityFindings": [],
+		"backendQualification": "custom-retained",
+		"qualificationEvidence": "https://github.com/agent-ix/filament-core-data/issues/21",
+		"customSourceLicense": "AGPL-3.0-or-later"
+	},
+	{
+		"contractVersion": "1.0.0",
+		"target": "typescript",
+		"nativeApi": ["static type", "discriminated union", "runtime schema"],
+		"runtimeValidation": "runtime validator derived from the locked semantic contract",
+		"identityMetadata": "exported readonly identity map",
+		"unsupportedFeaturePolicy": "fail",
+		"prohibitedDependencies": [
+			"ui",
+			"orm",
+			"sqlalchemy",
+			"tauri",
+			"network-client",
+			"database-migration",
+			"application-service"
+		],
+		"runtimeDependencies": ["runtime-schema-validator"],
+		"executableGeneratorDependencies": [],
+		"securityFindings": [],
+		"backendQualification": "custom-retained",
+		"qualificationEvidence": "https://github.com/agent-ix/filament-core-data/issues/22",
+		"customSourceLicense": "AGPL-3.0-or-later"
+	},
+	{
+		"contractVersion": "1.0.0",
+		"target": "python-pydantic-v2",
+		"nativeApi": ["Pydantic v2 BaseModel", "enum", "tagged union"],
+		"runtimeValidation": "Pydantic v2 model validation through governed JSON Schema adapter",
+		"identityMetadata": "generated class and field metadata",
+		"unsupportedFeaturePolicy": "fail",
+		"prohibitedDependencies": [
+			"ui",
+			"orm",
+			"sqlalchemy",
+			"tauri",
+			"network-client",
+			"database-migration",
+			"application-service"
+		],
+		"runtimeDependencies": ["pydantic-v2"],
+		"executableGeneratorDependencies": [
+			{
+				"name": "datamodel-code-generator",
+				"exactVersion": "0.76.0",
+				"provenance": "spikes/typespec-feasibility/evidence/custom.json"
+			}
+		],
+		"securityFindings": [],
+		"backendQualification": "upstream-qualified",
+		"qualificationEvidence": "spikes/typespec-feasibility/evidence/custom.json",
+		"customSourceLicense": "AGPL-3.0-or-later",
+		"pythonAuthoring": "generated-pydantic-v2"
+	},
+	{
+		"contractVersion": "1.0.0",
+		"target": "python-dataclass",
+		"nativeApi": ["standard dataclass", "enum", "tagged union helper"],
+		"runtimeValidation": "generated framework-neutral validation adapter",
+		"identityMetadata": "generated class and field metadata",
+		"unsupportedFeaturePolicy": "fail",
+		"prohibitedDependencies": [
+			"ui",
+			"orm",
+			"sqlalchemy",
+			"tauri",
+			"network-client",
+			"database-migration",
+			"application-service"
+		],
+		"runtimeDependencies": [],
+		"executableGeneratorDependencies": [
+			{
+				"name": "datamodel-code-generator",
+				"exactVersion": "0.76.0",
+				"provenance": "spikes/typespec-feasibility/evidence/custom.json"
+			}
+		],
+		"securityFindings": [],
+		"backendQualification": "upstream-qualified",
+		"qualificationEvidence": "spikes/typespec-feasibility/evidence/custom.json",
+		"customSourceLicense": "AGPL-3.0-or-later",
+		"pythonAuthoring": "generated-stdlib-dataclass"
+	}
+]

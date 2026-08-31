@@ -1,0 +1,113 @@
+[
+	{
+		"id": "documentation-only",
+		"family": "documentation",
+		"semanticValuesChanged": false,
+		"expected": "patch"
+	},
+	{
+		"id": "optional-field-all-open",
+		"family": "field",
+		"required": false,
+		"allConsumersPreserve": true,
+		"expected": "additive"
+	},
+	{
+		"id": "optional-field-stale-consumer",
+		"family": "field",
+		"required": false,
+		"consumerEvidence": "stale",
+		"expected": "conditional"
+	},
+	{
+		"id": "required-field",
+		"family": "field",
+		"required": true,
+		"expected": "breaking"
+	},
+	{
+		"id": "stable-identity-change",
+		"family": "identity",
+		"expected": "breaking"
+	},
+	{
+		"id": "type-domain-widening",
+		"family": "type",
+		"expected": "conditional"
+	},
+	{
+		"id": "union-variant-removal",
+		"family": "union",
+		"expected": "breaking"
+	},
+	{
+		"id": "constraint-documentation-correction",
+		"family": "constraint",
+		"semanticValuesChanged": false,
+		"expected": "patch"
+	},
+	{
+		"id": "generated-name-only",
+		"family": "generated-api",
+		"semanticIdentityChanged": false,
+		"expected": "patch"
+	},
+	{
+		"id": "closed-enum-addition",
+		"family": "enum",
+		"consumerPolicy": "closed",
+		"expected": "breaking"
+	},
+	{
+		"id": "open-enum-addition",
+		"family": "enum",
+		"consumerPolicy": "surface",
+		"expected": "additive"
+	},
+	{
+		"id": "unknown-policy-tightening",
+		"family": "unknown-policy",
+		"from": "preserve",
+		"to": "reject",
+		"expected": "breaking"
+	},
+	{
+		"id": "mapping-edit-direction-change",
+		"family": "mapping",
+		"from": "read-only",
+		"to": "bidirectional",
+		"expected": "conditional"
+	},
+	{
+		"id": "profile-omission-added",
+		"family": "profile",
+		"expected": "breaking"
+	},
+	{
+		"id": "authority-change-same-shape",
+		"family": "authority",
+		"expected": "breaking"
+	},
+	{
+		"id": "undeclared-loss-same-shape",
+		"family": "loss",
+		"expected": "breaking"
+	},
+	{
+		"id": "reserved-protobuf-number-reuse",
+		"family": "protobuf-reservation",
+		"expected": "invalid"
+	},
+	{
+		"id": "unknown-consumer",
+		"family": "generated-api",
+		"consumerEvidence": "unknown",
+		"expected": "unknown"
+	},
+	{
+		"id": "target-disagreement",
+		"family": "field",
+		"targetResults": ["additive", "breaking", "patch"],
+		"expected": "breaking"
+	}
+]
