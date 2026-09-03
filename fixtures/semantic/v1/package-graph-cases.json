@@ -1,0 +1,35 @@
+[
+	{
+		"id": "order-independent",
+		"packages": ["agent-ix/assurance", "agent-ix/core"],
+		"permutation": ["agent-ix/core", "agent-ix/assurance"],
+		"expected": "success"
+	},
+	{
+		"id": "version-conflict",
+		"conflicts": ["agent-ix/core@1.0.0", "agent-ix/core@2.0.0"],
+		"loci": ["manifest-a:imports[0]", "manifest-b:imports[0]"],
+		"expected": "invalid"
+	},
+	{
+		"id": "digest-conflict",
+		"conflicts": [
+			"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+			"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+		],
+		"loci": ["lock-a:packages[0]", "lock-b:packages[0]"],
+		"expected": "invalid"
+	},
+	{
+		"id": "package-cycle",
+		"conflicts": ["agent-ix/a -> agent-ix/b", "agent-ix/b -> agent-ix/a"],
+		"loci": ["a:imports[0]", "b:imports[0]"],
+		"expected": "invalid"
+	},
+	{
+		"id": "recursive-type-is-not-package-cycle",
+		"packages": ["agent-ix/recursive"],
+		"recursiveType": "ix://agent-ix/recursive/type/Node",
+		"expected": "success"
+	}
+]

@@ -1,0 +1,81 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/filament-core-data/v1/compiler-request.schema.json",
+	"title": "Filament compiler request v1",
+	"type": "object",
+	"required": [
+		"contractVersion",
+		"lockFingerprint",
+		"ir",
+		"profile",
+		"mappings",
+		"backend",
+		"outputRoot",
+		"limits"
+	],
+	"properties": {
+		"contractVersion": { "const": "1.0.0" },
+		"lockFingerprint": { "$ref": "common.schema.json#/$defs/sha256" },
+		"ir": { "$ref": "semantic-ir.schema.json" },
+		"profile": { "$ref": "profile.schema.json" },
+		"mappings": { "type": "array", "items": { "$ref": "mapping.schema.json" } },
+		"backend": {
+			"type": "object",
+			"required": [
+				"identity",
+				"version",
+				"supportedIrVersions",
+				"supportedFeatures",
+				"options"
+			],
+			"properties": {
+				"identity": { "$ref": "common.schema.json#/$defs/semanticIdentity" },
+				"version": { "$ref": "common.schema.json#/$defs/semver" },
+				"supportedIrVersions": {
+					"type": "array",
+					"items": { "$ref": "common.schema.json#/$defs/semver" },
+					"uniqueItems": true
+				},
+				"supportedFeatures": {
+					"type": "array",
+					"items": { "type": "string", "minLength": 1 },
+					"uniqueItems": true
+				},
+				"options": { "type": "object" }
+			},
+			"additionalProperties": false
+		},
+		"outputRoot": {
+			"type": "string",
+			"minLength": 1,
+			"pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\u0000]+$"
+		},
+		"limits": {
+			"type": "object",
+			"required": [
+				"maxInputBytes",
+				"maxDepth",
+				"maxNodes",
+				"maxCollectionItems",
+				"maxDiagnostics"
+			],
+			"properties": {
+				"maxInputBytes": {
+					"type": "integer",
+					"minimum": 1,
+					"maximum": 1073741824
+				},
+				"maxDepth": { "type": "integer", "minimum": 1, "maximum": 1024 },
+				"maxNodes": { "type": "integer", "minimum": 1, "maximum": 10000000 },
+				"maxCollectionItems": {
+					"type": "integer",
+					"minimum": 1,
+					"maximum": 1000000
+				},
+				"maxDiagnostics": { "type": "integer", "minimum": 1, "maximum": 100000 }
+			},
+			"additionalProperties": false
+		}
+	},
+	"additionalProperties": false
+}

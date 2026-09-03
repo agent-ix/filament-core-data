@@ -1,0 +1,20 @@
+{
+	"contractVersion": "1.0.0",
+	"identity": "ix://agent-ix/filament-core-data/adapter/avro-v1",
+	"sourceContract": {
+		"identity": "ix://agent-ix/filament-core-data/avro/core-data",
+		"version": "0.1.0"
+	},
+	"targetContract": {
+		"identity": "ix://agent-ix/filament-core-data/semantic/v1",
+		"version": "1.0.0"
+	},
+	"preservation": "semantic-lossless",
+	"omissions": [],
+	"diagnostics": [],
+	"retirementPrerequisites": [
+		"all known Avro readers inventoried",
+		"compatibility suite passes",
+		"named retirement approval"
+	]
+}

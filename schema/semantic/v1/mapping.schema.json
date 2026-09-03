@@ -1,0 +1,273 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/filament-core-data/v1/mapping.schema.json",
+	"title": "Filament semantic mapping v1",
+	"type": "object",
+	"required": [
+		"contractVersion",
+		"identity",
+		"version",
+		"sourceType",
+		"targetType",
+		"representation",
+		"correspondences",
+		"transformation"
+	],
+	"properties": {
+		"contractVersion": { "const": "1.0.0" },
+		"identity": { "$ref": "common.schema.json#/$defs/semanticIdentity" },
+		"version": { "$ref": "common.schema.json#/$defs/semver" },
+		"sourceType": { "$ref": "common.schema.json#/$defs/semanticIdentity" },
+		"targetType": { "$ref": "common.schema.json#/$defs/semanticIdentity" },
+		"representation": { "type": "string", "minLength": 1 },
+		"correspondences": {
+			"type": "array",
+			"minItems": 1,
+			"items": {
+				"type": "object",
+				"required": ["sourceIdentity", "targetLocus"],
+				"properties": {
+					"sourceIdentity": {
+						"$ref": "common.schema.json#/$defs/semanticIdentity"
+					},
+					"targetLocus": { "type": "string", "minLength": 1 }
+				},
+				"additionalProperties": false
+			}
+		},
+		"transformation": { "$ref": "#/$defs/transformation" }
+	},
+	"additionalProperties": false,
+	"$defs": {
+		"base": {
+			"type": "object",
+			"required": [
+				"kind",
+				"purity",
+				"deterministic",
+				"externalReads",
+				"externalWrites",
+				"failureStates",
+				"retryIdempotent"
+			],
+			"properties": {
+				"kind": {
+					"enum": [
+						"codec",
+						"lens",
+						"projection",
+						"extraction",
+						"rendering",
+						"aggregation",
+						"enrichment",
+						"materialization"
+					]
+				},
+				"purity": { "enum": ["pure", "effectful"] },
+				"deterministic": { "type": "boolean" },
+				"externalReads": {
+					"type": "array",
+					"items": { "$ref": "common.schema.json#/$defs/semanticIdentity" }
+				},
+				"externalWrites": {
+					"type": "array",
+					"items": { "$ref": "common.schema.json#/$defs/semanticIdentity" }
+				},
+				"failureStates": {
+					"type": "array",
+					"items": { "$ref": "common.schema.json#/$defs/resultState" },
+					"uniqueItems": true
+				},
+				"retryIdempotent": { "type": "boolean" },
+				"preservation": {
+					"enum": [
+						"byte-lossless",
+						"structure-lossless",
+						"semantic-lossless",
+						"declared-lossy",
+						"one-way"
+					]
+				},
+				"omittedIdentities": {
+					"type": "array",
+					"items": { "$ref": "common.schema.json#/$defs/semanticIdentity" },
+					"uniqueItems": true
+				},
+				"getPutLaws": {
+					"type": "array",
+					"items": { "enum": ["get-put", "put-get", "put-put"] },
+					"uniqueItems": true
+				},
+				"conflictPolicy": {
+					"enum": ["reject", "source-wins", "target-wins", "merge"]
+				},
+				"groupingKeys": {
+					"type": "array",
+					"items": { "$ref": "common.schema.json#/$defs/semanticIdentity" }
+				},
+				"window": { "type": "string", "minLength": 1 },
+				"ordering": { "type": "string", "minLength": 1 },
+				"lateDataPolicy": { "enum": ["reject", "revise", "side-output"] },
+				"aggregateSemantics": { "type": "string", "minLength": 1 },
+				"provenanceSources": {
+					"type": "array",
+					"items": { "$ref": "common.schema.json#/$defs/semanticIdentity" }
+				},
+				"lifetime": { "enum": ["request", "run", "session", "durable"] },
+				"encoding": { "type": "string", "minLength": 1 },
+				"decodePolicy": { "enum": ["strict", "preserve-unknown"] },
+				"selectedIdentities": {
+					"type": "array",
+					"minItems": 1,
+					"items": { "$ref": "common.schema.json#/$defs/semanticIdentity" },
+					"uniqueItems": true
+				},
+				"sourceLoci": {
+					"type": "array",
+					"minItems": 1,
+					"items": { "type": "string", "minLength": 1 },
+					"uniqueItems": true
+				},
+				"presentationMediaType": { "type": "string", "minLength": 1 }
+			},
+			"additionalProperties": false
+		},
+		"transformation": {
+			"allOf": [
+				{ "$ref": "#/$defs/base" },
+				{
+					"if": {
+						"type": "object",
+						"properties": { "kind": { "const": "codec" } }
+					},
+					"then": {
+						"type": "object",
+						"required": ["encoding", "decodePolicy"]
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": { "kind": { "const": "lens" } }
+					},
+					"then": {
+						"type": "object",
+						"required": ["getPutLaws", "conflictPolicy"]
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": { "kind": { "const": "projection" } }
+					},
+					"then": {
+						"type": "object",
+						"required": ["selectedIdentities", "preservation"]
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": { "kind": { "const": "extraction" } }
+					},
+					"then": {
+						"type": "object",
+						"required": ["sourceLoci", "preservation"]
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": { "kind": { "const": "rendering" } }
+					},
+					"then": {
+						"type": "object",
+						"required": ["presentationMediaType", "preservation"]
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": { "kind": { "const": "aggregation" } }
+					},
+					"then": {
+						"type": "object",
+						"required": [
+							"groupingKeys",
+							"window",
+							"ordering",
+							"lateDataPolicy",
+							"aggregateSemantics"
+						]
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": { "purity": { "const": "effectful" } }
+					},
+					"then": {
+						"type": "object",
+						"required": ["provenanceSources"],
+						"properties": {
+							"provenanceSources": { "type": "array", "minItems": 1 }
+						},
+						"anyOf": [
+							{
+								"properties": {
+									"externalReads": { "type": "array", "minItems": 1 }
+								}
+							},
+							{
+								"properties": {
+									"externalWrites": { "type": "array", "minItems": 1 }
+								}
+							}
+						]
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": { "kind": { "const": "enrichment" } }
+					},
+					"then": { "type": "object", "required": ["provenanceSources"] }
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": { "kind": { "const": "materialization" } }
+					},
+					"then": { "type": "object", "required": ["lifetime"] }
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": { "purity": { "const": "pure" } }
+					},
+					"then": {
+						"type": "object",
+						"properties": {
+							"externalReads": { "type": "array", "maxItems": 0 },
+							"externalWrites": { "type": "array", "maxItems": 0 }
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"required": ["preservation"],
+						"properties": { "preservation": { "const": "declared-lossy" } }
+					},
+					"then": {
+						"type": "object",
+						"required": ["omittedIdentities"],
+						"properties": {
+							"omittedIdentities": { "type": "array", "minItems": 1 }
+						}
+					}
+				}
+			]
+		}
+	}
+}

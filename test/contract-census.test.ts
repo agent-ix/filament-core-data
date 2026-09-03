@@ -505,7 +505,11 @@ describe("Filament contract census", () => {
 			"docs/semantic-data-system/",
 			"plan/Plan-001-semantic-data-architecture-record/",
 			"plan/Plan-003-typespec-feasibility/",
+			"plan/Plan-004-semantic-package-contract/",
+			"schema/semantic/v1/",
 			"spikes/typespec-feasibility/",
+			"fixtures/semantic/v1/",
+			"test/semantic-contract.test.ts",
 			"test/typespec-feasibility.test.ts",
 		];
 		for (const path of changedPaths()) {
