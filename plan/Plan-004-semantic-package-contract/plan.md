@@ -46,7 +46,7 @@ relationships:
 
 ### Functional Requirements
 
-- [x] **FR-019:** Select modular JSON Schema 2020-12 provisionally and define the versioned semantic IR envelope.
+- [x] **FR-019:** Select TypeSpec as the v1 structural source (ADR-0005) and define the versioned semantic IR envelope.
 - [x] **FR-020:** Define structural kinds, orthogonal roles, stable identities, presence, recursion, constraints, and extensions.
 - [x] **FR-021:** Define package manifests, exports, profiles, locks, and canonical fingerprints.
 - [x] **FR-022:** Define mappings, representation profiles, transformations, effects, preservation, and loss.
@@ -61,7 +61,7 @@ relationships:
 - [x] **NFR-009:** Require exact cross-language fixture verdict and canonical-value parity.
 - [x] **NFR-010:** Treat every schema and generator input as hostile and bound all effects and traversal.
 - [x] **NFR-011:** Publish sufficient schemas and examples for independent implementations and governed extensions.
-- [ ] **NFR-012:** Change no runtime, consumer, database, catalog, package, or enforcement surface and require human source promotion.
+- [x] **NFR-012:** Change no runtime, consumer, database, catalog, package, or enforcement surface and record the owner source decision.
 
 ## Dependency Graph
 
@@ -170,7 +170,7 @@ time ->  Task-024 -> Task-025 -> Task-026 -> Task-027 -> Task-028 --\
 | Task-030 | B | FR-025 | TC-165..170 | done |
 | Task-031 | B | FR-026 | TC-171..176 | done |
 | Task-032 | C | NFR-008..012 | TC-177..178, TC-181..198, TC-202 | done |
-| Task-033 | Gate | StR-001, US-005, NFR-012 | TC-199 | blocked |
+| Task-033 | Gate | StR-001, US-005, NFR-012 | TC-199 | done |
 
 ## Coordination Rules
 

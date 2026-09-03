@@ -22,7 +22,7 @@ relationships:
 ## Scope
 
 Present the completed contract, feasibility evidence, review findings, automated
-results, and non-disruption report to a named human for an explicit accept or
+results, and non-disruption report to the owner for an explicit accept or
 hold decision before normative merge.
 
 ## Subtasks
@@ -40,4 +40,4 @@ hold decision before normative merge.
 ## Notes
 
 - Automation, prior preference, issue assignment, or implementation success cannot satisfy this gate.
-- This is the campaign's next major-interference checkpoint.
+- Decision recorded by the owner on issue #4, 2026-09-03 (TypeSpec, ADR-0005).
