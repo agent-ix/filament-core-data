@@ -25,7 +25,6 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_ROOT = ROOT / "schema" / "semantic" / "v1"
 FIXTURE_ROOT = ROOT / "fixtures" / "semantic" / "v1"
-SCHEMA_BASE = "https://schemas.agent-ix.org/filament-core-data/v1/"
 
 CATEGORIES = {
     "structural",
@@ -241,6 +240,9 @@ def _check_constraint(
         else {}
     )
     if keyword == "pattern":
+        # Python's ``re`` stands in for ecma-262 here; the dialects differ on
+        # some constructs, so a disagreement with the TypeScript reader on a
+        # pattern case is a real finding, not noise (SR-035 FND-122).
         try:
             re.compile(str(operands.get("regex")))
         except re.error as error:
@@ -466,8 +468,24 @@ def read_semantic_ir(
     return out
 
 
+def _integral_floats(value: Any) -> Any:
+    """ES6/RFC 8785 number form: an integral float serializes without ``.0``."""
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    if isinstance(value, list):
+        return [_integral_floats(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _integral_floats(item) for key, item in value.items()}
+    return value
+
+
 def canonical(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return json.dumps(
+        _integral_floats(value),
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
 
 
 def normalize(document: Any) -> str:
