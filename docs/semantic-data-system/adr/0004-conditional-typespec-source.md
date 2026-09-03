@@ -2,10 +2,16 @@
 id: ADR-0004
 title: "Use TypeSpec conditionally as the schema source"
 type: ADR
-status: provisional
-resolution_gate: "https://github.com/agent-ix/filament-core-data/issues/4"
+status: historical
+superseded_by: ADR-0005
 ---
 # ADR-0004: Use TypeSpec conditionally as the schema source
+
+> **Historical.** Superseded by
+> [ADR-0005: Use TypeSpec as the structural schema source](0005-typespec-structural-source.md)
+> on 2026-09-03. The feasibility gate below was resolved by the owner decision on
+> [issue #4](https://github.com/agent-ix/filament-core-data/issues/4): TypeSpec
+> is selected; the JSON Schema fallback is not adopted.
 
 ## Context
 
