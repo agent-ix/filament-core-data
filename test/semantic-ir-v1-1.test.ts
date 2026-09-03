@@ -1039,3 +1039,189 @@ describe("FR-006 ConfigVersion worked example (Task-039)", () => {
 		});
 	});
 });
+
+type Verdict = {
+	id: string;
+	schemaValid?: boolean;
+	diagnostics?: string[];
+	normalized?: string;
+	code?: string;
+	hit?: boolean;
+	path?: string | null;
+};
+
+/** Mirrors `tests/semantic_ir_reader.py --verdicts` from the TypeScript side. */
+function typescriptVerdicts(): Verdict[] {
+	const results: Verdict[] = [];
+	const positives = readdirSync(resolve(fixtureRoot, "positive"))
+		.filter((name) => name.startsWith("semantic-ir") && name.endsWith(".json"))
+		.sort();
+	for (const name of [...positives, "config-version-v1-1.json"]) {
+		const document = readJson(`positive/${name}`);
+		results.push({
+			id: `positive/${name}`,
+			schemaValid: validates("semantic-ir.schema.json", document),
+			diagnostics: readSemanticIr(document)
+				.map((d) => d.code)
+				.sort(),
+			normalized: normalize(document),
+		});
+	}
+	for (const raw of array(readJson("negative/cases.json"), "cases")) {
+		const entry = object(raw, "case") as unknown as NegativeCase;
+		if (entry.schema !== "semantic-ir.schema.json") continue;
+		results.push({
+			id: `negative/${entry.id}`,
+			schemaValid: negativeValidates(entry.id).valid,
+		});
+	}
+	for (const raw of array(
+		readJson("negative/reader-cases.json"),
+		"reader cases",
+	)) {
+		const entry = object(raw, "reader case") as unknown as ReaderCase;
+		const { document } = readerCase(entry.id);
+		const hits = readSemanticIr(document).filter((d) => d.code === entry.code);
+		results.push({
+			id: `reader/${entry.id}`,
+			code: entry.code,
+			hit: hits.length > 0,
+			path: hits[0]?.path ?? null,
+		});
+	}
+	return results;
+}
+
+function seededDocument(seed: number): JsonObject {
+	const random = seededRandom(seed);
+	const pick = <T>(items: T[]): T =>
+		items[Math.floor(random() * items.length)] as T;
+	const document = clone(goldenV11());
+	const artifact = typeNamed(document, "Artifact");
+	for (const field of array(artifact.fields, "fields").map((value) =>
+		object(value, "field"),
+	)) {
+		const lower = pick([0, 1]);
+		const upper = pick([undefined, lower, lower + 1, lower + 5]);
+		const multiplicity: JsonObject = { lower };
+		if (upper !== undefined) multiplicity.upper = upper;
+		if (upper === undefined || upper > 1) {
+			if (random() < 0.5) multiplicity.ordered = random() < 0.5;
+			if (random() < 0.5) multiplicity.unique = random() < 0.5;
+		}
+		field.multiplicity = multiplicity;
+		field.presence = lower >= 1 ? "required" : "optional";
+		field.nullable = random() < 0.3;
+		if (field.name === "duration") field.unit = pick(["s", "ms", "min", "kg"]);
+	}
+	const relationship = object(
+		array(artifact.relationships, "relationships")[0],
+		"relationship",
+	);
+	relationship.category = pick([
+		"structural",
+		"dependency",
+		"traceability",
+		"governance",
+	]);
+	relationship.verb = pick(["belongs_to", "uses", "depends_on"]);
+	relationship.multiplicity = pick([
+		{ lower: 0, upper: 1 },
+		{ lower: 1, upper: 1 },
+		{ lower: 0 },
+	]);
+	const clause = object(array(artifact.clauses, "clauses")[0], "clause");
+	clause.language = pick(["ocl", "sysml", "fretish", "acme:tla"]);
+	clause.text = `context Artifact inv seed${seed}: self.summary <> '${seed}'`;
+	const operation = object(
+		array(artifact.operations, "operations")[0],
+		"operation",
+	);
+	object(operation.returns, "returns").nullable = random() < 0.5;
+	const seconds = typeNamed(document, "Seconds");
+	const bound = object(
+		array(seconds.constraints, "constraints")[0],
+		"constraint",
+	);
+	object(bound.operands, "operands").value = Math.floor(random() * 1000);
+	return document;
+}
+
+describe("FR-020 closing gate: two readers, round trip, fixture inventory (Task-040)", () => {
+	/** Traces: TC-232; FR-020-AC-8. */
+	it("agrees with the independent Python reader on every fixture and recorded case", () => {
+		const python = execFileSync(
+			"poetry",
+			["run", "python", "tests/semantic_ir_reader.py", "--verdicts"],
+			{ cwd: root, encoding: "utf8" },
+		);
+		const theirs = new Map(
+			(JSON.parse(python) as Verdict[]).map((v) => [v.id, v]),
+		);
+		const ours = typescriptVerdicts();
+		expect(ours.length).toBeGreaterThanOrEqual(40);
+		expect(new Set(theirs.keys())).toEqual(new Set(ours.map((v) => v.id)));
+		for (const verdict of ours) {
+			const other = theirs.get(verdict.id);
+			expect(other, verdict.id).toBeDefined();
+			if (verdict.schemaValid !== undefined)
+				expect(other?.schemaValid, `${verdict.id} schema`).toBe(
+					verdict.schemaValid,
+				);
+			if (verdict.diagnostics)
+				expect(other?.diagnostics, `${verdict.id} diagnostics`).toEqual(
+					verdict.diagnostics,
+				);
+			if (verdict.normalized)
+				expect(other?.normalized, `${verdict.id} normalized bytes`).toBe(
+					verdict.normalized,
+				);
+			if (verdict.hit !== undefined) {
+				expect(other?.hit, `${verdict.id} hit`).toBe(verdict.hit);
+				expect(other?.path, `${verdict.id} locus`).toBe(verdict.path);
+			}
+		}
+	});
+
+	/** Traces: TC-233; FR-020-AC-7. */
+	it("round-trips generated 1.1.0 documents with all five node kinds byte-identically", () => {
+		for (let seed = 1; seed <= 48; seed += 1) {
+			const document = seededDocument(seed);
+			expect(
+				validates("semantic-ir.schema.json", document),
+				`seed ${seed}: ${JSON.stringify(ajv.errors)}`,
+			).toBe(true);
+			expect(readSemanticIr(document), `seed ${seed}`).toEqual([]);
+			const bytes = normalize(document);
+			expect(normalize(JSON.parse(bytes)), `seed ${seed}`).toBe(bytes);
+			expect(JSON.parse(bytes)).toEqual(
+				JSON.parse(normalize(JSON.parse(bytes))),
+			);
+		}
+	});
+
+	/** Traces: TC-247; NFR-013-AC-5. */
+	it("has at least one golden and one negative fixture per new node kind", () => {
+		const golden = JSON.stringify([
+			readJson("positive/semantic-ir-v1-1.json"),
+			readJson("positive/config-version-v1-1.json"),
+		]);
+		const negatives = JSON.stringify([
+			readJson("negative/cases.json"),
+			readJson("negative/reader-cases.json"),
+		]);
+		const nodeKinds: [string, RegExp, RegExp][] = [
+			["multiplicity", /"multiplicity"/, /multiplicity/i],
+			["unit", /"unit":"s"/, /unit/i],
+			["relationship", /"relationships":\[\{/, /relationship/i],
+			["operation", /"operations":\[\{/, /operation/i],
+			["clause", /"clauses":\[\{/, /clause/i],
+			["constraint", /"keyword":"min"/, /constraint/i],
+			["dialect", /"dialect":"typespec"/, /dialect/i],
+		];
+		for (const [kind, goldenPattern, negativePattern] of nodeKinds) {
+			expect(goldenPattern.test(golden), `${kind} golden`).toBe(true);
+			expect(negativePattern.test(negatives), `${kind} negative`).toBe(true);
+		}
+	});
+});
