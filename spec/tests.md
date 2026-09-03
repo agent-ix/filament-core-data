@@ -9,13 +9,15 @@ type: TestMatrix
 
 This matrix defines the verification contract for the issue #8 architecture,
 issue #10 read-only contract census, issue #4 TypeSpec feasibility gate, and
-issue #9 semantic IR/package/projection specification. Coverage is complete when
+issue #9 semantic IR/package/projection specification, and the issue #34
+semantic IR v1.1 revision. Coverage is complete when
 every criterion, metric, and named constraint maps to at least one test case.
 Issues #8, #10, and #4 have passed their implementation gates. Issue #9 is fully
 mapped and its 72 automated, static, analysis, property, integration, fuzz, and
 snapshot cases pass. The schema-source decision at TC-199 is recorded (owner,
 issue #4, 2026-09-03: TypeSpec, ADR-0005); all later disruptive migration and
-promotion gates remain separate.
+promotion gates remain separate. Issue #34 (TC-203..236) is fully mapped and
+awaits implementation.
 
 ## Test Matrix Rules
 
@@ -32,7 +34,7 @@ promotion gates remain separate.
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001..US-005, FR-001..FR-026 | TC-033, TC-086, TC-129, TC-130..202 | ✅ Complete |
+| StR-001 | US-001..US-006, FR-001..FR-030 | TC-033, TC-086, TC-129, TC-130..236 | ✅ Complete |
 
 ### User Story Coverage
 
@@ -47,6 +49,7 @@ promotion gates remain separate.
 | US-004 | US-004-AC-1 | TC-127 | ✅ Complete |
 | US-004 | US-004-AC-2 | TC-128 | ✅ Complete |
 | US-005 | Informal story outcome implemented by FR-019..FR-026 | TC-130..176 | ✅ Complete |
+| US-006 | US-006-EX-1..4 (illustrative) implemented by FR-027..FR-030 | TC-203, TC-210, TC-214, TC-220 | ✅ Complete |
 
 ### Functional Requirement Coverage
 
@@ -71,13 +74,17 @@ promotion gates remain separate.
 | FR-017 | FR-017-AC-1..5 | TC-113..118 | ✅ Complete |
 | FR-018 | FR-018-AC-1..4 | TC-119..122 | ✅ Complete |
 | FR-019 | FR-019-AC-1..5, FR-019-CON-1..2 | TC-130..134 | ✅ Complete |
-| FR-020 | FR-020-AC-1..6, FR-020-CON-1..2 | TC-135..140 | ✅ Complete |
+| FR-020 | FR-020-AC-1..8, FR-020-CON-1..2 | TC-135..140, TC-232..233 | ✅ Complete |
 | FR-021 | FR-021-AC-1..7 | TC-141..146, TC-201 | ✅ Complete |
 | FR-022 | FR-022-AC-1..6 | TC-147..152 | ✅ Complete |
 | FR-023 | FR-023-AC-1..6 | TC-153..158 | ✅ Complete |
 | FR-024 | FR-024-AC-1..7 | TC-159..164, TC-200 | ✅ Complete |
 | FR-025 | FR-025-AC-1..6 | TC-165..170 | ✅ Complete |
 | FR-026 | FR-026-AC-1..6 | TC-171..176 | ✅ Complete |
+| FR-027 | FR-027-AC-1..7, FR-027-CON-1..2 | TC-203..209 | ✅ Complete |
+| FR-028 | FR-028-AC-1..8, FR-028-CON-1..2 | TC-210..218 | ✅ Complete |
+| FR-029 | FR-029-AC-1..6, FR-029-CON-1..2 | TC-219..226 | ✅ Complete |
+| FR-030 | FR-030-AC-1..4, FR-030-CON-1..2 | TC-227..231 | ✅ Complete |
 
 ### Non-Functional Requirement Coverage
 
@@ -95,6 +102,7 @@ promotion gates remain separate.
 | NFR-010 | Sandboxed path, network, execution, dependency, security, and bounded-resource checks | TC-185..189, TC-202 | ✅ Complete |
 | NFR-011 | Public schema, independent reader, extension, capability, and preservation checks | TC-190..194 | ✅ Complete |
 | NFR-012 | Diff, unchanged-suite, registry, downstream-gate, and human-decision checks | TC-195..199 | ✅ Complete |
+| NFR-013 | Unchanged v1 fixture suite, spike byte comparison, compatibility-corpus entry, and changed-path gate | TC-208, TC-234..236 | ✅ Complete |
 
 ## Test Case Summary
 
@@ -302,6 +310,40 @@ promotion gates remain separate.
 | TC-200 | Independent adapters and backends share stable diagnostic codes and causal envelopes | Unit | P0 | FR-024-AC-7 | ✅ passed — semantic contract v1 |
 | TC-201 | Fingerprints ignore excluded ordering but change for every included semantic-byte change | Property | P0 | FR-021-AC-7 | ✅ passed — semantic contract v1 |
 | TC-202 | Oversized and cyclic hostile inputs terminate at declared resource limits | Fuzz | P0 | NFR-010 | ✅ passed — semantic contract v1 |
+| TC-203 | A `0..1` field validates, derives `presence: optional`, and re-serializes byte-identically | Property | P0 | FR-027-AC-1, FR-020-AC-7, US-006-EX-1 | 🚧 issue #34 |
+| TC-204 | A `1..*` field preserves `ordered` and `unique` flags | Unit | P0 | FR-027-AC-2 | 🚧 issue #34 |
+| TC-205 | Stated `presence` contradicting multiplicity fails at the field locus | Unit | P0 | FR-027-AC-3 | 🚧 issue #34 |
+| TC-206 | `upper < lower` fails at the field locus | Unit | P0 | FR-027-AC-4 | 🚧 issue #34 |
+| TC-207 | `unit` validates on a scalar field and fails on a record field | Unit | P0 | FR-027-AC-5, FR-027-CON-2 | 🚧 issue #34 |
+| TC-208 | Every v1 positive fixture validates unchanged under v1.1 with multiplicity derived from presence | Integration | P0 | FR-027-AC-6, FR-027-CON-1, NFR-013-AC-1 | 🚧 issue #34 |
+| TC-209 | FR-006 `ConfigVersion` fields express as v1.1 fields with zero declared loss | Analysis | P0 | FR-027-AC-7 | 🚧 issue #34 |
+| TC-210 | A `belongs_to` structural relationship validates and round-trips byte-identically | Property | P0 | FR-028-AC-1, FR-020-AC-7, US-006-EX-2 | 🚧 issue #34 |
+| TC-211 | An unknown relationship `category` fails at the relationship locus | Unit | P0 | FR-028-AC-2 | 🚧 issue #34 |
+| TC-212 | An operation with params, bounded return, and present pre/post clauses validates | Unit | P0 | FR-028-AC-3 | 🚧 issue #34 |
+| TC-213 | An operation whose `post[]` names an absent clause fails at the operation locus | Unit | P0 | FR-028-AC-4 | 🚧 issue #34 |
+| TC-214 | An `ocl` clause with `sourceSpan` validates and the schema declares no parsed-content property | Static | P0 | FR-028-AC-5, FR-028-CON-2, US-006-EX-3 | 🚧 issue #34 |
+| TC-215 | A namespaced clause language validates and a bare unknown language fails | Unit | P0 | FR-028-AC-6 | 🚧 issue #34 |
+| TC-216 | `relationships[]` or `operations[]` on a non-record type definition fails | Unit | P0 | FR-028-AC-7 | 🚧 issue #34 |
+| TC-217 | Absent `relationships[]`, `operations[]`, and `clauses[]` read as empty on a v1 document | Unit | P0 | FR-028-CON-1 | 🚧 issue #34 |
+| TC-218 | FR-006 `overlay` relationship and an `ocl` invariant express with zero declared loss | Analysis | P0 | FR-028-AC-8 | 🚧 issue #34 |
+| TC-219 | Every closed constraint keyword has a positive fixture whose operands validate | Static | P0 | FR-029-AC-1 | 🚧 issue #34 |
+| TC-220 | Keyword `mnimum` fails at the constraint locus | Unit | P0 | FR-029-AC-2, US-006-EX-4 | 🚧 issue #34 |
+| TC-221 | A `min` constraint with a string operand fails | Unit | P0 | FR-029-AC-3 | 🚧 issue #34 |
+| TC-222 | A `pattern` constraint without `dialect` fails | Unit | P0 | FR-029-AC-4 | 🚧 issue #34 |
+| TC-223 | The v1.1 schema has no `keyword: string` path and no untyped `operands` path | Static | P0 | FR-029-AC-5 | 🚧 issue #34 |
+| TC-224 | Every v1 fixture constraint uses a closed keyword, or its correction is recorded | Static | P0 | FR-029-CON-1 | 🚧 issue #34 |
+| TC-225 | Keyword addition classifies additive; removal or retyping classifies breaking | Unit | P0 | FR-029-CON-2 | 🚧 issue #34 |
+| TC-226 | FR-006 `versionNumber` `min: 1` expresses as a typed constraint | Analysis | P1 | FR-029-AC-6 | 🚧 issue #34 |
+| TC-227 | A v1.1 document with `source.dialect: typespec` validates | Unit | P0 | FR-030-AC-1 | 🚧 issue #34 |
+| TC-228 | The JSON Schema `$schema` URI as `source.dialect` fails with a diagnostic citing ADR-0005 | Unit | P0 | FR-030-AC-2 | 🚧 issue #34 |
+| TC-229 | Manifest targets `rust`/`json-schema` validate; target `go` fails at its entry | Unit | P0 | FR-030-AC-3 | 🚧 issue #34 |
+| TC-230 | Manifest and target-contract schemas reference one shared target enumeration | Static | P0 | FR-030-AC-4, FR-030-CON-2 | 🚧 issue #34 |
+| TC-231 | The v1 `contractVersion: "1.0.0"` IR fixture remains valid under the v1 schema | Integration | P0 | FR-030-CON-1 | 🚧 issue #34 |
+| TC-232 | Two independent schema readers agree on every v1.1 node over shared golden and negative fixtures | Integration | P0 | FR-020-AC-8 | 🚧 issue #34 |
+| TC-233 | Generated v1.1 documents with all five new node kinds round-trip the normalized serialization byte-identically | Property | P0 | FR-020-AC-7 | 🚧 issue #34 |
+| TC-234 | `spike:typespec:check` output is byte-identical before and after the revision | Snapshot | P0 | NFR-013-AC-2 | 🚧 issue #34 |
+| TC-235 | The compatibility corpus records v1 → v1.1 as `additive` with the added node list | Static | P0 | NFR-013-AC-3 | 🚧 issue #34 |
+| TC-236 | Issue #34 changed-path gate excludes `spikes/`, backends, and corpus repositories | Static | P0 | NFR-013-AC-4 | 🚧 issue #34 |
 
 ## Option Permutation Matrix
 
@@ -328,6 +370,10 @@ promotion gates remain separate.
 | TC-155, TC-158 | concrete service boundary absent | Protobuf unselected | no descriptor mapping | Wire format remains absent without speculative generation |
 | TC-167 | enum/record evolution | open/closed | preserve/ignore/reject unknown | Compatibility follows declared capability, not language default |
 | TC-171, TC-172 | module known/unknown | dynamic/static consumer | preserve/reject/surface policy | Same identity graph, policy-specific handling |
+| TC-203..205 | field multiplicity | `0..1` / `1..1` / `0..*` / `1..*` | nullable true/false, default none/semantic | Derived presence is fixed by lower bound; nullable and default stay independent |
+| TC-204, TC-216 | collection flags | `ordered` / `unique` | upper absent or > 1 vs upper ≤ 1 | Flags allowed only on collections |
+| TC-214, TC-215 | clause language | `ocl` / `sysml` / `fretish` / `ns:name` | bare unknown token | Closed core set plus namespaced extension; bare unknown fails |
+| TC-227, TC-228 | IR source dialect | `typespec` / `spec-bundle` | v1 JSON Schema URI constant | Frontend identity accepted; stale constant rejected with ADR-0005 citation |
 
 ## Constraint Boundary Tests
 
@@ -363,6 +409,21 @@ promotion gates remain separate.
 | NFR-008 | Prohibited | Network, host path, or ordering changes output | TC-177..180 | Fail reproducibility gate |
 | NFR-010 | Allowed | Writes remain in a new regular-file output root | TC-185 | Pass sandbox check |
 | NFR-010 | Prohibited | Traversal, symlink, template, or option escapes sandbox | TC-185, TC-187 | Reject with source-located diagnostic |
+| FR-027-CON-1 | Allowed | v1 field with `presence` only | TC-208 | Multiplicity derived (`required` → `1..1`, `optional` → `0..1`) |
+| FR-027-CON-2 | Prohibited | `unit` on a record-typed field | TC-207 | Fail validation, never drop the unit |
+| FR-027 multiplicity | Min | `lower: 0`, `upper: 0` | TC-206 | Valid empty-only multiplicity |
+| FR-027 multiplicity | Below min | `lower: -1` | TC-206 | Fail validation |
+| FR-027 multiplicity | Inverted | `lower: 2`, `upper: 1` | TC-206 | Fail validation at the field locus |
+| FR-028-CON-1 | Allowed | v1 document without the three arrays | TC-217 | Read as empty |
+| FR-028-CON-2 | Prohibited | Parsed clause AST property in the schema | TC-214 | Schema inspection fails |
+| FR-029-CON-1 | Allowed | Every v1 fixture keyword in the closed set | TC-224 | Pass |
+| FR-029-CON-1 | Prohibited | v1 fixture keyword outside the closed set with no recorded correction | TC-224 | Fail |
+| FR-029-CON-2 | Allowed | Keyword added to the enumeration | TC-225 | Classified additive |
+| FR-029-CON-2 | Prohibited | Keyword removed or operand retyped | TC-225 | Classified breaking |
+| FR-029 operands | Min | `minLength: 0` | TC-219 | Valid |
+| FR-029 operands | Below min | `minLength: -1` | TC-221 | Fail validation |
+| FR-030-CON-1 | Allowed | `contractVersion: "1.0.0"` with the v1 dialect constant under the v1 schema | TC-231 | Pass |
+| FR-030-CON-2 | Prohibited | Manifest and target-contract enumerations diverge | TC-230 | Schema inspection fails |
 
 ## State Transition Matrix
 
@@ -387,6 +448,8 @@ promotion gates remain separate.
 | unknown required capability | load or compile attempt | explicit unsupported diagnostic and no target output | TC-193 |
 | current legacy manifest | legacy profile validation | accepted unchanged and advisory | TC-173 |
 | legacy manifest | later human enforcement promotion | native v1 validation may become required in the later ticket | TC-173, TC-198 |
+| v1 IR document | read under the v1.1 schema | valid, with multiplicity derived and node arrays empty | TC-208, TC-217 |
+| v1.1 IR document | read under the v1 schema | rejected as an unknown contract version (FR-019-CON-2) | TC-133, TC-231 |
 
 ## Error Paths
 
@@ -423,6 +486,14 @@ promotion gates remain separate.
 | ERR-029 | Legacy adapter, version, or identity is missing/contradictory | Explicit failure and zero-value success prohibited | TC-175 |
 | ERR-030 | Locked generation attempts network access or filesystem escape | Sandbox terminates generation and records the offending locus | TC-178, TC-185..187 |
 | ERR-031 | Required extension capability is unknown | Package load/compile fails before emission | TC-193 |
+| ERR-032 | Field `presence` contradicts its multiplicity, or `upper < lower` | Validation fails at the field locus | TC-205, TC-206 |
+| ERR-033 | `unit` declared on a non-scalar field | Validation fails at the field locus | TC-207 |
+| ERR-034 | Relationship category outside the FR-040 closed set, or on a non-record type | Validation fails at the relationship locus | TC-211, TC-216 |
+| ERR-035 | Operation pre/post references an absent clause identity | Validation fails at the operation locus | TC-213 |
+| ERR-036 | Clause language is a bare unknown token | Validation fails at the clause locus | TC-215 |
+| ERR-037 | Constraint keyword unknown or operands malformed for the keyword | Validation fails at the constraint locus | TC-220..222 |
+| ERR-038 | `source.dialect` carries the retired JSON Schema constant on a v1.1 document | Validation fails citing ADR-0005 | TC-228 |
+| ERR-039 | Manifest names a target outside the shared enumeration | Validation fails at the target entry | TC-229 |
 
 ## Edge Cases
 
@@ -454,10 +525,18 @@ promotion gates remain separate.
 | EC-024 | Dynamic consumer receives a module absent from static generated exports | FR-021, FR-026 | TC-145, TC-171..172 | Open ecosystem is accidentally closed or data silently discarded |
 | EC-025 | Malicious schema name resolves outside output root through traversal or symlink | NFR-010 | TC-185, TC-187 | Generator overwrites user or repository data |
 | EC-026 | Extension is optional to one backend but required to another | NFR-009, NFR-011 | TC-181, TC-193..194 | Cross-language success masks capability disagreement |
+| EC-027 | Required field (`lower ≥ 1`) that is also `nullable: true` | FR-027 | TC-203, TC-205 | Multiplicity is mistaken for nullability and one state is lost |
+| EC-028 | Self-referential relationship (`parent : ConfigVersion[0..1]`) | FR-028 | TC-210, TC-218 | Recursive edge flattened or rejected as a cycle |
+| EC-029 | Two clauses with the same `clauseId` in different languages on one type | FR-028 | TC-212, TC-215 | Operation pre/post binds to the wrong clause |
+| EC-030 | A v1 fixture already using a free-form keyword | FR-029 | TC-224 | Closing the vocabulary silently invalidates accepted evidence |
+| EC-031 | Target enumeration extended in one schema but not the other | FR-030 | TC-230 | Manifest accepts a target no contract defines |
 
 ## Coverage Gaps
 
-No open mapping gap remains for issues #8, #10, #4, or #9. The 41 issue #4 cases
+No open mapping gap remains for issues #8, #10, #4, #9, or #34. Issue #34's 34
+cases (TC-203..236) are mapped and unexecuted pending implementation; TC-233
+needs a generator for v1.1 documents, which the repository does not yet have.
+The 41 issue #4 cases
 pass through the isolated spike, retained evidence, native consumers, and
 source-selection report. Issue #9 has 72 passing contract-conformance cases and
 its manual merge gate, TC-199, is recorded. Production compiler, consumer,
@@ -467,14 +546,14 @@ database, publication, enforcement, and retirement work remains separately gated
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 96 | 96 | 0 | 0 | 100% mapped |
+| Static | 104 | 96 | 0 | 8 | 100% mapped |
 | Manual | 43 | 42 | 0 | 1 | 100% mapped |
-| Analysis | 13 | 13 | 0 | 0 | 100% mapped |
-| Property | 15 | 15 | 0 | 0 | 100% mapped |
-| Unit | 22 | 22 | 0 | 0 | 100% mapped |
-| Integration | 10 | 10 | 0 | 0 | 100% mapped |
+| Analysis | 16 | 13 | 0 | 3 | 100% mapped |
+| Property | 18 | 15 | 0 | 3 | 100% mapped |
+| Unit | 38 | 22 | 0 | 16 | 100% mapped |
+| Integration | 13 | 10 | 0 | 3 | 100% mapped |
 | Fuzz | 2 | 2 | 0 | 0 | 100% mapped |
-| Snapshot | 1 | 1 | 0 | 0 | 100% mapped |
-| **Total** | **202** | **202** | **0** | **0** | **100% mapped** |
+| Snapshot | 2 | 1 | 0 | 1 | 100% mapped |
+| **Total** | **236** | **202** | **0** | **34** | **100% mapped** |
 
-**Matrix coverage status: ✅ Complete. Execution status: ✅ 202 passed; TC-199 recorded by the owner decision on issue #4.**
+**Matrix coverage status: ✅ Complete. Execution status: ✅ 202 passed; TC-199 recorded by the owner decision on issue #4; 🚧 TC-203..236 blocked on issue #34 implementation.**
