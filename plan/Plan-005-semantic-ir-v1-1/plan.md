@@ -62,7 +62,7 @@ Task-034 -> Task-035 -> Task-036 -> Task-038 --\
 
 ### Cross-cutting constraints
 
-- NFR-013 permits edits only under `docs/semantic-data-system/contracts-v1.md`, `schema/semantic/v1/`, `fixtures/semantic/v1/`, `spec/`, `test/`, `agent_ix_core_data/` (second reader), `reviews/`, `plan/`.
+- NFR-013 permits edits only under `docs/semantic-data-system/contracts-v1.md`, `schema/semantic/v1/`, `fixtures/semantic/v1/`, `spec/`, `test/`, `tests/` (Python second reader, test-only), `pyproject.toml`/`poetry.lock` (test deps), `reviews/`, `plan/`.
 - `spikes/`, `src/`, generated packages, catalog pins, and every corpus repository (config-service included) are read-only.
 - Every schema change keeps `contractVersion: "1.0.0"` documents valid byte-for-byte and adds no derived bytes to them.
 
@@ -74,7 +74,7 @@ All v1.1 rules live in `schema/semantic/v1/semantic-ir.schema.json`,
 JSON Schema cannot express (kind resolution through aliases, clause binding,
 target resolution, composite acyclicity, keyword applicability, regex
 compilation) are implemented twice: in the TypeScript Vitest reader under
-`test/` and in a Python `jsonschema` reader under `agent_ix_core_data/`, and
+`test/` and in a Python `jsonschema` reader under `tests/`, and
 TC-232 compares them. Fixtures attach under `fixtures/semantic/v1/positive/`
 and `fixtures/semantic/v1/negative/cases.json`.
 
@@ -129,7 +129,7 @@ time ->  Task-034 -> Task-035 -> Task-036 -> Task-038 --\
 
 | Task | Track | Owns (references) | Verified by (verifies) | Status |
 |---|---|---|---|---|
-| Task-034 | A | NFR-013 | TC-208, TC-231, TC-234, TC-236 | todo |
+| Task-034 | A | NFR-013 | TC-208, TC-231, TC-234, TC-236 | done |
 | Task-035 | A | FR-030 | TC-227..230, TC-246 | todo |
 | Task-036 | A | FR-027 | TC-203..207, TC-237, TC-238 | todo |
 | Task-037 | B | FR-029 | TC-219..225, TC-244, TC-245 | todo |

@@ -29,7 +29,7 @@ Close the slice: prove two independent readers agree on every v1.1 fixture, prov
 
 ## Subtasks
 
-- [ ] Implement a test-only Python reader in `agent_ix_core_data/` using `jsonschema` plus the FR-027..030 cross-field rules; run it over every golden and negative fixture and compare verdicts with the Vitest reader (TC-232).
+- [ ] Implement a test-only Python reader under `tests/` (pytest) using `jsonschema` from the poetry dev group plus the FR-027..030 cross-field rules; run it over every golden and negative fixture and compare verdicts with the Vitest reader (TC-232).
 - [ ] Add a generator for `1.1.0` documents covering all five node kinds and a property test that normalized serialization round-trips byte-identically (TC-233).
 - [ ] Add a static inventory check: every new node kind has at least one golden and one negative fixture (TC-247).
 - [ ] Re-run the Task-034 baselines: spike byte-identical, v1 fixture hashes unchanged, changed-path guard green.

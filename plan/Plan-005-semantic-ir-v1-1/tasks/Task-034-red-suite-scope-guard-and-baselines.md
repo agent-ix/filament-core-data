@@ -2,7 +2,7 @@
 id: Task-034
 title: "Red suite, scope guard, and baselines"
 type: Task
-status: todo
+status: done
 track: A
 priority: P0
 relationships:
@@ -27,10 +27,10 @@ Establish the failing v1.1 assertions, the changed-path guard, and the byte base
 
 ## Subtasks
 
-- [ ] Record `pnpm spike:typespec:check` output and the sha256 of every `fixtures/semantic/v1/positive/*.json` on the base commit as committed baselines.
-- [ ] Add a trace-tagged Vitest suite covering TC-203..247 with red assertions naming the absent v1.1 node or rule.
-- [ ] Extend the changed-path guard to allow `agent_ix_core_data/` (second reader) and forbid `spikes/`, `src/`, generated packages, and any path outside the repository.
-- [ ] Assert every v1 positive fixture validates under the current schema and that the v1 IR fixture (`contractVersion: "1.0.0"`) stays valid at every later commit.
+- [x] Record `pnpm spike:typespec:check` output and the sha256 of every `fixtures/semantic/v1/positive/*.json` on the base commit as committed baselines.
+- [x] Add a trace-tagged Vitest suite covering TC-203..247 with red assertions naming the absent v1.1 node or rule.
+- [x] Extend the changed-path guards to allow `plan/Plan-005-semantic-ir-v1-1/`, `test/semantic-ir-v1-1.test.ts`, `tests/`, `pyproject.toml`, `poetry.lock`, and `reviews/`, and forbid `spikes/`, `src/`, generated packages, and any path outside the repository.
+- [x] Assert every v1 positive fixture validates under the current schema and that the v1 IR fixture (`contractVersion: "1.0.0"`) stays valid at every later commit.
 
 ## Deliverables
 

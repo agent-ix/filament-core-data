@@ -21,7 +21,7 @@ generated package, and corpus repository unchanged.
 
 ## Scope
 
-- Permitted: `docs/semantic-data-system/contracts-v1.md`, `schema/semantic/v1/*.schema.json`, `fixtures/semantic/v1/**`, `spec/**`, `test/**`, `agent_ix_core_data/**` (second reader only), `reviews/**`, and `plan/**`.
+- Permitted: `docs/semantic-data-system/contracts-v1.md`, `schema/semantic/v1/*.schema.json`, `fixtures/semantic/v1/**`, `spec/**`, `test/**`, `tests/**` (Python second reader, test-only), `pyproject.toml` and `poetry.lock` (test dependencies only), `reviews/**`, and `plan/**`.
 - Prohibited: `spikes/**`, `src/**` backends, generated packages, catalog pins, and any file in config-service or another corpus repository.
 
 ## Rationale

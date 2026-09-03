@@ -339,7 +339,7 @@ awaits implementation.
 | TC-229 | Manifest targets `rust`/`json-schema` validate; target `go` fails at its entry | Unit | P0 | FR-030-AC-3 | 🚧 issue #34 |
 | TC-230 | Manifest and target-contract schemas reference one shared target enumeration | Static | P0 | FR-030-AC-4, FR-030-CON-2 | 🚧 issue #34 |
 | TC-231 | The v1 `contractVersion: "1.0.0"` IR fixture remains valid under the v1 schema | Integration | P0 | FR-030-CON-1 | 🚧 issue #34 |
-| TC-232 | The TypeScript Ajv reader and the Python `jsonschema` reader agree on every v1.1 golden and negative fixture | Integration | P0 | FR-020-AC-8 | 🚧 issue #34 |
+| TC-232 | The TypeScript Ajv reader and the Python `jsonschema` reader (`tests/`) agree on every v1.1 golden and negative fixture | Integration | P0 | FR-020-AC-8 | 🚧 issue #34 |
 | TC-233 | Generated v1.1 documents with all five new node kinds round-trip the normalized serialization byte-identically | Property | P0 | FR-020-AC-7 | 🚧 issue #34 |
 | TC-234 | `spike:typespec:check` output is byte-identical before and after the revision | Snapshot | P0 | NFR-013-AC-2 | 🚧 issue #34 |
 | TC-235 | The compatibility corpus records v1 → v1.1 as `additive` with the added node list | Static | P0 | NFR-013-AC-3 | 🚧 issue #34 |
