@@ -40,7 +40,7 @@ their own ticket before they can become implementation input.
 | [Generated package contract](generated-packages.md) | normative | — | Cross-language package and consumer boundary |
 | [Representations and transformations](representations-and-transformations.md) | normative | — | Output selection, mappings, profiles, loss, and provenance |
 | [Compatibility policy](compatibility.md) | normative | — | Cross-format evolution and Avro preservation |
-| [TypeSpec feasibility](typespec-feasibility.md) | provisional | [issue #4](https://github.com/agent-ix/filament-core-data/issues/4) | Pass/fail matrix and JSON Schema fallback |
+| [TypeSpec feasibility](typespec-feasibility.md) | historical | — | Capability matrix used by the issue #4 spike; resolved by ADR-0005 |
 | [Corpus review method](corpus-review-method.md) | normative | — | Evidence format for current-type and contract reviews |
 | [Program roadmap](roadmap.md) | normative | — | Ordered waves and human go-or-hold gates |
 | [Conflict register](conflicts.md) | normative | — | Dispositions against existing Quire/module architecture |
@@ -48,7 +48,8 @@ their own ticket before they can become implementation input.
 | [ADR-0001: Concern-specific authority](adr/0001-concern-specific-authority.md) | normative | — | Reject one universal authoritative format |
 | [ADR-0002: Generated-package ownership](adr/0002-generated-package-ownership.md) | normative | — | Place compiler and emitters in `filament-core-data` |
 | [ADR-0003: Best-fit representations](adr/0003-best-fit-representations.md) | normative | — | Select wire and analytical formats per boundary |
-| [ADR-0004: Conditional TypeSpec source](adr/0004-conditional-typespec-source.md) | provisional | [issue #4](https://github.com/agent-ix/filament-core-data/issues/4) | Prefer TypeSpec only if the feasibility matrix passes |
+| [ADR-0004: Conditional TypeSpec source](adr/0004-conditional-typespec-source.md) | historical | — | Superseded by ADR-0005 |
+| [ADR-0005: TypeSpec structural source](adr/0005-typespec-structural-source.md) | normative | — | TypeSpec is the structural schema source; compiler and emitters stay here |
 
 ## Program ownership
 

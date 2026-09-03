@@ -1,5 +1,14 @@
 # TypeSpec feasibility spike
 
+> **Historical evidence (2026-08-30).** The decision this spike informed is
+> recorded in
+> [ADR-0005](../../docs/semantic-data-system/adr/0005-typespec-structural-source.md):
+> TypeSpec is selected as the structural schema source. `report.md` and
+> `evidence/capabilities.json` are frozen outputs of `run-experiment.mjs`; their
+> "hold" recommendation and the "unfunded compensation" pass rule were authored
+> during the spike, are not the ADR rule, and were rejected by the owner on
+> [issue #4](https://github.com/agent-ix/filament-core-data/issues/4).
+
 This directory is an isolated, unpublished experiment for
 [`filament-core-data#4`](https://github.com/agent-ix/filament-core-data/issues/4).
 It may contain pinned TypeSpec sources, a disposable custom emitter, generated
@@ -21,8 +30,6 @@ The one-command interface is `pnpm run spike:typespec`. It regenerates only
 inside this directory or a caller-supplied temporary output. `--check` compares
 fresh output with the checked-in evidence without rewriting it.
 
-The acceptance report must classify every capability as `pass`, `partial`,
-`fail`, or `not-applicable`. A missing or compensated P0 capability remains
-partial/fail unless its production ownership and maintenance cost are explicitly
-accepted. The spike never publishes, updates a catalog, replaces Avro, changes a
-consumer, or promotes ADR-0004.
+The acceptance report classifies every capability as `pass`, `partial`,
+`fail`, or `not-applicable`. The spike never publishes, updates a catalog,
+replaces Avro, changes a consumer, or promotes an ADR.

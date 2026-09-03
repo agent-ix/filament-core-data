@@ -12,13 +12,16 @@ relationships:
 
 ## Description
 
-When the issue #4 evidence is accepted, the v1 contract SHALL use modular JSON
-Schema 2020-12 as the authoritative structural source. The v1 contract SHALL
-define a source-independent, versioned semantic IR for compiler and emitter exchange.
+The v1 contract SHALL use modular TypeSpec packages as the authoritative
+structural source, as recorded in ADR-0005.
+
+The v1 contract SHALL define a source-independent, versioned semantic IR for
+compiler and emitter exchange.
 
 ## Inputs
 
-- Modular JSON Schema documents with absolute stable `$id` values and resolved package-local references
+- Modular TypeSpec packages that import a shared semantic core, compiled with an exact-pinned TypeSpec compiler
+- JSON Schema 2020-12 and Protobuf documents emitted from those packages by the official TypeSpec emitters, used as projections
 - Versioned package, mapping, profile, compatibility, and lock metadata
 - Exact source bytes, source loci, package identity, and compiler contract version
 
@@ -34,7 +37,8 @@ define a source-independent, versioned semantic IR for compiler and emitter exch
 - The IR SHALL retain every source definition's stable semantic identity and source locus.
 - The IR SHALL distinguish absent, explicitly null, defaulted, unknown, unavailable, unsupported, invalid, and lossy states where the source contract distinguishes them.
 - The IR SHALL carry its own version and the exact versions and digests of every input used to construct it.
-- TypeSpec SHALL remain a non-authoritative import or future authoring option until a superseding decision passes its own compatibility gate.
+- The TypeSpec frontend SHALL read the compiled TypeSpec program directly.
+- The frontend SHALL NOT treat emitted JSON Schema as a second authoring source.
 - Current Avro SHALL remain a compatibility representation.
 - Current Avro SHALL NOT become the v1 semantic source by implication.
 
@@ -49,11 +53,11 @@ define a source-independent, versioned semantic IR for compiler and emitter exch
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-019-AC-1 | The specification identifies modular JSON Schema 2020-12 as the v1 structural source and records the exact human promotion gate. | Inspection |
+| FR-019-AC-1 | The specification identifies TypeSpec as the v1 structural source and cites ADR-0005. | Inspection |
 | FR-019-AC-2 | Structural source, semantic IR, package metadata, mappings, profiles, and locks have separate identities and versions. | Analysis |
 | FR-019-AC-3 | Every IR node links to a stable semantic identity and at least one source locus or generated-origin record. | Test |
 | FR-019-AC-4 | Unsupported contract versions produce a non-empty machine-readable diagnostic and zero target artifacts. | Test |
-| FR-019-AC-5 | The v1 decision neither changes current Avro authority nor requires TypeSpec inputs. | Inspection |
+| FR-019-AC-5 | The v1 contract does not change current Avro authority. | Inspection |
 
 ## Dependencies
 

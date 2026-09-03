@@ -13,8 +13,9 @@ issue #9 semantic IR/package/projection specification. Coverage is complete when
 every criterion, metric, and named constraint maps to at least one test case.
 Issues #8, #10, and #4 have passed their implementation gates. Issue #9 is fully
 mapped and its 72 automated, static, analysis, property, integration, fuzz, and
-snapshot cases pass. The named schema-source decision at TC-199 remains blocked;
-all later disruptive migration and promotion gates remain separate.
+snapshot cases pass. The schema-source decision at TC-199 is recorded (owner,
+issue #4, 2026-09-03: TypeSpec, ADR-0005); all later disruptive migration and
+promotion gates remain separate.
 
 ## Test Matrix Rules
 
@@ -93,7 +94,7 @@ all later disruptive migration and promotion gates remain separate.
 | NFR-009 | Cross-language conformance, round-trip, adverse, and API checks | TC-181..184 | ✅ Complete |
 | NFR-010 | Sandboxed path, network, execution, dependency, security, and bounded-resource checks | TC-185..189, TC-202 | ✅ Complete |
 | NFR-011 | Public schema, independent reader, extension, capability, and preservation checks | TC-190..194 | ✅ Complete |
-| NFR-012 | Diff, unchanged-suite, registry, downstream-gate, and human-decision checks | TC-195..199 | 🚧 TC-199 human gate pending |
+| NFR-012 | Diff, unchanged-suite, registry, downstream-gate, and human-decision checks | TC-195..199 | ✅ Complete |
 
 ## Test Case Summary
 
@@ -219,20 +220,20 @@ all later disruptive migration and promotion gates remain separate.
 | TC-118 | Source diagnostics, generation duration, and output size are retained without production claims | Analysis | P1 | FR-017-AC-5 | ✅ passed — retained spike evidence |
 | TC-119 | Every required capability has command, version, sample, result, disposition, and rationale | Analysis | P0 | FR-018-AC-1, NFR-007 | ✅ passed — retained spike evidence |
 | TC-120 | Recommendation states extension maintenance cost and cost of being wrong | Analysis | P0 | FR-018-AC-2, NFR-007 | ✅ passed — retained spike evidence |
-| TC-121 | Failed P0 capability selects modular JSON Schema metadata fallback without weakening the gate | Static | P0 | FR-018-AC-3, NFR-007 | ✅ passed — retained spike evidence |
-| TC-122 | ADR-0004 cannot become normative without identified human acceptance | Manual | P0 | FR-018-AC-4 | ✅ passed — retained spike evidence |
+| TC-121 | Owner decision is recorded in a normative ADR that supersedes the conditional ADR and names TypeSpec | Static | P0 | FR-018-AC-3, NFR-007 | ✅ passed — ADR-0005, `test/semantic-architecture.test.ts` |
+| TC-122 | The spike cannot self-promote or self-reject an ADR; the owner decides | Manual | P0 | FR-018-AC-4 | ✅ passed — issue #4 owner decision (2026-09-03) |
 | TC-123 | Spike changes only isolated experiment, spec, plan, review, dependency, and test paths | Static | P0 | NFR-006 | ✅ passed — retained spike evidence |
 | TC-124 | Spike publishes nothing and replaces no current schema, generated binding, or consumer | Static | P0 | NFR-006 | ✅ passed — retained spike evidence |
 | TC-125 | Evidence schema rejects missing methods, versions, results, limits, consequences, rationales, or confidence | Static | P0 | NFR-007 | ✅ passed — retained spike evidence |
 | TC-126 | Adverse evidence remains failed or partial and requirements remain unchanged | Manual | P0 | NFR-007 | ✅ passed — retained spike evidence |
 | TC-127 | Reviewer runs one command and observes equivalent native consumer construction | Manual | P0 | US-004-AC-1 | ✅ passed — retained spike evidence |
-| TC-128 | Failed P0 demonstration reaches the JSON Schema fallback and leaves Avro/consumers unchanged | Manual | P0 | US-004-AC-2 | ✅ passed — retained spike evidence |
-| TC-129 | Root-index walkthrough resolves the evidence, recommendation, fallback, and human promotion gate | Manual | P0 | StR-001-VC-1 | ✅ passed — retained spike evidence |
-| TC-130 | V1 contract names modular JSON Schema 2020-12 and the human source-decision gate | Static | P0 | FR-019-AC-1 | ✅ passed — semantic contract v1 |
+| TC-128 | Toolchain-defect partial is retained with its workaround, tracked as a defect, and leaves Avro/consumers unchanged | Manual | P0 | US-004-AC-2 | ✅ passed — capability `json-schema-2020-12`, issue #31 |
+| TC-129 | Root-index walkthrough resolves the evidence, recommendation, and recorded owner decision | Manual | P0 | StR-001-VC-1 | ✅ passed — retained spike evidence, ADR-0005 |
+| TC-130 | V1 contract names TypeSpec as the structural source per ADR-0005 | Static | P0 | FR-019-AC-1 | ✅ passed — semantic contract v1 |
 | TC-131 | Source, IR, package, mapping, profile, and lock identities and versions remain distinct | Static | P0 | FR-019-AC-2 | ✅ passed — semantic contract v1 |
 | TC-132 | Every semantic IR node retains stable identity and source or generated origin | Unit | P0 | FR-019-AC-3, FR-019-CON-1 | ✅ passed — semantic contract v1 |
 | TC-133 | Unknown source or IR contract version emits diagnostics and zero target artifacts | Unit | P0 | FR-019-AC-4, FR-019-CON-2 | ✅ passed — semantic contract v1 |
-| TC-134 | V1 source selection changes neither current Avro nor TypeSpec authority implicitly | Static | P0 | FR-019-AC-5 | ✅ passed — semantic contract v1 |
+| TC-134 | V1 contract changes no current Avro authority | Static | P0 | FR-019-AC-5 | ✅ passed — semantic contract v1 |
 | TC-135 | Every structural kind has one normative IR shape and valid/invalid fixtures | Static | P0 | FR-020-AC-1 | ✅ passed — semantic contract v1 |
 | TC-136 | Structural kind and namespaced semantic roles vary independently | Unit | P0 | FR-020-AC-2 | ✅ passed — semantic contract v1 |
 | TC-137 | Required, optional, nullable, and defaulted states remain distinct across core targets | Property | P0 | FR-020-AC-3 | ✅ passed — semantic contract v1 |
@@ -297,7 +298,7 @@ all later disruptive migration and promotion gates remain separate.
 | TC-196 | Current Avro, package, and module fixture suites remain unchanged and passing | Integration | P0 | NFR-012 | ✅ passed — semantic contract v1 |
 | TC-197 | Issue #9 publishes no package and changes no catalog pin | Static | P0 | NFR-012 | ✅ passed — semantic contract v1 |
 | TC-198 | Every compiler, publication, enforcement, database, migration, and retirement action retains its own gate | Static | P0 | NFR-012, NFR-012-AC-2 | ✅ passed — semantic contract v1 |
-| TC-199 | Named human accepts or holds the modular JSON Schema v1 source before merge | Manual | P0 | NFR-012-AC-1 | 🚧 human decision gate |
+| TC-199 | Owner records the v1 structural-source decision before merge | Manual | P0 | NFR-012-AC-1 | ✅ passed — owner decision on issue #4 (2026-09-03): TypeSpec, ADR-0005 |
 | TC-200 | Independent adapters and backends share stable diagnostic codes and causal envelopes | Unit | P0 | FR-024-AC-7 | ✅ passed — semantic contract v1 |
 | TC-201 | Fingerprints ignore excluded ordering but change for every included semantic-byte change | Property | P0 | FR-021-AC-7 | ✅ passed — semantic contract v1 |
 | TC-202 | Oversized and cyclic hostile inputs terminate at declared resource limits | Fuzz | P0 | NFR-010 | ✅ passed — semantic contract v1 |
@@ -317,8 +318,8 @@ all later disruptive migration and promotion gates remain separate.
 | TC-061 | contract property | none or not-applicable | source proves absence or irrelevance | Explicit state is retained without inventing a value |
 | TC-064, TC-067 | repeated definition | conflict or unknown | equivalence not proven | Fit is prohibited |
 | TC-064 | representation-local definition | representation-local | semantic scope is intentionally local | No shared replacement is implied |
-| TC-097, TC-121 | TypeSpec P0 capabilities all pass | recommended | human ADR review | TypeSpec may be proposed, never self-promoted |
-| TC-102, TC-121 | TypeSpec P0 capability fails | no-go | modular JSON Schema fallback | Failure and requirement remain intact |
+| TC-097, TC-121 | TypeSpec P0 capabilities pass under the ADR rule | recommended | owner decision | TypeSpec may be proposed, never self-promoted |
+| TC-102, TC-128 | Official emitter output needs a workaround | partial with tracked defect | owner decision | Defect and workaround are retained; the source is not rejected |
 | TC-100, TC-110 | concrete Protobuf interface | wire projection | explicit field mapping | Stable numbered projection may pass without becoming universal |
 | TC-111 | recursive semantic graph | analytical projection | declared flattening/loss | Arrow remains derived and source/provenance linked |
 | TC-137 | field state | required/optional | nullable/non-null/defaulted | Every valid combination retains a distinct semantic state |
@@ -376,11 +377,10 @@ all later disruptive migration and promotion gates remain separate.
 | pinned input | pre-sign-off refresh finds contract-affecting drift | affected evidence invalid until refreshed | TC-058, TC-075 |
 | suspected consumer | source evidence confirms consumer | known consumer with revised confidence | TC-087 |
 | suspected consumer | evidence remains inconclusive | explicit unknown with consequence | TC-061, TC-087 |
-| TypeSpec candidate | all P0 capabilities pass | recommended, still provisional | TC-119..122 |
-| TypeSpec candidate | any P0 capability fails | no-go plus JSON Schema fallback | TC-121, TC-128 |
-| provisional ADR-0004 | human accepts retained report | normative decision recorded in a separate reviewed change | TC-122, TC-129 |
-| proposed JSON Schema v1 contract | named human holds source decision | specification remains provisional and unmerged | TC-130, TC-199 |
-| proposed JSON Schema v1 contract | named human accepts source decision after composite review | contract becomes eligible for merge, not implementation | TC-130, TC-199 |
+| TypeSpec candidate | P0 capabilities pass under the ADR rule | recommended, still provisional | TC-119..120 |
+| TypeSpec candidate | official emitter defect found | partial with tracked defect | TC-128 |
+| provisional ADR-0004 | owner records the decision | historical; ADR-0005 normative | TC-121, TC-122, TC-129 |
+| proposed v1 contract | owner records the structural-source decision (ADR-0005) | contract becomes eligible for merge, not implementation | TC-130, TC-199 |
 | unlocked package graph | successful deterministic resolution | immutable transitive lock | TC-141..142 |
 | locked package graph | any identity/version/digest conflict | failed resolution with all loci | TC-142 |
 | known extension capability | no-op dynamic/static processing | payload preserved according to profile | TC-144, TC-194 |
@@ -397,7 +397,7 @@ all later disruptive migration and promotion gates remain separate.
 | ERR-003 | Lossy transform omits declaration or provenance | Validation fails | TC-024 |
 | ERR-004 | Known conflict omits a disposition | Review fails | TC-030, TC-041 |
 | ERR-005 | Disruptive step omits a human promotion gate | Review fails | TC-028 |
-| ERR-006 | TypeSpec feasibility fails without a fallback | Review fails | TC-026, TC-036 |
+| ERR-006 | A spike report adds a pass condition the ADR does not state | Review fails | TC-026, TC-036 |
 | ERR-007 | Transformation cannot satisfy its declared preservation level | Explicit non-authoritative outcome | TC-024, TC-051 |
 | ERR-008 | Decision supersession graph contains a cycle | Validation fails | TC-053 |
 | ERR-009 | Repository or corpus input has no immutable revision | Input is marked unpinned with consequence and reduced confidence | TC-055, TC-057 |
@@ -411,7 +411,7 @@ all later disruptive migration and promotion gates remain separate.
 | ERR-017 | Official and custom outputs disagree without a retained mapping disposition | Feasibility gate fails | TC-109..110, TC-115 |
 | ERR-018 | Clean regeneration differs for unchanged inputs | Determinism capability fails | TC-113 |
 | ERR-019 | Native package does not compile or fixture meaning differs | Consumer-surface capability fails | TC-114..116 |
-| ERR-020 | Report marks a partial/failing P0 result as pass | Recommendation validation fails and fallback is selected | TC-119..121, TC-126 |
+| ERR-020 | Report marks a partial/failing P0 result as pass | Recommendation validation fails | TC-119..120, TC-126 |
 | ERR-021 | Spike attempts publication or canonical replacement | Isolation gate fails before merge | TC-123..124 |
 | ERR-022 | Structural-source or semantic-IR version is unknown | Source-located diagnostic and zero target output | TC-133 |
 | ERR-023 | Package graph has unresolved import, duplicate identity, cycle, version, or digest conflict | Resolution fails and lists every conflicting locus | TC-142 |
@@ -460,7 +460,7 @@ all later disruptive migration and promotion gates remain separate.
 No open mapping gap remains for issues #8, #10, #4, or #9. The 41 issue #4 cases
 pass through the isolated spike, retained evidence, native consumers, and
 source-selection report. Issue #9 has 72 passing contract-conformance cases and
-one intentional manual merge gate, TC-199. Production compiler, consumer,
+its manual merge gate, TC-199, is recorded. Production compiler, consumer,
 database, publication, enforcement, and retirement work remains separately gated.
 
 ## Test Execution Summary
@@ -475,6 +475,6 @@ database, publication, enforcement, and retirement work remains separately gated
 | Integration | 10 | 10 | 0 | 0 | 100% mapped |
 | Fuzz | 2 | 2 | 0 | 0 | 100% mapped |
 | Snapshot | 1 | 1 | 0 | 0 | 100% mapped |
-| **Total** | **202** | **201** | **0** | **1** | **100% mapped** |
+| **Total** | **202** | **202** | **0** | **0** | **100% mapped** |
 
-**Matrix coverage status: ✅ Complete. Execution status: 🚧 201 passed; TC-199 is the sole blocked human gate.**
+**Matrix coverage status: ✅ Complete. Execution status: ✅ 202 passed; TC-199 recorded by the owner decision on issue #4.**

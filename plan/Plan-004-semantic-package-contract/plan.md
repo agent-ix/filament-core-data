@@ -98,8 +98,8 @@ New normative contracts attach under `schema/semantic/v1/`, with examples and
 conformance cases under `fixtures/semantic/v1/` and human guidance under
 `docs/semantic-data-system/`. Contract tests attach to the existing Vitest
 suite but must not import or change `src/generated.ts` or
-`schema/avro/core-data.avpr`. The TypeSpec spike is retained evidence only;
-production compiler/codegen lives in the separate reusable AGPL campaign.
+`schema/avro/core-data.avpr`. The TypeSpec spike is retained evidence and the
+seed for the production compiler, which lives in this repository (ADR-0002).
 
 ## Test Plan
 
@@ -113,11 +113,11 @@ production compiler/codegen lives in the separate reusable AGPL campaign.
 - [x] **TC-177..184:** isolated reproducibility, offline operation, manifest reconciliation, path normalization, and cross-target parity.
 - [x] **TC-185..194, TC-202:** output isolation, network denial, hostile payloads, dependency provenance, public schemas, independent reading, extensions, and bounded termination.
 - [x] **TC-195..198:** changed-path, current-suite, non-publication, and downstream-gate protection.
-- [ ] **TC-199:** named human accepts or holds the proposed v1 source before normative merge.
+- [x] **TC-199:** owner recorded the v1 source decision (TypeSpec, ADR-0005) on issue #4, 2026-09-03.
 
 ### Entrance Criteria
 
-- Issue #4 evidence recommends modular JSON Schema 2020-12 and retains TypeSpec as non-authoritative.
+- Issue #4 evidence and the owner decision (ADR-0005) select TypeSpec as the structural source.
 - US-005, FR-019..026, NFR-008..012, TC-130..202, and SR-017..024 validate with Quire.
 - Existing Avro schema, generated source, package surface, and external repositories are read-only controls.
 
@@ -127,7 +127,7 @@ production compiler/codegen lives in the separate reusable AGPL campaign.
 - All 72 automated/static/analysis cases pass without production compiler or consumer changes.
 - Existing tests and Avro/module fixtures remain unchanged and passing.
 - Code review and gap analysis report no blocking finding.
-- TC-199 contains a named human decision; only then may the normative contract merge.
+- TC-199 contains the owner's recorded decision (done: issue #4, 2026-09-03).
 
 ## Remaining Work
 
@@ -148,7 +148,7 @@ production compiler/codegen lives in the separate reusable AGPL campaign.
 ### Track C: Join and gates
 
 - **C1 = Task-032** Cross-contract conformance and assurance — Hard; exit: all automated evidence, unchanged-suite checks, and non-disruption gates pass.
-- **Gate = Task-033** Human normative-source decision — measures acceptance of the proposed authority boundary; pass: a named human records accept or hold before merge.
+- **Gate = Task-033** Owner normative-source decision — measures acceptance of the proposed authority boundary; pass: the owner records the decision before merge (done: TypeSpec, ADR-0005, issue #4, 2026-09-03).
 
 ## Parallel Execution Summary
 

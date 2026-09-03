@@ -18,10 +18,10 @@ relationships:
 
 The architecture and corpus reviews found useful but plane-local Avro records,
 Markdown contracts, database models, DTOs, and extraction payloads. The TypeSpec
-experiment proved the desired consumer surfaces but did not justify TypeSpec or
-prototype Rust and TypeScript emitters as production dependencies. The next
-contract therefore uses modular JSON Schema 2020-12 for structural definitions
-and separately versions the semantic IR, packages, mappings, profiles, and locks.
+experiment proved the desired consumer surfaces, and the owner selected TypeSpec
+as the structural source (ADR-0005). The next contract therefore uses modular
+TypeSpec packages for structural definitions and separately versions the
+semantic IR, packages, mappings, profiles, and locks.
 
 ## Acceptance Examples (Illustrative)
 

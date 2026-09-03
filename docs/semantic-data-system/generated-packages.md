@@ -66,7 +66,8 @@ columns, or Protobuf field numbers for the same type.
 - Modular Draft 2020-12 schemas with stable `$id`, `$defs`, references, and
   explicit unknown-field behavior.
 - Portable validation and exchange surface for dynamic tools and LLM workflows.
-- Fallback schema-authoring source if the TypeSpec feasibility gate fails.
+- Generated from the TypeSpec source by the official emitter; never an
+  authoring source ([ADR-0005](adr/0005-typespec-structural-source.md)).
 
 ## Dependency exclusions
 

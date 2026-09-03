@@ -281,11 +281,11 @@ describe("semantic package contract v1", () => {
 			"utf8",
 		);
 		for (const term of [
-			"modular JSON Schema 2020-12",
-			"TypeSpec remains a non-authoritative",
+			"The v1 structural source is TypeSpec",
+			"ADR-0005",
 			"Avro remains a compatibility representation",
 			"AGPL-3.0-or-later",
-			"named human",
+			"the owner selected TypeSpec",
 		])
 			expect(contract).toContain(term);
 		expect(contract).toMatch(
