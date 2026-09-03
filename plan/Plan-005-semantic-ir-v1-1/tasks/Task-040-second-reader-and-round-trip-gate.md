@@ -2,7 +2,7 @@
 id: Task-040
 title: "Second reader and round-trip gate"
 type: Task
-status: in_progress
+status: done
 track: Gate
 priority: P0
 relationships:
@@ -33,7 +33,7 @@ Close the slice: prove two independent readers agree on every v1.1 fixture, prov
 - [x] Add a generator for `1.1.0` documents covering all five node kinds and a property test that normalized serialization round-trips byte-identically (TC-233).
 - [x] Add a static inventory check: every new node kind has at least one golden and one negative fixture (TC-247).
 - [x] Re-run the Task-034 baselines: spike byte-identical, v1 fixture hashes unchanged, changed-path guard green.
-- [ ] Run `/code-review` and `/gap-analysis`; resolve findings; comment "mergeable" on the PR.
+- [x] Run `/code-review` (SR-035) and `/gap-analysis` (SR-036); findings resolved or recorded; "mergeable" comment on PR #38.
 
 ## Deliverables
 

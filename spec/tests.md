@@ -16,8 +16,7 @@ Issues #8, #10, and #4 have passed their implementation gates. Issue #9 is fully
 mapped and its 72 automated, static, analysis, property, integration, fuzz, and
 snapshot cases pass. The schema-source decision at TC-199 is recorded (owner,
 issue #4, 2026-09-03: TypeSpec, ADR-0005); all later disruptive migration and
-promotion gates remain separate. Issue #34 (TC-203..247) is fully mapped and
-awaits implementation.
+promotion gates remain separate. Issue #34 (TC-203..247) is fully mapped and its 45 cases pass (PR #38).
 
 ## Test Matrix Rules
 
@@ -310,51 +309,51 @@ awaits implementation.
 | TC-200 | Independent adapters and backends share stable diagnostic codes and causal envelopes | Unit | P0 | FR-024-AC-7 | ✅ passed — semantic contract v1 |
 | TC-201 | Fingerprints ignore excluded ordering but change for every included semantic-byte change | Property | P0 | FR-021-AC-7 | ✅ passed — semantic contract v1 |
 | TC-202 | Oversized and cyclic hostile inputs terminate at declared resource limits | Fuzz | P0 | NFR-010 | ✅ passed — semantic contract v1 |
-| TC-203 | A `0..1` field validates, derives `presence: optional`, and re-serializes byte-identically | Property | P0 | FR-027-AC-1, FR-020-AC-7, US-006-EX-1 | 🚧 issue #34 |
-| TC-204 | A `1..*` field preserves `ordered` and `unique` flags | Unit | P0 | FR-027-AC-2 | 🚧 issue #34 |
-| TC-205 | Stated `presence` contradicting multiplicity fails at the field locus | Unit | P0 | FR-027-AC-3 | 🚧 issue #34 |
-| TC-206 | `upper < lower` and `lower < 0` fail at the field locus; `0..0` validates | Unit | P0 | FR-027-AC-4 | 🚧 issue #34 |
-| TC-207 | `unit` validates on a scalar field and fails on a record field | Unit | P0 | FR-027-AC-5, FR-027-CON-2 | 🚧 issue #34 |
-| TC-208 | Every v1 positive fixture validates unchanged under v1.1 with multiplicity derived from presence | Integration | P0 | FR-027-AC-6, FR-027-CON-1, NFR-013-AC-1 | 🚧 issue #34 |
-| TC-209 | FR-006 `ConfigVersion` fields express as v1.1 fields with zero declared loss | Analysis | P0 | FR-027-AC-7 | 🚧 issue #34 |
-| TC-210 | A `belongs_to` structural relationship validates and round-trips byte-identically | Property | P0 | FR-028-AC-1, FR-020-AC-7, US-006-EX-2 | 🚧 issue #34 |
-| TC-211 | An unknown relationship `category` fails at the relationship locus | Unit | P0 | FR-028-AC-2 | 🚧 issue #34 |
-| TC-212 | An operation with params, bounded return, and present pre/post clauses validates | Unit | P0 | FR-028-AC-3 | 🚧 issue #34 |
-| TC-213 | An operation whose `post[]` names an absent clause fails at the operation locus | Unit | P0 | FR-028-AC-4 | 🚧 issue #34 |
-| TC-214 | An `ocl` clause with `text` and `sourceSpan` validates and the schema declares no parsed-content property | Static | P0 | FR-028-AC-5, FR-028-CON-2, US-006-EX-3 | 🚧 issue #34 |
-| TC-215 | A namespaced clause language validates and a bare unknown language fails | Unit | P0 | FR-028-AC-6 | 🚧 issue #34 |
-| TC-216 | `relationships[]` or `operations[]` on a non-record type definition fails | Unit | P0 | FR-028-AC-7 | 🚧 issue #34 |
-| TC-217 | Absent `relationships[]`, `operations[]`, and `clauses[]` read as empty on a v1 document | Unit | P0 | FR-028-CON-1 | 🚧 issue #34 |
-| TC-218 | FR-006 `overlay` relationship and an `ocl` invariant express with zero declared loss | Analysis | P0 | FR-028-AC-8 | 🚧 issue #34 |
-| TC-219 | Every closed constraint keyword has a positive fixture whose operands validate | Unit | P0 | FR-029-AC-1 | 🚧 issue #34 |
-| TC-220 | Keyword `mnimum` fails at the constraint locus | Unit | P0 | FR-029-AC-2, US-006-EX-4 | 🚧 issue #34 |
-| TC-221 | A `min` constraint with a string operand fails | Unit | P0 | FR-029-AC-3 | 🚧 issue #34 |
-| TC-222 | A `pattern` constraint without `dialect` fails | Unit | P0 | FR-029-AC-4 | 🚧 issue #34 |
-| TC-223 | The v1.1 schema has no `keyword: string` path and no untyped `operands` path | Static | P0 | FR-029-AC-5 | 🚧 issue #34 |
-| TC-224 | Every v1 fixture constraint uses a closed keyword, or its correction is recorded | Static | P0 | FR-029-CON-1 | 🚧 issue #34 |
-| TC-225 | Keyword addition classifies additive; removal or retyping classifies breaking | Unit | P0 | FR-029-CON-2 | 🚧 issue #34 |
-| TC-226 | FR-006 `versionNumber` `min: 1` expresses as a typed constraint | Analysis | P1 | FR-029-AC-6 | 🚧 issue #34 |
-| TC-227 | A `1.1.0` document with `source.dialect: typespec` validates, and one with `spec-bundle` validates | Unit | P0 | FR-030-AC-1 | 🚧 issue #34 |
-| TC-228 | The JSON Schema `$schema` URI as `source.dialect` fails with a diagnostic citing ADR-0005 | Unit | P0 | FR-030-AC-2 | 🚧 issue #34 |
-| TC-229 | Manifest targets `rust`/`markdown` validate; target `go` fails at its entry | Unit | P0 | FR-030-AC-3 | 🚧 issue #34 |
-| TC-230 | Manifest, target-contract, and representation schemas reference the shared common enumerations | Static | P0 | FR-030-AC-4, FR-030-CON-2 | 🚧 issue #34 |
-| TC-231 | The v1 `contractVersion: "1.0.0"` IR fixture remains valid under the v1 schema | Integration | P0 | FR-030-CON-1 | 🚧 issue #34 |
-| TC-232 | The TypeScript Ajv reader and the Python `jsonschema` reader (`tests/`) agree on every v1.1 golden and negative fixture | Integration | P0 | FR-020-AC-8 | 🚧 issue #34 |
-| TC-233 | Generated v1.1 documents with all five new node kinds round-trip the normalized serialization byte-identically | Property | P0 | FR-020-AC-7 | 🚧 issue #34 |
-| TC-234 | `spike:typespec:check` output is byte-identical before and after the revision | Snapshot | P0 | NFR-013-AC-2 | 🚧 issue #34 |
-| TC-235 | The compatibility corpus records v1 → v1.1 as `additive` with the added node list | Static | P0 | NFR-013-AC-3 | 🚧 issue #34 |
-| TC-236 | Issue #34 changed-path gate excludes `spikes/`, backends, and corpus repositories | Static | P0 | NFR-013-AC-4 | 🚧 issue #34 |
-| TC-237 | `ordered: true` or `unique: true` on a `1..1` field fails at the field locus | Unit | P0 | FR-027-AC-8 | 🚧 issue #34 |
-| TC-238 | Multiplicity narrowing classifies breaking; widening classifies additive | Unit | P0 | FR-027-AC-9 | 🚧 issue #34 |
-| TC-239 | A relationship `target` resolving to no type definition or lock export fails at the relationship locus | Unit | P0 | FR-028-AC-9 | 🚧 issue #34 |
-| TC-240 | A composite cycle or composite self-reference fails at the closing relationship; a non-composite self-reference validates | Unit | P0 | FR-028-AC-10 | 🚧 issue #34 |
-| TC-241 | Two clauses sharing a `clauseId` in one type definition fail validation | Unit | P0 | FR-028-AC-11 | 🚧 issue #34 |
-| TC-242 | The IR `category` enumeration equals the quire-rs FR-040 `EdgeCategory` registry | Integration | P0 | FR-028-AC-12 | 🚧 issue #34 |
-| TC-243 | Added relationship/operation/clause classifies additive; removed or retargeted classifies breaking | Unit | P0 | FR-028-AC-13 | 🚧 issue #34 |
-| TC-244 | `minLength` applied to an `integer` scalar fails at the constraint locus | Unit | P0 | FR-029-AC-7 | 🚧 issue #34 |
-| TC-245 | A `pattern` whose `regex` does not compile under `ecma-262` fails validation | Unit | P0 | FR-029-AC-8 | 🚧 issue #34 |
-| TC-246 | `contractVersion: "1.2.0"` fails before emission; `1.1.0` with `source.dialect: avro` fails at `source.dialect` | Unit | P0 | FR-030-AC-5, FR-030-AC-6 | 🚧 issue #34 |
-| TC-247 | Every new IR node kind has one golden and one negative fixture under `fixtures/semantic/v1/` | Static | P0 | NFR-013-AC-5 | 🚧 issue #34 |
+| TC-203 | A `0..1` field validates, derives `presence: optional`, and re-serializes byte-identically | Property | P0 | FR-027-AC-1, FR-020-AC-7, US-006-EX-1 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-204 | A `1..*` field preserves `ordered` and `unique` flags | Unit | P0 | FR-027-AC-2 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-205 | Stated `presence` contradicting multiplicity fails at the field locus | Unit | P0 | FR-027-AC-3 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-206 | `upper < lower` and `lower < 0` fail at the field locus; `0..0` validates | Unit | P0 | FR-027-AC-4 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-207 | `unit` validates on a scalar field and fails on a record field | Unit | P0 | FR-027-AC-5, FR-027-CON-2 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-208 | Every v1 positive fixture validates unchanged under v1.1 with multiplicity derived from presence | Integration | P0 | FR-027-AC-6, FR-027-CON-1, NFR-013-AC-1 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-209 | FR-006 `ConfigVersion` fields express as v1.1 fields with zero declared loss | Analysis | P0 | FR-027-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-210 | A `belongs_to` structural relationship validates and round-trips byte-identically | Property | P0 | FR-028-AC-1, FR-020-AC-7, US-006-EX-2 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-211 | An unknown relationship `category` fails at the relationship locus | Unit | P0 | FR-028-AC-2 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-212 | An operation with params, bounded return, and present pre/post clauses validates | Unit | P0 | FR-028-AC-3 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-213 | An operation whose `post[]` names an absent clause fails at the operation locus | Unit | P0 | FR-028-AC-4 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-214 | An `ocl` clause with `text` and `sourceSpan` validates and the schema declares no parsed-content property | Static | P0 | FR-028-AC-5, FR-028-CON-2, US-006-EX-3 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-215 | A namespaced clause language validates and a bare unknown language fails | Unit | P0 | FR-028-AC-6 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-216 | `relationships[]` or `operations[]` on a non-record type definition fails | Unit | P0 | FR-028-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-217 | Absent `relationships[]`, `operations[]`, and `clauses[]` read as empty on a v1 document | Unit | P0 | FR-028-CON-1 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-218 | FR-006 `overlay` relationship and an `ocl` invariant express with zero declared loss | Analysis | P0 | FR-028-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-219 | Every closed constraint keyword has a positive fixture whose operands validate | Unit | P0 | FR-029-AC-1 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-220 | Keyword `mnimum` fails at the constraint locus | Unit | P0 | FR-029-AC-2, US-006-EX-4 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-221 | A `min` constraint with a string operand fails | Unit | P0 | FR-029-AC-3 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-222 | A `pattern` constraint without `dialect` fails | Unit | P0 | FR-029-AC-4 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-223 | The v1.1 schema has no `keyword: string` path and no untyped `operands` path | Static | P0 | FR-029-AC-5 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-224 | Every v1 fixture constraint uses a closed keyword, or its correction is recorded | Static | P0 | FR-029-CON-1 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-225 | Keyword addition classifies additive; removal or retyping classifies breaking | Unit | P0 | FR-029-CON-2 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-226 | FR-006 `versionNumber` `min: 1` expresses as a typed constraint | Analysis | P1 | FR-029-AC-6 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-227 | A `1.1.0` document with `source.dialect: typespec` validates, and one with `spec-bundle` validates | Unit | P0 | FR-030-AC-1 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-228 | The JSON Schema `$schema` URI as `source.dialect` fails with a diagnostic citing ADR-0005 | Unit | P0 | FR-030-AC-2 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-229 | Manifest targets `rust`/`markdown` validate; target `go` fails at its entry | Unit | P0 | FR-030-AC-3 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-230 | Manifest, target-contract, and representation schemas reference the shared common enumerations | Static | P0 | FR-030-AC-4, FR-030-CON-2 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-231 | The v1 `contractVersion: "1.0.0"` IR fixture remains valid under the v1 schema | Integration | P0 | FR-030-CON-1 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-232 | The TypeScript Ajv reader and the Python `jsonschema` reader (`tests/`) agree on every v1.1 golden and negative fixture | Integration | P0 | FR-020-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-233 | Generated v1.1 documents with all five new node kinds round-trip the normalized serialization byte-identically | Property | P0 | FR-020-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-234 | `spike:typespec:check` output is byte-identical before and after the revision | Snapshot | P0 | NFR-013-AC-2 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-235 | The compatibility corpus records v1 → v1.1 as `additive` with the added node list | Static | P0 | NFR-013-AC-3 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-236 | Issue #34 changed-path gate excludes `spikes/`, backends, and corpus repositories | Static | P0 | NFR-013-AC-4 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-237 | `ordered: true` or `unique: true` on a `1..1` field fails at the field locus | Unit | P0 | FR-027-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-238 | Multiplicity narrowing classifies breaking; widening classifies additive | Unit | P0 | FR-027-AC-9 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-239 | A relationship `target` resolving to no type definition or lock export fails at the relationship locus | Unit | P0 | FR-028-AC-9 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-240 | A composite cycle or composite self-reference fails at the closing relationship; a non-composite self-reference validates | Unit | P0 | FR-028-AC-10 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-241 | Two clauses sharing a `clauseId` in one type definition fail validation | Unit | P0 | FR-028-AC-11 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-242 | The IR `category` enumeration equals the quire-rs FR-040 `EdgeCategory` registry | Integration | P0 | FR-028-AC-12 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-243 | Added relationship/operation/clause classifies additive; removed or retargeted classifies breaking | Unit | P0 | FR-028-AC-13 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-244 | `minLength` applied to an `integer` scalar fails at the constraint locus | Unit | P0 | FR-029-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-245 | A `pattern` whose `regex` does not compile under `ecma-262` fails validation | Unit | P0 | FR-029-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-246 | `contractVersion: "1.2.0"` fails before emission; `1.1.0` with `source.dialect: avro` fails at `source.dialect` | Unit | P0 | FR-030-AC-5, FR-030-AC-6 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-247 | Every new IR node kind has one golden and one negative fixture under `fixtures/semantic/v1/` | Static | P0 | NFR-013-AC-5 | ✅ passed — semantic IR v1.1 (PR #38) |
 
 ## Option Permutation Matrix
 
@@ -554,9 +553,8 @@ awaits implementation.
 ## Coverage Gaps
 
 No open mapping gap remains for issues #8, #10, #4, #9, or #34. Issue #34's 45
-cases (TC-203..247) are mapped and unexecuted pending implementation; TC-233
-needs a generator for v1.1 documents, which the repository does not yet have.
-The 41 issue #4 cases
+cases (TC-203..247) pass; TC-233 uses a seeded in-test generator (no library
+dependency was added). The 41 issue #4 cases
 pass through the isolated spike, retained evidence, native consumers, and
 source-selection report. Issue #9 has 72 passing contract-conformance cases and
 its manual merge gate, TC-199, is recorded. Production compiler, consumer,
@@ -566,14 +564,14 @@ database, publication, enforcement, and retirement work remains separately gated
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 104 | 96 | 0 | 8 | 100% mapped |
-| Manual | 43 | 42 | 0 | 1 | 100% mapped |
-| Analysis | 16 | 13 | 0 | 3 | 100% mapped |
-| Property | 18 | 15 | 0 | 3 | 100% mapped |
-| Unit | 48 | 22 | 0 | 26 | 100% mapped |
-| Integration | 14 | 10 | 0 | 4 | 100% mapped |
+| Static | 104 | 104 | 0 | 0 | 100% mapped |
+| Manual | 43 | 43 | 0 | 0 | 100% mapped |
+| Analysis | 16 | 16 | 0 | 0 | 100% mapped |
+| Property | 18 | 18 | 0 | 0 | 100% mapped |
+| Unit | 48 | 48 | 0 | 0 | 100% mapped |
+| Integration | 14 | 14 | 0 | 0 | 100% mapped |
 | Fuzz | 2 | 2 | 0 | 0 | 100% mapped |
-| Snapshot | 2 | 1 | 0 | 1 | 100% mapped |
-| **Total** | **247** | **202** | **0** | **45** | **100% mapped** |
+| Snapshot | 2 | 2 | 0 | 0 | 100% mapped |
+| **Total** | **247** | **247** | **0** | **0** | **100% mapped** |
 
-**Matrix coverage status: ✅ Complete. Execution status: ✅ 202 passed; TC-199 recorded by the owner decision on issue #4; 🚧 TC-203..247 blocked on issue #34 implementation.**
+**Matrix coverage status: ✅ Complete. Execution status: ✅ 247 passed; TC-199 recorded by the owner decision on issue #4; TC-203..247 pass on PR #38 (TC-232 needs the poetry env, TC-242 the installed `spec-artifacts-iso` manifest).**

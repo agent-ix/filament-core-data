@@ -1210,18 +1210,23 @@ describe("FR-020 closing gate: two readers, round trip, fixture inventory (Task-
 			readJson("negative/cases.json"),
 			readJson("negative/reader-cases.json"),
 		]);
-		const nodeKinds: [string, RegExp, RegExp][] = [
-			["multiplicity", /"multiplicity"/, /multiplicity/i],
-			["unit", /"unit":"s"/, /unit/i],
-			["relationship", /"relationships":\[\{/, /relationship/i],
-			["operation", /"operations":\[\{/, /operation/i],
-			["clause", /"clauses":\[\{/, /clause/i],
-			["constraint", /"keyword":"min"/, /constraint/i],
-			["dialect", /"dialect":"typespec"/, /dialect/i],
+		// Plain substrings, not regex literals: Quire's coverage scanner counts
+		// braces inside regex literals and would report this file unbalanced.
+		const nodeKinds: [string, string, string][] = [
+			["multiplicity", '"multiplicity"', "multiplicity"],
+			["unit", '"unit":"s"', "unit"],
+			["relationship", '"relationships":[{', "relationship"],
+			["operation", '"operations":[{', "operation"],
+			["clause", '"clauses":[{', "clause"],
+			["constraint", '"keyword":"min"', "constraint"],
+			["dialect", '"dialect":"typespec"', "dialect"],
 		];
-		for (const [kind, goldenPattern, negativePattern] of nodeKinds) {
-			expect(goldenPattern.test(golden), `${kind} golden`).toBe(true);
-			expect(negativePattern.test(negatives), `${kind} negative`).toBe(true);
+		for (const [kind, goldenNeedle, negativeNeedle] of nodeKinds) {
+			expect(golden.includes(goldenNeedle), `${kind} golden`).toBe(true);
+			expect(
+				negatives.toLowerCase().includes(negativeNeedle),
+				`${kind} negative`,
+			).toBe(true);
 		}
 	});
 });

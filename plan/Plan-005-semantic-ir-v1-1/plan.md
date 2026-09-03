@@ -30,20 +30,20 @@ Issue: `agent-ix/filament-core-data#34`. Reviews: SR-027..034 under
 
 ### Stakeholder and User Requirements
 
-- [ ] **StR-001:** Keep the durable semantic contract governed and additive while Wave 4 module declarations become representable.
-- [ ] **US-006:** Let a module author's fields, multiplicities, units, relationships, operations, and formal clauses survive into the IR without loss.
+- [x] **StR-001:** Keep the durable semantic contract governed and additive while Wave 4 module declarations become representable.
+- [x] **US-006:** Let a module author's fields, multiplicities, units, relationships, operations, and formal clauses survive into the IR without loss.
 
 ### Functional Requirements
 
-- [ ] **FR-020 (AC-7, AC-8):** Five new node kinds round-trip byte-identically; two independent readers agree on every fixture.
-- [ ] **FR-027:** Field `multiplicity` and `unit`, derived `presence`, kind resolution through aliases, materialization rule, classifier rules.
-- [ ] **FR-028:** `relationships[]`, `operations[]`, `clauses[]` with target resolution, composite acyclicity, `clauseId` binding, opaque `text`, FR-040 category parity.
-- [ ] **FR-029:** Closed constraint keyword enumeration, per-keyword typed operands and applicability, compiled regex check.
-- [ ] **FR-030:** `contractVersion` `1.0.0`/`1.1.0` discriminator in one schema file, version-conditional `source.dialect`, shared target enumeration.
+- [x] **FR-020 (AC-7, AC-8):** Five new node kinds round-trip byte-identically; two independent readers agree on every fixture.
+- [x] **FR-027:** Field `multiplicity` and `unit`, derived `presence`, kind resolution through aliases, materialization rule, classifier rules.
+- [x] **FR-028:** `relationships[]`, `operations[]`, `clauses[]` with target resolution, composite acyclicity, `clauseId` binding, opaque `text`, FR-040 category parity.
+- [x] **FR-029:** Closed constraint keyword enumeration, per-keyword typed operands and applicability, compiled regex check.
+- [x] **FR-030:** `contractVersion` `1.0.0`/`1.1.0` discriminator in one schema file, version-conditional `source.dialect`, shared target enumeration.
 
 ### Non-Functional Requirements
 
-- [ ] **NFR-013:** Additive revision: v1 fixtures unchanged, spike byte-identical, compatibility corpus records `additive`, changed-path gate, fixture inventory.
+- [x] **NFR-013:** Additive revision: v1 fixtures unchanged, spike byte-identical, compatibility corpus records `additive`, changed-path gate, fixture inventory.
 
 ## Dependency Graph
 
@@ -80,13 +80,13 @@ and `fixtures/semantic/v1/negative/cases.json`.
 
 ## Test Plan
 
-- [ ] **TC-208, TC-231, TC-234, TC-236:** v1 fixtures unchanged, v1 IR fixture valid, spike byte-identical, changed-path guard.
-- [ ] **TC-227..230, TC-246:** dialect by version, retired constant rejected, manifest targets bound, unknown version rejected.
-- [ ] **TC-203..207, TC-237, TC-238:** multiplicity, derived presence, flags, units, kind resolution, classifier rules.
-- [ ] **TC-219..225, TC-244, TC-245:** closed keywords, typed operands, applicability, regex compilation, classifier rules.
-- [ ] **TC-210..217, TC-239..243:** relationships, operations, clauses, target resolution, composite cycles, `clauseId` uniqueness, FR-040 parity.
-- [ ] **TC-209, TC-218, TC-226, TC-235:** `ConfigVersion` worked example, compatibility corpus entry.
-- [ ] **TC-232, TC-233, TC-247:** two-reader agreement, generated round-trip property, fixture inventory.
+- [x] **TC-208, TC-231, TC-234, TC-236:** v1 fixtures unchanged, v1 IR fixture valid, spike byte-identical, changed-path guard.
+- [x] **TC-227..230, TC-246:** dialect by version, retired constant rejected, manifest targets bound, unknown version rejected.
+- [x] **TC-203..207, TC-237, TC-238:** multiplicity, derived presence, flags, units, kind resolution, classifier rules.
+- [x] **TC-219..225, TC-244, TC-245:** closed keywords, typed operands, applicability, regex compilation, classifier rules.
+- [x] **TC-210..217, TC-239..243:** relationships, operations, clauses, target resolution, composite cycles, `clauseId` uniqueness, FR-040 parity.
+- [x] **TC-209, TC-218, TC-226, TC-235:** `ConfigVersion` worked example, compatibility corpus entry.
+- [x] **TC-232, TC-233, TC-247:** two-reader agreement, generated round-trip property, fixture inventory.
 
 ### Entrance Criteria
 
@@ -135,7 +135,7 @@ time ->  Task-034 -> Task-035 -> Task-036 -> Task-038 --\
 | Task-037 | B | FR-029 | TC-219..225, TC-244, TC-245 | done |
 | Task-038 | A | FR-028 | TC-210..217, TC-239..243 | done |
 | Task-039 | C | FR-027, FR-028, FR-029, NFR-013 | TC-209, TC-218, TC-226, TC-235 | done |
-| Task-040 | Gate | FR-020, US-006, NFR-013 | TC-232, TC-233, TC-247 | in progress (review pending) |
+| Task-040 | Gate | FR-020, US-006, NFR-013 | TC-232, TC-233, TC-247 | done |
 
 ## Coordination Rules
 
