@@ -23,11 +23,11 @@ evidence.
 
 ## Acceptance Examples (Illustrative)
 
-### [US-002-EX-1] Conditional TypeSpec choice
+### [US-002-EX-1] TypeSpec choice before the owner decision
 
 - **Given** an implementer reads the schema-authoring decision
-- **When** the feasibility spike has not passed
-- **Then** TypeSpec is identified as preferred but provisional and JSON Schema is identified as the fallback
+- **When** the owner has not yet recorded the decision
+- **Then** TypeSpec is identified as preferred but provisional and the resolution ticket (issue #4) is named
 
 ### [US-002-EX-2] Proposed database cutover
 
@@ -39,7 +39,7 @@ evidence.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| US-002-AC-1 | Before the feasibility gate passes, the record labels TypeSpec provisional and identifies modular JSON Schema 2020-12 as the fallback. | Review (TC-036) |
+| US-002-AC-1 | Before the owner records the decision, the record labels TypeSpec provisional and names the resolution ticket (issue #4). | Review (TC-036) |
 | US-002-AC-2 | Before compatibility, backup, backfill, rollback, and promotion gates pass, the record identifies a database cutover as blocked. | Review (TC-037) |
 
 ## Constraints (Contextual)
