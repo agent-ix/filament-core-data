@@ -2,7 +2,7 @@
 id: Task-039
 title: "Worked example, compatibility entry, and contract document"
 type: Task
-status: todo
+status: done
 track: C
 priority: P0
 relationships:
@@ -35,10 +35,10 @@ Express config-service FR-006 `ConfigVersion` as a v1.1 document, record v1 → 
 
 ## Subtasks
 
-- [ ] Author `fixtures/semantic/v1/positive/config-version-v1-1.json`: `parent 0..1` self-relationship, `versionNumber 1..1` with `min: 1`, `overlay belongs_to` relationship, one `ocl` invariant clause; zero declared loss recorded in a loss table (TC-209, TC-218, TC-226).
-- [ ] Add the v1 → v1.1 case to `fixtures/semantic/v1/compatibility/cases.json` classified `additive` with the added node list (TC-235).
-- [ ] Update `docs/semantic-data-system/contracts-v1.md` semantic-model section for multiplicity, units, relationships, operations, clauses, closed keywords, and the version discriminator.
-- [ ] Amend FR-020 fixture references so AC-1 positive/invalid examples cover the new nodes.
+- [x] Author `fixtures/semantic/v1/positive/config-version-v1-1.json`: `parent 0..1` self-relationship, `versionNumber 1..1` with `min: 1`, `overlay belongs_to` relationship, one `ocl` invariant clause; zero declared loss recorded in a loss table (TC-209, TC-218, TC-226).
+- [x] Add the v1 → v1.1 case to `fixtures/semantic/v1/compatibility/cases.json` classified `additive` with the added node list (TC-235).
+- [x] Update `docs/semantic-data-system/contracts-v1.md` semantic-model section for multiplicity, units, relationships, operations, clauses, closed keywords, and the version discriminator.
+- [x] FR-020-AC-1 fixture coverage: the 1.1.0 golden and negative cases cover every new node; `contracts-v1.md` names them (no FR-020 text change needed).
 
 ## Deliverables
 

@@ -60,7 +60,9 @@ All identifiers below are rooted at
 | `consumer-policy.schema.json` | Dynamic/generated mode and preserve/reject/surface policy over one identity graph |
 
 Positive, negative, compatibility, representation, Markdown, package-graph, and
-legacy evidence is published under `fixtures/semantic/v1/`. A consumer can
+legacy evidence is published under `fixtures/semantic/v1/`; `1.1.0` golden
+documents, `negative/reader-cases.json` (cross-field rules a schema cannot
+express), and the `v1-fixture-digests.json` byte baseline sit beside them. A consumer can
 validate it using only these files and a JSON Schema 2020-12 implementation.
 
 ## Semantic model
@@ -82,6 +84,35 @@ their identity, keyword, operands, applicability, diagnostic, and origin.
 Recursive references retain graph identity. Open and closed definitions declare
 whether unknowns are preserved, rejected, or surfaced; unknowns never become a
 known zero value.
+
+### Contract 1.1.0 (issue #34)
+
+Contract `1.1.0` is additive to `1.0.0` and lives in the same schema file,
+discriminated by `contractVersion`. A `1.1.0` field carries an explicit
+`multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is
+unbounded) from which `presence` is derived, and may carry a UCUM `unit` when
+its `typeRef` resolves, through aliases, to a scalar. The normalized
+serialization materializes `multiplicity`, `presence`, and `nullable` on every
+`1.1.0` field and adds no bytes to a `1.0.0` document.
+
+A record type definition carries first-class `relationships[]` (verb, FR-040
+category, `composite` flag, target identity, multiplicity, origin),
+`operations[]` (params as field nodes, bounded `returns`, `pre[]`/`post[]`
+bound by `clauseId`), and any type definition carries `clauses[]`
+(`language` of `ocl`, `sysml`, `fretish`, or `<ns>:<name>`; `clauseId` unique
+per type; opaque `text`; `sourceSpan` when source-originated). The IR never
+parses clause text. Relationship targets resolve to a document type or a lock
+export; composite relationship graphs are acyclic.
+
+The constraint `keyword` is a closed set (`min`, `max`, `exclusiveMin`,
+`exclusiveMax`, `pattern`, `minLength`, `maxLength`, `enumValues`, `nonEmpty`,
+`unique`, `format`) with typed operands per keyword and an applicability table
+over the resolved kind. In a `1.1.0` document `source.dialect` is `typespec` or
+`spec-bundle`; the JSON Schema draft URI is the `1.0.0` constant only. Manifest
+targets bind to the declared registry: generated targets or representation
+formats, each defined once in `common.schema.json`. The worked example
+`fixtures/semantic/v1/positive/config-version-v1-1.json` lifts config-service
+FR-006 `ConfigVersion` with zero declared loss (`config-version-v1-1-loss.json`).
 
 ## Packages, locks, and fingerprints
 

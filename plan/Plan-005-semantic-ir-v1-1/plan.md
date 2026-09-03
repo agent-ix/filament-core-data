@@ -134,7 +134,7 @@ time ->  Task-034 -> Task-035 -> Task-036 -> Task-038 --\
 | Task-036 | A | FR-027 | TC-203..207, TC-237, TC-238 | done |
 | Task-037 | B | FR-029 | TC-219..225, TC-244, TC-245 | done |
 | Task-038 | A | FR-028 | TC-210..217, TC-239..243 | done |
-| Task-039 | C | FR-027, FR-028, FR-029, NFR-013 | TC-209, TC-218, TC-226, TC-235 | todo |
+| Task-039 | C | FR-027, FR-028, FR-029, NFR-013 | TC-209, TC-218, TC-226, TC-235 | done |
 | Task-040 | Gate | FR-020, US-006, NFR-013 | TC-232, TC-233, TC-247 | todo |
 
 ## Coordination Rules

@@ -955,3 +955,87 @@ describe("FR-028 relationships, operations, and clauses", () => {
 			expect(byId.get(breaking), breaking).toBe("breaking");
 	});
 });
+
+describe("FR-006 ConfigVersion worked example (Task-039)", () => {
+	function configVersion(): JsonObject {
+		const document = object(
+			readJson("positive/config-version-v1-1.json"),
+			"ConfigVersion",
+		);
+		expect(
+			validates("semantic-ir.schema.json", document),
+			JSON.stringify(ajv.errors),
+		).toBe(true);
+		expect(readSemanticIr(document)).toEqual([]);
+		expect(object(document.source, "source").dialect).toBe("spec-bundle");
+		return document;
+	}
+
+	/** Traces: TC-209; FR-027-AC-7. */
+	it("expresses the FR-006 fields with multiplicity and zero declared loss", () => {
+		const entity = typeNamed(configVersion(), "ConfigVersion");
+		const fields = array(entity.fields, "fields").map((value) =>
+			object(value, "field"),
+		);
+		expect(fields.map((field) => field.name)).toEqual([
+			"id",
+			"versionNumber",
+			"data",
+			"hash",
+			"createdAt",
+			"createdBy",
+		]);
+		for (const field of fields)
+			expect(field.multiplicity).toEqual({ lower: 1, upper: 1 });
+		const loss = object(
+			readJson("positive/config-version-v1-1-loss.json"),
+			"loss table",
+		);
+		expect(loss.fixture).toBe("positive/config-version-v1-1.json");
+		expect(loss.declaredLoss).toEqual([]);
+		const rows = array(loss.rows, "rows").map((value) => object(value, "row"));
+		expect(rows.length).toBeGreaterThanOrEqual(8);
+		for (const row of rows) expect(row.loss, String(row.row)).toBe("none");
+	});
+
+	/** Traces: TC-218; FR-028-AC-8. */
+	it("expresses the overlay and parent relationships and the immutability invariant", () => {
+		const entity = typeNamed(configVersion(), "ConfigVersion");
+		const relationships = array(entity.relationships, "relationships").map(
+			(value) => object(value, "relationship"),
+		);
+		expect(
+			relationships.map((relationship) => [
+				relationship.verb,
+				relationship.target,
+			]),
+		).toEqual([
+			["belongs_to", "ix://agent-ix/config-service/type/ConfigOverlay"],
+			["derives_from", "ix://agent-ix/config-service/type/ConfigVersion"],
+		]);
+		expect(relationships[1]?.multiplicity).toEqual({ lower: 0, upper: 1 });
+		const clauses = array(entity.clauses, "clauses").map((value) =>
+			object(value, "clause"),
+		);
+		expect(clauses).toHaveLength(1);
+		expect(clauses[0]).toMatchObject({
+			language: "ocl",
+			clauseId: "immutable",
+		});
+		expect(String(clauses[0]?.text)).toContain("@pre");
+	});
+
+	/** Traces: TC-226; FR-029-AC-6. */
+	it("expresses versionNumber min: 1 as a typed constraint", () => {
+		const versionNumber = typeNamed(configVersion(), "VersionNumber");
+		expect(versionNumber.kind).toBe("alias");
+		const constraint = object(
+			array(versionNumber.constraints, "constraints")[0],
+			"constraint",
+		);
+		expect(constraint).toMatchObject({
+			keyword: "min",
+			operands: { value: 1 },
+		});
+	});
+});
