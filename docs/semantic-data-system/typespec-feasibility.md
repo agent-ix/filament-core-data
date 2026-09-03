@@ -1,51 +1,42 @@
 ---
 id: ARCH-009
 title: "TypeSpec feasibility gate"
-status: provisional
-resolution_gate: "https://github.com/agent-ix/filament-core-data/issues/4"
+status: historical
+superseded_by: ADR-0005
 ---
 # TypeSpec feasibility gate
 
-TypeSpec is the preferred candidate for the package/type schema source because
-it is designed for API/schema modeling and emitter composition. It is not an
-accepted implementation dependency until issue #4 produces the evidence below.
-The fallback is modular JSON Schema 2020-12 plus explicit package, export,
-target, mapping, and profile metadata.
+> **Historical.** This gate was resolved on 2026-09-03 by the owner decision on
+> [issue #4](https://github.com/agent-ix/filament-core-data/issues/4) and
+> recorded in [ADR-0005](adr/0005-typespec-structural-source.md). TypeSpec is
+> the structural schema source. The matrix is kept as the record of what the
+> spike measured.
 
 ## Capability matrix
 
-| Capability | Pass evidence | Failure disposition |
+| Capability | Pass evidence | Spike result |
 |---|---|---|
-| Reusable packages and imports | Two independent module packages import a small semantic core without flattening identity/version ownership | Use modular JSON Schema `$id`/`$defs`/`$ref` and package manifests |
-| Rust generation | Native Serde-compatible structs/enums preserve constraints and discriminated unions | JSON Schema-driven Rust emitter or explicit IR adapter |
-| TypeScript generation | Static types and runtime validation agree on golden fixtures | JSON Schema types plus selected validator generation |
-| Python generation | Ordinary typed models validate golden fixtures without authoring decorators/custom `@` tags | JSON Schema-driven typed-model emitter |
-| JSON Schema 2020-12 | Stable `$id`, modular references, constraints, and unknown-field policy round-trip | Gate fails; fallback itself is not viable until corrected |
-| Protobuf mapping | Stable field numbers/reservations can be declared outside language-specific source | Keep Protobuf as a separately mapped boundary artifact |
-| Markdown metadata | Frontmatter, heading, prose, table, and extraction mappings survive without forcing renderer ownership into Quire | Keep mappings in module/profile metadata |
-| Determinism | Repeated generation is byte-identical after normalized tool metadata | Reject toolchain for governed publication |
-| Compatibility diff | Patch/additive/breaking examples classify consistently across targets | Keep compatibility classifier outside TypeSpec |
-| Toolchain operation | Pinned, reproducible CLI/library integration works in CI and Rust-oriented orchestration | Adopt JSON Schema source and revisit later |
+| Reusable packages and imports | Two independent module packages import a small semantic core without flattening identity/version ownership | pass |
+| Rust generation | Native Serde-compatible structs/enums preserve constraints and discriminated unions | pass |
+| TypeScript generation | Static types and runtime validation agree on golden fixtures | pass |
+| Python generation | Ordinary typed models validate golden fixtures without authoring decorators/custom `@` tags | pass |
+| JSON Schema 2020-12 | Stable `$id`, modular references, constraints, and unknown-field policy round-trip | partial: official emitter `$id` defect, tracked in [issue #31](https://github.com/agent-ix/filament-core-data/issues/31) |
+| Protobuf mapping | Stable field numbers/reservations can be declared outside language-specific source | pass (parser-validated; native `protoc` not run) |
+| Markdown metadata | Frontmatter, heading, prose, table, and extraction mappings survive without forcing renderer ownership into Quire | pass |
+| Determinism | Repeated generation is byte-identical after normalized tool metadata | pass |
+| Compatibility diff | Patch/additive/breaking examples classify consistently across targets | pass |
+| Toolchain operation | Pinned, reproducible CLI/library integration works in CI and Rust-oriented orchestration | pass |
 
 ## Pass rule
 
-The gate passes only if all P0 capabilities—package/import identity, four core
+The gate passed if all P0 capabilities—package/import identity, four core
 consumer surfaces, deterministic generation, and reproducible CI operation—pass
-with checked-in fixtures. A partial pass may justify an emitter experiment but
-does not make TypeSpec authoritative.
+with checked-in fixtures.
 
-## Fail rule and fallback
+## Result
 
-If a P0 capability fails, TypeSpec remains a non-authoritative experiment. The
-program adopts modular JSON Schema 2020-12 as schema source and stores the
-non-JSON-Schema concerns in versioned package/profile/mapping metadata. The
-semantic IR and emitter interfaces remain representation-independent so the
-source choice can be revisited without rewriting consumers.
-
-## Promotion
-
-Issue #4 records tool versions, fixtures, command lines, failures, performance,
-and a go/no-go recommendation. A human review promotes
-[ADR-0004](adr/0004-conditional-typespec-source.md) to normative or records the
-fallback decision. Until then, no compiler or module migration may require
-TypeSpec inputs.
+The spike under `spikes/typespec-feasibility/` met the rule above. Its report
+recommended a hold under a stricter rule added during the spike (a capability
+needing custom code counted as partial without a pre-accepted owner and budget).
+The owner rejected that rule; the retained spike outputs are unchanged and record
+what was measured on 2026-08-30.

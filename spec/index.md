@@ -13,7 +13,7 @@ okf_version: "0.1"
 * [US-001: Understand data authority](./usecase/US-001-understand-data-authority.md) - Reader outcome for authority and ownership.
 * [US-002: Plan safe semantic-data adoption](./usecase/US-002-plan-safe-adoption.md) - Implementer outcome for gates and provisional decisions.
 * [US-003: Assess Filament contract fit](./usecase/US-003-assess-contract-fit.md) - Migration reviewer outcome for the read-only contract census.
-* [US-004: Evaluate the structural schema source](./usecase/US-004-evaluate-structural-schema-source.md) - Compiler owner outcome for the isolated TypeSpec gate.
+* [US-004: Evaluate the structural schema source](./usecase/US-004-evaluate-structural-schema-source.md) - Compiler owner outcome for the isolated TypeSpec spike (resolved: TypeSpec, ADR-0005).
 * [Functional requirements](./functional/) - Required architecture-record, contract-census, and feasibility behavior and content.
 * [Non-functional requirements](./non-functional/) - Traceability, readability, reproducibility, evidence honesty, isolation, and safety qualities.
 * [Update log](./log.md) - Chronological bundle changes.
