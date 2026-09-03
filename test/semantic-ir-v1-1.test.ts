@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
@@ -718,5 +719,239 @@ describe("FR-029 closed constraint vocabulary", () => {
 	/** Traces: TC-245; FR-029-AC-8. */
 	it("fails a regex that does not compile under ecma-262", () => {
 		expectReaderFailure("constraint-regex-does-not-compile");
+	});
+});
+
+function typeNamed(document: JsonObject, name: string): JsonObject {
+	const definition = array(document.types, "types")
+		.map((value) => object(value, "type"))
+		.find((value) => value.displayName === name);
+	return object(definition, name);
+}
+
+describe("FR-028 relationships, operations, and clauses", () => {
+	/** Traces: TC-210; FR-028-AC-1, FR-020-AC-7, US-006-EX-2. */
+	it("carries a belongs_to structural relationship as a node and round-trips it", () => {
+		const document = goldenV11();
+		const artifact = typeNamed(document, "Artifact");
+		const relationship = object(
+			array(artifact.relationships, "relationships")[0],
+			"relationship",
+		);
+		expect(relationship).toMatchObject({
+			verb: "belongs_to",
+			category: "structural",
+			composite: false,
+			target: "ix://agent-ix/assurance/type/Project",
+			multiplicity: { lower: 0, upper: 1 },
+		});
+		expect(relationship.origin).toBeDefined();
+		const bytes = normalize(document);
+		expect(normalize(JSON.parse(bytes))).toBe(bytes);
+		expect(bytes).toContain('"verb":"belongs_to"');
+	});
+
+	/** Traces: TC-211; FR-028-AC-2. */
+	it("fails an unknown relationship category at the relationship locus", () => {
+		const { valid, entry } = negativeValidates("relationship-unknown-category");
+		expect(valid).toBe(false);
+		expect(entry.set?.path).toBe("types.3.relationships.0.category");
+		const { document } = readerCase("relationship-unresolved-target");
+		setAt(document, "types.3.relationships.0.category", "ownership");
+		const hit = readSemanticIr(document).find(
+			(diagnostic) =>
+				diagnostic.code === "agent-ix.semantic-ir.UNKNOWN_EDGE_CATEGORY",
+		);
+		expect(hit?.path).toBe("types.3.relationships.0.category");
+	});
+
+	/** Traces: TC-212; FR-028-AC-3. */
+	it("validates an operation with params, a bounded return, and present pre/post clauses", () => {
+		const operation = object(
+			array(typeNamed(goldenV11(), "Artifact").operations, "operations")[0],
+			"operation",
+		);
+		expect(array(operation.params, "params").length).toBe(2);
+		expect(operation.returns).toEqual({
+			typeRef: "ix://agent-ix/assurance/type/Artifact",
+			multiplicity: { lower: 1, upper: 1 },
+			nullable: false,
+		});
+		expect(operation.pre).toEqual(["not-archived"]);
+		expect(operation.post).toEqual(["archived"]);
+	});
+
+	/** Traces: TC-213; FR-028-AC-4. */
+	it("fails an operation whose post names an absent clauseId", () => {
+		expectReaderFailure("operation-dangling-post-clause");
+	});
+
+	/** Traces: TC-214; FR-028-AC-5, FR-028-CON-2, US-006-EX-3. */
+	it("carries clause text and span opaquely and declares no parsed-content property", () => {
+		const clauses = array(
+			typeNamed(goldenV11(), "Artifact").clauses,
+			"clauses",
+		).map((value) => object(value, "clause"));
+		const invariant = clauses.find(
+			(clause) => clause.clauseId === "not-archived",
+		);
+		expect(invariant).toMatchObject({ language: "ocl" });
+		expect(typeof object(invariant, "invariant").text).toBe("string");
+		expect(object(invariant, "invariant").sourceSpan).toMatchObject({
+			startLine: 30,
+			endLine: 31,
+		});
+		const clause = object(
+			object(schemaNamed("semantic-ir.schema.json").$defs, "$defs").clause,
+			"clause",
+		);
+		expect(Object.keys(object(clause.properties, "properties")).sort()).toEqual(
+			["clauseId", "identity", "language", "origin", "sourceSpan", "text"],
+		);
+		expect(negativeValidates("clause-parsed-content").valid).toBe(false);
+		expectReaderFailure("clause-source-without-span");
+		const generated = clauses.find(
+			(clause) => clause.clauseId === "generated-invariant",
+		);
+		expect(
+			object(generated, "generated clause").sourceSpan,
+			"generated origin needs no span",
+		).toBeUndefined();
+	});
+
+	/** Traces: TC-215; FR-028-AC-6. */
+	it("accepts a namespaced clause language and rejects a bare unknown one", () => {
+		const clauses = array(
+			typeNamed(goldenV11(), "Artifact").clauses,
+			"clauses",
+		).map((value) => object(value, "clause"));
+		expect(clauses.map((clause) => clause.language)).toContain("acme:tla");
+		expect(negativeValidates("clause-bare-unknown-language").valid).toBe(false);
+		const document = clone(goldenV11());
+		setAt(document, "types.3.clauses.0.language", "tla");
+		const hit = readSemanticIr(document).find(
+			(diagnostic) =>
+				diagnostic.code === "agent-ix.semantic-ir.UNKNOWN_CLAUSE_LANGUAGE",
+		);
+		expect(hit?.path).toBe("types.3.clauses.0.language");
+	});
+
+	/** Traces: TC-216; FR-028-AC-7. */
+	it("fails relationships or operations on a non-record type definition", () => {
+		expect(negativeValidates("relationship-on-scalar").valid).toBe(false);
+		expect(negativeValidates("operations-on-sequence").valid).toBe(false);
+		const document = clone(goldenV11());
+		setAt(document, "types.1.relationships", []);
+		const hit = readSemanticIr(document).find(
+			(diagnostic) =>
+				diagnostic.code === "agent-ix.semantic-ir.NODES_ON_NON_RECORD",
+		);
+		expect(hit?.path).toBe("types.1");
+		const seconds = typeNamed(goldenV11(), "Seconds");
+		expect(
+			array(seconds.clauses, "scalar clauses").length,
+			"clauses on any kind",
+		).toBe(1);
+	});
+
+	/** Traces: TC-217; FR-028-CON-1. */
+	it("reads absent node arrays as empty on a 1.0.0 document", () => {
+		const v1 = object(readJson("positive/semantic-ir.json"), "v1");
+		for (const definition of array(v1.types, "types").map((value) =>
+			object(value, "type"),
+		)) {
+			expect(definition.relationships).toBeUndefined();
+			expect(definition.operations).toBeUndefined();
+			expect(definition.clauses).toBeUndefined();
+		}
+		expect(validates("semantic-ir.schema.json", v1)).toBe(true);
+		expect(readSemanticIr(v1)).toEqual([]);
+	});
+
+	/** Traces: TC-239; FR-028-AC-9. */
+	it("fails a relationship target that resolves to nothing in the document or lock", () => {
+		expectReaderFailure("relationship-unresolved-target");
+		expect(negativeValidates("relationship-display-name-target").valid).toBe(
+			false,
+		);
+		const { document } = readerCase("relationship-unresolved-target");
+		expect(
+			readSemanticIr(document, ["ix://agent-ix/assurance/type/Missing"]),
+			"lock export resolves the target",
+		).toEqual([]);
+	});
+
+	/** Traces: TC-240; FR-028-AC-10. */
+	it("fails composite cycles and composite self-references but accepts a plain self-reference", () => {
+		expectReaderFailure("relationship-composite-self-reference");
+		expectReaderFailure("relationship-composite-cycle");
+		const parent = object(
+			array(
+				typeNamed(goldenV11(), "Artifact").relationships,
+				"relationships",
+			)[1],
+			"parent",
+		);
+		expect(parent.target).toBe("ix://agent-ix/assurance/type/Artifact");
+		expect(parent.composite).toBe(false);
+	});
+
+	/** Traces: TC-241; FR-028-AC-11. */
+	it("fails two clauses sharing a clauseId in one type definition", () => {
+		expectReaderFailure("clause-duplicate-clause-id");
+		expectReaderFailure("operation-duplicate-param");
+		expectReaderFailure("relationship-duplicate-identity");
+	});
+
+	/** Traces: TC-242; FR-028-AC-12. */
+	it("matches the IR category enumeration to the installed FR-040 EdgeCategory registry", () => {
+		const relationship = object(
+			object(schemaNamed("semantic-ir.schema.json").$defs, "$defs")
+				.relationship,
+			"relationship",
+		);
+		const categories = array(
+			object(object(relationship.properties, "properties").category, "category")
+				.enum,
+			"category enum",
+		).map(String);
+		const manifest = resolve(
+			homedir(),
+			".ix/filament/modules/spec-artifacts-iso/manifest.yaml",
+		);
+		if (!existsSync(manifest)) {
+			throw new Error(
+				`FR-040 registry is not installed at ${manifest}; install spec-artifacts-iso`,
+			);
+		}
+		const text = readFileSync(manifest, "utf8");
+		const registry = new Set(
+			[...text.matchAll(/\bcategory:\s*([a-z]+)/g)].map((match) => match[1]),
+		);
+		expect([...registry].sort()).toEqual([...categories].sort());
+	});
+
+	/** Traces: TC-243; FR-028-AC-13. */
+	it("classifies node-family additions as additive and removals or retargeting as breaking", () => {
+		const byId = new Map(
+			array(readJson("compatibility/cases.json"), "cases")
+				.map((value) => object(value, "case"))
+				.map((entry) => [String(entry.id), String(entry.expected)]),
+		);
+		for (const additive of [
+			"relationship-added",
+			"operation-added",
+			"clause-added",
+		])
+			expect(byId.get(additive), additive).toBe("additive");
+		for (const breaking of [
+			"relationship-removed",
+			"relationship-retargeted",
+			"relationship-composite-flipped",
+			"operation-returns-changed",
+			"clause-language-changed",
+			"clause-removed",
+		])
+			expect(byId.get(breaking), breaking).toBe("breaking");
 	});
 });

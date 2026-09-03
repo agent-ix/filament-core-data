@@ -2,7 +2,7 @@
 id: Task-038
 title: "Relationships, operations, and clauses"
 type: Task
-status: todo
+status: done
 track: A
 priority: P0
 relationships:
@@ -45,12 +45,12 @@ Add `relationships[]`, `operations[]`, and `clauses[]` to `typeDefinition` with 
 
 ## Subtasks
 
-- [ ] Add the three node schemas: relationship (`identity`, `verb`, `category`, `composite`, `target`, `multiplicity`, `origin`), operation (`params[]`, `returns { typeRef, multiplicity, nullable }`, `pre[]`/`post[]` of `clauseId`), clause (`identity`, `language`, `clauseId`, `text`, `sourceSpan` when source-originated, `origin`).
-- [ ] Restrict `relationships[]`/`operations[]` to `record` kinds; absent arrays read as empty on `1.0.0` (TC-216, TC-217).
-- [ ] Implement reader rules: target resolves to a document type or lock export, composite graph acyclic, `clauseId` unique per type, pre/post bind to present clauses, uniqueness by `identity`/`name` (TC-213, TC-239..241).
-- [ ] Language rule: `ocl`/`sysml`/`fretish` or `<ns>:<name>`; bare unknown fails (TC-215). Schema declares no parsed-content property (TC-214).
-- [ ] Contract test comparing the IR `category` enumeration to the quire-rs FR-040 `EdgeCategory` registry, read from the installed `spec-artifacts-iso` manifest (TC-242).
-- [ ] Add relationship/operation/clause add/remove/retarget families to the compatibility corpus (TC-243); golden and negative fixtures for every rule including a `belongs_to 0..1` self-reference.
+- [x] Add the three node schemas: relationship (`identity`, `verb`, `category`, `composite`, `target`, `multiplicity`, `origin`), operation (`params[]`, `returns { typeRef, multiplicity, nullable }`, `pre[]`/`post[]` of `clauseId`), clause (`identity`, `language`, `clauseId`, `text`, `sourceSpan` when source-originated, `origin`).
+- [x] Restrict `relationships[]`/`operations[]` to `record` kinds; absent arrays read as empty on `1.0.0` (TC-216, TC-217).
+- [x] Implement reader rules: target resolves to a document type or lock export, composite graph acyclic, `clauseId` unique per type, pre/post bind to present clauses, uniqueness by `identity`/`name` (TC-213, TC-239..241).
+- [x] Language rule: `ocl`/`sysml`/`fretish` or `<ns>:<name>`; bare unknown fails (TC-215). Schema declares no parsed-content property (TC-214).
+- [x] Contract test comparing the IR `category` enumeration to the quire-rs FR-040 `EdgeCategory` registry, read from the installed `spec-artifacts-iso` manifest (TC-242).
+- [x] Add relationship/operation/clause add/remove/retarget families to the compatibility corpus (TC-243); golden and negative fixtures for every rule including a `belongs_to 0..1` self-reference.
 
 ## Deliverables
 

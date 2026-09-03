@@ -296,5 +296,67 @@
 			"value": "email"
 		},
 		"code": "agent-ix.semantic-ir.INVALID_OPERAND"
+	},
+	{
+		"id": "relationship-unknown-category",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.relationships.0.category",
+			"value": "ownership"
+		},
+		"code": "agent-ix.semantic-ir.UNKNOWN_EDGE_CATEGORY"
+	},
+	{
+		"id": "relationship-on-scalar",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.1.relationships",
+			"value": []
+		},
+		"code": "agent-ix.semantic-ir.NODES_ON_NON_RECORD"
+	},
+	{
+		"id": "operations-on-sequence",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.4.operations",
+			"value": []
+		},
+		"code": "agent-ix.semantic-ir.NODES_ON_NON_RECORD"
+	},
+	{
+		"id": "clause-bare-unknown-language",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.clauses.0.language",
+			"value": "tla"
+		},
+		"code": "agent-ix.semantic-ir.UNKNOWN_CLAUSE_LANGUAGE"
+	},
+	{
+		"id": "clause-parsed-content",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.clauses.0.ast",
+			"value": {
+				"op": "<>"
+			}
+		},
+		"code": "agent-ix.semantic-ir.UNKNOWN_KEY"
+	},
+	{
+		"id": "relationship-display-name-target",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.relationships.0.target",
+			"value": "Project"
+		},
+		"code": "agent-ix.semantic-ir.INVALID_IDENTITY"
 	}
 ]

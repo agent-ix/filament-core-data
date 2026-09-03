@@ -175,5 +175,50 @@
 			"source.dialect (frontend)"
 		],
 		"expected": "additive"
+	},
+	{
+		"id": "relationship-added",
+		"family": "relationship",
+		"expected": "additive"
+	},
+	{
+		"id": "relationship-removed",
+		"family": "relationship",
+		"expected": "breaking"
+	},
+	{
+		"id": "relationship-retargeted",
+		"family": "relationship",
+		"expected": "breaking"
+	},
+	{
+		"id": "relationship-composite-flipped",
+		"family": "relationship",
+		"expected": "breaking"
+	},
+	{
+		"id": "operation-added",
+		"family": "operation",
+		"expected": "additive"
+	},
+	{
+		"id": "operation-returns-changed",
+		"family": "operation",
+		"expected": "breaking"
+	},
+	{
+		"id": "clause-added",
+		"family": "clause",
+		"expected": "additive"
+	},
+	{
+		"id": "clause-language-changed",
+		"family": "clause",
+		"expected": "breaking"
+	},
+	{
+		"id": "clause-removed",
+		"family": "clause",
+		"expected": "breaking"
 	}
 ]

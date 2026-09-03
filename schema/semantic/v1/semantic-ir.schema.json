@@ -555,6 +555,24 @@
 				},
 				"values": {
 					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"relationships": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/relationship"
+					}
+				},
+				"operations": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/operation"
+					}
+				},
+				"clauses": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/clause"
+					}
 				}
 			},
 			"allOf": [
@@ -641,6 +659,24 @@
 						"type": "object",
 						"required": ["values"]
 					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "record"
+							}
+						}
+					},
+					"then": {},
+					"else": {
+						"type": "object",
+						"properties": {
+							"relationships": false,
+							"operations": false
+						}
+					}
 				}
 			],
 			"additionalProperties": false
@@ -680,6 +716,133 @@
 				},
 				"unique": {
 					"type": "boolean"
+				}
+			},
+			"additionalProperties": false
+		},
+		"relationship": {
+			"type": "object",
+			"required": [
+				"identity",
+				"verb",
+				"category",
+				"composite",
+				"target",
+				"multiplicity",
+				"origin"
+			],
+			"properties": {
+				"identity": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"verb": {
+					"type": "string",
+					"minLength": 1
+				},
+				"category": {
+					"enum": [
+						"structural",
+						"behavioral",
+						"dataflow",
+						"dependency",
+						"realization",
+						"governance",
+						"traceability"
+					]
+				},
+				"composite": {
+					"type": "boolean"
+				},
+				"target": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"multiplicity": {
+					"$ref": "#/$defs/multiplicity"
+				},
+				"origin": {
+					"$ref": "common.schema.json#/$defs/origin"
+				}
+			},
+			"additionalProperties": false
+		},
+		"operation": {
+			"type": "object",
+			"required": ["identity", "name", "params", "pre", "post", "origin"],
+			"properties": {
+				"identity": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"name": {
+					"type": "string",
+					"minLength": 1
+				},
+				"params": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/field"
+					}
+				},
+				"returns": {
+					"type": "object",
+					"required": ["typeRef", "multiplicity", "nullable"],
+					"properties": {
+						"typeRef": {
+							"$ref": "common.schema.json#/$defs/semanticIdentity"
+						},
+						"multiplicity": {
+							"$ref": "#/$defs/multiplicity"
+						},
+						"nullable": {
+							"type": "boolean"
+						}
+					},
+					"additionalProperties": false
+				},
+				"pre": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"minLength": 1
+					},
+					"uniqueItems": true
+				},
+				"post": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"minLength": 1
+					},
+					"uniqueItems": true
+				},
+				"origin": {
+					"$ref": "common.schema.json#/$defs/origin"
+				}
+			},
+			"additionalProperties": false
+		},
+		"clause": {
+			"type": "object",
+			"required": ["identity", "language", "clauseId", "text", "origin"],
+			"properties": {
+				"identity": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"language": {
+					"type": "string",
+					"pattern": "^(ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$"
+				},
+				"clauseId": {
+					"type": "string",
+					"minLength": 1
+				},
+				"text": {
+					"type": "string"
+				},
+				"sourceSpan": {
+					"$ref": "common.schema.json#/$defs/sourceLocus"
+				},
+				"origin": {
+					"$ref": "common.schema.json#/$defs/origin"
 				}
 			},
 			"additionalProperties": false

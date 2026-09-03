@@ -89,5 +89,86 @@
 		},
 		"code": "agent-ix.semantic-ir.INVALID_PATTERN",
 		"path": "types.0.constraints.2.operands.regex"
+	},
+	{
+		"id": "relationship-unresolved-target",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.relationships.0.target",
+			"value": "ix://agent-ix/assurance/type/Missing"
+		},
+		"code": "agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET",
+		"path": "types.3.relationships.0.target"
+	},
+	{
+		"id": "relationship-composite-self-reference",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.relationships.1.composite",
+			"value": true
+		},
+		"code": "agent-ix.semantic-ir.COMPOSITE_CYCLE",
+		"path": "types.3.relationships.1"
+	},
+	{
+		"id": "relationship-composite-cycle",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.relationships.0.composite",
+			"value": true
+		},
+		"code": "agent-ix.semantic-ir.COMPOSITE_CYCLE",
+		"path": "types.5.relationships.0",
+		"note": "document-order traversal reaches Project through Artifact, so Project.contains closes the cycle"
+	},
+	{
+		"id": "operation-dangling-post-clause",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.operations.0.post.0",
+			"value": "missing-clause"
+		},
+		"code": "agent-ix.semantic-ir.DANGLING_CLAUSE_REF",
+		"path": "types.3.operations.0.post.0"
+	},
+	{
+		"id": "clause-duplicate-clause-id",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.clauses.1.clauseId",
+			"value": "not-archived"
+		},
+		"code": "agent-ix.semantic-ir.DUPLICATE_CLAUSE_ID",
+		"path": "types.3.clauses.1.clauseId"
+	},
+	{
+		"id": "clause-source-without-span",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.clauses.0.sourceSpan",
+			"value": null
+		},
+		"code": "agent-ix.semantic-ir.MISSING_SOURCE_SPAN",
+		"path": "types.3.clauses.0.sourceSpan"
+	},
+	{
+		"id": "operation-duplicate-param",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.operations.0.params.1.name",
+			"value": "reason"
+		},
+		"code": "agent-ix.semantic-ir.DUPLICATE_PARAM",
+		"path": "types.3.operations.0.params.1.name"
+	},
+	{
+		"id": "relationship-duplicate-identity",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.relationships.1.identity",
+			"value": "ix://agent-ix/assurance/relationship/artifact-project"
+		},
+		"code": "agent-ix.semantic-ir.DUPLICATE_IDENTITY",
+		"path": "types.3.relationships.1.identity"
 	}
 ]

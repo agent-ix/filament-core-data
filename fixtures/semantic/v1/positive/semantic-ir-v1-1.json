@@ -220,7 +220,31 @@
 			],
 			"extensions": [],
 			"unknownPolicy": "reject",
-			"scalar": "number"
+			"scalar": "number",
+			"clauses": [
+				{
+					"identity": "ix://agent-ix/assurance/clause/seconds-bounded",
+					"language": "sysml",
+					"clauseId": "bounded",
+					"text": "constraint { self >= 0 }",
+					"sourceSpan": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "types/seconds.tsp",
+						"startLine": 8,
+						"startColumn": 1,
+						"endLine": 8,
+						"endColumn": 1
+					},
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "types/seconds.tsp",
+							"startLine": 8,
+							"startColumn": 1
+						}
+					}
+				}
+			]
 		},
 		{
 			"identity": "ix://agent-ix/assurance/type/ArtifactId",
@@ -364,6 +388,174 @@
 					},
 					"extensions": []
 				}
+			],
+			"relationships": [
+				{
+					"identity": "ix://agent-ix/assurance/relationship/artifact-project",
+					"verb": "belongs_to",
+					"category": "structural",
+					"composite": false,
+					"target": "ix://agent-ix/assurance/type/Project",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "types/artifact.tsp",
+							"startLine": 20,
+							"startColumn": 3
+						}
+					}
+				},
+				{
+					"identity": "ix://agent-ix/assurance/relationship/artifact-parent",
+					"verb": "derives_from",
+					"category": "traceability",
+					"composite": false,
+					"target": "ix://agent-ix/assurance/type/Artifact",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "types/artifact.tsp",
+							"startLine": 21,
+							"startColumn": 3
+						}
+					}
+				}
+			],
+			"clauses": [
+				{
+					"identity": "ix://agent-ix/assurance/clause/artifact-not-archived",
+					"language": "ocl",
+					"clauseId": "not-archived",
+					"text": "context Artifact inv: self.summary <> 'archived'",
+					"sourceSpan": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "types/artifact.tsp",
+						"startLine": 30,
+						"startColumn": 1,
+						"endLine": 31,
+						"endColumn": 1
+					},
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "types/artifact.tsp",
+							"startLine": 30,
+							"startColumn": 1
+						}
+					}
+				},
+				{
+					"identity": "ix://agent-ix/assurance/clause/artifact-archived",
+					"language": "ocl",
+					"clauseId": "archived",
+					"text": "context Artifact::archive() post: result.summary = 'archived'",
+					"sourceSpan": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "types/artifact.tsp",
+						"startLine": 32,
+						"startColumn": 1,
+						"endLine": 33,
+						"endColumn": 1
+					},
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "types/artifact.tsp",
+							"startLine": 32,
+							"startColumn": 1
+						}
+					}
+				},
+				{
+					"identity": "ix://agent-ix/assurance/clause/artifact-generated",
+					"language": "acme:tla",
+					"clauseId": "generated-invariant",
+					"text": "[](summary # \"deleted\")",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://agent-ix/filament-core-data/generator/example",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://agent-ix/assurance/type/Artifact"]
+						}
+					}
+				}
+			],
+			"operations": [
+				{
+					"identity": "ix://agent-ix/assurance/operation/artifact-archive",
+					"name": "archive",
+					"params": [
+						{
+							"identity": "ix://agent-ix/assurance/field/archive-reason",
+							"name": "reason",
+							"typeRef": "ix://agent-ix/assurance/type/Text",
+							"multiplicity": {
+								"lower": 1,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"defaultKind": "none",
+							"origin": {
+								"source": {
+									"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+									"path": "types/artifact.tsp",
+									"startLine": 40,
+									"startColumn": 3
+								}
+							},
+							"extensions": []
+						},
+						{
+							"identity": "ix://agent-ix/assurance/field/archive-delay",
+							"name": "delay",
+							"typeRef": "ix://agent-ix/assurance/type/Seconds",
+							"multiplicity": {
+								"lower": 0,
+								"upper": 1
+							},
+							"presence": "optional",
+							"nullable": false,
+							"defaultKind": "none",
+							"origin": {
+								"source": {
+									"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+									"path": "types/artifact.tsp",
+									"startLine": 41,
+									"startColumn": 3
+								}
+							},
+							"extensions": [],
+							"unit": "s"
+						}
+					],
+					"returns": {
+						"typeRef": "ix://agent-ix/assurance/type/Artifact",
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1
+						},
+						"nullable": false
+					},
+					"pre": ["not-archived"],
+					"post": ["archived"],
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "types/artifact.tsp",
+							"startLine": 39,
+							"startColumn": 1
+						}
+					}
+				}
 			]
 		},
 		{
@@ -414,6 +606,70 @@
 			"extensions": [],
 			"unknownPolicy": "reject",
 			"items": "ix://agent-ix/assurance/type/Artifact"
+		},
+		{
+			"identity": "ix://agent-ix/assurance/type/Project",
+			"displayName": "Project",
+			"kind": "record",
+			"roles": ["agent-ix:entity"],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "types/project.tsp",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"fields": [
+				{
+					"identity": "ix://agent-ix/assurance/field/project-name",
+					"name": "name",
+					"typeRef": "ix://agent-ix/assurance/type/Text",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "types/project.tsp",
+							"startLine": 3,
+							"startColumn": 3
+						}
+					},
+					"extensions": []
+				}
+			],
+			"relationships": [
+				{
+					"identity": "ix://agent-ix/assurance/relationship/project-artifacts",
+					"verb": "contains",
+					"category": "structural",
+					"composite": true,
+					"target": "ix://agent-ix/assurance/type/Artifact",
+					"multiplicity": {
+						"lower": 0,
+						"ordered": true,
+						"unique": true
+					},
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "types/project.tsp",
+							"startLine": 6,
+							"startColumn": 3
+						}
+					}
+				}
+			],
+			"operations": [],
+			"clauses": []
 		}
 	],
 	"occurrences": [],

@@ -320,7 +320,7 @@ function checkTypeDefinition(
 		if (
 			isObject(clause.origin) &&
 			"source" in clause.origin &&
-			clause.sourceSpan === undefined
+			clause.sourceSpan == null
 		) {
 			diagnostics.push({
 				code: "agent-ix.semantic-ir.MISSING_SOURCE_SPAN",
