@@ -8,19 +8,21 @@ relationships:
     type: "constrains"
   - target: "ix://agent-ix/filament-core-data/NFR-012"
     type: "depends_on"
+  - target: "ix://agent-ix/filament-core-data/FR-025"
+    type: "depends_on"
 ---
 # [NFR-013] Additive semantic IR revision
 
 ## Statement
 
-Issue #34 SHALL revise the semantic IR from v1 to v1.1 additively, keeping
-every v1 fixture valid, the frozen TypeSpec spike byte-identical, and every
-backend, generated package, and corpus repository unchanged.
+The v1.1 revision of the semantic IR SHALL be additive, keeping every v1
+fixture valid, the frozen TypeSpec spike byte-identical, and every backend,
+generated package, and corpus repository unchanged.
 
 ## Scope
 
-- Permitted: `contracts-v1.md`, `schema/semantic/v1/*.schema.json`, `fixtures/semantic/v1/`, FR-020 and its sibling requirements, tests, reviews, and plans owned by issue #34.
-- Prohibited: `spikes/` content, compiler backends, generated packages, catalog pins, and any file in config-service or another corpus repository.
+- Permitted: `docs/semantic-data-system/contracts-v1.md`, `schema/semantic/v1/*.schema.json`, `fixtures/semantic/v1/**`, `spec/**`, `test/**`, `agent_ix_core_data/**` (second reader only), `reviews/**`, and `plan/**`.
+- Prohibited: `spikes/**`, `src/**` backends, generated packages, catalog pins, and any file in config-service or another corpus repository.
 
 ## Rationale
 
@@ -52,8 +54,9 @@ its base for corpus and backend paths.
 |---|---|---|
 | NFR-013-AC-1 | Every v1 positive fixture validates under the v1.1 schema without edit. | Test |
 | NFR-013-AC-2 | `spike:typespec:check` produces byte-identical output before and after the revision. | Test |
-| NFR-013-AC-3 | The compatibility corpus records v1 → v1.1 as `additive` with the added node list. | Inspection |
-| NFR-013-AC-4 | The issue branch changes no file under `spikes/`, no backend, and no corpus repository. | Inspection |
+| NFR-013-AC-3 | The compatibility corpus records v1 → v1.1 as `additive` with the added node list. | Analysis |
+| NFR-013-AC-4 | The issue branch changes no file under `spikes/`, no backend, and no corpus repository. | Analysis |
+| NFR-013-AC-5 | Every new IR node kind has at least one golden and one negative fixture under `fixtures/semantic/v1/`. | Test |
 
 ## Dependencies
 

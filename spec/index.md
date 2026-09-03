@@ -1,7 +1,7 @@
 ---
 type: index
 title: "filament-core-data requirements index"
-description: "Index of the semantic data architecture, contract-census, and TypeSpec-feasibility requirements bundle."
+description: "Index of the semantic data architecture, contract-census, TypeSpec-feasibility, semantic-contract, and IR v1.1 requirements bundle."
 okf_version: "0.1"
 ---
 # filament-core-data requirements

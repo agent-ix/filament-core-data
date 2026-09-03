@@ -5,7 +5,7 @@ type: US
 relationships:
   - target: "ix://agent-ix/filament-core-data/spec/stakeholder/StR-001"
     type: "traces_to"
-  - target: "ix://agent-ix/filament-core-data/spec/usecase/US-005"
+  - target: "ix://agent-ix/filament-core-data/US-005"
     type: "depends_on"
 ---
 # [US-006] Declare typed domain structure without loss
@@ -47,7 +47,7 @@ corpus.
 
 - **Given** an `ocl` invariant fence under `## Invariants`
 - **When** the artifact is lifted
-- **Then** the IR carries a `clauses[]` entry with `language: ocl`, a clause identity, and the source span, and the IR itself asserts nothing about the clause text
+- **Then** the IR carries a `clauses[]` entry with `language: ocl`, a clause identity, the clause text as extracted, and the source span, and the IR itself asserts nothing about what the text means
 
 ### [US-006-EX-4] An unknown constraint keyword fails
 
