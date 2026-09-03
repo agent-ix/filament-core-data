@@ -46,7 +46,7 @@ database files, and downstream repositories for zero mutation.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| NFR-012-AC-1 | A named human reviews the modular JSON Schema v1 source decision before the issue #9 normative contract merges. | Inspection |
+| NFR-012-AC-1 | The owner records the v1 structural-source decision (TypeSpec, ADR-0005) before the issue #9 normative contract merges. | Inspection |
 | NFR-012-AC-2 | Compiler, publication, enforcement, database, consumer-migration, and retirement work remains in separately gated tickets. | Inspection |
 
 ## Dependencies
