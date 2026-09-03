@@ -10,4 +10,6 @@ description: "Chronological log of structural changes to the requirements bundle
 * **2026-08-29** — Initialized the semantic data architecture requirements bundle for issue #8.
 * **2026-08-29** — Added the read-only Filament contract-census requirements for issue #10.
 * **2026-08-29** — Added the pinned, isolated TypeSpec feasibility and structural-schema decision requirements for issue #4.
-* **2026-08-30** — Added the issue #9 semantic IR, package, mapping, representation, generated-target, compatibility, and non-disruption requirements; the modular JSON Schema v1 source remains at its named human merge gate.
+* **2026-08-30** — Added the issue #9 semantic IR, package, mapping, representation, generated-target, compatibility, and non-disruption requirements.
+* **2026-09-03** — Issue #30: recorded the owner decision (TypeSpec is the structural source, ADR-0005). Removed the JSON Schema fallback and the "owns and funds the compensation" pass condition from FR-018 and US-004; retitled FR-018.
+* **2026-09-03** — Issue #9: FR-019 and US-005 rewritten from the JSON Schema fallback to TypeSpec as the v1 structural source per ADR-0005; TC-199 resolved by the owner decision on issue #4. The 13 contract schemas are unchanged.

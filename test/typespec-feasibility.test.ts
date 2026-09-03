@@ -259,7 +259,7 @@ describe("TypeSpec feasibility gate", () => {
 	});
 
 	/** Traces: TC-119..122, TC-125..126, TC-128..129; FR-018, NFR-007, US-004-AC-2. */
-	it("applies the unchanged pass rule and preserves the human promotion gate", () => {
+	it("retains a complete capability record and recommendation inputs", () => {
 		const evidence = readJson("evidence/capabilities.json");
 		const capabilities = records(evidence.capabilities, "capabilities");
 		expect(capabilities.length).toBeGreaterThanOrEqual(10);
@@ -282,16 +282,11 @@ describe("TypeSpec feasibility gate", () => {
 				/^(pass|partial|fail|not-applicable)$/,
 			);
 		}
-		const failedP0 = capabilities.some(
-			(capability) =>
-				capability.priority === "P0" && capability.disposition !== "pass",
-		);
-		expect(evidence.typeSpecSelected).toBe(!failedP0);
-		if (failedP0) expect(evidence.fallback).toBe("modular-json-schema-2020-12");
+		// The evidence file is a frozen 2026-08-30 snapshot. The decision it fed
+		// is recorded in docs/semantic-data-system/adr/0005-typespec-structural-source.md,
+		// so its typeSpecSelected/fallback/adrStatus fields are history, not state.
 		nonempty(evidence.extensionMaintenanceCost, "extension maintenance cost");
 		nonempty(evidence.costOfBeingWrong, "cost of being wrong");
-		expect(evidence.adrStatus).toBe("provisional");
-		expect(evidence.humanPromotionRequired).toBe(true);
 		const report = readFileSync(resolve(spike, "report.md"), "utf8");
 		expect(report).toContain("## Recommendation");
 		expect(report).toContain("## Human Decision Gate");

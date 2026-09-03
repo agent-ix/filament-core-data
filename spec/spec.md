@@ -49,9 +49,9 @@ paths, exercises ordinary native consumers, and produces retained evidence for a
 human schema-source decision.
 
 The fourth delivery is the versioned semantic IR, package, mapping, profile,
-compatibility, and generated-target contract. It adopts modular JSON Schema
-2020-12 as the proposed v1 structural source from the issue #4 evidence while
-retaining a named human decision before that contract becomes normative.
+compatibility, and generated-target contract. Its structural source is TypeSpec
+(ADR-0005); the contract itself remains provisional on issue #9 until its IR
+fields are frozen.
 
 ## 2. Scope
 
@@ -60,7 +60,8 @@ retaining a named human decision before that contract becomes normative.
 - An indexed architecture document bundle under `docs/semantic-data-system/`.
 - Accepted decisions for concern-specific authority, generated-package
   ownership, and best-fit representations.
-- A conditional TypeSpec decision with an explicit JSON Schema fallback.
+- TypeSpec as the structural schema source (ADR-0005), with JSON Schema and
+  Protobuf as generated projections.
 - The semantic metamodel, data planes, package model, representation mappings,
   compatibility policy, review method, and staged roadmap at design-record
   fidelity.
@@ -79,8 +80,8 @@ retaining a named human decision before that contract becomes normative.
 - Experimental JSON Schema, Protobuf, semantic IR, Rust, TypeScript, Python,
   Arrow, and Markdown outputs with compile, golden, diagnostic, determinism,
   compatibility, and maintenance-cost evidence.
-- A go/no-go recommendation that applies the existing pass rule and retains the
-  human ADR-0004 promotion gate.
+- A recommendation that applies the ADR pass rule as written and leaves the
+  decision to the owner.
 - A complete source-independent semantic IR and type-system contract.
 - Versioned package/import/export/profile/lock and fingerprint contracts.
 - Representation mapping and transformation contracts for Markdown, JSON,
@@ -100,8 +101,8 @@ retaining a named human decision before that contract becomes normative.
 - Modifying Quire parsing, validation, extraction, or byte-splice behavior.
 - Modifying Quoin catalog installation or module enforcement.
 - Migrating persisted data, rewriting the corpus, or removing legacy contracts.
-- Self-promoting TypeSpec or the fallback without human review of the issue #4
-  feasibility report.
+- Self-promoting or self-rejecting a schema source from the spike; the decision
+  is the owner's.
 - Correcting any contract finding while the issue #10 census is being collected.
 - Approving consumer, database, wire-format, package, enforcement, or retirement
   changes from audit recommendations alone.
@@ -165,10 +166,10 @@ Authority is assigned by concern:
 - **Informative** content explains context and carries no requirement.
 - **Historical** content records a retired decision and is normative of nothing.
 
-The architecture principles are normative. The issue #4 evidence recommends
-modular JSON Schema 2020-12 for v1 while TypeSpec remains non-authoritative; the
-source decision, exact metamodel fields, generated package registry names, and
-individual migration dispositions remain provisional until their named gates pass.
+The architecture principles and the TypeSpec source decision (ADR-0005) are
+normative. Exact metamodel fields, generated package registry names, and
+individual migration dispositions remain provisional until their owning tickets
+pass.
 
 ## 7. Verification Strategy
 
@@ -189,7 +190,8 @@ individual migration dispositions remain provisional until their named gates pas
 - Project 17 program epic: `agent-ix/filament-core-data#3`.
 - Project 18 companion epic: `agent-ix/quoin#286`.
 - Architecture companion: `agent-ix/quoin#289`.
-- TypeSpec feasibility gate: `agent-ix/filament-core-data#4`.
+- TypeSpec feasibility and source decision: `agent-ix/filament-core-data#4`
+  (resolved; ADR-0005).
 - Corpus reviews: `agent-ix/filament-core-data#10` and `agent-ix/quoin#288`.
 
 ## 9. Change Management

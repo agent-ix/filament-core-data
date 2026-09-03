@@ -32,6 +32,7 @@ const requiredArtifacts = [
 	"adr/0002-generated-package-ownership.md",
 	"adr/0003-best-fit-representations.md",
 	"adr/0004-conditional-typespec-source.md",
+	"adr/0005-typespec-structural-source.md",
 ] as const;
 
 type Frontmatter = Record<string, string>;
@@ -165,21 +166,26 @@ describe("semantic data architecture record", () => {
 	});
 
 	/** Traces: TC-029, TC-031, TC-032, TC-036; FR-008-AC-1, FR-008-AC-3, FR-008-AC-4, US-002-AC-1. */
-	it("defines all four ADRs and keeps TypeSpec conditional", () => {
+	it("defines all five ADRs and records TypeSpec as the normative source", () => {
 		const adrPaths = requiredArtifacts.filter((path) => /^adr\/\d/.test(path));
-		expect(adrPaths).toHaveLength(4);
+		expect(adrPaths).toHaveLength(5);
 		expect(
 			frontmatter(
 				readArchitectureFile("adr/0004-conditional-typespec-source.md"),
 			),
 		).toMatchObject({
-			status: "provisional",
-			resolution_gate:
-				"https://github.com/agent-ix/filament-core-data/issues/4",
+			status: "historical",
+			superseded_by: "ADR-0005",
 		});
-		expect(
-			readArchitectureFile("adr/0004-conditional-typespec-source.md"),
-		).toContain("JSON Schema 2020-12");
+		const adr0005 = readArchitectureFile(
+			"adr/0005-typespec-structural-source.md",
+		);
+		expect(frontmatter(adr0005)).toMatchObject({
+			status: "normative",
+			supersedes: "ADR-0004",
+		});
+		expect(adr0005).toContain("TypeSpec is the structural schema source");
+		expect(adr0005).not.toMatch(/fallback schema-authoring source/i);
 	});
 
 	/** Traces: TC-004, TC-053; FR-001-AC-4, FR-001-AC-5. */
@@ -189,6 +195,8 @@ describe("semantic data architecture record", () => {
 				new Map([
 					["ADR-0001", ["ADR-0002"]],
 					["ADR-0002", []],
+					["ADR-0004", ["ADR-0005"]],
+					["ADR-0005", []],
 				]),
 			),
 		).not.toThrow();
@@ -279,10 +287,9 @@ describe("semantic data architecture record", () => {
 		expect(roadmap).toMatch(/high corpus failure[\s\S]*(pause|hold)/i);
 
 		const typeSpec = readArchitectureFile("typespec-feasibility.md");
-		expect(typeSpec).toMatch(
-			/Capability matrix[\s\S]*Pass rule[\s\S]*Fail rule/i,
-		);
-		expect(typeSpec).toContain("modular JSON Schema 2020-12");
+		expect(typeSpec).toMatch(/Capability matrix[\s\S]*Pass rule[\s\S]*Result/i);
+		expect(typeSpec).toContain("ADR-0005");
+		expect(typeSpec).not.toMatch(/fallback/i);
 
 		const corpusReview = readArchitectureFile("corpus-review-method.md");
 		for (const scopeItem of [

@@ -7,22 +7,23 @@ resolution_gate: "https://github.com/agent-ix/filament-core-data/issues/9"
 # Semantic contract v1
 
 This record specifies the portable data contracts proposed by issue #9. It is
-executable and suitable for independent implementations, but it does not become
-normative until a named human accepts the source decision at the issue #9 gate.
-It does not implement a compiler, publish a package, change a consumer, or alter
-the current Avro contract.
+executable and suitable for independent implementations. It remains provisional
+on issue #9 until its IR fields are frozen. It does not implement a compiler,
+publish a package, change a consumer, or alter the current Avro contract.
 
 ## Authority and layers
 
-The proposed v1 structural source is modular JSON Schema 2020-12. Package
-metadata, mappings, build profiles, locks, and compatibility evidence are
-separate versioned inputs because structural JSON Schema cannot express all of
-their concerns. A source adapter normalizes these inputs into `semantic-ir-v1`.
-The IR is the versioned compiler exchange boundary, not a second authoring
-source.
+The v1 structural source is TypeSpec, per
+[ADR-0005](adr/0005-typespec-structural-source.md). Package metadata, mappings,
+build profiles, locks, and compatibility evidence are separate versioned inputs
+because a structural type language cannot express all of their concerns. The
+TypeSpec frontend normalizes the compiled program and these inputs into
+`semantic-ir-v1`. The IR is the versioned compiler exchange boundary, not a
+second authoring source. JSON Schema 2020-12 and Protobuf are official-emitter
+projections of the TypeSpec source, never authoring sources.
 
-TypeSpec remains a non-authoritative import or future authoring option. Existing
-Avro remains a compatibility representation until its reader retirement gate.
+Existing Avro remains a compatibility representation until its reader retirement
+gate.
 Markdown, JSON, database rows, Protobuf messages, Avro values, Arrow/Parquet
 batches, CSV/TSV files, and generated language objects are representations or
 projections selected for concrete boundaries.
@@ -218,7 +219,7 @@ or enforce a package, change a catalog pin, migrate a database, alter a consumer
 rewrite Quoin manifests, change current Avro/generated bindings, or retire a
 legacy path. Those actions remain separately ticketed and gated.
 
-A named human must accept or hold modular JSON Schema 2020-12 as the v1
-structural source after the automated conformance, code review, and gap analysis
-are complete. Until that record exists, this document remains provisional and
-must not trigger downstream adoption.
+The structural-source decision is recorded: the owner selected TypeSpec on
+[issue #4](https://github.com/agent-ix/filament-core-data/issues/4)
+(2026-09-03, ADR-0005). This document remains provisional on issue #9 only for
+its IR field set and must not trigger downstream adoption on its own.

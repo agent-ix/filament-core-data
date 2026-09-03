@@ -14,7 +14,7 @@ wave has a human go-or-hold decision.
 | Wave | Outcome | Required gate before promotion |
 |---|---|---|
 | 1. Record and census | Durable architecture plus Filament and Quire/Quoin inventories | **advisory gate:** reviews are complete, evidence-backed, and active-work conflicts have owners |
-| 2. Feasibility and detailed spec | TypeSpec decision plus semantic IR/package/projection specification | Human acceptance of issue #4 result and reviewed issue #9 specification |
+| 2. Feasibility and detailed spec | TypeSpec decision (recorded in ADR-0005) plus semantic IR/package/projection specification | Reviewed issue #9 specification |
 | 3. Compiler and packages | Deterministic compiler, generated semantic-core/module packages, compatibility classifier, and legacy bridges | **compatibility gate:** cross-language golden fixtures and current Avro/JSON readers agree |
 | 4. Consumer readiness | Complete consumer census, version availability, adapter plans, and rollback ownership | All known consumers classified; unknown/stale consumers keep the gate closed |
 | 5. Additive consumer migration | New readers first, then dual-write or additive writers where necessary | Per-consumer evidence; no shared replacement hidden in a feature PR |

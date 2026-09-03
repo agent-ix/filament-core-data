@@ -2,7 +2,7 @@
 id: Task-033
 title: "Human normative-source decision"
 type: Task
-status: blocked
+status: done
 track: Gate
 priority: P0
 relationships:
@@ -27,15 +27,15 @@ hold decision before normative merge.
 
 ## Subtasks
 
-- [ ] Identify the reviewer by GitHub identity or signed review record.
-- [ ] Record acceptance or hold of modular JSON Schema 2020-12 as the v1 structural source.
-- [ ] If accepted, confirm the merge still excludes compiler, publication, enforcement, database, migration, consumer, and retirement actions.
-- [ ] If held, preserve evidence and return the decision to specification without starting downstream work.
+- [x] Identify the reviewer by GitHub identity or signed review record. — repository owner (`kreneskyp`), issue #4 comment, 2026-09-03.
+- [x] Record the v1 structural-source decision. — TypeSpec selected; the JSON Schema fallback proposed by this plan is not adopted. Recorded in ADR-0005.
+- [x] Confirm the merge still excludes compiler, publication, enforcement, database, migration, consumer, and retirement actions.
+- [x] FR-019, US-005, and `contracts-v1.md` rewritten from the fallback to TypeSpec; the 13 contract schemas and fixtures are unchanged.
 
 ## Deliverables
 
-- Named, dated TC-199 decision record.
-- Merge authorization or explicit hold with rationale.
+- TC-199 decision record: issue #4 owner comment (2026-09-03) and ADR-0005.
+- Merge authorization: granted by the same decision.
 
 ## Notes
 

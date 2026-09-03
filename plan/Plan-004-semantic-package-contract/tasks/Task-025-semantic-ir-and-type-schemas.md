@@ -50,7 +50,7 @@ presence/null/default states, constraints, recursion, roles, and extensions.
 - [x] Define shared version, identity, source-locus, extension, result-state, and diagnostic primitives.
 - [x] Define scalar, record, enum, discriminated-union, alias/newtype, sequence, map, and semantic-reference nodes.
 - [x] Add positive, negative, boundary, recursive, role, open/closed, and rename fixtures.
-- [x] Document JSON Schema authority, TypeSpec non-authority, and retained Avro compatibility.
+- [x] Document TypeSpec authority (ADR-0005), JSON Schema as projection, and retained Avro compatibility.
 
 ## Deliverables
 

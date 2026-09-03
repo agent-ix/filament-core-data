@@ -35,5 +35,6 @@ made indirectly through this repository.
   [quoin#289](https://github.com/agent-ix/quoin/issues/289) and the corpus review.
 - Exact metamodel fields and module package metadata belong to
   [filament-core-data#9](https://github.com/agent-ix/filament-core-data/issues/9).
-- TypeSpec versus modular JSON Schema remains governed by
-  [filament-core-data#4](https://github.com/agent-ix/filament-core-data/issues/4).
+- TypeSpec is the structural schema source per
+  [ADR-0005](adr/0005-typespec-structural-source.md); the compiler and emitters
+  stay in `filament-core-data` per [ADR-0002](adr/0002-generated-package-ownership.md).

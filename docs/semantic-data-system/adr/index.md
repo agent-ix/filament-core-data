@@ -10,7 +10,8 @@ status: normative
 | [ADR-0001: Concern-specific authority](0001-concern-specific-authority.md) | normative | — | — |
 | [ADR-0002: Generated-package ownership](0002-generated-package-ownership.md) | normative | — | — |
 | [ADR-0003: Best-fit representations](0003-best-fit-representations.md) | normative | — | — |
-| [ADR-0004: Conditional TypeSpec source](0004-conditional-typespec-source.md) | provisional | — | [issue #4](https://github.com/agent-ix/filament-core-data/issues/4) |
+| [ADR-0004: Conditional TypeSpec source](0004-conditional-typespec-source.md) | historical | — | resolved by [ADR-0005](0005-typespec-structural-source.md) |
+| [ADR-0005: TypeSpec structural source](0005-typespec-structural-source.md) | normative | ADR-0004 | — |
 
 Accepted decisions remain normative until an indexed successor explicitly
 supersedes them. A historical decision links exactly one current successor. The
