@@ -1,0 +1,134 @@
+[
+	{
+		"id": "ir-unknown-version",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir.json",
+		"set": { "path": "contractVersion", "value": "2.0.0" },
+		"code": "agent-ix.semantic-ir.UNSUPPORTED_VERSION"
+	},
+	{
+		"id": "ir-missing-origin",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir.json",
+		"remove": "types.0.origin",
+		"code": "agent-ix.semantic-ir.MISSING_ORIGIN"
+	},
+	{
+		"id": "ir-record-without-fields",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir.json",
+		"remove": "types.1.fields",
+		"code": "agent-ix.semantic-ir.INVALID_TYPE_SHAPE"
+	},
+	{
+		"id": "ir-unnamespaced-role",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir.json",
+		"set": { "path": "types.1.roles.0", "value": "entity" },
+		"code": "agent-ix.semantic-ir.INVALID_ROLE"
+	},
+	{
+		"id": "manifest-unknown-key",
+		"schema": "package-manifest.schema.json",
+		"base": "positive/package-manifest.json",
+		"set": { "path": "registryUrl", "value": "https://registry.example" },
+		"code": "agent-ix.package.UNKNOWN_KEY"
+	},
+	{
+		"id": "manifest-extension-without-version",
+		"schema": "package-manifest.schema.json",
+		"base": "positive/package-manifest.json",
+		"remove": "extensions.0.version",
+		"code": "agent-ix.package.INVALID_EXTENSION"
+	},
+	{
+		"id": "lock-without-canonicalization",
+		"schema": "package-lock.schema.json",
+		"base": "positive/package-lock.json",
+		"remove": "canonicalization",
+		"code": "agent-ix.package.MISSING_CANONICALIZATION"
+	},
+	{
+		"id": "mapping-pure-external-read",
+		"schema": "mapping.schema.json",
+		"base": "positive/mapping.json",
+		"set": {
+			"path": "transformation.externalReads.0",
+			"value": "ix://example.org/external/source"
+		},
+		"code": "agent-ix.mapping.HIDDEN_EFFECT"
+	},
+	{
+		"id": "mapping-loss-without-omission",
+		"schema": "mapping.schema.json",
+		"base": "positive/mapping.json",
+		"set": { "path": "transformation.preservation", "value": "declared-lossy" },
+		"code": "agent-ix.mapping.UNDECLARED_LOSS"
+	},
+	{
+		"id": "mapping-lens-without-laws",
+		"schema": "mapping.schema.json",
+		"base": "positive/mapping.json",
+		"remove": "transformation.getPutLaws",
+		"code": "agent-ix.mapping.MISSING_LENS_LAWS"
+	},
+	{
+		"id": "profile-unknown-key",
+		"schema": "profile.schema.json",
+		"base": "positive/profile.json",
+		"set": { "path": "implicit", "value": true },
+		"code": "agent-ix.profile.UNKNOWN_KEY"
+	},
+	{
+		"id": "representation-selected-without-boundary",
+		"schema": "representation.schema.json",
+		"base": "positive/representations.json",
+		"select": 0,
+		"remove": "consumingBoundary",
+		"code": "agent-ix.representation.MISSING_BOUNDARY"
+	},
+	{
+		"id": "compiler-path-traversal",
+		"schema": "compiler-request.schema.json",
+		"base": "positive/compiler-request.json",
+		"set": { "path": "outputRoot", "value": "../outside" },
+		"code": "agent-ix.compiler.INVALID_OUTPUT_ROOT"
+	},
+	{
+		"id": "output-error-with-files",
+		"schema": "output-manifest.schema.json",
+		"base": "positive/output-manifest.json",
+		"set": { "path": "state", "value": "unsupported" },
+		"code": "agent-ix.compiler.OUTPUT_ON_FAILURE"
+	},
+	{
+		"id": "target-unlicensed-custom",
+		"schema": "target-contract.schema.json",
+		"base": "positive/target-contracts.json",
+		"select": 1,
+		"set": { "path": "customSourceLicense", "value": "MIT" },
+		"code": "agent-ix.target.INVALID_CUSTOM_LICENSE"
+	},
+	{
+		"id": "compatibility-missing-consumers",
+		"schema": "compatibility-report.schema.json",
+		"base": "positive/compatibility-report.json",
+		"remove": "changes.0.affectedConsumers",
+		"code": "agent-ix.compatibility.MISSING_CONSUMERS"
+	},
+	{
+		"id": "legacy-loss-without-omissions",
+		"schema": "legacy-adapter.schema.json",
+		"base": "positive/legacy-adapter.json",
+		"set": { "path": "preservation", "value": "declared-lossy" },
+		"code": "agent-ix.legacy.UNDECLARED_LOSS"
+	},
+	{
+		"id": "consumer-incomplete-identities",
+		"schema": "consumer-policy.schema.json",
+		"base": "positive/consumer-policies.json",
+		"select": 0,
+		"remove": "identityPlanes.5",
+		"code": "agent-ix.consumer.INCOMPLETE_IDENTITY_GRAPH"
+	}
+]

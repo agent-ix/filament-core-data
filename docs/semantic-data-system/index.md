@@ -36,6 +36,7 @@ their own ticket before they can become implementation input.
 | [Concern-specific authority](authority.md) | normative | — | Authority, edit direction, and provenance by concern |
 | [Ownership boundaries](ownership.md) | normative | — | Repository and subsystem responsibilities |
 | [Metamodel and data planes](metamodel.md) | provisional | [issue #9](https://github.com/agent-ix/filament-core-data/issues/9) | Semantic IR, kernel, identity, planes, and extensions |
+| [Semantic contract v1](contracts-v1.md) | provisional | [issue #9](https://github.com/agent-ix/filament-core-data/issues/9) | Executable IR, package, mapping, projection, target, compatibility, and legacy contracts |
 | [Generated package contract](generated-packages.md) | normative | — | Cross-language package and consumer boundary |
 | [Representations and transformations](representations-and-transformations.md) | normative | — | Output selection, mappings, profiles, loss, and provenance |
 | [Compatibility policy](compatibility.md) | normative | — | Cross-format evolution and Avro preservation |

@@ -1,0 +1,125 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/filament-core-data/v1/target-contract.schema.json",
+	"title": "Filament generated target contract v1",
+	"type": "object",
+	"required": [
+		"contractVersion",
+		"target",
+		"nativeApi",
+		"runtimeValidation",
+		"identityMetadata",
+		"unsupportedFeaturePolicy",
+		"prohibitedDependencies",
+		"runtimeDependencies",
+		"executableGeneratorDependencies",
+		"securityFindings",
+		"backendQualification",
+		"qualificationEvidence",
+		"customSourceLicense"
+	],
+	"properties": {
+		"contractVersion": { "const": "1.0.0" },
+		"target": {
+			"enum": [
+				"json-schema",
+				"rust",
+				"typescript",
+				"python-pydantic-v2",
+				"python-dataclass"
+			]
+		},
+		"nativeApi": {
+			"type": "array",
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"minLength": 1,
+				"not": {
+					"pattern": "(^|[^A-Za-z])(any|untyped map|empty model)([^A-Za-z]|$)"
+				}
+			}
+		},
+		"runtimeValidation": { "type": "string", "minLength": 1 },
+		"identityMetadata": { "type": "string", "minLength": 1 },
+		"unsupportedFeaturePolicy": { "enum": ["fail", "approved-declared-loss"] },
+		"prohibitedDependencies": {
+			"type": "array",
+			"items": {
+				"enum": [
+					"ui",
+					"orm",
+					"sqlalchemy",
+					"tauri",
+					"network-client",
+					"database-migration",
+					"application-service"
+				]
+			},
+			"uniqueItems": true
+		},
+		"runtimeDependencies": {
+			"type": "array",
+			"items": {
+				"type": "string",
+				"not": {
+					"pattern": "^(?:ui|orm|sqlalchemy|tauri|network-client|database-migration|application-service)$"
+				}
+			},
+			"uniqueItems": true
+		},
+		"executableGeneratorDependencies": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": ["name", "exactVersion", "provenance"],
+				"properties": {
+					"name": { "type": "string", "minLength": 1 },
+					"exactVersion": {
+						"type": "string",
+						"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$"
+					},
+					"provenance": { "type": "string", "minLength": 1 }
+				},
+				"additionalProperties": false
+			}
+		},
+		"securityFindings": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": ["id", "severity", "disposition"],
+				"properties": {
+					"id": { "type": "string", "minLength": 1 },
+					"severity": { "enum": ["low", "medium", "high", "critical"] },
+					"disposition": { "type": "string", "minLength": 1 }
+				},
+				"additionalProperties": false
+			}
+		},
+		"backendQualification": {
+			"enum": ["upstream-qualified", "custom-retained"]
+		},
+		"qualificationEvidence": { "type": "string", "minLength": 1 },
+		"customSourceLicense": { "const": "AGPL-3.0-or-later" },
+		"pythonAuthoring": {
+			"enum": [
+				"generated-pydantic-v2",
+				"generated-stdlib-dataclass",
+				"not-applicable"
+			]
+		}
+	},
+	"allOf": [
+		{
+			"if": {
+				"type": "object",
+				"properties": {
+					"target": { "enum": ["python-pydantic-v2", "python-dataclass"] }
+				}
+			},
+			"then": { "type": "object", "required": ["pythonAuthoring"] }
+		}
+	],
+	"additionalProperties": false
+}

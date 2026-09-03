@@ -1,0 +1,44 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/filament-core-data/v1/consumer-policy.schema.json",
+	"title": "Filament semantic consumer policy v1",
+	"type": "object",
+	"required": [
+		"contractVersion",
+		"consumer",
+		"mode",
+		"exports",
+		"unknownModules",
+		"unknownExtensions",
+		"identityPlanes"
+	],
+	"properties": {
+		"contractVersion": { "const": "1.0.0" },
+		"consumer": { "$ref": "common.schema.json#/$defs/semanticIdentity" },
+		"mode": { "enum": ["dynamic", "generated"] },
+		"exports": {
+			"type": "array",
+			"items": { "$ref": "common.schema.json#/$defs/semanticIdentity" },
+			"uniqueItems": true
+		},
+		"unknownModules": { "$ref": "common.schema.json#/$defs/unknownPolicy" },
+		"unknownExtensions": { "$ref": "common.schema.json#/$defs/unknownPolicy" },
+		"identityPlanes": {
+			"type": "array",
+			"items": {
+				"enum": [
+					"package",
+					"type",
+					"field",
+					"profile",
+					"mapping",
+					"fingerprint"
+				]
+			},
+			"minItems": 6,
+			"maxItems": 6,
+			"uniqueItems": true
+		}
+	},
+	"additionalProperties": false
+}

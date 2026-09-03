@@ -1,0 +1,94 @@
+[
+	{
+		"kind": "codec",
+		"purity": "pure",
+		"deterministic": true,
+		"externalReads": [],
+		"externalWrites": [],
+		"failureStates": ["invalid"],
+		"retryIdempotent": true,
+		"encoding": "application/json",
+		"decodePolicy": "strict"
+	},
+	{
+		"kind": "lens",
+		"purity": "pure",
+		"deterministic": true,
+		"externalReads": [],
+		"externalWrites": [],
+		"failureStates": ["invalid"],
+		"retryIdempotent": true,
+		"preservation": "semantic-lossless",
+		"getPutLaws": ["get-put", "put-get", "put-put"],
+		"conflictPolicy": "reject"
+	},
+	{
+		"kind": "projection",
+		"purity": "pure",
+		"deterministic": true,
+		"externalReads": [],
+		"externalWrites": [],
+		"failureStates": ["lossy"],
+		"retryIdempotent": true,
+		"preservation": "declared-lossy",
+		"selectedIdentities": ["ix://agent-ix/assurance/field/artifact-id"],
+		"omittedIdentities": ["ix://agent-ix/assurance/field/summary"]
+	},
+	{
+		"kind": "extraction",
+		"purity": "pure",
+		"deterministic": true,
+		"externalReads": [],
+		"externalWrites": [],
+		"failureStates": ["invalid", "partial"],
+		"retryIdempotent": true,
+		"preservation": "semantic-lossless",
+		"sourceLoci": ["frontmatter", "heading:Results", "body"]
+	},
+	{
+		"kind": "rendering",
+		"purity": "pure",
+		"deterministic": true,
+		"externalReads": [],
+		"externalWrites": [],
+		"failureStates": ["unsupported"],
+		"retryIdempotent": true,
+		"preservation": "one-way",
+		"presentationMediaType": "text/markdown"
+	},
+	{
+		"kind": "aggregation",
+		"purity": "pure",
+		"deterministic": true,
+		"externalReads": [],
+		"externalWrites": [],
+		"failureStates": ["invalid", "partial"],
+		"retryIdempotent": true,
+		"groupingKeys": ["ix://agent-ix/assurance/field/artifact-id"],
+		"window": "run",
+		"ordering": "event-time then semantic identity",
+		"lateDataPolicy": "revise",
+		"aggregateSemantics": "count verification outcomes by artifact"
+	},
+	{
+		"kind": "enrichment",
+		"purity": "effectful",
+		"deterministic": false,
+		"externalReads": ["ix://example.org/source/advisory-database"],
+		"externalWrites": [],
+		"failureStates": ["unavailable", "partial"],
+		"retryIdempotent": true,
+		"provenanceSources": ["ix://example.org/source/advisory-database"]
+	},
+	{
+		"kind": "materialization",
+		"purity": "effectful",
+		"deterministic": true,
+		"externalReads": [],
+		"externalWrites": ["ix://example.org/store/report-cache"],
+		"failureStates": ["unavailable", "partial"],
+		"retryIdempotent": true,
+		"provenanceSources": ["ix://example.org/store/report-cache"],
+		"lifetime": "durable"
+	}
+]

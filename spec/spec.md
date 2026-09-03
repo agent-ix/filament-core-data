@@ -48,6 +48,11 @@ It compiles one representative semantic slice through official and custom emitte
 paths, exercises ordinary native consumers, and produces retained evidence for a
 human schema-source decision.
 
+The fourth delivery is the versioned semantic IR, package, mapping, profile,
+compatibility, and generated-target contract. Its structural source is TypeSpec
+(ADR-0005); the contract itself remains provisional on issue #9 until its IR
+fields are frozen.
+
 ## 2. Scope
 
 ### 2.1 In Scope
@@ -77,6 +82,14 @@ human schema-source decision.
   compatibility, and maintenance-cost evidence.
 - A recommendation that applies the ADR pass rule as written and leaves the
   decision to the owner.
+- A complete source-independent semantic IR and type-system contract.
+- Versioned package/import/export/profile/lock and fingerprint contracts.
+- Representation mapping and transformation contracts for Markdown, JSON,
+  PostgreSQL, Protobuf, Avro, Arrow, Parquet, CSV, and TSV.
+- Generated Rust, TypeScript, Python, and JSON Schema target contracts without
+  selecting an unqualified implementation backend.
+- Cross-target compatibility, determinism, portability, security, legacy bridge,
+  dynamic-module, and non-disruption requirements.
 
 ### 2.2 Out of Scope
 
@@ -93,6 +106,8 @@ human schema-source decision.
 - Correcting any contract finding while the issue #10 census is being collected.
 - Approving consumer, database, wire-format, package, enforcement, or retirement
   changes from audit recommendations alone.
+- Implementing or publishing the production compiler, custom codegen, generated
+  packages, module-manifest adoption, or consumer migrations as part of issue #9.
 
 ## 3. System Overview
 
@@ -140,9 +155,9 @@ Authority is assigned by concern:
 | Class | Artifacts | Purpose |
 |---|---|---|
 | Stakeholder | [StR-001](./stakeholder/StR-001-durable-semantic-data-governance.md) | Durable governance need |
-| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-004](./usecase/US-004-evaluate-structural-schema-source.md) | Reader, implementer, migration-review, and tool-selection outcomes |
-| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-018](./functional/FR-018-resolve-structural-schema-source.md) | Architecture, census, and feasibility-gate behavior |
-| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-007](./non-functional/NFR-007-honest-feasibility-evidence.md) | Traceability, readability, reproducibility, isolation, honesty, and non-disruption |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-005](./usecase/US-005-author-portable-semantic-packages.md) | Reader, implementer, migration-review, tool-selection, and schema-author outcomes |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-026](./functional/FR-026-preserve-dynamic-and-legacy-boundaries.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, and compatibility behavior |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-012](./non-functional/NFR-012-non-disruptive-contract-specification.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, and non-disruption |
 
 ## 6. Decision Status Model
 

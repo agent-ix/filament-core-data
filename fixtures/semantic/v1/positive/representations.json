@@ -1,0 +1,195 @@
+[
+	{
+		"contractVersion": "1.0.0",
+		"identity": "ix://agent-ix/representation/markdown",
+		"version": "1.0.0",
+		"format": "markdown",
+		"selected": true,
+		"consumingBoundary": "Quire-authored ISO artifacts and LLM text exchange",
+		"bestFit": ["human authoring", "review", "LLM context"],
+		"nonUses": ["high-throughput wire transport", "columnar analytics"],
+		"compatibilityMethod": "semantic-locus snapshot and lens-law corpus",
+		"mapping": {
+			"kind": "markdown",
+			"loci": [
+				"frontmatter",
+				"heading",
+				"prose",
+				"table",
+				"list",
+				"fence",
+				"relationship",
+				"body-extraction"
+			],
+			"authority": "authored-bytes",
+			"roundTrips": ["structural", "semantic"],
+			"unrepresentable": ["ix://agent-ix/assurance/type/CyclicObjectGraph"]
+		}
+	},
+	{
+		"contractVersion": "1.0.0",
+		"identity": "ix://agent-ix/representation/json",
+		"version": "1.0.0",
+		"format": "json",
+		"selected": true,
+		"consumingBoundary": "dynamic package validation and portable data exchange",
+		"bestFit": ["schema validation", "portable interchange"],
+		"nonUses": ["compact binary wire transport"],
+		"compatibilityMethod": "JSON Schema conformance corpus",
+		"mapping": {
+			"kind": "json",
+			"mediaType": "application/vnd.agent-ix.semantic+json",
+			"schemaIdentity": "https://schemas.agent-ix.org/filament-core-data/v1/semantic-ir.schema.json",
+			"discriminator": "kind",
+			"canonicalization": "RFC8785-JCS-with-identity-sorted-sets-v1",
+			"unknownFields": "reject"
+		}
+	},
+	{
+		"contractVersion": "1.0.0",
+		"identity": "ix://agent-ix/representation/postgresql",
+		"version": "1.0.0",
+		"format": "postgresql",
+		"selected": true,
+		"consumingBoundary": "consumer-owned persistence mapping",
+		"bestFit": ["transactional persistence", "consumer queries"],
+		"nonUses": [
+			"semantic source authority",
+			"cross-consumer migration authority"
+		],
+		"compatibilityMethod": "logical mapping review plus owner migration gate",
+		"mapping": {
+			"kind": "postgresql",
+			"logicalFields": ["ix://agent-ix/assurance/field/artifact-id"],
+			"identity": "stable-id column maps semantic occurrence identity",
+			"nullability": "derived from semantic presence and nullability",
+			"constraints": ["logical uniqueness"],
+			"provenance": "consumer-owned migration record",
+			"physicalAuthority": "owning-consumer"
+		}
+	},
+	{
+		"contractVersion": "1.0.0",
+		"identity": "ix://agent-ix/representation/protobuf",
+		"version": "1.0.0",
+		"format": "protobuf",
+		"selected": false,
+		"bestFit": ["measured typed RPC boundary"],
+		"nonUses": ["universal semantic source", "unmeasured internal interchange"],
+		"compatibilityMethod": "descriptor compatibility and reserved identifier corpus",
+		"mapping": {
+			"kind": "protobuf",
+			"package": "agent_ix.assurance.v1",
+			"message": "Artifact",
+			"fieldNumbers": { "id": 1, "summary": 2 },
+			"enumNumbers": { "PASS": 0, "FAIL": 1 },
+			"reservedNames": ["legacy_label"],
+			"reservedNumbers": [3],
+			"presence": "proto3 optional and explicit wrapper policy",
+			"unknownFields": "preserve",
+			"descriptorCompatibility": "buf-style wire and source compatibility"
+		}
+	},
+	{
+		"contractVersion": "1.0.0",
+		"identity": "ix://agent-ix/representation/avro",
+		"version": "1.0.0",
+		"format": "avro",
+		"selected": true,
+		"consumingBoundary": "current filament-core-data readers",
+		"bestFit": ["existing generated binding compatibility"],
+		"nonUses": ["v1 semantic source authority"],
+		"compatibilityMethod": "existing positive and negative Avro fixture suite",
+		"mapping": {
+			"kind": "avro",
+			"protocolIdentity": "agent_ix.core_data.CoreData",
+			"authority": "compatibility-representation",
+			"compatibility": "versioned bridge until explicit reader retirement gate"
+		}
+	},
+	{
+		"contractVersion": "1.0.0",
+		"identity": "ix://agent-ix/representation/arrow",
+		"version": "1.0.0",
+		"format": "arrow",
+		"selected": false,
+		"bestFit": ["in-memory analytical batches"],
+		"nonUses": ["narrative authority", "recursive graph authority"],
+		"compatibilityMethod": "field-metadata and declared-loss fixture comparison",
+		"mapping": {
+			"kind": "arrow",
+			"fieldIdentities": ["ix://agent-ix/assurance/field/artifact-id"],
+			"order": ["ix://agent-ix/assurance/field/artifact-id"],
+			"types": { "id": "utf8" },
+			"nullability": { "id": false },
+			"metadata": { "semanticRole": "agent-ix:evidence" },
+			"partitioning": [],
+			"declaredLoss": ["ix://agent-ix/assurance/type/CyclicObjectGraph"]
+		}
+	},
+	{
+		"contractVersion": "1.0.0",
+		"identity": "ix://agent-ix/representation/parquet",
+		"version": "1.0.0",
+		"format": "parquet",
+		"selected": false,
+		"bestFit": ["durable analytical datasets"],
+		"nonUses": [
+			"interactive document editing",
+			"recursive semantic graph authority"
+		],
+		"compatibilityMethod": "physical schema plus semantic metadata diff",
+		"mapping": {
+			"kind": "parquet",
+			"fieldIdentities": ["ix://agent-ix/assurance/field/artifact-id"],
+			"order": ["ix://agent-ix/assurance/field/artifact-id"],
+			"types": { "id": "BYTE_ARRAY/UTF8" },
+			"nullability": { "id": false },
+			"metadata": { "contract": "agent-ix/assurance@1.0.0" },
+			"partitioning": ["ix://agent-ix/assurance/field/artifact-id"],
+			"declaredLoss": ["ix://agent-ix/assurance/type/CyclicObjectGraph"]
+		}
+	},
+	{
+		"contractVersion": "1.0.0",
+		"identity": "ix://agent-ix/representation/csv",
+		"version": "1.0.0",
+		"format": "csv",
+		"selected": false,
+		"bestFit": ["flat external interchange"],
+		"nonUses": ["implicit typed ingestion", "nested or recursive data"],
+		"compatibilityMethod": "external-schema and byte fixture comparison",
+		"mapping": {
+			"kind": "csv",
+			"externalSchema": "https://schemas.agent-ix.org/filament-core-data/v1/semantic-ir.schema.json",
+			"encoding": "UTF-8",
+			"delimiter": ",",
+			"escape": "RFC4180 double quote",
+			"nullToken": "\\N",
+			"headerIdentity": "stable semantic field identity map",
+			"flatnessLimit": 1,
+			"implicitTypeInference": false
+		}
+	},
+	{
+		"contractVersion": "1.0.0",
+		"identity": "ix://agent-ix/representation/tsv",
+		"version": "1.0.0",
+		"format": "tsv",
+		"selected": false,
+		"bestFit": ["flat tabular interchange"],
+		"nonUses": ["implicit typed ingestion", "nested or recursive data"],
+		"compatibilityMethod": "external-schema and byte fixture comparison",
+		"mapping": {
+			"kind": "tsv",
+			"externalSchema": "https://schemas.agent-ix.org/filament-core-data/v1/semantic-ir.schema.json",
+			"encoding": "UTF-8",
+			"delimiter": "\t",
+			"escape": "backslash escape",
+			"nullToken": "\\N",
+			"headerIdentity": "stable semantic field identity map",
+			"flatnessLimit": 1,
+			"implicitTypeInference": false
+		}
+	}
+]

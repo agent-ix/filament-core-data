@@ -1,0 +1,58 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/filament-core-data/v1/profile.schema.json",
+	"title": "Filament representation profile v1",
+	"type": "object",
+	"required": [
+		"contractVersion",
+		"identity",
+		"version",
+		"authority",
+		"editDirection",
+		"roundTrip",
+		"unknownPolicy",
+		"allowedOmissions",
+		"enrichment",
+		"materializationLifetime"
+	],
+	"properties": {
+		"contractVersion": { "const": "1.0.0" },
+		"identity": { "$ref": "common.schema.json#/$defs/semanticIdentity" },
+		"version": { "$ref": "common.schema.json#/$defs/semver" },
+		"authority": {
+			"enum": [
+				"semantic-source",
+				"authored-representation",
+				"runtime-store",
+				"derived-projection",
+				"compatibility-bridge"
+			]
+		},
+		"editDirection": { "enum": ["read-only", "write-only", "bidirectional"] },
+		"roundTrip": {
+			"enum": [
+				"byte-lossless",
+				"structure-lossless",
+				"semantic-lossless",
+				"declared-lossy",
+				"one-way"
+			]
+		},
+		"unknownPolicy": { "$ref": "common.schema.json#/$defs/unknownPolicy" },
+		"allowedOmissions": {
+			"type": "array",
+			"items": { "$ref": "common.schema.json#/$defs/semanticIdentity" },
+			"uniqueItems": true
+		},
+		"enrichment": { "type": "boolean" },
+		"materializationLifetime": {
+			"enum": ["request", "run", "session", "durable"]
+		},
+		"options": { "type": "object" },
+		"extensions": {
+			"type": "array",
+			"items": { "$ref": "common.schema.json#/$defs/extension" }
+		}
+	},
+	"additionalProperties": false
+}
