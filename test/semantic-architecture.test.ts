@@ -333,6 +333,7 @@ describe("semantic data architecture record", () => {
 			"plan/Plan-004-semantic-package-contract/",
 			"plan/Plan-005-semantic-ir-v1-1/",
 			"test/semantic-ir-v1-1.test.ts",
+			"test/semantic-ir-v1-1-reader.ts",
 			"tests/",
 			"pyproject.toml",
 			"poetry.lock",

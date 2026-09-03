@@ -209,5 +209,32 @@
 			"value": "go"
 		},
 		"code": "agent-ix.package.UNKNOWN_TARGET"
+	},
+	{
+		"id": "ir-v1-1-field-without-multiplicity",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"remove": "types.3.fields.0.multiplicity",
+		"code": "agent-ix.semantic-ir.MISSING_MULTIPLICITY"
+	},
+	{
+		"id": "ir-v1-1-negative-lower",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.fields.0.multiplicity.lower",
+			"value": -1
+		},
+		"code": "agent-ix.semantic-ir.INVALID_MULTIPLICITY"
+	},
+	{
+		"id": "ir-v1-1-empty-unit",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.fields.3.unit",
+			"value": ""
+		},
+		"code": "agent-ix.semantic-ir.INVALID_UNIT"
 	}
 ]

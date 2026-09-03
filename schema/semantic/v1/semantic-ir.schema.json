@@ -173,6 +173,14 @@
 					"items": {
 						"$ref": "common.schema.json#/$defs/extension"
 					}
+				},
+				"multiplicity": {
+					"$ref": "#/$defs/multiplicity"
+				},
+				"unit": {
+					"type": "string",
+					"minLength": 1,
+					"pattern": "^[!-~]+$"
 				}
 			},
 			"allOf": [
@@ -418,6 +426,27 @@
 				"value": {}
 			},
 			"additionalProperties": false
+		},
+		"multiplicity": {
+			"type": "object",
+			"required": ["lower"],
+			"properties": {
+				"lower": {
+					"type": "integer",
+					"minimum": 0
+				},
+				"upper": {
+					"type": "integer",
+					"minimum": 0
+				},
+				"ordered": {
+					"type": "boolean"
+				},
+				"unique": {
+					"type": "boolean"
+				}
+			},
+			"additionalProperties": false
 		}
 	},
 	"allOf": [
@@ -451,6 +480,36 @@
 						"properties": {
 							"dialect": {
 								"const": "https://json-schema.org/draft/2020-12/schema"
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"if": {
+				"type": "object",
+				"properties": {
+					"contractVersion": {
+						"const": "1.1.0"
+					}
+				}
+			},
+			"then": {
+				"type": "object",
+				"properties": {
+					"types": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"fields": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"required": ["multiplicity"]
+									}
+								}
 							}
 						}
 					}

@@ -109,5 +109,40 @@
 		"family": "field",
 		"targetResults": ["additive", "breaking", "patch"],
 		"expected": "breaking"
+	},
+	{
+		"id": "multiplicity-widening",
+		"family": "multiplicity",
+		"from": "1..1",
+		"to": "0..*",
+		"expected": "additive"
+	},
+	{
+		"id": "multiplicity-narrowing",
+		"family": "multiplicity",
+		"from": "0..*",
+		"to": "1..1",
+		"expected": "breaking"
+	},
+	{
+		"id": "unit-change",
+		"family": "unit",
+		"from": "s",
+		"to": "ms",
+		"expected": "breaking"
+	},
+	{
+		"id": "ordered-flag-change",
+		"family": "multiplicity",
+		"from": "ordered: false",
+		"to": "ordered: true",
+		"expected": "breaking"
+	},
+	{
+		"id": "unique-flag-change",
+		"family": "multiplicity",
+		"from": "unique: false",
+		"to": "unique: true",
+		"expected": "breaking"
 	}
 ]

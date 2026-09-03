@@ -1,0 +1,63 @@
+[
+	{
+		"id": "field-presence-contradicts-multiplicity",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.fields.1.presence",
+			"value": "required"
+		},
+		"code": "agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH",
+		"path": "types.3.fields.1.presence"
+	},
+	{
+		"id": "field-upper-below-lower",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.fields.0.multiplicity",
+			"value": {
+				"lower": 2,
+				"upper": 1
+			}
+		},
+		"code": "agent-ix.semantic-ir.INVALID_MULTIPLICITY",
+		"path": "types.3.fields.0.multiplicity.upper"
+	},
+	{
+		"id": "field-flags-on-single",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.fields.0.multiplicity",
+			"value": {
+				"lower": 1,
+				"upper": 1,
+				"ordered": true
+			}
+		},
+		"code": "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
+		"path": "types.3.fields.0.multiplicity"
+	},
+	{
+		"id": "field-unit-on-record",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.fields.1.typeRef",
+			"value": "ix://agent-ix/assurance/type/Artifact"
+		},
+		"also": {
+			"path": "types.3.fields.1.unit",
+			"value": "s"
+		},
+		"code": "agent-ix.semantic-ir.UNIT_ON_NON_SCALAR",
+		"path": "types.3.fields.1.unit"
+	},
+	{
+		"id": "field-unresolved-type-ref",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.fields.0.typeRef",
+			"value": "ix://agent-ix/assurance/type/Missing"
+		},
+		"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+		"path": "types.3.fields.0.typeRef"
+	}
+]

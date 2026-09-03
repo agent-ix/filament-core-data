@@ -2,7 +2,7 @@
 id: Task-036
 title: "Field multiplicity and units"
 type: Task
-status: todo
+status: done
 track: A
 priority: P0
 relationships:
@@ -33,11 +33,11 @@ Add `multiplicity` and `unit` to the `field` node, derive `presence`, resolve `t
 
 ## Subtasks
 
-- [ ] Add `multiplicity { lower, upper?, ordered?, unique? }` (required under `1.1.0`, optional under `1.0.0`) and `unit` to `$defs.field`.
-- [ ] Implement the cross-field rules in the TypeScript reader: derived presence agreement, `upper >= lower`, `lower >= 0`, flags only on collections, `unit` only on resolved `scalar` kind, unresolved `typeRef` fails (TC-203..207, TC-237).
-- [ ] Implement normalization: `1.1.0` documents materialize `multiplicity`, `presence`, `nullable`; `1.0.0` documents gain no bytes; round-trip property for `0..1` (TC-203).
-- [ ] Add multiplicity widening/narrowing and `unit`/`ordered`/`unique` change families to the compatibility corpus (TC-238).
-- [ ] Add golden and negative fixtures for every rule, including `0..0`, `1..*` ordered+unique, alias-of-scalar with a unit, and a UCUM symbol.
+- [x] Add `multiplicity { lower, upper?, ordered?, unique? }` (required under `1.1.0`, optional under `1.0.0`) and `unit` to `$defs.field`.
+- [x] Implement the cross-field rules in the TypeScript reader: derived presence agreement, `upper >= lower`, `lower >= 0`, flags only on collections, `unit` only on resolved `scalar` kind, unresolved `typeRef` fails (TC-203..207, TC-237).
+- [x] Implement normalization: `1.1.0` documents materialize `multiplicity`, `presence`, `nullable`; `1.0.0` documents gain no bytes; round-trip property for `0..1` (TC-203).
+- [x] Add multiplicity widening/narrowing and `unit`/`ordered`/`unique` change families to the compatibility corpus (TC-238).
+- [x] Add golden and negative fixtures for every rule, including `0..0`, `1..*` ordered+unique, alias-of-scalar with a unit, and a UCUM symbol.
 
 ## Deliverables
 
