@@ -15,6 +15,7 @@ okf_version: "0.1"
 * [US-003: Assess Filament contract fit](./usecase/US-003-assess-contract-fit.md) - Migration reviewer outcome for the read-only contract census.
 * [US-004: Evaluate the structural schema source](./usecase/US-004-evaluate-structural-schema-source.md) - Compiler owner outcome for the isolated TypeSpec spike (resolved: TypeSpec, ADR-0005).
 * [US-005: Author portable semantic packages](./usecase/US-005-author-portable-semantic-packages.md) - Schema-owner outcome for the semantic IR, packages, mappings, and generated targets.
+* [US-006: Declare typed domain structure](./usecase/US-006-declare-typed-domain-structure.md) - Module-author outcome for lossless IR v1.1 declarations.
 * [Functional requirements](./functional/) - Required architecture-record, census, feasibility, semantic-contract, package, projection, and compatibility behavior.
 * [Non-functional requirements](./non-functional/) - Traceability, reproducibility, parity, security, portability, evidence honesty, isolation, and safety qualities.
 * [Update log](./log.md) - Chronological bundle changes.
