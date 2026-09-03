@@ -18,7 +18,7 @@ later disruptive migration and promotion gates remain separate and closed.
 1. Every acceptance criterion and named constraint has at least one test case.
 2. Authority, status, projection, and gate options are tested in their valid combinations.
 3. Qualitative constraints are tested at their allowed and prohibited boundaries.
-4. Missing status, ownership, provenance, fallback, disposition, and gate paths fail validation.
+4. Missing status, ownership, provenance, disposition, and gate paths fail validation.
 5. Provisional, normative, superseded, and historical state transitions are tested.
 6. Cross-plane concepts, lossy transformations, high corpus failure, and stale decisions are covered as edge cases.
 
@@ -107,17 +107,17 @@ later disruptive migration and promotion gates remain separate and closed.
 | TC-023 | Markdown mapping covers frontmatter, headings, prose, and tables | Static | P0 | FR-006-AC-3 | ✅ automated contract passed |
 | TC-024 | Lossy transformations require declaration and provenance | Static | P0 | FR-006-AC-4 | ✅ automated contract passed |
 | TC-025 | Compatibility policy covers schema evolution and Avro preservation | Manual | P0 | FR-007-AC-1, FR-007-CON-1 | ✅ architecture review passed |
-| TC-026 | TypeSpec gate includes pass criteria and JSON Schema fallback | Static | P0 | FR-007-AC-2 | ✅ automated contract passed |
+| TC-026 | TypeSpec gate includes explicit pass criteria cited by ADR-0005 | Static | P0 | FR-007-AC-2 | ✅ automated contract passed |
 | TC-027 | Corpus-review method accounts for the complete declared scope | Manual | P0 | FR-007-AC-3 | ✅ architecture review passed |
 | TC-028 | Roadmap defines cutover gates and pauses on high failure | Manual | P0 | FR-007-AC-4, FR-007-CON-2 | ✅ architecture review passed |
 | TC-029 | Required ADR inventory and statuses are complete | Static | P0 | FR-008-AC-1 | ✅ automated contract passed |
 | TC-030 | Every known Quire conflict has a disposition | Manual | P0 | FR-008-AC-2 | ✅ architecture review passed |
 | TC-031 | ADRs keep rendering and generation outside Quire core | Static | P0 | FR-008-AC-3 | ✅ automated contract passed |
-| TC-032 | Conditional TypeSpec ADR links fallback and resolution ticket | Static | P0 | FR-008-AC-4 | ✅ automated contract passed |
+| TC-032 | TypeSpec ADR links its resolution ticket and superseding ADR | Static | P0 | FR-008-AC-4 | ✅ automated contract passed |
 | TC-033 | Root-index walkthrough satisfies the stakeholder governance need | Manual | P0 | StR-001-AC-1 | ✅ standalone review passed |
 | TC-034 | Authored requirement resolves to Markdown authority | Manual | P0 | US-001-AC-1 | ✅ standalone review passed |
 | TC-035 | Verification run resolves to runtime authority and report projection | Manual | P0 | US-001-AC-2 | ✅ standalone review passed |
-| TC-036 | Unpassed TypeSpec gate resolves to provisional plus fallback | Manual | P0 | US-002-AC-1 | ✅ standalone review passed |
+| TC-036 | Undecided TypeSpec gate resolves to provisional plus resolution ticket | Manual | P0 | US-002-AC-1 | ✅ standalone review passed |
 | TC-037 | Ungated database cutover resolves to blocked | Manual | P0 | US-002-AC-2 | ✅ standalone review passed |
 | TC-038 | Required-artifact inventory reaches 100 percent | Static | P0 | NFR-001-AC-1 | ✅ automated contract passed |
 | TC-039 | Internal-link scan reports zero broken links | Static | P0 | NFR-001-AC-2 | ✅ automated contract passed |
