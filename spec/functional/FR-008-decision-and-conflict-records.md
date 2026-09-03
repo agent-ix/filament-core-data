@@ -39,7 +39,7 @@ architecture.
 | FR-008-AC-1 | Four required ADRs exist and have unambiguous statuses. | Test (TC-029) |
 | FR-008-AC-2 | Every known Quire conflict has a compatibility, preserve, or supersede disposition. | Analysis (TC-030) |
 | FR-008-AC-3 | No ADR moves rendering or cross-language generation into Quire core. | Inspection (TC-031) |
-| FR-008-AC-4 | The conditional TypeSpec ADR records a fallback and a named resolution ticket. | Inspection (TC-032) |
+| FR-008-AC-4 | The TypeSpec ADR records its named resolution ticket and, once decided, the normative ADR that supersedes it (ADR-0005). | Inspection (TC-032) |
 
 ## Dependencies
 
