@@ -59,5 +59,35 @@
 		},
 		"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
 		"path": "types.3.fields.0.typeRef"
+	},
+	{
+		"id": "constraint-string-operand-on-number",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.1.constraints.0.operands.value",
+			"value": "1"
+		},
+		"code": "agent-ix.semantic-ir.INVALID_OPERAND",
+		"path": "types.1.constraints.0.operands.value"
+	},
+	{
+		"id": "constraint-min-length-on-number",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.0.constraints.0.appliesTo",
+			"value": "ix://agent-ix/assurance/type/Seconds"
+		},
+		"code": "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE",
+		"path": "types.0.constraints.0"
+	},
+	{
+		"id": "constraint-regex-does-not-compile",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.0.constraints.2.operands.regex",
+			"value": "([a-z"
+		},
+		"code": "agent-ix.semantic-ir.INVALID_PATTERN",
+		"path": "types.0.constraints.2.operands.regex"
 	}
 ]

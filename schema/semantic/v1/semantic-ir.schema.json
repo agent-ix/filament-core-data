@@ -102,36 +102,272 @@
 	"additionalProperties": false,
 	"$defs": {
 		"constraint": {
-			"type": "object",
-			"required": [
-				"identity",
-				"keyword",
-				"operands",
-				"appliesTo",
-				"diagnosticCode",
-				"origin"
-			],
-			"properties": {
-				"identity": {
-					"$ref": "common.schema.json#/$defs/semanticIdentity"
+			"oneOf": [
+				{
+					"type": "object",
+					"required": [
+						"identity",
+						"keyword",
+						"operands",
+						"appliesTo",
+						"diagnosticCode",
+						"origin"
+					],
+					"properties": {
+						"identity": {
+							"$ref": "common.schema.json#/$defs/semanticIdentity"
+						},
+						"appliesTo": {
+							"$ref": "common.schema.json#/$defs/semanticIdentity"
+						},
+						"diagnosticCode": {
+							"type": "string",
+							"minLength": 1
+						},
+						"origin": {
+							"$ref": "common.schema.json#/$defs/origin"
+						},
+						"keyword": {
+							"enum": ["min", "max", "exclusiveMin", "exclusiveMax"]
+						},
+						"operands": {
+							"type": "object",
+							"required": ["value"],
+							"properties": {
+								"value": {
+									"anyOf": [
+										{
+											"type": "number"
+										},
+										{
+											"type": "string",
+											"minLength": 1
+										}
+									]
+								}
+							},
+							"additionalProperties": false
+						}
+					},
+					"additionalProperties": false
 				},
-				"keyword": {
-					"type": "string",
-					"minLength": 1
+				{
+					"type": "object",
+					"required": [
+						"identity",
+						"keyword",
+						"operands",
+						"appliesTo",
+						"diagnosticCode",
+						"origin"
+					],
+					"properties": {
+						"identity": {
+							"$ref": "common.schema.json#/$defs/semanticIdentity"
+						},
+						"appliesTo": {
+							"$ref": "common.schema.json#/$defs/semanticIdentity"
+						},
+						"diagnosticCode": {
+							"type": "string",
+							"minLength": 1
+						},
+						"origin": {
+							"$ref": "common.schema.json#/$defs/origin"
+						},
+						"keyword": {
+							"enum": ["minLength", "maxLength"]
+						},
+						"operands": {
+							"type": "object",
+							"required": ["value"],
+							"properties": {
+								"value": {
+									"type": "integer",
+									"minimum": 0
+								}
+							},
+							"additionalProperties": false
+						}
+					},
+					"additionalProperties": false
 				},
-				"operands": {},
-				"appliesTo": {
-					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				{
+					"type": "object",
+					"required": [
+						"identity",
+						"keyword",
+						"operands",
+						"appliesTo",
+						"diagnosticCode",
+						"origin"
+					],
+					"properties": {
+						"identity": {
+							"$ref": "common.schema.json#/$defs/semanticIdentity"
+						},
+						"appliesTo": {
+							"$ref": "common.schema.json#/$defs/semanticIdentity"
+						},
+						"diagnosticCode": {
+							"type": "string",
+							"minLength": 1
+						},
+						"origin": {
+							"$ref": "common.schema.json#/$defs/origin"
+						},
+						"keyword": {
+							"enum": ["pattern"]
+						},
+						"operands": {
+							"type": "object",
+							"required": ["regex", "dialect"],
+							"properties": {
+								"regex": {
+									"type": "string",
+									"minLength": 1
+								},
+								"dialect": {
+									"const": "ecma-262"
+								}
+							},
+							"additionalProperties": false
+						}
+					},
+					"additionalProperties": false
 				},
-				"diagnosticCode": {
-					"type": "string",
-					"minLength": 1
+				{
+					"type": "object",
+					"required": [
+						"identity",
+						"keyword",
+						"operands",
+						"appliesTo",
+						"diagnosticCode",
+						"origin"
+					],
+					"properties": {
+						"identity": {
+							"$ref": "common.schema.json#/$defs/semanticIdentity"
+						},
+						"appliesTo": {
+							"$ref": "common.schema.json#/$defs/semanticIdentity"
+						},
+						"diagnosticCode": {
+							"type": "string",
+							"minLength": 1
+						},
+						"origin": {
+							"$ref": "common.schema.json#/$defs/origin"
+						},
+						"keyword": {
+							"enum": ["enumValues"]
+						},
+						"operands": {
+							"type": "object",
+							"required": ["values"],
+							"properties": {
+								"values": {
+									"type": "array",
+									"minItems": 1,
+									"uniqueItems": true,
+									"items": {
+										"anyOf": [
+											{
+												"type": "string"
+											},
+											{
+												"type": "number"
+											},
+											{
+												"type": "boolean"
+											}
+										]
+									}
+								}
+							},
+							"additionalProperties": false
+						}
+					},
+					"additionalProperties": false
 				},
-				"origin": {
-					"$ref": "common.schema.json#/$defs/origin"
+				{
+					"type": "object",
+					"required": [
+						"identity",
+						"keyword",
+						"operands",
+						"appliesTo",
+						"diagnosticCode",
+						"origin"
+					],
+					"properties": {
+						"identity": {
+							"$ref": "common.schema.json#/$defs/semanticIdentity"
+						},
+						"appliesTo": {
+							"$ref": "common.schema.json#/$defs/semanticIdentity"
+						},
+						"diagnosticCode": {
+							"type": "string",
+							"minLength": 1
+						},
+						"origin": {
+							"$ref": "common.schema.json#/$defs/origin"
+						},
+						"keyword": {
+							"enum": ["nonEmpty", "unique"]
+						},
+						"operands": {
+							"type": "object",
+							"properties": {},
+							"additionalProperties": false
+						}
+					},
+					"additionalProperties": false
+				},
+				{
+					"type": "object",
+					"required": [
+						"identity",
+						"keyword",
+						"operands",
+						"appliesTo",
+						"diagnosticCode",
+						"origin"
+					],
+					"properties": {
+						"identity": {
+							"$ref": "common.schema.json#/$defs/semanticIdentity"
+						},
+						"appliesTo": {
+							"$ref": "common.schema.json#/$defs/semanticIdentity"
+						},
+						"diagnosticCode": {
+							"type": "string",
+							"minLength": 1
+						},
+						"origin": {
+							"$ref": "common.schema.json#/$defs/origin"
+						},
+						"keyword": {
+							"enum": ["format"]
+						},
+						"operands": {
+							"type": "object",
+							"required": ["name"],
+							"properties": {
+								"name": {
+									"type": "string",
+									"pattern": "^[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*$"
+								}
+							},
+							"additionalProperties": false
+						}
+					},
+					"additionalProperties": false
 				}
-			},
-			"additionalProperties": false
+			]
 		},
 		"field": {
 			"type": "object",

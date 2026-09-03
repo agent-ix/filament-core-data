@@ -144,5 +144,36 @@
 		"from": "unique: false",
 		"to": "unique: true",
 		"expected": "breaking"
+	},
+	{
+		"id": "constraint-keyword-added-to-vocabulary",
+		"family": "constraint-vocabulary",
+		"expected": "additive"
+	},
+	{
+		"id": "constraint-keyword-removed-from-vocabulary",
+		"family": "constraint-vocabulary",
+		"expected": "breaking"
+	},
+	{
+		"id": "constraint-keyword-operands-retyped",
+		"family": "constraint-vocabulary",
+		"expected": "breaking"
+	},
+	{
+		"id": "v1-to-v1-1-additive-revision",
+		"family": "contract-version",
+		"from": "1.0.0",
+		"to": "1.1.0",
+		"addedNodes": [
+			"field.multiplicity",
+			"field.unit",
+			"typeDefinition.relationships",
+			"typeDefinition.operations",
+			"typeDefinition.clauses",
+			"constraint.keyword (closed)",
+			"source.dialect (frontend)"
+		],
+		"expected": "additive"
 	}
 ]

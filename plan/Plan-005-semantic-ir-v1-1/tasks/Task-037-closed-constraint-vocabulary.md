@@ -2,7 +2,7 @@
 id: Task-037
 title: "Closed constraint vocabulary"
 type: Task
-status: todo
+status: done
 track: B
 priority: P0
 relationships:
@@ -37,11 +37,11 @@ Replace `keyword: string` and untyped `operands` with a closed enumeration and p
 
 ## Subtasks
 
-- [ ] Rewrite `$defs.constraint` as a discriminated union over the eleven keywords with typed operands; remove every untyped path including `enumValues.values` items (TC-223).
-- [ ] Implement applicability in the reader: keyword × resolved kind/scalar table from FR-029; mismatches fail at the constraint locus (TC-244).
-- [ ] Compile `pattern.regex` under `ecma-262` during validation and fail on error (TC-245).
-- [ ] Add one positive fixture per keyword and negative fixtures for `mnimum`, string `min`, dialect-less `pattern`, `minLength: -1` (TC-219..222).
-- [ ] Verify every v1 positive fixture constraint (currently none) uses a closed keyword (TC-224); add keyword add/remove/retype families to the compatibility corpus (TC-225).
+- [x] Rewrite `$defs.constraint` as a discriminated union over the eleven keywords with typed operands; remove every untyped path including `enumValues.values` items (TC-223).
+- [x] Implement applicability in the reader: keyword × resolved kind/scalar table from FR-029; mismatches fail at the constraint locus (TC-244).
+- [x] Compile `pattern.regex` under `ecma-262` during validation and fail on error (TC-245).
+- [x] Add one positive fixture per keyword and negative fixtures for `mnimum`, string `min`, dialect-less `pattern`, `minLength: -1` (TC-219..222).
+- [x] Verify every v1 positive fixture constraint (currently none) uses a closed keyword (TC-224); add keyword add/remove/retype families to the compatibility corpus (TC-225).
 
 ## Deliverables
 

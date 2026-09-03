@@ -576,3 +576,147 @@ describe("FR-027 field multiplicity and units", () => {
 		expect(byId.get("unique-flag-change")?.expected).toBe("breaking");
 	});
 });
+
+const CLOSED_KEYWORDS = [
+	"min",
+	"max",
+	"exclusiveMin",
+	"exclusiveMax",
+	"pattern",
+	"minLength",
+	"maxLength",
+	"enumValues",
+	"nonEmpty",
+	"unique",
+	"format",
+];
+
+function allConstraints(document: JsonObject): JsonObject[] {
+	return array(document.types, "types").flatMap((type) =>
+		array(object(type, "type").constraints, "constraints").map((value) =>
+			object(value, "constraint"),
+		),
+	);
+}
+
+describe("FR-029 closed constraint vocabulary", () => {
+	/** Traces: TC-219; FR-029-AC-1. */
+	it("has one validating positive fixture per closed keyword", () => {
+		const keywords = new Set(
+			allConstraints(goldenV11()).map((constraint) =>
+				String(constraint.keyword),
+			),
+		);
+		for (const keyword of CLOSED_KEYWORDS)
+			expect(keywords, keyword).toContain(keyword);
+	});
+
+	/** Traces: TC-220; FR-029-AC-2, US-006-EX-4. */
+	it("fails an unknown keyword at the constraint locus", () => {
+		const { valid, entry } = negativeValidates("constraint-unknown-keyword");
+		expect(valid).toBe(false);
+		expect(entry.set?.value).toBe("mnimum");
+		const { document } = readerCase("constraint-string-operand-on-number");
+		setAt(document, "types.1.constraints.0.keyword", "mnimum");
+		const hit = readSemanticIr(document).find(
+			(diagnostic) =>
+				diagnostic.code === "agent-ix.semantic-ir.UNKNOWN_CONSTRAINT_KEYWORD",
+		);
+		expect(hit?.path).toBe("types.1.constraints.0.keyword");
+	});
+
+	/** Traces: TC-221; FR-029-AC-3. */
+	it("fails a string operand on a numeric bound and a negative length", () => {
+		expectReaderFailure("constraint-string-operand-on-number");
+		expect(negativeValidates("constraint-negative-min-length").valid).toBe(
+			false,
+		);
+		expect(negativeValidates("constraint-empty-enum-values").valid).toBe(false);
+	});
+
+	/** Traces: TC-222; FR-029-AC-4. */
+	it("fails a pattern constraint without a dialect", () => {
+		expect(negativeValidates("constraint-pattern-without-dialect").valid).toBe(
+			false,
+		);
+	});
+
+	/** Traces: TC-223; FR-029-AC-5. */
+	it("declares no free keyword and no untyped operands path", () => {
+		const constraint = object(
+			object(schemaNamed("semantic-ir.schema.json").$defs, "$defs").constraint,
+			"constraint",
+		);
+		const variants = array(constraint.oneOf, "constraint variants").map(
+			(value) => object(value, "variant"),
+		);
+		const declared = new Set<string>();
+		for (const variant of variants) {
+			const properties = object(variant.properties, "properties");
+			const keyword = object(properties.keyword, "keyword");
+			for (const value of array(keyword.enum, "keyword enum"))
+				declared.add(String(value));
+			const operands = object(properties.operands, "operands");
+			expect(operands.additionalProperties, "typed operands").toBe(false);
+			expect(operands.type).toBe("object");
+		}
+		expect([...declared].sort()).toEqual([...CLOSED_KEYWORDS].sort());
+		const text = JSON.stringify(constraint);
+		expect(text).not.toContain('"keyword":{"type":"string"');
+		expect(text).not.toContain('"operands":{}');
+		expect(text).not.toContain('"items":{}');
+		expect(negativeValidates("constraint-untyped-operand").valid).toBe(false);
+		expect(negativeValidates("constraint-unnamespaced-format").valid).toBe(
+			false,
+		);
+	});
+
+	/** Traces: TC-224; FR-029-CON-1. */
+	it("finds every v1 fixture constraint inside the closed vocabulary", () => {
+		const v1 = object(readJson("positive/semantic-ir.json"), "v1");
+		const constraints = allConstraints(v1);
+		expect(constraints.length, "v1 fixtures carry no constraints today").toBe(
+			0,
+		);
+		for (const constraint of [...constraints, ...allConstraints(goldenV11())])
+			expect(CLOSED_KEYWORDS).toContain(String(constraint.keyword));
+	});
+
+	/** Traces: TC-225, TC-235; FR-029-CON-2, NFR-013-AC-3. */
+	it("classifies vocabulary changes and records v1 → v1.1 as additive", () => {
+		const byId = new Map(
+			array(readJson("compatibility/cases.json"), "cases")
+				.map((value) => object(value, "case"))
+				.map((entry) => [String(entry.id), entry]),
+		);
+		expect(byId.get("constraint-keyword-added-to-vocabulary")?.expected).toBe(
+			"additive",
+		);
+		expect(
+			byId.get("constraint-keyword-removed-from-vocabulary")?.expected,
+		).toBe("breaking");
+		expect(byId.get("constraint-keyword-operands-retyped")?.expected).toBe(
+			"breaking",
+		);
+		const revision = object(
+			byId.get("v1-to-v1-1-additive-revision"),
+			"revision case",
+		);
+		expect(revision.expected).toBe("additive");
+		expect(revision.from).toBe("1.0.0");
+		expect(revision.to).toBe("1.1.0");
+		expect(
+			array(revision.addedNodes, "added nodes").length,
+		).toBeGreaterThanOrEqual(5);
+	});
+
+	/** Traces: TC-244; FR-029-AC-7. */
+	it("fails a keyword applied outside its applicability", () => {
+		expectReaderFailure("constraint-min-length-on-number");
+	});
+
+	/** Traces: TC-245; FR-029-AC-8. */
+	it("fails a regex that does not compile under ecma-262", () => {
+		expectReaderFailure("constraint-regex-does-not-compile");
+	});
+});

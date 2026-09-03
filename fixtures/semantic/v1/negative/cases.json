@@ -236,5 +236,65 @@
 			"value": ""
 		},
 		"code": "agent-ix.semantic-ir.INVALID_UNIT"
+	},
+	{
+		"id": "constraint-unknown-keyword",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.1.constraints.0.keyword",
+			"value": "mnimum"
+		},
+		"code": "agent-ix.semantic-ir.UNKNOWN_CONSTRAINT_KEYWORD"
+	},
+	{
+		"id": "constraint-pattern-without-dialect",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"remove": "types.0.constraints.2.operands.dialect",
+		"code": "agent-ix.semantic-ir.INVALID_OPERAND"
+	},
+	{
+		"id": "constraint-negative-min-length",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.0.constraints.0.operands.value",
+			"value": -1
+		},
+		"code": "agent-ix.semantic-ir.INVALID_OPERAND"
+	},
+	{
+		"id": "constraint-empty-enum-values",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.0.constraints.5.operands.values",
+			"value": []
+		},
+		"code": "agent-ix.semantic-ir.INVALID_OPERAND"
+	},
+	{
+		"id": "constraint-untyped-operand",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.1.constraints.0.operands",
+			"value": {
+				"value": 1,
+				"extra": true
+			}
+		},
+		"code": "agent-ix.semantic-ir.INVALID_OPERAND"
+	},
+	{
+		"id": "constraint-unnamespaced-format",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.0.constraints.3.operands.name",
+			"value": "email"
+		},
+		"code": "agent-ix.semantic-ir.INVALID_OPERAND"
 	}
 ]
