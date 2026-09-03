@@ -18,8 +18,9 @@ The semantic IR v1.1 document SHALL declare its revision through
 `contractVersion`, with `source.dialect` identifying the producing frontend per
 ADR-0005.
 
-Every `package-manifest` target string SHALL resolve to a
-`target-contract.target` value.
+Every `package-manifest` target string SHALL resolve to a declared registry
+value: a `target-contract.target` generated target or a `representation.format`
+representation.
 
 ## Inputs
 
@@ -43,17 +44,17 @@ Every `package-manifest` target string SHALL resolve to a
 - The `source.dialect` value SHALL admit `spec-bundle` for documents produced by the spec-bundle extraction frontend defined in issue #36, so that the frontend identity is declared before that frontend exists.
 - If a `1.1.0` document carries the v1 constant `https://json-schema.org/draft/2020-12/schema` as its dialect, then IR validation SHALL fail at `source.dialect` with a diagnostic naming ADR-0005.
 - The v1.1 fixtures SHALL include one hand-authored golden document with `source.dialect: spec-bundle`, because no frontend emits it until issue #36 lands.
-- The `package-manifest.targets[]` items and each `profiles[].targets[]` item SHALL validate against the same enumeration as `target-contract.target`: `json-schema`, `rust`, `typescript`, `python-pydantic-v2`, `python-dataclass`.
+- The `package-manifest.targets[]` items and each `profiles[].targets[]` item SHALL validate against the declared registry: the `target-contract.target` enumeration (`json-schema`, `rust`, `typescript`, `python-pydantic-v2`, `python-dataclass`) or the `representation.format` enumeration (`markdown`, `json`, `postgresql`, `protobuf`, `avro`, `arrow`, `parquet`, `csv`, `tsv`), because the v1 manifest fixture already selects `markdown` as a target.
 - If a manifest names a target outside that enumeration, then manifest validation SHALL fail at the offending entry with its locus.
-- The common schema SHALL define the target enumeration once.
-- The manifest and target-contract schemas SHALL reference that single common definition.
+- The common schema SHALL define the generated-target and representation-format enumerations once.
+- The manifest, target-contract, and representation schemas SHALL reference those single common definitions.
 
 ## Constraints
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-030-CON-1 | The IR validator SHALL keep the v1 `contractVersion: "1.0.0"` fixture valid under the v1.1 schema file; the dialect rule is conditional on `contractVersion: "1.1.0"`. | Compatibility | Existing-fixture suite |
-| FR-030-CON-2 | The common schema SHALL be the only definition of the target enumeration, so the manifest and target-contract schemas cannot diverge. | Integrity | Static schema check |
+| FR-030-CON-2 | The common schema SHALL be the only definition of the generated-target and representation-format enumerations, so the manifest, target-contract, and representation schemas cannot diverge. | Integrity | Static schema check |
 
 ## Acceptance Criteria
 
@@ -61,8 +62,8 @@ Every `package-manifest` target string SHALL resolve to a
 |---|---|---|
 | FR-030-AC-1 | A `1.1.0` IR document with `source.dialect: typespec` validates, and one with `spec-bundle` validates. | Test |
 | FR-030-AC-2 | A `1.1.0` IR document carrying the JSON Schema `$schema` URI as `source.dialect` fails validation with a diagnostic that cites ADR-0005. | Test |
-| FR-030-AC-3 | A manifest with `targets: ["rust", "json-schema"]` validates; a manifest with `targets: ["go"]` fails at that entry. | Test |
-| FR-030-AC-4 | The manifest and target-contract schemas reference one shared target enumeration definition. | Analysis |
+| FR-030-AC-3 | A manifest with `targets: ["rust", "markdown"]` validates; a manifest with `targets: ["go"]` fails at that entry. | Test |
+| FR-030-AC-4 | The manifest, target-contract, and representation schemas reference the shared common enumeration definitions. | Analysis |
 | FR-030-AC-5 | A document with `contractVersion: "1.2.0"` fails before target emission with a machine-readable diagnostic. | Test |
 | FR-030-AC-6 | A `1.1.0` document with `source.dialect: avro` fails validation at `source.dialect`. | Test |
 

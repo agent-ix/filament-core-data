@@ -14,44 +14,68 @@
 		"mapping"
 	],
 	"properties": {
-		"contractVersion": { "const": "1.0.0" },
-		"identity": { "$ref": "common.schema.json#/$defs/semanticIdentity" },
-		"version": { "$ref": "common.schema.json#/$defs/semver" },
-		"format": {
-			"enum": [
-				"markdown",
-				"json",
-				"postgresql",
-				"protobuf",
-				"avro",
-				"arrow",
-				"parquet",
-				"csv",
-				"tsv"
-			]
+		"contractVersion": {
+			"const": "1.0.0"
 		},
-		"selected": { "type": "boolean" },
-		"consumingBoundary": { "type": "string", "minLength": 1 },
+		"identity": {
+			"$ref": "common.schema.json#/$defs/semanticIdentity"
+		},
+		"version": {
+			"$ref": "common.schema.json#/$defs/semver"
+		},
+		"format": {
+			"$ref": "common.schema.json#/$defs/representationFormat"
+		},
+		"selected": {
+			"type": "boolean"
+		},
+		"consumingBoundary": {
+			"type": "string",
+			"minLength": 1
+		},
 		"bestFit": {
 			"type": "array",
 			"minItems": 1,
-			"items": { "type": "string", "minLength": 1 }
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
 		},
 		"nonUses": {
 			"type": "array",
 			"minItems": 1,
-			"items": { "type": "string", "minLength": 1 }
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
 		},
-		"compatibilityMethod": { "type": "string", "minLength": 1 },
+		"compatibilityMethod": {
+			"type": "string",
+			"minLength": 1
+		},
 		"mapping": {
 			"oneOf": [
-				{ "$ref": "#/$defs/markdown" },
-				{ "$ref": "#/$defs/json" },
-				{ "$ref": "#/$defs/postgresql" },
-				{ "$ref": "#/$defs/protobuf" },
-				{ "$ref": "#/$defs/avro" },
-				{ "$ref": "#/$defs/columnar" },
-				{ "$ref": "#/$defs/delimited" }
+				{
+					"$ref": "#/$defs/markdown"
+				},
+				{
+					"$ref": "#/$defs/json"
+				},
+				{
+					"$ref": "#/$defs/postgresql"
+				},
+				{
+					"$ref": "#/$defs/protobuf"
+				},
+				{
+					"$ref": "#/$defs/avro"
+				},
+				{
+					"$ref": "#/$defs/columnar"
+				},
+				{
+					"$ref": "#/$defs/delimited"
+				}
 			]
 		}
 	},
@@ -60,74 +84,131 @@
 			"if": {
 				"type": "object",
 				"required": ["selected"],
-				"properties": { "selected": { "const": true } }
-			},
-			"then": { "type": "object", "required": ["consumingBoundary"] }
-		},
-		{
-			"if": {
-				"type": "object",
-				"properties": { "format": { "const": "markdown" } }
+				"properties": {
+					"selected": {
+						"const": true
+					}
+				}
 			},
 			"then": {
 				"type": "object",
-				"properties": { "mapping": { "$ref": "#/$defs/markdown" } }
+				"required": ["consumingBoundary"]
 			}
 		},
 		{
 			"if": {
 				"type": "object",
-				"properties": { "format": { "const": "json" } }
+				"properties": {
+					"format": {
+						"const": "markdown"
+					}
+				}
 			},
 			"then": {
 				"type": "object",
-				"properties": { "mapping": { "$ref": "#/$defs/json" } }
+				"properties": {
+					"mapping": {
+						"$ref": "#/$defs/markdown"
+					}
+				}
 			}
 		},
 		{
 			"if": {
 				"type": "object",
-				"properties": { "format": { "const": "postgresql" } }
+				"properties": {
+					"format": {
+						"const": "json"
+					}
+				}
 			},
 			"then": {
 				"type": "object",
-				"properties": { "mapping": { "$ref": "#/$defs/postgresql" } }
+				"properties": {
+					"mapping": {
+						"$ref": "#/$defs/json"
+					}
+				}
 			}
 		},
 		{
 			"if": {
 				"type": "object",
-				"properties": { "format": { "const": "protobuf" } }
+				"properties": {
+					"format": {
+						"const": "postgresql"
+					}
+				}
 			},
 			"then": {
 				"type": "object",
-				"properties": { "mapping": { "$ref": "#/$defs/protobuf" } }
+				"properties": {
+					"mapping": {
+						"$ref": "#/$defs/postgresql"
+					}
+				}
 			}
 		},
 		{
 			"if": {
 				"type": "object",
-				"properties": { "format": { "const": "avro" } }
+				"properties": {
+					"format": {
+						"const": "protobuf"
+					}
+				}
 			},
 			"then": {
 				"type": "object",
-				"properties": { "mapping": { "$ref": "#/$defs/avro" } }
+				"properties": {
+					"mapping": {
+						"$ref": "#/$defs/protobuf"
+					}
+				}
 			}
 		},
 		{
 			"if": {
 				"type": "object",
-				"properties": { "format": { "const": "arrow" } }
+				"properties": {
+					"format": {
+						"const": "avro"
+					}
+				}
+			},
+			"then": {
+				"type": "object",
+				"properties": {
+					"mapping": {
+						"$ref": "#/$defs/avro"
+					}
+				}
+			}
+		},
+		{
+			"if": {
+				"type": "object",
+				"properties": {
+					"format": {
+						"const": "arrow"
+					}
+				}
 			},
 			"then": {
 				"type": "object",
 				"properties": {
 					"mapping": {
 						"allOf": [
-							{ "$ref": "#/$defs/columnar" },
+							{
+								"$ref": "#/$defs/columnar"
+							},
 							{
 								"type": "object",
-								"properties": { "kind": { "const": "arrow" } }
+								"properties": {
+									"kind": {
+										"const": "arrow"
+									}
+								}
 							}
 						]
 					}
@@ -137,17 +218,27 @@
 		{
 			"if": {
 				"type": "object",
-				"properties": { "format": { "const": "parquet" } }
+				"properties": {
+					"format": {
+						"const": "parquet"
+					}
+				}
 			},
 			"then": {
 				"type": "object",
 				"properties": {
 					"mapping": {
 						"allOf": [
-							{ "$ref": "#/$defs/columnar" },
+							{
+								"$ref": "#/$defs/columnar"
+							},
 							{
 								"type": "object",
-								"properties": { "kind": { "const": "parquet" } }
+								"properties": {
+									"kind": {
+										"const": "parquet"
+									}
+								}
 							}
 						]
 					}
@@ -157,15 +248,28 @@
 		{
 			"if": {
 				"type": "object",
-				"properties": { "format": { "const": "csv" } }
+				"properties": {
+					"format": {
+						"const": "csv"
+					}
+				}
 			},
 			"then": {
 				"type": "object",
 				"properties": {
 					"mapping": {
 						"allOf": [
-							{ "$ref": "#/$defs/delimited" },
-							{ "type": "object", "properties": { "kind": { "const": "csv" } } }
+							{
+								"$ref": "#/$defs/delimited"
+							},
+							{
+								"type": "object",
+								"properties": {
+									"kind": {
+										"const": "csv"
+									}
+								}
+							}
 						]
 					}
 				}
@@ -174,15 +278,28 @@
 		{
 			"if": {
 				"type": "object",
-				"properties": { "format": { "const": "tsv" } }
+				"properties": {
+					"format": {
+						"const": "tsv"
+					}
+				}
 			},
 			"then": {
 				"type": "object",
 				"properties": {
 					"mapping": {
 						"allOf": [
-							{ "$ref": "#/$defs/delimited" },
-							{ "type": "object", "properties": { "kind": { "const": "tsv" } } }
+							{
+								"$ref": "#/$defs/delimited"
+							},
+							{
+								"type": "object",
+								"properties": {
+									"kind": {
+										"const": "tsv"
+									}
+								}
+							}
 						]
 					}
 				}
@@ -195,7 +312,9 @@
 			"type": "object",
 			"required": ["kind", "loci", "authority", "roundTrips"],
 			"properties": {
-				"kind": { "const": "markdown" },
+				"kind": {
+					"const": "markdown"
+				},
 				"loci": {
 					"type": "array",
 					"items": {
@@ -221,12 +340,16 @@
 				},
 				"roundTrips": {
 					"type": "array",
-					"items": { "enum": ["byte", "structural", "semantic"] },
+					"items": {
+						"enum": ["byte", "structural", "semantic"]
+					},
 					"uniqueItems": true
 				},
 				"unrepresentable": {
 					"type": "array",
-					"items": { "$ref": "common.schema.json#/$defs/semanticIdentity" }
+					"items": {
+						"$ref": "common.schema.json#/$defs/semanticIdentity"
+					}
 				}
 			},
 			"additionalProperties": false
@@ -241,12 +364,28 @@
 				"unknownFields"
 			],
 			"properties": {
-				"kind": { "const": "json" },
-				"mediaType": { "type": "string", "pattern": "^application/" },
-				"schemaIdentity": { "type": "string", "format": "uri" },
-				"discriminator": { "type": "string", "minLength": 1 },
-				"canonicalization": { "type": "string", "minLength": 1 },
-				"unknownFields": { "$ref": "common.schema.json#/$defs/unknownPolicy" }
+				"kind": {
+					"const": "json"
+				},
+				"mediaType": {
+					"type": "string",
+					"pattern": "^application/"
+				},
+				"schemaIdentity": {
+					"type": "string",
+					"format": "uri"
+				},
+				"discriminator": {
+					"type": "string",
+					"minLength": 1
+				},
+				"canonicalization": {
+					"type": "string",
+					"minLength": 1
+				},
+				"unknownFields": {
+					"$ref": "common.schema.json#/$defs/unknownPolicy"
+				}
 			},
 			"additionalProperties": false
 		},
@@ -262,16 +401,36 @@
 				"physicalAuthority"
 			],
 			"properties": {
-				"kind": { "const": "postgresql" },
+				"kind": {
+					"const": "postgresql"
+				},
 				"logicalFields": {
 					"type": "array",
-					"items": { "$ref": "common.schema.json#/$defs/semanticIdentity" }
+					"items": {
+						"$ref": "common.schema.json#/$defs/semanticIdentity"
+					}
 				},
-				"identity": { "type": "string", "minLength": 1 },
-				"nullability": { "type": "string", "minLength": 1 },
-				"constraints": { "type": "array", "items": { "type": "string" } },
-				"provenance": { "type": "string", "minLength": 1 },
-				"physicalAuthority": { "const": "owning-consumer" }
+				"identity": {
+					"type": "string",
+					"minLength": 1
+				},
+				"nullability": {
+					"type": "string",
+					"minLength": 1
+				},
+				"constraints": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"provenance": {
+					"type": "string",
+					"minLength": 1
+				},
+				"physicalAuthority": {
+					"const": "owning-consumer"
+				}
 			},
 			"additionalProperties": false
 		},
@@ -290,9 +449,17 @@
 				"descriptorCompatibility"
 			],
 			"properties": {
-				"kind": { "const": "protobuf" },
-				"package": { "type": "string", "minLength": 1 },
-				"message": { "type": "string", "minLength": 1 },
+				"kind": {
+					"const": "protobuf"
+				},
+				"package": {
+					"type": "string",
+					"minLength": 1
+				},
+				"message": {
+					"type": "string",
+					"minLength": 1
+				},
 				"fieldNumbers": {
 					"type": "object",
 					"additionalProperties": {
@@ -303,21 +470,38 @@
 				},
 				"enumNumbers": {
 					"type": "object",
-					"additionalProperties": { "type": "integer", "minimum": 0 }
+					"additionalProperties": {
+						"type": "integer",
+						"minimum": 0
+					}
 				},
 				"reservedNames": {
 					"type": "array",
-					"items": { "type": "string", "minLength": 1 },
+					"items": {
+						"type": "string",
+						"minLength": 1
+					},
 					"uniqueItems": true
 				},
 				"reservedNumbers": {
 					"type": "array",
-					"items": { "type": "integer", "minimum": 1 },
+					"items": {
+						"type": "integer",
+						"minimum": 1
+					},
 					"uniqueItems": true
 				},
-				"presence": { "type": "string", "minLength": 1 },
-				"unknownFields": { "$ref": "common.schema.json#/$defs/unknownPolicy" },
-				"descriptorCompatibility": { "type": "string", "minLength": 1 }
+				"presence": {
+					"type": "string",
+					"minLength": 1
+				},
+				"unknownFields": {
+					"$ref": "common.schema.json#/$defs/unknownPolicy"
+				},
+				"descriptorCompatibility": {
+					"type": "string",
+					"minLength": 1
+				}
 			},
 			"additionalProperties": false
 		},
@@ -325,10 +509,20 @@
 			"type": "object",
 			"required": ["kind", "protocolIdentity", "authority", "compatibility"],
 			"properties": {
-				"kind": { "const": "avro" },
-				"protocolIdentity": { "type": "string", "minLength": 1 },
-				"authority": { "const": "compatibility-representation" },
-				"compatibility": { "type": "string", "minLength": 1 }
+				"kind": {
+					"const": "avro"
+				},
+				"protocolIdentity": {
+					"type": "string",
+					"minLength": 1
+				},
+				"authority": {
+					"const": "compatibility-representation"
+				},
+				"compatibility": {
+					"type": "string",
+					"minLength": 1
+				}
 			},
 			"additionalProperties": false
 		},
@@ -345,25 +539,41 @@
 				"declaredLoss"
 			],
 			"properties": {
-				"kind": { "enum": ["arrow", "parquet"] },
+				"kind": {
+					"enum": ["arrow", "parquet"]
+				},
 				"fieldIdentities": {
 					"type": "array",
-					"items": { "$ref": "common.schema.json#/$defs/semanticIdentity" }
+					"items": {
+						"$ref": "common.schema.json#/$defs/semanticIdentity"
+					}
 				},
 				"order": {
 					"type": "array",
-					"items": { "$ref": "common.schema.json#/$defs/semanticIdentity" }
+					"items": {
+						"$ref": "common.schema.json#/$defs/semanticIdentity"
+					}
 				},
-				"types": { "type": "object" },
-				"nullability": { "type": "object" },
-				"metadata": { "type": "object" },
+				"types": {
+					"type": "object"
+				},
+				"nullability": {
+					"type": "object"
+				},
+				"metadata": {
+					"type": "object"
+				},
 				"partitioning": {
 					"type": "array",
-					"items": { "$ref": "common.schema.json#/$defs/semanticIdentity" }
+					"items": {
+						"$ref": "common.schema.json#/$defs/semanticIdentity"
+					}
 				},
 				"declaredLoss": {
 					"type": "array",
-					"items": { "$ref": "common.schema.json#/$defs/semanticIdentity" }
+					"items": {
+						"$ref": "common.schema.json#/$defs/semanticIdentity"
+					}
 				}
 			},
 			"additionalProperties": false
@@ -382,15 +592,40 @@
 				"implicitTypeInference"
 			],
 			"properties": {
-				"kind": { "enum": ["csv", "tsv"] },
-				"externalSchema": { "type": "string", "format": "uri" },
-				"encoding": { "type": "string", "minLength": 1 },
-				"delimiter": { "type": "string", "minLength": 1, "maxLength": 1 },
-				"escape": { "type": "string", "minLength": 1 },
-				"nullToken": { "type": "string" },
-				"headerIdentity": { "type": "string", "minLength": 1 },
-				"flatnessLimit": { "type": "integer", "minimum": 1 },
-				"implicitTypeInference": { "const": false }
+				"kind": {
+					"enum": ["csv", "tsv"]
+				},
+				"externalSchema": {
+					"type": "string",
+					"format": "uri"
+				},
+				"encoding": {
+					"type": "string",
+					"minLength": 1
+				},
+				"delimiter": {
+					"type": "string",
+					"minLength": 1,
+					"maxLength": 1
+				},
+				"escape": {
+					"type": "string",
+					"minLength": 1
+				},
+				"nullToken": {
+					"type": "string"
+				},
+				"headerIdentity": {
+					"type": "string",
+					"minLength": 1
+				},
+				"flatnessLimit": {
+					"type": "integer",
+					"minimum": 1
+				},
+				"implicitTypeInference": {
+					"const": false
+				}
 			},
 			"additionalProperties": false
 		}

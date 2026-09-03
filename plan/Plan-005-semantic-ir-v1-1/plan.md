@@ -130,7 +130,7 @@ time ->  Task-034 -> Task-035 -> Task-036 -> Task-038 --\
 | Task | Track | Owns (references) | Verified by (verifies) | Status |
 |---|---|---|---|---|
 | Task-034 | A | NFR-013 | TC-208, TC-231, TC-234, TC-236 | done |
-| Task-035 | A | FR-030 | TC-227..230, TC-246 | todo |
+| Task-035 | A | FR-030 | TC-227..230, TC-246 | done |
 | Task-036 | A | FR-027 | TC-203..207, TC-237, TC-238 | todo |
 | Task-037 | B | FR-029 | TC-219..225, TC-244, TC-245 | todo |
 | Task-038 | A | FR-028 | TC-210..217, TC-239..243 | todo |

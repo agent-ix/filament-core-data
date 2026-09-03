@@ -2,7 +2,7 @@
 id: Task-035
 title: "Version discriminator, dialect, and target binding"
 type: Task
-status: todo
+status: done
 track: A
 priority: P0
 relationships:
@@ -29,11 +29,11 @@ Introduce `contractVersion` `"1.1.0"` alongside `"1.0.0"` in the single `semanti
 
 ## Subtasks
 
-- [ ] Change `contractVersion` from a `1.0.0` const to an enum of `1.0.0` and `1.1.0`; reject every other value before emission (TC-246).
-- [ ] Under `1.1.0`, restrict `source.dialect` to `typespec` or `spec-bundle`; under `1.0.0`, keep the v1 constant (TC-227, TC-228, TC-231).
-- [ ] Move the five-value target enumeration into `common.schema.json` and `$ref` it from `package-manifest.targets`, `profiles[].targets`, and `target-contract.target` (TC-229, TC-230).
-- [ ] Add a `1.1.0` golden fixture per dialect (including a hand-authored `spec-bundle` document) and negative cases for the retired constant, `avro`, `go`, and `1.2.0`.
-- [ ] Add the ADR-0005-citing diagnostic code for the retired dialect to the diagnostic inventory.
+- [x] Change `contractVersion` from a `1.0.0` const to an enum of `1.0.0` and `1.1.0`; reject every other value before emission (TC-246).
+- [x] Under `1.1.0`, restrict `source.dialect` to `typespec` or `spec-bundle`; under `1.0.0`, keep the v1 constant (TC-227, TC-228, TC-231).
+- [x] Move the five-value target enumeration into `common.schema.json` and `$ref` it from `package-manifest.targets`, `profiles[].targets`, and `target-contract.target` (TC-229, TC-230).
+- [x] Add a `1.1.0` golden fixture per dialect (including a hand-authored `spec-bundle` document) and negative cases for the retired constant, `avro`, `go`, and `1.2.0`.
+- [x] Add the ADR-0005-citing diagnostic code for the retired dialect to the diagnostic inventory.
 
 ## Deliverables
 

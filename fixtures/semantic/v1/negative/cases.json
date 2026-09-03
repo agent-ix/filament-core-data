@@ -3,7 +3,10 @@
 		"id": "ir-unknown-version",
 		"schema": "semantic-ir.schema.json",
 		"base": "positive/semantic-ir.json",
-		"set": { "path": "contractVersion", "value": "2.0.0" },
+		"set": {
+			"path": "contractVersion",
+			"value": "2.0.0"
+		},
 		"code": "agent-ix.semantic-ir.UNSUPPORTED_VERSION"
 	},
 	{
@@ -24,14 +27,20 @@
 		"id": "ir-unnamespaced-role",
 		"schema": "semantic-ir.schema.json",
 		"base": "positive/semantic-ir.json",
-		"set": { "path": "types.1.roles.0", "value": "entity" },
+		"set": {
+			"path": "types.1.roles.0",
+			"value": "entity"
+		},
 		"code": "agent-ix.semantic-ir.INVALID_ROLE"
 	},
 	{
 		"id": "manifest-unknown-key",
 		"schema": "package-manifest.schema.json",
 		"base": "positive/package-manifest.json",
-		"set": { "path": "registryUrl", "value": "https://registry.example" },
+		"set": {
+			"path": "registryUrl",
+			"value": "https://registry.example"
+		},
 		"code": "agent-ix.package.UNKNOWN_KEY"
 	},
 	{
@@ -62,7 +71,10 @@
 		"id": "mapping-loss-without-omission",
 		"schema": "mapping.schema.json",
 		"base": "positive/mapping.json",
-		"set": { "path": "transformation.preservation", "value": "declared-lossy" },
+		"set": {
+			"path": "transformation.preservation",
+			"value": "declared-lossy"
+		},
 		"code": "agent-ix.mapping.UNDECLARED_LOSS"
 	},
 	{
@@ -76,7 +88,10 @@
 		"id": "profile-unknown-key",
 		"schema": "profile.schema.json",
 		"base": "positive/profile.json",
-		"set": { "path": "implicit", "value": true },
+		"set": {
+			"path": "implicit",
+			"value": true
+		},
 		"code": "agent-ix.profile.UNKNOWN_KEY"
 	},
 	{
@@ -91,14 +106,20 @@
 		"id": "compiler-path-traversal",
 		"schema": "compiler-request.schema.json",
 		"base": "positive/compiler-request.json",
-		"set": { "path": "outputRoot", "value": "../outside" },
+		"set": {
+			"path": "outputRoot",
+			"value": "../outside"
+		},
 		"code": "agent-ix.compiler.INVALID_OUTPUT_ROOT"
 	},
 	{
 		"id": "output-error-with-files",
 		"schema": "output-manifest.schema.json",
 		"base": "positive/output-manifest.json",
-		"set": { "path": "state", "value": "unsupported" },
+		"set": {
+			"path": "state",
+			"value": "unsupported"
+		},
 		"code": "agent-ix.compiler.OUTPUT_ON_FAILURE"
 	},
 	{
@@ -106,7 +127,10 @@
 		"schema": "target-contract.schema.json",
 		"base": "positive/target-contracts.json",
 		"select": 1,
-		"set": { "path": "customSourceLicense", "value": "MIT" },
+		"set": {
+			"path": "customSourceLicense",
+			"value": "MIT"
+		},
 		"code": "agent-ix.target.INVALID_CUSTOM_LICENSE"
 	},
 	{
@@ -120,7 +144,10 @@
 		"id": "legacy-loss-without-omissions",
 		"schema": "legacy-adapter.schema.json",
 		"base": "positive/legacy-adapter.json",
-		"set": { "path": "preservation", "value": "declared-lossy" },
+		"set": {
+			"path": "preservation",
+			"value": "declared-lossy"
+		},
 		"code": "agent-ix.legacy.UNDECLARED_LOSS"
 	},
 	{
@@ -130,5 +157,57 @@
 		"select": 0,
 		"remove": "identityPlanes.5",
 		"code": "agent-ix.consumer.INCOMPLETE_IDENTITY_GRAPH"
+	},
+	{
+		"id": "ir-v1-1-retired-json-schema-dialect",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "source.dialect",
+			"value": "https://json-schema.org/draft/2020-12/schema"
+		},
+		"code": "agent-ix.semantic-ir.RETIRED_SOURCE_DIALECT",
+		"note": "ADR-0005: TypeSpec is the structural source; the JSON Schema draft URI is not a frontend identity in contract 1.1.0"
+	},
+	{
+		"id": "ir-v1-1-unknown-dialect",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "source.dialect",
+			"value": "avro"
+		},
+		"code": "agent-ix.semantic-ir.UNKNOWN_SOURCE_DIALECT"
+	},
+	{
+		"id": "ir-v1-1-unsupported-version",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "contractVersion",
+			"value": "1.2.0"
+		},
+		"code": "agent-ix.semantic-ir.UNSUPPORTED_VERSION"
+	},
+	{
+		"id": "ir-v1-0-frontend-dialect",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir.json",
+		"set": {
+			"path": "source.dialect",
+			"value": "typespec"
+		},
+		"code": "agent-ix.semantic-ir.DIALECT_VERSION_MISMATCH",
+		"note": "A 1.0.0 document keeps the v1 dialect constant"
+	},
+	{
+		"id": "manifest-unknown-target",
+		"schema": "package-manifest.schema.json",
+		"base": "positive/package-manifest.json",
+		"set": {
+			"path": "targets.0",
+			"value": "go"
+		},
+		"code": "agent-ix.package.UNKNOWN_TARGET"
 	}
 ]

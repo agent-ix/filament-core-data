@@ -336,8 +336,8 @@ awaits implementation.
 | TC-226 | FR-006 `versionNumber` `min: 1` expresses as a typed constraint | Analysis | P1 | FR-029-AC-6 | 🚧 issue #34 |
 | TC-227 | A `1.1.0` document with `source.dialect: typespec` validates, and one with `spec-bundle` validates | Unit | P0 | FR-030-AC-1 | 🚧 issue #34 |
 | TC-228 | The JSON Schema `$schema` URI as `source.dialect` fails with a diagnostic citing ADR-0005 | Unit | P0 | FR-030-AC-2 | 🚧 issue #34 |
-| TC-229 | Manifest targets `rust`/`json-schema` validate; target `go` fails at its entry | Unit | P0 | FR-030-AC-3 | 🚧 issue #34 |
-| TC-230 | Manifest and target-contract schemas reference one shared target enumeration | Static | P0 | FR-030-AC-4, FR-030-CON-2 | 🚧 issue #34 |
+| TC-229 | Manifest targets `rust`/`markdown` validate; target `go` fails at its entry | Unit | P0 | FR-030-AC-3 | 🚧 issue #34 |
+| TC-230 | Manifest, target-contract, and representation schemas reference the shared common enumerations | Static | P0 | FR-030-AC-4, FR-030-CON-2 | 🚧 issue #34 |
 | TC-231 | The v1 `contractVersion: "1.0.0"` IR fixture remains valid under the v1 schema | Integration | P0 | FR-030-CON-1 | 🚧 issue #34 |
 | TC-232 | The TypeScript Ajv reader and the Python `jsonschema` reader (`tests/`) agree on every v1.1 golden and negative fixture | Integration | P0 | FR-020-AC-8 | 🚧 issue #34 |
 | TC-233 | Generated v1.1 documents with all five new node kinds round-trip the normalized serialization byte-identically | Property | P0 | FR-020-AC-7 | 🚧 issue #34 |
