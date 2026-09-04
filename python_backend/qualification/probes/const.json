@@ -3,23 +3,16 @@
 	"id": "const",
 	"construct": "a const member",
 	"note": "A fixed value must render as that value, not as its type.",
-	"detector": {
-		"kind": "regex",
-		"pattern": "Literal\\['fixed'\\]"
-	},
+	"detector": { "kind": "regex", "pattern": "Literal\\['fixed'\\]" },
 	"schema": {
 		"$defs": {
 			"C": {
 				"type": "object",
 				"title": "C",
 				"properties": {
-					"v": {
-						"const": "fixed"
-					}
+					"v": { "const": "fixed" }
 				},
-				"required": [
-					"v"
-				],
+				"required": ["v"],
 				"additionalProperties": false
 			}
 		}

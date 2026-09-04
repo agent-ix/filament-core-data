@@ -121,8 +121,16 @@ def _unconstrained(node: Any) -> bool:
         return True
     if node.get("type") == "object" and not (
         meaningful
-        & {"properties", "additionalProperties", "patternProperties", "propertyNames",
-           "required", "minProperties", "maxProperties", "unevaluatedProperties"}
+        & {
+            "properties",
+            "additionalProperties",
+            "patternProperties",
+            "propertyNames",
+            "required",
+            "minProperties",
+            "maxProperties",
+            "unevaluatedProperties",
+        }
     ):
         return True
     if _uninhabited(node):
@@ -143,7 +151,9 @@ def _uninhabited(node: Any) -> bool:
     return closed and isinstance(properties, dict) and not properties
 
 
-def _walk_nodes(node: Any, document: str, pointer: str, out: list[tuple[str, str, dict[str, Any]]]) -> None:
+def _walk_nodes(
+    node: Any, document: str, pointer: str, out: list[tuple[str, str, dict[str, Any]]]
+) -> None:
     if isinstance(node, list):
         for index, item in enumerate(node):
             _walk_nodes(item, document, f"{pointer}/{index}", out)
@@ -153,7 +163,12 @@ def _walk_nodes(node: Any, document: str, pointer: str, out: list[tuple[str, str
     if isinstance(node.get("properties"), dict) or pointer == "":
         out.append((document, pointer, node))
     for key, value in node.items():
-        _walk_nodes(value, document, f"{pointer}/{key.replace('~', '~0').replace('/', '~1')}", out)
+        _walk_nodes(
+            value,
+            document,
+            f"{pointer}/{key.replace('~', '~0').replace('/', '~1')}",
+            out,
+        )
 
 
 def _declared_nodes(
@@ -213,7 +228,9 @@ def _annotation_names(node: ast.AST) -> list[str]:
             names.append(child.attr)
         elif isinstance(child, ast.Constant) and isinstance(child.value, str):
             try:
-                names.extend(_annotation_names(ast.parse(child.value, mode="eval").body))
+                names.extend(
+                    _annotation_names(ast.parse(child.value, mode="eval").body)
+                )
             except SyntaxError:
                 continue
     return names
@@ -225,7 +242,9 @@ def _is_permissive(annotation: ast.AST) -> bool:
     return any(name in PERMISSIVE_NAMES for name in _annotation_names(annotation))
 
 
-def _resolve(symbol: str, index: dict[str, tuple[str, dict[str, Any]]]) -> tuple[str | None, str | None]:
+def _resolve(
+    symbol: str, index: dict[str, tuple[str, dict[str, Any]]]
+) -> tuple[str | None, str | None]:
     if symbol in index:
         return symbol, None
     match = _VARIANT.match(symbol)
@@ -252,9 +271,13 @@ def inspect_generated(
     index = _declared_nodes(documents)
     report = InspectionReport()
 
-    document_roots = {_module_name(name): (name, schema) for name, schema in documents.items()}
+    document_roots = {
+        _module_name(name): (name, schema) for name, schema in documents.items()
+    }
 
-    def candidates_for(node: ast.ClassDef, attribute: str) -> list[tuple[str, str, dict[str, Any]]]:
+    def candidates_for(
+        node: ast.ClassDef, attribute: str
+    ) -> list[tuple[str, str, dict[str, Any]]]:
         names = {
             body.target.id
             for body in node.body
@@ -274,7 +297,9 @@ def inspect_generated(
         narrowed = [
             entry
             for entry in found
-            if not (entry[2].get("properties") or {}).get(attribute, {}).get("properties")
+            if not (entry[2].get("properties") or {})
+            .get(attribute, {})
+            .get("properties")
         ]
         return narrowed or found
 
@@ -295,18 +320,30 @@ def inspect_generated(
                     sibling = root and any(
                         candidate == f"{root}.py" for candidate in files
                     )
-                    relative = isinstance(statement, ast.ImportFrom) and statement.level > 0
-                    if root and root not in ALLOWED_IMPORT_ROOTS and not sibling and not relative:
+                    relative = (
+                        isinstance(statement, ast.ImportFrom) and statement.level > 0
+                    )
+                    if (
+                        root
+                        and root not in ALLOWED_IMPORT_ROOTS
+                        and not sibling
+                        and not relative
+                    ):
                         if mode == "enforce":
                             msg = (
-                                f"{module}:{statement.lineno}: generated source imports "
+                                f"{module}:{statement.lineno}: generated source "
+                                f"imports "
                                 f"{root!r}, which the allow-list does not carry"
                             )
                             raise InspectionError(msg)
                 continue
-            if isinstance(statement, (ast.ClassDef, ast.AnnAssign, ast.Assign, ast.TypeAlias)):
+            if isinstance(
+                statement, (ast.ClassDef, ast.AnnAssign, ast.Assign, ast.TypeAlias)
+            ):
                 continue
-            if isinstance(statement, ast.Expr) and isinstance(statement.value, ast.Constant):
+            if isinstance(statement, ast.Expr) and isinstance(
+                statement.value, ast.Constant
+            ):
                 continue
             if (
                 isinstance(statement, ast.Expr)
@@ -333,9 +370,9 @@ def inspect_generated(
                 if not _is_permissive(body.annotation):
                     continue
                 attribute = body.target.id
-                classification: Literal[
-                    "sanctioned", "degraded", "unattributed"
-                ] = "unattributed"
+                classification: Literal["sanctioned", "degraded", "unattributed"] = (
+                    "unattributed"
+                )
                 pointer: str | None = None
                 found = candidates_for(node, attribute)
                 owner = found[0] if len(found) == 1 else None
@@ -348,7 +385,9 @@ def inspect_generated(
                         # module is not itself a document, so it is attributed to
                         # the input set's roots, which must agree.
                         roots_seen = list(documents.values())
-                        if all(decide(root) == decide(roots_seen[0]) for root in roots_seen):
+                        if all(
+                            decide(root) == decide(roots_seen[0]) for root in roots_seen
+                        ):
                             entry = (sorted(documents)[0], roots_seen[0])
                     if entry is not None:
                         owner = (entry[0], "", entry[1])

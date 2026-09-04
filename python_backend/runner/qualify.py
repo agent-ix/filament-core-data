@@ -22,6 +22,7 @@ from typing import Any
 from python_backend import ROOT
 from python_backend.adapter.prepare import Prepared, prepare_input_set
 from python_backend.adapter.profiles import load_profiles, profile_digest
+from python_backend.adapter.render import render
 from python_backend.runner.generate import generate, toolchain_fingerprint
 from python_backend.runner.inspect_source import inspect_generated
 
@@ -50,7 +51,7 @@ def _documents(probe: dict[str, Any]) -> dict[str, dict[str, Any]]:
 
 
 def _prepared(probe: dict[str, Any]) -> Prepared:
-    from python_backend.adapter.prepare import _walk, Rewrite  # noqa: PLC0415
+    from python_backend.adapter.prepare import Rewrite, _walk  # noqa: PLC0415
 
     rewrites: list[Rewrite] = []
     documents = {
@@ -78,7 +79,9 @@ def measure() -> dict[str, Any]:
         for profile in families:
             generated = generate(prepared, profile["id"])
             joined = "\n".join(
-                text for name, text in sorted(generated.files.items()) if name.endswith(".py")
+                text
+                for name, text in sorted(generated.files.items())
+                if name.endswith(".py")
             )
             row[profile["id"]] = _detect(probe["detector"], joined)
         results[probe["id"]] = row
@@ -86,7 +89,9 @@ def measure() -> dict[str, Any]:
 
 
 def _published_set() -> Prepared:
-    return prepare_input_set(sorted((ROOT.parent / "schema" / "semantic" / "v1").glob("*.schema.json")))
+    return prepare_input_set(
+        sorted((ROOT.parent / "schema" / "semantic" / "v1").glob("*.schema.json"))
+    )
 
 
 def build() -> tuple[dict[str, Any], dict[str, Any]]:
@@ -122,28 +127,44 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
             (retained if row[profile["id"]] else lost).append(probe_id)
 
         generated = generate(published, profile["id"])
-        census = inspect_generated(generated.files, published.documents, "report").census
+        census = inspect_generated(
+            generated.files, published.documents, "report"
+        ).census
 
         conditions: list[dict[str, str]] = []
         if "closure-unevaluated" not in lost:
             conditions.append(
                 {
-                    "condition": "the FR-074 preparation pass rewrites `unevaluatedProperties`",
-                    "grounding": "python_backend/adapter/prepare.py rule `unevaluated-properties-to-additional`",
+                    "condition": (
+                        "the FR-074 preparation pass rewrites"
+                        " `unevaluatedProperties`"
+                    ),
+                    "grounding": (
+                        "python_backend/adapter/prepare.py rule"
+                        " `unevaluated-properties-to-additional`"
+                    ),
                 }
             )
         if "default-non-nullable" not in lost:
             conditions.append(
                 {
                     "condition": "the profile declares `--strict-nullable`",
-                    "grounding": "python_backend/profiles.json option `--strict-nullable`",
+                    "grounding": (
+                        "python_backend/profiles.json option `--strict-nullable`"
+                    ),
                 }
             )
         if "constraints-string" not in lost:
             conditions.append(
                 {
-                    "condition": "the profile declares `--field-constraints` and `--use-annotated`",
-                    "grounding": "python_backend/profiles.json options `--field-constraints`, `--use-annotated`",
+                    "condition": (
+                        "the profile declares `--field-constraints` and"
+                        " `--use-annotated`"
+                    ),
+                    "grounding": (
+                        "python_backend/profiles.json options"
+                        " `--field-constraints`, `--use-annotated`"
+                    ),
                 }
             )
 
@@ -190,16 +211,18 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
                     "construct": probe["construct"],
                     "probe": probe_id,
                     "family": profile["id"],
-                    "severity": "high"
-                    if probe_id
-                    in {
-                        "closure-additional",
-                        "closure-unevaluated",
-                        "constraints-string",
-                        "constraints-numeric",
-                        "alias",
-                    }
-                    else "medium",
+                    "severity": (
+                        "high"
+                        if probe_id
+                        in {
+                            "closure-additional",
+                            "closure-unevaluated",
+                            "constraints-string",
+                            "constraints-numeric",
+                            "alias",
+                        }
+                        else "medium"
+                    ),
                     "closableByPreparation": closable,
                     "disposition": (
                         "recorded; the pinned generator does not carry this construct "
@@ -232,7 +255,10 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
     )
     gaps["gaps"].append(
         {
-            "construct": "GAP-011: a `reference` whose target no type, import, or lock export supplies",
+            "construct": (
+                "GAP-011: a `reference` whose target no type, import, or lock"
+                " export supplies"
+            ),
             "probe": None,
             "family": "all",
             "severity": "medium",
@@ -254,20 +280,22 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
 
 
 def _write(path: Path, document: dict[str, Any]) -> str:
-    text = json.dumps(document, indent="\t", ensure_ascii=False) + "\n"
+    text = render(document)
     path.write_text(text, encoding="utf-8")
     return text
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Measure the Python output families.")
-    parser.add_argument("--check", action="store_true", help="fail if a committed artefact differs")
+    parser.add_argument(
+        "--check", action="store_true", help="fail if a committed artefact differs"
+    )
     args = parser.parse_args(argv)
 
     report, gaps = build()
     if args.check:
         for path, document in ((REPORT, report), (GAPS, gaps)):
-            fresh = json.dumps(document, indent="\t", ensure_ascii=False) + "\n"
+            fresh = render(document)
             if not path.exists() or path.read_text(encoding="utf-8") != fresh:
                 print(f"{path} differs from a fresh measurement", file=sys.stderr)
                 return 1

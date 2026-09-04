@@ -15,13 +15,9 @@
 					"type": "object",
 					"title": "A",
 					"properties": {
-						"b": {
-							"$ref": "b.schema.json#/$defs/B"
-						}
+						"b": { "$ref": "b.schema.json#/$defs/B" }
 					},
-					"required": [
-						"b"
-					],
+					"required": ["b"],
 					"additionalProperties": false
 				}
 			}
@@ -33,13 +29,9 @@
 					"type": "object",
 					"title": "B",
 					"properties": {
-						"x": {
-							"type": "string"
-						}
+						"x": { "type": "string" }
 					},
-					"required": [
-						"x"
-					],
+					"required": ["x"],
 					"additionalProperties": false
 				}
 			}

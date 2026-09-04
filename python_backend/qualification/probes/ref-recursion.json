@@ -3,29 +3,20 @@
 	"id": "ref-recursion",
 	"construct": "recursion through a self-reference",
 	"note": "A self-referential type must resolve, not flatten or recurse without bound.",
-	"detector": {
-		"kind": "regex",
-		"pattern": "c:.*\\bN\\b"
-	},
+	"detector": { "kind": "regex", "pattern": "c:.*\\bN\\b" },
 	"schema": {
 		"$defs": {
 			"N": {
 				"type": "object",
 				"title": "N",
 				"properties": {
-					"n": {
-						"type": "string"
-					},
+					"n": { "type": "string" },
 					"c": {
 						"type": "array",
-						"items": {
-							"$ref": "#/$defs/N"
-						}
+						"items": { "$ref": "#/$defs/N" }
 					}
 				},
-				"required": [
-					"n"
-				],
+				"required": ["n"],
 				"additionalProperties": false
 			}
 		}

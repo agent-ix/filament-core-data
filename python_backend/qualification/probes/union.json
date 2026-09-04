@@ -3,22 +3,12 @@
 	"id": "union",
 	"construct": "untagged union",
 	"note": "A two-branch scalar union must render as a union of both branches.",
-	"detector": {
-		"kind": "regex",
-		"pattern": "(str \\| int|int \\| str)"
-	},
+	"detector": { "kind": "regex", "pattern": "(str \\| int|int \\| str)" },
 	"schema": {
 		"$defs": {
 			"U": {
 				"title": "U",
-				"oneOf": [
-					{
-						"type": "string"
-					},
-					{
-						"type": "integer"
-					}
-				]
+				"oneOf": [{ "type": "string" }, { "type": "integer" }]
 			}
 		}
 	},

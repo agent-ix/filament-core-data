@@ -3,10 +3,7 @@
 	"id": "constraints-string",
 	"construct": "string constraints",
 	"note": "Length and pattern must reach the generated type.",
-	"detector": {
-		"kind": "regex",
-		"pattern": "pattern"
-	},
+	"detector": { "kind": "regex", "pattern": "pattern" },
 	"schema": {
 		"$defs": {
 			"S": {
@@ -20,9 +17,7 @@
 						"pattern": "^a+$"
 					}
 				},
-				"required": [
-					"s"
-				],
+				"required": ["s"],
 				"additionalProperties": false
 			}
 		}

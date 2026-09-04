@@ -6,9 +6,7 @@
 		"$defs": {
 			"A": {
 				"type": "array",
-				"items": {
-					"x-python-type": "os.system"
-				}
+				"items": { "x-python-type": "os.system" }
 			}
 		}
 	}

@@ -70,11 +70,48 @@ def test_no_generated_byte_carries_a_host_reading() -> None:
     assert re.search(r"\b\d\d:\d\d:\d\d\b", joined) is None
 
 
-def test_a_refused_schema_raises_before_any_spawn(monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.parametrize(
+    ("profile_id", "closed", "open_"),
+    [
+        ("pydantic_v2_basemodel", "extra='forbid'", "extra='allow'"),
+        ("pydantic_v2_dataclass", "extra='forbid'", "extra='allow'"),
+        ("typed_dict", "closed=True", "class SourceLocus(TypedDict):"),
+    ],
+)
+def test_the_preparation_pass_is_what_keeps_a_sealed_type_sealed(
+    profile_id: str, closed: str, open_: str
+) -> None:
+    """TC-865: FR-074-AC-3.
+
+    The committed spike bundle is the official TypeSpec emitter's own output and
+    seals its models with `unevaluatedProperties`. The pinned generator reads
+    neither that keyword nor the always-false `{"not": {}}` it carries, so
+    without the preparation pass every sealed contract type generates open —
+    silently, in every family. This is the measurement that decides the pass
+    exists, so it is asserted in both directions rather than described.
+    """
+    prepared = runner.generate(prepare.prepare_for_python(SPIKE), profile_id)
+    unprepared = runner.generate(
+        prepare.Prepared(documents={"input.schema.json": SPIKE}), profile_id
+    )
+    prepared_text = "\n".join(prepared.files.values())
+    unprepared_text = "\n".join(unprepared.files.values())
+    assert closed in prepared_text
+    assert open_ in unprepared_text
+    assert closed not in unprepared_text or prepared_text.count(
+        closed
+    ) > unprepared_text.count(closed)
+
+
+def test_a_refused_schema_raises_before_any_spawn(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """TC-885: FR-076-AC-3."""
     spawns: list[Any] = []
     monkeypatch.setattr(subprocess, "run", lambda *a, **k: spawns.append(a))
-    hostile = prepare.prepare_for_python({"$defs": {"A": {"customTypePath": "os.system"}}})
+    hostile = prepare.prepare_for_python(
+        {"$defs": {"A": {"customTypePath": "os.system"}}}
+    )
     with pytest.raises(guard.RefusalError):
         runner.generate(hostile, "pydantic_v2_basemodel")
     assert spawns == []
@@ -118,11 +155,15 @@ def test_the_input_size_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
         return prepare.Prepared(documents={"p.schema.json": {"title": filler}})
 
     at_limit = sized(declared)
-    assert len(json.dumps(at_limit.documents["p.schema.json"], sort_keys=True)) <= declared
+    assert (
+        len(json.dumps(at_limit.documents["p.schema.json"], sort_keys=True)) <= declared
+    )
     with pytest.raises(Exception):  # noqa: B017,PT011 - a spawn stub, not a real run
         runner.generate(at_limit, "pydantic_v2_basemodel")
 
-    over = prepare.Prepared(documents={"p.schema.json": {"title": "x" * (declared + 1)}})
+    over = prepare.Prepared(
+        documents={"p.schema.json": {"title": "x" * (declared + 1)}}
+    )
     spawns.clear()
     with pytest.raises(runner.LimitExceededError) as raised:
         runner.generate(over, "pydantic_v2_basemodel")
@@ -144,7 +185,9 @@ def test_zero_files_is_not_a_success(monkeypatch: pytest.MonkeyPatch) -> None:
     assert "zero files" in str(raised.value)
 
 
-def test_unexpected_standard_error_fails_the_run(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_unexpected_standard_error_fails_the_run(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """TC-889: FR-076-AC-7, FR-076-CON-3."""
 
     class Noisy:
@@ -217,7 +260,7 @@ def test_no_compiler_module_spawns_or_imports_the_generator() -> None:
             assert token not in source, f"{path} uses {token}"
     runner_source = (REPO / "python_backend" / "runner" / "generate.py").read_text()
     assert "import datamodel_code_generator" not in runner_source
-    assert not str(REPO / "src" / "compiler") in runner_source
+    assert str(REPO / "src" / "compiler") not in runner_source
 
 
 def test_a_degraded_annotation_is_named_with_its_pointer() -> None:
@@ -253,7 +296,9 @@ def test_a_degraded_annotation_is_named_with_its_pointer() -> None:
 )
 def test_each_sanctioned_shape_passes_in_both_modes(node: Any) -> None:
     """TC-909: FR-078-AC-2."""
-    document = {"$defs": {"K": {"type": "object", "title": "K", "properties": {"a": node}}}}
+    document = {
+        "$defs": {"K": {"type": "object", "title": "K", "properties": {"a": node}}}
+    }
     files = {"m.py": "from typing import Any\n\n\nclass K:\n    a: Any\n"}
     report = inspect_source.inspect_generated(files, {"m.json": document}, "report")
     assert [finding.classification for finding in report.findings] == ["sanctioned"]
@@ -261,11 +306,15 @@ def test_each_sanctioned_shape_passes_in_both_modes(node: Any) -> None:
 
 
 @pytest.mark.parametrize("profile_id", PROFILE_IDS)
-def test_the_published_set_yields_no_degraded_or_unattributed_finding(profile_id: str) -> None:
+def test_the_published_set_yields_no_degraded_or_unattributed_finding(
+    profile_id: str,
+) -> None:
     """TC-910: FR-078-AC-3."""
     prepared = _prepared()
     result = runner.generate(prepared, profile_id)
-    report = inspect_source.inspect_generated(result.files, prepared.documents, "report")
+    report = inspect_source.inspect_generated(
+        result.files, prepared.documents, "report"
+    )
     census = report.census
     assert census["degraded"] == 0
     assert census["unattributed"] == 0
@@ -275,15 +324,30 @@ def test_the_published_set_yields_no_degraded_or_unattributed_finding(profile_id
 
 @pytest.mark.parametrize(
     "annotation",
-    ["Any", "list[Any]", "dict[str, Any]", "str | Any", "Annotated[Any, 1]", "list[dict[str, Any]]"],
+    [
+        "Any",
+        "list[Any]",
+        "dict[str, Any]",
+        "str | Any",
+        "Annotated[Any, 1]",
+        "list[dict[str, Any]]",
+    ],
 )
 def test_a_permissive_annotation_is_found_at_any_depth(annotation: str) -> None:
     """TC-911: FR-078-AC-4."""
     document = {
-        "$defs": {"K": {"type": "object", "title": "K", "properties": {"a": {"type": "string"}}}}
+        "$defs": {
+            "K": {
+                "type": "object",
+                "title": "K",
+                "properties": {"a": {"type": "string"}},
+            }
+        }
     }
     files = {
-        "m.py": "from typing import Annotated, Any\n\n\nclass K:\n    a: " + annotation + "\n"
+        "m.py": "from typing import Annotated, Any\n\n\nclass K:\n    a: "
+        + annotation
+        + "\n"
     }
     report = inspect_source.inspect_generated(files, {"m.json": document}, "report")
     assert report.census["degraded"] == 1
@@ -298,7 +362,9 @@ def test_the_import_allow_list_is_closed_but_admits_siblings() -> None:
         )
     assert "'os'" in str(raised.value)
     inspect_source.inspect_generated(
-        {"m.py": "from . import other\n", "other.py": ""}, {"m.json": document}, "enforce"
+        {"m.py": "from . import other\n", "other.py": ""},
+        {"m.json": document},
+        "enforce",
     )
 
 
@@ -306,7 +372,9 @@ def test_a_module_level_call_other_than_model_rebuild_is_refused() -> None:
     """TC-913: FR-078-AC-6."""
     document = {"$defs": {}}
     inspect_source.inspect_generated(
-        {"m.py": "class K:\n    pass\n\n\nK.model_rebuild()\n"}, {"m.json": document}, "enforce"
+        {"m.py": "class K:\n    pass\n\n\nK.model_rebuild()\n"},
+        {"m.json": document},
+        "enforce",
     )
     with pytest.raises(inspect_source.InspectionError) as raised:
         inspect_source.inspect_generated(
@@ -315,7 +383,9 @@ def test_a_module_level_call_other_than_model_rebuild_is_refused() -> None:
     assert "module-level" in str(raised.value)
 
 
-def test_the_inspection_never_imports_what_it_reads(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_the_inspection_never_imports_what_it_reads(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """TC-914: FR-078-AC-7, FR-078-CON-3."""
     import builtins  # noqa: PLC0415
 

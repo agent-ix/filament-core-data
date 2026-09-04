@@ -13,13 +13,9 @@
 				"type": "object",
 				"title": "K",
 				"properties": {
-					"a": {
-						"type": "string"
-					}
+					"a": { "type": "string" }
 				},
-				"required": [
-					"a"
-				],
+				"required": ["a"],
 				"additionalProperties": false
 			}
 		}

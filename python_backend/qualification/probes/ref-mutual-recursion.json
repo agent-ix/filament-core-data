@@ -15,9 +15,7 @@
 					"type": "object",
 					"title": "C",
 					"properties": {
-						"d": {
-							"$ref": "d.schema.json#/$defs/D"
-						}
+						"d": { "$ref": "d.schema.json#/$defs/D" }
 					},
 					"additionalProperties": false
 				}
@@ -30,9 +28,7 @@
 					"type": "object",
 					"title": "D",
 					"properties": {
-						"c": {
-							"$ref": "c.schema.json#/$defs/C"
-						}
+						"c": { "$ref": "c.schema.json#/$defs/C" }
 					},
 					"additionalProperties": false
 				}

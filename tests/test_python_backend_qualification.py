@@ -87,7 +87,10 @@ def test_a_mutated_expectation_reds_the_gate() -> None:
     measured = qualify.measure()
     probe = next(p for p in qualify.probes() if p["id"] == "constraints-string")
     mutated = dict(probe["expected"], stdlib_dataclass=True)
-    assert measured["constraints-string"]["stdlib_dataclass"] != mutated["stdlib_dataclass"]
+    assert (
+        measured["constraints-string"]["stdlib_dataclass"]
+        != mutated["stdlib_dataclass"]
+    )
 
 
 def test_every_measured_loss_has_a_register_row() -> None:
@@ -102,7 +105,9 @@ def test_every_measured_loss_has_a_register_row() -> None:
         assert "closableByPreparation" in row
 
 
-@pytest.mark.parametrize("profile_id", ["pydantic_v2_basemodel", "pydantic_v2_dataclass"])
+@pytest.mark.parametrize(
+    "profile_id", ["pydantic_v2_basemodel", "pydantic_v2_dataclass"]
+)
 def test_both_pydantic_families_are_demonstrated(profile_id: str) -> None:
     """TC-899: FR-077-AC-5."""
     import importlib  # noqa: PLC0415
@@ -178,7 +183,15 @@ def test_the_corpus_account_is_honest_about_what_it_did_not_decide() -> None:
 def test_the_conformance_corpus_is_untouched() -> None:
     """TC-904: FR-077-AC-10, FR-077-CON-3."""
     changed = subprocess.run(
-        ["git", "diff", "--no-renames", "--name-only", "origin/main...HEAD", "--", "conformance"],
+        [
+            "git",
+            "diff",
+            "--no-renames",
+            "--name-only",
+            "origin/main...HEAD",
+            "--",
+            "conformance",
+        ],
         cwd=REPO,
         capture_output=True,
         text=True,
@@ -199,7 +212,9 @@ def test_no_gap_disposes_to_a_hand_written_generator() -> None:
 
 def test_a_construct_no_family_retains_yields_one_row_per_family() -> None:
     """TC-906: FR-077-AC-12."""
-    unique_items = [row for row in GAPS["gaps"] if row["probe"] == "constraints-array-unique"]
+    unique_items = [
+        row for row in GAPS["gaps"] if row["probe"] == "constraints-array-unique"
+    ]
     assert {row["family"] for row in unique_items} == set(profiles.profile_ids())
 
 
@@ -216,10 +231,15 @@ def test_no_verdict_word_outside_the_declared_three() -> None:
 
 
 @pytest.mark.parametrize("profile_id", sorted(emit.demonstrated()))
-def test_the_layout_is_one_module_per_document_with_a_sorted_all(profile_id: str) -> None:
+def test_the_layout_is_one_module_per_document_with_a_sorted_all(
+    profile_id: str,
+) -> None:
     """TC-918: FR-079-AC-1, FR-079-AC-10."""
     root = BACKEND / "generated" / profile_id
-    documents = sorted(path.name for path in (REPO / "schema" / "semantic" / "v1").glob("*.schema.json"))
+    documents = sorted(
+        path.name
+        for path in (REPO / "schema" / "semantic" / "v1").glob("*.schema.json")
+    )
     modules = {path.stem for path in root.glob("*.py")} - {"__init__"}
     assert len(modules) >= len(documents)
     init = (root / "__init__.py").read_text()
@@ -240,7 +260,13 @@ def test_the_layout_is_one_module_per_document_with_a_sorted_all(profile_id: str
 def test_each_generated_package_imports_cleanly(profile_id: str) -> None:
     """TC-919: FR-079-AC-2."""
     completed = subprocess.run(
-        [sys.executable, "-W", "error", "-c", f"import python_backend.generated.{profile_id}"],
+        [
+            sys.executable,
+            "-W",
+            "error",
+            "-c",
+            f"import python_backend.generated.{profile_id}",
+        ],
         cwd=REPO,
         capture_output=True,
         text=True,
@@ -251,9 +277,13 @@ def test_each_generated_package_imports_cleanly(profile_id: str) -> None:
 
 
 @pytest.mark.parametrize("profile_id", sorted(emit.demonstrated()))
-def test_provenance_carries_every_required_field_and_no_host_reading(profile_id: str) -> None:
+def test_provenance_carries_every_required_field_and_no_host_reading(
+    profile_id: str,
+) -> None:
     """TC-920: FR-079-AC-3, FR-079-CON-3."""
-    provenance = json.loads((BACKEND / "generated" / profile_id / "PROVENANCE.json").read_text())
+    provenance = json.loads(
+        (BACKEND / "generated" / profile_id / "PROVENANCE.json").read_text()
+    )
     assert provenance["source"]["inputDigest"].startswith("sha256:")
     assert provenance["profile"]["digest"].startswith("sha256:")
     assert provenance["toolchainFingerprint"].startswith("sha256:")
@@ -301,7 +331,15 @@ def test_a_not_qualified_family_has_no_package_and_a_recorded_reason() -> None:
             assert not (BACKEND / "generated" / profile_id).exists()
             assert profile_id in note
     prepared = prepare.prepare_for_python(
-        {"$defs": {"K": {"type": "object", "title": "K", "properties": {"a": {"type": "string"}}}}}
+        {
+            "$defs": {
+                "K": {
+                    "type": "object",
+                    "title": "K",
+                    "properties": {"a": {"type": "string"}},
+                }
+            }
+        }
     )
     _ = prepared, runner
 
@@ -310,8 +348,15 @@ def test_no_manifest_or_workflow_changed_and_nothing_is_published() -> None:
     """TC-924: FR-079-AC-7, FR-079-CON-1."""
     changed = subprocess.run(
         [
-            "git", "diff", "--no-renames", "--name-only", "origin/main...HEAD", "--",
-            "package.json", "pnpm-lock.yaml", ".github",
+            "git",
+            "diff",
+            "--no-renames",
+            "--name-only",
+            "origin/main...HEAD",
+            "--",
+            "package.json",
+            "pnpm-lock.yaml",
+            ".github",
         ],
         cwd=REPO,
         capture_output=True,
@@ -476,8 +521,12 @@ def test_removing_a_constraint_from_a_probe_changes_what_is_accepted() -> None:
     weakened = json.loads(json.dumps(constrained))
     del weakened["$defs"]["S"]["properties"]["s"]["pattern"]
 
-    strict = runner.generate(prepare.prepare_for_python(constrained), "pydantic_v2_basemodel")
-    loose = runner.generate(prepare.prepare_for_python(weakened), "pydantic_v2_basemodel")
+    strict = runner.generate(
+        prepare.prepare_for_python(constrained), "pydantic_v2_basemodel"
+    )
+    loose = runner.generate(
+        prepare.prepare_for_python(weakened), "pydantic_v2_basemodel"
+    )
     joined_strict = "\n".join(strict.files.values())
     joined_loose = "\n".join(loose.files.values())
     assert "pattern='^a+$'" in joined_strict

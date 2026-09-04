@@ -87,7 +87,10 @@ function changedPaths(): string[] {
 	// change created — confirmed with `git log --diff-filter=A -1`, which names
 	// 014bff7 — so the range is that change's commit, it survives the squash
 	// merge, and it disappears (failing loudly) if the change is reverted.
-	return changedPathsOf(root, "fixtures/semantic/v1/positive/semantic-ir-v1-1.json");
+	return changedPathsOf(
+		root,
+		"fixtures/semantic/v1/positive/semantic-ir-v1-1.json",
+	);
 }
 
 function sha256(path: string): string {

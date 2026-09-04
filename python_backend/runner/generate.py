@@ -159,11 +159,15 @@ def generate(
         )
         raise LimitExceededError(msg)
 
-    input_digest = digest({name: payload.decode("utf-8") for name, payload in payloads.items()})
+    input_digest = digest(
+        {name: payload.decode("utf-8") for name, payload in payloads.items()}
+    )
     command = _entry_point()
 
     scratch_parent = Path(tempfile.gettempdir())
-    scratch = Path(tempfile.mkdtemp(prefix="agent-ix-python-backend-", dir=scratch_parent))
+    scratch = Path(
+        tempfile.mkdtemp(prefix="agent-ix-python-backend-", dir=scratch_parent)
+    )
     try:
         source = scratch / "input"
         source.mkdir()
@@ -172,7 +176,12 @@ def generate(
         target = scratch / "output"
         target.mkdir()
 
-        argv = list(profile["options"]) + ["--input", str(source), "--output", str(target)]
+        argv = list(profile["options"]) + [
+            "--input",
+            str(source),
+            "--output",
+            str(target),
+        ]
         assert_argv_safe(argv)
 
         try:
@@ -194,7 +203,8 @@ def generate(
 
         if completed.returncode != 0:
             raise GenerationError(
-                f"generator exited {completed.returncode}: {completed.stderr.strip()[-2000:]}"
+                f"generator exited {completed.returncode}: "
+                f"{completed.stderr.strip()[-2000:]}"
             )
         noise = [
             line
@@ -213,7 +223,9 @@ def generate(
             if path.is_file()
         }
         if not files:
-            raise GenerationError("generator wrote zero files; an empty output is not a success")
+            raise GenerationError(
+                "generator wrote zero files; an empty output is not a success"
+            )
 
         if inspect is not None:
             inspect(files, prepared.documents)
@@ -236,7 +248,11 @@ def generate(
             preparation=prepared.preparation,
             limits={
                 key: declared[key]
-                for key in ("wallClockTimeoutSeconds", "killGraceSeconds", "maxInputBytes")
+                for key in (
+                    "wallClockTimeoutSeconds",
+                    "killGraceSeconds",
+                    "maxInputBytes",
+                )
             },
             stderr_allow_list=list(declared["stderrAllowList"]),
         )

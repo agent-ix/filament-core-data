@@ -3,36 +3,25 @@
 	"id": "ref-local",
 	"construct": "local reference",
 	"note": "A `$ref` to a sibling definition must render as that type, not as its expansion.",
-	"detector": {
-		"kind": "regex",
-		"pattern": "b:\\s*(\\\"?B\\\"?|B)"
-	},
+	"detector": { "kind": "regex", "pattern": "b:\\s*(\\\"?B\\\"?|B)" },
 	"schema": {
 		"$defs": {
 			"A": {
 				"type": "object",
 				"title": "A",
 				"properties": {
-					"b": {
-						"$ref": "#/$defs/B"
-					}
+					"b": { "$ref": "#/$defs/B" }
 				},
-				"required": [
-					"b"
-				],
+				"required": ["b"],
 				"additionalProperties": false
 			},
 			"B": {
 				"type": "object",
 				"title": "B",
 				"properties": {
-					"x": {
-						"type": "string"
-					}
+					"x": { "type": "string" }
 				},
-				"required": [
-					"x"
-				],
+				"required": ["x"],
 				"additionalProperties": false
 			}
 		}

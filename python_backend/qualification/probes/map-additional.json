@@ -3,19 +3,13 @@
 	"id": "map-additional",
 	"construct": "map by additionalProperties",
 	"note": "The value constraint of an open map must survive.",
-	"detector": {
-		"kind": "regex",
-		"pattern": "ge=0"
-	},
+	"detector": { "kind": "regex", "pattern": "ge=0" },
 	"schema": {
 		"$defs": {
 			"M": {
 				"type": "object",
 				"title": "M",
-				"additionalProperties": {
-					"type": "integer",
-					"minimum": 0
-				}
+				"additionalProperties": { "type": "integer", "minimum": 0 }
 			}
 		}
 	},

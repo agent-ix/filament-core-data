@@ -3,24 +3,16 @@
 	"id": "string-format",
 	"construct": "string format",
 	"note": "A `date-time` must reach a datetime type rather than a bare string.",
-	"detector": {
-		"kind": "regex",
-		"pattern": "(AwareDatetime|datetime)"
-	},
+	"detector": { "kind": "regex", "pattern": "(AwareDatetime|datetime)" },
 	"schema": {
 		"$defs": {
 			"F": {
 				"type": "object",
 				"title": "F",
 				"properties": {
-					"d": {
-						"type": "string",
-						"format": "date-time"
-					}
+					"d": { "type": "string", "format": "date-time" }
 				},
-				"required": [
-					"d"
-				],
+				"required": ["d"],
 				"additionalProperties": false
 			}
 		}

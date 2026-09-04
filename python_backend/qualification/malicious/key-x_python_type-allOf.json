@@ -3,10 +3,6 @@
 	"kind": "schema",
 	"expectedCode": "PY-REF-002",
 	"document": {
-		"allOf": [
-			{
-				"x-python-type": "os.system"
-			}
-		]
+		"allOf": [{ "x-python-type": "os.system" }]
 	}
 }

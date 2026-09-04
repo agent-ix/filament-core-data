@@ -16,9 +16,7 @@
 				"common_schema.FilamentSemanticContractCommonTypesV1"
 			],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
-			"lost": [
-				"constraints-array-unique"
-			],
+			"lost": ["constraints-array-unique"],
 			"exercised": [
 				{
 					"module": "common_schema",
@@ -480,9 +478,7 @@
 			"typesRejectingAnEmptyOrUndeclaredValue": 64,
 			"typesAcceptingAnything": [],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
-			"lost": [
-				"constraints-array-unique"
-			],
+			"lost": ["constraints-array-unique"],
 			"exercised": [
 				{
 					"module": "common_schema",

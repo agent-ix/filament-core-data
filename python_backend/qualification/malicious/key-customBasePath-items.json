@@ -6,9 +6,7 @@
 		"$defs": {
 			"A": {
 				"type": "array",
-				"items": {
-					"customBasePath": "os.system"
-				}
+				"items": { "customBasePath": "os.system" }
 			}
 		}
 	}

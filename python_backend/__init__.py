@@ -18,6 +18,4 @@ REPO = ROOT.parent
 
 DEPENDENCY_GROUP = "python-backend"
 
-PROVISIONING = (
-    "install it with `poetry install --with %s`" % DEPENDENCY_GROUP
-)
+PROVISIONING = "install it with `poetry install --with %s`" % DEPENDENCY_GROUP

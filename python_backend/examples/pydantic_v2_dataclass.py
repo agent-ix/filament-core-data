@@ -26,7 +26,11 @@ def accepts() -> common_schema.SourceLocus:
 
     locus = _ADAPTER.validate_python(CONFORMING)
     restored = _ADAPTER.validate_python(
-        {key: value for key, value in dataclasses.asdict(locus).items() if value is not None}
+        {
+            key: value
+            for key, value in dataclasses.asdict(locus).items()
+            if value is not None
+        }
     )
     assert restored == locus
     return locus

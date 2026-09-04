@@ -4,9 +4,7 @@
 	"expectedCode": "PY-REF-002",
 	"document": {
 		"$defs": {
-			"A": {
-				"x-python-type": "os.system"
-			}
+			"A": { "x-python-type": "os.system" }
 		}
 	}
 }

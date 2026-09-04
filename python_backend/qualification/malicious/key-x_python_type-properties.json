@@ -7,9 +7,7 @@
 			"A": {
 				"type": "object",
 				"properties": {
-					"p": {
-						"x-python-type": "os.system"
-					}
+					"p": { "x-python-type": "os.system" }
 				}
 			}
 		}

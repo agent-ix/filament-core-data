@@ -6,9 +6,7 @@
 		"$defs": {
 			"A": {
 				"type": "array",
-				"items": {
-					"default_factory": "os.system"
-				}
+				"items": { "default_factory": "os.system" }
 			}
 		}
 	}

@@ -3,20 +3,14 @@
 	"id": "default-non-nullable",
 	"construct": "a defaulted non-nullable field",
 	"note": "A field the schema declares non-nullable must not acquire `None` from having a default.",
-	"detector": {
-		"kind": "regex",
-		"pattern": "v:\\s*str = 'z'"
-	},
+	"detector": { "kind": "regex", "pattern": "v:\\s*str = 'z'" },
 	"schema": {
 		"$defs": {
 			"D": {
 				"type": "object",
 				"title": "D",
 				"properties": {
-					"v": {
-						"type": "string",
-						"default": "z"
-					}
+					"v": { "type": "string", "default": "z" }
 				},
 				"additionalProperties": false
 			}

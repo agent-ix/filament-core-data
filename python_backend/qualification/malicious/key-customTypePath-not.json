@@ -3,8 +3,6 @@
 	"kind": "schema",
 	"expectedCode": "PY-REF-003",
 	"document": {
-		"not": {
-			"customTypePath": "os.system"
-		}
+		"not": { "customTypePath": "os.system" }
 	}
 }

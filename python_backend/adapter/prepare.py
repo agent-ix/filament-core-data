@@ -126,7 +126,9 @@ def _walk(node: Any, name: str, pointer: str, out: list[Rewrite]) -> Any:
     return result
 
 
-def prepare_for_python(document: dict[str, Any], name: str = "input.schema.json") -> Prepared:
+def prepare_for_python(
+    document: dict[str, Any], name: str = "input.schema.json"
+) -> Prepared:
     rewrites: list[Rewrite] = []
     prepared = _walk(copy.deepcopy(document), name, "", rewrites)
     return Prepared(documents={name: prepared}, rewrites=rewrites)

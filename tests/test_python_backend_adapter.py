@@ -99,7 +99,10 @@ def test_the_profile_digest_covers_the_argument_vector_and_not_the_verdict() -> 
     """TC-860: FR-073-AC-7."""
     profile = profiles.profile_by_id("pydantic_v2_basemodel")
     baseline = profiles.profile_digest(profile)
-    assert profiles.profile_digest(profiles.profile_by_id("pydantic_v2_basemodel")) == baseline
+    assert (
+        profiles.profile_digest(profiles.profile_by_id("pydantic_v2_basemodel"))
+        == baseline
+    )
 
     changed = dict(profile, options=[*profile["options"], "--strict-refs"])
     assert profiles.profile_digest(changed) != baseline
@@ -149,9 +152,7 @@ def test_the_prepared_spike_bundle_differs_only_by_the_declared_rewrite() -> Non
     assert "unevaluatedProperties" not in json.dumps(document)
 
 
-@pytest.mark.parametrize(
-    "closure", [{"not": {}}, False, {"type": "string"}]
-)
+@pytest.mark.parametrize("closure", [{"not": {}}, False, {"type": "string"}])
 def test_unevaluated_properties_is_rewritten_at_any_depth(closure: Any) -> None:
     """TC-864: FR-074-AC-2."""
     nested: dict[str, Any] = {
@@ -160,9 +161,7 @@ def test_unevaluated_properties_is_rewritten_at_any_depth(closure: Any) -> None:
                 "type": "object",
                 "properties": {
                     "b": {
-                        "allOf": [
-                            {"type": "object", "unevaluatedProperties": closure}
-                        ]
+                        "allOf": [{"type": "object", "unevaluatedProperties": closure}]
                     }
                 },
                 "unevaluatedProperties": closure,
@@ -188,14 +187,20 @@ def test_conflicting_closure_raises_and_agreeing_closure_does_not() -> None:
     assert "will not choose between two stated intents" in str(raised.value)
 
     agreeing = prepare.prepare_for_python(
-        {"type": "object", "unevaluatedProperties": {"not": {}}, "additionalProperties": False}
+        {
+            "type": "object",
+            "unevaluatedProperties": {"not": {}},
+            "additionalProperties": False,
+        }
     )
     assert agreeing.documents["input.schema.json"]["additionalProperties"] is False
 
 
 def test_the_preparation_record_is_complete_and_empty_when_nothing_applies() -> None:
     """TC-867: FR-074-AC-5."""
-    empty = prepare.prepare_for_python({"type": "object", "additionalProperties": False})
+    empty = prepare.prepare_for_python(
+        {"type": "object", "additionalProperties": False}
+    )
     assert empty.preparation == []
     published = prepare.prepare_input_set(PUBLISHED)
     assert published.preparation == []
@@ -218,12 +223,14 @@ def test_the_source_locus_lookahead_pattern_survives_and_compiles() -> None:
     Rust backend must hand-write the check. Python's `re` supports lookahead, so
     the obligation here is that the pass copies it rather than normalizes it.
     """
-    common = json.loads((REPO / "schema" / "semantic" / "v1" / "common.schema.json").read_text())
+    common = json.loads(
+        (REPO / "schema" / "semantic" / "v1" / "common.schema.json").read_text()
+    )
     original = common["$defs"]["sourceLocus"]["properties"]["path"]["pattern"]
     prepared = prepare.prepare_input_set(PUBLISHED)
-    carried = prepared.documents["common.schema.json"]["$defs"]["sourceLocus"]["properties"][
-        "path"
-    ]["pattern"]
+    carried = prepared.documents["common.schema.json"]["$defs"]["sourceLocus"][
+        "properties"
+    ]["path"]["pattern"]
     assert carried == original
     assert original.count("(?!") == 4
     compiled = re.compile(carried)
@@ -262,7 +269,16 @@ def test_the_adapter_touches_no_file_and_edits_no_generated_text() -> None:
     import ast  # noqa: PLC0415
 
     adapter = REPO / "python_backend" / "adapter"
-    forbidden = {"subprocess", "socket", "urllib", "http", "requests", "time", "datetime", "os"}
+    forbidden = {
+        "subprocess",
+        "socket",
+        "urllib",
+        "http",
+        "requests",
+        "time",
+        "datetime",
+        "os",
+    }
     for module in sorted(adapter.glob("*.py")):
         tree = ast.parse(module.read_text())
         for node in ast.walk(tree):
@@ -272,7 +288,11 @@ def test_the_adapter_touches_no_file_and_edits_no_generated_text() -> None:
             elif isinstance(node, ast.ImportFrom):
                 assert (node.module or "").split(".")[0] not in forbidden, module.name
             elif isinstance(node, ast.Attribute):
-                assert node.attr not in {"write_text", "write_bytes", "mkdir"}, module.name
+                assert node.attr not in {
+                    "write_text",
+                    "write_bytes",
+                    "mkdir",
+                }, module.name
 
 
 def test_the_merged_artefacts_are_untouched() -> None:
@@ -285,7 +305,15 @@ def test_the_merged_artefacts_are_untouched() -> None:
         *[f"schema/semantic/v1/{path.name}" for path in PUBLISHED],
     ]
     changed = subprocess.run(
-        ["git", "diff", "--no-renames", "--name-only", "origin/main...HEAD", "--", *frozen],
+        [
+            "git",
+            "diff",
+            "--no-renames",
+            "--name-only",
+            "origin/main...HEAD",
+            "--",
+            *frozen,
+        ],
         cwd=REPO,
         capture_output=True,
         text=True,
@@ -322,7 +350,9 @@ def _place(path: str, leaf: dict[str, Any]) -> dict[str, Any]:
 
 @pytest.mark.parametrize("key", list(guard.FORBIDDEN_KEYS))
 @pytest.mark.parametrize("where", APPLICATORS)
-def test_every_forbidden_key_is_refused_at_every_applicator(key: str, where: str) -> None:
+def test_every_forbidden_key_is_refused_at_every_applicator(
+    key: str, where: str
+) -> None:
     """TC-873: FR-075-AC-1."""
     document = _place(where, {key: "os.system"})
     with pytest.raises(guard.RefusalError) as raised:
@@ -332,12 +362,13 @@ def test_every_forbidden_key_is_refused_at_every_applicator(key: str, where: str
 
 def test_the_register_is_measured_against_the_installed_generator() -> None:
     """TC-874: FR-075-AC-2, FR-075-CON-2."""
-    import datamodel_code_generator.parser.jsonschema as upstream  # noqa: PLC0415
     import datamodel_code_generator.input_model as upstream_input  # noqa: PLC0415
+    import datamodel_code_generator.parser.jsonschema as upstream  # noqa: PLC0415
 
-    source = pathlib.Path(upstream.__file__).read_text() + pathlib.Path(
-        upstream_input.__file__
-    ).read_text()
+    source = (
+        pathlib.Path(upstream.__file__).read_text()
+        + pathlib.Path(upstream_input.__file__).read_text()
+    )
     for key in guard.FORBIDDEN_KEYS:
         assert key in source, f"{key} is not bound by the installed generator"
     assert {"x-python-import", "customTypePath", "default_factory"} <= set(
@@ -347,7 +378,13 @@ def test_the_register_is_measured_against_the_installed_generator() -> None:
 
 @pytest.mark.parametrize(
     "reference",
-    ["https://example.invalid/x.json", "file:///x.json", "/etc/passwd", "../outside.json", "C:\\x.json"],
+    [
+        "https://example.invalid/x.json",
+        "file:///x.json",
+        "/etc/passwd",
+        "../outside.json",
+        "C:\\x.json",
+    ],
 )
 def test_every_escaping_reference_shape_is_refused(reference: str) -> None:
     """TC-875: FR-075-AC-3."""
@@ -360,12 +397,17 @@ def test_a_local_pointer_and_a_sibling_filename_are_accepted() -> None:
     """TC-876: FR-075-AC-4."""
     guard.assert_schema_safe(
         {
-            "$defs": {"A": {"$ref": "#/$defs/B"}, "B": {"$ref": "common.schema.json#/$defs/X"}}
+            "$defs": {
+                "A": {"$ref": "#/$defs/B"},
+                "B": {"$ref": "common.schema.json#/$defs/X"},
+            }
         }
     )
 
 
-@pytest.mark.parametrize("option", sorted(profiles.PROHIBITED_OPTIONS | guard.NETWORK_OPTIONS))
+@pytest.mark.parametrize(
+    "option", sorted(profiles.PROHIBITED_OPTIONS | guard.NETWORK_OPTIONS)
+)
 @pytest.mark.parametrize("form", ["separate", "inline"])
 @pytest.mark.parametrize("position", ["first", "middle", "last"])
 def test_every_prohibited_option_is_refused_in_both_forms_anywhere(

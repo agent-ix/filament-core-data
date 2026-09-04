@@ -7,9 +7,7 @@
 			"A": {
 				"type": "object",
 				"properties": {
-					"p": {
-						"customBasePath": "os.system"
-					}
+					"p": { "customBasePath": "os.system" }
 				}
 			}
 		}

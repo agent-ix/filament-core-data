@@ -53,9 +53,19 @@ help = "Show git and version info"
 testpaths = ["tests"]
 filterwarnings = ["error"]
 
+[tool.black]
+# The generated tree is regenerated and byte-compared; reformatting it would put
+# this repository's formatter in the loop of an artefact the generator owns.
+extend-exclude = "python_backend/generated"
+
 [tool.ruff]
 line-length = 88
 target-version = "py313"
+# The generated tree is not hand-maintained: it is regenerated and byte-compared,
+# so a style rule over it would either be silenced or would make the generator's
+# own choices this repository's problem. It is type-checked under strict `mypy`
+# and read by the FR-078 inspection, which are the checks that mean something.
+extend-exclude = ["python_backend/generated"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "TID"]
@@ -76,6 +86,11 @@ build-backend = "poetry_dynamic_versioning.backend"
 # no per-module override and no relaxation: a type the checker rejects is a
 # qualification finding, and the permitted remedies do not include silencing it.
 [tool.mypy]
+# The cache lives under `dist/`, which `.gitignore` and `biome.json` both
+# already exclude. A cache at the repository root would be formatted by
+# `make lint` and committed by an unwary `git add -A`, and `biome.json` is a
+# prohibited path for this change so its ignore list may not be widened.
+cache_dir = "dist/.mypy_cache"
 python_version = "3.13"
 strict = true
 files = ["python_backend"]

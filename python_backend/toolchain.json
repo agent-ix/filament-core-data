@@ -7,11 +7,26 @@
 		"license": "MIT"
 	},
 	"runtimes": [
-		{ "distribution": "pydantic", "version": "2.12.5", "command": "python -c 'import pydantic; print(pydantic.VERSION)'" },
-		{ "distribution": "msgspec", "version": "0.21.1", "command": "python -c 'import msgspec; print(msgspec.__version__)'" }
+		{
+			"distribution": "pydantic",
+			"version": "2.12.5",
+			"command": "python -c 'import pydantic; print(pydantic.VERSION)'"
+		},
+		{
+			"distribution": "msgspec",
+			"version": "0.21.1",
+			"command": "python -c 'import msgspec; print(msgspec.__version__)'"
+		}
 	],
-	"typeChecker": { "distribution": "mypy", "version": "1.19.1", "command": "mypy --version" },
-	"python": { "minor": "3.13", "command": "python -c 'import sys; print(\"%d.%d\" % sys.version_info[:2])'" },
+	"typeChecker": {
+		"distribution": "mypy",
+		"version": "1.19.1",
+		"command": "mypy --version"
+	},
+	"python": {
+		"minor": "3.13",
+		"command": "python -c 'import sys; print(\"%d.%d\" % sys.version_info[:2])'"
+	},
 	"formatter": null,
 	"dependencyGroup": "python-backend"
 }

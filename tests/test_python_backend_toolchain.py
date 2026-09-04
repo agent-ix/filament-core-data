@@ -33,8 +33,10 @@ def test_generator_version_and_licence() -> None:
     """TC-845: FR-072-AC-1, FR-072-CON-3."""
     assert tc.installed_version("datamodel-code-generator") == "0.76.0"
     dist = metadata.distribution("datamodel-code-generator")
-    declared = (dist.metadata.get("License-Expression") or "") + " " + " ".join(
-        dist.metadata.get_all("Classifier") or []
+    declared = (
+        (dist.metadata.get("License-Expression") or "")
+        + " "
+        + " ".join(dist.metadata.get_all("Classifier") or [])
     )
     assert "MIT" in declared
     vendored = list((REPO / "python_backend").rglob("datamodel_code_generator"))
@@ -62,7 +64,9 @@ def test_advisory_ranges_and_derived_floor() -> None:
         ("0.63.0", "GHSA-5578-w22f-pfx9"),
     ],
 )
-def test_versions_inside_a_published_range_are_refused(version: str, advisory: str) -> None:
+def test_versions_inside_a_published_range_are_refused(
+    version: str, advisory: str
+) -> None:
     """TC-847: FR-072-AC-3, FR-072-CON-1."""
     verdict = tc.check_version(version)
     assert not verdict.admissible
@@ -91,7 +95,10 @@ def test_an_absent_distribution_fails_rather_than_skips() -> None:
 
 def test_every_declared_version_matches_what_is_installed() -> None:
     """TC-850: FR-072-AC-6."""
-    assert tc.installed_version("datamodel-code-generator") == TOOLCHAIN["generator"]["version"]
+    assert (
+        tc.installed_version("datamodel-code-generator")
+        == TOOLCHAIN["generator"]["version"]
+    )
     for row in TOOLCHAIN["runtimes"]:
         assert tc.installed_version(row["distribution"]) == row["version"]
     checker = TOOLCHAIN["typeChecker"]

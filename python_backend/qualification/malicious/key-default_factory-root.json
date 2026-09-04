@@ -2,7 +2,5 @@
 	"$comment": "Issue #23, FR-075/NFR-026-AC-1. The executable schema key `default_factory` at the root position.",
 	"kind": "schema",
 	"expectedCode": "PY-REF-005",
-	"document": {
-		"default_factory": "os.system"
-	}
+	"document": { "default_factory": "os.system" }
 }

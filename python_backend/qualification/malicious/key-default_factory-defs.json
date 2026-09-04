@@ -4,9 +4,7 @@
 	"expectedCode": "PY-REF-005",
 	"document": {
 		"$defs": {
-			"A": {
-				"default_factory": "os.system"
-			}
+			"A": { "default_factory": "os.system" }
 		}
 	}
 }

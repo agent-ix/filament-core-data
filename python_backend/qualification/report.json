@@ -29,9 +29,7 @@
 				"union",
 				"union-discriminated"
 			],
-			"lost": [
-				"constraints-array-unique"
-			],
+			"lost": ["constraints-array-unique"],
 			"conditions": [
 				{
 					"condition": "the FR-074 preparation pass rewrites `unevaluatedProperties`",
@@ -84,9 +82,7 @@
 				"union",
 				"union-discriminated"
 			],
-			"lost": [
-				"constraints-array-unique"
-			],
+			"lost": ["constraints-array-unique"],
 			"conditions": [
 				{
 					"condition": "the FR-074 preparation pass rewrites `unevaluatedProperties`",

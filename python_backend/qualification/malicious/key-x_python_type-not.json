@@ -3,8 +3,6 @@
 	"kind": "schema",
 	"expectedCode": "PY-REF-002",
 	"document": {
-		"not": {
-			"x-python-type": "os.system"
-		}
+		"not": { "x-python-type": "os.system" }
 	}
 }

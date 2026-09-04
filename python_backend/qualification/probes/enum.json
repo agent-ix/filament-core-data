@@ -3,20 +3,13 @@
 	"id": "enum",
 	"construct": "enumeration",
 	"note": "Members that are not Python identifiers must survive as values.",
-	"detector": {
-		"kind": "regex",
-		"pattern": "'a-b'"
-	},
+	"detector": { "kind": "regex", "pattern": "'a-b'" },
 	"schema": {
 		"$defs": {
 			"E": {
 				"title": "E",
 				"type": "string",
-				"enum": [
-					"a-b",
-					"1x",
-					"class"
-				]
+				"enum": ["a-b", "1x", "class"]
 			}
 		}
 	},

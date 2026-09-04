@@ -3,19 +3,14 @@
 	"id": "map-pattern",
 	"construct": "map by patternProperties",
 	"note": "The key pattern of a pattern-keyed map must survive.",
-	"detector": {
-		"kind": "regex",
-		"pattern": "\\^x-"
-	},
+	"detector": { "kind": "regex", "pattern": "\\^x-" },
 	"schema": {
 		"$defs": {
 			"P": {
 				"type": "object",
 				"title": "P",
 				"patternProperties": {
-					"^x-": {
-						"type": "string"
-					}
+					"^x-": { "type": "string" }
 				},
 				"additionalProperties": false
 			}

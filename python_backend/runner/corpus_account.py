@@ -27,13 +27,16 @@ import sys
 from typing import Any
 
 from python_backend import ROOT
+from python_backend.adapter.render import render
 
 CORPUS = ROOT.parent / "conformance"
 ACCOUNT = ROOT / "qualification" / "corpus-account.json"
 
 #: The oracle states these; a schema-derived model cannot reach them. Recorded
 #: so the account says *why* a case is undecidable rather than only that it is.
-CROSS_FIELD_ONLY = "the oracle decides this case by a cross-field rule over a resolved document"
+CROSS_FIELD_ONLY = (
+    "the oracle decides this case by a cross-field rule over a resolved document"
+)
 
 
 def _read(path: Any) -> Any:
@@ -80,8 +83,11 @@ def _apply(document: Any, ops: list[dict[str, Any]]) -> Any:
         if kind == "x-repeat":
             holder, last = resolve(op["path"])
             for index in range(int(op["count"])):
-                insert(holder, "-" if isinstance(holder, list) else last,
-                       substitute(op["value"], index))
+                insert(
+                    holder,
+                    "-" if isinstance(holder, list) else last,
+                    substitute(op["value"], index),
+                )
             continue
         holder, last = resolve(op["path"])
         if kind in {"add", "replace"}:
@@ -97,9 +103,7 @@ def _apply(document: Any, ops: list[dict[str, Any]]) -> Any:
 def build() -> dict[str, Any]:
     manifest = _read(CORPUS / "corpus.json")
     registry = _read(CORPUS / "adapters" / "registry.json")
-    slot = next(
-        row for row in registry["adapters"] if row["id"] == "python-backend"
-    )
+    slot = next(row for row in registry["adapters"] if row["id"] == "python-backend")
 
     from pydantic import ValidationError  # noqa: PLC0415
 
@@ -159,7 +163,9 @@ def build() -> dict[str, Any]:
         )
 
     agreed = [row for row in rows if row.get("classification") == "agreed"]
-    over_strict = [row for row in rows if row.get("classification") == "surface-over-strict"]
+    over_strict = [
+        row for row in rows if row.get("classification") == "surface-over-strict"
+    ]
     undecidable = [
         row
         for row in rows
@@ -217,7 +223,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args(argv)
     document = build()
-    fresh = json.dumps(document, indent="\t", ensure_ascii=False) + "\n"
+    fresh = render(document)
     if args.check:
         if not ACCOUNT.exists() or ACCOUNT.read_text(encoding="utf-8") != fresh:
             print(f"{ACCOUNT} differs from a fresh measurement", file=sys.stderr)

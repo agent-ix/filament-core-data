@@ -21,6 +21,7 @@ from typing import Any
 
 from python_backend import ROOT
 from python_backend.adapter.profiles import load_profiles
+from python_backend.adapter.render import render
 from python_backend.runner.emit import GENERATED, demonstrated
 from python_backend.runner.qualify import REPORT
 
@@ -39,7 +40,8 @@ def _generated_types(profile_id: str) -> dict[str, list[str]]:
         names = [
             statement.name
             for statement in tree.body
-            if isinstance(statement, ast.ClassDef) and not statement.name.startswith("_")
+            if isinstance(statement, ast.ClassDef)
+            and not statement.name.startswith("_")
         ]
         names += [
             statement.name.id
@@ -88,7 +90,9 @@ def _exercise_pydantic(profile_id: str) -> list[dict[str, Any]]:
                     adapter.validate_python({"__undeclared__": object()})
             except ValidationError:
                 rejected = True
-            except Exception:  # noqa: BLE001 - a non-validation error is still a rejection
+            except (
+                Exception
+            ):  # noqa: BLE001 - a non-validation error is still a rejection
                 rejected = True
             outcomes.append(
                 {
@@ -112,7 +116,9 @@ def _exercise_msgspec(profile_id: str) -> list[dict[str, Any]]:
         )
         for name in names:
             candidate = getattr(module, name, None)
-            if not (isinstance(candidate, type) and issubclass(candidate, msgspec.Struct)):
+            if not (
+                isinstance(candidate, type) and issubclass(candidate, msgspec.Struct)
+            ):
                 continue
             rejected = False
             try:
@@ -174,7 +180,9 @@ def build() -> dict[str, Any]:
             )
             continue
         exercised = (
-            _exercise_msgspec(pid) if pid == "msgspec_struct" else _exercise_pydantic(pid)
+            _exercise_msgspec(pid)
+            if pid == "msgspec_struct"
+            else _exercise_pydantic(pid)
         )
         declared = sum(len(names) for names in _generated_types(pid).values())
         # A generated enum or type alias carries no validator to exercise, so the
@@ -225,7 +233,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args(argv)
     document = build()
-    fresh = json.dumps(document, indent="\t", ensure_ascii=False) + "\n"
+    fresh = render(document)
     if args.check:
         if not VALIDATION.exists() or VALIDATION.read_text(encoding="utf-8") != fresh:
             print(f"{VALIDATION} differs from a fresh measurement", file=sys.stderr)

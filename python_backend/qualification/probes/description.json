@@ -3,10 +3,7 @@
 	"id": "description",
 	"construct": "a description",
 	"note": "Authored documentation must reach the generated source or the package is undocumented.",
-	"detector": {
-		"kind": "regex",
-		"pattern": "who produced it"
-	},
+	"detector": { "kind": "regex", "pattern": "who produced it" },
 	"schema": {
 		"$defs": {
 			"P": {
@@ -14,14 +11,9 @@
 				"title": "P",
 				"description": "A provenance-bearing shape.",
 				"properties": {
-					"producer": {
-						"type": "string",
-						"description": "who produced it"
-					}
+					"producer": { "type": "string", "description": "who produced it" }
 				},
-				"required": [
-					"producer"
-				],
+				"required": ["producer"],
 				"additionalProperties": false
 			}
 		}

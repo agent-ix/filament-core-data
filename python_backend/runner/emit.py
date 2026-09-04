@@ -17,13 +17,13 @@ import ast
 import json
 import shutil
 import sys
-from pathlib import Path
 from typing import Any
 
 from python_backend import ROOT
 from python_backend.adapter.jcs import digest, digest_bytes
 from python_backend.adapter.prepare import prepare_input_set
 from python_backend.adapter.profiles import profile_by_id
+from python_backend.adapter.render import render
 from python_backend.runner.generate import generate
 from python_backend.runner.inspect_source import inspect_generated
 from python_backend.runner.qualify import NOT_QUALIFIED, REPORT
@@ -50,10 +50,14 @@ def _public_symbols(source: str) -> list[str]:
     for statement in tree.body:
         if isinstance(statement, ast.ClassDef) and not statement.name.startswith("_"):
             names.append(statement.name)
-        elif isinstance(statement, ast.TypeAlias) and isinstance(statement.name, ast.Name):
+        elif isinstance(statement, ast.TypeAlias) and isinstance(
+            statement.name, ast.Name
+        ):
             if not statement.name.id.startswith("_"):
                 names.append(statement.name.id)
-        elif isinstance(statement, ast.AnnAssign) and isinstance(statement.target, ast.Name):
+        elif isinstance(statement, ast.AnnAssign) and isinstance(
+            statement.target, ast.Name
+        ):
             if not statement.target.id.startswith("_"):
                 names.append(statement.target.id)
     return names
@@ -84,7 +88,9 @@ def collisions(exports: dict[str, list[str]]) -> dict[str, list[str]]:
     for module, names in exports.items():
         for name in names:
             owners.setdefault(name, []).append(module)
-    return {name: sorted(modules) for name, modules in owners.items() if len(modules) > 1}
+    return {
+        name: sorted(modules) for name, modules in owners.items() if len(modules) > 1
+    }
 
 
 def _init_module(exports: dict[str, list[str]]) -> str:
@@ -100,7 +106,7 @@ def _init_module(exports: dict[str, list[str]]) -> str:
     shared = collisions(exports)
     lines = [
         '"""Generated package. Do not edit: regenerate with',
-        '`poetry run python -m python_backend.runner.emit`.',
+        "`poetry run python -m python_backend.runner.emit`.",
         "",
         "`__all__` carries every type name exactly one module declares. Names",
         "several modules declare are different types that happen to share a",
@@ -123,7 +129,9 @@ def _init_module(exports: dict[str, list[str]]) -> str:
     return "\n".join(lines)
 
 
-def _readme(profile: dict[str, Any], verdict: dict[str, Any], shared: dict[str, list[str]]) -> str:
+def _readme(
+    profile: dict[str, Any], verdict: dict[str, Any], shared: dict[str, list[str]]
+) -> str:
     lost = verdict["lost"] or ["nothing measured as lost"]
     conditions = verdict["conditions"]
     lines = [
@@ -162,7 +170,8 @@ def _readme(profile: dict[str, Any], verdict: dict[str, Any], shared: dict[str, 
         lines.append("`__all__` rather than silently shadowed.")
         lines.append("")
         lines.extend(
-            f"- `{name}` — {', '.join(modules)}" for name, modules in sorted(shared.items())
+            f"- `{name}` — {', '.join(modules)}"
+            for name, modules in sorted(shared.items())
         )
         lines.append("")
     if conditions:
@@ -187,7 +196,9 @@ def _readme(profile: dict[str, Any], verdict: dict[str, Any], shared: dict[str, 
 
 
 def _content_fingerprint(files: dict[str, str]) -> str:
-    return digest({name: files[name] for name in sorted(files) if name != "PROVENANCE.json"})
+    return digest(
+        {name: files[name] for name in sorted(files) if name != "PROVENANCE.json"}
+    )
 
 
 def build(profile_id: str) -> dict[str, str]:
@@ -228,14 +239,16 @@ def build(profile_id: str) -> dict[str, str]:
         "published": False,
         "contentFingerprint": _content_fingerprint(files),
     }
-    files["PROVENANCE.json"] = json.dumps(provenance, indent="\t", ensure_ascii=False) + "\n"
+    files["PROVENANCE.json"] = render(provenance)
     return files
 
 
 def demonstrated() -> list[str]:
     report = json.loads(REPORT.read_text(encoding="utf-8"))
     return [
-        row["profileId"] for row in report["verdicts"] if row["verdict"] != NOT_QUALIFIED
+        row["profileId"]
+        for row in report["verdicts"]
+        if row["verdict"] != NOT_QUALIFIED
     ]
 
 

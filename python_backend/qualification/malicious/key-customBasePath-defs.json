@@ -4,9 +4,7 @@
 	"expectedCode": "PY-REF-004",
 	"document": {
 		"$defs": {
-			"A": {
-				"customBasePath": "os.system"
-			}
+			"A": { "customBasePath": "os.system" }
 		}
 	}
 }

@@ -3,62 +3,35 @@
 	"id": "union-discriminated",
 	"construct": "discriminated union",
 	"note": "The discriminator must reach the generated type; without it a consumer must guess the branch.",
-	"detector": {
-		"kind": "regex",
-		"pattern": "(discriminator|tag_field)"
-	},
+	"detector": { "kind": "regex", "pattern": "(discriminator|tag_field)" },
 	"schema": {
 		"$defs": {
 			"S": {
 				"title": "S",
-				"oneOf": [
-					{
-						"$ref": "#/$defs/C"
-					},
-					{
-						"$ref": "#/$defs/Q"
-					}
-				],
+				"oneOf": [{ "$ref": "#/$defs/C" }, { "$ref": "#/$defs/Q" }],
 				"discriminator": {
 					"propertyName": "kind",
-					"mapping": {
-						"circle": "#/$defs/C",
-						"square": "#/$defs/Q"
-					}
+					"mapping": { "circle": "#/$defs/C", "square": "#/$defs/Q" }
 				}
 			},
 			"C": {
 				"type": "object",
 				"title": "C",
 				"properties": {
-					"kind": {
-						"const": "circle"
-					},
-					"r": {
-						"type": "number"
-					}
+					"kind": { "const": "circle" },
+					"r": { "type": "number" }
 				},
-				"required": [
-					"kind",
-					"r"
-				],
+				"required": ["kind", "r"],
 				"additionalProperties": false
 			},
 			"Q": {
 				"type": "object",
 				"title": "Q",
 				"properties": {
-					"kind": {
-						"const": "square"
-					},
-					"s": {
-						"type": "number"
-					}
+					"kind": { "const": "square" },
+					"s": { "type": "number" }
 				},
-				"required": [
-					"kind",
-					"s"
-				],
+				"required": ["kind", "s"],
 				"additionalProperties": false
 			}
 		}

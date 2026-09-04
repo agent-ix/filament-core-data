@@ -56,7 +56,8 @@ const PROHIBITED = [
 	".github/",
 ];
 
-const read = (path: string): string => readFileSync(resolve(root, path), "utf8");
+const read = (path: string): string =>
+	readFileSync(resolve(root, path), "utf8");
 
 function walk(directory: string): string[] {
 	const out: string[] = [];
@@ -107,13 +108,18 @@ describe("qualified Python generation route (issue #23)", () => {
 		).trim();
 		expect(frozen).toBe("");
 
-		const manifest = JSON.parse(read("package.json")) as Record<string, unknown>;
+		const manifest = JSON.parse(read("package.json")) as Record<
+			string,
+			unknown
+		>;
 		expect(JSON.stringify(manifest)).not.toContain("python_backend");
 
 		const pyproject = read("pyproject.toml");
 		const include = pyproject.split("include = [")[1].split("]")[0];
 		expect(include).not.toContain("python_backend");
-		expect(pyproject).toContain('packages = [{ include = "agent_ix_core_data" }]');
+		expect(pyproject).toContain(
+			'packages = [{ include = "agent_ix_core_data" }]',
+		);
 	});
 
 	/** Traces: TC-943; NFR-027-AC-6. */
@@ -130,7 +136,9 @@ describe("qualified Python generation route (issue #23)", () => {
 		// The helper still exports the moving-baseline form, and that is fine: it
 		// is what `changedPathsOf` folds the working tree in with. What must not
 		// exist is a *gate* that resolves its own range that way.
-		expect(read("test/changed-paths.ts")).toContain("export function changedPathsOf(");
+		expect(read("test/changed-paths.ts")).toContain(
+			"export function changedPathsOf(",
+		);
 	});
 
 	/** Traces: TC-943; NFR-027-AC-6. */
@@ -207,7 +215,8 @@ describe("qualified Python generation route (issue #23)", () => {
 	/** Traces: TC-942; NFR-027-AC-9. */
 	it("adds no entry to any merged suite's permitted-path list", () => {
 		for (const entry of readdirSync(resolve(root, "test"))) {
-			if (!entry.endsWith(".test.ts") || entry === "python-backend.test.ts") continue;
+			if (!entry.endsWith(".test.ts") || entry === "python-backend.test.ts")
+				continue;
 			const source = read(join("test", entry));
 			expect(source, entry).not.toContain("python_backend");
 			expect(source, entry).not.toContain("Plan-012");
@@ -234,7 +243,9 @@ describe("qualified Python generation route (issue #23)", () => {
 
 	/** Traces: TC-936, TC-938; NFR-026-AC-1, NFR-026-AC-10. */
 	it("carries a malicious-schema corpus that covers every refusal code", () => {
-		const corpus = readdirSync(resolve(root, "python_backend/qualification/malicious"));
+		const corpus = readdirSync(
+			resolve(root, "python_backend/qualification/malicious"),
+		);
 		expect(corpus.length).toBeGreaterThanOrEqual(32);
 		const register = JSON.parse(read("python_backend/refusals.json")) as {
 			schemaKeys: { key: string; code: string }[];
@@ -247,7 +258,9 @@ describe("qualified Python generation route (issue #23)", () => {
 	/** Traces: TC-937; NFR-026-AC-11. */
 	it("writes nothing under the generated tree before the enforcing inspection", () => {
 		const emitter = read("python_backend/runner/emit.py");
-		const inspectAt = emitter.indexOf('inspect_generated(files, documents, "enforce")');
+		const inspectAt = emitter.indexOf(
+			'inspect_generated(files, documents, "enforce")',
+		);
 		const writeAt = emitter.indexOf("destination.write_text");
 		expect(inspectAt).toBeGreaterThan(-1);
 		expect(writeAt).toBeGreaterThan(inspectAt);

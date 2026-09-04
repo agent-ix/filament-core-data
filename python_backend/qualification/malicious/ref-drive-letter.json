@@ -3,9 +3,7 @@
 	"kind": "schema",
 	"document": {
 		"$defs": {
-			"A": {
-				"$ref": "C:\\x.json"
-			}
+			"A": { "$ref": "C:\\x.json" }
 		}
 	}
 }

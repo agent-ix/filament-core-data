@@ -3,10 +3,7 @@
 	"id": "optional-vs-null",
 	"construct": "required-nullable versus optional",
 	"note": "A required nullable field is not the same as an absent one and must render as nullable.",
-	"detector": {
-		"kind": "regex",
-		"pattern": "a:\\s*str \\| None"
-	},
+	"detector": { "kind": "regex", "pattern": "a:\\s*str \\| None" },
 	"schema": {
 		"$defs": {
 			"O": {
@@ -14,22 +11,12 @@
 				"title": "O",
 				"properties": {
 					"a": {
-						"type": [
-							"string",
-							"null"
-						]
+						"type": ["string", "null"]
 					},
-					"b": {
-						"type": "string"
-					},
-					"c": {
-						"type": "string"
-					}
+					"b": { "type": "string" },
+					"c": { "type": "string" }
 				},
-				"required": [
-					"a",
-					"b"
-				],
+				"required": ["a", "b"],
 				"additionalProperties": false
 			}
 		}

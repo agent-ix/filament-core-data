@@ -1,21 +1,71 @@
 {
 	"$comment": "Issue #23, FR-075. The closed refusal register. Narrowing it to make an input pass is forbidden (FR-075-CON-1); widening it is a specification amendment. The five schema keys are the measured executable surface of the pinned 0.76.0 — `JsonSchemaObject` binds `customTypePath` and `customBasePath`, the parser reads `x-python-import` and `x-python-type` as Python symbols to emit, and `default_factory` is the vector GHSA-386q-5hp3-95m9 names. FR-043's three-key set is a subset, which a gate asserts.",
 	"schemaKeys": [
-		{ "code": "PY-REF-001", "key": "x-python-import", "why": "the generator emits `from <module> import <name>` from this key; the vector of GHSA-5578-w22f-pfx9", "obligedBy": "GHSA-5578-w22f-pfx9" },
-		{ "code": "PY-REF-002", "key": "x-python-type", "why": "the parser reads this as a serialized Python type expression and emits it verbatim", "obligedBy": "FR-075" },
-		{ "code": "PY-REF-003", "key": "customTypePath", "why": "bound by `JsonSchemaObject` as a dotted Python path the generator imports; the vector of GHSA-5578-w22f-pfx9", "obligedBy": "GHSA-5578-w22f-pfx9" },
-		{ "code": "PY-REF-004", "key": "customBasePath", "why": "bound beside `customTypePath` and reaching the same import machinery", "obligedBy": "FR-075" },
-		{ "code": "PY-REF-005", "key": "default_factory", "why": "the generator emits this as a callable in the generated default; the vector of GHSA-386q-5hp3-95m9", "obligedBy": "GHSA-386q-5hp3-95m9" }
+		{
+			"code": "PY-REF-001",
+			"key": "x-python-import",
+			"why": "the generator emits `from <module> import <name>` from this key; the vector of GHSA-5578-w22f-pfx9",
+			"obligedBy": "GHSA-5578-w22f-pfx9"
+		},
+		{
+			"code": "PY-REF-002",
+			"key": "x-python-type",
+			"why": "the parser reads this as a serialized Python type expression and emits it verbatim",
+			"obligedBy": "FR-075"
+		},
+		{
+			"code": "PY-REF-003",
+			"key": "customTypePath",
+			"why": "bound by `JsonSchemaObject` as a dotted Python path the generator imports; the vector of GHSA-5578-w22f-pfx9",
+			"obligedBy": "GHSA-5578-w22f-pfx9"
+		},
+		{
+			"code": "PY-REF-004",
+			"key": "customBasePath",
+			"why": "bound beside `customTypePath` and reaching the same import machinery",
+			"obligedBy": "FR-075"
+		},
+		{
+			"code": "PY-REF-005",
+			"key": "default_factory",
+			"why": "the generator emits this as a callable in the generated default; the vector of GHSA-386q-5hp3-95m9",
+			"obligedBy": "GHSA-386q-5hp3-95m9"
+		}
 	],
 	"referenceShapes": [
-		{ "code": "PY-REF-010", "shape": "uri-scheme", "why": "a `$ref` carrying any URI scheme makes the generator a fetcher of caller-chosen content" },
-		{ "code": "PY-REF-011", "shape": "absolute-path", "why": "an absolute filesystem `$ref` reads outside the prepared input set" },
-		{ "code": "PY-REF-012", "shape": "parent-escape", "why": "a `..` segment escapes the prepared input set" },
-		{ "code": "PY-REF-013", "shape": "drive-letter", "why": "a Windows drive-letter `$ref` is an absolute path in another spelling" }
+		{
+			"code": "PY-REF-010",
+			"shape": "uri-scheme",
+			"why": "a `$ref` carrying any URI scheme makes the generator a fetcher of caller-chosen content"
+		},
+		{
+			"code": "PY-REF-011",
+			"shape": "absolute-path",
+			"why": "an absolute filesystem `$ref` reads outside the prepared input set"
+		},
+		{
+			"code": "PY-REF-012",
+			"shape": "parent-escape",
+			"why": "a `..` segment escapes the prepared input set"
+		},
+		{
+			"code": "PY-REF-013",
+			"shape": "drive-letter",
+			"why": "a Windows drive-letter `$ref` is an absolute path in another spelling"
+		}
 	],
 	"argumentTokens": [
-		{ "code": "PY-REF-020", "why": "an option in the FR-073-CON-2 prohibited set places caller-controlled Python in the output or loads caller-controlled code" },
-		{ "code": "PY-REF-021", "why": "a remote-reference or lock option re-enables the fetching the profile disables" },
-		{ "code": "PY-REF-022", "why": "an option token absent from the allow-list is refused until it is reviewed; an allow-list that defaults to admit is not an allow-list" }
+		{
+			"code": "PY-REF-020",
+			"why": "an option in the FR-073-CON-2 prohibited set places caller-controlled Python in the output or loads caller-controlled code"
+		},
+		{
+			"code": "PY-REF-021",
+			"why": "a remote-reference or lock option re-enables the fetching the profile disables"
+		},
+		{
+			"code": "PY-REF-022",
+			"why": "an option token absent from the allow-list is refused until it is reviewed; an allow-list that defaults to admit is not an allow-list"
+		}
 	]
 }

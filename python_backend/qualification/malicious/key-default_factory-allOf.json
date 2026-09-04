@@ -3,10 +3,6 @@
 	"kind": "schema",
 	"expectedCode": "PY-REF-005",
 	"document": {
-		"allOf": [
-			{
-				"default_factory": "os.system"
-			}
-		]
+		"allOf": [{ "default_factory": "os.system" }]
 	}
 }
