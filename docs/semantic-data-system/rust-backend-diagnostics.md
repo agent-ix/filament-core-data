@@ -7,7 +7,7 @@ status: normative
 # Rust/Serde backend diagnostic registry
 
 The closed `agent-ix.rust-backend.*` set, rendered from
-`src/compiler/backends/rust-serde/diagnostics.mjs`. 21 codes.
+`src/compiler/backends/rust-serde/diagnostics.mjs`. 22 codes.
 
 This is the *generator's* namespace. The Rust reader in `crates/semantic-ir`
 emits `agent-ix.semantic-ir.*` from the published set
@@ -39,6 +39,7 @@ input.
 | `agent-ix.rust-backend.DECLARED_LOSS` | warning | no | the backend drops a construct the profile lists in allowedOmissions |
 | `agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED` | warning | no | a record whose unknownPolicy is surface retained an unknown member at runtime |
 | `agent-ix.rust-backend.DIAGNOSTIC_LIMIT_REACHED` | warning | no | the diagnostic count reached the request's maxDiagnostics |
+| `agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION` | error | yes | a required extension whose identity the crate does not declare, or which names a capability the crate does not admit; the admitted set is empty because GAP-007 records that no published artifact lets a consumer declare one, and issue #69 carries the fixture's disagreeing spelling |
 | `agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE` | error | yes | a constraint keyword does not apply to its resolved subject |
 | `agent-ix.semantic-ir.INVALID_OPERAND` | error | yes | an operand's JSON type is not one the subject's Rust type admits |
 | `agent-ix.semantic-ir.V1_1_NODE_IN_V1_0` | error | yes | a 1.0.0 document carries a 1.1.0 node |

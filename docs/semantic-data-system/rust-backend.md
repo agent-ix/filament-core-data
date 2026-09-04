@@ -82,7 +82,7 @@ construction, not by claim.
 
 | Selector | Rust form | Serde | Mechanism | Refusal |
 |---|---|---|---|---|
-| `extensions` | `Vec<Extension>` | — | Extension carries identity, version, required, capability and a SemanticValue payload; an extension is never folded into an unknown member | — |
+| `extensions` | `Vec<Extension>, with the value type Extension carrying identity, version, required, capability and a SemanticValue payload` | — | Extension is a value type with try_new and decide, emitted alongside the ExtensionMeta constant; an extension is never folded into an unknown member. decide is governed by two rules: a required: false extension is preserved whatever its identity and carries no diagnostic, and a required: true extension is rejected when its identity is not one the contract declares or when it names any capability. The admitted-capability set the generated crate carries is EMPTY, and empty is a declared decision rather than an unfilled slot: consumer-policy.schema.json is sealed and carries no capability member and the published rust row of target-contracts.json declares no capability list, so no published artifact states a capability a crate could admit. That is GAP-007 in conformance/contract-gaps.json, owned by issue #9. | `agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION` |
 
 ### metadata
 
