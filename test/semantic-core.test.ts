@@ -1,5 +1,15 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, statSync } from "node:fs";
+import {
+	cpSync,
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	readdirSync,
+	rmSync,
+	statSync,
+	writeFileSync,
+} from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -7,13 +17,6 @@ import { NodeHost, compile, navigateProgram } from "@typespec/compiler";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { createHash } from "node:crypto";
-import {
-	mkdtempSync,
-	readdirSync,
-	rmSync,
-	writeFileSync,
-	cpSync,
-} from "node:fs";
 import { readDeclarations } from "./semantic-core-reader";
 import { type Instance, lower } from "./semantic-core-lowerer";
 import { normalize, readSemanticIr } from "./semantic-ir-v1-1-reader";

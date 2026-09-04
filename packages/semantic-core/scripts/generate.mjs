@@ -173,9 +173,16 @@ function main() {
 			}
 			if (current !== text) problems.push(relative(repoRoot, path));
 		}
-		const committed = readdirSync(outputDir).filter((name) =>
-			name.endsWith(".json"),
-		);
+		let committed = [];
+		try {
+			committed = readdirSync(outputDir).filter((name) =>
+				name.endsWith(".json"),
+			);
+		} catch {
+			problems.push(
+				`${relative(repoRoot, outputDir)} (missing; run make semantic-core-generate)`,
+			);
+		}
 		for (const name of committed)
 			if (!rendered.has(name))
 				problems.push(`${relative(repoRoot, join(outputDir, name))} (stale)`);
