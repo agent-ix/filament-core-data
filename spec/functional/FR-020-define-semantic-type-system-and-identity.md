@@ -12,7 +12,7 @@ relationships:
 
 ## Description
 
-The v1 semantic IR SHALL define a closed structural-kind vocabulary, orthogonal
+The semantic IR (v1, revised additively by v1.1) SHALL define a closed structural-kind vocabulary, orthogonal
 semantic roles, stable package/type/field identities, and explicit presence,
 nullability, default, constraint, recursion, and extension semantics.
 
@@ -27,6 +27,10 @@ nullability, default, constraint, recursion, and extension semantics.
 - Recursive references SHALL preserve identity without flattening the graph into duplicated anonymous structures.
 - Open and closed enums, unions, records, and extension points SHALL declare their unknown-value behavior.
 - Definitions and occurrences SHALL remain distinct.
+- In IR v1.1, a field SHALL carry an explicit multiplicity and an optional unit, with presence and nullability as derived views ([FR-027](./FR-027-declare-field-multiplicity-and-units.md)).
+- In IR v1.1, a type definition of any kind SHALL carry opaque clause nodes ([FR-028](./FR-028-represent-relationships-operations-and-clauses.md)).
+- In IR v1.1, a record type definition SHALL additionally carry first-class relationship and operation nodes ([FR-028](./FR-028-represent-relationships-operations-and-clauses.md)).
+- In IR v1.1, the IR schema SHALL close the constraint keyword vocabulary and type each keyword's operands ([FR-029](./FR-029-close-the-constraint-keyword-vocabulary.md)).
 - The contract SHALL NOT infer a definition version from an occurrence timestamp or database revision.
 
 ## Constraints
@@ -46,8 +50,10 @@ nullability, default, constraint, recursion, and extension semantics.
 | FR-020-AC-4 | Stable type and field identities survive generated-name and source-file renames classified as non-semantic. | Test |
 | FR-020-AC-5 | Recursive references and namespaced extensions do not collapse into anonymous JSON values. | Test |
 | FR-020-AC-6 | Unknown values follow the declared open/closed policy and never become a known zero/default variant. | Test |
+| FR-020-AC-7 | Multiplicity, unit, relationships, operations, and clauses round-trip through the normalized serialization byte-identically. | Test |
+| FR-020-AC-8 | Two independent readers of the v1.1 IR schema — the TypeScript Ajv reader in `test/` and a Python `jsonschema` reader under `tests/` (pytest, test-only), each implementing the cross-field rules of FR-027..030 — agree on every golden and negative fixture. | Test |
 
 ## Dependencies
 
 - **Upstream**: [FR-019](./FR-019-select-v1-structural-source-and-ir.md), architecture metamodel
-- **Downstream**: [FR-021](./FR-021-define-package-graphs-exports-and-locks.md), target emitters and compatibility classifier
+- **Downstream**: [FR-021](./FR-021-define-package-graphs-exports-and-locks.md), [FR-027](./FR-027-declare-field-multiplicity-and-units.md), [FR-028](./FR-028-represent-relationships-operations-and-clauses.md), [FR-029](./FR-029-close-the-constraint-keyword-vocabulary.md), target emitters and compatibility classifier

@@ -1,0 +1,174 @@
+[
+	{
+		"id": "field-presence-contradicts-multiplicity",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.fields.1.presence",
+			"value": "required"
+		},
+		"code": "agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH",
+		"path": "types.3.fields.1.presence"
+	},
+	{
+		"id": "field-upper-below-lower",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.fields.0.multiplicity",
+			"value": {
+				"lower": 2,
+				"upper": 1
+			}
+		},
+		"code": "agent-ix.semantic-ir.INVALID_MULTIPLICITY",
+		"path": "types.3.fields.0.multiplicity.upper"
+	},
+	{
+		"id": "field-flags-on-single",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.fields.0.multiplicity",
+			"value": {
+				"lower": 1,
+				"upper": 1,
+				"ordered": true
+			}
+		},
+		"code": "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
+		"path": "types.3.fields.0.multiplicity"
+	},
+	{
+		"id": "field-unit-on-record",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.fields.1.typeRef",
+			"value": "ix://agent-ix/assurance/type/Artifact"
+		},
+		"also": {
+			"path": "types.3.fields.1.unit",
+			"value": "s"
+		},
+		"code": "agent-ix.semantic-ir.UNIT_ON_NON_SCALAR",
+		"path": "types.3.fields.1.unit"
+	},
+	{
+		"id": "field-unresolved-type-ref",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.fields.0.typeRef",
+			"value": "ix://agent-ix/assurance/type/Missing"
+		},
+		"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+		"path": "types.3.fields.0.typeRef"
+	},
+	{
+		"id": "constraint-string-operand-on-number",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.1.constraints.0.operands.value",
+			"value": "1"
+		},
+		"code": "agent-ix.semantic-ir.INVALID_OPERAND",
+		"path": "types.1.constraints.0.operands.value"
+	},
+	{
+		"id": "constraint-min-length-on-number",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.0.constraints.0.appliesTo",
+			"value": "ix://agent-ix/assurance/type/Seconds"
+		},
+		"code": "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE",
+		"path": "types.0.constraints.0"
+	},
+	{
+		"id": "constraint-regex-does-not-compile",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.0.constraints.2.operands.regex",
+			"value": "([a-z"
+		},
+		"code": "agent-ix.semantic-ir.INVALID_PATTERN",
+		"path": "types.0.constraints.2.operands.regex"
+	},
+	{
+		"id": "relationship-unresolved-target",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.relationships.0.target",
+			"value": "ix://agent-ix/assurance/type/Missing"
+		},
+		"code": "agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET",
+		"path": "types.3.relationships.0.target"
+	},
+	{
+		"id": "relationship-composite-self-reference",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.relationships.1.composite",
+			"value": true
+		},
+		"code": "agent-ix.semantic-ir.COMPOSITE_CYCLE",
+		"path": "types.3.relationships.1"
+	},
+	{
+		"id": "relationship-composite-cycle",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.relationships.0.composite",
+			"value": true
+		},
+		"code": "agent-ix.semantic-ir.COMPOSITE_CYCLE",
+		"path": "types.5.relationships.0",
+		"note": "document-order traversal reaches Project through Artifact, so Project.contains closes the cycle"
+	},
+	{
+		"id": "operation-dangling-post-clause",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.operations.0.post.0",
+			"value": "missing-clause"
+		},
+		"code": "agent-ix.semantic-ir.DANGLING_CLAUSE_REF",
+		"path": "types.3.operations.0.post.0"
+	},
+	{
+		"id": "clause-duplicate-clause-id",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.clauses.1.clauseId",
+			"value": "not-archived"
+		},
+		"code": "agent-ix.semantic-ir.DUPLICATE_CLAUSE_ID",
+		"path": "types.3.clauses.1.clauseId"
+	},
+	{
+		"id": "clause-source-without-span",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.clauses.0.sourceSpan",
+			"value": null
+		},
+		"code": "agent-ix.semantic-ir.MISSING_SOURCE_SPAN",
+		"path": "types.3.clauses.0.sourceSpan"
+	},
+	{
+		"id": "operation-duplicate-param",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.operations.0.params.1.name",
+			"value": "reason"
+		},
+		"code": "agent-ix.semantic-ir.DUPLICATE_PARAM",
+		"path": "types.3.operations.0.params.1.name"
+	},
+	{
+		"id": "relationship-duplicate-identity",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.relationships.1.identity",
+			"value": "ix://agent-ix/assurance/relationship/artifact-project"
+		},
+		"code": "agent-ix.semantic-ir.DUPLICATE_IDENTITY",
+		"path": "types.3.relationships.1.identity"
+	}
+]

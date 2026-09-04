@@ -19,15 +19,11 @@
 		"customSourceLicense"
 	],
 	"properties": {
-		"contractVersion": { "const": "1.0.0" },
+		"contractVersion": {
+			"const": "1.0.0"
+		},
 		"target": {
-			"enum": [
-				"json-schema",
-				"rust",
-				"typescript",
-				"python-pydantic-v2",
-				"python-dataclass"
-			]
+			"$ref": "common.schema.json#/$defs/target"
 		},
 		"nativeApi": {
 			"type": "array",
@@ -40,9 +36,17 @@
 				}
 			}
 		},
-		"runtimeValidation": { "type": "string", "minLength": 1 },
-		"identityMetadata": { "type": "string", "minLength": 1 },
-		"unsupportedFeaturePolicy": { "enum": ["fail", "approved-declared-loss"] },
+		"runtimeValidation": {
+			"type": "string",
+			"minLength": 1
+		},
+		"identityMetadata": {
+			"type": "string",
+			"minLength": 1
+		},
+		"unsupportedFeaturePolicy": {
+			"enum": ["fail", "approved-declared-loss"]
+		},
 		"prohibitedDependencies": {
 			"type": "array",
 			"items": {
@@ -74,12 +78,18 @@
 				"type": "object",
 				"required": ["name", "exactVersion", "provenance"],
 				"properties": {
-					"name": { "type": "string", "minLength": 1 },
+					"name": {
+						"type": "string",
+						"minLength": 1
+					},
 					"exactVersion": {
 						"type": "string",
 						"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$"
 					},
-					"provenance": { "type": "string", "minLength": 1 }
+					"provenance": {
+						"type": "string",
+						"minLength": 1
+					}
 				},
 				"additionalProperties": false
 			}
@@ -90,9 +100,17 @@
 				"type": "object",
 				"required": ["id", "severity", "disposition"],
 				"properties": {
-					"id": { "type": "string", "minLength": 1 },
-					"severity": { "enum": ["low", "medium", "high", "critical"] },
-					"disposition": { "type": "string", "minLength": 1 }
+					"id": {
+						"type": "string",
+						"minLength": 1
+					},
+					"severity": {
+						"enum": ["low", "medium", "high", "critical"]
+					},
+					"disposition": {
+						"type": "string",
+						"minLength": 1
+					}
 				},
 				"additionalProperties": false
 			}
@@ -100,8 +118,13 @@
 		"backendQualification": {
 			"enum": ["upstream-qualified", "custom-retained"]
 		},
-		"qualificationEvidence": { "type": "string", "minLength": 1 },
-		"customSourceLicense": { "const": "AGPL-3.0-or-later" },
+		"qualificationEvidence": {
+			"type": "string",
+			"minLength": 1
+		},
+		"customSourceLicense": {
+			"const": "AGPL-3.0-or-later"
+		},
 		"pythonAuthoring": {
 			"enum": [
 				"generated-pydantic-v2",
@@ -115,10 +138,15 @@
 			"if": {
 				"type": "object",
 				"properties": {
-					"target": { "enum": ["python-pydantic-v2", "python-dataclass"] }
+					"target": {
+						"enum": ["python-pydantic-v2", "python-dataclass"]
+					}
 				}
 			},
-			"then": { "type": "object", "required": ["pythonAuthoring"] }
+			"then": {
+				"type": "object",
+				"required": ["pythonAuthoring"]
+			}
 		}
 	],
 	"additionalProperties": false
