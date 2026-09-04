@@ -31,7 +31,7 @@ constraint, relation, operation, clause reference, and enum value.
 
 ## Outputs
 
-- `packages/semantic-core/main.tsp` declaring the grammar, plus `package.json` (`@agent-ix/semantic-core`, `private: true`, `tspMain`) and `tspconfig.yaml`
+- `packages/semantic-core/main.tsp` declaring the grammar, plus `package.json` (`@agent-ix/semantic-core`, `tspMain`, `publishConfig` for the internal registry) and `tspconfig.yaml`
 - `packages/semantic-core/inventory.json`: the exact allowed declaration inventory below, used by the kernel scope test
 - A compiled program with zero diagnostics under the pinned compiler
 
@@ -53,6 +53,7 @@ constraint, relation, operation, clause reference, and enum value.
 - `ClauseLanguage` SHALL carry the pattern `^(ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$`.
 - `EdgeCategory`, `ConstraintKeyword`, and `ClauseLanguage` SHALL equal the IR schema's `relationship.category`, `constraint.keyword`, and clause-language sets respectively.
 - The package SHALL carry its version in `package.json` as semver, where a grammar addition is a minor version and a removal a major version.
+- The package SHALL be publishable to the internal registry (`publishConfig.registry`) and SHALL NOT be marked `private`, because the Quire object modules resolve `@agent-ix/semantic-core` as a versioned dependency rather than a repository path; FR-031-CON-1 governs where the grammar lives and who imports it, not whether it ships.
 - The compiled package SHALL produce zero TypeSpec diagnostics under the pinned compiler.
 - The package SHALL NOT declare a domain archetype (`Entity`, `Endpoint`, `Process`, `Requirement`, or any other module vocabulary) or an `Any`/`Unknown` scalar.
 
