@@ -1,14 +1,23 @@
 {
 	"name": "@agent-ix/semantic-core",
 	"version": "0.1.0",
-	"private": true,
-	"description": "Semantic-core L3 declaration grammar and kernel scalar library (TypeSpec source, AgentIx.Semantic.Core). Private until filament-core-data#11 publishes it.",
+	"description": "Semantic-core L3 declaration grammar and kernel scalar library (TypeSpec source, AgentIx.Semantic.Core). Published to npm.ix for Wave 4 module consumption (#40); the public packages are filament-core-data#11.",
 	"license": "AGPL-3.0-only",
 	"tspMain": "main.tsp",
 	"exports": {
 		".": {
 			"typespec": "./main.tsp"
 		}
+	},
+	"files": [
+		"main.tsp",
+		"generated/",
+		"inventory.json",
+		"kernel-scalars.json",
+		"lowering.json"
+	],
+	"publishConfig": {
+		"registry": "http://npm.ix/"
 	},
 	"peerDependencies": {
 		"@typespec/compiler": "1.15.0",
