@@ -41,7 +41,8 @@ source or by the manifest and none is inferred from a type's spelling.
 ## Outputs
 
 - `src/compiler/frontend/typespec/frontend.mjs`: the `typespec` frontend, returning a `FrontendResult`
-- `src/compiler/frontend/typespec/host.mjs`: `restrictedHost({ host, roots, libraryRoot })`, the TypeSpec `CompilerHost` the frontend compiles through
+- `src/compiler/frontend/typespec/host.mjs`: `restrictedHost({ readRoots, moduleRoots, realpath })`, the TypeSpec `CompilerHost` the frontend compiles through
+- `src/compiler/host.mjs`: `createHost` and `repositoryHost`, the injected host every module below the CLI reads through
 - `src/compiler/frontend/typespec/lower.mjs`: the pure lowering from a compiled `Program` plus a resolved package to an IR document
 - `test/fixtures/compiler/packages/**`: the TypeSpec package corpus every criterion below is exercised on, including the `assurance` package that covers every row of the structural-kind table
 - An IR document whose `contractVersion` is `1.1.0` and whose `source.dialect` is `typespec`

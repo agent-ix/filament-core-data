@@ -547,6 +547,18 @@ export function lowerProgram(options) {
 
 	// ---- pass one: every declaration becomes a definition -------------------
 	for (const declaration of declarations) {
+		// A declaration the IR cannot carry in full is declared loss, not a
+		// silent omission. Three shapes reach this: a templated declaration, whose
+		// parameters have no IR member; a `@doc` on a target the extension table
+		// does not cover; and an enum member's assigned value, below.
+		if (Array.isArray(declaration.templateMapper?.args)) {
+			context.raise(
+				DIAGNOSTIC_CODES.UNSUPPORTED_LOSS,
+				`${fragment(declaration.name)} is a template instance, and the IR has no member for a template argument`,
+				context.locusOf(declaration),
+			);
+			continue;
+		}
 		const identity = typeIdentity(declaration.name);
 		const classification = classify(declaration, context);
 		const origin = context.originOf(declaration);
@@ -558,6 +570,18 @@ export function lowerProgram(options) {
 		const unknownPolicy =
 			context.state("unknownPolicy", declaration)?.policy ?? "reject";
 		const extensions = [];
+		// A doc comment on a declaration is carried, not dropped: the same
+		// semantic-core `doc` extension FR-034 puts on a field and on an enum's
+		// member docs. Dropping it would be undeclared loss.
+		const declarationDoc = getDoc(program, declaration);
+		if (declarationDoc !== undefined) {
+			extensions.push({
+				identity: `${EXTENSION_BASE}/doc`,
+				version: "1.0.0",
+				required: false,
+				payload: { text: declarationDoc },
+			});
+		}
 		for (const item of context.state("semanticExtension", declaration) ?? []) {
 			extensions.push({
 				identity: item.identity,

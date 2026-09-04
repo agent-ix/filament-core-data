@@ -947,18 +947,51 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 	}, 60000);
 
 	/** Traces: TC-425; FR-053-AC-14. */
-	it("refuses an enum member value the IR has no member for", async () => {
-		const result = await compileSource(
+	it("refuses every datum the IR has no member for, and carries the ones it has", async () => {
+		const memberValue = await compileSource(
 			[
 				"namespace AgentIx.Semantic;",
 				'enum Status { draft, final: "FINAL" }',
 			].join("\n"),
 		);
-		expect(codesOf(result.diagnostics as never)).toContain(
+		expect(codesOf(memberValue.diagnostics as never)).toContain(
 			DIAGNOSTIC_CODES.UNSUPPORTED_LOSS.code,
 		);
-		expect(result.ir).toBeNull();
-	}, 60000);
+		expect(memberValue.ir).toBeNull();
+
+		// A template instance carries arguments the IR has no member for.
+		const templated = await compileSource(
+			[
+				"namespace AgentIx.Semantic;",
+				"scalar Text extends string;",
+				"model Box<T> { value: T; }",
+				"model TextBox { boxed: Box<Text>; }",
+			].join("\n"),
+		);
+		expect(codesOf(templated.diagnostics as never)).toContain(
+			DIAGNOSTIC_CODES.UNSUPPORTED_LOSS.code,
+		);
+
+		// And a doc comment on a declaration is *carried*, not dropped: it is the
+		// same semantic-core extension FR-034 puts on a field.
+		const documented = await compileSource(
+			[
+				"namespace AgentIx.Semantic;",
+				"/** what this scalar means */",
+				"scalar Text extends string;",
+			].join("\n"),
+		);
+		expect(codesOf(documented.diagnostics as never)).toEqual([]);
+		const text = (documented.ir as never as { types: Json[] }).types.find(
+			(type) => type.displayName === "Text",
+		);
+		expect((text?.extensions as Json[])[0]).toEqual({
+			identity: "ix://agent-ix/semantic-core/ext/doc",
+			version: "1.0.0",
+			required: false,
+			payload: { text: "what this scalar means" },
+		});
+	}, 180000);
 
 	/** Traces: TC-426, TC-431, TC-447, TC-455; FR-053-AC-15, FR-053-CON-5, FR-046-AC-16, FR-046-CON-5. */
 	it("licenses every manifest it adds AGPL-3.0-only and adds no dependency", () => {
@@ -1154,7 +1187,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(fieldOf("Artifact", "status").defaultKind).toBe("migration");
 	}, 120000);
 
-	/** Traces: TC-438, TC-599, TC-603; FR-046-AC-7. */
+	/** Traces: TC-438, TC-599, TC-603; FR-046-AC-6, FR-046-AC-7. */
 	it("refuses flags on a non-collection, an inverted bound, and a contradicted optionality", async () => {
 		const flags = await compileSource(
 			[
@@ -1988,7 +2021,7 @@ describe("package graph resolution (FR-047)", () => {
 		);
 	}, 60000);
 
-	/** Traces: TC-471, TC-615; FR-047-AC-16. */
+	/** Traces: TC-471, TC-615; FR-047-AC-1, FR-047-AC-16. */
 	it("resolves a diamond once per package", () => {
 		const result = resolveCase("diamond/root/root", ["diamond/registry"]);
 		expect(result.diagnostics).toEqual([]);
@@ -2136,7 +2169,8 @@ describe("canonicalization, digests, and the lock (FR-048)", () => {
 					{
 						identity: "agent-ix/x",
 						version: "1.0.0",
-						contentDigest: "sha256:" + "4".repeat(64),
+						contentDigest: `sha256:${"4".repeat(64)}`,
+						manifestDigest: `sha256:${"5".repeat(64)}`,
 					},
 				],
 			}),
@@ -2195,9 +2229,14 @@ describe("canonicalization, digests, and the lock (FR-048)", () => {
 			included: [...CANONICALIZATION.included],
 			excluded: [...CANONICALIZATION.excluded],
 		});
+		// Two builds agree, and the fingerprint the lock carries is the one
+		// `fingerprint()` computes from the resolution — so the comparison is not
+		// one pure call against another.
 		expect(serializeLock(buildLock(compiled.resolution as never))).toBe(
 			serializeLock(lock),
 		);
+		expect(lock.fingerprint).toBe(fingerprint(compiled.resolution as never));
+		expect(String(lock.fingerprint)).toMatch(/^sha256:[0-9a-f]{64}$/);
 	});
 
 	/** Traces: TC-481, TC-482, TC-490, TC-613; FR-048-AC-5, FR-048-AC-6, FR-048-CON-3. */
@@ -2548,7 +2587,7 @@ describe("the diagnostic registry (FR-049)", () => {
 		expect(mismatch?.locus).toEqual((field.origin as Json).source as never);
 	});
 
-	/** Traces: TC-499, TC-605; FR-049-AC-8. */
+	/** Traces: TC-499, TC-605; FR-049-AC-8, NFR-020-AC-1, NFR-020-AC-2. */
 	it("sorts before truncating, so the survivors do not depend on analysis order", () => {
 		const make = (path: string, code: never) =>
 			diagnostic(code, {
@@ -3026,7 +3065,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		).toBe(true);
 	});
 
-	/** Traces: TC-521, TC-522; FR-050-AC-12, FR-050-AC-13. */
+	/** Traces: TC-521, TC-522, TC-617; FR-050-AC-1, FR-050-AC-12, FR-050-AC-13. */
 	it("records a suppression rather than a verdict it cannot reach, and never throws", () => {
 		const document = JSON.parse(JSON.stringify(compiled.ir)) as never as {
 			types: Json[];
@@ -3273,6 +3312,38 @@ describe("compatibility and evolution (FR-051)", () => {
 		);
 		expect(computed.loss).toEqual(forward.loss);
 		expect(computed.loss.length).toBeGreaterThan(0);
+		// The golden is generated by the code under test, so it is also checked
+		// against something the code did not write: the loss list must be exactly
+		// the `1.1.0`-only members present in the source, computed here from the
+		// document rather than from the projection.
+		const expectedLoss: string[] = [];
+		for (const type of (source as never as { types: Json[] }).types) {
+			for (const key of ["relationships", "operations", "clauses"]) {
+				for (const node of (type[key] as Json[]) ?? []) {
+					expectedLoss.push(String(node.identity));
+				}
+			}
+			for (const field of (type.fields as Json[]) ?? []) {
+				if (field.multiplicity !== undefined) {
+					expectedLoss.push(`${field.identity}#multiplicity`);
+				}
+				if (field.unit !== undefined) {
+					expectedLoss.push(`${field.identity}#unit`);
+				}
+			}
+		}
+		expect([...computed.loss].sort()).toEqual(expectedLoss.sort());
+		// And no `1.1.0`-only member survives the projection.
+		for (const type of (computed.document as never as { types: Json[] })
+			.types) {
+			expect(type.relationships, String(type.identity)).toBeUndefined();
+			expect(type.operations, String(type.identity)).toBeUndefined();
+			expect(type.clauses, String(type.identity)).toBeUndefined();
+			for (const field of (type.fields as Json[]) ?? []) {
+				expect(field.multiplicity, String(field.identity)).toBeUndefined();
+				expect(field.unit, String(field.identity)).toBeUndefined();
+			}
+		}
 		expect(validateIrDocument(computed.document)).toEqual([]);
 		expect((computed.document.source as Json).digest).toBe(
 			(source.source as Json).digest,
@@ -3319,6 +3390,14 @@ describe("compatibility and evolution (FR-051)", () => {
 		expect(formatInspection(summary)).toBe(
 			formatInspection(inspectIr(compiled.ir, { importedExports: "unknown" })),
 		);
+		// And the summary says what the document says, read independently.
+		expect(summary.typeCount).toBe(
+			(compiled.ir as never as { types: Json[] }).types.length,
+		);
+		expect(summary.package.identity).toBe(
+			((compiled.ir as Json).package as Json).identity,
+		);
+		expect(summary.fingerprint).toBe(fingerprintIr(compiled.ir));
 	});
 
 	/** Traces: TC-538, TC-543; FR-051-AC-12, FR-051-CON-2. */
@@ -4047,6 +4126,7 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 			"src/compiler/compat/",
 			"src/compiler/diagnostics.",
 			"src/compiler/dialects.",
+			"src/compiler/family-map.",
 			"src/compiler/host.",
 			"src/compiler/inspect.",
 			"src/compiler/json-locus.",
@@ -4295,6 +4375,12 @@ describe("the remaining reader and resolver rules (FR-049 coverage)", () => {
 		run("unknown edge category", (document) => {
 			(artifactOf(document).relationships as Json[])[0].category = "invented";
 		});
+		run("relationships on a non-record", (document) => {
+			const status = document.types.find(
+				(type) => type.identity === "ix://agent-ix/assurance/type/Status",
+			) as Json;
+			status.relationships = artifactOf(document).relationships;
+		});
 
 		for (const code of [
 			DIAGNOSTIC_CODES.INVALID_DOCUMENT.code,
@@ -4303,6 +4389,7 @@ describe("the remaining reader and resolver rules (FR-049 coverage)", () => {
 			DIAGNOSTIC_CODES.UNKNOWN_CLAUSE_LANGUAGE.code,
 			DIAGNOSTIC_CODES.UNKNOWN_CONSTRAINT_KEYWORD.code,
 			DIAGNOSTIC_CODES.UNKNOWN_EDGE_CATEGORY.code,
+			DIAGNOSTIC_CODES.NODES_ON_NON_RECORD.code,
 		]) {
 			expect(observedCodes.has(code), code).toBe(true);
 		}

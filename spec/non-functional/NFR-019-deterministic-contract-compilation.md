@@ -30,7 +30,7 @@ search-path order — either supplied explicitly or excluded from the output.
 ## Scope
 
 - Applies to: `src/compiler/frontend/**`, `src/compiler/packages/**`, `src/compiler/ir/**`, `src/compiler/compat/**`, `src/compiler/diagnostics.mjs`, `src/compiler/inspect.mjs`, `src/compiler/json-locus.mjs`, `src/compiler/pipeline.mjs`, `src/compiler/host.mjs`, `src/compiler/cli.mjs`, `src/compiler/index.mjs`, `src/compiler/index.d.mts`, and `test/fixtures/compiler/**`.
-- Permitted paths: the applied paths above, `test/**`, `spec/**`, `plan/**`, `reviews/**`, `scripts/**`, `docs/semantic-data-system/compiler-diagnostics.md`, `docs/semantic-data-system/ir-compatibility-policy.md`, `Makefile`, `package.json` `scripts`, `spec/tests.md`.
+- Permitted paths: the applied paths above, `src/compiler/cli.mjs`, `test/**`, `spec/**`, `plan/**`, `reviews/**`, `scripts/**`, `docs/semantic-data-system/compiler-diagnostics.md`, `docs/semantic-data-system/ir-compatibility-policy.md`, `Makefile`, `biome.json`, and the `scripts` block of `package.json`.
 - Prohibited paths, meaning this branch changes no byte of them (reading them, and invoking a program under them, remain permitted): `src/compiler/ir.mjs`, `src/compiler/compile.mjs`, `src/compiler/identity.mjs`, `src/compiler/emitters/**`, `src/compiler/backends/**`, `src/compiler/inventory.json`, `schema/**`, `fixtures/semantic/**`, `fixtures/semantic-core/**`, `fixtures/representative-core-payloads.json`, `packages/**`, `spikes/**`, `conformance/**`, `agent_ix_core_data/**`, `src/generated.ts`, `audit/**`, `tests/**`, `test/semantic-ir-v1-1-reader.ts`, `test/semantic-core-reader.ts`, `test/semantic-core-lowerer.ts`, `.github/**`, and every corpus repository.
 
 ## Rationale
@@ -90,7 +90,7 @@ paths; inspect `package.json` and `pnpm-lock.yaml`.
 |---|---|---|
 | NFR-019-AC-1 | Two `compile` runs over the same package produce identical IR, lock, and diagnostic bytes. | Test |
 | NFR-019-AC-2 | Two `inspect` runs and two `diff` runs produce identical bytes. | Test |
-| NFR-019-AC-3 | No module in scope references `Date`, `Date.now`, `process.env`, `process.cwd`, `process.platform`, `os.hostname`, `Math.random`, `localeCompare`, `toLocaleString`, `Intl`, `path.sep`, or `node:fs` outside a test. | Analysis |
+| NFR-019-AC-3 | No module in scope — that is, everything below `cli.mjs` — references `Date`, `Date.now`, `process.env`, `process.cwd`, `process.platform`, `os.hostname`, `Math.random`, `localeCompare`, `toLocaleString`, `Intl`, or `path.sep`, and none but `host.mjs`, `dialects.mjs`, `family-map.mjs` and `schema-validate.mjs` references `node:fs`. | Analysis |
 | NFR-019-AC-4 | Two permutations of the search-path order that select the same packages produce identical output. | Test |
 | NFR-019-AC-5 | Two injected directory-enumeration orders produce identical output. | Test |
 | NFR-019-AC-6 | The emitted identity order is unchanged when compared against `Intl.Collator` orderings for at least two distinct locales. | Test |

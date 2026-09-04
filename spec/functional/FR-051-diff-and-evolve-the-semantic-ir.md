@@ -43,7 +43,7 @@ governed by the one policy document this requirement publishes.
 
 - `src/compiler/compat/diff.mjs`: `diffSemanticContract(request)` returning a document valid against `schema/semantic/v1/compatibility-report.schema.json`
 - `src/compiler/compat/evolution.mjs`: `readIrAsContract(document, targetVersion, { dialect })` returning `{ document, loss, diagnostics }`
-- `src/compiler/compat/family-map.json`: the observed-change family to report family map, as data, and `src/compiler/family-map.mjs`, the one module that reads it
+- `src/compiler/compat/family-map.json`: the observed-change family to report family map, as data, and `src/compiler/family-map.mjs`, the one module that reads it — outside `compat/`, because no module under that directory may touch `node:fs`
 - `test/fixtures/compiler/compatibility/cases/**`: one constructed input pair per case of `fixtures/semantic/v1/compatibility/cases.json`, which remains the read-only case index
 - `test/fixtures/compiler/evolution/`: the golden backward and forward projections
 - `docs/semantic-data-system/ir-compatibility-policy.md`: the published policy

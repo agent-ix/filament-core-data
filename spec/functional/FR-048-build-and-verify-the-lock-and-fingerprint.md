@@ -53,7 +53,8 @@ Behavior.
 - `manifestDigest(package)` SHALL be `digest` of that manifest's raw bytes; the same rule SHALL give each mapping's and profile's digest.
 - `source.digest` of an emitted IR document SHALL equal `contentDigest` of its root package.
 - `schema-bytes` SHALL be `[[filename, digest(bytes)], …]` over the files of `schema/semantic/v1/` whose name ends `.schema.json`, in ascending code-point order of filename.
-- `fingerprint` SHALL be `digest(canonicalize([schemaBytes, manifestDigest, mappingDigests, profileDigests, resolvedPackages, contractVersion]))`, where `mappingDigests` and `profileDigests` are identity-sorted sets, `resolvedPackages` is the identity-sorted list of `{ identity, version, contentDigest }`, and no excluded input appears.
+- `fingerprint` SHALL be `digest(canonicalize([schemaBytes, manifestDigest, mappingDigests, profileDigests, resolvedPackages, contractVersion]))`, where `mappingDigests` is the identity-sorted list of `[identity, digest]`, `profileDigests` the name-sorted list of `[name, digest]`, `resolvedPackages` the identity-sorted list of `[identity, version, contentDigest, manifestDigest]`, and no excluded input appears.
+- `resolvedPackages` SHALL carry every resolved package's **manifest** digest as well as its content digest. An imported package can change its exports, its own imports or its profiles without changing a source byte, and that is a change to what was compiled.
 - `package.lockDigest` of an emitted IR document SHALL be `digest` of the raw bytes of the lock the caller supplied, or, where the caller supplied none, of the serialised lock the compile built for itself.
 
 ### Building and verifying
@@ -80,7 +81,7 @@ Behavior.
 |---|---|---|
 | FR-048-AC-1 | `canonicalize` reproduces every vector in `test/fixtures/compiler/rfc8785/vectors.json` for string escaping, number formatting, and key ordering. | Test |
 | FR-048-AC-2 | Permuting object key order, permuting a declared identity-keyed set, changing the working directory, and changing the host locale each leave the fingerprint unchanged. | Property |
-| FR-048-AC-3 | Changing one byte of a source file, of a manifest, of a mapping, of a profile, of a resolved package version, of a published schema file, and of the contract version each changes the fingerprint. | Property |
+| FR-048-AC-3 | Changing one byte of a source file, of the root manifest, of an *imported package's* manifest, of a mapping, of a profile, of a resolved package version, of a published schema file, and of the contract version each changes the fingerprint. | Property |
 | FR-048-AC-4 | A built lock validates against `package-lock.schema.json`, and its `canonicalization` block equals the algorithm named here. | Test |
 | FR-048-AC-5 | `STALE_LOCK`, `STALE_LOCK_PACKAGE`, `LOCK_GRAPH_MISMATCH`, and `UNSUPPORTED_CANONICALIZATION` each fire on a fixture, each at the declared locus, each naming both values it compared. | Test |
 | FR-048-AC-6 | Verifying a lock leaves the lock file byte-unchanged on disk. | Test |

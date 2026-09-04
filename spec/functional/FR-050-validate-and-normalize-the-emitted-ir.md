@@ -39,6 +39,8 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 - `src/compiler/ir/reader.mjs`: `readContractIr(document, { importedExports, limits })` returning diagnostics
 - `src/compiler/ir/normalize.mjs`: `canonicalIr(document)` and `normalizeIr(document)` returning strings, and `fingerprintIr(document)` returning `sha256:<64 hex>`
 - `src/compiler/ir/schema.mjs`: `validateIrDocument(document)` returning schema diagnostics
+- `src/compiler/ir/applicability.mjs`: the one constraint applicability table the frontend and the reader share
+- `src/compiler/schema-validate.mjs`: the compiled published-schema set, keyed by repository root
 
 ## Behavior
 

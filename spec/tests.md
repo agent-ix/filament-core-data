@@ -717,9 +717,9 @@ passes.
 | TC-600 | Constraint applicability is exercised across every structural kind | Unit | P1 | FR-050-AC-11 | ✅ passed |
 | TC-601 | Implemented and unimplemented dialects behave as declared in the shared harness | Unit | P1 | FR-045-AC-3, FR-045-AC-5 | ✅ passed |
 | TC-602 | Enum addition is classified against every consumer policy and evidence status | Unit | P1 | FR-051-AC-1 | ✅ passed |
-| TC-603 | `@multiplicity(0)` and `@multiplicity(0, 0)` are accepted at the lower boundary | Unit | P1 | FR-046-AC-6 | ✅ passed |
+| TC-603 | `@multiplicity(0)` and `@multiplicity(0, 0)` are accepted at the lower boundary | Unit | P1 | FR-046-AC-6, FR-046-AC-7 | ✅ passed |
 | TC-604 | `@minLength(0)` is accepted and a negative length is refused | Unit | P1 | FR-053-AC-4 | ✅ passed |
-| TC-605 | `maxDiagnostics` of 1 truncates and a value below the schema minimum is refused | Unit | P1 | FR-049-AC-8, NFR-020-AC-1 | ✅ passed |
+| TC-605 | `maxDiagnostics` of 1 truncates and a value below the schema minimum is refused | Unit | P1 | FR-049-AC-8, NFR-020-AC-1, NFR-020-AC-2 | ✅ passed |
 | TC-606 | `maxDepth` at the limit passes and one past it terminates with the limit diagnostic | Unit | P1 | NFR-020-AC-1 | ✅ passed |
 | TC-607 | `maxInputBytes` at the exact size passes and one byte over terminates | Unit | P1 | NFR-020-AC-9 | ✅ passed |
 | TC-608 | A 120-character input string survives and a 121-character one is truncated | Unit | P1 | FR-049-AC-10 | ✅ passed |
@@ -729,9 +729,9 @@ passes.
 | TC-612 | A `1.0.0` document survives the `1.1.0` reader and the return projection | Property | P0 | FR-051-AC-9 | ✅ passed |
 | TC-613 | A lock moves from fresh to stale by a source byte and by a manifest byte | Unit | P1 | FR-048-AC-5 | ✅ passed |
 | TC-614 | A package with one type and no imports compiles | Unit | P2 | FR-046-AC-1 | ✅ passed |
-| TC-615 | A diamond import graph resolves each package once | Unit | P1 | FR-047-AC-1 | ✅ passed |
+| TC-615 | A diamond import graph resolves each package once | Unit | P1 | FR-047-AC-1, FR-047-AC-16 | ✅ passed |
 | TC-616 | Two cycles sharing an edge yield two diagnostics and no duplicate | Unit | P1 | FR-047-AC-4 | ✅ passed |
-| TC-617 | A relationship target resolving to an imported export validates | Unit | P1 | FR-050-AC-12 | ✅ passed |
+| TC-617 | A relationship target resolving to an imported export validates | Unit | P1 | FR-050-AC-1, FR-050-AC-12 | ✅ passed |
 | TC-618 | A caret constraint selects the highest satisfying version across two search directories | Unit | P1 | FR-047-AC-11 | ✅ passed |
 | TC-619 | A projection to the document's own version returns it unchanged | Unit | P1 | FR-051-AC-13 | ✅ passed |
 
@@ -1126,15 +1126,15 @@ therefore partially satisfied by construction and completes with #36.
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 180 | 180 | 0 | 0 | 100% mapped |
-| Manual | 45 | 44 | 0 | 1 | 100% mapped |
-| Analysis | 17 | 17 | 0 | 0 | 100% mapped |
-| Property | 43 | 43 | 0 | 0 | 100% mapped |
-| Unit | 230 | 230 | 0 | 0 | 100% mapped |
-| Integration | 37 | 36 | 0 | 1 | 100% mapped |
-| Fuzz | 7 | 7 | 0 | 0 | 100% mapped |
-| Snapshot | 17 | 17 | 0 | 0 | 100% mapped |
-| Compile | 3 | 3 | 0 | 0 | 100% mapped |
-| **Total** | **579** | **577** | **0** | **2** | **100% mapped** |
+| Static | 180 | 180 | 0 | 0 | 100% mapped (180/180) |
+| Manual | 45 | 44 | 0 | 1 | 100% mapped (45/45) |
+| Analysis | 17 | 17 | 0 | 0 | 100% mapped (17/17) |
+| Property | 43 | 43 | 0 | 0 | 100% mapped (43/43) |
+| Unit | 230 | 230 | 0 | 0 | 100% mapped (230/230) |
+| Integration | 37 | 36 | 0 | 1 | 100% mapped (37/37) |
+| Fuzz | 7 | 7 | 0 | 0 | 100% mapped (7/7) |
+| Snapshot | 17 | 17 | 0 | 0 | 100% mapped (17/17) |
+| Compile | 3 | 3 | 0 | 0 | 100% mapped (3/3) |
+| **Total** | **579** | **577** | **0** | **2** | **100% mapped (579/579)** |
 
 **Matrix coverage status: ✅ Complete. Execution status: ✅ 577 of 579 passed. TC-199 is recorded by the owner decision on issue #4; TC-370 and TC-382 remain blocked on issue #42 (the retained issue #4 evidence records the minting host's own tool versions). TC-398..619 pass on the issue #19 branch, measured with `make test`: 299 vitest cases across 9 files. The `Blocked` column counts every row whose status is not ✅.**

@@ -38,7 +38,8 @@ refused rather than guessed at.
 
 ## Outputs
 
-- `src/compiler/frontend/seam.mjs` exporting `FRONTEND_DIALECTS`, `selectFrontend(dialect)`, and `runFrontend(request)`
+- `src/compiler/frontend/seam.mjs` exporting `FRONTEND_DIALECTS`, `selectFrontend(dialect)`, `isImplemented(dialect)`, `assertFrontendContract(dialect, result)`, and `runFrontend(request)`
+- `src/compiler/dialects.mjs`, which reads the closed vocabulary from the published `common.schema.json`; it lives outside `frontend/` because no module under that directory may touch `node:fs`
 - A `FrontendResult`: `{ ir, diagnostics }`, where `ir` is `null` whenever any diagnostic is blocking
 - `src/compiler/frontend/typespec/frontend.mjs`, the implemented `typespec` frontend (FR-046, FR-053)
 - `src/compiler/frontend/spec-bundle/frontend.mjs`, the declared-unimplemented `spec-bundle` frontend
