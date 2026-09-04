@@ -1654,24 +1654,24 @@ than deciding it.
 | ERR-097 | A manifest declares two profiles and the caller names none | `AMBIGUOUS_PROFILE` and exit `1` | TC-552 |
 | ERR-098 | An unknown command, unknown flag, missing flag, or unreadable `--limits` | Usage text and exit `2` | TC-557 |
 | ERR-099 | An input exceeds one of the four size limits | A distinct blocking limit diagnostic naming the limit | TC-579, TC-587, TC-606 |
-| ERR-114 | A generation request names a target outside the published vocabulary | `TypeError` naming the value and the five permitted targets; the seam does not dispatch | TC-746, TC-828 |
-| ERR-115 | A generation request names a registered but unimplemented target | `state: "unavailable"`, zero files, one blocking `BACKEND_NOT_IMPLEMENTED` naming the owning issue | TC-747, TC-828 |
-| ERR-116 | A generation request fails `compiler-request.schema.json` | `state: "invalid"` with one diagnostic per schema error at the failing pointer, and no file | TC-748 |
-| ERR-117 | A request's `contractVersion` is outside the backend's `supportedIrVersions` | `state: "unsupported"` naming the version, and no file | TC-751 |
-| ERR-118 | A registered backend omits a contract member or returns a path outside `outputRoot` | `assertBackendContract` rejects the backend before it runs | TC-751 |
-| ERR-119 | Two distinct identities mint the same TypeScript identifier | Blocking `IDENTIFIER_COLLISION` naming both identities; no declaration is emitted | TC-764 |
-| ERR-120 | An IR document carries a construct the TypeScript target has no representation for | Declared loss under the backend's own prefix, an empty file map, and no write | TC-802, TC-774 |
-| ERR-121 | A `pattern` operand names a dialect other than `ecma-262` | The document is inadmissible; no approximate check is generated | TC-781 |
-| ERR-122 | A constraint names a `format` the backend does not implement | Declared loss and no generated package, never a check that accepts every value | TC-781 |
-| ERR-123 | A payload omits a required field, or passes `null` to a non-nullable one | Rejection with the pointer at that member and a code from the closed structural list | TC-778 |
-| ERR-124 | A property is present with the value `undefined` | Rejection for a required and for an optional field alike | TC-779 |
-| ERR-125 | An undeclared member reaches a type declaring `unknownPolicy: "reject"` | Rejection with a pointer at that member | TC-782 |
-| ERR-126 | A value nests past the generated validator's declared depth limit | The exceeded-depth code; the validator terminates rather than exhausting the stack | TC-785 |
-| ERR-127 | A document is both alias-cyclic and past the depth bound | `ALIAS_CYCLE`, never `DEPTH_LIMIT_EXCEEDED`; the cycle is the more specific fact | TC-798 |
-| ERR-128 | A `reference` target resolves to no document type, no import, and no lock export | `UNRESOLVED_TYPE_REF` at `/ir/types/<index>/target` under `REFERENCE_POLICY` `strict` | TC-803 |
-| ERR-129 | A canonicalization input carries a non-finite number or exceeds the depth bound | A named refusal rather than a serialized value | TC-810 |
-| ERR-130 | A compatibility pair carries a change the classification rules do not model | Aggregate `unknown`, never `patch` | TC-812 |
-| ERR-131 | An available adapter slot answers `unavailable`, or answers an undeclared `unsupported` | The harness records a problem and the run fails | TC-817 |
+| ERR-144 | A generation request names a target outside the published vocabulary | `TypeError` naming the value and the five permitted targets; the seam does not dispatch | TC-746, TC-828 |
+| ERR-145 | A generation request names a registered but unimplemented target | `state: "unavailable"`, zero files, one blocking `BACKEND_NOT_IMPLEMENTED` naming the owning issue | TC-747, TC-828 |
+| ERR-146 | A generation request fails `compiler-request.schema.json` | `state: "invalid"` with one diagnostic per schema error at the failing pointer, and no file | TC-748 |
+| ERR-147 | A request's `contractVersion` is outside the backend's `supportedIrVersions` | `state: "unsupported"` naming the version, and no file | TC-751 |
+| ERR-148 | A registered backend omits a contract member or returns a path outside `outputRoot` | `assertBackendContract` rejects the backend before it runs | TC-751 |
+| ERR-149 | Two distinct identities mint the same TypeScript identifier | Blocking `IDENTIFIER_COLLISION` naming both identities; no declaration is emitted | TC-764 |
+| ERR-150 | An IR document carries a construct the TypeScript target has no representation for | Declared loss under the backend's own prefix, an empty file map, and no write | TC-802, TC-774 |
+| ERR-151 | A `pattern` operand names a dialect other than `ecma-262` | The document is inadmissible; no approximate check is generated | TC-781 |
+| ERR-152 | A constraint names a `format` the backend does not implement | Declared loss and no generated package, never a check that accepts every value | TC-781 |
+| ERR-153 | A payload omits a required field, or passes `null` to a non-nullable one | Rejection with the pointer at that member and a code from the closed structural list | TC-778 |
+| ERR-154 | A property is present with the value `undefined` | Rejection for a required and for an optional field alike | TC-779 |
+| ERR-155 | An undeclared member reaches a type declaring `unknownPolicy: "reject"` | Rejection with a pointer at that member | TC-782 |
+| ERR-156 | A value nests past the generated validator's declared depth limit | The exceeded-depth code; the validator terminates rather than exhausting the stack | TC-785 |
+| ERR-157 | A document is both alias-cyclic and past the depth bound | `ALIAS_CYCLE`, never `DEPTH_LIMIT_EXCEEDED`; the cycle is the more specific fact | TC-798 |
+| ERR-158 | A `reference` target resolves to no document type, no import, and no lock export | `UNRESOLVED_TYPE_REF` at `/ir/types/<index>/target` under `REFERENCE_POLICY` `strict` | TC-803 |
+| ERR-159 | A canonicalization input carries a non-finite number or exceeds the depth bound | A named refusal rather than a serialized value | TC-810 |
+| ERR-160 | A compatibility pair carries a change the classification rules do not model | Aggregate `unknown`, never `patch` | TC-812 |
+| ERR-161 | An available adapter slot answers `unavailable`, or answers an undeclared `unsupported` | The harness records a problem and the run fails | TC-817 |
 | ERR-132 | An adapter answer carries a `caseDigest` the corpus manifest does not record | `case-digest` problem and a failed run | TC-815 |
 | ERR-133 | A registered divergence no longer reproduces | `unreproduced-divergence` problem; the run fails until the entry is removed | TC-824 |
 | ERR-134 | `generate` produces a blocking diagnostic while `--out-root` already holds a file | Exit `1`, no file written, and the pre-existing file byte-unchanged | TC-827 |
