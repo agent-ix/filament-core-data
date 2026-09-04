@@ -7,7 +7,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -59,6 +59,18 @@ const PROHIBITED = [
 const read = (path: string): string =>
 	readFileSync(resolve(root, path), "utf8");
 
+/**
+ * Source with its comment lines removed. These gates explain the defects they
+ * forbid, and a text search over the explanation would find itself.
+ */
+const code = (source: string): string =>
+	source
+		.split("\n")
+		.filter(
+			(line) => !line.trim().startsWith("//") && !line.trim().startsWith("*"),
+		)
+		.join("\n");
+
 function walk(directory: string): string[] {
 	const out: string[] = [];
 	for (const entry of readdirSync(resolve(root, directory))) {
@@ -88,14 +100,17 @@ describe("qualified Python generation route (issue #23)", () => {
 	});
 
 	/** Traces: TC-942; NFR-027-AC-5, NFR-027-AC-11. */
-	it("leaves every distribution manifest and workflow byte-identical to origin/main", () => {
+	it("leaves every distribution manifest and workflow byte-identical to the trunk", () => {
+		// Both ends from history, for the same reason every other range here is:
+		// `origin/main...HEAD` empties on merge and accretes before it.
+		const { base, tip } = changeRange(root, SENTINELS);
 		const frozen = execFileSync(
 			"git",
 			[
 				"diff",
 				"--no-renames",
 				"--name-only",
-				"origin/main...HEAD",
+				`${base}..${tip}`,
 				"--",
 				"package.json",
 				"pnpm-lock.yaml",
@@ -127,9 +142,23 @@ describe("qualified Python generation route (issue #23)", () => {
 		const offenders: string[] = [];
 		for (const entry of readdirSync(resolve(root, "test"))) {
 			if (!entry.endsWith(".test.ts")) continue;
-			const source = read(join("test", entry));
+			const source = code(read(join("test", entry)));
 			if (/changedPathsFrom\(\s*root,\s*"(?:origin\/)?main"/.test(source))
 				offenders.push(entry);
+			if (/["'`]origin\/main[.]{2,3}/.test(source)) offenders.push(entry);
+		}
+		for (const entry of readdirSync(resolve(root, "tests"))) {
+			if (!entry.endsWith(".py")) continue;
+			// The helper itself explains the defect in a module docstring, which
+			// the comment stripper cannot see. It resolves ranges from history and
+			// is not a gate.
+			if (entry === "change_range.py") continue;
+			const source = code(read(join("tests", entry)));
+			// The Python half is the same defect class in another language. The
+			// third verification state found three gates here measuring
+			// `origin/main...HEAD` and attributing a sibling commit's
+			// `conformance/README.md` to issue #23.
+			if (/["'`]origin\/main/.test(source)) offenders.push(entry);
 		}
 		expect(offenders).toEqual([]);
 
@@ -156,7 +185,7 @@ describe("qualified Python generation route (issue #23)", () => {
 		}
 		for (const entry of readdirSync(resolve(root, "tests"))) {
 			if (!entry.startsWith("test_python_backend")) continue;
-			const source = read(join("tests", entry));
+			const source = code(read(join("tests", entry)));
 			for (const match of source.matchAll(/"git",\s*"diff"([\s\S]{0,200})/g)) {
 				expect(match[1], `${entry}: git diff without --no-renames`).toContain(
 					'"--no-renames"',

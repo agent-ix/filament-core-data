@@ -18,6 +18,7 @@ REPO = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from python_backend.adapter import guard, prepare, profiles  # noqa: E402
+from tests.change_range import changed_paths  # noqa: E402
 
 PUBLISHED = sorted((REPO / "schema" / "semantic" / "v1").glob("*.schema.json"))
 SPIKE = (
@@ -29,6 +30,11 @@ SPIKE = (
     / "python"
     / "input.schema.json"
 )
+#: Both ends of this change's range come from history. See `tests/change_range.py`.
+SENTINELS = [
+    "spec/usecase/US-013-generate-governed-python-types.md",
+    "test/python-backend.test.ts",
+]
 FAMILIES = [
     "pydantic_v2.BaseModel",
     "pydantic_v2.dataclass",
@@ -297,29 +303,13 @@ def test_the_adapter_touches_no_file_and_edits_no_generated_text() -> None:
 
 def test_the_merged_artefacts_are_untouched() -> None:
     """TC-872: FR-074-AC-10, FR-074-CON-3."""
-    import subprocess  # noqa: PLC0415
 
     frozen = [
         "src/compiler/backends/python-schema.mjs",
         "spikes/typespec-feasibility/generated/custom/python/input.schema.json",
         *[f"schema/semantic/v1/{path.name}" for path in PUBLISHED],
     ]
-    changed = subprocess.run(
-        [
-            "git",
-            "diff",
-            "--no-renames",
-            "--name-only",
-            "origin/main...HEAD",
-            "--",
-            *frozen,
-        ],
-        cwd=REPO,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    assert changed.stdout.strip() == "", changed.stdout
+    assert changed_paths(REPO, SENTINELS, *frozen) == []
 
 
 APPLICATORS = [

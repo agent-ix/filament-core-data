@@ -21,8 +21,14 @@ sys.path.insert(0, str(REPO))
 from python_backend.adapter import prepare, profiles  # noqa: E402
 from python_backend.runner import corpus_account, emit, qualify, validate  # noqa: E402
 from python_backend.runner import generate as runner  # noqa: E402
+from tests.change_range import changed_paths  # noqa: E402
 
 BACKEND = REPO / "python_backend"
+#: Both ends of this change's range come from history. See `tests/change_range.py`.
+SENTINELS = [
+    "spec/usecase/US-013-generate-governed-python-types.md",
+    "test/python-backend.test.ts",
+]
 REPORT = json.loads((BACKEND / "qualification" / "report.json").read_text())
 GAPS = json.loads((BACKEND / "qualification" / "gaps.json").read_text())
 ACCOUNT = json.loads((BACKEND / "qualification" / "corpus-account.json").read_text())
@@ -182,22 +188,7 @@ def test_the_corpus_account_is_honest_about_what_it_did_not_decide() -> None:
 
 def test_the_conformance_corpus_is_untouched() -> None:
     """TC-904: FR-077-AC-10, FR-077-CON-3."""
-    changed = subprocess.run(
-        [
-            "git",
-            "diff",
-            "--no-renames",
-            "--name-only",
-            "origin/main...HEAD",
-            "--",
-            "conformance",
-        ],
-        cwd=REPO,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    assert changed.stdout.strip() == "", changed.stdout
+    assert changed_paths(REPO, SENTINELS, "conformance") == []
 
 
 def test_no_gap_disposes_to_a_hand_written_generator() -> None:
@@ -346,24 +337,10 @@ def test_a_not_qualified_family_has_no_package_and_a_recorded_reason() -> None:
 
 def test_no_manifest_or_workflow_changed_and_nothing_is_published() -> None:
     """TC-924: FR-079-AC-7, FR-079-CON-1."""
-    changed = subprocess.run(
-        [
-            "git",
-            "diff",
-            "--no-renames",
-            "--name-only",
-            "origin/main...HEAD",
-            "--",
-            "package.json",
-            "pnpm-lock.yaml",
-            ".github",
-        ],
-        cwd=REPO,
-        capture_output=True,
-        text=True,
-        check=False,
+    assert (
+        changed_paths(REPO, SENTINELS, "package.json", "pnpm-lock.yaml", ".github")
+        == []
     )
-    assert changed.stdout.strip() == "", changed.stdout
     pyproject = (REPO / "pyproject.toml").read_text()
     assert 'packages = [{ include = "agent_ix_core_data" }]' in pyproject
     assert "python_backend" not in pyproject.split("[tool.poetry.group")[0]
