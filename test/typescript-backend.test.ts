@@ -1,6 +1,13 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import {
+	mkdtempSync,
+	readFileSync,
+	readdirSync,
+	rmSync,
+	statSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -10,6 +17,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const fixture = resolve(root, "test/fixtures/backends/typescript");
 const expected = resolve(fixture, "expected");
 const tsc = resolve(root, "node_modules/.bin/tsc");
+const generator = resolve(root, "src/compiler/cli.mjs");
+const fixtureIr = resolve(fixture, "input/semantic-ir.json");
 
 function runTsc(...args: string[]): string {
 	try {
@@ -40,7 +49,61 @@ function fixtureFiles(directory: string): { path: string; text: string }[] {
 	return files;
 }
 
+function generatedFiles(directory: string): { path: string; text: string }[] {
+	const files: { path: string; text: string }[] = [];
+	for (const entry of readdirSync(directory)) {
+		const path = resolve(directory, entry);
+		if (statSync(path).isDirectory()) {
+			files.push(...generatedFiles(path));
+			continue;
+		}
+		files.push({
+			path: relative(directory, path),
+			text: readFileSync(path, "utf8"),
+		});
+	}
+	return files.sort((left, right) => left.path.localeCompare(right.path));
+}
+
+function generateSnapshot(cwd: string, output: string, locale: string) {
+	execFileSync(
+		process.execPath,
+		[
+			generator,
+			"generate",
+			"--ir",
+			fixtureIr,
+			"--target",
+			"typescript",
+			"--out-root",
+			output,
+			"--manifest",
+			resolve(output, "output-manifest.json"),
+		],
+		{ cwd, env: { ...process.env, LC_ALL: locale }, stdio: "pipe" },
+	);
+	return generatedFiles(output);
+}
+
 describe("TypeScript backend fixture (FR-071)", () => {
+	it("generates byte-identically across directories and C/Turkish locales", () => {
+		const scratch = mkdtempSync(
+			resolve(tmpdir(), "fcd-typescript-determinism-"),
+		);
+		try {
+			const rootRun = generateSnapshot(root, resolve(scratch, "root"), "C");
+			const cwdRun = generateSnapshot(scratch, resolve(scratch, "cwd"), "C");
+			const turkishRun = generateSnapshot(
+				scratch,
+				resolve(scratch, "turkish"),
+				"tr_TR.UTF-8",
+			);
+			expect(cwdRun).toEqual(rootRun);
+			expect(turkishRun).toEqual(rootRun);
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
+	});
 	it("typechecks the generated package and the positive type-level program", () => {
 		expect(
 			runTsc("--project", resolve(fixture, "tsconfig.json"), "--noEmit"),
