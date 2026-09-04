@@ -1,0 +1,6 @@
+{
+	"$comment": "Issue #23, FR-075/NFR-026-AC-1. The executable schema key `customTypePath` at the root position.",
+	"kind": "schema",
+	"expectedCode": "PY-REF-003",
+	"document": { "customTypePath": "os.system" }
+}

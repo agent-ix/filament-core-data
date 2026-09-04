@@ -1,0 +1,27 @@
+{
+	"$comment": "Issue #23, FR-077. One construct, one detector, one expected retention per family. The expectation is read from the contract, not from the measurement (FR-077-CON-2).",
+	"id": "const",
+	"construct": "a const member",
+	"note": "A fixed value must render as that value, not as its type.",
+	"detector": { "kind": "regex", "pattern": "Literal\\['fixed'\\]" },
+	"schema": {
+		"$defs": {
+			"C": {
+				"type": "object",
+				"title": "C",
+				"properties": {
+					"v": { "const": "fixed" }
+				},
+				"required": ["v"],
+				"additionalProperties": false
+			}
+		}
+	},
+	"expected": {
+		"pydantic_v2_basemodel": true,
+		"pydantic_v2_dataclass": true,
+		"stdlib_dataclass": true,
+		"typed_dict": true,
+		"msgspec_struct": true
+	}
+}

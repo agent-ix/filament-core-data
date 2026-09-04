@@ -1,0 +1,28 @@
+{
+	"$comment": "Issue #23, FR-072. The declared advisory floor. Ranges and first-patched versions are transcribed from the published advisories; lowering the floor or restating a range is forbidden (FR-072-CON-1). `vectorKeys` are the schema keys each advisory names, and FR-075's refusal register is asserted to contain every one of them.",
+	"distribution": "datamodel-code-generator",
+	"pinnedVersion": "0.76.0",
+	"advisories": [
+		{
+			"id": "GHSA-386q-5hp3-95m9",
+			"severity": "high",
+			"summary": "Code injection via an attacker-controlled `default_factory` schema field",
+			"vulnerableRange": ">= 0.17.0, <= 0.60.1",
+			"introducedVersion": "0.17.0",
+			"lastVulnerableVersion": "0.60.1",
+			"firstPatchedVersion": "0.60.2",
+			"vectorKeys": ["default_factory"]
+		},
+		{
+			"id": "GHSA-5578-w22f-pfx9",
+			"severity": "high",
+			"summary": "Code injection via `x-python-import` / `customTypePath` reaching generated import statements",
+			"vulnerableRange": ">= 0.11.6, <= 0.63.0",
+			"introducedVersion": "0.11.6",
+			"lastVulnerableVersion": "0.63.0",
+			"firstPatchedVersion": "0.64.0",
+			"vectorKeys": ["x-python-import", "customTypePath"]
+		}
+	],
+	"forbiddenExtras": ["http", "httpx2"]
+}

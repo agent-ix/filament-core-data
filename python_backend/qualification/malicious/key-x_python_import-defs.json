@@ -1,0 +1,10 @@
+{
+	"$comment": "Issue #23, FR-075/NFR-026-AC-1. The executable schema key `x-python-import` at the defs position.",
+	"kind": "schema",
+	"expectedCode": "PY-REF-001",
+	"document": {
+		"$defs": {
+			"A": { "x-python-import": "os.system" }
+		}
+	}
+}

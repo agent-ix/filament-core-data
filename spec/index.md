@@ -1,7 +1,7 @@
 ---
 type: index
 title: "filament-core-data requirements index"
-description: "Index of the semantic data architecture, contract-census, TypeSpec-feasibility, semantic-contract, IR v1.1, semantic-core grammar, prototype-promotion, compiler-core, and conformance-corpus requirements bundle."
+description: "Index of the semantic data architecture, contract-census, TypeSpec-feasibility, semantic-contract, IR v1.1, semantic-core grammar, prototype-promotion, compiler-core, conformance-corpus, and qualified Python generation requirements bundle."
 okf_version: "0.1"
 ---
 # filament-core-data requirements
@@ -20,6 +20,7 @@ okf_version: "0.1"
 * [US-008: Judge a compiler against an independent corpus](./usecase/US-008-judge-a-compiler-against-an-independent-corpus.md) - Reviewer outcome for the conformance corpus and differential oracle.
 * [US-009: Build generated packages from a supported compiler](./usecase/US-009-build-from-a-supported-compiler.md) - Compiler-maintainer outcome for promoting the issue #4 prototype emitters into `src/`.
 * [US-010: Compile a semantic package to versioned IR](./usecase/US-010-compile-a-semantic-package.md) - Package-author outcome for the TypeSpec frontend and the versioned semantic IR compiler core.
+* [US-013: Generate governed Python types from a qualified upstream generator](./usecase/US-013-generate-governed-python-types.md) - Python-consumer outcome for the qualified `datamodel-code-generator` route.
 * [Functional requirements](./functional/) - Required architecture-record, census, feasibility, semantic-contract, package, projection, and compatibility behavior.
 * [Non-functional requirements](./non-functional/) - Traceability, reproducibility, parity, security, portability, evidence honesty, isolation, and safety qualities.
 * [Update log](./log.md) - Chronological bundle changes.

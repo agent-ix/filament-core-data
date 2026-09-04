@@ -1,0 +1,32 @@
+{
+	"$comment": "Issue #23, FR-077. One construct, one detector, one expected retention per family. The expectation is read from the contract, not from the measurement (FR-077-CON-2).",
+	"id": "constraints-array-unique",
+	"construct": "array uniqueItems",
+	"note": "No family carries it. The contract states set semantics and every Python surface renders a list.",
+	"detector": { "kind": "regex", "pattern": "(unique|set\\[)" },
+	"schema": {
+		"$defs": {
+			"A": {
+				"type": "object",
+				"title": "A",
+				"properties": {
+					"a": {
+						"type": "array",
+						"items": { "type": "string" },
+						"minItems": 1,
+						"uniqueItems": true
+					}
+				},
+				"required": ["a"],
+				"additionalProperties": false
+			}
+		}
+	},
+	"expected": {
+		"pydantic_v2_basemodel": false,
+		"pydantic_v2_dataclass": false,
+		"stdlib_dataclass": false,
+		"typed_dict": false,
+		"msgspec_struct": false
+	}
+}

@@ -1,0 +1,15 @@
+{
+	"$comment": "Issue #23, FR-075/NFR-026-AC-1. The executable schema key `default_factory` at the properties position.",
+	"kind": "schema",
+	"expectedCode": "PY-REF-005",
+	"document": {
+		"$defs": {
+			"A": {
+				"type": "object",
+				"properties": {
+					"p": { "default_factory": "os.system" }
+				}
+			}
+		}
+	}
+}
