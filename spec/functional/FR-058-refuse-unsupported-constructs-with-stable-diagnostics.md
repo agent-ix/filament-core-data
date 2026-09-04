@@ -81,7 +81,6 @@ visible in the run rather than invisible in the generated source.
 | `UNSUPPORTED_SCALAR` | error | yes | a `kind: "scalar"` names a value outside the nine kernel scalars |
 | `UNDECLARED_WIRE_FORM` | error | yes | a construct's wire form is declared by no published artifact — `bytes` at this revision |
 | `UNSUPPORTED_MULTIPLICITY` | error | yes | a field's `multiplicity.upper` is `0` |
-| `UNKNOWN_POLICY_ON_NON_RECORD` | error | yes | a non-`record` kind declares an `unknownPolicy` other than `reject` |
 | `PAYLOAD_ON_ENUM_VARIANT` | error | yes | a `kind: "enum"` variant carries a `payloadType` |
 | `CONSTRAINT_NOT_APPLICABLE` | error | yes | a constraint keyword does not apply to its resolved subject |
 | `UNORDERED_SUBJECT` | error | yes | a bound keyword names a subject the contract does not order |

@@ -157,8 +157,15 @@ compiler-diff:
 # No target is allowed to skip. A gate whose toolchain is missing fails saying
 # it could not run, which is what NFR-022-AC-1 requires.
 
-export CARGO_TARGET_DIR := $(CURDIR)/target
-RUST_OUT ?= $(CURDIR)/target/generated
+# Inside `node_modules/`, deliberately. The directory has to be per-worktree, or
+# a shared cargo target serves a determinism gate an artifact another checkout
+# built; and it has to be somewhere `biome format .` does not walk, or every
+# `make lint` after a `make rust-build` fails on cargo's own fingerprint JSON.
+# `node_modules/` is already gitignored and already skipped by biome, so it is
+# the one directory that satisfies both without touching `biome.json`, which
+# NFR-023 prohibits.
+export CARGO_TARGET_DIR := $(CURDIR)/node_modules/.cache/rust-target
+RUST_OUT ?= $(CARGO_TARGET_DIR)/generated
 
 .PHONY: rust-toolchain-check
 rust-toolchain-check:

@@ -54,9 +54,6 @@ const DECLARED = {
 	UNSUPPORTED_MULTIPLICITY: blocking(
 		"a field's multiplicity.upper is 0, so the member may never be present and has no Rust form that serde round-trips",
 	),
-	UNKNOWN_POLICY_ON_NON_RECORD: blocking(
-		"a kind other than record declares an unknownPolicy other than reject, and only a record has a place to put a retained member",
-	),
 	PAYLOAD_ON_ENUM_VARIANT: blocking(
 		'a kind: "enum" variant carries a payloadType, which the schema permits and no contract rule reconciles with the kind',
 	),

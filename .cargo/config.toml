@@ -7,7 +7,7 @@
 # precedence over this key, so the Makefile targets set it explicitly rather
 # than relying on this file alone.
 [build]
-target-dir = "target"
+target-dir = "node_modules/.cache/rust-target"
 
 # Every gate runs offline. FR-061-CON-1 forbids contacting a registry to resolve
 # as well as to publish, and NFR-022 measures network calls at zero.

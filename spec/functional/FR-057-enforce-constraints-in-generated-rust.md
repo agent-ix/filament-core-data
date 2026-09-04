@@ -49,7 +49,15 @@ second case — so that a `pattern` constraint is never carried as an unchecked
   `classifyPattern(regex)` returning `expressible`, `proved`, or `unsupported`,
   and `lowerPattern(regex)` returning the generated matcher program
 - `src/compiler/backends/rust-serde/proved-validators.json` and, per entry, a
-  generated Rust validator plus its differential equivalence harness
+  generated Rust validator plus its differential equivalence harness at
+  `src/compiler/backends/rust-serde/harness/locus-path-differential.mjs`
+- `src/compiler/backends/rust-serde/published-patterns.json`: the `pattern`
+  values the published schemas carry, read out of `schema/semantic/v1/` and
+  pinned so the classification set is a committed fact rather than a re-scan
+- `src/compiler/backends/rust-serde/support-source.mjs` and
+  `src/compiler/backends/rust-serde/support-template.rs`: the emitted
+  `src/support.rs`, held as Rust beside its emitter so its own backticks and
+  braces need no escaping and so `rustfmt` can check it directly
 - A generated `src/support.rs` carrying the pattern matcher, `SemanticIdentity`,
   `Nullable`, `SemanticValue`, the validated scalar newtypes, and
   `ValidationError`

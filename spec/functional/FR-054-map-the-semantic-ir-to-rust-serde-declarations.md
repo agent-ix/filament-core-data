@@ -181,18 +181,31 @@ construct's disposition is written down rather than decided at the keyboard.
 
 ### Unknown members and extensions
 
-- The backend SHALL read `unknownPolicy` only on a `kind: "record"` type.
-- If a type whose `kind` is not `record` declares an `unknownPolicy` other than
-  `reject`, then the backend SHALL raise a blocking
-  `agent-ix.rust-backend.UNKNOWN_POLICY_ON_NON_RECORD`, because the schema
-  requires the member on all eight kinds while only a record has a place to put
-  a retained member, and silently ignoring `preserve` on a `scalar` would drop a
-  declared obligation.
-- For a record whose `unknownPolicy` is `reject`, the backend SHALL emit
-  `#[serde(deny_unknown_fields)]`.
-- For a record whose `unknownPolicy` is `preserve` or `surface`, the backend
-  SHALL emit one `#[serde(flatten)]` member of the generated type
-  `UnknownMembers`, which is a `BTreeMap<String, SemanticValue>`.
+- The schema requires `unknownPolicy` on all eight kinds, so the mapping SHALL
+  dispose it on all eight. It is a real obligation on the kinds that have a
+  closed member set and inert on the kinds that do not; neither disposition is
+  silence.
+
+| `kind` | `reject` | `preserve` or `surface` |
+|---|---|---|
+| `record` | `#[serde(deny_unknown_fields)]` | one `#[serde(flatten)]` `UnknownMembers` member |
+| `enum`, `union` | serde's default, under which an unrecognised variant is a deserialization error | a generated catch-all variant `Unknown`, carrying the unrecognised tag and, for a `union`, its payload as a `SemanticValue` |
+| `scalar`, `alias`, `sequence`, `map`, `reference` | inert | inert |
+
+- A `scalar` has no members; a `sequence` and a `map` admit every element and
+  every key by construction; an `alias` and a `reference` are transparent. On
+  those five kinds there is no unknown member for a policy to govern, so the
+  backend SHALL carry the declared value verbatim into the type's metadata
+  constant and SHALL state in the generated documentation that it is inert for
+  the kind. Recording it is what stops it being dropped; refusing it would
+  refuse documents the contract calls valid — `conformance/bases/core-1-1.json`
+  gives a `map` `preserve` and a `union` `surface`, and the independent oracle
+  decides that base `success`.
+- Where `unknownPolicy` is `surface`, the type's `validate` SHALL return one
+  non-blocking `agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED` diagnostic per
+  retained member or unrecognised variant; where it is `preserve`, `validate`
+  SHALL return none.
+- `UnknownMembers` SHALL be a `BTreeMap<String, SemanticValue>`.
 - `SemanticValue` SHALL be a generated closed enum over the JSON value space
   declared in the generated crate itself, with the variants `Null`,
   `Bool(bool)`, `Number(NumberLexeme)`, `String(String)`, `Array(Vec<SemanticValue>)`,
@@ -206,9 +219,6 @@ construct's disposition is written down rather than decided at the keyboard.
   [FR-059](./FR-059-answer-the-conformance-corpus-from-rust.md), and
   additionally as byte identity for every value whose source bytes the crate
   retained.
-- Where `unknownPolicy` is `surface`, the type's `validate` SHALL return one
-  non-blocking `agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED` diagnostic per
-  retained member; where it is `preserve`, `validate` SHALL return none.
 - The backend SHALL emit `extensions` as `Vec<Extension>`, where `Extension`
   carries `identity`, `version`, `required`, `capability`, and a
   `SemanticValue` payload, and SHALL NOT fold an extension into an unknown
@@ -269,7 +279,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | FR-054-AC-3 | Each of the eight combinations of collection × nullable × presence produces exactly the Rust member type and serde attribute set the composition table states, the eight are pairwise distinct, and boundedness changes none of them. | Test (TC-647) |
 | FR-054-AC-4 | For a field that is both `optional` and `nullable`, an absent member deserializes to `None`, a present `null` deserializes to `Some(Nullable::Null)`, the two are distinguishable, and each re-serializes to the bytes it came from. | Test (TC-648) |
 | FR-054-AC-5 | A `union` whose variants carry payloads round-trips externally tagged, a variant with no `payloadType` round-trips as a unit variant, and a `payloadType` on an `enum` variant raises `PAYLOAD_ON_ENUM_VARIANT`. | Test (TC-649) |
-| FR-054-AC-6 | A record whose `unknownPolicy` is `reject` fails to deserialize an unknown member; `preserve` retains it with no diagnostic; `surface` retains it and reports one `UNKNOWN_MEMBER_SURFACED`; the unknown member never becomes a default value of a known field; and a non-`reject` policy on a non-record kind raises `UNKNOWN_POLICY_ON_NON_RECORD`. | Test (TC-650) |
+| FR-054-AC-6 | A record whose `unknownPolicy` is `reject` fails to deserialize an unknown member; `preserve` retains it with no diagnostic; `surface` retains it and reports one `UNKNOWN_MEMBER_SURFACED`; an `enum` or `union` under `preserve` or `surface` deserializes an unrecognised variant into the catch-all and re-serializes it unchanged, and under `reject` refuses it; the declared policy of each of the five inert kinds appears verbatim in its metadata constant; and no unknown member ever becomes a default value of a known field. | Test (TC-650) |
 | FR-054-AC-7 | A direct self-reference, a two-record cycle, a cycle closing through an `alias` target, a cycle closing through a `union` variant `payloadType`, and a cycle through a `sequence` each generate a crate that compiles, and the boxed edge set is identical across two runs. | Test (TC-651) |
 | FR-054-AC-8 | `relationships`, `operations`, `clauses`, `roles`, `origin`, and `occurrences` survive generation into metadata with every member the IR carried, checked by reading the metadata back and comparing to the input document. | Test (TC-652) |
 | FR-054-AC-9 | `defaultKind: "semantic"` emits a serde default that applies on an absent member; `representation` and `migration` emit no serde default and appear only in metadata; a `defaultValue` the mapped type does not admit raises `INVALID_DEFAULT_VALUE`. | Test (TC-653) |
@@ -278,7 +288,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | FR-054-AC-12 | A construct with no mapping row and no named refusal raises a blocking diagnostic and writes no file, demonstrated by removing a row and re-running. | Test (TC-656) |
 | FR-054-AC-13 | `mapping.mjs` returns an identical model for a document and for the same document with every object's key order permuted and every identity-keyed array reordered, and its module graph reads no ambient input. | Analysis (TC-657) |
 | FR-054-AC-14 | The generated crate's `Cargo.toml` names `serde` as its only `[dependencies]` entry, at the pinned exact version. | Inspection (TC-655) |
-| FR-054-AC-15 | A `SemanticValue` retaining a number written `1.0`, a repeated object member name, and a member order that is not sorted re-serializes to the bytes it came from. | Test (TC-650) |
+| FR-054-AC-15 | A `SemanticValue` retaining a repeated object member name and an unsorted member order re-serializes to the bytes it came from, and a number re-serializes through the declared ECMAScript formatter — so `1.0` becomes `1`, which is what `JSON.parse` then `JSON.stringify` produces and what the corpus's canonical form compares. Byte identity is claimed for the members the crate retains bytes for and for no others: serde's data model hands a visitor a parsed `f64` and never the source lexeme, and the alternative would need `serde_json`, which the published `rust` target contract's `serde`-only runtime forbids. | Test (TC-650) |
 
 ## Dependencies
 

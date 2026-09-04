@@ -1306,7 +1306,7 @@ than deciding it.
 | ERR-097 | A manifest declares two profiles and the caller names none | `AMBIGUOUS_PROFILE` and exit `1` | TC-552 |
 | ERR-098 | An unknown command, unknown flag, missing flag, or unreadable `--limits` | Usage text and exit `2` | TC-557 |
 | ERR-099 | An input exceeds one of the four size limits | A distinct blocking limit diagnostic naming the limit | TC-579, TC-587, TC-606 |
-| ERR-114 | A construct selects no mapping row and no named refusal; a non-`record` kind declares a non-`reject` unknown policy; an `enum` variant carries a `payloadType` | `UNSUPPORTED_CONSTRUCT`, `UNKNOWN_POLICY_ON_NON_RECORD` or `PAYLOAD_ON_ENUM_VARIANT`, zero files | TC-650, TC-656 |
+| ERR-114 | A construct selects no mapping row and no named refusal; an `enum` variant carries a `payloadType` | `UNSUPPORTED_CONSTRUCT` or `PAYLOAD_ON_ENUM_VARIANT`, zero files | TC-650, TC-656 |
 | ERR-115 | An ECMA-262 pattern uses a lookahead, a backreference, a named group or a Unicode property escape and is not a proved-registry key | `UNSUPPORTED_PATTERN`, zero files | TC-680, TC-687 |
 | ERR-116 | A `kind: "scalar"` names a value outside the nine kernel scalars, or names `bytes`, whose JSON wire form no published artifact declares | `UNSUPPORTED_SCALAR` or `UNDECLARED_WIRE_FORM`, zero files | TC-646, TC-690 |
 | ERR-117 | A `format` operand names an unregistered format | `UNKNOWN_FORMAT`, zero files | TC-686 |

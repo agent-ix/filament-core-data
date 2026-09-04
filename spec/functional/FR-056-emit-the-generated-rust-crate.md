@@ -50,6 +50,9 @@ it came from.
   an ordered map of relative path to file bytes, and emitting no bytes to disk
 - `src/compiler/backends/rust-serde/index.mjs`: `generateRust(request, sink)`,
   the one entry point that writes
+- `src/compiler/backends/rust-serde/rust-format.mjs`: the pinned `rustfmt`
+  layout rules, reproduced so the emitter is a fixed point of the formatter
+  without shelling out to it during generation
 - `src/compiler/backends/rust-serde/cli.mjs`: the command line the `make`
   targets call — `generate`, `check`, `install-from-artifact`, `mutate`,
   `fuzz`, and `properties` — which is the only caller of `generateRust`
@@ -248,7 +251,7 @@ not restated here.
 | FR-056-AC-9 | The only open-typed members the crate exposes are `SemanticValue`, `UnknownMembers`, and `Extension`, verified by scanning every generated declaration. | Analysis (TC-674) |
 | FR-056-AC-10 | Generation writes no path outside the request's `outputRoot`, and a request whose `outputRoot` contains a `..` segment is refused before any write with the result state `invalid`. | Test (TC-675) |
 | FR-056-AC-11 | The emitted `LICENSE` is byte-identical to the repository `LICENSE`. | Analysis (TC-676) |
-| FR-056-AC-12 | `emitCrate` performs no filesystem call, verified by a static scan of its module graph for `node:fs` and by running it with the filesystem module stubbed to throw. | Analysis (TC-676) |
+| FR-056-AC-12 | `emitCrate` reads no ambient input: its module graph reaches no clock, no random source, no environment variable, no working directory and no child process, and its only filesystem reads are of the tables pinned beside it, each named in an Outputs section and each committed. Removing a pinned table makes it throw rather than emit a degraded crate. | Analysis (TC-676) |
 | FR-056-AC-13 | Every public item of a generated crate carries a doc comment equal to the stated derivation applied to its node, checked over every corpus base against the input document rather than against the emitted text; a node with roles carries its roles, a node with a unit carries its unit, and a `displayName` containing a comment terminator is escaped. | Test (TC-666) |
 | FR-056-AC-14 | Every output-manifest file entry carries the `mediaType` its extension row states and at least one semantic identity; a file carrying no type identity carries exactly the IR `package.identity` in `ix://` form; and the manifest validates against `output-manifest.schema.json`. | Test (TC-670) |
 | FR-056-AC-15 | The emitted `[package] name` equals `crateName(package.identity)`, contains no `/`, and is accepted by `cargo metadata`. | Analysis (TC-667) |
