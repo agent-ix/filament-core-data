@@ -163,8 +163,10 @@ without publishing a package or moving a consumer.
 - Revising the emitted semantic-IR shape, generating or publishing a Rust,
   TypeScript, or Python package, or moving any consumer as part of issue #27;
   those belong to issues #19, #21, #22, #23, and #11.
-- Building the independent conformance corpus and oracle (issue #20); issue #27
-  neither reads nor edits it, because that independence is the point.
+- Building the independent conformance corpus and oracle (issue #20); issues #27
+  and #19 neither read nor edit it, because that independence is the point. The
+  three-way IR reader agreement issue #19 stands up is a drift guard inside this
+  repository's own tests, not a substitute for that corpus.
 - Adding a public `./compiler` package export, a runtime dependency for the
   promoted compiler, or a supported `datamodel-code-generator` invocation;
   those belong to issues #11 and #23.
@@ -229,9 +231,9 @@ Authority is assigned by concern:
 | Class | Artifacts | Purpose |
 |---|---|---|
 | Stakeholder | [StR-001](./stakeholder/StR-001-durable-semantic-data-governance.md) | Durable governance need |
-| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-009](./usecase/US-009-build-from-a-supported-compiler.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, and compiler-maintainer outcomes |
-| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-044](./functional/FR-044-replay-the-frozen-spike-through-the-promoted-compiler.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, and prototype-promotion behavior |
-| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-018](./non-functional/NFR-018-non-disruptive-promotion-and-rollback.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic promoted compilation, and rollback |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-010](./usecase/US-010-compile-a-semantic-package.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, and package-author outcomes |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-053](./functional/FR-053-declare-the-typespec-semantic-vocabulary.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, prototype-promotion, and compiler-core behavior |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-021](./non-functional/NFR-021-non-disruptive-compiler-core.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic promoted compilation, rollback, bounded and safe compilation, and compiler-core non-disruption |
 
 ## 6. Decision Status Model
 

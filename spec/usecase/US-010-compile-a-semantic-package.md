@@ -9,6 +9,8 @@ relationships:
     type: "depends_on"
   - target: "ix://agent-ix/filament-core-data/US-006"
     type: "depends_on"
+  - target: "ix://agent-ix/filament-core-data/US-007"
+    type: "depends_on"
   - target: "ix://agent-ix/filament-core-data/US-009"
     type: "depends_on"
 ---

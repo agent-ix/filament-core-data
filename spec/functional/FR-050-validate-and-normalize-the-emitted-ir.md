@@ -78,7 +78,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 
 - For a `1.0.0` document, `readContractIr` SHALL derive each field's multiplicity from its `presence` by the rule `optional → { lower: 0, upper: 1 }`, `required → { lower: 1, upper: 1 }`, which is the derivation FR-027 published.
 - Where `importedExports` is the marker `unknown`, `readContractIr` SHALL suppress `UNRESOLVED_RELATIONSHIP_TARGET` for a target absent from the document and SHALL report the suppression to its caller, rather than reporting a defect it cannot see or passing a target it cannot check.
-- `readContractIr` SHALL terminate on a cyclic alias chain, a cyclic composite relationship graph, and a document exceeding `maxNodes` or `maxDepth`, raising the corresponding limit diagnostic rather than recursing without bound.
+- `readContractIr` SHALL terminate on a cyclic alias chain, a cyclic composite relationship graph, and a document whose node count exceeds `maxNodes`, whose nesting exceeds `maxDepth`, or any of whose arrays exceeds `maxCollectionItems`, raising the corresponding limit diagnostic rather than recursing without bound.
 
 ### Normalization
 

@@ -78,6 +78,7 @@ source or by the manifest and none is inferred from a type's spelling.
 
 ### Roles, unknown policy, and fields
 
+- The frontend SHALL set `displayName` to the declaration's own TypeSpec name, unqualified by its namespace.
 - The frontend SHALL set `roles` to the sorted, de-duplicated arguments of the declaration's `@role` applications, and to the empty array where there is none.
 - The frontend SHALL set `unknownPolicy` to the argument of `@unknownPolicy`, and to `reject` where there is none.
 - The frontend SHALL set `unknownPolicy` to `preserve` on the record a `JsonObject` kernel scalar lowers to, matching FR-034.
@@ -105,6 +106,7 @@ source or by the manifest and none is inferred from a type's spelling.
 - The frontend SHALL record every `origin` as `{ source: { sourceIdentity, path, startLine, startColumn } }`, where `sourceIdentity` is the document's `source.identity` and `path` is the declaration's file relative to the package root with `/` separators.
 - Where a declaration comes from an imported package, whose file cannot be named by a package-root-relative path, the frontend SHALL record a generated origin naming the frontend and the imported package's source identity, because `sourceLocus.path` forbids `..`.
 - If a declaration's source file lies beneath no declared root, then the frontend SHALL raise `agent-ix.compiler.SOURCE_OUTSIDE_PACKAGE` at the declaration's locus.
+- If any emitted array exceeds `maxCollectionItems`, or the declaration count exceeds `maxNodes`, then the frontend SHALL raise the corresponding blocking limit diagnostic and stop.
 - The frontend SHALL validate the emitted document under FR-050 before returning it, and SHALL return `ir: null` with the validation diagnostics rather than a document that fails its own schema.
 
 ## Constraints

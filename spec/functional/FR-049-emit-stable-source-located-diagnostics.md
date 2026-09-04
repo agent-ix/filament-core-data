@@ -37,6 +37,7 @@ to the line without searching.
 ### The registry
 
 - `DIAGNOSTIC_CODES` SHALL be a frozen record mapping each code to its `severity`, `blocking` disposition, and `owner` identity.
+- Every `blocking` code SHALL carry severity `error`, so a caller cannot meet a blocking `info` diagnostic.
 - The registry SHALL span exactly two namespaces: `agent-ix.compiler.*` for defects in a package's manifests, locks, sources, or the caller's invocation, and `agent-ix.semantic-ir.*` for defects in the shape of an IR document, whose spellings are those of `fixtures/semantic/v1/negative/reader-cases.json`.
 - Every emitted code SHALL match `^agent-ix\.[a-z0-9-]+\.[A-Z][A-Z0-9_]+$`.
 - Every module SHALL name a code only as a member access on `DIAGNOSTIC_CODES`, never as a string literal, so the emitted set can be extracted statically.
@@ -91,7 +92,7 @@ to the line without searching.
 | FR-049-AC-11 | The published registry document lists every code with its severity, blocking disposition, and owner, and the five limit defaults, and a test fails when the document and `DIAGNOSTIC_CODES`/`DEFAULT_LIMITS` disagree. | Test |
 | FR-049-AC-12 | Every `agent-ix.semantic-ir.*` code in the registry appears in `reader-cases.json`, and every code that file names appears in the registry. | Test |
 | FR-049-AC-13 | A diagnostic located by a JSON pointer into an IR node carries that node's `origin.source` as its locus. | Test |
-| FR-049-AC-14 | `DIAGNOSTIC_LIMIT_REACHED` is non-blocking, and the four size limits are blocking, asserted against the registry. | Test |
+| FR-049-AC-14 | `DIAGNOSTIC_LIMIT_REACHED` is non-blocking, the four size limits are blocking, and every blocking code carries severity `error`, asserted against the registry. | Test |
 
 ## Dependencies
 
