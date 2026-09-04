@@ -1,0 +1,111 @@
+---
+id: NFR-024
+title: "Portable and deterministic generated TypeScript"
+type: NFR
+quality_attribute: portability
+relationships:
+  - target: "ix://agent-ix/filament-core-data/US-012"
+    type: "constrains"
+  - target: "ix://agent-ix/filament-core-data/FR-064"
+    type: "constrains"
+  - target: "ix://agent-ix/filament-core-data/FR-065"
+    type: "constrains"
+  - target: "ix://agent-ix/filament-core-data/FR-066"
+    type: "constrains"
+  - target: "ix://agent-ix/filament-core-data/FR-067"
+    type: "constrains"
+  - target: "ix://agent-ix/filament-core-data/FR-071"
+    type: "constrains"
+  - target: "ix://agent-ix/filament-core-data/NFR-009"
+    type: "depends_on"
+  - target: "ix://agent-ix/filament-core-data/NFR-010"
+    type: "depends_on"
+  - target: "ix://agent-ix/filament-core-data/NFR-019"
+    type: "depends_on"
+---
+# [NFR-024] Portable and deterministic generated TypeScript
+
+## Statement
+
+The generated TypeScript package SHALL be reproducible byte-for-byte from the
+same IR document and profile on any host, working directory, and locale, while
+depending on no framework, application, or third-party runtime package.
+
+## Scope
+
+- Applies to: every file the TypeScript backend emits, the backend modules that
+  emit them, and the packed artifact produced from the emitted package.
+- Does not apply to: the repository's own `dist/generated.ts` Avro surface, the
+  frozen issue #4 goldens, or the devDependencies the repository uses to run
+  the generator and typecheck its output.
+- Operational context: generation is an offline, single-process, filesystem-free
+  computation; the caller writes the files.
+
+## Rationale
+
+`docs/semantic-data-system/generated-packages.md` (ARCH-006) states both halves
+of this requirement as accepted architecture: generated semantic packages
+exclude UI, React, ORM, SQLAlchemy, Tauri, application persistence, database
+migrations, web frameworks, network clients, and deployment policy; and, given
+the same accepted source, package metadata, profile, and compiler version,
+generation must be byte-reproducible after normalized tool metadata. The
+committed `typescript` row of `fixtures/semantic/v1/positive/target-contracts.json`
+repeats the prohibition as a `prohibitedDependencies` list of seven categories.
+
+Both halves have been broken before in this repository by accident rather than
+by decision. `localeCompare` with no locale made the prototype emitter's type
+order depend on the host's ICU data (`conformance/defects.json` DEF-PROTO-014),
+and `process.cwd()` made its source loci depend on where it was invoked
+(DEF-PROTO-009); issue #27 had to make both ambient inputs explicit before the
+prototype could be promoted at all. A generated package is the worst place to
+discover a third instance, because the drift shows up in a consumer's diff
+rather than in this repository's tests.
+
+The dependency half matters for a second reason. A generated package that
+acquires a runtime validator dependency stops being installable in the
+environments this contract exists to serve — a Tauri sidecar, a browser bundle,
+a CLI — and makes the semantic contract's availability a function of another
+project's release cadence. Generating the validator is more code and less risk.
+
+## Measurement and Evaluation
+
+| Metric | Target | Threshold | Method |
+|---|---|---|---|
+| Byte differences between two generation runs of one IR document | 0 | 0 | Snapshot comparison |
+| Byte differences between runs from two working directories | 0 | 0 | Snapshot comparison |
+| Byte differences between runs under `C` and `tr_TR.UTF-8` | 0 | 0 | Snapshot comparison |
+| Byte differences between two packed artifacts after normalizing mtime, uid, gid, uname, and gname | 0 | 0 | Archive comparison |
+| Prohibited dependency categories named by the generated package | 0 | 0 | Static import-graph analysis |
+| Third-party runtime dependencies declared by the generated `package.json` | 0 | 0 | Manifest inspection |
+| Import specifiers in generated source that are not relative | 0 | 0 | Static analysis |
+| Occurrences of `any`, `as` assertions, or `@ts-expect-error` in generated source | 0 | 0 | Static analysis |
+| Clock, environment-variable, network, and `process.cwd()` reads by a backend module | 0 | 0 | Purity test |
+| `localeCompare` calls in a backend module | 0 | 0 | Static analysis |
+| Generated files that omit the AGPL-3.0-only SPDX header | 0 | 0 | Static analysis |
+| Symbols reachable from a single-type import beyond that type's own surface | 0 | 0 | Bundle-surface fixture |
+
+## Verification
+
+Generate the same IR document twice into two directories, once from the
+repository root and once from a scratch directory, and once under
+`LC_ALL=tr_TR.UTF-8`, and compare every emitted byte and the output manifest.
+Pack the generated package twice and compare the archives after normalizing the
+five named metadata members and nothing else. Parse every generated module and
+assert that each import specifier is relative and that no identifier from the
+seven prohibited categories appears. Run the backend modules under a host that
+throws on filesystem, clock, environment, and network access. Typecheck the
+generated package under `strict` with `exactOptionalPropertyTypes`. Bundle a
+single-type entry point and compare the reachable symbol set with the committed
+surface fixture.
+
+## Dependencies
+
+- **Upstream**: [NFR-009](./NFR-009-cross-language-semantic-parity.md),
+  [NFR-010](./NFR-010-safe-schema-and-code-generation.md),
+  [NFR-019](./NFR-019-deterministic-contract-compilation.md), ARCH-006
+- **Downstream**: issue #11 (publication), issue #21, issue #23
+- **Constrains**: [FR-064](../functional/FR-064-lower-ir-type-definitions-to-typescript.md),
+  [FR-065](../functional/FR-065-generate-the-esm-package-and-export-surface.md),
+  [FR-066](../functional/FR-066-generate-runtime-validators.md),
+  [FR-067](../functional/FR-067-generate-identity-and-fingerprint-metadata.md),
+  [FR-071](../functional/FR-071-provide-the-generate-command-and-surface-fixtures.md)

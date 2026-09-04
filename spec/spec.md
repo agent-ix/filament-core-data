@@ -144,6 +144,12 @@ rather than against one another.
 - An independent JSON-level semantic oracle, a differential harness with a
   declared adapter registry and divergence register, coverage accounting,
   promotion thresholds, and a downstream fixture import API.
+- The generation backend seam keyed on the published target vocabulary, and the
+  TypeScript backend behind it: the type projection, the ESM package and its
+  export surface, the generated runtime validators, the identity and fingerprint
+  metadata, the backend's own IR admissibility reader, its canonical form and
+  compatibility classification, the `generate` command, and the
+  `typescript-backend` conformance adapter that answers the issue #20 oracle.
 
 ### 2.2 Out of Scope
 
@@ -208,6 +214,22 @@ rather than against one another.
 - Cross-language generated-package serialization and deserialization parity,
   which has no package to serialize until issues #21, #22, and #23 ship; the
   corpus records it as an unmet coverage area with those owners.
+- Publishing the generated TypeScript package to any registry, adding it to this
+  repository's `exports`, `files`, or dependency blocks, or moving a CLI,
+  backend, or React consumer onto it, as part of issue #22; publication remains
+  issue #11 behind the `agent-ix/quoin#290` sign-off.
+- Generating a Rust or a Python package as part of issue #22; those are issues
+  #21 and #23, which own the sibling adapter slots.
+- Editing any conformance case, base, oracle module, harness module, threshold,
+  defect row, gap row, or mutation row as part of issue #22; a disagreement
+  between the backend and the oracle is registered as a divergence with an owner
+  and a verdict, never absorbed by moving the yardstick.
+- Deciding the unresolved-`reference` question recorded as
+  `conformance/contract-gaps.json` GAP-011 as part of issue #22; the backend
+  adopts the corpus's published reading as a single declared policy constant and
+  records the dependency on issue #9, which owns the contract.
+- Rewriting the frozen issue #4 TypeScript backend or regenerating its golden as
+  part of issue #22; the contract-IR backend is a second backend beside it.
 
 ## 3. System Overview
 
