@@ -59,8 +59,15 @@ author.
   array
 - `Cargo.toml` (a workspace), `Cargo.lock`, `rust-toolchain.toml`,
   `rustfmt.toml`, and `.cargo/config.toml` at the repository root
-- A `command` and `status` on the registry's `rust-backend` slot, and nothing
-  else under `conformance/`
+- A `command` and `status` on the registry's `rust-backend` slot
+- The regenerated `conformance/coverage.json`, whose `rust-backend` row and
+  `unmetCases` total move from 111 unmet to 111 matched. That file is not a
+  yardstick: `conformance/README.md` declares it generated on every run and
+  never hand-edited, and FR-039 makes it a report *about* the adapters. Filling
+  the slot the corpus declares is what moves it, so leaving it stale would
+  contradict the corpus's own regeneration gate and leave the account saying the
+  slot is unavailable while the registry says it is available. No other path
+  under `conformance/` changes.
 - The GAP-002 closure and the GAP-011 dependency recorded in
   `docs/semantic-data-system/rust-backend.md`
 
@@ -160,7 +167,7 @@ author.
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-059-CON-1 | The Rust reader SHALL be an independent implementation derived from `schema/semantic/v1/`, `contracts-v1.md`, and `conformance/diagnostic-codes.json`. It SHALL NOT read or link `conformance/oracle/` or `src/compiler/ir/`. Each emitted code SHALL cite its derivation source in `crates/semantic-ir/RULES.md`, and the reader's first full corpus run SHALL be recorded before any oracle output is inspected, because a module-graph scan detects linking and not reading. | Correctness | Analysis |
-| FR-059-CON-2 | This requirement SHALL change exactly one path under `conformance/`: the `rust-backend` entry of `adapters/registry.json`. Every other path under `conformance/` SHALL be byte-unchanged. | Non-disruption | Analysis |
+| FR-059-CON-2 | This requirement SHALL change exactly two paths under `conformance/`: the `rust-backend` entry of `adapters/registry.json`, and the generated `coverage.json`, whose diff SHALL be confined to that adapter's row and the `unmetCases` total. Every other path under `conformance/` SHALL be byte-unchanged, and no case, base, expected verdict, threshold, divergence, gap register or oracle rule SHALL move. | Non-disruption | Analysis |
 | FR-059-CON-3 | An unmet row SHALL be reported as unmet. The adapter SHALL NOT answer a case it cannot decide with a fabricated agreeing verdict, and SHALL NOT omit a case. | Honesty | Test |
 | FR-059-CON-4 | The adapter SHALL be hermetic: no network, no clock, no environment read, and no filesystem read outside its working directory. | Determinism | Analysis |
 | FR-059-CON-5 | `crates/semantic-ir/` SHALL contain no `unsafe` block and SHALL declare no dependency. | Safety | Analysis |
@@ -181,7 +188,7 @@ author.
 | FR-059-AC-9 | Every corpus case whose oracle verdict is `invalid` is rejected by generation or by the generated crate, naming a code one of the two declared registries carries. | Test (TC-706) |
 | FR-059-AC-10 | Each of the five `target-verdicts.json` cases is decided by the generated crate exactly as its `rust` verdict states, including `unknown-preservable-extension` accepted and `unknown-required-capability` rejected. | Test (TC-707) |
 | FR-059-AC-11 | The reader returns a diagnostic and does not panic over at least 4096 mutated documents, run under a panic hook that fails the test; a truncated stdout, a non-UTF-8 byte, and an induced panic each surface as an adapter failure and never as a short corpus. | Test (TC-708) |
-| FR-059-AC-12 | The changed-path set under `conformance/` for this branch is exactly `adapters/registry.json`, and every other file under `conformance/` is byte-identical to the pre-change baseline. | Analysis (TC-709) |
+| FR-059-AC-12 | The changed-path set under `conformance/` for this branch is exactly `adapters/registry.json` and `coverage.json`; the coverage diff touches only the `rust-backend` adapter row and the `unmetCases` total, leaving `unmetAreas` and every other adapter's row byte-identical; and every other file under `conformance/` is byte-identical to the pre-change baseline. | Analysis (TC-709) |
 | FR-059-AC-13 | Removing the adapter command from the registry returns the slot to 111 unmet rows and zero passes, so a missing adapter can never read as agreement. | Test (TC-710) |
 | FR-059-AC-14 | `docs/semantic-data-system/rust-backend.md` records the GAP-011 dependency with the closed owner named and the adopted reading stated, records GAP-002 as answered by FR-057 with its register closure filed as issue #59, and records the unspent divergence budget; and `conformance/divergences.json` is byte-unchanged. | Inspection (TC-710) |
 | FR-059-AC-15 | The ECMAScript number formatter agrees with Node's `JSON.stringify` on a declared set of at least 512 values covering the exponent thresholds, negative zero, trailing zeros, integral floats, and the extremes of `f64`. | Test (TC-700) |

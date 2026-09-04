@@ -85,6 +85,7 @@ const PERMITTED: readonly string[] = [
 	"^\\.cargo/config\\.toml$",
 	"^THIRD-PARTY-NOTICES\\.md$",
 	"^conformance/adapters/registry\\.json$",
+	"^conformance/coverage\\.json$",
 ];
 
 /** Prohibited paths, transcribed from NFR-023's Scope. */
@@ -131,7 +132,10 @@ function isProhibited(path: string): boolean {
 	// opening brace it carried, and reported the file's braces unbalanced, which
 	// would have silently unbound every trace tag in it.
 	if (path.startsWith("conformance/")) {
-		return path !== "conformance/adapters/registry.json";
+		return (
+			path !== "conformance/adapters/registry.json" &&
+			path !== "conformance/coverage.json"
+		);
 	}
 	return PROHIBITED.some((pattern) => new RegExp(pattern).test(path));
 }
@@ -568,9 +572,12 @@ describe("TC-737..744 non-disruption", () => {
 		const touched = changedPathsUnion(root, SENTINELS).filter((path) =>
 			path.startsWith("conformance/"),
 		);
-		expect(touched.sort()).toEqual(
-			touched.length === 0 ? [] : ["conformance/adapters/registry.json"],
-		);
+		for (const path of touched) {
+			expect(
+				["conformance/adapters/registry.json", "conformance/coverage.json"],
+				`unexpected conformance path: ${path}`,
+			).toContain(path);
+		}
 	});
 
 	/** Traces: TC-739; NFR-023-AC-3. */
@@ -628,6 +635,72 @@ describe("TC-737..744 non-disruption", () => {
 				JSON.stringify(before[key]),
 			);
 		}
+	});
+
+	/** Traces: TC-739; FR-059-AC-12, NFR-023-AC-3. */
+	it("TC-739 the coverage account moves only on the rust-backend row", () => {
+		// The account is a generated report about the adapters, not a yardstick,
+		// and it necessarily moves when the slot it accounts for is filled. The
+		// permission is bounded here so it cannot carry anything else: no other
+		// adapter's row, no unmet area, no register row.
+		const { base } = changeRange(root, SENTINELS);
+		const path = "conformance/coverage.json";
+		type Account = {
+			adapters: {
+				adapter: string;
+				status: string;
+				matched: number;
+				unmet: number;
+				failed: number;
+			}[];
+			unmetCases: number;
+			unmetAreas: unknown;
+			registerRows?: unknown;
+		};
+		const atBase = JSON.parse(
+			execFileSync("git", ["show", `${base}:${path}`], {
+				cwd: root,
+				encoding: "utf8",
+				maxBuffer: 64 * 1024 * 1024,
+			}),
+		) as Account;
+		const now = readJson(resolve(root, path)) as Account;
+
+		expect(JSON.stringify(now.unmetAreas)).toBe(
+			JSON.stringify(atBase.unmetAreas),
+		);
+		expect(now.adapters.map((one) => one.adapter)).toEqual(
+			atBase.adapters.map((one) => one.adapter),
+		);
+		for (let index = 0; index < atBase.adapters.length; index += 1) {
+			if (atBase.adapters[index].adapter === "rust-backend") continue;
+			expect(
+				JSON.stringify(now.adapters[index]),
+				`adapter ${atBase.adapters[index].adapter} moved`,
+			).toBe(JSON.stringify(atBase.adapters[index]));
+		}
+		const mine = now.adapters.find((one) => one.adapter === "rust-backend");
+		expect(mine?.status).toBe("available");
+		expect(mine?.failed).toBe(0);
+		// Matched plus unmet is the case count either way; the slot cannot report
+		// more answers than the corpus has cases.
+		const before = atBase.adapters.find(
+			(one) => one.adapter === "rust-backend",
+		);
+		expect((mine?.matched ?? 0) + (mine?.unmet ?? 0)).toBe(
+			(before?.matched ?? 0) + (before?.unmet ?? 0),
+		);
+		expect(now.unmetCases).toBe(
+			atBase.unmetCases - (before?.unmet ?? 0) + (mine?.unmet ?? 0),
+		);
+		// Every member the account carries beyond these is byte-identical.
+		const strip = (value: Account) => {
+			const copy = JSON.parse(JSON.stringify(value)) as Record<string, unknown>;
+			delete copy.adapters;
+			delete copy.unmetCases;
+			return JSON.stringify(copy);
+		};
+		expect(strip(now)).toBe(strip(atBase));
 	});
 
 	/** Traces: TC-740; NFR-023-AC-4, FR-054-CON-5. */

@@ -51,8 +51,14 @@ later can be backed out by reverting this work alone.
   `docs/semantic-data-system/roadmap.md`,
   `scripts/build-rust-backend-docs.mjs`, `Makefile`, `.gitignore`,
   `rust-toolchain.toml`, `rustfmt.toml`, `Cargo.toml`, `Cargo.lock`,
-  `.cargo/config.toml`, `THIRD-PARTY-NOTICES.md`, and the single file
-  `conformance/adapters/registry.json`.
+  `.cargo/config.toml`, `THIRD-PARTY-NOTICES.md`, and exactly two files under
+  `conformance/`: `adapters/registry.json`, whose `rust-backend` slot the corpus
+  itself assigns to the owning issue, and the generated `coverage.json`, which
+  `conformance/README.md` declares is regenerated on every run and which
+  necessarily moves when the slot it accounts for is filled. The second entry is
+  admitted because FR-039 and FR-059 name it, not because a gate failed without
+  it, and FR-059-AC-12 bounds its diff to the `rust-backend` row so the
+  permission cannot carry anything else.
 - Prohibited paths: `schema/**`, `fixtures/**`, `packages/**`, `spikes/**`,
   `.github/**`, `src/compiler/backends/rust.mjs`,
   `src/compiler/backends/typescript.mjs`,
@@ -63,7 +69,7 @@ later can be backed out by reverting this work alone.
   `pnpm-lock.yaml`, `pyproject.toml`, `poetry.lock`, `biome.json`,
   `tsconfig*.json`, every `test/*.test.ts` other than `test/rust-backend*.ts`,
   and every path under `conformance/` except
-  `conformance/adapters/registry.json`. A prohibited path is one this change
+  `conformance/adapters/registry.json` and `conformance/coverage.json`. A prohibited path is one this change
   changes no byte of; reading such a file, and running a program under it,
   remain permitted and are how the FR-059 differential evidence is produced.
 - Every permitted entry SHALL be traceable to a requirement Output or to a
@@ -117,8 +123,9 @@ carries `publish = false`, and no step of this work contacts a registry.
 |---|---|---|---|
 | Prohibited paths in this change's own set | 0 | 0 | Change-set diff over a range fixed at both ends by history, unioned over `--first-parent --no-merges` |
 | Permitted entries traceable to no requirement Output or Verification step | 0 | 0 | Analysis over the permitted list |
-| Paths under `conformance/` other than `adapters/registry.json` in this change's set | 0 | 0 | Change-set diff |
-| Byte changes to `conformance/` files other than `adapters/registry.json` | 0 | 0 | Byte comparison against the pre-change baseline |
+| Paths under `conformance/` other than `adapters/registry.json` and `coverage.json` in this change's set | 0 | 0 | Change-set diff |
+| Coverage-account lines changed outside the `rust-backend` row and the `unmetCases` total | 0 | 0 | Line diff against the pre-change baseline |
+| Byte changes to `conformance/` files other than those two | 0 | 0 | Byte comparison against the pre-change baseline |
 | Crates published by this work | 0 | 0 | Registry inspection and command inspection |
 | Crate manifests without `publish = false`, emitted or hand-written | 0 | 0 | Analysis over every manifest in the change set and every emitted manifest |
 | Changes to `package.json` `exports`, `main`, `module`, `types`, `files` | 0 | 0 | Manifest comparison |
@@ -157,7 +164,7 @@ that a prohibited path at a path no later commit owns still fails the gate.
 |---|---|---|
 | NFR-023-AC-1 | Every path in this change's own set is permitted and none is prohibited. | Analysis |
 | NFR-023-AC-2 | `package.json` `exports`, `main`, `module`, `types`, and `files` are byte-unchanged from the pre-change baseline. | Analysis |
-| NFR-023-AC-3 | Every file under `conformance/` except `adapters/registry.json` is byte-unchanged from the pre-change baseline, and the registry's change is confined to the `rust-backend` entry. | Analysis |
+| NFR-023-AC-3 | Every file under `conformance/` except `adapters/registry.json` and `coverage.json` is byte-unchanged from the pre-change baseline; the registry's change is confined to the `rust-backend` entry; and the coverage account's change is confined to that adapter's row and the `unmetCases` total. | Analysis |
 | NFR-023-AC-4 | `schema/**`, `fixtures/**`, `packages/**`, `spikes/**`, `.github/**`, and the frozen prototype backends and emitters are byte-unchanged. | Analysis |
 | NFR-023-AC-5 | Every crate manifest this work produces carries `publish = false` — the emitted one and each of the hand-written crates — and removing that emission, or dropping it from a hand-written manifest, makes a test fail. | Test |
 | NFR-023-AC-6 | No crate was published and no downstream repository was changed. | Inspection |
