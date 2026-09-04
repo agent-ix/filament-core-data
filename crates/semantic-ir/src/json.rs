@@ -366,9 +366,8 @@ impl<'a> Reader<'a> {
                                     self.pos += 2;
                                     let second = self.hex4()?;
                                     if (0xDC00..0xE000).contains(&second) {
-                                        let combined = 0x1_0000
-                                            + ((first - 0xD800) << 10)
-                                            + (second - 0xDC00);
+                                        let combined =
+                                            0x1_0000 + ((first - 0xD800) << 10) + (second - 0xDC00);
                                         match char::from_u32(combined) {
                                             Some(ch) => out.push(ch),
                                             None => out.push('\u{FFFD}'),
@@ -464,6 +463,54 @@ pub fn to_canonical_string(value: &Json) -> String {
     let mut out = String::new();
     write_canonical(&mut out, value);
     out
+}
+
+/// Writes `value` keeping every object's member order, so a node copied out of
+/// a document reaches the wire in the order the document carried it.
+///
+/// A diagnostic's `locus` is "taken verbatim from the addressed node's
+/// `origin.source`", and verbatim includes the order the members were written
+/// in, which a comparison that is not itself canonical would otherwise see as a
+/// difference.
+pub fn to_document_string(value: &Json) -> String {
+    let mut out = String::new();
+    write_document(&mut out, value);
+    out
+}
+
+fn write_document(out: &mut String, value: &Json) {
+    match value {
+        Json::Object(members) => {
+            let mut resolved: Vec<(&str, &Json)> = Vec::with_capacity(members.len());
+            for (name, member) in members {
+                match resolved.iter_mut().find(|(seen, _)| *seen == name.as_str()) {
+                    Some(slot) => slot.1 = member,
+                    None => resolved.push((name.as_str(), member)),
+                }
+            }
+            out.push('{');
+            for (index, (name, member)) in resolved.iter().enumerate() {
+                if index > 0 {
+                    out.push(',');
+                }
+                write_string(out, name);
+                out.push(':');
+                write_document(out, member);
+            }
+            out.push('}');
+        }
+        Json::Array(items) => {
+            out.push('[');
+            for (index, item) in items.iter().enumerate() {
+                if index > 0 {
+                    out.push(',');
+                }
+                write_document(out, item);
+            }
+            out.push(']');
+        }
+        other => write_canonical(out, other),
+    }
 }
 
 fn write_canonical(out: &mut String, value: &Json) {

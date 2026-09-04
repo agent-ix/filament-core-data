@@ -257,19 +257,25 @@ process.stdin.on("end", () => {
         assert!(output.status.success(), "node exited non-zero");
         let rendered = String::from_utf8(output.stdout).expect("node writes UTF-8");
         let lines: Vec<&str> = rendered.split('\n').collect();
-        assert_eq!(lines.len(), values.len(), "one rendering per declared value");
+        assert_eq!(
+            lines.len(),
+            values.len(),
+            "one rendering per declared value"
+        );
 
         let mut agreed = 0usize;
         for (value, line) in values.iter().zip(lines.iter()) {
             let (as_string, as_json) = line.split_once('\t').expect("both renderings");
             let mine = ecma_number_to_string(*value);
             assert_eq!(
-                mine, as_string,
+                mine,
+                as_string,
                 "String({value:?}) disagrees at bits {:016x}",
                 value.to_bits()
             );
             assert_eq!(
-                mine, as_json,
+                mine,
+                as_json,
                 "JSON.stringify({value:?}) disagrees at bits {:016x}",
                 value.to_bits()
             );
