@@ -82,7 +82,7 @@ than a path under `spikes/`.
 | FR-041-AC-10 | Two `baseDir` values over the same entrypoint produce different, correctly relativised `source` loci of the form `<path>:<line>`, proving the working directory is a declared input and not an ambient one. | Test |
 | FR-041-AC-11 | Sorting the same type ids under `Intl.Collator` for two different locales and under the implemented code-point comparison yields the implemented order in every case. | Test |
 | FR-041-AC-12 | `make lint` formats and typechecks `src/compiler/`; a deliberate mismatch between `index.d.mts` and `index.mjs` fails `tsc --noEmit`. | Test |
-| FR-041-AC-13 | Every added package manifest declares `"license": "AGPL-3.0-only"`, and `package.json` gains no dependency entry. | Analysis |
+| FR-041-AC-13 | Every package manifest under `src/compiler/**` in the working tree — including `src/compiler/emitters/semantic-ir/package.json` — and every package manifest the branch adds declares `"license": "AGPL-3.0-only"`, and `package.json` gains no dependency entry. | Analysis |
 
 ## Dependencies
 

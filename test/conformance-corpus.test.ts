@@ -1,6 +1,6 @@
 /**
  * Issue #20 — the semantic conformance corpus and its independent differential
- * oracle. Test cases TC-280..TC-419 of `spec/tests.md`.
+ * oracle. Test cases TC-280..TC-641 of `spec/tests.md`.
  *
  * The corpus itself is JavaScript under `conformance/`; this file is the vitest
  * gate over it. It imports the corpus, never the other way round.
@@ -110,6 +110,44 @@ const gatesWithCase = (id: string, mutate: (entry: Json) => void) => {
 		readCase: (row: { id: string; path: string }) =>
 			row.id === id ? seeded : read(join(REPO, row.path)),
 	}) as { gate: string; subject: string; message: string }[];
+};
+
+/**
+ * Every path this issue changed, measured from a baseline that survives this
+ * branch's own merge.
+ *
+ * `origin/main...HEAD` is the wrong baseline for an isolation gate: once the
+ * branch squash-merges, that range is empty, so a positive claim about it fails
+ * forever and a negative one silently stops asserting — the defect issue #27
+ * carried into `main` in PR #44 and repaired in 4e48f08.
+ *
+ * Two baselines cover both states. Before the merge, the merge base with
+ * `origin/main` gives this branch's own change set, and merges of `main` into
+ * the branch are correctly excluded. After the squash merge that range is
+ * empty, so the fallback is the parent of the commit that introduced
+ * `conformance/corpus.json`, which the squash makes the ticket's whole change
+ * set. Either way the range contains the corpus, which the gate asserts.
+ */
+const corpusChangedPaths = (): string[] => {
+	const git = (...args: string[]) =>
+		execFileSync("git", args, { cwd: REPO, encoding: "utf8" });
+	const diffFrom = (base: string) =>
+		git("diff", "--no-renames", "--name-only", `${base}..HEAD`)
+			.split("\n")
+			.filter(Boolean);
+
+	let fromMergeBase: string[] = [];
+	try {
+		fromMergeBase = diffFrom(git("merge-base", "HEAD", "origin/main").trim());
+	} catch {
+		fromMergeBase = [];
+	}
+	if (fromMergeBase.length > 0) return fromMergeBase;
+
+	const commits = git("rev-list", "HEAD", "--", "conformance/corpus.json")
+		.split("\n")
+		.filter(Boolean);
+	return diffFrom(git("rev-parse", `${commits[commits.length - 1]}^`).trim());
 };
 
 /** Runs the gate set against a mutated manifest. */
@@ -1189,7 +1227,7 @@ describe("TC-302..313 the differential harness (FR-037)", () => {
 	});
 });
 
-describe("TC-314..319 and TC-398..401 the construct register and the defect registers (FR-038)", () => {
+describe("TC-314..319 and TC-620..401 the construct register and the defect registers (FR-038)", () => {
 	const coverage = buildCoverage(manifest, cases, [], []) as {
 		registerRows: {
 			id: string;
@@ -1398,7 +1436,7 @@ describe("TC-314..319 and TC-398..401 the construct register and the defect regi
 		}
 	});
 
-	it("TC-398 a union payload that resolves to nothing is rejected and a shared payload is accepted", () => {
+	it("TC-620 a union payload that resolves to nothing is rejected and a shared payload is accepted", () => {
 		expect(
 			(
 				corpus.oracleVerdict(corpus.loadCase("UNION-001")) as {
@@ -1415,7 +1453,7 @@ describe("TC-314..319 and TC-398..401 the construct register and the defect regi
 		expect(bad.diagnostics[0].pointer).toContain("/variants/");
 	});
 
-	it("TC-399 the three version-transition cases produce the result their rows state", () => {
+	it("TC-621 the three version-transition cases produce the result their rows state", () => {
 		expect(
 			(
 				corpus.oracleVerdict(corpus.loadCase("VER-001")) as {
@@ -1438,7 +1476,7 @@ describe("TC-314..319 and TC-398..401 the construct register and the defect regi
 		).toBe("breaking");
 	});
 
-	it("TC-400 every register source resolves and every criterion is quoted and covered", () => {
+	it("TC-622 every register source resolves and every criterion is quoted and covered", () => {
 		const covered = new Set(cases.flatMap((entry) => entry.covers as string[]));
 		for (const row of manifest.constructRegister) {
 			for (const source of row.sources) {
@@ -1452,7 +1490,7 @@ describe("TC-314..319 and TC-398..401 the construct register and the defect regi
 		}
 	});
 
-	it("TC-401 the unmet serialization area is recorded with its owning issues", () => {
+	it("TC-623 the unmet serialization area is recorded with its owning issues", () => {
 		const area = manifest.unmetAreas.find(
 			(one) => one.id === "UA-serialization-parity",
 		);
@@ -1468,14 +1506,14 @@ describe("TC-314..319 and TC-398..401 the construct register and the defect regi
 	});
 });
 
-describe("TC-402..410 coverage, thresholds, mutations, and the import API (FR-039)", () => {
-	it("TC-402 regenerating the coverage account reproduces the committed file", () => {
+describe("TC-624..410 coverage, thresholds, mutations, and the import API (FR-039)", () => {
+	it("TC-624 regenerating the coverage account reproduces the committed file", () => {
 		const committed = readFileSync(join(CONF, "coverage.json"), "utf8");
 		const report = run() as { coverage: unknown };
 		expect(renderCoverage(report.coverage)).toBe(committed);
 	});
 
-	it("TC-402 adding a case without regenerating leaves the committed account stale", () => {
+	it("TC-624 adding a case without regenerating leaves the committed account stale", () => {
 		const committed = readFileSync(join(CONF, "coverage.json"), "utf8");
 		const added = structuredClone(manifest) as { cases: { id: string }[] };
 		added.cases.push({
@@ -1491,7 +1529,7 @@ describe("TC-402..410 coverage, thresholds, mutations, and the import API (FR-03
 		);
 	});
 
-	it("TC-403 thresholds declare a proposed row for each owning issue", () => {
+	it("TC-625 thresholds declare a proposed row for each owning issue", () => {
 		const rows = thresholds.thresholds as {
 			adapter: string;
 			owningIssue: string;
@@ -1520,13 +1558,13 @@ describe("TC-402..410 coverage, thresholds, mutations, and the import API (FR-03
 		}
 	});
 
-	it("TC-404 every catalogued mutation is detected", () => {
+	it("TC-626 every catalogued mutation is detected", () => {
 		const score = mutationScore() as { score: number; undetected: string[] };
 		expect(score.undetected).toEqual([]);
 		expect(score.score).toBe(1);
 	});
 
-	it("TC-404 a mutation whose detecting case is suppressed drops the score", () => {
+	it("TC-626 a mutation whose detecting case is suppressed drops the score", () => {
 		const catalogue = mutations.mutations as {
 			id: string;
 			detectedBy: string;
@@ -1542,7 +1580,7 @@ describe("TC-402..410 coverage, thresholds, mutations, and the import API (FR-03
 		expect(score.score).toBeLessThan(1);
 	});
 
-	it("TC-405 the catalogue carries a mutation for every register family", () => {
+	it("TC-627 the catalogue carries a mutation for every register family", () => {
 		const families = new Set(
 			manifest.constructRegister.map((row) => row.family),
 		);
@@ -1554,7 +1592,7 @@ describe("TC-402..410 coverage, thresholds, mutations, and the import API (FR-03
 		}
 	});
 
-	it("TC-406 the import API works from another working directory", () => {
+	it("TC-628 the import API works from another working directory", () => {
 		const script = `
 			import { loadCorpus, buildInput, oracleVerdict, corpusVersion } from ${JSON.stringify(join(CONF, "oracle", "index.mjs"))};
 			const { cases } = loadCorpus();
@@ -1576,18 +1614,18 @@ describe("TC-402..410 coverage, thresholds, mutations, and the import API (FR-03
 		expect(parsed.ir).toBe("object");
 	});
 
-	it("TC-407 loadCase on an unknown id throws naming the id and the corpus version", () => {
+	it("TC-629 loadCase on an unknown id throws naming the id and the corpus version", () => {
 		expect(() => api.loadCase("ABSENT-999")).toThrow(/ABSENT-999/);
 		expect(() => api.loadCase("ABSENT-999")).toThrow(
 			new RegExp(manifest.corpusVersion.replace(/\./g, "\\.")),
 		);
 	});
 
-	it("TC-407 mutating a returned case does not affect a later load", () => {
+	it("TC-629 mutating a returned case does not affect a later load", () => {
 		const first = api.loadCase("ENV-001") as Json;
-		(first as Json).title = "mutated by TC-407";
+		(first as Json).title = "mutated by TC-629";
 		expect((api.loadCase("ENV-001") as Json).title).not.toBe(
-			"mutated by TC-407",
+			"mutated by TC-629",
 		);
 		const corpusOnce = api.loadCorpus() as { cases: Json[] };
 		corpusOnce.cases.length = 0;
@@ -1596,7 +1634,7 @@ describe("TC-402..410 coverage, thresholds, mutations, and the import API (FR-03
 		);
 	});
 
-	it("TC-408 a registry adapter with no threshold row and the converse each fail", () => {
+	it("TC-630 a registry adapter with no threshold row and the converse each fail", () => {
 		expect((run() as { problems: { kind: string }[] }).problems).toEqual([]);
 
 		const withoutThreshold = structuredClone(thresholds) as {
@@ -1636,7 +1674,7 @@ describe("TC-402..410 coverage, thresholds, mutations, and the import API (FR-03
 		).toBe(true);
 	});
 
-	it("TC-409 package.json gains no exports or files entry for the corpus", () => {
+	it("TC-631 package.json gains no exports or files entry for the corpus", () => {
 		const pkg = read(join(REPO, "package.json")) as {
 			exports: Record<string, unknown>;
 			files: string[];
@@ -1649,7 +1687,7 @@ describe("TC-402..410 coverage, thresholds, mutations, and the import API (FR-03
 		);
 	});
 
-	it("TC-410 the coverage account is byte-identical from another working directory", () => {
+	it("TC-632 the coverage account is byte-identical from another working directory", () => {
 		const script = `
 			import { run, renderCoverage } from ${JSON.stringify(join(CONF, "runner", "differential.mjs"))};
 			process.stdout.write(renderCoverage(run().coverage));
@@ -1666,8 +1704,8 @@ describe("TC-402..410 coverage, thresholds, mutations, and the import API (FR-03
 	});
 });
 
-describe("TC-411..419 blessing-free evidence and isolation (NFR-015, NFR-016)", () => {
-	it("TC-411 no case is blessed and every quote occurs in its artifact", () => {
+describe("TC-633..419 blessing-free evidence and isolation (NFR-015, NFR-016)", () => {
+	it("TC-633 no case is blessed and every quote occurs in its artifact", () => {
 		for (const entry of cases) {
 			expect((entry.provenance as Json).blessedFromRun, String(entry.id)).toBe(
 				false,
@@ -1686,14 +1724,14 @@ describe("TC-411..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		}
 	});
 
-	it("TC-412 verdicts, the report, and the coverage account are stable across two runs", () => {
+	it("TC-634 verdicts, the report, and the coverage account are stable across two runs", () => {
 		expect(canonical(run())).toBe(canonical(run()));
 		expect(
 			cases.map((entry) => canonical(corpus.oracleVerdict(entry))),
 		).toEqual(cases.map((entry) => canonical(corpus.oracleVerdict(entry))));
 	});
 
-	it("TC-412 the report is byte-identical under a Turkish locale and from another directory", () => {
+	it("TC-634 the report is byte-identical under a Turkish locale and from another directory", () => {
 		const script = `
 			import { run } from ${JSON.stringify(join(CONF, "runner", "differential.mjs"))};
 			process.stdout.write(JSON.stringify(run()));
@@ -1715,7 +1753,7 @@ describe("TC-411..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		expect(elsewhere).toBe(here);
 	});
 
-	it("TC-413 the oracle and the harness perform no clock, network, or environment read", () => {
+	it("TC-635 the oracle and the harness perform no clock, network, or environment read", () => {
 		const effects =
 			/Date\.now|new Date|process\.env|fetch\(|node:https?|node:dns|node:net/;
 		for (const dir of ["oracle", "runner"]) {
@@ -1730,7 +1768,7 @@ describe("TC-411..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		expect(readFileSync(join(CONF, "corpus.mjs"), "utf8")).not.toMatch(effects);
 	});
 
-	it("TC-414 every divergence carries an owner and a verdict, and gaps carry an owning issue", () => {
+	it("TC-636 every divergence carries an owner and a verdict, and gaps carry an owning issue", () => {
 		const register = read(join(CONF, "divergences.json")) as {
 			divergences: { owner: string; verdict: string; owningIssue: string }[];
 		};
@@ -1759,7 +1797,7 @@ describe("TC-411..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		}
 	});
 
-	it("TC-415 changing an expected result without a major bump fails the versioning gate", () => {
+	it("TC-637 changing an expected result without a major bump fails the versioning gate", () => {
 		const before = structuredClone(manifest) as Json;
 		const after = structuredClone(manifest) as {
 			corpusVersion: string;
@@ -1788,7 +1826,7 @@ describe("TC-411..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		expect(corpus.versioningFailures(before, after)).toEqual([]);
 	});
 
-	it("TC-415 a removed case and a changed base each require a major bump", () => {
+	it("TC-637 a removed case and a changed base each require a major bump", () => {
 		const before = structuredClone(manifest) as Json;
 		const removed = structuredClone(manifest) as {
 			corpusVersion: string;
@@ -1810,7 +1848,7 @@ describe("TC-411..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		).toBe(1);
 	});
 
-	it("TC-415 adding a case needs only a minor bump and a backward move fails", () => {
+	it("TC-637 adding a case needs only a minor bump and a backward move fails", () => {
 		const before = structuredClone(manifest) as Json;
 		const added = structuredClone(manifest) as {
 			corpusVersion: string;
@@ -1830,22 +1868,19 @@ describe("TC-411..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		).toContain("not a forward SemVer bump");
 	});
 
-	it("TC-415 corpusVersion is the version a consumer pins, and the README says so", () => {
+	it("TC-637 corpusVersion is the version a consumer pins, and the README says so", () => {
 		expect(readFileSync(join(CONF, "README.md"), "utf8")).toContain(
 			"the only version a consumer pins",
 		);
 		expect(api.corpusVersion()).toBe(manifest.corpusVersion);
 	});
 
-	it("TC-416 the branch changes no path NFR-016 prohibits", () => {
-		const changed = execFileSync(
-			"git",
-			["diff", "--name-only", "origin/main...HEAD"],
-			{ cwd: REPO, encoding: "utf8" },
-		)
-			.split("\n")
-			.filter(Boolean);
+	it("TC-638 every path this issue changed is permitted and none is prohibited", () => {
+		const changed = corpusChangedPaths();
+		// Measured from the corpus's own introduction, so the range is this
+		// issue's change set whether or not the branch has merged.
 		expect(changed.length).toBeGreaterThan(0);
+		expect(changed).toContain("conformance/corpus.json");
 		const prohibited = [
 			"spikes/",
 			"src/",
@@ -1863,14 +1898,6 @@ describe("TC-411..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 			"tsconfig.json",
 			"tsconfig.build.json",
 		];
-		for (const path of changed) {
-			for (const prefix of prohibited) {
-				expect(
-					path === prefix || path.startsWith(prefix),
-					`${path} is prohibited by NFR-016`,
-				).toBe(false);
-			}
-		}
 		const permitted = [
 			"conformance/",
 			"spec/",
@@ -1881,6 +1908,12 @@ describe("TC-411..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 			"Makefile",
 		];
 		for (const path of changed) {
+			for (const prefix of prohibited) {
+				expect(
+					path === prefix || path.startsWith(prefix),
+					`${path} is prohibited by NFR-016`,
+				).toBe(false);
+			}
 			expect(
 				permitted.some((prefix) => path === prefix || path.startsWith(prefix)),
 				`${path} is outside the NFR-016 permitted list`,
@@ -1888,19 +1921,36 @@ describe("TC-411..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		}
 	});
 
-	it("TC-417 package.json, pyproject.toml, and both lockfiles are byte-identical to main", () => {
+	it("TC-638 every file the corpus owns lives under conformance/ or its two suites", () => {
+		// The tree half, which holds no matter what any diff says.
+		const walk = (dir: string): string[] =>
+			readdirSync(dir).flatMap((entry) => {
+				const full = join(dir, entry);
+				return statSync(full).isDirectory() ? walk(full) : [full];
+			});
+		expect(walk(CONF).length).toBeGreaterThan(100);
+		expect(
+			statSync(join(REPO, "test", "conformance-corpus.test.ts")).isFile(),
+		).toBe(true);
+		expect(
+			statSync(join(REPO, "tests", "test_conformance_corpus.py")).isFile(),
+		).toBe(true);
+	});
+
+	it("TC-639 this issue changes no manifest and no lockfile", () => {
+		const changed = corpusChangedPaths();
 		for (const path of [
 			"package.json",
 			"pyproject.toml",
 			"pnpm-lock.yaml",
 			"poetry.lock",
 		]) {
-			const diff = execFileSync("git", ["diff", "origin/main", "--", path], {
-				cwd: REPO,
-				encoding: "utf8",
-			});
-			expect(diff, `${path} changed against main`).toBe("");
+			expect(changed, `${path} is in this issue's change set`).not.toContain(
+				path,
+			);
 		}
+		// The tree half: whatever any diff says, the manifest names no corpus
+		// surface and no dependency.
 		const pkg = read(join(REPO, "package.json")) as {
 			dependencies?: Json;
 			exports: Record<string, unknown>;
@@ -1915,14 +1965,8 @@ describe("TC-411..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		);
 	});
 
-	it("TC-419 the change alters no consumer, catalog pin, Avro contract, or release path", () => {
-		const changed = execFileSync(
-			"git",
-			["diff", "--name-only", "origin/main...HEAD"],
-			{ cwd: REPO, encoding: "utf8" },
-		)
-			.split("\n")
-			.filter(Boolean);
+	it("TC-641 this issue alters no consumer, catalog pin, Avro contract, or release path", () => {
+		const changed = corpusChangedPaths();
 		for (const surface of [
 			"schema/avro/",
 			"src/",

@@ -1,7 +1,7 @@
 # Semantic conformance corpus and independent differential oracle
 
 Issue [#20](https://github.com/agent-ix/filament-core-data/issues/20).
-Requirements: FR-035..FR-039, NFR-015, NFR-016. Plan: `plan/Plan-008-conformance-corpus-and-oracle/`.
+Requirements: FR-035..FR-039, NFR-015, NFR-016. Plan: `plan/Plan-009-conformance-corpus-and-oracle/`.
 
 This directory is the yardstick the semantic compiler (issue #19) and its Rust,
 TypeScript, and Python backends (issues #21, #22, #23) are judged against. It is
