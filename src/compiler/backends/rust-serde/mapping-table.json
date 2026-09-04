@@ -1,0 +1,471 @@
+{
+	"contractVersion": "1.0.0",
+	"requirement": "ix://agent-ix/filament-core-data/FR-054",
+	"note": "The single machine-readable mapping table for the Rust/Serde backend. Every other module in this directory derives its dispositions from these rows; no module restates a row. A construct that selects no row and no named refusal is an UNSUPPORTED_CONSTRUCT by FR-054-CON-1.",
+	"rows": [
+		{
+			"rowKey": "kind:scalar",
+			"axis": "kind",
+			"selector": "scalar",
+			"rustForm": "pub struct N(B);",
+			"serdeAttributes": ["transparent"],
+			"mechanism": "newtype over the kernel base with try_new and a validating Deserialize",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "kind:record",
+			"axis": "kind",
+			"selector": "record",
+			"rustForm": "pub struct N { .. }",
+			"serdeAttributes": [],
+			"mechanism": "derived Serialize, member attributes per the field axes, Deserialize routed through try_new",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "kind:enum",
+			"axis": "kind",
+			"selector": "enum",
+			"rustForm": "pub enum N { .. } (fieldless)",
+			"serdeAttributes": ["rename = \"<variant name>\""],
+			"mechanism": "derived Serialize and Deserialize; the rename is emitted only where the derived identifier differs from the variant name",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "kind:union",
+			"axis": "kind",
+			"selector": "union",
+			"rustForm": "pub enum N { .. } (unit variant without payloadType, one-field variant with)",
+			"serdeAttributes": ["rename = \"<variant name>\""],
+			"mechanism": "externally tagged, serde's default; the same conditional rename",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "kind:alias",
+			"axis": "kind",
+			"selector": "alias",
+			"rustForm": "pub struct N(T);",
+			"serdeAttributes": ["transparent"],
+			"mechanism": "newtype over the target's Rust type with try_new",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "kind:sequence",
+			"axis": "kind",
+			"selector": "sequence",
+			"rustForm": "pub struct N(Vec<I>);",
+			"serdeAttributes": ["transparent"],
+			"mechanism": "newtype over the items type with try_new",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "kind:map",
+			"axis": "kind",
+			"selector": "map",
+			"rustForm": "pub struct N(BTreeMap<String, V>);",
+			"serdeAttributes": ["transparent"],
+			"mechanism": "newtype over the values type with try_new; BTreeMap and the fixed String key serialize in one order",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "kind:reference",
+			"axis": "kind",
+			"selector": "reference",
+			"rustForm": "pub struct N(SemanticIdentity);",
+			"serdeAttributes": ["transparent"],
+			"mechanism": "newtype over the validated identity, not over the target's Rust type, plus a validating Deserialize",
+			"diagnosticCode": null
+		},
+
+		{
+			"rowKey": "scalar:boolean",
+			"axis": "scalar",
+			"selector": "boolean",
+			"rustForm": "bool",
+			"serdeAttributes": [],
+			"mechanism": "JSON boolean",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "scalar:integer",
+			"axis": "scalar",
+			"selector": "integer",
+			"rustForm": "i64",
+			"serdeAttributes": [],
+			"mechanism": "JSON number with no fraction or exponent",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "scalar:number",
+			"axis": "scalar",
+			"selector": "number",
+			"rustForm": "f64",
+			"serdeAttributes": [],
+			"mechanism": "JSON number",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "scalar:string",
+			"axis": "scalar",
+			"selector": "string",
+			"rustForm": "String",
+			"serdeAttributes": [],
+			"mechanism": "JSON string",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "scalar:bytes",
+			"axis": "scalar",
+			"selector": "bytes",
+			"rustForm": null,
+			"serdeAttributes": [],
+			"mechanism": "refused: no published artifact states the JSON wire form of bytes (issue #58)",
+			"diagnosticCode": "agent-ix.rust-backend.UNDECLARED_WIRE_FORM"
+		},
+		{
+			"rowKey": "scalar:date",
+			"axis": "scalar",
+			"selector": "date",
+			"rustForm": "Date",
+			"serdeAttributes": [],
+			"mechanism": "generated RFC 3339 full-date newtype over String; JSON string",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "scalar:datetime",
+			"axis": "scalar",
+			"selector": "datetime",
+			"rustForm": "DateTime",
+			"serdeAttributes": [],
+			"mechanism": "generated RFC 3339 date-time newtype over String; JSON string",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "scalar:duration",
+			"axis": "scalar",
+			"selector": "duration",
+			"rustForm": "Duration",
+			"serdeAttributes": [],
+			"mechanism": "generated ISO 8601 duration newtype over String; JSON string",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "scalar:uuid",
+			"axis": "scalar",
+			"selector": "uuid",
+			"rustForm": "Uuid",
+			"serdeAttributes": [],
+			"mechanism": "generated 8-4-4-4-12 newtype over String; JSON string",
+			"diagnosticCode": null
+		},
+
+		{
+			"rowKey": "field:single/non-null/required",
+			"axis": "field",
+			"selector": {
+				"collection": false,
+				"nullable": false,
+				"presence": "required"
+			},
+			"rustForm": "T",
+			"serdeAttributes": [],
+			"mechanism": "the composed member type",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "field:single/non-null/optional",
+			"axis": "field",
+			"selector": {
+				"collection": false,
+				"nullable": false,
+				"presence": "optional"
+			},
+			"rustForm": "Option<T>",
+			"serdeAttributes": [
+				"default",
+				"skip_serializing_if = \"Option::is_none\""
+			],
+			"mechanism": "the composed member type",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "field:single/nullable/required",
+			"axis": "field",
+			"selector": {
+				"collection": false,
+				"nullable": true,
+				"presence": "required"
+			},
+			"rustForm": "Nullable<T>",
+			"serdeAttributes": [],
+			"mechanism": "the composed member type",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "field:single/nullable/optional",
+			"axis": "field",
+			"selector": {
+				"collection": false,
+				"nullable": true,
+				"presence": "optional"
+			},
+			"rustForm": "Option<Nullable<T>>",
+			"serdeAttributes": [
+				"default",
+				"skip_serializing_if = \"Option::is_none\"",
+				"deserialize_with = \"present_or_absent\""
+			],
+			"mechanism": "present_or_absent keeps an absent member and a present null distinguishable",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "field:collection/non-null/required",
+			"axis": "field",
+			"selector": {
+				"collection": true,
+				"nullable": false,
+				"presence": "required"
+			},
+			"rustForm": "Vec<T>",
+			"serdeAttributes": [],
+			"mechanism": "the composed member type; boundedness does not change it",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "field:collection/non-null/optional",
+			"axis": "field",
+			"selector": {
+				"collection": true,
+				"nullable": false,
+				"presence": "optional"
+			},
+			"rustForm": "Option<Vec<T>>",
+			"serdeAttributes": [
+				"default",
+				"skip_serializing_if = \"Option::is_none\""
+			],
+			"mechanism": "the composed member type; boundedness does not change it",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "field:collection/nullable/required",
+			"axis": "field",
+			"selector": {
+				"collection": true,
+				"nullable": true,
+				"presence": "required"
+			},
+			"rustForm": "Vec<Nullable<T>>",
+			"serdeAttributes": [],
+			"mechanism": "the composed member type; boundedness does not change it",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "field:collection/nullable/optional",
+			"axis": "field",
+			"selector": {
+				"collection": true,
+				"nullable": true,
+				"presence": "optional"
+			},
+			"rustForm": "Option<Vec<Nullable<T>>>",
+			"serdeAttributes": [
+				"default",
+				"skip_serializing_if = \"Option::is_none\"",
+				"deserialize_with = \"present_or_absent\""
+			],
+			"mechanism": "present_or_absent keeps an absent member and a present null distinguishable",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "field:multiplicity/upper-zero",
+			"axis": "field",
+			"selector": { "upper": 0 },
+			"rustForm": null,
+			"serdeAttributes": [],
+			"mechanism": "refused: a member that may never be present has no Rust form serde round-trips",
+			"diagnosticCode": "agent-ix.rust-backend.UNSUPPORTED_MULTIPLICITY"
+		},
+
+		{
+			"rowKey": "unknownPolicy:record/reject",
+			"axis": "unknownPolicy",
+			"selector": { "kind": "record", "policy": "reject" },
+			"rustForm": "pub struct N { .. }",
+			"serdeAttributes": ["deny_unknown_fields"],
+			"mechanism": "serde refuses an unknown member at the boundary",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "unknownPolicy:record/preserve",
+			"axis": "unknownPolicy",
+			"selector": { "kind": "record", "policy": "preserve" },
+			"rustForm": "UnknownMembers",
+			"serdeAttributes": ["flatten"],
+			"mechanism": "one flattened BTreeMap<String, SemanticValue> member; validate returns no diagnostic",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "unknownPolicy:record/surface",
+			"axis": "unknownPolicy",
+			"selector": { "kind": "record", "policy": "surface" },
+			"rustForm": "UnknownMembers",
+			"serdeAttributes": ["flatten"],
+			"mechanism": "one flattened BTreeMap<String, SemanticValue> member; validate returns one UNKNOWN_MEMBER_SURFACED per retained member",
+			"diagnosticCode": "agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED"
+		},
+		{
+			"rowKey": "unknownPolicy:non-record/non-reject",
+			"axis": "unknownPolicy",
+			"selector": { "kind": "!record", "policy": "!reject" },
+			"rustForm": null,
+			"serdeAttributes": [],
+			"mechanism": "refused: only a record has a place to put a retained member",
+			"diagnosticCode": "agent-ix.rust-backend.UNKNOWN_POLICY_ON_NON_RECORD"
+		},
+		{
+			"rowKey": "unknownPolicy:non-record/reject",
+			"axis": "unknownPolicy",
+			"selector": { "kind": "!record", "policy": "reject" },
+			"rustForm": null,
+			"serdeAttributes": [],
+			"mechanism": "no emitted attribute; a non-record kind carries no member set to reject into",
+			"diagnosticCode": null
+		},
+
+		{
+			"rowKey": "defaultKind:none",
+			"axis": "defaultKind",
+			"selector": "none",
+			"rustForm": null,
+			"serdeAttributes": [],
+			"mechanism": "no serde default, no metadata default",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "defaultKind:semantic",
+			"axis": "defaultKind",
+			"selector": "semantic",
+			"rustForm": null,
+			"serdeAttributes": ["default = \"<generated fn>\""],
+			"mechanism": "a serde default drawn from defaultValue, plus the metadata record",
+			"diagnosticCode": "agent-ix.rust-backend.INVALID_DEFAULT_VALUE"
+		},
+		{
+			"rowKey": "defaultKind:representation",
+			"axis": "defaultKind",
+			"selector": "representation",
+			"rustForm": null,
+			"serdeAttributes": [],
+			"mechanism": "metadata only: the default belongs to a representation boundary",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "defaultKind:migration",
+			"axis": "defaultKind",
+			"selector": "migration",
+			"rustForm": null,
+			"serdeAttributes": [],
+			"mechanism": "metadata only: the default belongs to a migration boundary",
+			"diagnosticCode": null
+		},
+
+		{
+			"rowKey": "extension:node",
+			"axis": "extension",
+			"selector": "extensions",
+			"rustForm": "Vec<Extension>",
+			"serdeAttributes": [],
+			"mechanism": "Extension carries identity, version, required, capability and a SemanticValue payload; an extension is never folded into an unknown member",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "metadata:contract",
+			"axis": "metadata",
+			"selector": [
+				"roles",
+				"origin",
+				"relationships",
+				"operations",
+				"clauses",
+				"occurrences"
+			],
+			"rustForm": "generated const metadata",
+			"serdeAttributes": [],
+			"mechanism": "emitted beside the types they belong to, preserving every member the IR carries; an operation is metadata and never a Rust function",
+			"diagnosticCode": null
+		},
+
+		{
+			"rowKey": "indirection:field-single",
+			"axis": "indirection",
+			"selector": "field typeRef, single",
+			"rustForm": "Box<T>",
+			"serdeAttributes": [],
+			"mechanism": "boxed where the target lies in the owner's strongly connected component",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "indirection:field-collection",
+			"axis": "indirection",
+			"selector": "field typeRef, collection",
+			"rustForm": "Vec<T>",
+			"serdeAttributes": [],
+			"mechanism": "Vec already carries the indirection, so no Box is introduced",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "indirection:alias-target",
+			"axis": "indirection",
+			"selector": "alias target",
+			"rustForm": "Box<T>",
+			"serdeAttributes": [],
+			"mechanism": "boxed where the target lies in the owner's component; a cycle closing through an alias target is broken as surely as one closing through a record field",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "indirection:variant-payload",
+			"axis": "indirection",
+			"selector": "variant payloadType",
+			"rustForm": "Box<T>",
+			"serdeAttributes": [],
+			"mechanism": "boxed where the payload lies in the owner's component",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "indirection:sequence-items",
+			"axis": "indirection",
+			"selector": "sequence items",
+			"rustForm": "Vec<I>",
+			"serdeAttributes": [],
+			"mechanism": "Vec already carries the indirection",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "indirection:map-values",
+			"axis": "indirection",
+			"selector": "map values",
+			"rustForm": "BTreeMap<String, V>",
+			"serdeAttributes": [],
+			"mechanism": "BTreeMap already carries the indirection",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "indirection:reference-target",
+			"axis": "indirection",
+			"selector": "reference target",
+			"rustForm": "SemanticIdentity",
+			"serdeAttributes": [],
+			"mechanism": "the edge is in the graph and closes cycles there, but the target's Rust type is not materialized at this position, so there is no position to box",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "indirection:operation-edge",
+			"axis": "indirection",
+			"selector": "operation parameter typeRef and returns typeRef",
+			"rustForm": "generated const metadata",
+			"serdeAttributes": [],
+			"mechanism": "the edge is in the graph and closes cycles there; the mapped type reaches the crate as metadata text, so there is no position to box",
+			"diagnosticCode": null
+		}
+	]
+}

@@ -39,7 +39,10 @@ const RESERVED = JSON.parse(
 
 /** Reserved words with no raw-identifier form; these are refusals, not renames. */
 const NO_RAW_FORM = new Set(RESERVED.noRawForm);
-const RESERVED_WORDS = new Set([...RESERVED.reserved, ...RESERVED.reservedFuture]);
+const RESERVED_WORDS = new Set([
+	...RESERVED.reserved,
+	...RESERVED.reservedFuture,
+]);
 
 /**
  * The four Rust scopes injectivity is quantified over (FR-055 Behavior).
@@ -134,7 +137,9 @@ function lower(text) {
 
 function pascal(words) {
 	return words
-		.map((word) => `${upper([...word][0])}${lower([...word].slice(1).join(""))}`)
+		.map(
+			(word) => `${upper([...word][0])}${lower([...word].slice(1).join(""))}`,
+		)
 		.join("");
 }
 
@@ -223,7 +228,11 @@ export function memberName(node) {
 
 /** `snake_case` module name, derived from a type's identity segment. */
 export function moduleName(definition) {
-	return render(identitySegment(definition.identity), definition.identity, snake);
+	return render(
+		identitySegment(definition.identity),
+		definition.identity,
+		snake,
+	);
 }
 
 /** `SCREAMING_SNAKE_CASE` constant name. */

@@ -46,7 +46,7 @@ const DECLARED = {
 		"an ECMA-262 pattern is neither expressible in the declared subset nor a proved-validator registry key",
 	),
 	UNSUPPORTED_SCALAR: blocking(
-		"a kind: \"scalar\" names a value outside the nine kernel scalars",
+		'a kind: "scalar" names a value outside the nine kernel scalars',
 	),
 	UNDECLARED_WIRE_FORM: blocking(
 		"a construct's JSON wire form is declared by no published artifact — the bytes kernel scalar at this revision",
@@ -58,7 +58,7 @@ const DECLARED = {
 		"a kind other than record declares an unknownPolicy other than reject, and only a record has a place to put a retained member",
 	),
 	PAYLOAD_ON_ENUM_VARIANT: blocking(
-		"a kind: \"enum\" variant carries a payloadType, which the schema permits and no contract rule reconciles with the kind",
+		'a kind: "enum" variant carries a payloadType, which the schema permits and no contract rule reconciles with the kind',
 	),
 	CONSTRAINT_NOT_APPLICABLE: blocking(
 		"a constraint keyword does not apply to its resolved subject",
@@ -81,9 +81,7 @@ const DECLARED = {
 	NAME_COLLISION: blocking(
 		"two semantic identities derive one identifier in one declared scope",
 	),
-	V1_1_NODE_IN_V1_0: blocking(
-		"a 1.0.0 document carries a 1.1.0 node",
-	),
+	V1_1_NODE_IN_V1_0: blocking("a 1.0.0 document carries a 1.1.0 node"),
 	UNRESOLVED_TYPE_REF: blocking(
 		"a typeRef, appliesTo, items, values, payloadType or target resolves to nothing",
 	),
