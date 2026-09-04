@@ -24,7 +24,7 @@ the missing persisted second-decider artefacts, loss audit, or merge rehearsal.
 | --- | --- | --- | --- |
 | FND-1200 | resolved | Each corpus now has an authored JSON Schema 2020-12 sidecar (`constraints.schema.json`, `domain.schema.json`, `presence.schema.json`, and `unknown.schema.json`). The differential loads each document directly into Ajv and resolves the case type through its `$defs`; the old test-local IR-to-schema renderer is removed. | None. |
 | FND-1201 | resolved | `auditRenderedNodes` walks every identity-bearing resolved-model node after package rendering and rejects any absent from emitted text unless explicitly declared as a loss. Constraint and variant identity descriptors close the nodes the previous surface omitted; the focused test seeds an unrendered type and proves the audit names it. | None. |
-| FND-1202 | high | Task-115 remains entirely pending: no history-pinned changed-set gate, packed-artifact comparison, or branch/post-merge/sibling verification evidence exists in `test/typescript-backend.test.ts`. | Implement and rehearse every NFR-024/NFR-025 gate before final review. |
+| FND-1202 | resolved | The focused NFR-024/NFR-025 gate covers history-pinned paths, static hermeticity, source formatting, normalized two-pack artifacts, `npm pack --dry-run`, package/lock/divergence comparisons, a 15-export surface, and real squash/sibling rehearsals (17/17 in each state). The #22 revert is byte-identical to the pre-#22 tree. The initial 420/421 restore exposed #20 TC-639 annexing later adapter history; its owner-scoped repair `cf943af` landed first in the rehearsal, after which the provisioned #23-first restored full suite passes 421/421. | None. |
 
 ## Evidence observed
 

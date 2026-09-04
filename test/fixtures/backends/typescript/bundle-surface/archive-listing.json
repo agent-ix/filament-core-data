@@ -6,13 +6,13 @@
 	},
 	{
 		"path": "identity.ts",
-    "size": 8843,
-    "sha256": "532b75eded956eab92cf67b8093cb3dea4cebf10da4d32b35891becd8c52dc71"
+		"size": 8843,
+		"sha256": "532b75eded956eab92cf67b8093cb3dea4cebf10da4d32b35891becd8c52dc71"
 	},
 	{
 		"path": "index.ts",
-    "size": 1432,
-    "sha256": "1ef84341d8cec67a1b755a648a6c96492dad02e6d79099ed2998c6acef5d90ff"
+		"size": 1432,
+		"sha256": "1ef84341d8cec67a1b755a648a6c96492dad02e6d79099ed2998c6acef5d90ff"
 	},
 	{
 		"path": "LICENSE",
@@ -21,13 +21,13 @@
 	},
 	{
 		"path": "metadata.ts",
-    "size": 7503,
-    "sha256": "37481885975d1b46b1b5c95f6b3116f6f11e8efbb24fee4c3114a868881d74e2"
+		"size": 7503,
+		"sha256": "37481885975d1b46b1b5c95f6b3116f6f11e8efbb24fee4c3114a868881d74e2"
 	},
 	{
 		"path": "output-manifest.json",
-		"size": 2532,
-    "sha256": "6a5cb333997f8d56e9cb159949157d2e4e0c1a4b490b87f53abb7c0637432b59"
+		"size": 2469,
+		"sha256": "69660dbaa00782ca554870e6a823339465739ebfdf4bb966acdef5d8ab69bfac"
 	},
 	{
 		"path": "package.json",

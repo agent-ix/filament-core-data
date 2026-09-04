@@ -1,21 +1,43 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://agent-ix.example/fixtures/typescript/constraints.schema.json",
-  "$defs": {
-    "Plain": { "type": "string" },
-    "MinLen": { "type": "string", "minLength": 2 },
-    "MaxLen": { "type": "string", "maxLength": 4 },
-    "Loose": { "type": "string", "pattern": "ab" },
-    "Anchored": { "type": "string", "pattern": "^ab$" },
-    "Choice": { "type": "string", "enum": ["x", "y"] },
-    "Filled": { "type": "string", "minLength": 1 },
-    "Mail": { "type": "string", "format": "email" },
-    "AtLeast": { "type": "integer", "minimum": 0 },
-    "AtMost": { "type": "integer", "maximum": 10 },
-    "Above": { "type": "number", "exclusiveMinimum": 0 },
-    "Below": { "type": "number", "exclusiveMaximum": 10 },
-    "Octets": { "type": "string", "maxLength": 3 },
-    "Distinct": { "type": "array", "items": { "$ref": "#/$defs/Plain" }, "uniqueItems": true },
-    "Holder": { "type": "object", "properties": { "minLen": { "$ref": "#/$defs/MinLen" }, "maxLen": { "$ref": "#/$defs/MaxLen" }, "loose": { "$ref": "#/$defs/Loose" }, "anchored": { "$ref": "#/$defs/Anchored" }, "choice": { "$ref": "#/$defs/Choice" }, "filled": { "$ref": "#/$defs/Filled" }, "mail": { "$ref": "#/$defs/Mail" }, "atLeast": { "$ref": "#/$defs/AtLeast" }, "atMost": { "$ref": "#/$defs/AtMost" }, "above": { "$ref": "#/$defs/Above" }, "below": { "$ref": "#/$defs/Below" }, "octets": { "$ref": "#/$defs/Octets" }, "distinct": { "$ref": "#/$defs/Distinct" } }, "additionalProperties": false }
-  }
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://agent-ix.example/fixtures/typescript/constraints.schema.json",
+	"$defs": {
+		"Plain": { "type": "string" },
+		"MinLen": { "type": "string", "minLength": 2 },
+		"MaxLen": { "type": "string", "maxLength": 4 },
+		"Loose": { "type": "string", "pattern": "ab" },
+		"Anchored": { "type": "string", "pattern": "^ab$" },
+		"Choice": { "type": "string", "enum": ["x", "y"] },
+		"Filled": { "type": "string", "minLength": 1 },
+		"Mail": { "type": "string", "format": "email" },
+		"AtLeast": { "type": "integer", "minimum": 0 },
+		"AtMost": { "type": "integer", "maximum": 10 },
+		"Above": { "type": "number", "exclusiveMinimum": 0 },
+		"Below": { "type": "number", "exclusiveMaximum": 10 },
+		"Octets": { "type": "string", "maxLength": 3 },
+		"Distinct": {
+			"type": "array",
+			"items": { "$ref": "#/$defs/Plain" },
+			"uniqueItems": true
+		},
+		"Holder": {
+			"type": "object",
+			"properties": {
+				"minLen": { "$ref": "#/$defs/MinLen" },
+				"maxLen": { "$ref": "#/$defs/MaxLen" },
+				"loose": { "$ref": "#/$defs/Loose" },
+				"anchored": { "$ref": "#/$defs/Anchored" },
+				"choice": { "$ref": "#/$defs/Choice" },
+				"filled": { "$ref": "#/$defs/Filled" },
+				"mail": { "$ref": "#/$defs/Mail" },
+				"atLeast": { "$ref": "#/$defs/AtLeast" },
+				"atMost": { "$ref": "#/$defs/AtMost" },
+				"above": { "$ref": "#/$defs/Above" },
+				"below": { "$ref": "#/$defs/Below" },
+				"octets": { "$ref": "#/$defs/Octets" },
+				"distinct": { "$ref": "#/$defs/Distinct" }
+			},
+			"additionalProperties": false
+		}
+	}
 }

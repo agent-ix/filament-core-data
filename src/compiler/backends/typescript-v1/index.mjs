@@ -23,7 +23,11 @@ import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../../diagnostics.mjs";
 import { SCHEMA_FILES, admitIr } from "./admit.mjs";
 import { fingerprintIrForTarget } from "./canonical.mjs";
 import { refusesGeneration, representability } from "./loss.mjs";
-import { auditRenderedNodes, renderIdentity, renderMetadata } from "./metadata.mjs";
+import {
+	auditRenderedNodes,
+	renderIdentity,
+	renderMetadata,
+} from "./metadata.mjs";
 import { buildModel } from "./model.mjs";
 import { renderPackage } from "./package-layout.mjs";
 import { renderTypes } from "./types.mjs";

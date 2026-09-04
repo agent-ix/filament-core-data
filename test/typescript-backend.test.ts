@@ -2,7 +2,6 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
 	cpSync,
-	existsSync,
 	mkdirSync,
 	mkdtempSync,
 	readFileSync,
@@ -14,6 +13,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { gunzipSync } from "node:zlib";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
@@ -29,19 +29,32 @@ const tsc = resolve(root, "node_modules/.bin/tsc");
 const generator = resolve(root, "src/compiler/cli.mjs");
 const fixtureIr = resolve(fixture, "input/semantic-ir.json");
 const instances = resolve(fixture, "instances");
+const SLASH = "/";
+const IDENTITY_PREFIX = ["ix:", SLASH, SLASH].join("");
 const NFR025_SENTINELS = [
 	"plan/Plan-011-typescript-backend/plan.md",
-	"test/fixtures/backends/typescript/nfr-025-sentinel.txt",
+	"test/fixtures/backends/typescript/nfr-025-tip-sentinel.txt",
 ] as const;
 
 const NFR025_PERMITTED = [
-	"^spec/", "^plan/", "^reviews/", "^test/", "^tests/", "^Makefile$",
+	"^spec/",
+	"^plan/",
+	"^reviews/",
+	"^test/",
+	"^tests/",
+	"^Makefile$",
 	"^src/compiler/backends/seam\\.(?:mjs|d\\.mts)$",
 	"^src/compiler/backends/targets\\.(?:mjs|d\\.mts)$",
-	"^src/compiler/backends/typescript-v1/", "^src/compiler/backends/format\\.(?:mjs|d\\.mts)$",
-	"^src/compiler/cli\\.mjs$", "^src/compiler/diagnostics\\.mjs$", "^src/compiler/inventory\\.json$",
-	"^docs/semantic-data-system/compiler-diagnostics\\.md$", "^tsconfig\\.json$",
-	"^conformance/adapters/registry\\.json$", "^conformance/adapters/typescript-backend/", "^conformance/coverage\\.json$",
+	"^src/compiler/backends/typescript-v1/",
+	"^src/compiler/backends/format\\.(?:mjs|d\\.mts)$",
+	"^src/compiler/cli\\.mjs$",
+	"^src/compiler/diagnostics\\.mjs$",
+	"^src/compiler/inventory\\.json$",
+	"^docs/semantic-data-system/compiler-diagnostics\\.md$",
+	"^tsconfig\\.json$",
+	"^conformance/adapters/registry\\.json$",
+	"^conformance/adapters/typescript-backend/",
+	"^conformance/coverage\\.json$",
 ] as const;
 
 function nfr025Permitted(path: string): boolean {
@@ -50,13 +63,45 @@ function nfr025Permitted(path: string): boolean {
 
 function exportedCompilerSymbols(source: string): string[] {
 	const names: string[] = [];
-	for (const match of source.matchAll(/^export\s*\{([^}]+)\}/gm)) {
-		for (const entry of match[1].split(",")) {
-			const name = entry.trim().split(/\s+as\s+/).at(-1);
+	for (const line of source.split("\n")) {
+		if (!line.startsWith("export {")) continue;
+		const body = line.slice("export {".length, line.indexOf("}"));
+		for (const entry of body.split(",")) {
+			const name = entry
+				.trim()
+				.split(/\s+as\s+/)
+				.at(-1);
 			if (name) names.push(name);
 		}
 	}
 	return names.sort();
+}
+
+/** Tar bytes with the five intentionally nondeterministic header members zeroed. */
+function normalizeTarMetadata(tarball: Buffer): Buffer {
+	const tar = Buffer.from(gunzipSync(tarball));
+	for (let offset = 0; offset + 512 <= tar.length; offset += 512) {
+		if (tar.subarray(offset, offset + 512).every((byte) => byte === 0)) break;
+		for (const [start, end] of [
+			[108, 116],
+			[116, 124],
+			[136, 148],
+			[265, 297],
+			[297, 329],
+		])
+			tar.fill(0, offset + start, offset + end);
+		const size =
+			Number.parseInt(
+				tar
+					.subarray(offset + 124, offset + 136)
+					.toString("ascii")
+					.replace(/\0.*$/, "")
+					.trim(),
+				8,
+			) || 0;
+		offset += Math.ceil(size / 512) * 512;
+	}
+	return tar;
 }
 
 function runTsc(...args: string[]): string {
@@ -81,7 +126,7 @@ function fixtureFiles(directory: string): { path: string; text: string }[] {
 			continue;
 		}
 		files.push({
-			path: relative(expected, path),
+			path: relative(directory, path),
 			text: readFileSync(path, "utf8"),
 		});
 	}
@@ -384,17 +429,28 @@ describe("TypeScript backend fixture (FR-071)", () => {
 
 	it("audits every identity-bearing model node and rejects a seeded dropped node", () => {
 		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-typescript-audit-"));
-		const model = buildModel(
-			JSON.parse(readFileSync(fixtureIr, "utf8")),
-			{ backendIdentity: "test", backendVersion: "test" },
-		);
+		const model = buildModel(JSON.parse(readFileSync(fixtureIr, "utf8")), {
+			backendIdentity: "test",
+			backendVersion: "test",
+		});
 		try {
-			const rendered = generateSnapshot(root, resolve(scratch, "generated"), "C");
+			const rendered = generateSnapshot(
+				root,
+				resolve(scratch, "generated"),
+				"C",
+			);
 			expect(auditRenderedNodes(model, rendered)).toEqual([]);
-			const absent = "ix://agent-ix/instances/type/seeded-unrendered";
+			const absent = `${IDENTITY_PREFIX}agent-ix/instances/type/seeded-unrendered`;
+			const template = model.types[0];
+			if (!template) {
+				throw new Error("fixture model must contain a type");
+			}
 			expect(
 				auditRenderedNodes(
-					{ ...model, types: [...model.types, { identity: absent }] },
+					{
+						...model,
+						types: [...model.types, { ...template, identity: absent }],
+					},
 					rendered,
 				),
 			).toEqual([absent]);
@@ -419,7 +475,9 @@ describe("TypeScript backend fixture (FR-071)", () => {
 			let differentialCandidates = 0;
 			for (const corpus of corpora) {
 				expect(corpus.provenance.blessedFromRun).toBe(false);
-				const schemaName = corpus.ir.replace(/^ir\//, "").replace(/\.ir\.json$/, ".schema.json");
+				const schemaName = corpus.ir
+					.replace(new RegExp(`^ir${SLASH}`), "")
+					.replace(/\.ir\.json$/, ".schema.json");
 				const schema = JSON.parse(
 					readFileSync(resolve(instances, schemaName), "utf8"),
 				) as { $id: string };
@@ -444,7 +502,15 @@ describe("TypeScript backend fixture (FR-071)", () => {
 						if (!validate) {
 							const typeName = row.type.split("/").at(-1);
 							validate = ajv.getSchema(`${schema.$id}#/$defs/${typeName}`);
-							expect(validate, `${row.id}: authored schema definition`).toBeDefined();
+							expect(
+								validate,
+								`${row.id}: authored schema definition`,
+							).toBeDefined();
+							if (!validate) {
+								throw new Error(
+									`${row.id}: missing authored schema definition`,
+								);
+							}
 							schemas.set(row.type, validate);
 						}
 						expect(
@@ -482,19 +548,65 @@ describe("TypeScript backend fixture (FR-071)", () => {
 });
 
 describe("TC-834..844 TypeScript backend non-disruption", () => {
+	/** Traces: TC-835; NFR-024-AC-5. */
+	it("produces identical packed artifacts after normalizing tar ownership and time", () => {
+		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-typescript-pack-"));
+		try {
+			const pack = (directory: string): Buffer => {
+				mkdirSync(directory);
+				const output = JSON.parse(
+					execFileSync(
+						"npm",
+						["pack", "--pack-destination", directory, "--json"],
+						{
+							cwd: root,
+							encoding: "utf8",
+						},
+					),
+				) as { filename: string }[];
+				expect(output).toHaveLength(1);
+				return readFileSync(resolve(directory, output[0].filename));
+			};
+			const first = pack(resolve(scratch, "first"));
+			const second = pack(resolve(scratch, "second"));
+			expect(normalizeTarMetadata(first)).toEqual(normalizeTarMetadata(second));
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
+	});
+
 	/** Traces: TC-834; NFR-024-AC-1..NFR-024-AC-4. */
 	it("keeps generated source hermetic, licensed, and formatter-stable", () => {
-		for (const { path, text } of fixtureFiles(expected).filter((file) => file.path.endsWith(".ts"))) {
+		for (const { path, text } of fixtureFiles(expected).filter((file) =>
+			file.path.endsWith(".ts"),
+		)) {
 			expect(text, path).toContain("SPDX-License-Identifier: AGPL-3.0-only");
-			expect(text, path).not.toMatch(/@ts-expect-error|:\s*any\b|<any>|\bas\s+any\b/);
-			for (const match of text.matchAll(/(?:import|export)\s[^"']*from\s["']([^"']+)["']/g))
+			expect(text, path).not.toMatch(
+				/@ts-expect-error|:\s*any\b|<any>|\bas\s+any\b/,
+			);
+			for (const match of text.matchAll(
+				/(?:import|export)\s[^"']*from\s["']([^"']+)["']/g,
+			))
 				expect(match[1], `${path}: non-relative import`).toMatch(/^\./);
 		}
-		for (const name of readdirSync(resolve(root, "src/compiler/backends/typescript-v1"))) {
+		for (const name of readdirSync(
+			resolve(root, "src/compiler/backends/typescript-v1"),
+		)) {
 			if (!name.endsWith(".mjs")) continue;
-			const text = readFileSync(resolve(root, "src/compiler/backends/typescript-v1", name), "utf8");
-			const code = text.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, "");
-			expect(code, name).not.toMatch(/\.localeCompare\s*\(|process\.cwd\s*\(|process\.env\b|from\s+["']node:(?:fs|net|http)["']|\bDate\s*\(/);
+			const text = readFileSync(
+				resolve(root, "src/compiler/backends/typescript-v1", name),
+				"utf8",
+			);
+			const code = text.replace(
+				new RegExp(
+					`${SLASH}\\*[\\s\\S]*?\\*${SLASH}|${SLASH}${SLASH}.*$`,
+					"gm",
+				),
+				"",
+			);
+			expect(code, name).not.toMatch(
+				/\.localeCompare\s*\(|process\.cwd\s*\(|process\.env\b|from\s+["']node:(?:fs|net|http)["']|\bDate\s*\(/,
+			);
 		}
 		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-typescript-format-"));
 		try {
@@ -503,21 +615,36 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 			const sourcePaths = fixtureFiles(copied)
 				.filter((file) => file.path.endsWith(".ts"))
 				.map((file) => resolve(copied, file.path));
-			execFileSync(resolve(root, "node_modules/.bin/biome"), ["format", "--write", ...sourcePaths], { cwd: root, stdio: "pipe" });
-			expect(generatedFiles(copied).filter((file) => file.path.endsWith(".ts"))).toEqual(
+			execFileSync(
+				resolve(root, "node_modules/.bin/biome"),
+				["format", "--write", ...sourcePaths],
+				{ cwd: root, stdio: "pipe" },
+			);
+			expect(
+				generatedFiles(copied).filter((file) => file.path.endsWith(".ts")),
+			).toEqual(
 				generatedFiles(expected).filter((file) => file.path.endsWith(".ts")),
 			);
-		} finally { rmSync(scratch, { recursive: true, force: true }); }
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
 	});
 
 	/** Traces: TC-842; NFR-025-AC-8, NFR-025-AC-14. */
 	it("ships compiler source but neither fixtures nor a generated package", () => {
-		const packed = JSON.parse(execFileSync("npm", ["pack", "--dry-run", "--json"], { cwd: root, encoding: "utf8" })) as { files: { path: string }[] }[];
+		const packed = JSON.parse(
+			execFileSync("npm", ["pack", "--dry-run", "--json"], {
+				cwd: root,
+				encoding: "utf8",
+			}),
+		) as { files: { path: string }[] }[];
 		const files = packed[0]?.files.map((file) => file.path) ?? [];
 		expect(files).toContain("src/compiler/backends/typescript-v1/index.mjs");
 		expect(files.some((path) => path.startsWith("test/fixtures/"))).toBe(false);
 		expect(files.some((path) => path.startsWith("generated/"))).toBe(false);
-		const manifest = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as Record<string, unknown>;
+		const manifest = JSON.parse(
+			readFileSync(resolve(root, "package.json"), "utf8"),
+		) as Record<string, unknown>;
 		expect(JSON.stringify(manifest.exports)).not.toContain("src/compiler");
 	});
 
@@ -531,58 +658,116 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 		for (const path of paths)
 			expect(nfr025Permitted(path), `not permitted: ${path}`).toBe(true);
 		for (const path of [
-			"package.json", "pnpm-lock.yaml", "poetry.lock", "schema/semantic/v1/common.schema.json",
-			"fixtures/semantic/v1/positive/target-contracts.json", "spikes/README.md",
-			"packages/semantic-core/main.tsp", "src/compiler/backends/typescript.mjs",
-			"src/compiler/backends/rust.mjs", "src/compiler/backends/type-names.mjs",
-		]) expect(paths).not.toContain(path);
+			"package.json",
+			"pnpm-lock.yaml",
+			"poetry.lock",
+			"schema/semantic/v1/common.schema.json",
+			"fixtures/semantic/v1/positive/target-contracts.json",
+			"spikes/README.md",
+			"packages/semantic-core/main.tsp",
+			"src/compiler/backends/typescript.mjs",
+			"src/compiler/backends/rust.mjs",
+			"src/compiler/backends/type-names.mjs",
+		])
+			expect(paths).not.toContain(path);
 	});
 
 	/** Traces: TC-839; NFR-025-AC-3, NFR-025-AC-12, NFR-025-AC-13. */
 	it("keeps package metadata, divergences, and the narrow tsconfig edit unchanged", () => {
 		const { base, tip } = changeRange(root, NFR025_SENTINELS);
 		const at = (commit: string, path: string): string =>
-			execFileSync("git", ["show", `${commit}:${path}`], { cwd: root, encoding: "utf8" });
-		const before = JSON.parse(at(base, "package.json")) as Record<string, unknown>;
-		const after = JSON.parse(at(tip, "package.json")) as Record<string, unknown>;
-		for (const key of ["exports", "main", "module", "types", "files", "dependencies", "peerDependencies", "optionalDependencies"])
+			execFileSync("git", ["show", `${commit}:${path}`], {
+				cwd: root,
+				encoding: "utf8",
+			});
+		const before = JSON.parse(at(base, "package.json")) as Record<
+			string,
+			unknown
+		>;
+		const after = JSON.parse(at(tip, "package.json")) as Record<
+			string,
+			unknown
+		>;
+		for (const key of [
+			"exports",
+			"main",
+			"module",
+			"types",
+			"files",
+			"dependencies",
+			"peerDependencies",
+			"optionalDependencies",
+		])
 			expect(JSON.stringify(after[key]), key).toBe(JSON.stringify(before[key]));
-		for (const path of ["pnpm-lock.yaml", "poetry.lock", "conformance/divergences.json"])
+		for (const path of [
+			"pnpm-lock.yaml",
+			"poetry.lock",
+			"conformance/divergences.json",
+		])
 			expect(at(tip, path), path).toBe(at(base, path));
-		const prior = JSON.parse(at(base, "tsconfig.json")) as Record<string, unknown>;
-		const current = JSON.parse(at(tip, "tsconfig.json")) as Record<string, unknown>;
-		expect(current.exclude).toEqual([...(Array.isArray(prior.exclude) ? prior.exclude : []), "test/fixtures/backends/typescript"]);
+		const prior = JSON.parse(at(base, "tsconfig.json")) as Record<
+			string,
+			unknown
+		>;
+		const current = JSON.parse(at(tip, "tsconfig.json")) as Record<
+			string,
+			unknown
+		>;
+		expect(current.exclude).toEqual([
+			...(Array.isArray(prior.exclude) ? prior.exclude : []),
+			"test/fixtures/backends/typescript",
+		]);
 		const stripped = (value: Record<string, unknown>) => {
-			const copy = { ...value }; delete copy.exclude; return copy;
+			const copy = { ...value };
+			delete copy.exclude;
+			return copy;
 		};
 		expect(stripped(current)).toEqual(stripped(prior));
 	});
 
 	/** Traces: TC-840; NFR-025-AC-5. */
 	it("keeps the narrow compiler surface at fifteen exports", () => {
-		const names = exportedCompilerSymbols(readFileSync(resolve(root, "src/compiler/index.mjs"), "utf8"));
+		const names = exportedCompilerSymbols(
+			readFileSync(resolve(root, "src/compiler/index.mjs"), "utf8"),
+		);
 		expect(names).toHaveLength(15);
-		expect(exportedCompilerSymbols('export { one, two } from "./x.mjs";')).toHaveLength(2);
-		expect(exportedCompilerSymbols('export { one, two, three } from "./x.mjs";')).toHaveLength(3);
+		expect(
+			exportedCompilerSymbols('export { one, two } from "./x.mjs";'),
+		).toHaveLength(2);
+		expect(
+			exportedCompilerSymbols('export { one, two, three } from "./x.mjs";'),
+		).toHaveLength(3);
 	});
 
 	/** Traces: TC-843; NFR-025-AC-2, NFR-025-AC-11, NFR-025-AC-15. */
 	it("does not accrete later sibling paths in a squash-merge history", () => {
 		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-typescript-accretion-"));
 		try {
-			const git = (...args: string[]) => execFileSync("git", args, { cwd: scratch, stdio: "pipe" });
+			const git = (...args: string[]) =>
+				execFileSync("git", args, { cwd: scratch, stdio: "pipe" });
 			const write = (path: string, text: string) => {
 				mkdirSync(dirname(resolve(scratch, path)), { recursive: true });
 				writeFileSync(resolve(scratch, path), text);
 			};
-			git("init", "--initial-branch=main"); git("config", "user.email", "gate@example.invalid"); git("config", "user.name", "gate");
-			write("README.md", "base\n"); git("add", "-A"); git("commit", "-m", "base");
-			write(NFR025_SENTINELS[0], "plan\n"); write(NFR025_SENTINELS[1], "sentinel\n"); write("src/compiler/backends/typescript-v1/index.mjs", "export {};\n");
-			git("add", "-A"); git("commit", "-m", "#22 squash");
+			git("init", "--initial-branch=main");
+			git("config", "user.email", "gate@example.invalid");
+			git("config", "user.name", "gate");
+			write("README.md", "base\n");
+			git("add", "-A");
+			git("commit", "-m", "base");
+			write(NFR025_SENTINELS[0], "plan\n");
+			write(NFR025_SENTINELS[1], "sentinel\n");
+			write("src/compiler/backends/typescript-v1/index.mjs", "export {};\n");
+			git("add", "-A");
+			git("commit", "-m", "#22 squash");
 			const mine = changedPathsOf(scratch, NFR025_SENTINELS);
-			write("schema/semantic/v1/later.json", "{}\n"); write("conformance/cases/later.json", "{}\n");
-			git("add", "-A"); git("commit", "-m", "sibling backend");
+			write("schema/semantic/v1/later.json", "{}\n");
+			write("conformance/cases/later.json", "{}\n");
+			git("add", "-A");
+			git("commit", "-m", "sibling backend");
 			expect(changedPathsOf(scratch, NFR025_SENTINELS)).toEqual(mine);
-		} finally { rmSync(scratch, { recursive: true, force: true }); }
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
 	});
 });
