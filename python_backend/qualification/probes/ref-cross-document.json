@@ -1,0 +1,47 @@
+{
+	"$comment": "Issue #23, FR-077. A multi-document probe: `schemas` is the input set the generator resolves as a modular directory.",
+	"id": "ref-cross-document",
+	"construct": "cross-document reference",
+	"note": "The thirteen published documents reference one another by relative filename; a reference that flattened would duplicate a type per document.",
+	"detector": {
+		"kind": "regex",
+		"pattern": "(import|from) .*b_schema|b_schema\\."
+	},
+	"schemas": {
+		"a.schema.json": {
+			"$id": "https://x/a",
+			"$defs": {
+				"A": {
+					"type": "object",
+					"title": "A",
+					"properties": {
+						"b": { "$ref": "b.schema.json#/$defs/B" }
+					},
+					"required": ["b"],
+					"additionalProperties": false
+				}
+			}
+		},
+		"b.schema.json": {
+			"$id": "https://x/b",
+			"$defs": {
+				"B": {
+					"type": "object",
+					"title": "B",
+					"properties": {
+						"x": { "type": "string" }
+					},
+					"required": ["x"],
+					"additionalProperties": false
+				}
+			}
+		}
+	},
+	"expected": {
+		"pydantic_v2_basemodel": true,
+		"pydantic_v2_dataclass": true,
+		"stdlib_dataclass": true,
+		"typed_dict": true,
+		"msgspec_struct": true
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"$comment": "Issue #23, FR-076-CON-5. A constraint against widening a limit has no contents unless the limit has a value, so the values are here rather than in prose. The environment allow-list is exhaustive: the subprocess sees these names and nothing else, so no proxy variable, no caller `PYTHONPATH`, and no `HOME` that would let the formatter read a user configuration reaches it.",
+	"wallClockTimeoutSeconds": 120,
+	"killGraceSeconds": 5,
+	"maxInputBytes": 4194304,
+	"environmentAllowList": {
+		"PATH": "inherited; the generator is resolved through its distribution entry point, not through this",
+		"PYTHONHASHSEED": "0",
+		"PYTHONWARNINGS": "error",
+		"PYTHONDONTWRITEBYTECODE": "1",
+		"LC_ALL": "C.UTF-8",
+		"LANG": "C.UTF-8",
+		"TMPDIR": "the scratch root's parent"
+	},
+	"stderrAllowList": [],
+	"warningAllowList": []
+}

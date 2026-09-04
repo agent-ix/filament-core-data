@@ -14,16 +14,40 @@ build:
 	pnpm run build
 
 .PHONY: test
-test:
+test: test-node test-python
+
+.PHONY: test-node
+test-node:
 	pnpm run test
 	$(MAKE) rust
 
+# The Python half of the suite (issue #23, FR-072). Before this target the
+# repository had no entry point that ran pytest at all: `make test` was vitest
+# alone, and the 131 assertions issues #20 and #34 added under `tests/` ran only
+# when someone remembered to. Every gate this repository states about absent
+# tooling — fail with a provisioning message, never skip — needs somewhere to
+# run, so it runs here.
+.PHONY: test-python
+test-python:
+	poetry run pytest -q
+
 .PHONY: lint
-lint:
+lint: lint-node lint-python
+
+.PHONY: lint-node
+lint-node:
 	pnpm run lint
 	node scripts/build-rust-backend-docs.mjs --check
 	node src/compiler/backends/rust-serde/cli.mjs register --check
 	node src/compiler/backends/rust-serde/cli.mjs mutations --check
+
+# Issue #23 (SR-105 FND-1191). `ruff` and `black` were pinned dev dependencies
+# that no target ran, so their findings accumulated unseen. `make lint` is the
+# entry point the CI action calls, so it is where they belong.
+.PHONY: lint-python
+lint-python:
+	poetry run ruff check python_backend tests scripts
+	poetry run black --check python_backend tests scripts
 
 .PHONY: typecheck
 typecheck:

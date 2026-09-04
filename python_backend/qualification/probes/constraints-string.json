@@ -1,0 +1,32 @@
+{
+	"$comment": "Issue #23, FR-077. One construct, one detector, one expected retention per family. The expectation is read from the contract, not from the measurement (FR-077-CON-2).",
+	"id": "constraints-string",
+	"construct": "string constraints",
+	"note": "Length and pattern must reach the generated type.",
+	"detector": { "kind": "regex", "pattern": "pattern" },
+	"schema": {
+		"$defs": {
+			"S": {
+				"type": "object",
+				"title": "S",
+				"properties": {
+					"s": {
+						"type": "string",
+						"minLength": 2,
+						"maxLength": 5,
+						"pattern": "^a+$"
+					}
+				},
+				"required": ["s"],
+				"additionalProperties": false
+			}
+		}
+	},
+	"expected": {
+		"pydantic_v2_basemodel": true,
+		"pydantic_v2_dataclass": true,
+		"stdlib_dataclass": false,
+		"typed_dict": false,
+		"msgspec_struct": true
+	}
+}

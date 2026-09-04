@@ -1,0 +1,31 @@
+{
+	"$comment": "Issue #23, FR-077. One construct, one detector, one expected retention per family. The expectation is read from the contract, not from the measurement (FR-077-CON-2).",
+	"id": "alias",
+	"construct": "a property whose wire name is not an identifier",
+	"note": "A reserved or punctuated wire name must be recoverable, or the value cannot round-trip.",
+	"detector": {
+		"kind": "regex",
+		"pattern": "(alias='from'|'from':|name='from')"
+	},
+	"schema": {
+		"$defs": {
+			"A": {
+				"type": "object",
+				"title": "A",
+				"properties": {
+					"$schemaRef": { "type": "string" },
+					"from": { "type": "string" }
+				},
+				"required": ["from"],
+				"additionalProperties": false
+			}
+		}
+	},
+	"expected": {
+		"pydantic_v2_basemodel": true,
+		"pydantic_v2_dataclass": true,
+		"stdlib_dataclass": false,
+		"typed_dict": true,
+		"msgspec_struct": true
+	}
+}

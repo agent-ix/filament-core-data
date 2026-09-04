@@ -1,0 +1,9 @@
+{
+	"$comment": "Issue #23, FR-075/NFR-026-AC-1. A dynamic or recursive reference escaping the prepared input set.",
+	"kind": "schema",
+	"document": {
+		"$defs": {
+			"A": { "$recursiveRef": "../outside.json" }
+		}
+	}
+}
