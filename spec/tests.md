@@ -1992,16 +1992,16 @@ validator and its differential harness.
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 205 | 198 | 0 | 7 | 100% mapped (205/205) |
+| Static | 213 | 201 | 0 | 12 | 100% mapped (213/213) |
 | Manual | 47 | 45 | 0 | 2 | 100% mapped (47/47) |
-| Analysis | 39 | 21 | 0 | 18 | 100% mapped (39/39) |
-| Property | 64 | 58 | 0 | 6 | 100% mapped (64/64) |
-| Unit | 370 | 327 | 0 | 43 | 100% mapped (370/370) |
-| Integration | 83 | 62 | 0 | 21 | 100% mapped (83/83) |
-| Fuzz | 9 | 7 | 0 | 2 | 100% mapped (9/9) |
-| Snapshot | 23 | 20 | 0 | 3 | 100% mapped (23/23) |
-| Compile | 5 | 3 | 0 | 2 | 100% mapped (5/5) |
-| **Total** | **845** | **741** | **0** | **104** | **100% mapped (845/845)** |
+| Analysis | 47 | 29 | 0 | 18 | 100% mapped (47/47) |
+| Property | 73 | 58 | 0 | 15 | 100% mapped (73/73) |
+| Unit | 406 | 329 | 0 | 77 | 100% mapped (406/406) |
+| Integration | 104 | 64 | 0 | 40 | 100% mapped (104/104) |
+| Fuzz | 12 | 7 | 0 | 5 | 100% mapped (12/12) |
+| Snapshot | 30 | 21 | 0 | 9 | 100% mapped (30/30) |
+| Compile | 13 | 3 | 0 | 10 | 100% mapped (13/13) |
+| **Total** | **945** | **757** | **0** | **188** | **100% mapped (945/945)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.
@@ -2017,19 +2017,5 @@ registry records as #23 and which needs an IR reader a generated type package
 cannot be; and issue #66, the Python half of the suite having run in no entry
 point at all before this change added `make test-python`.
 
-## Test Execution Summary
-
-| Category | Total | Passed | Failed | Blocked | Coverage |
-|---|---|---|---|---|---|
-| Static | 206 | 201 | 0 | 5 | 100% mapped (206/206) |
-| Manual | 47 | 45 | 0 | 2 | 100% mapped (47/47) |
-| Analysis | 29 | 29 | 0 | 0 | 100% mapped (29/29) |
-| Property | 67 | 58 | 0 | 9 | 100% mapped (67/67) |
-| Unit | 363 | 329 | 0 | 34 | 100% mapped (363/363) |
-| Integration | 84 | 64 | 0 | 20 | 100% mapped (84/84) |
-| Fuzz | 10 | 7 | 0 | 3 | 100% mapped (10/10) |
-| Snapshot | 27 | 21 | 0 | 6 | 100% mapped (27/27) |
-| Compile | 11 | 3 | 0 | 8 | 100% mapped (11/11) |
-| **Total** | **844** | **757** | **0** | **87** | **100% mapped (844/844)** |
 
 **Matrix coverage status: ✅ Complete. Execution status: ✅ 757 of 844 rows pass and 87 are not — TC-370 and TC-382 blocked on issue #42, TC-944 awaiting the program owner's manual review, and issue #22's 84 rows that no test binds, each marked with the reason it is not bound — after issue #22 merged issue #23's TC-845..944 and issue #23's own TC-944 manual review; the automated suite is measured with `make test` and `poetry run pytest` and restated at the end of this line. TC-199 is recorded by the owner decision on issue #4; TC-370 and TC-382 remain blocked on issue #42 (the retained issue #4 evidence records the minting host's own tool versions). TC-398..619 pass on the issue #19 branch, measured with `make test` after merging `origin/main` at 4e48f08. The `Coverage` column is measured by `scripts/test-matrix-summary.mjs`, which counts the rows naming an id a spec artifact declares; it was a string literal before issue #19's code review (SR-073 FND-658). The `Blocked` column counts every row whose status is not ✅. Issue #19 measured `origin/main` at 51febd4 as **168 of 173** and filed the cause as #48; PR #47 re-expressed those five guards as tree assertions on `main`, and this branch takes that form. Issue #20 then measured the remaining direction: the NFR-021 changed-path range was fixed at its base but open at its head, so it grew from 236 paths and 0 prohibited hits against the merged trunk to 406 paths and 139 against a sibling branch. Both ends now come from history, and TC-644 rehearses the property on a synthetic history rather than inferring it from the shape of the source. Three states were measured for the fix, because the two-number standard cannot see an accreting range: **302 of 302** on the branch; **302 of 302** in a scratch clone where the branch is squash-merged onto f412bda and `origin/main` is repointed so both `git diff origin/main...HEAD` and `git status --porcelain` are empty; and **408 of 408 across 10 files** in that same clone with issue #20 (ad9c552) squash-merged on top. The third state is **406 of 407 with one failure** without this fix — `not permitted: conformance/README.md` — which is the defect. In the fixed third state issue #19's own range is 236 paths with 0 prohibited hits while the open-ended range over the same history is 406 paths with 139. Issue #20 then merged that fix and measured three states on `origin/main` at 3ddc04b, each with `pnpm install` and `poetry install`: **409 of 409 across 10 files** on the branch, identical on a second run; **409 of 409** in a scratch clone where the branch is squash-merged onto 3ddc04b and `origin/main` is repointed so both `git diff origin/main...HEAD` and `git status --porcelain` are empty; and **409 of 409** in that same clone with an unrelated sibling change squashed on top that adds `src/sibling/marker.mjs` and edits `docs/semantic-data-system/roadmap.md`. `poetry run pytest` is 131 of 131 in all three. The third state is what found the same defect one layer down in this corpus's own gates: measured against the range before it was bounded at its tip, it is **2 failed of 106**, attributing the sibling's `src/` and `docs/` paths to issue #20. TC-639 now asserts that every sentinel resolves and that nothing under `conformance/` is added after the range's tip, because a sentinel list is the kind of thing that rots quietly. The corpus's one remaining read of a moving ref is the versioning gate's predecessor, which is deliberate — a baseline the branch under test can edit is not a baseline — and is declared in the manifest so an unreadable ref fails loudly instead of skipping. Issue #22 then merged `origin/main` at de49a49 and measured the three states again, each with `pnpm install --frozen-lockfile` and `poetry install`: **445 of 445 across 12 files** with `pnpm run test` and **495 of 495** with `poetry run pytest` on the branch head; **445 of 445** and **495 of 495** in a scratch clone where the branch is squash-merged onto de49a49 and `origin/main` is repointed so both `git diff --no-renames --name-only origin/main...HEAD` and `git status --porcelain` are empty; and **445 of 445** and **495 of 495** in that same clone with an unrelated sibling change squashed on top that adds `src/sibling/marker.mjs` and edits `docs/semantic-data-system/roadmap.md`, so no sibling path is attributed to issue #22. `quire validate --scope . "spec/**/*.md"` exits 0 with one pre-existing EARS warning on FR-031 and no structural error. That merge also surfaced a cross-ticket collision the two-number standard cannot see: issue #23's TC-894 asserted that no module under `src/compiler/` spawns a process, which issue #22's FR-071 injected formatter does by design; the Python gate now carries the same named exemption and the same "no backend can reach it" reachability assertion the JS gate in `test/compiler.test.ts` already carried, and both halves were falsified before being accepted. The row-level binding pass that followed was re-measured in all three states: `quire coverage` reports **zero status lies across TC-745..844** on the branch head and in the squash-merged post-merge clone, with ten rows id-bound and the other eighty-four marked with the reason no test binds them; removing a trace id returns the row to a status lie, and an unrelated added test changes neither the bound set nor the lie count. `pnpm run test` is **445 of 445** and `poetry run pytest` **495 of 495** in each of the three states after that pass.**
