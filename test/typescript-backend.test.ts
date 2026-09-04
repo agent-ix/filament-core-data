@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
+	cpSync,
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
@@ -481,6 +482,45 @@ describe("TypeScript backend fixture (FR-071)", () => {
 });
 
 describe("TC-834..844 TypeScript backend non-disruption", () => {
+	/** Traces: TC-834; NFR-024-AC-1..NFR-024-AC-4. */
+	it("keeps generated source hermetic, licensed, and formatter-stable", () => {
+		for (const { path, text } of fixtureFiles(expected).filter((file) => file.path.endsWith(".ts"))) {
+			expect(text, path).toContain("SPDX-License-Identifier: AGPL-3.0-only");
+			expect(text, path).not.toMatch(/@ts-expect-error|:\s*any\b|<any>|\bas\s+any\b/);
+			for (const match of text.matchAll(/(?:import|export)\s[^"']*from\s["']([^"']+)["']/g))
+				expect(match[1], `${path}: non-relative import`).toMatch(/^\./);
+		}
+		for (const name of readdirSync(resolve(root, "src/compiler/backends/typescript-v1"))) {
+			if (!name.endsWith(".mjs")) continue;
+			const text = readFileSync(resolve(root, "src/compiler/backends/typescript-v1", name), "utf8");
+			const code = text.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, "");
+			expect(code, name).not.toMatch(/\.localeCompare\s*\(|process\.cwd\s*\(|process\.env\b|from\s+["']node:(?:fs|net|http)["']|\bDate\s*\(/);
+		}
+		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-typescript-format-"));
+		try {
+			const copied = resolve(scratch, "expected");
+			cpSync(expected, copied, { recursive: true });
+			const sourcePaths = fixtureFiles(copied)
+				.filter((file) => file.path.endsWith(".ts"))
+				.map((file) => resolve(copied, file.path));
+			execFileSync(resolve(root, "node_modules/.bin/biome"), ["format", "--write", ...sourcePaths], { cwd: root, stdio: "pipe" });
+			expect(generatedFiles(copied).filter((file) => file.path.endsWith(".ts"))).toEqual(
+				generatedFiles(expected).filter((file) => file.path.endsWith(".ts")),
+			);
+		} finally { rmSync(scratch, { recursive: true, force: true }); }
+	});
+
+	/** Traces: TC-842; NFR-025-AC-8, NFR-025-AC-14. */
+	it("ships compiler source but neither fixtures nor a generated package", () => {
+		const packed = JSON.parse(execFileSync("npm", ["pack", "--dry-run", "--json"], { cwd: root, encoding: "utf8" })) as { files: { path: string }[] }[];
+		const files = packed[0]?.files.map((file) => file.path) ?? [];
+		expect(files).toContain("src/compiler/backends/typescript-v1/index.mjs");
+		expect(files.some((path) => path.startsWith("test/fixtures/"))).toBe(false);
+		expect(files.some((path) => path.startsWith("generated/"))).toBe(false);
+		const manifest = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as Record<string, unknown>;
+		expect(JSON.stringify(manifest.exports)).not.toContain("src/compiler");
+	});
+
 	/** Traces: TC-838; NFR-025-AC-1, NFR-025-AC-4, NFR-025-AC-7. */
 	it("pins #22's changed set to history and permits every one of its paths", () => {
 		const { base, tip } = changeRange(root, NFR025_SENTINELS);
