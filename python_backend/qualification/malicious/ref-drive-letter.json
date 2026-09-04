@@ -1,0 +1,11 @@
+{
+	"$comment": "Issue #23, FR-075/NFR-026-AC-1. A `$ref` shape that escapes the prepared input set.",
+	"kind": "schema",
+	"document": {
+		"$defs": {
+			"A": {
+				"$ref": "C:\\x.json"
+			}
+		}
+	}
+}

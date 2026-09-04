@@ -1,0 +1,15 @@
+{
+	"$comment": "Issue #23, FR-075/NFR-026-AC-1. The executable schema key `x-python-type` at the items position.",
+	"kind": "schema",
+	"expectedCode": "PY-REF-002",
+	"document": {
+		"$defs": {
+			"A": {
+				"type": "array",
+				"items": {
+					"x-python-type": "os.system"
+				}
+			}
+		}
+	}
+}

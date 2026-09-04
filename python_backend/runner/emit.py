@@ -297,7 +297,7 @@ def check() -> int:
         committed = {
             str(path.relative_to(target)): path.read_text(encoding="utf-8")
             for path in sorted(target.rglob("*"))
-            if path.is_file()
+            if path.is_file() and "__pycache__" not in path.parts
         }
         for name in committed:
             if name not in files:

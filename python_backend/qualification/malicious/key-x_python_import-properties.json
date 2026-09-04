@@ -1,0 +1,17 @@
+{
+	"$comment": "Issue #23, FR-075/NFR-026-AC-1. The executable schema key `x-python-import` at the properties position.",
+	"kind": "schema",
+	"expectedCode": "PY-REF-001",
+	"document": {
+		"$defs": {
+			"A": {
+				"type": "object",
+				"properties": {
+					"p": {
+						"x-python-import": "os.system"
+					}
+				}
+			}
+		}
+	}
+}

@@ -203,6 +203,7 @@ def assert_argv_safe(argv: list[str]) -> None:
 
     prohibited_code, network_code, unknown_code = register().argument_tokens
 
+    seen: set[str] = set()
     index = 0
     while index < len(argv):
         token = argv[index]
@@ -210,6 +211,18 @@ def assert_argv_safe(argv: list[str]) -> None:
             index += 1
             continue
         name, _, inline = token.partition("=")
+        if name in seen:
+            # A repeated option is how a caller-supplied value overrides a
+            # profile one: the generator takes the last occurrence. The profile
+            # is the complete vector, so a second occurrence of anything is a
+            # caller addition whatever its name.
+            raise RefusalError(
+                unknown_code,
+                f"option {name!r} appears more than once; the profile is the "
+                "complete argument vector and a caller adds nothing",
+                f"argv[{index}]",
+            )
+        seen.add(name)
         if name in PROHIBITED_OPTIONS or name in REJECTED_OPTIONS:
             raise RefusalError(
                 prohibited_code,

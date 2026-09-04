@@ -1,0 +1,10 @@
+{
+	"$comment": "Issue #23, FR-075/NFR-026-AC-1. The executable schema key `x-python-type` at the not position.",
+	"kind": "schema",
+	"expectedCode": "PY-REF-002",
+	"document": {
+		"not": {
+			"x-python-type": "os.system"
+		}
+	}
+}
