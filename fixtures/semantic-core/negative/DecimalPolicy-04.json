@@ -1,0 +1,8 @@
+{
+	"model": "DecimalPolicy",
+	"reason": "precision below 1",
+	"value": {
+		"precision": 0,
+		"scale": 0
+	}
+}

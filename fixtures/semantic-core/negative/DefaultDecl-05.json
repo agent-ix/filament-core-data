@@ -1,0 +1,7 @@
+{
+	"model": "DefaultDecl",
+	"reason": "kind outside DefaultKind",
+	"value": {
+		"kind": "none"
+	}
+}

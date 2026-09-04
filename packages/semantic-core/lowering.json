@@ -1,0 +1,452 @@
+{
+	"$comment": "FR-034 lowering table: every grammar-model property → IR v1.1 node property. A row with loss != none fails the fixture gate.",
+	"rows": [
+		{
+			"model": "Multiplicity",
+			"property": "lower",
+			"irNode": "field|relationship|returns",
+			"irProperty": "multiplicity.lower",
+			"loss": "none"
+		},
+		{
+			"model": "Multiplicity",
+			"property": "upper",
+			"irNode": "field|relationship|returns",
+			"irProperty": "multiplicity.upper",
+			"loss": "none"
+		},
+		{
+			"model": "Multiplicity",
+			"property": "ordered",
+			"irNode": "field|relationship|returns",
+			"irProperty": "multiplicity.ordered",
+			"loss": "none"
+		},
+		{
+			"model": "Multiplicity",
+			"property": "unique",
+			"irNode": "field|relationship|returns",
+			"irProperty": "multiplicity.unique",
+			"loss": "none"
+		},
+		{
+			"model": "TypeRef",
+			"property": "target",
+			"irNode": "field",
+			"irProperty": "typeRef",
+			"loss": "none",
+			"note": "SemanticId verbatim; KernelScalar → package-local kernel definition identity"
+		},
+		{
+			"model": "TypeRef",
+			"property": "multiplicity",
+			"irNode": "field",
+			"irProperty": "multiplicity",
+			"loss": "none",
+			"note": "absent → 1..1"
+		},
+		{
+			"model": "TypeRef",
+			"property": "unit",
+			"irNode": "field",
+			"irProperty": "unit",
+			"loss": "none"
+		},
+		{
+			"model": "TypeRef",
+			"property": "decimal",
+			"irNode": "field",
+			"irProperty": "extensions[ix://agent-ix/semantic-core/ext/decimal]",
+			"loss": "none"
+		},
+		{
+			"model": "DecimalPolicy",
+			"property": "precision",
+			"irNode": "field",
+			"irProperty": "extensions[decimal].payload.precision",
+			"loss": "none"
+		},
+		{
+			"model": "DecimalPolicy",
+			"property": "scale",
+			"irNode": "field",
+			"irProperty": "extensions[decimal].payload.scale",
+			"loss": "none"
+		},
+		{
+			"model": "DefaultDecl",
+			"property": "kind",
+			"irNode": "field",
+			"irProperty": "defaultKind",
+			"loss": "none"
+		},
+		{
+			"model": "DefaultDecl",
+			"property": "value",
+			"irNode": "field",
+			"irProperty": "defaultValue",
+			"loss": "none"
+		},
+		{
+			"model": "FieldDecl",
+			"property": "name",
+			"irNode": "field",
+			"irProperty": "name",
+			"loss": "none"
+		},
+		{
+			"model": "FieldDecl",
+			"property": "type",
+			"irNode": "field",
+			"irProperty": "typeRef+multiplicity+unit",
+			"loss": "none",
+			"note": "via TypeRef rows; constrained fields reference a minted alias"
+		},
+		{
+			"model": "FieldDecl",
+			"property": "identity",
+			"irNode": "field",
+			"irProperty": "extensions[ix://agent-ix/semantic-core/ext/identity]",
+			"loss": "none"
+		},
+		{
+			"model": "FieldDecl",
+			"property": "nullable",
+			"irNode": "field",
+			"irProperty": "nullable",
+			"loss": "none",
+			"note": "absent → false"
+		},
+		{
+			"model": "FieldDecl",
+			"property": "default",
+			"irNode": "field",
+			"irProperty": "defaultKind/defaultValue",
+			"loss": "none",
+			"note": "absent → none"
+		},
+		{
+			"model": "FieldDecl",
+			"property": "doc",
+			"irNode": "field",
+			"irProperty": "extensions[ix://agent-ix/semantic-core/ext/doc]",
+			"loss": "none"
+		},
+		{
+			"model": "FieldDecl",
+			"property": "constraints",
+			"irNode": "typeDefinition(alias)",
+			"irProperty": "constraints[]",
+			"loss": "none",
+			"note": "appliesTo = minted alias identity"
+		},
+		{
+			"model": "MinConstraint",
+			"property": "keyword",
+			"irNode": "constraint",
+			"irProperty": "keyword",
+			"loss": "none"
+		},
+		{
+			"model": "MinConstraint",
+			"property": "value",
+			"irNode": "constraint",
+			"irProperty": "operands.value",
+			"loss": "none"
+		},
+		{
+			"model": "MaxConstraint",
+			"property": "keyword",
+			"irNode": "constraint",
+			"irProperty": "keyword",
+			"loss": "none"
+		},
+		{
+			"model": "MaxConstraint",
+			"property": "value",
+			"irNode": "constraint",
+			"irProperty": "operands.value",
+			"loss": "none"
+		},
+		{
+			"model": "ExclusiveMinConstraint",
+			"property": "keyword",
+			"irNode": "constraint",
+			"irProperty": "keyword",
+			"loss": "none"
+		},
+		{
+			"model": "ExclusiveMinConstraint",
+			"property": "value",
+			"irNode": "constraint",
+			"irProperty": "operands.value",
+			"loss": "none"
+		},
+		{
+			"model": "ExclusiveMaxConstraint",
+			"property": "keyword",
+			"irNode": "constraint",
+			"irProperty": "keyword",
+			"loss": "none"
+		},
+		{
+			"model": "ExclusiveMaxConstraint",
+			"property": "value",
+			"irNode": "constraint",
+			"irProperty": "operands.value",
+			"loss": "none"
+		},
+		{
+			"model": "PatternConstraint",
+			"property": "keyword",
+			"irNode": "constraint",
+			"irProperty": "keyword",
+			"loss": "none"
+		},
+		{
+			"model": "PatternConstraint",
+			"property": "regex",
+			"irNode": "constraint",
+			"irProperty": "operands.regex",
+			"loss": "none"
+		},
+		{
+			"model": "PatternConstraint",
+			"property": "dialect",
+			"irNode": "constraint",
+			"irProperty": "operands.dialect",
+			"loss": "none"
+		},
+		{
+			"model": "MinLengthConstraint",
+			"property": "keyword",
+			"irNode": "constraint",
+			"irProperty": "keyword",
+			"loss": "none"
+		},
+		{
+			"model": "MinLengthConstraint",
+			"property": "value",
+			"irNode": "constraint",
+			"irProperty": "operands.value",
+			"loss": "none"
+		},
+		{
+			"model": "MaxLengthConstraint",
+			"property": "keyword",
+			"irNode": "constraint",
+			"irProperty": "keyword",
+			"loss": "none"
+		},
+		{
+			"model": "MaxLengthConstraint",
+			"property": "value",
+			"irNode": "constraint",
+			"irProperty": "operands.value",
+			"loss": "none"
+		},
+		{
+			"model": "EnumValuesConstraint",
+			"property": "keyword",
+			"irNode": "constraint",
+			"irProperty": "keyword",
+			"loss": "none"
+		},
+		{
+			"model": "EnumValuesConstraint",
+			"property": "values",
+			"irNode": "constraint",
+			"irProperty": "operands.values",
+			"loss": "none"
+		},
+		{
+			"model": "NonEmptyConstraint",
+			"property": "keyword",
+			"irNode": "constraint",
+			"irProperty": "keyword",
+			"loss": "none"
+		},
+		{
+			"model": "UniqueConstraint",
+			"property": "keyword",
+			"irNode": "constraint",
+			"irProperty": "keyword",
+			"loss": "none"
+		},
+		{
+			"model": "FormatConstraint",
+			"property": "keyword",
+			"irNode": "constraint",
+			"irProperty": "keyword",
+			"loss": "none"
+		},
+		{
+			"model": "FormatConstraint",
+			"property": "name",
+			"irNode": "constraint",
+			"irProperty": "operands.name",
+			"loss": "none"
+		},
+		{
+			"model": "ConstraintDecl",
+			"property": "(union)",
+			"irNode": "constraint",
+			"irProperty": "oneOf variant",
+			"loss": "none",
+			"note": "selected by keyword"
+		},
+		{
+			"model": "RelationDecl",
+			"property": "verb",
+			"irNode": "relationship",
+			"irProperty": "verb",
+			"loss": "none"
+		},
+		{
+			"model": "RelationDecl",
+			"property": "category",
+			"irNode": "relationship",
+			"irProperty": "category",
+			"loss": "none"
+		},
+		{
+			"model": "RelationDecl",
+			"property": "composite",
+			"irNode": "relationship",
+			"irProperty": "composite",
+			"loss": "none",
+			"note": "absent → false"
+		},
+		{
+			"model": "RelationDecl",
+			"property": "target",
+			"irNode": "relationship",
+			"irProperty": "target",
+			"loss": "none"
+		},
+		{
+			"model": "RelationDecl",
+			"property": "multiplicity",
+			"irNode": "relationship",
+			"irProperty": "multiplicity",
+			"loss": "none",
+			"note": "absent → 0..1"
+		},
+		{
+			"model": "OperationDecl",
+			"property": "name",
+			"irNode": "operation",
+			"irProperty": "name",
+			"loss": "none"
+		},
+		{
+			"model": "OperationDecl",
+			"property": "params",
+			"irNode": "operation",
+			"irProperty": "params[]",
+			"loss": "none",
+			"note": "field rows"
+		},
+		{
+			"model": "OperationDecl",
+			"property": "returns",
+			"irNode": "operation",
+			"irProperty": "returns{typeRef,multiplicity,nullable:false}",
+			"loss": "none",
+			"note": "unit forbidden by grammar rule"
+		},
+		{
+			"model": "OperationDecl",
+			"property": "pre",
+			"irNode": "operation",
+			"irProperty": "pre[] (clauseId)",
+			"loss": "none"
+		},
+		{
+			"model": "OperationDecl",
+			"property": "post",
+			"irNode": "operation",
+			"irProperty": "post[] (clauseId)",
+			"loss": "none"
+		},
+		{
+			"model": "ClauseRef",
+			"property": "language",
+			"irNode": "clause",
+			"irProperty": "language",
+			"loss": "none"
+		},
+		{
+			"model": "ClauseRef",
+			"property": "clauseId",
+			"irNode": "clause",
+			"irProperty": "clauseId",
+			"loss": "none"
+		},
+		{
+			"model": "ClauseRef",
+			"property": "sourceSpan",
+			"irNode": "clause",
+			"irProperty": "sourceSpan + origin.source",
+			"loss": "none",
+			"note": "absent → generated origin"
+		},
+		{
+			"model": "EnumValue",
+			"property": "value",
+			"irNode": "variant",
+			"irProperty": "name",
+			"loss": "none"
+		},
+		{
+			"model": "EnumValue",
+			"property": "doc",
+			"irNode": "typeDefinition(enum)",
+			"irProperty": "extensions[ix://agent-ix/semantic-core/ext/doc] payload {value, text}",
+			"loss": "none",
+			"note": "IR variant carries no extensions"
+		},
+		{
+			"model": "SourceLocus",
+			"property": "sourceIdentity",
+			"irNode": "origin.source",
+			"irProperty": "sourceIdentity",
+			"loss": "none"
+		},
+		{
+			"model": "SourceLocus",
+			"property": "path",
+			"irNode": "origin.source",
+			"irProperty": "path",
+			"loss": "none"
+		},
+		{
+			"model": "SourceLocus",
+			"property": "startLine",
+			"irNode": "origin.source",
+			"irProperty": "startLine",
+			"loss": "none"
+		},
+		{
+			"model": "SourceLocus",
+			"property": "startColumn",
+			"irNode": "origin.source",
+			"irProperty": "startColumn",
+			"loss": "none"
+		},
+		{
+			"model": "SourceLocus",
+			"property": "endLine",
+			"irNode": "clause.sourceSpan",
+			"irProperty": "endLine",
+			"loss": "none"
+		},
+		{
+			"model": "SourceLocus",
+			"property": "endColumn",
+			"irNode": "clause.sourceSpan",
+			"irProperty": "endColumn",
+			"loss": "none"
+		}
+	]
+}

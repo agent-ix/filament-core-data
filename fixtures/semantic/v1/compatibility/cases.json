@@ -220,5 +220,24 @@
 		"id": "clause-removed",
 		"family": "clause",
 		"expected": "breaking"
+	},
+	{
+		"id": "kernel-scalar-member-added",
+		"family": "kernel-scalar",
+		"key": "member",
+		"expected": "additive"
+	},
+	{
+		"id": "kernel-scalar-member-removed",
+		"family": "kernel-scalar",
+		"key": "member",
+		"expected": "breaking"
+	},
+	{
+		"id": "kernel-scalar-re-represented",
+		"family": "kernel-scalar",
+		"key": "member",
+		"changed": "irScalar|bounds|serialization",
+		"expected": "breaking"
 	}
 ]

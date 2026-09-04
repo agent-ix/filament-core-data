@@ -26,6 +26,12 @@ Generated output uses a small `semantic-core` plus independently versioned modul
 packages. No generated semantic package depends on UI, ORM, Tauri, application
 persistence, or migrations.
 
+*Amendment (issue #35, 2026-09-03).* The "small shared kernel" this ADR
+assigns to `filament-core-data` includes the semantic-core declaration grammar
+(`packages/semantic-core/`, TypeSpec, official JSON Schema projection) whose
+inventory is pinned in `packages/semantic-core/inventory.json`; module
+repositories import it and keep their domain vocabulary in their own packages.
+
 ## Consequences
 
 - Static native types and open dynamic modules can coexist.

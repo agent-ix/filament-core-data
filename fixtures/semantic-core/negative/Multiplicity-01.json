@@ -1,0 +1,7 @@
+{
+	"model": "Multiplicity",
+	"reason": "missing lower",
+	"value": {
+		"upper": 1
+	}
+}

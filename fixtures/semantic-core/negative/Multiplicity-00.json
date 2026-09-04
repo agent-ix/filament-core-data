@@ -1,0 +1,7 @@
+{
+	"model": "Multiplicity",
+	"reason": "lower below 0",
+	"value": {
+		"lower": -1
+	}
+}

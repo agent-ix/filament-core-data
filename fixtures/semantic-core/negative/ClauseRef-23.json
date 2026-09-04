@@ -1,0 +1,8 @@
+{
+	"model": "ClauseRef",
+	"reason": "bare unknown language",
+	"value": {
+		"language": "tla",
+		"clauseId": "c"
+	}
+}

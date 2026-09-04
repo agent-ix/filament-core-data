@@ -1,0 +1,7 @@
+{
+	"model": "ExclusiveMaxConstraint",
+	"reason": "missing value",
+	"value": {
+		"keyword": "exclusiveMax"
+	}
+}

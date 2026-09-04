@@ -1,0 +1,8 @@
+{
+	"model": "NonEmptyConstraint",
+	"reason": "unknown property",
+	"value": {
+		"keyword": "nonEmpty",
+		"value": 1
+	}
+}

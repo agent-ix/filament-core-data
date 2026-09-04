@@ -604,7 +604,23 @@ def verdicts() -> list[dict[str, Any]]:
     return results
 
 
+def _cli_read(argv: list[str]) -> int:
+    """``--read <file> [--export <identity> ...]``: print diagnostics as JSON."""
+    path = argv[argv.index("--read") + 1]
+    exports = {argv[i + 1] for i, arg in enumerate(argv) if arg == "--export"}
+    document = json.loads(Path(path).read_text())
+    validator = _schema_validator()
+    result = {
+        "schemaValid": schema_valid(validator, document),
+        "diagnostics": read_semantic_ir(document, exports),
+    }
+    print(json.dumps(result, sort_keys=True))
+    return 0
+
+
 if __name__ == "__main__":
+    if "--read" in sys.argv:
+        sys.exit(_cli_read(sys.argv))
     if "--verdicts" in sys.argv:
         print(json.dumps(verdicts(), indent=None, sort_keys=True))
     else:

@@ -1,0 +1,8 @@
+{
+	"model": "UniqueConstraint",
+	"reason": "unknown property",
+	"value": {
+		"keyword": "unique",
+		"extra": true
+	}
+}

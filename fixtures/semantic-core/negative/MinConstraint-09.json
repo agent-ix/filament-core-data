@@ -1,0 +1,7 @@
+{
+	"model": "MinConstraint",
+	"reason": "missing value",
+	"value": {
+		"keyword": "min"
+	}
+}

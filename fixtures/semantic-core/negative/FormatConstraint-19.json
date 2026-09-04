@@ -1,0 +1,8 @@
+{
+	"model": "FormatConstraint",
+	"reason": "un-namespaced format",
+	"value": {
+		"keyword": "format",
+		"name": "email"
+	}
+}

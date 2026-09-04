@@ -59,3 +59,21 @@ version:
 .PHONY: info
 info:
 	@$(POE) info
+
+# -----------------------------------------------------------------------------
+# semantic-core (issue #35) — compiled with the root-installed TypeSpec toolchain
+# -----------------------------------------------------------------------------
+# No workspace file and no package.json script: the package is private until
+# issue #11 publishes it, so the build is a Makefile concern (NFR-014).
+
+.PHONY: semantic-core-compile
+semantic-core-compile:
+	pnpm exec tsp compile packages/semantic-core --no-emit
+
+.PHONY: semantic-core-generate
+semantic-core-generate:
+	node packages/semantic-core/scripts/generate.mjs
+
+.PHONY: semantic-core-check
+semantic-core-check:
+	node packages/semantic-core/scripts/generate.mjs --check

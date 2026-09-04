@@ -1,0 +1,17 @@
+{
+	"name": "@agent-ix/semantic-core",
+	"version": "0.1.0",
+	"private": true,
+	"description": "Semantic-core L3 declaration grammar and kernel scalar library (TypeSpec source, AgentIx.Semantic.Core). Private until filament-core-data#11 publishes it.",
+	"license": "AGPL-3.0-only",
+	"tspMain": "main.tsp",
+	"exports": {
+		".": {
+			"typespec": "./main.tsp"
+		}
+	},
+	"peerDependencies": {
+		"@typespec/compiler": "1.15.0",
+		"@typespec/json-schema": "1.15.0"
+	}
+}

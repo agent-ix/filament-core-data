@@ -1,0 +1,8 @@
+{
+	"model": "MaxLengthConstraint",
+	"reason": "string length",
+	"value": {
+		"keyword": "maxLength",
+		"value": "3"
+	}
+}

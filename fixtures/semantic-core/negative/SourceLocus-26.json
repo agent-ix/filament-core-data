@@ -1,0 +1,10 @@
+{
+	"model": "SourceLocus",
+	"reason": "startLine below 1",
+	"value": {
+		"sourceIdentity": "ix://agent-ix/config-service/spec",
+		"path": "x.md",
+		"startLine": 0,
+		"startColumn": 1
+	}
+}

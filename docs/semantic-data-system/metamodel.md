@@ -41,6 +41,15 @@ The kernel is intentionally small and representation-independent:
 Domain entities, requirements, tests, runs, reports, and events live in module
 packages. They can use kernel types but do not inherit one generic entity class.
 
+*Amendment (issue #35, 2026-09-03).* "Small" includes the L3 declaration
+grammar: the kernel package `semantic-core` declares what a field, type
+reference, constraint, relation, operation, clause reference, and enum value
+*is*, plus the closed `KernelScalar` set, and nothing else; its exact
+declaration inventory is `packages/semantic-core/inventory.json` and the kernel
+scope test fails on any addition outside it. Domain vocabulary (entity,
+endpoint, process, requirement, …) stays in module packages that import the
+grammar; the other kernel concepts listed above arrive in their own tickets.
+
 ## Data planes
 
 | Plane | Primary concepts | Typical authority | Typical projections |

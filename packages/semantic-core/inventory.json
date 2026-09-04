@@ -1,0 +1,30 @@
+{
+	"$comment": "Exact declaration inventory of AgentIx.Semantic.Core (FR-031). The compiled program must equal this set (NFR-014-AC-1); nothing else is a kernel declaration.",
+	"namespace": "AgentIx.Semantic.Core",
+	"models": [
+		"Multiplicity",
+		"TypeRef",
+		"DecimalPolicy",
+		"DefaultDecl",
+		"FieldDecl",
+		"MinConstraint",
+		"MaxConstraint",
+		"ExclusiveMinConstraint",
+		"ExclusiveMaxConstraint",
+		"PatternConstraint",
+		"MinLengthConstraint",
+		"MaxLengthConstraint",
+		"EnumValuesConstraint",
+		"NonEmptyConstraint",
+		"UniqueConstraint",
+		"FormatConstraint",
+		"RelationDecl",
+		"OperationDecl",
+		"ClauseRef",
+		"EnumValue",
+		"SourceLocus"
+	],
+	"unions": ["ConstraintDecl"],
+	"enums": ["KernelScalar", "EdgeCategory", "ConstraintKeyword", "DefaultKind"],
+	"scalars": ["Identifier", "SemanticId", "UnitSymbol", "ClauseLanguage"]
+}
