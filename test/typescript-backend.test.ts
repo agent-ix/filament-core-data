@@ -104,6 +104,29 @@ describe("TypeScript backend fixture (FR-071)", () => {
 			rmSync(scratch, { recursive: true, force: true });
 		}
 	});
+
+	it("keeps generated source self-contained, licensed, and dependency-free", () => {
+		const files = fixtureFiles(expected);
+		const manifest = JSON.parse(
+			readFileSync(resolve(expected, "package.json"), "utf8"),
+		) as Record<string, unknown>;
+		for (const key of [
+			"dependencies",
+			"peerDependencies",
+			"optionalDependencies",
+		]) {
+			expect(manifest[key], key).toBeUndefined();
+		}
+		for (const { path, text } of files.filter(({ path }) =>
+			path.endsWith(".ts"),
+		)) {
+			expect(text, path).toContain("SPDX-License-Identifier: AGPL-3.0-only");
+			for (const match of text.matchAll(/from "([^"]+)"/g)) {
+				expect(match[1], `${path} imports ${match[1]}`).toMatch(/^\./);
+			}
+			expect(text, path).not.toContain("@ts-expect-error");
+		}
+	});
 	it("typechecks the generated package and the positive type-level program", () => {
 		expect(
 			runTsc("--project", resolve(fixture, "tsconfig.json"), "--noEmit"),
