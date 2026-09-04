@@ -155,15 +155,15 @@ than deciding it.
 | FR-051 | FR-051-AC-1..15, FR-051-CON-1..5 | TC-527..TC-546, TC-602, TC-612, TC-619 | ✅ Complete |
 | FR-052 | FR-052-AC-1..16, FR-052-CON-1..4 | TC-547..TC-566 | ✅ Complete |
 | FR-053 | FR-053-AC-1..15, FR-053-CON-1..5 | TC-412..TC-431, TC-604 | ✅ Complete |
-| FR-054 | FR-054-AC-1..14, FR-054-CON-1..5 | TC-645..TC-657, TC-674, TC-740 | ✅ Complete |
-| FR-055 | FR-055-AC-1..10, FR-055-CON-1..3 | TC-658..TC-665 | ✅ Complete |
-| FR-056 | FR-056-AC-1..12, FR-056-CON-1..5 | TC-666..TC-676 | ✅ Complete |
-| FR-057 | FR-057-AC-1..13, FR-057-CON-1..5 | TC-677..TC-689 | ✅ Complete |
-| FR-058 | FR-058-AC-1..11, FR-058-CON-1..4 | TC-690..TC-697 | ✅ Complete |
-| FR-059 | FR-059-AC-1..14, FR-059-CON-1..5 | TC-698..TC-710 | ✅ Complete |
-| FR-060 | FR-060-AC-1..10, FR-060-CON-1..4 | TC-711..TC-718 | ✅ Complete |
-| FR-061 | FR-061-AC-1..9, FR-061-CON-1..4 | TC-719..TC-724 | ✅ Complete |
-| FR-062 | FR-062-AC-1..8, FR-062-CON-1..4 | TC-725..TC-730 | ✅ Complete |
+| FR-054 | FR-054-AC-1..15, FR-054-CON-1..6 | TC-645..TC-657, TC-674, TC-694, TC-740 | ✅ Complete |
+| FR-055 | FR-055-AC-1..14, FR-055-CON-1..4 | TC-658..TC-665 | ✅ Complete |
+| FR-056 | FR-056-AC-1..17, FR-056-CON-1..8 | TC-666..TC-676 | ✅ Complete |
+| FR-057 | FR-057-AC-1..14, FR-057-CON-1..6 | TC-677..TC-689 | ✅ Complete |
+| FR-058 | FR-058-AC-1..12, FR-058-CON-1..5 | TC-690..TC-697 | ✅ Complete |
+| FR-059 | FR-059-AC-1..15, FR-059-CON-1..6 | TC-698..TC-710 | ✅ Complete |
+| FR-060 | FR-060-AC-1..15, FR-060-CON-1..7 | TC-711..TC-718 | ✅ Complete |
+| FR-061 | FR-061-AC-1..13, FR-061-CON-1..7 | TC-719..TC-724 | ✅ Complete |
+| FR-062 | FR-062-AC-1..14, FR-062-CON-1..7 | TC-725..TC-730 | ✅ Complete |
 
 ### Non-Functional Requirement Coverage
 
@@ -190,8 +190,8 @@ than deciding it.
 | NFR-019 | Repeat-run and varied-environment byte comparison, ambient-input analysis, permutation and collator independence, injected-host observation, changed-path gate, dependency-pin inspection | TC-567..TC-578 | ✅ Complete |
 | NFR-020 | Limit enforcement, path-escape and module-load refusal, network and writer instrumentation, cyclic-input termination, fuzz run, message truncation | TC-579..TC-589, TC-606, TC-607 | ✅ Complete |
 | NFR-021 | Changed-path gate, manifest comparison, frozen-path byte comparison, scripted restore rehearsal, licence and publication inspection, post-merge range rehearsal, accretion rehearsal | TC-590..TC-597, TC-620, TC-621, TC-644 | ✅ Complete |
-| NFR-022 | Two-run and cross-environment byte comparison, ambient-input scan, dependency inspection, offline run, formatter check, degradation scan, reader fuzz | TC-711, TC-712, TC-716, TC-731..TC-736 | ✅ Complete |
-| NFR-023 | Changed-path gate over a range fixed at both ends by history, manifest comparison, frozen-path byte comparison, publication and licence inspection, scripted restore rehearsal, post-merge and accretion rehearsal | TC-709, TC-737..TC-744 | ✅ Complete |
+| NFR-022 | Two-run and cross-environment byte comparison, ambient-input scan, dependency inspection, offline run, formatter check, table-driven degradation scan with fault injection, two-language number-format agreement, reader fuzz | TC-711, TC-712, TC-716, TC-731..TC-736 | ✅ Complete |
+| NFR-023 | Changed-path gate over a range fixed at both ends by history and unioned over `--first-parent --no-merges`, permitted-entry traceability, manifest comparison, frozen-path byte comparison, publication, third-party attribution and licence inspection, scripted restore rehearsal, post-merge and accretion rehearsal | TC-709, TC-737..TC-744 | ✅ Complete |
 
 ## Test Case Summary
 
@@ -1306,24 +1306,24 @@ than deciding it.
 | ERR-097 | A manifest declares two profiles and the caller names none | `AMBIGUOUS_PROFILE` and exit `1` | TC-552 |
 | ERR-098 | An unknown command, unknown flag, missing flag, or unreadable `--limits` | Usage text and exit `2` | TC-557 |
 | ERR-099 | An input exceeds one of the four size limits | A distinct blocking limit diagnostic naming the limit | TC-579, TC-587, TC-606 |
-| ERR-114 | A construct has no row in the published mapping table | UNSUPPORTED_CONSTRUCT, zero files | TC-656 |
-| ERR-115 | An ECMA-262 pattern uses a lookahead and is not a proved-registry key | UNSUPPORTED_PATTERN, zero files | TC-680, TC-687 |
-| ERR-116 | A `kind: "scalar"` names a value outside the nine kernel scalars | UNSUPPORTED_SCALAR, zero files | TC-646, TC-690 |
-| ERR-117 | A `format` operand names an unregistered format | UNKNOWN_FORMAT, zero files | TC-686 |
-| ERR-118 | A name renders to the empty string or to a keyword with no raw form | UNRENDERABLE_NAME, zero files | TC-659, TC-660 |
-| ERR-119 | Two identities in one scope derive the same Rust identifier | NAME_COLLISION naming both, zero files | TC-662 |
-| ERR-120 | A 1.0.0 document carries a relationships, operations, clauses or unit node | V1_1_NODE_IN_V1_0, zero files | TC-654 |
-| ERR-121 | A typeRef, appliesTo, items, values or target resolves to nothing | UNRESOLVED_TYPE_REF, zero files | TC-690, TC-706 |
-| ERR-122 | A construct would be dropped that the profile does not list as an allowed omission | UNDECLARED_LOSS, zero files | TC-695 |
-| ERR-123 | A constraint keyword is not applicable to its resolved subject | CONSTRAINT_NOT_APPLICABLE, zero files | TC-678 |
-| ERR-124 | A document exceeds maxNodes, maxDepth or maxCollectionItems | The matching limit diagnostic, zero files | TC-673 |
-| ERR-125 | A compiler request's outputRoot escapes the repository root | Refused before any write | TC-675 |
+| ERR-114 | A construct selects no mapping row and no named refusal; a non-`record` kind declares a non-`reject` unknown policy; an `enum` variant carries a `payloadType` | `UNSUPPORTED_CONSTRUCT`, `UNKNOWN_POLICY_ON_NON_RECORD` or `PAYLOAD_ON_ENUM_VARIANT`, zero files | TC-650, TC-656 |
+| ERR-115 | An ECMA-262 pattern uses a lookahead, a backreference, a named group or a Unicode property escape and is not a proved-registry key | `UNSUPPORTED_PATTERN`, zero files | TC-680, TC-687 |
+| ERR-116 | A `kind: "scalar"` names a value outside the nine kernel scalars, or names `bytes`, whose JSON wire form no published artifact declares | `UNSUPPORTED_SCALAR` or `UNDECLARED_WIRE_FORM`, zero files | TC-646, TC-690 |
+| ERR-117 | A `format` operand names an unregistered format | `UNKNOWN_FORMAT`, zero files | TC-686 |
+| ERR-118 | A name renders to the empty string, to a keyword with no raw form, or carries a character the renderer cannot carry | `UNRENDERABLE_NAME`, zero files | TC-659, TC-660 |
+| ERR-119 | Two identities in one declared scope derive the same Rust identifier | `NAME_COLLISION` naming both, zero files | TC-662 |
+| ERR-120 | A `1.0.0` document carries a relationships, operations, clauses or unit node; or a field's `multiplicity.upper` is `0` | `V1_1_NODE_IN_V1_0` or `UNSUPPORTED_MULTIPLICITY`, zero files | TC-654 |
+| ERR-121 | A `typeRef`, `appliesTo`, `items`, `values`, `payloadType` or `target` resolves to nothing | `UNRESOLVED_TYPE_REF`, zero files | TC-690, TC-706 |
+| ERR-122 | A construct would be dropped that the profile does not list as an allowed omission; or a `defaultValue` is not a value the mapped Rust type admits | `UNDECLARED_LOSS` or `INVALID_DEFAULT_VALUE`, zero files | TC-653, TC-695 |
+| ERR-123 | A constraint keyword is not applicable to its resolved subject; a bound names a subject the contract does not order; an operand's JSON type the subject does not admit | `CONSTRAINT_NOT_APPLICABLE`, `UNORDERED_SUBJECT` or `INVALID_OPERAND`, zero files | TC-677, TC-678 |
+| ERR-124 | A document exceeds `maxInputBytes`, `maxNodes`, `maxDepth` or `maxCollectionItems` | `LIMIT_EXCEEDED` naming the limit, zero files | TC-673, TC-692 |
+| ERR-125 | A compiler request's `outputRoot` escapes the repository root or is not traversal-free | `UNSAFE_OUTPUT_ROOT`, refused before any write | TC-675, TC-683 |
 | ERR-126 | A generated matcher exceeds its step bound on a pathological subject | Bound-exceeded error, never a hang | TC-684 |
-| ERR-127 | The adapter omits an answer for a manifest case | missing-answer, the run fails | TC-699 |
-| ERR-128 | The adapter answers a case whose digest does not match the manifest | case-digest problem, the run fails | TC-699 |
-| ERR-129 | An emitted crate manifest omits publish = false | The publication gate fails | TC-741 |
-| ERR-130 | A changed-path gate cannot resolve its range from history | The gate fails saying it could not run | TC-736, TC-744 |
-| ERR-131 | A prohibited path is changed at a path no later commit owns | The non-disruption gate fails naming the path | TC-737, TC-744 |
+| ERR-127 | The adapter omits an answer for a manifest case, answers one twice, or truncates its output | `missing-answer` or `duplicate-answer`; the run fails | TC-699, TC-708 |
+| ERR-128 | The adapter answers a case whose digest does not match the manifest | `case-digest` problem, the run fails | TC-699 |
+| ERR-129 | A crate manifest omits `publish = false`, emitted or hand-written | The publication gate fails | TC-741 |
+| ERR-130 | A changed-path gate cannot resolve its range or its sentinels from history | The gate fails saying it could not run | TC-736, TC-744 |
+| ERR-131 | A prohibited path is changed at a path no later commit owns, or a permitted entry names no requirement | The non-disruption gate fails naming the path | TC-737, TC-744 |
 
 ## Edge Cases
 
@@ -1392,19 +1392,19 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-060 | The compiler's own lowering emits a document that fails the published schema | FR-046, FR-050 | TC-450, TC-517 | An invalid document is written and every downstream golden inherits it |
 | EC-061 | A compile fails after `--out` already holds a previous run's document | FR-049, FR-052 | TC-500, TC-549 | A stale document is read as the failed run's output |
 | EC-062 | `inspect` is given a document whose imported exports it cannot see | FR-050, FR-052 | TC-521, TC-555 | Every cross-package relationship is reported as unresolved, or the check is silently skipped |
-| EC-69 | A field is both optional and nullable, and the wire carries an absent member in one document and an explicit null in another | FR-054 | TC-648 | Absent and null collapse to one value and a deliberate null is read as unset |
-| EC-70 | A type graph is recursive through a sequence, a map and a direct self-reference at once | FR-054 | TC-651 | The emitter recurses without bound, or boxes a different field set on each run |
-| EC-71 | A collection is optional with an unbounded upper and a lower of zero | FR-054 | TC-647 | An empty collection and an absent collection become indistinguishable |
-| EC-72 | Two record fields differ only in a separator, so both render one snake_case identifier | FR-055 | TC-662 | A counter suffix is appended and the generated name then depends on document order |
-| EC-73 | A field is named for a Rust keyword that has no raw-identifier form | FR-055 | TC-659 | The emitter renames the field and the wire name silently changes |
-| EC-74 | A published pattern uses ECMAScript lookaheads whose `.` cannot cross a line terminator | FR-057 | TC-682, TC-683 | The validator enforces the intended language rather than the published one, and the two diverge unnoticed |
-| EC-75 | A locus path embeds a line terminator before a parent-directory segment | FR-057 | TC-683 | A traversal guard that the published pattern does not actually apply is assumed to be applied |
-| EC-76 | A pattern in the supported subset nests quantifiers so a backtracking matcher blows up | FR-057 | TC-684 | Generation or validation hangs on an untrusted document |
-| EC-77 | A type declares unknownPolicy preserve and the retained member's name collides with a known field's wire name | FR-054 | TC-650 | An unknown member overwrites a known field or silently disappears |
-| EC-78 | A required extension names a capability the crate does not admit | FR-061 | TC-722 | An unsupported capability is accepted and the consumer proceeds on a contract it cannot honour |
-| EC-79 | The conformance oracle and the Rust reader disagree on a reference target nothing declares | FR-059 | TC-710 | GAP-011 is decided by an implementation rather than by its owning issue |
-| EC-80 | A sibling ticket lands on top of this change before its gates are read | NFR-023 | TC-744 | This change's path set accretes the sibling's paths and the wrong ticket is blamed |
-| EC-81 | A generated crate is byte-identical on the authoring workstation and different on a clean runner | NFR-022 | TC-712, TC-731 | Determinism is claimed from one host, as issue #42 already records |
+| EC-069 | A field is both optional and nullable, and the wire carries an absent member in one document and an explicit null in another | FR-054 | TC-648 | Absent and null collapse to one value and a deliberate null is read as unset |
+| EC-070 | A type graph is recursive through a sequence, a map and a direct self-reference at once | FR-054 | TC-651 | The emitter recurses without bound, or boxes a different field set on each run |
+| EC-071 | A collection is optional with an unbounded upper and a lower of zero | FR-054 | TC-647 | An empty collection and an absent collection become indistinguishable |
+| EC-072 | Two record fields differ only in a separator, so both render one snake_case identifier | FR-055 | TC-662 | A counter suffix is appended and the generated name then depends on document order |
+| EC-073 | A field is named for a Rust keyword that has no raw-identifier form | FR-055 | TC-659 | The emitter renames the field and the wire name silently changes |
+| EC-074 | A published pattern uses ECMAScript lookaheads whose `.` cannot cross a line terminator | FR-057 | TC-682, TC-683 | The validator enforces the intended language rather than the published one, and the two diverge unnoticed |
+| EC-075 | A locus path embeds a line terminator before a parent-directory segment | FR-057 | TC-683 | A traversal guard that the published pattern does not actually apply is assumed to be applied |
+| EC-076 | A pattern in the supported subset nests quantifiers so a backtracking matcher blows up | FR-057 | TC-684 | Generation or validation hangs on an untrusted document |
+| EC-077 | A type declares unknownPolicy preserve and the retained member's name collides with a known field's wire name | FR-054 | TC-650 | An unknown member overwrites a known field or silently disappears |
+| EC-078 | A required extension names a capability the crate does not admit | FR-061 | TC-722 | An unsupported capability is accepted and the consumer proceeds on a contract it cannot honour |
+| EC-079 | The conformance oracle and the Rust reader disagree on a reference target nothing declares | FR-059 | TC-710 | GAP-011 is decided by an implementation rather than by its owning issue |
+| EC-080 | A sibling ticket lands on top of this change before its gates are read | NFR-023 | TC-744 | This change's path set accretes the sibling's paths and the wrong ticket is blamed |
+| EC-081 | A generated crate is byte-identical on the authoring workstation and different on a clean runner | NFR-022 | TC-712, TC-731 | Determinism is claimed from one host, as issue #42 already records |
 
 ## Coverage Gaps
 

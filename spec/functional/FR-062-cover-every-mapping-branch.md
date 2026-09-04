@@ -13,6 +13,8 @@ relationships:
     type: "depends_on"
   - target: "ix://agent-ix/filament-core-data/NFR-022"
     type: "constrained_by"
+  - target: "ix://agent-ix/filament-core-data/NFR-023"
+    type: "constrained_by"
 ---
 # FR-062: Cover every mapping branch with property and mutation tests
 
@@ -31,6 +33,8 @@ around it.
   diagnostic registry of
   [FR-058](./FR-058-refuse-unsupported-constructs-with-stable-diagnostics.md)
 - The corpus bases and cases, read through the FR-039 import API
+- The finished modules under `src/compiler/backends/rust-serde/`, which are the
+  population both the register and the catalogue census
 
 ## Outputs
 
@@ -38,11 +42,23 @@ around it.
   branch, naming the branch, the constructs that reach it, and the test cases
   that exercise it
 - `src/compiler/backends/rust-serde/mutations.json`: the mutation catalogue,
-  one entry per mutation with the branch it perturbs and the case expected to
-  detect it
+  generated as the declared operator set crossed with the declared target set,
+  one entry per applicable pair with the branch it perturbs and the case
+  expected to detect it
 - A generator of IR documents used by the property tests, with a declared seed
+- Make targets that reach the register and catalogue `--check` modes by calling
+  `node` directly
 
 ## Behavior
+
+### Position in the slice
+
+- The branch register and the mutation catalogue are this slice's closing
+  gates. Both are a census of the finished mapping, so both SHALL be checked
+  after the modules they census exist, and the `--check` mode SHALL land with
+  the register rather than ahead of it.
+- Landing the `--check` mode ahead of the modules would make it pass over an
+  empty population, which is the shape of gate this bundle exists to refuse.
 
 ### The branch register
 
@@ -62,23 +78,56 @@ around it.
   deterministic; the mapping model is invariant under key and identity-set
   reordering; a generated crate's serialization of a value round-trips; the
   identifier derivation is injective or raises `NAME_COLLISION`; no generated
-  declaration carries a degraded type outside its declared row; and generation
+  declaration carries a degraded type outside its declared row; generation
   either emits a compiling crate or emits zero files with a blocking diagnostic
-  and never a third outcome.
+  and never a third outcome; the eight combinations of the three field axes
+  produce eight pairwise distinct Rust member types; the boxed edge set a
+  document produces is identical across two runs; and the identifier derivation
+  is locale-independent, producing identical identifiers under `LANG=C` and
+  `LANG=tr_TR.UTF-8`.
 - Each property SHALL run at least 256 generated documents, with the seed fixed
   and printed on failure so a counter-example is reproducible.
 
 ### Mutations
 
 - Each mutation SHALL be a single, semantics-changing edit to the emitter or to
-  a generated support routine — a dropped `Option`, an inverted bound, a
-  swapped `deny_unknown_fields`, a dropped `serde(rename)`, a relaxed pattern
-  rule, a substituted `String`.
+  a generated support routine.
+- The mutation operator set SHALL be declared and closed, and SHALL contain at
+  least: drop an `Option` wrapper; drop a `skip_serializing_if`; drop a
+  `deserialize_with`; invert a bound comparison; flip `deny_unknown_fields`;
+  drop a `serde(rename)`; relax a pattern classification from `unsupported` to
+  `expressible`; substitute `String` for a mapped newtype; drop a `Box` at a
+  cycle edge; widen an applicability row; drop a blocking flag on a diagnostic.
+- The mutation target set SHALL be every module under
+  `src/compiler/backends/rust-serde/`.
+- The catalogue SHALL be generated as the operator set crossed with the target
+  set, admitting each pair the operator applies to, and SHALL NOT be
+  hand-picked. The detection score therefore cannot be raised by shrinking the
+  catalogue: a smaller catalogue is a smaller operator set or a smaller target
+  set, and both are declared here and checked.
 - The catalogue SHALL record, for each mutation, the case that detects it, and
   the detection score SHALL be the fraction of mutations at least one case
   detects.
 - The detection score SHALL be 1.0. A mutation no case detects SHALL be reported
-  as a gap and SHALL be closed by adding a case, never by removing the mutation.
+  as a gap and closed by adding a case, never by removing the mutation.
+
+### The degradation scan and its negative control
+
+- The degradation scan of
+  [NFR-022](../non-functional/NFR-022-deterministic-and-hermetic-rust-generation.md)
+  SHALL have a negative control in the catalogue: the mutation that substitutes
+  `String` for a constrained scalar SHALL make the scan fail, naming the
+  degraded declaration.
+- A scan that stays green under that mutation SHALL fail the gate, because a
+  scan that cannot fail is not evidence.
+
+### Wiring the checks
+
+- `make lint` SHALL reach the register `--check` and the catalogue `--check`
+  through a Make target that calls `node` directly, and SHALL NOT add a
+  `package.json` script, because `package.json` is a prohibited path under
+  [NFR-023](../non-functional/NFR-023-non-disruptive-rust-backend.md). This is
+  the resolution NFR-016 already states for the same problem.
 
 ## Constraints
 
@@ -88,22 +137,31 @@ around it.
 | FR-062-CON-2 | The mutation harness SHALL apply mutations to a scratch copy and SHALL leave the working tree unchanged. | Non-disruption | Test |
 | FR-062-CON-3 | A property test SHALL fail, never skip, when its generator or its seed cannot be resolved. | Honesty | Test |
 | FR-062-CON-4 | The register and the catalogue SHALL be generated and `--check`ed by `make lint`, so neither can go stale silently. | Maintainability | Test |
+| FR-062-CON-5 | The catalogue SHALL be generated from the declared operator set crossed with the declared target set, so no entry is admitted or withheld by hand. | Honesty | Analysis |
+| FR-062-CON-6 | `make lint` SHALL run the register and catalogue checks only after the modules they census exist. | Correctness | Inspection |
+| FR-062-CON-7 | `make lint` SHALL reach the `--check` modes through a Make target that calls `node` directly rather than through a `package.json` script. | Non-disruption | Inspection |
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-062-AC-1 | Every branch row names at least one test case, and every named case exists and covers the row. | Analysis |
-| FR-062-AC-2 | Adding a mapping branch without adding a case makes the register `--check` fail naming the branch. | Test |
-| FR-062-AC-3 | Every catalogued mutation is detected by at least one case; the detection score is 1.0. | Test |
-| FR-062-AC-4 | Suppressing the case that detects a given mutation drops the score below 1.0 and names the undetected mutation. | Test |
-| FR-062-AC-5 | Each declared property holds over at least 256 generated documents, with the seed printed. | Property |
-| FR-062-AC-6 | A deliberately broken emitter — one that emits `String` for a constrained scalar — is caught by at least one property and by at least one mutation row. | Test |
-| FR-062-AC-7 | The mutation run leaves `git status --porcelain` empty. | Test |
-| FR-062-AC-8 | The branch register covers every `kind`, kernel scalar, field-axis combination, `defaultKind`, `unknownPolicy`, constraint keyword and subject pair, recursion shape, and diagnostic code, checked against those vocabularies rather than against the register itself. | Analysis |
+| FR-062-AC-1 | Every branch row names at least one test case, and every named case exists and covers the row. | Analysis (TC-725) |
+| FR-062-AC-2 | Adding a mapping branch without adding a case makes the register `--check` fail naming the branch. | Test (TC-726) |
+| FR-062-AC-3 | Every catalogued mutation is detected by at least one case; the detection score is 1.0. | Test (TC-727) |
+| FR-062-AC-4 | Suppressing the case that detects a given mutation drops the score below 1.0 and names the undetected mutation. | Test (TC-727) |
+| FR-062-AC-5 | Each declared property holds over at least 256 generated documents, with the seed printed. | Test (TC-728) |
+| FR-062-AC-6 | A deliberately broken emitter — one that emits `String` for a constrained scalar — is caught by at least one property and by at least one mutation row. | Test (TC-729) |
+| FR-062-AC-7 | The mutation run leaves `git status --porcelain` empty. | Test (TC-730) |
+| FR-062-AC-8 | The branch register covers every `kind`, kernel scalar, field-axis combination, `defaultKind`, `unknownPolicy`, constraint keyword and subject pair, recursion shape, and diagnostic code, checked against those vocabularies rather than against the register itself. | Analysis (TC-730) |
+| FR-062-AC-9 | The catalogue equals the declared operator set crossed with the declared target set, restricted to the pairs each operator applies to; removing an operator, or removing a module from the target set, shrinks the catalogue and fails the `--check`. | Analysis (TC-730) |
+| FR-062-AC-10 | The mutation that substitutes `String` for a constrained scalar makes the degradation scan fail naming the degraded declaration, and a scan that stays green under it fails the gate. | Test (TC-729) |
+| FR-062-AC-11 | The eight combinations of collection, nullability, and presence produce eight pairwise distinct Rust member types over at least 256 generated documents. | Test (TC-728) |
+| FR-062-AC-12 | The boxed edge set a document produces is identical across two runs over at least 256 generated documents. | Test (TC-728) |
+| FR-062-AC-13 | The identifier derivation produces identical identifiers under `LANG=C` and `LANG=tr_TR.UTF-8` over at least 256 generated documents. | Test (TC-728) |
+| FR-062-AC-14 | `make lint` reaches the register and catalogue `--check` modes through a Make target that calls `node` directly, and `package.json` is byte-unchanged. | Analysis (TC-726) |
 
 ## Dependencies
 
 - **Upstream**: [FR-054](./FR-054-map-the-semantic-ir-to-rust-serde-declarations.md), [FR-058](./FR-058-refuse-unsupported-constructs-with-stable-diagnostics.md), [FR-059](./FR-059-answer-the-conformance-corpus-from-rust.md)
 - **Downstream**: issue #25
-- **Constrained by**: [NFR-022](../non-functional/NFR-022-deterministic-and-hermetic-rust-generation.md)
+- **Constrained by**: [NFR-022](../non-functional/NFR-022-deterministic-and-hermetic-rust-generation.md), [NFR-023](../non-functional/NFR-023-non-disruptive-rust-backend.md)
