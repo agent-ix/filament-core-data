@@ -1,12 +1,13 @@
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname, isAbsolute, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const auditRoot = resolve(root, "audit/filament-contract-census");
+const censusWorkspaceRoot = process.env.FILAMENT_CENSUS_WORKSPACE_ROOT;
 
 /**
  * Exact matrix trace inventory for the issue #10 gate:
@@ -103,6 +104,18 @@ function evidenceFingerprint(names: readonly string[]): string {
 		hash.update("\0");
 	}
 	return hash.digest("hex");
+}
+
+function sourceRepositoryPath(repository: JsonObject): string | undefined {
+	const locator = text(repository.localPath, "repository.localPath");
+	if (locator.startsWith("workspace://")) {
+		if (!censusWorkspaceRoot) return undefined;
+		const workspaceRelative = locator.slice("workspace://".length);
+		expect(isAbsolute(workspaceRelative), locator).toBe(false);
+		expect(workspaceRelative.split("/")).not.toContain("..");
+		return resolve(censusWorkspaceRoot, workspaceRelative);
+	}
+	return locator;
 }
 
 function changedPaths(): string[] {
@@ -282,7 +295,7 @@ describe("Filament contract census", () => {
 	});
 
 	/** Traces: TC-060, TC-063, TC-084; FR-010-AC-2, FR-010-AC-5, NFR-004. */
-	it("resolves every source locus at the recorded repository", () => {
+	it("uses portable source locators and resolves them in a configured workspace", () => {
 		const snapshot = readJson("snapshot.json");
 		const repositories = new Map(
 			objects(snapshot.repositories, "repositories").map((repository) => [
@@ -297,10 +310,15 @@ describe("Filament contract census", () => {
 			const repository = repositories.get(String(record.repositoryId));
 			expect(repository, String(record.repositoryId)).toBeDefined();
 			const source = record.source as JsonObject;
-			const sourcePath = resolve(
-				String(repository?.localPath),
-				String(source.path),
+			const repositoryPath = sourceRepositoryPath(repository as JsonObject);
+			const sourceRelativePath = text(
+				source.path,
+				`${String(record.id)}.source.path`,
 			);
+			expect(isAbsolute(sourceRelativePath), sourceRelativePath).toBe(false);
+			expect(relative(".", sourceRelativePath).split("/")).not.toContain("..");
+			if (!repositoryPath) continue;
+			const sourcePath = resolve(repositoryPath, sourceRelativePath);
 			expect(
 				existsSync(sourcePath),
 				`${String(record.id)} -> ${sourcePath}`,

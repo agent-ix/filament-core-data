@@ -215,6 +215,7 @@ describe("semantic IR v1.1 baseline and non-disruption", () => {
 			"spec/",
 			"test/",
 			"tests/",
+			"audit/filament-contract-census/",
 			"pyproject.toml",
 			"poetry.lock",
 		];

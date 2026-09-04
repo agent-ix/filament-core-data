@@ -1084,6 +1084,7 @@ describe("semantic package contract v1", () => {
 			"reviews/2026-08-30-semantic-package-contract-code-review.md",
 			"schema/semantic/v1/",
 			"spec/",
+			"audit/filament-contract-census/",
 			"test/contract-census.test.ts",
 			"test/semantic-architecture.test.ts",
 			"test/semantic-contract.test.ts",

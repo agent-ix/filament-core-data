@@ -30,8 +30,10 @@ conflict-bearing disposition, never `fit`.
 ## Determinism and safety
 
 `test/contract-census.test.ts` validates the packet, recomputes a canonical
-SHA-256 fingerprint, resolves source loci, and rejects any audit output that
-implies migration approval. Its initial TDD run on 2026-08-29 produced nine
+SHA-256 fingerprint, and rejects any audit output that implies migration
+approval. Repository locations use portable `workspace://` locators; set
+`FILAMENT_CENSUS_WORKSPACE_ROOT` to resolve the recorded source loci against a
+local checkout collection. Its initial TDD run on 2026-08-29 produced nine
 expected failures because every evidence file was absent. All examined
 repositories are read-only; pre-existing dirty state is evidence, not something
 this audit cleans or modifies.

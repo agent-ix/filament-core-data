@@ -53,14 +53,14 @@
 		{
 			"id": "filament-core-data",
 			"canonicalUrl": "https://github.com/agent-ix/filament-core-data",
-			"localPath": "/Users/peter/dev/filament-core-data",
+			"localPath": "workspace://filament-core-data",
 			"defaultBranch": "main",
 			"inspectedBranch": "audit/10-filament-contract-census",
 			"head": "c542b341500b69e6f391da9d5cd641eec8a9effd",
 			"dirty": true,
 			"dirtyEntryCount": 44,
 			"worktrees": [
-				"/Users/peter/dev/filament-core-data@audit/10-filament-contract-census"
+				"workspace://filament-core-data@audit/10-filament-contract-census"
 			],
 			"status": "available-dirty-audit-work",
 			"consequence": "Committed contract loci are read at c542b34; uncommitted issue #10 files are audit output and are not treated as source contracts.",
@@ -69,13 +69,13 @@
 		{
 			"id": "filament-domain-events",
 			"canonicalUrl": "https://github.com/agent-ix/filament-domain-events",
-			"localPath": "/Users/peter/dev/filament-domain-events",
+			"localPath": "workspace://filament-domain-events",
 			"defaultBranch": "main",
 			"inspectedBranch": "main",
 			"head": "c01b69906a550e6a8110046d08a0ebe4da04e8ee",
 			"dirty": false,
 			"dirtyEntryCount": 0,
-			"worktrees": ["/Users/peter/dev/filament-domain-events@main"],
+			"worktrees": ["workspace://filament-domain-events@main"],
 			"status": "available-clean",
 			"consequence": "Source files correspond exactly to the recorded HEAD.",
 			"confidence": "high"
@@ -83,13 +83,13 @@
 		{
 			"id": "filament-core-service",
 			"canonicalUrl": "https://github.com/agent-ix/filament-core-service",
-			"localPath": "/Users/peter/dev/filament-core-service",
+			"localPath": "workspace://filament-core-service",
 			"defaultBranch": "main",
 			"inspectedBranch": "main",
 			"head": "a50e8998a75ef75cf872b05afb617b7456e0b1db",
 			"dirty": true,
 			"dirtyEntryCount": 2,
-			"worktrees": ["/Users/peter/dev/filament-core-service@main"],
+			"worktrees": ["workspace://filament-core-service@main"],
 			"status": "available-dirty-user-work",
 			"consequence": "pyproject.toml and tests/test_core_data_contract.py are excluded from source-contract claims unless explicitly cited as active overlap; committed models are read at a50e899.",
 			"confidence": "medium"
@@ -97,14 +97,14 @@
 		{
 			"id": "filament-parser-lib",
 			"canonicalUrl": "https://github.com/agent-ix/filament-parser-lib",
-			"localPath": "/Users/peter/dev/filament-parser-lib",
+			"localPath": "workspace://filament-parser-lib",
 			"defaultBranch": "main",
 			"inspectedBranch": "task-8-quire-core-data-shim",
 			"head": "8ef01289ad08938d741b69966bf17dc9815513cf",
 			"dirty": false,
 			"dirtyEntryCount": 0,
 			"worktrees": [
-				"/Users/peter/dev/filament-parser-lib@task-8-quire-core-data-shim"
+				"workspace://filament-parser-lib@task-8-quire-core-data-shim"
 			],
 			"status": "available-clean-inflight-branch",
 			"consequence": "The audit measures the issue #8 compatibility-shim branch, not main; its unmerged status remains an implementation dependency.",
@@ -113,20 +113,20 @@
 		{
 			"id": "filament-ide-rs",
 			"canonicalUrl": "https://github.com/agent-ix/filament-ide-rs",
-			"localPath": "/Users/peter/dev/filament-ide-rs",
+			"localPath": "workspace://filament-ide-rs",
 			"defaultBranch": "main",
 			"inspectedBranch": "main",
 			"head": "b63141f9edd69cddb966cd601ed1954955276845",
 			"dirty": false,
 			"dirtyEntryCount": 0,
 			"worktrees": [
-				"/Users/peter/dev/filament-ide-rs@main",
-				"/Users/peter/dev/filament-ide-rs/.gittree/480-retrieval-reference@task/480-retrieval-reference",
-				"/Users/peter/dev/filament-ide-rs/.gittree/assurance-onboarding@feat/512-assurance-onboarding",
-				"/Users/peter/dev/filament-ide-rs/.gittree/fix-red-matrices@fix/red-test-matrices",
-				"/Users/peter/dev/filament-ide-rs/.gittree/phase-c-labels@task/expand-seeding",
-				"/Users/peter/dev/filament-ide-rs/.gittree/task-550-core-primitives@task/550-core-primitives",
-				"/Users/peter/dev/filament-ide-rs/.gittree/task-551-ui-test-evidence@task/551-ui-test-evidence"
+				"workspace://filament-ide-rs@main",
+				"workspace://filament-ide-rs/.gittree/480-retrieval-reference@task/480-retrieval-reference",
+				"workspace://filament-ide-rs/.gittree/assurance-onboarding@feat/512-assurance-onboarding",
+				"workspace://filament-ide-rs/.gittree/fix-red-matrices@fix/red-test-matrices",
+				"workspace://filament-ide-rs/.gittree/phase-c-labels@task/expand-seeding",
+				"workspace://filament-ide-rs/.gittree/task-550-core-primitives@task/550-core-primitives",
+				"workspace://filament-ide-rs/.gittree/task-551-ui-test-evidence@task/551-ui-test-evidence"
 			],
 			"status": "available-clean-with-active-worktrees",
 			"consequence": "Main is the source baseline; six active worktrees are overlap evidence and may change graph, assurance, core primitive, or UI contract surfaces.",
@@ -135,13 +135,13 @@
 		{
 			"id": "quire-rs",
 			"canonicalUrl": "https://github.com/agent-ix/quire-rs",
-			"localPath": "/Users/peter/dev/quire-rs",
+			"localPath": "workspace://quire-rs",
 			"defaultBranch": "main",
 			"inspectedBranch": "main",
 			"head": "0f4cc5fb94a344ef44a0ad66864bcd445c5db521",
 			"dirty": true,
 			"dirtyEntryCount": 1,
-			"worktrees": ["/Users/peter/dev/quire-rs@main"],
+			"worktrees": ["workspace://quire-rs@main"],
 			"status": "available-dirty-untracked",
 			"consequence": "The untracked logo path is not a contract source; committed extraction/corpus files are read at 0f4cc5f.",
 			"confidence": "high"
@@ -149,16 +149,16 @@
 		{
 			"id": "quoin",
 			"canonicalUrl": "https://github.com/agent-ix/quoin",
-			"localPath": "/Users/peter/dev/quoin",
+			"localPath": "workspace://quoin",
 			"defaultBranch": "main",
 			"inspectedBranch": "task/309-fix-spec-fuzz-frontmatter",
 			"head": "1a0092ffc41756e5ccaa76103277343685f14fe4",
 			"dirty": true,
 			"dirtyEntryCount": 3,
 			"worktrees": [
-				"/Users/peter/dev/quoin@task/309-fix-spec-fuzz-frontmatter",
-				"/Users/peter/dev/quoin-plugin-api@feat/plugin-library-api",
-				"/Users/peter/dev/quoin/.worktrees/268-intervention-experiment-spec@task/268-intervention-experiment-spec"
+				"workspace://quoin@task/309-fix-spec-fuzz-frontmatter",
+				"workspace://quoin-plugin-api@feat/plugin-library-api",
+				"workspace://quoin/.worktrees/268-intervention-experiment-spec@task/268-intervention-experiment-spec"
 			],
 			"status": "available-dirty-inflight-branches",
 			"consequence": "Committed default-modules.yaml is read at 1a0092f; spec-fuzz and intervention-experiment changes are active overlap, not accepted catalog contracts.",
@@ -167,13 +167,13 @@
 		{
 			"id": "quire-corpus",
 			"canonicalUrl": "https://github.com/agent-ix/quire-corpus",
-			"localPath": "/Users/peter/dev/quire-corpus",
+			"localPath": "workspace://quire-corpus",
 			"defaultBranch": "main",
 			"inspectedBranch": "main",
 			"head": "68eb2c7d93973adf36b2478c70176f3b89fbd5b0",
 			"dirty": false,
 			"dirtyEntryCount": 0,
-			"worktrees": ["/Users/peter/dev/quire-corpus@main"],
+			"worktrees": ["workspace://quire-corpus@main"],
 			"status": "available-clean-governed-baseline",
 			"consequence": "The complete-graph truth-set files correspond exactly to the revision delivered by quire-rs#385.",
 			"confidence": "high"
@@ -430,7 +430,7 @@
 		},
 		{
 			"id": "local-worktrees",
-			"source": "/Users/peter/dev repositories",
+			"source": "workspace repositories",
 			"method": "git worktree list --porcelain for each in-scope repository",
 			"toolVersion": "git 2.50.1",
 			"accessStatus": "available",
