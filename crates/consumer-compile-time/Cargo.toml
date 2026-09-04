@@ -1,0 +1,32 @@
+# The compile-time consumer of the generated crate (FR-061).
+#
+# It is excluded from the root workspace on purpose: FR-061 builds it against
+# the *unpacked* `cargo package` artifact in a scratch directory, so the `path`
+# below names a sibling of this crate inside that directory and resolves to
+# nothing in the generator's tree. A build that only worked in place would be a
+# build that proved nothing about the packaged crate.
+#
+# The dependency set is the generated crate and nothing else. This consumer
+# reads the static export surface only, so it needs no JSON front door and
+# declares no dev-dependency.
+
+[package]
+name = "consumer-compile-time"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85.0"
+license = "AGPL-3.0-only"
+publish = false
+
+[workspace]
+
+# `-D warnings` for this package alone. A global `RUSTFLAGS="-D warnings"` also
+# denies warnings inside `serde`, which fails for reasons that have nothing to
+# do with this contract; cargo applies this table to the local package only.
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "deny"
+warnings = "deny"
+
+[dependencies]
+agent-ix-conformance = { path = "../agent-ix-conformance-1.0.0" }

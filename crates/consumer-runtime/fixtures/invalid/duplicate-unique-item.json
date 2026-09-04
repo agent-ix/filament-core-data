@@ -1,0 +1,9 @@
+{
+	"id": "n1",
+	"elapsed": 1,
+	"status": "draft",
+	"children": [
+		"ix://agent-ix/conformance/node/2",
+		"ix://agent-ix/conformance/node/2"
+	]
+}

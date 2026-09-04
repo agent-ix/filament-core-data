@@ -16,6 +16,7 @@ build:
 .PHONY: test
 test:
 	pnpm run test
+	$(MAKE) rust
 
 .PHONY: lint
 lint:
@@ -177,9 +178,49 @@ rust-toolchain-check:
 rust-generate: rust-toolchain-check
 	node src/compiler/backends/rust-serde/cli.mjs generate --out $(RUST_OUT)
 
+# The goldens under `test/fixtures/rust-serde/goldens/` are transcribed once, by
+# `cli.mjs generate --out` writing into them. `rust-check` never writes there:
+# it regenerates into a scratch directory under CARGO_TARGET_DIR and compares,
+# so the check cannot pass by comparing a file to itself and cannot leave the
+# tree dirty (FR-060-CON-1).
+#
+# The goldens hold the emitted *crates*. The output manifests generation writes
+# beside them are not transcribed: they are `JSON.stringify` output that
+# `biome format` reformats, so a committed manifest would make `make lint` and
+# `make rust-check` demand two different files. The manifest is gated instead
+# by `--manifests`, which reads the freshly generated ones and checks the file
+# list each carries is sorted by path by code point (FR-060-AC-10).
+GOLDENS := test/fixtures/rust-serde/goldens
+RUST_GOLDEN_SCRATCH := $(CARGO_TARGET_DIR)/golden-write
+RUST_CHECK_SCRATCH := $(CARGO_TARGET_DIR)/golden-check
+
+.PHONY: rust-goldens
+rust-goldens:
+	rm -rf $(GOLDENS) $(RUST_GOLDEN_SCRATCH)
+	mkdir -p $(GOLDENS) $(RUST_GOLDEN_SCRATCH)
+	node src/compiler/backends/rust-serde/cli.mjs generate --out $(RUST_GOLDEN_SCRATCH)
+	for crate in $(RUST_GOLDEN_SCRATCH)/*/; do cp -r "$$crate" $(GOLDENS)/; done
+
+# The digest baseline is written by a *different* script from the one that
+# writes the goldens, and the two reach the emitter through different entry
+# points, so a single emitter change has to move two artifacts by two
+# deliberate acts before the check goes green again (FR-060-AC-12).
+.PHONY: rust-digests
+rust-digests:
+	node scripts/build-rust-backend-goldens.mjs --write-digests
+
 .PHONY: rust-check
 rust-check: rust-toolchain-check
 	node src/compiler/backends/rust-serde/cli.mjs check
+	rm -rf $(RUST_CHECK_SCRATCH)
+	mkdir -p $(RUST_CHECK_SCRATCH)
+	node src/compiler/backends/rust-serde/cli.mjs generate --out $(RUST_CHECK_SCRATCH)
+	for crate in $(GOLDENS)/*/; do diff -ru "$$crate" "$(RUST_CHECK_SCRATCH)/$$(basename $$crate)"; done
+	node scripts/build-rust-backend-goldens.mjs --manifests $(RUST_CHECK_SCRATCH)
+	node scripts/build-rust-backend-goldens.mjs --check-digests
+	node scripts/build-rust-backend-goldens.mjs --determinism
+	node scripts/build-rust-backend-goldens.mjs --rustfmt
+	node scripts/build-rust-backend-goldens.mjs --matrix
 
 .PHONY: rust-docs
 rust-docs:
@@ -214,6 +255,16 @@ rust-mutate: rust-toolchain-check
 .PHONY: rust-fuzz
 rust-fuzz: rust-toolchain-check
 	node src/compiler/backends/rust-serde/cli.mjs fuzz
+
+# The consolidated Rust gates `make test` runs. They are the edit-loop set: the
+# long property, fuzz and mutation runs are `rust-deep`, which is scheduled
+# separately (FR-060-AC-15).
+#
+# `rust-toolchain-check` is a prerequisite of every one of them, so a machine
+# with no Rust toolchain fails here naming what it could not run. That is the
+# intended reading: an absent toolchain is a red suite, never a green one.
+.PHONY: rust
+rust: rust-check rust-build rust-test rust-conformance rust-install-from-artifact
 
 .PHONY: rust-deep
 rust-deep: rust-mutate rust-fuzz
