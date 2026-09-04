@@ -49,7 +49,17 @@ import { requestFor } from "../cli.mjs";
 import { directorySink, generateRust, readLicense } from "../index.mjs";
 
 const ROOT = fileURLToPath(new URL("../../../../../", import.meta.url));
-const SCRATCH = join(ROOT, "target", "locus-harness");
+// Under `node_modules/.cache/` rather than `target/`, for the reason the
+// Makefile moved CARGO_TARGET_DIR there: it is per-worktree, and it is the one
+// directory `biome format .` does not walk, so a harness run does not redden
+// the next `make lint` on cargo's fingerprint JSON.
+const SCRATCH = join(
+	ROOT,
+	"node_modules",
+	".cache",
+	"rust-target",
+	"locus-harness",
+);
 
 /** The probe alphabet the registry entry declares. */
 export const PROBE_ALPHABET = Object.freeze([

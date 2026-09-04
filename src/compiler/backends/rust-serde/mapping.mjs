@@ -77,6 +77,7 @@ export const RESERVED_CRATE_NAMES = Object.freeze([
 	"SemanticValue",
 	"SourceLocusPath",
 	"UnknownMembers",
+	"UnknownVariant",
 	"Uuid",
 	"ValidationError",
 	"Diagnostic",
@@ -93,6 +94,40 @@ const V1_1_NODES = Object.freeze([
 	{ owner: "field", member: "multiplicity" },
 	{ owner: "field", member: "unit" },
 ]);
+
+/**
+ * How a type's declared `unknownPolicy` is disposed, keyed on its kind.
+ *
+ * The schema requires the member on all eight kinds, so the mapping disposes it
+ * on all eight, and neither disposition is silence:
+ *
+ * - `record` — a closed member set. `reject` is `deny_unknown_fields`;
+ *   `preserve` and `surface` retain the undeclared members in one flattened
+ *   `UnknownMembers`.
+ * - `enum` and `union` — a closed *variant* set, so the policy is just as real
+ *   an obligation. `reject` is serde's own default, under which an unrecognised
+ *   variant is a deserialization error; `preserve` and `surface` add a
+ *   generated catch-all `Unknown` variant that keeps the unrecognised tag and,
+ *   for a union, its payload, and round-trips unchanged.
+ * - `scalar`, `alias`, `sequence`, `map`, `reference` — inert. A scalar has no
+ *   members, a sequence and a map admit every element and every key by
+ *   construction, and an alias and a reference are transparent, so there is no
+ *   unknown member for a policy to govern. The declared value is carried
+ *   verbatim into the type's metadata constant and stated inert in the
+ *   generated documentation. Recording it is what stops it being dropped.
+ *
+ * Refusing the inert kinds was the earlier reading and it was wrong: it refused
+ * `conformance/bases/core-1-1.json`, which gives a `map` `preserve` and a
+ * `union` `surface`, and which the independent oracle decides `success`.
+ */
+export function unknownDisposition(kind, policy) {
+	const retains = policy === "preserve" || policy === "surface";
+	if (kind === "record") return retains ? "record-retain" : "record-reject";
+	if (kind === "enum" || kind === "union") {
+		return retains ? "variant-catchall" : "variant-closed";
+	}
+	return "inert";
+}
 
 /** The `1.0.0` derivation FR-027 publishes: `presence` fixes the bounds. */
 export function multiplicityFromPresence(presence) {
@@ -272,15 +307,6 @@ function mapType(definition, context) {
 	}
 	typeScope.push({ identifier: name.value, identity });
 
-	if (kind !== "record" && definition.unknownPolicy !== "reject") {
-		raise(
-			RUST_BACKEND_CODES.UNKNOWN_POLICY_ON_NON_RECORD,
-			`the type ${fragment(identity)} is a ${kind} and declares the unknown policy \`${fragment(definition.unknownPolicy)}\`; only a record has a place to put a retained member`,
-			locus,
-		);
-		return undefined;
-	}
-
 	const resolved = resolveKind(byIdentity, identity);
 	const lowered = lowerConstraints(definition, resolved, {});
 	for (const entry of lowered.diagnostics) {
@@ -301,6 +327,7 @@ function mapType(definition, context) {
 		displayName: definition.displayName,
 		roles: definition.roles ?? [],
 		unknownPolicy: definition.unknownPolicy,
+		unknownDisposition: unknownDisposition(kind, definition.unknownPolicy),
 		origin: definition.origin,
 		extensions: definition.extensions ?? [],
 		typeName: name.value,
@@ -406,6 +433,16 @@ function mapType(definition, context) {
 				identifier: variant.ident,
 				identity: variant.identity,
 			}));
+			// The catch-all is a declaration in the same scope, so a contract
+			// variant that derives `Unknown` is a named collision rather than a
+			// crate that does not compile.
+			if (model.unknownDisposition === "variant-catchall") {
+				variantScope.push({
+					identifier: "Unknown",
+					identity:
+						"ix://agent-ix/filament-core-data/rust-backend/reserved/UnknownVariant",
+				});
+			}
 			model.diagnostics.push(
 				...collisionsIn(SCOPES.ENUM_VARIANTS, variantScope),
 			);

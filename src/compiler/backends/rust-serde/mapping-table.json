@@ -75,7 +75,6 @@
 			"mechanism": "newtype over the validated identity, not over the target's Rust type, plus a validating Deserialize",
 			"diagnosticCode": null
 		},
-
 		{
 			"rowKey": "scalar:boolean",
 			"axis": "scalar",
@@ -157,7 +156,6 @@
 			"mechanism": "generated 8-4-4-4-12 newtype over String; JSON string",
 			"diagnosticCode": null
 		},
-
 		{
 			"rowKey": "field:single/non-null/required",
 			"axis": "field",
@@ -279,17 +277,21 @@
 		{
 			"rowKey": "field:multiplicity/upper-zero",
 			"axis": "field",
-			"selector": { "upper": 0 },
+			"selector": {
+				"upper": 0
+			},
 			"rustForm": null,
 			"serdeAttributes": [],
 			"mechanism": "refused: a member that may never be present has no Rust form serde round-trips",
 			"diagnosticCode": "agent-ix.rust-backend.UNSUPPORTED_MULTIPLICITY"
 		},
-
 		{
 			"rowKey": "unknownPolicy:record/reject",
 			"axis": "unknownPolicy",
-			"selector": { "kind": "record", "policy": "reject" },
+			"selector": {
+				"kind": "record",
+				"policy": "reject"
+			},
 			"rustForm": "pub struct N { .. }",
 			"serdeAttributes": ["deny_unknown_fields"],
 			"mechanism": "serde refuses an unknown member at the boundary",
@@ -298,7 +300,10 @@
 		{
 			"rowKey": "unknownPolicy:record/preserve",
 			"axis": "unknownPolicy",
-			"selector": { "kind": "record", "policy": "preserve" },
+			"selector": {
+				"kind": "record",
+				"policy": "preserve"
+			},
 			"rustForm": "UnknownMembers",
 			"serdeAttributes": ["flatten"],
 			"mechanism": "one flattened BTreeMap<String, SemanticValue> member; validate returns no diagnostic",
@@ -307,31 +312,63 @@
 		{
 			"rowKey": "unknownPolicy:record/surface",
 			"axis": "unknownPolicy",
-			"selector": { "kind": "record", "policy": "surface" },
+			"selector": {
+				"kind": "record",
+				"policy": "surface"
+			},
 			"rustForm": "UnknownMembers",
 			"serdeAttributes": ["flatten"],
 			"mechanism": "one flattened BTreeMap<String, SemanticValue> member; validate returns one UNKNOWN_MEMBER_SURFACED per retained member",
 			"diagnosticCode": "agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED"
 		},
 		{
-			"rowKey": "unknownPolicy:non-record/non-reject",
+			"rowKey": "unknownPolicy:variants/reject",
 			"axis": "unknownPolicy",
-			"selector": { "kind": "!record", "policy": "!reject" },
-			"rustForm": null,
+			"selector": {
+				"kind": "enum|union",
+				"policy": "reject"
+			},
+			"rustForm": "pub enum N { .. }",
 			"serdeAttributes": [],
-			"mechanism": "refused: only a record has a place to put a retained member",
-			"diagnosticCode": "agent-ix.rust-backend.UNKNOWN_POLICY_ON_NON_RECORD"
-		},
-		{
-			"rowKey": "unknownPolicy:non-record/reject",
-			"axis": "unknownPolicy",
-			"selector": { "kind": "!record", "policy": "reject" },
-			"rustForm": null,
-			"serdeAttributes": [],
-			"mechanism": "no emitted attribute; a non-record kind carries no member set to reject into",
+			"mechanism": "serde's own default, under which an unrecognised variant is a deserialization error",
 			"diagnosticCode": null
 		},
-
+		{
+			"rowKey": "unknownPolicy:variants/preserve",
+			"axis": "unknownPolicy",
+			"selector": {
+				"kind": "enum|union",
+				"policy": "preserve"
+			},
+			"rustForm": "a generated catch-all variant Unknown(String) on an enum, Unknown(UnknownVariant) on a union",
+			"serdeAttributes": [],
+			"mechanism": "a hand-written Serialize and Deserialize that keep the unrecognised tag and, for a union, its payload as a SemanticValue, and round-trip unchanged; validate returns no diagnostic",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "unknownPolicy:variants/surface",
+			"axis": "unknownPolicy",
+			"selector": {
+				"kind": "enum|union",
+				"policy": "surface"
+			},
+			"rustForm": "a generated catch-all variant Unknown(String) on an enum, Unknown(UnknownVariant) on a union",
+			"serdeAttributes": [],
+			"mechanism": "as preserve, and validate returns one UNKNOWN_MEMBER_SURFACED for an unrecognised variant",
+			"diagnosticCode": "agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED"
+		},
+		{
+			"rowKey": "unknownPolicy:inert",
+			"axis": "unknownPolicy",
+			"selector": {
+				"kind": "scalar|alias|sequence|map|reference",
+				"policy": "any"
+			},
+			"rustForm": null,
+			"serdeAttributes": [],
+			"mechanism": "inert: a scalar has no members, a sequence and a map admit every element and every key by construction, and an alias and a reference are transparent. The declared value is carried verbatim into the type's metadata constant and stated inert in the generated documentation; it is never dropped and never refused",
+			"diagnosticCode": null
+		},
 		{
 			"rowKey": "defaultKind:none",
 			"axis": "defaultKind",
@@ -368,7 +405,6 @@
 			"mechanism": "metadata only: the default belongs to a migration boundary",
 			"diagnosticCode": null
 		},
-
 		{
 			"rowKey": "extension:node",
 			"axis": "extension",
@@ -394,7 +430,6 @@
 			"mechanism": "emitted beside the types they belong to, preserving every member the IR carries; an operation is metadata and never a Rust function",
 			"diagnosticCode": null
 		},
-
 		{
 			"rowKey": "indirection:field-single",
 			"axis": "indirection",

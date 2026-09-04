@@ -17,7 +17,16 @@
  *
  * A pattern is `expressible` when every construct it uses lies in the declared
  * supported subset, `proved` when its exact text is a key of
- * `proved-validators.json`, and `unsupported` otherwise. An unsupported pattern
+ * `proved-validators.json`, and `unsupported` otherwise.
+ *
+ * The subset carries one restriction beyond the construct list, declared here
+ * rather than discovered at the step bound: an **unbounded quantifier over an
+ * atom that can match the empty string** — `(?:a?)*`, `(a|)+` — is
+ * `unsupported`. ECMA-262 terminates such a loop with a per-iteration progress
+ * check, this matcher has none, and lowering it anyway would produce a program
+ * that spins to the step bound and disagrees with the published engine on a
+ * subject the engine accepts. The combination is refused, which is the
+ * declared position: no pattern is weakened to one this backend can run. An unsupported pattern
  * stops generation. It is never rewritten, relaxed, approximated, or carried as
  * an unvalidated `String`: a pattern the backend silently dropped is
  * indistinguishable in the generated source from a field that never had one.
@@ -29,19 +38,33 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-const PROVED = JSON.parse(
-	readFileSync(
-		fileURLToPath(new URL("./proved-validators.json", import.meta.url)),
-		"utf8",
-	),
-);
+/**
+ * Reads one pinned table committed beside this module.
+ *
+ * The tables are the only input the emitter reads that is not the request, and
+ * a missing one is a defect in the checkout rather than in the contract. It
+ * therefore throws, naming the table: a backend that carried on without its
+ * reserved-word list, its published patterns, or its proved-validator registry
+ * would emit a crate degraded in exactly the way FR-058 exists to forbid, and
+ * the degradation would be invisible in the generated source.
+ */
+function readPinnedTable(name) {
+	try {
+		return readFileSync(
+			fileURLToPath(new URL(`./${name}`, import.meta.url)),
+			"utf8",
+		);
+	} catch (cause) {
+		throw new Error(
+			`the pinned table \`${name}\` could not be read, so the backend refuses to emit a degraded crate`,
+			{ cause },
+		);
+	}
+}
 
-const PUBLISHED = JSON.parse(
-	readFileSync(
-		fileURLToPath(new URL("./published-patterns.json", import.meta.url)),
-		"utf8",
-	),
-);
+const PROVED = JSON.parse(readPinnedTable("proved-validators.json"));
+
+const PUBLISHED = JSON.parse(readPinnedTable("published-patterns.json"));
 
 /** The proved-validator registry, keyed by exact pattern text. */
 export const PROVED_VALIDATORS = Object.freeze(PROVED);

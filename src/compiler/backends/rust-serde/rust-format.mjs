@@ -44,7 +44,17 @@ export const FN_CALL_WIDTH = 60;
 export function callLines(indent, head, args, suffix) {
 	const joined = args.join(", ");
 	const inline = `${indent}${head}(${joined})${suffix}`;
-	if (joined.length <= FN_CALL_WIDTH && inline.length <= MAX_WIDTH) {
+	// `fn_call_width` bounds each call, so an *enclosing* call — the `Err(..)`
+	// around every generated failure — has to be measured too. Its own argument
+	// is this whole call, and when that exceeds the bound `rustfmt` breaks the
+	// outer one even though the inner arguments would have fitted.
+	const nested = head.lastIndexOf("(");
+	const enclosing = nested === -1 ? "" : `${head.slice(nested + 1)}(${joined})`;
+	if (
+		joined.length <= FN_CALL_WIDTH &&
+		enclosing.length <= FN_CALL_WIDTH &&
+		inline.length <= MAX_WIDTH
+	) {
 		return [inline];
 	}
 	return [

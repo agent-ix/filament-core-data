@@ -447,6 +447,28 @@ function renderReadme(model) {
 		"The same values are exported as `&'static str` constants from",
 		"`src/identity.rs`, so a consumer can assert against them at run time.",
 		"",
+		"## Declared gaps",
+		"",
+		"The `format` constraint keyword is registered against no format in this",
+		"crate, and the emptiness is the declared position rather than an omission.",
+		"`format` takes a namespaced name, the only name any published artifact",
+		"carries is `agent-ix:plain-text`, and no published artifact states the",
+		"language that name checks: `common.schema.json` does not define it, FR-029",
+		"says only that the name is namespaced, and no fixture pins a rejected value.",
+		"Registering a check would be this backend deciding a cross-language",
+		"validation rule that belongs to the constraint vocabulary — the same shape",
+		"as choosing a JSON wire form for the `bytes` kernel scalar, which is filed",
+		"as issue #58. Every `format` operand therefore raises",
+		"`agent-ix.rust-backend.UNKNOWN_FORMAT` and stops generation until a",
+		"definition is published.",
+		"",
+		"The `sourceLocus.path` pattern's published language and its intended",
+		"language differ, because each of the pattern's guards is a lookahead over",
+		"`.` and `.` stops at the first line terminator. `SourceLocusPath::try_new`",
+		"decides the published language and `SourceLocusPath::is_traversal_free` the",
+		"intended one; the two are separately named rather than one standing for the",
+		"other. The divergence is GAP-002 and issue #56.",
+		"",
 		"## Licence",
 		"",
 		"AGPL-3.0-only. The repository `LICENSE` is carried verbatim beside this file.",
@@ -1172,13 +1194,32 @@ function renderType(type, model, byIdentity, diagnostics) {
 	}
 }
 
+/**
+ * The module header of one generated type.
+ *
+ * Where the type's `unknownPolicy` is inert for its kind, the header says so.
+ * The statement goes here rather than into the type's own doc comment because
+ * FR-056 fixes that comment as a total function of four parts and a fifth
+ * sentence would change a derivation the goldens measure; the module doc is the
+ * generated documentation for the same node and carries the record without
+ * moving that function.
+ */
 function moduleHeader(type) {
-	return [
+	const lines = [
 		`//! ${escapeDoc(type.displayName)}`,
 		"//!",
 		`//! Semantic identity: ${escapeDoc(type.identity)}.`,
-		"",
 	];
+	if (type.unknownDisposition === "inert") {
+		lines.push(
+			"//!",
+			`//! Unknown policy: \`${escapeDoc(type.unknownPolicy)}\`, which is inert for a`,
+			`//! \`${type.kind}\` — the kind has no unknown member for a policy to govern. The`,
+			"//! declared value is carried verbatim in this type's metadata constant.",
+		);
+	}
+	lines.push("");
+	return lines;
 }
 
 function checkConstants(type, checks, byIdentity) {
@@ -1480,17 +1521,32 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 	return `${lines.join("\n")}\n`;
 }
 
+/**
+ * An `enum` or a `union`.
+ *
+ * Under `reject` the derive is enough: serde's own default makes an
+ * unrecognised variant a deserialization error. Under `preserve` or `surface`
+ * the type gains a generated catch-all `Unknown` variant, and the two impls are
+ * written out rather than derived — serde's `#[serde(other)]` is a unit-variant
+ * attribute for an internally or adjacently tagged enum, and neither a
+ * string-shaped enum nor an externally tagged union is one of those, so a
+ * derived catch-all cannot keep the tag it caught.
+ */
 function renderEnum(type) {
 	const lines = moduleHeader(type);
+	const catchAll = type.unknownDisposition === "variant-catchall";
+	const union = type.kind === "union";
 	lines.push("use serde::{Deserialize, Serialize};", "");
 	lines.push(...docLines(type.doc));
 	lines.push(
-		"#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]",
+		catchAll
+			? "#[derive(Clone, Debug, PartialEq)]"
+			: "#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]",
 		`pub enum ${type.typeName} {`,
 	);
 	for (const variant of type.variants) {
 		lines.push(...docLines(variant.doc, "    "));
-		if (variant.rename !== undefined) {
+		if (variant.rename !== undefined && !catchAll) {
 			lines.push(`    #[serde(rename = ${rustString(variant.rename)})]`);
 		}
 		lines.push(
@@ -1499,28 +1555,239 @@ function renderEnum(type) {
 				: `    ${variant.ident}(${variant.payload}),`,
 		);
 	}
+	if (catchAll) {
+		lines.push(
+			"    /// A variant the contract does not declare, retained under this",
+			`    /// type's \`${type.unknownPolicy}\` unknown policy.`,
+			union
+				? "    Unknown(crate::support::UnknownVariant),"
+				: "    Unknown(String),",
+		);
+	}
+	lines.push("}", "");
+
+	if (catchAll) {
+		lines.push(...(union ? unionImpls(type) : stringEnumImpls(type)), "");
+	}
+
 	lines.push(
-		"}",
-		"",
 		`impl ${type.typeName} {`,
 		"    /// The non-blocking diagnostics this value carries.",
 		"    pub fn validate(&self) -> Vec<crate::support::Diagnostic> {",
-		"        Vec::new()",
-		"    }",
-		"}",
 	);
+	if (catchAll && type.unknownPolicy === "surface") {
+		lines.push(
+			`        if let ${type.typeName}::Unknown(unknown) = self {`,
+			"            return vec![crate::support::Diagnostic::new(",
+			`                ${rustString(SURFACED.code)},`,
+			`                ${rustString(SURFACED.severity)},`,
+			`                ${rustString(SURFACED.owner)},`,
+			`                ${SURFACED.blocking},`,
+			...(union
+				? formatCall(
+						"                ",
+						`"the variant {} is not declared by ${escapeDoc(type.identity)}"`,
+						"unknown.tag()",
+					)
+				: formatCall(
+						"                ",
+						`"the variant {unknown} is not declared by ${escapeDoc(type.identity)}"`,
+					)),
+			"            )];",
+			"        }",
+		);
+	}
+	lines.push("        Vec::new()", "    }", "}");
 	return `${lines.join("\n")}\n`;
 }
 
+/** The two impls of a string-shaped `enum` that carries a catch-all. */
+function stringEnumImpls(type) {
+	const lines = [`impl Serialize for ${type.typeName} {`];
+	lines.push(
+		"    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>",
+		"    where",
+		"        S: serde::Serializer,",
+		"    {",
+		"        serializer.serialize_str(match self {",
+	);
+	for (const variant of type.variants) {
+		lines.push(
+			`            ${type.typeName}::${variant.ident} => ${rustString(variant.name)},`,
+		);
+	}
+	lines.push(
+		`            ${type.typeName}::Unknown(tag) => tag.as_str(),`,
+		"        })",
+		"    }",
+		"}",
+		"",
+		`impl<'de> Deserialize<'de> for ${type.typeName} {`,
+		"    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>",
+		"    where",
+		"        D: serde::Deserializer<'de>,",
+		"    {",
+		"        let tag = String::deserialize(deserializer)?;",
+		"        Ok(match tag.as_str() {",
+	);
+	for (const variant of type.variants) {
+		lines.push(
+			`            ${rustString(variant.name)} => ${type.typeName}::${variant.ident},`,
+		);
+	}
+	lines.push(
+		`            _ => ${type.typeName}::Unknown(tag),`,
+		"        })",
+		"    }",
+		"}",
+	);
+	return lines;
+}
+
+/** The two impls of an externally tagged `union` that carries a catch-all. */
+function unionImpls(type) {
+	const lines = [`impl Serialize for ${type.typeName} {`];
+	lines.push(
+		"    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>",
+		"    where",
+		"        S: serde::Serializer,",
+		"    {",
+		"        use serde::ser::SerializeMap;",
+		"        match self {",
+	);
+	for (const variant of type.variants) {
+		if (variant.payload === undefined) {
+			lines.push(
+				...callLines(
+					"            ",
+					`${type.typeName}::${variant.ident} => serializer.serialize_str`,
+					[rustString(variant.name)],
+					",",
+				),
+			);
+			continue;
+		}
+		lines.push(
+			`            ${type.typeName}::${variant.ident}(payload) => {`,
+			"                let mut map = serializer.serialize_map(Some(1))?;",
+			`                map.serialize_entry(${rustString(variant.name)}, payload)?;`,
+			"                map.end()",
+			"            }",
+		);
+	}
+	lines.push(
+		`            ${type.typeName}::Unknown(unknown) => unknown.serialize(serializer),`,
+		"        }",
+		"    }",
+		"}",
+		"",
+		`impl<'de> Deserialize<'de> for ${type.typeName} {`,
+		"    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>",
+		"    where",
+		"        D: serde::Deserializer<'de>,",
+		"    {",
+		`        deserializer.deserialize_any(${type.typeName}Visitor)`,
+		"    }",
+		"}",
+		"",
+		`struct ${type.typeName}Visitor;`,
+		"",
+		`impl<'de> serde::de::Visitor<'de> for ${type.typeName}Visitor {`,
+		`    type Value = ${type.typeName};`,
+		"",
+		"    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {",
+		`        formatter.write_str(${rustString(`an externally tagged ${type.typeName}`)})`,
+		"    }",
+		"",
+		"    fn visit_str<E>(self, tag: &str) -> Result<Self::Value, E>",
+		"    where",
+		"        E: serde::de::Error,",
+		"    {",
+		"        Ok(match tag {",
+	);
+	for (const variant of type.variants) {
+		if (variant.payload !== undefined) continue;
+		lines.push(
+			`            ${rustString(variant.name)} => ${type.typeName}::${variant.ident},`,
+		);
+	}
+	lines.push(
+		...callLines(
+			"            ",
+			`_ => ${type.typeName}::Unknown(crate::support::UnknownVariant::Tag`,
+			["tag.to_owned()"],
+			"),",
+		),
+		"        })",
+		"    }",
+		"",
+		"    fn visit_map<A>(self, mut access: A) -> Result<Self::Value, A::Error>",
+		"    where",
+		"        A: serde::de::MapAccess<'de>,",
+		"    {",
+		"        let Some(tag) = access.next_key::<String>()? else {",
+		...callLines(
+			"            ",
+			"return Err(serde::de::Error::custom",
+			[rustString(`an externally tagged ${type.typeName} carries one member`)],
+			");",
+		),
+		"        };",
+		"        let value = match tag.as_str() {",
+	);
+	for (const variant of type.variants) {
+		if (variant.payload === undefined) {
+			lines.push(
+				`            ${rustString(variant.name)} => {`,
+				"                access.next_value::<serde::de::IgnoredAny>()?;",
+				`                ${type.typeName}::${variant.ident}`,
+				"            }",
+			);
+			continue;
+		}
+		lines.push(
+			...callLines(
+				"            ",
+				`${rustString(variant.name)} => ${type.typeName}::${variant.ident}`,
+				["access.next_value()?"],
+				",",
+			),
+		);
+	}
+	lines.push(
+		...callLines(
+			"            ",
+			`_ => ${type.typeName}::Unknown(crate::support::UnknownVariant::Tagged`,
+			["tag", "access.next_value()?"],
+			"),",
+		),
+		"        };",
+		"        Ok(value)",
+		"    }",
+		"}",
+	);
+	return lines;
+}
+
 /**
- * A `format!` call with one literal argument, wrapped when the literal makes
- * the line too wide. `rustfmt` puts the sole literal on its own line with no
- * trailing comma, so that is what is emitted.
+ * A `format!` call, wrapped when its arguments make the line too wide.
+ *
+ * `rustfmt` gives a sole literal a line of its own with no trailing comma, and
+ * gives each argument of a longer call a line with one, so both shapes are
+ * emitted here rather than approximated by one.
  */
-function formatCall(indent, literal) {
-	const inline = `${indent}format!(${literal}),`;
+function formatCall(indent, ...args) {
+	const inline = `${indent}format!(${args.join(", ")}),`;
 	if (inline.length <= MAX_WIDTH) return [inline];
-	return [`${indent}format!(`, `${indent}    ${literal}`, `${indent}),`];
+	if (args.length === 1) {
+		return [`${indent}format!(`, `${indent}    ${args[0]}`, `${indent}),`];
+	}
+	return [
+		`${indent}format!(`,
+		...args.slice(0, -1).map((argument) => `${indent}    ${argument},`),
+		`${indent}    ${args[args.length - 1]}`,
+		`${indent}),`,
+	];
 }
 
 // The generated `validate` reports the registry's own code and owner rather

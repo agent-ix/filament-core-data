@@ -28,14 +28,33 @@
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+
+/**
+ * Reads one pinned table committed beside this module.
+ *
+ * The tables are the only input the emitter reads that is not the request, and
+ * a missing one is a defect in the checkout rather than in the contract. It
+ * therefore throws, naming the table: a backend that carried on without its
+ * reserved-word list, its published patterns, or its proved-validator registry
+ * would emit a crate degraded in exactly the way FR-058 exists to forbid, and
+ * the degradation would be invisible in the generated source.
+ */
+function readPinnedTable(name) {
+	try {
+		return readFileSync(
+			fileURLToPath(new URL(`./${name}`, import.meta.url)),
+			"utf8",
+		);
+	} catch (cause) {
+		throw new Error(
+			`the pinned table \`${name}\` could not be read, so the backend refuses to emit a degraded crate`,
+			{ cause },
+		);
+	}
+}
 import { RUST_BACKEND_CODES, diagnostic, fragment } from "./diagnostics.mjs";
 
-const RESERVED = JSON.parse(
-	readFileSync(
-		fileURLToPath(new URL("./reserved-words.json", import.meta.url)),
-		"utf8",
-	),
-);
+const RESERVED = JSON.parse(readPinnedTable("reserved-words.json"));
 
 /** Reserved words with no raw-identifier form; these are refusals, not renames. */
 const NO_RAW_FORM = new Set(RESERVED.noRawForm);
