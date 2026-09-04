@@ -2,7 +2,7 @@
 id: Task-095
 title: "Code review, gap analysis, and the pull request"
 type: Task
-status: todo
+status: in_progress
 track: D
 priority: P0
 relationships:
@@ -19,8 +19,8 @@ Close the governed loop.
 
 ## Subtasks
 
-- [ ] Run `/code-review` over the Rust and JavaScript sides and record SR-085.
-- [ ] Run `/gap-analysis` over Plan-010 and record SR-086.
+- [x] Run `/code-review` over the Rust and JavaScript sides and record SR-085.
+- [x] Run `/gap-analysis` over Plan-010 and record SR-086.
 - [ ] Measure the three verification states: branch head; a scratch clone with the branch squash-merged and `origin/main` repointed; and that clone with a real unrelated sibling commit on top.
 - [ ] Run the falsification and perturbation rehearsals for every guard added.
 - [ ] Open the pull request and comment when it is mergeable.
