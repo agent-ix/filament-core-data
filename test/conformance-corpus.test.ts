@@ -61,6 +61,7 @@ const manifest = corpus.loadManifest() as Json & {
 	unmetAreas: { id: string; owningIssues: string[] }[];
 	corpusVersion: string;
 	corpusDigest: string;
+	predecessor: { state: string; ref: string; rationale: string };
 	minimizationBudget: number;
 	caseIdPattern: string;
 	familyPrefixes: Record<string, string>;

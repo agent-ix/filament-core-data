@@ -224,7 +224,7 @@ describe("semantic IR v1.1 baseline and non-disruption", () => {
 	it("keeps issue #34 inside its permitted paths", () => {
 		const allowed = [
 			"conformance/",
-			"plan/Plan-008-conformance-corpus-and-oracle/",
+			"plan/Plan-009-conformance-corpus-and-oracle/",
 			"test/conformance-corpus.test.ts",
 			"docs/semantic-data-system/",
 			"fixtures/semantic/v1/",

@@ -322,7 +322,7 @@ describe("semantic data architecture record", () => {
 	it("limits issue #8 changes to documentation, plans, reviews, and tests", () => {
 		const allowed = [
 			"conformance/",
-			"plan/Plan-008-conformance-corpus-and-oracle/",
+			"plan/Plan-009-conformance-corpus-and-oracle/",
 			"test/conformance-corpus.test.ts",
 			"README.md",
 			"biome.json",

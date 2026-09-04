@@ -1097,7 +1097,7 @@ describe("semantic package contract v1", () => {
 	it("keeps issue nine non-disruptive and separately gated", () => {
 		const allowed = [
 			"conformance/",
-			"plan/Plan-008-conformance-corpus-and-oracle/",
+			"plan/Plan-009-conformance-corpus-and-oracle/",
 			"test/conformance-corpus.test.ts",
 			"docs/semantic-data-system/",
 			"fixtures/semantic/v1/",
