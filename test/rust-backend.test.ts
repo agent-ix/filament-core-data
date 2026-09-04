@@ -46,6 +46,7 @@ import { describe, expect, it } from "vitest";
 import {
 	changeRange,
 	changedPathsUnion,
+	contentAsChanged,
 	mergeCommitsIn,
 } from "./changed-paths";
 
@@ -824,19 +825,40 @@ describe("TC-737..744 non-disruption", () => {
 		);
 	});
 
-	/** Traces: TC-738; NFR-023-AC-2. */
-	it("TC-738 the published package manifest's metadata fields are byte-unchanged", () => {
-		const { base } = changeRange(root, SENTINELS);
-		const atBase = JSON.parse(
-			execFileSync("git", ["show", `${base}:package.json`], {
-				cwd: root,
-				encoding: "utf8",
-			}),
-		) as Record<string, unknown>;
-		const now = readJson(resolve(root, "package.json")) as Record<
+	/**
+	 * A path's content at one end of this change's own range.
+	 *
+	 * Reading the *working tree* against `base` instead is the merge-degrading
+	 * defect in its sixth disguise: the range is pinned at its base and open at
+	 * its head, so every later ticket's edit to a frozen path is attributed to
+	 * this change and fails it for someone else's commit. Issue #20 measured
+	 * that shape on a path *set*; it is the same shape on a path's *bytes*.
+	 * Both ends therefore come from history, and the uncommitted half is
+	 * covered by asserting the path is absent from `changedPathsUnion`, which
+	 * already folds in the working-tree residual this change still owns and
+	 * already drops what a commit after `tip` has taken over.
+	 */
+	const contentAt = (commit: string, path: string): Buffer =>
+		execFileSync("git", ["show", `${commit}:${path}`], {
+			cwd: root,
+			maxBuffer: 64 * 1024 * 1024,
+		});
+	const asChanged = (path: string): Buffer =>
+		contentAsChanged(root, SENTINELS, path);
+	const jsonAt = (commit: string, path: string): Record<string, unknown> =>
+		JSON.parse(contentAt(commit, path).toString("utf8")) as Record<
 			string,
 			unknown
 		>;
+
+	/** Traces: TC-738; NFR-023-AC-2. */
+	it("TC-738 the published package manifest's metadata fields are byte-unchanged", () => {
+		const { base } = changeRange(root, SENTINELS);
+		expect(changedPathsUnion(root, SENTINELS)).not.toContain("package.json");
+		const atBase = jsonAt(base, "package.json");
+		const now = JSON.parse(
+			asChanged("package.json").toString("utf8"),
+		) as Record<string, unknown>;
 		for (const field of [
 			"exports",
 			"main",
@@ -870,16 +892,11 @@ describe("TC-737..744 non-disruption", () => {
 		const path = "conformance/adapters/registry.json";
 		let atBase: { adapters: Record<string, unknown>[] };
 		try {
-			atBase = JSON.parse(
-				execFileSync("git", ["show", `${base}:${path}`], {
-					cwd: root,
-					encoding: "utf8",
-				}),
-			);
+			atBase = JSON.parse(contentAt(base, path).toString("utf8"));
 		} catch {
 			throw new Error(`${path} is not in history at the change's base`);
 		}
-		const now = readJson(resolve(root, path)) as {
+		const now = JSON.parse(asChanged(path).toString("utf8")) as {
 			adapters: Record<string, unknown>[];
 			[key: string]: unknown;
 		};
@@ -942,13 +959,9 @@ describe("TC-737..744 non-disruption", () => {
 			registerRows?: unknown;
 		};
 		const atBase = JSON.parse(
-			execFileSync("git", ["show", `${base}:${path}`], {
-				cwd: root,
-				encoding: "utf8",
-				maxBuffer: 64 * 1024 * 1024,
-			}),
+			contentAt(base, path).toString("utf8"),
 		) as Account;
-		const now = readJson(resolve(root, path)) as Account;
+		const now = JSON.parse(asChanged(path).toString("utf8")) as Account;
 
 		expect(JSON.stringify(now.unmetAreas)).toBe(
 			JSON.stringify(atBase.unmetAreas),
@@ -1008,12 +1021,14 @@ describe("TC-737..744 non-disruption", () => {
 			"conformance/cases/provenance/PROV-002.json",
 		];
 		const { base } = changeRange(root, SENTINELS);
+		const owned = new Set(changedPathsUnion(root, SENTINELS));
 		for (const path of frozen) {
-			const atBase = execFileSync("git", ["show", `${base}:${path}`], {
-				cwd: root,
-				maxBuffer: 64 * 1024 * 1024,
-			});
-			expect(readFileSync(resolve(root, path)).equals(atBase), path).toBe(true);
+			// This change's own path set does not carry it, committed or not.
+			expect(owned.has(path), `${path} is in this change's path set`).toBe(
+				false,
+			);
+			// And its bytes at this change's head equal its bytes at its base.
+			expect(asChanged(path).equals(contentAt(base, path)), path).toBe(true);
 		}
 	});
 

@@ -48,6 +48,13 @@ export interface ChangeRange {
 	readonly base: string;
 	/** The commit that introduced the change. */
 	readonly tip: string;
+	/**
+	 * True when every sentinel resolves to one commit, which is what a squash
+	 * merge produces. It is the signal that separates "this change is still in
+	 * flight, and every commit after `tip` is its own" from "this change is one
+	 * landed commit, and everything after it belongs to a later ticket".
+	 */
+	readonly squashed: boolean;
 }
 
 /**
@@ -134,7 +141,7 @@ export function changeRange(
 		cwd: root,
 		encoding: "utf8",
 	}).trim();
-	return { base, tip: latest };
+	return { base, tip: latest, squashed: earliest === latest };
 }
 
 /**
@@ -185,6 +192,50 @@ export function changedPathsOf(
 		.filter((path) => !changedAfter(root, tip, path));
 
 	return [...new Set([...committed, ...working])];
+}
+
+/**
+ * A path's bytes *as this change left them*.
+ *
+ * A gate that reads the working tree and compares it to `changeRange().base`
+ * has both defects of a half-pinned range at once: the base is a history fact,
+ * the head is whatever is checked out. After the squash merge the head carries
+ * every later ticket, so a later ticket's edit to a path this change froze is
+ * attributed to this change and fails it for someone else's commit. That is the
+ * same shape issue #20 measured on a path *set*, applied to a path's *bytes*.
+ *
+ * Reading `tip` unconditionally is wrong in the other direction: while the
+ * change is in flight `tip` is the last commit that added a sentinel, not the
+ * branch head, so every commit the change made after it would be invisible.
+ *
+ * `squashed` separates the two, and it is a fact about history rather than a
+ * guess: while the sentinels sit in different commits the change is unmerged,
+ * there are no later tickets in this history, and the working tree is its end
+ * state; once they collapse to one commit the change *is* that commit, and
+ * everything after it is somebody else's.
+ *
+ * Throws when the path is absent, because a gate that cannot read the content
+ * it compares must fail rather than pass.
+ */
+export function contentAsChanged(
+	root: string,
+	sentinels: string | readonly string[],
+	path: string,
+): Buffer {
+	const { tip, squashed } = changeRange(root, sentinels);
+	if (squashed) {
+		return execFileSync("git", ["show", `${tip}:${path}`], {
+			cwd: root,
+			maxBuffer: 64 * 1024 * 1024,
+		});
+	}
+	const absolute = resolve(root, path);
+	if (!existsSync(absolute)) {
+		throw new Error(
+			`${path} is absent from the working tree, so this gate cannot read the content it compares`,
+		);
+	}
+	return readFileSync(absolute);
 }
 
 /** True when a commit after `tip` changed `path`: later work, not this change. */

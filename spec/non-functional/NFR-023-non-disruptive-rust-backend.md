@@ -154,8 +154,18 @@ per-commit path sets over `git log --first-parent --no-merges` so a trunk merge
 inside the range contributes nothing of the trunk's. Confirm every path in that
 union, and every uncommitted path in the tree no later commit has taken over, is
 permitted and none prohibited. Confirm each permitted entry is named by a
-requirement Output or by a Verification step here. Compare `package.json`
-metadata fields. Byte-compare every `conformance/` file other than the adapter
+requirement Output or by a Verification step here.
+
+A gate that compares a *file's bytes* rather than a path set names its head
+endpoint the same way, with `contentAsChanged` from `test/changed-paths.ts`.
+Comparing the working tree against the range's base is the half-pinned range in
+its sixth disguise: the base is a history fact and the head is whatever is
+checked out, so after the squash merge a later ticket's edit to a frozen file is
+attributed to this change and fails it for a commit it did not make. While the
+sentinels sit in different commits the change is unmerged, this history carries
+no later ticket, and the working tree is the change's end state; once they
+collapse to one commit the change *is* that commit, and its bytes come from
+there. Compare `package.json` metadata fields. Byte-compare every `conformance/` file other than the adapter
 registry against the pre-change baseline. Inspect every crate manifest, emitted
 and hand-written, for `publish = false`, and every added manifest for the
 licence. Compare `Cargo.lock`'s third-party entries against
