@@ -51,25 +51,25 @@ absent a reviewed P0 gap.
 
 ### Stakeholder and User Requirements
 
-- [ ] **StR-001:** Keep the semantic contract governed by evidence a reviewer can check.
-- [ ] **US-013:** Give Python consumers types that carry the contract's constraints rather than a generator's defaults, without acquiring a generator to maintain.
+- [x] **StR-001:** Keep the semantic contract governed by evidence a reviewer can check.
+- [x] **US-013:** Give Python consumers types that carry the contract's constraints rather than a generator's defaults, without acquiring a generator to maintain.
 
 ### Functional Requirements
 
-- [ ] **FR-072:** Declared pins, the advisory floor over GHSA-386q-5hp3-95m9 and GHSA-5578-w22f-pfx9, the `python-backend` dependency group, and gates that fail rather than skip.
-- [ ] **FR-073:** Five immutable profiles, one per output family; the option allow-list; `profile_digest` over the options alone.
-- [ ] **FR-074:** The owned `unevaluatedProperties` rewrite and the multi-document input mode, additive to FR-043 and touching neither it nor the published schemas.
-- [ ] **FR-075:** The five-key schema refusal set, the ref-shape refusals, the argument allow-list, and the closed refusal register.
-- [ ] **FR-076:** One sandboxed runner: guards first, scratch root, allow-listed environment, stated limits, declared-toolchain fingerprint, byte-identical repeat.
-- [ ] **FR-077:** The probe corpus, the per-family verdicts, the retained-gap register, and the read-only corpus account.
-- [ ] **FR-078:** The `ast` inspection in reporting and enforcing modes, with a stated attribution rule.
-- [ ] **FR-079:** The package layout, provenance, README, examples, and content fingerprint — published nowhere.
-- [ ] **FR-080:** Strict type checking over every emitted surface and falsifiable runtime validation of every recorded verdict.
+- [x] **FR-072:** Declared pins, the advisory floor over GHSA-386q-5hp3-95m9 and GHSA-5578-w22f-pfx9, the `python-backend` dependency group, and gates that fail rather than skip.
+- [x] **FR-073:** Five immutable profiles, one per output family; the option allow-list; `profile_digest` over the options alone.
+- [x] **FR-074:** The owned `unevaluatedProperties` rewrite and the multi-document input mode, additive to FR-043 and touching neither it nor the published schemas.
+- [x] **FR-075:** The five-key schema refusal set, the ref-shape refusals, the argument allow-list, and the closed refusal register.
+- [x] **FR-076:** One sandboxed runner: guards first, scratch root, allow-listed environment, stated limits, declared-toolchain fingerprint, byte-identical repeat.
+- [x] **FR-077:** The probe corpus, the per-family verdicts, the retained-gap register, and the read-only corpus account.
+- [x] **FR-078:** The `ast` inspection in reporting and enforcing modes, with a stated attribution rule.
+- [x] **FR-079:** The package layout, provenance, README, examples, and content fingerprint — published nowhere.
+- [x] **FR-080:** Strict type checking over every emitted surface and falsifiable runtime validation of every recorded verdict.
 
 ### Non-Functional Requirements
 
-- [ ] **NFR-026:** Schema treated as executable input: refusal before spawn, no network, allow-listed environment, no execution during inspection, no gate that skips.
-- [ ] **NFR-027:** Same-host byte identity, a `--check`ed report, no host-observed reading inside a byte-compared artefact, no publication, and changed-path gates that actually assert.
+- [x] **NFR-026:** Schema treated as executable input: refusal before spawn, no network, allow-listed environment, no execution during inspection, no gate that skips.
+- [x] **NFR-027:** Same-host byte identity, a `--check`ed report, no host-observed reading inside a byte-compared artefact, no publication, and changed-path gates that actually assert.
 
 ## Dependency Graph
 
@@ -114,17 +114,17 @@ is the natural home for — packaging, changed paths, and guard-range analysis.
 
 ## Test Plan
 
-- [ ] **TC-845..853:** pinned versions, advisory ranges and floor, ordered comparison, provisioning failure, extras, record-versus-lock agreement, no host reading.
-- [ ] **TC-854..862:** the five profiles, the required options, the prohibited options, the two rejected options, undeclared-profile and caller-option refusal, digest stability, parser agreement, deep copy.
-- [ ] **TC-863..872:** the rewrite at any depth, the closure difference it makes, the conflicting-closure error, the preparation record, purity, the lookahead pattern, keyword and `$ref` preservation, and the untouched merged artefacts.
-- [ ] **TC-873..882:** the five keys at generated positions, the register measured against the installed generator, the ref shapes, the option allow-list in both spellings, guard ordering, and the malicious corpus.
-- [ ] **TC-883..894:** repeat byte identity, host-leak scan, refusal before spawn, timeout and scratch removal, size boundary, empty output, stderr allow-list, socket instrumentation, entry-point resolution, environment, provisioning failure, limits, and the `src/compiler/` spawn scan.
-- [ ] **TC-895..907:** probe coverage and detectors, verdicts and their citations, expectation agreement, the gap register, the two Pydantic demonstrations, the stdlib disposition, condition grounding, `--check`, the corpus account, the untouched corpus, the generator ban, per-family gap rows, and the closed verdict vocabulary.
-- [ ] **TC-908..917:** degraded and sanctioned classification, the published-schema census, nested annotations, the import allow-list, module-level statements, non-execution, ordering, the two modes, the classifier mutation, and symbol-variant attribution.
-- [ ] **TC-918..926:** layout and duplicate names, clean import, provenance, `--check`, examples, the `not-qualified` branch and the pre-write refusal, manifest identity, packed-file reachability, and the content fingerprint.
-- [ ] **TC-927..935:** strict type checking, ignore ban, per-type exercise, retained-constraint rejection, lost-constraint falsification, the static-only record, provisioning failure, the skip census, and the weakened-probe mutation.
-- [ ] **TC-936..939:** the malicious corpus and the advisory gate, socket and filesystem instrumentation with emission ordering, non-execution and the register superset, and the provisioning and changed-path census.
-- [ ] **TC-940..943:** double generation and the artefact scan, report `--check`, the changed-path and manifest analysis, and the guard-range conversion with its post-merge perturbation.
+- [x] **TC-845..853:** pinned versions, advisory ranges and floor, ordered comparison, provisioning failure, extras, record-versus-lock agreement, no host reading.
+- [x] **TC-854..862:** the five profiles, the required options, the prohibited options, the two rejected options, undeclared-profile and caller-option refusal, digest stability, parser agreement, deep copy.
+- [x] **TC-863..872:** the rewrite at any depth, the closure difference it makes, the conflicting-closure error, the preparation record, purity, the lookahead pattern, keyword and `$ref` preservation, and the untouched merged artefacts.
+- [x] **TC-873..882:** the five keys at generated positions, the register measured against the installed generator, the ref shapes, the option allow-list in both spellings, guard ordering, and the malicious corpus.
+- [x] **TC-883..894:** repeat byte identity, host-leak scan, refusal before spawn, timeout and scratch removal, size boundary, empty output, stderr allow-list, socket instrumentation, entry-point resolution, environment, provisioning failure, limits, and the `src/compiler/` spawn scan.
+- [x] **TC-895..907:** probe coverage and detectors, verdicts and their citations, expectation agreement, the gap register, the two Pydantic demonstrations, the stdlib disposition, condition grounding, `--check`, the corpus account, the untouched corpus, the generator ban, per-family gap rows, and the closed verdict vocabulary.
+- [x] **TC-908..917:** degraded and sanctioned classification, the published-schema census, nested annotations, the import allow-list, module-level statements, non-execution, ordering, the two modes, the classifier mutation, and symbol-variant attribution.
+- [x] **TC-918..926:** layout and duplicate names, clean import, provenance, `--check`, examples, the `not-qualified` branch and the pre-write refusal, manifest identity, packed-file reachability, and the content fingerprint.
+- [x] **TC-927..935:** strict type checking, ignore ban, per-type exercise, retained-constraint rejection, lost-constraint falsification, the static-only record, provisioning failure, the skip census, and the weakened-probe mutation.
+- [x] **TC-936..939:** the malicious corpus and the advisory gate, socket and filesystem instrumentation with emission ordering, non-execution and the register superset, and the provisioning and changed-path census.
+- [x] **TC-940..943:** double generation and the artefact scan, report `--check`, the changed-path and manifest analysis, and the guard-range conversion with its post-merge perturbation.
 - [ ] **TC-944:** the recorded human review of the four irreducibly manual obligations.
 
 ### Entrance Criteria

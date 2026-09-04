@@ -21,7 +21,7 @@ Close the bundle: run the code review and the gap analysis, apply or disposition
 
 - [x] Run `/code-review` over the change and write the SpecReview.
 - [x] Run `/gap-analysis` over Plan-012 and write the SpecReview.
-- [ ] Apply every high finding and every real medium; record the dispositions for the rest.
+- [x] Apply every high finding and every real medium; record the dispositions for the rest.
 - [x] Grep every added test file for a non-binding trace tag, and check `black` has not wrapped a marker.
 - [x] Reconcile `quire coverage` against the `spec/tests.md` figure and say which number counts what.
 - [x] Rebase on `origin/main`, resolving `spec/tests.md` by keeping both id blocks.
