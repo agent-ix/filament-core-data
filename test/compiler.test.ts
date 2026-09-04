@@ -861,18 +861,27 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 		// frozen set below. Issue #19's contract path validates its own output
 		// against that schema deliberately (FR-050), so naming the schema there is
 		// the point rather than the defect.
+		//
+		// `backends/` was the whole directory until issue #22. The contract
+		// generation backend lives there too and validates its input against the
+		// published schema deliberately, exactly as issue #19's contract path
+		// does, so the frozen set is named file by file rather than widened to a
+		// prefix that swallows every backend written afterwards.
 		const prototype = [
 			"ir.mjs",
 			"compile.mjs",
 			"identity.mjs",
 			"index.mjs",
 			"cli.mjs",
+			"backends/typescript.mjs",
+			"backends/rust.mjs",
+			"backends/type-names.mjs",
+			"backends/python-schema.mjs",
+			"backends/python-pins.mjs",
 		];
 		for (const path of walk(compilerRoot)) {
 			const isPrototype =
-				prototype.includes(path) ||
-				path.startsWith("emitters/") ||
-				path.startsWith("backends/");
+				prototype.includes(path) || path.startsWith("emitters/");
 			if (!isPrototype) continue;
 			expect(read(resolve(compilerRoot, path)), path).not.toContain(
 				"semantic-ir.schema.json",

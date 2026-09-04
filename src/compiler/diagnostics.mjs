@@ -76,6 +76,14 @@ const COMPILER_CODES = [
 	"LIMIT_MAX_DEPTH",
 	"LIMIT_MAX_NODES",
 	"LIMIT_MAX_COLLECTION_ITEMS",
+	// Generation seam and backends (FR-063). These name a defect in a submitted
+	// generation *request*, or in the calling program's choice of target — never
+	// a defect in the shape of an IR document, which is why none of them belongs
+	// in `READER_CODES` below.
+	"BACKEND_NOT_IMPLEMENTED",
+	"INVALID_REQUEST",
+	"UNSUPPORTED_IR_VERSION",
+	"BACKEND_CONTRACT_VIOLATION",
 ];
 
 /**

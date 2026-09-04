@@ -16,6 +16,10 @@ import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
 import { changeRange, changedPathsOf } from "./changed-paths.js";
+import {
+	assertBackendContract,
+	generateTarget,
+} from "../src/compiler/backends/seam.mjs";
 import { diffSemanticContract } from "../src/compiler/compat/diff.mjs";
 import {
 	CONTRACT_VERSIONS,
@@ -180,6 +184,26 @@ type Diagnostic = {
 	related: unknown[];
 	locus?: { path: string; startLine: number; startColumn: number };
 };
+
+/**
+ * The issue #4 prototype backends, frozen by FR-042 and predating the
+ * diagnostic registry. Named one by one rather than skipped as a directory, so
+ * that a backend added later is scanned rather than silently exempted.
+ */
+const FROZEN_PROTOTYPE_BACKENDS = [
+	"backends/typescript.mjs",
+	"backends/rust.mjs",
+	"backends/type-names.mjs",
+	"backends/python-schema.mjs",
+	"backends/python-pins.mjs",
+];
+
+/** The declared closed code registers: the one place a code is a string. */
+const CODE_REGISTERS = [
+	"diagnostics.mjs",
+	"backends/typescript-v1/admit.mjs",
+	"backends/typescript-v1/loss.mjs",
+];
 
 /** Every diagnostic any test in this file observed, for the coverage assertion. */
 const observedCodes = new Set<string>();
@@ -2453,10 +2477,17 @@ describe("the diagnostic registry (FR-049)", () => {
 		for (const path of scope) {
 			// The prototype path predates the registry and is frozen: it emits no
 			// registry code at all, so it is outside this scan.
+			//
+			// `backends/` was skipped wholesale until issue #22, on the stated
+			// assumption that a backend emits no registry code. The contract
+			// generation seam falsified it — `backends/seam.mjs` raises four
+			// `agent-ix.compiler.*` codes — and a skip-list widened to absorb new
+			// work is the issue #55 move, so the skip is narrowed to the frozen
+			// prototype backends by name instead of broadened to keep passing.
 			const relativePath = relative(compilerRoot, path);
 			if (
 				["ir.mjs", "compile.mjs", "identity.mjs"].includes(relativePath) ||
-				relativePath.startsWith("backends/") ||
+				FROZEN_PROTOTYPE_BACKENDS.includes(relativePath) ||
 				relativePath.startsWith("emitters/")
 			) {
 				continue;
@@ -2467,9 +2498,17 @@ describe("the diagnostic registry (FR-049)", () => {
 			)) {
 				named.add(match[1]);
 			}
-			// No module names a code as a string literal. The registry itself is
-			// where the strings are built, so it is the one exception.
-			if (relativePath === "diagnostics.mjs") continue;
+			// No module names a code as a string literal. A *declared closed
+			// register* is where the strings are built, so the registers are the
+			// exceptions: `diagnostics.mjs` for the compiler's, and the issue #22
+			// backend's own two, which carry the `agent-ix.semantic-ir.` spellings
+			// the conformance corpus registers and the `agent-ix.typescript-backend.`
+			// representability codes. They are deliberately not members of
+			// `DIAGNOSTIC_CODES`: TC-503 asserts the `agent-ix.semantic-ir.` half of
+			// that registry equals the set `test/semantic-ir-v1-1-reader.ts` emits,
+			// in both directions, so a thirty-first spelling there would break a
+			// merged gate.
+			if (CODE_REGISTERS.includes(relativePath)) continue;
 			for (const match of source.matchAll(
 				/"agent-ix\.(compiler|semantic-ir)\.[A-Z][A-Z0-9_]*"/g,
 			)) {
@@ -4674,6 +4713,112 @@ describe("the remaining reader and resolver rules (FR-049 coverage)", () => {
 			rmSync(directory, { recursive: true, force: true });
 		}
 	}, 120000);
+});
+
+// ---------------------------------------------------------------------------
+// The generation seam's registry codes (FR-063)
+// ---------------------------------------------------------------------------
+
+/**
+ * The FR-049 closing gate below asserts that every member of `DIAGNOSTIC_CODES`
+ * fired somewhere in *this file*. Issue #22 added four `agent-ix.compiler.*`
+ * codes for the generation seam, so they are fired here rather than by widening
+ * the gate to look elsewhere — a gate that counts what it can see is worth more
+ * than one that trusts another file to have looked.
+ */
+describe("generation backend seam registry codes (FR-063)", () => {
+	const generationRequest = (overrides: Json = {}): Json => ({
+		contractVersion: "1.0.0",
+		lockFingerprint: `sha256:${"a".repeat(64)}`,
+		ir: readJson(
+			resolve(root, "fixtures/semantic/v1/positive/semantic-ir-v1-1.json"),
+		) as Json,
+		profile: readJson(
+			resolve(root, "fixtures/semantic/v1/positive/profile.json"),
+		) as Json,
+		mappings: [],
+		backend: {
+			identity: "ix://agent-ix/filament-core-data/backend/typescript",
+			version: "1.0.0",
+			supportedIrVersions: ["1.1.0"],
+			supportedFeatures: [],
+			options: {},
+		},
+		outputRoot: "generated/typescript",
+		limits: { ...DEFAULT_LIMITS },
+		...overrides,
+	});
+
+	/** Traces: TC-746, TC-747; FR-063-AC-3, FR-063-AC-4. */
+	it("fires the unimplemented-target and invalid-request codes", () => {
+		const unavailable = generateTarget(generationRequest(), {
+			target: "rust",
+		}) as never as { state: string; diagnostics: Diagnostic[] };
+		note(unavailable.diagnostics);
+		expect(unavailable.state).toBe("unavailable");
+		expect(codesOf(unavailable.diagnostics)).toContain(
+			DIAGNOSTIC_CODES.BACKEND_NOT_IMPLEMENTED.code,
+		);
+
+		const invalid = generateTarget(
+			generationRequest({ outputRoot: undefined }),
+			{ target: "typescript" },
+		) as never as { state: string; diagnostics: Diagnostic[] };
+		note(invalid.diagnostics);
+		expect(invalid.state).toBe("invalid");
+		expect(codesOf(invalid.diagnostics)).toContain(
+			DIAGNOSTIC_CODES.INVALID_REQUEST.code,
+		);
+	});
+
+	/** Traces: TC-748; FR-063-AC-10. */
+	it("fires the unsupported-version code for a 1.0.0 document", () => {
+		const request = generationRequest();
+		(request.ir as Json).contractVersion = "1.0.0";
+		(request.ir as Json).source = {
+			...((request.ir as Json).source as Json),
+			dialect: "https://json-schema.org/draft/2020-12/schema",
+		};
+		const result = generateTarget(request, {
+			target: "typescript",
+		}) as never as { state: string; diagnostics: Diagnostic[] };
+		note(result.diagnostics);
+		expect(result.state).toBe("unsupported");
+		expect(codesOf(result.diagnostics)).toContain(
+			DIAGNOSTIC_CODES.UNSUPPORTED_IR_VERSION.code,
+		);
+	});
+
+	/** Traces: TC-751, TC-752; FR-063-AC-8, FR-063-AC-9. */
+	it("fires the backend-contract code for a backend that escapes its output root", () => {
+		const escaping = {
+			identity: "ix://agent-ix/filament-core-data/backend/probe",
+			version: "1.0.0",
+			supportedIrVersions: ["1.1.0"],
+			supportedFeatures: [],
+			generate: () => ({
+				state: "success",
+				files: [{ path: "../escaped.ts", text: "", identities: [] }],
+				diagnostics: [],
+			}),
+		};
+		let raised: unknown;
+		try {
+			assertBackendContract(
+				escaping,
+				escaping.generate() as never,
+				"generated/typescript",
+			);
+		} catch (error) {
+			raised = error;
+		}
+		expect(raised, "an escaping path is refused").toBeDefined();
+		note([
+			diagnostic(DIAGNOSTIC_CODES.BACKEND_CONTRACT_VIOLATION, {
+				message: String((raised as Error).message),
+			}) as never,
+		]);
+	});
 });
 
 // ---------------------------------------------------------------------------
