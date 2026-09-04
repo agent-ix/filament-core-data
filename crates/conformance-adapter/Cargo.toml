@@ -1,0 +1,17 @@
+# The process the `rust-backend` slot of conformance/adapters/registry.json
+# starts (FR-059). It is never imported: the harness runs it, reads one JSON
+# array from its stdout, and compares every answer to the oracle.
+[package]
+name = "agent-ix-conformance-adapter"
+version = "0.0.0"
+description = "Answers the Filament semantic conformance corpus from Rust."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+agent-ix-semantic-ir = { path = "../semantic-ir" }
+
+[lints.rust]
+unsafe_code = "forbid"

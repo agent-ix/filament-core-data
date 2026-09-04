@@ -140,3 +140,73 @@ compiler-inspect:
 .PHONY: compiler-diff
 compiler-diff:
 	node src/compiler/cli.mjs diff --old $(OLD) --new $(NEW) --out $(DIFF_OUT)
+
+# -----------------------------------------------------------------------------
+# Rust/Serde semantic codegen backend (issue #21)
+# -----------------------------------------------------------------------------
+# The generator is JavaScript under `src/compiler/backends/rust-serde/`; the
+# reader, the conformance adapter and the two consumers are Rust under
+# `crates/`. These targets call `node` and `cargo` directly: `package.json` is a
+# prohibited path under NFR-023, so nothing here adds a script there.
+#
+# CARGO_TARGET_DIR is set on every target rather than left to `.cargo/config.toml`,
+# because the environment variable takes precedence over the config key and the
+# authoring host sets it globally. A determinism gate that compares a rebuilt
+# artifact against one another checkout left behind measures nothing.
+#
+# No target is allowed to skip. A gate whose toolchain is missing fails saying
+# it could not run, which is what NFR-022-AC-1 requires.
+
+export CARGO_TARGET_DIR := $(CURDIR)/target
+RUST_OUT ?= $(CURDIR)/target/generated
+
+.PHONY: rust-toolchain-check
+rust-toolchain-check:
+	@command -v cargo >/dev/null || { echo "cargo is not on PATH: the Rust gates cannot run, and this is a failure rather than a skip"; exit 1; }
+	@command -v rustfmt >/dev/null || { echo "rustfmt is not on PATH: the FR-060 formatter gate cannot run, and this is a failure rather than a skip"; exit 1; }
+
+.PHONY: rust-generate
+rust-generate: rust-toolchain-check
+	node src/compiler/backends/rust-serde/cli.mjs generate --out $(RUST_OUT)
+
+.PHONY: rust-check
+rust-check: rust-toolchain-check
+	node src/compiler/backends/rust-serde/cli.mjs check
+
+.PHONY: rust-docs
+rust-docs:
+	node scripts/build-rust-backend-docs.mjs
+
+.PHONY: rust-docs-check
+rust-docs-check:
+	node scripts/build-rust-backend-docs.mjs --check
+
+.PHONY: rust-build
+rust-build: rust-toolchain-check
+	cargo build --offline --workspace --locked
+	cargo fmt --all -- --check
+
+.PHONY: rust-test
+rust-test: rust-toolchain-check
+	cargo test --offline --workspace --locked
+
+.PHONY: rust-conformance
+rust-conformance: rust-toolchain-check
+	cargo build --offline --locked -p agent-ix-conformance-adapter
+	node conformance/runner/differential.mjs
+
+.PHONY: rust-install-from-artifact
+rust-install-from-artifact: rust-toolchain-check
+	node src/compiler/backends/rust-serde/cli.mjs install-from-artifact
+
+.PHONY: rust-mutate
+rust-mutate: rust-toolchain-check
+	node src/compiler/backends/rust-serde/cli.mjs mutate
+
+.PHONY: rust-fuzz
+rust-fuzz: rust-toolchain-check
+	node src/compiler/backends/rust-serde/cli.mjs fuzz
+
+.PHONY: rust-deep
+rust-deep: rust-mutate rust-fuzz
+	node src/compiler/backends/rust-serde/cli.mjs properties --deep

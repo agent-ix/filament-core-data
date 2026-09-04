@@ -1,0 +1,22 @@
+# The independent Rust semantic-IR reader (FR-059).
+#
+# It declares no dependency at all — not serde, not serde_json — and carries its
+# own JSON reader, writer and ECMAScript-compatible number formatter. That is
+# not asceticism: the corpus's canonical form is produced by `JSON.stringify`,
+# so the byte the adapter is compared on runs through a number formatter, and a
+# crate that owns its formatter can be tested against Node directly. Declaring
+# no dependency also keeps the crate's agreement with the issue #20 oracle
+# evidence rather than a shared implementation.
+[package]
+name = "agent-ix-semantic-ir"
+version = "0.0.0"
+description = "Independent Rust reader for the Filament semantic IR v1 contract."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+
+[lints.rust]
+unsafe_code = "forbid"

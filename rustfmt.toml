@@ -1,0 +1,9 @@
+# The formatting configuration the emitted crate is a fixed point of.
+#
+# Kept to stable options only: an unstable option would make the fixed point
+# depend on the channel's nightly features, and the whole point of the pin in
+# rust-toolchain.toml is that the fixed point is reproducible.
+edition = "2021"
+max_width = 100
+newline_style = "Unix"
+use_small_heuristics = "Default"

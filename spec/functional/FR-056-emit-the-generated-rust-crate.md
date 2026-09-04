@@ -50,6 +50,9 @@ it came from.
   an ordered map of relative path to file bytes, and emitting no bytes to disk
 - `src/compiler/backends/rust-serde/index.mjs`: `generateRust(request, sink)`,
   the one entry point that writes
+- `src/compiler/backends/rust-serde/cli.mjs`: the command line the `make`
+  targets call — `generate`, `check`, `install-from-artifact`, `mutate`,
+  `fuzz`, and `properties` — which is the only caller of `generateRust`
 - A generated crate rooted at the request's `outputRoot`, containing
   `Cargo.toml`, `LICENSE`, `README.md`, `src/lib.rs`, `src/support.rs`,
   `src/identity.rs`, `src/metadata.rs`, and one module per IR type
