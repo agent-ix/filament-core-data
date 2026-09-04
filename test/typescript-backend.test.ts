@@ -95,6 +95,8 @@ type InstanceCase = {
 	readonly code?: string;
 	readonly construct?: string;
 	readonly constructArgs?: Record<string, unknown>;
+	readonly differential?: "exempt";
+	readonly differentialReason?: string;
 };
 
 type InstanceCorpus = {
@@ -328,6 +330,7 @@ describe("TypeScript backend fixture (FR-071)", () => {
 						) as InstanceCorpus,
 				);
 			let exercised = 0;
+			let differentialCandidates = 0;
 			for (const corpus of corpora) {
 				expect(corpus.provenance.blessedFromRun).toBe(false);
 				const module = await generatedValidators(
@@ -335,6 +338,14 @@ describe("TypeScript backend fixture (FR-071)", () => {
 					resolve(scratch, corpus.ir.replace(/[^a-z0-9]+/gi, "-")),
 				);
 				for (const row of corpus.cases) {
+					if (row.differential === "exempt") {
+						expect(
+							row.differentialReason,
+							`${row.id}: exemption reason`,
+						).toMatch(/\S/);
+					} else {
+						differentialCandidates += 1;
+					}
 					const name = row.type.split("/").at(-1);
 					const validate = module[`validate${name}`];
 					expect(typeof validate, `${row.id}: validator export`).toBe(
@@ -357,6 +368,7 @@ describe("TypeScript backend fixture (FR-071)", () => {
 				}
 			}
 			expect(exercised).toBe(94);
+			expect(differentialCandidates).toBeGreaterThan(0);
 		} finally {
 			rmSync(scratch, { recursive: true, force: true });
 		}
