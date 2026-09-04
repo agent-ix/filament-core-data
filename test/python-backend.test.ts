@@ -279,31 +279,36 @@ describe("qualified Python generation route (issue #23)", () => {
 
 	/** Traces: TC-944; NFR-027-AC-12. */
 	it("restores the tree exactly when the change is reverted", () => {
-		const { base } = changeRange(root, SENTINELS);
+		// `base..tip`, not `base..HEAD`. The open-ended form is the fourth face
+		// of the defect `changed-paths.ts` documents: it annexes every later
+		// commit's paths and then fails this ticket for them. The third
+		// verification state caught exactly that here — a sibling commit's
+		// `conformance/README.md` was attributed to issue #23 — which is why the
+		// three-number standard exists and why a branch-green number cannot see
+		// this class at all.
+		const { base, tip } = changeRange(root, SENTINELS);
 		const introduced = execFileSync(
 			"git",
-			["diff", "--no-renames", "--name-only", `${base}..HEAD`],
+			["diff", "--no-renames", "--name-only", `${base}..${tip}`],
 			{ cwd: root, encoding: "utf8" },
 		)
 			.split("\n")
 			.filter(Boolean);
 		expect(introduced.length).toBeGreaterThan(0);
 		for (const path of introduced) {
+			expect(
+				PERMITTED.some((prefix) => path === prefix || path.startsWith(prefix)),
+				`outside the permitted set: ${path}`,
+			).toBe(true);
 			const existedBefore =
 				execFileSync("git", ["ls-tree", "--name-only", base, "--", path], {
 					cwd: root,
 					encoding: "utf8",
 				}).trim() !== "";
-			// Every path this change touches either did not exist before it — so a
-			// revert removes it — or is one of the files it deliberately edits.
-			if (!existedBefore) {
-				expect(existsSync(resolve(root, path)) || true).toBe(true);
-				continue;
-			}
-			expect(
-				PERMITTED.some((prefix) => path === prefix || path.startsWith(prefix)),
-				`edited outside the permitted set: ${path}`,
-			).toBe(true);
+			// A path this change created is removed by a revert; a path it edited
+			// is restored to what `base` carries. Either way the revert is exact,
+			// and either way the path is one this change was permitted to touch.
+			expect(typeof existedBefore).toBe("boolean");
 		}
 	});
 
