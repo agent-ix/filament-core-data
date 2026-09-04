@@ -1,0 +1,31 @@
+{
+	"$comment": "Issue #23, FR-077. One construct, one detector, one expected retention per family. The expectation is read from the contract, not from the measurement (FR-077-CON-2).",
+	"id": "optional-vs-null",
+	"construct": "required-nullable versus optional",
+	"note": "A required nullable field is not the same as an absent one and must render as nullable.",
+	"detector": { "kind": "regex", "pattern": "a:\\s*str \\| None" },
+	"schema": {
+		"$defs": {
+			"O": {
+				"type": "object",
+				"title": "O",
+				"properties": {
+					"a": {
+						"type": ["string", "null"]
+					},
+					"b": { "type": "string" },
+					"c": { "type": "string" }
+				},
+				"required": ["a", "b"],
+				"additionalProperties": false
+			}
+		}
+	},
+	"expected": {
+		"pydantic_v2_basemodel": true,
+		"pydantic_v2_dataclass": true,
+		"stdlib_dataclass": true,
+		"typed_dict": true,
+		"msgspec_struct": true
+	}
+}

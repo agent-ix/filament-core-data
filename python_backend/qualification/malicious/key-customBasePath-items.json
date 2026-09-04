@@ -1,0 +1,13 @@
+{
+	"$comment": "Issue #23, FR-075/NFR-026-AC-1. The executable schema key `customBasePath` at the items position.",
+	"kind": "schema",
+	"expectedCode": "PY-REF-004",
+	"document": {
+		"$defs": {
+			"A": {
+				"type": "array",
+				"items": { "customBasePath": "os.system" }
+			}
+		}
+	}
+}

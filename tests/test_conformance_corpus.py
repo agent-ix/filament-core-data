@@ -82,8 +82,7 @@ def _apply(document: dict, ops: list[dict]) -> dict:
 
     def parent(path: str):
         tokens = [
-            token.replace("~1", "/").replace("~0", "~")
-            for token in path.split("/")[1:]
+            token.replace("~1", "/").replace("~0", "~") for token in path.split("/")[1:]
         ]
         last = tokens.pop()
         node = document

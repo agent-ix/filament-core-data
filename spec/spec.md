@@ -83,6 +83,14 @@ them without reading any implementation under test, and a harness that judges
 every declared Rust, TypeScript, and Python implementation against that oracle
 rather than against one another.
 
+The tenth delivery is the qualified Python generation route (issue #23): the
+established `datamodel-code-generator` is pinned above both published advisory
+floors and measured, family by family, against a construct-isolating
+qualification corpus and the published v1 schemas; the repository owns only the
+schema preparation, the refusal guards, the sandboxed runner, the
+generated-source inspection, and the layout, and records every retained gap
+rather than acquiring a hand-written Python generator.
+
 ## 2. Scope
 
 ### 2.1 In Scope
@@ -144,6 +152,12 @@ rather than against one another.
 - An independent JSON-level semantic oracle, a differential harness with a
   declared adapter registry and divergence register, coverage accounting,
   promotion thresholds, and a downstream fixture import API.
+- The pinned Python generation toolchain and its advisory floor, the immutable
+  per-family target profiles, the owned schema-preparation pass and refusal
+  guards, the sandboxed generator runner, the generated-source inspection, the
+  per-family qualification verdicts and retained-gap register, and the generated
+  package layout with its provenance, examples, static checking, and runtime
+  validation — none of it published.
 
 ### 2.2 Out of Scope
 
@@ -172,6 +186,15 @@ rather than against one another.
 - Module vocabulary (entity, endpoint, process, requirement, …) in the
   semantic-core kernel; publishing `@agent-ix/semantic-core` (issue #11);
   a custom emitter for issue #35.
+- Publishing the generated Python package to PyPI or migrating any backend
+  consumer onto it; both wait on the issue #23 safety gate. Introducing a
+  hand-written Python code generator, absent a reviewed P0 qualification gap.
+  Wiring the corpus `python-backend` adapter slot, whose owning issue is #23:
+  the slot needs an IR reader that emits contract diagnostics, which a package
+  of generated types cannot produce, so issue #23 delivers a read-only advisory
+  account, leaves the slot `unavailable` and its rows unmet, and files that
+  reader as its own ticket. Deciding GAP-011, which couples in through the
+  corpus's `reference`-target cases and is recorded as a disposition.
 - Revising the emitted semantic-IR shape, generating or publishing a Rust,
   TypeScript, or Python package, or moving any consumer as part of issue #27;
   those belong to issues #19, #21, #22, #23, and #11.
@@ -255,9 +278,9 @@ Authority is assigned by concern:
 | Class | Artifacts | Purpose |
 |---|---|---|
 | Stakeholder | [StR-001](./stakeholder/StR-001-durable-semantic-data-governance.md) | Durable governance need |
-| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-010](./usecase/US-010-compile-a-semantic-package.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, and package-author outcomes |
-| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-053](./functional/FR-053-declare-the-typespec-semantic-vocabulary.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, prototype-promotion, and compiler-core behavior |
-| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-021](./non-functional/NFR-021-non-disruptive-compiler-core.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic promoted compilation, rollback, bounded and safe compilation, and compiler-core non-disruption |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-013](./usecase/US-013-generate-governed-python-types.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, package-author, and Python-consumer outcomes |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-080](./functional/FR-080-type-check-and-validate-generated-python.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, prototype-promotion, compiler-core, and qualified Python generation behavior |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-027](./non-functional/NFR-027-reproducible-non-disruptive-python-generation.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic promoted compilation, rollback, bounded and safe compilation, compiler-core non-disruption, sandboxed Python generation, and reproducible non-disruptive Python generation |
 
 ## 6. Decision Status Model
 
