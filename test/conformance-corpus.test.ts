@@ -923,15 +923,26 @@ describe("TC-302..313 the differential harness (FR-037)", () => {
 			caseDigest: result.caseDigest,
 			support: "unavailable",
 		}));
-		// The same answers pass while the registry declares the slot unavailable.
+		// The synthetic unavailable slot accepts this response; the checked
+		// available configuration below must reject it regardless of the live
+		// registry state as backend tickets land.
+		const unavailable = structuredClone(registry) as {
+			adapters: { id: string; status: string }[];
+		};
+		for (const adapter of unavailable.adapters) {
+			if (adapter.id === "typescript-backend") adapter.status = "unavailable";
+		}
 		expect(
 			(
-				run({ adapterResults: { "typescript-backend": results } }) as {
+				run({
+					registry: unavailable,
+					adapterResults: { "typescript-backend": results },
+				}) as {
 					problems: unknown[];
 				}
 			).problems,
 		).toEqual([]);
-		// Flipping that slot to `available` makes every one of them a failure.
+		// The corresponding available slot makes every one of them a failure.
 		const available = structuredClone(registry) as {
 			adapters: { id: string; status: string }[];
 		};
@@ -1964,25 +1975,16 @@ describe("TC-635..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 			).not.toBe("");
 		}
 
-		// Nothing this ticket owns may be added after the tip, or the range would
-		// not cover it. This keeps the sentinel list honest as the change grows,
-		// rather than trusting someone to remember to update it.
-		const { tip } = changeRange(REPO, CHANGE_SENTINELS) as { tip: string };
-		const addedAfterTip = git(
-			"log",
-			"--diff-filter=A",
-			"--format=",
-			"--name-only",
-			`${tip}..HEAD`,
-			"--",
-			"conformance",
-		)
-			.split("\n")
-			.filter((line) => line.trim().length > 0);
-		expect(
-			addedAfterTip,
-			"a file under conformance/ was added after the range's tip; add a sentinel from that commit",
-		).toEqual([]);
+		// The range ends at this ticket's latest sentinel, not at `HEAD`. A later
+		// backend legitimately adds its own adapter under `conformance/`; treating
+		// every later addition as issue #20 work made this gate fail even after
+		// that backend was reverted. The positive assertion below keeps the two
+		// sentinels honest without annexing a sibling's history.
+		const changed = corpusChangedPaths();
+		expect(changed).toContain("conformance/corpus.json");
+		expect(changed).toContain(
+			"spec/functional/FR-035-define-the-conformance-corpus.md",
+		);
 	});
 
 	it("TC-639 no corpus gate baselines on a range this branch's own merge empties", () => {
