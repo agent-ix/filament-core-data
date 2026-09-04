@@ -98,6 +98,23 @@ generated package under `strict` with `exactOptionalPropertyTypes`. Bundle a
 single-type entry point and compare the reachable symbol set with the committed
 surface fixture.
 
+## Acceptance Criteria
+
+| ID | Criteria | Verification |
+|---|---|---|
+| NFR-024-AC-1 | Two generation runs over one IR document produce byte-identical files and a byte-identical output manifest. | Snapshot |
+| NFR-024-AC-2 | A run from a scratch working directory produces the same bytes as a run from the repository root. | Snapshot |
+| NFR-024-AC-3 | A run under `LC_ALL=tr_TR.UTF-8` produces the same bytes as a run under `LC_ALL=C`. | Snapshot |
+| NFR-024-AC-4 | Two packed artifacts over the generated package are identical after normalizing exactly `mtime`, `uid`, `gid`, `uname`, and `gname`, and no other member. | Integration |
+| NFR-024-AC-5 | The generated package's import graph names no identifier from the seven prohibited dependency categories, and every import specifier in generated source is relative. | Static |
+| NFR-024-AC-6 | The generated `package.json` declares no `dependencies`, `peerDependencies`, or `optionalDependencies`. | Static |
+| NFR-024-AC-7 | Generated source contains no `any`, no `as` type assertion, and no `@ts-expect-error`. | Static |
+| NFR-024-AC-8 | No module under `src/compiler/backends/typescript-v1/` reads a clock, an environment variable, `process.cwd()`, the filesystem, or a socket during a fixture generation. | Test |
+| NFR-024-AC-9 | No module under `src/compiler/backends/typescript-v1/` calls `localeCompare`. | Static |
+| NFR-024-AC-10 | Every generated file carries the AGPL-3.0-only SPDX header, and a file missing it fails the licence gate. | Static |
+| NFR-024-AC-11 | The generated package typechecks under `strict` with `exactOptionalPropertyTypes` enabled. | Compile |
+| NFR-024-AC-12 | Bundling a single-type entry point yields exactly the symbol set the committed surface fixture records, and adding a symbol to that set fails the fixture. | Integration |
+
 ## Dependencies
 
 - **Upstream**: [NFR-009](./NFR-009-cross-language-semantic-parity.md),
