@@ -29,8 +29,6 @@
  * package for which its conclusion would not hold (FR-065-AC-12).
  */
 
-import { UNION_DISCRIMINANT } from "./names.mjs";
-
 /**
  * The emitted file set, and it is closed. An added or removed path is a visible
  * change in the output manifest rather than an implementation detail
@@ -90,28 +88,95 @@ export function identityFromPackageName(name) {
  * The fixed API surface: the public names that belong to the package rather
  * than to a type definition.
  *
- * FR-065-CON-5 bounds the export set to the union of this list and the
- * identity-derived exports. Stated as data because the export-set test asserts
- * over it, and a surface that grew by accident would otherwise be indexed only
- * in prose. `validate<Type>` and the branded `<Type>Of` constructor are
- * per-type members of the fixed surface and are named by rule below rather than
- * listed here.
+ * FR-065-CON-5 bounds the *public* export set — what `index.ts` re-exports — to
+ * the union of this list and the identity-derived exports. Stated as data
+ * because the export-set test asserts over it, and a surface that grew by
+ * accident would otherwise be indexed only in prose. `validate<Type>` and the
+ * branded `<Type>Of` constructor are per-type members of the fixed surface and
+ * are named by rule below rather than listed here.
+ *
+ * The names below were reconciled against what FR-066's and FR-067's renderers
+ * actually emit rather than guessed. Neither requirement states a literal name
+ * for a map, so the renderer's name is authoritative and this list follows it —
+ * `TYPE_IDENTITY` rather than `TYPE_IDENTITIES`, `FIELD_IDENTITY` rather than
+ * `FIELD_IDENTITIES`, `TYPE_RELATIONSHIPS` rather than `RELATIONSHIPS`,
+ * `FIELD_UNIT` rather than `FIELD_UNITS`, and `SEMANTIC_METADATA` rather than
+ * `CONTRACT_METADATA`. `ExportedTypeName` is the one name FR-067 does state, in
+ * its `Record<ExportedTypeName, string>` typing rule, and it is public for that
+ * reason.
+ *
+ * The list is not widened to whatever the renderers happen to export: a helper
+ * that is not public API is either un-exported at its declaration or, where a
+ * sibling generated module needs it, listed in `CROSS_MODULE_INTERNALS` below
+ * and withheld from the barrel.
  */
 export const FIXED_API_SURFACE = Object.freeze([
+	// The type surface (FR-064).
 	"UNION_DISCRIMINANT",
+	// The validator surface (FR-066).
 	"ValidationError",
 	"ValidationResult",
 	"VALIDATION_CODES",
-	"TYPE_IDENTITIES",
-	"FIELD_IDENTITIES",
+	"StructuralCode",
+	"MAX_VALIDATION_DEPTH",
+	"PRESERVED_MEMBER",
+	// The descriptor types that name the shapes of the maps below (FR-067).
+	"ExportedTypeName",
+	"ExportedFieldKey",
+	"ExtensionDescriptor",
+	"RelationshipDescriptor",
+	"FieldDescriptor",
+	"OperationDescriptor",
+	"ClauseDescriptor",
+	"DefaultDescriptor",
+	"OccurrenceDescriptor",
+	// The identity and contract-data maps (FR-067).
+	"TYPE_IDENTITY",
+	"TYPE_KIND",
 	"TYPE_ROLES",
+	"TYPE_UNKNOWN_POLICY",
 	"TYPE_EXTENSIONS",
+	"TYPE_RELATIONSHIPS",
+	"FIELD_IDENTITY",
+	"FIELD_EXTENSIONS",
+	"FIELD_UNIT",
+	// The provenance and document-level data (FR-067).
+	"SEMANTIC_METADATA",
 	"DOCUMENT_EXTENSIONS",
-	"FIELD_UNITS",
-	"RELATIONSHIPS",
 	"OCCURRENCES",
-	"CONTRACT_METADATA",
+	"TYPE_OPERATIONS",
+	"TYPE_CLAUSES",
+	"FIELD_DEFAULT",
 ]);
+
+/**
+ * Names one generated module exports so that another can import it, and which
+ * `index.ts` therefore does *not* re-export.
+ *
+ * A generated package is several modules, so a helper `validators.ts` needs
+ * from `errors.ts` has to cross a module boundary and must be exported at its
+ * declaration. That is a fact about ES modules, not a decision to make the
+ * helper public. Each entry carries the reason it cannot simply be private, so
+ * the list is auditable rather than a second surface that grows quietly.
+ */
+export const CROSS_MODULE_INTERNALS = Object.freeze({
+	fail: "records one ValidationError; called from every generated check",
+	join: "appends one RFC 6901 token to a pointer",
+	ownKeys: "own enumerable keys, without reaching the prototype chain",
+	ownMember: "reads one own member without invoking an accessor",
+	sortErrors: "orders a finding list by pointer then code, code-unit",
+	isPlainObject:
+		"rejects an array, a null and a non-object before member reads",
+	isUniqueCollection:
+		"decides `unique` by canonical form rather than reference",
+	copyAccessor: "carries an accessor-valued member without invoking it",
+	codePointLength: "counts a string in code points for minLength and maxLength",
+	isBase64: "decides the base64 form of a `bytes` scalar",
+	base64OctetLength: "counts a `bytes` value in decoded octets",
+	Member:
+		"the return type of `ownMember`, needed to name it across the boundary",
+	MemberState: "the discriminant of `Member`, for the same reason",
+});
 
 /** The rules that mint a fixed-surface name from a type's identifier. */
 const PER_TYPE_SURFACE = Object.freeze([
@@ -252,12 +317,30 @@ function moduleOf(specifier) {
  * condition depends on it (FR-065-AC-5).
  */
 function renderBarrel(model, fingerprint, modules) {
+	const permitted = new Set(permittedExports(model));
+	const withheld = new Set(withheldExports());
 	const blocks = [banner(model, fingerprint)];
+	const leaked = [];
 	for (const name of SOURCE_MODULES) {
 		const names = exportedNames(modules[name] ?? "");
-		if (names.length === 0) continue;
+		for (const entry of names) {
+			if (!permitted.has(entry) && !withheld.has(entry)) {
+				leaked.push(`${name}.ts:${entry}`);
+			}
+		}
+		const published = names.filter((entry) => permitted.has(entry));
+		if (published.length === 0) continue;
 		blocks.push(
-			`export {\n${names.map((entry) => `\t${entry},`).join("\n")}\n} from "./${name}.js";\n`,
+			`export {\n${published.map((entry) => `\t${entry},`).join("\n")}\n} from "./${name}.js";\n`,
+		);
+	}
+	// A name that is neither public API nor a declared cross-module internal is a
+	// surface leak. Refusing here is deliberate: the alternative — dropping it
+	// silently from the barrel — would leave the module still exporting it, so a
+	// consumer reaching past `index.ts` would find an API nobody declared.
+	if (leaked.length > 0) {
+		throw new Error(
+			`generated modules export names outside the declared surface: ${leaked.sort().join(", ")}`,
 		);
 	}
 	return blocks.join("\n");
@@ -482,10 +565,22 @@ function referencedNames(source, name) {
  */
 export function permittedExports(model) {
 	const names = new Set(FIXED_API_SURFACE);
-	names.add(UNION_DISCRIMINANT.toUpperCase());
 	for (const entry of model.types ?? []) {
 		names.add(entry.identifier);
 		for (const mint of PER_TYPE_SURFACE) names.add(mint(entry.identifier));
 	}
 	return [...names].sort(compareCodeUnits);
+}
+
+/**
+ * The names a generated module exports that the barrel withholds: the declared
+ * cross-module internals, and nothing else.
+ *
+ * A name a module exports that is neither permitted nor a declared internal is
+ * a surface leak, and `renderBarrel` refuses rather than re-exporting it, so
+ * the failure is a thrown error at generation time instead of a wider public
+ * API nobody noticed.
+ */
+export function withheldExports() {
+	return Object.keys(CROSS_MODULE_INTERNALS).sort(compareCodeUnits);
 }

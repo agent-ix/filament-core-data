@@ -960,7 +960,7 @@ export function base64OctetLength(value: string): number {
  * negative zero renders as \`0\`, so two members that differ only in key order or
  * in the sign of a zero are one member.
  */
-export function canonicalJson(value: unknown): string {
+function canonicalJson(value: unknown): string {
 	if (value === null) return "null";
 	if (typeof value === "boolean") return value ? "true" : "false";
 	if (typeof value === "number") {

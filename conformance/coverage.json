@@ -337,13 +337,13 @@
 		},
 		{
 			"adapter": "typescript-backend",
-			"status": "unavailable",
-			"matched": 0,
-			"unmet": 111,
+			"status": "available",
+			"matched": 111,
+			"unmet": 0,
 			"failed": 0
 		}
 	],
-	"unmetCases": 444,
+	"unmetCases": 333,
 	"unmetAreas": [
 		{
 			"id": "UA-serialization-parity",

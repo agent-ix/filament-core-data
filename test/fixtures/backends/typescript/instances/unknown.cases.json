@@ -1,0 +1,119 @@
+{
+	"$comment": "The three `unknownPolicy` values on a record, and the absence of any validation effect on the kinds that carry no declared member set. Expectations are read off `### Unknown members` in `spec/functional/FR-066-generate-runtime-validators.md` and off `ir/unknown.ir.json`. None was recorded from a run.",
+	"ir": "ir/unknown.ir.json",
+	"provenance": {
+		"authoredFrom": [
+			"spec/functional/FR-066-generate-runtime-validators.md",
+			"test/fixtures/backends/typescript/instances/ir/unknown.ir.json"
+		],
+		"blessedFromRun": false
+	},
+	"cases": [
+		{
+			"id": "UNK-001",
+			"title": "reject: a declared member alone is accepted",
+			"type": "ix://agent-ix/instances/type/Rejecting",
+			"payload": { "a": "x" },
+			"expect": "accept"
+		},
+		{
+			"id": "UNK-002",
+			"title": "reject: an undeclared member is rejected at its own pointer",
+			"type": "ix://agent-ix/instances/type/Rejecting",
+			"payload": { "a": "x", "extra": "y" },
+			"expect": "reject",
+			"pointer": "/extra",
+			"code": "agent-ix.typescript-backend.UNKNOWN_MEMBER"
+		},
+		{
+			"id": "UNK-003",
+			"title": "surface: an undeclared member leaves ok true and is surfaced",
+			"type": "ix://agent-ix/instances/type/Surfacing",
+			"payload": { "a": "x", "extra": "y" },
+			"expect": "accept",
+			"surfaced": [
+				{
+					"pointer": "/extra",
+					"code": "agent-ix.typescript-backend.UNKNOWN_MEMBER_SURFACED"
+				}
+			]
+		},
+		{
+			"id": "UNK-004",
+			"title": "surface: a conforming value with no undeclared member surfaces nothing",
+			"type": "ix://agent-ix/instances/type/Surfacing",
+			"payload": { "a": "x" },
+			"expect": "accept",
+			"surfaced": []
+		},
+		{
+			"id": "UNK-005",
+			"title": "preserve: an undeclared member is carried through unchanged",
+			"type": "ix://agent-ix/instances/type/Preserving",
+			"payload": { "a": "x", "extra": "y" },
+			"expect": "accept",
+			"preserved": { "extra": "y" }
+		},
+		{
+			"id": "UNK-006",
+			"title": "preserve: a declared field keeps its declared type and is not carried",
+			"type": "ix://agent-ix/instances/type/Preserving",
+			"payload": { "a": "x" },
+			"expect": "accept",
+			"preserved": null
+		},
+		{
+			"id": "UNK-007",
+			"title": "preserve: a declared field of the wrong type is still rejected",
+			"type": "ix://agent-ix/instances/type/Preserving",
+			"payload": { "a": 1, "extra": "y" },
+			"expect": "reject",
+			"pointer": "/a",
+			"code": "agent-ix.typescript-backend.NOT_A_STRING"
+		},
+		{
+			"id": "UNK-008",
+			"title": "preserve: a preserved __proto__ member mutates no prototype",
+			"type": "ix://agent-ix/instances/type/Preserving",
+			"construct": "prototypePolluter",
+			"constructArgs": { "declared": { "a": "x" } },
+			"expect": "accept",
+			"preserved": { "__proto__": { "polluted": true } },
+			"assertNoPrototypePollution": true,
+			"differential": "exempt",
+			"differentialReason": "`__proto__` in a JSON document is an ordinary member and ajv treats it as one, so the second decider agrees trivially and says nothing about the prototype-mutation hazard this case exists to check. The hazard is a JavaScript object-construction property, not a JSON Schema one."
+		},
+		{
+			"id": "UNK-009",
+			"title": "a map declaring preserve gains no validation effect",
+			"type": "ix://agent-ix/instances/type/InertMap",
+			"payload": { "any": "x", "keys": "y" },
+			"expect": "accept"
+		},
+		{
+			"id": "UNK-010",
+			"title": "a map still rejects a value of the wrong declared type",
+			"type": "ix://agent-ix/instances/type/InertMap",
+			"payload": { "any": 1 },
+			"expect": "reject",
+			"pointer": "/any",
+			"code": "agent-ix.typescript-backend.NOT_A_STRING"
+		},
+		{
+			"id": "UNK-011",
+			"title": "a sequence declaring surface gains no validation effect",
+			"type": "ix://agent-ix/instances/type/InertSeq",
+			"payload": ["a", "b"],
+			"expect": "accept"
+		},
+		{
+			"id": "UNK-012",
+			"title": "a sequence still rejects a member of the wrong declared type",
+			"type": "ix://agent-ix/instances/type/InertSeq",
+			"payload": ["a", 2],
+			"expect": "reject",
+			"pointer": "/1",
+			"code": "agent-ix.typescript-backend.NOT_A_STRING"
+		}
+	]
+}
