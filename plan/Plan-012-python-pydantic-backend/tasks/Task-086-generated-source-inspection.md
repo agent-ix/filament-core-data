@@ -2,7 +2,7 @@
 id: Task-086
 title: "The non-executing generated-source inspection in both modes"
 type: Task
-status: todo
+status: done
 track: C
 priority: P0
 relationships:
@@ -39,13 +39,13 @@ Read generated Python with `ast`, attribute every permissive annotation to a sch
 
 ## Subtasks
 
-- [ ] Implement `inspect_generated(files, documents, mode)` with `report` and `enforce`.
-- [ ] Find `Any`, `object`, bare `dict`/`list`, and `Any`-valued mappings at any annotation depth.
-- [ ] Attribute a finding by mapping the enclosing generated symbol to its `$defs` key or `title`, resolving numbered and de-duplicated variants to the name they vary and recording the variant.
-- [ ] Classify `sanctioned` on the four unconstrained schema shapes and `degraded` otherwise; classify `unattributed` when attribution fails.
-- [ ] Enforce the import allow-list and the module-level statement allow-list.
-- [ ] Provide an injected classifier seam so the mutation gate can disable the degraded branch without editing a committed file.
-- [ ] Instrument the import machinery to prove neither mode imports a generated module.
+- [x] Implement `inspect_generated(files, documents, mode)` with `report` and `enforce`.
+- [x] Find `Any`, `object`, bare `dict`/`list`, and `Any`-valued mappings at any annotation depth.
+- [x] Attribute a finding by mapping the enclosing generated symbol to its `$defs` key or `title`, resolving numbered and de-duplicated variants to the name they vary and recording the variant.
+- [x] Classify `sanctioned` on the four unconstrained schema shapes and `degraded` otherwise; classify `unattributed` when attribution fails.
+- [x] Enforce the import allow-list and the module-level statement allow-list.
+- [x] Provide an injected classifier seam so the mutation gate can disable the degraded branch without editing a committed file.
+- [x] Instrument the import machinery to prove neither mode imports a generated module.
 
 ## Deliverables
 

@@ -2,7 +2,7 @@
 id: Task-080
 title: "Dependency group, declared pins, advisory gate, and the Python test entry point"
 type: Task
-status: todo
+status: done
 track: A
 priority: P0
 relationships:
@@ -37,12 +37,12 @@ Land the `python-backend` Poetry group, the two declared records, the advisory g
 
 ## Subtasks
 
-- [ ] Add the `python-backend` Poetry group pinning `datamodel-code-generator==0.76.0`, `pydantic==2.12.5`, `msgspec`, and `mypy` exactly, with neither the `http` nor the `httpx2` extra.
-- [ ] Author `python_backend/toolchain.json` with the declared pins only — generator, Pydantic, msgspec, type checker, and the Python **minor** series — and no formatter entry and no patch-level interpreter version.
-- [ ] Author `python_backend/advisories.json` transcribing both advisories, their ranges, their first-patched versions, and their vector keys.
-- [ ] Implement `python_backend/runner/toolchain.py`: read installed distribution metadata, compare against the derived floor by ordered version comparison, and fail with a provisioning message when a distribution is absent.
-- [ ] Add a `test-python` Make target and make `make test` run both halves, because `make test` is vitest today and every Python gate in this bundle would otherwise have nowhere to run.
-- [ ] Add `tests/test_python_backend_toolchain.py` with the TC-845..853 gates, red at first.
+- [x] Add the `python-backend` Poetry group pinning `datamodel-code-generator==0.76.0`, `pydantic==2.12.5`, `msgspec`, and `mypy` exactly, with neither the `http` nor the `httpx2` extra.
+- [x] Author `python_backend/toolchain.json` with the declared pins only — generator, Pydantic, msgspec, type checker, and the Python **minor** series — and no formatter entry and no patch-level interpreter version.
+- [x] Author `python_backend/advisories.json` transcribing both advisories, their ranges, their first-patched versions, and their vector keys.
+- [x] Implement `python_backend/runner/toolchain.py`: read installed distribution metadata, compare against the derived floor by ordered version comparison, and fail with a provisioning message when a distribution is absent.
+- [x] Add a `test-python` Make target and make `make test` run both halves, because `make test` is vitest today and every Python gate in this bundle would otherwise have nowhere to run.
+- [x] Add `tests/test_python_backend_toolchain.py` with the TC-845..853 gates, red at first.
 
 ## Deliverables
 

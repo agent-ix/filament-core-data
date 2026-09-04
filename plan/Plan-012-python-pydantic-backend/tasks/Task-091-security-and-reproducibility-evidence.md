@@ -2,7 +2,7 @@
 id: Task-091
 title: "NFR-026 and NFR-027 evidence and the three measured states"
 type: Task
-status: todo
+status: done
 track: E
 priority: P0
 relationships:
@@ -35,12 +35,12 @@ Produce the instrumented security evidence, the reproducibility evidence, and th
 
 ## Subtasks
 
-- [ ] Run the malicious corpus and the advisory gate together and assert zero spawns and zero generated files.
-- [ ] Instrument sockets, filesystem access, the import machinery, and the emission ordering.
-- [ ] Remove each declared tool in turn and assert its gate fails with a provisioning message.
-- [ ] Scan every committed artefact this change adds for a clock, host, user, absolute path, patch interpreter version, or formatter version.
-- [ ] Run the branch's own changed-path gate through `changedPathsOf` with this change's first and last sentinels.
-- [ ] Measure three states: branch head; a scratch clone with the branch squash-merged and `origin/main` repointed so both the diff and the status are empty; and that clone with a real unrelated sibling commit on top.
+- [x] Run the malicious corpus and the advisory gate together and assert zero spawns and zero generated files.
+- [x] Instrument sockets, filesystem access, the import machinery, and the emission ordering.
+- [x] Remove each declared tool in turn and assert its gate fails with a provisioning message.
+- [x] Scan every committed artefact this change adds for a clock, host, user, absolute path, patch interpreter version, or formatter version.
+- [x] Run the branch's own changed-path gate through `changedPathsOf` with this change's first and last sentinels.
+- [x] Measure three states: branch head; a scratch clone with the branch squash-merged and `origin/main` repointed so both the diff and the status are empty; and that clone with a real unrelated sibling commit on top.
 
 ## Deliverables
 

@@ -2,7 +2,7 @@
 id: Task-090
 title: "Strict type checking and falsifiable runtime validation"
 type: Task
-status: todo
+status: done
 track: D
 priority: P0
 relationships:
@@ -35,12 +35,12 @@ Type-check every emitted surface under strict settings and exercise every valida
 
 ## Subtasks
 
-- [ ] Add the scoped `mypy` configuration with no per-module override and no relaxation of `strict`.
-- [ ] Exercise every generated type in a validating profile with a conforming and a non-conforming value per retained constraint.
-- [ ] Falsify every recorded loss: generate from the corresponding probe into a scratch directory and assert the surface accepts the value the contract forbids.
-- [ ] Falsify the gate itself: remove a constraint from a probe schema, generate into a scratch directory, and assert the runtime-validation gate reports the difference.
-- [ ] Emit `validation.json` recording static-only and undemonstrated families as such.
-- [ ] Read the skip count from the run's own report and fail on any skip.
+- [x] Add the scoped `mypy` configuration with no per-module override and no relaxation of `strict`.
+- [x] Exercise every generated type in a validating profile with a conforming and a non-conforming value per retained constraint.
+- [x] Falsify every recorded loss: generate from the corresponding probe into a scratch directory and assert the surface accepts the value the contract forbids.
+- [x] Falsify the gate itself: remove a constraint from a probe schema, generate into a scratch directory, and assert the runtime-validation gate reports the difference.
+- [x] Emit `validation.json` recording static-only and undemonstrated families as such.
+- [x] Read the skip count from the run's own report and fail on any skip.
 
 ## Deliverables
 

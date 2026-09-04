@@ -2,7 +2,7 @@
 id: Task-085
 title: "The sandboxed, deterministic generator runner"
 type: Task
-status: todo
+status: done
 track: C
 priority: P0
 relationships:
@@ -45,12 +45,12 @@ One entry point that guards first, generates inside a scratch root it owns, unde
 
 ## Subtasks
 
-- [ ] Author `python_backend/limits.json` with the timeout, the kill grace period, the maximum input size, and the environment allow-list.
-- [ ] Implement `generate()`: guards, size check, scratch root, entry-point resolution from distribution metadata, allow-listed environment with a fixed `PYTHONHASHSEED`, warnings as errors, stderr allow-list, and scratch removal on every outcome.
-- [ ] Compute the toolchain fingerprint over the declared pins, the profile digest, and the input digest, and over nothing the host observes.
-- [ ] Instrument spawn, socket, and filesystem access for the gates.
-- [ ] Rehearse a shadowing `datamodel-codegen` earlier on `PATH`.
-- [ ] Assert by source scan that no module under `src/compiler/` spawns a process or imports the generator.
+- [x] Author `python_backend/limits.json` with the timeout, the kill grace period, the maximum input size, and the environment allow-list.
+- [x] Implement `generate()`: guards, size check, scratch root, entry-point resolution from distribution metadata, allow-listed environment with a fixed `PYTHONHASHSEED`, warnings as errors, stderr allow-list, and scratch removal on every outcome.
+- [x] Compute the toolchain fingerprint over the declared pins, the profile digest, and the input digest, and over nothing the host observes.
+- [x] Instrument spawn, socket, and filesystem access for the gates.
+- [x] Rehearse a shadowing `datamodel-codegen` earlier on `PATH`.
+- [x] Assert by source scan that no module under `src/compiler/` spawns a process or imports the generator.
 
 ## Deliverables
 

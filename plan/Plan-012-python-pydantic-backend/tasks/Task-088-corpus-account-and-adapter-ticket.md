@@ -2,7 +2,7 @@
 id: Task-088
 title: "The read-only conformance-corpus account and the filed adapter-reader ticket"
 type: Task
-status: todo
+status: done
 track: D
 priority: P0
 relationships:
@@ -21,11 +21,11 @@ Say honestly what the generated Python surface can and cannot decide about the c
 
 ## Subtasks
 
-- [ ] Implement `corpus_account.py`: build each case's bundle, run its `ir` member through the generated `pydantic_v2.BaseModel` surface, and record accept, reject, agreement with the oracle's `resultState`, or `undecidable-by-this-surface`.
-- [ ] Emit `corpus-account.json` with decided, agreed, disagreed, and undecidable counts that sum to the case count, and a statement that the backend's corpus rows remain unmet.
-- [ ] Assert that every file under `conformance/` is byte-identical to `origin/main`.
-- [ ] File the adapter-reader ticket in the house shape, naming the `adapter-result.schema.json` contract, the registry slot, the `thresholds.json` proposal it must answer, and GAP-011's coupling through the `reference`-target cases.
-- [ ] Record a GAP-011 disposition row in `gaps.json` rather than deciding it.
+- [x] Implement `corpus_account.py`: build each case's bundle, run its `ir` member through the generated `pydantic_v2.BaseModel` surface, and record accept, reject, agreement with the oracle's `resultState`, or `undecidable-by-this-surface`.
+- [x] Emit `corpus-account.json` with decided, agreed, disagreed, and undecidable counts that sum to the case count, and a statement that the backend's corpus rows remain unmet.
+- [x] Assert that every file under `conformance/` is byte-identical to `origin/main`.
+- [x] File the adapter-reader ticket in the house shape, naming the `adapter-result.schema.json` contract, the registry slot, the `thresholds.json` proposal it must answer, and GAP-011's coupling through the `reference`-target cases.
+- [x] Record a GAP-011 disposition row in `gaps.json` rather than deciding it.
 
 ## Deliverables
 

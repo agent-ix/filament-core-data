@@ -2,7 +2,7 @@
 id: Task-087
 title: "The probe corpus, the per-family verdicts, and the retained-gap register"
 type: Task
-status: todo
+status: done
 track: C
 priority: P0
 relationships:
@@ -39,12 +39,12 @@ Measure what each family retains and loses, one construct at a time and then ove
 
 ## Subtasks
 
-- [ ] Author one probe per named construct area, each with a detector and an expected retention for all five families.
-- [ ] Implement `qualify.py`: generate every probe under every profile through the runner, measure through the inspection's reporting mode, and compute the verdicts.
-- [ ] Emit `report.json` with the verdict, the declared-toolchain fingerprint, the profile digest, and the retained and lost constructs per family.
-- [ ] Emit `gaps.json` with one row per construct and affected family, each with severity, closability, and disposition.
-- [ ] Ground every `qualified-with-conditions` condition in a declared profile option or a preparation rule.
-- [ ] Add the `--check` mode and prove a mutated expectation and a removed gap row both red the gate.
+- [x] Author one probe per named construct area, each with a detector and an expected retention for all five families.
+- [x] Implement `qualify.py`: generate every probe under every profile through the runner, measure through the inspection's reporting mode, and compute the verdicts.
+- [x] Emit `report.json` with the verdict, the declared-toolchain fingerprint, the profile digest, and the retained and lost constructs per family.
+- [x] Emit `gaps.json` with one row per construct and affected family, each with severity, closability, and disposition.
+- [x] Ground every `qualified-with-conditions` condition in a declared profile option or a preparation rule.
+- [x] Add the `--check` mode and prove a mutated expectation and a removed gap row both red the gate.
 
 ## Deliverables
 

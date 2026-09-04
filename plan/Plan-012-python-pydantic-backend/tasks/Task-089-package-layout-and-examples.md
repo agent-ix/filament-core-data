@@ -2,7 +2,7 @@
 id: Task-089
 title: "The package layout, provenance, README, and examples"
 type: Task
-status: todo
+status: done
 track: D
 priority: P0
 relationships:
@@ -35,12 +35,12 @@ Write the emitted tree for every demonstrated profile, with provenance, a conten
 
 ## Subtasks
 
-- [ ] Implement `emit.py`: run the enforcing inspection, then write one module per document, an `__init__.py` with a sorted `__all__`, `PROVENANCE.json`, and `README.md`.
-- [ ] Raise on a duplicate type name across two documents rather than let one shadow the other.
-- [ ] Record the MIT attribution verbatim beside `AGPL-3.0-only`, with no clock reading and no host-observed version.
-- [ ] Write one example per demonstrated profile that constructs, round-trips, and rejects.
-- [ ] Add the `--check` mode over the committed tree and the packed-file reachability gate.
-- [ ] Record the reason for each `not-qualified` family in place of a package.
+- [x] Implement `emit.py`: run the enforcing inspection, then write one module per document, an `__init__.py` with a sorted `__all__`, `PROVENANCE.json`, and `README.md`.
+- [x] Raise on a duplicate type name across two documents rather than let one shadow the other.
+- [x] Record the MIT attribution verbatim beside `AGPL-3.0-only`, with no clock reading and no host-observed version.
+- [x] Write one example per demonstrated profile that constructs, round-trips, and rejects.
+- [x] Add the `--check` mode over the committed tree and the packed-file reachability gate.
+- [x] Record the reason for each `not-qualified` family in place of a package.
 
 ## Deliverables
 

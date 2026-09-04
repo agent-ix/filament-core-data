@@ -2,7 +2,7 @@
 id: Task-082
 title: "The five immutable target profiles and the option allow-list"
 type: Task
-status: todo
+status: done
 track: A
 priority: P0
 relationships:
@@ -35,11 +35,11 @@ Declare one profile per output family, the complete argument vector for each, an
 
 ## Subtasks
 
-- [ ] Author `python_backend/profiles.json` with one profile per family, each carrying `id`, `outputModelType`, `options`, `runtimeValidation`, and `verdict`.
-- [ ] Implement `python_backend/adapter/profiles.py`: `load_profiles` returning a deep copy, `profile_by_id`, and `profile_digest` over `id`, `outputModelType`, and `options` alone.
-- [ ] Implement the canonical-JSON helper for `agent-ix-conformance-jcs-v1` in `python_backend/adapter/jcs.py`; the corpus's own implementation is under a prohibited path and may not be imported.
-- [ ] Gate the required options, the prohibited options, and the two deliberately rejected ones — `--extra-fields` and `--use-missing-sentinel`.
-- [ ] Gate the declared output model types and Python version against the installed generator's own option parser.
+- [x] Author `python_backend/profiles.json` with one profile per family, each carrying `id`, `outputModelType`, `options`, `runtimeValidation`, and `verdict`.
+- [x] Implement `python_backend/adapter/profiles.py`: `load_profiles` returning a deep copy, `profile_by_id`, and `profile_digest` over `id`, `outputModelType`, and `options` alone.
+- [x] Implement the canonical-JSON helper for `agent-ix-conformance-jcs-v1` in `python_backend/adapter/jcs.py`; the corpus's own implementation is under a prohibited path and may not be imported.
+- [x] Gate the required options, the prohibited options, and the two deliberately rejected ones — `--extra-fields` and `--use-missing-sentinel`.
+- [x] Gate the declared output model types and Python version against the installed generator's own option parser.
 
 ## Deliverables
 

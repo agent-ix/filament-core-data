@@ -2,7 +2,7 @@
 id: Task-083
 title: "The owned schema preparation pass and the multi-document input mode"
 type: Task
-status: todo
+status: done
 track: B
 priority: P0
 relationships:
@@ -37,12 +37,12 @@ Own the one rewrite the measurement showed is needed — `unevaluatedProperties`
 
 ## Subtasks
 
-- [ ] Implement `prepare_for_python` and `prepare_input_set` in `python_backend/adapter/prepare.py`.
-- [ ] Rewrite `unevaluatedProperties` at every depth and inside every applicator; raise on a subschema stating closure twice with differing values.
-- [ ] Preserve every relative `$ref` and every regular expression verbatim, including the four-lookahead `sourceLocus` pattern.
-- [ ] Record every rewrite with its rule, document, and pointer.
-- [ ] Demonstrate the closure difference by generating from the prepared and the unprepared adapter output and comparing the emitted model configuration.
-- [ ] Property-test purity, keyword preservation, and `$ref` preservation over the thirteen published documents.
+- [x] Implement `prepare_for_python` and `prepare_input_set` in `python_backend/adapter/prepare.py`.
+- [x] Rewrite `unevaluatedProperties` at every depth and inside every applicator; raise on a subschema stating closure twice with differing values.
+- [x] Preserve every relative `$ref` and every regular expression verbatim, including the four-lookahead `sourceLocus` pattern.
+- [x] Record every rewrite with its rule, document, and pointer.
+- [x] Demonstrate the closure difference by generating from the prepared and the unprepared adapter output and comparing the emitted model configuration.
+- [x] Property-test purity, keyword preservation, and `$ref` preservation over the thirteen published documents.
 
 ## Deliverables
 

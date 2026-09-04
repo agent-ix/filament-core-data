@@ -2,7 +2,7 @@
 id: Task-081
 title: "Convert the six changed-path gates that still baseline on a moving ref"
 type: Task
-status: todo
+status: done
 track: A
 priority: P0
 relationships:
@@ -19,11 +19,11 @@ Move `typespec-feasibility`, `semantic-contract`, `semantic-core`, `semantic-ir-
 
 ## Subtasks
 
-- [ ] Confirm each sentinel from history rather than guess it: `git log --diff-filter=A -1 -- <path>` must name the commit that owns the requirement the suite guards.
-- [ ] Convert each of the six suites to `changedPathsOf(root, <sentinel>)`, leaving every permitted-path list byte-identical.
-- [ ] Assert in `test/python-backend.test.ts` that no gate under `test/` resolves a range from `main` or `origin/main` and that every `git diff` in a gate passes `--no-renames`.
-- [ ] Rehearse each converted suite in a scratch clone: a prohibited path introduced into a simulated post-merge tree must still fail it.
-- [ ] Rehearse the loud-failure direction: with the sentinel absent from history, the gate must fail saying it did not run.
+- [x] Confirm each sentinel from history rather than guess it: `git log --diff-filter=A -1 -- <path>` must name the commit that owns the requirement the suite guards.
+- [x] Convert each of the six suites to `changedPathsOf(root, <sentinel>)`, leaving every permitted-path list byte-identical.
+- [x] Assert in `test/python-backend.test.ts` that no gate under `test/` resolves a range from `main` or `origin/main` and that every `git diff` in a gate passes `--no-renames`.
+- [x] Rehearse each converted suite in a scratch clone: a prohibited path introduced into a simulated post-merge tree must still fail it.
+- [x] Rehearse the loud-failure direction: with the sentinel absent from history, the gate must fail saying it did not run.
 
 ## Deliverables
 

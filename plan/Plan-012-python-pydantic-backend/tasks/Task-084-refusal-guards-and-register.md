@@ -2,7 +2,7 @@
 id: Task-084
 title: "The refusal guards, the closed register, and the malicious-schema corpus"
 type: Task
-status: todo
+status: done
 track: B
 priority: P0
 relationships:
@@ -39,12 +39,12 @@ Refuse, in the same interpreter and before any spawn, every schema key and every
 
 ## Subtasks
 
-- [ ] Implement `assert_schema_safe` over the five measured executable keys at every applicator position, and the ref-shape refusals.
-- [ ] Implement `assert_argv_safe` as an allow-list that refuses an unrecognised token, in both option spellings and at any index.
-- [ ] Author `python_backend/refusals.json` with unique codes, each citing its advisory or constraint.
-- [ ] Assert every register key against the installed generator's own source, so the register is measured rather than asserted.
-- [ ] Build the malicious-schema regression corpus covering every key, every refused ref shape, and every prohibited option.
-- [ ] Property-test key placement and option placement over generated positions rather than a handful of enumerated ones.
+- [x] Implement `assert_schema_safe` over the five measured executable keys at every applicator position, and the ref-shape refusals.
+- [x] Implement `assert_argv_safe` as an allow-list that refuses an unrecognised token, in both option spellings and at any index.
+- [x] Author `python_backend/refusals.json` with unique codes, each citing its advisory or constraint.
+- [x] Assert every register key against the installed generator's own source, so the register is measured rather than asserted.
+- [x] Build the malicious-schema regression corpus covering every key, every refused ref shape, and every prohibited option.
+- [x] Property-test key placement and option placement over generated positions rather than a handful of enumerated ones.
 
 ## Deliverables
 
