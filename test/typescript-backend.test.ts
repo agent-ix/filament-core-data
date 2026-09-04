@@ -9,7 +9,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, relative, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
 import { reachableSymbols } from "../src/compiler/backends/typescript-v1/package-layout.mjs";
 
@@ -19,6 +19,7 @@ const expected = resolve(fixture, "expected");
 const tsc = resolve(root, "node_modules/.bin/tsc");
 const generator = resolve(root, "src/compiler/cli.mjs");
 const fixtureIr = resolve(fixture, "input/semantic-ir.json");
+const instances = resolve(fixture, "instances");
 
 function runTsc(...args: string[]): string {
 	try {
@@ -83,6 +84,120 @@ function generateSnapshot(cwd: string, output: string, locale: string) {
 		{ cwd, env: { ...process.env, LC_ALL: locale }, stdio: "pipe" },
 	);
 	return generatedFiles(output);
+}
+
+type InstanceCase = {
+	readonly id: string;
+	readonly type: string;
+	readonly payload?: unknown;
+	readonly expect: "accept" | "reject";
+	readonly pointer?: string;
+	readonly code?: string;
+	readonly construct?: string;
+	readonly constructArgs?: Record<string, unknown>;
+};
+
+type InstanceCorpus = {
+	readonly ir: string;
+	readonly provenance: { readonly blessedFromRun: boolean };
+	readonly cases: readonly InstanceCase[];
+};
+
+function instancePayload(row: InstanceCase): unknown {
+	const payload = structuredClone(row.payload === undefined ? {} : row.payload);
+	if (row.construct === undefined) return payload;
+	if (payload === null || Array.isArray(payload) || typeof payload !== "object")
+		throw new Error(`${row.id}: constructed payload must be an object`);
+	const value = payload as Record<string, unknown>;
+	const args = row.constructArgs ?? {};
+	const member = typeof args.member === "string" ? args.member : undefined;
+	const requireMember = (): string => {
+		if (member === undefined)
+			throw new Error(`${row.id}: construct ${row.construct} needs a member`);
+		return member;
+	};
+	if (row.construct === "unsafeInteger") {
+		value[requireMember()] = Number.MAX_SAFE_INTEGER + 1;
+	} else if (row.construct === "negativeZero") {
+		value[requireMember()] = -0;
+	} else if (row.construct === "notANumber") {
+		value[requireMember()] = Number.NaN;
+	} else if (row.construct === "infinite") {
+		value[requireMember()] =
+			args.sign === -1 ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY;
+	} else if (row.construct === "coercible") {
+		const primitive = args.primitive;
+		value[requireMember()] =
+			args.via === "valueOf"
+				? { valueOf: () => primitive }
+				: { [Symbol.toPrimitive]: () => primitive };
+	} else if (row.construct === "explicitUndefined") {
+		value[requireMember()] = undefined;
+	} else if (row.construct === "inherited") {
+		return Object.assign(Object.create(args.inherited ?? null), args.own ?? {});
+	} else if (row.construct === "throwingGetter") {
+		Object.defineProperty(value, requireMember(), {
+			enumerable: true,
+			get: () => {
+				throw new Error("hostile getter");
+			},
+		});
+	} else if (row.construct === "nullPrototype") {
+		return Object.assign(Object.create(null), args.base ?? {});
+	} else if (row.construct === "ownProto") {
+		Object.defineProperty(value, "__proto__", {
+			enumerable: true,
+			value: args.value,
+		});
+	} else if (row.construct === "prototypePolluter") {
+		Object.assign(value, args.declared ?? {});
+		Object.defineProperty(value, "__proto__", {
+			enumerable: true,
+			value: { polluted: true },
+		});
+	} else {
+		throw new Error(`${row.id}: unknown construct ${row.construct}`);
+	}
+	return value;
+}
+
+async function generatedValidators(ir: string, directory: string) {
+	const generated = resolve(directory, "generated");
+	const compiled = resolve(directory, "compiled");
+	execFileSync(
+		process.execPath,
+		[
+			generator,
+			"generate",
+			"--ir",
+			ir,
+			"--target",
+			"typescript",
+			"--out-root",
+			generated,
+		],
+		{ cwd: root, stdio: "pipe" },
+	);
+	execFileSync(
+		tsc,
+		[
+			"--target",
+			"ES2022",
+			"--module",
+			"NodeNext",
+			"--moduleResolution",
+			"NodeNext",
+			"--outDir",
+			compiled,
+			...fixtureFiles(generated)
+				.filter(({ path }) => path.endsWith(".ts"))
+				.map(({ path }) => resolve(generated, path)),
+		],
+		{ cwd: root, stdio: "pipe" },
+	);
+	return import(
+		`${pathToFileURL(resolve(compiled, "index.js")).href}?${Date.now()}`
+	) as Promise<Record<string, unknown>>;
 }
 
 describe("TypeScript backend fixture (FR-071)", () => {
@@ -199,4 +314,51 @@ describe("TypeScript backend fixture (FR-071)", () => {
 			),
 		);
 	});
+
+	it("executes every authored runtime-validator case without blessing output", async () => {
+		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-typescript-instances-"));
+		try {
+			const corpora = readdirSync(instances)
+				.filter((name) => name.endsWith(".cases.json"))
+				.sort()
+				.map(
+					(name) =>
+						JSON.parse(
+							readFileSync(resolve(instances, name), "utf8"),
+						) as InstanceCorpus,
+				);
+			let exercised = 0;
+			for (const corpus of corpora) {
+				expect(corpus.provenance.blessedFromRun).toBe(false);
+				const module = await generatedValidators(
+					resolve(instances, corpus.ir),
+					resolve(scratch, corpus.ir.replace(/[^a-z0-9]+/gi, "-")),
+				);
+				for (const row of corpus.cases) {
+					const name = row.type.split("/").at(-1);
+					const validate = module[`validate${name}`];
+					expect(typeof validate, `${row.id}: validator export`).toBe(
+						"function",
+					);
+					const result = (
+						validate as (input: unknown) => {
+							ok: boolean;
+							errors?: readonly { pointer: string; code: string }[];
+						}
+					)(instancePayload(row));
+					expect(result.ok, row.id).toBe(row.expect === "accept");
+					if (row.expect === "reject") {
+						expect(result.errors?.[0], row.id).toMatchObject({
+							pointer: row.pointer,
+							code: row.code,
+						});
+					}
+					exercised += 1;
+				}
+			}
+			expect(exercised).toBe(94);
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
+	}, 30_000);
 });
