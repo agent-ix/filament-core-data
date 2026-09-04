@@ -1,0 +1,16 @@
+---
+type: log
+title: "Plan-011 — Update Log"
+description: "Chronological log of changes to the Plan-011 bundle."
+---
+# Plan-011 — Update Log
+
+## History
+
+* **2026-09-04** — Plan created from the reviewed issue #22 specification (US-012, FR-063..FR-071, NFR-024, NFR-025, TC-745..844, SR-087..SR-094) with seventeen tasks across four tracks: the decision layer the corpus judges, the codegen that hangs off the resolved model, the impure surfaces, and the join. Task ids start at **Task-100** rather than continuing from the tree's highest, Task-079, on purpose: issues #21 and #23 are being tasked in parallel from that same maximum and three branches continuing from one number would collide. The plan id `Plan-011` is likewise an exclusive allocation, leaving Plan-010 and Plan-012 to the siblings. The whole bundle is `pending`; nothing is implemented yet.
+
+  The build order is the one SR-093 recommended and it is not the requirement order. `canonical.mjs` lands before the first diagnostic rule, because `normalized` is compared byte for byte on all 111 corpus cases and is the cheapest complete signal available against the whole yardstick; the admissibility reader follows in the order its layers run; the codegen cannot start until representability is decided, because a construct the target cannot represent must refuse generation rather than be approximated under an `unsupportedFeaturePolicy` of `fail`.
+
+  Two disclosures carried from the review pass are load-bearing and are tasked as work rather than left to discipline: the per-code derivation ledger in Task-102, which records for each of the thirty registered codes whether its rule was read from a published contract clause or from the corpus's own register — `conformance/diagnostic-codes.json` marks 15 of the 30 `provenance: "minted"` — and the first-run divergence count in Task-103, Task-113 and Task-114, recorded before any fix, because after the first run every change is tuning and the count is the only honest measure of how much of the agreement was independent.
+
+  Five open contract questions are cited rather than decided: GAP-004 (the canonicalization algorithm is named and never defined) ranks highest because `normalized` feeds every fingerprint stamped into every generated file; then `agent-ix/filament-core-data#61` (a diagnostic's severity and locus are derivable from no published artifact), `#62` (the compiler's depth limit 128 against the corpus's 256), `#64` (the normative version-uplift round-trip rule against the oracle's flat classification), `#58` (the union wire form and the `bytes` scalar), and GAP-011 last, which touches four cases and one constant. `agent-ix/filament-core-data#9` is closed and can decide none of them, so every citation names the gap row and `#59`, which asks for a live owner. The shared machine-generated artifacts three concurrent backend tickets each regenerate are filed as `#63`.
