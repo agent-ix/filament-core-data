@@ -28,12 +28,7 @@ import {
 	hasBlocking,
 } from "./diagnostics.mjs";
 import { byCodePoint, enforceLimits, mapDocument } from "./mapping.mjs";
-import {
-	PUBLISHED_PATTERNS,
-	PUBLISHED_READER_CODES,
-	PUBLISHED_READER_OWNER,
-	lowerPattern,
-} from "./patterns.mjs";
+import { PUBLISHED_PATTERNS, lowerPattern } from "./patterns.mjs";
 import {
 	MAX_WIDTH,
 	STRUCT_LIT_WIDTH,
@@ -578,7 +573,7 @@ function renderIdentity(request, model) {
 function renderSupport() {
 	const identity = PUBLISHED_PATTERNS.semanticIdentity;
 	const program = lowerPattern(identity.regex);
-	const reader = PUBLISHED_READER_CODES.UNKNOWN_REQUIRED_EXTENSION;
+	const reader = RUST_BACKEND_CODES.UNKNOWN_REQUIRED_EXTENSION;
 	const lines = [
 		SUPPORT_PRELUDE.replace(/\n+$/, ""),
 		"",
@@ -605,11 +600,11 @@ function renderSupport() {
 			{ visibility: "pub ", instPath: "MatcherInst" },
 		),
 		"",
-		"/// The published code a rejected required extension is reported under.",
+		"/// The code a rejected required extension is reported under.",
 		"///",
-		"/// It is the reader spelling rather than a generator spelling, because the",
-		"/// published set already names this defect and a second spelling for one",
-		"/// defect is two registries that have to agree.",
+		"/// It carries the published reader spelling rather than a generator one,",
+		"/// because `conformance/diagnostic-codes.json` already names this defect and",
+		"/// a second spelling for one defect is two registries that have to agree.",
 		...constItem(
 			"pub ",
 			"UNKNOWN_REQUIRED_EXTENSION_CODE",
@@ -617,7 +612,7 @@ function renderSupport() {
 			atom(rustString(reader.code)),
 		),
 		"",
-		"/// The severity the published set declares for that code.",
+		"/// The severity the registry declares for that code.",
 		...constItem(
 			"pub ",
 			"UNKNOWN_REQUIRED_EXTENSION_SEVERITY",
@@ -625,12 +620,12 @@ function renderSupport() {
 			atom(rustString(reader.severity)),
 		),
 		"",
-		"/// The owner the published set declares for that code.",
+		"/// The owner the registry declares for that code.",
 		...constItem(
 			"pub ",
 			"UNKNOWN_REQUIRED_EXTENSION_OWNER",
 			"&str",
-			atom(rustString(PUBLISHED_READER_OWNER)),
+			atom(rustString(reader.owner)),
 		),
 	];
 	return `${lines.join("\n")}\n`;

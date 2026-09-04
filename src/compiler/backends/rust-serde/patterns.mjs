@@ -65,9 +65,6 @@ function readPinnedTable(name) {
 const PROVED = JSON.parse(readPinnedTable("proved-validators.json"));
 
 const PUBLISHED = JSON.parse(readPinnedTable("published-patterns.json"));
-const READER_CODES = JSON.parse(
-	readPinnedTable("published-diagnostic-codes.json"),
-);
 
 /** The proved-validator registry, keyed by exact pattern text. */
 export const PROVED_VALIDATORS = Object.freeze(PROVED);
@@ -79,22 +76,6 @@ export const PROVED_VALIDATORS = Object.freeze(PROVED);
  * copy here cannot quietly diverge from the artefact it came from.
  */
 export const PUBLISHED_PATTERNS = Object.freeze(PUBLISHED.patterns);
-
-/**
- * The published *reader* codes the generated crate raises at run time.
- *
- * This is not a second generator registry. `diagnostics.mjs` closes the codes
- * the generator emits while it is producing a crate; `conformance/diagnostic-codes.json`
- * closes the codes a reader decides while it is deciding a value. A verdict the
- * generated crate reaches about a value it was handed belongs to the second
- * set, and minting an `agent-ix.rust-backend.*` spelling for a defect the
- * published set already names would be the duplication SR-066 FND-500 records.
- * `cli.mjs check` re-reads the published artefact and fails on any drift.
- */
-export const PUBLISHED_READER_CODES = Object.freeze(READER_CODES.entries);
-
-/** The owner the published reader codes are emitted under. */
-export const PUBLISHED_READER_OWNER = READER_CODES.owner;
 
 /**
  * The largest matcher program the lowering will emit.
