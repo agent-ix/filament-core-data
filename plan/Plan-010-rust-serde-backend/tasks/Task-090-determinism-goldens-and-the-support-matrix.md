@@ -2,7 +2,7 @@
 id: Task-090
 title: "Determinism, the frozen goldens, and the support matrix"
 type: Task
-status: todo
+status: done
 track: D
 priority: P0
 relationships:
@@ -49,13 +49,13 @@ Produce the determinism evidence, and produce it honestly.
 
 ## Subtasks
 
-- [ ] Generate each corpus base twice into two scratch directories and compare bytes.
-- [ ] Repeat under the declared `TZ`, `LANG`, `HOME` and working-directory perturbations.
-- [ ] Transcribe the goldens once; write the digest baseline from a second, separate script.
-- [ ] Run `rustfmt --check` over every generated crate and assert the formatter is the pinned version.
-- [ ] Write the ambient-input scan over the generator's module graph.
-- [ ] Run the whole pipeline with the network denied, and prove the build fails when a cached crate is removed.
-- [ ] Write `docs/semantic-data-system/rust-backend-support-matrix.md`: one row supported with named measured evidence, every other row unmet with its reason and issue #60.
+- [x] Generate each corpus base twice into two scratch directories and compare bytes.
+- [x] Repeat under the declared `TZ`, `LANG`, `HOME` and working-directory perturbations.
+- [x] Transcribe the goldens once; write the digest baseline from a second, separate script.
+- [x] Run `rustfmt --check` over every generated crate and assert the formatter is the pinned version.
+- [x] Write the ambient-input scan over the generator's module graph.
+- [x] Run the whole pipeline with the network denied, and prove the build fails when a cached crate is removed.
+- [x] Write `docs/semantic-data-system/rust-backend-support-matrix.md`: one row supported with named measured evidence, every other row unmet with its reason and issue #60.
 
 ## Deliverables
 

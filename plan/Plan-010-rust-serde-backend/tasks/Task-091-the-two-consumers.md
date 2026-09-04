@@ -2,7 +2,7 @@
 id: Task-091
 title: "The compile-time and runtime consumers, built from the packaged artifact"
 type: Task
-status: todo
+status: done
 track: D
 priority: P0
 relationships:
@@ -31,11 +31,11 @@ Prove the generated crate is usable, from the package rather than from the gener
 
 ## Subtasks
 
-- [ ] Write `crates/consumer-compile-time`: the exhaustive `match` with no wildcard, the `const` assertion over `TYPES.len()`, and reads of an identity, a role, a relationship, an operation and a clause.
-- [ ] Write `crates/consumer-runtime`: the positive-fixture round trips under canonical equality, the retained-bytes assertions, and the eight invalid classes.
-- [ ] Wire `make rust-install-from-artifact`: `cargo package --offline --no-verify`, unpack to a scratch directory, build both consumers with `-D warnings`, leave the tree clean.
-- [ ] Assert the command list contains no `cargo publish`, no `--registry`, no `--index`, no publish `--dry-run`.
-- [ ] Rehearse the compile failures: an added type breaks the match, a changed count breaks the const assertion.
+- [x] Write `crates/consumer-compile-time`: the exhaustive `match` with no wildcard, the `const` assertion over `TYPES.len()`, and reads of an identity, a role, a relationship, an operation and a clause.
+- [x] Write `crates/consumer-runtime`: the positive-fixture round trips under canonical equality, the retained-bytes assertions, and the eight invalid classes.
+- [x] Wire `make rust-install-from-artifact`: `cargo package --offline --no-verify`, unpack to a scratch directory, build both consumers with `-D warnings`, leave the tree clean.
+- [x] Assert the command list contains no `cargo publish`, no `--registry`, no `--index`, no publish `--dry-run`.
+- [x] Rehearse the compile failures: an added type breaks the match, a changed count breaks the const assertion.
 
 ## Deliverables
 

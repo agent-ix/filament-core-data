@@ -2,7 +2,7 @@
 id: Task-092
 title: "The mapping-branch register, the property generator, and the mutation catalogue"
 type: Task
-status: todo
+status: done
 track: D
 priority: P0
 relationships:
@@ -33,12 +33,12 @@ The slice's closing census. SR-080 FND-931 records that this cannot discharge un
 
 ## Subtasks
 
-- [ ] Generate `branch-register.json` from the vocabularies — kind, kernel scalar, axis combination, default kind, unknown policy, keyword-and-subject pair, recursion shape, diagnostic code — and bind each row to its cases.
-- [ ] Generate `mutations.json` from the declared operator set crossed with the target set, so the catalogue cannot be shrunk to raise the score.
-- [ ] Write the mutation harness: scratch copy only, tree unchanged, score reported.
-- [ ] Write the property generator with its declared seed, and the declared properties.
-- [ ] Add the negative control: a `String` substituted for a constrained scalar must fail the degradation scan and at least one property.
-- [ ] Wire both `--check` modes into `make lint` through a Make target calling `node` directly.
+- [x] Generate `branch-register.json` from the vocabularies — kind, kernel scalar, axis combination, default kind, unknown policy, keyword-and-subject pair, recursion shape, diagnostic code — and bind each row to its cases.
+- [x] Generate `mutations.json` from the declared operator set crossed with the target set, so the catalogue cannot be shrunk to raise the score.
+- [x] Write the mutation harness: scratch copy only, tree unchanged, score reported.
+- [x] Write the property generator with its declared seed, and the declared properties.
+- [x] Add the negative control: a `String` substituted for a constrained scalar must fail the degradation scan and at least one property.
+- [x] Wire both `--check` modes into `make lint` through a Make target calling `node` directly.
 
 ## Deliverables
 
