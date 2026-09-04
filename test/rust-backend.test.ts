@@ -702,9 +702,10 @@ describe("TC-713 the emitted call rendering is a formatter fixed point", () => {
 		// broke the argument list where the formatter would have kept the call on
 		// one line. A golden minted from the bases would have stayed green
 		// through that, which is why this fixture exists beside them.
-		const { emitCrate } = await import(
-			"../src/compiler/backends/rust-serde/crate.mjs"
-		);
+		// The specifier is composed rather than written out, which is this
+		// suite's convention for importing an untyped `.mjs`: a literal one makes
+		// `tsc --noEmit` demand a declaration file for a module that has none.
+		const { emitCrate } = await import(modulePathOf("crate.mjs"));
 		const bundle = readJson(
 			resolve(root, "test/fixtures/rust-serde/format-branches.json"),
 		) as { ir: unknown };

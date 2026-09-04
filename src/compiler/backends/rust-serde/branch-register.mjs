@@ -27,6 +27,7 @@ import {
 	enumerateBranches,
 	readMappingTable,
 } from "./branches.mjs";
+import { formatJson } from "./json-format.mjs";
 import { byCodePoint } from "./mapping.mjs";
 
 /** The register's own file name, inside the backend directory. */
@@ -138,7 +139,7 @@ export function buildRegister({ directory = BACKEND_DIRECTORY, suiteText }) {
 
 /** The register's serialized form: the one spelling `--check` compares against. */
 export function serializeRegister(register) {
-	return `${JSON.stringify(register, null, "\t")}\n`;
+	return formatJson(register);
 }
 
 /**

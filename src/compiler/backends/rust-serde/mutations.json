@@ -14,9 +14,7 @@
 		{
 			"id": "drop-skip-serializing-if",
 			"description": "drop the `skip_serializing_if` an optional member's row states",
-			"branches": [
-				"field:single/non-null/optional"
-			]
+			"branches": ["field:single/non-null/optional"]
 		},
 		{
 			"id": "drop-deserialize-with",
@@ -29,10 +27,7 @@
 		{
 			"id": "invert-bound-comparison",
 			"description": "invert the comparison a bound keyword renders",
-			"branches": [
-				"constraint:min/integer",
-				"constraint:max/integer"
-			]
+			"branches": ["constraint:min/integer", "constraint:max/integer"]
 		},
 		{
 			"id": "flip-deny-unknown-fields",
@@ -45,17 +40,12 @@
 		{
 			"id": "drop-serde-rename",
 			"description": "drop the `serde(rename)` a derived identifier needs to keep its wire name",
-			"branches": [
-				"name:memberName",
-				"name:variantName"
-			]
+			"branches": ["name:memberName", "name:variantName"]
 		},
 		{
 			"id": "relax-pattern-classification",
 			"description": "relax a pattern classification from `unsupported` to `expressible`",
-			"branches": [
-				"diagnostic:agent-ix.rust-backend.UNSUPPORTED_PATTERN"
-			]
+			"branches": ["diagnostic:agent-ix.rust-backend.UNSUPPORTED_PATTERN"]
 		},
 		{
 			"id": "substitute-string-for-newtype",
@@ -79,17 +69,12 @@
 		{
 			"id": "widen-applicability-row",
 			"description": "widen an applicability row so a subject it excludes is admitted",
-			"branches": [
-				"constraint:pattern/string",
-				"unknownPolicy:inert"
-			]
+			"branches": ["constraint:pattern/string", "unknownPolicy:inert"]
 		},
 		{
 			"id": "drop-blocking-flag",
 			"description": "drop the blocking flag a refusing diagnostic carries",
-			"branches": [
-				"diagnostic:agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT"
-			]
+			"branches": ["diagnostic:agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT"]
 		}
 	],
 	"targets": [
@@ -116,9 +101,7 @@
 			"operator": "drop-blocking-flag",
 			"description": "drop the blocking flag a refusing diagnostic carries",
 			"target": "diagnostics.mjs",
-			"branches": [
-				"diagnostic:agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT"
-			],
+			"branches": ["diagnostic:agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT"],
 			"site": "blocking: true",
 			"detectedBy": [
 				"TC-725 every kind row selects the Rust form the mapping table states",
@@ -221,10 +204,7 @@
 			"operator": "drop-serde-rename",
 			"description": "drop the `serde(rename)` a derived identifier needs to keep its wire name",
 			"target": "crate.mjs",
-			"branches": [
-				"name:memberName",
-				"name:variantName"
-			],
+			"branches": ["name:memberName", "name:variantName"],
 			"site": "if (variant.rename !== undefined",
 			"detectedBy": [
 				"TC-727 the corpus bases emit the bytes the pristine emitter produced"
@@ -235,10 +215,7 @@
 			"operator": "drop-serde-rename",
 			"description": "drop the `serde(rename)` a derived identifier needs to keep its wire name",
 			"target": "names.mjs",
-			"branches": [
-				"name:memberName",
-				"name:variantName"
-			],
+			"branches": ["name:memberName", "name:variantName"],
 			"site": "return bare === wireName ? undefined : wireName;",
 			"detectedBy": [
 				"TC-727 the corpus bases emit the bytes the pristine emitter produced",
@@ -250,9 +227,7 @@
 			"operator": "drop-skip-serializing-if",
 			"description": "drop the `skip_serializing_if` an optional member's row states",
 			"target": "crate.mjs",
-			"branches": [
-				"field:single/non-null/optional"
-			],
+			"branches": ["field:single/non-null/optional"],
 			"site": "push('skip_serializing_if = \"Option::is_none\"')",
 			"detectedBy": [
 				"TC-727 the corpus bases emit the bytes the pristine emitter produced"
@@ -263,9 +238,7 @@
 			"operator": "drop-skip-serializing-if",
 			"description": "drop the `skip_serializing_if` an optional member's row states",
 			"target": "mapping.mjs",
-			"branches": [
-				"field:single/non-null/optional"
-			],
+			"branches": ["field:single/non-null/optional"],
 			"site": "push('skip_serializing_if = \"Option::is_none\"')",
 			"detectedBy": [
 				"TC-725 the eight field-axis rows produce the member type and the serde attributes the table states"
@@ -291,10 +264,7 @@
 			"operator": "invert-bound-comparison",
 			"description": "invert the comparison a bound keyword renders",
 			"target": "crate.mjs",
-			"branches": [
-				"constraint:min/integer",
-				"constraint:max/integer"
-			],
+			"branches": ["constraint:min/integer", "constraint:max/integer"],
 			"site": "min: \"<\"",
 			"detectedBy": [
 				"TC-727 the corpus bases emit the bytes the pristine emitter produced",
@@ -306,9 +276,7 @@
 			"operator": "relax-pattern-classification",
 			"description": "relax a pattern classification from `unsupported` to `expressible`",
 			"target": "constraints.mjs",
-			"branches": [
-				"diagnostic:agent-ix.rust-backend.UNSUPPORTED_PATTERN"
-			],
+			"branches": ["diagnostic:agent-ix.rust-backend.UNSUPPORTED_PATTERN"],
 			"site": "classification === \"unsupported\"",
 			"detectedBy": [
 				"TC-725 every kind row selects the Rust form the mapping table states",
@@ -326,9 +294,7 @@
 			"operator": "relax-pattern-classification",
 			"description": "relax a pattern classification from `unsupported` to `expressible`",
 			"target": "patterns.mjs",
-			"branches": [
-				"diagnostic:agent-ix.rust-backend.UNSUPPORTED_PATTERN"
-			],
+			"branches": ["diagnostic:agent-ix.rust-backend.UNSUPPORTED_PATTERN"],
 			"site": "return \"unsupported\";",
 			"detectedBy": [
 				"TC-725 a pattern outside the expressible subset is classified unsupported and refused"
@@ -356,10 +322,7 @@
 			"operator": "widen-applicability-row",
 			"description": "widen an applicability row so a subject it excludes is admitted",
 			"target": "constraints.mjs",
-			"branches": [
-				"constraint:pattern/string",
-				"unknownPolicy:inert"
-			],
+			"branches": ["constraint:pattern/string", "unknownPolicy:inert"],
 			"site": "!applies(keyword, resolved.kind, resolved.scalar)",
 			"detectedBy": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
@@ -370,10 +333,7 @@
 			"operator": "widen-applicability-row",
 			"description": "widen an applicability row so a subject it excludes is admitted",
 			"target": "mapping-table.json",
-			"branches": [
-				"constraint:pattern/string",
-				"unknownPolicy:inert"
-			],
+			"branches": ["constraint:pattern/string", "unknownPolicy:inert"],
 			"site": "\"kind\": \"scalar|alias|sequence|map|reference\"",
 			"detectedBy": [
 				"TC-725 the unknownPolicy rows dispose each of the eight kinds exactly once"
@@ -384,10 +344,7 @@
 			"operator": "widen-applicability-row",
 			"description": "widen an applicability row so a subject it excludes is admitted",
 			"target": "mapping.mjs",
-			"branches": [
-				"constraint:pattern/string",
-				"unknownPolicy:inert"
-			],
+			"branches": ["constraint:pattern/string", "unknownPolicy:inert"],
 			"site": "!Object.hasOwn(KERNEL_SCALARS, scalar)",
 			"detectedBy": [
 				"TC-725 every kernel scalar maps to the Rust base the mapping table states"

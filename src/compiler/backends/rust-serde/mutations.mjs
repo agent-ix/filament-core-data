@@ -37,6 +37,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { BACKEND_DIRECTORY } from "./branches.mjs";
+import { formatJson } from "./json-format.mjs";
 import { byCodePoint } from "./mapping.mjs";
 
 /** The catalogue's own file name, inside the backend directory. */
@@ -334,7 +335,7 @@ export function buildCatalogue(options = {}) {
 
 /** The catalogue's serialized form: the one spelling `--check` compares against. */
 export function serializeCatalogue(catalogue) {
-	return `${JSON.stringify(catalogue, null, "\t")}\n`;
+	return formatJson(catalogue);
 }
 
 /** The catalogue with every recorded detection stripped, for a structural comparison. */
