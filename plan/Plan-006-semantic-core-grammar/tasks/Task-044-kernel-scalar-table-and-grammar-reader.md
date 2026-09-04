@@ -2,7 +2,7 @@
 id: Task-044
 title: "Kernel scalar table and grammar reader"
 type: Task
-status: todo
+status: done
 track: B
 priority: P0
 relationships:
@@ -33,10 +33,10 @@ Write `kernel-scalars.json` and the test-scoped semantic-core reader that enforc
 
 ## Subtasks
 
-- [ ] `packages/semantic-core/kernel-scalars.json`: one entry per member with `irScalar`/`irLowering`, `bounds`, `serialization`, `unitAllowed` (TC-255, TC-257).
-- [ ] `test/semantic-core-reader.ts`: rules for bounds, flags on collections, decimal presence/absence, unit applicability (`unitAllowed` scalars only, never on `returns`), uniqueness keys, identity flag; diagnostics carry a declaration locus.
-- [ ] Negative grammar-rule fixtures under `fixtures/semantic-core/negative/rules/` and TC-277 asserting each is rejected at its locus while the FR-006 set reads clean; TC-256 for Decimal with/without `decimal`.
-- [ ] Mutation test injecting `Any` into `KernelScalar` (TC-258); compatibility corpus entries for kernel-scalar add/remove/re-represent (TC-260).
+- [x] `packages/semantic-core/kernel-scalars.json`: one entry per member with `irScalar`/`irLowering`, `bounds`, `serialization`, `unitAllowed` (TC-255, TC-257).
+- [x] `test/semantic-core-reader.ts`: rules for bounds, flags on collections, decimal presence/absence, unit applicability (`unitAllowed` scalars only, never on `returns`), uniqueness keys, identity flag; diagnostics carry a declaration locus.
+- [x] Negative grammar-rule fixtures under `fixtures/semantic-core/negative/rules/` and TC-277 asserting each is rejected at its locus while the FR-006 set reads clean; TC-256 for Decimal with/without `decimal`.
+- [x] Mutation test injecting `Any` into `KernelScalar` (TC-258); compatibility corpus entries for kernel-scalar add/remove/re-represent (TC-260).
 
 ## Deliverables
 

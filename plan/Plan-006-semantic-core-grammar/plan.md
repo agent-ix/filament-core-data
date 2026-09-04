@@ -28,19 +28,19 @@ Issue: `agent-ix/filament-core-data#35`. Reviews: SR-037..044 under
 
 ### Stakeholder and User Requirements
 
-- [ ] **StR-001:** Keep the shared kernel small and governed while every module gets one declaration grammar.
-- [ ] **US-007:** Let module maintainers declare archetypes against one shared grammar and a closed scalar set.
+- [x] **StR-001:** Keep the shared kernel small and governed while every module gets one declaration grammar.
+- [x] **US-007:** Let module maintainers declare archetypes against one shared grammar and a closed scalar set.
 
 ### Functional Requirements
 
-- [ ] **FR-031:** Grammar declarations in `packages/semantic-core/` with an exact inventory, IR-aligned patterns, closed vocabularies, and reader-enforced cross-property rules.
-- [ ] **FR-032:** `kernel-scalars.json` representation table, `unitAllowed`, decimal policy, no `Any`.
-- [ ] **FR-033:** Official JSON Schema emission, pinned #31 normalization recorded in `toolchain.json`, FR-006 `FieldDecl[]` fixture, per-model negatives, byte-identical `check`.
-- [ ] **FR-034:** `lowering.json`, reference lowerer, identity minting, alias-per-constrained-field, lowered FR-006 document validated by both IR readers.
+- [x] **FR-031:** Grammar declarations in `packages/semantic-core/` with an exact inventory, IR-aligned patterns, closed vocabularies, and reader-enforced cross-property rules.
+- [x] **FR-032:** `kernel-scalars.json` representation table, `unitAllowed`, decimal policy, no `Any`.
+- [x] **FR-033:** Official JSON Schema emission, pinned #31 normalization recorded in `toolchain.json`, FR-006 `FieldDecl[]` fixture, per-model negatives, byte-identical `check`.
+- [x] **FR-034:** `lowering.json`, reference lowerer, identity minting, alias-per-constrained-field, lowered FR-006 document validated by both IR readers.
 
 ### Non-Functional Requirements
 
-- [ ] **NFR-014:** Kernel equals the inventory; ARCH-005/ADR-0002 one-paragraph amendments; no spike, backend, lockfile, workspace, or corpus change; official emitters only.
+- [x] **NFR-014:** Kernel equals the inventory; ARCH-005/ADR-0002 one-paragraph amendments; no spike, backend, lockfile, workspace, or corpus change; official emitters only.
 
 ## Dependency Graph
 
@@ -78,12 +78,12 @@ and `tests/semantic_ir_reader.py`.
 
 ## Test Plan
 
-- [ ] **TC-275, TC-278:** changed-path guard, spike byte-identity.
-- [ ] **TC-248, TC-249, TC-251..254, TC-273, TC-276:** compile, inventory, vocabulary parity, no untyped property, additive regeneration, package placement, official emitters.
-- [ ] **TC-250, TC-259, TC-261..266:** keyword schema, fixture targets, emitted files, FR-006 fixture validation, negatives, determinism, toolchain pin, normalization isolation.
-- [ ] **TC-255..258, TC-260, TC-277:** scalar table, reader rules, `Any` rejection, corpus family, grammar-rule negatives.
-- [ ] **TC-267..272, TC-279:** lowering table, lowerer, structural parity, `UnitSymbol`, decimal lowering, loss gate, two-reader validation.
-- [ ] **TC-274:** amendments.
+- [x] **TC-275, TC-278:** changed-path guard, spike byte-identity.
+- [x] **TC-248, TC-249, TC-251..254, TC-273, TC-276:** compile, inventory, vocabulary parity, no untyped property, additive regeneration, package placement, official emitters.
+- [x] **TC-250, TC-259, TC-261..266:** keyword schema, fixture targets, emitted files, FR-006 fixture validation, negatives, determinism, toolchain pin, normalization isolation.
+- [x] **TC-255..258, TC-260, TC-277:** scalar table, reader rules, `Any` rejection, corpus family, grammar-rule negatives.
+- [x] **TC-267..272, TC-279:** lowering table, lowerer, structural parity, `UnitSymbol`, decimal lowering, loss gate, two-reader validation.
+- [x] **TC-274:** amendments.
 
 ### Entrance Criteria
 
@@ -126,12 +126,12 @@ time ->  Task-041 -> Task-042 -> Task-043 -> Task-045 --\
 
 | Task | Track | Owns (references) | Verified by (verifies) | Status |
 |---|---|---|---|---|
-| Task-041 | A | NFR-014 | TC-275, TC-278 | todo |
-| Task-042 | A | FR-031 | TC-248, TC-249, TC-251..254, TC-273, TC-276 | todo |
-| Task-043 | A | FR-033 | TC-250, TC-259, TC-261..266 | todo |
-| Task-044 | B | FR-032, FR-031 | TC-255..258, TC-260, TC-277 | todo |
-| Task-045 | A | FR-034 | TC-267..272, TC-279 | todo |
-| Task-046 | B | NFR-014 | TC-274 | todo |
+| Task-041 | A | NFR-014 | TC-275, TC-278 | done |
+| Task-042 | A | FR-031 | TC-248, TC-249, TC-251..254, TC-273, TC-276 | done |
+| Task-043 | A | FR-033 | TC-250, TC-259, TC-261..266 | done |
+| Task-044 | B | FR-032, FR-031 | TC-255..258, TC-260, TC-277 | done |
+| Task-045 | A | FR-034 | TC-267..272, TC-279 | done |
+| Task-046 | B | NFR-014 | TC-274 | done |
 | Task-047 | Gate | US-007, NFR-014 | — | todo |
 
 ## Coordination Rules

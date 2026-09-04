@@ -1,0 +1,8 @@
+{
+	"model": "ExclusiveMinConstraint",
+	"reason": "array operand",
+	"value": {
+		"keyword": "exclusiveMin",
+		"value": [1]
+	}
+}

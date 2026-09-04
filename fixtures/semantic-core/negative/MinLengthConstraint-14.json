@@ -1,0 +1,8 @@
+{
+	"model": "MinLengthConstraint",
+	"reason": "negative length",
+	"value": {
+		"keyword": "minLength",
+		"value": -1
+	}
+}

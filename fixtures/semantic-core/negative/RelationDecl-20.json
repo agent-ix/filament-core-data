@@ -1,0 +1,9 @@
+{
+	"model": "RelationDecl",
+	"reason": "category outside FR-040",
+	"value": {
+		"verb": "belongs_to",
+		"category": "ownership",
+		"target": "ix://agent-ix/config-service/type/X"
+	}
+}

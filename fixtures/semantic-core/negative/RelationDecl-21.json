@@ -1,0 +1,9 @@
+{
+	"model": "RelationDecl",
+	"reason": "target not a SemanticId",
+	"value": {
+		"verb": "belongs_to",
+		"category": "structural",
+		"target": "X"
+	}
+}

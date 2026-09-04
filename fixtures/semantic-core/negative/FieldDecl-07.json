@@ -1,0 +1,10 @@
+{
+	"model": "FieldDecl",
+	"reason": "name violates Identifier",
+	"value": {
+		"name": "1x",
+		"type": {
+			"target": "String"
+		}
+	}
+}

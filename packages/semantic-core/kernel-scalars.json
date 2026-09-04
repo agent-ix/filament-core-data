@@ -1,0 +1,59 @@
+{
+	"$comment": "FR-032 kernel scalar representation table. Bounds are documentation for consumers; the semantic-core reader does not evaluate values against them.",
+	"scalars": {
+		"UUID": {
+			"irScalar": "uuid",
+			"bounds": "RFC 4122 128-bit",
+			"serialization": "canonical lowercase hyphenated string",
+			"unitAllowed": false
+		},
+		"Boolean": {
+			"irScalar": "boolean",
+			"bounds": "true | false",
+			"serialization": "JSON boolean",
+			"unitAllowed": false
+		},
+		"Integer": {
+			"irScalar": "integer",
+			"bounds": "signed 64-bit: -2^63 .. 2^63-1",
+			"serialization": "JSON number without fraction",
+			"unitAllowed": true
+		},
+		"Decimal": {
+			"irScalar": "number",
+			"bounds": "TypeRef.decimal { precision, scale } required by the grammar rule",
+			"serialization": "JSON number or decimal string per target contract",
+			"unitAllowed": true
+		},
+		"String": {
+			"irScalar": "string",
+			"bounds": "minLength/maxLength in Unicode code points",
+			"serialization": "JSON string (UTF-8)",
+			"unitAllowed": false
+		},
+		"Timestamp": {
+			"irScalar": "datetime",
+			"bounds": "UTC instant, at most nanosecond precision",
+			"serialization": "RFC 3339",
+			"unitAllowed": true
+		},
+		"Duration": {
+			"irScalar": "duration",
+			"bounds": "ISO 8601 duration",
+			"serialization": "ISO 8601",
+			"unitAllowed": true
+		},
+		"Bytes": {
+			"irScalar": "bytes",
+			"bounds": "maxLength in bytes",
+			"serialization": "base64 string",
+			"unitAllowed": false
+		},
+		"JsonObject": {
+			"irLowering": "open-record",
+			"bounds": "opaque, never typed further",
+			"serialization": "JSON object; kind: record, fields: [], unknownPolicy: preserve",
+			"unitAllowed": false
+		}
+	}
+}

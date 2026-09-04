@@ -2,7 +2,7 @@
 id: Task-046
 title: "Kernel scope amendments"
 type: Task
-status: todo
+status: done
 track: B
 priority: P0
 relationships:
@@ -21,9 +21,9 @@ Add one paragraph each to ARCH-005 (`metamodel.md`) and ADR-0002 stating that th
 
 ## Subtasks
 
-- [ ] Amend `docs/semantic-data-system/metamodel.md` kernel section with one paragraph citing `packages/semantic-core/inventory.json`.
-- [ ] Amend `docs/semantic-data-system/adr/0002-generated-package-ownership.md` with one paragraph.
-- [ ] Record the manual inspection result for TC-274 in the plan log.
+- [x] Amend `docs/semantic-data-system/metamodel.md` kernel section with one paragraph citing `packages/semantic-core/inventory.json`.
+- [x] Amend `docs/semantic-data-system/adr/0002-generated-package-ownership.md` with one paragraph.
+- [x] Record the manual inspection result for TC-274 in the plan log.
 
 ## Deliverables
 

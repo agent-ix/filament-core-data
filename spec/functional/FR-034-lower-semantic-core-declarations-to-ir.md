@@ -42,7 +42,7 @@ reference lowerer, with zero declared loss, proven on the FR-006
 - The lowerer SHALL mint identities as `ix://<org>/<repo>/type/<Name>`, `.../field/<Name>-<field>`, `.../relationship/<Name>-<verb>-<TargetName>`, `.../operation/<Name>-<name>`, `.../clause/<Name>-<clauseId>`, `.../constraint/<Name>-<field>-<keyword>`, and `.../type/<KernelScalar>` for kernel scalar definitions.
 - The lowerer SHALL emit one kernel scalar type definition per `KernelScalar` member the instance uses, package-local, carrying the extension `ix://agent-ix/semantic-core/ext/kernel-scalar` (version `1.0.0`, `required: false`, payload `{ name }`) so cross-package equivalence is by kernel name.
 - The lowerer SHALL set every node's `origin` from the declaration's `SourceLocus`.
-- `Multiplicity` SHALL lower property-for-property to `field.multiplicity`, `relationship.multiplicity`, and `returns.multiplicity`; an absent `RelationDecl.multiplicity` lowers to `0..1` and an absent `composite` to `false`.
+- `Multiplicity` SHALL lower property-for-property to `field.multiplicity`, `relationship.multiplicity`, and `returns.multiplicity`, where an absent `TypeRef.multiplicity` lowers to `1..1`, an absent `RelationDecl.multiplicity` to `0..1`, and an absent `composite` to `false`.
 - `TypeRef.target` SHALL lower to `field.typeRef`: a `SemanticId` verbatim, a `KernelScalar` to that package-local kernel definition's identity.
 - `TypeRef.unit` SHALL lower to `field.unit` verbatim.
 - `TypeRef.decimal` SHALL lower to the extension `ix://agent-ix/semantic-core/ext/decimal` (version `1.0.0`, `required: true`, payload `{ precision, scale }`) on the field.

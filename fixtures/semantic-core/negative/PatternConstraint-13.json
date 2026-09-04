@@ -1,0 +1,8 @@
+{
+	"model": "PatternConstraint",
+	"reason": "missing dialect",
+	"value": {
+		"keyword": "pattern",
+		"regex": "a"
+	}
+}

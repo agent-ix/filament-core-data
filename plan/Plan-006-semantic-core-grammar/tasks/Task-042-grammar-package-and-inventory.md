@@ -2,7 +2,7 @@
 id: Task-042
 title: "Grammar package and inventory"
 type: Task
-status: todo
+status: done
 track: A
 priority: P0
 relationships:
@@ -35,11 +35,11 @@ Author `packages/semantic-core/main.tsp`, `package.json`, `tspconfig.yaml`, and 
 
 ## Subtasks
 
-- [ ] Declare the FR-031 inventory exactly: `Multiplicity`, `TypeRef`, `DecimalPolicy`, `DefaultDecl`, `FieldDecl`, the eleven `*Constraint` models and the `ConstraintDecl` union, `RelationDecl`, `OperationDecl`, `ClauseRef`, `EnumValue`, `SourceLocus`; enums `KernelScalar`, `EdgeCategory`, `ConstraintKeyword`, `DefaultKind`; scalars `Identifier`, `SemanticId`, `UnitSymbol`, `ClauseLanguage` with the FR-031 patterns.
-- [ ] Write `inventory.json` listing every declaration by kind and name; add the compiled-program inventory test using the compiler API (TC-249, TC-273) including a mutation run that injects `Entity` and `Any` and expects failure.
-- [ ] Vocabulary parity test against `schema/semantic/v1/semantic-ir.schema.json` for `EdgeCategory`, `ConstraintKeyword`, `ClauseLanguage` (TC-251).
-- [ ] Untyped-property scan (TC-252), package placement and no-spike-import scan (TC-254), `tspconfig.yaml` official-emitter check (TC-276).
-- [ ] Additivity check: add a throwaway model at a bumped minor version in a temp copy, regenerate, assert prior files byte-identical (TC-253). Add `make semantic-core-compile`.
+- [x] Declare the FR-031 inventory exactly: `Multiplicity`, `TypeRef`, `DecimalPolicy`, `DefaultDecl`, `FieldDecl`, the eleven `*Constraint` models and the `ConstraintDecl` union, `RelationDecl`, `OperationDecl`, `ClauseRef`, `EnumValue`, `SourceLocus`; enums `KernelScalar`, `EdgeCategory`, `ConstraintKeyword`, `DefaultKind`; scalars `Identifier`, `SemanticId`, `UnitSymbol`, `ClauseLanguage` with the FR-031 patterns.
+- [x] Write `inventory.json` listing every declaration by kind and name; add the compiled-program inventory test using the compiler API (TC-249, TC-273) including a mutation run that injects `Entity` and `Any` and expects failure.
+- [x] Vocabulary parity test against `schema/semantic/v1/semantic-ir.schema.json` for `EdgeCategory`, `ConstraintKeyword`, `ClauseLanguage` (TC-251).
+- [x] Untyped-property scan (TC-252), package placement and no-spike-import scan (TC-254), `tspconfig.yaml` official-emitter check (TC-276).
+- [x] Additivity check: add a throwaway model at a bumped minor version in a temp copy, regenerate, assert prior files byte-identical (TC-253). Add `make semantic-core-compile`.
 
 ## Deliverables
 
