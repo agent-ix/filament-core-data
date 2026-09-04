@@ -250,6 +250,13 @@ describe("semantic IR v1.1 baseline and non-disruption", () => {
 			"audit/filament-contract-census/",
 			"pyproject.toml",
 			"poetry.lock",
+			// Issue #19 (the compiler core) adds the compiler fixture corpus, the
+			// matrix-summary script, its plan bundle, and its test file. Each entry
+			// is a path this branch writes, enumerated rather than widened.
+			"fixtures/compiler/",
+			"scripts/",
+			"plan/Plan-008-typespec-frontend-and-ir-compiler-core/",
+			"test/compiler-core.test.ts",
 		];
 		for (const path of changedPaths()) {
 			expect(

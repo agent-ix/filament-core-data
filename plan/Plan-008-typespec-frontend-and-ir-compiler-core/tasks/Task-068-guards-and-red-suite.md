@@ -23,8 +23,8 @@ Author the guards before any implementation file exists, so the branch cannot go
 
 ## Subtasks
 
-- [ ] Measure the branch baseline: run the suite on this worktree and record which cases fail and why, so the starting number is measured rather than assumed.
-- [ ] Scope the six changed-path allowlists on `main` — `test/typespec-feasibility.test.ts`, `test/contract-census.test.ts`, `test/semantic-architecture.test.ts`, `test/semantic-contract.test.ts`, `test/semantic-core.test.ts`, `test/semantic-ir-v1-1.test.ts` — and the two in `test/compiler.test.ts`, adding exactly the paths this ticket writes: `fixtures/compiler/`, `scripts/`, `plan/Plan-008-typespec-frontend-and-ir-compiler-core/`, `test/compiler-core.test.ts`, `docs/semantic-data-system/compiler-diagnostics.md`, `docs/semantic-data-system/ir-compatibility-policy.md`. Each amendment is an enumeration of what this branch touches, never a widening that would let an unrelated path through.
+- [x] Measure the branch baseline: run the suite on this worktree and record which cases fail and why, so the starting number is measured rather than assumed.
+- [x] Scope the six changed-path allowlists on `main` — `test/typespec-feasibility.test.ts`, `test/contract-census.test.ts`, `test/semantic-architecture.test.ts`, `test/semantic-contract.test.ts`, `test/semantic-core.test.ts`, `test/semantic-ir-v1-1.test.ts` — and the two in `test/compiler.test.ts`, adding exactly the paths this ticket writes: `fixtures/compiler/`, `scripts/`, `plan/Plan-008-typespec-frontend-and-ir-compiler-core/`, `test/compiler-core.test.ts`, `docs/semantic-data-system/compiler-diagnostics.md`, `docs/semantic-data-system/ir-compatibility-policy.md`. Each amendment is an enumeration of what this branch touches, never a widening that would let an unrelated path through.
 - [ ] Add `test/compiler-core.test.ts` with the TC-398..619 trace inventory and the NFR-021 permitted/prohibited assertions (TC-590..597), all using `git diff --no-renames`.
 - [ ] Record the `origin/main` baselines the later tasks compare against: `src/compiler/{ir,compile,identity}.mjs`, `src/compiler/emitters/**`, `src/compiler/backends/**`, `src/compiler/inventory.json`, the four committed issue #4 goldens, `package.json` metadata, and every file under `conformance/`.
 - [ ] Wire `node scripts/test-matrix-summary.mjs --check` into `pnpm run lint` so the Test Execution Summary is computed from the rows rather than asserted.
@@ -32,6 +32,20 @@ Author the guards before any implementation file exists, so the branch cannot go
 ## Deliverables
 
 - Six scoped allowlists, a red `test/compiler-core.test.ts`, and a matrix-summary check in lint.
+
+## Findings
+
+Measured on `origin/main` at 51febd4 with a clean `pnpm install` and `poetry
+install`: **168 of 173 passed, 5 failed**. `main` is not 173/173; that figure was
+measured on the #27 branch before it merged. All five failures are issue #27
+gates in `test/compiler.test.ts` that assert properties of
+`git diff origin/main...HEAD` which hold only while the branch under test *is*
+the promotion. Filed as issue #48 and repaired here, each restated as the state
+fact it was really protecting, with an inline comment recording what it used to
+assert. The repairs strengthen the gates: the licence check now covers every
+manifest under `src/compiler/` rather than only the added ones, and the mutation
+prohibition names the three protected fixture trees individually rather than
+prohibiting all of `fixtures/`.
 
 ## Notes
 

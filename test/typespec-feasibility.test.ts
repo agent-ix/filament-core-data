@@ -332,6 +332,13 @@ describe("TypeSpec feasibility gate", () => {
 			"tsconfig.build.json",
 			"plan/Plan-007-promote-prototype-emitters/",
 			"test/compiler.test.ts",
+			// Issue #19 (the compiler core) adds the compiler fixture corpus, the
+			// matrix-summary script, its plan bundle, and its test file. Each entry
+			// is a path this branch writes, enumerated rather than widened.
+			"fixtures/compiler/",
+			"scripts/",
+			"plan/Plan-008-typespec-frontend-and-ir-compiler-core/",
+			"test/compiler-core.test.ts",
 			"docs/semantic-data-system/typespec-feasibility.md",
 		];
 		for (const path of changedPaths()) {

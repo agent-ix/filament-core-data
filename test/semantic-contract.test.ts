@@ -1134,6 +1134,13 @@ describe("semantic package contract v1", () => {
 			"test/semantic-architecture.test.ts",
 			"test/semantic-contract.test.ts",
 			"test/typespec-feasibility.test.ts",
+			// Issue #19 (the compiler core) adds the compiler fixture corpus, the
+			// matrix-summary script, its plan bundle, and its test file. Each entry
+			// is a path this branch writes, enumerated rather than widened.
+			"fixtures/compiler/",
+			"scripts/",
+			"plan/Plan-008-typespec-frontend-and-ir-compiler-core/",
+			"test/compiler-core.test.ts",
 		];
 		for (const path of changedPaths()) {
 			expect(
