@@ -188,8 +188,15 @@ describe("qualified Python generation route (issue #23)", () => {
 			"contract-census": "audit/filament-contract-census/inventory.json",
 		};
 		for (const [suite, sentinel] of Object.entries(converted)) {
+			// Whitespace-insensitive on purpose: the formatter wraps a call that
+			// does not fit, and a literal match then stops matching without
+			// anything being wrong. That is the same shape as the black-wrapped
+			// trace marker (quire-rs#395), and this gate met it on the way in.
 			const source = read(`test/${suite}.test.ts`);
-			expect(source, suite).toContain(`changedPathsOf(root, "${sentinel}")`);
+			const call = new RegExp(
+				`changedPathsOf\\(\\s*root,\\s*"${sentinel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}",?\\s*\\)`,
+			);
+			expect(call.test(source), suite).toBe(true);
 			// The sentinel must be a file the guarded change actually created, or
 			// the range baselines on a tree the gate was never meant to judge.
 			const adding = execFileSync(
