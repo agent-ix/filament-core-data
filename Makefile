@@ -272,15 +272,15 @@ rust-conformance: rust-toolchain-check
 
 .PHONY: rust-install-from-artifact
 rust-install-from-artifact: rust-toolchain-check
-	node src/compiler/backends/rust-serde/cli.mjs install-from-artifact
+	node scripts/rust-backend-harness.mjs install-from-artifact
 
 .PHONY: rust-mutate
 rust-mutate: rust-toolchain-check
-	node src/compiler/backends/rust-serde/cli.mjs mutate
+	node scripts/rust-backend-harness.mjs mutate
 
 .PHONY: rust-fuzz
 rust-fuzz: rust-toolchain-check
-	node src/compiler/backends/rust-serde/cli.mjs fuzz
+	node scripts/rust-backend-harness.mjs fuzz
 
 # The consolidated Rust gates `make test` runs. They are the edit-loop set: the
 # long property, fuzz and mutation runs are `rust-deep`, which is scheduled
@@ -294,4 +294,4 @@ rust: rust-check rust-build rust-test rust-conformance rust-install-from-artifac
 
 .PHONY: rust-deep
 rust-deep: rust-mutate rust-fuzz
-	node src/compiler/backends/rust-serde/cli.mjs properties --deep
+	node scripts/rust-backend-harness.mjs properties --deep

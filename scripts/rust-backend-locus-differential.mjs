@@ -46,7 +46,11 @@ import {
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { requestFor } from "../src/compiler/backends/rust-serde/cli.mjs";
-import { directorySink, generateRust, readLicense } from "../src/compiler/backends/rust-serde/index.mjs";
+import {
+	directorySink,
+	generateRust,
+	readLicense,
+} from "../src/compiler/backends/rust-serde/index.mjs";
 
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
 // Under `node_modules/.cache/` rather than `target/`, for the reason the

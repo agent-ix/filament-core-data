@@ -45,7 +45,32 @@ around it.
   generated as the declared operator set crossed with the declared target set,
   one entry per applicable pair with the branch it perturbs and the case
   expected to detect it
-- A generator of IR documents used by the property tests, with a declared seed
+- `src/compiler/backends/rust-serde/branches.mjs`: the branch vocabulary,
+  enumerated from the artefacts that declare the branches rather than
+  transcribed, and `readMappingTable()`
+- `src/compiler/backends/rust-serde/branch-register.mjs`:
+  `buildRegister(...)`, `checkRegister(...)` and `serializeRegister(...)`, which
+  build the register above and decide it against the suite
+- `src/compiler/backends/rust-serde/mutations.mjs`: the operator set, the target
+  set, `buildCatalogue(...)` and `runCatalogue(...)`, which build the catalogue
+  above and apply it to a scratch copy of the backend
+- `src/compiler/backends/rust-serde/json-format.mjs`: the JSON spelling both
+  generated artefacts are written in, so the formatter never rewrites a file the
+  generator produced
+- `src/compiler/backends/rust-serde/generator.mjs`: a generator of IR documents
+  used by the property tests, a pure function of `(seed, index)` with a declared
+  seed
+- `src/compiler/backends/rust-serde/properties.mjs`: the property battery and
+  the fuzz run — `runProperties(options)` and `runFuzz(options)` — which take
+  the identifier deriver of the locale-independence property as an argument
+  because starting its two child processes is a process operation FR-042-AC-4
+  forbids every module under `src/compiler/`
+- `src/compiler/backends/rust-serde/harness/detectors.mjs`: the detector
+  battery, one detector per test case, written as a function of a *loaded*
+  backend so the suite and the mutation harness run the same assertion
+- `src/compiler/backends/rust-serde/harness/derive-identifiers.mjs`: the pure
+  child the locale-independence property runs once per locale, which derives
+  every identifier of a seeded run and prints their digest
 - Make targets that reach the register and catalogue `--check` modes by calling
   `node` directly
 

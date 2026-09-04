@@ -50,7 +50,9 @@ second case — so that a `pattern` constraint is never carried as an unchecked
   and `lowerPattern(regex)` returning the generated matcher program
 - `src/compiler/backends/rust-serde/proved-validators.json` and, per entry, a
   generated Rust validator plus its differential equivalence harness at
-  `src/compiler/backends/rust-serde/harness/locus-path-differential.mjs`
+  `scripts/rust-backend-locus-differential.mjs`, which lives outside
+  `src/compiler/` because it builds and runs a Rust crate and FR-042-AC-4
+  forbids every module under `src/compiler/` from starting a process
 - `src/compiler/backends/rust-serde/published-patterns.json`: the `pattern`
   values the published schemas carry, read out of `schema/semantic/v1/` and
   pinned so the classification set is a committed fact rather than a re-scan

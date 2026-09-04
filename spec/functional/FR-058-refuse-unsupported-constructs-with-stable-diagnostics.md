@@ -48,6 +48,10 @@ visible in the run rather than invisible in the generated source.
 - `docs/semantic-data-system/rust-backend-diagnostics.md`: the published code
   table, rendered from the registry by `scripts/build-rust-backend-docs.mjs` and
   checked in `--check` mode
+- `src/compiler/backends/rust-serde/degradation.mjs`: the degradation scan
+  behind FR-058-AC-5, which reads the expected Rust type from
+  `mapping-table.json` and the observed one from the mapped model, so its
+  expectation never comes from the emitter under test
 - Diagnostics on the emitted output manifest, ordered and limited by FR-049
 
 ## Behavior

@@ -107,6 +107,15 @@ never about the machine that ran the generator.
   determinism evidence was measured on, with the toolchain version for each row.
 - The generated `Cargo.toml` SHALL carry `rust-version` equal to the matrix's
   MSRV.
+- The matrix SHALL record, beside the pin, every lint the generated
+  `[lints.rust]` table denies and the coupling that table creates: the generated
+  crate denies all warnings by manifest, so a future `rustc` lint reddens a
+  consumer build with no contract change. That is intended by
+  [FR-056](./FR-056-emit-the-generated-rust-crate.md) AC-1, and it is a property
+  of the generated artifact rather than of this repository, so it is recorded
+  where a consumer reads the pin. The matrix gate SHALL read the lint names out
+  of a generated `Cargo.toml` rather than from a list restated in the gate, so
+  adding or dropping a lint moves the gate instead of leaving a stale sentence.
 - Where a matrix row has no measured evidence, the matrix SHALL record it as
   unmet with its reason and its owning issue, and SHALL NOT list it as
   supported.
@@ -163,6 +172,7 @@ never about the machine that ran the generator.
 | FR-060-AC-13 | No platform row is listed supported without named measured evidence — the triple, the toolchain version, the `rustfmt` version, and the run that produced it — and exactly one row is so listed at this revision. | Inspection (TC-717) |
 | FR-060-AC-14 | Every unmet platform row names its reason and its owning issue, and a row recorded unmet with no owning issue fails the matrix gate. | Inspection (TC-717) |
 | FR-060-AC-15 | `make test` runs the Node-side gates and the consolidated Rust gates, `make rust-deep` runs the long property, fuzz, and mutation runs, and each target fails naming what it could not run when its toolchain is absent rather than skipping. | Test (TC-715) |
+| FR-060-AC-16 | The support matrix names every lint the generated `[lints.rust]` table denies, read from a generated `Cargo.toml`, and records that denying all warnings couples the generated crate to the `rustc` release; a matrix missing a denied lint or the section that states the coupling fails the matrix gate. | Inspection (TC-945) |
 
 ## Dependencies
 

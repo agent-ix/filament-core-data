@@ -1057,6 +1057,7 @@ than deciding it.
 | TC-942 | No changed path falls outside the permitted list, the distribution manifests and workflows are byte-identical to `origin/main`, nothing was published, and no merged permitted-path list gained an entry | Analysis | P0 | NFR-027-AC-4, NFR-027-AC-5, NFR-027-AC-9, NFR-027-AC-11 | ✅ passed |
 | TC-943 | No changed-path gate resolves its range from a moving ref, every gate pins both endpoints to history and passes `--no-renames`, fails loudly when its sentinels are absent, still catches a prohibited path after a simulated merge, runs from the repository's test entry point with zero skips, and reverts cleanly | Unit | P0 | NFR-027-AC-6, NFR-027-AC-7, NFR-027-AC-8, NFR-027-AC-10, NFR-027-AC-12 | ✅ passed |
 | TC-944 | A recorded human review confirms the four irreducibly manual obligations: a version bump re-runs the qualification, probe expectations are derived from the contract, the layout is reconciled with the merged generated-target contract, and non-conforming values are drawn from the contract rather than from what the code rejects | Manual | P0 | FR-072-CON-2, FR-077-CON-2, FR-079-CON-4, FR-080-CON-3 | ⚠️ awaiting the program owner's review |
+| TC-945 | The support matrix names every lint the generated `[lints.rust]` table denies, read from a generated `Cargo.toml`, and states the toolchain coupling that denying all warnings creates | Analysis | P0 | FR-060-AC-16 | 🚧 planned |
 
 ## Option Permutation Matrix
 
@@ -1628,41 +1629,16 @@ validator and its differential harness.
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 198 | 191 | 0 | 7 | 100% mapped (198/198) |
-| Manual | 46 | 45 | 0 | 1 | 100% mapped (46/46) |
-| Analysis | 34 | 17 | 0 | 17 | 100% mapped (34/34) |
-| Property | 54 | 48 | 0 | 6 | 100% mapped (54/54) |
-| Unit | 316 | 273 | 0 | 43 | 100% mapped (316/316) |
-| Integration | 62 | 41 | 0 | 21 | 100% mapped (62/62) |
+| Static | 205 | 198 | 0 | 7 | 100% mapped (205/205) |
+| Manual | 47 | 45 | 0 | 2 | 100% mapped (47/47) |
+| Analysis | 39 | 21 | 0 | 18 | 100% mapped (39/39) |
+| Property | 64 | 58 | 0 | 6 | 100% mapped (64/64) |
+| Unit | 370 | 327 | 0 | 43 | 100% mapped (370/370) |
+| Integration | 83 | 62 | 0 | 21 | 100% mapped (83/83) |
 | Fuzz | 9 | 7 | 0 | 2 | 100% mapped (9/9) |
-| Snapshot | 20 | 17 | 0 | 3 | 100% mapped (20/20) |
+| Snapshot | 23 | 20 | 0 | 3 | 100% mapped (23/23) |
 | Compile | 5 | 3 | 0 | 2 | 100% mapped (5/5) |
-| **Total** | **744** | **642** | **0** | **102** | **100% mapped (744/744)** |
-Issue #23 (the qualified Python generation route) is mapped at TC-845..TC-944.
-Ids TC-645..TC-844, FR-054..FR-071, NFR-022..NFR-025 and US-011..US-012 are left
-to the parallel issue #21 and #22 backend branches, which allocated them first;
-issue #23 neither reads nor edits their paths. Two of its rows are honest about
-what they cannot demonstrate. TC-903 measures the conformance-corpus account for
-the Python surface. That corpus slot's owning issue is #23 itself, not #52, and
-the reason it stays `unavailable` is not a blocker but a shape mismatch: an
-adapter result carries a `resultState`, contract diagnostics with registry
-codes, and a normalized form, and a package of generated types can decide none
-of those. TC-903 therefore asserts that the account separates what the generated
-surface decided from what it could not, and that the backend's corpus rows are
-reported as unmet — which is what this backend can honestly say — while the
-reader that could wire the slot is filed as issue #65. The account is real
-evidence rather than a placeholder: over all 111 cases the generated
-`pydantic_v2_basemodel` surface decides 70 and agrees with the oracle on all 70,
-finds 41 undecidable because the oracle reached a cross-field rule, and is
-over-strict on none. Every one of the 111 corpus rows for this backend is still
-reported unmet. TC-900 and
-TC-931 record `dataclasses.dataclass` and `typing.TypedDict` as measured, declared,
-and not qualified for a validating surface rather than omitting them, because a
-family that is not offered is a decision and a family that is not measured is a
-blind spot. The 100 rows cover 123 acceptance criteria and 32 named constraints: some rows
-carry two or three closely coupled criteria, TC-944 carries the four
-irreducibly human obligations as one recorded review, and every criterion and
-every named constraint is named in a `Traces To` cell.
+| **Total** | **845** | **741** | **0** | **104** | **100% mapped (845/845)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

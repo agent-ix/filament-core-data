@@ -25,8 +25,12 @@ defect.
 
 ## What the generated crate denies
 
-The generated `Cargo.toml` carries a `[lints.rust]` table with
-`unsafe_code = "forbid"`, `missing_docs = "deny"` and `warnings = "deny"`.
+The generated `Cargo.toml` carries a `[lints.rust]` table denying three lints:
+`unsafe_code` (`forbid`), `missing_docs` (`deny`) and `warnings` (`deny`).
+
+`make rust-check` reads that table out of a golden crate and fails when this
+document does not name every lint in it, so the paragraph cannot go stale by
+the emitter gaining or losing an entry.
 
 This is a property of the *generated crate*, not of this repository, and it has
 a consequence a consumer should read here rather than discover on a toolchain

@@ -14,8 +14,6 @@
  */
 
 import { createHash } from "node:crypto";
-import { execFileSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
 import { readMappingTable } from "./branches.mjs";
 import { emitCrate } from "./crate.mjs";
 import { describeDegradation, scanDegradation } from "./degradation.mjs";
@@ -26,15 +24,11 @@ import { byCodePoint, mapDocument } from "./mapping.mjs";
 /** The declared document count. `--deep` multiplies it; nothing lowers it. */
 export const MINIMUM_DOCUMENTS = 256;
 
-const LOCALE_CHILD = fileURLToPath(
-	new URL("./harness/derive-identifiers.mjs", import.meta.url),
-);
-
 /** A counter-example: the seed and the index that reproduce it. */
 export class PropertyFailure extends Error {
 	constructor(property, seed, index, detail) {
 		super(
-			`property \`${property}\` failed at document ${index} of seed ${seed}: ${detail}\n  reproduce with: node src/compiler/backends/rust-serde/cli.mjs properties --seed ${seed} --only ${property} --count ${index + 1}`,
+			`property \`${property}\` failed at document ${index} of seed ${seed}: ${detail}\n  reproduce with: node scripts/rust-backend-harness.mjs properties --seed ${seed} --only ${property} --count ${index + 1}`,
 		);
 		this.property = property;
 		this.seed = seed;
@@ -582,25 +576,19 @@ export const PROPERTIES = Object.freeze([
 		id: "locale-independent-derivation",
 		title:
 			"identifier derivation is identical under LANG=C and LANG=tr_TR.UTF-8",
+		// The two derivations have to happen in two *child* processes, because
+		// Node fixes its ICU locale at start-up. Starting them is a process
+		// operation, which FR-042-AC-4 forbids every module under
+		// `src/compiler/`, so the deriver is supplied by the caller and
+		// `scripts/rust-backend-harness.mjs` is the only thing that supplies it.
+		// It is required, not optional: a run that cannot resolve it fails
+		// (FR-062-CON-3), it never quietly drops this property.
 		run(context) {
 			const digests = new Map();
 			for (const locale of ["C", "tr_TR.UTF-8"]) {
 				digests.set(
 					locale,
-					execFileSync(
-						process.execPath,
-						[
-							LOCALE_CHILD,
-							"--seed",
-							String(context.seed),
-							"--count",
-							String(context.count),
-						],
-						{
-							encoding: "utf8",
-							env: { ...process.env, LANG: locale, LC_ALL: locale },
-						},
-					).trim(),
+					context.deriveIdentifierDigest(locale, context.seed, context.count),
 				);
 			}
 			const [first, second] = [...digests.values()];
@@ -641,6 +629,11 @@ export function runProperties(options = {}) {
 			"the property run could not resolve its generator, so it fails rather than skipping",
 		);
 	}
+	if (typeof options.deriveIdentifierDigest !== "function") {
+		throw new Error(
+			"the property run could not resolve its identifier deriver, so it fails rather than skipping the locale-independence property; `scripts/rust-backend-harness.mjs` supplies it",
+		);
+	}
 	const selected =
 		options.only === undefined
 			? PROPERTIES
@@ -659,6 +652,7 @@ export function runProperties(options = {}) {
 		count,
 		table: options.table ?? readMappingTable(),
 		emitOptions: { licenseText: options.licenseText ?? "" },
+		deriveIdentifierDigest: options.deriveIdentifierDigest,
 	};
 	const results = [];
 	for (const property of selected) {

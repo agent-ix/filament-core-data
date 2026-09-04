@@ -1224,6 +1224,13 @@ const backendDirectory = resolve(root, "src/compiler/backends/rust-serde");
 const modulePathOf = (name: string): string =>
 	`../src/compiler/backends/rust-serde/${name}`;
 
+/**
+ * The same convention for the harness outside `src/compiler/`: composed rather
+ * than written out, because a literal specifier makes `tsc --noEmit` demand a
+ * declaration file for a module that has none.
+ */
+const harnessPath = (name: string): string => `../scripts/${name}`;
+
 interface LoadedBackend {
 	detectors: any;
 	backend: any;
@@ -1757,9 +1764,16 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	/** Traces: TC-728; FR-062-AC-5, FR-062-AC-11, FR-062-AC-12, FR-062-AC-13, FR-062-CON-3. */
 	it("TC-728 every declared property holds over at least 256 generated documents, with the seed printed", async () => {
 		const properties = await import(modulePathOf("properties.mjs"));
+		// The locale-independence property compares two child processes, and
+		// starting one is a process operation FR-042-AC-4 forbids every module
+		// under `src/compiler/`. The deriver therefore comes from the harness
+		// outside it, and `runProperties` refuses to run without one rather than
+		// dropping the property (FR-062-CON-3), which the assertion below shows.
+		const harness = await import(harnessPath("rust-backend-harness.mjs"));
 		const run = properties.runProperties({
 			count: 256,
 			licenseText: read(resolve(root, "LICENSE")),
+			deriveIdentifierDigest: harness.deriveIdentifierDigest,
 		});
 		for (const result of run.results as {
 			id: string;
@@ -1805,8 +1819,16 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 			/could not resolve a document count/,
 		);
 		expect(() =>
-			properties.runProperties({ only: "no-such-property" }),
+			properties.runProperties({
+				only: "no-such-property",
+				deriveIdentifierDigest: harness.deriveIdentifierDigest,
+			}),
 		).toThrow(/no property is named/);
+		// And a run with no deriver fails naming what it could not resolve,
+		// rather than running eight of the nine and reporting a green battery.
+		expect(() => properties.runProperties({ count: 8 })).toThrow(
+			/could not resolve its identifier deriver/,
+		);
 	}, 300000);
 
 	/** Traces: TC-729; FR-062-AC-6, FR-062-AC-10. */
@@ -1850,9 +1872,11 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 			expect(described).toContain("crate::support::Date");
 
 			// And at least one property fails under it.
+			const harness = await import(harnessPath("rust-backend-harness.mjs"));
 			const run = broken.properties.runProperties({
 				count: 8,
 				licenseText: "",
+				deriveIdentifierDigest: harness.deriveIdentifierDigest,
 			});
 			expect((run.failures as { id: string }[]).map((one) => one.id)).toContain(
 				"no-degraded-declaration",

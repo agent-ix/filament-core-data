@@ -430,6 +430,30 @@ function rustfmtGate() {
 // ---------------------------------------------------------------------------
 
 /**
+ * The `[lints.rust]` entries a generated `Cargo.toml` carries, read from a
+ * golden crate. Reading them is the point: a transcribed list would agree with
+ * every change to the emitter.
+ */
+function deniedLints() {
+	const bases = readdirSync(GOLDENS)
+		.filter((name) => statSync(join(GOLDENS, name)).isDirectory())
+		.sort();
+	if (bases.length === 0) {
+		throw new Error(
+			"no golden crate is present, so the denied lint set could not be read and this gate fails rather than passing over an empty set",
+		);
+	}
+	const text = readFileSync(join(GOLDENS, bases[0], "Cargo.toml"), "utf8");
+	const table = /\n\[lints\.rust\]\n([\s\S]*?)(?:\n\[|$)/.exec(text);
+	if (!table) {
+		throw new Error(
+			`the golden crate ${bases[0]} carries no [lints.rust] table, so the denied lint set could not be read`,
+		);
+	}
+	return [...table[1].matchAll(/^([a-z_]+)\s*=/gm)].map((one) => one[1]);
+}
+
+/**
  * Every platform row is qualified: supported with named measured evidence, or
  * unmet with a reason and an owning issue. A row recorded unmet with no owning
  * issue fails (FR-060-AC-8, FR-060-AC-13, FR-060-AC-14).
@@ -487,6 +511,25 @@ function matrixGate() {
 	const channel = pinnedChannel();
 	if (!text.includes(`\`${channel}\``))
 		problems.push(`the matrix does not name the pinned channel ${channel}`);
+
+	// The `[lints.rust]` table the generator writes couples the *generated*
+	// crate to the `rustc` release: a future lint reddens a consumer build with
+	// no contract change. FR-056-AC-1 intends that, and it is a property of the
+	// generated artifact, so it is recorded beside the pin rather than left for
+	// a consumer to discover on a toolchain bump. The lint names are read out of
+	// a golden `Cargo.toml` rather than restated here, so adding or dropping one
+	// moves this gate instead of leaving a stale sentence behind.
+	for (const lint of deniedLints()) {
+		if (!text.includes(`\`${lint}\``))
+			problems.push(
+				`the generated Cargo.toml denies \`${lint}\` and the matrix does not name it`,
+			);
+	}
+	if (!text.includes("## What the generated crate denies")) {
+		problems.push(
+			"the matrix carries no `## What the generated crate denies` section, so the toolchain coupling the `[lints.rust]` table creates is unrecorded",
+		);
+	}
 
 	for (const problem of problems)
 		process.stderr.write(`support matrix failed: ${problem}\n`);

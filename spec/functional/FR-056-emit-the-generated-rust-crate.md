@@ -53,9 +53,13 @@ it came from.
 - `src/compiler/backends/rust-serde/rust-format.mjs`: the pinned `rustfmt`
   layout rules, reproduced so the emitter is a fixed point of the formatter
   without shelling out to it during generation
-- `src/compiler/backends/rust-serde/cli.mjs`: the command line the `make`
-  targets call — `generate`, `check`, `install-from-artifact`, `mutate`,
-  `fuzz`, and `properties` — which is the only caller of `generateRust`
+- `src/compiler/backends/rust-serde/cli.mjs`: the pure half of the command line
+  the `make` targets call — `generate`, `check`, `register`, and `mutations` —
+  which is the only caller of `generateRust`
+- `scripts/rust-backend-harness.mjs`: the half that needs a child process —
+  `install-from-artifact`, `mutate`, `fuzz`, `properties`, and `verdicts` — held
+  outside `src/compiler/` because FR-042-AC-4 forbids every module there from
+  starting one, and importing `cli.mjs` rather than the other way round
 - A generated crate rooted at the request's `outputRoot`, containing
   `Cargo.toml`, `LICENSE`, `README.md`, `src/lib.rs`, `src/support.rs`,
   `src/identity.rs`, `src/metadata.rs`, and one module per IR type
