@@ -7,13 +7,17 @@ relationships:
     type: "traces_to"
   - target: "ix://agent-ix/filament-core-data/US-005"
     type: "depends_on"
+  - target: "ix://agent-ix/filament-core-data/US-006"
+    type: "depends_on"
+  - target: "ix://agent-ix/filament-core-data/US-007"
+    type: "depends_on"
 ---
 # [US-009] Build generated packages from a supported compiler
 
 ## Story
 
 **As a** maintainer of the Agent IX semantic data system
-**I want** the semantic-IR emitter and the language generation backends to live in this repository's `src/` under the same quality, licence, and determinism gates as the rest of the code, instead of inside a frozen throwaway spike
+**I want** the semantic-IR emitter and the language generation backends to be owned code under the same quality, licence, and determinism gates as the rest of the repository, instead of living inside a frozen throwaway spike
 **So that** the Rust, TypeScript, and Python package tickets can be built from a compiler that is owned, tested, and versioned rather than by copying prototype code out of an experiment.
 
 ## Context
@@ -22,8 +26,8 @@ Issue #4 produced a working prototype: a TypeSpec `$onEmit` semantic-IR emitter,
 hand-rolled Rust/Serde and TypeScript generators, and a Python adapter that
 normalizes the official JSON Schema bundle for `datamodel-code-generator`. All of
 it lives under `spikes/typespec-feasibility/`, is reachable only through a
-`file:` devDependency, is excluded from the repository formatter, and is declared
-non-canonical by NFR-006.
+`file:` devDependency, has its generated and evidence trees excluded from the
+repository formatter, and is declared non-canonical by NFR-006.
 
 ADR-0005 has since selected TypeSpec as the structural source and ADR-0002 keeps
 the compiler in this repository. IR v1.1 (issue #34) and the semantic-core
@@ -44,7 +48,7 @@ consumer.
 
 - **Given** the Rust package ticket needs Serde types for a semantic package
 - **When** it calls the repository's build interface
-- **Then** it reaches a module under `src/compiler/` that is formatted, typechecked, and tested by the repository's own gates, and it never reads a path under `spikes/`
+- **Then** it reaches an owned module that is formatted and tested by the repository's own gates, whose declarations `tsc` checks, and it never reads a path under `spikes/`
 
 ### [US-009-EX-2] A prototype component is not promoted just because it worked
 
@@ -96,6 +100,9 @@ that moving the emitter silently rebaselines the frozen spike evidence, which
 would destroy the historical record the promotion is supposed to preserve.
 
 ## Traceability (Informative)
+
+One host-reproducibility defect in the retained issue #4 evidence is recorded
+separately as issue #42 and is deliberately not repaired here.
 
 This story drives [FR-040](../functional/FR-040-disposition-the-prototype-inventory.md)
 through [FR-044](../functional/FR-044-replay-the-frozen-spike-through-the-promoted-compiler.md)

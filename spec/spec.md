@@ -118,7 +118,9 @@ stays frozen, non-canonical, and reproducible.
 ### 2.2 Out of Scope
 
 - Implementing the production semantic compiler or production emitter framework;
-  issue #4 may implement only an isolated disposable experimental emitter.
+  issue #4 may implement only an isolated disposable experimental emitter, and
+  issue #27 may only promote that prototype without changing its output — the
+  production compiler is issue #19.
 - Generating, publishing, or consuming new Rust, TypeScript, or Python packages.
 - Changing Avro, database, API, Tauri, Protobuf, Arrow, Parquet, or Markdown
   runtime behavior.
@@ -145,6 +147,12 @@ stays frozen, non-canonical, and reproducible.
   those belong to issues #19, #21, #22, #23, and #11.
 - Building the independent conformance corpus and oracle (issue #20); issue #27
   neither reads nor edits it, because that independence is the point.
+- Adding a public `./compiler` package export, a runtime dependency for the
+  promoted compiler, or a supported `datamodel-code-generator` invocation;
+  those belong to issues #11 and #23.
+- Repairing the retained issue #4 evidence's host couplings (issue #42); issue
+  #27 records them and fixes only the lockfile seeding, which changes no
+  retained byte.
 
 ## 3. System Overview
 
@@ -181,7 +189,7 @@ Authority is assigned by concern:
 
 | Owner | Responsibility | Explicit non-responsibility |
 |---|---|---|
-| `filament-core-data` | Semantic IR, shared kernel, package/projection contracts, compiler and emitters in later tickets | Domain vocabulary ownership and application persistence policy |
+| `filament-core-data` | Semantic IR, shared kernel, package/projection contracts, the promoted prototype compiler under `src/compiler/` (issue #27), the production compiler in issue #19 | Domain vocabulary ownership and application persistence policy |
 | Quire | Parse, validate, extract, and byte-splice typed Markdown | Cross-language generation, template rendering, application policy, registry sourcing |
 | Quoin | Module catalog, locks, installation, skills, and workflows | Runtime domain persistence and compiler ownership |
 | Module repositories | Domain vocabulary, constraints, skeletons, mappings, examples, and module versions | Shared compiler implementation |

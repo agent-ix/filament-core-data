@@ -5,56 +5,82 @@ type: FR
 relationships:
   - target: "ix://agent-ix/filament-core-data/US-009"
     type: "implements"
+  - target: "ix://agent-ix/filament-core-data/FR-017"
+    type: "depends_on"
 ---
 # [FR-040] Disposition every issue #4 prototype component
 
 ## Description
 
-The promotion SHALL record a written disposition for every component of the
-issue #4 prototype, where each disposition is exactly one of `retain`,
-`rewrite`, `replace-with-official`, or `discard` and carries the evidence that
+The maintainer SHALL record a written disposition for every issue #4 prototype
+component enumerated below, where each disposition is exactly one of `retain`,
+`rewrite`, `replace-with-official`, or `discard` and cites the evidence that
 justifies it.
 
 ## Inputs
 
-- `spikes/typespec-feasibility/emitter/index.mjs` (the `$onEmit` semantic-IR emitter)
-- The generator, adapter, fixture, projection, evidence, and harness functions in `spikes/typespec-feasibility/scripts/run-experiment.mjs`
-- `spikes/typespec-feasibility/evidence/capabilities.json` (the recorded disposition and confidence of each spike capability)
+The prototype component set is this enumeration; it is the oracle, and no count
+stands in for it. Each entry names the spike path and the exact symbols it
+covers.
+
+1. Semantic-IR emitter — `spikes/typespec-feasibility/emitter/index.mjs` (`$onEmit`, `record`, `metadataOf`, `semanticRole`, `sourceOf`, `namespaceOf`, `versionRecord`)
+2. TypeScript backend — `scripts/run-experiment.mjs` (`emitTypeScript`, `tsType`, `simpleReferences`, `enumMembers`, `replaceEnumMember`)
+3. Rust/Serde backend — `scripts/run-experiment.mjs` (`emitRust`, `rustType`, `snake`, `inheritedFields`)
+4. Python JSON Schema adapter — `scripts/run-experiment.mjs` (`normalizeJsonSchemaForPython`)
+5. Python generator pins and invocation — `scripts/run-experiment.mjs` (`pydanticVersion`, `datamodelCodegenVersion`, `pythonGeneratorArguments`)
+6. Determinism helpers — `scripts/run-experiment.mjs` (`canonical`, `fingerprint`)
+7. Python virtualenv bootstrap — `scripts/run-experiment.mjs` (`ensurePython`)
+8. Golden consumer programs — `scripts/run-experiment.mjs` (`emitConsumers`)
+9. Codegen-confidence fixtures — `scripts/run-experiment.mjs` (`fixture`, `invalidFixture`)
+10. Arrow projection writer — `scripts/run-experiment.mjs` (the `generated/custom/arrow/schema.json` writer)
+11. Markdown mapping writer — `scripts/run-experiment.mjs` (the `generated/custom/markdown/mappings.json` writer)
+12. Protobuf mapping writer — `scripts/run-experiment.mjs` (the `generated/custom/protobuf/mapping.json` writer)
+13. Compatibility classifier — `scripts/run-experiment.mjs` (`classify`)
+14. Official emitter invocations — `scripts/run-experiment.mjs` (the `@typespec/json-schema` and `@typespec/protobuf` compile calls)
+
+Also read: `spikes/typespec-feasibility/evidence/capabilities.json`, whose
+sixteen capability records carry the issue #4 disposition and confidence.
 
 ## Outputs
 
-- `src/compiler/inventory.json`: one record per prototype component with `component`, `source` (the spike path), `disposition`, `target` (the promoted `src/` path, or `null`), `evidence`, and `limitation`
-- A `## Promotion inventory` section in `docs/semantic-data-system/typespec-feasibility.md` naming the counts per disposition and linking the inventory
+- `src/compiler/inventory.json` with two arrays:
+  - `components`: one record per enumerated component, each carrying `component`, `source` (the spike path plus the symbol list), `capability` (the `capabilities.json` id that judged it, or `null` when no capability record covers it), `disposition`, `targets` (an array of promoted `src/compiler/` paths, empty when the component is not promoted), `evidence`, and `limitation`
+  - `authored`: one record per `src/compiler/` file that has no issue #4 ancestor, each carrying `path` and `reason`
+- A `## Promotion inventory` section in `docs/semantic-data-system/typespec-feasibility.md` naming the per-disposition counts and linking the inventory
 
 ## Behavior
 
-- The inventory SHALL contain one record for each of the thirteen prototype components enumerated in the Inputs.
-- The inventory SHALL contain no record whose `source` is absent or empty.
-- Every record SHALL carry a `disposition` drawn from the closed set `retain`, `rewrite`, `replace-with-official`, `discard`.
-- Every `retain` and `rewrite` record SHALL name a `target` path that exists under `src/compiler/`.
-- Every `replace-with-official` and `discard` record SHALL set `target` to `null`.
-- Every record SHALL carry a `limitation` string stating what the component was **not** qualified against.
-- If a record's only stated `evidence` is that the representative golden passed, then the inventory test SHALL reject that record.
-- The inventory SHALL record the Rust and TypeScript backends as qualified against the representative slice only, naming the absent conformance corpus, property/fuzz suite, and downstream adoption.
-- If a file under `src/compiler/` is not the `target` of any inventory record, then the inventory test SHALL fail naming that file.
+- The inventory `components` array SHALL hold one record for each of the fourteen components enumerated in Inputs, keyed by that component name.
+- The inventory SHALL hold no `components` record whose `source` is absent or empty.
+- Every `components` record SHALL carry a `disposition` drawn from the closed set `retain`, `rewrite`, `replace-with-official`, `discard`.
+- Every `retain` and `rewrite` record SHALL name at least one `targets` path that exists under `src/compiler/`.
+- Every `replace-with-official` and `discard` record SHALL carry an empty `targets` array.
+- Every `components` record SHALL carry a `limitation` string stating what the component was **not** qualified against.
+- If a `components` record's only stated `evidence` is that the representative golden passed, then the inventory test SHALL reject that record.
+- The inventory SHALL record the Rust and TypeScript backends as qualified against the issue #4 representative slice only, naming the absent conformance corpus, property/fuzz suite, compatibility matrix, and downstream adoption.
+- If a file under `src/compiler/` is neither in some record's `targets` nor in the `authored` array, then the inventory test SHALL fail naming that file.
+- If a `components` record names a `capability` whose `capabilities.json` disposition is `partial`, then that record's `limitation` SHALL restate that capability's recorded `limitation`.
 
 ## Constraints
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-040-CON-1 | The inventory SHALL NOT record a disposition of `retain` for a component whose spike disposition in `capabilities.json` is `partial` without repeating that partiality in `limitation`. | Integrity | Inventory test |
-| FR-040-CON-2 | The disposition set SHALL stay closed; adding a fifth value requires amending this requirement rather than the inventory file. | Integrity | Inventory test |
+| FR-040-CON-1 | The inventory test SHALL fail a `retain` or `rewrite` record whose named `capability` is `partial` in `capabilities.json` and whose `limitation` omits that capability's recorded limitation. | Integrity | Inventory test |
+| FR-040-CON-2 | The inventory test SHALL reject any `disposition` outside the four-value set; a fifth value requires amending this requirement before the inventory. | Integrity | Inventory test |
+| FR-040-CON-3 | The `authored` array SHALL name only files the promotion itself creates. | Integrity | Inventory test |
+| FR-040-CON-4 | The maintainer SHALL NOT use the `authored` array to excuse a promoted component from a `components` record. | Integrity | Inventory test |
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-040-AC-1 | `src/compiler/inventory.json` holds thirteen records, one per enumerated prototype component, each with a spike source path that exists in the tree or in the promotion commit's parent. | Test |
-| FR-040-AC-2 | Every record's `disposition` is in the closed four-value set, and a record carrying any other value fails the inventory test. | Test |
-| FR-040-AC-3 | Every `retain`/`rewrite` record names an existing `src/compiler/` target and every `replace-with-official`/`discard` record names `null`. | Test |
-| FR-040-AC-4 | Every record carries a non-empty `limitation`; a record whose `evidence` is only "representative golden passed" is rejected. | Test |
-| FR-040-AC-5 | Every file under `src/compiler/` except the inventory itself is the target of exactly one record. | Test |
-| FR-040-AC-6 | `docs/semantic-data-system/typespec-feasibility.md` gains a `## Promotion inventory` section whose per-disposition counts equal the inventory's. | Test |
+| FR-040-AC-1 | `src/compiler/inventory.json` `components` holds exactly the fourteen component names enumerated in Inputs, each with a non-empty `source`; a missing or extra name fails the test. | Test |
+| FR-040-AC-2 | Every record's `disposition` is in the closed four-value set, and a mutated record carrying a fifth value fails the inventory test. | Test |
+| FR-040-AC-3 | Every `retain`/`rewrite` record names at least one existing `src/compiler/` target and every `replace-with-official`/`discard` record carries an empty `targets` array. | Test |
+| FR-040-AC-4 | Every record carries a non-empty `limitation`, and a mutated record whose `evidence` is only "representative golden passed" is rejected. | Test |
+| FR-040-AC-5 | Every file under `src/compiler/` is either in exactly one record's `targets` or in the `authored` array, and every `authored` entry carries a reason. | Test |
+| FR-040-AC-6 | `docs/semantic-data-system/typespec-feasibility.md` carries a `## Promotion inventory` section whose per-disposition counts equal the inventory's. | Test |
+| FR-040-AC-7 | Every record naming a `partial` capability restates that capability's recorded limitation; a mutated record that drops it fails. | Test |
 
 ## Dependencies
 
