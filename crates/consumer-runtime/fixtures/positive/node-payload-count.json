@@ -1,0 +1,7 @@
+{
+	"id": "n2",
+	"label": "labelled",
+	"elapsed": 7,
+	"status": "draft",
+	"payload": { "count": 42 }
+}

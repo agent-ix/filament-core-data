@@ -1,0 +1,354 @@
+{
+	"contractVersion": "1.0.0",
+	"requirement": "ix://agent-ix/filament-core-data/FR-062",
+	"note": "The declared operator set crossed with the declared target set, admitting each pair the operator finds a site in. The target set is the transitive import closure of index.mjs plus the tables pinned beside it, computed rather than listed. Removing an operator, or a module from the emitter, shrinks this catalogue and fails `cli.mjs mutations --check`.",
+	"operators": [
+		{
+			"id": "drop-option-wrapper",
+			"description": "drop the `Option` wrapper an optional member's row states",
+			"branches": [
+				"field:single/non-null/optional",
+				"field:collection/non-null/optional"
+			]
+		},
+		{
+			"id": "drop-skip-serializing-if",
+			"description": "drop the `skip_serializing_if` an optional member's row states",
+			"branches": ["field:single/non-null/optional"]
+		},
+		{
+			"id": "drop-deserialize-with",
+			"description": "drop the `deserialize_with` that keeps an absent member and a present null apart",
+			"branches": [
+				"field:single/nullable/optional",
+				"field:collection/nullable/optional"
+			]
+		},
+		{
+			"id": "invert-bound-comparison",
+			"description": "invert the comparison a bound keyword renders",
+			"branches": ["constraint:min/integer", "constraint:max/integer"]
+		},
+		{
+			"id": "flip-deny-unknown-fields",
+			"description": "flip the condition under which a record denies unknown members",
+			"branches": [
+				"unknownPolicy:record/reject",
+				"unknownPolicy:record/preserve"
+			]
+		},
+		{
+			"id": "drop-serde-rename",
+			"description": "drop the `serde(rename)` a derived identifier needs to keep its wire name",
+			"branches": ["name:memberName", "name:variantName"]
+		},
+		{
+			"id": "relax-pattern-classification",
+			"description": "relax a pattern classification from `unsupported` to `expressible`",
+			"branches": ["diagnostic:agent-ix.rust-backend.UNSUPPORTED_PATTERN"]
+		},
+		{
+			"id": "substitute-string-for-newtype",
+			"description": "substitute `String` for a mapped, constrained newtype",
+			"branches": [
+				"scalar:date",
+				"scalar:datetime",
+				"scalar:duration",
+				"scalar:uuid"
+			]
+		},
+		{
+			"id": "drop-box-at-cycle-edge",
+			"description": "drop the `Box` the graph introduces at a cycle edge",
+			"branches": [
+				"indirection:field-single",
+				"indirection:alias-target",
+				"indirection:variant-payload"
+			]
+		},
+		{
+			"id": "widen-applicability-row",
+			"description": "widen an applicability row so a subject it excludes is admitted",
+			"branches": ["constraint:pattern/string", "unknownPolicy:inert"]
+		},
+		{
+			"id": "drop-blocking-flag",
+			"description": "drop the blocking flag a refusing diagnostic carries",
+			"branches": ["diagnostic:agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT"]
+		}
+	],
+	"targets": [
+		"constraints.mjs",
+		"crate.mjs",
+		"diagnostics.mjs",
+		"graph.mjs",
+		"index.mjs",
+		"mapping-table.json",
+		"mapping.mjs",
+		"names.mjs",
+		"patterns.mjs",
+		"proved-validators.json",
+		"published-patterns.json",
+		"reserved-words.json",
+		"rust-format.mjs",
+		"support-source.mjs",
+		"support-template.rs"
+	],
+	"mutationCount": 19,
+	"mutations": [
+		{
+			"mutationId": "drop-blocking-flag@diagnostics.mjs",
+			"operator": "drop-blocking-flag",
+			"description": "drop the blocking flag a refusing diagnostic carries",
+			"target": "diagnostics.mjs",
+			"branches": ["diagnostic:agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT"],
+			"site": "blocking: true",
+			"detectedBy": [
+				"TC-725 every kind row selects the Rust form the mapping table states",
+				"TC-725 every kernel scalar maps to the Rust base the mapping table states",
+				"TC-725 the eight field-axis rows produce the member type and the serde attributes the table states",
+				"TC-725 every defaultKind, extension and metadata row reaches the emitted crate",
+				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
+			]
+		},
+		{
+			"mutationId": "drop-box-at-cycle-edge@graph.mjs",
+			"operator": "drop-box-at-cycle-edge",
+			"description": "drop the `Box` the graph introduces at a cycle edge",
+			"target": "graph.mjs",
+			"branches": [
+				"indirection:field-single",
+				"indirection:alias-target",
+				"indirection:variant-payload"
+			],
+			"site": "boxed.add(edge.edgeKey);",
+			"detectedBy": [
+				"TC-725 every indirection row materializes at the position the table names"
+			]
+		},
+		{
+			"mutationId": "drop-box-at-cycle-edge@mapping.mjs",
+			"operator": "drop-box-at-cycle-edge",
+			"description": "drop the `Box` the graph introduces at a cycle edge",
+			"target": "mapping.mjs",
+			"branches": [
+				"indirection:field-single",
+				"indirection:alias-target",
+				"indirection:variant-payload"
+			],
+			"site": "graph.boxed.has(edgeKey) ? `Box<${base}>` : base",
+			"detectedBy": [
+				"TC-725 every indirection row materializes at the position the table names"
+			]
+		},
+		{
+			"mutationId": "drop-deserialize-with@crate.mjs",
+			"operator": "drop-deserialize-with",
+			"description": "drop the `deserialize_with` that keeps an absent member and a present null apart",
+			"target": "crate.mjs",
+			"branches": [
+				"field:single/nullable/optional",
+				"field:collection/nullable/optional"
+			],
+			"site": "push('deserialize_with = \"crate::support::present_or_absent\"')",
+			"detectedBy": [
+				"TC-727 the corpus bases emit the bytes the pristine emitter produced"
+			]
+		},
+		{
+			"mutationId": "drop-deserialize-with@mapping.mjs",
+			"operator": "drop-deserialize-with",
+			"description": "drop the `deserialize_with` that keeps an absent member and a present null apart",
+			"target": "mapping.mjs",
+			"branches": [
+				"field:single/nullable/optional",
+				"field:collection/nullable/optional"
+			],
+			"site": "push(",
+			"detectedBy": [
+				"TC-725 the eight field-axis rows produce the member type and the serde attributes the table states"
+			]
+		},
+		{
+			"mutationId": "drop-option-wrapper@crate.mjs",
+			"operator": "drop-option-wrapper",
+			"description": "drop the `Option` wrapper an optional member's row states",
+			"target": "crate.mjs",
+			"branches": [
+				"field:single/non-null/optional",
+				"field:collection/non-null/optional"
+			],
+			"site": "`Option<${rendered}>`",
+			"detectedBy": [
+				"TC-725 an operation's parameter and return metadata carry the mapped type its axes state"
+			]
+		},
+		{
+			"mutationId": "drop-option-wrapper@mapping.mjs",
+			"operator": "drop-option-wrapper",
+			"description": "drop the `Option` wrapper an optional member's row states",
+			"target": "mapping.mjs",
+			"branches": [
+				"field:single/non-null/optional",
+				"field:collection/non-null/optional"
+			],
+			"site": "`Option<${rustType}>`",
+			"detectedBy": [
+				"TC-727 the corpus bases emit the bytes the pristine emitter produced",
+				"TC-725 the eight field-axis rows produce the member type and the serde attributes the table states",
+				"TC-729 the degradation scan names a declaration that carries a degraded type"
+			]
+		},
+		{
+			"mutationId": "drop-serde-rename@crate.mjs",
+			"operator": "drop-serde-rename",
+			"description": "drop the `serde(rename)` a derived identifier needs to keep its wire name",
+			"target": "crate.mjs",
+			"branches": ["name:memberName", "name:variantName"],
+			"site": "if (variant.rename !== undefined",
+			"detectedBy": [
+				"TC-727 the corpus bases emit the bytes the pristine emitter produced"
+			]
+		},
+		{
+			"mutationId": "drop-serde-rename@names.mjs",
+			"operator": "drop-serde-rename",
+			"description": "drop the `serde(rename)` a derived identifier needs to keep its wire name",
+			"target": "names.mjs",
+			"branches": ["name:memberName", "name:variantName"],
+			"site": "return bare === wireName ? undefined : wireName;",
+			"detectedBy": [
+				"TC-727 the corpus bases emit the bytes the pristine emitter produced",
+				"TC-725 every identifier renderer derives from the source the requirement names and refuses a collision"
+			]
+		},
+		{
+			"mutationId": "drop-skip-serializing-if@crate.mjs",
+			"operator": "drop-skip-serializing-if",
+			"description": "drop the `skip_serializing_if` an optional member's row states",
+			"target": "crate.mjs",
+			"branches": ["field:single/non-null/optional"],
+			"site": "push('skip_serializing_if = \"Option::is_none\"')",
+			"detectedBy": [
+				"TC-727 the corpus bases emit the bytes the pristine emitter produced"
+			]
+		},
+		{
+			"mutationId": "drop-skip-serializing-if@mapping.mjs",
+			"operator": "drop-skip-serializing-if",
+			"description": "drop the `skip_serializing_if` an optional member's row states",
+			"target": "mapping.mjs",
+			"branches": ["field:single/non-null/optional"],
+			"site": "push('skip_serializing_if = \"Option::is_none\"')",
+			"detectedBy": [
+				"TC-725 the eight field-axis rows produce the member type and the serde attributes the table states"
+			]
+		},
+		{
+			"mutationId": "flip-deny-unknown-fields@crate.mjs",
+			"operator": "flip-deny-unknown-fields",
+			"description": "flip the condition under which a record denies unknown members",
+			"target": "crate.mjs",
+			"branches": [
+				"unknownPolicy:record/reject",
+				"unknownPolicy:record/preserve"
+			],
+			"site": "if (!retains) lines.push(",
+			"detectedBy": [
+				"TC-727 the corpus bases emit the bytes the pristine emitter produced",
+				"TC-725 a record that rejects unknown members denies unknown fields and one that retains them flattens"
+			]
+		},
+		{
+			"mutationId": "invert-bound-comparison@crate.mjs",
+			"operator": "invert-bound-comparison",
+			"description": "invert the comparison a bound keyword renders",
+			"target": "crate.mjs",
+			"branches": ["constraint:min/integer", "constraint:max/integer"],
+			"site": "min: \"<\"",
+			"detectedBy": [
+				"TC-727 the corpus bases emit the bytes the pristine emitter produced",
+				"TC-725 a bound and a length render the comparison their keyword names"
+			]
+		},
+		{
+			"mutationId": "relax-pattern-classification@constraints.mjs",
+			"operator": "relax-pattern-classification",
+			"description": "relax a pattern classification from `unsupported` to `expressible`",
+			"target": "constraints.mjs",
+			"branches": ["diagnostic:agent-ix.rust-backend.UNSUPPORTED_PATTERN"],
+			"site": "classification === \"unsupported\"",
+			"detectedBy": [
+				"TC-725 every kind row selects the Rust form the mapping table states",
+				"TC-725 the eight field-axis rows produce the member type and the serde attributes the table states",
+				"TC-725 every defaultKind, extension and metadata row reaches the emitted crate",
+				"TC-725 every indirection row materializes at the position the table names",
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits",
+				"TC-725 a pattern outside the expressible subset is classified unsupported and refused",
+				"TC-725 an operation's parameter and return metadata carry the mapped type its axes state",
+				"TC-729 the degradation scan names a declaration that carries a degraded type"
+			]
+		},
+		{
+			"mutationId": "relax-pattern-classification@patterns.mjs",
+			"operator": "relax-pattern-classification",
+			"description": "relax a pattern classification from `unsupported` to `expressible`",
+			"target": "patterns.mjs",
+			"branches": ["diagnostic:agent-ix.rust-backend.UNSUPPORTED_PATTERN"],
+			"site": "return \"unsupported\";",
+			"detectedBy": [
+				"TC-725 a pattern outside the expressible subset is classified unsupported and refused"
+			]
+		},
+		{
+			"mutationId": "substitute-string-for-newtype@mapping.mjs",
+			"operator": "substitute-string-for-newtype",
+			"description": "substitute `String` for a mapped, constrained newtype",
+			"target": "mapping.mjs",
+			"branches": [
+				"scalar:date",
+				"scalar:datetime",
+				"scalar:duration",
+				"scalar:uuid"
+			],
+			"site": "date: \"crate::support::Date\"",
+			"detectedBy": [
+				"TC-725 every kernel scalar maps to the Rust base the mapping table states",
+				"TC-729 the degradation scan names a declaration that carries a degraded type"
+			]
+		},
+		{
+			"mutationId": "widen-applicability-row@constraints.mjs",
+			"operator": "widen-applicability-row",
+			"description": "widen an applicability row so a subject it excludes is admitted",
+			"target": "constraints.mjs",
+			"branches": ["constraint:pattern/string", "unknownPolicy:inert"],
+			"site": "!applies(keyword, resolved.kind, resolved.scalar)",
+			"detectedBy": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"mutationId": "widen-applicability-row@mapping-table.json",
+			"operator": "widen-applicability-row",
+			"description": "widen an applicability row so a subject it excludes is admitted",
+			"target": "mapping-table.json",
+			"branches": ["constraint:pattern/string", "unknownPolicy:inert"],
+			"site": "\"kind\": \"scalar|alias|sequence|map|reference\"",
+			"detectedBy": [
+				"TC-725 the unknownPolicy rows dispose each of the eight kinds exactly once"
+			]
+		},
+		{
+			"mutationId": "widen-applicability-row@mapping.mjs",
+			"operator": "widen-applicability-row",
+			"description": "widen an applicability row so a subject it excludes is admitted",
+			"target": "mapping.mjs",
+			"branches": ["constraint:pattern/string", "unknownPolicy:inert"],
+			"site": "!Object.hasOwn(KERNEL_SCALARS, scalar)",
+			"detectedBy": [
+				"TC-725 every kernel scalar maps to the Rust base the mapping table states"
+			]
+		}
+	]
+}

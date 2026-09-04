@@ -1,0 +1,15 @@
+# Build configuration for the Rust side of this repository.
+#
+# The target directory is fixed inside the repository. A shared, ambient
+# CARGO_TARGET_DIR — which is set on the authoring host — serves artifacts built
+# from another checkout, and a determinism gate that compares a rebuilt artifact
+# against a stale one measures nothing. Note that the environment variable takes
+# precedence over this key, so the Makefile targets set it explicitly rather
+# than relying on this file alone.
+[build]
+target-dir = "node_modules/.cache/rust-target"
+
+# Every gate runs offline. FR-061-CON-1 forbids contacting a registry to resolve
+# as well as to publish, and NFR-022 measures network calls at zero.
+[net]
+offline = true
