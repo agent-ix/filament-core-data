@@ -45,10 +45,10 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { requestFor } from "../cli.mjs";
-import { directorySink, generateRust, readLicense } from "../index.mjs";
+import { requestFor } from "../src/compiler/backends/rust-serde/cli.mjs";
+import { directorySink, generateRust, readLicense } from "../src/compiler/backends/rust-serde/index.mjs";
 
-const ROOT = fileURLToPath(new URL("../../../../../", import.meta.url));
+const ROOT = fileURLToPath(new URL("../", import.meta.url));
 // Under `node_modules/.cache/` rather than `target/`, for the reason the
 // Makefile moved CARGO_TARGET_DIR there: it is per-worktree, and it is the one
 // directory `biome format .` does not walk, so a harness run does not redden

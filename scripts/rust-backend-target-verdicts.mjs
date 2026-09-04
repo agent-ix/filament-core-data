@@ -37,10 +37,10 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { requestFor } from "../cli.mjs";
-import { directorySink, generateRust, readLicense } from "../index.mjs";
+import { requestFor } from "../src/compiler/backends/rust-serde/cli.mjs";
+import { directorySink, generateRust, readLicense } from "../src/compiler/backends/rust-serde/index.mjs";
 
-const ROOT = fileURLToPath(new URL("../../../../../", import.meta.url));
+const ROOT = fileURLToPath(new URL("../", import.meta.url));
 const SCRATCH = join(
 	ROOT,
 	"node_modules",

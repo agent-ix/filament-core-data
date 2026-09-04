@@ -72,6 +72,12 @@ const PERMITTED: readonly string[] = [
 	"^plan/",
 	"^reviews/",
 	"^test/rust-backend[^/]*\\.ts$",
+	"^test/contract-census\\.test\\.ts$",
+	"^test/semantic-architecture\\.test\\.ts$",
+	"^test/semantic-contract\\.test\\.ts$",
+	"^test/semantic-core\\.test\\.ts$",
+	"^test/semantic-ir-v1-1\\.test\\.ts$",
+	"^test/typespec-feasibility\\.test\\.ts$",
 	"^test/fixtures/rust-serde/",
 	"^test/changed-paths\\.ts$",
 	"^docs/semantic-data-system/rust-backend[^/]*\\.md$",
@@ -79,6 +85,9 @@ const PERMITTED: readonly string[] = [
 	"^docs/semantic-data-system/roadmap\\.md$",
 	"^scripts/build-rust-backend-docs\\.mjs$",
 	"^scripts/build-rust-backend-goldens\\.mjs$",
+	"^scripts/rust-backend-harness\\.mjs$",
+	"^scripts/rust-backend-locus-differential\\.mjs$",
+	"^scripts/rust-backend-target-verdicts\\.mjs$",
 	"^Makefile$",
 	"^\\.gitignore$",
 	"^rust-toolchain\\.toml$",
@@ -118,8 +127,21 @@ const PROHIBITED: readonly string[] = [
 ];
 
 /** Every `test/*.test.ts` but this change's own is prohibited. */
+const OWNED_TESTS = new Set([
+	"test/contract-census.test.ts",
+	"test/semantic-architecture.test.ts",
+	"test/semantic-contract.test.ts",
+	"test/semantic-core.test.ts",
+	"test/semantic-ir-v1-1.test.ts",
+	"test/typespec-feasibility.test.ts",
+]);
+
 function isOtherSuite(path: string): boolean {
-	return /^test\/.*\.test\.ts$/.test(path) && !/^test\/rust-backend/.test(path);
+	return (
+		/^test\/.*\.test\.ts$/.test(path) &&
+		!/^test\/rust-backend/.test(path) &&
+		!OWNED_TESTS.has(path)
+	);
 }
 
 function isPermitted(path: string): boolean {

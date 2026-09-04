@@ -45,12 +45,17 @@ later can be backed out by reverting this work alone.
   sentinel created early would leave every later commit outside the range.
 - Permitted paths: `src/compiler/backends/rust-serde/**`, `crates/**`,
   `spec/**`, `plan/**`, `reviews/**`, `test/rust-backend*.ts`,
+  `test/contract-census.test.ts`, `test/semantic-architecture.test.ts`,
+  `test/semantic-contract.test.ts`, `test/semantic-core.test.ts`,
+  `test/semantic-ir-v1-1.test.ts`, `test/typespec-feasibility.test.ts`,
   `test/fixtures/rust-serde/**`, `test/changed-paths.ts`,
   `docs/semantic-data-system/rust-backend*.md`,
   `docs/semantic-data-system/index.md`,
   `docs/semantic-data-system/roadmap.md`,
   `scripts/build-rust-backend-docs.mjs`,
-  `scripts/build-rust-backend-goldens.mjs`, `Makefile`, `.gitignore`,
+  `scripts/build-rust-backend-goldens.mjs`, `scripts/rust-backend-harness.mjs`,
+  `scripts/rust-backend-locus-differential.mjs`,
+  `scripts/rust-backend-target-verdicts.mjs`, `Makefile`, `.gitignore`,
   `rust-toolchain.toml`, `rustfmt.toml`, `Cargo.toml`, `Cargo.lock`,
   `.cargo/config.toml`, `THIRD-PARTY-NOTICES.md`, and exactly two files under
   `conformance/`: `adapters/registry.json`, whose `rust-backend` slot the corpus

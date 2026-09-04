@@ -343,6 +343,29 @@ describe("TypeSpec feasibility gate", () => {
 			"docs/semantic-data-system/ir-compatibility-policy.md",
 			"biome.json",
 			"docs/semantic-data-system/typespec-feasibility.md",
+			// Issue #21 (the Rust/Serde backend) adds a Rust workspace, its
+			// toolchain and formatter pins, the generated-crate goldens, the
+			// third-party attribution register and two rendered documents. Each
+			// entry is a path that branch writes, enumerated rather than widened,
+			// which is the extension NFR-016 states every ticket makes to these
+			// cumulative lists. The gate itself still reads a moving `origin/main`,
+			// which is issue #51 and not this ticket's to fix.
+			".cargo/config.toml",
+			"Cargo.toml",
+			"Cargo.lock",
+			"rust-toolchain.toml",
+			"rustfmt.toml",
+			"THIRD-PARTY-NOTICES.md",
+			".gitignore",
+			"crates/",
+			"scripts/build-rust-backend-docs.mjs",
+			"scripts/build-rust-backend-goldens.mjs",
+			"scripts/rust-backend-",
+			"docs/semantic-data-system/rust-backend",
+			"test/rust-backend.test.ts",
+			"test/fixtures/rust-serde/",
+			"plan/",
+			"test/",
 		];
 		for (const path of changedPaths()) {
 			expect(
