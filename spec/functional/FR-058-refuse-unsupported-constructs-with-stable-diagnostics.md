@@ -57,13 +57,20 @@ visible in the run rather than invisible in the generated source.
 - The *generator* — everything under `src/compiler/backends/rust-serde/` — SHALL
   emit only codes in the `agent-ix.rust-backend` namespace, from the registry
   this requirement publishes.
+- Where the *generator* finds a defect in the **shape of an IR document** rather
+  than in its own mapping, it SHALL emit the published `agent-ix.semantic-ir.*`
+  spelling that `conformance/diagnostic-codes.json` already fixes, and SHALL NOT
+  mint a second `agent-ix.rust-backend.*` spelling for the same defect. That is
+  the two-namespaces-for-one-defect problem SR-066 FND-500 raised against the
+  compiler, which FR-049 fixed by registering both sets explicitly; this
+  requirement takes the same resolution.
 - The *Rust reader* of
   [FR-059](./FR-059-answer-the-conformance-corpus-from-rust.md) SHALL emit only
-  codes in the `agent-ix.semantic-ir` namespace, from the published set
-  `conformance/diagnostic-codes.json` fixes, because those are the codes the
-  independent oracle decides and the adapter is compared on.
-- Neither set SHALL borrow a code from the other, and the closure claims below
-  quantify over each namespace separately.
+  codes in the `agent-ix.semantic-ir` namespace, from that same published set,
+  because those are the codes the independent oracle decides and the adapter is
+  compared on.
+- The two leaf-name sets SHALL be disjoint: one defect, one code, one namespace.
+  The closure claims below quantify over each namespace separately.
 
 ### The closed generator code set
 
@@ -71,8 +78,10 @@ visible in the run rather than invisible in the generated source.
   by its registry entry; the generator SHALL NOT construct a diagnostic from a
   string literal code, and constructing one from an unregistered entry SHALL
   throw.
-- The registry SHALL be exactly this set, in the `agent-ix.rust-backend`
-  namespace:
+- The registry SHALL be exactly this set. The first sixteen are in the
+  `agent-ix.rust-backend` namespace and name a defect in this backend's mapping;
+  the last five carry the published `agent-ix.semantic-ir` spelling and name a
+  defect in the document:
 
 | Code | Severity | Blocking | Raised when |
 |---|---|---|---|
@@ -82,24 +91,26 @@ visible in the run rather than invisible in the generated source.
 | `UNDECLARED_WIRE_FORM` | error | yes | a construct's wire form is declared by no published artifact — `bytes` at this revision |
 | `UNSUPPORTED_MULTIPLICITY` | error | yes | a field's `multiplicity.upper` is `0` |
 | `PAYLOAD_ON_ENUM_VARIANT` | error | yes | a `kind: "enum"` variant carries a `payloadType` |
-| `CONSTRAINT_NOT_APPLICABLE` | error | yes | a constraint keyword does not apply to its resolved subject |
+| `agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE` | error | yes | a constraint keyword does not apply to its resolved subject |
 | `UNORDERED_SUBJECT` | error | yes | a bound keyword names a subject the contract does not order |
-| `INVALID_OPERAND` | error | yes | an operand's JSON type is not one the subject's Rust type admits |
+| `agent-ix.semantic-ir.INVALID_OPERAND` | error | yes | an operand's JSON type is not one the subject's Rust type admits |
 | `INVALID_DEFAULT_VALUE` | error | yes | a `defaultValue` is not a value the field's mapped Rust type admits |
 | `UNKNOWN_FORMAT` | error | yes | a `format` operand names an unregistered format |
 | `UNRENDERABLE_NAME` | error | yes | a name derives no legal Rust identifier |
 | `NAME_COLLISION` | error | yes | two identities derive one identifier in one declared scope |
-| `V1_1_NODE_IN_V1_0` | error | yes | a `1.0.0` document carries a `1.1.0` node |
-| `UNRESOLVED_TYPE_REF` | error | yes | a `typeRef`, `appliesTo`, `items`, `values`, `payloadType`, or `target` resolves to nothing |
+| `agent-ix.semantic-ir.V1_1_NODE_IN_V1_0` | error | yes | a `1.0.0` document carries a `1.1.0` node |
+| `agent-ix.semantic-ir.UNRESOLVED_TYPE_REF` | error | yes | a `typeRef`, `appliesTo`, `items`, `values`, `payloadType`, or `target` resolves to nothing |
 | `UNSAFE_OUTPUT_ROOT` | error | yes | the request's `outputRoot` is not traversal-free under the FR-057 intended-language predicate |
-| `UNDECLARED_LOSS` | error | yes | the backend would drop a construct the profile does not list in `allowedOmissions` |
+| `agent-ix.semantic-ir.UNDECLARED_LOSS` | error | yes | the backend would drop a construct the profile does not list in `allowedOmissions` |
 | `LIMIT_EXCEEDED` | error | yes | an input exceeds one of the five NFR-020 limits; the message names which |
 | `DECLARED_LOSS` | warning | no | the backend drops a construct the profile lists in `allowedOmissions` |
 | `UNKNOWN_MEMBER_SURFACED` | warning | no | a `surface` record retained an unknown member at runtime |
 | `DIAGNOSTIC_LIMIT_REACHED` | warning | no | the diagnostic count reached the request limit |
 
-- Every code SHALL name its owner as
-  `ix://agent-ix/filament-core-data/rust-backend`.
+- Every `agent-ix.rust-backend.*` code SHALL name its owner as
+  `ix://agent-ix/filament-core-data/rust-backend`; every
+  `agent-ix.semantic-ir.*` code SHALL keep the owner the published set gives
+  it, because renaming an owner is renaming a code.
 
 ### Refusal
 

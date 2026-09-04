@@ -170,7 +170,7 @@ const SINGLE = String.fromCharCode(39);
 const BACKTICK = String.fromCharCode(96);
 
 /**
- * Two patterns built from `RegExp` rather than written as literals.
+ * A pattern built from `RegExp` rather than written as a literal.
  *
  * A regex literal carrying an odd number of quote characters desynchronises a
  * scanner that tracks string state but does not tokenise regex literals: the
@@ -178,9 +178,6 @@ const BACKTICK = String.fromCharCode(96);
  * after it is miscounted. The consequence is not a warning — it is that the
  * file's trace tags bind nothing at all.
  */
-const CODE_AS_LITERAL = new RegExp(
-	`[${[DOUBLE, SINGLE, BACKTICK].map((mark) => mark).join("")}]agent-ix\\.rust-backend\\.`,
-);
 const LOCK_NAME = new RegExp(
 	`^name = ${DOUBLE}([^${DOUBLE}]+)${DOUBLE}$`,
 	"gm",
@@ -197,7 +194,7 @@ describe("TC-690..697 the closed generator diagnostic registry", () => {
 	const modulePath = "src/compiler/backends/rust-serde/diagnostics.mjs";
 
 	/** Traces: TC-691; FR-058-AC-2, FR-058-CON-1. */
-	it("TC-691 every code the registry carries is in the rust-backend namespace and is frozen", async () => {
+	it("TC-691 every registered code is in a declared namespace, owned by it, and frozen", async () => {
 		const module = await import(`../${modulePath}`);
 		const entries = module.REGISTERED_ENTRIES as {
 			code: string;
@@ -208,8 +205,16 @@ describe("TC-690..697 the closed generator diagnostic registry", () => {
 		}[];
 		expect(entries.length).toBeGreaterThan(0);
 		for (const entry of entries) {
-			expect(entry.code).toMatch(/^agent-ix\.rust-backend\.[A-Z][A-Z0-9_]+$/);
-			expect(entry.owner).toBe(ix("agent-ix/filament-core-data/rust-backend"));
+			expect(entry.code).toMatch(
+				/^agent-ix\.(rust-backend|semantic-ir)\.[A-Z][A-Z0-9_]+$/,
+			);
+			// The owner follows the namespace. Renaming an owner is renaming a
+			// code, and the published `agent-ix.semantic-ir.*` set owns its own.
+			expect(entry.owner).toBe(
+				entry.code.startsWith("agent-ix.rust-backend.")
+					? ix("agent-ix/filament-core-data/rust-backend")
+					: ix("agent-ix/filament-core-data/semantic-ir"),
+			);
 			expect(entry.rule.length).toBeGreaterThan(0);
 			expect(Object.isFrozen(entry)).toBe(true);
 			// A blocking advisory or a non-blocking error is a contradiction the
@@ -231,20 +236,31 @@ describe("TC-690..697 the closed generator diagnostic registry", () => {
 	});
 
 	/** Traces: TC-691; FR-058-AC-2, FR-058-CON-1. */
-	it("TC-691 no live generator path spells a code as a string literal", () => {
+	it("TC-691 no live generator path constructs a diagnostic from a string", () => {
+		// The property is that a code is addressed as a registry member and never
+		// spelled. Forbidding the *text* of a code anywhere would also forbid
+		// naming one in the documentation the emitter writes into the generated
+		// crate — prose about a refusal rather than a construction of one — and a
+		// gate that cannot tell those apart is measuring the wrong thing.
 		const directory = resolve(root, "src/compiler/backends/rust-serde");
-		if (!existsSync(directory)) return expect(existsSync(directory)).toBe(true);
+		expect(existsSync(directory)).toBe(true);
+		const construction = new RegExp(
+			`diagnostic\\(\\s*[${DOUBLE}${SINGLE}${BACKTICK}]`,
+		);
+		let scanned = 0;
 		for (const name of readdirSync(directory)) {
-			if (!name.endsWith(".mjs") || name === "diagnostics.mjs") continue;
+			if (!name.endsWith(".mjs")) continue;
 			const source = read(resolve(directory, name))
 				.split("\n")
 				.filter((line) => !COMMENT_LINE.test(line))
 				.join("\n");
 			expect(
 				source,
-				`${name} spells a diagnostic code as a literal`,
-			).not.toMatch(CODE_AS_LITERAL);
+				`${name} constructs a diagnostic from a string literal`,
+			).not.toMatch(construction);
+			scanned += 1;
 		}
+		expect(scanned).toBeGreaterThan(5);
 	});
 
 	/** Traces: TC-696; FR-058-AC-7..FR-058-AC-9, FR-058-CON-3. */
@@ -303,6 +319,180 @@ describe("TC-690..697 the closed generator diagnostic registry", () => {
 		expect(
 			[...module.fragment(astral)].every((point: string) => point !== "\uD83D"),
 		).toBe(true);
+	});
+});
+
+describe("TC-655, TC-697 the published tables and the closed code sets", () => {
+	/** Traces: TC-655; FR-054-AC-11, FR-054-CON-1. */
+	it("TC-655 the mapping table, the requirement's tables and the rendered page agree", () => {
+		// Parsed from the requirement's own markdown rather than eyeballed, so a
+		// row added to one and not the other fails here rather than in review.
+		const requirement = read(
+			resolve(
+				root,
+				"spec/functional/FR-054-map-the-semantic-ir-to-rust-serde-declarations.md",
+			),
+		);
+		const table = readJson(
+			resolve(root, "src/compiler/backends/rust-serde/mapping-table.json"),
+		) as {
+			rows: {
+				rowKey: string;
+				axis: string;
+				selector: string;
+				rustForm: string;
+			}[];
+		};
+		const rendered = read(
+			resolve(root, "docs/semantic-data-system/rust-backend.md"),
+		);
+
+		const declaredKinds = [
+			"scalar",
+			"record",
+			"enum",
+			"union",
+			"alias",
+			"sequence",
+			"map",
+			"reference",
+		];
+		const declaredScalars = [
+			"boolean",
+			"integer",
+			"number",
+			"string",
+			"bytes",
+			"date",
+			"datetime",
+			"duration",
+			"uuid",
+		];
+		const kindRows = table.rows
+			.filter((row) => row.axis === "kind")
+			.map((row) => row.selector);
+		expect(kindRows.sort()).toEqual([...declaredKinds].sort());
+		const scalarRows = table.rows
+			.filter((row) => row.axis === "scalar")
+			.map((row) => row.selector);
+		expect(scalarRows.sort()).toEqual([...declaredScalars].sort());
+
+		// Selector agreement is checked where a selector is contract vocabulary —
+		// the kind and scalar axes. The field-axis rows are keyed by a composite
+		// of three axis values, which the requirement writes as three table
+		// columns rather than as one token, so they are checked by shape below.
+		for (const row of table.rows.filter(
+			(one) => one.axis === "kind" || one.axis === "scalar",
+		)) {
+			expect(
+				requirement.includes(row.selector),
+				`mapping row ${row.rowKey} is in no requirement table`,
+			).toBe(true);
+			expect(
+				rendered.includes(row.selector),
+				`mapping row ${row.rowKey} is not rendered`,
+			).toBe(true);
+		}
+		// Every row, whatever its axis, reaches the rendered page.
+		for (const row of table.rows) {
+			expect(
+				rendered.includes(row.rowKey) || rendered.includes(row.selector),
+				`mapping row ${row.rowKey} is not rendered`,
+			).toBe(true);
+		}
+		// And the eight field-axis combinations are all present and distinct.
+		const axisRows = table.rows.filter((row) =>
+			/^field:(single|collection)\/(non-null|nullable)\/(required|optional)$/.test(
+				row.rowKey,
+			),
+		);
+		expect(axisRows).toHaveLength(8);
+		expect(new Set(axisRows.map((row) => row.rustForm)).size).toBe(8);
+	});
+
+	/** Traces: TC-697; FR-058-AC-10, FR-058-CON-5. */
+	it("TC-697 every code named anywhere in the bundle is in one of the two declared sets", async () => {
+		const module = await import(
+			"../src/compiler/backends/rust-serde/diagnostics.mjs"
+		);
+		const generator = new Set(
+			(module.REGISTERED_ENTRIES as readonly { code: string }[]).map(
+				(entry) => entry.code.split(".").at(-1) as string,
+			),
+		);
+		const reader = new Set(
+			(
+				readJson(resolve(root, "conformance/diagnostic-codes.json")) as {
+					codes: { code: string }[];
+				}
+			).codes.map((entry) => entry.code.split(".").at(-1) as string),
+		);
+
+		// Two precise populations, not a scan for shouty tokens. The first is
+		// every fully-qualified code this ticket's requirements name; the second
+		// is every backticked leaf inside this ticket's own error-path rows. A
+		// loose scan would sweep up the identity constants FR-056 declares and
+		// the merged tickets' codes, and a gate that has to exempt fifty tokens
+		// is not measuring anything.
+		const requirements = readdirSync(resolve(root, "spec/functional"))
+			.filter((name) => /^FR-0(5[4-9]|6[0-2])-/.test(name))
+			.map((name) => read(resolve(root, "spec/functional", name)))
+			.join("\n");
+		const matrix = read(resolve(root, "spec/tests.md"));
+		const errRows = matrix
+			.split("\n")
+			.filter((line) => /^\| ERR-1(1[4-9]|2[0-9]|3[01]) \|/.test(line))
+			.join("\n");
+		expect(errRows.split("\n")).toHaveLength(18);
+
+		const qualified = [
+			...`${requirements}\n${errRows}`.matchAll(
+				/agent-ix\.(rust-backend|semantic-ir)\.([A-Z][A-Z0-9_]+)/g,
+			),
+		];
+		for (const [, namespace, leaf] of qualified) {
+			const set = namespace === "rust-backend" ? generator : reader;
+			expect(set.has(leaf), `${namespace}.${leaf} is in no closed set`).toBe(
+				true,
+			);
+		}
+		const bare = [...errRows.matchAll(/`([A-Z][A-Z0-9_]{4,})`/g)].map(
+			(match) => match[1],
+		);
+		expect(bare.length).toBeGreaterThan(10);
+		for (const leaf of bare) {
+			expect(
+				generator.has(leaf) || reader.has(leaf),
+				`${leaf} is named by an error-path row and registered nowhere`,
+			).toBe(true);
+		}
+		// One defect, one code, one namespace. The generator's own namespace must
+		// not restate a published code, and every published spelling it carries
+		// must be one the published set actually declares — not an invented code
+		// wearing a borrowed prefix.
+		const generatorOwn = new Set(
+			(module.REGISTERED_ENTRIES as readonly { code: string }[])
+				.filter((entry) => entry.code.startsWith("agent-ix.rust-backend."))
+				.map((entry) => entry.code.split(".").at(-1) as string),
+		);
+		const generatorPublished = new Set(
+			(module.REGISTERED_ENTRIES as readonly { code: string }[])
+				.filter((entry) => entry.code.startsWith("agent-ix.semantic-ir."))
+				.map((entry) => entry.code.split(".").at(-1) as string),
+		);
+		const restated = [...generatorOwn].filter((leaf) => reader.has(leaf));
+		expect(
+			restated,
+			`the generator mints a second spelling for: ${restated.join(", ")}`,
+		).toEqual([]);
+		const invented = [...generatorPublished].filter(
+			(leaf) => !reader.has(leaf),
+		);
+		expect(
+			invented,
+			`carried as published but declared nowhere: ${invented.join(", ")}`,
+		).toEqual([]);
+		expect(generatorPublished.size).toBeGreaterThan(0);
 	});
 });
 

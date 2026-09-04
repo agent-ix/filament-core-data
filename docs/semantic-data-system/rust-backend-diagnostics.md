@@ -29,20 +29,20 @@ input.
 | `agent-ix.rust-backend.UNDECLARED_WIRE_FORM` | error | yes | a construct's JSON wire form is declared by no published artifact — the bytes kernel scalar at this revision |
 | `agent-ix.rust-backend.UNSUPPORTED_MULTIPLICITY` | error | yes | a field's multiplicity.upper is 0, so the member may never be present and has no Rust form that serde round-trips |
 | `agent-ix.rust-backend.PAYLOAD_ON_ENUM_VARIANT` | error | yes | a kind: "enum" variant carries a payloadType, which the schema permits and no contract rule reconciles with the kind |
-| `agent-ix.rust-backend.CONSTRAINT_NOT_APPLICABLE` | error | yes | a constraint keyword does not apply to its resolved subject |
 | `agent-ix.rust-backend.UNORDERED_SUBJECT` | error | yes | a bound keyword names a subject the contract does not order — an ISO 8601 duration at this revision |
-| `agent-ix.rust-backend.INVALID_OPERAND` | error | yes | an operand's JSON type is not one the subject's Rust type admits |
 | `agent-ix.rust-backend.INVALID_DEFAULT_VALUE` | error | yes | a defaultValue is not a value the field's mapped Rust type admits |
 | `agent-ix.rust-backend.UNKNOWN_FORMAT` | error | yes | a format operand names a format the generated registry does not carry |
 | `agent-ix.rust-backend.UNRENDERABLE_NAME` | error | yes | a name derives no legal Rust identifier, and the backend refuses rather than dropping the characters it cannot carry |
 | `agent-ix.rust-backend.NAME_COLLISION` | error | yes | two semantic identities derive one identifier in one declared scope |
-| `agent-ix.rust-backend.V1_1_NODE_IN_V1_0` | error | yes | a 1.0.0 document carries a 1.1.0 node |
-| `agent-ix.rust-backend.UNRESOLVED_TYPE_REF` | error | yes | a typeRef, appliesTo, items, values, payloadType or target resolves to nothing |
 | `agent-ix.rust-backend.UNSAFE_OUTPUT_ROOT` | error | yes | the request's outputRoot is not traversal-free under the intended-language predicate |
-| `agent-ix.rust-backend.UNDECLARED_LOSS` | error | yes | the backend would drop a construct the profile does not list in allowedOmissions |
 | `agent-ix.rust-backend.LIMIT_EXCEEDED` | error | yes | an input exceeds one of the five declared limits; the message names which |
 | `agent-ix.rust-backend.DECLARED_LOSS` | warning | no | the backend drops a construct the profile lists in allowedOmissions |
 | `agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED` | warning | no | a record whose unknownPolicy is surface retained an unknown member at runtime |
 | `agent-ix.rust-backend.DIAGNOSTIC_LIMIT_REACHED` | warning | no | the diagnostic count reached the request's maxDiagnostics |
+| `agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE` | error | yes | a constraint keyword does not apply to its resolved subject |
+| `agent-ix.semantic-ir.INVALID_OPERAND` | error | yes | an operand's JSON type is not one the subject's Rust type admits |
+| `agent-ix.semantic-ir.V1_1_NODE_IN_V1_0` | error | yes | a 1.0.0 document carries a 1.1.0 node |
+| `agent-ix.semantic-ir.UNRESOLVED_TYPE_REF` | error | yes | a typeRef, appliesTo, items, values, payloadType or target resolves to nothing |
+| `agent-ix.semantic-ir.UNDECLARED_LOSS` | error | yes | the backend would drop a construct the profile does not list in allowedOmissions |
 
 Owner of every code: `ix://agent-ix/filament-core-data/rust-backend`.

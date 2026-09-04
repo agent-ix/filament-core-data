@@ -9,7 +9,7 @@ status: normative
 # Rust/Serde backend mapping and declared decisions
 
 Rendered from `src/compiler/backends/rust-serde/mapping-table.json`, which is
-the single machine-readable mapping table. 45 rows across
+the single machine-readable mapping table. 47 rows across
 8 axes. A construct that selects no row and no named refusal is an
 `agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT`; the mapping is total by
 construction, not by claim.
@@ -64,8 +64,10 @@ construction, not by claim.
 | `[object Object]` | `pub struct N { .. }` | `deny_unknown_fields` | serde refuses an unknown member at the boundary | — |
 | `[object Object]` | `UnknownMembers` | `flatten` | one flattened BTreeMap<String, SemanticValue> member; validate returns no diagnostic | — |
 | `[object Object]` | `UnknownMembers` | `flatten` | one flattened BTreeMap<String, SemanticValue> member; validate returns one UNKNOWN_MEMBER_SURFACED per retained member | `agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED` |
-| `[object Object]` | `null` | — | refused: only a record has a place to put a retained member | `agent-ix.rust-backend.UNKNOWN_POLICY_ON_NON_RECORD` |
-| `[object Object]` | `null` | — | no emitted attribute; a non-record kind carries no member set to reject into | — |
+| `[object Object]` | `pub enum N { .. }` | — | serde's own default, under which an unrecognised variant is a deserialization error | — |
+| `[object Object]` | `a generated catch-all variant Unknown(String) on an enum, Unknown(UnknownVariant) on a union` | — | a hand-written Serialize and Deserialize that keep the unrecognised tag and, for a union, its payload as a SemanticValue, and round-trip unchanged; validate returns no diagnostic | — |
+| `[object Object]` | `a generated catch-all variant Unknown(String) on an enum, Unknown(UnknownVariant) on a union` | — | as preserve, and validate returns one UNKNOWN_MEMBER_SURFACED for an unrecognised variant | `agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED` |
+| `[object Object]` | `null` | — | inert: a scalar has no members, a sequence and a map admit every element and every key by construction, and an alias and a reference are transparent. The declared value is carried verbatim into the type's metadata constant and stated inert in the generated documentation; it is never dropped and never refused | — |
 
 ### defaultKind
 

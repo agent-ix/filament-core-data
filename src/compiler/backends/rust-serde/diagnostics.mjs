@@ -22,6 +22,7 @@
  */
 
 const OWNER = "ix://agent-ix/filament-core-data/rust-backend";
+const READER_OWNER = "ix://agent-ix/filament-core-data/semantic-ir";
 
 /** `error` + blocking: the generator writes no file. */
 function blocking(rule) {
@@ -57,14 +58,8 @@ const DECLARED = {
 	PAYLOAD_ON_ENUM_VARIANT: blocking(
 		'a kind: "enum" variant carries a payloadType, which the schema permits and no contract rule reconciles with the kind',
 	),
-	CONSTRAINT_NOT_APPLICABLE: blocking(
-		"a constraint keyword does not apply to its resolved subject",
-	),
 	UNORDERED_SUBJECT: blocking(
 		"a bound keyword names a subject the contract does not order — an ISO 8601 duration at this revision",
-	),
-	INVALID_OPERAND: blocking(
-		"an operand's JSON type is not one the subject's Rust type admits",
 	),
 	INVALID_DEFAULT_VALUE: blocking(
 		"a defaultValue is not a value the field's mapped Rust type admits",
@@ -78,15 +73,8 @@ const DECLARED = {
 	NAME_COLLISION: blocking(
 		"two semantic identities derive one identifier in one declared scope",
 	),
-	V1_1_NODE_IN_V1_0: blocking("a 1.0.0 document carries a 1.1.0 node"),
-	UNRESOLVED_TYPE_REF: blocking(
-		"a typeRef, appliesTo, items, values, payloadType or target resolves to nothing",
-	),
 	UNSAFE_OUTPUT_ROOT: blocking(
 		"the request's outputRoot is not traversal-free under the intended-language predicate",
-	),
-	UNDECLARED_LOSS: blocking(
-		"the backend would drop a construct the profile does not list in allowedOmissions",
 	),
 	LIMIT_EXCEEDED: blocking(
 		"an input exceeds one of the five declared limits; the message names which",
@@ -102,12 +90,50 @@ const DECLARED = {
 	),
 };
 
+/**
+ * The published `agent-ix.semantic-ir.*` spellings, for defects in the *shape of
+ * an IR document* rather than in this backend's own mapping.
+ *
+ * `conformance/diagnostic-codes.json` already fixes these five, and the
+ * independent oracle decides them under exactly these codes. Minting a second
+ * `agent-ix.rust-backend.*` spelling for the same defect is the
+ * two-namespaces-for-one-defect problem SR-066 FND-500 raised against the
+ * compiler, which FR-049 fixed by registering both sets explicitly. This file
+ * takes the same resolution: one code per defect, in the namespace that owns it.
+ * A gate asserts the two leaf sets stay disjoint, so the collision cannot come
+ * back unnoticed.
+ */
+const IR_SHAPE = {
+	CONSTRAINT_NOT_APPLICABLE: blocking(
+		"a constraint keyword does not apply to its resolved subject",
+	),
+	INVALID_OPERAND: blocking(
+		"an operand's JSON type is not one the subject's Rust type admits",
+	),
+	V1_1_NODE_IN_V1_0: blocking("a 1.0.0 document carries a 1.1.0 node"),
+	UNRESOLVED_TYPE_REF: blocking(
+		"a typeRef, appliesTo, items, values, payloadType or target resolves to nothing",
+	),
+	UNDECLARED_LOSS: blocking(
+		"the backend would drop a construct the profile does not list in allowedOmissions",
+	),
+};
+
 function buildRegistry() {
 	const registry = {};
 	for (const [name, entry] of Object.entries(DECLARED)) {
 		registry[name] = Object.freeze({
 			code: `agent-ix.rust-backend.${name}`,
 			...entry,
+		});
+	}
+	for (const [name, entry] of Object.entries(IR_SHAPE)) {
+		registry[name] = Object.freeze({
+			code: `agent-ix.semantic-ir.${name}`,
+			...entry,
+			// The published set owns these codes, so it owns their owner too.
+			// Renaming an owner is renaming a code.
+			owner: READER_OWNER,
 		});
 	}
 	// Deeply frozen. Freezing only the outer record leaves every entry mutable,
