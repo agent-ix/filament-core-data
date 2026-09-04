@@ -1,0 +1,83 @@
+{
+	"contractVersion": "1.0.0",
+	"requestFingerprint": "sha256:0d457cfc29a125b2d81ddf13abf39a261e602a499a13233625dab14f33149286",
+	"backend": "ix://agent-ix/filament-core-data/backend/typescript",
+	"state": "success",
+	"files": [
+		{
+			"path": "LICENSE",
+			"digest": "sha256:0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+			"mediaType": "text/plain",
+			"semanticIdentities": [
+				"ix://agent-ix/conformance"
+			]
+		},
+		{
+			"path": "errors.ts",
+			"digest": "sha256:0887a7924ff6fb5e407dedf275be7adc57e3be39da818715afa3db3ab95fc8ba",
+			"mediaType": "text/typescript",
+			"semanticIdentities": [
+				"ix://agent-ix/conformance"
+			]
+		},
+		{
+			"path": "identity.ts",
+			"digest": "sha256:884db6f71b630f751baf8f0d5d36770a00c00556b014f4ce827d11d66e92e314",
+			"mediaType": "text/typescript",
+			"semanticIdentities": [
+				"ix://agent-ix/conformance"
+			]
+		},
+		{
+			"path": "index.ts",
+			"digest": "sha256:6db0cfbf7a17edc326baf9549173cf931f2d5feed57d0ec41f4b349c9f4b6553",
+			"mediaType": "text/typescript",
+			"semanticIdentities": [
+				"ix://agent-ix/conformance"
+			]
+		},
+		{
+			"path": "metadata.ts",
+			"digest": "sha256:c8ed55cc7cfa8799b87d38b8191bc50761bfd2a0f73b0e5bff21f445f0388dea",
+			"mediaType": "text/typescript",
+			"semanticIdentities": [
+				"ix://agent-ix/conformance"
+			]
+		},
+		{
+			"path": "package.json",
+			"digest": "sha256:b25f98fd75292fc8453c73d8781d00f94a4b24ebafe477c1119eb16648c84965",
+			"mediaType": "application/json",
+			"semanticIdentities": [
+				"ix://agent-ix/conformance"
+			]
+		},
+		{
+			"path": "types.ts",
+			"digest": "sha256:f97061c2e47dc3961c700a32afab94756d5611d8ca7a1652d6e2c3db43247f48",
+			"mediaType": "text/typescript",
+			"semanticIdentities": [
+				"ix://agent-ix/conformance/type/Count",
+				"ix://agent-ix/conformance/type/Millis",
+				"ix://agent-ix/conformance/type/Node",
+				"ix://agent-ix/conformance/type/NodeRef",
+				"ix://agent-ix/conformance/type/Payload",
+				"ix://agent-ix/conformance/type/Root",
+				"ix://agent-ix/conformance/type/Status",
+				"ix://agent-ix/conformance/type/Text",
+				"ix://agent-ix/conformance/type/TextList",
+				"ix://agent-ix/conformance/type/TextMap"
+			]
+		},
+		{
+			"path": "validators.ts",
+			"digest": "sha256:eb62ce6be3b0f7698841eac902994ee6f116ac6895146f1a975d81dec6c4c3fb",
+			"mediaType": "text/typescript",
+			"semanticIdentities": [
+				"ix://agent-ix/conformance"
+			]
+		}
+	],
+	"diagnostics": [],
+	"normalizedFingerprint": "sha256:e2f0f9228011b4d10fac90ac6835f823bc07ba556c2ad532ba5e1a0327d7380a"
+}
