@@ -35,6 +35,10 @@ const generator = resolve(root, "src/compiler/cli.mjs");
 const fixtureIr = resolve(fixture, "input/semantic-ir.json");
 const instances = resolve(fixture, "instances");
 const SLASH = "/";
+// Built rather than written as a literal: a regex literal carrying a double
+// quote defeats the trace binder's TypeScript brace scanner, and an unreadable
+// file binds no row at all.
+const RELATIVE_IMPORT = new RegExp('from "([^"]+)"', "g");
 const IDENTITY_PREFIX = ["ix:", SLASH, SLASH].join("");
 const NFR025_SENTINELS = [
 	"plan/Plan-011-typescript-backend/plan.md",
@@ -291,7 +295,7 @@ async function generatedValidators(ir: string, directory: string) {
 }
 
 describe("TypeScript backend fixture (FR-071)", () => {
-	it("generates byte-identically across directories and C/Turkish locales", () => {
+	it("TC-834 generates byte-identically across directories and C/Turkish locales", () => {
 		const scratch = mkdtempSync(
 			resolve(tmpdir(), "fcd-typescript-determinism-"),
 		);
@@ -310,7 +314,8 @@ describe("TypeScript backend fixture (FR-071)", () => {
 		}
 	});
 
-	it("keeps generated source self-contained, licensed, and dependency-free", () => {
+	// TC-770
+	it("TC-836 keeps generated source self-contained, licensed, and dependency-free", () => {
 		const files = fixtureFiles(expected);
 		const manifest = JSON.parse(
 			readFileSync(resolve(expected, "package.json"), "utf8"),
@@ -326,7 +331,7 @@ describe("TypeScript backend fixture (FR-071)", () => {
 			path.endsWith(".ts"),
 		)) {
 			expect(text, path).toContain("SPDX-License-Identifier: AGPL-3.0-only");
-			for (const match of text.matchAll(/from "([^"]+)"/g)) {
+			for (const match of text.matchAll(RELATIVE_IMPORT)) {
 				expect(match[1], `${path} imports ${match[1]}`).toMatch(/^\./);
 			}
 			expect(text, path).not.toContain("@ts-expect-error");
@@ -405,7 +410,7 @@ describe("TypeScript backend fixture (FR-071)", () => {
 		);
 	});
 
-	it("preserves the fixture's identity and metadata surface without retaining validators", () => {
+	it("TC-787 preserves the fixture's identity and metadata surface without retaining validators", () => {
 		const identity = readFileSync(resolve(expected, "identity.ts"), "utf8");
 		const metadata = readFileSync(resolve(expected, "metadata.ts"), "utf8");
 		const ir = JSON.parse(readFileSync(fixtureIr, "utf8")) as {
@@ -432,7 +437,7 @@ describe("TypeScript backend fixture (FR-071)", () => {
 		expect(metadata).not.toMatch(/from "\.\/validators\.js"/);
 	});
 
-	it("audits every identity-bearing model node and rejects a seeded dropped node", () => {
+	it("TC-787 audits every identity-bearing model node and rejects a seeded dropped node", () => {
 		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-typescript-audit-"));
 		const model = buildModel(JSON.parse(readFileSync(fixtureIr, "utf8")), {
 			backendIdentity: "test",
@@ -464,7 +469,7 @@ describe("TypeScript backend fixture (FR-071)", () => {
 		}
 	});
 
-	it("executes every authored runtime-validator case without blessing output", async () => {
+	it("TC-777 executes every authored runtime-validator case without blessing output", async () => {
 		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-typescript-instances-"));
 		try {
 			const corpora = readdirSync(instances)
@@ -633,7 +638,7 @@ async function classifierUnder(setting: string): Promise<{
 
 describe("TC-811 IR-surface classification rules (FR-069)", () => {
 	/** Traces: TC-811; FR-069-AC-17. */
-	it("classifies every removal and required addition breaking", () => {
+	it("TC-811 classifies every removal and required addition breaking", () => {
 		const removedField = classifierBase();
 		(removedField.types as Record<string, unknown>[])[1].fields = [];
 		expect(classifySurface(classifierBase(), removedField).classification).toBe(
@@ -756,8 +761,8 @@ describe("TC-811 IR-surface classification rules (FR-069)", () => {
 });
 
 describe("TC-834..844 TypeScript backend non-disruption", () => {
-	/** Traces: TC-835; NFR-024-AC-5. */
-	it("produces identical packed artifacts after normalizing tar ownership and time", () => {
+	/** TC-835: NFR-024-AC-4. Bound by the leading id of the test name. */
+	it("TC-835 produces identical packed artifacts after normalizing tar ownership and time", () => {
 		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-typescript-pack-"));
 		try {
 			const pack = (directory: string): Buffer => {
@@ -783,8 +788,8 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 		}
 	});
 
-	/** Traces: TC-834; NFR-024-AC-1..NFR-024-AC-4. */
-	it("keeps generated source hermetic, licensed, and formatter-stable", () => {
+	/** TC-837: NFR-024-AC-7..NFR-024-AC-9, and the formatter no-op of NFR-024-AC-12. */
+	it("TC-837 keeps generated source hermetic, licensed, and formatter-stable", () => {
 		for (const { path, text } of fixtureFiles(expected).filter((file) =>
 			file.path.endsWith(".ts"),
 		)) {
@@ -838,7 +843,7 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 		}
 	});
 
-	/** Traces: TC-842; NFR-025-AC-8, NFR-025-AC-14. */
+	/** Part of TC-843 (NFR-025-AC-8, NFR-025-AC-14); the corpus half of that row has no test, so the row is not bound. */
 	it("ships compiler source but neither fixtures nor a generated package", () => {
 		const packed = JSON.parse(
 			execFileSync("npm", ["pack", "--dry-run", "--json"], {
@@ -856,8 +861,8 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 		expect(JSON.stringify(manifest.exports)).not.toContain("src/compiler");
 	});
 
-	/** Traces: TC-838; NFR-025-AC-1, NFR-025-AC-4, NFR-025-AC-7. */
-	it("pins #22's changed set to history and permits every one of its paths", () => {
+	/** TC-839: NFR-025-AC-1. Bound by the leading id of the test name. */
+	it("TC-839 pins #22's changed set to history and permits every one of its paths", () => {
 		const { base, tip } = changeRange(root, NFR025_SENTINELS);
 		expect(base).toMatch(/^[0-9a-f]{40}$/);
 		expect(tip).toMatch(/^[0-9a-f]{40}$/);
@@ -880,8 +885,8 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 			expect(paths).not.toContain(path);
 	});
 
-	/** Traces: TC-839; NFR-025-AC-3, NFR-025-AC-12, NFR-025-AC-13. */
-	it("keeps package metadata, divergences, and the narrow tsconfig edit unchanged", () => {
+	/** TC-841: NFR-025-AC-3, NFR-025-AC-4, NFR-025-AC-13. Bound by the leading id of the test name. */
+	it("TC-841 keeps package metadata, divergences, and the narrow tsconfig edit unchanged", () => {
 		const { base, tip } = changeRange(root, NFR025_SENTINELS);
 		const at = (commit: string, path: string): string =>
 			execFileSync("git", ["show", `${commit}:${path}`], {
@@ -933,7 +938,7 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 		expect(stripped(current)).toEqual(stripped(prior));
 	});
 
-	/** Traces: TC-840; NFR-025-AC-5. */
+	/** Part of TC-842 (NFR-025-AC-5); the frozen-golden half of that row has no test, so the row is not bound. */
 	it("keeps the narrow compiler surface at fifteen exports", () => {
 		const names = exportedCompilerSymbols(
 			readFileSync(resolve(root, "src/compiler/index.mjs"), "utf8"),
@@ -947,7 +952,7 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 		).toHaveLength(3);
 	});
 
-	/** Traces: TC-843; NFR-025-AC-2, NFR-025-AC-11, NFR-025-AC-15. */
+	/** Part of TC-840 (NFR-025-AC-2); the other two clauses of that row have no test, so the row is not bound. */
 	it("does not accrete later sibling paths in a squash-merge history", () => {
 		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-typescript-accretion-"));
 		try {
