@@ -2,7 +2,7 @@
 id: Task-049
 title: "Base bundles, the patch dialect, the manifest, and digests"
 type: Task
-status: pending
+status: done
 track: A
 priority: P0
 relationships:
@@ -39,11 +39,11 @@ Land the shared base bundles, the RFC 6902 patch dialect with the `x-repeat` ext
 
 ## Subtasks
 
-- [ ] Author the base bundles under `conformance/bases/` and prove each validates and yields zero oracle diagnostics.
-- [ ] Implement `applyPatch` with `add`, `remove`, `replace`, `copy`, `move`, `test`, and `x-repeat`, failing loudly on an unresolvable path or a failed `test`.
-- [ ] Implement the corpus manifest builder: per-case and per-base raw-byte digests, `corpusDigest`, and the case index in a fixed order.
-- [ ] Implement the corpus gates: minimization budget, `test`-op rule, blessing ban, provenance quote check, id pattern, family directory, defect-case deletion, and the SemVer bump rule.
-- [ ] Prove a flipped byte in one case file fails and names that file.
+- [x] Author the base bundles under `conformance/bases/` and prove each validates and yields zero oracle diagnostics.
+- [x] Implement `applyPatch` with `add`, `remove`, `replace`, `copy`, `move`, `test`, and `x-repeat`, failing loudly on an unresolvable path or a failed `test`.
+- [x] Implement the corpus manifest builder: per-case and per-base raw-byte digests, `corpusDigest`, and the case index in a fixed order.
+- [x] Implement the corpus gates: minimization budget, `test`-op rule, blessing ban, provenance quote check, id pattern, family directory, defect-case deletion, and the SemVer bump rule.
+- [x] Prove a flipped byte in one case file fails and names that file.
 
 ## Deliverables
 

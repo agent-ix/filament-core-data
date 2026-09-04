@@ -35,21 +35,21 @@ independently of #19's implementer.
 
 ### Stakeholder and User Requirements
 
-- [ ] **StR-001:** Keep the semantic contract governed by evidence a reviewer can check without running the thing being judged.
-- [ ] **US-008:** Let a reviewer judge the compiler and its backends against a contract-derived corpus rather than against their own output.
+- [x] **StR-001:** Keep the semantic contract governed by evidence a reviewer can check without running the thing being judged.
+- [x] **US-008:** Let a reviewer judge the compiler and its backends against a contract-derived corpus rather than against their own output.
 
 ### Functional Requirements
 
-- [ ] **FR-035:** Versioned corpus under `conformance/`: input bundles, base-plus-patch cases, contract-cited provenance, raw-byte digests, minimization budget, SemVer rules.
-- [ ] **FR-036:** Independent oracle: pinned schema layer with the deepest-location collapse rule, cross-field rules, package-context rules, the diagnostic-code register, exhaustive `resultState`, IR-surface compatibility classification, cycle-before-depth, and no import of a judged implementation.
-- [ ] **FR-037:** Differential harness: adapter registry with four declared slots, `caseDigest` binding, oracle-only comparison, declared `unsupported` and `unavailable`, divergence register with owner and verdict, clock-free report, separate audit target.
-- [ ] **FR-038:** Construct register of 22 families with four case classes per row or a justified `notApplicable`, the six package negatives, the four presence/nullability combinations, recursion and cycles, the defect register, and the unmet serialization area.
-- [ ] **FR-039:** Generated coverage account, proposed promotion thresholds, committed mutation catalogue, and the import API — with no change to the published package surface.
+- [x] **FR-035:** Versioned corpus under `conformance/`: input bundles, base-plus-patch cases, contract-cited provenance, raw-byte digests, minimization budget, SemVer rules.
+- [x] **FR-036:** Independent oracle: pinned schema layer with the deepest-location collapse rule, cross-field rules, package-context rules, the diagnostic-code register, exhaustive `resultState`, IR-surface compatibility classification, cycle-before-depth, and no import of a judged implementation.
+- [x] **FR-037:** Differential harness: adapter registry with four declared slots, `caseDigest` binding, oracle-only comparison, declared `unsupported` and `unavailable`, divergence register with owner and verdict, clock-free report, separate audit target.
+- [x] **FR-038:** Construct register of 22 families with four case classes per row or a justified `notApplicable`, the six package negatives, the four presence/nullability combinations, recursion and cycles, the defect register, and the unmet serialization area.
+- [x] **FR-039:** Generated coverage account, proposed promotion thresholds, committed mutation catalogue, and the import API — with no change to the published package surface.
 
 ### Non-Functional Requirements
 
-- [ ] **NFR-015:** No expectation blessed from a run; byte-identical verdicts, reports, and coverage across runs, locales, and working directories; disagreements recorded, never absorbed.
-- [ ] **NFR-016:** Everything the corpus owns lives under `conformance/`; no change to `spikes/`, `src/`, `packages/`, `schema/`, `fixtures/`, `docs/`, `.github/`, either lockfile, or the package surface.
+- [x] **NFR-015:** No expectation blessed from a run; byte-identical verdicts, reports, and coverage across runs, locales, and working directories; disagreements recorded, never absorbed.
+- [x] **NFR-016:** Everything the corpus owns lives under `conformance/`; no change to `spikes/`, `src/`, `packages/`, `schema/`, `fixtures/`, `docs/`, `.github/`, either lockfile, or the package surface.
 
 ## Dependency Graph
 
@@ -95,13 +95,13 @@ two suites; the Python suite reads the same JSON with the already-pinned
 
 ## Test Plan
 
-- [ ] **TC-338..341:** changed-path gate, manifest diff, offline run, publication analysis.
-- [ ] **TC-280..289:** case, base, and manifest schemas; provenance quotes; digests; blessing ban; minimization budget; `test`-op rule; deletion and versioning gates; diagnostic shape; id, pattern, and directory rules.
-- [ ] **TC-290..301:** oracle verdict equality, determinism and locale, cycle before depth, five distinct codes, import and effect analysis, `1.0.0` normalization, compatibility classification, published diagnostic shape, package-context rules, schema-layer collapse, code register, non-bundle input.
-- [ ] **TC-302..313:** harness exit, seeded divergences, agreeing-but-wrong adapters, unmet rows, register reproduction and audit, report determinism, adapter failure, declared `unsupported`, runner source analysis, `caseDigest` binding, pointer compatibility, registry slots.
-- [ ] **TC-314..323:** class coverage, the six package negatives, presence and nullability, recursion and cycles, the defect register, deciding layers, union payloads, evolution cases, register sources and #19 criteria, the unmet serialization area.
-- [ ] **TC-324..332:** coverage regeneration, thresholds, mutation catalogue, import API, unknown id, registry and threshold mismatch, package surface, coverage determinism.
-- [ ] **TC-333..337:** provenance, cross-run determinism, import and effect analysis, register inspection, expectation-change rule.
+- [x] **TC-338..341:** changed-path gate, manifest diff, offline run, publication analysis.
+- [x] **TC-280..289:** case, base, and manifest schemas; provenance quotes; digests; blessing ban; minimization budget; `test`-op rule; deletion and versioning gates; diagnostic shape; id, pattern, and directory rules.
+- [x] **TC-290..301:** oracle verdict equality, determinism and locale, cycle before depth, five distinct codes, import and effect analysis, `1.0.0` normalization, compatibility classification, published diagnostic shape, package-context rules, schema-layer collapse, code register, non-bundle input.
+- [x] **TC-302..313:** harness exit, seeded divergences, agreeing-but-wrong adapters, unmet rows, register reproduction and audit, report determinism, adapter failure, declared `unsupported`, runner source analysis, `caseDigest` binding, pointer compatibility, registry slots.
+- [x] **TC-314..323:** class coverage, the six package negatives, presence and nullability, recursion and cycles, the defect register, deciding layers, union payloads, evolution cases, register sources and #19 criteria, the unmet serialization area.
+- [x] **TC-324..332:** coverage regeneration, thresholds, mutation catalogue, import API, unknown id, registry and threshold mismatch, package surface, coverage determinism.
+- [x] **TC-333..337:** provenance, cross-run determinism, import and effect analysis, register inspection, expectation-change rule.
 
 ### Entrance Criteria
 
@@ -150,15 +150,15 @@ time ->  Task-048 -> Task-049 -> Task-050 -> Task-051 --\
 
 | Task | Track | Owns (references) | Verified by (verifies) | Status |
 |---|---|---|---|---|
-| Task-048 | A | NFR-016 | TC-338..341 | pending |
-| Task-049 | A | FR-035 | TC-280..289 | pending |
-| Task-050 | A | FR-036 | TC-290..301 | pending |
-| Task-051 | B | FR-038 | TC-314, TC-316, TC-317, TC-319, TC-320, TC-322 | pending |
-| Task-052 | B | FR-038, NFR-015 | TC-315, TC-318, TC-321, TC-323, TC-336, TC-337 | pending |
-| Task-053 | C | FR-037 | TC-302..313 | pending |
-| Task-054 | C | FR-039 | TC-324..331 | pending |
-| Task-055 | D | NFR-015, NFR-016 | TC-291, TC-295, TC-307, TC-332..335, TC-340 | pending |
-| Task-056 | Gate | US-008 | — | pending |
+| Task-048 | A | NFR-016 | TC-338..341 | done |
+| Task-049 | A | FR-035 | TC-280..289 | done |
+| Task-050 | A | FR-036 | TC-290..301 | done |
+| Task-051 | B | FR-038 | TC-314, TC-316, TC-317, TC-319, TC-320, TC-322 | done |
+| Task-052 | B | FR-038, NFR-015 | TC-315, TC-318, TC-321, TC-323, TC-336, TC-337 | done |
+| Task-053 | C | FR-037 | TC-302..313 | done |
+| Task-054 | C | FR-039 | TC-324..331 | done |
+| Task-055 | D | NFR-015, NFR-016 | TC-291, TC-295, TC-307, TC-332..335, TC-340 | done |
+| Task-056 | Gate | US-008 | — | in progress |
 
 ## Coordination Rules
 

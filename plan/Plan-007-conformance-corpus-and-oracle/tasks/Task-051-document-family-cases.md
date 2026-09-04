@@ -2,7 +2,7 @@
 id: Task-051
 title: "Cases for the document construct families"
 type: Task
-status: pending
+status: done
 track: B
 priority: P0
 relationships:
@@ -31,11 +31,11 @@ Author the construct register and the cases for the nineteen document families, 
 
 ## Subtasks
 
-- [ ] Author the `constructRegister[]` rows for every family with sources, deciding layer, and any justified `notApplicable` class.
-- [ ] Author the `positive`, `negative`, `boundary`, and `evolution` cases for envelope, identity, scalar, alias, enum, sequence-map, union, reference, field-presence, field-default, unit, constraint, recursion, relationship, operation, clause, provenance, unknown, and extension.
-- [ ] Author the four `presence` by `nullable` combinations and prove the four normalized forms differ.
-- [ ] Author direct recursion, mutual recursion, the alias cycle, and the composite cycle.
-- [ ] Prove every register source path resolves and every case's deciding layer is the layer that decided it.
+- [x] Author the `constructRegister[]` rows for every family with sources, deciding layer, and any justified `notApplicable` class.
+- [x] Author the `positive`, `negative`, `boundary`, and `evolution` cases for envelope, identity, scalar, alias, enum, sequence-map, union, reference, field-presence, field-default, unit, constraint, recursion, relationship, operation, clause, provenance, unknown, and extension.
+- [x] Author the four `presence` by `nullable` combinations and prove the four normalized forms differ.
+- [x] Author direct recursion, mutual recursion, the alias cycle, and the composite cycle.
+- [x] Prove every register source path resolves and every case's deciding layer is the layer that decided it.
 
 ## Deliverables
 

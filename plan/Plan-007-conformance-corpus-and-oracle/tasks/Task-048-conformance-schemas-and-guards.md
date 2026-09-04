@@ -2,7 +2,7 @@
 id: Task-048
 title: "Conformance schemas, changed-path guard, and red suites"
 type: Task
-status: pending
+status: done
 track: A
 priority: P0
 relationships:
@@ -25,12 +25,12 @@ Land the conformance schema set, the isolation gates, and the two failing suites
 
 ## Subtasks
 
-- [ ] Author `conformance/schema/input-bundle.schema.json` composing `semantic-ir`, `package-manifest`, `package-lock`, `profile`, `mapping`, and `consumer-policy` by reference.
-- [ ] Author `corpus-case.schema.json`, `corpus-manifest.schema.json`, and `adapter-result.schema.json`.
-- [ ] Add `test/conformance-corpus.test.ts` and `tests/test_conformance_corpus.py` with the failing gate skeletons.
-- [ ] Add the changed-path gate asserting no branch file under the NFR-016 prohibited set and no lockfile change.
-- [ ] Add the manifest-diff gate asserting no added dependency and no `exports` or `files` entry.
-- [ ] Add the `conformance` and `conformance-audit` Make targets and the `conformance` package script.
+- [x] Author `conformance/schema/input-bundle.schema.json` composing `semantic-ir`, `package-manifest`, `package-lock`, `profile`, `mapping`, and `consumer-policy` by reference.
+- [x] Author `corpus-case.schema.json`, `corpus-manifest.schema.json`, and `adapter-result.schema.json`.
+- [x] Add `test/conformance-corpus.test.ts` and `tests/test_conformance_corpus.py` with the failing gate skeletons.
+- [x] Add the changed-path gate asserting no branch file under the NFR-016 prohibited set and no lockfile change.
+- [x] Add the manifest-diff gate asserting no added dependency and no `exports` or `files` entry.
+- [x] Add the `conformance` and `conformance-audit` Make targets and the `conformance` package script.
 
 ## Deliverables
 

@@ -2,7 +2,7 @@
 id: Task-052
 title: "Package, version, and compatibility cases and the defect registers"
 type: Task
-status: pending
+status: done
 track: B
 priority: P0
 relationships:
@@ -35,12 +35,12 @@ Author the package, version, and compatibility families, and record the defects 
 
 ## Subtasks
 
-- [ ] Author the six package negatives: unresolved import, lock package cycle, unknown mapping, duplicate identity, stale manifest digest, and undeclared loss, each at an exact source locus.
-- [ ] Author the version family: a `1.0.0` document under `1.1.0` rules and a `1.1.0` node carried by a `1.0.0` document.
-- [ ] Author the compatibility family, including the export added and removed across a package version.
-- [ ] Author `conformance/defects.json` with a row per prototype-emitter defect, its `documentExpressible` flag, and either a reproducing case or the static check that detects it.
-- [ ] Author `conformance/contract-gaps.json` for every disagreement with the published contract, including constructs the IR has no node for.
-- [ ] Record the unmet cross-language serialization area with its owning issues.
+- [x] Author the six package negatives: unresolved import, lock package cycle, unknown mapping, duplicate identity, stale manifest digest, and undeclared loss, each at an exact source locus.
+- [x] Author the version family: a `1.0.0` document under `1.1.0` rules and a `1.1.0` node carried by a `1.0.0` document.
+- [x] Author the compatibility family, including the export added and removed across a package version.
+- [x] Author `conformance/defects.json` with a row per prototype-emitter defect, its `documentExpressible` flag, and either a reproducing case or the static check that detects it.
+- [x] Author `conformance/contract-gaps.json` for every disagreement with the published contract, including constructs the IR has no node for.
+- [x] Record the unmet cross-language serialization area with its owning issues.
 
 ## Deliverables
 

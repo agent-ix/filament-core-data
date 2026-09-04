@@ -2,7 +2,7 @@
 id: Task-054
 title: "Coverage account, thresholds, mutation catalogue, and import API"
 type: Task
-status: pending
+status: done
 track: C
 priority: P0
 relationships:
@@ -39,11 +39,11 @@ Land the generated coverage account, the proposed promotion thresholds, the comm
 
 ## Subtasks
 
-- [ ] Generate `conformance/coverage.json` from the run and gate a fresh generation against the committed file.
-- [ ] Author `conformance/thresholds.json` with a `proposed` row per owning issue and gate it against the registry both ways.
-- [ ] Author `conformance/mutations.json` with at least one mutation per family and prove every mutation is detected.
-- [ ] Implement the import API with module-relative path resolution and deep-copy returns.
-- [ ] Prove `package.json` gains no `exports` and no `files` entry and that the unmet serialization area is named in the coverage account.
+- [x] Generate `conformance/coverage.json` from the run and gate a fresh generation against the committed file.
+- [x] Author `conformance/thresholds.json` with a `proposed` row per owning issue and gate it against the registry both ways.
+- [x] Author `conformance/mutations.json` with at least one mutation per family and prove every mutation is detected.
+- [x] Implement the import API with module-relative path resolution and deep-copy returns.
+- [x] Prove `package.json` gains no `exports` and no `files` entry and that the unmet serialization area is named in the coverage account.
 
 ## Deliverables
 

@@ -2,7 +2,7 @@
 id: Task-050
 title: "The independent semantic oracle"
 type: Task
-status: pending
+status: done
 track: A
 priority: P0
 relationships:
@@ -43,13 +43,13 @@ Land the oracle: the pinned schema layer with the deepest-location collapse rule
 
 ## Subtasks
 
-- [ ] Implement the schema layer over the published v1 schemas, collapsing to one diagnostic per deepest failing instance location.
-- [ ] Implement the cross-field rules and the package-context rules, each silent when its bundle member is absent.
-- [ ] Author `conformance/diagnostic-codes.json` reusing the sixteen codes frozen in `reader-cases.json` verbatim and citing a contract clause for every minted code.
-- [ ] Emit every diagnostic as a `common.schema.json#/$defs/diagnostic` document with `owner`, `blocking`, `causes`, `related`, and `locus`.
-- [ ] Implement cycle detection before the depth bound for aliases, composite relationships, and the lock package graph.
-- [ ] Implement the normalized serialization and the IR-surface compatibility classifier with the declared restrictiveness order.
-- [ ] Add the static analysis asserting no import of a judged implementation and no clock, network, or environment read.
+- [x] Implement the schema layer over the published v1 schemas, collapsing to one diagnostic per deepest failing instance location.
+- [x] Implement the cross-field rules and the package-context rules, each silent when its bundle member is absent.
+- [x] Author `conformance/diagnostic-codes.json` reusing the sixteen codes frozen in `reader-cases.json` verbatim and citing a contract clause for every minted code.
+- [x] Emit every diagnostic as a `common.schema.json#/$defs/diagnostic` document with `owner`, `blocking`, `causes`, `related`, and `locus`.
+- [x] Implement cycle detection before the depth bound for aliases, composite relationships, and the lock package graph.
+- [x] Implement the normalized serialization and the IR-surface compatibility classifier with the declared restrictiveness order.
+- [x] Add the static analysis asserting no import of a judged implementation and no clock, network, or environment read.
 
 ## Deliverables
 

@@ -2,7 +2,7 @@
 id: Task-055
 title: "Determinism, locale, directory, and offline evidence"
 type: Task
-status: pending
+status: done
 track: D
 priority: P0
 relationships:
@@ -35,12 +35,12 @@ Produce the evidence that the corpus is deterministic and isolated, and wire the
 
 ## Subtasks
 
-- [ ] Run the oracle, the harness, and the coverage generator twice and compare bytes.
-- [ ] Re-run under `LC_ALL=tr_TR.UTF-8` and under `LC_ALL=C` and compare bytes.
-- [ ] Re-run from a different working directory and compare bytes.
-- [ ] Run the static analysis for imports, clock, network, environment, and out-of-tree filesystem access across the oracle and the harness.
-- [ ] Prove both suites run with the network unavailable.
-- [ ] Write `conformance/README.md`: versioning, minimization, provenance, canonical form, the import path, and the issue #11 ownership note.
+- [x] Run the oracle, the harness, and the coverage generator twice and compare bytes.
+- [x] Re-run under `LC_ALL=tr_TR.UTF-8` and under `LC_ALL=C` and compare bytes.
+- [x] Re-run from a different working directory and compare bytes.
+- [x] Run the static analysis for imports, clock, network, environment, and out-of-tree filesystem access across the oracle and the harness.
+- [x] Prove both suites run with the network unavailable.
+- [x] Write `conformance/README.md`: versioning, minimization, provenance, canonical form, the import path, and the issue #11 ownership note.
 
 ## Deliverables
 

@@ -2,7 +2,7 @@
 id: Task-053
 title: "The differential harness, adapter registry, and stub adapters"
 type: Task
-status: pending
+status: done
 track: C
 priority: P0
 relationships:
@@ -43,13 +43,13 @@ Land the harness, the four declared adapter slots, the stub adapters the harness
 
 ## Subtasks
 
-- [ ] Author `conformance/adapters/registry.json` with the issue #19, #21, #22, and #23 slots, their statuses, `pointerCompatible`, and the ownership note.
-- [ ] Implement the harness: `caseDigest` binding, oracle-only comparison, the match rule over `resultState`, ordered code, severity, locus, classification, and normalized bytes.
-- [ ] Implement `support` handling: declared `unsupported`, registry-declared `unavailable` as an unmet row, and every undeclared answer as a failure.
-- [ ] Implement the divergence register with `owner` and `verdict`, failing on an entry the run does not reproduce.
-- [ ] Implement the clock-free report and the separate `conformance-audit` target that reports an expired `reviewBy`.
-- [ ] Add the conforming and seeded-divergent stub adapters and the tests that drive them.
-- [ ] Add the source analysis asserting no adapter-to-adapter comparison and no import of adapter internals.
+- [x] Author `conformance/adapters/registry.json` with the issue #19, #21, #22, and #23 slots, their statuses, `pointerCompatible`, and the ownership note.
+- [x] Implement the harness: `caseDigest` binding, oracle-only comparison, the match rule over `resultState`, ordered code, severity, locus, classification, and normalized bytes.
+- [x] Implement `support` handling: declared `unsupported`, registry-declared `unavailable` as an unmet row, and every undeclared answer as a failure.
+- [x] Implement the divergence register with `owner` and `verdict`, failing on an entry the run does not reproduce.
+- [x] Implement the clock-free report and the separate `conformance-audit` target that reports an expired `reviewBy`.
+- [x] Add the conforming and seeded-divergent stub adapters and the tests that drive them.
+- [x] Add the source analysis asserting no adapter-to-adapter comparison and no import of adapter internals.
 
 ## Deliverables
 
