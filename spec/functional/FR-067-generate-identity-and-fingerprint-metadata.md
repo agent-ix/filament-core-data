@@ -62,6 +62,9 @@ decorator, and without reading a side-car file at run time.
 - `renderIdentity` SHALL emit, for every type, a readonly array of that type's `roles[]`, ordered as the document orders them, because a role is contract data a consumer may dispatch on.
 - `renderIdentity` SHALL emit, for every type, that type's declared `unknownPolicy`, including for the seven kinds on which FR-066 gives it no validation effect.
 - `renderIdentity` SHALL emit, for every `record`, one readonly relationship descriptor per declared relationship, carrying the relationship's `identity`, `verb`, `category`, `composite`, `target` identity, and `multiplicity` lower and upper bounds.
+- `renderMetadata` SHALL render every declared `operation` as a readonly descriptor carrying its identity, name, parameter descriptors, `returns` where present, and its `pre` and `post` clause ids, because an operation is contract data a consumer may dispatch on and no generated function is emitted for it.
+- `renderMetadata` SHALL render every declared `clause` as a readonly descriptor carrying its identity, `language`, `clauseId`, opaque `text` and `sourceSpan` where present, and SHALL NOT parse the text, because `agent-ix/quire-contract-ir#52` owns clause semantics and the IR itself never parses it.
+- `renderMetadata` SHALL render every field's `defaultKind` and, where the kind is not `none`, its `defaultValue`, so that a `representation` or `migration` default is visible to a consumer even though [FR-066](./FR-066-generate-runtime-validators.md)'s generated validator applies only a `semantic` one.
 - This requirement SHALL be the only place a relationship descriptor is rendered; [FR-064](./FR-064-lower-ir-type-definitions-to-typescript.md) renders none, because a relationship is not a member of a record's serialized shape and two descriptors of one relationship in two modules would be two answers to one question.
 - `renderIdentity` SHALL emit an empty relationship descriptor list for a `record` declaring no relationship, rather than omitting the member, so a consumer reads one shape.
 - `renderIdentity` SHALL emit, for every field declaring a `unit`, that unit string beside the field's identity, and SHALL emit no unit member for a field declaring none.
@@ -122,6 +125,7 @@ decorator, and without reading a side-car file at run time.
 | FR-067-AC-14 | Generating from `conformance/bases/core-1-1.json` and `conformance/bases/package-1-1.json` exposes each document's occurrence, its document-level extension, and the `unit: "ms"` of its declaring field, each byte-equal to the document's value. | Test |
 | FR-067-AC-15 | Every type-level and field-level `extensions[]` entry of a fixture document appears as a descriptor carrying `identity`, `version`, `required`, `capability` where declared, and `payload`, including the `doc` extension FR-064 also renders as JSDoc. | Test |
 | FR-067-AC-16 | An audit that walks every node of a fixture IR document finds each one either rendered by a generated module or named in a declared representability loss, and a seeded unrendered node makes the audit fail. | Test |
+| FR-067-AC-18 | An operation, a clause and a `migration` default each appear in the generated metadata as readonly descriptor data, and none of the three causes generation to refuse. | Unit |
 | FR-067-AC-17 | Each type's declared `unknownPolicy` appears in the metadata for all eight kinds, including the `union` declaring `surface` and the `map` declaring `preserve` in the committed bases. | Unit |
 
 ## Dependencies

@@ -2,7 +2,7 @@
 id: Task-104
 title: "Representability and declared loss under a `fail` policy"
 type: Task
-status: pending
+status: done
 track: A
 priority: P0
 relationships:
@@ -23,12 +23,12 @@ Land `loss.mjs`: the target-level judgement about what TypeScript can represent,
 
 ## Subtasks
 
-- [ ] Implement `representability(ir)` returning the declared target losses, each naming the construct and its owning type identity under the `agent-ix.typescript-backend.` prefix.
-- [ ] Declare the losses: an operation (the generated surface is data, not behaviour); a clause (clause semantics belong to `agent-ix/quire-contract-ir#52`); an unimplemented `format` name; a `defaultKind` of `representation` or `migration` at generation time; and an ordering constraint — `min`, `max`, `exclusiveMin`, `exclusiveMax` — on a `duration` subject, because ISO-8601 designators have no total order and inventing one is worse than refusing.
-- [ ] Keep representability out of the admissibility answer entirely. A document can be admissible and unrepresentable; that is a refusal to generate, not a claim that the document is invalid, and the separation is what keeps the adapter's positional diagnostic comparison from failing on target-specific loss.
-- [ ] Honour the committed target contract's `unsupportedFeaturePolicy` of `fail`: a declared loss emits zero files under manifest state `unsupported`, while an admissibility `lossy` result generates with files under state `lossy`.
-- [ ] Assert that a `union` at `unknownPolicy: "surface"` and a `map` at `unknownPolicy: "preserve"` — both of which the committed bases carry — yield neither a diagnostic nor a declared loss, because `unknownPolicy` is meaningful only on a `record`.
-- [ ] Add the static analysis: `admit.mjs` and `loss.mjs` import no module of the compiler's reader, schema layer, applicability table or diff, and none under `conformance/`.
+- [x] Implement `representability(ir)` returning the declared target losses, each naming the construct and its owning type identity under the `agent-ix.typescript-backend.` prefix.
+- [x] Declare the losses: an operation (the generated surface is data, not behaviour); a clause (clause semantics belong to `agent-ix/quire-contract-ir#52`); an unimplemented `format` name; a `defaultKind` of `representation` or `migration` at generation time; and an ordering constraint — `min`, `max`, `exclusiveMin`, `exclusiveMax` — on a `duration` subject, because ISO-8601 designators have no total order and inventing one is worse than refusing.
+- [x] Keep representability out of the admissibility answer entirely. A document can be admissible and unrepresentable; that is a refusal to generate, not a claim that the document is invalid, and the separation is what keeps the adapter's positional diagnostic comparison from failing on target-specific loss.
+- [x] Honour the committed target contract's `unsupportedFeaturePolicy` of `fail`: a declared loss emits zero files under manifest state `unsupported`, while an admissibility `lossy` result generates with files under state `lossy`.
+- [x] Assert that a `union` at `unknownPolicy: "surface"` and a `map` at `unknownPolicy: "preserve"` — both of which the committed bases carry — yield neither a diagnostic nor a declared loss, because `unknownPolicy` is meaningful only on a `record`.
+- [x] Add the static analysis: `admit.mjs` and `loss.mjs` import no module of the compiler's reader, schema layer, applicability table or diff, and none under `conformance/`.
 
 ## Deliverables
 
@@ -38,3 +38,4 @@ Land `loss.mjs`: the target-level judgement about what TypeScript can represent,
 
 - The `bytes` reading and the union discriminator's wire shape are open contract questions filed as issue #58, where issue #21 has already recorded a differing reading. This backend states its reading as a declared decision pending #58 and does not present it as settled.
 - `conformance/thresholds.json` permits this slot zero divergences, so a reading that #58 settles the other way produces a reported failure for the owner, not a suppression.
+- Representability yields 3 losses on each rich base and none on `minimal-1-1`. `agent-ix/filament-core-data#68` filed: the register has a code for the depth bound and none for the collection-size or input-byte bounds the contract also requires.

@@ -1,26 +1,92 @@
 /**
  * The TypeScript generation backend (FR-063).
  *
- * This module is the backend's *contract* with the seam: its identity, the
- * contract versions it accepts, the features it claims, and one `generate`
- * entry point. The contract is complete as written; what is not complete is the
- * generation itself, which Task-105 through Task-110 of
- * `plan/Plan-011-typescript-backend/` land — the resolved model, the type
- * projection, the validators, the metadata, and the package layout.
- *
- * Until those land `generate` returns `state: "unsupported"` with one
- * diagnostic naming the tasks that own it, which is what the seam's own
- * contract requires of a backend that cannot produce a file: zero files and at
- * least one diagnostic, never an empty success. A stub that returned
- * `state: "success"` with no files would satisfy `output-manifest.schema.json`
- * and assert nothing, and is exactly the vacuous pass this repository's gates
- * exist to refuse.
+ * This module is the backend's *contract* with the seam — its identity, the
+ * contract versions it accepts, the features it claims — and the four steps
+ * behind its one `generate` entry point: admit the document (FR-068), decide
+ * what the target can represent (FR-068), resolve the model (FR-064), and
+ * assemble the package (FR-065).
  *
  * Purity: nothing here reads a clock, an environment variable, `process.cwd()`,
- * the file system, or a socket. The declared target contract is loaded by the
- * caller through the injected host, not imported here, for the same reason.
+ * or a socket, and nothing reaches the file system directly. Every read goes
+ * through the host the caller injects, so a refusal is a refusal in fact and
+ * the set of files a generation touched is observable rather than asserted.
+ *
+ * A refusal returns zero files and at least one diagnostic, never an empty
+ * success: a `state: "success"` with no files would satisfy
+ * `output-manifest.schema.json` and assert nothing, which is the vacuous pass
+ * this repository's gates exist to refuse.
  */
-import { DIAGNOSTIC_CODES, diagnostic } from "../../diagnostics.mjs";
+import { readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../../diagnostics.mjs";
+import { SCHEMA_FILES, admitIr } from "./admit.mjs";
+import { fingerprintIrForTarget } from "./canonical.mjs";
+import { refusesGeneration, representability } from "./loss.mjs";
+import { renderIdentity, renderMetadata } from "./metadata.mjs";
+import { buildModel } from "./model.mjs";
+import { renderPackage } from "./package-layout.mjs";
+import { renderTypes } from "./types.mjs";
+import { renderErrors, renderValidators } from "./validators.mjs";
+
+/** This repository's root, from this module's own location. */
+const REPO_ROOT = resolve(
+	dirname(fileURLToPath(import.meta.url)),
+	"..",
+	"..",
+	"..",
+	"..",
+);
+
+/**
+ * Reads a repository file through the injected host where one is supplied.
+ *
+ * The fallback exists so the backend is usable from a test with no host, and it
+ * is deliberately the only route to `node:fs` in this directory. Everything the
+ * generation reads is a *published contract artifact* — the v1 schemas and this
+ * repository's `LICENSE` — never an input a package supplied.
+ */
+function repositoryReader(host) {
+	return (relativePath) => {
+		const absolute = join(REPO_ROOT, relativePath);
+		return host?.readText
+			? host.readText(absolute)
+			: readFileSync(absolute, "utf8");
+	};
+}
+
+/**
+ * An admissibility diagnostic, carried into the output manifest.
+ *
+ * `common.schema.json#/$defs/diagnostic` is `additionalProperties: false` and
+ * has no member for an in-document location — that is GAP-003 — so the RFC 6901
+ * pointer, which the reader carries beside the diagnostic, is folded into the
+ * message rather than dropped. A pointer that reached the manifest as a
+ * silently discarded member would be worse than one a reader can see.
+ */
+function manifestDiagnostic(located) {
+	return {
+		...located.diagnostic,
+		message:
+			located.pointer.length > 0
+				? `${located.pointer}: ${located.diagnostic.message}`
+				: located.diagnostic.message,
+	};
+}
+
+/** A representability loss, in the shape the manifest carries. */
+function lossDiagnostic(loss) {
+	return {
+		code: loss.code,
+		severity: "error",
+		message: `${loss.pointer}: the TypeScript target cannot represent ${fragment(loss.construct)} on ${fragment(loss.owner)}${loss.detail ? ` (${fragment(loss.detail)})` : ""}`,
+		owner: loss.owner,
+		blocking: true,
+		causes: [],
+		related: [],
+	};
+}
 
 /** The backend's own semantic identity, stamped into every output manifest. */
 export const identity = "ix://agent-ix/filament-core-data/backend/typescript";
@@ -59,16 +125,81 @@ export const typescriptBackend = Object.freeze({
 		"runtime-validation",
 		"identity-metadata",
 	]),
-	generate() {
+	generate(request, options = {}) {
+		const read = repositoryReader(options.host);
+
+		// Layer 1: is this document admissible at all? The backend decides for
+		// itself rather than asking the compiler, because a backend that asks the
+		// compiler whether the compiler's output is valid produces agreement and
+		// no evidence (FR-068-CON-1).
+		let admission;
+		try {
+			admission = admitIr(
+				{ ir: request.ir },
+				{ schemas: SCHEMA_FILES.map((file) => JSON.parse(read(file))) },
+			);
+		} catch (error) {
+			return {
+				state: "invalid",
+				files: [],
+				diagnostics: [
+					diagnostic(DIAGNOSTIC_CODES.BACKEND_CONTRACT_VIOLATION, {
+						message: `the admissibility reader could not run: ${fragment(error.message)}`,
+					}),
+				],
+			};
+		}
+		if (admission.resultState === "invalid") {
+			return {
+				state: "invalid",
+				files: [],
+				diagnostics: admission.diagnostics.map(manifestDiagnostic),
+			};
+		}
+
+		// Layer 2: can the target represent everything the document declares? The
+		// committed target contract sets `unsupportedFeaturePolicy: "fail"`, so a
+		// declared loss refuses rather than degrades. An admissibility result of
+		// `lossy` is a different thing and still generates (FR-065-AC-13).
+		const losses = representability(request.ir);
+		if (refusesGeneration(losses)) {
+			return {
+				state: "unsupported",
+				files: [],
+				diagnostics: losses.map(lossDiagnostic),
+			};
+		}
+
+		const model = buildModel(request.ir, {
+			backendIdentity: identity,
+			backendVersion: typescriptBackend.version,
+		});
+		if (model.losses.length > 0) {
+			return {
+				state: "unsupported",
+				files: [],
+				diagnostics: model.losses.map(lossDiagnostic),
+			};
+		}
+
+		const fingerprint = fingerprintIrForTarget(request.ir);
+		const rendered = renderPackage(model, {
+			fingerprint,
+			license: read("LICENSE"),
+			types: renderTypes(model),
+			validators: renderValidators(model),
+			errors: renderErrors(),
+			identity: renderIdentity(model),
+			metadata: renderMetadata(model, { fingerprint }),
+		});
 		return {
-			state: "unsupported",
-			files: [],
-			diagnostics: [
-				diagnostic(DIAGNOSTIC_CODES.BACKEND_NOT_IMPLEMENTED, {
-					message:
-						"the TypeScript renderers are not landed yet; they are Task-105 through Task-110 of plan/Plan-011-typescript-backend",
-				}),
-			],
+			state: admission.resultState === "lossy" ? "lossy" : "success",
+			// `outputRoot`-relative, as FR-063 requires: the seam checks the paths
+			// against the root the caller named, and the caller joins the two when
+			// it writes. A path that already carried the root would be checked
+			// against it twice and written under it twice.
+			files: rendered.files,
+			diagnostics: admission.diagnostics.map(manifestDiagnostic),
 		};
 	},
 });

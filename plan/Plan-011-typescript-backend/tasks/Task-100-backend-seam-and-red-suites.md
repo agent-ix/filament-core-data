@@ -2,7 +2,7 @@
 id: Task-100
 title: "Backend seam, target registry, and the red suites"
 type: Task
-status: pending
+status: done
 track: A
 priority: P0
 relationships:
@@ -37,16 +37,16 @@ Land the generation seam, the closed target registry, the declared TypeScript ta
 
 ## Subtasks
 
-- [ ] Author `src/compiler/backends/targets.mjs` and its `.d.mts`, reading the closed `target` vocabulary out of `schema/semantic/v1/common.schema.json` through the injected host rather than restating it, as `src/compiler/dialects.mjs` already does for `frontendDialect`.
-- [ ] Author `src/compiler/backends/seam.mjs` and its `.d.mts` exporting `BACKEND_TARGETS`, `selectBackend(target)`, `isBackendImplemented(target)`, `assertBackendContract(backend)`, and `generateTarget(request, options)`, where `options` carries the injected `format(text, path)`.
-- [ ] Register all five declared targets. Only `typescript` is implemented; `rust`, `python-pydantic-v2`, `python-dataclass` and `json-schema` are registered as declared-unimplemented naming their owning issue, on the `src/compiler/frontend/spec-bundle/` precedent.
-- [ ] Make `selectBackend` throw a `TypeError` naming the value and the five permitted targets for a value outside the vocabulary — a caller defect — while every defect in a submitted request document is a diagnostic and never a throw.
-- [ ] Validate the request against `compiler-request.schema.json` before dispatch; return `state: "invalid"` with one diagnostic per schema error at the failing instance pointer.
-- [ ] Return an `output-manifest.schema.json`-valid document for every request including every failing one, computing `requestFingerprint` from the canonicalized request and `normalizedFingerprint` from the request's `ir`.
-- [ ] Implement the `files[]` reconciliation, including the convention that a file rendering no type definition — `package.json` and `LICENSE` — carries the package's own identity minted as `ix://<owner>/<name>` so `semanticIdentities` is never empty.
-- [ ] Add `BACKEND_NOT_IMPLEMENTED` and the other new members to `DIAGNOSTIC_CODES` in `src/compiler/diagnostics.mjs`, and regenerate `docs/semantic-data-system/compiler-diagnostics.md` with `node scripts/build-compiler-docs.mjs`.
-- [ ] Author `src/compiler/backends/typescript-v1/index.mjs`, `index.d.mts` and `target-contract.json`, copying the committed `typescript` row of `fixtures/semantic/v1/positive/target-contracts.json` member for member — including the `runtime-schema-validator` runtime dependency and the `AGPL-3.0-or-later` licence string, neither of which this ticket corrects.
-- [ ] Author `test/typescript-backend.test.ts` with the failing skeletons for TC-745..844, so every later task turns a real red gate green rather than adding a green one.
+- [x] Author `src/compiler/backends/targets.mjs` and its `.d.mts`, reading the closed `target` vocabulary out of `schema/semantic/v1/common.schema.json` through the injected host rather than restating it, as `src/compiler/dialects.mjs` already does for `frontendDialect`.
+- [x] Author `src/compiler/backends/seam.mjs` and its `.d.mts` exporting `BACKEND_TARGETS`, `selectBackend(target)`, `isBackendImplemented(target)`, `assertBackendContract(backend)`, and `generateTarget(request, options)`, where `options` carries the injected `format(text, path)`.
+- [x] Register all five declared targets. Only `typescript` is implemented; `rust`, `python-pydantic-v2`, `python-dataclass` and `json-schema` are registered as declared-unimplemented naming their owning issue, on the `src/compiler/frontend/spec-bundle/` precedent.
+- [x] Make `selectBackend` throw a `TypeError` naming the value and the five permitted targets for a value outside the vocabulary — a caller defect — while every defect in a submitted request document is a diagnostic and never a throw.
+- [x] Validate the request against `compiler-request.schema.json` before dispatch; return `state: "invalid"` with one diagnostic per schema error at the failing instance pointer.
+- [x] Return an `output-manifest.schema.json`-valid document for every request including every failing one, computing `requestFingerprint` from the canonicalized request and `normalizedFingerprint` from the request's `ir`.
+- [x] Implement the `files[]` reconciliation, including the convention that a file rendering no type definition — `package.json` and `LICENSE` — carries the package's own identity minted as `ix://<owner>/<name>` so `semanticIdentities` is never empty.
+- [x] Add `BACKEND_NOT_IMPLEMENTED` and the other new members to `DIAGNOSTIC_CODES` in `src/compiler/diagnostics.mjs`, and regenerate `docs/semantic-data-system/compiler-diagnostics.md` with `node scripts/build-compiler-docs.mjs`.
+- [x] Author `src/compiler/backends/typescript-v1/index.mjs`, `index.d.mts` and `target-contract.json`, copying the committed `typescript` row of `fixtures/semantic/v1/positive/target-contracts.json` member for member — including the `runtime-schema-validator` runtime dependency and the `AGPL-3.0-or-later` licence string, neither of which this ticket corrects.
+- [x] Author `test/typescript-backend.test.ts` with the failing skeletons for TC-745..844, so every later task turns a real red gate green rather than adding a green one.
 
 ## Deliverables
 
@@ -62,3 +62,4 @@ Land the generation seam, the closed target registry, the declared TypeScript ta
 - `docs/semantic-data-system/compiler-diagnostics.md` is generated, not written. It is one of the four artifacts issues #21 and #23 also regenerate; on rebase it is regenerated from the rebased tree and never merged textually. Issue #63 owns the reconciliation.
 - The target contract's `runtimeDependencies` names `runtime-schema-validator` while the generated package's third-party runtime dependency count is zero, and its licence string is `AGPL-3.0-or-later` where the programme mandates `AGPL-3.0-only` — issue #57. Both are the committed fixture's wording and are recorded here rather than silently corrected.
 - Never weaken a gate to get green. If a skeleton assertion cannot be satisfied, the requirement is wrong and gets fixed, or the finding is escalated.
+- Landed. Four `agent-ix.compiler.*` codes added, `READER_CODES` untouched. Two merged gates in `test/compiler.test.ts` and `test/compiler-core.test.ts` treated `src/compiler/backends/` wholesale as the frozen issue #4 prototype path; the frozen set is now named file by file so a backend added later is scanned rather than exempted.

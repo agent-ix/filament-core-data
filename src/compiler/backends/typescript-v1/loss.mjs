@@ -17,6 +17,29 @@
  * every backend: "Unsupported features fail or use an explicitly approved lossy
  * target. They never degrade to `any`, generic maps, or empty models."
  *
+ * Because a loss refuses, what counts as one matters, and the line this module
+ * draws is between a construct the target cannot *represent* and one the target
+ * does not *execute*. An operation, a clause, and a `representation` or
+ * `migration` default are all rendered as ordinary readonly descriptor data by
+ * `metadata.mjs`, exactly as a relationship, a role, a unit, an extension and an
+ * occurrence are. Rendering a construct as data is not degrading it to `any`, a
+ * generic map, or an empty model, so none of the three is a loss.
+ *
+ * That line was measured rather than argued. An earlier draft treated all three
+ * as loss, and of the 70 corpus cases the admissibility reader accepts, **66
+ * refused to generate** — 67 operation losses, 132 clause losses, 2
+ * default-kind losses. A target contract under which almost no real document
+ * can be generated is not a target contract a consumer could use, and the
+ * defect was in the loss framing rather than in any of those documents.
+ *
+ * What remains is the case a loss exists for: a construct whose omission would
+ * make the generated package *silently wrong* — a check the validator would
+ * skip, or a value it would substitute. Two qualify. A `format` name this
+ * backend implements no check for would become a check that quietly passes
+ * everything. An ordering constraint on a `duration` subject would need a
+ * comparison ISO-8601 does not define, and an invented one is a wrong answer
+ * rather than a missing one.
+ *
  * Nothing here imports the compiler's reader, its schema layer, its
  * applicability table, or anything under `conformance/`.
  */
@@ -31,23 +54,8 @@ const TARGET = (name) => `agent-ix.typescript-backend.${name}`;
  * answer.
  */
 export const LOSS_CODES = Object.freeze({
-	OPERATION_NOT_REPRESENTABLE: Object.freeze({
-		code: TARGET("OPERATION_NOT_REPRESENTABLE"),
-		severity: "error",
-		blocking: true,
-	}),
-	CLAUSE_NOT_REPRESENTABLE: Object.freeze({
-		code: TARGET("CLAUSE_NOT_REPRESENTABLE"),
-		severity: "error",
-		blocking: true,
-	}),
 	FORMAT_NOT_IMPLEMENTED: Object.freeze({
 		code: TARGET("FORMAT_NOT_IMPLEMENTED"),
-		severity: "error",
-		blocking: true,
-	}),
-	DEFAULT_KIND_NOT_REPRESENTABLE: Object.freeze({
-		code: TARGET("DEFAULT_KIND_NOT_REPRESENTABLE"),
 		severity: "error",
 		blocking: true,
 	}),
@@ -69,34 +77,44 @@ export const LOSS_CODES = Object.freeze({
  */
 export const TARGET_LOSSES = Object.freeze([
 	Object.freeze({
-		construct: "operation",
-		code: LOSS_CODES.OPERATION_NOT_REPRESENTABLE.code,
-		rationale:
-			"the generated surface is data rather than behaviour; an operation has no rendering in a type declaration or a validator",
-	}),
-	Object.freeze({
-		construct: "clause",
-		code: LOSS_CODES.CLAUSE_NOT_REPRESENTABLE.code,
-		rationale:
-			"formal clause text is not parsed here; agent-ix/quire-contract-ir#52 owns clause semantics and the IR carries the text opaquely",
-	}),
-	Object.freeze({
 		construct: "format-constraint",
 		code: LOSS_CODES.FORMAT_NOT_IMPLEMENTED.code,
 		rationale:
 			"a format name this backend implements no check for would otherwise become a silently skipped check",
 	}),
 	Object.freeze({
-		construct: "default-kind",
-		code: LOSS_CODES.DEFAULT_KIND_NOT_REPRESENTABLE.code,
-		rationale:
-			"a representation or migration default is not a value the generated type can carry at generation time",
-	}),
-	Object.freeze({
 		construct: "duration-order",
 		code: LOSS_CODES.DURATION_ORDER_NOT_REPRESENTABLE.code,
 		rationale:
 			"ISO-8601 designators admit no total order — P1M and P30D are not comparable without a calendar — so an ordering constraint on a duration subject is refused rather than answered by an invented comparison",
+	}),
+]);
+
+/**
+ * The constructs an earlier draft declared lost and this one renders as data,
+ * kept as a record so the reasoning survives the diff. Each is emitted by
+ * `metadata.mjs` as a readonly descriptor; none refuses generation.
+ */
+export const RENDERED_NOT_LOST = Object.freeze([
+	Object.freeze({
+		construct: "operation",
+		renderedAs:
+			"a readonly operation descriptor carrying its identity, name, parameter descriptors, returns, and pre and post clause ids",
+		rationale:
+			"the generated package emits no executable function for an operation, and a descriptor is data rather than behaviour; refusing for one would refuse 67 operations across the corpus",
+	}),
+	Object.freeze({
+		construct: "clause",
+		renderedAs:
+			"a readonly clause descriptor carrying its identity, language, clauseId, opaque text, and sourceSpan",
+		rationale:
+			"the IR itself never parses clause text and agent-ix/quire-contract-ir#52 owns clause semantics; carrying the text opaquely loses nothing",
+	}),
+	Object.freeze({
+		construct: "default-kind",
+		renderedAs: "the field's defaultKind and defaultValue on its descriptor",
+		rationale:
+			"a representation or migration default is visible to a consumer even though the generated validator applies only a semantic one, which FR-066 already states",
 	}),
 ]);
 
@@ -189,25 +207,9 @@ export function representability(ir, options = {}) {
 		if (type === null || typeof type !== "object") continue;
 		const owner = type.identity;
 
-		for (const [position, operation] of (type.operations ?? []).entries()) {
-			record({
-				code: LOSS_CODES.OPERATION_NOT_REPRESENTABLE.code,
-				construct: "operation",
-				owner,
-				pointer: `/ir/types/${index}/operations/${position}`,
-				detail: operation?.name ?? null,
-			});
-		}
-
-		for (const [position, clause] of (type.clauses ?? []).entries()) {
-			record({
-				code: LOSS_CODES.CLAUSE_NOT_REPRESENTABLE.code,
-				construct: "clause",
-				owner,
-				pointer: `/ir/types/${index}/clauses/${position}`,
-				detail: clause?.clauseId ?? null,
-			});
-		}
+		// An `operation` and a `clause` are rendered as readonly descriptor data
+		// by `metadata.mjs` and are deliberately not recorded here; see the
+		// module header and `RENDERED_NOT_LOST`.
 
 		for (const [position, constraint] of (type.constraints ?? []).entries()) {
 			if (constraint === null || typeof constraint !== "object") continue;
@@ -237,21 +239,9 @@ export function representability(ir, options = {}) {
 			}
 		}
 
-		for (const [position, field] of (type.fields ?? []).entries()) {
-			if (field === null || typeof field !== "object") continue;
-			if (
-				field.defaultKind === "representation" ||
-				field.defaultKind === "migration"
-			) {
-				record({
-					code: LOSS_CODES.DEFAULT_KIND_NOT_REPRESENTABLE.code,
-					construct: "default-kind",
-					owner: field.identity ?? owner,
-					pointer: `/ir/types/${index}/fields/${position}/defaultKind`,
-					detail: field.defaultKind,
-				});
-			}
-		}
+		// A `representation` or `migration` default is carried on the field's
+		// descriptor by `metadata.mjs`; the generated validator applies only a
+		// `semantic` one, which FR-066 states. Neither is a loss.
 	}
 
 	// `unknownPolicy` on a kind other than `record` is neither a loss nor a

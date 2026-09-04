@@ -7,10 +7,7 @@ export interface LossCode {
 }
 
 export declare const LOSS_CODES: Readonly<{
-	OPERATION_NOT_REPRESENTABLE: LossCode;
-	CLAUSE_NOT_REPRESENTABLE: LossCode;
 	FORMAT_NOT_IMPLEMENTED: LossCode;
-	DEFAULT_KIND_NOT_REPRESENTABLE: LossCode;
 	DURATION_ORDER_NOT_REPRESENTABLE: LossCode;
 	IDENTIFIER_COLLISION: LossCode;
 }>;
@@ -22,6 +19,15 @@ export interface DeclaredLoss {
 }
 
 export declare const TARGET_LOSSES: readonly DeclaredLoss[];
+
+/** A construct an earlier draft declared lost and this one renders as data. */
+export interface RenderedConstruct {
+	readonly construct: string;
+	readonly renderedAs: string;
+	readonly rationale: string;
+}
+
+export declare const RENDERED_NOT_LOST: readonly RenderedConstruct[];
 
 export declare const IMPLEMENTED_FORMATS: readonly string[];
 
