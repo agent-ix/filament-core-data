@@ -15,7 +15,7 @@ import { tmpdir } from "node:os";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
-import { baselineBefore, changedPathsSince } from "./changed-paths.js";
+import { changeRange, changedPathsOf } from "./changed-paths.js";
 import { diffSemanticContract } from "../src/compiler/compat/diff.mjs";
 import {
 	CONTRACT_VERSIONS,
@@ -106,18 +106,19 @@ function git(...args: string[]): string {
 }
 
 /**
- * The commit issue #19 replaced, located from history through a file it created.
- * Fixed after the merge, unlike `origin/main`. See `changedPathsSince`.
+ * The commits issue #19 sits between, located from history through files it
+ * created. Both ends are fixed after the merge. See `changeRange`.
  */
 const SENTINEL = [
 	"spec/usecase/US-010-compile-a-semantic-package.md",
 	"src/compiler/pipeline.mjs",
 ];
-const baseline = (): string => baselineBefore(root, SENTINEL);
+const range = (): { base: string; tip: string } => changeRange(root, SENTINEL);
+const baseline = (): string => range().base;
 
 /** Every path this change made, with rename detection off (Plan-007's lesson). */
 function changedPaths(): string[] {
-	return changedPathsSince(root, SENTINEL);
+	return changedPathsOf(root, SENTINEL);
 }
 
 function temp(label: string): string {
@@ -4238,12 +4239,16 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 
 	/** Traces: TC-593; NFR-021-AC-4. */
 	it("leaves the issue #4 goldens and everything under spikes/ byte-unchanged", () => {
+		// Both ends from history: measured to the current head this would fail
+		// the moment any later ticket legitimately touched `spikes/`, and would
+		// report it as an issue #19 mutation of the issue #4 goldens.
+		const { base, tip } = range();
 		expect(
 			git(
 				"diff",
 				"--no-renames",
 				"--name-only",
-				`${baseline()}..HEAD`,
+				`${base}..${tip}`,
 				"--",
 				"spikes/",
 			)
@@ -4276,7 +4281,12 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 		// squash commit's parent afterwards. A single mid-branch sentinel would
 		// baseline on a tree this change had already touched, and the rehearsal
 		// would then "restore" files the change itself had since moved.
-		const base = baselineBefore(root, SENTINEL);
+		//
+		// The far end is pinned the same way. Measured to the current head, the
+		// rehearsal restores every file every later ticket has landed since and
+		// calls the result "reverting issue #19" — the accreting form issue #20
+		// measured on the changed-path gate above.
+		const { base, tip } = range();
 
 		const scratch = temp("restore");
 		const worktree = resolve(scratch, "base");
@@ -4289,7 +4299,7 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 				"diff",
 				"--no-renames",
 				"--name-only",
-				`${base}..HEAD`,
+				`${base}..${tip}`,
 			)
 				.split("\n")
 				.map((line) => line.trim())
@@ -4352,7 +4362,7 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 	}, 120000);
 
 	/** Traces: TC-620; NFR-021-AC-9. */
-	it("resolves every non-disruption baseline from history, not a moving ref", () => {
+	it("resolves both ends of every non-disruption range from history", () => {
 		// A gate baselined on `origin/main` stops asserting the moment the change
 		// merges: the range empties, the working tree matches the base, and every
 		// prohibition passes over an empty set. It does not go red, it goes quiet,
@@ -4370,12 +4380,82 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 			expect(source, `${name} baselines on a moving ref`).not.toMatch(
 				movingRef,
 			);
+			// The far end has to be pinned too. A range from a fixed base to the
+			// current head does not go quiet on merge, it grows: it annexes every
+			// path every later ticket adds and then fails this ticket for them.
+			// Issue #20 measured that on this suite's own gate before it could
+			// take the trunk red.
+			const movingHead = new RegExp(`\\.\\.${["HE", "AD"].join("")}`);
+			expect(source, `${name} measures to a moving head`).not.toMatch(
+				movingHead,
+			);
 		}
 		// And the shared helper offers the history-based resolver the two suites
 		// use, so the fix cannot be reverted by deleting it unnoticed.
 		const helper = read(resolve(root, "test/changed-paths.ts"));
-		expect(helper).toContain("export function baselineBefore(");
-		expect(helper).toContain("export function changedPathsSince(");
+		expect(helper).toContain("export function changeRange(");
+		expect(helper).toContain("export function changedPathsOf(");
+	});
+
+	/**
+	 * Traces: TC-644; NFR-021-AC-10.
+	 *
+	 * The property the four faces of this defect all violate, asserted directly
+	 * on a synthetic history rather than inferred from the shape of the source:
+	 * a merged change's path set does not move when a later, unrelated change
+	 * lands on top of it.
+	 */
+	it("does not annex a later change's paths into this change's path set", () => {
+		const scratch = temp("accretion");
+		try {
+			const run = (...args: string[]): void => {
+				execFileSync("git", args, { cwd: scratch, stdio: "pipe" });
+			};
+			const write = (path: string, body: string): void => {
+				mkdirSync(dirname(resolve(scratch, path)), { recursive: true });
+				writeFileSync(resolve(scratch, path), body);
+			};
+			run("init", "--initial-branch=main");
+			run("config", "user.email", "gate@example.invalid");
+			run("config", "user.name", "gate");
+			write("README.md", "base\n");
+			run("add", "-A");
+			run("commit", "-m", "base");
+
+			// The change under test, squash-merged as one commit.
+			write("src/compiler/pipeline.mjs", "export const compile = () => {};\n");
+			write("spec/usecase/US-010-compile-a-semantic-package.md", "# US-010\n");
+			run("add", "-A");
+			run("commit", "-m", "the change");
+			const mine = changedPathsOf(scratch, SENTINEL).sort();
+			expect(mine).toEqual([
+				"spec/usecase/US-010-compile-a-semantic-package.md",
+				"src/compiler/pipeline.mjs",
+			]);
+
+			// A later, unrelated ticket lands on top, adding exactly the paths
+			// this change's own requirement prohibits.
+			write("conformance/corpus/case-001.json", "{}\n");
+			write("tests/test_conformance_corpus.py", "def test_it(): ...\n");
+			run("add", "-A");
+			run("commit", "-m", "a later ticket");
+			expect(changedPathsOf(scratch, SENTINEL).sort()).toEqual(mine);
+
+			// And the gate still discriminates: a prohibited path left in the
+			// working tree at a path no later commit owns is still this change's.
+			write("schema/semantic/v1/rogue.json", "{}\n");
+			expect(changedPathsOf(scratch, SENTINEL)).toContain(
+				"schema/semantic/v1/rogue.json",
+			);
+			// while the later ticket's own file, edited in the working tree, is
+			// attributed to the later ticket rather than annexed into this one.
+			write("conformance/corpus/case-001.json", '{"edited": true}\n');
+			expect(changedPathsOf(scratch, SENTINEL)).not.toContain(
+				"conformance/corpus/case-001.json",
+			);
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
 	});
 
 	/** Traces: TC-586; NFR-020-AC-8. */

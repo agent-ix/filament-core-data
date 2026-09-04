@@ -42,8 +42,17 @@ export const REGENERATED_IN_PLACE: ReadonlySet<string> = new Set([
 	"test/declaration-drift-probe.ts",
 ]);
 
+/** The commits a change sits between. Both endpoints are history facts. */
+export interface ChangeRange {
+	/** The commit the change replaced. */
+	readonly base: string;
+	/** The commit that introduced the change. */
+	readonly tip: string;
+}
+
 /**
- * The commit a change replaced, located from history through a file it created.
+ * The commit range a change occupies, located from history through files it
+ * created.
  *
  * `changedPathsFrom(root, "origin/main")` answers "what has this branch changed"
  * only while the branch is unmerged. After the squash merge `origin/main` *is*
@@ -53,40 +62,55 @@ export const REGENERATED_IN_PLACE: ReadonlySet<string> = new Set([
  * so an empty set satisfies all of them vacuously. The gate does not go red. It
  * goes quiet, which is worse, because a green suite is then evidence of nothing.
  *
- * Issue #27 met the first two faces of this (positive assertions about the
- * range, fixed by #47) and issue #19 met the third here. The durable form is the
- * one #47 used for TC-395: pick a file the change created, find the commit that
- * added it, and take that commit's parent. The result is a history fact — fixed
- * after the merge, and gone if the change is ever reverted, at which point the
- * gate fails loudly rather than quietly asserting nothing.
+ * Pinning only the *base* to history and leaving the far end at `HEAD` closes
+ * the quiet direction and opens the loud one. Issue #19 shipped that form and
+ * issue #20 measured what it does before it could take the trunk red: the range
+ * from issue #19's baseline to the merged trunk was 236 paths with 0 prohibited
+ * hits, and the same range measured to the issue #20 branch was 406 paths with
+ * 139 — `conformance/**` and `tests/`, which NFR-016 permits for issue #20 and
+ * NFR-021 prohibits for issue #19. Both requirements are right about their own
+ * ticket. The range is what is wrong: "everything since my baseline" annexes
+ * every later ticket's work and then fails the earlier ticket for it.
  *
- * Pass several sentinels when the change spans more than one commit: the
- * baseline is the parent of the *earliest* commit that added any of them, which
- * is the branch point while the branch is unmerged and the squash commit's
- * parent afterwards. One sentinel is enough only when the change is one commit;
- * with several, a sentinel created mid-branch would baseline mid-branch and the
- * gate would then compare against a tree the change itself had already touched.
+ * That is the fourth face of one defect. A merged change's path set is a fixed
+ * historical fact, and encoding it as a live computation against a moving ref
+ * makes it either empty (quiet) or growing (red, and pointed at the wrong
+ * ticket). So both ends are resolved from history here:
  *
- * Throws when no sentinel is in history, because a baseline that cannot be
- * located is not a reason to assert less.
+ * - `base` is the parent of the *earliest* commit that added any sentinel — the
+ *   branch point while the change is unmerged, the squash commit's parent after;
+ * - `tip` is the *latest* commit that added any sentinel — the branch head while
+ *   the change is unmerged, the squash commit itself after.
+ *
+ * Pass sentinels created by the change's first and last commits. With a single
+ * sentinel the range collapses to that one commit, which is exactly right for a
+ * squash merge and too narrow for a live multi-commit branch.
+ *
+ * Throws when no sentinel is in history, because a range that cannot be located
+ * is not a reason to assert less: if the change is reverted its sentinels leave
+ * history and the gate fails loudly rather than passing vacuously.
  */
-export function baselineBefore(
+export function changeRange(
 	root: string,
 	sentinels: string | readonly string[],
-): string {
+): ChangeRange {
 	const paths = typeof sentinels === "string" ? [sentinels] : sentinels;
-	const adding = paths
-		.map((path) =>
-			execFileSync(
-				"git",
-				["log", "--diff-filter=A", "--format=%H", "-1", "--", path],
-				{ cwd: root, encoding: "utf8" },
-			).trim(),
-		)
-		.filter((commit) => commit.length > 0);
+	const adding = [
+		...new Set(
+			paths
+				.map((path) =>
+					execFileSync(
+						"git",
+						["log", "--diff-filter=A", "--format=%H", "-1", "--", path],
+						{ cwd: root, encoding: "utf8" },
+					).trim(),
+				)
+				.filter((commit) => commit.length > 0),
+		),
+	];
 	if (adding.length === 0) {
 		throw new Error(
-			`no commit in history adds any of ${paths.join(", ")}: the baseline for this gate cannot be located, so it cannot assert`,
+			`no commit in history adds any of ${paths.join(", ")}: the range for this gate cannot be located, so it cannot assert`,
 		);
 	}
 	const isAncestor = (a: string, b: string): boolean => {
@@ -103,23 +127,75 @@ export function baselineBefore(
 	const earliest = adding.reduce((best, commit) =>
 		isAncestor(commit, best) ? commit : best,
 	);
-	return execFileSync("git", ["rev-parse", `${earliest}^`], {
+	const latest = adding.reduce((best, commit) =>
+		isAncestor(best, commit) ? commit : best,
+	);
+	const base = execFileSync("git", ["rev-parse", `${earliest}^`], {
 		cwd: root,
 		encoding: "utf8",
 	}).trim();
+	return { base, tip: latest };
 }
 
 /**
- * The paths a change made, baselined on the commit it replaced.
+ * The paths a change made: its own commit range, plus the uncommitted work in
+ * the tree that the change still owns.
  *
- * Prefer this over `changedPathsFrom(root, "origin/main")` in any gate that
- * asserts a prohibition: it keeps asserting after the merge.
+ * The committed half is `base..tip`, both endpoints history facts, so it cannot
+ * empty on merge and cannot accrete afterwards — a later ticket's commits fall
+ * outside the range instead of being annexed into it.
+ *
+ * A frozen range alone would be a constant, and a constant cannot discriminate:
+ * dropping a rogue module into `src/compiler/` or editing a byte of `schema/`
+ * has to make this gate red, or the gate is decoration. So the working tree is
+ * folded in — every entry `git status` reports that is genuinely different from
+ * `HEAD` — minus the paths some commit after `tip` has already changed, which
+ * belong to that later work and not to this change.
+ *
+ * The residual is uncommitted work from another ticket sharing this checkout at
+ * a path no later commit has touched yet. History cannot attribute that, and the
+ * alternative — dropping the working tree — would leave a gate that can never
+ * fail. It is a local condition the author created and can see; it reaches
+ * neither a clean CI checkout nor the merged trunk.
  */
-export function changedPathsSince(
+export function changedPathsOf(
 	root: string,
 	sentinels: string | readonly string[],
 ): string[] {
-	return changedPathsFrom(root, baselineBefore(root, sentinels));
+	const { base, tip } = changeRange(root, sentinels);
+	const committed = execFileSync(
+		"git",
+		["diff", "--no-renames", "--name-only", `${base}..${tip}`],
+		{ cwd: root, encoding: "utf8" },
+	)
+		.split("\n")
+		.filter((line) => line.length > 0);
+
+	const working = execFileSync(
+		"git",
+		["status", "--porcelain", "--untracked-files=all"],
+		{ cwd: root, encoding: "utf8" },
+	)
+		.split("\n")
+		.filter((line) => line.trim().length > 0)
+		.map((line) => line.slice(3).trim())
+		.filter((path) => path.length > 0)
+		.filter((path) => !REGENERATED_IN_PLACE.has(path))
+		.filter((path) => !matchesBase(root, "HEAD", path))
+		.filter((path) => !changedAfter(root, tip, path));
+
+	return [...new Set([...committed, ...working])];
+}
+
+/** True when a commit after `tip` changed `path`: later work, not this change. */
+function changedAfter(root: string, tip: string, path: string): boolean {
+	return (
+		execFileSync(
+			"git",
+			["log", "--format=%H", "-1", `${tip}..HEAD`, "--", path],
+			{ cwd: root, encoding: "utf8" },
+		).trim().length > 0
+	);
 }
 
 export function changedPathsFrom(root: string, base: string): string[] {
@@ -155,6 +231,8 @@ function matchesBase(root: string, base: string, path: string): boolean {
 		atBase = execFileSync("git", ["show", `${base}:${path}`], {
 			cwd: root,
 			maxBuffer: 64 * 1024 * 1024,
+			// An addition is the expected case, not an error worth printing.
+			stdio: ["ignore", "pipe", "ignore"],
 		});
 	} catch {
 		// The base does not carry it: an addition, and a real change.

@@ -149,7 +149,7 @@ passes.
 | NFR-018 | Changed-path gate, manifest and packed-file comparison, licence inspection, restore rehearsal, publication inspection | TC-390..396 | ✅ Complete |
 | NFR-019 | Repeat-run and varied-environment byte comparison, ambient-input analysis, permutation and collator independence, injected-host observation, changed-path gate, dependency-pin inspection | TC-567..TC-578 | ✅ Complete |
 | NFR-020 | Limit enforcement, path-escape and module-load refusal, network and writer instrumentation, cyclic-input termination, fuzz run, message truncation | TC-579..TC-589, TC-606, TC-607 | ✅ Complete |
-| NFR-021 | Changed-path gate, manifest comparison, frozen-path byte comparison, scripted restore rehearsal, licence and publication inspection, post-merge baseline rehearsal | TC-590..TC-597, TC-620, TC-621 | ✅ Complete |
+| NFR-021 | Changed-path gate, manifest comparison, frozen-path byte comparison, scripted restore rehearsal, licence and publication inspection, post-merge range rehearsal, accretion rehearsal | TC-590..TC-597, TC-620, TC-621, TC-644 | ✅ Complete |
 
 ## Test Case Summary
 
@@ -712,8 +712,9 @@ passes.
 | TC-595 | Reverting the branch leaves the suite green with the pre-existing case count, rehearsed by a script rather than by hand | Integration | P0 | NFR-021-AC-6 | ✅ passed |
 | TC-596 | Every added package manifest declares `"license": "AGPL-3.0-only"` | Static | P0 | NFR-021-AC-7 | ✅ passed |
 | TC-597 | No package was published and no downstream repository was changed | Static | P0 | NFR-021-AC-8 | ✅ passed |
-| TC-620 | Every NFR-021 gate resolves its baseline from history and still fails on the same input in a simulated post-merge tree where `origin/main...HEAD` and `git status` are both empty | Integration | P0 | NFR-021-AC-9 | ✅ passed |
+| TC-620 | Every NFR-021 gate resolves both ends of its range from history — neither a moving base nor a moving head — and still fails on the same input in a simulated post-merge tree where the branch diff and `git status` are both empty | Integration | P0 | NFR-021-AC-9 | ✅ passed |
 | TC-621 | An unaccounted-for file under `src/compiler/` fails the promotion-inventory gate in that same post-merge tree | Static | P0 | NFR-021-AC-9 | ✅ passed |
+| TC-644 | A later unrelated change landing on top of this one does not grow this change's path set, and a prohibited path left in the tree at a path no later commit owns still fails the gate | Integration | P0 | NFR-021-AC-10 | ✅ passed |
 | TC-598 | Multiplicity, nullability, and default kind are independent across their permutations | Property | P0 | FR-046-AC-6, FR-046-AC-9 | ✅ passed |
 | TC-599 | Collection flags are accepted on collections and refused on single-valued properties | Unit | P1 | FR-046-AC-7 | ✅ passed |
 | TC-600 | Constraint applicability is exercised across every structural kind | Unit | P1 | FR-050-AC-11 | ✅ passed |
@@ -1133,10 +1134,10 @@ therefore partially satisfied by construction and completes with #36.
 | Analysis | 17 | 17 | 0 | 0 | 100% mapped (17/17) |
 | Property | 43 | 43 | 0 | 0 | 100% mapped (43/43) |
 | Unit | 230 | 230 | 0 | 0 | 100% mapped (230/230) |
-| Integration | 38 | 37 | 0 | 1 | 100% mapped (38/38) |
+| Integration | 39 | 38 | 0 | 1 | 100% mapped (39/39) |
 | Fuzz | 7 | 7 | 0 | 0 | 100% mapped (7/7) |
 | Snapshot | 17 | 17 | 0 | 0 | 100% mapped (17/17) |
 | Compile | 3 | 3 | 0 | 0 | 100% mapped (3/3) |
-| **Total** | **581** | **579** | **0** | **2** | **100% mapped (581/581)** |
+| **Total** | **582** | **580** | **0** | **2** | **100% mapped (582/582)** |
 
-**Matrix coverage status: ✅ Complete. Execution status: ✅ 577 of 579 passed. TC-199 is recorded by the owner decision on issue #4; TC-370 and TC-382 remain blocked on issue #42 (the retained issue #4 evidence records the minting host's own tool versions). TC-398..619 pass on the issue #19 branch, measured with `make test` after merging `origin/main` at 4e48f08. The `Coverage` column is measured by `scripts/test-matrix-summary.mjs`, which counts the rows naming an id a spec artifact declares; it was a string literal before issue #19's code review (SR-073 FND-658). The `Blocked` column counts every row whose status is not ✅. Issue #19 measured `origin/main` at 51febd4 as **168 of 173** and filed the cause as #48; PR #47 re-expressed those five guards as tree assertions on `main`, and this branch takes that form.**
+**Matrix coverage status: ✅ Complete. Execution status: ✅ 580 of 582 rows pass, 2 blocked; the automated suite is 302 of 302 across 9 files, measured with `make test` on the issue #19 follow-up branch. TC-199 is recorded by the owner decision on issue #4; TC-370 and TC-382 remain blocked on issue #42 (the retained issue #4 evidence records the minting host's own tool versions). TC-398..619 pass on the issue #19 branch, measured with `make test` after merging `origin/main` at 4e48f08. The `Coverage` column is measured by `scripts/test-matrix-summary.mjs`, which counts the rows naming an id a spec artifact declares; it was a string literal before issue #19's code review (SR-073 FND-658). The `Blocked` column counts every row whose status is not ✅. Issue #19 measured `origin/main` at 51febd4 as **168 of 173** and filed the cause as #48; PR #47 re-expressed those five guards as tree assertions on `main`, and this branch takes that form. Issue #20 then measured the remaining direction: the NFR-021 changed-path range was fixed at its base but open at its head, so it grew from 236 paths and 0 prohibited hits against the merged trunk to 406 paths and 139 against a sibling branch. Both ends now come from history, and TC-644 rehearses the property on a synthetic history rather than inferring it from the shape of the source. Three states were measured for the fix, because the two-number standard cannot see an accreting range: **302 of 302** on the branch; **302 of 302** in a scratch clone where the branch is squash-merged onto f412bda and `origin/main` is repointed so both `git diff origin/main...HEAD` and `git status --porcelain` are empty; and **408 of 408 across 10 files** in that same clone with issue #20 (ad9c552) squash-merged on top. The third state is **406 of 407 with one failure** without this fix — `not permitted: conformance/README.md` — which is the defect. In the fixed third state issue #19's own range is 236 paths with 0 prohibited hits while the open-ended range over the same history is 406 paths with 139.**

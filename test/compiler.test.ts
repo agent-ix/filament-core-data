@@ -14,7 +14,7 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { baselineBefore, changedPathsSince } from "./changed-paths.js";
+import { changeRange, changedPathsOf } from "./changed-paths.js";
 import {
 	SEMANTIC_IR_SCHEMA_VERSION,
 	compileSemanticIr,
@@ -71,16 +71,20 @@ function git(...args: string[]): string {
 	return execFileSync("git", args, { cwd: root, encoding: "utf8" });
 }
 
+/** Issue #27's promotion, as a pair of history facts rather than a moving ref. */
+const PROMOTION = (): { base: string; tip: string } =>
+	changeRange(root, "src/compiler/inventory.json");
+
 function changedPaths(): string[] {
-	// Baselined on the commit this change replaced, not on a moving `main`.
-	// See `changedPathsSince` for why: against `origin/main` this set empties
-	// after the merge and every prohibition below passes vacuously.
-	return changedPathsSince(root, "src/compiler/inventory.json");
+	// Both ends of the range come from history. See `changedPathsOf`: measured
+	// from a moving ref this set empties after the merge and every prohibition
+	// below passes vacuously, and measured from a fixed base to a moving head it
+	// grows to contain every later ticket's work and fails this one for it.
+	return changedPathsOf(root, "src/compiler/inventory.json");
 }
 
 /** The commit issue #27's promotion replaced — a history fact, not a moving ref. */
-const PROMOTION_BASE = (): string =>
-	baselineBefore(root, "src/compiler/inventory.json");
+const PROMOTION_BASE = (): string => PROMOTION().base;
 
 function existsAtMain(path: string): boolean {
 	try {
@@ -1492,19 +1496,16 @@ describe("determinism and non-disruption (NFR-017, NFR-018)", () => {
 		// baseline is discovered from history through a file the promotion
 		// created, so it stays fixed after the merge and disappears — failing the
 		// gate — if the promotion is ever reverted.
-		const promotionCommit = git(
-			"log",
-			"--diff-filter=A",
-			"--format=%H",
-			"-1",
-			"--",
-			"src/compiler/inventory.json",
-		).trim();
-		expect(
-			promotionCommit,
-			"src/compiler/inventory.json must exist in history",
-		).not.toBe("");
-		const base = git("rev-parse", `${promotionCommit}^`).trim();
+		//
+		// The far end is pinned to the promotion commit for the same reason the
+		// near end is pinned to its parent. Measured to the current head this
+		// rehearsal restores every file every later ticket has landed since, and
+		// calls that "the promotion" — the accretion issue #20 measured on the
+		// issue #19 gate and issue #19 fixes here for both suites.
+		const { base, tip } = PROMOTION();
+		expect(tip, "src/compiler/inventory.json must exist in history").not.toBe(
+			"",
+		);
 		const existsAtBase = (path: string): boolean => {
 			try {
 				execFileSync("git", ["cat-file", "-e", `${base}:${path}`], {
@@ -1516,7 +1517,12 @@ describe("determinism and non-disruption (NFR-017, NFR-018)", () => {
 				return false;
 			}
 		};
-		const changed = git("diff", "--no-renames", "--name-only", `${base}..HEAD`)
+		const changed = git(
+			"diff",
+			"--no-renames",
+			"--name-only",
+			`${base}..${tip}`,
+		)
 			.split("\n")
 			.map((line) => line.trim())
 			.filter(
