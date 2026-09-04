@@ -292,6 +292,45 @@ export function lowerProgram(options) {
 		}
 	}
 
+	// Decorator argument defects and second applications are collected while the
+	// program compiles; they surface here so they carry the same registry codes,
+	// the same locus discipline and the same ordering as everything else.
+	for (const defect of program.stateMap(STATE.defects).get("all") ?? []) {
+		if (defect.kind === "duplicate") {
+			// `DecoratorContext` exposes the decorated target, not the application,
+			// so both applications share one node. The applications are recoverable
+			// from the target's own decorator list, in source order, which is what
+			// lets the diagnostic land on the *second* one and name the first.
+			const applications = (defect.target?.decorators ?? [])
+				.filter(
+					(item) =>
+						`@${item.definition?.name ?? item.decorator?.name ?? ""}`.replace(
+							/^@@/,
+							"@",
+						) === defect.decorator,
+				)
+				.map((item) => item.node)
+				.filter(Boolean)
+				.sort((left, right) => (left.pos ?? 0) - (right.pos ?? 0));
+			const second = applications[1] ?? defect.node;
+			const first = applications[0];
+			context.raise(
+				DIAGNOSTIC_CODES.DUPLICATE_DECORATOR,
+				`${fragment(defect.decorator)} is applied more than once to one declaration`,
+				context.locusOf(defect.target, second),
+				first && first !== second
+					? [context.locusOf(defect.target, first)].filter(Boolean)
+					: [],
+			);
+			continue;
+		}
+		context.raise(
+			DIAGNOSTIC_CODES.INVALID_DECORATOR_ARGUMENT,
+			`${fragment(defect.decorator)} parameter ${fragment(defect.parameter)} expects ${fragment(defect.expected)}, got ${fragment(defect.value)}`,
+			context.locusOf(defect.target, defect.node),
+		);
+	}
+
 	const kernels = new Map();
 	const useKernel = (irScalar, at) => {
 		const name = KERNEL_NAMES.get(irScalar);

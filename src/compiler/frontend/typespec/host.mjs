@@ -16,6 +16,20 @@
 import { NodeHost } from "@typespec/compiler";
 import { relative, resolve } from "node:path";
 
+/**
+ * The two refusal phrases.
+ *
+ * They are exported because the TypeSpec compiler catches whatever a host
+ * throws and re-reports it as its own `js-error` diagnostic, so the frontend has
+ * to recognise its own refusal in that message to give it the right registry
+ * code. A refusal that arrived as a generic compile error would tell a caller
+ * that their package does not compile, when what happened is that the compiler
+ * declined to load something.
+ */
+export const MODULE_REFUSAL =
+	"refusing to load a JavaScript module outside the library root";
+export const READ_REFUSAL = "refusing to read outside the declared roots";
+
 function within(parent, child) {
 	if (child === parent) return true;
 	const rel = relative(parent, child);
@@ -59,7 +73,7 @@ export function restrictedHost(options) {
 		async readFile(path) {
 			if (!allowedRead(path)) {
 				record.refusedReads.push(path);
-				throw new Error(`read outside the declared roots: ${path}`);
+				throw new Error(`${READ_REFUSAL}: ${path}`);
 			}
 			record.reads.push(path);
 			return NodeHost.readFile(path);
@@ -67,7 +81,7 @@ export function restrictedHost(options) {
 		async readDir(path) {
 			if (!allowedRead(path)) {
 				record.refusedReads.push(path);
-				throw new Error(`read outside the declared roots: ${path}`);
+				throw new Error(`${READ_REFUSAL}: ${path}`);
 			}
 			const names = await NodeHost.readDir(path);
 			return [...names].sort((left, right) =>
@@ -93,9 +107,7 @@ export function restrictedHost(options) {
 			const absolute = real(path);
 			if (!moduleRoots.some((root) => within(root, absolute))) {
 				record.refusedModules.push(absolute);
-				throw new Error(
-					`refusing to load a JavaScript module outside the library root: ${absolute}`,
-				);
+				throw new Error(`${MODULE_REFUSAL}: ${absolute}`);
 			}
 			record.moduleLoads.push(absolute);
 			return NodeHost.getJsImport(path);

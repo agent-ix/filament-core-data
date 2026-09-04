@@ -1001,7 +1001,7 @@ passes.
 | ERR-069 | `@defaultKind` is applied to a property with no declared default | `DEFAULT_KIND_WITHOUT_VALUE` at the decorator locus | TC-440 |
 | ERR-070 | A decorator argument fails its declared shape or pattern | `INVALID_DECORATOR_ARGUMENT` at the decorator locus | TC-415 |
 | ERR-071 | A single-valued decorator is applied twice to one target | `DUPLICATE_DECORATOR` at the second locus | TC-414 |
-| ERR-072 | A constraint keyword is not applicable to its resolved subject | `CONSTRAINT_NOT_APPLICABLE`, no constraint emitted | TC-422, TC-600 |
+| ERR-072 | A constraint keyword is not applicable to its resolved subject | `CONSTRAINT_NOT_APPLICABLE` from the reader; from the frontend, TypeSpec's own `decorator-wrong-target` refuses the application first | TC-422, TC-600 |
 | ERR-073 | Two declarations mint the same semantic identity | `DUPLICATE_IDENTITY` at the later locus, earlier as related | TC-421 |
 | ERR-074 | Two distinct names slug to one identity | `UNSLUGGABLE_NAME` at the later locus | TC-421 |
 | ERR-075 | A `@pre` or `@post` names an undeclared `clauseId` | `DANGLING_CLAUSE_REF` at the decorator locus | TC-422 |

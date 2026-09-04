@@ -9,6 +9,7 @@
  * exception.
  */
 import { compile } from "@typespec/compiler";
+import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -21,7 +22,7 @@ import {
 } from "../../diagnostics.mjs";
 import { readContractIr } from "../../ir/reader.mjs";
 import { validateIrDocument } from "../../ir/schema.mjs";
-import { restrictedHost } from "./host.mjs";
+import { MODULE_REFUSAL, READ_REFUSAL, restrictedHost } from "./host.mjs";
 import { lowerProgram } from "./lower.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -29,10 +30,16 @@ const here = dirname(fileURLToPath(import.meta.url));
 /** The absolute path of the decorator library the frontend injects. */
 export const DECORATOR_LIBRARY = resolve(here, "lib", "main.tsp");
 
-/** The toolchain's own installation, the only other place a module may load from. */
+/**
+ * The toolchain's own installation, the only other place a module may load from.
+ *
+ * Resolved through `createRequire` rather than `import.meta.resolve`, because
+ * the test runner's module transform does not provide the latter and a host
+ * whose module allow-list silently collapses would be worse than no host.
+ */
 function toolchainRoot() {
 	return dirname(
-		fileURLToPath(import.meta.resolve("@typespec/compiler/package.json")),
+		createRequire(import.meta.url).resolve("@typespec/compiler/package.json"),
 	);
 }
 
@@ -69,7 +76,7 @@ export async function run(request) {
 			ir: null,
 			diagnostics: [
 				diagnostic(
-					/outside the library root/.test(String(error?.message))
+					String(error?.message).includes(MODULE_REFUSAL)
 						? DIAGNOSTIC_CODES.UNTRUSTED_MODULE
 						: DIAGNOSTIC_CODES.PATH_ESCAPE,
 					{ message: fragment(String(error?.message ?? error)) },
@@ -80,6 +87,14 @@ export async function run(request) {
 
 	for (const entry of program.diagnostics) {
 		if (entry.severity !== "error") continue;
+		// The TypeSpec compiler catches a host refusal and re-reports it as its
+		// own `js-error`. Recognising the phrase is what keeps a refusal reported
+		// as a refusal rather than as "your package does not compile".
+		const refusal = entry.message?.includes(MODULE_REFUSAL)
+			? DIAGNOSTIC_CODES.UNTRUSTED_MODULE
+			: entry.message?.includes(READ_REFUSAL)
+				? DIAGNOSTIC_CODES.PATH_ESCAPE
+				: undefined;
 		const location = entry.target?.file
 			? entry.target
 			: (entry.target?.node ?? undefined);
@@ -96,8 +111,10 @@ export async function run(request) {
 				? location.file.getLineAndCharacterOfPosition(location.pos)
 				: undefined;
 		diagnostics.push(
-			diagnostic(DIAGNOSTIC_CODES.TYPESPEC_COMPILE_ERROR, {
-				message: `${entry.code}: ${fragment(entry.message)}`,
+			diagnostic(refusal ?? DIAGNOSTIC_CODES.TYPESPEC_COMPILE_ERROR, {
+				message: refusal
+					? fragment(entry.message)
+					: `${entry.code}: ${fragment(entry.message)}`,
 				...(position
 					? {
 							locus: {

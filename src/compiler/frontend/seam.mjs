@@ -12,25 +12,12 @@
  *   - a frontend stamps its own dialect and never reads the one used to select
  *     it, so no frontend can be made to claim another's identity.
  */
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { hasBlocking } from "../diagnostics.mjs";
-import { REPO_ROOT } from "../packages/lock.mjs";
+import { FRONTEND_DIALECTS } from "../dialects.mjs";
 import * as specBundle from "./spec-bundle/frontend.mjs";
 import * as typespec from "./typespec/frontend.mjs";
 
-/**
- * The closed dialect vocabulary, read from the published schema rather than
- * restated, so the registry and the contract cannot drift apart silently.
- */
-export const FRONTEND_DIALECTS = Object.freeze(
-	JSON.parse(
-		readFileSync(
-			resolve(REPO_ROOT, "schema/semantic/v1/common.schema.json"),
-			"utf8",
-		),
-	).$defs.frontendDialect.enum,
-);
+export { FRONTEND_DIALECTS };
 
 const REGISTRY = new Map([
 	[typespec.dialect, { frontend: typespec, implemented: true }],
@@ -59,17 +46,23 @@ export function isImplemented(dialect) {
 }
 
 /**
- * Runs a frontend over a `FrontendRequest` and enforces the seam's own contract:
- * a blocking diagnostic and a non-null document never come back together.
+ * The seam's own contract: a blocking diagnostic and a non-null document never
+ * come back together. Exported so it can be exercised directly — a frontend that
+ * breaks the contract is a defect in the compiler, and the seam is the only
+ * place that can catch it.
  */
-export async function runFrontend(request) {
-	const { frontend } = selectFrontend(request.dialect);
-	const result = await frontend.run(request);
+export function assertFrontendContract(dialect, result) {
 	const diagnostics = result.diagnostics ?? [];
-	if (hasBlocking(diagnostics) && result.ir !== null) {
+	if (hasBlocking(diagnostics) && result.ir != null) {
 		throw new Error(
-			`${request.dialect} returned a document alongside a blocking diagnostic; a partial document is never a complete one`,
+			`${dialect} returned a document alongside a blocking diagnostic; a partial document is never a complete one`,
 		);
 	}
 	return { ir: result.ir ?? null, diagnostics };
+}
+
+/** Runs a frontend over a `FrontendRequest` and enforces the seam's contract. */
+export async function runFrontend(request) {
+	const { frontend } = selectFrontend(request.dialect);
+	return assertFrontendContract(request.dialect, await frontend.run(request));
 }

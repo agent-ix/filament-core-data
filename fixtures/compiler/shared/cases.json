@@ -1,0 +1,23 @@
+{
+	"$comment": "Shared frontend fixture cases (FR-045). Each case names one source tree per dialect; the harness runs every *implemented* dialect the case supplies and compares the normalized serialization of FR-050. With only `typespec` implemented, each case is recorded as single-dialect rather than as cross-frontend agreement it never observed — the spec-bundle column is issue #36's to fill in.",
+	"cases": [
+		{
+			"id": "scalars-and-records",
+			"sources": {
+				"typespec": "shared/typespec/scalars-and-records"
+			}
+		},
+		{
+			"id": "collections-and-units",
+			"sources": {
+				"typespec": "shared/typespec/collections-and-units"
+			}
+		},
+		{
+			"id": "enums-and-unions",
+			"sources": {
+				"typespec": "shared/typespec/enums-and-unions"
+			}
+		}
+	]
+}
