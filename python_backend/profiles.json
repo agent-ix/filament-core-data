@@ -1,0 +1,113 @@
+{
+	"$comment": "Issue #23, FR-073. One immutable profile per generator output family at the single declared Python and Pydantic version. `options` is the complete argument vector: the runner adds, removes, and reorders nothing, and refuses a caller-supplied option. `verdict` and `runtimeValidation` are measured by FR-077 and are excluded from the profile digest, so recording a measurement does not invalidate the measurement.",
+	"pythonVersion": "3.13",
+	"pydanticVersion": "2.12.5",
+	"sharedOptionsRationale": {
+		"--disable-timestamp": "the output carries no clock reading",
+		"--formatters builtin": "the generator's dependency-free formatter; no external formatter version participates in generation, so the pinned version's warning that black and isort become opt-in cannot move the output",
+		"--strict-refs": "an unresolved local pointer is an error rather than a fallback `Any` model",
+		"--no-allow-remote-refs": "no remote reference is fetched; the guard and the absent HTTP extra are the other two independent defences",
+		"--field-constraints --use-annotated": "renders `Annotated[int, Field(ge=…)]` rather than `conint(ge=…)`; a call is not a valid type annotation and strict mypy rejects it, and no permitted remedy could repair that",
+		"--strict-nullable": "without it a non-nullable field carrying a default renders `T | None`, which admits a value the contract forbids",
+		"--use-standard-collections --use-union-operator": "the 3.13 spellings, so the output matches the declared target",
+		"NOT --extra-fields": "measured: `additionalProperties: false` already closes both Pydantic families and TypedDict, while the blanket flag closes models the schema leaves open",
+		"NOT --use-missing-sentinel": "measured: it is the only option that separates absent from null in the Pydantic families, and it renders `pydantic_core.MISSING` in a type position that mypy 1.19.1 rejects against pydantic 2.12.5"
+	},
+	"profiles": [
+		{
+			"id": "pydantic-v2-basemodel",
+			"outputModelType": "pydantic_v2.BaseModel",
+			"runtimeValidation": "validating",
+			"options": [
+				"--input-file-type", "jsonschema",
+				"--output-model-type", "pydantic_v2.BaseModel",
+				"--target-python-version", "3.13",
+				"--disable-timestamp",
+				"--formatters", "builtin",
+				"--strict-refs",
+				"--no-allow-remote-refs",
+				"--field-constraints",
+				"--use-annotated",
+				"--strict-nullable",
+				"--use-standard-collections",
+				"--use-union-operator"
+			]
+		},
+		{
+			"id": "pydantic-v2-dataclass",
+			"outputModelType": "pydantic_v2.dataclass",
+			"runtimeValidation": "validating",
+			"options": [
+				"--input-file-type", "jsonschema",
+				"--output-model-type", "pydantic_v2.dataclass",
+				"--target-python-version", "3.13",
+				"--disable-timestamp",
+				"--formatters", "builtin",
+				"--strict-refs",
+				"--no-allow-remote-refs",
+				"--field-constraints",
+				"--use-annotated",
+				"--strict-nullable",
+				"--use-standard-collections",
+				"--use-union-operator"
+			]
+		},
+		{
+			"id": "stdlib-dataclass",
+			"outputModelType": "dataclasses.dataclass",
+			"runtimeValidation": "static-only",
+			"options": [
+				"--input-file-type", "jsonschema",
+				"--output-model-type", "dataclasses.dataclass",
+				"--target-python-version", "3.13",
+				"--disable-timestamp",
+				"--formatters", "builtin",
+				"--strict-refs",
+				"--no-allow-remote-refs",
+				"--field-constraints",
+				"--use-annotated",
+				"--strict-nullable",
+				"--use-standard-collections",
+				"--use-union-operator"
+			]
+		},
+		{
+			"id": "typed-dict",
+			"outputModelType": "typing.TypedDict",
+			"runtimeValidation": "static-only",
+			"options": [
+				"--input-file-type", "jsonschema",
+				"--output-model-type", "typing.TypedDict",
+				"--target-python-version", "3.13",
+				"--disable-timestamp",
+				"--formatters", "builtin",
+				"--strict-refs",
+				"--no-allow-remote-refs",
+				"--field-constraints",
+				"--use-annotated",
+				"--strict-nullable",
+				"--use-standard-collections",
+				"--use-union-operator"
+			]
+		},
+		{
+			"id": "msgspec-struct",
+			"outputModelType": "msgspec.Struct",
+			"runtimeValidation": "validating",
+			"options": [
+				"--input-file-type", "jsonschema",
+				"--output-model-type", "msgspec.Struct",
+				"--target-python-version", "3.13",
+				"--disable-timestamp",
+				"--formatters", "builtin",
+				"--strict-refs",
+				"--no-allow-remote-refs",
+				"--field-constraints",
+				"--use-annotated",
+				"--strict-nullable",
+				"--use-standard-collections",
+				"--use-union-operator"
+			]
+		}
+	]
+}
