@@ -197,6 +197,45 @@ first time and before any file under `conformance/oracle/` was opened:
 `cargo test --offline --workspace --locked` at that point: 23 tests, 0 failures.
 `cargo fmt --all -- --check` clean, `cargo build` warning-free.
 
+## The differential harness
+
+`make rust-conformance` — `cargo build --offline --locked -p
+agent-ix-conformance-adapter` followed by `node
+conformance/runner/differential.mjs` — reports, on the committed corpus,
+registry and divergence register:
+
+| adapter | status | matched | unmet | failed |
+|---|---|---|---|---|
+| `rust-backend` | `available` | **111** | **0** | **0** |
+
+with `problems: []`, `divergences: []` and harness `exitCode: 0`. The one
+divergence `conformance/thresholds.json` permits for GAP-002 goes unspent.
+
+`PROV-002` is answered `supported` and matched: its `unsupportedBy` entry
+licenses an `unsupported` answer and does not require one, and the case is about
+a `startLine` of 0, which the schema layer decides structurally.
+
+### Negative controls
+
+Each was run by editing only the `rust-backend` registry entry, and the entry was
+restored afterwards; no other file under `conformance/` was written.
+
+| Control | Reported |
+|---|---|
+| The `command` removed and `status` returned to `unavailable` | `matched: 0`, `unmet: 111` — a missing adapter never reads as agreement |
+| `support: "unsupported"` on `ALIAS-001`, which no `unsupportedBy` licenses | problem `unsupported`, "the case does not declare this adapter in unsupportedBy", harness exit 1 |
+| The answer for `ENV-001` omitted | problem `missing-answer`, harness exit 1 |
+| The `caseDigest` for `SCAL-001` replaced | problem `case-digest`, "the answer names a case digest the manifest does not carry", harness exit 1 |
+
+### A note for the NFR-023 gate
+
+`node conformance/runner/differential.mjs` rewrites
+`conformance/coverage.json` on every run — `conformance/README.md` records it as
+"Generated on every run; never hand-edited". Running the harness with the
+`rust-backend` slot filled therefore leaves that file modified in the working
+tree. This change does not commit it: the only path under `conformance/` in this
+change's set is `adapters/registry.json`.
+
 ## Open questions
 
 None outstanding. No question arose during this work that could only have been
