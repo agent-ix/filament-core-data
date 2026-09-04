@@ -363,9 +363,38 @@ export function observedBump(previousVersion, currentVersion) {
 /**
  * The FR-035 versioning gate: an existing expected result may not change, and a
  * case or base may not be removed, without a major `corpusVersion` bump.
+ *
+ * The manifest declares whether a predecessor is expected, so the absence of one
+ * is an assertion rather than a silent skip. A gate that quietly disables itself
+ * when a git ref is unreadable is the same defect as a gate that baselines on a
+ * range its own merge empties: it stops asserting and nothing says so.
  */
 export function versioningFailures(previous, current) {
-	if (!previous) return [];
+	const declared = current.predecessor ?? {
+		state: "required",
+		ref: "origin/main",
+	};
+	if (declared.state === "none") {
+		if (previous) {
+			return [
+				{
+					gate: "versioning",
+					subject: "corpus.json",
+					message: `the manifest declares no predecessor, but ${declared.ref} now carries one at corpusVersion ${previous.corpusVersion}; set predecessor.state to "required"`,
+				},
+			];
+		}
+		return [];
+	}
+	if (!previous) {
+		return [
+			{
+				gate: "versioning",
+				subject: "corpus.json",
+				message: `the manifest requires a predecessor at ${declared.ref}, which could not be read, so the versioning comparison did not run`,
+			},
+		];
+	}
 	const { required, reasons } = classifyVersionChange(previous, current);
 	const observed = observedBump(previous.corpusVersion, current.corpusVersion);
 	const order = ["none", "patch", "minor", "major"];

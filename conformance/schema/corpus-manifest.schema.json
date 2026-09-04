@@ -12,6 +12,7 @@
 		"depthLimit",
 		"repeatLimit",
 		"contractArtifacts",
+		"predecessor",
 		"familyPrefixes",
 		"constructRegister",
 		"bases",
@@ -33,6 +34,16 @@
 		"minimizationBudget": { "type": "integer", "minimum": 1 },
 		"depthLimit": { "type": "integer", "minimum": 1 },
 		"repeatLimit": { "type": "integer", "minimum": 1 },
+		"predecessor": {
+			"type": "object",
+			"required": ["state", "ref", "rationale"],
+			"properties": {
+				"state": { "enum": ["none", "required"] },
+				"ref": { "type": "string", "minLength": 1 },
+				"rationale": { "type": "string", "minLength": 1 }
+			},
+			"additionalProperties": false
+		},
 		"contractArtifacts": {
 			"type": "array",
 			"minItems": 1,

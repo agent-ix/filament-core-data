@@ -150,6 +150,13 @@ const corpusChangedPaths = (): string[] => {
 	return diffFrom(git("rev-parse", `${commits[commits.length - 1]}^`).trim());
 };
 
+/** The predecessor declaration a merged corpus carries (FR-035). */
+const predecessorRequired = {
+	state: "required",
+	ref: "origin/main:conformance/corpus.json",
+	rationale: "seeded by the versioning assertions",
+};
+
 /** Runs the gate set against a mutated manifest. */
 const gatesWithManifest = (mutate: (value: Json) => void) => {
 	const seeded = corpus.loadManifest() as Json;
@@ -1801,10 +1808,12 @@ describe("TC-633..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		const before = structuredClone(manifest) as Json;
 		const after = structuredClone(manifest) as {
 			corpusVersion: string;
+			predecessor: Json;
 			cases: { expectedDigest: string }[];
 		};
 		after.cases[0].expectedDigest = `sha256:${"0".repeat(64)}`;
 		after.corpusVersion = "1.1.0";
+		after.predecessor = { ...predecessorRequired };
 		const classified = corpus.classifyVersionChange(before, after) as {
 			required: string;
 			reasons: { reason: string }[];
@@ -1830,19 +1839,23 @@ describe("TC-633..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		const before = structuredClone(manifest) as Json;
 		const removed = structuredClone(manifest) as {
 			corpusVersion: string;
+			predecessor: Json;
 			cases: unknown[];
 		};
 		removed.cases.pop();
 		removed.corpusVersion = "1.1.0";
+		removed.predecessor = { ...predecessorRequired };
 		expect(
 			(corpus.versioningFailures(before, removed) as unknown[]).length,
 		).toBe(1);
 		const rebased = structuredClone(manifest) as {
 			corpusVersion: string;
+			predecessor: Json;
 			bases: { digest: string }[];
 		};
 		rebased.bases[0].digest = `sha256:${"1".repeat(64)}`;
 		rebased.corpusVersion = "1.0.1";
+		rebased.predecessor = { ...predecessorRequired };
 		expect(
 			(corpus.versioningFailures(before, rebased) as unknown[]).length,
 		).toBe(1);
@@ -1852,10 +1865,12 @@ describe("TC-633..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		const before = structuredClone(manifest) as Json;
 		const added = structuredClone(manifest) as {
 			corpusVersion: string;
+			predecessor: Json;
 			cases: unknown[];
 		};
 		added.cases.push({ ...structuredClone(manifest.cases[0]), id: "ENV-999" });
 		added.corpusVersion = "1.1.0";
+		added.predecessor = { ...predecessorRequired };
 		expect(corpus.versioningFailures(before, added)).toEqual([]);
 		added.corpusVersion = "1.0.0";
 		expect((corpus.versioningFailures(before, added) as unknown[]).length).toBe(
@@ -1866,6 +1881,76 @@ describe("TC-633..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 			(corpus.versioningFailures(before, added) as { message: string }[])[0]
 				.message,
 		).toContain("not a forward SemVer bump");
+	});
+
+	it("TC-637 the versioning gate cannot silently disable itself", () => {
+		// The manifest declares whether a predecessor is expected, so a gate that
+		// did not run says so instead of passing. This is the same defect class as
+		// baselining on a range the branch's own merge empties.
+		const declared = manifest.predecessor as {
+			state: string;
+			ref: string;
+			rationale: string;
+		};
+		expect(["none", "required"]).toContain(declared.state);
+		expect(declared.rationale.length).toBeGreaterThan(0);
+
+		// Declared `none` with no predecessor readable: the comparison is
+		// legitimately not applicable.
+		expect(corpus.versioningFailures(undefined, manifest)).toEqual([]);
+
+		// Declared `none` once a predecessor exists: stale, and it fails rather
+		// than quietly comparing nothing.
+		const appeared = corpus.versioningFailures(
+			{ corpusVersion: "1.0.0", cases: [], bases: [] },
+			manifest,
+		) as { gate: string; message: string }[];
+		expect(appeared.length).toBe(1);
+		expect(appeared[0].gate).toBe("versioning");
+		expect(appeared[0].message).toContain(
+			'set predecessor.state to "required"',
+		);
+
+		// Declared `required` but unreadable: the gate fails instead of skipping.
+		const required = {
+			...structuredClone(manifest),
+			predecessor: { ...declared, state: "required" },
+		};
+		const unreadable = corpus.versioningFailures(undefined, required) as {
+			message: string;
+		}[];
+		expect(unreadable.length).toBe(1);
+		expect(unreadable[0].message).toContain("did not run");
+	});
+
+	it("TC-637 no corpus gate baselines on a range this branch's own merge empties", () => {
+		// The defect issue #27 carried into main: a positive claim about
+		// `origin/main...HEAD` fails forever after the squash merge, and a negative
+		// one stops asserting. Nothing under conformance/ may read that range, and
+		// the suite's own baseline carries the merge-empty fallback.
+		const walk = (dir: string): string[] =>
+			readdirSync(dir).flatMap((entry) => {
+				const full = join(dir, entry);
+				return statSync(full).isDirectory() ? walk(full) : [full];
+			});
+		for (const file of walk(CONF)) {
+			if (!file.endsWith(".mjs")) continue;
+			expect(
+				/origin\/main\.\.\.|origin\/main\.\./.test(readFileSync(file, "utf8")),
+				file,
+			).toBe(false);
+		}
+		const suite = readFileSync(
+			join(REPO, "test", "conformance-corpus.test.ts"),
+			"utf8",
+		);
+		expect(suite).toContain("merge-base");
+		// Built at runtime so this assertion is not its own counter-example.
+		const forbidden = `"origin/main${".".repeat(3)}HEAD"`;
+		expect(
+			suite.includes(forbidden),
+			"the suite baselines on the merge-empty range",
+		).toBe(false);
 	});
 
 	it("TC-637 corpusVersion is the version a consumer pins, and the README says so", () => {

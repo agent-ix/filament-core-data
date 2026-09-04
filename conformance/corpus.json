@@ -11,6 +11,11 @@
 		"schema/semantic/v1/",
 		"fixtures/semantic/v1/"
 	],
+	"predecessor": {
+		"state": "none",
+		"ref": "origin/main:conformance/corpus.json",
+		"rationale": "origin/main carries no corpus until this branch merges, so there is nothing to compare a corpusVersion bump against. The gate fails the moment a predecessor becomes readable, which forces this to be flipped to `required` on the next branch instead of staying a silent no-op."
+	},
 	"familyPrefixes": {
 		"envelope": "ENV",
 		"identity": "IDENT",
