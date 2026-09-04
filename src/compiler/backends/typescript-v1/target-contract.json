@@ -1,0 +1,23 @@
+{
+	"contractVersion": "1.0.0",
+	"target": "typescript",
+	"nativeApi": ["static type", "discriminated union", "runtime schema"],
+	"runtimeValidation": "runtime validator derived from the locked semantic contract",
+	"identityMetadata": "exported readonly identity map",
+	"unsupportedFeaturePolicy": "fail",
+	"prohibitedDependencies": [
+		"ui",
+		"orm",
+		"sqlalchemy",
+		"tauri",
+		"network-client",
+		"database-migration",
+		"application-service"
+	],
+	"runtimeDependencies": ["runtime-schema-validator"],
+	"executableGeneratorDependencies": [],
+	"securityFindings": [],
+	"backendQualification": "custom-retained",
+	"qualificationEvidence": "https://github.com/agent-ix/filament-core-data/issues/22",
+	"customSourceLicense": "AGPL-3.0-or-later"
+}

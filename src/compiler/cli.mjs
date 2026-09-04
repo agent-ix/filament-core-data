@@ -2,10 +2,12 @@
 /**
  * The compiler command line (FR-041, FR-052).
  *
- * Four verbs. `emit-ir` is the promoted issue #4 prototype path and is
+ * Five verbs. `emit-ir` is the promoted issue #4 prototype path and is
  * deliberately untouched: it is the route the frozen spike replay still takes,
  * and its bytes are a committed golden. `compile`, `inspect` and `diff` are the
- * contract path.
+ * contract path, and `generate` is the generation path issue #22 adds — the
+ * four that came before it keep their flags, their exit codes and their output
+ * unchanged (FR-071-CON-6).
  *
  * Two conventions run through all four. Every input is a flag or a file — the
  * CLI reads no environment variable to decide anything, so two hosts cannot
@@ -15,6 +17,11 @@
  */
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { FormatterError, biomeFormatter } from "./backends/format.mjs";
+import { BACKEND_TARGETS } from "./backends/seam.mjs";
+import { fingerprintIrForTarget } from "./backends/typescript-v1/canonical.mjs";
+import { emitTypeScriptPackage } from "./backends/typescript-v1/emit.mjs";
+import { typescriptBackend } from "./backends/typescript-v1/index.mjs";
 import { compileSemanticIr } from "./compile.mjs";
 import { diffSemanticContract } from "./compat/diff.mjs";
 import {
@@ -39,6 +46,8 @@ const USAGE = `Usage:
   node src/compiler/cli.mjs diff --old <ir> --new <ir> --out <file>
                                  [--consumer-policy <file>]... [--consumer-evidence <status>]
                                  [--target-result <target>=<disposition>]...
+  node src/compiler/cli.mjs generate --ir <file> [--target <target>] --out-root <dir>
+                                     [--profile <file>] [--manifest <file>] [--limits <file>]
 
 Exit codes: 0 success, 1 a blocking diagnostic or a breaking aggregate, 2 a usage error.`;
 
@@ -69,7 +78,35 @@ const FLAGS = {
 		repeated: ["consumer-policy", "target-result"],
 		boolean: [],
 	},
+	generate: {
+		single: ["ir", "target", "out-root", "profile", "manifest", "limits"],
+		repeated: [],
+		boolean: [],
+	},
 };
+
+/**
+ * The profile a generation assumes when the caller names none.
+ *
+ * Declared here rather than borrowed from a fixture: a default that read a test
+ * artifact would make the command's behaviour a function of a file nobody
+ * thinks of as an input. `semantic-source` authority with a `read-only` edge
+ * and `reject` unknowns is the conservative reading — a generated language
+ * package derives from the semantic source, is not edited back, and admits
+ * nothing the contract did not declare.
+ */
+const DEFAULT_GENERATION_PROFILE = Object.freeze({
+	contractVersion: "1.0.0",
+	identity: "ix://agent-ix/filament-core-data/profile/generated-typescript",
+	version: "1.0.0",
+	authority: "semantic-source",
+	editDirection: "read-only",
+	roundTrip: "semantic-lossless",
+	unknownPolicy: "reject",
+	allowedOmissions: [],
+	enrichment: false,
+	materializationLifetime: "durable",
+});
 
 class UsageError extends Error {}
 
@@ -235,7 +272,102 @@ async function diff(options) {
 	return ["breaking", "invalid"].includes(report.aggregateDisposition) ? 1 : 0;
 }
 
-const COMMANDS = { "emit-ir": emitIr, compile, inspect, diff };
+/**
+ * Generates a language package from one IR document (FR-071).
+ *
+ * The CLI is the one place that reads a flag, constructs the injected host and
+ * constructs the formatter, and passes both down; nothing beneath it reaches
+ * for an environment variable or the file system on its own (FR-071-CON-2).
+ *
+ * Nothing is written until the whole generation has succeeded. A blocking
+ * diagnostic must leave a fresh `--out-root` empty and a pre-existing file
+ * under it byte-unchanged, and the only way to promise that is to decide
+ * before the first write rather than to unwind after one.
+ */
+async function generate(options) {
+	require_(options, "ir", "out-root");
+	const target = options.target ?? "typescript";
+	if (!BACKEND_TARGETS.includes(target)) {
+		// A target outside the closed vocabulary is the caller naming something
+		// the contract does not define, which is a usage error and not a defect in
+		// any document (FR-071-AC-7).
+		throw new UsageError(
+			`--target must be one of ${BACKEND_TARGETS.join(", ")}; received ${target}`,
+		);
+	}
+	const ir = readJsonFile(options.ir, "ir");
+	const profile = options.profile
+		? readJsonFile(options.profile, "profile")
+		: DEFAULT_GENERATION_PROFILE;
+	const limits = options.limits
+		? { ...DEFAULT_LIMITS, ...readJsonFile(options.limits, "limits") }
+		: DEFAULT_LIMITS;
+	const outRoot = resolve(options["out-root"]);
+	const host = createHost({
+		readRoots: [
+			REPO_ROOT,
+			...[options.ir, options.profile, options.limits]
+				.filter(Boolean)
+				.map((path) => dirname(resolve(path))),
+		],
+	});
+
+	const request = {
+		contractVersion: "1.0.0",
+		lockFingerprint: fingerprintIrForTarget(ir),
+		ir,
+		profile,
+		mappings: [],
+		backend: {
+			identity: typescriptBackend.identity,
+			version: typescriptBackend.version,
+			supportedIrVersions: [...typescriptBackend.supportedIrVersions],
+			supportedFeatures: [...typescriptBackend.supportedFeatures],
+			options: {},
+		},
+		// A declared label, never the caller's directory. `--out-root` decides
+		// where the bytes land; putting it in the request would put the caller's
+		// path into the output manifest, and two runs into two different
+		// directories would then produce two different manifests — which is
+		// exactly what FR-071-AC-2 exists to forbid.
+		outputRoot: `generated/${target}`,
+		limits,
+	};
+
+	let emitted;
+	try {
+		emitted = emitTypeScriptPackage(request, {
+			target,
+			host,
+			format: biomeFormatter(),
+		});
+	} catch (error) {
+		if (error instanceof FormatterError) {
+			process.stderr.write(`${error.message}\n`);
+			return 1;
+		}
+		throw error;
+	}
+	const { manifest, files } = emitted;
+
+	const diagnostics = sortDiagnostics(manifest.diagnostics);
+	for (const entry of diagnostics) {
+		process.stderr.write(
+			`${entry.code} ${entry.locus ? `${entry.locus.path}:${entry.locus.startLine}:${entry.locus.startColumn} ` : ""}${entry.message}\n`,
+		);
+	}
+
+	const bytes = `${JSON.stringify(manifest, null, "\t")}\n`;
+	if (options.manifest) writeAtomic(options.manifest, bytes);
+	else process.stdout.write(bytes);
+
+	const clean = manifest.state === "success" || manifest.state === "lossy";
+	if (!clean || hasBlocking(diagnostics)) return 1;
+	for (const file of files) writeAtomic(resolve(outRoot, file.path), file.text);
+	return 0;
+}
+
+const COMMANDS = { "emit-ir": emitIr, compile, inspect, diff, generate };
 
 async function main(argv) {
 	const [command, ...rest] = argv;

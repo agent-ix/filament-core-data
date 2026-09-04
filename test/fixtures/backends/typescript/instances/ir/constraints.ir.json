@@ -1,0 +1,784 @@
+{
+	"contractVersion": "1.1.0",
+	"source": {
+		"identity": "ix://agent-ix/filament-core-data/source/typespec",
+		"version": "1.0.0",
+		"dialect": "typespec",
+		"digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+	},
+	"package": {
+		"identity": "agent-ix/instances",
+		"version": "1.0.0",
+		"manifestDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+		"mappingVersions": ["1.0.0"],
+		"profileVersions": ["1.0.0"],
+		"lockDigest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+	},
+	"types": [
+		{
+			"identity": "ix://agent-ix/instances/type/Plain",
+			"displayName": "Plain",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "string"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/MinLen",
+			"displayName": "MinLen",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 3,
+					"startColumn": 1
+				}
+			},
+			"constraints": [
+				{
+					"identity": "ix://agent-ix/instances/constraint/min-len",
+					"keyword": "minLength",
+					"operands": {
+						"value": 2
+					},
+					"appliesTo": "ix://agent-ix/instances/type/MinLen",
+					"diagnosticCode": "agent-ix.instances.MIN_LEN",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 2,
+							"startColumn": 1
+						}
+					}
+				}
+			],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "string"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/MaxLen",
+			"displayName": "MaxLen",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 5,
+					"startColumn": 1
+				}
+			},
+			"constraints": [
+				{
+					"identity": "ix://agent-ix/instances/constraint/max-len",
+					"keyword": "maxLength",
+					"operands": {
+						"value": 4
+					},
+					"appliesTo": "ix://agent-ix/instances/type/MaxLen",
+					"diagnosticCode": "agent-ix.instances.MAX_LEN",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 4,
+							"startColumn": 1
+						}
+					}
+				}
+			],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "string"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Loose",
+			"displayName": "Loose",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 7,
+					"startColumn": 1
+				}
+			},
+			"constraints": [
+				{
+					"identity": "ix://agent-ix/instances/constraint/loose",
+					"keyword": "pattern",
+					"operands": {
+						"regex": "ab",
+						"dialect": "ecma-262"
+					},
+					"appliesTo": "ix://agent-ix/instances/type/Loose",
+					"diagnosticCode": "agent-ix.instances.LOOSE",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 6,
+							"startColumn": 1
+						}
+					}
+				}
+			],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "string"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Anchored",
+			"displayName": "Anchored",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 9,
+					"startColumn": 1
+				}
+			},
+			"constraints": [
+				{
+					"identity": "ix://agent-ix/instances/constraint/anchored",
+					"keyword": "pattern",
+					"operands": {
+						"regex": "^ab$",
+						"dialect": "ecma-262"
+					},
+					"appliesTo": "ix://agent-ix/instances/type/Anchored",
+					"diagnosticCode": "agent-ix.instances.ANCHORED",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 8,
+							"startColumn": 1
+						}
+					}
+				}
+			],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "string"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Choice",
+			"displayName": "Choice",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 11,
+					"startColumn": 1
+				}
+			},
+			"constraints": [
+				{
+					"identity": "ix://agent-ix/instances/constraint/choice",
+					"keyword": "enumValues",
+					"operands": {
+						"values": ["x", "y"]
+					},
+					"appliesTo": "ix://agent-ix/instances/type/Choice",
+					"diagnosticCode": "agent-ix.instances.CHOICE",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 10,
+							"startColumn": 1
+						}
+					}
+				}
+			],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "string"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Filled",
+			"displayName": "Filled",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 13,
+					"startColumn": 1
+				}
+			},
+			"constraints": [
+				{
+					"identity": "ix://agent-ix/instances/constraint/filled",
+					"keyword": "nonEmpty",
+					"operands": {},
+					"appliesTo": "ix://agent-ix/instances/type/Filled",
+					"diagnosticCode": "agent-ix.instances.FILLED",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 12,
+							"startColumn": 1
+						}
+					}
+				}
+			],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "string"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Mail",
+			"displayName": "Mail",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 15,
+					"startColumn": 1
+				}
+			},
+			"constraints": [
+				{
+					"identity": "ix://agent-ix/instances/constraint/mail",
+					"keyword": "format",
+					"operands": {
+						"name": "agent-ix:email"
+					},
+					"appliesTo": "ix://agent-ix/instances/type/Mail",
+					"diagnosticCode": "agent-ix.instances.MAIL",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 14,
+							"startColumn": 1
+						}
+					}
+				}
+			],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "string"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/AtLeast",
+			"displayName": "AtLeast",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 17,
+					"startColumn": 1
+				}
+			},
+			"constraints": [
+				{
+					"identity": "ix://agent-ix/instances/constraint/at-least",
+					"keyword": "min",
+					"operands": {
+						"value": 0
+					},
+					"appliesTo": "ix://agent-ix/instances/type/AtLeast",
+					"diagnosticCode": "agent-ix.instances.AT_LEAST",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 16,
+							"startColumn": 1
+						}
+					}
+				}
+			],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "integer"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/AtMost",
+			"displayName": "AtMost",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 19,
+					"startColumn": 1
+				}
+			},
+			"constraints": [
+				{
+					"identity": "ix://agent-ix/instances/constraint/at-most",
+					"keyword": "max",
+					"operands": {
+						"value": 10
+					},
+					"appliesTo": "ix://agent-ix/instances/type/AtMost",
+					"diagnosticCode": "agent-ix.instances.AT_MOST",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 18,
+							"startColumn": 1
+						}
+					}
+				}
+			],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "integer"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Above",
+			"displayName": "Above",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 21,
+					"startColumn": 1
+				}
+			},
+			"constraints": [
+				{
+					"identity": "ix://agent-ix/instances/constraint/above",
+					"keyword": "exclusiveMin",
+					"operands": {
+						"value": 0
+					},
+					"appliesTo": "ix://agent-ix/instances/type/Above",
+					"diagnosticCode": "agent-ix.instances.ABOVE",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 20,
+							"startColumn": 1
+						}
+					}
+				}
+			],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "number"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Below",
+			"displayName": "Below",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 23,
+					"startColumn": 1
+				}
+			},
+			"constraints": [
+				{
+					"identity": "ix://agent-ix/instances/constraint/below",
+					"keyword": "exclusiveMax",
+					"operands": {
+						"value": 10
+					},
+					"appliesTo": "ix://agent-ix/instances/type/Below",
+					"diagnosticCode": "agent-ix.instances.BELOW",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 22,
+							"startColumn": 1
+						}
+					}
+				}
+			],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "number"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Octets",
+			"displayName": "Octets",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 25,
+					"startColumn": 1
+				}
+			},
+			"constraints": [
+				{
+					"identity": "ix://agent-ix/instances/constraint/octets",
+					"keyword": "maxLength",
+					"operands": {
+						"value": 3
+					},
+					"appliesTo": "ix://agent-ix/instances/type/Octets",
+					"diagnosticCode": "agent-ix.instances.OCTETS",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 24,
+							"startColumn": 1
+						}
+					}
+				}
+			],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "bytes"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Distinct",
+			"displayName": "Distinct",
+			"kind": "sequence",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 26,
+					"startColumn": 1
+				}
+			},
+			"constraints": [
+				{
+					"identity": "ix://agent-ix/instances/constraint/distinct",
+					"keyword": "unique",
+					"operands": {},
+					"appliesTo": "ix://agent-ix/instances/type/Distinct",
+					"diagnosticCode": "agent-ix.instances.DISTINCT",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 27,
+							"startColumn": 1
+						}
+					}
+				}
+			],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"items": "ix://agent-ix/instances/type/Plain"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Holder",
+			"displayName": "Holder",
+			"kind": "record",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 41,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"fields": [
+				{
+					"identity": "ix://agent-ix/instances/field/holder-minLen",
+					"name": "minLen",
+					"typeRef": "ix://agent-ix/instances/type/MinLen",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 28,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/holder-maxLen",
+					"name": "maxLen",
+					"typeRef": "ix://agent-ix/instances/type/MaxLen",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 29,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/holder-loose",
+					"name": "loose",
+					"typeRef": "ix://agent-ix/instances/type/Loose",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 30,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/holder-anchored",
+					"name": "anchored",
+					"typeRef": "ix://agent-ix/instances/type/Anchored",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 31,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/holder-choice",
+					"name": "choice",
+					"typeRef": "ix://agent-ix/instances/type/Choice",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 32,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/holder-filled",
+					"name": "filled",
+					"typeRef": "ix://agent-ix/instances/type/Filled",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 33,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/holder-mail",
+					"name": "mail",
+					"typeRef": "ix://agent-ix/instances/type/Mail",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 34,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/holder-atLeast",
+					"name": "atLeast",
+					"typeRef": "ix://agent-ix/instances/type/AtLeast",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 35,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/holder-atMost",
+					"name": "atMost",
+					"typeRef": "ix://agent-ix/instances/type/AtMost",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 36,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/holder-above",
+					"name": "above",
+					"typeRef": "ix://agent-ix/instances/type/Above",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 37,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/holder-below",
+					"name": "below",
+					"typeRef": "ix://agent-ix/instances/type/Below",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 38,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/holder-octets",
+					"name": "octets",
+					"typeRef": "ix://agent-ix/instances/type/Octets",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 39,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/holder-distinct",
+					"name": "distinct",
+					"typeRef": "ix://agent-ix/instances/type/Distinct",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 40,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				}
+			]
+		}
+	],
+	"occurrences": [],
+	"extensions": []
+}

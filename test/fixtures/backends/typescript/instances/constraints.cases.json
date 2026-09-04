@@ -1,0 +1,268 @@
+{
+	"$comment": "Every one of the eleven closed constraint keywords at its boundary and one past it. Each expectation is read off the keyword table in `### Constraint keywords` of `spec/functional/FR-066-generate-runtime-validators.md` together with the operand the named constraint declares in `ir/constraints.ir.json`; the expected code is that constraint's own `diagnosticCode`, which FR-066 requires the validator to report rather than minting one. None was recorded from a run.",
+	"ir": "ir/constraints.ir.json",
+	"provenance": {
+		"authoredFrom": [
+			"spec/functional/FR-066-generate-runtime-validators.md",
+			"test/fixtures/backends/typescript/instances/ir/constraints.ir.json"
+		],
+		"blessedFromRun": false
+	},
+	"cases": [
+		{
+			"id": "CONS-001",
+			"title": "minLength 2: a two-code-point string is at the bound and accepted",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "minLen": "ab" },
+			"expect": "accept"
+		},
+		{
+			"id": "CONS-002",
+			"title": "minLength 2: a one-code-point string is one past the bound",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "minLen": "a" },
+			"expect": "reject",
+			"pointer": "/minLen",
+			"code": "agent-ix.instances.MIN_LEN"
+		},
+		{
+			"id": "CONS-003",
+			"title": "minLength counts code points, so one astral character counts once and fails a bound of two",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "minLen": "𝄞" },
+			"expect": "reject",
+			"pointer": "/minLen",
+			"code": "agent-ix.instances.MIN_LEN"
+		},
+		{
+			"id": "CONS-004",
+			"title": "minLength counts code points: one astral character and one ASCII make two",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "minLen": "𝄞a" },
+			"expect": "accept"
+		},
+		{
+			"id": "CONS-005",
+			"title": "maxLength 4: a four-code-point string is at the bound and accepted",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "maxLen": "abcd" },
+			"expect": "accept"
+		},
+		{
+			"id": "CONS-006",
+			"title": "maxLength 4: a five-code-point string is one past the bound",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "maxLen": "abcde" },
+			"expect": "reject",
+			"pointer": "/maxLen",
+			"code": "agent-ix.instances.MAX_LEN"
+		},
+		{
+			"id": "CONS-007",
+			"title": "an unanchored pattern matches an embedded substring, proving no anchor was added",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "loose": "xaby" },
+			"expect": "accept"
+		},
+		{
+			"id": "CONS-008",
+			"title": "an unanchored pattern still rejects a string it does not occur in",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "loose": "xy" },
+			"expect": "reject",
+			"pointer": "/loose",
+			"code": "agent-ix.instances.LOOSE"
+		},
+		{
+			"id": "CONS-009",
+			"title": "an anchored pattern matches only the whole string",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "anchored": "ab" },
+			"expect": "accept"
+		},
+		{
+			"id": "CONS-010",
+			"title": "an anchored pattern rejects the embedded form the unanchored one accepts",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "anchored": "xaby" },
+			"expect": "reject",
+			"pointer": "/anchored",
+			"code": "agent-ix.instances.ANCHORED"
+		},
+		{
+			"id": "CONS-011",
+			"title": "enumValues: a declared member is accepted",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "choice": "x" },
+			"expect": "accept"
+		},
+		{
+			"id": "CONS-012",
+			"title": "enumValues: a value outside the declared set is rejected",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "choice": "z" },
+			"expect": "reject",
+			"pointer": "/choice",
+			"code": "agent-ix.instances.CHOICE"
+		},
+		{
+			"id": "CONS-013",
+			"title": "nonEmpty: one character is at the bound and accepted",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "filled": "a" },
+			"expect": "accept"
+		},
+		{
+			"id": "CONS-014",
+			"title": "nonEmpty: the empty string is one past the bound",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "filled": "" },
+			"expect": "reject",
+			"pointer": "/filled",
+			"code": "agent-ix.instances.FILLED"
+		},
+		{
+			"id": "CONS-015",
+			"title": "format: a value satisfying the declared format is accepted",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "mail": "someone@example.test" },
+			"expect": "accept"
+		},
+		{
+			"id": "CONS-016",
+			"title": "format: a value that is not of the declared format is rejected",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "mail": "not-an-address" },
+			"expect": "reject",
+			"pointer": "/mail",
+			"code": "agent-ix.instances.MAIL"
+		},
+		{
+			"id": "CONS-017",
+			"title": "min 0: zero is at the bound and accepted",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "atLeast": 0 },
+			"expect": "accept"
+		},
+		{
+			"id": "CONS-018",
+			"title": "min 0: minus one is one past the bound",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "atLeast": -1 },
+			"expect": "reject",
+			"pointer": "/atLeast",
+			"code": "agent-ix.instances.AT_LEAST"
+		},
+		{
+			"id": "CONS-019",
+			"title": "max 10: ten is at the bound and accepted",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "atMost": 10 },
+			"expect": "accept"
+		},
+		{
+			"id": "CONS-020",
+			"title": "max 10: eleven is one past the bound",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "atMost": 11 },
+			"expect": "reject",
+			"pointer": "/atMost",
+			"code": "agent-ix.instances.AT_MOST"
+		},
+		{
+			"id": "CONS-021",
+			"title": "exclusiveMin 0: a value above the bound is accepted",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "above": 0.5 },
+			"expect": "accept"
+		},
+		{
+			"id": "CONS-022",
+			"title": "exclusiveMin 0: the bound itself is excluded",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "above": 0 },
+			"expect": "reject",
+			"pointer": "/above",
+			"code": "agent-ix.instances.ABOVE"
+		},
+		{
+			"id": "CONS-023",
+			"title": "exclusiveMax 10: a value below the bound is accepted",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "below": 9.5 },
+			"expect": "accept"
+		},
+		{
+			"id": "CONS-024",
+			"title": "exclusiveMax 10: the bound itself is excluded",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "below": 10 },
+			"expect": "reject",
+			"pointer": "/below",
+			"code": "agent-ix.instances.BELOW"
+		},
+		{
+			"id": "CONS-025",
+			"title": "maxLength 3 on a bytes subject: four base64 characters decoding to three octets are at the bound",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "octets": "YWJj" },
+			"expect": "accept",
+			"differential": "exempt",
+			"differentialReason": "JSON Schema 2020-12 states `contentEncoding` as an annotation and ajv does not decode it, so the second decider counts base64 characters where FR-066 counts decoded octets. Teaching the schema the octet rule would be authoring the answer rather than a second reading."
+		},
+		{
+			"id": "CONS-026",
+			"title": "maxLength 3 on a bytes subject: eight base64 characters decoding to four octets are one past it",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "octets": "YWJjZA==" },
+			"expect": "reject",
+			"pointer": "/octets",
+			"code": "agent-ix.instances.OCTETS",
+			"differential": "exempt",
+			"differentialReason": "As CONS-025: the decoded-octet length is outside the JSON data model ajv validates in."
+		},
+		{
+			"id": "CONS-027",
+			"title": "a bytes subject rejects a string that is not well-formed base64",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "octets": "not base64!" },
+			"expect": "reject",
+			"pointer": "/octets",
+			"code": "agent-ix.typescript-backend.NOT_BASE64",
+			"differential": "exempt",
+			"differentialReason": "The base64 well-formedness rule is a declared backend decision pending agent-ix/filament-core-data#58, not a published contract clause, so a hand-authored schema asserting it would restate the decision rather than check it."
+		},
+		{
+			"id": "CONS-028",
+			"title": "unique: two distinct members are accepted",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "distinct": ["a", "b"] },
+			"expect": "accept"
+		},
+		{
+			"id": "CONS-029",
+			"title": "unique: two members sharing a canonical form are rejected",
+			"type": "ix://agent-ix/instances/type/Holder",
+			"payload": { "distinct": ["a", "a"] },
+			"expect": "reject",
+			"pointer": "/distinct",
+			"code": "agent-ix.instances.DISTINCT"
+		},
+		{
+			"id": "CONS-030",
+			"title": "a constrained scalar validated directly reports at the root pointer",
+			"type": "ix://agent-ix/instances/type/MinLen",
+			"payload": "a",
+			"expect": "reject",
+			"pointer": "",
+			"code": "agent-ix.instances.MIN_LEN"
+		},
+		{
+			"id": "CONS-031",
+			"title": "a constrained scalar at its bound is accepted when validated directly",
+			"type": "ix://agent-ix/instances/type/MinLen",
+			"payload": "ab",
+			"expect": "accept"
+		}
+	]
+}

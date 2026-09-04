@@ -32,9 +32,10 @@
 			"id": "typescript-backend",
 			"language": "typescript",
 			"owningIssue": "agent-ix/filament-core-data#22",
-			"status": "unavailable",
+			"status": "available",
 			"pointerCompatible": true,
-			"rationale": "No generated TypeScript package exists; the merged issue #34 reader is evidence for that issue, not an adapter, and the oracle may not import it."
+			"command": ["node", "adapters/typescript-backend/adapter.mjs"],
+			"rationale": "Issue #22 landed the TypeScript generation backend under src/compiler/backends/typescript-v1/. The adapter answers every case from that backend's own decision modules \u2014 admitIr for the result state and the diagnostics, normalizeIrForTarget for the canonical form, classifySurface for a compatibility case's classification \u2014 and calls neither oracleVerdict nor compare. pointerCompatible stays true because the backend locates by the same RFC 6901 scheme this oracle uses."
 		},
 		{
 			"id": "python-backend",

@@ -1,0 +1,47 @@
+[
+	{
+		"path": "errors.ts",
+		"size": 8647,
+		"sha256": "0887a7924ff6fb5e407dedf275be7adc57e3be39da818715afa3db3ab95fc8ba"
+	},
+	{
+		"path": "identity.ts",
+		"size": 8843,
+		"sha256": "532b75eded956eab92cf67b8093cb3dea4cebf10da4d32b35891becd8c52dc71"
+	},
+	{
+		"path": "index.ts",
+		"size": 1432,
+		"sha256": "1ef84341d8cec67a1b755a648a6c96492dad02e6d79099ed2998c6acef5d90ff"
+	},
+	{
+		"path": "LICENSE",
+		"size": 34523,
+		"sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+	},
+	{
+		"path": "metadata.ts",
+		"size": 7503,
+		"sha256": "37481885975d1b46b1b5c95f6b3116f6f11e8efbb24fee4c3114a868881d74e2"
+	},
+	{
+		"path": "output-manifest.json",
+		"size": 2469,
+		"sha256": "69660dbaa00782ca554870e6a823339465739ebfdf4bb966acdef5d8ab69bfac"
+	},
+	{
+		"path": "package.json",
+		"size": 992,
+		"sha256": "b25f98fd75292fc8453c73d8781d00f94a4b24ebafe477c1119eb16648c84965"
+	},
+	{
+		"path": "types.ts",
+		"size": 1991,
+		"sha256": "f97061c2e47dc3961c700a32afab94756d5611d8ca7a1652d6e2c3db43247f48"
+	},
+	{
+		"path": "validators.ts",
+		"size": 28680,
+		"sha256": "eb62ce6be3b0f7698841eac902994ee6f116ac6895146f1a975d81dec6c4c3fb"
+	}
+]

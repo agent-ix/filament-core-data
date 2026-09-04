@@ -1,0 +1,2 @@
+TypeScript backend NFR-025 final tip sentinel. The history gate resolves this
+file's adding commit as the fixed far endpoint for the complete #22 change.

@@ -1,0 +1,30 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://agent-ix.example/fixtures/typescript/unknown.schema.json",
+	"$defs": {
+		"Word": { "type": "string" },
+		"Rejecting": {
+			"type": "object",
+			"properties": { "a": { "$ref": "#/$defs/Word" } },
+			"required": ["a"],
+			"additionalProperties": false
+		},
+		"Surfacing": {
+			"type": "object",
+			"properties": { "a": { "$ref": "#/$defs/Word" } },
+			"required": ["a"],
+			"additionalProperties": true
+		},
+		"Preserving": {
+			"type": "object",
+			"properties": { "a": { "$ref": "#/$defs/Word" } },
+			"required": ["a"],
+			"additionalProperties": true
+		},
+		"InertMap": {
+			"type": "object",
+			"additionalProperties": { "$ref": "#/$defs/Word" }
+		},
+		"InertSeq": { "type": "array", "items": { "$ref": "#/$defs/Word" } }
+	}
+}
