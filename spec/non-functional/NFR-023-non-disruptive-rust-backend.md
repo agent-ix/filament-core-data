@@ -34,11 +34,15 @@ later can be backed out by reverting this work alone.
   that no later commit has taken over. It does not extend to paths a later
   ticket lands on top of this one, and it does not extend to paths a trunk merge
   inside the range brought in.
-- Sentinel artifacts: `src/compiler/backends/rust-serde/mapping.mjs` (created by
-  this change's first implementation commit) and
-  `docs/semantic-data-system/rust-backend-support-matrix.md` (created by its
-  last). Both ends of the range are resolved from these, so a single-sentinel
-  collapse cannot narrow the range to one commit on a live branch.
+- Sentinel artifacts: `spec/usecase/US-011-consume-semantic-contracts-in-rust.md`,
+  created by this change's *first* commit, and
+  `docs/semantic-data-system/rust-backend-support-matrix.md`, created by its
+  *last*. Both ends of the range resolve from these, so a single-sentinel
+  collapse cannot narrow the range to one commit on a live branch, and after the
+  squash merge both resolve to the one squash commit, which is exactly this
+  change's path set. The support matrix is therefore written in the final
+  implementation commit rather than when its requirement is first satisfied; a
+  sentinel created early would leave every later commit outside the range.
 - Permitted paths: `src/compiler/backends/rust-serde/**`, `crates/**`,
   `spec/**`, `plan/**`, `reviews/**`, `test/rust-backend*.ts`,
   `test/fixtures/rust-serde/**`, `test/changed-paths.ts`,

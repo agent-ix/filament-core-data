@@ -240,3 +240,80 @@ function matchesBase(root: string, base: string, path: string): boolean {
 	}
 	return readFileSync(absolute).equals(atBase);
 }
+
+/**
+ * The paths a change's own commits touched, as the union of their per-commit
+ * name lists over `--first-parent --no-merges`.
+ *
+ * This is the fifth face of the merge-degrading defect, and it is the one
+ * `changedPathsOf` above does not cover. That helper takes a *tree* diff over
+ * `base..tip`, which is exact for a branch whose history is linear over the
+ * trunk and wrong for one that merged the trunk inside its own range: the diff
+ * then carries every path the trunk moved as though this change had moved it.
+ * `test/conformance-corpus.test.ts` measured it — 456 paths, 74 of them the
+ * trunk's, against a true change set of 182 — and worked around it with a
+ * private copy of the loop below. This is that copy, promoted, so the next gate
+ * does not have to rediscover it.
+ *
+ * Both endpoints still come from history through `changeRange`, so the range
+ * neither empties on merge nor accretes afterwards. `--first-parent` keeps a
+ * merged branch's own commits and drops the side it merged; `--no-merges` drops
+ * the merge commits themselves, whose name lists are the combined trees.
+ *
+ * The preferred fix is still not to merge the trunk into a branch at all — a
+ * rebase leaves nothing for this to filter — and NFR-023 requires that. This
+ * exists because "we rebased" is a claim and the union is a measurement.
+ */
+export function changedPathsUnion(
+	root: string,
+	sentinels: string | readonly string[],
+): string[] {
+	const { base, tip } = changeRange(root, sentinels);
+	const committed = execFileSync(
+		"git",
+		[
+			"log",
+			"--first-parent",
+			"--no-merges",
+			"--no-renames",
+			"--format=",
+			"--name-only",
+			`${base}..${tip}`,
+		],
+		{ cwd: root, encoding: "utf8" },
+	)
+		.split("\n")
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0);
+
+	const working = execFileSync(
+		"git",
+		["status", "--porcelain", "--untracked-files=all"],
+		{ cwd: root, encoding: "utf8" },
+	)
+		.split("\n")
+		.filter((line) => line.trim().length > 0)
+		.map((line) => line.slice(3).trim())
+		.filter((path) => path.length > 0)
+		.filter((path) => !REGENERATED_IN_PLACE.has(path))
+		.filter((path) => !matchesBase(root, "HEAD", path))
+		.filter((path) => !changedAfter(root, tip, path));
+
+	return [...new Set([...committed, ...working])].sort();
+}
+
+/** Merge commits inside a change's own range. NFR-023 requires none. */
+export function mergeCommitsIn(
+	root: string,
+	sentinels: string | readonly string[],
+): string[] {
+	const { base, tip } = changeRange(root, sentinels);
+	return execFileSync(
+		"git",
+		["log", "--merges", "--format=%H", `${base}..${tip}`],
+		{ cwd: root, encoding: "utf8" },
+	)
+		.split("\n")
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0);
+}
