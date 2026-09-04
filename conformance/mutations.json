@@ -1,0 +1,615 @@
+{
+	"$comment": "The committed mutation catalogue: one named, reproducible change to a base bundle that the contract forbids, per construct-register family. The score is the fraction the corpus detects; it measures the corpus and the oracle together, and the catalogue is fixed so a score cannot be raised by deleting a mutation.",
+	"mutations": [
+		{
+			"id": "MUT-001",
+			"family": "envelope",
+			"title": "A contract version outside the declared set is rejected",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/contractVersion",
+						"value": "1.1.0"
+					},
+					{
+						"op": "replace",
+						"path": "/ir/contractVersion",
+						"value": "1.2.0"
+					},
+					{
+						"op": "test",
+						"path": "/ir/source/dialect",
+						"value": "typespec"
+					},
+					{
+						"op": "replace",
+						"path": "/ir/source/dialect",
+						"value": "https://json-schema.org/draft/2020-12/schema"
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+			"pointer": "/ir/contractVersion",
+			"detectedBy": "ENV-002"
+		},
+		{
+			"id": "MUT-002",
+			"family": "identity",
+			"title": "One identity declared by two fields of one record is rejected",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/types/8/fields/1/identity",
+						"value": "ix://agent-ix/conformance/field/node-label"
+					},
+					{
+						"op": "replace",
+						"path": "/ir/types/8/fields/1/identity",
+						"value": "ix://agent-ix/conformance/field/node-id"
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.DUPLICATE_IDENTITY",
+			"pointer": "/ir/types/8/fields/1/identity",
+			"detectedBy": "IDENT-002"
+		},
+		{
+			"id": "MUT-003",
+			"family": "scalar",
+			"title": "A scalar name outside the closed set is rejected",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/types/0/scalar",
+						"value": "string"
+					},
+					{
+						"op": "replace",
+						"path": "/ir/types/0/scalar",
+						"value": "text"
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+			"pointer": "/ir/types/0/scalar",
+			"detectedBy": "SCAL-002"
+		},
+		{
+			"id": "MUT-004",
+			"family": "alias",
+			"title": "An alias whose target no type declares is rejected",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "add",
+						"path": "/ir/types/-",
+						"value": {
+							"identity": "ix://agent-ix/conformance/type/Dangling",
+							"displayName": "Dangling",
+							"kind": "alias",
+							"roles": [],
+							"origin": {
+								"source": {
+									"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+									"path": "model/extra.tsp",
+									"startLine": 110,
+									"startColumn": 1
+								}
+							},
+							"constraints": [],
+							"extensions": [],
+							"unknownPolicy": "reject",
+							"target": "ix://agent-ix/conformance/type/Absent"
+						}
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+			"pointer": "/ir/types/10/target",
+			"detectedBy": "ALIAS-002"
+		},
+		{
+			"id": "MUT-005",
+			"family": "enum",
+			"title": "An enum with no variants member is rejected",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/types/3/variants",
+						"value": [
+							{
+								"identity": "ix://agent-ix/conformance/variant/status-draft",
+								"name": "draft",
+								"origin": {
+									"source": {
+										"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+										"path": "model/status.tsp",
+										"startLine": 2,
+										"startColumn": 3
+									}
+								}
+							},
+							{
+								"identity": "ix://agent-ix/conformance/variant/status-final",
+								"name": "final",
+								"origin": {
+									"source": {
+										"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+										"path": "model/status.tsp",
+										"startLine": 3,
+										"startColumn": 3
+									}
+								}
+							}
+						]
+					},
+					{
+						"op": "remove",
+						"path": "/ir/types/3/variants"
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+			"pointer": "/ir/types/3",
+			"detectedBy": "ENUM-002"
+		},
+		{
+			"id": "MUT-006",
+			"family": "sequence-map",
+			"title": "A sequence whose element type no type declares is rejected",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/types/4/items",
+						"value": "ix://agent-ix/conformance/type/Text"
+					},
+					{
+						"op": "replace",
+						"path": "/ir/types/4/items",
+						"value": "ix://agent-ix/conformance/type/Absent"
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.UNRESOLVED_ELEMENT_TYPE",
+			"pointer": "/ir/types/4/items",
+			"detectedBy": "SEQMAP-002"
+		},
+		{
+			"id": "MUT-007",
+			"family": "union",
+			"title": "A union variant whose payload type no type declares is rejected",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/types/6/variants/1/payloadType",
+						"value": "ix://agent-ix/conformance/type/Count"
+					},
+					{
+						"op": "replace",
+						"path": "/ir/types/6/variants/1/payloadType",
+						"value": "ix://agent-ix/conformance/type/Absent"
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.UNRESOLVED_VARIANT_PAYLOAD",
+			"pointer": "/ir/types/6/variants/1/payloadType",
+			"detectedBy": "UNION-002"
+		},
+		{
+			"id": "MUT-008",
+			"family": "reference",
+			"title": "A reference whose target no type declares is rejected",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/types/7/target",
+						"value": "ix://agent-ix/conformance/type/Node"
+					},
+					{
+						"op": "replace",
+						"path": "/ir/types/7/target",
+						"value": "ix://agent-ix/conformance/type/Absent"
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+			"pointer": "/ir/types/7/target",
+			"detectedBy": "REF-002"
+		},
+		{
+			"id": "MUT-009",
+			"family": "field-presence",
+			"title": "Presence that contradicts the multiplicity lower bound is rejected",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/types/8/fields/0/presence",
+						"value": "required"
+					},
+					{
+						"op": "replace",
+						"path": "/ir/types/8/fields/0/presence",
+						"value": "optional"
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH",
+			"pointer": "/ir/types/8/fields/0/presence",
+			"detectedBy": "PRES-002"
+		},
+		{
+			"id": "MUT-010",
+			"family": "field-default",
+			"title": "A default value with no default kind is rejected",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/types/8/fields/3/defaultKind",
+						"value": "semantic"
+					},
+					{
+						"op": "replace",
+						"path": "/ir/types/8/fields/3/defaultKind",
+						"value": "none"
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+			"pointer": "/ir/types/8/fields/3",
+			"detectedBy": "DEF-002"
+		},
+		{
+			"id": "MUT-011",
+			"family": "unit",
+			"title": "A unit on a field resolving to a sequence is rejected",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "add",
+						"path": "/ir/types/8/fields/5/unit",
+						"value": "kg"
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.UNIT_ON_NON_SCALAR",
+			"pointer": "/ir/types/8/fields/5/unit",
+			"detectedBy": "UNIT-002"
+		},
+		{
+			"id": "MUT-012",
+			"family": "constraint",
+			"title": "A length constraint applied to an integer is rejected",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/types/0/constraints/0/appliesTo",
+						"value": "ix://agent-ix/conformance/type/Text"
+					},
+					{
+						"op": "replace",
+						"path": "/ir/types/0/constraints/0/appliesTo",
+						"value": "ix://agent-ix/conformance/type/Count"
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE",
+			"pointer": "/ir/types/0/constraints/0",
+			"detectedBy": "CONS-002"
+		},
+		{
+			"id": "MUT-013",
+			"family": "recursion",
+			"title": "An alias that targets itself is rejected as a cycle",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "add",
+						"path": "/ir/types/-",
+						"value": {
+							"identity": "ix://agent-ix/conformance/type/Loop",
+							"displayName": "Loop",
+							"kind": "alias",
+							"roles": [],
+							"origin": {
+								"source": {
+									"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+									"path": "model/extra.tsp",
+									"startLine": 110,
+									"startColumn": 1
+								}
+							},
+							"constraints": [],
+							"extensions": [],
+							"unknownPolicy": "reject",
+							"target": "ix://agent-ix/conformance/type/Loop"
+						}
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.ALIAS_CYCLE",
+			"pointer": "/ir/types/10/target",
+			"detectedBy": "REC-002"
+		},
+		{
+			"id": "MUT-014",
+			"family": "relationship",
+			"title": "A composite relationship that closes a cycle is rejected",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "add",
+						"path": "/ir/types/8/relationships/-",
+						"value": {
+							"identity": "ix://agent-ix/conformance/relationship/node-owns-root",
+							"verb": "owns",
+							"category": "structural",
+							"composite": true,
+							"target": "ix://agent-ix/conformance/type/Root",
+							"multiplicity": {
+								"lower": 0,
+								"upper": 1
+							},
+							"origin": {
+								"source": {
+									"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+									"path": "model/node.tsp",
+									"startLine": 16,
+									"startColumn": 3
+								}
+							}
+						}
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.COMPOSITE_CYCLE",
+			"pointer": "/ir/types/9/relationships/0/target",
+			"detectedBy": "REL-002"
+		},
+		{
+			"id": "MUT-015",
+			"family": "operation",
+			"title": "A precondition naming a clause the type does not declare is rejected",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/types/9/operations/0/pre/0",
+						"value": "size-non-negative"
+					},
+					{
+						"op": "replace",
+						"path": "/ir/types/9/operations/0/pre/0",
+						"value": "absent-clause"
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.DANGLING_CLAUSE_REF",
+			"pointer": "/ir/types/9/operations/0/pre/0",
+			"detectedBy": "OP-002"
+		},
+		{
+			"id": "MUT-016",
+			"family": "clause",
+			"title": "A second clause reusing a clauseId on one type is rejected",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "add",
+						"path": "/ir/types/9/clauses/-",
+						"value": {
+							"identity": "ix://agent-ix/conformance/clause/root-size-again",
+							"language": "ocl",
+							"clauseId": "size-non-negative",
+							"text": "size >= 0",
+							"sourceSpan": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/root.tsp",
+								"startLine": 11,
+								"startColumn": 3
+							},
+							"origin": {
+								"source": {
+									"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+									"path": "model/root.tsp",
+									"startLine": 11,
+									"startColumn": 3
+								}
+							}
+						}
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.DUPLICATE_CLAUSE_ID",
+			"pointer": "/ir/types/9/clauses/2/clauseId",
+			"detectedBy": "CLAUSE-002"
+		},
+		{
+			"id": "MUT-017",
+			"family": "provenance",
+			"title": "A source locus that escapes the source root is rejected",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/types/0/origin",
+						"value": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/scalars.tsp",
+								"startLine": 1,
+								"startColumn": 1
+							}
+						}
+					},
+					{
+						"op": "replace",
+						"path": "/ir/types/0/origin",
+						"value": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/scalars.tsp",
+								"startLine": 0,
+								"startColumn": 1
+							}
+						}
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+			"pointer": "/ir/types/0/origin/source/startLine",
+			"detectedBy": "PROV-002"
+		},
+		{
+			"id": "MUT-018",
+			"family": "unknown",
+			"title": "An unknown policy outside the declared set is rejected",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/types/0/unknownPolicy",
+						"value": "reject"
+					},
+					{
+						"op": "replace",
+						"path": "/ir/types/0/unknownPolicy",
+						"value": "ignore"
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+			"pointer": "/ir/types/0/unknownPolicy",
+			"detectedBy": "UNK-002"
+		},
+		{
+			"id": "MUT-019",
+			"family": "extension",
+			"title": "A required extension a rejecting consumer policy does not list is rejected",
+			"mutation": {
+				"base": "package-1-1",
+				"ops": [
+					{
+						"op": "test",
+						"path": "/consumerPolicy/unknownExtensions",
+						"value": "surface"
+					},
+					{
+						"op": "replace",
+						"path": "/consumerPolicy/unknownExtensions",
+						"value": "reject"
+					},
+					{
+						"op": "add",
+						"path": "/ir/extensions/-",
+						"value": {
+							"identity": "ix://agent-ix/conformance/ext/units",
+							"version": "1.0.0",
+							"required": true,
+							"payload": {
+								"system": "ucum"
+							}
+						}
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION",
+			"pointer": "/ir/extensions/1/identity",
+			"detectedBy": "EXT-002"
+		},
+		{
+			"id": "MUT-020",
+			"family": "package",
+			"title": "An import the lock does not resolve is rejected",
+			"mutation": {
+				"base": "package-1-1",
+				"ops": [
+					{
+						"op": "test",
+						"path": "/manifest/imports/0/packageIdentity",
+						"value": "agent-ix/kernel"
+					},
+					{
+						"op": "replace",
+						"path": "/manifest/imports/0/packageIdentity",
+						"value": "agent-ix/absent"
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.UNRESOLVED_IMPORT",
+			"pointer": "/manifest/imports/0/packageIdentity",
+			"detectedBy": "PKG-002"
+		},
+		{
+			"id": "MUT-021",
+			"family": "version",
+			"title": "A contract 1.1.0 node carried by a 1.0.0 document is rejected",
+			"mutation": {
+				"base": "minimal-1-0",
+				"ops": [
+					{
+						"op": "add",
+						"path": "/ir/types/1/fields/0/multiplicity",
+						"value": {
+							"lower": 1,
+							"upper": 1
+						}
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.V1_1_NODE_IN_V1_0",
+			"pointer": "/ir/types/1/fields/0/multiplicity",
+			"detectedBy": "VER-002"
+		},
+		{
+			"id": "MUT-022",
+			"family": "compatibility",
+			"title": "A pair whose later document is invalid classifies invalid",
+			"mutation": {
+				"base": "core-1-1",
+				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/types/8/fields/1/identity",
+						"value": "ix://agent-ix/conformance/field/node-label"
+					},
+					{
+						"op": "replace",
+						"path": "/ir/types/8/fields/1/identity",
+						"value": "ix://agent-ix/conformance/field/node-id"
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.DUPLICATE_IDENTITY",
+			"pointer": "/ir/types/8/fields/1/identity",
+			"detectedBy": "COMP-002"
+		}
+	]
+}

@@ -502,6 +502,9 @@ describe("Filament contract census", () => {
 		expect(validation.weakenedRequirements).toBe(0);
 
 		const allowed = [
+			"conformance/",
+			"plan/Plan-009-conformance-corpus-and-oracle/",
+			"test/conformance-corpus.test.ts",
 			"audit/filament-contract-census/",
 			"plan/Plan-002-filament-contract-census/",
 			"reviews/",

@@ -1,0 +1,27 @@
+{
+	"id": "CLAUSE-001",
+	"title": "Opaque clauses in a core language are accepted",
+	"family": "clause",
+	"class": "positive",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [],
+	"covers": ["CR-clause"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "(`language` of `ocl`, `sysml`, `fretish`, or `<ns>:<name>`; `clauseId` unique"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

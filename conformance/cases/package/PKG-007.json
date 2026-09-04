@@ -1,0 +1,51 @@
+{
+	"id": "PKG-007",
+	"title": "A mapping naming an identity no declaration owns is rejected",
+	"family": "package",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "package-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/mappings/0/sourceType",
+			"value": "ix://agent-ix/conformance/type/Root"
+		},
+		{
+			"op": "replace",
+			"path": "/mappings/0/sourceType",
+			"value": "ix://agent-ix/conformance/type/Absent"
+		}
+	],
+	"covers": ["CR-package"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Packages, locks, and fingerprints",
+			"quote": "source identities, and dependencies. Package cycles are rejected with every"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/mappings/0/sourceType",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.UNKNOWN_MAPPING_TARGET",
+					"severity": "error",
+					"message": "a mapping names a semantic identity the document declares",
+					"owner": "ix://agent-ix/conformance/mapping/root-json",
+					"blocking": true,
+					"causes": [],
+					"related": []
+				}
+			}
+		]
+	}
+}

@@ -80,6 +80,28 @@ semantic-core-check:
 	node packages/semantic-core/scripts/generate.mjs --check
 
 # -----------------------------------------------------------------------------
+# Conformance corpus and differential oracle (issue #20)
+# -----------------------------------------------------------------------------
+# The corpus lives entirely under conformance/ (NFR-016). `make test` already
+# runs its gates through test/conformance-corpus.test.ts, so CI needs no
+# workflow change; these targets are for running it directly.
+#
+# `conformance` is clock-free and produces a byte-identical report for an
+# unchanged corpus. `conformance-audit` is the only entry point that reads a
+# clock: it reports divergence-register entries past their review date.
+#
+# Both call node directly: issue #9's non-disruption gate requires package.json
+# to stay byte-identical to main, so the corpus adds no script there.
+
+.PHONY: conformance
+conformance:
+	node conformance/runner/differential.mjs
+
+.PHONY: conformance-audit
+conformance-audit:
+	node conformance/tools/audit.mjs
+
+# -----------------------------------------------------------------------------
 # Promoted prototype compiler (issue #27)
 # -----------------------------------------------------------------------------
 # The narrow build interface lives in src/compiler/. It is repo-internal for

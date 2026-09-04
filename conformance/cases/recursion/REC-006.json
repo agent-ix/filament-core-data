@@ -1,0 +1,66 @@
+{
+	"id": "REC-006",
+	"title": "Recursion is a graph property, not a substring of a type name",
+	"family": "recursion",
+	"class": "positive",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/type/NodeName",
+				"displayName": "NodeName",
+				"kind": "scalar",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 180,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"scalar": "string"
+			}
+		},
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/1/typeRef",
+			"value": "ix://agent-ix/conformance/type/Text"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/1/typeRef",
+			"value": "ix://agent-ix/conformance/type/NodeName"
+		}
+	],
+	"covers": ["CR-recursion"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "Recursive references retain graph identity."
+		},
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "identities are explicit. Display names, generated identifiers, source paths,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false,
+		"reproduces": "DEF-PROTO-005"
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

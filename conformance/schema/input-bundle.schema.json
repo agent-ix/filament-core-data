@@ -1,0 +1,35 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/filament-core-data/conformance/v1/input-bundle.schema.json",
+	"title": "Conformance input bundle v1",
+	"description": "One case input: a semantic IR document plus the optional package, lock, mapping, profile, and consumer-policy context that no IR document carries. Every member is validated by its published v1 schema; this file composes them and defines nothing they define.",
+	"type": "object",
+	"required": ["ir"],
+	"properties": {
+		"ir": {
+			"$ref": "https://schemas.agent-ix.org/filament-core-data/v1/semantic-ir.schema.json"
+		},
+		"manifest": {
+			"$ref": "https://schemas.agent-ix.org/filament-core-data/v1/package-manifest.schema.json"
+		},
+		"manifestDigest": {
+			"$ref": "https://schemas.agent-ix.org/filament-core-data/v1/common.schema.json#/$defs/sha256"
+		},
+		"lock": {
+			"$ref": "https://schemas.agent-ix.org/filament-core-data/v1/package-lock.schema.json"
+		},
+		"profile": {
+			"$ref": "https://schemas.agent-ix.org/filament-core-data/v1/profile.schema.json"
+		},
+		"mappings": {
+			"type": "array",
+			"items": {
+				"$ref": "https://schemas.agent-ix.org/filament-core-data/v1/mapping.schema.json"
+			}
+		},
+		"consumerPolicy": {
+			"$ref": "https://schemas.agent-ix.org/filament-core-data/v1/consumer-policy.schema.json"
+		}
+	},
+	"additionalProperties": false
+}

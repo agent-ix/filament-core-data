@@ -1,0 +1,41 @@
+{
+	"id": "REF-004",
+	"title": "Re-aiming a reference target is an incompatible type change",
+	"family": "reference",
+	"class": "evolution",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/7/target",
+			"value": "ix://agent-ix/conformance/type/Node"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/7/target",
+			"value": "ix://agent-ix/conformance/type/Root"
+		}
+	],
+	"beforeBase": "core-1-1",
+	"beforeOps": [],
+	"covers": ["CR-reference"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "Required additions, removals, incompatible meaning/type changes, stable identity"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "breaking"
+	}
+}

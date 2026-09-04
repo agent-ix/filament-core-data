@@ -1,0 +1,64 @@
+{
+	"id": "PRES-007",
+	"title": "Ordered and unique on a single-valued field are rejected",
+	"family": "field-presence",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/0/multiplicity",
+			"value": {
+				"lower": 1,
+				"upper": 1
+			}
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/0/multiplicity",
+			"value": {
+				"lower": 1,
+				"upper": 1,
+				"ordered": true
+			}
+		}
+	],
+	"covers": ["CR-field-presence"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "`multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/8/fields/0/multiplicity",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
+					"severity": "error",
+					"message": "ordered and unique describe a collection and this field is single-valued",
+					"owner": "ix://agent-ix/conformance/field/node-id",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/node.tsp",
+						"startLine": 5,
+						"startColumn": 1
+					}
+				}
+			}
+		]
+	}
+}

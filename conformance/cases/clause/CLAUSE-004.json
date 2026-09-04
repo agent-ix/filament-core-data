@@ -1,0 +1,46 @@
+{
+	"id": "CLAUSE-004",
+	"title": "Rewording opaque clause text is unclassifiable, not a patch",
+	"family": "clause",
+	"class": "evolution",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/9/clauses/0/text",
+			"value": "size >= 0"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/9/clauses/0/text",
+			"value": "size > -1"
+		}
+	],
+	"beforeBase": "core-1-1",
+	"beforeOps": [],
+	"covers": ["CR-clause"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "Required additions, removals, incompatible meaning/type changes, stable identity"
+		},
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "per type; opaque `text`; `sourceSpan` when source-originated). The IR never"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "unknown"
+	}
+}

@@ -1,0 +1,50 @@
+{
+	"id": "SCAL-003",
+	"title": "The last member of the scalar enumeration is accepted",
+	"family": "scalar",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/type/Ident",
+				"displayName": "Ident",
+				"kind": "scalar",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 100,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"scalar": "uuid"
+			}
+		}
+	],
+	"covers": ["CR-scalar"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "The closed structural vocabulary is scalar, record, enum, discriminated union,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

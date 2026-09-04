@@ -1,0 +1,43 @@
+{
+	"id": "EXT-004",
+	"title": "Adding a required extension is breaking",
+	"family": "extension",
+	"class": "evolution",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/extensions/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/ext/units",
+				"version": "1.0.0",
+				"required": true,
+				"payload": {
+					"system": "ucum"
+				}
+			}
+		}
+	],
+	"beforeBase": "core-1-1",
+	"beforeOps": [],
+	"covers": ["CR-extension"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "Required additions, removals, incompatible meaning/type changes, stable identity"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "breaking"
+	}
+}

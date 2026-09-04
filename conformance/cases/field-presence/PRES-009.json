@@ -1,0 +1,57 @@
+{
+	"id": "PRES-009",
+	"title": "Two fields of one record sharing a name are rejected",
+	"family": "field-presence",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/1/name",
+			"value": "label"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/1/name",
+			"value": "id"
+		}
+	],
+	"covers": ["CR-field-presence"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "identities are explicit"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/8/fields/1/name",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.DUPLICATE_FIELD_NAME",
+					"severity": "error",
+					"message": "the second field of this record to carry the name",
+					"owner": "ix://agent-ix/conformance/field/node-label",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/node.tsp",
+						"startLine": 6,
+						"startColumn": 1
+					}
+				}
+			}
+		]
+	}
+}

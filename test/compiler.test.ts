@@ -1384,6 +1384,10 @@ describe("determinism and non-disruption (NFR-017, NFR-018)", () => {
 		// prohibited: a Python test file changes no consumer, schema or package.
 		"tests/",
 		"docs/semantic-data-system/typespec-feasibility.md",
+		// The issue #20 conformance corpus, for the same reason `tests/` is
+		// permitted above: it is a sibling deliverable's surface, entirely
+		// additive, and changes no consumer, schema or package.
+		"conformance/",
 		"spec/",
 		"plan/",
 		"reviews/",

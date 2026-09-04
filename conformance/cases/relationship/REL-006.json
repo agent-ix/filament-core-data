@@ -1,0 +1,57 @@
+{
+	"id": "REL-006",
+	"title": "An edge category outside the declared set is rejected",
+	"family": "relationship",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/9/relationships/0/category",
+			"value": "structural"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/9/relationships/0/category",
+			"value": "temporal"
+		}
+	],
+	"covers": ["CR-relationship"],
+	"decidedBy": "schema",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "export; composite relationship graphs are acyclic."
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/9/relationships/0/category",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"severity": "error",
+					"message": "the edge category vocabulary is closed and temporal is not a member",
+					"owner": "ix://agent-ix/conformance/relationship/root-contains-node",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/root.tsp",
+						"startLine": 5,
+						"startColumn": 3
+					}
+				}
+			}
+		]
+	}
+}

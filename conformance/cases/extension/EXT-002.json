@@ -1,0 +1,63 @@
+{
+	"id": "EXT-002",
+	"title": "A required extension a rejecting consumer policy does not list is rejected",
+	"family": "extension",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "package-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/consumerPolicy/unknownExtensions",
+			"value": "surface"
+		},
+		{
+			"op": "replace",
+			"path": "/consumerPolicy/unknownExtensions",
+			"value": "reject"
+		},
+		{
+			"op": "add",
+			"path": "/ir/extensions/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/ext/units",
+				"version": "1.0.0",
+				"required": true,
+				"payload": {
+					"system": "ucum"
+				}
+			}
+		}
+	],
+	"covers": ["CR-extension"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Dynamic and legacy consumers",
+			"quote": "unknown modules and extensions are preserved, rejected, or surfaced. Legacy"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/extensions/1/identity",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION",
+					"severity": "error",
+					"message": "the consumer policy rejects unknown extensions and does not list this one",
+					"owner": "ix://agent-ix/conformance/ext/units",
+					"blocking": true,
+					"causes": [],
+					"related": []
+				}
+			}
+		]
+	}
+}

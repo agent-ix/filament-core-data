@@ -1,0 +1,63 @@
+{
+	"id": "CLAUSE-005",
+	"title": "A source-originated clause with no source span is rejected",
+	"family": "clause",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/9/clauses/0/sourceSpan",
+			"value": {
+				"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+				"path": "model/root.tsp",
+				"startLine": 9,
+				"startColumn": 3,
+				"endLine": 9,
+				"endColumn": 24
+			}
+		},
+		{
+			"op": "remove",
+			"path": "/ir/types/9/clauses/0/sourceSpan"
+		}
+	],
+	"covers": ["CR-clause"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "(`language` of `ocl`, `sysml`, `fretish`, or `<ns>:<name>`; `clauseId` unique"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/9/clauses/0/sourceSpan",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.MISSING_SOURCE_SPAN",
+					"severity": "error",
+					"message": "a source-originated clause carries the span it was read from",
+					"owner": "ix://agent-ix/conformance/clause/root-size-non-negative",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/root.tsp",
+						"startLine": 9,
+						"startColumn": 3
+					}
+				}
+			}
+		]
+	}
+}

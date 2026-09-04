@@ -1,0 +1,57 @@
+{
+	"id": "CONS-005",
+	"title": "A keyword outside the closed set is rejected",
+	"family": "constraint",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/0/constraints/0/keyword",
+			"value": "minLength"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/0/constraints/0/keyword",
+			"value": "startsWith"
+		}
+	],
+	"covers": ["CR-constraint"],
+	"decidedBy": "schema",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "The constraint `keyword` is a closed set (`min`, `max`, `exclusiveMin`,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/0/constraints/0",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"severity": "error",
+					"message": "the constraint keyword vocabulary is closed and startsWith is not a member",
+					"owner": "ix://agent-ix/conformance/constraint/text-min-length",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/scalars.tsp",
+						"startLine": 2,
+						"startColumn": 3
+					}
+				}
+			}
+		]
+	}
+}

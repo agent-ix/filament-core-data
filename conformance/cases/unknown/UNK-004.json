@@ -1,0 +1,41 @@
+{
+	"id": "UNK-004",
+	"title": "Tightening an unknown policy to reject is breaking",
+	"family": "unknown",
+	"class": "evolution",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/5/unknownPolicy",
+			"value": "preserve"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/5/unknownPolicy",
+			"value": "reject"
+		}
+	],
+	"beforeBase": "core-1-1",
+	"beforeOps": [],
+	"covers": ["CR-unknown"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "Required additions, removals, incompatible meaning/type changes, stable identity"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "breaking"
+	}
+}

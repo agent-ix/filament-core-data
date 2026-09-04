@@ -1,0 +1,76 @@
+{
+	"ir": {
+		"contractVersion": "1.0.0",
+		"source": {
+			"identity": "ix://agent-ix/filament-core-data/source/typespec",
+			"version": "1.0.0",
+			"dialect": "https://json-schema.org/draft/2020-12/schema",
+			"digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+		},
+		"package": {
+			"identity": "agent-ix/conformance",
+			"version": "1.0.0",
+			"manifestDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+			"mappingVersions": ["1.0.0"],
+			"profileVersions": ["1.0.0"],
+			"lockDigest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+		},
+		"types": [
+			{
+				"identity": "ix://agent-ix/conformance/type/Text",
+				"displayName": "Text",
+				"kind": "scalar",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/scalars.tsp",
+						"startLine": 1,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"scalar": "string"
+			},
+			{
+				"identity": "ix://agent-ix/conformance/type/Leaf",
+				"displayName": "Leaf",
+				"kind": "record",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/leaf.tsp",
+						"startLine": 1,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"fields": [
+					{
+						"identity": "ix://agent-ix/conformance/field/leaf-id",
+						"name": "id",
+						"typeRef": "ix://agent-ix/conformance/type/Text",
+						"presence": "required",
+						"nullable": false,
+						"defaultKind": "none",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/leaf.tsp",
+								"startLine": 2,
+								"startColumn": 1
+							}
+						}
+					}
+				]
+			}
+		],
+		"occurrences": [],
+		"extensions": []
+	}
+}

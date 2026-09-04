@@ -1,0 +1,54 @@
+{
+	"id": "PROV-003",
+	"title": "A locus at the first line and column of a file is accepted",
+	"family": "provenance",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/0/origin",
+			"value": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model/scalars.tsp",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			}
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/0/origin",
+			"value": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model/scalars.tsp",
+					"startLine": 1,
+					"startColumn": 1,
+					"endLine": 1,
+					"endColumn": 1
+				}
+			}
+		}
+	],
+	"covers": ["CR-provenance"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "identities are explicit. Display names, generated identifiers, source paths,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

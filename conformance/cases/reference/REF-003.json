@@ -1,0 +1,50 @@
+{
+	"id": "REF-003",
+	"title": "A reference whose target is another reference is accepted",
+	"family": "reference",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/type/NodeRefRef",
+				"displayName": "NodeRefRef",
+				"kind": "reference",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 150,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"target": "ix://agent-ix/conformance/type/NodeRef"
+			}
+		}
+	],
+	"covers": ["CR-reference"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "The closed structural vocabulary is scalar, record, enum, discriminated union,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

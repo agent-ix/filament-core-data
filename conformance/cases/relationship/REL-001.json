@@ -1,0 +1,27 @@
+{
+	"id": "REL-001",
+	"title": "A composite relationship over an acyclic graph is accepted",
+	"family": "relationship",
+	"class": "positive",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [],
+	"covers": ["CR-relationship"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "export; composite relationship graphs are acyclic."
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

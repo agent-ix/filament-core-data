@@ -1,0 +1,38 @@
+{
+	"id": "EXT-003",
+	"title": "An extension whose payload is empty is accepted",
+	"family": "extension",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/extensions/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/ext/empty",
+				"version": "1.0.0",
+				"required": false,
+				"payload": {}
+			}
+		}
+	],
+	"covers": ["CR-extension"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Dynamic and legacy consumers",
+			"quote": "unknown modules and extensions are preserved, rejected, or surfaced. Legacy"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

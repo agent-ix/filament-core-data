@@ -1,0 +1,51 @@
+{
+	"id": "REL-003",
+	"title": "An unbounded relationship multiplicity is accepted",
+	"family": "relationship",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/9/relationships/0/multiplicity",
+			"value": {
+				"lower": 1,
+				"ordered": true,
+				"unique": true
+			}
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/9/relationships/0/multiplicity",
+			"value": {
+				"lower": 0,
+				"ordered": true,
+				"unique": true
+			}
+		}
+	],
+	"covers": ["CR-relationship"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "export; composite relationship graphs are acyclic."
+		},
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "`multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

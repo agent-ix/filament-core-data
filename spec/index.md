@@ -1,7 +1,7 @@
 ---
 type: index
 title: "filament-core-data requirements index"
-description: "Index of the semantic data architecture, contract-census, TypeSpec-feasibility, semantic-contract, IR v1.1, semantic-core grammar, prototype-promotion, and compiler-core requirements bundle."
+description: "Index of the semantic data architecture, contract-census, TypeSpec-feasibility, semantic-contract, IR v1.1, semantic-core grammar, prototype-promotion, compiler-core, and conformance-corpus requirements bundle."
 okf_version: "0.1"
 ---
 # filament-core-data requirements
@@ -17,6 +17,7 @@ okf_version: "0.1"
 * [US-005: Author portable semantic packages](./usecase/US-005-author-portable-semantic-packages.md) - Schema-owner outcome for the semantic IR, packages, mappings, and generated targets.
 * [US-006: Declare typed domain structure](./usecase/US-006-declare-typed-domain-structure.md) - Module-author outcome for lossless IR v1.1 declarations.
 * [US-007: Declare archetypes against a shared grammar](./usecase/US-007-declare-archetypes-against-a-shared-grammar.md) - Module-maintainer outcome for the semantic-core declaration grammar.
+* [US-008: Judge a compiler against an independent corpus](./usecase/US-008-judge-a-compiler-against-an-independent-corpus.md) - Reviewer outcome for the conformance corpus and differential oracle.
 * [US-009: Build generated packages from a supported compiler](./usecase/US-009-build-from-a-supported-compiler.md) - Compiler-maintainer outcome for promoting the issue #4 prototype emitters into `src/`.
 * [US-010: Compile a semantic package to versioned IR](./usecase/US-010-compile-a-semantic-package.md) - Package-author outcome for the TypeSpec frontend and the versioned semantic IR compiler core.
 * [Functional requirements](./functional/) - Required architecture-record, census, feasibility, semantic-contract, package, projection, and compatibility behavior.

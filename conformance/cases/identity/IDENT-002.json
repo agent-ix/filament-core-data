@@ -1,0 +1,58 @@
+{
+	"id": "IDENT-002",
+	"title": "One identity declared by two fields of one record is rejected",
+	"family": "identity",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/1/identity",
+			"value": "ix://agent-ix/conformance/field/node-label"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/1/identity",
+			"value": "ix://agent-ix/conformance/field/node-id"
+		}
+	],
+	"covers": ["CR-identity"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "identities are explicit"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false,
+		"reproduces": "DEF-PROTO-015"
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/8/fields/1/identity",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.DUPLICATE_IDENTITY",
+					"severity": "error",
+					"message": "the second declaration of an identity the document already carries",
+					"owner": "ix://agent-ix/conformance/field/node-id",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/node.tsp",
+						"startLine": 6,
+						"startColumn": 1
+					}
+				}
+			}
+		]
+	}
+}

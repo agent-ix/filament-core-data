@@ -1,0 +1,27 @@
+{
+	"id": "REC-001",
+	"title": "A record that reaches itself through a reference is preserved",
+	"family": "recursion",
+	"class": "positive",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [],
+	"covers": ["CR-recursion"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "Recursive references retain graph identity."
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

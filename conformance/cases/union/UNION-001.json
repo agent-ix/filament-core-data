@@ -1,0 +1,38 @@
+{
+	"id": "UNION-001",
+	"title": "Two union variants sharing one payload type are accepted",
+	"family": "union",
+	"class": "positive",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/6/variants/1/payloadType",
+			"value": "ix://agent-ix/conformance/type/Count"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/6/variants/1/payloadType",
+			"value": "ix://agent-ix/conformance/type/Text"
+		}
+	],
+	"covers": ["CR-union"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "The closed structural vocabulary is scalar, record, enum, discriminated union,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

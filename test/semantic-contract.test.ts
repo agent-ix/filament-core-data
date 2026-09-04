@@ -1105,6 +1105,9 @@ describe("semantic package contract v1", () => {
 	/** Traces: TC-195, TC-196, TC-197, TC-198. */
 	it("keeps issue nine non-disruptive and separately gated", () => {
 		const allowed = [
+			"conformance/",
+			"plan/Plan-009-conformance-corpus-and-oracle/",
+			"test/conformance-corpus.test.ts",
 			"docs/semantic-data-system/",
 			"fixtures/semantic/v1/",
 			"plan/Plan-004-semantic-package-contract/",

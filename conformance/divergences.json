@@ -1,0 +1,4 @@
+{
+	"$comment": "Divergences between a registered adapter and the oracle that the run suppresses. An entry names who adjudicates it and which side is wrong; an entry the run does not reproduce fails the run, so a fixed defect cannot stay suppressed. A disagreement with the published contract, or with a merged artifact that is not a registered adapter, belongs in conformance/contract-gaps.json instead.",
+	"divergences": []
+}

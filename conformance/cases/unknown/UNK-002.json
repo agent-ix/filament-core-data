@@ -1,0 +1,62 @@
+{
+	"id": "UNK-002",
+	"title": "An unknown policy outside the declared set is rejected",
+	"family": "unknown",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/0/unknownPolicy",
+			"value": "reject"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/0/unknownPolicy",
+			"value": "ignore"
+		}
+	],
+	"covers": ["CR-unknown"],
+	"decidedBy": "schema",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "whether unknowns are preserved, rejected, or surfaced; unknowns never become a"
+		},
+		{
+			"artifact": "schema/semantic/v1/common.schema.json",
+			"locator": "#/$defs/unknownPolicy",
+			"quote": "\"unknownPolicy\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/0/unknownPolicy",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"severity": "error",
+					"message": "the unknown policy vocabulary is closed and ignore is not a member",
+					"owner": "ix://agent-ix/conformance/type/Text",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/scalars.tsp",
+						"startLine": 1,
+						"startColumn": 1
+					}
+				}
+			}
+		]
+	}
+}
