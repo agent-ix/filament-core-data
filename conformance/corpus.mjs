@@ -252,8 +252,26 @@ export function substantive(value, kind) {
  * Reads the manifest as `origin/main` carries it, or `undefined` when the
  * corpus has no predecessor there.
  *
- * This is the only place the corpus reads git, and it reads one committed
- * blob, never the working tree and never a clock.
+ * This is the one place in this corpus that resolves anything from a moving
+ * ref, and it is deliberate. Every other range and baseline here is a history
+ * fact, because a live computation against a moving ref either empties out
+ * after a merge or annexes a later ticket's work — the defect issues #27, #19
+ * and this corpus each carried.
+ *
+ * A versioning gate is the exception, because its baseline has to be something
+ * the branch under test cannot edit. Transcribing the previous corpus into this
+ * branch as a constant would satisfy the letter of that rule and break its
+ * point: the same commit that changes an expected result would update the
+ * baseline beside it and the gate would never fire. That is the blessing this
+ * whole corpus exists to prevent, one level up. Resolving it from history does
+ * not work either — the parent of the commit that introduced the corpus never
+ * carries a predecessor, so the comparison would be permanently vacuous.
+ *
+ * The moving-ref risk that remains is that the ref is unreadable and the gate
+ * quietly stops asserting. `versioningFailures` closes that: the manifest
+ * declares whether a predecessor is expected, so an unreadable one is a failure
+ * rather than a skip. It reads one committed blob, never the working tree and
+ * never a clock.
  */
 export function previousManifest() {
 	try {

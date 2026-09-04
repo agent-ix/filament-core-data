@@ -11,6 +11,8 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { changeRange } from "./changed-paths.js";
+
 /* The corpus is untyped ESM JavaScript by design (NFR-016): it stays consumable
    from any runtime and adds no build step, so the suite reads it through a
    loader that types it loosely rather than through generated declarations. */
@@ -114,41 +116,44 @@ const gatesWithCase = (id: string, mutate: (entry: Json) => void) => {
 };
 
 /**
- * Every path this issue changed, measured from a baseline that survives this
- * branch's own merge.
+ * Every path this issue changed, with both ends resolved from history.
  *
- * `origin/main...HEAD` is the wrong baseline for an isolation gate: once the
- * branch squash-merges, that range is empty, so a positive claim about it fails
- * forever and a negative one silently stops asserting — the defect issue #27
- * carried into `main` in PR #44 and repaired in 4e48f08.
+ * `origin/main...HEAD` is the wrong range for an isolation gate: after a squash
+ * merge it is empty, so a positive claim about it fails forever and a negative
+ * one silently stops asserting. Issue #27 met that in PR #44, issue #19 in
+ * PR #50, and this file carried it too until it was repaired here.
  *
- * Two baselines cover both states. Before the merge, the merge base with
- * `origin/main` gives this branch's own change set, and merges of `main` into
- * the branch are correctly excluded. After the squash merge that range is
- * empty, so the fallback is the parent of the commit that introduced
- * `conformance/corpus.json`, which the squash makes the ticket's whole change
- * set. Either way the range contains the corpus, which the gate asserts.
+ * The base is `changeRange`'s, the encoding 3ddc04b settled on: the parent of
+ * the earliest commit that added a sentinel this change created. The far end is
+ * where this gate differs from `changedPathsOf`, deliberately. That helper takes
+ * a tree diff `base..tip`, which is exact for a branch whose history is linear
+ * over the trunk; this branch merged `origin/main` three times, so a tree diff
+ * annexes the trunk — measured here at 456 paths, 74 of them the trunk's, against
+ * a true change set of 182. The union of this branch's own first-parent,
+ * non-merge commits is 202 paths, every one inside the NFR-016 permitted set;
+ * the 20 beyond the final diff are files this ticket created and later renamed,
+ * which it did touch. Nothing here reads a moving ref.
  */
 const corpusChangedPaths = (): string[] => {
-	const git = (...args: string[]) =>
-		execFileSync("git", args, { cwd: REPO, encoding: "utf8" });
-	const diffFrom = (base: string) =>
-		git("diff", "--no-renames", "--name-only", `${base}..HEAD`)
-			.split("\n")
-			.filter(Boolean);
-
-	let fromMergeBase: string[] = [];
-	try {
-		fromMergeBase = diffFrom(git("merge-base", "HEAD", "origin/main").trim());
-	} catch {
-		fromMergeBase = [];
-	}
-	if (fromMergeBase.length > 0) return fromMergeBase;
-
-	const commits = git("rev-list", "HEAD", "--", "conformance/corpus.json")
+	const { base } = changeRange(REPO, [
+		"spec/functional/FR-035-define-the-conformance-corpus.md",
+	]);
+	const committed = execFileSync(
+		"git",
+		[
+			"log",
+			"--first-parent",
+			"--no-merges",
+			"--format=",
+			"--name-only",
+			`${base}..HEAD`,
+		],
+		{ cwd: REPO, encoding: "utf8" },
+	)
 		.split("\n")
-		.filter(Boolean);
-	return diffFrom(git("rev-parse", `${commits[commits.length - 1]}^`).trim());
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0);
+	return [...new Set(committed)].sort();
 };
 
 /** The predecessor declaration a merged corpus carries (FR-035). */
@@ -1948,17 +1953,37 @@ describe("TC-635..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 				file,
 			).toBe(false);
 		}
+		// The suite itself resolves its range from history, never from a ref.
 		const suite = readFileSync(
 			join(REPO, "test", "conformance-corpus.test.ts"),
 			"utf8",
 		);
-		expect(suite).toContain("merge-base");
-		// Built at runtime so this assertion is not its own counter-example.
-		const forbidden = `"origin/main${".".repeat(3)}HEAD"`;
+		expect(suite).toContain("changeRange(REPO");
+		const ref = `origin/main`;
+		for (const call of suite.matchAll(
+			/execFileSync\(\s*"git",\s*\[([^\]]*)\]/g,
+		)) {
+			expect(
+				call[1].includes(ref),
+				`a git call in this suite resolves against ${ref}: ${call[1].slice(0, 60)}`,
+			).toBe(false);
+		}
+
+		// One deliberate exception, declared and guarded: the versioning gate's
+		// predecessor. Every other file under conformance/ is ref-free.
+		const readers = walk(CONF)
+			.filter((file) => file.endsWith(".mjs"))
+			.filter((file) => readFileSync(file, "utf8").includes(ref));
+		expect(readers.map((file) => file.slice(CONF.length + 1))).toEqual([
+			"corpus.mjs",
+		]);
+		const corpusSource = readFileSync(join(CONF, "corpus.mjs"), "utf8");
 		expect(
-			suite.includes(forbidden),
-			"the suite baselines on the merge-empty range",
-		).toBe(false);
+			(corpusSource.match(new RegExp(`execFileSync\\("git"`, "g")) ?? [])
+				.length,
+			"more than one git invocation under conformance/",
+		).toBe(1);
+		expect(corpusSource).toContain("predecessor");
 	});
 
 	it("TC-639 corpusVersion is the version a consumer pins, and the README says so", () => {
