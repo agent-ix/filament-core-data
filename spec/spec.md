@@ -63,6 +63,12 @@ The sixth delivery is the semantic-core declaration grammar and kernel scalar
 library (issue #35): TypeSpec models every Quire object module imports, their
 official JSON Schema projection, and a zero-loss lowering to IR v1.1.
 
+The seventh delivery is the semantic conformance corpus and its independent
+differential oracle (issue #20): contract-derived cases, an oracle that decides
+them without reading any implementation under test, and a harness that judges
+every declared Rust, TypeScript, and Python implementation against that oracle
+rather than against one another.
+
 ## 2. Scope
 
 ### 2.1 In Scope
@@ -105,6 +111,12 @@ official JSON Schema projection, and a zero-loss lowering to IR v1.1.
 - The semantic-core L3 declaration grammar and kernel scalar library in
   TypeSpec under `packages/semantic-core/`, its emitted JSON Schema, and its
   lowering table to IR v1.1.
+- A versioned semantic conformance corpus under `conformance/` with positive,
+  negative, boundary, and evolution cases per IR construct and compatibility
+  rule, contract-cited provenance, and minimization rules.
+- An independent JSON-level semantic oracle, a differential harness with a
+  declared adapter registry and divergence register, coverage accounting,
+  promotion thresholds, and a downstream fixture import API.
 
 ### 2.2 Out of Scope
 
@@ -131,6 +143,11 @@ official JSON Schema projection, and a zero-loss lowering to IR v1.1.
 - Module vocabulary (entity, endpoint, process, requirement, …) in the
   semantic-core kernel; publishing `@agent-ix/semantic-core` (issue #11);
   a custom emitter for issue #35.
+- Implementing, fixing, or promoting any compiler, frontend, or backend the
+  corpus judges (issues #19, #21, #22, #23, #27); the corpus records a
+  divergence rather than repairing the implementation that causes it.
+- Publishing the corpus as its own package, or moving it to a corpus
+  repository, as part of issue #20.
 
 ## 3. System Overview
 
@@ -178,9 +195,9 @@ Authority is assigned by concern:
 | Class | Artifacts | Purpose |
 |---|---|---|
 | Stakeholder | [StR-001](./stakeholder/StR-001-durable-semantic-data-governance.md) | Durable governance need |
-| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-007](./usecase/US-007-declare-archetypes-against-a-shared-grammar.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, and module-maintainer outcomes |
-| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-034](./functional/FR-034-lower-semantic-core-declarations-to-ir.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, and semantic-core grammar behavior |
-| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-014](./non-functional/NFR-014-small-kernel-discipline.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, and kernel discipline |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-008](./usecase/US-008-judge-a-compiler-against-an-independent-corpus.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, and conformance-reviewer outcomes |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-039](./functional/FR-039-account-for-corpus-coverage-and-import.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, and conformance-corpus behavior |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-016](./non-functional/NFR-016-isolated-conformance-corpus.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, and blessing-free conformance evidence |
 
 ## 6. Decision Status Model
 
