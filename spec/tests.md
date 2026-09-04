@@ -18,7 +18,7 @@ snapshot cases pass. The schema-source decision at TC-199 is recorded (owner,
 issue #4, 2026-09-03: TypeSpec, ADR-0005); all later disruptive migration and
 promotion gates remain separate. Issue #34 (TC-203..247) is fully mapped and its 45 cases pass (PR #38).
 Issue #35 (TC-248..279) is fully mapped and its 32 cases pass (PR #39; TC-274 by inspection).
-Issue #20 (TC-280..332) adds the semantic conformance corpus, its independent
+Issue #20 (TC-280..341) adds the semantic conformance corpus, its independent
 differential oracle, and the harness that judges every declared backend against
 that oracle rather than against another backend.
 
@@ -37,7 +37,7 @@ that oracle rather than against another backend.
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001..US-008, FR-001..FR-039 | TC-033, TC-086, TC-129, TC-130..332 | ✅ Complete |
+| StR-001 | US-001..US-008, FR-001..FR-039 | TC-033, TC-086, TC-129, TC-130..341 | ✅ Complete |
 
 ### User Story Coverage
 
@@ -54,7 +54,7 @@ that oracle rather than against another backend.
 | US-005 | Informal story outcome implemented by FR-019..FR-026 | TC-130..176 | ✅ Complete |
 | US-006 | US-006-EX-1..4 (illustrative) implemented by FR-027..FR-030 | TC-203, TC-210, TC-214, TC-220 | ✅ Complete |
 | US-007 | US-007-EX-1..4 (illustrative) implemented by FR-031..FR-034 | TC-262, TC-271, TC-258, TC-277 | ✅ Complete |
-| US-008 | US-008-EX-1..5 (illustrative) implemented by FR-035..FR-039 | TC-282, TC-298, TC-301, TC-299, TC-312 | ✅ Complete |
+| US-008 | US-008-EX-1..5 (illustrative) implemented by FR-035..FR-039 | TC-282, TC-303, TC-305, TC-304, TC-318 | ✅ Complete |
 
 ### Functional Requirement Coverage
 
@@ -94,11 +94,11 @@ that oracle rather than against another backend.
 | FR-032 | FR-032-AC-1..5, FR-032-CON-1 | TC-255..260 | ✅ Complete |
 | FR-033 | FR-033-AC-1..5, FR-033-CON-1..2 | TC-261..266 | ✅ Complete |
 | FR-034 | FR-034-AC-1..5, FR-034-CON-1 | TC-267..272, TC-279 | ✅ Complete |
-| FR-035 | FR-035-AC-1..8, FR-035-CON-1..2 | TC-280..288 | ✅ Complete |
-| FR-036 | FR-036-AC-1..7, FR-036-CON-1..2 | TC-289..296 | ✅ Complete |
-| FR-037 | FR-037-AC-1..8, FR-037-CON-1..2 | TC-297..307 | ✅ Complete |
-| FR-038 | FR-038-AC-1..8, FR-038-CON-1..2 | TC-308..317 | ✅ Complete |
-| FR-039 | FR-039-AC-1..7, FR-039-CON-1..2 | TC-318..324 | ✅ Complete |
+| FR-035 | FR-035-AC-1..10, FR-035-CON-1..3 | TC-280..289 | ✅ Complete |
+| FR-036 | FR-036-AC-1..11, FR-036-CON-1..3 | TC-290..301 | ✅ Complete |
+| FR-037 | FR-037-AC-1..11, FR-037-CON-1..3 | TC-302..313 | ✅ Complete |
+| FR-038 | FR-038-AC-1..9, FR-038-CON-1..3 | TC-314..323 | ✅ Complete |
+| FR-039 | FR-039-AC-1..9, FR-039-CON-1..3 | TC-324..332 | ✅ Complete |
 
 ### Non-Functional Requirement Coverage
 
@@ -118,8 +118,8 @@ that oracle rather than against another backend.
 | NFR-012 | Diff, unchanged-suite, registry, downstream-gate, and human-decision checks | TC-195..199 | ✅ Complete |
 | NFR-013 | Unchanged v1 fixture suite, spike byte comparison, compatibility-corpus entry, changed-path gate, and fixture inventory | TC-208, TC-234..236, TC-247 | ✅ Complete |
 | NFR-014 | Compiled-program inventory, amendment inspection, changed-path gate, emitter inspection, spike byte comparison | TC-249, TC-273..276, TC-278 | ✅ Complete |
-| NFR-015 | Provenance quote check, repeat/locale/directory byte comparison, oracle import and effect analysis, divergence-register inspection | TC-325..328 | ✅ Complete |
-| NFR-016 | Changed-path gate, dependency inspection, offline test run, publication inspection | TC-329..332 | ✅ Complete |
+| NFR-015 | Provenance quote check, repeat/locale/directory byte comparison, oracle and harness import and effect analysis, divergence and contract-gap register inspection | TC-333..337 | ✅ Complete |
+| NFR-016 | Changed-path gate, manifest diff, offline test run, publication analysis | TC-338..341 | ✅ Complete |
 
 ## Test Case Summary
 
@@ -404,59 +404,68 @@ that oracle rather than against another backend.
 | TC-277 | Each reader-enforced grammar rule (bounds, flags, decimal presence, unit applicability, returns.unit, uniqueness keys, identity flag) has a negative fixture rejected at its locus; the FR-006 set reads clean | Unit | P0 | FR-031-AC-7, US-007-EX-4 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-278 | `spike:typespec:check` output is byte-identical before and after the semantic-core change | Snapshot | P0 | NFR-014-AC-5 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-279 | The lowered FR-006 document validates as `1.1.0` and both IR readers return zero diagnostics when the lowerer runs from the committed `FieldDecl[]` fixture | Integration | P0 | FR-034-AC-2 | ✅ passed — semantic-core grammar (PR #39) |
-| TC-280 | Every case file validates against `corpus-case.schema.json` and `corpus.json` against `corpus-manifest.schema.json` | Unit | P0 | FR-035-AC-1 | 🚧 issue #20 |
-| TC-281 | Every base document validates against `semantic-ir.schema.json` and yields zero oracle diagnostics | Unit | P0 | FR-035-AC-2, FR-035-CON-1 | 🚧 issue #20 |
-| TC-282 | Every case's `derivedFrom` names an existing contract artifact and its `quote` occurs verbatim in it | Static | P0 | FR-035-AC-3, US-008-EX-1 | 🚧 issue #20 |
-| TC-283 | Every `negative` case yields exactly one oracle diagnostic; a case seeded with a second violation fails the gate | Unit | P0 | FR-035-AC-4 | 🚧 issue #20 |
-| TC-284 | An expected diagnostic addressing a node under an `origin.source` carries that origin's exact locus; removing it fails the gate | Unit | P0 | FR-035-AC-5 | 🚧 issue #20 |
-| TC-285 | Recomputing every case digest and `corpusDigest` reproduces `corpus.json`; a mutated case byte fails and names the case | Snapshot | P0 | FR-035-AC-6 | 🚧 issue #20 |
-| TC-286 | No case sets `provenance.blessedFromRun`; a blessed case with no `blessing` block fails the gate | Static | P0 | FR-035-AC-7 | 🚧 issue #20 |
-| TC-287 | No case's `ops` exceeds the 64-node minimization budget | Static | P1 | FR-035-AC-8 | 🚧 issue #20 |
-| TC-288 | Case ids are unique across the corpus and match the declared id pattern | Static | P0 | FR-035-CON-2 | 🚧 issue #20 |
-| TC-289 | The oracle's verdict equals every case's authored `expected` block, including diagnostic codes, order, pointers, and loci | Unit | P0 | FR-036-AC-1 | 🚧 issue #20 |
-| TC-290 | Two oracle runs over the corpus are byte-identical and the diagnostic order is unchanged under `LC_ALL=tr_TR.UTF-8` | Property | P0 | FR-036-AC-2, FR-036-CON-2 | 🚧 issue #20 |
-| TC-291 | A self-referential alias, a mutually recursive alias pair, and a self-referential composite relationship yield `DEPTH_LIMIT_EXCEEDED` rather than unbounded recursion | Unit | P0 | FR-036-AC-3 | 🚧 issue #20 |
-| TC-292 | Duplicate identity, alias cycle, unresolved occurrence definition, unresolved union payload, and unresolved sequence or map element are five distinct diagnostic codes | Unit | P0 | FR-036-AC-4 | 🚧 issue #20 |
-| TC-293 | The oracle imports no path under `spikes/`, `src/`, `test/`, `tests/`, or `conformance/adapters/` and adds no dependency | Static | P0 | FR-036-AC-5, FR-036-CON-1 | 🚧 issue #20 |
-| TC-294 | The oracle's `normalized` output for a `1.0.0` document is byte-identical to the canonical form of the input | Unit | P0 | FR-036-AC-6 | 🚧 issue #20 |
-| TC-295 | A document pair carrying both an optional and a required addition classifies `breaking` and names both changes | Unit | P0 | FR-036-AC-7 | 🚧 issue #20 |
-| TC-296 | A non-object input returns `invalid` with exactly one `INVALID_DOCUMENT` diagnostic at pointer `""` | Unit | P1 | FR-036-AC-1 | 🚧 issue #20 |
-| TC-297 | The harness runs the whole corpus against every registered adapter and exits zero on the committed corpus and register | Integration | P0 | FR-037-AC-1 | 🚧 issue #20 |
-| TC-298 | An adapter result with an extra, missing, reordered, or repointed diagnostic fails and the report names the case, the adapter, and the locus | Unit | P0 | FR-037-AC-2, US-008-EX-2 | 🚧 issue #20 |
-| TC-299 | Two adapters that agree with each other but disagree with the oracle both fail | Unit | P0 | FR-037-AC-3, US-008-EX-4 | 🚧 issue #20 |
-| TC-300 | The harness source contains no comparison between two adapter results | Static | P0 | FR-037-AC-3 | 🚧 issue #20 |
-| TC-301 | An `unavailable` adapter is an unmet row naming its owning issue and is excluded from the pass count; an `available` adapter returning `unavailable` fails | Unit | P0 | FR-037-AC-4, US-008-EX-3 | 🚧 issue #20 |
-| TC-302 | A divergence entry with a past `reviewBy` date, and one that no run reproduces, each fail the run | Unit | P0 | FR-037-AC-5 | 🚧 issue #20 |
-| TC-303 | Two consecutive harness runs over an unchanged corpus produce byte-identical reports | Snapshot | P0 | FR-037-AC-6 | 🚧 issue #20 |
-| TC-304 | An adapter command exiting non-zero, or emitting a result failing `adapter-result.schema.json`, fails per case with a non-zero harness exit | Unit | P0 | FR-037-AC-7 | 🚧 issue #20 |
-| TC-305 | The registry declares an adapter for issues #19, #21, #22, and #23, each with its owning issue and status | Static | P0 | FR-037-CON-1 | 🚧 issue #20 |
-| TC-306 | Every adapter result is obtained from a process started from the registry command, never by importing adapter internals | Static | P0 | FR-037-CON-2 | 🚧 issue #20 |
-| TC-307 | An `unsupported` result is accepted only where the case declares that adapter in `expected.unsupportedBy`; an undeclared one fails | Unit | P0 | FR-037-AC-8 | 🚧 issue #20 |
-| TC-308 | Every construct-register row carries a `positive`, a `negative`, a `boundary`, and an `evolution` case; removing one fails naming the row and class | Unit | P0 | FR-038-AC-1 | 🚧 issue #20 |
-| TC-309 | Invalid import, package cycle, unknown mapping, duplicate identity, stale lock, and undeclared loss each have a negative case failing at an exact source locus | Unit | P0 | FR-038-AC-2 | 🚧 issue #20 |
-| TC-310 | Four cases realize the four `presence` × `nullable` combinations and the oracle distinguishes all four normalized forms | Unit | P0 | FR-038-AC-3 | 🚧 issue #20 |
-| TC-311 | Direct and mutual recursion are accepted; an alias cycle and a composite cycle are rejected; a package cycle carries a different code from a recursive type graph | Unit | P0 | FR-038-AC-4 | 🚧 issue #20 |
-| TC-312 | Every recorded prototype-emitter divergence has a `defect` register row and a reproducing case that fails on a document carrying it | Unit | P0 | FR-038-AC-5, US-008-EX-5 | 🚧 issue #20 |
-| TC-313 | Every register row declares its deciding layer and the oracle's decision for its cases comes from that layer | Unit | P1 | FR-038-AC-6 | 🚧 issue #20 |
-| TC-314 | Every register row's `sources` resolve to existing paths under `schema/semantic/v1/` or `docs/semantic-data-system/` | Static | P0 | FR-038-CON-1 | 🚧 issue #20 |
-| TC-315 | Every issue #19 acceptance criterion listed in the register is covered by at least one case | Static | P0 | FR-038-CON-2 | 🚧 issue #20 |
-| TC-316 | A union variant whose `payloadType` no type declares is rejected at that variant's locus; two variants sharing one payload type are accepted | Unit | P0 | FR-038-AC-7 | 🚧 issue #20 |
-| TC-317 | A `1.0.0` document read under `1.1.0` rules, a `1.1.0` node in a `1.0.0` document, and an export added and removed across a package version each classify as the contract states | Unit | P0 | FR-038-AC-8 | 🚧 issue #20 |
-| TC-318 | Regenerating `coverage.json` reproduces the committed file byte-for-byte; adding a case without regenerating fails the gate | Snapshot | P0 | FR-039-AC-1, FR-039-CON-1 | 🚧 issue #20 |
-| TC-319 | `thresholds.json` declares coverage, pass-rate, divergence, and mutation-score thresholds with an owning issue for each of #19, #21, #22, and #23 | Static | P0 | FR-039-AC-2 | 🚧 issue #20 |
-| TC-320 | Every catalogued mutation is detected by at least one case; suppressing a detecting case drops the score and fails the gate | Unit | P0 | FR-039-AC-3 | 🚧 issue #20 |
-| TC-321 | The mutation catalogue carries at least one mutation for every construct-register family | Static | P0 | FR-039-AC-4 | 🚧 issue #20 |
-| TC-322 | A consumer importing the conformance subpath from a different working directory loads the corpus, builds an input, and obtains an oracle verdict | Integration | P0 | FR-039-AC-5 | 🚧 issue #20 |
-| TC-323 | `loadCase` on an unknown id throws naming the id and the corpus version; mutating a returned case does not affect a later load | Unit | P0 | FR-039-AC-6, FR-039-CON-2 | 🚧 issue #20 |
-| TC-324 | A registry adapter with no threshold row, and a threshold row with no registry adapter, each fail the gate | Unit | P0 | FR-039-AC-7 | 🚧 issue #20 |
-| TC-325 | No case is blessed from a run and every `derivedFrom` quote occurs verbatim in the named contract artifact | Static | P0 | NFR-015-AC-1 | 🚧 issue #20 |
-| TC-326 | Oracle verdicts, the harness report, and the coverage account are byte-identical across two runs, two locales, and two working directories | Property | P0 | NFR-015-AC-2 | 🚧 issue #20 |
-| TC-327 | The oracle performs no clock, network, or environment read and no filesystem access outside `conformance/` and `schema/` | Static | P0 | NFR-015-AC-3 | 🚧 issue #20 |
-| TC-328 | Every disagreement with a merged implementation in this repository is recorded in `divergences.json` with its owning issue rather than absorbed into an expected result | Manual | P0 | NFR-015-AC-4 | 🚧 issue #20 |
-| TC-329 | The issue #20 changed-path gate excludes `spikes/`, `src/`, `packages/`, `schema/`, `fixtures/`, and both lockfiles | Static | P0 | NFR-016-AC-1 | 🚧 issue #20 |
-| TC-330 | The change adds no runtime dependency to `package.json` or `pyproject.toml` | Static | P0 | NFR-016-AC-2 | 🚧 issue #20 |
-| TC-331 | The conformance suites run from `make test` and `poetry run pytest` with no network connection | Integration | P0 | NFR-016-AC-3 | 🚧 issue #20 |
-| TC-332 | The change publishes no package and alters no consumer, catalog pin, or Avro contract | Manual | P0 | NFR-016-AC-4 | 🚧 issue #20 |
+| TC-280 | Every case file, base bundle, and the corpus manifest validate against their conformance schemas | Unit | P0 | FR-035-AC-1 | 🚧 issue #20 |
+| TC-281 | Every base bundle validates against the published schemas it composes and yields zero oracle diagnostics | Unit | P0 | FR-035-AC-2, FR-035-CON-1 | 🚧 issue #20 |
+| TC-282 | Every case's `derivedFrom` names an existing artifact and its `quote` occurs verbatim; a quote that no longer occurs fails the gate | Unit | P0 | FR-035-AC-3, US-008-EX-1 | 🚧 issue #20 |
+| TC-283 | Recomputing every case and base digest and `corpusDigest` reproduces `corpus.json`; a flipped byte fails and names the file | Unit | P0 | FR-035-AC-4 | 🚧 issue #20 |
+| TC-284 | No case sets `provenance.blessedFromRun`; a blessed case with no `blessing` block fails the gate | Unit | P0 | FR-035-AC-5 | 🚧 issue #20 |
+| TC-285 | No case's `ops` exceeds the 64-node budget, and the depth boundary case stays inside it using `x-repeat` | Unit | P1 | FR-035-AC-6 | 🚧 issue #20 |
+| TC-286 | An indexed `replace` or `remove` with no preceding `test` op fails the gate; a `test` op that no longer matches its base fails the run | Unit | P0 | FR-035-AC-7 | 🚧 issue #20 |
+| TC-287 | Deleting a case a `defect` row names fails the gate; changing an `expected` block without a major `corpusVersion` bump fails the versioning gate | Unit | P0 | FR-035-AC-8 | 🚧 issue #20 |
+| TC-288 | Every expected diagnostic validates against `common.schema.json#/$defs/diagnostic` and its `pointer` resolves in the built bundle | Unit | P0 | FR-035-AC-9 | 🚧 issue #20 |
+| TC-289 | Case ids are unique, match the declared pattern, and sit in the directory their `family` names | Unit | P0 | FR-035-AC-10, FR-035-CON-2, FR-035-CON-3 | 🚧 issue #20 |
+| TC-290 | The oracle's verdict equals every case's authored `expected` block, including codes, order, pointers, severities, and loci | Unit | P0 | FR-036-AC-1 | 🚧 issue #20 |
+| TC-291 | Two oracle runs over the corpus are byte-identical and the diagnostic order is unchanged under `LC_ALL=tr_TR.UTF-8` | Property | P0 | FR-036-AC-2, FR-036-CON-2 | 🚧 issue #20 |
+| TC-292 | A self-referential alias and a mutual alias pair each yield one `ALIAS_CYCLE`; a 257-link acyclic chain yields `DEPTH_LIMIT_EXCEEDED` | Unit | P0 | FR-036-AC-3 | 🚧 issue #20 |
+| TC-293 | Duplicate identity, alias cycle, unresolved occurrence definition, unresolved union payload, and unresolved sequence or map element are five distinct codes | Unit | P0 | FR-036-AC-4 | 🚧 issue #20 |
+| TC-294 | The oracle and harness import no judged implementation, read no clock, network, or environment, and add no dependency | Static | P0 | FR-036-AC-5, FR-036-CON-1 | 🚧 issue #20 |
+| TC-295 | For every `1.0.0` document, `normalized` is byte-identical to the corpus canonical form of the input and adds no member | Property | P0 | FR-036-AC-6 | 🚧 issue #20 |
+| TC-296 | An optional plus required addition classifies `breaking` naming both; the optional addition alone is `additive` under a preserving policy and `conditional` with none | Unit | P0 | FR-036-AC-7 | 🚧 issue #20 |
+| TC-297 | Every diagnostic the oracle emits validates against the published diagnostic schema and carries `owner`, `blocking`, `causes`, and `related` | Unit | P0 | FR-036-AC-8 | 🚧 issue #20 |
+| TC-298 | Each of the six package-context rules fires on a bundle supplying its member and stays silent on one that omits it | Unit | P0 | FR-036-AC-9 | 🚧 issue #20 |
+| TC-299 | A schema-decided case yields one diagnostic at the deepest failing instance location and no ancestor location beside it | Unit | P0 | FR-036-AC-10 | 🚧 issue #20 |
+| TC-300 | Every emitted code has a `diagnostic-codes.json` row citing a contract clause, and the sixteen frozen `reader-cases.json` codes are reused verbatim | Unit | P0 | FR-036-AC-11, FR-036-CON-3 | 🚧 issue #20 |
+| TC-301 | A value that is not an input bundle returns `invalid` with exactly one `INVALID_DOCUMENT` diagnostic at pointer `""` | Unit | P1 | FR-036-AC-1 | 🚧 issue #20 |
+| TC-302 | The harness runs the whole corpus against every registered adapter and exits zero on the committed corpus, registry, and register | Integration | P0 | FR-037-AC-1 | 🚧 issue #20 |
+| TC-303 | A stub result seeded with an extra, missing, reordered, repointed, relocated, or reclassified diagnostic fails, naming case, adapter, and locus | Unit | P0 | FR-037-AC-2, US-008-EX-2 | 🚧 issue #20 |
+| TC-304 | Two stub adapters that agree with each other but disagree with the oracle both fail | Unit | P0 | FR-037-AC-3, US-008-EX-4 | 🚧 issue #20 |
+| TC-305 | An `unavailable` adapter is an unmet row naming its owning issue and is no pass; an `available` adapter returning `unavailable` fails | Unit | P0 | FR-037-AC-4, US-008-EX-3 | 🚧 issue #20 |
+| TC-306 | A divergence entry the run does not reproduce fails the run, and the audit target reports an entry whose `reviewBy` date has passed | Unit | P0 | FR-037-AC-5 | 🚧 issue #20 |
+| TC-307 | Two harness runs over an unchanged corpus produce byte-identical reports and the harness source reads no clock | Property | P0 | FR-037-AC-6 | 🚧 issue #20 |
+| TC-308 | An adapter exiting non-zero, or emitting a result failing its schema, fails per case with a non-zero harness exit rather than a skip | Unit | P0 | FR-037-AC-7 | 🚧 issue #20 |
+| TC-309 | An `unsupported` result is accepted only where the case declares that adapter in `unsupportedBy`; an undeclared one fails | Unit | P0 | FR-037-AC-8 | 🚧 issue #20 |
+| TC-310 | A source analysis of `conformance/runner/` finds no adapter-to-adapter comparison and no import of adapter internals | Static | P0 | FR-037-AC-9, FR-037-CON-2 | 🚧 issue #20 |
+| TC-311 | An adapter result whose `caseDigest` does not match the manifest is rejected, so a canned result cannot pass | Unit | P0 | FR-037-AC-10 | 🚧 issue #20 |
+| TC-312 | A `pointerCompatible: false` adapter passes on a different pointer scheme when code, severity, locus, classification, and bytes match, and fails on a wrong locus | Unit | P0 | FR-037-AC-11 | 🚧 issue #20 |
+| TC-313 | The registry declares the four adapter slots with owning issues, statuses, and the note that supplying a command is the owning issue's obligation | Static | P0 | FR-037-CON-1, FR-037-CON-3 | 🚧 issue #20 |
+| TC-314 | Every register row carries four case classes or a justified `notApplicable`; removing a case fails and names the row and class | Unit | P0 | FR-038-AC-1 | 🚧 issue #20 |
+| TC-315 | Unresolved import, package cycle, unknown mapping, duplicate identity, stale manifest digest, and undeclared loss each fail at an exact source locus | Unit | P0 | FR-038-AC-2 | 🚧 issue #20 |
+| TC-316 | Four cases realize the four `presence` by `nullable` combinations and the oracle distinguishes all four normalized forms | Unit | P0 | FR-038-AC-3 | 🚧 issue #20 |
+| TC-317 | Direct and mutual recursion are accepted; alias and composite cycles are rejected; a package cycle carries a different code from a recursive type graph | Unit | P0 | FR-038-AC-4 | 🚧 issue #20 |
+| TC-318 | Every `documentExpressible` defect row has a reproducing case that fails, and every other row names the static check that detects it | Unit | P0 | FR-038-AC-5, US-008-EX-5 | 🚧 issue #20 |
+| TC-319 | Every register row declares its deciding layer and the layer that produced its cases' diagnostics is the declared one | Unit | P1 | FR-038-AC-6 | 🚧 issue #20 |
+| TC-320 | A union variant whose `payloadType` no type declares is rejected at that variant's locus; two variants sharing one payload type are accepted | Unit | P0 | FR-038-AC-7 | 🚧 issue #20 |
+| TC-321 | A `1.0.0` document under `1.1.0` rules, a `1.1.0` node in a `1.0.0` document, and an export added and removed each produce the stated result | Unit | P0 | FR-038-AC-8 | 🚧 issue #20 |
+| TC-322 | Every register row's `sources` resolve, and every listed issue #19 criterion is quoted in its row and covered by a case | Unit | P0 | FR-038-AC-9, FR-038-CON-1, FR-038-CON-2 | 🚧 issue #20 |
+| TC-323 | Cross-language generated-package serialization parity is recorded as an unmet area with issues #21, #22, #23, and #11 as owners | Static | P0 | FR-038-CON-3 | 🚧 issue #20 |
+| TC-324 | Regenerating `coverage.json` reproduces the committed file byte-for-byte; adding a case without regenerating fails the gate | Unit | P0 | FR-039-AC-1, FR-039-CON-1 | 🚧 issue #20 |
+| TC-325 | `thresholds.json` declares a `proposed` row for each of issues #19, #21, #22, and #23 with all four thresholds and an owning issue | Unit | P0 | FR-039-AC-2 | 🚧 issue #20 |
+| TC-326 | Every catalogued mutation is detected by at least one case; suppressing a detecting case drops the score and fails the gate | Unit | P0 | FR-039-AC-3, FR-039-CON-3 | 🚧 issue #20 |
+| TC-327 | The mutation catalogue carries at least one mutation for every construct-register family | Unit | P0 | FR-039-AC-4 | 🚧 issue #20 |
+| TC-328 | A consumer importing `conformance/oracle/index.mjs` from another working directory loads the corpus, builds an input, and obtains a verdict | Integration | P0 | FR-039-AC-5 | 🚧 issue #20 |
+| TC-329 | `loadCase` on an unknown id throws naming the id and the corpus version; mutating a returned case does not affect a later load | Unit | P0 | FR-039-AC-6, FR-039-CON-2 | 🚧 issue #20 |
+| TC-330 | A registry adapter with no threshold row, and a threshold row with no registry adapter, each fail the gate | Unit | P0 | FR-039-AC-7 | 🚧 issue #20 |
+| TC-331 | `package.json` gains no `exports` or `files` entry for `conformance/`, and the coverage account names the unmet serialization area | Static | P0 | FR-039-AC-8 | 🚧 issue #20 |
+| TC-332 | The coverage account is byte-identical when regenerated from a different working directory and under a different locale | Property | P0 | FR-039-AC-9 | 🚧 issue #20 |
+| TC-333 | No case is blessed from a run and every `derivedFrom` quote occurs verbatim in the named contract artifact | Unit | P0 | NFR-015-AC-1 | 🚧 issue #20 |
+| TC-334 | Oracle verdicts, the harness report, and the coverage account are byte-identical across two runs, two locales, and two working directories | Property | P0 | NFR-015-AC-2 | 🚧 issue #20 |
+| TC-335 | The oracle and the harness import no judged implementation and read no clock, network, or environment outside the audit target | Static | P0 | NFR-015-AC-3 | 🚧 issue #20 |
+| TC-336 | Every divergence entry carries an owner and a verdict, and every contract or merged-artifact disagreement sits in `contract-gaps.json` with its owning issue | Manual | P0 | NFR-015-AC-4 | 🚧 issue #20 |
+| TC-337 | An expected result changes only under a `corpus-defect` verdict carrying the major `corpusVersion` bump | Static | P0 | NFR-015-AC-5 | 🚧 issue #20 |
+| TC-338 | The issue #20 changed-path gate excludes `/spikes/`, `/src/`, `/packages/`, `/schema/`, `/fixtures/`, `/docs/`, `/.github/`, and both lockfiles | Static | P0 | NFR-016-AC-1 | 🚧 issue #20 |
+| TC-339 | The change adds no dependency to `package.json` or `pyproject.toml` and no `exports` or `files` entry | Static | P0 | NFR-016-AC-2 | 🚧 issue #20 |
+| TC-340 | The conformance suites run from `make test` and `poetry run pytest` with no network connection and no clock read | Integration | P0 | NFR-016-AC-3 | 🚧 issue #20 |
+| TC-341 | A changed-path and manifest analysis shows the change publishes no package and alters no consumer, catalog pin, or Avro contract | Static | P0 | NFR-016-AC-4 | 🚧 issue #20 |
 
 ## Option Permutation Matrix
 
@@ -491,10 +500,11 @@ that oracle rather than against another backend.
 | TC-277 | `TypeRef.unit` | unit-allowed scalar / other scalar / `SemanticId` / `returns` | present or absent | Allowed only on `Integer`, `Decimal`, `Timestamp`, `Duration` fields |
 | TC-250, TC-251 | closed enumerations | eleven keywords / seven categories | member vs non-member | Members accepted, non-members rejected by the emitted schema |
 | TC-253, TC-264 | package version | `v1` / `v1` + addition | regenerate | Prior version bytes unchanged; new version additive |
-| TC-310 | field presence × nullability | `required` / `optional` | `nullable: true` / `nullable: false` | All four combinations are distinct normalized forms; neither is inferable from the other |
-| TC-301, TC-307 | adapter answer | `supported` / `unsupported` / `unavailable` | declared in the case or the registry, or undeclared | Declared `unsupported` and registry-declared `unavailable` are recorded; every undeclared answer fails |
-| TC-317 | contract version | `1.0.0` / `1.1.0` | node present or absent | A `1.1.0` node in a `1.0.0` document, and a `1.0.0` document read under `1.1.0` rules, each classify as the contract states |
-| TC-295, TC-317 | compatibility change | optional addition / required addition / removal | single or combined | Most restrictive classification wins and every contributing change is named |
+| TC-316 | field presence and nullability | `required` / `optional` | `nullable: true` / `nullable: false` | All four combinations are distinct normalized forms; neither is inferable from the other |
+| TC-305, TC-309 | adapter answer | `supported` / `unsupported` / `unavailable` | declared in the case or the registry, or undeclared | Declared `unsupported` and registry-declared `unavailable` are recorded; every undeclared answer fails |
+| TC-321 | contract version | `1.0.0` / `1.1.0` | node present or absent | A `1.1.0` node in a `1.0.0` document, and a `1.0.0` document read under `1.1.0` rules, each classify as the register row states |
+| TC-296 | compatibility change | optional addition / required addition / removal | consumer policy preserving, rejecting, or absent | Most restrictive classification wins, an optional addition is additive only under a preserving policy, and every contributing change is named |
+| TC-312 | adapter pointer scheme | `pointerCompatible: true` / `false` | matching or mismatched locus | The pointer is compared only for a compatible adapter; a wrong locus always fails |
 
 ## Constraint Boundary Tests
 
@@ -560,12 +570,12 @@ that oracle rather than against another backend.
 | Multiplicity (grammar) | Min / Below min | `lower: 0` / `lower: -1` | TC-263 | Pass / fail `Multiplicity.json` |
 | FR-030-CON-1 | Allowed | `contractVersion: "1.0.0"` with the v1 dialect constant under the v1 schema | TC-231 | Pass |
 | FR-030-CON-2 | Prohibited | Manifest and target-contract enumerations diverge | TC-230 | Schema inspection fails |
-| FR-035-AC-8 minimization budget | Max / Above max | 64 `ops` nodes / 65 `ops` nodes | TC-287 | Pass / fail the corpus gate |
-| FR-035-AC-4 single violation | Allowed / Prohibited | one seeded violation / two seeded violations | TC-283 | Exactly one oracle diagnostic / gate fails |
-| FR-036 expansion depth | Max / Above max | depth 256 / depth 257 | TC-291 | Verdict returned / `DEPTH_LIMIT_EXCEEDED` at the exceeding node |
-| FR-037 divergence `reviewBy` | Allowed / Prohibited | a future date / a past date | TC-302 | Suppression accepted / run fails |
-| FR-038-AC-1 class coverage | Min / Below min | four classes per row / three classes per row | TC-308 | Pass / fail naming the row and the missing class |
-| FR-039-AC-3 mutation score | Min / Below min | every catalogued mutation detected / one undetected | TC-320 | Pass / fail naming the mutation |
+| FR-035-AC-6 minimization budget | Max / Above max | 64 `ops` nodes / 65 `ops` nodes | TC-285 | Pass / fail the corpus gate |
+| FR-036 single violation | Allowed / Prohibited | one seeded violation / two seeded violations | TC-290 | Exactly one oracle diagnostic / gate fails |
+| FR-036 expansion depth | Max / Above max | acyclic alias chain of 256 / of 257 | TC-292 | Verdict returned / `DEPTH_LIMIT_EXCEEDED` at the exceeding node |
+| FR-037 divergence `reviewBy` | Allowed / Reported | a future date / a past date | TC-306 | Audit target silent / audit target reports the entry |
+| FR-038-AC-1 class coverage | Min / Below min | four classes, or three plus a justified `notApplicable` / three unjustified | TC-314 | Pass / fail naming the row and the missing class |
+| FR-039-AC-3 mutation score | Min / Below min | every catalogued mutation detected / one undetected | TC-326 | Pass / fail naming the mutation |
 
 ## State Transition Matrix
 
@@ -595,11 +605,11 @@ that oracle rather than against another backend.
 | semantic-core `v1` | grammar addition under `Versions.v2` | `v1` projection byte-identical; `v2` additive | TC-253 |
 | raw official bundle | #31 normalization applied | absolute `$id` bundle that validates without alias | TC-262, TC-265 |
 | normalized bundle | issue #31 fixed upstream | normalization removed; raw bundle validates | TC-266 |
-| adapter `status: unavailable` | the owning backend ships | `status: available`; every `unavailable` answer now fails | TC-301 |
-| divergence entry open | the owning issue fixes the defect | the entry no longer reproduces and the run fails until it is removed | TC-302 |
-| corpus `1.x.y` | a case is added | minor bump, regenerated `coverage.json`, new `corpusDigest` | TC-285, TC-318 |
-| corpus `1.x.y` | an existing `expected` block changes | major bump; a minor bump fails the versioning gate | TC-285 |
-| package version `v1` | an export is added and another removed | additive plus breaking; the pair classifies `breaking` | TC-317 |
+| adapter `status: unavailable` | the owning backend ships | `status: available`; every `unavailable` answer now fails | TC-305 |
+| divergence entry open | the owning issue fixes the defect | the entry no longer reproduces and the run fails until it is removed | TC-306 |
+| corpus `1.x.y` | a case is added | minor bump, regenerated `coverage.json`, new `corpusDigest` | TC-283, TC-324 |
+| corpus `1.x.y` | an existing `expected` block changes | major bump under a `corpus-defect` verdict; a minor bump fails the versioning gate | TC-287, TC-337 |
+| package version `v1` | an export is added and another removed | additive plus breaking; the pair classifies `breaking` | TC-321 |
 
 ## Error Paths
 
@@ -655,19 +665,21 @@ that oracle rather than against another backend.
 | ERR-048 | Lowering row records `loss` | Fixture gate fails | TC-272 |
 | ERR-049 | `UnitSymbol` outside the UCUM charset, or `unit` on a non-unit scalar or on `returns` | Pattern validation or reader rejects | TC-270, TC-277 |
 | ERR-050 | Duplicate field/operation/param name, relation (verb, target), enum value, or clauseId | Reader rejects at the second declaration | TC-277 |
-| ERR-051 | An import names a package the lock does not resolve | Oracle rejects at the import's locus | TC-309 |
-| ERR-052 | The package graph closes a cycle | Oracle rejects with a package-cycle code distinct from a recursive type graph | TC-309, TC-311 |
-| ERR-053 | A mapping names an identity no type declares | Oracle rejects at the mapping's locus | TC-309 |
-| ERR-054 | The same semantic identity is declared twice anywhere in the document | Oracle rejects at the second declaration | TC-292, TC-309 |
-| ERR-055 | A lock's `manifestDigest` no longer matches the manifest | Oracle rejects as a stale lock | TC-309 |
-| ERR-056 | An identity is omitted that the profile does not declare as loss | Oracle rejects as undeclared loss | TC-309 |
-| ERR-057 | An alias chain closes on itself | Oracle emits an alias-cycle code, not an unresolved reference | TC-292, TC-311 |
-| ERR-058 | A union variant's `payloadType` resolves to nothing | Oracle rejects at that variant's locus | TC-316 |
-| ERR-059 | An adapter command exits non-zero or emits a result failing its schema | Harness fails that adapter per case and exits non-zero | TC-304 |
-| ERR-060 | An adapter answers `unsupported` or `unavailable` where nothing declares it | Harness fails naming the case and the adapter | TC-301, TC-307 |
-| ERR-061 | A divergence entry is expired, or reproduces nothing | Harness fails naming the entry | TC-302 |
-| ERR-062 | `coverage.json` is hand-edited | Coverage gate fails naming the differing rows | TC-318 |
-| ERR-063 | `loadCase` is called with an id the corpus does not declare | The import API throws naming the id and the corpus version | TC-323 |
+| ERR-051 | An import names a package the lock does not resolve | Oracle rejects at the import's locus | TC-298, TC-315 |
+| ERR-052 | The lock package graph closes a cycle | Oracle rejects with a package-cycle code distinct from a recursive type graph | TC-315, TC-317 |
+| ERR-053 | A mapping names an identity no declaration owns | Oracle rejects at the mapping's locus | TC-298, TC-315 |
+| ERR-054 | The same semantic identity is declared twice anywhere in the document | Oracle rejects at the second declaration | TC-293, TC-315 |
+| ERR-055 | The IR's `manifestDigest` no longer matches the manifest | Oracle rejects as a stale lock | TC-298, TC-315 |
+| ERR-056 | An entity-role type is neither exported nor declared an allowed omission | Oracle rejects as undeclared loss | TC-298, TC-315 |
+| ERR-057 | An alias chain closes on itself | Oracle emits `ALIAS_CYCLE`, not an unresolved reference or a depth error | TC-292, TC-293 |
+| ERR-058 | A union variant's `payloadType` resolves to nothing | Oracle rejects at that variant's locus | TC-320 |
+| ERR-059 | An adapter command exits non-zero or emits a result failing its schema | Harness fails that adapter per case and exits non-zero | TC-308 |
+| ERR-060 | An adapter answers `unsupported` or `unavailable` where nothing declares it | Harness fails naming the case and the adapter | TC-305, TC-309 |
+| ERR-061 | A divergence entry reproduces nothing, or its `reviewBy` has passed | Harness fails, or the audit target reports it | TC-306 |
+| ERR-062 | `coverage.json` is hand-edited | Coverage gate fails naming the differing rows | TC-324 |
+| ERR-063 | `loadCase` is called with an id the corpus does not declare | The import API throws naming the id and the corpus version | TC-329 |
+| ERR-064 | An adapter answers with a `caseDigest` the manifest does not carry | Harness rejects the result rather than counting it | TC-311 |
+| ERR-065 | An indexed `replace` or `remove` op carries no preceding `test` op | Corpus gate fails naming the case | TC-286 |
 
 ## Edge Cases
 
@@ -710,18 +722,21 @@ that oracle rather than against another backend.
 | EC-035 | Module vocabulary smuggled in as a "support type" | NFR-014 | TC-249, TC-273 | Kernel grows into the generic entity class ARCH-005 forbids |
 | EC-036 | Constraint on a field whose kernel scalar is shared by other fields | FR-034 | TC-268, TC-269 | `min` on one field constrains every `Integer` unless a per-field alias is minted |
 | EC-037 | Official emitter is not version-aware | FR-031, FR-033 | TC-253 | A `@versioned` claim cannot be evidenced; package semver carries the version instead |
-| EC-038 | Every implementation is wrong in the same direction | FR-037 | TC-299, TC-300 | Backend-versus-backend agreement is mistaken for correctness |
-| EC-039 | A case's expected result is regenerated from the implementation it judges | NFR-015, FR-035 | TC-286, TC-325 | The corpus silently becomes a transcript of current behavior |
-| EC-040 | A `1.0.0` document carries a `1.1.0` node the schema does not version-gate | FR-038, NFR-013 | TC-317 | A `1.0.0` reader drops relationships, operations, clauses, or units in silence |
-| EC-041 | A type name contains the substring of a construct a backend detects by name matching | FR-038 | TC-312 | Nullability, recursion, or openness is inferred from a rendered display name |
-| EC-042 | The only declared backend for a language is `unavailable` at promotion time | FR-037, FR-039 | TC-301, TC-319 | An absent backend is read as a passing backend |
-| EC-043 | Two implementations sort diagnostics under different locales | FR-036, NFR-015 | TC-290, TC-326 | An ordering difference is reported as a semantic divergence, or hides one |
-| EC-044 | A divergence stays suppressed after its defect is fixed | FR-037 | TC-302 | The register accumulates permanent exemptions |
-| EC-045 | A recursive type graph is reported as a package cycle | FR-038 | TC-311 | A legal self-referential model is rejected, or a real package cycle is accepted |
+| EC-038 | Every implementation is wrong in the same direction | FR-037 | TC-304, TC-310 | Backend-versus-backend agreement is mistaken for correctness |
+| EC-039 | A case's expected result is regenerated from the implementation it judges | NFR-015, FR-035 | TC-284, TC-333, TC-337 | The corpus silently becomes a transcript of current behavior |
+| EC-040 | A `1.0.0` document carries a `1.1.0` node the schema does not version-gate | FR-038, NFR-013 | TC-321 | A `1.0.0` reader drops relationships, operations, clauses, or units in silence |
+| EC-041 | A type name contains the substring of a construct a backend detects by name matching | FR-038 | TC-318 | Nullability, recursion, or openness is inferred from a rendered display name |
+| EC-042 | Every declared backend is `unavailable` at promotion time | FR-037, FR-039 | TC-305, TC-325 | An absent backend is read as a passing backend |
+| EC-043 | Two implementations sort diagnostics under different locales | FR-036, NFR-015 | TC-291, TC-334 | An ordering difference is reported as a semantic divergence, or hides one |
+| EC-044 | A divergence stays suppressed after its defect is fixed | FR-037 | TC-306 | The register accumulates permanent exemptions |
+| EC-045 | A recursive type graph is reported as a package cycle | FR-038 | TC-317 | A legal self-referential model is rejected, or a real package cycle is accepted |
+| EC-046 | An adapter answers from a canned table rather than from the case it was given | FR-037 | TC-311 | A backend passes the corpus without reading it |
+| EC-047 | A defect is a process property (a locale-sensitive sort, a working-directory-dependent path) that no document can carry | FR-038 | TC-318, TC-335 | An unreproducible defect is silently dropped from the register |
+| EC-048 | A base bundle is edited and every dependent case's positional patch re-aims | FR-035 | TC-283, TC-286 | Every gate stays green while the cases now test something else |
 
 ## Coverage Gaps
 
-Issue #20's 53 cases (TC-280..332) are fully mapped; their execution status is
+Issue #20's 62 cases (TC-280..341) are fully mapped; their execution status is
 recorded below. No open mapping gap remains for issues #8, #10, #4, #9, #34, or #35. Issue #35's
 32 cases (TC-248..279) pass; TC-279 reuses both IR v1.1 readers. Issue #34's 45 cases (TC-203..247) pass; TC-233 uses a seeded in-test generator (no library
 dependency was added). The 41 issue #4 cases
@@ -734,15 +749,15 @@ database, publication, enforcement, and retirement work remains separately gated
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 126 | 110 | 0 | 0 | 100% mapped |
-| Manual | 46 | 44 | 0 | 0 | 100% mapped |
+| Static | 120 | 110 | 0 | 0 | 100% mapped |
+| Manual | 45 | 44 | 0 | 0 | 100% mapped |
 | Analysis | 17 | 17 | 0 | 0 | 100% mapped |
-| Property | 20 | 18 | 0 | 0 | 100% mapped |
-| Unit | 93 | 66 | 0 | 0 | 100% mapped |
+| Property | 23 | 18 | 0 | 0 | 100% mapped |
+| Unit | 109 | 66 | 0 | 0 | 100% mapped |
 | Integration | 18 | 15 | 0 | 0 | 100% mapped |
 | Fuzz | 2 | 2 | 0 | 0 | 100% mapped |
-| Snapshot | 9 | 6 | 0 | 0 | 100% mapped |
+| Snapshot | 6 | 6 | 0 | 0 | 100% mapped |
 | Compile | 1 | 1 | 0 | 0 | 100% mapped |
-| **Total** | **332** | **279** | **0** | **0** | **100% mapped** |
+| **Total** | **341** | **279** | **0** | **0** | **100% mapped** |
 
-**Matrix coverage status: ✅ Complete. Execution status: ✅ 279 passed; TC-199 recorded by the owner decision on issue #4; TC-203..247 pass on PR #38 (TC-232 needs the poetry env, TC-242 the installed `spec-artifacts-iso` manifest); TC-248..279 pass on PR #39 (TC-274 by inspection; TC-279 needs the poetry env). 🚧 TC-280..332 are in progress on issue #20.**
+**Matrix coverage status: ✅ Complete. Execution status: ✅ 279 passed; TC-199 recorded by the owner decision on issue #4; TC-203..247 pass on PR #38 (TC-232 needs the poetry env, TC-242 the installed `spec-artifacts-iso` manifest); TC-248..279 pass on PR #39 (TC-274 by inspection; TC-279 needs the poetry env). 🚧 TC-280..341 are in progress on issue #20.**

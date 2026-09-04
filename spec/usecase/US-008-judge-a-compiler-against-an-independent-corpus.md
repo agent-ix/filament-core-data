@@ -60,9 +60,9 @@ That is enough to author cases and expected results without running anything.
 
 ### [US-008-EX-4] Two implementations that agree with each other but not with the contract still fail
 
-- **Given** the TypeScript and Python readers both resolve an alias cycle to "unresolved type reference"
+- **Given** two implementations that both resolve an alias cycle to "unresolved type reference"
 - **When** the oracle expects an alias-cycle diagnostic at the cycle's locus
-- **Then** both implementations fail that case, because they are compared with the oracle and never with each other
+- **Then** both implementations fail that case, because each is compared with the oracle and never with the other
 
 ### [US-008-EX-5] A discovered defect becomes a permanent case
 
@@ -81,10 +81,12 @@ settle each of these.
 
 ## Constraints (Contextual)
 
-The corpus publishes no package and changes no consumer. It does not modify
-`spikes/`, `src/`, the semantic-core package, the frozen v1 fixtures, or any
-corpus repository owned by another project. It targets the published contract
-as merged, and records rather than repairs any disagreement it finds.
+The corpus publishes no package, enlarges no published surface, and changes no
+consumer. It does not modify `spikes/`, `src/`, the semantic-core package, the
+frozen v1 fixtures, the published schemas, or any repository owned by another
+project. It targets the published contract as merged; where it disagrees with
+the contract or with a merged artifact, it records the disagreement with an
+owning issue rather than repairing either side.
 
 ## Dependencies (Contextual)
 

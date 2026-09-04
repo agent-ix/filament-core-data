@@ -17,58 +17,66 @@ relationships:
 The conformance corpus SHALL declare a construct register naming every IR
 construct family and compatibility rule it verifies, and SHALL carry a
 `positive`, a `negative`, a `boundary`, and an `evolution` case for every row of
-that register.
+that register, or a written justification for a class that row cannot carry.
 
 ## Inputs
 
-- The IR v1.1 node set: envelope, identity, structural kind, field presence and nullability, defaults, units, constraints, discriminated unions, recursion, relationships, operations, clauses, provenance, unknown policy, package and lock binding, contract version
+- The IR v1.1 node set of `semantic-ir.schema.json` and `common.schema.json`
+- The package, lock, mapping, profile, and consumer-policy contracts of `schema/semantic/v1/`
 - The compatibility dispositions of FR-025 and `compatibility-report.schema.json`
-- The issue #19 acceptance criteria: invalid imports, cycles, unknown mappings, duplicate identities, stale locks, unsupported loss, recursion, discriminators, nullability versus optionality, version transitions, provenance, and source loci
+- The issue #19 acceptance criteria as they stand in the issue at the time the register row is authored: invalid imports, cycles, unknown mappings, duplicate identities, stale locks, unsupported loss, recursion, discriminators, nullability versus optionality, version transitions, provenance, and source loci
 
 ## Outputs
 
-- `conformance/corpus.json` `constructRegister[]`: one row per construct or rule, each with `id`, `title`, `family`, the contract `sources` it is read from, and the issue #19 acceptance criterion it exercises
+- `conformance/corpus.json` `constructRegister[]`: one row per construct or rule, each with `id`, `title`, `family`, the contract `sources` it is read from, its `decidedBy` layer, the criterion it exercises, and any `notApplicable` class with its justification
+- `conformance/defects.json`: the defect register, one row per defect discovered in an implementation
 - The case files that satisfy the register
 
 ## Behavior
 
-- The corpus SHALL declare the register families `envelope`, `identity`, `kind`, `field-presence`, `field-default`, `unit`, `constraint`, `union`, `recursion`, `relationship`, `operation`, `clause`, `provenance`, `unknown`, `package`, `version`, and `compatibility`.
+- The corpus SHALL declare the register families `envelope`, `identity`, `scalar`, `alias`, `enum`, `sequence-map`, `union`, `reference`, `field-presence`, `field-default`, `unit`, `constraint`, `recursion`, `relationship`, `operation`, `clause`, `provenance`, `unknown`, `extension`, `package`, `version`, and `compatibility`.
 - The corpus SHALL carry, for every register row, at least one case of each of the classes `positive`, `negative`, `boundary`, and `evolution`.
+- The coverage gate SHALL accept a class a register row declares `notApplicable` with a written justification and a contract citation, where the construct carries no limit to sit on or admits no version transition.
+- If a register row is missing a class that it does not declare `notApplicable`, then the coverage gate SHALL fail and name the row and the class.
 - A `positive` case SHALL exercise the construct in its accepted form.
 - A `negative` case SHALL violate exactly one contract rule about the construct.
 - A `boundary` case SHALL sit on a declared limit of the construct.
 - An `evolution` case SHALL change the construct across a contract or package version transition.
-- The corpus SHALL carry a `negative` case for each of: an import naming a package the lock does not resolve; a package-graph cycle; a mapping naming an identity no type declares; a duplicate semantic identity; a lock whose `manifestDigest` no longer matches the manifest; and an omitted identity that the profile does not declare as loss.
-- The corpus SHALL carry cases in which nullability and optionality vary independently across all four combinations of `presence` and `nullable`, so that neither can be inferred from the other.
-- The corpus SHALL carry a `negative` case in which a discriminated union declares a variant whose `payloadType` no type declares, and a `positive` case in which two variants share one payload type.
+- The corpus SHALL carry a `negative` case for each of: an import naming a package the lock does not resolve; a lock package-graph cycle; a mapping naming an identity no declaration owns; a duplicate semantic identity; a `manifestDigest` the manifest no longer hashes to; and an entity-role type the manifest neither exports nor the profile declares an allowed omission.
+- The corpus SHALL carry cases in which nullability and optionality vary independently across all four combinations of `presence` and `nullable`.
+- The corpus SHALL carry a `negative` case in which a union declares a variant whose `payloadType` no type declares.
+- The corpus SHALL carry a `positive` case in which two union variants share one payload type.
 - The corpus SHALL carry cases for direct recursion, mutual recursion through two records, an alias cycle, and a composite relationship cycle.
 - The corpus SHALL distinguish a preserved recursive type graph from a rejected package cycle by diagnostic code.
-- The corpus SHALL carry `evolution` cases for a `1.0.0` document read under `1.1.0` rules, a `1.1.0` document carrying a node `1.0.0` has no reader for, and a package version transition that adds and removes an export.
-- The corpus SHALL carry a `defect` register section in which each row names a defect discovered in an implementation, its owning issue, and the case that reproduces it.
-- The corpus SHALL carry the reproducing case that every `defect` register row names.
-- The corpus SHALL record, for every register row, whether its expectation is decided by the schema, by the oracle's cross-field rules, or by the oracle's compatibility classification.
-- If a register row has fewer than four classes of case, then the coverage gate SHALL fail and name the row and the missing classes.
+- The corpus SHALL carry `evolution` cases for a `1.0.0` document read under `1.1.0` rules, a `1.1.0` node carried by a `1.0.0` document, and a package version transition that adds one export and removes another.
+- The corpus SHALL record, in `conformance/defects.json`, each defect discovered in an implementation with its owning issue, its `documentExpressible` flag, and either the case that reproduces it or the static check that detects it.
+- The corpus SHALL carry the reproducing case that every `documentExpressible` defect row names.
+- A defect row whose `documentExpressible` is `false` SHALL name the process property it concerns and the static check that detects it, so that a locale-dependent sort or a working-directory-dependent path is recorded rather than silently uncovered.
+- The corpus SHALL record, for every register row, whether its expectation is decided by the schema layer, by the oracle's cross-field rules, or by the oracle's compatibility classification.
+- The corpus SHALL record every construct the ticket names that the published IR has no node for — generic type parameters, renames, and deprecations — as a `contract-gaps.json` row rather than as a register row.
 - The corpus SHALL NOT derive a register row from an implementation's feature list.
 
 ## Constraints
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-038-CON-1 | Every register row SHALL name at least one `source` that resolves to an existing path under `schema/semantic/v1/` or `docs/semantic-data-system/`. | Traceability | Test |
-| FR-038-CON-2 | Every issue #19 acceptance criterion listed in the register SHALL be covered by at least one case. | Traceability | Test |
+| FR-038-CON-1 | Every register row SHALL name at least one `source` that resolves to an existing path under `schema/semantic/v1/`, `docs/semantic-data-system/`, or `fixtures/semantic/v1/`. | Traceability | Test |
+| FR-038-CON-2 | Every issue #19 acceptance criterion the register lists SHALL be covered by at least one case, with the criterion quoted in the row so the register does not silently follow a re-specification. | Traceability | Test |
+| FR-038-CON-3 | Cross-language generated-package serialization parity SHALL be recorded as an unmet register area owned by issues #21, #22, #23, and #11, because no generated package exists to serialize. | Completeness | Analysis |
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-038-AC-1 | Every construct-register row carries at least one `positive`, one `negative`, one `boundary`, and one `evolution` case; removing any case fails the gate and names the row and class. | Test |
-| FR-038-AC-2 | The corpus carries a passing negative case for each of invalid import, package cycle, unknown mapping, duplicate identity, stale lock, and undeclared loss, each with an exact source locus. | Test |
-| FR-038-AC-3 | Four cases realize the four `presence` × `nullable` combinations and the oracle distinguishes all four normalized forms. | Test |
-| FR-038-AC-4 | Direct recursion and mutual recursion are accepted, an alias cycle and a composite relationship cycle are rejected, and a package cycle is rejected with a different diagnostic code from a recursive type graph. | Test |
-| FR-038-AC-5 | The `defect` register reproduces every prototype-emitter divergence recorded for this issue, and each such case fails against a document that carries the divergence. | Test |
-| FR-038-AC-6 | Every register row declares its deciding layer (`schema`, `cross-field`, or `compatibility`), and the oracle's decision for each row's cases comes from that layer. | Test |
-| FR-038-AC-7 | A discriminated union whose variant `payloadType` no type declares is rejected at that variant's locus, and a union whose two variants share one payload type is accepted. | Test |
-| FR-038-AC-8 | A `1.0.0` document read under `1.1.0` rules, a `1.1.0` node carried in a `1.0.0` document, and a package version transition that adds and removes an export each produce the classification the contract states. | Test |
+| FR-038-AC-1 | Every construct-register row carries a `positive`, a `negative`, a `boundary`, and an `evolution` case, or declares that class `notApplicable` with a justification; removing a case fails the gate and names the row and the class. | Test |
+| FR-038-AC-2 | The corpus carries a passing negative case for each of unresolved import, package cycle, unknown mapping, duplicate identity, stale manifest digest, and undeclared loss, each at an exact source locus. | Test |
+| FR-038-AC-3 | Four cases realize the four `presence` by `nullable` combinations and the oracle distinguishes all four normalized forms. | Test |
+| FR-038-AC-4 | Direct and mutual recursion are accepted, an alias cycle and a composite relationship cycle are rejected, and a package cycle carries a different diagnostic code from a recursive type graph. | Test |
+| FR-038-AC-5 | Every `documentExpressible` defect row has a reproducing case that fails on a bundle carrying the defect, and every other defect row names the static check that detects it. | Test |
+| FR-038-AC-6 | Every register row declares its deciding layer, and the layer that produced the oracle's diagnostics for that row's cases is the declared one. | Test |
+| FR-038-AC-7 | A union variant whose `payloadType` no type declares is rejected at that variant's locus, and a union whose two variants share one payload type is accepted. | Test |
+| FR-038-AC-8 | A `1.0.0` document read under `1.1.0` rules, a `1.1.0` node carried by a `1.0.0` document, and an export added and removed across a package version each produce the result the register row states. | Test |
+| FR-038-AC-9 | Every register row's `sources` resolve to existing paths, and every listed issue #19 criterion is quoted in its row and covered by a case. | Test |
 
 ## Dependencies
 

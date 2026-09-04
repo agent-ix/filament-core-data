@@ -146,8 +146,12 @@ rather than against one another.
 - Implementing, fixing, or promoting any compiler, frontend, or backend the
   corpus judges (issues #19, #21, #22, #23, #27); the corpus records a
   divergence rather than repairing the implementation that causes it.
-- Publishing the corpus as its own package, or moving it to a corpus
-  repository, as part of issue #20.
+- Publishing the corpus as its own package, moving it to a corpus repository,
+  or adding it to the published package's `exports` or `files`, as part of
+  issue #20; enlarging the published surface belongs to the issue #11 gate.
+- Cross-language generated-package serialization and deserialization parity,
+  which has no package to serialize until issues #21, #22, and #23 ship; the
+  corpus records it as an unmet coverage area with those owners.
 
 ## 3. System Overview
 
