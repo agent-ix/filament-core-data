@@ -18,6 +18,16 @@ include = [
 [tool.poetry.dependencies]
 python = ">=3.13,<3.14"
 
+[tool.poetry.group.python-backend.dependencies]
+# Issue #23 (FR-072). Exact pins: the qualification's verdicts are only meaningful
+# against the versions that produced them, and the generator's advisory floor is
+# a version comparison, not a range. The `http` and `httpx2` extras are
+# deliberately absent so remote reference fetching has no transport at all.
+datamodel-code-generator = "0.76.0"
+pydantic = "2.12.5"
+msgspec = "0.21.1"
+mypy = "1.19.1"
+
 [tool.poetry.group.dev.dependencies]
 black = "^26.1.0"
 poethepoet = "^0.41.0"

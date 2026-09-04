@@ -1,0 +1,17 @@
+{
+	"$comment": "Issue #23, FR-072. The DECLARED pins only. No patch-level interpreter version and no formatter entry appear here on purpose: a host-observed reading inside a byte-compared artefact is the issue #42 coupling that already blocks TC-370 and TC-382, and the declared profiles use the generator's dependency-free `builtin` formatter so there is no external formatter to record.",
+	"generator": {
+		"distribution": "datamodel-code-generator",
+		"version": "0.76.0",
+		"command": "datamodel-codegen --version",
+		"license": "MIT"
+	},
+	"runtimes": [
+		{ "distribution": "pydantic", "version": "2.12.5", "command": "python -c 'import pydantic; print(pydantic.VERSION)'" },
+		{ "distribution": "msgspec", "version": "0.21.1", "command": "python -c 'import msgspec; print(msgspec.__version__)'" }
+	],
+	"typeChecker": { "distribution": "mypy", "version": "1.19.1", "command": "mypy --version" },
+	"python": { "minor": "3.13", "command": "python -c 'import sys; print(\"%d.%d\" % sys.version_info[:2])'" },
+	"formatter": null,
+	"dependencyGroup": "python-backend"
+}

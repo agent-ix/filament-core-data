@@ -14,8 +14,21 @@ build:
 	pnpm run build
 
 .PHONY: test
-test:
+test: test-node test-python
+
+.PHONY: test-node
+test-node:
 	pnpm run test
+
+# The Python half of the suite (issue #23, FR-072). Before this target the
+# repository had no entry point that ran pytest at all: `make test` was vitest
+# alone, and the 131 assertions issues #20 and #34 added under `tests/` ran only
+# when someone remembered to. Every gate this repository states about absent
+# tooling — fail with a provisioning message, never skip — needs somewhere to
+# run, so it runs here.
+.PHONY: test-python
+test-python:
+	poetry run pytest -q
 
 .PHONY: lint
 lint:
