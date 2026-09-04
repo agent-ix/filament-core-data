@@ -2,7 +2,7 @@
 id: Task-077
 title: "Pipeline, commands, and the narrow interface"
 type: Task
-status: pending
+status: done
 track: A
 priority: P0
 relationships:
@@ -57,11 +57,11 @@ Join both tracks behind one orchestration and three verbs.
 
 ## Subtasks
 
-- [ ] `src/compiler/pipeline.mjs`: `compilePackage` running resolve, lock, frontend, validate, write, stopping at the first blocking phase, returning `{ ir, lock, diagnostics, state }`.
-- [ ] `src/compiler/inspect.mjs`: the deterministic summary record and its canonical JSON form.
-- [ ] `src/compiler/cli.mjs`: the `compile`, `inspect`, and `diff` verbs with their flags, `emit-ir` untouched, exit codes 0/1/2, usage text, `.tmp`-then-rename writes, `DEFAULT_LIMITS` applied.
-- [ ] Extend `src/compiler/index.mjs` to exactly fifteen symbols and `index.d.mts` to declare each one; assert `package.json` metadata is unchanged.
-- [ ] `make compiler-compile`, `make compiler-inspect`, `make compiler-diff`.
+- [x] `src/compiler/pipeline.mjs`: `compilePackage` running resolve, lock, frontend, validate, write, stopping at the first blocking phase, returning `{ ir, lock, diagnostics, state }`.
+- [x] `src/compiler/inspect.mjs`: the deterministic summary record and its canonical JSON form.
+- [x] `src/compiler/cli.mjs`: the `compile`, `inspect`, and `diff` verbs with their flags, `emit-ir` untouched, exit codes 0/1/2, usage text, `.tmp`-then-rename writes, `DEFAULT_LIMITS` applied.
+- [x] Extend `src/compiler/index.mjs` to exactly fifteen symbols and `index.d.mts` to declare each one; assert `package.json` metadata is unchanged.
+- [x] `make compiler-compile`, `make compiler-inspect`, `make compiler-diff`.
 
 ## Deliverables
 

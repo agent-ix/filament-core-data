@@ -2,7 +2,7 @@
 id: Task-069
 title: "Injected host, diagnostic registry, and JSON source loci"
 type: Task
-status: pending
+status: done
 track: A
 priority: P0
 relationships:
@@ -51,12 +51,12 @@ The three primitives every later task depends on: the one host through which eve
 
 ## Subtasks
 
-- [ ] `src/compiler/host.mjs`: `createHost({ roots, enumerationOrder })` implementing `readFile`, `stat`, `realpath`, `readDir`, `getJsImport`, and `writeFile`, each recording what it did so a test can count it. Every read resolves to a real path and is refused outside `roots`.
-- [ ] `src/compiler/diagnostics.mjs`: `DIAGNOSTIC_CODES` frozen over both namespaces, `DEFAULT_LIMITS`, `diagnostic()` with 120-character truncation, `sortDiagnostics()` code-point ordering with no-locus last, `applyDiagnosticLimit()` sorting before truncating.
-- [ ] The `agent-ix.semantic-ir.*` half of the registry is transcribed from `fixtures/semantic/v1/negative/reader-cases.json` plus the four codes the #34 reader emits that the cases do not exercise; a test asserts set equality in both directions (TC-503).
-- [ ] Every blocking code carries severity `error`; `DIAGNOSTIC_LIMIT_REACHED` is a non-blocking warning; the four size limits are blocking (TC-505).
-- [ ] `src/compiler/json-locus.mjs`: `indexJsonPointers`, `locateJsonPointer` with nearest-ancestor fallback, `offsetToPosition`. Tab-indented documents, array elements, and absent pointers are all covered.
-- [ ] Author the code-name-as-member-access rule and the static extractor that proves the emitted set equals the registry set; the extractor runs in Task-079 when every module exists.
+- [x] `src/compiler/host.mjs`: `createHost({ roots, enumerationOrder })` implementing `readFile`, `stat`, `realpath`, `readDir`, `getJsImport`, and `writeFile`, each recording what it did so a test can count it. Every read resolves to a real path and is refused outside `roots`.
+- [x] `src/compiler/diagnostics.mjs`: `DIAGNOSTIC_CODES` frozen over both namespaces, `DEFAULT_LIMITS`, `diagnostic()` with 120-character truncation, `sortDiagnostics()` code-point ordering with no-locus last, `applyDiagnosticLimit()` sorting before truncating.
+- [x] The `agent-ix.semantic-ir.*` half of the registry is transcribed from `fixtures/semantic/v1/negative/reader-cases.json` plus the four codes the #34 reader emits that the cases do not exercise; a test asserts set equality in both directions (TC-503).
+- [x] Every blocking code carries severity `error`; `DIAGNOSTIC_LIMIT_REACHED` is a non-blocking warning; the four size limits are blocking (TC-505).
+- [x] `src/compiler/json-locus.mjs`: `indexJsonPointers`, `locateJsonPointer` with nearest-ancestor fallback, `offsetToPosition`. Tab-indented documents, array elements, and absent pointers are all covered.
+- [x] Author the code-name-as-member-access rule and the static extractor that proves the emitted set equals the registry set; the extractor runs in Task-079 when every module exists.
 
 ## Deliverables
 

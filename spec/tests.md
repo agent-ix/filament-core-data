@@ -512,228 +512,228 @@ passes.
 | TC-394 | No third-party dependency is added and the sets are otherwise identical | Static | P0 | NFR-018-AC-5 | ✅ passed |
 | TC-395 | Restoring the changed paths reproduces `origin/main`'s tree exactly | Integration | P0 | NFR-018-AC-6 | ✅ passed |
 | TC-396 | No workflow, tag, or registry publication is added or triggered | Static | P0 | NFR-018-AC-7 | ✅ passed |
-| TC-398 | `FRONTEND_DIALECTS` equals the `frontendDialect` enum read from `common.schema.json`; a test that reads both fails when either changes alone | Unit | P0 | FR-045-AC-1 | 🚧 issue #19 |
-| TC-399 | `selectFrontend("json-schema")` throws a `TypeError` naming the value and the two permitted dialects | Unit | P0 | FR-045-AC-2 | 🚧 issue #19 |
-| TC-400 | `runFrontend` for `spec-bundle` returns `ir: null` and exactly one blocking diagnostic coded `agent-ix.compiler.FRONTEND_NOT_IMPLEMENTED` | Unit | P0 | FR-045-AC-3 | 🚧 issue #19 |
-| TC-401 | For a package whose TypeSpec sources fail to compile, the `typespec` frontend returns diagnostics and `ir: null` and does not throw | Unit | P0 | FR-045-AC-4 | 🚧 issue #19 |
-| TC-402 | Every shared fixture case runs through every implemented dialect it supplies | Unit | P0 | FR-045-AC-5 | 🚧 issue #19 |
-| TC-403 | No file under `src/compiler/frontend/` imports a module under `src/compiler/backends/`, and no frontend imports `@typespec/json-schema` | Static | P0 | FR-045-AC-6 | 🚧 issue #19 |
-| TC-404 | A frontend that returns a blocking diagnostic together with a non-null `ir` fails the seam's own contract test | Unit | P0 | FR-045-AC-7 | 🚧 issue #19 |
-| TC-405 | A `FrontendRequest` carrying a `resolution` for a package with two exports makes both export identities visible to the frontend | Unit | P0 | FR-045-AC-8 | 🚧 issue #19 |
-| TC-406 | Every read a frontend performs during a fixture compile is observed by the injected `host` | Unit | P0 | FR-045-AC-9 | 🚧 issue #19 |
-| TC-407 | Over 256 mutated inputs the seam returns a `FrontendResult` and never throws | Fuzz | P0 | FR-045-AC-10 | 🚧 issue #19 |
-| TC-408 | The seam SHALL NOT implement the `spec-bundle` frontend; that work is issue #36. The registration exists so the harness and the diagnostic exist | Static | P1 | FR-045-CON-1 | 🚧 issue #19 |
-| TC-409 | A `FrontendResult` SHALL carry `ir: null` whenever any of its diagnostics is `blocking`, so no caller can consume a partial document as a complete one | Property | P1 | FR-045-CON-2 | 🚧 issue #19 |
-| TC-410 | No frontend SHALL read a decorator defined by `@typespec/json-schema`, `@typespec/protobuf`, `@typespec/openapi` | Static | P1 | FR-045-CON-3 | 🚧 issue #19 |
-| TC-411 | The seam SHALL distinguish a caller defect, which throws, from an input defect, which is a diagnostic | Fuzz | P1 | FR-045-CON-4 | 🚧 issue #19 |
-| TC-412 | The library declares exactly the fifteen named decorators; a test reading `main.tsp` fails when a sixteenth appears | Unit | P0 | FR-053-AC-1 | 🚧 issue #19 |
-| TC-413 | A package compiles against the library with no `import` statement of its own and no path containing `..`, driven through `additionalImports` | Unit | P0 | FR-053-AC-2 | 🚧 issue #19 |
-| TC-414 | A second application of each single-valued decorator raises `DUPLICATE_DECORATOR` at the second locus with the first as a related locus | Unit | P0 | FR-053-AC-3 | 🚧 issue #19 |
-| TC-415 | Every declared argument pattern rejects at least one malformed value with `INVALID_DECORATOR_ARGUMENT` at the decorator's line and column | Unit | P0 | FR-053-AC-4 | 🚧 issue #19 |
-| TC-416 | `@unit("furlong")` is accepted and `@unit("a b")` is rejected on charset, proving UCUM membership is not checked and the charset is | Unit | P0 | FR-053-AC-5 | 🚧 issue #19 |
-| TC-417 | For a worked package, every minted identity equals the identity FR-034's rules give the same declaration | Unit | P0 | FR-053-AC-6 | 🚧 issue #19 |
-| TC-418 | Renaming every declaration in a fixture package changes only the identities and display names, and no `role`, `nullable`, `unknownPolicy`, `unit` | Property | P0 | FR-053-AC-7 | 🚧 issue #19 |
-| TC-419 | A constrained model property mints the alias type, retargets the field | Unit | P0 | FR-053-AC-8 | 🚧 issue #19 |
-| TC-420 | Every derived `diagnosticCode` matches the `common.schema.json` code pattern, including for a package named `core.data` and a field named `a_b.c` | Property | P0 | FR-053-AC-9 | 🚧 issue #19 |
-| TC-421 | Two declarations minting one identity raise `DUPLICATE_IDENTITY` at the later locus by the declared source order | Unit | P0 | FR-053-AC-10 | 🚧 issue #19 |
-| TC-422 | `CONSTRAINT_NOT_APPLICABLE`, `NODES_ON_NON_RECORD`, `DANGLING_CLAUSE_REF` | Unit | P0 | FR-053-AC-11 | 🚧 issue #19 |
-| TC-423 | Relationships, operations, and clauses lower with the FR-034 defaults for `composite`, relationship multiplicity, and `returns.nullable` | Unit | P0 | FR-053-AC-12 | 🚧 issue #19 |
-| TC-424 | Each of the four extension lowerings produces the identity, version, `required` flag, and payload FR-034 names | Unit | P0 | FR-053-AC-13 | 🚧 issue #19 |
-| TC-425 | An enum member with an assigned value raises `UNSUPPORTED_LOSS` at the member's locus, and no document is written | Unit | P0 | FR-053-AC-14 | 🚧 issue #19 |
-| TC-426 | Every added manifest declares `AGPL-3.0-only`, and `package.json` gains no dependency and no `file:`/`link:` specifier | Static | P0 | FR-053-AC-15 | 🚧 issue #19 |
-| TC-427 | The minted identities and the constraint-alias rule SHALL equal those of FR-034 | Integration | P1 | FR-053-CON-1 | 🚧 issue #19 |
-| TC-428 | The library SHALL declare no decorator beyond the fifteen named here; adding one is a compatibility change under FR-051 | Unit | P1 | FR-053-CON-2 | 🚧 issue #19 |
-| TC-429 | The frontend SHALL reach the library by the absolute path it supplies to `additionalImports` | Static | P1 | FR-053-CON-3 | 🚧 issue #19 |
-| TC-430 | The library SHALL declare no decorator that overrides a minted identity or that lets an IR value be derived from a declaration's name, namespace | Property | P1 | FR-053-CON-4 | 🚧 issue #19 |
-| TC-431 | Every manifest this requirement adds SHALL declare `"license": "AGPL-3.0-only"` | Static | P1 | FR-053-CON-5 | 🚧 issue #19 |
-| TC-432 | The IR produced for `test/fixtures/compiler/packages/assurance` validates against `semantic-ir.schema.json` with `contractVersion` `1.1.0` | Unit | P0 | FR-046-AC-1 | 🚧 issue #19 |
-| TC-433 | Every row of the structural-kind table is exercised by a declaration in the fixture package and yields the stated `kind` and additional members | Unit | P0 | FR-046-AC-2 | 🚧 issue #19 |
-| TC-434 | Every row of the built-in scalar mapping yields the stated IR `scalar` | Unit | P0 | FR-046-AC-3 | 🚧 issue #19 |
-| TC-435 | A record named `AuditEvent` with no `@role` has `roles: []`, and a record named `Thing` with `@role("agent-ix:event")` has `roles: | Unit | P0 | FR-046-AC-4 | 🚧 issue #19 |
-| TC-436 | A property typed `Text \| null` is `nullable: true` and a property typed `NullableText` (a declared alias of `Text`) is `nullable: false` | Unit | P0 | FR-046-AC-5 | 🚧 issue #19 |
-| TC-437 | The four multiplicity derivations (collection/single × optional/required) and the `@multiplicity` override each produce the stated bounds | Unit | P0 | FR-046-AC-6 | 🚧 issue #19 |
-| TC-438 | `@collection` on a single-valued property raises `FLAGS_ON_NON_COLLECTION`, `@multiplicity(2, 1)` raises `INVALID_MULTIPLICITY` | Unit | P0 | FR-046-AC-7 | 🚧 issue #19 |
-| TC-439 | `@unit("s")` on a field resolving through an alias to a scalar is emitted | Unit | P0 | FR-046-AC-8 | 🚧 issue #19 |
-| TC-440 | A property with a TypeSpec default emits `defaultKind: "semantic"` and that `defaultValue`; `@defaultKind("migration")` overrides the kind | Unit | P0 | FR-046-AC-9 | 🚧 issue #19 |
-| TC-441 | A field typed by a built-in scalar directly emits the package-local kernel scalar definition with its `ext/kernel-scalar` extension | Unit | P0 | FR-046-AC-10 | 🚧 issue #19 |
-| TC-442 | A property typed by an export of a resolved imported package resolves, and one typed by an unexported type of that package raises | Unit | P0 | FR-046-AC-11 | 🚧 issue #19 |
-| TC-443 | `source.digest` equals the root package's `contentDigest`, and the `package` block equals the values FR-047 and FR-048 supply, asserted field by field | Unit | P0 | FR-046-AC-12 | 🚧 issue #19 |
-| TC-444 | `occurrences` is the empty array for every fixture package | Unit | P0 | FR-046-AC-13 | 🚧 issue #19 |
-| TC-445 | Every emitted array is sorted by `identity` under code-point comparison | Property | P0 | FR-046-AC-14 | 🚧 issue #19 |
-| TC-446 | `src/compiler/ir.mjs`, `compile.mjs`, `identity.mjs`, `emitters/**`, and `backends/**` are byte-unchanged from `origin/main` | Static | P0 | FR-046-AC-15 | 🚧 issue #19 |
-| TC-447 | No file under `src/compiler/frontend/` imports a target-facing TypeSpec library or `node:fs`, `package.json` gains no dependency | Static | P0 | FR-046-AC-16 | 🚧 issue #19 |
-| TC-448 | A package whose entrypoint imports a file outside its root raises `PATH_ESCAPE` | Unit | P0 | FR-046-AC-17 | 🚧 issue #19 |
-| TC-449 | A declaration reached through an imported package carries a generated origin naming the frontend and that package's source identity, not a `..` path | Unit | P0 | FR-046-AC-18 | 🚧 issue #19 |
-| TC-450 | A lowering that would emit a document failing `semantic-ir.schema.json` returns `ir: null` with the validation diagnostics | Unit | P0 | FR-046-AC-19 | 🚧 issue #19 |
-| TC-451 | The prototype IR of FR-041 — `schemaVersion` `1.0.0`, the `{schemaVersion, generator, types}` envelope | Snapshot | P1 | FR-046-CON-1 | 🚧 issue #19 |
-| TC-452 | The lowering SHALL take every `role`, `nullable`, `unit`, `unknownPolicy`, `composite` | Property | P1 | FR-046-CON-2 | 🚧 issue #19 |
-| TC-453 | The frontend SHALL import only `@typespec/compiler` and `@typespec/versioning` from the pinned toolchain, and no target-facing TypeSpec library | Static | P1 | FR-046-CON-3 | 🚧 issue #19 |
-| TC-454 | The frontend SHALL reach the file system only through `restrictedHost`, which delegates to the injected host | Static | P1 | FR-046-CON-4 | 🚧 issue #19 |
-| TC-455 | The lowering SHALL be a pure function of the compiled program and the resolved package, reading no clock, environment variable, hostname | Static | P1 | FR-046-CON-5 | 🚧 issue #19 |
-| TC-456 | The concrete tree for the `order-independent` case resolves to the same ordered result under both permutations named in the case index | Property | P0 | FR-047-AC-1 | 🚧 issue #19 |
-| TC-457 | The `version-conflict` tree yields exactly one `IMPORT_VERSION_CONFLICT` naming both requiring loci | Unit | P0 | FR-047-AC-2 | 🚧 issue #19 |
-| TC-458 | The `digest-conflict` tree yields `DIGEST_CONFLICT` naming both digests and both loci | Unit | P0 | FR-047-AC-3 | 🚧 issue #19 |
-| TC-459 | The `package-cycle` tree yields exactly one `PACKAGE_CYCLE` naming both import loci and starting at the least package identity | Unit | P0 | FR-047-AC-4 | 🚧 issue #19 |
-| TC-460 | The `recursive-type-is-not-package-cycle` tree resolves successfully and emits no cycle diagnostic | Unit | P0 | FR-047-AC-5 | 🚧 issue #19 |
-| TC-461 | A manifest failing its schema yields one `INVALID_MANIFEST` per schema error, each at the line and column of the failing pointer's key | Unit | P0 | FR-047-AC-6 | 🚧 issue #19 |
-| TC-462 | `locateJsonPointer` returns exact positions for a pointer into an object, an array element, a nested array element, and a tab-indented document | Unit | P0 | FR-047-AC-7 | 🚧 issue #19 |
-| TC-463 | `IMPORT_NOT_FOUND`, `IMPORT_VERSION_UNSATISFIED`, `IMPORT_EXPORT_MISSING`, `IMPORT_EXPORT_PRIVATE` | Unit | P0 | FR-047-AC-8 | 🚧 issue #19 |
-| TC-464 | `UNKNOWN_PROFILE`, `UNKNOWN_MAPPING`, `UNKNOWN_TARGET`, and `UNDECLARED_LOSS` each fire on a fixture at the declared locus | Unit | P0 | FR-047-AC-9 | 🚧 issue #19 |
-| TC-465 | `DUPLICATE_EXPORT` fires for a repeated identity within one manifest and for the same identity exported by two packages | Unit | P0 | FR-047-AC-10 | 🚧 issue #19 |
-| TC-466 | A version constraint of `>=1.0.0` yields `UNSUPPORTED_VERSION_CONSTRAINT` rather than a resolution | Unit | P0 | FR-047-AC-11 | 🚧 issue #19 |
-| TC-467 | A search directory entry that is a symlink to a directory outside the search root yields `PATH_ESCAPE` and no resolved package | Unit | P0 | FR-047-AC-12 | 🚧 issue #19 |
-| TC-468 | A full fixture compile reads no path outside the package root and search directories, and opens no network connection | Integration | P0 | FR-047-AC-13 | 🚧 issue #19 |
-| TC-469 | Every locus the resolver emits carries a `sourceIdentity` and a relative `path` free of `..`, including a locus inside an imported package | Unit | P0 | FR-047-AC-14 | 🚧 issue #19 |
-| TC-470 | Exceeding `maxNodes`, `maxInputBytes`, and `maxDepth` each terminates resolution with the corresponding blocking limit diagnostic | Unit | P0 | FR-047-AC-15 | 🚧 issue #19 |
-| TC-471 | Two permutations of the search-path order, where no two directories supply the same identity at the same version, produce identical output | Property | P0 | FR-047-AC-16 | 🚧 issue #19 |
-| TC-472 | Resolution SHALL work offline, opening no network connection and reading nothing outside the declared package root and search directories | Integration | P1 | FR-047-CON-1 | 🚧 issue #19 |
-| TC-473 | A resolved package path SHALL NOT escape its search directory through `..` or a symbolic link; an escape is `agent-ix.compiler.PATH_ESCAPE` | Unit | P1 | FR-047-CON-2 | 🚧 issue #19 |
-| TC-474 | The resolver SHALL implement version-constraint satisfaction in this repository against the two accepted forms, adding no semver dependency | Static | P1 | FR-047-CON-3 | 🚧 issue #19 |
-| TC-475 | The resolver SHALL NOT execute any file it reads; manifests, mappings, profiles, and locks are data | Integration | P1 | FR-047-CON-4 | 🚧 issue #19 |
-| TC-476 | `fixtures/semantic/v1/package-graph-cases.json` SHALL remain byte-unchanged; it is the read-only case index | Static | P1 | FR-047-CON-5 | 🚧 issue #19 |
-| TC-477 | `canonicalize` reproduces every vector in `test/fixtures/compiler/rfc8785/vectors.json` for string escaping, number formatting, and key ordering | Unit | P0 | FR-048-AC-1 | 🚧 issue #19 |
-| TC-478 | Permuting object key order, permuting a declared identity-keyed set, changing the working directory | Property | P0 | FR-048-AC-2 | 🚧 issue #19 |
-| TC-479 | Changing one byte of a source file, of a manifest, of a mapping, of a profile, of a resolved package version, of a published schema file | Property | P0 | FR-048-AC-3 | 🚧 issue #19 |
-| TC-480 | A built lock validates against `package-lock.schema.json`, and its `canonicalization` block equals the algorithm named here | Unit | P0 | FR-048-AC-4 | 🚧 issue #19 |
-| TC-481 | `STALE_LOCK`, `STALE_LOCK_PACKAGE`, `LOCK_GRAPH_MISMATCH`, and `UNSUPPORTED_CANONICALIZATION` each fire on a fixture, each at the declared locus | Unit | P0 | FR-048-AC-5 | 🚧 issue #19 |
-| TC-482 | Verifying a lock leaves the lock file byte-unchanged on disk | Unit | P0 | FR-048-AC-6 | 🚧 issue #19 |
-| TC-483 | Two lock builds over the same graph produce identical bytes | Snapshot | P0 | FR-048-AC-7 | 🚧 issue #19 |
-| TC-484 | `contentDigest` is unchanged when a package's files are enumerated in a different order and changes when any source byte changes | Property | P0 | FR-048-AC-8 | 🚧 issue #19 |
-| TC-485 | `source.digest` of a compiled document equals `contentDigest` of its root package, asserted by recomputation | Unit | P0 | FR-048-AC-9 | 🚧 issue #19 |
-| TC-486 | `package.lockDigest` equals the digest of a supplied lock's bytes, and, with no lock supplied, of the lock the compile built | Unit | P0 | FR-048-AC-10 | 🚧 issue #19 |
-| TC-487 | A value nested past `maxDepth` terminates `canonicalize` with the blocking limit diagnostic | Unit | P0 | FR-048-AC-11 | 🚧 issue #19 |
-| TC-488 | The fingerprint SHALL change for every change to an included input, and stay equal for every change confined to an excluded input | Property | P1 | FR-048-CON-1 | 🚧 issue #19 |
-| TC-489 | The canonical form SHALL be produced by this repository; no canonical-JSON dependency is added | Static | P1 | FR-048-CON-2 | 🚧 issue #19 |
-| TC-490 | The lock verifier SHALL work offline, reading no file the resolution did not already name | Integration | P1 | FR-048-CON-3 | 🚧 issue #19 |
-| TC-491 | Every digest this requirement defines SHALL be defined by its byte set, not by its name, so two implementations cannot disagree about what was hashed | Static | P1 | FR-048-CON-4 | 🚧 issue #19 |
-| TC-492 | Every entry of `DIAGNOSTIC_CODES` matches the code pattern and validates as a `diagnostic` against `common.schema.json` when instantiated | Unit | P0 | FR-049-AC-1 | 🚧 issue #19 |
-| TC-493 | The set of codes named under `src/compiler/` equals the registry set, extracted statically from `DIAGNOSTIC_CODES` member accesses | Static | P0 | FR-049-AC-2 | 🚧 issue #19 |
-| TC-494 | Every registry code is emitted by at least one test case in the suite, asserted by a coverage set collected at run time | Unit | P0 | FR-049-AC-3 | 🚧 issue #19 |
-| TC-495 | `sortDiagnostics` produces the same order for a list and for its reverse, and for at least two `Intl.Collator` locales | Property | P0 | FR-049-AC-4 | 🚧 issue #19 |
-| TC-496 | Two compiles of a three-defect fixture produce identical diagnostic bytes | Snapshot | P0 | FR-049-AC-5 | 🚧 issue #19 |
-| TC-497 | No message emitted across a full fixture-corpus run contains an absolute path, a timestamp, a hostname, or a duration | Unit | P0 | FR-049-AC-6 | 🚧 issue #19 |
-| TC-498 | A defect caused by another is emitted once with the cause nested | Unit | P0 | FR-049-AC-7 | 🚧 issue #19 |
-| TC-499 | With `maxDiagnostics: 2`, a fixture producing five defects emits the two lowest in sort order plus `DIAGNOSTIC_LIMIT_REACHED` | Unit | P0 | FR-049-AC-8 | 🚧 issue #19 |
-| TC-500 | A blocking diagnostic leaves a fresh `--out` path absent and exits non-zero, leaves a pre-existing `--out` byte-unchanged | Unit | P0 | FR-049-AC-9 | 🚧 issue #19 |
-| TC-501 | A 4000-character input string never appears in a message longer than 120 characters | Unit | P0 | FR-049-AC-10 | 🚧 issue #19 |
-| TC-502 | The published registry document lists every code with its severity, blocking disposition, and owner, and the five limit defaults | Unit | P0 | FR-049-AC-11 | 🚧 issue #19 |
-| TC-503 | Every code `reader-cases.json` names appears in the registry, and every `agent-ix.semantic-ir.*` code in the registry is one the issue #34 TypeScript reader can emit | Unit | P0 | FR-049-AC-12 | 🚧 issue #19 |
-| TC-504 | A diagnostic located by a JSON pointer into an IR node carries that node's `origin.source` as its locus | Unit | P0 | FR-049-AC-13 | 🚧 issue #19 |
-| TC-505 | `DIAGNOSTIC_LIMIT_REACHED` is non-blocking, and the four size limits are blocking, asserted against the registry | Unit | P0 | FR-049-AC-14 | 🚧 issue #19 |
-| TC-506 | The registry is a compatibility surface: a code's spelling and its `blocking` disposition SHALL NOT change without a compatibility-report entry in | Static | P1 | FR-049-CON-1 | 🚧 issue #19 |
-| TC-507 | The `diagnostic` constructor SHALL truncate every input-derived string to 120 characters before it enters a message; input data beyond identities | Unit | P1 | FR-049-CON-2 | 🚧 issue #19 |
-| TC-508 | The set of codes the registry declares and the set the compiler emits SHALL be equal, with every declared code reached by at least one test | Unit | P1 | FR-049-CON-3 | 🚧 issue #19 |
-| TC-509 | The `agent-ix.semantic-ir.*` spellings SHALL be exactly those the issue #34 readers already emit, extracted from the byte-unchanged `fixtures/semantic/v1/negative/reader-cases.json` and `test/semantic-ir-v1-1-reader.ts` | Unit | P1 | FR-049-CON-4 | 🚧 issue #19 |
-| TC-510 | Every positive `1.1.0` fixture under `fixtures/semantic/v1/positive/` validates and yields zero reader diagnostics | Unit | P0 | FR-050-AC-1 | 🚧 issue #19 |
-| TC-511 | Every case in `negative/reader-cases.json` yields the expected diagnostic code from the compiler's reader | Unit | P0 | FR-050-AC-2 | 🚧 issue #19 |
-| TC-512 | For every case in `negative/reader-cases.json`, the compiler's reader, the issue #34 TypeScript reader | Integration | P0 | FR-050-AC-3 | 🚧 issue #19 |
-| TC-513 | `src/compiler/ir/reader.mjs` imports no module under `test/` or `tests/` | Static | P0 | FR-050-AC-4 | 🚧 issue #19 |
-| TC-514 | `normalizeIr` materializes `multiplicity`, `presence`, and `nullable` on every `1.1.0` field and operation parameter | Unit | P0 | FR-050-AC-5 | 🚧 issue #19 |
-| TC-515 | `normalizeIr(normalizeIr(d))` equals `normalizeIr(d)` for every positive fixture and for generated documents | Property | P0 | FR-050-AC-6 | 🚧 issue #19 |
-| TC-516 | Two documents differing only in object key order and in identity-keyed array order have the same `fingerprintIr` | Property | P0 | FR-050-AC-7 | 🚧 issue #19 |
-| TC-517 | An emitted document that fails validation is not written, and the failure is a blocking diagnostic naming the failing pointer | Unit | P0 | FR-050-AC-8 | 🚧 issue #19 |
-| TC-518 | A document whose alias chain is cyclic, one whose composite relationships are cyclic, one exceeding `maxNodes` | Unit | P0 | FR-050-AC-9 | 🚧 issue #19 |
-| TC-519 | `INVALID_IR` diagnostics name the failing instance pointer, verified against a hand-computed pointer for a malformed fixture | Unit | P0 | FR-050-AC-10 | 🚧 issue #19 |
-| TC-520 | Every rule of the code table fires on a constructed document and produces exactly its named code | Unit | P0 | FR-050-AC-11 | 🚧 issue #19 |
-| TC-521 | With `importedExports` set to `unknown`, a relationship target absent from the document produces no diagnostic and one recorded suppression | Unit | P0 | FR-050-AC-12 | 🚧 issue #19 |
-| TC-522 | Over 512 mutated documents the reader returns diagnostics and never throws | Fuzz | P0 | FR-050-AC-13 | 🚧 issue #19 |
-| TC-523 | The compiler's reader is deliberately a third implementation beside the issue #34 TypeScript and Python readers; it SHALL NOT import either | Integration | P1 | FR-050-CON-1 | 🚧 issue #19 |
-| TC-524 | This requirement SHALL NOT edit `test/semantic-ir-v1-1-reader.ts` or `tests/semantic_ir_reader.py`. Invoking the Python reader from a test under | Static | P1 | FR-050-CON-2 | 🚧 issue #19 |
-| TC-525 | Normalization SHALL be idempotent: normalizing a normalized document yields identical bytes | Property | P1 | FR-050-CON-3 | 🚧 issue #19 |
-| TC-526 | The reader SHALL terminate on every cyclic or oversized input rather than recursing without bound | Fuzz | P1 | FR-050-CON-4 | 🚧 issue #19 |
-| TC-527 | Every case in `fixtures/semantic/v1/compatibility/cases.json` is reproduced by a constructed input pair whose diff yields the case's `expected` | Unit | P0 | FR-051-AC-1 | 🚧 issue #19 |
-| TC-528 | Every family the report schema declares is produced by at least one such case | Unit | P0 | FR-051-AC-2 | 🚧 issue #19 |
-| TC-529 | The `target-disagreement` case yields the most restrictive of its `targetResults` | Unit | P0 | FR-051-AC-3 | 🚧 issue #19 |
-| TC-530 | A diff run with no profile, mapping, reservation, or target-result inputs omits the `profile`, `authority`, `mapping`, `protobuf-reservation` | Unit | P0 | FR-051-AC-4 | 🚧 issue #19 |
-| TC-531 | Every produced report validates against `compatibility-report.schema.json` | Unit | P0 | FR-051-AC-5 | 🚧 issue #19 |
-| TC-532 | Diffing a document against itself yields one `patch` change identified by `source.identity` and an aggregate of `patch` | Unit | P0 | FR-051-AC-6 | 🚧 issue #19 |
-| TC-533 | The forward projection of `fixtures/semantic/v1/positive/semantic-ir-v1-1.json` equals the committed golden byte for byte | Snapshot | P0 | FR-051-AC-7 | 🚧 issue #19 |
-| TC-534 | The backward projection of a `1.0.0` document with a declared dialect equals the committed golden byte for byte and reports empty loss | Snapshot | P0 | FR-051-AC-8 | 🚧 issue #19 |
-| TC-535 | A `1.0.0` document projected to `1.1.0` and back is byte-identical to the original | Property | P0 | FR-051-AC-9 | 🚧 issue #19 |
-| TC-536 | Both projections validate against the published schema at their target `contractVersion` | Unit | P0 | FR-051-AC-10 | 🚧 issue #19 |
-| TC-537 | Two runs of the diff over the same inputs produce byte-identical reports | Snapshot | P0 | FR-051-AC-11 | 🚧 issue #19 |
-| TC-538 | The published policy document states the four evolution rules, and a test fails when the document and the implemented ranking disagree | Unit | P0 | FR-051-AC-12 | 🚧 issue #19 |
-| TC-539 | Projecting to `1.1.0` with no dialect yields `MISSING_TARGET_DIALECT` and no document; projecting to `2.0.0` yields `UNKNOWN_CONTRACT_VERSION` | Unit | P0 | FR-051-AC-13 | 🚧 issue #19 |
-| TC-540 | A projection carries `source.digest` and the `package` block verbatim from the input | Unit | P0 | FR-051-AC-14 | 🚧 issue #19 |
-| TC-541 | A revision that removes a member, retypes a member, or narrows a closed vocabulary is classified `breaking` | Unit | P0 | FR-051-AC-15 | 🚧 issue #19 |
-| TC-542 | The diff SHALL NOT classify a family from an input it was not given; an absent input is a named gap, never a `patch` | Unit | P1 | FR-051-CON-1 | 🚧 issue #19 |
-| TC-543 | The disposition rank SHALL be exactly `patch < additive < conditional < unknown < breaking < invalid` | Unit | P1 | FR-051-CON-2 | 🚧 issue #19 |
-| TC-544 | A forward projection SHALL report every dropped identity; silently dropping a `1.1.0` member is a defect, not a projection | Unit | P1 | FR-051-CON-3 | 🚧 issue #19 |
-| TC-545 | The diff SHALL NOT import a target backend; per-target dispositions are an input | Static | P1 | FR-051-CON-4 | 🚧 issue #19 |
-| TC-546 | `fixtures/semantic/v1/compatibility/cases.json` SHALL remain byte-unchanged; it is the read-only case index | Static | P1 | FR-051-CON-5 | 🚧 issue #19 |
-| TC-547 | `emit-ir` over the spike entrypoint reproduces the committed golden `spikes/typespec-feasibility/generated/custom/semantic-ir.json` byte for byte | Snapshot | P0 | FR-052-AC-1 | 🚧 issue #19 |
-| TC-548 | `compile` over the fixture package writes a valid `1.1.0` document and exits `0`; running it twice produces identical IR and diagnostic bytes | Integration | P0 | FR-052-AC-2 | 🚧 issue #19 |
-| TC-549 | `compile` over a fixture with a blocking defect exits `1`, leaves a fresh `--out` absent, leaves a pre-existing `--out` byte-unchanged | Integration | P0 | FR-052-AC-3 | 🚧 issue #19 |
-| TC-550 | `compile` with `--lock` pointing at a stale lock exits `1` and leaves the lock file byte-unchanged | Integration | P0 | FR-052-AC-4 | 🚧 issue #19 |
-| TC-551 | `compile --write-lock` produces a lock validating against its schema; omitting the flag writes no lock | Integration | P0 | FR-052-AC-5 | 🚧 issue #19 |
-| TC-552 | A manifest with two profiles and no `--profile` yields `AMBIGUOUS_PROFILE` and exit `1` | Unit | P0 | FR-052-AC-6 | 🚧 issue #19 |
-| TC-553 | `inspect` output is byte-identical across two runs and lists every type sorted by identity with its five node counts | Snapshot | P0 | FR-052-AC-7 | 🚧 issue #19 |
-| TC-554 | `inspect --json` output parses, is canonical, and carries the same values as the text form | Unit | P0 | FR-052-AC-8 | 🚧 issue #19 |
-| TC-555 | `inspect` over an invalid document prints its reader diagnostics and exits `1` | Unit | P0 | FR-052-AC-9 | 🚧 issue #19 |
-| TC-556 | `diff` writes a schema-valid report, exits `0` for an additive aggregate and `1` for a breaking one | Integration | P0 | FR-052-AC-10 | 🚧 issue #19 |
-| TC-557 | An unknown command, an unknown flag, a missing required flag, and an unreadable `--limits` file each exit `2` and print the usage text | Unit | P0 | FR-052-AC-11 | 🚧 issue #19 |
-| TC-558 | The narrow interface declares fifteen symbols that `tsc --noEmit` checks | Compile | P0 | FR-052-AC-12 | 🚧 issue #19 |
-| TC-559 | `package.json` `exports`, `main`, `module`, `types`, and `files` are byte-unchanged from `origin/main`, and no dependency was added | Static | P0 | FR-052-AC-13 | 🚧 issue #19 |
-| TC-560 | A compile with every environment variable cleared but `PATH` produces identical output | Integration | P0 | FR-052-AC-14 | 🚧 issue #19 |
-| TC-561 | `compilePackage` runs its five phases in the declared order and stops at the first blocking phase, asserted by an instrumented phase recorder | Unit | P0 | FR-052-AC-15 | 🚧 issue #19 |
-| TC-562 | Every path the CLI creates during a fixture compile is a caller-named path or its `.tmp` sibling | Integration | P0 | FR-052-AC-16 | 🚧 issue #19 |
-| TC-563 | The narrow interface SHALL export exactly the six FR-041 symbols plus the nine named here | Unit | P1 | FR-052-CON-1 | 🚧 issue #19 |
-| TC-564 | This requirement SHALL leave `package.json` `exports`, `main`, `module`, `types`, and `files` unchanged | Static | P1 | FR-052-CON-2 | 🚧 issue #19 |
-| TC-565 | The CLI SHALL read no environment variable to decide behavior; every input is a flag or a file | Static | P1 | FR-052-CON-3 | 🚧 issue #19 |
-| TC-566 | The CLI SHALL be the one place that constructs the injected host, passing it down to every module below it | Static | P1 | FR-052-CON-4 | 🚧 issue #19 |
-| TC-567 | Two `compile` runs over the same package produce identical IR, lock, and diagnostic bytes | Unit | P0 | NFR-019-AC-1 | 🚧 issue #19 |
-| TC-568 | Two `inspect` runs and two `diff` runs produce identical bytes | Unit | P0 | NFR-019-AC-2 | 🚧 issue #19 |
-| TC-569 | No module in scope references `Date`, `Date.now`, `process.env`, `process.cwd`, `process.platform`, `os.hostname`, `Math.random`, `localeCompare` | Static | P0 | NFR-019-AC-3 | 🚧 issue #19 |
-| TC-570 | Two permutations of the search-path order that select the same packages produce identical output | Unit | P0 | NFR-019-AC-4 | 🚧 issue #19 |
-| TC-571 | Two injected directory-enumeration orders produce identical output | Unit | P0 | NFR-019-AC-5 | 🚧 issue #19 |
-| TC-572 | The emitted identity order is unchanged when compared against `Intl.Collator` orderings for at least two distinct locales | Unit | P0 | NFR-019-AC-6 | 🚧 issue #19 |
-| TC-573 | A compile with every environment variable cleared but `PATH`, and a compile with `TZ`, `LANG` | Unit | P0 | NFR-019-AC-7 | 🚧 issue #19 |
-| TC-574 | A compile driven from a different working directory produces identical output | Unit | P0 | NFR-019-AC-8 | 🚧 issue #19 |
-| TC-575 | A compile through an injected host reporting a `\` path separator produces identical emitted paths | Unit | P0 | NFR-019-AC-9 | 🚧 issue #19 |
-| TC-576 | Every file-system read and every JavaScript module load a fixture compile performs is observed by the injected host, counted at run time | Unit | P0 | NFR-019-AC-10 | 🚧 issue #19 |
-| TC-577 | The branch changes no file under the prohibited paths, verified by a diff against `origin/main` | Static | P0 | NFR-019-AC-11 | 🚧 issue #19 |
-| TC-578 | `package.json` gains no dependency, every `@typespec/*` specifier is an exact version, no `.npmrc` is committed | Static | P0 | NFR-019-AC-12 | 🚧 issue #19 |
-| TC-579 | Each of the four size limits — `maxInputBytes`, `maxDepth`, `maxNodes`, `maxCollectionItems` — is enforced | Unit | P0 | NFR-020-AC-1 | 🚧 issue #19 |
-| TC-580 | `DEFAULT_LIMITS` applies where the caller supplies none, its five values are those FR-049 declares, and the published registry document carries them | Unit | P0 | NFR-020-AC-2 | 🚧 issue #19 |
-| TC-581 | A manifest whose `sourceRoots` contains `..` and one that is a symlink out of the package root each yield `PATH_ESCAPE` | Unit | P0 | NFR-020-AC-3 | 🚧 issue #19 |
-| TC-582 | A package shipping a `.mjs` file that its sources import is refused by the injected `getJsImport`, which never delegates for it | Unit | P0 | NFR-020-AC-4 | 🚧 issue #19 |
-| TC-583 | No module in scope imports a network-capable or code-executing built-in, and a fixture compile with `globalThis.fetch` stubbed never calls it | Unit | P0 | NFR-020-AC-5 | 🚧 issue #19 |
-| TC-584 | The instrumented writer records only caller-named paths and their `.tmp` siblings over a full fixture compile | Unit | P0 | NFR-020-AC-6 | 🚧 issue #19 |
-| TC-585 | A cyclic alias chain, a cyclic composite relationship graph, a cyclic package import graph, a self-referential JSON pointer | Unit | P0 | NFR-020-AC-7 | 🚧 issue #19 |
-| TC-586 | A fuzz run of at least 512 mutations over the manifest and IR readers produces zero uncaught exceptions and no code outside the registry | Fuzz | P0 | NFR-020-AC-8 | 🚧 issue #19 |
-| TC-587 | An input of exactly `maxInputBytes` parses and one byte more terminates with the limit diagnostic before parsing | Unit | P0 | NFR-020-AC-9 | 🚧 issue #19 |
-| TC-588 | Input string content reaching a diagnostic message is truncated to 120 characters, so an adversarial name cannot flood the output | Unit | P0 | NFR-020-AC-10 | 🚧 issue #19 |
-| TC-589 | Every read the pinned TypeSpec compiler performs during a fixture compile passes through the injected host, counted at run time | Unit | P0 | NFR-020-AC-11 | 🚧 issue #19 |
-| TC-590 | Every changed path on the branch is in the permitted set and none is in the prohibited set | Static | P0 | NFR-021-AC-1 | 🚧 issue #19 |
-| TC-591 | `package.json` `exports`, `main`, `module`, `types`, and `files` are byte-unchanged from `origin/main` | Static | P0 | NFR-021-AC-2 | 🚧 issue #19 |
-| TC-592 | `src/compiler/ir.mjs`, `compile.mjs`, `identity.mjs`, `emitters/**`, `backends/**`, and `inventory.json` are byte-unchanged from `origin/main` | Static | P0 | NFR-021-AC-3 | 🚧 issue #19 |
-| TC-593 | The four committed issue #4 goldens and every file under `spikes/` are byte-unchanged | Static | P0 | NFR-021-AC-4 | 🚧 issue #19 |
-| TC-594 | Nothing under `conformance/` is changed by this branch | Static | P0 | NFR-021-AC-5 | 🚧 issue #19 |
-| TC-595 | Reverting the branch leaves the suite green with the pre-existing case count, rehearsed by a script rather than by hand | Integration | P0 | NFR-021-AC-6 | 🚧 issue #19 |
-| TC-596 | Every added package manifest declares `"license": "AGPL-3.0-only"` | Static | P0 | NFR-021-AC-7 | 🚧 issue #19 |
-| TC-597 | No package was published and no downstream repository was changed | Static | P0 | NFR-021-AC-8 | 🚧 issue #19 |
-| TC-598 | Multiplicity, nullability, and default kind are independent across their permutations | Property | P0 | FR-046-AC-6, FR-046-AC-9 | 🚧 issue #19 |
-| TC-599 | Collection flags are accepted on collections and refused on single-valued properties | Unit | P1 | FR-046-AC-7 | 🚧 issue #19 |
-| TC-600 | Constraint applicability is exercised across every structural kind | Unit | P1 | FR-050-AC-11 | 🚧 issue #19 |
-| TC-601 | Implemented and unimplemented dialects behave as declared in the shared harness | Unit | P1 | FR-045-AC-3, FR-045-AC-5 | 🚧 issue #19 |
-| TC-602 | Enum addition is classified against every consumer policy and evidence status | Unit | P1 | FR-051-AC-1 | 🚧 issue #19 |
-| TC-603 | `@multiplicity(0)` and `@multiplicity(0, 0)` are accepted at the lower boundary | Unit | P1 | FR-046-AC-6 | 🚧 issue #19 |
-| TC-604 | `@minLength(0)` is accepted and a negative length is refused | Unit | P1 | FR-053-AC-4 | 🚧 issue #19 |
-| TC-605 | `maxDiagnostics` of 1 truncates and a value below the schema minimum is refused | Unit | P1 | FR-049-AC-8, NFR-020-AC-1 | 🚧 issue #19 |
-| TC-606 | `maxDepth` at the limit passes and one past it terminates with the limit diagnostic | Unit | P1 | NFR-020-AC-1 | 🚧 issue #19 |
-| TC-607 | `maxInputBytes` at the exact size passes and one byte over terminates | Unit | P1 | NFR-020-AC-9 | 🚧 issue #19 |
-| TC-608 | A 120-character input string survives and a 121-character one is truncated | Unit | P1 | FR-049-AC-10 | 🚧 issue #19 |
-| TC-609 | Every registry code fires at least once across the fixture corpus | Unit | P0 | FR-049-AC-3 | 🚧 issue #19 |
-| TC-610 | A manifest that is not JSON at all yields `INVALID_MANIFEST` at line 1 | Unit | P1 | FR-047-AC-6 | 🚧 issue #19 |
-| TC-611 | An IR document at an unknown `contractVersion` is refused with a pointer | Unit | P1 | FR-050-AC-10 | 🚧 issue #19 |
-| TC-612 | A `1.0.0` document survives the `1.1.0` reader and the return projection | Property | P0 | FR-051-AC-9 | 🚧 issue #19 |
-| TC-613 | A lock moves from fresh to stale by a source byte and by a manifest byte | Unit | P1 | FR-048-AC-5 | 🚧 issue #19 |
-| TC-614 | A package with one type and no imports compiles | Unit | P2 | FR-046-AC-1 | 🚧 issue #19 |
-| TC-615 | A diamond import graph resolves each package once | Unit | P1 | FR-047-AC-1 | 🚧 issue #19 |
-| TC-616 | Two cycles sharing an edge yield two diagnostics and no duplicate | Unit | P1 | FR-047-AC-4 | 🚧 issue #19 |
-| TC-617 | A relationship target resolving to an imported export validates | Unit | P1 | FR-050-AC-12 | 🚧 issue #19 |
-| TC-618 | A caret constraint selects the highest satisfying version across two search directories | Unit | P1 | FR-047-AC-11 | 🚧 issue #19 |
-| TC-619 | A projection to the document's own version returns it unchanged | Unit | P1 | FR-051-AC-13 | 🚧 issue #19 |
+| TC-398 | `FRONTEND_DIALECTS` equals the `frontendDialect` enum read from `common.schema.json`; a test that reads both fails when either changes alone | Unit | P0 | FR-045-AC-1 | ✅ passed |
+| TC-399 | `selectFrontend("json-schema")` throws a `TypeError` naming the value and the two permitted dialects | Unit | P0 | FR-045-AC-2 | ✅ passed |
+| TC-400 | `runFrontend` for `spec-bundle` returns `ir: null` and exactly one blocking diagnostic coded `agent-ix.compiler.FRONTEND_NOT_IMPLEMENTED` | Unit | P0 | FR-045-AC-3 | ✅ passed |
+| TC-401 | For a package whose TypeSpec sources fail to compile, the `typespec` frontend returns diagnostics and `ir: null` and does not throw | Unit | P0 | FR-045-AC-4 | ✅ passed |
+| TC-402 | Every shared fixture case runs through every implemented dialect it supplies | Unit | P0 | FR-045-AC-5 | ✅ passed |
+| TC-403 | No file under `src/compiler/frontend/` imports a module under `src/compiler/backends/`, and no frontend imports `@typespec/json-schema` | Static | P0 | FR-045-AC-6 | ✅ passed |
+| TC-404 | A frontend that returns a blocking diagnostic together with a non-null `ir` fails the seam's own contract test | Unit | P0 | FR-045-AC-7 | ✅ passed |
+| TC-405 | A `FrontendRequest` carrying a `resolution` for a package with two exports makes both export identities visible to the frontend | Unit | P0 | FR-045-AC-8 | ✅ passed |
+| TC-406 | Every read a frontend performs during a fixture compile is observed by the injected `host` | Unit | P0 | FR-045-AC-9 | ✅ passed |
+| TC-407 | Over 256 mutated inputs the seam returns a `FrontendResult` and never throws | Fuzz | P0 | FR-045-AC-10 | ✅ passed |
+| TC-408 | The seam SHALL NOT implement the `spec-bundle` frontend; that work is issue #36. The registration exists so the harness and the diagnostic exist | Static | P1 | FR-045-CON-1 | ✅ passed |
+| TC-409 | A `FrontendResult` SHALL carry `ir: null` whenever any of its diagnostics is `blocking`, so no caller can consume a partial document as a complete one | Property | P1 | FR-045-CON-2 | ✅ passed |
+| TC-410 | No frontend SHALL read a decorator defined by `@typespec/json-schema`, `@typespec/protobuf`, `@typespec/openapi` | Static | P1 | FR-045-CON-3 | ✅ passed |
+| TC-411 | The seam SHALL distinguish a caller defect, which throws, from an input defect, which is a diagnostic | Fuzz | P1 | FR-045-CON-4 | ✅ passed |
+| TC-412 | The library declares exactly the fifteen named decorators; a test reading `main.tsp` fails when a sixteenth appears | Unit | P0 | FR-053-AC-1 | ✅ passed |
+| TC-413 | A package compiles against the library with no `import` statement of its own and no path containing `..`, driven through `additionalImports` | Unit | P0 | FR-053-AC-2 | ✅ passed |
+| TC-414 | A second application of each single-valued decorator raises `DUPLICATE_DECORATOR` at the second locus with the first as a related locus | Unit | P0 | FR-053-AC-3 | ✅ passed |
+| TC-415 | Every declared argument pattern rejects at least one malformed value with `INVALID_DECORATOR_ARGUMENT` at the decorator's line and column | Unit | P0 | FR-053-AC-4 | ✅ passed |
+| TC-416 | `@unit("furlong")` is accepted and `@unit("a b")` is rejected on charset, proving UCUM membership is not checked and the charset is | Unit | P0 | FR-053-AC-5 | ✅ passed |
+| TC-417 | For a worked package, every minted identity equals the identity FR-034's rules give the same declaration | Unit | P0 | FR-053-AC-6 | ✅ passed |
+| TC-418 | Renaming every declaration in a fixture package changes only the identities and display names, and no `role`, `nullable`, `unknownPolicy`, `unit` | Property | P0 | FR-053-AC-7 | ✅ passed |
+| TC-419 | A constrained model property mints the alias type, retargets the field | Unit | P0 | FR-053-AC-8 | ✅ passed |
+| TC-420 | Every derived `diagnosticCode` matches the `common.schema.json` code pattern, including for a package named `core.data` and a field named `a_b.c` | Property | P0 | FR-053-AC-9 | ✅ passed |
+| TC-421 | Two declarations minting one identity raise `DUPLICATE_IDENTITY` at the later locus by the declared source order | Unit | P0 | FR-053-AC-10 | ✅ passed |
+| TC-422 | `CONSTRAINT_NOT_APPLICABLE`, `NODES_ON_NON_RECORD`, `DANGLING_CLAUSE_REF` | Unit | P0 | FR-053-AC-11 | ✅ passed |
+| TC-423 | Relationships, operations, and clauses lower with the FR-034 defaults for `composite`, relationship multiplicity, and `returns.nullable` | Unit | P0 | FR-053-AC-12 | ✅ passed |
+| TC-424 | Each of the four extension lowerings produces the identity, version, `required` flag, and payload FR-034 names | Unit | P0 | FR-053-AC-13 | ✅ passed |
+| TC-425 | An enum member with an assigned value raises `UNSUPPORTED_LOSS` at the member's locus, and no document is written | Unit | P0 | FR-053-AC-14 | ✅ passed |
+| TC-426 | Every added manifest declares `AGPL-3.0-only`, and `package.json` gains no dependency and no `file:`/`link:` specifier | Static | P0 | FR-053-AC-15 | ✅ passed |
+| TC-427 | The minted identities and the constraint-alias rule SHALL equal those of FR-034 | Integration | P1 | FR-053-CON-1 | ✅ passed |
+| TC-428 | The library SHALL declare no decorator beyond the fifteen named here; adding one is a compatibility change under FR-051 | Unit | P1 | FR-053-CON-2 | ✅ passed |
+| TC-429 | The frontend SHALL reach the library by the absolute path it supplies to `additionalImports` | Static | P1 | FR-053-CON-3 | ✅ passed |
+| TC-430 | The library SHALL declare no decorator that overrides a minted identity or that lets an IR value be derived from a declaration's name, namespace | Property | P1 | FR-053-CON-4 | ✅ passed |
+| TC-431 | Every manifest this requirement adds SHALL declare `"license": "AGPL-3.0-only"` | Static | P1 | FR-053-CON-5 | ✅ passed |
+| TC-432 | The IR produced for `test/fixtures/compiler/packages/assurance` validates against `semantic-ir.schema.json` with `contractVersion` `1.1.0` | Unit | P0 | FR-046-AC-1 | ✅ passed |
+| TC-433 | Every row of the structural-kind table is exercised by a declaration in the fixture package and yields the stated `kind` and additional members | Unit | P0 | FR-046-AC-2 | ✅ passed |
+| TC-434 | Every row of the built-in scalar mapping yields the stated IR `scalar` | Unit | P0 | FR-046-AC-3 | ✅ passed |
+| TC-435 | A record named `AuditEvent` with no `@role` has `roles: []`, and a record named `Thing` with `@role("agent-ix:event")` has `roles: | Unit | P0 | FR-046-AC-4 | ✅ passed |
+| TC-436 | A property typed `Text \| null` is `nullable: true` and a property typed `NullableText` (a declared alias of `Text`) is `nullable: false` | Unit | P0 | FR-046-AC-5 | ✅ passed |
+| TC-437 | The four multiplicity derivations (collection/single × optional/required) and the `@multiplicity` override each produce the stated bounds | Unit | P0 | FR-046-AC-6 | ✅ passed |
+| TC-438 | `@collection` on a single-valued property raises `FLAGS_ON_NON_COLLECTION`, `@multiplicity(2, 1)` raises `INVALID_MULTIPLICITY` | Unit | P0 | FR-046-AC-7 | ✅ passed |
+| TC-439 | `@unit("s")` on a field resolving through an alias to a scalar is emitted | Unit | P0 | FR-046-AC-8 | ✅ passed |
+| TC-440 | A property with a TypeSpec default emits `defaultKind: "semantic"` and that `defaultValue`; `@defaultKind("migration")` overrides the kind | Unit | P0 | FR-046-AC-9 | ✅ passed |
+| TC-441 | A field typed by a built-in scalar directly emits the package-local kernel scalar definition with its `ext/kernel-scalar` extension | Unit | P0 | FR-046-AC-10 | ✅ passed |
+| TC-442 | A property typed by an export of a resolved imported package resolves, and one typed by an unexported type of that package raises | Unit | P0 | FR-046-AC-11 | ✅ passed |
+| TC-443 | `source.digest` equals the root package's `contentDigest`, and the `package` block equals the values FR-047 and FR-048 supply, asserted field by field | Unit | P0 | FR-046-AC-12 | ✅ passed |
+| TC-444 | `occurrences` is the empty array for every fixture package | Unit | P0 | FR-046-AC-13 | ✅ passed |
+| TC-445 | Every emitted array is sorted by `identity` under code-point comparison | Property | P0 | FR-046-AC-14 | ✅ passed |
+| TC-446 | `src/compiler/ir.mjs`, `compile.mjs`, `identity.mjs`, `emitters/**`, and `backends/**` are byte-unchanged from `origin/main` | Static | P0 | FR-046-AC-15 | ✅ passed |
+| TC-447 | No file under `src/compiler/frontend/` imports a target-facing TypeSpec library or `node:fs`, `package.json` gains no dependency | Static | P0 | FR-046-AC-16 | ✅ passed |
+| TC-448 | A package whose entrypoint imports a file outside its root raises `PATH_ESCAPE` | Unit | P0 | FR-046-AC-17 | ✅ passed |
+| TC-449 | A declaration reached through an imported package carries a generated origin naming the frontend and that package's source identity, not a `..` path | Unit | P0 | FR-046-AC-18 | ✅ passed |
+| TC-450 | A lowering that would emit a document failing `semantic-ir.schema.json` returns `ir: null` with the validation diagnostics | Unit | P0 | FR-046-AC-19 | ✅ passed |
+| TC-451 | The prototype IR of FR-041 — `schemaVersion` `1.0.0`, the `{schemaVersion, generator, types}` envelope | Snapshot | P1 | FR-046-CON-1 | ✅ passed |
+| TC-452 | The lowering SHALL take every `role`, `nullable`, `unit`, `unknownPolicy`, `composite` | Property | P1 | FR-046-CON-2 | ✅ passed |
+| TC-453 | The frontend SHALL import only `@typespec/compiler` and `@typespec/versioning` from the pinned toolchain, and no target-facing TypeSpec library | Static | P1 | FR-046-CON-3 | ✅ passed |
+| TC-454 | The frontend SHALL reach the file system only through `restrictedHost`, which delegates to the injected host | Static | P1 | FR-046-CON-4 | ✅ passed |
+| TC-455 | The lowering SHALL be a pure function of the compiled program and the resolved package, reading no clock, environment variable, hostname | Static | P1 | FR-046-CON-5 | ✅ passed |
+| TC-456 | The concrete tree for the `order-independent` case resolves to the same ordered result under both permutations named in the case index | Property | P0 | FR-047-AC-1 | ✅ passed |
+| TC-457 | The `version-conflict` tree yields exactly one `IMPORT_VERSION_CONFLICT` naming both requiring loci | Unit | P0 | FR-047-AC-2 | ✅ passed |
+| TC-458 | The `digest-conflict` tree yields `DIGEST_CONFLICT` naming both digests and both loci | Unit | P0 | FR-047-AC-3 | ✅ passed |
+| TC-459 | The `package-cycle` tree yields exactly one `PACKAGE_CYCLE` naming both import loci and starting at the least package identity | Unit | P0 | FR-047-AC-4 | ✅ passed |
+| TC-460 | The `recursive-type-is-not-package-cycle` tree resolves successfully and emits no cycle diagnostic | Unit | P0 | FR-047-AC-5 | ✅ passed |
+| TC-461 | A manifest failing its schema yields one `INVALID_MANIFEST` per schema error, each at the line and column of the failing pointer's key | Unit | P0 | FR-047-AC-6 | ✅ passed |
+| TC-462 | `locateJsonPointer` returns exact positions for a pointer into an object, an array element, a nested array element, and a tab-indented document | Unit | P0 | FR-047-AC-7 | ✅ passed |
+| TC-463 | `IMPORT_NOT_FOUND`, `IMPORT_VERSION_UNSATISFIED`, `IMPORT_EXPORT_MISSING`, `IMPORT_EXPORT_PRIVATE` | Unit | P0 | FR-047-AC-8 | ✅ passed |
+| TC-464 | `UNKNOWN_PROFILE`, `UNKNOWN_MAPPING`, `UNKNOWN_TARGET`, and `UNDECLARED_LOSS` each fire on a fixture at the declared locus | Unit | P0 | FR-047-AC-9 | ✅ passed |
+| TC-465 | `DUPLICATE_EXPORT` fires for a repeated identity within one manifest and for the same identity exported by two packages | Unit | P0 | FR-047-AC-10 | ✅ passed |
+| TC-466 | A version constraint of `>=1.0.0` yields `UNSUPPORTED_VERSION_CONSTRAINT` rather than a resolution | Unit | P0 | FR-047-AC-11 | ✅ passed |
+| TC-467 | A search directory entry that is a symlink to a directory outside the search root yields `PATH_ESCAPE` and no resolved package | Unit | P0 | FR-047-AC-12 | ✅ passed |
+| TC-468 | A full fixture compile reads no path outside the package root and search directories, and opens no network connection | Integration | P0 | FR-047-AC-13 | ✅ passed |
+| TC-469 | Every locus the resolver emits carries a `sourceIdentity` and a relative `path` free of `..`, including a locus inside an imported package | Unit | P0 | FR-047-AC-14 | ✅ passed |
+| TC-470 | Exceeding `maxNodes`, `maxInputBytes`, and `maxDepth` each terminates resolution with the corresponding blocking limit diagnostic | Unit | P0 | FR-047-AC-15 | ✅ passed |
+| TC-471 | Two permutations of the search-path order, where no two directories supply the same identity at the same version, produce identical output | Property | P0 | FR-047-AC-16 | ✅ passed |
+| TC-472 | Resolution SHALL work offline, opening no network connection and reading nothing outside the declared package root and search directories | Integration | P1 | FR-047-CON-1 | ✅ passed |
+| TC-473 | A resolved package path SHALL NOT escape its search directory through `..` or a symbolic link; an escape is `agent-ix.compiler.PATH_ESCAPE` | Unit | P1 | FR-047-CON-2 | ✅ passed |
+| TC-474 | The resolver SHALL implement version-constraint satisfaction in this repository against the two accepted forms, adding no semver dependency | Static | P1 | FR-047-CON-3 | ✅ passed |
+| TC-475 | The resolver SHALL NOT execute any file it reads; manifests, mappings, profiles, and locks are data | Integration | P1 | FR-047-CON-4 | ✅ passed |
+| TC-476 | `fixtures/semantic/v1/package-graph-cases.json` SHALL remain byte-unchanged; it is the read-only case index | Static | P1 | FR-047-CON-5 | ✅ passed |
+| TC-477 | `canonicalize` reproduces every vector in `test/fixtures/compiler/rfc8785/vectors.json` for string escaping, number formatting, and key ordering | Unit | P0 | FR-048-AC-1 | ✅ passed |
+| TC-478 | Permuting object key order, permuting a declared identity-keyed set, changing the working directory | Property | P0 | FR-048-AC-2 | ✅ passed |
+| TC-479 | Changing one byte of a source file, of a manifest, of a mapping, of a profile, of a resolved package version, of a published schema file | Property | P0 | FR-048-AC-3 | ✅ passed |
+| TC-480 | A built lock validates against `package-lock.schema.json`, and its `canonicalization` block equals the algorithm named here | Unit | P0 | FR-048-AC-4 | ✅ passed |
+| TC-481 | `STALE_LOCK`, `STALE_LOCK_PACKAGE`, `LOCK_GRAPH_MISMATCH`, and `UNSUPPORTED_CANONICALIZATION` each fire on a fixture, each at the declared locus | Unit | P0 | FR-048-AC-5 | ✅ passed |
+| TC-482 | Verifying a lock leaves the lock file byte-unchanged on disk | Unit | P0 | FR-048-AC-6 | ✅ passed |
+| TC-483 | Two lock builds over the same graph produce identical bytes | Snapshot | P0 | FR-048-AC-7 | ✅ passed |
+| TC-484 | `contentDigest` is unchanged when a package's files are enumerated in a different order and changes when any source byte changes | Property | P0 | FR-048-AC-8 | ✅ passed |
+| TC-485 | `source.digest` of a compiled document equals `contentDigest` of its root package, asserted by recomputation | Unit | P0 | FR-048-AC-9 | ✅ passed |
+| TC-486 | `package.lockDigest` equals the digest of a supplied lock's bytes, and, with no lock supplied, of the lock the compile built | Unit | P0 | FR-048-AC-10 | ✅ passed |
+| TC-487 | A value nested past `maxDepth` terminates `canonicalize` with the blocking limit diagnostic | Unit | P0 | FR-048-AC-11 | ✅ passed |
+| TC-488 | The fingerprint SHALL change for every change to an included input, and stay equal for every change confined to an excluded input | Property | P1 | FR-048-CON-1 | ✅ passed |
+| TC-489 | The canonical form SHALL be produced by this repository; no canonical-JSON dependency is added | Static | P1 | FR-048-CON-2 | ✅ passed |
+| TC-490 | The lock verifier SHALL work offline, reading no file the resolution did not already name | Integration | P1 | FR-048-CON-3 | ✅ passed |
+| TC-491 | Every digest this requirement defines SHALL be defined by its byte set, not by its name, so two implementations cannot disagree about what was hashed | Static | P1 | FR-048-CON-4 | ✅ passed |
+| TC-492 | Every entry of `DIAGNOSTIC_CODES` matches the code pattern and validates as a `diagnostic` against `common.schema.json` when instantiated | Unit | P0 | FR-049-AC-1 | ✅ passed |
+| TC-493 | The set of codes named under `src/compiler/` equals the registry set, extracted statically from `DIAGNOSTIC_CODES` member accesses | Static | P0 | FR-049-AC-2 | ✅ passed |
+| TC-494 | Every registry code is emitted by at least one test case in the suite, asserted by a coverage set collected at run time | Unit | P0 | FR-049-AC-3 | ✅ passed |
+| TC-495 | `sortDiagnostics` produces the same order for a list and for its reverse, and for at least two `Intl.Collator` locales | Property | P0 | FR-049-AC-4 | ✅ passed |
+| TC-496 | Two compiles of a three-defect fixture produce identical diagnostic bytes | Snapshot | P0 | FR-049-AC-5 | ✅ passed |
+| TC-497 | No message emitted across a full fixture-corpus run contains an absolute path, a timestamp, a hostname, or a duration | Unit | P0 | FR-049-AC-6 | ✅ passed |
+| TC-498 | A defect caused by another is emitted once with the cause nested | Unit | P0 | FR-049-AC-7 | ✅ passed |
+| TC-499 | With `maxDiagnostics: 2`, a fixture producing five defects emits the two lowest in sort order plus `DIAGNOSTIC_LIMIT_REACHED` | Unit | P0 | FR-049-AC-8 | ✅ passed |
+| TC-500 | A blocking diagnostic leaves a fresh `--out` path absent and exits non-zero, leaves a pre-existing `--out` byte-unchanged | Unit | P0 | FR-049-AC-9 | ✅ passed |
+| TC-501 | A 4000-character input string never appears in a message longer than 120 characters | Unit | P0 | FR-049-AC-10 | ✅ passed |
+| TC-502 | The published registry document lists every code with its severity, blocking disposition, and owner, and the five limit defaults | Unit | P0 | FR-049-AC-11 | ✅ passed |
+| TC-503 | Every code `reader-cases.json` names appears in the registry, and every `agent-ix.semantic-ir.*` code in the registry is one the issue #34 TypeScript reader can emit | Unit | P0 | FR-049-AC-12 | ✅ passed |
+| TC-504 | A diagnostic located by a JSON pointer into an IR node carries that node's `origin.source` as its locus | Unit | P0 | FR-049-AC-13 | ✅ passed |
+| TC-505 | `DIAGNOSTIC_LIMIT_REACHED` is non-blocking, and the four size limits are blocking, asserted against the registry | Unit | P0 | FR-049-AC-14 | ✅ passed |
+| TC-506 | The registry is a compatibility surface: a code's spelling and its `blocking` disposition SHALL NOT change without a compatibility-report entry in | Static | P1 | FR-049-CON-1 | ✅ passed |
+| TC-507 | The `diagnostic` constructor SHALL truncate every input-derived string to 120 characters before it enters a message; input data beyond identities | Unit | P1 | FR-049-CON-2 | ✅ passed |
+| TC-508 | The set of codes the registry declares and the set the compiler emits SHALL be equal, with every declared code reached by at least one test | Unit | P1 | FR-049-CON-3 | ✅ passed |
+| TC-509 | The `agent-ix.semantic-ir.*` spellings SHALL be exactly those the issue #34 readers already emit, extracted from the byte-unchanged `fixtures/semantic/v1/negative/reader-cases.json` and `test/semantic-ir-v1-1-reader.ts` | Unit | P1 | FR-049-CON-4 | ✅ passed |
+| TC-510 | Every positive `1.1.0` fixture under `fixtures/semantic/v1/positive/` validates and yields zero reader diagnostics | Unit | P0 | FR-050-AC-1 | ✅ passed |
+| TC-511 | Every case in `negative/reader-cases.json` yields the expected diagnostic code from the compiler's reader | Unit | P0 | FR-050-AC-2 | ✅ passed |
+| TC-512 | For every case in `negative/reader-cases.json`, the compiler's reader, the issue #34 TypeScript reader | Integration | P0 | FR-050-AC-3 | ✅ passed |
+| TC-513 | `src/compiler/ir/reader.mjs` imports no module under `test/` or `tests/` | Static | P0 | FR-050-AC-4 | ✅ passed |
+| TC-514 | `normalizeIr` materializes `multiplicity`, `presence`, and `nullable` on every `1.1.0` field and operation parameter | Unit | P0 | FR-050-AC-5 | ✅ passed |
+| TC-515 | `normalizeIr(normalizeIr(d))` equals `normalizeIr(d)` for every positive fixture and for generated documents | Property | P0 | FR-050-AC-6 | ✅ passed |
+| TC-516 | Two documents differing only in object key order and in identity-keyed array order have the same `fingerprintIr` | Property | P0 | FR-050-AC-7 | ✅ passed |
+| TC-517 | An emitted document that fails validation is not written, and the failure is a blocking diagnostic naming the failing pointer | Unit | P0 | FR-050-AC-8 | ✅ passed |
+| TC-518 | A document whose alias chain is cyclic, one whose composite relationships are cyclic, one exceeding `maxNodes` | Unit | P0 | FR-050-AC-9 | ✅ passed |
+| TC-519 | `INVALID_IR` diagnostics name the failing instance pointer, verified against a hand-computed pointer for a malformed fixture | Unit | P0 | FR-050-AC-10 | ✅ passed |
+| TC-520 | Every rule of the code table fires on a constructed document and produces exactly its named code | Unit | P0 | FR-050-AC-11 | ✅ passed |
+| TC-521 | With `importedExports` set to `unknown`, a relationship target absent from the document produces no diagnostic and one recorded suppression | Unit | P0 | FR-050-AC-12 | ✅ passed |
+| TC-522 | Over 512 mutated documents the reader returns diagnostics and never throws | Fuzz | P0 | FR-050-AC-13 | ✅ passed |
+| TC-523 | The compiler's reader is deliberately a third implementation beside the issue #34 TypeScript and Python readers; it SHALL NOT import either | Integration | P1 | FR-050-CON-1 | ✅ passed |
+| TC-524 | This requirement SHALL NOT edit `test/semantic-ir-v1-1-reader.ts` or `tests/semantic_ir_reader.py`. Invoking the Python reader from a test under | Static | P1 | FR-050-CON-2 | ✅ passed |
+| TC-525 | Normalization SHALL be idempotent: normalizing a normalized document yields identical bytes | Property | P1 | FR-050-CON-3 | ✅ passed |
+| TC-526 | The reader SHALL terminate on every cyclic or oversized input rather than recursing without bound | Fuzz | P1 | FR-050-CON-4 | ✅ passed |
+| TC-527 | Every case in `fixtures/semantic/v1/compatibility/cases.json` is reproduced by a constructed input pair whose diff yields the case's `expected` | Unit | P0 | FR-051-AC-1 | ✅ passed |
+| TC-528 | Every family the report schema declares is produced by at least one such case | Unit | P0 | FR-051-AC-2 | ✅ passed |
+| TC-529 | The `target-disagreement` case yields the most restrictive of its `targetResults` | Unit | P0 | FR-051-AC-3 | ✅ passed |
+| TC-530 | A diff run with no profile, mapping, reservation, or target-result inputs omits the `profile`, `authority`, `mapping`, `protobuf-reservation` | Unit | P0 | FR-051-AC-4 | ✅ passed |
+| TC-531 | Every produced report validates against `compatibility-report.schema.json` | Unit | P0 | FR-051-AC-5 | ✅ passed |
+| TC-532 | Diffing a document against itself yields one `patch` change identified by `source.identity` and an aggregate of `patch` | Unit | P0 | FR-051-AC-6 | ✅ passed |
+| TC-533 | The forward projection of `fixtures/semantic/v1/positive/semantic-ir-v1-1.json` equals the committed golden byte for byte | Snapshot | P0 | FR-051-AC-7 | ✅ passed |
+| TC-534 | The backward projection of a `1.0.0` document with a declared dialect equals the committed golden byte for byte and reports empty loss | Snapshot | P0 | FR-051-AC-8 | ✅ passed |
+| TC-535 | A `1.0.0` document projected to `1.1.0` and back is byte-identical to the original | Property | P0 | FR-051-AC-9 | ✅ passed |
+| TC-536 | Both projections validate against the published schema at their target `contractVersion` | Unit | P0 | FR-051-AC-10 | ✅ passed |
+| TC-537 | Two runs of the diff over the same inputs produce byte-identical reports | Snapshot | P0 | FR-051-AC-11 | ✅ passed |
+| TC-538 | The published policy document states the four evolution rules, and a test fails when the document and the implemented ranking disagree | Unit | P0 | FR-051-AC-12 | ✅ passed |
+| TC-539 | Projecting to `1.1.0` with no dialect yields `MISSING_TARGET_DIALECT` and no document; projecting to `2.0.0` yields `UNKNOWN_CONTRACT_VERSION` | Unit | P0 | FR-051-AC-13 | ✅ passed |
+| TC-540 | A projection carries `source.digest` and the `package` block verbatim from the input | Unit | P0 | FR-051-AC-14 | ✅ passed |
+| TC-541 | A revision that removes a member, retypes a member, or narrows a closed vocabulary is classified `breaking` | Unit | P0 | FR-051-AC-15 | ✅ passed |
+| TC-542 | The diff SHALL NOT classify a family from an input it was not given; an absent input is a named gap, never a `patch` | Unit | P1 | FR-051-CON-1 | ✅ passed |
+| TC-543 | The disposition rank SHALL be exactly `patch < additive < conditional < unknown < breaking < invalid` | Unit | P1 | FR-051-CON-2 | ✅ passed |
+| TC-544 | A forward projection SHALL report every dropped identity; silently dropping a `1.1.0` member is a defect, not a projection | Unit | P1 | FR-051-CON-3 | ✅ passed |
+| TC-545 | The diff SHALL NOT import a target backend; per-target dispositions are an input | Static | P1 | FR-051-CON-4 | ✅ passed |
+| TC-546 | `fixtures/semantic/v1/compatibility/cases.json` SHALL remain byte-unchanged; it is the read-only case index | Static | P1 | FR-051-CON-5 | ✅ passed |
+| TC-547 | `emit-ir` over the spike entrypoint reproduces the committed golden `spikes/typespec-feasibility/generated/custom/semantic-ir.json` byte for byte | Snapshot | P0 | FR-052-AC-1 | ✅ passed |
+| TC-548 | `compile` over the fixture package writes a valid `1.1.0` document and exits `0`; running it twice produces identical IR and diagnostic bytes | Integration | P0 | FR-052-AC-2 | ✅ passed |
+| TC-549 | `compile` over a fixture with a blocking defect exits `1`, leaves a fresh `--out` absent, leaves a pre-existing `--out` byte-unchanged | Integration | P0 | FR-052-AC-3 | ✅ passed |
+| TC-550 | `compile` with `--lock` pointing at a stale lock exits `1` and leaves the lock file byte-unchanged | Integration | P0 | FR-052-AC-4 | ✅ passed |
+| TC-551 | `compile --write-lock` produces a lock validating against its schema; omitting the flag writes no lock | Integration | P0 | FR-052-AC-5 | ✅ passed |
+| TC-552 | A manifest with two profiles and no `--profile` yields `AMBIGUOUS_PROFILE` and exit `1` | Unit | P0 | FR-052-AC-6 | ✅ passed |
+| TC-553 | `inspect` output is byte-identical across two runs and lists every type sorted by identity with its five node counts | Snapshot | P0 | FR-052-AC-7 | ✅ passed |
+| TC-554 | `inspect --json` output parses, is canonical, and carries the same values as the text form | Unit | P0 | FR-052-AC-8 | ✅ passed |
+| TC-555 | `inspect` over an invalid document prints its reader diagnostics and exits `1` | Unit | P0 | FR-052-AC-9 | ✅ passed |
+| TC-556 | `diff` writes a schema-valid report, exits `0` for an additive aggregate and `1` for a breaking one | Integration | P0 | FR-052-AC-10 | ✅ passed |
+| TC-557 | An unknown command, an unknown flag, a missing required flag, and an unreadable `--limits` file each exit `2` and print the usage text | Unit | P0 | FR-052-AC-11 | ✅ passed |
+| TC-558 | The narrow interface declares fifteen symbols that `tsc --noEmit` checks | Compile | P0 | FR-052-AC-12 | ✅ passed |
+| TC-559 | `package.json` `exports`, `main`, `module`, `types`, and `files` are byte-unchanged from `origin/main`, and no dependency was added | Static | P0 | FR-052-AC-13 | ✅ passed |
+| TC-560 | A compile with every environment variable cleared but `PATH` produces identical output | Integration | P0 | FR-052-AC-14 | ✅ passed |
+| TC-561 | `compilePackage` runs its five phases in the declared order and stops at the first blocking phase, asserted by an instrumented phase recorder | Unit | P0 | FR-052-AC-15 | ✅ passed |
+| TC-562 | Every path the CLI creates during a fixture compile is a caller-named path or its `.tmp` sibling | Integration | P0 | FR-052-AC-16 | ✅ passed |
+| TC-563 | The narrow interface SHALL export exactly the six FR-041 symbols plus the nine named here | Unit | P1 | FR-052-CON-1 | ✅ passed |
+| TC-564 | This requirement SHALL leave `package.json` `exports`, `main`, `module`, `types`, and `files` unchanged | Static | P1 | FR-052-CON-2 | ✅ passed |
+| TC-565 | The CLI SHALL read no environment variable to decide behavior; every input is a flag or a file | Static | P1 | FR-052-CON-3 | ✅ passed |
+| TC-566 | The CLI SHALL be the one place that constructs the injected host, passing it down to every module below it | Static | P1 | FR-052-CON-4 | ✅ passed |
+| TC-567 | Two `compile` runs over the same package produce identical IR, lock, and diagnostic bytes | Unit | P0 | NFR-019-AC-1 | ✅ passed |
+| TC-568 | Two `inspect` runs and two `diff` runs produce identical bytes | Unit | P0 | NFR-019-AC-2 | ✅ passed |
+| TC-569 | No module in scope references `Date`, `Date.now`, `process.env`, `process.cwd`, `process.platform`, `os.hostname`, `Math.random`, `localeCompare` | Static | P0 | NFR-019-AC-3 | ✅ passed |
+| TC-570 | Two permutations of the search-path order that select the same packages produce identical output | Unit | P0 | NFR-019-AC-4 | ✅ passed |
+| TC-571 | Two injected directory-enumeration orders produce identical output | Unit | P0 | NFR-019-AC-5 | ✅ passed |
+| TC-572 | The emitted identity order is unchanged when compared against `Intl.Collator` orderings for at least two distinct locales | Unit | P0 | NFR-019-AC-6 | ✅ passed |
+| TC-573 | A compile with every environment variable cleared but `PATH`, and a compile with `TZ`, `LANG` | Unit | P0 | NFR-019-AC-7 | ✅ passed |
+| TC-574 | A compile driven from a different working directory produces identical output | Unit | P0 | NFR-019-AC-8 | ✅ passed |
+| TC-575 | A compile through an injected host reporting a `\` path separator produces identical emitted paths | Unit | P0 | NFR-019-AC-9 | ✅ passed |
+| TC-576 | Every file-system read and every JavaScript module load a fixture compile performs is observed by the injected host, counted at run time | Unit | P0 | NFR-019-AC-10 | ✅ passed |
+| TC-577 | The branch changes no file under the prohibited paths, verified by a diff against `origin/main` | Static | P0 | NFR-019-AC-11 | ✅ passed |
+| TC-578 | `package.json` gains no dependency, every `@typespec/*` specifier is an exact version, no `.npmrc` is committed | Static | P0 | NFR-019-AC-12 | ✅ passed |
+| TC-579 | Each of the four size limits — `maxInputBytes`, `maxDepth`, `maxNodes`, `maxCollectionItems` — is enforced | Unit | P0 | NFR-020-AC-1 | ✅ passed |
+| TC-580 | `DEFAULT_LIMITS` applies where the caller supplies none, its five values are those FR-049 declares, and the published registry document carries them | Unit | P0 | NFR-020-AC-2 | ✅ passed |
+| TC-581 | A manifest whose `sourceRoots` contains `..` and one that is a symlink out of the package root each yield `PATH_ESCAPE` | Unit | P0 | NFR-020-AC-3 | ✅ passed |
+| TC-582 | A package shipping a `.mjs` file that its sources import is refused by the injected `getJsImport`, which never delegates for it | Unit | P0 | NFR-020-AC-4 | ✅ passed |
+| TC-583 | No module in scope imports a network-capable or code-executing built-in, and a fixture compile with `globalThis.fetch` stubbed never calls it | Unit | P0 | NFR-020-AC-5 | ✅ passed |
+| TC-584 | The instrumented writer records only caller-named paths and their `.tmp` siblings over a full fixture compile | Unit | P0 | NFR-020-AC-6 | ✅ passed |
+| TC-585 | A cyclic alias chain, a cyclic composite relationship graph, a cyclic package import graph, a self-referential JSON pointer | Unit | P0 | NFR-020-AC-7 | ✅ passed |
+| TC-586 | A fuzz run of at least 512 mutations over the manifest and IR readers produces zero uncaught exceptions and no code outside the registry | Fuzz | P0 | NFR-020-AC-8 | ✅ passed |
+| TC-587 | An input of exactly `maxInputBytes` parses and one byte more terminates with the limit diagnostic before parsing | Unit | P0 | NFR-020-AC-9 | ✅ passed |
+| TC-588 | Input string content reaching a diagnostic message is truncated to 120 characters, so an adversarial name cannot flood the output | Unit | P0 | NFR-020-AC-10 | ✅ passed |
+| TC-589 | Every read the pinned TypeSpec compiler performs during a fixture compile passes through the injected host, counted at run time | Unit | P0 | NFR-020-AC-11 | ✅ passed |
+| TC-590 | Every changed path on the branch is in the permitted set and none is in the prohibited set | Static | P0 | NFR-021-AC-1 | ✅ passed |
+| TC-591 | `package.json` `exports`, `main`, `module`, `types`, and `files` are byte-unchanged from `origin/main` | Static | P0 | NFR-021-AC-2 | ✅ passed |
+| TC-592 | `src/compiler/ir.mjs`, `compile.mjs`, `identity.mjs`, `emitters/**`, `backends/**`, and `inventory.json` are byte-unchanged from `origin/main` | Static | P0 | NFR-021-AC-3 | ✅ passed |
+| TC-593 | The four committed issue #4 goldens and every file under `spikes/` are byte-unchanged | Static | P0 | NFR-021-AC-4 | ✅ passed |
+| TC-594 | Nothing under `conformance/` is changed by this branch | Static | P0 | NFR-021-AC-5 | ✅ passed |
+| TC-595 | Reverting the branch leaves the suite green with the pre-existing case count, rehearsed by a script rather than by hand | Integration | P0 | NFR-021-AC-6 | ✅ passed |
+| TC-596 | Every added package manifest declares `"license": "AGPL-3.0-only"` | Static | P0 | NFR-021-AC-7 | ✅ passed |
+| TC-597 | No package was published and no downstream repository was changed | Static | P0 | NFR-021-AC-8 | ✅ passed |
+| TC-598 | Multiplicity, nullability, and default kind are independent across their permutations | Property | P0 | FR-046-AC-6, FR-046-AC-9 | ✅ passed |
+| TC-599 | Collection flags are accepted on collections and refused on single-valued properties | Unit | P1 | FR-046-AC-7 | ✅ passed |
+| TC-600 | Constraint applicability is exercised across every structural kind | Unit | P1 | FR-050-AC-11 | ✅ passed |
+| TC-601 | Implemented and unimplemented dialects behave as declared in the shared harness | Unit | P1 | FR-045-AC-3, FR-045-AC-5 | ✅ passed |
+| TC-602 | Enum addition is classified against every consumer policy and evidence status | Unit | P1 | FR-051-AC-1 | ✅ passed |
+| TC-603 | `@multiplicity(0)` and `@multiplicity(0, 0)` are accepted at the lower boundary | Unit | P1 | FR-046-AC-6 | ✅ passed |
+| TC-604 | `@minLength(0)` is accepted and a negative length is refused | Unit | P1 | FR-053-AC-4 | ✅ passed |
+| TC-605 | `maxDiagnostics` of 1 truncates and a value below the schema minimum is refused | Unit | P1 | FR-049-AC-8, NFR-020-AC-1 | ✅ passed |
+| TC-606 | `maxDepth` at the limit passes and one past it terminates with the limit diagnostic | Unit | P1 | NFR-020-AC-1 | ✅ passed |
+| TC-607 | `maxInputBytes` at the exact size passes and one byte over terminates | Unit | P1 | NFR-020-AC-9 | ✅ passed |
+| TC-608 | A 120-character input string survives and a 121-character one is truncated | Unit | P1 | FR-049-AC-10 | ✅ passed |
+| TC-609 | Every registry code fires at least once across the fixture corpus | Unit | P0 | FR-049-AC-3 | ✅ passed |
+| TC-610 | A manifest that is not JSON at all yields `INVALID_MANIFEST` at line 1 | Unit | P1 | FR-047-AC-6 | ✅ passed |
+| TC-611 | An IR document at an unknown `contractVersion` is refused with a pointer | Unit | P1 | FR-050-AC-10 | ✅ passed |
+| TC-612 | A `1.0.0` document survives the `1.1.0` reader and the return projection | Property | P0 | FR-051-AC-9 | ✅ passed |
+| TC-613 | A lock moves from fresh to stale by a source byte and by a manifest byte | Unit | P1 | FR-048-AC-5 | ✅ passed |
+| TC-614 | A package with one type and no imports compiles | Unit | P2 | FR-046-AC-1 | ✅ passed |
+| TC-615 | A diamond import graph resolves each package once | Unit | P1 | FR-047-AC-1 | ✅ passed |
+| TC-616 | Two cycles sharing an edge yield two diagnostics and no duplicate | Unit | P1 | FR-047-AC-4 | ✅ passed |
+| TC-617 | A relationship target resolving to an imported export validates | Unit | P1 | FR-050-AC-12 | ✅ passed |
+| TC-618 | A caret constraint selects the highest satisfying version across two search directories | Unit | P1 | FR-047-AC-11 | ✅ passed |
+| TC-619 | A projection to the document's own version returns it unchanged | Unit | P1 | FR-051-AC-13 | ✅ passed |
 
 ## Option Permutation Matrix
 
@@ -1110,7 +1110,7 @@ source-selection report. Issue #9 has 72 passing contract-conformance cases and
 its manual merge gate, TC-199, is recorded. Production compiler, consumer,
 database, publication, enforcement, and retirement work remains separately gated.
 
-Issue #19's 222 cases (TC-398..619) cover the frontend seam, the TypeSpec
+Issue #19's 222 cases (TC-398..619) pass and cover the frontend seam, the TypeSpec
 lowering, package resolution, locks and fingerprints, the diagnostic registry,
 IR validation and normalization, the compatibility diff and evolution
 projections, and the three commands, under determinism, safety, and
@@ -1126,15 +1126,15 @@ therefore partially satisfied by construction and completes with #36.
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 180 | 145 | 0 | 35 | 100% mapped |
+| Static | 180 | 180 | 0 | 0 | 100% mapped |
 | Manual | 45 | 44 | 0 | 1 | 100% mapped |
 | Analysis | 17 | 17 | 0 | 0 | 100% mapped |
-| Property | 43 | 24 | 0 | 19 | 100% mapped |
-| Unit | 230 | 91 | 0 | 139 | 100% mapped |
-| Integration | 37 | 21 | 0 | 16 | 100% mapped |
-| Fuzz | 7 | 2 | 0 | 5 | 100% mapped |
-| Snapshot | 17 | 9 | 0 | 8 | 100% mapped |
-| Compile | 3 | 2 | 0 | 1 | 100% mapped |
-| **Total** | **579** | **355** | **0** | **224** | **100% mapped** |
+| Property | 43 | 43 | 0 | 0 | 100% mapped |
+| Unit | 230 | 230 | 0 | 0 | 100% mapped |
+| Integration | 37 | 36 | 0 | 1 | 100% mapped |
+| Fuzz | 7 | 7 | 0 | 0 | 100% mapped |
+| Snapshot | 17 | 17 | 0 | 0 | 100% mapped |
+| Compile | 3 | 3 | 0 | 0 | 100% mapped |
+| **Total** | **579** | **577** | **0** | **2** | **100% mapped** |
 
-**Matrix coverage status: ✅ Complete. Execution status: 🚧 in progress for issue #19. 355 of 357 pre-existing cases passed; TC-199 recorded by the owner decision on issue #4; TC-370 and TC-382 remain blocked on issue #42; TC-398..619 are mapped and in progress on the issue #19 branch.**
+**Matrix coverage status: ✅ Complete. Execution status: ✅ 577 of 579 passed. TC-199 is recorded by the owner decision on issue #4; TC-370 and TC-382 remain blocked on issue #42 (the retained issue #4 evidence records the minting host's own tool versions). TC-398..619 pass on the issue #19 branch, measured with `make test`: 299 vitest cases across 9 files. The `Blocked` column counts every row whose status is not ✅.**

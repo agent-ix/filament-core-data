@@ -2,7 +2,7 @@
 id: Task-076
 title: "Compatibility classifier and contract-version projections"
 type: Task
-status: pending
+status: done
 track: B
 priority: P0
 relationships:
@@ -57,12 +57,12 @@ Classify a revision into a compatibility report and project a document between c
 
 ## Subtasks
 
-- [ ] `test/fixtures/compiler/compatibility/family-map.json`: the observed-family to report-family map as data.
-- [ ] `test/fixtures/compiler/compatibility/cases/**`: one constructed input pair per case of the published case index, which stays byte-unchanged.
-- [ ] `src/compiler/compat/diff.mjs`: the classification table, the disposition rank, the most-restrictive aggregate, the `source.identity` fallback for identity-less changes, the `requiredGates` naming of every omitted family, and the equal-fingerprint single-`patch` result.
-- [ ] `src/compiler/compat/evolution.mjs`: both projections, the verbatim envelope carry-over, `MISSING_TARGET_DIALECT`, `UNKNOWN_CONTRACT_VERSION`, and the same-version identity.
-- [ ] `test/fixtures/compiler/evolution/`: the forward and backward goldens; a round-trip property test.
-- [ ] Assert every produced report validates against `compatibility-report.schema.json`.
+- [x] `test/fixtures/compiler/compatibility/family-map.json`: the observed-family to report-family map as data.
+- [x] `test/fixtures/compiler/compatibility/cases/**`: one constructed input pair per case of the published case index, which stays byte-unchanged.
+- [x] `src/compiler/compat/diff.mjs`: the classification table, the disposition rank, the most-restrictive aggregate, the `source.identity` fallback for identity-less changes, the `requiredGates` naming of every omitted family, and the equal-fingerprint single-`patch` result.
+- [x] `src/compiler/compat/evolution.mjs`: both projections, the verbatim envelope carry-over, `MISSING_TARGET_DIALECT`, `UNKNOWN_CONTRACT_VERSION`, and the same-version identity.
+- [x] `test/fixtures/compiler/evolution/`: the forward and backward goldens; a round-trip property test.
+- [x] Assert every produced report validates against `compatibility-report.schema.json`.
 
 ## Deliverables
 

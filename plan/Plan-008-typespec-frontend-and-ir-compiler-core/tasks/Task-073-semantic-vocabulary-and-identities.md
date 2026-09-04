@@ -2,7 +2,7 @@
 id: Task-073
 title: "Semantic decorator vocabulary and identity minting"
 type: Task
-status: pending
+status: done
 track: A
 priority: P0
 relationships:
@@ -57,14 +57,14 @@ The fifteen decorators, their argument validation, and the one identity minting 
 
 ## Subtasks
 
-- [ ] `src/compiler/frontend/typespec/lib/main.tsp` and `lib.mjs`: the fifteen `extern dec` declarations and their `$decorators` implementations, each storing into a program state map, each validating its arguments at its own locus.
-- [ ] `lib/package.json` declaring `AGPL-3.0-only`.
-- [ ] `src/compiler/frontend/typespec/identity.mjs`: `slug`, `mintIdentity` for each of the seven slots exactly as FR-034 mints them, `constraintDiagnosticCode`, and the `UNSLUGGABLE_NAME` collision check.
-- [ ] A shared identity table driving both the minting code and its test, so the FR-034 correspondence is one table rather than two lists.
-- [ ] `src/compiler/frontend/typespec/vocabulary.mjs`: read the state maps, apply repeatability, and raise `DUPLICATE_DECORATOR`.
-- [ ] Constraint lowering: the nine core decorators to the closed keywords, the minted alias for a constrained property, `appliesTo`, and the derived `diagnosticCode`.
-- [ ] Relationships, operations, and clauses with the FR-034 defaults; the four extensions plus `@semanticExtension`; `UNSUPPORTED_LOSS` for an enum member value.
-- [ ] The metamorphic rename property: renaming every declaration changes only identities and display names.
+- [x] `src/compiler/frontend/typespec/lib/main.tsp` and `lib.mjs`: the fifteen `extern dec` declarations and their `$decorators` implementations, each storing into a program state map, each validating its arguments at its own locus.
+- [x] `lib/package.json` declaring `AGPL-3.0-only`.
+- [x] `src/compiler/frontend/typespec/identity.mjs`: `slug`, `mintIdentity` for each of the seven slots exactly as FR-034 mints them, `constraintDiagnosticCode`, and the `UNSLUGGABLE_NAME` collision check.
+- [x] A shared identity table driving both the minting code and its test, so the FR-034 correspondence is one table rather than two lists.
+- [x] `src/compiler/frontend/typespec/vocabulary.mjs`: read the state maps, apply repeatability, and raise `DUPLICATE_DECORATOR`.
+- [x] Constraint lowering: the nine core decorators to the closed keywords, the minted alias for a constrained property, `appliesTo`, and the derived `diagnosticCode`.
+- [x] Relationships, operations, and clauses with the FR-034 defaults; the four extensions plus `@semanticExtension`; `UNSUPPORTED_LOSS` for an enum member value.
+- [x] The metamorphic rename property: renaming every declaration changes only identities and display names.
 
 ## Deliverables
 

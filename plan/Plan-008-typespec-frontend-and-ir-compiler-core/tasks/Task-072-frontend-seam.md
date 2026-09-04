@@ -2,7 +2,7 @@
 id: Task-072
 title: "Frontend seam and dialect registry"
 type: Task
-status: pending
+status: done
 track: A
 priority: P0
 relationships:
@@ -45,11 +45,11 @@ One seam, two registered dialects, one implemented, and the shared fixture harne
 
 ## Subtasks
 
-- [ ] `src/compiler/frontend/seam.mjs`: `FRONTEND_DIALECTS` read from `common.schema.json`, `selectFrontend` throwing a `TypeError` for a value outside the vocabulary, `runFrontend` returning a `FrontendResult`.
-- [ ] `src/compiler/frontend/spec-bundle/frontend.mjs`: one blocking `FRONTEND_NOT_IMPLEMENTED` naming issue #36.
-- [ ] The seam's own contract test: `ir` is null whenever any diagnostic is blocking; a frontend that returns both fails; no frontend reaches the file system except through `request.host`.
-- [ ] `test/fixtures/compiler/shared/cases.json` and its source trees, with the harness recording each case as cross-dialect or single-dialect.
-- [ ] Fuzz the seam over 256 mutated inputs and assert it never throws.
+- [x] `src/compiler/frontend/seam.mjs`: `FRONTEND_DIALECTS` read from `common.schema.json`, `selectFrontend` throwing a `TypeError` for a value outside the vocabulary, `runFrontend` returning a `FrontendResult`.
+- [x] `src/compiler/frontend/spec-bundle/frontend.mjs`: one blocking `FRONTEND_NOT_IMPLEMENTED` naming issue #36.
+- [x] The seam's own contract test: `ir` is null whenever any diagnostic is blocking; a frontend that returns both fails; no frontend reaches the file system except through `request.host`.
+- [x] `test/fixtures/compiler/shared/cases.json` and its source trees, with the harness recording each case as cross-dialect or single-dialect.
+- [x] Fuzz the seam over 256 mutated inputs and assert it never throws.
 
 ## Deliverables
 

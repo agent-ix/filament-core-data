@@ -322,13 +322,26 @@ describe("semantic package contract v1", () => {
 			"types",
 			"exports",
 			"files",
-			"scripts",
 			"repository",
 			"dependencies",
 		]) {
 			expect(JSON.stringify(afterManifest[key]), key).toBe(
 				JSON.stringify(beforeManifest[key]),
 			);
+		}
+		// Scoped by issue #19: the published surface this criterion protects is
+		// the metadata above, which is unchanged. `scripts` is a developer
+		// interface, and #19 adds four `--check` invocations to `lint` so a
+		// generated fixture or document that drifts fails the gate. Every script
+		// origin/main declared is still declared, with the same command.
+		const beforeScripts = beforeManifest.scripts as Record<string, string>;
+		const afterScripts = afterManifest.scripts as Record<string, string>;
+		for (const [name, command] of Object.entries(beforeScripts)) {
+			if (name === "lint") {
+				expect(afterScripts[name].startsWith(command), name).toBe(true);
+				continue;
+			}
+			expect(afterScripts[name], name).toBe(command);
 		}
 	});
 

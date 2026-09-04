@@ -2,7 +2,7 @@
 id: Task-075
 title: "IR schema validation, cross-field reader, and normalization"
 type: Task
-status: pending
+status: done
 track: B
 priority: P0
 relationships:
@@ -51,13 +51,13 @@ The compiler's own IR reader, the normalized serialization, and the IR fingerpri
 
 ## Subtasks
 
-- [ ] `src/compiler/ir/schema.mjs`: ajv 2020-12 validation against the published schema, one `INVALID_IR` per error naming the failing instance pointer.
-- [ ] `src/compiler/ir/reader.mjs`: the 22 cross-field rules, each with its own `agent-ix.semantic-ir.*` code, written from the requirement table and not from the issue #34 reader.
-- [ ] `importedExports` with its `unknown` marker and the recorded suppression.
-- [ ] Termination on cyclic aliases, cyclic composite graphs, `maxNodes`, `maxDepth`, and `maxCollectionItems`.
-- [ ] `src/compiler/ir/normalize.mjs`: `canonicalIr` over the declared identity-keyed sets, `normalizeIr` materialising the `1.1.0` members, `fingerprintIr`.
-- [ ] The three-way differential: the compiler reader, the issue #34 TypeScript reader, and `poetry run python tests/semantic_ir_reader.py`, run from `test/` with neither of the other two edited.
-- [ ] Property tests for idempotence and for the fingerprint's ordering insensitivity; a 512-mutation fuzz run.
+- [x] `src/compiler/ir/schema.mjs`: ajv 2020-12 validation against the published schema, one `INVALID_IR` per error naming the failing instance pointer.
+- [x] `src/compiler/ir/reader.mjs`: the 22 cross-field rules, each with its own `agent-ix.semantic-ir.*` code, written from the requirement table and not from the issue #34 reader.
+- [x] `importedExports` with its `unknown` marker and the recorded suppression.
+- [x] Termination on cyclic aliases, cyclic composite graphs, `maxNodes`, `maxDepth`, and `maxCollectionItems`.
+- [x] `src/compiler/ir/normalize.mjs`: `canonicalIr` over the declared identity-keyed sets, `normalizeIr` materialising the `1.1.0` members, `fingerprintIr`.
+- [x] The three-way differential: the compiler reader, the issue #34 TypeScript reader, and `poetry run python tests/semantic_ir_reader.py`, run from `test/` with neither of the other two edited.
+- [x] Property tests for idempotence and for the fingerprint's ordering insensitivity; a 512-mutation fuzz run.
 
 ## Deliverables
 

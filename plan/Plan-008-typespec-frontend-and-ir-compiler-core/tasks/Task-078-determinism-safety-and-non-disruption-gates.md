@@ -2,7 +2,7 @@
 id: Task-078
 title: "Determinism, safety, and non-disruption gates"
 type: Task
-status: pending
+status: done
 track: A
 priority: P0
 relationships:
@@ -83,11 +83,11 @@ The cross-cutting gates over the finished tree, and the two published documents.
 
 ## Subtasks
 
-- [ ] Determinism: repeat runs, a changed working directory, `TZ`/`LANG`/`LC_ALL` variation, two search-path permutations, two injected enumeration orders, two `Intl.Collator` locales, a simulated `\` separator, and the ambient-token scan.
-- [ ] Observation: count every read and module load the injected host did not see across a full fixture compile, and assert zero.
-- [ ] Safety: the four size limits at and past their boundaries, `PATH_ESCAPE` through `..` and a symlink, `UNTRUSTED_MODULE` through `getJsImport`, the module-graph network check plus a stubbed `fetch`, the writer inventory, five cyclic shapes, a 512-mutation fuzz run, and message truncation.
-- [ ] Non-disruption: `git diff --no-renames` against `origin/main` for the permitted and prohibited path sets, the `package.json` metadata comparison, the frozen prototype and issue #4 golden byte comparison, `conformance/` untouched, the scripted restore rehearsal, licence inspection, and the publication check.
-- [ ] Publish `docs/semantic-data-system/compiler-diagnostics.md` (every code with its severity, blocking disposition, owner, and the five limit defaults) and `docs/semantic-data-system/ir-compatibility-policy.md` (the four evolution rules and the disposition rank), each with a test that fails when the document and the code disagree.
+- [x] Determinism: repeat runs, a changed working directory, `TZ`/`LANG`/`LC_ALL` variation, two search-path permutations, two injected enumeration orders, two `Intl.Collator` locales, a simulated `\` separator, and the ambient-token scan.
+- [x] Observation: count every read and module load the injected host did not see across a full fixture compile, and assert zero.
+- [x] Safety: the four size limits at and past their boundaries, `PATH_ESCAPE` through `..` and a symlink, `UNTRUSTED_MODULE` through `getJsImport`, the module-graph network check plus a stubbed `fetch`, the writer inventory, five cyclic shapes, a 512-mutation fuzz run, and message truncation.
+- [x] Non-disruption: `git diff --no-renames` against `origin/main` for the permitted and prohibited path sets, the `package.json` metadata comparison, the frozen prototype and issue #4 golden byte comparison, `conformance/` untouched, the scripted restore rehearsal, licence inspection, and the publication check.
+- [x] Publish `docs/semantic-data-system/compiler-diagnostics.md` (every code with its severity, blocking disposition, owner, and the five limit defaults) and `docs/semantic-data-system/ir-compatibility-policy.md` (the four evolution rules and the disposition rank), each with a test that fails when the document and the code disagree.
 
 ## Deliverables
 
