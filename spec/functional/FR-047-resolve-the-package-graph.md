@@ -41,7 +41,7 @@ diagnostic at the manifest position that declared it.
 
 - `src/compiler/packages/manifest.mjs`: `readManifest(host, dir)` returning `{ manifest, text, path, digest, pointers }` or diagnostics
 - `src/compiler/packages/resolve.mjs`: `resolvePackageGraph(request)` returning `{ root, packages, profile, mappings, exports, sourceFiles, diagnostics }`
-- `src/compiler/json-locus.mjs`: `indexJsonPointers(text)`, `locateJsonPointer(text, pointer, prefer)`, and `offsetToPosition(text, offset)`
+- `src/compiler/json-locus.mjs`: `indexJsonPointers(text)`, `locateJsonPointer(text, pointer, prefer)`, `offsetToPosition(text, offset)`, and `jsonPointer(segments)`
 - `test/fixtures/compiler/packages/**`: the concrete package trees, one per case of `fixtures/semantic/v1/package-graph-cases.json`, which remains the read-only case index they are keyed to
 - A resolution whose `packages` are ordered by package identity under code-point comparison, independent of discovery order
 

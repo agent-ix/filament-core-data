@@ -3938,9 +3938,20 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 			"readIrAsContract",
 			"runFrontend",
 		]);
+		// A substring check would pass on a name mentioned in a comment. The
+		// declared *export set* is extracted and compared with the module's.
 		const declarations = read(resolve(compilerRoot, "index.d.mts"));
+		const declared = new Set<string>();
+		for (const match of declarations.matchAll(
+			/^export (?:declare (?:function|const|class) |\{ )?([A-Za-z_][A-Za-z0-9_]*)/gm,
+		)) {
+			declared.add(match[1]);
+		}
+		for (const match of declarations.matchAll(/^export \{([^}]+)\}/gm)) {
+			for (const name of match[1].split(",")) declared.add(name.trim());
+		}
 		for (const name of exported) {
-			expect(declarations, name).toContain(name);
+			expect([...declared], name).toContain(name);
 		}
 	});
 

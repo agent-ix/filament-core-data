@@ -40,7 +40,7 @@ code by the same three verbs.
 
 - The extended `src/compiler/cli.mjs`
 - `src/compiler/pipeline.mjs`: `compilePackage(request)`, the orchestration behind the `compile` verb
-- `src/compiler/inspect.mjs`: `inspectIr(document)` returning the deterministic summary record
+- `src/compiler/inspect.mjs`: `inspectIr(document, { importedExports })`, `formatInspection(summary)`, and `inspectionJson(summary)`
 - An extended `src/compiler/index.mjs` narrow interface, adding `runFrontend`, `compilePackage`, `readContractIr`, `normalizeIr`, `fingerprintIr`, `inspectIr`, `diffSemanticContract`, `readIrAsContract`, and `CONTRACT_IR_VERSION`
 - An extended `src/compiler/index.d.mts` declaring every added symbol
 - `make compiler-compile`, `make compiler-inspect`, and `make compiler-diff` targets

@@ -2,7 +2,7 @@
 id: Task-079
 title: "Code review, gap analysis, and pull request"
 type: Task
-status: in progress
+status: done
 track: A
 priority: P0
 relationships:
@@ -63,13 +63,13 @@ The closing gate.
 
 ## Subtasks
 
-- [ ] Run the static code extractor and assert the emitted diagnostic-code set equals the registry set, and that every registry code fired at least once across the suite (FR-049-AC-2, AC-3, CON-3).
-- [ ] Land the remaining rule rows: permutation, boundary, error-path, state-transition, and edge-case cases.
-- [ ] `/code-review` producing a validated SpecReview at `reviews/YY-MM-DD-typespec-frontend-and-ir-compiler-core-code-review.md` with `analysis: code-review`; fix every high and every real medium, record a disposition for anything declined.
-- [ ] `/gap-analysis` producing `reviews/YY-MM-DD-plan-008-compiler-core-gap-analysis.md`; every task done, every matrix row backed by a real tracking tag, every module traced to a requirement.
-- [ ] Re-run `make lint`, `make build`, `make typecheck`, `make test` and record the measured numbers.
-- [ ] Recompute the Test Execution Summary from the rows and flip the issue #19 statuses from `🚧` to their measured result.
-- [ ] Push the branch, open the PR against main linking issue #19, and comment `mergeable` with the measured gate results. Do not merge.
+- [x] Run the static code extractor and assert the emitted diagnostic-code set equals the registry set, and that every registry code fired at least once across the suite (FR-049-AC-2, AC-3, CON-3).
+- [x] Land the remaining rule rows: permutation, boundary, error-path, state-transition, and edge-case cases.
+- [x] `/code-review` producing a validated SpecReview at `reviews/YY-MM-DD-typespec-frontend-and-ir-compiler-core-code-review.md` with `analysis: code-review`; fix every high and every real medium, record a disposition for anything declined.
+- [x] `/gap-analysis` producing `reviews/YY-MM-DD-plan-008-compiler-core-gap-analysis.md`; every task done, every matrix row backed by a real tracking tag, every module traced to a requirement.
+- [x] Re-run `make lint`, `make build`, `make typecheck`, `make test` and record the measured numbers.
+- [x] Recompute the Test Execution Summary from the rows and flip the issue #19 statuses from `🚧` to their measured result.
+- [x] Push the branch, open the PR against main linking issue #19, and comment `mergeable` with the measured gate results. Do not merge.
 
 ## Deliverables
 

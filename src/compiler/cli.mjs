@@ -38,6 +38,7 @@ const USAGE = `Usage:
   node src/compiler/cli.mjs inspect --ir <file> [--json] [--package <dir>]
   node src/compiler/cli.mjs diff --old <ir> --new <ir> --out <file>
                                  [--consumer-policy <file>]... [--consumer-evidence <status>]
+                                 [--target-result <target>=<disposition>]...
 
 Exit codes: 0 success, 1 a blocking diagnostic or a breaking aggregate, 2 a usage error.`;
 

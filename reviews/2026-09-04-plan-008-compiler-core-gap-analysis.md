@@ -324,3 +324,54 @@ fail, which means four criteria are recorded `✅ passed` on no evidence.
 10. Then flip Task-079: write the code review it sequences first, check its own
     subtasks, and recompute `spec/tests.md`'s execution line and the
     `plan/.../log.md` figure from the corrected run (FND-712).
+
+## Dispositions
+
+Applied on 2026-09-04, on the branch this review was taken from. Every high and
+every medium is fixed; one low is recorded with no action and one medium is
+accepted with a reason. The gates after remediation: `make lint`, `make build`
+and `make typecheck` green; `make test` **299 of 299** across 9 files;
+`spec/tests.md` 577 of 579 passed with TC-370 and TC-382 blocked on issue #42,
+and the coverage column now measured at `100% mapped (579/579)`.
+
+| ID | Disposition |
+|---|---|
+| FND-680 | Fixed with FND-664, and filed as #49. |
+| FND-681 | Fixed. Selection is against every constraint gathered so far, so permuting a manifest's imports no longer changes the resolved version. Verified on the caret fixture with both permutations. |
+| FND-682 | Fixed. `type/ArtifactCode` and `ARTIFACT_CODE_MINLENGTH`, matching FR-034 literally — the keyword is upper-cased without inserting a separator, because agreement with the semantic-core lowering is the point. |
+| FND-683 | Fixed. `resolvedPackages` carries each package's manifest digest as well as its content digest, and FR-048 and its criterion say so. |
+| FND-684 | Fixed with FND-645. |
+| FND-685 | Fixed with FND-644. TC-470's fabricated `note()` is replaced by documents that actually reach the bound. |
+| FND-686 | Fixed with FND-641. |
+| FND-687 | Fixed. A version uplift is compared against the projection of the new document, so its own additions are not counted and every other change still is. An uplift that also removes a field reports the removal. |
+| FND-688 | Fixed with FND-647. |
+| FND-689 | Fixed with FND-665. |
+| FND-690 | Fixed with FND-665. |
+| FND-691 | Fixed. `readDocument` takes the source identity as a function of the parsed document, so every candidate's locus names the package it came from. |
+| FND-692 | Fixed. The test watches `node:fs` directly for the duration of a compile and asserts the set of reads the injected host did not see is empty. |
+| FND-693 | Fixed. `relativePosix` falls back to the file name when a document lies outside the package root, so no locus carries `..`. |
+| FND-694 | Fixed. `src/compiler/frontend/typespec/vocabulary.mjs` exists and is the only reader of the decorator state maps. |
+| FND-695 | Fixed. NFR-019's Scope names every module that exists, `biome.json` is in the permitted list, and the test's list matches it. |
+| FND-696 | Fixed. NFR-019 states that `cli.mjs` is the boundary rather than a subject — it is the one module that reads the world and constructs the host — and AC-3 says the scan covers everything below it. |
+| FND-697 | Fixed. `dialects.mjs`, `family-map.mjs`, `schema-validate.mjs`, `host.mjs` and `ir/applicability.mjs` are named in the Outputs of the requirements that own them. |
+| FND-698 | Fixed with FND-652. |
+| FND-699 | Fixed with FND-667. |
+| FND-700 | Fixed. A constructed document puts relationships on an enum and the reader's `NODES_ON_NON_RECORD` fires. |
+| FND-701 | Fixed. `fragment` cuts on a code point, and the test asserts the input-derived part is exactly 120 characters and carries no lone surrogate. |
+| FND-702 | Fixed with FND-683: FR-048 states the tuple the code computes, member by member. |
+| FND-703 | Fixed. A duplicate is reported on the identity as well as on the name. |
+| FND-704 | Fixed. A type reference into the document's own package is never suppressed — no resolution could have resolved it — and `INVALID_PATTERN` compiles without the `u` flag, which the `ecma-262` operand dialect requires. |
+| FND-705 | Fixed with FND-660. |
+| FND-706 | Fixed. The change comparator orders on identity, family, disposition, then rationale, so it is total. |
+| FND-707 | Fixed. The four self-comparisons compare against independently computed values: a literal canonical form, the recomputed fingerprint, the document's own counts, and a hand-computed content digest. |
+| FND-708 | Fixed. TC-603, TC-605, TC-615 and TC-617 name every criterion their test asserts, in both the matrix and the tag. |
+| FND-709 | Fixed. Declared loss now covers a template instance as well as an enum member value; a `@doc` on a declaration is *carried* as the semantic-core `doc` extension rather than dropped, which is the honest treatment of a datum the IR can hold. |
+| FND-710 | Fixed with FND-663. |
+| FND-711 | Accepted and recorded. Cross-frontend equivalence needs issue #36; EC-049 and `spec/tests.md` record the harness as single-dialect rather than claiming agreement it never observed. |
+| FND-712 | Fixed. The plan log, the matrix status line and this review carry the measured numbers from the remediated tree. |
+| FND-713 | Fixed. FR-047, FR-048 and FR-052 publish the signatures the modules actually export. |
+| FND-714 | Fixed. `DIAGNOSTIC_CODES` is frozen entry by entry, so a caller cannot change a code's blocking disposition at run time. |
+
+## Verdict after remediation
+
+PASS. The fourteen highs and seventeen mediums are fixed, and the three lows with them; FND-711 stands as the one deferred item, and it is deferred to issue #36 rather than left unsaid.

@@ -129,6 +129,10 @@ function buildRegistry() {
 		code: "agent-ix.compiler.DIAGNOSTIC_LIMIT_REACHED",
 		...advisory(COMPILER),
 	};
+	// Deeply frozen: freezing only the outer record leaves every entry mutable,
+	// so a caller could change a code's blocking disposition at run time and the
+	// gate that reads it would agree.
+	for (const entry of Object.values(registry)) Object.freeze(entry);
 	return Object.freeze(registry);
 }
 

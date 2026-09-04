@@ -119,3 +119,50 @@ longer constrains additions and permits arbitrary suffixes on `lint`
 (FND-649). Four of the six lists also carry entries a pre-existing prefix
 already covered, which is inherited permission rather than a live risk, but is
 the same recurrence SR-063 FND-435 recorded.
+
+## Dispositions
+
+Applied on 2026-09-04, on the branch this review was taken from. Every high and
+every medium is fixed; one low is recorded with no action and one medium is
+accepted with a reason. The gates after remediation: `make lint`, `make build`
+and `make typecheck` green; `make test` **299 of 299** across 9 files;
+`spec/tests.md` 577 of 579 passed with TC-370 and TC-382 blocked on issue #42,
+and the coverage column now measured at `100% mapped (579/579)`.
+
+| ID | Disposition |
+|---|---|
+| FND-640 | Fixed. Kernel scalar definitions are emitted the moment a member type needs one, so `resolvedKindOf` sees them; a constraint or `@unit` on a built-in-typed field now resolves. The `?? { kind: "record" }` fallback is gone. |
+| FND-641 | Fixed. Unknown evidence is a floor, not a substitute: the disposition is `mostRestrictive([observed, ...targets, unknown])`. `diff` on `required-field` exits 1 with and without the flag. |
+| FND-642 | Fixed. `isKeyword` uses `Object.hasOwn`; the family map lookup does the same. `"keyword": "constructor"` now yields `UNKNOWN_CONSTRAINT_KEYWORD` instead of a `TypeError`. |
+| FND-643 | Fixed. `host.isDirectory` and `host.exists` no longer swallow a refusal; `contentDigest` failures become `PATH_ESCAPE` at the manifest's `sourceRoots` locus, and a refused search-directory entry is reported rather than skipped. |
+| FND-644 | Fixed. `maxDepth` is a diagnostic wherever a document can reach it — the reader measures depth directly, the resolver converts a canonicalisation failure, and `fingerprintIr` returns `undefined` rather than throwing out of a published symbol. |
+| FND-645 | Fixed. `compilePackage` returns through `applyDiagnosticLimit(diagnostics, limits.maxDiagnostics)` on every path. |
+| FND-646 | Fixed. The map moved to `src/compiler/compat/family-map.json`, which `files` ships, and is read by `src/compiler/family-map.mjs` — outside `compat/`, so no module there touches `node:fs`. A test asserts the path is inside a packed glob. |
+| FND-647 | Fixed. The rehearsal checks out `origin/main` into a scratch worktree and compares: every path it calls changed must actually differ, and nothing outside the changed set may differ. |
+| FND-648 | Fixed. Prerelease identifiers compare field by field with numeric ones numerically, and a caret range admits a prerelease only when the constraint names one of the same release. |
+| FND-649 | Fixed, and tightened past the original: the script *set* may not change, every command but `lint` is compared exactly, and `lint` may only gain clauses matching `node scripts/<name>.mjs --check`. |
+| FND-650 | Fixed. The four generator scripts are enumerated by name in every allowlist, and the entries already covered by `test/` or `docs/semantic-data-system/` are removed. |
+| FND-651 | Fixed. `maxNodes` bounds the emitted definition count and the document's type count; `maxCollectionItems` bounds every array in both the lowering and the reader; `maxInputBytes` is checked from the directory entry before the bytes are read. |
+| FND-652 | Fixed. `repositoryHost` and `schemaValidators` are keyed by root, so a caller that passes a different tree gets that tree. |
+| FND-653 | Fixed. `createHost` refuses an empty root list outright, and `walk` visits each real path once so a symlink to an ancestor cannot loop. |
+| FND-654 | Fixed. `restrictedHost` resolves the real path before testing the roots, using the resolver the injected host supplies — no `node:fs` under `frontend/`. |
+| FND-655 | Fixed. A refusal is classified by what was thrown: `PathEscapeError` is `PATH_ESCAPE`, an absent file is the caller's own code, an unrecognised toolchain throw is `TYPESPEC_COMPILE_ERROR`, and a malformed lock is `UNSUPPORTED_CANONICALIZATION` rather than `STALE_LOCK`. |
+| FND-656 | Fixed. The `validate` phase validates the returned document against the published schema and stops the compile on a blocking result. The seam admits frontends this repository did not write, so the phase is a gate rather than a label. |
+| FND-657 | Fixed. `attach`, `slugCollisions`, `record.directRead` and the unreachable `JsonObject` branches are removed; the unreachable `uuid` row stays with a comment saying why the table is complete against FR-032; `importedExports` now resolves a member type to an imported export. |
+| FND-658 | Fixed. The coverage column measures the share of rows naming an id a spec artifact declares. It reads `100% mapped (579/579)`, and drops when a row is pointed at a phantom criterion. |
+| FND-659 | Fixed. The two digests in a `DIGEST_CONFLICT` message are sorted, so the text does not depend on enumeration order. |
+| FND-660 | Fixed. Nullability, defaults, presence, declared roles and variant payloads are compared; none of them can now land in the `patch` fallback. |
+| FND-661 | Fixed. A candidate that fails to parse is collected rather than reported, and surfaces as a nested cause on `IMPORT_NOT_FOUND` only if something actually imports it. |
+| FND-662 | Fixed. Every compatibility profile and mapping input is now a document valid against its published schema, asserted in the test. Observed loss — which no mapping document states — arrives as its own input. |
+| FND-663 | Fixed in part. The vectors gained a supplementary-plane key, the non-finite refusals, and the key-ordering case where `JSON.stringify` deliberately disagrees, so the oracle is no longer the implementation's own delegate. The RFC's published test file is still not vendored, which the fixture's provenance note states. |
+| FND-664 | Fixed. Seven copies of `changedPaths()` became one helper that compares content against the merge base. Filed as issue #49, because the underlying defect — a test mutating a tracked file to prove its own gate — is in `packages/**`, which this ticket may not touch. |
+| FND-665 | Fixed. The path-escape oracle asserts one outcome; the drift check compares export sets; the goldens gained an independent loss computation; the ordering test sorts strings a collator orders differently. |
+| FND-666 | Fixed. `index.d.mts` is parsed for its declared export set and compared with the module's, rather than searched for substrings. |
+| FND-667 | Fixed. TC-533 recomputes the expected loss list from the source document and asserts no `1.1.0`-only member survives the projection, so the golden is checked against something the generator did not write. |
+| FND-668 | Fixed. `--target-result` is in the usage text. Its target key is deliberately global for now: the CLI has no per-identity syntax, and the API takes one. |
+| FND-669 | Fixed. The unreachable third clause in `within()` is gone. |
+| FND-670 | Recorded, no action: the review's own note that the compatibility oracle, the registry equality and the frozen-path proof are sound. |
+
+## Verdict after remediation
+
+PASS. The nine highs and sixteen mediums are fixed in the branch; five of the six lows are fixed and the sixth records what the review found sound.

@@ -89,7 +89,7 @@ Task-068 -> Task-069 -> Task-070 -> Task-071 -> Task-072 -> Task-073 -> Task-074
 | Task-076 | [Task-076](./tasks/Task-076-compatibility-diff-and-evolution.md) | done | B |
 | Task-077 | [Task-077](./tasks/Task-077-pipeline-cli-and-interface.md) | done | A |
 | Task-078 | [Task-078](./tasks/Task-078-determinism-safety-and-non-disruption-gates.md) | done | A |
-| Task-079 | [Task-079](./tasks/Task-079-review-gap-analysis-and-pr.md) | in progress | A |
+| Task-079 | [Task-079](./tasks/Task-079-review-gap-analysis-and-pr.md) | done | A |
 
 - Task-068 fixes the guards first. Six changed-path allowlists on `main` were written by earlier tickets against their own branches and fail on any path a later ticket adds; each is scoped, as issue #27 scoped five of them, and the red suite is authored before any implementation file exists.
 - Task-069 lands the three primitives everything else needs: the injected host (the mechanism that makes every NFR-019 and NFR-020 claim observable rather than asserted), the diagnostic registry, and the JSON pointer locator.
