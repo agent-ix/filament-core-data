@@ -5,7 +5,7 @@
 			"profileId": "pydantic_v2_basemodel",
 			"outputModelType": "pydantic_v2.BaseModel",
 			"runtimeValidation": "validating",
-			"verdict": "qualified-with-conditions",
+			"verdict": "qualified-x-with-conditions",
 			"profileDigest": "sha256:de77a678b1815ffce78633025a657d40deea86bcec59ba28c35adf93a9112dd0",
 			"toolchainFingerprint": "sha256:20bf80b4543fdace0268362044737db818a49af69a5868f39023e7143f050a75",
 			"retained": [
