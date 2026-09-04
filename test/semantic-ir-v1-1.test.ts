@@ -74,6 +74,13 @@ function validates(schemaName: string, value: unknown): boolean {
 }
 
 function changedPaths(): string[] {
+	// Issue #19 note: this baseline moves. Once the change this suite guards
+	// is merged, `origin/main` carries it, the set empties, and every prohibition
+	// below passes vacuously — the gate goes quiet rather than red. The fix
+	// is `changedPathsSince` with a sentinel this suite's own change created;
+	// picking that sentinel wrongly baselines against an unrelated tree and
+	// makes the prohibition fail on history it was never meant to judge, so
+	// it belongs to whoever owns these requirements. Tracked as issue #51.
 	return changedPathsFrom(root, "origin/main");
 }
 

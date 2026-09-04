@@ -15,6 +15,7 @@ import { tmpdir } from "node:os";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
+import { baselineBefore, changedPathsSince } from "./changed-paths.js";
 import { diffSemanticContract } from "../src/compiler/compat/diff.mjs";
 import {
 	CONTRACT_VERSIONS,
@@ -104,11 +105,19 @@ function git(...args: string[]): string {
 	return execFileSync("git", args, { cwd: root, encoding: "utf8" });
 }
 
-/** Every path this branch changed, with rename detection off (Plan-007's lesson). */
+/**
+ * The commit issue #19 replaced, located from history through a file it created.
+ * Fixed after the merge, unlike `origin/main`. See `changedPathsSince`.
+ */
+const SENTINEL = [
+	"spec/usecase/US-010-compile-a-semantic-package.md",
+	"src/compiler/pipeline.mjs",
+];
+const baseline = (): string => baselineBefore(root, SENTINEL);
+
+/** Every path this change made, with rename detection off (Plan-007's lesson). */
 function changedPaths(): string[] {
-	return git("diff", "--no-renames", "--name-only", "origin/main...HEAD")
-		.split("\n")
-		.filter((line) => line.length > 0);
+	return changedPathsSince(root, SENTINEL);
 }
 
 function temp(label: string): string {
@@ -1005,7 +1014,9 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			readJson(resolve(compilerRoot, "frontend/typespec/lib/package.json"))
 				.license,
 		).toBe("AGPL-3.0-only");
-		const before = JSON.parse(git("show", "origin/main:package.json")) as Json;
+		const before = JSON.parse(
+			git("show", `${baseline()}:package.json`),
+		) as Json;
 		const now = readJson(resolve(root, "package.json"));
 		expect(now.dependencies ?? null).toEqual(before.dependencies ?? null);
 		expect(Object.keys((now.devDependencies as Json) ?? {}).sort()).toEqual(
@@ -3957,7 +3968,9 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 
 	/** Traces: TC-559, TC-564, TC-591; FR-052-AC-13, FR-052-CON-2, NFR-021-AC-2. */
 	it("leaves the published package surface untouched", () => {
-		const before = JSON.parse(git("show", "origin/main:package.json")) as Json;
+		const before = JSON.parse(
+			git("show", `${baseline()}:package.json`),
+		) as Json;
 		const now = readJson(resolve(root, "package.json"));
 		for (const key of ["exports", "main", "module", "types", "files"]) {
 			expect(now[key], key).toEqual(before[key]);
@@ -4230,7 +4243,7 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 				"diff",
 				"--no-renames",
 				"--name-only",
-				"origin/main...HEAD",
+				`${baseline()}..HEAD`,
 				"--",
 				"spikes/",
 			)
@@ -4240,24 +4253,57 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 	});
 
 	/** Traces: TC-595; NFR-021-AC-6. */
-	it("restores origin/main exactly when every changed path is reverted", () => {
-		// The rehearsal has to *discriminate*: writing bytes and reading them back
-		// is true of any bytes. So it checks out `origin/main` into a scratch
-		// worktree — a real revert — and compares that tree against the branch,
-		// asserting the difference is exactly the set of changed paths and that
-		// every modified file genuinely differs.
+	it("restores the pre-issue-19 tree exactly when the change is reverted", () => {
+		// Baselined on the commit this change replaced, located from history —
+		// not on `origin/main...HEAD`.
+		//
+		// The first form of this rehearsal asserted `changed.length` was greater
+		// than zero against that range. That is the identical positive
+		// branch-diff shape this branch diagnosed in #48 and #47 fixed for
+		// TC-395: the range empties the moment the change merges, the loop
+		// iterates zero times, and the rehearsal reports success having
+		// rehearsed nothing — or, with the length assertion kept, fails on
+		// `main`. Making it conditional on a non-empty diff would be the same
+		// defect wearing a disguise: it would go quiet rather than red.
+		//
+		// So the baseline is discovered the way #47 discovered TC-395's: find the
+		// commit that first added a file this change created, and take its
+		// parent. That is a history fact. It survives the squash merge, and if
+		// issue #19 is ever reverted the sentinel disappears from history and
+		// this gate fails rather than passing vacuously.
+		// `SENTINEL` spans the change: the earliest artifact it created and the
+		// latest, so the baseline is the branch point while unmerged and the
+		// squash commit's parent afterwards. A single mid-branch sentinel would
+		// baseline on a tree this change had already touched, and the rehearsal
+		// would then "restore" files the change itself had since moved.
+		const base = baselineBefore(root, SENTINEL);
+
 		const scratch = temp("restore");
-		const worktree = resolve(scratch, "main");
+		const worktree = resolve(scratch, "base");
 		try {
-			execFileSync(
-				"git",
-				["worktree", "add", "--detach", worktree, "origin/main"],
-				{ cwd: root, stdio: "pipe" },
-			);
-			const changed = changedPaths().filter(
-				(path) => !path.startsWith("node_modules/"),
-			);
-			expect(changed.length).toBeGreaterThan(0);
+			execFileSync("git", ["worktree", "add", "--detach", worktree, base], {
+				cwd: root,
+				stdio: "pipe",
+			});
+			const changed = git(
+				"diff",
+				"--no-renames",
+				"--name-only",
+				`${base}..HEAD`,
+			)
+				.split("\n")
+				.map((line) => line.trim())
+				.filter(
+					(path) =>
+						path.length > 0 &&
+						!path.startsWith("dist/") &&
+						!path.startsWith("node_modules/"),
+				);
+			// The sentinel is in the set by construction, which is what makes the
+			// baseline discriminating rather than merely non-empty.
+			expect(changed).toContain("src/compiler/pipeline.mjs");
+			expect(changed).toContain("spec/tests.md");
+
 			let modified = 0;
 			let added = 0;
 			for (const path of changed) {
@@ -4271,21 +4317,31 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 				// A path this gate calls changed must actually differ from the base.
 				expect(
 					readFileSync(here).equals(readFileSync(there)),
-					`${path} is listed as changed but is identical to origin/main`,
+					`${path} is listed as changed but is identical to the base`,
 				).toBe(false);
 				modified += 1;
 			}
 			expect(added).toBeGreaterThan(0);
 			expect(modified).toBeGreaterThan(0);
-			// And nothing outside the changed set differs: the revert is complete.
-			const differing = execFileSync(
-				"git",
-				["diff", "--no-renames", "--name-only", "origin/main...HEAD"],
-				{ cwd: root, encoding: "utf8" },
-			)
-				.split("\n")
-				.filter((line) => line.length > 0);
-			for (const path of differing) expect(changed, path).toContain(path);
+			// And the revert is complete: reverting to `base` restores every file
+			// the base carried, and removes every file it did not.
+			for (const path of changed) {
+				const there = resolve(worktree, path);
+				const carriedByBase = (() => {
+					try {
+						execFileSync("git", ["cat-file", "-e", `${base}:${path}`], {
+							cwd: root,
+							stdio: "ignore",
+						});
+						return true;
+					} catch {
+						return false;
+					}
+				})();
+				expect(existsSync(there), `restore incomplete: ${path}`).toBe(
+					carriedByBase,
+				);
+			}
 		} finally {
 			execFileSync("git", ["worktree", "remove", "--force", worktree], {
 				cwd: root,

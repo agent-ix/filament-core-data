@@ -37,6 +37,86 @@ export const REGENERATED_IN_PLACE: ReadonlySet<string> = new Set([
 	"packages/semantic-core/generated/json-schema/EnumValue.json",
 ]);
 
+/**
+ * The commit a change replaced, located from history through a file it created.
+ *
+ * `changedPathsFrom(root, "origin/main")` answers "what has this branch changed"
+ * only while the branch is unmerged. After the squash merge `origin/main` *is*
+ * the branch content, the range empties, `matchesBase` finds every working file
+ * identical to the base, and the helper returns `[]`. Every caller below loops
+ * over that set asserting a prohibition — "no changed path is under `schema/`" —
+ * so an empty set satisfies all of them vacuously. The gate does not go red. It
+ * goes quiet, which is worse, because a green suite is then evidence of nothing.
+ *
+ * Issue #27 met the first two faces of this (positive assertions about the
+ * range, fixed by #47) and issue #19 met the third here. The durable form is the
+ * one #47 used for TC-395: pick a file the change created, find the commit that
+ * added it, and take that commit's parent. The result is a history fact — fixed
+ * after the merge, and gone if the change is ever reverted, at which point the
+ * gate fails loudly rather than quietly asserting nothing.
+ *
+ * Pass several sentinels when the change spans more than one commit: the
+ * baseline is the parent of the *earliest* commit that added any of them, which
+ * is the branch point while the branch is unmerged and the squash commit's
+ * parent afterwards. One sentinel is enough only when the change is one commit;
+ * with several, a sentinel created mid-branch would baseline mid-branch and the
+ * gate would then compare against a tree the change itself had already touched.
+ *
+ * Throws when no sentinel is in history, because a baseline that cannot be
+ * located is not a reason to assert less.
+ */
+export function baselineBefore(
+	root: string,
+	sentinels: string | readonly string[],
+): string {
+	const paths = typeof sentinels === "string" ? [sentinels] : sentinels;
+	const adding = paths
+		.map((path) =>
+			execFileSync(
+				"git",
+				["log", "--diff-filter=A", "--format=%H", "-1", "--", path],
+				{ cwd: root, encoding: "utf8" },
+			).trim(),
+		)
+		.filter((commit) => commit.length > 0);
+	if (adding.length === 0) {
+		throw new Error(
+			`no commit in history adds any of ${paths.join(", ")}: the baseline for this gate cannot be located, so it cannot assert`,
+		);
+	}
+	const isAncestor = (a: string, b: string): boolean => {
+		try {
+			execFileSync("git", ["merge-base", "--is-ancestor", a, b], {
+				cwd: root,
+				stdio: "ignore",
+			});
+			return true;
+		} catch {
+			return false;
+		}
+	};
+	const earliest = adding.reduce((best, commit) =>
+		isAncestor(commit, best) ? commit : best,
+	);
+	return execFileSync("git", ["rev-parse", `${earliest}^`], {
+		cwd: root,
+		encoding: "utf8",
+	}).trim();
+}
+
+/**
+ * The paths a change made, baselined on the commit it replaced.
+ *
+ * Prefer this over `changedPathsFrom(root, "origin/main")` in any gate that
+ * asserts a prohibition: it keeps asserting after the merge.
+ */
+export function changedPathsSince(
+	root: string,
+	sentinels: string | readonly string[],
+): string[] {
+	return changedPathsFrom(root, baselineBefore(root, sentinels));
+}
+
 export function changedPathsFrom(root: string, base: string): string[] {
 	const committed = execFileSync(
 		"git",
