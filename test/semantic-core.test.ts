@@ -14,7 +14,6 @@ import {
 	writeFileSync,
 	cpSync,
 } from "node:fs";
-import { tmpdir } from "node:os";
 import { readDeclarations } from "./semantic-core-reader";
 import { type Instance, lower } from "./semantic-core-lowerer";
 import { normalize, readSemanticIr } from "./semantic-ir-v1-1-reader";
