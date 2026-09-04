@@ -128,7 +128,7 @@ describe("semantic-core non-disruption (Task-041)", () => {
 	});
 });
 
-describe("semantic-core package inventory (red until Task-042 lands)", () => {
+describe("semantic-core package inventory (Task-042)", () => {
 	/** Traces: TC-254; FR-031-CON-1. */
 	it("lives under packages/semantic-core with a private package manifest", () => {
 		expect(existsSync(resolve(packageRoot, "main.tsp"))).toBe(true);
@@ -944,6 +944,50 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 		expect(object(id.origin, "origin")).toHaveProperty("source");
 		const clause = object(array(entity.clauses, "clauses")[0], "clause");
 		expect(String(clause.text)).toContain("@pre");
+	});
+
+	/** Traces: TC-268; FR-034-AC-2 (enum kind: EnumValue.doc lands on the enum definition). */
+	it("lowers an enum-kind instance with documented values onto the enum definition", () => {
+		const instance: Instance = {
+			name: "Status",
+			kind: "enum",
+			package: "agent-ix/config-service",
+			sourceLocus: {
+				sourceIdentity: "ix://agent-ix/config-service/spec",
+				path: "spec/functional/FR-009-status.md",
+				startLine: 1,
+				startColumn: 1,
+			},
+			enumValues: [
+				{ value: "draft", doc: "Not yet published." },
+				{ value: "final" },
+			],
+		};
+		expect(readDeclarations(instance)).toEqual([]);
+		const document = lower(instance, "enum");
+		const validate = irAjv.getSchema(
+			"https://schemas.agent-ix.org/filament-core-data/v1/semantic-ir.schema.json",
+		);
+		expect(validate?.(document), JSON.stringify(validate?.errors)).toBe(true);
+		expect(readSemanticIr(document)).toEqual([]);
+		const status = object(
+			array(document.types, "types")
+				.map((v) => object(v, "type"))
+				.find((t) => t.displayName === "Status"),
+			"Status",
+		);
+		expect(status.kind).toBe("enum");
+		expect(
+			array(status.variants, "variants").map((v) => object(v, "v").name),
+		).toEqual(["draft", "final"]);
+		expect(array(status.extensions, "ext")).toEqual([
+			expect.objectContaining({
+				identity: "ix://agent-ix/semantic-core/ext/doc",
+				payload: { value: "draft", text: "Not yet published." },
+			}),
+		]);
+		for (const variant of array(status.variants, "variants"))
+			expect(object(variant, "v")).not.toHaveProperty("extensions");
 	});
 
 	/** Traces: TC-279; FR-034-AC-2. */

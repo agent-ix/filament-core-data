@@ -132,7 +132,7 @@ time ->  Task-041 -> Task-042 -> Task-043 -> Task-045 --\
 | Task-044 | B | FR-032, FR-031 | TC-255..258, TC-260, TC-277 | done |
 | Task-045 | A | FR-034 | TC-267..272, TC-279 | done |
 | Task-046 | B | NFR-014 | TC-274 | done |
-| Task-047 | Gate | US-007, NFR-014 | — | todo |
+| Task-047 | Gate | US-007, NFR-014 | — | done |
 
 ## Coordination Rules
 

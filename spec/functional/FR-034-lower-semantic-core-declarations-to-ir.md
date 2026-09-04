@@ -49,10 +49,12 @@ reference lowerer, with zero declared loss, proven on the FR-006
 - `FieldDecl.nullable` SHALL lower to `field.nullable` (default `false`).
 - `FieldDecl.default` SHALL lower to `defaultKind`/`defaultValue` (absent → `none`).
 - `FieldDecl.identity` SHALL lower to the extension `ix://agent-ix/semantic-core/ext/identity` (version `1.0.0`, `required: false`, payload `{ identity: true }`).
-- `FieldDecl.doc` and `EnumValue.doc` SHALL lower to `ix://agent-ix/semantic-core/ext/doc` (version `1.0.0`, `required: false`, payload `{ text }`).
+- `FieldDecl.doc` SHALL lower to `ix://agent-ix/semantic-core/ext/doc` (version `1.0.0`, `required: false`, payload `{ text }`) on the field.
+- `EnumValue.doc` SHALL lower to the same `doc` extension on the enum type definition with payload `{ value, text }`, because an IR `variant` carries no extensions.
 - A `FieldDecl` with `constraints` SHALL lower its field's `typeRef` to a minted `alias` type definition `ix://<org>/<repo>/type/<Name><Field>` targeting the declared type, and each constraint to a `constraint` on that alias with `appliesTo` set to the alias identity, `diagnosticCode` `agent-ix.<repo>.<NAME>_<FIELD>_<KEYWORD>`, and the same keyword and operands.
 - `RelationDecl` SHALL lower to `relationships[]` with `verb`, `category`, `composite`, `target`, and `multiplicity` verbatim.
 - `OperationDecl` SHALL lower to `operations[]` with params lowered as fields, `returns` lowered with `nullable: false`, and `pre[]`/`post[]` set to the referenced `clauseId` values.
+- Nodes whose declaration carries no `SourceLocus` in the lowering context (operations, params, variants, kernel definitions, spanless clauses) SHALL carry a generated origin naming the lowerer.
 - Every `ClauseRef` reachable from the instance SHALL lower to one `clauses[]` entry with `language`, `clauseId`, `sourceSpan` when declared, `text` from the clause-text map, and origin from the span or, absent a span, a generated origin naming the lowerer.
 - `EnumValue` SHALL lower to `variant` on an `enum`-kind type definition.
 - `KernelScalar.JsonObject` SHALL lower to an open record definition with `unknownPolicy: preserve`.

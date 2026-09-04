@@ -2,7 +2,7 @@
 id: Task-047
 title: "Review, gap analysis, and PR"
 type: Task
-status: todo
+status: done
 track: Gate
 priority: P0
 relationships:
@@ -23,9 +23,9 @@ Close the slice: run the baselines, the code review, and the gap analysis; open 
 
 ## Subtasks
 
-- [ ] Re-run `pnpm test`, `poetry run pytest`, `pnpm lint`, `make semantic-core-check`, and the spike diff guard.
-- [ ] Run `/code-review` and `/gap-analysis`; apply findings; commit the SpecReviews under `reviews/`.
-- [ ] Open the PR with the spec-cycle summary and comment "mergeable".
+- [x] Re-run `pnpm test`, `poetry run pytest`, `pnpm lint`, `make semantic-core-check`, and the spike diff guard.
+- [x] Run `/code-review` and `/gap-analysis`; apply findings; commit the SpecReviews under `reviews/`.
+- [x] Open the PR with the spec-cycle summary and comment "mergeable".
 
 ## Deliverables
 

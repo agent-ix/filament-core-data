@@ -265,6 +265,16 @@ export function lower(instance: Instance, sourceBytes: string): JsonObject {
 			name: String(entry.value),
 			origin: origin(undefined),
 		}));
+		// An IR variant carries no extensions (FR-034): documented values are
+		// recorded on the enum definition itself.
+		definition.extensions = (instance.enumValues ?? [])
+			.filter((entry) => typeof entry.doc === "string")
+			.map((entry) =>
+				ext("doc", false, {
+					value: String(entry.value),
+					text: String(entry.doc),
+				}),
+			);
 		definition.clauses = clauses;
 	}
 

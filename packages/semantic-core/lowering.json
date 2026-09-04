@@ -401,9 +401,10 @@
 		{
 			"model": "EnumValue",
 			"property": "doc",
-			"irNode": "variant",
-			"irProperty": "extensions[ix://agent-ix/semantic-core/ext/doc]",
-			"loss": "none"
+			"irNode": "typeDefinition(enum)",
+			"irProperty": "extensions[ix://agent-ix/semantic-core/ext/doc] payload {value, text}",
+			"loss": "none",
+			"note": "IR variant carries no extensions"
 		},
 		{
 			"model": "SourceLocus",

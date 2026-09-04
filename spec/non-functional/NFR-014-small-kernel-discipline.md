@@ -25,8 +25,8 @@ language package, catalog pin, or corpus repository.
 
 ## Scope
 
-- Permitted: `packages/semantic-core/**`, `fixtures/semantic-core/**`, `docs/semantic-data-system/metamodel.md` and `docs/semantic-data-system/adr/0002-generated-package-ownership.md` (one paragraph each), `spec/**`, `test/**`, `tests/**`, `Makefile` (build targets only), `package.json` (`scripts` only), `plan/**`, `reviews/**`, `spec/reviews/**`.
-- Prohibited: `spikes/**`, `src/**`, `schema/avro/**`, `pnpm-lock.yaml`, generated language packages, catalog pins, a `pnpm-workspace.yaml`, and any file in config-service or another corpus repository.
+- Permitted: `packages/semantic-core/**`, `fixtures/semantic-core/**`, `docs/semantic-data-system/metamodel.md` and `docs/semantic-data-system/adr/0002-generated-package-ownership.md` (one paragraph each), `spec/**`, `test/**`, `tests/**`, `fixtures/semantic/v1/compatibility/cases.json` (kernel-scalar families), `Makefile` (build targets only), `plan/**`, `reviews/**`, `spec/reviews/**`.
+- Prohibited: `spikes/**`, `src/**`, `schema/avro/**`, `package.json`, `pnpm-lock.yaml`, generated language packages, catalog pins, a `pnpm-workspace.yaml`, and any file in config-service or another corpus repository.
 
 ## Rationale
 
