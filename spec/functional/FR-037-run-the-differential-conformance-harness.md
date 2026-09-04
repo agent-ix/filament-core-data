@@ -73,6 +73,7 @@ recorded in the divergence register.
 | FR-037-AC-5 | A divergence-register entry with a past `reviewBy` date fails the run, and an entry that no run reproduces fails the run. | Test |
 | FR-037-AC-6 | Two consecutive runs over an unchanged corpus produce byte-identical reports. | Test |
 | FR-037-AC-7 | An adapter command that exits non-zero, or emits a result failing `adapter-result.schema.json`, produces a non-zero harness exit and a per-case failure rather than a skip. | Test |
+| FR-037-AC-8 | An `unsupported` result is accepted only for a case declaring that adapter in `expected.unsupportedBy` with an owning issue; an undeclared `unsupported` fails and names the case and the adapter. | Test |
 
 ## Dependencies
 

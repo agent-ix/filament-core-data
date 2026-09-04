@@ -67,6 +67,8 @@ that register.
 | FR-038-AC-4 | Direct recursion and mutual recursion are accepted, an alias cycle and a composite relationship cycle are rejected, and a package cycle is rejected with a different diagnostic code from a recursive type graph. | Test |
 | FR-038-AC-5 | The `defect` register reproduces every prototype-emitter divergence recorded for this issue, and each such case fails against a document that carries the divergence. | Test |
 | FR-038-AC-6 | Every register row declares its deciding layer (`schema`, `cross-field`, or `compatibility`), and the oracle's decision for each row's cases comes from that layer. | Test |
+| FR-038-AC-7 | A discriminated union whose variant `payloadType` no type declares is rejected at that variant's locus, and a union whose two variants share one payload type is accepted. | Test |
+| FR-038-AC-8 | A `1.0.0` document read under `1.1.0` rules, a `1.1.0` node carried in a `1.0.0` document, and a package version transition that adds and removes an export each produce the classification the contract states. | Test |
 
 ## Dependencies
 
