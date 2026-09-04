@@ -1,0 +1,26 @@
+{
+	"contractVersion": "1.0.0",
+	"identity": "ix://agent-ix/root/mapping/markdown",
+	"version": "1.0.0",
+	"sourceType": "ix://agent-ix/root/type/Text",
+	"targetType": "ix://agent-ix/root/type/Text",
+	"representation": "markdown",
+	"correspondences": [
+		{
+			"sourceIdentity": "ix://agent-ix/root/type/Text",
+			"targetLocus": "body"
+		}
+	],
+	"transformation": {
+		"kind": "rendering",
+		"purity": "pure",
+		"deterministic": true,
+		"externalReads": [],
+		"externalWrites": [],
+		"failureStates": ["invalid"],
+		"retryIdempotent": true,
+		"preservation": "declared-lossy",
+		"omittedIdentities": ["ix://agent-ix/root/type/Text"],
+		"presentationMediaType": "text/markdown"
+	}
+}

@@ -1,0 +1,25 @@
+{
+	"contractVersion": "1.0.0",
+	"package": {
+		"identity": "agent-ix/root",
+		"version": "1.0.0"
+	},
+	"schemaDialect": "https://json-schema.org/draft/2020-12/schema",
+	"sourceRoots": ["types"],
+	"exports": [],
+	"imports": [],
+	"profiles": [
+		{
+			"name": "default",
+			"version": "1.0.0",
+			"exports": [],
+			"targets": ["rust"],
+			"mappings": ["ix://agent-ix/root/mapping/absent"],
+			"options": {},
+			"compatibilityPosture": "additive"
+		}
+	],
+	"targets": ["json-schema"],
+	"mappings": [],
+	"extensions": []
+}
