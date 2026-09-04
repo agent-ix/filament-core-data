@@ -89,7 +89,7 @@ paragraph is where it is now recorded.
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001..US-010, US-012, FR-001..FR-053, FR-063..FR-071 | TC-033, TC-086, TC-129, TC-130..644, TC-745..844 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch |
+| StR-001 | US-001..US-010, US-012, US-013, FR-001..FR-053, FR-063..FR-080 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch |
 
 ### User Story Coverage
 
@@ -122,6 +122,11 @@ paragraph is where it is now recorded.
 | US-012 | US-012-EX-4 (illustrative) implemented by FR-065 and FR-066 | TC-770, TC-786 | 🚧 In progress |
 | US-012 | US-012-EX-5 (illustrative) implemented by FR-071 and NFR-024 | TC-826, TC-834 | 🚧 In progress |
 | US-012 | US-012-EX-6 (illustrative) implemented by FR-065 and FR-067 | TC-773, TC-794 | 🚧 In progress |
+| US-013 | US-013-EX-1 (illustrative) implemented by FR-074 and FR-078 | TC-865, TC-908, TC-930 | ✅ Complete |
+| US-013 | US-013-EX-2 (illustrative) implemented by FR-077 | TC-896, TC-899, TC-900 | ✅ Complete |
+| US-013 | US-013-EX-3 (illustrative) implemented by FR-075 | TC-873, TC-875, TC-880 | ✅ Complete |
+| US-013 | US-013-EX-4 (illustrative) implemented by FR-076 and NFR-027 | TC-883, TC-940 | ✅ Complete |
+| US-013 | US-013-EX-5 (illustrative) implemented by FR-079 and NFR-027 | TC-924, TC-942 | ✅ Complete |
 
 ### Functional Requirement Coverage
 
@@ -189,6 +194,15 @@ paragraph is where it is now recorded.
 | FR-069 | FR-069-AC-1..21, FR-069-CON-1..7 | TC-806..TC-814 | 🚧 In progress |
 | FR-070 | FR-070-AC-1..20, FR-070-CON-1..8 | TC-815..TC-824 | 🚧 In progress |
 | FR-071 | FR-071-AC-1..20, FR-071-CON-1..8 | TC-825..TC-833 | 🚧 In progress |
+| FR-072 | FR-072-AC-1..10, FR-072-CON-1..4 | TC-845..853, TC-944 | ✅ Complete |
+| FR-073 | FR-073-AC-1..10, FR-073-CON-1..3 | TC-854..862 | ✅ Complete |
+| FR-074 | FR-074-AC-1..11, FR-074-CON-1..3 | TC-863..872 | ✅ Complete |
+| FR-075 | FR-075-AC-1..11, FR-075-CON-1..3 | TC-873..882 | ✅ Complete |
+| FR-076 | FR-076-AC-1..14, FR-076-CON-1..5 | TC-883..894 | ✅ Complete |
+| FR-077 | FR-077-AC-1..13, FR-077-CON-1..4 | TC-895..907, TC-944 | ✅ Complete |
+| FR-078 | FR-078-AC-1..11, FR-078-CON-1..3 | TC-908..917 | ✅ Complete |
+| FR-079 | FR-079-AC-1..11, FR-079-CON-1..4 | TC-918..926, TC-944 | ✅ Complete |
+| FR-080 | FR-080-AC-1..9, FR-080-CON-1..3 | TC-927..935, TC-944 | ✅ Complete |
 
 ### Non-Functional Requirement Coverage
 
@@ -217,6 +231,8 @@ paragraph is where it is now recorded.
 | NFR-021 | Changed-path gate, manifest comparison, frozen-path byte comparison, scripted restore rehearsal, licence and publication inspection, post-merge range rehearsal, accretion rehearsal | TC-590..TC-597, TC-620, TC-621, TC-644 | ✅ Complete |
 | NFR-024 | NFR-024-AC-1..13: repeat-run, directory, and locale byte comparison; packed-artifact comparison after five normalized members; import-graph and dependency-closure analysis; backend purity test; SPDX, formatter no-op, strict-typecheck, and static reachable-symbol checks | TC-834..TC-838 | 🚧 In progress |
 | NFR-025 | NFR-025-AC-1..15: changed-path gate with both ends from history, accretion and post-merge rehearsal, manifest and lockfile comparison against the range's base endpoint, export-set test, frozen-path, corpus and divergence-register byte comparison, packed-file listing, licence inspection, restore rehearsal | TC-839..TC-844 | 🚧 In progress |
+| NFR-026 | Malicious-schema corpus, advisory gate, socket and filesystem instrumentation, non-executing source inspection, emission ordering, provisioning-failure and changed-path checks | TC-936..939 | ✅ Complete |
+| NFR-027 | Double-generation byte comparison, report `--check`, changed-path and manifest analysis, guard-range conversion with post-merge perturbation, revert rehearsal and skip census | TC-940..943 | ✅ Complete |
 
 ## Test Case Summary
 
@@ -966,6 +982,106 @@ paragraph is where it is now recorded.
 | TC-842 | The narrow interface exports exactly fifteen symbols, and the frozen prototype backends and the four issue #4 goldens are absent from this change's path set with their comparisons still passing in the checked-out tree | Snapshot | P0 | NFR-025-AC-5, NFR-025-AC-6 | ✅ passed — TypeScript backend (ordered integration 441/441) |
 | TC-843 | No corpus case, base, oracle module, harness module, threshold, defect row, gap row, mutation row, conformance schema, or divergence register changed a byte; and `npm pack --dry-run` lists the added `src/compiler/` modules as source and no generated-package or fixture file | Analysis | P0 | NFR-025-AC-7, NFR-025-AC-8, NFR-025-AC-12, NFR-025-AC-14 | ✅ passed — TypeScript backend (ordered integration 441/441) |
 | TC-844 | Every generated manifest and added source file declares AGPL-3.0-only, and reverting this change's commit range leaves the full suite passing | Integration | P0 | NFR-025-AC-9, NFR-025-AC-10 | ✅ passed — TypeScript backend (ordered integration 441/441) |
+| TC-845 | The installed `datamodel-code-generator` distribution reports version 0.76.0, declares the MIT licence, and is neither vendored nor forked into this repository | Unit | P0 | FR-072-AC-1, FR-072-CON-3 | ✅ passed |
+| TC-846 | `advisories.json` carries both advisory ids with their published ranges and first-patched versions, and derives the floor 0.64.0 | Unit | P0 | FR-072-AC-2 | ✅ passed |
+| TC-847 | A synthesized installed version inside either published advisory range fails the gate naming the advisory, the version, and the range | Unit | P0 | FR-072-AC-3, FR-072-CON-1 | ✅ passed |
+| TC-848 | A synthesized version below the derived floor but outside both published ranges still fails, because the floor is compared by version order | Unit | P0 | FR-072-AC-4 | ✅ passed |
+| TC-849 | With the generator distribution absent the advisory gate fails with a provisioning message and does not skip | Unit | P0 | FR-072-AC-5, FR-072-CON-4 | ✅ passed |
+| TC-850 | Every declared version in `toolchain.json` matches the distribution it names, comparing the Python entry by minor series only | Unit | P0 | FR-072-AC-6 | ✅ passed |
+| TC-851 | Neither the `http` nor the `httpx2` generator extra is present in the resolved dependency set | Static | P0 | FR-072-AC-7 | ✅ passed |
+| TC-852 | `DATAMODEL_CODEGEN_VERSION` and `PYDANTIC_VERSION` equal the `toolchain.json` entries and the versions `poetry.lock` resolves | Unit | P0 | FR-072-AC-8 | ✅ passed |
+| TC-853 | `toolchain.json` carries no patch-level interpreter version and no formatter entry, and every advisory vector key appears in the refusal register | Unit | P0 | FR-072-AC-9, FR-072-AC-10 | ✅ passed |
+| TC-854 | `profiles.json` declares exactly one profile per output family, all five are present, and every id is unique | Unit | P0 | FR-073-AC-1 | ✅ passed |
+| TC-855 | Every profile declares `--disable-timestamp`, `--strict-refs`, `--no-allow-remote-refs`, and `--formatters builtin` | Unit | P0 | FR-073-AC-2 | ✅ passed |
+| TC-856 | Every profile declares the five annotation and nullability options and declares neither `--extra-fields` nor `--use-missing-sentinel` | Unit | P0 | FR-073-AC-3, FR-073-CON-1 | ✅ passed |
+| TC-857 | No profile declares a prohibited generator option, matched by exact option token rather than by substring | Static | P0 | FR-073-AC-4, FR-073-CON-2 | ✅ passed |
+| TC-858 | A generation request naming an undeclared profile id is refused naming the id and listing the declared ids | Unit | P0 | FR-073-AC-5 | ✅ passed |
+| TC-859 | A generation request supplying its own generator option is refused whether the option is prohibited, permitted, or already present | Unit | P0 | FR-073-AC-6 | ✅ passed |
+| TC-860 | `profile_digest` is stable across calls, changes on any option value or order change, and is unchanged by recording a verdict | Property | P0 | FR-073-AC-7 | ✅ passed |
+| TC-861 | Every profile's output model type and declared Python version are values the installed generator's own option parser accepts | Integration | P1 | FR-073-AC-8 | ✅ passed |
+| TC-862 | Mutating the value `load_profiles` returns at any depth does not change what a second call returns, and every declared profile id appears in the qualification report | Property | P0 | FR-073-AC-9, FR-073-AC-10, FR-073-CON-3 | ✅ passed |
+| TC-863 | The prepared committed adapter output differs from the committed file only by the declared rewrites, each named by pointer in the preparation record | Unit | P0 | FR-074-AC-1 | ✅ passed |
+| TC-864 | `unevaluatedProperties` at any depth and inside any applicator becomes `additionalProperties`, and no `unevaluatedProperties` key survives | Property | P0 | FR-074-AC-2 | ✅ passed |
+| TC-865 | The prepared adapter output yields a closed model where the unprepared file yields an open one, for both Pydantic families and for TypedDict | Integration | P0 | FR-074-AC-3 | ✅ passed |
+| TC-866 | A subschema stating closure twice with differing values raises naming its pointer, while deep-equal duplicates do not | Unit | P0 | FR-074-AC-4 | ✅ passed |
+| TC-867 | The preparation record names every rewrite with its rule, document, and pointer, and is empty for a document needing none | Unit | P1 | FR-074-AC-5 | ✅ passed |
+| TC-868 | Calling the preparation pass twice returns deep-equal results and leaves every input document deep-equal to its pre-call state | Property | P0 | FR-074-AC-6 | ✅ passed |
+| TC-869 | The `sourceLocus` path pattern survives the pass byte-for-byte, lookaheads included, and compiles under Python's `re` | Unit | P0 | FR-074-AC-7 | ✅ passed |
+| TC-870 | Over the thirteen published documents the prepared set carries the same constraint-keyword multiset and the same `$ref` set as the input | Property | P0 | FR-074-AC-8, FR-074-CON-2 | ✅ passed |
+| TC-871 | The pass opens no socket, reads no clock, reads only the files it was given, and no adapter module edits generated Python text | Unit | P0 | FR-074-AC-9, FR-074-AC-11, FR-074-CON-1 | ✅ passed |
+| TC-872 | `python-schema.mjs`, the committed `input.schema.json`, and every published v1 schema are byte-identical to `origin/main` | Static | P0 | FR-074-AC-10, FR-074-CON-3 | ✅ passed |
+| TC-873 | Each of the five forbidden schema keys is refused at a generated position drawn from the root, every `$defs` entry, and every applicator keyword | Property | P0 | FR-075-AC-1 | ✅ passed |
+| TC-874 | Every key the refusal register names is bound by the installed generator's own source, and FR-043's three keys are all present | Integration | P0 | FR-075-AC-2, FR-075-CON-2 | ✅ passed |
+| TC-875 | A `$ref` carrying a URI scheme, an absolute path, a `..`-relative path, or a drive-letter path is refused naming the pointer | Unit | P0 | FR-075-AC-3 | ✅ passed |
+| TC-876 | A local pointer `$ref` and a sibling-filename `$ref` into the input set are both accepted | Unit | P0 | FR-075-AC-4 | ✅ passed |
+| TC-877 | Every prohibited option is refused in both spellings at a generated position in the argument vector, naming the token and its index | Property | P0 | FR-075-AC-5 | ✅ passed |
+| TC-878 | An option token absent from the allow-list is refused naming the token and its index | Unit | P0 | FR-075-AC-6, FR-075-CON-3 | ✅ passed |
+| TC-879 | Every declared profile's argument vector passes the argument guard, so the declared set and the guard cannot disagree | Unit | P0 | FR-075-AC-7 | ✅ passed |
+| TC-880 | A refused request writes no file and spawns no process, asserted by an instrumented spawn and an instrumented writer | Unit | P0 | FR-075-AC-8 | ✅ passed |
+| TC-881 | The malicious-schema regression corpus refuses every document and generates nothing, covering each key, each refused ref shape, and each prohibited option | Unit | P0 | FR-075-AC-9 | ✅ passed |
+| TC-882 | Refusal codes are unique, complete, and each raisable, and the entry point calls both guards before any other work | Unit | P0 | FR-075-AC-10, FR-075-AC-11, FR-075-CON-1 | ✅ passed |
+| TC-883 | Two generations of the same prepared input set into fresh scratch roots yield byte-identical file maps and an identical fingerprint | Integration | P0 | FR-076-AC-1 | ✅ passed |
+| TC-884 | No generated file contains a date, a time, an absolute path from the generating host, a user name, or a hostname | Integration | P0 | FR-076-AC-2 | ✅ passed |
+| TC-885 | A refused schema raises before any subprocess is spawned, asserted by an instrumented spawn counter reading zero | Unit | P0 | FR-076-AC-3 | ✅ passed |
+| TC-886 | A timed-out generation terminates the subprocess, names the timeout, removes the scratch root, and leaves the output directory unchanged; the scratch root is absent after every outcome | Integration | P0 | FR-076-AC-4, FR-076-AC-13 | ✅ passed |
+| TC-887 | An input set of exactly the declared maximum proceeds and one byte larger fails naming the limit before any spawn | Unit | P0 | FR-076-AC-5 | ✅ passed |
+| TC-888 | A generator run that writes zero files fails rather than reporting success | Unit | P0 | FR-076-AC-6 | ✅ passed |
+| TC-889 | A standard-error diagnostic outside the allow-list fails the run naming it, and the result enumerates the allow-list | Integration | P0 | FR-076-AC-7, FR-076-CON-3 | ✅ passed |
+| TC-890 | No socket is opened during a generation, asserted by instrumenting `socket.socket`, and every gate input is a committed local document | Integration | P0 | FR-076-AC-8, FR-076-CON-4 | ✅ passed |
+| TC-891 | With a shadowing `datamodel-codegen` earlier on `PATH`, the pinned distribution's entry point is still the one invoked | Integration | P0 | FR-076-AC-9 | ✅ passed |
+| TC-892 | The subprocess environment carries exactly the allow-listed names, no proxy variable, no caller `PYTHONPATH`, and a fixed `PYTHONHASHSEED` | Unit | P0 | FR-076-AC-10 | ✅ passed |
+| TC-893 | With the generator absent the runner fails with a provisioning message, and the runner reads every limit from `limits.json` rather than a literal | Unit | P0 | FR-076-AC-11, FR-076-AC-14, FR-076-CON-5 | ✅ passed |
+| TC-894 | No module under `src/compiler/` spawns a process or imports the generator, and the runner lives outside `src/compiler/` | Static | P0 | FR-076-AC-12, FR-076-CON-1, FR-076-CON-2 | ✅ passed |
+| TC-895 | Every named construct area has at least one probe, and every probe declares a detector and an expected retention for all five families | Unit | P0 | FR-077-AC-1 | ✅ passed |
+| TC-896 | `report.json` carries one verdict per declared profile, each citing the declared-toolchain fingerprint and the profile digest | Unit | P0 | FR-077-AC-2 | ✅ passed |
+| TC-897 | Measured retention equals every probe's declared expectation, and a mutated expectation makes the gate red | Integration | P0 | FR-077-AC-3 | ✅ passed |
+| TC-898 | Every construct-and-family pair measured as lost has a `gaps.json` row with severity, closability, and disposition; removing a row reds the gate | Unit | P0 | FR-077-AC-4 | ✅ passed |
+| TC-899 | The Pydantic BaseModel and Pydantic dataclass artefacts each import, accept a conforming value, and raise on a non-conforming one | Integration | P0 | FR-077-AC-5 | ✅ passed |
+| TC-900 | The stdlib dataclass verdict enumerates the constructs it drops, including bounds, patterns, formats, closure, discriminated unions, and aliases | Integration | P0 | FR-077-AC-6 | ✅ passed |
+| TC-901 | Every `qualified-with-conditions` condition names an option present in that profile or a rule present in the preparation pass | Unit | P0 | FR-077-AC-7 | ✅ passed |
+| TC-902 | The qualification report and the corpus account are byte-identical on a second measurement, and `--check` fails on a mutated committed artefact | Snapshot | P0 | FR-077-AC-8 | ✅ passed |
+| TC-903 | The corpus account's decided, agreed, disagreed, and undecidable counts sum to the case count and it states the backend's rows remain unmet | Unit | P0 | FR-077-AC-9, FR-077-CON-4 | ✅ passed |
+| TC-904 | Every file under `conformance/` is byte-identical to `origin/main` on this branch | Analysis | P0 | FR-077-AC-10, FR-077-CON-3 | ✅ passed |
+| TC-905 | `gaps.json` records no hand-written generator as a disposition absent a reviewed P0 decision naming the reviewer and the date | Unit | P0 | FR-077-AC-11, FR-077-CON-1 | ✅ passed |
+| TC-906 | A probe whose construct no family retains yields five `gaps.json` rows, one per family, rather than one row or a corpus defect | Unit | P1 | FR-077-AC-12 | ✅ passed |
+| TC-907 | No verdict word outside the declared three appears in the report, the profiles, the gap register, or the Test Matrix | Static | P0 | FR-077-AC-13 | ✅ passed |
+| TC-908 | In enforcing mode an attribute annotated `Any` where the schema declares a string raises, naming module, symbol, and schema pointer | Unit | P0 | FR-078-AC-1, FR-078-CON-1 | ✅ passed |
+| TC-909 | Each of the four sanctioned schema shapes is classified sanctioned and fails in neither mode | Unit | P0 | FR-078-AC-2 | ✅ passed |
+| TC-910 | The thirteen published documents under every profile yield zero degraded and zero unattributed findings, each sanctioned pointer independently confirmed unconstrained | Integration | P0 | FR-078-AC-3 | ✅ passed |
+| TC-911 | A permissive annotation at any depth of a union, a list, a dict, or an Annotated form is reported | Property | P0 | FR-078-AC-4 | ✅ passed |
+| TC-912 | A generated module importing `os` is refused naming the import; one importing a sibling generated module is not | Unit | P0 | FR-078-AC-5, FR-078-CON-2 | ✅ passed |
+| TC-913 | A module-level call other than `model_rebuild` is refused naming the statement and its line | Unit | P0 | FR-078-AC-6 | ✅ passed |
+| TC-914 | Neither inspection mode imports or executes the module under inspection, asserted by instrumenting the import machinery | Unit | P0 | FR-078-AC-7, FR-078-CON-3 | ✅ passed |
+| TC-915 | The report's ordering is identical across two runs over the same files presented in a different order | Property | P1 | FR-078-AC-8 | ✅ passed |
+| TC-916 | An unattributable annotation raises in enforcing mode and becomes an unattributed census entry with no failure in reporting mode | Unit | P0 | FR-078-AC-9 | ✅ passed |
+| TC-917 | Disabling the degraded branch through the injected classifier seam makes the degradation probe pass, and restoring it makes the probe fail; a numbered symbol variant is attributed to the name it varies | Unit | P0 | FR-078-AC-10, FR-078-AC-11 | ✅ passed |
+| TC-918 | Each demonstrated profile has one module per input document, a sorted complete `__all__`, and a duplicate type name across documents raises naming both | Unit | P0 | FR-079-AC-1, FR-079-AC-10 | ✅ passed |
+| TC-919 | Each generated package imports under the declared interpreter with no exception and no warning, and no model retains an unresolved forward reference | Integration | P0 | FR-079-AC-2 | ✅ passed |
+| TC-920 | `PROVENANCE.json` carries every required digest and licence field and carries no clock reading or host-observed version | Unit | P0 | FR-079-AC-3, FR-079-CON-3 | ✅ passed |
+| TC-921 | Regenerating an unchanged input reproduces the committed tree byte-for-byte, and `--check` fails on a mutated committed file | Snapshot | P0 | FR-079-AC-4, FR-079-CON-2 | ✅ passed |
+| TC-922 | Each example constructs a conforming value, round-trips it through serialization, and raises on a non-conforming value | Integration | P0 | FR-079-AC-5 | ✅ passed |
+| TC-923 | A `not-qualified` family has no emitted package and a recorded reason, and a degraded tree is refused before any file is written | Unit | P0 | FR-079-AC-6, FR-079-AC-11 | ✅ passed |
+| TC-924 | The npm and Python distribution manifests and every workflow file are byte-identical to `origin/main`, and nothing is published | Analysis | P0 | FR-079-AC-7, FR-079-CON-1 | ✅ passed |
+| TC-925 | No path under the backend directory is reachable from any published package manifest, checked against the packed file list | Static | P0 | FR-079-AC-8 | ✅ passed |
+| TC-926 | The content fingerprint changes when any generated byte changes and is identical otherwise | Property | P0 | FR-079-AC-9 | ✅ passed |
+| TC-927 | The pinned type checker reports zero errors over every emitted module and every example under strict settings | Analysis | P0 | FR-080-AC-1 | ✅ passed |
+| TC-928 | No generated or example source carries a `type: ignore`, and the checker configuration declares no override and no relaxation of strict | Static | P0 | FR-080-AC-2, FR-080-CON-1 | ✅ passed |
+| TC-929 | Every generated type in a validating profile is exercised with a conforming and a non-conforming value; an unexercised type reds the gate | Integration | P0 | FR-080-AC-3 | ✅ passed |
+| TC-930 | For each retained constraint a non-conforming value is rejected by the family's own runtime, naming the constraint | Integration | P0 | FR-080-AC-4 | ✅ passed |
+| TC-931 | For each lost constraint, scratch generation from the corresponding probe produces a surface that accepts the forbidden value | Integration | P0 | FR-080-AC-5 | ✅ passed |
+| TC-932 | `validation.json` records static-only and undemonstrated families as such and counts neither as runtime-covered | Unit | P0 | FR-080-AC-6 | ✅ passed |
+| TC-933 | With the type checker absent the gate fails with a provisioning message and does not skip | Unit | P0 | FR-080-AC-7 | ✅ passed |
+| TC-934 | The added suites report zero skipped tests read from the run's own report, and the coverage account counts no skip | Unit | P0 | FR-080-AC-8, FR-080-CON-2 | ✅ passed |
+| TC-935 | Removing a constraint from a probe schema produces, in a scratch directory, a surface that accepts the previously rejected value and the gate reports the difference | Integration | P0 | FR-080-AC-9 | ✅ passed |
+| TC-936 | The malicious-schema regression corpus refuses every document before any spawn, covering every key, ref shape, and prohibited option, and the advisory gate fails inside each range and below the floor | Unit | P0 | NFR-026-AC-1, NFR-026-AC-2, NFR-026-AC-7 | ✅ passed |
+| TC-937 | Generation opens zero sockets and touches nothing outside its scratch root and the caller-named output, and no file is written before the enforcing inspection returned | Integration | P0 | NFR-026-AC-3, NFR-026-AC-4, NFR-026-AC-11 | ✅ passed |
+| TC-938 | The inspection executes no generated module, refuses an out-of-allow-list import, and the refusal register is a measured superset of FR-043's keys | Unit | P0 | NFR-026-AC-5, NFR-026-AC-6, NFR-026-AC-10 | ✅ passed |
+| TC-939 | Removing each declared tool in turn makes its gate fail with a provisioning message, no gate skips, and no changed path is prohibited | Unit | P0 | NFR-026-AC-8, NFR-026-AC-9 | ✅ passed |
+| TC-940 | Two clean generations of every demonstrated profile agree byte-for-byte, and no committed artefact encodes a clock, host, user, absolute path, patch interpreter, or formatter version | Integration | P0 | NFR-027-AC-1, NFR-027-AC-2 | ✅ passed |
+| TC-941 | Re-measuring the qualification report and the corpus account reproduces the committed ones, and a mutated committed artefact fails `--check` | Snapshot | P0 | NFR-027-AC-3 | ✅ passed |
+| TC-942 | No changed path falls outside the permitted list, the distribution manifests and workflows are byte-identical to `origin/main`, nothing was published, and no merged permitted-path list gained an entry | Analysis | P0 | NFR-027-AC-4, NFR-027-AC-5, NFR-027-AC-9, NFR-027-AC-11 | ✅ passed |
+| TC-943 | No changed-path gate resolves its range from a moving ref, every gate pins both endpoints to history and passes `--no-renames`, fails loudly when its sentinels are absent, still catches a prohibited path after a simulated merge, runs from the repository's test entry point with zero skips, and reverts cleanly | Unit | P0 | NFR-027-AC-6, NFR-027-AC-7, NFR-027-AC-8, NFR-027-AC-10, NFR-027-AC-12 | ✅ passed |
+| TC-944 | A recorded human review confirms the four irreducibly manual obligations: a version bump re-runs the qualification, probe expectations are derived from the contract, the layout is reconciled with the merged generated-target contract, and non-conforming values are drawn from the contract rather than from what the code rejects | Manual | P0 | FR-072-CON-2, FR-077-CON-2, FR-079-CON-4, FR-080-CON-3 | 🚧 awaiting the program owner's review |
 
 ## Option Permutation Matrix
 
@@ -1030,6 +1146,15 @@ paragraph is where it is now recorded.
 | TC-779 | field presence and member state | `required` / `optional` | absent / `null` / explicitly `undefined` / a conforming value | Six accept-or-reject decisions; absent and explicitly `undefined` never collapse into one another |
 | TC-782 | `unknownPolicy` against structural kind | `preserve` / `reject` / `surface` | `record` / `union` / `map` | Only a `record` carries a validation effect; the other kinds record the policy in metadata and validate identically |
 | TC-781 | constraint subject after alias resolution | `string` / `bytes` / `integer` / `number` / `duration` | `minLength` / `maxLength` / `min` / `max` | Length counts code points for a `string` and decoded octets for `bytes`; an ordering keyword on a `duration` is a representability loss |
+| TC-854, TC-899 | `pydantic_v2.BaseModel` | qualified | full profile | Constraints, closure, aliases, and discriminated unions all retained |
+| TC-854, TC-899 | `pydantic_v2.dataclass` | qualified | full profile | Same retention as `BaseModel`; the union renders as an annotated alias rather than a root model |
+| TC-854, TC-900 | `dataclasses.dataclass` | not qualified | full profile | Every constraint, format, alias, closure, and discriminator dropped; static shape only |
+| TC-854, TC-932 | `typing.TypedDict` | not qualified | full profile | Closure and aliases retained, constraints and formats dropped, and no runtime validation exists |
+| TC-854, TC-930 | `msgspec.Struct` | qualified with conditions | full profile | Constraints and tagged unions retained; formats, closure, and pattern-keyed maps recorded as gaps |
+| TC-865 | sealed object schema | `unevaluatedProperties` only | preparation pass applied | Generated model is closed |
+| TC-865 | sealed object schema | `unevaluatedProperties` only | preparation pass skipped | Generated model is open, which is the defect the pass closes |
+| TC-856, TC-865 | open object schema | `additionalProperties` absent | `--extra-fields` not declared | Generated model stays open, so closure is decided by the schema and not by a blanket flag |
+| TC-856 | non-nullable field with a default | `--strict-nullable` declared | Pydantic family | Renders `T` rather than `T | None`, so no null the contract forbids is admitted |
 
 ## Constraint Boundary Tests
 
@@ -1161,6 +1286,27 @@ paragraph is where it is now recorded.
 | FR-066-AC-21 | Boundary | An `integer` subject given `-0` where it accepts `0` | TC-781 | Accepted, and canonicalizing to the same bytes as `0` |
 | FR-068-AC-22 | At bound | A document nested to the declared depth of 256 | TC-805 | Admitted, because the bound is the corpus's declared 256 and not the compiler's `DEFAULT_LIMITS` of 128 |
 | FR-068-AC-22 | Above max | The same document nested to 257 | TC-805 | `DEPTH_LIMIT_EXCEEDED`, and a cycle at the same depth reports `ALIAS_CYCLE` instead |
+| FR-072-CON-1 | Allowed | Installed generator 0.76.0, above the derived floor 0.64.0 | TC-845, TC-846 | Advisory gate passes |
+| FR-072-CON-1 | Prohibited | Installed generator 0.63.0, the last version inside GHSA-5578-w22f-pfx9 | TC-847 | Advisory gate fails naming the advisory |
+| FR-072-CON-1 | Boundary | Installed generator 0.64.0, the first patched version | TC-848 | Advisory gate passes |
+| FR-072-CON-1 | Boundary | Installed generator 0.63.9, below the floor and outside both published ranges | TC-848 | Advisory gate fails on ordered comparison |
+| FR-072-CON-4 | Prohibited | Generator distribution absent | TC-849 | Gate fails with a provisioning message rather than skipping |
+| FR-073-CON-2 | Allowed | A profile declaring only reviewed options | TC-855, TC-857 | Profile gate passes |
+| FR-073-CON-2 | Prohibited | A profile declaring `--custom-template-dir` | TC-857 | Profile gate fails naming the option |
+| FR-073-CON-1 | Prohibited | A profile declaring `--extra-fields forbid` or `--use-missing-sentinel` | TC-856 | Profile gate fails; closure and absence are schema decisions, not flags |
+| FR-075-CON-2 | Allowed | A schema with no executable extension key | TC-876 | Guard admits |
+| FR-075-CON-2 | Prohibited | A schema carrying any of the five executable keys at any depth | TC-873 | Guard refuses naming the key and pointer |
+| FR-075-CON-3 | Prohibited | An option token the guard does not recognise | TC-878 | Guard refuses rather than passing it through |
+| FR-076-CON-5 | Boundary | An input set of exactly the declared maximum size | TC-887 | Generation proceeds |
+| FR-076-CON-5 | Prohibited | An input set one byte over the declared maximum | TC-887 | Fails naming the limit before any spawn |
+| FR-076-CON-5 | Boundary | A generation finishing just inside the declared timeout | TC-886 | Generation proceeds and the scratch root is removed |
+| FR-076-CON-5 | Prohibited | A generation exceeding the declared timeout | TC-886 | Subprocess terminated, then killed after the grace period |
+| FR-077-CON-1 | Prohibited | A `gaps.json` row disposing a gap to a hand-written generator with no reviewed decision | TC-905 | Gate fails |
+| FR-078-CON-1 | Allowed | `Any` at a `true`-schema position | TC-909 | Classified sanctioned |
+| FR-078-CON-1 | Prohibited | `Any` at a constrained position | TC-908 | Classified degraded and refused in enforcing mode |
+| FR-078-CON-2 | Prohibited | A generated module importing outside the allow-list | TC-912 | Inspection refuses naming the import |
+| FR-080-CON-1 | Prohibited | A `type: ignore` in generated or example source | TC-928 | Static gate fails |
+| FR-079-CON-1 | Prohibited | A generated path added to a published manifest | TC-924, TC-925 | Packaging gate fails |
 
 ## State Transition Matrix
 
@@ -1216,6 +1362,14 @@ paragraph is where it is now recorded.
 | `REFERENCE_POLICY` at `strict` | The owner GAP-011 acquires through `agent-ix/filament-core-data#59` settles it in favour of the open reading | the constant moves to `open` and corpus cases REF-001..004 move with it under a `corpus-defect` verdict and a major `corpusVersion` bump | TC-803 |
 | The `bytes` wire form and the union discriminator recorded as declared decisions | `agent-ix/filament-core-data#58` settles either | the named declared decision moves in one place, and a resulting disagreement is reported for the owner rather than registered as a divergence | TC-786, TC-822 |
 | An admissibility rule suppressed for an absent input | the bundle later supplies that input | the suppression is replaced by a decided answer, and the recorded `resultState` for a satisfied input is unchanged | TC-795 |
+| declared profile | its options are edited | new profile digest; every verdict citing the old digest is stale | TC-860 |
+| declared profile | a measured verdict is recorded on it | same profile digest, so the verdict it cites stays valid | TC-860, TC-862 |
+| measured family | every probe expectation met with no condition | verdict `qualified` | TC-897, TC-899 |
+| measured family | expectation met only under a declared profile option or preparation rule | verdict `qualified-with-conditions` with that condition named | TC-901 |
+| measured family | a contract construct is lost with no closing rule | verdict `not-qualified`, no emitted package, and a `gaps.json` row per losing family | TC-898, TC-900, TC-923 |
+| `not-qualified` family | package emission requested | no package emitted, reason recorded | TC-923 |
+| generated tree | a degraded annotation is found in enforcing mode | nothing written under the generated tree | TC-923, TC-937 |
+| unavailable `python-backend` adapter slot | corpus account requested | rows recorded unmet, decided cases reported separately, none recorded as passing | TC-903 |
 
 ## Error Paths
 
@@ -1365,6 +1519,18 @@ paragraph is where it is now recorded.
 | ERR-141 | An admissibility rule's declared input — a manifest, a lock, a mapping, or a consumer policy — is absent from the bundle | A recorded suppression, never a diagnostic and never a silent pass | TC-795 |
 | ERR-142 | The injected formatter exits non-zero during a generation | No file written and a blocking diagnostic naming the formatter | TC-827 |
 | ERR-143 | A generated identifier collides with the exported discriminant constant or with another identity's minted identifier | One blocking `IDENTIFIER_COLLISION` naming both, raised while the model is built and before a file map exists | TC-764 |
+| ERR-132 | An installed generator version falls inside a published advisory range | Advisory gate fails naming the advisory | TC-847 |
+| ERR-133 | A pinned tool is absent from the environment | Gate fails with a provisioning message; it never skips | TC-849, TC-893, TC-932 |
+| ERR-134 | A schema carries an executable Python extension key | Guard refuses before any spawn; no file written | TC-873, TC-880 |
+| ERR-135 | A schema carries a remote or path-escaping `$ref` | Guard refuses naming the pointer | TC-875 |
+| ERR-136 | A caller supplies a generator option | Request refused; only profile options reach the generator | TC-858 |
+| ERR-137 | A subschema states closure twice with different values | Preparation pass throws naming the pointer | TC-866 |
+| ERR-138 | The generator exceeds its declared timeout or input-size limit | Subprocess terminated; failure names the limit | TC-886, TC-887 |
+| ERR-139 | The generator writes zero files or warns outside the allow-list | Run fails rather than reporting success | TC-888, TC-889 |
+| ERR-140 | A generated annotation degrades to `Any` at a constrained position | Generation fails naming module, symbol, and pointer | TC-907 |
+| ERR-141 | A generated annotation cannot be attributed to any schema pointer | Classified unattributed and fails | TC-915 |
+| ERR-142 | A construct measured as lost is missing from `gaps.json` | Qualification gate fails | TC-898 |
+| ERR-143 | A guard's change range cannot be located from history | Guard fails saying it did not run | TC-943 |
 
 ## Edge Cases
 
@@ -1449,6 +1615,18 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-082 | `unknownPolicy` is declared on a kind that has no unknown members — a `union` at `surface` and a `map` at `preserve`, both carried by the committed conformance bases | FR-064, FR-066, FR-067, FR-068 | TC-762, TC-782, TC-802, TC-794 | A policy with no meaning is rendered as a validation rule, or is dropped without a declared loss under a `fail` policy |
 | EC-083 | A record declaring `preserve` widens its interface enough that the four presence and nullability forms stop being distinguishable under `exactOptionalPropertyTypes` | FR-064, FR-066 | TC-782 | The optional-versus-null distinction the package exists to carry dissolves at exactly the types that carry unknown data |
 | EC-084 | A `reference` target names an identity an imported package legitimately exports, and the case supplies no `importedExports` to resolve it against | FR-068 | TC-795, TC-803 | The policy constant answers a question it was never given the input to decide, and GAP-011 acquires a third reading nobody recorded |
+| EC-070 | The official emitter states closure with `unevaluatedProperties`, which the generator does not read | FR-074 | TC-864, TC-865 | Every sealed contract type generates as an open Python model |
+| EC-071 | A blanket `--extra-fields forbid` closes a model the schema deliberately leaves open | FR-073 | TC-856, TC-865 | Over-restriction in the opposite direction, invisible to a closure gate |
+| EC-072 | A schema node is genuinely unconstrained, so `Any` is faithful | FR-078 | TC-909, TC-910 | A correct `Any` is treated as a defect and the check is then disabled |
+| EC-073 | `uniqueItems` and string `format` are dropped by families that keep other constraints | FR-077 | TC-898, TC-931 | A partial-fidelity family is recorded as fully qualified |
+| EC-074 | The `msgspec` tagged-union rendering replaces the discriminator field rather than keeping it | FR-077 | TC-897, TC-906 | A structural difference is mistaken for a semantic loss, or the reverse |
+| EC-075 | An absent field and a null field are the same value in the Pydantic families, and the option that separates them fails strict type checking | FR-077, FR-080 | TC-898, TC-927 | A fidelity gap is closed by an option that silently breaks the type-checking gate |
+| EC-076 | The pinned generator warns that its default external formatters become opt-in | FR-073 | TC-855 | Output changes on a future upstream release with no version change here |
+| EC-077 | A shadowing `datamodel-codegen` sits earlier on `PATH` | FR-076 | TC-891 | An unpinned generator produces the qualified evidence |
+| EC-078 | The published `sourceLocus` pattern uses four ECMAScript lookaheads | FR-074 | TC-869 | A normalizing pass silently drops a pattern Python can honour |
+| EC-079 | The generator renames or de-duplicates a symbol, so a generated name is not a schema name | FR-078 | TC-917 | Attribution silently fails and every finding becomes unattributed, or the check is relaxed |
+| EC-080 | A patch-level interpreter or formatter bump moves a byte-compared artefact with no input change | NFR-027 | TC-940 | The issue #42 host coupling is reproduced and the gate goes red for nothing |
+| EC-081 | Six merged suites resolve their changed-path gates against a moving ref | NFR-027 | TC-943 | A seventh permitted-path entry is added and the guards are disabled incrementally |
 
 ## Coverage Gaps
 
@@ -1479,10 +1657,9 @@ spec-bundle frontend of issue #36. The issue #19 acceptance criterion
 "independent frontend fixtures produce equivalent IR where semantics agree" is
 therefore partially satisfied by construction and completes with #36.
 
-Issue #22's 100 cases (TC-745..844) are mapped and none has been executed yet;
-every row is `🚧` and appears in the summary's `Blocked` column until the
-implementation lands and the three verification states are measured. Two gaps
-are recorded rather than closed. The first is GAP-011: the resolution rule for a
+Issue #22's 100 cases (TC-745..844) are mapped and executed; the three
+verification states are restated at the end of the execution summary below. Two
+gaps are recorded rather than closed. The first is GAP-011: the resolution rule for a
 `reference` kind's `target` is unstated in `contracts-v1.md`, which states one
 only for relationship targets, and the question is owned by
 `agent-ix/filament-core-data#9`, which is **closed** and can therefore decide
@@ -1521,19 +1698,59 @@ JSON wire form of a discriminated union and of the `bytes` kernel scalar is
 unspecified (`#58`, filed by issue #21). Each is a declared reading in this
 bundle, recorded in one named place, and none is presented as settled contract.
 
+Issue #23 (the qualified Python generation route) is mapped at TC-845..TC-944.
+Ids TC-645..TC-844, FR-054..FR-071, NFR-022..NFR-025 and US-011..US-012 are left
+to the parallel issue #21 and #22 backend branches, which allocated them first;
+issue #23 neither reads nor edits their paths. Two of its rows are honest about
+what they cannot demonstrate. TC-903 measures the conformance-corpus account for
+the Python surface. That corpus slot's owning issue is #23 itself, not #52, and
+the reason it stays `unavailable` is not a blocker but a shape mismatch: an
+adapter result carries a `resultState`, contract diagnostics with registry
+codes, and a normalized form, and a package of generated types can decide none
+of those. TC-903 therefore asserts that the account separates what the generated
+surface decided from what it could not, and that the backend's corpus rows are
+reported as unmet — which is what this backend can honestly say — while the
+reader that could wire the slot is filed as issue #65. The account is real
+evidence rather than a placeholder: over all 111 cases the generated
+`pydantic_v2_basemodel` surface decides 70 and agrees with the oracle on all 70,
+finds 41 undecidable because the oracle reached a cross-field rule, and is
+over-strict on none. Every one of the 111 corpus rows for this backend is still
+reported unmet. TC-900 and
+TC-931 record `dataclasses.dataclass` and `typing.TypedDict` as measured, declared,
+and not qualified for a validating surface rather than omitting them, because a
+family that is not offered is a decision and a family that is not measured is a
+blind spot. The 100 rows cover 123 acceptance criteria and 32 named constraints: some rows
+carry two or three closely coupled criteria, TC-944 carries the four
+irreducibly human obligations as one recorded review, and every criterion and
+every named constraint is named in a `Traces To` cell.
+
+Issue #23 also converts the six suites that still resolve their changed-path
+gates against a moving `main` or `origin/main` — the open defect of issue #51.
+It does so rather than add a seventh permitted-path entry to each, because
+issue #55 records that widening those lists is how the guards were disabled
+incrementally in the first place. TC-943 carries that conversion, including the
+post-merge perturbation each converted suite must still fail on. Each sentinel
+was confirmed from history with `git log --diff-filter=A -1`, not guessed.
+
+Two defects outside issue #23's scope were found and filed rather than absorbed:
+issue #65, the corpus `python-backend` adapter slot, whose owning issue the
+registry records as #23 and which needs an IR reader a generated type package
+cannot be; and issue #66, the Python half of the suite having run in no entry
+point at all before this change added `make test-python`.
+
 ## Test Execution Summary
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 199 | 199 | 0 | 0 | 100% mapped (199/199) |
-| Manual | 46 | 45 | 0 | 1 | 100% mapped (46/46) |
-| Analysis | 25 | 25 | 0 | 0 | 100% mapped (25/25) |
-| Property | 57 | 57 | 0 | 0 | 100% mapped (57/57) |
-| Unit | 309 | 309 | 0 | 0 | 100% mapped (309/309) |
-| Integration | 63 | 62 | 0 | 1 | 100% mapped (63/63) |
+| Static | 206 | 206 | 0 | 0 | 100% mapped (206/206) |
+| Manual | 47 | 45 | 0 | 2 | 100% mapped (47/47) |
+| Analysis | 29 | 29 | 0 | 0 | 100% mapped (29/29) |
+| Property | 67 | 67 | 0 | 0 | 100% mapped (67/67) |
+| Unit | 363 | 363 | 0 | 0 | 100% mapped (363/363) |
+| Integration | 84 | 83 | 0 | 1 | 100% mapped (84/84) |
 | Fuzz | 10 | 10 | 0 | 0 | 100% mapped (10/10) |
-| Snapshot | 24 | 24 | 0 | 0 | 100% mapped (24/24) |
+| Snapshot | 27 | 27 | 0 | 0 | 100% mapped (27/27) |
 | Compile | 11 | 11 | 0 | 0 | 100% mapped (11/11) |
-| **Total** | **744** | **742** | **0** | **2** | **100% mapped (744/744)** |
+| **Total** | **844** | **841** | **0** | **3** | **100% mapped (844/844)** |
 
-**Matrix coverage status: ✅ Complete. Execution status: ✅ 642 of 644 rows pass, 2 blocked; the automated suite is measured with `make test` and restated at the end of this line. TC-199 is recorded by the owner decision on issue #4; TC-370 and TC-382 remain blocked on issue #42 (the retained issue #4 evidence records the minting host's own tool versions). TC-398..619 pass on the issue #19 branch, measured with `make test` after merging `origin/main` at 4e48f08. The `Coverage` column is measured by `scripts/test-matrix-summary.mjs`, which counts the rows naming an id a spec artifact declares; it was a string literal before issue #19's code review (SR-073 FND-658). The `Blocked` column counts every row whose status is not ✅. Issue #19 measured `origin/main` at 51febd4 as **168 of 173** and filed the cause as #48; PR #47 re-expressed those five guards as tree assertions on `main`, and this branch takes that form. Issue #20 then measured the remaining direction: the NFR-021 changed-path range was fixed at its base but open at its head, so it grew from 236 paths and 0 prohibited hits against the merged trunk to 406 paths and 139 against a sibling branch. Both ends now come from history, and TC-644 rehearses the property on a synthetic history rather than inferring it from the shape of the source. Three states were measured for the fix, because the two-number standard cannot see an accreting range: **302 of 302** on the branch; **302 of 302** in a scratch clone where the branch is squash-merged onto f412bda and `origin/main` is repointed so both `git diff origin/main...HEAD` and `git status --porcelain` are empty; and **408 of 408 across 10 files** in that same clone with issue #20 (ad9c552) squash-merged on top. The third state is **406 of 407 with one failure** without this fix — `not permitted: conformance/README.md` — which is the defect. In the fixed third state issue #19's own range is 236 paths with 0 prohibited hits while the open-ended range over the same history is 406 paths with 139. Issue #20 then merged that fix and measured three states on `origin/main` at 3ddc04b, each with `pnpm install` and `poetry install`: **409 of 409 across 10 files** on the branch, identical on a second run; **409 of 409** in a scratch clone where the branch is squash-merged onto 3ddc04b and `origin/main` is repointed so both `git diff origin/main...HEAD` and `git status --porcelain` are empty; and **409 of 409** in that same clone with an unrelated sibling change squashed on top that adds `src/sibling/marker.mjs` and edits `docs/semantic-data-system/roadmap.md`. `poetry run pytest` is 131 of 131 in all three. The third state is what found the same defect one layer down in this corpus's own gates: measured against the range before it was bounded at its tip, it is **2 failed of 106**, attributing the sibling's `src/` and `docs/` paths to issue #20. TC-639 now asserts that every sentinel resolves and that nothing under `conformance/` is added after the range's tip, because a sentinel list is the kind of thing that rots quietly. The corpus's one remaining read of a moving ref is the versioning gate's predecessor, which is deliberate — a baseline the branch under test can edit is not a baseline — and is declared in the manifest so an unreadable ref fails loudly instead of skipping. The `642 of 644` figure above is the pre-issue-#22 measurement and is retained as the record of that state; issue #22 adds TC-745..844, taking the matrix to **744 rows** of which **642 pass** and **102 are blocked** — the two issue #42 rows plus this ticket's 100, none of which has been executed yet. Those 100 stay `🚧` until the implementation lands and the three verification states — branch head, simulated post-merge, and post-merge with an unrelated sibling commit on top — are measured with `make test` and `poetry run pytest` and restated here with the commands that produced them.**
+**Matrix coverage status: ✅ Complete. Execution status: ✅ 642 of 744 rows pass, 2 blocked and 100 in progress on the issue #23 branch; the automated suite is measured with `make test` and restated at the end of this line. TC-199 is recorded by the owner decision on issue #4; TC-370 and TC-382 remain blocked on issue #42 (the retained issue #4 evidence records the minting host's own tool versions). TC-398..619 pass on the issue #19 branch, measured with `make test` after merging `origin/main` at 4e48f08. The `Coverage` column is measured by `scripts/test-matrix-summary.mjs`, which counts the rows naming an id a spec artifact declares; it was a string literal before issue #19's code review (SR-073 FND-658). The `Blocked` column counts every row whose status is not ✅. Issue #19 measured `origin/main` at 51febd4 as **168 of 173** and filed the cause as #48; PR #47 re-expressed those five guards as tree assertions on `main`, and this branch takes that form. Issue #20 then measured the remaining direction: the NFR-021 changed-path range was fixed at its base but open at its head, so it grew from 236 paths and 0 prohibited hits against the merged trunk to 406 paths and 139 against a sibling branch. Both ends now come from history, and TC-644 rehearses the property on a synthetic history rather than inferring it from the shape of the source. Three states were measured for the fix, because the two-number standard cannot see an accreting range: **302 of 302** on the branch; **302 of 302** in a scratch clone where the branch is squash-merged onto f412bda and `origin/main` is repointed so both `git diff origin/main...HEAD` and `git status --porcelain` are empty; and **408 of 408 across 10 files** in that same clone with issue #20 (ad9c552) squash-merged on top. The third state is **406 of 407 with one failure** without this fix — `not permitted: conformance/README.md` — which is the defect. In the fixed third state issue #19's own range is 236 paths with 0 prohibited hits while the open-ended range over the same history is 406 paths with 139. Issue #20 then merged that fix and measured three states on `origin/main` at 3ddc04b, each with `pnpm install` and `poetry install`: **409 of 409 across 10 files** on the branch, identical on a second run; **409 of 409** in a scratch clone where the branch is squash-merged onto 3ddc04b and `origin/main` is repointed so both `git diff origin/main...HEAD` and `git status --porcelain` are empty; and **409 of 409** in that same clone with an unrelated sibling change squashed on top that adds `src/sibling/marker.mjs` and edits `docs/semantic-data-system/roadmap.md`. `poetry run pytest` is 131 of 131 in all three. The third state is what found the same defect one layer down in this corpus's own gates: measured against the range before it was bounded at its tip, it is **2 failed of 106**, attributing the sibling's `src/` and `docs/` paths to issue #20. TC-639 now asserts that every sentinel resolves and that nothing under `conformance/` is added after the range's tip, because a sentinel list is the kind of thing that rots quietly. The corpus's one remaining read of a moving ref is the versioning gate's predecessor, which is deliberate — a baseline the branch under test can edit is not a baseline — and is declared in the manifest so an unreadable ref fails loudly instead of skipping.**

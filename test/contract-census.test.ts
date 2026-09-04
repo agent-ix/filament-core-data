@@ -3,7 +3,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { changedPathsFrom } from "./changed-paths.js";
+import { changedPathsOf } from "./changed-paths.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const auditRoot = resolve(root, "audit/filament-contract-census");
@@ -119,14 +119,20 @@ function sourceRepositoryPath(repository: JsonObject): string | undefined {
 }
 
 function changedPaths(): string[] {
-	// Issue #19 note: this baseline moves. Once the change this suite guards
-	// is merged, `main` carries it, the set empties, and every prohibition
-	// below passes vacuously — the gate goes quiet rather than red. The fix
-	// is `changedPathsOf` with a sentinel this suite's own change created;
-	// picking that sentinel wrongly baselines against an unrelated tree and
-	// makes the prohibition fail on history it was never meant to judge, so
-	// it belongs to whoever owns these requirements. Tracked as issue #51.
-	return changedPathsFrom(root, "main");
+	// Issue #51, fixed by issue #23. This gate used to resolve its range
+	// from a moving `main`, which is the quiet face of the defect issue #27
+	// met: once the change this suite guards merges, the range empties, the
+	// loop below iterates zero times, and every prohibition passes over
+	// nothing. Left open it is also the accreting face — the range annexes a
+	// later ticket's paths, and the only way to keep it green is to widen the
+	// permitted list below, which issue #55 records as how these guards were
+	// disabled incrementally.
+	//
+	// Both ends now come from history. The sentinel is the file issue #10's own
+	// change created — confirmed with `git log --diff-filter=A -1`, which names
+	// 3832e07 — so the range is that change's commit, it survives the squash
+	// merge, and it disappears (failing loudly) if the change is reverted.
+	return changedPathsOf(root, "audit/filament-contract-census/inventory.json");
 }
 
 describe("Filament contract census", () => {

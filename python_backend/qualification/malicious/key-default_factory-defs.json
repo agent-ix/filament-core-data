@@ -1,0 +1,10 @@
+{
+	"$comment": "Issue #23, FR-075/NFR-026-AC-1. The executable schema key `default_factory` at the defs position.",
+	"kind": "schema",
+	"expectedCode": "PY-REF-005",
+	"document": {
+		"$defs": {
+			"A": { "default_factory": "os.system" }
+		}
+	}
+}

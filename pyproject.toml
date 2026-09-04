@@ -18,6 +18,16 @@ include = [
 [tool.poetry.dependencies]
 python = ">=3.13,<3.14"
 
+[tool.poetry.group.python-backend.dependencies]
+# Issue #23 (FR-072). Exact pins: the qualification's verdicts are only meaningful
+# against the versions that produced them, and the generator's advisory floor is
+# a version comparison, not a range. The `http` and `httpx2` extras are
+# deliberately absent so remote reference fetching has no transport at all.
+datamodel-code-generator = "0.76.0"
+pydantic = "2.12.5"
+msgspec = "0.21.1"
+mypy = "1.19.1"
+
 [tool.poetry.group.dev.dependencies]
 black = "^26.1.0"
 poethepoet = "^0.41.0"
@@ -43,9 +53,19 @@ help = "Show git and version info"
 testpaths = ["tests"]
 filterwarnings = ["error"]
 
+[tool.black]
+# The generated tree is regenerated and byte-compared; reformatting it would put
+# this repository's formatter in the loop of an artefact the generator owns.
+extend-exclude = "python_backend/generated"
+
 [tool.ruff]
 line-length = 88
 target-version = "py313"
+# The generated tree is not hand-maintained: it is regenerated and byte-compared,
+# so a style rule over it would either be silenced or would make the generator's
+# own choices this repository's problem. It is type-checked under strict `mypy`
+# and read by the FR-078 inspection, which are the checks that mean something.
+extend-exclude = ["python_backend/generated"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "TID"]
@@ -61,3 +81,17 @@ style = "pep440"
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
+
+# Issue #23 (FR-080). Strict, scoped to the generated tree and the examples, with
+# no per-module override and no relaxation: a type the checker rejects is a
+# qualification finding, and the permitted remedies do not include silencing it.
+[tool.mypy]
+# The cache lives under `dist/`, which `.gitignore` and `biome.json` both
+# already exclude. A cache at the repository root would be formatted by
+# `make lint` and committed by an unwary `git add -A`, and `biome.json` is a
+# prohibited path for this change so its ignore list may not be widened.
+cache_dir = "dist/.mypy_cache"
+python_version = "3.13"
+strict = true
+files = ["python_backend"]
+mypy_path = ["python_backend/generated"]

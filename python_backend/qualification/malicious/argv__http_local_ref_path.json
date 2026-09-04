@@ -1,0 +1,5 @@
+{
+	"$comment": "Issue #23, FR-075/NFR-026-AC-1. A generator option that injects code or re-enables fetching.",
+	"kind": "argv",
+	"argv": ["--disable-timestamp", "--http-local-ref-path", "x"]
+}
