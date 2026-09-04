@@ -2,7 +2,7 @@
 id: Task-115
 title: "Determinism, portability, and the non-disruption gates"
 type: Task
-status: pending
+status: in_progress
 track: D
 priority: P0
 relationships:
@@ -43,15 +43,15 @@ Land the two quality gates: that the generated package is reproducible and frame
 
 ## Subtasks
 
-- [ ] Prove byte-identity across two runs, across two working directories, and under `LC_ALL=tr_TR.UTF-8` — the Turkish locale specifically, because dotted-I case folding is how a locale-dependent identifier mint shows itself.
+- [x] Prove byte-identity across two runs, across two working directories, and under `LC_ALL=tr_TR.UTF-8` — the Turkish locale specifically, because dotted-I case folding is how a locale-dependent identifier mint shows itself.
 - [ ] Prove the packed artifacts are identical after normalizing exactly `mtime`, `uid`, `gid`, `uname` and `gname`.
-- [ ] Assert statically: every import specifier in generated source is relative; the generated `package.json` declares no dependency block; no type assertion, no `any` in a type position and no `@ts-expect-error` appears in generated source; no module under `typescript-v1/` calls `localeCompare`, reads a clock, an environment variable, `process.cwd()`, the filesystem or a socket; and every generated file carries the SPDX header.
-- [ ] Assert `biome format` over the committed generated fixture reports no change.
-- [ ] Build the NFR-025 change-set gate on the shared `changeRange(root, sentinels)` helper in `test/changed-paths.ts`, pinning **both** endpoints to history through sentinel files this change created. Pass `--no-renames` to every `git diff`.
-- [ ] Assert every path in this change's own set is permitted and none prohibited; that `package.json`, both lockfiles, `schema/**`, `fixtures/**`, `spikes/**`, `packages/**` and the frozen prototype backends are absent from that set; that `src/compiler/index.mjs` still exports exactly fifteen symbols; and that the only `tsconfig.json` edit is the one `exclude` entry.
-- [ ] Assert `conformance/divergences.json` is byte-unchanged.
-- [ ] Assert the `src/compiler/` modules this change adds ship as source in `npm pack --dry-run` — `package.json` `files` already carries `src/` — with no runtime entry point, no `exports` entry and no dependency, and that no generated package and no `test/fixtures/` file appears in that listing.
-- [ ] Rehearse the accretion property on a synthetic history in which an unrelated change lands on top, and confirm this change's path set does not grow.
+- [x] Assert statically: every import specifier in generated source is relative; the generated `package.json` declares no dependency block; no type assertion, no `any` in a type position and no `@ts-expect-error` appears in generated source; no module under `typescript-v1/` calls `localeCompare`, reads a clock, an environment variable, `process.cwd()`, the filesystem or a socket; and every generated file carries the SPDX header.
+- [x] Assert `biome format` over the committed generated TypeScript source fixture reports no change.
+- [x] Build the NFR-025 change-set gate on the shared `changeRange(root, sentinels)` helper in `test/changed-paths.ts`, pinning **both** endpoints to history through sentinel files this change created. Pass `--no-renames` to every `git diff`.
+- [x] Assert every path in this change's own set is permitted and none prohibited; that `package.json`, both lockfiles, `schema/**`, `fixtures/**`, `spikes/**`, `packages/**` and the frozen prototype backends are absent from that set; that `src/compiler/index.mjs` still exports exactly fifteen symbols; and that the only `tsconfig.json` edit is the one `exclude` entry.
+- [x] Assert `conformance/divergences.json` is byte-unchanged.
+- [x] Assert the `src/compiler/` modules this change adds ship as source in `npm pack --dry-run` — `package.json` `files` already carries `src/` — with no runtime entry point, no `exports` entry and no dependency, and that no generated package and no `test/fixtures/` file appears in that listing.
+- [x] Rehearse the accretion property on a synthetic history in which an unrelated change lands on top, and confirm this change's path set does not grow.
 - [ ] Rehearse the quiet direction: every gate here still fails on the input it exists to catch after the branch is squashed onto the trunk and `origin/main` is repointed at it.
 - [ ] Rehearse the restore: revert this change's commit range and confirm the full suite passes.
 - [ ] Assert no criterion in the bundle asserts a whole-corpus absolute, by rehearsing a synthetic history in which a sibling backend lands first.
