@@ -63,8 +63,9 @@ info:
 # -----------------------------------------------------------------------------
 # semantic-core (issue #35) — compiled with the root-installed TypeSpec toolchain
 # -----------------------------------------------------------------------------
-# No workspace file and no package.json script: the package is private until
-# issue #11 publishes it, so the build is a Makefile concern (NFR-014).
+# No workspace file and no package.json script: the build is a Makefile concern
+# (NFR-014). The package itself ships to npm.ix (issue #40) for Wave 4 module
+# consumption; the public packages remain issue #11.
 
 .PHONY: semantic-core-compile
 semantic-core-compile:

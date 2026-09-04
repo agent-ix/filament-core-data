@@ -174,13 +174,48 @@ describe("semantic-core non-disruption (Task-041)", () => {
 
 describe("semantic-core package inventory (Task-042)", () => {
 	/** Traces: TC-254; FR-031-CON-1. */
-	it("lives under packages/semantic-core with a private package manifest", () => {
+	it("lives under packages/semantic-core, compiled by the root toolchain", () => {
 		expect(existsSync(resolve(packageRoot, "main.tsp"))).toBe(true);
 		const manifest = object(readPackageJson("package.json"), "package.json");
 		expect(manifest.name).toBe("@agent-ix/semantic-core");
-		expect(manifest.private).toBe(true);
 		expect(manifest.tspMain).toBe("main.tsp");
 		expect(String(manifest.version)).toMatch(/^\d+\.\d+\.\d+$/);
+		// FR-031-CON-1 is about where the grammar lives, not about whether it
+		// ships: issue #40 published @agent-ix/semantic-core to npm.ix so the
+		// Wave-4 object modules can consume it, so `private` is deliberately
+		// absent from the manifest and asserting it would un-publish them.
+		expect(manifest.private).toBeUndefined();
+		// "Lives under packages/semantic-core/": the entry point and every path
+		// the package ships resolve inside the package directory and exist, so
+		// moving the grammar (or an emitted artefact) out of it fails here.
+		const exportsMap = object(manifest.exports, "exports");
+		const rootExport = object(exportsMap["."], 'exports["."]');
+		for (const entry of [
+			String(manifest.tspMain),
+			String(rootExport.typespec),
+			...array(manifest.files, "files").map(String),
+		]) {
+			const target = resolve(packageRoot, entry);
+			expect(
+				target === packageRoot || target.startsWith(`${packageRoot}/`),
+				entry,
+			).toBe(true);
+			expect(existsSync(target), entry).toBe(true);
+		}
+		// "Compiled with the root-installed TypeSpec toolchain": the package
+		// declares the pinned compiler as a peer of the root devDependency
+		// instead of vendoring a second copy of its own.
+		const rootManifest = object(
+			JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")),
+			"root package.json",
+		);
+		const rootDev = object(
+			rootManifest.devDependencies,
+			"root devDependencies",
+		);
+		const peers = object(manifest.peerDependencies, "peerDependencies");
+		for (const name of ["@typespec/compiler", "@typespec/json-schema"])
+			expect(peers[name], name).toBe(rootDev[name]);
 		// The spike has its own packages/semantic-core; it must never import ours.
 		let spikeSources = "";
 		try {

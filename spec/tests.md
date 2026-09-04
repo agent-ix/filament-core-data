@@ -387,7 +387,7 @@ computed from the rows.
 | TC-251 | `EdgeCategory`, `ConstraintKeyword`, and `ClauseLanguage` equal the IR schema enumerations in a contract test | Unit | P0 | FR-031-AC-4 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-252 | No property in the compiled program resolves to `unknown` or an untyped record except `DefaultDecl.value` | Static | P0 | FR-031-AC-5, FR-031-CON-2 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-253 | Adding one model at a new minor version changes only its emitted file and the bundle index; every prior file is byte-identical | Snapshot | P0 | FR-031-AC-6 | ✅ passed — semantic-core grammar (PR #39) |
-| TC-254 | The grammar lives under `packages/semantic-core/`; no `spikes/` file imports it | Static | P0 | FR-031-CON-1 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-254 | The grammar lives under `packages/semantic-core/` (every shipped path resolves inside it), is compiled by the root-installed toolchain, is published rather than `private`, and no `spikes/` file imports it | Static | P0 | FR-031-CON-1 | ✅ passed — semantic-core grammar (PR #39); assertion corrected for the npm.ix publish (#40) |
 | TC-255 | `kernel-scalars.json` has exactly one entry per `KernelScalar` member and none names `any` | Static | P0 | FR-032-AC-1 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-256 | The semantic-core reader rejects `Decimal` without `decimal` and `String` with `decimal` | Unit | P0 | FR-032-AC-2 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-257 | Every entry's `irScalar` is in the IR v1 scalar enumeration, except `JsonObject` → open record | Static | P0 | FR-032-AC-3 | ✅ passed — semantic-core grammar (PR #39) |
@@ -799,4 +799,4 @@ database, publication, enforcement, and retirement work remains separately gated
 | Compile | 2 | 2 | 0 | 0 | 100% mapped |
 | **Total** | **357** | **355** | **0** | **2** | **100% mapped** |
 
-**Matrix coverage status: ✅ Complete. Execution status: ✅ 355 of 357 passed; TC-199 recorded by the owner decision on issue #4; TC-203..247 pass on PR #38 (TC-232 needs the poetry env, TC-242 the installed `spec-artifacts-iso` manifest); TC-248..279 pass on PR #39 (TC-274 by inspection; TC-279 needs the poetry env); TC-320..397 pass on the issue #27 promotion branch (vitest 172/173; the single failure is TC-254, pre-existing on main and filed as issue #43), except TC-370 and TC-382, which are blocked on issue #42.**
+**Matrix coverage status: ✅ Complete. Execution status: ✅ 355 of 357 passed; TC-199 recorded by the owner decision on issue #4; TC-203..247 pass on PR #38 (TC-232 needs the poetry env, TC-242 the installed `spec-artifacts-iso` manifest); TC-248..279 pass on PR #39 (TC-274 by inspection; TC-279 needs the poetry env); TC-254 was re-asserted against FR-031-CON-1 when #40 published `@agent-ix/semantic-core`, and the suite is green on `main` again; TC-320..397 pass on the issue #27 promotion branch, except TC-370 and TC-382, which are blocked on issue #42.**
