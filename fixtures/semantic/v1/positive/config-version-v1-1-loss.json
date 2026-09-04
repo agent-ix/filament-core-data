@@ -1,0 +1,60 @@
+{
+	"source": "agent-ix/config-service spec/functional/FR-006-config-version-entity.md (read-only corpus fixture, revision as inspected 2026-09-03)",
+	"fixture": "positive/config-version-v1-1.json",
+	"rows": [
+		{
+			"row": "id | UUID | PK, default uuid4",
+			"node": "ConfigVersion.fields[id] 1..1 UUID",
+			"loss": "none",
+			"note": "PK is the identity field; default uuid4 is a representation default (FR-020 defaultKind) and is out of the FR-006 typed table"
+		},
+		{
+			"row": "overlay_id | UUID | FK → config_overlays.id",
+			"node": "ConfigVersion.relationships[belongs_to ConfigOverlay 1..1, structural]",
+			"loss": "none"
+		},
+		{
+			"row": "version_number | int | required",
+			"node": "ConfigVersion.fields[versionNumber] 1..1 VersionNumber (alias of Integer, min: 1)",
+			"loss": "none"
+		},
+		{
+			"row": "data | Dict[str, Any] | JSONB column",
+			"node": "ConfigVersion.fields[data] 1..1 JsonObject (open record, unknownPolicy preserve)",
+			"loss": "none",
+			"note": "JSONB is a PostgreSQL representation concern (FR-023), not a semantic type"
+		},
+		{
+			"row": "hash | str | content hash",
+			"node": "ConfigVersion.fields[hash] 1..1 String",
+			"loss": "none"
+		},
+		{
+			"row": "parent_id | UUID (optional) | nullable, previous version reference",
+			"node": "ConfigVersion.relationships[derives_from ConfigVersion 0..1, traceability]",
+			"loss": "none"
+		},
+		{
+			"row": "created_at | datetime | default=utc_now",
+			"node": "ConfigVersion.fields[createdAt] 1..1 Timestamp",
+			"loss": "none"
+		},
+		{
+			"row": "created_by | str | actor identifier",
+			"node": "ConfigVersion.fields[createdBy] 1..1 String",
+			"loss": "none"
+		},
+		{
+			"row": "## Relationships: overlay many-to-one → ConfigOverlay",
+			"node": "same relationship as overlay_id",
+			"loss": "none"
+		},
+		{
+			"row": "FR-006-AC-2 immutability",
+			"node": "ConfigVersion.clauses[immutable] ocl",
+			"loss": "none",
+			"note": "clause text is carried opaquely; its meaning is checked by quire-contract-ir#55, not here"
+		}
+	],
+	"declaredLoss": []
+}

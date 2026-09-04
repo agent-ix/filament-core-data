@@ -24,6 +24,7 @@ poethepoet = "^0.41.0"
 poetry-dynamic-versioning = "^1.10.0"
 pytest = "^9.0.2"
 ruff = "^0.14.13"
+jsonschema = "^4.26.0"
 
 [tool.poetry.scripts]
 build-tools = "scripts.build_tools:main"

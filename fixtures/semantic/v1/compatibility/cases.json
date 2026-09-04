@@ -109,5 +109,116 @@
 		"family": "field",
 		"targetResults": ["additive", "breaking", "patch"],
 		"expected": "breaking"
+	},
+	{
+		"id": "multiplicity-widening",
+		"family": "multiplicity",
+		"from": "1..1",
+		"to": "0..*",
+		"expected": "additive"
+	},
+	{
+		"id": "multiplicity-narrowing",
+		"family": "multiplicity",
+		"from": "0..*",
+		"to": "1..1",
+		"expected": "breaking"
+	},
+	{
+		"id": "unit-change",
+		"family": "unit",
+		"from": "s",
+		"to": "ms",
+		"expected": "breaking"
+	},
+	{
+		"id": "ordered-flag-change",
+		"family": "multiplicity",
+		"from": "ordered: false",
+		"to": "ordered: true",
+		"expected": "breaking"
+	},
+	{
+		"id": "unique-flag-change",
+		"family": "multiplicity",
+		"from": "unique: false",
+		"to": "unique: true",
+		"expected": "breaking"
+	},
+	{
+		"id": "constraint-keyword-added-to-vocabulary",
+		"family": "constraint-vocabulary",
+		"expected": "additive"
+	},
+	{
+		"id": "constraint-keyword-removed-from-vocabulary",
+		"family": "constraint-vocabulary",
+		"expected": "breaking"
+	},
+	{
+		"id": "constraint-keyword-operands-retyped",
+		"family": "constraint-vocabulary",
+		"expected": "breaking"
+	},
+	{
+		"id": "v1-to-v1-1-additive-revision",
+		"family": "contract-version",
+		"from": "1.0.0",
+		"to": "1.1.0",
+		"addedNodes": [
+			"field.multiplicity",
+			"field.unit",
+			"typeDefinition.relationships",
+			"typeDefinition.operations",
+			"typeDefinition.clauses",
+			"constraint.keyword (closed)",
+			"source.dialect (frontend)"
+		],
+		"expected": "additive"
+	},
+	{
+		"id": "relationship-added",
+		"family": "relationship",
+		"expected": "additive"
+	},
+	{
+		"id": "relationship-removed",
+		"family": "relationship",
+		"expected": "breaking"
+	},
+	{
+		"id": "relationship-retargeted",
+		"family": "relationship",
+		"expected": "breaking"
+	},
+	{
+		"id": "relationship-composite-flipped",
+		"family": "relationship",
+		"expected": "breaking"
+	},
+	{
+		"id": "operation-added",
+		"family": "operation",
+		"expected": "additive"
+	},
+	{
+		"id": "operation-returns-changed",
+		"family": "operation",
+		"expected": "breaking"
+	},
+	{
+		"id": "clause-added",
+		"family": "clause",
+		"expected": "additive"
+	},
+	{
+		"id": "clause-language-changed",
+		"family": "clause",
+		"expected": "breaking"
+	},
+	{
+		"id": "clause-removed",
+		"family": "clause",
+		"expected": "breaking"
 	}
 ]

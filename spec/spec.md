@@ -53,6 +53,12 @@ compatibility, and generated-target contract. Its structural source is TypeSpec
 (ADR-0005); the contract itself remains provisional on issue #9 until its IR
 fields are frozen.
 
+The fifth delivery is semantic IR v1.1 (issue #34): an additive revision that
+adds field multiplicity and units, first-class relationships, operations, and
+opaque formal clauses, a closed constraint vocabulary, and binds the source
+dialect and manifest targets to their contracts, so Wave 4 module declarations
+are representable without loss.
+
 ## 2. Scope
 
 ### 2.1 In Scope
@@ -90,6 +96,8 @@ fields are frozen.
   selecting an unqualified implementation backend.
 - Cross-target compatibility, determinism, portability, security, legacy bridge,
   dynamic-module, and non-disruption requirements.
+- IR v1.1 node shapes for multiplicity, units, relationships, operations,
+  clauses, and typed constraints, with golden and negative fixtures.
 
 ### 2.2 Out of Scope
 
@@ -108,6 +116,11 @@ fields are frozen.
   changes from audit recommendations alone.
 - Implementing or publishing the production compiler, custom codegen, generated
   packages, module-manifest adoption, or consumer migrations as part of issue #9.
+- Parsing, normalizing, or typechecking formal clause text in the IR; clause
+  semantics belong to the formal-clause frontends (`agent-ix/quire-contract-ir#52`).
+- Editing any corpus repository for issue #34; config-service FR-006 is a
+  read-only worked example.
+- Changing the frozen TypeSpec spike or any backend as part of issue #34.
 
 ## 3. System Overview
 
@@ -155,9 +168,9 @@ Authority is assigned by concern:
 | Class | Artifacts | Purpose |
 |---|---|---|
 | Stakeholder | [StR-001](./stakeholder/StR-001-durable-semantic-data-governance.md) | Durable governance need |
-| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-005](./usecase/US-005-author-portable-semantic-packages.md) | Reader, implementer, migration-review, tool-selection, and schema-author outcomes |
-| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-026](./functional/FR-026-preserve-dynamic-and-legacy-boundaries.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, and compatibility behavior |
-| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-012](./non-functional/NFR-012-non-disruptive-contract-specification.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, and non-disruption |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-006](./usecase/US-006-declare-typed-domain-structure.md) | Reader, implementer, migration-review, tool-selection, schema-author, and module-author outcomes |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-030](./functional/FR-030-bind-source-dialect-and-manifest-targets.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, and IR v1.1 declaration behavior |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-013](./non-functional/NFR-013-additive-semantic-ir-revision.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, and additive revision |
 
 ## 6. Decision Status Model
 

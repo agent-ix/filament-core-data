@@ -12,8 +12,8 @@
 		"signoff-refresh.json"
 	],
 	"normalization": "Recursively sort JSON object keys; preserve array order; hash sorted filename, NUL, canonical JSON, NUL with SHA-256.",
-	"normalizedFingerprint": "35787388cfdeb051cde6284427655f2e00ad57ce91483f7ccf946a2859fe0265",
-	"repeatNormalizedFingerprint": "35787388cfdeb051cde6284427655f2e00ad57ce91483f7ccf946a2859fe0265",
+	"normalizedFingerprint": "64aa026cdbbf97f68565c6918e97a661c50c124d9e1ec40cd322c9415325cdff",
+	"repeatNormalizedFingerprint": "64aa026cdbbf97f68565c6918e97a661c50c124d9e1ec40cd322c9415325cdff",
 	"evidence": {
 		"repositories": 8,
 		"contractFamilies": 15,
