@@ -465,6 +465,57 @@ impl UnknownMembers {
     }
 }
 
+/// An unrecognised variant of a closed variant set, retained verbatim.
+///
+/// An `enum` and a `union` have a closed variant set, so their unknown policy
+/// is a real obligation rather than an inert one: under `preserve` or
+/// `surface` an unrecognised tag is kept here instead of failing
+/// deserialization.
+///
+/// The two wire forms are kept apart because the round trip has to be
+/// unchanged. An externally tagged variant reaches the wire either as a bare
+/// tag string, which is how a variant with no payload is written, or as a
+/// one-member object. Collapsing them onto one constructor would re-serialize
+/// a value in the form it did not arrive in.
+#[derive(Clone, Debug, PartialEq)]
+pub enum UnknownVariant {
+    /// The wire form was a bare tag string.
+    Tag(String),
+    /// The wire form was a one-member object: a tag and its payload.
+    Tagged(String, SemanticValue),
+}
+
+impl UnknownVariant {
+    /// The unrecognised tag.
+    pub fn tag(&self) -> &str {
+        match self {
+            UnknownVariant::Tag(tag) => tag,
+            UnknownVariant::Tagged(tag, _) => tag,
+        }
+    }
+
+    /// The retained payload, where the wire form carried one.
+    pub fn payload(&self) -> Option<&SemanticValue> {
+        match self {
+            UnknownVariant::Tag(_) => None,
+            UnknownVariant::Tagged(_, payload) => Some(payload),
+        }
+    }
+}
+
+impl Serialize for UnknownVariant {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match self {
+            UnknownVariant::Tag(tag) => serializer.serialize_str(tag),
+            UnknownVariant::Tagged(tag, payload) => {
+                let mut map = serializer.serialize_map(Some(1))?;
+                map.serialize_entry(tag, payload)?;
+                map.end()
+            }
+        }
+    }
+}
+
 /// A declared extension carried beside a contract node.
 ///
 /// An extension is never folded into an unknown member: the two mean different

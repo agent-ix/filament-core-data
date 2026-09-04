@@ -26,7 +26,9 @@ const read = (path) => readFileSync(resolve(root, path), "utf8");
 const readJson = (path) => JSON.parse(read(path));
 
 const table = readJson("src/compiler/backends/rust-serde/mapping-table.json");
-const proved = readJson("src/compiler/backends/rust-serde/proved-validators.json");
+const proved = readJson(
+	"src/compiler/backends/rust-serde/proved-validators.json",
+);
 const registry = readJson("conformance/adapters/registry.json");
 const thresholds = readJson("conformance/thresholds.json");
 const gaps = readJson("conformance/contract-gaps.json");
@@ -204,7 +206,9 @@ for (const [path, body] of outputs) {
 			current = "";
 		}
 		if (current !== body) {
-			process.stderr.write(`${path} is stale; run node scripts/build-rust-backend-docs.mjs\n`);
+			process.stderr.write(
+				`${path} is stale; run node scripts/build-rust-backend-docs.mjs\n`,
+			);
 			stale += 1;
 		}
 	} else {
