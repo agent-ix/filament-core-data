@@ -6,7 +6,6 @@
 	"license": "AGPL-3.0-only",
 	"type": "module",
 	"dependencies": {
-		"@agent-ix/typespec-semantic-ir-emitter-spike": "file:./emitter",
 		"@typespec/compiler": "1.15.0",
 		"@typespec/json-schema": "1.15.0",
 		"@typespec/protobuf": "0.85.0",

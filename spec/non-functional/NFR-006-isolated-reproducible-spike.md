@@ -31,6 +31,12 @@ or replace zero current schemas, packages, generated bindings, or consumers.
 
 ## Rationale
 
+Since issue #27 promoted the prototype emitters into `src/compiler/`, the
+spike's isolation means "changes nothing outside itself", not "imports nothing
+outside itself": the runner now imports the promoted build interface and stamps
+the historical generator identity so its retained evidence is unchanged, while
+the emitter package and its `file:` dependency are gone.
+
 The experiment exists to reduce architectural risk. Allowing it to become an
 implicit production dependency or to overwrite the Avro baseline would create the
 cutover before the decision gate has been reviewed.

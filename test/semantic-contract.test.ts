@@ -179,7 +179,7 @@ function fingerprint(value: unknown): string {
 function changedPaths(): string[] {
 	const committed = execFileSync(
 		"git",
-		["diff", "--name-only", "origin/main...HEAD"],
+		["diff", "--no-renames", "--name-only", "origin/main...HEAD"],
 		{
 			cwd: root,
 			encoding: "utf8",
@@ -295,15 +295,41 @@ describe("semantic package contract v1", () => {
 			/Quire retains[\s\S]*Quoin retains[\s\S]*compiler compiles/i,
 		);
 
-		const packageDiff = execFileSync(
-			"git",
-			["diff", "origin/main", "--", "package.json"],
-			{
+		// Scoped by issue #27: the promotion removes the spike emitter's `file:`
+		// devDependency, so a whole-file diff no longer expresses what NFR-012
+		// protects. The published surface and the runtime dependency set are what
+		// must not move, and TC-391 checks the same keys plus dependency-set
+		// equality modulo that one removal.
+		const beforeManifest = JSON.parse(
+			execFileSync("git", ["show", "origin/main:package.json"], {
 				cwd: root,
 				encoding: "utf8",
-			},
-		);
-		expect(packageDiff).toBe("");
+			}),
+		) as Record<string, unknown>;
+		const afterManifest = JSON.parse(
+			readFileSync(resolve(root, "package.json"), "utf8"),
+		) as Record<string, unknown>;
+		for (const key of [
+			"name",
+			"version",
+			"description",
+			"author",
+			"license",
+			"type",
+			"packageManager",
+			"main",
+			"module",
+			"types",
+			"exports",
+			"files",
+			"scripts",
+			"repository",
+			"dependencies",
+		]) {
+			expect(JSON.stringify(afterManifest[key]), key).toBe(
+				JSON.stringify(beforeManifest[key]),
+			);
+		}
 	});
 
 	/** Traces: TC-132, TC-133, TC-135, TC-136, TC-137, TC-138, TC-139, TC-140. */
@@ -1075,6 +1101,18 @@ describe("semantic package contract v1", () => {
 			"plan/Plan-004-semantic-package-contract/",
 			"plan/Plan-005-semantic-ir-v1-1/",
 			"plan/Plan-006-semantic-core-grammar/",
+			"src/compiler/",
+			"tsconfig.json",
+			"tsconfig.build.json",
+			"plan/Plan-007-promote-prototype-emitters/",
+			"package.json",
+			"pnpm-lock.yaml",
+			"docs/semantic-data-system/typespec-feasibility.md",
+			"test/compiler.test.ts",
+			"spikes/typespec-feasibility/scripts/",
+			"spikes/typespec-feasibility/package.json",
+			"spikes/typespec-feasibility/evidence/custom.json",
+			"spikes/typespec-feasibility/emitter/",
 			"test/semantic-ir-v1-1.test.ts",
 			"test/semantic-ir-v1-1-reader.ts",
 			"packages/semantic-core/",
@@ -1105,12 +1143,14 @@ describe("semantic package contract v1", () => {
 			if (existsSync(resolve(root, path)))
 				expect(statSync(resolve(root, path)).isFile(), path).toBe(true);
 		}
+		// Issue #27 removes the spike emitter's `file:` devDependency, so
+		// `package.json` and `pnpm-lock.yaml` necessarily move. What these
+		// criteria protect — the published surface and the runtime dependency
+		// set — is pinned exactly by TC-391 in test/compiler.test.ts.
 		for (const prohibited of [
 			"schema/avro/core-data.avpr",
 			"src/generated.ts",
 			"agent_ix_core_data/core_data.py",
-			"package.json",
-			"pnpm-lock.yaml",
 		]) {
 			expect(changedPaths(), prohibited).not.toContain(prohibited);
 		}

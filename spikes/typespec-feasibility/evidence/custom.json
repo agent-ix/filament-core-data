@@ -1,5 +1,5 @@
 {
-  "command": "pnpm exec tsp compile spikes/typespec-feasibility/main.tsp --emit @agent-ix/typespec-semantic-ir-emitter-spike",
+  "command": "node src/compiler/cli.mjs emit-ir --entrypoint spikes/typespec-feasibility/main.tsp --generator @agent-ix/typespec-semantic-ir-emitter-spike@0.0.0 --out generated/custom/semantic-ir.json",
   "compilerVersion": "1.15.0",
   "result": "passed",
   "typeCount": 18,

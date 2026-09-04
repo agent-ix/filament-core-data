@@ -1,5 +1,4 @@
 import {
-	emitFile,
 	getDeprecated,
 	getDiscriminator,
 	getNamespaceFullName,
@@ -14,20 +13,46 @@ import {
 	getVersion,
 } from "@typespec/versioning";
 import { relative } from "node:path";
+import { defaultGeneratorId } from "./identity.mjs";
 
-const SCHEMA_VERSION = "1.0.0";
+/**
+ * Schema version of the emitted semantic IR. Frozen at the issue #4 prototype
+ * value by FR-041-CON-1; revising the emitted shape belongs to issue #19.
+ */
+export const SEMANTIC_IR_SCHEMA_VERSION = "1.0.0";
+
 const TARGET_NAMESPACE = "AgentIx.Semantic";
+
+/**
+ * Locale-independent code-point ordering (FR-041, NFR-017-AC-3).
+ * A collator-based comparison varies with the host's ICU data, which would let
+ * the emitted order — and therefore every downstream golden — differ between
+ * machines. This comparison cannot.
+ */
+function byCodePoint(left, right) {
+	if (left < right) return -1;
+	if (left > right) return 1;
+	return 0;
+}
 
 function namespaceOf(type) {
 	return type.namespace ? getNamespaceFullName(type.namespace) : "";
 }
 
-function sourceOf(type) {
+function inTargetNamespace(type) {
+	const namespace = namespaceOf(type);
+	return (
+		namespace === TARGET_NAMESPACE ||
+		namespace.startsWith(`${TARGET_NAMESPACE}.`)
+	);
+}
+
+function sourceOf(type, baseDir) {
 	const location = getSourceLocation(type, { locateId: true });
 	if (!location) return "synthetic";
-	const marker = `${process.cwd()}/`;
+	const marker = `${baseDir}/`;
 	const path = location.file.path.startsWith(marker)
-		? relative(process.cwd(), location.file.path)
+		? relative(baseDir, location.file.path)
 		: location.file.path;
 	const position = location.file.getLineAndCharacterOfPosition(location.pos);
 	return `${path}:${position.line + 1}`;
@@ -69,16 +94,15 @@ function metadataOf(program, type) {
 	};
 }
 
-function record(program, type) {
+function record(program, type, baseDir) {
 	const packageName = namespaceOf(type);
-	const id = `${packageName}.${type.name}`;
 	const base = {
-		id,
+		id: `${packageName}.${type.name}`,
 		name: type.name,
 		package: packageName,
 		kind: type.kind.toLowerCase(),
 		role: semanticRole(type.name, type.kind),
-		source: sourceOf(type),
+		source: sourceOf(type, baseDir),
 		...metadataOf(program, type),
 	};
 	if (type.kind === "Model") {
@@ -94,7 +118,7 @@ function record(program, type) {
 					nullable: fieldType.includes("null"),
 					recursive: fieldType.includes(type.name),
 					extensionPoint: fieldType.includes("Record<"),
-					source: sourceOf(property),
+					source: sourceOf(property, baseDir),
 					...metadataOf(program, property),
 				};
 			}),
@@ -115,34 +139,35 @@ function record(program, type) {
 	};
 }
 
-export async function $onEmit(context) {
+/**
+ * Build the semantic IR from an already-compiled TypeSpec program.
+ *
+ * `generator` and `baseDir` are explicit inputs: the identity stamped into the
+ * document follows the caller rather than the call site, and source loci are
+ * relative to a declared directory rather than an ambient `process.cwd()`.
+ */
+export function buildSemanticIr(program, options = {}) {
+	const { generator = defaultGeneratorId(), baseDir = process.cwd() } = options;
 	const types = new Map();
 	const add = (type) => {
-		const namespace = namespaceOf(type);
-		if (
-			type.name &&
-			(namespace === TARGET_NAMESPACE ||
-				namespace.startsWith(`${TARGET_NAMESPACE}.`))
-		) {
-			const item = record(context.program, type);
-			types.set(item.id, item);
-		}
+		if (!type.name || !inTargetNamespace(type)) return;
+		const item = record(program, type, baseDir);
+		types.set(item.id, item);
 	};
-	navigateProgram(context.program, {
-		model: add,
-		enum: add,
-		scalar: add,
-	});
-	const ir = {
-		schemaVersion: SCHEMA_VERSION,
-		generator: "@agent-ix/typespec-semantic-ir-emitter-spike@0.0.0",
+	navigateProgram(program, { model: add, enum: add, scalar: add });
+	return {
+		schemaVersion: SEMANTIC_IR_SCHEMA_VERSION,
+		generator,
 		types: [...types.values()].sort((left, right) =>
-			left.id.localeCompare(right.id),
+			byCodePoint(left.id, right.id),
 		),
 	};
-	await emitFile(context.program, {
-		path: `${context.emitterOutputDir}/semantic-ir.json`,
-		content: `${JSON.stringify(ir, null, 2)}\n`,
-		newLine: "lf",
-	});
+}
+
+/**
+ * The serialisation every byte-identity criterion in the issue #27 bundle
+ * compares against (FR-041).
+ */
+export function serializeSemanticIr(ir) {
+	return `${JSON.stringify(ir, null, 2)}\n`;
 }

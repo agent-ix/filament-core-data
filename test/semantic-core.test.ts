@@ -63,7 +63,7 @@ function readPackageJson(path: string): unknown {
 function changedPaths(): string[] {
 	const committed = execFileSync(
 		"git",
-		["diff", "--name-only", "origin/main...HEAD"],
+		["diff", "--no-renames", "--name-only", "origin/main...HEAD"],
 		{ cwd: root, encoding: "utf8" },
 	);
 	const working = execFileSync(
@@ -89,6 +89,18 @@ describe("semantic-core non-disruption (Task-041)", () => {
 			"fixtures/semantic/v1/compatibility/cases.json",
 			"packages/semantic-core/",
 			"plan/Plan-006-semantic-core-grammar/",
+			"src/compiler/",
+			"tsconfig.json",
+			"tsconfig.build.json",
+			"plan/Plan-007-promote-prototype-emitters/",
+			"package.json",
+			"pnpm-lock.yaml",
+			"docs/semantic-data-system/typespec-feasibility.md",
+			"test/compiler.test.ts",
+			"spikes/typespec-feasibility/scripts/",
+			"spikes/typespec-feasibility/package.json",
+			"spikes/typespec-feasibility/evidence/custom.json",
+			"spikes/typespec-feasibility/emitter/",
 			"reviews/",
 			"spec/",
 			"test/",
@@ -103,28 +115,60 @@ describe("semantic-core non-disruption (Task-041)", () => {
 			if (existsSync(resolve(root, path)))
 				expect(statSync(resolve(root, path)).isFile(), path).toBe(true);
 		}
+		// Issue #27 removes the spike emitter's `file:` devDependency, so
+		// `package.json` and `pnpm-lock.yaml` necessarily move. What these
+		// criteria protect — the published surface and the runtime dependency
+		// set — is pinned exactly by TC-391 in test/compiler.test.ts.
 		for (const prohibited of [
-			"pnpm-lock.yaml",
 			"pnpm-workspace.yaml",
-			"package.json",
 			"schema/avro/core-data.avpr",
 			"src/generated.ts",
 		])
 			expect(changedPaths(), prohibited).not.toContain(prohibited);
-		for (const path of changedPaths())
+		// Issue #27 promoted the prototype emitters into src/compiler/ and rewired
+		// the spike runner to them, so those paths are no longer prohibited for
+		// every later branch. The frozen retained evidence is still protected —
+		// by TC-371 in test/compiler.test.ts, which allows exactly one field of
+		// spikes/typespec-feasibility/evidence/custom.json to differ.
+		const promotionPaths = [
+			"src/compiler/",
+			"spikes/typespec-feasibility/scripts/",
+			"spikes/typespec-feasibility/package.json",
+			"spikes/typespec-feasibility/evidence/custom.json",
+			"spikes/typespec-feasibility/emitter/",
+		];
+		for (const path of changedPaths()) {
+			if (promotionPaths.some((prefix) => path.startsWith(prefix))) continue;
 			expect(path.startsWith("spikes/") || path.startsWith("src/"), path).toBe(
 				false,
 			);
+		}
 	});
 
 	/** Traces: TC-278; NFR-014-AC-5. */
 	it("leaves the frozen TypeSpec spike byte-identical", () => {
+		// Scoped by issue #27 (FR-044): the promotion rewires the spike runner to
+		// the promoted compiler and deletes the spike emitter package. The
+		// retained evidence this criterion protects is unchanged apart from the
+		// one declared field, which TC-371 pins exactly.
+		const promotionPaths = [
+			"spikes/typespec-feasibility/scripts/run-experiment.mjs",
+			"spikes/typespec-feasibility/package.json",
+			"spikes/typespec-feasibility/evidence/custom.json",
+		];
 		const spikeDiff = execFileSync(
 			"git",
-			["diff", "origin/main", "--stat", "--", "spikes/"],
+			["diff", "--no-renames", "origin/main", "--name-only", "--", "spikes/"],
 			{ cwd: root, encoding: "utf8" },
-		);
-		expect(spikeDiff).toBe("");
+		)
+			.split("\n")
+			.filter((line) => line.length > 0)
+			.filter(
+				(path) =>
+					!promotionPaths.includes(path) &&
+					!path.startsWith("spikes/typespec-feasibility/emitter/"),
+			);
+		expect(spikeDiff).toEqual([]);
 	});
 });
 

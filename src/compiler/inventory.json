@@ -1,0 +1,167 @@
+{
+	"issue": "https://github.com/agent-ix/filament-core-data/issues/27",
+	"source": "spikes/typespec-feasibility",
+	"dispositions": ["retain", "rewrite", "replace-with-official", "discard"],
+	"shipping": "src/compiler/** ships as source only: package.json `files` already includes src/, package.json `exports` gains no ./compiler entry, and every @typespec/* stays a devDependency. A public entry point with runtime dependencies belongs to issue #11 (NFR-018-AC-3).",
+	"components": [
+		{
+			"component": "semantic-ir-emitter",
+			"source": "spikes/typespec-feasibility/emitter/index.mjs ($onEmit, record, metadataOf, semanticRole, sourceOf, namespaceOf, versionRecord)",
+			"capability": "semantic-ir",
+			"disposition": "rewrite",
+			"targets": [
+				"src/compiler/ir.mjs",
+				"src/compiler/compile.mjs",
+				"src/compiler/emitters/semantic-ir/index.mjs",
+				"src/compiler/emitters/semantic-ir/package.json",
+				"src/compiler/emitters/semantic-ir/index.d.mts",
+				"src/compiler/identity.mjs",
+				"src/compiler/identity.d.mts"
+			],
+			"evidence": "Reproduces the committed generated/custom/semantic-ir.json byte-for-byte through all three routes (programmatic, CLI, tsp --emit); FR-041-AC-2, FR-041-AC-5, TC-333, TC-336.",
+			"limitation": "Rewritten only to make two ambient inputs explicit (baseDir replaces process.cwd(); code-point ordering replaces localeCompare). The IR shape, the role/nullable/recursive/extensionPoint name heuristics, and the absence of an id-uniqueness rule are unchanged prototype semantics frozen by FR-041-CON-1; revising them is issue #19. No separate reusable compiler repository, accepted production owner, budget, compatibility matrix, or upgrade SLA exists"
+		},
+		{
+			"component": "typescript-backend",
+			"source": "spikes/typespec-feasibility/scripts/run-experiment.mjs (emitTypeScript, tsType, simpleReferences, enumMembers, replaceEnumMember)",
+			"capability": "native-codegen-conformance",
+			"disposition": "rewrite",
+			"targets": ["src/compiler/backends/typescript.mjs"],
+			"evidence": "Reproduces the committed generated/custom/typescript/index.ts byte-for-byte from the committed IR, which the promoted code did not produce; FR-042-AC-1, TC-349.",
+			"limitation": "Rewritten only to add the missing-base guard, which changes no golden byte. Qualified against the issue #4 representative slice only: no conformance corpus, no property/fuzz suite, no release compatibility matrix, and no independent downstream adoption; qualified against the issue #4 representative slice only, until issues #21 and #22 discharge it against the issue #20 corpus. Renders by textual substitution over the strings getTypeName produces, so a @typespec/compiler upgrade can change output while the IR test still passes (FR-042-CON-5). No broad conformance corpus, property/fuzz suite, release compatibility matrix, or independent downstream adoption exists"
+		},
+		{
+			"component": "rust-serde-backend",
+			"source": "spikes/typespec-feasibility/scripts/run-experiment.mjs (emitRust, rustType, snake, inheritedFields)",
+			"capability": "native-codegen-conformance",
+			"disposition": "rewrite",
+			"targets": ["src/compiler/backends/rust.mjs"],
+			"evidence": "Reproduces the committed generated/custom/rust/src/lib.rs byte-for-byte from the committed IR; FR-042-AC-2, TC-350.",
+			"limitation": "Rewritten only to add the missing-base and base-chain-cycle guards, which change no golden byte. Qualified against the issue #4 representative slice only: no conformance corpus, no property/fuzz suite, no release compatibility matrix, and no independent downstream adoption; qualified against the issue #4 representative slice only, until issues #21 and #22 discharge it against the issue #20 corpus. No broad conformance corpus, property/fuzz suite, release compatibility matrix, or independent downstream adoption exists"
+		},
+		{
+			"component": "python-json-schema-adapter",
+			"source": "spikes/typespec-feasibility/scripts/run-experiment.mjs (normalizeJsonSchemaForPython)",
+			"capability": "python-pydantic-consumer",
+			"disposition": "retain",
+			"targets": ["src/compiler/backends/python-schema.mjs"],
+			"evidence": "Reproduces the committed generated/custom/python/input.schema.json byte-for-byte from the committed official bundle; FR-043-AC-1, TC-361.",
+			"limitation": "Carries the issue #31 workaround, including a hard-coded RecordString.json alias and a name-keyed unevaluatedProperties rewrite. Duplicate $id collapse and non-unique derived titles are unhandled and belong to issue #23. Requires pinned local tooling, TypeSpec JSON Schema URI normalization, extension rejection, and sandboxed generation"
+		},
+		{
+			"component": "python-generator-pins",
+			"source": "spikes/typespec-feasibility/scripts/run-experiment.mjs (pydanticVersion, datamodelCodegenVersion, pythonGeneratorArguments)",
+			"capability": "python-pydantic-consumer",
+			"disposition": "rewrite",
+			"targets": [
+				"src/compiler/backends/python-pins.mjs",
+				"src/compiler/backends/python-pins.d.mts"
+			],
+			"evidence": "The pins become exported constants checked against evidence/toolchain.json; FR-043-AC-7, TC-368.",
+			"limitation": "Only the version pins are promoted. The datamodel-code-generator argv and its virtualenv remain with the caller, so issue #23 still owns a supported Python generation route; no module under src/compiler/ spawns a process (TC-369). Requires pinned local tooling, TypeSpec JSON Schema URI normalization, extension rejection, and sandboxed generation"
+		},
+		{
+			"component": "determinism-helpers",
+			"source": "spikes/typespec-feasibility/scripts/run-experiment.mjs (canonical, fingerprint)",
+			"capability": "deterministic-regeneration",
+			"disposition": "discard",
+			"targets": [],
+			"evidence": "The helpers exist to fingerprint the spike's own retained output; nothing in the promoted build interface fingerprints anything, and inventing a caller would be speculative.",
+			"limitation": "Not promoted, so the promoted compiler has no content-fingerprint utility; issue #19 will need one and should not copy this implementation without a determinism corpus behind it."
+		},
+		{
+			"component": "python-virtualenv-bootstrap",
+			"source": "spikes/typespec-feasibility/scripts/run-experiment.mjs (ensurePython)",
+			"capability": "python-pydantic-consumer",
+			"disposition": "discard",
+			"targets": [],
+			"evidence": "Builds a venv from whatever python3 resolves to, which is one of the three host couplings measured in issue #42; promoting it would promote the defect.",
+			"limitation": "Not promoted, so no supported Python environment provisioning exists; issue #23 owns it and must declare the Python floor issue #42 records."
+		},
+		{
+			"component": "golden-consumer-programs",
+			"source": "spikes/typespec-feasibility/scripts/run-experiment.mjs (emitConsumers)",
+			"capability": "native-codegen-conformance",
+			"disposition": "discard",
+			"targets": [],
+			"evidence": "These are the spike's own test harness \u2014 a TypeScript, a Python and a Rust program that read one shared golden. They verify the spike, not the compiler.",
+			"limitation": "Not promoted, so the promoted backends are verified by byte-identity against the committed goldens rather than by executing generated code; executing it is issues #21, #22 and #23. No broad conformance corpus, property/fuzz suite, release compatibility matrix, or independent downstream adoption exists"
+		},
+		{
+			"component": "codegen-confidence-fixtures",
+			"source": "spikes/typespec-feasibility/scripts/run-experiment.mjs (fixture, invalidFixture)",
+			"capability": "native-codegen-conformance",
+			"disposition": "discard",
+			"targets": [],
+			"evidence": "Retained in place as issue #4 evidence (FR-043-AC-6); the promoted compiler takes its inputs from the caller and ships no fixture of its own.",
+			"limitation": "Not promoted, so src/compiler/ carries no positive or negative payload corpus; the issue #20 conformance corpus is the intended source and issue #27 deliberately does not consume it. No broad conformance corpus, property/fuzz suite, release compatibility matrix, or independent downstream adoption exists"
+		},
+		{
+			"component": "arrow-projection-writer",
+			"source": "spikes/typespec-feasibility/scripts/run-experiment.mjs (the generated/custom/arrow/schema.json writer)",
+			"capability": "arrow-projection",
+			"disposition": "discard",
+			"targets": [],
+			"evidence": "Writes a declared metadata document, not generated code; representation contracts are FR-023's, not the compiler's.",
+			"limitation": "Not promoted, so no Arrow projection is produced by owned code; the declared loss and provenance semantics live in FR-023 and remain unimplemented."
+		},
+		{
+			"component": "markdown-mapping-writer",
+			"source": "spikes/typespec-feasibility/scripts/run-experiment.mjs (the generated/custom/markdown/mappings.json writer)",
+			"capability": "markdown-mapping",
+			"disposition": "discard",
+			"targets": [],
+			"evidence": "Filters a checked-in mapping file into a declaration document; it generates no code and moves no renderer ownership.",
+			"limitation": "Not promoted, so no Markdown mapping is produced by owned code; FR-022 and FR-023 own the contract and Quire owns the renderer."
+		},
+		{
+			"component": "protobuf-mapping-writer",
+			"source": "spikes/typespec-feasibility/scripts/run-experiment.mjs (the generated/custom/protobuf/mapping.json writer)",
+			"capability": "protobuf-wire",
+			"disposition": "discard",
+			"targets": [],
+			"evidence": "Writes a fixed declaration about the official Protobuf output; it derives nothing from the IR.",
+			"limitation": "Not promoted, so wire-projection policy is unrepresented in owned code. Native protoc is absent; syntax is parser-validated"
+		},
+		{
+			"component": "compatibility-classifier",
+			"source": "spikes/typespec-feasibility/scripts/run-experiment.mjs (classify)",
+			"capability": "compatibility-classification",
+			"disposition": "discard",
+			"targets": [],
+			"evidence": "A three-case structural classifier superseded by the FR-025 compatibility contract and its fixture corpus.",
+			"limitation": "Not promoted, so the promoted compiler classifies no change; FR-025 owns the policy and its richer rules are unimplemented. Semantic policy changes need richer rules"
+		},
+		{
+			"component": "official-emitter-invocations",
+			"source": "spikes/typespec-feasibility/scripts/run-experiment.mjs (the @typespec/json-schema and @typespec/protobuf compile calls)",
+			"capability": "json-schema-2020-12",
+			"disposition": "replace-with-official",
+			"targets": [],
+			"evidence": "Already the official pinned emitters; there is nothing to own. packages/semantic-core/ (issue #35) is the production precedent for driving them.",
+			"limitation": "The official JSON Schema bundle still carries the issue #31 relative-$id defect, which the Python adapter works around and FR-033 normalises. The official bundle emits RecordString.json as a relative shared $id while references resolve beneath multiple namespace bases"
+		}
+	],
+	"authored": [
+		{
+			"path": "src/compiler/backends/type-names.mjs",
+			"reason": "Type-name substitution helpers shared by the TypeScript and Rust backends. The prototype declared them at module scope in run-experiment.mjs alongside both generators; extracting them into their own module is the promotion's factoring, so neither backend record owns the file."
+		},
+		{
+			"path": "src/compiler/cli.mjs",
+			"reason": "The command the spike and the Makefile target call; the prototype was reached only through `tsp --emit` against a file: dependency, which FR-044 removes."
+		},
+		{
+			"path": "src/compiler/index.d.mts",
+			"reason": "TypeScript declarations for that interface, so tsc --noEmit fails when they drift from the .mjs implementation (FR-041-AC-12)."
+		},
+		{
+			"path": "src/compiler/index.mjs",
+			"reason": "The six-symbol narrow build interface FR-041 requires; the prototype had no interface, only a $onEmit entry point and module-scope functions inside the spike runner."
+		},
+		{
+			"path": "src/compiler/inventory.json",
+			"reason": "This ledger."
+		}
+	]
+}

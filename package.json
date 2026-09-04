@@ -44,7 +44,6 @@
 		"spike:typespec:check": "node spikes/typespec-feasibility/scripts/run-experiment.mjs --check"
 	},
 	"devDependencies": {
-		"@agent-ix/typespec-semantic-ir-emitter-spike": "file:spikes/typespec-feasibility/emitter",
 		"@biomejs/biome": "^2.5.1",
 		"@types/node": "^22.10.0",
 		"@typespec/compiler": "1.15.0",

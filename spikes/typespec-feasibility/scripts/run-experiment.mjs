@@ -18,15 +18,30 @@ import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { Field, Schema, Utf8 } from "apache-arrow";
 import protobuf from "protobufjs";
+import {
+	emitRust,
+	emitTypeScript,
+	normalizeJsonSchemaForPython,
+} from "../../../src/compiler/index.mjs";
+import {
+	DATAMODEL_CODEGEN_VERSION,
+	PYDANTIC_VERSION,
+} from "../../../src/compiler/backends/python-pins.mjs";
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const spike = resolve(scriptDirectory, "..");
 const root = resolve(spike, "../..");
 const tsp = resolve(root, "node_modules/.bin/tsp");
 const tsc = resolve(root, "node_modules/.bin/tsc");
+const compilerCli = resolve(root, "src/compiler/cli.mjs");
 const checkMode = process.argv.includes("--check");
-const pydanticVersion = "2.12.5";
-const datamodelCodegenVersion = "0.76.0";
+// The identity this experiment was minted under. The emitter it named now lives
+// in src/compiler/ (issue #27); stamping the historical id keeps the retained
+// generated/custom/semantic-ir.json byte-identical to the issue #4 record.
+const spikeGeneratorId = "@agent-ix/typespec-semantic-ir-emitter-spike@0.0.0";
+const irCommand = `node src/compiler/cli.mjs emit-ir --entrypoint spikes/typespec-feasibility/main.tsp --generator ${spikeGeneratorId} --out generated/custom/semantic-ir.json`;
+const pydanticVersion = PYDANTIC_VERSION;
+const datamodelCodegenVersion = DATAMODEL_CODEGEN_VERSION;
 const serdeVersion = "1.0.229";
 const serdeJsonVersion = "1.0.151";
 const experimentRoot = mkdtempSync(join(tmpdir(), "filament-typespec-"));
@@ -100,196 +115,6 @@ function listFiles(directory, prefix = "") {
 
 function packageVersion(name) {
 	return json(resolve(root, "node_modules", name, "package.json")).version;
-}
-
-function enumMembers(ir) {
-	const values = new Map();
-	for (const type of ir.types.filter(
-		(candidate) => candidate.kind === "enum",
-	)) {
-		for (const member of type.members)
-			values.set(`${type.id}.${member.name}`, member.value);
-	}
-	return [...values.entries()].sort(
-		([left], [right]) => right.length - left.length,
-	);
-}
-
-function replaceEnumMember(typeName, members, render) {
-	let result = typeName;
-	for (const [name, value] of members)
-		result = result.replaceAll(name, render(value));
-	return result;
-}
-
-function simpleReferences(typeName) {
-	return typeName.replaceAll(
-		/AgentIx\.Semantic\.(?:Core|Assurance|Wire)\.([A-Za-z0-9_]+)/g,
-		"$1",
-	);
-}
-
-function tsType(typeName, members) {
-	let result = replaceEnumMember(typeName, members, (value) =>
-		JSON.stringify(value),
-	);
-	result = simpleReferences(result)
-		.replaceAll("utcDateTime", "string")
-		.replaceAll("Record<string>", "Record<string, unknown>")
-		.replaceAll(
-			/\b(?:u?int(?:8|16|32|64)?|safeint|float(?:32|64)?|numeric|decimal(?:128)?)\b/g,
-			"number",
-		);
-	return result;
-}
-
-function inheritedFields(model, byId) {
-	const base = model.base ? byId.get(model.base) : undefined;
-	const fields = base ? inheritedFields(base, byId) : [];
-	const merged = new Map(fields.map((field) => [field.name, field]));
-	for (const field of model.fields) merged.set(field.name, field);
-	return [...merged.values()];
-}
-
-function emitTypeScript(ir) {
-	const members = enumMembers(ir);
-	const lines = ["// Generated experimental output. Do not publish.", ""];
-	for (const type of ir.types.filter(
-		(candidate) => candidate.kind === "scalar",
-	)) {
-		lines.push(`export type ${type.name} = string;`, "");
-	}
-	for (const type of ir.types.filter(
-		(candidate) => candidate.kind === "enum",
-	)) {
-		lines.push(
-			`export type ${type.name} = ${type.members.map((member) => JSON.stringify(member.value)).join(" | ")};`,
-			"",
-		);
-	}
-	for (const type of ir.types.filter(
-		(candidate) => candidate.kind === "model",
-	)) {
-		const extension = type.base
-			? ` extends ${simpleReferences(type.base)}`
-			: "";
-		lines.push(`export interface ${type.name}${extension} {`);
-		for (const field of type.fields) {
-			lines.push(
-				`\t${field.name}${field.optional ? "?" : ""}: ${tsType(field.type, members)};`,
-			);
-		}
-		lines.push("}", "");
-	}
-	return `${lines.join("\n").trim()}\n`;
-}
-
-function normalizeJsonSchemaForPython(schema) {
-	const definitions = schema.$defs ?? {};
-	const references = new Map();
-	for (const [name, definition] of Object.entries(definitions)) {
-		if (definition.$id) references.set(definition.$id, `#/$defs/${name}`);
-	}
-	references.set("RecordString.json", "#/$defs/RecordString");
-	const forbidden = new Set([
-		"x-python-import",
-		"customTypePath",
-		"default_factory",
-	]);
-	const rewrite = (value) => {
-		if (Array.isArray(value)) return value.map(rewrite);
-		if (value === null || typeof value !== "object") return value;
-		const output = {};
-		for (const [key, child] of Object.entries(value)) {
-			if (forbidden.has(key)) {
-				throw new Error(`Forbidden executable Python schema extension: ${key}`);
-			}
-			if (key === "$ref" && references.has(child))
-				output[key] = references.get(child);
-			else output[key] = rewrite(child);
-		}
-		return output;
-	};
-	const normalized = rewrite(schema);
-	for (const [name, definition] of Object.entries(normalized.$defs ?? {})) {
-		delete definition.$id;
-		delete definition.$schema;
-		if (
-			name === "RecordString" &&
-			definition.unevaluatedProperties !== undefined
-		) {
-			definition.additionalProperties = definition.unevaluatedProperties;
-			delete definition.unevaluatedProperties;
-		}
-		definition.title ??= name
-			.split(/[^A-Za-z0-9]+/)
-			.filter(Boolean)
-			.map((part) => `${part[0].toUpperCase()}${part.slice(1)}`)
-			.join("");
-	}
-	normalized.$id = "urn:agent-ix:typespec-feasibility:python-input:1";
-	return normalized;
-}
-
-function snake(name) {
-	return name.replaceAll(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase();
-}
-
-function rustType(typeName, optional, members) {
-	let result = replaceEnumMember(typeName, members, () => "String");
-	result = simpleReferences(result)
-		.replaceAll(/([A-Za-z_][A-Za-z0-9_]*)\[\]/g, "Vec<$1>")
-		.replaceAll("utcDateTime", "String")
-		.replaceAll("Record<string>", "BTreeMap<String, serde_json::Value>")
-		.replaceAll("string", "String")
-		.replaceAll("int32", "i32")
-		.replaceAll(/"[^"]+"/g, "String")
-		.replaceAll(/ \| null/g, "");
-	if (typeName.includes("null") || optional) result = `Option<${result}>`;
-	return result;
-}
-
-function emitRust(ir) {
-	const members = enumMembers(ir);
-	const byId = new Map(ir.types.map((type) => [type.id, type]));
-	const lines = [
-		"// Generated experimental output. Do not publish.",
-		"use serde::{Deserialize, Serialize};",
-		"use std::collections::BTreeMap;",
-		"",
-	];
-	for (const type of ir.types.filter(
-		(candidate) => candidate.kind === "scalar",
-	)) {
-		lines.push(`pub type ${type.name} = String;`, "");
-	}
-	for (const type of ir.types.filter(
-		(candidate) => candidate.kind === "enum",
-	)) {
-		lines.push("#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]");
-		lines.push(`pub enum ${type.name} {`);
-		for (const member of type.members) {
-			lines.push(`    #[serde(rename = ${JSON.stringify(member.value)})]`);
-			lines.push(`    ${member.name[0].toUpperCase()}${member.name.slice(1)},`);
-		}
-		lines.push("}", "");
-	}
-	for (const type of ir.types.filter(
-		(candidate) => candidate.kind === "model",
-	)) {
-		lines.push("#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]");
-		lines.push(`pub struct ${type.name} {`);
-		for (const field of inheritedFields(type, byId)) {
-			const fieldName = snake(field.name);
-			if (fieldName !== field.name)
-				lines.push(`    #[serde(rename = ${JSON.stringify(field.name)})]`);
-			lines.push(
-				`    pub ${fieldName}: ${rustType(field.type, field.optional, members)},`,
-			);
-		}
-		lines.push("}", "");
-	}
-	return `${lines.join("\n").trim()}\n`;
 }
 
 function fixture() {
@@ -418,15 +243,21 @@ function generate(output) {
 		"--pretty",
 		"false",
 	]);
-	const custom = run(tsp, [
-		"compile",
+	// The semantic IR now comes from the promoted compiler (issue #27); the
+	// historical generator identity is stamped so the retained document is
+	// unchanged.
+	const irPath = resolve(customRaw, "semantic-ir.json");
+	const custom = run("node", [
+		compilerCli,
+		"emit-ir",
+		"--entrypoint",
 		resolve(spike, "main.tsp"),
-		"--emit",
-		"@agent-ix/typespec-semantic-ir-emitter-spike",
-		"--output-dir",
-		customRaw,
-		"--pretty",
-		"false",
+		"--generator",
+		spikeGeneratorId,
+		"--base-dir",
+		root,
+		"--out",
+		irPath,
 	]);
 	const invalid = run(
 		tsp,
@@ -443,10 +274,6 @@ function generate(output) {
 	const protoPath = resolve(
 		officialRaw,
 		"@typespec/protobuf/agentix/semantic/v1.proto",
-	);
-	const irPath = resolve(
-		customRaw,
-		"@agent-ix/typespec-semantic-ir-emitter-spike/semantic-ir.json",
 	);
 	mkdirSync(resolve(output, "generated/official/json-schema"), {
 		recursive: true,
@@ -582,8 +409,7 @@ function generate(output) {
 			"official compile and both emitters complete in less than one second on the recorded workstation",
 	});
 	writeJson(resolve(output, "evidence/custom.json"), {
-		command:
-			"pnpm exec tsp compile spikes/typespec-feasibility/main.tsp --emit @agent-ix/typespec-semantic-ir-emitter-spike",
+		command: irCommand,
 		compilerVersion: packageVersion("@typespec/compiler"),
 		result: custom.exitCode === 0 ? "passed" : "failed",
 		typeCount: ir.types.length,
@@ -765,7 +591,19 @@ function validate(output, repeat) {
 		env: cargoEnvironment,
 		allowFailure: true,
 	});
-	if (!existsSync(resolve(rustPackage, "Cargo.lock"))) {
+	// Seed the committed lockfile instead of resolving transitive crates afresh.
+	// The generated Cargo.toml pins only serde and serde_json, so a regenerated
+	// lock drifts whenever any transitive crate publishes, which turned the
+	// retained-evidence gate red for reasons unrelated to any change
+	// (FR-044, NFR-017, issue #42).
+	const retainedLock = resolve(spike, "generated/custom/rust/Cargo.lock");
+	if (existsSync(retainedLock)) {
+		cpSync(retainedLock, resolve(rustPackage, "Cargo.lock"));
+	} else if (checkMode) {
+		throw new Error(
+			`Missing retained lockfile ${relative(root, retainedLock)}; --check must not generate one, because generating it silently rebaselines the retained evidence.`,
+		);
+	} else if (!existsSync(resolve(rustPackage, "Cargo.lock"))) {
 		run("cargo", ["generate-lockfile", "--offline"], { cwd: rustPackage });
 	}
 	run("cargo", ["check", "--offline", "--locked"], {

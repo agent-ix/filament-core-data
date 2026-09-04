@@ -40,3 +40,60 @@ recommended a hold under a stricter rule added during the spike (a capability
 needing custom code counted as partial without a pre-accepted owner and budget).
 The owner rejected that rule; the retained spike outputs are unchanged and record
 what was measured on 2026-08-30.
+
+## Promotion inventory
+
+Issue #27 promoted the prototype emitters into `src/compiler/`. Every prototype
+component carries a written disposition in
+[`src/compiler/inventory.json`](../../src/compiler/inventory.json), and no
+component was promoted merely because the representative golden passed. The
+fourteen components disposition as: **1 retain**, **4 rewrite**,
+**1 replace-with-official**, **8 discard**. 5 files under
+`src/compiler/` are recorded as authored by the promotion rather than inherited
+from the prototype.
+
+The two promoted language backends are qualified against the issue #4
+representative slice only. Their recorded limitation names the four gates they
+have not passed — no conformance corpus, no property/fuzz suite, no release
+compatibility matrix, no independent downstream adoption — and it stands until
+issues #21 and #22 discharge it against the issue #20 corpus.
+
+## Retained evidence
+
+The retained tree under `spikes/typespec-feasibility/{generated,evidence}` and
+`report.md` is the historical issue #4 record. Issue #27 does **not** update it
+to match the promotion: `capabilities.json` and `report.md` still say what was
+measured on 2026-08-30, including statements the promotion supersedes (that no
+separate compiler source exists, and that promotion would require a separate
+gated change — which is this ticket). The superseding statement lives here, not
+in the evidence.
+
+Exactly one retained byte range changed: the `command` field of
+`evidence/custom.json`, because the emitter package that command named no longer
+exists. Before and after:
+
+```text
+pnpm exec tsp compile spikes/typespec-feasibility/main.tsp --emit @agent-ix/typespec-semantic-ir-emitter-spike
+node src/compiler/cli.mjs emit-ir --entrypoint spikes/typespec-feasibility/main.tsp --generator @agent-ix/typespec-semantic-ir-emitter-spike@0.0.0 --out generated/custom/semantic-ir.json
+```
+
+### Host reproducibility
+
+`pnpm run spike:typespec:check` cannot pass off the workstation that minted the
+evidence, for three measured reasons recorded in
+[issue #42](https://github.com/agent-ix/filament-core-data/issues/42):
+
+1. The generated Rust package pinned only `serde` and `serde_json`, so its
+   retained `Cargo.lock` was regenerated on every run and drifted whenever a
+   transitive crate published. **Issue #27 fixes this** by seeding the committed
+   lockfile instead of resolving afresh; it changes no committed byte.
+2. `evidence/toolchain.json` is inside the byte-compared set and records the
+   host's own `node`, `rustc`/`cargo` and `python3` versions (24.15.0, 1.95.0,
+   3.14.7). Repairing this rewrites retained evidence and needs an owner
+   decision plus a run on a conforming host, so issue #27 does not do it.
+3. The generated Python models target 3.13 and import `StrEnum`, so a host whose
+   `python3` is 3.10 cannot import them. The required floor is undeclared.
+
+Because of 2 and 3, the promotion is verified per component — the semantic IR,
+TypeScript, Rust and Python-input bytes are each compared against the committed
+issue #4 goldens — rather than by a full replay.
