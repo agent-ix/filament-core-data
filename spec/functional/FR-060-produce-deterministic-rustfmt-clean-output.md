@@ -41,6 +41,15 @@ never about the machine that ran the generator.
 - `docs/semantic-data-system/rust-backend-support-matrix.md`: the MSRV, edition,
   toolchain version, `rustfmt` version, and platform matrix with the evidence
   each row rests on and the owning issue each unmet row carries
+- `scripts/build-rust-backend-goldens.mjs`: writes `digests.json` and the
+  determinism, formatter and support-matrix checks. It is a *different*
+  script from the one that writes the goldens, so a single emitter change
+  must move two artifacts and regenerating only the goldens leaves the
+  baseline red
+- `test/fixtures/rust-serde/format-branches.json`: a document exercising all
+  three branches of the emitted `try_new` call rendering, because no corpus
+  base reaches the middle one and a golden minted from the bases cannot
+  catch a divergence there
 - A `make rust-check` target that regenerates into a scratch directory and
   compares against the committed goldens and against the digest baseline
 - A `make rust-deep` target carrying the long property, fuzz, and mutation runs

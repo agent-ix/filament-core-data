@@ -76,6 +76,7 @@ const PERMITTED: readonly string[] = [
 	"^docs/semantic-data-system/index\\.md$",
 	"^docs/semantic-data-system/roadmap\\.md$",
 	"^scripts/build-rust-backend-docs\\.mjs$",
+	"^scripts/build-rust-backend-goldens\\.mjs$",
 	"^Makefile$",
 	"^\\.gitignore$",
 	"^rust-toolchain\\.toml$",
@@ -687,6 +688,74 @@ describe("TC-658..665 identifier derivation", () => {
 // ---------------------------------------------------------------------------
 // Non-disruption
 // ---------------------------------------------------------------------------
+
+describe("TC-713 the emitted call rendering is a formatter fixed point", () => {
+	/** Traces: TC-713; FR-060-AC-3, FR-060-CON-2. */
+	it("TC-713 all three branches of the try_new call survive rustfmt --check", async () => {
+		// The goldens cannot catch this. `rustfmt` breaks this shape in two
+		// stages — the method chain first, the argument list only when the
+		// arguments exceed `fn_call_width` — and none of the four corpus bases
+		// reaches the middle branch, because their records carry two or eight
+		// fields. A three-field record does, and the emitter got it wrong: it
+		// broke the argument list where the formatter would have kept the call on
+		// one line. A golden minted from the bases would have stayed green
+		// through that, which is why this fixture exists beside them.
+		const { emitCrate } = await import(
+			"../src/compiler/backends/rust-serde/crate.mjs"
+		);
+		const bundle = readJson(
+			resolve(root, "test/fixtures/rust-serde/format-branches.json"),
+		) as { ir: unknown };
+		const files = emitCrate({
+			contractVersion: "1.0.0",
+			lockFingerprint: `sha256:${"0".repeat(64)}`,
+			ir: bundle.ir,
+			profile: {},
+			mappings: [],
+			backend: {
+				identity: ix("agent-ix/filament-core-data/rust-backend"),
+				version: "0.0.0",
+			},
+			outputRoot: "out",
+			limits: {},
+		}) as { files?: Map<string, string> } | Map<string, string>;
+		const emitted =
+			files instanceof Map ? files : (files.files as Map<string, string>);
+
+		const scratch = temp("format-branches");
+		try {
+			for (const [relative, body] of emitted) {
+				const full = resolve(scratch, relative);
+				mkdirSync(dirname(full), { recursive: true });
+				writeFileSync(full, body);
+			}
+			writeFileSync(
+				resolve(scratch, "rustfmt.toml"),
+				read(resolve(root, "rustfmt.toml")),
+			);
+			const sources = [...emitted.keys()].filter((name) =>
+				name.endsWith(".rs"),
+			);
+			expect(sources.length).toBeGreaterThan(3);
+
+			// The three branches are actually present, or this fixture proves
+			// nothing about the branch it was written for.
+			const bodies = sources
+				.map((name) => emitted.get(name) as string)
+				.join("\n");
+			expect(bodies).toMatch(/Self::try_new\([a-z]/);
+			expect(bodies).toMatch(/Self::try_new\(wire\.[^)]*\)\n\s+\.map_err/);
+			expect(bodies).toMatch(/Self::try_new\(\n/);
+
+			execFileSync("rustfmt", ["--check", ...sources], {
+				cwd: scratch,
+				stdio: "pipe",
+			});
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
+	});
+});
 
 describe("TC-737..744 non-disruption", () => {
 	/** Traces: TC-737; NFR-023-AC-1. */

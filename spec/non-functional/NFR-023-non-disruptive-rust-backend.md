@@ -49,7 +49,8 @@ later can be backed out by reverting this work alone.
   `docs/semantic-data-system/rust-backend*.md`,
   `docs/semantic-data-system/index.md`,
   `docs/semantic-data-system/roadmap.md`,
-  `scripts/build-rust-backend-docs.mjs`, `Makefile`, `.gitignore`,
+  `scripts/build-rust-backend-docs.mjs`,
+  `scripts/build-rust-backend-goldens.mjs`, `Makefile`, `.gitignore`,
   `rust-toolchain.toml`, `rustfmt.toml`, `Cargo.toml`, `Cargo.lock`,
   `.cargo/config.toml`, `THIRD-PARTY-NOTICES.md`, and exactly two files under
   `conformance/`: `adapters/registry.json`, whose `rust-backend` slot the corpus

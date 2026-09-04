@@ -34,6 +34,7 @@ import {
 	STRUCT_LIT_WIDTH,
 	atom,
 	callLines,
+	FN_CALL_WIDTH,
 	constItem,
 	slice,
 	some,
@@ -1183,11 +1184,31 @@ function okSelf(indent, fields) {
 	];
 }
 
-/** The `Self::try_new(..).map_err(..)` call a `Deserialize` ends with. */
+/**
+ * The `Self::try_new(..).map_err(..)` call a `Deserialize` ends with.
+ *
+ * Three forms, because `rustfmt` breaks this shape in two stages and measuring
+ * only `max_width` finds the wrong one. When the whole expression does not fit,
+ * the formatter breaks the *method chain* first and leaves the call on one line,
+ * indenting the chained call by four; it breaks the argument list only when the
+ * arguments themselves exceed `fn_call_width`.
+ *
+ * Measured against rustfmt 1.8.0-stable under the pinned `rustfmt.toml` rather
+ * than reasoned about. Emitting the fully-broken form for a call whose arguments
+ * fit inside `fn_call_width` produced output the formatter rewrites — a real
+ * `rustfmt --check` failure that no corpus base reaches, because their records
+ * carry two or eight fields and both of those land in the other two branches.
+ * It was found while building the FR-061 consumer contract, on a three-field
+ * record.
+ */
 function tryNewCall(indent, arguments_) {
 	const tail = ".map_err(serde::de::Error::custom)";
-	const inline = `${indent}Self::try_new(${arguments_.join(", ")})${tail}`;
+	const joined = arguments_.join(", ");
+	const inline = `${indent}Self::try_new(${joined})${tail}`;
 	if (inline.length <= MAX_WIDTH) return [inline];
+	if (joined.length <= FN_CALL_WIDTH) {
+		return [`${indent}Self::try_new(${joined})`, `${indent}    ${tail}`];
+	}
 	return [
 		`${indent}Self::try_new(`,
 		...arguments_.map((argument) => `${indent}    ${argument},`),
