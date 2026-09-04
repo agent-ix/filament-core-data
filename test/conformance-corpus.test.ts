@@ -116,6 +116,15 @@ const gatesWithCase = (id: string, mutate: (entry: Json) => void) => {
 };
 
 /**
+ * Files this change created, in its first and last file-adding commits. Both
+ * ends of the range come from these, so neither moves when the trunk does.
+ */
+const CHANGE_SENTINELS = [
+	"spec/functional/FR-035-define-the-conformance-corpus.md",
+	"conformance/corpus.json",
+];
+
+/**
  * Every path this issue changed, with both ends resolved from history.
  *
  * `origin/main...HEAD` is the wrong range for an isolation gate: after a squash
@@ -133,11 +142,16 @@ const gatesWithCase = (id: string, mutate: (entry: Json) => void) => {
  * non-merge commits is 202 paths, every one inside the NFR-016 permitted set;
  * the 20 beyond the final diff are files this ticket created and later renamed,
  * which it did touch. Nothing here reads a moving ref.
+ *
+ * The far end is `tip`, not `HEAD`. Bounding it at `HEAD` was this file's own
+ * instance of the open-ended-range defect, and the third rehearsal state caught
+ * it: with an unrelated sibling change squashed on top, `src/sibling/marker.mjs`
+ * and a `docs/` edit were attributed to this ticket and TC-640 and TC-643 failed
+ * for another ticket's work — the same shape that took issue #19's gate red for
+ * this one's.
  */
 const corpusChangedPaths = (): string[] => {
-	const { base } = changeRange(REPO, [
-		"spec/functional/FR-035-define-the-conformance-corpus.md",
-	]);
+	const { base, tip } = changeRange(REPO, CHANGE_SENTINELS);
 	const committed = execFileSync(
 		"git",
 		[
@@ -146,7 +160,7 @@ const corpusChangedPaths = (): string[] => {
 			"--no-merges",
 			"--format=",
 			"--name-only",
-			`${base}..HEAD`,
+			`${base}..${tip}`,
 		],
 		{ cwd: REPO, encoding: "utf8" },
 	)
@@ -1934,6 +1948,41 @@ describe("TC-635..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		}[];
 		expect(unreadable.length).toBe(1);
 		expect(unreadable[0].message).toContain("did not run");
+	});
+
+	it("TC-639 the change range is bounded at both ends and covers everything this ticket owns", () => {
+		const git = (...args: string[]) =>
+			execFileSync("git", args, { cwd: REPO, encoding: "utf8" }).trim();
+
+		// Every sentinel must resolve. `changeRange` ignores one that does not,
+		// and a renamed sentinel is exactly how this range would silently narrow
+		// until it stopped covering the work it exists to cover.
+		for (const sentinel of CHANGE_SENTINELS) {
+			expect(
+				git("log", "--diff-filter=A", "--format=%H", "-1", "--", sentinel),
+				`sentinel does not resolve: ${sentinel}`,
+			).not.toBe("");
+		}
+
+		// Nothing this ticket owns may be added after the tip, or the range would
+		// not cover it. This keeps the sentinel list honest as the change grows,
+		// rather than trusting someone to remember to update it.
+		const { tip } = changeRange(REPO, CHANGE_SENTINELS) as { tip: string };
+		const addedAfterTip = git(
+			"log",
+			"--diff-filter=A",
+			"--format=",
+			"--name-only",
+			`${tip}..HEAD`,
+			"--",
+			"conformance",
+		)
+			.split("\n")
+			.filter((line) => line.trim().length > 0);
+		expect(
+			addedAfterTip,
+			"a file under conformance/ was added after the range's tip; add a sentinel from that commit",
+		).toEqual([]);
 	});
 
 	it("TC-639 no corpus gate baselines on a range this branch's own merge empties", () => {
