@@ -431,6 +431,33 @@ describe("TypeScript backend fixture (FR-071)", () => {
 		);
 	});
 
+	it("preserves the fixture's identity and metadata surface without retaining validators", () => {
+		const identity = readFileSync(resolve(expected, "identity.ts"), "utf8");
+		const metadata = readFileSync(resolve(expected, "metadata.ts"), "utf8");
+		const ir = JSON.parse(readFileSync(fixtureIr, "utf8")) as {
+			types: {
+				identity: string;
+				fields?: { identity: string; name: string }[];
+			}[];
+			extensions: { identity: string }[];
+			occurrences: { identity: string }[];
+		};
+		for (const type of ir.types) {
+			expect(identity).toContain(JSON.stringify(type.identity));
+			for (const field of type.fields ?? [])
+				expect(identity).toContain(JSON.stringify(field.identity));
+		}
+		for (const extension of ir.extensions)
+			expect(metadata).toContain(JSON.stringify(extension.identity));
+		for (const occurrence of ir.occurrences)
+			expect(metadata).toContain(JSON.stringify(occurrence.identity));
+		expect(metadata).toContain("sourceIdentity:");
+		expect(metadata).toContain("packageLockDigest:");
+		expect(metadata).toContain("fingerprint:");
+		expect(identity).not.toMatch(/from "\.\/validators\.js"/);
+		expect(metadata).not.toMatch(/from "\.\/validators\.js"/);
+	});
+
 	it("executes every authored runtime-validator case without blessing output", async () => {
 		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-typescript-instances-"));
 		try {
