@@ -39,7 +39,7 @@ by Wave 4 module tickets (`agent-ix/quoin#286`), the extraction frontend
 
 - **Given** a `TypeRef` whose target is `Decimal`
 - **When** it is lowered to the IR
-- **Then** the IR field carries `scalar: number` plus a namespaced decimal precision/scale extension, and nothing is dropped
+- **Then** the IR field references a package-local `Decimal` kernel definition (`scalar: number`) and carries the semantic-core `decimal` extension with the declared precision and scale, and nothing is dropped
 
 ### [US-007-EX-3] The kernel refuses domain vocabulary
 
@@ -50,8 +50,8 @@ by Wave 4 module tickets (`agent-ix/quoin#286`), the extraction frontend
 ### [US-007-EX-4] A malformed declaration is rejected by the emitted schema
 
 - **Given** a `FieldDecl` whose `type.multiplicity` has `upper: 0, lower: 1`
-- **When** it is validated against the emitted `FieldDecl.json`
-- **Then** validation fails at that declaration
+- **When** the semantic-core reader reads it (the emitted `FieldDecl.json` validates shape; the reader enforces cross-property rules)
+- **Then** the reader rejects it at that declaration's locus
 
 ## Options (Exploratory)
 
