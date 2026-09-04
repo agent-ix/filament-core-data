@@ -43,7 +43,7 @@ computed from the rows.
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001..US-007, US-009, FR-001..FR-034, FR-040..FR-044 | TC-033, TC-086, TC-129, TC-130..279, TC-320..397 | 🚧 issue #27 |
+| StR-001 | US-001..US-007, US-009, FR-001..FR-034, FR-040..FR-044 | TC-033, TC-086, TC-129, TC-130..279, TC-320..397 | ⚠️ TC-370, TC-382 blocked on issue #42 |
 
 ### User Story Coverage
 
@@ -483,7 +483,7 @@ computed from the rows.
 | TC-386 | `baseDir` is an explicit parameter, not an ambient read | Unit | P0 | NFR-017-AC-4 | ✅ passed |
 | TC-387 | A seeded lockfile survives `cargo check --offline --locked` unchanged | Integration | P0 | NFR-017-AC-5 | ✅ passed |
 | TC-388 | No dependency added, exact pins, no `.npmrc`, no `file:`/`link:` | Static | P0 | NFR-017-AC-6 | ✅ passed |
-| TC-389 | The issue #42 host couplings are named in the feasibility doc | Static | P0 | NFR-017-AC-7 | ✅ passed |
+| TC-389 | All three issue #42 host couplings are named in the feasibility doc | Static | P0 | NFR-017-AC-7 | ✅ passed |
 | TC-390 | Every changed path is permitted and none is prohibited | Static | P0 | NFR-018-AC-1 | ✅ passed |
 | TC-391 | `exports`, `main`, `module`, `types`, `files` unchanged from `origin/main` | Static | P0 | NFR-018-AC-2 | ✅ passed |
 | TC-392 | The packed-file delta is confined to `src/compiler/**` and recorded | Integration | P0 | NFR-018-AC-3 | ✅ passed |
@@ -799,4 +799,4 @@ database, publication, enforcement, and retirement work remains separately gated
 | Compile | 2 | 2 | 0 | 0 | 100% mapped |
 | **Total** | **357** | **355** | **0** | **2** | **100% mapped** |
 
-**Matrix coverage status: ✅ Complete. Execution status: ✅ 355 of 357 passed; TC-199 recorded by the owner decision on issue #4; TC-203..247 pass on PR #38 (TC-232 needs the poetry env, TC-242 the installed `spec-artifacts-iso` manifest); TC-248..279 pass on PR #39 (TC-274 by inspection; TC-279 needs the poetry env); TC-320..397 pass on the issue #27 promotion branch (vitest 171/172; the single failure is TC-254, pre-existing on main and filed as issue #43), except TC-370 and TC-382, which are blocked on issue #42.**
+**Matrix coverage status: ✅ Complete. Execution status: ✅ 355 of 357 passed; TC-199 recorded by the owner decision on issue #4; TC-203..247 pass on PR #38 (TC-232 needs the poetry env, TC-242 the installed `spec-artifacts-iso` manifest); TC-248..279 pass on PR #39 (TC-274 by inspection; TC-279 needs the poetry env); TC-320..397 pass on the issue #27 promotion branch (vitest 172/173; the single failure is TC-254, pre-existing on main and filed as issue #43), except TC-370 and TC-382, which are blocked on issue #42.**

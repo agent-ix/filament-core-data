@@ -6,17 +6,23 @@ import { serializeSemanticIr } from "./ir.mjs";
 
 const USAGE = `Usage: node src/compiler/cli.mjs emit-ir --entrypoint <path> [--generator <id>] [--base-dir <path>] --out <path>`;
 
+const KNOWN_FLAGS = new Set(["entrypoint", "generator", "base-dir", "out"]);
+
 function parse(argv) {
 	const options = {};
 	for (let index = 0; index < argv.length; index += 1) {
 		const argument = argv[index];
-		if (!argument.startsWith("--")) continue;
+		if (!argument.startsWith("--")) {
+			throw new Error(`Unexpected argument: ${argument}\n${USAGE}`);
+		}
 		const key = argument.slice(2);
-		const value = argv[index + 1];
-		if (value === undefined || value.startsWith("--")) {
+		if (!KNOWN_FLAGS.has(key)) {
+			throw new Error(`Unknown flag: --${key}\n${USAGE}`);
+		}
+		if (index + 1 >= argv.length) {
 			throw new Error(`Missing value for --${key}\n${USAGE}`);
 		}
-		options[key] = value;
+		options[key] = argv[index + 1];
 		index += 1;
 	}
 	return options;

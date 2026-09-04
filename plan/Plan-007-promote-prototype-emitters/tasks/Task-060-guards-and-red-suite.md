@@ -2,7 +2,7 @@
 id: Task-060
 title: "Guards, changed-path allowlist, and red suite"
 type: Task
-status: pending
+status: done
 track: A
 priority: P0
 relationships:
@@ -25,10 +25,10 @@ Author the guards before any promoted file exists, so the branch cannot go green
 
 ## Subtasks
 
-- [ ] Extend the `allowed` changed-path array in `test/typespec-feasibility.test.ts` (TC-123/TC-124) with `src/compiler/`, `tsconfig.json`, `tsconfig.build.json`, `plan/Plan-007-promote-prototype-emitters/`, and `test/compiler.test.ts`. This array, not NFR-017's prose, is the gate that actually runs.
-- [ ] Add `test/compiler.test.ts` with the TC-320..397 trace inventory comment and the changed-path assertions for the NFR-017 permitted and prohibited lists (TC-390).
-- [ ] Add the assertion that every path the branch changes is covered by the allowlist (TC-379).
-- [ ] Record the `origin/main` baselines the later tasks compare against: the four committed goldens (`semantic-ir.json`, `typescript/index.ts`, `rust/src/lib.rs`, `python/input.schema.json`), the committed `Cargo.lock`, and `evidence/custom.json`.
+- [x] Extend the `allowed` changed-path array in `test/typespec-feasibility.test.ts` (TC-123/TC-124) with `src/compiler/`, `tsconfig.json`, `tsconfig.build.json`, `plan/Plan-007-promote-prototype-emitters/`, and `test/compiler.test.ts`. This array, not NFR-017's prose, is the gate that actually runs.
+- [x] Add `test/compiler.test.ts` with the TC-320..397 trace inventory comment and the changed-path assertions for the NFR-017 permitted and prohibited lists (TC-390).
+- [x] Add the assertion that every path the branch changes is covered by the allowlist (TC-379).
+- [x] Record the `origin/main` baselines the later tasks compare against: the four committed goldens (`semantic-ir.json`, `typescript/index.ts`, `rust/src/lib.rs`, `python/input.schema.json`), the committed `Cargo.lock`, and `evidence/custom.json`.
 
 ## Deliverables
 

@@ -2,7 +2,7 @@
 id: Task-063
 title: "Python JSON Schema adapter and pinned constants"
 type: Task
-status: pending
+status: done
 track: B
 priority: P0
 relationships:
@@ -37,11 +37,11 @@ Promote the JSON Schema adapter that prepares the official bundle for `datamodel
 
 ## Subtasks
 
-- [ ] `src/compiler/backends/python-schema.mjs` exporting `normalizeJsonSchemaForPython(schema)`, `DATAMODEL_CODEGEN_VERSION`, and `PYDANTIC_VERSION`.
-- [ ] Keep the forbidden-key rejection closed over `x-python-import`, `customTypePath`, `default_factory`, at any depth (TC-362, TC-363).
-- [ ] Golden comparison against the committed `python/input.schema.json` (TC-361).
-- [ ] Purity and input-immutability assertions (TC-366).
-- [ ] Assert no module under `src/compiler/` spawns a process, so the generator invocation is demonstrably left to issue #23 (TC-369).
+- [x] `src/compiler/backends/python-schema.mjs` exporting `normalizeJsonSchemaForPython(schema)`, `DATAMODEL_CODEGEN_VERSION`, and `PYDANTIC_VERSION`.
+- [x] Keep the forbidden-key rejection closed over `x-python-import`, `customTypePath`, `default_factory`, at any depth (TC-362, TC-363).
+- [x] Golden comparison against the committed `python/input.schema.json` (TC-361).
+- [x] Purity and input-immutability assertions (TC-366).
+- [x] Assert no module under `src/compiler/` spawns a process, so the generator invocation is demonstrably left to issue #23 (TC-369).
 
 ## Deliverables
 

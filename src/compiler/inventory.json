@@ -14,7 +14,9 @@
 				"src/compiler/compile.mjs",
 				"src/compiler/emitters/semantic-ir/index.mjs",
 				"src/compiler/emitters/semantic-ir/package.json",
-				"src/compiler/emitters/semantic-ir/index.d.mts"
+				"src/compiler/emitters/semantic-ir/index.d.mts",
+				"src/compiler/identity.mjs",
+				"src/compiler/identity.d.mts"
 			],
 			"evidence": "Reproduces the committed generated/custom/semantic-ir.json byte-for-byte through all three routes (programmatic, CLI, tsp --emit); FR-041-AC-2, FR-041-AC-5, TC-333, TC-336.",
 			"limitation": "Rewritten only to make two ambient inputs explicit (baseDir replaces process.cwd(); code-point ordering replaces localeCompare). The IR shape, the role/nullable/recursive/extensionPoint name heuristics, and the absence of an id-uniqueness rule are unchanged prototype semantics frozen by FR-041-CON-1; revising them is issue #19. No separate reusable compiler repository, accepted production owner, budget, compatibility matrix, or upgrade SLA exists"
@@ -23,13 +25,10 @@
 			"component": "typescript-backend",
 			"source": "spikes/typespec-feasibility/scripts/run-experiment.mjs (emitTypeScript, tsType, simpleReferences, enumMembers, replaceEnumMember)",
 			"capability": "native-codegen-conformance",
-			"disposition": "retain",
-			"targets": [
-				"src/compiler/backends/typescript.mjs",
-				"src/compiler/backends/type-names.mjs"
-			],
+			"disposition": "rewrite",
+			"targets": ["src/compiler/backends/typescript.mjs"],
 			"evidence": "Reproduces the committed generated/custom/typescript/index.ts byte-for-byte from the committed IR, which the promoted code did not produce; FR-042-AC-1, TC-349.",
-			"limitation": "Qualified against the issue #4 representative slice only: no conformance corpus, no property/fuzz suite, no release compatibility matrix, and no independent downstream adoption; qualified against the issue #4 representative slice only, until issues #21 and #22 discharge it against the issue #20 corpus. Renders by textual substitution over the strings getTypeName produces, so a @typespec/compiler upgrade can change output while the IR test still passes (FR-042-CON-5). No broad conformance corpus, property/fuzz suite, release compatibility matrix, or independent downstream adoption exists"
+			"limitation": "Rewritten only to add the missing-base guard, which changes no golden byte. Qualified against the issue #4 representative slice only: no conformance corpus, no property/fuzz suite, no release compatibility matrix, and no independent downstream adoption; qualified against the issue #4 representative slice only, until issues #21 and #22 discharge it against the issue #20 corpus. Renders by textual substitution over the strings getTypeName produces, so a @typespec/compiler upgrade can change output while the IR test still passes (FR-042-CON-5). No broad conformance corpus, property/fuzz suite, release compatibility matrix, or independent downstream adoption exists"
 		},
 		{
 			"component": "rust-serde-backend",
@@ -145,16 +144,20 @@
 	],
 	"authored": [
 		{
-			"path": "src/compiler/index.mjs",
-			"reason": "The six-symbol narrow build interface FR-041 requires; the prototype had no interface, only a $onEmit entry point and module-scope functions inside the spike runner."
+			"path": "src/compiler/backends/type-names.mjs",
+			"reason": "Type-name substitution helpers shared by the TypeScript and Rust backends. The prototype declared them at module scope in run-experiment.mjs alongside both generators; extracting them into their own module is the promotion's factoring, so neither backend record owns the file."
+		},
+		{
+			"path": "src/compiler/cli.mjs",
+			"reason": "The command the spike and the Makefile target call; the prototype was reached only through `tsp --emit` against a file: dependency, which FR-044 removes."
 		},
 		{
 			"path": "src/compiler/index.d.mts",
 			"reason": "TypeScript declarations for that interface, so tsc --noEmit fails when they drift from the .mjs implementation (FR-041-AC-12)."
 		},
 		{
-			"path": "src/compiler/cli.mjs",
-			"reason": "The command the spike and the Makefile target call; the prototype was reached only through `tsp --emit` against a file: dependency, which FR-044 removes."
+			"path": "src/compiler/index.mjs",
+			"reason": "The six-symbol narrow build interface FR-041 requires; the prototype had no interface, only a $onEmit entry point and module-scope functions inside the spike runner."
 		},
 		{
 			"path": "src/compiler/inventory.json",

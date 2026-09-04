@@ -86,7 +86,7 @@ semantic-core-check:
 # stay devDependencies until issue #11 publishes.
 
 ENTRYPOINT ?= spikes/typespec-feasibility/main.tsp
-OUT ?= build/semantic-ir.json
+OUT ?= dist/semantic-ir.json
 GENERATOR ?=
 
 .PHONY: compiler-emit-ir

@@ -2,7 +2,7 @@
 id: Task-066
 title: "Determinism and non-disruption gates"
 type: Task
-status: pending
+status: done
 track: A
 priority: P0
 relationships:
@@ -45,15 +45,15 @@ Run the cross-cutting gates over the finished tree.
 
 ## Subtasks
 
-- [ ] Repeat-run identity for the CLI, both backends, and the adapter (TC-383).
-- [ ] Collator-independence and explicit-`baseDir` checks (TC-385, TC-386).
-- [ ] Retained-evidence branch diff: exactly one file, exactly one field (TC-384).
-- [ ] Dependency inspection: no added dependency, exact `@typespec/*` pins, no `.npmrc`, no `file:`/`link:` (TC-388).
-- [ ] Manifest and packed-file comparison against `origin/main`, asserting the tarball delta is confined to `src/compiler/**` (TC-391, TC-392).
-- [ ] Licence inspection and dependency-set comparison (TC-393, TC-394).
-- [ ] Restore rehearsal: restoring every changed path from `origin/main` reproduces `origin/main`'s tree exactly (TC-395).
-- [ ] Confirm no workflow, tag, or publication step is added or triggered (TC-396).
-- [ ] Confirm the issue #42 couplings are named in the feasibility doc (TC-389).
+- [x] Repeat-run identity for the CLI, both backends, and the adapter (TC-383).
+- [x] Collator-independence and explicit-`baseDir` checks (TC-385, TC-386).
+- [x] Retained-evidence branch diff: exactly one file, exactly one field (TC-384).
+- [x] Dependency inspection: no added dependency, exact `@typespec/*` pins, no `.npmrc`, no `file:`/`link:` (TC-388).
+- [x] Manifest and packed-file comparison against `origin/main`, asserting the tarball delta is confined to `src/compiler/**` (TC-391, TC-392).
+- [x] Licence inspection and dependency-set comparison (TC-393, TC-394).
+- [x] Restore rehearsal: restoring every changed path from `origin/main` reproduces `origin/main`'s tree exactly (TC-395).
+- [x] Confirm no workflow, tag, or publication step is added or triggered (TC-396).
+- [x] Confirm the issue #42 couplings are named in the feasibility doc (TC-389).
 
 ## Deliverables
 

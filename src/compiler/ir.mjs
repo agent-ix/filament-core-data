@@ -13,6 +13,7 @@ import {
 	getVersion,
 } from "@typespec/versioning";
 import { relative } from "node:path";
+import { defaultGeneratorId } from "./identity.mjs";
 
 /**
  * Schema version of the emitted semantic IR. Frozen at the issue #4 prototype
@@ -146,7 +147,7 @@ function record(program, type, baseDir) {
  * relative to a declared directory rather than an ambient `process.cwd()`.
  */
 export function buildSemanticIr(program, options = {}) {
-	const { generator, baseDir = process.cwd() } = options;
+	const { generator = defaultGeneratorId(), baseDir = process.cwd() } = options;
 	const types = new Map();
 	const add = (type) => {
 		if (!type.name || !inTargetNamespace(type)) return;

@@ -11,7 +11,7 @@ import {
 	writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
@@ -21,7 +21,10 @@ import {
 	emitTypeScript,
 	normalizeJsonSchemaForPython,
 } from "../src/compiler/index.mjs";
-import type { SemanticIrDocument } from "../src/compiler/index.d.mts";
+import type {
+	SemanticIrDocument,
+	SemanticIrType,
+} from "../src/compiler/index.d.mts";
 import {
 	DATAMODEL_CODEGEN_VERSION,
 	PYDANTIC_VERSION,
@@ -68,7 +71,12 @@ function git(...args: string[]): string {
 }
 
 function changedPaths(): string[] {
-	const committed = git("diff", "--name-only", "origin/main...HEAD");
+	const committed = git(
+		"diff",
+		"--no-renames",
+		"--name-only",
+		"origin/main...HEAD",
+	);
 	const working = execFileSync(
 		"git",
 		["status", "--porcelain", "--untracked-files=all"],
@@ -305,7 +313,7 @@ describe("issue #27 promotion inventory (FR-040)", () => {
 		for (const [disposition, count] of counts) {
 			expect(doc, disposition).toContain(`**${count} ${disposition}**`);
 		}
-		expect(doc).toContain(`${inventory.authored.length} files`);
+		expect(doc).toContain(`${inventory.authored.length} files under`);
 	});
 
 	/** Traces: TC-329; FR-040-AC-7, FR-040-CON-1. */
@@ -356,12 +364,37 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 		]);
 	});
 
-	/** Traces: TC-332; FR-041-AC-1. */
-	it("fails the export-set assertion when a seventh symbol appears", async () => {
-		const module = await import("../src/compiler/index.mjs");
-		const withExtra = [...Object.keys(module), "serializeSemanticIr"].sort();
-		expect(withExtra).not.toEqual(Object.keys(module).sort());
-		expect(withExtra).toHaveLength(7);
+	/** Traces: TC-332, TC-343; FR-041-AC-1, FR-041-AC-12. */
+	it("keeps the declarations and the implementation in the same export set", async () => {
+		// The real drift risk is a symbol declared but not implemented, or
+		// implemented but not declared. `tsc` cannot see it, because the
+		// repository does not typecheck `.mjs`, so the sets are compared here.
+		const pairs: [string, string][] = [
+			["../src/compiler/index.mjs", "src/compiler/index.d.mts"],
+			[
+				"../src/compiler/backends/python-pins.mjs",
+				"src/compiler/backends/python-pins.d.mts",
+			],
+			[
+				"../src/compiler/emitters/semantic-ir/index.mjs",
+				"src/compiler/emitters/semantic-ir/index.d.mts",
+			],
+		];
+		for (const [modulePath, declarationPath] of pairs) {
+			const module = (await import(modulePath)) as Record<string, unknown>;
+			const text = read(resolve(root, declarationPath));
+			const declared = new Set(
+				[...text.matchAll(/export declare (?:function|const) ([\w$]+)/g)].map(
+					(match) => match[1],
+				),
+			);
+			for (const match of text.matchAll(/export \{ ([\w$]+) \}/g)) {
+				declared.add(match[1]);
+			}
+			expect([...declared].sort(), declarationPath).toEqual(
+				Object.keys(module).sort(),
+			);
+		}
 	});
 
 	/** Traces: TC-333, TC-335, TC-383; FR-041-AC-2, FR-041-AC-4, NFR-017-AC-1. */
@@ -408,6 +441,22 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 					baseDir: root,
 				}),
 			).rejects.toThrow(/invalid\/main\.tsp/);
+			// The CLI owns --out, so it is the route that could leave a partial
+			// file behind.
+			expect(() =>
+				execFileSync(
+					"node",
+					[
+						cli,
+						"emit-ir",
+						"--entrypoint",
+						resolve(spike, "fixtures/invalid/main.tsp"),
+						"--out",
+						out,
+					],
+					{ cwd: root, stdio: "pipe" },
+				),
+			).toThrow();
 			expect(existsSync(out)).toBe(false);
 		} finally {
 			rmSync(output, { recursive: true, force: true });
@@ -487,11 +536,40 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 		expect(SEMANTIC_IR_SCHEMA_VERSION).toBe("1.0.0");
 		expect(Object.keys(ir)).toEqual(["schemaVersion", "generator", "types"]);
 		expect(ir.generator).toBe("caller@9.9.9");
-		const { defaultGeneratorId } = await import(
-			"../src/compiler/emitters/semantic-ir/index.mjs"
-		);
 		const manifest = readJson(resolve(emitterDir, "package.json"));
-		expect(defaultGeneratorId()).toBe(`${manifest.name}@${manifest.version}`);
+		const expected = `${manifest.name}@${manifest.version}`;
+		const { defaultGeneratorId } = await import("../src/compiler/identity.mjs");
+		expect(defaultGeneratorId()).toBe(expected);
+		// Every route must stamp it, not just $onEmit: an undefined generator is
+		// dropped by JSON.stringify and would emit an envelope-less document.
+		const programmatic = await compileSemanticIr({
+			entrypoint: resolve(spike, "main.tsp"),
+			baseDir: root,
+		});
+		expect(programmatic.generator).toBe(expected);
+		const output = temp("default");
+		try {
+			const out = resolve(output, "ir.json");
+			execFileSync(
+				"node",
+				[
+					cli,
+					"emit-ir",
+					"--entrypoint",
+					resolve(spike, "main.tsp"),
+					"--base-dir",
+					root,
+					"--out",
+					out,
+				],
+				{ cwd: root },
+			);
+			const emitted = JSON.parse(read(out)) as { generator?: string };
+			expect(Object.keys(emitted)).toContain("generator");
+			expect(emitted.generator).toBe(expected);
+		} finally {
+			rmSync(output, { recursive: true, force: true });
+		}
 	});
 
 	/** Traces: TC-340; FR-041-AC-9. */
@@ -524,7 +602,7 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 		const second = outside.types.find((type) => type.id === first?.id);
 		expect(first?.source).toMatch(/^spikes\/typespec-feasibility\/.+:\d+$/);
 		expect(second?.source).not.toBe(first?.source);
-		expect(second?.source).toContain("filament-core-data-27/spikes");
+		expect(second?.source).toContain(`${basename(root)}/spikes`);
 	});
 
 	/** Traces: TC-342, TC-385; FR-041-AC-11, NFR-017-AC-3. */
@@ -547,11 +625,16 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 	});
 
 	/** Traces: TC-343; FR-041-AC-12. */
-	it("is covered by the repository formatter and typechecker", () => {
+	it("is formatted by the repository formatter", () => {
+		// `biome format` exits non-zero when a file would be reformatted, so the
+		// call itself is the gate.
 		execFileSync("pnpm", ["exec", "biome", "format", "src/compiler"], {
 			cwd: root,
 		});
-		expect(existsSync(resolve(compilerRoot, "index.d.mts"))).toBe(true);
+		const formatted = walk(compilerRoot).filter(
+			(path) => path.endsWith(".mjs") || path.endsWith(".mts"),
+		);
+		expect(formatted.length).toBeGreaterThan(5);
 	});
 
 	/** Traces: TC-344; FR-041-AC-12. */
@@ -576,9 +659,15 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 
 	/** Traces: TC-345, TC-393; FR-041-AC-13, FR-041-CON-5, NFR-018-AC-4. */
 	it("licenses every added manifest AGPL-3.0-only", () => {
-		expect(readJson(resolve(emitterDir, "package.json")).license).toBe(
-			"AGPL-3.0-only",
+		const manifests = addedPaths().filter((path) =>
+			path.endsWith("package.json"),
 		);
+		expect(manifests).toContain(
+			"src/compiler/emitters/semantic-ir/package.json",
+		);
+		for (const path of manifests) {
+			expect(readJson(resolve(root, path)).license, path).toBe("AGPL-3.0-only");
+		}
 	});
 
 	/** Traces: TC-346, TC-347; FR-041-CON-3, FR-041-CON-4. */
@@ -646,35 +735,79 @@ describe("promoted language backends (FR-042)", () => {
 
 	/** Traces: TC-352, TC-369; FR-042-AC-4, FR-042-CON-2, FR-043-AC-8, FR-043-CON-3. */
 	it("touches no filesystem, environment, clock, network, or process", () => {
-		for (const path of walk(compilerRoot)) {
-			if (!path.endsWith(".mjs")) continue;
-			if (path === "cli.mjs" || path.startsWith("emitters/")) continue;
+		const forbidden = [
+			"node:fs",
+			"node:child_process",
+			"node:net",
+			"node:http",
+			"node:https",
+			"node:dns",
+			"node:tls",
+			"node:os",
+			"node:worker_threads",
+			"createRequire",
+			"fetch(",
+			"XMLHttpRequest",
+			"process.env",
+			"process.cwd",
+			"globalThis.process",
+			"Date.now",
+			"new Date(",
+			"performance.now",
+			"Math.random",
+		];
+		// The purity claim binds the backends and everything they can reach, so
+		// the import graph is walked rather than a hand-picked file list.
+		const reachable = new Set<string>();
+		const visit = (relPath: string) => {
+			if (reachable.has(relPath)) return;
+			reachable.add(relPath);
+			const source = read(resolve(compilerRoot, relPath));
+			for (const match of source.matchAll(
+				/(?:from|import)\s*\(?\s*"(\.[^"]+)"/g,
+			)) {
+				visit(
+					relative(
+						compilerRoot,
+						resolve(dirname(resolve(compilerRoot, relPath)), match[1]),
+					),
+				);
+			}
+		};
+		visit("backends/typescript.mjs");
+		visit("backends/rust.mjs");
+		visit("backends/python-schema.mjs");
+		expect([...reachable].sort()).toEqual([
+			"backends/python-schema.mjs",
+			"backends/rust.mjs",
+			"backends/type-names.mjs",
+			"backends/typescript.mjs",
+		]);
+		for (const path of reachable) {
 			const source = read(resolve(compilerRoot, path));
-			for (const forbidden of [
-				"node:fs",
-				"node:child_process",
-				"node:net",
-				"node:http",
-				"process.env",
-				"Date.now",
-				"new Date(",
-				"Math.random",
-			]) {
-				expect(source, `${path} uses ${forbidden}`).not.toContain(forbidden);
+			for (const token of forbidden) {
+				expect(source, `${path} uses ${token}`).not.toContain(token);
 			}
 		}
-		const backends = ["backends/typescript.mjs", "backends/rust.mjs"];
-		for (const path of backends) {
-			expect(read(resolve(compilerRoot, path)), path).not.toContain(
-				"process.cwd",
-			);
+		// FR-043-AC-8 binds the whole compiler, including the two modules that
+		// legitimately do I/O and are unreachable from any backend.
+		for (const path of walk(compilerRoot)) {
+			if (!path.endsWith(".mjs")) continue;
+			expect(
+				read(resolve(compilerRoot, path)),
+				`${path} spawns a process`,
+			).not.toMatch(/spawn\(|execFile|execSync|child_process/);
+		}
+		for (const impure of ["cli.mjs", "identity.mjs"]) {
+			expect(reachable.has(impure), impure).toBe(false);
 		}
 	});
 
 	/** Traces: TC-353; FR-042-AC-5. */
 	it("throws naming a base absent from the document", () => {
-		const broken = {
+		const broken: SemanticIrDocument = {
 			schemaVersion: "1.0.0",
+			generator: "test@0.0.0",
 			types: [
 				{
 					id: "AgentIx.Semantic.Core.Orphan",
@@ -685,6 +818,10 @@ describe("promoted language backends (FR-042)", () => {
 					source: "synthetic",
 					base: "AgentIx.Semantic.Core.Ghost",
 					fields: [],
+					constraints: {},
+					discriminator: null,
+					versioning: { packageVersions: [], added: [], removed: [] },
+					deprecated: null,
 				},
 			],
 		};
@@ -696,7 +833,7 @@ describe("promoted language backends (FR-042)", () => {
 
 	/** Traces: TC-354; FR-042-AC-6. */
 	it("throws naming a base-chain cycle instead of recursing", () => {
-		const model = (name: string, base: string) => ({
+		const model = (name: string, base: string): SemanticIrType => ({
 			id: `AgentIx.Semantic.Core.${name}`,
 			name,
 			package: "AgentIx.Semantic.Core",
@@ -705,9 +842,14 @@ describe("promoted language backends (FR-042)", () => {
 			source: "synthetic",
 			base: `AgentIx.Semantic.Core.${base}`,
 			fields: [],
+			constraints: {},
+			discriminator: null,
+			versioning: { packageVersions: [], added: [], removed: [] },
+			deprecated: null,
 		});
-		const cyclic = {
+		const cyclic: SemanticIrDocument = {
 			schemaVersion: "1.0.0",
+			generator: "test@0.0.0",
 			types: [model("A", "B"), model("B", "A")],
 		};
 		expect(() => emitRust(cyclic)).toThrow(/cycle/i);
@@ -898,7 +1040,7 @@ describe("frozen spike replay (FR-044)", () => {
 	});
 
 	/** Traces: TC-372; FR-044-AC-3, FR-044-CON-2. */
-	it("seeds the committed lockfile instead of regenerating it", () => {
+	it("seeds the committed lockfile instead of regenerating it (source-text)", () => {
 		const runner = read(resolve(spike, "scripts/run-experiment.mjs"));
 		expect(runner).toContain('generated/custom/rust/Cargo.lock"');
 		expect(runner).toContain("cpSync(retainedLock");
@@ -909,7 +1051,7 @@ describe("frozen spike replay (FR-044)", () => {
 	});
 
 	/** Traces: TC-374; FR-044-AC-4. */
-	it("fails --check rather than generating a missing lockfile", () => {
+	it("fails --check rather than generating a missing lockfile (source-text)", () => {
 		const runner = read(resolve(spike, "scripts/run-experiment.mjs"));
 		expect(runner).toMatch(
 			/else if \(checkMode\) \{[\s\S]*Missing retained lockfile/,
@@ -941,7 +1083,7 @@ describe("frozen spike replay (FR-044)", () => {
 	});
 
 	/** Traces: TC-377; FR-044-AC-7. */
-	it("makes the spike runner import the promoted backends", () => {
+	it("makes the spike runner import the promoted backends (source-text)", () => {
 		const runner = read(resolve(spike, "scripts/run-experiment.mjs"));
 		expect(runner).toContain('from "../../../src/compiler/index.mjs"');
 		for (const name of [
@@ -968,6 +1110,42 @@ describe("frozen spike replay (FR-044)", () => {
 				path,
 			).toBe(true);
 		}
+	});
+
+	/** Traces: TC-380; FR-044-AC-10. */
+	it("proves zero publications and mutations from the branch diff", () => {
+		// FR-044-AC-10 forbids discharging this from validation.json's counters,
+		// which run-experiment.mjs writes as literals. The branch diff is the
+		// independent evidence.
+		const mutationPrefixes = [
+			"schema/",
+			"fixtures/",
+			"packages/",
+			"agent_ix_core_data/",
+			"src/generated.ts",
+			"audit/",
+			".github/",
+		];
+		for (const path of changedPaths()) {
+			for (const prefix of mutationPrefixes) {
+				expect(
+					path === prefix || path.startsWith(prefix),
+					`mutation outside the promotion: ${path}`,
+				).toBe(false);
+			}
+		}
+		// No consumer or corpus repository is reachable from this repo's diff at
+		// all, and no publication step exists to trigger.
+		const manifest = readJson(resolve(root, "package.json"));
+		expect(manifest).not.toHaveProperty("publishConfig");
+		expect(
+			changedPaths().filter((path) => path.startsWith("spikes/")).length,
+		).toBeGreaterThan(0);
+		const validation = readJson(resolve(spike, "evidence/validation.json"));
+		// The counters must still read zero, but they are corroboration, not the
+		// evidence: the changed-path check above is.
+		expect(validation.packagePublications).toBe(0);
+		expect(validation.externalRepositoryMutations).toBe(0);
 	});
 
 	/** Traces: TC-381, TC-389, TC-397; FR-044-AC-11, FR-044-AC-12, NFR-017-AC-7. */
@@ -1069,29 +1247,54 @@ describe("determinism and non-disruption (NFR-017, NFR-018)", () => {
 
 	/** Traces: TC-395; NFR-018-AC-6. */
 	it("restores origin/main exactly when the changed paths are reverted", () => {
+		const changed = changedPaths().filter(
+			(path) => !path.startsWith("dist/") && !path.startsWith("node_modules/"),
+		);
+		expect(changed).toContain(
+			"spikes/typespec-feasibility/evidence/custom.json",
+		);
+		const deleted = deletedPaths();
+		expect(
+			deleted.some((path) =>
+				path.startsWith("spikes/typespec-feasibility/emitter/"),
+			),
+			"the emitter deletion must be visible to the restore rehearsal",
+		).toBe(true);
+
 		const scratch = temp("restore");
 		try {
-			expect(changedPaths()).toContain(
-				"spikes/typespec-feasibility/evidence/custom.json",
-			);
-			const deleted = deletedPaths();
-			expect(
-				deleted.some((path) =>
-					path.startsWith("spikes/typespec-feasibility/emitter/"),
-				),
-			).toBe(true);
-			for (const path of deleted) {
-				const restored = git("show", `origin/main:${path}`);
+			let restored = 0;
+			for (const path of changed) {
+				if (!existsAtMain(path)) {
+					expect(existsSync(resolve(root, path)), path).toBe(true);
+					continue;
+				}
+				const original = execFileSync("git", ["show", `origin/main:${path}`], {
+					cwd: root,
+					encoding: "buffer",
+				}) as unknown as Buffer;
 				const target = resolve(scratch, path);
 				mkdirSync(dirname(target), { recursive: true });
-				writeFileSync(target, restored);
-				expect(existsSync(target), path).toBe(true);
+				writeFileSync(target, original);
+				expect(readFileSync(target).equals(original), path).toBe(true);
+				restored += 1;
+				if (deleted.includes(path)) {
+					expect(existsSync(resolve(root, path)), path).toBe(false);
+					expect(original.length, path).toBeGreaterThan(0);
+				}
 			}
-			const evidence = git(
-				"show",
-				"origin/main:spikes/typespec-feasibility/evidence/custom.json",
+			expect(restored).toBeGreaterThan(0);
+			const evidencePath = "spikes/typespec-feasibility/evidence/custom.json";
+			expect(read(resolve(scratch, evidencePath))).toBe(
+				execFileSync("git", ["show", `origin/main:${evidencePath}`], {
+					cwd: root,
+					encoding: "utf8",
+				}),
 			);
-			expect(evidence).toContain(
+			expect(read(resolve(scratch, evidencePath))).toContain(
+				"--emit @agent-ix/typespec-semantic-ir-emitter-spike",
+			);
+			expect(read(resolve(root, evidencePath))).not.toContain(
 				"--emit @agent-ix/typespec-semantic-ir-emitter-spike",
 			);
 		} finally {
@@ -1111,8 +1314,14 @@ describe("determinism and non-disruption (NFR-017, NFR-018)", () => {
 
 	/** Traces: TC-373, TC-387; FR-044-AC-3, NFR-017-AC-5. */
 	it("keeps the seeded lockfile byte-identical through cargo check", () => {
-		const cargo = resolve(process.env.HOME ?? "", ".cargo/bin/cargo");
-		if (!existsSync(cargo)) return;
+		// A missing cargo is an unmet host prerequisite (FR-044-CON-4), not a
+		// reason for this gate to pass having asserted nothing.
+		const cargo = execFileSync("sh", ["-c", "command -v cargo || true"], {
+			encoding: "utf8",
+		}).trim();
+		expect(cargo, "cargo is a host prerequisite for TC-373/TC-387").not.toBe(
+			"",
+		);
 		const scratch = temp("cargo");
 		try {
 			const source = resolve(spike, "generated/custom/rust");

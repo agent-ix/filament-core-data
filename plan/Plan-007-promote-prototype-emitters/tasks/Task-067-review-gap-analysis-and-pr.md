@@ -19,10 +19,10 @@ Close the governed loop.
 
 ## Subtasks
 
-- [ ] Run `/code-review` over the change set; write the validated SpecReview to `reviews/YY-MM-DD-promote-prototype-emitters-code-review.md` with `analysis: code-review`.
-- [ ] Run the gap analysis; write it to `reviews/YY-MM-DD-plan-007-promote-prototype-emitters-gap-analysis.md`.
-- [ ] Fix every high and every real medium; record a one-line disposition for anything deliberately not acted on.
-- [ ] Re-run `make lint`, `make test`, `make build`, `make typecheck`, and `quire validate` for both the spec and plan globs.
+- [x] Run `/code-review` over the change set; write the validated SpecReview to `reviews/YY-MM-DD-promote-prototype-emitters-code-review.md` with `analysis: code-review`.
+- [x] Run the gap analysis; write it to `reviews/YY-MM-DD-plan-007-promote-prototype-emitters-gap-analysis.md`.
+- [x] Fix every high and every real medium; record a one-line disposition for anything deliberately not acted on.
+- [x] Re-run `make lint`, `make test`, `make build`, `make typecheck`, and `quire validate` for both the spec and plan globs.
 - [ ] Flip the TC-320..397 rows to their measured status, open the PR against main linking #27, and post the "mergeable" comment listing the gates and their results.
 
 ## Deliverables

@@ -47,9 +47,10 @@ Issue #27 promoted the prototype emitters into `src/compiler/`. Every prototype
 component carries a written disposition in
 [`src/compiler/inventory.json`](../../src/compiler/inventory.json), and no
 component was promoted merely because the representative golden passed. The
-fourteen components disposition as: **2 retain**, **3 rewrite**,
-**1 replace-with-official**, **8 discard**. 4 files under `src/compiler/` are
-recorded as authored by the promotion rather than inherited from the prototype.
+fourteen components disposition as: **1 retain**, **4 rewrite**,
+**1 replace-with-official**, **8 discard**. 5 files under
+`src/compiler/` are recorded as authored by the promotion rather than inherited
+from the prototype.
 
 The two promoted language backends are qualified against the issue #4
 representative slice only. Their recorded limitation names the four gates they

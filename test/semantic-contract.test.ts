@@ -179,7 +179,7 @@ function fingerprint(value: unknown): string {
 function changedPaths(): string[] {
 	const committed = execFileSync(
 		"git",
-		["diff", "--name-only", "origin/main...HEAD"],
+		["diff", "--no-renames", "--name-only", "origin/main...HEAD"],
 		{
 			cwd: root,
 			encoding: "utf8",
@@ -312,11 +312,18 @@ describe("semantic package contract v1", () => {
 		for (const key of [
 			"name",
 			"version",
+			"description",
+			"author",
+			"license",
+			"type",
+			"packageManager",
 			"main",
 			"module",
 			"types",
 			"exports",
 			"files",
+			"scripts",
+			"repository",
 			"dependencies",
 		]) {
 			expect(JSON.stringify(afterManifest[key]), key).toBe(
@@ -1102,7 +1109,10 @@ describe("semantic package contract v1", () => {
 			"pnpm-lock.yaml",
 			"docs/semantic-data-system/typespec-feasibility.md",
 			"test/compiler.test.ts",
-			"spikes/typespec-feasibility/",
+			"spikes/typespec-feasibility/scripts/",
+			"spikes/typespec-feasibility/package.json",
+			"spikes/typespec-feasibility/evidence/custom.json",
+			"spikes/typespec-feasibility/emitter/",
 			"test/semantic-ir-v1-1.test.ts",
 			"test/semantic-ir-v1-1-reader.ts",
 			"packages/semantic-core/",

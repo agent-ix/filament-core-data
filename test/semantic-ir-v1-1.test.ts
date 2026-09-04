@@ -80,7 +80,7 @@ function validates(schemaName: string, value: unknown): boolean {
 function changedPaths(): string[] {
 	const committed = execFileSync(
 		"git",
-		["diff", "--name-only", "origin/main...HEAD"],
+		["diff", "--no-renames", "--name-only", "origin/main...HEAD"],
 		{ cwd: root, encoding: "utf8" },
 	);
 	const working = execFileSync(
@@ -211,7 +211,7 @@ describe("semantic IR v1.1 baseline and non-disruption", () => {
 		}
 		const spikeDiff = execFileSync(
 			"git",
-			["diff", "origin/main", "--name-only", "--", "spikes/"],
+			["diff", "--no-renames", "origin/main", "--name-only", "--", "spikes/"],
 			{ cwd: root, encoding: "utf8" },
 		)
 			.split("\n")
@@ -235,7 +235,10 @@ describe("semantic IR v1.1 baseline and non-disruption", () => {
 			"pnpm-lock.yaml",
 			"docs/semantic-data-system/typespec-feasibility.md",
 			"test/compiler.test.ts",
-			"spikes/typespec-feasibility/",
+			"spikes/typespec-feasibility/scripts/",
+			"spikes/typespec-feasibility/package.json",
+			"spikes/typespec-feasibility/evidence/custom.json",
+			"spikes/typespec-feasibility/emitter/",
 			"packages/semantic-core/",
 			"fixtures/semantic-core/",
 			"Makefile",

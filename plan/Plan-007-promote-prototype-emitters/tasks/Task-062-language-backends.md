@@ -2,7 +2,7 @@
 id: Task-062
 title: "TypeScript and Rust generation backends"
 type: Task
-status: pending
+status: done
 track: B
 priority: P0
 relationships:
@@ -43,12 +43,12 @@ Promote the two hand-rolled generators as pure functions from IR to source text.
 
 ## Subtasks
 
-- [ ] `src/compiler/backends/typescript.mjs` exporting `emitTypeScript(ir)`.
-- [ ] `src/compiler/backends/rust.mjs` exporting `emitRust(ir)`.
-- [ ] Add the missing-base guard to both backends and the base-chain cycle guard to `emitRust`; these are the only behavioural additions, and the goldens must still match byte-for-byte.
-- [ ] Golden comparisons against the committed `typescript/index.ts` and `rust/src/lib.rs` (TC-349, TC-350).
-- [ ] Purity assertions: repeat-call identity plus no filesystem, environment, clock, or network access (TC-351, TC-352).
-- [ ] Rendering assertions: `#[serde(rename)]`, enum unions, `Option<…>` and `?` (TC-355..357).
+- [x] `src/compiler/backends/typescript.mjs` exporting `emitTypeScript(ir)`.
+- [x] `src/compiler/backends/rust.mjs` exporting `emitRust(ir)`.
+- [x] Add the missing-base guard to both backends and the base-chain cycle guard to `emitRust`; these are the only behavioural additions, and the goldens must still match byte-for-byte.
+- [x] Golden comparisons against the committed `typescript/index.ts` and `rust/src/lib.rs` (TC-349, TC-350).
+- [x] Purity assertions: repeat-call identity plus no filesystem, environment, clock, or network access (TC-351, TC-352).
+- [x] Rendering assertions: `#[serde(rename)]`, enum unions, `Option<…>` and `?` (TC-355..357).
 
 ## Deliverables
 
