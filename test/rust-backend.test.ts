@@ -28,7 +28,8 @@
  * rebases rather than merges — which is asserted rather than claimed.
  */
 
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
 	existsSync,
 	mkdirSync,
@@ -36,6 +37,7 @@ import {
 	readFileSync,
 	readdirSync,
 	rmSync,
+	statSync,
 	writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -1165,4 +1167,886 @@ describe("TC-737..744 non-disruption", () => {
 		expect(isPermitted("src/compiler/pipeline.mjs")).toBe(false);
 		expect(isPermitted("package.json")).toBe(false);
 	});
+});
+
+// ---------------------------------------------------------------------------
+// The branch register, the property battery and the mutation catalogue
+// ---------------------------------------------------------------------------
+
+/**
+ * These cases are the slice's closing census, and two of their conventions are
+ * load bearing.
+ *
+ * Each case that exercises a mapping branch declares it in its own doc comment,
+ * on a line naming the branch ids and terminated by a semicolon. `cli.mjs
+ * register` reads those declarations and
+ * binds them to the vocabularies — the mapping table, the applicability table,
+ * the diagnostic registry and the derivation module — so a branch nobody
+ * declared is an unmet register row and a failing check, and it is closed by
+ * adding a case rather than by dropping the row.
+ *
+ * Each such case's body is one detector from `harness/detectors.mjs`, run here
+ * against the working tree's modules and run again by the mutation harness
+ * against a mutated scratch copy. Writing the assertion once is the point: a
+ * detector the suite does not run is a mutation score nobody earned, and a case
+ * the harness does not run is a detection claim nobody checked.
+ *
+ * The expectations are read from the mapping table and the applicability table
+ * rather than from the emitter's own output (FR-062-CON-1). The one exception
+ * is the corpus-bytes case, which compares a mutant against the pristine
+ * emitter and is a change detector by construction; it is named as such, and no
+ * register row rests on it alone.
+ */
+const backendDirectory = resolve(root, "src/compiler/backends/rust-serde");
+const modulePathOf = (name: string): string =>
+	`../src/compiler/backends/rust-serde/${name}`;
+
+interface LoadedBackend {
+	detectors: any;
+	backend: any;
+	options: any;
+}
+
+let loadedBackend: Promise<LoadedBackend> | undefined;
+
+/**
+ * Loads the backend once, with the corpus and the pristine bytes the
+ * change-detector compares against.
+ */
+async function loadOnce(): Promise<LoadedBackend> {
+	if (loadedBackend === undefined) {
+		loadedBackend = (async (): Promise<LoadedBackend> => {
+			const detectors = await import(modulePathOf("harness/detectors.mjs"));
+			const cli = await import(modulePathOf("cli.mjs"));
+			const crate = await import(modulePathOf("crate.mjs"));
+			const licenseText = read(resolve(root, "LICENSE"));
+			const bases = cli.corpusBases();
+			const baseline = new Map<string, string>(
+				bases.map((base: { name: string }) => {
+					const result = crate.emitCrate(cli.requestFor(base), { licenseText });
+					return [
+						base.name,
+						[...result.files]
+							.map(([path, text]: [string, string]) => `${path}\n${text}`)
+							.join(""),
+					];
+				}),
+			);
+			const published = readJson(
+				resolve(root, "conformance/diagnostic-codes.json"),
+			) as { codes: { code: string }[] };
+			const options = {
+				licenseText,
+				bases,
+				baseline,
+				publishedCodes: published.codes.map((one) => one.code),
+			};
+			return {
+				detectors,
+				backend: await detectors.loadBackend(backendDirectory, options),
+				options,
+			};
+		})();
+	}
+	return loadedBackend;
+}
+
+/** Runs one detector against the working tree. It throws, naming what it saw. */
+async function runDetectorCase(caseId: string): Promise<void> {
+	const { detectors, backend } = await loadOnce();
+	const detector = detectors.DETECTORS.find(
+		(one: { caseId: string }) => one.caseId === caseId,
+	);
+	expect(
+		detector,
+		`no detector is named "${caseId}", so this case asserts nothing`,
+	).toBeDefined();
+	detector.run(backend);
+}
+
+/** Every `it(...)` title in this suite, read from its own text. */
+function suiteTitles(): Set<string> {
+	const text = read(resolve(root, "test/rust-backend.test.ts"));
+	const pattern = new RegExp(
+		`\\bit\\(\\s*${DOUBLE}((?:[^${DOUBLE}\\\\]|\\\\.)*)${DOUBLE}`,
+		"g",
+	);
+	return new Set([...text.matchAll(pattern)].map((match) => match[1]));
+}
+
+/** A digest of every file under a directory, for the non-disruption assertion. */
+function treeDigest(directory: string): Map<string, string> {
+	const digests = new Map<string, string>();
+	const walk = (current: string): void => {
+		for (const name of readdirSync(current).sort()) {
+			const path = join(current, name);
+			if (statSync(path).isDirectory()) {
+				walk(path);
+				continue;
+			}
+			digests.set(
+				path,
+				createHash("sha256").update(readFileSync(path)).digest("hex"),
+			);
+		}
+	};
+	walk(directory);
+	return digests;
+}
+
+describe("TC-725..730 the branch register, the properties and the mutation catalogue", () => {
+	/**
+	 * Traces: TC-725; FR-062-AC-1, FR-062-AC-8.
+	 *
+	 * Branches: kind:alias, kind:enum, kind:map, kind:record, kind:reference,
+	 * kind:scalar, kind:sequence, kind:union;
+	 */
+	it("TC-725 every kind row selects the Rust form the mapping table states", async () => {
+		await runDetectorCase(
+			"TC-725 every kind row selects the Rust form the mapping table states",
+		);
+	});
+
+	/**
+	 * Traces: TC-725; FR-062-AC-1, FR-062-AC-8.
+	 *
+	 * Branches: scalar:boolean, scalar:bytes, scalar:date, scalar:datetime,
+	 * scalar:duration, scalar:integer, scalar:number, scalar:string,
+	 * scalar:uuid;
+	 */
+	it("TC-725 every kernel scalar maps to the Rust base the mapping table states", async () => {
+		await runDetectorCase(
+			"TC-725 every kernel scalar maps to the Rust base the mapping table states",
+		);
+	});
+
+	/**
+	 * Traces: TC-725; FR-062-AC-1, FR-062-AC-8, FR-062-AC-11.
+	 *
+	 * Branches: field:collection/non-null/optional,
+	 * field:collection/non-null/required,
+	 * field:collection/nullable/optional,
+	 * field:collection/nullable/required, field:multiplicity/upper-zero,
+	 * field:single/non-null/optional, field:single/non-null/required,
+	 * field:single/nullable/optional, field:single/nullable/required;
+	 */
+	it("TC-725 the eight field-axis rows produce the member type and the serde attributes the table states", async () => {
+		await runDetectorCase(
+			"TC-725 the eight field-axis rows produce the member type and the serde attributes the table states",
+		);
+	});
+
+	/**
+	 * Traces: TC-725; FR-062-AC-1, FR-062-AC-8.
+	 *
+	 * Branches: unknownPolicy:inert, unknownPolicy:record/preserve,
+	 * unknownPolicy:record/reject, unknownPolicy:record/surface,
+	 * unknownPolicy:variants/preserve, unknownPolicy:variants/reject,
+	 * unknownPolicy:variants/surface;
+	 */
+	it("TC-725 the unknownPolicy rows dispose each of the eight kinds exactly once", async () => {
+		await runDetectorCase(
+			"TC-725 the unknownPolicy rows dispose each of the eight kinds exactly once",
+		);
+	});
+
+	/**
+	 * Traces: TC-725; FR-062-AC-1, FR-062-AC-8.
+	 *
+	 * Branches: defaultKind:migration, defaultKind:none,
+	 * defaultKind:representation, defaultKind:semantic, extension:node,
+	 * metadata:contract;
+	 */
+	it("TC-725 every defaultKind, extension and metadata row reaches the emitted crate", async () => {
+		await runDetectorCase(
+			"TC-725 every defaultKind, extension and metadata row reaches the emitted crate",
+		);
+	});
+
+	/**
+	 * Traces: TC-725; FR-062-AC-1, FR-062-AC-8, FR-062-AC-12.
+	 *
+	 * Branches: indirection:alias-target, indirection:field-collection,
+	 * indirection:field-single, indirection:map-values,
+	 * indirection:operation-edge, indirection:reference-target,
+	 * indirection:sequence-items, indirection:variant-payload;
+	 */
+	it("TC-725 every indirection row materializes at the position the table names", async () => {
+		await runDetectorCase(
+			"TC-725 every indirection row materializes at the position the table names",
+		);
+	});
+
+	/**
+	 * Traces: TC-725; FR-062-AC-1, FR-062-AC-8.
+	 *
+	 * Branches: constraint:enumValues/boolean, constraint:enumValues/bytes,
+	 * constraint:enumValues/date, constraint:enumValues/datetime,
+	 * constraint:enumValues/duration, constraint:enumValues/integer,
+	 * constraint:enumValues/number, constraint:enumValues/string,
+	 * constraint:enumValues/uuid, constraint:exclusiveMax/date,
+	 * constraint:exclusiveMax/datetime,
+	 * constraint:exclusiveMax/duration, constraint:exclusiveMax/integer,
+	 * constraint:exclusiveMax/number, constraint:exclusiveMin/date,
+	 * constraint:exclusiveMin/datetime,
+	 * constraint:exclusiveMin/duration, constraint:exclusiveMin/integer,
+	 * constraint:exclusiveMin/number, constraint:format/string,
+	 * constraint:max/date, constraint:max/datetime,
+	 * constraint:max/duration, constraint:max/integer,
+	 * constraint:max/number, constraint:maxLength/bytes,
+	 * constraint:maxLength/string, constraint:min/date,
+	 * constraint:min/datetime, constraint:min/duration,
+	 * constraint:min/integer, constraint:min/number,
+	 * constraint:minLength/bytes, constraint:minLength/string,
+	 * constraint:nonEmpty/bytes, constraint:nonEmpty/map,
+	 * constraint:nonEmpty/sequence, constraint:nonEmpty/string,
+	 * constraint:pattern/string, constraint:unique/sequence;
+	 */
+	it("TC-725 every constraint keyword lowers onto every subject its applicability row admits", async () => {
+		await runDetectorCase(
+			"TC-725 every constraint keyword lowers onto every subject its applicability row admits",
+		);
+	});
+
+	/**
+	 * Traces: TC-725; FR-062-AC-1, FR-062-AC-8.
+	 *
+	 * Branches: diagnostic:agent-ix.rust-backend.DECLARED_LOSS,
+	 * diagnostic:agent-ix.rust-backend.DIAGNOSTIC_LIMIT_REACHED,
+	 * diagnostic:agent-ix.rust-backend.INVALID_DEFAULT_VALUE,
+	 * diagnostic:agent-ix.rust-backend.LIMIT_EXCEEDED,
+	 * diagnostic:agent-ix.rust-backend.NAME_COLLISION,
+	 * diagnostic:agent-ix.rust-backend.PAYLOAD_ON_ENUM_VARIANT,
+	 * diagnostic:agent-ix.rust-backend.UNDECLARED_WIRE_FORM,
+	 * diagnostic:agent-ix.rust-backend.UNKNOWN_FORMAT,
+	 * diagnostic:agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED,
+	 * diagnostic:agent-ix.rust-backend.UNORDERED_SUBJECT,
+	 * diagnostic:agent-ix.rust-backend.UNRENDERABLE_NAME,
+	 * diagnostic:agent-ix.rust-backend.UNSAFE_OUTPUT_ROOT,
+	 * diagnostic:agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT,
+	 * diagnostic:agent-ix.rust-backend.UNSUPPORTED_MULTIPLICITY,
+	 * diagnostic:agent-ix.rust-backend.UNSUPPORTED_PATTERN,
+	 * diagnostic:agent-ix.rust-backend.UNSUPPORTED_SCALAR,
+	 * diagnostic:agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE,
+	 * diagnostic:agent-ix.semantic-ir.INVALID_OPERAND,
+	 * diagnostic:agent-ix.semantic-ir.UNDECLARED_LOSS,
+	 * diagnostic:agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION,
+	 * diagnostic:agent-ix.semantic-ir.UNRESOLVED_TYPE_REF,
+	 * diagnostic:agent-ix.semantic-ir.V1_1_NODE_IN_V1_0;
+	 */
+	it("TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path", async () => {
+		await runDetectorCase(
+			"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path",
+		);
+	});
+
+	/**
+	 * Traces: TC-725; FR-062-AC-1, FR-062-AC-8.
+	 *
+	 * Branches: name:constantName, name:crateName, name:memberName,
+	 * name:moduleName, name:typeName, name:variantName,
+	 * scope:CRATE_TYPES, scope:ENUM_VARIANTS, scope:OPERATION_PARAMS,
+	 * scope:RECORD_MEMBERS;
+	 */
+	it("TC-725 every identifier renderer derives from the source the requirement names and refuses a collision", async () => {
+		await runDetectorCase(
+			"TC-725 every identifier renderer derives from the source the requirement names and refuses a collision",
+		);
+	});
+
+	/** Traces: TC-725; FR-062-AC-1, FR-062-CON-1. */
+	it("TC-725 a bound and a length render the comparison their keyword names", async () => {
+		await runDetectorCase(
+			"TC-725 a bound and a length render the comparison their keyword names",
+		);
+	});
+
+	/** Traces: TC-725; FR-062-AC-1, FR-062-CON-1. */
+	it("TC-725 a record that rejects unknown members denies unknown fields and one that retains them flattens", async () => {
+		await runDetectorCase(
+			"TC-725 a record that rejects unknown members denies unknown fields and one that retains them flattens",
+		);
+	});
+
+	/** Traces: TC-725; FR-062-AC-1, FR-062-CON-1. */
+	it("TC-725 a pattern outside the expressible subset is classified unsupported and refused", async () => {
+		await runDetectorCase(
+			"TC-725 a pattern outside the expressible subset is classified unsupported and refused",
+		);
+	});
+
+	/** Traces: TC-725; FR-062-AC-1, FR-062-CON-1. */
+	it("TC-725 an operation's parameter and return metadata carry the mapped type its axes state", async () => {
+		await runDetectorCase(
+			"TC-725 an operation's parameter and return metadata carry the mapped type its axes state",
+		);
+	});
+
+	/** Traces: TC-727; FR-062-AC-3. */
+	it("TC-727 the corpus bases emit the bytes the pristine emitter produced", async () => {
+		await runDetectorCase(
+			"TC-727 the corpus bases emit the bytes the pristine emitter produced",
+		);
+	});
+
+	/** Traces: TC-729; FR-062-AC-6, FR-062-AC-10. */
+	it("TC-729 the degradation scan names a declaration that carries a degraded type", async () => {
+		await runDetectorCase(
+			"TC-729 the degradation scan names a declaration that carries a degraded type",
+		);
+	});
+	/** Traces: TC-725; FR-062-AC-1. */
+	it("TC-725 every register row names a case the suite carries, and the register is not stale", async () => {
+		const branchRegister = await import(modulePathOf("branch-register.mjs"));
+		const suiteText = read(resolve(root, "test/rust-backend.test.ts"));
+		const committed = read(join(backendDirectory, "branch-register.json"));
+		const gaps = readJson(resolve(root, "conformance/contract-gaps.json")) as {
+			gaps: { id: string; owningIssue: string }[];
+		};
+		const { problems, register } = branchRegister.checkRegister({
+			directory: backendDirectory,
+			suiteText,
+			committed,
+			gaps,
+		});
+		expect(problems, problems.join("\n")).toEqual([]);
+		expect(register.rowCount).toBeGreaterThan(100);
+		expect(register.unmetCount).toBe(0);
+		const titles = suiteTitles();
+		const declaredGaps = new Set(gaps.gaps.map((one) => one.id));
+		for (const row of register.rows as {
+			branchId: string;
+			cases: string[];
+			unreachable?: { gap: string; owner: string; reason: string };
+		}[]) {
+			if (row.unreachable !== undefined) {
+				// A branch no published input can reach is recorded, not covered
+				// and not dropped: it names the gap that makes it unreachable, the
+				// issue that owns it, and no case. The citation is resolved here,
+				// so a reason that stops being true stops passing.
+				expect(row.cases).toEqual([]);
+				expect(
+					declaredGaps.has(row.unreachable.gap),
+					`the branch ${row.branchId} cites ${row.unreachable.gap}, which the contract-gap register does not declare`,
+				).toBe(true);
+				expect(row.unreachable.owner).toMatch(/#\d+$/);
+				expect(row.unreachable.reason.length).toBeGreaterThan(40);
+				continue;
+			}
+			expect(
+				row.cases.length,
+				`the branch ${row.branchId} names no case; close it by adding a case, never by dropping the row`,
+			).toBeGreaterThan(0);
+			for (const caseId of row.cases) {
+				expect(
+					titles.has(caseId),
+					`the branch ${row.branchId} names the case "${caseId}", which this suite does not carry`,
+				).toBe(true);
+			}
+		}
+		// The unreachable record is not an escape hatch: exactly the branches
+		// `branches.mjs` declares unreachable are recorded so, and a row that
+		// claimed both a reason and a case would have failed above.
+		const branches = await import(modulePathOf("branches.mjs"));
+		expect(
+			(register.rows as { branchId: string; unreachable?: unknown }[])
+				.filter((one) => one.unreachable !== undefined)
+				.map((one) => one.branchId)
+				.sort(),
+		).toEqual(
+			(branches.UNREACHABLE_BRANCHES as { branchId: string }[])
+				.map((one) => one.branchId)
+				.sort(),
+		);
+	});
+
+	/** Traces: TC-726; FR-062-AC-2, FR-062-CON-4. */
+	it("TC-726 a branch added without a case fails the register check naming the branch", async () => {
+		const mutations = await import(modulePathOf("mutations.mjs"));
+		const { base, backend } = mutations.scratchCopy(root, "register-gate");
+		try {
+			// The scratch copy carries this suite, because the register binds to
+			// it; the branch added below is named by no case in it.
+			mkdirSync(join(base, "test"), { recursive: true });
+			writeFileSync(
+				join(base, "test", "rust-backend.test.ts"),
+				read(resolve(root, "test/rust-backend.test.ts")),
+				"utf8",
+			);
+			const tablePath = join(backend, "mapping-table.json");
+			const table = JSON.parse(read(tablePath)) as { rows: unknown[] };
+			table.rows.push({
+				rowKey: "kind:widget",
+				axis: "kind",
+				selector: "widget",
+				rustForm: "pub struct N;",
+				serdeAttributes: [],
+				mechanism:
+					"a branch this case adds, and for which it deliberately writes no test",
+				diagnosticCode: null,
+			});
+			writeFileSync(
+				tablePath,
+				`${JSON.stringify(table, null, "\t")}\n`,
+				"utf8",
+			);
+
+			const result = spawnSync(
+				process.execPath,
+				[join(backend, "cli.mjs"), "register", "--check"],
+				{ encoding: "utf8" },
+			);
+			expect(result.status).toBe(1);
+			expect(result.stderr).toContain("kind:widget");
+			expect(result.stderr).toContain("unmet");
+			// And the same run over the unmutated copy passes, so the failure is
+			// the added branch and not the copy.
+			const clean = mutations.scratchCopy(root, "register-clean");
+			try {
+				mkdirSync(join(clean.base, "test"), { recursive: true });
+				writeFileSync(
+					join(clean.base, "test", "rust-backend.test.ts"),
+					read(resolve(root, "test/rust-backend.test.ts")),
+					"utf8",
+				);
+				const ok = spawnSync(
+					process.execPath,
+					[join(clean.backend, "cli.mjs"), "register", "--check"],
+					{ encoding: "utf8" },
+				);
+				expect(ok.stderr, ok.stderr).toBe("");
+				expect(ok.status).toBe(0);
+			} finally {
+				rmSync(clean.base, { recursive: true, force: true });
+			}
+		} finally {
+			rmSync(base, { recursive: true, force: true });
+		}
+	}, 60000);
+
+	/** Traces: TC-726; FR-062-AC-14, FR-062-CON-7. */
+	it("TC-726 make lint reaches both check modes through a Make target calling node, and package.json carries no script for them", () => {
+		// `package.json` is a prohibited path under NFR-023, so the checks reach
+		// `make lint` through the Makefile and through nothing else.
+		const manifest = readJson(resolve(root, "package.json")) as {
+			scripts: Record<string, string>;
+		};
+		for (const [name, script] of Object.entries(manifest.scripts)) {
+			expect(
+				script.includes("rust-serde"),
+				`the package manifest's \`${name}\` script reaches the Rust backend, and package.json is a prohibited path`,
+			).toBe(false);
+		}
+		expect(isProhibited("package.json")).toBe(true);
+
+		// The `lint` recipe, and the recipes of the targets it depends on: `make
+		// lint` reaches a check through either.
+		const makefile = read(resolve(root, "Makefile"));
+		const recipeOf = (target: string): string => {
+			const pattern = new RegExp(
+				`^${target}:([^\\n]*)\\n((?:\\t[^\\n]*\\n)*)`,
+				"m",
+			);
+			const found = pattern.exec(makefile);
+			return found === null ? "" : `${found[1]}\n${found[2]}`;
+		};
+		const lint = recipeOf("lint");
+		expect(
+			lint.length,
+			"the Makefile carries no `lint` target",
+		).toBeGreaterThan(0);
+		const prerequisites = lint
+			.split("\n")[0]
+			.trim()
+			.split(/\s+/)
+			.filter((one) => one.length > 0);
+		const reached = [lint, ...prerequisites.map(recipeOf)].join("\n");
+		for (const verb of ["register --check", "mutations --check"]) {
+			expect(
+				reached.includes(
+					`node src/compiler/backends/rust-serde/cli.mjs ${verb}`,
+				),
+				`\`make lint\` does not reach \`cli.mjs ${verb}\`; add it to the lint recipe or to a target lint depends on, calling node directly`,
+			).toBe(true);
+		}
+	});
+
+	/** Traces: TC-727; FR-062-AC-3, FR-062-CON-5. */
+	it("TC-727 every catalogued mutation is detected by at least one case and the detection score is 1.0", async () => {
+		const mutations = await import(modulePathOf("mutations.mjs"));
+		const { detectors, options } = await loadOnce();
+		const catalogue = mutations.buildCatalogue({ directory: backendDirectory });
+		expect(catalogue.mutationCount).toBeGreaterThan(10);
+		const run = await mutations.runCatalogue({
+			root,
+			catalogue,
+			detectors,
+			backendOptions: options,
+		});
+		expect(
+			run.undetected,
+			`no case detects: ${run.undetected.join(", ")}. Close the gap by adding a case, never by removing the mutation.`,
+		).toEqual([]);
+		expect(run.score).toBe(1);
+		expect(run.total).toBe(catalogue.mutationCount);
+		// A mutation that could not be applied was never tried, and an entry that
+		// is never tried is not a mutation the score speaks for. It is reported
+		// as its own outcome and it fails this case rather than quietly moving
+		// the denominator.
+		expect(
+			run.inapplicable,
+			`never applied, so never tried: ${run.inapplicable.join(", ")}`,
+		).toEqual([]);
+		expect(run.applied).toBe(catalogue.mutationCount);
+	}, 300000);
+
+	/** Traces: TC-727; FR-062-AC-4. */
+	it("TC-727 suppressing the case that detects a mutation drops the score below 1.0 and names it", async () => {
+		const mutations = await import(modulePathOf("mutations.mjs"));
+		const { detectors, options } = await loadOnce();
+		const catalogue = readJson(join(backendDirectory, "mutations.json")) as {
+			mutations: { mutationId: string; detectedBy: string[] }[];
+		};
+		// The mutation the fewest cases detect: suppressing that set is the
+		// sharpest form of the criterion, and it is read off the catalogue
+		// rather than named here, so it follows the suite as cases are added.
+		const singly = [...catalogue.mutations].sort(
+			(left, right) => left.detectedBy.length - right.detectedBy.length,
+		)[0];
+		expect(
+			singly,
+			"the catalogue records no mutation at all, so suppression cannot be measured",
+		).toBeDefined();
+		expect(singly.detectedBy.length).toBeGreaterThan(0);
+		const suppressed = await mutations.runCatalogue({
+			root,
+			catalogue: mutations.buildCatalogue({ directory: backendDirectory }),
+			detectors,
+			backendOptions: options,
+			suppress: (singly as { detectedBy: string[] }).detectedBy,
+		});
+		expect(suppressed.score).toBeLessThan(1);
+		expect(suppressed.undetected).toContain(
+			(singly as { mutationId: string }).mutationId,
+		);
+	}, 300000);
+
+	/** Traces: TC-728; FR-062-AC-5, FR-062-AC-11, FR-062-AC-12, FR-062-AC-13, FR-062-CON-3. */
+	it("TC-728 every declared property holds over at least 256 generated documents, with the seed printed", async () => {
+		const properties = await import(modulePathOf("properties.mjs"));
+		const run = properties.runProperties({
+			count: 256,
+			licenseText: read(resolve(root, "LICENSE")),
+		});
+		for (const result of run.results as {
+			id: string;
+			ok: boolean;
+			documents: number;
+			failure?: string;
+		}[]) {
+			expect(result.ok, `${result.id}: ${result.failure}`).toBe(true);
+			expect(result.documents).toBeGreaterThanOrEqual(256);
+		}
+		// The nine properties FR-062 declares, named rather than counted.
+		expect(
+			(run.results as { id: string }[]).map((one) => one.id).sort(),
+		).toEqual(
+			[
+				"axis-types-distinct",
+				"boxed-edges-stable",
+				"deterministic-generation",
+				"emit-or-refuse",
+				"locale-independent-derivation",
+				"name-injectivity",
+				"no-degraded-declaration",
+				"reordering-invariant",
+				"serialization-round-trip",
+			].sort(),
+		);
+		expect(Number.isInteger(run.seed)).toBe(true);
+		// A counter-example is reproduced from the message alone.
+		const failure = new properties.PropertyFailure(
+			"axis-types-distinct",
+			7,
+			3,
+			"why",
+		);
+		expect(failure.message).toContain("--seed 7");
+		expect(failure.message).toContain("document 3");
+		// A run that cannot resolve its seed, its count or its generator fails
+		// rather than skipping.
+		expect(() => properties.runProperties({ seed: "not-a-seed" })).toThrow(
+			/could not resolve a seed/,
+		);
+		expect(() => properties.runProperties({ count: 0 })).toThrow(
+			/could not resolve a document count/,
+		);
+		expect(() =>
+			properties.runProperties({ only: "no-such-property" }),
+		).toThrow(/no property is named/);
+	}, 300000);
+
+	/** Traces: TC-729; FR-062-AC-6, FR-062-AC-10. */
+	it("TC-729 an emitter that substitutes String for a constrained scalar fails the degradation scan and a property", async () => {
+		const mutations = await import(modulePathOf("mutations.mjs"));
+		const { detectors, options } = await loadOnce();
+		const { base, backend } = mutations.scratchCopy(root, "negative-control");
+		try {
+			const operator = mutations.OPERATORS.find(
+				(one: { id: string }) => one.id === "substitute-string-for-newtype",
+			);
+			const path = join(backend, "mapping.mjs");
+			const applied = mutations.applyOperator(operator, read(path));
+			expect(
+				applied,
+				"the substitution operator found no site, so the negative control could not be built",
+			).toBeDefined();
+			writeFileSync(path, applied.mutated, "utf8");
+
+			const broken = await detectors.loadBackend(backend, options);
+			const ir = broken.generator.generateDocument(
+				broken.generator.DEFAULT_SEED,
+				0,
+			);
+			const model = broken.mapping.mapDocument(ir, {}).model;
+			expect(
+				model,
+				"the broken emitter refused its own document",
+			).toBeDefined();
+			// The scan fails, and it names the degraded declaration rather than
+			// reporting a count. A scan that stays green here is not evidence.
+			const degraded = broken.degradation.scanDegradation(model, broken.table);
+			expect(degraded.length).toBeGreaterThan(0);
+			expect(
+				degraded.map((one: { observed: string }) => one.observed),
+			).toContain("String");
+			const described = broken.degradation
+				.describeDegradation(degraded)
+				.join("\n");
+			expect(described).toContain("scalar:date");
+			expect(described).toContain("crate::support::Date");
+
+			// And at least one property fails under it.
+			const run = broken.properties.runProperties({
+				count: 8,
+				licenseText: "",
+			});
+			expect((run.failures as { id: string }[]).map((one) => one.id)).toContain(
+				"no-degraded-declaration",
+			);
+
+			// And the catalogue records the mutation with the case that detects it.
+			const catalogue = readJson(join(backendDirectory, "mutations.json")) as {
+				mutations: { mutationId: string; detectedBy: string[] }[];
+			};
+			const row = catalogue.mutations.find(
+				(one) => one.mutationId === "substitute-string-for-newtype@mapping.mjs",
+			);
+			expect(
+				row,
+				"the catalogue carries no substitution mutation",
+			).toBeDefined();
+			expect(
+				(row as { detectedBy: string[] }).detectedBy.length,
+			).toBeGreaterThan(0);
+		} finally {
+			rmSync(base, { recursive: true, force: true });
+		}
+	}, 120000);
+
+	/** Traces: TC-730; FR-062-AC-7, FR-062-CON-2. */
+	it("TC-730 the mutation run writes only to a scratch copy and leaves the working tree unchanged", async () => {
+		const mutations = await import(modulePathOf("mutations.mjs"));
+		const { detectors, options } = await loadOnce();
+		const status = (): string =>
+			execFileSync("git", ["status", "--porcelain"], {
+				cwd: root,
+				encoding: "utf8",
+			});
+		// Both halves of FR-062-AC-7. The run must not change the tree, which is
+		// asserted file by file as well as through git; and a run over a clean
+		// tree must leave `git status --porcelain` empty, which is the form the
+		// criterion takes in CI. Asserting emptiness unconditionally would fail
+		// on an author's unrelated edit, which is a fact about the checkout
+		// rather than about the harness.
+		const before = status();
+		const digestsBefore = treeDigest(backendDirectory);
+		await mutations.runCatalogue({
+			root,
+			catalogue: mutations.buildCatalogue({ directory: backendDirectory }),
+			detectors,
+			backendOptions: options,
+		});
+		const after = status();
+		expect(after).toBe(before);
+		expect([...treeDigest(backendDirectory)]).toEqual([...digestsBefore]);
+		if (before === "") expect(after).toBe("");
+	}, 300000);
+
+	/** Traces: TC-730; FR-062-AC-8. */
+	it("TC-730 the register is checked against the vocabularies rather than against itself", async () => {
+		const branches = await import(modulePathOf("branches.mjs"));
+		const diagnostics = await import(modulePathOf("diagnostics.mjs"));
+		const applicability = await import("../src/compiler/ir/applicability.mjs");
+		const register = readJson(
+			join(backendDirectory, "branch-register.json"),
+		) as {
+			rows: { branchId: string; vocabulary: string }[];
+			contributions: Record<string, number>;
+		};
+		const ids = new Set(register.rows.map((one) => one.branchId));
+
+		// Every mapping-table row: kind, kernel scalar, field-axis combination,
+		// unknownPolicy, defaultKind, extension, metadata and recursion shape.
+		const table = readJson(join(backendDirectory, "mapping-table.json")) as {
+			rows: { rowKey: string; axis: string }[];
+		};
+		for (const row of table.rows) {
+			expect(
+				ids.has(row.rowKey),
+				`the register carries no row for ${row.rowKey}`,
+			).toBe(true);
+		}
+		for (const axis of [
+			"kind",
+			"scalar",
+			"field",
+			"unknownPolicy",
+			"defaultKind",
+			"extension",
+			"metadata",
+			"indirection",
+		]) {
+			expect(
+				table.rows.some((row) => row.axis === axis),
+				`the mapping table declares no ${axis} axis`,
+			).toBe(true);
+		}
+		// Every constraint keyword against every subject its applicability row
+		// admits.
+		let pairs = 0;
+		for (const [keyword, subjects] of Object.entries(
+			applicability.KEYWORD_APPLICABILITY as Record<string, string[]>,
+		)) {
+			for (const subject of subjects) {
+				expect(
+					ids.has(`constraint:${keyword}/${subject}`),
+					`the register carries no row for \`${keyword}\` on a ${subject} subject`,
+				).toBe(true);
+				pairs += 1;
+			}
+		}
+		expect(pairs).toBe(40);
+		// Every diagnostic code, in both namespaces.
+		for (const entry of diagnostics.REGISTERED_ENTRIES as { code: string }[]) {
+			expect(
+				ids.has(`diagnostic:${entry.code}`),
+				`the register carries no row for ${entry.code}`,
+			).toBe(true);
+		}
+		// Every name-derivation case, read from the derivation module's exports.
+		for (const renderer of branches.renderers() as string[]) {
+			expect(ids.has(`name:${renderer}`)).toBe(true);
+		}
+		// And nothing else: the register is exactly the vocabularies' census, so
+		// a row cannot be added to it by hand to make a count look better.
+		const enumerated = branches
+			.enumerateBranches(branches.readMappingTable(backendDirectory))
+			.map((one: { branchId: string }) => one.branchId)
+			.sort();
+		expect([...ids].sort()).toEqual(enumerated);
+		expect(
+			Object.values(register.contributions).reduce((a, b) => a + b, 0),
+		).toBe(register.rows.length);
+	});
+
+	/** Traces: TC-730; FR-062-AC-9, FR-062-CON-5. */
+	it("TC-730 the catalogue equals the operator set crossed with the target set, and shrinking either shrinks it", async () => {
+		const mutations = await import(modulePathOf("mutations.mjs"));
+		const committed = readJson(join(backendDirectory, "mutations.json")) as {
+			operators: { id: string }[];
+			targets: string[];
+			mutations: { mutationId: string; operator: string; target: string }[];
+		};
+		const rebuilt = mutations.buildCatalogue({ directory: backendDirectory });
+		expect(
+			mutations.serializeCatalogue(mutations.structureOf(rebuilt)),
+			"mutations.json is stale: regenerate it with `cli.mjs mutations`",
+		).toBe(mutations.serializeCatalogue(mutations.structureOf(committed)));
+
+		// The eleven operators FR-062 declares, by what each edit does.
+		expect(committed.operators.map((one) => one.id).sort()).toEqual(
+			[
+				"drop-blocking-flag",
+				"drop-box-at-cycle-edge",
+				"drop-deserialize-with",
+				"drop-option-wrapper",
+				"drop-serde-rename",
+				"drop-skip-serializing-if",
+				"flip-deny-unknown-fields",
+				"invert-bound-comparison",
+				"relax-pattern-classification",
+				"substitute-string-for-newtype",
+				"widen-applicability-row",
+			].sort(),
+		);
+		// Every entry is an (operator, target) pair drawn from the two declared
+		// sets, and every pair is distinct.
+		const targets = new Set(committed.targets);
+		const operators = new Set(committed.operators.map((one) => one.id));
+		for (const mutation of committed.mutations) {
+			expect(operators.has(mutation.operator)).toBe(true);
+			expect(targets.has(mutation.target)).toBe(true);
+			expect(mutation.mutationId).toBe(
+				`${mutation.operator}@${mutation.target}`,
+			);
+		}
+		expect(new Set(committed.mutations.map((one) => one.mutationId)).size).toBe(
+			committed.mutations.length,
+		);
+		// Each operator admits at least one pair, so removing any one of them
+		// shrinks the catalogue rather than leaving it unchanged.
+		for (const operator of committed.operators) {
+			const smaller = mutations.buildCatalogue({
+				directory: backendDirectory,
+				operators: (mutations.OPERATORS as { id: string }[]).filter(
+					(one) => one.id !== operator.id,
+				),
+			});
+			expect(
+				smaller.mutationCount,
+				`removing the operator \`${operator.id}\` does not shrink the catalogue`,
+			).toBeLessThan(committed.mutations.length);
+			expect(
+				mutations.serializeCatalogue(mutations.structureOf(smaller)),
+			).not.toBe(
+				mutations.serializeCatalogue(mutations.structureOf(committed)),
+			);
+		}
+		// And so does removing a module from the target set.
+		for (const target of committed.targets.filter((one) =>
+			committed.mutations.some((entry) => entry.target === one),
+		)) {
+			const smaller = mutations.buildCatalogue({
+				directory: backendDirectory,
+				targets: committed.targets.filter((one) => one !== target),
+			});
+			expect(
+				smaller.mutationCount,
+				`removing the target \`${target}\` does not shrink the catalogue`,
+			).toBeLessThan(committed.mutations.length);
+		}
+		// The target set is the emitter's own import closure plus the tables
+		// pinned beside it, computed rather than listed.
+		const closure = mutations.emitterClosure(backendDirectory) as string[];
+		for (const module of closure) expect(targets.has(module)).toBe(true);
+		expect(closure).toContain("crate.mjs");
+		expect(closure).toContain("mapping.mjs");
+		expect(targets.has("mapping-table.json")).toBe(true);
+		expect(targets.has("support-template.rs")).toBe(true);
+		// The gate's own outputs are not modules of the emitter and are not
+		// targets: mutating an output measures nothing.
+		expect(targets.has("mutations.json")).toBe(false);
+		expect(targets.has("branch-register.json")).toBe(false);
+	}, 60000);
 });

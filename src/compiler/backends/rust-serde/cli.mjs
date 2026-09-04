@@ -2,11 +2,16 @@
 /**
  * The command line the `make rust-*` targets call.
  *
- * `generate`, `check` and `install-from-artifact` are implemented here. The
- * remaining verbs the Makefile already wires — `mutate`, `fuzz` and
- * `properties` — exit non-zero naming the task that implements them, rather
- * than exiting zero having done nothing: a gate that cannot run fails saying
- * so, which is what NFR-022-AC-1 requires of every gate in this bundle.
+ * `generate`, `check`, `install-from-artifact`, `register`, `mutations`,
+ * `mutate`, `fuzz` and `properties` are implemented here. A verb that is not
+ * exits non-zero naming the task that implements it, rather than exiting zero
+ * having done nothing: a gate that cannot run fails saying so, which is what
+ * NFR-022-AC-1 requires of every gate in this bundle.
+ *
+ * `register --check` and `mutations --check` are FR-062's two closing gates.
+ * Both are censuses of the finished mapping, so both read the vocabularies and
+ * the suite rather than a file they wrote themselves, and both fail naming the
+ * branch or the mutation at fault.
  */
 
 import { spawnSync } from "node:child_process";
@@ -21,11 +26,27 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+	buildRegister,
+	checkRegister,
+	readSuite,
+	REGISTER_FILE,
+	serializeRegister,
+} from "./branch-register.mjs";
 import { emitCrate } from "./crate.mjs";
 import { REGISTERED_ENTRIES } from "./diagnostics.mjs";
+import { DETECTORS, loadBackend, runDetectors } from "./harness/detectors.mjs";
 import { directorySink, generateRust, readLicense } from "./index.mjs";
 import { byCodePoint } from "./mapping.mjs";
+import {
+	buildCatalogue,
+	CATALOGUE_FILE,
+	runCatalogue,
+	serializeCatalogue,
+	structureOf,
+} from "./mutations.mjs";
 import { PROVED_VALIDATORS, PUBLISHED_PATTERNS } from "./patterns.mjs";
+import { runFuzz, runProperties } from "./properties.mjs";
 
 const HERE = fileURLToPath(new URL("./", import.meta.url));
 const ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
@@ -238,11 +259,64 @@ function check() {
 		}
 	}
 
+	// 6. The two closing censuses of FR-062. They run last, after the modules
+	// they census have been read, because a census that runs over an empty
+	// population is the shape of gate this bundle exists to refuse
+	// (FR-062-CON-6).
+	const suiteText = readSuite(ROOT);
+	const registerCheck = checkRegister({
+		directory: HERE,
+		suiteText,
+		committed: readFileSync(join(HERE, REGISTER_FILE), "utf8"),
+		gaps: contractGaps(),
+	});
+	problems.push(...registerCheck.problems);
+
+	// The catalogue's structural half: the operator set crossed with the target
+	// set, and every mutation naming a case the detector battery carries. The
+	// detection score itself is `mutate`, because running nineteen mutants is a
+	// gate of its own rather than a line in this one.
+	const catalogueCommitted = JSON.parse(
+		readFileSync(join(HERE, CATALOGUE_FILE), "utf8"),
+	);
+	const catalogueRebuilt = buildCatalogue({ directory: HERE });
+	if (
+		serializeCatalogue(structureOf(catalogueRebuilt)) !==
+		serializeCatalogue(structureOf(catalogueCommitted))
+	) {
+		problems.push(
+			`${CATALOGUE_FILE} is stale: the operator set crossed with the target set no longer produces the committed entries`,
+		);
+	}
+	const detectorCases = new Set(DETECTORS.map((one) => one.caseId));
+	const suiteCases = new Set(
+		buildRegister({ directory: HERE, suiteText }).caseTitles,
+	);
+	for (const detector of DETECTORS) {
+		if (suiteCases.has(detector.caseId)) continue;
+		problems.push(
+			`the detector \`${detector.caseId}\` names a case the suite does not carry`,
+		);
+	}
+	for (const mutation of catalogueCommitted.mutations ?? []) {
+		if (mutation.detectedBy.length === 0) {
+			problems.push(
+				`the mutation \`${mutation.mutationId}\` records no detecting case`,
+			);
+		}
+		for (const caseId of mutation.detectedBy) {
+			if (detectorCases.has(caseId)) continue;
+			problems.push(
+				`the mutation \`${mutation.mutationId}\` names the detecting case "${caseId}", which the detector battery does not carry`,
+			);
+		}
+	}
+
 	for (const problem of problems)
 		process.stderr.write(`check failed: ${problem}\n`);
 	if (problems.length > 0) return 1;
 	process.stdout.write(
-		`check passed: ${REGISTERED_ENTRIES.length} registered codes, ${table.rows.length} mapping rows\n`,
+		`check passed: ${REGISTERED_ENTRIES.length} registered codes, ${table.rows.length} mapping rows, ${registerCheck.register.rowCount} branch-register rows, ${catalogueRebuilt.mutationCount} catalogued mutations\n`,
 	);
 	return 0;
 }
@@ -640,6 +714,281 @@ const REHEARSALS = Object.freeze([
 	},
 ]);
 
+/** Reads a numeric flag, or `undefined` when it is absent. */
+function numberFlag(argv, name) {
+	const index = argv.indexOf(name);
+	if (index === -1) return undefined;
+	const value = Number(argv[index + 1]);
+	if (!Number.isInteger(value)) {
+		throw new Error(
+			`${name} takes an integer; \`${argv[index + 1]}\` is not one, and this run fails rather than guessing`,
+		);
+	}
+	return value;
+}
+
+function textFlag(argv, name) {
+	const index = argv.indexOf(name);
+	return index === -1 ? undefined : argv[index + 1];
+}
+
+/**
+ * The declared contract gaps, which a branch recorded unreachable cites.
+ *
+ * A missing file is not silently an empty set: the check reports that it could
+ * not resolve the reason, which is a failure and not a pass.
+ */
+function contractGaps() {
+	try {
+		return JSON.parse(
+			readFileSync(join(ROOT, "conformance", "contract-gaps.json"), "utf8"),
+		);
+	} catch {
+		return { gaps: [] };
+	}
+}
+
+/** `register` and `register --check` (FR-062-AC-1, FR-062-AC-2, FR-062-AC-8). */
+function register(argv) {
+	const suiteText = readSuite(ROOT);
+	if (!argv.includes("--check")) {
+		const built = buildRegister({ directory: HERE, suiteText });
+		writeFileSync(
+			join(HERE, REGISTER_FILE),
+			serializeRegister(built.register),
+			"utf8",
+		);
+		process.stdout.write(
+			`wrote ${REGISTER_FILE}: ${built.register.rowCount} branches, ${built.register.unmetCount} unmet, ${built.register.unreachableCount} recorded unreachable\n`,
+		);
+		return built.register.unmetCount === 0 ? 0 : 1;
+	}
+	let committed;
+	try {
+		committed = readFileSync(join(HERE, REGISTER_FILE), "utf8");
+	} catch {
+		process.stderr.write(
+			`register check failed: ${REGISTER_FILE} is missing, so the gate could not run\n`,
+		);
+		return 1;
+	}
+	const { problems, register: built } = checkRegister({
+		directory: HERE,
+		suiteText,
+		committed,
+		gaps: contractGaps(),
+	});
+	for (const problem of problems)
+		process.stderr.write(`register check failed: ${problem}\n`);
+	if (problems.length > 0) return 1;
+	process.stdout.write(
+		`register check passed: ${built.rowCount} branches, every one named by a case (${Object.entries(
+			built.contributions,
+		)
+			.map(([key, value]) => `${key} ${value}`)
+			.join(", ")})\n`,
+	);
+	return 0;
+}
+
+/** The backend options every detector run shares: the corpus and the pristine bytes. */
+function detectorOptions() {
+	const licenseText = readLicense(ROOT);
+	const bases = corpusBases();
+	const baseline = new Map(
+		bases.map((base) => {
+			const result = emitCrate(requestFor(base), { licenseText });
+			return [
+				base.name,
+				[...result.files].map(([path, text]) => `${path}\n${text}`).join(""),
+			];
+		}),
+	);
+	return { licenseText, bases, baseline, publishedCodes: publishedCodes() };
+}
+
+/** The published reader codes, read from the corpus artefact that fixes them. */
+function publishedCodes() {
+	const published = JSON.parse(
+		readFileSync(join(ROOT, "conformance", "diagnostic-codes.json"), "utf8"),
+	);
+	return published.codes.map((one) => one.code);
+}
+
+/** Runs the whole catalogue and returns the run. */
+async function mutationRun(catalogue, suppress = []) {
+	return runCatalogue({
+		root: ROOT,
+		catalogue,
+		detectors: { loadBackend, runDetectors },
+		backendOptions: detectorOptions(),
+		suppress,
+	});
+}
+
+/** `mutations` and `mutations --check` (FR-062-AC-9). */
+async function mutations(argv) {
+	const suiteText = readSuite(ROOT);
+	const titles = new Set(
+		buildRegister({ directory: HERE, suiteText }).caseTitles,
+	);
+	const problems = [];
+	for (const detector of DETECTORS) {
+		if (titles.has(detector.caseId)) continue;
+		problems.push(
+			`the detector \`${detector.caseId}\` names a case the suite does not carry`,
+		);
+	}
+
+	if (!argv.includes("--check")) {
+		const run = await mutationRun(buildCatalogue({ directory: HERE }));
+		const expected = Object.fromEntries(
+			run.results.map((one) => [one.mutationId, one.detectedBy]),
+		);
+		const catalogue = buildCatalogue({ directory: HERE, expected });
+		writeFileSync(
+			join(HERE, CATALOGUE_FILE),
+			serializeCatalogue(catalogue),
+			"utf8",
+		);
+		process.stdout.write(
+			`wrote ${CATALOGUE_FILE}: ${catalogue.mutationCount} mutations over ${catalogue.operators.length} operators and ${catalogue.targets.length} targets, detection score ${run.score.toFixed(4)}\n`,
+		);
+		for (const problem of problems)
+			process.stderr.write(`mutations failed: ${problem}\n`);
+		for (const id of run.inapplicable) {
+			process.stderr.write(
+				`mutations failed: the mutation \`${id}\` could not be applied, so it was never tried\n`,
+			);
+		}
+		return problems.length === 0 &&
+			run.score === 1 &&
+			run.inapplicable.length === 0
+			? 0
+			: 1;
+	}
+
+	let committed;
+	try {
+		committed = JSON.parse(readFileSync(join(HERE, CATALOGUE_FILE), "utf8"));
+	} catch {
+		process.stderr.write(
+			`mutations check failed: ${CATALOGUE_FILE} is missing, so the gate could not run\n`,
+		);
+		return 1;
+	}
+	const rebuilt = buildCatalogue({ directory: HERE });
+	if (
+		serializeCatalogue(structureOf(rebuilt)) !==
+		serializeCatalogue(structureOf(committed))
+	) {
+		problems.push(
+			`${CATALOGUE_FILE} is stale: the operator set crossed with the target set no longer produces the committed entries. Regenerate it with \`cli.mjs mutations\`.`,
+		);
+	}
+	const detectorCases = new Set(DETECTORS.map((one) => one.caseId));
+	for (const mutation of committed.mutations ?? []) {
+		if (mutation.detectedBy.length === 0) {
+			problems.push(
+				`the mutation \`${mutation.mutationId}\` records no detecting case; close it by adding a case, never by removing the mutation`,
+			);
+		}
+		for (const caseId of mutation.detectedBy) {
+			if (detectorCases.has(caseId)) continue;
+			problems.push(
+				`the mutation \`${mutation.mutationId}\` names the detecting case "${caseId}", which the detector battery does not carry`,
+			);
+		}
+	}
+	for (const problem of problems)
+		process.stderr.write(`mutations check failed: ${problem}\n`);
+	if (problems.length > 0) return 1;
+	process.stdout.write(
+		`mutations check passed: ${committed.mutations.length} mutations, ${committed.operators.length} operators, ${committed.targets.length} targets, every mutation naming a case the suite carries\n`,
+	);
+	return 0;
+}
+
+/** `mutate`: run the catalogue and report the detection score (FR-062-AC-3). */
+async function mutate(argv) {
+	const run = await mutationRun(buildCatalogue({ directory: HERE }));
+	for (const result of run.results) {
+		process.stdout.write(
+			`${result.detectedBy.length > 0 ? "detected" : "UNDETECTED"} ${result.mutationId}${result.detectedBy.length > 0 ? ` by ${result.detectedBy.length} case(s)` : ""}\n`,
+		);
+	}
+	process.stdout.write(
+		`detection score ${run.score.toFixed(4)} (${run.detected} of ${run.applied} applied; ${run.total} catalogued)\n`,
+	);
+	for (const id of run.inapplicable) {
+		process.stderr.write(
+			`the mutation \`${id}\` could not be applied, so the mutant was never built and the score says nothing about it\n`,
+		);
+	}
+	if (run.score === 1 && run.inapplicable.length === 0) return 0;
+	for (const id of run.undetected) {
+		process.stderr.write(
+			`no case detects \`${id}\`: this is a gap in the suite, closed by adding a case and never by removing the mutation\n`,
+		);
+	}
+	return 1;
+}
+
+/** `properties`: the declared battery over the declared document count. */
+function properties(argv) {
+	const deep = argv.includes("--deep");
+	const count = numberFlag(argv, "--count") ?? (deep ? 2048 : 256);
+	const seed = numberFlag(argv, "--seed");
+	const only = textFlag(argv, "--only");
+	const run = runProperties({
+		seed,
+		count,
+		only,
+		licenseText: readLicense(ROOT),
+	});
+	for (const result of run.results) {
+		process.stdout.write(
+			`${result.ok ? "held" : "FAILED"} ${result.id} over ${result.documents} documents\n`,
+		);
+		if (result.ok !== true) process.stderr.write(`${result.failure}\n`);
+	}
+	process.stdout.write(
+		`seed ${run.seed}, ${run.count} documents per property, ${run.results.length} properties\n`,
+	);
+	return run.failures.length === 0 ? 0 : 1;
+}
+
+/** `fuzz`: adversarial documents, every one of which must reach a manifest. */
+function fuzz(argv) {
+	const count = numberFlag(argv, "--count") ?? 64;
+	const run = runFuzz({
+		seed: numberFlag(argv, "--seed"),
+		count,
+		licenseText: readLicense(ROOT),
+	});
+	for (const problem of run.problems)
+		process.stderr.write(`fuzz failed: ${problem}\n`);
+	process.stdout.write(
+		`fuzz: ${run.checked} damaged documents from seed ${run.seed}, ${run.problems.length} problems\n`,
+	);
+	return run.problems.length === 0 ? 0 : 1;
+}
+
+/**
+ * Decides the five published `target-verdicts.json` cases through a generated
+ * crate and compares them to the fixture's `rust` column (FR-059-AC-10).
+ *
+ * It is a verb rather than part of `check` because it builds a Rust crate and
+ * runs it, and `check` is the fast gate that answers whether this backend
+ * agrees with itself.
+ */
+async function verdicts() {
+	const harness = await import("./harness/target-verdicts.mjs");
+	const report = harness.run();
+	process.stdout.write(`${JSON.stringify(report, null, "\t")}\n`);
+	return 0;
+}
+
 function notImplemented(verb, task) {
 	process.stderr.write(
 		`\`${verb}\` is not implemented in this task; ${task} implements it. This exits non-zero rather than passing vacuously.\n`,
@@ -647,24 +996,30 @@ function notImplemented(verb, task) {
 	return 1;
 }
 
-function main(argv) {
+async function main(argv) {
 	const verb = argv[0];
 	switch (verb) {
 		case "generate":
 			return generate(argv.slice(1));
 		case "check":
 			return check();
+		case "verdicts":
+			return verdicts();
 		case "install-from-artifact":
 			return installFromArtifact();
+		case "register":
+			return register(argv.slice(1));
+		case "mutations":
+			return mutations(argv.slice(1));
 		case "mutate":
-			return notImplemented("mutate", "Task-092");
+			return mutate(argv.slice(1));
 		case "fuzz":
-			return notImplemented("fuzz", "Task-092");
+			return fuzz(argv.slice(1));
 		case "properties":
-			return notImplemented("properties", "Task-090");
+			return properties(argv.slice(1));
 		default:
 			process.stderr.write(
-				"usage: cli.mjs <generate --out <dir> | check | install-from-artifact | mutate | fuzz | properties>\n",
+				"usage: cli.mjs <generate --out <dir> | check | register [--check] | mutations [--check] | mutate | fuzz | properties [--seed N] [--count N] [--only id] [--deep] | install-from-artifact>\n",
 			);
 			return 1;
 	}
@@ -673,5 +1028,5 @@ function main(argv) {
 // Only when this file *is* the command. Importing it — the harnesses under
 // `harness/` do — must not run a verb as a side effect.
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-	process.exitCode = main(process.argv.slice(2));
+	process.exitCode = await main(process.argv.slice(2));
 }
