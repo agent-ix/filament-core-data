@@ -41,6 +41,19 @@ are now computed from the rows by `scripts/test-matrix-summary.mjs`, which
 row whose status is not `✅`, so an in-progress `🚧` row appears there until it
 passes.
 
+Issue #21 (the Rust/Serde semantic codegen backend) is mapped at TC-645..744.
+Its rows land `🚧 planned` and are flipped as the implementation lands, so the
+`Blocked` column carries them until they pass. Its ids were allocated against
+`main` at c1b8807, and the parallel issue #22 and #23 backend branches allocate
+US, FR, NFR, TC and SR ids from their own reserved ranges, so `spec/tests.md`
+conflicts between the three branches are resolved by keeping every id block, not
+by renumbering. TC-682 and TC-683 are the rows that carry GAP-002: the published
+`sourceLocus.path` pattern uses four ECMAScript lookaheads no RE2-family engine
+can compile, and the resolution is a hand-written validator proved equivalent to
+the published language by differential harness — not a weakened pattern and not
+an unvalidated `String`. TC-710 records the GAP-011 dependency on issue #9 rather
+than deciding it.
+
 ## Test Matrix Rules
 
 1. Every acceptance criterion and named constraint has at least one test case.
@@ -83,6 +96,7 @@ passes.
 | US-010 | US-010-EX-3 (illustrative) implemented by FR-046-CON-1 and NFR-021 | TC-446, TC-451, TC-592 | ✅ Complete |
 | US-010 | US-010-EX-4 (illustrative) implemented by FR-045 | TC-400, TC-402, TC-408 | ✅ Complete |
 | US-010 | US-010-EX-5 (illustrative) implemented by FR-051 | TC-527, TC-528, TC-529 | ✅ Complete |
+| US-011 | US-011-EX-1..5 (illustrative) | TC-645..TC-744 | ✅ Complete |
 
 ### Functional Requirement Coverage
 
@@ -141,6 +155,15 @@ passes.
 | FR-051 | FR-051-AC-1..15, FR-051-CON-1..5 | TC-527..TC-546, TC-602, TC-612, TC-619 | ✅ Complete |
 | FR-052 | FR-052-AC-1..16, FR-052-CON-1..4 | TC-547..TC-566 | ✅ Complete |
 | FR-053 | FR-053-AC-1..15, FR-053-CON-1..5 | TC-412..TC-431, TC-604 | ✅ Complete |
+| FR-054 | FR-054-AC-1..14, FR-054-CON-1..5 | TC-645..TC-657, TC-674, TC-740 | ✅ Complete |
+| FR-055 | FR-055-AC-1..10, FR-055-CON-1..3 | TC-658..TC-665 | ✅ Complete |
+| FR-056 | FR-056-AC-1..12, FR-056-CON-1..5 | TC-666..TC-676 | ✅ Complete |
+| FR-057 | FR-057-AC-1..13, FR-057-CON-1..5 | TC-677..TC-689 | ✅ Complete |
+| FR-058 | FR-058-AC-1..11, FR-058-CON-1..4 | TC-690..TC-697 | ✅ Complete |
+| FR-059 | FR-059-AC-1..14, FR-059-CON-1..5 | TC-698..TC-710 | ✅ Complete |
+| FR-060 | FR-060-AC-1..10, FR-060-CON-1..4 | TC-711..TC-718 | ✅ Complete |
+| FR-061 | FR-061-AC-1..9, FR-061-CON-1..4 | TC-719..TC-724 | ✅ Complete |
+| FR-062 | FR-062-AC-1..8, FR-062-CON-1..4 | TC-725..TC-730 | ✅ Complete |
 
 ### Non-Functional Requirement Coverage
 
@@ -167,6 +190,8 @@ passes.
 | NFR-019 | Repeat-run and varied-environment byte comparison, ambient-input analysis, permutation and collator independence, injected-host observation, changed-path gate, dependency-pin inspection | TC-567..TC-578 | ✅ Complete |
 | NFR-020 | Limit enforcement, path-escape and module-load refusal, network and writer instrumentation, cyclic-input termination, fuzz run, message truncation | TC-579..TC-589, TC-606, TC-607 | ✅ Complete |
 | NFR-021 | Changed-path gate, manifest comparison, frozen-path byte comparison, scripted restore rehearsal, licence and publication inspection, post-merge range rehearsal, accretion rehearsal | TC-590..TC-597, TC-620, TC-621, TC-644 | ✅ Complete |
+| NFR-022 | Two-run and cross-environment byte comparison, ambient-input scan, dependency inspection, offline run, formatter check, degradation scan, reader fuzz | TC-711, TC-712, TC-716, TC-731..TC-736 | ✅ Complete |
+| NFR-023 | Changed-path gate over a range fixed at both ends by history, manifest comparison, frozen-path byte comparison, publication and licence inspection, scripted restore rehearsal, post-merge and accretion rehearsal | TC-709, TC-737..TC-744 | ✅ Complete |
 
 ## Test Case Summary
 
@@ -816,6 +841,106 @@ passes.
 | TC-642 | The conformance suites run from `make test` and `poetry run pytest` with no network connection and no clock read | Integration | P0 | NFR-016-AC-3 | ✅ passed — conformance corpus (PR pending) |
 | TC-643 | A changed-path and manifest analysis shows the change publishes no package and alters no consumer, catalog pin, or Avro contract | Static | P0 | NFR-016-AC-4 | ✅ passed — conformance corpus (PR pending) |
 | TC-644 | A later unrelated change landing on top of this one does not grow this change's path set, and a prohibited path left in the tree at a path no later commit owns still fails the gate | Integration | P0 | NFR-021-AC-10 | ✅ passed |
+| TC-645 | Every structural kind maps to its declared Rust form | Unit | P0 | FR-054-AC-1, FR-054-CON-1 | 🚧 planned |
+| TC-646 | Every kernel scalar maps to its declared Rust base | Unit | P0 | FR-054-AC-2 | 🚧 planned |
+| TC-647 | The collection, nullability and presence axes compose the declared Rust type and stay distinct | Unit | P0 | FR-054-AC-3 | 🚧 planned |
+| TC-648 | An absent member and a present null stay distinguishable through a round trip | Unit | P0 | FR-054-AC-4 | 🚧 planned |
+| TC-649 | A union round-trips externally tagged, with and without a payload | Unit | P1 | FR-054-AC-5 | 🚧 planned |
+| TC-650 | The three unknown policies behave as declared and never fill a known field | Unit | P0 | FR-054-AC-6 | 🚧 planned |
+| TC-651 | Recursive type graphs compile and box a stable field set across two runs | Integration | P0 | FR-054-AC-7 | 🚧 planned |
+| TC-652 | Relationships, operations, clauses, roles, origins and occurrences survive into metadata | Unit | P0 | FR-054-AC-8 | 🚧 planned |
+| TC-653 | A semantic default applies and a representation or migration default does not | Unit | P1 | FR-054-AC-9 | 🚧 planned |
+| TC-654 | A 1.0.0 document derives multiplicity, and a 1.1.0 node inside one is refused | Unit | P0 | FR-054-AC-10 | 🚧 planned |
+| TC-655 | The published mapping table, the requirement's rows and the serde-only dependency set agree | Analysis | P0 | FR-054-AC-11, FR-054-AC-14, FR-054-CON-4 | 🚧 planned |
+| TC-656 | A construct with no mapping row is refused and writes no file | Unit | P0 | FR-054-AC-12 | 🚧 planned |
+| TC-657 | The mapping model is invariant under key and identity-set reordering and reads no ambient input | Property | P0 | FR-054-AC-13, FR-054-CON-3 | 🚧 planned |
+| TC-658 | Case renderings segment acronyms, separators and digits as declared | Unit | P0 | FR-055-AC-1 | 🚧 planned |
+| TC-659 | Reserved words render raw, and the four with no raw form are refused | Unit | P0 | FR-055-AC-2 | 🚧 planned |
+| TC-660 | A name rendering to the empty string is refused naming its identity | Unit | P1 | FR-055-AC-3 | 🚧 planned |
+| TC-661 | A digit-leading name is prefixed and the crate compiles | Unit | P1 | FR-055-AC-4 | 🚧 planned |
+| TC-662 | A colliding pair raises one NAME_COLLISION naming both identities and writes no file | Unit | P0 | FR-055-AC-5, FR-055-CON-1 | 🚧 planned |
+| TC-663 | Every renamed member carries a serde rename back to the contract name | Unit | P0 | FR-055-AC-6 | 🚧 planned |
+| TC-664 | Derivation is position-independent, order-independent, ambient-free and injective-or-refusing | Property | P0 | FR-055-AC-7..FR-055-AC-9, FR-055-CON-3 | 🚧 planned |
+| TC-665 | The pinned reserved-word list matches the language reference for the declared edition | Analysis | P1 | FR-055-AC-10, FR-055-CON-2 | 🚧 planned |
+| TC-666 | Each corpus base generates a crate that builds offline with warnings denied | Integration | P0 | FR-056-AC-1 | 🚧 planned |
+| TC-667 | The emitted manifest declares the licence, publish false, one pinned dependency and the MSRV | Analysis | P0 | FR-056-AC-2, FR-056-CON-3 | 🚧 planned |
+| TC-668 | Provenance constants equal the compiler request member by member | Unit | P0 | FR-056-AC-3 | 🚧 planned |
+| TC-669 | The SemanticType export is exhaustive and an added type breaks a consumer match | Compile | P0 | FR-056-AC-4 | 🚧 planned |
+| TC-670 | The output manifest names exactly the files written, with matching digests | Unit | P0 | FR-056-AC-5 | 🚧 planned |
+| TC-671 | A blocking diagnostic writes zero files and leaves the output root empty | Unit | P0 | FR-056-AC-6 | 🚧 planned |
+| TC-672 | Emitted bytes carry no clock, host, path, user or environment value | Unit | P0 | FR-056-AC-7, FR-056-CON-2 | 🚧 planned |
+| TC-673 | Each declared limit raises its diagnostic and writes no file | Unit | P0 | FR-056-AC-8 | 🚧 planned |
+| TC-674 | The only open-typed members the crate exposes are the three declared ones | Static | P0 | FR-056-AC-9, FR-054-CON-2 | 🚧 planned |
+| TC-675 | Generation writes nothing outside the output root and refuses an escaping root | Unit | P0 | FR-056-AC-10, FR-056-CON-5 | 🚧 planned |
+| TC-676 | The emitted licence is byte-identical and the pure emitter touches no filesystem | Static | P0 | FR-056-AC-11, FR-056-AC-12, FR-056-CON-1, FR-056-CON-4 | 🚧 planned |
+| TC-677 | Every constraint keyword on every applicable subject accepts and rejects through both entry points | Unit | P0 | FR-057-AC-1 | 🚧 planned |
+| TC-678 | An inapplicable constraint is refused rather than silently dropped | Unit | P0 | FR-057-AC-2 | 🚧 planned |
+| TC-679 | classifyPattern separates the supported subset from lookaround and backreferences | Unit | P0 | FR-057-AC-3 | 🚧 planned |
+| TC-680 | An unregistered lookahead pattern raises UNSUPPORTED_PATTERN and writes no file | Unit | P0 | FR-057-AC-4, FR-057-CON-2 | 🚧 planned |
+| TC-681 | The generated matcher agrees with an ECMA-262 engine over the declared pattern set | Property | P0 | FR-057-AC-5 | 🚧 planned |
+| TC-682 | SourceLocusPath decides exactly the language the published locus pattern denotes | Property | P0 | FR-057-AC-6 | 🚧 planned |
+| TC-683 | The published and intended locus-path predicates differ, and the divergence is recorded | Unit | P0 | FR-057-AC-7, FR-057-CON-5 | 🚧 planned |
+| TC-684 | The matcher stays inside its step bound over a catastrophic-backtracking catalogue | Fuzz | P0 | FR-057-AC-8, FR-057-CON-4 | 🚧 planned |
+| TC-685 | ValidationError names the constraint, keyword, path and operand and bounds echoed input | Unit | P1 | FR-057-AC-9 | 🚧 planned |
+| TC-686 | An unregistered format name is refused | Unit | P1 | FR-057-AC-10 | 🚧 planned |
+| TC-687 | Removing the proved-validator entry turns the locus pattern into a refusal | Unit | P0 | FR-057-AC-11 | 🚧 planned |
+| TC-688 | Perturbing the hand-written validator makes the differential harness fail naming the input | Unit | P0 | FR-057-AC-12, FR-057-CON-3 | 🚧 planned |
+| TC-689 | The generated crate depends on no regex engine | Analysis | P0 | FR-057-AC-13, FR-057-CON-1 | 🚧 planned |
+| TC-690 | Every registered diagnostic code is raised by a constructed input | Unit | P0 | FR-058-AC-1 | 🚧 planned |
+| TC-691 | An unregistered diagnostic entry throws and no live path spells a code as a literal | Static | P0 | FR-058-AC-2, FR-058-CON-1 | 🚧 planned |
+| TC-692 | Each blocking code yields zero files, the declared result state and a diagnostic | Unit | P0 | FR-058-AC-3 | 🚧 planned |
+| TC-693 | Three distinct blocking defects are all reported in one run | Unit | P1 | FR-058-AC-4 | 🚧 planned |
+| TC-694 | The degradation scan finds a degraded type only where the mapping table declares one | Static | P0 | FR-058-AC-5, FR-058-CON-2 | 🚧 planned |
+| TC-695 | Declared loss warns and undeclared loss blocks | Unit | P0 | FR-058-AC-6 | 🚧 planned |
+| TC-696 | Diagnostic order and truncation are locale- and traversal-independent and bounded | Unit | P0 | FR-058-AC-7..FR-058-AC-9, FR-058-CON-3 | 🚧 planned |
+| TC-697 | The published code table matches the registry, and reverting the refusal branch fails a test | Analysis | P0 | FR-058-AC-10, FR-058-AC-11, FR-058-CON-4 | 🚧 planned |
+| TC-698 | The rust-backend adapter runs as a process and matches the oracle on every judged case | Integration | P0 | FR-059-AC-1 | 🚧 planned |
+| TC-699 | The adapter answers every manifest case once, echoing the digest, and an omission is reported | Integration | P0 | FR-059-AC-2, FR-059-CON-3 | 🚧 planned |
+| TC-700 | The adapter's normalized string is byte-identical to the oracle's | Integration | P0 | FR-059-AC-3 | 🚧 planned |
+| TC-701 | The adapter's diagnostic codes and severities equal the oracle's in order | Integration | P0 | FR-059-AC-4 | 🚧 planned |
+| TC-702 | The adapter's compatibility classification equals the oracle's | Integration | P0 | FR-059-AC-5 | 🚧 planned |
+| TC-703 | PROV-002 is answered unsupported and counted unmet rather than passed | Integration | P0 | FR-059-AC-6 | 🚧 planned |
+| TC-704 | The Rust reader's module graph reaches neither the oracle nor the compiler reader | Static | P0 | FR-059-AC-7, FR-059-CON-1 | 🚧 planned |
+| TC-705 | Every success case generates a compiling crate and round-trips its own document | Integration | P0 | FR-059-AC-8 | 🚧 planned |
+| TC-706 | Every invalid case is rejected naming a registered code | Integration | P0 | FR-059-AC-9 | 🚧 planned |
+| TC-707 | The five published target verdicts are decided exactly as the rust column states | Unit | P0 | FR-059-AC-10 | 🚧 planned |
+| TC-708 | The reader returns diagnostics and never panics over mutated documents | Fuzz | P0 | FR-059-AC-11, FR-059-CON-5 | 🚧 planned |
+| TC-709 | The only conformance path this change touches is the rust-backend registry entry | Analysis | P0 | FR-059-AC-12, FR-059-CON-2 | 🚧 planned |
+| TC-710 | Removing the adapter command returns the slot to unmet, and the GAP-011 dependency is recorded | Integration | P0 | FR-059-AC-13, FR-059-AC-14, FR-059-CON-4 | 🚧 planned |
+| TC-711 | Two generations of one request are byte-identical over an actual second run | Snapshot | P0 | FR-060-AC-1, FR-060-CON-2 | 🚧 planned |
+| TC-712 | Generation is byte-unchanged across the declared environment perturbations | Unit | P0 | FR-060-AC-2 | 🚧 planned |
+| TC-713 | The formatter reports no change over every generated crate | Integration | P0 | FR-060-AC-3 | 🚧 planned |
+| TC-714 | The committed goldens equal a fresh generation and an emitter edit fails the check | Snapshot | P0 | FR-060-AC-4, FR-060-CON-1 | 🚧 planned |
+| TC-715 | The golden check leaves the working tree clean | Integration | P0 | FR-060-AC-5 | 🚧 planned |
+| TC-716 | The generator's live graph reaches no clock, RNG, environment, cwd or child process | Static | P0 | FR-060-AC-6, FR-060-CON-4 | 🚧 planned |
+| TC-717 | The emitted MSRV matches the matrix and every matrix row is evidenced or recorded unmet | Analysis | P0 | FR-060-AC-7, FR-060-AC-8, FR-060-CON-3 | 🚧 planned |
+| TC-718 | Output is invariant under document reordering and the manifest file list is sorted | Property | P0 | FR-060-AC-9, FR-060-AC-10 | 🚧 planned |
+| TC-719 | The packaged crate unpacks and both consumers build offline with a clean tree | Integration | P0 | FR-061-AC-1, FR-061-CON-4 | 🚧 planned |
+| TC-720 | An added type breaks the exhaustive match and a changed count breaks the const assertion | Compile | P0 | FR-061-AC-2, FR-061-AC-3, FR-061-CON-3 | 🚧 planned |
+| TC-721 | Every positive fixture round-trips canonically equal through the generated crate | Integration | P0 | FR-061-AC-4 | 🚧 planned |
+| TC-722 | Each of the eight invalid classes is rejected with the expected error | Integration | P0 | FR-061-AC-5 | 🚧 planned |
+| TC-723 | A preserved unknown member survives a round trip and a rejecting type refuses it | Integration | P0 | FR-061-AC-6 | 🚧 planned |
+| TC-724 | No step reaches a registry or the network and no consumer path escapes the scratch directory | Analysis | P0 | FR-061-AC-7..FR-061-AC-9, FR-061-CON-1, FR-061-CON-2 | 🚧 planned |
+| TC-725 | Every branch row names a case that exists and asserts against an independent expectation | Analysis | P0 | FR-062-AC-1, FR-062-CON-1 | 🚧 planned |
+| TC-726 | A branch added without a case fails the register check naming the branch | Unit | P0 | FR-062-AC-2, FR-062-CON-4 | 🚧 planned |
+| TC-727 | Every catalogued mutation is detected, and suppressing its case drops the score | Unit | P0 | FR-062-AC-3, FR-062-AC-4 | 🚧 planned |
+| TC-728 | Each declared property holds over the generated document set with a printed seed | Property | P0 | FR-062-AC-5, FR-062-CON-3 | 🚧 planned |
+| TC-729 | A deliberately degrading emitter is caught by a property and by a mutation row | Unit | P0 | FR-062-AC-6 | 🚧 planned |
+| TC-730 | The mutation run leaves the tree clean and the register covers every vocabulary | Analysis | P0 | FR-062-AC-7, FR-062-AC-8, FR-062-CON-2 | 🚧 planned |
+| TC-731 | Byte differences across two runs, four environment perturbations and every evidenced matrix row are zero | Snapshot | P0 | NFR-022 | 🚧 planned |
+| TC-732 | The generator's live module graph reaches no ambient input | Static | P0 | NFR-022 | 🚧 planned |
+| TC-733 | A generated crate's runtime dependency set is serde alone | Analysis | P0 | NFR-022 | 🚧 planned |
+| TC-734 | Generation, build and consumption complete with the network denied | Integration | P0 | NFR-022-AC-4 | 🚧 planned |
+| TC-735 | The degradation scan and the support matrix are measured against published sources, not their own output | Analysis | P0 | NFR-022-AC-2, NFR-022-AC-3 | 🚧 planned |
+| TC-736 | A gate that cannot resolve its inputs fails naming them rather than passing vacuously | Unit | P0 | NFR-022-AC-1 | 🚧 planned |
+| TC-737 | Every path in this change's own set is permitted and none is prohibited | Analysis | P0 | NFR-023-AC-1 | 🚧 planned |
+| TC-738 | The published package manifest's metadata fields are byte-unchanged | Analysis | P0 | NFR-023-AC-2 | 🚧 planned |
+| TC-739 | Every conformance file but the adapter registry is byte-unchanged and the registry change is confined to the rust slot | Analysis | P0 | NFR-023-AC-3 | 🚧 planned |
+| TC-740 | Schemas, fixtures, packages, spikes and the frozen prototype backends are byte-unchanged | Analysis | P0 | NFR-023-AC-4, FR-054-CON-5 | 🚧 planned |
+| TC-741 | Every emitted crate manifest carries publish false, and removing that emission fails a test | Unit | P0 | NFR-023-AC-5 | 🚧 planned |
+| TC-742 | No crate was published, no downstream repository changed, and every added manifest is AGPL-3.0-only | Analysis | P0 | NFR-023-AC-6, NFR-023-AC-7 | 🚧 planned |
+| TC-743 | Reverting this change's own range leaves the suite green at the pre-existing count | Integration | P0 | NFR-023-AC-8 | 🚧 planned |
+| TC-744 | Both range endpoints come from history, the gate still bites after merge, a later change adds no path, and the permitted list was not widened | Integration | P0 | NFR-023-AC-9..NFR-023-AC-11 | 🚧 planned |
 
 ## Option Permutation Matrix
 
@@ -869,6 +994,13 @@ passes.
 | TC-527, TC-602 | enum member addition | consumer policy `reject` / `surface` / `preserve` | consumer evidence current / stale / unknown | Disposition follows declared policy and evidence, never a language default |
 | TC-533, TC-534 | IR contract version | `1.0.0` / `1.1.0` | forward or backward projection | Forward projection declares its loss; backward projection derives multiplicity |
 | TC-466, TC-618 | version constraint | exact / caret | one or two search directories offering candidates | Highest satisfying version wins; the earlier declared directory breaks a tie |
+| TC-645, TC-646 | IR type definition | one of the eight structural kinds, nine kernel scalars | Rust declaration form | Each kind and scalar takes exactly its mapping-table row; no fallback exists |
+| TC-647, TC-648 | field shape | collection x nullable x presence x bounded | composed Rust type | The three axes compose independently; absent, null and empty stay distinct |
+| TC-650 | unknown member | reject / preserve / surface | deserialization outcome | Refused, retained silently, or retained with one non-blocking diagnostic |
+| TC-653 | field default | none / semantic / representation / migration | serde default | Only a semantic default reaches the wire boundary; the other two stay metadata |
+| TC-677, TC-678 | constraint keyword | one of eleven | resolved subject kind or scalar | Applicable pairs generate a check; inapplicable pairs are refused, never dropped |
+| TC-679, TC-680 | ECMA-262 pattern | expressible / proved / unsupported | generated matcher, hand-written validator, or refusal | Exactly one of three outcomes; there is no unvalidated fourth |
+| TC-698, TC-703 | conformance case | supported / unsupported-by-declaration | adapter answer | A supported case is judged against the oracle; a declared-unsupported case is unmet, never a pass |
 
 ## Constraint Boundary Tests
 
@@ -977,6 +1109,31 @@ passes.
 | FR-052-CON-1 | Prohibited | A sixteenth exported symbol | TC-563 | Export-set assertion fails |
 | FR-053-CON-2 | Allowed | Exactly fifteen declared decorators | TC-412 | Vocabulary assertion passes |
 | FR-053-CON-2 | Prohibited | A sixteenth declared decorator | TC-412 | Vocabulary assertion fails |
+| FR-054-CON-1 | Allowed | Every construct has a mapping row | TC-655 | Generation proceeds |
+| FR-054-CON-1 | Prohibited | A construct has no row | TC-656 | UNSUPPORTED_CONSTRUCT, zero files |
+| FR-054-CON-2 | Allowed | A degraded type at a position the table declares | TC-694 | Scan passes |
+| FR-054-CON-2 | Prohibited | String substituted for a constrained scalar | TC-694, TC-729 | Scan fails naming the declaration |
+| FR-054-CON-4 | Allowed | serde as the sole runtime dependency | TC-655 | Manifest inspection passes |
+| FR-054-CON-4 | Prohibited | A second runtime dependency | TC-655, TC-689 | Manifest inspection fails |
+| FR-055-CON-1 | Allowed | Distinct identities derive distinct identifiers | TC-664 | Generation proceeds |
+| FR-055-CON-1 | Prohibited | Two identities derive one identifier | TC-662 | NAME_COLLISION, zero files |
+| FR-056-CON-3 | Allowed | Emitted manifest carries publish = false | TC-667, TC-741 | Gate passes |
+| FR-056-CON-3 | Prohibited | Emitted manifest omits publish = false | TC-741 | Gate fails |
+| FR-056-CON-5 | Boundary | outputRoot containing a parent segment | TC-675 | Refused before any write |
+| FR-057-CON-2 | Allowed | Pattern inside the supported subset | TC-681 | Matcher generated |
+| FR-057-CON-2 | Prohibited | Pattern relaxed to make it compile | TC-680, TC-687 | UNSUPPORTED_PATTERN, zero files |
+| FR-057-CON-3 | Boundary | Proved validator perturbed by one rule | TC-688 | Differential harness fails naming the input |
+| FR-057-CON-4 | Boundary | Pattern and subject at the step bound | TC-684 | Bound-exceeded error, never a hang |
+| FR-058-CON-1 | Prohibited | Diagnostic constructed from an unregistered entry | TC-691 | Construction throws |
+| FR-058-CON-3 | Boundary | Message echoing a 10000-character member | TC-696 | Truncated at 120 code points |
+| FR-059-CON-1 | Prohibited | Rust reader reaches the oracle or the compiler reader | TC-704 | Static scan fails |
+| FR-059-CON-2 | Allowed | Only the rust-backend registry entry changes under conformance/ | TC-709 | Change-set diff passes |
+| FR-059-CON-2 | Prohibited | Any other conformance path changes | TC-709, TC-739 | Change-set diff fails |
+| FR-059-CON-3 | Prohibited | A case answered with a fabricated verdict or omitted | TC-699, TC-703 | Reported as missing-answer or failure |
+| FR-060-CON-1 | Prohibited | Golden check compares a file to itself | TC-714, TC-715 | Check regenerates into a scratch directory |
+| FR-061-CON-1 | Prohibited | Any registry contact during package or build | TC-724 | Offline run fails the step |
+| FR-062-CON-2 | Boundary | Mutation harness run to completion | TC-730 | Working tree unchanged |
+| NFR-023-AC-11 | Prohibited | Permitted-path list widened to absorb accretion | TC-744 | Inspection fails |
 
 ## State Transition Matrix
 
@@ -1023,6 +1180,13 @@ passes.
 | promoted compiler in the tree | every path differing from the pre-promotion commit is restored from it | the spike emitter returns as the only generator | TC-395 |
 | committed Rust lockfile | crates.io index publishes a newer transitive crate | seeded lockfile keeps the retained bytes and the check unaffected | TC-372, TC-373, TC-387 |
 | retained evidence | promotion supersedes a `capabilities.json` claim | claim stays as the historical record; the doc carries the superseding note | TC-381, TC-389 |
+| generation started | every construct maps and no diagnostic blocks | success, crate written, manifest emitted | TC-666, TC-670 |
+| generation started | a construct has no mapping row | unsupported, zero files, at least one diagnostic | TC-656, TC-692 |
+| generation started | the document is ill-formed | invalid, zero files, at least one diagnostic | TC-671, TC-692 |
+| generation refused | the refusing construct is removed and generation is re-run | success, crate written | TC-687 |
+| rust-backend slot unavailable | an adapter command is supplied and the slot is marked available | every case judged against the oracle | TC-698, TC-710 |
+| rust-backend slot available | the adapter command is removed | 111 unmet rows and zero passes | TC-710 |
+| value constructed through try_new | a constraint is violated | ValidationError naming the constraint | TC-677, TC-685 |
 
 ## Error Paths
 
@@ -1142,6 +1306,24 @@ passes.
 | ERR-097 | A manifest declares two profiles and the caller names none | `AMBIGUOUS_PROFILE` and exit `1` | TC-552 |
 | ERR-098 | An unknown command, unknown flag, missing flag, or unreadable `--limits` | Usage text and exit `2` | TC-557 |
 | ERR-099 | An input exceeds one of the four size limits | A distinct blocking limit diagnostic naming the limit | TC-579, TC-587, TC-606 |
+| ERR-114 | A construct has no row in the published mapping table | UNSUPPORTED_CONSTRUCT, zero files | TC-656 |
+| ERR-115 | An ECMA-262 pattern uses a lookahead and is not a proved-registry key | UNSUPPORTED_PATTERN, zero files | TC-680, TC-687 |
+| ERR-116 | A `kind: "scalar"` names a value outside the nine kernel scalars | UNSUPPORTED_SCALAR, zero files | TC-646, TC-690 |
+| ERR-117 | A `format` operand names an unregistered format | UNKNOWN_FORMAT, zero files | TC-686 |
+| ERR-118 | A name renders to the empty string or to a keyword with no raw form | UNRENDERABLE_NAME, zero files | TC-659, TC-660 |
+| ERR-119 | Two identities in one scope derive the same Rust identifier | NAME_COLLISION naming both, zero files | TC-662 |
+| ERR-120 | A 1.0.0 document carries a relationships, operations, clauses or unit node | V1_1_NODE_IN_V1_0, zero files | TC-654 |
+| ERR-121 | A typeRef, appliesTo, items, values or target resolves to nothing | UNRESOLVED_TYPE_REF, zero files | TC-690, TC-706 |
+| ERR-122 | A construct would be dropped that the profile does not list as an allowed omission | UNDECLARED_LOSS, zero files | TC-695 |
+| ERR-123 | A constraint keyword is not applicable to its resolved subject | CONSTRAINT_NOT_APPLICABLE, zero files | TC-678 |
+| ERR-124 | A document exceeds maxNodes, maxDepth or maxCollectionItems | The matching limit diagnostic, zero files | TC-673 |
+| ERR-125 | A compiler request's outputRoot escapes the repository root | Refused before any write | TC-675 |
+| ERR-126 | A generated matcher exceeds its step bound on a pathological subject | Bound-exceeded error, never a hang | TC-684 |
+| ERR-127 | The adapter omits an answer for a manifest case | missing-answer, the run fails | TC-699 |
+| ERR-128 | The adapter answers a case whose digest does not match the manifest | case-digest problem, the run fails | TC-699 |
+| ERR-129 | An emitted crate manifest omits publish = false | The publication gate fails | TC-741 |
+| ERR-130 | A changed-path gate cannot resolve its range from history | The gate fails saying it could not run | TC-736, TC-744 |
+| ERR-131 | A prohibited path is changed at a path no later commit owns | The non-disruption gate fails naming the path | TC-737, TC-744 |
 
 ## Edge Cases
 
@@ -1210,6 +1392,19 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-060 | The compiler's own lowering emits a document that fails the published schema | FR-046, FR-050 | TC-450, TC-517 | An invalid document is written and every downstream golden inherits it |
 | EC-061 | A compile fails after `--out` already holds a previous run's document | FR-049, FR-052 | TC-500, TC-549 | A stale document is read as the failed run's output |
 | EC-062 | `inspect` is given a document whose imported exports it cannot see | FR-050, FR-052 | TC-521, TC-555 | Every cross-package relationship is reported as unresolved, or the check is silently skipped |
+| EC-69 | A field is both optional and nullable, and the wire carries an absent member in one document and an explicit null in another | FR-054 | TC-648 | Absent and null collapse to one value and a deliberate null is read as unset |
+| EC-70 | A type graph is recursive through a sequence, a map and a direct self-reference at once | FR-054 | TC-651 | The emitter recurses without bound, or boxes a different field set on each run |
+| EC-71 | A collection is optional with an unbounded upper and a lower of zero | FR-054 | TC-647 | An empty collection and an absent collection become indistinguishable |
+| EC-72 | Two record fields differ only in a separator, so both render one snake_case identifier | FR-055 | TC-662 | A counter suffix is appended and the generated name then depends on document order |
+| EC-73 | A field is named for a Rust keyword that has no raw-identifier form | FR-055 | TC-659 | The emitter renames the field and the wire name silently changes |
+| EC-74 | A published pattern uses ECMAScript lookaheads whose `.` cannot cross a line terminator | FR-057 | TC-682, TC-683 | The validator enforces the intended language rather than the published one, and the two diverge unnoticed |
+| EC-75 | A locus path embeds a line terminator before a parent-directory segment | FR-057 | TC-683 | A traversal guard that the published pattern does not actually apply is assumed to be applied |
+| EC-76 | A pattern in the supported subset nests quantifiers so a backtracking matcher blows up | FR-057 | TC-684 | Generation or validation hangs on an untrusted document |
+| EC-77 | A type declares unknownPolicy preserve and the retained member's name collides with a known field's wire name | FR-054 | TC-650 | An unknown member overwrites a known field or silently disappears |
+| EC-78 | A required extension names a capability the crate does not admit | FR-061 | TC-722 | An unsupported capability is accepted and the consumer proceeds on a contract it cannot honour |
+| EC-79 | The conformance oracle and the Rust reader disagree on a reference target nothing declares | FR-059 | TC-710 | GAP-011 is decided by an implementation rather than by its owning issue |
+| EC-80 | A sibling ticket lands on top of this change before its gates are read | NFR-023 | TC-744 | This change's path set accretes the sibling's paths and the wrong ticket is blamed |
+| EC-81 | A generated crate is byte-identical on the authoring workstation and different on a clean runner | NFR-022 | TC-712, TC-731 | Determinism is claimed from one host, as issue #42 already records |
 
 ## Coverage Gaps
 
@@ -1238,19 +1433,32 @@ dialect, so they demonstrate that the harness runs and that a single-dialect
 case is reported as such — not cross-frontend equivalence, which needs the
 spec-bundle frontend of issue #36. The issue #19 acceptance criterion
 "independent frontend fixtures produce equivalent IR where semantics agree" is
-therefore partially satisfied by construction and completes with #36.## Test Execution Summary
+therefore partially satisfied by construction and completes with #36.
+
+Issue #21's 100 cases (TC-645..744) are mapped and land `🚧 planned`; they are
+flipped to `✅` only against a measured run. Two open dependencies are recorded
+here rather than resolved. First, GAP-011 — the contract states a resolution
+rule for relationship targets and none for a `reference` kind's target — is
+owned by issue #9; the Rust adapter adopts the corpus oracle's reading so the
+disagreement stays visible, and TC-710 asserts the dependency is recorded rather
+than decided. Second, the platform rows of the Rust support matrix that no run
+has covered are recorded unmet with their reason under TC-717, not listed as
+supported. GAP-002 is not a gap here: TC-682 and TC-683 close it with a proved
+validator and its differential harness.
+
+## Test Execution Summary
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 191 | 191 | 0 | 0 | 100% mapped (191/191) |
+| Static | 198 | 191 | 0 | 7 | 100% mapped (198/198) |
 | Manual | 46 | 45 | 0 | 1 | 100% mapped (46/46) |
-| Analysis | 17 | 17 | 0 | 0 | 100% mapped (17/17) |
-| Property | 48 | 48 | 0 | 0 | 100% mapped (48/48) |
-| Unit | 273 | 273 | 0 | 0 | 100% mapped (273/273) |
-| Integration | 42 | 41 | 0 | 1 | 100% mapped (42/42) |
-| Fuzz | 7 | 7 | 0 | 0 | 100% mapped (7/7) |
-| Snapshot | 17 | 17 | 0 | 0 | 100% mapped (17/17) |
-| Compile | 3 | 3 | 0 | 0 | 100% mapped (3/3) |
-| **Total** | **644** | **642** | **0** | **2** | **100% mapped (644/644)** |
+| Analysis | 34 | 17 | 0 | 17 | 100% mapped (34/34) |
+| Property | 54 | 48 | 0 | 6 | 100% mapped (54/54) |
+| Unit | 316 | 273 | 0 | 43 | 100% mapped (316/316) |
+| Integration | 62 | 41 | 0 | 21 | 100% mapped (62/62) |
+| Fuzz | 9 | 7 | 0 | 2 | 100% mapped (9/9) |
+| Snapshot | 20 | 17 | 0 | 3 | 100% mapped (20/20) |
+| Compile | 5 | 3 | 0 | 2 | 100% mapped (5/5) |
+| **Total** | **744** | **642** | **0** | **102** | **100% mapped (744/744)** |
 
 **Matrix coverage status: ✅ Complete. Execution status: ✅ 642 of 644 rows pass, 2 blocked; the automated suite is measured with `make test` and restated at the end of this line. TC-199 is recorded by the owner decision on issue #4; TC-370 and TC-382 remain blocked on issue #42 (the retained issue #4 evidence records the minting host's own tool versions). TC-398..619 pass on the issue #19 branch, measured with `make test` after merging `origin/main` at 4e48f08. The `Coverage` column is measured by `scripts/test-matrix-summary.mjs`, which counts the rows naming an id a spec artifact declares; it was a string literal before issue #19's code review (SR-073 FND-658). The `Blocked` column counts every row whose status is not ✅. Issue #19 measured `origin/main` at 51febd4 as **168 of 173** and filed the cause as #48; PR #47 re-expressed those five guards as tree assertions on `main`, and this branch takes that form. Issue #20 then measured the remaining direction: the NFR-021 changed-path range was fixed at its base but open at its head, so it grew from 236 paths and 0 prohibited hits against the merged trunk to 406 paths and 139 against a sibling branch. Both ends now come from history, and TC-644 rehearses the property on a synthetic history rather than inferring it from the shape of the source. Three states were measured for the fix, because the two-number standard cannot see an accreting range: **302 of 302** on the branch; **302 of 302** in a scratch clone where the branch is squash-merged onto f412bda and `origin/main` is repointed so both `git diff origin/main...HEAD` and `git status --porcelain` are empty; and **408 of 408 across 10 files** in that same clone with issue #20 (ad9c552) squash-merged on top. The third state is **406 of 407 with one failure** without this fix — `not permitted: conformance/README.md` — which is the defect. In the fixed third state issue #19's own range is 236 paths with 0 prohibited hits while the open-ended range over the same history is 406 paths with 139. Issue #20 then merged that fix and measured three states on `origin/main` at 3ddc04b, each with `pnpm install` and `poetry install`: **409 of 409 across 10 files** on the branch, identical on a second run; **409 of 409** in a scratch clone where the branch is squash-merged onto 3ddc04b and `origin/main` is repointed so both `git diff origin/main...HEAD` and `git status --porcelain` are empty; and **409 of 409** in that same clone with an unrelated sibling change squashed on top that adds `src/sibling/marker.mjs` and edits `docs/semantic-data-system/roadmap.md`. `poetry run pytest` is 131 of 131 in all three. The third state is what found the same defect one layer down in this corpus's own gates: measured against the range before it was bounded at its tip, it is **2 failed of 106**, attributing the sibling's `src/` and `docs/` paths to issue #20. TC-639 now asserts that every sentinel resolves and that nothing under `conformance/` is added after the range's tip, because a sentinel list is the kind of thing that rots quietly. The corpus's one remaining read of a moving ref is the versioning gate's predecessor, which is deliberate — a baseline the branch under test can edit is not a baseline — and is declared in the manifest so an unreadable ref fails loudly instead of skipping.**
