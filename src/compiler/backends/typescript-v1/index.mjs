@@ -17,7 +17,6 @@
  * `output-manifest.schema.json` and assert nothing, which is the vacuous pass
  * this repository's gates exist to refuse.
  */
-import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../../diagnostics.mjs";
@@ -40,19 +39,20 @@ const REPO_ROOT = resolve(
 );
 
 /**
- * Reads a repository file through the injected host where one is supplied.
- *
- * The fallback exists so the backend is usable from a test with no host, and it
- * is deliberately the only route to `node:fs` in this directory. Everything the
- * generation reads is a *published contract artifact* — the v1 schemas and this
- * repository's `LICENSE` — never an input a package supplied.
+ * Reads a published repository artifact through the bounded host supplied by the
+ * caller. The backend never falls back to `node:fs`: doing that would make an
+ * ostensibly pure IR-to-package function read ambient repository state when a
+ * caller forgot its host. The CLI supplies the sole filesystem boundary.
  */
 function repositoryReader(host) {
+	if (typeof host?.readText !== "function") {
+		throw new TypeError(
+			"the TypeScript backend requires options.host.readText for repository artifacts",
+		);
+	}
 	return (relativePath) => {
 		const absolute = join(REPO_ROOT, relativePath);
-		return host?.readText
-			? host.readText(absolute)
-			: readFileSync(absolute, "utf8");
+		return host.readText(absolute);
 	};
 }
 

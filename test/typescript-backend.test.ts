@@ -127,6 +127,15 @@ describe("TypeScript backend fixture (FR-071)", () => {
 			expect(text, path).not.toContain("@ts-expect-error");
 		}
 	});
+
+	it("keeps the TypeScript backend's repository reads behind an injected host", () => {
+		const backend = readFileSync(
+			resolve(root, "src/compiler/backends/typescript-v1/index.mjs"),
+			"utf8",
+		);
+		expect(backend).not.toContain('from "node:fs"');
+		expect(backend).toContain("requires options.host.readText");
+	});
 	it("typechecks the generated package and the positive type-level program", () => {
 		expect(
 			runTsc("--project", resolve(fixture, "tsconfig.json"), "--noEmit"),
