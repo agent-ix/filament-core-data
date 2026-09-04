@@ -42,6 +42,26 @@ export declare const VERSION_UPLIFT_POLICY: "corpus" | "normative";
 /** The two settings the policy admits, so a third is a visible change. */
 export declare const VERSION_UPLIFT_POLICIES: readonly ["corpus", "normative"];
 
+/**
+ * How the addition of an enum or union variant with no consumer policy
+ * classifies, and the one place in the module that decides it.
+ *
+ * `"corpus"` — the default — answers `conditional`, conforming to the
+ * conformance corpus's published reading. `"contract"` answers `breaking`,
+ * following `docs/semantic-data-system/compatibility.md`, which makes an enum
+ * addition "additive only for open-enum consumers" and names "closed-enum
+ * expansion" in its Breaking change class. With a policy that admits unknown
+ * members both settings answer `additive`. The default is conformance and not a
+ * ruling: FR-070 forbids this work from editing a corpus case and NFR-025 makes
+ * the corpus a prohibited path, so the disagreement is reported to the corpus's
+ * owner instead. Measured, the two settings differ on exactly `ENUM-004` and
+ * `UNION-004`.
+ */
+export declare const VARIANT_ADDITION_POLICY: "corpus" | "contract";
+
+/** The two settings the policy admits, so a third is a visible change. */
+export declare const VARIANT_ADDITION_POLICIES: readonly ["corpus", "contract"];
+
 /** The more restrictive of two classifications. */
 export declare function moreRestrictive(
 	left: Classification,

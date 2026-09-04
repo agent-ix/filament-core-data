@@ -134,6 +134,49 @@ export const VERSION_UPLIFT_POLICY = "corpus";
 /** The two settings the policy admits, so a third is a visible change. */
 export const VERSION_UPLIFT_POLICIES = Object.freeze(["corpus", "normative"]);
 
+/**
+ * How the addition of an enum or union variant classifies, and the one place in
+ * this module that decides it.
+ *
+ * `docs/semantic-data-system/compatibility.md` is the cited authority and it is
+ * literal: "An **enum** addition is additive only for open-enum consumers.
+ * Closed generated enums require an unknown variant or coordinated breaking
+ * release", and its change-class table names "closed-enum expansion" under
+ * **Breaking**. That document declares three classes — patch, additive and
+ * breaking — and `conditional` is not one of them, so softening a closed-enum
+ * expansion into something a consumer may ignore is a reading the authority
+ * does not carry. Under `"contract"` this module therefore answers `additive`
+ * where a consumer policy admits unknown members and `breaking` where none
+ * does.
+ *
+ * The conformance corpus reads the same change as `conditional` with no policy,
+ * citing `contracts-v1.md`'s weaker "Open/closed enum behavior is consumer
+ * policy, not a language default", which states who decides and not what the
+ * answer is when nobody has.
+ *
+ * The disagreement was measured rather than predicted. Under `"contract"` the
+ * corpus cases `ENUM-004` and `UNION-004` — both on the base `core-1-1`, which
+ * carries no consumer policy — answer `breaking` against an expected
+ * `conditional`, and the compatibility family is 23 of 25. Under `"corpus"`
+ * both answer `conditional` and the family is 25 of 25. No other case's answer
+ * moves between the two settings.
+ *
+ * The default is **conformance with the corpus's published reading, not a
+ * ruling on the contract**, for the same reason `VERSION_UPLIFT_POLICY`
+ * defaults that way, and for one more: FR-070 forbids this work from editing a
+ * corpus case, a base, the oracle, the harness or the divergence register, and
+ * NFR-025 makes every one of those a prohibited path. A backend that moved the
+ * yardstick it is judged against would have arranged its own verdict, which
+ * `conformance/README.md` names as the thing the corpus exists to prevent. So
+ * the disagreement is reported to the corpus's owner instead, and when
+ * `ENUM-004` and `UNION-004` move under a `corpus-defect` verdict and a major
+ * `corpusVersion` bump, this backend follows by one edit here and nowhere else.
+ */
+export const VARIANT_ADDITION_POLICY = "corpus";
+
+/** The two settings the policy admits, so a third is a visible change. */
+export const VARIANT_ADDITION_POLICIES = Object.freeze(["corpus", "contract"]);
+
 const RANK = new Map(
 	CLASSIFICATION_ORDER.map((value, index) => [value, index]),
 );
@@ -395,7 +438,13 @@ export function classifySurface(before, after, options = {}) {
 		: "conditional";
 
 	classifyEnvelope(left, right, record);
-	classifyTypes(left, right, record, additionOfOptional);
+	const additionOfVariant =
+		VARIANT_ADDITION_POLICY === "contract"
+			? admitsUnknown(consumerPolicy)
+				? "additive"
+				: "breaking"
+			: additionOfOptional;
+	classifyTypes(left, right, record, additionOfOptional, additionOfVariant);
 	classifyExtensions(left.extensions, right.extensions, "", record, "document");
 	classifyResidue(left, right, record);
 
@@ -584,7 +633,13 @@ function classifyContractVersionMove(before, after, record) {
 	);
 }
 
-function classifyTypes(before, after, record, additionOfOptional) {
+function classifyTypes(
+	before,
+	after,
+	record,
+	additionOfOptional,
+	additionOfVariant,
+) {
 	const beforeTypes = byIdentity(before.types);
 	const afterTypes = byIdentity(after.types);
 
@@ -620,6 +675,7 @@ function classifyTypes(before, after, record, additionOfOptional) {
 			`/types/${afterEntry.position}`,
 			record,
 			additionOfOptional,
+			additionOfVariant,
 			beforeTypes,
 			afterTypes,
 		);
@@ -632,6 +688,7 @@ function classifyType(
 	pointer,
 	record,
 	additionOfOptional,
+	additionOfVariant,
 	beforeTypes,
 	afterTypes,
 ) {
@@ -713,7 +770,7 @@ function classifyType(
 		beforeTypes,
 		afterTypes,
 	);
-	classifyVariants(before, after, pointer, record, additionOfOptional);
+	classifyVariants(before, after, pointer, record, additionOfVariant);
 	classifyRelationships(before, after, pointer, record);
 	classifyOperations(
 		before,
@@ -1021,7 +1078,7 @@ function classifyMultiplicity(before, after, pointer, record, noun) {
 	}
 }
 
-function classifyVariants(before, after, pointer, record, additionOfOptional) {
+function classifyVariants(before, after, pointer, record, additionOfVariant) {
 	const beforeIndex = byIdentity(before.variants);
 	const afterIndex = byIdentity(after.variants);
 	for (const [identity, entry] of beforeIndex) {
@@ -1037,11 +1094,12 @@ function classifyVariants(before, after, pointer, record, additionOfOptional) {
 		if (beforeIndex.has(identity)) continue;
 		// ARCH-008: "An **enum** addition is additive only for open-enum consumers.
 		// Closed generated enums require an unknown variant or coordinated breaking
-		// release." Whether the consumer is open is what its policy declares, so the
-		// same test that softens an optional field softens a variant addition; with
-		// no policy the answer is conditional, not additive.
+		// release." Whether the consumer is open is what its policy declares.
+		// `VARIANT_ADDITION_POLICY` is the one place that decides what an absent
+		// policy means: `breaking` under the cited authority, `conditional` under
+		// the corpus's published reading, which is the default.
 		record(
-			additionOfOptional,
+			additionOfVariant,
 			`${pointer}/variants/${entry.position}`,
 			`the variant ${identity} was added`,
 			"variant-added",

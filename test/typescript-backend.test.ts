@@ -20,6 +20,11 @@ import { describe, expect, it } from "vitest";
 import { reachableSymbols } from "../src/compiler/backends/typescript-v1/package-layout.mjs";
 import { auditRenderedNodes } from "../src/compiler/backends/typescript-v1/metadata.mjs";
 import { buildModel } from "../src/compiler/backends/typescript-v1/model.mjs";
+import {
+	VARIANT_ADDITION_POLICIES,
+	VARIANT_ADDITION_POLICY,
+	classifySurface,
+} from "../src/compiler/backends/typescript-v1/classify.mjs";
 import { changeRange, changedPathsOf } from "./changed-paths";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -545,6 +550,209 @@ describe("TypeScript backend fixture (FR-071)", () => {
 			rmSync(scratch, { recursive: true, force: true });
 		}
 	}, 30_000);
+});
+
+type IrDocument = Record<string, unknown>;
+
+/** A `1.1.0` document carrying one enum, one record, and one relationship. */
+function classifierBase(): IrDocument {
+	return {
+		contractVersion: "1.1.0",
+		package: {
+			identity: "ix://agent-ix/tc811/package/p",
+			version: "1.0.0",
+		},
+		types: [
+			{
+				identity: "ix://agent-ix/tc811/type/Status",
+				kind: "enum",
+				variants: [
+					{ identity: "ix://agent-ix/tc811/variant/open", name: "open" },
+				],
+			},
+			{
+				identity: "ix://agent-ix/tc811/type/Record",
+				kind: "record",
+				fields: [
+					{
+						identity: "ix://agent-ix/tc811/field/name",
+						name: "name",
+						presence: "required",
+						nullable: false,
+						scalar: "string",
+					},
+				],
+				relationships: [
+					{
+						identity: "ix://agent-ix/tc811/rel/status",
+						name: "status",
+						target: "ix://agent-ix/tc811/type/Status",
+					},
+				],
+			},
+		],
+	};
+}
+
+/** The policy shape `consumer-policy.schema.json` gives an open consumer. */
+const OPEN_CONSUMER = { unknownExtensions: "preserve" } as const;
+
+/**
+ * `classify.mjs` and its one import, copied outside the tree with
+ * `VARIANT_ADDITION_POLICY` set to `setting`.
+ *
+ * The copy is made outside the working tree deliberately: writing a variant of a
+ * compiler module *into* `src/compiler/` is the defect issue #49 records, where
+ * three unrelated changed-path gates failed against a file another suite was
+ * part way through writing.
+ */
+async function classifierUnder(setting: string): Promise<{
+	classifySurface: typeof classifySurface;
+	dispose: () => void;
+}> {
+	const scratch = mkdtempSync(resolve(tmpdir(), "fcd-tc811-"));
+	const backend = resolve(root, "src/compiler/backends/typescript-v1");
+	cpSync(resolve(backend, "canonical.mjs"), resolve(scratch, "canonical.mjs"));
+	const source = readFileSync(resolve(backend, "classify.mjs"), "utf8");
+	const patched = source.replace(
+		'export const VARIANT_ADDITION_POLICY = "corpus";',
+		`export const VARIANT_ADDITION_POLICY = ${JSON.stringify(setting)};`,
+	);
+	expect(patched, "the constant is declared in one literal place").not.toBe(
+		source === patched && setting === "corpus" ? "" : source,
+	);
+	writeFileSync(resolve(scratch, "classify.mjs"), patched);
+	const module = await import(
+		pathToFileURL(resolve(scratch, "classify.mjs")).href
+	);
+	return {
+		classifySurface: module.classifySurface,
+		dispose: () => rmSync(scratch, { recursive: true, force: true }),
+	};
+}
+
+describe("TC-811 IR-surface classification rules (FR-069)", () => {
+	/** Traces: TC-811; FR-069-AC-17. */
+	it("classifies every removal and required addition breaking", () => {
+		const removedField = classifierBase();
+		(removedField.types as Record<string, unknown>[])[1].fields = [];
+		expect(classifySurface(classifierBase(), removedField).classification).toBe(
+			"breaking",
+		);
+
+		const addedRequired = classifierBase();
+		(
+			(addedRequired.types as Record<string, unknown>[])[1].fields as Record<
+				string,
+				unknown
+			>[]
+		).push({
+			identity: "ix://agent-ix/tc811/field/added",
+			name: "added",
+			presence: "required",
+			nullable: false,
+			scalar: "string",
+		});
+		expect(
+			classifySurface(classifierBase(), addedRequired).classification,
+		).toBe("breaking");
+
+		const removedVariant = classifierBase();
+		(removedVariant.types as Record<string, unknown>[])[0].variants = [];
+		expect(
+			classifySurface(classifierBase(), removedVariant).classification,
+		).toBe("breaking");
+
+		const removedRelationship = classifierBase();
+		(removedRelationship.types as Record<string, unknown>[])[1].relationships =
+			[];
+		expect(
+			classifySurface(classifierBase(), removedRelationship).classification,
+		).toBe("breaking");
+	});
+
+	/** Traces: TC-811; FR-069-AC-17, FR-069-AC-12. */
+	it("classifies an added optional field conditional with no consumer policy", () => {
+		const after = classifierBase();
+		(
+			(after.types as Record<string, unknown>[])[1].fields as Record<
+				string,
+				unknown
+			>[]
+		).push({
+			identity: "ix://agent-ix/tc811/field/optional",
+			name: "optional",
+			presence: "optional",
+			nullable: false,
+			scalar: "string",
+		});
+		expect(classifySurface(classifierBase(), after).classification).toBe(
+			"conditional",
+		);
+		expect(
+			classifySurface(classifierBase(), after, {
+				consumerPolicy: { ...OPEN_CONSUMER },
+			}).classification,
+		).toBe("additive");
+	});
+
+	/** Traces: TC-811; FR-069-AC-17, FR-069-AC-25. */
+	it("classifies an added variant by the one named policy constant", async () => {
+		const before = classifierBase();
+		const after = classifierBase();
+		(
+			(after.types as Record<string, unknown>[])[0].variants as Record<
+				string,
+				unknown
+			>[]
+		).push({ identity: "ix://agent-ix/tc811/variant/void", name: "void" });
+
+		// `compatibility.md` makes the addition additive for an open consumer
+		// under either setting, because that is the one answer it states.
+		expect(VARIANT_ADDITION_POLICIES).toEqual(["corpus", "contract"]);
+		for (const setting of VARIANT_ADDITION_POLICIES) {
+			const { classifySurface: classify, dispose } =
+				await classifierUnder(setting);
+			try {
+				expect(
+					classify(before, after, { consumerPolicy: { ...OPEN_CONSUMER } })
+						.classification,
+					`${setting} with an open consumer`,
+				).toBe("additive");
+				expect(
+					classify(before, after).classification,
+					`${setting} with no consumer policy`,
+				).toBe(setting === "contract" ? "breaking" : "conditional");
+			} finally {
+				dispose();
+			}
+		}
+
+		// And the committed default is the corpus's reading, which is what the
+		// conformance agreement of FR-070 is measured against.
+		expect(VARIANT_ADDITION_POLICY).toBe("corpus");
+		expect(classifySurface(before, after).classification).toBe("conditional");
+	}, 30_000);
+
+	/** Traces: TC-811; FR-069-AC-25. */
+	it("decides the variant addition in exactly one place", () => {
+		const backend = resolve(root, "src/compiler/backends/typescript-v1");
+		const readers: string[] = [];
+		for (const name of readdirSync(backend)) {
+			if (!name.endsWith(".mjs")) continue;
+			const uses = readFileSync(resolve(backend, name), "utf8")
+				.split("\n")
+				.filter((line) => {
+					const text = line.trimStart();
+					return !text.startsWith("*") && !text.startsWith("//");
+				})
+				.filter((line) => line.includes("VARIANT_ADDITION_POLICY")).length;
+			if (uses > 0) readers.push(`${name}:${uses}`);
+		}
+		// Outside its own documentation the constant appears twice: the
+		// declaration, and the single read that decides the classification.
+		expect(readers).toEqual(["classify.mjs:2"]);
+	});
 });
 
 describe("TC-834..844 TypeScript backend non-disruption", () => {

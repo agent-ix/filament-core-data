@@ -68,7 +68,7 @@ Classification is the half that depends on admissibility, and only for the
 
 - `src/compiler/backends/typescript-v1/canonical.mjs`: `canonicalize(value, { sets })`, `normalizeIr(document)` returning the materialized document, `normalizeIrForTarget(document)` returning the corpus-comparable canonical string, `fingerprintIrForTarget(document)` returning the contract fingerprint, `digestOf(text)` returning `sha256:<64 hex>`, `IDENTITY_SET_PATHS`, `KEY_ORDER`, `MAX_CANONICAL_DEPTH`, and `CanonicalError`
 - `src/compiler/backends/typescript-v1/canonical.d.mts` declaring that surface
-- `src/compiler/backends/typescript-v1/classify.mjs`: `classifySurface(before, after, { consumerPolicy })` returning `{ classification, changes }`, `CLASSIFICATION_ORDER`, and `MODELLED_CHANGES`
+- `src/compiler/backends/typescript-v1/classify.mjs`: `classifySurface(before, after, { consumerPolicy })` returning `{ classification, changes }`, `CLASSIFICATION_ORDER`, `MODELLED_CHANGES`, `VERSION_UPLIFT_POLICY`, and `VARIANT_ADDITION_POLICY`
 - `src/compiler/backends/typescript-v1/classify.d.mts` declaring that surface
 
 ## Behavior
@@ -135,7 +135,7 @@ Classification is the half that depends on admissibility, and only for the
 - `classifySurface` SHALL classify a change to a field's `nullable` as `breaking`, in either direction, because each direction breaks one side of the contract.
 - `classifySurface` SHALL classify a change to a field's `defaultKind` or `defaultValue` as `conditional`.
 - `classifySurface` SHALL classify a removed enum or union variant as `breaking`.
-- `classifySurface` SHALL classify an added enum or union variant as `conditional` where a consumer policy admits unknown members, and as `breaking` otherwise, because `docs/semantic-data-system/compatibility.md` states that an enum addition is "additive only for open-enum consumers" and that a closed generated enum requires an unknown variant or a coordinated breaking release.
+- `classifySurface` SHALL classify an added enum or union variant as `additive` where a consumer policy admits unknown members, and, where none does, as the single named `VARIANT_ADDITION_POLICY` constant decides, in the manner of the `VERSION_UPLIFT_POLICY` constant below.
 - `classifySurface` SHALL classify an added relationship as `conditional`.
 - `classifySurface` SHALL classify a removed relationship as `breaking`, because `docs/semantic-data-system/ir-compatibility-policy.md` rule 3 forbids removing a member and `docs/semantic-data-system/compatibility.md` names a removal breaking; an *added* relationship stays `conditional`.
 - `classifySurface` SHALL classify an added extension whose `required` is true as `breaking`.
@@ -149,6 +149,56 @@ Classification is the half that depends on admissibility, and only for the
 - `classifySurface` SHALL record, for every change, its classification, its RFC 6901 pointer, and a message naming what moved.
 - `classifySurface` SHALL order recorded changes by pointer, then by classification, comparing both by code point.
 - `classifySurface` SHALL NOT override `schema/semantic/v1/compatibility-report.schema.json`, which stays the authority for the profile, mapping, representation, target, and consumer surfaces this classification does not read.
+
+### The variant addition
+
+- `docs/semantic-data-system/compatibility.md` SHALL be the authority for how an
+  added enum or union variant classifies, because it is the document the rule
+  above cites and the only one that states an answer rather than an owner.
+- That document states that an enum addition is "additive only for open-enum
+  consumers", that a closed generated enum requires "an unknown variant or
+  coordinated breaking release", and it names "closed-enum expansion" in its
+  **Breaking** change class. It declares three classes — patch, additive and
+  breaking — and `conditional` is not one of them, so softening a closed-enum
+  expansion into something a consumer may ignore is a reading the cited
+  authority does not carry.
+- The contract's reading of a variant addition is therefore `additive` where a
+  consumer policy admits unknown members and `breaking` where none does.
+- `docs/semantic-data-system/contracts-v1.md` says only "Open/closed enum
+  behavior is consumer policy, not a language default", which states who decides
+  and not what the answer is when nobody has; the conformance corpus reads the
+  absent policy as `conditional` and cites that weaker sentence.
+- The disagreement was measured rather than predicted: under the contract's
+  reading the corpus cases `ENUM-004` and `UNION-004` — both on the base
+  `core-1-1`, which carries no consumer policy — answer `breaking` against an
+  expected `conditional`, and the compatibility family is 23 of 25. Under the
+  corpus's reading both answer `conditional` and the family is 25 of 25. No
+  other case's answer moves between the two settings.
+- `classify.mjs` SHALL carry a single named `VARIANT_ADDITION_POLICY` constant
+  with exactly two admissible settings, `corpus` and `contract`, in the manner
+  of the `REFERENCE_POLICY` of
+  [FR-068](./FR-068-decide-and-report-ir-admissibility.md).
+- `VARIANT_ADDITION_POLICY` SHALL default to the corpus's published reading, so
+  that the backend conforms to the yardstick the acceptance criteria name.
+- The default SHALL be recorded as conformance with the published corpus rather
+  than as a ruling on the contract. It is not open to this requirement to settle
+  it the other way by moving the corpus:
+  [FR-070](./FR-070-run-the-typescript-conformance-adapter.md) states that a
+  disagreement "SHALL NOT be resolved by editing a corpus case, a base, the
+  oracle, the harness, or a threshold", and
+  [NFR-025](../non-functional/NFR-025-non-disruptive-typescript-backend.md)
+  makes `conformance/cases/**`, `conformance/corpus.json`,
+  `conformance/contract-gaps.json` and `conformance/divergences.json` prohibited
+  paths, for the reason `conformance/README.md` gives — a backend that edits the
+  corpus it is judged against has arranged its own verdict.
+- The disagreement SHALL therefore be reported to the corpus's owner under
+  [FR-070](./FR-070-run-the-typescript-conformance-adapter.md)'s Disagreement
+  rule rather than absorbed, and when `ENUM-004` and `UNION-004` move under a
+  `corpus-defect` verdict and a major `corpusVersion` bump, flipping this
+  constant SHALL be one edit in one place.
+- [FR-070](./FR-070-run-the-typescript-conformance-adapter.md) SHALL report the
+  disagreement in the pull request whichever way the constant is set, so that a
+  green conformance run does not make the open question invisible.
 
 ### The contract-version move
 
@@ -210,9 +260,10 @@ Classification is the half that depends on admissibility, and only for the
 | FR-069-AC-22 | `normalizeIrForTarget` reproduces the oracle's `normalized` string byte for byte for all 111 corpus cases, measured with no admissibility answer computed. | Snapshot |
 | FR-069-AC-23 | The unextended and the extended forms differ for a document whose set members are out of identity order, and agree for one already in order, so the two named algorithms are demonstrably two. | Unit |
 | FR-069-AC-16 | A document carrying two members with the same `identity` in an identity-sorted container canonicalizes to the same bytes whatever order those two members arrive in, and a document carrying two byte-identical such members canonicalizes without dropping either. | Property |
-| FR-069-AC-17 | A removed field, an added required field, a removed variant, and a removed relationship each classify `breaking`; an added variant and an added optional field each classify `conditional` with no consumer policy. | Unit |
+| FR-069-AC-17 | A removed field, an added required field, a removed variant, and a removed relationship each classify `breaking`; an added optional field classifies `conditional` with no consumer policy; and an added variant classifies `additive` under a policy admitting unknown members, `breaking` with no policy under the `contract` setting of `VARIANT_ADDITION_POLICY`, and `conditional` with no policy under its default `corpus` setting. | Unit |
 | FR-069-AC-18 | Under the normative setting of `VERSION_UPLIFT_POLICY`, a contract-version move whose down-projection reproduces the `before` document byte for byte classifies `additive`, and one whose projection does not classifies `conditional`; under the default corpus setting both classify `conditional`. | Unit |
 | FR-069-AC-24 | `VERSION_UPLIFT_POLICY` is the only place in the backend that decides how a contract-version move classifies, and flipping it changes the answer for the corpus case `VER-004` and for no other case. | Static |
+| FR-069-AC-25 | `VARIANT_ADDITION_POLICY` is the only place in the backend that decides how a variant addition with no consumer policy classifies; under `contract` an added variant classifies `breaking` with no policy and `additive` under a policy admitting unknown members; and flipping it changes the answer for the corpus cases `ENUM-004` and `UNION-004` and for no other case. | Static |
 | FR-069-AC-19 | `MODELLED_CHANGES` is exported as data, and a rule stated in this requirement but absent from that list fails the module's own contract test. | Test |
 | FR-069-AC-20 | `canonicalize` and `normalizeIrForTarget` run over every corpus case with no admissibility answer computed, demonstrating that canonicalization depends on nothing from FR-068. | Unit |
 | FR-069-AC-21 | The number negative zero canonicalizes to the same bytes as positive zero, and a document differing only in that sign yields one canonical form. | Unit |

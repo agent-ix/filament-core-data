@@ -9,9 +9,11 @@ from __future__ import annotations
 
 import json
 import pathlib
+import re
 import socket
 import subprocess
 import sys
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -268,13 +270,40 @@ def test_provisioning_failure_and_declared_limits() -> None:
     assert "poetry install --with python-backend" in str(raised.value)
 
 
+# The one module under `src/compiler/` that starts a child process by design.
+#
+# FR-071 requires `backends/format.mjs` to render generated text through this
+# repository's exactly-pinned biome binary, exactly as
+# `conformance/tools/format-json.mjs` already does for JSON, so that a committed
+# generated artefact is formatted by the formatter `make lint` runs. The
+# exemption is one named module rather than a widened pattern, and it is paired
+# below with the assertion that no backend can reach it — which is the half that
+# matters, and which a blanket "no process anywhere" never made. The JS side of
+# the same gate carries the identical named exemption in `test/compiler.test.ts`.
+PROCESS_STARTING = ("backends/format.mjs",)
+
+
 def test_no_compiler_module_spawns_or_imports_the_generator() -> None:
     """TC-894: FR-076-AC-12, FR-076-CON-1, FR-076-CON-2."""
     compiler = REPO / "src" / "compiler"
+    exempt = {compiler / relative for relative in PROCESS_STARTING}
+    for permitted in exempt:
+        assert permitted.is_file(), f"{permitted} is exempt but absent"
     for path in compiler.rglob("*.mjs"):
+        if path in exempt:
+            continue
         source = path.read_text()
         for token in ("spawn(", "execFile", "execSync", "child_process"):
             assert token not in source, f"{path} uses {token}"
+    # The exempt module is unreachable from every backend, so no generation path
+    # can start a process through it.
+    for entrypoint in (
+        "backends/typescript.mjs",
+        "backends/rust.mjs",
+        "backends/typescript-v1/index.mjs",
+    ):
+        for reached in _reachable(compiler, entrypoint):
+            assert reached not in exempt, f"{entrypoint} reaches {reached}"
     runner_source = (REPO / "python_backend" / "runner" / "generate.py").read_text()
     assert "import datamodel_code_generator" not in runner_source
     assert str(REPO / "src" / "compiler") not in runner_source
@@ -469,3 +498,19 @@ def test_the_classifier_seam_falsifies_the_gate_and_variants_resolve() -> None:
     report = inspect_source.inspect_generated(variant, {"m.json": document}, "report")
     assert report.variants == {"K2": "K"}
     assert report.findings[0].variant_of == "K"
+
+
+def _reachable(compiler: Path, entrypoint: str) -> set[Path]:
+    """Every `.mjs` module reachable from `entrypoint` by relative import."""
+    seen: set[Path] = set()
+    pending = [(compiler / entrypoint).resolve()]
+    while pending:
+        current = pending.pop()
+        if current in seen or not current.is_file():
+            continue
+        seen.add(current)
+        for match in re.finditer(
+            r'(?:from|import)\s*\(?\s*"(\.[^"]+\.mjs)"', current.read_text()
+        ):
+            pending.append((current.parent / match.group(1)).resolve())
+    return seen
