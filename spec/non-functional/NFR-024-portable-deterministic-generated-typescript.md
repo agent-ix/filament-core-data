@@ -78,11 +78,13 @@ project's release cadence. Generating the validator is more code and less risk.
 | Prohibited dependency categories named by the generated package | 0 | 0 | Static import-graph analysis |
 | Third-party runtime dependencies declared by the generated `package.json` | 0 | 0 | Manifest inspection |
 | Import specifiers in generated source that are not relative | 0 | 0 | Static analysis |
-| Occurrences of `any`, `as` assertions, or `@ts-expect-error` in generated source | 0 | 0 | Static analysis |
+| Type assertions (`as <Type>`, `<Type>value`, non-null `!`) and `@ts-expect-error` directives in generated source | 0 | 0 | Static analysis |
+| Uses of `any` in a type position in generated source | 0 | 0 | Static analysis |
+| Byte differences between the emitted package and the same package after `biome format` | 0 | 0 | Formatter comparison |
 | Clock, environment-variable, network, and `process.cwd()` reads by a backend module | 0 | 0 | Purity test |
 | `localeCompare` calls in a backend module | 0 | 0 | Static analysis |
 | Generated files that omit the AGPL-3.0-only SPDX header | 0 | 0 | Static analysis |
-| Symbols reachable from a single-type import beyond that type's own surface | 0 | 0 | Bundle-surface fixture |
+| Symbols reachable from a single-type entry export beyond that type's own surface | 0 | 0 | Reachable-symbol walk |
 
 ## Verification
 
@@ -108,12 +110,13 @@ surface fixture.
 | NFR-024-AC-4 | Two packed artifacts over the generated package are identical after normalizing exactly `mtime`, `uid`, `gid`, `uname`, and `gname`, and no other member. | Integration |
 | NFR-024-AC-5 | The generated package's import graph names no identifier from the seven prohibited dependency categories, and every import specifier in generated source is relative. | Static |
 | NFR-024-AC-6 | The generated `package.json` declares no `dependencies`, `peerDependencies`, or `optionalDependencies`. | Static |
-| NFR-024-AC-7 | Generated source contains no `any`, no `as` type assertion, and no `@ts-expect-error`. | Static |
+| NFR-024-AC-7 | Generated source contains no `any` in a type position, no type assertion (`as <Type>`, `<Type>value`, or a non-null `!`), and no `@ts-expect-error`, measured syntactically rather than by a lexical scan so that the `as const` assertions FR-067 mandates are not counted. | Static |
 | NFR-024-AC-8 | No module under `src/compiler/backends/typescript-v1/` reads a clock, an environment variable, `process.cwd()`, the filesystem, or a socket during a fixture generation. | Test |
 | NFR-024-AC-9 | No module under `src/compiler/backends/typescript-v1/` calls `localeCompare`. | Static |
 | NFR-024-AC-10 | Every generated file carries the AGPL-3.0-only SPDX header, and a file missing it fails the licence gate. | Static |
-| NFR-024-AC-11 | The generated package typechecks under `strict` with `exactOptionalPropertyTypes` enabled. | Compile |
-| NFR-024-AC-12 | Bundling a single-type entry point yields exactly the symbol set the committed surface fixture records, and adding a symbol to that set fails the fixture. | Integration |
+| NFR-024-AC-11 | The generated package typechecks under `strict` with `exactOptionalPropertyTypes`, `noUnusedLocals`, and `noUnusedParameters`, in the one program described by `test/fixtures/backends/typescript/tsconfig.json`, and not in the repository's own root program, which excludes that directory. | Compile |
+| NFR-024-AC-12 | A static reachable-symbol walk from a single-type entry export yields exactly the set the committed surface fixture records, and adding a symbol to that set fails the fixture. The walk first asserts its four enabling conditions — `sideEffects: false`, an empty external import closure, named-only re-exports, and every export a top-level binding with a side-effect-free initializer — so it cannot pass over a package for which the conclusion would not hold. | Integration |
+| NFR-024-AC-13 | The emitted text is rendered through the injected formatter that FR-071 backs with this repository's exactly-pinned `@biomejs/biome` binary, so `biome format` over the committed generated fixture reports no change and the declared code style — tab indentation, double quotes, terminating semicolons — is the same style the repository applies to its own source. | Snapshot |
 
 ## Dependencies
 

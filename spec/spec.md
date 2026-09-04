@@ -230,6 +230,19 @@ rather than against one another.
   records the dependency on issue #9, which owns the contract.
 - Rewriting the frozen issue #4 TypeScript backend or regenerating its golden as
   part of issue #22; the contract-IR backend is a second backend beside it.
+- Adding a dependency to `package.json`, `pnpm-lock.yaml`, `pyproject.toml`, or
+  `poetry.lock` as part of issue #22 — including a bundler, a property-test
+  generator, or a runtime validator; every gate this ticket declares is met with
+  what those files already carry, or the gate is restated so that it can be.
+- Registering a divergence in `conformance/divergences.json` as part of issue
+  #22; a suppressed divergence counts as a matched case, so a disagreement this
+  ticket cannot close is reported and left failing for the owner rather than
+  absorbed.
+- Narrowing a backend's declared `supportedFeatures`, or declaring a corpus case
+  `unsupportedBy` this backend, to reduce the set of cases it must answer;
+  the declared coverage is not the implementer's to shrink.
+- Accepting a `conformance/thresholds.json` row, which stays `proposed` until the
+  issue #11 publication gate acts on it.
 
 ## 3. System Overview
 

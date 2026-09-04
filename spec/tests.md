@@ -50,6 +50,29 @@ issue #22 row carries `🚧` until the implementation lands and the three
 verification states are measured, so the `Blocked` column counts all 100 of them
 until then; a `✅` on an unimplemented row would be the one thing this matrix
 exists to prevent.
+The issue #22 bundle was then revised in the composite review pass recorded at
+SR-087..SR-094, which added 73 acceptance criteria and named constraints across
+FR-063..FR-071, NFR-024 and NFR-025. The hundred rows were reconciled against the
+revised criteria rather than extended with new ids: the range is exclusive and
+exhausted, so a criterion joins the row whose test would decide it and that row's
+title was rewritten to say so. Fifty-four rows changed. Several rows also had to
+be corrected rather than merely widened — the emitted file set became eight files
+rather than seven, the bundler-based surface measurement became a static
+reachable-symbol walk because no bundler resolves in this repository, the
+validator's instance evidence moved from payloads the conformance corpus does not
+carry to an authored instance corpus checked differentially against the pinned
+`ajv`, the corpus-wide `unmetCases` absolutes became this slot's own delta, and
+the compatibility-case count was corrected from five to twenty-five.
+
+One vocabulary mismatch is recorded here rather than left to be discovered. The
+`Verification` column of a requirement's acceptance-criteria table and the `Type`
+column of a matrix row are different vocabularies: `Test` is a legitimate
+`Verification` value throughout this bundle and is not a matrix `Type`, which
+`scripts/test-matrix-summary.mjs` rejects. Where the two differ, the row's `Type`
+names what actually makes the test fail. A row absorbing several criteria of
+different kinds carries one `Type`, so the mapping is many-to-one by
+construction; SR-090 FND-1033 raised that it was recorded nowhere, and this
+paragraph is where it is now recorded.
 
 ## Test Matrix Rules
 
@@ -157,15 +180,15 @@ exists to prevent.
 | FR-051 | FR-051-AC-1..15, FR-051-CON-1..5 | TC-527..TC-546, TC-602, TC-612, TC-619 | ✅ Complete |
 | FR-052 | FR-052-AC-1..16, FR-052-CON-1..4 | TC-547..TC-566 | ✅ Complete |
 | FR-053 | FR-053-AC-1..15, FR-053-CON-1..5 | TC-412..TC-431, TC-604 | ✅ Complete |
-| FR-063 | FR-063-AC-1..16, FR-063-CON-1..6 | TC-745..TC-754 | 🚧 In progress |
-| FR-064 | FR-064-AC-1..17, FR-064-CON-1..5 | TC-755..TC-765 | 🚧 In progress |
-| FR-065 | FR-065-AC-1..17, FR-065-CON-1..6 | TC-766..TC-775 | 🚧 In progress |
-| FR-066 | FR-066-AC-1..17, FR-066-CON-1..6 | TC-776..TC-786 | 🚧 In progress |
-| FR-067 | FR-067-AC-1..13, FR-067-CON-1..5 | TC-787..TC-794 | 🚧 In progress |
-| FR-068 | FR-068-AC-1..16, FR-068-CON-1..6 | TC-795..TC-805 | 🚧 In progress |
-| FR-069 | FR-069-AC-1..15, FR-069-CON-1..5 | TC-806..TC-814 | 🚧 In progress |
-| FR-070 | FR-070-AC-1..16, FR-070-CON-1..6 | TC-815..TC-824 | 🚧 In progress |
-| FR-071 | FR-071-AC-1..16, FR-071-CON-1..6 | TC-825..TC-833 | 🚧 In progress |
+| FR-063 | FR-063-AC-1..21, FR-063-CON-1..6 | TC-745..TC-754 | 🚧 In progress |
+| FR-064 | FR-064-AC-1..22, FR-064-CON-1..7 | TC-755..TC-765 | 🚧 In progress |
+| FR-065 | FR-065-AC-1..22, FR-065-CON-1..6 | TC-766..TC-775 | 🚧 In progress |
+| FR-066 | FR-066-AC-1..29, FR-066-CON-1..9 | TC-776..TC-786 | 🚧 In progress |
+| FR-067 | FR-067-AC-1..17, FR-067-CON-1..6 | TC-787..TC-794 | 🚧 In progress |
+| FR-068 | FR-068-AC-1..24, FR-068-CON-1..8 | TC-795..TC-805 | 🚧 In progress |
+| FR-069 | FR-069-AC-1..21, FR-069-CON-1..7 | TC-806..TC-814 | 🚧 In progress |
+| FR-070 | FR-070-AC-1..20, FR-070-CON-1..8 | TC-815..TC-824 | 🚧 In progress |
+| FR-071 | FR-071-AC-1..20, FR-071-CON-1..8 | TC-825..TC-833 | 🚧 In progress |
 
 ### Non-Functional Requirement Coverage
 
@@ -192,8 +215,8 @@ exists to prevent.
 | NFR-019 | Repeat-run and varied-environment byte comparison, ambient-input analysis, permutation and collator independence, injected-host observation, changed-path gate, dependency-pin inspection | TC-567..TC-578 | ✅ Complete |
 | NFR-020 | Limit enforcement, path-escape and module-load refusal, network and writer instrumentation, cyclic-input termination, fuzz run, message truncation | TC-579..TC-589, TC-606, TC-607 | ✅ Complete |
 | NFR-021 | Changed-path gate, manifest comparison, frozen-path byte comparison, scripted restore rehearsal, licence and publication inspection, post-merge range rehearsal, accretion rehearsal | TC-590..TC-597, TC-620, TC-621, TC-644 | ✅ Complete |
-| NFR-024 | Repeat-run, directory, and locale byte comparison; packed-artifact comparison after five normalized members; import-graph and dependency-closure analysis; backend purity test; SPDX, strict-typecheck, and bundle-surface checks | TC-834..TC-838 | 🚧 In progress |
-| NFR-025 | Changed-path gate with both ends from history, accretion rehearsal, manifest and lockfile comparison, export-set test, frozen-path and corpus byte comparison, licence inspection, restore rehearsal | TC-839..TC-844 | 🚧 In progress |
+| NFR-024 | NFR-024-AC-1..13: repeat-run, directory, and locale byte comparison; packed-artifact comparison after five normalized members; import-graph and dependency-closure analysis; backend purity test; SPDX, formatter no-op, strict-typecheck, and static reachable-symbol checks | TC-834..TC-838 | 🚧 In progress |
+| NFR-025 | NFR-025-AC-1..15: changed-path gate with both ends from history, accretion and post-merge rehearsal, manifest and lockfile comparison against the range's base endpoint, export-set test, frozen-path, corpus and divergence-register byte comparison, packed-file listing, licence inspection, restore rehearsal | TC-839..TC-844 | 🚧 In progress |
 
 ## Test Case Summary
 
@@ -845,103 +868,103 @@ exists to prevent.
 | TC-644 | A later unrelated change landing on top of this one does not grow this change's path set, and a prohibited path left in the tree at a path no later commit owns still fails the gate | Integration | P0 | NFR-021-AC-10 | ✅ passed |
 | TC-745 | `BACKEND_TARGETS` equals the published `target` enum and registers one entry for each of the five declared targets | Unit | P0 | FR-063-AC-1, FR-063-CON-1 | 🚧 in progress — TypeScript backend branch |
 | TC-746 | A target outside the closed vocabulary throws a `TypeError` naming the value and the five permitted targets | Unit | P0 | FR-063-AC-2 | 🚧 in progress — TypeScript backend branch |
-| TC-747 | Each of the four unimplemented targets returns `state: "unavailable"`, zero files, and one blocking `BACKEND_NOT_IMPLEMENTED` naming its owning issue | Unit | P0 | FR-063-AC-3 | 🚧 in progress — TypeScript backend branch |
+| TC-747 | A target registered as declared-unimplemented returns `state: "unavailable"`, zero files, and one blocking `BACKEND_NOT_IMPLEMENTED` naming its registered owner, exercised over a synthetic registration; and every registry entry names an owner that `isBackendImplemented` agrees with | Unit | P0 | FR-063-AC-3, FR-063-AC-19 | 🚧 in progress — TypeScript backend branch |
 | TC-748 | A request failing `compiler-request.schema.json` returns `state: "invalid"` with one diagnostic per schema error at the failing instance pointer and no file | Unit | P0 | FR-063-AC-4 | 🚧 in progress — TypeScript backend branch |
-| TC-749 | Every manifest the seam returns validates against `output-manifest.schema.json`, for a valid request, an invalid request, an unimplemented target, and a declared loss | Property | P0 | FR-063-AC-5 | 🚧 in progress — TypeScript backend branch |
-| TC-750 | `requestFingerprint` and `normalizedFingerprint` are recomputed independently, and each `files[]` entry carries a path under `outputRoot`, its digest, its media type, and at least one identity | Integration | P0 | FR-063-AC-6, FR-063-AC-7 | 🚧 in progress — TypeScript backend branch |
+| TC-749 | Every manifest the seam returns validates against `output-manifest.schema.json`, and the five states are each reached: `success` for an admitted representable document, `lossy` for an admissible one, `unsupported` for a representability loss, `invalid` for a schema-failing request, and `unavailable` for an unimplemented target | Property | P0 | FR-063-AC-5, FR-063-AC-17, FR-063-AC-18 | 🚧 in progress — TypeScript backend branch |
+| TC-750 | `requestFingerprint` and `normalizedFingerprint` are recomputed independently, each `files[]` entry carries a path under `outputRoot`, its media type, and a non-empty identity set, and its digest is taken over the text the injected formatter returned | Integration | P0 | FR-063-AC-6, FR-063-AC-7, FR-063-AC-20 | 🚧 in progress — TypeScript backend branch |
 | TC-751 | `assertBackendContract` rejects a backend missing any contract member and one naming a path outside `outputRoot`, and a `1.0.0` request against the TypeScript backend returns `state: "unsupported"` | Unit | P0 | FR-063-AC-8, FR-063-AC-9, FR-063-AC-10 | 🚧 in progress — TypeScript backend branch |
 | TC-752 | `target-contract.json` validates against its schema and carries the member values of the committed `typescript` target row, whose declared runtime validator is satisfied in-package | Unit | P0 | FR-063-AC-11, FR-063-CON-2 | 🚧 in progress — TypeScript backend branch |
 | TC-753 | The seam imports no frontend and neither prototype backend, the narrow interface keeps exactly fifteen symbols, and `package.json` metadata is unchanged | Analysis | P0 | FR-063-AC-12, FR-063-CON-4, FR-063-CON-5, FR-063-CON-6 | 🚧 in progress — TypeScript backend branch |
-| TC-754 | Every read goes through the injected host, no backend module reads a clock, environment, cwd, filesystem or socket, 256 mutated requests never throw, and every code is a registry member | Fuzz | P0 | FR-063-AC-13, FR-063-AC-14, FR-063-AC-15, FR-063-AC-16, FR-063-CON-3 | 🚧 in progress — TypeScript backend branch |
-| TC-755 | A model carrying one definition of each of the eight IR kinds renders eight declarations matching their committed snapshots, and an unhandled kind fails the renderer's contract test | Snapshot | P0 | FR-064-AC-1, FR-064-CON-3 | 🚧 in progress — TypeScript backend branch |
-| TC-756 | Each of the nine `scalar` values renders its declared TypeScript primitive, and a record renders as an interface with no `extends` clause | Unit | P0 | FR-064-AC-2, FR-064-AC-3 | 🚧 in progress — TypeScript backend branch |
+| TC-754 | Every read goes through the injected host, no backend module reads a clock, environment, cwd, filesystem or socket, no module below the injected formatter starts a child process, 256 mutated requests never throw, and every code is a declared register member | Fuzz | P0 | FR-063-AC-13, FR-063-AC-14, FR-063-AC-15, FR-063-AC-16, FR-063-AC-21, FR-063-CON-3 | 🚧 in progress — TypeScript backend branch |
+| TC-755 | A model carrying one definition of each of the eight IR kinds renders eight declarations matching their committed snapshots, an unhandled kind fails the renderer's contract test, and `buildModel` over both conformance bases carries every declared node including occurrences, document extensions, and field units | Snapshot | P0 | FR-064-AC-1, FR-064-AC-18, FR-064-CON-3, FR-064-CON-7 | 🚧 in progress — TypeScript backend branch |
+| TC-756 | Each of the nine `scalar` values renders its declared TypeScript primitive, `bytes` renders as `string` with its base64 reading recorded against issue #58, and a record renders as an interface with no `extends` clause | Unit | P0 | FR-064-AC-2, FR-064-AC-3, FR-064-AC-20 | 🚧 in progress — TypeScript backend branch |
 | TC-757 | An enum renders as a union of its variants' names as string literals in code-point order of variant identity | Unit | P0 | FR-064-AC-4 | 🚧 in progress — TypeScript backend branch |
 | TC-758 | A union renders both member shapes and a `switch` over the exported discriminant constant narrows the default arm to `never` | Compile | P0 | FR-064-AC-5 | 🚧 in progress — TypeScript backend branch |
 | TC-759 | A `reference` renders as a branded type that refuses a plain `string` and accepts a value from the generated constructor | Compile | P0 | FR-064-AC-6 | 🚧 in progress — TypeScript backend branch |
 | TC-760 | The four presence and nullability combinations render four distinct property forms with no `undefined` in a required field, and `multiplicity.upper` decides array against scalar | Unit | P0 | FR-064-AC-7, FR-064-AC-8 | 🚧 in progress — TypeScript backend branch |
 | TC-761 | A `typeRef` cycle spanning three records renders three mutually recursive interfaces that `tsc` accepts, and the renderer terminates | Compile | P0 | FR-064-AC-9 | 🚧 in progress — TypeScript backend branch |
-| TC-762 | The three `unknownPolicy` values render three distinguishable forms with no index signature under `reject`, and no rendered output contains `any` | Unit | P0 | FR-064-AC-10, FR-064-AC-17 | 🚧 in progress — TypeScript backend branch |
+| TC-762 | The three `unknownPolicy` values render three distinguishable forms with no index signature under `reject`, a `union` at `surface` and a `map` at `preserve` render no unknown-member marker, and no rendered output uses `any` in a type position | Unit | P0 | FR-064-AC-10, FR-064-AC-17, FR-064-AC-21 | 🚧 in progress — TypeScript backend branch |
 | TC-763 | A `doc` extension renders as JSDoc on its declaration or property, and a record's relationships render as one readonly descriptor rather than an interface member | Snapshot | P0 | FR-064-AC-11, FR-064-AC-12 | 🚧 in progress — TypeScript backend branch |
-| TC-764 | A reserved-word `displayName` mangles deterministically, and two identities deriving one identifier produce a blocking `IDENTIFIER_COLLISION` naming both with no declaration emitted | Unit | P0 | FR-064-AC-13, FR-064-AC-14 | 🚧 in progress — TypeScript backend branch |
-| TC-765 | Rendering is order-independent and pure, reads no prototype-IR module, decides no value from a name heuristic, names no decorator, and writes no file | Property | P0 | FR-064-AC-15, FR-064-AC-16, FR-064-CON-1, FR-064-CON-2, FR-064-CON-4, FR-064-CON-5 | 🚧 in progress — TypeScript backend branch |
-| TC-766 | Generating the fixture package emits exactly the seven declared files and no other path | Integration | P0 | FR-065-AC-1 | 🚧 in progress — TypeScript backend branch |
+| TC-764 | A reserved-word `displayName` mangles deterministically, two identities deriving one identifier produce a blocking `IDENTIFIER_COLLISION` naming both before any file map exists, and changing only a `displayName` moves the generated identifier while the recorded identity does not move | Unit | P0 | FR-064-AC-13, FR-064-AC-14, FR-064-AC-22 | 🚧 in progress — TypeScript backend branch |
+| TC-765 | Rendering and model building are order-independent, pure, and argument-preserving, read no prototype-IR module, decide no value from a name heuristic, name no decorator, write no file, and `buildModel` is the only module that walks the raw document | Property | P0 | FR-064-AC-15, FR-064-AC-16, FR-064-AC-19, FR-064-CON-1, FR-064-CON-2, FR-064-CON-4, FR-064-CON-5, FR-064-CON-6 | 🚧 in progress — TypeScript backend branch |
+| TC-766 | Generating the fixture package emits exactly the eight declared files — `package.json`, `index.ts`, `types.ts`, `validators.ts`, `errors.ts`, `identity.ts`, `metadata.ts`, and `LICENSE` — and no other path | Integration | P0 | FR-065-AC-1 | 🚧 in progress — TypeScript backend branch |
 | TC-767 | The generated `package.json` declares the five required members with their declared values and carries no dependency block, no `overrides`, no `file:` or `link:` specifier, and no upper bound | Unit | P0 | FR-065-AC-2, FR-065-CON-2 | 🚧 in progress — TypeScript backend branch |
 | TC-768 | Every `exports` entry lists `types` before `default` in parsed key order, and the generated package name round-trips to the IR's `package.identity` | Property | P0 | FR-065-AC-3, FR-065-AC-4 | 🚧 in progress — TypeScript backend branch |
-| TC-769 | `index.ts` carries no `export *`, its re-exported names equal the union of the four modules' public names, and no exported symbol lacks a semantic identity | Unit | P0 | FR-065-AC-5, FR-065-CON-5 | 🚧 in progress — TypeScript backend branch |
+| TC-769 | `index.ts` carries no `export *`, its re-exported names equal the union of the five source modules' public names, and the exported set equals the identity-derived exports plus the declared fixed API surface, with an export outside both failing the check | Unit | P0 | FR-065-AC-5, FR-065-AC-20, FR-065-CON-5 | 🚧 in progress — TypeScript backend branch |
 | TC-770 | Every generated import specifier is relative, no generated module names a package in the seven prohibited categories, and the check is static rather than a runtime probe | Static | P0 | FR-065-AC-6, FR-065-AC-7, FR-065-CON-3 | 🚧 in progress — TypeScript backend branch |
-| TC-771 | Every corpus model FR-068 admits typechecks under `strict` with `exactOptionalPropertyTypes`, and assigning `undefined` to an optional non-nullable property fails that typecheck | Compile | P0 | FR-065-AC-8, FR-065-AC-9 | 🚧 in progress — TypeScript backend branch |
-| TC-772 | Every generated file begins with the SPDX header and the fingerprint banner, and the emitted `LICENSE` is byte-identical to this repository's AGPL-3.0-only text | Snapshot | P0 | FR-065-AC-10, FR-065-AC-11, FR-065-CON-6 | 🚧 in progress — TypeScript backend branch |
-| TC-773 | Bundling a single-type entry point over a ten-type package names that type's symbols and none of the other nine, using a bundler already pinned in the lockfile | Integration | P0 | FR-065-AC-12, FR-065-CON-4 | 🚧 in progress — TypeScript backend branch |
-| TC-774 | A model carrying a declared loss yields an empty file map and its diagnostics, `renderPackage` is repeatable and writes nothing, and the generated modules have no import cycle | Unit | P0 | FR-065-AC-13, FR-065-AC-14, FR-065-AC-15 | 🚧 in progress — TypeScript backend branch |
-| TC-775 | The manifest's `semanticIdentities` for `types.ts` equals the declared identity set, and the branch adds no lockfile entry, no `package.json` byte, and no workspace member | Analysis | P0 | FR-065-AC-16, FR-065-AC-17, FR-065-CON-1 | 🚧 in progress — TypeScript backend branch |
-| TC-776 | Every positive payload derived from `fixtures/semantic/v1/positive/` is accepted and returned unchanged except for applied semantic defaults | Integration | P0 | FR-066-AC-1 | 🚧 in progress — TypeScript backend branch |
-| TC-777 | Every negative case in `cases.json` and `reader-cases.json`, projected to a payload, is rejected without a thrown exception | Integration | P0 | FR-066-AC-2 | 🚧 in progress — TypeScript backend branch |
+| TC-771 | Every corpus model FR-068 admits typechecks as one compiler-API program under the fixture `tsconfig.json` with `strict` and `exactOptionalPropertyTypes`, assigning `undefined` to an optional non-nullable property fails that typecheck, and the root `tsconfig.json` excludes that fixture directory | Compile | P0 | FR-065-AC-8, FR-065-AC-9, FR-065-AC-21, FR-065-AC-22 | 🚧 in progress — TypeScript backend branch |
+| TC-772 | Every generated file begins with the SPDX header and the fingerprint banner, the emitted `LICENSE` is byte-identical to this repository's AGPL-3.0-only text, and the repository's pinned `biome format` reports no change over the committed fixture | Snapshot | P0 | FR-065-AC-10, FR-065-AC-11, FR-065-AC-18, FR-065-CON-6 | 🚧 in progress — TypeScript backend branch |
+| TC-773 | A static reachable-symbol walk from a one-type entry export over a ten-type package reaches that type's symbols and none of the other nine, and fails loudly when any one of its four enabling conditions is removed | Integration | P0 | FR-065-AC-12, FR-065-CON-4 | 🚧 in progress — TypeScript backend branch |
+| TC-774 | A model carrying a representability loss yields an empty file map while a `lossy` admissible model yields the full eight-file map, `renderPackage` is repeatable and writes nothing, and the generated modules have no import cycle | Unit | P0 | FR-065-AC-13, FR-065-AC-14, FR-065-AC-15 | 🚧 in progress — TypeScript backend branch |
+| TC-775 | The manifest's `semanticIdentities` for `types.ts` equals the declared identity set, `package.json` and `LICENSE` each carry the package's own identity, and the branch adds no lockfile entry, no `package.json` byte, and no workspace member | Analysis | P0 | FR-065-AC-16, FR-065-AC-17, FR-065-AC-19, FR-065-CON-1 | 🚧 in progress — TypeScript backend branch |
+| TC-776 | Every positive case of the authored instance corpus is accepted and returned unchanged except for applied semantic defaults, and a `lossy` admissible document still generates validators while a representability loss generates none | Integration | P0 | FR-066-AC-1, FR-066-AC-28, FR-066-CON-7 | 🚧 in progress — TypeScript backend branch |
+| TC-777 | Every negative case of the authored instance corpus is rejected at its expected pointer and code without a thrown exception, and the generated validator reaches the same verdict as `ajv@8.20.0` running that case's authored JSON Schema | Integration | P0 | FR-066-AC-2, FR-066-AC-18, FR-066-CON-8 | 🚧 in progress — TypeScript backend branch |
 | TC-778 | The four presence and nullability combinations produce the twelve accept and reject decisions of the declared table, asserted cell by cell | Unit | P0 | FR-066-AC-3 | 🚧 in progress — TypeScript backend branch |
 | TC-779 | A property present with the value `undefined` is rejected for a required and an optional field alike, while an absent property is accepted only where `presence` is `optional` | Unit | P0 | FR-066-AC-4 | 🚧 in progress — TypeScript backend branch |
-| TC-780 | Each of the eleven constraint keywords fires on a constructed value and reports that constraint's own `diagnosticCode` at the expected pointer, with no check weakened to pass a fixture | Unit | P0 | FR-066-AC-5, FR-066-CON-3 | 🚧 in progress — TypeScript backend branch |
-| TC-781 | An unanchored `pattern` matches an embedded substring while an anchored one rejects it, and an unimplemented `format` becomes a declared loss rather than a vacuous check | Unit | P0 | FR-066-AC-6, FR-066-AC-7 | 🚧 in progress — TypeScript backend branch |
-| TC-782 | `unknownPolicy` `reject`, `surface`, and `preserve` produce a pointed rejection, a surfaced finding with `ok` true, and a value carrying the member unchanged | Unit | P0 | FR-066-AC-8 | 🚧 in progress — TypeScript backend branch |
+| TC-780 | Each of the eleven constraint keywords fires on a constructed value and reports that constraint's own `diagnosticCode` at the expected pointer with no check weakened to pass a fixture, and the closed structural-code list ships as `errors.ts`, the eighth file, behind its own `exports` subpath | Unit | P0 | FR-066-AC-5, FR-066-AC-19, FR-066-CON-3 | 🚧 in progress — TypeScript backend branch |
+| TC-781 | An unanchored `pattern` matches an embedded substring while an anchored one rejects it; an unimplemented `format` and a `duration` ordering constraint each become a declared representability loss; a `bytes` length counts decoded octets; and an `integer` rejects a non-integral, non-finite, or unsafe magnitude while accepting negative zero | Unit | P0 | FR-066-AC-6, FR-066-AC-7, FR-066-AC-20, FR-066-AC-21, FR-066-AC-22 | 🚧 in progress — TypeScript backend branch |
+| TC-782 | `unknownPolicy` `reject`, `surface`, and `preserve` produce a pointed rejection, a surfaced finding with `ok` true, and a separately named readonly member that keeps the four presence and nullability forms distinct; the policy on a `union` and on a `map` has no validation effect and appears only in the metadata | Unit | P0 | FR-066-AC-8, FR-066-AC-26, FR-066-AC-27 | 🚧 in progress — TypeScript backend branch |
 | TC-783 | A `unique: true` collection rejects two structurally equal members and accepts two differing only in key order, and an `ordered: false` collection returns the caller's order | Property | P0 | FR-066-AC-9, FR-066-AC-10 | 🚧 in progress — TypeScript backend branch |
 | TC-784 | A `semantic` default is applied to an absent property while a `representation` or `migration` default is not | Unit | P0 | FR-066-AC-11 | 🚧 in progress — TypeScript backend branch |
-| TC-785 | A validator over a self-referential type terminates past the declared depth limit reporting the exceeded-depth code, and 512 mutated payloads never throw | Fuzz | P0 | FR-066-AC-12, FR-066-AC-13, FR-066-CON-4, FR-066-CON-6 | 🚧 in progress — TypeScript backend branch |
-| TC-786 | The generated source carries no cast, `any`, non-null assertion, or suppression, its runtime closure is empty, its error order is locale-independent, and `result.ok` gates narrowing | Static | P0 | FR-066-AC-14, FR-066-AC-15, FR-066-AC-16, FR-066-AC-17, FR-066-CON-1, FR-066-CON-2, FR-066-CON-5 | 🚧 in progress — TypeScript backend branch |
-| TC-787 | The generated type-identity map carries one entry per exported type with the document's identity copied verbatim | Unit | P0 | FR-067-AC-1, FR-067-CON-5 | 🚧 in progress — TypeScript backend branch |
+| TC-785 | A validator over a self-referential type terminates past the declared depth limit reporting the exceeded-depth code, a null-prototype input, an inherited accessor, a throwing getter, a `Symbol.toPrimitive` object, and `__proto__`, `constructor` and `prototype` members are each decided without a thrown exception or a mutated prototype, and 512 mutated payloads never throw | Fuzz | P0 | FR-066-AC-12, FR-066-AC-13, FR-066-AC-23, FR-066-AC-24, FR-066-AC-25, FR-066-CON-4, FR-066-CON-6 | 🚧 in progress — TypeScript backend branch |
+| TC-786 | The generated source carries no type assertion, `any` type, non-null assertion or suppression while keeping the mandated `as const`, its runtime closure is empty, its error order is locale-independent, `result.ok` gates narrowing, and the `bytes` wire form, its length unit, and the union discriminator each sit in one named declared decision citing issue #58 | Static | P0 | FR-066-AC-14, FR-066-AC-15, FR-066-AC-16, FR-066-AC-17, FR-066-AC-29, FR-066-CON-1, FR-066-CON-2, FR-066-CON-5, FR-066-CON-9 | 🚧 in progress — TypeScript backend branch |
+| TC-787 | The generated type-identity map carries one entry per exported type with the document's identity copied verbatim, and an audit walking every node of a fixture document finds each one rendered or named in a declared representability loss | Unit | P0 | FR-067-AC-1, FR-067-AC-16, FR-067-CON-5, FR-067-CON-6 | 🚧 in progress — TypeScript backend branch |
 | TC-788 | The generated field-identity map carries one entry per field of every exported record, keyed `<Type>.<field>` | Unit | P0 | FR-067-AC-2 | 🚧 in progress — TypeScript backend branch |
 | TC-789 | Both identity maps are ordered by key under code-point comparison and keep that order under `LC_ALL=tr_TR.UTF-8` | Property | P0 | FR-067-AC-3 | 🚧 in progress — TypeScript backend branch |
 | TC-790 | A package with a type missing from the identity map, and one with an entry for an unexported name, each fail `tsc --noEmit` | Compile | P0 | FR-067-AC-4, FR-067-CON-2 | 🚧 in progress — TypeScript backend branch |
-| TC-791 | The metadata object carries the eleven provenance values and the fingerprint computed over the normalized document rather than over the file bytes | Unit | P0 | FR-067-AC-5, FR-067-CON-4 | 🚧 in progress — TypeScript backend branch |
+| TC-791 | The metadata object carries the eleven provenance values and the fingerprint computed over the normalized document rather than the file bytes, and exposes each document's occurrences, document-level extensions, and field units byte-equal to the document | Unit | P0 | FR-067-AC-5, FR-067-AC-14, FR-067-CON-4 | 🚧 in progress — TypeScript backend branch |
 | TC-792 | Two documents differing only in set order share a fingerprint, and two differing in any semantic value do not | Property | P0 | FR-067-AC-6 | 🚧 in progress — TypeScript backend branch |
 | TC-793 | Every banner names the backend identity, version, and fingerprint, no emitted byte matches a date, time, hostname, user, or absolute-path pattern, and two runs at different wall-clock times agree | Static | P0 | FR-067-AC-7, FR-067-AC-8, FR-067-CON-1 | 🚧 in progress — TypeScript backend branch |
-| TC-794 | Roles and relationship descriptors are exposed per type, a metadata-only import retains no validator symbol, a `displayName` rename moves no identity, and the metadata module typechecks | Unit | P0 | FR-067-AC-9, FR-067-AC-10, FR-067-AC-11, FR-067-AC-12, FR-067-AC-13, FR-067-CON-3 | 🚧 in progress — TypeScript backend branch |
-| TC-795 | Every positive fixture and every conformance base yields `resultState` `success` with zero diagnostics | Integration | P0 | FR-068-AC-1 | 🚧 in progress — TypeScript backend branch |
-| TC-796 | Every rule of the code table fires on a constructed document and produces exactly its named code at a hand-computed pointer | Unit | P0 | FR-068-AC-2 | 🚧 in progress — TypeScript backend branch |
+| TC-794 | Roles, relationship descriptors, per-type and per-field extension descriptors, and each type's `unknownPolicy` are exposed per type; a metadata-only import retains no validator symbol; a `displayName` rename moves no identity; and the metadata module typechecks | Unit | P0 | FR-067-AC-9, FR-067-AC-10, FR-067-AC-11, FR-067-AC-12, FR-067-AC-13, FR-067-AC-15, FR-067-AC-17, FR-067-CON-3 | 🚧 in progress — TypeScript backend branch |
+| TC-795 | Every positive fixture and every conformance base yields `resultState` `success` with zero diagnostics, and a bundle carrying only `ir` records one suppression per absent-input rule, emits no diagnostic for any of them, and returns the same result state | Integration | P0 | FR-068-AC-1, FR-068-AC-18, FR-068-AC-19, FR-068-CON-8 | 🚧 in progress — TypeScript backend branch |
+| TC-796 | Every rule of the code table fires on a constructed document producing exactly its named code at a hand-computed pointer, and the derivation ledger names for every registered code either the published clause its rule was read from or the corpus register | Unit | P0 | FR-068-AC-2, FR-068-AC-20, FR-068-AC-21, FR-068-CON-7 | 🚧 in progress — TypeScript backend branch |
 | TC-797 | Three schema errors at one instance location collapse to one `SCHEMA_VIOLATION` at the deepest failing location, and a structurally invalid document yields no cross-field code | Unit | P0 | FR-068-AC-3, FR-068-AC-4 | 🚧 in progress — TypeScript backend branch |
 | TC-798 | A document that is both alias-cyclic and past the depth bound yields `ALIAS_CYCLE` and never `DEPTH_LIMIT_EXCEEDED` | Unit | P0 | FR-068-AC-5 | 🚧 in progress — TypeScript backend branch |
-| TC-799 | The three `resultState` values are produced by a clean, an erroring, and a non-erroring document, and no other value is ever returned | Unit | P0 | FR-068-AC-6 | 🚧 in progress — TypeScript backend branch |
+| TC-799 | The three `resultState` values are produced by a clean, an erroring, and a non-erroring document, no other value is ever returned, and a non-error-only document generates with manifest state `lossy` and a non-empty file set | Unit | P0 | FR-068-AC-6, FR-068-AC-23 | 🚧 in progress — TypeScript backend branch |
 | TC-800 | Diagnostic order is byte-identical under `LC_ALL=tr_TR.UTF-8`, from another working directory, and with every environment variable cleared but `PATH` | Integration | P0 | FR-068-AC-7, FR-068-AC-16 | 🚧 in progress — TypeScript backend branch |
-| TC-801 | Every emitted diagnostic validates against the published definition and carries no pointer member, every emitted code is registered, and a deliberately minted code fails the check | Property | P0 | FR-068-AC-8, FR-068-AC-9, FR-068-CON-2 | 🚧 in progress — TypeScript backend branch |
-| TC-802 | An operation, a clause, an unimplemented `format`, and a `migration` default yield four declared losses under the backend's own prefix that block generation and add nothing to the admissibility answer | Unit | P0 | FR-068-AC-10, FR-068-AC-11 | 🚧 in progress — TypeScript backend branch |
+| TC-801 | Every emitted diagnostic validates against the published definition, carries no pointer member, severity `error` and `blocking` true, and a `locus` exactly when an enclosing node supplies one; every emitted code is registered and a deliberately minted code fails the check | Property | P0 | FR-068-AC-8, FR-068-AC-9, FR-068-AC-17, FR-068-CON-2 | 🚧 in progress — TypeScript backend branch |
+| TC-802 | An operation, a clause, an unimplemented `format`, and a `migration` default yield four declared losses under the backend's own prefix that block generation and add nothing to the admissibility answer, while an `unknownPolicy` on a `union` or a `map` yields neither a diagnostic nor a loss | Unit | P0 | FR-068-AC-10, FR-068-AC-11, FR-068-AC-24 | 🚧 in progress — TypeScript backend branch |
 | TC-803 | `REFERENCE_POLICY` at `strict` yields `UNRESOLVED_TYPE_REF` at the reference target pointer and at `open` yields none, with no other line of the backend differing between the runs | Unit | P0 | FR-068-AC-12, FR-068-CON-3 | 🚧 in progress — TypeScript backend branch |
 | TC-804 | `admit.mjs` and `loss.mjs` import no compiler reader, schema layer, applicability table, or diff module, and nothing under `conformance/`, and edit no corpus file | Static | P0 | FR-068-AC-13, FR-068-CON-1, FR-068-CON-4 | 🚧 in progress — TypeScript backend branch |
-| TC-805 | Each of the four declared limits returns a bounded answer without throwing, and 512 mutated documents leave the input byte-unchanged and never throw | Fuzz | P0 | FR-068-AC-14, FR-068-AC-15, FR-068-CON-5, FR-068-CON-6 | 🚧 in progress — TypeScript backend branch |
-| TC-806 | Two documents differing only in object key order and in the thirteen identity-keyed containers canonicalize alike, and two differing in any semantic value do not | Property | P0 | FR-069-AC-1, FR-069-AC-2 | 🚧 in progress — TypeScript backend branch |
+| TC-805 | Each of the four declared limits returns a bounded answer without throwing, the depth bound is the declared 256 rather than the compiler's `DEFAULT_LIMITS`, and 512 mutated documents leave the input byte-unchanged and never throw | Fuzz | P0 | FR-068-AC-14, FR-068-AC-15, FR-068-AC-22, FR-068-CON-5, FR-068-CON-6 | 🚧 in progress — TypeScript backend branch |
+| TC-806 | Two documents differing only in object key order and in the thirteen identity-keyed containers canonicalize alike, two differing in any semantic value do not, and two members sharing one `identity` canonicalize to one form whatever order they arrive in | Property | P0 | FR-069-AC-1, FR-069-AC-2, FR-069-AC-16 | 🚧 in progress — TypeScript backend branch |
 | TC-807 | `normalizeIrForTarget` is idempotent over every positive fixture and every generated document | Property | P0 | FR-069-AC-3 | 🚧 in progress — TypeScript backend branch |
 | TC-808 | A `1.1.0` field gains the derived multiplicity, the re-derived presence, and a literal `nullable`, while the same field in a `1.0.0` document gains no member | Unit | P0 | FR-069-AC-4 | 🚧 in progress — TypeScript backend branch |
 | TC-809 | Canonicalizing every conformance base and case input is byte-identical on a second run, from another working directory, and under `LC_ALL=tr_TR.UTF-8` | Integration | P0 | FR-069-AC-5 | 🚧 in progress — TypeScript backend branch |
-| TC-810 | A non-finite number and a value past the depth bound are each refused with a named error, and canonicalization leaves its argument byte-identical | Unit | P0 | FR-069-AC-6, FR-069-AC-7, FR-069-CON-5 | 🚧 in progress — TypeScript backend branch |
-| TC-811 | Each of the seventeen classification rules fires on a constructed pair and yields exactly its stated classification at a hand-computed pointer | Unit | P0 | FR-069-AC-8 | 🚧 in progress — TypeScript backend branch |
+| TC-810 | A non-finite number and a value past the depth bound are each refused with a named error, negative zero canonicalizes as positive zero, and canonicalization leaves its argument byte-identical | Unit | P0 | FR-069-AC-6, FR-069-AC-7, FR-069-AC-21, FR-069-CON-5 | 🚧 in progress — TypeScript backend branch |
+| TC-811 | Each declared classification rule — including a removed field, an added required field, a removed variant, and an added variant as `breaking` and an added optional field as `additive` — fires on a constructed pair at a hand-computed pointer, and a rule absent from the exported `MODELLED_CHANGES` data fails the module's contract test | Unit | P0 | FR-069-AC-8, FR-069-AC-17, FR-069-AC-19, FR-069-CON-7 | 🚧 in progress — TypeScript backend branch |
 | TC-812 | A mixed pair aggregates to the most restrictive classification, an inadmissible side on either end aggregates `invalid`, and an unmodelled change aggregates `unknown` rather than `patch` | Unit | P0 | FR-069-AC-9, FR-069-AC-10, FR-069-AC-11 | 🚧 in progress — TypeScript backend branch |
-| TC-813 | An added optional field classifies `additive` with no policy and `patch` under a policy admitting unknown members, and the five corpus compatibility cases agree with the oracle or report a divergence | Integration | P0 | FR-069-AC-12, FR-069-AC-13 | 🚧 in progress — TypeScript backend branch |
-| TC-814 | Neither module imports the compiler's normalization, canonicalization, diff, or evolution module nor anything under `conformance/`, declares `IDENTITY_SET_PATHS` once, retains the GAP-004 citation, reads no clock, and adds no lockfile entry | Static | P0 | FR-069-AC-14, FR-069-AC-15, FR-069-CON-1, FR-069-CON-2, FR-069-CON-3, FR-069-CON-4 | 🚧 in progress — TypeScript backend branch |
-| TC-815 | `make conformance` runs the `typescript-backend` command over all 111 cases with no adapter, unknown-case, duplicate-answer, case-digest, or missing-answer problem | Integration | P0 | FR-070-AC-1 | 🚧 in progress — TypeScript backend branch |
-| TC-816 | Every document the adapter emits validates against `conformance/schema/adapter-result.schema.json` | Integration | P0 | FR-070-AC-2 | 🚧 in progress — TypeScript backend branch |
+| TC-813 | An added optional field classifies `additive` with no policy and `patch` under a policy admitting unknown members, a contract-version move classifies `additive` only when its down-projection round-trips, and the twenty-five corpus compatibility cases agree with the oracle or report a divergence | Integration | P0 | FR-069-AC-12, FR-069-AC-13, FR-069-AC-18 | 🚧 in progress — TypeScript backend branch |
+| TC-814 | Neither module imports the compiler's normalization, canonicalization, diff or evolution module nor anything under `conformance/`, declares `IDENTITY_SET_PATHS` and the key-ordering rule once as data, retains the GAP-004 citation, canonicalizes every case with no admissibility answer computed, reads no clock, and adds no lockfile entry | Static | P0 | FR-069-AC-14, FR-069-AC-15, FR-069-AC-20, FR-069-CON-1, FR-069-CON-2, FR-069-CON-3, FR-069-CON-4, FR-069-CON-6 | 🚧 in progress — TypeScript backend branch |
+| TC-815 | `make conformance` runs the `typescript-backend` command over all 111 cases with no adapter, unknown-case, duplicate-answer, case-digest or missing-answer problem, and the harness reports 111 matched cases and zero unsuppressed divergences for the slot | Integration | P0 | FR-070-AC-1, FR-070-AC-11 | 🚧 in progress — TypeScript backend branch |
+| TC-816 | Every document the adapter emits validates against `conformance/schema/adapter-result.schema.json`, and its `adapterVersion` moves when a decision module changes a verdict | Integration | P0 | FR-070-AC-2, FR-070-AC-19 | 🚧 in progress — TypeScript backend branch |
 | TC-817 | The adapter answers `support: "supported"` for all 111 cases and `unavailable` for none | Integration | P0 | FR-070-AC-3 | 🚧 in progress — TypeScript backend branch |
-| TC-818 | The measured match, failure, and divergence counts are recorded with the command that produced them, and the figure is read from the regenerated coverage account rather than restated | Analysis | P0 | FR-070-AC-4, FR-070-CON-6 | 🚧 in progress — TypeScript backend branch |
+| TC-818 | The measured match, failure and divergence counts are recorded with the command that produced them and read from the regenerated coverage account rather than restated, and the first-run divergence count is measured before the first fix and never remeasured | Analysis | P0 | FR-070-AC-4, FR-070-AC-17, FR-070-CON-6, FR-070-CON-8 | 🚧 in progress — TypeScript backend branch |
 | TC-819 | Neither the adapter nor any module it reaches references `oracleVerdict`, `compare`, or the oracle's own modules, and the harness starts it as a process rather than importing it | Static | P0 | FR-070-AC-5, FR-070-CON-1, FR-070-CON-5 | 🚧 in progress — TypeScript backend branch |
 | TC-820 | Substituting the oracle's answer for the backend's makes a deliberately seeded backend defect invisible, showing the independence constraint is load-bearing | Integration | P0 | FR-070-AC-6 | 🚧 in progress — TypeScript backend branch |
-| TC-821 | Two adapter runs from different working directories and under `LC_ALL=tr_TR.UTF-8` are byte-identical, and the regenerated coverage account reproduces and records 333 unmet cases | Snapshot | P0 | FR-070-AC-7, FR-070-AC-8 | 🚧 in progress — TypeScript backend branch |
-| TC-822 | The ten named corpus paths, the three sibling registry rows, and the Rust inventory component are byte-unchanged, and no corpus file is edited to make the backend agree | Analysis | P0 | FR-070-AC-9, FR-070-AC-14, FR-070-CON-2 | 🚧 in progress — TypeScript backend branch |
-| TC-823 | Every admitted case generates a package that passes `tsc --noEmit`, every positive payload is accepted and every negative rejected, and a refused case emits no file and names the construct | Compile | P0 | FR-070-AC-10, FR-070-AC-11, FR-070-AC-12 | 🚧 in progress — TypeScript backend branch |
+| TC-821 | Two adapter runs from different working directories and under `LC_ALL=tr_TR.UTF-8` are byte-identical; the regenerated coverage account reproduces, records `matched` 111 and `unmet` 0 for this slot, and a total exactly 111 lower than at this change's base commit; and no criterion of the requirement names a whole-corpus absolute | Snapshot | P0 | FR-070-AC-7, FR-070-AC-8, FR-070-AC-20, FR-070-CON-7 | 🚧 in progress — TypeScript backend branch |
+| TC-822 | The ten named corpus paths, `conformance/divergences.json`, the three sibling registry rows and the Rust inventory component are byte-unchanged, and no corpus file is edited to make the backend agree | Analysis | P0 | FR-070-AC-9, FR-070-AC-14, FR-070-AC-18, FR-070-CON-2 | 🚧 in progress — TypeScript backend branch |
+| TC-823 | Every admitted case generates a package and all of them typecheck as one compiler program, and a case refused on representability emits no file and names the construct; instance-level acceptance and rejection are FR-066's authored corpus, because the conformance corpus supplies no payloads | Compile | P0 | FR-070-AC-10, FR-070-AC-12 | 🚧 in progress — TypeScript backend branch |
 | TC-824 | A seeded disagreement is registered as a divergence with an owner and a verdict and fails once unreproduced, the inventory discharges only the conformance clause, and nothing is published | Integration | P0 | FR-070-AC-13, FR-070-AC-15, FR-070-AC-16, FR-070-CON-3, FR-070-CON-4 | 🚧 in progress — TypeScript backend branch |
-| TC-825 | `generate` over the committed fixture IR writes the expected package byte for byte and exits `0`, and the committed fixture is never regenerated to make a comparison pass | Snapshot | P0 | FR-071-AC-1, FR-071-CON-5 | 🚧 in progress — TypeScript backend branch |
+| TC-825 | `generate` over the committed fixture IR writes the expected package byte for byte and exits `0`, `biome format .` reports no change over it, `biome.json` is unchanged, and the committed fixture is never regenerated to make a comparison pass | Snapshot | P0 | FR-071-AC-1, FR-071-AC-17, FR-071-CON-5 | 🚧 in progress — TypeScript backend branch |
 | TC-826 | Runs into two directories, from another working directory, under `LC_ALL=tr_TR.UTF-8`, and with every environment variable cleared but `PATH` all produce identical bytes and manifests | Integration | P0 | FR-071-AC-2, FR-071-AC-3 | 🚧 in progress — TypeScript backend branch |
-| TC-827 | A blocking diagnostic writes no file under a fresh `--out-root`, leaves a pre-existing file byte-unchanged, exits `1` with an empty `files` array, and creates only caller-named paths and their `.tmp` siblings | Integration | P0 | FR-071-AC-4, FR-071-AC-5 | 🚧 in progress — TypeScript backend branch |
-| TC-828 | An unknown command, unknown flag, missing flag, and unreadable `--limits` each exit `2` with usage text, `--target rust` names issue #21 and exits `1`, and `--target avro` exits `2` | Unit | P0 | FR-071-AC-6, FR-071-AC-7 | 🚧 in progress — TypeScript backend branch |
+| TC-827 | A blocking diagnostic, and a formatter exiting non-zero, each write no file under a fresh `--out-root`, leave a pre-existing file byte-unchanged, exit `1` with an empty `files` array, and create only caller-named paths and their `.tmp` siblings | Integration | P0 | FR-071-AC-4, FR-071-AC-5, FR-071-AC-18 | 🚧 in progress — TypeScript backend branch |
+| TC-828 | An unknown command, unknown flag, missing flag and unreadable `--limits` each exit `2` with usage text; a `--target` naming a registered declared-unimplemented target prints that target and its registered owning issue and exits `1`; a `--target` outside the vocabulary exits `2` | Unit | P0 | FR-071-AC-6, FR-071-AC-7 | 🚧 in progress — TypeScript backend branch |
 | TC-829 | The packed-artifact listing normalized in exactly `mtime`, `uid`, `gid`, `uname`, and `gname` is equal between runs and still differs on a one-byte content change | Integration | P0 | FR-071-AC-8 | 🚧 in progress — TypeScript backend branch |
-| TC-830 | The type-level fixtures compile, three deliberate mutations each fail the typecheck, and the four presence and nullability forms are proved by assignability probes | Compile | P0 | FR-071-AC-9, FR-071-AC-10 | 🚧 in progress — TypeScript backend branch |
-| TC-831 | The bundle-surface record matches the symbols reachable from the committed single-type import and fails when that set grows | Analysis | P0 | FR-071-AC-11 | 🚧 in progress — TypeScript backend branch |
+| TC-830 | The type-level fixtures compile, the four deliberately-uncompilable ones each fail with the expected diagnostic code, the four presence and nullability forms are proved by assignability probes, and the whole check runs as one compiler program whose added wall-clock time the run records | Compile | P0 | FR-071-AC-9, FR-071-AC-10, FR-071-AC-20 | 🚧 in progress — TypeScript backend branch |
+| TC-831 | The committed reachable-symbol record matches the walk for every declared entry module, adding an export fails the check, removing `"sideEffects": false` makes the walk fail rather than report a set, and the measurement adds no dependency to either lockfile | Analysis | P0 | FR-071-AC-11, FR-071-CON-7 | 🚧 in progress — TypeScript backend branch |
 | TC-832 | `make generate-typescript-check` leaves `git status --porcelain` unchanged, and no target of this requirement rewrites a committed artifact inside the tree | Integration | P0 | FR-071-AC-12, FR-071-CON-3 | 🚧 in progress — TypeScript backend branch |
-| TC-833 | The four existing verbs keep their flags, exit codes, and output, `package.json` metadata is unchanged, and the command reads no environment variable, opens no socket, and starts no child program | Integration | P0 | FR-071-AC-13, FR-071-AC-14, FR-071-AC-15, FR-071-AC-16, FR-071-CON-1, FR-071-CON-2, FR-071-CON-4, FR-071-CON-6 | 🚧 in progress — TypeScript backend branch |
+| TC-833 | The four existing verbs keep their flags, exit codes and output; `package.json` metadata is unchanged against the range's base endpoint; the root `tsconfig.json` differs by exactly one `exclude` entry; and the command reads no environment variable, opens no socket, and starts no child program but the pinned formatter | Integration | P0 | FR-071-AC-13, FR-071-AC-14, FR-071-AC-15, FR-071-AC-16, FR-071-AC-19, FR-071-CON-1, FR-071-CON-2, FR-071-CON-4, FR-071-CON-6, FR-071-CON-8 | 🚧 in progress — TypeScript backend branch |
 | TC-834 | Two generation runs, a run from a scratch working directory, and a run under `LC_ALL=tr_TR.UTF-8` all produce byte-identical files and manifests | Snapshot | P0 | NFR-024-AC-1, NFR-024-AC-2, NFR-024-AC-3 | 🚧 in progress — TypeScript backend branch |
 | TC-835 | Two packed artifacts are identical after normalizing exactly `mtime`, `uid`, `gid`, `uname`, and `gname`, and no other member | Integration | P0 | NFR-024-AC-4 | 🚧 in progress — TypeScript backend branch |
 | TC-836 | The generated import graph names no prohibited-category identifier, every specifier is relative, and the generated manifest declares no dependency block | Static | P0 | NFR-024-AC-5, NFR-024-AC-6 | 🚧 in progress — TypeScript backend branch |
 | TC-837 | Generated source carries no `any`, cast, or suppression, no backend module reads a clock, environment, cwd, filesystem, or socket, and none calls `localeCompare` | Static | P0 | NFR-024-AC-7, NFR-024-AC-8, NFR-024-AC-9 | 🚧 in progress — TypeScript backend branch |
-| TC-838 | Every generated file carries the AGPL-3.0-only SPDX header, the package typechecks under `strict` with `exactOptionalPropertyTypes`, and the single-type bundle surface matches the committed fixture | Compile | P0 | NFR-024-AC-10, NFR-024-AC-11, NFR-024-AC-12 | 🚧 in progress — TypeScript backend branch |
+| TC-838 | Every generated file carries the AGPL-3.0-only SPDX header, is a formatter no-op, and the package typechecks under `strict` with `exactOptionalPropertyTypes`, and the single-type reachable-symbol set matches the committed fixture | Compile | P0 | NFR-024-AC-10, NFR-024-AC-11, NFR-024-AC-12, NFR-024-AC-13 | 🚧 in progress — TypeScript backend branch |
 | TC-839 | Every path in this change's own set is permitted and none is prohibited, with both ends of the range resolved from history and the diff taken with `--no-renames` | Analysis | P0 | NFR-025-AC-1 | 🚧 in progress — TypeScript backend branch |
-| TC-840 | A synthetic history landing an unrelated commit after this change's tip leaves the path set unchanged | Unit | P0 | NFR-025-AC-2 | 🚧 in progress — TypeScript backend branch |
-| TC-841 | `package.json` metadata and both dependency blocks, `pnpm-lock.yaml`, and `poetry.lock` are byte-unchanged from the merge base | Analysis | P0 | NFR-025-AC-3, NFR-025-AC-4 | 🚧 in progress — TypeScript backend branch |
-| TC-842 | The narrow interface exports exactly fifteen symbols, and the frozen prototype backends and the four issue #4 goldens are byte-unchanged with their comparisons still passing | Snapshot | P0 | NFR-025-AC-5, NFR-025-AC-6 | 🚧 in progress — TypeScript backend branch |
-| TC-843 | No corpus case, base, oracle module, harness module, threshold, defect row, gap row, mutation row, or conformance schema changed a byte, and `npm pack --dry-run` lists no generated-package file | Analysis | P0 | NFR-025-AC-7, NFR-025-AC-8 | 🚧 in progress — TypeScript backend branch |
+| TC-840 | A synthetic history landing an unrelated commit after this change's tip leaves the path set unchanged, every gate still fails on the input it exists to catch after the merge, and a synthetic history landing a sibling backend first falsifies no criterion of this bundle | Unit | P0 | NFR-025-AC-2, NFR-025-AC-11, NFR-025-AC-15 | 🚧 in progress — TypeScript backend branch |
+| TC-841 | `package.json` metadata and both dependency blocks, `pnpm-lock.yaml` and `poetry.lock` are absent from this change's own path set and byte-identical between the range's two history-pinned endpoints, and the root `tsconfig.json` differs by exactly one `exclude` entry | Analysis | P0 | NFR-025-AC-3, NFR-025-AC-4, NFR-025-AC-13 | 🚧 in progress — TypeScript backend branch |
+| TC-842 | The narrow interface exports exactly fifteen symbols, and the frozen prototype backends and the four issue #4 goldens are absent from this change's path set with their comparisons still passing in the checked-out tree | Snapshot | P0 | NFR-025-AC-5, NFR-025-AC-6 | 🚧 in progress — TypeScript backend branch |
+| TC-843 | No corpus case, base, oracle module, harness module, threshold, defect row, gap row, mutation row, conformance schema, or divergence register changed a byte; and `npm pack --dry-run` lists the added `src/compiler/` modules as source and no generated-package or fixture file | Analysis | P0 | NFR-025-AC-7, NFR-025-AC-8, NFR-025-AC-12, NFR-025-AC-14 | 🚧 in progress — TypeScript backend branch |
 | TC-844 | Every generated manifest and added source file declares AGPL-3.0-only, and reverting this change's commit range leaves the full suite passing | Integration | P0 | NFR-025-AC-9, NFR-025-AC-10 | 🚧 in progress — TypeScript backend branch |
 
 ## Option Permutation Matrix
@@ -1004,6 +1027,9 @@ exists to prevent.
 | TC-784 | `defaultKind` | `none` / `semantic` / `representation` / `migration` | property absent at validation | Only a `semantic` default is applied; the other two belong to the representation layer |
 | TC-817, TC-822 | adapter answer | `supported` / `unsupported` / `unavailable` | registry `status` and the case's own `unsupportedBy` | An available slot must answer `supported`; every other answer must be declared or the run fails |
 | TC-803 | `REFERENCE_POLICY` | `strict` / `open` | a `reference` target no type, import, or lock export supplies | `UNRESOLVED_TYPE_REF` or no diagnostic; the constant is the only line that differs between the runs |
+| TC-779 | field presence and member state | `required` / `optional` | absent / `null` / explicitly `undefined` / a conforming value | Six accept-or-reject decisions; absent and explicitly `undefined` never collapse into one another |
+| TC-782 | `unknownPolicy` against structural kind | `preserve` / `reject` / `surface` | `record` / `union` / `map` | Only a `record` carries a validation effect; the other kinds record the policy in metadata and validate identically |
+| TC-781 | constraint subject after alias resolution | `string` / `bytes` / `integer` / `number` / `duration` | `minLength` / `maxLength` / `min` / `max` | Length counts code points for a `string` and decoded octets for `bytes`; an ordering keyword on a `duration` is a representability loss |
 
 ## Constraint Boundary Tests
 
@@ -1129,6 +1155,12 @@ exists to prevent.
 | FR-068-AC-14 | Allowed | A document producing exactly `maxDiagnostics` findings | TC-805 | Every finding returned, no truncation |
 | FR-068-AC-14 | Prohibited | A document producing one finding past `maxDiagnostics` | TC-805 | Bounded answer naming the limit, with no throw |
 | FR-069-AC-6 | Prohibited | A non-finite number in a document being canonicalized | TC-810 | Named refusal rather than a serialized value |
+| FR-066-AC-20 | At bound | A `bytes` subject at `maxLength` 3 given a four-character base64 string decoding to exactly three octets | TC-781 | Accepted; the octet count, not the character count, is the measured length |
+| FR-066-AC-20 | Above max | The same subject given a base64 string decoding to four octets | TC-781 | Rejected with that constraint's own `diagnosticCode` |
+| FR-066-AC-21 | Above max | An `integer` subject given `Number.MAX_SAFE_INTEGER + 2` | TC-781 | Rejected with its own structural code rather than accepted as a `number` |
+| FR-066-AC-21 | Boundary | An `integer` subject given `-0` where it accepts `0` | TC-781 | Accepted, and canonicalizing to the same bytes as `0` |
+| FR-068-AC-22 | At bound | A document nested to the declared depth of 256 | TC-805 | Admitted, because the bound is the corpus's declared 256 and not the compiler's `DEFAULT_LIMITS` of 128 |
+| FR-068-AC-22 | Above max | The same document nested to 257 | TC-805 | `DEPTH_LIMIT_EXCEEDED`, and a cycle at the same depth reports `ALIAS_CYCLE` instead |
 
 ## State Transition Matrix
 
@@ -1181,7 +1213,9 @@ exists to prevent.
 | lossy document | an error diagnostic is introduced | `resultState` moves `lossy` to `invalid` | TC-799 |
 | divergence entry open against this backend | the backend defect is fixed | the entry stops reproducing and the run fails until it is removed | TC-824 |
 | generated package export present | the IR drops the type that declared it | the pair classifies `breaking` and the type-level fixture stops compiling | TC-812, TC-830 |
-| `REFERENCE_POLICY` at `strict` | `agent-ix/filament-core-data#9` settles GAP-011 in favour of the open reading | the constant moves to `open` and corpus cases REF-001..004 move with it under a `corpus-defect` verdict and a major `corpusVersion` bump | TC-803 |
+| `REFERENCE_POLICY` at `strict` | The owner GAP-011 acquires through `agent-ix/filament-core-data#59` settles it in favour of the open reading | the constant moves to `open` and corpus cases REF-001..004 move with it under a `corpus-defect` verdict and a major `corpusVersion` bump | TC-803 |
+| The `bytes` wire form and the union discriminator recorded as declared decisions | `agent-ix/filament-core-data#58` settles either | the named declared decision moves in one place, and a resulting disagreement is reported for the owner rather than registered as a divergence | TC-786, TC-822 |
+| An admissibility rule suppressed for an absent input | the bundle later supplies that input | the suppression is replaced by a decided answer, and the recorded `resultState` for a satisfied input is unchanged | TC-795 |
 
 ## Error Paths
 
@@ -1323,6 +1357,14 @@ exists to prevent.
 | ERR-133 | A registered divergence no longer reproduces | `unreproduced-divergence` problem; the run fails until the entry is removed | TC-824 |
 | ERR-134 | `generate` produces a blocking diagnostic while `--out-root` already holds a file | Exit `1`, no file written, and the pre-existing file byte-unchanged | TC-827 |
 | ERR-135 | `generate` is given an unknown flag, a missing required flag, or an unreadable `--limits` | Usage text and exit `2` | TC-828 |
+| ERR-136 | A declared member is present with the value `undefined` rather than absent | Rejected for a required and an optional field alike, because absent and explicitly `undefined` are different values under `exactOptionalPropertyTypes` | TC-779 |
+| ERR-137 | An ordering constraint resolves to a `duration` subject, for which ISO-8601 designators supply no total order | A declared representability loss and no generated package, rather than an invented comparison | TC-781, TC-802 |
+| ERR-138 | A `bytes` value is not well-formed base64, or its decoded length exceeds a `maxLength` | Rejected with that constraint's own `diagnosticCode`, the length counted in decoded octets | TC-781 |
+| ERR-139 | An `integer` subject receives a non-integral, non-finite, or above-`Number.MAX_SAFE_INTEGER` value | Rejected with its own structural code rather than silently truncated | TC-781 |
+| ERR-140 | A validated input carries a getter that throws, an inherited accessor for a declared member, or a `Symbol.toPrimitive` coercion | A returned rejection, never a thrown exception and never a coerced accept | TC-785 |
+| ERR-141 | An admissibility rule's declared input — a manifest, a lock, a mapping, or a consumer policy — is absent from the bundle | A recorded suppression, never a diagnostic and never a silent pass | TC-795 |
+| ERR-142 | The injected formatter exits non-zero during a generation | No file written and a blocking diagnostic naming the formatter | TC-827 |
+| ERR-143 | A generated identifier collides with the exported discriminant constant or with another identity's minted identifier | One blocking `IDENTIFIER_COLLISION` naming both, raised while the model is built and before a file map exists | TC-764 |
 
 ## Edge Cases
 
@@ -1403,6 +1445,10 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-078 | A generated identifier collides with the generated discriminant constant | FR-064 | TC-758, TC-764 | The discriminated union stops narrowing and `tsc` accepts an unhandled variant |
 | EC-079 | A consumer bundles the generated package importing only `metadata.ts` | FR-067 | TC-794 | Metadata-only consumers retain the whole validator surface in their bundle |
 | EC-080 | The adapter and the oracle agree because the adapter asked the oracle | FR-070 | TC-819, TC-820 | A perfect pass rate that measures nothing and hides every shared defect |
+| EC-081 | A document declares two type definitions carrying the same `identity`, so identity-sorted set ordering is not a total order, while the adapter must still emit a `normalized` string for that case | FR-069 | TC-806 | Two runs canonicalize one document two ways and the byte comparison the whole slot rests on becomes non-deterministic |
+| EC-082 | `unknownPolicy` is declared on a kind that has no unknown members — a `union` at `surface` and a `map` at `preserve`, both carried by the committed conformance bases | FR-064, FR-066, FR-067, FR-068 | TC-762, TC-782, TC-802, TC-794 | A policy with no meaning is rendered as a validation rule, or is dropped without a declared loss under a `fail` policy |
+| EC-083 | A record declaring `preserve` widens its interface enough that the four presence and nullability forms stop being distinguishable under `exactOptionalPropertyTypes` | FR-064, FR-066 | TC-782 | The optional-versus-null distinction the package exists to carry dissolves at exactly the types that carry unknown data |
+| EC-084 | A `reference` target names an identity an imported package legitimately exports, and the case supplies no `importedExports` to resolve it against | FR-068 | TC-795, TC-803 | The policy constant answers a question it was never given the input to decide, and GAP-011 acquires a third reading nobody recorded |
 
 ## Coverage Gaps
 
@@ -1439,20 +1485,41 @@ implementation lands and the three verification states are measured. Two gaps
 are recorded rather than closed. The first is GAP-011: the resolution rule for a
 `reference` kind's `target` is unstated in `contracts-v1.md`, which states one
 only for relationship targets, and the question is owned by
-`agent-ix/filament-core-data#9`. This backend does not decide it. It carries a
-single named `REFERENCE_POLICY` constant defaulting to the corpus's published
-reading, so that its conformance answers agree with the yardstick it is judged
-against; when issue #9 settles the question, that constant and corpus cases
+`agent-ix/filament-core-data#9`, which is **closed** and can therefore decide
+nothing; `agent-ix/filament-core-data#59` records that and asks for a live
+owner. This backend does not decide it. It carries a single named
+`REFERENCE_POLICY` constant defaulting to the corpus's published reading, so
+that its conformance answers agree with the yardstick it is judged against; when
+the question acquires an owner and is settled, that constant and corpus cases
 REF-001..004 move together under a `corpus-defect` verdict and a major
 `corpusVersion` bump, and TC-803 exists to prove the flip is one edit in one
 place. Adopting the corpus's reading is conformance with the published yardstick
-and is not a ruling on the contract. The second is that the `compiler-frontend`
-adapter slot stays `unavailable` after this work: wiring it to the issue #19
-compiler is `agent-ix/filament-core-data#52`, which is deliberately not in this
-ticket's scope, so the corpus's coverage account falls from 444 unmet rows to
-333 rather than to 222. Cross-language generated-package serialization parity
-also remains unmet, because it needs the issue #21 and issue #23 packages that
-do not exist yet; issue #22 supplies one of the three sides it requires.
+and is not a ruling on the contract.
+
+The second is that the `compiler-frontend` adapter slot stays `unavailable`
+after this work: wiring it to the issue #19 compiler is
+`agent-ix/filament-core-data#52`, which is deliberately not in this ticket's
+scope. This ticket's own effect on the coverage account is therefore a delta and
+not a total — the `typescript-backend` row moves from 111 unmet to 0 and the
+corpus-wide total falls by 111 — and no row or criterion here states an
+absolute, because issues #21 and #23 are in flight against the same generated
+account and whichever of the three merges second would otherwise fail for a
+sibling's work. That shared-artifact reconciliation is
+`agent-ix/filament-core-data#63`.
+
+Cross-language generated-package serialization parity also remains unmet,
+because it needs the issue #21 and issue #23 packages that do not exist yet;
+issue #22 supplies one of the three sides it requires.
+
+Four further gaps are open contract questions this bundle depends on and does
+not close, each filed rather than absorbed: the `severity` and `locus` of a
+semantic-IR diagnostic are derivable from no published artifact
+(`agent-ix/filament-core-data#61`), the compiler's default graph-depth limit of
+128 and the corpus's declared 256 disagree (`#62`), the normative version-uplift
+round-trip rule and the oracle's flat `conditional` disagree (`#64`), and the
+JSON wire form of a discriminated union and of the `bytes` kernel scalar is
+unspecified (`#58`, filed by issue #21). Each is a declared reading in this
+bundle, recorded in one named place, and none is presented as settled contract.
 
 ## Test Execution Summary
 
