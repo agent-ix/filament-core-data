@@ -132,6 +132,20 @@
 			"owningIssue": "agent-ix/filament-core-data#25",
 			"discoveredBy": "agent-ix/filament-core-data#20",
 			"status": "open"
+		},
+		{
+			"id": "GAP-011",
+			"title": "The resolution rule for a `reference` kind's target is unstated",
+			"artifacts": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"schema/semantic/v1/semantic-ir.schema.json"
+			],
+			"finding": "`contracts-v1.md` states a resolution rule for relationship targets only — \"Relationship targets resolve to a document type or a lock export\" — and states none for the `target` of a `reference`-kind type definition, which the schema requires but constrains only to the semanticIdentity pattern.",
+			"consequence": "The issue #19 compiler, compiled read-only over its own `test/fixtures/compiler/packages/assurance` fixture, emits `ix://agent-ix/assurance/type/ActorRef` as a `reference` whose target is `ix://agent-ix/core/type/Actor`. No type in the document declares that identity, the manifest declares no imports, and no lock export names it. Issue #19's own reader accepts the document (`inspect` exits 0 and reports 18 types); this oracle rejects it with one `UNRESOLVED_TYPE_REF` at `/ir/types/0/target`. Both readings are defensible against the contract as written, so two conforming implementations disagree about whether the document is valid — and a generated-package backend must decide whether to emit a type for a reference it cannot resolve.",
+			"corpusDisposition": "Recorded, not resolved. The oracle keeps its rule, which is the relationship rule applied to references, and the corpus does not change the issue #19 compiler. Cases REF-001..004 pin this oracle's reading so the disagreement stays visible rather than drifting; whichever way the contract is settled, the cases move with a `corpus-defect` verdict and a major `corpusVersion` bump.",
+			"owningIssue": "agent-ix/filament-core-data#9",
+			"discoveredBy": "agent-ix/filament-core-data#20",
+			"status": "open"
 		}
 	]
 }
