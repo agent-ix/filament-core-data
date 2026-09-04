@@ -337,6 +337,7 @@ describe("TypeSpec feasibility gate", () => {
 			"plan/Plan-008-typespec-frontend-and-ir-compiler-core/",
 			"plan/Plan-011-typescript-backend/",
 			"test/fixtures/backends/typescript/",
+			"test/typescript-backend.test.ts",
 			"test/compiler-core.test.ts",
 			"test/changed-paths.ts",
 			// Issue #19 also publishes two generated documents and excludes its

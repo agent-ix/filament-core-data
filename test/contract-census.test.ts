@@ -506,6 +506,8 @@ describe("Filament contract census", () => {
 			"plan/Plan-009-conformance-corpus-and-oracle/",
 			"plan/Plan-011-typescript-backend/",
 			"test/fixtures/backends/typescript/",
+			"test/typescript-backend.test.ts",
+			"tsconfig.json",
 			"test/conformance-corpus.test.ts",
 			"audit/filament-contract-census/",
 			"plan/Plan-002-filament-contract-census/",
