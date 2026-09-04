@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-ix.example/fixtures/typescript/presence.schema.json",
+  "$defs": {
+    "Word": { "type": "string" },
+    "Combo": { "type": "object", "properties": { "rf": { "$ref": "#/$defs/Word" }, "rt": { "anyOf": [{ "$ref": "#/$defs/Word" }, { "type": "null" }] }, "of": { "$ref": "#/$defs/Word" }, "ot": { "anyOf": [{ "$ref": "#/$defs/Word" }, { "type": "null" }] } }, "required": ["rf", "rt"], "additionalProperties": false },
+    "ComboCollection": { "type": "object", "properties": { "rows": { "anyOf": [{ "type": "array", "items": { "$ref": "#/$defs/Word" }, "minItems": 0 }, { "type": "null" }] } }, "additionalProperties": false }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-ix.example/fixtures/typescript/domain.schema.json",
+  "$defs": {
+    "Word": { "type": "string" }, "Whole": { "type": "integer" }, "Real": { "type": "number" }, "Flag": { "type": "boolean" }, "Blob": { "type": "string" }, "Id": { "type": "string" }, "Day": { "type": "string" }, "Moment": { "type": "string" }, "Span": { "type": "string" },
+    "Scalars": { "type": "object", "properties": { "whole": { "$ref": "#/$defs/Whole" }, "real": { "$ref": "#/$defs/Real" }, "flag": { "$ref": "#/$defs/Flag" }, "blob": { "$ref": "#/$defs/Blob" }, "id": { "$ref": "#/$defs/Id" }, "day": { "$ref": "#/$defs/Day" }, "moment": { "$ref": "#/$defs/Moment" }, "span": { "$ref": "#/$defs/Span" } }, "additionalProperties": false },
+    "Defaults": { "type": "object", "properties": { "sem": { "$ref": "#/$defs/Word" }, "rep": { "$ref": "#/$defs/Word" }, "mig": { "$ref": "#/$defs/Word" }, "plain": { "$ref": "#/$defs/Word" } }, "additionalProperties": false },
+    "Collections": { "type": "object", "properties": { "unordered": { "type": "array", "items": { "$ref": "#/$defs/Word" }, "minItems": 0 }, "distinct": { "type": "array", "items": { "$ref": "#/$defs/Word" }, "minItems": 0, "uniqueItems": true }, "bounded": { "type": "array", "items": { "$ref": "#/$defs/Word" }, "minItems": 2, "maxItems": 3 } }, "required": ["bounded"], "additionalProperties": false },
+    "Hazards": { "type": "object", "properties": { "__proto__": { "$ref": "#/$defs/Word" }, "constructor": { "$ref": "#/$defs/Word" }, "prototype": { "$ref": "#/$defs/Word" } }, "additionalProperties": false }
+  }
+}

@@ -107,118 +107,6 @@ type InstanceCorpus = {
 	readonly cases: readonly InstanceCase[];
 };
 
-type IrDefinition = Record<string, unknown>;
-
-function schemaForInstanceIr(
-	document: { types: IrDefinition[] },
-	identity: string,
-) {
-	const definitions = new Map(
-		document.types.map((definition) => [
-			definition.identity as string,
-			definition,
-		]),
-	);
-	const schemaFor = (id: string): Record<string, unknown> => {
-		const definition = definitions.get(id);
-		if (!definition) throw new Error(`instance IR has no type ${id}`);
-		const constraints = (definition.constraints as IrDefinition[]) ?? [];
-		const constrained = (schema: Record<string, unknown>) => {
-			for (const constraint of constraints) {
-				const operands = constraint.operands as Record<string, unknown>;
-				switch (constraint.keyword) {
-					case "minLength":
-						schema.minLength = operands.value;
-						break;
-					case "maxLength":
-						schema.maxLength = operands.value;
-						break;
-					case "pattern":
-						schema.pattern = operands.regex;
-						break;
-					case "enumValues":
-						schema.enum = operands.values;
-						break;
-					case "nonEmpty":
-						schema.minLength = 1;
-						break;
-					case "format":
-						schema.format =
-							operands.name === "agent-ix:email" ? "email" : operands.name;
-						break;
-					case "min":
-						schema.minimum = operands.value;
-						break;
-					case "max":
-						schema.maximum = operands.value;
-						break;
-					case "exclusiveMin":
-						schema.exclusiveMinimum = operands.value;
-						break;
-					case "exclusiveMax":
-						schema.exclusiveMaximum = operands.value;
-						break;
-					case "unique":
-						schema.uniqueItems = true;
-						break;
-				}
-			}
-			return schema;
-		};
-		if (definition.kind === "scalar") {
-			const scalar = definition.scalar;
-			const type =
-				scalar === "integer"
-					? "integer"
-					: scalar === "number"
-						? "number"
-						: scalar === "boolean"
-							? "boolean"
-							: "string";
-			return constrained({ type });
-		}
-		if (definition.kind === "sequence")
-			return constrained({
-				type: "array",
-				items: schemaFor(definition.items as string),
-			});
-		if (definition.kind === "map")
-			return constrained({
-				type: "object",
-				additionalProperties: schemaFor(definition.values as string),
-			});
-		if (definition.kind !== "record")
-			throw new Error(`unsupported instance kind ${definition.kind}`);
-		const properties: Record<string, unknown> = Object.create(null);
-		const required: string[] = [];
-		for (const field of (definition.fields as IrDefinition[]) ?? []) {
-			let fieldSchema = schemaFor(field.typeRef as string);
-			const multiplicity = field.multiplicity as Record<string, unknown>;
-			if (multiplicity.upper !== 1) {
-				fieldSchema = {
-					type: "array",
-					items: fieldSchema,
-					minItems: multiplicity.lower,
-				};
-				if (typeof multiplicity.upper === "number")
-					fieldSchema.maxItems = multiplicity.upper;
-				if (multiplicity.unique === true) fieldSchema.uniqueItems = true;
-			}
-			if (field.nullable === true)
-				fieldSchema = { anyOf: [fieldSchema, { type: "null" }] };
-			properties[field.name as string] = fieldSchema;
-			if (field.presence === "required") required.push(field.name as string);
-		}
-		return constrained({
-			type: "object",
-			properties,
-			required,
-			additionalProperties: definition.unknownPolicy !== "reject",
-		});
-	};
-	return schemaFor(identity);
-}
-
 function instancePayload(row: InstanceCase): unknown {
 	const payload = structuredClone(row.payload === undefined ? {} : row.payload);
 	if (row.construct === undefined) return payload;
@@ -474,11 +362,14 @@ describe("TypeScript backend fixture (FR-071)", () => {
 			let differentialCandidates = 0;
 			for (const corpus of corpora) {
 				expect(corpus.provenance.blessedFromRun).toBe(false);
-				const instanceIr = JSON.parse(
-					readFileSync(resolve(instances, corpus.ir), "utf8"),
-				) as { types: IrDefinition[] };
+				const schemaName = corpus.ir.replace(/^ir\//, "").replace(/\.ir\.json$/, ".schema.json");
+				const schema = JSON.parse(
+					readFileSync(resolve(instances, schemaName), "utf8"),
+				) as { $id: string };
+				expect(schema.$id, `${schemaName}: schema identity`).toMatch(/^https:/);
 				const ajv = new Ajv2020({ allErrors: true, strict: true });
 				addFormats(ajv);
+				ajv.addSchema(schema);
 				const schemas = new Map<string, (value: unknown) => boolean>();
 				const module = await generatedValidators(
 					resolve(instances, corpus.ir),
@@ -494,7 +385,9 @@ describe("TypeScript backend fixture (FR-071)", () => {
 						differentialCandidates += 1;
 						let validate = schemas.get(row.type);
 						if (!validate) {
-							validate = ajv.compile(schemaForInstanceIr(instanceIr, row.type));
+							const typeName = row.type.split("/").at(-1);
+							validate = ajv.getSchema(`${schema.$id}#/$defs/${typeName}`);
+							expect(validate, `${row.id}: authored schema definition`).toBeDefined();
 							schemas.set(row.type, validate);
 						}
 						expect(

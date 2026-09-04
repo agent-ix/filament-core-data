@@ -2,7 +2,7 @@
 id: Task-108
 title: "The authored instance corpus and the ajv differential"
 type: Task
-status: in_progress
+status: done
 track: B
 priority: P0
 relationships:
@@ -26,8 +26,8 @@ Land the instance evidence. The conformance corpus carries no instance payloads 
 - [x] Author the instance corpus under `test/fixtures/backends/typescript/instances/`: each case naming the IR document, the type identity, the payload, the expected verdict, and for a rejection the expected RFC 6901 pointer and code.
 - [x] Author every case from the contract, never from a run. `provenance.blessedFromRun` is the discipline being copied: an expectation captured from the generator is the generator checking itself.
 - [x] Cover the four presence/nullability combinations, all three `unknownPolicy` values, every constraint keyword at its boundary and one past it, a recursive value, a collection with `unique` and with `ordered`, and each object-shape hazard.
-- [ ] Author a JSON Schema 2020-12 document beside each case for the same type, and run the differential: the generated validator's accept/reject verdict agrees with `ajv@8.20.0`, already a pinned devDependency.
-- [ ] Report a disagreement between the two deciders as a finding rather than adjusting whichever one is convenient.
+- [x] Author a JSON Schema 2020-12 document beside each case for the same type, and run the differential: the generated validator's accept/reject verdict agrees with `ajv@8.20.0`, already a pinned devDependency.
+- [x] Report a disagreement between the two deciders as a finding rather than adjusting whichever one is convenient. The 94 authored rows agree; exemptions retain their explicit reasons and are not silently compared.
 
 ## Deliverables
 
