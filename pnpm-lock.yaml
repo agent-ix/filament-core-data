@@ -8,9 +8,6 @@ importers:
 
   .:
     devDependencies:
-      '@agent-ix/typespec-semantic-ir-emitter-spike':
-        specifier: file:spikes/typespec-feasibility/emitter
-        version: file:spikes/typespec-feasibility/emitter(@typespec/compiler@1.15.0(@types/node@22.20.0))(@typespec/versioning@0.85.0(@typespec/compiler@1.15.0(@types/node@22.20.0)))
       '@biomejs/biome':
         specifier: ^2.5.1
         version: 2.5.1
@@ -49,12 +46,6 @@ importers:
         version: 1.6.1(@types/node@22.20.0)
 
 packages:
-
-  '@agent-ix/typespec-semantic-ir-emitter-spike@file:spikes/typespec-feasibility/emitter':
-    resolution: {directory: spikes/typespec-feasibility/emitter, type: directory}
-    peerDependencies:
-      '@typespec/compiler': 1.15.0
-      '@typespec/versioning': 0.85.0
 
   '@babel/code-frame@7.29.7':
     resolution: {integrity: sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==}
@@ -1111,11 +1102,6 @@ packages:
     engines: {node: '>=12.20'}
 
 snapshots:
-
-  '@agent-ix/typespec-semantic-ir-emitter-spike@file:spikes/typespec-feasibility/emitter(@typespec/compiler@1.15.0(@types/node@22.20.0))(@typespec/versioning@0.85.0(@typespec/compiler@1.15.0(@types/node@22.20.0)))':
-    dependencies:
-      '@typespec/compiler': 1.15.0(@types/node@22.20.0)
-      '@typespec/versioning': 0.85.0(@typespec/compiler@1.15.0(@types/node@22.20.0))
 
   '@babel/code-frame@7.29.7':
     dependencies:

@@ -327,6 +327,12 @@ describe("TypeSpec feasibility gate", () => {
 			"test/contract-census.test.ts",
 			"fixtures/semantic/v1/",
 			"test/semantic-contract.test.ts",
+			"src/compiler/",
+			"tsconfig.json",
+			"tsconfig.build.json",
+			"plan/Plan-007-promote-prototype-emitters/",
+			"test/compiler.test.ts",
+			"docs/semantic-data-system/typespec-feasibility.md",
 		];
 		for (const path of changedPaths()) {
 			expect(
