@@ -459,7 +459,7 @@ passes.
 | TC-342 | Emitted order matches under two `Intl.Collator` locales | Property | P0 | FR-041-AC-11 | ✅ passed |
 | TC-343 | `make lint` formats and typechecks `src/compiler/` | Static | P0 | FR-041-AC-12 | ✅ passed |
 | TC-344 | A deliberate declaration mismatch fails `tsc --noEmit` | Compile | P0 | FR-041-AC-12 | ✅ passed |
-| TC-345 | Added manifests declare AGPL-3.0-only and no dependency is added | Static | P0 | FR-041-AC-13, FR-041-CON-5 | ✅ passed |
+| TC-345 | Every `src/compiler/**` manifest in the tree, and every added manifest, declares AGPL-3.0-only and no dependency is added | Static | P0 | FR-041-AC-13, FR-041-CON-5 | ✅ passed |
 | TC-346 | The compiler imports only pinned `@typespec/*` packages | Static | P0 | FR-041-CON-3 | ✅ passed |
 | TC-347 | `@typespec/*` stay devDependencies and no runtime entry point is added | Static | P0 | FR-041-CON-4 | ✅ passed |
 | TC-348 | The promoted IR is never validated against the v1 IR schema | Static | P1 | FR-041-CON-2 | ✅ passed |
@@ -485,7 +485,7 @@ passes.
 | TC-368 | The pinned Python constants equal the recorded evidence versions | Unit | P0 | FR-043-AC-7 | ✅ passed |
 | TC-369 | No module under `src/compiler/` spawns a process | Static | P0 | FR-043-AC-8, FR-043-CON-3 | ✅ passed |
 | TC-370 | `spike:typespec:check` exits zero on a host meeting the issue #42 floor | Integration | P0 | FR-044-AC-1 | 🚧 blocked on issue #42 |
-| TC-371 | The retained-evidence diff is exactly `evidence/custom.json` `command` | Static | P0 | FR-044-AC-2, FR-044-CON-1 | ✅ passed |
+| TC-371 | No retained-evidence path other than `evidence/custom.json` changes, and the committed file differs from the frozen issue #4 record in `command` alone | Static | P0 | FR-044-AC-2, FR-044-CON-1 | ✅ passed |
 | TC-372 | The committed `Cargo.lock` is unchanged and the runner seeds it | Static | P0 | FR-044-AC-3, FR-044-CON-2 | ✅ passed |
 | TC-373 | Seeding leaves the lockfile identical after `cargo check --offline --locked` | Integration | P0 | FR-044-AC-3 | ✅ passed |
 | TC-374 | With no committed lockfile, `--check` exits non-zero naming it | Unit | P0 | FR-044-AC-4 | ✅ passed |
@@ -494,12 +494,12 @@ passes.
 | TC-377 | The spike runner imports the promoted backends and defines none | Static | P0 | FR-044-AC-7 | ✅ passed |
 | TC-378 | The branch changes only the four permitted spike paths | Static | P0 | FR-044-AC-8 | ✅ passed |
 | TC-379 | The changed-path allowlist covers every path the branch changes | Unit | P0 | FR-044-AC-9 | ✅ passed |
-| TC-380 | Zero publications and mutations proven by a changed-path check | Static | P0 | FR-044-AC-10 | ✅ passed |
+| TC-380 | Zero publications and mutations proven by a changed-path check, paired with tree evidence that the promotion is in place | Static | P0 | FR-044-AC-10 | ✅ passed |
 | TC-381 | The feasibility doc carries the `## Retained evidence` note | Static | P1 | FR-044-AC-11 | ✅ passed |
 | TC-397 | NFR-006 gains one paragraph recording the spike's new import direction | Static | P1 | FR-044-AC-12 | ✅ passed |
 | TC-382 | A cargo cache missing a pinned crate is an unmet host prerequisite | Manual | P1 | FR-044-CON-4, FR-044-CON-5 | 🚧 blocked on issue #42 |
 | TC-383 | Compiler, backends, and adapter all repeat identically | Property | P0 | NFR-017-AC-1 | ✅ passed |
-| TC-384 | The branch changes exactly one retained-evidence file and field | Static | P0 | NFR-017-AC-2 | ✅ passed |
+| TC-384 | No retained-evidence file changes but `evidence/custom.json`, and no field of it but `command` differs from the frozen issue #4 record | Static | P0 | NFR-017-AC-2 | ✅ passed |
 | TC-385 | Emitted ordering is unchanged under two collator locales | Property | P0 | NFR-017-AC-3 | ✅ passed |
 | TC-386 | `baseDir` is an explicit parameter, not an ambient read | Unit | P0 | NFR-017-AC-4 | ✅ passed |
 | TC-387 | A seeded lockfile survives `cargo check --offline --locked` unchanged | Integration | P0 | NFR-017-AC-5 | ✅ passed |
@@ -507,10 +507,10 @@ passes.
 | TC-389 | All three issue #42 host couplings are named in the feasibility doc | Static | P0 | NFR-017-AC-7 | ✅ passed |
 | TC-390 | Every changed path is permitted and none is prohibited | Static | P0 | NFR-018-AC-1 | ✅ passed |
 | TC-391 | `exports`, `main`, `module`, `types`, `files` unchanged from `origin/main` | Static | P0 | NFR-018-AC-2 | ✅ passed |
-| TC-392 | The packed-file delta is confined to `src/compiler/**` and recorded | Integration | P0 | NFR-018-AC-3 | ✅ passed |
-| TC-393 | Every added package manifest declares AGPL-3.0-only | Static | P0 | NFR-018-AC-4 | ✅ passed |
+| TC-392 | The packed-file delta is confined to `src/compiler/**`, the packed set over the tree holds the promoted modules, and the shipping note is recorded | Integration | P0 | NFR-018-AC-3 | ✅ passed |
+| TC-393 | Every promoted `src/compiler/**` manifest and every added package manifest declares AGPL-3.0-only | Static | P0 | NFR-018-AC-4 | ✅ passed |
 | TC-394 | No third-party dependency is added and the sets are otherwise identical | Static | P0 | NFR-018-AC-5 | ✅ passed |
-| TC-395 | Restoring the changed paths reproduces `origin/main`'s tree exactly | Integration | P0 | NFR-018-AC-6 | ✅ passed |
+| TC-395 | Restoring every path that differs from the pre-promotion commit reproduces that tree exactly | Integration | P0 | NFR-018-AC-6 | ✅ passed |
 | TC-396 | No workflow, tag, or registry publication is added or triggered | Static | P0 | NFR-018-AC-7 | ✅ passed |
 | TC-398 | `FRONTEND_DIALECTS` equals the `frontendDialect` enum read from `common.schema.json`; a test that reads both fails when either changes alone | Unit | P0 | FR-045-AC-1 | ✅ passed |
 | TC-399 | `selectFrontend("json-schema")` throws a `TypeError` naming the value and the two permitted dialects | Unit | P0 | FR-045-AC-2 | ✅ passed |
@@ -866,8 +866,8 @@ passes.
 | FR-044-CON-1 | Prohibited | Any second changed retained-evidence byte | TC-371, TC-384 | Retained-evidence diff fails |
 | FR-044-CON-2 | Prohibited | A regenerated `Cargo.lock` | TC-372 | Branch diff fails |
 | FR-044-CON-3 | Prohibited | Any `file:` or `link:` dependency specifier | TC-376, TC-388 | Dependency inspection fails |
-| NFR-018-AC-3 | Allowed | Packed-file delta confined to `src/compiler/**` | TC-392 | Packed-file comparison passes |
-| NFR-018-AC-3 | Prohibited | Any other added tarball path | TC-392 | Packed-file comparison fails |
+| NFR-018-AC-3 | Allowed | Packed-file delta confined to `src/compiler/**`, promoted modules present in the packed set | TC-392 | Packed-file comparison passes |
+| NFR-018-AC-3 | Prohibited | Any other added tarball path, or a promoted module missing from the packed set | TC-392 | Packed-file comparison fails |
 | FR-046-AC-6 | Allowed | `@multiplicity(0)` and `@multiplicity(0, 0)` | TC-603 | Bounds accepted at the lower boundary |
 | FR-046-AC-7 | Prohibited | `@multiplicity(2, 1)` | TC-438 | `INVALID_MULTIPLICITY` at the decorator locus |
 | FR-053-AC-4 | Allowed | `@minLength(0)` | TC-604 | `minLength` operand `0` emitted |
@@ -922,7 +922,7 @@ passes.
 | normalized bundle | issue #31 fixed upstream | normalization removed; raw bundle validates | TC-266 |
 | prototype component in `spikes/` | promotion inventory records a disposition | owned `src/compiler/` module or an explicit non-promotion | TC-320, TC-324, TC-327 |
 | spike emitter package present | promotion removes the `file:` dependency | spike replays through `src/compiler/` and stays byte-identical | TC-371, TC-375, TC-377 |
-| promoted compiler on the branch | every changed path is restored from `origin/main` | the spike emitter returns as the only generator | TC-395 |
+| promoted compiler in the tree | every path differing from the pre-promotion commit is restored from it | the spike emitter returns as the only generator | TC-395 |
 | committed Rust lockfile | crates.io index publishes a newer transitive crate | seeded lockfile keeps the retained bytes and the check unaffected | TC-372, TC-373, TC-387 |
 | retained evidence | promotion supersedes a `capabilities.json` claim | claim stays as the historical record; the doc carries the superseding note | TC-381, TC-389 |
 
@@ -985,7 +985,7 @@ passes.
 | ERR-053 | The compiler entrypoint fails to compile | `compileSemanticIr` rejects with the diagnostics and writes no output | TC-334 |
 | ERR-054 | The IR names a base model absent from the same document, or a base cycle | The backend throws naming the base or the cycle | TC-353, TC-354 |
 | ERR-055 | The JSON Schema carries an executable extension key at any depth | The adapter throws naming the key and produces no output | TC-362, TC-363 |
-| ERR-056 | A second retained-evidence byte changes | Retained-evidence diff fails; the change is a defect, not a rebaseline | TC-371, TC-384 |
+| ERR-056 | A second retained-evidence byte changes | The comparison against the frozen issue #4 record fails; the change is a defect, not a rebaseline | TC-371, TC-384 |
 | ERR-057 | A `file:` or `link:` specifier remains after the promotion | Dependency inspection fails | TC-376, TC-388 |
 | ERR-058 | No committed `Cargo.lock` while the runner is in `--check` mode | The runner exits non-zero naming the missing lockfile | TC-374 |
 | ERR-059 | The branch changes a path the isolation allowlist does not cover | TC-123/TC-124 fail naming the path | TC-379, TC-390 |
@@ -1137,4 +1137,4 @@ therefore partially satisfied by construction and completes with #36.
 | Compile | 3 | 3 | 0 | 0 | 100% mapped (3/3) |
 | **Total** | **579** | **577** | **0** | **2** | **100% mapped (579/579)** |
 
-**Matrix coverage status: ✅ Complete. Execution status: ✅ 577 of 579 passed. TC-199 is recorded by the owner decision on issue #4; TC-370 and TC-382 remain blocked on issue #42 (the retained issue #4 evidence records the minting host's own tool versions). TC-398..619 pass on the issue #19 branch, measured with `make test`: 299 vitest cases across 9 files. The `Coverage` column is measured by `scripts/test-matrix-summary.mjs`, which counts the rows naming an id a spec artifact declares; it was a string literal before issue #19's code review (SR-073 FND-658). The `Blocked` column counts every row whose status is not ✅.**
+**Matrix coverage status: ✅ Complete. Execution status: ✅ 577 of 579 passed. TC-199 is recorded by the owner decision on issue #4; TC-370 and TC-382 remain blocked on issue #42 (the retained issue #4 evidence records the minting host's own tool versions). TC-398..619 pass on the issue #19 branch, measured with `make test` after merging `origin/main` at 4e48f08. The `Coverage` column is measured by `scripts/test-matrix-summary.mjs`, which counts the rows naming an id a spec artifact declares; it was a string literal before issue #19's code review (SR-073 FND-658). The `Blocked` column counts every row whose status is not ✅. Issue #19 measured `origin/main` at 51febd4 as **168 of 173** and filed the cause as #48; PR #47 re-expressed those five guards as tree assertions on `main`, and this branch takes that form.**
