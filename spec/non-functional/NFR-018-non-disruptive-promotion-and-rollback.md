@@ -49,20 +49,26 @@ denied.
 | `exports`, `main`, `module`, `types` entries changed in `package.json` | 0 | 0 | Manifest comparison |
 | Published `files` globs changed in `package.json` | 0 | 0 | Manifest comparison |
 | Added tarball paths outside `src/compiler/` | 0 | 0 | Packed-file listing comparison |
+| Promoted compiler modules absent from the packed-file set the `files` globs name | 0 | 0 | Packed-file listing over the working tree |
 | Non-AGPL-3.0-only original source files added | 0 | 0 | Licence inspection |
 | Third-party dependencies added without a pin and an attribution | 0 | 0 | Dependency and licence inspection |
-| Promotion commits that survive a branch revert | 0 | 0 | Revert rehearsal |
+| Promotion commits that survive a revert to the pre-promotion commit | 0 | 0 | Revert rehearsal against the commit the promotion replaced |
 
 ## Verification
 
 Diff the branch against `origin/main` and assert every changed path is on the
 [NFR-017](./NFR-017-deterministic-promoted-compilation.md) permitted list;
-compare `package.json` `exports`, `main`, `module`, `types`, and `files`; list
-the packed files before and after and assert the delta is confined to
-`src/compiler/`; read the licence field of every added package manifest and
-confirm no third-party dependency was added; rehearse the revert by restoring
-every changed path from `origin/main` on a scratch worktree and re-running the
-gates.
+compare `package.json` `exports`, `main`, `module`, `types`, and `files`; assert that the branch adds no packed path
+outside `src/compiler/` and that the packed-file set the `files` globs name over
+the working tree contains the promoted compiler modules; read the licence field
+of every package manifest under `src/compiler/` and of every manifest the branch
+adds, and confirm no third-party dependency was added; rehearse the revert by
+restoring every path that differs between the pre-promotion commit and `HEAD`
+onto a scratch worktree and re-running the gates. The rehearsal's baseline is
+the commit the promotion replaced — discovered from history through a file the
+promotion created — and not the branch point, because `origin/main...HEAD` is
+empty once the promotion merges and a rehearsal over an empty range rehearses
+nothing.
 
 ## Acceptance Criteria
 
@@ -70,10 +76,10 @@ gates.
 |---|---|---|
 | NFR-018-AC-1 | Every changed path on the branch is on the permitted list, and none is on the prohibited list. | Test |
 | NFR-018-AC-2 | `package.json` `exports`, `main`, `module`, `types`, and `files` are byte-identical to `origin/main`. | Test |
-| NFR-018-AC-3 | The packed-file delta against `origin/main` is confined to `src/compiler/**`, and the promotion records in `src/compiler/inventory.json` that the compiler ships as source only, with a public entry point deferred to issue #11. | Test |
-| NFR-018-AC-4 | Every added package manifest declares `"license": "AGPL-3.0-only"`. | Inspection |
+| NFR-018-AC-3 | Every packed path the branch adds lies under `src/compiler/**`, the packed-file set the `package.json` `files` globs name over the working tree contains the promoted compiler entry points, emitter, and backends, and the promotion records in `src/compiler/inventory.json` that the compiler ships as source only, with a public entry point deferred to issue #11. | Test |
+| NFR-018-AC-4 | Every package manifest under `src/compiler/**` in the working tree, and every package manifest the branch adds, declares `"license": "AGPL-3.0-only"`. | Inspection |
 | NFR-018-AC-5 | The promotion adds no third-party dependency, so no new attribution is owed; `package.json` dependency sets are byte-identical to `origin/main` apart from the removed spike-emitter entry. | Test |
-| NFR-018-AC-6 | Restoring every path the branch changed from `origin/main` reproduces `origin/main`'s tree exactly, including the restored `spikes/typespec-feasibility/emitter/` and the original `evidence/custom.json` command. | Test |
+| NFR-018-AC-6 | Restoring every path that differs between the pre-promotion commit and `HEAD` reproduces the pre-promotion tree exactly, including the restored `spikes/typespec-feasibility/emitter/` and the original `evidence/custom.json` command. The pre-promotion commit is the parent of the commit that added `src/compiler/inventory.json`, located from history so the rehearsal keeps a fixed baseline after the promotion merges. | Test |
 | NFR-018-AC-7 | No workflow file, tag, or registry publication step is added or triggered by the promotion. | Inspection |
 
 ## Dependencies

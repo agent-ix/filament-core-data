@@ -24,7 +24,8 @@ read from the ambient environment.
 
 - Applies to: `src/compiler/**` and the retained-evidence replay in `spikes/typespec-feasibility/`.
 - Permitted paths: `src/compiler/**`, `spikes/typespec-feasibility/scripts/**`, `spikes/typespec-feasibility/package.json`, `spikes/typespec-feasibility/evidence/custom.json`, `spikes/typespec-feasibility/emitter/**` (deletion only), `spikes/typespec-feasibility/README.md`, `package.json`, `pnpm-lock.yaml`, `Makefile`, `biome.json`, `tsconfig.json`, `tsconfig.build.json`, `test/**`, `docs/semantic-data-system/typespec-feasibility.md`, `spec/**`, `plan/**`, `reviews/**`.
-- Prohibited paths: every other file under `spikes/typespec-feasibility/` (in particular `generated/**`, the rest of `evidence/**`, `report.md`, `main.tsp`, `packages/**`, `mappings/**`, `fixtures/**`, `tspconfig.yaml`), `schema/**`, `fixtures/**`, `packages/**`, `agent_ix_core_data/**`, `src/generated.ts`, `audit/**`, `pyproject.toml`, `poetry.lock`, `tests/**`, `.github/**`, and every corpus repository.
+- Permitted paths (continued): `tests/**`. The Python suite is a sibling deliverable's surface rather than this promotion's: issue #20 (`NFR-016`) legitimately adds `tests/test_conformance_corpus.py`, and prohibiting `tests/**` here made the two requirements contradict each other and failed every branch that carried both. This promotion adds no file there itself; its non-disruption is carried by `pyproject.toml`, `poetry.lock` and `agent_ix_core_data/**` remaining prohibited, since a Python test file changes no consumer, schema, or published package.
+- Prohibited paths: every other file under `spikes/typespec-feasibility/` (in particular `generated/**`, the rest of `evidence/**`, `report.md`, `main.tsp`, `packages/**`, `mappings/**`, `fixtures/**`, `tspconfig.yaml`), `schema/**`, `fixtures/**`, `packages/**`, `agent_ix_core_data/**`, `src/generated.ts`, `audit/**`, `pyproject.toml`, `poetry.lock`, `.github/**`, and every corpus repository.
 
 ## Rationale
 
@@ -44,8 +45,8 @@ only the lockfile one, which changes no committed byte.
 |---|---|---|---|
 | Byte difference between two `src/compiler/` CLI runs over the same entrypoint | 0 | 0 | Repeat-run comparison |
 | Ambient inputs read by the compiler without an explicit parameter (cwd, locale, clock, environment) | 0 | 0 | Purity and parameterisation tests |
-| Retained evidence files changed by the promotion | 1 | 1 | Branch diff against `origin/main` |
-| Retained evidence fields changed by the promotion | 1 | 1 | Branch diff against `origin/main` |
+| Retained evidence files changed outside `evidence/custom.json` | 0 | 0 | Changed-path gate over the branch diff |
+| Fields of `evidence/custom.json` differing from the frozen issue #4 record other than `command` | 0 | 0 | Comparison against the transcribed frozen record |
 | Retained Rust lockfile entries replaced by a run | 0 | 0 | Lockfile seeding test |
 | New dependencies added to `package.json` by the promotion | 0 | 0 | Dependency inspection |
 | `@typespec/*` specifiers that are not an exact version | 0 | 0 | Dependency inspection |
@@ -57,8 +58,10 @@ Run the compiler CLI twice over the same entrypoint and compare bytes; run the
 backends and adapter twice and compare; sort the golden type ids under two
 `Intl.Collator` locales and confirm the implemented code-point order is
 unchanged; build the IR under two `baseDir` values and confirm the loci differ
-as declared; diff the promotion branch against `origin/main` restricted to the
-retained-evidence paths; copy the committed lockfile into a generated Rust
+as declared; assert that the branch diff changes no
+retained-evidence path other than `evidence/custom.json`, and compare the
+committed `evidence/custom.json` field by field against the frozen issue #4
+record transcribed into the test; copy the committed lockfile into a generated Rust
 package and confirm `cargo check --offline --locked` leaves it unchanged;
 inspect `package.json` and `pnpm-lock.yaml`.
 
@@ -67,7 +70,7 @@ inspect `package.json` and `pnpm-lock.yaml`.
 | ID | Criteria | Verification |
 |---|---|---|
 | NFR-017-AC-1 | Two runs of the compiler CLI over the same entrypoint produce identical bytes, and two calls of each backend and of the adapter return identical results. | Test |
-| NFR-017-AC-2 | The branch changes exactly one retained-evidence file and exactly one field within it. | Analysis |
+| NFR-017-AC-2 | The changed-path set contains no retained-evidence path other than `spikes/typespec-feasibility/evidence/custom.json`, and the committed `evidence/custom.json` differs from the frozen issue #4 record transcribed into the test in the `command` field and no other. The comparison is against the transcribed record, not against `origin/main`, whose copy becomes the promoted content once the branch merges. | Analysis |
 | NFR-017-AC-3 | The type order the compiler emits is unchanged when compared against `Intl.Collator` orderings for at least two distinct locales, proving the ordering is locale-independent. | Test |
 | NFR-017-AC-4 | The compiler takes the working directory as an explicit `baseDir` parameter; two values yield correspondingly different loci for the same entrypoint. | Test |
 | NFR-017-AC-5 | Seeding the committed lockfile into a generated Rust package and running `cargo check --offline --locked` leaves the lockfile byte-identical. | Test |
