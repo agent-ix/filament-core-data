@@ -22,6 +22,8 @@ test:
 lint:
 	pnpm run lint
 	node scripts/build-rust-backend-docs.mjs --check
+	node src/compiler/backends/rust-serde/cli.mjs register --check
+	node src/compiler/backends/rust-serde/cli.mjs mutations --check
 
 .PHONY: typecheck
 typecheck:
