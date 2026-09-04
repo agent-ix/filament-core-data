@@ -80,7 +80,7 @@ visible in the run rather than invisible in the generated source.
   throw.
 - The registry SHALL be exactly this set. The first sixteen are in the
   `agent-ix.rust-backend` namespace and name a defect in this backend's mapping;
-  the last five carry the published `agent-ix.semantic-ir` spelling and name a
+  the last six carry the published `agent-ix.semantic-ir` spelling and name a
   defect in the document:
 
 | Code | Severity | Blocking | Raised when |
@@ -102,6 +102,7 @@ visible in the run rather than invisible in the generated source.
 | `agent-ix.semantic-ir.UNRESOLVED_TYPE_REF` | error | yes | a `typeRef`, `appliesTo`, `items`, `values`, `payloadType`, or `target` resolves to nothing |
 | `UNSAFE_OUTPUT_ROOT` | error | yes | the request's `outputRoot` is not traversal-free under the FR-057 intended-language predicate |
 | `agent-ix.semantic-ir.UNDECLARED_LOSS` | error | yes | the backend would drop a construct the profile does not list in `allowedOmissions` |
+| `agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION` | error | yes | a required extension whose identity the generated crate does not declare, or which names a capability it does not admit; the admitted set is empty because GAP-007 records that no published artifact lets a consumer declare one |
 | `LIMIT_EXCEEDED` | error | yes | an input exceeds one of the five NFR-020 limits; the message names which |
 | `DECLARED_LOSS` | warning | no | the backend drops a construct the profile lists in `allowedOmissions` |
 | `UNKNOWN_MEMBER_SURFACED` | warning | no | a `surface` record retained an unknown member at runtime |

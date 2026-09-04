@@ -104,6 +104,9 @@ const DECLARED = {
  * back unnoticed.
  */
 const IR_SHAPE = {
+	UNKNOWN_REQUIRED_EXTENSION: blocking(
+		"a required extension whose identity the crate does not declare, or which names a capability the crate does not admit; the admitted set is empty because GAP-007 records that no published artifact lets a consumer declare one, and issue #69 carries the fixture's disagreeing spelling",
+	),
 	CONSTRAINT_NOT_APPLICABLE: blocking(
 		"a constraint keyword does not apply to its resolved subject",
 	),
