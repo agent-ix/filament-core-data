@@ -1155,6 +1155,7 @@ describe("semantic package contract v1", () => {
 			"scripts/build-evolution-goldens.mjs",
 			"scripts/build-compiler-docs.mjs",
 			"plan/Plan-008-typespec-frontend-and-ir-compiler-core/",
+			"plan/Plan-011-typescript-backend/",
 			"test/compiler-core.test.ts",
 			"test/changed-paths.ts",
 			// Issue #19 also publishes two generated documents and excludes its

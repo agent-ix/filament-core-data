@@ -504,6 +504,7 @@ describe("Filament contract census", () => {
 		const allowed = [
 			"conformance/",
 			"plan/Plan-009-conformance-corpus-and-oracle/",
+			"plan/Plan-011-typescript-backend/",
 			"test/conformance-corpus.test.ts",
 			"audit/filament-contract-census/",
 			"plan/Plan-002-filament-contract-census/",

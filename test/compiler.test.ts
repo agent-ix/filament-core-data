@@ -656,6 +656,10 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 					// scripts, not callers of a published surface, and `make lint` runs
 					// each in `--check` mode so a drifting golden fails the gate.
 					path.startsWith("scripts/") ||
+					// Issue #22's conformance adapter is an internal consumer of the
+					// backend decision modules. It is judged by the differential runner,
+					// not a published compiler API consumer.
+					path === "conformance/adapters/typescript-backend/adapter.mjs" ||
 					path === "spikes/typespec-feasibility/scripts/run-experiment.mjs",
 				path,
 			).toBe(true);
