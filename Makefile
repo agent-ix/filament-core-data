@@ -20,6 +20,7 @@ test:
 .PHONY: lint
 lint:
 	pnpm run lint
+	node scripts/build-rust-backend-docs.mjs --check
 
 .PHONY: typecheck
 typecheck:
