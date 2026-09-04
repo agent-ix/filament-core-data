@@ -2,7 +2,7 @@
 id: Task-086
 title: "Crate emission, the static export surface, and the output manifest"
 type: Task
-status: todo
+status: done
 track: B
 priority: P0
 relationships:
@@ -41,13 +41,13 @@ Land `crate.mjs` and `index.mjs`: the pure emitter and the one module that write
 
 ## Subtasks
 
-- [ ] Emit `Cargo.toml` with the licence, `publish = false`, the `crateName`, the MSRV and the single pinned `serde` dependency.
-- [ ] Emit `lib.rs` with `forbid(unsafe_code)`, `deny(missing_docs)`, the module tree, `TYPES`, `FIELDS` and `SemanticType`.
-- [ ] Emit the derived doc comment on every public item by the stated total function, escaped and truncated.
-- [ ] Emit `identity.rs` from the request-member correspondence table, and `metadata.rs`.
-- [ ] Emit the output manifest with per-extension media types, the package identity fallback for a file carrying no type identity, and the code-point-sorted file list.
-- [ ] Implement the write-nothing-on-blocking rule, the `outputRoot` refusal, and the four size limits.
-- [ ] Add the ambient-input scan and the filesystem-stub purity test for `emitCrate`.
+- [x] Emit `Cargo.toml` with the licence, `publish = false`, the `crateName`, the MSRV and the single pinned `serde` dependency.
+- [x] Emit `lib.rs` with `forbid(unsafe_code)`, `deny(missing_docs)`, the module tree, `TYPES`, `FIELDS` and `SemanticType`.
+- [x] Emit the derived doc comment on every public item by the stated total function, escaped and truncated.
+- [x] Emit `identity.rs` from the request-member correspondence table, and `metadata.rs`.
+- [x] Emit the output manifest with per-extension media types, the package identity fallback for a file carrying no type identity, and the code-point-sorted file list.
+- [x] Implement the write-nothing-on-blocking rule, the `outputRoot` refusal, and the four size limits.
+- [x] Add the ambient-input scan and the filesystem-stub purity test for `emitCrate`.
 
 ## Deliverables
 

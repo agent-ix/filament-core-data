@@ -2,7 +2,7 @@
 id: Task-089
 title: "The compatibility classifier, the adapter binary, and the registry slot"
 type: Task
-status: todo
+status: done
 track: C
 priority: P0
 relationships:
@@ -31,12 +31,12 @@ Fill the `rust-backend` slot the corpus declares, and run the differential harne
 
 ## Subtasks
 
-- [ ] Implement the compatibility classifier over the six dispositions.
-- [ ] Write the adapter binary: read the corpus from the working directory, answer every case once, echo the digest, buffer one write, install the panic hook, exit 0.
-- [ ] Add the `command` and `status` to the `rust-backend` entry of `conformance/adapters/registry.json`, and change nothing else under `conformance/`.
-- [ ] Record the first full corpus run before inspecting any oracle output.
-- [ ] Run `make rust-conformance` and reconcile every mismatch by changing this backend, never a case, a base, an expected verdict, the thresholds or the oracle.
-- [ ] Assert the negative controls: a removed command returns the slot to 111 unmet, an undeclared `unsupported` answer fails, a missing answer is `missing-answer`, a wrong digest is `case-digest`.
+- [x] Implement the compatibility classifier over the six dispositions.
+- [x] Write the adapter binary: read the corpus from the working directory, answer every case once, echo the digest, buffer one write, install the panic hook, exit 0.
+- [x] Add the `command` and `status` to the `rust-backend` entry of `conformance/adapters/registry.json`, and change nothing else under `conformance/`.
+- [x] Record the first full corpus run before inspecting any oracle output.
+- [x] Run `make rust-conformance` and reconcile every mismatch by changing this backend, never a case, a base, an expected verdict, the thresholds or the oracle.
+- [x] Assert the negative controls: a removed command returns the slot to 111 unmet, an undeclared `unsupported` answer fails, a missing answer is `missing-answer`, a wrong digest is `case-digest`.
 
 ## Deliverables
 

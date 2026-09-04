@@ -2,7 +2,7 @@
 id: Task-082
 title: "Stable identifier derivation and the pinned reserved-word list"
 type: Task
-status: todo
+status: done
 track: A
 priority: P0
 relationships:
@@ -35,12 +35,12 @@ Land `names.mjs`: pure, total, ambient-free derivation from the semantic identit
 
 ## Subtasks
 
-- [ ] Pin the Rust reserved and reserved-for-future word set for the declared edition, with its transcribed provenance beside it.
-- [ ] Implement the segmenter, the three case renderings, the `_` prefix, the `r#` raw form and the four keywords with no raw form.
-- [ ] Implement the `XID_Start`/`XID_Continue` refusal and the locale-independent simple case mapping.
-- [ ] Implement `crateName`, replacing `/` with `-`.
-- [ ] Implement the four declared scopes and the `NAME_COLLISION` refusal, with no counter, hash or positional suffix anywhere.
-- [ ] Write the injectivity, order-independence, position-independence and locale-independence property tests.
+- [x] Pin the Rust reserved and reserved-for-future word set for the declared edition, with its transcribed provenance beside it.
+- [x] Implement the segmenter, the three case renderings, the `_` prefix, the `r#` raw form and the four keywords with no raw form.
+- [x] Implement the `XID_Start`/`XID_Continue` refusal and the locale-independent simple case mapping.
+- [x] Implement `crateName`, replacing `/` with `-`.
+- [x] Implement the four declared scopes and the `NAME_COLLISION` refusal, with no counter, hash or positional suffix anywhere.
+- [x] Write the injectivity, order-independence, position-independence and locale-independence property tests.
 
 ## Deliverables
 

@@ -2,7 +2,7 @@
 id: Task-087
 title: "The Rust JSON layer, the ECMAScript number formatter, and the derivation ledger"
 type: Task
-status: todo
+status: done
 track: C
 priority: P0
 relationships:
@@ -21,11 +21,11 @@ Start the long pole. `crates/semantic-ir` carries its own JSON reader and writer
 
 ## Subtasks
 
-- [ ] Write the JSON reader retaining number lexemes, member order and repeated names.
-- [ ] Write the canonical writer: members sorted by code point, array order preserved, no insignificant whitespace.
-- [ ] Write the ECMAScript `Number::toString` formatter as a separately tested unit.
-- [ ] Write the 512-value agreement test against Node's `JSON.stringify`, covering the exponent thresholds, negative zero, trailing zeros, integral floats and the `f64` extremes.
-- [ ] Open `crates/semantic-ir/RULES.md` and record the derivation source of every rule as it is written.
+- [x] Write the JSON reader retaining number lexemes, member order and repeated names.
+- [x] Write the canonical writer: members sorted by code point, array order preserved, no insignificant whitespace.
+- [x] Write the ECMAScript `Number::toString` formatter as a separately tested unit.
+- [x] Write the 512-value agreement test against Node's `JSON.stringify`, covering the exponent thresholds, negative zero, trailing zeros, integral floats and the `f64` extremes.
+- [x] Open `crates/semantic-ir/RULES.md` and record the derivation source of every rule as it is written.
 
 ## Deliverables
 

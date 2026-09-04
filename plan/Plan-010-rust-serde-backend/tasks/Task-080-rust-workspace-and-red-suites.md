@@ -2,7 +2,7 @@
 id: Task-080
 title: "Rust workspace, toolchain pin, offline supply, and the red suites"
 type: Task
-status: todo
+status: done
 track: A
 priority: P0
 relationships:
@@ -23,14 +23,14 @@ Stand up the Rust side of the repository, which today contains no line of Rust, 
 
 ## Subtasks
 
-- [ ] Add the root workspace `Cargo.toml` with `publish = false`, the five member crates declared, and `resolver = "2"`.
-- [ ] Add `rust-toolchain.toml` pinning the toolchain channel and the `rustfmt` component, and `rustfmt.toml` pinning the formatting configuration.
-- [ ] Add `.cargo/config.toml` fixing the target directory inside the repository, so the ambient `CARGO_TARGET_DIR` cannot serve a stale artifact from another checkout.
-- [ ] Confirm the offline supply: `serde` and `serde_json` at the pinned exact versions plus serde's transitive crates resolve with `--offline`, and commit `Cargo.lock`.
-- [ ] Add `THIRD-PARTY-NOTICES.md` with one entry per third-party crate: exact version, SPDX identifier, and the location of the preserved upstream licence text.
-- [ ] Add `.gitignore` entries for the build directory so `git status --porcelain` stays empty after a build.
-- [ ] Add the Makefile targets `rust-generate`, `rust-check`, `rust-test`, `rust-conformance`, `rust-install-from-artifact`, `rust-mutate`, `rust-fuzz` and `rust-deep`, each calling `node` or `cargo` directly because `package.json` is a prohibited path.
-- [ ] Open `test/rust-backend.test.ts` with the failing assertions for TC-645..744, so every later task turns a red row green.
+- [x] Add the root workspace `Cargo.toml` with `publish = false`, the five member crates declared, and `resolver = "2"`.
+- [x] Add `rust-toolchain.toml` pinning the toolchain channel and the `rustfmt` component, and `rustfmt.toml` pinning the formatting configuration.
+- [x] Add `.cargo/config.toml` fixing the target directory inside the repository, so the ambient `CARGO_TARGET_DIR` cannot serve a stale artifact from another checkout.
+- [x] Confirm the offline supply: `serde` and `serde_json` at the pinned exact versions plus serde's transitive crates resolve with `--offline`, and commit `Cargo.lock`.
+- [x] Add `THIRD-PARTY-NOTICES.md` with one entry per third-party crate: exact version, SPDX identifier, and the location of the preserved upstream licence text.
+- [x] Add `.gitignore` entries for the build directory so `git status --porcelain` stays empty after a build.
+- [x] Add the Makefile targets `rust-generate`, `rust-check`, `rust-test`, `rust-conformance`, `rust-install-from-artifact`, `rust-mutate`, `rust-fuzz` and `rust-deep`, each calling `node` or `cargo` directly because `package.json` is a prohibited path.
+- [x] Open `test/rust-backend.test.ts` with the failing assertions for TC-645..744, so every later task turns a red row green.
 
 ## Deliverables
 

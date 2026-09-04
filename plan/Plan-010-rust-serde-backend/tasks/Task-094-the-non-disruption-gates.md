@@ -2,7 +2,7 @@
 id: Task-094
 title: "The non-disruption, attribution and revert gates"
 type: Task
-status: todo
+status: done
 track: D
 priority: P0
 relationships:
@@ -35,13 +35,13 @@ Land the gate family this repository has been dragged back by four times, in the
 
 ## Subtasks
 
-- [ ] Use `changeRange` from `test/changed-paths.ts` with both sentinels; pass `--no-renames` everywhere; union the per-commit sets over `--first-parent --no-merges`.
-- [ ] Rebase this branch onto the trunk rather than merging it, and assert zero merge commits inside the range.
-- [ ] Assert every path in the set is permitted and none prohibited, and that every permitted entry is named by a requirement Output or by NFR-023's Verification.
-- [ ] Byte-compare every `conformance/` file but the adapter registry, and the frozen schemas, fixtures, packages, spikes and prototype backends.
-- [ ] Assert `publish = false` on every manifest, emitted and hand-written, and that removing it fails.
-- [ ] Compare `Cargo.lock`'s third-party entries against `THIRD-PARTY-NOTICES.md`.
-- [ ] Rehearse the revert, the accretion on a synthetic history, a trunk merge inside the range, and an unresolvable sentinel.
+- [x] Use `changeRange` from `test/changed-paths.ts` with both sentinels; pass `--no-renames` everywhere; union the per-commit sets over `--first-parent --no-merges`.
+- [x] Rebase this branch onto the trunk rather than merging it, and assert zero merge commits inside the range.
+- [x] Assert every path in the set is permitted and none prohibited, and that every permitted entry is named by a requirement Output or by NFR-023's Verification.
+- [x] Byte-compare every `conformance/` file but the adapter registry, and the frozen schemas, fixtures, packages, spikes and prototype backends.
+- [x] Assert `publish = false` on every manifest, emitted and hand-written, and that removing it fails.
+- [x] Compare `Cargo.lock`'s third-party entries against `THIRD-PARTY-NOTICES.md`.
+- [x] Rehearse the revert, the accretion on a synthetic history, a trunk merge inside the range, and an unresolvable sentinel.
 
 ## Deliverables
 

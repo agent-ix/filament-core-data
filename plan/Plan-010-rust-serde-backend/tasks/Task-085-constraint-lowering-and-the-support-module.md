@@ -2,7 +2,7 @@
 id: Task-085
 title: "Constraint lowering and the generated support module"
 type: Task
-status: todo
+status: done
 track: B
 priority: P0
 relationships:
@@ -29,12 +29,12 @@ Land `constraints.mjs` and the generated `src/support.rs`: fallible constructors
 
 ## Subtasks
 
-- [ ] Emit `Nullable<T>`, `present_or_absent`, `SemanticValue` with `NumberLexeme` and ordered `Object`, `UnknownMembers`, `Extension`, `SemanticIdentity`, `SourceLocusPath` with both predicates, and `ValidationError`.
-- [ ] Emit the four validated scalar newtypes `Date`, `DateTime`, `Duration`, `Uuid`.
-- [ ] Lower the eleven keywords, with instants for `date`/`datetime` bounds and the `UNORDERED_SUBJECT` refusal for `duration` bounds.
-- [ ] Lower `enumValues` and `unique` with the declared equality, and `minLength`/`maxLength` with the declared count.
-- [ ] Emit the matcher runtime and the format registry, and the `UNKNOWN_FORMAT` refusal.
-- [ ] Route every `Deserialize` through `try_new`.
+- [x] Emit `Nullable<T>`, `present_or_absent`, `SemanticValue` with `NumberLexeme` and ordered `Object`, `UnknownMembers`, `Extension`, `SemanticIdentity`, `SourceLocusPath` with both predicates, and `ValidationError`.
+- [x] Emit the four validated scalar newtypes `Date`, `DateTime`, `Duration`, `Uuid`.
+- [x] Lower the eleven keywords, with instants for `date`/`datetime` bounds and the `UNORDERED_SUBJECT` refusal for `duration` bounds.
+- [x] Lower `enumValues` and `unique` with the declared equality, and `minLength`/`maxLength` with the declared count.
+- [x] Emit the matcher runtime and the format registry, and the `UNKNOWN_FORMAT` refusal.
+- [x] Route every `Deserialize` through `try_new`.
 
 ## Deliverables
 

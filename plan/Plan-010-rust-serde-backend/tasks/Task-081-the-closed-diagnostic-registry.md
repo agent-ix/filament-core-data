@@ -2,7 +2,7 @@
 id: Task-081
 title: "The closed generator diagnostic registry"
 type: Task
-status: todo
+status: done
 track: A
 priority: P0
 relationships:
@@ -23,10 +23,10 @@ Land `diagnostics.mjs`, the registry every other module in the slice emits throu
 
 ## Subtasks
 
-- [ ] Write the deeply frozen `agent-ix.rust-backend.*` registry with the 21 entries FR-058 declares, each carrying severity, blocking flag, owner and rule.
-- [ ] Write `diagnostic(entry, …)`, which throws on an unregistered entry, and the 120-code-point `fragment` truncation.
-- [ ] Write the FR-049 ordering key and the order-then-truncate limit application.
-- [ ] Add the static scan asserting no live generator path spells a code as a string literal.
+- [x] Write the deeply frozen `agent-ix.rust-backend.*` registry with the 21 entries FR-058 declares, each carrying severity, blocking flag, owner and rule.
+- [x] Write `diagnostic(entry, …)`, which throws on an unregistered entry, and the 120-code-point `fragment` truncation.
+- [x] Write the FR-049 ordering key and the order-then-truncate limit application.
+- [x] Add the static scan asserting no live generator path spells a code as a string literal.
 
 ## Deliverables
 

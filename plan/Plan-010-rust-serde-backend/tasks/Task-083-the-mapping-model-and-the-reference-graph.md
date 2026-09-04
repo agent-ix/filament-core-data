@@ -2,7 +2,7 @@
 id: Task-083
 title: "The mapping model, the published mapping table, and the reference graph"
 type: Task
-status: todo
+status: done
 track: B
 priority: P0
 relationships:
@@ -45,13 +45,13 @@ Land `mapping.mjs`, `mapping-table.json` and `graph.mjs`: the total mapping keye
 
 ## Subtasks
 
-- [ ] Write `mapping-table.json` as the single machine-readable table, and derive the requirement's tables from it in the `--check` comparison.
-- [ ] Implement the eight kind rows, the eight supported kernel scalars, and the `bytes` refusal.
-- [ ] Implement the eight axis combinations with their exact serde attribute sets, including `present_or_absent` on the optional-nullable rows.
-- [ ] Implement the `unknownPolicy` rule and its non-record refusal, the extension mapping, and the contract-metadata lowering.
-- [ ] Implement `graph.mjs`: edges from field `typeRef`, `alias`/`reference` `target`, `sequence` `items`, `map` `values`, variant `payloadType`, operation parameter and return `typeRef`; components; and the indirection decision.
-- [ ] Implement the `1.0.0` multiplicity derivation and the `1.1.0`-node refusal.
-- [ ] Write the purity and reordering property tests.
+- [x] Write `mapping-table.json` as the single machine-readable table, and derive the requirement's tables from it in the `--check` comparison.
+- [x] Implement the eight kind rows, the eight supported kernel scalars, and the `bytes` refusal.
+- [x] Implement the eight axis combinations with their exact serde attribute sets, including `present_or_absent` on the optional-nullable rows.
+- [x] Implement the `unknownPolicy` rule and its non-record refusal, the extension mapping, and the contract-metadata lowering.
+- [x] Implement `graph.mjs`: edges from field `typeRef`, `alias`/`reference` `target`, `sequence` `items`, `map` `values`, variant `payloadType`, operation parameter and return `typeRef`; components; and the indirection decision.
+- [x] Implement the `1.0.0` multiplicity derivation and the `1.1.0`-node refusal.
+- [x] Write the purity and reordering property tests.
 
 ## Deliverables
 

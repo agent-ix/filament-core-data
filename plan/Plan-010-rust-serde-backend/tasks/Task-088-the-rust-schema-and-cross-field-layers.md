@@ -2,7 +2,7 @@
 id: Task-088
 title: "The Rust schema layer, the cross-field rules, and the normalized form"
 type: Task
-status: todo
+status: done
 track: C
 priority: P0
 relationships:
@@ -25,12 +25,12 @@ Decide the published schema layer and the cross-field rules in Rust, emitting th
 
 ## Subtasks
 
-- [ ] Implement the schema layer over the published `semantic-ir.schema.json` and `common.schema.json`.
-- [ ] Implement the cross-field rules and the codes `conformance/diagnostic-codes.json` publishes.
-- [ ] Implement the normalized form for every case, including the ones the schema layer decides invalid.
-- [ ] Implement the alias-cycle, composite-cycle and size-limit termination.
-- [ ] Add the no-panic surface scan and the 4096-document mutation fuzz under a failing panic hook.
-- [ ] Complete `RULES.md` with a citation for every emitted code, and check every locator resolves.
+- [x] Implement the schema layer over the published `semantic-ir.schema.json` and `common.schema.json`.
+- [x] Implement the cross-field rules and the codes `conformance/diagnostic-codes.json` publishes.
+- [x] Implement the normalized form for every case, including the ones the schema layer decides invalid.
+- [x] Implement the alias-cycle, composite-cycle and size-limit termination.
+- [x] Add the no-panic surface scan and the 4096-document mutation fuzz under a failing panic hook.
+- [x] Complete `RULES.md` with a citation for every emitted code, and check every locator resolves.
 
 ## Deliverables
 

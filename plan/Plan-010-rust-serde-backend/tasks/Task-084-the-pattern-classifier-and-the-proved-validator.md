@@ -2,7 +2,7 @@
 id: Task-084
 title: "The ECMA-262 classifier, the generated matcher, and the proved-validator registry"
 type: Task
-status: todo
+status: done
 track: B
 priority: P0
 relationships:
@@ -37,13 +37,13 @@ Answer GAP-002. Land `patterns.mjs`: the classifier over the declared subset, th
 
 ## Subtasks
 
-- [ ] Write the ECMA-262 parser for the declared subset — no `u`, `v`, `s`, `m`, `i` or `g` flag, over UTF-16 code units — and the `expressible` / `proved` / `unsupported` classification.
-- [ ] Lower an expressible pattern to a matcher program with a declared step bound.
-- [ ] Write the `sourceLocus.path` registry entry: the exact pattern text, the validator name, the equivalence argument, the probe alphabet carrying all four line terminators and U+0000, and the harness id.
-- [ ] Write the differential harness: exhaustive strings of length 0..6 over the entry alphabet, every corpus and fixture locus path, and 100000 seeded random strings from a pool including an astral character.
-- [ ] Write the pattern-aware subject generator with its 20-per-cent engine-acceptance floor, and the 40-pattern agreement property.
-- [ ] Write the catastrophic-backtracking catalogue and the step-bound fuzz.
-- [ ] Write the perturbation tests: an LF-only line-terminator rule and a dropped drive-letter rule must both fail the harness naming the input.
+- [x] Write the ECMA-262 parser for the declared subset — no `u`, `v`, `s`, `m`, `i` or `g` flag, over UTF-16 code units — and the `expressible` / `proved` / `unsupported` classification.
+- [x] Lower an expressible pattern to a matcher program with a declared step bound.
+- [x] Write the `sourceLocus.path` registry entry: the exact pattern text, the validator name, the equivalence argument, the probe alphabet carrying all four line terminators and U+0000, and the harness id.
+- [x] Write the differential harness: exhaustive strings of length 0..6 over the entry alphabet, every corpus and fixture locus path, and 100000 seeded random strings from a pool including an astral character.
+- [x] Write the pattern-aware subject generator with its 20-per-cent engine-acceptance floor, and the 40-pattern agreement property.
+- [x] Write the catastrophic-backtracking catalogue and the step-bound fuzz.
+- [x] Write the perturbation tests: an LF-only line-terminator rule and a dropped drive-letter rule must both fail the harness naming the input.
 
 ## Deliverables
 
