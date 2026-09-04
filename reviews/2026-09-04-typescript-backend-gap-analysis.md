@@ -23,7 +23,7 @@ the missing persisted second-decider artefacts, loss audit, or merge rehearsal.
 | ID | Severity | Finding | Required remediation |
 | --- | --- | --- | --- |
 | FND-1200 | resolved | Each corpus now has an authored JSON Schema 2020-12 sidecar (`constraints.schema.json`, `domain.schema.json`, `presence.schema.json`, and `unknown.schema.json`). The differential loads each document directly into Ajv and resolves the case type through its `$defs`; the old test-local IR-to-schema renderer is removed. | None. |
-| FND-1201 | high | Task-109 has emitted identity and metadata modules, but no node-walk audit proves that every IR node is rendered or declared as a loss; no seeded unrendered-node mutation is present. | Add the audit at the resolved-model boundary and a mutation that fails it. |
+| FND-1201 | resolved | `auditRenderedNodes` walks every identity-bearing resolved-model node after package rendering and rejects any absent from emitted text unless explicitly declared as a loss. Constraint and variant identity descriptors close the nodes the previous surface omitted; the focused test seeds an unrendered type and proves the audit names it. | None. |
 | FND-1202 | high | Task-115 remains entirely pending: no history-pinned changed-set gate, packed-artifact comparison, or branch/post-merge/sibling verification evidence exists in `test/typescript-backend.test.ts`. | Implement and rehearse every NFR-024/NFR-025 gate before final review. |
 
 ## Evidence observed

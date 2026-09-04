@@ -94,6 +94,22 @@ export interface ClauseDescriptor {
 	} | null;
 }
 
+/** One enum or union member, including its semantic identity. */
+export interface VariantDescriptor {
+	readonly identity: string;
+	readonly name: string;
+	readonly payloadType: string;
+}
+
+/** One constraint's semantic identity and operands. */
+export interface ConstraintDescriptor {
+	readonly identity: string;
+	readonly keyword: string;
+	readonly appliesTo: string;
+	readonly diagnosticCode: string;
+	readonly operands: unknown;
+}
+
 /**
  * One field's declared default.
  *

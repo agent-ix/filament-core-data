@@ -128,6 +128,8 @@ export const FIXED_API_SURFACE = Object.freeze([
 	"FieldDescriptor",
 	"OperationDescriptor",
 	"ClauseDescriptor",
+	"VariantDescriptor",
+	"ConstraintDescriptor",
 	"DefaultDescriptor",
 	"OccurrenceDescriptor",
 	// The identity and contract-data maps (FR-067).
@@ -146,6 +148,8 @@ export const FIXED_API_SURFACE = Object.freeze([
 	"OCCURRENCES",
 	"TYPE_OPERATIONS",
 	"TYPE_CLAUSES",
+	"TYPE_VARIANTS",
+	"TYPE_CONSTRAINTS",
 	"FIELD_DEFAULT",
 ]);
 

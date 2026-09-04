@@ -215,6 +215,30 @@ function clauseDescriptor(clause, indent) {
 	].join("\n");
 }
 
+/** One enum or union member, including the identity ordinary TypeScript omits. */
+function variantDescriptor(variant, indent) {
+	return [
+		"{",
+		`${indent}\tidentity: ${literal(variant.identity ?? "")},`,
+		`${indent}\tname: ${literal(variant.name ?? "")},`,
+		`${indent}\tpayloadType: ${literal(variant.payloadType ?? "")},`,
+		`${indent}}`,
+	].join("\n");
+}
+
+/** One constraint's identity and contract operands, preserved as readonly data. */
+function constraintDescriptor(constraint, indent) {
+	return [
+		"{",
+		`${indent}\tidentity: ${literal(constraint.identity ?? "")},`,
+		`${indent}\tkeyword: ${literal(constraint.keyword ?? "")},`,
+		`${indent}\tappliesTo: ${literal(constraint.appliesTo ?? "")},`,
+		`${indent}\tdiagnosticCode: ${literal(constraint.diagnosticCode ?? "")},`,
+		`${indent}\toperands: ${value(constraint.operands ?? null, `${indent}\t`)},`,
+		`${indent}}`,
+	].join("\n");
+}
+
 /** A list of descriptors rendered by `render`, or `[]`. */
 function descriptorList(entries, render, indent) {
 	const present = [...(entries ?? [])];
@@ -493,6 +517,22 @@ export interface ClauseDescriptor {
 	} | null;
 }
 
+/** One enum or union member, including its semantic identity. */
+export interface VariantDescriptor {
+	readonly identity: string;
+	readonly name: string;
+	readonly payloadType: string;
+}
+
+/** One constraint's semantic identity and operands. */
+export interface ConstraintDescriptor {
+	readonly identity: string;
+	readonly keyword: string;
+	readonly appliesTo: string;
+	readonly diagnosticCode: string;
+	readonly operands: unknown;
+}
+
 /**
  * One field's declared default.
  *
@@ -593,6 +633,14 @@ export function renderMetadata(model, options = {}) {
 		entry.identifier,
 		descriptorList(entry.clauses, clauseDescriptor, "\t"),
 	]);
+	const variants = types.map((entry) => [
+		entry.identifier,
+		descriptorList(entry.variants, variantDescriptor, "\t"),
+	]);
+	const constraints = types.map((entry) => [
+		entry.identifier,
+		descriptorList(entry.constraints, constraintDescriptor, "\t"),
+	]);
 	const defaults = [];
 	for (const entry of types) {
 		for (const field of entry.fields ?? []) {
@@ -651,12 +699,14 @@ export function renderMetadata(model, options = {}) {
 
 import type {
 	ClauseDescriptor,
+	ConstraintDescriptor,
 	DefaultDescriptor,
 	ExportedFieldKey,
 	ExportedTypeName,
 	ExtensionDescriptor,
 	OccurrenceDescriptor,
 	OperationDescriptor,
+	VariantDescriptor,
 } from "./identity.js";
 
 /** The document's provenance and the fingerprint of its normalized form. */
@@ -686,6 +736,12 @@ ${mapDeclaration("TYPE_OPERATIONS", recordLiteral(operations), "Record<ExportedT
  */
 ${mapDeclaration("TYPE_CLAUSES", recordLiteral(clauses), "Record<ExportedTypeName, readonly ClauseDescriptor[]>")}
 
+/** The enum and union members, including their semantic identities. */
+${mapDeclaration("TYPE_VARIANTS", recordLiteral(variants), "Record<ExportedTypeName, readonly VariantDescriptor[]>")}
+
+/** The constraints each type carries, including their semantic identities. */
+${mapDeclaration("TYPE_CONSTRAINTS", recordLiteral(constraints), "Record<ExportedTypeName, readonly ConstraintDescriptor[]>")}
+
 /**
  * The declared default of each exported field.
  *
@@ -695,4 +751,51 @@ ${mapDeclaration("TYPE_CLAUSES", recordLiteral(clauses), "Record<ExportedTypeNam
  */
 ${mapDeclaration("FIELD_DEFAULT", recordLiteral(defaults), "Record<ExportedFieldKey, DefaultDescriptor>")}
 `;
+}
+
+/**
+ * Identity-bearing nodes that the model made reachable.  The list deliberately
+ * follows model edges, not raw document keys: this is the resolved-model
+ * boundary and therefore catches a new construct that a renderer forgets.
+ */
+function identityNodes(model) {
+	const nodes = [];
+	const add = (node) => {
+		if (typeof node?.identity === "string") nodes.push(node.identity);
+	};
+	for (const extension of model.extensions ?? []) add(extension);
+	for (const occurrence of model.occurrences ?? []) add(occurrence);
+	for (const type of model.types ?? []) {
+		add(type);
+		for (const constraint of type.constraints ?? []) add(constraint);
+		for (const extension of type.extensions ?? []) add(extension);
+		for (const clause of type.clauses ?? []) add(clause);
+		for (const variant of type.variants ?? []) add(variant);
+		for (const field of type.fields ?? []) {
+			add(field);
+			for (const extension of field.extensions ?? []) add(extension);
+		}
+		for (const relationship of type.relationships ?? []) add(relationship);
+		for (const operation of type.operations ?? []) {
+			add(operation);
+			for (const param of operation.params ?? []) add(param);
+		}
+	}
+	return nodes.sort();
+}
+
+/**
+ * Audit emitted text against every identity-bearing resolved-model node.
+ *
+ * `losses` is explicit so a future target that really cannot render a node
+ * must declare its identity at this call site; omission cannot look like a
+ * successful package. This target's fail policy supplies none.
+ */
+export function auditRenderedNodes(model, files, losses = []) {
+	const output = [...files].map((file) => file.text ?? "").join("\n");
+	const declaredLosses = new Set(losses);
+	return identityNodes(model).filter(
+		(identity) =>
+			!declaredLosses.has(identity) && !output.includes(literal(identity)),
+	);
 }

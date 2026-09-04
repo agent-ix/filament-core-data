@@ -47,6 +47,7 @@ export {
 
 export {
 	ClauseDescriptor,
+	ConstraintDescriptor,
 	DefaultDescriptor,
 	ExportedFieldKey,
 	ExportedTypeName,
@@ -64,6 +65,7 @@ export {
 	TYPE_RELATIONSHIPS,
 	TYPE_ROLES,
 	TYPE_UNKNOWN_POLICY,
+	VariantDescriptor,
 } from "./identity.js";
 
 export {
@@ -72,5 +74,7 @@ export {
 	OCCURRENCES,
 	SEMANTIC_METADATA,
 	TYPE_CLAUSES,
+	TYPE_CONSTRAINTS,
 	TYPE_OPERATIONS,
+	TYPE_VARIANTS,
 } from "./metadata.js";

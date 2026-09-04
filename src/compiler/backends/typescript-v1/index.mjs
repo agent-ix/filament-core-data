@@ -23,7 +23,7 @@ import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../../diagnostics.mjs";
 import { SCHEMA_FILES, admitIr } from "./admit.mjs";
 import { fingerprintIrForTarget } from "./canonical.mjs";
 import { refusesGeneration, representability } from "./loss.mjs";
-import { renderIdentity, renderMetadata } from "./metadata.mjs";
+import { auditRenderedNodes, renderIdentity, renderMetadata } from "./metadata.mjs";
 import { buildModel } from "./model.mjs";
 import { renderPackage } from "./package-layout.mjs";
 import { renderTypes } from "./types.mjs";
@@ -192,6 +192,12 @@ export const typescriptBackend = Object.freeze({
 			identity: renderIdentity(model),
 			metadata: renderMetadata(model, { fingerprint }),
 		});
+		const unrendered = auditRenderedNodes(model, rendered.files);
+		if (unrendered.length > 0) {
+			throw new Error(
+				`TypeScript backend dropped identity-bearing model nodes: ${unrendered.join(", ")}`,
+			);
+		}
 		return {
 			state: admission.resultState === "lossy" ? "lossy" : "success",
 			// `outputRoot`-relative, as FR-063 requires: the seam checks the paths

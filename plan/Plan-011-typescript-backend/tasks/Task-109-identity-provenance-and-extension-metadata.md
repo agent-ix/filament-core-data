@@ -2,7 +2,7 @@
 id: Task-109
 title: "Identity, provenance, roles, extensions, units, relationships, and occurrences"
 type: Task
-status: pending
+status: in_progress
 track: B
 priority: P0
 relationships:
@@ -44,7 +44,7 @@ Land `metadata.mjs`: everything the IR carries that no other module renders, as 
 - [ ] Carry no timestamp, no hostname, no user, no working directory and no tool path — each is a determinism leak this repository has shipped before.
 - [ ] Name the backend identity, the backend version and the IR fingerprint in every generated file's banner, and no clock value.
 - [ ] Keep the metadata module importable without the validators, so a metadata-only consumer does not retain the validator code.
-- [ ] Add the node-walk audit: every node the IR document carries is rendered somewhere or declared as a loss, and a seeded unrendered node fails it.
+- [x] Add the node-walk audit: every node the IR document carries is rendered somewhere or declared as a loss, and a seeded unrendered node fails it.
 
 ## Deliverables
 

@@ -25,12 +25,14 @@
 
 import type {
 	ClauseDescriptor,
+	ConstraintDescriptor,
 	DefaultDescriptor,
 	ExportedFieldKey,
 	ExportedTypeName,
 	ExtensionDescriptor,
 	OccurrenceDescriptor,
 	OperationDescriptor,
+	VariantDescriptor,
 } from "./identity.js";
 
 /** The document's provenance and the fingerprint of its normalized form. */
@@ -168,6 +170,76 @@ export const TYPE_CLAUSES = {
 	TextList: [],
 	TextMap: [],
 } as const satisfies Record<ExportedTypeName, readonly ClauseDescriptor[]>;
+
+/** The enum and union members, including their semantic identities. */
+export const TYPE_VARIANTS = {
+	Count: [],
+	Millis: [],
+	Node: [],
+	NodeRef: [],
+	Payload: [
+		{
+			identity: "ix://agent-ix/conformance/variant/payload-count",
+			name: "count",
+			payloadType: "ix://agent-ix/conformance/type/Count",
+		},
+		{
+			identity: "ix://agent-ix/conformance/variant/payload-text",
+			name: "text",
+			payloadType: "ix://agent-ix/conformance/type/Text",
+		},
+	],
+	Root: [],
+	Status: [
+		{
+			identity: "ix://agent-ix/conformance/variant/status-draft",
+			name: "draft",
+			payloadType: "",
+		},
+		{
+			identity: "ix://agent-ix/conformance/variant/status-final",
+			name: "final",
+			payloadType: "",
+		},
+	],
+	Text: [],
+	TextList: [],
+	TextMap: [],
+} as const satisfies Record<ExportedTypeName, readonly VariantDescriptor[]>;
+
+/** The constraints each type carries, including their semantic identities. */
+export const TYPE_CONSTRAINTS = {
+	Count: [
+		{
+			identity: "ix://agent-ix/conformance/constraint/count-min",
+			keyword: "min",
+			appliesTo: "ix://agent-ix/conformance/type/Count",
+			diagnosticCode: "agent-ix.conformance.COUNT_MIN",
+			operands: {
+				value: 0,
+			},
+		},
+	],
+	Millis: [],
+	Node: [],
+	NodeRef: [],
+	Payload: [],
+	Root: [],
+	Status: [],
+	Text: [
+		{
+			identity: "ix://agent-ix/conformance/constraint/text-min-length",
+			keyword: "minLength",
+			appliesTo: "ix://agent-ix/conformance/type/Text",
+			diagnosticCode: "agent-ix.conformance.TEXT_MIN_LENGTH",
+			operands: {
+				value: 1,
+			},
+		},
+	],
+	TextList: [],
+	TextMap: [],
+} as const satisfies Record<ExportedTypeName, readonly ConstraintDescriptor[]>;
 
 /**
  * The declared default of each exported field.

@@ -29,6 +29,22 @@ export interface OccurrenceDescriptor {
 	readonly value: unknown;
 }
 
+/** One enum or union member, including its semantic identity. */
+export interface VariantDescriptor {
+	readonly identity: string;
+	readonly name: string;
+	readonly payloadType: string;
+}
+
+/** One constraint's semantic identity and operands. */
+export interface ConstraintDescriptor {
+	readonly identity: string;
+	readonly keyword: string;
+	readonly appliesTo: string;
+	readonly diagnosticCode: string;
+	readonly operands: unknown;
+}
+
 /** The provenance the generated `metadata.ts` exports. */
 export interface SemanticMetadata {
 	readonly contractVersion: string;
@@ -67,3 +83,10 @@ export declare function renderMetadata(
 	model: ResolvedModel,
 	options?: { fingerprint?: string; ir?: unknown },
 ): string;
+
+/** Return identity-bearing model nodes absent from emitted files and losses. */
+export declare function auditRenderedNodes(
+	model: ResolvedModel,
+	files: readonly { readonly path: string; readonly text: string }[],
+	losses?: readonly string[],
+): readonly string[];

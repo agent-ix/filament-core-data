@@ -14,6 +14,8 @@ import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
 import { reachableSymbols } from "../src/compiler/backends/typescript-v1/package-layout.mjs";
+import { auditRenderedNodes } from "../src/compiler/backends/typescript-v1/metadata.mjs";
+import { buildModel } from "../src/compiler/backends/typescript-v1/model.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const fixture = resolve(root, "test/fixtures/backends/typescript");
@@ -344,6 +346,27 @@ describe("TypeScript backend fixture (FR-071)", () => {
 		expect(metadata).toContain("fingerprint:");
 		expect(identity).not.toMatch(/from "\.\/validators\.js"/);
 		expect(metadata).not.toMatch(/from "\.\/validators\.js"/);
+	});
+
+	it("audits every identity-bearing model node and rejects a seeded dropped node", () => {
+		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-typescript-audit-"));
+		const model = buildModel(
+			JSON.parse(readFileSync(fixtureIr, "utf8")),
+			{ backendIdentity: "test", backendVersion: "test" },
+		);
+		try {
+			const rendered = generateSnapshot(root, resolve(scratch, "generated"), "C");
+			expect(auditRenderedNodes(model, rendered)).toEqual([]);
+			const absent = "ix://agent-ix/instances/type/seeded-unrendered";
+			expect(
+				auditRenderedNodes(
+					{ ...model, types: [...model.types, { identity: absent }] },
+					rendered,
+				),
+			).toEqual([absent]);
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
 	});
 
 	it("executes every authored runtime-validator case without blessing output", async () => {

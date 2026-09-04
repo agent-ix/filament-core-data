@@ -22,7 +22,7 @@
 		},
 		{
 			"path": "identity.ts",
-			"digest": "sha256:884db6f71b630f751baf8f0d5d36770a00c00556b014f4ce827d11d66e92e314",
+			"digest": "sha256:532b75eded956eab92cf67b8093cb3dea4cebf10da4d32b35891becd8c52dc71",
 			"mediaType": "text/typescript",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance"
@@ -30,7 +30,7 @@
 		},
 		{
 			"path": "index.ts",
-			"digest": "sha256:6db0cfbf7a17edc326baf9549173cf931f2d5feed57d0ec41f4b349c9f4b6553",
+			"digest": "sha256:1ef84341d8cec67a1b755a648a6c96492dad02e6d79099ed2998c6acef5d90ff",
 			"mediaType": "text/typescript",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance"
@@ -38,7 +38,7 @@
 		},
 		{
 			"path": "metadata.ts",
-			"digest": "sha256:c8ed55cc7cfa8799b87d38b8191bc50761bfd2a0f73b0e5bff21f445f0388dea",
+			"digest": "sha256:37481885975d1b46b1b5c95f6b3116f6f11e8efbb24fee4c3114a868881d74e2",
 			"mediaType": "text/typescript",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance"
