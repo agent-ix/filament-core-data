@@ -145,6 +145,37 @@ compiler-emit-ir:
 	node src/compiler/cli.mjs emit-ir --entrypoint $(ENTRYPOINT) $(if $(GENERATOR),--generator $(GENERATOR),) --out $(OUT)
 
 # -----------------------------------------------------------------------------
+# TypeScript generation backend (issue #22)
+# -----------------------------------------------------------------------------
+# `generate` reads one IR document and writes a generated package to a
+# caller-named directory. `generate-typescript-check` regenerates the committed
+# fixture into a scratch directory *outside* the tree and compares; it never
+# rewrites a committed artifact in place, because regenerating inside the
+# working tree is the defect issue #49 records, where three unrelated
+# changed-path gates failed at random against a file another suite was part way
+# through rewriting.
+#
+# Both call `node` directly: `package.json` gains no script, because NFR-025
+# asserts its `exports`, `main`, `module`, `types`, `files` and every dependency
+# block byte-unchanged.
+
+GENERATE_IR ?= test/fixtures/backends/typescript/input/semantic-ir.json
+GENERATE_TARGET ?= typescript
+GENERATE_OUT ?= dist/generated/typescript
+GENERATE_FIXTURE ?= test/fixtures/backends/typescript/expected
+
+.PHONY: generate-typescript
+generate-typescript:
+	node src/compiler/cli.mjs generate --ir $(GENERATE_IR) --target $(GENERATE_TARGET) --out-root $(GENERATE_OUT) --manifest $(GENERATE_OUT)/output-manifest.json
+
+.PHONY: generate-typescript-check
+generate-typescript-check:
+	@scratch=$$(mktemp -d) ; \
+	trap 'rm -rf "$$scratch"' EXIT ; \
+	node src/compiler/cli.mjs generate --ir $(GENERATE_IR) --target $(GENERATE_TARGET) --out-root "$$scratch" --manifest "$$scratch/output-manifest.json" ; \
+	diff -ru $(GENERATE_FIXTURE) "$$scratch"
+
+# -----------------------------------------------------------------------------
 # Contract compiler (issue #19)
 # -----------------------------------------------------------------------------
 # The contract path: resolve a package graph, build and verify its lock, run the

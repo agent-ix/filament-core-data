@@ -33,6 +33,8 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | Code | Severity | Blocking | Owner |
 |---|---|---|---|
 | `agent-ix.compiler.AMBIGUOUS_PROFILE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.compiler.BACKEND_CONTRACT_VIOLATION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.compiler.BACKEND_NOT_IMPLEMENTED` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.DEFAULT_KIND_WITHOUT_VALUE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.DIAGNOSTIC_LIMIT_REACHED` | warning | no | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.DIGEST_CONFLICT` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
@@ -50,6 +52,7 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.INVALID_MANIFEST` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.INVALID_MAPPING` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.INVALID_PROFILE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.compiler.INVALID_REQUEST` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.LIMIT_MAX_COLLECTION_ITEMS` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.LIMIT_MAX_DEPTH` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.LIMIT_MAX_INPUT_BYTES` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
@@ -71,6 +74,7 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.UNSLUGGABLE_NAME` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSUPPORTED_CANONICALIZATION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSUPPORTED_DECLARATION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.compiler.UNSUPPORTED_IR_VERSION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSUPPORTED_LOSS` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSUPPORTED_SCALAR_BASE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSUPPORTED_VERSION_CONSTRAINT` | error | yes | `ix://agent-ix/filament-core-data/compiler` |

@@ -1,0 +1,624 @@
+{
+	"contractVersion": "1.1.0",
+	"source": {
+		"identity": "ix://agent-ix/filament-core-data/source/typespec",
+		"version": "1.0.0",
+		"dialect": "typespec",
+		"digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+	},
+	"package": {
+		"identity": "agent-ix/instances",
+		"version": "1.0.0",
+		"manifestDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+		"mappingVersions": ["1.0.0"],
+		"profileVersions": ["1.0.0"],
+		"lockDigest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+	},
+	"types": [
+		{
+			"identity": "ix://agent-ix/instances/type/Word",
+			"displayName": "Word",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "string"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Whole",
+			"displayName": "Whole",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 2,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "integer"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Real",
+			"displayName": "Real",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 3,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "number"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Flag",
+			"displayName": "Flag",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 4,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "boolean"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Blob",
+			"displayName": "Blob",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 5,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "bytes"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Id",
+			"displayName": "Id",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 6,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "uuid"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Day",
+			"displayName": "Day",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 7,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "date"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Moment",
+			"displayName": "Moment",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 8,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "datetime"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Span",
+			"displayName": "Span",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 9,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "duration"
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Scalars",
+			"displayName": "Scalars",
+			"kind": "record",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 18,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"fields": [
+				{
+					"identity": "ix://agent-ix/instances/field/scalars-whole",
+					"name": "whole",
+					"typeRef": "ix://agent-ix/instances/type/Whole",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 10,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/scalars-real",
+					"name": "real",
+					"typeRef": "ix://agent-ix/instances/type/Real",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 11,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/scalars-flag",
+					"name": "flag",
+					"typeRef": "ix://agent-ix/instances/type/Flag",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 12,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/scalars-blob",
+					"name": "blob",
+					"typeRef": "ix://agent-ix/instances/type/Blob",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 13,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/scalars-id",
+					"name": "id",
+					"typeRef": "ix://agent-ix/instances/type/Id",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 14,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/scalars-day",
+					"name": "day",
+					"typeRef": "ix://agent-ix/instances/type/Day",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 15,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/scalars-moment",
+					"name": "moment",
+					"typeRef": "ix://agent-ix/instances/type/Moment",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 16,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/scalars-span",
+					"name": "span",
+					"typeRef": "ix://agent-ix/instances/type/Span",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 17,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				}
+			]
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Defaults",
+			"displayName": "Defaults",
+			"kind": "record",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 23,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"fields": [
+				{
+					"identity": "ix://agent-ix/instances/field/defaults-sem",
+					"name": "sem",
+					"typeRef": "ix://agent-ix/instances/type/Word",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "semantic",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 19,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"defaultValue": "fallback"
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/defaults-rep",
+					"name": "rep",
+					"typeRef": "ix://agent-ix/instances/type/Word",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "representation",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 20,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"defaultValue": "not-applied"
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/defaults-mig",
+					"name": "mig",
+					"typeRef": "ix://agent-ix/instances/type/Word",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "migration",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 21,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"defaultValue": "not-applied"
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/defaults-plain",
+					"name": "plain",
+					"typeRef": "ix://agent-ix/instances/type/Word",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 22,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				}
+			]
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Collections",
+			"displayName": "Collections",
+			"kind": "record",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 27,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"fields": [
+				{
+					"identity": "ix://agent-ix/instances/field/collections-unordered",
+					"name": "unordered",
+					"typeRef": "ix://agent-ix/instances/type/Word",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 24,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"ordered": false
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/collections-distinct",
+					"name": "distinct",
+					"typeRef": "ix://agent-ix/instances/type/Word",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 25,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"ordered": true,
+						"unique": true
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/collections-bounded",
+					"name": "bounded",
+					"typeRef": "ix://agent-ix/instances/type/Word",
+					"presence": "required",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 26,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 2,
+						"upper": 3,
+						"ordered": true
+					}
+				}
+			]
+		},
+		{
+			"identity": "ix://agent-ix/instances/type/Hazards",
+			"displayName": "Hazards",
+			"kind": "record",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model.tsp",
+					"startLine": 31,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"fields": [
+				{
+					"identity": "ix://agent-ix/instances/field/hazards-__proto__",
+					"name": "__proto__",
+					"typeRef": "ix://agent-ix/instances/type/Word",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 28,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/hazards-constructor",
+					"name": "constructor",
+					"typeRef": "ix://agent-ix/instances/type/Word",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 29,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				},
+				{
+					"identity": "ix://agent-ix/instances/field/hazards-prototype",
+					"name": "prototype",
+					"typeRef": "ix://agent-ix/instances/type/Word",
+					"presence": "optional",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model.tsp",
+							"startLine": 30,
+							"startColumn": 1
+						}
+					},
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					}
+				}
+			]
+		}
+	],
+	"occurrences": [],
+	"extensions": []
+}

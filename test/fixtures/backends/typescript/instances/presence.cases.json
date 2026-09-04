@@ -1,0 +1,202 @@
+{
+	"$comment": "The four presence/nullability combinations of FR-066, cell by cell. Every expectation here is read off the table in `spec/functional/FR-066-generate-runtime-validators.md` under `### Presence, nullability, and the four combinations` and off `ir/presence.ir.json`'s own declarations. None was recorded from a run of the generated validator: an expectation minted by the implementation under test is not evidence, which is the discipline `provenance.blessedFromRun` states for the conformance corpus.",
+	"ir": "ir/presence.ir.json",
+	"provenance": {
+		"authoredFrom": [
+			"spec/functional/FR-066-generate-runtime-validators.md",
+			"test/fixtures/backends/typescript/instances/ir/presence.ir.json"
+		],
+		"blessedFromRun": false
+	},
+	"cases": [
+		{
+			"id": "PRES-001",
+			"title": "every field present and conforming is accepted",
+			"type": "ix://agent-ix/instances/type/Combo",
+			"payload": { "rf": "a", "rt": "b", "of": "c", "ot": "d" },
+			"expect": "accept"
+		},
+		{
+			"id": "PRES-002",
+			"title": "required and non-nullable: absent is rejected",
+			"type": "ix://agent-ix/instances/type/Combo",
+			"payload": { "rt": "b" },
+			"expect": "reject",
+			"pointer": "/rf",
+			"code": "agent-ix.typescript-backend.MISSING_REQUIRED"
+		},
+		{
+			"id": "PRES-003",
+			"title": "required and non-nullable: null is rejected",
+			"type": "ix://agent-ix/instances/type/Combo",
+			"payload": { "rf": null, "rt": "b" },
+			"expect": "reject",
+			"pointer": "/rf",
+			"code": "agent-ix.typescript-backend.NULL_NOT_PERMITTED"
+		},
+		{
+			"id": "PRES-004",
+			"title": "required and nullable: absent is rejected",
+			"type": "ix://agent-ix/instances/type/Combo",
+			"payload": { "rf": "a" },
+			"expect": "reject",
+			"pointer": "/rt",
+			"code": "agent-ix.typescript-backend.MISSING_REQUIRED"
+		},
+		{
+			"id": "PRES-005",
+			"title": "required and nullable: null is accepted",
+			"type": "ix://agent-ix/instances/type/Combo",
+			"payload": { "rf": "a", "rt": null },
+			"expect": "accept"
+		},
+		{
+			"id": "PRES-006",
+			"title": "optional and non-nullable: absent is accepted",
+			"type": "ix://agent-ix/instances/type/Combo",
+			"payload": { "rf": "a", "rt": "b", "ot": "d" },
+			"expect": "accept"
+		},
+		{
+			"id": "PRES-007",
+			"title": "optional and non-nullable: null is rejected",
+			"type": "ix://agent-ix/instances/type/Combo",
+			"payload": { "rf": "a", "rt": "b", "of": null },
+			"expect": "reject",
+			"pointer": "/of",
+			"code": "agent-ix.typescript-backend.NULL_NOT_PERMITTED"
+		},
+		{
+			"id": "PRES-008",
+			"title": "optional and nullable: absent is accepted",
+			"type": "ix://agent-ix/instances/type/Combo",
+			"payload": { "rf": "a", "rt": "b" },
+			"expect": "accept"
+		},
+		{
+			"id": "PRES-009",
+			"title": "optional and nullable: null is accepted",
+			"type": "ix://agent-ix/instances/type/Combo",
+			"payload": { "rf": "a", "rt": "b", "ot": null },
+			"expect": "accept"
+		},
+		{
+			"id": "PRES-010",
+			"title": "a required property present with the value undefined is rejected",
+			"type": "ix://agent-ix/instances/type/Combo",
+			"construct": "explicitUndefined",
+			"constructArgs": { "base": { "rt": "b" }, "member": "rf" },
+			"expect": "reject",
+			"pointer": "/rf",
+			"code": "agent-ix.typescript-backend.EXPLICIT_UNDEFINED",
+			"differential": "exempt",
+			"differentialReason": "JSON has no representation for `undefined`, so a JSON Schema document cannot express the difference between an absent property and one present with `undefined`. FR-066 makes that difference decidable only by an own-property test, which is outside the JSON data model ajv works in."
+		},
+		{
+			"id": "PRES-011",
+			"title": "an optional property present with the value undefined is rejected",
+			"type": "ix://agent-ix/instances/type/Combo",
+			"construct": "explicitUndefined",
+			"constructArgs": {
+				"base": { "rf": "a", "rt": "b" },
+				"member": "of"
+			},
+			"expect": "reject",
+			"pointer": "/of",
+			"code": "agent-ix.typescript-backend.EXPLICIT_UNDEFINED",
+			"differential": "exempt",
+			"differentialReason": "As PRES-010: `undefined` is not a JSON value, so the second decider cannot see the case at all."
+		},
+		{
+			"id": "PRES-012",
+			"title": "an inherited member does not satisfy a declared field",
+			"type": "ix://agent-ix/instances/type/Combo",
+			"construct": "inherited",
+			"constructArgs": { "own": { "rt": "b" }, "inherited": { "rf": "a" } },
+			"expect": "reject",
+			"pointer": "/rf",
+			"code": "agent-ix.typescript-backend.MISSING_REQUIRED",
+			"differential": "exempt",
+			"differentialReason": "A prototype chain is not part of the JSON data model. ajv validates the object's enumerable own and inherited members alike through ordinary property access, so it cannot distinguish the two; FR-066 requires an own-property test."
+		},
+		{
+			"id": "PRES-013",
+			"title": "an accessor member is not read and is reported rather than invoked",
+			"type": "ix://agent-ix/instances/type/Combo",
+			"construct": "throwingGetter",
+			"constructArgs": { "base": { "rt": "b" }, "member": "rf" },
+			"expect": "reject",
+			"pointer": "/rf",
+			"code": "agent-ix.typescript-backend.ACCESSOR_MEMBER",
+			"differential": "exempt",
+			"differentialReason": "A getter is not a JSON value. ajv reads the property, invoking the getter, so the second decider would throw where FR-066 requires the first to report."
+		},
+		{
+			"id": "PRES-014",
+			"title": "an object with a null prototype validates identically",
+			"type": "ix://agent-ix/instances/type/Combo",
+			"construct": "nullPrototype",
+			"constructArgs": { "base": { "rf": "a", "rt": "b" } },
+			"expect": "accept"
+		},
+		{
+			"id": "PRES-015",
+			"title": "a value that is not an object is rejected at the root pointer",
+			"type": "ix://agent-ix/instances/type/Combo",
+			"payload": "not-an-object",
+			"expect": "reject",
+			"pointer": "",
+			"code": "agent-ix.typescript-backend.NOT_AN_OBJECT"
+		},
+		{
+			"id": "PRES-016",
+			"title": "an array is not a record",
+			"type": "ix://agent-ix/instances/type/Combo",
+			"payload": [],
+			"expect": "reject",
+			"pointer": "",
+			"code": "agent-ix.typescript-backend.NOT_AN_OBJECT"
+		},
+		{
+			"id": "PRES-017",
+			"title": "null is not a record",
+			"type": "ix://agent-ix/instances/type/Combo",
+			"payload": null,
+			"expect": "reject",
+			"pointer": "",
+			"code": "agent-ix.typescript-backend.NOT_AN_OBJECT"
+		},
+		{
+			"id": "PRES-018",
+			"title": "a nullable collection field accepts null for the collection itself",
+			"type": "ix://agent-ix/instances/type/ComboCollection",
+			"payload": { "rows": null },
+			"expect": "accept"
+		},
+		{
+			"id": "PRES-019",
+			"title": "a nullable collection field does not admit a null member",
+			"type": "ix://agent-ix/instances/type/ComboCollection",
+			"payload": { "rows": ["a", null] },
+			"expect": "reject",
+			"pointer": "/rows/1",
+			"code": "agent-ix.typescript-backend.NOT_A_STRING"
+		},
+		{
+			"id": "PRES-020",
+			"title": "an absent nullable collection is accepted",
+			"type": "ix://agent-ix/instances/type/ComboCollection",
+			"payload": {},
+			"expect": "accept"
+		},
+		{
+			"id": "PRES-021",
+			"title": "a collection member of the wrong type is rejected at its index",
+			"type": "ix://agent-ix/instances/type/ComboCollection",
+			"payload": { "rows": ["a", 7] },
+			"expect": "reject",
+			"pointer": "/rows/1",
+			"code": "agent-ix.typescript-backend.NOT_A_STRING"
+		}
+	]
+}

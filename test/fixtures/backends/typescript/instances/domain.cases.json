@@ -1,0 +1,282 @@
+{
+	"$comment": "The scalar value domain, the three default kinds, the collection bounds and flags, and the object-shape hazards. Expectations are read off `### The scalar value domain`, `### Collections and defaults` and `### Hostile and unusual input values` in `spec/functional/FR-066-generate-runtime-validators.md`, together with `ir/domain.ir.json`'s own declarations. None was recorded from a run.",
+	"ir": "ir/domain.ir.json",
+	"provenance": {
+		"authoredFrom": [
+			"spec/functional/FR-066-generate-runtime-validators.md",
+			"test/fixtures/backends/typescript/instances/ir/domain.ir.json"
+		],
+		"blessedFromRun": false
+	},
+	"cases": [
+		{
+			"id": "DOM-001",
+			"title": "an integer subject accepts a whole number",
+			"type": "ix://agent-ix/instances/type/Scalars",
+			"payload": { "whole": 7 },
+			"expect": "accept"
+		},
+		{
+			"id": "DOM-002",
+			"title": "an integer subject rejects a non-integral number",
+			"type": "ix://agent-ix/instances/type/Scalars",
+			"payload": { "whole": 1.5 },
+			"expect": "reject",
+			"pointer": "/whole",
+			"code": "agent-ix.typescript-backend.NOT_AN_INTEGER"
+		},
+		{
+			"id": "DOM-003",
+			"title": "an integer subject rejects a magnitude above Number.MAX_SAFE_INTEGER",
+			"type": "ix://agent-ix/instances/type/Scalars",
+			"construct": "unsafeInteger",
+			"constructArgs": { "member": "whole" },
+			"expect": "reject",
+			"pointer": "/whole",
+			"code": "agent-ix.typescript-backend.INTEGER_OUT_OF_SAFE_RANGE",
+			"differential": "exempt",
+			"differentialReason": "The safe-integer bound is a property of the JavaScript number the JSON parses to, not of the JSON text. JSON Schema has no keyword for it and ajv sees only the parsed double, so the second decider cannot reach the question."
+		},
+		{
+			"id": "DOM-004",
+			"title": "an integer subject accepts negative zero wherever it accepts zero",
+			"type": "ix://agent-ix/instances/type/Scalars",
+			"construct": "negativeZero",
+			"constructArgs": { "member": "whole" },
+			"expect": "accept",
+			"differential": "exempt",
+			"differentialReason": "`-0` and `0` are the same JSON token to a parser and ajv cannot distinguish them; the rule FR-066 states is about the JavaScript value the validator receives."
+		},
+		{
+			"id": "DOM-005",
+			"title": "a number subject rejects NaN",
+			"type": "ix://agent-ix/instances/type/Scalars",
+			"construct": "notANumber",
+			"constructArgs": { "member": "real" },
+			"expect": "reject",
+			"pointer": "/real",
+			"code": "agent-ix.typescript-backend.NOT_A_NUMBER_VALUE",
+			"differential": "exempt",
+			"differentialReason": "`NaN` is not a JSON value; it can only arrive as a JavaScript value, which is outside what ajv validates."
+		},
+		{
+			"id": "DOM-006",
+			"title": "a number subject rejects Infinity",
+			"type": "ix://agent-ix/instances/type/Scalars",
+			"construct": "infinite",
+			"constructArgs": { "member": "real", "sign": 1 },
+			"expect": "reject",
+			"pointer": "/real",
+			"code": "agent-ix.typescript-backend.NOT_FINITE",
+			"differential": "exempt",
+			"differentialReason": "As DOM-005: `Infinity` is not a JSON value."
+		},
+		{
+			"id": "DOM-007",
+			"title": "a number subject rejects negative Infinity",
+			"type": "ix://agent-ix/instances/type/Scalars",
+			"construct": "infinite",
+			"constructArgs": { "member": "real", "sign": -1 },
+			"expect": "reject",
+			"pointer": "/real",
+			"code": "agent-ix.typescript-backend.NOT_FINITE",
+			"differential": "exempt",
+			"differentialReason": "As DOM-005: `-Infinity` is not a JSON value."
+		},
+		{
+			"id": "DOM-008",
+			"title": "a number subject accepts a fractional value",
+			"type": "ix://agent-ix/instances/type/Scalars",
+			"payload": { "real": 1.5 },
+			"expect": "accept"
+		},
+		{
+			"id": "DOM-009",
+			"title": "a boolean subject accepts a boolean",
+			"type": "ix://agent-ix/instances/type/Scalars",
+			"payload": { "flag": true },
+			"expect": "accept"
+		},
+		{
+			"id": "DOM-010",
+			"title": "a boolean subject rejects a string that looks like one",
+			"type": "ix://agent-ix/instances/type/Scalars",
+			"payload": { "flag": "true" },
+			"expect": "reject",
+			"pointer": "/flag",
+			"code": "agent-ix.typescript-backend.NOT_A_BOOLEAN"
+		},
+		{
+			"id": "DOM-011",
+			"title": "a bytes subject accepts well-formed base64",
+			"type": "ix://agent-ix/instances/type/Scalars",
+			"payload": { "blob": "YWJj" },
+			"expect": "accept"
+		},
+		{
+			"id": "DOM-012",
+			"title": "a bytes subject rejects a string outside the base64 alphabet",
+			"type": "ix://agent-ix/instances/type/Scalars",
+			"payload": { "blob": "a b!" },
+			"expect": "reject",
+			"pointer": "/blob",
+			"code": "agent-ix.typescript-backend.NOT_BASE64",
+			"differential": "exempt",
+			"differentialReason": "The base64 wire form of `bytes` is a declared backend decision pending agent-ix/filament-core-data#58 rather than a published contract clause; a schema asserting it would restate the decision, not check it."
+		},
+		{
+			"id": "DOM-013",
+			"title": "a value of the wrong JavaScript type is rejected rather than coerced through Symbol.toPrimitive",
+			"type": "ix://agent-ix/instances/type/Scalars",
+			"construct": "coercible",
+			"constructArgs": { "member": "whole", "primitive": 7 },
+			"expect": "reject",
+			"pointer": "/whole",
+			"code": "agent-ix.typescript-backend.NOT_A_NUMBER",
+			"differential": "exempt",
+			"differentialReason": "An object defining `Symbol.toPrimitive` is a JavaScript value with no JSON form; ajv sees an object and rejects it for a different reason, so agreement here would be coincidence rather than evidence."
+		},
+		{
+			"id": "DOM-014",
+			"title": "a value of the wrong JavaScript type is rejected rather than coerced through valueOf",
+			"type": "ix://agent-ix/instances/type/Scalars",
+			"construct": "coercible",
+			"constructArgs": { "member": "whole", "primitive": 7, "via": "valueOf" },
+			"expect": "reject",
+			"pointer": "/whole",
+			"code": "agent-ix.typescript-backend.NOT_A_NUMBER",
+			"differential": "exempt",
+			"differentialReason": "As DOM-013."
+		},
+		{
+			"id": "DOM-015",
+			"title": "a semantic default is substituted when the property is absent",
+			"type": "ix://agent-ix/instances/type/Defaults",
+			"payload": {},
+			"expect": "accept",
+			"value": { "sem": "fallback" }
+		},
+		{
+			"id": "DOM-016",
+			"title": "a semantic default does not override a supplied value",
+			"type": "ix://agent-ix/instances/type/Defaults",
+			"payload": { "sem": "given" },
+			"expect": "accept",
+			"value": { "sem": "given" }
+		},
+		{
+			"id": "DOM-017",
+			"title": "a representation default is not substituted and the property stays absent",
+			"type": "ix://agent-ix/instances/type/Defaults",
+			"payload": {},
+			"expect": "accept",
+			"absentMembers": ["rep"]
+		},
+		{
+			"id": "DOM-018",
+			"title": "a migration default is not substituted and the property stays absent",
+			"type": "ix://agent-ix/instances/type/Defaults",
+			"payload": {},
+			"expect": "accept",
+			"absentMembers": ["mig"]
+		},
+		{
+			"id": "DOM-019",
+			"title": "a field declaring no default gains none",
+			"type": "ix://agent-ix/instances/type/Defaults",
+			"payload": {},
+			"expect": "accept",
+			"absentMembers": ["plain"]
+		},
+		{
+			"id": "DOM-020",
+			"title": "an unordered collection accepts any member order",
+			"type": "ix://agent-ix/instances/type/Collections",
+			"payload": { "bounded": ["a", "b"], "unordered": ["b", "a"] },
+			"expect": "accept",
+			"value": { "unordered": ["b", "a"] }
+		},
+		{
+			"id": "DOM-021",
+			"title": "an unordered collection is returned in the caller's order rather than reordered",
+			"type": "ix://agent-ix/instances/type/Collections",
+			"payload": { "bounded": ["a", "b"], "unordered": ["z", "y", "x"] },
+			"expect": "accept",
+			"value": { "unordered": ["z", "y", "x"] }
+		},
+		{
+			"id": "DOM-022",
+			"title": "a unique collection rejects two members sharing a canonical form",
+			"type": "ix://agent-ix/instances/type/Collections",
+			"payload": { "bounded": ["a", "b"], "distinct": ["a", "a"] },
+			"expect": "reject",
+			"pointer": "/distinct",
+			"code": "agent-ix.typescript-backend.COLLECTION_NOT_UNIQUE"
+		},
+		{
+			"id": "DOM-023",
+			"title": "a unique collection accepts two distinct members",
+			"type": "ix://agent-ix/instances/type/Collections",
+			"payload": { "bounded": ["a", "b"], "distinct": ["a", "b"] },
+			"expect": "accept"
+		},
+		{
+			"id": "DOM-024",
+			"title": "a bounded collection at its lower bound is accepted",
+			"type": "ix://agent-ix/instances/type/Collections",
+			"payload": { "bounded": ["a", "b"] },
+			"expect": "accept"
+		},
+		{
+			"id": "DOM-025",
+			"title": "a bounded collection one short of its lower bound is rejected",
+			"type": "ix://agent-ix/instances/type/Collections",
+			"payload": { "bounded": ["a"] },
+			"expect": "reject",
+			"pointer": "/bounded",
+			"code": "agent-ix.typescript-backend.COLLECTION_TOO_SHORT"
+		},
+		{
+			"id": "DOM-026",
+			"title": "a bounded collection at its upper bound is accepted",
+			"type": "ix://agent-ix/instances/type/Collections",
+			"payload": { "bounded": ["a", "b", "c"] },
+			"expect": "accept"
+		},
+		{
+			"id": "DOM-027",
+			"title": "a bounded collection one past its upper bound is rejected",
+			"type": "ix://agent-ix/instances/type/Collections",
+			"payload": { "bounded": ["a", "b", "c", "d"] },
+			"expect": "reject",
+			"pointer": "/bounded",
+			"code": "agent-ix.typescript-backend.COLLECTION_TOO_LONG"
+		},
+		{
+			"id": "DOM-028",
+			"title": "__proto__ as a declared member name validates by the ordinary rule",
+			"type": "ix://agent-ix/instances/type/Hazards",
+			"construct": "ownProto",
+			"constructArgs": { "value": "x" },
+			"expect": "accept",
+			"differential": "exempt",
+			"differentialReason": "The case turns on `__proto__` being an *own* property rather than a prototype assignment, which is a JavaScript object-construction property. A JSON document carrying `__proto__` is parsed to an own property by `JSON.parse` and to a prototype assignment by an object literal, so the two deciders would be handed different objects."
+		},
+		{
+			"id": "DOM-029",
+			"title": "constructor and prototype as declared member names validate by the ordinary rule",
+			"type": "ix://agent-ix/instances/type/Hazards",
+			"payload": { "constructor": "x", "prototype": "y" },
+			"expect": "accept"
+		},
+		{
+			"id": "DOM-030",
+			"title": "a declared member named constructor still checks its declared type",
+			"type": "ix://agent-ix/instances/type/Hazards",
+			"payload": { "constructor": 1 },
+			"expect": "reject",
+			"pointer": "/constructor",
+			"code": "agent-ix.typescript-backend.NOT_A_STRING"
+		}
+	]
+}

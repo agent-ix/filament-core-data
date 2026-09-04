@@ -58,7 +58,7 @@ declared toolchain.
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-076-CON-1 | The runner SHALL live outside `src/compiler/`, because FR-043-AC-8 requires that no module under `src/compiler/` spawns a process and that gate stays green. | Compatibility | Static |
+| FR-076-CON-1 | The runner SHALL live outside `src/compiler/`, because FR-043-AC-8 requires that no module under `src/compiler/` spawns a process except the one named module FR-071 declares, and that gate stays green. | Compatibility | Static |
 | FR-076-CON-2 | The runner SHALL NOT import the generator in-process, because the subprocess boundary is the sandbox and an in-process call would put schema-driven code execution in the test interpreter. | Security | Static |
 | FR-076-CON-3 | The maintainer SHALL NOT widen the stderr or warning allow-list to make a run green; an unexpected diagnostic is a finding. | Integrity | Test |
 | FR-076-CON-4 | Every input a gate generates from SHALL be a committed local document, never a network-reachable one. | Security | Static |
@@ -79,7 +79,7 @@ declared toolchain.
 | FR-076-AC-9 | With a shadowing `datamodel-codegen` earlier on `PATH`, the pinned distribution's entry point is still the one invoked. | Integration |
 | FR-076-AC-10 | The subprocess environment contains exactly the allow-listed names, carries no proxy variable and no caller `PYTHONPATH`, and fixes `PYTHONHASHSEED`. | Test |
 | FR-076-AC-11 | With the generator distribution absent, the runner fails with a provisioning message naming the Poetry group and does not skip. | Test |
-| FR-076-AC-12 | No module under `src/compiler/` spawns a process or imports the generator after this change, so FR-043-AC-8 is still satisfied. | Static |
+| FR-076-AC-12 | No module under `src/compiler/` spawns a process or imports the generator after this change, apart from the one module [FR-071](./FR-071-provide-the-generate-command-and-surface-fixtures.md) names as the injected formatter — which no backend can reach, as this criterion also asserts — so FR-043-AC-8 is still satisfied. | Static |
 | FR-076-AC-13 | The scratch root is absent after a successful call, after a failed call, and after a timed-out call. | Test |
 | FR-076-AC-14 | `limits.json` states a timeout, a maximum input size, a kill grace period, and an environment allow-list, and the runner reads each of them rather than a literal. | Test |
 

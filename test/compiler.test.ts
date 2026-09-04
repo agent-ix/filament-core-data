@@ -656,6 +656,10 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 					// scripts, not callers of a published surface, and `make lint` runs
 					// each in `--check` mode so a drifting golden fails the gate.
 					path.startsWith("scripts/") ||
+					// Issue #22's conformance adapter is an internal consumer of the
+					// backend decision modules. It is judged by the differential runner,
+					// not a published compiler API consumer.
+					path === "conformance/adapters/typescript-backend/adapter.mjs" ||
 					path === "spikes/typespec-feasibility/scripts/run-experiment.mjs",
 				path,
 			).toBe(true);
@@ -861,18 +865,27 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 		// frozen set below. Issue #19's contract path validates its own output
 		// against that schema deliberately (FR-050), so naming the schema there is
 		// the point rather than the defect.
+		//
+		// `backends/` was the whole directory until issue #22. The contract
+		// generation backend lives there too and validates its input against the
+		// published schema deliberately, exactly as issue #19's contract path
+		// does, so the frozen set is named file by file rather than widened to a
+		// prefix that swallows every backend written afterwards.
 		const prototype = [
 			"ir.mjs",
 			"compile.mjs",
 			"identity.mjs",
 			"index.mjs",
 			"cli.mjs",
+			"backends/typescript.mjs",
+			"backends/rust.mjs",
+			"backends/type-names.mjs",
+			"backends/python-schema.mjs",
+			"backends/python-pins.mjs",
 		];
 		for (const path of walk(compilerRoot)) {
 			const isPrototype =
-				prototype.includes(path) ||
-				path.startsWith("emitters/") ||
-				path.startsWith("backends/");
+				prototype.includes(path) || path.startsWith("emitters/");
 			if (!isPrototype) continue;
 			expect(read(resolve(compilerRoot, path)), path).not.toContain(
 				"semantic-ir.schema.json",
@@ -958,17 +971,65 @@ describe("promoted language backends (FR-042)", () => {
 				expect(source, `${path} uses ${token}`).not.toContain(token);
 			}
 		}
-		// FR-043-AC-8 binds the whole compiler, including the two modules that
+		// FR-043-AC-8 binds the whole compiler, including the modules that
 		// legitimately do I/O and are unreachable from any backend.
+		//
+		// Issue #22 added one such module. FR-071 requires
+		// `backends/format.mjs` to render generated text through this
+		// repository's exactly-pinned biome binary, exactly as
+		// `conformance/tools/format-json.mjs` already does for JSON, so that a
+		// committed generated artifact is formatted by the same formatter
+		// `make lint` runs and `biome.json` needs no exclusion. It therefore
+		// starts a child process by design.
+		//
+		// The exemption is one named module rather than a widened pattern, and
+		// it is paired with the assertion below that no backend can reach it —
+		// which is the half that matters. A blanket "no process anywhere" was
+		// the weaker claim: it said nothing about *which* code could start one.
+		const PROCESS_STARTING = ["backends/format.mjs"];
 		for (const path of walk(compilerRoot)) {
 			if (!path.endsWith(".mjs")) continue;
+			if (PROCESS_STARTING.includes(path)) continue;
 			expect(
 				read(resolve(compilerRoot, path)),
 				`${path} spawns a process`,
 			).not.toMatch(/spawn\(|execFile|execSync|child_process/);
 		}
-		for (const impure of ["cli.mjs", "identity.mjs"]) {
+		for (const impure of ["cli.mjs", "identity.mjs", ...PROCESS_STARTING]) {
 			expect(reachable.has(impure), impure).toBe(false);
+		}
+		// And the one permitted module is unreachable from the contract backend
+		// too, not merely from the frozen prototype ones: the seam receives the
+		// formatter as an injected function, so no module under
+		// `backends/typescript-v1/` imports it.
+		const contractReachable = new Set<string>();
+		const visitContract = (relPath: string) => {
+			if (contractReachable.has(relPath)) return;
+			contractReachable.add(relPath);
+			const source = read(resolve(compilerRoot, relPath));
+			for (const match of source.matchAll(
+				/(?:from|import)\s*\(?\s*"(\.[^"]+)"/g,
+			)) {
+				// Only `.mjs` specifiers are this module's own imports. A code
+				// generator's source also contains `from "./identity.js"` and the
+				// like — the import statements it *emits* into generated
+				// TypeScript — and those name files in the generated package, not
+				// in this tree.
+				if (!match[1].endsWith(".mjs")) continue;
+				visitContract(
+					relative(
+						compilerRoot,
+						resolve(dirname(resolve(compilerRoot, relPath)), match[1]),
+					),
+				);
+			}
+		};
+		visitContract("backends/typescript-v1/index.mjs");
+		for (const permitted of PROCESS_STARTING) {
+			expect(
+				contractReachable.has(permitted),
+				`${permitted} is reachable from the contract backend`,
+			).toBe(false);
 		}
 	});
 

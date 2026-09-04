@@ -152,6 +152,12 @@ rather than acquiring a hand-written Python generator.
 - An independent JSON-level semantic oracle, a differential harness with a
   declared adapter registry and divergence register, coverage accounting,
   promotion thresholds, and a downstream fixture import API.
+- The generation backend seam keyed on the published target vocabulary, and the
+  TypeScript backend behind it: the type projection, the ESM package and its
+  export surface, the generated runtime validators, the identity and fingerprint
+  metadata, the backend's own IR admissibility reader, its canonical form and
+  compatibility classification, the `generate` command, and the
+  `typescript-backend` conformance adapter that answers the issue #20 oracle.
 - The Rust/Serde generation backend under `src/compiler/backends/rust-serde/`:
   the published IR-to-Rust mapping table, stable identifier derivation, crate
   emission with a finite static export surface and an explicit dynamic
@@ -244,6 +250,35 @@ rather than acquiring a hand-written Python generator.
 - Cross-language generated-package serialization and deserialization parity,
   which has no package to serialize until issues #21, #22, and #23 ship; the
   corpus records it as an unmet coverage area with those owners.
+- Publishing the generated TypeScript package to any registry, adding it to this
+  repository's `exports`, `files`, or dependency blocks, or moving a CLI,
+  backend, or React consumer onto it, as part of issue #22; publication remains
+  issue #11 behind the `agent-ix/quoin#290` sign-off.
+- Generating a Rust or a Python package as part of issue #22; those are issues
+  #21 and #23, which own the sibling adapter slots.
+- Editing any conformance case, base, oracle module, harness module, threshold,
+  defect row, gap row, or mutation row as part of issue #22; a disagreement
+  between the backend and the oracle is registered as a divergence with an owner
+  and a verdict, never absorbed by moving the yardstick.
+- Deciding the unresolved-`reference` question recorded as
+  `conformance/contract-gaps.json` GAP-011 as part of issue #22; the backend
+  adopts the corpus's published reading as a single declared policy constant and
+  records the dependency on issue #9, which owns the contract.
+- Rewriting the frozen issue #4 TypeScript backend or regenerating its golden as
+  part of issue #22; the contract-IR backend is a second backend beside it.
+- Adding a dependency to `package.json`, `pnpm-lock.yaml`, `pyproject.toml`, or
+  `poetry.lock` as part of issue #22 — including a bundler, a property-test
+  generator, or a runtime validator; every gate this ticket declares is met with
+  what those files already carry, or the gate is restated so that it can be.
+- Registering a divergence in `conformance/divergences.json` as part of issue
+  #22; a suppressed divergence counts as a matched case, so a disagreement this
+  ticket cannot close is reported and left failing for the owner rather than
+  absorbed.
+- Narrowing a backend's declared `supportedFeatures`, or declaring a corpus case
+  `unsupportedBy` this backend, to reduce the set of cases it must answer;
+  the declared coverage is not the implementer's to shrink.
+- Accepting a `conformance/thresholds.json` row, which stays `proposed` until the
+  issue #11 publication gate acts on it.
 - Publishing any crate, adding a crate to a registry, or moving any downstream
   Rust consumer as part of issue #21; publication passes the issue #7
   cross-language gate and the release-readiness gate, neither of which has
