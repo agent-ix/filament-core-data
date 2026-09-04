@@ -1,0 +1,53 @@
+{
+	"id": "PROV-001",
+	"title": "Source and generated origins side by side are accepted",
+	"family": "provenance",
+	"class": "positive",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/9/operations/0/origin",
+			"value": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model/root.tsp",
+					"startLine": 7,
+					"startColumn": 3
+				}
+			}
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/9/operations/0/origin",
+			"value": {
+				"generated": {
+					"generatorIdentity": "ix://agent-ix/conformance/generator/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://agent-ix/filament-core-data/source/typespec"
+					]
+				}
+			}
+		}
+	],
+	"covers": ["CR-provenance"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "identities are explicit. Display names, generated identifiers, source paths,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

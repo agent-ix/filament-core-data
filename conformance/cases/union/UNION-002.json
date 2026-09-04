@@ -1,0 +1,57 @@
+{
+	"id": "UNION-002",
+	"title": "A union variant whose payload type no type declares is rejected",
+	"family": "union",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/6/variants/1/payloadType",
+			"value": "ix://agent-ix/conformance/type/Count"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/6/variants/1/payloadType",
+			"value": "ix://agent-ix/conformance/type/Absent"
+		}
+	],
+	"covers": ["CR-union"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "The closed structural vocabulary is scalar, record, enum, discriminated union,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/6/variants/1/payloadType",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.UNRESOLVED_VARIANT_PAYLOAD",
+					"severity": "error",
+					"message": "the union variant payload type resolves to no declared type",
+					"owner": "ix://agent-ix/conformance/variant/payload-count",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/payload.tsp",
+						"startLine": 3,
+						"startColumn": 3
+					}
+				}
+			}
+		]
+	}
+}

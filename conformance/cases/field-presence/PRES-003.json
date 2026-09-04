@@ -1,0 +1,44 @@
+{
+	"id": "PRES-003",
+	"title": "A field bounded to zero occurrences is accepted as optional",
+	"family": "field-presence",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/1/multiplicity",
+			"value": {
+				"lower": 0,
+				"upper": 1
+			}
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/1/multiplicity",
+			"value": {
+				"lower": 0,
+				"upper": 0
+			}
+		}
+	],
+	"covers": ["CR-field-presence"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "`multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

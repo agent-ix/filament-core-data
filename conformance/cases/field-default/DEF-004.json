@@ -1,0 +1,41 @@
+{
+	"id": "DEF-004",
+	"title": "Moving a default from semantic to representation is conditional",
+	"family": "field-default",
+	"class": "evolution",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/3/defaultKind",
+			"value": "semantic"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/3/defaultKind",
+			"value": "representation"
+		}
+	],
+	"beforeBase": "core-1-1",
+	"beforeOps": [],
+	"covers": ["CR-field-default"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "Required additions, removals, incompatible meaning/type changes, stable identity"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "conditional"
+	}
+}

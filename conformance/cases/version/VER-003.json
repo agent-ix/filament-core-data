@@ -1,0 +1,38 @@
+{
+	"id": "VER-003",
+	"title": "The second frontend dialect a 1.1.0 document admits is accepted",
+	"family": "version",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "minimal-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/source/dialect",
+			"value": "typespec"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/source/dialect",
+			"value": "spec-bundle"
+		}
+	],
+	"covers": ["CR-version"],
+	"decidedBy": "schema",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "over the resolved kind. In a `1.1.0` document `source.dialect` is `typespec` or"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

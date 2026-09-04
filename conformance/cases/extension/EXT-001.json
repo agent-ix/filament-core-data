@@ -1,0 +1,27 @@
+{
+	"id": "EXT-001",
+	"title": "An optional extension beside its payload is accepted",
+	"family": "extension",
+	"class": "positive",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [],
+	"covers": ["CR-extension"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Dynamic and legacy consumers",
+			"quote": "unknown modules and extensions are preserved, rejected, or surfaced. Legacy"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

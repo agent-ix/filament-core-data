@@ -1,0 +1,57 @@
+{
+	"id": "DEF-002",
+	"title": "A default value with no default kind is rejected",
+	"family": "field-default",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/3/defaultKind",
+			"value": "semantic"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/3/defaultKind",
+			"value": "none"
+		}
+	],
+	"covers": ["CR-field-default"],
+	"decidedBy": "schema",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "values, and no/semantic/representation/migration defaults."
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/8/fields/3",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"severity": "error",
+					"message": "a field whose defaultKind is none carries no defaultValue",
+					"owner": "ix://agent-ix/conformance/field/node-status",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/node.tsp",
+						"startLine": 8,
+						"startColumn": 1
+					}
+				}
+			}
+		]
+	}
+}

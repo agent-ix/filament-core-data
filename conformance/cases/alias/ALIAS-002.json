@@ -1,0 +1,69 @@
+{
+	"id": "ALIAS-002",
+	"title": "An alias whose target no type declares is rejected",
+	"family": "alias",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/type/Dangling",
+				"displayName": "Dangling",
+				"kind": "alias",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 110,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"target": "ix://agent-ix/conformance/type/Absent"
+			}
+		}
+	],
+	"covers": ["CR-alias"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "The closed structural vocabulary is scalar, record, enum, discriminated union,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/10/target",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+					"severity": "error",
+					"message": "the alias target resolves to no declared type",
+					"owner": "ix://agent-ix/conformance/type/Dangling",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 110,
+						"startColumn": 1
+					}
+				}
+			}
+		]
+	}
+}

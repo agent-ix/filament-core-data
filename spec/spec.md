@@ -77,6 +77,12 @@ serialization, an inspect command, and a compatibility-diff and schema-evolution
 API — all of it deterministic, bounded against untrusted input, and landed
 without publishing a package or moving a consumer.
 
+The ninth delivery is the semantic conformance corpus and its independent
+differential oracle (issue #20): contract-derived cases, an oracle that decides
+them without reading any implementation under test, and a harness that judges
+every declared Rust, TypeScript, and Python implementation against that oracle
+rather than against one another.
+
 ## 2. Scope
 
 ### 2.1 In Scope
@@ -132,6 +138,12 @@ without publishing a package or moving a consumer.
 - The compiler-side IR reader, the normalized serialization and IR fingerprint,
   the `compile`, `inspect`, and `diff` commands, and the compatibility-diff and
   IR schema-evolution projections with their goldens and published policy.
+- A versioned semantic conformance corpus under `conformance/` with positive,
+  negative, boundary, and evolution cases per IR construct and compatibility
+  rule, contract-cited provenance, and minimization rules.
+- An independent JSON-level semantic oracle, a differential harness with a
+  declared adapter registry and divergence register, coverage accounting,
+  promotion thresholds, and a downstream fixture import API.
 
 ### 2.2 Out of Scope
 
@@ -184,6 +196,18 @@ without publishing a package or moving a consumer.
   #19; those remain issues #11, #21, #22, and #23.
 - Emitting a target or representation from the compiler; issue #19 stops at the
   IR, its lock, its diagnostics, and its compatibility report.
+- Implementing, fixing, or repairing any compiler, frontend, or backend the
+  conformance corpus judges (issues #19, #21, #22, #23, #27); the corpus
+  records a divergence rather than repairing the implementation that causes it.
+- Wiring the corpus's `compiler-frontend` adapter to the issue #19 compiler as
+  part of issue #20; that connection is its own ticket, so that neither side
+  assumes the other owns it.
+- Publishing the corpus as its own package, moving it to a corpus repository,
+  or adding it to the published package's `exports` or `files`, as part of
+  issue #20; enlarging the published surface belongs to the issue #11 gate.
+- Cross-language generated-package serialization and deserialization parity,
+  which has no package to serialize until issues #21, #22, and #23 ship; the
+  corpus records it as an unmet coverage area with those owners.
 
 ## 3. System Overview
 

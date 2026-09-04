@@ -1,0 +1,81 @@
+{
+	"id": "ENUM-002",
+	"title": "An enum with no variants member is rejected",
+	"family": "enum",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/3/variants",
+			"value": [
+				{
+					"identity": "ix://agent-ix/conformance/variant/status-draft",
+					"name": "draft",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model/status.tsp",
+							"startLine": 2,
+							"startColumn": 3
+						}
+					}
+				},
+				{
+					"identity": "ix://agent-ix/conformance/variant/status-final",
+					"name": "final",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model/status.tsp",
+							"startLine": 3,
+							"startColumn": 3
+						}
+					}
+				}
+			]
+		},
+		{
+			"op": "remove",
+			"path": "/ir/types/3/variants"
+		}
+	],
+	"covers": ["CR-enum"],
+	"decidedBy": "schema",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "The closed structural vocabulary is scalar, record, enum, discriminated union,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/3",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"severity": "error",
+					"message": "an enum type definition requires variants",
+					"owner": "ix://agent-ix/conformance/type/Status",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/status.tsp",
+						"startLine": 1,
+						"startColumn": 1
+					}
+				}
+			}
+		]
+	}
+}

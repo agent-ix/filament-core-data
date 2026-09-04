@@ -18,9 +18,18 @@ snapshot cases pass. The schema-source decision at TC-199 is recorded (owner,
 issue #4, 2026-09-03: TypeSpec, ADR-0005); all later disruptive migration and
 promotion gates remain separate. Issue #34 (TC-203..247) is fully mapped and its 45 cases pass (PR #38).
 Issue #35 (TC-248..279) is fully mapped and its 32 cases pass (PR #39; TC-274 by inspection).
+Issue #20 (TC-280..319 and TC-622..643) adds the semantic conformance corpus, its independent
+differential oracle, and the harness that judges every declared backend against
+that oracle rather than against another backend.
 Issue #27 (promotion of the issue #4 prototype emitters into `src/`) is mapped at
 TC-320..397. Three of its cases (TC-370, TC-373's full-replay half, and the
 end-to-end retained-evidence run) depend on the host floor recorded in issue #42
+and are marked blocked rather than passed. Issue #27 reserved TC-280..319,
+FR-035..039, NFR-015..016 and US-008 for the parallel issue #20
+conformance-corpus branch, which allocated them first; issue #20's remaining 22
+rows continue at TC-398 after issue #27's highest. The Static and Snapshot counts in the Test Execution Summary were off by
+one each before this revision (110/6 recorded against 111/5 actual) and are now
+computed from the rows.
 and are marked blocked rather than passed. Issue #19 (the TypeSpec frontend and the versioned semantic IR
 compiler core) is mapped at TC-398..619. Ids TC-280..319, FR-035..039,
 NFR-015..016 and US-008 are left to the parallel issue #20 conformance-corpus and
@@ -47,7 +56,7 @@ passes.
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001..US-007, US-009, US-010, FR-001..FR-034, FR-040..FR-053 | TC-033, TC-086, TC-129, TC-130..279, TC-320..397, TC-398..619 | ⚠️ TC-370, TC-382 blocked on issue #42 |
+| StR-001 | US-001..US-010, FR-001..FR-053 | TC-033, TC-086, TC-129, TC-130..643 | ⚠️ TC-370, TC-382 blocked on issue #42 |
 
 ### User Story Coverage
 
@@ -64,6 +73,7 @@ passes.
 | US-005 | Informal story outcome implemented by FR-019..FR-026 | TC-130..176 | ✅ Complete |
 | US-006 | US-006-EX-1..4 (illustrative) implemented by FR-027..FR-030 | TC-203, TC-210, TC-214, TC-220 | ✅ Complete |
 | US-007 | US-007-EX-1..4 (illustrative) implemented by FR-031..FR-034 | TC-262, TC-271, TC-258, TC-277 | ✅ Complete |
+| US-008 | US-008-EX-1..5 (illustrative) implemented by FR-035..FR-039 | TC-282, TC-303, TC-305, TC-304, TC-318 | ✅ Complete |
 | US-009 | US-009-EX-1 (illustrative) implemented by FR-041 | TC-337, TC-343, TC-344 | ✅ Complete |
 | US-009 | US-009-EX-2 (illustrative) implemented by FR-040 | TC-320, TC-326, TC-358 | ✅ Complete |
 | US-009 | US-009-EX-3 (illustrative) implemented by FR-044 | TC-371, TC-378, TC-370 (blocked on issue #42) | ✅ Complete |
@@ -112,6 +122,11 @@ passes.
 | FR-032 | FR-032-AC-1..5, FR-032-CON-1 | TC-255..260 | ✅ Complete |
 | FR-033 | FR-033-AC-1..5, FR-033-CON-1..2 | TC-261..266 | ✅ Complete |
 | FR-034 | FR-034-AC-1..5, FR-034-CON-1 | TC-267..272, TC-279 | ✅ Complete |
+| FR-035 | FR-035-AC-1..10, FR-035-CON-1..3 | TC-280..289 | ✅ Complete |
+| FR-036 | FR-036-AC-1..11, FR-036-CON-1..3 | TC-290..301 | ✅ Complete |
+| FR-037 | FR-037-AC-1..11, FR-037-CON-1..3 | TC-302..313 | ✅ Complete |
+| FR-038 | FR-038-AC-1..9, FR-038-CON-1..3 | TC-314..323 | ✅ Complete |
+| FR-039 | FR-039-AC-1..9, FR-039-CON-1..3 | TC-626..634 | ✅ Complete |
 | FR-040 | FR-040-AC-1..7, FR-040-CON-1..4 | TC-320..330 | ✅ Complete |
 | FR-041 | FR-041-AC-1..13, FR-041-CON-1..5 | TC-331..348 | ✅ Complete |
 | FR-042 | FR-042-AC-1..11, FR-042-CON-1..5 | TC-349..360 | ✅ Complete |
@@ -145,6 +160,8 @@ passes.
 | NFR-012 | Diff, unchanged-suite, registry, downstream-gate, and human-decision checks | TC-195..199 | ✅ Complete |
 | NFR-013 | Unchanged v1 fixture suite, spike byte comparison, compatibility-corpus entry, changed-path gate, and fixture inventory | TC-208, TC-234..236, TC-247 | ✅ Complete |
 | NFR-014 | Compiled-program inventory, amendment inspection, changed-path gate, emitter inspection, spike byte comparison | TC-249, TC-273..276, TC-278 | ✅ Complete |
+| NFR-015 | Provenance quote check, repeat/locale/directory byte comparison, oracle and harness import and effect analysis, divergence and contract-gap register inspection | TC-635..337 | ✅ Complete |
+| NFR-016 | Changed-path gate, manifest diff, offline test run, publication analysis | TC-640..643 | ✅ Complete |
 | NFR-017 | Repeat-run byte comparison, collator-independence check, explicit-baseDir check, lockfile seeding, retained-evidence branch diff, dependency-pin inspection | TC-383..389 | ✅ Complete |
 | NFR-018 | Changed-path gate, manifest and packed-file comparison, licence inspection, restore rehearsal, publication inspection | TC-390..396 | ✅ Complete |
 | NFR-019 | Repeat-run and varied-environment byte comparison, ambient-input analysis, permutation and collator independence, injected-host observation, changed-path gate, dependency-pin inspection | TC-567..TC-578 | ✅ Complete |
@@ -434,6 +451,46 @@ passes.
 | TC-277 | Each reader-enforced grammar rule (bounds, flags, decimal presence, unit applicability, returns.unit, uniqueness keys, identity flag) has a negative fixture rejected at its locus; the FR-006 set reads clean | Unit | P0 | FR-031-AC-7, US-007-EX-4 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-278 | `spike:typespec:check` output is byte-identical before and after the semantic-core change | Snapshot | P0 | NFR-014-AC-5 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-279 | The lowered FR-006 document validates as `1.1.0` and both IR readers return zero diagnostics when the lowerer runs from the committed `FieldDecl[]` fixture | Integration | P0 | FR-034-AC-2 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-280 | Every case file, base bundle, and the corpus manifest validate against their conformance schemas | Unit | P0 | FR-035-AC-1 | ✅ passed — conformance corpus (PR pending) |
+| TC-281 | Every base bundle validates against the published schemas it composes and yields zero oracle diagnostics | Unit | P0 | FR-035-AC-2, FR-035-CON-1 | ✅ passed — conformance corpus (PR pending) |
+| TC-282 | Every case's `derivedFrom` names an existing artifact and its `quote` occurs verbatim; a quote that no longer occurs fails the gate | Unit | P0 | FR-035-AC-3, US-008-EX-1 | ✅ passed — conformance corpus (PR pending) |
+| TC-283 | Recomputing every case and base digest and `corpusDigest` reproduces `corpus.json`; a flipped byte fails and names the file | Unit | P0 | FR-035-AC-4 | ✅ passed — conformance corpus (PR pending) |
+| TC-284 | No case sets `provenance.blessedFromRun`; a blessed case with no `blessing` block fails the gate | Unit | P0 | FR-035-AC-5 | ✅ passed — conformance corpus (PR pending) |
+| TC-285 | No case's `ops` exceeds the 64-node budget, and the depth boundary case stays inside it using `x-repeat` | Unit | P1 | FR-035-AC-6 | ✅ passed — conformance corpus (PR pending) |
+| TC-286 | An indexed `replace` or `remove` with no preceding `test` op fails the gate; a `test` op that no longer matches its base fails the run | Unit | P0 | FR-035-AC-7 | ✅ passed — conformance corpus (PR pending) |
+| TC-287 | Deleting a case a `defect` row names fails the gate; changing an `expected` block without a major `corpusVersion` bump fails the versioning gate | Unit | P0 | FR-035-AC-8 | ✅ passed — conformance corpus (PR pending) |
+| TC-288 | Every expected diagnostic validates against `common.schema.json#/$defs/diagnostic` and its `pointer` resolves in the built bundle | Unit | P0 | FR-035-AC-9 | ✅ passed — conformance corpus (PR pending) |
+| TC-289 | Case ids are unique, match the declared pattern, and sit in the directory their `family` names | Unit | P0 | FR-035-AC-10, FR-035-CON-2, FR-035-CON-3 | ✅ passed — conformance corpus (PR pending) |
+| TC-290 | The oracle's verdict equals every case's authored `expected` block, including codes, order, pointers, severities, and loci | Unit | P0 | FR-036-AC-1 | ✅ passed — conformance corpus (PR pending) |
+| TC-291 | Two oracle runs over the corpus are byte-identical and the diagnostic order is unchanged under `LC_ALL=tr_TR.UTF-8` | Property | P0 | FR-036-AC-2, FR-036-CON-2 | ✅ passed — conformance corpus (PR pending) |
+| TC-292 | A self-referential alias and a mutual alias pair each yield one `ALIAS_CYCLE`; a 257-link acyclic chain yields `DEPTH_LIMIT_EXCEEDED` | Unit | P0 | FR-036-AC-3 | ✅ passed — conformance corpus (PR pending) |
+| TC-293 | Duplicate identity, alias cycle, unresolved occurrence definition, unresolved union payload, and unresolved sequence or map element are five distinct codes | Unit | P0 | FR-036-AC-4 | ✅ passed — conformance corpus (PR pending) |
+| TC-294 | The oracle and harness import no judged implementation, read no clock, network, or environment, and add no dependency | Static | P0 | FR-036-AC-5, FR-036-CON-1 | ✅ passed — conformance corpus (PR pending) |
+| TC-295 | For every `1.0.0` document, `normalized` is byte-identical to the corpus canonical form of the input and adds no member | Property | P0 | FR-036-AC-6 | ✅ passed — conformance corpus (PR pending) |
+| TC-296 | An optional plus required addition classifies `breaking` naming both; the optional addition alone is `additive` under a preserving policy and `conditional` with none | Unit | P0 | FR-036-AC-7 | ✅ passed — conformance corpus (PR pending) |
+| TC-297 | Every diagnostic the oracle emits validates against the published diagnostic schema and carries `owner`, `blocking`, `causes`, and `related` | Unit | P0 | FR-036-AC-8 | ✅ passed — conformance corpus (PR pending) |
+| TC-298 | Each of the six package-context rules fires on a bundle supplying its member and stays silent on one that omits it | Unit | P0 | FR-036-AC-9 | ✅ passed — conformance corpus (PR pending) |
+| TC-299 | A schema-decided case yields one diagnostic at the deepest failing instance location and no ancestor location beside it | Unit | P0 | FR-036-AC-10 | ✅ passed — conformance corpus (PR pending) |
+| TC-300 | Every emitted code has a `diagnostic-codes.json` row citing a contract clause, and the sixteen frozen `reader-cases.json` codes are reused verbatim | Unit | P0 | FR-036-AC-11, FR-036-CON-3 | ✅ passed — conformance corpus (PR pending) |
+| TC-301 | A value that is not an input bundle returns `invalid` with exactly one `INVALID_DOCUMENT` diagnostic at pointer `""` | Unit | P1 | FR-036-AC-1 | ✅ passed — conformance corpus (PR pending) |
+| TC-302 | The harness runs the whole corpus against every registered adapter and exits zero on the committed corpus, registry, and register | Integration | P0 | FR-037-AC-1 | ✅ passed — conformance corpus (PR pending) |
+| TC-303 | A stub result seeded with an extra, missing, reordered, repointed, relocated, or reclassified diagnostic fails, naming case, adapter, and locus | Unit | P0 | FR-037-AC-2, US-008-EX-2 | ✅ passed — conformance corpus (PR pending) |
+| TC-304 | Two stub adapters that agree with each other but disagree with the oracle both fail | Unit | P0 | FR-037-AC-3, US-008-EX-4 | ✅ passed — conformance corpus (PR pending) |
+| TC-305 | An `unavailable` adapter is an unmet row naming its owning issue and is no pass; an `available` adapter returning `unavailable` fails | Unit | P0 | FR-037-AC-4, US-008-EX-3 | ✅ passed — conformance corpus (PR pending) |
+| TC-306 | A divergence entry the run does not reproduce fails the run, and the audit target reports an entry whose `reviewBy` date has passed | Unit | P0 | FR-037-AC-5 | ✅ passed — conformance corpus (PR pending) |
+| TC-307 | Two harness runs over an unchanged corpus produce byte-identical reports and the harness source reads no clock | Property | P0 | FR-037-AC-6 | ✅ passed — conformance corpus (PR pending) |
+| TC-308 | An adapter exiting non-zero, or emitting a result failing its schema, fails per case with a non-zero harness exit rather than a skip | Unit | P0 | FR-037-AC-7 | ✅ passed — conformance corpus (PR pending) |
+| TC-309 | An `unsupported` result is accepted only where the case declares that adapter in `unsupportedBy`; an undeclared one fails | Unit | P0 | FR-037-AC-8 | ✅ passed — conformance corpus (PR pending) |
+| TC-310 | A source analysis of `conformance/runner/` finds no adapter-to-adapter comparison and no import of adapter internals | Static | P0 | FR-037-AC-9, FR-037-CON-2 | ✅ passed — conformance corpus (PR pending) |
+| TC-311 | An adapter result whose `caseDigest` does not match the manifest is rejected, so a canned result cannot pass | Unit | P0 | FR-037-AC-10 | ✅ passed — conformance corpus (PR pending) |
+| TC-312 | A `pointerCompatible: false` adapter passes on a different pointer scheme when code, severity, locus, classification, and bytes match, and fails on a wrong locus | Unit | P0 | FR-037-AC-11 | ✅ passed — conformance corpus (PR pending) |
+| TC-313 | The registry declares the four adapter slots with owning issues, statuses, and the note that supplying a command is the owning issue's obligation | Static | P0 | FR-037-CON-1, FR-037-CON-3 | ✅ passed — conformance corpus (PR pending) |
+| TC-314 | Every register row carries four case classes or a justified `notApplicable`; removing a case fails and names the row and class | Unit | P0 | FR-038-AC-1 | ✅ passed — conformance corpus (PR pending) |
+| TC-315 | Unresolved import, package cycle, unknown mapping, duplicate identity, stale manifest digest, and undeclared loss each fail at an exact source locus | Unit | P0 | FR-038-AC-2 | ✅ passed — conformance corpus (PR pending) |
+| TC-316 | Four cases realize the four `presence` by `nullable` combinations and the oracle distinguishes all four normalized forms | Unit | P0 | FR-038-AC-3 | ✅ passed — conformance corpus (PR pending) |
+| TC-317 | Direct and mutual recursion are accepted; alias and composite cycles are rejected; a package cycle carries a different code from a recursive type graph | Unit | P0 | FR-038-AC-4 | ✅ passed — conformance corpus (PR pending) |
+| TC-318 | Every `documentExpressible` defect row has a reproducing case that fails, and every other row names the static check that detects it | Unit | P0 | FR-038-AC-5, US-008-EX-5 | ✅ passed — conformance corpus (PR pending) |
+| TC-319 | Every register row declares its deciding layer and the layer that produced its cases' diagnostics is the declared one | Unit | P1 | FR-038-AC-6 | ✅ passed — conformance corpus (PR pending) |
 | TC-320 | Inventory holds exactly the fourteen enumerated components with sources | Static | P0 | FR-040-AC-1 | ✅ passed |
 | TC-321 | A missing or extra component name fails the inventory test | Unit | P0 | FR-040-AC-1 | ✅ passed |
 | TC-322 | Every disposition is inside the closed four-value set | Static | P0 | FR-040-AC-2 | ✅ passed |
@@ -496,7 +553,6 @@ passes.
 | TC-379 | The changed-path allowlist covers every path the branch changes | Unit | P0 | FR-044-AC-9 | ✅ passed |
 | TC-380 | Zero publications and mutations proven by a changed-path check, paired with tree evidence that the promotion is in place | Static | P0 | FR-044-AC-10 | ✅ passed |
 | TC-381 | The feasibility doc carries the `## Retained evidence` note | Static | P1 | FR-044-AC-11 | ✅ passed |
-| TC-397 | NFR-006 gains one paragraph recording the spike's new import direction | Static | P1 | FR-044-AC-12 | ✅ passed |
 | TC-382 | A cargo cache missing a pinned crate is an unmet host prerequisite | Manual | P1 | FR-044-CON-4, FR-044-CON-5 | 🚧 blocked on issue #42 |
 | TC-383 | Compiler, backends, and adapter all repeat identically | Property | P0 | NFR-017-AC-1 | ✅ passed |
 | TC-384 | No retained-evidence file changes but `evidence/custom.json`, and no field of it but `command` differs from the frozen issue #4 record | Static | P0 | NFR-017-AC-2 | ✅ passed |
@@ -512,6 +568,7 @@ passes.
 | TC-394 | No third-party dependency is added and the sets are otherwise identical | Static | P0 | NFR-018-AC-5 | ✅ passed |
 | TC-395 | Restoring every path that differs from the pre-promotion commit reproduces that tree exactly | Integration | P0 | NFR-018-AC-6 | ✅ passed |
 | TC-396 | No workflow, tag, or registry publication is added or triggered | Static | P0 | NFR-018-AC-7 | ✅ passed |
+| TC-397 | NFR-006 gains one paragraph recording the spike's new import direction | Static | P1 | FR-044-AC-12 | ✅ passed |
 | TC-398 | `FRONTEND_DIALECTS` equals the `frontendDialect` enum read from `common.schema.json`; a test that reads both fails when either changes alone | Unit | P0 | FR-045-AC-1 | ✅ passed |
 | TC-399 | `selectFrontend("json-schema")` throws a `TypeError` naming the value and the two permitted dialects | Unit | P0 | FR-045-AC-2 | ✅ passed |
 | TC-400 | `runFrontend` for `spec-bundle` returns `ir: null` and exactly one blocking diagnostic coded `agent-ix.compiler.FRONTEND_NOT_IMPLEMENTED` | Unit | P0 | FR-045-AC-3 | ✅ passed |
@@ -712,9 +769,6 @@ passes.
 | TC-595 | Reverting the branch leaves the suite green with the pre-existing case count, rehearsed by a script rather than by hand | Integration | P0 | NFR-021-AC-6 | ✅ passed |
 | TC-596 | Every added package manifest declares `"license": "AGPL-3.0-only"` | Static | P0 | NFR-021-AC-7 | ✅ passed |
 | TC-597 | No package was published and no downstream repository was changed | Static | P0 | NFR-021-AC-8 | ✅ passed |
-| TC-620 | Every NFR-021 gate resolves both ends of its range from history — neither a moving base nor a moving head — and still fails on the same input in a simulated post-merge tree where the branch diff and `git status` are both empty | Integration | P0 | NFR-021-AC-9 | ✅ passed |
-| TC-621 | An unaccounted-for file under `src/compiler/` fails the promotion-inventory gate in that same post-merge tree | Static | P0 | NFR-021-AC-9 | ✅ passed |
-| TC-644 | A later unrelated change landing on top of this one does not grow this change's path set, and a prohibited path left in the tree at a path no later commit owns still fails the gate | Integration | P0 | NFR-021-AC-10 | ✅ passed |
 | TC-598 | Multiplicity, nullability, and default kind are independent across their permutations | Property | P0 | FR-046-AC-6, FR-046-AC-9 | ✅ passed |
 | TC-599 | Collection flags are accepted on collections and refused on single-valued properties | Unit | P1 | FR-046-AC-7 | ✅ passed |
 | TC-600 | Constraint applicability is exercised across every structural kind | Unit | P1 | FR-050-AC-11 | ✅ passed |
@@ -737,6 +791,31 @@ passes.
 | TC-617 | A relationship target resolving to an imported export validates | Unit | P1 | FR-050-AC-1, FR-050-AC-12 | ✅ passed |
 | TC-618 | A caret constraint selects the highest satisfying version across two search directories | Unit | P1 | FR-047-AC-11 | ✅ passed |
 | TC-619 | A projection to the document's own version returns it unchanged | Unit | P1 | FR-051-AC-13 | ✅ passed |
+| TC-620 | Every NFR-021 gate resolves both ends of its range from history — neither a moving base nor a moving head — and still fails on the same input in a simulated post-merge tree where the branch diff and `git status` are both empty | Integration | P0 | NFR-021-AC-9 | ✅ passed |
+| TC-621 | An unaccounted-for file under `src/compiler/` fails the promotion-inventory gate in that same post-merge tree | Static | P0 | NFR-021-AC-9 | ✅ passed |
+| TC-622 | A union variant whose `payloadType` no type declares is rejected at that variant's locus; two variants sharing one payload type are accepted | Unit | P0 | FR-038-AC-7 | ✅ passed — conformance corpus (PR pending) |
+| TC-623 | A `1.0.0` document under `1.1.0` rules, a `1.1.0` node in a `1.0.0` document, and an export added and removed each produce the stated result | Unit | P0 | FR-038-AC-8 | ✅ passed — conformance corpus (PR pending) |
+| TC-624 | Every register row's `sources` resolve, and every listed issue #19 criterion is quoted in its row and covered by a case | Unit | P0 | FR-038-AC-9, FR-038-CON-1, FR-038-CON-2 | ✅ passed — conformance corpus (PR pending) |
+| TC-625 | Cross-language generated-package serialization parity is recorded as an unmet area with issues #21, #22, #23, and #11 as owners | Static | P0 | FR-038-CON-3 | ✅ passed — conformance corpus (PR pending) |
+| TC-626 | Regenerating `coverage.json` reproduces the committed file byte-for-byte; adding a case without regenerating fails the gate | Unit | P0 | FR-039-AC-1, FR-039-CON-1 | ✅ passed — conformance corpus (PR pending) |
+| TC-627 | `thresholds.json` declares a `proposed` row for each of issues #19, #21, #22, and #23 with all four thresholds and an owning issue | Unit | P0 | FR-039-AC-2 | ✅ passed — conformance corpus (PR pending) |
+| TC-628 | Every catalogued mutation is detected by at least one case; suppressing a detecting case drops the score and fails the gate | Unit | P0 | FR-039-AC-3, FR-039-CON-3 | ✅ passed — conformance corpus (PR pending) |
+| TC-629 | The mutation catalogue carries at least one mutation for every construct-register family | Unit | P0 | FR-039-AC-4 | ✅ passed — conformance corpus (PR pending) |
+| TC-630 | A consumer importing `conformance/oracle/index.mjs` from another working directory loads the corpus, builds an input, and obtains a verdict | Integration | P0 | FR-039-AC-5 | ✅ passed — conformance corpus (PR pending) |
+| TC-631 | `loadCase` on an unknown id throws naming the id and the corpus version; mutating a returned case does not affect a later load | Unit | P0 | FR-039-AC-6, FR-039-CON-2 | ✅ passed — conformance corpus (PR pending) |
+| TC-632 | A registry adapter with no threshold row, and a threshold row with no registry adapter, each fail the gate | Unit | P0 | FR-039-AC-7 | ✅ passed — conformance corpus (PR pending) |
+| TC-633 | `package.json` gains no `exports` or `files` entry for `conformance/`, and the coverage account names the unmet serialization area | Static | P0 | FR-039-AC-8 | ✅ passed — conformance corpus (PR pending) |
+| TC-634 | The coverage account is byte-identical when regenerated from a different working directory and under a different locale | Property | P0 | FR-039-AC-9 | ✅ passed — conformance corpus (PR pending) |
+| TC-635 | No case is blessed from a run and every `derivedFrom` quote occurs verbatim in the named contract artifact | Unit | P0 | NFR-015-AC-1 | ✅ passed — conformance corpus (PR pending) |
+| TC-636 | Oracle verdicts, the harness report, and the coverage account are byte-identical across two runs, two locales, and two working directories | Property | P0 | NFR-015-AC-2 | ✅ passed — conformance corpus (PR pending) |
+| TC-637 | The oracle and the harness import no judged implementation and read no clock, network, or environment outside the audit target | Static | P0 | NFR-015-AC-3 | ✅ passed — conformance corpus (PR pending) |
+| TC-638 | Every divergence entry carries an owner and a verdict, and every contract or merged-artifact disagreement sits in `contract-gaps.json` with its owning issue | Manual | P0 | NFR-015-AC-4 | ✅ passed — conformance corpus (PR pending) |
+| TC-639 | An expected result changes only under a `corpus-defect` verdict carrying the major `corpusVersion` bump | Static | P0 | NFR-015-AC-5 | ✅ passed — conformance corpus (PR pending) |
+| TC-640 | The issue #20 changed-path gate excludes `/spikes/`, `/src/`, `/packages/`, `/schema/`, `/fixtures/`, `/docs/`, `/.github/`, and both lockfiles | Static | P0 | NFR-016-AC-1 | ✅ passed — conformance corpus (PR pending) |
+| TC-641 | The change adds no dependency to `package.json` or `pyproject.toml` and no `exports` or `files` entry | Static | P0 | NFR-016-AC-2 | ✅ passed — conformance corpus (PR pending) |
+| TC-642 | The conformance suites run from `make test` and `poetry run pytest` with no network connection and no clock read | Integration | P0 | NFR-016-AC-3 | ✅ passed — conformance corpus (PR pending) |
+| TC-643 | A changed-path and manifest analysis shows the change publishes no package and alters no consumer, catalog pin, or Avro contract | Static | P0 | NFR-016-AC-4 | ✅ passed — conformance corpus (PR pending) |
+| TC-644 | A later unrelated change landing on top of this one does not grow this change's path set, and a prohibited path left in the tree at a path no later commit owns still fails the gate | Integration | P0 | NFR-021-AC-10 | ✅ passed |
 
 ## Option Permutation Matrix
 
@@ -771,6 +850,11 @@ passes.
 | TC-277 | `TypeRef.unit` | unit-allowed scalar / other scalar / `SemanticId` / `returns` | present or absent | Allowed only on `Integer`, `Decimal`, `Timestamp`, `Duration` fields |
 | TC-250, TC-251 | closed enumerations | eleven keywords / seven categories | member vs non-member | Members accepted, non-members rejected by the emitted schema |
 | TC-253, TC-264 | package version | `v1` / `v1` + addition | regenerate | Prior version bytes unchanged; new version additive |
+| TC-316 | field presence and nullability | `required` / `optional` | `nullable: true` / `nullable: false` | All four combinations are distinct normalized forms; neither is inferable from the other |
+| TC-305, TC-309 | adapter answer | `supported` / `unsupported` / `unavailable` | declared in the case or the registry, or undeclared | Declared `unsupported` and registry-declared `unavailable` are recorded; every undeclared answer fails |
+| TC-321 | contract version | `1.0.0` / `1.1.0` | node present or absent | A `1.1.0` node in a `1.0.0` document, and a `1.0.0` document read under `1.1.0` rules, each classify as the register row states |
+| TC-296 | compatibility change | optional addition / required addition / removal | consumer policy preserving, rejecting, or absent | Most restrictive classification wins, an optional addition is additive only under a preserving policy, and every contributing change is named |
+| TC-312 | adapter pointer scheme | `pointerCompatible: true` / `false` | matching or mismatched locus | The pointer is compared only for a compatible adapter; a wrong locus always fails |
 | TC-322, TC-324 | prototype component | `retain` / `rewrite` / `replace-with-official` / `discard` | targets present or empty | Promoted dispositions name a file; non-promoted dispositions name none |
 | TC-327, TC-330 | `src/compiler/` file | promoted component target / promotion-authored | inventory `components` or `authored` | Every file is owned exactly once, and `authored` cannot launder a component |
 | TC-333, TC-336 | IR production route | programmatic / CLI / `tsp --emit` | same entrypoint and generator | All three routes produce the same IR document |
@@ -850,6 +934,12 @@ passes.
 | Multiplicity (grammar) | Min / Below min | `lower: 0` / `lower: -1` | TC-263 | Pass / fail `Multiplicity.json` |
 | FR-030-CON-1 | Allowed | `contractVersion: "1.0.0"` with the v1 dialect constant under the v1 schema | TC-231 | Pass |
 | FR-030-CON-2 | Prohibited | Manifest and target-contract enumerations diverge | TC-230 | Schema inspection fails |
+| FR-035-AC-6 minimization budget | Max / Above max | 64 `ops` nodes / 65 `ops` nodes | TC-285 | Pass / fail the corpus gate |
+| FR-036 single violation | Allowed / Prohibited | one seeded violation / two seeded violations | TC-290 | Exactly one oracle diagnostic / gate fails |
+| FR-036 expansion depth | Max / Above max | acyclic alias chain of 256 / of 257 | TC-292 | Verdict returned / `DEPTH_LIMIT_EXCEEDED` at the exceeding node |
+| FR-037 divergence `reviewBy` | Allowed / Reported | a future date / a past date | TC-306 | Audit target silent / audit target reports the entry |
+| FR-038-AC-1 class coverage | Min / Below min | four classes, or three plus a justified `notApplicable` / three unjustified | TC-314 | Pass / fail naming the row and the missing class |
+| FR-039-AC-3 mutation score | Min / Below min | every catalogued mutation detected / one undetected | TC-628 | Pass / fail naming the mutation |
 | FR-040-CON-2 | Allowed | `retain`, `rewrite`, `replace-with-official`, `discard` | TC-322 | Inventory test passes |
 | FR-040-CON-2 | Prohibited | A fifth disposition value such as `defer` | TC-323 | Inventory test fails |
 | FR-040-CON-1 | Allowed | A `partial` capability whose limitation is restated | TC-329 | Inventory test passes |
@@ -923,6 +1013,11 @@ passes.
 | semantic-core `v1` | grammar addition under `Versions.v2` | `v1` projection byte-identical; `v2` additive | TC-253 |
 | raw official bundle | #31 normalization applied | absolute `$id` bundle that validates without alias | TC-262, TC-265 |
 | normalized bundle | issue #31 fixed upstream | normalization removed; raw bundle validates | TC-266 |
+| adapter `status: unavailable` | the owning backend ships | `status: available`; every `unavailable` answer now fails | TC-305 |
+| divergence entry open | the owning issue fixes the defect | the entry no longer reproduces and the run fails until it is removed | TC-306 |
+| corpus `1.x.y` | a case is added | minor bump, regenerated `coverage.json`, new `corpusDigest` | TC-283, TC-626 |
+| corpus `1.x.y` | an existing `expected` block changes | major bump under a `corpus-defect` verdict; a minor bump fails the versioning gate | TC-287, TC-639 |
+| package version `v1` | an export is added and another removed | additive plus breaking; the pair classifies `breaking` | TC-321 |
 | prototype component in `spikes/` | promotion inventory records a disposition | owned `src/compiler/` module or an explicit non-promotion | TC-320, TC-324, TC-327 |
 | spike emitter package present | promotion removes the `file:` dependency | spike replays through `src/compiler/` and stays byte-identical | TC-371, TC-375, TC-377 |
 | promoted compiler in the tree | every path differing from the pre-promotion commit is restored from it | the spike emitter returns as the only generator | TC-395 |
@@ -993,6 +1088,21 @@ passes.
 | ERR-058 | No committed `Cargo.lock` while the runner is in `--check` mode | The runner exits non-zero naming the missing lockfile | TC-374 |
 | ERR-059 | The branch changes a path the isolation allowlist does not cover | TC-123/TC-124 fail naming the path | TC-379, TC-390 |
 | ERR-060 | The declarations in `index.d.mts` drift from `index.mjs` | `tsc --noEmit` fails | TC-344 |
+| ERR-061 | An import names a package the lock does not resolve | Oracle rejects at the import's locus | TC-298, TC-315 |
+| ERR-101 | The lock package graph closes a cycle | Oracle rejects with a package-cycle code distinct from a recursive type graph | TC-315, TC-317 |
+| ERR-063 | A mapping names an identity no declaration owns | Oracle rejects at the mapping's locus | TC-298, TC-315 |
+| ERR-064 | The same semantic identity is declared twice anywhere in the document | Oracle rejects at the second declaration | TC-293, TC-315 |
+| ERR-104 | The IR's `manifestDigest` no longer matches the manifest | Oracle rejects as a stale lock | TC-298, TC-315 |
+| ERR-105 | An entity-role type is neither exported nor declared an allowed omission | Oracle rejects as undeclared loss | TC-298, TC-315 |
+| ERR-106 | An alias chain closes on itself | Oracle emits `ALIAS_CYCLE`, not an unresolved reference or a depth error | TC-292, TC-293 |
+| ERR-107 | A union variant's `payloadType` resolves to nothing | Oracle rejects at that variant's locus | TC-622 |
+| ERR-108 | An adapter command exits non-zero or emits a result failing its schema | Harness fails that adapter per case and exits non-zero | TC-308 |
+| ERR-109 | An adapter answers `unsupported` or `unavailable` where nothing declares it | Harness fails naming the case and the adapter | TC-305, TC-309 |
+| ERR-110 | A divergence entry reproduces nothing, or its `reviewBy` has passed | Harness fails, or the audit target reports it | TC-306 |
+| ERR-111 | `coverage.json` is hand-edited | Coverage gate fails naming the differing rows | TC-626 |
+| ERR-112 | `loadCase` is called with an id the corpus does not declare | The import API throws naming the id and the corpus version | TC-631 |
+| ERR-113 | An adapter answers with a `caseDigest` the manifest does not carry | Harness rejects the result rather than counting it | TC-311 |
+| ERR-075 | An indexed `replace` or `remove` op carries no preceding `test` op | Corpus gate fails naming the case | TC-286 |
 | ERR-061 | A caller names a source dialect outside the closed vocabulary | `selectFrontend` throws a `TypeError` naming the permitted set | TC-399 |
 | ERR-062 | A caller names the registered but unimplemented `spec-bundle` dialect | One blocking `FRONTEND_NOT_IMPLEMENTED` naming issue #36 | TC-400 |
 | ERR-063 | A TypeSpec declaration extends a built-in scalar outside the mapping | `UNSUPPORTED_SCALAR_BASE` at the declaration locus | TC-434 |
@@ -1074,12 +1184,13 @@ passes.
 | EC-035 | Module vocabulary smuggled in as a "support type" | NFR-014 | TC-249, TC-273 | Kernel grows into the generic entity class ARCH-005 forbids |
 | EC-036 | Constraint on a field whose kernel scalar is shared by other fields | FR-034 | TC-268, TC-269 | `min` on one field constrains every `Integer` unless a per-field alias is minted |
 | EC-037 | Official emitter is not version-aware | FR-031, FR-033 | TC-253 | A `@versioned` claim cannot be evidenced; package semver carries the version instead |
+Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping gap remains for issues #8, #10, #4, #9, #34, or #35. Issue #35's
 | EC-038 | The promoted emitter changes the generator identity stamped into the frozen spike IR | FR-044 | TC-338, TC-339, TC-371 | The frozen issue #4 record is silently rebaselined and stops being historical evidence |
 | EC-039 | An unpinned transitive Rust crate publishes a new version | NFR-017, FR-044 | TC-372, TC-373, TC-387 | The retained-evidence gate goes red for reasons unrelated to any change, inviting a rebaseline |
 | EC-040 | A prototype component is promoted because its one representative golden passed | FR-040, FR-042 | TC-326, TC-358 | Unmeasured recursion, generics, or version transitions misgenerate consumer contracts |
 | EC-041 | The promotion is landed alongside a package publication or consumer move | NFR-018 | TC-390, TC-396 | A later compiler defect cannot be backed out without a consumer migration |
 | EC-042 | A backend writes files, so a package ticket must edit the backend to change layout | FR-042 | TC-352 | Layout policy leaks into the generator and each target ticket forks it |
-| EC-043 | The Python adapter's forbidden-key list is narrowed to make a schema pass | FR-043 | TC-362, TC-363 | Caller-controlled Python reaches the generated models |
+| EC-068 | The Python adapter's forbidden-key list is narrowed to make a schema pass | FR-043 | TC-362, TC-363 | Caller-controlled Python reaches the generated models |
 | EC-044 | The host's ICU data orders type ids differently from the minting host | NFR-017, FR-041 | TC-342, TC-385 | Every downstream golden and the retained fingerprint flip on a different host |
 | EC-045 | The compiler is invoked from a directory other than the repository root | NFR-017, FR-041 | TC-341, TC-386 | Absolute host paths are written into the IR with every gate green |
 | EC-046 | The retained evidence records the minting host's own tool versions | NFR-017, FR-044 | TC-370, TC-389 | The gate can only ever pass on one workstation (issue #42) |
@@ -1102,6 +1213,10 @@ passes.
 
 ## Coverage Gaps
 
+Issue #20's 62 cases (TC-280..319 and TC-398..419) are fully mapped and pass.
+The block is split because issue #27 reserved TC-280..319 for issue #20 and then
+took TC-320..397 itself; issue #20 fills the reserved block and continues after
+issue #27's highest row rather than leaving a gap.
 Issue #27's 78 cases (TC-320..397) are mapped; 76 pass and TC-370 and TC-382
 are blocked on issue #42, which records three host couplings in the retained
 issue #4 evidence; issue #27 repairs only the lockfile seeding, which changes no
@@ -1123,21 +1238,19 @@ dialect, so they demonstrate that the harness runs and that a single-dialect
 case is reported as such — not cross-frontend equivalence, which needs the
 spec-bundle frontend of issue #36. The issue #19 acceptance criterion
 "independent frontend fixtures produce equivalent IR where semantics agree" is
-therefore partially satisfied by construction and completes with #36.
-
-## Test Execution Summary
+therefore partially satisfied by construction and completes with #36.## Test Execution Summary
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 181 | 181 | 0 | 0 | 100% mapped (181/181) |
-| Manual | 45 | 44 | 0 | 1 | 100% mapped (45/45) |
+| Static | 191 | 191 | 0 | 0 | 100% mapped (191/191) |
+| Manual | 46 | 45 | 0 | 1 | 100% mapped (46/46) |
 | Analysis | 17 | 17 | 0 | 0 | 100% mapped (17/17) |
-| Property | 43 | 43 | 0 | 0 | 100% mapped (43/43) |
-| Unit | 230 | 230 | 0 | 0 | 100% mapped (230/230) |
-| Integration | 39 | 38 | 0 | 1 | 100% mapped (39/39) |
+| Property | 48 | 48 | 0 | 0 | 100% mapped (48/48) |
+| Unit | 273 | 273 | 0 | 0 | 100% mapped (273/273) |
+| Integration | 42 | 41 | 0 | 1 | 100% mapped (42/42) |
 | Fuzz | 7 | 7 | 0 | 0 | 100% mapped (7/7) |
 | Snapshot | 17 | 17 | 0 | 0 | 100% mapped (17/17) |
 | Compile | 3 | 3 | 0 | 0 | 100% mapped (3/3) |
-| **Total** | **582** | **580** | **0** | **2** | **100% mapped (582/582)** |
+| **Total** | **644** | **642** | **0** | **2** | **100% mapped (644/644)** |
 
-**Matrix coverage status: ✅ Complete. Execution status: ✅ 580 of 582 rows pass, 2 blocked; the automated suite is 302 of 302 across 9 files, measured with `make test` on the issue #19 follow-up branch. TC-199 is recorded by the owner decision on issue #4; TC-370 and TC-382 remain blocked on issue #42 (the retained issue #4 evidence records the minting host's own tool versions). TC-398..619 pass on the issue #19 branch, measured with `make test` after merging `origin/main` at 4e48f08. The `Coverage` column is measured by `scripts/test-matrix-summary.mjs`, which counts the rows naming an id a spec artifact declares; it was a string literal before issue #19's code review (SR-073 FND-658). The `Blocked` column counts every row whose status is not ✅. Issue #19 measured `origin/main` at 51febd4 as **168 of 173** and filed the cause as #48; PR #47 re-expressed those five guards as tree assertions on `main`, and this branch takes that form. Issue #20 then measured the remaining direction: the NFR-021 changed-path range was fixed at its base but open at its head, so it grew from 236 paths and 0 prohibited hits against the merged trunk to 406 paths and 139 against a sibling branch. Both ends now come from history, and TC-644 rehearses the property on a synthetic history rather than inferring it from the shape of the source. Three states were measured for the fix, because the two-number standard cannot see an accreting range: **302 of 302** on the branch; **302 of 302** in a scratch clone where the branch is squash-merged onto f412bda and `origin/main` is repointed so both `git diff origin/main...HEAD` and `git status --porcelain` are empty; and **408 of 408 across 10 files** in that same clone with issue #20 (ad9c552) squash-merged on top. The third state is **406 of 407 with one failure** without this fix — `not permitted: conformance/README.md` — which is the defect. In the fixed third state issue #19's own range is 236 paths with 0 prohibited hits while the open-ended range over the same history is 406 paths with 139.**
+**Matrix coverage status: ✅ Complete. Execution status: ✅ 642 of 644 rows pass, 2 blocked; the automated suite is measured with `make test` and restated at the end of this line. TC-199 is recorded by the owner decision on issue #4; TC-370 and TC-382 remain blocked on issue #42 (the retained issue #4 evidence records the minting host's own tool versions). TC-398..619 pass on the issue #19 branch, measured with `make test` after merging `origin/main` at 4e48f08. The `Coverage` column is measured by `scripts/test-matrix-summary.mjs`, which counts the rows naming an id a spec artifact declares; it was a string literal before issue #19's code review (SR-073 FND-658). The `Blocked` column counts every row whose status is not ✅. Issue #19 measured `origin/main` at 51febd4 as **168 of 173** and filed the cause as #48; PR #47 re-expressed those five guards as tree assertions on `main`, and this branch takes that form. Issue #20 then measured the remaining direction: the NFR-021 changed-path range was fixed at its base but open at its head, so it grew from 236 paths and 0 prohibited hits against the merged trunk to 406 paths and 139 against a sibling branch. Both ends now come from history, and TC-644 rehearses the property on a synthetic history rather than inferring it from the shape of the source. Three states were measured for the fix, because the two-number standard cannot see an accreting range: **302 of 302** on the branch; **302 of 302** in a scratch clone where the branch is squash-merged onto f412bda and `origin/main` is repointed so both `git diff origin/main...HEAD` and `git status --porcelain` are empty; and **408 of 408 across 10 files** in that same clone with issue #20 (ad9c552) squash-merged on top. The third state is **406 of 407 with one failure** without this fix — `not permitted: conformance/README.md` — which is the defect. In the fixed third state issue #19's own range is 236 paths with 0 prohibited hits while the open-ended range over the same history is 406 paths with 139. Issue #20 then merged that fix and measured three states on `origin/main` at 3ddc04b, each with `pnpm install` and `poetry install`: **409 of 409 across 10 files** on the branch, identical on a second run; **409 of 409** in a scratch clone where the branch is squash-merged onto 3ddc04b and `origin/main` is repointed so both `git diff origin/main...HEAD` and `git status --porcelain` are empty; and **409 of 409** in that same clone with an unrelated sibling change squashed on top that adds `src/sibling/marker.mjs` and edits `docs/semantic-data-system/roadmap.md`. `poetry run pytest` is 131 of 131 in all three. The third state is what found the same defect one layer down in this corpus's own gates: measured against the range before it was bounded at its tip, it is **2 failed of 106**, attributing the sibling's `src/` and `docs/` paths to issue #20. TC-639 now asserts that every sentinel resolves and that nothing under `conformance/` is added after the range's tip, because a sentinel list is the kind of thing that rots quietly. The corpus's one remaining read of a moving ref is the versioning gate's predecessor, which is deliberate — a baseline the branch under test can edit is not a baseline — and is declared in the manifest so an unreadable ref fails loudly instead of skipping.**

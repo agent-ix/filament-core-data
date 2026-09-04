@@ -1,0 +1,60 @@
+{
+	"id": "PKG-008",
+	"title": "An entity neither exported nor declared an allowed omission is rejected",
+	"family": "package",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "package-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/manifest/exports/1",
+			"value": {
+				"name": "Node",
+				"typeIdentity": "ix://agent-ix/conformance/type/Node",
+				"visibility": "public"
+			}
+		},
+		{
+			"op": "remove",
+			"path": "/manifest/exports/1"
+		}
+	],
+	"covers": ["CR-package"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Mappings and profiles",
+			"quote": "every omitted identity; undeclared loss fails."
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/8/identity",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.UNDECLARED_LOSS",
+					"severity": "error",
+					"message": "declared loss lists every omitted identity and undeclared loss fails",
+					"owner": "ix://agent-ix/conformance/type/Node",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/node.tsp",
+						"startLine": 4,
+						"startColumn": 1
+					}
+				}
+			}
+		]
+	}
+}

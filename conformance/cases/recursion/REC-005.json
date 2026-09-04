@@ -1,0 +1,111 @@
+{
+	"id": "REC-005",
+	"title": "An acyclic alias chain past the declared depth limit is bounded",
+	"family": "recursion",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "x-repeat",
+			"path": "/ir/types/-",
+			"count": 258,
+			"template": {
+				"identity": "ix://agent-ix/conformance/type/Deep$i",
+				"displayName": "Deep$i",
+				"kind": "alias",
+				"roles": [],
+				"origin": {
+					"generated": {
+						"generatorIdentity": "ix://agent-ix/conformance/generator/case-author",
+						"generatorVersion": "1.0.0",
+						"inputIdentities": [
+							"ix://agent-ix/filament-core-data/source/typespec"
+						]
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"target": "ix://agent-ix/conformance/type/Deep$n"
+			}
+		},
+		{
+			"op": "add",
+			"path": "/ir/types/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/type/Deep258",
+				"displayName": "Deep258",
+				"kind": "alias",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 110,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"target": "ix://agent-ix/conformance/type/Text"
+			}
+		}
+	],
+	"covers": ["CR-recursion"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Safety and reproducibility",
+			"quote": "have declared finite limits and terminate with source-located diagnostics."
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/10/target",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.DEPTH_LIMIT_EXCEEDED",
+					"severity": "error",
+					"message": "alias expansion is bounded at the declared finite depth",
+					"owner": "ix://agent-ix/conformance/type/Deep0",
+					"blocking": true,
+					"causes": [],
+					"related": []
+				}
+			},
+			{
+				"pointer": "/ir/types/11/target",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.DEPTH_LIMIT_EXCEEDED",
+					"severity": "error",
+					"message": "alias expansion is bounded at the declared finite depth",
+					"owner": "ix://agent-ix/conformance/type/Deep1",
+					"blocking": true,
+					"causes": [],
+					"related": []
+				}
+			},
+			{
+				"pointer": "/ir/types/12/target",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.DEPTH_LIMIT_EXCEEDED",
+					"severity": "error",
+					"message": "alias expansion is bounded at the declared finite depth",
+					"owner": "ix://agent-ix/conformance/type/Deep2",
+					"blocking": true,
+					"causes": [],
+					"related": []
+				}
+			}
+		]
+	}
+}

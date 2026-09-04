@@ -1,0 +1,86 @@
+{
+	"id": "ALIAS-004",
+	"title": "Moving a field to an alias of the same scalar changes no meaning",
+	"family": "alias",
+	"class": "evolution",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/type/Words",
+				"displayName": "Words",
+				"kind": "alias",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 110,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"target": "ix://agent-ix/conformance/type/Text"
+			}
+		},
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/0/typeRef",
+			"value": "ix://agent-ix/conformance/type/Text"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/0/typeRef",
+			"value": "ix://agent-ix/conformance/type/Words"
+		}
+	],
+	"beforeBase": "core-1-1",
+	"beforeOps": [
+		{
+			"op": "add",
+			"path": "/ir/types/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/type/Words",
+				"displayName": "Words",
+				"kind": "alias",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 110,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"target": "ix://agent-ix/conformance/type/Text"
+			}
+		}
+	],
+	"covers": ["CR-alias"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "Required additions, removals, incompatible meaning/type changes, stable identity"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "patch"
+	}
+}

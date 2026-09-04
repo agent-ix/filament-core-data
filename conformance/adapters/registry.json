@@ -1,0 +1,38 @@
+{
+	"$comment": "The declared implementations the harness judges. A slot exists whether or not it is runnable today: an absent backend is an unmet row in the coverage account, never a pass. Supplying the command and an adapter-result emitter is the owning issue's obligation, not issue #20's; issue #20 declares the slot and the result contract.",
+	"ownership": "Each owning issue supplies its adapter command and an emitter that writes one conformance/schema/adapter-result.schema.json document per case to stdout as a JSON array. Issue #20 declares the slots, the result contract, and the comparison; it does not implement any adapter.",
+	"adapters": [
+		{
+			"id": "compiler-frontend",
+			"language": "typescript",
+			"owningIssue": "agent-ix/filament-core-data#19",
+			"status": "unavailable",
+			"pointerCompatible": true,
+			"rationale": "The TypeSpec frontend and IR compiler core are not implemented; the prototype under spikes/ emits a document the published schema rejects (conformance/defects.json DEF-PROTO-001)."
+		},
+		{
+			"id": "rust-backend",
+			"language": "rust",
+			"owningIssue": "agent-ix/filament-core-data#21",
+			"status": "unavailable",
+			"pointerCompatible": false,
+			"rationale": "No Rust crate exists in this repository. pointerCompatible is false because the published sourceLocus path pattern cannot compile under RE2 (conformance/contract-gaps.json GAP-002), so a Rust reader is expected to locate by its own scheme."
+		},
+		{
+			"id": "typescript-backend",
+			"language": "typescript",
+			"owningIssue": "agent-ix/filament-core-data#22",
+			"status": "unavailable",
+			"pointerCompatible": true,
+			"rationale": "No generated TypeScript package exists; the merged issue #34 reader is evidence for that issue, not an adapter, and the oracle may not import it."
+		},
+		{
+			"id": "python-backend",
+			"language": "python",
+			"owningIssue": "agent-ix/filament-core-data#23",
+			"status": "unavailable",
+			"pointerCompatible": true,
+			"rationale": "No generated Python package exists; the merged issue #34 reader is evidence for that issue, not an adapter, and the oracle may not import it."
+		}
+	]
+}

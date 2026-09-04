@@ -1,0 +1,76 @@
+{
+	"id": "PRES-010",
+	"title": "Nullability is a member, not a substring of a rendered type name",
+	"family": "field-presence",
+	"class": "positive",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/type/Annullable",
+				"displayName": "Annullable",
+				"kind": "scalar",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 170,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"scalar": "string"
+			}
+		},
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/1/typeRef",
+			"value": "ix://agent-ix/conformance/type/Text"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/1/typeRef",
+			"value": "ix://agent-ix/conformance/type/Annullable"
+		},
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/1/nullable",
+			"value": true
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/1/nullable",
+			"value": false
+		}
+	],
+	"covers": ["CR-field-presence"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "Fields independently encode required/optional presence, nullable/non-nullable"
+		},
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "identities are explicit. Display names, generated identifiers, source paths,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false,
+		"reproduces": "DEF-PROTO-004"
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

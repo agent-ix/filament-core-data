@@ -1,0 +1,37 @@
+{
+	"id": "ENV-003",
+	"title": "A document carrying the schema minimum of one type is accepted",
+	"family": "envelope",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "minimal-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/1/identity",
+			"value": "ix://agent-ix/conformance/type/Leaf"
+		},
+		{
+			"op": "remove",
+			"path": "/ir/types/1"
+		}
+	],
+	"covers": ["CR-envelope"],
+	"decidedBy": "schema",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "discriminated by `contractVersion`"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

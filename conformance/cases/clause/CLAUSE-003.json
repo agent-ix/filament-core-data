@@ -1,0 +1,38 @@
+{
+	"id": "CLAUSE-003",
+	"title": "A clause whose text is empty is accepted",
+	"family": "clause",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/9/clauses/0/text",
+			"value": "size >= 0"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/9/clauses/0/text",
+			"value": ""
+		}
+	],
+	"covers": ["CR-clause"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "(`language` of `ocl`, `sysml`, `fretish`, or `<ns>:<name>`; `clauseId` unique"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

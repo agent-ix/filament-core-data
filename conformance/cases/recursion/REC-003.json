@@ -1,0 +1,109 @@
+{
+	"id": "REC-003",
+	"title": "A mutually recursive alias pair is rejected at both ends",
+	"family": "recursion",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/type/Ping",
+				"displayName": "Ping",
+				"kind": "alias",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 110,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"target": "ix://agent-ix/conformance/type/Pong"
+			}
+		},
+		{
+			"op": "add",
+			"path": "/ir/types/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/type/Pong",
+				"displayName": "Pong",
+				"kind": "alias",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 111,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"target": "ix://agent-ix/conformance/type/Ping"
+			}
+		}
+	],
+	"covers": ["CR-recursion"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "Recursive references retain graph identity."
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/10/target",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.ALIAS_CYCLE",
+					"severity": "error",
+					"message": "the alias chain closes on itself",
+					"owner": "ix://agent-ix/conformance/type/Ping",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 110,
+						"startColumn": 1
+					}
+				}
+			},
+			{
+				"pointer": "/ir/types/11/target",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.ALIAS_CYCLE",
+					"severity": "error",
+					"message": "the alias chain closes on itself",
+					"owner": "ix://agent-ix/conformance/type/Pong",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 111,
+						"startColumn": 1
+					}
+				}
+			}
+		]
+	}
+}

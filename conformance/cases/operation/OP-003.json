@@ -1,0 +1,52 @@
+{
+	"id": "OP-003",
+	"title": "An operation with no parameters and no return is accepted",
+	"family": "operation",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/9/identity",
+			"value": "ix://agent-ix/conformance/type/Root"
+		},
+		{
+			"op": "add",
+			"path": "/ir/types/9/operations/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/operation/root-touch",
+				"name": "touch",
+				"params": [],
+				"pre": [],
+				"post": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/root.tsp",
+						"startLine": 12,
+						"startColumn": 3
+					}
+				}
+			}
+		}
+	],
+	"covers": ["CR-operation"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "bound by `clauseId`), and any type definition carries `clauses[]`"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

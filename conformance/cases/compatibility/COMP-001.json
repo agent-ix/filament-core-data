@@ -1,0 +1,30 @@
+{
+	"id": "COMP-001",
+	"title": "A document compared with itself is a patch-level change",
+	"family": "compatibility",
+	"class": "positive",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [],
+	"beforeBase": "core-1-1",
+	"beforeOps": [],
+	"covers": ["CR-compatibility"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "Required additions, removals, incompatible meaning/type changes, stable identity"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "patch"
+	}
+}

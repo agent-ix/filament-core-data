@@ -1,0 +1,48 @@
+{
+	"id": "DEF-003",
+	"title": "A migration default whose value is null is accepted",
+	"family": "field-default",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/3/defaultKind",
+			"value": "semantic"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/3/defaultKind",
+			"value": "migration"
+		},
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/3/defaultValue",
+			"value": "draft"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/3/defaultValue",
+			"value": null
+		}
+	],
+	"covers": ["CR-field-default"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "values, and no/semantic/representation/migration defaults."
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

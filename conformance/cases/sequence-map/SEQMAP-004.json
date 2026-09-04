@@ -1,0 +1,41 @@
+{
+	"id": "SEQMAP-004",
+	"title": "Changing a map's value type is an incompatible type change",
+	"family": "sequence-map",
+	"class": "evolution",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/5/values",
+			"value": "ix://agent-ix/conformance/type/Text"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/5/values",
+			"value": "ix://agent-ix/conformance/type/Count"
+		}
+	],
+	"beforeBase": "core-1-1",
+	"beforeOps": [],
+	"covers": ["CR-sequence-map"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "Required additions, removals, incompatible meaning/type changes, stable identity"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "breaking"
+	}
+}

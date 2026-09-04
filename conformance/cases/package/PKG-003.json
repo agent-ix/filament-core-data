@@ -1,0 +1,61 @@
+{
+	"id": "PKG-003",
+	"title": "A lock resolving the schema minimum of one package is accepted",
+	"family": "package",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "package-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/lock/packages/1/identity",
+			"value": "agent-ix/kernel"
+		},
+		{
+			"op": "remove",
+			"path": "/lock/packages/1"
+		},
+		{
+			"op": "test",
+			"path": "/manifest/imports/0",
+			"value": {
+				"packageIdentity": "agent-ix/kernel",
+				"versionConstraint": "1.0.0",
+				"exports": ["Text"],
+				"capabilities": ["documentation"]
+			}
+		},
+		{
+			"op": "remove",
+			"path": "/manifest/imports/0"
+		},
+		{
+			"op": "test",
+			"path": "/lock/packages/0/dependencies",
+			"value": ["agent-ix/kernel"]
+		},
+		{
+			"op": "replace",
+			"path": "/lock/packages/0/dependencies",
+			"value": []
+		}
+	],
+	"covers": ["CR-package"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Packages, locks, and fingerprints",
+			"quote": "source identities, and dependencies. Package cycles are rejected with every"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

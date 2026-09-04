@@ -1,0 +1,74 @@
+{
+	"id": "ALIAS-003",
+	"title": "An alias chain exactly at the declared depth limit resolves",
+	"family": "alias",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "x-repeat",
+			"path": "/ir/types/-",
+			"count": 255,
+			"template": {
+				"identity": "ix://agent-ix/conformance/type/Link$i",
+				"displayName": "Link$i",
+				"kind": "alias",
+				"roles": [],
+				"origin": {
+					"generated": {
+						"generatorIdentity": "ix://agent-ix/conformance/generator/case-author",
+						"generatorVersion": "1.0.0",
+						"inputIdentities": [
+							"ix://agent-ix/filament-core-data/source/typespec"
+						]
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"target": "ix://agent-ix/conformance/type/Link$n"
+			}
+		},
+		{
+			"op": "add",
+			"path": "/ir/types/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/type/Link255",
+				"displayName": "Link255",
+				"kind": "alias",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 110,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"target": "ix://agent-ix/conformance/type/Text"
+			}
+		}
+	],
+	"covers": ["CR-alias"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Safety and reproducibility",
+			"quote": "have declared finite limits and terminate with source-located diagnostics."
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

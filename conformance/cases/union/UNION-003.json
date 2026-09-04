@@ -1,0 +1,64 @@
+{
+	"id": "UNION-003",
+	"title": "A union with exactly one variant is accepted",
+	"family": "union",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/type/Single",
+				"displayName": "Single",
+				"kind": "union",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 140,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"variants": [
+					{
+						"identity": "ix://agent-ix/conformance/variant/single-text",
+						"name": "text",
+						"payloadType": "ix://agent-ix/conformance/type/Text",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/extra.tsp",
+								"startLine": 141,
+								"startColumn": 3
+							}
+						}
+					}
+				]
+			}
+		}
+	],
+	"covers": ["CR-union"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "The closed structural vocabulary is scalar, record, enum, discriminated union,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

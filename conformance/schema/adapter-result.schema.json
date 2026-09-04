@@ -1,0 +1,58 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/filament-core-data/conformance/v1/adapter-result.schema.json",
+	"title": "Conformance adapter result v1",
+	"description": "One implementation's answer for one case. The harness compares it with the oracle verdict and never with another adapter's answer.",
+	"type": "object",
+	"required": ["adapter", "adapterVersion", "caseId", "caseDigest", "support"],
+	"properties": {
+		"adapter": { "type": "string", "minLength": 1 },
+		"adapterVersion": { "type": "string", "minLength": 1 },
+		"caseId": { "$ref": "corpus-case.schema.json#/$defs/caseId" },
+		"caseDigest": {
+			"$ref": "https://schemas.agent-ix.org/filament-core-data/v1/common.schema.json#/$defs/sha256"
+		},
+		"support": { "enum": ["supported", "unsupported", "unavailable"] },
+		"resultState": {
+			"$ref": "https://schemas.agent-ix.org/filament-core-data/v1/common.schema.json#/$defs/resultState"
+		},
+		"diagnostics": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": ["pointer", "diagnostic"],
+				"properties": {
+					"pointer": { "type": "string" },
+					"diagnostic": {
+						"$ref": "https://schemas.agent-ix.org/filament-core-data/v1/common.schema.json#/$defs/diagnostic"
+					}
+				},
+				"additionalProperties": false
+			}
+		},
+		"classification": {
+			"enum": [
+				"patch",
+				"additive",
+				"conditional",
+				"breaking",
+				"unknown",
+				"invalid"
+			]
+		},
+		"normalized": { "type": "string" }
+	},
+	"allOf": [
+		{
+			"if": {
+				"type": "object",
+				"properties": { "support": { "const": "supported" } }
+			},
+			"then": {
+				"type": "object",
+				"required": ["resultState", "diagnostics", "normalized"]
+			}
+		}
+	],
+	"additionalProperties": false
+}

@@ -1,0 +1,62 @@
+{
+	"id": "OP-002",
+	"title": "A precondition naming a clause the type does not declare is rejected",
+	"family": "operation",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/9/operations/0/pre/0",
+			"value": "size-non-negative"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/9/operations/0/pre/0",
+			"value": "absent-clause"
+		}
+	],
+	"covers": ["CR-operation"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "bound by `clauseId`), and any type definition carries `clauses[]`"
+		},
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "(`language` of `ocl`, `sysml`, `fretish`, or `<ns>:<name>`; `clauseId` unique"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/9/operations/0/pre/0",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.DANGLING_CLAUSE_REF",
+					"severity": "error",
+					"message": "pre and post bind by clauseId to a clause this type declares",
+					"owner": "ix://agent-ix/conformance/operation/root-resize",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/root.tsp",
+						"startLine": 7,
+						"startColumn": 3
+					}
+				}
+			}
+		]
+	}
+}

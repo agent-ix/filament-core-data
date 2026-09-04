@@ -1,0 +1,57 @@
+{
+	"id": "CONS-002",
+	"title": "A length constraint applied to an integer is rejected",
+	"family": "constraint",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/0/constraints/0/appliesTo",
+			"value": "ix://agent-ix/conformance/type/Text"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/0/constraints/0/appliesTo",
+			"value": "ix://agent-ix/conformance/type/Count"
+		}
+	],
+	"covers": ["CR-constraint"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "The constraint `keyword` is a closed set (`min`, `max`, `exclusiveMin`,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/0/constraints/0",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE",
+					"severity": "error",
+					"message": "the applicability table does not admit this keyword on this resolved kind",
+					"owner": "ix://agent-ix/conformance/constraint/text-min-length",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/scalars.tsp",
+						"startLine": 2,
+						"startColumn": 3
+					}
+				}
+			}
+		]
+	}
+}

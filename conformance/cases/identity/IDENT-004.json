@@ -1,0 +1,56 @@
+{
+	"id": "IDENT-004",
+	"title": "Changing a stable identity is a removal and an addition",
+	"family": "identity",
+	"class": "evolution",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/2/identity",
+			"value": "ix://agent-ix/conformance/type/Millis"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/2/identity",
+			"value": "ix://agent-ix/conformance/type/Milliseconds"
+		},
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/2/typeRef",
+			"value": "ix://agent-ix/conformance/type/Millis"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/2/typeRef",
+			"value": "ix://agent-ix/conformance/type/Milliseconds"
+		}
+	],
+	"beforeBase": "core-1-1",
+	"beforeOps": [],
+	"covers": ["CR-identity"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "Required additions, removals, incompatible meaning/type changes, stable identity"
+		},
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "identities are explicit"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "breaking"
+	}
+}

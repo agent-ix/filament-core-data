@@ -1,0 +1,76 @@
+{
+	"id": "OP-005",
+	"title": "Two parameters of one operation sharing a name are rejected",
+	"family": "operation",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/9/operations/0/identity",
+			"value": "ix://agent-ix/conformance/operation/root-resize"
+		},
+		{
+			"op": "add",
+			"path": "/ir/types/9/operations/0/params/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/field/root-resize-size2",
+				"name": "size",
+				"typeRef": "ix://agent-ix/conformance/type/Count",
+				"presence": "required",
+				"nullable": false,
+				"defaultKind": "none",
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/root.tsp",
+						"startLine": 8,
+						"startColumn": 3
+					}
+				},
+				"multiplicity": {
+					"lower": 1,
+					"upper": 1
+				}
+			}
+		}
+	],
+	"covers": ["CR-operation"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "bound by `clauseId`), and any type definition carries `clauses[]`"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/9/operations/0/params/1/name",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.DUPLICATE_PARAM",
+					"severity": "error",
+					"message": "the second parameter of this operation to carry the name",
+					"owner": "ix://agent-ix/conformance/field/root-resize-size2",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/root.tsp",
+						"startLine": 8,
+						"startColumn": 3
+					}
+				}
+			}
+		]
+	}
+}

@@ -1,0 +1,57 @@
+{
+	"id": "CONS-006",
+	"title": "A string operand on a numeric keyword is rejected",
+	"family": "constraint",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/1/constraints/0/operands/value",
+			"value": 0
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/1/constraints/0/operands/value",
+			"value": "0"
+		}
+	],
+	"covers": ["CR-constraint"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "The constraint `keyword` is a closed set (`min`, `max`, `exclusiveMin`,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/1/constraints/0/operands/value",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.INVALID_OPERAND",
+					"severity": "error",
+					"message": "a numeric keyword on an integer scalar takes a number operand",
+					"owner": "ix://agent-ix/conformance/constraint/count-min",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/scalars.tsp",
+						"startLine": 6,
+						"startColumn": 3
+					}
+				}
+			}
+		]
+	}
+}

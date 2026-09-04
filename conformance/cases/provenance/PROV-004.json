@@ -1,0 +1,61 @@
+{
+	"id": "PROV-004",
+	"title": "Moving a node from a source origin to a generated one is not a contract change",
+	"family": "provenance",
+	"class": "evolution",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/0/origin",
+			"value": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+					"path": "model/scalars.tsp",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			}
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/0/origin",
+			"value": {
+				"generated": {
+					"generatorIdentity": "ix://agent-ix/conformance/generator/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://agent-ix/filament-core-data/source/typespec"
+					]
+				}
+			}
+		}
+	],
+	"beforeBase": "core-1-1",
+	"beforeOps": [],
+	"covers": ["CR-provenance"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "Required additions, removals, incompatible meaning/type changes, stable identity"
+		},
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "identities are explicit. Display names, generated identifiers, source paths,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "patch"
+	}
+}

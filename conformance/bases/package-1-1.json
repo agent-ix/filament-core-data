@@ -1,0 +1,802 @@
+{
+	"ir": {
+		"contractVersion": "1.1.0",
+		"source": {
+			"identity": "ix://agent-ix/filament-core-data/source/typespec",
+			"version": "1.0.0",
+			"dialect": "typespec",
+			"digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+		},
+		"package": {
+			"identity": "agent-ix/conformance",
+			"version": "1.0.0",
+			"manifestDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+			"mappingVersions": ["1.0.0"],
+			"profileVersions": ["1.0.0"],
+			"lockDigest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+		},
+		"types": [
+			{
+				"identity": "ix://agent-ix/conformance/type/Text",
+				"displayName": "Text",
+				"kind": "scalar",
+				"roles": ["agent-ix:value"],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/scalars.tsp",
+						"startLine": 1,
+						"startColumn": 1
+					}
+				},
+				"constraints": [
+					{
+						"identity": "ix://agent-ix/conformance/constraint/text-min-length",
+						"keyword": "minLength",
+						"operands": {
+							"value": 1
+						},
+						"appliesTo": "ix://agent-ix/conformance/type/Text",
+						"diagnosticCode": "agent-ix.conformance.TEXT_MIN_LENGTH",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/scalars.tsp",
+								"startLine": 2,
+								"startColumn": 3
+							}
+						}
+					}
+				],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"scalar": "string"
+			},
+			{
+				"identity": "ix://agent-ix/conformance/type/Count",
+				"displayName": "Count",
+				"kind": "scalar",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/scalars.tsp",
+						"startLine": 5,
+						"startColumn": 1
+					}
+				},
+				"constraints": [
+					{
+						"identity": "ix://agent-ix/conformance/constraint/count-min",
+						"keyword": "min",
+						"operands": {
+							"value": 0
+						},
+						"appliesTo": "ix://agent-ix/conformance/type/Count",
+						"diagnosticCode": "agent-ix.conformance.COUNT_MIN",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/scalars.tsp",
+								"startLine": 6,
+								"startColumn": 3
+							}
+						}
+					}
+				],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"scalar": "integer"
+			},
+			{
+				"identity": "ix://agent-ix/conformance/type/Millis",
+				"displayName": "Millis",
+				"kind": "alias",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/scalars.tsp",
+						"startLine": 9,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"target": "ix://agent-ix/conformance/type/Count"
+			},
+			{
+				"identity": "ix://agent-ix/conformance/type/Status",
+				"displayName": "Status",
+				"kind": "enum",
+				"roles": ["agent-ix:state"],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/status.tsp",
+						"startLine": 1,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"variants": [
+					{
+						"identity": "ix://agent-ix/conformance/variant/status-draft",
+						"name": "draft",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/status.tsp",
+								"startLine": 2,
+								"startColumn": 3
+							}
+						}
+					},
+					{
+						"identity": "ix://agent-ix/conformance/variant/status-final",
+						"name": "final",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/status.tsp",
+								"startLine": 3,
+								"startColumn": 3
+							}
+						}
+					}
+				]
+			},
+			{
+				"identity": "ix://agent-ix/conformance/type/TextList",
+				"displayName": "TextList",
+				"kind": "sequence",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/collections.tsp",
+						"startLine": 1,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"items": "ix://agent-ix/conformance/type/Text"
+			},
+			{
+				"identity": "ix://agent-ix/conformance/type/TextMap",
+				"displayName": "TextMap",
+				"kind": "map",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/collections.tsp",
+						"startLine": 4,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "preserve",
+				"values": "ix://agent-ix/conformance/type/Text"
+			},
+			{
+				"identity": "ix://agent-ix/conformance/type/Payload",
+				"displayName": "Payload",
+				"kind": "union",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/payload.tsp",
+						"startLine": 1,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "surface",
+				"variants": [
+					{
+						"identity": "ix://agent-ix/conformance/variant/payload-text",
+						"name": "text",
+						"payloadType": "ix://agent-ix/conformance/type/Text",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/payload.tsp",
+								"startLine": 2,
+								"startColumn": 3
+							}
+						}
+					},
+					{
+						"identity": "ix://agent-ix/conformance/variant/payload-count",
+						"name": "count",
+						"payloadType": "ix://agent-ix/conformance/type/Count",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/payload.tsp",
+								"startLine": 3,
+								"startColumn": 3
+							}
+						}
+					}
+				]
+			},
+			{
+				"identity": "ix://agent-ix/conformance/type/NodeRef",
+				"displayName": "NodeRef",
+				"kind": "reference",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/node.tsp",
+						"startLine": 1,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"target": "ix://agent-ix/conformance/type/Node"
+			},
+			{
+				"identity": "ix://agent-ix/conformance/type/Node",
+				"displayName": "Node",
+				"kind": "record",
+				"roles": ["agent-ix:entity"],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/node.tsp",
+						"startLine": 4,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"fields": [
+					{
+						"identity": "ix://agent-ix/conformance/field/node-id",
+						"name": "id",
+						"typeRef": "ix://agent-ix/conformance/type/Text",
+						"presence": "required",
+						"nullable": false,
+						"defaultKind": "none",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/node.tsp",
+								"startLine": 5,
+								"startColumn": 1
+							}
+						},
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1
+						}
+					},
+					{
+						"identity": "ix://agent-ix/conformance/field/node-label",
+						"name": "label",
+						"typeRef": "ix://agent-ix/conformance/type/Text",
+						"presence": "optional",
+						"nullable": true,
+						"defaultKind": "none",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/node.tsp",
+								"startLine": 6,
+								"startColumn": 1
+							}
+						},
+						"multiplicity": {
+							"lower": 0,
+							"upper": 1
+						}
+					},
+					{
+						"identity": "ix://agent-ix/conformance/field/node-elapsed",
+						"name": "elapsed",
+						"typeRef": "ix://agent-ix/conformance/type/Millis",
+						"presence": "required",
+						"nullable": false,
+						"defaultKind": "none",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/node.tsp",
+								"startLine": 7,
+								"startColumn": 1
+							}
+						},
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1
+						},
+						"unit": "ms"
+					},
+					{
+						"identity": "ix://agent-ix/conformance/field/node-status",
+						"name": "status",
+						"typeRef": "ix://agent-ix/conformance/type/Status",
+						"presence": "required",
+						"nullable": false,
+						"defaultKind": "semantic",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/node.tsp",
+								"startLine": 8,
+								"startColumn": 1
+							}
+						},
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1
+						},
+						"defaultValue": "draft"
+					},
+					{
+						"identity": "ix://agent-ix/conformance/field/node-children",
+						"name": "children",
+						"typeRef": "ix://agent-ix/conformance/type/NodeRef",
+						"presence": "optional",
+						"nullable": false,
+						"defaultKind": "none",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/node.tsp",
+								"startLine": 9,
+								"startColumn": 1
+							}
+						},
+						"multiplicity": {
+							"lower": 0,
+							"ordered": true,
+							"unique": true
+						}
+					},
+					{
+						"identity": "ix://agent-ix/conformance/field/node-tags",
+						"name": "tags",
+						"typeRef": "ix://agent-ix/conformance/type/TextList",
+						"presence": "optional",
+						"nullable": false,
+						"defaultKind": "none",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/node.tsp",
+								"startLine": 10,
+								"startColumn": 1
+							}
+						},
+						"multiplicity": {
+							"lower": 0,
+							"upper": 1
+						}
+					},
+					{
+						"identity": "ix://agent-ix/conformance/field/node-attrs",
+						"name": "attrs",
+						"typeRef": "ix://agent-ix/conformance/type/TextMap",
+						"presence": "optional",
+						"nullable": false,
+						"defaultKind": "none",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/node.tsp",
+								"startLine": 11,
+								"startColumn": 1
+							}
+						},
+						"multiplicity": {
+							"lower": 0,
+							"upper": 1
+						}
+					},
+					{
+						"identity": "ix://agent-ix/conformance/field/node-payload",
+						"name": "payload",
+						"typeRef": "ix://agent-ix/conformance/type/Payload",
+						"presence": "optional",
+						"nullable": false,
+						"defaultKind": "none",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/node.tsp",
+								"startLine": 12,
+								"startColumn": 1
+							}
+						},
+						"multiplicity": {
+							"lower": 0,
+							"upper": 1
+						}
+					}
+				],
+				"relationships": [
+					{
+						"identity": "ix://agent-ix/conformance/relationship/node-references-node",
+						"verb": "references",
+						"category": "dependency",
+						"composite": false,
+						"target": "ix://agent-ix/conformance/type/Node",
+						"multiplicity": {
+							"lower": 0,
+							"ordered": true,
+							"unique": true
+						},
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/node.tsp",
+								"startLine": 14,
+								"startColumn": 3
+							}
+						}
+					}
+				],
+				"operations": [],
+				"clauses": []
+			},
+			{
+				"identity": "ix://agent-ix/conformance/type/Root",
+				"displayName": "Root",
+				"kind": "record",
+				"roles": ["agent-ix:entity", "agent-ix:aggregate"],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/root.tsp",
+						"startLine": 1,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"fields": [
+					{
+						"identity": "ix://agent-ix/conformance/field/root-name",
+						"name": "name",
+						"typeRef": "ix://agent-ix/conformance/type/Text",
+						"presence": "required",
+						"nullable": false,
+						"defaultKind": "none",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/root.tsp",
+								"startLine": 2,
+								"startColumn": 1
+							}
+						},
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1
+						}
+					},
+					{
+						"identity": "ix://agent-ix/conformance/field/root-node",
+						"name": "node",
+						"typeRef": "ix://agent-ix/conformance/type/NodeRef",
+						"presence": "required",
+						"nullable": false,
+						"defaultKind": "none",
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/root.tsp",
+								"startLine": 3,
+								"startColumn": 1
+							}
+						},
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1
+						}
+					}
+				],
+				"relationships": [
+					{
+						"identity": "ix://agent-ix/conformance/relationship/root-contains-node",
+						"verb": "contains",
+						"category": "structural",
+						"composite": true,
+						"target": "ix://agent-ix/conformance/type/Node",
+						"multiplicity": {
+							"lower": 1,
+							"ordered": true,
+							"unique": true
+						},
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/root.tsp",
+								"startLine": 5,
+								"startColumn": 3
+							}
+						}
+					}
+				],
+				"operations": [
+					{
+						"identity": "ix://agent-ix/conformance/operation/root-resize",
+						"name": "resize",
+						"params": [
+							{
+								"identity": "ix://agent-ix/conformance/field/root-resize-size",
+								"name": "size",
+								"typeRef": "ix://agent-ix/conformance/type/Count",
+								"presence": "required",
+								"nullable": false,
+								"defaultKind": "none",
+								"origin": {
+									"source": {
+										"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+										"path": "model/root.tsp",
+										"startLine": 7,
+										"startColumn": 1
+									}
+								},
+								"multiplicity": {
+									"lower": 1,
+									"upper": 1
+								}
+							}
+						],
+						"returns": {
+							"typeRef": "ix://agent-ix/conformance/type/Node",
+							"multiplicity": {
+								"lower": 1,
+								"upper": 1
+							},
+							"nullable": false
+						},
+						"pre": ["size-non-negative"],
+						"post": ["node-returned"],
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/root.tsp",
+								"startLine": 7,
+								"startColumn": 3
+							}
+						}
+					}
+				],
+				"clauses": [
+					{
+						"identity": "ix://agent-ix/conformance/clause/root-size-non-negative",
+						"language": "ocl",
+						"clauseId": "size-non-negative",
+						"text": "size >= 0",
+						"sourceSpan": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model/root.tsp",
+							"startLine": 9,
+							"startColumn": 3,
+							"endLine": 9,
+							"endColumn": 24
+						},
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/root.tsp",
+								"startLine": 9,
+								"startColumn": 3
+							}
+						}
+					},
+					{
+						"identity": "ix://agent-ix/conformance/clause/root-node-returned",
+						"language": "ocl",
+						"clauseId": "node-returned",
+						"text": "result.oclIsKindOf(Node)",
+						"sourceSpan": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model/root.tsp",
+							"startLine": 10,
+							"startColumn": 3,
+							"endLine": 10,
+							"endColumn": 34
+						},
+						"origin": {
+							"source": {
+								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+								"path": "model/root.tsp",
+								"startLine": 10,
+								"startColumn": 3
+							}
+						}
+					}
+				]
+			}
+		],
+		"occurrences": [
+			{
+				"identity": "ix://agent-ix/conformance/occurrence/root-1",
+				"definition": "ix://agent-ix/conformance/type/Root",
+				"observedAt": "2026-01-01T00:00:00Z",
+				"value": {
+					"name": "root",
+					"node": "ix://agent-ix/conformance/type/Node"
+				}
+			}
+		],
+		"extensions": [
+			{
+				"identity": "ix://agent-ix/conformance/ext/doc",
+				"version": "1.0.0",
+				"required": false,
+				"capability": "documentation",
+				"payload": {
+					"text": "conformance base"
+				}
+			}
+		]
+	},
+	"manifest": {
+		"contractVersion": "1.0.0",
+		"package": {
+			"identity": "agent-ix/conformance",
+			"version": "1.0.0"
+		},
+		"schemaDialect": "https://json-schema.org/draft/2020-12/schema",
+		"sourceRoots": ["model"],
+		"exports": [
+			{
+				"name": "Root",
+				"typeIdentity": "ix://agent-ix/conformance/type/Root",
+				"visibility": "public"
+			},
+			{
+				"name": "Node",
+				"typeIdentity": "ix://agent-ix/conformance/type/Node",
+				"visibility": "public"
+			}
+		],
+		"imports": [
+			{
+				"packageIdentity": "agent-ix/kernel",
+				"versionConstraint": "1.0.0",
+				"exports": ["Text"],
+				"capabilities": ["documentation"]
+			}
+		],
+		"profiles": [
+			{
+				"name": "default",
+				"version": "1.0.0",
+				"exports": ["Root", "Node"],
+				"targets": ["json-schema"],
+				"mappings": ["ix://agent-ix/conformance/mapping/root-json"],
+				"options": {},
+				"compatibilityPosture": "strict"
+			}
+		],
+		"targets": ["json-schema"],
+		"mappings": ["ix://agent-ix/conformance/mapping/root-json"],
+		"extensions": []
+	},
+	"manifestDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+	"lock": {
+		"contractVersion": "1.0.0",
+		"rootPackage": "agent-ix/conformance",
+		"fingerprint": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+		"canonicalization": {
+			"algorithm": "RFC8785-JCS-with-identity-sorted-sets-v1",
+			"digest": "sha256",
+			"included": [
+				"schema-bytes",
+				"manifest",
+				"mappings",
+				"profiles",
+				"resolved-packages",
+				"compiler-contract-version"
+			],
+			"excluded": [
+				"object-order",
+				"set-order",
+				"source-path",
+				"working-directory",
+				"timestamp",
+				"hostname",
+				"locale"
+			]
+		},
+		"packages": [
+			{
+				"identity": "agent-ix/conformance",
+				"version": "1.0.0",
+				"contentDigest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+				"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+				"dependencies": ["agent-ix/kernel"]
+			},
+			{
+				"identity": "agent-ix/kernel",
+				"version": "1.0.0",
+				"contentDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+				"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+				"dependencies": []
+			}
+		]
+	},
+	"profile": {
+		"contractVersion": "1.0.0",
+		"identity": "ix://agent-ix/conformance/profile/default",
+		"version": "1.0.0",
+		"authority": "semantic-source",
+		"editDirection": "read-only",
+		"roundTrip": "semantic-lossless",
+		"unknownPolicy": "reject",
+		"allowedOmissions": [],
+		"enrichment": false,
+		"materializationLifetime": "run"
+	},
+	"mappings": [
+		{
+			"contractVersion": "1.0.0",
+			"identity": "ix://agent-ix/conformance/mapping/root-json",
+			"version": "1.0.0",
+			"sourceType": "ix://agent-ix/conformance/type/Root",
+			"targetType": "ix://agent-ix/conformance/type/Root",
+			"representation": "json",
+			"correspondences": [
+				{
+					"sourceIdentity": "ix://agent-ix/conformance/field/root-name",
+					"targetLocus": "$.name"
+				},
+				{
+					"sourceIdentity": "ix://agent-ix/conformance/field/root-node",
+					"targetLocus": "$.node"
+				}
+			],
+			"transformation": {
+				"kind": "codec",
+				"purity": "pure",
+				"deterministic": true,
+				"externalReads": [],
+				"externalWrites": [],
+				"failureStates": ["invalid"],
+				"retryIdempotent": true,
+				"encoding": "utf-8",
+				"decodePolicy": "strict"
+			}
+		}
+	],
+	"consumerPolicy": {
+		"contractVersion": "1.0.0",
+		"consumer": "ix://agent-ix/conformance/consumer/reference",
+		"mode": "generated",
+		"exports": [
+			"ix://agent-ix/conformance/type/Root",
+			"ix://agent-ix/conformance/type/Node"
+		],
+		"unknownModules": "reject",
+		"unknownExtensions": "surface",
+		"identityPlanes": [
+			"package",
+			"type",
+			"field",
+			"profile",
+			"mapping",
+			"fingerprint"
+		]
+	}
+}

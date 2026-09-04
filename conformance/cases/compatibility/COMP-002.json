@@ -1,0 +1,60 @@
+{
+	"id": "COMP-002",
+	"title": "A pair whose later document is invalid classifies invalid",
+	"family": "compatibility",
+	"class": "negative",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/1/identity",
+			"value": "ix://agent-ix/conformance/field/node-label"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/1/identity",
+			"value": "ix://agent-ix/conformance/field/node-id"
+		}
+	],
+	"beforeBase": "core-1-1",
+	"beforeOps": [],
+	"covers": ["CR-compatibility"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "Required additions, removals, incompatible meaning/type changes, stable identity"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/8/fields/1/identity",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.DUPLICATE_IDENTITY",
+					"severity": "error",
+					"message": "a pair is classified only when both documents are valid",
+					"owner": "ix://agent-ix/conformance/field/node-id",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/node.tsp",
+						"startLine": 6,
+						"startColumn": 1
+					}
+				}
+			}
+		],
+		"classification": "invalid"
+	}
+}
