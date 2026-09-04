@@ -1,0 +1,8 @@
+{
+	"model": "ConstraintDecl",
+	"reason": "keyword outside the closed set",
+	"value": {
+		"keyword": "mnimum",
+		"value": 1
+	}
+}

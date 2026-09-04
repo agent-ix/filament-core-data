@@ -1,0 +1,7 @@
+{
+	"model": "TypeRef",
+	"reason": "target is neither SemanticId nor KernelScalar",
+	"value": {
+		"target": "Whatever"
+	}
+}

@@ -1,0 +1,9 @@
+{
+	"model": "FieldDecl",
+	"reason": "missing name",
+	"value": {
+		"type": {
+			"target": "String"
+		}
+	}
+}

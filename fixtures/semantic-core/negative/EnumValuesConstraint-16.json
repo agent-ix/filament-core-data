@@ -1,0 +1,8 @@
+{
+	"model": "EnumValuesConstraint",
+	"reason": "empty values",
+	"value": {
+		"keyword": "enumValues",
+		"values": []
+	}
+}

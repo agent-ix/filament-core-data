@@ -1,0 +1,8 @@
+{
+	"model": "MaxConstraint",
+	"reason": "boolean operand",
+	"value": {
+		"keyword": "max",
+		"value": true
+	}
+}

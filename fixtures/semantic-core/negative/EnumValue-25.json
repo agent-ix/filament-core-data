@@ -1,0 +1,7 @@
+{
+	"model": "EnumValue",
+	"reason": "value violates Identifier",
+	"value": {
+		"value": "a-b"
+	}
+}

@@ -17,6 +17,7 @@ mapped and its 72 automated, static, analysis, property, integration, fuzz, and
 snapshot cases pass. The schema-source decision at TC-199 is recorded (owner,
 issue #4, 2026-09-03: TypeSpec, ADR-0005); all later disruptive migration and
 promotion gates remain separate. Issue #34 (TC-203..247) is fully mapped and its 45 cases pass (PR #38).
+Issue #35 (TC-248..279) is fully mapped and its 32 cases pass (PR #39; TC-274 by inspection).
 
 ## Test Matrix Rules
 
@@ -33,7 +34,7 @@ promotion gates remain separate. Issue #34 (TC-203..247) is fully mapped and its
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001..US-006, FR-001..FR-030 | TC-033, TC-086, TC-129, TC-130..247 | ✅ Complete |
+| StR-001 | US-001..US-007, FR-001..FR-034 | TC-033, TC-086, TC-129, TC-130..279 | ✅ Complete |
 
 ### User Story Coverage
 
@@ -49,6 +50,7 @@ promotion gates remain separate. Issue #34 (TC-203..247) is fully mapped and its
 | US-004 | US-004-AC-2 | TC-128 | ✅ Complete |
 | US-005 | Informal story outcome implemented by FR-019..FR-026 | TC-130..176 | ✅ Complete |
 | US-006 | US-006-EX-1..4 (illustrative) implemented by FR-027..FR-030 | TC-203, TC-210, TC-214, TC-220 | ✅ Complete |
+| US-007 | US-007-EX-1..4 (illustrative) implemented by FR-031..FR-034 | TC-262, TC-271, TC-258, TC-277 | ✅ Complete |
 
 ### Functional Requirement Coverage
 
@@ -84,6 +86,10 @@ promotion gates remain separate. Issue #34 (TC-203..247) is fully mapped and its
 | FR-028 | FR-028-AC-1..13, FR-028-CON-1..2 | TC-210..218, TC-239..243 | ✅ Complete |
 | FR-029 | FR-029-AC-1..8, FR-029-CON-1..2 | TC-219..226, TC-244..245 | ✅ Complete |
 | FR-030 | FR-030-AC-1..6, FR-030-CON-1..2 | TC-227..231, TC-246 | ✅ Complete |
+| FR-031 | FR-031-AC-1..7, FR-031-CON-1..2 | TC-248..254, TC-277 | ✅ Complete |
+| FR-032 | FR-032-AC-1..5, FR-032-CON-1 | TC-255..260 | ✅ Complete |
+| FR-033 | FR-033-AC-1..5, FR-033-CON-1..2 | TC-261..266 | ✅ Complete |
+| FR-034 | FR-034-AC-1..5, FR-034-CON-1 | TC-267..272, TC-279 | ✅ Complete |
 
 ### Non-Functional Requirement Coverage
 
@@ -102,6 +108,7 @@ promotion gates remain separate. Issue #34 (TC-203..247) is fully mapped and its
 | NFR-011 | Public schema, independent reader, extension, capability, and preservation checks | TC-190..194 | ✅ Complete |
 | NFR-012 | Diff, unchanged-suite, registry, downstream-gate, and human-decision checks | TC-195..199 | ✅ Complete |
 | NFR-013 | Unchanged v1 fixture suite, spike byte comparison, compatibility-corpus entry, changed-path gate, and fixture inventory | TC-208, TC-234..236, TC-247 | ✅ Complete |
+| NFR-014 | Compiled-program inventory, amendment inspection, changed-path gate, emitter inspection, spike byte comparison | TC-249, TC-273..276, TC-278 | ✅ Complete |
 
 ## Test Case Summary
 
@@ -354,6 +361,38 @@ promotion gates remain separate. Issue #34 (TC-203..247) is fully mapped and its
 | TC-245 | A `pattern` whose `regex` does not compile under `ecma-262` fails validation | Unit | P0 | FR-029-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-246 | `contractVersion: "1.2.0"` fails before emission; `1.1.0` with `source.dialect: avro` fails at `source.dialect` | Unit | P0 | FR-030-AC-5, FR-030-AC-6 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-247 | Every new IR node kind has one golden and one negative fixture under `fixtures/semantic/v1/` | Static | P0 | NFR-013-AC-5 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-248 | `tsp compile packages/semantic-core` exits 0 with zero diagnostics under the pinned compiler | Compile | P0 | FR-031-AC-1 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-249 | The compiled program's declaration set equals `inventory.json`; adding `Entity` or `Any` to the source makes the scope test fail naming the declaration | Unit | P0 | FR-031-AC-2, NFR-014-AC-1 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-250 | `ConstraintKeyword` and the eleven constraint models match the FR-029 keyword set and operand shapes; the emitted schema rejects a twelfth | Unit | P0 | FR-031-AC-3 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-251 | `EdgeCategory`, `ConstraintKeyword`, and `ClauseLanguage` equal the IR schema enumerations in a contract test | Unit | P0 | FR-031-AC-4 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-252 | No property in the compiled program resolves to `unknown` or an untyped record except `DefaultDecl.value` | Static | P0 | FR-031-AC-5, FR-031-CON-2 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-253 | Adding one model at a new minor version changes only its emitted file and the bundle index; every prior file is byte-identical | Snapshot | P0 | FR-031-AC-6 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-254 | The grammar lives under `packages/semantic-core/`; no `spikes/` file imports it | Static | P0 | FR-031-CON-1 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-255 | `kernel-scalars.json` has exactly one entry per `KernelScalar` member and none names `any` | Static | P0 | FR-032-AC-1 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-256 | The semantic-core reader rejects `Decimal` without `decimal` and `String` with `decimal` | Unit | P0 | FR-032-AC-2 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-257 | Every entry's `irScalar` is in the IR v1 scalar enumeration, except `JsonObject` → open record | Static | P0 | FR-032-AC-3 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-258 | A tenth enum member `Any` added to the source fails the inventory test | Unit | P0 | FR-032-AC-4, US-007-EX-3 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-259 | Every `type.target` in the committed FR-006 `FieldDecl[]` fixture is `UUID`, `Integer`, `String`, `Timestamp`, `JsonObject`, or a `SemanticId` | Unit | P1 | FR-032-AC-5 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-260 | A `KernelScalar` addition classifies additive; removal or re-representation classifies breaking, keyed on member name | Unit | P0 | FR-032-CON-1 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-261 | One schema file exists per inventory model and enum with an absolute `$id` under the package base | Static | P0 | FR-033-AC-1 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-262 | Every element of the FR-006 `FieldDecl[]` fixture validates against `FieldDecl.json` under Ajv strict mode with no alias | Unit | P0 | FR-033-AC-2, US-007-EX-1 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-263 | Each negative shape fixture fails against its named model schema; at least one exists per grammar model | Unit | P0 | FR-033-AC-3 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-264 | Regenerating twice yields byte-identical output equal to the recorded digest; a mutated byte makes the `check` script fail naming the file | Snapshot | P0 | FR-033-AC-4, FR-033-CON-1 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-265 | `toolchain.json` pins compiler, emitter, and normalization versions equal to the lockfile's resolved versions | Static | P0 | FR-033-AC-5 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-266 | The normalization step is isolated (one function, one call site) and records a no-op when no relative `$id` is emitted | Analysis | P1 | FR-033-CON-2 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-267 | `lowering.json` has one row per grammar-model property, every `loss` is `none`, and a `loss` row fails the gate | Unit | P0 | FR-034-AC-1, FR-034-CON-1 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-268 | Reference lowerer mints identities, origins, kernel definitions, alias-per-constrained-field, and clause text per the FR-034 rules on the FR-006 set | Unit | P0 | FR-034-AC-2 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-269 | The lowered FR-006 document equals `config-version-v1-1.json` in the structural comparison ignoring minted identities and semantic-core extensions | Unit | P0 | FR-034-AC-3 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-270 | `UnitSymbol` rejects ``, `k g`, `kg²` and accepts `kg`, `m/s`, `ms`, `10*3.m` | Unit | P0 | FR-034-AC-4 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-271 | A `Decimal` field lowers with the `decimal` extension carrying `precision` and `scale`; the table records no loss for `TypeRef.decimal` | Unit | P0 | FR-034-AC-5, US-007-EX-2 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-272 | A lowering row recording `loss` fails the fixture gate | Unit | P0 | FR-034-AC-1 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-273 | The compiled program declares nothing outside `inventory.json` (kernel scope) | Unit | P0 | NFR-014-AC-1 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-274 | ARCH-005 and ADR-0002 each gain exactly one amendment paragraph naming the grammar and the module-vocabulary rule | Manual | P0 | NFR-014-AC-2 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-275 | Issue #35 changed-path gate excludes `spikes/`, `src/`, `pnpm-lock.yaml`, and corpus repositories | Static | P0 | NFR-014-AC-3 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-276 | `tspconfig.yaml` lists only official `@typespec/*` emitters and no custom emitter dependency exists | Static | P0 | NFR-014-AC-4 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-277 | Each reader-enforced grammar rule (bounds, flags, decimal presence, unit applicability, returns.unit, uniqueness keys, identity flag) has a negative fixture rejected at its locus; the FR-006 set reads clean | Unit | P0 | FR-031-AC-7, US-007-EX-4 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-278 | `spike:typespec:check` output is byte-identical before and after the semantic-core change | Snapshot | P0 | NFR-014-AC-5 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-279 | The lowered FR-006 document validates as `1.1.0` and both IR readers return zero diagnostics when the lowerer runs from the committed `FieldDecl[]` fixture | Integration | P0 | FR-034-AC-2 | ✅ passed — semantic-core grammar (PR #39) |
 
 ## Option Permutation Matrix
 
@@ -384,6 +423,10 @@ promotion gates remain separate. Issue #34 (TC-203..247) is fully mapped and its
 | TC-204, TC-216 | collection flags | `ordered` / `unique` | upper absent or > 1 vs upper ≤ 1 | Flags allowed only on collections |
 | TC-214, TC-215 | clause language | `ocl` / `sysml` / `fretish` / `ns:name` | bare unknown token | Closed core set plus namespaced extension; bare unknown fails |
 | TC-227, TC-228 | IR source dialect | `typespec` / `spec-bundle` | v1 JSON Schema URI constant | Frontend identity accepted; stale constant rejected with ADR-0005 citation |
+| TC-256, TC-271 | `TypeRef.target` | `KernelScalar` member / `SemanticId` | with or without `decimal` policy | `Decimal` requires `decimal`; any other target forbids it; both lower without loss |
+| TC-277 | `TypeRef.unit` | unit-allowed scalar / other scalar / `SemanticId` / `returns` | present or absent | Allowed only on `Integer`, `Decimal`, `Timestamp`, `Duration` fields |
+| TC-250, TC-251 | closed enumerations | eleven keywords / seven categories | member vs non-member | Members accepted, non-members rejected by the emitted schema |
+| TC-253, TC-264 | package version | `v1` / `v1` + addition | regenerate | Prior version bytes unchanged; new version additive |
 
 ## Constraint Boundary Tests
 
@@ -436,6 +479,17 @@ promotion gates remain separate. Issue #34 (TC-203..247) is fully mapped and its
 | FR-029 applicability | Prohibited | `minLength` on `integer`, `min` on `record` | TC-244 | Fail validation at the constraint locus |
 | FR-030 contractVersion | Allowed | `"1.0.0"`, `"1.1.0"` | TC-227, TC-231 | Pass under the single schema file |
 | FR-030 contractVersion | Prohibited | `"1.2.0"`, `"0.9.0"` | TC-246 | Fail before emission |
+| FR-031-CON-1 | Allowed | Grammar under `packages/semantic-core/` | TC-254 | Pass |
+| FR-031-CON-1 | Prohibited | `spikes/` importing the grammar | TC-254 | Fail |
+| FR-031-CON-2 | Prohibited | Property typed `unknown` or `Record<unknown>` | TC-252 | Fail static scan |
+| FR-032-CON-1 | Allowed / Prohibited | Member added / member removed | TC-260 | additive / breaking |
+| FR-033-CON-1 | Allowed | Same toolchain on two hosts | TC-264 | Byte-identical |
+| FR-033-CON-2 | Prohibited | Normalization weakened instead of removed | TC-266 | Fail review |
+| FR-034-CON-1 | Prohibited | Grammar property with no lowering row | TC-267 | Fail completeness |
+| FR-034 UnitSymbol | Allowed | `kg`, `m/s`, `ms`, `10*3.m` | TC-270 | Pass |
+| FR-034 UnitSymbol | Prohibited | ``, `k g`, `kg²` | TC-270 | Fail pattern |
+| Multiplicity (grammar) | Inverted | `lower: 1, upper: 0` | TC-277 | Reader rejects at the declaration |
+| Multiplicity (grammar) | Min / Below min | `lower: 0` / `lower: -1` | TC-263 | Pass / fail `Multiplicity.json` |
 | FR-030-CON-1 | Allowed | `contractVersion: "1.0.0"` with the v1 dialect constant under the v1 schema | TC-231 | Pass |
 | FR-030-CON-2 | Prohibited | Manifest and target-contract enumerations diverge | TC-230 | Schema inspection fails |
 
@@ -464,6 +518,9 @@ promotion gates remain separate. Issue #34 (TC-203..247) is fully mapped and its
 | legacy manifest | later human enforcement promotion | native v1 validation may become required in the later ticket | TC-173, TC-198 |
 | v1 IR document | read under the v1.1 schema | valid, with multiplicity derived and node arrays empty | TC-208, TC-217 |
 | v1.1 IR document | read under the v1 schema | rejected as an unknown contract version (FR-019-CON-2) | TC-133, TC-231 |
+| semantic-core `v1` | grammar addition under `Versions.v2` | `v1` projection byte-identical; `v2` additive | TC-253 |
+| raw official bundle | #31 normalization applied | absolute `$id` bundle that validates without alias | TC-262, TC-265 |
+| normalized bundle | issue #31 fixed upstream | normalization removed; raw bundle validates | TC-266 |
 
 ## Error Paths
 
@@ -513,6 +570,12 @@ promotion gates remain separate. Issue #34 (TC-203..247) is fully mapped and its
 | ERR-042 | Duplicate `clauseId` within one type definition | Validation fails at the second clause | TC-241 |
 | ERR-043 | Constraint keyword applied outside its applicability, or regex fails to compile | Validation fails at the constraint locus | TC-244, TC-245 |
 | ERR-044 | `contractVersion` outside `1.0.0`/`1.1.0`, or `1.1.0` dialect outside `typespec`/`spec-bundle` | Fails before emission with a machine-readable diagnostic | TC-246 |
+| ERR-045 | Kernel declares a domain archetype or an `Any` scalar | Scope test fails naming the declaration | TC-249, TC-258, TC-273 |
+| ERR-046 | Emitted projection differs from committed bytes | `check` script exits non-zero naming the file | TC-264 |
+| ERR-047 | `Decimal` `TypeRef` without `decimal`, or `decimal` on a non-Decimal target | Semantic-core reader rejects at the declaration | TC-256, TC-277 |
+| ERR-048 | Lowering row records `loss` | Fixture gate fails | TC-272 |
+| ERR-049 | `UnitSymbol` outside the UCUM charset, or `unit` on a non-unit scalar or on `returns` | Pattern validation or reader rejects | TC-270, TC-277 |
+| ERR-050 | Duplicate field/operation/param name, relation (verb, target), enum value, or clauseId | Reader rejects at the second declaration | TC-277 |
 
 ## Edge Cases
 
@@ -549,11 +612,17 @@ promotion gates remain separate. Issue #34 (TC-203..247) is fully mapped and its
 | EC-029 | Two clauses with the same `clauseId` in different languages on one type | FR-028 | TC-241 | Operation pre/post binds to the wrong clause |
 | EC-030 | A v1 fixture already using a free-form keyword | FR-029 | TC-224 | Closing the vocabulary silently invalidates accepted evidence |
 | EC-031 | Target enumeration extended in one schema but not the other | FR-030 | TC-230 | Manifest accepts a target no contract defines |
+| EC-032 | Shared `Record<string>` helper emitted with a relative `$id` (issue #31) | FR-033 | TC-262, TC-265 | Bundle validates on one namespace and fails on another |
+| EC-033 | `TypeRef` to a `SemanticId` that names a kernel scalar's own identity | FR-034 | TC-268, TC-271 | Scalar double-declared as reference and kernel type |
+| EC-034 | `OperationDecl` `pre` references a clause the extractor has not yet supplied text for | FR-034 | TC-268 | Lowered document dangles until extraction |
+| EC-035 | Module vocabulary smuggled in as a "support type" | NFR-014 | TC-249, TC-273 | Kernel grows into the generic entity class ARCH-005 forbids |
+| EC-036 | Constraint on a field whose kernel scalar is shared by other fields | FR-034 | TC-268, TC-269 | `min` on one field constrains every `Integer` unless a per-field alias is minted |
+| EC-037 | Official emitter is not version-aware | FR-031, FR-033 | TC-253 | A `@versioned` claim cannot be evidenced; package semver carries the version instead |
 
 ## Coverage Gaps
 
-No open mapping gap remains for issues #8, #10, #4, #9, or #34. Issue #34's 45
-cases (TC-203..247) pass; TC-233 uses a seeded in-test generator (no library
+No open mapping gap remains for issues #8, #10, #4, #9, #34, or #35. Issue #35's
+32 cases (TC-248..279) pass; TC-279 reuses both IR v1.1 readers. Issue #34's 45 cases (TC-203..247) pass; TC-233 uses a seeded in-test generator (no library
 dependency was added). The 41 issue #4 cases
 pass through the isolated spike, retained evidence, native consumers, and
 source-selection report. Issue #9 has 72 passing contract-conformance cases and
@@ -564,14 +633,15 @@ database, publication, enforcement, and retirement work remains separately gated
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 104 | 104 | 0 | 0 | 100% mapped |
-| Manual | 43 | 43 | 0 | 0 | 100% mapped |
-| Analysis | 16 | 16 | 0 | 0 | 100% mapped |
+| Static | 110 | 110 | 0 | 0 | 100% mapped |
+| Manual | 44 | 44 | 0 | 0 | 100% mapped |
+| Analysis | 17 | 17 | 0 | 0 | 100% mapped |
 | Property | 18 | 18 | 0 | 0 | 100% mapped |
-| Unit | 48 | 48 | 0 | 0 | 100% mapped |
-| Integration | 14 | 14 | 0 | 0 | 100% mapped |
+| Unit | 66 | 66 | 0 | 0 | 100% mapped |
+| Integration | 15 | 15 | 0 | 0 | 100% mapped |
 | Fuzz | 2 | 2 | 0 | 0 | 100% mapped |
-| Snapshot | 2 | 2 | 0 | 0 | 100% mapped |
-| **Total** | **247** | **247** | **0** | **0** | **100% mapped** |
+| Snapshot | 6 | 6 | 0 | 0 | 100% mapped |
+| Compile | 1 | 1 | 0 | 0 | 100% mapped |
+| **Total** | **279** | **279** | **0** | **0** | **100% mapped** |
 
-**Matrix coverage status: ✅ Complete. Execution status: ✅ 247 passed; TC-199 recorded by the owner decision on issue #4; TC-203..247 pass on PR #38 (TC-232 needs the poetry env, TC-242 the installed `spec-artifacts-iso` manifest).**
+**Matrix coverage status: ✅ Complete. Execution status: ✅ 247 passed; TC-199 recorded by the owner decision on issue #4; TC-203..247 pass on PR #38 (TC-232 needs the poetry env, TC-242 the installed `spec-artifacts-iso` manifest); TC-248..279 pass on PR #39 (TC-274 by inspection; TC-279 needs the poetry env).**

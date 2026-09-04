@@ -1,7 +1,7 @@
 ---
 type: index
 title: "filament-core-data requirements index"
-description: "Index of the semantic data architecture, contract-census, TypeSpec-feasibility, semantic-contract, and IR v1.1 requirements bundle."
+description: "Index of the semantic data architecture, contract-census, TypeSpec-feasibility, semantic-contract, IR v1.1, and semantic-core grammar requirements bundle."
 okf_version: "0.1"
 ---
 # filament-core-data requirements
@@ -16,6 +16,7 @@ okf_version: "0.1"
 * [US-004: Evaluate the structural schema source](./usecase/US-004-evaluate-structural-schema-source.md) - Compiler owner outcome for the isolated TypeSpec spike (resolved: TypeSpec, ADR-0005).
 * [US-005: Author portable semantic packages](./usecase/US-005-author-portable-semantic-packages.md) - Schema-owner outcome for the semantic IR, packages, mappings, and generated targets.
 * [US-006: Declare typed domain structure](./usecase/US-006-declare-typed-domain-structure.md) - Module-author outcome for lossless IR v1.1 declarations.
+* [US-007: Declare archetypes against a shared grammar](./usecase/US-007-declare-archetypes-against-a-shared-grammar.md) - Module-maintainer outcome for the semantic-core declaration grammar.
 * [Functional requirements](./functional/) - Required architecture-record, census, feasibility, semantic-contract, package, projection, and compatibility behavior.
 * [Non-functional requirements](./non-functional/) - Traceability, reproducibility, parity, security, portability, evidence honesty, isolation, and safety qualities.
 * [Update log](./log.md) - Chronological bundle changes.
