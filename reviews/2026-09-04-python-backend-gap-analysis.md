@@ -44,6 +44,12 @@ not the first two.
 | FND-1198 | medium | Unowned runner behaviour: the verdict-derivation rule that decides which families get packages, two hard-coded `gaps.json` rows (one naming families `pydantic-v2-basemodel` that match no profile id), `corpus_account._apply` re-implementing the corpus patch dialect, the invented `surface-over-strict` class where FR-077-AC-9 names four counts, `guard._OPTION_VALUES` value-level allow-listing plus three refusals outside FR-075's closed register, `validate.py --check`, and `limits.json::warningAllowList` read by nothing | python_backend/runner/qualify.py::build, python_backend/runner/corpus_account.py, python_backend/adapter/guard.py:210, python_backend/runner/validate.py, python_backend/limits.json, FR-075, FR-077-AC-9 | missing-requirement |
 | FND-1199 | low | Mis-shaped trace and declaration metadata: `qualify.py:33` carries `FR-077-AC-13` in a `#:` comment directly above `QUALIFIED = "qualified"` — the `python-comment-id` form, which binds to the next symbol; TC-944's status `⚠️ awaiting the program owner's review` is reported by quire's `undeclared_statuses` as classing as nothing; `toolchain.json`'s `"formatter": null` is an entry where FR-072-AC-9 asks for none; and `PROVISIONING`, `REPO`, `declared_python_version`, `declared_pydantic_version` and `prepare.CLOSED` are dead public surface | python_backend/runner/qualify.py:33, TC-944, python_backend/toolchain.json, python_backend/__init__.py, python_backend/adapter/profiles.py | wrong-requirement |
 
+## Dispositions
+
+| Finding | Disposition |
+| --- | --- |
+| FND-1195 | Not a defect. FR-079-AC-10 distinguishes a duplicate **within one module**, which `_init_module` rejects naming the module and name, from a duplicate in **two modules**, which the same criterion requires to remain module-qualified, be excluded from `__all__`, and be recorded in provenance. `collisions()` and `_init_module()` implement exactly that second branch. Reversing it would violate the normative requirement and make the seven measured cross-document names unrepresentable. |
+
 ## Coverage
 
 - Reconciliation: `quire coverage` 0.31.0 (engine 0.46.0, module `spec-artifacts-process`), run with `--scope` at the worktree root. No fallback; no `diagnostics` entry touched the documents in scope.
