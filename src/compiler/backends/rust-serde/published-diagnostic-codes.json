@@ -1,0 +1,18 @@
+{
+	"contractVersion": "1.0.0",
+	"note": "The published reader codes the generated crate raises at run time, extracted from conformance/diagnostic-codes.json rather than retyped. `cli.mjs check` re-reads that artefact and fails on drift. This table is not a second registry: `diagnostics.mjs` closes the codes the *generator* emits, and the published set closes the codes a *reader* decides. A code the generated crate raises while deciding a value it was handed belongs to the second set, and minting an `agent-ix.rust-backend.*` spelling for a defect the published set already names would be the duplication SR-066 FND-500 records.",
+	"source": {
+		"file": "conformance/diagnostic-codes.json",
+		"pointer": "/codes"
+	},
+	"owner": "ix://agent-ix/filament-core-data/rust-backend",
+	"entries": {
+		"UNKNOWN_REQUIRED_EXTENSION": {
+			"code": "agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION",
+			"severity": "error",
+			"blocking": true,
+			"rule": "A required extension the consumer policy does not list while it rejects unknown extensions.",
+			"decidedBy": "cross-field"
+		}
+	}
+}
