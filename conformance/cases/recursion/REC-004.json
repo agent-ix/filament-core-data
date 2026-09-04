@@ -1,0 +1,54 @@
+{
+	"id": "REC-004",
+	"title": "Adding a recursive edge is conditional on consumer policy",
+	"family": "recursion",
+	"class": "evolution",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/8/relationships/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/relationship/node-precedes-node",
+				"verb": "precedes",
+				"category": "dependency",
+				"composite": false,
+				"target": "ix://agent-ix/conformance/type/Node",
+				"multiplicity": {
+					"lower": 0,
+					"upper": 1
+				},
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/node.tsp",
+						"startLine": 15,
+						"startColumn": 3
+					}
+				}
+			}
+		}
+	],
+	"beforeBase": "core-1-1",
+	"beforeOps": [],
+	"covers": ["CR-recursion"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "changes, and unknown-policy tightening are breaking. Optional additions are"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "conditional"
+	}
+}

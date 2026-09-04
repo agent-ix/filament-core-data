@@ -1,0 +1,45 @@
+{
+	"$comment": "The promotion thresholds this corpus proposes to each backend's owning issue. Every row is `proposed` until that issue accepts it: issue #20 measures and proposes, it does not impose a gate on another ticket.",
+	"thresholds": [
+		{
+			"adapter": "compiler-frontend",
+			"owningIssue": "agent-ix/filament-core-data#19",
+			"status": "proposed",
+			"constructRegisterCoverage": 1.0,
+			"corpusPassRate": 1.0,
+			"permittedDivergences": 0,
+			"mutationDetectionScore": 1.0,
+			"rationale": "The frontend is the thing the corpus exists to judge; it meets every register row before it is called production-ready."
+		},
+		{
+			"adapter": "rust-backend",
+			"owningIssue": "agent-ix/filament-core-data#21",
+			"status": "proposed",
+			"constructRegisterCoverage": 1.0,
+			"corpusPassRate": 1.0,
+			"permittedDivergences": 1,
+			"mutationDetectionScore": 1.0,
+			"rationale": "One divergence is permitted for the RE2 locus-pattern gap recorded as GAP-002, which is a contract defect rather than a backend defect."
+		},
+		{
+			"adapter": "typescript-backend",
+			"owningIssue": "agent-ix/filament-core-data#22",
+			"status": "proposed",
+			"constructRegisterCoverage": 1.0,
+			"corpusPassRate": 1.0,
+			"permittedDivergences": 0,
+			"mutationDetectionScore": 1.0,
+			"rationale": "The TypeScript backend shares the oracle's JSON Schema dialect and pointer scheme, so no divergence is expected."
+		},
+		{
+			"adapter": "python-backend",
+			"owningIssue": "agent-ix/filament-core-data#23",
+			"status": "proposed",
+			"constructRegisterCoverage": 1.0,
+			"corpusPassRate": 1.0,
+			"permittedDivergences": 0,
+			"mutationDetectionScore": 1.0,
+			"rationale": "The Python backend shares the oracle's JSON Schema dialect and pointer scheme, so no divergence is expected."
+		}
+	]
+}

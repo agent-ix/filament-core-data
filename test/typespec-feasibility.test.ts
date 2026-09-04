@@ -295,6 +295,9 @@ describe("TypeSpec feasibility gate", () => {
 	/** Traces: TC-123..124; NFR-006. */
 	it("keeps the spike isolated, unpublished, and non-canonical", () => {
 		const allowed = [
+			"conformance/",
+			"plan/Plan-007-conformance-corpus-and-oracle/",
+			"test/conformance-corpus.test.ts",
 			"README.md",
 			"biome.json",
 			"docs/semantic-data-system/",

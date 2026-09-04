@@ -1,0 +1,27 @@
+{
+	"id": "PKG-001",
+	"title": "A manifest, lock, profile, mapping, and policy that agree are accepted",
+	"family": "package",
+	"class": "positive",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "package-1-1",
+	"ops": [],
+	"covers": ["CR-package"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Packages, locks, and fingerprints",
+			"quote": "source identities, and dependencies. Package cycles are rejected with every"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

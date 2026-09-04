@@ -1,0 +1,61 @@
+{
+	"id": "ENV-002",
+	"title": "A contract version outside the declared set is rejected",
+	"family": "envelope",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/contractVersion",
+			"value": "1.1.0"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/contractVersion",
+			"value": "1.2.0"
+		},
+		{
+			"op": "test",
+			"path": "/ir/source/dialect",
+			"value": "typespec"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/source/dialect",
+			"value": "https://json-schema.org/draft/2020-12/schema"
+		}
+	],
+	"covers": ["CR-envelope"],
+	"decidedBy": "schema",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "discriminated by `contractVersion`"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/contractVersion",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"severity": "error",
+					"message": "contractVersion is a closed enumeration and 1.2.0 is not a member",
+					"owner": "ix://agent-ix/filament-core-data/conformance/oracle",
+					"blocking": true,
+					"causes": [],
+					"related": []
+				}
+			}
+		]
+	}
+}

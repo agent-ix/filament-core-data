@@ -1,0 +1,47 @@
+{
+	"id": "ENUM-004",
+	"title": "Adding an enum variant is consumer policy, not a language default",
+	"family": "enum",
+	"class": "evolution",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/3/variants/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/variant/status-void",
+				"name": "void",
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/status.tsp",
+						"startLine": 4,
+						"startColumn": 3
+					}
+				}
+			}
+		}
+	],
+	"beforeBase": "core-1-1",
+	"beforeOps": [],
+	"covers": ["CR-enum"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "changes, and unknown-policy tightening are breaking. Optional additions are"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "conditional"
+	}
+}

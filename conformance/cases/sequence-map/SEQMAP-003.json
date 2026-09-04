@@ -1,0 +1,50 @@
+{
+	"id": "SEQMAP-003",
+	"title": "A sequence whose element type is itself a map is accepted",
+	"family": "sequence-map",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/type/MapList",
+				"displayName": "MapList",
+				"kind": "sequence",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 130,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"items": "ix://agent-ix/conformance/type/TextMap"
+			}
+		}
+	],
+	"covers": ["CR-sequence-map"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "The closed structural vocabulary is scalar, record, enum, discriminated union,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

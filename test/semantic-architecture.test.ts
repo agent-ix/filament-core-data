@@ -321,6 +321,9 @@ describe("semantic data architecture record", () => {
 	/** Traces: TC-045, TC-046, TC-047; NFR-003-AC-1, NFR-003-AC-2, NFR-003-AC-3. */
 	it("limits issue #8 changes to documentation, plans, reviews, and tests", () => {
 		const allowed = [
+			"conformance/",
+			"plan/Plan-007-conformance-corpus-and-oracle/",
+			"test/conformance-corpus.test.ts",
 			"README.md",
 			"biome.json",
 			"package.json",

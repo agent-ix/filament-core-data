@@ -1,0 +1,70 @@
+{
+	"id": "REL-002",
+	"title": "A composite relationship that closes a cycle is rejected",
+	"family": "relationship",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/8/relationships/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/relationship/node-owns-root",
+				"verb": "owns",
+				"category": "structural",
+				"composite": true,
+				"target": "ix://agent-ix/conformance/type/Root",
+				"multiplicity": {
+					"lower": 0,
+					"upper": 1
+				},
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/node.tsp",
+						"startLine": 16,
+						"startColumn": 3
+					}
+				}
+			}
+		}
+	],
+	"covers": ["CR-relationship"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "export; composite relationship graphs are acyclic."
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/9/relationships/0/target",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.COMPOSITE_CYCLE",
+					"severity": "error",
+					"message": "the composite relationship graph is required to be acyclic",
+					"owner": "ix://agent-ix/conformance/relationship/root-contains-node",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/root.tsp",
+						"startLine": 5,
+						"startColumn": 3
+					}
+				}
+			}
+		]
+	}
+}

@@ -1,0 +1,333 @@
+{
+	"$comment": "Every diagnostic code the oracle may emit, its deciding layer, and the contract clause that obliges the rule. A `frozen` code is reused verbatim from fixtures/semantic/v1/negative/reader-cases.json; a `minted` code is new to this corpus and carries its own citation.",
+	"codes": [
+		{
+			"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+			"provenance": "minted",
+			"decidedBy": "schema",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"schema/semantic/v1/common.schema.json"
+			],
+			"rule": "A value the published v1 schema for its bundle member rejects, reported at the deepest failing instance location.",
+			"citation": "All identifiers below are rooted at",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.INVALID_DOCUMENT",
+			"provenance": "minted",
+			"decidedBy": "schema",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A value that is not a conformance input bundle at all.",
+			"citation": "A consumer can",
+			"exercisedBy": "test:TC-301"
+		},
+		{
+			"code": "agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH",
+			"provenance": "frozen",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"rule": "A field whose presence contradicts the multiplicity lower bound it is derived from.",
+			"citation": "unbounded) from which `presence` is derived, and may carry a UCUM `unit` when",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.INVALID_MULTIPLICITY",
+			"provenance": "frozen",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"rule": "A multiplicity whose upper bound is below its lower bound.",
+			"citation": "`multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
+			"provenance": "frozen",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"rule": "Ordered or unique declared on a field that is not a collection.",
+			"citation": "`multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNIT_ON_NON_SCALAR",
+			"provenance": "frozen",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"rule": "A unit on a field whose type reference does not resolve, through aliases, to a scalar.",
+			"citation": "unbounded) from which `presence` is derived, and may carry a UCUM `unit` when",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+			"provenance": "frozen",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"rule": "A type reference, alias target, reference target, or operation return type that resolves to no declared type.",
+			"citation": "Recursive references retain graph identity.",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNRESOLVED_ELEMENT_TYPE",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"schema/semantic/v1/semantic-ir.schema.json"
+			],
+			"rule": "A sequence item type or map value type that resolves to no declared type.",
+			"citation": "The closed structural vocabulary is scalar, record, enum, discriminated union,",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNRESOLVED_VARIANT_PAYLOAD",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"schema/semantic/v1/semantic-ir.schema.json"
+			],
+			"rule": "A union variant payload type that resolves to no declared type.",
+			"citation": "The closed structural vocabulary is scalar, record, enum, discriminated union,",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNRESOLVED_OCCURRENCE_DEFINITION",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"schema/semantic/v1/semantic-ir.schema.json"
+			],
+			"rule": "An occurrence naming a definition no type declares.",
+			"citation": "semantic identity. Definitions and occurrences remain separate.",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.ALIAS_CYCLE",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "An alias chain that closes on itself and therefore resolves to nothing.",
+			"citation": "Recursive references retain graph identity.",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.DEPTH_LIMIT_EXCEEDED",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "An acyclic expansion longer than the corpus's declared finite depth bound.",
+			"citation": "have declared finite limits and terminate with source-located diagnostics.",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.DUPLICATE_IDENTITY",
+			"provenance": "frozen",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"rule": "A semantic identity declared twice anywhere in one document.",
+			"citation": "identities are explicit",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.DUPLICATE_FIELD_NAME",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "Two fields of one record carrying the same name.",
+			"citation": "Package, type, field, variant, constraint, occurrence, mapping, and profile",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.DUPLICATE_PARAM",
+			"provenance": "frozen",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"rule": "Two parameters of one operation carrying the same name.",
+			"citation": "bound by `clauseId`), and any type definition carries `clauses[]`",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.DUPLICATE_CLAUSE_ID",
+			"provenance": "frozen",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"rule": "A clauseId declared twice on one type.",
+			"citation": "(`language` of `ocl`, `sysml`, `fretish`, or `<ns>:<name>`; `clauseId` unique",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.DANGLING_CLAUSE_REF",
+			"provenance": "frozen",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"rule": "An operation precondition or postcondition naming a clauseId its type does not declare.",
+			"citation": "bound by `clauseId`), and any type definition carries `clauses[]`",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.MISSING_SOURCE_SPAN",
+			"provenance": "frozen",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"rule": "A source-originated clause carrying no source span.",
+			"citation": "per type; opaque `text`; `sourceSpan` when source-originated). The IR never",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE",
+			"provenance": "frozen",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"rule": "A constraint keyword applied to a resolved kind the applicability table does not admit.",
+			"citation": "over the resolved kind. In a `1.1.0` document `source.dialect` is `typespec` or",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.INVALID_OPERAND",
+			"provenance": "frozen",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"rule": "A constraint operand whose type does not match the keyword and the resolved scalar.",
+			"citation": "`unique`, `format`) with typed operands per keyword and an applicability table",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.INVALID_PATTERN",
+			"provenance": "frozen",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"rule": "A pattern operand that does not compile under the declared dialect.",
+			"citation": "`unique`, `format`) with typed operands per keyword and an applicability table",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET",
+			"provenance": "frozen",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"rule": "A relationship target that is neither a document type nor a manifest export.",
+			"citation": "parses clause text. Relationship targets resolve to a document type or a lock",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.COMPOSITE_CYCLE",
+			"provenance": "frozen",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"rule": "A composite relationship graph that closes a cycle.",
+			"citation": "export; composite relationship graphs are acyclic.",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.V1_1_NODE_IN_V1_0",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A contract 1.1.0 node carried by a contract 1.0.0 document, which a 1.0.0 reader drops.",
+			"citation": "Contract `1.1.0` is additive to `1.0.0` and lives in the same schema file,",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNRESOLVED_IMPORT",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "An import naming a package the lock does not resolve.",
+			"citation": "Locks resolve the complete dependency graph to exact versions, content digests,",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.PACKAGE_CYCLE",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A lock package graph that closes a cycle.",
+			"citation": "source identities, and dependencies. Package cycles are rejected with every",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.STALE_LOCK",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "An IR naming a manifest digest the bundle's manifest does not hash to.",
+			"citation": "It includes\nschema bytes, manifest, mappings, profiles, resolved packages, and compiler",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNKNOWN_MAPPING_TARGET",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A mapping naming a semantic identity no declaration owns.",
+			"citation": "Exports refer to stable semantic identities; profiles select",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNDECLARED_LOSS",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "An entity-role type the manifest neither exports nor the profile declares an allowed omission.",
+			"citation": "every omitted identity; undeclared loss fails.",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A required extension the consumer policy does not list while it rejects unknown extensions.",
+			"citation": "unknown modules and extensions are preserved, rejected, or surfaced. Legacy",
+			"exercisedBy": "case"
+		}
+	]
+}

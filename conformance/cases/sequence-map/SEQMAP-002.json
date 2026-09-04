@@ -1,0 +1,57 @@
+{
+	"id": "SEQMAP-002",
+	"title": "A sequence whose element type no type declares is rejected",
+	"family": "sequence-map",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/4/items",
+			"value": "ix://agent-ix/conformance/type/Text"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/4/items",
+			"value": "ix://agent-ix/conformance/type/Absent"
+		}
+	],
+	"covers": ["CR-sequence-map"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "The closed structural vocabulary is scalar, record, enum, discriminated union,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/4/items",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.UNRESOLVED_ELEMENT_TYPE",
+					"severity": "error",
+					"message": "the sequence element type resolves to no declared type",
+					"owner": "ix://agent-ix/conformance/type/TextList",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/collections.tsp",
+						"startLine": 1,
+						"startColumn": 1
+					}
+				}
+			}
+		]
+	}
+}

@@ -1,0 +1,60 @@
+{
+	"id": "SCAL-004",
+	"title": "Re-representing a scalar under one identity is breaking",
+	"family": "scalar",
+	"class": "evolution",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/1/scalar",
+			"value": "integer"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/1/scalar",
+			"value": "number"
+		},
+		{
+			"op": "test",
+			"path": "/ir/types/1/constraints/0/identity",
+			"value": "ix://agent-ix/conformance/constraint/count-min"
+		},
+		{
+			"op": "remove",
+			"path": "/ir/types/1/constraints/0"
+		}
+	],
+	"beforeBase": "core-1-1",
+	"beforeOps": [
+		{
+			"op": "test",
+			"path": "/ir/types/1/constraints/0/identity",
+			"value": "ix://agent-ix/conformance/constraint/count-min"
+		},
+		{
+			"op": "remove",
+			"path": "/ir/types/1/constraints/0"
+		}
+	],
+	"covers": ["CR-scalar"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "Required additions, removals, incompatible meaning/type changes, stable identity"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "breaking"
+	}
+}

@@ -1,0 +1,39 @@
+{
+	"id": "UNK-005",
+	"title": "Openness is the unknown policy, not a rendered map type name",
+	"family": "unknown",
+	"class": "positive",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/8/unknownPolicy",
+			"value": "reject"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/unknownPolicy",
+			"value": "surface"
+		}
+	],
+	"covers": ["CR-unknown"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "whether unknowns are preserved, rejected, or surfaced; unknowns never become a"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false,
+		"reproduces": "DEF-PROTO-006"
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

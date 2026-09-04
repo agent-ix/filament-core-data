@@ -83,6 +83,9 @@ describe("semantic-core non-disruption (Task-041)", () => {
 	/** Traces: TC-275; NFR-014-AC-3. */
 	it("keeps issue #35 inside its permitted paths", () => {
 		const allowed = [
+			"conformance/",
+			"plan/Plan-007-conformance-corpus-and-oracle/",
+			"test/conformance-corpus.test.ts",
 			"docs/semantic-data-system/metamodel.md",
 			"docs/semantic-data-system/adr/0002-generated-package-ownership.md",
 			"fixtures/semantic-core/",

@@ -1,0 +1,38 @@
+{
+	"id": "PRES-006",
+	"title": "An optional field may be non-nullable",
+	"family": "field-presence",
+	"class": "positive",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/1/nullable",
+			"value": true
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/1/nullable",
+			"value": false
+		}
+	],
+	"covers": ["CR-field-presence"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "Fields independently encode required/optional presence, nullable/non-nullable"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

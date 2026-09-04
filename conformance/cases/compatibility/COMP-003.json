@@ -1,0 +1,79 @@
+{
+	"id": "COMP-003",
+	"title": "The most restrictive classification wins over a combined change",
+	"family": "compatibility",
+	"class": "boundary",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/8/fields/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/field/node-note",
+				"name": "note",
+				"typeRef": "ix://agent-ix/conformance/type/Text",
+				"presence": "optional",
+				"nullable": false,
+				"defaultKind": "none",
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/node.tsp",
+						"startLine": 20,
+						"startColumn": 1
+					}
+				},
+				"multiplicity": {
+					"lower": 0,
+					"upper": 1
+				}
+			}
+		},
+		{
+			"op": "add",
+			"path": "/ir/types/8/fields/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/field/node-owner",
+				"name": "owner",
+				"typeRef": "ix://agent-ix/conformance/type/Text",
+				"presence": "required",
+				"nullable": false,
+				"defaultKind": "none",
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/node.tsp",
+						"startLine": 21,
+						"startColumn": 1
+					}
+				},
+				"multiplicity": {
+					"lower": 1,
+					"upper": 1
+				}
+			}
+		}
+	],
+	"beforeBase": "core-1-1",
+	"beforeOps": [],
+	"covers": ["CR-compatibility"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "Required additions, removals, incompatible meaning/type changes, stable identity"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "breaking"
+	}
+}

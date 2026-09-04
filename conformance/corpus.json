@@ -1,0 +1,1147 @@
+{
+	"corpusVersion": "1.0.0",
+	"contractVersions": ["1.0.0", "1.1.0"],
+	"canonicalForm": "agent-ix-conformance-jcs-v1",
+	"caseIdPattern": "^[A-Z][A-Z0-9]*(-[A-Z0-9]+)*-[0-9]{3}$",
+	"minimizationBudget": 64,
+	"depthLimit": 256,
+	"familyPrefixes": {
+		"envelope": "ENV",
+		"identity": "IDENT",
+		"scalar": "SCAL",
+		"alias": "ALIAS",
+		"enum": "ENUM",
+		"sequence-map": "SEQMAP",
+		"union": "UNION",
+		"reference": "REF",
+		"field-presence": "PRES",
+		"field-default": "DEF",
+		"unit": "UNIT",
+		"constraint": "CONS",
+		"recursion": "REC",
+		"relationship": "REL",
+		"operation": "OP",
+		"clause": "CLAUSE",
+		"provenance": "PROV",
+		"unknown": "UNK",
+		"extension": "EXT",
+		"package": "PKG",
+		"version": "VER",
+		"compatibility": "COMP"
+	},
+	"constructRegister": [
+		{
+			"id": "CR-envelope",
+			"title": "The IR envelope and its contract version",
+			"family": "envelope",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"decidedBy": "schema",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "Identical inputs yield byte-identical IR and diagnostics."
+		},
+		{
+			"id": "CR-identity",
+			"title": "Stable semantic identity and document-wide uniqueness",
+			"family": "identity",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"schema/semantic/v1/common.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"decidedBy": "cross-field",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "Invalid imports, cycles, unknown mappings, duplicate identities, stale locks, and unsupported loss fail at exact source loci."
+		},
+		{
+			"id": "CR-scalar",
+			"title": "The closed scalar vocabulary",
+			"family": "scalar",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"decidedBy": "schema",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "IR for identity, structural kind, semantic role, constraints, nullability, optionality, recursion, discriminators, extensions, provenance, source loci, and version transitions."
+		},
+		{
+			"id": "CR-alias",
+			"title": "Alias definitions and their resolution",
+			"family": "alias",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"decidedBy": "cross-field",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "IR for identity, structural kind, semantic role, constraints, nullability, optionality, recursion, discriminators, extensions, provenance, source loci, and version transitions."
+		},
+		{
+			"id": "CR-enum",
+			"title": "Enumerations and their variants",
+			"family": "enum",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"decidedBy": "schema",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "IR for identity, structural kind, semantic role, constraints, nullability, optionality, recursion, discriminators, extensions, provenance, source loci, and version transitions."
+		},
+		{
+			"id": "CR-sequence-map",
+			"title": "Sequences and maps over one element type",
+			"family": "sequence-map",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"decidedBy": "cross-field",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "IR for identity, structural kind, semantic role, constraints, nullability, optionality, recursion, discriminators, extensions, provenance, source loci, and version transitions."
+		},
+		{
+			"id": "CR-union",
+			"title": "Discriminated unions and their payload types",
+			"family": "union",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"decidedBy": "cross-field",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "Invalid imports, cycles, unknown mappings, duplicate identities, stale locks, and unsupported loss fail at exact source loci."
+		},
+		{
+			"id": "CR-reference",
+			"title": "Semantic references between definitions",
+			"family": "reference",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"decidedBy": "cross-field",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "IR for identity, structural kind, semantic role, constraints, nullability, optionality, recursion, discriminators, extensions, provenance, source loci, and version transitions."
+		},
+		{
+			"id": "CR-field-presence",
+			"title": "Presence, nullability, and multiplicity as independent members",
+			"family": "field-presence",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"decidedBy": "cross-field",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "IR for identity, structural kind, semantic role, constraints, nullability, optionality, recursion, discriminators, extensions, provenance, source loci, and version transitions."
+		},
+		{
+			"id": "CR-field-default",
+			"title": "No, semantic, representation, and migration defaults",
+			"family": "field-default",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"decidedBy": "schema",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "IR for identity, structural kind, semantic role, constraints, nullability, optionality, recursion, discriminators, extensions, provenance, source loci, and version transitions."
+		},
+		{
+			"id": "CR-unit",
+			"title": "UCUM units on scalar-resolved fields",
+			"family": "unit",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"decidedBy": "cross-field",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "IR v1.1 nodes (#34): multiplicity, unit, relationships, operations, clauses, closed constraint vocabulary."
+		},
+		{
+			"id": "CR-constraint",
+			"title": "The closed constraint keyword vocabulary and its applicability",
+			"family": "constraint",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"decidedBy": "cross-field",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "IR v1.1 nodes (#34): multiplicity, unit, relationships, operations, clauses, closed constraint vocabulary."
+		},
+		{
+			"id": "CR-recursion",
+			"title": "Recursive type graphs, alias cycles, and the depth bound",
+			"family": "recursion",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"decidedBy": "cross-field",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "IR for identity, structural kind, semantic role, constraints, nullability, optionality, recursion, discriminators, extensions, provenance, source loci, and version transitions."
+		},
+		{
+			"id": "CR-relationship",
+			"title": "First-class relationships and acyclic composite graphs",
+			"family": "relationship",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"decidedBy": "cross-field",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "IR v1.1 nodes (#34): multiplicity, unit, relationships, operations, clauses, closed constraint vocabulary."
+		},
+		{
+			"id": "CR-operation",
+			"title": "Operations, parameters, returns, and clause binding",
+			"family": "operation",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"decidedBy": "cross-field",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "IR v1.1 nodes (#34): multiplicity, unit, relationships, operations, clauses, closed constraint vocabulary."
+		},
+		{
+			"id": "CR-clause",
+			"title": "Opaque formal clauses and their spans",
+			"family": "clause",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"decidedBy": "cross-field",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "IR v1.1 nodes (#34): multiplicity, unit, relationships, operations, clauses, closed constraint vocabulary."
+		},
+		{
+			"id": "CR-provenance",
+			"title": "Source loci and generated origins",
+			"family": "provenance",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"schema/semantic/v1/common.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"decidedBy": "schema",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "Invalid imports, cycles, unknown mappings, duplicate identities, stale locks, and unsupported loss fail at exact source loci."
+		},
+		{
+			"id": "CR-unknown",
+			"title": "Preserve, reject, and surface unknown policy",
+			"family": "unknown",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"schema/semantic/v1/common.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"decidedBy": "schema",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "IR for identity, structural kind, semantic role, constraints, nullability, optionality, recursion, discriminators, extensions, provenance, source loci, and version transitions."
+		},
+		{
+			"id": "CR-extension",
+			"title": "Extensions and required capability against consumer policy",
+			"family": "extension",
+			"sources": [
+				"schema/semantic/v1/common.schema.json",
+				"schema/semantic/v1/consumer-policy.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"decidedBy": "cross-field",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "IR for identity, structural kind, semantic role, constraints, nullability, optionality, recursion, discriminators, extensions, provenance, source loci, and version transitions."
+		},
+		{
+			"id": "CR-package",
+			"title": "Package identity, imports, exports, locks, mappings, and declared loss",
+			"family": "package",
+			"sources": [
+				"schema/semantic/v1/package-manifest.schema.json",
+				"schema/semantic/v1/package-lock.schema.json",
+				"schema/semantic/v1/mapping.schema.json",
+				"schema/semantic/v1/profile.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"decidedBy": "cross-field",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "Invalid imports, cycles, unknown mappings, duplicate identities, stale locks, and unsupported loss fail at exact source loci."
+		},
+		{
+			"id": "CR-version",
+			"title": "Contract version transitions between 1.0.0 and 1.1.0",
+			"family": "version",
+			"sources": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"decidedBy": "cross-field",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "IR schema evolution has golden backward/forward readers and an explicit compatibility policy."
+		},
+		{
+			"id": "CR-compatibility",
+			"title": "IR-surface compatibility classification",
+			"family": "compatibility",
+			"sources": [
+				"schema/semantic/v1/compatibility-report.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"decidedBy": "compatibility",
+			"criterion": "agent-ix/filament-core-data#19",
+			"criterionQuote": "IR schema evolution has golden backward/forward readers and an explicit compatibility policy."
+		}
+	],
+	"unmetAreas": [
+		{
+			"id": "UA-serialization-parity",
+			"title": "Cross-language generated-package serialization and deserialization parity",
+			"owningIssues": [
+				"agent-ix/filament-core-data#21",
+				"agent-ix/filament-core-data#22",
+				"agent-ix/filament-core-data#23",
+				"agent-ix/filament-core-data#11"
+			],
+			"rationale": "No generated Rust, TypeScript, or Python package exists to serialize; the corpus judges the IR document layer only and records the gap rather than claiming it."
+		},
+		{
+			"id": "UA-live-adapters",
+			"title": "A running implementation on any adapter slot",
+			"owningIssues": [
+				"agent-ix/filament-core-data#19",
+				"agent-ix/filament-core-data#21",
+				"agent-ix/filament-core-data#22",
+				"agent-ix/filament-core-data#23"
+			],
+			"rationale": "Every declared adapter is unavailable until its owning issue ships a command that emits an adapter result; the harness records the unmet rows and counts none of them as a pass."
+		},
+		{
+			"id": "UA-semantic-core-grammar",
+			"title": "Conformance cases over the semantic-core declaration grammar itself",
+			"owningIssues": [
+				"agent-ix/filament-core-data#11",
+				"agent-ix/filament-core-data#36"
+			],
+			"rationale": "The corpus judges lowered IR documents, not the L3 grammar that produces them; grammar conformance is gated by issue #35's own suite."
+		}
+	],
+	"bases": [
+		{
+			"id": "core-1-1",
+			"path": "conformance/bases/core-1-1.json",
+			"digest": "sha256:d11a0997f4012c989cce33f2c3f0da9233ededb86502ae960a9c8b952922dab3"
+		},
+		{
+			"id": "minimal-1-0",
+			"path": "conformance/bases/minimal-1-0.json",
+			"digest": "sha256:f4fbae439e952a9538b94241f44a20c188edd615c5e88566630ec562a9d83745"
+		},
+		{
+			"id": "minimal-1-1",
+			"path": "conformance/bases/minimal-1-1.json",
+			"digest": "sha256:808ec34a5e61f27208d909a29baee5d2a8012e3556fa119f5c952f5e732499f7"
+		},
+		{
+			"id": "package-1-1",
+			"path": "conformance/bases/package-1-1.json",
+			"digest": "sha256:667b047bb16d044c931f8528f6ea6ea457168805d6a98166a71317ba0324da91"
+		}
+	],
+	"cases": [
+		{
+			"id": "ALIAS-001",
+			"path": "conformance/cases/alias/ALIAS-001.json",
+			"family": "alias",
+			"class": "positive",
+			"digest": "sha256:b7da0df98e4ab7adc593a1c032c51cbf226cfc182c5504508dd19c1b26a295d7"
+		},
+		{
+			"id": "ALIAS-002",
+			"path": "conformance/cases/alias/ALIAS-002.json",
+			"family": "alias",
+			"class": "negative",
+			"digest": "sha256:f3af44fb6ef11aeb4eb985dde0a24f9957e73a369c8b0ec3d77f26c5c1ad20e1"
+		},
+		{
+			"id": "ALIAS-003",
+			"path": "conformance/cases/alias/ALIAS-003.json",
+			"family": "alias",
+			"class": "boundary",
+			"digest": "sha256:5428085054220f9d4ec09e27ac42ab9799080f7fbb142966460d9e5ca6d855c8"
+		},
+		{
+			"id": "ALIAS-004",
+			"path": "conformance/cases/alias/ALIAS-004.json",
+			"family": "alias",
+			"class": "evolution",
+			"digest": "sha256:7495dd7c8c2eb8cfd61eee7d477fc3edac33fc6246ec941e234b1f442c3a1c86"
+		},
+		{
+			"id": "CLAUSE-001",
+			"path": "conformance/cases/clause/CLAUSE-001.json",
+			"family": "clause",
+			"class": "positive",
+			"digest": "sha256:330e3120a18f5689986eb06ec94ab933709151a98c4d329cc813b86d5317301f"
+		},
+		{
+			"id": "CLAUSE-002",
+			"path": "conformance/cases/clause/CLAUSE-002.json",
+			"family": "clause",
+			"class": "negative",
+			"digest": "sha256:575676e0fa8da831f16aab2df10b1601bb8bc824130c009596ace3d775f87a07"
+		},
+		{
+			"id": "CLAUSE-003",
+			"path": "conformance/cases/clause/CLAUSE-003.json",
+			"family": "clause",
+			"class": "boundary",
+			"digest": "sha256:c3512469f442aa44b8b1069f026e5d9f010671e3508fcc446a60cc01a28cb2dd"
+		},
+		{
+			"id": "CLAUSE-004",
+			"path": "conformance/cases/clause/CLAUSE-004.json",
+			"family": "clause",
+			"class": "evolution",
+			"digest": "sha256:fcdfdfd7276faf5e83e5d1b7521214b7230265f941dd3d12b36f5ecdda05cc02"
+		},
+		{
+			"id": "CLAUSE-005",
+			"path": "conformance/cases/clause/CLAUSE-005.json",
+			"family": "clause",
+			"class": "negative",
+			"digest": "sha256:2c2ae705dbeb58cc4be9c441e5b9698e4a1aebc650d3f34f816adfa65f887d34"
+		},
+		{
+			"id": "CLAUSE-006",
+			"path": "conformance/cases/clause/CLAUSE-006.json",
+			"family": "clause",
+			"class": "negative",
+			"digest": "sha256:d8b64db302cd4974da8af3436208fc841fd69302091c3ebc8f2f51e178c8caa0"
+		},
+		{
+			"id": "COMP-001",
+			"path": "conformance/cases/compatibility/COMP-001.json",
+			"family": "compatibility",
+			"class": "positive",
+			"digest": "sha256:216648051c325c6b303209d4384af241a3a56e9e534ad238613a9634da5cf17e"
+		},
+		{
+			"id": "COMP-002",
+			"path": "conformance/cases/compatibility/COMP-002.json",
+			"family": "compatibility",
+			"class": "negative",
+			"digest": "sha256:8658c0a75badd56f2287e160fa712362815c2ac3b4a3e609586c2507b0074036"
+		},
+		{
+			"id": "COMP-003",
+			"path": "conformance/cases/compatibility/COMP-003.json",
+			"family": "compatibility",
+			"class": "boundary",
+			"digest": "sha256:c95e275ab99dea398768d5d8f5364ad15e3f3c704590fe4df48cc317e1cdaa8f"
+		},
+		{
+			"id": "COMP-004",
+			"path": "conformance/cases/compatibility/COMP-004.json",
+			"family": "compatibility",
+			"class": "evolution",
+			"digest": "sha256:830bdb7c26bc51285abd14b62fc0370eec1e640b5f7618f65aa2f8cac2594df2"
+		},
+		{
+			"id": "COMP-005",
+			"path": "conformance/cases/compatibility/COMP-005.json",
+			"family": "compatibility",
+			"class": "evolution",
+			"digest": "sha256:a2f01cadd65c35f54b47f7b014fd2212683606a2c2313933549a89de411fb72e"
+		},
+		{
+			"id": "CONS-001",
+			"path": "conformance/cases/constraint/CONS-001.json",
+			"family": "constraint",
+			"class": "positive",
+			"digest": "sha256:439bb73c967669b1a02b1346b25e9f67630c5a05189cf0faa5b1d454c6aac48d"
+		},
+		{
+			"id": "CONS-002",
+			"path": "conformance/cases/constraint/CONS-002.json",
+			"family": "constraint",
+			"class": "negative",
+			"digest": "sha256:2e2398a52aa707a83765fde532050697458e19c7fde6fffadb679970cfd988a3"
+		},
+		{
+			"id": "CONS-003",
+			"path": "conformance/cases/constraint/CONS-003.json",
+			"family": "constraint",
+			"class": "boundary",
+			"digest": "sha256:7437f11f5b976a35a8fc14f25119d5782caa3a3371b4e7c1f110a07e657488fa"
+		},
+		{
+			"id": "CONS-004",
+			"path": "conformance/cases/constraint/CONS-004.json",
+			"family": "constraint",
+			"class": "evolution",
+			"digest": "sha256:c25967d6ca21a3eb7412683b9ce0f9f270db72e199ceda0307fc54e90f9027af"
+		},
+		{
+			"id": "CONS-005",
+			"path": "conformance/cases/constraint/CONS-005.json",
+			"family": "constraint",
+			"class": "negative",
+			"digest": "sha256:6888c1802e3bd269b40f5ff50b39e70ed66a1a187536f90bb4c1a9e2242eb1d9"
+		},
+		{
+			"id": "CONS-006",
+			"path": "conformance/cases/constraint/CONS-006.json",
+			"family": "constraint",
+			"class": "negative",
+			"digest": "sha256:3ef69497fbae7977a4cb3c22e7c60c8abfd34881e2d75e352c4bb43a3b82c6f8"
+		},
+		{
+			"id": "CONS-007",
+			"path": "conformance/cases/constraint/CONS-007.json",
+			"family": "constraint",
+			"class": "negative",
+			"digest": "sha256:40202da33ab5e30f832c61139e0824eb5dea71d9dd5621715f21fafc89e98043"
+		},
+		{
+			"id": "DEF-001",
+			"path": "conformance/cases/field-default/DEF-001.json",
+			"family": "field-default",
+			"class": "positive",
+			"digest": "sha256:34e5e97542dfa5cacf2052f8cea8306bcf4e405a7660a875425678cad32a340e"
+		},
+		{
+			"id": "DEF-002",
+			"path": "conformance/cases/field-default/DEF-002.json",
+			"family": "field-default",
+			"class": "negative",
+			"digest": "sha256:a871fd68161fba593168163ecaf900d4c3a01993cc9bc97518063ed51fc81e54"
+		},
+		{
+			"id": "DEF-003",
+			"path": "conformance/cases/field-default/DEF-003.json",
+			"family": "field-default",
+			"class": "boundary",
+			"digest": "sha256:287066c755674978df9251f94bc273fa653363119134489d62a0edb823e99804"
+		},
+		{
+			"id": "DEF-004",
+			"path": "conformance/cases/field-default/DEF-004.json",
+			"family": "field-default",
+			"class": "evolution",
+			"digest": "sha256:07597c0d948c43d285c27a37dbd37e292e7fb9fc1186f20461a0924c0071f59b"
+		},
+		{
+			"id": "ENUM-001",
+			"path": "conformance/cases/enum/ENUM-001.json",
+			"family": "enum",
+			"class": "positive",
+			"digest": "sha256:e6579a6f3672d81f959fe946eba82c76bdc926212a5235d461b915a7f8fb8e6c"
+		},
+		{
+			"id": "ENUM-002",
+			"path": "conformance/cases/enum/ENUM-002.json",
+			"family": "enum",
+			"class": "negative",
+			"digest": "sha256:f6153031a6f7cc34da5b2347c6402873aa89c60d62cd2c0e36eeae91462ba754"
+		},
+		{
+			"id": "ENUM-003",
+			"path": "conformance/cases/enum/ENUM-003.json",
+			"family": "enum",
+			"class": "boundary",
+			"digest": "sha256:a44035a3bbd6082d69195e1b079239cf1ab39a9ae8ef8986ff19d57214bb3d4b"
+		},
+		{
+			"id": "ENUM-004",
+			"path": "conformance/cases/enum/ENUM-004.json",
+			"family": "enum",
+			"class": "evolution",
+			"digest": "sha256:8e4fe5aa43c7ccda5d046ce0062a5d3011f6337439785b2fe431c940d0e88878"
+		},
+		{
+			"id": "ENV-001",
+			"path": "conformance/cases/envelope/ENV-001.json",
+			"family": "envelope",
+			"class": "positive",
+			"digest": "sha256:9c3e9e1cc10cc882e838941b5e940e00405781176b7af12c09ee1885efd34319"
+		},
+		{
+			"id": "ENV-002",
+			"path": "conformance/cases/envelope/ENV-002.json",
+			"family": "envelope",
+			"class": "negative",
+			"digest": "sha256:850f42b6e364cf49752b86985a2e19cc3c7d366d113c26bc0f5ad83f81f8594e"
+		},
+		{
+			"id": "ENV-003",
+			"path": "conformance/cases/envelope/ENV-003.json",
+			"family": "envelope",
+			"class": "boundary",
+			"digest": "sha256:263196c58027ef831c8d98ce31b37d5cea7e91a4bc31492df9751250423db894"
+		},
+		{
+			"id": "ENV-004",
+			"path": "conformance/cases/envelope/ENV-004.json",
+			"family": "envelope",
+			"class": "evolution",
+			"digest": "sha256:e2bf722a3e9db9380e598598f03e5b5fc8e1d583dadc1056f87d8398841a07bf"
+		},
+		{
+			"id": "EXT-001",
+			"path": "conformance/cases/extension/EXT-001.json",
+			"family": "extension",
+			"class": "positive",
+			"digest": "sha256:ab65dc21d779f6167b96da250aa005d6379cc4db9a8dabbb1d830d2c708fb4c1"
+		},
+		{
+			"id": "EXT-002",
+			"path": "conformance/cases/extension/EXT-002.json",
+			"family": "extension",
+			"class": "negative",
+			"digest": "sha256:491aae9d53c18fb5cb42248417ef490e4fb9f2dfe1751b17a1232825984090a8"
+		},
+		{
+			"id": "EXT-003",
+			"path": "conformance/cases/extension/EXT-003.json",
+			"family": "extension",
+			"class": "boundary",
+			"digest": "sha256:77a34d35149b11eed91b155fc1f7d6092200a606791a028f297013a6a2d5f161"
+		},
+		{
+			"id": "EXT-004",
+			"path": "conformance/cases/extension/EXT-004.json",
+			"family": "extension",
+			"class": "evolution",
+			"digest": "sha256:56c43d28d42e9034b5e7bf4324f133bcec4ff78a15da6dd8615133e92407ceb8"
+		},
+		{
+			"id": "IDENT-001",
+			"path": "conformance/cases/identity/IDENT-001.json",
+			"family": "identity",
+			"class": "positive",
+			"digest": "sha256:4aa217a81894f717529abf8b7da9da95a11c387ae7020bfdeb08fe181cef8515"
+		},
+		{
+			"id": "IDENT-002",
+			"path": "conformance/cases/identity/IDENT-002.json",
+			"family": "identity",
+			"class": "negative",
+			"digest": "sha256:c2fa24bbea061cbedc6053bebe57e5eab46dc8ea4753a82e9e54159361ab0a13"
+		},
+		{
+			"id": "IDENT-003",
+			"path": "conformance/cases/identity/IDENT-003.json",
+			"family": "identity",
+			"class": "boundary",
+			"digest": "sha256:ebecb603d328defecf6a5230f73d43cb44152c611119208a4f8261c7949e26af"
+		},
+		{
+			"id": "IDENT-004",
+			"path": "conformance/cases/identity/IDENT-004.json",
+			"family": "identity",
+			"class": "evolution",
+			"digest": "sha256:c54ebf006a29ee7fc0e3e2071a4409a32647433376165696c20db2dccdc0b48a"
+		},
+		{
+			"id": "IDENT-005",
+			"path": "conformance/cases/identity/IDENT-005.json",
+			"family": "identity",
+			"class": "negative",
+			"digest": "sha256:33fd660adfafbdac30f6ea6e180fd97dd88e4c0551e30842c33c942a75803276"
+		},
+		{
+			"id": "OP-001",
+			"path": "conformance/cases/operation/OP-001.json",
+			"family": "operation",
+			"class": "positive",
+			"digest": "sha256:5252cdec823a7e951b19809116c4cdf9add54aab79c20d5d31b207c27059eea3"
+		},
+		{
+			"id": "OP-002",
+			"path": "conformance/cases/operation/OP-002.json",
+			"family": "operation",
+			"class": "negative",
+			"digest": "sha256:4a72ccacb001a8679424c8bcafd7f3ee8802c474c733591c15d5c1692cdffc01"
+		},
+		{
+			"id": "OP-003",
+			"path": "conformance/cases/operation/OP-003.json",
+			"family": "operation",
+			"class": "boundary",
+			"digest": "sha256:c126c5c422209f7a53ccd2173104fd4faa60da7d16e12d282186de906139901c"
+		},
+		{
+			"id": "OP-004",
+			"path": "conformance/cases/operation/OP-004.json",
+			"family": "operation",
+			"class": "evolution",
+			"digest": "sha256:85218d5d367e4ce5595425e3bc242644cceb03270e2931a5e2163bd5c88f0b9f"
+		},
+		{
+			"id": "OP-005",
+			"path": "conformance/cases/operation/OP-005.json",
+			"family": "operation",
+			"class": "negative",
+			"digest": "sha256:f8ecc3bef13285465bd132d5178a20d9af2691eb90c1a4cc1de353a0eaf1743a"
+		},
+		{
+			"id": "PKG-001",
+			"path": "conformance/cases/package/PKG-001.json",
+			"family": "package",
+			"class": "positive",
+			"digest": "sha256:7e6dadb72cc56fa8a58758920892fda1080666c38eef88f23c14adbb98e239f0"
+		},
+		{
+			"id": "PKG-002",
+			"path": "conformance/cases/package/PKG-002.json",
+			"family": "package",
+			"class": "negative",
+			"digest": "sha256:a9a38787c9786dbb32af36d2f7f8424c7aa0cf09c5c3cca9077dd2c1abd45ba1"
+		},
+		{
+			"id": "PKG-003",
+			"path": "conformance/cases/package/PKG-003.json",
+			"family": "package",
+			"class": "boundary",
+			"digest": "sha256:78c51bd1f0f7ed136d72f6b0497b800eaa359f5ef761652a079bb2711a671321"
+		},
+		{
+			"id": "PKG-004",
+			"path": "conformance/cases/package/PKG-004.json",
+			"family": "package",
+			"class": "evolution",
+			"digest": "sha256:7e192bb051627d9b7433b4fb3cef020fe0ed19c0be030bab4f22e6c2ca518632"
+		},
+		{
+			"id": "PKG-005",
+			"path": "conformance/cases/package/PKG-005.json",
+			"family": "package",
+			"class": "negative",
+			"digest": "sha256:b1fbdf86b1d1af3d39db7ca7fb3a0341c4262f0b0368e6ba9b5e759930915eb7"
+		},
+		{
+			"id": "PKG-006",
+			"path": "conformance/cases/package/PKG-006.json",
+			"family": "package",
+			"class": "negative",
+			"digest": "sha256:862eae7344015c69f7fbc34929403197214edea22d3db6e3b02737cf2a4e610c"
+		},
+		{
+			"id": "PKG-007",
+			"path": "conformance/cases/package/PKG-007.json",
+			"family": "package",
+			"class": "negative",
+			"digest": "sha256:e56bed8137d71c1913361170045f3333f66e932f8bed37327cfa6a777108208e"
+		},
+		{
+			"id": "PKG-008",
+			"path": "conformance/cases/package/PKG-008.json",
+			"family": "package",
+			"class": "negative",
+			"digest": "sha256:f595c93b9f2d1cc0af18a063b800d6b5d993fb8db51daeec9e458b7f94e8743d"
+		},
+		{
+			"id": "PRES-001",
+			"path": "conformance/cases/field-presence/PRES-001.json",
+			"family": "field-presence",
+			"class": "positive",
+			"digest": "sha256:2f16ced083207d37354e8bc4589bf3135eb5872a25b8cb39d8c00a24c15ccbd9"
+		},
+		{
+			"id": "PRES-002",
+			"path": "conformance/cases/field-presence/PRES-002.json",
+			"family": "field-presence",
+			"class": "negative",
+			"digest": "sha256:5072faaf266b50dfb9fa823bd9d11092a9970e81ecbb9f14e2a79a56d3c6beb5"
+		},
+		{
+			"id": "PRES-003",
+			"path": "conformance/cases/field-presence/PRES-003.json",
+			"family": "field-presence",
+			"class": "boundary",
+			"digest": "sha256:2d7588f57701bf41c693d6bf6962073d09988ca8ac78fe55db5c6b1c6ec9cc64"
+		},
+		{
+			"id": "PRES-004",
+			"path": "conformance/cases/field-presence/PRES-004.json",
+			"family": "field-presence",
+			"class": "evolution",
+			"digest": "sha256:aab1942a88b2a44b86bda520fb62e3f70153f748873b9e6b0f4ec9ae1081facb"
+		},
+		{
+			"id": "PRES-005",
+			"path": "conformance/cases/field-presence/PRES-005.json",
+			"family": "field-presence",
+			"class": "positive",
+			"digest": "sha256:a2ac85d6f440790babecb6725946ec0d60bbb944b53be7f14ca774cbd2ce45a8"
+		},
+		{
+			"id": "PRES-006",
+			"path": "conformance/cases/field-presence/PRES-006.json",
+			"family": "field-presence",
+			"class": "positive",
+			"digest": "sha256:9c16be5fdd22b9a33dcdfeddeafd67466f2c215c0d9da1296be91343037cde12"
+		},
+		{
+			"id": "PRES-007",
+			"path": "conformance/cases/field-presence/PRES-007.json",
+			"family": "field-presence",
+			"class": "negative",
+			"digest": "sha256:0d86ec986f4f29da0cdaf754fb5988a14eba5b3e9ae8ee8786add1c76f37d9c3"
+		},
+		{
+			"id": "PRES-008",
+			"path": "conformance/cases/field-presence/PRES-008.json",
+			"family": "field-presence",
+			"class": "negative",
+			"digest": "sha256:7554aa8c3026ff808ddf539787e30d7e3ea6892ba123796c686f8603c02098cf"
+		},
+		{
+			"id": "PRES-009",
+			"path": "conformance/cases/field-presence/PRES-009.json",
+			"family": "field-presence",
+			"class": "negative",
+			"digest": "sha256:31f03119bf924a0ae01b2d8c4908b0f069f0991c23803860dadb9ef63af2dc6e"
+		},
+		{
+			"id": "PRES-010",
+			"path": "conformance/cases/field-presence/PRES-010.json",
+			"family": "field-presence",
+			"class": "negative",
+			"digest": "sha256:bd5b4e388390a6065e07df5b97fea4a181537f8812e8905cdb478d3bb54d46b0"
+		},
+		{
+			"id": "PROV-001",
+			"path": "conformance/cases/provenance/PROV-001.json",
+			"family": "provenance",
+			"class": "positive",
+			"digest": "sha256:ed733b12323fd05adee3ed124a0c9b7896feb58efe23465d2ff8f4153ecca063"
+		},
+		{
+			"id": "PROV-002",
+			"path": "conformance/cases/provenance/PROV-002.json",
+			"family": "provenance",
+			"class": "negative",
+			"digest": "sha256:b7ea89c263cfd5ab234202e2845adae30006bb6bc12fec8968ec69a7ca8bc460"
+		},
+		{
+			"id": "PROV-003",
+			"path": "conformance/cases/provenance/PROV-003.json",
+			"family": "provenance",
+			"class": "boundary",
+			"digest": "sha256:474dfd463feb720e84a5128a6c8ad9f1ac94e0ed7922516d5157d2f983c7b633"
+		},
+		{
+			"id": "PROV-004",
+			"path": "conformance/cases/provenance/PROV-004.json",
+			"family": "provenance",
+			"class": "evolution",
+			"digest": "sha256:8753dcd1f71fbe6a8a2685ff4712112b64a69e73e91281672f6017d4c0c22630"
+		},
+		{
+			"id": "REC-001",
+			"path": "conformance/cases/recursion/REC-001.json",
+			"family": "recursion",
+			"class": "positive",
+			"digest": "sha256:6f9980c6eb5024c622307a7777a11f117e6d61821a575086d022ddf66128995b"
+		},
+		{
+			"id": "REC-002",
+			"path": "conformance/cases/recursion/REC-002.json",
+			"family": "recursion",
+			"class": "negative",
+			"digest": "sha256:7540a6ab762a4a786e5012a22790d853a7d0f4dcabde442ffc04f147c13e71a6"
+		},
+		{
+			"id": "REC-003",
+			"path": "conformance/cases/recursion/REC-003.json",
+			"family": "recursion",
+			"class": "boundary",
+			"digest": "sha256:eb734b0c0f04505df6b5363f31376800d774a405284d2384fc0b8323b306485e"
+		},
+		{
+			"id": "REC-004",
+			"path": "conformance/cases/recursion/REC-004.json",
+			"family": "recursion",
+			"class": "evolution",
+			"digest": "sha256:9230027d34fe030a956cdd16907b583d94dc37a981c718340a54ca41aaa053d9"
+		},
+		{
+			"id": "REC-005",
+			"path": "conformance/cases/recursion/REC-005.json",
+			"family": "recursion",
+			"class": "boundary",
+			"digest": "sha256:d067f282522fbfba71935864b645c3721ef2ef9a58cece56af5d56d82cffbb5d"
+		},
+		{
+			"id": "REC-006",
+			"path": "conformance/cases/recursion/REC-006.json",
+			"family": "recursion",
+			"class": "positive",
+			"digest": "sha256:8566fb658b24248403650598d7113baec7427c741a569e3ab2ffc7eed1128a46"
+		},
+		{
+			"id": "REF-001",
+			"path": "conformance/cases/reference/REF-001.json",
+			"family": "reference",
+			"class": "positive",
+			"digest": "sha256:67cc3d234f2bfd762f3f25ac07256b793ad1349b76e204da00836016cc61fdb3"
+		},
+		{
+			"id": "REF-002",
+			"path": "conformance/cases/reference/REF-002.json",
+			"family": "reference",
+			"class": "negative",
+			"digest": "sha256:5767dfde9f237c4acf6d6810e53b53ee8d05ba585d93a5738539751d6d01c630"
+		},
+		{
+			"id": "REF-003",
+			"path": "conformance/cases/reference/REF-003.json",
+			"family": "reference",
+			"class": "boundary",
+			"digest": "sha256:da49f6330ae007360199f0578f469f1b7c57adba1a0808e7dd6422d83749f24b"
+		},
+		{
+			"id": "REF-004",
+			"path": "conformance/cases/reference/REF-004.json",
+			"family": "reference",
+			"class": "evolution",
+			"digest": "sha256:e759d95637af1d5a5975f1e95e39b0eb7797b4664e55428f26bbdc1d88c1d88c"
+		},
+		{
+			"id": "REL-001",
+			"path": "conformance/cases/relationship/REL-001.json",
+			"family": "relationship",
+			"class": "positive",
+			"digest": "sha256:1fb76b3fd5c04e07953f027395469d83f76d5863859ecdb3a75655e1b72da7ed"
+		},
+		{
+			"id": "REL-002",
+			"path": "conformance/cases/relationship/REL-002.json",
+			"family": "relationship",
+			"class": "negative",
+			"digest": "sha256:05fc383b9abf6abe050d0f6e08394e39783760bb6b610a6d9e3000357ce75d59"
+		},
+		{
+			"id": "REL-003",
+			"path": "conformance/cases/relationship/REL-003.json",
+			"family": "relationship",
+			"class": "boundary",
+			"digest": "sha256:3293118b021a0af6ebe8dd458dc626203589fb2f9ef1f59991a95274fa678e3c"
+		},
+		{
+			"id": "REL-004",
+			"path": "conformance/cases/relationship/REL-004.json",
+			"family": "relationship",
+			"class": "evolution",
+			"digest": "sha256:0a14feb50a1b1c895fb06587aa747477030ef0cbd37739e649bb119cae5db13e"
+		},
+		{
+			"id": "REL-005",
+			"path": "conformance/cases/relationship/REL-005.json",
+			"family": "relationship",
+			"class": "negative",
+			"digest": "sha256:84f031173063ed3ee7bdfaa206c07d1c7ef6c57c9e4a65c49dc64bb755075047"
+		},
+		{
+			"id": "REL-006",
+			"path": "conformance/cases/relationship/REL-006.json",
+			"family": "relationship",
+			"class": "negative",
+			"digest": "sha256:68b69b9108df1ef92d39a35c3b3f98e0bf7f5a767e7f986bb2d149b1d6b237ef"
+		},
+		{
+			"id": "SCAL-001",
+			"path": "conformance/cases/scalar/SCAL-001.json",
+			"family": "scalar",
+			"class": "positive",
+			"digest": "sha256:046c66f8f2a3b5523184b6cba7f6429cfd6005a849e1fc1e2450bd2f184bd489"
+		},
+		{
+			"id": "SCAL-002",
+			"path": "conformance/cases/scalar/SCAL-002.json",
+			"family": "scalar",
+			"class": "negative",
+			"digest": "sha256:10ec5058b172745b78bcbe89e048c4c58de9825a950fa2478f324f4f37e3a490"
+		},
+		{
+			"id": "SCAL-003",
+			"path": "conformance/cases/scalar/SCAL-003.json",
+			"family": "scalar",
+			"class": "boundary",
+			"digest": "sha256:447bef503cd9a8125a1ca6c34ddee5046c9cac0e7088c5b533fbf55794227d71"
+		},
+		{
+			"id": "SCAL-004",
+			"path": "conformance/cases/scalar/SCAL-004.json",
+			"family": "scalar",
+			"class": "evolution",
+			"digest": "sha256:1ba3967dee57fae376f90efc7ebea4764367061f1183127953c28a877e6639ca"
+		},
+		{
+			"id": "SEQMAP-001",
+			"path": "conformance/cases/sequence-map/SEQMAP-001.json",
+			"family": "sequence-map",
+			"class": "positive",
+			"digest": "sha256:bbad4025f48969045cfde09434e8106b34d1b7d53ccca7e6b16fd54108bd4585"
+		},
+		{
+			"id": "SEQMAP-002",
+			"path": "conformance/cases/sequence-map/SEQMAP-002.json",
+			"family": "sequence-map",
+			"class": "negative",
+			"digest": "sha256:314bdefe9730fd4f46944d68e300d241c6705d90c8ecbbd9cd29d577785b4c95"
+		},
+		{
+			"id": "SEQMAP-003",
+			"path": "conformance/cases/sequence-map/SEQMAP-003.json",
+			"family": "sequence-map",
+			"class": "boundary",
+			"digest": "sha256:43aed3911a5c520ea831fa9fc3955779dbcd63a3a43082d2998b4019bc666dc5"
+		},
+		{
+			"id": "SEQMAP-004",
+			"path": "conformance/cases/sequence-map/SEQMAP-004.json",
+			"family": "sequence-map",
+			"class": "evolution",
+			"digest": "sha256:f22502852148ca2be05be73b2a400362eba31a39fd878f92ed83d18e5f79b663"
+		},
+		{
+			"id": "UNION-001",
+			"path": "conformance/cases/union/UNION-001.json",
+			"family": "union",
+			"class": "positive",
+			"digest": "sha256:31a5e1eaa3e8fb5803e02568761ae449b76494993e9cf5b67854a28bc1839044"
+		},
+		{
+			"id": "UNION-002",
+			"path": "conformance/cases/union/UNION-002.json",
+			"family": "union",
+			"class": "negative",
+			"digest": "sha256:e9919d1b6ca95aa345386cb297d1914c3d2119c57e5993c181737e972b84d77c"
+		},
+		{
+			"id": "UNION-003",
+			"path": "conformance/cases/union/UNION-003.json",
+			"family": "union",
+			"class": "boundary",
+			"digest": "sha256:ddf5a3605430edaec2a02f0f5fd492166620101e78d93743b411d739e690335b"
+		},
+		{
+			"id": "UNION-004",
+			"path": "conformance/cases/union/UNION-004.json",
+			"family": "union",
+			"class": "evolution",
+			"digest": "sha256:976b73af2e65a255dddbeb0374e20fc33e1aa6392196e27f070cf3e78399120a"
+		},
+		{
+			"id": "UNIT-001",
+			"path": "conformance/cases/unit/UNIT-001.json",
+			"family": "unit",
+			"class": "positive",
+			"digest": "sha256:cbd9c9d45f5a568e6f0c3c9e9a758179254abf66f816a30c5e96ecaa3213c6b7"
+		},
+		{
+			"id": "UNIT-002",
+			"path": "conformance/cases/unit/UNIT-002.json",
+			"family": "unit",
+			"class": "negative",
+			"digest": "sha256:49b3f1f4d6761d897b977fe17852c6bd8b3120b1decedbdeb69312dadab5e27a"
+		},
+		{
+			"id": "UNIT-003",
+			"path": "conformance/cases/unit/UNIT-003.json",
+			"family": "unit",
+			"class": "boundary",
+			"digest": "sha256:1a195cd83920f2d68e7ee2829512366fe8c561a2eeee476201f19258dc2a320d"
+		},
+		{
+			"id": "UNIT-004",
+			"path": "conformance/cases/unit/UNIT-004.json",
+			"family": "unit",
+			"class": "evolution",
+			"digest": "sha256:6b739cb85fd76a8f22ae434ce3fdaa6d43b2e08a271af14fc47728efd7eda016"
+		},
+		{
+			"id": "UNK-001",
+			"path": "conformance/cases/unknown/UNK-001.json",
+			"family": "unknown",
+			"class": "positive",
+			"digest": "sha256:981e8830f306c79a6facf3b6e9099808c62835ff366401e045071156727b9ee0"
+		},
+		{
+			"id": "UNK-002",
+			"path": "conformance/cases/unknown/UNK-002.json",
+			"family": "unknown",
+			"class": "negative",
+			"digest": "sha256:39f2583d0633d5ce8838fa4abd5560f50f64ed08f36b610397c9ede14a8dc2a0"
+		},
+		{
+			"id": "UNK-003",
+			"path": "conformance/cases/unknown/UNK-003.json",
+			"family": "unknown",
+			"class": "boundary",
+			"digest": "sha256:8ec8e019a42442a3c61afcd703d274a79bd5c407eca191bb8eeac399ae5c61d0"
+		},
+		{
+			"id": "UNK-004",
+			"path": "conformance/cases/unknown/UNK-004.json",
+			"family": "unknown",
+			"class": "evolution",
+			"digest": "sha256:f81570d762fec81efd0b9997481caeec69d694399ef4f526287bf7559a801abb"
+		},
+		{
+			"id": "UNK-005",
+			"path": "conformance/cases/unknown/UNK-005.json",
+			"family": "unknown",
+			"class": "positive",
+			"digest": "sha256:7a38540c1aacfb0e6a4fe87bd0be970bde62b07f27d9a7dc77b5a6b711ef2c39"
+		},
+		{
+			"id": "VER-001",
+			"path": "conformance/cases/version/VER-001.json",
+			"family": "version",
+			"class": "positive",
+			"digest": "sha256:8487fa19856f6c98314e09032f5e10c8d30657d9d0b748f4156c612a9060ef2f"
+		},
+		{
+			"id": "VER-002",
+			"path": "conformance/cases/version/VER-002.json",
+			"family": "version",
+			"class": "negative",
+			"digest": "sha256:465bb304d2881a0995a72dcd1d3fdcf895e10d0850da9c578a0c559edd4a3f92"
+		},
+		{
+			"id": "VER-003",
+			"path": "conformance/cases/version/VER-003.json",
+			"family": "version",
+			"class": "boundary",
+			"digest": "sha256:5921504c9f1fbff0ff323d5b78eaf36221fd5177ac68c192093f22cb3ca787ca"
+		},
+		{
+			"id": "VER-004",
+			"path": "conformance/cases/version/VER-004.json",
+			"family": "version",
+			"class": "evolution",
+			"digest": "sha256:8ffb391ce50dd5fe71e3b717ff1f4bffd0b9b0fef0d276061e829394a03549f2"
+		}
+	],
+	"corpusDigest": "sha256:bebf6be052ba2c56e6297c1d449837b63649fb651dd668c3e5fe8e4086e7b7c8"
+}

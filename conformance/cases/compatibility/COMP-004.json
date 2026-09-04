@@ -1,0 +1,55 @@
+{
+	"id": "COMP-004",
+	"title": "An optional addition is additive only under a preserving consumer policy",
+	"family": "compatibility",
+	"class": "evolution",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "package-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/8/fields/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/field/node-note",
+				"name": "note",
+				"typeRef": "ix://agent-ix/conformance/type/Text",
+				"presence": "optional",
+				"nullable": false,
+				"defaultKind": "none",
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/node.tsp",
+						"startLine": 20,
+						"startColumn": 1
+					}
+				},
+				"multiplicity": {
+					"lower": 0,
+					"upper": 1
+				}
+			}
+		}
+	],
+	"beforeBase": "package-1-1",
+	"beforeOps": [],
+	"covers": ["CR-compatibility"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "changes, and unknown-policy tightening are breaking. Optional additions are"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "additive"
+	}
+}

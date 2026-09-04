@@ -1,0 +1,55 @@
+{
+	"id": "OP-004",
+	"title": "Changing an operation's parameter list is breaking",
+	"family": "operation",
+	"class": "evolution",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/9/operations/0/params/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/field/root-resize-force",
+				"name": "force",
+				"typeRef": "ix://agent-ix/conformance/type/Status",
+				"presence": "required",
+				"nullable": false,
+				"defaultKind": "none",
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/root.tsp",
+						"startLine": 8,
+						"startColumn": 3
+					}
+				},
+				"multiplicity": {
+					"lower": 1,
+					"upper": 1
+				}
+			}
+		}
+	],
+	"beforeBase": "core-1-1",
+	"beforeOps": [],
+	"covers": ["CR-operation"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "Required additions, removals, incompatible meaning/type changes, stable identity"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "breaking"
+	}
+}

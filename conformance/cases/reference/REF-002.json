@@ -1,0 +1,57 @@
+{
+	"id": "REF-002",
+	"title": "A reference whose target no type declares is rejected",
+	"family": "reference",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/7/target",
+			"value": "ix://agent-ix/conformance/type/Node"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/7/target",
+			"value": "ix://agent-ix/conformance/type/Absent"
+		}
+	],
+	"covers": ["CR-reference"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "The closed structural vocabulary is scalar, record, enum, discriminated union,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/7/target",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+					"severity": "error",
+					"message": "the reference target resolves to no declared type",
+					"owner": "ix://agent-ix/conformance/type/NodeRef",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/node.tsp",
+						"startLine": 1,
+						"startColumn": 1
+					}
+				}
+			}
+		]
+	}
+}

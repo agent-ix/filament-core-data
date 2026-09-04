@@ -1,0 +1,386 @@
+{
+	"corpusVersion": "1.0.0",
+	"corpusDigest": "sha256:bebf6be052ba2c56e6297c1d449837b63649fb651dd668c3e5fe8e4086e7b7c8",
+	"totalCases": 111,
+	"registerRows": [
+		{
+			"id": "CR-envelope",
+			"family": "envelope",
+			"decidedBy": "schema",
+			"cases": {
+				"positive": ["ENV-001"],
+				"negative": ["ENV-002"],
+				"boundary": ["ENV-003"],
+				"evolution": ["ENV-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-identity",
+			"family": "identity",
+			"decidedBy": "cross-field",
+			"cases": {
+				"positive": ["IDENT-001"],
+				"negative": ["IDENT-002", "IDENT-005"],
+				"boundary": ["IDENT-003"],
+				"evolution": ["IDENT-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-scalar",
+			"family": "scalar",
+			"decidedBy": "schema",
+			"cases": {
+				"positive": ["SCAL-001"],
+				"negative": ["SCAL-002"],
+				"boundary": ["SCAL-003"],
+				"evolution": ["SCAL-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-alias",
+			"family": "alias",
+			"decidedBy": "cross-field",
+			"cases": {
+				"positive": ["ALIAS-001"],
+				"negative": ["ALIAS-002"],
+				"boundary": ["ALIAS-003"],
+				"evolution": ["ALIAS-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-enum",
+			"family": "enum",
+			"decidedBy": "schema",
+			"cases": {
+				"positive": ["ENUM-001"],
+				"negative": ["ENUM-002"],
+				"boundary": ["ENUM-003"],
+				"evolution": ["ENUM-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-sequence-map",
+			"family": "sequence-map",
+			"decidedBy": "cross-field",
+			"cases": {
+				"positive": ["SEQMAP-001"],
+				"negative": ["SEQMAP-002"],
+				"boundary": ["SEQMAP-003"],
+				"evolution": ["SEQMAP-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-union",
+			"family": "union",
+			"decidedBy": "cross-field",
+			"cases": {
+				"positive": ["UNION-001"],
+				"negative": ["UNION-002"],
+				"boundary": ["UNION-003"],
+				"evolution": ["UNION-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-reference",
+			"family": "reference",
+			"decidedBy": "cross-field",
+			"cases": {
+				"positive": ["REF-001"],
+				"negative": ["REF-002"],
+				"boundary": ["REF-003"],
+				"evolution": ["REF-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-field-presence",
+			"family": "field-presence",
+			"decidedBy": "cross-field",
+			"cases": {
+				"positive": ["PRES-001", "PRES-005", "PRES-006"],
+				"negative": [
+					"PRES-002",
+					"PRES-007",
+					"PRES-008",
+					"PRES-009",
+					"PRES-010"
+				],
+				"boundary": ["PRES-003"],
+				"evolution": ["PRES-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-field-default",
+			"family": "field-default",
+			"decidedBy": "schema",
+			"cases": {
+				"positive": ["DEF-001"],
+				"negative": ["DEF-002"],
+				"boundary": ["DEF-003"],
+				"evolution": ["DEF-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-unit",
+			"family": "unit",
+			"decidedBy": "cross-field",
+			"cases": {
+				"positive": ["UNIT-001"],
+				"negative": ["UNIT-002"],
+				"boundary": ["UNIT-003"],
+				"evolution": ["UNIT-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-constraint",
+			"family": "constraint",
+			"decidedBy": "cross-field",
+			"cases": {
+				"positive": ["CONS-001"],
+				"negative": ["CONS-002", "CONS-005", "CONS-006", "CONS-007"],
+				"boundary": ["CONS-003"],
+				"evolution": ["CONS-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-recursion",
+			"family": "recursion",
+			"decidedBy": "cross-field",
+			"cases": {
+				"positive": ["REC-001", "REC-006"],
+				"negative": ["REC-002"],
+				"boundary": ["REC-003", "REC-005"],
+				"evolution": ["REC-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-relationship",
+			"family": "relationship",
+			"decidedBy": "cross-field",
+			"cases": {
+				"positive": ["REL-001"],
+				"negative": ["REL-002", "REL-005", "REL-006"],
+				"boundary": ["REL-003"],
+				"evolution": ["REL-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-operation",
+			"family": "operation",
+			"decidedBy": "cross-field",
+			"cases": {
+				"positive": ["OP-001"],
+				"negative": ["OP-002", "OP-005"],
+				"boundary": ["OP-003"],
+				"evolution": ["OP-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-clause",
+			"family": "clause",
+			"decidedBy": "cross-field",
+			"cases": {
+				"positive": ["CLAUSE-001"],
+				"negative": ["CLAUSE-002", "CLAUSE-005", "CLAUSE-006"],
+				"boundary": ["CLAUSE-003"],
+				"evolution": ["CLAUSE-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-provenance",
+			"family": "provenance",
+			"decidedBy": "schema",
+			"cases": {
+				"positive": ["PROV-001"],
+				"negative": ["PROV-002"],
+				"boundary": ["PROV-003"],
+				"evolution": ["PROV-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-unknown",
+			"family": "unknown",
+			"decidedBy": "schema",
+			"cases": {
+				"positive": ["UNK-001", "UNK-005"],
+				"negative": ["UNK-002"],
+				"boundary": ["UNK-003"],
+				"evolution": ["UNK-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-extension",
+			"family": "extension",
+			"decidedBy": "cross-field",
+			"cases": {
+				"positive": ["EXT-001"],
+				"negative": ["EXT-002"],
+				"boundary": ["EXT-003"],
+				"evolution": ["EXT-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-package",
+			"family": "package",
+			"decidedBy": "cross-field",
+			"cases": {
+				"positive": ["PKG-001"],
+				"negative": ["PKG-002", "PKG-005", "PKG-006", "PKG-007", "PKG-008"],
+				"boundary": ["PKG-003"],
+				"evolution": ["PKG-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-version",
+			"family": "version",
+			"decidedBy": "cross-field",
+			"cases": {
+				"positive": ["VER-001"],
+				"negative": ["VER-002"],
+				"boundary": ["VER-003"],
+				"evolution": ["VER-004"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		},
+		{
+			"id": "CR-compatibility",
+			"family": "compatibility",
+			"decidedBy": "compatibility",
+			"cases": {
+				"positive": ["COMP-001"],
+				"negative": ["COMP-002"],
+				"boundary": ["COMP-003"],
+				"evolution": ["COMP-004", "COMP-005"]
+			},
+			"notApplicable": [],
+			"missing": [],
+			"met": true
+		}
+	],
+	"unmetRegisterRows": [],
+	"adapters": [
+		{
+			"adapter": "compiler-frontend",
+			"status": "unavailable",
+			"matched": 0,
+			"unmet": 111,
+			"failed": 0
+		},
+		{
+			"adapter": "python-backend",
+			"status": "unavailable",
+			"matched": 0,
+			"unmet": 111,
+			"failed": 0
+		},
+		{
+			"adapter": "rust-backend",
+			"status": "unavailable",
+			"matched": 0,
+			"unmet": 111,
+			"failed": 0
+		},
+		{
+			"adapter": "typescript-backend",
+			"status": "unavailable",
+			"matched": 0,
+			"unmet": 111,
+			"failed": 0
+		}
+	],
+	"unmetCases": 444,
+	"unmetAreas": [
+		{
+			"id": "UA-serialization-parity",
+			"title": "Cross-language generated-package serialization and deserialization parity",
+			"owningIssues": [
+				"agent-ix/filament-core-data#21",
+				"agent-ix/filament-core-data#22",
+				"agent-ix/filament-core-data#23",
+				"agent-ix/filament-core-data#11"
+			],
+			"rationale": "No generated Rust, TypeScript, or Python package exists to serialize; the corpus judges the IR document layer only and records the gap rather than claiming it."
+		},
+		{
+			"id": "UA-live-adapters",
+			"title": "A running implementation on any adapter slot",
+			"owningIssues": [
+				"agent-ix/filament-core-data#19",
+				"agent-ix/filament-core-data#21",
+				"agent-ix/filament-core-data#22",
+				"agent-ix/filament-core-data#23"
+			],
+			"rationale": "Every declared adapter is unavailable until its owning issue ships a command that emits an adapter result; the harness records the unmet rows and counts none of them as a pass."
+		},
+		{
+			"id": "UA-semantic-core-grammar",
+			"title": "Conformance cases over the semantic-core declaration grammar itself",
+			"owningIssues": [
+				"agent-ix/filament-core-data#11",
+				"agent-ix/filament-core-data#36"
+			],
+			"rationale": "The corpus judges lowered IR documents, not the L3 grammar that produces them; grammar conformance is gated by issue #35's own suite."
+		}
+	]
+}

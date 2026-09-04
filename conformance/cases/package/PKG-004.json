@@ -1,0 +1,94 @@
+{
+	"id": "PKG-004",
+	"title": "Adding one export and removing another is breaking",
+	"family": "package",
+	"class": "evolution",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "package-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/type/Mark",
+				"displayName": "Mark",
+				"kind": "scalar",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 161,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"scalar": "boolean"
+			}
+		},
+		{
+			"op": "add",
+			"path": "/manifest/exports/-",
+			"value": {
+				"name": "Mark",
+				"typeIdentity": "ix://agent-ix/conformance/type/Mark",
+				"visibility": "public"
+			}
+		}
+	],
+	"beforeBase": "package-1-1",
+	"beforeOps": [
+		{
+			"op": "add",
+			"path": "/ir/types/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/type/Flag",
+				"displayName": "Flag",
+				"kind": "scalar",
+				"roles": [],
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/extra.tsp",
+						"startLine": 160,
+						"startColumn": 1
+					}
+				},
+				"constraints": [],
+				"extensions": [],
+				"unknownPolicy": "reject",
+				"scalar": "boolean"
+			}
+		},
+		{
+			"op": "add",
+			"path": "/manifest/exports/-",
+			"value": {
+				"name": "Flag",
+				"typeIdentity": "ix://agent-ix/conformance/type/Flag",
+				"visibility": "public"
+			}
+		}
+	],
+	"covers": ["CR-package"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "Required additions, removals, incompatible meaning/type changes, stable identity"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "breaking"
+	}
+}

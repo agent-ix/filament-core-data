@@ -49,7 +49,7 @@ the contract clause it was derived from.
 - The corpus SHALL construct a case's input bundle by applying `ops` to the named base bundle.
 - The corpus SHALL apply no transformation to a case's input bundle other than that patch.
 - `ops` SHALL be an RFC 6902 patch extended with one declared operation, `x-repeat`, which appends `count` copies of a template with the copy index substituted, so that a case sitting on a depth or size limit stays inside the minimization budget.
-- An `ops` entry whose `op` is `replace` or `remove` and whose `path` addresses an array member by index SHALL be preceded by an RFC 6902 `test` operation pinning that member, so that an edit to a base cannot silently re-aim the case.
+- An `ops` entry whose `op` is `replace` or `remove` and whose `path` addresses an array member by index SHALL be preceded by an RFC 6902 `test` operation pinning that member or an identifying member inside it, so that an edit to a base cannot silently re-aim the case.
 - A case whose `kind` is `compatibility` SHALL additionally carry `beforeBase` and `beforeOps`, which construct the prior bundle the same way.
 - A case whose `kind` is `compatibility` SHALL carry a `classification` in its `expected` block.
 - `derivedFrom` SHALL carry at least one entry naming an `artifact` that exists in the repository, a `locator` (a JSON pointer or a heading), and the `quote` the expectation was read from.
@@ -87,7 +87,7 @@ the contract clause it was derived from.
 | FR-035-AC-4 | Recomputing every case and base digest and `corpusDigest` reproduces `corpus.json` byte-for-byte; flipping one byte of one case file fails the gate and names that file. | Test |
 | FR-035-AC-5 | No case sets `provenance.blessedFromRun` to `true`; a case that sets it without a `blessing` block fails the gate. | Test |
 | FR-035-AC-6 | No case's `ops` exceeds the 64-node minimization budget, and a `boundary` case that would exceed it uses `x-repeat` and stays inside it. | Test |
-| FR-035-AC-7 | An indexed `replace` or `remove` op with no preceding `test` op fails the gate, and a `test` op that no longer matches its base fails the run. | Test |
+| FR-035-AC-7 | An indexed `replace` or `remove` op with no preceding `test` op addressing it or an identifying member inside it fails the gate, and a `test` op that no longer matches its base fails the run. | Test |
 | FR-035-AC-8 | Deleting a case that a `defect` register row names fails the gate, and changing an existing `expected` block without a major `corpusVersion` bump fails the versioning gate. | Test |
 | FR-035-AC-9 | Every expected diagnostic validates against `common.schema.json#/$defs/diagnostic`, and its `pointer` resolves in the case's built input bundle. | Test |
 | FR-035-AC-10 | Every case id matches the declared pattern, is unique, and sits in the directory its `family` names. | Test |

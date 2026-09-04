@@ -1,0 +1,48 @@
+{
+	"id": "UNION-004",
+	"title": "Adding a union variant is conditional on consumer policy",
+	"family": "union",
+	"class": "evolution",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/6/variants/-",
+			"value": {
+				"identity": "ix://agent-ix/conformance/variant/payload-status",
+				"name": "status",
+				"payloadType": "ix://agent-ix/conformance/type/Status",
+				"origin": {
+					"source": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/payload.tsp",
+						"startLine": 4,
+						"startColumn": 3
+					}
+				}
+			}
+		}
+	],
+	"beforeBase": "core-1-1",
+	"beforeOps": [],
+	"covers": ["CR-union"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "changes, and unknown-policy tightening are breaking. Optional additions are"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "conditional"
+	}
+}

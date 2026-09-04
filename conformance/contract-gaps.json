@@ -1,0 +1,137 @@
+{
+	"$comment": "Disagreements between the corpus and the published contract, or with a merged artifact that is not a registered adapter. These are recorded, not repaired: this issue may not change a published schema or another ticket's implementation. Every row names the issue that owns the decision.",
+	"gaps": [
+		{
+			"id": "GAP-001",
+			"title": "The IR schema does not version-gate the contract 1.1.0 nodes",
+			"artifacts": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"finding": "`semantic-ir.schema.json` gates only `multiplicity`, requiring it on a 1.1.0 field. A document declaring `contractVersion: \"1.0.0\"` may carry `relationships`, `operations`, `clauses`, and a field `unit`, and the schema accepts it.",
+			"consequence": "A reader written to contract 1.0.0 drops relationships, operations, clauses, and units in silence, which is exactly the additive-revision failure NFR-013 exists to prevent.",
+			"corpusDisposition": "The oracle decides it as `agent-ix.semantic-ir.V1_1_NODE_IN_V1_0` from the additive rule in `contracts-v1.md`; case VER-002 pins it. The corpus decides a rule the schema does not, and records that rather than treating its own rule as the contract.",
+			"owningIssue": "agent-ix/filament-core-data#34",
+			"discoveredBy": "agent-ix/filament-core-data#20",
+			"status": "open"
+		},
+		{
+			"id": "GAP-002",
+			"title": "The `sourceLocus` path pattern cannot compile under RE2",
+			"artifacts": ["schema/semantic/v1/common.schema.json"],
+			"finding": "`common.schema.json#/$defs/sourceLocus` constrains `path` with `^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\u0000]+$`, four ECMAScript lookaheads.",
+			"consequence": "RE2 — the engine behind the Rust `regex` crate and Go's `regexp` — has no lookahead, so the Rust backend of issue #21 cannot compile the published schema as written and must hand-write the check, which is a second place for the rule to drift.",
+			"corpusDisposition": "The oracle validates the locus structurally rather than by the pattern when it decides whether a locus is usable, and records the divergence here.",
+			"owningIssue": "agent-ix/filament-core-data#21",
+			"discoveredBy": "agent-ix/filament-core-data#20",
+			"status": "open"
+		},
+		{
+			"id": "GAP-003",
+			"title": "The published diagnostic has no member for a location inside the document",
+			"artifacts": ["schema/semantic/v1/common.schema.json"],
+			"finding": "`common.schema.json#/$defs/diagnostic` is sealed with `additionalProperties: false` and locates only by `locus`, a source-file position.",
+			"consequence": "A JSON-level checker, and every negative fixture that addresses a node, has nowhere contract-defined to put an RFC 6901 instance pointer. The merged readers invented a dotted `path`; this corpus carries an RFC 6901 `pointer` beside the diagnostic rather than inside it. Two implementations will disagree on where that information lives.",
+			"corpusDisposition": "The corpus keeps the published diagnostic verbatim and carries `pointer` as corpus metadata beside it.",
+			"owningIssue": "agent-ix/filament-core-data#9",
+			"discoveredBy": "agent-ix/filament-core-data#20",
+			"status": "open"
+		},
+		{
+			"id": "GAP-004",
+			"title": "The named canonical form is not defined",
+			"artifacts": ["docs/semantic-data-system/contracts-v1.md"],
+			"finding": "`contracts-v1.md` names `RFC8785-JCS-with-identity-sorted-sets-v1` and `package-lock.schema.json` fixes it as a constant, but no artifact defines what an identity-sorted set is or how it is serialized.",
+			"consequence": "Two conforming implementations can produce different fingerprints for the same input, which defeats the determinism the fingerprint exists to prove.",
+			"corpusDisposition": "The corpus names its own comparison form `agent-ix-conformance-jcs-v1` and states in `README.md` that it is not the fingerprint form, so no reader mistakes one for the other.",
+			"owningIssue": "agent-ix/filament-core-data#9",
+			"discoveredBy": "agent-ix/filament-core-data#20",
+			"status": "open"
+		},
+		{
+			"id": "GAP-005",
+			"title": "Three constructs issue #20 names have no IR node",
+			"artifacts": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"finding": "Issue #20's deliverables list generics, renames, and deprecations. The IR has no node for a generic type parameter, no rename record, and no deprecation member.",
+			"consequence": "There is nothing to write a construct-register row against, so those three deliverables cannot be covered by any case.",
+			"corpusDisposition": "Recorded here rather than as a register row, per FR-038. Generic instantiation is representable only by minting one type per instantiation, which loses the parameter.",
+			"owningIssue": "agent-ix/filament-core-data#19",
+			"discoveredBy": "agent-ix/filament-core-data#20",
+			"status": "open"
+		},
+		{
+			"id": "GAP-006",
+			"title": "`resultState` carries values no rule assigns",
+			"artifacts": [
+				"schema/semantic/v1/common.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"finding": "`common.schema.json#/$defs/resultState` admits `partial` and `unsupported`; `contracts-v1.md` says an invalid, unsupported, or unavailable result emits zero files and at least one diagnostic, but nothing says when a compiler returns `partial` rather than `lossy`, or `unsupported` rather than `invalid`.",
+			"consequence": "Two conforming compilers can return different states for one input and both cite the contract.",
+			"corpusDisposition": "The oracle returns only `success`, `invalid`, and `lossy`, which FR-036 declares exhaustive and disjoint for a verdict, and leaves `partial`, `unsupported`, and `unavailable` to the adapter layer.",
+			"owningIssue": "agent-ix/filament-core-data#9",
+			"discoveredBy": "agent-ix/filament-core-data#20",
+			"status": "open"
+		},
+		{
+			"id": "GAP-007",
+			"title": "A consumer policy cannot say which capabilities it admits",
+			"artifacts": [
+				"schema/semantic/v1/consumer-policy.schema.json",
+				"schema/semantic/v1/common.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"finding": "`common.schema.json#/$defs/extension` carries `capability`, and `contracts-v1.md` says unknown required capabilities fail; `consumer-policy.schema.json` has `unknownExtensions` and `exports` but no capability member.",
+			"consequence": "The rule 'a required capability no consumer admits fails' has no expressible input, so it cannot be checked as written.",
+			"corpusDisposition": "The oracle decides the reachable half — a required extension whose identity the policy does not list while it rejects unknown extensions — and records that the capability half is unexpressible.",
+			"owningIssue": "agent-ix/filament-core-data#9",
+			"discoveredBy": "agent-ix/filament-core-data#20",
+			"status": "open"
+		},
+		{
+			"id": "GAP-008",
+			"title": "The constraint applicability table is named but not published",
+			"artifacts": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"schema/semantic/v1/semantic-ir.schema.json"
+			],
+			"finding": "`contracts-v1.md` says the keyword set carries 'typed operands per keyword and an applicability table over the resolved kind'. No artifact publishes the table.",
+			"consequence": "Every implementation reconstructs it, and this corpus reconstructed it too. A disagreement between two backends about whether `nonEmpty` applies to a map is a disagreement about an unpublished rule.",
+			"corpusDisposition": "The oracle's table is written down in `conformance/oracle/oracle.mjs` and exercised by the constraint family, so at least one reading is testable; it is not authority.",
+			"owningIssue": "agent-ix/filament-core-data#29",
+			"discoveredBy": "agent-ix/filament-core-data#20",
+			"status": "open"
+		},
+		{
+			"id": "GAP-009",
+			"title": "Presence is derivable from multiplicity but both are required and unreconciled by the schema",
+			"artifacts": [
+				"schema/semantic/v1/semantic-ir.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"finding": "A 1.1.0 field must carry `presence` and `multiplicity`, and `contracts-v1.md` says `presence` is derived from the multiplicity lower bound; the schema enforces no agreement between them.",
+			"consequence": "A schema-valid document can state both `presence: \"optional\"` and `multiplicity.lower: 1`. Only a cross-field reader catches it, so a backend that validates by schema alone accepts a contradiction.",
+			"corpusDisposition": "The oracle decides it as `PRESENCE_MULTIPLICITY_MISMATCH`, reusing the code `reader-cases.json` already froze; case PRES-002 pins it.",
+			"owningIssue": "agent-ix/filament-core-data#34",
+			"discoveredBy": "agent-ix/filament-core-data#20",
+			"status": "open"
+		},
+		{
+			"id": "GAP-010",
+			"title": "The unknown-policy tightening direction is not ordered",
+			"artifacts": [
+				"schema/semantic/v1/common.schema.json",
+				"docs/semantic-data-system/contracts-v1.md"
+			],
+			"finding": "`contracts-v1.md` calls unknown-policy tightening breaking; `common.schema.json#/$defs/unknownPolicy` lists `preserve`, `reject`, and `surface` with no ordering.",
+			"consequence": "Whether `preserve` to `surface` is a tightening is undecided, so two compatibility classifiers can disagree.",
+			"corpusDisposition": "The oracle treats a move to `reject` as breaking and any other change as conditional, and states so in FR-036; the ordering is the corpus's reading, not the contract's.",
+			"owningIssue": "agent-ix/filament-core-data#25",
+			"discoveredBy": "agent-ix/filament-core-data#20",
+			"status": "open"
+		}
+	]
+}

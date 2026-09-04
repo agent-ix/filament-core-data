@@ -78,7 +78,7 @@ oracle verdicts without copying them.
 | FR-039-AC-5 | A consumer importing `conformance/oracle/index.mjs` from a different working directory loads the corpus, builds an input, and obtains an oracle verdict. | Test |
 | FR-039-AC-6 | `loadCase` on an unknown id throws an error naming the id and the corpus version, and mutating a returned case does not affect a later load. | Test |
 | FR-039-AC-7 | A registry adapter with no threshold row, and a threshold row with no registry adapter, each fail the gate. | Test |
-| FR-039-AC-8 | `package.json` gains no `exports` entry and no `files` entry for `conformance/`, and the coverage account names cross-language serialization parity as an unmet area with its owning issues. | Analysis |
+| FR-039-AC-8 | `package.json` is byte-identical to `main`, so it gains no `exports` and no `files` entry, and the coverage account names cross-language serialization parity as an unmet area with its owning issues. | Analysis |
 | FR-039-AC-9 | The coverage account is byte-identical when regenerated from a different working directory and under a different locale. | Test |
 
 ## Dependencies

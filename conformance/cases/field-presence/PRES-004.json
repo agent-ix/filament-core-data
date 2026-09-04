@@ -1,0 +1,57 @@
+{
+	"id": "PRES-004",
+	"title": "Making an optional field required is breaking",
+	"family": "field-presence",
+	"class": "evolution",
+	"kind": "compatibility",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/1/multiplicity",
+			"value": {
+				"lower": 0,
+				"upper": 1
+			}
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/1/multiplicity",
+			"value": {
+				"lower": 1,
+				"upper": 1
+			}
+		},
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/1/presence",
+			"value": "optional"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/1/presence",
+			"value": "required"
+		}
+	],
+	"beforeBase": "core-1-1",
+	"beforeOps": [],
+	"covers": ["CR-field-presence"],
+	"decidedBy": "compatibility",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Compatibility",
+			"quote": "Required additions, removals, incompatible meaning/type changes, stable identity"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": [],
+		"classification": "breaking"
+	}
+}

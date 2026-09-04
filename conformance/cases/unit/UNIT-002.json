@@ -1,0 +1,52 @@
+{
+	"id": "UNIT-002",
+	"title": "A unit on a field resolving to a sequence is rejected",
+	"family": "unit",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "add",
+			"path": "/ir/types/8/fields/5/unit",
+			"value": "kg"
+		}
+	],
+	"covers": ["CR-unit"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "unbounded) from which `presence` is derived, and may carry a UCUM `unit` when"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/8/fields/5/unit",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.UNIT_ON_NON_SCALAR",
+					"severity": "error",
+					"message": "a unit is carried only where the type reference resolves to a scalar",
+					"owner": "ix://agent-ix/conformance/field/node-tags",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/node.tsp",
+						"startLine": 10,
+						"startColumn": 1
+					}
+				}
+			}
+		]
+	}
+}

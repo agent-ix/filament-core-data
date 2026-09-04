@@ -1,0 +1,51 @@
+{
+	"id": "IDENT-005",
+	"title": "An occurrence naming a definition no type declares is rejected",
+	"family": "identity",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/occurrences/0/definition",
+			"value": "ix://agent-ix/conformance/type/Root"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/occurrences/0/definition",
+			"value": "ix://agent-ix/conformance/type/Absent"
+		}
+	],
+	"covers": ["CR-identity"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "identities are explicit"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/occurrences/0/definition",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.UNRESOLVED_OCCURRENCE_DEFINITION",
+					"severity": "error",
+					"message": "definitions and occurrences remain separate and an occurrence names a declared definition",
+					"owner": "ix://agent-ix/conformance/occurrence/root-1",
+					"blocking": true,
+					"causes": [],
+					"related": []
+				}
+			}
+		]
+	}
+}

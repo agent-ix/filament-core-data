@@ -1,0 +1,57 @@
+{
+	"id": "SCAL-002",
+	"title": "A scalar name outside the closed set is rejected",
+	"family": "scalar",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "1.1.0",
+	"base": "core-1-1",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/0/scalar",
+			"value": "string"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/0/scalar",
+			"value": "text"
+		}
+	],
+	"covers": ["CR-scalar"],
+	"decidedBy": "schema",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "The closed structural vocabulary is scalar, record, enum, discriminated union,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#20",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/0/scalar",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"severity": "error",
+					"message": "scalar is a closed enumeration and text is not a member",
+					"owner": "ix://agent-ix/conformance/type/Text",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/scalars.tsp",
+						"startLine": 1,
+						"startColumn": 1
+					}
+				}
+			}
+		]
+	}
+}
