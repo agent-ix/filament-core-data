@@ -10,6 +10,8 @@ relationships:
     type: "constrains"
   - target: "ix://agent-ix/filament-core-data/NFR-018"
     type: "depends_on"
+  - target: "ix://agent-ix/filament-core-data/NFR-012"
+    type: "depends_on"
 ---
 # [NFR-021] Non-disruptive compiler core
 
@@ -33,7 +35,7 @@ compiler that edits its own oracle proves nothing.
 
 - Applies to: the whole branch.
 - Permitted paths: as NFR-019.
-- Prohibited paths: as NFR-019.
+- Prohibited paths: as NFR-019. A prohibited path is one this branch changes no byte of; reading such a file, and invoking a program under `tests/`, remain permitted and are how the differential oracle of FR-050-AC-3 is run.
 
 ## Measurement and Evaluation
 
@@ -65,7 +67,7 @@ for the licence; confirm no registry publication occurred.
 | NFR-021-AC-3 | `src/compiler/ir.mjs`, `compile.mjs`, `identity.mjs`, `emitters/**`, `backends/**`, and `inventory.json` are byte-unchanged from `origin/main`. | Analysis |
 | NFR-021-AC-4 | The four committed issue #4 goldens and every file under `spikes/` are byte-unchanged. | Analysis |
 | NFR-021-AC-5 | Nothing under `conformance/` is changed by this branch. | Analysis |
-| NFR-021-AC-6 | Reverting the branch leaves the suite green with the pre-existing case count. | Test |
+| NFR-021-AC-6 | Reverting the branch leaves the suite green with the pre-existing case count, rehearsed by a script rather than by hand. | Test |
 | NFR-021-AC-7 | Every added package manifest declares `"license": "AGPL-3.0-only"`. | Analysis |
 | NFR-021-AC-8 | No package was published and no downstream repository was changed. | Inspection |
 
