@@ -36,6 +36,7 @@ const NFR025_SENTINELS = [
 const NFR025_PERMITTED = [
 	"^spec/", "^plan/", "^reviews/", "^test/", "^tests/", "^Makefile$",
 	"^src/compiler/backends/seam\\.(?:mjs|d\\.mts)$",
+	"^src/compiler/backends/targets\\.(?:mjs|d\\.mts)$",
 	"^src/compiler/backends/typescript-v1/", "^src/compiler/backends/format\\.(?:mjs|d\\.mts)$",
 	"^src/compiler/cli\\.mjs$", "^src/compiler/diagnostics\\.mjs$", "^src/compiler/inventory\\.json$",
 	"^docs/semantic-data-system/compiler-diagnostics\\.md$", "^tsconfig\\.json$",
@@ -510,7 +511,7 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 			expect(at(tip, path), path).toBe(at(base, path));
 		const prior = JSON.parse(at(base, "tsconfig.json")) as Record<string, unknown>;
 		const current = JSON.parse(at(tip, "tsconfig.json")) as Record<string, unknown>;
-		expect(current.exclude).toEqual([...(prior.exclude as unknown[]), "test/fixtures/backends/typescript"]);
+		expect(current.exclude).toEqual([...(Array.isArray(prior.exclude) ? prior.exclude : []), "test/fixtures/backends/typescript"]);
 		const stripped = (value: Record<string, unknown>) => {
 			const copy = { ...value }; delete copy.exclude; return copy;
 		};

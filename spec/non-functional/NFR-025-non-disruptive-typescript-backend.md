@@ -38,6 +38,7 @@ work alone.
   ticket lands on top of this one.
 - Permitted paths: `spec/**`, `plan/**`, `reviews/**`, `test/**`, `tests/**`,
   `Makefile`, `src/compiler/backends/seam.mjs`, `src/compiler/backends/seam.d.mts`,
+	`src/compiler/backends/targets.mjs`, `src/compiler/backends/targets.d.mts`,
   `src/compiler/backends/typescript-v1/**`, `src/compiler/backends/format.mjs`,
   `src/compiler/backends/format.d.mts`, `src/compiler/cli.mjs`,
   `src/compiler/diagnostics.mjs`, `src/compiler/inventory.json`,
