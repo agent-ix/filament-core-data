@@ -63,6 +63,12 @@ The sixth delivery is the semantic-core declaration grammar and kernel scalar
 library (issue #35): TypeSpec models every Quire object module imports, their
 official JSON Schema projection, and a zero-loss lowering to IR v1.1.
 
+The seventh delivery is the promotion of the issue #4 prototype emitters into
+`src/` (issue #27): the semantic-IR emitter, the TypeScript and Rust generation
+backends, and the governed Python JSON Schema adapter become owned, tested,
+deterministic repository code behind one narrow build interface, while the spike
+stays frozen, non-canonical, and reproducible.
+
 ## 2. Scope
 
 ### 2.1 In Scope
@@ -105,6 +111,9 @@ official JSON Schema projection, and a zero-loss lowering to IR v1.1.
 - The semantic-core L3 declaration grammar and kernel scalar library in
   TypeSpec under `packages/semantic-core/`, its emitted JSON Schema, and its
   lowering table to IR v1.1.
+- The promoted semantic-IR emitter, TypeScript and Rust generation backends, and
+  Python JSON Schema adapter under `src/compiler/`, with a written disposition
+  for every issue #4 prototype component and a frozen spike that still replays.
 
 ### 2.2 Out of Scope
 
@@ -131,6 +140,11 @@ official JSON Schema projection, and a zero-loss lowering to IR v1.1.
 - Module vocabulary (entity, endpoint, process, requirement, …) in the
   semantic-core kernel; publishing `@agent-ix/semantic-core` (issue #11);
   a custom emitter for issue #35.
+- Revising the emitted semantic-IR shape, generating or publishing a Rust,
+  TypeScript, or Python package, or moving any consumer as part of issue #27;
+  those belong to issues #19, #21, #22, #23, and #11.
+- Building the independent conformance corpus and oracle (issue #20); issue #27
+  neither reads nor edits it, because that independence is the point.
 
 ## 3. System Overview
 
@@ -178,9 +192,9 @@ Authority is assigned by concern:
 | Class | Artifacts | Purpose |
 |---|---|---|
 | Stakeholder | [StR-001](./stakeholder/StR-001-durable-semantic-data-governance.md) | Durable governance need |
-| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-007](./usecase/US-007-declare-archetypes-against-a-shared-grammar.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, and module-maintainer outcomes |
-| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-034](./functional/FR-034-lower-semantic-core-declarations-to-ir.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, and semantic-core grammar behavior |
-| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-014](./non-functional/NFR-014-small-kernel-discipline.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, and kernel discipline |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-009](./usecase/US-009-build-from-a-supported-compiler.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, and compiler-maintainer outcomes |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-044](./functional/FR-044-replay-the-frozen-spike-through-the-promoted-compiler.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, and prototype-promotion behavior |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-018](./non-functional/NFR-018-non-disruptive-promotion-and-rollback.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic promoted compilation, and rollback |
 
 ## 6. Decision Status Model
 

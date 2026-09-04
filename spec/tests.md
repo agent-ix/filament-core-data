@@ -1,6 +1,6 @@
 ---
 id: TM-001
-title: "filament-core-data semantic architecture, census, feasibility, and semantic-contract Test Matrix"
+title: "filament-core-data semantic architecture, census, feasibility, semantic-contract, and prototype-promotion Test Matrix"
 type: TestMatrix
 ---
 # Test Matrix
@@ -18,6 +18,10 @@ snapshot cases pass. The schema-source decision at TC-199 is recorded (owner,
 issue #4, 2026-09-03: TypeSpec, ADR-0005); all later disruptive migration and
 promotion gates remain separate. Issue #34 (TC-203..247) is fully mapped and its 45 cases pass (PR #38).
 Issue #35 (TC-248..279) is fully mapped and its 32 cases pass (PR #39; TC-274 by inspection).
+Issue #27 (promotion of the issue #4 prototype emitters into `src/`) is mapped at
+TC-320..375. Ids TC-280..319, FR-035..039, NFR-015..016 and US-008 are left to the
+parallel issue #20 conformance-corpus and oracle branch, which allocated them first;
+issue #27 neither reads nor edits that corpus.
 
 ## Test Matrix Rules
 
@@ -34,7 +38,7 @@ Issue #35 (TC-248..279) is fully mapped and its 32 cases pass (PR #39; TC-274 by
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001..US-007, FR-001..FR-034 | TC-033, TC-086, TC-129, TC-130..279 | ✅ Complete |
+| StR-001 | US-001..US-007, US-009, FR-001..FR-034, FR-040..FR-044 | TC-033, TC-086, TC-129, TC-130..279, TC-320..375 | 🚧 issue #27 |
 
 ### User Story Coverage
 
@@ -51,6 +55,7 @@ Issue #35 (TC-248..279) is fully mapped and its 32 cases pass (PR #39; TC-274 by
 | US-005 | Informal story outcome implemented by FR-019..FR-026 | TC-130..176 | ✅ Complete |
 | US-006 | US-006-EX-1..4 (illustrative) implemented by FR-027..FR-030 | TC-203, TC-210, TC-214, TC-220 | ✅ Complete |
 | US-007 | US-007-EX-1..4 (illustrative) implemented by FR-031..FR-034 | TC-262, TC-271, TC-258, TC-277 | ✅ Complete |
+| US-009 | US-009-EX-1..4 (illustrative) implemented by FR-040..FR-044 | TC-335, TC-320, TC-357, TC-372 | 🚧 issue #27 |
 
 ### Functional Requirement Coverage
 
@@ -90,6 +95,11 @@ Issue #35 (TC-248..279) is fully mapped and its 32 cases pass (PR #39; TC-274 by
 | FR-032 | FR-032-AC-1..5, FR-032-CON-1 | TC-255..260 | ✅ Complete |
 | FR-033 | FR-033-AC-1..5, FR-033-CON-1..2 | TC-261..266 | ✅ Complete |
 | FR-034 | FR-034-AC-1..5, FR-034-CON-1 | TC-267..272, TC-279 | ✅ Complete |
+| FR-040 | FR-040-AC-1..6, FR-040-CON-1..2 | TC-320..328 | 🚧 issue #27 |
+| FR-041 | FR-041-AC-1..7, FR-041-CON-1..4 | TC-329..339 | 🚧 issue #27 |
+| FR-042 | FR-042-AC-1..6, FR-042-CON-1..3 | TC-340..348 | 🚧 issue #27 |
+| FR-043 | FR-043-AC-1..6, FR-043-CON-1..2 | TC-349..356 | 🚧 issue #27 |
+| FR-044 | FR-044-AC-1..6, FR-044-CON-1..3 | TC-357..365 | 🚧 issue #27 |
 
 ### Non-Functional Requirement Coverage
 
@@ -109,6 +119,8 @@ Issue #35 (TC-248..279) is fully mapped and its 32 cases pass (PR #39; TC-274 by
 | NFR-012 | Diff, unchanged-suite, registry, downstream-gate, and human-decision checks | TC-195..199 | ✅ Complete |
 | NFR-013 | Unchanged v1 fixture suite, spike byte comparison, compatibility-corpus entry, changed-path gate, and fixture inventory | TC-208, TC-234..236, TC-247 | ✅ Complete |
 | NFR-014 | Compiled-program inventory, amendment inspection, changed-path gate, emitter inspection, spike byte comparison | TC-249, TC-273..276, TC-278 | ✅ Complete |
+| NFR-017 | Repeat-run byte comparison, retained-evidence branch diff, drifted-index replay, dependency pin inspection | TC-366..370 | 🚧 issue #27 |
+| NFR-018 | Changed-path gate, export-surface comparison, licence inspection, revert rehearsal, publication inspection | TC-371..375 | 🚧 issue #27 |
 
 ## Test Case Summary
 
@@ -393,6 +405,62 @@ Issue #35 (TC-248..279) is fully mapped and its 32 cases pass (PR #39; TC-274 by
 | TC-277 | Each reader-enforced grammar rule (bounds, flags, decimal presence, unit applicability, returns.unit, uniqueness keys, identity flag) has a negative fixture rejected at its locus; the FR-006 set reads clean | Unit | P0 | FR-031-AC-7, US-007-EX-4 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-278 | `spike:typespec:check` output is byte-identical before and after the semantic-core change | Snapshot | P0 | NFR-014-AC-5 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-279 | The lowered FR-006 document validates as `1.1.0` and both IR readers return zero diagnostics when the lowerer runs from the committed `FieldDecl[]` fixture | Integration | P0 | FR-034-AC-2 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-320 | Promotion inventory holds one record per prototype component | Static | P0 | FR-040-AC-1 | 🚧 issue #27 |
+| TC-321 | Disposition values stay inside the closed four-value set | Unit | P0 | FR-040-AC-2, FR-040-CON-2 | 🚧 issue #27 |
+| TC-322 | Retain and rewrite records name an existing `src/compiler/` target | Static | P0 | FR-040-AC-3 | 🚧 issue #27 |
+| TC-323 | Replace-with-official and discard records name a null target | Static | P1 | FR-040-AC-3 | 🚧 issue #27 |
+| TC-324 | Every inventory record carries a non-empty limitation | Static | P0 | FR-040-AC-4 | 🚧 issue #27 |
+| TC-325 | A record justified only by the representative golden is rejected | Unit | P0 | FR-040-AC-4 | 🚧 issue #27 |
+| TC-326 | Every `src/compiler/` file is the target of exactly one record | Static | P0 | FR-040-AC-5 | 🚧 issue #27 |
+| TC-327 | Feasibility doc promotion-inventory counts equal the inventory | Static | P1 | FR-040-AC-6 | 🚧 issue #27 |
+| TC-328 | A retain over a `partial` spike capability repeats the partiality | Static | P0 | FR-040-CON-1 | 🚧 issue #27 |
+| TC-329 | The narrow build interface exports exactly six symbols | Static | P0 | FR-041-AC-1 | 🚧 issue #27 |
+| TC-330 | A seventh export fails the export-set assertion | Unit | P0 | FR-041-AC-1 | 🚧 issue #27 |
+| TC-331 | `buildSemanticIr` reproduces the retained semantic IR byte-for-byte | Snapshot | P0 | FR-041-AC-2 | 🚧 issue #27 |
+| TC-332 | An unresolved TypeSpec reference rejects with its locus and emits nothing | Unit | P0 | FR-041-AC-3 | 🚧 issue #27 |
+| TC-333 | Two compiler CLI runs over one entrypoint are byte-identical | Property | P0 | FR-041-AC-4 | 🚧 issue #27 |
+| TC-334 | `tsp --emit` over the promoted emitter equals the programmatic IR | Integration | P0 | FR-041-AC-5 | 🚧 issue #27 |
+| TC-335 | Nothing outside `src/compiler/` imports a module under `spikes/` | Static | P0 | FR-041-AC-6 | 🚧 issue #27 |
+| TC-336 | Emitted IR carries `schemaVersion` 1.0.0 and the caller's generator | Unit | P0 | FR-041-AC-7, FR-041-CON-1 | 🚧 issue #27 |
+| TC-337 | Only `AgentIx.Semantic` declarations enter the IR | Unit | P1 | FR-041-AC-2 | 🚧 issue #27 |
+| TC-338 | Every promoted package manifest declares AGPL-3.0-only | Static | P0 | FR-041-CON-3 | 🚧 issue #27 |
+| TC-339 | No dependency is added and every `@typespec/*` pin stays exact | Static | P0 | FR-041-CON-2, FR-041-CON-4 | 🚧 issue #27 |
+| TC-340 | `emitTypeScript` reproduces the retained TypeScript golden | Snapshot | P0 | FR-042-AC-1 | 🚧 issue #27 |
+| TC-341 | `emitRust` reproduces the retained Rust golden | Snapshot | P0 | FR-042-AC-2 | 🚧 issue #27 |
+| TC-342 | Repeated backend calls on one IR return identical strings | Property | P0 | FR-042-AC-3 | 🚧 issue #27 |
+| TC-343 | Neither backend writes to the filesystem during a call | Unit | P0 | FR-042-AC-3, FR-042-CON-2 | 🚧 issue #27 |
+| TC-344 | `emitRust` throws naming a base model absent from the IR | Unit | P0 | FR-042-AC-4 | 🚧 issue #27 |
+| TC-345 | A non-snake_case field receives a `#[serde(rename)]` attribute | Unit | P1 | FR-042-AC-5 | 🚧 issue #27 |
+| TC-346 | Inventory records both backends as representative-slice-only | Static | P0 | FR-042-AC-6, FR-042-CON-1, FR-042-CON-3 | 🚧 issue #27 |
+| TC-347 | Enums render as string-literal unions of their member values | Unit | P1 | FR-042-AC-1 | 🚧 issue #27 |
+| TC-348 | Optional and nullable fields wrap in `Option<…>` | Unit | P1 | FR-042-AC-2 | 🚧 issue #27 |
+| TC-349 | The adapter reproduces the retained Python input schema | Snapshot | P0 | FR-043-AC-1 | 🚧 issue #27 |
+| TC-350 | `x-python-import` throws naming the offending key | Unit | P0 | FR-043-AC-2, FR-043-CON-1 | 🚧 issue #27 |
+| TC-351 | `customTypePath` and `default_factory` throw naming the key | Unit | P0 | FR-043-AC-2, FR-043-CON-1 | 🚧 issue #27 |
+| TC-352 | Normalized output carries the urn `$id` and a title per definition | Unit | P0 | FR-043-AC-3 | 🚧 issue #27 |
+| TC-353 | `RecordString` carries `additionalProperties`, not `unevaluatedProperties` | Unit | P0 | FR-043-AC-4 | 🚧 issue #27 |
+| TC-354 | The adapter is pure and leaves its input document unmutated | Property | P0 | FR-043-AC-5 | 🚧 issue #27 |
+| TC-355 | The issue #31 defect fixture and codegen goldens stay reproducible | Static | P0 | FR-043-AC-6, FR-043-CON-2 | 🚧 issue #27 |
+| TC-356 | No hand-written Python code generator exists under `src/compiler/` | Static | P1 | FR-043-AC-1 | 🚧 issue #27 |
+| TC-357 | `spike:typespec:check` exits zero on the promotion branch | Integration | P0 | FR-044-AC-1 | 🚧 issue #27 |
+| TC-358 | The retained-evidence diff touches exactly `evidence/custom.json` | Static | P0 | FR-044-AC-2, FR-044-CON-1 | 🚧 issue #27 |
+| TC-359 | Only the `command` field changes, with the recorded before and after | Static | P0 | FR-044-AC-2 | 🚧 issue #27 |
+| TC-360 | The retained `Cargo.lock` is unchanged from `origin/main` | Static | P0 | FR-044-AC-3, FR-044-CON-2 | 🚧 issue #27 |
+| TC-361 | The seeded lockfile keeps the check green on a drifted crates.io index | Integration | P0 | FR-044-AC-3 | 🚧 issue #27 |
+| TC-362 | Neither manifest names the spike emitter and its directory is gone | Static | P0 | FR-044-AC-4 | 🚧 issue #27 |
+| TC-363 | `pnpm-lock.yaml` holds no `file:` or `link:` specifier | Static | P0 | FR-044-AC-4, FR-044-CON-3 | 🚧 issue #27 |
+| TC-364 | The spike runner imports the promoted backends and defines none | Static | P0 | FR-044-AC-5 | 🚧 issue #27 |
+| TC-365 | Spike `validation.json` still reports zero publications and mutations | Static | P0 | FR-044-AC-6 | 🚧 issue #27 |
+| TC-366 | Two compiler runs over the same entrypoint produce identical bytes | Property | P0 | NFR-017-AC-1 | 🚧 issue #27 |
+| TC-367 | The branch changes exactly one retained-evidence file and field | Static | P0 | NFR-017-AC-2 | 🚧 issue #27 |
+| TC-368 | The retained-evidence check exits zero with a newer `syn` in the index | Integration | P0 | NFR-017-AC-3 | 🚧 issue #27 |
+| TC-369 | Every `@typespec/*` pin is exact with no upper-bound expression | Static | P0 | NFR-017-AC-4 | 🚧 issue #27 |
+| TC-370 | No `.npmrc` is committed and no `file:`/`link:` specifier remains | Static | P0 | NFR-017-AC-5 | 🚧 issue #27 |
+| TC-371 | Every changed path is permitted and none is prohibited | Static | P0 | NFR-018-AC-1 | 🚧 issue #27 |
+| TC-372 | Package export surface is byte-identical to `origin/main` | Static | P0 | NFR-018-AC-2 | 🚧 issue #27 |
+| TC-373 | Every added package manifest declares AGPL-3.0-only | Static | P0 | NFR-018-AC-3 | 🚧 issue #27 |
+| TC-374 | Reverting the promotion restores the spike emitter and its command | Manual | P1 | NFR-018-AC-4 | 🚧 issue #27 |
+| TC-375 | No workflow, tag, or registry publication is triggered | Static | P0 | NFR-018-AC-5 | 🚧 issue #27 |
 
 ## Option Permutation Matrix
 
@@ -427,6 +495,11 @@ Issue #35 (TC-248..279) is fully mapped and its 32 cases pass (PR #39; TC-274 by
 | TC-277 | `TypeRef.unit` | unit-allowed scalar / other scalar / `SemanticId` / `returns` | present or absent | Allowed only on `Integer`, `Decimal`, `Timestamp`, `Duration` fields |
 | TC-250, TC-251 | closed enumerations | eleven keywords / seven categories | member vs non-member | Members accepted, non-members rejected by the emitted schema |
 | TC-253, TC-264 | package version | `v1` / `v1` + addition | regenerate | Prior version bytes unchanged; new version additive |
+| TC-321, TC-322 | prototype component | `retain` / `rewrite` / `replace-with-official` / `discard` | target path present or `null` | Promoted dispositions name a file; non-promoted dispositions name nothing |
+| TC-331, TC-334 | IR production route | programmatic `buildSemanticIr` / `tsp --emit` / CLI | same entrypoint | All three routes produce the same IR document |
+| TC-336 | generator identity | caller-supplied / defaulted | spike replay or production build | The stamped identity follows the caller, never the call site |
+| TC-348 | field state | required / optional / nullable | Rust and TypeScript backends | Optional and nullable both reach `Option<…>`; TypeScript uses `?` |
+| TC-360, TC-361 | retained Rust lockfile | present / absent | crates.io index at or ahead of the minted versions | Present lockfile is seeded; absent lockfile is generated once |
 
 ## Constraint Boundary Tests
 
@@ -492,6 +565,15 @@ Issue #35 (TC-248..279) is fully mapped and its 32 cases pass (PR #39; TC-274 by
 | Multiplicity (grammar) | Min / Below min | `lower: 0` / `lower: -1` | TC-263 | Pass / fail `Multiplicity.json` |
 | FR-030-CON-1 | Allowed | `contractVersion: "1.0.0"` with the v1 dialect constant under the v1 schema | TC-231 | Pass |
 | FR-030-CON-2 | Prohibited | Manifest and target-contract enumerations diverge | TC-230 | Schema inspection fails |
+| FR-040-CON-2 | Allowed | `retain`, `rewrite`, `replace-with-official`, `discard` | TC-321 | Inventory test passes |
+| FR-040-CON-2 | Prohibited | A fifth disposition value such as `defer` | TC-321 | Inventory test fails |
+| FR-041-CON-2 | Allowed | `@typespec/compiler` pinned to `1.15.0` | TC-339 | Dependency inspection passes |
+| FR-041-CON-2 | Prohibited | A caret or upper-bounded `@typespec/*` range | TC-339, TC-369 | Dependency inspection fails |
+| FR-043-CON-1 | Allowed | A schema with none of the three forbidden keys | TC-352 | Adapter returns the normalized document |
+| FR-043-CON-1 | Prohibited | `x-python-import`, `customTypePath`, `default_factory` | TC-350, TC-351 | Adapter throws naming the key |
+| FR-044-CON-1 | Allowed | One changed retained-evidence field (`evidence/custom.json` `command`) | TC-358, TC-359, TC-367 | Retained-evidence diff passes |
+| FR-044-CON-1 | Prohibited | Any second changed retained-evidence byte | TC-358, TC-367 | Retained-evidence diff fails |
+| FR-044-CON-3 | Prohibited | Any `file:` or `link:` dependency specifier | TC-363, TC-370 | Dependency inspection fails |
 
 ## State Transition Matrix
 
@@ -521,6 +603,10 @@ Issue #35 (TC-248..279) is fully mapped and its 32 cases pass (PR #39; TC-274 by
 | semantic-core `v1` | grammar addition under `Versions.v2` | `v1` projection byte-identical; `v2` additive | TC-253 |
 | raw official bundle | #31 normalization applied | absolute `$id` bundle that validates without alias | TC-262, TC-265 |
 | normalized bundle | issue #31 fixed upstream | normalization removed; raw bundle validates | TC-266 |
+| prototype component in `spikes/` | promotion inventory records a disposition | owned `src/compiler/` module or an explicit non-promotion | TC-320, TC-322, TC-323 |
+| spike emitter package present | promotion removes the `file:` dependency | spike replays through `src/compiler/` and stays reproducible | TC-357, TC-362, TC-364 |
+| promoted compiler on the branch | promotion commits are reverted | spike emitter restored and the gate returns to its `origin/main` state | TC-374 |
+| retained Rust lockfile | crates.io index publishes a newer transitive crate | seeded lockfile keeps the retained bytes and the check green | TC-360, TC-361, TC-368 |
 
 ## Error Paths
 
@@ -576,6 +662,13 @@ Issue #35 (TC-248..279) is fully mapped and its 32 cases pass (PR #39; TC-274 by
 | ERR-048 | Lowering row records `loss` | Fixture gate fails | TC-272 |
 | ERR-049 | `UnitSymbol` outside the UCUM charset, or `unit` on a non-unit scalar or on `returns` | Pattern validation or reader rejects | TC-270, TC-277 |
 | ERR-050 | Duplicate field/operation/param name, relation (verb, target), enum value, or clauseId | Reader rejects at the second declaration | TC-277 |
+| ERR-051 | An inventory record names a disposition outside the closed set, an absent target, or an empty limitation | Inventory test fails naming the record | TC-321, TC-322, TC-324, TC-325 |
+| ERR-052 | A file under `src/compiler/` is owned by no inventory record | Inventory test fails naming the file | TC-326 |
+| ERR-053 | The compiler entrypoint fails to compile | `compileSemanticIr` rejects with the diagnostics and writes no output | TC-332 |
+| ERR-054 | The IR names a base model absent from the same document | `emitRust` throws naming the missing base | TC-344 |
+| ERR-055 | The JSON Schema carries an executable extension key | The adapter throws naming the key and produces no output | TC-350, TC-351 |
+| ERR-056 | A second retained-evidence byte changes | Retained-evidence diff fails; the change is a defect, not a rebaseline | TC-358, TC-367 |
+| ERR-057 | A `file:` or `link:` specifier remains after the promotion | Dependency inspection fails | TC-363, TC-370 |
 
 ## Edge Cases
 
@@ -618,10 +711,17 @@ Issue #35 (TC-248..279) is fully mapped and its 32 cases pass (PR #39; TC-274 by
 | EC-035 | Module vocabulary smuggled in as a "support type" | NFR-014 | TC-249, TC-273 | Kernel grows into the generic entity class ARCH-005 forbids |
 | EC-036 | Constraint on a field whose kernel scalar is shared by other fields | FR-034 | TC-268, TC-269 | `min` on one field constrains every `Integer` unless a per-field alias is minted |
 | EC-037 | Official emitter is not version-aware | FR-031, FR-033 | TC-253 | A `@versioned` claim cannot be evidenced; package semver carries the version instead |
+| EC-038 | The promoted emitter changes the generator identity stamped into the frozen spike IR | FR-044 | TC-336, TC-359 | The frozen issue #4 record is silently rebaselined and stops being historical evidence |
+| EC-039 | An unpinned transitive Rust crate publishes a new version | NFR-017, FR-044 | TC-360, TC-361, TC-368 | The retained-evidence gate goes red for reasons unrelated to any change, inviting a rebaseline |
+| EC-040 | A prototype component is promoted because its one representative golden passed | FR-040, FR-042 | TC-325, TC-346 | Unmeasured recursion, generics, or version transitions misgenerate consumer contracts |
+| EC-041 | The promotion is landed alongside a package publication or consumer move | NFR-018 | TC-371, TC-375 | A later compiler defect cannot be backed out without a consumer migration |
+| EC-042 | A backend writes files, so a package ticket must edit the backend to change layout | FR-042 | TC-343 | Layout policy leaks into the generator and each target ticket forks it |
+| EC-043 | The Python adapter's forbidden-key list is narrowed to make a schema pass | FR-043 | TC-350, TC-351 | Caller-controlled Python reaches the generated models |
 
 ## Coverage Gaps
 
-No open mapping gap remains for issues #8, #10, #4, #9, #34, or #35. Issue #35's
+Issue #27's 56 cases (TC-320..375) are mapped and in progress; TC-374 is a manual
+revert rehearsal. No open mapping gap remains for issues #8, #10, #4, #9, #34, or #35. Issue #35's
 32 cases (TC-248..279) pass; TC-279 reuses both IR v1.1 readers. Issue #34's 45 cases (TC-203..247) pass; TC-233 uses a seeded in-test generator (no library
 dependency was added). The 41 issue #4 cases
 pass through the isolated spike, retained evidence, native consumers, and
@@ -633,15 +733,15 @@ database, publication, enforcement, and retirement work remains separately gated
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 110 | 110 | 0 | 0 | 100% mapped |
-| Manual | 44 | 44 | 0 | 0 | 100% mapped |
+| Static | 138 | 110 | 0 | 28 | 100% mapped |
+| Manual | 45 | 44 | 0 | 1 | 100% mapped |
 | Analysis | 17 | 17 | 0 | 0 | 100% mapped |
-| Property | 18 | 18 | 0 | 0 | 100% mapped |
-| Unit | 66 | 66 | 0 | 0 | 100% mapped |
-| Integration | 15 | 15 | 0 | 0 | 100% mapped |
+| Property | 22 | 18 | 0 | 4 | 100% mapped |
+| Unit | 81 | 66 | 0 | 15 | 100% mapped |
+| Integration | 19 | 15 | 0 | 4 | 100% mapped |
 | Fuzz | 2 | 2 | 0 | 0 | 100% mapped |
-| Snapshot | 6 | 6 | 0 | 0 | 100% mapped |
+| Snapshot | 10 | 6 | 0 | 4 | 100% mapped |
 | Compile | 1 | 1 | 0 | 0 | 100% mapped |
-| **Total** | **279** | **279** | **0** | **0** | **100% mapped** |
+| **Total** | **335** | **279** | **0** | **56** | **100% mapped** |
 
-**Matrix coverage status: ✅ Complete. Execution status: ✅ 247 passed; TC-199 recorded by the owner decision on issue #4; TC-203..247 pass on PR #38 (TC-232 needs the poetry env, TC-242 the installed `spec-artifacts-iso` manifest); TC-248..279 pass on PR #39 (TC-274 by inspection; TC-279 needs the poetry env).**
+**Matrix coverage status: ✅ Complete. Execution status: 🚧 issue #27. 279 passed; TC-199 recorded by the owner decision on issue #4; TC-203..247 pass on PR #38 (TC-232 needs the poetry env, TC-242 the installed `spec-artifacts-iso` manifest); TC-248..279 pass on PR #39 (TC-274 by inspection; TC-279 needs the poetry env); TC-320..375 are in progress on the issue #27 promotion branch.**
