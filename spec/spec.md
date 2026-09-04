@@ -189,8 +189,12 @@ rather than acquiring a hand-written Python generator.
 - Publishing the generated Python package to PyPI or migrating any backend
   consumer onto it; both wait on the issue #23 safety gate. Introducing a
   hand-written Python code generator, absent a reviewed P0 qualification gap.
-  Wiring the corpus `python-backend` adapter slot, which is issue #52 and is
-  blocked on GAP-011.
+  Wiring the corpus `python-backend` adapter slot, whose owning issue is #23:
+  the slot needs an IR reader that emits contract diagnostics, which a package
+  of generated types cannot produce, so issue #23 delivers a read-only advisory
+  account, leaves the slot `unavailable` and its rows unmet, and files that
+  reader as its own ticket. Deciding GAP-011, which couples in through the
+  corpus's `reference`-target cases and is recorded as a disposition.
 - Revising the emitted semantic-IR shape, generating or publishing a Rust,
   TypeScript, or Python package, or moving any consumer as part of issue #27;
   those belong to issues #19, #21, #22, #23, and #11.

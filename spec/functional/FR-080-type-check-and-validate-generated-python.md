@@ -5,63 +5,69 @@ type: FR
 relationships:
   - target: "ix://agent-ix/filament-core-data/US-013"
     type: "implements"
+  - target: "ix://agent-ix/filament-core-data/FR-077"
+    type: "depends_on"
   - target: "ix://agent-ix/filament-core-data/FR-079"
+    type: "depends_on"
+  - target: "ix://agent-ix/filament-core-data/NFR-027"
     type: "depends_on"
 ---
 # [FR-080] Type-check and runtime-validate every generated Python surface
 
 ## Description
 
-The gate SHALL type-check every generated Python surface statically and
-exercise every surface declared to validate at run time, against conforming and
-non-conforming values drawn from the contract, so that a surface which
+The repository SHALL type-check every generated Python surface statically and
+exercise every surface it records as validating at run time, against conforming
+and non-conforming values drawn from the contract, so that a surface which
 type-checks but accepts invalid data is caught.
 
 ## Inputs
 
-- The emitted packages of [FR-079](./FR-079-emit-the-python-package-layout.md)
-- The qualification verdicts of [FR-077](./FR-077-qualify-each-python-output-family.md)
-- The representative payload fixtures the repository already carries
+- The emitted packages of [FR-079](./FR-079-emit-the-python-package-layout.md), which exist only for demonstrated profiles
+- The verdicts and `runtimeValidation` values of [FR-077](./FR-077-qualify-each-python-output-family.md)
+- The published documents and the probe corpus, which supply the constraints the values are drawn from
 
 ## Outputs
 
-- A pinned `mypy` configuration scoped to the generated tree and the examples
+- A pinned `mypy` configuration scoped to `python_backend/generated/**` and `python_backend/examples/**`
 - `python_backend/qualification/validation.json`: per profile and per generated type, the conforming and non-conforming values exercised and the outcome
 
 ## Behavior
 
-- Static type checking SHALL run over every generated module and every example, under `strict` settings, with no per-file ignore and no `type: ignore` comment in generated or example source.
-- The gate SHALL run the type checker at the exact version `toolchain.json` records, failing rather than skipping when it is absent.
-- The gate SHALL exercise every generated type in a validating family with at least one conforming value and at least one non-conforming value per constraint the qualification records that family as retaining.
+- The gate SHALL run the type checker over every emitted module and every example under `strict` settings, with no per-file ignore and no `type: ignore` comment in generated or example source.
+- The gate SHALL run the type checker at the exact version `toolchain.json` records, failing with a provisioning message rather than skipping when it is absent.
+- The gate SHALL cover only demonstrated profiles, recording each undemonstrated family in `validation.json` as not emitted rather than as passing, because a `not-qualified` family has no emitted tree.
+- The gate SHALL exercise every generated type in a profile whose `runtimeValidation` is `validating` with at least one conforming value and at least one non-conforming value per constraint the qualification records that family as retaining.
 - The gate SHALL fail, naming the type, the field, and the constraint, when the family's own runtime — Pydantic validation for the two Pydantic families, `msgspec` decoding for `msgspec.Struct` — accepts a value the contract forbids.
-- `validation.json` SHALL record a family the qualification finds non-validating — stdlib dataclass and `TypedDict` — as non-validating and covered by static checking only, never as runtime-covered.
-- The gate SHALL assert, for every constraint a family is recorded as losing, that the generated surface really does accept the value the contract forbids, so the recorded verdict is falsifiable rather than asserted.
-- The coverage account SHALL state, per profile, the number of generated types, the number exercised, and the number of constraints exercised, failing when any generated type in a validating family is unexercised.
+- `validation.json` SHALL record a profile whose `runtimeValidation` is `static-only` as covered by static checking alone, never as runtime-covered.
+- The gate SHALL assert, for every constraint a demonstrated family is recorded as losing, that the generated surface really does accept the value the contract forbids, so the recorded verdict is falsifiable rather than asserted.
+- The gate SHALL run its falsification cases against generation into a scratch directory with a mutated probe schema, never against the committed tree, so that the freeze of FR-079-AC-4 and the falsification of a verdict do not contradict each other.
+- The coverage account SHALL state, per profile, the number of generated types, the number exercised, and the number of constraints exercised, failing when any generated type in a validating profile is unexercised.
 - Every test in this requirement SHALL run rather than skip, reporting an absent tool as a failure with a provisioning message.
 
 ## Constraints
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-080-CON-1 | The maintainer SHALL NOT add a `type: ignore`, an `Any` cast, or a mypy per-module override to reach green; a type the checker rejects is a qualification finding. | Integrity | Branch diff and gate |
-| FR-080-CON-2 | The coverage account SHALL NOT count a skipped test, because the suite fails with a provisioning message instead of skipping. | Reliability | Falsification test |
-| FR-080-CON-3 | The author SHALL derive the non-conforming values from the contract's constraints rather than from what the generated code happens to reject. | Integrity | Inspection |
+| FR-080-CON-1 | The maintainer SHALL NOT add a `type: ignore`, an `Any` cast, a per-module checker override, or a narrowing of the checker configuration to reach green; a type the checker rejects is a qualification finding. | Integrity | Test |
+| FR-080-CON-2 | The coverage account SHALL NOT count a skipped test, because the suite fails with a provisioning message instead of skipping. | Reliability | Test |
+| FR-080-CON-3 | The author SHALL derive the non-conforming values from the contract's constraints rather than from what the generated code happens to reject; a value chosen because the code rejects it proves nothing. | Integrity | Manual |
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-080-AC-1 | The pinned type checker reports zero errors over every generated module and every example under strict settings. | Static |
-| FR-080-AC-2 | No generated or example source contains a `type: ignore` comment or a per-module checker override. | Test |
-| FR-080-AC-3 | Every generated type in a validating family is exercised with at least one conforming and one non-conforming value; an unexercised type fails the gate. | Test |
-| FR-080-AC-4 | For each constraint a family retains, a non-conforming value is rejected by that family's runtime, naming the constraint. | Test |
-| FR-080-AC-5 | For each constraint a family is recorded as losing, a test asserts the generated surface accepts the forbidden value, so the verdict is falsifiable. | Test |
-| FR-080-AC-6 | `validation.json` records the non-validating families as non-validating, and the coverage account never counts them as runtime-covered. | Test |
-| FR-080-AC-7 | With the type checker absent, the gate fails with a provisioning message naming the dependency group; it does not skip. | Test |
-| FR-080-AC-8 | The suite contains zero skipped tests for this requirement, asserted from the run's own report rather than by inspection. | Test |
-| FR-080-AC-9 | A deliberately weakened generated constraint — a pattern removed from one generated model — makes the runtime validation gate red. | Test |
+| FR-080-AC-1 | The pinned type checker reports zero errors over every emitted module and every example under strict settings. | Analysis |
+| FR-080-AC-2 | No generated or example source contains a `type: ignore` comment, and the checker configuration declares no per-module override and no relaxation of `strict`. | Static |
+| FR-080-AC-3 | Every generated type in a `validating` profile is exercised with at least one conforming and one non-conforming value; an unexercised type fails the gate. | Integration |
+| FR-080-AC-4 | For each constraint a demonstrated family retains, a non-conforming value is rejected by that family's runtime, naming the constraint. | Integration |
+| FR-080-AC-5 | For each constraint a demonstrated family is recorded as losing, generation into a scratch directory from the corresponding probe produces a surface that accepts the forbidden value. | Integration |
+| FR-080-AC-6 | `validation.json` records every `static-only` profile as static-only and every undemonstrated family as not emitted, and the coverage account counts neither as runtime-covered. | Test |
+| FR-080-AC-7 | With the type checker absent, the gate fails with a provisioning message naming the Poetry group; it does not skip. | Test |
+| FR-080-AC-8 | The suites added by this change report zero skipped tests, read from the run's own report rather than by inspection. | Test |
+| FR-080-AC-9 | A probe schema whose constraint is removed produces, into a scratch directory, a surface that accepts the previously rejected value, and the runtime-validation gate reports that difference. | Integration |
 
 ## Dependencies
 
-- **Upstream**: [FR-077](./FR-077-qualify-each-python-output-family.md), [FR-079](./FR-079-emit-the-python-package-layout.md)
+- **Upstream**: [FR-077](./FR-077-qualify-each-python-output-family.md), [FR-079](./FR-079-emit-the-python-package-layout.md), [NFR-027](../non-functional/NFR-027-reproducible-non-disruptive-python-generation.md)
 - **Downstream**: issue #11

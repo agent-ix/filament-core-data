@@ -46,9 +46,19 @@ equivalent in fidelity, and the difference is invisible unless it is measured.
 This story exists to measure it before anything downstream depends on it.
 
 The conformance corpus of issue #20 is the independent oracle, and its
-`python-backend` adapter slot is declared `unavailable`. Wiring that slot is
-issue #52 and is blocked on GAP-011. Whatever this story cannot demonstrate
-against the oracle stays an unmet row rather than becoming a claimed pass.
+`python-backend` adapter slot is declared `unavailable`. That slot's
+`owningIssue` in `conformance/adapters/registry.json` is this ticket, not issue
+#52 — #52 wires the `compiler-frontend` slot alone and says the other three stay
+unavailable with their owning issues. The obligation is therefore this ticket's
+to place, and it is placed honestly rather than claimed: an adapter result for
+that slot must carry a `resultState`, contract diagnostics with registry codes,
+and a normalized form, which a package of generated types cannot produce — the
+oracle's cross-field readings need an IR reader, a different artefact from the
+types this story qualifies. This story therefore delivers a read-only advisory
+account of what the generated Pydantic surface decides about each corpus case,
+leaves the slot `unavailable` and its rows unmet, and files the reader-and-emitter
+as its own ticket. GAP-011 couples in through cases REF-001..004 and is recorded
+as a disposition rather than decided here.
 
 ## Acceptance Examples (Illustrative)
 
@@ -104,9 +114,13 @@ were bypassed.
 ## Dependencies (Contextual)
 
 Depends on [US-009](./US-009-build-from-a-supported-compiler.md) for the owned
-adapter seam, [US-010](./US-010-compile-a-semantic-package.md) for the IR and its
-emitted schemas, and [US-008](./US-008-judge-a-compiler-against-an-independent-corpus.md)
-for the oracle. Blocks publication (issue #11) and Python consumer migration.
+adapter seam and its pinned constants, and on
+[US-008](./US-008-judge-a-compiler-against-an-independent-corpus.md) for the
+oracle it reads without registering against. It does not depend on
+[US-010](./US-010-compile-a-semantic-package.md): every input it reads is a
+merged, committed artefact — the FR-043 adapter output, the published v1
+schemas, and the pinned constants — so the compiler is not a prerequisite.
+Blocks publication (issue #11) and Python consumer migration.
 
 ## Priority and Risk (Informative)
 
