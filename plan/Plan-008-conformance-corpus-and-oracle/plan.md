@@ -1,5 +1,5 @@
 ---
-id: Plan-007
+id: Plan-008
 title: "Semantic conformance corpus and independent differential oracle"
 type: Plan
 status: active
@@ -95,17 +95,17 @@ two suites; the Python suite reads the same JSON with the already-pinned
 
 ## Test Plan
 
-- [x] **TC-338..341:** changed-path gate, manifest diff, offline run, publication analysis.
+- [x] **TC-416..341:** changed-path gate, manifest diff, offline run, publication analysis.
 - [x] **TC-280..289:** case, base, and manifest schemas; provenance quotes; digests; blessing ban; minimization budget; `test`-op rule; deletion and versioning gates; diagnostic shape; id, pattern, and directory rules.
 - [x] **TC-290..301:** oracle verdict equality, determinism and locale, cycle before depth, five distinct codes, import and effect analysis, `1.0.0` normalization, compatibility classification, published diagnostic shape, package-context rules, schema-layer collapse, code register, non-bundle input.
 - [x] **TC-302..313:** harness exit, seeded divergences, agreeing-but-wrong adapters, unmet rows, register reproduction and audit, report determinism, adapter failure, declared `unsupported`, runner source analysis, `caseDigest` binding, pointer compatibility, registry slots.
 - [x] **TC-314..323:** class coverage, the six package negatives, presence and nullability, recursion and cycles, the defect register, deciding layers, union payloads, evolution cases, register sources and #19 criteria, the unmet serialization area.
-- [x] **TC-324..332:** coverage regeneration, thresholds, mutation catalogue, import API, unknown id, registry and threshold mismatch, package surface, coverage determinism.
-- [x] **TC-333..337:** provenance, cross-run determinism, import and effect analysis, register inspection, expectation-change rule.
+- [x] **TC-402..332:** coverage regeneration, thresholds, mutation catalogue, import API, unknown id, registry and threshold mismatch, package surface, coverage determinism.
+- [x] **TC-411..337:** provenance, cross-run determinism, import and effect analysis, register inspection, expectation-change rule.
 
 ### Entrance Criteria
 
-- US-008, FR-035..039, NFR-015, NFR-016, TC-280..341, and SR-047..054 validate with Quire: zero errors, zero grammar findings (done 2026-09-03).
+- US-008, FR-035..039, NFR-015, NFR-016, TC-280..319 and TC-398..419, and SR-047..054 validate with Quire: zero errors, zero grammar findings (done 2026-09-03).
 - `pnpm test` and `poetry run pytest` green on the base commit.
 
 ### Exit Criteria
@@ -150,14 +150,14 @@ time ->  Task-048 -> Task-049 -> Task-050 -> Task-051 --\
 
 | Task | Track | Owns (references) | Verified by (verifies) | Status |
 |---|---|---|---|---|
-| Task-048 | A | NFR-016 | TC-338..341 | done |
+| Task-048 | A | NFR-016 | TC-416..341 | done |
 | Task-049 | A | FR-035 | TC-280..289 | done |
 | Task-050 | A | FR-036 | TC-290..301 | done |
-| Task-051 | B | FR-038 | TC-314, TC-316, TC-317, TC-319, TC-320, TC-322 | done |
-| Task-052 | B | FR-038, NFR-015 | TC-315, TC-318, TC-321, TC-323, TC-336, TC-337 | done |
+| Task-051 | B | FR-038 | TC-314, TC-316, TC-317, TC-319, TC-398, TC-400 | done |
+| Task-052 | B | FR-038, NFR-015 | TC-315, TC-318, TC-399, TC-401, TC-414, TC-415 | done |
 | Task-053 | C | FR-037 | TC-302..313 | done |
-| Task-054 | C | FR-039 | TC-324..331 | done |
-| Task-055 | D | NFR-015, NFR-016 | TC-291, TC-295, TC-307, TC-332..335, TC-340 | done |
+| Task-054 | C | FR-039 | TC-402..331 | done |
+| Task-055 | D | NFR-015, NFR-016 | TC-291, TC-295, TC-307, TC-410..335, TC-418 | done |
 | Task-056 | Gate | US-008 | — | in progress |
 
 ## Coordination Rules

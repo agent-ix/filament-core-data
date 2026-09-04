@@ -63,7 +63,13 @@ The sixth delivery is the semantic-core declaration grammar and kernel scalar
 library (issue #35): TypeSpec models every Quire object module imports, their
 official JSON Schema projection, and a zero-loss lowering to IR v1.1.
 
-The seventh delivery is the semantic conformance corpus and its independent
+The seventh delivery is the promotion of the issue #4 prototype emitters into
+`src/` (issue #27): the semantic-IR emitter, the TypeScript and Rust generation
+backends, and the governed Python JSON Schema adapter become owned, tested,
+deterministic repository code behind one narrow build interface, while the spike
+stays frozen, non-canonical, and reproducible.
+
+The eighth delivery is the semantic conformance corpus and its independent
 differential oracle (issue #20): contract-derived cases, an oracle that decides
 them without reading any implementation under test, and a harness that judges
 every declared Rust, TypeScript, and Python implementation against that oracle
@@ -111,6 +117,9 @@ rather than against one another.
 - The semantic-core L3 declaration grammar and kernel scalar library in
   TypeSpec under `packages/semantic-core/`, its emitted JSON Schema, and its
   lowering table to IR v1.1.
+- The promoted semantic-IR emitter, TypeScript and Rust generation backends, and
+  Python JSON Schema adapter under `src/compiler/`, with a written disposition
+  for every issue #4 prototype component and a frozen spike that still replays.
 - A versioned semantic conformance corpus under `conformance/` with positive,
   negative, boundary, and evolution cases per IR construct and compatibility
   rule, contract-cited provenance, and minimization rules.
@@ -121,7 +130,9 @@ rather than against one another.
 ### 2.2 Out of Scope
 
 - Implementing the production semantic compiler or production emitter framework;
-  issue #4 may implement only an isolated disposable experimental emitter.
+  issue #4 may implement only an isolated disposable experimental emitter, and
+  issue #27 may only promote that prototype without changing its output — the
+  production compiler is issue #19.
 - Generating, publishing, or consuming new Rust, TypeScript, or Python packages.
 - Changing Avro, database, API, Tauri, Protobuf, Arrow, Parquet, or Markdown
   runtime behavior.
@@ -143,9 +154,20 @@ rather than against one another.
 - Module vocabulary (entity, endpoint, process, requirement, …) in the
   semantic-core kernel; publishing `@agent-ix/semantic-core` (issue #11);
   a custom emitter for issue #35.
-- Implementing, fixing, or promoting any compiler, frontend, or backend the
-  corpus judges (issues #19, #21, #22, #23, #27); the corpus records a
-  divergence rather than repairing the implementation that causes it.
+- Revising the emitted semantic-IR shape, generating or publishing a Rust,
+  TypeScript, or Python package, or moving any consumer as part of issue #27;
+  those belong to issues #19, #21, #22, #23, and #11.
+- Building the independent conformance corpus and oracle (issue #20); issue #27
+  neither reads nor edits it, because that independence is the point.
+- Adding a public `./compiler` package export, a runtime dependency for the
+  promoted compiler, or a supported `datamodel-code-generator` invocation;
+  those belong to issues #11 and #23.
+- Repairing the retained issue #4 evidence's host couplings (issue #42); issue
+  #27 records them and fixes only the lockfile seeding, which changes no
+  retained byte.
+- Implementing, fixing, or repairing any compiler, frontend, or backend the
+  conformance corpus judges (issues #19, #21, #22, #23, #27); the corpus
+  records a divergence rather than repairing the implementation that causes it.
 - Publishing the corpus as its own package, moving it to a corpus repository,
   or adding it to the published package's `exports` or `files`, as part of
   issue #20; enlarging the published surface belongs to the issue #11 gate.
@@ -188,7 +210,7 @@ Authority is assigned by concern:
 
 | Owner | Responsibility | Explicit non-responsibility |
 |---|---|---|
-| `filament-core-data` | Semantic IR, shared kernel, package/projection contracts, compiler and emitters in later tickets | Domain vocabulary ownership and application persistence policy |
+| `filament-core-data` | Semantic IR, shared kernel, package/projection contracts, the promoted prototype compiler under `src/compiler/` (issue #27), the production compiler in issue #19 | Domain vocabulary ownership and application persistence policy |
 | Quire | Parse, validate, extract, and byte-splice typed Markdown | Cross-language generation, template rendering, application policy, registry sourcing |
 | Quoin | Module catalog, locks, installation, skills, and workflows | Runtime domain persistence and compiler ownership |
 | Module repositories | Domain vocabulary, constraints, skeletons, mappings, examples, and module versions | Shared compiler implementation |
@@ -199,9 +221,9 @@ Authority is assigned by concern:
 | Class | Artifacts | Purpose |
 |---|---|---|
 | Stakeholder | [StR-001](./stakeholder/StR-001-durable-semantic-data-governance.md) | Durable governance need |
-| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-008](./usecase/US-008-judge-a-compiler-against-an-independent-corpus.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, and conformance-reviewer outcomes |
-| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-039](./functional/FR-039-account-for-corpus-coverage-and-import.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, and conformance-corpus behavior |
-| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-016](./non-functional/NFR-016-isolated-conformance-corpus.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, and blessing-free conformance evidence |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-009](./usecase/US-009-build-from-a-supported-compiler.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, and conformance-reviewer outcomes |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-044](./functional/FR-044-replay-the-frozen-spike-through-the-promoted-compiler.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, conformance-corpus, and prototype-promotion behavior |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-018](./non-functional/NFR-018-non-disruptive-promotion-and-rollback.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, blessing-free conformance evidence, deterministic promoted compilation, and rollback |
 
 ## 6. Decision Status Model
 

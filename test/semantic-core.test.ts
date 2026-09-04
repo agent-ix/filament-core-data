@@ -63,7 +63,7 @@ function readPackageJson(path: string): unknown {
 function changedPaths(): string[] {
 	const committed = execFileSync(
 		"git",
-		["diff", "--name-only", "origin/main...HEAD"],
+		["diff", "--no-renames", "--name-only", "origin/main...HEAD"],
 		{ cwd: root, encoding: "utf8" },
 	);
 	const working = execFileSync(
@@ -92,6 +92,18 @@ describe("semantic-core non-disruption (Task-041)", () => {
 			"fixtures/semantic/v1/compatibility/cases.json",
 			"packages/semantic-core/",
 			"plan/Plan-006-semantic-core-grammar/",
+			"src/compiler/",
+			"tsconfig.json",
+			"tsconfig.build.json",
+			"plan/Plan-007-promote-prototype-emitters/",
+			"package.json",
+			"pnpm-lock.yaml",
+			"docs/semantic-data-system/typespec-feasibility.md",
+			"test/compiler.test.ts",
+			"spikes/typespec-feasibility/scripts/",
+			"spikes/typespec-feasibility/package.json",
+			"spikes/typespec-feasibility/evidence/custom.json",
+			"spikes/typespec-feasibility/emitter/",
 			"reviews/",
 			"spec/",
 			"test/",
@@ -106,40 +118,107 @@ describe("semantic-core non-disruption (Task-041)", () => {
 			if (existsSync(resolve(root, path)))
 				expect(statSync(resolve(root, path)).isFile(), path).toBe(true);
 		}
+		// Issue #27 removes the spike emitter's `file:` devDependency, so
+		// `package.json` and `pnpm-lock.yaml` necessarily move. What these
+		// criteria protect — the published surface and the runtime dependency
+		// set — is pinned exactly by TC-391 in test/compiler.test.ts.
 		for (const prohibited of [
-			"pnpm-lock.yaml",
 			"pnpm-workspace.yaml",
-			"package.json",
 			"schema/avro/core-data.avpr",
 			"src/generated.ts",
 		])
 			expect(changedPaths(), prohibited).not.toContain(prohibited);
-		for (const path of changedPaths())
+		// Issue #27 promoted the prototype emitters into src/compiler/ and rewired
+		// the spike runner to them, so those paths are no longer prohibited for
+		// every later branch. The frozen retained evidence is still protected —
+		// by TC-371 in test/compiler.test.ts, which allows exactly one field of
+		// spikes/typespec-feasibility/evidence/custom.json to differ.
+		const promotionPaths = [
+			"src/compiler/",
+			"spikes/typespec-feasibility/scripts/",
+			"spikes/typespec-feasibility/package.json",
+			"spikes/typespec-feasibility/evidence/custom.json",
+			"spikes/typespec-feasibility/emitter/",
+		];
+		for (const path of changedPaths()) {
+			if (promotionPaths.some((prefix) => path.startsWith(prefix))) continue;
 			expect(path.startsWith("spikes/") || path.startsWith("src/"), path).toBe(
 				false,
 			);
+		}
 	});
 
 	/** Traces: TC-278; NFR-014-AC-5. */
 	it("leaves the frozen TypeSpec spike byte-identical", () => {
+		// Scoped by issue #27 (FR-044): the promotion rewires the spike runner to
+		// the promoted compiler and deletes the spike emitter package. The
+		// retained evidence this criterion protects is unchanged apart from the
+		// one declared field, which TC-371 pins exactly.
+		const promotionPaths = [
+			"spikes/typespec-feasibility/scripts/run-experiment.mjs",
+			"spikes/typespec-feasibility/package.json",
+			"spikes/typespec-feasibility/evidence/custom.json",
+		];
 		const spikeDiff = execFileSync(
 			"git",
-			["diff", "origin/main", "--stat", "--", "spikes/"],
+			["diff", "--no-renames", "origin/main", "--name-only", "--", "spikes/"],
 			{ cwd: root, encoding: "utf8" },
-		);
-		expect(spikeDiff).toBe("");
+		)
+			.split("\n")
+			.filter((line) => line.length > 0)
+			.filter(
+				(path) =>
+					!promotionPaths.includes(path) &&
+					!path.startsWith("spikes/typespec-feasibility/emitter/"),
+			);
+		expect(spikeDiff).toEqual([]);
 	});
 });
 
 describe("semantic-core package inventory (Task-042)", () => {
 	/** Traces: TC-254; FR-031-CON-1. */
-	it("lives under packages/semantic-core with a private package manifest", () => {
+	it("lives under packages/semantic-core, compiled by the root toolchain", () => {
 		expect(existsSync(resolve(packageRoot, "main.tsp"))).toBe(true);
 		const manifest = object(readPackageJson("package.json"), "package.json");
 		expect(manifest.name).toBe("@agent-ix/semantic-core");
-		expect(manifest.private).toBe(true);
 		expect(manifest.tspMain).toBe("main.tsp");
 		expect(String(manifest.version)).toMatch(/^\d+\.\d+\.\d+$/);
+		// FR-031-CON-1 is about where the grammar lives, not about whether it
+		// ships: issue #40 published @agent-ix/semantic-core to npm.ix so the
+		// Wave-4 object modules can consume it, so `private` is deliberately
+		// absent from the manifest and asserting it would un-publish them.
+		expect(manifest.private).toBeUndefined();
+		// "Lives under packages/semantic-core/": the entry point and every path
+		// the package ships resolve inside the package directory and exist, so
+		// moving the grammar (or an emitted artefact) out of it fails here.
+		const exportsMap = object(manifest.exports, "exports");
+		const rootExport = object(exportsMap["."], 'exports["."]');
+		for (const entry of [
+			String(manifest.tspMain),
+			String(rootExport.typespec),
+			...array(manifest.files, "files").map(String),
+		]) {
+			const target = resolve(packageRoot, entry);
+			expect(
+				target === packageRoot || target.startsWith(`${packageRoot}/`),
+				entry,
+			).toBe(true);
+			expect(existsSync(target), entry).toBe(true);
+		}
+		// "Compiled with the root-installed TypeSpec toolchain": the package
+		// declares the pinned compiler as a peer of the root devDependency
+		// instead of vendoring a second copy of its own.
+		const rootManifest = object(
+			JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")),
+			"root package.json",
+		);
+		const rootDev = object(
+			rootManifest.devDependencies,
+			"root devDependencies",
+		);
+		const peers = object(manifest.peerDependencies, "peerDependencies");
+		for (const name of ["@typespec/compiler", "@typespec/json-schema"])
+			expect(peers[name], name).toBe(rootDev[name]);
 		// The spike has its own packages/semantic-core; it must never import ours.
 		let spikeSources = "";
 		try {

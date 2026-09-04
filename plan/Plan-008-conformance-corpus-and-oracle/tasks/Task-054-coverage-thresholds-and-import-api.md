@@ -14,21 +14,21 @@ relationships:
     type: depends_on
   - target: "ix://agent-ix/filament-core-data/FR-039"
     type: references
-  - target: "ix://agent-ix/filament-core-data/TC-324"
+  - target: "ix://agent-ix/filament-core-data/TC-402"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-325"
+  - target: "ix://agent-ix/filament-core-data/TC-403"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-326"
+  - target: "ix://agent-ix/filament-core-data/TC-404"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-327"
+  - target: "ix://agent-ix/filament-core-data/TC-405"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-328"
+  - target: "ix://agent-ix/filament-core-data/TC-406"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-329"
+  - target: "ix://agent-ix/filament-core-data/TC-407"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-330"
+  - target: "ix://agent-ix/filament-core-data/TC-408"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-331"
+  - target: "ix://agent-ix/filament-core-data/TC-409"
     type: verifies
 ---
 # Task-054: Coverage account, thresholds, mutation catalogue, and import API

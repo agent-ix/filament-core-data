@@ -1,4 +1,4 @@
-"""Issue #20 — the Python half of the conformance gate (TC-340, NFR-016-AC-3).
+"""Issue #20 — the Python half of the conformance gate (TC-418, NFR-016-AC-3).
 
 The corpus is language-neutral JSON. This suite reads it with the already
 pinned `jsonschema` and asserts, in a second language and a second JSON Schema
@@ -161,13 +161,13 @@ def _resolve(document, pointer: str):
 
 
 def test_tc340_manifest_validates() -> None:
-    """TC-340: the manifest validates under a second JSON Schema implementation."""
+    """TC-418: the manifest validates under a second JSON Schema implementation."""
     _validator(CONF_BASE + "corpus-manifest.schema.json").validate(MANIFEST)
 
 
 @pytest.mark.parametrize("entry", CASES, ids=[case["id"] for case in CASES])
 def test_tc340_case_validates(entry: dict) -> None:
-    """TC-340: every case validates and its expected diagnostics are published ones."""
+    """TC-418: every case validates and its expected diagnostics are published ones."""
     _validator(CONF_BASE + "corpus-case.schema.json").validate(entry)
     checker = _diagnostic_validator()
     for expectation in entry["expected"]["diagnostics"]:
@@ -176,12 +176,12 @@ def test_tc340_case_validates(entry: dict) -> None:
 
 @pytest.mark.parametrize("base_id", sorted(BASES), ids=sorted(BASES))
 def test_tc340_base_validates(base_id: str) -> None:
-    """TC-340: every base bundle validates against the composed published schemas."""
+    """TC-418: every base bundle validates against the composed published schemas."""
     _validator(CONF_BASE + "input-bundle.schema.json").validate(BASES[base_id])
 
 
 def test_tc340_digests_recompute() -> None:
-    """TC-283/TC-340: every digest and the corpus digest recompute from disk."""
+    """TC-283/TC-418: every digest and the corpus digest recompute from disk."""
     for row in MANIFEST["bases"] + MANIFEST["cases"]:
         assert _digest(REPO / row["path"]) == row["digest"], row["path"]
     joined = "".join(
@@ -195,7 +195,7 @@ def test_tc340_digests_recompute() -> None:
 
 
 def test_tc333_provenance_quotes_occur() -> None:
-    """TC-333: no case is blessed and every quote still occurs in its artifact."""
+    """TC-411: no case is blessed and every quote still occurs in its artifact."""
     for entry in CASES:
         assert entry["provenance"]["blessedFromRun"] is False, entry["id"]
         for source in entry["derivedFrom"]:
@@ -204,7 +204,7 @@ def test_tc333_provenance_quotes_occur() -> None:
 
 
 def test_tc340_every_case_builds_and_its_pointers_address_the_bundle() -> None:
-    """TC-288/TC-340: each patch applies and each expected pointer has a parent."""
+    """TC-288/TC-418: each patch applies and each expected pointer has a parent."""
     for entry in CASES:
         bundle = _apply(BASES[entry["base"]], entry["ops"])
         assert "ir" in bundle, entry["id"]
@@ -279,7 +279,7 @@ def test_tc318_defect_rows_name_a_case_or_a_static_check() -> None:
 
 
 def test_tc336_registers_name_their_owner() -> None:
-    """TC-336: every contract gap and every adapter slot names its owning issue."""
+    """TC-414: every contract gap and every adapter slot names its owning issue."""
     assert GAPS["gaps"], "the corpus found no contract gap, which would itself be news"
     for gap in GAPS["gaps"]:
         assert re.search(r"#\d+$", gap["owningIssue"]), gap["id"]
@@ -289,7 +289,7 @@ def test_tc336_registers_name_their_owner() -> None:
 
 
 def test_tc325_thresholds_and_registry_agree() -> None:
-    """TC-325/TC-330: every registry slot has a proposed threshold row and back."""
+    """TC-403/TC-408: every registry slot has a proposed threshold row and back."""
     registry_ids = sorted(one["id"] for one in REGISTRY["adapters"])
     threshold_ids = sorted(one["adapter"] for one in THRESHOLDS["thresholds"])
     assert registry_ids == threshold_ids
@@ -298,7 +298,7 @@ def test_tc325_thresholds_and_registry_agree() -> None:
 
 
 def test_tc341_the_corpus_publishes_nothing() -> None:
-    """TC-341: package.json names no conformance surface and no dependency."""
+    """TC-419: package.json names no conformance surface and no dependency."""
     package = _read(REPO / "package.json")
     assert not any("conformance" in key for key in package["exports"])
     assert not any("conformance" in entry for entry in package["files"])

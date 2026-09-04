@@ -63,8 +63,9 @@ info:
 # -----------------------------------------------------------------------------
 # semantic-core (issue #35) — compiled with the root-installed TypeSpec toolchain
 # -----------------------------------------------------------------------------
-# No workspace file and no package.json script: the package is private until
-# issue #11 publishes it, so the build is a Makefile concern (NFR-014).
+# No workspace file and no package.json script: the build is a Makefile concern
+# (NFR-014). The package itself ships to npm.ix (issue #40) for Wave 4 module
+# consumption; the public packages remain issue #11.
 
 .PHONY: semantic-core-compile
 semantic-core-compile:
@@ -100,3 +101,17 @@ conformance:
 conformance-audit:
 	node conformance/tools/audit.mjs
 
+# -----------------------------------------------------------------------------
+# Promoted prototype compiler (issue #27)
+# -----------------------------------------------------------------------------
+# The narrow build interface lives in src/compiler/. It is repo-internal for
+# issue #27: package.json `exports` gains no `./compiler` entry and @typespec/*
+# stay devDependencies until issue #11 publishes.
+
+ENTRYPOINT ?= spikes/typespec-feasibility/main.tsp
+OUT ?= dist/semantic-ir.json
+GENERATOR ?=
+
+.PHONY: compiler-emit-ir
+compiler-emit-ir:
+	node src/compiler/cli.mjs emit-ir --entrypoint $(ENTRYPOINT) $(if $(GENERATOR),--generator $(GENERATOR),) --out $(OUT)

@@ -80,7 +80,7 @@ function validates(schemaName: string, value: unknown): boolean {
 function changedPaths(): string[] {
 	const committed = execFileSync(
 		"git",
-		["diff", "--name-only", "origin/main...HEAD"],
+		["diff", "--no-renames", "--name-only", "origin/main...HEAD"],
 		{ cwd: root, encoding: "utf8" },
 	);
 	const working = execFileSync(
@@ -194,14 +194,30 @@ describe("semantic IR v1.1 baseline and non-disruption", () => {
 
 	/** Traces: TC-234; NFR-013-AC-2. */
 	it("leaves the frozen TypeSpec spike untouched", () => {
-		for (const path of changedPaths())
+		// Scoped by issue #27 (FR-044), which owns the spike's rewiring. The
+		// retained evidence NFR-013 protects is still byte-identical apart from
+		// the one declared field, pinned by TC-371 in test/compiler.test.ts.
+		const promotionPaths = [
+			"spikes/typespec-feasibility/scripts/run-experiment.mjs",
+			"spikes/typespec-feasibility/package.json",
+			"spikes/typespec-feasibility/evidence/custom.json",
+		];
+		const permitted = (path: string) =>
+			promotionPaths.includes(path) ||
+			path.startsWith("spikes/typespec-feasibility/emitter/");
+		for (const path of changedPaths()) {
+			if (permitted(path)) continue;
 			expect(path.startsWith("spikes/"), path).toBe(false);
+		}
 		const spikeDiff = execFileSync(
 			"git",
-			["diff", "origin/main", "--stat", "--", "spikes/"],
+			["diff", "--no-renames", "origin/main", "--name-only", "--", "spikes/"],
 			{ cwd: root, encoding: "utf8" },
-		);
-		expect(spikeDiff).toBe("");
+		)
+			.split("\n")
+			.filter((line) => line.length > 0)
+			.filter((path) => !permitted(path));
+		expect(spikeDiff).toEqual([]);
 	});
 
 	/** Traces: TC-236; NFR-013-AC-4. */
@@ -214,6 +230,18 @@ describe("semantic IR v1.1 baseline and non-disruption", () => {
 			"fixtures/semantic/v1/",
 			"plan/Plan-005-semantic-ir-v1-1/",
 			"plan/Plan-006-semantic-core-grammar/",
+			"src/compiler/",
+			"tsconfig.json",
+			"tsconfig.build.json",
+			"plan/Plan-007-promote-prototype-emitters/",
+			"package.json",
+			"pnpm-lock.yaml",
+			"docs/semantic-data-system/typespec-feasibility.md",
+			"test/compiler.test.ts",
+			"spikes/typespec-feasibility/scripts/",
+			"spikes/typespec-feasibility/package.json",
+			"spikes/typespec-feasibility/evidence/custom.json",
+			"spikes/typespec-feasibility/emitter/",
 			"packages/semantic-core/",
 			"fixtures/semantic-core/",
 			"Makefile",
@@ -234,12 +262,14 @@ describe("semantic IR v1.1 baseline and non-disruption", () => {
 			if (existsSync(resolve(root, path)))
 				expect(statSync(resolve(root, path)).isFile(), path).toBe(true);
 		}
+		// Issue #27 removes the spike emitter's `file:` devDependency, so
+		// `package.json` and `pnpm-lock.yaml` necessarily move. What these
+		// criteria protect — the published surface and the runtime dependency
+		// set — is pinned exactly by TC-391 in test/compiler.test.ts.
 		for (const prohibited of [
 			"schema/avro/core-data.avpr",
 			"src/generated.ts",
 			"agent_ix_core_data/core_data.py",
-			"package.json",
-			"pnpm-lock.yaml",
 		])
 			expect(changedPaths(), prohibited).not.toContain(prohibited);
 	});
