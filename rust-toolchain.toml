@@ -1,0 +1,17 @@
+# The toolchain every Rust gate in this repository is measured on.
+#
+# FR-060 requires the emitted source to be a fixed point of `rustfmt`, and a
+# fixed point is a fixed point *of a version*: a formatter upgrade moves it and
+# breaks the goldens while the determinism metric still reads zero. Pinning the
+# channel here is what makes `rustfmt --check` a claim about the emitter rather
+# than about whichever formatter happened to be on the path.
+#
+# The pinned channel and the support matrix in
+# docs/semantic-data-system/rust-backend-support-matrix.md must agree; the
+# FR-060 gate reads the version out of the running binary and fails naming both
+# when they do not.
+
+[toolchain]
+channel = "1.94.1"
+components = ["rustfmt", "clippy"]
+profile = "minimal"

@@ -1,0 +1,36 @@
+# The runtime consumer of the generated crate (FR-061).
+#
+# It is excluded from the root workspace on purpose: FR-061 builds it against
+# the *unpacked* `cargo package` artifact in a scratch directory, so the `path`
+# below names a sibling of this crate inside that directory and resolves to
+# nothing in the generator's tree. A build that only worked in place would be a
+# build that proved nothing about the packaged crate.
+#
+# `serde_json` is the JSON front door the fixtures are fed through and the
+# canonical form is measured with. It is pinned exactly and it is a
+# dev-dependency: it is a test-time dependency of this consumer and never a
+# runtime dependency of the generated crate.
+
+[package]
+name = "consumer-runtime"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85.0"
+license = "AGPL-3.0-only"
+publish = false
+
+[workspace]
+
+# `-D warnings` for this package alone. A global `RUSTFLAGS="-D warnings"` also
+# denies warnings inside `serde`, which fails for reasons that have nothing to
+# do with this contract; cargo applies this table to the local package only.
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "deny"
+warnings = "deny"
+
+[dependencies]
+agent-ix-conformance = { path = "../agent-ix-conformance-1.0.0" }
+
+[dev-dependencies]
+serde_json = "=1.0.151"

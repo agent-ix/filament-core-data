@@ -1,0 +1,22 @@
+{
+	"contractVersion": "1.0.0",
+	"note": "The published patterns the generated crate enforces on its own support types, extracted from the schema rather than retyped. `cli.mjs check` re-reads the schema and fails when a value here has drifted from it.",
+	"patterns": {
+		"semanticIdentity": {
+			"regex": "^ix://[a-z0-9][a-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._~:/-]*$",
+			"source": {
+				"file": "schema/semantic/v1/common.schema.json",
+				"pointer": "/$defs/semanticIdentity/pattern"
+			},
+			"constraint": "ix://agent-ix/filament-core-data/schema/common/semanticIdentity"
+		},
+		"sourceLocusPath": {
+			"regex": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\u0000]+$",
+			"source": {
+				"file": "schema/semantic/v1/common.schema.json",
+				"pointer": "/$defs/sourceLocus/properties/path/pattern"
+			},
+			"constraint": "ix://agent-ix/filament-core-data/schema/common/sourceLocus/path"
+		}
+	}
+}

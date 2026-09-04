@@ -1,0 +1,13 @@
+{
+	"id": "n1",
+	"label": null,
+	"elapsed": 250,
+	"status": "final",
+	"children": [
+		"ix://agent-ix/conformance/node/2",
+		"ix://agent-ix/conformance/node/3"
+	],
+	"tags": ["a", "b"],
+	"attrs": { "k": "v" },
+	"payload": { "text": "hello" }
+}

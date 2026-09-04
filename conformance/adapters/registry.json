@@ -14,7 +14,17 @@
 			"id": "rust-backend",
 			"language": "rust",
 			"owningIssue": "agent-ix/filament-core-data#21",
-			"status": "unavailable",
+			"status": "available",
+			"command": [
+				"cargo",
+				"run",
+				"--quiet",
+				"--offline",
+				"--locked",
+				"--manifest-path",
+				"../crates/conformance-adapter/Cargo.toml",
+				"--"
+			],
 			"pointerCompatible": false,
 			"rationale": "No Rust crate exists in this repository. pointerCompatible is false because the published sourceLocus path pattern cannot compile under RE2 (conformance/contract-gaps.json GAP-002), so a Rust reader is expected to locate by its own scheme."
 		},

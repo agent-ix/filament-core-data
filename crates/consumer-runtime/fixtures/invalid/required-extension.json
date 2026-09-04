@@ -1,0 +1,4 @@
+{
+	"parts": ["one", "two"],
+	"ix://agent-ix/conformance/ext/sealing": { "algorithm": "ed25519" }
+}
