@@ -69,6 +69,14 @@ backends, and the governed Python JSON Schema adapter become owned, tested,
 deterministic repository code behind one narrow build interface, while the spike
 stays frozen, non-canonical, and reproducible.
 
+The eighth delivery is the TypeSpec frontend and the versioned semantic IR
+compiler core (issue #19): one frontend seam, a TypeSpec lowering to contract IR
+`1.1.0`, package/import/export/profile/target resolution with locks, fingerprints
+and cycle diagnostics, a stable source-located diagnostic registry, a normalized
+serialization, an inspect command, and a compatibility-diff and schema-evolution
+API — all of it deterministic, bounded against untrusted input, and landed
+without publishing a package or moving a consumer.
+
 ## 2. Scope
 
 ### 2.1 In Scope
@@ -114,6 +122,16 @@ stays frozen, non-canonical, and reproducible.
 - The promoted semantic-IR emitter, TypeScript and Rust generation backends, and
   Python JSON Schema adapter under `src/compiler/`, with a written disposition
   for every issue #4 prototype component and a frozen spike that still replays.
+- The frontend seam and its dialect registry, the TypeSpec semantic decorator
+  library, and the lowering from a compiled TypeSpec program to contract semantic
+  IR `1.1.0`.
+- Package graph resolution, lock building and verification, the v1 fingerprint
+  canonicalization, and exact source loci for JSON inputs.
+- The closed compiler diagnostic registry, its published document, and the
+  deterministic diagnostic ordering and limits.
+- The compiler-side IR reader, the normalized serialization and IR fingerprint,
+  the `compile`, `inspect`, and `diff` commands, and the compatibility-diff and
+  IR schema-evolution projections with their goldens and published policy.
 
 ### 2.2 Out of Scope
 
@@ -153,6 +171,17 @@ stays frozen, non-canonical, and reproducible.
 - Repairing the retained issue #4 evidence's host couplings (issue #42); issue
   #27 records them and fixes only the lockfile seeding, which changes no
   retained byte.
+- Implementing the spec-bundle extraction frontend (issue #36); issue #19 builds
+  the seam and the shared fixture harness it will plug into, and registers the
+  dialect as declared-unimplemented.
+- Editing the frozen prototype path or regenerating the four issue #4 goldens as
+  part of issue #19; the contract IR is a second lowering beside the prototype,
+  not a rewrite of it.
+- Publishing a language package, adding a public compiler export, generating a
+  Rust, TypeScript, or Python package, or moving any consumer as part of issue
+  #19; those remain issues #11, #21, #22, and #23.
+- Emitting a target or representation from the compiler; issue #19 stops at the
+  IR, its lock, its diagnostics, and its compatibility report.
 
 ## 3. System Overview
 
