@@ -411,6 +411,15 @@ function renderCargoToml(model) {
 # The empty \`[workspace]\` table makes the generated crate its own workspace
 # root, so a crate emitted inside another workspace's directory tree builds as
 # itself rather than as an unlisted member of the enclosing workspace.
+#
+# \`[lints.rust]\` carries the warning-free property with the crate. Without it
+# the property is asserted by whoever happens to run the build, and the only
+# other way to state it — \`RUSTFLAGS="-D warnings"\` — also denies warnings in
+# \`serde\`, which fails for reasons that have nothing to do with this contract.
+# Cargo applies this table to the local package alone, which is exactly the
+# claim being made. The two crate-level attributes in \`src/lib.rs\` are kept as
+# well: an attribute travels with the source file, a manifest key with the
+# package, and a consumer reading either one should find the same answer.
 
 [package]
 name = "${model.crateName}"
@@ -421,6 +430,11 @@ license = "AGPL-3.0-only"
 publish = false
 
 [workspace]
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "deny"
+warnings = "deny"
 
 [dependencies]
 serde = { version = "=${SERDE_VERSION}", features = ["derive"] }
