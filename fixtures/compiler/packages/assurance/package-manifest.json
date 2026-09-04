@@ -1,0 +1,38 @@
+{
+	"contractVersion": "1.0.0",
+	"package": { "identity": "agent-ix/assurance", "version": "1.0.0" },
+	"schemaDialect": "https://json-schema.org/draft/2020-12/schema",
+	"sourceRoots": ["types"],
+	"exports": [
+		{
+			"name": "Artifact",
+			"typeIdentity": "ix://agent-ix/assurance/type/Artifact",
+			"visibility": "public"
+		},
+		{
+			"name": "Text",
+			"typeIdentity": "ix://agent-ix/assurance/type/Text",
+			"visibility": "public"
+		},
+		{
+			"name": "Internal",
+			"typeIdentity": "ix://agent-ix/assurance/type/InternalNote",
+			"visibility": "private"
+		}
+	],
+	"imports": [],
+	"profiles": [
+		{
+			"name": "default",
+			"version": "1.0.0",
+			"exports": ["Artifact", "Text"],
+			"targets": ["json-schema"],
+			"mappings": [],
+			"options": { "capabilities": ["agent-ix:semantic-ir"] },
+			"compatibilityPosture": "additive"
+		}
+	],
+	"targets": ["json-schema"],
+	"mappings": [],
+	"extensions": []
+}

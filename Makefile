@@ -93,3 +93,28 @@ GENERATOR ?=
 .PHONY: compiler-emit-ir
 compiler-emit-ir:
 	node src/compiler/cli.mjs emit-ir --entrypoint $(ENTRYPOINT) $(if $(GENERATOR),--generator $(GENERATOR),) --out $(OUT)
+
+# -----------------------------------------------------------------------------
+# Contract compiler (issue #19)
+# -----------------------------------------------------------------------------
+# The contract path: resolve a package graph, build and verify its lock, run the
+# selected frontend, validate, and write one versioned IR document. `emit-ir`
+# above stays the frozen issue #4 prototype route.
+
+PACKAGE ?= fixtures/compiler/packages/assurance
+COMPILE_OUT ?= dist/compiler/semantic-ir.json
+IR ?= $(COMPILE_OUT)
+PROFILE ?= default
+ENTRY ?= types/main.tsp
+
+.PHONY: compiler-compile
+compiler-compile:
+	node src/compiler/cli.mjs compile --package $(PACKAGE) --profile $(PROFILE) --entrypoint $(ENTRY) --out $(COMPILE_OUT)
+
+.PHONY: compiler-inspect
+compiler-inspect:
+	node src/compiler/cli.mjs inspect --ir $(IR) --package $(PACKAGE)
+
+.PHONY: compiler-diff
+compiler-diff:
+	node src/compiler/cli.mjs diff --old $(OLD) --new $(NEW) --out $(DIFF_OUT)

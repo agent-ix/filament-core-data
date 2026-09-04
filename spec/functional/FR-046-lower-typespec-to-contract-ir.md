@@ -75,6 +75,8 @@ source or by the manifest and none is inferred from a type's spelling.
 - If a declaration's built-in base is outside that table, then the frontend SHALL raise `agent-ix.compiler.UNSUPPORTED_SCALAR_BASE` at the declaration's locus and SHALL NOT substitute a nearest match.
 - If a declaration matches no row of the classification table, then the frontend SHALL raise `agent-ix.compiler.UNSUPPORTED_DECLARATION` at its locus.
 - Where a field, indexer, variant, or operation parameter is typed by a TypeSpec built-in scalar directly, the frontend SHALL emit one package-local kernel scalar definition `ix://<package identity>/type/<KernelScalar>` carrying the extension `ix://agent-ix/semantic-core/ext/kernel-scalar` (version `1.0.0`, `required: false`, payload `{ name }`), matching FR-034, and SHALL reference it.
+- The kernel scalar names are those FR-032 closes: `boolean` lowers to `Boolean`, `integer` to `Integer`, `number` to `Decimal`, `string` to `String`, `bytes` to `Bytes`, `datetime` to `Timestamp`, `duration` to `Duration`, and `uuid` to `UUID`.
+- If a built-in with no kernel scalar — `plainDate`, whose IR scalar is `date` — is used directly as a member type, then the frontend SHALL raise `agent-ix.compiler.UNSUPPORTED_SCALAR_BASE` naming the absent kernel scalar, because a package-local definition it cannot name is not a definition; declaring a package scalar over it remains available and lowers normally.
 
 ### Roles, unknown policy, and fields
 
