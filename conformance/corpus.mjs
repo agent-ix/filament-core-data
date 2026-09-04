@@ -375,16 +375,23 @@ export function versioningFailures(previous, current) {
 		ref: "origin/main",
 	};
 	if (declared.state === "none") {
-		if (previous) {
-			return [
-				{
-					gate: "versioning",
-					subject: "corpus.json",
-					message: `the manifest declares no predecessor, but ${declared.ref} now carries one at corpusVersion ${previous.corpusVersion}; set predecessor.state to "required"`,
-				},
-			];
-		}
-		return [];
+		// Nothing to compare against: the honest state before this corpus first
+		// merges. Once a predecessor becomes readable the declaration is out of
+		// date, but it is only *wrong* when the corpus has moved since — the first
+		// moment the comparison would have said anything. Failing on the identical
+		// post-merge tree instead would leave `main` red for a stale sentence.
+		if (!previous) return [];
+		const { reasons } = classifyVersionChange(previous, current);
+		if (reasons.length === 0) return [];
+		return [
+			{
+				gate: "versioning",
+				subject: "corpus.json",
+				message: `the manifest declares no predecessor, but ${declared.ref} carries one at corpusVersion ${previous.corpusVersion} and the corpus has moved since (${reasons
+					.map((entry) => entry.reason)
+					.join("; ")}); set predecessor.state to "required"`,
+			},
+		];
 	}
 	if (!previous) {
 		return [

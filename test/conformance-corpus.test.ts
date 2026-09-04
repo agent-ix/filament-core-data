@@ -1899,12 +1899,19 @@ describe("TC-633..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		// legitimately not applicable.
 		expect(corpus.versioningFailures(undefined, manifest)).toEqual([]);
 
-		// Declared `none` once a predecessor exists: stale, and it fails rather
-		// than quietly comparing nothing.
-		const appeared = corpus.versioningFailures(
-			{ corpusVersion: "1.0.0", cases: [], bases: [] },
-			manifest,
-		) as { gate: string; message: string }[];
+		// Declared `none` once a predecessor exists and is identical: the state on
+		// `main` the instant this corpus merges. Nothing has moved, so nothing is
+		// asserted and nothing is wrong.
+		expect(corpus.versioningFailures(manifest, manifest)).toEqual([]);
+
+		// Declared `none` once a predecessor exists and the corpus has moved:
+		// stale, and it fails rather than quietly comparing nothing.
+		const moved = structuredClone(manifest) as { cases: unknown[] };
+		moved.cases.pop();
+		const appeared = corpus.versioningFailures(moved, manifest) as {
+			gate: string;
+			message: string;
+		}[];
 		expect(appeared.length).toBe(1);
 		expect(appeared[0].gate).toBe("versioning");
 		expect(appeared[0].message).toContain(
