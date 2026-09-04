@@ -45,7 +45,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 ### Schema validation
 
 - `validateIrDocument` SHALL validate against the published schema with a JSON Schema 2020-12 implementation.
-- If validation fails, then `validateIrDocument` SHALL emit one `agent-ix.semantic-ir.INVALID_IR` diagnostic per schema error, naming the failing instance pointer.
+- If validation fails, then `validateIrDocument` SHALL emit one `agent-ix.compiler.INVALID_IR` diagnostic per schema error, naming the failing instance pointer.
 
 ### Cross-field rules
 

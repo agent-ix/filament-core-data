@@ -38,7 +38,7 @@ to the line without searching.
 
 - `DIAGNOSTIC_CODES` SHALL be a frozen record mapping each code to its `severity`, `blocking` disposition, and `owner` identity.
 - Every `blocking` code SHALL carry severity `error`, so a caller cannot meet a blocking `info` diagnostic.
-- The registry SHALL span exactly two namespaces: `agent-ix.compiler.*` for defects in a package's manifests, locks, sources, or the caller's invocation, and `agent-ix.semantic-ir.*` for defects in the shape of an IR document, whose spellings are those of `fixtures/semantic/v1/negative/reader-cases.json`.
+- The registry SHALL span exactly two namespaces: `agent-ix.compiler.*` for defects in a package's manifests, locks, sources, or the caller's invocation, and `agent-ix.semantic-ir.*` for defects in the shape of an IR document, whose spellings are those the issue #34 readers already emit.
 - Every emitted code SHALL match `^agent-ix\.[a-z0-9-]+\.[A-Z][A-Z0-9_]+$`.
 - Every module SHALL name a code only as a member access on `DIAGNOSTIC_CODES`, never as a string literal, so the emitted set can be extracted statically.
 - If a module asks for a code the registry does not contain, then `diagnostic` SHALL throw, because that is a defect in the compiler rather than in an input.
@@ -73,7 +73,7 @@ to the line without searching.
 | FR-049-CON-1 | The registry is a compatibility surface: a code's spelling and its `blocking` disposition SHALL NOT change without a compatibility-report entry in the `generated-api` family. | Compatibility | Analysis |
 | FR-049-CON-2 | The `diagnostic` constructor SHALL truncate every input-derived string to 120 characters before it enters a message; input data beyond identities, versions, digests, keywords, and positions never reaches it. | Security | Test |
 | FR-049-CON-3 | The set of codes the registry declares and the set the compiler emits SHALL be equal, with every declared code reached by at least one test. | Completeness | Test |
-| FR-049-CON-4 | The `agent-ix.semantic-ir.*` spellings SHALL equal those of the byte-unchanged `fixtures/semantic/v1/negative/reader-cases.json`. | Consistency | Test |
+| FR-049-CON-4 | The `agent-ix.semantic-ir.*` spellings SHALL be exactly those the issue #34 readers already emit, extracted from the byte-unchanged `fixtures/semantic/v1/negative/reader-cases.json` and `test/semantic-ir-v1-1-reader.ts`. | Consistency | Test |
 
 ## Acceptance Criteria
 
@@ -90,7 +90,7 @@ to the line without searching.
 | FR-049-AC-9 | A blocking diagnostic leaves a fresh `--out` path absent and exits non-zero, leaves a pre-existing `--out` byte-unchanged, and a warning-only compile writes the file and exits zero. | Test |
 | FR-049-AC-10 | A 4000-character input string never appears in a message longer than 120 characters. | Test |
 | FR-049-AC-11 | The published registry document lists every code with its severity, blocking disposition, and owner, and the five limit defaults, and a test fails when the document and `DIAGNOSTIC_CODES`/`DEFAULT_LIMITS` disagree. | Test |
-| FR-049-AC-12 | Every `agent-ix.semantic-ir.*` code in the registry appears in `reader-cases.json`, and every code that file names appears in the registry. | Test |
+| FR-049-AC-12 | Every code `reader-cases.json` names appears in the registry, and every `agent-ix.semantic-ir.*` code in the registry is one the issue #34 TypeScript reader can emit, both sets extracted from those files rather than restated. | Test |
 | FR-049-AC-13 | A diagnostic located by a JSON pointer into an IR node carries that node's `origin.source` as its locus. | Test |
 | FR-049-AC-14 | `DIAGNOSTIC_LIMIT_REACHED` is non-blocking, the four size limits are blocking, and every blocking code carries severity `error`, asserted against the registry. | Test |
 

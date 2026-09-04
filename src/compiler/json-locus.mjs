@@ -34,7 +34,10 @@ class Scanner {
 	}
 
 	skipWhitespace() {
-		while (this.index < this.text.length && WHITESPACE.has(this.text[this.index])) {
+		while (
+			this.index < this.text.length &&
+			WHITESPACE.has(this.text[this.index])
+		) {
 			this.index += 1;
 		}
 	}
@@ -63,8 +66,18 @@ class Scanner {
 					);
 					this.index += 4;
 				} else {
-					const simple = { '"': '"', "\\": "\\", "/": "/", b: "\b", f: "\f", n: "\n", r: "\r", t: "\t" };
-					if (!(escape in simple)) throw this.error(`unknown escape \\${escape}`);
+					const simple = {
+						'"': '"',
+						"\\": "\\",
+						"/": "/",
+						b: "\b",
+						f: "\f",
+						n: "\n",
+						r: "\r",
+						t: "\t",
+					};
+					if (!(escape in simple))
+						throw this.error(`unknown escape \\${escape}`);
 					value += simple[escape];
 				}
 				continue;

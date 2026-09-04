@@ -617,13 +617,13 @@ passes.
 | TC-500 | A blocking diagnostic leaves a fresh `--out` path absent and exits non-zero, leaves a pre-existing `--out` byte-unchanged | Unit | P0 | FR-049-AC-9 | 🚧 issue #19 |
 | TC-501 | A 4000-character input string never appears in a message longer than 120 characters | Unit | P0 | FR-049-AC-10 | 🚧 issue #19 |
 | TC-502 | The published registry document lists every code with its severity, blocking disposition, and owner, and the five limit defaults | Unit | P0 | FR-049-AC-11 | 🚧 issue #19 |
-| TC-503 | Every `agent-ix.semantic-ir.*` code in the registry appears in `reader-cases.json`, and every code that file names appears in the registry | Unit | P0 | FR-049-AC-12 | 🚧 issue #19 |
+| TC-503 | Every code `reader-cases.json` names appears in the registry, and every `agent-ix.semantic-ir.*` code in the registry is one the issue #34 TypeScript reader can emit | Unit | P0 | FR-049-AC-12 | 🚧 issue #19 |
 | TC-504 | A diagnostic located by a JSON pointer into an IR node carries that node's `origin.source` as its locus | Unit | P0 | FR-049-AC-13 | 🚧 issue #19 |
 | TC-505 | `DIAGNOSTIC_LIMIT_REACHED` is non-blocking, and the four size limits are blocking, asserted against the registry | Unit | P0 | FR-049-AC-14 | 🚧 issue #19 |
 | TC-506 | The registry is a compatibility surface: a code's spelling and its `blocking` disposition SHALL NOT change without a compatibility-report entry in | Static | P1 | FR-049-CON-1 | 🚧 issue #19 |
 | TC-507 | The `diagnostic` constructor SHALL truncate every input-derived string to 120 characters before it enters a message; input data beyond identities | Unit | P1 | FR-049-CON-2 | 🚧 issue #19 |
 | TC-508 | The set of codes the registry declares and the set the compiler emits SHALL be equal, with every declared code reached by at least one test | Unit | P1 | FR-049-CON-3 | 🚧 issue #19 |
-| TC-509 | The `agent-ix.semantic-ir.*` spellings SHALL equal those of the byte-unchanged `fixtures/semantic/v1/negative/reader-cases.json` | Unit | P1 | FR-049-CON-4 | 🚧 issue #19 |
+| TC-509 | The `agent-ix.semantic-ir.*` spellings SHALL be exactly those the issue #34 readers already emit, extracted from the byte-unchanged `fixtures/semantic/v1/negative/reader-cases.json` and `test/semantic-ir-v1-1-reader.ts` | Unit | P1 | FR-049-CON-4 | 🚧 issue #19 |
 | TC-510 | Every positive `1.1.0` fixture under `fixtures/semantic/v1/positive/` validates and yields zero reader diagnostics | Unit | P0 | FR-050-AC-1 | 🚧 issue #19 |
 | TC-511 | Every case in `negative/reader-cases.json` yields the expected diagnostic code from the compiler's reader | Unit | P0 | FR-050-AC-2 | 🚧 issue #19 |
 | TC-512 | For every case in `negative/reader-cases.json`, the compiler's reader, the issue #34 TypeScript reader | Integration | P0 | FR-050-AC-3 | 🚧 issue #19 |
