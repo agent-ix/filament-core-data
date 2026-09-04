@@ -18,13 +18,13 @@ relationships:
     type: verifies
   - target: "ix://agent-ix/filament-core-data/TC-307"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-632"
-    type: verifies
   - target: "ix://agent-ix/filament-core-data/TC-634"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-635"
+  - target: "ix://agent-ix/filament-core-data/TC-636"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-640"
+  - target: "ix://agent-ix/filament-core-data/TC-637"
+    type: verifies
+  - target: "ix://agent-ix/filament-core-data/TC-642"
     type: verifies
 ---
 # Task-055: Determinism, locale, directory, and offline evidence

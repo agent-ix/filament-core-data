@@ -1,0 +1,27 @@
+{
+	"contractVersion": "1.0.0",
+	"package": {
+		"identity": "agent-ix/core",
+		"version": "1.3.0"
+	},
+	"schemaDialect": "https://json-schema.org/draft/2020-12/schema",
+	"sourceRoots": ["types"],
+	"exports": [],
+	"imports": [],
+	"profiles": [
+		{
+			"name": "default",
+			"version": "1.0.0",
+			"exports": [],
+			"targets": ["json-schema"],
+			"mappings": [],
+			"options": {
+				"capabilities": ["agent-ix:semantic-ir"]
+			},
+			"compatibilityPosture": "additive"
+		}
+	],
+	"targets": ["json-schema"],
+	"mappings": [],
+	"extensions": []
+}

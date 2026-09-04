@@ -8,13 +8,13 @@ priority: P0
 relationships:
   - target: "ix://agent-ix/filament-core-data/NFR-016"
     type: references
-  - target: "ix://agent-ix/filament-core-data/TC-638"
-    type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-639"
-    type: verifies
   - target: "ix://agent-ix/filament-core-data/TC-640"
     type: verifies
   - target: "ix://agent-ix/filament-core-data/TC-641"
+    type: verifies
+  - target: "ix://agent-ix/filament-core-data/TC-642"
+    type: verifies
+  - target: "ix://agent-ix/filament-core-data/TC-643"
     type: verifies
 ---
 # Task-048: Conformance schemas, changed-path guard, and red suites

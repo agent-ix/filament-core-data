@@ -16,15 +16,15 @@ relationships:
     type: verifies
   - target: "ix://agent-ix/filament-core-data/TC-318"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-621"
-    type: verifies
   - target: "ix://agent-ix/filament-core-data/TC-623"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-633"
+  - target: "ix://agent-ix/filament-core-data/TC-625"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-636"
+  - target: "ix://agent-ix/filament-core-data/TC-635"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-637"
+  - target: "ix://agent-ix/filament-core-data/TC-638"
+    type: verifies
+  - target: "ix://agent-ix/filament-core-data/TC-639"
     type: verifies
 ---
 # Task-052: Package, version, and compatibility cases and the defect registers

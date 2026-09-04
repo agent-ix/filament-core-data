@@ -1,0 +1,84 @@
+---
+id: SR-066
+title: "Integrity review of the TypeSpec frontend and semantic IR compiler core"
+type: SpecReview
+analysis: integrity
+scope: "spec/usecase/US-010-*.md, spec/functional/FR-045-*.md..FR-052-*.md, spec/non-functional/NFR-019-*.md..NFR-021-*.md, spec/tests.md TC-398..566 with ERR-061..093 and EC-049..058, spec/spec.md, spec/index.md, spec/log.md"
+review_set: all
+---
+# Integrity review
+
+## Summary
+
+US-010 is elaborated by FR-045..052 and constrained by NFR-019..021 under
+StR-001. Coverage is mechanically complete: all 149 acceptance criteria and
+named constraints of the eleven new requirements map one-to-one onto
+TC-398..546, TC-547..566 add the permutation, boundary and edge rows, and the
+169-case count, the `TC-398..566` range and the 526-row execution summary agree.
+Ids are unique, the dependency graph over FR-045..052 is acyclic, and `spec.md`,
+`index.md` and `log.md` all carry the issue #19 delta. The scope statements of
+NFR-019..021 are one shared permitted/prohibited path set, and the frozen
+prototype path is fenced off consistently by FR-046-CON-1, NFR-021-AC-3 and
+TC-541.
+
+The record is not yet single-interpretation. Two high findings are unreconciled
+contradictions rather than omissions: the compiler's diagnostic registry is
+declared closed over `agent-ix.compiler.*` while the reader cases FR-050 must
+reproduce are all `agent-ix.semantic-ir.*`, so FR-049-AC-2/CON-3 and
+FR-050-AC-2/AC-3 cannot both pass as written; and the determinism and sandbox
+claims of NFR-019-AC-10, NFR-020-AC-4 and FR-047-AC-13 are made over a frontend
+that drives `@typespec/compiler`, which performs its own file-system reads and
+loads decorator JavaScript, with no requirement naming the injected host or the
+rule that stops a compiled package importing its own JavaScript. Nine medium
+findings are undefined inputs (the limits document, the three digest byte-sets,
+the projection's dialect argument), unstated tie-breaks (cycle rotation, the
+classification-table row overlap is low but the diagnostic-code slug is not),
+and one obligation — `compilePackage` — that is exported but owned by no
+requirement. No spec artifact, source file, fixture, schema or conformance file
+was edited by this review.
+
+## Findings
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-500 | high | The compiler emits two diagnostic namespaces for the same defects and no requirement reconciles them. FR-046/FR-047/FR-048 emit `agent-ix.compiler.*`; every case in `fixtures/semantic/v1/negative/reader-cases.json` — the file FR-050 names — expects `agent-ix.semantic-ir.*` (`INVALID_MULTIPLICITY`, `FLAGS_ON_NON_COLLECTION`, `UNIT_ON_NON_SCALAR`, `UNRESOLVED_TYPE_REF`, `DANGLING_CLAUSE_REF`, `CONSTRAINT_NOT_APPLICABLE`, `DUPLICATE_IDENTITY` collide by leaf name across the two namespaces, and `PRESENCE_MULTIPLICITY_MISMATCH`, `INVALID_OPERAND`, `INVALID_PATTERN`, `UNRESOLVED_RELATIONSHIP_TARGET`, `COMPOSITE_CYCLE`, `DUPLICATE_CLAUSE_ID`, `MISSING_SOURCE_SPAN`, `DUPLICATE_PARAM` exist only there). FR-049-AC-2 and FR-049-CON-3 require the set emitted anywhere under `src/compiler/` to equal `DIAGNOSTIC_CODES`, while FR-050-AC-2/AC-3 require `readContractIr` to produce the reader-case codes; both hold only if the registry also declares the `agent-ix.semantic-ir.*` codes, which no requirement says. Resolve by stating which namespace `readContractIr` emits and registering that set explicitly. | FR-049-AC-2, FR-049-CON-3, FR-050-AC-2, FR-050-AC-3, FR-046, TC-459, TC-471, TC-473, TC-474 |
+| FND-501 | high | The sandbox and determinism obligations are asserted over the pinned TypeSpec toolchain without naming the mechanism that makes them true. NFR-019-AC-10 requires every file-system read to go through one injected reader, FR-047-AC-13 and FR-047-CON-1 require no read outside the declared roots, and NFR-020-AC-4 requires that a `.js`/`.mjs` file shipped by a compiled package is never loaded — yet FR-046 compiles the package with `@typespec/compiler`, which resolves imports and loads decorator JavaScript through its own host, and FR-046-CON-3 makes a *relative* JavaScript library import the sanctioned way for a package's sources to reach decorators. Nothing states that the program is compiled through an injected `CompilerHost`, nor what rule distinguishes the repository's own `lib.mjs` from a package-supplied relative one. As written, TC-442, TC-528 and TC-532 cannot be authored to pass. Resolve by requiring an injected TypeSpec host, and by stating the allow-rule (an absolute path identity for the repository library, or a refusal of any JS module outside it). | NFR-019-AC-10, NFR-020-AC-4, FR-047-AC-13, FR-047-CON-1, FR-046-CON-3, TC-442, TC-528, TC-532 |
+| FND-502 | medium | The limits input has no defined document and no defined defaults. FR-049 and NFR-020 both source the five limits from `schema/semantic/v1/compiler-request.schema.json`, but that schema additionally requires `ir`, `profile`, `mappings`, `backend` and `outputRoot` — members a compile-time request cannot supply, since the IR is the compile's output — and `schema/**` is a prohibited path, so no compile-request schema may be added. FR-052 accepts `--limits <file>` without saying whether the file is a whole compiler request or a bare `limits` object, and NFR-020-AC-2 requires "a declared default for every limit" without naming a single value. TC-529, TC-530, TC-554, TC-555 and TC-556 all assert against limits whose source and defaults are unstated. Resolve by referencing `compiler-request.schema.json#/properties/limits` for the `--limits` file and by publishing the five default values in FR-049's registry document. | FR-049, FR-052, NFR-020-AC-1, NFR-020-AC-2, TC-529, TC-530, TC-554, TC-555, TC-556 |
+| FND-503 | medium | Three digests are specified by name and not by byte-set, in a requirement whose whole purpose is byte-determinism. FR-048 includes `schema-bytes` in the fingerprint tuple without saying which schema files (the IR schema alone, `schema/semantic/v1/*`, or the whole directory); computes each package's `contentDigest` over "that package's path-sorted source file list" without saying what counts as a source file (everything beneath the package root, or only the manifest's `sourceRoots`); and FR-046 sets `source.digest` to "the SHA-256 of the package's source bytes under the canonicalization of FR-048" without saying whether that is the same value as the root package's `contentDigest`. Two implementations can satisfy every criterion and disagree on the fingerprint. Resolve by enumerating the schema file set and defining one named source-file selection reused by both digests. | FR-048, FR-048-AC-3, FR-048-AC-8, FR-046, NFR-019-AC-1, TC-449, TC-454 |
+| FND-504 | medium | `readIrAsContract(document, targetVersion)` takes two parameters, but the `1.1.0` projection is specified to set `source.dialect` "taken from the caller-declared frontend dialect" — an input the signature does not carry — and no rule says what happens when the caller declares none. The schema forces a `1.0.0` document's dialect to the JSON Schema constant and a `1.1.0` document's to `typespec`/`spec-bundle`, so the projection cannot derive it. TC-493 and TC-495 cannot be written without inventing the argument. Resolve by adding the dialect to the signature and stating the behavior when it is absent (a diagnostic, not a default). | FR-051, FR-051-AC-8, FR-051-AC-10, TC-493, TC-495 |
+| FND-505 | medium | `PACKAGE_CYCLE` must name "every import locus on the cycle in the order the cycle traverses them" and must not be reported twice "under a rotated starting point", but no requirement says which rotation is canonical. An elementary cycle has as many traversal orders as it has members; without a tie-break (for example, start at the lexicographically least package identity) two runs that both satisfy FR-047 produce different diagnostic messages, which NFR-019-AC-1 forbids and which leaves TC-433 and TC-565 with no assertable expected message. Resolve by naming the canonical starting locus. | FR-047, FR-047-AC-4, NFR-019-AC-1, TC-433, TC-565, ERR-079 |
+| FND-506 | medium | FR-047-AC-1..AC-5 assert resolution outcomes for the five cases of `fixtures/semantic/v1/package-graph-cases.json`, but that file holds abstract descriptors with symbolic loci (`manifest-a:imports[0]`, `lock-b:packages[0]`) and no package directories, and `fixtures/semantic/**` is a prohibited path under NFR-019 and NFR-021, so the trees cannot be added there. FR-045 and FR-046 name their fixture homes (`fixtures/compiler/shared/cases.json`, `fixtures/compiler/packages/assurance`); FR-047 names none. Resolve by declaring the concrete package trees under `fixtures/compiler/packages/**` and stating that the `semantic/v1` file remains the read-only case index they are keyed to. | FR-047-AC-1, FR-047-AC-2, FR-047-AC-3, FR-047-AC-4, FR-047-AC-5, NFR-019, NFR-021-AC-1, TC-430..434 |
+| FND-507 | medium | `compilePackage` is named in FR-052's export list and counted in the fifteen symbols of FR-052-CON-1, but no requirement defines its module, its signature, or its orchestration semantics; FR-052 specifies only the `compile` verb's flags and exit codes. The obvious module name, `src/compiler/compile.mjs`, is a prohibited path under NFR-019 and NFR-021-AC-3 because it holds the frozen prototype. Every ordering question the compile depends on — resolve before lock, lock before frontend, validate before write, and whether a lock failure short-circuits the frontend — is therefore stated once, in a CLI sentence, and is untested at the API level by TC-516. Resolve by giving `compilePackage` an owning Outputs entry with a module path outside the frozen set and a stated phase order. | FR-052, FR-052-CON-1, FR-052-AC-12, NFR-021-AC-3, TC-513, TC-516 |
+| FND-508 | medium | The `FrontendRequest` contract is self-contradictory and partly unused. FR-045 declares `{ dialect, packageRoot, entrypoint, sourceIdentity, packagePath, limits }`, then states that "no frontend SHALL accept `source.dialect` as a parameter" while `runFrontend` hands the frontend a request carrying `dialect`; `sourceIdentity` is consumed by nothing, because FR-046 derives `source.identity` as `ix://<package identity>/source/typespec`; and `packageRoot` and `packagePath` are two path-shaped fields whose difference (root under compilation versus search directories) is never stated, while FR-047 speaks of "package search directories" under neither name. Resolve by deleting or defining `sourceIdentity`, renaming `packagePath` to the search-path list it appears to be, and separating dialect *selection* from the value a frontend stamps. | FR-045, FR-046, FR-047, TC-398, TC-402 |
+| FND-509 | medium | `agent-ix.compiler.DIAGNOSTIC_LIMIT_REACHED` has no declared `blocking` disposition. NFR-020-AC-1 requires each of the five limits to produce "a distinct blocking diagnostic", which makes it blocking; FR-049 makes a blocking diagnostic suppress the IR file and force a non-zero exit, so a compile that produced only warnings but hit `maxDiagnostics` would write nothing — an outcome no requirement intends. FR-049-AC-8 and TC-465/TC-554 assert the truncation but not the disposition, so both readings pass. Resolve by stating the disposition explicitly and, if blocking, saying so in NFR-020's rationale. | FR-049, FR-049-AC-8, FR-049-AC-9, NFR-020-AC-1, TC-465, TC-554, ERR-088 |
+| FND-510 | medium | The derived constraint `diagnosticCode` can be unspellable. FR-046 derives it as `agent-ix.<package name>.<OWNER>_<KEYWORD>`, but `common.schema.json` constrains a code to `^agent-ix\.[a-z0-9-]+\.[A-Z][A-Z0-9_]+$`, while `packageIdentity` admits `.` and `_` in the package name and `semanticIdentity` admits `.`, `~`, `:` and `-` in the owner tail that becomes `<OWNER>`. A package named `core.data`, or a field owner carrying a `.`, yields a code that fails FR-049-AC-1. No slug rule is given for either segment. Resolve by defining the sanitisation (and a diagnostic when a name cannot be slugged without collision). | FR-046, FR-046-AC-10, FR-049-AC-1, TC-417, TC-458 |
+| FND-511 | low | The structural-kind table is declared closed and applied "exactly once", but its rows can overlap and no precedence is stated: a `model X { … }` carrying `@semanticReference` matches both the `record` row and the `reference` row (the reference row's `model X {}` is written empty but the table never says emptiness is required), and a `model X is Array<T>` carrying extra properties matches neither cleanly. TC-409 and ERR-064 assume exactly one row matches. Resolve by stating row precedence, or by making `@semanticReference` on a non-empty model an explicit diagnostic. | FR-046, FR-046-AC-2, TC-409, ERR-064 |
+| FND-512 | low | Traceability housekeeping. US-010's Dependencies prose names US-007 (the semantic-core grammar) but its frontmatter `depends_on` lists only US-005, US-006 and US-009. NFR-019's Dependencies name NFR-017 and issue #42 upstream while its frontmatter carries only NFR-008. None of FR-045..052 names NFR-019, NFR-020 or NFR-021 in its own Dependencies section, so the FR→NFR back-reference exists only through US-010's Traceability paragraph and the NFRs' own Downstream lists. | US-010, NFR-019, FR-045..FR-052 |
+| FND-513 | low | Atomicity: FR-051 carries two obligations — classifying a difference between two contracts into a compatibility report, and projecting a document between contract versions — with separate outputs (`diff.mjs`, `evolution.mjs`), separate fixtures and separate downstream consumers. The title says so ("Diff … and govern IR schema evolution"). A later ticket cannot depend on the projection without also inheriting the sixteen-row classification table. Resolve by splitting, or by recording why the two ship as one requirement. | FR-051, TC-486..501 |
+| FND-514 | low | The compatibility fixture's `family` values are not report families. `fixtures/semantic/v1/compatibility/cases.json` uses `multiplicity`, `unit`, `relationship`, `operation`, `clause`, `constraint-vocabulary`, `contract-version` and `kernel-scalar`, none of which appears in the fourteen-member `family` enum of `compatibility-report.schema.json`. FR-051's table does map each observed change to a report family in prose, but the fixture-family-to-report-family correspondence TC-487 asserts is nowhere written as data, so the test must hard-code it. | FR-051-AC-2, TC-487 |
+| FND-515 | low | FR-046 lowers `@unit` verbatim and validates only that the field resolves to a `scalar`, while FR-027 requires `unit` to be "a case-sensitive UCUM unit symbol". No requirement, error row or test rejects a non-UCUM symbol, so `@unit("furlongs per fortnight")` compiles into a valid document. Either state that UCUM validity is out of scope for v1 or add the diagnostic. | FR-046, FR-027, ERR-067, TC-415 |
+| FND-516 | low | The working tree already violates the gate it declares: `packages/semantic-core/generated/json-schema/EnumValue.json` carries an uncommitted one-character edit (`"type": "object" ,`), and `packages/**` is a prohibited path under NFR-019 and NFR-021-AC-1. As the branch stands, TC-539 would fail on a change unrelated to issue #19. | NFR-021-AC-1, NFR-019, TC-539 |
+
+## Traceability Matrix
+
+| US | FR/NFR | StR | Verification |
+|---|---|---|---|
+| US-010 (EX-4) | FR-045 (AC-1..7, CON-1..3) | StR-001 | TC-398..407, TC-550 |
+| US-010 (EX-3) | FR-046 (AC-1..17, CON-1..5) | StR-001 | TC-408..429, TC-547..549, TC-552, TC-553, TC-563 |
+| US-010 (EX-2) | FR-047 (AC-1..13, CON-1..4) | StR-001 | TC-430..446, TC-559, TC-564, TC-565 |
+| US-010 (EX-1) | FR-048 (AC-1..8, CON-1..3) | StR-001 | TC-447..457, TC-562 |
+| US-010 (EX-2) | FR-049 (AC-1..11, CON-1..3) | StR-001 | TC-458..471, TC-554, TC-557, TC-558 |
+| US-010 (EX-1) | FR-050 (AC-1..10, CON-1..4) | StR-001 | TC-472..485, TC-560, TC-566 |
+| US-010 (EX-5) | FR-051 (AC-1..12, CON-1..4) | StR-001 | TC-486..501, TC-551, TC-561 |
+| US-010 (EX-1) | FR-052 (AC-1..14, CON-1..3) | StR-001 | TC-502..518 |
+| US-010 | NFR-019 (AC-1..10, 10 metrics) | StR-001 | TC-519..528 |
+| US-010 | NFR-020 (AC-1..10, 7 metrics) | StR-001 | TC-529..538, TC-555, TC-556 |
+| US-010 | NFR-021 (AC-1..8, 9 metrics) | StR-001 | TC-539..546 |
+
+## Coverage Result
+
+| Scope | Obligations | Matrix cases | Result |
+|---|---|---|---|
+| Issue #19 compiler core | 92 FR criteria, 29 FR constraints, 28 NFR criteria, 26 NFR metrics | TC-398..566 (169) | Every criterion and named constraint mapped one-to-one onto TC-398..546; TC-547..566 carry the permutation, boundary and edge rows. 2 high and 9 medium interpretation defects |
+| Cross-artifact deltas | `spec.md` §1/§2.1/§2.2, `index.md`, `log.md` | — | Present and consistent with FR-045..052 |
+| Existing corpus | 397 cases | TC-001..397 | Untouched; TC-370 and TC-382 remain blocked on issue #42 |

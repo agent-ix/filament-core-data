@@ -18,9 +18,9 @@ relationships:
     type: verifies
   - target: "ix://agent-ix/filament-core-data/TC-319"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-620"
-    type: verifies
   - target: "ix://agent-ix/filament-core-data/TC-622"
+    type: verifies
+  - target: "ix://agent-ix/filament-core-data/TC-624"
     type: verifies
 ---
 # Task-051: Cases for the document construct families

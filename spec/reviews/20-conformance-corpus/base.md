@@ -3,7 +3,7 @@ id: SR-047
 title: "Base review of the semantic conformance corpus and differential oracle"
 type: SpecReview
 analysis: base
-scope: "US-008, FR-035..039, NFR-015, NFR-016, spec/tests.md TC-280..319 and TC-620..419"
+scope: "US-008, FR-035..039, NFR-015, NFR-016, spec/tests.md TC-280..319 and TC-622..419"
 review_set: all
 ---
 # Base specification review
@@ -31,11 +31,11 @@ no requirement id at that point.
 
 | Area | Result | Evidence |
 |---|---|---|
-| ID format and uniqueness | Pass | US-008, FR-035..039, NFR-015..016, TC-280..319 and TC-620..419, SR-047..054, FND-715..341, ERR-051..065, EC-038..048 continue the sequences; no remote branch allocates beyond them |
+| ID format and uniqueness | Pass | US-008, FR-035..039, NFR-015..016, TC-280..319 and TC-622..419, SR-047..054, FND-715..341, ERR-051..065, EC-038..048 continue the sequences; no remote branch allocates beyond them |
 | User story quality | Pass | US-008 has the story shape, five acceptance examples, options, constraints, dependencies, priority and risk, traceability |
 | Functional requirement quality | Pass | Each FR carries Inputs, Outputs, EARS-shaped single-obligation Behavior bullets, a Constraints table with validation, measurable ACs, and Dependencies |
 | Non-functional requirement quality | Pass | NFR-015 and NFR-016 each carry a Statement, Scope, Rationale, a Measurement table with numeric targets, Verification, and an Acceptance Criteria table |
-| Coverage (Rule 1) | Pass | 74/74 criteria → TC-280..319 and TC-620..419 (see the traceability tables in `spec/tests.md`) |
+| Coverage (Rule 1) | Pass | 74/74 criteria → TC-280..319 and TC-622..419 (see the traceability tables in `spec/tests.md`) |
 | Option permutation (Rule 2) | Pass | presence and nullability, adapter answer against declaration, adapter pointer scheme, contract version against node presence, compatibility change against consumer policy |
 | Constraint boundary (Rule 3) | Pass | 64/65-node `ops` budget, one/two seeded violations, depth 256/257, future/past `reviewBy`, four/three case classes, full/partial mutation detection |
 | Error path (Rule 4) | Pass | ERR-051..065 |
@@ -59,7 +59,7 @@ no requirement id at that point.
 |---|---|---|
 | IDs, structure, and EARS grammar | Pass | Quire: zero errors, zero `[ears:*]` and zero `[quality:*]` findings across the bundle |
 | Requirement clarity and atomicity | Pass | Every Behavior bullet and every Constraint row carries one obligation after the grammar pass |
-| Complete traceability | Pass | 74/74 criteria mapped; TC-280..319 and TC-620..419; every TC traces to a criterion that exists |
+| Complete traceability | Pass | 74/74 criteria mapped; TC-280..319 and TC-622..419; every TC traces to a criterion that exists |
 | Master spec and log updated | Pass | `spec/spec.md` §1, §2.1, §2.2 and the requirement index; `spec/index.md`; `spec/log.md` |
 
 ## Dispositions
@@ -76,7 +76,7 @@ disposition row.
 | FND-719, FND-736, FND-767, FND-821 | Acted. `resultState` is now exhaustive and disjoint: `success` with no diagnostic, `invalid` with at least one `error`, `lossy` with at least one diagnostic and none of severity `error`. The oracle never returns `unsupported`, `unavailable`, or `partial`; the harness evaluates `support` before `resultState`. |
 | FND-720 | Acted. FR-036 declares the total restrictiveness order `invalid`, `breaking`, `unknown`, `conditional`, `additive`, `patch`, and defines `unknown` as the classification for a change no rule matches. |
 | FND-721, FND-731, FND-755, FND-809 | Acted. Cycle detection now precedes every depth bound: a self-referential or mutually recursive alias yields exactly one `ALIAS_CYCLE`; `DEPTH_LIMIT_EXCEEDED` applies only to an acyclic chain longer than 256. FR-036-AC-3 and TC-292 state both halves. |
-| FND-729, FND-774 | Acted as a recorded non-goal. Cross-language generated-package serialization parity has no package to serialize until issues #21..#23 ship. FR-038-CON-3 records it as an unmet coverage area with its owners, `spec.md` 2.2 excludes it, and TC-623 asserts the record exists. It is not silently claimed. |
+| FND-729, FND-774 | Acted as a recorded non-goal. Cross-language generated-package serialization parity has no package to serialize until issues #21..#23 ship. FR-038-CON-3 records it as an unmet coverage area with its owners, `spec.md` 2.2 excludes it, and TC-625 asserts the record exists. It is not silently claimed. |
 | FND-730, FND-753, FND-770, FND-810, FND-827 | Acted. A case's input is now an input bundle — `ir` plus optional `manifest`, `manifestDigest`, `lock`, `profile`, `mappings`, and `consumerPolicy`, each validated against its published v1 schema. FR-036 states the six package-context rules the six mandated negatives need, and states that a rule stays silent when its bundle member is absent. |
 | FND-732, FND-761 | Acted. The harness reads no clock. `reviewBy` moved to a separate audit target, which FR-037 names as the only conformance entry point that reads one. |
 | FND-733, FND-812, FND-828 | Acted. The oracle's classification is scoped to the IR surface in FR-036, FR-025 and `compatibility-report.schema.json` remain the authority for the profile, mapping, representation, generated-target, and consumer-evidence surfaces, and an optional addition is `additive` only under a consumer policy that preserves or surfaces unknown members. |
@@ -94,7 +94,7 @@ disposition row.
 | FND-771, FND-807 | Acted. `conformance/diagnostic-codes.json` is the code register: one row per code with its rule, deciding layer, and the contract clause that obliges it. The sixteen codes already frozen in `fixtures/semantic/v1/negative/reader-cases.json` are reused verbatim rather than re-minted, and `derivedFrom` quotes the rule rather than the code. |
 | FND-773 | Acted. FR-038-CON-2 now requires each register row to quote the issue #19 criterion it exercises, so a re-specification of #19 does not silently move the register. The register is authored from the criteria as they stand when the row is written, and the quote makes any later drift visible. |
 | FND-813 | Acknowledged and bounded, not removed. `contracts-v1.md` is provisional on issue #9 for its IR field set. Every case cites the clause it was read from, so a clause change is traceable to the cases it moves; a moved expectation is a `corpus-defect` verdict and a major `corpusVersion` bump. The corpus cannot be more settled than the contract it encodes, and pretending otherwise would be the worse error. |
-| FND-826, FND-780, FND-816, FND-833 | Acted. The `./conformance` subpath export and the `files` entry are dropped. FR-039 states that enlarging the published surface belongs to the issue #11 gate, `spec.md` 2.2 excludes it, `corpusVersion` is declared the only version a consumer pins for corpus content, and TC-631 asserts `package.json` gains neither entry. |
+| FND-826, FND-780, FND-816, FND-833 | Acted. The `./conformance` subpath export and the `files` entry are dropped. FR-039 states that enlarging the published surface belongs to the issue #11 gate, `spec.md` 2.2 excludes it, `corpusVersion` is declared the only version a consumer pins for corpus content, and TC-633 asserts `package.json` gains neither entry. |
 | FND-829 | Acted. FR-037-CON-3 records that supplying an adapter command and an `adapter-result.schema.json` emitter is the owning issue's obligation. This issue declares the four slots and the result contract; it does not oblige another ticket from one side. |
 
 ### Medium findings
@@ -124,7 +124,7 @@ disposition row.
 | FND-781 | Acted as a recorded limit. What `quire-contract-ir#52` imports from `conformance/` is that repository's decision; FR-039 fixes the import surface so the decision is possible. Issue #36 gains no adapter row here because it has no implementation to adapt. |
 | FND-785 | Acted. The Python entry point is a real conformance suite at `tests/test_conformance_corpus.py` using the already-pinned `jsonschema`, so `poetry run pytest` has something to run. |
 | FND-786, FND-825 | Acted. FR-035-CON-2 binds the case id to its family's declared prefix and FR-035-CON-3 binds the file to its family directory, with the pattern declared in the manifest rather than in prose. |
-| FND-787..FND-794 | Acted. Ten `Test` obligations discharged by static rows were retyped, the determinism rows became `Property` (TC-291, TC-295, TC-307, TC-632, TC-634), the harness-source scan became its own `Analysis` obligation (FR-037-AC-9, TC-310), NFR-016-AC-4 became `Analysis`, NFR-015-AC-4 was narrowed to the register inspection it really is, and FR-039-AC-5's `Verification` cell became `Test`. |
+| FND-787..FND-794 | Acted. Ten `Test` obligations discharged by static rows were retyped, the determinism rows became `Property` (TC-291, TC-295, TC-307, TC-634, TC-636), the harness-source scan became its own `Analysis` obligation (FR-037-AC-9, TC-310), NFR-016-AC-4 became `Analysis`, NFR-015-AC-4 was narrowed to the register inspection it really is, and FR-039-AC-5's `Verification` cell became `Test`. |
 | FND-817 | Acted. The sixteen frozen `reader-cases.json` codes are reused verbatim and cited as `derivedFrom`; the corpus adds cases the frozen set does not carry rather than restating it. |
 | FND-820 | Acted. The capability rule was rewritten onto members `consumer-policy.schema.json` actually declares: a `required: true` extension whose identity the policy does not list while `unknownExtensions` is `reject`. |
 | FND-822 | Acted, and recorded as a contract gap. The schema does not stop a `1.0.0` document carrying a `1.1.0` node, so the corpus decides it under NFR-013's additive rule and records the schema gap in `contract-gaps.json` rather than treating its own rule as the contract. |

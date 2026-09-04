@@ -1,0 +1,207 @@
+{
+	"$comment": "RFC 8785 conformance vectors for `canonicalize` (FR-048-AC-1). Provenance, stated plainly: the RFC's own test suite is not vendored here, so these are inputs chosen in this repository with expected outputs derived from the rules RFC 8785 states - number serialisation from 3.2.2.3 (the ECMAScript number-to-string algorithm), string escaping from 3.2.2.2 (shortest form; only quote, backslash and the C0 controls are escaped, and non-ASCII is emitted literally as UTF-8), and member ordering from 3.2.3 (ascending UTF-16 code units of the member name). Each row names the section its rule comes from. For every scalar row the platform's own JSON.stringify is an independent second implementation of the same rule and the test asserts both agree; the object rows are the part this repository owns and are checked against the stated ordering rule alone.",
+	"numbers": [
+		{
+			"section": "3.2.2.3",
+			"input": 0,
+			"expected": "0"
+		},
+		{
+			"section": "3.2.2.3",
+			"input": -0.0,
+			"expected": "0",
+			"note": "negative zero has no distinct canonical form"
+		},
+		{
+			"section": "3.2.2.3",
+			"input": 1,
+			"expected": "1"
+		},
+		{
+			"section": "3.2.2.3",
+			"input": -1,
+			"expected": "-1"
+		},
+		{
+			"section": "3.2.2.3",
+			"input": 1e30,
+			"expected": "1e+30"
+		},
+		{
+			"section": "3.2.2.3",
+			"input": 1e-7,
+			"expected": "1e-7"
+		},
+		{
+			"section": "3.2.2.3",
+			"input": 1e21,
+			"expected": "1e+21",
+			"note": "the exponent threshold above which the algorithm switches form"
+		},
+		{
+			"section": "3.2.2.3",
+			"input": 1e20,
+			"expected": "100000000000000000000"
+		},
+		{
+			"section": "3.2.2.3",
+			"input": 1e-6,
+			"expected": "0.000001"
+		},
+		{
+			"section": "3.2.2.3",
+			"input": 333333333.3333333,
+			"expected": "333333333.3333333",
+			"note": "shortest round-tripping representation, not the literal digits"
+		},
+		{
+			"section": "3.2.2.3",
+			"input": 9007199254740991,
+			"expected": "9007199254740991"
+		},
+		{
+			"section": "3.2.2.3",
+			"input": -1.5,
+			"expected": "-1.5"
+		}
+	],
+	"strings": [
+		{
+			"section": "3.2.2.2",
+			"input": "",
+			"expected": "\"\""
+		},
+		{
+			"section": "3.2.2.2",
+			"input": "abc",
+			"expected": "\"abc\""
+		},
+		{
+			"section": "3.2.2.2",
+			"input": "a\"b",
+			"expected": "\"a\\\"b\"",
+			"note": "quote is escaped"
+		},
+		{
+			"section": "3.2.2.2",
+			"input": "a\\b",
+			"expected": "\"a\\\\b\"",
+			"note": "backslash is escaped"
+		},
+		{
+			"section": "3.2.2.2",
+			"input": "a/b",
+			"expected": "\"a/b\"",
+			"note": "solidus is NOT escaped"
+		},
+		{
+			"section": "3.2.2.2",
+			"input": "a\bb",
+			"expected": "\"a\\bb\"",
+			"note": "a C0 control with a short form uses it"
+		},
+		{
+			"section": "3.2.2.2",
+			"input": "a\fb",
+			"expected": "\"a\\fb\""
+		},
+		{
+			"section": "3.2.2.2",
+			"input": "a\nb",
+			"expected": "\"a\\nb\""
+		},
+		{
+			"section": "3.2.2.2",
+			"input": "a\rb",
+			"expected": "\"a\\rb\""
+		},
+		{
+			"section": "3.2.2.2",
+			"input": "a\tb",
+			"expected": "\"a\\tb\""
+		},
+		{
+			"section": "3.2.2.2",
+			"input": "a\u000bb",
+			"expected": "\"a\\u000bb\"",
+			"note": "a C0 control with no short form uses lower-case backslash-u"
+		},
+		{
+			"section": "3.2.2.2",
+			"input": "a\u0000b",
+			"expected": "\"a\\u0000b\""
+		},
+		{
+			"section": "3.2.2.2",
+			"input": "€",
+			"expected": "\"€\"",
+			"note": "non-ASCII is emitted literally, never escaped"
+		},
+		{
+			"section": "3.2.2.2",
+			"input": "ö",
+			"expected": "\"ö\""
+		},
+		{
+			"section": "3.2.2.2",
+			"input": "😀",
+			"expected": "\"😀\"",
+			"note": "a surrogate pair stays a literal character"
+		}
+	],
+	"objects": [
+		{
+			"section": "3.2.3",
+			"input": {
+				"b": 1,
+				"a": 2
+			},
+			"expected": "{\"a\":2,\"b\":1}"
+		},
+		{
+			"section": "3.2.3",
+			"input": {
+				"a": 1,
+				"A": 2
+			},
+			"expected": "{\"A\":2,\"a\":1}",
+			"note": "upper case sorts before lower case, because U+0041 < U+0061"
+		},
+		{
+			"section": "3.2.3",
+			"input": {
+				"€": 1,
+				"a": 2,
+				"1": 3
+			},
+			"expected": "{\"1\":3,\"a\":2,\"€\":1}",
+			"note": "ordering is by code unit, so the digit precedes the letter and the letter precedes U+20AC"
+		},
+		{
+			"section": "3.2.3",
+			"input": {
+				"ö": 1,
+				"z": 2
+			},
+			"expected": "{\"z\":2,\"ö\":1}",
+			"note": "code-unit order, not any locale collation: U+00F6 sorts after U+007A"
+		},
+		{
+			"section": "3.2.3",
+			"input": {
+				"b": {
+					"d": 1,
+					"c": 2
+				},
+				"a": [3, 1, 2]
+			},
+			"expected": "{\"a\":[3,1,2],\"b\":{\"c\":2,\"d\":1}}",
+			"note": "ordering is recursive; an array not declared to be a set keeps its order"
+		},
+		{
+			"section": "3.2.3",
+			"input": {},
+			"expected": "{}"
+		}
+	]
+}
