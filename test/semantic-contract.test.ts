@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
+import { changedPathsFrom } from "./changed-paths.js";
 import {
 	type CoreDataRecordName,
 	validateCoreDataRecord,
@@ -15,11 +16,6 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const schemaRoot = resolve(root, "schema/semantic/v1");
 const fixtureRoot = resolve(root, "fixtures/semantic/v1");
 const schemaBase = "https://schemas.agent-ix.org/filament-core-data/v1/";
-const generatedDuringTests = new Set([
-	"agent_ix_core_data/core_data.py",
-	"src/generated.ts",
-]);
-
 /**
  * Exact automated issue #9 matrix trace inventory:
  * TC-130, TC-131, TC-132, TC-133, TC-134, TC-135, TC-136, TC-137, TC-138,
@@ -177,26 +173,14 @@ function fingerprint(value: unknown): string {
 }
 
 function changedPaths(): string[] {
-	const committed = execFileSync(
-		"git",
-		["diff", "--no-renames", "--name-only", "origin/main...HEAD"],
-		{
-			cwd: root,
-			encoding: "utf8",
-		},
-	);
-	const working = execFileSync(
-		"git",
-		["status", "--porcelain", "--untracked-files=all"],
-		{ cwd: root, encoding: "utf8" },
-	)
-		.split("\n")
-		.filter(Boolean)
-		.map((line) => line.slice(3))
-		// schema.test.ts regenerates these controls in-place in a parallel test file.
-		// The committed branch diff below still catches any retained mutation.
-		.filter((path) => !generatedDuringTests.has(path));
-	return [...new Set([...committed.split("\n"), ...working])].filter(Boolean);
+	// Issue #19 note: this baseline moves. Once the change this suite guards
+	// is merged, `origin/main` carries it, the set empties, and every prohibition
+	// below passes vacuously — the gate goes quiet rather than red. The fix
+	// is `changedPathsSince` with a sentinel this suite's own change created;
+	// picking that sentinel wrongly baselines against an unrelated tree and
+	// makes the prohibition fail on history it was never meant to judge, so
+	// it belongs to whoever owns these requirements. Tracked as issue #51.
+	return changedPathsFrom(root, "origin/main");
 }
 
 function walkStrings(value: unknown, visit: (text: string) => void): void {
@@ -322,12 +306,37 @@ describe("semantic package contract v1", () => {
 			"types",
 			"exports",
 			"files",
-			"scripts",
 			"repository",
 			"dependencies",
 		]) {
 			expect(JSON.stringify(afterManifest[key]), key).toBe(
 				JSON.stringify(beforeManifest[key]),
+			);
+		}
+		// Scoped by issue #19: the published surface this criterion protects is
+		// the metadata above, which is unchanged. `scripts` is a developer
+		// interface, and #19 appends four `--check` invocations to `lint` so a
+		// generated fixture or document that drifts fails the gate.
+		//
+		// The scoping is deliberately narrow: the script *set* may not change,
+		// every other command is compared exactly, and `lint` may only differ by
+		// appending `&& node scripts/<name>.mjs --check` clauses. Iterating the
+		// old set alone would have let a new script in unchecked, and a bare
+		// `startsWith` would have let `lint` be appended with `|| true`.
+		const beforeScripts = beforeManifest.scripts as Record<string, string>;
+		const afterScripts = afterManifest.scripts as Record<string, string>;
+		expect(Object.keys(afterScripts).sort()).toEqual(
+			Object.keys(beforeScripts).sort(),
+		);
+		for (const [name, command] of Object.entries(beforeScripts)) {
+			if (name === "lint") continue;
+			expect(afterScripts[name], name).toBe(command);
+		}
+		const appended = afterScripts.lint.slice(beforeScripts.lint.length);
+		expect(afterScripts.lint.startsWith(beforeScripts.lint)).toBe(true);
+		for (const clause of appended.split("&&").filter((part) => part.trim())) {
+			expect(clause.trim(), "lint may only gain --check invocations").toMatch(
+				/^node scripts\/[a-z0-9-]+\.mjs --check$/,
 			);
 		}
 	});
@@ -1134,6 +1143,22 @@ describe("semantic package contract v1", () => {
 			"test/semantic-architecture.test.ts",
 			"test/semantic-contract.test.ts",
 			"test/typespec-feasibility.test.ts",
+			// Issue #19 (the compiler core) adds the compiler fixture corpus, the
+			// matrix-summary script, its plan bundle, and its test file. Each entry
+			// is a path this branch writes, enumerated rather than widened.
+			"test/fixtures/compiler/",
+			"scripts/test-matrix-summary.mjs",
+			"scripts/build-compatibility-cases.mjs",
+			"scripts/build-evolution-goldens.mjs",
+			"scripts/build-compiler-docs.mjs",
+			"plan/Plan-008-typespec-frontend-and-ir-compiler-core/",
+			"test/compiler-core.test.ts",
+			"test/changed-paths.ts",
+			// Issue #19 also publishes two generated documents and excludes its
+			// generated fixtures from the formatter.
+			"docs/semantic-data-system/compiler-diagnostics.md",
+			"docs/semantic-data-system/ir-compatibility-policy.md",
+			"biome.json",
 		];
 		for (const path of changedPaths()) {
 			expect(

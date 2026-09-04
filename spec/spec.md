@@ -69,6 +69,14 @@ backends, and the governed Python JSON Schema adapter become owned, tested,
 deterministic repository code behind one narrow build interface, while the spike
 stays frozen, non-canonical, and reproducible.
 
+The eighth delivery is the TypeSpec frontend and the versioned semantic IR
+compiler core (issue #19): one frontend seam, a TypeSpec lowering to contract IR
+`1.1.0`, package/import/export/profile/target resolution with locks, fingerprints
+and cycle diagnostics, a stable source-located diagnostic registry, a normalized
+serialization, an inspect command, and a compatibility-diff and schema-evolution
+API — all of it deterministic, bounded against untrusted input, and landed
+without publishing a package or moving a consumer.
+
 ## 2. Scope
 
 ### 2.1 In Scope
@@ -114,6 +122,16 @@ stays frozen, non-canonical, and reproducible.
 - The promoted semantic-IR emitter, TypeScript and Rust generation backends, and
   Python JSON Schema adapter under `src/compiler/`, with a written disposition
   for every issue #4 prototype component and a frozen spike that still replays.
+- The frontend seam and its dialect registry, the TypeSpec semantic decorator
+  library, and the lowering from a compiled TypeSpec program to contract semantic
+  IR `1.1.0`.
+- Package graph resolution, lock building and verification, the v1 fingerprint
+  canonicalization, and exact source loci for JSON inputs.
+- The closed compiler diagnostic registry, its published document, and the
+  deterministic diagnostic ordering and limits.
+- The compiler-side IR reader, the normalized serialization and IR fingerprint,
+  the `compile`, `inspect`, and `diff` commands, and the compatibility-diff and
+  IR schema-evolution projections with their goldens and published policy.
 
 ### 2.2 Out of Scope
 
@@ -145,14 +163,27 @@ stays frozen, non-canonical, and reproducible.
 - Revising the emitted semantic-IR shape, generating or publishing a Rust,
   TypeScript, or Python package, or moving any consumer as part of issue #27;
   those belong to issues #19, #21, #22, #23, and #11.
-- Building the independent conformance corpus and oracle (issue #20); issue #27
-  neither reads nor edits it, because that independence is the point.
+- Building the independent conformance corpus and oracle (issue #20); issues #27
+  and #19 neither read nor edit it, because that independence is the point. The
+  three-way IR reader agreement issue #19 stands up is a drift guard inside this
+  repository's own tests, not a substitute for that corpus.
 - Adding a public `./compiler` package export, a runtime dependency for the
   promoted compiler, or a supported `datamodel-code-generator` invocation;
   those belong to issues #11 and #23.
 - Repairing the retained issue #4 evidence's host couplings (issue #42); issue
   #27 records them and fixes only the lockfile seeding, which changes no
   retained byte.
+- Implementing the spec-bundle extraction frontend (issue #36); issue #19 builds
+  the seam and the shared fixture harness it will plug into, and registers the
+  dialect as declared-unimplemented.
+- Editing the frozen prototype path or regenerating the four issue #4 goldens as
+  part of issue #19; the contract IR is a second lowering beside the prototype,
+  not a rewrite of it.
+- Publishing a language package, adding a public compiler export, generating a
+  Rust, TypeScript, or Python package, or moving any consumer as part of issue
+  #19; those remain issues #11, #21, #22, and #23.
+- Emitting a target or representation from the compiler; issue #19 stops at the
+  IR, its lock, its diagnostics, and its compatibility report.
 
 ## 3. System Overview
 
@@ -200,9 +231,9 @@ Authority is assigned by concern:
 | Class | Artifacts | Purpose |
 |---|---|---|
 | Stakeholder | [StR-001](./stakeholder/StR-001-durable-semantic-data-governance.md) | Durable governance need |
-| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-009](./usecase/US-009-build-from-a-supported-compiler.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, and compiler-maintainer outcomes |
-| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-044](./functional/FR-044-replay-the-frozen-spike-through-the-promoted-compiler.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, and prototype-promotion behavior |
-| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-018](./non-functional/NFR-018-non-disruptive-promotion-and-rollback.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic promoted compilation, and rollback |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-010](./usecase/US-010-compile-a-semantic-package.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, and package-author outcomes |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-053](./functional/FR-053-declare-the-typespec-semantic-vocabulary.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, prototype-promotion, and compiler-core behavior |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-021](./non-functional/NFR-021-non-disruptive-compiler-core.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic promoted compilation, rollback, bounded and safe compilation, and compiler-core non-disruption |
 
 ## 6. Decision Status Model
 

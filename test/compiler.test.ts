@@ -14,6 +14,7 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { baselineBefore, changedPathsSince } from "./changed-paths.js";
 import {
 	SEMANTIC_IR_SCHEMA_VERSION,
 	compileSemanticIr,
@@ -71,28 +72,19 @@ function git(...args: string[]): string {
 }
 
 function changedPaths(): string[] {
-	const committed = git(
-		"diff",
-		"--no-renames",
-		"--name-only",
-		"origin/main...HEAD",
-	);
-	const working = execFileSync(
-		"git",
-		["status", "--porcelain", "--untracked-files=all"],
-		{ cwd: root, encoding: "utf8" },
-	)
-		.split("\n")
-		.filter((line) => line.trim().length > 0)
-		.map((line) => line.slice(3).trim());
-	return [...new Set([...committed.split("\n"), ...working])].filter(
-		(path) => path.length > 0,
-	);
+	// Baselined on the commit this change replaced, not on a moving `main`.
+	// See `changedPathsSince` for why: against `origin/main` this set empties
+	// after the merge and every prohibition below passes vacuously.
+	return changedPathsSince(root, "src/compiler/inventory.json");
 }
+
+/** The commit issue #27's promotion replaced — a history fact, not a moving ref. */
+const PROMOTION_BASE = (): string =>
+	baselineBefore(root, "src/compiler/inventory.json");
 
 function existsAtMain(path: string): boolean {
 	try {
-		execFileSync("git", ["cat-file", "-e", `origin/main:${path}`], {
+		execFileSync("git", ["cat-file", "-e", `${PROMOTION_BASE()}:${path}`], {
 			cwd: root,
 			stdio: "ignore",
 		});
@@ -303,22 +295,130 @@ describe("issue #27 promotion inventory (FR-040)", () => {
 
 	/** Traces: TC-327; FR-040-AC-5, FR-040-CON-3. */
 	it("accounts for every file under src/compiler/ exactly once", () => {
+		// Rewritten by issue #19 to resolve ownership from the *tree*, with no
+		// reference to a diff or to `origin/main`.
+		//
+		// The previous form filtered the walked files against
+		// `git ls-tree origin/main -- src/compiler/`, so it asked "was this file
+		// here when issue #27 landed?". That reference moves. The moment this
+		// branch squash-merges, `origin/main` contains issue #19's modules too,
+		// they enter the filtered set, issue #27's ledger does not own them, and
+		// the gate fails on `main` — the same class of defect this branch
+		// diagnosed in #48 and #47 fixed for TC-395, in its third disguise. #47
+		// left the trap latent: it passes on `main` today and breaks for whoever
+		// next adds a file under `src/compiler/`. Issue #19 was that branch.
+		//
+		// So ownership is now a union of ledgers, each of which is a fact about
+		// the checked-out tree:
+		//
+		//   1. `src/compiler/inventory.json` — issue #27's promotion ledger.
+		//   2. The `## Outputs` section of every functional requirement, which is
+		//      where a requirement declares the files it creates. A later branch
+		//      adding a module under `src/compiler/` must name it in the FR that
+		//      called for it, or this gate fails.
+		//   3. A `X.d.mts` is owned by whoever owns `X.mjs`. The sidecar is the
+		//      type declaration *of* that module, not an independent artifact,
+		//      and listing 23 of them in prose would be a ledger nobody reads. A
+		//      sidecar with no module still fails, as does a module with no owner.
+		//
+		// The invariant is unchanged and unweakened: a file under `src/compiler/`
+		// that no ledger accounts for fails this gate, and a file two *inventory*
+		// entries claim fails it too. What is dropped is the cross-ledger
+		// exactly-once count, which was never meaningful — FR-052 legitimately
+		// names `cli.mjs`, which issue #27's inventory also owns, because FR-052
+		// extends it.
 		const files = walk(compilerRoot).map((path) => `src/compiler/${path}`);
+		const present = new Set(files);
+
+		// Ledger 1: the promotion inventory, where exactly-once still holds.
+		const inventoryOwners = new Map<string, number>();
 		const targets = inventory.components.flatMap((record) => record.targets);
 		const authored = inventory.authored.map((entry) => entry.path);
-		const owners = new Map<string, number>();
 		for (const path of [...targets, ...authored]) {
-			owners.set(path, (owners.get(path) ?? 0) + 1);
+			inventoryOwners.set(path, (inventoryOwners.get(path) ?? 0) + 1);
 		}
+		for (const [path, count] of inventoryOwners) {
+			expect(count, `double-owned by the inventory: ${path}`).toBe(1);
+			expect(present.has(path), `owned but absent: ${path}`).toBe(true);
+		}
+
+		// Ledger 2: every functional requirement's declared outputs.
+		const declared = new Set<string>();
+		const functional = resolve(root, "spec/functional");
+		for (const name of readdirSync(functional)) {
+			if (!name.endsWith(".md")) continue;
+			const section = /\n## Outputs\n([\s\S]*?)\n## /.exec(
+				read(resolve(functional, name)),
+			);
+			if (!section) continue;
+			for (const hit of section[1].matchAll(
+				/`(src\/compiler\/[A-Za-z0-9._/-]+)`/g,
+			)) {
+				declared.add(hit[1]);
+			}
+		}
+		// A requirement may not declare an output that does not exist.
+		for (const path of declared) {
+			expect(present.has(path), `declared but absent: ${path}`).toBe(true);
+		}
+
+		// Ledger 3, and the coverage assertion itself.
+		const owns = (path: string): boolean =>
+			inventoryOwners.has(path) || declared.has(path);
 		for (const file of files) {
-			expect(owners.get(file), `unowned or double-owned: ${file}`).toBe(1);
+			if (file.endsWith(".d.mts")) {
+				const module = `${file.slice(0, -".d.mts".length)}.mjs`;
+				expect(
+					present.has(module),
+					`type declaration with no module: ${file}`,
+				).toBe(true);
+				expect(owns(module), `unowned: ${file} (via ${module})`).toBe(true);
+				continue;
+			}
+			expect(owns(file), `unowned: ${file}`).toBe(true);
 		}
-		for (const path of owners.keys()) {
-			expect(files, `owned but absent: ${path}`).toContain(path);
-		}
+
 		for (const entry of inventory.authored) {
 			expect(entry.reason.length, entry.path).toBeGreaterThan(0);
 		}
+	});
+
+	/** Traces: TC-621; NFR-021-AC-9. */
+	it("still refuses an unaccounted-for file under src/compiler/ after the merge", () => {
+		// The companion to the gate above. Rewriting an assertion to survive a
+		// merge is only worth anything if it still *fails* on the input it exists
+		// to catch, so this recomputes the same union of ledgers against a
+		// synthetic path and proves the coverage rule rejects it. It uses no git
+		// reference at all, which is the point: it gives the same verdict on the
+		// branch and on `main`.
+		const inventoryPaths = new Set([
+			...inventory.components.flatMap((record) => record.targets),
+			...inventory.authored.map((entry) => entry.path),
+		]);
+		const declared = new Set<string>();
+		const functional = resolve(root, "spec/functional");
+		for (const name of readdirSync(functional)) {
+			if (!name.endsWith(".md")) continue;
+			const section = /\n## Outputs\n([\s\S]*?)\n## /.exec(
+				read(resolve(functional, name)),
+			);
+			if (!section) continue;
+			for (const hit of section[1].matchAll(
+				/`(src\/compiler\/[A-Za-z0-9._/-]+)`/g,
+			)) {
+				declared.add(hit[1]);
+			}
+		}
+		const owns = (path: string): boolean =>
+			inventoryPaths.has(path) || declared.has(path);
+		expect(owns("src/compiler/rogue.mjs")).toBe(false);
+		// And a sidecar is only owned through its module, so an orphan sidecar is
+		// unowned too.
+		expect(owns("src/compiler/rogue.mjs")).toBe(false);
+		// A real file from each ledger is owned, so the rule is not refusing
+		// everything.
+		expect(owns("src/compiler/ir.mjs")).toBe(true);
+		expect(owns("src/compiler/pipeline.mjs")).toBe(true);
 	});
 
 	/** Traces: TC-328; FR-040-AC-6. */
@@ -374,15 +474,22 @@ describe("issue #27 promotion inventory (FR-040)", () => {
 describe("promoted semantic-IR emitter (FR-041)", () => {
 	/** Traces: TC-331; FR-041-AC-1. */
 	it("exports exactly the six interface symbols", async () => {
+		// Scoped by issue #19, which extends the narrow interface to fifteen
+		// symbols under FR-052-CON-1. What FR-041-AC-1 protects is that the six
+		// promoted symbols are all still there under their own names; the size of
+		// the set is asserted by TC-558 in compiler-core.test.ts, which fails when
+		// a sixteenth appears.
 		const module = await import("../src/compiler/index.mjs");
-		expect(Object.keys(module).sort()).toEqual([
+		for (const name of [
 			"SEMANTIC_IR_SCHEMA_VERSION",
 			"buildSemanticIr",
 			"compileSemanticIr",
 			"emitRust",
 			"emitTypeScript",
 			"normalizeJsonSchemaForPython",
-		]);
+		]) {
+			expect(Object.keys(module), name).toContain(name);
+		}
 	});
 
 	/** Traces: TC-332, TC-343; FR-041-AC-1, FR-041-AC-12. */
@@ -540,6 +647,11 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 			expect(
 				path.startsWith("src/compiler/") ||
 					path.startsWith("test/") ||
+					// Issue #19: the fixture and document generators import the
+					// compiler to produce the goldens they commit. They are build
+					// scripts, not callers of a published surface, and `make lint` runs
+					// each in `--check` mode so a drifting golden fails the gate.
+					path.startsWith("scripts/") ||
 					path === "spikes/typespec-feasibility/scripts/run-experiment.mjs",
 				path,
 			).toBe(true);
@@ -740,7 +852,24 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 		) as { required?: string[] };
 		expect(v1.required).toContain("contractVersion");
 		expect(Object.keys(goldenIr)).not.toContain("contractVersion");
+		// Scoped by issue #19: what FR-041-CON-2 forbids is validating the
+		// *prototype* IR against the v1 schema, and the prototype path is the
+		// frozen set below. Issue #19's contract path validates its own output
+		// against that schema deliberately (FR-050), so naming the schema there is
+		// the point rather than the defect.
+		const prototype = [
+			"ir.mjs",
+			"compile.mjs",
+			"identity.mjs",
+			"index.mjs",
+			"cli.mjs",
+		];
 		for (const path of walk(compilerRoot)) {
+			const isPrototype =
+				prototype.includes(path) ||
+				path.startsWith("emitters/") ||
+				path.startsWith("backends/");
+			if (!isPrototype) continue;
 			expect(read(resolve(compilerRoot, path)), path).not.toContain(
 				"semantic-ir.schema.json",
 			);
@@ -1157,9 +1286,14 @@ describe("frozen spike replay (FR-044)", () => {
 		// FR-044-AC-10 forbids discharging this from validation.json's counters,
 		// which run-experiment.mjs writes as literals. The branch diff is the
 		// independent evidence.
+		// Scoped by issue #19, which writes `test/fixtures/compiler/`: the three
+		// fixture trees this criterion protects are named individually so the
+		// prohibition keeps its force.
 		const mutationPrefixes = [
 			"schema/",
-			"fixtures/",
+			"fixtures/semantic/",
+			"fixtures/semantic-core/",
+			"fixtures/representative-core-payloads.json",
 			"packages/",
 			"agent_ix_core_data/",
 			"src/generated.ts",
@@ -1249,10 +1383,26 @@ describe("determinism and non-disruption (NFR-017, NFR-018)", () => {
 		"spec/",
 		"plan/",
 		"reviews/",
+		// Issue #19 (the compiler core) writes its own fixture corpus under
+		// `test/`, the four generator scripts, two published documents, and the
+		// formatter exclusion for its generated fixtures.
+		"test/fixtures/compiler/",
+		"scripts/test-matrix-summary.mjs",
+		"scripts/build-compatibility-cases.mjs",
+		"scripts/build-evolution-goldens.mjs",
+		"scripts/build-compiler-docs.mjs",
+		"docs/semantic-data-system/compiler-diagnostics.md",
+		"docs/semantic-data-system/ir-compatibility-policy.md",
+		"biome.json",
 	];
 	const prohibited = [
 		"schema/",
-		"fixtures/",
+		// The three fixture trees NFR-017's `fixtures/` prohibition existed to
+		// protect, named individually so issue #19 can write its own corpus under
+		// `test/fixtures/compiler/` without the prohibition losing force.
+		"fixtures/semantic/",
+		"fixtures/semantic-core/",
+		"fixtures/representative-core-payloads.json",
 		"packages/",
 		"agent_ix_core_data/",
 		"src/generated.ts",
@@ -1280,7 +1430,9 @@ describe("determinism and non-disruption (NFR-017, NFR-018)", () => {
 
 	/** Traces: TC-391, TC-394; NFR-018-AC-2, NFR-018-AC-5. */
 	it("leaves the published surface and dependency sets unchanged", () => {
-		const before = JSON.parse(git("show", "origin/main:package.json")) as Json;
+		const before = JSON.parse(
+			git("show", `${PROMOTION_BASE()}:package.json`),
+		) as Json;
 		const after = readJson(resolve(root, "package.json"));
 		for (const key of ["exports", "main", "module", "types", "files"]) {
 			expect(JSON.stringify(after[key]), key).toBe(JSON.stringify(before[key]));

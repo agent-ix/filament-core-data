@@ -1,0 +1,33 @@
+{
+	"contractVersion": "1.0.0",
+	"package": {
+		"identity": "agent-ix/core",
+		"version": "1.0.0"
+	},
+	"schemaDialect": "https://json-schema.org/draft/2020-12/schema",
+	"sourceRoots": ["types"],
+	"exports": [
+		{
+			"name": "Actor",
+			"typeIdentity": "ix://agent-ix/core/type/Actor",
+			"visibility": "public"
+		}
+	],
+	"imports": [],
+	"profiles": [
+		{
+			"name": "default",
+			"version": "1.0.0",
+			"exports": ["Actor"],
+			"targets": ["json-schema"],
+			"mappings": [],
+			"options": {
+				"capabilities": ["agent-ix:semantic-ir"]
+			},
+			"compatibilityPosture": "additive"
+		}
+	],
+	"targets": ["json-schema"],
+	"mappings": [],
+	"extensions": []
+}

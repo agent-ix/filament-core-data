@@ -1,0 +1,93 @@
+{
+	"$comment": "Observed-change family to compatibility-report family and surface (FR-051). The left column is the vocabulary `fixtures/semantic/v1/compatibility/cases.json` uses to name a kind of change; the right is the closed `family` and `surface` enumeration `compatibility-report.schema.json` declares. The map is data because FR-051-AC-2 asserts the correspondence, and an assertion against a table restated in a test would only prove the test agrees with itself.",
+	"families": {
+		"authority": {
+			"family": "authority",
+			"surface": "profile"
+		},
+		"clause": {
+			"family": "type",
+			"surface": "semantic"
+		},
+		"constraint": {
+			"family": "constraint",
+			"surface": "semantic"
+		},
+		"constraint-vocabulary": {
+			"family": "constraint",
+			"surface": "semantic"
+		},
+		"contract-version": {
+			"family": "generated-api",
+			"surface": "target"
+		},
+		"documentation": {
+			"family": "documentation",
+			"surface": "semantic"
+		},
+		"enum": {
+			"family": "enum",
+			"surface": "semantic"
+		},
+		"field": {
+			"family": "field",
+			"surface": "semantic"
+		},
+		"generated-api": {
+			"family": "generated-api",
+			"surface": "target"
+		},
+		"identity": {
+			"family": "identity",
+			"surface": "semantic"
+		},
+		"kernel-scalar": {
+			"family": "type",
+			"surface": "semantic"
+		},
+		"loss": {
+			"family": "loss",
+			"surface": "representation"
+		},
+		"mapping": {
+			"family": "mapping",
+			"surface": "mapping"
+		},
+		"multiplicity": {
+			"family": "field",
+			"surface": "semantic"
+		},
+		"operation": {
+			"family": "type",
+			"surface": "semantic"
+		},
+		"profile": {
+			"family": "profile",
+			"surface": "profile"
+		},
+		"protobuf-reservation": {
+			"family": "protobuf-reservation",
+			"surface": "target"
+		},
+		"relationship": {
+			"family": "type",
+			"surface": "semantic"
+		},
+		"type": {
+			"family": "type",
+			"surface": "semantic"
+		},
+		"union": {
+			"family": "union",
+			"surface": "semantic"
+		},
+		"unit": {
+			"family": "field",
+			"surface": "semantic"
+		},
+		"unknown-policy": {
+			"family": "unknown-policy",
+			"surface": "semantic"
+		}
+	}
+}

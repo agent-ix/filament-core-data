@@ -1,0 +1,13 @@
+{
+	"name": "@agent-ix/semantic-decorators",
+	"version": "0.1.0",
+	"private": true,
+	"description": "TypeSpec decorator vocabulary carrying the Agent IX semantics the type system cannot express (issue #19, FR-053).",
+	"license": "AGPL-3.0-only",
+	"type": "module",
+	"main": "./lib.mjs",
+	"tspMain": "./main.tsp",
+	"peerDependencies": {
+		"@typespec/compiler": "1.15.0"
+	}
+}
