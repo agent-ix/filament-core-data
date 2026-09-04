@@ -22,7 +22,7 @@ Close the governed loop.
 - [x] Run `/code-review` over the Rust and JavaScript sides and record SR-085.
 - [x] Run `/gap-analysis` over Plan-010 and record SR-086.
 - [x] Measure the three verification states: branch head; a scratch clone with the branch squash-merged and `origin/main` repointed; and that clone with a real unrelated sibling commit on top.
-- [ ] Run the falsification and perturbation rehearsals for every guard added.
+- [x] Run the falsification and perturbation rehearsals for every guard added: TC-727 suppresses the only detecting case and drops the mutation score, TC-729 mutates a scratch emitter and names the degradation, and TC-744 proves a later sibling cannot accrete paths.
 - [ ] Open the pull request and comment when it is mergeable.
 
 ## Deliverables
