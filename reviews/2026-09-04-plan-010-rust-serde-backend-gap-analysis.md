@@ -15,16 +15,17 @@ relationships:
 
 **FAIL — evidence closure pending, not an implementation failure.** Task-094's
 focused gates are green on the branch, in the measured squash-merge state, and
-with a measured unrelated sibling on top. The restore rehearsal has now exposed
-a real predecessor-gate defect, and guard falsification/perturbation remains
-unrecorded.
+with a measured unrelated sibling on top. Restore requires #23's predecessor
+range-gate conversion to land first; the provisioned integrated rehearsal
+passes the two predecessor suites that failed against `c1b8807`. Full integrated
+restore and guard falsification/perturbation remain unrecorded.
 
 ## Finding
 
 | ID | Severity | Finding | Remediation |
 | --- | --- | --- | --- |
-| FND-1203 | high | A real restore rehearsal fails predecessor non-disruption gates: after reverting the sibling and squashed Rust commits, the Node suite is 403/409. `test/semantic-contract.test.ts`, `test/semantic-core.test.ts`, and `test/semantic-ir-v1-1.test.ts` each still attribute `.cargo/config.toml` through the reverted history. This contradicts NFR-023's restore metric. | Repair the affected predecessor range gates so a reverted Rust range is not retained as their changed path, then rerun the restore state. |
-| FND-1204 | medium | The scratch clone's Python-dependent tests could not run because its Poetry environment lacked `jsonschema`; this is an environment-provisioning failure, not a backend verdict. | Run `poetry install` in the verification clone before claiming the full-suite result. |
+| FND-1203 | high | The standalone `c1b8807` restore is not the delivery order this campaign requires: #23 owns the predecessor range-gate conversion. In a provisioned clone with #23 squash-merged first and #21 then reverted, `semantic-contract` and `semantic-ir-v1-1` pass; the full integrated suite has not yet reached a terminal result in this environment. | Merge/rebase #23 before #21, resolve shared spec/matrix documents by retaining both id blocks, then run the full provisioned restore state to completion. |
+| FND-1204 | resolved | The clone was provisioned with `poetry install`; `jsonschema` installed and the Python-reader-dependent `semantic-ir-v1-1` suite passed. | None. |
 
 ## Current evidence
 
@@ -37,7 +38,9 @@ the post-merge direction, but not accretion or restore, which are facts about
 different histories. The same clone also passes 57/57 after a real later
 sibling commit added `src/sibling/marker.mjs` and edited
 `docs/semantic-data-system/roadmap.md`; those paths are visible in
-`origin/main..HEAD` but were not annexed by the Rust gate. The subsequent
-revert of both temporary commits ran the Node suite and produced 403/409: three
-predecessor changed-path failures plus three Python-reader invocations that
-failed only because the clone had not installed `jsonschema`.
+`origin/main..HEAD` but were not annexed by the Rust gate. A standalone revert
+against `c1b8807` produced 403/409 because it predates #23's range conversion.
+In the correct order — #23 squash-merged first, shared documents resolved in
+favor of its range-gate forms, then #21 squash-merged and reverted — a
+provisioned clone passes `semantic-contract` (14/14) and
+`semantic-ir-v1-1` (45/45). The remaining full integrated run is still needed.
