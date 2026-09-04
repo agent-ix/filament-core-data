@@ -48,7 +48,7 @@ One seam, two registered dialects, one implemented, and the shared fixture harne
 - [ ] `src/compiler/frontend/seam.mjs`: `FRONTEND_DIALECTS` read from `common.schema.json`, `selectFrontend` throwing a `TypeError` for a value outside the vocabulary, `runFrontend` returning a `FrontendResult`.
 - [ ] `src/compiler/frontend/spec-bundle/frontend.mjs`: one blocking `FRONTEND_NOT_IMPLEMENTED` naming issue #36.
 - [ ] The seam's own contract test: `ir` is null whenever any diagnostic is blocking; a frontend that returns both fails; no frontend reaches the file system except through `request.host`.
-- [ ] `fixtures/compiler/shared/cases.json` and its source trees, with the harness recording each case as cross-dialect or single-dialect.
+- [ ] `test/fixtures/compiler/shared/cases.json` and its source trees, with the harness recording each case as cross-dialect or single-dialect.
 - [ ] Fuzz the seam over 256 mutated inputs and assert it never throws.
 
 ## Deliverables

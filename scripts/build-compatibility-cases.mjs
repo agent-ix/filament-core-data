@@ -6,7 +6,7 @@
  * The published case file is a *description*: it names a kind of change and the
  * disposition it must receive, and carries no documents. This script turns each
  * description into a real pair of IR documents plus whatever declared inputs
- * that family needs, and writes them under `fixtures/compiler/compatibility/cases/`.
+ * that family needs, and writes them under `test/fixtures/compiler/compatibility/cases/`.
  * Both the script and its output are committed, so the pairs are reviewable data
  * rather than something a test invents at run time and then agrees with.
  *
@@ -17,7 +17,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const outputDir = resolve(root, "fixtures/compiler/compatibility/cases");
+const outputDir = resolve(root, "test/fixtures/compiler/compatibility/cases");
 const PKG = "agent-ix/assurance";
 const SOURCE = `ix://${PKG}/source/typespec`;
 const DIGEST = `sha256:${"0".repeat(64)}`;

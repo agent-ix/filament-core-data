@@ -7,7 +7,9 @@
 			"!**/*.map",
 			"!**/.venv/**",
 			"!spikes/typespec-feasibility/generated/**",
-			"!spikes/typespec-feasibility/evidence/**"
+			"!spikes/typespec-feasibility/evidence/**",
+			"!test/fixtures/compiler/compatibility/cases/**",
+			"!test/fixtures/compiler/evolution/**"
 		]
 	},
 	"formatter": {

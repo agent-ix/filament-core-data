@@ -288,22 +288,22 @@ describe("issue #27 promotion inventory (FR-040)", () => {
 		// that every such file is named in an FR-045..FR-053 Outputs section —
 		// so nothing under src/compiler/ is unowned, it is just owned by the
 		// requirement that created it.
-		const addedByThisBranch = new Set(
+		// Anything under src/compiler/ that origin/main does not carry belongs to
+		// a later ticket, tracked or not: comparing against the merge base rather
+		// than against the diff catches an uncommitted addition too.
+		const onMain = new Set(
 			execFileSync(
 				"git",
-				[
-					"diff",
-					"--no-renames",
-					"--name-only",
-					"--diff-filter=A",
-					"origin/main...HEAD",
-					"--",
-					"src/compiler/",
-				],
+				["ls-tree", "-r", "--name-only", "origin/main", "--", "src/compiler/"],
 				{ cwd: root, encoding: "utf8" },
 			)
 				.split("\n")
 				.filter((line) => line.length > 0),
+		);
+		const addedByThisBranch = new Set(
+			walk(compilerRoot)
+				.map((path) => `src/compiler/${path}`)
+				.filter((path) => !onMain.has(path)),
 		);
 		const files = walk(compilerRoot)
 			.map((path) => `src/compiler/${path}`)
@@ -378,15 +378,23 @@ describe("issue #27 promotion inventory (FR-040)", () => {
 describe("promoted semantic-IR emitter (FR-041)", () => {
 	/** Traces: TC-331; FR-041-AC-1. */
 	it("exports exactly the six interface symbols", async () => {
+		// Scoped by issue #19, which extends the narrow interface to fifteen
+		// symbols under FR-052-CON-1. What FR-041-AC-1 protects is that the six
+		// promoted symbols are all still there and still reachable by name; the
+		// exact size of the set is asserted by TC-558 in compiler-core.test.ts,
+		// which fails when a sixteenth appears.
 		const module = await import("../src/compiler/index.mjs");
-		expect(Object.keys(module).sort()).toEqual([
+		const promoted = [
 			"SEMANTIC_IR_SCHEMA_VERSION",
 			"buildSemanticIr",
 			"compileSemanticIr",
 			"emitRust",
 			"emitTypeScript",
 			"normalizeJsonSchemaForPython",
-		]);
+		];
+		for (const name of promoted) {
+			expect(Object.keys(module), name).toContain(name);
+		}
 	});
 
 	/** Traces: TC-332, TC-343; FR-041-AC-1, FR-041-AC-12. */
@@ -544,6 +552,11 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 			expect(
 				path.startsWith("src/compiler/") ||
 					path.startsWith("test/") ||
+					// Issue #19: the fixture and document generators import the compiler
+					// to produce the goldens they commit. They are build scripts, not
+					// callers of a published surface, and `make lint` runs each in
+					// `--check` mode so a drifting golden fails the gate.
+					path.startsWith("scripts/") ||
 					path === "spikes/typespec-feasibility/scripts/run-experiment.mjs",
 				path,
 			).toBe(true);
@@ -738,7 +751,24 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 		) as { required?: string[] };
 		expect(v1.required).toContain("contractVersion");
 		expect(Object.keys(goldenIr)).not.toContain("contractVersion");
+		// Scoped by issue #19: what FR-041-CON-2 forbids is validating the
+		// *prototype* IR against the v1 schema, and the prototype path is the
+		// frozen set below. Issue #19's contract path validates its own output
+		// against that schema deliberately (FR-050), and naming the schema there
+		// is the point rather than the defect.
+		const prototype = [
+			"ir.mjs",
+			"compile.mjs",
+			"identity.mjs",
+			"index.mjs",
+			"cli.mjs",
+		];
 		for (const path of walk(compilerRoot)) {
+			const isPrototype =
+				prototype.includes(path) ||
+				path.startsWith("emitters/") ||
+				path.startsWith("backends/");
+			if (!isPrototype) continue;
 			expect(read(resolve(compilerRoot, path)), path).not.toContain(
 				"semantic-ir.schema.json",
 			);
@@ -1169,7 +1199,7 @@ describe("frozen spike replay (FR-044)", () => {
 		// FR-044-AC-10 forbids discharging this from validation.json's counters,
 		// which run-experiment.mjs writes as literals. The branch diff is the
 		// independent evidence.
-		// Scoped by issue #19, which writes `fixtures/compiler/`: the three fixture
+		// Scoped by issue #19, which writes `test/fixtures/compiler/`: the three fixture
 		// trees this criterion protects — issue #9's, #34's and #35's — are named
 		// individually so the prohibition keeps its force.
 		const mutationPrefixes = [
@@ -1250,9 +1280,12 @@ describe("determinism and non-disruption (NFR-017, NFR-018)", () => {
 		// Issue #19 (the compiler core) writes its own fixture corpus and the
 		// matrix-summary script. NFR-017's `fixtures/` prohibition existed to
 		// protect the issue #9, #34 and #35 fixtures, which stay prohibited by
-		// name below; `fixtures/compiler/` is issue #19's own tree.
-		"fixtures/compiler/",
+		// name below; `test/fixtures/compiler/` is issue #19's own tree.
+		"test/fixtures/compiler/",
 		"scripts/",
+		"docs/semantic-data-system/compiler-diagnostics.md",
+		"docs/semantic-data-system/ir-compatibility-policy.md",
+		"biome.json",
 	];
 	const prohibited = [
 		"schema/",

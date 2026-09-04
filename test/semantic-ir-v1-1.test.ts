@@ -253,10 +253,15 @@ describe("semantic IR v1.1 baseline and non-disruption", () => {
 			// Issue #19 (the compiler core) adds the compiler fixture corpus, the
 			// matrix-summary script, its plan bundle, and its test file. Each entry
 			// is a path this branch writes, enumerated rather than widened.
-			"fixtures/compiler/",
+			"test/fixtures/compiler/",
 			"scripts/",
 			"plan/Plan-008-typespec-frontend-and-ir-compiler-core/",
 			"test/compiler-core.test.ts",
+			// Issue #19 also publishes two generated documents and excludes its
+			// generated fixtures from the formatter.
+			"docs/semantic-data-system/compiler-diagnostics.md",
+			"docs/semantic-data-system/ir-compatibility-policy.md",
+			"biome.json",
 		];
 		for (const path of changedPaths()) {
 			expect(

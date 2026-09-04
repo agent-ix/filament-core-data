@@ -42,7 +42,7 @@ diagnostic at the manifest position that declared it.
 - `src/compiler/packages/manifest.mjs`: `readManifest(host, dir)` returning `{ manifest, text, path, digest, pointers }` or diagnostics
 - `src/compiler/packages/resolve.mjs`: `resolvePackageGraph(request)` returning `{ root, packages, profile, mappings, exports, sourceFiles, diagnostics }`
 - `src/compiler/json-locus.mjs`: `indexJsonPointers(text)`, `locateJsonPointer(text, pointer, prefer)`, and `offsetToPosition(text, offset)`
-- `fixtures/compiler/packages/**`: the concrete package trees, one per case of `fixtures/semantic/v1/package-graph-cases.json`, which remains the read-only case index they are keyed to
+- `test/fixtures/compiler/packages/**`: the concrete package trees, one per case of `fixtures/semantic/v1/package-graph-cases.json`, which remains the read-only case index they are keyed to
 - A resolution whose `packages` are ordered by package identity under code-point comparison, independent of discovery order
 
 ## Behavior
@@ -97,7 +97,7 @@ diagnostic at the manifest position that declared it.
 | FR-047-CON-2 | A resolved package path SHALL NOT escape its search directory through `..` or a symbolic link; an escape is `agent-ix.compiler.PATH_ESCAPE`, not a resolved package. | Security | Test |
 | FR-047-CON-3 | The resolver SHALL implement version-constraint satisfaction in this repository against the two accepted forms, adding no semver dependency. | Maintainability | Dependency inspection |
 | FR-047-CON-4 | The resolver SHALL NOT execute any file it reads; manifests, mappings, profiles, and locks are data. | Security | Instrumented run |
-| FR-047-CON-5 | `fixtures/semantic/v1/package-graph-cases.json` SHALL remain byte-unchanged; it is the read-only case index, and the concrete trees live under `fixtures/compiler/packages/**`. | Non-disruption | Branch diff |
+| FR-047-CON-5 | `fixtures/semantic/v1/package-graph-cases.json` SHALL remain byte-unchanged; it is the read-only case index, and the concrete trees live under `test/fixtures/compiler/packages/**`. | Non-disruption | Branch diff |
 
 ## Acceptance Criteria
 

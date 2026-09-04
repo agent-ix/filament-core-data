@@ -119,7 +119,13 @@ function builtinBase(scalar) {
 }
 
 export function createLowering(options) {
-	const { program, packageIdentity, packageRoot, sourceIdentity } = options;
+	const {
+		program,
+		packageIdentity,
+		packageRoot,
+		sourceIdentity,
+		packageRoots = [],
+	} = options;
 	const diagnostics = [];
 	const state = (key, target) => program.stateMap(STATE[key]).get(target);
 
@@ -153,10 +159,35 @@ export function createLowering(options) {
 		return { ...start, endLine: end.line + 1, endColumn: end.character + 1 };
 	};
 
-	/** An origin for a declaration the package owns, or a generated one otherwise. */
+	/** The declared roots a source file may legitimately come from. */
+	const knownRoots = [packageRoot, ...packageRoots].filter(Boolean);
+
+	/** Where a declaration's file is, or `undefined` when it has none. */
+	const fileOf = (target, node) => {
+		const location = node
+			? getSourceLocation(node)
+			: getSourceLocation(target, { locateId: true });
+		return location?.file?.path;
+	};
+
+	/**
+	 * An origin for a declaration the package owns, or a generated one for a
+	 * declaration reached through an imported package — whose file cannot be
+	 * named by a package-root-relative path, because `sourceLocus.path` forbids
+	 * `..`. A file under no declared root at all is a defect, not a generated
+	 * origin: inventing provenance for it would hide where it came from.
+	 */
 	const originOf = (target, node) => {
 		const locus = locusOf(target, node);
 		if (locus) return { source: locus };
+		const file = fileOf(target, node);
+		if (file && !knownRoots.some((known) => file.startsWith(`${known}/`))) {
+			diagnostics.push(
+				diagnostic(DIAGNOSTIC_CODES.SOURCE_OUTSIDE_PACKAGE, {
+					message: `a declaration's source file lies beneath no declared package root`,
+				}),
+			);
+		}
 		return {
 			generated: {
 				generatorIdentity: "ix://agent-ix/filament-core-data/compiler/typespec",

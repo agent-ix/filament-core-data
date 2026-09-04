@@ -111,7 +111,7 @@ function discoverCandidates(host, searchPath, limits, diagnostics) {
 				absolutePath: manifestPath,
 				packageRoot,
 				schemaName: "package-manifest.schema.json",
-				code: "INVALID_MANIFEST",
+				entry: DIAGNOSTIC_CODES.INVALID_MANIFEST,
 				sourceIdentity: sourceIdentityFor("agent-ix/unresolved", "manifest"),
 				limits,
 			});
@@ -247,7 +247,7 @@ export function resolvePackageGraph(request) {
 		absolutePath: resolve(packageRoot, "package-manifest.json"),
 		packageRoot,
 		schemaName: "package-manifest.schema.json",
-		code: "INVALID_MANIFEST",
+		entry: DIAGNOSTIC_CODES.INVALID_MANIFEST,
 		sourceIdentity: "ix://agent-ix/unresolved/source/manifest",
 		limits,
 	});
@@ -495,7 +495,7 @@ export function resolvePackageGraph(request) {
 				absolutePath: profileDocumentPath,
 				packageRoot,
 				schemaName: "profile.schema.json",
-				code: "INVALID_PROFILE",
+				entry: DIAGNOSTIC_CODES.INVALID_PROFILE,
 				sourceIdentity: sourceIdentityFor(rootIdentity, "profile"),
 				limits,
 			});
@@ -541,7 +541,7 @@ export function resolvePackageGraph(request) {
 				absolutePath: documentPath,
 				packageRoot,
 				schemaName: "mapping.schema.json",
-				code: "INVALID_MAPPING",
+				entry: DIAGNOSTIC_CODES.INVALID_MAPPING,
 				sourceIdentity: sourceIdentityFor(rootIdentity, "mapping"),
 				limits,
 			});

@@ -42,9 +42,9 @@ governed by the one policy document this requirement publishes.
 
 - `src/compiler/compat/diff.mjs`: `diffSemanticContract(request)` returning a document valid against `schema/semantic/v1/compatibility-report.schema.json`
 - `src/compiler/compat/evolution.mjs`: `readIrAsContract(document, targetVersion, { dialect })` returning `{ document, loss, diagnostics }`
-- `fixtures/compiler/compatibility/family-map.json`: the observed-change family to report family map, as data
-- `fixtures/compiler/compatibility/cases/**`: one constructed input pair per case of `fixtures/semantic/v1/compatibility/cases.json`, which remains the read-only case index
-- `fixtures/compiler/evolution/`: the golden backward and forward projections
+- `test/fixtures/compiler/compatibility/family-map.json`: the observed-change family to report family map, as data
+- `test/fixtures/compiler/compatibility/cases/**`: one constructed input pair per case of `fixtures/semantic/v1/compatibility/cases.json`, which remains the read-only case index
+- `test/fixtures/compiler/evolution/`: the golden backward and forward projections
 - `docs/semantic-data-system/ir-compatibility-policy.md`: the published policy
 
 ## Behavior
@@ -86,7 +86,7 @@ governed by the one policy document this requirement publishes.
 | A reserved Protobuf field name or number reused | `protobuf-reservation` | `target` | `invalid` |
 | Any change whose consumer evidence is `unknown` | the observed family | its surface | `unknown` |
 
-- `fixtures/compiler/compatibility/family-map.json` SHALL carry that observed-family to report-family map as data, and the implementation SHALL read it rather than restating it.
+- `test/fixtures/compiler/compatibility/family-map.json` SHALL carry that observed-family to report-family map as data, and the implementation SHALL read it rather than restating it.
 - If an input the table needs is absent — no profile documents, no mapping documents, no reservation registry, no per-target dispositions — then the diff SHALL omit the families that need it rather than classifying them, and SHALL name each omitted family in `requiredGates`.
 - The diff SHALL set `oldFingerprint` and `newFingerprint` from `fingerprintIr` (FR-050) and `retainedBridges` from the bridges the caller declares the new contract still carries.
 - If the two documents have equal fingerprints, then the diff SHALL emit exactly one `documentation` change of disposition `patch`, identified by the new document's `source.identity`, because the report schema requires a non-empty `changes` array.
@@ -111,7 +111,7 @@ governed by the one policy document this requirement publishes.
 | FR-051-CON-2 | The disposition rank SHALL be exactly `patch < additive < conditional < unknown < breaking < invalid`, matching the ranking already asserted by the issue #9 contract tests. | Consistency | Test |
 | FR-051-CON-3 | A forward projection SHALL report every dropped identity; silently dropping a `1.1.0` member is a defect, not a projection. | Honesty | Test |
 | FR-051-CON-4 | The diff SHALL NOT import a target backend; per-target dispositions are an input. | Portability | Static analysis |
-| FR-051-CON-5 | `fixtures/semantic/v1/compatibility/cases.json` SHALL remain byte-unchanged; it is the read-only case index, and the constructed pairs live under `fixtures/compiler/compatibility/cases/**`. | Non-disruption | Branch diff |
+| FR-051-CON-5 | `fixtures/semantic/v1/compatibility/cases.json` SHALL remain byte-unchanged; it is the read-only case index, and the constructed pairs live under `test/fixtures/compiler/compatibility/cases/**`. | Non-disruption | Branch diff |
 
 ## Acceptance Criteria
 

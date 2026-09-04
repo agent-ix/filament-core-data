@@ -47,7 +47,7 @@ The byte-level foundation of every determinism claim: one canonical form, one di
 
 ## Subtasks
 
-- [ ] Transcribe the RFC 8785 §3.2 string-escaping, number-formatting, and key-ordering vectors into `fixtures/compiler/rfc8785/vectors.json`, citing the RFC section each row comes from.
+- [ ] Transcribe the RFC 8785 §3.2 string-escaping, number-formatting, and key-ordering vectors into `test/fixtures/compiler/rfc8785/vectors.json`, citing the RFC section each row comes from.
 - [ ] `src/compiler/packages/canonical.mjs`: `canonicalize(value, sets)` with UTF-16 code-unit key ordering, RFC 8785 number serialisation, RFC 8785 string escaping, identity-sorted declared sets, order-preserving other arrays, and a `maxDepth` bound.
 - [ ] `digest(bytes)` returning `sha256:<64 hex>` via `node:crypto`.
 - [ ] `src/compiler/packages/lock.mjs`: `sourceFiles`, `contentDigest`, `fingerprint` over the six included inputs, `buildLock`, `verifyLock` with its four diagnostics located through `json-locus`.

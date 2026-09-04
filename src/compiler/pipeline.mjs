@@ -14,6 +14,7 @@
 import { resolve } from "node:path";
 import {
 	DEFAULT_LIMITS,
+	DIAGNOSTIC_CODES,
 	hasBlocking,
 	sortDiagnostics,
 } from "./diagnostics.mjs";
@@ -85,7 +86,7 @@ export async function compilePackage(request) {
 			absolutePath: resolve(lockPath),
 			packageRoot,
 			schemaName: "package-lock.schema.json",
-			code: "STALE_LOCK",
+			entry: DIAGNOSTIC_CODES.STALE_LOCK,
 			sourceIdentity: `ix://${resolution.root.identity}/source/lock`,
 			limits,
 		});

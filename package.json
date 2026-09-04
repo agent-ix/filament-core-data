@@ -36,7 +36,7 @@
 		"build": "tsc -p tsconfig.build.json",
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit -p tsconfig.json",
-		"lint": "biome format . && tsc --noEmit -p tsconfig.json",
+		"lint": "biome format . && tsc --noEmit -p tsconfig.json && node scripts/test-matrix-summary.mjs --check && node scripts/build-compatibility-cases.mjs --check && node scripts/build-evolution-goldens.mjs --check && node scripts/build-compiler-docs.mjs --check",
 		"format": "biome format --write .",
 		"format:check": "biome format .",
 		"prepublishOnly": "pnpm run build",

@@ -34,7 +34,7 @@ refused rather than guessed at.
   - `limits` is the FR-049 limits record,
   - `host` is the injected file-system and module host of NFR-019 and NFR-020.
 - The closed `frontendDialect` vocabulary of `schema/semantic/v1/common.schema.json`: `typespec` and `spec-bundle`
-- Shared frontend fixture cases under `fixtures/compiler/shared/`
+- Shared frontend fixture cases under `test/fixtures/compiler/shared/`
 
 ## Outputs
 
@@ -42,8 +42,8 @@ refused rather than guessed at.
 - A `FrontendResult`: `{ ir, diagnostics }`, where `ir` is `null` whenever any diagnostic is blocking
 - `src/compiler/frontend/typespec/frontend.mjs`, the implemented `typespec` frontend (FR-046, FR-053)
 - `src/compiler/frontend/spec-bundle/frontend.mjs`, the declared-unimplemented `spec-bundle` frontend
-- `fixtures/compiler/shared/cases.json`, the shared fixture manifest naming, per case, one source tree per dialect and the expected normalized IR
-- `fixtures/compiler/shared/**`, the shared source trees those cases name
+- `test/fixtures/compiler/shared/cases.json`, the shared fixture manifest naming, per case, one source tree per dialect and the expected normalized IR
+- `test/fixtures/compiler/shared/**`, the shared source trees those cases name
 
 ## Behavior
 
@@ -56,7 +56,7 @@ refused rather than guessed at.
 - No frontend SHALL read `request.dialect` when stamping `source.dialect`, so a frontend cannot be made to claim another dialect's identity.
 - Every frontend SHALL read every file through `request.host`, reaching the file system through no other route.
 - The seam SHALL NOT import any module under `src/compiler/backends/`, so no target backend can influence which IR a frontend produces.
-- The shared fixture harness SHALL run every case in `fixtures/compiler/shared/cases.json` through every *implemented* dialect for which the case supplies a source tree.
+- The shared fixture harness SHALL run every case in `test/fixtures/compiler/shared/cases.json` through every *implemented* dialect for which the case supplies a source tree.
 - The harness SHALL compare those results by the normalized serialization of FR-050 rather than by raw bytes.
 - Where a shared case supplies a source tree for exactly one implemented dialect, the harness SHALL record that case as single-dialect rather than reporting cross-dialect agreement it did not observe.
 

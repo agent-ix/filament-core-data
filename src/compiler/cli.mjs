@@ -145,8 +145,17 @@ async function compile(options) {
 	const limits = options.limits
 		? { ...DEFAULT_LIMITS, ...readJsonFile(options.limits, "limits") }
 		: DEFAULT_LIMITS;
+	// A caller-named file may live anywhere; its own directory is a declared
+	// root, and nothing wider is.
 	const host = createHost({
-		readRoots: [packageRoot, ...searchPath, REPO_ROOT],
+		readRoots: [
+			packageRoot,
+			...searchPath,
+			REPO_ROOT,
+			...[options.lock, options.limits]
+				.filter(Boolean)
+				.map((path) => dirname(resolve(path))),
+		],
 	});
 	const result = await compilePackage({
 		host,

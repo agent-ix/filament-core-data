@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 import { readIrAsContract } from "../src/compiler/compat/evolution.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const outputDir = resolve(root, "fixtures/compiler/evolution");
+const outputDir = resolve(root, "test/fixtures/compiler/evolution");
 const check = process.argv.includes("--check");
 
 const source = JSON.parse(

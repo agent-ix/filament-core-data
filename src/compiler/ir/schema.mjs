@@ -8,7 +8,7 @@
  * copy would quietly stop testing it.
  */
 import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../diagnostics.mjs";
-import { createHost } from "../host.mjs";
+import { repositoryHost } from "../host.mjs";
 import { REPO_ROOT } from "../packages/lock.mjs";
 import {
 	errorMessage,
@@ -16,21 +16,13 @@ import {
 	schemaValidators,
 } from "../schema-validate.mjs";
 
-let fallback;
-
-/** A host scoped to the repository, for callers that supply none. */
-export function repositoryHost() {
-	if (!fallback) fallback = createHost({ readRoots: [REPO_ROOT] });
-	return fallback;
-}
-
 /**
  * Returns one `INVALID_IR` diagnostic per schema error, each naming the failing
  * instance pointer. The locus, where the offending node carries an `origin`, is
  * that node's own source position (FR-049).
  */
 export function validateIrDocument(document, options = {}) {
-	const host = options.host ?? repositoryHost();
+	const host = options.host ?? repositoryHost(REPO_ROOT);
 	const errors = schemaValidators(host).errors(
 		"semantic-ir.schema.json",
 		document,

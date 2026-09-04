@@ -101,7 +101,7 @@ compiler-emit-ir:
 # selected frontend, validate, and write one versioned IR document. `emit-ir`
 # above stays the frozen issue #4 prototype route.
 
-PACKAGE ?= fixtures/compiler/packages/assurance
+PACKAGE ?= test/fixtures/compiler/packages/assurance
 COMPILE_OUT ?= dist/compiler/semantic-ir.json
 IR ?= $(COMPILE_OUT)
 PROFILE ?= default

@@ -62,7 +62,7 @@ Resolve a root manifest and its transitive imports into one ordered graph, repor
 - [ ] `src/compiler/packages/manifest.mjs`: read and schema-validate a manifest, mapping, or profile through the injected host, returning its text, digest, and pointer index.
 - [ ] `src/compiler/packages/resolve.mjs`: candidate discovery over the declared search directories, exact and caret constraint satisfaction, highest-satisfying selection with the declared-order tie-break, digest conflict, export and capability checks, depth-first cycle detection by back edge from the least identity, duplicate exports, profile/mapping/target selection, and the strict-posture loss check.
 - [ ] Every diagnostic carries a locus from `json-locus`, with `sourceIdentity` and a `..`-free relative path, including for a document inside an imported package.
-- [ ] `fixtures/compiler/packages/**`: the `assurance` package exercising every structural-kind row, plus one concrete tree per case of `fixtures/semantic/v1/package-graph-cases.json` and one per named diagnostic. That file stays byte-unchanged and is read only as the case index.
+- [ ] `test/fixtures/compiler/packages/**`: the `assurance` package exercising every structural-kind row, plus one concrete tree per case of `fixtures/semantic/v1/package-graph-cases.json` and one per named diagnostic. That file stays byte-unchanged and is read only as the case index.
 - [ ] Bound the resolution by `maxNodes`, `maxInputBytes`, and `maxDepth`.
 
 ## Deliverables

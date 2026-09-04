@@ -40,7 +40,7 @@ export function readDocument(host, options) {
 		absolutePath,
 		packageRoot,
 		schemaName,
-		code,
+		entry,
 		sourceIdentity,
 		limits = DEFAULT_LIMITS,
 	} = options;
@@ -97,7 +97,7 @@ export function readDocument(host, options) {
 			text,
 			path,
 			diagnostics: [
-				diagnostic(DIAGNOSTIC_CODES[code], {
+				diagnostic(entry, {
 					message: `${path} is not valid JSON: ${fragment(error.message)}`,
 					locus: {
 						sourceIdentity,
@@ -112,7 +112,7 @@ export function readDocument(host, options) {
 
 	for (const error of schemaValidators(host).errors(schemaName, value)) {
 		diagnostics.push(
-			diagnostic(DIAGNOSTIC_CODES[code], {
+			diagnostic(entry, {
 				message: `${path}: ${fragment(errorMessage(error))}`,
 				locus: locus(errorPointer(error)),
 			}),

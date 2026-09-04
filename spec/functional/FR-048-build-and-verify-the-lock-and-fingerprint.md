@@ -33,7 +33,7 @@ Behavior.
 
 - `src/compiler/packages/canonical.mjs`: `canonicalize(value, sets)`, the `RFC8785-JCS-with-identity-sorted-sets-v1` byte form, and `digest(bytes)` returning `sha256:<64 hex>`
 - `src/compiler/packages/lock.mjs`: `buildLock(resolution)`, `verifyLock(lock, lockText, resolution)`, `contentDigest(files)`, and `fingerprint(resolution)`
-- `fixtures/compiler/rfc8785/vectors.json`: the RFC 8785 §3.2 string, number, and key-ordering vectors transcribed from the RFC text, with their expected canonical bytes
+- `test/fixtures/compiler/rfc8785/vectors.json`: the RFC 8785 §3.2 string, number, and key-ordering vectors transcribed from the RFC text, with their expected canonical bytes
 - A lock document whose `canonicalization.included` is `["schema-bytes", "manifest", "mappings", "profiles", "resolved-packages", "compiler-contract-version"]` and whose `excluded` is `["object-order", "set-order", "source-path", "working-directory", "timestamp", "hostname", "locale"]`
 
 ## Behavior
@@ -78,7 +78,7 @@ Behavior.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-048-AC-1 | `canonicalize` reproduces every vector in `fixtures/compiler/rfc8785/vectors.json` for string escaping, number formatting, and key ordering. | Test |
+| FR-048-AC-1 | `canonicalize` reproduces every vector in `test/fixtures/compiler/rfc8785/vectors.json` for string escaping, number formatting, and key ordering. | Test |
 | FR-048-AC-2 | Permuting object key order, permuting a declared identity-keyed set, changing the working directory, and changing the host locale each leave the fingerprint unchanged. | Property |
 | FR-048-AC-3 | Changing one byte of a source file, of a manifest, of a mapping, of a profile, of a resolved package version, of a published schema file, and of the contract version each changes the fingerprint. | Property |
 | FR-048-AC-4 | A built lock validates against `package-lock.schema.json`, and its `canonicalization` block equals the algorithm named here. | Test |

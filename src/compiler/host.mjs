@@ -26,10 +26,15 @@ import {
 	statSync,
 	writeFileSync,
 } from "node:fs";
-import { dirname, relative, resolve, sep } from "node:path";
+import { dirname, relative, resolve } from "node:path";
 
+/**
+ * Always POSIX, whatever the platform reports. A path that carries the host's
+ * separator into an emitted document makes two hosts disagree about a byte, and
+ * `sourceLocus.path` forbids a backslash outright.
+ */
 function toPosix(path) {
-	return sep === "/" ? path : path.split(sep).join("/");
+	return String(path).split(/[\\/]/).join("/");
 }
 
 /** True when `child` is `parent` or lies beneath it. */
@@ -199,4 +204,16 @@ export function createHost(options = {}) {
 		/** POSIX path separator, always, whatever the platform reports. */
 		toPosix,
 	};
+}
+
+let repository;
+
+/**
+ * A host scoped to this repository, for callers that read a document off disk
+ * with no compile in progress — the IR schema loader, and the tests. A compile
+ * always uses the host the CLI constructs and passes down.
+ */
+export function repositoryHost(root) {
+	if (!repository) repository = createHost({ readRoots: [root] });
+	return repository;
 }

@@ -47,7 +47,7 @@ export function familyMapping(root = REPO_ROOT) {
 	if (!familyMap) {
 		familyMap = JSON.parse(
 			readFileSync(
-				resolve(root, "fixtures/compiler/compatibility/family-map.json"),
+				resolve(root, "test/fixtures/compiler/compatibility/family-map.json"),
 				"utf8",
 			),
 		).families;

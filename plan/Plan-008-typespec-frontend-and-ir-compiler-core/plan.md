@@ -93,7 +93,7 @@ Task-068 -> Task-069 -> Task-070 -> Task-071 -> Task-072 -> Task-073 -> Task-074
 
 - Task-068 fixes the guards first. Six changed-path allowlists on `main` were written by earlier tickets against their own branches and fail on any path a later ticket adds; each is scoped, as issue #27 scoped five of them, and the red suite is authored before any implementation file exists.
 - Task-069 lands the three primitives everything else needs: the injected host (the mechanism that makes every NFR-019 and NFR-020 claim observable rather than asserted), the diagnostic registry, and the JSON pointer locator.
-- Task-070 and Task-071 are the package side; Task-071 also authors the fixture package corpus under `fixtures/compiler/packages/**` that most later criteria run on.
+- Task-070 and Task-071 are the package side; Task-071 also authors the fixture package corpus under `test/fixtures/compiler/packages/**` that most later criteria run on.
 - Task-072, Task-073, and Task-074 are the frontend, split exactly where SR-071 FND-603 asked: the seam, the vocabulary and identity minting, then the structural lowering.
 - Task-075 and Task-076 (track B) depend only on Task-069 and the published schemas, so they run in parallel with the package and frontend work.
 - Task-077 joins both tracks behind `compilePackage` and the CLI.
@@ -102,7 +102,7 @@ Task-068 -> Task-069 -> Task-070 -> Task-071 -> Task-072 -> Task-073 -> Task-074
 
 ### Cross-cutting constraints
 
-- NFR-019 permits `src/compiler/{frontend,packages,ir,compat}/**`, `src/compiler/{diagnostics,inspect,json-locus,pipeline,host,cli,index}.mjs`, `src/compiler/index.d.mts`, `fixtures/compiler/**`, `test/**`, `spec/**`, `plan/**`, `reviews/**`, `scripts/**`, the two new `docs/semantic-data-system/` documents, `Makefile`, and `package.json` `scripts`.
+- NFR-019 permits `src/compiler/{frontend,packages,ir,compat}/**`, `src/compiler/{diagnostics,inspect,json-locus,pipeline,host,cli,index}.mjs`, `src/compiler/index.d.mts`, `test/fixtures/compiler/**`, `test/**`, `spec/**`, `plan/**`, `reviews/**`, `scripts/**`, the two new `docs/semantic-data-system/` documents, `Makefile`, and `package.json` `scripts`.
 - Prohibited, meaning no byte changes: `src/compiler/{ir,compile,identity}.mjs`, `src/compiler/emitters/**`, `src/compiler/backends/**`, `src/compiler/inventory.json`, `schema/**`, `fixtures/semantic/**`, `fixtures/semantic-core/**`, `packages/**`, `spikes/**`, `conformance/**`, `tests/**`, `test/semantic-ir-v1-1-reader.ts`, `test/semantic-core-reader.ts`, `test/semantic-core-lowerer.ts`, `agent_ix_core_data/**`, `src/generated.ts`, `audit/**`, `.github/**`, and every corpus repository. Reading them, and invoking `poetry run python tests/semantic_ir_reader.py`, remain permitted.
 - No dependency is added; `@typespec/*` stay exact devDependency pins. No `file:`/`link:` specifier. No `.npmrc` is committed. Every added manifest is AGPL-3.0-only.
 - Every changed-path gate uses `git diff --no-renames`, the lesson Plan-007's Task-067 paid for.

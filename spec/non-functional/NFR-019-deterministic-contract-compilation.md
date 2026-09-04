@@ -29,7 +29,7 @@ search-path order — either supplied explicitly or excluded from the output.
 
 ## Scope
 
-- Applies to: `src/compiler/frontend/**`, `src/compiler/packages/**`, `src/compiler/ir/**`, `src/compiler/compat/**`, `src/compiler/diagnostics.mjs`, `src/compiler/inspect.mjs`, `src/compiler/json-locus.mjs`, `src/compiler/pipeline.mjs`, `src/compiler/host.mjs`, `src/compiler/cli.mjs`, `src/compiler/index.mjs`, `src/compiler/index.d.mts`, and `fixtures/compiler/**`.
+- Applies to: `src/compiler/frontend/**`, `src/compiler/packages/**`, `src/compiler/ir/**`, `src/compiler/compat/**`, `src/compiler/diagnostics.mjs`, `src/compiler/inspect.mjs`, `src/compiler/json-locus.mjs`, `src/compiler/pipeline.mjs`, `src/compiler/host.mjs`, `src/compiler/cli.mjs`, `src/compiler/index.mjs`, `src/compiler/index.d.mts`, and `test/fixtures/compiler/**`.
 - Permitted paths: the applied paths above, `test/**`, `spec/**`, `plan/**`, `reviews/**`, `scripts/**`, `docs/semantic-data-system/compiler-diagnostics.md`, `docs/semantic-data-system/ir-compatibility-policy.md`, `Makefile`, `package.json` `scripts`, `spec/tests.md`.
 - Prohibited paths, meaning this branch changes no byte of them (reading them, and invoking a program under them, remain permitted): `src/compiler/ir.mjs`, `src/compiler/compile.mjs`, `src/compiler/identity.mjs`, `src/compiler/emitters/**`, `src/compiler/backends/**`, `src/compiler/inventory.json`, `schema/**`, `fixtures/semantic/**`, `fixtures/semantic-core/**`, `fixtures/representative-core-payloads.json`, `packages/**`, `spikes/**`, `conformance/**`, `agent_ix_core_data/**`, `src/generated.ts`, `audit/**`, `tests/**`, `test/semantic-ir-v1-1-reader.ts`, `test/semantic-core-reader.ts`, `test/semantic-core-lowerer.ts`, `.github/**`, and every corpus repository.
 

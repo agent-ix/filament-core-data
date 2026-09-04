@@ -43,7 +43,7 @@ source or by the manifest and none is inferred from a type's spelling.
 - `src/compiler/frontend/typespec/frontend.mjs`: the `typespec` frontend, returning a `FrontendResult`
 - `src/compiler/frontend/typespec/host.mjs`: `restrictedHost({ host, roots, libraryRoot })`, the TypeSpec `CompilerHost` the frontend compiles through
 - `src/compiler/frontend/typespec/lower.mjs`: the pure lowering from a compiled `Program` plus a resolved package to an IR document
-- `fixtures/compiler/packages/**`: the TypeSpec package corpus every criterion below is exercised on, including the `assurance` package that covers every row of the structural-kind table
+- `test/fixtures/compiler/packages/**`: the TypeSpec package corpus every criterion below is exercised on, including the `assurance` package that covers every row of the structural-kind table
 - An IR document whose `contractVersion` is `1.1.0` and whose `source.dialect` is `typespec`
 
 ## Behavior
@@ -125,7 +125,7 @@ source or by the manifest and none is inferred from a type's spelling.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-046-AC-1 | The IR produced for `fixtures/compiler/packages/assurance` validates against `semantic-ir.schema.json` with `contractVersion` `1.1.0` and `source.dialect` `typespec`, and produces zero diagnostics from the FR-050 reader. | Test |
+| FR-046-AC-1 | The IR produced for `test/fixtures/compiler/packages/assurance` validates against `semantic-ir.schema.json` with `contractVersion` `1.1.0` and `source.dialect` `typespec`, and produces zero diagnostics from the FR-050 reader. | Test |
 | FR-046-AC-2 | Every row of the structural-kind table is exercised by a declaration in the fixture package and yields the stated `kind` and additional members; a model matching two rows takes the earlier one. | Test |
 | FR-046-AC-3 | Every row of the built-in scalar mapping yields the stated IR `scalar`, and a declaration extending an unmapped built-in raises `UNSUPPORTED_SCALAR_BASE` at its locus. | Test |
 | FR-046-AC-4 | A record named `AuditEvent` with no `@role` has `roles: []`, and a record named `Thing` with `@role("agent-ix:event")` has `roles: ["agent-ix:event"]`; neither value depends on the name. | Test |

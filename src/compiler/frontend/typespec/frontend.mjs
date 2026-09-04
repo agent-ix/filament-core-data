@@ -136,6 +136,7 @@ export async function run(request) {
 		program,
 		packageIdentity: resolution.root.identity,
 		packageRoot,
+		packageRoots: resolution.packages.map((entry) => entry.packageRoot),
 		sourceIdentity: resolution.root.sourceIdentity,
 		packageVersion: resolution.root.version,
 		sourceDigest: resolution.root.contentDigest,
