@@ -63,13 +63,14 @@ for the licence; confirm no registry publication occurred.
 | ID | Criteria | Verification |
 |---|---|---|
 | NFR-021-AC-1 | Every changed path on the branch is in the permitted set and none is in the prohibited set. | Analysis |
-| NFR-021-AC-2 | `package.json` `exports`, `main`, `module`, `types`, and `files` are byte-unchanged from `origin/main`. | Analysis |
-| NFR-021-AC-3 | `src/compiler/ir.mjs`, `compile.mjs`, `identity.mjs`, `emitters/**`, `backends/**`, and `inventory.json` are byte-unchanged from `origin/main`. | Analysis |
+| NFR-021-AC-2 | `package.json` `exports`, `main`, `module`, `types`, and `files` are byte-unchanged from the pre-change baseline. | Analysis |
+| NFR-021-AC-3 | `src/compiler/ir.mjs`, `compile.mjs`, `identity.mjs`, `emitters/**`, `backends/**`, and `inventory.json` are byte-unchanged from the pre-change baseline. | Analysis |
 | NFR-021-AC-4 | The four committed issue #4 goldens and every file under `spikes/` are byte-unchanged. | Analysis |
 | NFR-021-AC-5 | Nothing under `conformance/` is changed by this branch. | Analysis |
 | NFR-021-AC-6 | Reverting the branch leaves the suite green with the pre-existing case count, rehearsed by a script rather than by hand. | Test |
 | NFR-021-AC-7 | Every added package manifest declares `"license": "AGPL-3.0-only"`. | Analysis |
 | NFR-021-AC-8 | No package was published and no downstream repository was changed. | Inspection |
+| NFR-021-AC-9 | Every gate in this requirement resolves its baseline from history rather than from `origin/main`, and still fails on the same input after the change is merged. | Test |
 
 ## Dependencies
 

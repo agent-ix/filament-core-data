@@ -4351,6 +4351,33 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 		}
 	}, 120000);
 
+	/** Traces: TC-620; NFR-021-AC-9. */
+	it("resolves every non-disruption baseline from history, not a moving ref", () => {
+		// A gate baselined on `origin/main` stops asserting the moment the change
+		// merges: the range empties, the working tree matches the base, and every
+		// prohibition passes over an empty set. It does not go red, it goes quiet,
+		// which is why the suite reported green through two rounds of this defect.
+		// This is the static gate that keeps it out of the two suites that were
+		// fixed. It reads the sources rather than the git graph, so it gives the
+		// same verdict before and after the merge.
+		for (const name of ["compiler.test.ts", "compiler-core.test.ts"]) {
+			const source = read(resolve(root, "test", name))
+				.split("\n")
+				.filter((line) => !/^\s*(\/\/|\*|\/\*)/.test(line))
+				.join("\n");
+			// Assembled from parts so this gate does not match its own source.
+			const movingRef = new RegExp(["origin", "main"].join("/"));
+			expect(source, `${name} baselines on a moving ref`).not.toMatch(
+				movingRef,
+			);
+		}
+		// And the shared helper offers the history-based resolver the two suites
+		// use, so the fix cannot be reverted by deleting it unnoticed.
+		const helper = read(resolve(root, "test/changed-paths.ts"));
+		expect(helper).toContain("export function baselineBefore(");
+		expect(helper).toContain("export function changedPathsSince(");
+	});
+
 	/** Traces: TC-586; NFR-020-AC-8. */
 	it("survives 512 mutations of a manifest with no uncaught exception", () => {
 		const directory = temp("fuzz");

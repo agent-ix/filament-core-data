@@ -149,7 +149,7 @@ passes.
 | NFR-018 | Changed-path gate, manifest and packed-file comparison, licence inspection, restore rehearsal, publication inspection | TC-390..396 | ✅ Complete |
 | NFR-019 | Repeat-run and varied-environment byte comparison, ambient-input analysis, permutation and collator independence, injected-host observation, changed-path gate, dependency-pin inspection | TC-567..TC-578 | ✅ Complete |
 | NFR-020 | Limit enforcement, path-escape and module-load refusal, network and writer instrumentation, cyclic-input termination, fuzz run, message truncation | TC-579..TC-589, TC-606, TC-607 | ✅ Complete |
-| NFR-021 | Changed-path gate, manifest comparison, frozen-path byte comparison, scripted restore rehearsal, licence and publication inspection | TC-590..TC-597 | ✅ Complete |
+| NFR-021 | Changed-path gate, manifest comparison, frozen-path byte comparison, scripted restore rehearsal, licence and publication inspection, post-merge baseline rehearsal | TC-590..TC-597, TC-620, TC-621 | ✅ Complete |
 
 ## Test Case Summary
 
@@ -705,13 +705,15 @@ passes.
 | TC-588 | Input string content reaching a diagnostic message is truncated to 120 characters, so an adversarial name cannot flood the output | Unit | P0 | NFR-020-AC-10 | ✅ passed |
 | TC-589 | Every read the pinned TypeSpec compiler performs during a fixture compile passes through the injected host, counted at run time | Unit | P0 | NFR-020-AC-11 | ✅ passed |
 | TC-590 | Every changed path on the branch is in the permitted set and none is in the prohibited set | Static | P0 | NFR-021-AC-1 | ✅ passed |
-| TC-591 | `package.json` `exports`, `main`, `module`, `types`, and `files` are byte-unchanged from `origin/main` | Static | P0 | NFR-021-AC-2 | ✅ passed |
-| TC-592 | `src/compiler/ir.mjs`, `compile.mjs`, `identity.mjs`, `emitters/**`, `backends/**`, and `inventory.json` are byte-unchanged from `origin/main` | Static | P0 | NFR-021-AC-3 | ✅ passed |
+| TC-591 | `package.json` `exports`, `main`, `module`, `types`, and `files` are byte-unchanged from the pre-change baseline | Static | P0 | NFR-021-AC-2 | ✅ passed |
+| TC-592 | `src/compiler/ir.mjs`, `compile.mjs`, `identity.mjs`, `emitters/**`, `backends/**`, and `inventory.json` are byte-unchanged from the pre-change baseline | Static | P0 | NFR-021-AC-3 | ✅ passed |
 | TC-593 | The four committed issue #4 goldens and every file under `spikes/` are byte-unchanged | Static | P0 | NFR-021-AC-4 | ✅ passed |
 | TC-594 | Nothing under `conformance/` is changed by this branch | Static | P0 | NFR-021-AC-5 | ✅ passed |
 | TC-595 | Reverting the branch leaves the suite green with the pre-existing case count, rehearsed by a script rather than by hand | Integration | P0 | NFR-021-AC-6 | ✅ passed |
 | TC-596 | Every added package manifest declares `"license": "AGPL-3.0-only"` | Static | P0 | NFR-021-AC-7 | ✅ passed |
 | TC-597 | No package was published and no downstream repository was changed | Static | P0 | NFR-021-AC-8 | ✅ passed |
+| TC-620 | Every NFR-021 gate resolves its baseline from history and still fails on the same input in a simulated post-merge tree where `origin/main...HEAD` and `git status` are both empty | Integration | P0 | NFR-021-AC-9 | ✅ passed |
+| TC-621 | An unaccounted-for file under `src/compiler/` fails the promotion-inventory gate in that same post-merge tree | Static | P0 | NFR-021-AC-9 | ✅ passed |
 | TC-598 | Multiplicity, nullability, and default kind are independent across their permutations | Property | P0 | FR-046-AC-6, FR-046-AC-9 | ✅ passed |
 | TC-599 | Collection flags are accepted on collections and refused on single-valued properties | Unit | P1 | FR-046-AC-7 | ✅ passed |
 | TC-600 | Constraint applicability is exercised across every structural kind | Unit | P1 | FR-050-AC-11 | ✅ passed |
@@ -1126,15 +1128,15 @@ therefore partially satisfied by construction and completes with #36.
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 180 | 180 | 0 | 0 | 100% mapped (180/180) |
+| Static | 181 | 181 | 0 | 0 | 100% mapped (181/181) |
 | Manual | 45 | 44 | 0 | 1 | 100% mapped (45/45) |
 | Analysis | 17 | 17 | 0 | 0 | 100% mapped (17/17) |
 | Property | 43 | 43 | 0 | 0 | 100% mapped (43/43) |
 | Unit | 230 | 230 | 0 | 0 | 100% mapped (230/230) |
-| Integration | 37 | 36 | 0 | 1 | 100% mapped (37/37) |
+| Integration | 38 | 37 | 0 | 1 | 100% mapped (38/38) |
 | Fuzz | 7 | 7 | 0 | 0 | 100% mapped (7/7) |
 | Snapshot | 17 | 17 | 0 | 0 | 100% mapped (17/17) |
 | Compile | 3 | 3 | 0 | 0 | 100% mapped (3/3) |
-| **Total** | **579** | **577** | **0** | **2** | **100% mapped (579/579)** |
+| **Total** | **581** | **579** | **0** | **2** | **100% mapped (581/581)** |
 
 **Matrix coverage status: ✅ Complete. Execution status: ✅ 577 of 579 passed. TC-199 is recorded by the owner decision on issue #4; TC-370 and TC-382 remain blocked on issue #42 (the retained issue #4 evidence records the minting host's own tool versions). TC-398..619 pass on the issue #19 branch, measured with `make test` after merging `origin/main` at 4e48f08. The `Coverage` column is measured by `scripts/test-matrix-summary.mjs`, which counts the rows naming an id a spec artifact declares; it was a string literal before issue #19's code review (SR-073 FND-658). The `Blocked` column counts every row whose status is not ✅. Issue #19 measured `origin/main` at 51febd4 as **168 of 173** and filed the cause as #48; PR #47 re-expressed those five guards as tree assertions on `main`, and this branch takes that form.**
