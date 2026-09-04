@@ -158,6 +158,19 @@ rather than acquiring a hand-written Python generator.
   metadata, the backend's own IR admissibility reader, its canonical form and
   compatibility classification, the `generate` command, and the
   `typescript-backend` conformance adapter that answers the issue #20 oracle.
+- The Rust/Serde generation backend under `src/compiler/backends/rust-serde/`:
+  the published IR-to-Rust mapping table, stable identifier derivation, crate
+  emission with a finite static export surface and an explicit dynamic
+  extension surface, constraint enforcement at the construction and
+  deserialization boundary, and a closed `agent-ix.rust-backend.*` diagnostic
+  registry that refuses unsupported constructs rather than degrading them.
+- The decision procedure for ECMA-262 patterns an RE2-family engine cannot
+  compile, and the proved hand-written validator that resolves GAP-002 for the
+  published `sourceLocus.path` pattern with a differential equivalence harness.
+- The `rust-backend` conformance adapter, its independent Rust semantic-IR
+  reader, and the compile-time and runtime consumers built from the packaged
+  crate artifact, with determinism, rustfmt, MSRV, branch-register, and
+  mutation evidence.
 - The pinned Python generation toolchain and its advisory floor, the immutable
   per-family target profiles, the owned schema-preparation pass and refusal
   guards, the sandboxed generator runner, the generated-source inspection, the
@@ -266,6 +279,21 @@ rather than acquiring a hand-written Python generator.
   the declared coverage is not the implementer's to shrink.
 - Accepting a `conformance/thresholds.json` row, which stays `proposed` until the
   issue #11 publication gate acts on it.
+- Publishing any crate, adding a crate to a registry, or moving any downstream
+  Rust consumer as part of issue #21; publication passes the issue #7
+  cross-language gate and the release-readiness gate, neither of which has
+  moved.
+- The TypeScript (issue #22) and Python (issue #23) backends; issue #21 answers
+  the same mapping questions only for Rust and shares no generated code with
+  them.
+- Deciding GAP-011, the unstated resolution rule for a `reference` kind's
+  target; issue #21 records the dependency, adopts the corpus oracle's reading
+  for its adapter, and leaves the contract decision to issue #9.
+- Changing the published schemas, fixtures, or any conformance artefact other
+  than the `rust-backend` slot of `conformance/adapters/registry.json`, which
+  the corpus itself declares is the owning issue's to supply.
+- The ecosystem-wide property, fuzz, mutation, and adversarial testing program
+  (issue #25); issue #21 covers only its own mapping branches.
 
 ## 3. System Overview
 
@@ -313,6 +341,9 @@ Authority is assigned by concern:
 | Class | Artifacts | Purpose |
 |---|---|---|
 | Stakeholder | [StR-001](./stakeholder/StR-001-durable-semantic-data-governance.md) | Durable governance need |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-011](./usecase/US-011-consume-semantic-contracts-in-rust.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, package-author, and Rust-consumer outcomes |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-062](./functional/FR-062-cover-every-mapping-branch.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, prototype-promotion, compiler-core, and Rust/Serde backend behavior |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-023](./non-functional/NFR-023-non-disruptive-rust-backend.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic promoted compilation, rollback, bounded and safe compilation, compiler-core non-disruption, and hermetic deterministic Rust generation |
 | User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-013](./usecase/US-013-generate-governed-python-types.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, package-author, and Python-consumer outcomes |
 | Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-080](./functional/FR-080-type-check-and-validate-generated-python.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, prototype-promotion, compiler-core, and qualified Python generation behavior |
 | Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-027](./non-functional/NFR-027-reproducible-non-disruptive-python-generation.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic promoted compilation, rollback, bounded and safe compilation, compiler-core non-disruption, sandboxed Python generation, and reproducible non-disruptive Python generation |

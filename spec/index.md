@@ -21,6 +21,7 @@ okf_version: "0.1"
 * [US-009: Build generated packages from a supported compiler](./usecase/US-009-build-from-a-supported-compiler.md) - Compiler-maintainer outcome for promoting the issue #4 prototype emitters into `src/`.
 * [US-010: Compile a semantic package to versioned IR](./usecase/US-010-compile-a-semantic-package.md) - Package-author outcome for the TypeSpec frontend and the versioned semantic IR compiler core.
 * [US-012: Generate a TypeScript package from a compiled semantic package](./usecase/US-012-generate-a-typescript-package.md) - TypeScript-consumer outcome for the semantic codegen and validator backend.
+* [US-011: Consume semantic contracts as native Rust types](./usecase/US-011-consume-semantic-contracts-in-rust.md) - Rust-consumer outcome for the Rust/Serde semantic codegen backend.
 * [US-013: Generate governed Python types from a qualified upstream generator](./usecase/US-013-generate-governed-python-types.md) - Python-consumer outcome for the qualified `datamodel-code-generator` route.
 * [Functional requirements](./functional/) - Required architecture-record, census, feasibility, semantic-contract, package, projection, and compatibility behavior.
 * [Non-functional requirements](./non-functional/) - Traceability, reproducibility, parity, security, portability, evidence honesty, isolation, and safety qualities.

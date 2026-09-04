@@ -330,9 +330,9 @@
 		},
 		{
 			"adapter": "rust-backend",
-			"status": "unavailable",
-			"matched": 0,
-			"unmet": 111,
+			"status": "available",
+			"matched": 111,
+			"unmet": 0,
 			"failed": 0
 		},
 		{

@@ -1,0 +1,35 @@
+{
+	"contractVersion": "1.0.0",
+	"requirement": "ix://agent-ix/filament-core-data/FR-057",
+	"note": "The registry of hand-written validators admitted with a differential equivalence proof. Exactly one entry at this revision. A pattern is looked up here only after patterns.mjs has decided it is not expressible in the declared subset; a pattern in neither place stops generation with UNSUPPORTED_PATTERN.",
+	"entries": {
+		"^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\u0000]+$": {
+			"validator": "SourceLocusPath",
+			"patternSource": {
+				"file": "schema/semantic/v1/common.schema.json",
+				"pointer": "/$defs/sourceLocus/properties/path/pattern"
+			},
+			"reason": "The pattern carries four lookaheads. No RE2-family engine compiles a lookahead, and this backend generates its own matcher rather than linking one, so the declared subset of patterns.mjs cannot express it and a hand-written validator with a proof is the only alternative to refusing the one path member every IR document carries.",
+			"equivalenceArgument": "Anchored at both ends, the pattern is a conjunction of five independent clauses over the subject read as UTF-16 code units: the trailing [^\\u0000]+ makes the subject non-empty and NUL-free; (?!/) forbids a leading solidus; (?![A-Za-z]:) forbids a leading ASCII drive letter; (?!.*\\\\) forbids a backslash in the head, the prefix before the first line terminator, because . excludes all four ECMAScript line terminators with no s flag; and (?!.*(?:^|/)\\.\\.(?:/|$)) forbids a parent-directory segment whose two dots lie in the head, whose preceding position is the string start or a solidus, and which is followed by a solidus or the end of the subject, where ^ and $ bind to the whole subject because there is no m flag. SourceLocusPath::try_new decides exactly that conjunction, clause for clause, in the same code-unit basis.",
+			"probeAlphabet": [
+				"a",
+				"/",
+				"\\\\",
+				".",
+				":",
+				"\\u000a",
+				"\\u000d",
+				"\\u2028",
+				"\\u2029",
+				"\\u0000"
+			],
+			"probeAlphabetNote": "Every class the pattern discriminates has a member: an ordinary character, the solidus the segment rule turns on, the backslash the head rule turns on, the dot the parent-directory rule turns on, the colon the drive-letter rule turns on, all four ECMAScript line terminators because the head is defined by them and an alphabet with only U+000A admits a validator that treats U+000A as the only terminator and still agrees on every probed string, and U+0000 which the character class excludes.",
+			"harness": "agent-ix.rust-backend.harness.locus-path-differential",
+			"divergence": {
+				"gap": "GAP-002",
+				"issue": "https://github.com/agent-ix/filament-core-data/issues/56",
+				"note": "The published language admits a value carrying a line terminator followed by a parent-directory segment, because the head guards stop at the first line terminator. SourceLocusPath::is_traversal_free decides the intended language instead and is required, in addition, wherever a value governed by this pattern addresses the filesystem."
+			}
+		}
+	}
+}

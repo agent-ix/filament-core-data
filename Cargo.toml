@@ -1,0 +1,31 @@
+# Rust workspace for agent-ix/filament-core-data#21.
+#
+# Two members are built here. `crates/semantic-ir` is the independent Rust
+# reader FR-059 requires: it declares no dependency at all, so its agreement
+# with the issue #20 oracle is evidence rather than a shared implementation.
+# `crates/conformance-adapter` is the process the `rust-backend` slot of
+# `conformance/adapters/registry.json` starts.
+#
+# The two consumer crates are excluded on purpose. FR-061 builds them against
+# the *unpacked* crate artifact in a scratch directory, with no path dependency
+# reaching back into this tree, so a build that only works in place is a
+# failure rather than a convenience.
+#
+# `publish = false` is on every member and on this manifest, because the issue
+# #21 safety gate forbids crate publication until the cross-language
+# compatibility and release-readiness gates pass.
+
+[workspace]
+resolver = "2"
+members = ["crates/semantic-ir", "crates/conformance-adapter"]
+exclude = ["crates/consumer-compile-time", "crates/consumer-runtime"]
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.85.0"
+license = "AGPL-3.0-only"
+publish = false
+
+[workspace.dependencies]
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.151"

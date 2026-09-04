@@ -48,6 +48,13 @@ export interface ChangeRange {
 	readonly base: string;
 	/** The commit that introduced the change. */
 	readonly tip: string;
+	/**
+	 * True when every sentinel resolves to one commit, which is what a squash
+	 * merge produces. It is the signal that separates "this change is still in
+	 * flight, and every commit after `tip` is its own" from "this change is one
+	 * landed commit, and everything after it belongs to a later ticket".
+	 */
+	readonly squashed: boolean;
 }
 
 /**
@@ -134,7 +141,7 @@ export function changeRange(
 		cwd: root,
 		encoding: "utf8",
 	}).trim();
-	return { base, tip: latest };
+	return { base, tip: latest, squashed: earliest === latest };
 }
 
 /**
@@ -185,6 +192,50 @@ export function changedPathsOf(
 		.filter((path) => !changedAfter(root, tip, path));
 
 	return [...new Set([...committed, ...working])];
+}
+
+/**
+ * A path's bytes *as this change left them*.
+ *
+ * A gate that reads the working tree and compares it to `changeRange().base`
+ * has both defects of a half-pinned range at once: the base is a history fact,
+ * the head is whatever is checked out. After the squash merge the head carries
+ * every later ticket, so a later ticket's edit to a path this change froze is
+ * attributed to this change and fails it for someone else's commit. That is the
+ * same shape issue #20 measured on a path *set*, applied to a path's *bytes*.
+ *
+ * Reading `tip` unconditionally is wrong in the other direction: while the
+ * change is in flight `tip` is the last commit that added a sentinel, not the
+ * branch head, so every commit the change made after it would be invisible.
+ *
+ * `squashed` separates the two, and it is a fact about history rather than a
+ * guess: while the sentinels sit in different commits the change is unmerged,
+ * there are no later tickets in this history, and the working tree is its end
+ * state; once they collapse to one commit the change *is* that commit, and
+ * everything after it is somebody else's.
+ *
+ * Throws when the path is absent, because a gate that cannot read the content
+ * it compares must fail rather than pass.
+ */
+export function contentAsChanged(
+	root: string,
+	sentinels: string | readonly string[],
+	path: string,
+): Buffer {
+	const { tip, squashed } = changeRange(root, sentinels);
+	if (squashed) {
+		return execFileSync("git", ["show", `${tip}:${path}`], {
+			cwd: root,
+			maxBuffer: 64 * 1024 * 1024,
+		});
+	}
+	const absolute = resolve(root, path);
+	if (!existsSync(absolute)) {
+		throw new Error(
+			`${path} is absent from the working tree, so this gate cannot read the content it compares`,
+		);
+	}
+	return readFileSync(absolute);
 }
 
 /** True when a commit after `tip` changed `path`: later work, not this change. */
@@ -239,4 +290,81 @@ function matchesBase(root: string, base: string, path: string): boolean {
 		return false;
 	}
 	return readFileSync(absolute).equals(atBase);
+}
+
+/**
+ * The paths a change's own commits touched, as the union of their per-commit
+ * name lists over `--first-parent --no-merges`.
+ *
+ * This is the fifth face of the merge-degrading defect, and it is the one
+ * `changedPathsOf` above does not cover. That helper takes a *tree* diff over
+ * `base..tip`, which is exact for a branch whose history is linear over the
+ * trunk and wrong for one that merged the trunk inside its own range: the diff
+ * then carries every path the trunk moved as though this change had moved it.
+ * `test/conformance-corpus.test.ts` measured it — 456 paths, 74 of them the
+ * trunk's, against a true change set of 182 — and worked around it with a
+ * private copy of the loop below. This is that copy, promoted, so the next gate
+ * does not have to rediscover it.
+ *
+ * Both endpoints still come from history through `changeRange`, so the range
+ * neither empties on merge nor accretes afterwards. `--first-parent` keeps a
+ * merged branch's own commits and drops the side it merged; `--no-merges` drops
+ * the merge commits themselves, whose name lists are the combined trees.
+ *
+ * The preferred fix is still not to merge the trunk into a branch at all — a
+ * rebase leaves nothing for this to filter — and NFR-023 requires that. This
+ * exists because "we rebased" is a claim and the union is a measurement.
+ */
+export function changedPathsUnion(
+	root: string,
+	sentinels: string | readonly string[],
+): string[] {
+	const { base, tip } = changeRange(root, sentinels);
+	const committed = execFileSync(
+		"git",
+		[
+			"log",
+			"--first-parent",
+			"--no-merges",
+			"--no-renames",
+			"--format=",
+			"--name-only",
+			`${base}..${tip}`,
+		],
+		{ cwd: root, encoding: "utf8" },
+	)
+		.split("\n")
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0);
+
+	const working = execFileSync(
+		"git",
+		["status", "--porcelain", "--untracked-files=all"],
+		{ cwd: root, encoding: "utf8" },
+	)
+		.split("\n")
+		.filter((line) => line.trim().length > 0)
+		.map((line) => line.slice(3).trim())
+		.filter((path) => path.length > 0)
+		.filter((path) => !REGENERATED_IN_PLACE.has(path))
+		.filter((path) => !matchesBase(root, "HEAD", path))
+		.filter((path) => !changedAfter(root, tip, path));
+
+	return [...new Set([...committed, ...working])].sort();
+}
+
+/** Merge commits inside a change's own range. NFR-023 requires none. */
+export function mergeCommitsIn(
+	root: string,
+	sentinels: string | readonly string[],
+): string[] {
+	const { base, tip } = changeRange(root, sentinels);
+	return execFileSync(
+		"git",
+		["log", "--merges", "--format=%H", `${base}..${tip}`],
+		{ cwd: root, encoding: "utf8" },
+	)
+		.split("\n")
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0);
 }
