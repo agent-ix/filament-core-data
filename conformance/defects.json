@@ -46,7 +46,7 @@
 			"owningIssue": "agent-ix/filament-core-data#19",
 			"discoveredBy": "agent-ix/filament-core-data#20",
 			"evidence": "`nullable: fieldType.includes(\"null\")` over `getTypeName(property.type)`.",
-			"contractExpectation": "Nullability is a member a field carries, independent of presence. A type whose display name merely contains the substring is not nullable, and a rename can flip the answer.",
+			"contractExpectation": "Nullability is a member a field carries, independent of presence. A type whose display name merely contains the substring is not nullable, and the check is case-sensitive, so a rename can flip the answer in either direction.",
 			"documentExpressible": true,
 			"reproducingCase": "PRES-010"
 		},

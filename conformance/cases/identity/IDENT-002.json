@@ -29,7 +29,8 @@
 	],
 	"provenance": {
 		"authoredFor": "agent-ix/filament-core-data#20",
-		"blessedFromRun": false
+		"blessedFromRun": false,
+		"reproduces": "DEF-PROTO-015"
 	},
 	"expected": {
 		"resultState": "invalid",

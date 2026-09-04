@@ -1,6 +1,6 @@
 {
 	"id": "PROV-002",
-	"title": "A source locus that escapes the source root is rejected",
+	"title": "A source locus whose line number is below one is rejected",
 	"family": "provenance",
 	"class": "negative",
 	"kind": "document",
@@ -45,6 +45,13 @@
 		"authoredFor": "agent-ix/filament-core-data#20",
 		"blessedFromRun": false
 	},
+	"unsupportedBy": [
+		{
+			"adapter": "rust-backend",
+			"owningIssue": "agent-ix/filament-core-data#21",
+			"rationale": "The published sourceLocus constrains its path with four ECMAScript lookaheads that RE2 cannot compile (contract-gaps.json GAP-002), so a Rust reader decides a locus structurally and may answer unsupported rather than reproduce this validator's instance location."
+		}
+	],
 	"expected": {
 		"resultState": "invalid",
 		"diagnostics": [

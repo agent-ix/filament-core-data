@@ -2,7 +2,7 @@
 	"id": "PRES-010",
 	"title": "Nullability is a member, not a substring of a rendered type name",
 	"family": "field-presence",
-	"class": "negative",
+	"class": "positive",
 	"kind": "document",
 	"contractVersion": "1.1.0",
 	"base": "core-1-1",
@@ -11,8 +11,8 @@
 			"op": "add",
 			"path": "/ir/types/-",
 			"value": {
-				"identity": "ix://agent-ix/conformance/type/Nullifier",
-				"displayName": "Nullifier",
+				"identity": "ix://agent-ix/conformance/type/Annullable",
+				"displayName": "Annullable",
 				"kind": "scalar",
 				"roles": [],
 				"origin": {
@@ -37,7 +37,7 @@
 		{
 			"op": "replace",
 			"path": "/ir/types/8/fields/1/typeRef",
-			"value": "ix://agent-ix/conformance/type/Nullifier"
+			"value": "ix://agent-ix/conformance/type/Annullable"
 		},
 		{
 			"op": "test",
@@ -48,16 +48,6 @@
 			"op": "replace",
 			"path": "/ir/types/8/fields/1/nullable",
 			"value": false
-		},
-		{
-			"op": "test",
-			"path": "/ir/types/8/fields/1/presence",
-			"value": "optional"
-		},
-		{
-			"op": "replace",
-			"path": "/ir/types/8/fields/1/presence",
-			"value": "required"
 		}
 	],
 	"covers": ["CR-field-presence"],
@@ -80,26 +70,7 @@
 		"reproduces": "DEF-PROTO-004"
 	},
 	"expected": {
-		"resultState": "invalid",
-		"diagnostics": [
-			{
-				"pointer": "/ir/types/8/fields/1/presence",
-				"diagnostic": {
-					"code": "agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH",
-					"severity": "error",
-					"message": "presence is derived from the multiplicity lower bound and contradicts it",
-					"owner": "ix://agent-ix/conformance/field/node-label",
-					"blocking": true,
-					"causes": [],
-					"related": [],
-					"locus": {
-						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
-						"path": "model/node.tsp",
-						"startLine": 6,
-						"startColumn": 1
-					}
-				}
-			}
-		]
+		"resultState": "success",
+		"diagnostics": []
 	}
 }

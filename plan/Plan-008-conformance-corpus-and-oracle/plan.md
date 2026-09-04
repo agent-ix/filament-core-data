@@ -71,8 +71,8 @@ Task-048 -> Task-049 -> Task-050 -> Task-051 --\
 
 ### Cross-cutting constraints
 
-- NFR-016 permits `conformance/**`, `spec/**`, `plan/**`, `reviews/**`, `spec/reviews/**`, `test/conformance-corpus.test.ts`, `tests/test_conformance_corpus.py`, `Makefile` (new targets), and `package.json` (a script only).
-- Prohibited: `/spikes/**`, `/src/**`, `/packages/**`, `/schema/**`, `/fixtures/**`, `/docs/**`, `/.github/**`, `/pyproject.toml`, `/biome.json`, `/tsconfig*.json`, both lockfiles, and any `exports` or `files` entry.
+- NFR-016 permits `conformance/**`, `spec/**`, `plan/**`, `reviews/**`, `spec/reviews/**`, `test/conformance-corpus.test.ts`, `tests/test_conformance_corpus.py`, `Makefile` (new targets), and the cumulative changed-path allow-lists the earlier tickets' gates carry in `test/*.test.ts`, which every ticket extends.
+- Prohibited: `/spikes/**`, `/src/**`, `/packages/**`, `/schema/**`, `/fixtures/**`, `/docs/**`, `/.github/**`, `/package.json`, `/pyproject.toml`, `/biome.json`, `/tsconfig*.json`, and both lockfiles. `package.json` is prohibited outright because issue #9's own gate requires it byte-identical to `main`, so the Make targets call `node` directly rather than adding a script.
 - The oracle imports no judged implementation and reads no clock, network, or environment. The audit target is the only entry point that reads a clock.
 - Every expected result is authored from a contract clause the case quotes. No expectation is captured from a run.
 - The prototype emitter may be read and may be run read-only into a scratch output directory; nothing under `spikes/` changes.

@@ -68,7 +68,8 @@ function compareDiagnostics(left, right) {
 	return (
 		compareCodePoint(left.pointer, right.pointer) ||
 		compareCodePoint(left.code, right.code) ||
-		compareCodePoint(left.message, right.message)
+		compareCodePoint(left.message, right.message) ||
+		compareCodePoint(canonical(left), canonical(right))
 	);
 }
 
@@ -665,7 +666,7 @@ function checkTypeDefinition(definition, at, version, types, lockExports, out) {
 	}
 }
 
-function checkCompositeCycles(ir, types, out) {
+function checkCompositeCycles(ir, out) {
 	const edges = new Map();
 	const definitions = Array.isArray(ir.types) ? ir.types : [];
 	for (const [t, definition] of definitions.entries()) {
@@ -714,7 +715,6 @@ function checkCompositeCycles(ir, types, out) {
 		state.set(node, "done");
 	};
 	for (const node of edges.keys()) if (!state.has(node)) visit(node, 0);
-	void types;
 }
 
 /* ---------------------------------------------------- package and lock ---- */
@@ -765,7 +765,16 @@ function checkPackageContext(bundle, ir, types, out) {
 				.map((entry, index) => [entry.identity, index]),
 		);
 		const visit = (node, depth) => {
-			if (depth > DEPTH_LIMIT) return;
+			if (depth > DEPTH_LIMIT) {
+				out.push(
+					diagnostic(
+						"DEPTH_LIMIT_EXCEEDED",
+						pointer("lock", "packages", indexOf.get(node) ?? 0, "dependencies"),
+						`package graph expansion exceeded the declared depth limit of ${DEPTH_LIMIT}`,
+					),
+				);
+				return;
+			}
 			state.set(node, "open");
 			for (const dependency of graph.get(node) ?? []) {
 				const status = state.get(dependency);
@@ -803,6 +812,7 @@ function checkPackageContext(bundle, ir, types, out) {
 		}
 	}
 
+	const declaredIdentities = mappings.length > 0 ? identitySet(ir) : undefined;
 	for (const [m, mapping] of mappings.entries()) {
 		if (!isObject(mapping)) continue;
 		for (const key of ["sourceType", "targetType"]) {
@@ -822,7 +832,7 @@ function checkPackageContext(bundle, ir, types, out) {
 		).entries()) {
 			if (
 				isObject(correspondence) &&
-				!identitySet(ir).has(correspondence.sourceIdentity)
+				!declaredIdentities.has(correspondence.sourceIdentity)
 			) {
 				out.push(
 					diagnostic(
@@ -1008,7 +1018,7 @@ export function verdict(bundle, schemaRows = []) {
 			);
 		}
 	}
-	checkCompositeCycles(ir, byIdentity, out);
+	checkCompositeCycles(ir, out);
 
 	for (const [i, occurrence] of (Array.isArray(ir.occurrences)
 		? ir.occurrences
@@ -1054,6 +1064,52 @@ function fieldIndex(ir) {
 	return index;
 }
 
+/** Members of a type definition the classifier models change-by-change. */
+const MODELLED_TYPE_MEMBERS = [
+	"constraints",
+	"displayName",
+	"fields",
+	"identity",
+	"items",
+	"kind",
+	"operations",
+	"origin",
+	"relationships",
+	"scalar",
+	"target",
+	"unknownPolicy",
+	"values",
+	"variants",
+];
+
+/** Members of a field the classifier models change-by-change. */
+const MODELLED_FIELD_MEMBERS = [
+	"defaultKind",
+	"defaultValue",
+	"identity",
+	"multiplicity",
+	"name",
+	"nullable",
+	"origin",
+	"presence",
+	"typeRef",
+	"unit",
+];
+
+/**
+ * The part of a node no classification rule reads.
+ *
+ * A difference here is a real change the classifier cannot name, so it is
+ * `unknown` rather than silence: the contract keeps an unclassifiable change
+ * visible because it prevents a compatible promotion.
+ */
+function residue(node, modelled) {
+	if (!isObject(node)) return canonical(node);
+	const copy = { ...node };
+	for (const member of modelled) delete copy[member];
+	return canonical(copy);
+}
+
 function moreRestrictive(left, right) {
 	return CLASSIFICATION_ORDER.indexOf(left) <=
 		CLASSIFICATION_ORDER.indexOf(right)
@@ -1083,8 +1139,9 @@ export function classify(beforeBundle, afterBundle) {
 		changes.push({ classification, pointer: at, message });
 
 	const beforeTypes = indexTypes(before).byIdentity;
-	const afterTypes = indexTypes(after).byIdentity;
-	const afterIndex = indexTypes(after).indexOf;
+	const afterIndexed = indexTypes(after);
+	const afterTypes = afterIndexed.byIdentity;
+	const afterIndex = afterIndexed.indexOf;
 
 	for (const identity of beforeTypes.keys()) {
 		if (!afterTypes.has(identity)) {
@@ -1249,6 +1306,16 @@ export function classify(beforeBundle, afterBundle) {
 				);
 			}
 		}
+		if (
+			residue(prior, MODELLED_TYPE_MEMBERS) !==
+			residue(definition, MODELLED_TYPE_MEMBERS)
+		) {
+			record(
+				"unknown",
+				at,
+				`type ${identity} changed a member no compatibility rule classifies`,
+			);
+		}
 		for (const identityOfConstraint of priorConstraints.keys()) {
 			const still = (
 				Array.isArray(definition.constraints) ? definition.constraints : []
@@ -1349,6 +1416,16 @@ export function classify(beforeBundle, afterBundle) {
 			record("breaking", at, `field ${identity} became required`);
 		} else if (nowLower < priorLower) {
 			record("additive", at, `field ${identity} became optional`);
+		}
+		if (
+			residue(prior.field, MODELLED_FIELD_MEMBERS) !==
+			residue(field, MODELLED_FIELD_MEMBERS)
+		) {
+			record(
+				"unknown",
+				at,
+				`field ${identity} changed a member no compatibility rule classifies`,
+			);
 		}
 	}
 

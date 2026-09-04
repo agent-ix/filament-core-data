@@ -27,7 +27,7 @@ const oracle = await load(
 const { applyPatch, canonical, countNodes } = await load(
 	join(HERE, "..", "conformance", "oracle", "json.mjs"),
 );
-const { schemaDiagnostics, validateConformance } = await load(
+const { schemaDiagnostics, validateAgainst, validateConformance } = await load(
 	join(HERE, "..", "conformance", "oracle", "schema-layer.mjs"),
 );
 const { buildCoverage, mutationScore, renderCoverage, run } = await load(
@@ -45,6 +45,7 @@ const manifest = corpus.loadManifest() as Json & {
 		id: string;
 		path: string;
 		digest: string;
+		expectedDigest: string;
 		family: string;
 		class: string;
 	}[];
@@ -98,6 +99,30 @@ function conforming(entry: Json) {
 const conformingResults = (adapter: string) =>
 	cases.map((entry) => ({ ...conforming(entry), adapter }));
 
+/**
+ * Runs the real FR-035 gate set with one case swapped for a mutated copy, so a
+ * negative test exercises the gate rather than restating its own input.
+ */
+const gatesWithCase = (id: string, mutate: (entry: Json) => void) => {
+	const seeded = corpus.loadCase(id) as Json;
+	mutate(seeded);
+	return corpus.corpusGates({
+		readCase: (row: { id: string; path: string }) =>
+			row.id === id ? seeded : read(join(REPO, row.path)),
+	}) as { gate: string; subject: string; message: string }[];
+};
+
+/** Runs the gate set against a mutated manifest. */
+const gatesWithManifest = (mutate: (value: Json) => void) => {
+	const seeded = corpus.loadManifest() as Json;
+	mutate(seeded);
+	return corpus.corpusGates({ manifest: seeded }) as {
+		gate: string;
+		subject: string;
+		message: string;
+	}[];
+};
+
 describe("TC-280..289 the corpus format, provenance, and digests (FR-035)", () => {
 	it("TC-280 every case, base, and the manifest validate against the conformance schemas", () => {
 		expect(
@@ -147,16 +172,31 @@ describe("TC-280..289 the corpus format, provenance, and digests (FR-035)", () =
 	});
 
 	it("TC-282 a quote that no longer occurs fails the provenance gate", () => {
-		const broken = structuredClone(cases[0]) as Json;
-		(broken.derivedFrom as { quote: string }[])[0].quote =
-			"a phrase no contract artifact carries";
-		const text = readFileSync(
-			join(REPO, (broken.derivedFrom as { artifact: string }[])[0].artifact),
-			"utf8",
+		const failures = gatesWithCase("ENV-001", (entry) => {
+			(entry.derivedFrom as { quote: string }[])[0].quote =
+				"a phrase no contract artifact carries";
+		});
+		expect(failures.some((one) => one.gate === "provenance")).toBe(true);
+		expect(failures.find((one) => one.gate === "provenance")?.subject).toBe(
+			"ENV-001",
 		);
+	});
+
+	it("TC-282 a quote taken from outside the declared contract artifacts fails", () => {
+		const failures = gatesWithCase("ENV-001", (entry) => {
+			(entry.derivedFrom as Json[])[0] = {
+				artifact: "package.json",
+				locator: "name",
+				quote: "@agent-ix/filament-core-data",
+			};
+		});
 		expect(
-			text.includes((broken.derivedFrom as { quote: string }[])[0].quote),
-		).toBe(false);
+			failures.some(
+				(one) =>
+					one.gate === "provenance" &&
+					one.message.includes("not a declared contract artifact"),
+			),
+		).toBe(true);
 	});
 
 	it("TC-283 every digest and the corpus digest recompute from disk", () => {
@@ -175,12 +215,25 @@ describe("TC-280..289 the corpus format, provenance, and digests (FR-035)", () =
 		);
 	});
 
-	it("TC-283 a flipped byte in one case file changes that case's digest", () => {
-		const row = manifest.cases[0];
-		const bytes = readFileSync(join(REPO, row.path));
-		const mutated = Buffer.from(bytes);
-		mutated[mutated.length - 2] ^= 0x01;
-		expect(corpus.textDigest(mutated.toString("utf8"))).not.toBe(row.digest);
+	it("TC-283 a case digest that no longer matches the file fails the gate and names it", () => {
+		const failures = gatesWithManifest((seeded) => {
+			(seeded.cases as { digest: string }[])[0].digest =
+				`sha256:${"0".repeat(64)}`;
+		});
+		const digestFailure = failures.find((one) => one.gate === "digest");
+		expect(digestFailure).toBeDefined();
+		expect(digestFailure?.subject).toBe(manifest.cases[0].id);
+		expect(
+			failures.some((one) => one.gate === "corpus-digest"),
+			"a changed case digest also changes the corpus digest",
+		).toBe(true);
+	});
+
+	it("TC-283 a base file absent from the manifest fails the base-index gate", () => {
+		const failures = gatesWithManifest((seeded) => {
+			(seeded.bases as unknown[]).shift();
+		});
+		expect(failures.some((one) => one.gate === "base-index")).toBe(true);
 	});
 
 	it("TC-284 no case is blessed from a run", () => {
@@ -191,10 +244,14 @@ describe("TC-280..289 the corpus format, provenance, and digests (FR-035)", () =
 		}
 	});
 
-	it("TC-284 a blessed case with no blessing block fails the case schema contract", () => {
-		const blessed = structuredClone(cases[0]) as Json;
-		(blessed.provenance as Json).blessedFromRun = true;
-		expect((blessed.provenance as Json).blessing).toBeUndefined();
+	it("TC-284 a blessed case with no blessing block fails the gate", () => {
+		const failures = gatesWithCase("ENV-001", (entry) => {
+			(entry.provenance as Json).blessedFromRun = true;
+		});
+		expect(failures.some((one) => one.gate === "blessing")).toBe(true);
+		expect(failures.find((one) => one.gate === "blessing")?.subject).toBe(
+			"ENV-001",
+		);
 	});
 
 	it("TC-285 no case exceeds the minimization budget", () => {
@@ -260,32 +317,29 @@ describe("TC-280..289 the corpus format, provenance, and digests (FR-035)", () =
 		}
 	});
 
-	it("TC-288 every expected diagnostic is a published diagnostic and its pointer resolves", () => {
-		for (const entry of cases) {
-			const bundle = corpus.buildInput(entry);
-			for (const expectation of (entry.expected as Json).diagnostics as {
-				pointer: string;
-				diagnostic: Json;
-			}[]) {
-				expect(
-					(
-						corpus.validatePublished(
-							"common.schema.json",
-							expectation.diagnostic,
-						) as unknown[]
-					).length,
-					`${String(entry.id)} ${expectation.pointer}`,
-				).toBeGreaterThanOrEqual(0);
-				const parent = expectation.pointer.slice(
-					0,
-					expectation.pointer.lastIndexOf("/"),
-				);
-				expect(
-					parent === "" || JSON.stringify(bundle).length > 0,
-					String(entry.id),
-				).toBe(true);
-			}
-		}
+	it("TC-288 a malformed expected diagnostic fails the diagnostic-shape gate", () => {
+		const negative = cases.find(
+			(entry) => ((entry.expected as Json).diagnostics as unknown[]).length > 0,
+		) as Json;
+		const failures = gatesWithCase(negative.id as string, (entry) => {
+			delete (
+				((entry.expected as Json).diagnostics as { diagnostic: Json }[])[0]
+					.diagnostic as Json
+			).owner;
+		});
+		expect(failures.some((one) => one.gate === "diagnostic-shape")).toBe(true);
+	});
+
+	it("TC-288 an expected pointer that addresses no node fails the pointer gate", () => {
+		const negative = cases.find(
+			(entry) => ((entry.expected as Json).diagnostics as unknown[]).length > 0,
+		) as Json;
+		const failures = gatesWithCase(negative.id as string, (entry) => {
+			(
+				(entry.expected as Json).diagnostics as { pointer: string }[]
+			)[0].pointer = "/ir/types/9999/absent";
+		});
+		expect(failures.some((one) => one.gate === "pointer")).toBe(true);
 	});
 
 	it("TC-289 case ids are unique, patterned, prefixed, and in their family directory", () => {
@@ -325,18 +379,21 @@ describe("TC-290..301 the oracle (FR-036)", () => {
 	});
 
 	it("TC-291 the diagnostic order is unchanged under a Turkish locale", () => {
-		const before = cases.map((entry) => canonical(corpus.oracleVerdict(entry)));
-		const previous = process.env.LC_ALL;
-		process.env.LC_ALL = "tr_TR.UTF-8";
-		try {
-			const after = cases.map((entry) =>
-				canonical(corpus.oracleVerdict(entry)),
-			);
-			expect(after).toEqual(before);
-		} finally {
-			if (previous === undefined) delete process.env.LC_ALL;
-			else process.env.LC_ALL = previous;
-		}
+		// Node resolves its ICU locale at startup, so this has to run out of
+		// process: an in-process assignment could not change any comparison.
+		const script = `
+			import { loadCorpus, oracleVerdict, textDigest } from ${JSON.stringify(join(CONF, "corpus.mjs"))};
+			import { canonical } from ${JSON.stringify(join(CONF, "oracle", "json.mjs"))};
+			const { cases } = loadCorpus();
+			process.stdout.write(textDigest(canonical(cases.map(oracleVerdict))));
+		`;
+		const under = (locale: string) =>
+			execFileSync("node", ["--input-type=module", "-e", script], {
+				cwd: REPO,
+				encoding: "utf8",
+				env: { ...process.env, LC_ALL: locale, LANG: locale },
+			});
+		expect(under("tr_TR.UTF-8")).toBe(under("C"));
 	});
 
 	it("TC-292 a self-referential and a mutual alias each yield ALIAS_CYCLE, not a depth error", () => {
@@ -475,23 +532,26 @@ describe("TC-290..301 the oracle (FR-036)", () => {
 		).toBe("conditional");
 	});
 
-	it("TC-297 every diagnostic the oracle emits is a published diagnostic", () => {
+	it("TC-297 every diagnostic the oracle emits validates against the published definition", () => {
+		const DIAGNOSTIC =
+			"https://schemas.agent-ix.org/filament-core-data/v1/common.schema.json#/$defs/diagnostic";
+		const errors = (value: unknown) =>
+			(validateAgainst(DIAGNOSTIC, value) as unknown[]).length;
+		// The validator really does reject a malformed diagnostic.
+		expect(errors({ code: "nope" })).toBeGreaterThan(0);
 		for (const entry of cases) {
-			const verdict = corpus.oracleVerdict(entry) as {
-				diagnostics: { diagnostic: Json }[];
-			};
-			for (const one of verdict.diagnostics) {
-				expect(Object.keys(one.diagnostic), String(entry.id)).toEqual(
-					expect.arrayContaining([
-						"code",
-						"severity",
-						"message",
-						"owner",
-						"blocking",
-						"causes",
-						"related",
-					]),
-				);
+			for (const one of (
+				corpus.oracleVerdict(entry) as { diagnostics: { diagnostic: Json }[] }
+			).diagnostics) {
+				expect(errors(one.diagnostic), String(entry.id)).toBe(0);
+			}
+		}
+		// Including a diagnostic for an input no corpus case carries.
+		for (const value of [null, 42, [], {}]) {
+			for (const one of (
+				oracle.verdict(value, []) as { diagnostics: { diagnostic: Json }[] }
+			).diagnostics) {
+				expect(errors(one.diagnostic)).toBe(0);
 			}
 		}
 	});
@@ -661,6 +721,26 @@ describe("TC-302..313 the differential harness (FR-037)", () => {
 		).toBe(1);
 	});
 
+	it("TC-303 a reordered diagnostic list fails", () => {
+		// The single-violation gate holds every negative case to one diagnostic,
+		// so the reorder is seeded on a boundary case that carries several.
+		const multi = cases.find(
+			(entry) => ((entry.expected as Json).diagnostics as unknown[]).length > 1,
+		) as Json;
+		expect(
+			multi,
+			"the corpus carries a case with more than one diagnostic",
+		).toBeDefined();
+		const results = conformingResults("typescript-backend");
+		const target = results.find((one) => one.caseId === multi.id) as Json;
+		target.diagnostics = [...(target.diagnostics as unknown[])].reverse();
+		const report = run({
+			adapterResults: { "typescript-backend": results },
+		}) as { exitCode: number; divergences: { case: string }[] };
+		expect(report.exitCode).toBe(1);
+		expect(report.divergences.some((one) => one.case === multi.id)).toBe(true);
+	});
+
 	it("TC-303 a repointed diagnostic fails", () => {
 		expect(
 			seeded((result) => {
@@ -778,23 +858,33 @@ describe("TC-302..313 the differential harness (FR-037)", () => {
 			caseDigest: result.caseDigest,
 			support: "unavailable",
 		}));
-		const patched = structuredClone(registry) as {
+		// The same answers pass while the registry declares the slot unavailable.
+		expect(
+			(
+				run({ adapterResults: { "typescript-backend": results } }) as {
+					problems: unknown[];
+				}
+			).problems,
+		).toEqual([]);
+		// Flipping that slot to `available` makes every one of them a failure.
+		const available = structuredClone(registry) as {
 			adapters: { id: string; status: string }[];
 		};
-		const original = readFileSync(
-			join(CONF, "adapters", "registry.json"),
-			"utf8",
-		);
-		void patched;
-		void original;
-		// The registry declares the adapter unavailable, so the same answers pass;
-		// the harness rule is exercised through the `available` branch below.
+		for (const adapter of available.adapters) {
+			if (adapter.id === "typescript-backend") adapter.status = "available";
+		}
 		const report = run({
+			registry: available,
 			adapterResults: { "typescript-backend": results },
-		}) as {
-			problems: unknown[];
-		};
-		expect(report.problems).toEqual([]);
+		}) as { exitCode: number; problems: { kind: string; message: string }[] };
+		expect(report.exitCode).toBe(1);
+		expect(
+			report.problems.some(
+				(one) =>
+					one.kind === "unavailable" &&
+					one.message.includes("an available adapter answered unavailable"),
+			),
+		).toBe(true);
 	});
 
 	it("TC-306 a registered divergence that no run reproduces fails", () => {
@@ -910,6 +1000,102 @@ describe("TC-302..313 the differential harness (FR-037)", () => {
 		);
 	});
 
+	it("TC-309 a declared unsupported answer is an unmet row, not a pass", () => {
+		const declared = cases.find(
+			(entry) => (entry.unsupportedBy as unknown[] | undefined)?.length,
+		) as Json;
+		expect(
+			declared,
+			"a case declares an adapter in unsupportedBy",
+		).toBeDefined();
+		const adapter = (declared.unsupportedBy as { adapter: string }[])[0]
+			.adapter;
+		const results = conformingResults(adapter).map((result) =>
+			result.caseId === declared.id
+				? {
+						adapter: result.adapter,
+						adapterVersion: result.adapterVersion,
+						caseId: result.caseId,
+						caseDigest: result.caseDigest,
+						support: "unsupported",
+					}
+				: result,
+		);
+		const report = run({ adapterResults: { [adapter]: results } }) as {
+			problems: unknown[];
+			unmet: { adapter: string; case: string }[];
+			adapters: { adapter: string; matched: number; unmet: number }[];
+		};
+		expect(report.problems).toEqual([]);
+		expect(
+			report.unmet.some(
+				(one) => one.adapter === adapter && one.case === declared.id,
+			),
+		).toBe(true);
+		const row = report.adapters.find((one) => one.adapter === adapter);
+		expect(row?.unmet).toBe(1);
+		expect(row?.matched).toBe(cases.length - 1);
+	});
+
+	it("TC-308 an adapter command that exits non-zero fails every case it did not answer", () => {
+		const failing = structuredClone(registry) as {
+			adapters: { id: string; status: string; command?: string[] }[];
+		};
+		for (const adapter of failing.adapters) {
+			if (adapter.id === "typescript-backend") {
+				adapter.status = "available";
+				adapter.command = ["node", "-e", "process.exit(3)"];
+			}
+		}
+		const report = run({ registry: failing, skipCorpusGates: true }) as {
+			exitCode: number;
+			problems: { kind: string; adapter?: string; message: string }[];
+		};
+		expect(report.exitCode).toBe(1);
+		expect(
+			report.problems.some(
+				(one) =>
+					one.kind === "adapter" &&
+					one.adapter === "typescript-backend" &&
+					one.message.includes("exited non-zero"),
+			),
+		).toBe(true);
+	});
+
+	it("TC-308 an adapter that emits non-JSON, or JSON that is not an array, fails", () => {
+		const withCommand = (command: string[]) => {
+			const patched = structuredClone(registry) as {
+				adapters: { id: string; status: string; command?: string[] }[];
+			};
+			for (const adapter of patched.adapters) {
+				if (adapter.id === "typescript-backend") {
+					adapter.status = "available";
+					adapter.command = command;
+				}
+			}
+			return run({ registry: patched, skipCorpusGates: true }) as {
+				exitCode: number;
+				problems: { kind: string; message: string }[];
+			};
+		};
+		const notJson = withCommand([
+			"node",
+			"-e",
+			"process.stdout.write('not json')",
+		]);
+		expect(notJson.exitCode).toBe(1);
+		expect(
+			notJson.problems.some((one) => one.message.includes("did not emit JSON")),
+		).toBe(true);
+		const notArray = withCommand(["node", "-e", "process.stdout.write('{}')"]);
+		expect(notArray.exitCode).toBe(1);
+		expect(
+			notArray.problems.some((one) =>
+				one.message.includes("not an array of results"),
+			),
+		).toBe(true);
+	});
+
 	it("TC-310 the harness starts an adapter as a process and imports no adapter internals", () => {
 		const text = readFileSync(join(CONF, "runner", "differential.mjs"), "utf8");
 		expect(text).toContain("execFileSync(adapter.command[0]");
@@ -1003,7 +1189,7 @@ describe("TC-302..313 the differential harness (FR-037)", () => {
 	});
 });
 
-describe("TC-314..323 the construct register and the defect registers (FR-038)", () => {
+describe("TC-314..319 and TC-398..401 the construct register and the defect registers (FR-038)", () => {
 	const coverage = buildCoverage(manifest, cases, [], []) as {
 		registerRows: {
 			id: string;
@@ -1151,7 +1337,7 @@ describe("TC-314..323 the construct register and the defect registers (FR-038)",
 		expect((defects.defects as unknown[]).length).toBeGreaterThan(0);
 	});
 
-	it("TC-318 every reproducing case fails on the bundle carrying the defect", () => {
+	it("TC-318 every reproducing case names the defect it reproduces", () => {
 		for (const defect of defects.defects as {
 			id: string;
 			documentExpressible: boolean;
@@ -1159,16 +1345,40 @@ describe("TC-314..323 the construct register and the defect registers (FR-038)",
 		}[]) {
 			if (!defect.documentExpressible || !defect.reproducingCase) continue;
 			const entry = corpus.loadCase(defect.reproducingCase) as Json;
-			const verdict = corpus.oracleVerdict(entry) as { resultState: string };
-			// A defect case is either a rejection the prototype misses, or an
-			// acceptance the prototype wrongly rejects; both are decided, never
-			// silently skipped.
-			expect(["success", "invalid"], defect.id).toContain(verdict.resultState);
-			expect(
-				(entry.provenance as Json).reproduces ?? defect.id,
-				defect.id,
-			).toBeDefined();
+			expect((entry.provenance as Json).reproduces, defect.id).toBe(defect.id);
 		}
+	});
+
+	it("TC-318 a reader carrying the substring defect answers differently from the oracle", () => {
+		// DEF-PROTO-004: the prototype decides nullability from a substring of a
+		// rendered type name. PRES-010 carries a type whose name contains the
+		// substring while the field is not nullable, so a reader with the defect
+		// materializes `nullable: true` and its normalized bytes diverge.
+		const entry = corpus.loadCase("PRES-010") as Json;
+		const bundle = corpus.buildInput(entry) as Json;
+		const field = (
+			((bundle.ir as Json).types as Json[])[8].fields as Json[]
+		)[1];
+		expect(String(field.typeRef).includes("null")).toBe(true);
+		expect(field.nullable).toBe(false);
+		const verdict = corpus.oracleVerdict(entry) as {
+			resultState: string;
+			normalized: string;
+		};
+		expect(verdict.resultState).toBe("success");
+		const substringAnswer = {
+			...conforming(entry),
+			adapter: "typescript-backend",
+			normalized: verdict.normalized.replace(
+				'"name":"label","nullable":false',
+				'"name":"label","nullable":true',
+			),
+		};
+		expect(substringAnswer.normalized).not.toBe(verdict.normalized);
+		const report = run({
+			adapterResults: { "typescript-backend": [substringAnswer] },
+		}) as { exitCode: number };
+		expect(report.exitCode).toBe(1);
 	});
 
 	it("TC-319 every register row declares a deciding layer and its cases are decided there", () => {
@@ -1258,20 +1468,27 @@ describe("TC-314..323 the construct register and the defect registers (FR-038)",
 	});
 });
 
-describe("TC-402..332 coverage, thresholds, mutations, and the import API (FR-039)", () => {
+describe("TC-402..410 coverage, thresholds, mutations, and the import API (FR-039)", () => {
 	it("TC-402 regenerating the coverage account reproduces the committed file", () => {
 		const committed = readFileSync(join(CONF, "coverage.json"), "utf8");
 		const report = run() as { coverage: unknown };
 		expect(renderCoverage(report.coverage)).toBe(committed);
 	});
 
-	it("TC-402 adding a case without regenerating leaves the account stale", () => {
-		const report = run() as { coverage: { totalCases: number } };
-		expect(report.coverage.totalCases).toBe(manifest.cases.length);
-		const stale = buildCoverage(manifest, cases.slice(1), [], []) as {
-			registerRows: { missing: string[] }[];
-		};
-		expect(stale.registerRows.some((row) => row.missing.length > 0)).toBe(true);
+	it("TC-402 adding a case without regenerating leaves the committed account stale", () => {
+		const committed = readFileSync(join(CONF, "coverage.json"), "utf8");
+		const added = structuredClone(manifest) as { cases: { id: string }[] };
+		added.cases.push({
+			...structuredClone(manifest.cases[0]),
+			id: "ENV-999",
+		} as never);
+		const regenerated = renderCoverage(
+			buildCoverage(added, [...cases, { ...cases[0], id: "ENV-999" }], [], []),
+		) as string;
+		expect(regenerated).not.toBe(committed);
+		expect((JSON.parse(regenerated) as { totalCases: number }).totalCases).toBe(
+			manifest.cases.length + 1,
+		);
 	});
 
 	it("TC-403 thresholds declare a proposed row for each owning issue", () => {
@@ -1316,14 +1533,13 @@ describe("TC-402..332 coverage, thresholds, mutations, and the import API (FR-03
 			code: string;
 		}[];
 		const first = catalogue[0];
-		const entry = corpus.loadCase(first.detectedBy);
-		const verdict = corpus.oracleVerdict(entry) as {
-			diagnostics: { diagnostic: { code: string } }[];
+		const suppressed = cases.filter((entry) => entry.id !== first.detectedBy);
+		const score = mutationScore({ cases: suppressed }) as {
+			score: number;
+			undetected: string[];
 		};
-		expect(
-			verdict.diagnostics.some((one) => one.diagnostic.code === first.code),
-		).toBe(true);
-		expect(() => corpus.loadCase("MUT-ABSENT-000")).toThrow();
+		expect(score.undetected).toContain(first.id);
+		expect(score.score).toBeLessThan(1);
 	});
 
 	it("TC-405 the catalogue carries a mutation for every register family", () => {
@@ -1381,17 +1597,43 @@ describe("TC-402..332 coverage, thresholds, mutations, and the import API (FR-03
 	});
 
 	it("TC-408 a registry adapter with no threshold row and the converse each fail", () => {
-		const registryIds = (registry.adapters as { id: string }[])
-			.map((one) => one.id)
-			.sort();
-		const thresholdIds = (thresholds.thresholds as { adapter: string }[])
-			.map((one) => one.adapter)
-			.sort();
-		expect(registryIds).toEqual(thresholdIds);
-		const missing = registryIds.filter(
-			(id) => !thresholdIds.slice(1).includes(id),
-		);
-		expect(missing.length).toBeGreaterThan(0);
+		expect((run() as { problems: { kind: string }[] }).problems).toEqual([]);
+
+		const withoutThreshold = structuredClone(thresholds) as {
+			thresholds: { adapter: string }[];
+		};
+		const dropped = withoutThreshold.thresholds.shift() as { adapter: string };
+		const one = run({ thresholds: withoutThreshold }) as {
+			exitCode: number;
+			problems: { kind: string; adapter?: string; message: string }[];
+		};
+		expect(one.exitCode).toBe(1);
+		expect(
+			one.problems.some(
+				(problem) =>
+					problem.kind === "threshold" &&
+					problem.adapter === dropped.adapter &&
+					problem.message === "registry adapter has no threshold row",
+			),
+		).toBe(true);
+
+		const withoutAdapter = structuredClone(registry) as {
+			adapters: { id: string }[];
+		};
+		const removed = withoutAdapter.adapters.shift() as { id: string };
+		const other = run({ registry: withoutAdapter }) as {
+			exitCode: number;
+			problems: { kind: string; adapter?: string; message: string }[];
+		};
+		expect(other.exitCode).toBe(1);
+		expect(
+			other.problems.some(
+				(problem) =>
+					problem.kind === "threshold" &&
+					problem.adapter === removed.id &&
+					problem.message === "threshold row has no registry adapter",
+			),
+		).toBe(true);
 	});
 
 	it("TC-409 package.json gains no exports or files entry for the corpus", () => {
@@ -1424,7 +1666,7 @@ describe("TC-402..332 coverage, thresholds, mutations, and the import API (FR-03
 	});
 });
 
-describe("TC-411..341 blessing-free evidence and isolation (NFR-015, NFR-016)", () => {
+describe("TC-411..419 blessing-free evidence and isolation (NFR-015, NFR-016)", () => {
 	it("TC-411 no case is blessed and every quote occurs in its artifact", () => {
 		for (const entry of cases) {
 			expect((entry.provenance as Json).blessedFromRun, String(entry.id)).toBe(
@@ -1517,38 +1759,185 @@ describe("TC-411..341 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		}
 	});
 
-	it("TC-415 the corpus version is the only version a consumer pins for corpus content", () => {
-		const pkg = read(join(REPO, "package.json")) as { version: string };
-		expect(manifest.corpusVersion).not.toBe(undefined);
+	it("TC-415 changing an expected result without a major bump fails the versioning gate", () => {
+		const before = structuredClone(manifest) as Json;
+		const after = structuredClone(manifest) as {
+			corpusVersion: string;
+			cases: { expectedDigest: string }[];
+		};
+		after.cases[0].expectedDigest = `sha256:${"0".repeat(64)}`;
+		after.corpusVersion = "1.1.0";
+		const classified = corpus.classifyVersionChange(before, after) as {
+			required: string;
+			reasons: { reason: string }[];
+		};
+		expect(classified.required).toBe("major");
+		expect(
+			classified.reasons.some((one) =>
+				one.reason.includes("changed its expected result"),
+			),
+		).toBe(true);
+		const failures = corpus.versioningFailures(before, after) as {
+			gate: string;
+			message: string;
+		}[];
+		expect(failures.length).toBe(1);
+		expect(failures[0].gate).toBe("versioning");
+		expect(failures[0].message).toContain("requires a major bump");
+		after.corpusVersion = "2.0.0";
+		expect(corpus.versioningFailures(before, after)).toEqual([]);
+	});
+
+	it("TC-415 a removed case and a changed base each require a major bump", () => {
+		const before = structuredClone(manifest) as Json;
+		const removed = structuredClone(manifest) as {
+			corpusVersion: string;
+			cases: unknown[];
+		};
+		removed.cases.pop();
+		removed.corpusVersion = "1.1.0";
+		expect(
+			(corpus.versioningFailures(before, removed) as unknown[]).length,
+		).toBe(1);
+		const rebased = structuredClone(manifest) as {
+			corpusVersion: string;
+			bases: { digest: string }[];
+		};
+		rebased.bases[0].digest = `sha256:${"1".repeat(64)}`;
+		rebased.corpusVersion = "1.0.1";
+		expect(
+			(corpus.versioningFailures(before, rebased) as unknown[]).length,
+		).toBe(1);
+	});
+
+	it("TC-415 adding a case needs only a minor bump and a backward move fails", () => {
+		const before = structuredClone(manifest) as Json;
+		const added = structuredClone(manifest) as {
+			corpusVersion: string;
+			cases: unknown[];
+		};
+		added.cases.push({ ...structuredClone(manifest.cases[0]), id: "ENV-999" });
+		added.corpusVersion = "1.1.0";
+		expect(corpus.versioningFailures(before, added)).toEqual([]);
+		added.corpusVersion = "1.0.0";
+		expect((corpus.versioningFailures(before, added) as unknown[]).length).toBe(
+			1,
+		);
+		added.corpusVersion = "0.9.0";
+		expect(
+			(corpus.versioningFailures(before, added) as { message: string }[])[0]
+				.message,
+		).toContain("not a forward SemVer bump");
+	});
+
+	it("TC-415 corpusVersion is the version a consumer pins, and the README says so", () => {
 		expect(readFileSync(join(CONF, "README.md"), "utf8")).toContain(
 			"the only version a consumer pins",
 		);
-		expect(typeof pkg.version).toBe("string");
+		expect(api.corpusVersion()).toBe(manifest.corpusVersion);
 	});
 
-	it("TC-416 every corpus artifact lives under conformance/ or its two declared suites", () => {
-		const walk = (dir: string): string[] =>
-			readdirSync(dir).flatMap((entry) => {
-				const full = join(dir, entry);
-				return statSync(full).isDirectory() ? walk(full) : [full];
-			});
-		for (const file of walk(CONF)) {
-			expect(file.startsWith(CONF)).toBe(true);
+	it("TC-416 the branch changes no path NFR-016 prohibits", () => {
+		const changed = execFileSync(
+			"git",
+			["diff", "--name-only", "origin/main...HEAD"],
+			{ cwd: REPO, encoding: "utf8" },
+		)
+			.split("\n")
+			.filter(Boolean);
+		expect(changed.length).toBeGreaterThan(0);
+		const prohibited = [
+			"spikes/",
+			"src/",
+			"packages/",
+			"schema/",
+			"fixtures/",
+			"docs/",
+			".github/",
+			"agent_ix_core_data/",
+			"pnpm-lock.yaml",
+			"poetry.lock",
+			"pyproject.toml",
+			"package.json",
+			"biome.json",
+			"tsconfig.json",
+			"tsconfig.build.json",
+		];
+		for (const path of changed) {
+			for (const prefix of prohibited) {
+				expect(
+					path === prefix || path.startsWith(prefix),
+					`${path} is prohibited by NFR-016`,
+				).toBe(false);
+			}
 		}
-		expect(
-			statSync(join(REPO, "test", "conformance-corpus.test.ts")).isFile(),
-		).toBe(true);
-		expect(
-			statSync(join(REPO, "tests", "test_conformance_corpus.py")).isFile(),
-		).toBe(true);
+		const permitted = [
+			"conformance/",
+			"spec/",
+			"plan/",
+			"reviews/",
+			"test/",
+			"tests/",
+			"Makefile",
+		];
+		for (const path of changed) {
+			expect(
+				permitted.some((prefix) => path === prefix || path.startsWith(prefix)),
+				`${path} is outside the NFR-016 permitted list`,
+			).toBe(true);
+		}
 	});
 
-	it("TC-417 the change adds no runtime dependency", () => {
-		const pkg = read(join(REPO, "package.json")) as { dependencies?: Json };
+	it("TC-417 package.json, pyproject.toml, and both lockfiles are byte-identical to main", () => {
+		for (const path of [
+			"package.json",
+			"pyproject.toml",
+			"pnpm-lock.yaml",
+			"poetry.lock",
+		]) {
+			const diff = execFileSync("git", ["diff", "origin/main", "--", path], {
+				cwd: REPO,
+				encoding: "utf8",
+			});
+			expect(diff, `${path} changed against main`).toBe("");
+		}
+		const pkg = read(join(REPO, "package.json")) as {
+			dependencies?: Json;
+			exports: Record<string, unknown>;
+			files: string[];
+		};
 		expect(pkg.dependencies).toBeUndefined();
+		expect(
+			Object.keys(pkg.exports).some((key) => key.includes("conformance")),
+		).toBe(false);
+		expect(pkg.files.some((entry) => entry.includes("conformance"))).toBe(
+			false,
+		);
 	});
 
-	it("TC-419 nothing under conformance/ publishes or triggers a release", () => {
+	it("TC-419 the change alters no consumer, catalog pin, Avro contract, or release path", () => {
+		const changed = execFileSync(
+			"git",
+			["diff", "--name-only", "origin/main...HEAD"],
+			{ cwd: REPO, encoding: "utf8" },
+		)
+			.split("\n")
+			.filter(Boolean);
+		for (const surface of [
+			"schema/avro/",
+			"src/",
+			"agent_ix_core_data/",
+			".github/workflows/",
+			"packages/",
+			"pyproject.toml",
+			"package.json",
+		]) {
+			for (const path of changed) {
+				expect(path.startsWith(surface), `${path} touches ${surface}`).toBe(
+					false,
+				);
+			}
+		}
 		const walk = (dir: string): string[] =>
 			readdirSync(dir).flatMap((entry) => {
 				const full = join(dir, entry);
@@ -1556,9 +1945,10 @@ describe("TC-411..341 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 			});
 		for (const file of walk(CONF)) {
 			if (!file.endsWith(".mjs")) continue;
-			const text = readFileSync(file, "utf8");
 			expect(
-				/npm\s+publish|pnpm\s+publish|poetry\s+publish/.test(text),
+				/npm\s+publish|pnpm\s+publish|poetry\s+publish/.test(
+					readFileSync(file, "utf8"),
+				),
 				file,
 			).toBe(false);
 		}

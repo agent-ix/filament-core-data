@@ -112,3 +112,45 @@ they name.
 - NFR-015: provenance, blessing-free evidence, and cross-run/locale/directory
   byte identity hold. NFR-016: the corpus is confined to `conformance/` plus its
   two suites and a Makefile target, but has no gate of its own (FND-610).
+
+## Dispositions
+
+Every high and every real medium is applied on this branch; the remaining rows
+carry the reason they are not. Ids are the renumbered ones: the issue #27 merge
+moved this bundle's block to FND-465..632, so the code review is FND-588..613
+and the gap analysis (SR-066) FND-614..632.
+
+| Findings | Disposition |
+|---|---|
+| FND-588, FND-617 | Acted. `corpus.mjs` gained `previousManifest`, `classifyVersionChange`, `observedBump`, and `versioningFailures`; the manifest gained an `expectedDigest` per case so a changed expectation is detectable from the manifest alone. A changed `expected`, a removed case, and a changed base each require a major bump; adding a case requires a minor one; a backward or sideways `corpusVersion` move fails. Four assertions drive the classifier and the gate directly, because `origin/main` carries no predecessor corpus to compare against yet. |
+| FND-589 | Acted. The classifier compares the residue of every type definition and every field — the members no rule reads — and records `unknown` when it differs, instead of folding to the least restrictive value. Case CLAUSE-004 was retitled and now expects `unknown`: rewording opaque clause text is unclassifiable, not a patch, because the IR never parses clause text. The classifier also gained scalar, target, items, values, relationship, operation, and extension comparison. |
+| FND-590, FND-620 | Acted. `run()` takes a registry seam, so the assertion flips the slot to `available` and asserts the failure the row names. |
+| FND-591, FND-618, FND-619, FND-623, FND-624, FND-625 | Acted. `corpusGates()` takes `manifest` and `readCase` seams; every negative half now seeds a mutated case or manifest and asserts the gate names it — a broken quote, a citation outside the declared contract artifacts, a wrong digest, an orphan base, a blessed case, a malformed diagnostic, an unresolvable pointer, a suppressed mutation, a threshold mismatch in both directions, and a stale coverage account. |
+| FND-592, FND-626 | Acted. TC-291 runs the oracle in two child processes under `tr_TR.UTF-8` and `C` and compares a digest of the verdicts, because Node resolves its ICU locale at startup. |
+| FND-593 | Acted. The comparator falls through to the canonical form of the diagnostic, so no two diagnostics tie and the order does not rest on sort stability. |
+| FND-594 | Acted. The case schema caps `count` at 512, the manifest declares `repeatLimit`, and a repeat-limit gate fails a case above it. |
+| FND-595 | Acted. The manifest declares `contractArtifacts` and the provenance gate rejects a citation outside it, so the anti-transcription control is a gate rather than a convention. |
+| FND-596 | Acted. The lock traversal emits `DEPTH_LIMIT_EXCEEDED` at the node that exceeds the bound, as the alias and composite traversals already did. |
+| FND-597, FND-606 | Acted. The test-op guard covers `add`, `copy`, `move`, `remove`, and `replace`, pinned by a `test` op anywhere under the op's containing indexed member; the Python cross-check implements `copy` and `move`. All 80 indexed mutating ops in the corpus are pinned. |
+| FND-598 | Acted. `conformance/README.md` gained the section naming the IR surface as the classification's whole scope and FR-025 and `compatibility-report.schema.json` as the authority elsewhere. |
+| FND-599, FND-622 | Acted. `run()` takes a registry seam and three assertions drive a real adapter process: a non-zero exit, non-JSON stdout, and a JSON payload that is not an array. |
+| FND-600 | Acted. PROV-002 declares `rust-backend` in `unsupportedBy` with issue #21 and the GAP-002 rationale, and an assertion drives the accept branch: the answer becomes an unmet row with its owning issue, never a pass. |
+| FND-601 | Acted. The corpus is loaded once and is injectable. |
+| FND-602 | Acted. The gate walks `conformance/bases/` and fails a base the manifest does not list. |
+| FND-603 | Not acted, by design. Issue #20 proposes thresholds and gates no other ticket on them: the bijection with the registry is enforced, every row is `proposed` until its owning issue accepts it, and FR-039 and the README say so. |
+| FND-604 | Acted. |
+| FND-605 | Acted. `checkCompositeCycles` lost its unused parameter, `classify` indexes the later document once, and `checkPackageContext` builds the identity set once. |
+| FND-607 | Acted. A sentinel distinguishes an absent node from a JSON null. |
+| FND-608, FND-621 | Acted, and the vacuous assertion is why FND-615 was invisible. TC-318 now asserts the reproduces link and drives the substring-defect answer through the harness. |
+| FND-609, FND-630 | Acted. TC-415 drives the versioning classifier and gate in four directions; TC-419 diffs the branch against `main` for every consumer surface. |
+| FND-610, FND-616 | Acted. TC-416 diffs the branch against `main` and asserts every changed path is inside the NFR-016 permitted list and outside the prohibited one; TC-417 asserts `package.json`, `pyproject.toml`, and both lockfiles are byte-identical to `main`. |
+| FND-611 | Not acted: environmental. A second agent's `.worktrees/issue-19/` carries its own `biome.json`, which aborts a repository-root `biome` run. `biome format` and `tsc --noEmit` are clean over this branch's trees, and CI has no worktree. |
+| FND-612 | Not acted. Each pytest function carries its TC id in the docstring, so traceability holds; the sibling suite's class grouping is a style preference, not a gate. |
+| FND-613 | Recorded; no action needed. |
+| FND-614 | Acted before this review landed, in 4b6e49d: Task-048..055 are `done`, every subtask is checked, and `log.md` records the implementation. |
+| FND-615 | Acted. PRES-010 became a `positive` trap: the field's type is a scalar named `Annullable`, whose name contains the substring `null` while the field is not nullable. A reader deciding nullability by substring materializes `nullable: true`, so its normalized bytes diverge; an assertion drives exactly that seeded answer through the harness and asserts it fails. |
+| FND-627 | Acted. The reorder seed is applied to a boundary case carrying several diagnostics, which is the only class the single-violation gate permits to carry more than one; the row now says so. |
+| FND-628 | Acted. TC-297 validates every emitted diagnostic against `common.schema.json#/$defs/diagnostic`, including the diagnostics the oracle emits for inputs no case carries, and first proves the validator rejects a malformed one. |
+| FND-629 | Acted. The plan's cross-cutting constraints and Task-048's deliverables now state that `package.json` is untouched and the Make targets call `node` directly, and name the inherited allow-lists this branch extends. |
+| FND-631 | Not acted. TC-304's behavioural half — two adapters agreeing with each other and both failing against the oracle — is the real evidence; the source scan is a second, cheaper signal and is documented as such. |
+| FND-632 | Acted. The execution summary states the assertion counts and the split TC block, and Task-056's subtasks are checked as they complete. |

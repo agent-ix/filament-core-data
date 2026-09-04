@@ -1,6 +1,6 @@
 {
 	"id": "CLAUSE-004",
-	"title": "Rewording opaque clause text is not a semantic change",
+	"title": "Rewording opaque clause text is unclassifiable, not a patch",
 	"family": "clause",
 	"class": "evolution",
 	"kind": "compatibility",
@@ -27,6 +27,11 @@
 			"artifact": "docs/semantic-data-system/contracts-v1.md",
 			"locator": "Compatibility",
 			"quote": "Required additions, removals, incompatible meaning/type changes, stable identity"
+		},
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Contract 1.1.0 (issue #34)",
+			"quote": "per type; opaque `text`; `sourceSpan` when source-originated). The IR never"
 		}
 	],
 	"provenance": {
@@ -36,6 +41,6 @@
 	"expected": {
 		"resultState": "success",
 		"diagnostics": [],
-		"classification": "patch"
+		"classification": "unknown"
 	}
 }

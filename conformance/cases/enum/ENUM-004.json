@@ -8,6 +8,11 @@
 	"base": "core-1-1",
 	"ops": [
 		{
+			"op": "test",
+			"path": "/ir/types/3/identity",
+			"value": "ix://agent-ix/conformance/type/Status"
+		},
+		{
 			"op": "add",
 			"path": "/ir/types/3/variants/-",
 			"value": {

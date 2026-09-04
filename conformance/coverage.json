@@ -1,6 +1,6 @@
 {
 	"corpusVersion": "1.0.0",
-	"corpusDigest": "sha256:bebf6be052ba2c56e6297c1d449837b63649fb651dd668c3e5fe8e4086e7b7c8",
+	"corpusDigest": "sha256:2bf9f37ceed9ca4af42adc6d66ba9689ca2d603192bd7607aec93a0db43e3709",
 	"totalCases": 111,
 	"registerRows": [
 		{
@@ -120,14 +120,8 @@
 			"family": "field-presence",
 			"decidedBy": "cross-field",
 			"cases": {
-				"positive": ["PRES-001", "PRES-005", "PRES-006"],
-				"negative": [
-					"PRES-002",
-					"PRES-007",
-					"PRES-008",
-					"PRES-009",
-					"PRES-010"
-				],
+				"positive": ["PRES-001", "PRES-005", "PRES-006", "PRES-010"],
+				"negative": ["PRES-002", "PRES-007", "PRES-008", "PRES-009"],
 				"boundary": ["PRES-003"],
 				"evolution": ["PRES-004"]
 			},

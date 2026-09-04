@@ -296,7 +296,7 @@ describe("TypeSpec feasibility gate", () => {
 	it("keeps the spike isolated, unpublished, and non-canonical", () => {
 		const allowed = [
 			"conformance/",
-			"plan/Plan-007-conformance-corpus-and-oracle/",
+			"plan/Plan-008-conformance-corpus-and-oracle/",
 			"test/conformance-corpus.test.ts",
 			"README.md",
 			"biome.json",

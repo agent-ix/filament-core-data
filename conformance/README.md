@@ -61,6 +61,18 @@ diagnostic the `code`, `severity`, `owner`, `blocking`, `pointer`, and `locus`.
 `message` is authored prose beside the judgement and is not compared, so a
 reworded diagnostic is not a corpus failure while a changed code or locus is.
 
+## What the compatibility classification covers
+
+The oracle classifies the **IR surface only**: type kinds, scalars, alias and
+reference targets, sequence and map element types, fields and their presence,
+nullability, units and defaults, constraints, variants, relationships,
+operations, and extensions. `compatibility-report.schema.json` and FR-025
+remain the authority for the profile, mapping, representation,
+generated-target, and consumer-evidence surfaces; where both speak, the FR-025
+report wins and this classification never overrides it. A change no rule models
+classifies `unknown` rather than passing silently, because an unclassifiable
+change prevents a compatible promotion.
+
 ## Canonical form
 
 The corpus comparison form is `agent-ix-conformance-jcs-v1`: object keys ordered

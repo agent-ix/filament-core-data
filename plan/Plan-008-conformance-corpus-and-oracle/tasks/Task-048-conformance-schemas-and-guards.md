@@ -30,14 +30,14 @@ Land the conformance schema set, the isolation gates, and the two failing suites
 - [x] Add `test/conformance-corpus.test.ts` and `tests/test_conformance_corpus.py` with the failing gate skeletons.
 - [x] Add the changed-path gate asserting no branch file under the NFR-016 prohibited set and no lockfile change.
 - [x] Add the manifest-diff gate asserting no added dependency and no `exports` or `files` entry.
-- [x] Add the `conformance` and `conformance-audit` Make targets and the `conformance` package script.
+- [x] Add the `conformance` and `conformance-audit` Make targets, calling `node` directly so `package.json` stays byte-identical to `main`.
 
 ## Deliverables
 
 - `conformance/schema/*.schema.json`
 - `test/conformance-corpus.test.ts`
 - `tests/test_conformance_corpus.py`
-- `Makefile` targets and one `package.json` script
+- `Makefile` targets; `package.json` is untouched
 
 ## Notes
 

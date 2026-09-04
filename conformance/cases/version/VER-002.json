@@ -8,6 +8,11 @@
 	"base": "minimal-1-0",
 	"ops": [
 		{
+			"op": "test",
+			"path": "/ir/types/1/fields/0/identity",
+			"value": "ix://agent-ix/conformance/field/leaf-id"
+		},
+		{
 			"op": "add",
 			"path": "/ir/types/1/fields/0/multiplicity",
 			"value": {

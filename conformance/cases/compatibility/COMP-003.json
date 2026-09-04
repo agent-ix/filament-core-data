@@ -8,6 +8,11 @@
 	"base": "core-1-1",
 	"ops": [
 		{
+			"op": "test",
+			"path": "/ir/types/8/identity",
+			"value": "ix://agent-ix/conformance/type/Node"
+		},
+		{
 			"op": "add",
 			"path": "/ir/types/8/fields/-",
 			"value": {
@@ -30,6 +35,11 @@
 					"upper": 1
 				}
 			}
+		},
+		{
+			"op": "test",
+			"path": "/ir/types/8/identity",
+			"value": "ix://agent-ix/conformance/type/Node"
 		},
 		{
 			"op": "add",

@@ -8,6 +8,11 @@
 	"base": "core-1-1",
 	"ops": [
 		{
+			"op": "test",
+			"path": "/ir/types/9/operations/0/identity",
+			"value": "ix://agent-ix/conformance/operation/root-resize"
+		},
+		{
 			"op": "add",
 			"path": "/ir/types/9/operations/0/params/-",
 			"value": {

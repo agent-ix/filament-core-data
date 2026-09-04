@@ -10,6 +10,8 @@
 		"caseIdPattern",
 		"minimizationBudget",
 		"depthLimit",
+		"repeatLimit",
+		"contractArtifacts",
 		"familyPrefixes",
 		"constructRegister",
 		"bases",
@@ -30,6 +32,13 @@
 		"caseIdPattern": { "type": "string", "minLength": 1 },
 		"minimizationBudget": { "type": "integer", "minimum": 1 },
 		"depthLimit": { "type": "integer", "minimum": 1 },
+		"repeatLimit": { "type": "integer", "minimum": 1 },
+		"contractArtifacts": {
+			"type": "array",
+			"minItems": 1,
+			"items": { "type": "string", "minLength": 1 },
+			"uniqueItems": true
+		},
 		"familyPrefixes": {
 			"type": "object",
 			"additionalProperties": {
@@ -114,7 +123,14 @@
 			"minItems": 1,
 			"items": {
 				"type": "object",
-				"required": ["id", "path", "family", "class", "digest"],
+				"required": [
+					"id",
+					"path",
+					"family",
+					"class",
+					"digest",
+					"expectedDigest"
+				],
 				"properties": {
 					"id": { "$ref": "corpus-case.schema.json#/$defs/caseId" },
 					"path": { "type": "string", "minLength": 1 },
@@ -123,6 +139,9 @@
 						"enum": ["positive", "negative", "boundary", "evolution"]
 					},
 					"digest": {
+						"$ref": "https://schemas.agent-ix.org/filament-core-data/v1/common.schema.json#/$defs/sha256"
+					},
+					"expectedDigest": {
 						"$ref": "https://schemas.agent-ix.org/filament-core-data/v1/common.schema.json#/$defs/sha256"
 					}
 				},

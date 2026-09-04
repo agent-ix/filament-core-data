@@ -19,9 +19,9 @@ Close the slice: run every gate, the code review, and the gap analysis; open the
 
 ## Subtasks
 
-- [ ] Re-run `make lint`, `make typecheck`, `make test`, `make conformance`, `poetry run pytest`, and the changed-path gate.
-- [ ] Run `/code-review` and `/gap-analysis`; apply every high and every real medium; commit the SpecReviews under `reviews/`.
-- [ ] Flip the TC-280..341 rows to passed and update the Test Execution Summary.
+- [x] Re-run `make lint`, `make typecheck`, `make test`, `make conformance`, `poetry run pytest`, and the changed-path gate.
+- [x] Run `/code-review` and `/gap-analysis`; apply every high and every real medium; commit the SpecReviews under `reviews/`.
+- [x] Flip the TC-280..341 rows to passed and update the Test Execution Summary.
 - [ ] Open the PR linking issue #20 and post the "mergeable" comment listing the gates and their results.
 
 ## Deliverables

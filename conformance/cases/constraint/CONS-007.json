@@ -8,6 +8,11 @@
 	"base": "core-1-1",
 	"ops": [
 		{
+			"op": "test",
+			"path": "/ir/types/0/identity",
+			"value": "ix://agent-ix/conformance/type/Text"
+		},
+		{
 			"op": "add",
 			"path": "/ir/types/0/constraints/-",
 			"value": {

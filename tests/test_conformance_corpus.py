@@ -135,12 +135,28 @@ def _apply(document: dict, ops: list[dict]) -> dict:
                 del holder[int(last)]
             else:
                 holder.pop(last)
-        else:  # pragma: no cover - the case schema closes the vocabulary
+        elif kind in ("copy", "move"):
+            source = _resolve(document, op["from"])
+            assert source is not _ABSENT, f"from does not resolve: {op['from']}"
+            value = copy.deepcopy(source)
+            if kind == "move":
+                origin_holder, origin_last = parent(op["from"])
+                if isinstance(origin_holder, list):
+                    del origin_holder[int(origin_last)]
+                else:
+                    origin_holder.pop(origin_last)
+                holder, last = parent(op["path"])
+            insert(holder, last, value)
+        else:
             raise AssertionError(f"unsupported op {kind}")
     return document
 
 
+_ABSENT = object()
+
+
 def _resolve(document, pointer: str):
+    """Resolves an RFC 6901 pointer, distinguishing an absent node from a null."""
     node = document
     if pointer == "":
         return node
@@ -149,14 +165,14 @@ def _resolve(document, pointer: str):
         if isinstance(node, list):
             index = int(token)
             if index >= len(node):
-                return None
+                return _ABSENT
             node = node[index]
         elif isinstance(node, dict):
             if token not in node:
-                return None
+                return _ABSENT
             node = node[token]
         else:
-            return None
+            return _ABSENT
     return node
 
 
@@ -213,7 +229,7 @@ def test_tc340_every_case_builds_and_its_pointers_address_the_bundle() -> None:
             if pointer == "":
                 continue
             parent = pointer[: pointer.rfind("/")]
-            assert _resolve(bundle, parent) is not None, f"{entry['id']} {pointer}"
+            assert _resolve(bundle, parent) is not _ABSENT, f"{entry['id']} {pointer}"
 
 
 def test_tc289_case_ids_are_unique_patterned_and_placed() -> None:

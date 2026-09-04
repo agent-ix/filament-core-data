@@ -6,6 +6,7 @@
  * network, or an environment variable.
  */
 
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, posix, relative } from "node:path";
@@ -19,12 +20,15 @@ import {
 	isObject,
 	resolvePointer,
 } from "./oracle/json.mjs";
+import { classify, verdict } from "./oracle/oracle.mjs";
 import {
+	schemaDiagnostics,
+	validateAgainst,
 	validateConformance,
 	validatePublished,
 } from "./oracle/schema-layer.mjs";
-import { classify, verdict } from "./oracle/oracle.mjs";
-import { schemaDiagnostics } from "./oracle/schema-layer.mjs";
+
+const PUBLISHED_BASE = "https://schemas.agent-ix.org/filament-core-data/v1/";
 
 export const ROOT = dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = join(ROOT, "..");
@@ -242,17 +246,191 @@ export function substantive(value, kind) {
 	};
 }
 
+/* --------------------------------------------------------- versioning ---- */
+
+/**
+ * Reads the manifest as `origin/main` carries it, or `undefined` when the
+ * corpus has no predecessor there.
+ *
+ * This is the only place the corpus reads git, and it reads one committed
+ * blob, never the working tree and never a clock.
+ */
+export function previousManifest() {
+	try {
+		return JSON.parse(
+			execFileSync("git", ["show", "origin/main:conformance/corpus.json"], {
+				cwd: REPO_ROOT,
+				encoding: "utf8",
+				stdio: ["ignore", "pipe", "ignore"],
+			}),
+		);
+	} catch {
+		return undefined;
+	}
+}
+
+function semverParts(value) {
+	const match = /^(\d+)\.(\d+)\.(\d+)/.exec(String(value));
+	return match
+		? [Number(match[1]), Number(match[2]), Number(match[3])]
+		: undefined;
+}
+
+/**
+ * Classifies the change between two corpus manifests and names the reasons.
+ *
+ * `major` when an existing case's `expected` changed, or a case or base was
+ * removed or rewritten; `minor` when a case, a base, or a register row was
+ * added; `patch` when only titles, citations, or prose moved; `none` when
+ * nothing did (FR-035).
+ */
+export function classifyVersionChange(previous, current) {
+	const reasons = [];
+	const priorCases = new Map(
+		(previous.cases ?? []).map((row) => [row.id, row]),
+	);
+	const priorBases = new Map(
+		(previous.bases ?? []).map((row) => [row.id, row]),
+	);
+	for (const row of current.cases ?? []) {
+		const prior = priorCases.get(row.id);
+		if (!prior) {
+			reasons.push({ level: "minor", reason: `case ${row.id} was added` });
+			continue;
+		}
+		if (prior.expectedDigest !== row.expectedDigest) {
+			reasons.push({
+				level: "major",
+				reason: `case ${row.id} changed its expected result`,
+			});
+		} else if (prior.digest !== row.digest) {
+			reasons.push({
+				level: "patch",
+				reason: `case ${row.id} changed outside its expected result`,
+			});
+		}
+		priorCases.delete(row.id);
+	}
+	for (const id of priorCases.keys()) {
+		reasons.push({ level: "major", reason: `case ${id} was removed` });
+	}
+	for (const row of current.bases ?? []) {
+		const prior = priorBases.get(row.id);
+		if (!prior)
+			reasons.push({ level: "minor", reason: `base ${row.id} was added` });
+		else if (prior.digest !== row.digest) {
+			reasons.push({ level: "major", reason: `base ${row.id} changed` });
+		}
+		priorBases.delete(row.id);
+	}
+	for (const id of priorBases.keys()) {
+		reasons.push({ level: "major", reason: `base ${id} was removed` });
+	}
+	const priorRows = new Set(
+		(previous.constructRegister ?? []).map((row) => row.id),
+	);
+	for (const row of current.constructRegister ?? []) {
+		if (!priorRows.has(row.id)) {
+			reasons.push({
+				level: "minor",
+				reason: `register row ${row.id} was added`,
+			});
+		}
+	}
+	const order = ["none", "patch", "minor", "major"];
+	const required = reasons.reduce(
+		(worst, entry) =>
+			order.indexOf(entry.level) > order.indexOf(worst) ? entry.level : worst,
+		"none",
+	);
+	return { required, reasons };
+}
+
+/** The bump actually taken between two SemVer strings. */
+export function observedBump(previousVersion, currentVersion) {
+	const before = semverParts(previousVersion);
+	const after = semverParts(currentVersion);
+	if (!before || !after) return undefined;
+	if (after[0] > before[0]) return "major";
+	if (after[0] < before[0]) return undefined;
+	if (after[1] > before[1]) return "minor";
+	if (after[1] < before[1]) return undefined;
+	if (after[2] > before[2]) return "patch";
+	if (after[2] < before[2]) return undefined;
+	return "none";
+}
+
+/**
+ * The FR-035 versioning gate: an existing expected result may not change, and a
+ * case or base may not be removed, without a major `corpusVersion` bump.
+ */
+export function versioningFailures(previous, current) {
+	if (!previous) return [];
+	const { required, reasons } = classifyVersionChange(previous, current);
+	const observed = observedBump(previous.corpusVersion, current.corpusVersion);
+	const order = ["none", "patch", "minor", "major"];
+	if (observed === undefined) {
+		return [
+			{
+				gate: "versioning",
+				subject: "corpus.json",
+				message: `corpusVersion moved from ${previous.corpusVersion} to ${current.corpusVersion}, which is not a forward SemVer bump`,
+			},
+		];
+	}
+	if (order.indexOf(observed) < order.indexOf(required)) {
+		return [
+			{
+				gate: "versioning",
+				subject: "corpus.json",
+				message: `the change requires a ${required} bump but corpusVersion took a ${observed} one: ${reasons
+					.filter((entry) => entry.level === required)
+					.map((entry) => entry.reason)
+					.join("; ")}`,
+			},
+		];
+	}
+	return [];
+}
+
 /* -------------------------------------------------------------- gates ----- */
 
 const INDEXED = /\/\d+(\/|$)/;
+
+/**
+ * Operations that re-aim when a base gains or loses an array member, and so
+ * must be pinned by a preceding `test` op (FR-035).
+ */
+const PINNED_OPS = new Set(["add", "copy", "move", "remove", "replace"]);
+
+/** The `x-repeat` expansion ceiling the manifest declares. */
+export const REPEAT_LIMIT = 512;
+
+/**
+ * The array member an indexed path sits inside: the path up to and including
+ * its last numeric segment. A `test` op anywhere under that member pins the op
+ * against a base whose element order changed.
+ */
+export function indexedContainer(path) {
+	const tokens = path.split("/");
+	for (let index = tokens.length - 1; index >= 0; index -= 1) {
+		if (/^\d+$/.test(tokens[index]))
+			return tokens.slice(0, index + 1).join("/");
+	}
+	return path;
+}
 
 /**
  * Runs every FR-035 corpus gate and returns the failures it found.
  *
  * A failure is `{ gate, case | base, message }`; an empty list is a pass.
  */
-export function corpusGates() {
-	const manifest = loadManifest();
+export function corpusGates(overrides = {}) {
+	const manifest = overrides.manifest ?? loadManifest();
+	const readCase =
+		overrides.readCase ?? ((row) => readJson(join(REPO_ROOT, row.path)));
+	const previous =
+		overrides.previous === undefined ? previousManifest() : overrides.previous;
 	const failures = [];
 	const fail = (gate, subject, message) =>
 		failures.push({ gate, subject, message });
@@ -314,7 +492,7 @@ export function corpusGates() {
 				`case digest is ${actual}, manifest says ${row.digest}`,
 			);
 		}
-		const entry = readJson(path);
+		const entry = readCase(row);
 		for (const error of validateConformance("corpus-case.schema.json", entry)) {
 			fail("case-schema", row.id, `${error.instancePath} ${error.message}`);
 		}
@@ -342,6 +520,18 @@ export function corpusGates() {
 			fail("case-base", row.id, `base ${entry.base} is not in the manifest`);
 		}
 
+		for (const [index, op] of entry.ops.entries()) {
+			if (
+				op.op === "x-repeat" &&
+				op.count > (manifest.repeatLimit ?? REPEAT_LIMIT)
+			) {
+				fail(
+					"repeat-limit",
+					row.id,
+					`ops[${index}] repeats ${op.count} times, ceiling is ${manifest.repeatLimit ?? REPEAT_LIMIT}`,
+				);
+			}
+		}
 		const nodes = countNodes(entry.ops);
 		if (nodes > manifest.minimizationBudget) {
 			fail(
@@ -352,20 +542,17 @@ export function corpusGates() {
 		}
 
 		for (const [index, op] of entry.ops.entries()) {
-			if (
-				(op.op === "replace" || op.op === "remove") &&
-				INDEXED.test(op.path)
-			) {
+			if (PINNED_OPS.has(op.op) && INDEXED.test(op.path)) {
 				const before = entry.ops[index - 1];
 				const pins =
-					before &&
+					before !== undefined &&
 					before.op === "test" &&
-					(before.path === op.path || before.path.startsWith(`${op.path}/`));
+					before.path.startsWith(indexedContainer(op.path));
 				if (!pins) {
 					fail(
 						"test-op",
 						row.id,
-						`ops[${index}] ${op.op} ${op.path} is indexed and carries no preceding test op`,
+						`ops[${index}] ${op.op} ${op.path} addresses an array member by index and carries no preceding test op pinning ${indexedContainer(op.path)}`,
 					);
 				}
 			}
@@ -382,6 +569,18 @@ export function corpusGates() {
 			);
 		}
 		for (const source of entry.derivedFrom) {
+			const allowed = (manifest.contractArtifacts ?? []).some(
+				(prefix) =>
+					source.artifact === prefix || source.artifact.startsWith(prefix),
+			);
+			if (!allowed) {
+				fail(
+					"provenance",
+					row.id,
+					`derivedFrom names ${source.artifact}, which is not a declared contract artifact`,
+				);
+				continue;
+			}
 			let text;
 			try {
 				text = readFileSync(join(REPO_ROOT, source.artifact), "utf8");
@@ -429,6 +628,16 @@ export function corpusGates() {
 			);
 		}
 		for (const expectation of entry.expected.diagnostics) {
+			for (const error of validateAgainst(
+				`${PUBLISHED_BASE}common.schema.json#/$defs/diagnostic`,
+				expectation.diagnostic,
+			)) {
+				fail(
+					"diagnostic-shape",
+					row.id,
+					`expected diagnostic at ${expectation.pointer}: ${error.instancePath} ${error.message}`,
+				);
+			}
 			if (expectation.pointer === "") continue;
 			// A diagnostic may address an absent member (a missing sourceSpan, a
 			// missing required property), so the parent is what must resolve.
@@ -459,12 +668,19 @@ export function corpusGates() {
 		);
 	}
 
-	const onDisk = new Set(listJson(join(ROOT, "cases")).map(relPath));
-	for (const path of onDisk) {
+	for (const path of listJson(join(ROOT, "cases")).map(relPath)) {
 		if (!manifest.cases.some((row) => row.path === path)) {
 			fail("case-index", path, "case file is not in the manifest");
 		}
 	}
+	for (const path of listJson(join(ROOT, "bases")).map(relPath)) {
+		if (!manifest.bases.some((row) => row.path === path)) {
+			fail("base-index", path, "base file is not in the manifest");
+		}
+	}
+
+	for (const failure of versioningFailures(previous, manifest))
+		failures.push(failure);
 	return failures;
 }
 
@@ -486,6 +702,7 @@ export function computeDigests() {
 			family: entry.family,
 			class: entry.class,
 			digest: fileDigest(path),
+			expectedDigest: textDigest(canonical(entry.expected)),
 		};
 	});
 	cases.sort((left, right) => compareCodePoint(left.id, right.id));

@@ -8,6 +8,11 @@
 	"base": "core-1-1",
 	"ops": [
 		{
+			"op": "test",
+			"path": "/ir/types/6/identity",
+			"value": "ix://agent-ix/conformance/type/Payload"
+		},
+		{
 			"op": "add",
 			"path": "/ir/types/6/variants/-",
 			"value": {

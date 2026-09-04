@@ -84,7 +84,7 @@ describe("semantic-core non-disruption (Task-041)", () => {
 	it("keeps issue #35 inside its permitted paths", () => {
 		const allowed = [
 			"conformance/",
-			"plan/Plan-007-conformance-corpus-and-oracle/",
+			"plan/Plan-008-conformance-corpus-and-oracle/",
 			"test/conformance-corpus.test.ts",
 			"docs/semantic-data-system/metamodel.md",
 			"docs/semantic-data-system/adr/0002-generated-package-ownership.md",

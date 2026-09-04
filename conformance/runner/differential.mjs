@@ -96,12 +96,13 @@ function divergenceKey(caseId, adapterId, code) {
 }
 
 /** Runs the whole corpus against every registered adapter. */
-export function run({ adapterResults } = {}) {
-	const gateFailures = corpusGates();
+export function run(options = {}) {
+	const { adapterResults } = options;
+	const gateFailures = options.skipCorpusGates === true ? [] : corpusGates();
 	const { manifest, cases } = loadCorpus();
-	const registry = readJson(REGISTRY_PATH);
-	const register = readJson(DIVERGENCES_PATH);
-	const thresholds = readJson(THRESHOLDS_PATH);
+	const registry = options.registry ?? readJson(REGISTRY_PATH);
+	const register = options.divergences ?? readJson(DIVERGENCES_PATH);
+	const thresholds = options.thresholds ?? readJson(THRESHOLDS_PATH);
 	const byId = new Map(manifest.cases.map((row) => [row.id, row]));
 
 	const problems = [];
@@ -395,14 +396,13 @@ export function writeCoverage(report) {
 }
 
 /** The mutation catalogue's detection score. */
-export function mutationScore() {
-	const catalogue = readJson(MUTATIONS_PATH);
+export function mutationScore(options = {}) {
+	const catalogue = options.catalogue ?? readJson(MUTATIONS_PATH);
+	const cases = options.cases ?? loadCorpus().cases;
 	const detected = [];
 	const undetected = [];
 	for (const mutation of catalogue.mutations) {
-		const entry = loadCorpus().cases.find(
-			(one) => one.id === mutation.detectedBy,
-		);
+		const entry = cases.find((one) => one.id === mutation.detectedBy);
 		const decided = entry ? oracleVerdict(entry) : undefined;
 		const hit =
 			decided !== undefined &&
