@@ -1,0 +1,1134 @@
+import { execFileSync } from "node:child_process";
+import {
+	cpSync,
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	readdirSync,
+	rmSync,
+	statSync,
+	writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { describe, expect, it } from "vitest";
+import {
+	SEMANTIC_IR_SCHEMA_VERSION,
+	compileSemanticIr,
+	emitRust,
+	emitTypeScript,
+	normalizeJsonSchemaForPython,
+} from "../src/compiler/index.mjs";
+import type { SemanticIrDocument } from "../src/compiler/index.d.mts";
+import {
+	DATAMODEL_CODEGEN_VERSION,
+	PYDANTIC_VERSION,
+} from "../src/compiler/backends/python-pins.mjs";
+
+/**
+ * Issue #27 (promote the issue #4 prototype emitters into src/) matrix trace
+ * inventory:
+ * TC-320, TC-321, TC-322, TC-323, TC-324, TC-325, TC-326, TC-327, TC-328,
+ * TC-329, TC-330, TC-331, TC-332, TC-333, TC-334, TC-335, TC-336, TC-337,
+ * TC-338, TC-339, TC-340, TC-341, TC-342, TC-343, TC-344, TC-345, TC-346,
+ * TC-347, TC-348, TC-349, TC-350, TC-351, TC-352, TC-353, TC-354, TC-355,
+ * TC-356, TC-357, TC-358, TC-359, TC-360, TC-361, TC-362, TC-363, TC-364,
+ * TC-365, TC-366, TC-367, TC-368, TC-369, TC-371, TC-372, TC-373, TC-374,
+ * TC-375, TC-376, TC-377, TC-378, TC-379, TC-380, TC-381, TC-383, TC-384,
+ * TC-385, TC-386, TC-387, TC-388, TC-389, TC-390, TC-391, TC-392, TC-393,
+ * TC-394, TC-395, TC-396, TC-397.
+ * TC-370 and TC-382 are blocked on issue #42 (the retained evidence records the
+ * minting host's tool versions and the generated Python models need >= 3.11).
+ * Acceptance criteria: FR-040-AC-1..7, FR-041-AC-1..13, FR-042-AC-1..11,
+ * FR-043-AC-1..8, FR-044-AC-2..12, NFR-017-AC-1..7, NFR-018-AC-1..7.
+ * Constraints: FR-040-CON-1..4, FR-041-CON-1..5, FR-042-CON-1..5,
+ * FR-043-CON-1..3, FR-044-CON-1..3.
+ */
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const compilerRoot = resolve(root, "src/compiler");
+const spike = resolve(root, "spikes/typespec-feasibility");
+const emitterDir = resolve(compilerRoot, "emitters/semantic-ir");
+const cli = resolve(compilerRoot, "cli.mjs");
+
+type Json = Record<string, unknown>;
+
+function read(path: string): string {
+	return readFileSync(path, "utf8");
+}
+
+function readJson(path: string): Json {
+	return JSON.parse(read(path)) as Json;
+}
+
+function git(...args: string[]): string {
+	return execFileSync("git", args, { cwd: root, encoding: "utf8" });
+}
+
+function changedPaths(): string[] {
+	const committed = git("diff", "--name-only", "origin/main...HEAD");
+	const working = execFileSync(
+		"git",
+		["status", "--porcelain", "--untracked-files=all"],
+		{ cwd: root, encoding: "utf8" },
+	)
+		.split("\n")
+		.filter((line) => line.trim().length > 0)
+		.map((line) => line.slice(3).trim());
+	return [...new Set([...committed.split("\n"), ...working])].filter(
+		(path) => path.length > 0,
+	);
+}
+
+function existsAtMain(path: string): boolean {
+	try {
+		execFileSync("git", ["cat-file", "-e", `origin/main:${path}`], {
+			cwd: root,
+			stdio: "ignore",
+		});
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+/** Paths the branch adds, counting uncommitted work. */
+function addedPaths(): string[] {
+	return changedPaths().filter((path) => !existsAtMain(path));
+}
+
+/** Paths the branch deletes, counting uncommitted work. */
+function deletedPaths(): string[] {
+	return changedPaths().filter(
+		(path) => existsAtMain(path) && !existsSync(resolve(root, path)),
+	);
+}
+
+function walk(directory: string, prefix = ""): string[] {
+	return readdirSync(directory).flatMap((name) => {
+		const absolute = join(directory, name);
+		const path = prefix ? `${prefix}/${name}` : name;
+		return statSync(absolute).isDirectory() ? walk(absolute, path) : [path];
+	});
+}
+
+function temp(label: string): string {
+	return mkdtempSync(join(tmpdir(), `fcd-27-${label}-`));
+}
+
+const goldenIr = readJson(
+	resolve(spike, "generated/custom/semantic-ir.json"),
+) as unknown as SemanticIrDocument;
+const inventory = readJson(resolve(compilerRoot, "inventory.json")) as {
+	dispositions: string[];
+	shipping: string;
+	components: {
+		component: string;
+		source: string;
+		capability: string | null;
+		disposition: string;
+		targets: string[];
+		evidence: string;
+		limitation: string;
+	}[];
+	authored: { path: string; reason: string }[];
+};
+const capabilities = (
+	readJson(resolve(spike, "evidence/capabilities.json")) as {
+		capabilities: { id: string; disposition: string; limitation: string }[];
+	}
+).capabilities;
+
+const ENUMERATED_COMPONENTS = [
+	"semantic-ir-emitter",
+	"typescript-backend",
+	"rust-serde-backend",
+	"python-json-schema-adapter",
+	"python-generator-pins",
+	"determinism-helpers",
+	"python-virtualenv-bootstrap",
+	"golden-consumer-programs",
+	"codegen-confidence-fixtures",
+	"arrow-projection-writer",
+	"markdown-mapping-writer",
+	"protobuf-mapping-writer",
+	"compatibility-classifier",
+	"official-emitter-invocations",
+];
+
+const ABSENT_GATES = [
+	"conformance corpus",
+	"property/fuzz suite",
+	"compatibility matrix",
+	"downstream adoption",
+];
+
+/** The rejection rules the inventory test enforces, applied to one record. */
+function inventoryViolations(
+	record: (typeof inventory.components)[number],
+): string[] {
+	const problems: string[] = [];
+	if (!record.source || record.source.trim().length === 0) {
+		problems.push(`${record.component}: empty source`);
+	}
+	if (!inventory.dispositions.includes(record.disposition)) {
+		problems.push(`${record.component}: disposition ${record.disposition}`);
+	}
+	if (!record.limitation || record.limitation.trim().length === 0) {
+		problems.push(`${record.component}: empty limitation`);
+	}
+	if (/^\s*representative golden passed\.?\s*$/i.test(record.evidence)) {
+		problems.push(`${record.component}: evidence is only the golden`);
+	}
+	const promoted =
+		record.disposition === "retain" || record.disposition === "rewrite";
+	if (promoted && record.targets.length === 0) {
+		problems.push(`${record.component}: promoted with no target`);
+	}
+	if (!promoted && record.targets.length > 0) {
+		problems.push(`${record.component}: not promoted but names a target`);
+	}
+	for (const target of record.targets) {
+		if (!existsSync(resolve(root, target))) {
+			problems.push(`${record.component}: missing target ${target}`);
+		}
+	}
+	const capability = capabilities.find((item) => item.id === record.capability);
+	if (capability?.disposition === "partial") {
+		if (!record.limitation.includes(capability.limitation)) {
+			problems.push(
+				`${record.component}: partial capability ${capability.id} limitation not restated`,
+			);
+		}
+	}
+	return problems;
+}
+
+describe("issue #27 promotion inventory (FR-040)", () => {
+	/** Traces: TC-320; FR-040-AC-1. */
+	it("holds one record per enumerated prototype component", () => {
+		expect(inventory.components.map((record) => record.component)).toEqual(
+			ENUMERATED_COMPONENTS,
+		);
+		for (const record of inventory.components) {
+			expect(record.source.length, record.component).toBeGreaterThan(0);
+		}
+	});
+
+	/** Traces: TC-321; FR-040-AC-1. */
+	it("fails when a component name is missing or extra", () => {
+		const names = inventory.components.map((record) => record.component);
+		expect([...names.slice(1)]).not.toEqual(ENUMERATED_COMPONENTS);
+		expect([...names, "invented-component"]).not.toEqual(ENUMERATED_COMPONENTS);
+	});
+
+	/** Traces: TC-322; FR-040-AC-2. */
+	it("keeps every disposition inside the closed four-value set", () => {
+		expect(inventory.dispositions).toEqual([
+			"retain",
+			"rewrite",
+			"replace-with-official",
+			"discard",
+		]);
+		for (const record of inventory.components) {
+			expect(inventory.dispositions, record.component).toContain(
+				record.disposition,
+			);
+		}
+	});
+
+	/** Traces: TC-323; FR-040-AC-2, FR-040-CON-2. */
+	it("rejects a mutated fifth disposition value", () => {
+		const mutated = { ...inventory.components[0], disposition: "defer" };
+		expect(inventoryViolations(mutated)).toContain(
+			`${mutated.component}: disposition defer`,
+		);
+	});
+
+	/** Traces: TC-324; FR-040-AC-3. */
+	it("gives promoted records an existing target and others none", () => {
+		for (const record of inventory.components) {
+			expect(inventoryViolations(record), record.component).toEqual([]);
+		}
+	});
+
+	/** Traces: TC-325; FR-040-AC-4. */
+	it("carries a non-empty limitation on every record", () => {
+		for (const record of inventory.components) {
+			expect(record.limitation.length, record.component).toBeGreaterThan(0);
+		}
+	});
+
+	/** Traces: TC-326; FR-040-AC-4. */
+	it("rejects a record justified only by the representative golden", () => {
+		const mutated = {
+			...inventory.components[1],
+			evidence: "representative golden passed",
+		};
+		expect(inventoryViolations(mutated)).toContain(
+			`${mutated.component}: evidence is only the golden`,
+		);
+	});
+
+	/** Traces: TC-327; FR-040-AC-5, FR-040-CON-3. */
+	it("accounts for every file under src/compiler/ exactly once", () => {
+		const files = walk(compilerRoot).map((path) => `src/compiler/${path}`);
+		const targets = inventory.components.flatMap((record) => record.targets);
+		const authored = inventory.authored.map((entry) => entry.path);
+		const owners = new Map<string, number>();
+		for (const path of [...targets, ...authored]) {
+			owners.set(path, (owners.get(path) ?? 0) + 1);
+		}
+		for (const file of files) {
+			expect(owners.get(file), `unowned or double-owned: ${file}`).toBe(1);
+		}
+		for (const path of owners.keys()) {
+			expect(files, `owned but absent: ${path}`).toContain(path);
+		}
+		for (const entry of inventory.authored) {
+			expect(entry.reason.length, entry.path).toBeGreaterThan(0);
+		}
+	});
+
+	/** Traces: TC-328; FR-040-AC-6. */
+	it("matches the feasibility document's per-disposition counts", () => {
+		const counts = new Map<string, number>();
+		for (const record of inventory.components) {
+			counts.set(record.disposition, (counts.get(record.disposition) ?? 0) + 1);
+		}
+		const doc = read(
+			resolve(root, "docs/semantic-data-system/typespec-feasibility.md"),
+		);
+		expect(doc).toContain("## Promotion inventory");
+		for (const [disposition, count] of counts) {
+			expect(doc, disposition).toContain(`**${count} ${disposition}**`);
+		}
+		expect(doc).toContain(`${inventory.authored.length} files`);
+	});
+
+	/** Traces: TC-329; FR-040-AC-7, FR-040-CON-1. */
+	it("restates the recorded limitation of every partial capability", () => {
+		const partial = inventory.components.filter((record) => {
+			const capability = capabilities.find(
+				(item) => item.id === record.capability,
+			);
+			return capability?.disposition === "partial";
+		});
+		expect(partial.length).toBeGreaterThan(0);
+		for (const record of partial) {
+			expect(inventoryViolations(record), record.component).toEqual([]);
+		}
+		const mutated = { ...partial[0], limitation: "none" };
+		expect(inventoryViolations(mutated).join(" ")).toContain(
+			"limitation not restated",
+		);
+	});
+
+	/** Traces: TC-330; FR-040-CON-4. */
+	it("refuses to let the authored ledger launder a promoted component", () => {
+		const promoted = inventory.components.filter(
+			(record) => record.targets.length > 0,
+		);
+		const authored = new Set(inventory.authored.map((entry) => entry.path));
+		for (const record of promoted) {
+			for (const target of record.targets) {
+				expect(authored, `${record.component} -> ${target}`).not.toContain(
+					target,
+				);
+			}
+		}
+	});
+});
+
+describe("promoted semantic-IR emitter (FR-041)", () => {
+	/** Traces: TC-331; FR-041-AC-1. */
+	it("exports exactly the six interface symbols", async () => {
+		const module = await import("../src/compiler/index.mjs");
+		expect(Object.keys(module).sort()).toEqual([
+			"SEMANTIC_IR_SCHEMA_VERSION",
+			"buildSemanticIr",
+			"compileSemanticIr",
+			"emitRust",
+			"emitTypeScript",
+			"normalizeJsonSchemaForPython",
+		]);
+	});
+
+	/** Traces: TC-332; FR-041-AC-1. */
+	it("fails the export-set assertion when a seventh symbol appears", async () => {
+		const module = await import("../src/compiler/index.mjs");
+		const withExtra = [...Object.keys(module), "serializeSemanticIr"].sort();
+		expect(withExtra).not.toEqual(Object.keys(module).sort());
+		expect(withExtra).toHaveLength(7);
+	});
+
+	/** Traces: TC-333, TC-335, TC-383; FR-041-AC-2, FR-041-AC-4, NFR-017-AC-1. */
+	it("reproduces the committed semantic IR and repeats byte-identically", () => {
+		const output = temp("ir");
+		try {
+			const first = resolve(output, "a.json");
+			const second = resolve(output, "b.json");
+			for (const out of [first, second]) {
+				execFileSync(
+					"node",
+					[
+						cli,
+						"emit-ir",
+						"--entrypoint",
+						resolve(spike, "main.tsp"),
+						"--generator",
+						"@agent-ix/typespec-semantic-ir-emitter-spike@0.0.0",
+						"--base-dir",
+						root,
+						"--out",
+						out,
+					],
+					{ cwd: root },
+				);
+			}
+			const golden = read(resolve(spike, "generated/custom/semantic-ir.json"));
+			expect(read(first)).toBe(golden);
+			expect(read(second)).toBe(read(first));
+		} finally {
+			rmSync(output, { recursive: true, force: true });
+		}
+	});
+
+	/** Traces: TC-334; FR-041-AC-3. */
+	it("rejects an unresolved reference with its locus and writes nothing", async () => {
+		const output = temp("bad");
+		const out = resolve(output, "ir.json");
+		try {
+			await expect(
+				compileSemanticIr({
+					entrypoint: resolve(spike, "fixtures/invalid/main.tsp"),
+					generator: "test",
+					baseDir: root,
+				}),
+			).rejects.toThrow(/invalid\/main\.tsp/);
+			expect(existsSync(out)).toBe(false);
+		} finally {
+			rmSync(output, { recursive: true, force: true });
+		}
+	});
+
+	/** Traces: TC-336; FR-041-AC-5. */
+	it("produces the same IR through tsp --emit as through the interface", async () => {
+		const output = temp("tsp");
+		try {
+			execFileSync(
+				resolve(root, "node_modules/.bin/tsp"),
+				[
+					"compile",
+					resolve(spike, "main.tsp"),
+					"--emit",
+					emitterDir,
+					"--option",
+					"@agent-ix/semantic-ir-emitter.generator=@agent-ix/typespec-semantic-ir-emitter-spike@0.0.0",
+					"--output-dir",
+					output,
+					"--pretty",
+					"false",
+				],
+				{ cwd: root },
+			);
+			const emitted = resolve(
+				output,
+				"@agent-ix/semantic-ir-emitter/semantic-ir.json",
+			);
+			expect(existsSync(emitted), emitted).toBe(true);
+			const programmatic = await compileSemanticIr({
+				entrypoint: resolve(spike, "main.tsp"),
+				generator: "@agent-ix/typespec-semantic-ir-emitter-spike@0.0.0",
+				baseDir: root,
+			});
+			expect(JSON.parse(read(emitted))).toEqual(programmatic);
+		} finally {
+			rmSync(output, { recursive: true, force: true });
+		}
+	});
+
+	/** Traces: TC-337; FR-041-AC-6. */
+	it("never imports a module under spikes/, in either direction", () => {
+		for (const path of walk(compilerRoot)) {
+			if (!path.endsWith(".mjs") && !path.endsWith(".mts")) continue;
+			const source = read(resolve(compilerRoot, path));
+			for (const match of source.matchAll(
+				/(?:from|import)\s*\(?\s*"([^"]+)"/g,
+			)) {
+				expect(match[1], `${path} imports ${match[1]}`).not.toContain(
+					"spikes/",
+				);
+			}
+		}
+		const importers = git("grep", "-l", "src/compiler", "--", "*.mjs", "*.ts")
+			.split("\n")
+			.filter((line) => line.length > 0);
+		for (const path of importers) {
+			expect(
+				path.startsWith("src/compiler/") ||
+					path.startsWith("test/") ||
+					path === "spikes/typespec-feasibility/scripts/run-experiment.mjs",
+				path,
+			).toBe(true);
+		}
+	});
+
+	/** Traces: TC-338, TC-339; FR-041-AC-7, FR-041-AC-8, FR-041-CON-1. */
+	it("stamps the caller's generator and defaults to the emitter's own id", async () => {
+		const ir = await compileSemanticIr({
+			entrypoint: resolve(spike, "main.tsp"),
+			generator: "caller@9.9.9",
+			baseDir: root,
+		});
+		expect(ir.schemaVersion).toBe("1.0.0");
+		expect(SEMANTIC_IR_SCHEMA_VERSION).toBe("1.0.0");
+		expect(Object.keys(ir)).toEqual(["schemaVersion", "generator", "types"]);
+		expect(ir.generator).toBe("caller@9.9.9");
+		const { defaultGeneratorId } = await import(
+			"../src/compiler/emitters/semantic-ir/index.mjs"
+		);
+		const manifest = readJson(resolve(emitterDir, "package.json"));
+		expect(defaultGeneratorId()).toBe(`${manifest.name}@${manifest.version}`);
+	});
+
+	/** Traces: TC-340; FR-041-AC-9. */
+	it("keeps only AgentIx.Semantic declarations", async () => {
+		const ir = await compileSemanticIr({
+			entrypoint: resolve(spike, "main.tsp"),
+			generator: "test",
+			baseDir: root,
+		});
+		expect(ir.types.length).toBeGreaterThan(0);
+		for (const type of ir.types) {
+			expect(type.package, type.id).toMatch(/^AgentIx\.Semantic(\.|$)/);
+			expect(type.source, type.id).toMatch(/^(synthetic|.+:\d+)$/);
+		}
+	});
+
+	/** Traces: TC-341, TC-386; FR-041-AC-10, NFR-017-AC-4. */
+	it("takes the working directory as an explicit baseDir", async () => {
+		const inside = await compileSemanticIr({
+			entrypoint: resolve(spike, "main.tsp"),
+			generator: "test",
+			baseDir: root,
+		});
+		const outside = await compileSemanticIr({
+			entrypoint: resolve(spike, "main.tsp"),
+			generator: "test",
+			baseDir: resolve(root, ".."),
+		});
+		const first = inside.types.find((type) => type.source !== "synthetic");
+		const second = outside.types.find((type) => type.id === first?.id);
+		expect(first?.source).toMatch(/^spikes\/typespec-feasibility\/.+:\d+$/);
+		expect(second?.source).not.toBe(first?.source);
+		expect(second?.source).toContain("filament-core-data-27/spikes");
+	});
+
+	/** Traces: TC-342, TC-385; FR-041-AC-11, NFR-017-AC-3. */
+	it("orders types by code point, not by the host's collator", () => {
+		const ids = goldenIr.types.map((type) => type.id);
+		const byCodePoint = [...ids].sort((left, right) =>
+			left < right ? -1 : left > right ? 1 : 0,
+		);
+		expect(ids).toEqual(byCodePoint);
+		for (const locale of ["en-US", "sv-SE", "tr-TR"]) {
+			const collator = new Intl.Collator(locale);
+			expect([...ids].sort(collator.compare), locale).toEqual(byCodePoint);
+		}
+		expect(read(resolve(compilerRoot, "ir.mjs"))).not.toContain(
+			".localeCompare(",
+		);
+		expect(read(resolve(compilerRoot, "ir.mjs"))).not.toContain(
+			"Intl.Collator",
+		);
+	});
+
+	/** Traces: TC-343; FR-041-AC-12. */
+	it("is covered by the repository formatter and typechecker", () => {
+		execFileSync("pnpm", ["exec", "biome", "format", "src/compiler"], {
+			cwd: root,
+		});
+		expect(existsSync(resolve(compilerRoot, "index.d.mts"))).toBe(true);
+	});
+
+	/** Traces: TC-344; FR-041-AC-12. */
+	it("fails tsc when the declarations drift from the implementation", () => {
+		const probe = resolve(root, "test/declaration-drift-probe.ts");
+		writeFileSync(
+			probe,
+			'import { emitRust } from "../src/compiler/index.mjs";\nconst broken: number = emitRust({ schemaVersion: "1.0.0", types: [] });\nvoid broken;\n',
+		);
+		try {
+			expect(() =>
+				execFileSync(
+					resolve(root, "node_modules/.bin/tsc"),
+					["--noEmit", "-p", "tsconfig.json"],
+					{ cwd: root, encoding: "utf8" },
+				),
+			).toThrow();
+		} finally {
+			rmSync(probe, { force: true });
+		}
+	});
+
+	/** Traces: TC-345, TC-393; FR-041-AC-13, FR-041-CON-5, NFR-018-AC-4. */
+	it("licenses every added manifest AGPL-3.0-only", () => {
+		expect(readJson(resolve(emitterDir, "package.json")).license).toBe(
+			"AGPL-3.0-only",
+		);
+	});
+
+	/** Traces: TC-346, TC-347; FR-041-CON-3, FR-041-CON-4. */
+	it("imports only pinned @typespec packages and adds no dependency", () => {
+		const manifest = readJson(resolve(root, "package.json")) as {
+			dependencies?: Json;
+			devDependencies: Record<string, string>;
+			exports: Json;
+		};
+		expect(manifest.dependencies).toBeUndefined();
+		for (const [name, version] of Object.entries(manifest.devDependencies)) {
+			if (!name.startsWith("@typespec/")) continue;
+			expect(version, name).toMatch(/^\d+\.\d+\.\d+$/);
+		}
+		const imported = new Set<string>();
+		for (const path of walk(compilerRoot)) {
+			if (!path.endsWith(".mjs")) continue;
+			for (const match of read(resolve(compilerRoot, path)).matchAll(
+				/from "(@[^"]+)"/g,
+			)) {
+				imported.add(match[1]);
+			}
+		}
+		for (const name of imported) {
+			expect(manifest.devDependencies, name).toHaveProperty(name);
+		}
+		expect(manifest.exports).not.toHaveProperty("./compiler");
+	});
+
+	/** Traces: TC-348; FR-041-CON-2. */
+	it("never validates the prototype IR against the v1 IR schema", () => {
+		const v1 = readJson(
+			resolve(root, "schema/semantic/v1/semantic-ir.schema.json"),
+		) as { required?: string[] };
+		expect(v1.required).toContain("contractVersion");
+		expect(Object.keys(goldenIr)).not.toContain("contractVersion");
+		for (const path of walk(compilerRoot)) {
+			expect(read(resolve(compilerRoot, path)), path).not.toContain(
+				"semantic-ir.schema.json",
+			);
+		}
+	});
+});
+
+describe("promoted language backends (FR-042)", () => {
+	/** Traces: TC-349; FR-042-AC-1. */
+	it("reproduces the committed TypeScript golden", () => {
+		expect(emitTypeScript(goldenIr)).toBe(
+			read(resolve(spike, "generated/custom/typescript/index.ts")),
+		);
+	});
+
+	/** Traces: TC-350; FR-042-AC-2. */
+	it("reproduces the committed Rust golden", () => {
+		expect(emitRust(goldenIr)).toBe(
+			read(resolve(spike, "generated/custom/rust/src/lib.rs")),
+		);
+	});
+
+	/** Traces: TC-351; FR-042-AC-3. */
+	it("returns identical strings on repeated calls", () => {
+		expect(emitTypeScript(goldenIr)).toBe(emitTypeScript(goldenIr));
+		expect(emitRust(goldenIr)).toBe(emitRust(goldenIr));
+	});
+
+	/** Traces: TC-352, TC-369; FR-042-AC-4, FR-042-CON-2, FR-043-AC-8, FR-043-CON-3. */
+	it("touches no filesystem, environment, clock, network, or process", () => {
+		for (const path of walk(compilerRoot)) {
+			if (!path.endsWith(".mjs")) continue;
+			if (path === "cli.mjs" || path.startsWith("emitters/")) continue;
+			const source = read(resolve(compilerRoot, path));
+			for (const forbidden of [
+				"node:fs",
+				"node:child_process",
+				"node:net",
+				"node:http",
+				"process.env",
+				"Date.now",
+				"new Date(",
+				"Math.random",
+			]) {
+				expect(source, `${path} uses ${forbidden}`).not.toContain(forbidden);
+			}
+		}
+		const backends = ["backends/typescript.mjs", "backends/rust.mjs"];
+		for (const path of backends) {
+			expect(read(resolve(compilerRoot, path)), path).not.toContain(
+				"process.cwd",
+			);
+		}
+	});
+
+	/** Traces: TC-353; FR-042-AC-5. */
+	it("throws naming a base absent from the document", () => {
+		const broken = {
+			schemaVersion: "1.0.0",
+			types: [
+				{
+					id: "AgentIx.Semantic.Core.Orphan",
+					name: "Orphan",
+					package: "AgentIx.Semantic.Core",
+					kind: "model",
+					role: "definition",
+					source: "synthetic",
+					base: "AgentIx.Semantic.Core.Ghost",
+					fields: [],
+				},
+			],
+		};
+		expect(() => emitRust(broken)).toThrow(/AgentIx\.Semantic\.Core\.Ghost/);
+		expect(() => emitTypeScript(broken)).toThrow(
+			/AgentIx\.Semantic\.Core\.Ghost/,
+		);
+	});
+
+	/** Traces: TC-354; FR-042-AC-6. */
+	it("throws naming a base-chain cycle instead of recursing", () => {
+		const model = (name: string, base: string) => ({
+			id: `AgentIx.Semantic.Core.${name}`,
+			name,
+			package: "AgentIx.Semantic.Core",
+			kind: "model",
+			role: "definition",
+			source: "synthetic",
+			base: `AgentIx.Semantic.Core.${base}`,
+			fields: [],
+		});
+		const cyclic = {
+			schemaVersion: "1.0.0",
+			types: [model("A", "B"), model("B", "A")],
+		};
+		expect(() => emitRust(cyclic)).toThrow(/cycle/i);
+	});
+
+	/** Traces: TC-355; FR-042-AC-7. */
+	it("renames a non-snake_case field in the Rust output", () => {
+		const rust = emitRust(goldenIr);
+		expect(rust).toContain('#[serde(rename = "artifactType")]');
+		expect(rust).toContain("pub artifact_type:");
+	});
+
+	/** Traces: TC-356; FR-042-AC-8. */
+	it("renders an enum as a union of its member values", () => {
+		const typescript = emitTypeScript(goldenIr);
+		const enumType = goldenIr.types.find((type) => type.kind === "enum") as
+			| { name: string; members: { value: string }[] }
+			| undefined;
+		expect(enumType).toBeDefined();
+		if (!enumType) return;
+		expect(typescript).toContain(
+			`export type ${enumType.name} = ${enumType.members
+				.map((member) => JSON.stringify(member.value))
+				.join(" | ")};`,
+		);
+	});
+
+	/** Traces: TC-357; FR-042-AC-9. */
+	it("renders optional fields as Option in Rust and ? in TypeScript", () => {
+		expect(emitRust(goldenIr)).toContain("Option<");
+		expect(emitTypeScript(goldenIr)).toMatch(/\t\w+\?:/);
+	});
+
+	/** Traces: TC-358, TC-360; FR-042-AC-10, FR-042-CON-1, FR-042-CON-3, FR-042-CON-5. */
+	it("records both backends as representative-slice-only", () => {
+		for (const name of ["typescript-backend", "rust-serde-backend"]) {
+			const record = inventory.components.find(
+				(item) => item.component === name,
+			);
+			expect(record, name).toBeDefined();
+			if (!record) continue;
+			expect(record.limitation).toContain("representative slice only");
+			for (const gate of ABSENT_GATES) {
+				expect(record.limitation, `${name} / ${gate}`).toContain(gate);
+			}
+			expect(record.limitation.toLowerCase()).not.toContain(
+				"production-qualified",
+			);
+		}
+		const typescript = inventory.components.find(
+			(item) => item.component === "typescript-backend",
+		);
+		expect(typescript?.limitation).toContain("textual substitution");
+	});
+
+	/** Traces: TC-359, TC-367; FR-042-AC-11, FR-043-AC-6, FR-042-CON-4. */
+	it("leaves every committed issue #4 golden untouched", () => {
+		const frozen = [
+			"spikes/typespec-feasibility/generated/custom/semantic-ir.json",
+			"spikes/typespec-feasibility/generated/custom/typescript/index.ts",
+			"spikes/typespec-feasibility/generated/custom/rust/src/lib.rs",
+			"spikes/typespec-feasibility/generated/custom/rust/Cargo.lock",
+			"spikes/typespec-feasibility/generated/custom/python/input.schema.json",
+			"spikes/typespec-feasibility/generated/custom/python/models.py",
+			"spikes/typespec-feasibility/generated/custom/python/models_dataclass.py",
+			"spikes/typespec-feasibility/generated/official/json-schema/semantic.json",
+		];
+		const changed = changedPaths();
+		for (const path of frozen) {
+			expect(changed, path).not.toContain(path);
+		}
+	});
+});
+
+describe("Python generation adapter (FR-043)", () => {
+	const bundle = readJson(
+		resolve(spike, "generated/official/json-schema/semantic.json"),
+	);
+
+	/** Traces: TC-361; FR-043-AC-1. */
+	it("reproduces the committed Python input schema", () => {
+		const normalized = normalizeJsonSchemaForPython(bundle);
+		expect(`${JSON.stringify(normalized, null, 2)}\n`).toBe(
+			read(resolve(spike, "generated/custom/python/input.schema.json")),
+		);
+	});
+
+	/** Traces: TC-362, TC-363; FR-043-AC-2, FR-043-CON-1. */
+	it("throws on every executable extension key, at any depth", () => {
+		for (const key of [
+			"x-python-import",
+			"customTypePath",
+			"default_factory",
+		]) {
+			expect(() =>
+				normalizeJsonSchemaForPython({ $defs: {}, [key]: "x" }),
+			).toThrow(key);
+			expect(() =>
+				normalizeJsonSchemaForPython({
+					$defs: { Nested: { properties: { a: { [key]: "x" } } } },
+				}),
+			).toThrow(key);
+		}
+	});
+
+	/** Traces: TC-364; FR-043-AC-3. */
+	it("stamps the urn id and titles every definition", () => {
+		const normalized = normalizeJsonSchemaForPython(bundle) as {
+			$id: string;
+			$defs: Record<string, Json>;
+		};
+		expect(normalized.$id).toBe(
+			"urn:agent-ix:typespec-feasibility:python-input:1",
+		);
+		for (const [name, definition] of Object.entries(normalized.$defs)) {
+			expect(definition, name).not.toHaveProperty("$id");
+			expect(definition, name).not.toHaveProperty("$schema");
+			expect(typeof definition.title, name).toBe("string");
+		}
+	});
+
+	/** Traces: TC-365; FR-043-AC-4, FR-043-CON-2. */
+	it("localises the RecordString helper the issue #31 defect breaks", () => {
+		const normalized = normalizeJsonSchemaForPython(bundle) as {
+			$defs: Record<string, Json>;
+		};
+		const helper = normalized.$defs.RecordString;
+		expect(helper).toBeDefined();
+		expect(helper).toHaveProperty("additionalProperties");
+		expect(helper).not.toHaveProperty("unevaluatedProperties");
+		expect(JSON.stringify(normalized)).not.toContain('"RecordString.json"');
+	});
+
+	/** Traces: TC-366; FR-043-AC-5. */
+	it("is pure and leaves its input unmutated", () => {
+		const before = JSON.stringify(bundle);
+		const first = normalizeJsonSchemaForPython(bundle);
+		const second = normalizeJsonSchemaForPython(bundle);
+		expect(first).toEqual(second);
+		expect(JSON.stringify(bundle)).toBe(before);
+	});
+
+	/** Traces: TC-368; FR-043-AC-7. */
+	it("pins the generator versions the evidence records", () => {
+		const tools = (
+			readJson(resolve(spike, "evidence/toolchain.json")) as {
+				tools: { name: string; version: string }[];
+			}
+		).tools;
+		const version = (name: string) =>
+			tools.find((tool) => tool.name === name)?.version;
+		expect(DATAMODEL_CODEGEN_VERSION).toBe(version("datamodel-code-generator"));
+		expect(PYDANTIC_VERSION).toBe(version("Pydantic"));
+	});
+});
+
+describe("frozen spike replay (FR-044)", () => {
+	/** Traces: TC-371, TC-384; FR-044-AC-2, FR-044-CON-1, NFR-017-AC-2. */
+	it("changes exactly one retained-evidence field", () => {
+		const retained = [
+			"spikes/typespec-feasibility/generated/",
+			"spikes/typespec-feasibility/evidence/",
+			"spikes/typespec-feasibility/report.md",
+		];
+		const changed = changedPaths()
+			.filter((path) => retained.some((prefix) => path.startsWith(prefix)))
+			.sort();
+		expect(changed).toEqual([
+			"spikes/typespec-feasibility/evidence/custom.json",
+		]);
+		const before = JSON.parse(
+			git(
+				"show",
+				"origin/main:spikes/typespec-feasibility/evidence/custom.json",
+			),
+		) as Json;
+		const after = readJson(resolve(spike, "evidence/custom.json"));
+		const differing = Object.keys(after).filter(
+			(key) => JSON.stringify(after[key]) !== JSON.stringify(before[key]),
+		);
+		expect(differing).toEqual(["command"]);
+		expect(before.command).toBe(
+			"pnpm exec tsp compile spikes/typespec-feasibility/main.tsp --emit @agent-ix/typespec-semantic-ir-emitter-spike",
+		);
+		expect(after.command).toBe(
+			"node src/compiler/cli.mjs emit-ir --entrypoint spikes/typespec-feasibility/main.tsp --generator @agent-ix/typespec-semantic-ir-emitter-spike@0.0.0 --out generated/custom/semantic-ir.json",
+		);
+	});
+
+	/** Traces: TC-372; FR-044-AC-3, FR-044-CON-2. */
+	it("seeds the committed lockfile instead of regenerating it", () => {
+		const runner = read(resolve(spike, "scripts/run-experiment.mjs"));
+		expect(runner).toContain('generated/custom/rust/Cargo.lock"');
+		expect(runner).toContain("cpSync(retainedLock");
+		const seedIndex = runner.indexOf("cpSync(retainedLock");
+		const generateIndex = runner.indexOf('"generate-lockfile"');
+		expect(seedIndex).toBeGreaterThan(-1);
+		expect(seedIndex).toBeLessThan(generateIndex);
+	});
+
+	/** Traces: TC-374; FR-044-AC-4. */
+	it("fails --check rather than generating a missing lockfile", () => {
+		const runner = read(resolve(spike, "scripts/run-experiment.mjs"));
+		expect(runner).toMatch(
+			/else if \(checkMode\) \{[\s\S]*Missing retained lockfile/,
+		);
+	});
+
+	/** Traces: TC-375; FR-044-AC-5. */
+	it("removes the spike emitter package and its dependency", () => {
+		expect(existsSync(resolve(spike, "emitter"))).toBe(false);
+		for (const manifest of [
+			resolve(root, "package.json"),
+			resolve(spike, "package.json"),
+		]) {
+			expect(read(manifest), manifest).not.toContain(
+				"typespec-semantic-ir-emitter-spike",
+			);
+		}
+	});
+
+	/** Traces: TC-376, TC-388; FR-044-AC-6, FR-044-CON-3, NFR-017-AC-6. */
+	it("leaves no file: or link: specifier and no committed .npmrc", () => {
+		const lock = read(resolve(root, "pnpm-lock.yaml"));
+		for (const line of lock.split("\n")) {
+			expect(line, line).not.toMatch(/(?<![\w-])(file|link):/);
+		}
+		expect(lock).not.toContain("typespec-semantic-ir-emitter-spike");
+		const tracked = git("ls-files").split("\n");
+		expect(tracked.filter((path) => path.endsWith(".npmrc"))).toEqual([]);
+	});
+
+	/** Traces: TC-377; FR-044-AC-7. */
+	it("makes the spike runner import the promoted backends", () => {
+		const runner = read(resolve(spike, "scripts/run-experiment.mjs"));
+		expect(runner).toContain('from "../../../src/compiler/index.mjs"');
+		for (const name of [
+			"function emitTypeScript",
+			"function emitRust",
+			"function normalizeJsonSchemaForPython",
+		]) {
+			expect(runner, name).not.toContain(name);
+		}
+	});
+
+	/** Traces: TC-378; FR-044-AC-8. */
+	it("changes only the permitted spike paths", () => {
+		const changed = changedPaths().filter((path) => path.startsWith("spikes/"));
+		const permitted = [
+			"spikes/typespec-feasibility/scripts/run-experiment.mjs",
+			"spikes/typespec-feasibility/package.json",
+			"spikes/typespec-feasibility/evidence/custom.json",
+		];
+		for (const path of changed) {
+			expect(
+				permitted.includes(path) ||
+					path.startsWith("spikes/typespec-feasibility/emitter/"),
+				path,
+			).toBe(true);
+		}
+	});
+
+	/** Traces: TC-381, TC-389, TC-397; FR-044-AC-11, FR-044-AC-12, NFR-017-AC-7. */
+	it("records the retained evidence and the issue #42 couplings", () => {
+		const doc = read(
+			resolve(root, "docs/semantic-data-system/typespec-feasibility.md"),
+		);
+		expect(doc).toContain("## Retained evidence");
+		expect(doc).toContain("issues/42");
+		expect(doc).toContain("toolchain.json");
+		expect(doc).toContain("StrEnum");
+		const nfr = read(
+			resolve(
+				root,
+				"spec/non-functional/NFR-006-isolated-reproducible-spike.md",
+			),
+		);
+		expect(nfr).toContain("changes nothing outside itself");
+	});
+});
+
+describe("determinism and non-disruption (NFR-017, NFR-018)", () => {
+	const permitted = [
+		"src/compiler/",
+		"spikes/typespec-feasibility/scripts/",
+		"spikes/typespec-feasibility/package.json",
+		"spikes/typespec-feasibility/evidence/custom.json",
+		"spikes/typespec-feasibility/emitter/",
+		"spikes/typespec-feasibility/README.md",
+		"package.json",
+		"pnpm-lock.yaml",
+		"Makefile",
+		"biome.json",
+		"tsconfig.json",
+		"tsconfig.build.json",
+		"test/",
+		"docs/semantic-data-system/typespec-feasibility.md",
+		"spec/",
+		"plan/",
+		"reviews/",
+	];
+	const prohibited = [
+		"schema/",
+		"fixtures/",
+		"packages/",
+		"agent_ix_core_data/",
+		"src/generated.ts",
+		"audit/",
+		"pyproject.toml",
+		"poetry.lock",
+		"tests/",
+		".github/",
+	];
+
+	/** Traces: TC-379, TC-390; FR-044-AC-9, NFR-018-AC-1. */
+	it("keeps every changed path permitted and none prohibited", () => {
+		for (const path of changedPaths()) {
+			expect(
+				permitted.some((prefix) => path === prefix || path.startsWith(prefix)),
+				`not permitted: ${path}`,
+			).toBe(true);
+			for (const prefix of prohibited) {
+				expect(
+					path === prefix || path.startsWith(prefix),
+					`prohibited: ${path}`,
+				).toBe(false);
+			}
+		}
+	});
+
+	/** Traces: TC-391, TC-394; NFR-018-AC-2, NFR-018-AC-5. */
+	it("leaves the published surface and dependency sets unchanged", () => {
+		const before = JSON.parse(git("show", "origin/main:package.json")) as Json;
+		const after = readJson(resolve(root, "package.json"));
+		for (const key of ["exports", "main", "module", "types", "files"]) {
+			expect(JSON.stringify(after[key]), key).toBe(JSON.stringify(before[key]));
+		}
+		expect(after.dependencies).toEqual(before.dependencies);
+		const beforeDev = { ...(before.devDependencies as Json) };
+		delete beforeDev["@agent-ix/typespec-semantic-ir-emitter-spike"];
+		expect(after.devDependencies).toEqual(beforeDev);
+	});
+
+	/** Traces: TC-392; NFR-018-AC-3. */
+	it("confines the packed-file delta to src/compiler/", () => {
+		const files = (
+			readJson(resolve(root, "package.json")).files as string[]
+		).map((glob) => glob.replace(/\/$/, ""));
+		const added = addedPaths().filter((path) =>
+			files.some((glob) => path === glob || path.startsWith(`${glob}/`)),
+		);
+		for (const path of added) {
+			expect(path.startsWith("src/compiler/"), path).toBe(true);
+		}
+		expect(added.length).toBeGreaterThan(0);
+		expect(inventory.shipping).toContain("source only");
+		expect(inventory.shipping).toContain("issue #11");
+	});
+
+	/** Traces: TC-395; NFR-018-AC-6. */
+	it("restores origin/main exactly when the changed paths are reverted", () => {
+		const scratch = temp("restore");
+		try {
+			expect(changedPaths()).toContain(
+				"spikes/typespec-feasibility/evidence/custom.json",
+			);
+			const deleted = deletedPaths();
+			expect(
+				deleted.some((path) =>
+					path.startsWith("spikes/typespec-feasibility/emitter/"),
+				),
+			).toBe(true);
+			for (const path of deleted) {
+				const restored = git("show", `origin/main:${path}`);
+				const target = resolve(scratch, path);
+				mkdirSync(dirname(target), { recursive: true });
+				writeFileSync(target, restored);
+				expect(existsSync(target), path).toBe(true);
+			}
+			const evidence = git(
+				"show",
+				"origin/main:spikes/typespec-feasibility/evidence/custom.json",
+			);
+			expect(evidence).toContain(
+				"--emit @agent-ix/typespec-semantic-ir-emitter-spike",
+			);
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
+	});
+
+	/** Traces: TC-396; NFR-018-AC-7. */
+	it("adds and triggers no publication step", () => {
+		for (const path of changedPaths()) {
+			expect(path.startsWith(".github/"), path).toBe(false);
+		}
+		const manifest = readJson(resolve(root, "package.json"));
+		expect(manifest).not.toHaveProperty("publishConfig");
+		expect(existsSync(resolve(compilerRoot, ".npmrc"))).toBe(false);
+	});
+
+	/** Traces: TC-373, TC-387; FR-044-AC-3, NFR-017-AC-5. */
+	it("keeps the seeded lockfile byte-identical through cargo check", () => {
+		const cargo = resolve(process.env.HOME ?? "", ".cargo/bin/cargo");
+		if (!existsSync(cargo)) return;
+		const scratch = temp("cargo");
+		try {
+			const source = resolve(spike, "generated/custom/rust");
+			mkdirSync(resolve(scratch, "src"), { recursive: true });
+			cpSync(resolve(source, "Cargo.toml"), resolve(scratch, "Cargo.toml"));
+			cpSync(resolve(source, "Cargo.lock"), resolve(scratch, "Cargo.lock"));
+			cpSync(resolve(source, "src/lib.rs"), resolve(scratch, "src/lib.rs"));
+			execFileSync(cargo, ["check", "--offline", "--locked"], {
+				cwd: scratch,
+				env: { ...process.env, CARGO_TARGET_DIR: resolve(scratch, "target") },
+			});
+			expect(read(resolve(scratch, "Cargo.lock"))).toBe(
+				read(resolve(source, "Cargo.lock")),
+			);
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
+	}, 180000);
+});

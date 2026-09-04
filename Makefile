@@ -77,3 +77,18 @@ semantic-core-generate:
 .PHONY: semantic-core-check
 semantic-core-check:
 	node packages/semantic-core/scripts/generate.mjs --check
+
+# -----------------------------------------------------------------------------
+# Promoted prototype compiler (issue #27)
+# -----------------------------------------------------------------------------
+# The narrow build interface lives in src/compiler/. It is repo-internal for
+# issue #27: package.json `exports` gains no `./compiler` entry and @typespec/*
+# stay devDependencies until issue #11 publishes.
+
+ENTRYPOINT ?= spikes/typespec-feasibility/main.tsp
+OUT ?= build/semantic-ir.json
+GENERATOR ?=
+
+.PHONY: compiler-emit-ir
+compiler-emit-ir:
+	node src/compiler/cli.mjs emit-ir --entrypoint $(ENTRYPOINT) $(if $(GENERATOR),--generator $(GENERATOR),) --out $(OUT)
