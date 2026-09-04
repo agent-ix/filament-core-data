@@ -9,11 +9,28 @@
 			"declaredTypes": 141,
 			"validatingTypes": 89,
 			"nonValidatingDeclarations": 52,
-			"exercisedTypes": 89,
-			"unexercisedValidatingTypes": 0,
-			"typesRejectingAnEmptyOrUndeclaredValue": 88,
+			"exercisedTypes": 55,
+			"unexercisedValidatingTypes": 34,
+			"constraintsExercised": 174,
+			"typesRejectingAnEmptyOrUndeclaredValue": 72,
 			"typesAcceptingAnything": [
-				"common_schema.FilamentSemanticContractCommonTypesV1"
+				"common_schema.FilamentSemanticContractCommonTypesV1",
+				"compatibility_report_schema.AffectedConsumer",
+				"compatibility_report_schema.RequiredGate",
+				"compiler_request_schema.SupportedFeature",
+				"legacy_adapter_schema.RetirementPrerequisite",
+				"package_manifest_schema.Capability",
+				"package_manifest_schema.Export1",
+				"package_manifest_schema.SourceRoot",
+				"representation_schema.BestFitItem",
+				"representation_schema.NonUs",
+				"representation_schema.ReservedName",
+				"representation_schema.ReservedNumber",
+				"semantic_ir_schema.PostItem",
+				"semantic_ir_schema.PreItem",
+				"semantic_ir_schema.Role",
+				"semantic_ir_schema.Value",
+				"target_contract_schema.NativeApiItem"
 			],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
 			"lost": ["constraints-array-unique"],
@@ -21,447 +38,680 @@
 				{
 					"module": "common_schema",
 					"type": "Diagnostic",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "common_schema",
 					"type": "Extension",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "common_schema",
 					"type": "FilamentSemanticContractCommonTypesV1",
-					"rejectsUndeclaredOrIncomplete": false
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "common_schema",
 					"type": "GeneratedOrigin",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "common_schema",
 					"type": "ManifestTarget",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "common_schema",
 					"type": "Origin",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "common_schema",
 					"type": "Origin1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "common_schema",
 					"type": "Origin2",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "common_schema",
 					"type": "PackageIdentity",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "common_schema",
 					"type": "SemanticIdentity",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "common_schema",
 					"type": "Semver",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "common_schema",
 					"type": "Sha256",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "common_schema",
 					"type": "SourceLocus",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "compatibility_report_schema",
 					"type": "AffectedConsumer",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "compatibility_report_schema",
 					"type": "Change",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "compatibility_report_schema",
 					"type": "FilamentSemanticCompatibilityReportV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "compatibility_report_schema",
 					"type": "RequiredGate",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "compatibility_report_schema",
 					"type": "TargetResult",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "compiler_request_schema",
 					"type": "Backend",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "compiler_request_schema",
 					"type": "FilamentCompilerRequestV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "compiler_request_schema",
 					"type": "Limits",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "compiler_request_schema",
 					"type": "SupportedFeature",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "consumer_policy_schema",
 					"type": "FilamentSemanticConsumerPolicyV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "legacy_adapter_schema",
 					"type": "FilamentLegacyAdapterContractV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "legacy_adapter_schema",
 					"type": "RetirementPrerequisite",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "legacy_adapter_schema",
 					"type": "VersionedContract",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "mapping_schema",
 					"type": "Base",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 14
 				},
 				{
 					"module": "mapping_schema",
 					"type": "Correspondence",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "mapping_schema",
 					"type": "FilamentSemanticMappingV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "mapping_schema",
 					"type": "SourceLocus",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "mapping_schema",
 					"type": "Transformation",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 14
 				},
 				{
 					"module": "output_manifest_schema",
 					"type": "FilamentCompilerOutputManifestV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "output_manifest_schema",
 					"type": "File",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "package_lock_schema",
 					"type": "Canonicalization",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 4
 				},
 				{
 					"module": "package_lock_schema",
 					"type": "FilamentSemanticPackageLockV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "package_lock_schema",
 					"type": "Package",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "Capability",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "Export",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "Export1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "FilamentSemanticPackageManifestV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "Import",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "Package",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "Profile",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "SourceRoot",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "profile_schema",
 					"type": "FilamentRepresentationProfileV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "representation_schema",
 					"type": "Avro",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 4
 				},
 				{
 					"module": "representation_schema",
 					"type": "BestFitItem",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "representation_schema",
 					"type": "Columnar",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "representation_schema",
 					"type": "Delimited",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 8
 				},
 				{
 					"module": "representation_schema",
 					"type": "FilamentRepresentationContractV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "representation_schema",
 					"type": "Json",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "representation_schema",
 					"type": "Markdown",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "representation_schema",
 					"type": "NonUs",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "representation_schema",
 					"type": "Postgresql",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "representation_schema",
 					"type": "Protobuf",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "representation_schema",
 					"type": "ReservedName",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "representation_schema",
 					"type": "ReservedNumber",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Clause",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint2",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint3",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint4",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint5",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint6",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "FieldModel",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 4
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "FilamentSemanticIrV1ContractVersions100And110",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Multiplicity",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Occurrence",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operands",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operands1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operands2",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operands3",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operands4",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operation",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Package",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "PostItem",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "PreItem",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Relationship",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Returns",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Role",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Source",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "TypeDefinition",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Value",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Variant",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "target_contract_schema",
 					"type": "ExecutableGeneratorDependency",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "target_contract_schema",
 					"type": "FilamentGeneratedTargetContractV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 9
 				},
 				{
 					"module": "target_contract_schema",
 					"type": "NativeApiItem",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "target_contract_schema",
 					"type": "SecurityFinding",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				}
 			]
 		},
@@ -473,8 +723,9 @@
 			"declaredTypes": 143,
 			"validatingTypes": 64,
 			"nonValidatingDeclarations": 79,
-			"exercisedTypes": 64,
-			"unexercisedValidatingTypes": 0,
+			"exercisedTypes": 49,
+			"unexercisedValidatingTypes": 15,
+			"constraintsExercised": 169,
 			"typesRejectingAnEmptyOrUndeclaredValue": 64,
 			"typesAcceptingAnything": [],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
@@ -483,322 +734,514 @@
 				{
 					"module": "common_schema",
 					"type": "Diagnostic",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "common_schema",
 					"type": "Extension",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "common_schema",
 					"type": "GeneratedOrigin",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "common_schema",
 					"type": "Origin1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "common_schema",
 					"type": "Origin2",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "common_schema",
 					"type": "SourceLocus",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "compatibility_report_schema",
 					"type": "Change",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "compatibility_report_schema",
 					"type": "FilamentSemanticCompatibilityReportV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "compatibility_report_schema",
 					"type": "TargetResult",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "compiler_request_schema",
 					"type": "Backend",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "compiler_request_schema",
 					"type": "FilamentCompilerRequestV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "compiler_request_schema",
 					"type": "Limits",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "consumer_policy_schema",
 					"type": "FilamentSemanticConsumerPolicyV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "legacy_adapter_schema",
 					"type": "FilamentLegacyAdapterContractV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "legacy_adapter_schema",
 					"type": "VersionedContract",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "mapping_schema",
 					"type": "Base",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 14
 				},
 				{
 					"module": "mapping_schema",
 					"type": "Correspondence",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "mapping_schema",
 					"type": "FilamentSemanticMappingV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "mapping_schema",
 					"type": "Transformation",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 14
 				},
 				{
 					"module": "output_manifest_schema",
 					"type": "FilamentCompilerOutputManifestV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "output_manifest_schema",
 					"type": "File",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "package_lock_schema",
 					"type": "Canonicalization",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 4
 				},
 				{
 					"module": "package_lock_schema",
 					"type": "FilamentSemanticPackageLockV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "package_lock_schema",
 					"type": "Package",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "Export",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "FilamentSemanticPackageManifestV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "Import",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "Package",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "Profile",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "profile_schema",
 					"type": "FilamentRepresentationProfileV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "representation_schema",
 					"type": "Avro",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 4
 				},
 				{
 					"module": "representation_schema",
 					"type": "Columnar",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "representation_schema",
 					"type": "Delimited",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 8
 				},
 				{
 					"module": "representation_schema",
 					"type": "FilamentRepresentationContractV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "representation_schema",
 					"type": "Json",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "representation_schema",
 					"type": "Markdown",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "representation_schema",
 					"type": "Postgresql",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "representation_schema",
 					"type": "Protobuf",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Clause",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint2",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint3",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint4",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint5",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint6",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "FieldModel",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 4
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "FilamentSemanticIrV1ContractVersions100And110",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Multiplicity",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Occurrence",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operands",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operands1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operands2",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operands3",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operands4",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operation",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Package",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Relationship",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Returns",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Source",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "TypeDefinition",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Variant",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "target_contract_schema",
 					"type": "ExecutableGeneratorDependency",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "target_contract_schema",
 					"type": "FilamentGeneratedTargetContractV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 9
 				},
 				{
 					"module": "target_contract_schema",
 					"type": "SecurityFinding",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				}
 			]
 		},
@@ -848,8 +1291,9 @@
 			"declaredTypes": 143,
 			"validatingTypes": 64,
 			"nonValidatingDeclarations": 79,
-			"exercisedTypes": 64,
-			"unexercisedValidatingTypes": 0,
+			"exercisedTypes": 44,
+			"unexercisedValidatingTypes": 20,
+			"constraintsExercised": 169,
 			"typesRejectingAnEmptyOrUndeclaredValue": 64,
 			"typesAcceptingAnything": [],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
@@ -865,322 +1309,514 @@
 				{
 					"module": "common_schema",
 					"type": "Diagnostic",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "common_schema",
 					"type": "Extension",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "common_schema",
 					"type": "GeneratedOrigin",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "common_schema",
 					"type": "Origin1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "common_schema",
 					"type": "Origin2",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "common_schema",
 					"type": "SourceLocus",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "compatibility_report_schema",
 					"type": "Change",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "compatibility_report_schema",
 					"type": "FilamentSemanticCompatibilityReportV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "compatibility_report_schema",
 					"type": "TargetResult",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "compiler_request_schema",
 					"type": "Backend",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "compiler_request_schema",
 					"type": "FilamentCompilerRequestV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "compiler_request_schema",
 					"type": "Limits",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "consumer_policy_schema",
 					"type": "FilamentSemanticConsumerPolicyV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "legacy_adapter_schema",
 					"type": "FilamentLegacyAdapterContractV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "legacy_adapter_schema",
 					"type": "VersionedContract",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "mapping_schema",
 					"type": "Base",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 14
 				},
 				{
 					"module": "mapping_schema",
 					"type": "Correspondence",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "mapping_schema",
 					"type": "FilamentSemanticMappingV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "mapping_schema",
 					"type": "Transformation",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 14
 				},
 				{
 					"module": "output_manifest_schema",
 					"type": "FilamentCompilerOutputManifestV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "output_manifest_schema",
 					"type": "File",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "package_lock_schema",
 					"type": "Canonicalization",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 4
 				},
 				{
 					"module": "package_lock_schema",
 					"type": "FilamentSemanticPackageLockV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "package_lock_schema",
 					"type": "Package",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "Export",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "FilamentSemanticPackageManifestV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "Import",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "Package",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "package_manifest_schema",
 					"type": "Profile",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "profile_schema",
 					"type": "FilamentRepresentationProfileV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "representation_schema",
 					"type": "Avro",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 4
 				},
 				{
 					"module": "representation_schema",
 					"type": "Columnar",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "representation_schema",
 					"type": "Delimited",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 8
 				},
 				{
 					"module": "representation_schema",
 					"type": "FilamentRepresentationContractV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "representation_schema",
 					"type": "Json",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "representation_schema",
 					"type": "Markdown",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "representation_schema",
 					"type": "Postgresql",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "representation_schema",
 					"type": "Protobuf",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Clause",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint2",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint3",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint4",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint5",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Constraint6",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Field",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 4
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "FilamentSemanticIrV1ContractVersions100And110",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Multiplicity",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Occurrence",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operands",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operands1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operands2",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operands3",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operands4",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Operation",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Package",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Relationship",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Returns",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Source",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "TypeDefinition",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "Variant",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "target_contract_schema",
 					"type": "ExecutableGeneratorDependency",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				},
 				{
 					"module": "target_contract_schema",
 					"type": "FilamentGeneratedTargetContractV1",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 9
 				},
 				{
 					"module": "target_contract_schema",
 					"type": "SecurityFinding",
-					"rejectsUndeclaredOrIncomplete": true
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
 				}
 			]
 		}

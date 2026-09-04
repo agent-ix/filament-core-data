@@ -20,7 +20,11 @@ from pathlib import Path
 from typing import Any
 
 from python_backend import ROOT
-from python_backend.adapter.prepare import Prepared, prepare_input_set
+from python_backend.adapter.prepare import (
+    Prepared,
+    prepare_documents,
+    prepare_input_set,
+)
 from python_backend.adapter.profiles import load_profiles, profile_digest
 from python_backend.adapter.render import render
 from python_backend.runner.generate import generate, toolchain_fingerprint
@@ -30,8 +34,10 @@ PROBES = ROOT / "qualification" / "probes"
 REPORT = ROOT / "qualification" / "report.json"
 GAPS = ROOT / "qualification" / "gaps.json"
 
-#: The three verdicts, and no others. A static gate asserts no other verdict
-#: word appears in any artefact of this change (FR-077-AC-13).
+# The three verdicts, and no others. A static gate asserts that no other verdict
+# word appears in any artefact of this change; the criterion is named in
+# `spec/tests.md` rather than here, because a bare requirement id in a comment
+# binds to the NEXT symbol and would mint a trace on a constant.
 QUALIFIED = "qualified"
 CONDITIONAL = "qualified-with-conditions"
 NOT_QUALIFIED = "not-qualified"
@@ -51,14 +57,7 @@ def _documents(probe: dict[str, Any]) -> dict[str, dict[str, Any]]:
 
 
 def _prepared(probe: dict[str, Any]) -> Prepared:
-    from python_backend.adapter.prepare import Rewrite, _walk  # noqa: PLC0415
-
-    rewrites: list[Rewrite] = []
-    documents = {
-        name: _walk(json.loads(json.dumps(document)), name, "", rewrites)
-        for name, document in _documents(probe).items()
-    }
-    return Prepared(documents=documents, rewrites=rewrites)
+    return prepare_documents(_documents(probe))
 
 
 def _detect(detector: dict[str, Any], sources: str) -> bool:
@@ -86,6 +85,24 @@ def measure() -> dict[str, Any]:
             row[profile["id"]] = _detect(probe["detector"], joined)
         results[probe["id"]] = row
     return results
+
+
+def mismatches(
+    measured: dict[str, dict[str, bool]], catalogue: list[dict[str, Any]]
+) -> list[tuple[str, str, bool, bool]]:
+    """Where a measurement disagrees with a probe's declared expectation.
+
+    The gate reads this, and so does its falsification, so the falsification
+    exercises the comparison rather than restating the negation it just built.
+    """
+
+    out: list[tuple[str, str, bool, bool]] = []
+    for probe in catalogue:
+        for profile_id, expected in probe["expected"].items():
+            actual = measured[probe["id"]][profile_id]
+            if actual != expected:
+                out.append((probe["id"], profile_id, expected, actual))
+    return out
 
 
 def _published_set() -> Prepared:
@@ -237,7 +254,7 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
         {
             "construct": "absent versus null in the Pydantic families",
             "probe": "default-non-nullable",
-            "family": "pydantic-v2-basemodel, pydantic-v2-dataclass",
+            "family": "pydantic_v2_basemodel, pydantic_v2_dataclass",
             "severity": "medium",
             "closableByPreparation": False,
             "disposition": (

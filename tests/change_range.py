@@ -28,14 +28,26 @@ class RangeNotLocatedError(RuntimeError):
     """No sentinel is in history, so this gate cannot assert."""
 
 
+class GitFailedError(RuntimeError):
+    """A git command failed. Never silently an empty result.
+
+    `check=False` with an ignored return code turns "git errored" into "nothing
+    changed", which is the quietest way for a freeze gate to stop asserting.
+    """
+
+
 def _git(repo: pathlib.Path, *args: str) -> str:
-    return subprocess.run(
+    completed = subprocess.run(
         ["git", *args],
         cwd=repo,
         capture_output=True,
         text=True,
         check=False,
-    ).stdout.strip()
+    )
+    if completed.returncode != 0:
+        msg = f"git {' '.join(args)} failed: {completed.stderr.strip()}"
+        raise GitFailedError(msg)
+    return completed.stdout.strip()
 
 
 def _is_ancestor(repo: pathlib.Path, older: str, newer: str) -> bool:
@@ -50,8 +62,23 @@ def _is_ancestor(repo: pathlib.Path, older: str, newer: str) -> bool:
     )
 
 
-def change_range(repo: pathlib.Path, sentinels: list[str]) -> tuple[str, str]:
-    """`(base, tip)` for the change that created `sentinels`."""
+def change_range(
+    repo: pathlib.Path, sentinels: list[str], owned: str = "python_backend/"
+) -> tuple[str, str]:
+    """`(base, tip)` for the change that created `sentinels`.
+
+    `base` is the parent of the earliest commit that added a sentinel — the
+    branch point while the change is unmedged, the squash commit's parent after.
+
+    `tip` is the latest commit that touched `owned`, the tree this change is the
+    owner of. A tip pinned to a *file* goes stale the moment the change adds
+    another commit, and every gate reading the range then judges a prefix of the
+    change while reporting on all of it. A tip pinned to the change's own tree
+    cannot: it moves with the change, it survives the squash merge, and a later
+    ticket's commit is outside it unless that commit edits this backend — in
+    which case judging it against this backend's permitted paths is right, not
+    wrong.
+    """
 
     adding = []
     for path in sentinels:
@@ -73,13 +100,47 @@ def change_range(repo: pathlib.Path, sentinels: list[str]) -> tuple[str, str]:
             earliest = commit
         if _is_ancestor(repo, latest, commit):
             latest = commit
-    return _git(repo, "rev-parse", f"{earliest}^"), latest
+    base = _git(repo, "rev-parse", f"{earliest}^")
+    owning = _git(repo, "log", "--format=%H", "-1", "--", owned)
+    if not owning:
+        return base, latest
+    # Keep whichever is later, so the range always covers the sentinels.
+    return base, (owning if _is_ancestor(repo, latest, owning) else latest)
 
 
-def changed_paths(repo: pathlib.Path, sentinels: list[str], *paths: str) -> list[str]:
-    """The paths this change touched, optionally narrowed to `paths`."""
+class StaleSentinelError(RuntimeError):
+    """A commit after the range's tip touched a path the change owns.
 
-    base, tip = change_range(repo, sentinels)
+    A tip pinned to history is correct and it goes stale: once the change adds
+    another commit, the range stops at the old tip and every freeze gate reading
+    it judges a prefix of the change while reporting on all of it. Detecting
+    that is the difference between a narrow gate and a quiet one — the same
+    lesson `conformance/`'s TC-639 records.
+    """
+
+
+def changed_paths(
+    repo: pathlib.Path,
+    sentinels: list[str],
+    *paths: str,
+    owned: str = "python_backend/",
+) -> list[str]:
+    """The paths this change touched, optionally narrowed to `paths`.
+
+    Raises when a commit after the tip touches `owned`, because that means the
+    sentinel list no longer reaches the end of the change and the range this
+    returns is a prefix of it.
+    """
+
+    base, tip = change_range(repo, sentinels, owned)
+    after = _git(repo, "log", "--format=%H", f"{tip}..HEAD", "--", owned)
+    if after:
+        msg = (
+            f"commits after the range tip {tip[:7]} touch {owned!r}: "
+            f"{after.splitlines()[:3]}. The range no longer reaches the end of "
+            "this change, so every gate reading it judges only a prefix."
+        )
+        raise StaleSentinelError(msg)
     argv = ["diff", "--no-renames", "--name-only", f"{base}..{tip}"]
     if paths:
         argv += ["--", *paths]

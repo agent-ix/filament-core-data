@@ -20,7 +20,7 @@ import sys
 from typing import Any
 
 from python_backend import ROOT
-from python_backend.adapter.jcs import digest, digest_bytes
+from python_backend.adapter.jcs import digest
 from python_backend.adapter.prepare import prepare_input_set
 from python_backend.adapter.profiles import profile_by_id
 from python_backend.adapter.render import render
@@ -289,13 +289,16 @@ def write_all() -> dict[str, str]:
             destination.write_text(text, encoding="utf-8")
         fingerprints[profile_id] = _content_fingerprint(files)
     (GENERATED / "NOT-QUALIFIED.md").write_text(_not_qualified_note(), encoding="utf-8")
-    (GENERATED / "__init__.py").write_text(
+    (GENERATED / "__init__.py").write_text(_generated_init(), encoding="utf-8")
+    return fingerprints
+
+
+def _generated_init() -> str:
+    return (
         '"""Generated Python packages, one per demonstrated profile (FR-079).\n\n'
         "Regenerate with `poetry run python -m python_backend.runner.emit`. Not\n"
-        'published: the issue #23 safety gate forbids it."""\n',
-        encoding="utf-8",
+        'published: the issue #23 safety gate forbids it."""\n'
     )
-    return fingerprints
 
 
 def check() -> int:
@@ -318,8 +321,20 @@ def check() -> int:
     note = GENERATED / "NOT-QUALIFIED.md"
     if not note.exists() or note.read_text(encoding="utf-8") != _not_qualified_note():
         failures.append(str(note))
-    if not (GENERATED / "__init__.py").exists():
-        failures.append(str(GENERATED / "__init__.py"))
+    package_init = GENERATED / "__init__.py"
+    expected_init = _generated_init()
+    if (
+        not package_init.exists()
+        or package_init.read_text(encoding="utf-8") != expected_init
+    ):
+        failures.append(str(package_init))
+    for entry in sorted(GENERATED.iterdir()):
+        if (
+            entry.is_dir()
+            and entry.name != "__pycache__"
+            and entry.name not in set(demonstrated())
+        ):
+            failures.append(f"{entry} is a package for a family with no verdict")
     for failure in failures:
         print(f"{failure} differs from a fresh generation", file=sys.stderr)
     return 1 if failures else 0
@@ -334,7 +349,6 @@ def main(argv: list[str] | None = None) -> int:
     fingerprints = write_all()
     for profile_id, fingerprint in fingerprints.items():
         print(f"{profile_id} {fingerprint}")
-    _ = digest_bytes
     return 0
 
 

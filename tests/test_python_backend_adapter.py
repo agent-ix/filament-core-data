@@ -154,8 +154,30 @@ def test_the_prepared_spike_bundle_differs_only_by_the_declared_rewrite() -> Non
     }
     for row in prepared.preparation:
         assert row["pointer"].startswith("/")
-    assert json.dumps(raw) == SPIKE.read_text().strip() or True
     assert "unevaluatedProperties" not in json.dumps(document)
+
+    # The rewrite is the only difference: normalising the two closure keywords
+    # to one name makes the before and after documents structurally identical
+    # apart from the value each carries, so any *other* edit shows up here.
+    def normalise(node: object) -> object:
+        if isinstance(node, dict):
+            return {
+                (
+                    "closure"
+                    if k in {"unevaluatedProperties", "additionalProperties"}
+                    else k
+                ): (
+                    "CLOSED"
+                    if k in {"unevaluatedProperties", "additionalProperties"}
+                    else normalise(v)
+                )
+                for k, v in node.items()
+            }
+        if isinstance(node, list):
+            return [normalise(item) for item in node]
+        return node
+
+    assert normalise(raw) == normalise(document)
 
 
 @pytest.mark.parametrize("closure", [{"not": {}}, False, {"type": "string"}])
@@ -275,25 +297,22 @@ def test_the_adapter_touches_no_file_and_edits_no_generated_text() -> None:
     import ast  # noqa: PLC0415
 
     adapter = REPO / "python_backend" / "adapter"
-    forbidden = {
-        "subprocess",
-        "socket",
-        "urllib",
-        "http",
-        "requests",
-        "time",
-        "datetime",
-        "os",
-    }
+    # `urllib.parse` is string work and is permitted; `urllib.request` is a
+    # transport and is not. The distinction is the point of the rule.
+    forbidden_roots = {"subprocess", "socket", "http", "requests", "time", "os"}
+    forbidden_modules = {"urllib.request", "urllib.error", "datetime"}
     for module in sorted(adapter.glob("*.py")):
         tree = ast.parse(module.read_text())
         for node in ast.walk(tree):
+            names: list[str] = []
             if isinstance(node, ast.Import):
-                for alias in node.names:
-                    assert alias.name.split(".")[0] not in forbidden, module.name
+                names = [alias.name for alias in node.names]
             elif isinstance(node, ast.ImportFrom):
-                assert (node.module or "").split(".")[0] not in forbidden, module.name
-            elif isinstance(node, ast.Attribute):
+                names = [node.module or ""]
+            for name in names:
+                assert name.split(".")[0] not in forbidden_roots, (module.name, name)
+                assert name not in forbidden_modules, (module.name, name)
+            if isinstance(node, ast.Attribute):
                 assert node.attr not in {
                     "write_text",
                     "write_bytes",
@@ -351,7 +370,7 @@ def test_every_forbidden_key_is_refused_at_every_applicator(
 
 
 def test_the_register_is_measured_against_the_installed_generator() -> None:
-    """TC-874: FR-075-AC-2, FR-075-CON-2."""
+    """TC-874, TC-938: FR-075-AC-2, FR-075-CON-2, NFR-026-AC-10."""
     import datamodel_code_generator.input_model as upstream_input  # noqa: PLC0415
     import datamodel_code_generator.parser.jsonschema as upstream  # noqa: PLC0415
 
@@ -436,12 +455,11 @@ def test_a_refused_request_spawns_nothing_and_writes_nothing(
     tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """TC-880: FR-075-AC-8."""
-    import subprocess  # noqa: PLC0415
 
     from python_backend.runner import generate as runner  # noqa: PLC0415
 
     spawns: list[Any] = []
-    monkeypatch.setattr(subprocess, "run", lambda *a, **k: spawns.append(a))
+    monkeypatch.setattr(runner, "_run", lambda *a, **k: spawns.append(a))
     prepared = prepare.prepare_for_python({"$defs": {"A": {"x-python-import": {}}}})
     out = tmp_path / "out"
     with pytest.raises(guard.RefusalError):

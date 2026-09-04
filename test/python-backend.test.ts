@@ -11,20 +11,57 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { changeRange, changedPathsOf } from "./changed-paths.js";
+import { changeRange } from "./changed-paths.js";
 
 const root = resolve(dirname(new URL(import.meta.url).pathname), "..");
 
 /**
- * Both ends of this change's range come from history: the user story its first
- * commit added and this file, which its last commit adds. See `changedPathsOf`
- * — a range computed against a moving ref either empties on merge (and asserts
- * nothing) or accretes the next ticket's work (and blames it).
+ * Both ends of this change's range come from history — a range computed against
+ * a moving ref either empties on merge (and asserts nothing) or accretes the
+ * next ticket's work (and blames it).
+ *
+ * The base is the parent of the commit that added the user story. The tip is
+ * the latest commit that touched `python_backend/`, the tree this change owns,
+ * rather than a file the change happened to add: a file-pinned tip goes stale
+ * the moment the change adds another commit, and every gate reading the range
+ * then judges a prefix of the change while reporting on all of it. `TIP_OWNED`
+ * is the same rule `tests/change_range.py` applies on the Python side.
  */
-const SENTINELS = [
-	"spec/usecase/US-013-generate-governed-python-types.md",
-	"test/python-backend.test.ts",
-];
+const SENTINELS = ["spec/usecase/US-013-generate-governed-python-types.md"];
+const TIP_OWNED = "python_backend";
+
+/** `changeRange`'s base, with the tip pinned to the owned tree's last commit. */
+function ownRange(): { base: string; tip: string } {
+	const { base, tip } = changeRange(root, SENTINELS);
+	const owning = execFileSync(
+		"git",
+		["log", "--format=%H", "-1", "--", TIP_OWNED],
+		{ cwd: root, encoding: "utf8" },
+	).trim();
+	if (owning === "") return { base, tip };
+	let later = tip;
+	try {
+		execFileSync("git", ["merge-base", "--is-ancestor", tip, owning], {
+			cwd: root,
+			stdio: "ignore",
+		});
+		later = owning;
+	} catch {
+		later = tip;
+	}
+	return { base, tip: later };
+}
+
+function ownChangedPaths(): string[] {
+	const { base, tip } = ownRange();
+	return execFileSync(
+		"git",
+		["diff", "--no-renames", "--name-only", `${base}..${tip}`],
+		{ cwd: root, encoding: "utf8" },
+	)
+		.split("\n")
+		.filter(Boolean);
+}
 
 /** NFR-026 and NFR-027 declare one list; the two gates read the same one. */
 const PERMITTED = [
@@ -83,9 +120,9 @@ function walk(directory: string): string[] {
 }
 
 describe("qualified Python generation route (issue #23)", () => {
-	/** Traces: TC-939, TC-942; NFR-026-AC-9, NFR-027-AC-4. */
-	it("changes no prohibited path, measured over its own historical range", () => {
-		const changed = changedPathsOf(root, SENTINELS);
+	/** NFR-026-AC-9, NFR-027-AC-4. */
+	it("TC-939 changes no prohibited path, measured over its own historical range", () => {
+		const changed = ownChangedPaths();
 		expect(changed.length).toBeGreaterThan(0);
 		for (const path of changed) {
 			expect(
@@ -99,11 +136,11 @@ describe("qualified Python generation route (issue #23)", () => {
 		}
 	});
 
-	/** Traces: TC-942; NFR-027-AC-5, NFR-027-AC-11. */
-	it("leaves every distribution manifest and workflow byte-identical to the trunk", () => {
+	/** NFR-027-AC-5, NFR-027-AC-11. */
+	it("TC-942 leaves every distribution manifest and workflow byte-identical to the trunk", () => {
 		// Both ends from history, for the same reason every other range here is:
 		// `origin/main...HEAD` empties on merge and accretes before it.
-		const { base, tip } = changeRange(root, SENTINELS);
+		const { base, tip } = ownRange();
 		const frozen = execFileSync(
 			"git",
 			[
@@ -137,8 +174,8 @@ describe("qualified Python generation route (issue #23)", () => {
 		);
 	});
 
-	/** Traces: TC-943; NFR-027-AC-6. */
-	it("leaves no changed-path gate resolving its range from a moving ref", () => {
+	/** NFR-027-AC-6. */
+	it("TC-943 leaves no changed-path gate resolving its range from a moving ref", () => {
 		const offenders: string[] = [];
 		for (const entry of readdirSync(resolve(root, "test"))) {
 			if (!entry.endsWith(".test.ts")) continue;
@@ -170,8 +207,8 @@ describe("qualified Python generation route (issue #23)", () => {
 		);
 	});
 
-	/** Traces: TC-943; NFR-027-AC-6. */
-	it("passes --no-renames in every git diff a gate runs", () => {
+	/** NFR-027-AC-6. */
+	it("TC-943 passes --no-renames in every git diff a gate runs", () => {
 		for (const entry of readdirSync(resolve(root, "test"))) {
 			if (!entry.endsWith(".ts")) continue;
 			const source = read(join("test", entry));
@@ -194,8 +231,8 @@ describe("qualified Python generation route (issue #23)", () => {
 		}
 	});
 
-	/** Traces: TC-943; NFR-027-AC-7. */
-	it("fails loudly when a range cannot be located, rather than asserting over nothing", () => {
+	/** NFR-027-AC-7. */
+	it("TC-943 fails loudly when a range cannot be located, rather than asserting over nothing", () => {
 		expect(() => changeRange(root, "a/file/no/commit/ever/added")).toThrow(
 			/cannot be located/,
 		);
@@ -206,8 +243,8 @@ describe("qualified Python generation route (issue #23)", () => {
 		}
 	});
 
-	/** Traces: TC-943; NFR-027-AC-8. */
-	it("keeps each converted suite pinned to the change it guards", () => {
+	/** NFR-027-AC-8. */
+	it("TC-943 keeps each converted suite pinned to the change it guards", () => {
 		const converted: Record<string, string> = {
 			"typespec-feasibility": "spikes/typespec-feasibility/main.tsp",
 			"semantic-contract": "schema/semantic/v1/semantic-ir.schema.json",
@@ -248,8 +285,8 @@ describe("qualified Python generation route (issue #23)", () => {
 		}
 	});
 
-	/** Traces: TC-942; NFR-027-AC-9. */
-	it("adds no entry to any merged suite's permitted-path list", () => {
+	/** NFR-027-AC-9. */
+	it("TC-942 adds no entry to any merged suite's permitted-path list", () => {
 		for (const entry of readdirSync(resolve(root, "test"))) {
 			if (!entry.endsWith(".test.ts") || entry === "python-backend.test.ts")
 				continue;
@@ -259,8 +296,8 @@ describe("qualified Python generation route (issue #23)", () => {
 		}
 	});
 
-	/** Traces: TC-940; NFR-027-AC-2. */
-	it("encodes no host reading in any committed artefact this change adds", () => {
+	/** NFR-027-AC-2. */
+	it("TC-940 encodes no host reading in any committed artefact this change adds", () => {
 		const host = execFileSync("hostname", { encoding: "utf8" }).trim();
 		const user = execFileSync("whoami", { encoding: "utf8" }).trim();
 		const patchVersion = /"\d+\.\d+\.\d+"/;
@@ -277,8 +314,8 @@ describe("qualified Python generation route (issue #23)", () => {
 		expect(JSON.parse(toolchain).python.minor).not.toMatch(patchVersion);
 	});
 
-	/** Traces: TC-936, TC-938; NFR-026-AC-1, NFR-026-AC-10. */
-	it("carries a malicious-schema corpus that covers every refusal code", () => {
+	/** NFR-026-AC-1, NFR-026-AC-10. */
+	it("TC-936 carries a malicious-schema corpus that covers every refusal code", () => {
 		const corpus = readdirSync(
 			resolve(root, "python_backend/qualification/malicious"),
 		);
@@ -291,8 +328,8 @@ describe("qualified Python generation route (issue #23)", () => {
 			expect(keys, `FR-043 forbids ${key}`).toContain(key);
 	});
 
-	/** Traces: TC-937; NFR-026-AC-11. */
-	it("writes nothing under the generated tree before the enforcing inspection", () => {
+	/** NFR-026-AC-11. */
+	it("TC-937 writes nothing under the generated tree before the enforcing inspection", () => {
 		const emitter = read("python_backend/runner/emit.py");
 		const inspectAt = emitter.indexOf(
 			'inspect_generated(files, documents, "enforce")',
@@ -306,8 +343,8 @@ describe("qualified Python generation route (issue #23)", () => {
 		);
 	});
 
-	/** Traces: TC-944; NFR-027-AC-12. */
-	it("restores the tree exactly when the change is reverted", () => {
+	/** NFR-027-AC-12. */
+	it("TC-943 restores the tree exactly when the change is reverted", () => {
 		// `base..tip`, not `base..HEAD`. The open-ended form is the fourth face
 		// of the defect `changed-paths.ts` documents: it annexes every later
 		// commit's paths and then fails this ticket for them. The third
@@ -315,7 +352,7 @@ describe("qualified Python generation route (issue #23)", () => {
 		// `conformance/README.md` was attributed to issue #23 — which is why the
 		// three-number standard exists and why a branch-green number cannot see
 		// this class at all.
-		const { base, tip } = changeRange(root, SENTINELS);
+		const { base, tip } = ownRange();
 		const introduced = execFileSync(
 			"git",
 			["diff", "--no-renames", "--name-only", `${base}..${tip}`],
@@ -329,26 +366,41 @@ describe("qualified Python generation route (issue #23)", () => {
 				PERMITTED.some((prefix) => path === prefix || path.startsWith(prefix)),
 				`outside the permitted set: ${path}`,
 			).toBe(true);
-			const existedBefore =
-				execFileSync("git", ["ls-tree", "--name-only", base, "--", path], {
-					cwd: root,
-					encoding: "utf8",
-				}).trim() !== "";
-			// A path this change created is removed by a revert; a path it edited
-			// is restored to what `base` carries. Either way the revert is exact,
-			// and either way the path is one this change was permitted to touch.
-			expect(typeof existedBefore).toBe("boolean");
+			const atBase = execFileSync(
+				"git",
+				["ls-tree", "--name-only", base, "--", path],
+				{ cwd: root, encoding: "utf8" },
+			).trim();
+			if (atBase === "") continue;
+			// A path this change edited rather than created must be restorable to
+			// exactly what `base` carries — so `base` must still hold readable
+			// content for it. A path it created is removed by a revert and needs
+			// no baseline.
+			const restored = execFileSync("git", ["show", `${base}:${path}`], {
+				cwd: root,
+				maxBuffer: 64 * 1024 * 1024,
+			});
+			expect(
+				restored.length,
+				`${path} has no restorable baseline`,
+			).toBeGreaterThan(0);
 		}
 	});
 
-	/** Traces: TC-925; FR-079-AC-8. */
-	it("keeps every generated path out of the packed distribution", () => {
+	/** FR-079-AC-8. */
+	it("TC-925 keeps every generated path out of the packed distribution", () => {
 		const packed = execFileSync("npm", ["pack", "--dry-run", "--json"], {
 			cwd: root,
 			encoding: "utf8",
 			maxBuffer: 64 * 1024 * 1024,
 		});
 		expect(packed).not.toContain("python_backend");
-		expect(relative(root, root)).toBe("");
+		const listed = JSON.parse(packed) as { files: { path: string }[] }[];
+		expect(listed[0].files.length).toBeGreaterThan(0);
+		for (const entry of listed[0].files)
+			expect(
+				relative(root, resolve(root, entry.path)).startsWith("python_backend"),
+				entry.path,
+			).toBe(false);
 	});
 });

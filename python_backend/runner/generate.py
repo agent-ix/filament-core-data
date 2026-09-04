@@ -80,13 +80,68 @@ def _entry_point() -> list[str]:
     for entry in dist.entry_points:
         if entry.group == "console_scripts" and entry.name == "datamodel-codegen":
             module, _, attribute = entry.value.partition(":")
-            return [
-                sys.executable,
-                "-c",
-                f"import sys; from {module} import {attribute} as _m; sys.exit(_m())",
-            ]
+            # The socket guard is installed IN THE CHILD, before the generator is
+            # imported. Patching `socket.socket` in the parent asserts nothing:
+            # the generator runs in a subprocess and never sees the parent's
+            # module table. This makes the no-network property a property of the
+            # sandbox rather than of a test, and the test then observes the
+            # child's own refusal.
+            guard = (
+                "import socket, sys\n"
+                "def _no_network(*a, **k):\n"
+                "    raise OSError('agent-ix: generation opened a socket')\n"
+                "socket.socket = _no_network\n"
+                "socket.create_connection = _no_network\n"
+                "socket.socketpair = _no_network\n"
+                f"from {module} import {attribute} as _m\n"
+                "sys.exit(_m())\n"
+            )
+            return [sys.executable, "-c", guard]
     msg = f"{distribution} declares no `datamodel-codegen` console entry point"
     raise ProvisioningError(msg)
+
+
+@dataclass
+class Completed:
+    returncode: int
+    stdout: str
+    stderr: str
+
+
+def _run(
+    argv: list[str],
+    *,
+    env: dict[str, str],
+    cwd: str,
+    timeout: int,
+    grace: int,
+) -> Completed:
+    """Run the generator, terminating then killing it if it overruns.
+
+    `subprocess.run(timeout=…)` sends a kill and waits forever; the declared
+    `killGraceSeconds` only means something if a terminate precedes it, so the
+    process is driven directly rather than through the convenience wrapper.
+    """
+
+    process = subprocess.Popen(  # noqa: S603 - argv is guarded and fixed
+        argv,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        env=env,
+        cwd=cwd,
+    )
+    try:
+        stdout, stderr = process.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        process.terminate()
+        try:
+            process.communicate(timeout=grace)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.communicate()
+        raise
+    return Completed(returncode=process.returncode, stdout=stdout, stderr=stderr)
 
 
 def _environment(scratch_parent: Path) -> dict[str, str]:
@@ -144,7 +199,6 @@ def generate(
     profile = profile_by_id(profile_id)
     for name, document in prepared.documents.items():
         assert_schema_safe(document, "")
-        _ = name
 
     declared = limits()
     payloads = {
@@ -185,14 +239,12 @@ def generate(
         assert_argv_safe(argv)
 
         try:
-            completed = subprocess.run(  # noqa: S603 - argv is guarded and fixed
+            completed = _run(
                 command + argv,
-                capture_output=True,
-                text=True,
                 env=_environment(scratch_parent),
                 cwd=str(scratch),
                 timeout=declared["wallClockTimeoutSeconds"],
-                check=False,
+                grace=declared["killGraceSeconds"],
             )
         except subprocess.TimeoutExpired as error:
             msg = (

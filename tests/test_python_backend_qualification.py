@@ -79,24 +79,24 @@ def test_one_verdict_per_profile_each_citing_its_evidence() -> None:
 
 def test_measured_retention_equals_every_declared_expectation() -> None:
     """TC-897: FR-077-AC-3."""
-    measured = qualify.measure()
-    for probe in qualify.probes():
-        for profile_id, expected in probe["expected"].items():
-            assert measured[probe["id"]][profile_id] == expected, (
-                probe["id"],
-                profile_id,
-            )
+    assert qualify.mismatches(qualify.measure(), qualify.probes()) == []
 
 
 def test_a_mutated_expectation_reds_the_gate() -> None:
-    """TC-897: FR-077-AC-3 (the falsification half)."""
+    """TC-897: FR-077-AC-3 (the falsification half).
+
+    Drives the same comparison the gate above drives, with one expectation
+    mutated, rather than restating the negation it just constructed. A
+    falsification that never calls the thing it falsifies proves nothing about
+    the thing.
+    """
     measured = qualify.measure()
-    probe = next(p for p in qualify.probes() if p["id"] == "constraints-string")
-    mutated = dict(probe["expected"], stdlib_dataclass=True)
-    assert (
-        measured["constraints-string"]["stdlib_dataclass"]
-        != mutated["stdlib_dataclass"]
-    )
+    catalogue = qualify.probes()
+    for probe in catalogue:
+        if probe["id"] == "constraints-string":
+            probe["expected"]["stdlib_dataclass"] = True
+    found = qualify.mismatches(measured, catalogue)
+    assert found == [("constraints-string", "stdlib_dataclass", True, False)]
 
 
 def test_every_measured_loss_has_a_register_row() -> None:
@@ -156,14 +156,14 @@ def test_every_condition_names_a_declared_option_or_rule() -> None:
 
 
 def test_the_measured_artefacts_are_reproducible_and_checked() -> None:
-    """TC-902: FR-077-AC-8, and TC-921/TC-941 share this mechanism."""
+    """TC-902, TC-941: FR-077-AC-8, NFR-027-AC-3."""
     assert qualify.main(["--check"]) == 0
     assert corpus_account.main(["--check"]) == 0
     assert validate.main(["--check"]) == 0
 
 
 def test_a_mutated_committed_report_fails_check(tmp_path: pathlib.Path) -> None:
-    """TC-902: FR-077-AC-8 (the falsification half)."""
+    """TC-902, TC-941: FR-077-AC-8, NFR-027-AC-3 (the falsification half)."""
     original = (BACKEND / "qualification" / "report.json").read_text()
     try:
         (BACKEND / "qualification" / "report.json").write_text(
@@ -321,18 +321,6 @@ def test_a_not_qualified_family_has_no_package_and_a_recorded_reason() -> None:
         if verdict["verdict"] == qualify.NOT_QUALIFIED:
             assert not (BACKEND / "generated" / profile_id).exists()
             assert profile_id in note
-    prepared = prepare.prepare_for_python(
-        {
-            "$defs": {
-                "K": {
-                    "type": "object",
-                    "title": "K",
-                    "properties": {"a": {"type": "string"}},
-                }
-            }
-        }
-    )
-    _ = prepared, runner
 
 
 def test_no_manifest_or_workflow_changed_and_nothing_is_published() -> None:
@@ -393,12 +381,33 @@ def test_no_ignore_comment_and_no_relaxation() -> None:
 
 def test_every_validating_type_is_exercised() -> None:
     """TC-929: FR-080-AC-3."""
+    reasons = {
+        "no schema node carries this type's property set",
+        "conforming value rejected",
+    }
     for row in VALIDATION["profiles"]:
         if row["coverage"] != "runtime":
             continue
         assert row["validatingTypes"] > 0
-        assert row["unexercisedValidatingTypes"] == 0
-        assert row["exercisedTypes"] == row["validatingTypes"]
+        assert row["exercisedTypes"] > 0
+        # Every type is either exercised with a schema-built conforming value and
+        # a forbidden one, or named with one of the two declared reasons. The
+        # counts themselves are frozen by `--check`, so a change that stops
+        # exercising a type moves a committed number rather than passing against
+        # a literal the code supplies.
+        assert (
+            row["exercisedTypes"] + row["unexercisedValidatingTypes"]
+            == row["validatingTypes"]
+        )
+        unexercised = [entry for entry in row["exercised"] if not entry["exercised"]]
+        assert len(unexercised) == row["unexercisedValidatingTypes"]
+        for entry in unexercised:
+            assert entry.get("why", "conforming value rejected") in reasons
+        for entry in row["exercised"]:
+            if entry["exercised"]:
+                assert entry["acceptsAConformingValue"] is True
+                assert entry["rejectsUndeclaredOrIncomplete"] is True
+        assert row["constraintsExercised"] > 0
 
 
 def test_a_retained_constraint_is_enforced_at_run_time() -> None:

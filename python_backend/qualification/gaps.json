@@ -256,7 +256,7 @@
 		{
 			"construct": "absent versus null in the Pydantic families",
 			"probe": "default-non-nullable",
-			"family": "pydantic-v2-basemodel, pydantic-v2-dataclass",
+			"family": "pydantic_v2_basemodel, pydantic_v2_dataclass",
 			"severity": "medium",
 			"closableByPreparation": false,
 			"disposition": "The generator's `--use-missing-sentinel` separates the two, and against pydantic 2.12.5 it renders `pydantic_core.MISSING` in a type position that mypy 1.19.1 rejects, which FR-080 forbids papering over. Recorded rather than adopted; the two obligations cannot both be met with this toolchain.",

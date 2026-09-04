@@ -31,8 +31,19 @@ test-python:
 	poetry run pytest -q
 
 .PHONY: lint
-lint:
+lint: lint-node lint-python
+
+.PHONY: lint-node
+lint-node:
 	pnpm run lint
+
+# Issue #23 (SR-105 FND-1191). `ruff` and `black` were pinned dev dependencies
+# that no target ran, so their findings accumulated unseen. `make lint` is the
+# entry point the CI action calls, so it is where they belong.
+.PHONY: lint-python
+lint-python:
+	poetry run ruff check python_backend tests scripts
+	poetry run black --check python_backend tests scripts
 
 .PHONY: typecheck
 typecheck:

@@ -108,7 +108,7 @@ def test_a_refused_schema_raises_before_any_spawn(
 ) -> None:
     """TC-885: FR-076-AC-3."""
     spawns: list[Any] = []
-    monkeypatch.setattr(subprocess, "run", lambda *a, **k: spawns.append(a))
+    monkeypatch.setattr(runner, "_run", lambda *a, **k: spawns.append(a))
     hostile = prepare.prepare_for_python(
         {"$defs": {"A": {"customTypePath": "os.system"}}}
     )
@@ -134,7 +134,7 @@ def test_a_timeout_terminates_cleans_up_and_leaves_the_output_alone(
     def timeout(*args: Any, **kwargs: Any) -> Any:
         raise subprocess.TimeoutExpired(cmd="datamodel-codegen", timeout=120)
 
-    monkeypatch.setattr(subprocess, "run", timeout)
+    monkeypatch.setattr(runner, "_run", timeout)
     out = tmp_path / "out"
     with pytest.raises(runner.LimitExceededError) as raised:
         runner.generate(_prepared(), "pydantic_v2_basemodel", out)
@@ -147,19 +147,34 @@ def test_a_timeout_terminates_cleans_up_and_leaves_the_output_alone(
 def test_the_input_size_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
     """TC-887: FR-076-AC-5."""
     spawns: list[Any] = []
-    monkeypatch.setattr(subprocess, "run", lambda *a, **k: spawns.append(a))
+
+    def record(*args: Any, **kwargs: Any) -> Any:
+        spawns.append(args)
+        return runner.Completed(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(runner, "_run", record)
     declared = runner.limits()["maxInputBytes"]
 
     def sized(target: int) -> prepare.Prepared:
         filler = "x" * max(target - 40, 1)
         return prepare.Prepared(documents={"p.schema.json": {"title": filler}})
 
+    monkeypatch.setattr(
+        runner,
+        "_run",
+        lambda *a, **k: runner.Completed(returncode=0, stdout="", stderr=""),
+    )
     at_limit = sized(declared)
     assert (
         len(json.dumps(at_limit.documents["p.schema.json"], sort_keys=True)) <= declared
     )
-    with pytest.raises(Exception):  # noqa: B017,PT011 - a spawn stub, not a real run
+    # An input of exactly the declared maximum passes the size check and reaches
+    # the generator, so the failure it raises is the stub's empty output rather
+    # than the limit. Asserting the *specific* error is what distinguishes
+    # "proceeded" from "failed for some other reason".
+    with pytest.raises(runner.GenerationError) as at_limit_error:
         runner.generate(at_limit, "pydantic_v2_basemodel")
+    assert "zero files" in str(at_limit_error.value)
 
     over = prepare.Prepared(
         documents={"p.schema.json": {"title": "x" * (declared + 1)}}
@@ -174,12 +189,11 @@ def test_the_input_size_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_zero_files_is_not_a_success(monkeypatch: pytest.MonkeyPatch) -> None:
     """TC-888: FR-076-AC-6."""
 
-    class Completed:
-        returncode = 0
-        stderr = ""
-        stdout = ""
-
-    monkeypatch.setattr(subprocess, "run", lambda *a, **k: Completed())
+    monkeypatch.setattr(
+        runner,
+        "_run",
+        lambda *a, **k: runner.Completed(returncode=0, stdout="", stderr=""),
+    )
     with pytest.raises(runner.GenerationError) as raised:
         runner.generate(_prepared(), "pydantic_v2_basemodel")
     assert "zero files" in str(raised.value)
@@ -190,12 +204,15 @@ def test_unexpected_standard_error_fails_the_run(
 ) -> None:
     """TC-889: FR-076-AC-7, FR-076-CON-3."""
 
-    class Noisy:
-        returncode = 0
-        stderr = "FutureWarning: the default formatters will become opt-in"
-        stdout = ""
-
-    monkeypatch.setattr(subprocess, "run", lambda *a, **k: Noisy())
+    monkeypatch.setattr(
+        runner,
+        "_run",
+        lambda *a, **k: runner.Completed(
+            returncode=0,
+            stdout="",
+            stderr="FutureWarning: the default formatters will become opt-in",
+        ),
+    )
     with pytest.raises(runner.GenerationError) as raised:
         runner.generate(_prepared(), "pydantic_v2_basemodel")
     assert "outside the declared allow-list" in str(raised.value)
@@ -354,7 +371,7 @@ def test_a_permissive_annotation_is_found_at_any_depth(annotation: str) -> None:
 
 
 def test_the_import_allow_list_is_closed_but_admits_siblings() -> None:
-    """TC-912: FR-078-AC-5, FR-078-CON-2."""
+    """TC-912, TC-938: FR-078-AC-5, FR-078-CON-2, NFR-026-AC-6."""
     document = {"$defs": {}}
     with pytest.raises(inspect_source.InspectionError) as raised:
         inspect_source.inspect_generated(
@@ -386,7 +403,7 @@ def test_a_module_level_call_other_than_model_rebuild_is_refused() -> None:
 def test_the_inspection_never_imports_what_it_reads(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """TC-914: FR-078-AC-7, FR-078-CON-3."""
+    """TC-914, TC-938: FR-078-AC-7, FR-078-CON-3, NFR-026-AC-5."""
     import builtins  # noqa: PLC0415
 
     imported: list[str] = []

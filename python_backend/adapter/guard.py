@@ -14,6 +14,7 @@ import json
 import re
 from dataclasses import dataclass
 from typing import Any
+from urllib.parse import unquote
 
 from python_backend import ROOT
 from python_backend.adapter.profiles import PROHIBITED_OPTIONS, REJECTED_OPTIONS
@@ -144,6 +145,9 @@ def _escape(token: str) -> str:
 
 
 def _classify_ref(value: str) -> str | None:
+    # Percent-encoding is decoded first: `%2e%2e/` is `../` to a resolver and
+    # would otherwise walk straight past a literal `..` check.
+    value = unquote(value)
     if value.startswith("#"):
         return None
     if _DRIVE.match(value):
@@ -185,7 +189,9 @@ def assert_schema_safe(document: Any, pointer: str = "") -> None:
                     f"forbidden executable Python schema extension {key!r}",
                     here or "/",
                 )
-            if key == "$ref" and isinstance(value, str):
+            if key in {"$ref", "$dynamicRef", "$recursiveRef"} and isinstance(
+                value, str
+            ):
                 shape = _classify_ref(value)
                 if shape is not None:
                     raise RefusalError(
@@ -208,8 +214,17 @@ def assert_argv_safe(argv: list[str]) -> None:
     while index < len(argv):
         token = argv[index]
         if not token.startswith("--"):
-            index += 1
-            continue
+            # A token that is not a long option and is not the value of one is
+            # a bare positional or a short option. The generator reads short
+            # options (`-o` is `--output`), so skipping them would let
+            # `["-o", "/etc/passwd"]` through an allow-list that is supposed to
+            # default to refuse.
+            raise RefusalError(
+                unknown_code,
+                f"unexpected argument {token!r}; the vector carries only "
+                "allow-listed long options and their values",
+                f"argv[{index}]",
+            )
         name, _, inline = token.partition("=")
         if name in seen:
             # A repeated option is how a caller-supplied value overrides a
@@ -251,7 +266,16 @@ def assert_argv_safe(argv: list[str]) -> None:
                 )
             index += 1
             continue
-        value = inline if inline else (argv[index + 1] if index + 1 < len(argv) else "")
+        if inline:
+            value = inline
+        elif index + 1 < len(argv):
+            value = argv[index + 1]
+        else:
+            raise RefusalError(
+                unknown_code,
+                f"{name!r} takes a value and none follows it",
+                f"argv[{index}]",
+            )
         if permitted is not None and value not in permitted:
             raise RefusalError(
                 unknown_code,

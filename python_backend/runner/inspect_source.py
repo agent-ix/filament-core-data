@@ -171,6 +171,54 @@ def _walk_nodes(
         )
 
 
+def _names_for(pointer: str, node: Any) -> set[str]:
+    """The class names the generator could derive for a node.
+
+    From its `title`, and from the last non-index segment of its pointer — a
+    `$defs` key, or the property name an inline object was minted from. This is
+    corroboration, not attribution: a structural match that no name supports is
+    refused rather than guessed at.
+    """
+
+    names: set[str] = set()
+
+    def camel(text: str) -> str:
+        return "".join(
+            part[:1].upper() + part[1:]
+            for part in re.split(r"[^A-Za-z0-9]+", text)
+            if part
+        )
+
+    if isinstance(node, dict) and isinstance(node.get("title"), str):
+        names.add(camel(node["title"]))
+    segments = [s for s in pointer.split("/") if s and not s.isdigit()]
+    inside_items = segments and segments[-1] == "items"
+    for segment in reversed(segments):
+        if segment in {
+            "properties",
+            "$defs",
+            "definitions",
+            "items",
+            "allOf",
+            "anyOf",
+            "oneOf",
+            "patternProperties",
+            "then",
+            "else",
+            "if",
+            "not",
+        }:
+            continue
+        derived = camel(segment)
+        names.add(derived)
+        if inside_items and derived.endswith("s"):
+            # The generator names an array's item type from the array's own
+            # property name, singularised: `profiles` items become `Profile`.
+            names.add(derived[:-1])
+        break
+    return names
+
+
 def _declared_nodes(
     documents: dict[str, dict[str, Any]],
 ) -> dict[frozenset[str], list[tuple[str, str, dict[str, Any]]]]:
@@ -242,17 +290,6 @@ def _is_permissive(annotation: ast.AST) -> bool:
     return any(name in PERMISSIVE_NAMES for name in _annotation_names(annotation))
 
 
-def _resolve(
-    symbol: str, index: dict[str, tuple[str, dict[str, Any]]]
-) -> tuple[str | None, str | None]:
-    if symbol in index:
-        return symbol, None
-    match = _VARIANT.match(symbol)
-    if match and match.group("stem") in index:
-        return match.group("stem"), symbol
-    return None, None
-
-
 def inspect_generated(
     files: dict[str, str],
     documents: dict[str, dict[str, Any]],
@@ -285,6 +322,26 @@ def inspect_generated(
         }
         names.discard("model_config")
         found = list(index.get(frozenset(names)) or [])
+        # A structural match is a candidate, not an attribution. The generated
+        # class name must corroborate it — through the node's own `title` or the
+        # key it was minted from, allowing for the generator's numeric variant
+        # suffix — or the finding is left unattributed and `enforce` refuses it.
+        # Without this, two unrelated nodes that happen to declare the same
+        # property names attribute to each other and a real loss reads as
+        # sanctioned.
+        stem = _VARIANT.match(node.name)
+        candidate_names = {node.name} | ({stem.group("stem")} if stem else set())
+        if node.name.endswith("Model"):
+            # The generator renames a class that would shadow a name its own
+            # runtime exports: the contract's `field` becomes `FieldModel`.
+            candidate_names.add(node.name[: -len("Model")])
+        corroborated = [
+            entry for entry in found if _names_for(entry[1], entry[2]) & candidate_names
+        ]
+        if corroborated:
+            found = corroborated
+        elif len(found) >= 1:
+            return []
         if len(found) <= 1:
             return found
         # Several schema nodes share this property-name set — the `oneOf`

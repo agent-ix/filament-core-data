@@ -16,10 +16,10 @@ import argparse
 import ast
 import json
 import sys
-from pathlib import Path
 from typing import Any
 
 from python_backend import ROOT
+from python_backend.adapter.prepare import prepare_input_set
 from python_backend.adapter.profiles import load_profiles
 from python_backend.adapter.render import render
 from python_backend.runner.emit import GENERATED, demonstrated
@@ -55,89 +55,354 @@ def _generated_types(profile_id: str) -> dict[str, list[str]]:
     return types
 
 
-def _exercise_pydantic(profile_id: str) -> list[dict[str, Any]]:
-    """Exercise every declared model of a Pydantic package.
+def _conforming(
+    schema: Any,
+    documents: dict[str, dict[str, Any]],
+    home: str,
+    depth: int = 0,
+) -> Any:
+    """A value the contract admits, built from the schema rather than guessed.
 
-    A conforming value is built from the model's own declared requirements, and
-    a non-conforming one from the contract's constraints: an undeclared member
-    where the schema seals the object, and a bound violation where it bounds a
-    number. Both are contract facts, not observations of what the code rejects.
+    `home` is the document the node came from, so a local `#/$defs/x` resolves
+    inside it rather than inside whichever document happened to be first.
+    `depth` bounds a recursive type: the contract has self-referential shapes
+    and a builder without a bound would not return.
+    """
+
+    if depth > 6 or schema is True:
+        return {}
+    if not isinstance(schema, dict):
+        return None
+    ref = schema.get("$ref")
+    if isinstance(ref, str):
+        target, target_home = _resolve_ref(ref, documents, home)
+        if target is None:
+            return "x"
+        return _conforming(target, documents, target_home, depth + 1)
+    for key in ("const",):
+        if key in schema:
+            return schema[key]
+    if "enum" in schema and schema["enum"]:
+        return schema["enum"][0]
+    for combinator in ("oneOf", "anyOf"):
+        branches = schema.get(combinator)
+        if isinstance(branches, list) and branches:
+            return _conforming(branches[0], documents, home, depth + 1)
+    branches = schema.get("allOf")
+    if isinstance(branches, list) and branches:
+        merged: dict[str, Any] = {}
+        for branch in branches:
+            built = _conforming(branch, documents, home, depth + 1)
+            if isinstance(built, dict):
+                merged.update(built)
+        rest = {k: v for k, v in schema.items() if k != "allOf"}
+        if rest.get("properties") or rest.get("required"):
+            built = _conforming(rest, documents, home, depth + 1)
+            if isinstance(built, dict):
+                merged.update(built)
+        return merged
+    kind = schema.get("type")
+    if isinstance(kind, list):
+        kind = next((entry for entry in kind if entry != "null"), "string")
+    properties = schema.get("properties")
+    if kind == "object" or isinstance(properties, dict):
+        value: dict[str, Any] = {}
+        properties = properties or {}
+        for name in schema.get("required") or []:
+            value[name] = _conforming(
+                properties.get(name, {}), documents, home, depth + 1
+            )
+        return value
+    if kind == "array":
+        item = schema.get("items")
+        minimum = max(int(schema.get("minItems") or 0), 0)
+        if minimum == 0:
+            return []
+        return [_conforming(item, documents, home, depth + 1) for _ in range(minimum)]
+    if kind == "integer":
+        return int(schema.get("minimum", schema.get("exclusiveMinimum", 0) + 1) or 1)
+    if kind == "number":
+        return float(schema.get("minimum", schema.get("exclusiveMinimum", 0) + 1) or 1)
+    if kind == "boolean":
+        return True
+    if kind == "null":
+        return None
+    return _conforming_string(schema)
+
+
+def _conforming_string(schema: dict[str, Any]) -> str:
+    fmt = schema.get("format")
+    if fmt == "date-time":
+        return "2000-01-01T00:00:00Z"
+    if fmt == "uuid":
+        return "00000000-0000-4000-8000-000000000000"
+    if fmt == "uri":
+        return "https://example.invalid/x"
+    pattern = schema.get("pattern")
+    if isinstance(pattern, str):
+        sample = _SAMPLES.get(pattern)
+        if sample is not None:
+            return sample
+    return "x" * max(int(schema.get("minLength") or 1), 1)
+
+
+#: One value per pattern the published schemas actually use, each satisfying the
+#: pattern it is filed under. A conforming value cannot be derived from an
+#: arbitrary regular expression, so these are enumerated from the contract —
+#: `python_backend/qualification/validation.json` names any type whose pattern
+#: has no sample as **unexercised**, so a missing entry is reported rather than
+#: silently skipped.
+_SAMPLES: dict[str, str] = {
+    "^ix://[a-z0-9][a-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._~:/-]*$": "ix://agent-ix/Thing",
+    "^[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*$": "a:B",
+    "^[a-z0-9][a-z0-9.-]*:[a-zA-Z0-9][a-zA-Z0-9._-]*$": "a:B",
+    "^[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$": "agent-ix/core",
+    "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)"
+    "(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$": "1.0.0",
+    "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$": "1.0.0",
+    "^agent-ix\\.[a-z0-9-]+\\.[A-Z][A-Z0-9_]+$": "agent-ix.semantic-ir.SOME_CODE",
+    "^sha256:[0-9a-f]{64}$": "sha256:" + "0" * 64,
+    "^[!-~]+$": "x",
+    "^application/": "application/json",
+    "^(?:ui|orm|sqlalchemy|tauri|network-client|database-migration"
+    "|application-service)$": "ui",
+    "^(ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$": "ocl",
+    "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\u0000]+$": "a/b.json",
+}
+
+
+def _resolve_ref(
+    ref: str, documents: dict[str, dict[str, Any]], home: str
+) -> tuple[dict[str, Any] | None, str]:
+    """Resolve a `$ref` in the document that wrote it, not in an arbitrary one."""
+
+    document, _, pointer = ref.partition("#")
+    target_home = document or home
+    root = documents.get(target_home)
+    if root is None:
+        return None, home
+    node: Any = root
+    for token in [t for t in pointer.split("/") if t]:
+        token = token.replace("~1", "/").replace("~0", "~")
+        if not isinstance(node, dict) or token not in node:
+            return None, target_home
+        node = node[token]
+    return (node if isinstance(node, dict) else None), target_home
+
+
+def _schema_nodes(
+    documents: dict[str, dict[str, Any]],
+) -> dict[frozenset[str], tuple[dict[str, Any], str]]:
+    """Object subschemas keyed by their property-name set, as FR-078 keys them."""
+
+    index: dict[frozenset[str], tuple[dict[str, Any], str]] = {}
+
+    def walk(node: Any, home: str) -> None:
+        if isinstance(node, list):
+            for item in node:
+                walk(item, home)
+            return
+        if not isinstance(node, dict):
+            return
+        properties = node.get("properties")
+        if isinstance(properties, dict) and properties:
+            index.setdefault(frozenset(properties), (node, home))
+        for value in node.values():
+            walk(value, home)
+
+    for name, document in documents.items():
+        walk(document, name)
+    return index
+
+
+def _scalar_node(
+    name: str, documents: dict[str, dict[str, Any]]
+) -> tuple[dict[str, Any] | None, str]:
+    """The `$defs` entry a generated root model was named from."""
+
+    import re as _re  # noqa: PLC0415
+
+    def camel(key: str) -> str:
+        return "".join(
+            part[:1].upper() + part[1:]
+            for part in _re.split(r"[^A-Za-z0-9]+", key)
+            if part
+        )
+
+    stem = _re.sub(r"\d+$", "", name)
+    for document, schema in documents.items():
+        for key, node in (schema.get("$defs") or {}).items():
+            if not isinstance(node, dict):
+                continue
+            title = node.get("title")
+            if camel(key) in {name, stem} or (
+                isinstance(title, str) and camel(title) in {name, stem}
+            ):
+                return node, document
+    return None, ""
+
+
+def _fields(candidate: Any) -> set[str]:
+    fields = getattr(candidate, "model_fields", None) or getattr(
+        candidate, "__pydantic_fields__", None
+    )
+    if fields:
+        return {
+            getattr(info, "alias", None) or name for name, info in dict(fields).items()
+        }
+    struct_fields = getattr(candidate, "__struct_encode_fields__", None)
+    if struct_fields:
+        return set(struct_fields)
+    return set()
+
+
+def _exercise(
+    profile_id: str, documents: dict[str, dict[str, Any]]
+) -> tuple[list[dict[str, Any]], int]:
+    """Exercise every validating type with a conforming and a forbidden value.
+
+    The conforming value is built from the schema node the generated type
+    carries — matched by property-name set, exactly as FR-078 attributes an
+    annotation — so it comes from the contract rather than from what the code
+    happens to accept. A type whose schema node cannot be located, or whose
+    conforming value the runtime rejects, is reported as **unexercised** rather
+    than counted, because an account that cannot report a shortfall is not an
+    account.
     """
 
     import importlib  # noqa: PLC0415
 
     from pydantic import BaseModel, TypeAdapter, ValidationError  # noqa: PLC0415
 
+    nodes = _schema_nodes(documents)
     outcomes: list[dict[str, Any]] = []
+    unexercised = 0
+
+    if profile_id == "msgspec_struct":
+        import msgspec  # noqa: PLC0415
+
     for module_name, names in _generated_types(profile_id).items():
         module = importlib.import_module(
             f"python_backend.generated.{profile_id}.{module_name}"
         )
         for name in names:
             candidate = getattr(module, name, None)
-            if candidate is None:
+            if not isinstance(candidate, type):
                 continue
-            is_model = isinstance(candidate, type) and issubclass(candidate, BaseModel)
-            is_dataclass = hasattr(candidate, "__pydantic_fields__") and not is_model
-            if not (is_model or is_dataclass):
-                continue
-            adapter: Any = candidate if is_model else TypeAdapter(candidate)
-            rejected = False
-            try:
-                if is_model:
-                    adapter.model_validate({"__undeclared__": object()})
-                else:
-                    adapter.validate_python({"__undeclared__": object()})
-            except ValidationError:
-                rejected = True
-            except (
-                Exception
-            ):  # noqa: BLE001 - a non-validation error is still a rejection
-                rejected = True
-            outcomes.append(
-                {
-                    "module": module_name,
-                    "type": name,
-                    "rejectsUndeclaredOrIncomplete": rejected,
-                }
-            )
-    return outcomes
-
-
-def _exercise_msgspec(profile_id: str) -> list[dict[str, Any]]:
-    import importlib  # noqa: PLC0415
-
-    import msgspec  # noqa: PLC0415
-
-    outcomes: list[dict[str, Any]] = []
-    for module_name, names in _generated_types(profile_id).items():
-        module = importlib.import_module(
-            f"python_backend.generated.{profile_id}.{module_name}"
-        )
-        for name in names:
-            candidate = getattr(module, name, None)
-            if not (
-                isinstance(candidate, type) and issubclass(candidate, msgspec.Struct)
+            if profile_id == "msgspec_struct":
+                if not issubclass(candidate, msgspec.Struct):
+                    continue
+            elif not (
+                issubclass(candidate, BaseModel)
+                or hasattr(candidate, "__pydantic_fields__")
             ):
                 continue
+
+            fields = _fields(candidate)
+            located = nodes.get(frozenset(fields))
+            node, home = located if located is not None else (None, "")
+            if node is None and fields == {"root"}:
+                # A root model wraps a scalar or a map rather than a property
+                # set, so it is located by the scalar `$defs` entry whose
+                # generated name it carries rather than by its fields.
+                node, home = _scalar_node(name, documents)
+            if node is None:
+                unexercised += 1
+                outcomes.append(
+                    {
+                        "module": module_name,
+                        "type": name,
+                        "exercised": False,
+                        "why": "no schema node carries this type's property set",
+                    }
+                )
+                continue
+
+            value = _conforming(node, documents, home)
+            constraints = sum(
+                1
+                for member in (node.get("properties") or {}).values()
+                if isinstance(member, dict)
+                and (
+                    {
+                        "minimum",
+                        "maximum",
+                        "exclusiveMinimum",
+                        "exclusiveMaximum",
+                        "minLength",
+                        "maxLength",
+                        "pattern",
+                        "format",
+                        "multipleOf",
+                        "minItems",
+                        "maxItems",
+                        "enum",
+                        "const",
+                    }
+                    & set(member)
+                )
+            )
+
+            accepted = False
             rejected = False
-            try:
-                msgspec.json.decode(b"{}", type=candidate)
-            except msgspec.ValidationError:
-                rejected = True
-            except Exception:  # noqa: BLE001
-                rejected = True
+            if profile_id == "msgspec_struct":
+                import json as _json  # noqa: PLC0415
+
+                try:
+                    msgspec.json.decode(
+                        _json.dumps(value).encode("utf-8"), type=candidate
+                    )
+                    accepted = True
+                except Exception:  # noqa: BLE001
+                    accepted = False
+                try:
+                    msgspec.json.decode(b"{}", type=candidate)
+                except msgspec.ValidationError:
+                    rejected = True
+                except Exception:  # noqa: BLE001
+                    rejected = True
+            else:
+                adapter: Any = (
+                    candidate
+                    if issubclass(candidate, BaseModel)
+                    else TypeAdapter(candidate)
+                )
+                validate = (
+                    adapter.model_validate
+                    if issubclass(candidate, BaseModel)
+                    else adapter.validate_python
+                )
+                try:
+                    validate(value)
+                    accepted = True
+                except ValidationError:
+                    accepted = False
+                try:
+                    validate({"__undeclared__": object()})
+                except ValidationError:
+                    rejected = True
+                except Exception:  # noqa: BLE001
+                    rejected = True
+
+            if not accepted:
+                unexercised += 1
             outcomes.append(
                 {
                     "module": module_name,
                     "type": name,
+                    "exercised": accepted,
+                    "acceptsAConformingValue": accepted,
                     "rejectsUndeclaredOrIncomplete": rejected,
+                    "constraintsOnThisType": constraints,
                 }
             )
-    return outcomes
+    return outcomes, unexercised
 
 
 def build() -> dict[str, Any]:
+    documents = prepare_input_set(
+        sorted((ROOT.parent / "schema" / "semantic" / "v1").glob("*.schema.json"))
+    ).documents
     report = json.loads(REPORT.read_text(encoding="utf-8"))
     verdicts = {row["profileId"]: row for row in report["verdicts"]}
     emitted = set(demonstrated())
@@ -179,16 +444,8 @@ def build() -> dict[str, Any]:
                 }
             )
             continue
-        exercised = (
-            _exercise_msgspec(pid)
-            if pid == "msgspec_struct"
-            else _exercise_pydantic(pid)
-        )
+        exercised, unexercised = _exercise(pid, documents)
         declared = sum(len(names) for names in _generated_types(pid).values())
-        # A generated enum or type alias carries no validator to exercise, so the
-        # obligation "every generated type is exercised" is over the validating
-        # declarations. The difference is recorded rather than hidden in a ratio.
-        unexercised = declared - len(exercised)
         profiles.append(
             {
                 "profileId": pid,
@@ -197,16 +454,19 @@ def build() -> dict[str, Any]:
                 "coverage": "runtime",
                 "declaredTypes": declared,
                 "validatingTypes": len(exercised),
-                "nonValidatingDeclarations": unexercised,
-                "exercisedTypes": len(exercised),
-                "unexercisedValidatingTypes": 0,
+                "nonValidatingDeclarations": declared - len(exercised),
+                "exercisedTypes": sum(1 for row in exercised if row["exercised"]),
+                "unexercisedValidatingTypes": unexercised,
+                "constraintsExercised": sum(
+                    int(row.get("constraintsOnThisType", 0)) for row in exercised
+                ),
                 "typesRejectingAnEmptyOrUndeclaredValue": sum(
-                    1 for row in exercised if row["rejectsUndeclaredOrIncomplete"]
+                    1 for row in exercised if row.get("rejectsUndeclaredOrIncomplete")
                 ),
                 "typesAcceptingAnything": [
                     f"{row['module']}.{row['type']}"
                     for row in exercised
-                    if not row["rejectsUndeclaredOrIncomplete"]
+                    if not row.get("rejectsUndeclaredOrIncomplete")
                 ],
                 "typesAcceptingAnythingNote": (
                     "The generator emits one root model per input document, over "
@@ -242,7 +502,6 @@ def main(argv: list[str] | None = None) -> int:
     VALIDATION.write_text(fresh, encoding="utf-8")
     for row in document["profiles"]:
         print(row["profileId"], row["coverage"], row.get("exercisedTypes", "-"))
-    _ = Path
     return 0
 
 

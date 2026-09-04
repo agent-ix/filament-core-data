@@ -150,10 +150,13 @@ def assert_generator_admissible() -> AdvisoryVerdict:
 
 
 def resolved_extras() -> set[str]:
-    """The generator extras the environment actually resolved.
+    """The generator extras the environment resolved, read from its metadata.
 
-    An extra is present when every distribution it requires is importable, so
-    this reads the requirement metadata rather than trusting the lock file.
+    An extra is reported present when **any** distribution it requires is
+    importable. That is deliberately the pessimistic reading: the question this
+    answers is whether a transport could be reached, and a partially installed
+    extra is not a safe one. The lock file is not consulted, because what is
+    installed is what matters.
     """
 
     distribution = toolchain()["generator"]["distribution"]

@@ -134,6 +134,22 @@ def prepare_for_python(
     return Prepared(documents={name: prepared}, rewrites=rewrites)
 
 
+def prepare_documents(documents: dict[str, dict[str, Any]]) -> Prepared:
+    """Prepare an in-memory input set.
+
+    The public form of what `prepare_input_set` does after reading from disk,
+    so a caller with documents in hand does not reach into this module's
+    internals to get them.
+    """
+
+    rewrites: list[Rewrite] = []
+    prepared = {
+        name: _walk(copy.deepcopy(document), name, "", rewrites)
+        for name, document in documents.items()
+    }
+    return Prepared(documents=prepared, rewrites=rewrites)
+
+
 def prepare_input_set(paths: list[Path]) -> Prepared:
     """The multi-document form.
 

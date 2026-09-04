@@ -1,0 +1,9 @@
+{
+	"$comment": "Issue #23, FR-075/NFR-026-AC-1. `%2e%2e/` is `../` after decoding; a literal check walks straight past it.",
+	"kind": "schema",
+	"document": {
+		"$defs": {
+			"A": { "$ref": "%2e%2e/outside.json" }
+		}
+	}
+}
