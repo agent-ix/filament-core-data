@@ -59,6 +59,10 @@ opaque formal clauses, a closed constraint vocabulary, and binds the source
 dialect and manifest targets to their contracts, so Wave 4 module declarations
 are representable without loss.
 
+The sixth delivery is the semantic-core declaration grammar and kernel scalar
+library (issue #35): TypeSpec models every Quire object module imports, their
+official JSON Schema projection, and a zero-loss lowering to IR v1.1.
+
 ## 2. Scope
 
 ### 2.1 In Scope
@@ -98,6 +102,9 @@ are representable without loss.
   dynamic-module, and non-disruption requirements.
 - IR v1.1 node shapes for multiplicity, units, relationships, operations,
   clauses, and typed constraints, with golden and negative fixtures.
+- The semantic-core L3 declaration grammar and kernel scalar library in
+  TypeSpec under `packages/semantic-core/`, its emitted JSON Schema, and its
+  lowering table to IR v1.1.
 
 ### 2.2 Out of Scope
 
@@ -121,6 +128,9 @@ are representable without loss.
 - Editing any corpus repository for issue #34; config-service FR-006 is a
   read-only worked example.
 - Changing the frozen TypeSpec spike or any backend as part of issue #34.
+- Module vocabulary (entity, endpoint, process, requirement, …) in the
+  semantic-core kernel; publishing `@agent-ix/semantic-core` (issue #11);
+  a custom emitter for issue #35.
 
 ## 3. System Overview
 
@@ -168,9 +178,9 @@ Authority is assigned by concern:
 | Class | Artifacts | Purpose |
 |---|---|---|
 | Stakeholder | [StR-001](./stakeholder/StR-001-durable-semantic-data-governance.md) | Durable governance need |
-| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-006](./usecase/US-006-declare-typed-domain-structure.md) | Reader, implementer, migration-review, tool-selection, schema-author, and module-author outcomes |
-| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-030](./functional/FR-030-bind-source-dialect-and-manifest-targets.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, and IR v1.1 declaration behavior |
-| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-013](./non-functional/NFR-013-additive-semantic-ir-revision.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, and additive revision |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-007](./usecase/US-007-declare-archetypes-against-a-shared-grammar.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, and module-maintainer outcomes |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-034](./functional/FR-034-lower-semantic-core-declarations-to-ir.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, and semantic-core grammar behavior |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-014](./non-functional/NFR-014-small-kernel-discipline.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, and kernel discipline |
 
 ## 6. Decision Status Model
 
