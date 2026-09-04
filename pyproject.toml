@@ -71,3 +71,12 @@ style = "pep440"
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
+
+# Issue #23 (FR-080). Strict, scoped to the generated tree and the examples, with
+# no per-module override and no relaxation: a type the checker rejects is a
+# qualification finding, and the permitted remedies do not include silencing it.
+[tool.mypy]
+python_version = "3.13"
+strict = true
+files = ["python_backend"]
+mypy_path = ["python_backend/generated"]

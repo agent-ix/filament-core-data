@@ -44,7 +44,8 @@ class LimitExceededError(GenerationError):
 
 
 def limits() -> dict[str, Any]:
-    return json.loads(LIMITS_PATH.read_text(encoding="utf-8"))
+    loaded: dict[str, Any] = json.loads(LIMITS_PATH.read_text(encoding="utf-8"))
+    return loaded
 
 
 @dataclass

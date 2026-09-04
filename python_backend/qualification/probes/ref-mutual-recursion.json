@@ -1,0 +1,49 @@
+{
+	"$comment": "Issue #23, FR-077. A multi-document probe: `schemas` is the input set the generator resolves as a modular directory.",
+	"id": "ref-mutual-recursion",
+	"construct": "mutual recursion across two documents",
+	"note": "Two documents that reference each other. Measured against the pinned generator, the cycle resolves: both types are sunk into a generator-owned shared module and re-exported per document, so the reference is preserved and no Python import cycle is created. The detector therefore asks whether both directions resolve, not how the generator arranged the modules.",
+	"detector": {
+		"kind": "regex",
+		"pattern": "(?s)(?=.*\\bd:[^\\n]*\\bD\\b)(?=.*\\bc:[^\\n]*\\bC\\b)"
+	},
+	"schemas": {
+		"c.schema.json": {
+			"$id": "https://x/c",
+			"$defs": {
+				"C": {
+					"type": "object",
+					"title": "C",
+					"properties": {
+						"d": {
+							"$ref": "d.schema.json#/$defs/D"
+						}
+					},
+					"additionalProperties": false
+				}
+			}
+		},
+		"d.schema.json": {
+			"$id": "https://x/d",
+			"$defs": {
+				"D": {
+					"type": "object",
+					"title": "D",
+					"properties": {
+						"c": {
+							"$ref": "c.schema.json#/$defs/C"
+						}
+					},
+					"additionalProperties": false
+				}
+			}
+		}
+	},
+	"expected": {
+		"pydantic_v2_basemodel": true,
+		"pydantic_v2_dataclass": true,
+		"stdlib_dataclass": true,
+		"typed_dict": true,
+		"msgspec_struct": true
+	}
+}

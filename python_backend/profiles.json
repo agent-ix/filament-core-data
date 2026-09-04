@@ -15,7 +15,7 @@
 	},
 	"profiles": [
 		{
-			"id": "pydantic-v2-basemodel",
+			"id": "pydantic_v2_basemodel",
 			"outputModelType": "pydantic_v2.BaseModel",
 			"runtimeValidation": "validating",
 			"options": [
@@ -34,7 +34,7 @@
 			]
 		},
 		{
-			"id": "pydantic-v2-dataclass",
+			"id": "pydantic_v2_dataclass",
 			"outputModelType": "pydantic_v2.dataclass",
 			"runtimeValidation": "validating",
 			"options": [
@@ -53,7 +53,7 @@
 			]
 		},
 		{
-			"id": "stdlib-dataclass",
+			"id": "stdlib_dataclass",
 			"outputModelType": "dataclasses.dataclass",
 			"runtimeValidation": "static-only",
 			"options": [
@@ -72,7 +72,7 @@
 			]
 		},
 		{
-			"id": "typed-dict",
+			"id": "typed_dict",
 			"outputModelType": "typing.TypedDict",
 			"runtimeValidation": "static-only",
 			"options": [
@@ -91,7 +91,7 @@
 			]
 		},
 		{
-			"id": "msgspec-struct",
+			"id": "msgspec_struct",
 			"outputModelType": "msgspec.Struct",
 			"runtimeValidation": "validating",
 			"options": [

@@ -32,7 +32,8 @@ class AdvisoryError(RuntimeError):
 
 
 def _read(path: Any) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
+    loaded: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+    return loaded
 
 
 def toolchain() -> dict[str, Any]:
@@ -71,7 +72,9 @@ def declared_floor() -> str:
     """The greatest first-patched version across the declared advisories."""
 
     document = advisories()
-    patched = [row["firstPatchedVersion"] for row in document["advisories"]]
+    patched: list[str] = [
+        str(row["firstPatchedVersion"]) for row in document["advisories"]
+    ]
     return max(patched, key=parse_version)
 
 

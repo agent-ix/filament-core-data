@@ -199,7 +199,9 @@ def _strip_literals(node: ast.AST) -> ast.AST:
                 return ast.Name(id="__literal__", ctx=ast.Load())
             return self.generic_visit(node)
 
-    return Blank().visit(ast.parse(ast.unparse(node), mode="eval").body)
+    blanked = Blank().visit(ast.parse(ast.unparse(node), mode="eval").body)
+    assert isinstance(blanked, ast.AST)
+    return blanked
 
 
 def _annotation_names(node: ast.AST) -> list[str]:
@@ -331,12 +333,23 @@ def inspect_generated(
                 if not _is_permissive(body.annotation):
                     continue
                 attribute = body.target.id
-                classification = "unattributed"
-                pointer = None
+                classification: Literal[
+                    "sanctioned", "degraded", "unattributed"
+                ] = "unattributed"
+                pointer: str | None = None
                 found = candidates_for(node, attribute)
                 owner = found[0] if len(found) == 1 else None
                 if owner is None and attribute == "root":
                     entry = document_roots.get(module.removesuffix(".py"))
+                    if entry is None and len(documents) > 1:
+                        # The generator sinks the types of a cross-document
+                        # reference cycle into a shared module it owns, and emits
+                        # one root model per contributing document there. That
+                        # module is not itself a document, so it is attributed to
+                        # the input set's roots, which must agree.
+                        roots_seen = list(documents.values())
+                        if all(decide(root) == decide(roots_seen[0]) for root in roots_seen):
+                            entry = (sorted(documents)[0], roots_seen[0])
                     if entry is not None:
                         owner = (entry[0], "", entry[1])
                 if owner is not None:

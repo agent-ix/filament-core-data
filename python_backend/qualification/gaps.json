@@ -1,0 +1,275 @@
+{
+	"$comment": "Issue #23, FR-077. One row per construct and affected family. A construct measured as lost with no row here fails the gate; removing a row fails the gate. No row may dispose a gap to a hand-written generator absent a recorded reviewed P0 decision.",
+	"gaps": [
+		{
+			"construct": "array uniqueItems",
+			"probe": "constraints-array-unique",
+			"family": "pydantic_v2_basemodel",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "No family carries it. The contract states set semantics and every Python surface renders a list."
+		},
+		{
+			"construct": "array uniqueItems",
+			"probe": "constraints-array-unique",
+			"family": "pydantic_v2_dataclass",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "No family carries it. The contract states set semantics and every Python surface renders a list."
+		},
+		{
+			"construct": "a property whose wire name is not an identifier",
+			"probe": "alias",
+			"family": "stdlib_dataclass",
+			"severity": "high",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "A reserved or punctuated wire name must be recoverable, or the value cannot round-trip."
+		},
+		{
+			"construct": "object closure by additionalProperties",
+			"probe": "closure-additional",
+			"family": "stdlib_dataclass",
+			"severity": "high",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "A sealed object must not generate as an open one."
+		},
+		{
+			"construct": "object closure by unevaluatedProperties",
+			"probe": "closure-unevaluated",
+			"family": "stdlib_dataclass",
+			"severity": "high",
+			"closableByPreparation": true,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "The form the official TypeSpec emitter actually writes; retained only because the FR-074 pass rewrites it."
+		},
+		{
+			"construct": "array uniqueItems",
+			"probe": "constraints-array-unique",
+			"family": "stdlib_dataclass",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "No family carries it. The contract states set semantics and every Python surface renders a list."
+		},
+		{
+			"construct": "numeric constraints",
+			"probe": "constraints-numeric",
+			"family": "stdlib_dataclass",
+			"severity": "high",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "Bounds and multiples must reach the generated type."
+		},
+		{
+			"construct": "string constraints",
+			"probe": "constraints-string",
+			"family": "stdlib_dataclass",
+			"severity": "high",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "Length and pattern must reach the generated type."
+		},
+		{
+			"construct": "a description",
+			"probe": "description",
+			"family": "stdlib_dataclass",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "Authored documentation must reach the generated source or the package is undocumented."
+		},
+		{
+			"construct": "map by additionalProperties",
+			"probe": "map-additional",
+			"family": "stdlib_dataclass",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "The value constraint of an open map must survive."
+		},
+		{
+			"construct": "map by patternProperties",
+			"probe": "map-pattern",
+			"family": "stdlib_dataclass",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "The key pattern of a pattern-keyed map must survive."
+		},
+		{
+			"construct": "string format",
+			"probe": "string-format",
+			"family": "stdlib_dataclass",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "A `date-time` must reach a datetime type rather than a bare string."
+		},
+		{
+			"construct": "discriminated union",
+			"probe": "union-discriminated",
+			"family": "stdlib_dataclass",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "The discriminator must reach the generated type; without it a consumer must guess the branch."
+		},
+		{
+			"construct": "array uniqueItems",
+			"probe": "constraints-array-unique",
+			"family": "typed_dict",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "No family carries it. The contract states set semantics and every Python surface renders a list."
+		},
+		{
+			"construct": "numeric constraints",
+			"probe": "constraints-numeric",
+			"family": "typed_dict",
+			"severity": "high",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "Bounds and multiples must reach the generated type."
+		},
+		{
+			"construct": "string constraints",
+			"probe": "constraints-string",
+			"family": "typed_dict",
+			"severity": "high",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "Length and pattern must reach the generated type."
+		},
+		{
+			"construct": "a defaulted non-nullable field",
+			"probe": "default-non-nullable",
+			"family": "typed_dict",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "A field the schema declares non-nullable must not acquire `None` from having a default."
+		},
+		{
+			"construct": "a description",
+			"probe": "description",
+			"family": "typed_dict",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "Authored documentation must reach the generated source or the package is undocumented."
+		},
+		{
+			"construct": "map by additionalProperties",
+			"probe": "map-additional",
+			"family": "typed_dict",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "The value constraint of an open map must survive."
+		},
+		{
+			"construct": "map by patternProperties",
+			"probe": "map-pattern",
+			"family": "typed_dict",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "The key pattern of a pattern-keyed map must survive."
+		},
+		{
+			"construct": "string format",
+			"probe": "string-format",
+			"family": "typed_dict",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "A `date-time` must reach a datetime type rather than a bare string."
+		},
+		{
+			"construct": "discriminated union",
+			"probe": "union-discriminated",
+			"family": "typed_dict",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "The discriminator must reach the generated type; without it a consumer must guess the branch."
+		},
+		{
+			"construct": "object closure by additionalProperties",
+			"probe": "closure-additional",
+			"family": "msgspec_struct",
+			"severity": "high",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "A sealed object must not generate as an open one."
+		},
+		{
+			"construct": "object closure by unevaluatedProperties",
+			"probe": "closure-unevaluated",
+			"family": "msgspec_struct",
+			"severity": "high",
+			"closableByPreparation": true,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "The form the official TypeSpec emitter actually writes; retained only because the FR-074 pass rewrites it."
+		},
+		{
+			"construct": "array uniqueItems",
+			"probe": "constraints-array-unique",
+			"family": "msgspec_struct",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "No family carries it. The contract states set semantics and every Python surface renders a list."
+		},
+		{
+			"construct": "a defaulted non-nullable field",
+			"probe": "default-non-nullable",
+			"family": "msgspec_struct",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "A field the schema declares non-nullable must not acquire `None` from having a default."
+		},
+		{
+			"construct": "map by patternProperties",
+			"probe": "map-pattern",
+			"family": "msgspec_struct",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "The key pattern of a pattern-keyed map must survive."
+		},
+		{
+			"construct": "string format",
+			"probe": "string-format",
+			"family": "msgspec_struct",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "A `date-time` must reach a datetime type rather than a bare string."
+		},
+		{
+			"construct": "absent versus null in the Pydantic families",
+			"probe": "default-non-nullable",
+			"family": "pydantic-v2-basemodel, pydantic-v2-dataclass",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "The generator's `--use-missing-sentinel` separates the two, and against pydantic 2.12.5 it renders `pydantic_core.MISSING` in a type position that mypy 1.19.1 rejects, which FR-080 forbids papering over. Recorded rather than adopted; the two obligations cannot both be met with this toolchain.",
+			"note": "An optional non-nullable field renders `T | None = None`, so a consumer cannot distinguish an omitted member from an explicit null."
+		},
+		{
+			"construct": "GAP-011: a `reference` whose target no type, import, or lock export supplies",
+			"probe": null,
+			"family": "all",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "Deferred to the program owner, not decided here. `conformance/contract-gaps.json` GAP-011 records that `contracts-v1.md` states a resolution rule for relationship targets and none for a `reference` target, and its own consequence text says a generated-package backend must decide whether to emit a type for a reference it cannot resolve. The profile's `--strict-refs` governs an unresolved JSON Schema `$ref`, which is a different construct and does not answer it.",
+			"note": "Corpus cases REF-001..004 pin the oracle's reading."
+		}
+	]
+}

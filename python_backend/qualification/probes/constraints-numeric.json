@@ -1,0 +1,37 @@
+{
+	"$comment": "Issue #23, FR-077. One construct, one detector, one expected retention per family. The expectation is read from the contract, not from the measurement (FR-077-CON-2).",
+	"id": "constraints-numeric",
+	"construct": "numeric constraints",
+	"note": "Bounds and multiples must reach the generated type.",
+	"detector": {
+		"kind": "regex",
+		"pattern": "multiple_of"
+	},
+	"schema": {
+		"$defs": {
+			"N": {
+				"type": "object",
+				"title": "N",
+				"properties": {
+					"i": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 9,
+						"multipleOf": 3
+					}
+				},
+				"required": [
+					"i"
+				],
+				"additionalProperties": false
+			}
+		}
+	},
+	"expected": {
+		"pydantic_v2_basemodel": true,
+		"pydantic_v2_dataclass": true,
+		"stdlib_dataclass": false,
+		"typed_dict": false,
+		"msgspec_struct": true
+	}
+}
