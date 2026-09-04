@@ -22,10 +22,32 @@ import {
 import {
 	CORE_CLAUSE_LANGUAGES,
 	EDGE_CATEGORIES,
-	KEYWORD_APPLICABILITY,
 	NAMESPACED_LANGUAGE,
 	applies,
+	isKeyword,
 } from "./applicability.mjs";
+
+/** Nesting depth, stopping as soon as `bound` is exceeded. */
+function depthOf(value, bound, depth = 0) {
+	if (depth > bound) return depth;
+	if (Array.isArray(value)) {
+		let deepest = depth;
+		for (const item of value) {
+			deepest = Math.max(deepest, depthOf(item, bound, depth + 1));
+			if (deepest > bound) return deepest;
+		}
+		return deepest;
+	}
+	if (value !== null && typeof value === "object") {
+		let deepest = depth;
+		for (const item of Object.values(value)) {
+			deepest = Math.max(deepest, depthOf(item, bound, depth + 1));
+			if (deepest > bound) return deepest;
+		}
+		return deepest;
+	}
+	return depth;
+}
 
 function isObject(value) {
 	return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -89,6 +111,10 @@ export function readContractIr(document, options = {}) {
 	}
 
 	const version = String(document.contractVersion);
+	const documentPackage =
+		typeof document.package?.identity === "string"
+			? document.package.identity
+			: undefined;
 	const definitions = asArray(document.types);
 	if (definitions.length > limits.maxNodes) {
 		raise(
@@ -139,7 +165,16 @@ export function readContractIr(document, options = {}) {
 	const checkField = (field) => {
 		const resolved = resolveKind(types, field.typeRef);
 		if (!resolved && !known.has(String(field.typeRef))) {
-			if (exportsUnknown && typeof field.typeRef === "string") {
+			// Suppression is only for a reference that could plausibly belong to an
+			// imported package — one whose identity names a *different* package. A
+			// reference into this document's own package cannot be resolved by any
+			// resolution, so it is a defect whether or not one was supplied.
+			const foreign =
+				exportsUnknown &&
+				typeof field.typeRef === "string" &&
+				documentPackage !== undefined &&
+				!field.typeRef.startsWith(`ix://${documentPackage}/`);
+			if (foreign) {
 				suppressions.push({
 					rule: DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF.code,
 					identity: String(field.identity),
@@ -194,7 +229,7 @@ export function readContractIr(document, options = {}) {
 
 	const checkConstraint = (constraint, owner) => {
 		const keyword = String(constraint.keyword);
-		if (!(keyword in KEYWORD_APPLICABILITY)) {
+		if (!isKeyword(keyword)) {
 			raise(
 				DIAGNOSTIC_CODES.UNKNOWN_CONSTRAINT_KEYWORD,
 				`${fragment(keyword)} is outside the closed constraint vocabulary`,
@@ -221,7 +256,10 @@ export function readContractIr(document, options = {}) {
 		const operands = isObject(constraint.operands) ? constraint.operands : {};
 		if (keyword === "pattern") {
 			try {
-				new RegExp(String(operands.regex), "u");
+				// ECMA-262 without the `u` flag: the operand's dialect is `ecma-262`,
+				// and compiling it in Unicode mode rejects patterns a plain ECMA-262
+				// engine accepts, so the check would refuse valid documents.
+				new RegExp(String(operands.regex));
 			} catch (error) {
 				raise(
 					DIAGNOSTIC_CODES.INVALID_PATTERN,
@@ -250,10 +288,24 @@ export function readContractIr(document, options = {}) {
 	const checkDefinition = (definition) => {
 		const isRecord = definition.kind === "record";
 		const fields = asArray(definition.fields);
-		if (fields.length > limits.maxCollectionItems) {
+		// Every list, not only the fields: a document with a hundred thousand
+		// clauses is as unbounded as one with a hundred thousand fields.
+		for (const key of [
+			"fields",
+			"variants",
+			"constraints",
+			"relationships",
+			"operations",
+			"clauses",
+			"extensions",
+		]) {
+			const list = definition[key];
+			if (!Array.isArray(list) || list.length <= limits.maxCollectionItems) {
+				continue;
+			}
 			raise(
 				DIAGNOSTIC_CODES.LIMIT_MAX_COLLECTION_ITEMS,
-				`a field list of ${fields.length} exceeds the maxCollectionItems limit of ${limits.maxCollectionItems}`,
+				`a ${key} list of ${list.length} exceeds the maxCollectionItems limit of ${limits.maxCollectionItems}`,
 				locusOf(definition),
 			);
 			return;
@@ -316,7 +368,11 @@ export function readContractIr(document, options = {}) {
 		for (const relationship of relationships) {
 			const target = String(relationship.target);
 			if (!types.has(target) && !known.has(target)) {
-				if (exportsUnknown) {
+				const foreign =
+					exportsUnknown &&
+					documentPackage !== undefined &&
+					!target.startsWith(`ix://${documentPackage}/`);
+				if (foreign) {
 					suppressions.push({
 						rule: DIAGNOSTIC_CODES.UNRESOLVED_RELATIONSHIP_TARGET.code,
 						identity: String(relationship.identity),
@@ -412,6 +468,18 @@ export function readContractIr(document, options = {}) {
 		}
 		identities.add(identity);
 		checkDefinition(definition);
+	}
+
+	// A document too deep to canonicalise cannot be fingerprinted, so the bound
+	// is checked here, where it is a diagnostic rather than an exception. The
+	// depth is measured directly rather than by calling the canonicaliser, which
+	// would make the reader and the normalizer import each other.
+	if (depthOf(document, limits.maxDepth) > limits.maxDepth) {
+		raise(
+			DIAGNOSTIC_CODES.LIMIT_MAX_DEPTH,
+			`the document nests past the maxDepth limit of ${limits.maxDepth}`,
+		);
+		return Object.assign(diagnostics, { suppressions });
 	}
 
 	// Composite relationship graphs are acyclic. The traversal marks nodes, so a

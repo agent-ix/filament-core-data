@@ -60,6 +60,11 @@ function byCodePoint(left, right) {
  */
 export function schemaBytes(host, root = REPO_ROOT) {
 	const directory = resolve(root, "schema/semantic/v1");
+	if (!host.isDirectory(directory)) {
+		throw new TypeError(
+			`the compiler reads its own published schemas: ${directory} must be a declared read root`,
+		);
+	}
 	return host
 		.walk(directory)
 		.filter((name) => name.endsWith(".schema.json"))
@@ -111,7 +116,15 @@ export function fingerprint(resolution) {
 			.map((profile) => [profile.name, profile.digest])
 			.sort((left, right) => byCodePoint(left[0], right[0])),
 		[...resolution.packages]
-			.map((entry) => [entry.identity, entry.version, entry.contentDigest])
+			.map((entry) => [
+				entry.identity,
+				entry.version,
+				entry.contentDigest,
+				// Every resolved package's *manifest*, not only the root's: an
+				// imported package can change its exports or its own imports without
+				// changing a source byte, and that is a change to what was compiled.
+				entry.manifestDigest ?? null,
+			])
 			.sort((left, right) => byCodePoint(left[0], right[0])),
 		CONTRACT_IR_VERSION,
 	];

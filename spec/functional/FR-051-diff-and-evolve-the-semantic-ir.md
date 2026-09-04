@@ -32,7 +32,8 @@ governed by the one policy document this requirement publishes.
 ## Inputs
 
 - Two semantic IR documents, old and new
-- Optionally the old and new selected profile documents and their mapping documents
+- Optionally the old and new selected profile documents and their mapping documents, each valid against its published schema
+- Optionally the identities each mapping is observed to drop, which no mapping document carries and which therefore arrives as its own input
 - Optionally the old and new Protobuf field-number reservation registries
 - Optionally consumer policy documents valid against `schema/semantic/v1/consumer-policy.schema.json`, and a `consumerEvidenceStatus` of `current`, `stale`, or `unknown`
 - Optionally per-target dispositions supplied by a qualified backend
@@ -42,7 +43,7 @@ governed by the one policy document this requirement publishes.
 
 - `src/compiler/compat/diff.mjs`: `diffSemanticContract(request)` returning a document valid against `schema/semantic/v1/compatibility-report.schema.json`
 - `src/compiler/compat/evolution.mjs`: `readIrAsContract(document, targetVersion, { dialect })` returning `{ document, loss, diagnostics }`
-- `test/fixtures/compiler/compatibility/family-map.json`: the observed-change family to report family map, as data
+- `src/compiler/compat/family-map.json`: the observed-change family to report family map, as data, and `src/compiler/family-map.mjs`, the one module that reads it
 - `test/fixtures/compiler/compatibility/cases/**`: one constructed input pair per case of `fixtures/semantic/v1/compatibility/cases.json`, which remains the read-only case index
 - `test/fixtures/compiler/evolution/`: the golden backward and forward projections
 - `docs/semantic-data-system/ir-compatibility-policy.md`: the published policy
@@ -82,11 +83,12 @@ governed by the one policy document this requirement publishes.
 | Profile `allowedOmissions` gained an identity | `profile` | `profile` | `breaking` |
 | Profile `authority` changed with an unchanged structural shape | `authority` | `profile` | `breaking` |
 | Mapping `editDirection` changed | `mapping` | `mapping` | `conditional` |
-| Loss present in the new contract and not in `omittedIdentities` | `loss` | `representation` | `breaking` |
+| An observed dropped identity absent from that mapping's `omittedIdentities` | `loss` | `representation` | `breaking` |
 | A reserved Protobuf field name or number reused | `protobuf-reservation` | `target` | `invalid` |
 | Any change whose consumer evidence is `unknown` | the observed family | its surface | `unknown` |
 
-- `test/fixtures/compiler/compatibility/family-map.json` SHALL carry that observed-family to report-family map as data, and the implementation SHALL read it rather than restating it.
+- `src/compiler/compat/family-map.json` SHALL carry that observed-family to report-family map as data, and the implementation SHALL read it rather than restating it.
+- The map SHALL live under `src/compiler/`, which `package.json` `files` ships, rather than under a fixture tree it does not, so an installed package can open it.
 - If an input the table needs is absent — no profile documents, no mapping documents, no reservation registry, no per-target dispositions — then the diff SHALL omit the families that need it rather than classifying them, and SHALL name each omitted family in `requiredGates`.
 - The diff SHALL set `oldFingerprint` and `newFingerprint` from `fingerprintIr` (FR-050) and `retainedBridges` from the bridges the caller declares the new contract still carries.
 - If the two documents have equal fingerprints, then the diff SHALL emit exactly one `documentation` change of disposition `patch`, identified by the new document's `source.identity`, because the report schema requires a non-empty `changes` array.

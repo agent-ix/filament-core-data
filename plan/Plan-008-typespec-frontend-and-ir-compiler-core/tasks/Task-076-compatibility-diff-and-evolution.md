@@ -57,7 +57,7 @@ Classify a revision into a compatibility report and project a document between c
 
 ## Subtasks
 
-- [x] `test/fixtures/compiler/compatibility/family-map.json`: the observed-family to report-family map as data.
+- [x] `src/compiler/compat/family-map.json`: the observed-family to report-family map as data.
 - [x] `test/fixtures/compiler/compatibility/cases/**`: one constructed input pair per case of the published case index, which stays byte-unchanged.
 - [x] `src/compiler/compat/diff.mjs`: the classification table, the disposition rank, the most-restrictive aggregate, the `source.identity` fallback for identity-less changes, the `requiredGates` naming of every omitted family, and the equal-fingerprint single-`patch` result.
 - [x] `src/compiler/compat/evolution.mjs`: both projections, the verbatim envelope carry-over, `MISSING_TARGET_DIALECT`, `UNKNOWN_CONTRACT_VERSION`, and the same-version identity.

@@ -8,7 +8,7 @@
  * away, and a diagnostic at the top of a 400-line manifest is not a diagnostic a
  * human can act on.
  */
-import { relative, resolve } from "node:path";
+import { basename, relative, resolve } from "node:path";
 import {
 	DIAGNOSTIC_CODES,
 	DEFAULT_LIMITS,
@@ -23,9 +23,18 @@ import {
 	schemaValidators,
 } from "../schema-validate.mjs";
 
-/** POSIX form of `path` relative to `root`; never absolute, never `..`-bearing. */
+/**
+ * POSIX form of `path` relative to `root`; never absolute, never `..`-bearing.
+ *
+ * A caller may name a lock or a limits file anywhere, and `sourceLocus.path`
+ * forbids `..` outright, so a document outside the root is named by its own file
+ * name. A locus the schema rejects is worse than a coarser one.
+ */
 export function relativePosix(root, path) {
-	return relative(resolve(root), resolve(path)).split(/[\\/]/).join("/");
+	const rel = relative(resolve(root), resolve(path)).split(/[\\/]/).join("/");
+	return rel === "" || rel.startsWith("../") || rel === ".."
+		? basename(path)
+		: rel;
 }
 
 /**
@@ -41,10 +50,19 @@ export function readDocument(host, options) {
 		packageRoot,
 		schemaName,
 		entry,
-		sourceIdentity,
 		limits = DEFAULT_LIMITS,
 	} = options;
 	const path = relativePosix(packageRoot, absolutePath);
+	// The source identity may depend on what the document says — a candidate
+	// package's identity is not known until its manifest is read — so the caller
+	// may pass a function of the parsed value. Every locus a candidate emits then
+	// names the package it came from, rather than a shared placeholder that makes
+	// two loci from two manifests indistinguishable.
+	const identityOf = (value) =>
+		typeof options.sourceIdentity === "function"
+			? options.sourceIdentity(value)
+			: options.sourceIdentity;
+	let sourceIdentity = identityOf(undefined);
 	const diagnostics = [];
 	const locus = (pointer, prefer = "key") => ({
 		sourceIdentity,
@@ -63,6 +81,20 @@ export function readDocument(host, options) {
 
 	let text;
 	try {
+		// The size is checked from the directory entry, before the bytes are read:
+		// checking afterwards means the oversized document is already in memory,
+		// which is the thing the limit exists to prevent.
+		const declared = host.sizeOf?.(absolutePath);
+		if (declared !== undefined && declared > limits.maxInputBytes) {
+			return {
+				diagnostics: [
+					diagnostic(DIAGNOSTIC_CODES.LIMIT_MAX_INPUT_BYTES, {
+						message: `${path} is ${declared} bytes, over the maxInputBytes limit of ${limits.maxInputBytes}`,
+						locus: { sourceIdentity, path, startLine: 1, startColumn: 1 },
+					}),
+				],
+			};
+		}
 		const bytes = host.readBytes(absolutePath);
 		if (bytes.length > limits.maxInputBytes) {
 			return {
@@ -76,10 +108,17 @@ export function readDocument(host, options) {
 		}
 		text = bytes.toString("utf8");
 	} catch (error) {
+		// A refusal and an absent file are different defects: one says the caller
+		// pointed outside its declared roots, the other that a document the
+		// manifest names is not there. Reporting both as `PATH_ESCAPE` told a
+		// package author to look for a security problem they did not have.
+		const escaped = error?.name === "PathEscapeError";
 		return {
 			diagnostics: [
-				diagnostic(DIAGNOSTIC_CODES.PATH_ESCAPE, {
-					message: `cannot read ${fragment(path)}: ${fragment(error.message)}`,
+				diagnostic(escaped ? DIAGNOSTIC_CODES.PATH_ESCAPE : entry, {
+					message: escaped
+						? `${path} lies outside every declared root`
+						: `cannot read ${fragment(path)}: ${fragment(error.message)}`,
 					locus: { sourceIdentity, path, startLine: 1, startColumn: 1 },
 				}),
 			],
@@ -91,6 +130,7 @@ export function readDocument(host, options) {
 	try {
 		index = indexJsonPointers(text);
 		value = JSON.parse(text);
+		sourceIdentity = identityOf(value) ?? sourceIdentity;
 	} catch (error) {
 		const position = error.position ?? { line: 1, column: 1 };
 		return {

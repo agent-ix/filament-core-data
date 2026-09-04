@@ -7,13 +7,14 @@ export interface HostRecord {
 	refusedModules: string[];
 	writes: string[];
 	refusedWrites: string[];
-	directRead: number;
 }
 
 export interface CompilerFileHost {
 	readBytes(path: string): Buffer;
 	readText(path: string): string;
 	digestFile(path: string): string;
+	realpathOf(path: string): string;
+	sizeOf(path: string): number | undefined;
 	exists(path: string): boolean;
 	isDirectory(path: string): boolean;
 	readDir(path: string): string[];

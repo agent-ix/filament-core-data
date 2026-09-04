@@ -63,6 +63,7 @@ export async function run(request) {
 	const host = restrictedHost({
 		readRoots: [...new Set([...searchRoots, here, toolchainRoot()])],
 		moduleRoots: [resolve(here, "lib"), toolchainRoot()],
+		realpath: request.host?.realpathOf,
 	});
 
 	let program;
@@ -72,16 +73,19 @@ export async function run(request) {
 			additionalImports: [DECORATOR_LIBRARY],
 		});
 	} catch (error) {
+		// Only the two refusals this host raises are classified as refusals;
+		// anything else the toolchain throws is a compile failure, and saying
+		// "path escape" for it would send a package author looking in the wrong
+		// place.
+		const message = String(error?.message ?? error);
+		const entry = message.includes(MODULE_REFUSAL)
+			? DIAGNOSTIC_CODES.UNTRUSTED_MODULE
+			: message.includes(READ_REFUSAL)
+				? DIAGNOSTIC_CODES.PATH_ESCAPE
+				: DIAGNOSTIC_CODES.TYPESPEC_COMPILE_ERROR;
 		return {
 			ir: null,
-			diagnostics: [
-				diagnostic(
-					String(error?.message).includes(MODULE_REFUSAL)
-						? DIAGNOSTIC_CODES.UNTRUSTED_MODULE
-						: DIAGNOSTIC_CODES.PATH_ESCAPE,
-					{ message: fragment(String(error?.message ?? error)) },
-				),
-			],
+			diagnostics: [diagnostic(entry, { message: fragment(message) })],
 		};
 	}
 

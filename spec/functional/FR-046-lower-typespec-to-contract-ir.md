@@ -76,6 +76,7 @@ source or by the manifest and none is inferred from a type's spelling.
 - If a declaration matches no row of the classification table, then the frontend SHALL raise `agent-ix.compiler.UNSUPPORTED_DECLARATION` at its locus.
 - Where a field, indexer, variant, or operation parameter is typed by a TypeSpec built-in scalar directly, the frontend SHALL emit one package-local kernel scalar definition `ix://<package identity>/type/<KernelScalar>` carrying the extension `ix://agent-ix/semantic-core/ext/kernel-scalar` (version `1.0.0`, `required: false`, payload `{ name }`), matching FR-034, and SHALL reference it.
 - The kernel scalar names are those FR-032 closes: `boolean` lowers to `Boolean`, `integer` to `Integer`, `number` to `Decimal`, `string` to `String`, `bytes` to `Bytes`, `datetime` to `Timestamp`, `duration` to `Duration`, and `uuid` to `UUID`.
+- No TypeSpec built-in maps to `uuid` or to `JsonObject`, so those two rows are unreachable from this frontend and the table records them as such; `JsonObject` is a record in the IR rather than a scalar, and FR-034 lowers it in the semantic-core path.
 - If a built-in with no kernel scalar — `plainDate`, whose IR scalar is `date` — is used directly as a member type, then the frontend SHALL raise `agent-ix.compiler.UNSUPPORTED_SCALAR_BASE` naming the absent kernel scalar, because a package-local definition it cannot name is not a definition; declaring a package scalar over it remains available and lowers normally.
 
 ### Roles, unknown policy, and fields
@@ -83,7 +84,6 @@ source or by the manifest and none is inferred from a type's spelling.
 - The frontend SHALL set `displayName` to the declaration's own TypeSpec name, unqualified by its namespace.
 - The frontend SHALL set `roles` to the sorted, de-duplicated arguments of the declaration's `@role` applications, and to the empty array where there is none.
 - The frontend SHALL set `unknownPolicy` to the argument of `@unknownPolicy`, and to `reject` where there is none.
-- The frontend SHALL set `unknownPolicy` to `preserve` on the record a `JsonObject` kernel scalar lowers to, matching FR-034.
 - The frontend SHALL derive a field's `multiplicity` as `{ lower: 0 }` when the property type is a collection and the property is optional, `{ lower: 1 }` when it is a collection and required, `{ lower: 0, upper: 1 }` when it is single-valued and optional, and `{ lower: 1, upper: 1 }` when it is single-valued and required.
 - Where `@collection(ordered, unique)` is applied to a collection-typed property, the frontend SHALL set `multiplicity.ordered` and `multiplicity.unique` from its arguments.
 - If `@collection` is applied to a single-valued property, then the frontend SHALL raise `agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION` at the decorator's locus.
@@ -134,7 +134,7 @@ source or by the manifest and none is inferred from a type's spelling.
 | FR-046-AC-7 | `@collection` on a single-valued property raises `FLAGS_ON_NON_COLLECTION`, `@multiplicity(2, 1)` raises `INVALID_MULTIPLICITY`, and `@multiplicity(1)` on an optional property raises `MULTIPLICITY_CONTRADICTS_OPTIONALITY`, each at the decorator's line and column. | Test |
 | FR-046-AC-8 | `@unit("s")` on a field resolving through an alias to a scalar is emitted; `@unit("s")` on a field resolving to a record raises `UNIT_ON_NON_SCALAR` at the decorator's locus. | Test |
 | FR-046-AC-9 | A property with a TypeSpec default emits `defaultKind: "semantic"` and that `defaultValue`; `@defaultKind("migration")` overrides the kind; `@defaultKind` without a default raises `DEFAULT_KIND_WITHOUT_VALUE`. | Test |
-| FR-046-AC-10 | A field typed by a built-in scalar directly emits the package-local kernel scalar definition with its `ext/kernel-scalar` extension, and a `JsonObject` kernel scalar lowers to a record with `unknownPolicy: preserve`. | Test |
+| FR-046-AC-10 | A field typed by a built-in scalar directly emits the package-local kernel scalar definition with its `ext/kernel-scalar` extension, and the kernel-name table is complete against FR-032 with the rows this frontend cannot reach recorded as such. | Test |
 | FR-046-AC-11 | A property typed by an export of a resolved imported package resolves, and one typed by an unexported type of that package raises `UNRESOLVED_TYPE_REF`. | Test |
 | FR-046-AC-12 | `source.digest` equals the root package's `contentDigest`, and the `package` block equals the values FR-047 and FR-048 supply, asserted field by field. | Test |
 | FR-046-AC-13 | `occurrences` is the empty array for every fixture package. | Test |

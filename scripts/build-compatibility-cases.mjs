@@ -235,6 +235,55 @@ const CLOSED_CONSUMER = {
 	unknownExtensions: "reject",
 };
 
+/** A profile document, valid against `profile.schema.json`. */
+function profile(overrides) {
+	return {
+		contractVersion: "1.0.0",
+		identity: `ix://${PKG}/profile/default`,
+		version: "1.0.0",
+		authority: "semantic-source",
+		editDirection: "read-only",
+		roundTrip: "semantic-lossless",
+		unknownPolicy: "preserve",
+		allowedOmissions: [],
+		enrichment: false,
+		materializationLifetime: "run",
+		...overrides,
+	};
+}
+
+/** A mapping document, valid against `mapping.schema.json`. */
+function mapping(overrides) {
+	const { omittedIdentities = [], ...rest } = overrides;
+	return {
+		contractVersion: "1.0.0",
+		identity: `ix://${PKG}/mapping/markdown`,
+		version: "1.0.0",
+		sourceType: `ix://${PKG}/type/Artifact`,
+		targetType: `ix://${PKG}/type/Text`,
+		representation: "markdown",
+		correspondences: [
+			{ sourceIdentity: `ix://${PKG}/type/Artifact`, targetLocus: "body" },
+		],
+		transformation: {
+			kind: "rendering",
+			purity: "pure",
+			deterministic: true,
+			externalReads: [],
+			externalWrites: [],
+			failureStates: ["invalid"],
+			retryIdempotent: true,
+			preservation: "declared-lossy",
+			omittedIdentities:
+				omittedIdentities.length > 0
+					? omittedIdentities
+					: [`ix://${PKG}/type/Artifact`],
+			presentationMediaType: "text/markdown",
+		},
+		...rest,
+	};
+}
+
 const VOCABULARY = {
 	constraintKeywords: [
 		"min",
@@ -374,19 +423,11 @@ const BUILDERS = {
 		old: base(),
 		new: base(),
 		request: {
-			mappings: {
-				old: [
-					{
-						identity: `ix://${PKG}/mapping/markdown`,
-						editDirection: "read-only",
-					},
-				],
-				new: [
-					{
-						identity: `ix://${PKG}/mapping/markdown`,
-						editDirection: "bidirectional",
-					},
-				],
+			// Edit direction is a *profile* member (`profile.schema.json`), so the
+			// case supplies profile documents rather than an invented mapping shape.
+			profiles: {
+				old: profile({ editDirection: "read-only" }),
+				new: profile({ editDirection: "bidirectional" }),
 			},
 		},
 	}),
@@ -395,16 +436,10 @@ const BUILDERS = {
 		new: base(),
 		request: {
 			profiles: {
-				old: {
-					identity: `ix://${PKG}/profile/default`,
-					authority: "semantic-source",
-					allowedOmissions: [],
-				},
-				new: {
-					identity: `ix://${PKG}/profile/default`,
-					authority: "semantic-source",
+				old: profile({}),
+				new: profile({
 					allowedOmissions: [`ix://${PKG}/field/Artifact-duration`],
-				},
+				}),
 			},
 		},
 	}),
@@ -413,16 +448,8 @@ const BUILDERS = {
 		new: base(),
 		request: {
 			profiles: {
-				old: {
-					identity: `ix://${PKG}/profile/default`,
-					authority: "semantic-source",
-					allowedOmissions: [],
-				},
-				new: {
-					identity: `ix://${PKG}/profile/default`,
-					authority: "runtime-store",
-					allowedOmissions: [],
-				},
+				old: profile({}),
+				new: profile({ authority: "runtime-store" }),
 			},
 		},
 	}),
@@ -431,22 +458,13 @@ const BUILDERS = {
 		new: base(),
 		request: {
 			mappings: {
-				old: [
-					{
-						identity: `ix://${PKG}/mapping/markdown`,
-						editDirection: "read-only",
-						omitted: [],
-						omittedIdentities: [],
-					},
-				],
-				new: [
-					{
-						identity: `ix://${PKG}/mapping/markdown`,
-						editDirection: "read-only",
-						omitted: [`ix://${PKG}/field/Artifact-tags`],
-						omittedIdentities: [],
-					},
-				],
+				old: [mapping({ omittedIdentities: [`ix://${PKG}/type/Artifact`] })],
+				new: [mapping({ omittedIdentities: [`ix://${PKG}/type/Artifact`] })],
+			},
+			// What the transformation actually drops is an observation, not a
+			// member of the mapping document.
+			observedLoss: {
+				[`ix://${PKG}/mapping/markdown`]: [`ix://${PKG}/field/Artifact-tags`],
 			},
 		},
 	}),

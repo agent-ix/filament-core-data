@@ -160,9 +160,12 @@ const MAX_MESSAGE_FRAGMENT = 120;
  */
 export function fragment(value) {
 	const text = String(value).replace(/\s+/g, " ");
-	return text.length <= MAX_MESSAGE_FRAGMENT
-		? text
-		: `${text.slice(0, MAX_MESSAGE_FRAGMENT - 1)}…`;
+	if (text.length <= MAX_MESSAGE_FRAGMENT) return text;
+	// Cut on a code point, not a code unit: slicing between the halves of a
+	// surrogate pair leaves a lone surrogate in the message, which is not text.
+	const points = [...text].slice(0, MAX_MESSAGE_FRAGMENT - 1);
+	while (points.join("").length > MAX_MESSAGE_FRAGMENT - 1) points.pop();
+	return `${points.join("")}…`;
 }
 
 /**

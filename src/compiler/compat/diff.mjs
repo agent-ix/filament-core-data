@@ -11,10 +11,8 @@
  * `patch`: reporting "no change" for something you could not look at is how a
  * breaking release gets promoted.
  */
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { canonicalize } from "../packages/canonical.mjs";
-import { REPO_ROOT } from "../packages/lock.mjs";
+import { familyMap } from "../family-map.mjs";
 import { fingerprintIr, normalizeIr } from "../ir/normalize.mjs";
 import { V1_1_ADDED_NODES, readIrAsContract } from "./evolution.mjs";
 
@@ -40,19 +38,9 @@ export const INPUT_FAMILIES = Object.freeze({
 	"kernel-scalar": "a declared kernel scalar library",
 });
 
-let familyMap;
-
 /** The observed-family to report-family map, read as data (FR-051-AC-2). */
-export function familyMapping(root = REPO_ROOT) {
-	if (!familyMap) {
-		familyMap = JSON.parse(
-			readFileSync(
-				resolve(root, "test/fixtures/compiler/compatibility/family-map.json"),
-				"utf8",
-			),
-		).families;
-	}
-	return familyMap;
+export function familyMapping() {
+	return familyMap();
 }
 
 function mostRestrictive(dispositions) {
@@ -147,29 +135,32 @@ export function diffSemanticContract(request) {
 		reservations,
 		vocabulary,
 		generatedNames,
+		observedLoss = {},
 		retainedBridges = [],
 	} = request;
-	const map = familyMapping(request.root);
+	const map = familyMapping();
+	const familyOf = (observed) =>
+		Object.hasOwn(map, observed) ? map[observed] : undefined;
 	const changes = [];
 	const evidence = consumerEvidenceStatus;
 
 	const record = (identity, observed, disposition, rationale) => {
-		const mapped = map[observed];
+		const mapped = familyOf(observed);
 		if (!mapped) throw new TypeError(`unmapped observed family: ${observed}`);
 		const perTarget = targetResults[identity] ?? targetResults["*"] ?? [];
 		const entry = {
 			identity,
 			family: mapped.family,
 			surface: mapped.surface,
-			disposition:
-				perTarget.length > 0
-					? mostRestrictive([
-							...perTarget.map((item) => item.disposition),
-							disposition,
-						])
-					: evidence === "unknown"
-						? "unknown"
-						: disposition,
+			// Unknown evidence is a *floor*, never a substitute. Replacing a
+			// disposition with `unknown` would relax `breaking` to `unknown`, which
+			// ranks lower — less information making a release gate easier to pass
+			// is the exact failure the vocabulary exists to prevent.
+			disposition: mostRestrictive([
+				disposition,
+				...perTarget.map((item) => item.disposition),
+				...(evidence === "unknown" ? ["unknown"] : []),
+			]),
 			rationale,
 			affectedConsumers: (Array.isArray(consumerPolicies)
 				? consumerPolicies
@@ -192,29 +183,44 @@ export function diffSemanticContract(request) {
 	// `multiplicity` as its own field change would classify the very revision
 	// NFR-013 declares additive as breaking — the nodes did not change, the
 	// contract's ability to express them did.
-	let versionUplift = false;
+	//
+	// A version uplift is *additive only when it adds nothing but the declared
+	// nodes*, and the way to establish that is to project the new document back
+	// and compare. When the projection matches, the type graph is compared
+	// against the projection rather than skipped: an uplift that also renamed a
+	// field must still report the rename, and it must not report every
+	// materialised `multiplicity` as a change of its own.
 	if (before?.contractVersion !== after?.contractVersion) {
 		const projection = readIrAsContract(
 			after,
 			String(before?.contractVersion),
 			{ dialect: String(before?.source?.dialect) },
 		);
-		versionUplift =
+		const uplift =
 			projection.document !== null &&
 			normalizeIr(projection.document) === normalizeIr(before);
 		record(
 			String(after?.source?.identity ?? "ix://agent-ix/unknown/source"),
 			"contract-version",
-			versionUplift ? "additive" : "breaking",
-			versionUplift
+			uplift ? "additive" : "breaking",
+			uplift
 				? `contract ${before?.contractVersion} to ${after?.contractVersion} adds only ${V1_1_ADDED_NODES.join(", ")}; the projection back to ${before?.contractVersion} is byte-identical to the old document`
 				: `contract version ${before?.contractVersion} to ${after?.contractVersion} carries changes beyond the declared additive nodes`,
 		);
 	}
 
 	// ---- the type graph ------------------------------------------------------
-	const oldTypes = versionUplift ? new Map() : typesOf(before);
-	const newTypes = versionUplift ? new Map() : typesOf(after);
+	// When the versions differ the new document is compared against the *old
+	// version's projection of itself*, so the members the uplift added are not
+	// counted as changes while everything else still is.
+	const comparisonSubject =
+		before?.contractVersion !== after?.contractVersion
+			? (readIrAsContract(after, String(before?.contractVersion), {
+					dialect: String(before?.source?.dialect),
+				}).document ?? after)
+			: after;
+	const oldTypes = typesOf(before);
+	const newTypes = typesOf(comparisonSubject);
 	const oldByName = new Map(
 		[...oldTypes.values()].map((type) => [String(type.displayName), type]),
 	);
@@ -286,6 +292,9 @@ export function diffSemanticContract(request) {
 		diffConstraints(previous, next, record);
 		diffNodes(previous, next, record);
 
+		if (!same(previous.roles ?? [], next.roles ?? [])) {
+			record(identity, "type", "conditional", "the declared roles changed");
+		}
 		if (
 			same(stripDocumentation(previous), stripDocumentation(next)) &&
 			!same(previous, next)
@@ -313,6 +322,15 @@ export function diffSemanticContract(request) {
 				"the profile gained an allowed omission",
 			);
 		}
+		// The inputs are *profile documents*, valid against `profile.schema.json`.
+		if (profiles.old.editDirection !== profiles.new.editDirection) {
+			record(
+				profiles.new.identity,
+				"mapping",
+				"conditional",
+				`edit direction changed from ${profiles.old.editDirection} to ${profiles.new.editDirection}`,
+			);
+		}
 		if (profiles.old.authority !== profiles.new.authority) {
 			record(
 				profiles.new.identity,
@@ -328,21 +346,41 @@ export function diffSemanticContract(request) {
 	}
 
 	if (mappings?.old && mappings?.new) {
+		// The inputs are *mapping documents*, valid against
+		// `mapping.schema.json`, so the fields read here are the ones such a
+		// document actually carries: the transformation's preservation level and
+		// its declared omissions. Reading an invented shape would make the
+		// classifier agree only with fixtures written to match it.
 		const oldMappings = byIdentity(mappings.old);
 		for (const [identity, next] of byIdentity(mappings.new)) {
 			const previous = oldMappings.get(identity);
 			if (!previous) continue;
-			if (previous.editDirection !== next.editDirection) {
+			const before = previous.transformation ?? {};
+			const now = next.transformation ?? {};
+			if (before.kind !== now.kind || before.purity !== now.purity) {
 				record(
 					identity,
 					"mapping",
 					"conditional",
-					`edit direction changed from ${previous.editDirection} to ${next.editDirection}`,
+					`the transformation changed from ${before.kind}/${before.purity} to ${now.kind}/${now.purity}`,
 				);
 			}
-			const undeclared = (next.omitted ?? []).filter(
-				(item) => !(next.omittedIdentities ?? []).includes(item),
-			);
+			if ((before.preservation ?? null) !== (now.preservation ?? null)) {
+				record(
+					identity,
+					"mapping",
+					"conditional",
+					`preservation changed from ${before.preservation ?? "none"} to ${now.preservation ?? "none"}`,
+				);
+			}
+			// Declared loss is loss the consumer was told about. Which identities a
+			// transformation *actually* drops is not something a mapping document
+			// says — it is an observation, so it arrives as its own input. Reading
+			// it out of the document would mean inventing a member the published
+			// schema forbids, and then only fixtures written to match would pass.
+			const dropped = observedLoss[identity] ?? [];
+			const declared = new Set(now.omittedIdentities ?? []);
+			const undeclared = dropped.filter((item) => !declared.has(item));
 			if (undeclared.length > 0) {
 				record(
 					identity,
@@ -509,6 +547,36 @@ function diffFields(previous, next, record, consumerPolicies, evidence) {
 				`the field's type reference changed from ${original.typeRef} to ${field.typeRef}`,
 			);
 		}
+		// Nullability and defaults are semantic values, and a change to either is
+		// a change a consumer has to handle. Leaving them out let a field become
+		// nullable under a `patch`.
+		if ((original.nullable === true) !== (field.nullable === true)) {
+			record(
+				identity,
+				"field",
+				field.nullable === true ? "conditional" : "breaking",
+				`the field became ${field.nullable === true ? "nullable" : "non-nullable"}`,
+			);
+		}
+		if (
+			original.defaultKind !== field.defaultKind ||
+			!same(original.defaultValue, field.defaultValue)
+		) {
+			record(
+				identity,
+				"field",
+				"conditional",
+				`the default changed from ${original.defaultKind} to ${field.defaultKind}`,
+			);
+		}
+		if ((original.presence ?? null) !== (field.presence ?? null)) {
+			record(
+				identity,
+				"field",
+				field.presence === "required" ? "breaking" : "additive",
+				`presence changed from ${original.presence} to ${field.presence}`,
+			);
+		}
 	}
 }
 
@@ -526,7 +594,18 @@ function diffVariants(previous, next, record, consumerPolicies, evidence) {
 		);
 	}
 	for (const [identity, variant] of after) {
-		if (before.has(identity)) continue;
+		const original = before.get(identity);
+		if (original) {
+			if (!same(original.payloadType ?? null, variant.payloadType ?? null)) {
+				record(
+					identity,
+					kind,
+					"breaking",
+					`the variant payload changed from ${original.payloadType ?? "none"} to ${variant.payloadType ?? "none"}`,
+				);
+			}
+			continue;
+		}
 		const policies = Array.isArray(consumerPolicies) ? consumerPolicies : [];
 		const closed = policies.some(
 			(policy) =>

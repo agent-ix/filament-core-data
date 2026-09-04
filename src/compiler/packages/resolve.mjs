@@ -46,7 +46,14 @@ export function parseVersion(value) {
 	};
 }
 
-/** Semantic-version precedence; a prerelease sorts below its release. */
+/**
+ * Semantic-version precedence (SemVer 2.0.0 §11).
+ *
+ * A prerelease sorts below its release, and prerelease identifiers compare
+ * field by field: numeric ones numerically, so `alpha.2` precedes `alpha.10`,
+ * which a string comparison gets backwards; a numeric identifier ranks below an
+ * alphanumeric one; and a shorter prefix ranks below a longer one.
+ */
 export function compareVersions(left, right) {
 	for (const part of ["major", "minor", "patch"]) {
 		if (left[part] !== right[part]) return left[part] - right[part];
@@ -54,7 +61,24 @@ export function compareVersions(left, right) {
 	if (left.prerelease === right.prerelease) return 0;
 	if (left.prerelease === "") return 1;
 	if (right.prerelease === "") return -1;
-	return byCodePoint(left.prerelease, right.prerelease);
+	const a = left.prerelease.split(".");
+	const b = right.prerelease.split(".");
+	for (let index = 0; index < Math.max(a.length, b.length); index += 1) {
+		if (a[index] === undefined) return -1;
+		if (b[index] === undefined) return 1;
+		const numericA = /^\d+$/.test(a[index]);
+		const numericB = /^\d+$/.test(b[index]);
+		if (numericA && numericB) {
+			if (Number(a[index]) !== Number(b[index])) {
+				return Number(a[index]) - Number(b[index]);
+			}
+			continue;
+		}
+		if (numericA !== numericB) return numericA ? -1 : 1;
+		const comparison = byCodePoint(a[index], b[index]);
+		if (comparison !== 0) return comparison;
+	}
+	return 0;
 }
 
 /**
@@ -78,6 +102,19 @@ export function satisfies(version, constraint) {
 		return compareVersions(version, constraint.version) === 0;
 	}
 	const base = constraint.version;
+	// A caret range admits a prerelease only when the constraint itself names
+	// one, and then only of the same release. `^1.2.0` selecting `1.3.0-beta`
+	// would resolve a package to something its author has not released.
+	if (version.prerelease !== "") {
+		if (base.prerelease === "") return false;
+		if (
+			version.major !== base.major ||
+			version.minor !== base.minor ||
+			version.patch !== base.patch
+		) {
+			return false;
+		}
+	}
 	if (compareVersions(version, base) < 0) return false;
 	if (base.major > 0) return version.major === base.major;
 	if (base.minor > 0)
@@ -98,25 +135,52 @@ function sourceIdentityFor(identity, kind) {
  */
 function discoverCandidates(host, searchPath, limits, diagnostics) {
 	const candidates = new Map();
+	const rejected = [];
 	for (const [order, directory] of searchPath.entries()) {
 		const root = resolve(directory);
 		if (!host.isDirectory(root)) continue;
 		for (const name of host.readDir(root)) {
 			const packageRoot = resolve(root, name);
-			if (!host.isDirectory(packageRoot)) continue;
+			// A search-directory entry whose real path is outside the root — a
+			// symlink out of the tree — is refused and reported, not skipped and
+			// not allowed to abort the whole resolution.
+			try {
+				if (!host.isDirectory(packageRoot)) continue;
+			} catch (error) {
+				diagnostics.push(
+					diagnostic(DIAGNOSTIC_CODES.PATH_ESCAPE, {
+						message: `${fragment(name)} in a declared search directory resolves outside it: ${fragment(error?.message ?? String(error))}`,
+					}),
+				);
+				continue;
+			}
 			const manifestPath = resolve(packageRoot, "package-manifest.json");
-			if (!host.exists(manifestPath)) continue;
+			let present = false;
+			try {
+				present = host.exists(manifestPath);
+			} catch {
+				continue;
+			}
+			if (!present) continue;
 			const read = readDocument(host, {
 				host,
 				absolutePath: manifestPath,
 				packageRoot,
 				schemaName: "package-manifest.schema.json",
 				entry: DIAGNOSTIC_CODES.INVALID_MANIFEST,
-				sourceIdentity: sourceIdentityFor("agent-ix/unresolved", "manifest"),
+				sourceIdentity: (value) =>
+					sourceIdentityFor(
+						value?.package?.identity ?? "agent-ix/unresolved",
+						"manifest",
+					),
 				limits,
 			});
 			if (!read.value) {
-				diagnostics.push(...read.diagnostics);
+				// A candidate this compile never imports is not this compile's
+				// problem: its defects are collected and reported only if it is
+				// selected. Failing a build on an unrelated package in a shared
+				// search directory would make one bad package block every other.
+				rejected.push({ packageRoot, diagnostics: read.diagnostics });
 				continue;
 			}
 			const identity = read.value.package.identity;
@@ -140,16 +204,30 @@ function discoverCandidates(host, searchPath, limits, diagnostics) {
 				candidates.set(key, entry);
 				continue;
 			}
-			const existingDigest = contentDigest(
-				host,
-				existing.packageRoot,
-				existing.manifest,
-			);
-			const currentDigest = contentDigest(host, packageRoot, read.value);
+			let existingDigest;
+			let currentDigest;
+			try {
+				existingDigest = contentDigest(
+					host,
+					existing.packageRoot,
+					existing.manifest,
+				);
+				currentDigest = contentDigest(host, packageRoot, read.value);
+			} catch {
+				// A candidate whose sources cannot be read is reported when it is
+				// selected, at the manifest that declared the root; comparing two
+				// digests one of which does not exist would report the wrong defect.
+				continue;
+			}
 			if (existingDigest !== currentDigest) {
+				// Sorted, so the message does not depend on which directory the host
+				// happened to enumerate first.
+				const [first, second] = [existingDigest, currentDigest].sort(
+					byCodePoint,
+				);
 				diagnostics.push(
 					diagnostic(DIAGNOSTIC_CODES.DIGEST_CONFLICT, {
-						message: `${fragment(key)} resolves to two different content digests: ${existingDigest} and ${currentDigest}`,
+						message: `${fragment(key)} resolves to two different content digests: ${first} and ${second}`,
 						locus: existing.locate("/package"),
 						related: [read.locate("/package")],
 					}),
@@ -157,7 +235,7 @@ function discoverCandidates(host, searchPath, limits, diagnostics) {
 			}
 		}
 	}
-	return candidates;
+	return { candidates, rejected };
 }
 
 /** Groups candidates by identity, highest version first, declared order breaking ties. */
@@ -248,7 +326,11 @@ export function resolvePackageGraph(request) {
 		packageRoot,
 		schemaName: "package-manifest.schema.json",
 		entry: DIAGNOSTIC_CODES.INVALID_MANIFEST,
-		sourceIdentity: "ix://agent-ix/unresolved/source/manifest",
+		sourceIdentity: (value) =>
+			sourceIdentityFor(
+				value?.package?.identity ?? "agent-ix/unresolved",
+				"manifest",
+			),
 		limits,
 	});
 	if (!rootRead.value) {
@@ -257,7 +339,12 @@ export function resolvePackageGraph(request) {
 	const rootIdentity = rootRead.value.package.identity;
 	const rootLocus = (pointer) => rootRead.locate(pointer);
 
-	const candidates = discoverCandidates(host, searchPath, limits, diagnostics);
+	const { candidates, rejected } = discoverCandidates(
+		host,
+		searchPath,
+		limits,
+		diagnostics,
+	);
 	const grouped = byIdentity(candidates);
 
 	// The root is always in the graph, whether or not a search directory also
@@ -277,6 +364,15 @@ export function resolvePackageGraph(request) {
 
 	const selected = new Map([[rootIdentity, rootEntry]]);
 	const constraints = new Map();
+
+	/** The highest candidate satisfying every constraint recorded so far. */
+	const select = (identity, offered) => {
+		const applicable = constraints.get(identity) ?? [];
+		const matching = offered.filter((candidate) =>
+			applicable.every((item) => satisfies(candidate.version, item.constraint)),
+		);
+		return matching[0];
+	};
 	const edges = new Map();
 	const queue = [rootEntry];
 	while (queue.length > 0) {
@@ -315,6 +411,10 @@ export function resolvePackageGraph(request) {
 					diagnostic(DIAGNOSTIC_CODES.IMPORT_NOT_FOUND, {
 						message: `no search directory supplies ${fragment(entry.packageIdentity)}`,
 						locus,
+						// A rejected candidate is the likely reason: nesting it says
+						// which package could not be read rather than only that none
+						// was found.
+						causes: rejected.flatMap((item) => item.diagnostics),
 					}),
 				);
 				continue;
@@ -331,8 +431,17 @@ export function resolvePackageGraph(request) {
 				);
 				continue;
 			}
-			const chosen = matching[0];
-			if (!selected.has(entry.packageIdentity)) {
+			// The selection is against *every* constraint gathered so far, not the
+			// first one seen. Choosing on the first and reporting a conflict later
+			// makes the resolved version depend on the order the manifests were
+			// walked, which is the ordering independence FR-047 promises.
+			const chosen = select(entry.packageIdentity, offered);
+			if (!chosen) continue;
+			const previous = selected.get(entry.packageIdentity);
+			if (!previous) {
+				selected.set(entry.packageIdentity, chosen);
+				queue.push(chosen);
+			} else if (previous.versionText !== chosen.versionText) {
 				selected.set(entry.packageIdentity, chosen);
 				queue.push(chosen);
 			}
@@ -371,7 +480,19 @@ export function resolvePackageGraph(request) {
 		byCodePoint(left.identity, right.identity),
 	)) {
 		const seen = new Set();
+		const seenIdentities = new Set();
 		for (const [index, item] of (entry.manifest.exports ?? []).entries()) {
+			// Both keys matter: two names for one identity is as much a duplicate
+			// as two entries under one name, and only the second was caught.
+			if (seenIdentities.has(item.typeIdentity)) {
+				diagnostics.push(
+					diagnostic(DIAGNOSTIC_CODES.DUPLICATE_EXPORT, {
+						message: `${fragment(entry.identity)} exports ${fragment(item.typeIdentity)} under two names`,
+						locus: entry.locate(`/exports/${index}`),
+					}),
+				);
+			}
+			seenIdentities.add(item.typeIdentity);
 			if (seen.has(item.name)) {
 				diagnostics.push(
 					diagnostic(DIAGNOSTIC_CODES.DUPLICATE_EXPORT, {
@@ -579,12 +700,36 @@ export function resolvePackageGraph(request) {
 		}
 	}
 
+	/**
+	 * A source root the declared roots refuse, or a document too deep to
+	 * canonicalise, is a diagnostic at the manifest that declared it — never a
+	 * package that quietly digests nothing.
+	 */
+	const digestOf = (entry) => {
+		try {
+			return contentDigest(host, entry.packageRoot, entry.manifest);
+		} catch (error) {
+			diagnostics.push(
+				diagnostic(
+					error?.name === "CanonicalLimitError"
+						? DIAGNOSTIC_CODES.LIMIT_MAX_DEPTH
+						: DIAGNOSTIC_CODES.PATH_ESCAPE,
+					{
+						message: `${fragment(entry.identity)}: ${fragment(error?.message ?? String(error))}`,
+						locus: entry.locate("/sourceRoots"),
+					},
+				),
+			);
+			return undefined;
+		}
+	};
+
 	const packages = [...selected.values()]
 		.sort((left, right) => byCodePoint(left.identity, right.identity))
 		.map((entry) => ({
 			identity: entry.identity,
 			version: entry.versionText,
-			contentDigest: contentDigest(host, entry.packageRoot, entry.manifest),
+			contentDigest: digestOf(entry),
 			sourceIdentity: sourceIdentityFor(entry.identity, "typespec"),
 			dependencies: [
 				...new Set(
@@ -592,6 +737,9 @@ export function resolvePackageGraph(request) {
 				),
 			].sort(byCodePoint),
 			packageRoot: entry.packageRoot,
+			// Every resolved package's manifest is an input the fingerprint covers.
+			// Carrying only the root's would let an imported package change its
+			// exports, its imports or its profiles without moving the fingerprint.
 			manifest: entry.manifest,
 			manifestDigest: entry.manifestDigest,
 			manifestPath: entry.manifestPath,

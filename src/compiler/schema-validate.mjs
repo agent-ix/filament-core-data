@@ -14,12 +14,19 @@ import { REPO_ROOT } from "./packages/lock.mjs";
 
 const SCHEMA_BASE = "https://schemas.agent-ix.org/filament-core-data/v1/";
 
-let cached;
+const cached = new Map();
 
-/** Compiles the schema set once per process, reading through the injected host. */
+/**
+ * Compiles the schema set once per root, reading through the injected host.
+ *
+ * Keyed by root: a single process-wide cache would return whichever root asked
+ * first, so a caller that passed a different tree would be validating against
+ * the wrong schemas without any sign of it.
+ */
 export function schemaValidators(host, root = REPO_ROOT) {
-	if (cached) return cached;
-	const directory = resolve(root, "schema/semantic/v1");
+	const key = resolve(root);
+	if (cached.has(key)) return cached.get(key);
+	const directory = resolve(key, "schema/semantic/v1");
 	const ajv = new Ajv2020({
 		allErrors: true,
 		strict: true,
@@ -32,7 +39,7 @@ export function schemaValidators(host, root = REPO_ROOT) {
 	for (const name of names) {
 		ajv.addSchema(JSON.parse(host.readText(resolve(directory, name))));
 	}
-	cached = {
+	const validators = {
 		/** Returns `[]` when the document is valid, else ajv's error list. */
 		errors(schemaName, document) {
 			const validate = ajv.getSchema(`${SCHEMA_BASE}${schemaName}`);
@@ -41,12 +48,13 @@ export function schemaValidators(host, root = REPO_ROOT) {
 		},
 		names,
 	};
-	return cached;
+	cached.set(key, validators);
+	return validators;
 }
 
-/** Test seam: forget the compiled schema set so a later call recompiles it. */
+/** Test seam: forget the compiled schema sets so a later call recompiles them. */
 export function resetSchemaValidators() {
-	cached = undefined;
+	cached.clear();
 }
 
 /**

@@ -30,8 +30,14 @@ import {
 	getSourceLocation,
 	navigateProgram,
 } from "@typespec/compiler";
-import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../../diagnostics.mjs";
 import {
+	DEFAULT_LIMITS,
+	DIAGNOSTIC_CODES,
+	diagnostic,
+	fragment,
+} from "../../diagnostics.mjs";
+import {
+	capitalize,
 	constraintAliasIdentity,
 	constraintDiagnosticCode,
 	kernelIdentity,
@@ -39,7 +45,10 @@ import {
 	slug,
 } from "./identity.mjs";
 import { applies } from "../../ir/applicability.mjs";
-import { STATE } from "./lib/lib.mjs";
+import {
+	defects as decoratorDefects,
+	read as readState,
+} from "./vocabulary.mjs";
 
 const TARGET_NAMESPACE = "AgentIx.Semantic";
 
@@ -72,7 +81,16 @@ const BUILTIN_SCALARS = new Map([
 	["duration", "duration"],
 ]);
 
-/** IR scalar to the FR-032 kernel scalar a package-local definition is named for. */
+/**
+ * IR scalar to the FR-032 kernel scalar a package-local definition is named for.
+ *
+ * The table is the shared vocabulary, so it is complete against FR-032 rather
+ * than trimmed to what this frontend reaches. `uuid` is here and unreachable
+ * from TypeSpec: no built-in maps to it, and a package that wants one declares a
+ * scalar with a `format` constraint. `JsonObject` is deliberately absent — it is
+ * a *record* in the IR, not a scalar, and FR-034 lowers it in the semantic-core
+ * path where a declaration can name it.
+ */
 const KERNEL_NAMES = new Map([
 	["boolean", "Boolean"],
 	["integer", "Integer"],
@@ -127,7 +145,7 @@ export function createLowering(options) {
 		packageRoots = [],
 	} = options;
 	const diagnostics = [];
-	const state = (key, target) => program.stateMap(STATE[key]).get(target);
+	const state = (key, target) => readState(program, key, target);
 
 	const posix = (path) => path.split(/[\\/]/).join("/");
 
@@ -326,7 +344,7 @@ export function lowerProgram(options) {
 	// Decorator argument defects and second applications are collected while the
 	// program compiles; they surface here so they carry the same registry codes,
 	// the same locus discipline and the same ordering as everything else.
-	for (const defect of program.stateMap(STATE.defects).get("all") ?? []) {
+	for (const defect of decoratorDefects(program)) {
 		if (defect.kind === "duplicate") {
 			// `DecoratorContext` exposes the decorated target, not the application,
 			// so both applications share one node. The applications are recoverable
@@ -362,7 +380,10 @@ export function lowerProgram(options) {
 		);
 	}
 
-	const kernels = new Map();
+	// A kernel definition is emitted the moment a member type needs it, not at
+	// the end. `resolvedKindOf` looks definitions up by identity, so a definition
+	// that arrives later leaves every constraint and every `@unit` on a
+	// built-in-typed field resolving to nothing — and then refused, wrongly.
 	const useKernel = (irScalar, at) => {
 		const name = KERNEL_NAMES.get(irScalar);
 		if (!name) {
@@ -374,7 +395,7 @@ export function lowerProgram(options) {
 			return undefined;
 		}
 		const identity = kernelIdentity(packageIdentity, name);
-		if (!kernels.has(identity)) kernels.set(identity, { name, irScalar });
+		if (!definitions.has(identity)) emitKernel(identity, name, irScalar);
 		return identity;
 	};
 
@@ -485,6 +506,34 @@ export function lowerProgram(options) {
 		return definition;
 	};
 
+	/** The package-local definition FR-034 mints for a kernel scalar. */
+	const emitKernel = (identity, name, irScalar) =>
+		emit({
+			identity,
+			displayName: name,
+			kind: "scalar",
+			roles: [],
+			origin: {
+				generated: {
+					generatorIdentity:
+						"ix://agent-ix/filament-core-data/compiler/typespec",
+					generatorVersion: "1.1.0",
+					inputIdentities: [sourceIdentity],
+				},
+			},
+			constraints: [],
+			extensions: [
+				{
+					identity: `${EXTENSION_BASE}/kernel-scalar`,
+					version: "1.0.0",
+					required: false,
+					payload: { name },
+				},
+			],
+			unknownPolicy: "reject",
+			scalar: irScalar,
+		});
+
 	/** Resolves a definition's kind and scalar, following aliases. */
 	const resolvedKindOf = (identity, seen = new Set()) => {
 		if (seen.has(identity)) return undefined;
@@ -494,37 +543,6 @@ export function lowerProgram(options) {
 		if (definition.kind === "alias")
 			return resolvedKindOf(definition.target, seen);
 		return { kind: definition.kind, scalar: definition.scalar };
-	};
-
-	const attach = (
-		ownerName,
-		ownerIdentity,
-		target,
-		subjectParts,
-		constraints,
-		appliesTo,
-	) => {
-		const emitted = [];
-		for (const item of constraints) {
-			const identity = mintIdentity(packageIdentity, "constraint", [
-				...subjectParts,
-				item.keyword,
-			]);
-			emitted.push({
-				identity,
-				keyword: item.keyword,
-				operands: item.operands,
-				appliesTo,
-				diagnosticCode: constraintDiagnosticCode(
-					packageIdentity,
-					subjectParts,
-					item.keyword,
-				),
-				origin: context.originOf(target),
-				subject: item,
-			});
-		}
-		return emitted;
 	};
 
 	// ---- pass one: every declaration becomes a definition -------------------
@@ -688,8 +706,9 @@ export function lowerProgram(options) {
 	}
 
 	// ---- pass two: record members, which need every definition to resolve ----
-	const importedExports = options.importedExports ?? new Set();
-	const resolvesElsewhere = (identity) => importedExports.has(identity);
+	// A member type may resolve to an export of an imported package rather than
+	// to a declaration in this one.
+	const importedExports = new Set(options.importedExports ?? []);
 
 	/** Lowers one model property (or operation parameter) to an IR field node. */
 	const lowerField = (declaration, property, identityParts, ownerParts) => {
@@ -760,6 +779,7 @@ export function lowerProgram(options) {
 				ownerParts[0],
 				property.name,
 			);
+			const aliasName = `${ownerParts[0]}${capitalize(property.name)}`;
 			const resolved = resolvedKindOf(typeRef) ?? { kind: "record" };
 			const attached = [];
 			for (const item of constraints) {
@@ -791,7 +811,7 @@ export function lowerProgram(options) {
 			if (attached.length > 0) {
 				emit({
 					identity: aliasIdentity,
-					displayName: `${ownerParts[0]}${property.name}`,
+					displayName: aliasName,
 					kind: "alias",
 					roles: [],
 					origin: context.originOf(property),
@@ -1093,37 +1113,36 @@ export function lowerProgram(options) {
 		definition.constraints = attached.sort(byIdentity);
 	}
 
-	// Package-local kernel scalar definitions, minted for every built-in a member
-	// used directly (FR-034).
-	for (const [identity, kernel] of kernels) {
-		if (definitions.has(identity)) continue;
-		emit({
-			identity,
-			displayName: kernel.name,
-			kind: kernel.name === "JsonObject" ? "record" : "scalar",
-			roles: [],
-			origin: {
-				generated: {
-					generatorIdentity:
-						"ix://agent-ix/filament-core-data/compiler/typespec",
-					generatorVersion: "1.1.0",
-					inputIdentities: [sourceIdentity],
-				},
-			},
-			constraints: [],
-			extensions: [
-				{
-					identity: `${EXTENSION_BASE}/kernel-scalar`,
-					version: "1.0.0",
-					required: false,
-					payload: { name: kernel.name },
-				},
-			],
-			unknownPolicy: kernel.name === "JsonObject" ? "preserve" : "reject",
-			...(kernel.name === "JsonObject"
-				? { fields: [] }
-				: { scalar: kernel.irScalar }),
-		});
+	// The emitted document is bounded: a package that declares more definitions
+	// than `maxNodes`, or a list longer than `maxCollectionItems`, is refused
+	// rather than compiled into a document no reader will accept.
+	const limits = options.limits ?? DEFAULT_LIMITS;
+	if (definitions.size > limits.maxNodes) {
+		context.raise(
+			DIAGNOSTIC_CODES.LIMIT_MAX_NODES,
+			`the package declares ${definitions.size} types, over the maxNodes limit of ${limits.maxNodes}`,
+		);
+	}
+	for (const definition of definitions.values()) {
+		for (const key of [
+			"fields",
+			"variants",
+			"constraints",
+			"relationships",
+			"operations",
+			"clauses",
+			"extensions",
+		]) {
+			const list = definition[key];
+			if (!Array.isArray(list) || list.length <= limits.maxCollectionItems) {
+				continue;
+			}
+			context.raise(
+				DIAGNOSTIC_CODES.LIMIT_MAX_COLLECTION_ITEMS,
+				`${fragment(definition.displayName)} declares ${list.length} ${key}, over the maxCollectionItems limit of ${limits.maxCollectionItems}`,
+				context.locusOf(undefined) ?? undefined,
+			);
+		}
 	}
 
 	const types = [...definitions.values()].sort(byIdentity);

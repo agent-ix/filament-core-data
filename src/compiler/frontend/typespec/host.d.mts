@@ -8,6 +8,7 @@ import type { CompilerHost } from "@typespec/compiler";
 export declare function restrictedHost(options: {
 	readRoots: string[];
 	moduleRoots: string[];
+	realpath?: (path: string) => string;
 }): CompilerHost & {
 	record: {
 		reads: string[];

@@ -15,10 +15,11 @@ import { resolve } from "node:path";
 import {
 	DEFAULT_LIMITS,
 	DIAGNOSTIC_CODES,
+	applyDiagnosticLimit,
 	hasBlocking,
-	sortDiagnostics,
 } from "./diagnostics.mjs";
 import { runFrontend } from "./frontend/seam.mjs";
+import { validateIrDocument } from "./ir/schema.mjs";
 import { digest } from "./packages/canonical.mjs";
 import { buildLock, serializeLock, verifyLock } from "./packages/lock.mjs";
 import { readDocument } from "./packages/manifest.mjs";
@@ -55,10 +56,13 @@ export async function compilePackage(request) {
 	} = request;
 	const diagnostics = [];
 	const phases = [];
+	// Every return sorts and then truncates: which defects survive a busy compile
+	// must not depend on the order analysis happened to find them.
+	const report = () => applyDiagnosticLimit(diagnostics, limits.maxDiagnostics);
 	const stop = (state) => ({
 		ir: null,
 		lock: undefined,
-		diagnostics: sortDiagnostics(diagnostics),
+		diagnostics: report(),
 		state,
 		phases,
 	});
@@ -86,7 +90,9 @@ export async function compilePackage(request) {
 			absolutePath: resolve(lockPath),
 			packageRoot,
 			schemaName: "package-lock.schema.json",
-			entry: DIAGNOSTIC_CODES.STALE_LOCK,
+			// A lock that is not a lock is not a *stale* lock: `STALE_LOCK` says the
+			// inputs moved, which is a different thing for a caller to act on.
+			entry: DIAGNOSTIC_CODES.UNSUPPORTED_CANONICALIZATION,
 			sourceIdentity: `ix://${resolution.root.identity}/source/lock`,
 			limits,
 		});
@@ -122,10 +128,14 @@ export async function compilePackage(request) {
 	diagnostics.push(...result.diagnostics);
 	if (hasBlocking(diagnostics)) return stop("invalid");
 
-	// The frontend already validated its own output; naming the phase keeps the
-	// order observable and leaves room for a frontend that does not.
+	// The frontend validates its own output, and this phase validates it again
+	// against the published schema — deliberately, because the seam admits
+	// frontends this repository did not write and a phase that only names itself
+	// is not a gate.
 	phases.push("validate");
 	onPhase("validate");
+	diagnostics.push(...validateIrDocument(result.ir, { host }));
+	if (hasBlocking(diagnostics)) return stop("invalid");
 
 	phases.push("assemble");
 	onPhase("assemble");
@@ -134,7 +144,7 @@ export async function compilePackage(request) {
 		lock,
 		lockBytes,
 		resolution,
-		diagnostics: sortDiagnostics(diagnostics),
+		diagnostics: report(),
 		state: diagnostics.length > 0 ? "partial" : "success",
 		phases,
 	};

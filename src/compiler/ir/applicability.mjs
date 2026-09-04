@@ -60,7 +60,19 @@ export const NAMESPACED_LANGUAGE =
  * `kind` and, for a scalar, whose scalar name is `scalar`.
  */
 export function applies(keyword, kind, scalar) {
+	if (!isKeyword(keyword)) return false;
 	const allowed = KEYWORD_APPLICABILITY[keyword];
-	if (!allowed) return false;
 	return allowed.includes(kind === "scalar" ? String(scalar) : kind);
+}
+
+/**
+ * True when `keyword` is one of the eleven.
+ *
+ * `keyword in KEYWORD_APPLICABILITY` would say yes to `constructor`,
+ * `toString`, and every other `Object.prototype` member, and the caller would
+ * then index the object and get a function. An input that reaches a `TypeError`
+ * is an input that crashed the compiler, which FR-045-CON-4 forbids outright.
+ */
+export function isKeyword(keyword) {
+	return Object.hasOwn(KEYWORD_APPLICABILITY, String(keyword));
 }

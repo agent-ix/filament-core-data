@@ -628,21 +628,72 @@
 		"mappings": {
 			"old": [
 				{
+					"contractVersion": "1.0.0",
 					"identity": "ix://agent-ix/assurance/mapping/markdown",
-					"editDirection": "read-only",
-					"omitted": [],
-					"omittedIdentities": []
+					"version": "1.0.0",
+					"sourceType": "ix://agent-ix/assurance/type/Artifact",
+					"targetType": "ix://agent-ix/assurance/type/Text",
+					"representation": "markdown",
+					"correspondences": [
+						{
+							"sourceIdentity": "ix://agent-ix/assurance/type/Artifact",
+							"targetLocus": "body"
+						}
+					],
+					"transformation": {
+						"kind": "rendering",
+						"purity": "pure",
+						"deterministic": true,
+						"externalReads": [],
+						"externalWrites": [],
+						"failureStates": [
+							"invalid"
+						],
+						"retryIdempotent": true,
+						"preservation": "declared-lossy",
+						"omittedIdentities": [
+							"ix://agent-ix/assurance/type/Artifact"
+						],
+						"presentationMediaType": "text/markdown"
+					}
 				}
 			],
 			"new": [
 				{
+					"contractVersion": "1.0.0",
 					"identity": "ix://agent-ix/assurance/mapping/markdown",
-					"editDirection": "read-only",
-					"omitted": [
-						"ix://agent-ix/assurance/field/Artifact-tags"
+					"version": "1.0.0",
+					"sourceType": "ix://agent-ix/assurance/type/Artifact",
+					"targetType": "ix://agent-ix/assurance/type/Text",
+					"representation": "markdown",
+					"correspondences": [
+						{
+							"sourceIdentity": "ix://agent-ix/assurance/type/Artifact",
+							"targetLocus": "body"
+						}
 					],
-					"omittedIdentities": []
+					"transformation": {
+						"kind": "rendering",
+						"purity": "pure",
+						"deterministic": true,
+						"externalReads": [],
+						"externalWrites": [],
+						"failureStates": [
+							"invalid"
+						],
+						"retryIdempotent": true,
+						"preservation": "declared-lossy",
+						"omittedIdentities": [
+							"ix://agent-ix/assurance/type/Artifact"
+						],
+						"presentationMediaType": "text/markdown"
+					}
 				}
+			]
+		},
+		"observedLoss": {
+			"ix://agent-ix/assurance/mapping/markdown": [
+				"ix://agent-ix/assurance/field/Artifact-tags"
 			]
 		}
 	}

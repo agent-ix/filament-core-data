@@ -57,15 +57,26 @@ export function kernelIdentity(packageIdentity, kernelName) {
  */
 export function constraintAliasIdentity(packageIdentity, owner, field) {
 	return mintIdentity(packageIdentity, "type", [
-		`${slug(owner)}${slug(field)}`,
+		`${slug(owner)}${capitalize(slug(field))}`,
 	]);
 }
 
+/** `code` becomes `Code`; FR-034 writes the minted alias as `<Name><Field>`. */
+export function capitalize(value) {
+	const text = String(value);
+	return text.length === 0 ? text : text[0].toUpperCase() + text.slice(1);
+}
+
+/**
+ * `artifact-code` becomes `ARTIFACT_CODE`.
+ *
+ * A camel-case keyword is *not* split: FR-034 writes the code as
+ * `<NAME>_<FIELD>_<KEYWORD>`, so `minLength` is `MINLENGTH`. Inserting a
+ * separator there would read better and would disagree with the semantic-core
+ * lowering, and agreement is the point.
+ */
 function upperSnake(value) {
-	return slug(value)
-		.replace(/([a-z0-9])([A-Z])/g, "$1-$2")
-		.replace(/-+/g, "_")
-		.toUpperCase();
+	return slug(value).replace(/-+/g, "_").toUpperCase();
 }
 
 /**
@@ -83,22 +94,4 @@ export function constraintDiagnosticCode(packageIdentity, parts, keyword) {
 	const namespace = slug(name).toLowerCase();
 	const tail = [...parts, keyword].map(upperSnake).filter(Boolean).join("_");
 	return `agent-ix.${namespace}.${tail}`;
-}
-
-/**
- * Detects a slug collision: two distinct declaration names that mint one
- * identity. Returns the colliding pairs, so the caller can raise
- * `UNSLUGGABLE_NAME` at the later declaration rather than emitting a document
- * in which two things share a name.
- */
-export function slugCollisions(names) {
-	const seen = new Map();
-	const collisions = [];
-	for (const name of names) {
-		const key = slug(name);
-		const first = seen.get(key);
-		if (first !== undefined && first !== name) collisions.push([first, name]);
-		else if (first === undefined) seen.set(key, name);
-	}
-	return collisions;
 }

@@ -14,6 +14,7 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { changedPathsFrom } from "./changed-paths.js";
 import {
 	SEMANTIC_IR_SCHEMA_VERSION,
 	compileSemanticIr,
@@ -71,23 +72,7 @@ function git(...args: string[]): string {
 }
 
 function changedPaths(): string[] {
-	const committed = git(
-		"diff",
-		"--no-renames",
-		"--name-only",
-		"origin/main...HEAD",
-	);
-	const working = execFileSync(
-		"git",
-		["status", "--porcelain", "--untracked-files=all"],
-		{ cwd: root, encoding: "utf8" },
-	)
-		.split("\n")
-		.filter((line) => line.trim().length > 0)
-		.map((line) => line.slice(3).trim());
-	return [...new Set([...committed.split("\n"), ...working])].filter(
-		(path) => path.length > 0,
-	);
+	return changedPathsFrom(root, "origin/main");
 }
 
 function existsAtMain(path: string): boolean {
@@ -1282,7 +1267,10 @@ describe("determinism and non-disruption (NFR-017, NFR-018)", () => {
 		// protect the issue #9, #34 and #35 fixtures, which stay prohibited by
 		// name below; `test/fixtures/compiler/` is issue #19's own tree.
 		"test/fixtures/compiler/",
-		"scripts/",
+		"scripts/test-matrix-summary.mjs",
+		"scripts/build-compatibility-cases.mjs",
+		"scripts/build-evolution-goldens.mjs",
+		"scripts/build-compiler-docs.mjs",
 		"docs/semantic-data-system/compiler-diagnostics.md",
 		"docs/semantic-data-system/ir-compatibility-policy.md",
 		"biome.json",

@@ -625,19 +625,31 @@
 		"extensions": []
 	},
 	"request": {
-		"mappings": {
-			"old": [
-				{
-					"identity": "ix://agent-ix/assurance/mapping/markdown",
-					"editDirection": "read-only"
-				}
-			],
-			"new": [
-				{
-					"identity": "ix://agent-ix/assurance/mapping/markdown",
-					"editDirection": "bidirectional"
-				}
-			]
+		"profiles": {
+			"old": {
+				"contractVersion": "1.0.0",
+				"identity": "ix://agent-ix/assurance/profile/default",
+				"version": "1.0.0",
+				"authority": "semantic-source",
+				"editDirection": "read-only",
+				"roundTrip": "semantic-lossless",
+				"unknownPolicy": "preserve",
+				"allowedOmissions": [],
+				"enrichment": false,
+				"materializationLifetime": "run"
+			},
+			"new": {
+				"contractVersion": "1.0.0",
+				"identity": "ix://agent-ix/assurance/profile/default",
+				"version": "1.0.0",
+				"authority": "semantic-source",
+				"editDirection": "bidirectional",
+				"roundTrip": "semantic-lossless",
+				"unknownPolicy": "preserve",
+				"allowedOmissions": [],
+				"enrichment": false,
+				"materializationLifetime": "run"
+			}
 		}
 	}
 }

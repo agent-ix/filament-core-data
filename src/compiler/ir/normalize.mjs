@@ -41,8 +41,8 @@ function asArray(value) {
 }
 
 /** The canonical byte form of an IR document, with its sets identity-sorted. */
-export function canonicalIr(document) {
-	return canonicalize(document, { sets: IDENTITY_SETS });
+export function canonicalIr(document, options = {}) {
+	return canonicalize(document, { sets: IDENTITY_SETS, ...options });
 }
 
 /**
@@ -50,8 +50,8 @@ export function canonicalIr(document) {
  * operation parameter carries an explicit `multiplicity`, `presence` and
  * `nullable` before canonicalisation.
  */
-export function normalizeIr(document) {
-	if (!isObject(document)) return canonicalIr(document);
+export function normalizeIr(document, options = {}) {
+	if (!isObject(document)) return canonicalIr(document, options);
 	const copy = structuredClone(document);
 	if (copy.contractVersion === "1.1.0") {
 		const materialize = (field) => {
@@ -70,12 +70,23 @@ export function normalizeIr(document) {
 			}
 		}
 	}
-	return canonicalIr(copy);
+	return canonicalIr(copy, options);
 }
 
-/** `sha256:<hex>` over the normalized serialization. */
-export function fingerprintIr(document) {
-	return digest(normalizeIr(document));
+/**
+ * `sha256:<hex>` over the normalized serialization.
+ *
+ * A document nested past `maxDepth` cannot be canonicalised, and this is a
+ * published symbol, so the bound surfaces as a value a caller can test rather
+ * than as an exception it did not ask for.
+ */
+export function fingerprintIr(document, options = {}) {
+	try {
+		return digest(normalizeIr(document, options));
+	} catch (error) {
+		if (error?.name !== "CanonicalLimitError") throw error;
+		return undefined;
+	}
 }
 
 /** The bytes the CLI writes for an IR document: tab-indented JSON, one newline. */

@@ -89,7 +89,6 @@ export function createHost(options = {}) {
 		refusedModules: [],
 		writes: [],
 		refusedWrites: [],
-		directRead: 0,
 	};
 
 	const realOf = (path) => {
@@ -101,9 +100,14 @@ export function createHost(options = {}) {
 		}
 	};
 
+	if (readRoots.length === 0) {
+		// A host with no roots would confine nothing while looking as though it
+		// did, which is worse than no host at all.
+		throw new TypeError("createHost requires at least one read root");
+	}
+
 	const allowRead = (path) => {
 		const real = realOf(path);
-		if (readRoots.length === 0) return real;
 		if (readRoots.some((root) => within(root, real))) return real;
 		record.refusedReads.push(toPosix(real));
 		throw new PathEscapeError(toPosix(real));
@@ -124,16 +128,32 @@ export function createHost(options = {}) {
 		digestFile(path) {
 			return `sha256:${createHash("sha256").update(this.readBytes(path)).digest("hex")}`;
 		},
-		exists(path) {
+		/** The real path of `path`, following symlinks; the caller's own resolver. */
+		realpathOf(path) {
+			return realOf(path);
+		},
+		/** The declared size of `path`, without reading it. */
+		sizeOf(path) {
 			try {
-				return existsSync(allowRead(path));
+				return statSync(allowRead(path)).size;
 			} catch {
-				return false;
+				return undefined;
 			}
 		},
+		/** True when `path` exists. A refused path throws rather than reads false. */
+		exists(path) {
+			return existsSync(allowRead(path));
+		},
+		/**
+		 * True when `path` is a directory. A path that is simply absent is
+		 * `false`; a path the roots refuse is an error the caller must report.
+		 * Swallowing the refusal here made `"sourceRoots": ["../../etc"]` compile
+		 * with no diagnostic at all and digest the empty set.
+		 */
 		isDirectory(path) {
+			const real = allowRead(path);
 			try {
-				return statSync(allowRead(path)).isDirectory();
+				return statSync(real).isDirectory();
 			} catch {
 				return false;
 			}
@@ -153,7 +173,13 @@ export function createHost(options = {}) {
 		/** Every file beneath `path`, as root-relative POSIX paths, in code-point order. */
 		walk(path, root = path) {
 			const out = [];
+			// A symlinked directory that points at an ancestor would make this walk
+			// run forever; visiting each real path once bounds it.
+			const seen = new Set();
 			const visit = (current) => {
+				const real = realOf(current);
+				if (seen.has(real)) return;
+				seen.add(real);
 				for (const name of this.readDir(current)) {
 					const child = resolve(current, name);
 					if (this.isDirectory(child)) visit(child);
@@ -206,14 +232,21 @@ export function createHost(options = {}) {
 	};
 }
 
-let repository;
+const repositories = new Map();
 
 /**
- * A host scoped to this repository, for callers that read a document off disk
- * with no compile in progress — the IR schema loader, and the tests. A compile
- * always uses the host the CLI constructs and passes down.
+ * A host scoped to one repository root, for callers that read a document off
+ * disk with no compile in progress — the IR schema loader, and the tests. A
+ * compile always uses the host the CLI constructs and passes down.
+ *
+ * Keyed by root rather than cached once: a single cached instance would serve
+ * whichever root happened to ask first, and a test that then passes a different
+ * root would be measuring the first one.
  */
 export function repositoryHost(root) {
-	if (!repository) repository = createHost({ readRoots: [root] });
-	return repository;
+	const key = resolve(root);
+	if (!repositories.has(key)) {
+		repositories.set(key, createHost({ readRoots: [key] }));
+	}
+	return repositories.get(key);
 }

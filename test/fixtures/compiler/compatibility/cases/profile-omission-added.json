@@ -627,16 +627,30 @@
 	"request": {
 		"profiles": {
 			"old": {
+				"contractVersion": "1.0.0",
 				"identity": "ix://agent-ix/assurance/profile/default",
+				"version": "1.0.0",
 				"authority": "semantic-source",
-				"allowedOmissions": []
+				"editDirection": "read-only",
+				"roundTrip": "semantic-lossless",
+				"unknownPolicy": "preserve",
+				"allowedOmissions": [],
+				"enrichment": false,
+				"materializationLifetime": "run"
 			},
 			"new": {
+				"contractVersion": "1.0.0",
 				"identity": "ix://agent-ix/assurance/profile/default",
+				"version": "1.0.0",
 				"authority": "semantic-source",
+				"editDirection": "read-only",
+				"roundTrip": "semantic-lossless",
+				"unknownPolicy": "preserve",
 				"allowedOmissions": [
 					"ix://agent-ix/assurance/field/Artifact-duration"
-				]
+				],
+				"enrichment": false,
+				"materializationLifetime": "run"
 			}
 		}
 	}

@@ -4,6 +4,8 @@ export declare const SLOTS: Readonly<Record<string, readonly string[]>>;
 
 export declare function slug(value: unknown): string;
 
+export declare function capitalize(value: unknown): string;
+
 export declare function mintIdentity(
 	packageIdentity: string,
 	slot: string,
@@ -26,7 +28,3 @@ export declare function constraintDiagnosticCode(
 	parts: readonly string[],
 	keyword: string,
 ): string;
-
-export declare function slugCollisions(
-	names: readonly string[],
-): [string, string][];

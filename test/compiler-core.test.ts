@@ -460,6 +460,48 @@ describe("frontend seam and dialect registry (FR-045)", () => {
 			expect(path.startsWith(root), path).toBe(true);
 		}
 		expect(host.record.refusedReads).toEqual([]);
+		// The count NFR-019-AC-10 asks for: every read the compile performed,
+		// minus the ones an injected host observed, is zero. `node:fs` is watched
+		// directly, so a module that read the disk without going through a host
+		// shows up here rather than passing unnoticed.
+		const fs = await import("node:fs");
+		const unobserved: string[] = [];
+		const watched = ["readFileSync", "readdirSync", "statSync"] as const;
+		const saved = watched.map((name) => [name, fs.default[name]] as const);
+		try {
+			for (const name of watched) {
+				const original = fs.default[name] as (...args: unknown[]) => unknown;
+				(fs.default as Record<string, unknown>)[name] = (
+					...args: unknown[]
+				) => {
+					const path = String(args[0]);
+					if (path.startsWith(root) && !path.includes("node_modules")) {
+						unobserved.push(`${name}:${path}`);
+					}
+					return original(...args);
+				};
+			}
+			const counted = newHost([root]);
+			await compilePackage({
+				host: counted,
+				packageRoot: assurance,
+				searchPath: [],
+				profileName: "default",
+				entrypoint: "types/main.tsp",
+			});
+			// Every recorded direct call is one the host also recorded, or one the
+			// host itself made on the caller's behalf.
+			const observed = new Set(counted.record.reads);
+			const stray = unobserved.filter((entry) => {
+				const path = entry.slice(entry.indexOf(":") + 1);
+				return !observed.has(path) && !path.startsWith(compilerRoot);
+			});
+			expect(stray, "reads the injected host never saw").toEqual([]);
+		} finally {
+			for (const [name, original] of saved) {
+				(fs.default as Record<string, unknown>)[name] = original;
+			}
+		}
 	}, 120000);
 
 	/** Traces: TC-407, TC-411; FR-045-AC-10, FR-045-CON-4. */
@@ -660,7 +702,7 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			"ix://agent-ix/assurance/constraint/Text-minLength",
 		);
 		expect(constraintAliasIdentity(pkg, "Artifact", "code")).toBe(
-			"ix://agent-ix/assurance/type/Artifactcode",
+			"ix://agent-ix/assurance/type/ArtifactCode",
 		);
 		// Every identity the fixture emits matches one of those forms.
 		const identities = (compiled.ir as never as { types: Json[] }).types.map(
@@ -706,7 +748,7 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 	it("mints an alias for a constrained property and retargets the field to it", () => {
 		const types = (compiled.ir as never as { types: Json[] }).types;
 		const alias = types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifactcode",
+			(type) => type.identity === "ix://agent-ix/assurance/type/ArtifactCode",
 		);
 		expect(alias?.kind).toBe("alias");
 		expect(alias?.target).toBe("ix://agent-ix/assurance/type/Text");
@@ -1727,22 +1769,38 @@ describe("package graph resolution (FR-047)", () => {
 				"namespace AgentIx.Semantic;\n",
 			);
 			symlinkSync(resolve(outside, "smuggled"), resolve(registry, "smuggled"));
-			const host = createHost({ readRoots: [registry] });
+			// The compiler always reads its own published schemas, so the
+			// repository root is a declared root of every host a compile uses.
+			const host = createHost({
+				readRoots: [root, registry, resolve(cases, "minimal/root/minimal")],
+			});
 			const resolution = resolvePackageGraph({
 				host,
 				packageRoot: resolve(cases, "minimal/root/minimal"),
 				searchPath: [registry],
-			}) as never as { diagnostics: Diagnostic[] };
+			}) as never as {
+				diagnostics: Diagnostic[];
+				packages: { identity: string }[];
+			};
 			note(resolution.diagnostics);
 			// The smuggled package is never read: its real path is outside the root.
 			expect(
 				host.record.reads.some((path: string) => path.includes("smuggled")),
 			).toBe(false);
 			expect(host.record.refusedReads.length).toBeGreaterThan(0);
+			// The smuggled package is simply not a candidate: its real path is
+			// outside the search root, so the graph resolves without it and the
+			// import that wanted it is unresolved. Asserting "either a PATH_ESCAPE
+			// or nothing at all" would pass whichever branch the code took.
 			expect(
-				codesOf(resolution.diagnostics).includes(
-					DIAGNOSTIC_CODES.PATH_ESCAPE.code,
-				) || resolution.diagnostics.length === 0,
+				resolution.packages.map(
+					(entry: { identity: string }) => entry.identity,
+				),
+			).toEqual(["agent-ix/minimal"]);
+			expect(
+				host.record.refusedReads.some((path: string) =>
+					path.includes("smuggled"),
+				),
 			).toBe(true);
 		} finally {
 			rmSync(outside, { recursive: true, force: true });
@@ -1892,12 +1950,42 @@ describe("package graph resolution (FR-047)", () => {
 		}
 		expect(() => canonicalize(deep, { maxDepth: 100 })).not.toThrow();
 		expect(() => canonicalize(deep, { maxDepth: 10 })).toThrow(/maxDepth/);
-		note([
-			diagnostic(DIAGNOSTIC_CODES.LIMIT_MAX_DEPTH, { message: "bounded" }),
-			diagnostic(DIAGNOSTIC_CODES.LIMIT_MAX_COLLECTION_ITEMS, {
-				message: "bounded",
-			}),
-		]);
+		// And the bound is a *diagnostic* where a document can reach it, not an
+		// exception a caller has to know about.
+		const nested: Json = { contractVersion: "1.1.0", types: [] };
+		let cursor2: Json = nested;
+		for (let level = 0; level < 60; level += 1) {
+			cursor2.child = {};
+			cursor2 = cursor2.child as Json;
+		}
+		const bounded = readContractIr(nested, {
+			limits: { ...DEFAULT_LIMITS, maxDepth: 20 },
+		}) as never as Diagnostic[];
+		note(bounded);
+		expect(codesOf(bounded)).toEqual([DIAGNOSTIC_CODES.LIMIT_MAX_DEPTH.code]);
+		const wide = {
+			contractVersion: "1.1.0",
+			types: [
+				{
+					identity: "ix://a/b/type/W",
+					kind: "record",
+					fields: [],
+					clauses: Array.from({ length: 12 }, (_, index) => ({
+						identity: `ix://a/b/clause/W-c${index}`,
+						clauseId: `c${index}`,
+						language: "ocl",
+						text: "",
+					})),
+				},
+			],
+		};
+		const items = readContractIr(wide, {
+			limits: { ...DEFAULT_LIMITS, maxCollectionItems: 5 },
+		}) as never as Diagnostic[];
+		note(items);
+		expect(codesOf(items)).toContain(
+			DIAGNOSTIC_CODES.LIMIT_MAX_COLLECTION_ITEMS.code,
+		);
 	}, 60000);
 
 	/** Traces: TC-471, TC-615; FR-047-AC-16. */
@@ -1963,8 +2051,10 @@ describe("canonicalization, digests, and the lock (FR-048)", () => {
 				);
 			}
 		}
-		// The platform's own serialiser is an independent second implementation of
-		// the scalar rules, and must agree.
+		// The platform's own serialiser is a second implementation of the *scalar*
+		// rules and must agree — but it is not the oracle for the part this
+		// repository owns. Key ordering is: `JSON.stringify` preserves insertion
+		// order, so an object vector is a case where the two deliberately differ.
 		for (const group of ["numbers", "strings"] as const) {
 			for (const row of vectors[group]) {
 				expect(JSON.stringify(row.input), JSON.stringify(row.input)).toBe(
@@ -1972,6 +2062,17 @@ describe("canonicalization, digests, and the lock (FR-048)", () => {
 				);
 			}
 		}
+		const insertionOrdered = JSON.stringify({ b: 1, a: 2 });
+		expect(insertionOrdered).toBe('{"b":1,"a":2}');
+		expect(canonicalize({ b: 1, a: 2 })).toBe('{"a":2,"b":1}');
+		// A lone surrogate and a supplementary-plane key are the cases a naive
+		// implementation gets wrong; both are emitted literally, and the key
+		// ordering is by UTF-16 code unit, which puts the pair last.
+		expect(canonicalize({ "\u{1F600}": 1, z: 2 })).toBe(
+			'{"z":2,"\u{1F600}":1}',
+		);
+		expect(() => canonicalize(Number.POSITIVE_INFINITY)).toThrow(/non-finite/);
+		expect(() => canonicalize(Number.NaN)).toThrow(/non-finite/);
 		expect(digest("abc")).toBe(
 			"sha256:ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
 		);
@@ -2365,11 +2466,28 @@ describe("the diagnostic registry (FR-049)", () => {
 		expect(reverse).toEqual(forward);
 		// The unlocated diagnostic sorts last.
 		expect(forward[forward.length - 1].startsWith(":0:")).toBe(true);
-		for (const locale of ["en-US", "sv-SE"]) {
-			expect(new Intl.Collator(locale).compare("a", "b")).toBeLessThan(0);
+		// Locale independence, tested against something that is not itself: a
+		// collator that disagrees with code-point order on the very strings being
+		// sorted. Swedish sorts "z" before "ä"; code point does the opposite.
+		const localeSensitive = ["ä.tsp", "z.tsp", "Z.tsp"].map((path) =>
+			make(path, 1, DIAGNOSTIC_CODES.PATH_ESCAPE as never),
+		);
+		const sorted = sortDiagnostics(localeSensitive).map(
+			(entry: Diagnostic) => entry.locus?.path,
+		);
+		expect(sorted).toEqual(["Z.tsp", "z.tsp", "ä.tsp"]);
+		for (const locale of ["sv-SE", "de-DE", "tr-TR"]) {
+			const collated = ["ä.tsp", "z.tsp", "Z.tsp"].sort(
+				new Intl.Collator(locale).compare,
+			);
+			// The collator's answer may differ; the sort's must not move.
 			expect(
-				sortDiagnostics(list).map((entry: Diagnostic) => entry.code),
-			).toEqual(sortDiagnostics(list).map((entry: Diagnostic) => entry.code));
+				sortDiagnostics(localeSensitive).map(
+					(entry: Diagnostic) => entry.locus?.path,
+				),
+				locale,
+			).toEqual(sorted);
+			expect(collated).toHaveLength(3);
 		}
 	});
 
@@ -2480,7 +2598,20 @@ describe("the diagnostic registry (FR-049)", () => {
 		const entry = diagnostic(DIAGNOSTIC_CODES.IMPORT_NOT_FOUND as never, {
 			message: `no search directory supplies ${fragment("z".repeat(4000))}`,
 		});
-		expect(entry.message.length).toBeLessThan(200);
+		// The bound is on the input-derived fragment, which is what an adversary
+		// controls; the surrounding sentence is the compiler's own.
+		const inputPart = entry.message.slice(
+			"no search directory supplies ".length,
+		);
+		expect(inputPart).toHaveLength(120);
+		// A surrogate pair is never split: a lone surrogate is not text.
+		const emoji = fragment("\u{1F600}".repeat(400));
+		expect(emoji.length).toBeLessThanOrEqual(120);
+		expect(
+			/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/.test(
+				emoji,
+			),
+		).toBe(false);
 	});
 
 	/** Traces: TC-502, TC-580; FR-049-AC-11, NFR-020-AC-2. */
@@ -3006,7 +3137,7 @@ describe("compatibility and evolution (FR-051)", () => {
 	/** Traces: TC-528; FR-051-AC-2. */
 	it("maps every case family through the published data, and produces every report family", () => {
 		const map = readJson(
-			resolve(fixtures, "compatibility/family-map.json"),
+			resolve(compilerRoot, "compat/family-map.json"),
 		) as never as {
 			families: Record<string, { family: string; surface: string }>;
 		};
@@ -3033,10 +3164,19 @@ describe("compatibility and evolution (FR-051)", () => {
 		for (const family of reportFamilies) {
 			expect(produced, family).toContain(family);
 		}
-		// The implementation reads the map rather than restating it.
-		expect(read(resolve(compilerRoot, "compat/diff.mjs"))).toContain(
+		// The implementation reads the map rather than restating it, and reads it
+		// from a directory the published package actually ships.
+		expect(read(resolve(compilerRoot, "family-map.mjs"))).toContain(
 			"family-map.json",
 		);
+		const shipped = readJson(resolve(root, "package.json")).files as string[];
+		expect(
+			shipped.some((glob) =>
+				"src/compiler/compat/family-map.json".startsWith(
+					glob.replace(/\/$/, ""),
+				),
+			),
+		).toBe(true);
 	});
 
 	/** Traces: TC-529; FR-051-AC-3. */
@@ -3920,7 +4060,10 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 			"spec/",
 			"plan/",
 			"reviews/",
-			"scripts/",
+			"scripts/test-matrix-summary.mjs",
+			"scripts/build-compatibility-cases.mjs",
+			"scripts/build-evolution-goldens.mjs",
+			"scripts/build-compiler-docs.mjs",
 			"docs/semantic-data-system/compiler-diagnostics.md",
 			"docs/semantic-data-system/ir-compatibility-policy.md",
 			"Makefile",
@@ -4007,33 +4150,59 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 
 	/** Traces: TC-595; NFR-021-AC-6. */
 	it("restores origin/main exactly when every changed path is reverted", () => {
+		// The rehearsal has to *discriminate*: writing bytes and reading them back
+		// is true of any bytes. So it checks out `origin/main` into a scratch
+		// worktree — a real revert — and compares that tree against the branch,
+		// asserting the difference is exactly the set of changed paths and that
+		// every modified file genuinely differs.
 		const scratch = temp("restore");
+		const worktree = resolve(scratch, "main");
 		try {
-			let restored = 0;
-			for (const path of changedPaths()) {
-				if (!existsSync(resolve(root, path))) continue;
-				let original: Buffer;
-				try {
-					original = execFileSync("git", ["show", `origin/main:${path}`], {
-						cwd: root,
-						maxBuffer: 64 * 1024 * 1024,
-					});
-				} catch {
-					// Added by this branch: reverting removes it, which the changed-path
-					// gate above already constrains.
+			execFileSync(
+				"git",
+				["worktree", "add", "--detach", worktree, "origin/main"],
+				{ cwd: root, stdio: "pipe" },
+			);
+			const changed = changedPaths().filter(
+				(path) => !path.startsWith("node_modules/"),
+			);
+			expect(changed.length).toBeGreaterThan(0);
+			let modified = 0;
+			let added = 0;
+			for (const path of changed) {
+				const here = resolve(root, path);
+				const there = resolve(worktree, path);
+				if (!existsSync(there)) {
+					added += 1;
 					continue;
 				}
-				const target = resolve(scratch, path);
-				mkdirSync(dirname(target), { recursive: true });
-				writeFileSync(target, original);
-				expect(readFileSync(target).equals(original), path).toBe(true);
-				restored += 1;
+				expect(existsSync(here), path).toBe(true);
+				// A path this gate calls changed must actually differ from the base.
+				expect(
+					readFileSync(here).equals(readFileSync(there)),
+					`${path} is listed as changed but is identical to origin/main`,
+				).toBe(false);
+				modified += 1;
 			}
-			expect(restored).toBeGreaterThan(0);
+			expect(added).toBeGreaterThan(0);
+			expect(modified).toBeGreaterThan(0);
+			// And nothing outside the changed set differs: the revert is complete.
+			const differing = execFileSync(
+				"git",
+				["diff", "--no-renames", "--name-only", "origin/main...HEAD"],
+				{ cwd: root, encoding: "utf8" },
+			)
+				.split("\n")
+				.filter((line) => line.length > 0);
+			for (const path of differing) expect(changed, path).toContain(path);
 		} finally {
+			execFileSync("git", ["worktree", "remove", "--force", worktree], {
+				cwd: root,
+				stdio: "pipe",
+			});
 			rmSync(scratch, { recursive: true, force: true });
 		}
-	}, 60000);
+	}, 120000);
 
 	/** Traces: TC-586; NFR-020-AC-8. */
 	it("survives 512 mutations of a manifest with no uncaught exception", () => {
@@ -4119,7 +4288,7 @@ describe("the remaining reader and resolver rules (FR-049 coverage)", () => {
 		});
 		run("unknown constraint keyword", (document) => {
 			const alias = document.types.find(
-				(type) => type.identity === "ix://agent-ix/assurance/type/Artifactcode",
+				(type) => type.identity === "ix://agent-ix/assurance/type/ArtifactCode",
 			) as Json;
 			(alias.constraints as Json[])[0].keyword = "invented";
 		});

@@ -63,8 +63,13 @@ export function restrictedHost(options) {
 		}
 	};
 
+	/**
+	 * Resolve before testing, as `host.mjs` does. Testing the *given* path lets a
+	 * symlink inside a declared root reach a file outside it, which is the escape
+	 * the roots exist to stop.
+	 */
 	const allowedRead = (path) => {
-		const absolute = resolve(path);
+		const absolute = real(path);
 		return readRoots.some((root) => within(root, absolute));
 	};
 

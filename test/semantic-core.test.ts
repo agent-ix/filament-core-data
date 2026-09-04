@@ -21,14 +21,10 @@ import { readDeclarations } from "./semantic-core-reader";
 import { type Instance, lower } from "./semantic-core-lowerer";
 import { normalize, readSemanticIr } from "./semantic-ir-v1-1-reader";
 import type { Program } from "@typespec/compiler";
+import { changedPathsFrom } from "./changed-paths.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const packageRoot = resolve(root, "packages/semantic-core");
-const generatedDuringTests = new Set([
-	"agent_ix_core_data/core_data.py",
-	"src/generated.ts",
-]);
-
 /**
  * Issue #35 (semantic-core L3 declaration grammar) matrix trace inventory:
  * TC-248, TC-249, TC-250, TC-251, TC-252, TC-253, TC-254, TC-255, TC-256,
@@ -61,22 +57,7 @@ function readPackageJson(path: string): unknown {
 }
 
 function changedPaths(): string[] {
-	const committed = execFileSync(
-		"git",
-		["diff", "--no-renames", "--name-only", "origin/main...HEAD"],
-		{ cwd: root, encoding: "utf8" },
-	);
-	const working = execFileSync(
-		"git",
-		["status", "--porcelain", "--untracked-files=all"],
-		{ cwd: root, encoding: "utf8" },
-	)
-		.split("\n")
-		.filter((line) => line.trim().length > 0)
-		.map((line) => line.slice(3).trim());
-	return [...new Set([...committed.split("\n"), ...working])].filter(
-		(path) => path.length > 0 && !generatedDuringTests.has(path),
-	);
+	return changedPathsFrom(root, "origin/main");
 }
 
 describe("semantic-core non-disruption (Task-041)", () => {
@@ -110,9 +91,11 @@ describe("semantic-core non-disruption (Task-041)", () => {
 			// matrix-summary script, its plan bundle, and its test file. Each entry
 			// is a path this branch writes, enumerated rather than widened.
 			"test/fixtures/compiler/",
-			"scripts/",
+			"scripts/test-matrix-summary.mjs",
+			"scripts/build-compatibility-cases.mjs",
+			"scripts/build-evolution-goldens.mjs",
+			"scripts/build-compiler-docs.mjs",
 			"plan/Plan-008-typespec-frontend-and-ir-compiler-core/",
-			"test/compiler-core.test.ts",
 			// Issue #19 also publishes two generated documents and excludes its
 			// generated fixtures from the formatter.
 			"docs/semantic-data-system/compiler-diagnostics.md",
