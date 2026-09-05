@@ -31,6 +31,11 @@ const COMPILER_CODES = [
 	// Kernel bundle (FR-081). The inventory mismatch is what stops a bundle
 	// declaring a document set the grammar does not have; the staleness code is
 	// what stops a generated tree outliving the source it was generated from.
+	// JSON Schema lowering (FR-082). Two codes, not one: "outside the recognised
+	// set" and "recognised but in an arrangement never seen here" send a reader
+	// to different files.
+	"UNSUPPORTED_SCHEMA_KEYWORD",
+	"UNSUPPORTED_SCHEMA_SHAPE",
 	"KERNEL_INVENTORY_MISMATCH",
 	"KERNEL_BUNDLE_STALE",
 	"FRONTEND_NOT_IMPLEMENTED",
