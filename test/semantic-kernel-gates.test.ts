@@ -19,8 +19,14 @@ const PERMITTED = [
 	"src/compiler/diagnostics.mjs",
 	"src/compiler/inventory.json",
 	"src/compiler/frontend/json-schema/",
+	// Enumerated file by file rather than as `test/semantic-kernel*`: a prefix
+	// would silently admit any future file whose name happened to start the
+	// same way. This list rejected `semantic-kernel-agreement.test.ts` when it
+	// was added, which is the list doing its job.
 	"test/semantic-kernel.test.ts",
 	"test/semantic-kernel-gates.test.ts",
+	"test/semantic-kernel-consumer.test.ts",
+	"test/semantic-kernel-agreement.test.ts",
 	"tests/test_kernel_python_target.py",
 	"docs/semantic-data-system/compiler-diagnostics.md",
 ];
