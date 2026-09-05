@@ -141,6 +141,7 @@ than deciding it.
 | US-013 | US-013-EX-3 (illustrative) implemented by FR-075 | TC-873, TC-875, TC-880 | ✅ Complete |
 | US-013 | US-013-EX-4 (illustrative) implemented by FR-076 and NFR-027 | TC-883, TC-940 | ✅ Complete |
 | US-013 | US-013-EX-5 (illustrative) implemented by FR-079 and NFR-027 | TC-924, TC-942 | ✅ Complete |
+| US-014 | US-014-EX-1 (illustrative) implemented by FR-085, FR-086, FR-087 | TC-1040..TC-1084 | 🚧 In progress |
 
 ### Functional Requirement Coverage
 
@@ -226,6 +227,16 @@ than deciding it.
 | FR-078 | FR-078-AC-1..11, FR-078-CON-1..3 | TC-908..917 | ✅ Complete |
 | FR-079 | FR-079-AC-1..11, FR-079-CON-1..4 | TC-918..926, TC-944 | ✅ Complete |
 | FR-080 | FR-080-AC-1..9, FR-080-CON-1..3 | TC-927..935, TC-944 | ✅ Complete |
+| FR-081 | FR-081-AC/CON x26 | TC-1000..TC-1008 | 🚧 In progress |
+| FR-082 | FR-082-AC/CON x32 | TC-1009..TC-1019 | 🚧 In progress |
+| FR-083 | FR-083-AC/CON x23 | TC-1020..TC-1027 | 🚧 In progress |
+| FR-084 | FR-084-AC/CON x30 | TC-1028..TC-1037 | 🚧 In progress |
+| FR-085 | FR-085-AC/CON x28 | TC-1038..TC-1047 | 🚧 In progress |
+| FR-086 | FR-086-AC/CON x30 | TC-1048..TC-1057 | 🚧 In progress |
+| FR-087 | FR-087-AC/CON x26 | TC-1058..TC-1066 | 🚧 In progress |
+| FR-088 | FR-088-AC/CON x25 | TC-1067..TC-1075 | 🚧 In progress |
+| FR-089 | FR-089-AC/CON x28 | TC-1076..TC-1085 | 🚧 In progress |
+| FR-090 | FR-090-AC/CON x34 | TC-1086..TC-1097 | 🚧 In progress |
 
 ### Non-Functional Requirement Coverage
 
@@ -258,6 +269,9 @@ than deciding it.
 | NFR-023 | Changed-path gate over a range fixed at both ends by history and unioned over `--first-parent --no-merges`, permitted-entry traceability, manifest comparison, frozen-path byte comparison, publication, third-party attribution and licence inspection, scripted restore rehearsal, post-merge and accretion rehearsal | TC-709, TC-737..TC-744 | ✅ Complete |
 | NFR-026 | Malicious-schema corpus, advisory gate, socket and filesystem instrumentation, non-executing source inspection, emission ordering, provisioning-failure and changed-path checks | TC-936..939 | ✅ Complete |
 | NFR-027 | Double-generation byte comparison, report `--check`, changed-path and manifest analysis, guard-range conversion with post-merge perturbation, revert rehearsal and skip census | TC-940..943 | ✅ Complete |
+| NFR-028 | NFR-028-AC/CON x8 | TC-1098..TC-1100 | 🚧 In progress |
+| NFR-029 | NFR-029-AC/CON x10 | TC-1101..TC-1104 | 🚧 In progress |
+| NFR-030 | NFR-030-AC/CON x12 | TC-1105..TC-1108 | 🚧 In progress |
 
 ## Test Case Summary
 
@@ -1208,6 +1222,115 @@ than deciding it.
 | TC-943 | No changed-path gate resolves its range from a moving ref, every gate pins both endpoints to history and passes `--no-renames`, fails loudly when its sentinels are absent, still catches a prohibited path after a simulated merge, runs from the repository's test entry point with zero skips, and reverts cleanly | Unit | P0 | NFR-027-AC-6, NFR-027-AC-7, NFR-027-AC-8, NFR-027-AC-10, NFR-027-AC-12 | ✅ passed |
 | TC-944 | A recorded human review confirms the four irreducibly manual obligations: a version bump re-runs the qualification, probe expectations are derived from the contract, the layout is reconciled with the merged generated-target contract, and non-conforming values are drawn from the contract rather than from what the code rejects | Manual | P0 | FR-072-CON-2, FR-077-CON-2, FR-079-CON-4, FR-080-CON-3 | 🚧 awaiting the program owner's review |
 | TC-945 | The support matrix names every lint the generated `[lints.rust]` table denies, read from a generated `Cargo.toml`, and states the toolchain coupling that denying all warnings creates | Analysis | P0 | FR-060-AC-16 | 🚧 planned |
+| TC-1000 | Edits no file under packages/semantic-core/generated/, schema/semantic/v1/, or fixtures/semantic/v1/. The projection is the pinned official emitter's | Static | P0 | FR-081-CON-1, FR-081-CON-2, FR-081-CON-3 | 🚧 planned |
+| TC-1001 | Edits neither the repository root package.json nor packages/semantic-core/package.json, so no packed surface changes and packages/semantic-kernel/ is | Static | P0 | FR-081-CON-4, FR-081-CON-5, FR-081-CON-6 | 🚧 planned |
+| TC-1002 | Writes only under packages/semantic-kernel/, src/compiler/frontend/json-schema/, scripts/build-semantic-kernel.mjs, test/semantic-kernel.test.ts, src/ | Property | P0 | FR-081-CON-7, FR-081-CON-8, FR-081-AC-1 | 🚧 planned |
+| TC-1003 | The same thirty-member set equals the files array of packages/semantic-core/generated/toolchain.json | Property | P0 | FR-081-AC-2, FR-081-AC-3, FR-081-AC-4 | 🚧 planned |
+| TC-1004 | The declared schema base equals base in generated/toolchain.json and the @jsonSchema argument in packages/semantic-core/main.tsp | Property | P0 | FR-081-AC-5, FR-081-AC-6, FR-081-AC-7 | 🚧 planned |
+| TC-1005 | The declared artifact paths are exactly packages/semantic-kernel/typescript/, packages/semantic-kernel/rust/, packages/semantic-kernel/python/, and pa | Property | P0 | FR-081-AC-8, FR-081-AC-9, FR-081-AC-10 | 🚧 planned |
+| TC-1006 | A generated tree whose recorded provenance digest differs from kernelDigest() produces one KERNEL_BUNDLE_STALE diagnostic naming the tree and both dig | Property | P0 | FR-081-AC-11, FR-081-AC-12, FR-081-AC-13 | 🚧 planned |
+| TC-1007 | The branch changes no file under packages/semantic-core/, schema/, fixtures/, conformance/, src/compiler/backends/, src/compiler/frontend/typespec/, o | Property | P0 | FR-081-AC-14, FR-081-AC-15, FR-081-AC-16 | 🚧 planned |
+| TC-1008 | KERNEL_INVENTORY_MISMATCH and KERNEL_BUNDLE_STALE are members of DIAGNOSTIC_CODES in src/compiler/diagnostics.mjs | Property | P0 | FR-081-AC-17, FR-081-AC-18 | 🚧 planned |
+| TC-1009 | Leave byte-unchanged every file under schema/**, packages/semantic-core/**, fixtures/**, and conformance/**, together with src/compiler/cli.mjs, src/c | Static | P0 | FR-082-CON-1, FR-082-CON-2, FR-082-CON-3 | 🚧 planned |
+| TC-1010 | The lowering compute presence from multiplicity.lower at exactly one call site and at no other, assigning presence from no other module. Two independe | Static | P0 | FR-082-CON-4, FR-082-CON-5, FR-082-CON-6 | 🚧 planned |
+| TC-1011 | The two declared representability losses | Unit | P0 | FR-082-CON-7, FR-082-AC-1, FR-082-AC-2 | 🚧 planned |
+| TC-1012 | A document carrying additionalProperties, oneOf, allOf, $defs, format, or maxLength produces one blocking UNSUPPORTED_SCHEMA_KEYWORD diagnostic naming | Property | P0 | FR-082-AC-3, FR-082-AC-4, FR-082-AC-5 | 🚧 planned |
+| TC-1013 | Every lowered type from a document carrying unevaluatedProperties: {"not": {}} has unknownPolicy: "reject" | Property | P0 | FR-082-AC-6, FR-082-AC-7, FR-082-AC-8 | 🚧 planned |
+| TC-1014 | Every fields[] member and every operation parameter of the emitted document carries multiplicity | Property | P0 | FR-082-AC-9, FR-082-AC-10, FR-082-AC-11 | 🚧 planned |
+| TC-1015 | The emitted document declares source.dialect of typespec, source.digest equal to kernelDigest(), and source.version of 0.1.0 | Snapshot | P0 | FR-082-AC-12, FR-082-AC-13, FR-082-AC-14 | 🚧 planned |
+| TC-1016 | Every emitted list | Property | P0 | FR-082-AC-15, FR-082-AC-16, FR-082-AC-17 | 🚧 planned |
+| TC-1017 | Every read performed during a full kernel lowering is observed by the injected host | Property | P0 | FR-082-AC-18, FR-082-AC-19, FR-082-AC-20 | 🚧 planned |
+| TC-1018 | RunFrontend called with no sourceForm selects the dialect's default form | Property | P0 | FR-082-AC-21, FR-082-AC-22, FR-082-AC-23 | 🚧 planned |
+| TC-1019 | Every module this requirement adds has a record in src/compiler/inventory.json | Property | P0 | FR-082-AC-24, FR-082-AC-25 | 🚧 planned |
+| TC-1020 | Mint.mjs does not read a file, a clock, an environment variable, or a network socket | Snapshot | P0 | FR-083-CON-1, FR-083-CON-2, FR-083-CON-3 | 🚧 planned |
+| TC-1021 | Minting introduce no diagnostic code of its own | Static | P0 | FR-083-CON-4, FR-083-CON-5, FR-083-CON-6 | 🚧 planned |
+| TC-1022 | A collision does not be resolved by dropping either construct or by merging two distinct canonical forms into one type | Unit | P0 | FR-083-CON-7, FR-083-AC-1, FR-083-AC-2 | 🚧 planned |
+| TC-1023 | MinConstraintKeyword is an enum with exactly one variant whose name is the string min, equal to the const in MinConstraint.json | Unit | P0 | FR-083-AC-3, FR-083-AC-4, FR-083-AC-5 | 🚧 planned |
+| TC-1024 | Multiplicity.lower, Multiplicity.upper | Unit | P0 | FR-083-AC-6, FR-083-AC-7, FR-083-AC-8 | 🚧 planned |
+| TC-1025 | Minting the bundle with its documents supplied in reversed order | Snapshot | P0 | FR-083-AC-9, FR-083-AC-10, FR-083-AC-11 | 🚧 planned |
+| TC-1026 | Every identity in types | Snapshot | P0 | FR-083-AC-12, FR-083-AC-13, FR-083-AC-14 | 🚧 planned |
+| TC-1027 | Over 256 mutated bundles mintAll returns a mint table or a refusal and never throws | Property | P0 | FR-083-AC-15, FR-083-AC-16 | 🚧 planned |
+| TC-1028 | Close KERNEL_LOSSES at exactly the two declared rows and put it in bijection with the loss codes it adds to DIAGNOSTIC_CODES, asserted in both directi | Static | P0 | FR-084-CON-1, FR-084-CON-2, FR-084-CON-3 | 🚧 planned |
+| TC-1029 | Provenance.mjs compute source.digest as a pure function of the supplied file bytes and paths, reading no file system, clock, environment variable, or | Static | P0 | FR-084-CON-4, FR-084-CON-5, FR-084-CON-6 | 🚧 planned |
+| TC-1030 | NOT relax, reorder, or reword any existing member of DIAGNOSTIC_CODES | Static | P0 | FR-084-CON-7, FR-084-CON-8, FR-084-CON-9 | 🚧 planned |
+| TC-1031 | The emitted kernel IR validates against schema/semantic/v1/semantic-ir.schema.json at contractVersion 1.1.0, carrying every required member of source | Property | P0 | FR-084-AC-1, FR-084-AC-2, FR-084-AC-3 | 🚧 planned |
+| TC-1032 | Source.version, package.version | Property | P0 | FR-084-AC-4, FR-084-AC-5, FR-084-AC-6 | 🚧 planned |
+| TC-1033 | The TypeScript, Rust, Python | Snapshot | P0 | FR-084-AC-7, FR-084-AC-8, FR-084-AC-9 | 🚧 planned |
+| TC-1034 | Lowering the committed bundle emits exactly one agent-ix.compiler.KERNEL_UNCONSTRAINED_VALUE located at DefaultDecl.json's value, naming the minted De | Unit | P0 | FR-084-AC-10, FR-084-AC-11, FR-084-AC-12 | 🚧 planned |
+| TC-1035 | A synthetic document carrying a keyword outside the closed set | Unit | P0 | FR-084-AC-13, FR-084-AC-14, FR-084-AC-15 | 🚧 planned |
+| TC-1036 | No caller-supplied option, environment variable, or flag turns any refusal in AC-13, AC-14, or AC-15 into a document | Property | P0 | FR-084-AC-16, FR-084-AC-17, FR-084-AC-18 | 🚧 planned |
+| TC-1037 | Over 512 mutated bundles neither provenance.mjs nor representability.mjs throws, each returns an answer | Snapshot | P0 | FR-084-AC-19, FR-084-AC-20, FR-084-AC-21 | 🚧 planned |
+| TC-1038 | Adds no TypeScript emitter, no module under src/compiler/backends/typescript-v1/, and no kernel-specific branch inside the existing backend. A constru | Static | P0 | FR-085-CON-1, FR-085-CON-2, FR-085-CON-3 | 🚧 planned |
+| TC-1039 | Records the strict typecheck criterion as blocked on agent-ix/filament-core-data#22 with the defect named | Snapshot | P0 | FR-085-CON-4, FR-085-CON-5, FR-085-CON-6 | 🚧 planned |
+| TC-1040 | The generated package declare no third-party runtime dependency and keep every import specifier in every committed module relative, so the kernel's Ty | Property | P0 | FR-085-CON-7, FR-085-CON-8, FR-085-AC-1 | 🚧 planned |
+| TC-1041 | The committed packages/semantic-kernel/typescript/ path set is exactly LICENSE, errors.ts, identity.ts, index.ts, metadata.ts, package.json, types.ts, | Snapshot | P0 | FR-085-AC-2, FR-085-AC-3, FR-085-AC-4 | 🚧 planned |
+| TC-1042 | The committed package name equals packageNameFor(package.identity) for the kernel document's identity | Property | P0 | FR-085-AC-5, FR-085-AC-6, FR-085-AC-7 | 🚧 planned |
+| TC-1043 | The committed identity.ts and metadata.ts expose every kernel type's roles[] and unknownPolicy, every record's relationship descriptors, every field's | Property | P0 | FR-085-AC-8, FR-085-AC-9, FR-085-AC-10 | 🚧 planned |
+| TC-1044 | Every committed file begins with the SPDX-License-Identifier: AGPL-3.0-only header and the banner naming the backend identity, the backend version and | Snapshot | P0 | FR-085-AC-11, FR-085-AC-12, FR-085-AC-13 | 🚧 planned |
+| TC-1045 | Every import specifier in every committed module begins with ./ or ../, and no committed module names a package in any of the seven prohibited depende | Snapshot | P0 | FR-085-AC-14, FR-085-AC-15, FR-085-AC-16 | 🚧 planned |
+| TC-1046 | Hand-editing one byte of a committed generated file makes make semantic-kernel-check fail naming that file, so the tree cannot drift from the emitter | Property | P0 | FR-085-AC-17, FR-085-AC-18, FR-085-AC-19 | 🚧 planned |
+| TC-1047 | Docs/semantic-data-system/semantic-kernel-packages.md carries one row per blocked criterion | Unit | P0 | FR-085-AC-20 | 🚧 planned |
+| TC-1048 | Adds no module under src/compiler/backends/rust-serde/ and no kernel-specific branch inside the existing emitter. A construct the backend cannot rende | Static | P0 | FR-086-CON-1, FR-086-CON-2, FR-086-CON-3 | 🚧 planned |
+| TC-1049 | The digest baseline be written by a script other than the one that writes the committed crate, reaching the emitter through a different entry point, s | Static | P0 | FR-086-CON-4, FR-086-CON-5, FR-086-CON-6 | 🚧 planned |
+| TC-1050 | No step contact a package registry, either to publish or to resolve | Static | P0 | FR-086-CON-7, FR-086-CON-8, FR-086-CON-9 | 🚧 planned |
+| TC-1051 | Src/compiler/backends/**, Cargo.lock, rust-toolchain.toml, rustfmt.toml, .cargo/config.toml, package.json, tsconfig.json and .github/** are prohibited | Unit | P0 | FR-086-CON-10, FR-086-AC-1, FR-086-AC-2 | 🚧 planned |
+| TC-1052 | The committed Cargo.toml carries publish = false | Property | P0 | FR-086-AC-3, FR-086-AC-4, FR-086-AC-5 | 🚧 planned |
+| TC-1053 | Introducing a missing_docs violation | Unit | P0 | FR-086-AC-6, FR-086-AC-7, FR-086-AC-8 | 🚧 planned |
+| TC-1054 | Make semantic-kernel-check leaves git status --porcelain empty, in the passing case and in each failing case, with no Cargo.lock and no target/ left i | Property | P0 | FR-086-AC-9, FR-086-AC-10, FR-086-AC-11 | 🚧 planned |
+| TC-1055 | THIRD-PARTY-NOTICES.md carries a row for serde at the exact pinned version with its SPDX identifier and the location of its preserved upstream licence | Snapshot | P0 | FR-086-AC-12, FR-086-AC-13, FR-086-AC-14 | 🚧 planned |
+| TC-1056 | The committed crate name equals the value crate.mjs derives from the kernel document's package.identity | Snapshot | P0 | FR-086-AC-15, FR-086-AC-16, FR-086-AC-17 | 🚧 planned |
+| TC-1057 | Make semantic-kernel-check reports on every run that Rust publication is blocked on agent-ix/quoin#290, that publish = false in the generated manifest | Property | P0 | FR-086-AC-18, FR-086-AC-19, FR-086-AC-20 | 🚧 planned |
+| TC-1058 | The maintainer does not widen python_backend/refusals.json, relax a guard, add a guard exemption, or add a generator option to make the kernel bundle | Static | P0 | FR-087-CON-1, FR-087-CON-2, FR-087-CON-3 | 🚧 planned |
+| TC-1059 | The maintainer does not emit a package for a family the qualification judges not-qualified, nor re-run the qualification with an altered probe set to | Static | P0 | FR-087-CON-4, FR-087-CON-5, FR-087-CON-6 | 🚧 planned |
+| TC-1060 | Every existing path under python_backend/adapter/, python_backend/runner/, python_backend/qualification/, and python_backend/generated/, and every exi | Snapshot | P0 | FR-087-CON-7, FR-087-CON-8, FR-087-AC-1 | 🚧 planned |
+| TC-1061 | After localize_bundle, no document carries a root $id, every $ref is a bare sibling filename naming a document present in the input set | Snapshot | P0 | FR-087-AC-2, FR-087-AC-3, FR-087-AC-4 | 🚧 planned |
+| TC-1062 | Calling localize_bundle twice returns deep-equal results and leaves every input document deep-equal to its pre-call state | Property | P0 | FR-087-AC-5, FR-087-AC-6, FR-087-AC-7 | 🚧 planned |
+| TC-1063 | A package tree exists under packages/semantic-kernel/python/ for exactly the families recorded as qualified-with-conditions, NOT-QUALIFIED.md records | Property | P0 | FR-087-AC-8, FR-087-AC-9, FR-087-AC-10 | 🚧 planned |
+| TC-1064 | PROVENANCE.json carries the input digest, the profile digest, the toolchain fingerprint, the content fingerprint, the kernel bundle base and digest, t | Snapshot | P0 | FR-087-AC-11, FR-087-AC-12, FR-087-AC-13 | 🚧 planned |
+| TC-1065 | No byte under packages/semantic-core/ changes | Snapshot | P0 | FR-087-AC-14, FR-087-AC-15, FR-087-AC-16 | 🚧 planned |
+| TC-1066 | Python_backend/kernel/emit.py reaches the issue #23 route only by import | Unit | P0 | FR-087-AC-17, FR-087-AC-18 | 🚧 planned |
+| TC-1067 | Change no byte anywhere under packages/semantic-core/. Those documents are the official emitter's output under ADR-0005 and FR-033, and an index that | Static | P0 | FR-088-CON-1, FR-088-CON-2, FR-088-CON-3 | 🚧 planned |
+| TC-1068 | Scripts/build-semantic-kernel.mjs recompute the bundle digest in the index, never copy it from generated/toolchain.json, so the equality of the two is | Static | P0 | FR-088-CON-4, FR-088-CON-5, FR-088-CON-6 | 🚧 planned |
+| TC-1069 | No registry publication and no publication workflow change happen here | Unit | P0 | FR-088-CON-7, FR-088-CON-8, FR-088-AC-1 | 🚧 planned |
+| TC-1070 | A document present in packages/semantic-core/generated/json-schema/ and absent from the index | Unit | P0 | FR-088-AC-2, FR-088-AC-3, FR-088-AC-4 | 🚧 planned |
+| TC-1071 | Every document's $id equals the index's base concatenated with its file name | Property | P0 | FR-088-AC-5, FR-088-AC-6, FR-088-AC-7 | 🚧 planned |
+| TC-1072 | Every $ref in every document either begins with the declared base and names a listed document, or is a local #-fragment | Property | P0 | FR-088-AC-8, FR-088-AC-9, FR-088-AC-10 | 🚧 planned |
+| TC-1073 | Every document declares https://json-schema.org/draft/2020-12/schema | Snapshot | P0 | FR-088-AC-11, FR-088-AC-12, FR-088-AC-13 | 🚧 planned |
+| TC-1074 | Regenerating the index from unchanged inputs reproduces the committed file byte-for-byte | Snapshot | P0 | FR-088-AC-14, FR-088-AC-15, FR-088-AC-16 | 🚧 planned |
+| TC-1075 | No path under packages/semantic-kernel/ appears in the packed file list of any distribution this repository builds | Snapshot | P0 | FR-088-AC-17 | 🚧 planned |
+| TC-1076 | Each example import its generated package by that package's public surface only | Static | P0 | FR-089-CON-1, FR-089-CON-2, FR-089-CON-3 | 🚧 planned |
+| TC-1077 | No example be skipped, marked expected-to-fail, or disabled by a condition to obtain a green run | Static | P0 | FR-089-CON-4, FR-089-CON-5, FR-089-CON-6 | 🚧 planned |
+| TC-1078 | No example read a clock, an environment variable, a network socket, or a host-observed version, so that a run in CI and a run on a maintainer's machin | Static | P0 | FR-089-CON-7, FR-089-CON-8, FR-089-CON-9 | 🚧 planned |
+| TC-1079 | Writes no file under conformance/, which NFR-030 makes a prohibited path for issue #11 in its entirety | Property | P0 | FR-089-CON-10, FR-089-AC-1, FR-089-AC-2 | 🚧 planned |
+| TC-1080 | Each example constructs a FieldDecl carrying a multiplicity and asserts its member values | Property | P0 | FR-089-AC-3, FR-089-AC-4, FR-089-AC-5 | 🚧 planned |
+| TC-1081 | Each example reads its package's semantic identity, source version | Unit | P0 | FR-089-AC-6, FR-089-AC-7, FR-089-AC-8 | 🚧 planned |
+| TC-1082 | The Rust example declares the generated kernel crate and serde_json at a pinned exact version as a dev-dependency and nothing else | Property | P0 | FR-089-AC-9, FR-089-AC-10, FR-089-AC-11 | 🚧 planned |
+| TC-1083 | No example is skipped, marked expected-to-fail, or conditionally disabled, checked over the collected test inventory of all three suites rather than b | Compile | P0 | FR-089-AC-12, FR-089-AC-13, FR-089-AC-14 | 🚧 planned |
+| TC-1084 | No example's source matches Date.now, new Date, process.env, process.cwd, datetime.now, os.environ, std::time, std::env, or any socket API, and two ru | Snapshot | P0 | FR-089-AC-15, FR-089-AC-16, FR-089-AC-17 | 🚧 planned |
+| TC-1085 | Where the Python package excludes a colliding type name from __all__, the example reaches that type as <module>.<Name> and no example re-exports the e | Unit | P0 | FR-089-AC-18 | 🚧 planned |
+| TC-1086 | Every one of the four kernel packages decide every golden document. The harness count a package excused from a document as unmet, never as passed, fol | Static | P0 | FR-090-CON-1, FR-090-CON-2, FR-090-CON-3 | 🚧 planned |
+| TC-1087 | No package decision emitter import conformance/oracle/index.mjs or call oracleVerdict or compare | Static | P0 | FR-090-CON-4, FR-090-CON-5, FR-090-CON-6 | 🚧 planned |
+| TC-1088 | No published schema under schema/semantic/v1/ and no artifact under docs/semantic-data-system/ be edited. A disagreement with the published contract i | Static | P0 | FR-090-CON-7, FR-090-CON-8, FR-090-CON-9 | 🚧 planned |
+| TC-1089 | Adds nothing under packages/semantic-kernel/, packages/semantic-core/generated/, or conformance/ to the npm package's files or exports, the Python dis | Static | P0 | FR-090-CON-10, FR-090-CON-11, FR-090-CON-12 | 🚧 planned |
+| TC-1090 | The golden corpus under packages/semantic-kernel/parity/golden/ carries positive, negative | Property | P0 | FR-090-AC-1, FR-090-AC-2, FR-090-AC-3 | 🚧 planned |
+| TC-1091 | For every golden document, the serialized member name of every declared member is identical across the four packages | Property | P0 | FR-090-AC-4, FR-090-AC-5, FR-090-AC-6 | 🚧 planned |
+| TC-1092 | For each of preserve, reject | Snapshot | P0 | FR-090-AC-7, FR-090-AC-8, FR-090-AC-9 | 🚧 planned |
+| TC-1093 | A full parity run leaves every file under conformance/ byte-unchanged, including conformance/corpus.json, conformance/coverage.json, conformance/diver | Property | P0 | FR-090-AC-10, FR-090-AC-11, FR-090-AC-12 | 🚧 planned |
+| TC-1094 | A divergence row without an adjudicating owner is rejected by the gate | Unit | P0 | FR-090-AC-13, FR-090-AC-14, FR-090-AC-15 | 🚧 planned |
+| TC-1095 | No file under schema/semantic/v1/ or docs/semantic-data-system/ differs before and after this requirement's run | Property | P0 | FR-090-AC-16, FR-090-AC-17, FR-090-AC-18 | 🚧 planned |
+| TC-1096 | Packages/semantic-kernel/parity/publication-gate.json names agent-ix/quoin#290 for each of the four packages, states the step as blocked | Property | P0 | FR-090-AC-19, FR-090-AC-20, FR-090-AC-21 | 🚧 planned |
+| TC-1097 | Two consecutive full runs produce a byte-identical packages/semantic-kernel/parity/agreement.json | Snapshot | P0 | FR-090-AC-22 | 🚧 planned |
+| TC-1098 | Two generations of the same kernel bundle, from different working directories and under different locales, produce byte-identical trees for all four t | Snapshot | P1 | NFR-028-AC-1, NFR-028-AC-2, NFR-028-AC-3 | 🚧 planned |
+| TC-1099 | Every --check verb regenerates into a directory outside the working tree | Snapshot | P1 | NFR-028-AC-4, NFR-028-AC-5, NFR-028-AC-6 | 🚧 planned |
+| TC-1100 | The generated trees carry no generation timestamp, build date, hostname, machine identifier, user name, home directory, working directory, absolute pa | Property | P1 | NFR-028-AC-7, NFR-028-AC-8 | 🚧 planned |
+| TC-1101 | The transitive dependency closure of each emitted package contains no persistence layer, ORM, Tauri, UI framework, application package, or network tra | Unit | P1 | NFR-029-AC-1, NFR-029-AC-2, NFR-029-AC-3 | 🚧 planned |
+| TC-1102 | The emitted Python package's closure adds nothing beyond the declared Pydantic pin | Property | P1 | NFR-029-AC-4, NFR-029-AC-5, NFR-029-AC-6 | 🚧 planned |
+| TC-1103 | Each package's static export surface equals the kernel's declared type set plus the minted types, checked in both directions so a missing export and a | Property | P1 | NFR-029-AC-7, NFR-029-AC-8, NFR-029-AC-9 | 🚧 planned |
+| TC-1104 | Each consumer example of [FR-089](../functional/FR-089-provide-independent-consumer-examples.md) satisfies the same closure assertion as the package i | Unit | P1 | NFR-029-AC-10 | 🚧 planned |
+| TC-1105 | Every path in this change's own path set is permitted and none is prohibited, with both endpoints of the range resolved from history through the two d | Property | P1 | NFR-030-AC-1, NFR-030-AC-2, NFR-030-AC-3 | 🚧 planned |
+| TC-1106 | Package.json exports, main, module, types, files, dependencies, peerDependencies | Unit | P1 | NFR-030-AC-4, NFR-030-AC-5, NFR-030-AC-6 | 🚧 planned |
+| TC-1107 | Cargo.lock changes only by the addition of this change's own members and adds no third-party package, asserted by comparing the resolved package set b | Unit | P1 | NFR-030-AC-7, NFR-030-AC-8, NFR-030-AC-9 | 🚧 planned |
+| TC-1108 | This change's own range contains no merge commit, so its path set is the union of its own commits and carries nothing the trunk moved | Property | P1 | NFR-030-AC-10, NFR-030-AC-11, NFR-030-AC-12 | 🚧 planned |
 
 ## Option Permutation Matrix
 
@@ -1992,16 +2115,16 @@ validator and its differential harness.
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 213 | 201 | 0 | 12 | 100% mapped (213/213) |
+| Static | 236 | 201 | 0 | 35 | 100% mapped (236/236) |
 | Manual | 47 | 45 | 0 | 2 | 100% mapped (47/47) |
 | Analysis | 47 | 29 | 0 | 18 | 100% mapped (47/47) |
-| Property | 73 | 58 | 0 | 15 | 100% mapped (73/73) |
-| Unit | 406 | 329 | 0 | 77 | 100% mapped (406/406) |
+| Property | 115 | 58 | 0 | 57 | 100% mapped (115/115) |
+| Unit | 425 | 329 | 0 | 96 | 100% mapped (425/425) |
 | Integration | 104 | 64 | 0 | 40 | 100% mapped (104/104) |
 | Fuzz | 12 | 7 | 0 | 5 | 100% mapped (12/12) |
-| Snapshot | 30 | 21 | 0 | 9 | 100% mapped (30/30) |
-| Compile | 13 | 3 | 0 | 10 | 100% mapped (13/13) |
-| **Total** | **945** | **757** | **0** | **188** | **100% mapped (945/945)** |
+| Snapshot | 54 | 21 | 0 | 33 | 100% mapped (54/54) |
+| Compile | 14 | 3 | 0 | 11 | 100% mapped (14/14) |
+| **Total** | **1054** | **757** | **0** | **297** | **100% mapped (1054/1054)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

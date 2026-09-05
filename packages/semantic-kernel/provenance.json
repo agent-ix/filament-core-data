@@ -1,0 +1,25 @@
+{
+	"$comment": "Issue #11, FR-084. Generated, never hand-edited. The fingerprint is over the declared toolchain only: nothing the host observes enters it.",
+	"target": "json-schema",
+	"semanticCore": "0.1.0",
+	"emissionDigest": "sha256:dd33c886f70e908b14507c35e078d163b76308c3d170d2b54ddf933d1a4ebb52",
+	"inputDigest": "sha256:990abba17fd76d1f66c9213ab57ae90f0c98e3c8ad221827e6877dffcd63ae25",
+	"losses": [
+		{
+			"id": "unconstrained-value",
+			"code": "agent-ix.compiler.KERNEL_UNCONSTRAINED_VALUE",
+			"construct": "DefaultDecl.value"
+		},
+		{
+			"id": "required-collection-presence",
+			"code": "agent-ix.compiler.KERNEL_REQUIRED_COLLECTION_PRESENCE",
+			"construct": "OperationDecl.params"
+		}
+	],
+	"toolchainFingerprint": "sha256:42be3e5d2b937ffb30e6ead390979f246852c43e7ed7c16d1ba8b6a350b90014",
+	"published": false,
+	"publicationGate": {
+		"issue": "agent-ix/quoin#290",
+		"state": "not-taken"
+	}
+}

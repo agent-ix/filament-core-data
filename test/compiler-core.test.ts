@@ -4825,6 +4825,69 @@ describe("generation backend seam registry codes (FR-063)", () => {
 // The closing gate: every registry code fired somewhere in this suite
 // ---------------------------------------------------------------------------
 
+describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
+	// Every code this repository registers must be emitted by a test in this
+	// file (FR-049's closing gate). Issue #11 adds six, and fires each one here
+	// from the module that raises it, rather than asserting the code exists.
+	it("fires each of the six kernel codes from the module that raises it", async () => {
+		const bundle = await import(
+			"../src/compiler/frontend/json-schema/bundle.mjs"
+		);
+		const representability = await import(
+			"../src/compiler/frontend/json-schema/representability.mjs"
+		);
+		const lower = await import(
+			"../src/compiler/frontend/json-schema/lower.mjs"
+		);
+
+		const declaration = {
+			documents: ["A.json"],
+			semanticCore: "0.1.0",
+			emissionDigest: "sha256:aa",
+			inventoryCounts: { models: 1 },
+		};
+
+		// KERNEL_INVENTORY_MISMATCH and KERNEL_BUNDLE_STALE.
+		note(
+			bundle.checkKernelBundle(
+				declaration,
+				{ models: [1, 2] },
+				{ files: ["B.json"], digest: "sha256:bb" },
+				{ version: "9.9.9" },
+			) as readonly Diagnostic[],
+		);
+
+		// UNSUPPORTED_SCHEMA_KEYWORD: a keyword outside the closed set.
+		const keywordRun = lower.lowerBundle([
+			["A.json", { $id: "A", type: "object", oneOf: [] }],
+		]) as { diagnostics?: readonly Diagnostic[] };
+		note(keywordRun.diagnostics ?? []);
+
+		// UNSUPPORTED_SCHEMA_SHAPE: an object schema with no seal.
+		const shapeRun = lower.lowerBundle([
+			["B.json", { $id: "B", type: "object", properties: {} }],
+		]) as { diagnostics?: readonly Diagnostic[] };
+		note(shapeRun.diagnostics ?? []);
+
+		// The two declared losses.
+		note([
+			representability.decide("DefaultDecl.value").diagnostic,
+			representability.decide("OperationDecl.params").diagnostic,
+		] as readonly Diagnostic[]);
+
+		for (const code of [
+			"agent-ix.compiler.KERNEL_INVENTORY_MISMATCH",
+			"agent-ix.compiler.KERNEL_BUNDLE_STALE",
+			"agent-ix.compiler.UNSUPPORTED_SCHEMA_KEYWORD",
+			"agent-ix.compiler.UNSUPPORTED_SCHEMA_SHAPE",
+			"agent-ix.compiler.KERNEL_UNCONSTRAINED_VALUE",
+			"agent-ix.compiler.KERNEL_REQUIRED_COLLECTION_PRESENCE",
+		]) {
+			expect(observedCodes.has(code), code).toBe(true);
+		}
+	});
+});
+
 describe("diagnostic coverage (FR-049 closing gate)", () => {
 	/** Traces: TC-494, TC-609; FR-049-AC-3. */
 	it("fires every registry code at least once across the fixture corpus", () => {

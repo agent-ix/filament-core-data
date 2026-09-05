@@ -91,6 +91,14 @@ schema preparation, the refusal guards, the sandboxed runner, the
 generated-source inspection, and the layout, and records every retained gap
 rather than acquiring a hand-written Python generator.
 
+The eleventh delivery is the semantic kernel packages (issue #11): the issue #35
+declaration grammar and kernel scalar library, lowered from its official JSON
+Schema projection to one semantic IR v1.1 document and generated into native
+Rust, TypeScript, and Python packages beside the modular JSON Schema bundle, with
+independent consumer examples and a cross-language agreement measurement. It
+generates every package and publishes none of them: publication passes
+`agent-ix/quoin#290`, a human sign-off that has not been given.
+
 ## 2. Scope
 
 ### 2.1 In Scope
@@ -177,9 +185,23 @@ rather than acquiring a hand-written Python generator.
   per-family qualification verdicts and retained-gap register, and the generated
   package layout with its provenance, examples, static checking, and runtime
   validation — none of it published.
+- The semantic kernel bundle declaration, the JSON Schema 2020-12 lowering to one
+  semantic IR v1.1 kernel document, the minting rules that give an anonymous
+  schema construct a stable name, the declared representability-loss register,
+  the generated Rust, TypeScript, and Python kernel packages and the modular JSON
+  Schema index beside them, independent per-language consumer examples, and the
+  cross-language agreement measurement over a shared golden corpus of kernel
+  instances.
 
 ### 2.2 Out of Scope
 
+- Publishing any kernel package to npm, crates.io, or a Python index, adding one
+  to a packed manifest surface, or pushing a release tag. Publication passes
+  `agent-ix/quoin#290` and is not part of issue #11; issue #11 generates,
+  verifies, and records the publication step as blocked.
+- Repairing a representability limit of semantic IR v1.1 by widening a closed
+  vocabulary in `schema/**`, or repairing a defect in the issue #21, #22, or #23
+  backends inside issue #11; each is recorded against its own owner.
 - Implementing the production semantic compiler or production emitter framework;
   issue #4 may implement only an isolated disposable experimental emitter, and
   issue #27 may only promote that prototype without changing its output — the
@@ -347,6 +369,9 @@ Authority is assigned by concern:
 | User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-013](./usecase/US-013-generate-governed-python-types.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, package-author, and Python-consumer outcomes |
 | Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-080](./functional/FR-080-type-check-and-validate-generated-python.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, prototype-promotion, compiler-core, and qualified Python generation behavior |
 | Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-027](./non-functional/NFR-027-reproducible-non-disruptive-python-generation.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic promoted compilation, rollback, bounded and safe compilation, compiler-core non-disruption, sandboxed Python generation, and reproducible non-disruptive Python generation |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-014](./usecase/US-014-consume-the-semantic-kernel-natively.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, package-author, Rust-consumer, TypeScript-consumer, Python-consumer, and semantic-kernel-consumer outcomes |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-090](./functional/FR-090-prove-cross-language-agreement.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, prototype-promotion, compiler-core, Rust/Serde, TypeScript, qualified Python generation, and semantic kernel packaging behavior |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-030](./non-functional/NFR-030-non-disruptive-kernel-packaging.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic and hermetic kernel generation, portable dependency-free kernel packages, and non-disruptive kernel packaging behind the publication gate |
 
 ## 6. Decision Status Model
 

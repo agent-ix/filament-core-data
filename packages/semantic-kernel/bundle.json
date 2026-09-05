@@ -1,0 +1,85 @@
+{
+	"$comment": "Issue #11, FR-081. The kernel bundle declaration: what is generated, where it lands, and how staleness is detected. Read at run time; never restated in a module.",
+	"kernel": {
+		"name": "@agent-ix/semantic-kernel",
+		"version": "0.1.0"
+	},
+	"semanticCore": "0.1.0",
+	"emissionDigest": "sha256:dd33c886f70e908b14507c35e078d163b76308c3d170d2b54ddf933d1a4ebb52",
+	"inventoryCounts": {
+		"models": 21,
+		"unions": 1,
+		"enums": 4,
+		"scalars": 4
+	},
+	"documents": [
+		"ClauseLanguage.json",
+		"ClauseRef.json",
+		"ConstraintDecl.json",
+		"ConstraintKeyword.json",
+		"DecimalPolicy.json",
+		"DefaultDecl.json",
+		"DefaultKind.json",
+		"EdgeCategory.json",
+		"EnumValue.json",
+		"EnumValuesConstraint.json",
+		"ExclusiveMaxConstraint.json",
+		"ExclusiveMinConstraint.json",
+		"FieldDecl.json",
+		"FormatConstraint.json",
+		"Identifier.json",
+		"KernelScalar.json",
+		"MaxConstraint.json",
+		"MaxLengthConstraint.json",
+		"MinConstraint.json",
+		"MinLengthConstraint.json",
+		"Multiplicity.json",
+		"NonEmptyConstraint.json",
+		"OperationDecl.json",
+		"PatternConstraint.json",
+		"RelationDecl.json",
+		"SemanticId.json",
+		"SourceLocus.json",
+		"TypeRef.json",
+		"UniqueConstraint.json",
+		"UnitSymbol.json"
+	],
+	"targets": [
+		{
+			"target": "json-schema",
+			"root": "packages/semantic-kernel/json-schema/",
+			"issue": "agent-ix/filament-core-data#11",
+			"form": "index"
+		},
+		{
+			"target": "typescript",
+			"root": "packages/semantic-kernel/typescript/",
+			"issue": "agent-ix/filament-core-data#22",
+			"form": "generated"
+		},
+		{
+			"target": "rust",
+			"root": "packages/semantic-kernel/rust/",
+			"issue": "agent-ix/filament-core-data#21",
+			"form": "generated"
+		},
+		{
+			"target": "python-pydantic-v2",
+			"root": "packages/semantic-kernel/python/",
+			"issue": "agent-ix/filament-core-data#23",
+			"form": "generated"
+		}
+	],
+	"digestInputs": [
+		"packages/semantic-core/generated/json-schema/",
+		"packages/semantic-core/inventory.json",
+		"packages/semantic-core/generated/toolchain.json",
+		"packages/semantic-core/kernel-scalars.json",
+		"packages/semantic-core/lowering.json"
+	],
+	"publicationGate": {
+		"issue": "agent-ix/quoin#290",
+		"state": "not-taken",
+		"note": "Generation is in scope for #11; publication is not. No step may invoke `cargo publish`, `npm publish`, or a PyPI upload."
+	}
+}

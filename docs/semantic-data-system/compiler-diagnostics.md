@@ -53,6 +53,10 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.INVALID_MAPPING` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.INVALID_PROFILE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.INVALID_REQUEST` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.compiler.KERNEL_BUNDLE_STALE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.compiler.KERNEL_INVENTORY_MISMATCH` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.compiler.KERNEL_REQUIRED_COLLECTION_PRESENCE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.compiler.KERNEL_UNCONSTRAINED_VALUE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.LIMIT_MAX_COLLECTION_ITEMS` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.LIMIT_MAX_DEPTH` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.LIMIT_MAX_INPUT_BYTES` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
@@ -77,6 +81,8 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.UNSUPPORTED_IR_VERSION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSUPPORTED_LOSS` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSUPPORTED_SCALAR_BASE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.compiler.UNSUPPORTED_SCHEMA_KEYWORD` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.compiler.UNSUPPORTED_SCHEMA_SHAPE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSUPPORTED_VERSION_CONSTRAINT` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNTRUSTED_MODULE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.semantic-ir.COMPOSITE_CYCLE` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
