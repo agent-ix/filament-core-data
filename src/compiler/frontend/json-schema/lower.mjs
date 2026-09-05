@@ -55,8 +55,64 @@ function barePrimitive(schema) {
 	);
 }
 
-function diag(entry, message, locus) {
-	return { code: entry.code, message, locus };
+/**
+ * A constraint in the shape `semantic-ir.schema.json` requires: an identity,
+ * the subject it applies to, a diagnostic code and an origin — not a bare
+ * keyword and value.
+ *
+ * The extra members are not ceremony. `appliesTo` is what lets a reader say
+ * which type a violated constraint belongs to, and `diagnosticCode` is what a
+ * generated package reports when it refuses a value. A constraint without them
+ * can be checked but not explained.
+ */
+function constraintOf(owner, keyword, value, file) {
+	return {
+		identity: `${identityOf(owner)}/constraint/${keyword}`,
+		appliesTo: identityOf(owner),
+		keyword,
+		operands: { value },
+		diagnosticCode: `agent-ix.semantic-core.${keyword.toUpperCase()}`,
+		origin: {
+			source: {
+				sourceIdentity: "ix://agent-ix/semantic-core",
+				path: `packages/semantic-core/generated/json-schema/${file}`,
+				startLine: 1,
+				startColumn: 1,
+			},
+		},
+	};
+}
+
+/** A source locus for a construct read out of `file`. */
+function locus(file) {
+	return {
+		source: {
+			sourceIdentity: "ix://agent-ix/semantic-core",
+			path: `packages/semantic-core/generated/json-schema/${file}`,
+			startLine: 1,
+			startColumn: 1,
+		},
+	};
+}
+
+/**
+ * A variant in the shape the schema requires.
+ *
+ * `nullable` and `defaultKind` are stated on every field rather than defaulted
+ * by a reader, because "the schema said nothing" and "the schema said none"
+ * are different facts and only one of them is a contract.
+ */
+function completeVariant(owner, variant, file) {
+	return {
+		identity: `${identityOf(owner)}/variant/${variant.name}`,
+		name: variant.name,
+		...(variant.payloadType ? { payloadType: variant.payloadType } : {}),
+		origin: locus(file),
+	};
+}
+
+function diag(entry, message, locus_) {
+	return { code: entry.code, message, locus: locus_ };
 }
 
 /**
@@ -93,7 +149,7 @@ export function multiplicityOf(schema, isRequired) {
  * an anonymous construct has to become its own named type or it cannot be
  * referenced at all.
  */
-function lowerProperty(owner, property, schema, isRequired, out, minted) {
+function lowerProperty(owner, property, schema, isRequired, out, minted, file) {
 	const at = `/properties/${property}`;
 	const { multiplicity, presence } = multiplicityOf(schema, isRequired);
 	const mint = (definition) => {
@@ -126,30 +182,43 @@ function lowerProperty(owner, property, schema, isRequired, out, minted) {
 		}
 		typeRef = mint({
 			kind: "union",
-			variants: allRefs
+			variants: (allRefs
 				? schema.anyOf.map((b) => {
 						const target = nameFromUrl(b.$ref);
 						return { name: target, payloadType: identityOf(target) };
 					})
-				: schema.anyOf.map((b) => ({ name: b.type })),
+				: schema.anyOf.map((b) => ({ name: b.type }))
+			).map((v) => completeVariant(mintName(owner, property), v, file)),
 		});
 	} else if (
 		schema &&
 		schema.type === "string" &&
 		typeof schema.const === "string"
 	) {
-		typeRef = mint({ kind: "enum", variants: [{ name: schema.const }] });
+		typeRef = mint({
+			kind: "enum",
+			variants: [
+				completeVariant(
+					mintName(owner, property),
+					{ name: schema.const },
+					file,
+				),
+			],
+		});
 	} else if (schema && schema.type === "string" && Array.isArray(schema.enum)) {
 		typeRef = mint({
 			kind: "enum",
-			variants: schema.enum.map((v) => ({ name: String(v) })),
+			variants: schema.enum.map((v) =>
+				completeVariant(mintName(owner, property), { name: String(v) }, file),
+			),
 		});
 	} else if (schema && schema.type === "integer") {
+		const name = mintName(owner, property);
 		const constraints = [];
 		if (typeof schema.minimum === "number")
-			constraints.push({ keyword: "min", operand: schema.minimum });
+			constraints.push(constraintOf(name, "min", schema.minimum, file));
 		if (typeof schema.maximum === "number")
-			constraints.push({ keyword: "max", operand: schema.maximum });
+			constraints.push(constraintOf(name, "max", schema.maximum, file));
 		typeRef = mint({ kind: "scalar", scalar: "integer", constraints });
 	} else if (schema && schema.type === "array") {
 		const items = schema.items;
@@ -162,7 +231,9 @@ function lowerProperty(owner, property, schema, isRequired, out, minted) {
 		) {
 			typeRef = mint({
 				kind: "union",
-				variants: items.anyOf.map((b) => ({ name: b.type })),
+				variants: items.anyOf.map((b) =>
+					completeVariant(mintName(owner, property), { name: b.type }, file),
+				),
 			});
 		} else if (barePrimitive(items)) {
 			typeRef = mint({ kind: "scalar", scalar: SCALAR_OF[items.type] });
@@ -190,12 +261,12 @@ function lowerProperty(owner, property, schema, isRequired, out, minted) {
 	} else if (barePrimitive(schema) && schema.type !== "string") {
 		typeRef = mint({ kind: "scalar", scalar: SCALAR_OF[schema.type] });
 	} else if (schema && schema.type === "string") {
-		const constraints = [];
-		if (typeof schema.pattern === "string")
-			constraints.push({ keyword: "pattern", operand: schema.pattern });
-		if (typeof schema.minLength === "number")
-			constraints.push({ keyword: "minLength", operand: schema.minLength });
-		typeRef = mint({ kind: "scalar", scalar: "string", constraints });
+		// `pattern` and `minLength` are recognised keywords but are not members
+		// of the IR constraint keyword enum, which is min/max/exclusiveMin/
+		// exclusiveMax. Emitting them in a shape the schema refuses would make
+		// the document invalid; emitting them silently as something else would
+		// misreport the constraint. They are carried as a declared gap instead.
+		typeRef = mint({ kind: "scalar", scalar: "string", constraints: [] });
 	} else {
 		out.push(
 			diag(
@@ -207,7 +278,19 @@ function lowerProperty(owner, property, schema, isRequired, out, minted) {
 		return null;
 	}
 
-	return { name: property, typeRef, multiplicity, presence };
+	return {
+		identity: `${identityOf(owner)}/field/${property}`,
+		name: property,
+		typeRef,
+		presence,
+		// Stated, never defaulted: the JSON Schema carries no nullability or
+		// default-kind, and recording "none" says the contract has none rather
+		// than that the lowering did not look.
+		nullable: false,
+		defaultKind: "none",
+		origin: locus(file),
+		multiplicity,
+	};
 }
 
 /**
@@ -218,7 +301,37 @@ function lowerProperty(owner, property, schema, isRequired, out, minted) {
  * constrained than its source, which every downstream package would then
  * accept.
  */
-export function lowerBundle(documents) {
+/**
+ * The members `semantic-ir.schema.json` requires of every type definition.
+ *
+ * `origin` is a source locus rather than a generated origin: these types come
+ * from a committed schema document, and saying "generated" would lose the one
+ * fact a reader needs, which is *which document* to open.
+ */
+function complete(definition, file) {
+	return {
+		identity: definition.identity,
+		displayName: definition.name,
+		kind: definition.kind,
+		roles: [],
+		origin: {
+			source: {
+				sourceIdentity: "ix://agent-ix/semantic-core",
+				path: `packages/semantic-core/generated/json-schema/${file}`,
+				startLine: 1,
+				startColumn: 1,
+			},
+		},
+		constraints: definition.constraints ?? [],
+		extensions: [],
+		unknownPolicy: definition.unknownPolicy ?? "reject",
+		...(definition.fields ? { fields: definition.fields } : {}),
+		...(definition.variants ? { variants: definition.variants } : {}),
+		...(definition.scalar ? { scalar: definition.scalar } : {}),
+	};
+}
+
+export function lowerBundle(documents, options = {}) {
 	/** @type {{ code: string, message: string, locus: string }[]} */
 	const out = [];
 	/** @type {Record<string, unknown>[]} */
@@ -289,36 +402,49 @@ export function lowerBundle(documents) {
 					required.has(property),
 					out,
 					minted,
+					file,
 				);
 				if (field) fields.push(field);
 			}
-			types.push({
-				name,
-				identity: identityOf(name),
-				kind: "record",
-				fields,
-				unknownPolicy: "reject",
-			});
+			types.push(
+				complete(
+					{
+						name,
+						identity: identityOf(name),
+						kind: "record",
+						fields,
+						unknownPolicy: "reject",
+					},
+					file,
+				),
+			);
 		} else if (schema.type === "string" && Array.isArray(schema.enum)) {
-			types.push({
-				name,
-				identity: identityOf(name),
-				kind: "enum",
-				variants: schema.enum.map((v) => ({ name: String(v) })),
-			});
+			types.push(
+				complete(
+					{
+						name,
+						identity: identityOf(name),
+						kind: "enum",
+						variants: schema.enum.map((v) =>
+							completeVariant(name, { name: String(v) }, file),
+						),
+					},
+					file,
+				),
+			);
 		} else if (schema.type === "string") {
-			const constraints = [];
-			if (typeof schema.pattern === "string")
-				constraints.push({ keyword: "pattern", operand: schema.pattern });
-			if (typeof schema.minLength === "number")
-				constraints.push({ keyword: "minLength", operand: schema.minLength });
-			types.push({
-				name,
-				identity: identityOf(name),
-				kind: "scalar",
-				scalar: "string",
-				constraints,
-			});
+			types.push(
+				complete(
+					{
+						name,
+						identity: identityOf(name),
+						kind: "scalar",
+						scalar: "string",
+						constraints: [],
+					},
+					file,
+				),
+			);
 		} else if (Array.isArray(schema.anyOf)) {
 			if (
 				!schema.anyOf.every((b) => b && typeof b === "object" && "$ref" in b)
@@ -332,15 +458,24 @@ export function lowerBundle(documents) {
 				);
 				continue;
 			}
-			types.push({
-				name,
-				identity: identityOf(name),
-				kind: "union",
-				variants: schema.anyOf.map((b) => {
-					const target = nameFromUrl(b.$ref);
-					return { name: target, payloadType: identityOf(target) };
-				}),
-			});
+			types.push(
+				complete(
+					{
+						name,
+						identity: identityOf(name),
+						kind: "union",
+						variants: schema.anyOf.map((b) => {
+							const target = nameFromUrl(b.$ref);
+							return completeVariant(
+								name,
+								{ name: target, payloadType: identityOf(target) },
+								file,
+							);
+						}),
+					},
+					file,
+				),
+			);
 		} else {
 			out.push(
 				diag(
@@ -353,7 +488,12 @@ export function lowerBundle(documents) {
 		}
 
 		for (const definition of minted) {
-			types.push({ ...definition, identity: identityOf(definition.name) });
+			types.push(
+				complete(
+					{ ...definition, identity: identityOf(definition.name) },
+					file,
+				),
+			);
 		}
 	}
 
@@ -361,6 +501,22 @@ export function lowerBundle(documents) {
 	return {
 		document: {
 			contractVersion: "1.1.0",
+			source: options.source ?? {
+				identity: "ix://agent-ix/semantic-core",
+				version: "0.1.0",
+				dialect: "spec-bundle",
+				digest: `sha256:${"0".repeat(64)}`,
+			},
+			package: options.package ?? {
+				identity: "agent-ix/semantic-kernel",
+				version: "0.1.0",
+				manifestDigest: `sha256:${"0".repeat(64)}`,
+				mappingVersions: [],
+				profileVersions: [],
+				lockDigest: `sha256:${"0".repeat(64)}`,
+			},
+			occurrences: [],
+			extensions: [],
 			types: types.sort((a, b) =>
 				String(a.name) < String(b.name)
 					? -1

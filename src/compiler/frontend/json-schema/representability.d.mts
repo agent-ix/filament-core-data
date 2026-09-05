@@ -21,9 +21,7 @@ export declare function checkLossBijection(
 };
 
 /** A declared loss, or a refusal. There is no third answer. */
-export declare function decide(
-	construct: string,
-):
+export declare function decide(construct: string):
 	| {
 			readonly outcome: "declared-loss";
 			readonly row: LossRow;
