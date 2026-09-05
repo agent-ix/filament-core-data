@@ -28,6 +28,11 @@ function advisory(owner) {
 
 const COMPILER_CODES = [
 	// Seam and frontend
+	// Kernel bundle (FR-081). The inventory mismatch is what stops a bundle
+	// declaring a document set the grammar does not have; the staleness code is
+	// what stops a generated tree outliving the source it was generated from.
+	"KERNEL_INVENTORY_MISMATCH",
+	"KERNEL_BUNDLE_STALE",
 	"FRONTEND_NOT_IMPLEMENTED",
 	"TYPESPEC_COMPILE_ERROR",
 	"DUPLICATE_DECORATOR",
