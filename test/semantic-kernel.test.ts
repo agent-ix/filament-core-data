@@ -15,6 +15,15 @@ import {
 	segment,
 } from "../src/compiler/frontend/json-schema/mint.mjs";
 import {
+	KERNEL_LOSSES,
+	checkLossBijection,
+	decide,
+} from "../src/compiler/frontend/json-schema/representability.mjs";
+import {
+	hostLeaks,
+	provenanceOf,
+} from "../src/compiler/frontend/json-schema/provenance.mjs";
+import {
 	checkKernelBundle,
 	checkKernelFreshness,
 	kernelDigest,
@@ -252,5 +261,108 @@ describe("TC-1009..1030 minted names and the closed keyword set (FR-082, FR-083)
 		expect(found).toEqual([{ keyword: "oneOf", pointer: "/oneOf" }]);
 		// `properties` introduces author-chosen names; checking them would report
 		// every field in the grammar.
+	});
+});
+
+describe("TC-1031..1045 the closed loss register and provenance (FR-084)", () => {
+	// TC-1031
+	it("closes the register at exactly two rows in bijection with their codes", () => {
+		expect(KERNEL_LOSSES).toHaveLength(2);
+		expect(checkLossBijection()).toEqual({
+			codesWithoutRow: [],
+			rowsWithoutCode: [],
+		});
+	});
+
+	// TC-1032 — both directions, because they are different defects.
+	it("detects a code with no row", () => {
+		const found = checkLossBijection({
+			X: { code: "agent-ix.compiler.KERNEL_MADE_UP" },
+		});
+		expect(found.codesWithoutRow).toEqual(["agent-ix.compiler.KERNEL_MADE_UP"]);
+	});
+
+	// TC-1033
+	it("names each declared loss and refuses anything else", () => {
+		expect(decide("DefaultDecl.value").outcome).toBe("declared-loss");
+		expect(decide("OperationDecl.params").outcome).toBe("declared-loss");
+
+		const refused = decide("Something.undeclared");
+		expect(refused.outcome).toBe("refused");
+		expect(refused.diagnostic.code).toBe("agent-ix.compiler.UNSUPPORTED_LOSS");
+		// "Proceed and mention it" is the outcome the closed register exists to
+		// make unavailable.
+		expect(refused.diagnostic.message).toContain(
+			"refuses rather than degrading",
+		);
+	});
+
+	// TC-1034
+	it("freezes the register so a caller cannot widen it at run time", () => {
+		expect(Object.isFrozen(KERNEL_LOSSES)).toBe(true);
+		expect(Object.isFrozen(KERNEL_LOSSES[0])).toBe(true);
+	});
+
+	// TC-1035
+	it("fingerprints the declared toolchain and nothing the host observes", () => {
+		const record = provenanceOf({
+			target: "rust",
+			semanticCore: "0.1.0",
+			emissionDigest: "sha256:aa",
+			inputDigest: "sha256:bb",
+			losses: KERNEL_LOSSES,
+		});
+		expect(
+			hostLeaks(record, {
+				cwd: process.cwd(),
+				home: process.env.HOME ?? "",
+				node: process.version,
+			}),
+		).toEqual([]);
+	});
+
+	// TC-1036
+	it("digests by value, so key order does not move the fingerprint", () => {
+		const a = provenanceOf({
+			target: "rust",
+			semanticCore: "0.1.0",
+			emissionDigest: "sha256:aa",
+			inputDigest: "sha256:bb",
+			losses: [],
+		});
+		const b = provenanceOf({
+			semanticCore: "0.1.0",
+			target: "rust",
+			inputDigest: "sha256:bb",
+			emissionDigest: "sha256:aa",
+			losses: [],
+		});
+		expect(a.toolchainFingerprint).toBe(b.toolchainFingerprint);
+
+		// But a declared value moving must move it, or it fingerprints nothing.
+		const moved = provenanceOf({
+			target: "rust",
+			semanticCore: "0.1.1",
+			emissionDigest: "sha256:aa",
+			inputDigest: "sha256:bb",
+			losses: [],
+		});
+		expect(moved.toolchainFingerprint).not.toBe(a.toolchainFingerprint);
+	});
+
+	// TC-1037
+	it("carries the losses and the publication gate with the artifact", () => {
+		const record = provenanceOf({
+			target: "typescript",
+			semanticCore: "0.1.0",
+			emissionDigest: "sha256:aa",
+			inputDigest: "sha256:bb",
+			losses: KERNEL_LOSSES,
+		});
+		expect((record.losses as unknown[]).length).toBe(2);
+		expect(record.published).toBe(false);
+		expect((record.publicationGate as { issue: string }).issue).toBe(
+			"agent-ix/quoin#290",
+		);
 	});
 });
