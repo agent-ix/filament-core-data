@@ -4,6 +4,10 @@ import { describe, expect, it } from "vitest";
 
 import { readdirSync } from "node:fs";
 
+import { generateRust } from "../src/compiler/backends/rust-serde/index.mjs";
+import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
+import { createHost } from "../src/compiler/host.mjs";
+
 import {
 	RECOGNISED_KEYWORDS,
 	unrecognisedKeywords,
@@ -364,5 +368,54 @@ describe("TC-1031..1045 the closed loss register and provenance (FR-084)", () =>
 		expect((record.publicationGate as { issue: string }).issue).toBe(
 			"agent-ix/quoin#290",
 		);
+	});
+});
+
+describe("TC-1046..1060 the generated language trees (FR-085, FR-086)", () => {
+	const kernelRequest = (outputRoot: string) => ({
+		...read("fixtures/semantic/v1/positive/compiler-request.json"),
+		ir: read("packages/semantic-kernel/semantic-ir.json"),
+		profile: read("fixtures/semantic/v1/positive/profile.json"),
+		mappings: [],
+		outputRoot,
+	});
+
+	// TC-1046
+	it("generates the TypeScript kernel package with no diagnostics", () => {
+		const result = typescriptBackend.generate(
+			{
+				...kernelRequest("packages/semantic-kernel/typescript"),
+				backend: {
+					identity: typescriptBackend.identity,
+					version: typescriptBackend.version,
+					supportedIrVersions: [...typescriptBackend.supportedIrVersions],
+					supportedFeatures: [...typescriptBackend.supportedFeatures],
+					options: {},
+				},
+			},
+			{ host: createHost({ readRoots: [root] }) },
+		) as { state: string; files: { path: string; text: string }[] };
+		expect(result.state).toBe("success");
+		expect(result.files.map((f) => f.path).sort()).toContain("types.ts");
+	});
+
+	// TC-1047 — the Rust target refuses, and the refusal is the finding.
+	it("records the Rust name collision rather than working around it", () => {
+		const manifest = generateRust(
+			kernelRequest("packages/semantic-kernel/rust"),
+			{ clear() {}, write() {} },
+			{ root },
+		) as { state: string; diagnostics?: { code: string; message: string }[] };
+
+		// Issue #80: FR-083 mints `SourceLocusPath` from `SourceLocus.path`, and
+		// the Rust backend reserves the same identifier. The backend refuses
+		// rather than letting one definition overwrite the other, which is why
+		// this was caught by trying rather than shipped.
+		expect(manifest.state).toBe("unsupported");
+		const collision = (manifest.diagnostics ?? []).find((d) =>
+			d.code.endsWith("NAME_COLLISION"),
+		);
+		expect(collision?.message).toContain("SourceLocusPath");
+		expect(collision?.message).toContain("reserved");
 	});
 });
