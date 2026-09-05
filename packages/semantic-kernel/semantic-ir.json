@@ -1,0 +1,1384 @@
+{
+	"contractVersion": "1.1.0",
+	"types": [
+		{
+			"name": "ClauseLanguage",
+			"identity": "ix://agent-ix/semantic-core/type/ClauseLanguage",
+			"kind": "scalar",
+			"scalar": "string",
+			"constraints": [
+				{
+					"keyword": "pattern",
+					"operand": "^(ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$"
+				}
+			]
+		},
+		{
+			"name": "ClauseRef",
+			"identity": "ix://agent-ix/semantic-core/type/ClauseRef",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "language",
+					"typeRef": "ix://agent-ix/semantic-core/type/ClauseLanguage",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "clauseId",
+					"typeRef": "ix://agent-ix/semantic-core/type/Identifier",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "sourceSpan",
+					"typeRef": "ix://agent-ix/semantic-core/type/SourceLocus",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "ConstraintDecl",
+			"identity": "ix://agent-ix/semantic-core/type/ConstraintDecl",
+			"kind": "union",
+			"variants": [
+				{
+					"name": "MinConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/type/MinConstraint"
+				},
+				{
+					"name": "MaxConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/type/MaxConstraint"
+				},
+				{
+					"name": "ExclusiveMinConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraint"
+				},
+				{
+					"name": "ExclusiveMaxConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint"
+				},
+				{
+					"name": "PatternConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/type/PatternConstraint"
+				},
+				{
+					"name": "MinLengthConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/type/MinLengthConstraint"
+				},
+				{
+					"name": "MaxLengthConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/type/MaxLengthConstraint"
+				},
+				{
+					"name": "EnumValuesConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/type/EnumValuesConstraint"
+				},
+				{
+					"name": "NonEmptyConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/type/NonEmptyConstraint"
+				},
+				{
+					"name": "UniqueConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/type/UniqueConstraint"
+				},
+				{
+					"name": "FormatConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/type/FormatConstraint"
+				}
+			]
+		},
+		{
+			"name": "ConstraintKeyword",
+			"identity": "ix://agent-ix/semantic-core/type/ConstraintKeyword",
+			"kind": "enum",
+			"variants": [
+				{
+					"name": "min"
+				},
+				{
+					"name": "max"
+				},
+				{
+					"name": "exclusiveMin"
+				},
+				{
+					"name": "exclusiveMax"
+				},
+				{
+					"name": "pattern"
+				},
+				{
+					"name": "minLength"
+				},
+				{
+					"name": "maxLength"
+				},
+				{
+					"name": "enumValues"
+				},
+				{
+					"name": "nonEmpty"
+				},
+				{
+					"name": "unique"
+				},
+				{
+					"name": "format"
+				}
+			]
+		},
+		{
+			"name": "DecimalPolicy",
+			"identity": "ix://agent-ix/semantic-core/type/DecimalPolicy",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "precision",
+					"typeRef": "ix://agent-ix/semantic-core/type/DecimalPolicyPrecision",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "scale",
+					"typeRef": "ix://agent-ix/semantic-core/type/DecimalPolicyScale",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "DecimalPolicyPrecision",
+			"kind": "scalar",
+			"scalar": "integer",
+			"constraints": [
+				{
+					"keyword": "min",
+					"operand": 1
+				},
+				{
+					"keyword": "max",
+					"operand": 2147483647
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/DecimalPolicyPrecision"
+		},
+		{
+			"name": "DecimalPolicyScale",
+			"kind": "scalar",
+			"scalar": "integer",
+			"constraints": [
+				{
+					"keyword": "min",
+					"operand": 0
+				},
+				{
+					"keyword": "max",
+					"operand": 2147483647
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/DecimalPolicyScale"
+		},
+		{
+			"name": "DefaultDecl",
+			"identity": "ix://agent-ix/semantic-core/type/DefaultDecl",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "kind",
+					"typeRef": "ix://agent-ix/semantic-core/type/DefaultKind",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "value",
+					"typeRef": "ix://agent-ix/semantic-core/type/DefaultDeclValue",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "DefaultDeclValue",
+			"kind": "record",
+			"fields": [],
+			"unknownPolicy": "preserve",
+			"identity": "ix://agent-ix/semantic-core/type/DefaultDeclValue"
+		},
+		{
+			"name": "DefaultKind",
+			"identity": "ix://agent-ix/semantic-core/type/DefaultKind",
+			"kind": "enum",
+			"variants": [
+				{
+					"name": "semantic"
+				},
+				{
+					"name": "representation"
+				},
+				{
+					"name": "migration"
+				}
+			]
+		},
+		{
+			"name": "EdgeCategory",
+			"identity": "ix://agent-ix/semantic-core/type/EdgeCategory",
+			"kind": "enum",
+			"variants": [
+				{
+					"name": "structural"
+				},
+				{
+					"name": "behavioral"
+				},
+				{
+					"name": "dataflow"
+				},
+				{
+					"name": "dependency"
+				},
+				{
+					"name": "realization"
+				},
+				{
+					"name": "governance"
+				},
+				{
+					"name": "traceability"
+				}
+			]
+		},
+		{
+			"name": "EnumValue",
+			"identity": "ix://agent-ix/semantic-core/type/EnumValue",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "value",
+					"typeRef": "ix://agent-ix/semantic-core/type/Identifier",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "doc",
+					"typeRef": "ix://agent-ix/semantic-core/type/EnumValueDoc",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "EnumValueDoc",
+			"kind": "scalar",
+			"scalar": "string",
+			"constraints": [],
+			"identity": "ix://agent-ix/semantic-core/type/EnumValueDoc"
+		},
+		{
+			"name": "EnumValuesConstraint",
+			"identity": "ix://agent-ix/semantic-core/type/EnumValuesConstraint",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "keyword",
+					"typeRef": "ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "values",
+					"typeRef": "ix://agent-ix/semantic-core/type/EnumValuesConstraintValues",
+					"multiplicity": {
+						"lower": 1
+					},
+					"presence": "required"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "EnumValuesConstraintKeyword",
+			"kind": "enum",
+			"variants": [
+				{
+					"name": "enumValues"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword"
+		},
+		{
+			"name": "EnumValuesConstraintValues",
+			"kind": "union",
+			"variants": [
+				{
+					"name": "string"
+				},
+				{
+					"name": "number"
+				},
+				{
+					"name": "boolean"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/EnumValuesConstraintValues"
+		},
+		{
+			"name": "ExclusiveMaxConstraint",
+			"identity": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "keyword",
+					"typeRef": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintKeyword",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "value",
+					"typeRef": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "ExclusiveMaxConstraintKeyword",
+			"kind": "enum",
+			"variants": [
+				{
+					"name": "exclusiveMax"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintKeyword"
+		},
+		{
+			"name": "ExclusiveMaxConstraintValue",
+			"kind": "union",
+			"variants": [
+				{
+					"name": "number"
+				},
+				{
+					"name": "string"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue"
+		},
+		{
+			"name": "ExclusiveMinConstraint",
+			"identity": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraint",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "keyword",
+					"typeRef": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintKeyword",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "value",
+					"typeRef": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "ExclusiveMinConstraintKeyword",
+			"kind": "enum",
+			"variants": [
+				{
+					"name": "exclusiveMin"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintKeyword"
+		},
+		{
+			"name": "ExclusiveMinConstraintValue",
+			"kind": "union",
+			"variants": [
+				{
+					"name": "number"
+				},
+				{
+					"name": "string"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue"
+		},
+		{
+			"name": "FieldDecl",
+			"identity": "ix://agent-ix/semantic-core/type/FieldDecl",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "name",
+					"typeRef": "ix://agent-ix/semantic-core/type/Identifier",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "type",
+					"typeRef": "ix://agent-ix/semantic-core/type/TypeRef",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "identity",
+					"typeRef": "ix://agent-ix/semantic-core/type/FieldDeclIdentity",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				},
+				{
+					"name": "nullable",
+					"typeRef": "ix://agent-ix/semantic-core/type/FieldDeclNullable",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				},
+				{
+					"name": "default",
+					"typeRef": "ix://agent-ix/semantic-core/type/DefaultDecl",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				},
+				{
+					"name": "doc",
+					"typeRef": "ix://agent-ix/semantic-core/type/FieldDeclDoc",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				},
+				{
+					"name": "constraints",
+					"typeRef": "ix://agent-ix/semantic-core/type/ConstraintDecl",
+					"multiplicity": {
+						"lower": 0
+					},
+					"presence": "optional"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "FieldDeclDoc",
+			"kind": "scalar",
+			"scalar": "string",
+			"constraints": [],
+			"identity": "ix://agent-ix/semantic-core/type/FieldDeclDoc"
+		},
+		{
+			"name": "FieldDeclIdentity",
+			"kind": "scalar",
+			"scalar": "boolean",
+			"identity": "ix://agent-ix/semantic-core/type/FieldDeclIdentity"
+		},
+		{
+			"name": "FieldDeclNullable",
+			"kind": "scalar",
+			"scalar": "boolean",
+			"identity": "ix://agent-ix/semantic-core/type/FieldDeclNullable"
+		},
+		{
+			"name": "FormatConstraint",
+			"identity": "ix://agent-ix/semantic-core/type/FormatConstraint",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "keyword",
+					"typeRef": "ix://agent-ix/semantic-core/type/FormatConstraintKeyword",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "name",
+					"typeRef": "ix://agent-ix/semantic-core/type/FormatConstraintName",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "FormatConstraintKeyword",
+			"kind": "enum",
+			"variants": [
+				{
+					"name": "format"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/FormatConstraintKeyword"
+		},
+		{
+			"name": "FormatConstraintName",
+			"kind": "scalar",
+			"scalar": "string",
+			"constraints": [
+				{
+					"keyword": "pattern",
+					"operand": "^[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*$"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/FormatConstraintName"
+		},
+		{
+			"name": "Identifier",
+			"identity": "ix://agent-ix/semantic-core/type/Identifier",
+			"kind": "scalar",
+			"scalar": "string",
+			"constraints": [
+				{
+					"keyword": "pattern",
+					"operand": "^[A-Za-z_][A-Za-z0-9_]*$"
+				}
+			]
+		},
+		{
+			"name": "KernelScalar",
+			"identity": "ix://agent-ix/semantic-core/type/KernelScalar",
+			"kind": "enum",
+			"variants": [
+				{
+					"name": "UUID"
+				},
+				{
+					"name": "Boolean"
+				},
+				{
+					"name": "Integer"
+				},
+				{
+					"name": "Decimal"
+				},
+				{
+					"name": "String"
+				},
+				{
+					"name": "Timestamp"
+				},
+				{
+					"name": "Duration"
+				},
+				{
+					"name": "Bytes"
+				},
+				{
+					"name": "JsonObject"
+				}
+			]
+		},
+		{
+			"name": "MaxConstraint",
+			"identity": "ix://agent-ix/semantic-core/type/MaxConstraint",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "keyword",
+					"typeRef": "ix://agent-ix/semantic-core/type/MaxConstraintKeyword",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "value",
+					"typeRef": "ix://agent-ix/semantic-core/type/MaxConstraintValue",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "MaxConstraintKeyword",
+			"kind": "enum",
+			"variants": [
+				{
+					"name": "max"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/MaxConstraintKeyword"
+		},
+		{
+			"name": "MaxConstraintValue",
+			"kind": "union",
+			"variants": [
+				{
+					"name": "number"
+				},
+				{
+					"name": "string"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/MaxConstraintValue"
+		},
+		{
+			"name": "MaxLengthConstraint",
+			"identity": "ix://agent-ix/semantic-core/type/MaxLengthConstraint",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "keyword",
+					"typeRef": "ix://agent-ix/semantic-core/type/MaxLengthConstraintKeyword",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "value",
+					"typeRef": "ix://agent-ix/semantic-core/type/MaxLengthConstraintValue",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "MaxLengthConstraintKeyword",
+			"kind": "enum",
+			"variants": [
+				{
+					"name": "maxLength"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/MaxLengthConstraintKeyword"
+		},
+		{
+			"name": "MaxLengthConstraintValue",
+			"kind": "scalar",
+			"scalar": "integer",
+			"constraints": [
+				{
+					"keyword": "min",
+					"operand": 0
+				},
+				{
+					"keyword": "max",
+					"operand": 2147483647
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/MaxLengthConstraintValue"
+		},
+		{
+			"name": "MinConstraint",
+			"identity": "ix://agent-ix/semantic-core/type/MinConstraint",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "keyword",
+					"typeRef": "ix://agent-ix/semantic-core/type/MinConstraintKeyword",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "value",
+					"typeRef": "ix://agent-ix/semantic-core/type/MinConstraintValue",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "MinConstraintKeyword",
+			"kind": "enum",
+			"variants": [
+				{
+					"name": "min"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/MinConstraintKeyword"
+		},
+		{
+			"name": "MinConstraintValue",
+			"kind": "union",
+			"variants": [
+				{
+					"name": "number"
+				},
+				{
+					"name": "string"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/MinConstraintValue"
+		},
+		{
+			"name": "MinLengthConstraint",
+			"identity": "ix://agent-ix/semantic-core/type/MinLengthConstraint",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "keyword",
+					"typeRef": "ix://agent-ix/semantic-core/type/MinLengthConstraintKeyword",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "value",
+					"typeRef": "ix://agent-ix/semantic-core/type/MinLengthConstraintValue",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "MinLengthConstraintKeyword",
+			"kind": "enum",
+			"variants": [
+				{
+					"name": "minLength"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/MinLengthConstraintKeyword"
+		},
+		{
+			"name": "MinLengthConstraintValue",
+			"kind": "scalar",
+			"scalar": "integer",
+			"constraints": [
+				{
+					"keyword": "min",
+					"operand": 0
+				},
+				{
+					"keyword": "max",
+					"operand": 2147483647
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/MinLengthConstraintValue"
+		},
+		{
+			"name": "Multiplicity",
+			"identity": "ix://agent-ix/semantic-core/type/Multiplicity",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "lower",
+					"typeRef": "ix://agent-ix/semantic-core/type/MultiplicityLower",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "upper",
+					"typeRef": "ix://agent-ix/semantic-core/type/MultiplicityUpper",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				},
+				{
+					"name": "ordered",
+					"typeRef": "ix://agent-ix/semantic-core/type/MultiplicityOrdered",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				},
+				{
+					"name": "unique",
+					"typeRef": "ix://agent-ix/semantic-core/type/MultiplicityUnique",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "MultiplicityLower",
+			"kind": "scalar",
+			"scalar": "integer",
+			"constraints": [
+				{
+					"keyword": "min",
+					"operand": 0
+				},
+				{
+					"keyword": "max",
+					"operand": 2147483647
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/MultiplicityLower"
+		},
+		{
+			"name": "MultiplicityOrdered",
+			"kind": "scalar",
+			"scalar": "boolean",
+			"identity": "ix://agent-ix/semantic-core/type/MultiplicityOrdered"
+		},
+		{
+			"name": "MultiplicityUnique",
+			"kind": "scalar",
+			"scalar": "boolean",
+			"identity": "ix://agent-ix/semantic-core/type/MultiplicityUnique"
+		},
+		{
+			"name": "MultiplicityUpper",
+			"kind": "scalar",
+			"scalar": "integer",
+			"constraints": [
+				{
+					"keyword": "min",
+					"operand": 0
+				},
+				{
+					"keyword": "max",
+					"operand": 2147483647
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/MultiplicityUpper"
+		},
+		{
+			"name": "NonEmptyConstraint",
+			"identity": "ix://agent-ix/semantic-core/type/NonEmptyConstraint",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "keyword",
+					"typeRef": "ix://agent-ix/semantic-core/type/NonEmptyConstraintKeyword",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "NonEmptyConstraintKeyword",
+			"kind": "enum",
+			"variants": [
+				{
+					"name": "nonEmpty"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/NonEmptyConstraintKeyword"
+		},
+		{
+			"name": "OperationDecl",
+			"identity": "ix://agent-ix/semantic-core/type/OperationDecl",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "name",
+					"typeRef": "ix://agent-ix/semantic-core/type/Identifier",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "params",
+					"typeRef": "ix://agent-ix/semantic-core/type/FieldDecl",
+					"multiplicity": {
+						"lower": 0
+					},
+					"presence": "optional"
+				},
+				{
+					"name": "returns",
+					"typeRef": "ix://agent-ix/semantic-core/type/TypeRef",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				},
+				{
+					"name": "pre",
+					"typeRef": "ix://agent-ix/semantic-core/type/ClauseRef",
+					"multiplicity": {
+						"lower": 0
+					},
+					"presence": "optional"
+				},
+				{
+					"name": "post",
+					"typeRef": "ix://agent-ix/semantic-core/type/ClauseRef",
+					"multiplicity": {
+						"lower": 0
+					},
+					"presence": "optional"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "PatternConstraint",
+			"identity": "ix://agent-ix/semantic-core/type/PatternConstraint",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "keyword",
+					"typeRef": "ix://agent-ix/semantic-core/type/PatternConstraintKeyword",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "regex",
+					"typeRef": "ix://agent-ix/semantic-core/type/PatternConstraintRegex",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "dialect",
+					"typeRef": "ix://agent-ix/semantic-core/type/PatternConstraintDialect",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "PatternConstraintDialect",
+			"kind": "enum",
+			"variants": [
+				{
+					"name": "ecma-262"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/PatternConstraintDialect"
+		},
+		{
+			"name": "PatternConstraintKeyword",
+			"kind": "enum",
+			"variants": [
+				{
+					"name": "pattern"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/PatternConstraintKeyword"
+		},
+		{
+			"name": "PatternConstraintRegex",
+			"kind": "scalar",
+			"scalar": "string",
+			"constraints": [
+				{
+					"keyword": "minLength",
+					"operand": 1
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/PatternConstraintRegex"
+		},
+		{
+			"name": "RelationDecl",
+			"identity": "ix://agent-ix/semantic-core/type/RelationDecl",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "verb",
+					"typeRef": "ix://agent-ix/semantic-core/type/Identifier",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "category",
+					"typeRef": "ix://agent-ix/semantic-core/type/EdgeCategory",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "composite",
+					"typeRef": "ix://agent-ix/semantic-core/type/RelationDeclComposite",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				},
+				{
+					"name": "target",
+					"typeRef": "ix://agent-ix/semantic-core/type/SemanticId",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "multiplicity",
+					"typeRef": "ix://agent-ix/semantic-core/type/Multiplicity",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "RelationDeclComposite",
+			"kind": "scalar",
+			"scalar": "boolean",
+			"identity": "ix://agent-ix/semantic-core/type/RelationDeclComposite"
+		},
+		{
+			"name": "SemanticId",
+			"identity": "ix://agent-ix/semantic-core/type/SemanticId",
+			"kind": "scalar",
+			"scalar": "string",
+			"constraints": [
+				{
+					"keyword": "pattern",
+					"operand": "^ix://[a-z0-9][a-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._~:/-]*$"
+				}
+			]
+		},
+		{
+			"name": "SourceLocus",
+			"identity": "ix://agent-ix/semantic-core/type/SourceLocus",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "sourceIdentity",
+					"typeRef": "ix://agent-ix/semantic-core/type/SemanticId",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "path",
+					"typeRef": "ix://agent-ix/semantic-core/type/SourceLocusPath",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "startLine",
+					"typeRef": "ix://agent-ix/semantic-core/type/SourceLocusStartLine",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "startColumn",
+					"typeRef": "ix://agent-ix/semantic-core/type/SourceLocusStartColumn",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "endLine",
+					"typeRef": "ix://agent-ix/semantic-core/type/SourceLocusEndLine",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				},
+				{
+					"name": "endColumn",
+					"typeRef": "ix://agent-ix/semantic-core/type/SourceLocusEndColumn",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "SourceLocusEndColumn",
+			"kind": "scalar",
+			"scalar": "integer",
+			"constraints": [
+				{
+					"keyword": "min",
+					"operand": 1
+				},
+				{
+					"keyword": "max",
+					"operand": 2147483647
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/SourceLocusEndColumn"
+		},
+		{
+			"name": "SourceLocusEndLine",
+			"kind": "scalar",
+			"scalar": "integer",
+			"constraints": [
+				{
+					"keyword": "min",
+					"operand": 1
+				},
+				{
+					"keyword": "max",
+					"operand": 2147483647
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/SourceLocusEndLine"
+		},
+		{
+			"name": "SourceLocusPath",
+			"kind": "scalar",
+			"scalar": "string",
+			"constraints": [
+				{
+					"keyword": "minLength",
+					"operand": 1
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/SourceLocusPath"
+		},
+		{
+			"name": "SourceLocusStartColumn",
+			"kind": "scalar",
+			"scalar": "integer",
+			"constraints": [
+				{
+					"keyword": "min",
+					"operand": 1
+				},
+				{
+					"keyword": "max",
+					"operand": 2147483647
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/SourceLocusStartColumn"
+		},
+		{
+			"name": "SourceLocusStartLine",
+			"kind": "scalar",
+			"scalar": "integer",
+			"constraints": [
+				{
+					"keyword": "min",
+					"operand": 1
+				},
+				{
+					"keyword": "max",
+					"operand": 2147483647
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/SourceLocusStartLine"
+		},
+		{
+			"name": "TypeRef",
+			"identity": "ix://agent-ix/semantic-core/type/TypeRef",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "target",
+					"typeRef": "ix://agent-ix/semantic-core/type/TypeRefTarget",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				},
+				{
+					"name": "multiplicity",
+					"typeRef": "ix://agent-ix/semantic-core/type/Multiplicity",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				},
+				{
+					"name": "unit",
+					"typeRef": "ix://agent-ix/semantic-core/type/UnitSymbol",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				},
+				{
+					"name": "decimal",
+					"typeRef": "ix://agent-ix/semantic-core/type/DecimalPolicy",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"presence": "optional"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "TypeRefTarget",
+			"kind": "union",
+			"variants": [
+				{
+					"name": "SemanticId",
+					"payloadType": "ix://agent-ix/semantic-core/type/SemanticId"
+				},
+				{
+					"name": "KernelScalar",
+					"payloadType": "ix://agent-ix/semantic-core/type/KernelScalar"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/TypeRefTarget"
+		},
+		{
+			"name": "UniqueConstraint",
+			"identity": "ix://agent-ix/semantic-core/type/UniqueConstraint",
+			"kind": "record",
+			"fields": [
+				{
+					"name": "keyword",
+					"typeRef": "ix://agent-ix/semantic-core/type/UniqueConstraintKeyword",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required"
+				}
+			],
+			"unknownPolicy": "reject"
+		},
+		{
+			"name": "UniqueConstraintKeyword",
+			"kind": "enum",
+			"variants": [
+				{
+					"name": "unique"
+				}
+			],
+			"identity": "ix://agent-ix/semantic-core/type/UniqueConstraintKeyword"
+		},
+		{
+			"name": "UnitSymbol",
+			"identity": "ix://agent-ix/semantic-core/type/UnitSymbol",
+			"kind": "scalar",
+			"scalar": "string",
+			"constraints": [
+				{
+					"keyword": "pattern",
+					"operand": "^[!-~]+$"
+				}
+			]
+		}
+	]
+}
