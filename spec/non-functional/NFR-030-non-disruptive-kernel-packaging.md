@@ -57,6 +57,15 @@ be backed out by reverting this work alone.
   `crates/kernel-consumer/**`, `scripts/build-semantic-kernel.mjs`,
   `scripts/build-semantic-kernel-digests.mjs`,
   `test/semantic-kernel.test.ts`, `test/changed-paths.ts`,
+  `test/compiler-core.test.ts` — permitted for one reason only, stated here so
+  the entry cannot be reused for another: FR-049's closing gate requires every
+  registered diagnostic code to be emitted by a test **in that file**, and this
+  requirement's siblings add six codes. Firing them anywhere else leaves the
+  gate reporting them unemitted. The alternative is a code that no test can
+  fire, which is the thing FR-049 exists to prevent. The scope conflict is
+  recorded as `agent-ix/filament-core-data#83`; this entry is the local
+  resolution, not the general one, and admits only the additions that fire this
+  requirement's own codes,
   `tests/test_semantic_kernel.py`, `Makefile`, `Cargo.toml`, `Cargo.lock`,
   and nothing else.
 - Prohibited paths: every other path, and in particular

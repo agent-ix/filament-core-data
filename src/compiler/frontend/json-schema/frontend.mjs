@@ -12,6 +12,7 @@
  * returns diagnostics or a document. It reads nothing either.
  */
 
+import { DIAGNOSTIC_CODES } from "../../diagnostics.mjs";
 import { lowerBundle } from "./lower.mjs";
 
 /**
@@ -43,7 +44,10 @@ export function run(request) {
 			state: "invalid",
 			diagnostics: Object.freeze([
 				{
-					code: "agent-ix.compiler.UNSUPPORTED_SCHEMA_SHAPE",
+					// Referenced, never spelled: a literal code drifts from the
+					// registry silently, and the registry is what the docs and the
+					// coverage gate read.
+					code: DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE.code,
 					message:
 						"the request carries no documents; an empty bundle lowers to an empty document, which is indistinguishable from a bundle that failed to load",
 					locus: "/documents",
