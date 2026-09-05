@@ -32,6 +32,8 @@ import {
 	checkLossBijection,
 } from "../src/compiler/frontend/json-schema/representability.mjs";
 import { provenanceOf } from "../src/compiler/frontend/json-schema/provenance.mjs";
+import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
+import { createHost } from "../src/compiler/host.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const KERNEL = join(ROOT, "packages/semantic-kernel");
@@ -134,6 +136,45 @@ function main(argv) {
 			),
 		],
 	];
+
+	// The TypeScript tree (FR-085). Generated through the backend issue #22
+	// landed, not through a second emitter written here: a second emitter would
+	// be a second contract, and the corpus judges only the first.
+	const tsRequest = {
+		contractVersion: "1.0.0",
+		lockFingerprint: inputDigest,
+		ir: lowered.document,
+		profile: readJson(join(ROOT, "fixtures/semantic/v1/positive/profile.json")),
+		mappings: [],
+		backend: {
+			identity: typescriptBackend.identity,
+			version: typescriptBackend.version,
+			supportedIrVersions: [...typescriptBackend.supportedIrVersions],
+			supportedFeatures: [...typescriptBackend.supportedFeatures],
+			options: {},
+		},
+		outputRoot: "packages/semantic-kernel/typescript",
+		limits: {
+			maxInputBytes: 16777216,
+			maxDepth: 128,
+			maxNodes: 100000,
+			maxCollectionItems: 10000,
+			maxDiagnostics: 1000,
+		},
+	};
+	const ts = typescriptBackend.generate(tsRequest, {
+		host: createHost({ readRoots: [ROOT] }),
+	});
+	if (ts.state !== "success") {
+		for (const d of ts.diagnostics ?? []) {
+			process.stderr.write(`${d.code}: ${d.message}\n`);
+		}
+		process.exitCode = 1;
+		return;
+	}
+	for (const file of ts.files) {
+		artifacts.push([`typescript/${file.path}`, file.text]);
+	}
 
 	let stale = 0;
 	for (const [relative, contents] of artifacts) {
