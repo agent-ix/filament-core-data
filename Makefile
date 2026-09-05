@@ -326,3 +326,14 @@ rust: rust-check rust-build rust-test rust-conformance rust-install-from-artifac
 .PHONY: rust-deep
 rust-deep: rust-mutate rust-fuzz
 	node scripts/rust-backend-harness.mjs properties --deep
+
+# The semantic kernel (issue #11). `semantic-kernel` writes every generated
+# artifact; `semantic-kernel-check` writes nothing and fails if any would
+# change. Generation only: publication passes agent-ix/quoin#290.
+.PHONY: semantic-kernel
+semantic-kernel:
+	node scripts/build-semantic-kernel.mjs
+
+.PHONY: semantic-kernel-check
+semantic-kernel-check:
+	node scripts/build-semantic-kernel.mjs --check

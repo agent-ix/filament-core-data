@@ -28,6 +28,21 @@ function advisory(owner) {
 
 const COMPILER_CODES = [
 	// Seam and frontend
+	// Kernel bundle (FR-081). The inventory mismatch is what stops a bundle
+	// declaring a document set the grammar does not have; the staleness code is
+	// what stops a generated tree outliving the source it was generated from.
+	// JSON Schema lowering (FR-082). Two codes, not one: "outside the recognised
+	// set" and "recognised but in an arrangement never seen here" send a reader
+	// to different files.
+	// The two declared kernel representability losses (FR-084). Each is in
+	// bijection with a KERNEL_LOSSES row: a code with no row, or a row with no
+	// code, is how a loss register stops describing the losses.
+	"KERNEL_UNCONSTRAINED_VALUE",
+	"KERNEL_REQUIRED_COLLECTION_PRESENCE",
+	"UNSUPPORTED_SCHEMA_KEYWORD",
+	"UNSUPPORTED_SCHEMA_SHAPE",
+	"KERNEL_INVENTORY_MISMATCH",
+	"KERNEL_BUNDLE_STALE",
 	"FRONTEND_NOT_IMPLEMENTED",
 	"TYPESPEC_COMPILE_ERROR",
 	"DUPLICATE_DECORATOR",

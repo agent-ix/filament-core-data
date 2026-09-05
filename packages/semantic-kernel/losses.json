@@ -1,0 +1,20 @@
+{
+	"losses": [
+		{
+			"id": "unconstrained-value",
+			"code": "agent-ix.compiler.KERNEL_UNCONSTRAINED_VALUE",
+			"construct": "DefaultDecl.value",
+			"owner": "ix://agent-ix/semantic-core/type/DefaultDecl",
+			"lost": "any JSON value narrowed to any JSON object",
+			"why": "`DefaultDecl.value` is `unknown` in main.tsp and `{}` in DefaultDecl.json, and IR v1.1 has no any-type. The JsonObject lowering — kind record, fields [], unknownPolicy preserve — is the closest representable shape, and it admits strictly less than the schema does."
+		},
+		{
+			"id": "required-collection-presence",
+			"code": "agent-ix.compiler.KERNEL_REQUIRED_COLLECTION_PRESENCE",
+			"construct": "OperationDecl.params",
+			"owner": "ix://agent-ix/semantic-core/type/OperationDecl",
+			"lost": "required-but-possibly-empty collapsed to optional",
+			"why": "`OperationDecl.params` is named in required and carries no minItems, so it lowers to lower 0 and its derived presence is optional. IR v1.1 cannot express 'the member must be present and may be empty'."
+		}
+	]
+}

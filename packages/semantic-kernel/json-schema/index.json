@@ -1,0 +1,127 @@
+{
+	"$comment": "Issue #11, FR-088. An index over packages/semantic-core/generated/json-schema/, never a copy of it.",
+	"base": "https://schemas.agent-ix.org/semantic-core/0.1.0/",
+	"emissionDigest": "sha256:dd33c886f70e908b14507c35e078d163b76308c3d170d2b54ddf933d1a4ebb52",
+	"documents": [
+		{
+			"name": "ClauseLanguage.json",
+			"path": "../../semantic-core/generated/json-schema/ClauseLanguage.json"
+		},
+		{
+			"name": "ClauseRef.json",
+			"path": "../../semantic-core/generated/json-schema/ClauseRef.json"
+		},
+		{
+			"name": "ConstraintDecl.json",
+			"path": "../../semantic-core/generated/json-schema/ConstraintDecl.json"
+		},
+		{
+			"name": "ConstraintKeyword.json",
+			"path": "../../semantic-core/generated/json-schema/ConstraintKeyword.json"
+		},
+		{
+			"name": "DecimalPolicy.json",
+			"path": "../../semantic-core/generated/json-schema/DecimalPolicy.json"
+		},
+		{
+			"name": "DefaultDecl.json",
+			"path": "../../semantic-core/generated/json-schema/DefaultDecl.json"
+		},
+		{
+			"name": "DefaultKind.json",
+			"path": "../../semantic-core/generated/json-schema/DefaultKind.json"
+		},
+		{
+			"name": "EdgeCategory.json",
+			"path": "../../semantic-core/generated/json-schema/EdgeCategory.json"
+		},
+		{
+			"name": "EnumValue.json",
+			"path": "../../semantic-core/generated/json-schema/EnumValue.json"
+		},
+		{
+			"name": "EnumValuesConstraint.json",
+			"path": "../../semantic-core/generated/json-schema/EnumValuesConstraint.json"
+		},
+		{
+			"name": "ExclusiveMaxConstraint.json",
+			"path": "../../semantic-core/generated/json-schema/ExclusiveMaxConstraint.json"
+		},
+		{
+			"name": "ExclusiveMinConstraint.json",
+			"path": "../../semantic-core/generated/json-schema/ExclusiveMinConstraint.json"
+		},
+		{
+			"name": "FieldDecl.json",
+			"path": "../../semantic-core/generated/json-schema/FieldDecl.json"
+		},
+		{
+			"name": "FormatConstraint.json",
+			"path": "../../semantic-core/generated/json-schema/FormatConstraint.json"
+		},
+		{
+			"name": "Identifier.json",
+			"path": "../../semantic-core/generated/json-schema/Identifier.json"
+		},
+		{
+			"name": "KernelScalar.json",
+			"path": "../../semantic-core/generated/json-schema/KernelScalar.json"
+		},
+		{
+			"name": "MaxConstraint.json",
+			"path": "../../semantic-core/generated/json-schema/MaxConstraint.json"
+		},
+		{
+			"name": "MaxLengthConstraint.json",
+			"path": "../../semantic-core/generated/json-schema/MaxLengthConstraint.json"
+		},
+		{
+			"name": "MinConstraint.json",
+			"path": "../../semantic-core/generated/json-schema/MinConstraint.json"
+		},
+		{
+			"name": "MinLengthConstraint.json",
+			"path": "../../semantic-core/generated/json-schema/MinLengthConstraint.json"
+		},
+		{
+			"name": "Multiplicity.json",
+			"path": "../../semantic-core/generated/json-schema/Multiplicity.json"
+		},
+		{
+			"name": "NonEmptyConstraint.json",
+			"path": "../../semantic-core/generated/json-schema/NonEmptyConstraint.json"
+		},
+		{
+			"name": "OperationDecl.json",
+			"path": "../../semantic-core/generated/json-schema/OperationDecl.json"
+		},
+		{
+			"name": "PatternConstraint.json",
+			"path": "../../semantic-core/generated/json-schema/PatternConstraint.json"
+		},
+		{
+			"name": "RelationDecl.json",
+			"path": "../../semantic-core/generated/json-schema/RelationDecl.json"
+		},
+		{
+			"name": "SemanticId.json",
+			"path": "../../semantic-core/generated/json-schema/SemanticId.json"
+		},
+		{
+			"name": "SourceLocus.json",
+			"path": "../../semantic-core/generated/json-schema/SourceLocus.json"
+		},
+		{
+			"name": "TypeRef.json",
+			"path": "../../semantic-core/generated/json-schema/TypeRef.json"
+		},
+		{
+			"name": "UniqueConstraint.json",
+			"path": "../../semantic-core/generated/json-schema/UniqueConstraint.json"
+		},
+		{
+			"name": "UnitSymbol.json",
+			"path": "../../semantic-core/generated/json-schema/UnitSymbol.json"
+		}
+	]
+}
