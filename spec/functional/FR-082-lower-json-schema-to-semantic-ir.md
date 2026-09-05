@@ -50,7 +50,7 @@ the contract.
 - `src/compiler/frontend/json-schema/frontend.mjs`, exporting `dialect`, `sourceForm`, and `run(request)`, matching the `FrontendResult` shape `src/compiler/frontend/typespec/frontend.mjs` returns
 - `src/compiler/frontend/json-schema/lower.mjs`, the pure lowering
 - `src/compiler/frontend/json-schema/keywords.mjs`, the closed recognised-keyword set
-- A `.d.mts` declaration beside every added `.mjs` under `src/compiler/frontend/json-schema/`, as `src/compiler/frontend/typespec/` does
+- A `.d.mts` declaration beside every added `.mjs` in this frontend's directory, as the TypeSpec frontend does for its own modules
 - A registration on the `typespec` entry of the registry in `src/compiler/frontend/seam.mjs`, under the source form `json-schema-bundle`
 - `packages/semantic-kernel/semantic-ir.json`, the kernel IR document, fifty-three type definitions lowered from the thirty documents, written by `scripts/build-semantic-kernel.mjs`
 - Diagnostics `agent-ix.compiler.UNSUPPORTED_SCHEMA_KEYWORD` and `agent-ix.compiler.UNSUPPORTED_SCHEMA_SHAPE`, added as members of `DIAGNOSTIC_CODES` in `src/compiler/diagnostics.mjs`

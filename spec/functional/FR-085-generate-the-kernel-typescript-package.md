@@ -54,7 +54,7 @@ tree, the regeneration gate, and the one criterion it cannot close.
 - `test/semantic-kernel.test.ts`, the Node-side suite carrying this requirement's criteria
 - The blocked-criteria record in `docs/semantic-data-system/semantic-kernel-packages.md`, naming `agent-ix/filament-core-data#22` for the `strict` typecheck and `agent-ix/quoin#290` for publication
 
-This requirement adds no module under `src/compiler/backends/typescript-v1/`, no
+This requirement adds no module to the issue #22 TypeScript backend's directory, no
 second renderer, and no kernel-specific branch inside the backend. If the kernel
 document needs behaviour the backend does not have, that is a change to issue
 #22's requirements and not a fork here.
@@ -123,7 +123,7 @@ document needs behaviour the backend does not have, that is a change to issue
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-085-CON-1 | This requirement SHALL add no TypeScript emitter, no module under `src/compiler/backends/typescript-v1/`, and no kernel-specific branch inside the existing backend. A construct the backend cannot render is a change request against `agent-ix/filament-core-data#22`, not a second renderer here, because two emitters for one target are two answers to one question and the committed tree would stop being evidence about the backend. | Scope | Inspection |
+| FR-085-CON-1 | This requirement SHALL add no TypeScript emitter, no module to the issue #22 TypeScript backend's directory, and no kernel-specific branch inside the existing backend. A construct the backend cannot render is a change request against `agent-ix/filament-core-data#22`, not a second renderer here, because two emitters for one target are two answers to one question and the committed tree would stop being evidence about the backend. | Scope | Inspection |
 | FR-085-CON-2 | The check SHALL regenerate into a scratch directory outside the working tree and never rewrite a committed artifact in place, so it cannot pass by comparing a file to itself and cannot leave the tree dirty — the defect `agent-ix/filament-core-data#49` records. | Correctness | Test |
 | FR-085-CON-3 | No `npm publish`, `pnpm publish`, `npm pack --publish`, registry token, `publishConfig` member, or tag push SHALL appear in any target, script or committed manifest this requirement adds. Publication is blocked on `agent-ix/quoin#290` and the block is enforced by the absence of the mechanism rather than by an intention to refrain. | Safety | Inspection |
 | FR-085-CON-4 | This requirement SHALL record the `strict` typecheck criterion as blocked on `agent-ix/filament-core-data#22` with the defect named, and never soften it, re-scope it to weaker compiler options, or remove it. A gate this ticket cannot pass is reported red with an owner; it is never re-typed until it is green. | Honesty | Inspection |

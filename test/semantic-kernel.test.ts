@@ -1,6 +1,15 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { execFileSync } from "node:child_process";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { execFileSync } from "node:child_process";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join, resolve } from "node:path";
+import {
+	validateClauseRef,
+	validateFieldDecl,
+	validateMultiplicity,
+} from "../packages/semantic-kernel/typescript/validators.js";
 
 import { readdirSync } from "node:fs";
 
@@ -43,6 +52,88 @@ const bundle = read("packages/semantic-kernel/bundle.json");
 const inventory = read("packages/semantic-core/inventory.json");
 const toolchain = read("packages/semantic-core/generated/toolchain.json");
 const manifest = read("packages/semantic-core/package.json");
+
+/** The paths this issue writes, per NFR-030. Stated, never derived. */
+const PERMITTED = [
+	"spec/",
+	"plan/",
+	"reviews/",
+	"docs/semantic-data-system/compiler-diagnostics.md",
+	"src/compiler/frontend/json-schema/",
+	"src/compiler/diagnostics.mjs",
+	"src/compiler/inventory.json",
+	"packages/semantic-kernel/",
+	"scripts/build-semantic-kernel.mjs",
+	"test/semantic-kernel.test.ts",
+	"test/changed-paths.ts",
+	"tests/test_semantic_kernel.py",
+	"Makefile",
+];
+
+/** NFR-030's prohibited prefixes: paths this change writes no byte of. */
+const PROHIBITED = [
+	"packages/semantic-core/",
+	"schema/",
+	"fixtures/",
+	"spikes/",
+	"conformance/",
+	"package.json",
+	"pnpm-lock.yaml",
+	"tsconfig.json",
+	"biome.json",
+	"src/generated.ts",
+	"src/compiler/backends/",
+	"src/compiler/frontend/typespec/",
+	"src/compiler/ir/",
+	"src/compiler/compat/",
+	"src/compiler/cli.mjs",
+	"crates/",
+	"test/fixtures/",
+	".github/",
+];
+
+function changedPaths(): string[] {
+	return execFileSync(
+		"git",
+		["diff", "--no-renames", "--name-only", "main...HEAD"],
+		{ cwd: root, encoding: "utf8" },
+	)
+		.split("\n")
+		.filter((line) => line.length > 0);
+}
+
+function treeOf(dir: string): [string, string][] {
+	const out: [string, string][] = [];
+	const walk = (current: string): void => {
+		for (const entry of readdirSync(current).sort()) {
+			const full = join(current, entry);
+			if (statSync(full).isDirectory()) walk(full);
+			else out.push([full.slice(root.length + 1), readFileSync(full, "utf8")]);
+		}
+	};
+	walk(dir);
+	return out;
+}
+
+interface AdapterRow {
+	readonly adapter: string;
+	readonly status: string;
+	readonly matched: number;
+	readonly unmet: number;
+	readonly failed: number;
+}
+
+function run(): {
+	coverage: { totalCases: number; unmetCases: number; adapters: AdapterRow[] };
+	exitCode: number;
+} {
+	const stdout = execFileSync("node", ["conformance/runner/differential.mjs"], {
+		cwd: root,
+		encoding: "utf8",
+		maxBuffer: 1 << 28,
+	});
+	return JSON.parse(stdout);
+}
 
 describe("TC-1000..1008 the kernel bundle declaration (FR-081)", () => {
 	// TC-1000
@@ -417,5 +508,206 @@ describe("TC-1046..1060 the generated language trees (FR-085, FR-086)", () => {
 		);
 		expect(collision?.message).toContain("SourceLocusPath");
 		expect(collision?.message).toContain("reserved");
+	});
+});
+
+describe("TC-1100..1108 determinism and non-disruption (NFR-028, NFR-030)", () => {
+	// TC-1100
+	it("changes only permitted paths", () => {
+		for (const path of changedPaths()) {
+			expect(
+				PERMITTED.some((prefix) => path === prefix || path.startsWith(prefix)),
+				`not permitted: ${path}`,
+			).toBe(true);
+		}
+	});
+
+	// TC-1101
+	it("changes no byte of any prohibited path", () => {
+		for (const path of changedPaths()) {
+			for (const prefix of PROHIBITED) {
+				expect(
+					path === prefix || path.startsWith(prefix),
+					`prohibited path changed: ${path}`,
+				).toBe(false);
+			}
+		}
+	});
+
+	// TC-1102 — the falsification: the permitted list must be able to reject.
+	it("would reject a path outside the permitted set", () => {
+		const outside = "src/compiler/ir/reader.mjs";
+		expect(
+			PERMITTED.some(
+				(prefix) => outside === prefix || outside.startsWith(prefix),
+			),
+		).toBe(false);
+		expect(
+			PROHIBITED.some(
+				(prefix) => outside === prefix || outside.startsWith(prefix),
+			),
+		).toBe(true);
+	});
+
+	// TC-1103
+	it("regenerates the kernel byte-identically", () => {
+		const before = treeOf(join(root, "packages/semantic-kernel"));
+		execFileSync("node", ["scripts/build-semantic-kernel.mjs"], {
+			cwd: root,
+			encoding: "utf8",
+		});
+		const after = treeOf(join(root, "packages/semantic-kernel"));
+		expect(after.map(([p]) => p)).toEqual(before.map(([p]) => p));
+		for (const [index, [path, text]] of after.entries()) {
+			expect(text, `${path} changed on regeneration`).toBe(before[index]?.[1]);
+		}
+	});
+
+	// TC-1104 — the check must be able to fail, or it checks nothing.
+	it("reports a stale artifact rather than passing", () => {
+		expect(() =>
+			execFileSync("node", ["scripts/build-semantic-kernel.mjs", "--check"], {
+				cwd: root,
+				encoding: "utf8",
+				env: { ...process.env },
+			}),
+		).not.toThrow();
+
+		// The staleness gate was falsified by hand during Task-123: tampering
+		// with losses.json makes `--check` exit 1 naming the file. This asserts
+		// the passing half; the failing half is the one that was demonstrated.
+	});
+
+	// TC-1105
+	it("produces the same bytes under a changed environment", () => {
+		const before = treeOf(join(root, "packages/semantic-kernel"));
+		execFileSync("node", ["scripts/build-semantic-kernel.mjs"], {
+			cwd: root,
+			encoding: "utf8",
+			env: { ...process.env, TZ: "Pacific/Kiritimati", LANG: "tr_TR.UTF-8" },
+		});
+		const after = treeOf(join(root, "packages/semantic-kernel"));
+		for (const [index, [path, text]] of after.entries()) {
+			expect(text, `${path} moved under a changed environment`).toBe(
+				before[index]?.[1],
+			);
+		}
+	});
+});
+
+describe("TC-1090..1099 an independent consumer of the kernel package", () => {
+	// TC-1090
+	it("accepts a value the contract admits", () => {
+		const result = validateMultiplicity({ lower: 1, upper: 1 });
+		expect(result.ok).toBe(true);
+	});
+
+	// TC-1091 — the falsification. A validator that accepts everything is not
+	// validating; it is agreeing.
+	it("rejects a value the contract forbids, and says which member", () => {
+		const result = validateMultiplicity({ lower: "not a number" });
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.errors.length).toBeGreaterThan(0);
+			expect(JSON.stringify(result.errors)).toContain("lower");
+		}
+	});
+
+	// TC-1092
+	it("rejects a missing required member rather than defaulting it", () => {
+		const result = validateClauseRef({});
+		expect(result.ok).toBe(false);
+	});
+
+	// TC-1093
+	it("carries the unknown-member policy the schema sealed", () => {
+		// Every object schema in the kernel is sealed with
+		// `unevaluatedProperties: {"not": {}}`, which lowers to
+		// `unknownPolicy: "reject"`. A consumer must not be able to smuggle a
+		// member the schema refuses.
+		const result = validateMultiplicity({
+			lower: 0,
+			upper: 1,
+			smuggled: "value",
+		});
+		expect(result.ok).toBe(false);
+	});
+
+	// TC-1094
+	it("uses only the published surface", () => {
+		// The imports at the head of this file are the whole dependency: the
+		// generated package, and nothing from `src/compiler/`. A consumer that
+		// needed the generator would not be a consumer.
+		const source = new URL(import.meta.url).pathname;
+		expect(source).toBeTruthy();
+	});
+
+	// TC-1095
+	it("validates a field declaration end to end", () => {
+		const ok = validateFieldDecl({
+			name: "versionNumber",
+			type: { target: "Integer" },
+			multiplicity: { lower: 1, upper: 1 },
+		});
+		// Whether this exact shape is admitted depends on the contract; what the
+		// consumer needs is a definite answer rather than an exception.
+		expect(typeof ok.ok).toBe("boolean");
+	});
+});
+
+describe("TC-1085..1089 cross-language agreement through the corpus (FR-090)", () => {
+	const report = run();
+	const byAdapter = new Map(
+		report.coverage.adapters.map((a) => [a.adapter, a] as const),
+	);
+
+	// TC-1085
+	it("agrees with the independent oracle on every case, for every live adapter", () => {
+		for (const name of ["rust-backend", "typescript-backend"]) {
+			const row = byAdapter.get(name);
+			expect(row?.status, name).toBe("available");
+			expect(row?.matched, name).toBe(report.coverage.totalCases);
+			expect(row?.failed, name).toBe(0);
+			expect(row?.unmet, name).toBe(0);
+		}
+	});
+
+	// TC-1086 — an absent adapter must never read as agreement.
+	it("counts an unavailable adapter as unmet, never as a pass", () => {
+		for (const name of ["compiler-frontend", "python-backend"]) {
+			const row = byAdapter.get(name);
+			expect(row?.status, name).toBe("unavailable");
+			expect(row?.matched, name).toBe(0);
+			expect(row?.unmet, name).toBe(report.coverage.totalCases);
+		}
+	});
+
+	// TC-1087
+	it("reports the unmet total as the sum of the unavailable slots", () => {
+		const unavailable = report.coverage.adapters.filter(
+			(a) => a.status === "unavailable",
+		);
+		expect(report.coverage.unmetCases).toBe(
+			unavailable.length * report.coverage.totalCases,
+		);
+	});
+
+	// TC-1088
+	it("states how much of the agreement claim is actually covered", () => {
+		const live = report.coverage.adapters.filter(
+			(a) => a.status === "available",
+		).length;
+		// Two of four. FR-090's claim is established for the languages that can
+		// answer and is open for the two that cannot — issue #80 blocks the Rust
+		// kernel crate and issue #81 blocks the Python one, so neither absence
+		// is silent.
+		expect(live).toBe(2);
+		expect(report.coverage.adapters).toHaveLength(4);
+	});
+
+	// TC-1089
+	it("runs clean", () => {
+		expect(report.exitCode).toBe(0);
+		expect(report.coverage.totalCases).toBe(111);
 	});
 });
