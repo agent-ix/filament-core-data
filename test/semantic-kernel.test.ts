@@ -2,6 +2,18 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { readdirSync } from "node:fs";
+
+import {
+	RECOGNISED_KEYWORDS,
+	unrecognisedKeywords,
+} from "../src/compiler/frontend/json-schema/keywords.mjs";
+import {
+	mintCollisions,
+	mintName,
+	mintPath,
+	segment,
+} from "../src/compiler/frontend/json-schema/mint.mjs";
 import {
 	checkKernelBundle,
 	checkKernelFreshness,
@@ -32,11 +44,15 @@ describe("TC-1000..1008 the kernel bundle declaration (FR-081)", () => {
 	it("rejects a document set that has drifted from the emitter's", () => {
 		const drifted = {
 			...bundle,
-			documents: (bundle.documents as string[]).slice(0, 29).concat(["Bogus.json"]),
+			documents: (bundle.documents as string[])
+				.slice(0, 29)
+				.concat(["Bogus.json"]),
 		};
 		const found = checkKernelBundle(drifted, inventory, toolchain, manifest);
 		expect(found).toHaveLength(1);
-		expect(found[0]?.code).toBe(DIAGNOSTIC_CODES.KERNEL_INVENTORY_MISMATCH.code);
+		expect(found[0]?.code).toBe(
+			DIAGNOSTIC_CODES.KERNEL_INVENTORY_MISMATCH.code,
+		);
 		// The message names both directions, because a substitution is the case a
 		// count comparison passes.
 		expect(found[0]?.message).toContain("emitted but undeclared");
@@ -52,7 +68,9 @@ describe("TC-1000..1008 the kernel bundle declaration (FR-081)", () => {
 			manifest,
 		);
 		expect(found).toHaveLength(1);
-		expect(found[0]?.code).toBe(DIAGNOSTIC_CODES.KERNEL_INVENTORY_MISMATCH.code);
+		expect(found[0]?.code).toBe(
+			DIAGNOSTIC_CODES.KERNEL_INVENTORY_MISMATCH.code,
+		);
 	});
 
 	// TC-1003
@@ -145,5 +163,94 @@ describe("TC-1000..1008 the kernel bundle declaration (FR-081)", () => {
 		expect(kernelDigestInputs(bundle as { documents: string[] })).toHaveLength(
 			30,
 		);
+	});
+});
+
+describe("TC-1009..1030 minted names and the closed keyword set (FR-082, FR-083)", () => {
+	// TC-1009 — every mint FR-083 names, checked against the requirement.
+	it("mints exactly the names the requirement declares", () => {
+		expect(mintName("TypeRef", "target")).toBe("TypeRefTarget");
+		expect(mintName("MinConstraint", "keyword")).toBe("MinConstraintKeyword");
+		expect(mintName("DefaultDecl", "value")).toBe("DefaultDeclValue");
+		expect(mintName("DecimalPolicy", "precision")).toBe(
+			"DecimalPolicyPrecision",
+		);
+	});
+
+	// TC-1010
+	it("composes left to right without eliding an intermediate segment", () => {
+		expect(mintPath("A", ["b", "c"])).toBe("ABC");
+		// Eliding would let two distinct positions mint one name, and the
+		// collision surfaces as a silently overwritten type.
+		expect(
+			mintCollisions([
+				{ owner: "A", path: ["bC"] },
+				{ owner: "A", path: ["b", "c"] },
+			]),
+		).toEqual([{ name: "ABC", positions: ["A.bC", "A.b.c"] }]);
+	});
+
+	// TC-1011 — the property that keeps generated packages stable.
+	it("reads no part of a name from the construct's own content", () => {
+		// The signature takes an owner and a property. There is nothing to pass
+		// a description or a maximum through, so a content change cannot rename.
+		expect(mintName.length).toBe(2);
+		expect(mintName("Owner", "prop")).toBe(mintName("Owner", "prop"));
+	});
+
+	// TC-1012
+	it("upper-cases the first code point, not the first UTF-16 unit", () => {
+		expect(segment("value")).toBe("Value");
+		expect(segment("")).toBe("");
+		// An astral first character has a surrogate pair as its first two units;
+		// upper-casing one unit alone yields an invalid name.
+		expect(segment("\u{1D4B6}bc")).toBe("\u{1D4B6}bc");
+	});
+
+	// TC-1013
+	it("declares exactly the eighteen recognised keywords", () => {
+		expect(RECOGNISED_KEYWORDS.size).toBe(18);
+		for (const k of [
+			"$schema",
+			"$id",
+			"$ref",
+			"unevaluatedProperties",
+			"maximum",
+		]) {
+			expect(RECOGNISED_KEYWORDS.has(k)).toBe(true);
+		}
+		for (const k of [
+			"oneOf",
+			"allOf",
+			"additionalProperties",
+			"patternProperties",
+		]) {
+			expect(RECOGNISED_KEYWORDS.has(k)).toBe(false);
+		}
+	});
+
+	// TC-1014 — the closed set is right for the grammar it must lower.
+	it("finds no unrecognised keyword in any committed schema", () => {
+		const dir = resolve(root, "packages/semantic-core/generated/json-schema");
+		const found = readdirSync(dir)
+			.filter((f) => f.endsWith(".json"))
+			.flatMap((f) =>
+				unrecognisedKeywords(
+					read(`packages/semantic-core/generated/json-schema/${f}`),
+				),
+			);
+		expect(found).toEqual([]);
+	});
+
+	// TC-1015 — the falsification, and the namespace distinction.
+	it("flags an unrecognised keyword but not an author-chosen field of that name", () => {
+		const found = unrecognisedKeywords({
+			type: "object",
+			oneOf: [{ additionalProperties: false }],
+			properties: { oneOf: { type: "string" } },
+		});
+		expect(found).toEqual([{ keyword: "oneOf", pointer: "/oneOf" }]);
+		// `properties` introduces author-chosen names; checking them would report
+		// every field in the grammar.
 	});
 });
