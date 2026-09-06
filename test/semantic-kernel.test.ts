@@ -10,6 +10,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { changedPathsUnion } from "./changed-paths";
 import { runCorpusCommand, withCorpusScratch } from "./corpus-scratch";
 import {
 	interruptScratchMutation,
@@ -75,6 +76,8 @@ const PERMITTED = [
 	"packages/semantic-kernel/",
 	"scripts/build-semantic-kernel.mjs",
 	"test/semantic-kernel.test.ts",
+	// NFR-030/#83 already permits the original kernel diagnostic emission tests.
+	"test/compiler-core.test.ts",
 	"test/changed-paths.ts",
 	"tests/test_semantic_kernel.py",
 	"Makefile",
@@ -103,15 +106,11 @@ const PROHIBITED = [
 ];
 
 function changedPaths(checkout = root): string[] {
-	return execFileSync(
-		"git",
-		["diff", "--no-renames", "--name-only", "main...HEAD"],
-		{ cwd: checkout, encoding: "utf8" },
-	)
-		.split("\n")
-		.filter((line) => line.length > 0);
+	return changedPathsUnion(checkout, KERNEL_SENTINELS);
 }
 
+// Both were introduced by the landed #82 squash. The planned closing document
+// was never created: an unfinished deliverable cannot locate committed work.
 const KERNEL_SENTINELS = [
 	"spec/usecase/US-014-consume-the-semantic-kernel-natively.md",
 	"packages/semantic-kernel/bundle.json",
@@ -153,7 +152,7 @@ function withOwnershipHistory(
 }
 
 describe("kernel ownership history (issue #51)", () => {
-	/** Traces: NFR-030-AC-1; NFR-030-AC-2. */
+	/** Traces: TC-1105; NFR-030-AC-1; NFR-030-AC-2. */
 	it("keeps the real owned paths after unrelated commits and dirty later-owned edits", () => {
 		withOwnershipHistory(({ checkout, git, write, commit }) => {
 			git("switch", "-c", "kernel");
@@ -171,7 +170,7 @@ describe("kernel ownership history (issue #51)", () => {
 		});
 	});
 
-	/** Traces: NFR-030-AC-1; NFR-030-AC-2; NFR-030-AC-6. */
+	/** Traces: TC-1105; NFR-030-AC-1; NFR-030-AC-2; NFR-030-AC-6. */
 	it("retains a forbidden owned path after a real squash and main repointing", () => {
 		withOwnershipHistory(({ checkout, git, write, commit }) => {
 			git("switch", "-c", "kernel");
@@ -203,7 +202,7 @@ describe("kernel ownership history (issue #51)", () => {
 		});
 	});
 
-	/** Traces: NFR-030-AC-1; NFR-030-AC-6. */
+	/** Traces: TC-1105; NFR-030-AC-1; NFR-030-AC-6. */
 	it("reports untracked, staged and unstaged prohibited bytes but not restored bytes", () => {
 		withOwnershipHistory(({ checkout, write, commit, git }) => {
 			write(KERNEL_SENTINELS[0]);
@@ -220,7 +219,7 @@ describe("kernel ownership history (issue #51)", () => {
 		});
 	});
 
-	/** Traces: NFR-030-AC-1; NFR-030-AC-6. */
+	/** Traces: TC-1105; NFR-030-AC-1; NFR-030-AC-6. */
 	it("does not hide a prohibited deletion behind a permitted rename destination", () => {
 		withOwnershipHistory(({ checkout, git, write, commit }) => {
 			git("switch", "-c", "kernel");
@@ -236,7 +235,7 @@ describe("kernel ownership history (issue #51)", () => {
 		});
 	});
 
-	/** Traces: NFR-030-AC-1; NFR-030-AC-6. */
+	/** Traces: TC-1105; NFR-030-AC-1; NFR-030-AC-6. */
 	it("retains a prohibited write restored before the final sentinel commit", () => {
 		withOwnershipHistory(({ checkout, git, write, commit }) => {
 			git("switch", "-c", "kernel");
@@ -251,7 +250,7 @@ describe("kernel ownership history (issue #51)", () => {
 		});
 	});
 
-	/** Traces: NFR-030-AC-3. */
+	/** Traces: TC-1105; NFR-030-AC-3. */
 	it("refuses missing sentinel history rather than asserting an empty path set", () => {
 		withOwnershipHistory(({ checkout }) => {
 			expect(() => changedPaths(checkout)).toThrow(/no commit in history adds/);
@@ -699,7 +698,7 @@ describe("TC-1046..1060 the generated language trees (FR-085, FR-086)", () => {
 });
 
 describe("TC-1100..1108 determinism and non-disruption (NFR-028, NFR-030)", () => {
-	// TC-1100
+	/** Traces: TC-1105; NFR-030-AC-1. */
 	it("changes only permitted paths", () => {
 		for (const path of changedPaths()) {
 			expect(
@@ -709,7 +708,7 @@ describe("TC-1100..1108 determinism and non-disruption (NFR-028, NFR-030)", () =
 		}
 	});
 
-	// TC-1101
+	/** Traces: TC-1105; NFR-030-AC-1; NFR-030-AC-6. */
 	it("changes no byte of any prohibited path", () => {
 		for (const path of changedPaths()) {
 			for (const prefix of PROHIBITED) {
