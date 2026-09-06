@@ -22,7 +22,8 @@ compiler semantics, the reference lowerer, a schema, nor a golden byte changed.
   lowerer through the installed pinned TypeScript transpiler and formats its
   JSON with the installed pinned Biome tool. Default behavior writes only stdout.
   Exactly `--write` is required to overwrite the fixed existing lowered-fixture
-  target. Extra arguments and symbolic-link redirection refuse before writing.
+  target. Extra arguments, symbolic-link redirection and multiple hard links
+  refuse before writing.
   This is reference-fixture maintenance, not a production extraction frontend.
 
 ## Native controls
@@ -41,7 +42,44 @@ Four focused controls passed in 4.40 seconds:
    silently ignored and an arbitrary subprocess failure cannot satisfy the test.
 
 Root TypeScript checking passed. The owning specifications validated successfully.
-The final concurrent qualification is recorded below after execution.
+
+The seven-suite concurrent run at initial implementation commit `782a5e7`
+completed **278 passed, 2 failed of 280** in 94.01 seconds. Compiler 59/59,
+compiler-core 132/132, semantic-core 28/28, legacy schema 4/4, Python-tree 12/12,
+authoring 3/3, kernel 40/42. The only failures remain the unchanged kernel
+`main...HEAD` ownership gates, attributing `docs/semantic-data-system/contracts-v1.md`
+and `src/compiler/backends/rust-serde/index.d.mts` to original kernel scope.
+No tests were skipped or relaxed in that run.
+
+Kernel staleness (12 artifacts), compatibility (40 pairs), evolution (2 goldens),
+compiler docs (2 documents), matrix staleness, authored formatting and diff checks
+passed concurrently. Production/schema/fixture/corpus-data paths remained clean.
+
+### Independent review correction: hardlink alias
+
+Coordinator review of `782a5e7` found that realpath and regular-file checks still
+allow a multiply linked target. A native scratch control was added before the
+fix: after creating a second hard link and mutating the shared inode in a killed
+child, `--write` changed the alias bytes, failing the exact preservation assertion.
+This was a demonstrated overwrite, not an inferred concern or generic exit error.
+
+The followup refuses `nlink > 1` before rendering/writing, with a named hardlink
+diagnostic. All **5 focused controls passed** after the correction, including
+preservation of both linked names; root typechecking passed again. Existing
+fixture bytes and explicit-write policy remain unchanged. No concurrent hostile
+filesystem-race guarantee is claimed. The original review finding and commit are
+preserved rather than erased by an amend.
+
+```bash
+VIRTUAL_ENV=/home/peter/.cache/pypoetry/virtualenvs/agent-ix-core-data-K2gJLEyT-py3.13 \
+PATH=/home/peter/.cache/pypoetry/virtualenvs/agent-ix-core-data-K2gJLEyT-py3.13/bin:$PATH \
+node node_modules/vitest/vitest.mjs run test/compiler.test.ts \
+  test/compiler-core.test.ts test/semantic-core.test.ts test/semantic-kernel.test.ts \
+  test/schema.test.ts test/python-backend.test.ts test/fixture-authoring.test.ts
+node node_modules/vitest/vitest.mjs run test/fixture-authoring.test.ts \
+  test/compiler-core.test.ts -t 'explicit reference-fixture|digests the declared source files'
+node node_modules/typescript/bin/tsc --noEmit -p tsconfig.json
+```
 
 ## Refreshed inventory disposition
 

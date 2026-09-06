@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { cpSync, readFileSync, rmSync, symlinkSync } from "node:fs";
+import { cpSync, linkSync, readFileSync, rmSync, symlinkSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { withCorpusScratch } from "./corpus-scratch";
@@ -72,6 +72,32 @@ describe("FR-034 explicit reference-fixture authoring boundary (issue #49)", () 
 				"refusing redirected or non-file authoring target",
 			);
 			expect(readFileSync(resolve(scratch, input), "utf8")).toBe(inputBefore);
+		});
+	});
+
+	/** Traces: FR-034; a preexisting hard link must not widen the fixed write target. */
+	it("refuses a hardlinked authoring target without overwriting its alias", () => {
+		withGenerationScratch(root, authoringInputs, (scratch) => {
+			const target = resolve(scratch, fixture);
+			const alias = resolve(
+				scratch,
+				"fixtures/semantic-core/positive/hardlink-alias.json",
+			);
+			linkSync(target, alias);
+			interruptScratchMutation(scratch, fixture);
+			const retained = readFileSync(alias, "utf8");
+			const result = spawnSync(process.execPath, [command, "--write"], {
+				cwd: scratch,
+				encoding: "utf8",
+			});
+			expect(result.error).toBeUndefined();
+			expect(
+				readFileSync(alias, "utf8") === retained,
+				"hardlink alias bytes must not change",
+			).toBe(true);
+			expect(readFileSync(target, "utf8")).toBe(retained);
+			expect(result.status).toBe(1);
+			expect(result.stderr).toContain("refusing hardlinked authoring target");
 		});
 	});
 
