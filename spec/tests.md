@@ -540,7 +540,7 @@ than deciding it.
 | TC-261 | One schema file exists per inventory model and enum with an absolute `$id` under the package base | Static | P0 | FR-033-AC-1 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-262 | Every element of the FR-006 `FieldDecl[]` fixture validates against `FieldDecl.json` under Ajv strict mode with no alias | Unit | P0 | FR-033-AC-2, US-007-EX-1 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-263 | Each negative shape fixture fails against its named model schema; at least one exists per grammar model | Unit | P0 | FR-033-AC-3 | ✅ passed — semantic-core grammar (PR #39) |
-| TC-264 | Regenerating twice yields byte-identical output equal to the recorded digest; a mutated byte makes the `check` script fail naming the file | Snapshot | P0 | FR-033-AC-4, FR-033-CON-1 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-264 | Regenerating twice yields byte-identical output equal to the recorded digest; an isolated mutated byte makes the actual `check` script fail naming the file, and abrupt mutator termination preserves source bytes before cleanup | Snapshot | P0 | FR-033-AC-4, FR-033-CON-1 | ✅ passed — issue #49 scratch isolation and SIGKILL control |
 | TC-265 | `toolchain.json` pins compiler, emitter, and normalization versions equal to the lockfile's resolved versions | Static | P0 | FR-033-AC-5 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-266 | The normalization step is isolated (one function, one call site) and records a no-op when no relative `$id` is emitted | Analysis | P1 | FR-033-CON-2 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-267 | `lowering.json` has one row per grammar-model property, every `loss` is `none`, and a `loss` row fails the gate | Unit | P0 | FR-034-AC-1, FR-034-CON-1 | ✅ passed — semantic-core grammar (PR #39) |
@@ -620,7 +620,7 @@ than deciding it.
 | TC-341 | Two `baseDir` values relativise loci as `<path>:<line>` | Unit | P0 | FR-041-AC-10 | ✅ passed |
 | TC-342 | Emitted order matches under two `Intl.Collator` locales | Property | P0 | FR-041-AC-11 | ✅ passed |
 | TC-343 | `make lint` formats and typechecks `src/compiler/` | Static | P0 | FR-041-AC-12 | ✅ passed |
-| TC-344 | A deliberate declaration mismatch fails `tsc --noEmit` | Compile | P0 | FR-041-AC-12 | ✅ passed |
+| TC-344 | A valid copied consumer compiles; a scratch-only declaration return-type drift survives abrupt mutator termination and fails `tsc --noEmit` with exact TS2322 while source bytes and source probe existence remain unchanged | Compile | P0 | FR-041-AC-12 | ✅ passed — issue #49 scratch isolation |
 | TC-345 | Every `src/compiler/**` manifest in the tree, and every added manifest, declares AGPL-3.0-only and no dependency is added | Static | P0 | FR-041-AC-13, FR-041-CON-5 | ✅ passed |
 | TC-346 | The compiler imports only pinned `@typespec/*` packages | Static | P0 | FR-041-CON-3 | ✅ passed |
 | TC-347 | `@typespec/*` stay devDependencies and no runtime entry point is added | Static | P0 | FR-041-CON-4 | ✅ passed |
@@ -718,7 +718,7 @@ than deciding it.
 | TC-439 | `@unit("s")` on a field resolving through an alias to a scalar is emitted | Unit | P0 | FR-046-AC-8 | ✅ passed |
 | TC-440 | A property with a TypeSpec default emits `defaultKind: "semantic"` and that `defaultValue`; `@defaultKind("migration")` overrides the kind | Unit | P0 | FR-046-AC-9 | ✅ passed |
 | TC-441 | A field typed by a built-in scalar directly emits the package-local kernel scalar definition with its `ext/kernel-scalar` extension | Unit | P0 | FR-046-AC-10 | ✅ passed |
-| TC-442 | A property typed by an export of a resolved imported package resolves, and one typed by an unexported type of that package raises | Unit | P0 | FR-046-AC-11 | ✅ passed |
+| TC-442 | Properties and reference-definition targets resolve through declared imported exports; missing exports fail, and an unresolved reference prevents IR output | Unit | P0 | FR-046-AC-11 | ✅ passed — issue #52 reference-definition controls |
 | TC-443 | `source.digest` equals the root package's `contentDigest`, and the `package` block equals the values FR-047 and FR-048 supply, asserted field by field | Unit | P0 | FR-046-AC-12 | ✅ passed |
 | TC-444 | `occurrences` is the empty array for every fixture package | Unit | P0 | FR-046-AC-13 | ✅ passed |
 | TC-445 | Every emitted array is sorted by `identity` under code-point comparison | Property | P0 | FR-046-AC-14 | ✅ passed |
@@ -796,7 +796,7 @@ than deciding it.
 | TC-517 | An emitted document that fails validation is not written, and the failure is a blocking diagnostic naming the failing pointer | Unit | P0 | FR-050-AC-8 | ✅ passed |
 | TC-518 | A document whose alias chain is cyclic, one whose composite relationships are cyclic, one exceeding `maxNodes` | Unit | P0 | FR-050-AC-9 | ✅ passed |
 | TC-519 | `INVALID_IR` diagnostics name the failing instance pointer, verified against a hand-computed pointer for a malformed fixture | Unit | P0 | FR-050-AC-10 | ✅ passed |
-| TC-520 | Every rule of the code table fires on a constructed document and produces exactly its named code | Unit | P0 | FR-050-AC-11 | ✅ passed |
+| TC-520 | Every rule of the code table fires with its named code; reference and alias targets distinguish local, imported, absent and unknown-resolution states at their source locus | Unit | P0 | FR-050-AC-11 | ✅ passed — issue #52 reference-definition controls |
 | TC-521 | With `importedExports` set to `unknown`, a relationship target absent from the document produces no diagnostic and one recorded suppression | Unit | P0 | FR-050-AC-12 | ✅ passed |
 | TC-522 | Over 512 mutated documents the reader returns diagnostics and never throws | Fuzz | P0 | FR-050-AC-13 | ✅ passed |
 | TC-523 | The compiler's reader is deliberately a third implementation beside the issue #34 TypeScript and Python readers; it SHALL NOT import either | Integration | P1 | FR-050-CON-1 | ✅ passed |
@@ -1178,7 +1178,7 @@ than deciding it.
 | TC-899 | The Pydantic BaseModel and Pydantic dataclass artefacts each import, accept a conforming value, and raise on a non-conforming one | Integration | P0 | FR-077-AC-5 | ✅ passed |
 | TC-900 | The stdlib dataclass verdict enumerates the constructs it drops, including bounds, patterns, formats, closure, discriminated unions, and aliases | Integration | P0 | FR-077-AC-6 | ✅ passed |
 | TC-901 | Every `qualified-with-conditions` condition names an option present in that profile or a rule present in the preparation pass | Unit | P0 | FR-077-AC-7 | ✅ passed |
-| TC-902 | The qualification report and the corpus account are byte-identical on a second measurement, and `--check` fails on a mutated committed artefact | Snapshot | P0 | FR-077-AC-8 | ✅ passed |
+| TC-902 | The qualification report and corpus account reproduce; the real checker passes a clean scratch copy and rejects an interrupted child's retained report mutation while source bytes remain unchanged | Snapshot | P0 | FR-077-AC-8 | ✅ passed |
 | TC-903 | The corpus account's decided, agreed, disagreed, and undecidable counts sum to the case count and it states the backend's rows remain unmet | Unit | P0 | FR-077-AC-9, FR-077-CON-4 | ✅ passed |
 | TC-904 | Every file under `conformance/` is byte-identical to `origin/main` on this branch | Analysis | P0 | FR-077-AC-10, FR-077-CON-3 | ✅ passed |
 | TC-905 | `gaps.json` records no hand-written generator as a disposition absent a reviewed P0 decision naming the reviewer and the date | Unit | P0 | FR-077-AC-11, FR-077-CON-1 | ✅ passed |
@@ -1197,7 +1197,7 @@ than deciding it.
 | TC-918 | Each demonstrated profile has one module per input document, a sorted complete `__all__`, and a duplicate type name across documents raises naming both | Unit | P0 | FR-079-AC-1, FR-079-AC-10 | ✅ passed |
 | TC-919 | Each generated package imports under the declared interpreter with no exception and no warning, and no model retains an unresolved forward reference | Integration | P0 | FR-079-AC-2 | ✅ passed |
 | TC-920 | `PROVENANCE.json` carries every required digest and licence field and carries no clock reading or host-observed version | Unit | P0 | FR-079-AC-3, FR-079-CON-3 | ✅ passed |
-| TC-921 | Regenerating an unchanged input reproduces the committed tree byte-for-byte, and `--check` fails on a mutated committed file | Snapshot | P0 | FR-079-AC-4, FR-079-CON-2 | ✅ passed |
+| TC-921 | The generated tree reproduces; its real checker passes a clean scratch copy and rejects an interrupted child's retained README mutation while source bytes remain unchanged | Snapshot | P0 | FR-079-AC-4, FR-079-CON-2 | ✅ passed |
 | TC-922 | Each example constructs a conforming value, round-trips it through serialization, and raises on a non-conforming value | Integration | P0 | FR-079-AC-5 | ✅ passed |
 | TC-923 | A `not-qualified` family has no emitted package and a recorded reason, and a degraded tree is refused before any file is written | Unit | P0 | FR-079-AC-6, FR-079-AC-11 | ✅ passed |
 | TC-924 | The npm and Python distribution manifests and every workflow file are byte-identical to `origin/main`, and nothing is published | Analysis | P0 | FR-079-AC-7, FR-079-CON-1 | ✅ passed |
@@ -1331,6 +1331,8 @@ than deciding it.
 | TC-1106 | Package.json exports, main, module, types, files, dependencies, peerDependencies | Unit | P1 | NFR-030-AC-4, NFR-030-AC-5, NFR-030-AC-6 | 🚧 planned |
 | TC-1107 | Cargo.lock changes only by the addition of this change's own members and adds no third-party package, asserted by comparing the resolved package set b | Unit | P1 | NFR-030-AC-7, NFR-030-AC-8, NFR-030-AC-9 | 🚧 planned |
 | TC-1108 | This change's own range contains no merge commit, so its path set is the union of its own commits and carries nothing the trunk moved | Property | P1 | NFR-030-AC-10, NFR-030-AC-11, NFR-030-AC-12 | 🚧 planned |
+| TC-1109 | Fresh zero-field reject, preserve and surface records pass strict compilation; scratch-only reversal to the old empty register fails with TS7034 and TS7005 | Compile | P0 | FR-066-AC-30 | ✅ passed — `test/compiler-baseline-typecheck.test.ts` |
+| TC-1110 | The regenerated committed kernel compiles under strict, exactOptionalPropertyTypes, noUnusedLocals and noUnusedParameters without exclusions | Compile | P0 | FR-085-AC-9 | ✅ passed — later backend-owned recovery in `test/compiler-baseline-typecheck.test.ts`; other FR-085 criteria remain open |
 
 ## Option Permutation Matrix
 
@@ -2123,8 +2125,8 @@ validator and its differential harness.
 | Integration | 104 | 64 | 0 | 40 | 100% mapped (104/104) |
 | Fuzz | 12 | 7 | 0 | 5 | 100% mapped (12/12) |
 | Snapshot | 54 | 21 | 0 | 33 | 100% mapped (54/54) |
-| Compile | 14 | 3 | 0 | 11 | 100% mapped (14/14) |
-| **Total** | **1054** | **757** | **0** | **297** | **100% mapped (1054/1054)** |
+| Compile | 16 | 5 | 0 | 11 | 100% mapped (16/16) |
+| **Total** | **1056** | **759** | **0** | **297** | **100% mapped (1056/1056)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

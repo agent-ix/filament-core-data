@@ -50,6 +50,7 @@ Behavior.
 
 - `sourceFiles(package)` SHALL be every file beneath each entry of that package's manifest `sourceRoots`, in ascending code-point order of its package-root-relative `/`-separated path; no other file beneath the package root is a source file.
 - `contentDigest(package)` SHALL be `digest(canonicalize([[path, digest(bytes)], …]))` over `sourceFiles(package)`.
+- Tests of source-root exclusion SHALL create non-source files only in unique scratch copies of the package, observe an interrupted SIGKILL writer there, and verify source names and bytes before cleanup without restoring the source fixture.
 - `manifestDigest(package)` SHALL be `digest` of that manifest's raw bytes; the same rule SHALL give each mapping's and profile's digest.
 - `source.digest` of an emitted IR document SHALL equal `contentDigest` of its root package.
 - `schema-bytes` SHALL be `[[filename, digest(bytes)], …]` over the files of `schema/semantic/v1/` whose name ends `.schema.json`, in ascending code-point order of filename.

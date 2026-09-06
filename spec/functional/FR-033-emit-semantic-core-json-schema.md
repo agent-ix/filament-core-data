@@ -42,6 +42,7 @@ from `data_schema`.
 - The emitted schemas SHALL reject every negative fixture at its model schema, where negative fixtures exercise shape errors (missing required property, unknown property, wrong type, keyword or category outside the closed set).
 - The sealing option SHALL close every emitted object schema, emitting either `unevaluatedProperties: {not: {}}` or `additionalProperties: false`, and the test accepts either form.
 - If regeneration produces bytes that differ from the committed output, then the `check` script SHALL exit non-zero naming the first differing file.
+- The negative regeneration check SHALL mutate only an isolated copy of the package. It SHALL preserve the source package byte-for-byte even when the mutating process terminates before cleanup, and SHALL still exercise the actual `check` script against the copied output.
 
 ## Constraints
 
@@ -57,7 +58,7 @@ from `data_schema`.
 | FR-033-AC-1 | One schema file exists per inventory model and enum with an absolute `$id` under the package base. | Analysis |
 | FR-033-AC-2 | Every element of the FR-006 `FieldDecl[]` fixture validates against `FieldDecl.json` under Ajv strict mode with no alias. | Test |
 | FR-033-AC-3 | Each negative fixture fails against its named model schema, and at least one exists per grammar model. | Test |
-| FR-033-AC-4 | Regenerating twice yields byte-identical output equal to the recorded digest; a mutated byte makes the `check` script fail naming the file. | Test |
+| FR-033-AC-4 | Regenerating twice yields byte-identical output equal to the recorded digest; a mutated byte in an isolated copy makes the actual `check` script fail naming the file, while the source package remains byte-identical after abrupt termination of the mutating process and before cleanup. | Test |
 | FR-033-AC-5 | `toolchain.json` pins the compiler, emitter, and normalization versions and equals the lockfile's resolved versions. | Analysis |
 
 ## Dependencies

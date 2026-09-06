@@ -6,12 +6,13 @@
  * gate over it. It imports the corpus, never the other way round.
  */
 
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { changeRange } from "./changed-paths.js";
+import { runCorpusCommand, withCorpusScratch } from "./corpus-scratch";
 
 /* The corpus is untyped ESM JavaScript by design (NFR-016): it stays consumable
    from any runtime and adds no build step, so the suite reads it through a
@@ -41,6 +42,30 @@ type Json = Record<string, unknown>;
 const REPO = join(HERE, "..");
 const CONF = join(REPO, "conformance");
 const read = (path: string): Json => JSON.parse(readFileSync(path, "utf8"));
+
+function seedInterruptedDivergence(scratch: string, entry: Json): void {
+	const target = join(scratch, "conformance/divergences.json");
+	const register = JSON.parse(readFileSync(target, "utf8")) as {
+		divergences: Json[];
+	};
+	register.divergences.push(entry);
+	const contents = `${JSON.stringify(register, null, "\t")}\n`;
+	const child = spawnSync(
+		process.execPath,
+		[
+			"--input-type=module",
+			"--eval",
+			'import { writeFileSync } from "node:fs"; writeFileSync(process.argv[1], process.argv[2]); process.kill(process.pid, "SIGKILL");',
+			target,
+			contents,
+		],
+		{ cwd: scratch, encoding: "utf8" },
+	);
+	expect(child.error).toBeUndefined();
+	expect(child.signal).toBe("SIGKILL");
+	expect(child.status).toBeNull();
+	expect(readFileSync(target, "utf8")).toBe(contents);
+}
 
 const manifest = corpus.loadManifest() as Json & {
 	cases: {
@@ -963,52 +988,87 @@ describe("TC-302..313 the differential harness (FR-037)", () => {
 		).toBe(true);
 	});
 
-	it("TC-306 a registered divergence that no run reproduces fails", () => {
-		const registerPath = join(CONF, "divergences.json");
-		const original = readFileSync(registerPath, "utf8");
-		try {
-			execFileSync("node", [
-				"-e",
-				`const fs=require('fs');const p=${JSON.stringify(registerPath)};const d=JSON.parse(fs.readFileSync(p,'utf8'));d.divergences.push({id:'DIV-TEST',case:'ENV-001',adapter:'typescript-backend',code:'agent-ix.semantic-ir.SCHEMA_VIOLATION',owner:'test',owningIssue:'agent-ix/filament-core-data#20',severity:'low',verdict:'corpus-defect',rationale:'seeded by TC-306',reviewBy:'2099-01-01'});fs.writeFileSync(p, JSON.stringify(d,null,'\\t')+'\\n');`,
+	/** Traces: TC-306; FR-037-AC-5. */
+	it("TC-306 a registered divergence that no run reproduces fails after an interrupted scratch mutation", () => {
+		withCorpusScratch(REPO, (scratch) => {
+			const entrypoint = "conformance/runner/differential.mjs";
+			const healthy = runCorpusCommand(scratch, entrypoint);
+			expect(healthy.error).toBeUndefined();
+			expect(healthy.status, healthy.stderr).toBe(0);
+			expect(JSON.parse(healthy.stdout).problems).toEqual([]);
+			seedInterruptedDivergence(scratch, {
+				id: "DIV-TEST",
+				case: "ENV-001",
+				adapter: "typescript-backend",
+				code: "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+				owner: "test",
+				owningIssue: "agent-ix/filament-core-data#20",
+				severity: "low",
+				verdict: "corpus-defect",
+				rationale: "seeded by TC-306",
+				reviewBy: "2099-01-01",
+			});
+			const retained = readFileSync(
+				join(scratch, "conformance/divergences.json"),
+				"utf8",
+			);
+			const failed = runCorpusCommand(scratch, entrypoint);
+			expect(failed.error).toBeUndefined();
+			expect(failed.status, failed.stderr).toBe(1);
+			const report = JSON.parse(failed.stdout) as {
+				exitCode: number;
+				problems: Json[];
+			};
+			expect(report.exitCode).toBe(1);
+			expect(report.problems).toEqual([
+				{
+					kind: "unreproduced-divergence",
+					adapter: "typescript-backend",
+					case: "ENV-001",
+					message: "divergence DIV-TEST is registered but no run reproduces it",
+				},
 			]);
-			const report = run() as { problems: { kind: string }[] };
 			expect(
-				report.problems.some((one) => one.kind === "unreproduced-divergence"),
-			).toBe(true);
-		} finally {
-			execFileSync("node", [
-				"-e",
-				`require('fs').writeFileSync(${JSON.stringify(registerPath)}, ${JSON.stringify(original)});`,
-			]);
-		}
+				readFileSync(join(scratch, "conformance/divergences.json"), "utf8"),
+			).toBe(retained);
+		});
 	});
 
-	it("TC-306 the audit target reports an entry whose review date has passed", () => {
-		const registerPath = join(CONF, "divergences.json");
-		const original = readFileSync(registerPath, "utf8");
-		try {
-			execFileSync("node", [
-				"-e",
-				`const fs=require('fs');const p=${JSON.stringify(registerPath)};const d=JSON.parse(fs.readFileSync(p,'utf8'));d.divergences.push({id:'DIV-OLD',case:'ENV-001',adapter:'typescript-backend',code:'x',owner:'test',owningIssue:'agent-ix/filament-core-data#20',severity:'low',verdict:'contract-gap',rationale:'seeded by TC-306',reviewBy:'2000-01-01'});fs.writeFileSync(p, JSON.stringify(d,null,'\\t')+'\\n');`,
-			]);
-			let failed = false;
-			let output = "";
-			try {
-				output = execFileSync("node", [join(CONF, "tools", "audit.mjs")], {
-					encoding: "utf8",
-				});
-			} catch (error) {
-				failed = true;
-				output = String((error as { stdout?: string }).stdout ?? "");
-			}
-			expect(failed).toBe(true);
-			expect(output).toContain("DIV-OLD");
-		} finally {
-			execFileSync("node", [
-				"-e",
-				`require('fs').writeFileSync(${JSON.stringify(registerPath)}, ${JSON.stringify(original)});`,
-			]);
-		}
+	/** Traces: TC-306; FR-037-AC-5. */
+	it("TC-306 the audit reports an expired entry after an interrupted scratch mutation", () => {
+		withCorpusScratch(REPO, (scratch) => {
+			const entrypoint = "conformance/tools/audit.mjs";
+			const healthy = runCorpusCommand(scratch, entrypoint);
+			expect(healthy.error).toBeUndefined();
+			expect(healthy.status, healthy.stderr).toBe(0);
+			expect(healthy.stdout).toContain("0 past review");
+			seedInterruptedDivergence(scratch, {
+				id: "DIV-OLD",
+				case: "ENV-001",
+				adapter: "typescript-backend",
+				code: "x",
+				owner: "test",
+				owningIssue: "agent-ix/filament-core-data#20",
+				severity: "low",
+				verdict: "contract-gap",
+				rationale: "seeded by TC-306",
+				reviewBy: "2000-01-01",
+			});
+			const retained = readFileSync(
+				join(scratch, "conformance/divergences.json"),
+				"utf8",
+			);
+			const failed = runCorpusCommand(scratch, entrypoint);
+			expect(failed.error).toBeUndefined();
+			expect(failed.status, failed.stderr).toBe(1);
+			expect(failed.stdout).toContain(
+				"expired DIV-OLD: ENV-001 on typescript-backend, review due 2000-01-01",
+			);
+			expect(failed.stdout).toContain("1 past review");
+			expect(
+				readFileSync(join(scratch, "conformance/divergences.json"), "utf8"),
+			).toBe(retained);
+		});
 	});
 
 	it("TC-307 two harness runs produce byte-identical reports", () => {

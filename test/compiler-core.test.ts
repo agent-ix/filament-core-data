@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import {
 	cpSync,
 	existsSync,
@@ -16,6 +16,7 @@ import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
 import { changeRange, changedPathsOf } from "./changed-paths.js";
+import { withGenerationScratch } from "./generation-scratch";
 import {
 	assertBackendContract,
 	generateTarget,
@@ -208,7 +209,9 @@ const CODE_REGISTERS = [
 /** Every diagnostic any test in this file observed, for the coverage assertion. */
 const observedCodes = new Set<string>();
 
-function note(diagnostics: readonly Diagnostic[]): readonly Diagnostic[] {
+function note<T extends { readonly code: string }>(
+	diagnostics: readonly T[],
+): readonly T[] {
 	for (const entry of diagnostics) observedCodes.add(entry.code);
 	return diagnostics;
 }
@@ -1077,7 +1080,9 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 	/** Traces: TC-433; FR-046-AC-2. */
 	it("classifies every row of the structural-kind table, first match wins", () => {
 		expect(typeOf("ActorRef").kind).toBe("reference");
-		expect(typeOf("ActorRef").target).toBe("ix://agent-ix/core/type/Actor");
+		expect(typeOf("ActorRef").target).toBe(
+			"ix://agent-ix/assurance/type/Actor",
+		);
 		expect(typeOf("ArtifactId").kind).toBe("alias");
 		expect(typeOf("ArtifactId").target).toBe(
 			"ix://agent-ix/assurance/type/Text",
@@ -2359,16 +2364,30 @@ describe("canonicalization, digests, and the lock (FR-048)", () => {
 		expect(files.length).toBeGreaterThan(0);
 		for (const path of files) expect(path.startsWith("types/")).toBe(true);
 		const before = contentDigest(host, assurance, manifest as never);
-		// A file beneath the package root but outside `sourceRoots` changes nothing.
-		const scratch = resolve(assurance, "NOTES.tmp");
-		try {
-			writeFileSync(scratch, "not a source file\n");
-			expect(contentDigest(newHost([root]), assurance, manifest as never)).toBe(
-				before,
+		// A file outside sourceRoots changes nothing, even after a killed writer.
+		// The real fixture is never touched; its prior names/bytes are preserved.
+		const fixture = relative(root, assurance);
+		withGenerationScratch(root, [fixture], (scratch) => {
+			const copied = resolve(scratch, fixture);
+			const copiedHost = newHost([scratch]);
+			expect(contentDigest(copiedHost, copied, manifest as never)).toBe(before);
+			const target = resolve(copied, "NOTES.tmp");
+			const interrupted = spawnSync(
+				process.execPath,
+				[
+					"--input-type=module",
+					"--eval",
+					'import { writeFileSync } from "node:fs"; writeFileSync(process.argv[1], "not a source file\\n"); process.kill(process.pid, "SIGKILL");',
+					target,
+				],
+				{ cwd: scratch, encoding: "utf8" },
 			);
-		} finally {
-			rmSync(scratch, { force: true });
-		}
+			expect(interrupted.error).toBeUndefined();
+			expect(interrupted.signal).toBe("SIGKILL");
+			expect(interrupted.status).toBeNull();
+			expect(readFileSync(target, "utf8")).toBe("not a source file\n");
+			expect(contentDigest(copiedHost, copied, manifest as never)).toBe(before);
+		});
 		// Enumeration order does not matter; the host sorts.
 		const descending = createHost({
 			readRoots: [root],
@@ -4873,7 +4892,7 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 		note([
 			representability.decide("DefaultDecl.value").diagnostic,
 			representability.decide("OperationDecl.params").diagnostic,
-		] as readonly Diagnostic[]);
+		]);
 
 		for (const code of [
 			"agent-ix.compiler.KERNEL_INVENTORY_MISMATCH",

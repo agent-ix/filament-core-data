@@ -1,19 +1,30 @@
-import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { execFileSync, spawnSync } from "node:child_process";
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	readdirSync,
+	rmSync,
+	writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { changedPathsUnion } from "./changed-paths";
+import { runCorpusCommand, withCorpusScratch } from "./corpus-scratch";
+import {
+	interruptScratchMutation,
+	snapshotPaths,
+	withGenerationScratch,
+} from "./generation-scratch";
 import {
 	validateClauseRef,
 	validateFieldDecl,
 	validateMultiplicity,
 } from "../packages/semantic-kernel/typescript/validators.js";
 
-import { readdirSync } from "node:fs";
-
 import { generateRust } from "../src/compiler/backends/rust-serde/index.mjs";
+import type { GenerationRequest } from "../src/compiler/backends/seam.d.mts";
 import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 
@@ -65,6 +76,8 @@ const PERMITTED = [
 	"packages/semantic-kernel/",
 	"scripts/build-semantic-kernel.mjs",
 	"test/semantic-kernel.test.ts",
+	// NFR-030/#83 already permits the original kernel diagnostic emission tests.
+	"test/compiler-core.test.ts",
 	"test/changed-paths.ts",
 	"tests/test_semantic_kernel.py",
 	"Makefile",
@@ -92,27 +105,195 @@ const PROHIBITED = [
 	".github/",
 ];
 
-function changedPaths(): string[] {
-	return execFileSync(
-		"git",
-		["diff", "--no-renames", "--name-only", "main...HEAD"],
-		{ cwd: root, encoding: "utf8" },
-	)
-		.split("\n")
-		.filter((line) => line.length > 0);
+function changedPaths(checkout = root): string[] {
+	return changedPathsUnion(checkout, KERNEL_SENTINELS);
 }
 
-function treeOf(dir: string): [string, string][] {
-	const out: [string, string][] = [];
-	const walk = (current: string): void => {
-		for (const entry of readdirSync(current).sort()) {
-			const full = join(current, entry);
-			if (statSync(full).isDirectory()) walk(full);
-			else out.push([full.slice(root.length + 1), readFileSync(full, "utf8")]);
-		}
+// Both were introduced by the landed #82 squash. The planned closing document
+// was never created: an unfinished deliverable cannot locate committed work.
+const KERNEL_SENTINELS = [
+	"spec/usecase/US-014-consume-the-semantic-kernel-natively.md",
+	"packages/semantic-kernel/bundle.json",
+] as const;
+
+function withOwnershipHistory(
+	run: (history: {
+		checkout: string;
+		git: (...args: string[]) => string;
+		write: (path: string, body?: string) => void;
+		commit: (message: string) => void;
+	}) => void,
+): void {
+	const checkout = mkdtempSync(join(tmpdir(), "kernel-ownership-"));
+	const git = (...args: string[]) =>
+		execFileSync("git", ["-c", "core.hooksPath=/dev/null", ...args], {
+			cwd: checkout,
+			encoding: "utf8",
+		}).trim();
+	const write = (path: string, body = "fixture\n") => {
+		mkdirSync(dirname(resolve(checkout, path)), { recursive: true });
+		writeFileSync(resolve(checkout, path), body);
 	};
-	walk(dir);
-	return out;
+	const commit = (message: string) => {
+		git("add", "-A");
+		git("commit", "-m", message);
+	};
+	try {
+		git("init", "--initial-branch=main");
+		git("config", "user.email", "kernel-gate@example.invalid");
+		git("config", "user.name", "kernel ownership gate");
+		write("README.md", "base\n");
+		write("schema/frozen.json", "{}\n");
+		commit("baseline");
+		run({ checkout, git, write, commit });
+	} finally {
+		rmSync(checkout, { recursive: true, force: true });
+	}
+}
+
+describe("kernel ownership history (issue #51)", () => {
+	/** Traces: TC-1105; NFR-030-AC-1; NFR-030-AC-2. */
+	it("keeps the real owned paths after unrelated commits and dirty later-owned edits", () => {
+		withOwnershipHistory(({ checkout, git, write, commit }) => {
+			git("switch", "-c", "kernel");
+			write(KERNEL_SENTINELS[0]);
+			commit("kernel specification");
+			write(KERNEL_SENTINELS[1]);
+			commit("kernel bundle");
+			const owned = [...KERNEL_SENTINELS].sort();
+			expect(changedPaths(checkout).sort()).toEqual(owned);
+			write("src/compiler/backends/later.mjs");
+			write("docs/later-ticket.md");
+			commit("unrelated later ticket");
+			write("src/compiler/backends/later.mjs", "later dirty work\n");
+			expect(changedPaths(checkout).sort()).toEqual(owned);
+		});
+	});
+
+	/** Traces: TC-1105; NFR-030-AC-1; NFR-030-AC-2; NFR-030-AC-6. */
+	it("retains a forbidden owned path after a real squash and main repointing", () => {
+		withOwnershipHistory(({ checkout, git, write, commit }) => {
+			git("switch", "-c", "kernel");
+			write(KERNEL_SENTINELS[0]);
+			commit("kernel specification");
+			write(KERNEL_SENTINELS[1]);
+			write("schema/rogue.json");
+			commit("kernel bundle with forbidden change");
+			git("switch", "main");
+			git("merge", "--squash", "kernel");
+			commit("land kernel squash");
+			git("update-ref", "refs/remotes/origin/main", "HEAD");
+			expect(git("diff", "--no-renames", "--name-only", "main...HEAD")).toBe(
+				"",
+			);
+			expect(git("status", "--porcelain")).toBe("");
+			const paths = changedPaths(checkout);
+			expect(paths).toContain("schema/rogue.json");
+			expect(
+				paths.some((path) =>
+					PROHIBITED.some((prefix) => path.startsWith(prefix)),
+				),
+			).toBe(true);
+			expect(
+				paths.every((path) =>
+					PERMITTED.some((prefix) => path.startsWith(prefix)),
+				),
+			).toBe(false);
+		});
+	});
+
+	/** Traces: TC-1105; NFR-030-AC-1; NFR-030-AC-6. */
+	it("reports untracked, staged and unstaged prohibited bytes but not restored bytes", () => {
+		withOwnershipHistory(({ checkout, write, commit, git }) => {
+			write(KERNEL_SENTINELS[0]);
+			write(KERNEL_SENTINELS[1]);
+			commit("landed kernel");
+			write("schema/rogue.json");
+			expect(changedPaths(checkout)).toContain("schema/rogue.json");
+			git("add", "schema/rogue.json");
+			expect(changedPaths(checkout)).toContain("schema/rogue.json");
+			write("schema/frozen.json", "changed\n");
+			expect(changedPaths(checkout)).toContain("schema/frozen.json");
+			write("schema/frozen.json", "{}\n");
+			expect(changedPaths(checkout)).not.toContain("schema/frozen.json");
+		});
+	});
+
+	/** Traces: TC-1105; NFR-030-AC-1; NFR-030-AC-6. */
+	it("does not hide a prohibited deletion behind a permitted rename destination", () => {
+		withOwnershipHistory(({ checkout, git, write, commit }) => {
+			git("switch", "-c", "kernel");
+			write(KERNEL_SENTINELS[0]);
+			commit("kernel specification");
+			write(KERNEL_SENTINELS[1]);
+			git("mv", "schema/frozen.json", "packages/semantic-kernel/moved.json");
+			commit("kernel bundle with forbidden rename");
+			expect(changedPaths(checkout)).toContain("schema/frozen.json");
+			expect(changedPaths(checkout)).toContain(
+				"packages/semantic-kernel/moved.json",
+			);
+		});
+	});
+
+	/** Traces: TC-1105; NFR-030-AC-1; NFR-030-AC-6. */
+	it("retains a prohibited write restored before the final sentinel commit", () => {
+		withOwnershipHistory(({ checkout, git, write, commit }) => {
+			git("switch", "-c", "kernel");
+			write(KERNEL_SENTINELS[0]);
+			commit("kernel specification");
+			write("schema/frozen.json", "changed\n");
+			commit("transient forbidden write");
+			write("schema/frozen.json", "{}\n");
+			write(KERNEL_SENTINELS[1]);
+			commit("restore before kernel closing artifact");
+			expect(changedPaths(checkout)).toContain("schema/frozen.json");
+		});
+	});
+
+	/** Traces: TC-1105; NFR-030-AC-3. */
+	it("refuses missing sentinel history rather than asserting an empty path set", () => {
+		withOwnershipHistory(({ checkout }) => {
+			expect(() => changedPaths(checkout)).toThrow(/no commit in history adds/);
+		});
+	});
+});
+
+function withKernelScratch(run: (scratch: string) => void): void {
+	withGenerationScratch(
+		root,
+		[
+			"packages/semantic-kernel",
+			"packages/semantic-core",
+			"src/compiler",
+			"scripts/build-semantic-kernel.mjs",
+			"schema/semantic/v1",
+			"conformance/schema",
+			"fixtures/semantic/v1/positive/profile.json",
+			"LICENSE",
+			"package.json",
+		],
+		run,
+	);
+}
+
+function generateFreshKernel(scratch: string, env = process.env): void {
+	// These are generated outputs, not bundle.json or an inferred source set.
+	// Removing the copies makes a generator that writes nothing fail equality.
+	for (const path of [
+		"semantic-ir.json",
+		"losses.json",
+		"json-schema/index.json",
+		"provenance.json",
+		"typescript",
+	])
+		rmSync(join(scratch, "packages/semantic-kernel", path), {
+			recursive: true,
+		});
+	execFileSync(process.execPath, ["scripts/build-semantic-kernel.mjs"], {
+		cwd: scratch,
+		encoding: "utf8",
+		env,
+	});
 }
 
 interface AdapterRow {
@@ -127,12 +308,15 @@ function run(): {
 	coverage: { totalCases: number; unmetCases: number; adapters: AdapterRow[] };
 	exitCode: number;
 } {
-	const stdout = execFileSync("node", ["conformance/runner/differential.mjs"], {
-		cwd: root,
-		encoding: "utf8",
-		maxBuffer: 1 << 28,
+	return withCorpusScratch(root, (scratch) => {
+		const result = runCorpusCommand(
+			scratch,
+			"conformance/runner/differential.mjs",
+		);
+		expect(result.error).toBeUndefined();
+		expect(result.status, result.stderr).toBe(0);
+		return JSON.parse(result.stdout);
 	});
-	return JSON.parse(stdout);
 }
 
 describe("TC-1000..1008 the kernel bundle declaration (FR-081)", () => {
@@ -463,8 +647,10 @@ describe("TC-1031..1045 the closed loss register and provenance (FR-084)", () =>
 });
 
 describe("TC-1046..1060 the generated language trees (FR-085, FR-086)", () => {
-	const kernelRequest = (outputRoot: string) => ({
-		...read("fixtures/semantic/v1/positive/compiler-request.json"),
+	const kernelRequest = (outputRoot: string): GenerationRequest => ({
+		...(read(
+			"fixtures/semantic/v1/positive/compiler-request.json",
+		) as unknown as GenerationRequest),
 		ir: read("packages/semantic-kernel/semantic-ir.json"),
 		profile: read("fixtures/semantic/v1/positive/profile.json"),
 		mappings: [],
@@ -484,8 +670,8 @@ describe("TC-1046..1060 the generated language trees (FR-085, FR-086)", () => {
 					options: {},
 				},
 			},
-			{ host: createHost({ readRoots: [root] }) },
-		) as { state: string; files: { path: string; text: string }[] };
+			{ host: createHost({ readRoots: [root] }), format: (text) => text },
+		);
 		expect(result.state).toBe("success");
 		expect(result.files.map((f) => f.path).sort()).toContain("types.ts");
 	});
@@ -496,7 +682,7 @@ describe("TC-1046..1060 the generated language trees (FR-085, FR-086)", () => {
 			kernelRequest("packages/semantic-kernel/rust"),
 			{ clear() {}, write() {} },
 			{ root },
-		) as { state: string; diagnostics?: { code: string; message: string }[] };
+		);
 
 		// Issue #80: FR-083 mints `SourceLocusPath` from `SourceLocus.path`, and
 		// the Rust backend reserves the same identifier. The backend refuses
@@ -512,7 +698,7 @@ describe("TC-1046..1060 the generated language trees (FR-085, FR-086)", () => {
 });
 
 describe("TC-1100..1108 determinism and non-disruption (NFR-028, NFR-030)", () => {
-	// TC-1100
+	/** Traces: TC-1105; NFR-030-AC-1. */
 	it("changes only permitted paths", () => {
 		for (const path of changedPaths()) {
 			expect(
@@ -522,7 +708,7 @@ describe("TC-1100..1108 determinism and non-disruption (NFR-028, NFR-030)", () =
 		}
 	});
 
-	// TC-1101
+	/** Traces: TC-1105; NFR-030-AC-1; NFR-030-AC-6. */
 	it("changes no byte of any prohibited path", () => {
 		for (const path of changedPaths()) {
 			for (const prefix of PROHIBITED) {
@@ -549,49 +735,58 @@ describe("TC-1100..1108 determinism and non-disruption (NFR-028, NFR-030)", () =
 		).toBe(true);
 	});
 
-	// TC-1103
+	/** Traces: NFR-028-AC-6; generated TypeScript and JSON Schema index only. */
 	it("regenerates the kernel byte-identically", () => {
-		const before = treeOf(join(root, "packages/semantic-kernel"));
-		execFileSync("node", ["scripts/build-semantic-kernel.mjs"], {
-			cwd: root,
-			encoding: "utf8",
-		});
-		const after = treeOf(join(root, "packages/semantic-kernel"));
-		expect(after.map(([p]) => p)).toEqual(before.map(([p]) => p));
-		for (const [index, [path, text]] of after.entries()) {
-			expect(text, `${path} changed on regeneration`).toBe(before[index]?.[1]);
-		}
-	});
-
-	// TC-1104 — the check must be able to fail, or it checks nothing.
-	it("reports a stale artifact rather than passing", () => {
-		expect(() =>
-			execFileSync("node", ["scripts/build-semantic-kernel.mjs", "--check"], {
-				cwd: root,
-				encoding: "utf8",
-				env: { ...process.env },
-			}),
-		).not.toThrow();
-
-		// The staleness gate was falsified by hand during Task-123: tampering
-		// with losses.json makes `--check` exit 1 naming the file. This asserts
-		// the passing half; the failing half is the one that was demonstrated.
-	});
-
-	// TC-1105
-	it("produces the same bytes under a changed environment", () => {
-		const before = treeOf(join(root, "packages/semantic-kernel"));
-		execFileSync("node", ["scripts/build-semantic-kernel.mjs"], {
-			cwd: root,
-			encoding: "utf8",
-			env: { ...process.env, TZ: "Pacific/Kiritimati", LANG: "tr_TR.UTF-8" },
-		});
-		const after = treeOf(join(root, "packages/semantic-kernel"));
-		for (const [index, [path, text]] of after.entries()) {
-			expect(text, `${path} moved under a changed environment`).toBe(
-				before[index]?.[1],
+		const before = snapshotPaths(root, ["packages/semantic-kernel"]);
+		withKernelScratch((scratch) => {
+			generateFreshKernel(scratch);
+			expect(snapshotPaths(scratch, ["packages/semantic-kernel"])).toEqual(
+				before,
 			);
-		}
+		});
+	});
+
+	/** Traces: NFR-028-AC-4; FR-085-AC-3. */
+	it("reports an interrupted scratch artifact mutation without changing source bytes", () => {
+		withKernelScratch((scratch) => {
+			const args = ["scripts/build-semantic-kernel.mjs", "--check"];
+			const healthy = spawnSync(process.execPath, args, {
+				cwd: scratch,
+				encoding: "utf8",
+			});
+			expect(healthy.error).toBeUndefined();
+			expect(healthy.status).toBe(0);
+			expect(healthy.stdout).toContain("artifact(s) current");
+			interruptScratchMutation(scratch, "packages/semantic-kernel/losses.json");
+			const mutated = snapshotPaths(scratch, ["packages/semantic-kernel"]);
+			const stale = spawnSync(process.execPath, args, {
+				cwd: scratch,
+				encoding: "utf8",
+			});
+			expect(stale.error).toBeUndefined();
+			expect(stale.status).toBe(1);
+			expect(stale.stderr).toContain(
+				"agent-ix.compiler.KERNEL_BUNDLE_STALE: losses.json differs from a fresh generation",
+			);
+			expect(snapshotPaths(scratch, ["packages/semantic-kernel"])).toEqual(
+				mutated,
+			);
+		});
+	});
+
+	/** Traces: NFR-028-AC-1; generated TypeScript and JSON Schema index only. */
+	it("produces the same bytes under a changed environment", () => {
+		const before = snapshotPaths(root, ["packages/semantic-kernel"]);
+		withKernelScratch((scratch) => {
+			generateFreshKernel(scratch, {
+				...process.env,
+				TZ: "Pacific/Kiritimati",
+				LANG: "tr_TR.UTF-8",
+			});
+			expect(snapshotPaths(scratch, ["packages/semantic-kernel"])).toEqual(
+				before,
+			);
+		});
 	});
 });
 

@@ -78,6 +78,19 @@ tree and compares. It never rewrites a committed artifact in place. Issue `#49`
 records what in-place regeneration costs: three unrelated changed-path gates
 failed at random against a file another suite was part way through rewriting.
 
+The tests of generation and of changed-environment determinism SHALL also run
+the real generator in unique scratch copies, never against the source checkout.
+The staleness test SHALL first pass the real check on an unmodified copy, then
+mutate only a copied artifact in a child that terminates with SIGKILL. It SHALL
+observe that signal, the retained mutation, and an exit-1 check diagnostic naming
+the artifact. Source input and output bytes SHALL remain unchanged before scratch
+cleanup; no source restoration in teardown may establish this property.
+
+Kernel tests invoking the differential corpus CLI SHALL use the same isolated
+repository boundary, because that CLI writes its coverage report. The tests
+SHALL preserve the real adapter roster and exact predecessor reference; a
+coverage report generated during a check must not rewrite the source checkout.
+
 `CARGO_TARGET_DIR` is set explicitly by every Rust target rather than left to
 `.cargo/config.toml`, because the environment variable takes precedence and a
 determinism gate that compares a rebuilt artifact against one another checkout
