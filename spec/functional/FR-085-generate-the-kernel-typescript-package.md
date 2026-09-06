@@ -20,6 +20,15 @@ relationships:
 
 ## Description
 
+**Later backend-owned recovery (2026-09-06):** FR-066-AC-30 and TC-1109
+repair the empty-register emitter defect recorded below. TC-1110 verifies the
+regenerated committed kernel with the unchanged strict options of AC-9. The
+original #11 blocked-state and prohibited-path statements below describe that
+slice's baseline; this later repair is owned by the backend and does not relax
+them or assert completion of the remaining kernel generation, fidelity,
+packaging, consumer or publication criteria. See
+`reviews/2026-09-06-compiler-baseline-typecheck.md` for the scoped evidence.
+
 The semantic kernel's TypeScript package SHALL be produced by running the
 already-implemented `typescript` backend of `agent-ix/filament-core-data#22`
 over the kernel IR document FR-082 lowers, and the emitted bytes SHALL be

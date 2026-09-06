@@ -515,6 +515,7 @@ function fieldStatements(field) {
 
 /** A `const name = [...]` binding, broken across lines where it must be. */
 function nameSet(indent, name, names) {
+	if (names.length === 0) return [`${indent}const ${name}: string[] = [];`];
 	const inline = `[${names.map((member) => literal(member)).join(", ")}]`;
 	const single = `${indent}const ${name} = ${inline};`;
 	if (single.length <= LINE_WIDTH) return [single];

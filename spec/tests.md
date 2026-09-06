@@ -1331,6 +1331,8 @@ than deciding it.
 | TC-1106 | Package.json exports, main, module, types, files, dependencies, peerDependencies | Unit | P1 | NFR-030-AC-4, NFR-030-AC-5, NFR-030-AC-6 | 🚧 planned |
 | TC-1107 | Cargo.lock changes only by the addition of this change's own members and adds no third-party package, asserted by comparing the resolved package set b | Unit | P1 | NFR-030-AC-7, NFR-030-AC-8, NFR-030-AC-9 | 🚧 planned |
 | TC-1108 | This change's own range contains no merge commit, so its path set is the union of its own commits and carries nothing the trunk moved | Property | P1 | NFR-030-AC-10, NFR-030-AC-11, NFR-030-AC-12 | 🚧 planned |
+| TC-1109 | Fresh zero-field reject, preserve and surface records pass strict compilation; scratch-only reversal to the old empty register fails with TS7034 and TS7005 | Compile | P0 | FR-066-AC-30 | ✅ passed — `test/compiler-baseline-typecheck.test.ts` |
+| TC-1110 | The regenerated committed kernel compiles under strict, exactOptionalPropertyTypes, noUnusedLocals and noUnusedParameters without exclusions | Compile | P0 | FR-085-AC-9 | ✅ passed — later backend-owned recovery in `test/compiler-baseline-typecheck.test.ts`; other FR-085 criteria remain open |
 
 ## Option Permutation Matrix
 
@@ -2123,8 +2125,8 @@ validator and its differential harness.
 | Integration | 104 | 64 | 0 | 40 | 100% mapped (104/104) |
 | Fuzz | 12 | 7 | 0 | 5 | 100% mapped (12/12) |
 | Snapshot | 54 | 21 | 0 | 33 | 100% mapped (54/54) |
-| Compile | 14 | 3 | 0 | 11 | 100% mapped (14/14) |
-| **Total** | **1054** | **757** | **0** | **297** | **100% mapped (1054/1054)** |
+| Compile | 16 | 5 | 0 | 11 | 100% mapped (16/16) |
+| **Total** | **1056** | **759** | **0** | **297** | **100% mapped (1056/1056)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.
