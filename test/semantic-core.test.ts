@@ -1041,9 +1041,8 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 
 	function committedLowered(): JsonObject {
 		if (process.env.SEMANTIC_CORE_WRITE_LOWERED === "1")
-			writeFileSync(
-				loweredPath,
-				`${JSON.stringify(loweredFromFixture(), null, "\t")}\n`,
+			throw new Error(
+				"SEMANTIC_CORE_WRITE_LOWERED is not supported by tests; run node scripts/write-semantic-core-lowered.mjs --write explicitly",
 			);
 		return object(
 			JSON.parse(readFileSync(loweredPath, "utf8")),
