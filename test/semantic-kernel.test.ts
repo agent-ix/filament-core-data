@@ -2,6 +2,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { readFileSync, readdirSync, rmSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { runCorpusCommand, withCorpusScratch } from "./corpus-scratch";
 import {
 	interruptScratchMutation,
 	snapshotPaths,
@@ -153,12 +154,15 @@ function run(): {
 	coverage: { totalCases: number; unmetCases: number; adapters: AdapterRow[] };
 	exitCode: number;
 } {
-	const stdout = execFileSync("node", ["conformance/runner/differential.mjs"], {
-		cwd: root,
-		encoding: "utf8",
-		maxBuffer: 1 << 28,
+	return withCorpusScratch(root, (scratch) => {
+		const result = runCorpusCommand(
+			scratch,
+			"conformance/runner/differential.mjs",
+		);
+		expect(result.error).toBeUndefined();
+		expect(result.status, result.stderr).toBe(0);
+		return JSON.parse(result.stdout);
 	});
-	return JSON.parse(stdout);
 }
 
 describe("TC-1000..1008 the kernel bundle declaration (FR-081)", () => {
