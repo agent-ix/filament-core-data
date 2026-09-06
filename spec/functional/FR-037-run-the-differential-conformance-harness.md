@@ -54,6 +54,9 @@ divergence register does not record.
 - The harness SHALL read no clock, so that its report is a function of the corpus and the adapter results alone.
 - A separate audit target SHALL report every divergence entry whose `reviewBy` date has passed.
 - The audit target SHALL be the only conformance entry point that reads a clock.
+- Tests that seed divergence-register entries SHALL run the real harness or audit in unique scratch repository copies, preserving the corpus's exact predecessor reference and installed toolchain.
+- Each divergence-register mutation test SHALL first require the real command to complete successfully on the unchanged register, then observe SIGKILL after a child writes only the copied register and require the intended exit-1 diagnostic.
+- Each divergence-register mutation test SHALL compare unchanged source corpus bytes before scratch cleanup without source restoration in teardown.
 - The harness SHALL record a disagreement between the oracle and a merged artifact that is not a registered adapter in `conformance/contract-gaps.json`, never in the divergence register.
 - The harness SHALL run every adapter over every case in the case order `corpus.json` declares.
 - The harness SHALL produce a byte-identical report for two runs over an unchanged corpus and adapter set.

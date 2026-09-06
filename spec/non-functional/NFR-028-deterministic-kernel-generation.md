@@ -86,6 +86,11 @@ observe that signal, the retained mutation, and an exit-1 check diagnostic namin
 the artifact. Source input and output bytes SHALL remain unchanged before scratch
 cleanup; no source restoration in teardown may establish this property.
 
+Kernel tests invoking the differential corpus CLI SHALL use the same isolated
+repository boundary, because that CLI writes its coverage report. The tests
+SHALL preserve the real adapter roster and exact predecessor reference; a
+coverage report generated during a check must not rewrite the source checkout.
+
 `CARGO_TARGET_DIR` is set explicitly by every Rust target rather than left to
 `.cargo/config.toml`, because the environment variable takes precedence and a
 determinism gate that compares a rebuilt artifact against one another checkout
