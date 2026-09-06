@@ -208,7 +208,9 @@ const CODE_REGISTERS = [
 /** Every diagnostic any test in this file observed, for the coverage assertion. */
 const observedCodes = new Set<string>();
 
-function note(diagnostics: readonly Diagnostic[]): readonly Diagnostic[] {
+function note<T extends { readonly code: string }>(
+	diagnostics: readonly T[],
+): readonly T[] {
 	for (const entry of diagnostics) observedCodes.add(entry.code);
 	return diagnostics;
 }
@@ -4875,7 +4877,7 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 		note([
 			representability.decide("DefaultDecl.value").diagnostic,
 			representability.decide("OperationDecl.params").diagnostic,
-		] as readonly Diagnostic[]);
+		]);
 
 		for (const code of [
 			"agent-ix.compiler.KERNEL_INVENTORY_MISMATCH",

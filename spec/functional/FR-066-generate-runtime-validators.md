@@ -75,6 +75,13 @@ contract itself rather than against an erased TypeScript type.
 
 ### Presence, nullability, and the four combinations
 
+- A zero-field record's generated field-name register SHALL have an explicit
+  `string[]` element type wherever it is emitted. The empty record remains in
+  the input and its reject, preserve and surface policies remain unchanged;
+  strict compilation SHALL NOT be obtained by suppressing diagnostics or
+  excluding the generated validator. This is the backend-owned recovery of the
+  TS7034/TS7005 defect recorded by FR-085, not a kernel-specific renderer.
+
 - The backend SHALL treat presence and nullability as two independent axes.
 - The backend SHALL generate the four presence and nullability combinations as four distinct accept and reject decisions:
 
@@ -239,6 +246,7 @@ contract itself rather than against an erased TypeScript type.
 | FR-066-AC-27 | `unknownPolicy` declared on a `union` and on a `map` produces no validation effect, and the declared value appears in the FR-067 metadata for both. | Unit |
 | FR-066-AC-28 | A document whose admissibility result is `lossy` generates validators; a document carrying a representability loss generates none. | Unit |
 | FR-066-AC-29 | The `bytes` wire form, its length unit, and the union discriminator's wire shape each appear as a single named declared decision citing `agent-ix/filament-core-data#58`, and `conformance/divergences.json` carries no entry attributed to that question. | Static |
+| FR-066-AC-30 | A freshly generated package containing a zero-field record compiles under `strict`, `exactOptionalPropertyTypes`, `noUnusedLocals` and `noUnusedParameters` for each of `reject`, `preserve` and `surface`. Replacing only the generated empty register's explicit type with the former untyped empty array in a scratch copy fails with TS7034 and TS7005 in `validators.ts`. | Compile |
 
 ## Dependencies
 

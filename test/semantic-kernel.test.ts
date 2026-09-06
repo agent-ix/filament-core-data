@@ -2,18 +2,14 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
 import {
 	validateClauseRef,
 	validateFieldDecl,
 	validateMultiplicity,
 } from "../packages/semantic-kernel/typescript/validators.js";
 
-import { readdirSync } from "node:fs";
-
 import { generateRust } from "../src/compiler/backends/rust-serde/index.mjs";
+import type { GenerationRequest } from "../src/compiler/backends/seam.d.mts";
 import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 
@@ -463,8 +459,10 @@ describe("TC-1031..1045 the closed loss register and provenance (FR-084)", () =>
 });
 
 describe("TC-1046..1060 the generated language trees (FR-085, FR-086)", () => {
-	const kernelRequest = (outputRoot: string) => ({
-		...read("fixtures/semantic/v1/positive/compiler-request.json"),
+	const kernelRequest = (outputRoot: string): GenerationRequest => ({
+		...(read(
+			"fixtures/semantic/v1/positive/compiler-request.json",
+		) as unknown as GenerationRequest),
 		ir: read("packages/semantic-kernel/semantic-ir.json"),
 		profile: read("fixtures/semantic/v1/positive/profile.json"),
 		mappings: [],
@@ -484,8 +482,8 @@ describe("TC-1046..1060 the generated language trees (FR-085, FR-086)", () => {
 					options: {},
 				},
 			},
-			{ host: createHost({ readRoots: [root] }) },
-		) as { state: string; files: { path: string; text: string }[] };
+			{ host: createHost({ readRoots: [root] }), format: (text) => text },
+		);
 		expect(result.state).toBe("success");
 		expect(result.files.map((f) => f.path).sort()).toContain("types.ts");
 	});
@@ -496,7 +494,7 @@ describe("TC-1046..1060 the generated language trees (FR-085, FR-086)", () => {
 			kernelRequest("packages/semantic-kernel/rust"),
 			{ clear() {}, write() {} },
 			{ root },
-		) as { state: string; diagnostics?: { code: string; message: string }[] };
+		);
 
 		// Issue #80: FR-083 mints `SourceLocusPath` from `SourceLocus.path`, and
 		// the Rust backend reserves the same identifier. The backend refuses

@@ -1152,7 +1152,7 @@ function prepareDefaultDeclValue(value: unknown, depth: number): unknown {
 	if (!isPlainObject(value)) return value;
 	const out: Record<string, unknown> = Object.create(null);
 	let accessor = false;
-	const declared = [];
+	const declared: string[] = [];
 	const carried: Record<string, unknown> = Object.create(null);
 	let carriedAny = false;
 	for (const key of ownKeys(value)) {
