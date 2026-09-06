@@ -620,7 +620,7 @@ than deciding it.
 | TC-341 | Two `baseDir` values relativise loci as `<path>:<line>` | Unit | P0 | FR-041-AC-10 | ✅ passed |
 | TC-342 | Emitted order matches under two `Intl.Collator` locales | Property | P0 | FR-041-AC-11 | ✅ passed |
 | TC-343 | `make lint` formats and typechecks `src/compiler/` | Static | P0 | FR-041-AC-12 | ✅ passed |
-| TC-344 | A deliberate declaration mismatch fails `tsc --noEmit` | Compile | P0 | FR-041-AC-12 | ✅ passed |
+| TC-344 | A valid copied consumer compiles; a scratch-only declaration return-type drift survives abrupt mutator termination and fails `tsc --noEmit` with exact TS2322 while source bytes and source probe existence remain unchanged | Compile | P0 | FR-041-AC-12 | ✅ passed — issue #49 scratch isolation |
 | TC-345 | Every `src/compiler/**` manifest in the tree, and every added manifest, declares AGPL-3.0-only and no dependency is added | Static | P0 | FR-041-AC-13, FR-041-CON-5 | ✅ passed |
 | TC-346 | The compiler imports only pinned `@typespec/*` packages | Static | P0 | FR-041-CON-3 | ✅ passed |
 | TC-347 | `@typespec/*` stay devDependencies and no runtime entry point is added | Static | P0 | FR-041-CON-4 | ✅ passed |
@@ -1178,7 +1178,7 @@ than deciding it.
 | TC-899 | The Pydantic BaseModel and Pydantic dataclass artefacts each import, accept a conforming value, and raise on a non-conforming one | Integration | P0 | FR-077-AC-5 | ✅ passed |
 | TC-900 | The stdlib dataclass verdict enumerates the constructs it drops, including bounds, patterns, formats, closure, discriminated unions, and aliases | Integration | P0 | FR-077-AC-6 | ✅ passed |
 | TC-901 | Every `qualified-with-conditions` condition names an option present in that profile or a rule present in the preparation pass | Unit | P0 | FR-077-AC-7 | ✅ passed |
-| TC-902 | The qualification report and the corpus account are byte-identical on a second measurement, and `--check` fails on a mutated committed artefact | Snapshot | P0 | FR-077-AC-8 | ✅ passed |
+| TC-902 | The qualification report and corpus account reproduce; the real checker passes a clean scratch copy and rejects an interrupted child's retained report mutation while source bytes remain unchanged | Snapshot | P0 | FR-077-AC-8 | ✅ passed |
 | TC-903 | The corpus account's decided, agreed, disagreed, and undecidable counts sum to the case count and it states the backend's rows remain unmet | Unit | P0 | FR-077-AC-9, FR-077-CON-4 | ✅ passed |
 | TC-904 | Every file under `conformance/` is byte-identical to `origin/main` on this branch | Analysis | P0 | FR-077-AC-10, FR-077-CON-3 | ✅ passed |
 | TC-905 | `gaps.json` records no hand-written generator as a disposition absent a reviewed P0 decision naming the reviewer and the date | Unit | P0 | FR-077-AC-11, FR-077-CON-1 | ✅ passed |
@@ -1197,7 +1197,7 @@ than deciding it.
 | TC-918 | Each demonstrated profile has one module per input document, a sorted complete `__all__`, and a duplicate type name across documents raises naming both | Unit | P0 | FR-079-AC-1, FR-079-AC-10 | ✅ passed |
 | TC-919 | Each generated package imports under the declared interpreter with no exception and no warning, and no model retains an unresolved forward reference | Integration | P0 | FR-079-AC-2 | ✅ passed |
 | TC-920 | `PROVENANCE.json` carries every required digest and licence field and carries no clock reading or host-observed version | Unit | P0 | FR-079-AC-3, FR-079-CON-3 | ✅ passed |
-| TC-921 | Regenerating an unchanged input reproduces the committed tree byte-for-byte, and `--check` fails on a mutated committed file | Snapshot | P0 | FR-079-AC-4, FR-079-CON-2 | ✅ passed |
+| TC-921 | The generated tree reproduces; its real checker passes a clean scratch copy and rejects an interrupted child's retained README mutation while source bytes remain unchanged | Snapshot | P0 | FR-079-AC-4, FR-079-CON-2 | ✅ passed |
 | TC-922 | Each example constructs a conforming value, round-trips it through serialization, and raises on a non-conforming value | Integration | P0 | FR-079-AC-5 | ✅ passed |
 | TC-923 | A `not-qualified` family has no emitted package and a recorded reason, and a degraded tree is refused before any file is written | Unit | P0 | FR-079-AC-6, FR-079-AC-11 | ✅ passed |
 | TC-924 | The npm and Python distribution manifests and every workflow file are byte-identical to `origin/main`, and nothing is published | Analysis | P0 | FR-079-AC-7, FR-079-CON-1 | ✅ passed |

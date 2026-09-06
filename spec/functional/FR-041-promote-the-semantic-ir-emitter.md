@@ -55,6 +55,11 @@ than a path under `spikes/`.
 - No module under `src/compiler/` SHALL import a module under `spikes/`.
 - `biome format` SHALL format every `.mjs` and `.d.mts` file under `src/compiler/`.
 - A TypeScript test SHALL import `src/compiler/index.d.mts`, so `tsc --noEmit` fails when the declarations drift from the implementation.
+- The declaration-drift falsification SHALL run in a copied scratch tree, first
+  proving the valid consumer compiles. Mutating only the copied declaration's
+  return type SHALL fail at that consumer with TS2322. Abrupt termination of
+  the mutator SHALL leave the mutation visible in scratch and preserve source
+  files and the source probe path's prior existence before scratch cleanup.
 
 ## Constraints
 
