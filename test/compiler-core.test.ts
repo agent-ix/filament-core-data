@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import {
 	cpSync,
 	existsSync,
@@ -16,6 +16,7 @@ import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
 import { changeRange, changedPathsOf } from "./changed-paths.js";
+import { withGenerationScratch } from "./generation-scratch";
 import {
 	assertBackendContract,
 	generateTarget,
@@ -2363,16 +2364,30 @@ describe("canonicalization, digests, and the lock (FR-048)", () => {
 		expect(files.length).toBeGreaterThan(0);
 		for (const path of files) expect(path.startsWith("types/")).toBe(true);
 		const before = contentDigest(host, assurance, manifest as never);
-		// A file beneath the package root but outside `sourceRoots` changes nothing.
-		const scratch = resolve(assurance, "NOTES.tmp");
-		try {
-			writeFileSync(scratch, "not a source file\n");
-			expect(contentDigest(newHost([root]), assurance, manifest as never)).toBe(
-				before,
+		// A file outside sourceRoots changes nothing, even after a killed writer.
+		// The real fixture is never touched; its prior names/bytes are preserved.
+		const fixture = relative(root, assurance);
+		withGenerationScratch(root, [fixture], (scratch) => {
+			const copied = resolve(scratch, fixture);
+			const copiedHost = newHost([scratch]);
+			expect(contentDigest(copiedHost, copied, manifest as never)).toBe(before);
+			const target = resolve(copied, "NOTES.tmp");
+			const interrupted = spawnSync(
+				process.execPath,
+				[
+					"--input-type=module",
+					"--eval",
+					'import { writeFileSync } from "node:fs"; writeFileSync(process.argv[1], "not a source file\\n"); process.kill(process.pid, "SIGKILL");',
+					target,
+				],
+				{ cwd: scratch, encoding: "utf8" },
 			);
-		} finally {
-			rmSync(scratch, { force: true });
-		}
+			expect(interrupted.error).toBeUndefined();
+			expect(interrupted.signal).toBe("SIGKILL");
+			expect(interrupted.status).toBeNull();
+			expect(readFileSync(target, "utf8")).toBe("not a source file\n");
+			expect(contentDigest(copiedHost, copied, manifest as never)).toBe(before);
+		});
 		// Enumeration order does not matter; the host sorts.
 		const descending = createHost({
 			readRoots: [root],
