@@ -29,6 +29,9 @@ try {
 			`refusing redirected or non-file authoring target: ${targetPath}`,
 		);
 	}
+	if (args[0] === "--write" && lstatSync(target).nlink > 1) {
+		throw new Error(`refusing hardlinked authoring target: ${targetPath}`);
+	}
 	// Execute the same reference lowerer as the tests; transpilation introduces
 	// no second lowering recipe, fixture expectation, or generated source file.
 	const compiled = ts.transpileModule(

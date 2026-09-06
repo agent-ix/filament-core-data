@@ -62,7 +62,7 @@ reference lowerer, with zero declared loss, proven on the FR-006
 - If any lowering row records `loss`, then the fixture gate SHALL fail.
 - Ordinary tests SHALL refuse an inherited `SEMANTIC_CORE_WRITE_LOWERED=1` flag with a diagnostic naming the explicit authoring command, without rewriting the committed fixture.
 - `node scripts/write-semantic-core-lowered.mjs` SHALL render the fixture through the existing reference lowerer and installed pinned TypeScript/Biome tools to stdout by default, without writing a file.
-- The authoring command SHALL write only the fixed, validated `fixtures/semantic-core/positive/config-version-lowered.json` target when explicitly invoked with `--write`; unknown arguments or a redirected symbolic-link target are refusals.
+- The authoring command SHALL write only the fixed, validated `fixtures/semantic-core/positive/config-version-lowered.json` target when explicitly invoked with `--write`; unknown arguments, a redirected symbolic-link target, or a target with multiple hard links are refusals.
 - The authoring-command gate SHALL prove byte parity against the unchanged fixture and exercise writes only in scratch copies. This maintains the reference fixture and does not implement the production frontend or change independent oracle expectations.
 
 ## Constraints
