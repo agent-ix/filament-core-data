@@ -23,18 +23,10 @@ import { resolve } from "node:path";
  * entry whose bytes match the base is not a change, whatever the stat cache
  * says, and an entry the base does not carry at all still counts.
  *
- * One case the content check cannot cover is a file another suite is part way
- * through rewriting: `test/schema.test.ts` still regenerates committed
- * artefacts in place, so a gate can read one mid-write.
- * `REGENERATED_IN_PLACE` names those artefacts, as the two hand-maintained
- * copies of this helper already did. It is a mitigation, not a fix — the fix is
- * for those tests to regenerate into a scratch directory, which issue #49 owns
- * — and the committed branch diff below still catches any retained mutation.
+ * The formerly exempted generation probes now use scratch copies (issue #49).
+ * There is no path exception for a concurrent writer: a differing working-tree
+ * artifact must be reported through the same content/history rules as any other path.
  */
-export const REGENERATED_IN_PLACE: ReadonlySet<string> = new Set([
-	"agent_ix_core_data/core_data.py",
-	"src/generated.ts",
-]);
 
 /** The commits a change sits between. Both endpoints are history facts. */
 export interface ChangeRange {
@@ -181,7 +173,6 @@ export function changedPathsOf(
 		.filter((line) => line.trim().length > 0)
 		.map((line) => line.slice(3).trim())
 		.filter((path) => path.length > 0)
-		.filter((path) => !REGENERATED_IN_PLACE.has(path))
 		.filter((path) => !matchesBase(root, "HEAD", path))
 		.filter((path) => !changedAfter(root, tip, path));
 
@@ -261,7 +252,6 @@ export function changedPathsFrom(root: string, base: string): string[] {
 		.filter((line) => line.trim().length > 0)
 		.map((line) => line.slice(3).trim())
 		.filter((path) => path.length > 0)
-		.filter((path) => !REGENERATED_IN_PLACE.has(path))
 		.filter((path) => !matchesBase(root, base, path));
 
 	return [...new Set([...committed, ...working])];
@@ -340,7 +330,6 @@ export function changedPathsUnion(
 		.filter((line) => line.trim().length > 0)
 		.map((line) => line.slice(3).trim())
 		.filter((path) => path.length > 0)
-		.filter((path) => !REGENERATED_IN_PLACE.has(path))
 		.filter((path) => !matchesBase(root, "HEAD", path))
 		.filter((path) => !changedAfter(root, tip, path));
 

@@ -27,6 +27,7 @@ invalidating current inputs.
 - Dynamic and static consumers SHALL use the same package, semantic type, field, profile, mapping, and fingerprint identities.
 - Existing Quoin manifests SHALL remain valid under an explicit legacy compatibility profile until the Project 18 advisory and promotion gates pass.
 - Existing Avro artifacts and generated bindings SHALL remain readable through a versioned bridge until all known readers pass the final retirement gate.
+- Existing Avro binding regeneration tests SHALL run the real pinned generator in a unique scratch copy and compare both emitted bindings against the unchanged source baseline. An interrupted scratch mutation SHALL leave source inputs and bindings byte-identical without source restoration in teardown. These checks preserve the current compatibility surface; they do not demonstrate bridge implementation or authorize migration.
 - Legacy adapters SHALL declare source/target versions, preservation, omissions, diagnostics, and retirement prerequisites.
 - Unknown contract versions, unresolved schemas, contradictory identities, or unavailable adapters SHALL produce explicit failures.
 - Failed validation SHALL NOT yield empty models or zero-value success.
