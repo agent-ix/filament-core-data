@@ -15,7 +15,7 @@ import { resolve } from "node:path";
  *
  * The second is `git status`. It reports a *racily clean* file — one written and
  * restored inside the index's timestamp resolution — as modified, and
- * `test/semantic-core.test.ts` does exactly that to prove its own `--check`
+ * `test/semantic-core.test.ts` previously did that to prove its own `--check`
  * gate. The result was three unrelated gates failing at random (issue #49). Two
  * files worked around it with a hand-maintained list of the paths a test is
  * known to touch, which only holds while the list is current. Comparing content
@@ -24,8 +24,8 @@ import { resolve } from "node:path";
  * says, and an entry the base does not carry at all still counts.
  *
  * One case the content check cannot cover is a file another suite is part way
- * through rewriting: `test/schema.test.ts` and `test/semantic-core.test.ts`
- * regenerate committed artefacts in place, so a gate can read one mid-write.
+ * through rewriting: `test/schema.test.ts` still regenerates committed
+ * artefacts in place, so a gate can read one mid-write.
  * `REGENERATED_IN_PLACE` names those artefacts, as the two hand-maintained
  * copies of this helper already did. It is a mitigation, not a fix — the fix is
  * for those tests to regenerate into a scratch directory, which issue #49 owns
@@ -34,10 +34,9 @@ import { resolve } from "node:path";
 export const REGENERATED_IN_PLACE: ReadonlySet<string> = new Set([
 	"agent_ix_core_data/core_data.py",
 	"src/generated.ts",
-	"packages/semantic-core/generated/json-schema/EnumValue.json",
-	// Written and deleted inside TC-346's declaration-drift probe. A changed-path
+	// Written and deleted inside TC-344's declaration-drift probe. A changed-path
 	// gate running in a parallel worker can observe it mid-run, which is the same
-	// issue #49 defect as the three above and has the same mitigation until that
+	// issue #49 defect as the two above and has the same mitigation until that
 	// ticket moves these artefacts into a scratch directory.
 	"test/declaration-drift-probe.ts",
 ]);

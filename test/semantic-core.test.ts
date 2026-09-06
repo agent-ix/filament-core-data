@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import {
 	cpSync,
 	existsSync,
@@ -8,8 +8,10 @@ import {
 	readdirSync,
 	rmSync,
 	statSync,
+	symlinkSync,
 	writeFileSync,
 } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -707,7 +709,7 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 	});
 
 	/** Traces: TC-264; FR-033-AC-4, FR-033-CON-1. */
-	it("regenerates byte-identically, matches the recorded digest, and fails the check on a mutated byte", () => {
+	it("regenerates byte-identically and detects an interrupted scratch mutation without changing source bytes", () => {
 		const first = execFileSync(
 			"node",
 			["packages/semantic-core/scripts/generate.mjs", "--check"],
@@ -722,29 +724,81 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 				`${name}\n${readFileSync(resolve(schemaDir, name), "utf8")}`,
 			);
 		expect(`sha256:${digest.digest("hex")}`).toBe(toolchain().digest);
-		const target = resolve(schemaDir, "EnumValue.json");
-		const original = readFileSync(target, "utf8");
+		const snapshot = (directory: string): Map<string, Buffer> => {
+			const files = new Map<string, Buffer>();
+			const visit = (relative: string) => {
+				for (const entry of readdirSync(resolve(directory, relative), {
+					withFileTypes: true,
+				}).sort((a, b) => a.name.localeCompare(b.name))) {
+					const path = `${relative}${entry.name}`;
+					if (entry.isDirectory()) visit(`${path}/`);
+					else files.set(path, readFileSync(resolve(directory, path)));
+				}
+			};
+			visit("");
+			return files;
+		};
+		const sourceBefore = snapshot(packageRoot);
+		const scratch = mkdtempSync(resolve(tmpdir(), "semantic-core-check-"));
 		try {
-			writeFileSync(
-				target,
-				original.replace('"type": "object"', '"type": "object" '),
+			cpSync(packageRoot, resolve(scratch, "packages/semantic-core"), {
+				recursive: true,
+			});
+			for (const name of ["package.json", "biome.json"])
+				cpSync(resolve(root, name), resolve(scratch, name));
+			// Only dependencies are linked. The generator, grammar, and output
+			// are real copies, so an interrupted writer cannot touch the source.
+			symlinkSync(
+				resolve(root, "node_modules"),
+				resolve(scratch, "node_modules"),
+				"dir",
 			);
-			let failed = false;
-			let message = "";
-			try {
-				execFileSync(
-					"node",
-					["packages/semantic-core/scripts/generate.mjs", "--check"],
-					{ cwd: root, encoding: "utf8", stdio: "pipe" },
-				);
-			} catch (error) {
-				failed = true;
-				message = String((error as { stderr?: string }).stderr ?? "");
-			}
-			expect(failed).toBe(true);
-			expect(message).toContain("EnumValue.json");
+			const checkArgs = [
+				"packages/semantic-core/scripts/generate.mjs",
+				"--check",
+			];
+			expect(
+				execFileSync(process.execPath, checkArgs, {
+					cwd: scratch,
+					encoding: "utf8",
+				}),
+			).toContain("up to date");
+			const target = resolve(
+				scratch,
+				"packages/semantic-core/generated/json-schema/EnumValue.json",
+			);
+			const original = readFileSync(target, "utf8");
+			const interrupted = spawnSync(
+				process.execPath,
+				[
+					"--input-type=module",
+					"--eval",
+					'import { readFileSync, writeFileSync } from "node:fs";\nconst target = process.argv[1];\nwriteFileSync(target, readFileSync(target, "utf8") + " ");\nprocess.kill(process.pid, "SIGKILL");\n',
+					target,
+				],
+				{ cwd: scratch, encoding: "utf8" },
+			);
+			expect(interrupted.error).toBeUndefined();
+			expect(interrupted.signal).toBe("SIGKILL");
+			expect(interrupted.status).toBeNull();
+			expect(readFileSync(target, "utf8")).toBe(`${original} `);
+			expect(snapshot(packageRoot)).toEqual(sourceBefore);
+			const check = spawnSync(process.execPath, checkArgs, {
+				cwd: scratch,
+				encoding: "utf8",
+			});
+			expect(check.error).toBeUndefined();
+			expect(check.status).toBe(1);
+			expect(check.stderr).toContain(
+				"projection differs from the committed output",
+			);
+			expect(check.stderr).toContain(
+				"packages/semantic-core/generated/json-schema/EnumValue.json",
+			);
+			expect(readFileSync(target, "utf8")).toBe(`${original} `);
+			expect(snapshot(packageRoot)).toEqual(sourceBefore);
 		} finally {
-			writeFileSync(target, original);
+			rmSync(scratch, { recursive: true, force: true });
 		}
 	});
 
