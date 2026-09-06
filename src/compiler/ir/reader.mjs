@@ -286,6 +286,29 @@ export function readContractIr(document, options = {}) {
 	};
 
 	const checkDefinition = (definition) => {
+		if (definition.kind === "reference" || definition.kind === "alias") {
+			const target = String(definition.target);
+			if (!types.has(target) && !known.has(target)) {
+				const foreign =
+					exportsUnknown &&
+					typeof definition.target === "string" &&
+					target.startsWith("ix://") &&
+					documentPackage !== undefined &&
+					!target.startsWith(`ix://${documentPackage}/`);
+				if (foreign) {
+					suppressions.push({
+						rule: DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF.code,
+						identity: String(definition.identity),
+					});
+				} else {
+					raise(
+						DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF,
+						`the ${definition.kind} target ${fragment(target)} resolves to no definition and no imported export`,
+						locusOf(definition),
+					);
+				}
+			}
+		}
 		const isRecord = definition.kind === "record";
 		const fields = asArray(definition.fields);
 		// Every list, not only the fields: a document with a hundred thousand

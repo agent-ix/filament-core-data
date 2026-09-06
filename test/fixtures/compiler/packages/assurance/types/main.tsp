@@ -42,9 +42,14 @@ union Payload {
   id: ArtifactId,
 }
 
-/** Row 1: an empty model carrying @semanticReference. */
-@semanticReference("ix://agent-ix/core/type/Actor")
+/** Row 1: an empty model referring to a declaration in this package. */
+@semanticReference("ix://agent-ix/assurance/type/Actor")
 model ActorRef {}
+
+/** GAP-011: a reference's target must actually be declared. */
+model Actor {
+  id: ArtifactId;
+}
 
 /** A record whose name says nothing about its role; @role does. */
 @role("agent-ix:entity")

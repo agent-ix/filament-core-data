@@ -1077,7 +1077,9 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 	/** Traces: TC-433; FR-046-AC-2. */
 	it("classifies every row of the structural-kind table, first match wins", () => {
 		expect(typeOf("ActorRef").kind).toBe("reference");
-		expect(typeOf("ActorRef").target).toBe("ix://agent-ix/core/type/Actor");
+		expect(typeOf("ActorRef").target).toBe(
+			"ix://agent-ix/assurance/type/Actor",
+		);
 		expect(typeOf("ArtifactId").kind).toBe("alias");
 		expect(typeOf("ArtifactId").target).toBe(
 			"ix://agent-ix/assurance/type/Text",

@@ -85,6 +85,14 @@ Recursive references retain graph identity. Open and closed definitions declare
 whether unknowns are preserved, rejected, or surfaced; unknowns never become a
 known zero value.
 
+A `reference` or `alias` definition's `target` MUST resolve to a type declared
+in the document or an export of the resolved, locked package graph. An opaque
+identity that nothing declares is not a valid reference. This records the
+[GAP-011 owner ruling of 2026-09-04](https://github.com/agent-ix/filament-core-data/issues/52#issuecomment-5546123193).
+An inspection without package resolution reports an explicit suppression for a
+foreign target it cannot check; that suppression is not evidence of resolution.
+Compilation supplies the resolved export set and refuses an unresolved target.
+
 ### Contract 1.1.0 (issue #34)
 
 Contract `1.1.0` is additive to `1.0.0` and lives in the same schema file,

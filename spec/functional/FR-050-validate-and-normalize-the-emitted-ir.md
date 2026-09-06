@@ -60,6 +60,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | every field of a `1.1.0` document declares `multiplicity` | `agent-ix.semantic-ir.MISSING_MULTIPLICITY` |
 | `presence` agrees with `multiplicity.lower` | `agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH` |
 | a `typeRef` resolves, through aliases, to a definition | `agent-ix.semantic-ir.UNRESOLVED_TYPE_REF` |
+| a `reference` or `alias` definition's `target` resolves to a document type or an imported export | `agent-ix.semantic-ir.UNRESOLVED_TYPE_REF` |
 | `unit` is a non-empty symbol | `agent-ix.semantic-ir.INVALID_UNIT` |
 | `unit` appears only on a field resolving to a `scalar` | `agent-ix.semantic-ir.UNIT_ON_NON_SCALAR` |
 | a constraint keyword is one of the closed eleven | `agent-ix.semantic-ir.UNKNOWN_CONSTRAINT_KEYWORD` |
@@ -80,6 +81,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 
 - For a `1.0.0` document, `readContractIr` SHALL derive each field's multiplicity from its `presence` by the rule `optional → { lower: 0, upper: 1 }`, `required → { lower: 1, upper: 1 }`, which is the derivation FR-027 published.
 - Where `importedExports` is the marker `unknown`, `readContractIr` SHALL suppress `UNRESOLVED_RELATIONSHIP_TARGET` for a target absent from the document and SHALL report the suppression to its caller, rather than reporting a defect it cannot see or passing a target it cannot check.
+- For `reference` and `alias` definition targets, an absent foreign target with unknown `importedExports` SHALL likewise produce one recorded `UNRESOLVED_TYPE_REF` suppression naming the definition. A missing package-local target SHALL always be rejected. With a supplied export set, an absent target SHALL be rejected at the definition's source locus unless the document or supplied exports declare it. This applies to both supported contract versions and implements the GAP-011 owner ruling; suppressions do not certify linkage.
 - `readContractIr` SHALL terminate on a cyclic alias chain, a cyclic composite relationship graph, and a document whose node count exceeds `maxNodes`, whose nesting exceeds `maxDepth`, or any of whose arrays exceeds `maxCollectionItems`, raising the corresponding limit diagnostic rather than recursing without bound.
 
 ### Normalization
@@ -114,7 +116,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | FR-050-AC-8 | An emitted document that fails validation is not written, and the failure is a blocking diagnostic naming the failing pointer. | Test |
 | FR-050-AC-9 | A document whose alias chain is cyclic, one whose composite relationships are cyclic, one exceeding `maxNodes`, and one exceeding `maxDepth` each produce a diagnostic and terminate. | Test |
 | FR-050-AC-10 | `INVALID_IR` diagnostics name the failing instance pointer, verified against a hand-computed pointer for a malformed fixture. | Test |
-| FR-050-AC-11 | Every rule of the code table fires on a constructed document and produces exactly its named code. | Test |
+| FR-050-AC-11 | Every rule of the code table fires on a constructed document and produces exactly its named code. Reference and alias targets accept local or imported definitions, reject absent targets with known exports at the definition locus, reject missing local targets without resolution, and explicitly suppress only unchecked foreign targets. | Test |
 | FR-050-AC-12 | With `importedExports` set to `unknown`, a relationship target absent from the document produces no diagnostic and one recorded suppression; with the resolution supplied, the same document produces `UNRESOLVED_RELATIONSHIP_TARGET`. | Test |
 | FR-050-AC-13 | Over 512 mutated documents the reader returns diagnostics and never throws. | Fuzz |
 
