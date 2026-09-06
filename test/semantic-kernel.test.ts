@@ -1,7 +1,12 @@
-import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
+import { readFileSync, readdirSync, rmSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import {
+	interruptScratchMutation,
+	snapshotPaths,
+	withGenerationScratch,
+} from "./generation-scratch";
 import {
 	validateClauseRef,
 	validateFieldDecl,
@@ -98,17 +103,42 @@ function changedPaths(): string[] {
 		.filter((line) => line.length > 0);
 }
 
-function treeOf(dir: string): [string, string][] {
-	const out: [string, string][] = [];
-	const walk = (current: string): void => {
-		for (const entry of readdirSync(current).sort()) {
-			const full = join(current, entry);
-			if (statSync(full).isDirectory()) walk(full);
-			else out.push([full.slice(root.length + 1), readFileSync(full, "utf8")]);
-		}
-	};
-	walk(dir);
-	return out;
+function withKernelScratch(run: (scratch: string) => void): void {
+	withGenerationScratch(
+		root,
+		[
+			"packages/semantic-kernel",
+			"packages/semantic-core",
+			"src/compiler",
+			"scripts/build-semantic-kernel.mjs",
+			"schema/semantic/v1",
+			"conformance/schema",
+			"fixtures/semantic/v1/positive/profile.json",
+			"LICENSE",
+			"package.json",
+		],
+		run,
+	);
+}
+
+function generateFreshKernel(scratch: string, env = process.env): void {
+	// These are generated outputs, not bundle.json or an inferred source set.
+	// Removing the copies makes a generator that writes nothing fail equality.
+	for (const path of [
+		"semantic-ir.json",
+		"losses.json",
+		"json-schema/index.json",
+		"provenance.json",
+		"typescript",
+	])
+		rmSync(join(scratch, "packages/semantic-kernel", path), {
+			recursive: true,
+		});
+	execFileSync(process.execPath, ["scripts/build-semantic-kernel.mjs"], {
+		cwd: scratch,
+		encoding: "utf8",
+		env,
+	});
 }
 
 interface AdapterRow {
@@ -547,49 +577,58 @@ describe("TC-1100..1108 determinism and non-disruption (NFR-028, NFR-030)", () =
 		).toBe(true);
 	});
 
-	// TC-1103
+	/** Traces: NFR-028-AC-6; generated TypeScript and JSON Schema index only. */
 	it("regenerates the kernel byte-identically", () => {
-		const before = treeOf(join(root, "packages/semantic-kernel"));
-		execFileSync("node", ["scripts/build-semantic-kernel.mjs"], {
-			cwd: root,
-			encoding: "utf8",
-		});
-		const after = treeOf(join(root, "packages/semantic-kernel"));
-		expect(after.map(([p]) => p)).toEqual(before.map(([p]) => p));
-		for (const [index, [path, text]] of after.entries()) {
-			expect(text, `${path} changed on regeneration`).toBe(before[index]?.[1]);
-		}
-	});
-
-	// TC-1104 — the check must be able to fail, or it checks nothing.
-	it("reports a stale artifact rather than passing", () => {
-		expect(() =>
-			execFileSync("node", ["scripts/build-semantic-kernel.mjs", "--check"], {
-				cwd: root,
-				encoding: "utf8",
-				env: { ...process.env },
-			}),
-		).not.toThrow();
-
-		// The staleness gate was falsified by hand during Task-123: tampering
-		// with losses.json makes `--check` exit 1 naming the file. This asserts
-		// the passing half; the failing half is the one that was demonstrated.
-	});
-
-	// TC-1105
-	it("produces the same bytes under a changed environment", () => {
-		const before = treeOf(join(root, "packages/semantic-kernel"));
-		execFileSync("node", ["scripts/build-semantic-kernel.mjs"], {
-			cwd: root,
-			encoding: "utf8",
-			env: { ...process.env, TZ: "Pacific/Kiritimati", LANG: "tr_TR.UTF-8" },
-		});
-		const after = treeOf(join(root, "packages/semantic-kernel"));
-		for (const [index, [path, text]] of after.entries()) {
-			expect(text, `${path} moved under a changed environment`).toBe(
-				before[index]?.[1],
+		const before = snapshotPaths(root, ["packages/semantic-kernel"]);
+		withKernelScratch((scratch) => {
+			generateFreshKernel(scratch);
+			expect(snapshotPaths(scratch, ["packages/semantic-kernel"])).toEqual(
+				before,
 			);
-		}
+		});
+	});
+
+	/** Traces: NFR-028-AC-4; FR-085-AC-3. */
+	it("reports an interrupted scratch artifact mutation without changing source bytes", () => {
+		withKernelScratch((scratch) => {
+			const args = ["scripts/build-semantic-kernel.mjs", "--check"];
+			const healthy = spawnSync(process.execPath, args, {
+				cwd: scratch,
+				encoding: "utf8",
+			});
+			expect(healthy.error).toBeUndefined();
+			expect(healthy.status).toBe(0);
+			expect(healthy.stdout).toContain("artifact(s) current");
+			interruptScratchMutation(scratch, "packages/semantic-kernel/losses.json");
+			const mutated = snapshotPaths(scratch, ["packages/semantic-kernel"]);
+			const stale = spawnSync(process.execPath, args, {
+				cwd: scratch,
+				encoding: "utf8",
+			});
+			expect(stale.error).toBeUndefined();
+			expect(stale.status).toBe(1);
+			expect(stale.stderr).toContain(
+				"agent-ix.compiler.KERNEL_BUNDLE_STALE: losses.json differs from a fresh generation",
+			);
+			expect(snapshotPaths(scratch, ["packages/semantic-kernel"])).toEqual(
+				mutated,
+			);
+		});
+	});
+
+	/** Traces: NFR-028-AC-1; generated TypeScript and JSON Schema index only. */
+	it("produces the same bytes under a changed environment", () => {
+		const before = snapshotPaths(root, ["packages/semantic-kernel"]);
+		withKernelScratch((scratch) => {
+			generateFreshKernel(scratch, {
+				...process.env,
+				TZ: "Pacific/Kiritimati",
+				LANG: "tr_TR.UTF-8",
+			});
+			expect(snapshotPaths(scratch, ["packages/semantic-kernel"])).toEqual(
+				before,
+			);
+		});
 	});
 });
 

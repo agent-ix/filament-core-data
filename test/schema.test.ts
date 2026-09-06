@@ -1,8 +1,14 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { changedPathsFrom } from "./changed-paths";
+import {
+	interruptScratchMutation,
+	snapshotPaths,
+	withGenerationScratch,
+} from "./generation-scratch";
 import {
 	type CoreDataRecordName,
 	CORE_DATA_PROTOCOL,
@@ -12,7 +18,6 @@ import {
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const fixturePath = resolve(root, "fixtures/representative-core-payloads.json");
 const pythonBindingPath = resolve(root, "agent_ix_core_data/core_data.py");
-const typeScriptBindingPath = resolve(root, "src/generated.ts");
 
 const fixtures = JSON.parse(readFileSync(fixturePath, "utf8")) as Record<
 	CoreDataRecordName,
@@ -20,16 +25,80 @@ const fixtures = JSON.parse(readFileSync(fixturePath, "utf8")) as Record<
 >;
 
 describe("filament-core-data shared Avro contract", () => {
-	it("keeps generated bindings in sync with the Avro protocol", () => {
-		const before = {
-			python: readFileSync(pythonBindingPath, "utf8"),
-			typeScript: readFileSync(typeScriptBindingPath, "utf8"),
-		};
+	/** Traces: FR-026; legacy baseline preservation, not bridge qualification. */
+	it("keeps generated bindings in sync without source mutation even after interrupted probes", () => {
+		const outputs = ["src/generated.ts", "agent_ix_core_data/core_data.py"];
+		const before = snapshotPaths(root, outputs);
+		withGenerationScratch(
+			root,
+			[
+				...outputs,
+				"schema/avro/core-data.avpr",
+				"scripts/generate-core-data-schema.mjs",
+				"package.json",
+				"biome.json",
+			],
+			(scratch) => {
+				const generate = () =>
+					execFileSync(
+						process.execPath,
+						["scripts/generate-core-data-schema.mjs"],
+						{
+							cwd: scratch,
+							stdio: "pipe",
+						},
+					);
+				// Missing outputs force real generation; retained copies cannot pass.
+				for (const path of outputs) rmSync(resolve(scratch, path));
+				generate();
+				expect(snapshotPaths(scratch, outputs)).toEqual(before);
+				for (const path of outputs) {
+					interruptScratchMutation(scratch, path);
+					expect(snapshotPaths(scratch, outputs).get(path)).not.toEqual(
+						before.get(path),
+					);
+					expect(snapshotPaths(root, outputs)).toEqual(before);
+					generate();
+					expect(snapshotPaths(scratch, outputs)).toEqual(before);
+				}
+			},
+		);
+	});
 
-		execFileSync("pnpm", ["run", "generate"], { cwd: root, stdio: "pipe" });
-
-		expect(readFileSync(typeScriptBindingPath, "utf8")).toBe(before.typeScript);
-		expect(readFileSync(pythonBindingPath, "utf8")).toBe(before.python);
+	/** Traces: FR-026; issue #49's removed changed-path mitigation. */
+	it("reports both formerly exempted generated bindings as real working-tree changes", () => {
+		const outputs = ["src/generated.ts", "agent_ix_core_data/core_data.py"];
+		withGenerationScratch(root, outputs, (scratch) => {
+			const git = (...args: string[]) =>
+				execFileSync("git", args, {
+					cwd: scratch,
+					encoding: "utf8",
+					stdio: ["ignore", "pipe", "pipe"],
+				});
+			git("init", "--quiet");
+			git("add", "--", ...outputs);
+			git(
+				"-c",
+				"user.name=Isolation test",
+				"-c",
+				"user.email=isolation@example.invalid",
+				"-c",
+				"commit.gpgsign=false",
+				"commit",
+				"--quiet",
+				"-m",
+				"synthetic baseline",
+			);
+			// Dependencies are an intentionally untracked symlink in this scratch repo.
+			const baseline = changedPathsFrom(scratch, "HEAD");
+			expect(baseline.filter((path) => outputs.includes(path))).toEqual([]);
+			for (const path of outputs) interruptScratchMutation(scratch, path);
+			expect(
+				changedPathsFrom(scratch, "HEAD")
+					.filter((path) => outputs.includes(path))
+					.sort(),
+			).toEqual([...outputs].sort());
+		});
 	});
 
 	it("validates every representative payload fixture in TypeScript", () => {
