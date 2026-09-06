@@ -1,6 +1,14 @@
 import { execFileSync, spawnSync } from "node:child_process";
-import { readFileSync, readdirSync, rmSync } from "node:fs";
-import { join, resolve } from "node:path";
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	readdirSync,
+	rmSync,
+	writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { runCorpusCommand, withCorpusScratch } from "./corpus-scratch";
 import {
@@ -94,15 +102,162 @@ const PROHIBITED = [
 	".github/",
 ];
 
-function changedPaths(): string[] {
+function changedPaths(checkout = root): string[] {
 	return execFileSync(
 		"git",
 		["diff", "--no-renames", "--name-only", "main...HEAD"],
-		{ cwd: root, encoding: "utf8" },
+		{ cwd: checkout, encoding: "utf8" },
 	)
 		.split("\n")
 		.filter((line) => line.length > 0);
 }
+
+const KERNEL_SENTINELS = [
+	"spec/usecase/US-014-consume-the-semantic-kernel-natively.md",
+	"packages/semantic-kernel/bundle.json",
+] as const;
+
+function withOwnershipHistory(
+	run: (history: {
+		checkout: string;
+		git: (...args: string[]) => string;
+		write: (path: string, body?: string) => void;
+		commit: (message: string) => void;
+	}) => void,
+): void {
+	const checkout = mkdtempSync(join(tmpdir(), "kernel-ownership-"));
+	const git = (...args: string[]) =>
+		execFileSync("git", ["-c", "core.hooksPath=/dev/null", ...args], {
+			cwd: checkout,
+			encoding: "utf8",
+		}).trim();
+	const write = (path: string, body = "fixture\n") => {
+		mkdirSync(dirname(resolve(checkout, path)), { recursive: true });
+		writeFileSync(resolve(checkout, path), body);
+	};
+	const commit = (message: string) => {
+		git("add", "-A");
+		git("commit", "-m", message);
+	};
+	try {
+		git("init", "--initial-branch=main");
+		git("config", "user.email", "kernel-gate@example.invalid");
+		git("config", "user.name", "kernel ownership gate");
+		write("README.md", "base\n");
+		write("schema/frozen.json", "{}\n");
+		commit("baseline");
+		run({ checkout, git, write, commit });
+	} finally {
+		rmSync(checkout, { recursive: true, force: true });
+	}
+}
+
+describe("kernel ownership history (issue #51)", () => {
+	/** Traces: NFR-030-AC-1; NFR-030-AC-2. */
+	it("keeps the real owned paths after unrelated commits and dirty later-owned edits", () => {
+		withOwnershipHistory(({ checkout, git, write, commit }) => {
+			git("switch", "-c", "kernel");
+			write(KERNEL_SENTINELS[0]);
+			commit("kernel specification");
+			write(KERNEL_SENTINELS[1]);
+			commit("kernel bundle");
+			const owned = [...KERNEL_SENTINELS].sort();
+			expect(changedPaths(checkout).sort()).toEqual(owned);
+			write("src/compiler/backends/later.mjs");
+			write("docs/later-ticket.md");
+			commit("unrelated later ticket");
+			write("src/compiler/backends/later.mjs", "later dirty work\n");
+			expect(changedPaths(checkout).sort()).toEqual(owned);
+		});
+	});
+
+	/** Traces: NFR-030-AC-1; NFR-030-AC-2; NFR-030-AC-6. */
+	it("retains a forbidden owned path after a real squash and main repointing", () => {
+		withOwnershipHistory(({ checkout, git, write, commit }) => {
+			git("switch", "-c", "kernel");
+			write(KERNEL_SENTINELS[0]);
+			commit("kernel specification");
+			write(KERNEL_SENTINELS[1]);
+			write("schema/rogue.json");
+			commit("kernel bundle with forbidden change");
+			git("switch", "main");
+			git("merge", "--squash", "kernel");
+			commit("land kernel squash");
+			git("update-ref", "refs/remotes/origin/main", "HEAD");
+			expect(git("diff", "--no-renames", "--name-only", "main...HEAD")).toBe(
+				"",
+			);
+			expect(git("status", "--porcelain")).toBe("");
+			const paths = changedPaths(checkout);
+			expect(paths).toContain("schema/rogue.json");
+			expect(
+				paths.some((path) =>
+					PROHIBITED.some((prefix) => path.startsWith(prefix)),
+				),
+			).toBe(true);
+			expect(
+				paths.every((path) =>
+					PERMITTED.some((prefix) => path.startsWith(prefix)),
+				),
+			).toBe(false);
+		});
+	});
+
+	/** Traces: NFR-030-AC-1; NFR-030-AC-6. */
+	it("reports untracked, staged and unstaged prohibited bytes but not restored bytes", () => {
+		withOwnershipHistory(({ checkout, write, commit, git }) => {
+			write(KERNEL_SENTINELS[0]);
+			write(KERNEL_SENTINELS[1]);
+			commit("landed kernel");
+			write("schema/rogue.json");
+			expect(changedPaths(checkout)).toContain("schema/rogue.json");
+			git("add", "schema/rogue.json");
+			expect(changedPaths(checkout)).toContain("schema/rogue.json");
+			write("schema/frozen.json", "changed\n");
+			expect(changedPaths(checkout)).toContain("schema/frozen.json");
+			write("schema/frozen.json", "{}\n");
+			expect(changedPaths(checkout)).not.toContain("schema/frozen.json");
+		});
+	});
+
+	/** Traces: NFR-030-AC-1; NFR-030-AC-6. */
+	it("does not hide a prohibited deletion behind a permitted rename destination", () => {
+		withOwnershipHistory(({ checkout, git, write, commit }) => {
+			git("switch", "-c", "kernel");
+			write(KERNEL_SENTINELS[0]);
+			commit("kernel specification");
+			write(KERNEL_SENTINELS[1]);
+			git("mv", "schema/frozen.json", "packages/semantic-kernel/moved.json");
+			commit("kernel bundle with forbidden rename");
+			expect(changedPaths(checkout)).toContain("schema/frozen.json");
+			expect(changedPaths(checkout)).toContain(
+				"packages/semantic-kernel/moved.json",
+			);
+		});
+	});
+
+	/** Traces: NFR-030-AC-1; NFR-030-AC-6. */
+	it("retains a prohibited write restored before the final sentinel commit", () => {
+		withOwnershipHistory(({ checkout, git, write, commit }) => {
+			git("switch", "-c", "kernel");
+			write(KERNEL_SENTINELS[0]);
+			commit("kernel specification");
+			write("schema/frozen.json", "changed\n");
+			commit("transient forbidden write");
+			write("schema/frozen.json", "{}\n");
+			write(KERNEL_SENTINELS[1]);
+			commit("restore before kernel closing artifact");
+			expect(changedPaths(checkout)).toContain("schema/frozen.json");
+		});
+	});
+
+	/** Traces: NFR-030-AC-3. */
+	it("refuses missing sentinel history rather than asserting an empty path set", () => {
+		withOwnershipHistory(({ checkout }) => {
+			expect(() => changedPaths(checkout)).toThrow(/no commit in history adds/);
+		});
+	});
+});
 
 function withKernelScratch(run: (scratch: string) => void): void {
 	withGenerationScratch(

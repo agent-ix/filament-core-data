@@ -44,9 +44,12 @@ be backed out by reverting this work alone.
   sentinel artifacts this change created, plus the uncommitted paths in the tree
   that no later commit has taken over. It does not extend to paths a later
   ticket lands on top of this one.
-- Sentinels: `spec/usecase/US-014-consume-the-semantic-kernel-natively.md`,
-  added by this change's first commit, and
-  `docs/semantic-data-system/semantic-kernel-packages.md`, added by its last.
+- Sentinels for the landed partial implementation (#82):
+  `spec/usecase/US-014-consume-the-semantic-kernel-natively.md` and
+  `packages/semantic-kernel/bundle.json`. Both were introduced by the same
+  historical squash commit. The planned closing document
+  `docs/semantic-data-system/semantic-kernel-packages.md` has not been created
+  and cannot locate an implemented change's history.
 - Permitted paths: `spec/**`, `plan/**`, `reviews/**`,
   `docs/semantic-data-system/semantic-kernel-packages.md`,
   `docs/semantic-data-system/compiler-diagnostics.md`,
@@ -175,6 +178,19 @@ not run.
 | Test cases failing after a revert of this change's range, beyond those already failing on its base | 0 | 0 | Restore rehearsal |
 
 ## Verification
+
+> **CR-051 (2026-09-06, issue #51):** the kernel gate still measured
+> `main...HEAD` despite this requirement's history-based contract. On the
+> campaign branch it attributed later contracts documentation and a Rust backend
+> declaration to #82; after merge its prohibition could instead pass over an
+> empty range. Locate the landed partial implementation with the two real
+> sentinels above and the existing `changedPathsUnion` helper. This does not
+> complete the planned kernel packaging work. The local permitted set also
+> omitted `test/compiler-core.test.ts`, already authorized above by #83 for the
+> kernel diagnostic tests. Restore that existing permission, not a new one;
+> every other local allowance and prohibition remains unchanged. Rehearsals
+> cover later commits, squash/repointing, uncommitted prohibited changes,
+> renames, transient committed changes, and missing sentinel history.
 
 Resolve this change's own commit range from history through its two sentinels,
 take the union of the per-commit name lists over `--first-parent --no-merges
