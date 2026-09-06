@@ -60,6 +60,12 @@ than repair it silently or leave it implied.
 
 ## Constraints
 
+The AC-8 negative check SHALL mutate a copy of the report in an isolated scratch
+repository, after the real qualification checker passes there. A child process
+terminated immediately after its write SHALL leave the copied mutation intact;
+the real checker SHALL return 1 naming that report. Source backend and schema
+bytes SHALL be unchanged before cleanup, with no source restoration in teardown.
+
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-077-CON-1 | This requirement SHALL introduce no hand-written Python generator: a gap the maintainer judges P0 goes to the program owner as a reviewed decision recorded in `gaps.json`, and the generator remains upstream until that review lands. | Integrity | Test |

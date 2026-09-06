@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import {
 	cpSync,
 	existsSync,
@@ -8,6 +8,7 @@ import {
 	readdirSync,
 	rmSync,
 	statSync,
+	symlinkSync,
 	writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -780,21 +781,95 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 
 	/** Traces: TC-344; FR-041-AC-12. */
 	it("fails tsc when the declarations drift from the implementation", () => {
-		const probe = resolve(root, "test/declaration-drift-probe.ts");
-		writeFileSync(
-			probe,
-			'import { emitRust } from "../src/compiler/index.mjs";\nconst broken: number = emitRust({ schemaVersion: "1.0.0", types: [] });\nvoid broken;\n',
+		const sourceProbe = resolve(root, "test/declaration-drift-probe.ts");
+		const probeBytes = () =>
+			existsSync(sourceProbe) ? readFileSync(sourceProbe) : null;
+		const sourceSnapshot = () =>
+			new Map(
+				walk(compilerRoot).map((path) => [
+					path,
+					readFileSync(resolve(compilerRoot, path)),
+				]),
+			);
+		const sourceBefore = sourceSnapshot();
+		const probeBefore = probeBytes();
+		const scratch = mkdtempSync(
+			resolve(tmpdir(), "compiler-declaration-check-"),
 		);
 		try {
-			expect(() =>
-				execFileSync(
-					resolve(root, "node_modules/.bin/tsc"),
-					["--noEmit", "-p", "tsconfig.json"],
-					{ cwd: root, encoding: "utf8" },
-				),
-			).toThrow();
+			cpSync(resolve(root, "src"), resolve(scratch, "src"), {
+				recursive: true,
+			});
+			for (const name of ["package.json", "tsconfig.json"])
+				cpSync(resolve(root, name), resolve(scratch, name));
+			symlinkSync(
+				resolve(root, "node_modules"),
+				resolve(scratch, "node_modules"),
+				"dir",
+			);
+			mkdirSync(resolve(scratch, "test"));
+			writeFileSync(
+				resolve(scratch, "test/declaration-drift-probe.ts"),
+				'import { emitRust } from "../src/compiler/index.mjs";\nconst actual: string = emitRust({ schemaVersion: "1.0.0", generator: "probe", types: [] });\nvoid actual;\n',
+			);
+			expect(
+				typeof emitRust({
+					schemaVersion: "1.0.0",
+					generator: "probe",
+					types: [],
+				}),
+			).toBe("string");
+			const check = () =>
+				spawnSync(
+					process.execPath,
+					[
+						resolve(root, "node_modules/typescript/bin/tsc"),
+						"--noEmit",
+						"-p",
+						"tsconfig.json",
+					],
+					{ cwd: scratch, encoding: "utf8" },
+				);
+			const clean = check();
+			expect(clean.error).toBeUndefined();
+			expect(clean.status, clean.stdout + clean.stderr).toBe(0);
+			const declaration = resolve(scratch, "src/compiler/index.d.mts");
+			const original = readFileSync(declaration, "utf8");
+			const correct =
+				"export declare function emitRust(ir: SemanticIrDocument): string;";
+			const drifted =
+				"export declare function emitRust(ir: SemanticIrDocument): number;";
+			expect(original).toContain(correct);
+			const interrupted = spawnSync(
+				process.execPath,
+				[
+					"--input-type=module",
+					"-e",
+					'import { readFileSync, writeFileSync } from "node:fs";\nconst [path, before, after] = process.argv.slice(1);\nwriteFileSync(path, readFileSync(path, "utf8").replace(before, after));\nprocess.kill(process.pid, "SIGKILL");\n',
+					declaration,
+					correct,
+					drifted,
+				],
+				{ cwd: scratch, encoding: "utf8" },
+			);
+			expect(interrupted.error).toBeUndefined();
+			expect(interrupted.signal).toBe("SIGKILL");
+			expect(interrupted.status).toBeNull();
+			expect(readFileSync(declaration, "utf8")).toBe(
+				original.replace(correct, drifted),
+			);
+			expect(sourceSnapshot()).toEqual(sourceBefore);
+			expect(probeBytes()).toEqual(probeBefore);
+			const failed = check();
+			expect(failed.error).toBeUndefined();
+			expect(failed.status, failed.stdout + failed.stderr).toBe(2);
+			expect(failed.stdout.trim()).toBe(
+				"test/declaration-drift-probe.ts(2,7): error TS2322: Type 'number' is not assignable to type 'string'.",
+			);
+			expect(sourceSnapshot()).toEqual(sourceBefore);
+			expect(probeBytes()).toEqual(probeBefore);
 		} finally {
-			rmSync(probe, { force: true });
+			rmSync(scratch, { recursive: true, force: true });
 		}
 	});
 

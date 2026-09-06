@@ -57,6 +57,12 @@ example, and SHALL publish none of it.
 
 ## Constraints
 
+The AC-4 negative check SHALL mutate only a copied generated artifact in an
+isolated scratch repository, after the real generation checker passes there.
+An abruptly terminated mutator SHALL leave the scratch mutation visible; the
+checker SHALL return 1 naming that artifact. Source backend and schema bytes
+SHALL remain unchanged before cleanup, without restoring source in teardown.
+
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-079-CON-1 | No PyPI publication and no backend consumer migration happen here; the safety gate of issue #23 governs both. | Compliance | Analysis |

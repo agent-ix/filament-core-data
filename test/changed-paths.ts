@@ -34,11 +34,6 @@ import { resolve } from "node:path";
 export const REGENERATED_IN_PLACE: ReadonlySet<string> = new Set([
 	"agent_ix_core_data/core_data.py",
 	"src/generated.ts",
-	// Written and deleted inside TC-344's declaration-drift probe. A changed-path
-	// gate running in a parallel worker can observe it mid-run, which is the same
-	// issue #49 defect as the two above and has the same mitigation until that
-	// ticket moves these artefacts into a scratch directory.
-	"test/declaration-drift-probe.ts",
 ]);
 
 /** The commits a change sits between. Both endpoints are history facts. */
