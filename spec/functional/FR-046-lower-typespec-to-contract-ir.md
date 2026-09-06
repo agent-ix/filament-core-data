@@ -136,7 +136,7 @@ source or by the manifest and none is inferred from a type's spelling.
 | FR-046-AC-8 | `@unit("s")` on a field resolving through an alias to a scalar is emitted; `@unit("s")` on a field resolving to a record raises `UNIT_ON_NON_SCALAR` at the decorator's locus. | Test |
 | FR-046-AC-9 | A property with a TypeSpec default emits `defaultKind: "semantic"` and that `defaultValue`; `@defaultKind("migration")` overrides the kind; `@defaultKind` without a default raises `DEFAULT_KIND_WITHOUT_VALUE`. | Test |
 | FR-046-AC-10 | A field typed by a built-in scalar directly emits the package-local kernel scalar definition with its `ext/kernel-scalar` extension, and the kernel-name table is complete against FR-032 with the rows this frontend cannot reach recorded as such. | Test |
-| FR-046-AC-11 | A property typed by an export of a resolved imported package resolves, and one typed by an unexported type of that package raises `UNRESOLVED_TYPE_REF`. | Test |
+| FR-046-AC-11 | A property or reference-definition target typed by an export of a resolved imported package resolves, and one typed by an unexported type of that package raises `UNRESOLVED_TYPE_REF`. An unresolved reference-definition target prevents the compiler from returning or writing an IR document. | Test |
 | FR-046-AC-12 | `source.digest` equals the root package's `contentDigest`, and the `package` block equals the values FR-047 and FR-048 supply, asserted field by field. | Test |
 | FR-046-AC-13 | `occurrences` is the empty array for every fixture package. | Test |
 | FR-046-AC-14 | Every emitted array is sorted by `identity` under code-point comparison, and the order is unchanged when compared against `Intl.Collator` orderings for at least two distinct locales. | Property |
