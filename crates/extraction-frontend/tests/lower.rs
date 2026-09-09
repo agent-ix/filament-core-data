@@ -101,6 +101,29 @@ fn type_named<'a>(types: &'a [Value], display_name: &str) -> &'a Value {
         .unwrap_or_else(|| panic!("no definition named {display_name}"))
 }
 
+/// The alias definitions minted for `record`'s constrained fields (FR-093
+/// "The fields": `type/<DisplayName>.<fieldName>`), in `types` order.
+fn aliases_of<'a>(types: &'a [Value], record: &str) -> Vec<&'a Value> {
+    let prefix = format!("{record}.");
+    types
+        .iter()
+        .filter(|t| t["kind"] == "alias")
+        .filter(|t| {
+            t["displayName"]
+                .as_str()
+                .is_some_and(|n| n.starts_with(&prefix))
+        })
+        .collect()
+}
+
+/// Every constraint of `record`, gathered from its field aliases.
+fn constraints_of<'a>(types: &'a [Value], record: &str) -> Vec<&'a Value> {
+    aliases_of(types, record)
+        .into_iter()
+        .flat_map(|a| a["constraints"].as_array().expect("constraints"))
+        .collect()
+}
+
 fn field_named<'a>(record: &'a Value, name: &str) -> &'a Value {
     record["fields"]
         .as_array()
@@ -354,7 +377,13 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     let order = type_named(&types, "Order");
     let total = field_named(order, "total");
     assert_eq!(total["unit"], "USD");
-    assert_eq!(total["typeRef"], "ix://agent-ix/orders/type/Decimal");
+    // `min: 0` on the row: the typeRef names the field's alias, whose
+    // target is the resolved scalar.
+    assert_eq!(total["typeRef"], "ix://agent-ix/orders/type/Order.total");
+    assert_eq!(
+        type_named(&types, "Order.total")["target"],
+        "ix://agent-ix/orders/type/Decimal"
+    );
     assert_eq!(
         total["extensions"],
         json!([{
@@ -368,22 +397,45 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
 
 #[trace("TC-1223", "FR-093-AC-4")]
 #[test]
-fn tc_1223_version_number_min_one_emits_one_min_constraint_with_the_screaming_diagnostic_code() {
+fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_alias_with_the_screaming_diagnostic_code(
+) {
     let lift = lift("config-version-table");
     let types = types_json(&lift);
     let record = type_named(&types, "ConfigVersion");
-    let constraints = record["constraints"].as_array().expect("constraints");
-    let min: Vec<&Value> = constraints
-        .iter()
-        .filter(|c| c["keyword"] == "min")
-        .collect();
-    assert_eq!(min.len(), 1, "{constraints:?}");
-    let min = min[0];
-    assert_eq!(min["operands"], json!({"value": 1}));
+    // The record carries no constraint of its own: each lives on the alias
+    // minted for its field (FR-034's form), which the field's typeRef names.
+    assert_eq!(record["constraints"], json!([]));
+    let alias = type_named(&types, "ConfigVersion.versionNumber");
     assert_eq!(
-        min["appliesTo"],
-        "ix://agent-ix/config-service/field/configversion-versionnumber"
+        alias["identity"],
+        "ix://agent-ix/config-service/type/ConfigVersion.versionNumber"
     );
+    assert_eq!(alias["kind"], "alias");
+    assert_eq!(alias["target"], "ix://agent-ix/config-service/type/Integer");
+    assert_eq!(alias["roles"], json!([]));
+    assert_eq!(alias["unknownPolicy"], "reject");
+    assert_eq!(alias["extensions"], json!([]));
+    assert!(alias.get("fields").is_none());
+    assert!(alias.get("scalar").is_none());
+    assert_eq!(
+        alias["origin"]["source"],
+        json!({
+            "sourceIdentity": "ix://agent-ix/config-service/spec",
+            "path": "spec/functional/FR-006-config-version-entity.md",
+            "startLine": 23, "startColumn": 3
+        }),
+        "the alias originates at the row"
+    );
+    assert_eq!(
+        field_named(record, "versionNumber")["typeRef"],
+        alias["identity"]
+    );
+    let constraints = alias["constraints"].as_array().expect("constraints");
+    assert_eq!(constraints.len(), 1, "{constraints:?}");
+    let min = &constraints[0];
+    assert_eq!(min["keyword"], "min");
+    assert_eq!(min["operands"], json!({"value": 1}));
+    assert_eq!(min["appliesTo"], alias["identity"]);
     assert_eq!(
         min["diagnosticCode"],
         "agent-ix.config-service.VERSION_NUMBER_MIN"
@@ -394,12 +446,37 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_with_the_screaming_di
     );
     assert_eq!(min["origin"]["source"]["startLine"], 23, "the row's origin");
     assert_eq!(min["origin"]["source"]["startColumn"], 3);
-    // Every constraint of the record: min, nonEmpty, maxLength.
-    let keywords: Vec<&str> = constraints
+    // Every constraint of the record: min, nonEmpty, maxLength, one alias
+    // each, in field order; no unconstrained field mints one.
+    let keywords: Vec<&str> = constraints_of(&types, "ConfigVersion")
         .iter()
         .map(|c| c["keyword"].as_str().expect("keyword"))
         .collect();
     assert_eq!(keywords, ["min", "nonEmpty", "maxLength"]);
+    let alias_names: Vec<&str> = aliases_of(&types, "ConfigVersion")
+        .iter()
+        .map(|a| a["displayName"].as_str().expect("displayName"))
+        .collect();
+    assert_eq!(
+        alias_names,
+        [
+            "ConfigVersion.versionNumber",
+            "ConfigVersion.hash",
+            "ConfigVersion.createdBy"
+        ]
+    );
+    for field in record["fields"].as_array().expect("fields") {
+        let name = field["name"].as_str().expect("name");
+        let aliased = alias_names.contains(&format!("ConfigVersion.{name}").as_str());
+        assert_eq!(
+            field["typeRef"]
+                .as_str()
+                .expect("typeRef")
+                .starts_with("ix://agent-ix/config-service/type/ConfigVersion."),
+            aliased,
+            "{name}"
+        );
+    }
     // The screaming rule.
     assert_eq!(screaming("versionNumber"), "VERSION_NUMBER");
     assert_eq!(screaming("version_number"), "VERSION_NUMBER");
@@ -419,16 +496,22 @@ fn tc_1224_max_length_pattern_and_enum_values_carry_their_operand_shapes() {
     let lift = lift("config-version-table");
     let types = types_json(&lift);
     let record = type_named(&types, "ConfigVersion");
-    let max_length = record["constraints"]
-        .as_array()
-        .expect("constraints")
-        .iter()
+    let max_length = constraints_of(&types, "ConfigVersion")
+        .into_iter()
         .find(|c| c["keyword"] == "maxLength")
         .expect("maxLength");
     assert_eq!(max_length["operands"], json!({"value": 64}));
     assert_eq!(
         max_length["appliesTo"],
-        "ix://agent-ix/config-service/field/configversion-createdby"
+        "ix://agent-ix/config-service/type/ConfigVersion.createdBy"
+    );
+    assert_eq!(
+        field_named(record, "createdBy")["typeRef"],
+        "ix://agent-ix/config-service/type/ConfigVersion.createdBy"
+    );
+    assert_eq!(
+        type_named(&types, "ConfigVersion.createdBy")["target"],
+        "ix://agent-ix/config-service/type/String"
     );
 
     let audit = self::lift("lower/constraints");
@@ -439,10 +522,9 @@ fn tc_1224_max_length_pattern_and_enum_values_carry_their_operand_shapes() {
     );
     let types = types_json(&audit);
     let record = type_named(&types, "Audit");
-    let by_keyword: BTreeMap<&str, &Value> = record["constraints"]
-        .as_array()
-        .expect("constraints")
-        .iter()
+    assert_eq!(record["constraints"], json!([]));
+    let by_keyword: BTreeMap<&str, &Value> = constraints_of(&types, "Audit")
+        .into_iter()
         .map(|c| (c["keyword"].as_str().expect("keyword"), c))
         .collect();
     assert_eq!(
@@ -463,6 +545,26 @@ fn tc_1224_max_length_pattern_and_enum_values_carry_their_operand_shapes() {
     assert_eq!(by_keyword["minLength"]["operands"], json!({"value": 1}));
     assert_eq!(by_keyword["maxLength"]["operands"], json!({"value": 64}));
     assert_eq!(by_keyword.len(), 8);
+    // One alias per constrained field: `count` and `payload` each carry
+    // two keywords on one alias.
+    let aliases = aliases_of(&types, "Audit");
+    assert_eq!(aliases.len(), 6, "{aliases:?}");
+    for alias in &aliases {
+        let field = alias["displayName"]
+            .as_str()
+            .and_then(|n| n.strip_prefix("Audit."))
+            .expect("Audit.<field>");
+        assert_eq!(field_named(record, field)["typeRef"], alias["identity"]);
+        for c in alias["constraints"].as_array().expect("constraints") {
+            assert_eq!(c["appliesTo"], alias["identity"]);
+        }
+    }
+    assert_eq!(
+        type_named(&types, "Audit.count")["constraints"]
+            .as_array()
+            .map(Vec::len),
+        Some(2)
+    );
     assert_eq!(reader_codes(&ir_document(&audit)), Vec::<String>::new());
 }
 
@@ -851,7 +953,8 @@ fn without(value: &Value, drop: &[&str]) -> Value {
 #[trace("TC-1229", "FR-093-AC-10")]
 #[trace("TC-1229", "FR-093-CON-2")]
 #[test]
-fn tc_1229_renaming_every_field_changes_only_name_identity_applies_to_and_diagnostic_code() {
+fn tc_1229_renaming_every_field_changes_only_name_identity_alias_identity_applies_to_and_diagnostic_code(
+) {
     let lift = lift("lower/constraints");
     let package = PackageIdentity::from(lift.bundle.package());
     let artifact = artifact_ref(&lift, "FR-001");
@@ -867,6 +970,7 @@ fn tc_1229_renaming_every_field_changes_only_name_identity_applies_to_and_diagno
     let baseline =
         lower_record(extraction, &lift.resolutions.resolutions, &rows, &ctx).expect("lowers");
     let base = serde_json::to_value(&baseline.definition).expect("serialises");
+    let base_aliases = serde_json::to_value(&baseline.aliases).expect("serialises");
     let decls = extraction.fields.as_deref().expect("fields");
 
     let mut runner = TestRunner::new(Config::with_cases(64));
@@ -894,38 +998,55 @@ fn tc_1229_renaming_every_field_changes_only_name_identity_applies_to_and_diagno
             let lowered = lower_record(&renamed, &resolutions, &rows, &ctx)
                 .map_err(|e| TestCaseError::fail(format!("{e:?}")))?;
             let got = serde_json::to_value(&lowered.definition).expect("serialises");
+            let got_aliases = serde_json::to_value(&lowered.aliases).expect("serialises");
             // The record itself is untouched by field names.
-            prop_assert_eq!(
-                without(&got, &["fields", "constraints"]),
-                without(&base, &["fields", "constraints"])
-            );
+            prop_assert_eq!(without(&got, &["fields"]), without(&base, &["fields"]));
             let base_fields = base["fields"].as_array().expect("fields");
             let got_fields = got["fields"].as_array().expect("fields");
             prop_assert_eq!(got_fields.len(), base_fields.len());
             for (b, g) in base_fields.iter().zip(got_fields) {
-                prop_assert_eq!(
-                    without(g, &["name", "identity"]),
-                    without(b, &["name", "identity"])
-                );
                 prop_assert_ne!(&g["name"], &b["name"]);
+                // A constrained field's typeRef names its alias, whose
+                // identity carries the field name; an unconstrained
+                // field's typeRef is untouched.
+                let aliased = b["typeRef"]
+                    .as_str()
+                    .is_some_and(|t| t.contains("/type/Audit."));
+                let moved: &[&str] = if aliased {
+                    &["name", "identity", "typeRef"]
+                } else {
+                    &["name", "identity"]
+                };
+                prop_assert_eq!(without(g, moved), without(b, moved));
             }
-            let base_constraints = base["constraints"].as_array().expect("constraints");
-            let got_constraints = got["constraints"].as_array().expect("constraints");
-            prop_assert_eq!(got_constraints.len(), base_constraints.len());
-            for (b, g) in base_constraints.iter().zip(got_constraints) {
+            // Every alias keeps its target, origin and operands; only the
+            // alias identity, displayName, appliesTo and diagnosticCode move.
+            let base_aliases = base_aliases.as_array().expect("aliases");
+            let got_aliases = got_aliases.as_array().expect("aliases");
+            prop_assert_eq!(got_aliases.len(), base_aliases.len());
+            for (b, g) in base_aliases.iter().zip(got_aliases) {
                 prop_assert_eq!(
-                    without(g, &["identity", "appliesTo", "diagnosticCode"]),
-                    without(b, &["identity", "appliesTo", "diagnosticCode"])
+                    without(g, &["identity", "displayName", "constraints"]),
+                    without(b, &["identity", "displayName", "constraints"])
                 );
+                let base_constraints = b["constraints"].as_array().expect("constraints");
+                let got_constraints = g["constraints"].as_array().expect("constraints");
+                prop_assert_eq!(got_constraints.len(), base_constraints.len());
+                for (b, g) in base_constraints.iter().zip(got_constraints) {
+                    prop_assert_eq!(
+                        without(g, &["identity", "appliesTo", "diagnosticCode"]),
+                        without(b, &["identity", "appliesTo", "diagnosticCode"])
+                    );
+                }
             }
             Ok(())
         })
-        .expect("64 renamings move only name, identity, appliesTo and diagnosticCode");
+        .expect("64 renamings move only name, identity, the alias identity, appliesTo and diagnosticCode");
 }
 
 #[trace("TC-1333", "FR-093-AC-12")]
 #[test]
-fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values_row_and_no_alias_anywhere(
+fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values_row_and_every_alias_is_a_constrained_field(
 ) {
     let lift = lift("business");
     assert!(
@@ -1014,8 +1135,11 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
         .iter()
         .any(|t| t.display_name == "Colour"));
 
-    // No fixture document carries a `kind: alias` definition; the kind
-    // enum cannot even spell it.
+    // Every `kind: alias` definition in a fixture document is the one
+    // minted for a constrained field: named `<DisplayName>.<fieldName>`,
+    // targeting a non-alias definition, referenced by exactly that field's
+    // typeRef, and carrying at least one constraint; no other kind is
+    // emitted.
     for name in [
         "config-version-table",
         "config-version-fence",
@@ -1026,11 +1150,44 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
         "resolve/enumeration",
     ] {
         let lift = self::lift(name);
+        let types = types_json(&lift);
         for t in &lift.lowered.types {
             assert!(
-                matches!(t.kind, Kind::Scalar | Kind::Record | Kind::Enum),
+                matches!(
+                    t.kind,
+                    Kind::Scalar | Kind::Record | Kind::Enum | Kind::Alias
+                ),
                 "{name}: {:?}",
                 t.kind
+            );
+        }
+        for alias in types.iter().filter(|t| t["kind"] == "alias") {
+            let (record, field) = alias["displayName"]
+                .as_str()
+                .and_then(|n| n.split_once('.'))
+                .unwrap_or_else(|| panic!("{name}: {alias} is not <DisplayName>.<fieldName>"));
+            let target = type_named(&types, record);
+            let referencing: Vec<&Value> = target["fields"]
+                .as_array()
+                .expect("fields")
+                .iter()
+                .filter(|f| f["typeRef"] == alias["identity"])
+                .collect();
+            assert_eq!(referencing.len(), 1, "{name}: {alias}");
+            assert_eq!(referencing[0]["name"], field);
+            let resolved = types
+                .iter()
+                .find(|t| t["identity"] == alias["target"])
+                .unwrap_or_else(|| panic!("{name}: {} targets nothing", alias["identity"]));
+            assert_ne!(
+                resolved["kind"], "alias",
+                "{name}: an alias never targets an alias"
+            );
+            assert!(
+                alias["constraints"]
+                    .as_array()
+                    .is_some_and(|c| !c.is_empty()),
+                "{name}: {alias} carries no constraint"
             );
         }
     }

@@ -3,8 +3,10 @@
 //!
 //! Every identity the frontend emits is minted here and nowhere else. The
 //! `type/` segment carries the record's `displayName` verbatim (FR-046's
-//! rule); every other segment is a [`slug`] (decision D8). A name that slugs
-//! to the empty string is [`Unsluggable`], which the caller raises as
+//! rule), or `<DisplayName>.<fieldName>` for the alias FR-093 mints per
+//! constrained field (FR-034's form; `semanticIdentity` admits the dot);
+//! every other segment is a [`slug`] (decision D8). A name that slugs to the
+//! empty string is [`Unsluggable`], which the caller raises as
 //! `UNSLUGGABLE_NAME` at the declaration's locus, blocking.
 
 use std::fmt;
@@ -158,6 +160,15 @@ impl PackageIdentity {
         self.node(NodeKind::Type, display_name)
     }
 
+    /// `ix://<org>/<name>/type/<DisplayName>.<fieldName>`: the alias a
+    /// constrained field's `typeRef` names, whose `constraints[]` carry the
+    /// row's keywords (FR-093 "The fields", FR-095 "Node identities"). Both
+    /// segments are `Identifier`s, so the tail is verbatim; two fields of
+    /// one record cannot share a name (`DUPLICATE_FIELD` is the engine's).
+    pub fn alias_identity(&self, record: &str, field: &str) -> String {
+        self.node(NodeKind::Type, &alias_display_name(record, field))
+    }
+
     /// `ix://<org>/<name>/field/<record-slug>-<field-slug>`.
     pub fn field_identity(&self, record: &str, field: &str) -> Result<String, Unsluggable> {
         Ok(self.node(NodeKind::Field, &join(&[record, field])?))
@@ -213,6 +224,12 @@ impl From<&Package> for PackageIdentity {
     fn from(package: &Package) -> Self {
         Self::new(&package.org, &package.name)
     }
+}
+
+/// `<DisplayName>.<fieldName>`: the `displayName` of the alias minted for
+/// a constrained field, and the tail of its identity.
+pub fn alias_display_name(record: &str, field: &str) -> String {
+    format!("{record}.{field}")
 }
 
 /// The slugs of `names`, joined by `-`. The first unsluggable name is the

@@ -83,4 +83,5 @@ the first task that shells to the node reader; **rebase after PR #84 first**
 
 - Canonical form is the issue #67 reading FR-097 declares (`agent-ix-conformance-jcs-v1` as `crates/semantic-ir` writes it); the fingerprint domain is quire-specification FR-018's, copied verbatim (D10).
 - `std::fs` appears only in `write.rs` (NFR-031-AC-5 exemption list).
+- CR-036-4 (2026-09-09): the three reader checks this task deferred (`tc_1283_`, `tc_1219_`, `tc_1230_`) were `#[ignore]`d because the FR-050 node reader resolves `constraint.appliesTo` as a type identity; the orchestrator adopted FR-034's alias-per-constrained-field form (FR-093 "The fields"), `lower.rs` now mints one `kind: alias` per constrained field, and the three tests are un-ignored and green. The AC defects this task reported against FR-097-AC-1 (`jsonschema` reachable via quire-rs) and FR-097-AC-4 (`Intl.Collator` is not a code-point reference) and the FR-097 node-list gap (field/param `extensions`, `occurrences`, top-level `extensions`) were applied in the same CR.
 - Unblocks: Task-135.

@@ -233,12 +233,14 @@ pub fn lower_enum(rows: &[ValueRow], ctx: &ArtifactContext<'_>) -> Result<Loweri
             extensions: Vec::new(),
             unknown_policy: UnknownPolicy::Reject,
             scalar: None,
+            target: None,
             fields: None,
             variants: Some(variants),
             relationships: None,
             operations: None,
             clauses: None,
         },
+        aliases: Vec::new(),
         diagnostics,
     })
 }

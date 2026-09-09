@@ -51,7 +51,6 @@ fn assert_none_of(name: &str, codes: &[String], forbidden: &[&str]) {
 
 #[trace("TC-1219", "FR-092-AC-10")]
 #[test]
-#[ignore = "blocked: the FR-050 node reader resolves constraint.appliesTo as a type identity (UNRESOLVED_TYPE_REF on every field-scoped constraint), while FR-093-AC-4 emits the field identity and agent_ix_semantic_ir::decide accepts it; a spec CR must pick one reading (reported with Task-134)"]
 fn tc_1219_neither_reader_raises_unresolved_type_ref_over_any_emitted_document() {
     for (name, _dir, request, _) in positive_lifts() {
         let (rust, node) = reader_codes(&request.out);
@@ -90,7 +89,6 @@ fn tc_1219_neither_reader_raises_unresolved_type_ref_over_any_emitted_document()
 
 #[trace("TC-1230", "FR-093-AC-11")]
 #[test]
-#[ignore = "blocked: the FR-050 node reader resolves constraint.appliesTo as a type identity (UNRESOLVED_TYPE_REF on every field-scoped constraint), while FR-093-AC-4 emits the field identity and agent_ix_semantic_ir::decide accepts it; a spec CR must pick one reading (reported with Task-134)"]
 fn tc_1230_every_emitted_document_passes_both_readers_with_zero_semantic_ir_diagnostics() {
     let lifts = positive_lifts();
     assert!(lifts.len() >= 4);

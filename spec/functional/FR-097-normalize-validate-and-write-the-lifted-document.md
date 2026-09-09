@@ -83,7 +83,7 @@ test suite.
 
 ### Canonical form (declared reading of issue #67)
 
-- The frontend SHALL sort every node list — `types`, and within each type `fields`, `variants`, `constraints`, `relationships`, `operations`, `clauses`, and `extensions`, and within each operation `params` — by `identity` under a locale-independent code-point comparison before calling `decide`.
+- The frontend SHALL sort every node list — `types`, and within each type `fields`, `variants`, `constraints`, `relationships`, `operations`, `clauses`, and `extensions`, within each field and each operation parameter `extensions`, within each operation `params`, and the top-level `occurrences` and `extensions` — by `identity` under a locale-independent code-point comparison before calling `decide`; these are exactly the sets FR-050's `normalizeIr` declares (`IDENTITY_SETS`).
 - The frontend SHALL obtain the written bytes as `agent_ix_semantic_ir::normalize::normalized(&{"ir": <document>})` over the sorted document and from no other serializer.
 - The frontend SHALL materialize `multiplicity`, `presence`, and `nullable` on every field and operation parameter before serialization, so that `normalized` adds no member and the written bytes re-parse to the assembled value.
 - The frontend SHALL NOT link the `jsonschema` crate.
@@ -127,10 +127,10 @@ test suite.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-097-AC-1 | `crates/extraction-frontend/Cargo.toml` names `agent-ix-semantic-ir` under `[dependencies]` with `path = "../semantic-ir"` and names no `jsonschema`; `cargo tree -p agent-ix-extraction-frontend` lists no `jsonschema`. | Static (TC-1273) |
+| FR-097-AC-1 | `crates/extraction-frontend/Cargo.toml` names `agent-ix-semantic-ir` under `[dependencies]` with `path = "../semantic-ir"` and names no `jsonschema`; `cargo tree -p agent-ix-extraction-frontend` lists no direct `jsonschema` edge, and every `jsonschema` line it lists sits under `quire-rs`, which links it for its own frontmatter schemas (NFR-033). | Static (TC-1273) |
 | FR-097-AC-2 | A fault-injected document missing `unknownPolicy` on one type yields exactly one blocking `INVALID_IR` naming that type's instance pointer, and no `<out>`, `<out>.fingerprint`, or `<out>.provenance.json` is written. | Test (TC-1274) |
 | FR-097-AC-3 | The bytes written for the `config-version-table` fixture equal `decide({"ir": doc}).normalized` and equal the committed `expected/semantic-ir.json`; parsing them and calling `normalized` again reproduces them. | Test (TC-1275) |
-| FR-097-AC-4 | Every node list in the written document is sorted by `identity` under code-point order, and the order is unchanged when compared against `Intl.Collator` orderings for at least two locales. | Property (TC-1276) |
+| FR-097-AC-4 | Every node list in the written document is sorted by `identity` under code-point order, and the order equals the code-point sort computed in `node` under two `LC_ALL` values (`en_US.UTF-8`, `de_DE.UTF-8`); an `Intl.Collator` is not the reference, because a collator's primary level is case-insensitive and orders `Ordering` before `OrderLifecycle` where code point orders `L` before `i`, so it would disagree with FR-050's `normalizeIr` on the emitted lists. | Property (TC-1276) |
 | FR-097-AC-5 | `node -e` importing `src/compiler/ir/normalize.mjs` and applying FR-050 `normalizeIr` to every emitted fixture document returns the emitted bytes unchanged. | Test (TC-1277) |
 | FR-097-AC-6 | `<out>.fingerprint` parses to exactly the members `domain` `quire.verification.jcs`, `version` `rfc8785-v1`, `algorithm` `sha256`, and `digest` `sha256-jcs:<64 hex>`, and the digest equals `sha256sum` over the written document bytes. | Test (TC-1278) |
 | FR-097-AC-7 | Two consecutive lifts of the `config-version-table` fixture produce documents and sidecars byte-identical to each other and to the committed `expected/` goldens. | Test (TC-1279) |

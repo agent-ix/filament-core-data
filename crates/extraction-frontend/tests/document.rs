@@ -221,11 +221,10 @@ fn tc_1273_the_manifest_names_semantic_ir_by_path_and_no_jsonschema_and_the_read
         String::from_utf8_lossy(&tree.stderr)
     );
     let tree = String::from_utf8_lossy(&tree.stdout);
-    // FR-097-AC-1 asks for no `jsonschema` in `cargo tree`; the pinned
-    // engine (`quire-rs`, read-only) links it for its own frontmatter
-    // schemas, so the tree lists it two levels down. What the frontend
-    // controls, and what FR-097 "SHALL NOT link" fixes, is the direct
-    // edge: none exists (reported with Task-134 as an AC defect).
+    // FR-097-AC-1: no direct `jsonschema` edge. The pinned engine
+    // (`quire-rs`, read-only) links it for its own frontmatter schemas, so
+    // the tree lists it two levels down; what the frontend controls, and
+    // what FR-097 "SHALL NOT link" fixes, is the direct edge (CR-036-4).
     let direct: Vec<&str> = tree
         .lines()
         .filter(|l| l.starts_with("├── ") || l.starts_with("└── "))
@@ -451,13 +450,12 @@ fn tc_1276_every_node_list_is_identity_sorted_by_code_point_and_two_collators_ag
     });
 
     // The emitted order is the code-point order FR-050's canonicalizer
-    // (`byCodePoint`) produces, and it is the same under two process
-    // locales, so no locale could have produced a different document.
-    // FR-097-AC-4 names `Intl.Collator` as the reference; a collator
-    // compares letters case-insensitively at its primary level and orders
-    // `Ordering` before `OrderLifecycle`, where code point puts `L` before
-    // `i`, so the collator cannot be the reference (reported with Task-134
-    // as an AC defect; the witness is asserted below).
+    // produces, computed in `node` under two `LC_ALL` values, so no locale
+    // could have produced a different document (FR-097-AC-4). An
+    // `Intl.Collator` is not the reference: a collator compares letters
+    // case-insensitively at its primary level and orders `Ordering` before
+    // `OrderLifecycle`, where code point puts `L` before `i`; the witness
+    // that the two orders differ on the emitted lists is asserted below.
     let mut checked = 0;
     let mut collator_disagreed = false;
     for (name, _dir, _request, outcome) in positive_lifts() {
@@ -485,7 +483,7 @@ fn tc_1276_every_node_list_is_identity_sorted_by_code_point_and_two_collators_ag
     assert!(checked > 0, "at least one multi-node list was compared");
     assert!(
         collator_disagreed,
-        "Intl.Collator agreed with code point on every emitted list: FR-097-AC-4 could be restored as written"
+        "Intl.Collator agreed with code point on every emitted list: FR-097-AC-4's reason for byCodePoint would be moot"
     );
 }
 

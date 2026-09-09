@@ -287,7 +287,6 @@ fn tc_1282_a_lift_into_a_directory_that_does_not_exist_refuses_with_output_unwri
 
 #[trace("TC-1283", "FR-097-AC-11")]
 #[test]
-#[ignore = "blocked: the FR-050 node reader resolves constraint.appliesTo as a type identity (UNRESOLVED_TYPE_REF on every field-scoped constraint), while FR-093-AC-4 emits the field identity and agent_ix_semantic_ir::decide accepts it; a spec CR must pick one reading (reported with Task-134)"]
 fn tc_1283_node_inspect_reports_zero_diagnostics_for_every_emitted_document_and_names_node_when_absent(
 ) {
     for (name, _dir, request, _outcome) in positive_lifts() {

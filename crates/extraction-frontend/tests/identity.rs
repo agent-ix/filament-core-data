@@ -69,6 +69,11 @@ fn tc_1252_slug_lowercases_collapses_runs_and_an_all_punctuation_title_is_unslug
         "type/ carries displayName verbatim"
     );
     assert_eq!(
+        package.alias_identity("ConfigVersion", "versionNumber"),
+        "ix://agent-ix/config-service/type/ConfigVersion.versionNumber",
+        "the alias of a constrained field: type/<DisplayName>.<fieldName>, both verbatim"
+    );
+    assert_eq!(
         package
             .field_identity("ConfigVersion", "versionNumber")
             .as_deref(),

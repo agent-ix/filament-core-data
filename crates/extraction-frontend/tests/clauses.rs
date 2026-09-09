@@ -379,9 +379,18 @@ fn is_semantic_identity(s: &str) -> bool {
     org_ok && tail_ok
 }
 
+/// An `Identifier`: `[A-Za-z_][A-Za-z0-9_]*`.
+fn is_identifier(s: &str) -> bool {
+    s.chars()
+        .next()
+        .is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
+        && s.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+}
+
 /// The one FR-095 node kind `identity` matches, if exactly one does: the
 /// segment after `ix://<org>/<name>/` and a tail that is a slug
-/// (`[a-z0-9]+(-[a-z0-9]+)*`), or for `type/` an `Identifier`.
+/// (`[a-z0-9]+(-[a-z0-9]+)*`), or for `type/` an `Identifier` or, for the
+/// alias of a constrained field, `<Identifier>.<Identifier>`.
 fn node_kind(identity: &str, package: &str) -> Option<NodeKind> {
     let rest = identity.strip_prefix(&format!("ix://{package}/"))?;
     let (segment, tail) = rest.split_once('/')?;
@@ -389,12 +398,10 @@ fn node_kind(identity: &str, package: &str) -> Option<NodeKind> {
         .into_iter()
         .filter(|kind| kind.segment() == segment)
         .filter(|kind| match kind {
-            NodeKind::Type => {
-                tail.chars()
-                    .next()
-                    .is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
-                    && tail.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
-            }
+            NodeKind::Type => match tail.split_once('.') {
+                Some((record, field)) => is_identifier(record) && is_identifier(field),
+                None => is_identifier(tail),
+            },
             _ => {
                 !tail.is_empty()
                     && !tail.starts_with('-')

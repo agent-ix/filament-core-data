@@ -15,7 +15,25 @@
 //! where the declaration text begins (column 3 of a table row; the first
 //! non-blank column of a fence line), which is the one locus both forms
 //! share when a fixture aligns them. The field name reaches only `name`,
-//! `identity`, `appliesTo` and `diagnosticCode` (FR-093-CON-2).
+//! `identity`, `diagnosticCode`, and the alias identity a constrained
+//! field's `typeRef` and its constraints' `appliesTo` name (FR-093-CON-2).
+//!
+//! # Constraints: one alias per constrained field (FR-034's form)
+//!
+//! A field row carrying one or more constraints lowers to one extra
+//! definition of `kind: alias` at `type/<DisplayName>.<fieldName>`
+//! ([`PackageIdentity::alias_identity`]) whose `target` is the field's
+//! resolved type, whose `constraints[]` carry the row's keywords with
+//! `appliesTo` the alias identity, and whose `origin` is the row; the
+//! field's `typeRef` then names the alias. This is the form FR-034 lowers
+//! the semantic-core kernel path to (`VersionNumber` in
+//! `fixtures/semantic/v1/positive/config-version-v1-1.json`), and the one
+//! both readers resolve: `appliesTo` is a type identity for FR-050's
+//! `reader.mjs` as well as for `agent_ix_semantic_ir::decide` (CR-036-4).
+//! A field with no constraints is unchanged, and a record's own
+//! `constraints[]` is always empty. The aliases of a record are returned
+//! beside it in [`Lowering::aliases`]; [`lower_bundle`] emits them into
+//! `types[]`, which FR-097 sorts by identity.
 //!
 //! # Declared losses (issue #78, unruled)
 //!
@@ -71,7 +89,7 @@ use crate::diagnostics::{Code, Diagnostic, Disposition, Locus, NotLoweredReason,
 use crate::edges::{lower_relationships, Relationship};
 use crate::enumeration::{lower_enum, values_rows};
 use crate::extract::Extractions;
-use crate::identity::{slug, PackageIdentity};
+use crate::identity::{alias_display_name, slug, PackageIdentity};
 use crate::limits::{check_bundle, check_extraction, Limits};
 use crate::resolve::{ArtifactRef, Outcome, Resolution, Resolutions, Resolved, Site};
 use crate::rows::{field_rows, locate, operation_rows, RowLocus};
@@ -96,15 +114,16 @@ pub const JSON_OBJECT: &str = "JsonObject";
 // IR node shapes (`schema/semantic/v1/semantic-ir.schema.json`)
 // ---------------------------------------------------------------------------
 
-/// `typeDefinition.kind` as this frontend emits it: never `alias`,
-/// `union`, `sequence`, `map` or `reference` (FR-093 "Enumeration
-/// artifacts").
+/// `typeDefinition.kind` as this frontend emits it: `alias` only for the
+/// definition minted per constrained field; never `union`, `sequence`,
+/// `map` or `reference` (FR-093 "Enumeration artifacts").
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Kind {
     Scalar,
     Record,
     Enum,
+    Alias,
 }
 
 /// `common.schema.json#/$defs/unknownPolicy`, the two values emitted.
@@ -211,6 +230,10 @@ pub struct TypeDefinition {
     pub unknown_policy: UnknownPolicy,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scalar: Option<String>,
+    /// The resolved type behind a constrained field's alias; absent on
+    /// every other kind.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub target: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fields: Option<Vec<Field>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -247,6 +270,7 @@ impl From<ScalarDefinition> for TypeDefinition {
                 .collect(),
             unknown_policy: UnknownPolicy::Reject,
             scalar: Some(scalar.scalar),
+            target: None,
             fields: None,
             variants: None,
             relationships: None,
@@ -495,11 +519,13 @@ impl<'a> ArtifactContext<'a> {
     }
 }
 
-/// One lowered definition with the non-blocking diagnostics it raised
-/// (`DECLARED_LOSS`).
+/// One lowered definition with the alias definitions its constrained
+/// fields minted (in field order) and the non-blocking diagnostics it
+/// raised (`DECLARED_LOSS`).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Lowering {
     pub definition: TypeDefinition,
+    pub aliases: Vec<TypeDefinition>,
     pub diagnostics: Vec<Diagnostic>,
 }
 
@@ -544,12 +570,17 @@ impl Sink {
         self.diagnostics.push(diagnostic);
     }
 
-    fn finish(self, definition: TypeDefinition) -> Result<Lowering, LowerError> {
+    fn finish(
+        self,
+        definition: TypeDefinition,
+        aliases: Vec<TypeDefinition>,
+    ) -> Result<Lowering, LowerError> {
         if self.blocked {
             Err(LowerError::Blocked(self.diagnostics))
         } else {
             Ok(Lowering {
                 definition,
+                aliases,
                 diagnostics: self.diagnostics,
             })
         }
@@ -598,7 +629,7 @@ pub fn lower_record(
     }
     let decls = extraction.fields.as_deref().unwrap_or(&[]);
     let mut fields = Vec::with_capacity(decls.len());
-    let mut constraints = Vec::new();
+    let mut aliases = Vec::new();
     let mut codes: BTreeMap<String, Locus> = BTreeMap::new();
     for (index, decl) in decls.iter().enumerate() {
         let locus = locate(rows, index, &decl.name)
@@ -615,39 +646,65 @@ pub fn lower_record(
                 continue;
             }
         };
-        let field = lower_field(decl, resolved, identity, locus.clone(), ctx, &mut sink)?;
-        let kind = resolved.and_then(ResolvedKind::of);
-        lower_constraints(
-            decl,
-            &field.identity,
-            kind,
-            &locus,
-            ctx,
-            &mut codes,
-            &mut constraints,
-            &mut sink,
-        );
+        let mut field = lower_field(decl, resolved, identity, locus.clone(), ctx, &mut sink)?;
+        if decl.constraints.as_deref().is_some_and(|c| !c.is_empty()) {
+            let kind = resolved.and_then(ResolvedKind::of);
+            let alias_identity = ctx.package.alias_identity(ctx.display_name, &decl.name);
+            let mut constraints = Vec::new();
+            lower_constraints(
+                decl,
+                &alias_identity,
+                kind,
+                &locus,
+                ctx,
+                &mut codes,
+                &mut constraints,
+                &mut sink,
+            );
+            aliases.push(TypeDefinition {
+                identity: alias_identity.clone(),
+                display_name: alias_display_name(ctx.display_name, &decl.name),
+                kind: Kind::Alias,
+                roles: Vec::new(),
+                origin: Origin::Source(locus),
+                constraints,
+                extensions: Vec::new(),
+                unknown_policy: UnknownPolicy::Reject,
+                scalar: None,
+                target: Some(std::mem::replace(&mut field.type_ref, alias_identity)),
+                fields: None,
+                variants: None,
+                relationships: None,
+                operations: None,
+                clauses: None,
+            });
+        }
         fields.push(field);
     }
-    sink.finish(TypeDefinition {
-        identity: ctx.package.type_identity(ctx.display_name),
-        display_name: ctx.display_name.to_string(),
-        kind: Kind::Record,
-        roles: ctx.roles.clone(),
-        origin: head_origin(ctx),
-        constraints,
-        extensions: Vec::new(),
-        unknown_policy: UnknownPolicy::Reject,
-        scalar: None,
-        fields: Some(fields),
-        variants: None,
-        // Filled by `lower_bundle`, which holds the document, the registry
-        // and the index the three need; a record always carries the three
-        // lists, an enumeration or scalar never does.
-        relationships: Some(Vec::new()),
-        operations: Some(Vec::new()),
-        clauses: Some(Vec::new()),
-    })
+    sink.finish(
+        TypeDefinition {
+            identity: ctx.package.type_identity(ctx.display_name),
+            display_name: ctx.display_name.to_string(),
+            kind: Kind::Record,
+            roles: ctx.roles.clone(),
+            origin: head_origin(ctx),
+            // Every constraint lives on its field's alias.
+            constraints: Vec::new(),
+            extensions: Vec::new(),
+            unknown_policy: UnknownPolicy::Reject,
+            scalar: None,
+            target: None,
+            fields: Some(fields),
+            variants: None,
+            // Filled by `lower_bundle`, which holds the document, the registry
+            // and the index the three need; a record always carries the three
+            // lists, an enumeration or scalar never does.
+            relationships: Some(Vec::new()),
+            operations: Some(Vec::new()),
+            clauses: Some(Vec::new()),
+        },
+        aliases,
+    )
 }
 
 /// Lower one `FieldDecl` at `locus` to an IR `field` (FR-093 "The fields",
@@ -728,13 +785,15 @@ pub(crate) fn lower_field(
     })
 }
 
-/// The constraints of one field row under FR-029, with `DUPLICATE_CONSTRAINT`
-/// on a repeated keyword or a colliding `diagnosticCode` and
-/// `CONSTRAINT_NOT_APPLICABLE` from the RULES.md table.
+/// The constraints of one field row under FR-029, each with `appliesTo`
+/// the row's alias (`alias_identity`), with `DUPLICATE_CONSTRAINT` on a
+/// repeated keyword or a colliding `diagnosticCode` and
+/// `CONSTRAINT_NOT_APPLICABLE` from the RULES.md table — the frontend's own
+/// gate, raised at the row before the reader could see the alias.
 #[allow(clippy::too_many_arguments)]
 fn lower_constraints(
     decl: &quire_rs::semantic::FieldDecl,
-    field_identity: &str,
+    alias_identity: &str,
     kind: Option<ResolvedKind<'_>>,
     locus: &Locus,
     ctx: &ArtifactContext<'_>,
@@ -805,7 +864,7 @@ fn lower_constraints(
             identity,
             keyword,
             operands,
-            applies_to: field_identity.to_string(),
+            applies_to: alias_identity.to_string(),
             diagnostic_code: code,
             origin: Origin::Source(locus.clone()),
         });
@@ -830,6 +889,7 @@ pub fn json_object_record(package: &PackageIdentity, generator_version: &str) ->
         extensions: Vec::new(),
         unknown_policy: UnknownPolicy::Preserve,
         scalar: None,
+        target: None,
         fields: Some(Vec::new()),
         variants: None,
         relationships: None,
@@ -846,7 +906,9 @@ pub fn json_object_record(package: &PackageIdentity, generator_version: &str) ->
 ///
 /// `types` holds the kernel scalar definitions in identity order, the
 /// `JsonObject` record when the bundle uses it, then one definition per
-/// lowered artifact in document path order; FR-097 sorts by identity.
+/// lowered artifact in document path order, each record followed by the
+/// aliases of its constrained fields in field order; FR-097 sorts by
+/// identity.
 /// `diagnostics` holds FR-092's diagnostics — minus every
 /// `KERNEL_NAME_SHADOWED` a `DUPLICATE_TYPE_NAME` superseded — followed by
 /// this stage's own; the engine's stay in [`Extractions::diagnostics`].
@@ -1037,6 +1099,7 @@ pub fn lower_bundle(
             Ok(lowering) => {
                 own.extend(lowering.diagnostics);
                 types.push(lowering.definition);
+                types.extend(lowering.aliases);
             }
             Err(LowerError::Blocked(diagnostics)) => own.extend(diagnostics),
             Err(LowerError::NotLowered) | Err(LowerError::Unresolved { .. }) => {}
