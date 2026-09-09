@@ -40,6 +40,15 @@
 //! `KERNEL_NAME_SHADOWED` warning, which stays only when the bundle does not
 //! use the scalar (orchestrator ruling on FR-092-AC-8 / FR-093-AC-13).
 //!
+//! # Relationships, operations and clauses (FR-094)
+//!
+//! A record's three lists are filled by [`lower_bundle`] after
+//! [`lower_record`], through [`crate::edges::lower_relationships`],
+//! [`crate::clauses::lower_clauses`] and
+//! [`crate::clauses::lower_operations`]; a scalar or enumeration
+//! definition carries none. The parameter fields of an operation share
+//! [`lower_field`] with the record's rows.
+//!
 //! # Module short name
 //!
 //! FR-093 names roles `<module short name>:<object type>` with the example
@@ -57,13 +66,15 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::bundle::{Bundle, Document};
+use crate::clauses::{lower_clauses, lower_operations, Clause, Operation};
 use crate::diagnostics::{Code, Diagnostic, Disposition, Locus, NotLoweredReason, OWNER};
+use crate::edges::{lower_relationships, Relationship};
 use crate::enumeration::{lower_enum, values_rows};
 use crate::extract::Extractions;
 use crate::identity::{slug, PackageIdentity};
 use crate::limits::{check_bundle, check_extraction, Limits};
-use crate::resolve::{ArtifactRef, Outcome, Resolution, Resolutions, Resolved};
-use crate::rows::{field_rows, locate, RowLocus};
+use crate::resolve::{ArtifactRef, Outcome, Resolution, Resolutions, Resolved, Site};
+use crate::rows::{field_rows, locate, operation_rows, RowLocus};
 use crate::scalars::{definitions, GeneratedOrigin, KernelScalar, ScalarDefinition};
 
 /// `losses.json`, byte for byte.
@@ -204,6 +215,15 @@ pub struct TypeDefinition {
     pub fields: Option<Vec<Field>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub variants: Option<Vec<Variant>>,
+    /// FR-094: a record's frontmatter edges; absent on scalars and enums.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub relationships: Option<Vec<Relationship>>,
+    /// FR-094: a record's `OperationDecl`s; absent on scalars and enums.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operations: Option<Vec<Operation>>,
+    /// FR-094: a record's located `ClauseRef`s; absent on scalars and enums.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub clauses: Option<Vec<Clause>>,
 }
 
 impl From<ScalarDefinition> for TypeDefinition {
@@ -229,6 +249,9 @@ impl From<ScalarDefinition> for TypeDefinition {
             scalar: Some(scalar.scalar),
             fields: None,
             variants: None,
+            relationships: None,
+            operations: None,
+            clauses: None,
         }
     }
 }
@@ -463,11 +486,11 @@ pub struct ArtifactContext<'a> {
 }
 
 impl<'a> ArtifactContext<'a> {
-    fn head(&self) -> Locus {
+    pub(crate) fn head(&self) -> Locus {
         Locus::head(&self.package.source(), self.path)
     }
 
-    fn at(&self, line: usize, column: usize) -> Locus {
+    pub(crate) fn at(&self, line: usize, column: usize) -> Locus {
         Locus::new(&self.package.source(), self.path, line, column)
     }
 }
@@ -509,14 +532,14 @@ impl fmt::Display for LowerError {
 impl std::error::Error for LowerError {}
 
 /// Collects diagnostics and remembers whether one of them blocks.
-#[derive(Default)]
-struct Sink {
-    diagnostics: Vec<Diagnostic>,
-    blocked: bool,
+#[derive(Debug, Default)]
+pub(crate) struct Sink {
+    pub(crate) diagnostics: Vec<Diagnostic>,
+    pub(crate) blocked: bool,
 }
 
 impl Sink {
-    fn push(&mut self, diagnostic: Diagnostic) {
+    pub(crate) fn push(&mut self, diagnostic: Diagnostic) {
         self.blocked |= diagnostic.blocking;
         self.diagnostics.push(diagnostic);
     }
@@ -529,6 +552,15 @@ impl Sink {
                 definition,
                 diagnostics: self.diagnostics,
             })
+        }
+    }
+
+    /// `value` unless a diagnostic blocked, in which case the diagnostics.
+    pub(crate) fn finish_with<T>(self, value: T) -> Result<T, LowerError> {
+        if self.blocked {
+            Err(LowerError::Blocked(self.diagnostics))
+        } else {
+            Ok(value)
         }
     }
 }
@@ -574,13 +606,8 @@ pub fn lower_record(
             .unwrap_or_else(|| ctx.head());
         let resolved = resolutions
             .iter()
-            .find(|r| r.artifact == ctx.id && r.field == decl.name)
+            .find(|r| r.artifact == ctx.id && r.site == Site::Field && r.field == decl.name)
             .map(|r| &r.resolution);
-        let Some(type_ref) = resolved.and_then(|r| r.type_ref(ctx.package)) else {
-            return Err(LowerError::Unresolved {
-                field: decl.name.clone(),
-            });
-        };
         let identity = match ctx.package.field_identity(ctx.display_name, &decl.name) {
             Ok(identity) => identity,
             Err(unsluggable) => {
@@ -588,53 +615,11 @@ pub fn lower_record(
                 continue;
             }
         };
-        let multiplicity = decl
-            .type_ref
-            .multiplicity
-            .clone()
-            .unwrap_or_else(Multiplicity::one);
-        if matches!(
-            resolved,
-            Some(Resolution::KernelScalar(KernelScalar::JsonObject))
-        ) {
-            sink.push(Loss::UnconstrainedValue.diagnostic(
-                &format!("field {} is a JsonObject", decl.name),
-                locus.clone(),
-            ));
-        }
-        if multiplicity.lower == 0 && multiplicity.upper.is_none() {
-            sink.push(Loss::RequiredCollectionPresence.diagnostic(
-                &format!(
-                    "field {} is a 0..* collection emitted as optional",
-                    decl.name
-                ),
-                locus.clone(),
-            ));
-        }
-        let mut extensions = Vec::new();
-        if decl.identity == Some(true) {
-            extensions.push(Extension {
-                identity: IDENTITY_FIELD_EXTENSION.to_string(),
-                version: FIELD_EXTENSION_VERSION.to_string(),
-                required: false,
-                payload: serde_json::json!({}),
-            });
-        }
-        if let Some(decimal) = &decl.type_ref.decimal {
-            extensions.push(Extension {
-                identity: DECIMAL_POLICY_EXTENSION.to_string(),
-                version: FIELD_EXTENSION_VERSION.to_string(),
-                required: false,
-                payload: serde_json::json!({
-                    "precision": decimal.precision,
-                    "scale": decimal.scale,
-                }),
-            });
-        }
+        let field = lower_field(decl, resolved, identity, locus.clone(), ctx, &mut sink)?;
         let kind = resolved.and_then(ResolvedKind::of);
         lower_constraints(
             decl,
-            &identity,
+            &field.identity,
             kind,
             &locus,
             ctx,
@@ -642,18 +627,7 @@ pub fn lower_record(
             &mut constraints,
             &mut sink,
         );
-        fields.push(Field {
-            identity,
-            name: decl.name.clone(),
-            type_ref,
-            presence: Presence::of(&multiplicity),
-            nullable: decl.nullable.unwrap_or(false),
-            default_kind: DefaultKind::None,
-            origin: Origin::Source(locus),
-            extensions,
-            multiplicity,
-            unit: decl.type_ref.unit.clone(),
-        });
+        fields.push(field);
     }
     sink.finish(TypeDefinition {
         identity: ctx.package.type_identity(ctx.display_name),
@@ -667,6 +641,90 @@ pub fn lower_record(
         scalar: None,
         fields: Some(fields),
         variants: None,
+        // Filled by `lower_bundle`, which holds the document, the registry
+        // and the index the three need; a record always carries the three
+        // lists, an enumeration or scalar never does.
+        relationships: Some(Vec::new()),
+        operations: Some(Vec::new()),
+        clauses: Some(Vec::new()),
+    })
+}
+
+/// Lower one `FieldDecl` at `locus` to an IR `field` (FR-093 "The fields",
+/// "Declared losses") under the already-minted `identity`: `typeRef` from
+/// the FR-092 `resolved` classification, multiplicity default `{1,1}`,
+/// presence from `lower`, nullable default `false`, `defaultKind: none`,
+/// the `identity-field` and `decimal-policy` extensions, and the declared
+/// losses for a `JsonObject` cell and a `0..*` collection. Shared by a
+/// record's the Properties table rows and an operation's parameter rows
+/// (FR-094 "Operations"); constraints are the caller's.
+pub(crate) fn lower_field(
+    decl: &quire_rs::semantic::FieldDecl,
+    resolved: Option<&Resolution>,
+    identity: String,
+    locus: Locus,
+    ctx: &ArtifactContext<'_>,
+    sink: &mut Sink,
+) -> Result<Field, LowerError> {
+    let Some(type_ref) = resolved.and_then(|r| r.type_ref(ctx.package)) else {
+        return Err(LowerError::Unresolved {
+            field: decl.name.clone(),
+        });
+    };
+    let multiplicity = decl
+        .type_ref
+        .multiplicity
+        .clone()
+        .unwrap_or_else(Multiplicity::one);
+    if matches!(
+        resolved,
+        Some(Resolution::KernelScalar(KernelScalar::JsonObject))
+    ) {
+        sink.push(Loss::UnconstrainedValue.diagnostic(
+            &format!("field {} is a JsonObject", decl.name),
+            locus.clone(),
+        ));
+    }
+    if multiplicity.lower == 0 && multiplicity.upper.is_none() {
+        sink.push(Loss::RequiredCollectionPresence.diagnostic(
+            &format!(
+                "field {} is a 0..* collection emitted as optional",
+                decl.name
+            ),
+            locus.clone(),
+        ));
+    }
+    let mut extensions = Vec::new();
+    if decl.identity == Some(true) {
+        extensions.push(Extension {
+            identity: IDENTITY_FIELD_EXTENSION.to_string(),
+            version: FIELD_EXTENSION_VERSION.to_string(),
+            required: false,
+            payload: serde_json::json!({}),
+        });
+    }
+    if let Some(decimal) = &decl.type_ref.decimal {
+        extensions.push(Extension {
+            identity: DECIMAL_POLICY_EXTENSION.to_string(),
+            version: FIELD_EXTENSION_VERSION.to_string(),
+            required: false,
+            payload: serde_json::json!({
+                "precision": decimal.precision,
+                "scale": decimal.scale,
+            }),
+        });
+    }
+    Ok(Field {
+        identity,
+        name: decl.name.clone(),
+        type_ref,
+        presence: Presence::of(&multiplicity),
+        nullable: decl.nullable.unwrap_or(false),
+        default_kind: DefaultKind::None,
+        origin: Origin::Source(locus),
+        extensions,
+        multiplicity,
+        unit: decl.type_ref.unit.clone(),
     })
 }
 
@@ -774,6 +832,9 @@ pub fn json_object_record(package: &PackageIdentity, generator_version: &str) ->
         scalar: None,
         fields: Some(Vec::new()),
         variants: None,
+        relationships: None,
+        operations: None,
+        clauses: None,
     }
 }
 
@@ -947,7 +1008,30 @@ pub fn lower_bundle(
             }
         } else {
             let rows = field_rows(document.raw());
-            lower_record(&extracted.extraction, &resolutions.resolutions, &rows, &ctx)
+            lower_record(&extracted.extraction, &resolutions.resolutions, &rows, &ctx).and_then(
+                |mut lowering| {
+                    // FR-094: the record's edges, clauses and operations.
+                    let relationships = lower_relationships(
+                        document,
+                        object_type,
+                        bundle,
+                        &resolutions.outcomes,
+                        &ctx,
+                    )
+                    .map_err(LowerError::Blocked)?;
+                    let clauses = lower_clauses(&extracted.extraction, &ctx)?;
+                    let operations = lower_operations(
+                        &extracted.extraction,
+                        &resolutions.resolutions,
+                        &operation_rows(document.raw()),
+                        &ctx,
+                    )?;
+                    lowering.definition.relationships = Some(relationships);
+                    lowering.definition.clauses = Some(clauses);
+                    lowering.definition.operations = Some(operations);
+                    Ok(lowering)
+                },
+            )
         };
         match outcome {
             Ok(lowering) => {

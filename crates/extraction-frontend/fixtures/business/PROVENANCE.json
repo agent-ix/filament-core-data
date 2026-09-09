@@ -4,11 +4,18 @@
   "files": [
     "spec/spec.md",
     "spec/domain/DM-001-ordering.md",
+    "spec/functional/AR-001-order-aggregate.md",
+    "spec/functional/EN-001-order-status.md",
+    "spec/functional/EV-001-order-placed.md",
     "spec/functional/FR-001-order.md",
+    "spec/functional/NE-001-shipment.md",
+    "spec/functional/PR-001-fulfilment.md",
+    "spec/functional/RP-001-order-repository.md",
+    "spec/functional/SM-001-order-lifecycle.md",
     "spec/functional/VO-001-order-line.md",
-    "spec/functional/EN-001-order-status.md"
+    "spec/functional/operations.md"
   ],
   "derived": [],
   "edits": [],
-  "note": "The `business` fixture (FR-098 inventory), begun by Task-132 with the four artifacts FR-093 lowers: a `domain` with no `## Properties` (fields.state not_applicable, record with fields: []; TC-1335), an `entity` with a collection, an optional field, a Decimal(10,2) [USD] policy and a reference to the enumeration, a `value_object` carrying pattern/min/enumValues constraints, and an `object: enumeration` with a `## Values` table lowered through the module's values_table locator (TC-1333). Task-133 adds relationships and operations under the vendored spec-objects-business module."
+  "note": "The `business` fixture (FR-098 inventory), begun by Task-132 with the four artifacts FR-093 lowers: a `domain` with no `## Properties` (fields.state not_applicable, record with fields: []; TC-1335), an `entity` with a collection, an optional field, a Decimal(10,2) [USD] policy and a reference to the enumeration, a `value_object` carrying pattern/min/enumValues constraints, and an `object: enumeration` with a `## Values` table lowered through the module's values_table locator (TC-1333). Task-133 adds relationships and operations under the vendored spec-objects-business module. Task-133 completes it: one artifact per exported object type (aggregate_root with Members, nested_entity with Parent, repository with Invariants and Operations, event with a json Schema fence, state_machine with a mermaid States & Transitions fence, process with a mermaid Workflow fence) and operations.md (id OP-001, an entity named Basket) whose operations carry a parameter table, Returns:, and Pre:/Post: references to its own Invariants; frontmatter relationships of contains (domain, entity, aggregate_root, nested_entity), aggregates, composes (value_object), references, owns, emits, carries, raises, consumes, reads, operates_on and persists, plus traces_to/implements/depends_on on the Order entity to targets that exist nowhere (skipped silently, FR-094-AC-6); the Order entity's `capped` ocl fence carries leading whitespace, a tab and two trailing newlines (FR-094-AC-10). Lifted under spec-objects-business and edge-vocabulary (the registry that categorises the verbs)."
 }

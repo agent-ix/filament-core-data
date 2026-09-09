@@ -4,6 +4,9 @@ title: Order Line
 object: value_object
 type: FR
 name: OrderLine
+relationships:
+  - target: EN-001
+    type: composes
 ---
 
 # VO-001: Order Line

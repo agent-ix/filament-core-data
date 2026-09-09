@@ -42,6 +42,13 @@ fn business_module() -> PathBuf {
     fixture("modules/spec-objects-business")
 }
 
+/// The `edge_types` registry FR-094 categorises frontmatter edges by; the
+/// vendored business module declares none, so a bundle with an allowed
+/// edge lifted under it alone raises `UNKNOWN_EDGE_VERB`.
+fn edge_vocabulary() -> PathBuf {
+    fixture("modules/edge-vocabulary")
+}
+
 fn limits() -> Limits {
     Limits::declared().expect("limits.json parses")
 }
@@ -69,7 +76,7 @@ fn lift_at(root: &Path, modules: &[&Path]) -> Lift {
 }
 
 fn lift(name: &str) -> Lift {
-    lift_at(&fixture(name), &[&business_module()])
+    lift_at(&fixture(name), &[&business_module(), &edge_vocabulary()])
 }
 
 fn with_code(diagnostics: &[Diagnostic], code: Code) -> Vec<&Diagnostic> {

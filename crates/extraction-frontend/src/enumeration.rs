@@ -235,6 +235,9 @@ pub fn lower_enum(rows: &[ValueRow], ctx: &ArtifactContext<'_>) -> Result<Loweri
             scalar: None,
             fields: None,
             variants: Some(variants),
+            relationships: None,
+            operations: None,
+            clauses: None,
         },
         diagnostics,
     })

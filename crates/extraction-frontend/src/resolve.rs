@@ -32,7 +32,7 @@ use crate::diagnostics::{
 };
 use crate::extract::{Extracted, Extractions};
 use crate::identity::PackageIdentity;
-use crate::rows::{field_rows, locate};
+use crate::rows::{field_rows, locate, operation_rows, RowLocus};
 use crate::scalars::KernelScalar;
 
 /// The engine's advisory code accompanying every placeholder.
@@ -47,6 +47,8 @@ const ENUMERATION: &str = "enumeration";
 const SCHEME: &str = "ix://";
 const TYPE_SEGMENT: &str = "type";
 const UNRESOLVED_SEGMENT: &str = "unresolved";
+/// The name the engine gives a `Returns:` row (quire-rs `parse_returns`).
+pub const RETURNS: &str = "returns";
 
 /// One bundle artifact a resolved token names: what the definition it
 /// lowers to is identified by.
@@ -189,13 +191,26 @@ pub struct PassOne {
     pub diagnostics: Vec<Diagnostic>,
 }
 
+/// Where a classified token was declared: a the Properties table row, a
+/// parameter row of one operation, or the `Returns:` line of one
+/// operation (FR-094 "Operations" resolves both through FR-092).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Site {
+    Field,
+    Param { operation: String },
+    Returns { operation: String },
+}
+
 /// One classified token.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Resolved {
     /// The artifact whose row carries the token.
     pub artifact: String,
-    /// The field the row declares.
+    /// The field or parameter the row declares; the engine's `returns` for
+    /// a `Returns:` line.
     pub field: String,
+    /// Which declaration the row is.
+    pub site: Site,
     /// The row's locus, when the engine's scanner finds the row again.
     pub locus: Option<Locus>,
     pub resolution: Resolution,
@@ -316,20 +331,13 @@ pub fn pass_two(bundle: &Bundle, extractions: &Extractions, outcomes: &Outcomes)
     let source_identity = bundle.package().source_identity();
     let mut out = PassTwo::default();
     for (id, extracted) in &extractions.artifacts {
-        let Some(fields) = extracted.extraction.fields.as_deref() else {
-            continue;
-        };
-        let rows = bundle
+        let document = bundle
             .documents()
             .iter()
-            .find(|d| d.path() == extracted.path)
-            .map(|d| field_rows(d.raw()))
-            .unwrap_or_default();
-        for (index, field) in fields.iter().enumerate() {
-            let row = locate(&rows, index, &field.name);
+            .find(|d| d.path() == extracted.path);
+        let mut classify_token = |field: &str, site: Site, target: &str, row: Option<&RowLocus>| {
             let locus =
                 row.map(|r| Locus::new(&source_identity, &extracted.path, r.line, r.column));
-            let target = field.type_ref.target.as_str();
             let companion = companion_of(extracted, target, row.map(|r| r.line));
             let resolution = classify(target, companion, bundle, outcomes);
             if let Resolution::KernelScalar(scalar) = &resolution {
@@ -347,10 +355,56 @@ pub fn pass_two(bundle: &Bundle, extractions: &Extractions, outcomes: &Outcomes)
             }
             out.resolutions.push(Resolved {
                 artifact: id.clone(),
-                field: field.name.clone(),
+                field: field.to_string(),
+                site,
                 locus,
                 resolution,
             });
+        };
+        if let Some(fields) = extracted.extraction.fields.as_deref() {
+            let rows = document.map(|d| field_rows(d.raw())).unwrap_or_default();
+            for (index, field) in fields.iter().enumerate() {
+                let row = locate(&rows, index, &field.name);
+                classify_token(&field.name, Site::Field, &field.type_ref.target, row);
+            }
+        }
+        // FR-094 "Operations": every parameter row and every `Returns:`
+        // token is a `Type` cell resolved the same way (FR-094-AC-12).
+        if let Some(operations) = extracted.extraction.operations.as_deref() {
+            let rows = document
+                .map(|d| operation_rows(d.raw()))
+                .unwrap_or_default();
+            for operation in operations {
+                let located = rows.iter().find(|r| r.name == operation.name);
+                for (index, param) in operation.params.iter().enumerate() {
+                    let row = located.and_then(|r| locate(&r.params, index, &param.name));
+                    classify_token(
+                        &param.name,
+                        Site::Param {
+                            operation: operation.name.clone(),
+                        },
+                        &param.type_ref.target,
+                        row,
+                    );
+                }
+                if let Some(returns) = &operation.returns {
+                    let row = located
+                        .and_then(|r| r.returns)
+                        .map(|(line, column)| RowLocus {
+                            name: RETURNS.to_string(),
+                            line,
+                            column,
+                        });
+                    classify_token(
+                        RETURNS,
+                        Site::Returns {
+                            operation: operation.name.clone(),
+                        },
+                        &returns.target,
+                        row.as_ref(),
+                    );
+                }
+            }
         }
     }
     out
@@ -450,7 +504,7 @@ fn placeholder_reason(companion: Option<&SemanticDiagnostic>) -> Unresolved {
 /// The indexed artifact the engine resolved `name` to, in the engine's own
 /// precedence (quire-rs FR-070): an object by `id`, else the one object
 /// whose `names` carry it, else an enumeration by `id` or name.
-fn indexed_artifact<'a>(bundle: &'a Bundle, name: &str) -> Option<&'a Document> {
+pub(crate) fn indexed_artifact<'a>(bundle: &'a Bundle, name: &str) -> Option<&'a Document> {
     let index = bundle.index();
     let id = index
         .objects
