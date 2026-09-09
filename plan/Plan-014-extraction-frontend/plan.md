@@ -145,7 +145,7 @@ single enumeration, grouped by the module under test.
 - [ ] FR-091-AC-8 TC-1207; FR-095-AC-12 TC-1257; FR-096-AC-3 TC-1261; FR-097-AC-1 TC-1273, TC-1336; FR-098-AC-10/11 TC-1294, TC-1338, TC-1343; FR-099-AC-4..6 TC-1298, TC-1299, TC-1349; three-CON grep TC-1330
 - [ ] NFR-031: TC-1300..TC-1304, TC-1306..TC-1309
 - [ ] NFR-032: TC-1310..TC-1319
-- [ ] NFR-033: TC-1320..TC-1329
+- [ ] NFR-033: TC-1320..TC-1329, TC-1350
 
 ### Property and fuzz tests (`proptest`)
 

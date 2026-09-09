@@ -16,6 +16,8 @@ relationships:
     type: verifies
   - target: "ix://agent-ix/filament-core-data/TC-1329"
     type: verifies
+  - target: "ix://agent-ix/filament-core-data/TC-1350"
+    type: verifies
 ---
 # Task-127: NFR-033 scaffold: crate, pins, vendored module, toolchain gate
 
