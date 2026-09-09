@@ -1792,7 +1792,7 @@ and "next free" is not a fact either branch can establish.
 | NFR-031-AC-6 | Prohibited | A bundle tree one level over `maxDepth` | TC-1305 | One blocking `LIMIT_MAX_DEPTH`; terminates within 512 MiB and 30 s |
 | FR-093-AC-3 | Allowed | Multiplicity `1` | TC-1222 | `{lower: 1, upper: 1}`, `presence: required` |
 | FR-093-AC-3 | Allowed | Multiplicity `0..1` | TC-1222 | `{lower: 0, upper: 1}`, `presence: optional` |
-| FR-093-AC-8 | Allowed | Multiplicity `0..*` | TC-1227 | `lower: 0`, `upper` absent, `presence: optional`; one `DECLARED_LOSS` where the module marks it required |
+| FR-093-AC-8 | Allowed | Multiplicity `0..*` | TC-1227 | `lower: 0`, `upper` absent, `presence: optional`; one `DECLARED_LOSS` `required-collection-presence` per `0..*`/`*` field |
 | FR-093-AC-8 | Allowed | Multiplicity `1..*` | TC-1227 | `lower: 1`, `upper` absent, `presence: required` |
 | FR-094-AC-1 | Boundary | A frontmatter relationship, which authors no bound | TC-1231 | `multiplicity {1,1}` always; no suffix grammar exists on the frontmatter axis |
 | FR-093-AC-13 | Prohibited | One field row carrying `min` twice | TC-1334 | `DUPLICATE_CONSTRAINT` at that row, blocking |
@@ -2070,7 +2070,7 @@ and "next free" is not a fact either branch can establish.
 | ERR-142 | A construct measured as lost is missing from `gaps.json` | Qualification gate fails | TC-898 |
 | ERR-143 | A guard's change range cannot be located from history | Guard fails saying it did not run | TC-943 |
 | ERR-250 | A supplied module manifest carries no `semantic` block | `MODULE_WITHOUT_SEMANTIC_BLOCK` naming the module; refusal; no file; exit 2 | TC-1201, TC-1296 |
-| ERR-251 | quire-rs refuses a module's `semantic` block (unsupported `semantic_core`, duplicate object type) | `MODULE_REFUSED` carrying the engine's `semantic.*` code at the manifest, line 1, column 1; no artifact lowered as empty; exit 2 | TC-1202, TC-1265 |
+| ERR-251 | quire-rs refuses a module's `semantic` block (unsupported `semantic_core`, duplicate object type) | `MODULE_REFUSED` whose message opens with the engine's `semantic.*` code, `causes` empty, at the manifest, line 1, column 1; no artifact lowered as empty; exit 2 | TC-1202, TC-1265 |
 | ERR-252 | `spec/spec.md` is absent, lacks `org` or `name`, or carries one outside the `packageIdentity` grammar; an object-typed document has no `id` | `BUNDLE_UNIDENTIFIED` at `spec/spec.md` or the document's frontmatter naming the offending value; refusal; exit 2 | TC-1204 |
 | ERR-253 | Two loaded documents carry the same frontmatter `id` | `DUPLICATE_ARTIFACT_ID` at the second document in path order naming both paths; refusal; exit 2 | TC-1331 |
 | ERR-254 | A document's `object` names a type no loaded module declares | `UNKNOWN_OBJECT_TYPE` at the frontmatter; document not lowered | TC-1205 |
