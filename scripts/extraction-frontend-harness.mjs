@@ -67,8 +67,8 @@ if (!process.execArgv.some((arg) => arg.startsWith("--experimental-strip-types")
 	process.exit(child.status ?? 1);
 }
 
-/** The repository this script lives in: `crates/extraction-frontend/scripts/../../..`. */
-const HOME_ROOT = resolve(dirname(SELF), "..", "..", "..");
+/** The repository this script lives in: `scripts/..` (root `scripts/`, the one such path NFR-032 permits; CR-036-8). */
+const HOME_ROOT = resolve(dirname(SELF), "..");
 
 const helpers = await import(
 	pathToFileURL(join(HOME_ROOT, "test", "changed-paths.ts")).href
@@ -88,6 +88,7 @@ const PERMITTED = Object.freeze([
 	{ name: "Cargo.lock", test: (p) => p === "Cargo.lock" },
 	{ name: "Makefile (one extraction-frontend block)", test: (p) => p === "Makefile" },
 	{ name: "THIRD-PARTY-NOTICES.md (additive rows for the crates Cargo.lock adds; CR-036-8)", test: (p) => p === "THIRD-PARTY-NOTICES.md" },
+	{ name: "scripts/extraction-frontend-harness.mjs (the NFR-032 rehearsal harness; CR-036-8)", test: (p) => p === "scripts/extraction-frontend-harness.mjs" },
 	{ name: "test/fixtures/compiler/shared/cases.json", test: (p) => p === "test/fixtures/compiler/shared/cases.json" },
 	{ name: "test/fixtures/compiler/shared/spec-bundle/**", test: (p) => p.startsWith("test/fixtures/compiler/shared/spec-bundle/") },
 	{ name: "test/fixtures/compiler/shared/typespec/records-and-scalars/**", test: (p) => p.startsWith("test/fixtures/compiler/shared/typespec/records-and-scalars/") },
@@ -116,6 +117,7 @@ const PROHIBITED = Object.freeze([
 	{ name: "agent_ix_core_data/**", test: (p) => p.startsWith("agent_ix_core_data/") },
 	{ name: "tests/**", test: (p) => p.startsWith("tests/") },
 	{ name: "test/*.test.ts", test: (p) => /^test\/[^/]+\.test\.ts$/.test(p) },
+	{ name: "scripts/** (other than the harness)", test: (p) => p.startsWith("scripts/") && p !== "scripts/extraction-frontend-harness.mjs" },
 ]);
 
 /** The seven paths FR-099-AC-5 names byte-unchanged, as `git diff` pathspecs. */

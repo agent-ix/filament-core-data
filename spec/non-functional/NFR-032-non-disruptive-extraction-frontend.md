@@ -53,7 +53,10 @@ the crates whose agreement is evidence remain independent of it.
   `Makefile`; additive rows in the root `THIRD-PARTY-NOTICES.md` for exactly
   the crates this change adds to `Cargo.lock` — a row per newly locked package
   version, no line of the register removed or changed, no row for a crate the
-  lock does not carry (CR-036-8); the `spec-bundle` and `reason` members of
+  lock does not carry (CR-036-8); exactly one repository-root script,
+  `scripts/extraction-frontend-harness.mjs`, the rehearsal harness the
+  Verification names — the rest of the root `scripts/` stays prohibited
+  (CR-036-8); the `spec-bundle` and `reason` members of
   each case in `test/fixtures/compiler/shared/cases.json` and its top-level
   `$comment`, whose sentence reserved the column for this ticket (FR-045) and
   is rewritten to say the column is filled,
@@ -74,7 +77,9 @@ the crates whose agreement is evidence remain independent of it.
   `conformance/**`, `spikes/**`, `package.json`, `pnpm-lock.yaml`,
   `rust-toolchain.toml`, the `rust-version` key of the root `Cargo.toml`,
   `.github/**`, `agent_ix_core_data/**`, the repository-root `tests/**`, every
-  `test/*.test.ts`, and every path of every other repository —
+  `test/*.test.ts`, the repository-root `scripts/**` other than
+  `scripts/extraction-frontend-harness.mjs`, and every path of every other
+  repository —
   `config-service`, `quire-rs`, `spec-objects-business`, and
   `spec-artifacts-iso` are read-only fixtures. The `fixtures/**` and
   `tests/**` globs are anchored at the repository root and do not match
@@ -92,7 +97,10 @@ the crates whose agreement is evidence remain independent of it.
   its gate (`test/rust-backend.test.ts` TC-742) reads the lock this change
   produces, so a register that omits a locked crate is the defect NFR-023
   forbids, not a path this change may leave alone — the widening is bounded
-  to the additions the lock proves; the shared-case members and the
+  to the additions the lock proves; the harness because the Verification
+  names it by that path and `test/compiler.test.ts` requires every tracked
+  `.mjs` that names `src/compiler` — the harness does, in its prohibited
+  table — to live under the root `scripts/`; the shared-case members and the
   `$comment` because FR-045 reserved the column for this ticket by name and
   FR-098 owns the `reason` member and the `records-and-scalars` case; the
   vendored module because
@@ -200,10 +208,8 @@ and compare outcomes row for row. Re-run the full suite on a revert of the
 range. Rehearse the range on a synthetic history in which an unrelated change
 lands on top, and confirm the set does not grow and that a prohibited path no
 later commit owns still fails the gate. The three rehearsals are verbs of
-`crates/extraction-frontend/scripts/extraction-frontend-harness.mjs` (the
-repository-root `scripts/` is not a permitted path), typed `Static` in the
-matrix, in the form `test/changed-paths.ts` already takes; none is a
-`cargo test`.
+`scripts/extraction-frontend-harness.mjs`, typed `Static` in the matrix, in
+the form `test/changed-paths.ts` already takes; none is a `cargo test`.
 
 ## Acceptance Criteria
 
@@ -215,7 +221,7 @@ matrix, in the form `test/changed-paths.ts` already takes; none is a
 | NFR-032-AC-4 | `test/fixtures/compiler/shared/cases.json` differs from the base only by `spec-bundle` and `reason` members, the rewritten top-level `$comment`, and the added `records-and-scalars` case; every pre-existing path under `test/fixtures/compiler/shared/**` and `src/compiler/frontend/spec-bundle/frontend.mjs` are byte-unchanged. | Analysis (TC-1313) |
 | NFR-032-AC-5 | After the full crate suite runs, `git status --porcelain` is empty in this repository's fixture directories and in every corpus repository the fixtures name. | Test (TC-1314) |
 | NFR-032-AC-6 | Every crate manifest in the change set carries `publish = false` and `license = "AGPL-3.0-only"`, and no command in the `Makefile` block or the crate names a registry. | Analysis (TC-1315) |
-| NFR-032-AC-7 | `make test` and `make rust`, driven by the `crates/extraction-frontend/scripts/extraction-frontend-harness.mjs` `suite-compare` verb on the range's base and on its head, produce the same pass/fail outcome for every pre-existing row. | Static (TC-1316) |
+| NFR-032-AC-7 | `make test` and `make rust`, driven by the `scripts/extraction-frontend-harness.mjs` `suite-compare` verb on the range's base and on its head, produce the same pass/fail outcome for every pre-existing row. | Static (TC-1316) |
 | NFR-032-AC-8 | The full suite passes on a revert of this change's range, driven by the harness's `revert-rehearsal` verb. | Static (TC-1317) |
 | NFR-032-AC-9 | On a synthetic history built by the harness's `accretion-rehearsal` verb, where an unrelated sibling change lands on top, this change's path set does not grow, and a prohibited path no later commit owns still fails the gate. | Static (TC-1318) |
 | NFR-032-AC-10 | `git log --merges` over the range is empty, and `package.json` and `pnpm-lock.yaml` are byte-unchanged. | Analysis (TC-1319) |

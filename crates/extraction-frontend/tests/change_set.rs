@@ -52,7 +52,7 @@ fn ticket_artifact(path: &str) -> bool {
 }
 
 fn harness_path() -> PathBuf {
-    crate_dir().join("scripts/extraction-frontend-harness.mjs")
+    workspace_dir().join("scripts/extraction-frontend-harness.mjs")
 }
 
 /// `node scripts/extraction-frontend-harness.mjs <args>` in the workspace.
@@ -696,6 +696,7 @@ fn tc_1299_outside_the_crate_and_fr098_the_change_set_is_members_lock_makefile_b
             "Makefile",
             "THIRD-PARTY-NOTICES.md",
             "docs/semantic-data-system/extraction-frontend-diagnostics.md",
+            "scripts/extraction-frontend-harness.mjs",
         ]
     );
 
