@@ -294,7 +294,7 @@ and "next free" is not a fact either branch can establish.
 | NFR-030 | NFR-030-AC/CON x12 | TC-1105..TC-1108 | 🚧 In progress |
 | NFR-031 | NFR-031-AC-1..10: golden, repeat-run, varied-environment, and cross-root byte comparison; enumeration-order analysis citing path-sorted loading; ambient-input and HashMap audits with planted-token controls; one limit probe per limits.json entry under a 512 MiB / 30 s budget; unshare -n offline run; forbid(unsafe_code) compile_fail doctest; proptest bundle-tree fuzz | TC-1300..TC-1309 | 🚧 In progress |
 | NFR-032 | NFR-032-AC-1..10: changed-path gate fixed at both ends by sentinels and unioned over --first-parent --no-merges, cargo metadata edge check, Cargo.toml and cases.json line diffs, corpus git status after the suite, publish and licence inspection, harness suite-compare, revert-rehearsal, and accretion-rehearsal verbs | TC-1310..TC-1319 | 🚧 In progress |
-| NFR-033 | NFR-033-AC-1..10: manifest, lock, and toolchain inspection, EXTRACTION_TOOLCHAIN=0.0.0 gate run, dependency-specifier inspection against the workspace members, make extraction-frontend-deny and -audit, lock-to-notices comparison, clippy and fmt, trace-marker scan and status-lie rehearsal, offline build | TC-1320..TC-1329 | 🚧 In progress |
+| NFR-033 | NFR-033-AC-1..11: manifest, lock, and toolchain inspection, EXTRACTION_TOOLCHAIN=0.0.0 gate run, dependency-specifier inspection against the workspace members, make extraction-frontend-deny and -audit, lock-to-notices comparison, clippy --no-deps and fmt, trace-marker scan and status-lie rehearsal, offline build, workspace-channel check | TC-1320..TC-1329, TC-1350 | 🚧 In progress |
 
 ## Test Case Summary
 
@@ -1474,13 +1474,13 @@ and "next free" is not a fact either branch can establish.
 | TC-1317 | The full suite passes on a revert of this change's range, driven by the harness revert-rehearsal verb | Static | P1 | NFR-032-AC-8 | 🚧 planned |
 | TC-1318 | On a synthetic history built by the harness accretion-rehearsal verb with an unrelated sibling on top, the path set does not grow, and a prohibited path no later commit owns still fails the gate | Static | P1 | NFR-032-AC-9 | 🚧 planned |
 | TC-1319 | git log --merges over the range is empty, and package.json and pnpm-lock.yaml are byte-unchanged | Static | P1 | NFR-032-AC-10 | 🚧 planned |
-| TC-1320 | The crate manifest declares rust-version 1.98.1, license AGPL-3.0-only, publish = false, edition 2021; the workspace rust-version, rust-toolchain.toml, and other members' Cargo.lock entries are unchanged from base | Static | P1 | NFR-033-AC-1 | 🚧 planned |
-| TC-1321 | Every cargo invocation in the Makefile extraction-frontend block carries +1.98.1, and with EXTRACTION_TOOLCHAIN=0.0.0 each gate exits non-zero naming 0.0.0 | Static | P1 | NFR-033-AC-2 | 🚧 planned |
+| TC-1320 | The crate manifest declares rust-version.workspace = true, license AGPL-3.0-only, publish = false, edition 2021; the Makefile names the qualification compiler on exactly one non-comment line, EXTRACTION_TOOLCHAIN ?= 1.98.1; the workspace rust-version, rust-toolchain.toml, and other members' Cargo.lock entries are unchanged from base | Static | P1 | NFR-033-AC-1 | 🚧 planned |
+| TC-1321 | Every cargo invocation in the Makefile extraction-frontend block carries +$(EXTRACTION_TOOLCHAIN), and with EXTRACTION_TOOLCHAIN=0.0.0 each gate exits non-zero naming 0.0.0 | Static | P1 | NFR-033-AC-2 | 🚧 planned |
 | TC-1322 | quire-rs is a git dep at exact rev 8b8020e or later with no branch, ix-trace-rs dev at v0.1.1, semantic-ir by path, serde pins exact, sha2 and clap exact, no jsonschema, no outside path/file/link dep; module PROVENANCE names d1840b8 | Static | P1 | NFR-033-AC-3 | 🚧 planned |
 | TC-1323 | make extraction-frontend-deny passes with zero errors against a deny.toml whose allowlist is exactly the permitted set, with quire-rs AGPL-3.0-or-later admitted by an explicit entry | Static | P1 | NFR-033-AC-4 | 🚧 planned |
 | TC-1324 | make extraction-frontend-audit reports zero advisories against the locked graph | Static | P1 | NFR-033-AC-5 | 🚧 planned |
 | TC-1325 | Every third-party crate reachable in Cargo.lock has a THIRD-PARTY-NOTICES.md entry naming version and licence, and the crate ships a LICENSE file carrying AGPL-3.0-only | Static | P1 | NFR-033-AC-6 | 🚧 planned |
-| TC-1326 | cargo +1.98.1 clippy --all-targets --locked -- -D warnings and cargo +1.98.1 fmt --check both pass | Static | P1 | NFR-033-AC-7 | 🚧 planned |
+| TC-1326 | cargo +1.98.1 clippy --no-deps --all-targets --locked -- -D warnings and cargo +1.98.1 fmt --check both pass | Static | P1 | NFR-033-AC-7 | 🚧 planned |
 | TC-1327 | Every requirement test carries a #[trace("TC-NNNN", "...-AC-N")] marker and a tc_NNNN_ name, and every named TC id exists in spec/tests.md, which carries TC-1200..1329 before the first traced test | Static | P1 | NFR-033-AC-8 | 🚧 planned |
 | TC-1328 | With quire coverage --scope . --json confirmed to bind the Rust #[trace] form, removing one marker turns its matrix row into a status lie, proving the binding is by symbol | Static | P1 | NFR-033-AC-9 | 🚧 planned |
 | TC-1329 | cargo +1.98.1 build --locked --offline succeeds from a warm cache, so every dependency resolves without a network | Integration | P1 | NFR-033-AC-10 | 🚧 planned |
@@ -1504,6 +1504,7 @@ and "next free" is not a fact either branch can establish.
 | TC-1347 | Two records titled Status and status slug to the same status, and lifting a bundle holding both refuses at the second document with DUPLICATE_TYPE_NAME and mints no field/status-* identity twice | Unit | P1 | FR-095-AC-14 | 🚧 planned |
 | TC-1348 | The provenance record's entry for the vendored spec-objects-business module carries the manifest sha256 that fixtures/modules/spec-objects-business/PROVENANCE.json records for revision d1840b8 | Unit | P1 | FR-095-AC-15 | 🚧 planned |
 | TC-1349 | extraction-frontend-deny and extraction-frontend-audit each exit non-zero when a crate with a licence outside the deny.toml allow list, or a yanked version, is planted in a scratch manifest, and exit zero on the committed one | Static | P1 | FR-099-AC-6 | 🚧 planned |
+| TC-1350 | cargo check -p agent-ix-extraction-frontend --locked --offline on the rust-toolchain.toml channel (1.94.1) exits zero, so a --workspace build on the workspace channel still compiles the crate and make rust-build and rust-test are not broken by it (CR-036-1) | Integration | P1 | NFR-033-AC-11 | 🚧 planned |
 
 ## Option Permutation Matrix
 
@@ -2411,7 +2412,11 @@ until `agent-ix/quire-rs#418` ships `RelationDecl` extraction (FR-094-CON-1,
 TC-1236); cross-frontend parity is structural under the FR-098 projection over
 the `records-and-scalars` shared case (TC-1291, TC-1344), never byte parity of
 whole documents; and wiring the Rust binary into the node `spec-bundle` seam is
-`filament-core-data#86`, outside this block.
+`filament-core-data#86`, outside this block. CR-036-1 (2026-09-08) added TC-1350
+for NFR-033-AC-11 — the crate compiles on the workspace channel — as the next
+id after the block, checked free against every remote branch; TC-1320's title
+now asserts `rust-version.workspace = true` and the single Makefile line naming
+the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 
 ## Test Execution Summary
 
@@ -2422,12 +2427,12 @@ whole documents; and wiring the Rust binary into the node `spec-bundle` seam is
 | Analysis | 47 | 29 | 0 | 18 | 100% mapped (47/47) |
 | Property | 128 | 58 | 0 | 70 | 100% mapped (128/128) |
 | Unit | 485 | 329 | 0 | 156 | 100% mapped (485/485) |
-| Integration | 119 | 64 | 0 | 55 | 100% mapped (119/119) |
+| Integration | 120 | 64 | 0 | 56 | 100% mapped (120/120) |
 | Fuzz | 13 | 7 | 0 | 6 | 100% mapped (13/13) |
 | Snapshot | 67 | 21 | 0 | 46 | 100% mapped (67/67) |
 | Compile | 15 | 3 | 0 | 12 | 100% mapped (15/15) |
 | E2E | 12 | 0 | 0 | 12 | 100% mapped (12/12) |
-| **Total** | **1204** | **757** | **0** | **447** | **100% mapped (1204/1204)** |
+| **Total** | **1205** | **757** | **0** | **448** | **100% mapped (1205/1205)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

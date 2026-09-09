@@ -230,7 +230,29 @@ fn tc_1320_manifest_pins_toolchain_and_lock_entries_of_other_members_hold() {
         key(&package, "name").as_deref(),
         Some(&*format!("\"{PACKAGE}\""))
     );
-    assert_eq!(key(&package, "rust-version").as_deref(), Some("\"1.98.1\""));
+    // CR-036-1: the supported minimum is the workspace's (cargo enforces every
+    // member's `rust-version` under `--workspace`, so a member-level 1.98.1
+    // would break `make rust-build` on the workspace channel); the
+    // qualification compiler is named once, in the Makefile.
+    assert_eq!(
+        key(&package, "rust-version.workspace").as_deref(),
+        Some("true"),
+        "the crate inherits the workspace rust-version"
+    );
+    assert!(
+        key(&package, "rust-version").is_none(),
+        "no member-level rust-version override"
+    );
+    let makefile = read(&workspace_dir().join("Makefile"));
+    let naming: Vec<&str> = makefile
+        .lines()
+        .filter(|l| !l.trim_start().starts_with('#') && l.contains(TOOLCHAIN))
+        .collect();
+    assert_eq!(
+        naming,
+        vec![format!("EXTRACTION_TOOLCHAIN ?= {TOOLCHAIN}")],
+        "the Makefile names the qualification compiler exactly once"
+    );
     assert_eq!(
         key(&package, "license").as_deref(),
         Some("\"AGPL-3.0-only\"")
@@ -406,6 +428,28 @@ fn tc_1325_every_reachable_third_party_crate_has_a_notices_row_and_license_is_ag
         missing.is_empty(),
         "third-party crates without a THIRD-PARTY-NOTICES.md row:\n{}",
         missing.join("\n")
+    );
+}
+
+#[trace("TC-1350", "NFR-033-AC-11")]
+#[test]
+fn tc_1350_crate_compiles_on_the_workspace_channel() {
+    // The channel `make rust-build --workspace` runs on, read from the pin
+    // rather than hard-coded, so the test follows the workspace if it moves.
+    let toolchain = read(&workspace_dir().join("rust-toolchain.toml"));
+    let channel = key(&section(&toolchain, "[toolchain]"), "channel")
+        .and_then(|v| quoted(&v))
+        .expect("rust-toolchain.toml names a channel");
+    let out = Command::new("cargo")
+        .arg(format!("+{channel}"))
+        .args(["check", "--locked", "--offline", "-p", PACKAGE])
+        .current_dir(workspace_dir())
+        .output()
+        .expect("spawn cargo check");
+    assert!(
+        out.status.success(),
+        "cargo +{channel} check --locked --offline -p {PACKAGE} failed (CR-036-1):\n{}",
+        String::from_utf8_lossy(&out.stderr)
     );
 }
 

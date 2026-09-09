@@ -82,13 +82,13 @@ evidence produced by the named targets, not by `cargo test`.
 ### Make targets
 
 - `extraction-frontend-build` SHALL run `cargo +$(EXTRACTION_TOOLCHAIN) build --locked -p agent-ix-extraction-frontend` and `cargo +$(EXTRACTION_TOOLCHAIN) fmt -p agent-ix-extraction-frontend -- --check`.
-- `extraction-frontend-test` SHALL run `cargo +$(EXTRACTION_TOOLCHAIN) test --locked -p agent-ix-extraction-frontend` and `cargo +$(EXTRACTION_TOOLCHAIN) clippy --locked -p agent-ix-extraction-frontend --all-targets -- -D warnings`.
+- `extraction-frontend-test` SHALL run `cargo +$(EXTRACTION_TOOLCHAIN) test --locked -p agent-ix-extraction-frontend` and `cargo +$(EXTRACTION_TOOLCHAIN) clippy --locked -p agent-ix-extraction-frontend --no-deps --all-targets -- -D warnings` (`--no-deps` because the other workspace members are qualified on the workspace channel, not on `1.98.1`'s newer lint set).
 - `extraction-frontend-lift` SHALL run `lift` with `BUNDLE`, `MODULES` (space-separated, each becoming one `--module`), and `OUT`.
 - `extraction-frontend-goldens` SHALL run `lift --write-goldens`.
 - `extraction-frontend-check` SHALL regenerate every fixture into a scratch directory under `CARGO_TARGET_DIR` and `diff -ru` it against the committed goldens.
 - `extraction-frontend-check` SHALL NOT write under `fixtures/`.
 - `extraction-frontend-deny` SHALL run `cargo +$(EXTRACTION_TOOLCHAIN) deny --manifest-path crates/extraction-frontend/Cargo.toml check`.
-- `extraction-frontend-audit` SHALL run `cargo +$(EXTRACTION_TOOLCHAIN) audit --locked` over the workspace lock with the crate's `deny.toml` advisory policy.
+- `extraction-frontend-audit` SHALL run `cargo +$(EXTRACTION_TOOLCHAIN) audit` over the workspace `Cargo.lock` with the crate's `deny.toml` advisory policy (`cargo audit` reads the lock as written and has no `--locked` flag).
 - Every target SHALL depend on a toolchain check that fails naming `$(EXTRACTION_TOOLCHAIN)` when `cargo +$(EXTRACTION_TOOLCHAIN)` cannot run.
 - Every target SHALL use the `CARGO_TARGET_DIR` the Makefile already exports.
 

@@ -1,8 +1,11 @@
 # The spec-bundle extraction frontend (agent-ix/filament-core-data#36).
 #
-# Qualified on exactly Rust 1.98.1 (NFR-033): `rust-version` is a member-level
-# key here, overriding the workspace's 1.85.0 without moving it, and every gate
-# over this crate runs `cargo +1.98.1`. Every dependency is an exact pin:
+# Qualified on exactly Rust 1.98.1 (NFR-033): the qualification compiler is
+# named once in the Makefile (`EXTRACTION_TOOLCHAIN ?= 1.98.1`) and every gate
+# over this crate runs `cargo +$(EXTRACTION_TOOLCHAIN)`. `rust-version` is the
+# workspace's supported minimum, because cargo enforces every member's
+# `rust-version` under `--workspace` and a member-level 1.98.1 broke
+# `make rust-build` on the workspace channel (CR-036-1). Every dependency is an exact pin:
 # `quire-rs` by git `rev` because no release tag contains `Registry::load_module_set`
 # (quire-rs#411 at a874fb6); `serde`/`serde_json` through the workspace's own
 # exact pins; the rest with `=`. No `jsonschema` is declared: validation and
@@ -12,7 +15,7 @@ name = "agent-ix-extraction-frontend"
 version = "0.0.0"
 description = "Lifts a quire spec bundle into the Filament semantic IR."
 edition = "2021"
-rust-version = "1.98.1"
+rust-version.workspace = true
 license = "AGPL-3.0-only"
 publish = false
 
