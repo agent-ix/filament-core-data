@@ -32,7 +32,11 @@ raise is a `Code` variant, so the enum is built immediately after FR-091. The
 locus rule is the declared reading of issue #61, cited here: the engine's locus
 is authoritative and the frontend derives no other. Engine diagnostics are
 wrapped, not passed through: the wire code is always `ENGINE_DIAGNOSTIC` and
-the engine's own code lives in `causes[0]`; this requirement is the single
+the engine's own code and reason open the message, as
+`<engine code> (reason: <reason>): <engine message>`, with `causes` empty —
+the `diagnostic` schema types `causes.items` as `diagnostic`, whose `code`
+pattern admits only `agent-ix.*` codes, so a `semantic.*` code cannot live
+there and the document stays schema-valid; this requirement is the single
 authority for that mapping, and FR-091 refers to it. The reader's codes
 (`agent-ix.semantic-ir.*`, `agent-ix.compiler.*`) are never emitted as the
 frontend's own; a reader finding at lift time is carried under the frontend's
@@ -65,7 +69,7 @@ raised by the limit checks NFR-031 owns.
 
 ### Engine diagnostics
 
-- The frontend SHALL turn each `SemanticDiagnostic` into one `ENGINE_DIAGNOSTIC` whose message begins with the engine's own code and whose `causes` carries one nested diagnostic reproducing the engine's `code`, `message`, and `reason`.
+- The frontend SHALL turn each `SemanticDiagnostic` into one `ENGINE_DIAGNOSTIC` whose message is `<engine code> (reason: <reason>): <engine message>` and whose `causes` is empty, so the engine's `code`, `reason`, and `message` are carried in the message and the wrapper validates as a `diagnostic`.
 - The frontend SHALL map the engine severity `error` to `error`, `warning` to `warning`, and `advisory` to `info`.
 - The frontend SHALL NOT drop, merge, re-rank, or re-word an engine diagnostic.
 
@@ -106,7 +110,7 @@ raised by the limit checks NFR-031 owns.
 | FR-096-AC-1 | Every `Code` variant serialises to a code matching the published pattern and, instantiated, validates as a `diagnostic` against `common.schema.json`, including a variant instantiated with no `locus`. | Test (TC-1259) |
 | FR-096-AC-2 | The severity and blocking table above holds for every variant, asserted variant by variant, including `KERNEL_NAME_SHADOWED` as `warning` non-blocking and `INVALID_IR`, `DUPLICATE_CONSTRAINT`, `CONSTRAINT_NOT_APPLICABLE`, `IMPORT_UNSUPPORTED`, and `DUPLICATE_ARTIFACT_ID` as `error` blocking. | Test (TC-1260) |
 | FR-096-AC-3 | A grep of `crates/extraction-frontend/src/` finds no string literal beginning `agent-ix.extraction-frontend.`, `agent-ix.compiler.`, or `agent-ix.semantic-ir.`; the only spelling is the enum's `Display`; planting one such literal in `lower.rs` fails the gate. | Static (TC-1261) |
-| FR-096-AC-4 | The `legacy` fixture yields one `ENGINE_DIAGNOSTIC` of severity `warning` whose message begins `semantic.legacy-properties-form`, whose `causes[0]` reproduces the engine code and reason, and whose locus is line 17, column 1. | Test (TC-1262) |
+| FR-096-AC-4 | The `legacy` fixture yields one `ENGINE_DIAGNOSTIC` of severity `warning` whose message begins `semantic.legacy-properties-form (reason: ` and carries the engine message after `): `, whose `causes` is empty, and whose locus is line 17, column 1. | Test (TC-1262) |
 | FR-096-AC-5 | An engine `advisory` maps to `info`, non-blocking; an engine `error` maps to `error`, blocking; the wire code of each is `agent-ix.extraction-frontend.ENGINE_DIAGNOSTIC`. | Test (TC-1263) |
 | FR-096-AC-6 | A `Type` cell `Sting` at row 14 yields `UNRESOLVED_TYPE_TOKEN` with locus `{path, startLine: 14, startColumn: 3}` and `sourceIdentity` `ix://agent-ix/config-service/spec`. | Test (TC-1264) |
 | FR-096-AC-7 | A refused module yields `MODULE_REFUSED` with locus at the manifest, line 1, column 1. | Test (TC-1265) |
