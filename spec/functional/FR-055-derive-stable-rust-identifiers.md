@@ -107,6 +107,18 @@ that a rename in the generated crate can only follow a change in the contract.
   positional suffix, because such a suffix moves when an unrelated declaration is
   added and the generated name would then depend on document order rather than on
   the contract.
+- If a `kind: scalar` definition whose `scalar` is one of `date`, `datetime`,
+  `duration`, or `uuid` derives the type identifier that is the support type of
+  that same scalar (`Date`, `DateTime`, `Duration`, or `Uuid`), then the backend
+  SHALL map the definition onto the support type: it SHALL emit no newtype for
+  it, SHALL render every `typeRef` to it as `crate::support::<Support>`, and
+  SHALL treat the crate's existing re-export of that support type as the
+  definition's rendering, because a kernel scalar is a known quantity and not a
+  user type (agent-ix/filament-core-data#90, owner ruling of 2026-09-09).
+- A definition that derives a reserved crate name with any other `scalar`, or
+  with any kind other than `scalar`, SHALL keep raising `NAME_COLLISION` under
+  the rule above, so the mapping onto a support type is admitted only where the
+  derived name and the scalar agree.
 
 ### Stability
 
@@ -142,6 +154,8 @@ that a rename in the generated crate can only follow a change in the contract.
 | FR-055-AC-12 | Derivation under `LANG=tr_TR.UTF-8` produces identifiers identical to derivation under `LANG=C`, for a source containing `i` and `I`. | Test (TC-664) |
 | FR-055-AC-13 | Two records whose `displayName` values render one identifier but whose identities differ generate two distinct types with no collision, proving the type derivation reads the identity and not the display name; and a field whose identity's final segment differs from its wire `name` derives its member name from the wire `name`, so the emitted member needs no `serde(rename)`. | Test (TC-658) |
 | FR-055-AC-14 | `crateName` of `agent-ix/assurance` is `agent-ix-assurance`, and a Cargo manifest carrying it is accepted by `cargo metadata`. | Test (TC-665) |
+| FR-055-AC-15 | A document declaring a `kind: scalar`, `scalar: uuid` definition whose identity's final segment is `UUID`, and a record field whose `typeRef` names it, generates with zero diagnostics, emits no newtype for the definition, and renders the field's type as `crate::support::Uuid`; the same holds for `date`, `datetime`, and `duration` definitions deriving `Date`, `DateTime`, and `Duration`. | Test (TC-1357) |
+| FR-055-AC-16 | A `kind: scalar`, `scalar: string` definition whose identity's final segment is `Uuid` raises one `NAME_COLLISION` naming both `ix://agent-ix/filament-core-data/rust-backend/reserved/Uuid` and the definition's identity, and writes no file; a `kind: record` definition deriving `Date` raises the same. | Test (TC-1358) |
 
 ## Dependencies
 

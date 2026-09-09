@@ -94,7 +94,10 @@ either branch can establish. Its 151 rows are `✅` after the Plan-014 delivery
 and the SR-169/SR-170 fix pass (CR-036-9) except four: TC-1290 and TC-1291
 blocked on issue #87, TC-1292 blocked on issue #88 (TypeScript half) and on
 the rust-serde `NAME_COLLISION` defect (Rust half), and TC-1337 the Manual row
-blocked on issue #85. Nine rows are `Static` evidence produced by
+blocked on issue #85. CR-088-1 and CR-090-1 (2026-09-09) add TC-1355..1359
+for the backend fixes those two halves wait on: FR-068-AC-25/26 (per-node
+extension identity, issue #88) and FR-055-AC-15/16 with FR-062-AC-15 (kernel
+scalar mapped onto its support type, issue #90), all `🚧` until implemented. Nine rows are `Static` evidence produced by
 `make extraction-frontend-evidence`, the crate's `--ignored` run; seven pass
 under it, TC-1316 fails on issue #89 and TC-1317 fails in the rehearsal's
 scratch-clone environment (both `🚧`).
@@ -232,19 +235,19 @@ producer/schema plan are accepted.
 | FR-065 | FR-065-AC-1..22, FR-065-CON-1..6 | TC-766..TC-775 | 🚧 In progress |
 | FR-066 | FR-066-AC-1..29, FR-066-CON-1..9 | TC-776..TC-786 | 🚧 In progress |
 | FR-067 | FR-067-AC-1..17, FR-067-CON-1..6 | TC-787..TC-794 | 🚧 In progress |
-| FR-068 | FR-068-AC-1..24, FR-068-CON-1..8 | TC-795..TC-805 | 🚧 In progress |
+| FR-068 | FR-068-AC-1..26, FR-068-CON-1..8 | TC-795..TC-805, TC-1355, TC-1356 | 🚧 In progress; TC-1355, TC-1356 on issue #88 |
 | FR-069 | FR-069-AC-1..25, FR-069-CON-1..7 | TC-806..TC-814 | 🚧 In progress |
 | FR-070 | FR-070-AC-1..20, FR-070-CON-1..8 | TC-815..TC-824 | 🚧 In progress |
 | FR-071 | FR-071-AC-1..20, FR-071-CON-1..8 | TC-825..TC-833 | 🚧 In progress |
 | FR-054 | FR-054-AC-1..15, FR-054-CON-1..6 | TC-645..TC-657, TC-674, TC-694, TC-740 | ✅ Complete |
-| FR-055 | FR-055-AC-1..14, FR-055-CON-1..4 | TC-658..TC-665 | ✅ Complete |
+| FR-055 | FR-055-AC-1..16, FR-055-CON-1..4 | TC-658..TC-665, TC-1357, TC-1358 | 🚧 TC-1357, TC-1358 on issue #90 |
 | FR-056 | FR-056-AC-1..17, FR-056-CON-1..8 | TC-666..TC-676 | ✅ Complete |
 | FR-057 | FR-057-AC-1..14, FR-057-CON-1..6 | TC-677..TC-689 | ✅ Complete |
 | FR-058 | FR-058-AC-1..12, FR-058-CON-1..5 | TC-690..TC-697 | ✅ Complete |
 | FR-059 | FR-059-AC-1..15, FR-059-CON-1..6 | TC-698..TC-710 | ✅ Complete |
 | FR-060 | FR-060-AC-1..15, FR-060-CON-1..7 | TC-711..TC-718 | ✅ Complete |
 | FR-061 | FR-061-AC-1..13, FR-061-CON-1..7 | TC-719..TC-724 | ✅ Complete |
-| FR-062 | FR-062-AC-1..14, FR-062-CON-1..7 | TC-725..TC-730 | ✅ Complete |
+| FR-062 | FR-062-AC-1..15, FR-062-CON-1..7 | TC-725..TC-730, TC-1359 | 🚧 TC-1359 on issue #90 |
 | FR-072 | FR-072-AC-1..10, FR-072-CON-1..4 | TC-845..853, TC-944 | ✅ Complete |
 | FR-073 | FR-073-AC-1..10, FR-073-CON-1..3 | TC-854..862 | ✅ Complete |
 | FR-074 | FR-074-AC-1..11, FR-074-CON-1..3 | TC-863..872 | ✅ Complete |
@@ -1527,6 +1530,11 @@ producer/schema plan are accepted.
 | TC-1348 | The provenance record's entry for the vendored spec-objects-business module carries the manifest sha256 that fixtures/modules/spec-objects-business/PROVENANCE.json records for revision d1840b8 | Unit | P1 | FR-095-AC-15 | ✅ passed |
 | TC-1349 | extraction-frontend-deny exits non-zero when a crate with a licence outside the deny.toml allow list is planted in a scratch manifest, extraction-frontend-audit (--deny yanked) exits non-zero when a yanked version is planted, and each exits zero on the committed one | Static | P1 | FR-099-AC-6 | ✅ static evidence (make extraction-frontend-evidence) |
 | TC-1350 | cargo check -p agent-ix-extraction-frontend --locked --offline on the rust-toolchain.toml channel (1.94.1) exits zero, so a --workspace build on the workspace channel still compiles the crate and make rust-build and rust-test are not broken by it (CR-036-1) | Integration | P1 | NFR-033-AC-11 | ✅ passed |
+| TC-1355 | admitIr admits a document whose three kind: scalar definitions each carry the ext/kernel-scalar extension with success and zero diagnostics, and reports two ext/doc extensions on one field as exactly one DUPLICATE_IDENTITY at /ir/types/N/fields/M/extensions/1/identity with nothing at any type's extensions pointer (CR-088-1) | Unit | P0 | FR-068-AC-25 | 🚧 planned on issue #88 |
+| TC-1356 | generate --target typescript over the IR lowered from test/fixtures/compiler/packages/assurance exits zero with zero diagnostics and a non-empty file set, so the TypeScript half of TC-1292 unblocks (CR-088-1) | Integration | P0 | FR-068-AC-26 | 🚧 planned on issue #88 |
+| TC-1357 | A scalar: uuid definition deriving UUID, and date, datetime, and duration definitions deriving Date, DateTime, and Duration, each generate with zero diagnostics, no newtype, and every typeRef rendered as crate::support::<Support> (CR-090-1) | Unit | P0 | FR-055-AC-15 | 🚧 planned on issue #90 |
+| TC-1358 | A scalar: string definition deriving Uuid, and a record deriving Date, each raise one NAME_COLLISION naming the reserved identity and the definition's identity and write no file (CR-090-1) | Unit | P1 | FR-055-AC-16 | 🚧 planned on issue #90 |
+| TC-1359 | The regenerated branch register carries one name-derivation row per support scalar contributed by names.mjs, each bound to an existing case, register --check passes, and removing any one case fails it naming the row (CR-090-1) | Analysis | P1 | FR-062-AC-15 | 🚧 planned on issue #90 |
 | TC-1373 | A baseline field distinguishes required empty `0..*`, optional absent `1..*`, explicit null, invalid input, unavailable observation, and otherwise-equal default/ordered/unique variants; a v1.1 source lacking authored presence refuses baseline projection with named loss | Unit | P0 | FR-106-AC-1, FR-106-AC-2, FR-106-AC-3, FR-106-AC-5, FR-106-CON-1, FR-106-CON-2 | 🚧 planned — #95 producer/schema boundary |
 | TC-1374 | A v1.2 field whose authored presence matches the historical v1.1 derivation projects without a presence loss | Unit | P1 | FR-106-AC-4 | 🚧 planned — #95 producer/schema boundary |
 | TC-1375 | Relationship declarations preserve distinct endpoint multiplicities and stable endpoints, reject a field-only invented relationship, retain endpoint-role loss, and refuse a composite cycle | Integration | P0 | FR-107-AC-1, FR-107-AC-2, FR-107-AC-3, FR-107-CON-1, FR-107-CON-2 | 🚧 planned — #95 producer/schema boundary |
@@ -2132,6 +2140,8 @@ producer/schema plan are accepted.
 | ERR-273 | The bundle tree exceeds `maxDepth` | `LIMIT_MAX_DEPTH`; blocking; terminates within the declared budget | TC-1305 |
 | ERR-274 | The engine returns a `SemanticDiagnostic`, with or without a usable line | `ENGINE_DIAGNOSTIC` whose message is `<engine code> (reason: <reason>): <engine message>` with `causes` empty; severity mapped, blocking iff `error`; no `locus` when `line` is 0 | TC-1208, TC-1262, TC-1263, TC-1345 |
 | ERR-275 | `decide` returns any diagnostic at lift time, or `inspect` reads a document the reader rejects | `INVALID_IR` with no `locus`, the reader's code and pointer in the message, and the reader's diagnostic in `causes[0]`; blocking; no document; `inspect` exits 1 | TC-1274, TC-1297, TC-1342, TC-1346 |
+| ERR-282 | One node's `extensions[]`, or the document-level `extensions[]`, carries two entries with one `identity` | `DUPLICATE_IDENTITY` at the second entry's `identity` pointer; an extension identity shared across nodes raises nothing | TC-1355 |
+| ERR-283 | A definition derives a reserved support-type name (`Date`, `DateTime`, `Duration`, `Uuid`) with a `scalar` other than the one that support type carries, or with a kind other than `scalar` | `NAME_COLLISION` naming the reserved identity and the definition's identity; zero files | TC-1358 |
 
 ## Edge Cases
 
@@ -2256,6 +2266,8 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-152 | A bundle directory that is read-only to the lifting process, or an `--out` pointing inside it | FR-097, FR-098, NFR-032 | TC-1289, TC-1314, TC-1340 | A scratch or temporary file is placed inside the bundle and the lift fails, or writes into the corpus when it can |
 | EC-153 | An engine diagnostic reported at `line` 0 or with no line | FR-091, FR-096 | TC-1331, TC-1345 | A fabricated locus at line 0 fails the schema, or the diagnostic is dropped for lack of one |
 | EC-154 | Two documents whose titles differ only by case (`Status`, `status`) | FR-093, FR-095 | TC-1334, TC-1347 | Distinct `type/` identities mint colliding `field/`, `constraint/`, and `relationship/` identities |
+| EC-162 | Several definitions in one document each carry the same extension `identity` (`ext/kernel-scalar`), as every lifted package with more than one kernel scalar does | FR-050, FR-068 | TC-1355, TC-1356 | An extension identity is decided as a declaration identity and every real multi-scalar package is refused with `DUPLICATE_IDENTITY` |
+| EC-163 | A package-local kernel scalar definition derives the name of its own support type (`UUID` → `Uuid`, `Date`, `DateTime`, `Duration`) | FR-055, FR-062 | TC-1357, TC-1358, TC-1359 | The definition is refused as a collision with the crate's re-export, or a `scalar: string` named `Uuid` is silently mapped onto `uuid::Uuid` |
 
 ## Coverage Gaps
 
@@ -2461,15 +2473,15 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 |---|---|---|---|---|---|
 | Static | 270 | 233 | 0 | 37 | 100% mapped (270/270) |
 | Manual | 48 | 45 | 0 | 3 | 100% mapped (48/48) |
-| Analysis | 47 | 29 | 0 | 18 | 100% mapped (47/47) |
+| Analysis | 48 | 29 | 0 | 19 | 100% mapped (48/48) |
 | Property | 128 | 71 | 0 | 57 | 100% mapped (128/128) |
-| Unit | 490 | 389 | 0 | 101 | 100% mapped (490/490) |
-| Integration | 130 | 77 | 0 | 53 | 100% mapped (130/130) |
+| Unit | 493 | 389 | 0 | 104 | 100% mapped (493/493) |
+| Integration | 131 | 77 | 0 | 54 | 100% mapped (131/131) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 67 | 34 | 0 | 33 | 100% mapped (67/67) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1220** | **902** | **0** | **318** | **100% mapped (1220/1220)** |
+| **Total** | **1225** | **902** | **0** | **323** | **100% mapped (1225/1225)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.
