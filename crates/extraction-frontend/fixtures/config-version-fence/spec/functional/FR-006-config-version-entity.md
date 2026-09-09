@@ -17,14 +17,15 @@ The service SHALL persist configuration versions as immutable `ConfigVersion` en
 
 ## Properties
 
+
 ```sysml
-attribute id : UUID[1] { identity }
-attribute versionNumber : Integer[1] { min: 1 }
-attribute data : JsonObject[1]
-attribute hash : String[1] { nonEmpty }
-ref item parent : ConfigVersion[0..1]
-attribute createdAt : Timestamp[1]
-attribute createdBy : String[1] { maxLength: 64 }
+  attribute id : UUID[1] { identity }
+  attribute versionNumber : Integer[1] { min: 1 }
+  attribute data : JsonObject[1]
+  attribute hash : String[1] { nonEmpty }
+  ref item parent : ConfigVersion[0..1]
+  attribute createdAt : Timestamp[1]
+  attribute createdBy : String[1] { maxLength: 64 }
 ```
 
 ## Relationships

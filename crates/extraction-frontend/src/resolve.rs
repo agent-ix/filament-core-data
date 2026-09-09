@@ -62,7 +62,10 @@ pub struct ArtifactRef {
 }
 
 impl ArtifactRef {
-    fn from_document(document: &Document) -> Self {
+    /// The artifact `document` declares: its id, path and FR-093
+    /// `displayName` (frontmatter `name` when it is an `Identifier`, else
+    /// the `title` verbatim; FR-093 decides whether that is nameable).
+    pub fn of(document: &Document) -> Self {
         let name = document
             .frontmatter()
             .and_then(|fm| fm.get("name"))
@@ -418,7 +421,7 @@ pub fn classify(
         }
         TYPE_SEGMENT => match indexed_artifact(bundle, name) {
             Some(document) => {
-                let artifact = ArtifactRef::from_document(document);
+                let artifact = ArtifactRef::of(document);
                 match outcomes.get(&artifact.id) {
                     Some(Outcome::Definition) if document.object() == Some(ENUMERATION) => {
                         Resolution::Enumeration(artifact)

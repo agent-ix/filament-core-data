@@ -14,11 +14,14 @@
 //! whole kind unavailable), so `fields[i]` is `rows[i]`; the name is checked
 //! all the same and a mismatch falls back to a search by name.
 //!
-//! Column: a table row is located at column 3, the first cell's text after
-//! `| ` (FR-093 "Fields", FR-096-AC-6); a fence line at column 1, as the
-//! engine reports fence lines.
+//! Column: the column where the declaration text begins. A table row is
+//! located at column 3, the first cell's text after `| ` (FR-093 "Fields",
+//! FR-096-AC-6); a fence line at its first non-blank character, so that a
+//! fence authored with the same two-column lead-in as a table row locates
+//! its rows at the same column (FR-093-AC-1: the two forms of one
+//! declaration lower to identical bytes).
 
-use quire_rs::semantic::properties::{fence_rows, table_rows, RowInput};
+use quire_rs::semantic::properties::{fence_rows, table_rows};
 use quire_rs::semantic::scan::{blocks_in, level2_sections, lines, Block};
 
 /// The level-2 heading the engine reads field declarations under
@@ -28,8 +31,6 @@ const PROPERTIES_SECTION: &str = "Properties";
 const SYSML: &str = "sysml";
 /// Column of a table row's first cell text.
 const TABLE_ROW_COLUMN: usize = 3;
-/// Column of a fence line.
-const FENCE_LINE_COLUMN: usize = 1;
 
 /// The line and column one declaration row sits at.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -54,18 +55,35 @@ pub fn field_rows(raw: &str) -> Vec<RowLocus> {
             Block::Fence(fence) => fence.language == SYSML,
             Block::List { .. } => false,
         });
-    let (rows, column): (Vec<RowInput>, usize) = match block {
-        Some(Block::Table(table)) => (table_rows(&table), TABLE_ROW_COLUMN),
-        Some(Block::Fence(fence)) => (fence_rows(&fence, &mut Vec::new()), FENCE_LINE_COLUMN),
-        Some(Block::List { .. }) | None => return Vec::new(),
-    };
-    rows.into_iter()
-        .map(|row| RowLocus {
-            name: row.name,
-            line: row.line,
-            column,
-        })
-        .collect()
+    match block {
+        Some(Block::Table(table)) => table_rows(&table)
+            .into_iter()
+            .map(|row| RowLocus {
+                name: row.name,
+                line: row.line,
+                column: TABLE_ROW_COLUMN,
+            })
+            .collect(),
+        Some(Block::Fence(fence)) => {
+            let body: Vec<&str> = fence.body.split('\n').collect();
+            fence_rows(&fence, &mut Vec::new())
+                .into_iter()
+                .map(|row| RowLocus {
+                    name: row.name,
+                    line: row.line,
+                    column: body
+                        .get(row.line.saturating_sub(fence.open_line + 1))
+                        .map_or(1, |raw| text_column(raw)),
+                })
+                .collect()
+        }
+        Some(Block::List { .. }) | None => Vec::new(),
+    }
+}
+
+/// The 1-based column of the first non-blank character of `raw`.
+fn text_column(raw: &str) -> usize {
+    raw.chars().take_while(|c| c.is_whitespace()).count() + 1
 }
 
 /// The row of the `index`-th field named `name`: positional when the

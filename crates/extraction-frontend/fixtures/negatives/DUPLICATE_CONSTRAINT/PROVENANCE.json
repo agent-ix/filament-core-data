@@ -1,0 +1,12 @@
+{
+  "source": "authored",
+  "code": "DUPLICATE_CONSTRAINT",
+  "files": [
+    "spec/spec.md",
+    "spec/functional/FR-001-counter.md",
+    "spec/functional/FR-002-pair.md"
+  ],
+  "derived": [],
+  "edits": [],
+  "note": "FR-001's one row carries `min` twice (DUPLICATE_CONSTRAINT at that row, line 18); FR-002's `versionNumber` and `version_number` both carry `min` and both yield diagnosticCode agent-ix.counter-service.VERSION_NUMBER_MIN (DUPLICATE_CONSTRAINT at the second row, line 19). Both blocking (FR-093-AC-13; TC-1334)."
+}

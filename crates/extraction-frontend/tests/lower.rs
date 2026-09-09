@@ -1,0 +1,1239 @@
+//! FR-093: records, fields, constraints, enumerations and the declared
+//! losses, over committed fixture bundles under the vendored business
+//! module. Nothing here reads the environment.
+
+use std::collections::{BTreeMap, BTreeSet};
+use std::path::{Path, PathBuf};
+
+mod common;
+
+use agent_ix_extraction_frontend::diagnostics::{Code, Diagnostic, Locus, Severity, WireCode};
+use agent_ix_extraction_frontend::enumeration::VALUE_COLUMN;
+use agent_ix_extraction_frontend::lower::{
+    applies_to, diagnostic_code, loss_register, roles, screaming, Kind, Presence,
+    DECIMAL_POLICY_EXTENSION, IDENTITY_FIELD_EXTENSION, KEYWORDS,
+};
+use agent_ix_extraction_frontend::resolve::{Outcome, Resolved};
+use agent_ix_extraction_frontend::rows::field_rows;
+use agent_ix_extraction_frontend::{
+    extract, lower_bundle, lower_record, resolve, ArtifactContext, ArtifactRef, Bundle, Envelope,
+    Extractions, Limits, Loss, LowerError, Lowered, PackageIdentity, Resolutions,
+};
+use agent_ix_semantic_ir::json::parse as parse_json;
+use agent_ix_semantic_ir::normalize::normalized;
+use agent_ix_semantic_ir::{decide, ResultState};
+use ix_trace_rs::trace;
+use proptest::prelude::*;
+use proptest::test_runner::{Config, TestRunner};
+use quire_rs::semantic::{FieldsForm, SemanticExtraction};
+use serde_json::{json, Value};
+
+const VERSION: &str = "0.0.0";
+
+fn crate_dir() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+}
+
+fn fixture(name: &str) -> PathBuf {
+    crate_dir().join("fixtures").join(name)
+}
+
+fn business_module() -> PathBuf {
+    fixture("modules/spec-objects-business")
+}
+
+fn limits() -> Limits {
+    Limits::declared().expect("limits.json parses")
+}
+
+/// One lift up to this task: load, extract, resolve, lower.
+struct Lift {
+    bundle: Bundle,
+    extractions: Extractions,
+    resolutions: Resolutions,
+    lowered: Lowered,
+}
+
+fn lift_at(root: &Path, modules: &[&Path]) -> Lift {
+    let bundle =
+        Bundle::load(root, modules).unwrap_or_else(|r| panic!("{} refused: {r}", root.display()));
+    let extractions = extract(&bundle);
+    let resolutions = resolve(&bundle, &extractions);
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits(), VERSION);
+    Lift {
+        bundle,
+        extractions,
+        resolutions,
+        lowered,
+    }
+}
+
+fn lift(name: &str) -> Lift {
+    lift_at(&fixture(name), &[&business_module()])
+}
+
+fn with_code(diagnostics: &[Diagnostic], code: Code) -> Vec<&Diagnostic> {
+    diagnostics
+        .iter()
+        .filter(|d| d.code == WireCode::Registry(code))
+        .collect()
+}
+
+fn types_json(lift: &Lift) -> Vec<Value> {
+    lift.lowered
+        .types
+        .iter()
+        .map(|t| serde_json::to_value(t).expect("serialises"))
+        .collect()
+}
+
+fn type_named<'a>(types: &'a [Value], display_name: &str) -> &'a Value {
+    types
+        .iter()
+        .find(|t| t["displayName"] == display_name)
+        .unwrap_or_else(|| panic!("no definition named {display_name}"))
+}
+
+fn field_named<'a>(record: &'a Value, name: &str) -> &'a Value {
+    record["fields"]
+        .as_array()
+        .expect("fields")
+        .iter()
+        .find(|f| f["name"] == name)
+        .unwrap_or_else(|| panic!("no field named {name} in {record}"))
+}
+
+/// A full IR document over the lift's types, with the lift's envelope.
+fn ir_document(lift: &Lift) -> Value {
+    let envelope = Envelope::new(&lift.bundle, &[]);
+    let mut doc = serde_json::to_value(&envelope).expect("envelope serialises");
+    doc["contractVersion"] = json!("1.1.0");
+    doc["types"] = Value::Array(types_json(lift));
+    json!({ "ir": doc })
+}
+
+/// The reader's verdict over a document.
+fn verdict(doc: &Value) -> agent_ix_semantic_ir::Verdict {
+    let text = serde_json::to_string(doc).expect("serialises");
+    decide(&parse_json(&text).expect("parses"))
+}
+
+fn reader_codes(doc: &Value) -> Vec<String> {
+    verdict(doc)
+        .diagnostics
+        .iter()
+        .map(|d| format!("{} at {}", d.code, d.pointer))
+        .collect()
+}
+
+fn locus(lift: &Lift, path: &str, line: usize, column: usize) -> Locus {
+    Locus::new(&lift.bundle.package().source_identity(), path, line, column)
+}
+
+/// The context `lower_bundle` builds for one artifact, for direct
+/// `lower_record` calls.
+fn context<'a>(
+    lift: &'a Lift,
+    package: &'a PackageIdentity,
+    id: &'a str,
+    artifact: &'a ArtifactRef,
+) -> ArtifactContext<'a> {
+    let document = lift
+        .bundle
+        .documents()
+        .iter()
+        .find(|d| d.id() == id)
+        .expect("document");
+    let object = document.object().expect("object");
+    let object_type = lift.bundle.object_type(object).expect("object type");
+    ArtifactContext {
+        package,
+        id,
+        path: &artifact.path,
+        display_name: &artifact.display_name,
+        roles: roles(&object_type.module, object, object_type.archetype.roles()),
+    }
+}
+
+fn artifact_ref(lift: &Lift, id: &str) -> ArtifactRef {
+    let document = lift
+        .bundle
+        .documents()
+        .iter()
+        .find(|d| d.id() == id)
+        .expect("document");
+    ArtifactRef::of(document)
+}
+
+#[trace("TC-1220", "FR-093-AC-1")]
+#[trace("TC-1220", "FR-093-CON-1")]
+#[test]
+fn tc_1220_table_root_and_fence_root_lower_to_byte_identical_types_and_fields_form_moves_no_byte() {
+    let table = lift("config-version-table");
+    let fence = lift("config-version-fence");
+    assert!(
+        !table.lowered.diagnostics.iter().any(|d| d.blocking)
+            && !fence.lowered.diagnostics.iter().any(|d| d.blocking),
+        "both roots lift unblocked: {:?} / {:?}",
+        table.lowered.diagnostics,
+        fence.lowered.diagnostics
+    );
+    let table_bytes = serde_json::to_string(&table.lowered.types).expect("serialises");
+    let fence_bytes = serde_json::to_string(&fence.lowered.types).expect("serialises");
+    assert_eq!(
+        table_bytes, fence_bytes,
+        "the two forms lower to identical bytes"
+    );
+    let table_diag = serde_json::to_string(&table.lowered.diagnostics).expect("serialises");
+    let fence_diag = serde_json::to_string(&fence.lowered.diagnostics).expect("serialises");
+    assert_eq!(table_diag, fence_diag);
+
+    // The same envelope over both type lists: `normalized` agrees too, and
+    // the reader accepts the document (the sanity half of TC-1230).
+    let mut fence_doc = ir_document(&table);
+    fence_doc["ir"]["types"] = Value::Array(types_json(&fence));
+    let table_doc = ir_document(&table);
+    let n =
+        |doc: &Value| normalized(&parse_json(&serde_json::to_string(doc).expect("s")).expect("p"));
+    assert_eq!(n(&table_doc), n(&fence_doc));
+    assert_eq!(
+        reader_codes(&table_doc),
+        Vec::<String>::new(),
+        "the reader accepts the lowered document"
+    );
+
+    // Falsification control: flipping `fields_form` on the extraction
+    // moves no byte of the record.
+    let package = PackageIdentity::from(table.bundle.package());
+    let artifact = artifact_ref(&table, "FR-006");
+    let ctx = context(&table, &package, "FR-006", &artifact);
+    let document = table
+        .bundle
+        .documents()
+        .iter()
+        .find(|d| d.id() == "FR-006")
+        .expect("FR-006");
+    let rows = field_rows(document.raw());
+    let extraction = &table.extractions.artifacts["FR-006"].extraction;
+    let mut flipped: SemanticExtraction = extraction.clone();
+    flipped.fields_form = Some(match extraction.fields_form {
+        Some(FieldsForm::Table) => FieldsForm::Fence,
+        _ => FieldsForm::Table,
+    });
+    let a = lower_record(extraction, &table.resolutions.resolutions, &rows, &ctx).expect("lowers");
+    let b = lower_record(&flipped, &table.resolutions.resolutions, &rows, &ctx).expect("lowers");
+    assert_eq!(
+        serde_json::to_string(&a.definition).expect("s"),
+        serde_json::to_string(&b.definition).expect("s")
+    );
+}
+
+#[trace("TC-1221", "FR-093-AC-2")]
+#[test]
+fn tc_1221_config_version_carries_three_roles_reject_policy_and_seven_fields_in_order() {
+    let lift = lift("config-version-table");
+    let types = types_json(&lift);
+    let record = type_named(&types, "ConfigVersion");
+    assert_eq!(record["kind"], "record");
+    assert_eq!(
+        record["identity"],
+        "ix://agent-ix/config-service/type/ConfigVersion"
+    );
+    assert_eq!(
+        record["roles"],
+        json!([
+            "business:domain-object",
+            "business:entity",
+            "business:persistable"
+        ])
+    );
+    assert_eq!(record["unknownPolicy"], "reject");
+    assert_eq!(
+        record["origin"],
+        json!({"source": {
+            "sourceIdentity": "ix://agent-ix/config-service/spec",
+            "path": "spec/functional/FR-006-config-version-entity.md",
+            "startLine": 1, "startColumn": 1
+        }})
+    );
+    let names: Vec<&str> = record["fields"]
+        .as_array()
+        .expect("fields")
+        .iter()
+        .map(|f| f["name"].as_str().expect("name"))
+        .collect();
+    assert_eq!(
+        names,
+        [
+            "id",
+            "versionNumber",
+            "data",
+            "hash",
+            "parent",
+            "createdAt",
+            "createdBy"
+        ],
+        "declaration order before normalization"
+    );
+    // Roles are sorted and de-duplicated whatever the manifest order.
+    assert_eq!(
+        roles(
+            "spec-objects-business",
+            "entity",
+            &[
+                "persistable".into(),
+                "domain-object".into(),
+                "entity".into()
+            ]
+        ),
+        [
+            "business:domain-object",
+            "business:entity",
+            "business:persistable"
+        ]
+    );
+    // Every emitted definition is schema-shaped: the reader accepts it.
+    assert_eq!(reader_codes(&ir_document(&lift)), Vec::<String>::new());
+}
+
+#[trace("TC-1222", "FR-093-AC-3")]
+#[test]
+fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_and_parent_to_optional(
+) {
+    let lift = lift("config-version-table");
+    let types = types_json(&lift);
+    let record = type_named(&types, "ConfigVersion");
+    let id = field_named(record, "id");
+    assert_eq!(id["multiplicity"], json!({"lower": 1, "upper": 1}));
+    assert_eq!(id["presence"], "required");
+    assert_eq!(id["nullable"], false);
+    assert_eq!(id["defaultKind"], "none");
+    assert_eq!(id["typeRef"], "ix://agent-ix/config-service/type/UUID");
+    assert_eq!(
+        id["identity"],
+        "ix://agent-ix/config-service/field/configversion-id"
+    );
+    assert_eq!(
+        id["extensions"],
+        json!([{
+            "identity": IDENTITY_FIELD_EXTENSION,
+            "version": "1.0.0",
+            "required": false,
+            "payload": {}
+        }])
+    );
+    assert_eq!(
+        id["origin"]["source"],
+        json!({
+            "sourceIdentity": "ix://agent-ix/config-service/spec",
+            "path": "spec/functional/FR-006-config-version-entity.md",
+            "startLine": 22, "startColumn": 3
+        }),
+        "the row's line, column 3"
+    );
+    let parent = field_named(record, "parent");
+    assert_eq!(parent["multiplicity"], json!({"lower": 0, "upper": 1}));
+    assert_eq!(parent["presence"], "optional");
+    assert_eq!(parent["nullable"], false);
+    assert_eq!(
+        parent["typeRef"], "ix://agent-ix/config-service/type/ConfigVersion",
+        "the self-reference resolves to the record itself (EC-143)"
+    );
+    assert_eq!(parent["extensions"], json!([]));
+
+    // The decimal policy rides the same extension mechanism.
+    let business = self::lift("business");
+    let types = types_json(&business);
+    let order = type_named(&types, "Order");
+    let total = field_named(order, "total");
+    assert_eq!(total["unit"], "USD");
+    assert_eq!(total["typeRef"], "ix://agent-ix/orders/type/Decimal");
+    assert_eq!(
+        total["extensions"],
+        json!([{
+            "identity": DECIMAL_POLICY_EXTENSION,
+            "version": "1.0.0",
+            "required": false,
+            "payload": {"precision": 10, "scale": 2}
+        }])
+    );
+}
+
+#[trace("TC-1223", "FR-093-AC-4")]
+#[test]
+fn tc_1223_version_number_min_one_emits_one_min_constraint_with_the_screaming_diagnostic_code() {
+    let lift = lift("config-version-table");
+    let types = types_json(&lift);
+    let record = type_named(&types, "ConfigVersion");
+    let constraints = record["constraints"].as_array().expect("constraints");
+    let min: Vec<&Value> = constraints
+        .iter()
+        .filter(|c| c["keyword"] == "min")
+        .collect();
+    assert_eq!(min.len(), 1, "{constraints:?}");
+    let min = min[0];
+    assert_eq!(min["operands"], json!({"value": 1}));
+    assert_eq!(
+        min["appliesTo"],
+        "ix://agent-ix/config-service/field/configversion-versionnumber"
+    );
+    assert_eq!(
+        min["diagnosticCode"],
+        "agent-ix.config-service.VERSION_NUMBER_MIN"
+    );
+    assert_eq!(
+        min["identity"],
+        "ix://agent-ix/config-service/constraint/configversion-versionnumber-min"
+    );
+    assert_eq!(min["origin"]["source"]["startLine"], 23, "the row's origin");
+    assert_eq!(min["origin"]["source"]["startColumn"], 3);
+    // Every constraint of the record: min, nonEmpty, maxLength.
+    let keywords: Vec<&str> = constraints
+        .iter()
+        .map(|c| c["keyword"].as_str().expect("keyword"))
+        .collect();
+    assert_eq!(keywords, ["min", "nonEmpty", "maxLength"]);
+    // The screaming rule.
+    assert_eq!(screaming("versionNumber"), "VERSION_NUMBER");
+    assert_eq!(screaming("version_number"), "VERSION_NUMBER");
+    assert_eq!(screaming("version-number"), "VERSION_NUMBER");
+    assert_eq!(screaming("maxLength"), "MAX_LENGTH");
+    assert_eq!(screaming("id"), "ID");
+    let package = PackageIdentity::new("agent-ix", "config-service");
+    assert_eq!(
+        diagnostic_code(&package, "createdBy", "maxLength"),
+        "agent-ix.config-service.CREATED_BY_MAX_LENGTH"
+    );
+}
+
+#[trace("TC-1224", "FR-093-AC-5")]
+#[test]
+fn tc_1224_max_length_pattern_and_enum_values_carry_their_operand_shapes() {
+    let lift = lift("config-version-table");
+    let types = types_json(&lift);
+    let record = type_named(&types, "ConfigVersion");
+    let max_length = record["constraints"]
+        .as_array()
+        .expect("constraints")
+        .iter()
+        .find(|c| c["keyword"] == "maxLength")
+        .expect("maxLength");
+    assert_eq!(max_length["operands"], json!({"value": 64}));
+    assert_eq!(
+        max_length["appliesTo"],
+        "ix://agent-ix/config-service/field/configversion-createdby"
+    );
+
+    let audit = self::lift("lower/constraints");
+    assert!(
+        audit.lowered.diagnostics.is_empty(),
+        "{:?}",
+        audit.lowered.diagnostics
+    );
+    let types = types_json(&audit);
+    let record = type_named(&types, "Audit");
+    let by_keyword: BTreeMap<&str, &Value> = record["constraints"]
+        .as_array()
+        .expect("constraints")
+        .iter()
+        .map(|c| (c["keyword"].as_str().expect("keyword"), c))
+        .collect();
+    assert_eq!(
+        by_keyword["pattern"]["operands"],
+        json!({"regex": "^[a-z]+$", "dialect": "ecma-262"})
+    );
+    assert_eq!(
+        by_keyword["enumValues"]["operands"],
+        json!({"values": ["a", "b"]})
+    );
+    assert_eq!(
+        by_keyword["format"]["operands"],
+        json!({"name": "iana:email"})
+    );
+    assert_eq!(by_keyword["min"]["operands"], json!({"value": 1}));
+    assert_eq!(by_keyword["max"]["operands"], json!({"value": 10}));
+    assert_eq!(by_keyword["nonEmpty"]["operands"], json!({}));
+    assert_eq!(by_keyword["minLength"]["operands"], json!({"value": 1}));
+    assert_eq!(by_keyword["maxLength"]["operands"], json!({"value": 64}));
+    assert_eq!(by_keyword.len(), 8);
+    assert_eq!(reader_codes(&ir_document(&audit)), Vec::<String>::new());
+}
+
+/// One IR document holding a definition of `kind` (with `scalar` for a
+/// scalar) and a record whose constraint `keyword` applies to that
+/// definition, for the reader's applicability verdict.
+fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
+    let origin = json!({"generated": {
+        "generatorIdentity": "ix://agent-ix/test/gen",
+        "generatorVersion": "0.0.0",
+        "inputIdentities": ["ix://agent-ix/test/spec"]
+    }});
+    let string = json!({
+        "identity": "ix://agent-ix/test/type/String", "displayName": "String", "kind": "scalar",
+        "roles": [], "origin": origin, "constraints": [], "extensions": [],
+        "unknownPolicy": "reject", "scalar": "string"
+    });
+    let mut target = json!({
+        "identity": "ix://agent-ix/test/type/T", "displayName": "T", "kind": kind,
+        "roles": [], "origin": origin, "constraints": [], "extensions": [],
+        "unknownPolicy": "reject"
+    });
+    match kind {
+        "scalar" => target["scalar"] = json!(scalar),
+        "record" => target["fields"] = json!([]),
+        "enum" => {
+            target["variants"] = json!([{
+                "identity": "ix://agent-ix/test/variant/t-a", "name": "a", "origin": origin
+            }])
+        }
+        "union" => {
+            target["variants"] = json!([{
+                "identity": "ix://agent-ix/test/variant/t-a", "name": "a", "origin": origin,
+                "payloadType": "ix://agent-ix/test/type/String"
+            }])
+        }
+        "sequence" => target["items"] = json!("ix://agent-ix/test/type/String"),
+        "map" => target["values"] = json!("ix://agent-ix/test/type/String"),
+        "alias" | "reference" => target["target"] = json!("ix://agent-ix/test/type/String"),
+        other => panic!("unknown kind {other}"),
+    }
+    let operands = match keyword {
+        "min" | "max" | "exclusiveMin" | "exclusiveMax" => json!({"value": 1}),
+        "minLength" | "maxLength" => json!({"value": 1}),
+        "pattern" => json!({"regex": "^a$", "dialect": "ecma-262"}),
+        "enumValues" => json!({"values": ["a"]}),
+        "nonEmpty" | "unique" => json!({}),
+        "format" => json!({"name": "iana:email"}),
+        other => panic!("unknown keyword {other}"),
+    };
+    let record = json!({
+        "identity": "ix://agent-ix/test/type/R", "displayName": "R", "kind": "record",
+        "roles": [], "origin": origin, "extensions": [], "unknownPolicy": "reject",
+        "constraints": [{
+            "identity": "ix://agent-ix/test/constraint/r-f-k",
+            "keyword": keyword, "operands": operands,
+            "appliesTo": "ix://agent-ix/test/type/T",
+            "diagnosticCode": "agent-ix.test.F_K", "origin": origin
+        }],
+        "fields": [{
+            "identity": "ix://agent-ix/test/field/r-f", "name": "f",
+            "typeRef": "ix://agent-ix/test/type/T", "presence": "required",
+            "nullable": false, "defaultKind": "none", "origin": origin,
+            "multiplicity": {"lower": 1, "upper": 1}
+        }]
+    });
+    json!({"ir": {
+        "contractVersion": "1.1.0",
+        "source": {"identity": "ix://agent-ix/test/spec", "version": "0.0.0",
+                   "dialect": "spec-bundle", "digest": format!("sha256:{}", "0".repeat(64))},
+        "package": {"identity": "agent-ix/test", "version": "0.0.0",
+                    "manifestDigest": format!("sha256:{}", "0".repeat(64)),
+                    "mappingVersions": [], "profileVersions": [],
+                    "lockDigest": format!("sha256:{}", "0".repeat(64))},
+        "types": [string, target, record],
+        "occurrences": [], "extensions": []
+    }})
+}
+
+#[trace("TC-1225", "FR-093-AC-6")]
+#[trace("TC-1225", "FR-093-CON-4")]
+#[test]
+fn tc_1225_min_on_string_is_blocking_constraint_not_applicable_and_the_reader_agrees_over_the_cross_product(
+) {
+    let lift = lift("negatives/CONSTRAINT_NOT_APPLICABLE");
+    let found = with_code(&lift.lowered.diagnostics, Code::ConstraintNotApplicable);
+    assert_eq!(found.len(), 1, "{:?}", lift.lowered.diagnostics);
+    assert!(found[0].blocking);
+    assert_eq!(found[0].severity, Severity::Error);
+    assert_eq!(
+        found[0].locus,
+        Some(locus(&lift, "spec/functional/FR-001-person.md", 19, 3))
+    );
+    assert!(found[0].message.contains("`min`"), "{}", found[0].message);
+    assert!(found[0].message.contains("string"), "{}", found[0].message);
+    assert!(
+        !lift
+            .lowered
+            .types
+            .iter()
+            .any(|t| t.display_name == "Person"),
+        "the record is not emitted, so no document is written"
+    );
+    let json = serde_json::to_value(found[0]).expect("serialises");
+    assert!(common::diagnostic_schema_violations(&json, &common::common_schema(), "").is_empty());
+
+    // The reader, handed the same constraint over the string scalar,
+    // raises its own CONSTRAINT_NOT_APPLICABLE at that constraint.
+    let doc = applicability_doc("scalar", "string", "min");
+    let codes = reader_codes(&doc);
+    assert_eq!(
+        codes,
+        ["agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE at /ir/types/2/constraints/0"]
+    );
+
+    // The full RULES.md cross product: the frontend's table and the
+    // reader agree for every (kind, keyword) pair.
+    let kinds: Vec<(&str, &str)> = vec![
+        ("scalar", "boolean"),
+        ("scalar", "integer"),
+        ("scalar", "number"),
+        ("scalar", "string"),
+        ("scalar", "bytes"),
+        ("scalar", "date"),
+        ("scalar", "datetime"),
+        ("scalar", "duration"),
+        ("scalar", "uuid"),
+        ("record", ""),
+        ("enum", ""),
+        ("union", ""),
+        ("sequence", ""),
+        ("map", ""),
+        ("reference", ""),
+    ];
+    let mut pairs = 0;
+    for (kind, scalar) in &kinds {
+        for keyword in KEYWORDS {
+            let doc = applicability_doc(kind, scalar, keyword);
+            let verdict = verdict(&doc);
+            let reader_rejects = verdict
+                .diagnostics
+                .iter()
+                .any(|d| d.code.ends_with("CONSTRAINT_NOT_APPLICABLE"));
+            let other: Vec<String> = verdict
+                .diagnostics
+                .iter()
+                .filter(|d| !d.code.ends_with("CONSTRAINT_NOT_APPLICABLE"))
+                .map(|d| format!("{} at {}", d.code, d.pointer))
+                .collect();
+            assert!(
+                other.is_empty(),
+                "the probe document for ({kind} {scalar}, {keyword}) is otherwise valid: {other:?}"
+            );
+            assert_eq!(
+                !applies_to(keyword, kind, scalar),
+                reader_rejects,
+                "({kind} {scalar}, {keyword}): frontend applies_to={} reader rejects={reader_rejects}",
+                applies_to(keyword, kind, scalar)
+            );
+            pairs += 1;
+        }
+    }
+    assert_eq!(pairs, kinds.len() * KEYWORDS.len());
+    // An alias resolves through to its target: the reader decides on the
+    // string scalar behind it, and so does the table on the resolved kind.
+    let doc = applicability_doc("alias", "", "min");
+    assert!(reader_codes(&doc)
+        .iter()
+        .any(|c| c.contains("CONSTRAINT_NOT_APPLICABLE")));
+}
+
+#[trace("TC-1226", "FR-093-AC-7")]
+#[trace("TC-1226", "FR-093-CON-3")]
+#[test]
+fn tc_1226_json_object_emits_the_open_record_once_and_a_declared_loss_with_a_registered_row() {
+    let lift = lift("negatives/DECLARED_LOSS");
+    let types = types_json(&lift);
+    let open: Vec<&Value> = types
+        .iter()
+        .filter(|t| t["identity"] == "ix://agent-ix/blob-service/type/JsonObject")
+        .collect();
+    assert_eq!(open.len(), 1, "once per package: {types:?}");
+    let open = open[0];
+    assert_eq!(open["kind"], "record");
+    assert_eq!(open["displayName"], "JsonObject");
+    assert_eq!(open["fields"], json!([]));
+    assert_eq!(open["unknownPolicy"], "preserve");
+    assert!(open["origin"]["generated"].is_object(), "{open}");
+    let blob = type_named(&types, "Blob");
+    assert_eq!(
+        field_named(blob, "data")["typeRef"],
+        "ix://agent-ix/blob-service/type/JsonObject"
+    );
+    assert!(
+        !types
+            .iter()
+            .any(|t| t["scalar"].as_str().is_some_and(|s| s.contains("json"))),
+        "no scalar definition is minted for JsonObject"
+    );
+
+    let losses = with_code(&lift.lowered.diagnostics, Code::DeclaredLoss);
+    let unconstrained: Vec<&&Diagnostic> = losses
+        .iter()
+        .filter(|d| d.message.contains("`unconstrained-value`"))
+        .collect();
+    assert_eq!(unconstrained.len(), 1, "{losses:?}");
+    assert_eq!(unconstrained[0].severity, Severity::Info);
+    assert!(!unconstrained[0].blocking);
+    assert_eq!(
+        unconstrained[0].locus,
+        Some(locus(&lift, "spec/functional/FR-001-blob.md", 19, 3))
+    );
+    assert!(
+        !lift.lowered.diagnostics.iter().any(|d| d.blocking),
+        "a declared loss never blocks: {:?}",
+        lift.lowered.diagnostics
+    );
+    assert_eq!(reader_codes(&ir_document(&lift)), Vec::<String>::new());
+
+    // The register: every Loss variant has a row, the #78 rows cite #78,
+    // and every DECLARED_LOSS emitted over the fixtures names a row.
+    let register = loss_register().expect("losses.json parses");
+    let rows: BTreeMap<&str, _> = register.iter().map(|r| (r.code.as_str(), r)).collect();
+    for loss in Loss::ALL {
+        let row = rows
+            .get(loss.row())
+            .unwrap_or_else(|| panic!("losses.json has no row {}", loss.row()));
+        assert_eq!(row.diagnostic, Code::DeclaredLoss.to_string());
+    }
+    assert_eq!(rows.len(), Loss::ALL.len(), "the register is closed");
+    assert!(rows["unconstrained-value"].owner.ends_with("#78"));
+    assert!(rows["required-collection-presence"].owner.ends_with("#78"));
+    assert!(rows["lossy-extraction"].owner.contains("FR-072"));
+    for name in [
+        "negatives/DECLARED_LOSS",
+        "config-version-table",
+        "config-version-fence",
+        "business",
+        "lower/collections",
+    ] {
+        let lift = self::lift(name);
+        for d in with_code(&lift.lowered.diagnostics, Code::DeclaredLoss) {
+            let named = Loss::ALL
+                .iter()
+                .find(|l| d.message.contains(&format!("`{}`", l.row())));
+            assert!(
+                named.is_some(),
+                "{name}: {} names no register row",
+                d.message
+            );
+        }
+    }
+}
+
+#[trace("TC-1227", "FR-093-AC-8")]
+#[test]
+fn tc_1227_one_to_many_is_required_and_star_is_optional_with_one_declared_loss_each() {
+    let lift = lift("lower/collections");
+    let types = types_json(&lift);
+    let basket = type_named(&types, "Basket");
+    let items = field_named(basket, "items");
+    assert_eq!(items["multiplicity"], json!({"lower": 1}));
+    assert_eq!(items["presence"], "required");
+    let tags = field_named(basket, "tags");
+    assert_eq!(tags["multiplicity"], json!({"lower": 0}));
+    assert_eq!(tags["presence"], "optional");
+    let labels = field_named(basket, "labels");
+    assert_eq!(labels["multiplicity"], json!({"lower": 0}));
+    assert_eq!(labels["presence"], "optional");
+
+    let losses: Vec<&Diagnostic> = with_code(&lift.lowered.diagnostics, Code::DeclaredLoss)
+        .into_iter()
+        .filter(|d| d.message.contains("`required-collection-presence`"))
+        .collect();
+    assert_eq!(
+        losses.len(),
+        2,
+        "one per 0..*-declared collection: {losses:?}"
+    );
+    assert_eq!(
+        losses[0].locus,
+        Some(locus(&lift, "spec/functional/FR-001-basket.md", 20, 3))
+    );
+    assert_eq!(
+        losses[1].locus,
+        Some(locus(&lift, "spec/functional/FR-001-basket.md", 21, 3))
+    );
+    assert!(losses
+        .iter()
+        .all(|d| d.severity == Severity::Info && !d.blocking));
+    assert_eq!(
+        lift.lowered.diagnostics.len(),
+        2,
+        "{:?}",
+        lift.lowered.diagnostics
+    );
+    assert_eq!(reader_codes(&ir_document(&lift)), Vec::<String>::new());
+    // The presence derivation itself.
+    let m = |lower: u64, upper: Option<u64>| quire_rs::semantic::Multiplicity {
+        lower,
+        upper,
+        ordered: None,
+        unique: None,
+    };
+    assert_eq!(Presence::of(&m(1, None)), Presence::Required);
+    assert_eq!(Presence::of(&m(0, None)), Presence::Optional);
+    assert_eq!(Presence::of(&m(0, Some(1))), Presence::Optional);
+    assert_eq!(Presence::of(&m(2, Some(5))), Presence::Required);
+}
+
+#[trace("TC-1228", "FR-093-AC-9")]
+#[test]
+fn tc_1228_legacy_form_emits_no_record_and_a_warning_while_both_forms_blocks() {
+    let legacy = lift("legacy");
+    assert!(
+        !legacy.lowered.types.iter().any(|t| t.kind == Kind::Record),
+        "no record: {:?}",
+        legacy.lowered.types
+    );
+    let not_lowered = with_code(&legacy.lowered.diagnostics, Code::ArtifactNotLowered);
+    assert_eq!(not_lowered.len(), 1, "{:?}", legacy.lowered.diagnostics);
+    assert!(!not_lowered[0].blocking);
+    assert_eq!(not_lowered[0].severity, Severity::Warning);
+    assert!(not_lowered[0].message.contains("legacy-form"));
+    assert_eq!(
+        legacy.resolutions.outcomes.get("FR-006"),
+        Some(&Outcome::NotLowered {
+            cause: locus(
+                &legacy,
+                "spec/functional/FR-006-config-version-entity.md",
+                1,
+                1
+            )
+        })
+    );
+
+    let both = lift("negatives/ARTIFACT_NOT_LOWERED");
+    let blocking: Vec<&Diagnostic> = with_code(&both.lowered.diagnostics, Code::ArtifactNotLowered)
+        .into_iter()
+        .filter(|d| d.message.contains("both-forms"))
+        .collect();
+    assert_eq!(blocking.len(), 1, "{:?}", both.lowered.diagnostics);
+    assert!(blocking[0].blocking);
+    assert_eq!(blocking[0].severity, Severity::Error);
+    assert_eq!(
+        blocking[0].locus,
+        Some(locus(&both, "spec/functional/FR-001-both-forms.md", 1, 1))
+    );
+    assert!(
+        !both
+            .lowered
+            .types
+            .iter()
+            .any(|t| t.display_name == "BothForms"),
+        "{:?}",
+        both.lowered.types
+    );
+    // The direct call reports the pass-one verdict without re-raising it.
+    let package = PackageIdentity::from(both.bundle.package());
+    let artifact = artifact_ref(&both, "FR-001");
+    let ctx = context(&both, &package, "FR-001", &artifact);
+    let extraction = &both.extractions.artifacts["FR-001"].extraction;
+    assert_eq!(
+        lower_record(extraction, &both.resolutions.resolutions, &[], &ctx),
+        Err(LowerError::NotLowered)
+    );
+}
+
+/// A random distinct identifier per field.
+fn renames(count: usize) -> impl Strategy<Value = Vec<String>> {
+    proptest::collection::btree_set("[a-z][A-Za-z0-9_]{0,10}", count)
+        .prop_map(|set| set.into_iter().collect())
+}
+
+/// `value` with the members named in `drop` removed at the top level.
+fn without(value: &Value, drop: &[&str]) -> Value {
+    let mut out = value.clone();
+    if let Some(map) = out.as_object_mut() {
+        for key in drop {
+            map.remove(*key);
+        }
+    }
+    out
+}
+
+#[trace("TC-1229", "FR-093-AC-10")]
+#[trace("TC-1229", "FR-093-CON-2")]
+#[test]
+fn tc_1229_renaming_every_field_changes_only_name_identity_applies_to_and_diagnostic_code() {
+    let lift = lift("lower/constraints");
+    let package = PackageIdentity::from(lift.bundle.package());
+    let artifact = artifact_ref(&lift, "FR-001");
+    let ctx = context(&lift, &package, "FR-001", &artifact);
+    let document = lift
+        .bundle
+        .documents()
+        .iter()
+        .find(|d| d.id() == "FR-001")
+        .expect("FR-001");
+    let rows = field_rows(document.raw());
+    let extraction = &lift.extractions.artifacts["FR-001"].extraction;
+    let baseline =
+        lower_record(extraction, &lift.resolutions.resolutions, &rows, &ctx).expect("lowers");
+    let base = serde_json::to_value(&baseline.definition).expect("serialises");
+    let decls = extraction.fields.as_deref().expect("fields");
+
+    let mut runner = TestRunner::new(Config::with_cases(64));
+    runner
+        .run(&renames(decls.len()), |names| {
+            let mut renamed = extraction.clone();
+            let mut resolutions: Vec<Resolved> = lift
+                .resolutions
+                .resolutions
+                .iter()
+                .filter(|r| r.artifact == "FR-001")
+                .cloned()
+                .collect();
+            let mut rows = rows.clone();
+            for (i, name) in names.iter().enumerate() {
+                let old = decls[i].name.clone();
+                renamed.fields.as_mut().expect("fields")[i].name = name.clone();
+                for r in resolutions.iter_mut().filter(|r| r.field == old) {
+                    r.field = name.clone();
+                }
+                for row in rows.iter_mut().filter(|r| r.name == old) {
+                    row.name = name.clone();
+                }
+            }
+            let lowered = lower_record(&renamed, &resolutions, &rows, &ctx)
+                .map_err(|e| TestCaseError::fail(format!("{e:?}")))?;
+            let got = serde_json::to_value(&lowered.definition).expect("serialises");
+            // The record itself is untouched by field names.
+            prop_assert_eq!(
+                without(&got, &["fields", "constraints"]),
+                without(&base, &["fields", "constraints"])
+            );
+            let base_fields = base["fields"].as_array().expect("fields");
+            let got_fields = got["fields"].as_array().expect("fields");
+            prop_assert_eq!(got_fields.len(), base_fields.len());
+            for (b, g) in base_fields.iter().zip(got_fields) {
+                prop_assert_eq!(
+                    without(g, &["name", "identity"]),
+                    without(b, &["name", "identity"])
+                );
+                prop_assert_ne!(&g["name"], &b["name"]);
+            }
+            let base_constraints = base["constraints"].as_array().expect("constraints");
+            let got_constraints = got["constraints"].as_array().expect("constraints");
+            prop_assert_eq!(got_constraints.len(), base_constraints.len());
+            for (b, g) in base_constraints.iter().zip(got_constraints) {
+                prop_assert_eq!(
+                    without(g, &["identity", "appliesTo", "diagnosticCode"]),
+                    without(b, &["identity", "appliesTo", "diagnosticCode"])
+                );
+            }
+            Ok(())
+        })
+        .expect("64 renamings move only name, identity, appliesTo and diagnosticCode");
+}
+
+#[trace("TC-1333", "FR-093-AC-12")]
+#[test]
+fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values_row_and_no_alias_anywhere(
+) {
+    let lift = lift("business");
+    assert!(
+        !lift.lowered.diagnostics.iter().any(|d| d.blocking),
+        "{:?}",
+        lift.lowered.diagnostics
+    );
+    let types = types_json(&lift);
+    let status = type_named(&types, "OrderStatus");
+    assert_eq!(status["kind"], "enum");
+    assert_eq!(status["identity"], "ix://agent-ix/orders/type/OrderStatus");
+    assert_eq!(status["roles"], json!(["business:enumeration"]));
+    assert_eq!(status["unknownPolicy"], "reject");
+    assert_eq!(status["constraints"], json!([]));
+    assert_eq!(status["extensions"], json!([]));
+    assert!(status.get("fields").is_none());
+    assert_eq!(
+        status["origin"]["source"]["path"],
+        "spec/functional/EN-001-order-status.md"
+    );
+    let variants = status["variants"].as_array().expect("variants");
+    let names: Vec<&str> = variants
+        .iter()
+        .map(|v| v["name"].as_str().expect("name"))
+        .collect();
+    assert_eq!(names, ["draft", "placed", "shipped", "cancelled"]);
+    let identities: Vec<&str> = variants
+        .iter()
+        .map(|v| v["identity"].as_str().expect("identity"))
+        .collect();
+    assert_eq!(
+        identities,
+        [
+            "ix://agent-ix/orders/variant/orderstatus-draft",
+            "ix://agent-ix/orders/variant/orderstatus-placed",
+            "ix://agent-ix/orders/variant/orderstatus-shipped",
+            "ix://agent-ix/orders/variant/orderstatus-cancelled",
+        ]
+    );
+    for (i, v) in variants.iter().enumerate() {
+        assert_eq!(
+            v["origin"]["source"],
+            json!({
+                "sourceIdentity": "ix://agent-ix/orders/spec",
+                "path": "spec/functional/EN-001-order-status.md",
+                "startLine": 15 + i, "startColumn": 3
+            })
+        );
+    }
+    assert_eq!(VALUE_COLUMN, "Value");
+    // The entity's cell resolves to the enum's identity.
+    let order = type_named(&types, "Order");
+    assert_eq!(
+        field_named(order, "status")["typeRef"],
+        "ix://agent-ix/orders/type/OrderStatus"
+    );
+    assert_eq!(reader_codes(&ir_document(&lift)), Vec::<String>::new());
+
+    // No `## Values`: blocking ARTIFACT_NOT_LOWERED naming the evaluator's
+    // reason.
+    let missing = self::lift("negatives/ARTIFACT_NOT_LOWERED");
+    let colour: Vec<&Diagnostic> =
+        with_code(&missing.lowered.diagnostics, Code::ArtifactNotLowered)
+            .into_iter()
+            .filter(|d| d.message.contains("EN-001"))
+            .collect();
+    assert_eq!(colour.len(), 1, "{:?}", missing.lowered.diagnostics);
+    assert!(colour[0].blocking);
+    assert!(
+        colour[0].message.contains("values_table"),
+        "{}",
+        colour[0].message
+    );
+    assert!(
+        colour[0].message.contains("Values"),
+        "{}",
+        colour[0].message
+    );
+    assert_eq!(
+        colour[0].locus,
+        Some(locus(&missing, "spec/functional/EN-001-colour.md", 1, 1))
+    );
+    assert!(!missing
+        .lowered
+        .types
+        .iter()
+        .any(|t| t.display_name == "Colour"));
+
+    // No fixture document carries a `kind: alias` definition; the kind
+    // enum cannot even spell it.
+    for name in [
+        "config-version-table",
+        "config-version-fence",
+        "business",
+        "lower/constraints",
+        "lower/collections",
+        "negatives/DECLARED_LOSS",
+        "resolve/enumeration",
+    ] {
+        let lift = self::lift(name);
+        for t in &lift.lowered.types {
+            assert!(
+                matches!(t.kind, Kind::Scalar | Kind::Record | Kind::Enum),
+                "{name}: {:?}",
+                t.kind
+            );
+        }
+    }
+}
+
+#[trace("TC-1334", "FR-093-AC-13")]
+#[test]
+fn tc_1334_status_and_status_collide_and_repeated_or_colliding_constraints_are_duplicate_constraint(
+) {
+    let lift = lift("negatives/DUPLICATE_TYPE_NAME");
+    let dup = with_code(&lift.lowered.diagnostics, Code::DuplicateTypeName);
+    assert_eq!(dup.len(), 1, "{:?}", lift.lowered.diagnostics);
+    assert!(dup[0].blocking);
+    assert_eq!(
+        dup[0].locus,
+        Some(locus(&lift, "spec/functional/FR-002-status.md", 1, 1)),
+        "at the second document in path order"
+    );
+    assert_eq!(
+        dup[0].related,
+        vec![locus(&lift, "spec/functional/FR-001-status.md", 1, 1)]
+    );
+    assert!(
+        dup[0].message.contains("FR-001-status.md"),
+        "{}",
+        dup[0].message
+    );
+    assert!(dup[0].message.contains("FR-002"), "{}", dup[0].message);
+
+    let lift = self::lift("negatives/DUPLICATE_CONSTRAINT");
+    let dup = with_code(&lift.lowered.diagnostics, Code::DuplicateConstraint);
+    assert_eq!(dup.len(), 2, "{:?}", lift.lowered.diagnostics);
+    assert!(dup.iter().all(|d| d.blocking));
+    assert_eq!(
+        dup[0].locus,
+        Some(locus(&lift, "spec/functional/FR-001-counter.md", 18, 3)),
+        "`min: 1, min: 2` at that row"
+    );
+    assert!(dup[0].message.contains("twice"), "{}", dup[0].message);
+    assert_eq!(
+        dup[1].locus,
+        Some(locus(&lift, "spec/functional/FR-002-pair.md", 19, 3)),
+        "`version_number` at the second row"
+    );
+    assert!(
+        dup[1].message.contains("VERSION_NUMBER_MIN"),
+        "{}",
+        dup[1].message
+    );
+    assert_eq!(
+        dup[1].related,
+        vec![locus(&lift, "spec/functional/FR-002-pair.md", 18, 3)]
+    );
+    assert!(
+        lift.lowered.types.iter().all(|t| t.kind == Kind::Scalar),
+        "neither record is emitted: {:?}",
+        lift.lowered.types
+    );
+
+    // The naming rule's other refusal (FR-093 "The record"): a title that
+    // is no Identifier and no `name` to fall back on.
+    let lift = self::lift("negatives/UNNAMEABLE_ARTIFACT");
+    let unnameable = with_code(&lift.lowered.diagnostics, Code::UnnameableArtifact);
+    assert_eq!(unnameable.len(), 1, "{:?}", lift.lowered.diagnostics);
+    assert!(unnameable[0].blocking);
+    assert_eq!(
+        unnameable[0].locus,
+        Some(locus(
+            &lift,
+            "spec/functional/FR-005-config-overlay-entity.md",
+            1,
+            1
+        ))
+    );
+    assert!(
+        unnameable[0].message.contains("Config Overlay Entity"),
+        "{}",
+        unnameable[0].message
+    );
+    assert!(lift.lowered.types.iter().all(|t| t.kind == Kind::Scalar));
+}
+
+#[trace("TC-1335", "FR-093-AC-14")]
+#[test]
+fn tc_1335_a_domain_without_properties_lowers_to_an_empty_record_and_lossy_yields_one_declared_loss(
+) {
+    let lift = lift("business");
+    let types = types_json(&lift);
+    let domain = type_named(&types, "Ordering");
+    assert_eq!(domain["kind"], "record");
+    assert_eq!(domain["fields"], json!([]));
+    assert_eq!(domain["roles"], json!(["business:domain"]));
+    assert_eq!(
+        lift.extractions.artifacts["DM-001"]
+            .extraction
+            .availability
+            .fields
+            .state,
+        quire_rs::semantic::AvailabilityState::NotApplicable
+    );
+    assert!(
+        !lift
+            .lowered
+            .diagnostics
+            .iter()
+            .any(|d| d.message.contains("DM-001")),
+        "no diagnostic for the domain: {:?}",
+        lift.lowered.diagnostics
+    );
+    let verdict = verdict(&ir_document(&lift));
+    assert_eq!(
+        verdict.result_state,
+        ResultState::Success,
+        "{:?}",
+        reader_codes(&ir_document(&lift))
+    );
+
+    // A lossy extraction: one DECLARED_LOSS naming lossy-extraction.
+    let package = PackageIdentity::from(lift.bundle.package());
+    let artifact = artifact_ref(&lift, "DM-001");
+    let ctx = context(&lift, &package, "DM-001", &artifact);
+    let mut lossy = lift.extractions.artifacts["DM-001"].extraction.clone();
+    lossy.availability.fields.lossy = true;
+    let lowered = lower_record(&lossy, &lift.resolutions.resolutions, &[], &ctx).expect("lowers");
+    assert_eq!(lowered.diagnostics.len(), 1, "{:?}", lowered.diagnostics);
+    let loss = &lowered.diagnostics[0];
+    assert_eq!(loss.code, WireCode::Registry(Code::DeclaredLoss));
+    assert!(
+        loss.message.contains("`lossy-extraction`"),
+        "{}",
+        loss.message
+    );
+    assert_eq!(loss.severity, Severity::Info);
+    assert!(!loss.blocking);
+    assert_eq!(
+        loss.locus,
+        Some(locus(&lift, "spec/domain/DM-001-ordering.md", 1, 1))
+    );
+    assert_eq!(lowered.definition.fields, Some(Vec::new()));
+}
+
+#[trace("TC-1347", "FR-095-AC-14")]
+#[test]
+fn tc_1347_status_and_status_slug_alike_refuse_at_the_second_document_and_mint_no_field_twice() {
+    let lift = lift("negatives/DUPLICATE_TYPE_NAME");
+    assert_eq!(
+        agent_ix_extraction_frontend::slug("Status"),
+        agent_ix_extraction_frontend::slug("status")
+    );
+    let dup = with_code(&lift.lowered.diagnostics, Code::DuplicateTypeName);
+    assert_eq!(dup.len(), 1);
+    assert!(dup[0].blocking, "the lift refuses");
+    assert_eq!(
+        dup[0].locus.as_ref().map(|l| l.path.as_str()),
+        Some("spec/functional/FR-002-status.md")
+    );
+    let identities: Vec<String> = lift
+        .lowered
+        .types
+        .iter()
+        .flat_map(|t| t.fields.iter().flatten().map(|f| f.identity.clone()))
+        .chain(
+            lift.lowered
+                .types
+                .iter()
+                .flat_map(|t| t.constraints.iter().map(|c| c.identity.clone())),
+        )
+        .collect();
+    let unique: BTreeSet<&String> = identities.iter().collect();
+    assert_eq!(
+        unique.len(),
+        identities.len(),
+        "no identity twice: {identities:?}"
+    );
+    let status_fields: Vec<&String> = identities
+        .iter()
+        .filter(|i| i.contains("/field/status-"))
+        .collect();
+    assert_eq!(
+        status_fields.len(),
+        2,
+        "the first Status keeps its two fields, the second mints none: {identities:?}"
+    );
+    // The kernel-scalar collision: an artifact named like a scalar the
+    // bundle uses is a DUPLICATE_TYPE_NAME at the artifact, superseding
+    // pass one's warning (orchestrator ruling on FR-092-AC-8).
+    let shadowed = self::lift("negatives/KERNEL_NAME_SHADOWED");
+    let dup = with_code(&shadowed.lowered.diagnostics, Code::DuplicateTypeName);
+    assert_eq!(dup.len(), 1, "{:?}", shadowed.lowered.diagnostics);
+    assert!(dup[0].blocking);
+    assert!(
+        dup[0].message.contains("kernel scalar String"),
+        "{}",
+        dup[0].message
+    );
+    assert_eq!(
+        dup[0].locus,
+        Some(locus(&shadowed, "spec/functional/FR-007-string.md", 1, 1))
+    );
+    assert!(
+        with_code(&shadowed.lowered.diagnostics, Code::KernelNameShadowed).is_empty(),
+        "the warning is superseded: {:?}",
+        shadowed.lowered.diagnostics
+    );
+    assert!(
+        !shadowed
+            .lowered
+            .types
+            .iter()
+            .any(|t| t.kind == Kind::Record && t.display_name == "String"),
+        "the scalar keeps type/String"
+    );
+}
