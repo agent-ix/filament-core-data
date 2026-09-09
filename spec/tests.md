@@ -86,6 +86,11 @@ can compile, and the resolution is a hand-written validator proved equivalent to
 the published language by differential harness — not a weakened pattern and not
 an unvalidated `String`. TC-710 records the GAP-011 dependency on issue #9 rather
 than deciding it.
+Issue #36 (the spec-bundle extraction frontend, TC-1200..1349 with TC-1339
+unused) is mapped against US-015, FR-091..FR-099 and NFR-031..NFR-033 as
+revised by the composite review, every row `🚧`, its ids reserved as an
+exclusive range against `main` at 3b75e01 because PR #84 is open in parallel
+and "next free" is not a fact either branch can establish.
 
 ## Test Matrix Rules
 
@@ -102,7 +107,7 @@ than deciding it.
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001..US-010, US-012, US-013, FR-001..FR-053, FR-063..FR-080 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch |
+| StR-001 | US-001..US-010, US-012, US-013, US-015, FR-001..FR-053, FR-063..FR-080, FR-091..FR-099 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944, TC-1200..1349 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch |
 
 ### User Story Coverage
 
@@ -142,6 +147,12 @@ than deciding it.
 | US-013 | US-013-EX-4 (illustrative) implemented by FR-076 and NFR-027 | TC-883, TC-940 | ✅ Complete |
 | US-013 | US-013-EX-5 (illustrative) implemented by FR-079 and NFR-027 | TC-924, TC-942 | ✅ Complete |
 | US-014 | US-014-EX-1 (illustrative) implemented by FR-085, FR-086, FR-087 | TC-1040..TC-1084 | 🚧 In progress |
+| US-015 | US-015-EX-1 (illustrative) implemented by FR-093, FR-094 and FR-097 | TC-1221, TC-1231, TC-1239, TC-1279, TC-1284 | 🚧 In progress |
+| US-015 | US-015-EX-2 (illustrative) implemented by FR-093 and NFR-031 | TC-1220, TC-1302 | 🚧 In progress |
+| US-015 | US-015-EX-3 (illustrative) implemented by FR-092 and FR-096 | TC-1212, TC-1264, TC-1268 | 🚧 In progress |
+| US-015 | US-015-EX-4 (illustrative) implemented by FR-097, FR-098 and NFR-032 | TC-1289, TC-1314, TC-1340, TC-1341 | 🚧 In progress |
+| US-015 | US-015-EX-5 (illustrative) implemented by FR-091 | TC-1202, TC-1265 | 🚧 In progress |
+| US-015 | Issue #36 AC-5 (json-schema target), no test behind it | TC-1337 | 🚧 Blocked on issue #85 |
 
 ### Functional Requirement Coverage
 
@@ -237,6 +248,15 @@ than deciding it.
 | FR-088 | FR-088-AC/CON x25 | TC-1067..TC-1075 | 🚧 In progress |
 | FR-089 | FR-089-AC/CON x28 | TC-1076..TC-1085 | 🚧 In progress |
 | FR-090 | FR-090-AC/CON x34 | TC-1086..TC-1097 | 🚧 In progress |
+| FR-091 | FR-091-AC-1..11, FR-091-CON-1..3 | TC-1200..TC-1209, TC-1330, TC-1331 | 🚧 In progress |
+| FR-092 | FR-092-AC-1..11, FR-092-CON-1..2 | TC-1210..TC-1219, TC-1330, TC-1332 | 🚧 In progress |
+| FR-093 | FR-093-AC-1..14, FR-093-CON-1..4 | TC-1220..TC-1230, TC-1333..TC-1335 | 🚧 In progress |
+| FR-094 | FR-094-AC-1..15, FR-094-CON-1..4 | TC-1231..TC-1245 | 🚧 In progress |
+| FR-095 | FR-095-AC-1..15, FR-095-CON-1..3 | TC-1246..TC-1258, TC-1347, TC-1348 | 🚧 In progress |
+| FR-096 | FR-096-AC-1..16, FR-096-CON-1..3 | TC-1259..TC-1272, TC-1345, TC-1346 | 🚧 In progress |
+| FR-097 | FR-097-AC-1..15, FR-097-CON-1..3 | TC-1273..TC-1284, TC-1336, TC-1340..TC-1342 | 🚧 In progress |
+| FR-098 | FR-098-AC-1..12, FR-098-CON-1..3 | TC-1285..TC-1294, TC-1338, TC-1343, TC-1344 | 🚧 In progress |
+| FR-099 | FR-099-AC-1..6, FR-099-CON-1..3 | TC-1295..TC-1299, TC-1330, TC-1349 | 🚧 In progress |
 
 ### Non-Functional Requirement Coverage
 
@@ -272,6 +292,9 @@ than deciding it.
 | NFR-028 | NFR-028-AC/CON x8 | TC-1098..TC-1100 | 🚧 In progress |
 | NFR-029 | NFR-029-AC/CON x10 | TC-1101..TC-1104 | 🚧 In progress |
 | NFR-030 | NFR-030-AC/CON x12 | TC-1105..TC-1108 | 🚧 In progress |
+| NFR-031 | NFR-031-AC-1..10: golden, repeat-run, varied-environment, and cross-root byte comparison; enumeration-order analysis citing path-sorted loading; ambient-input and HashMap audits with planted-token controls; one limit probe per limits.json entry under a 512 MiB / 30 s budget; unshare -n offline run; forbid(unsafe_code) compile_fail doctest; proptest bundle-tree fuzz | TC-1300..TC-1309 | 🚧 In progress |
+| NFR-032 | NFR-032-AC-1..10: changed-path gate fixed at both ends by sentinels and unioned over --first-parent --no-merges, cargo metadata edge check, Cargo.toml and cases.json line diffs, corpus git status after the suite, publish and licence inspection, harness suite-compare, revert-rehearsal, and accretion-rehearsal verbs | TC-1310..TC-1319 | 🚧 In progress |
+| NFR-033 | NFR-033-AC-1..10: manifest, lock, and toolchain inspection, EXTRACTION_TOOLCHAIN=0.0.0 gate run, dependency-specifier inspection against the workspace members, make extraction-frontend-deny and -audit, lock-to-notices comparison, clippy and fmt, trace-marker scan and status-lie rehearsal, offline build | TC-1320..TC-1329 | 🚧 In progress |
 
 ## Test Case Summary
 
@@ -1331,6 +1354,155 @@ than deciding it.
 | TC-1106 | Package.json exports, main, module, types, files, dependencies, peerDependencies | Unit | P1 | NFR-030-AC-4, NFR-030-AC-5, NFR-030-AC-6 | 🚧 planned |
 | TC-1107 | Cargo.lock changes only by the addition of this change's own members and adds no third-party package, asserted by comparing the resolved package set b | Unit | P1 | NFR-030-AC-7, NFR-030-AC-8, NFR-030-AC-9 | 🚧 planned |
 | TC-1108 | This change's own range contains no merge commit, so its path set is the union of its own commits and carries nothing the trunk moved | Property | P1 | NFR-030-AC-10, NFR-030-AC-11, NFR-030-AC-12 | 🚧 planned |
+| TC-1200 | Loading the config-version-table fixture under the vendored spec-objects-business 0.3.0 module yields one extraction for FR-006 (fields available, seven fields) and one for FR-005, keyed by id | Integration | P0 | FR-091-AC-1 | 🚧 planned |
+| TC-1201 | A module root whose manifest carries no semantic block refuses with MODULE_WITHOUT_SEMANTIC_BLOCK naming the module and lowers nothing | Unit | P1 | FR-091-AC-2 | 🚧 planned |
+| TC-1202 | A module whose semantic.semantic_core is 9.9.9 refuses with MODULE_REFUSED carrying semantic.unsupported-semantic-core, and no artifact lowers to an empty record | Integration | P0 | FR-091-AC-3 | 🚧 planned |
+| TC-1203 | With a conflicting module planted under HOME/.ix and QUIRE_MODULES, the fixture lifts byte-identically to the explicit-module lift; the control lift with the conflicting module supplied explicitly differs | E2E | P0 | FR-091-AC-4 | 🚧 planned |
+| TC-1204 | A spec.md lacking org refuses with BUNDLE_UNIDENTIFIED at spec/spec.md; a name of Config Service refuses with BUNDLE_UNIDENTIFIED naming Config Service | Unit | P1 | FR-091-AC-5 | 🚧 planned |
+| TC-1205 | A document with object: widget, declared by no module, yields UNKNOWN_OBJECT_TYPE and is not lowered; a document with no object yields no diagnostic | Unit | P1 | FR-091-AC-6 | 🚧 planned |
+| TC-1206 | The BundleIndex handed to extraction names every object-typed artifact by id and title, and a Type cell naming a sibling by title resolves | Integration | P1 | FR-091-AC-7 | 🚧 planned |
+| TC-1207 | grep of src/ finds no struct FieldDecl/TypeRef/ClauseRef/OperationDecl, no extract_semantic_json, no section-heading parser, and load_repo/load_module_set only in bundle.rs; a planted struct TypeRef fails the gate | Static | P0 | FR-091-AC-8, FR-091-CON-1, FR-091-CON-3 | 🚧 planned |
+| TC-1208 | Every SemanticDiagnostic the engine returns for the legacy-form control appears as one ENGINE_DIAGNOSTIC whose causes[0].code is the engine code, with the mapped severity and the engine's line and column | Property | P1 | FR-091-AC-9 | 🚧 planned |
+| TC-1209 | The legacy free-column FR-006 yields fields unavailable with reason legacy-form and the engine's semantic.legacy-properties-form warning at line 17, and is not lowered | Integration | P1 | FR-091-AC-10 | 🚧 planned |
+| TC-1210 | Every kernel scalar name resolves to KernelScalar; the config-version-table fixture emits exactly UUID, Integer, String, Timestamp at type/<KernelScalar> with the kernel-scalar extension, plus the JsonObject record, each once | Property | P1 | FR-092-AC-1 | 🚧 planned |
+| TC-1211 | ConfigOverlay in a Type cell resolves to Object(FR-005) by title, and FR-005 resolves to the same artifact by id | Unit | P1 | FR-092-AC-2 | 🚧 planned |
+| TC-1212 | A Type cell reading Sting yields Unresolved::UnknownToken and one blocking UNRESOLVED_TYPE_TOKEN at that row's line and column naming Sting; no document is written | Unit | P0 | FR-092-AC-3 | 🚧 planned |
+| TC-1213 | Two artifacts titled Status make the engine emit semantic.ambiguous-type; the referring artifact yields ARTIFACT_NOT_LOWERED plus one ENGINE_DIAGNOSTIC, and no Resolution is produced for the dropped row | Unit | P1 | FR-092-AC-4 | 🚧 planned |
+| TC-1214 | A cell naming ix://acme/other/type/Thing yields Unresolved::ImportUnsupported("acme/other") and blocking IMPORT_UNSUPPORTED naming acme/other | Unit | P1 | FR-092-AC-5 | 🚧 planned |
+| TC-1215 | In a two-document bundle where FR-006 refers to a legacy-form FR-005, the cell yields Unresolved::Stale and STALE_TYPE_TOKEN naming FR-005 with related at FR-005's ARTIFACT_NOT_LOWERED locus | Unit | P1 | FR-092-AC-6 | 🚧 planned |
+| TC-1216 | An object: enumeration artifact named in a cell resolves to Enumeration with its type/ identity as typeRef, and the same title under object: entity resolves to Object | Unit | P1 | FR-092-AC-7 | 🚧 planned |
+| TC-1217 | An artifact titled String yields one KERNEL_NAME_SHADOWED warning at its frontmatter, a cell reading String resolves to KernelScalar, and the lift is not blocked | Unit | P1 | FR-092-AC-8 | 🚧 planned |
+| TC-1218 | Over 256 mutated tokens the resolver returns a Resolution and never panics, every Unresolved value maps to exactly one code, and ImportUnsupported(package) is the only string-carrying variant | Property | P1 | FR-092-AC-9, FR-092-CON-1 | 🚧 planned |
+| TC-1219 | The FR-050 reader and agent_ix_semantic_ir::decide each return zero UNRESOLVED_TYPE_REF over every emitted fixture document, so no typeRef names an undeclared identity | Integration | P1 | FR-092-AC-10 | 🚧 planned |
+| TC-1220 | The config-version-table and config-version-fence bundle roots, each holding FR-006 at the same relative path in one form, lift to byte-identical IR documents, so fields_form influences no byte | Snapshot | P0 | FR-093-AC-1, FR-093-CON-1 | 🚧 planned |
+| TC-1221 | The lifted ConfigVersion record carries roles business:domain-object, business:entity, business:persistable, unknownPolicy reject, and seven fields in declaration order | Unit | P1 | FR-093-AC-2 | 🚧 planned |
+| TC-1222 | The id UUID 1 identity row lowers to {1,1}, required, nullable false, defaultKind none, and the identity-field extension; parent ConfigVersion 0..1 lowers to {0,1} optional | Unit | P1 | FR-093-AC-3 | 🚧 planned |
+| TC-1223 | versionNumber Integer 1 min: 1 emits one min constraint with operands.value 1, appliesTo the field identity, and diagnosticCode agent-ix.<name>.VERSION_NUMBER_MIN | Unit | P1 | FR-093-AC-4 | 🚧 planned |
+| TC-1224 | maxLength: 64 emits {value: 64}, a pattern /^[a-z]+$/ cell emits {regex, dialect: ecma-262}, and an enumValues a or b cell emits {values: [a, b]} | Unit | P1 | FR-093-AC-5 | 🚧 planned |
+| TC-1225 | A min constraint on a String field raises the frontend's own blocking CONSTRAINT_NOT_APPLICABLE at the row with no document written, decide agrees at the same field, and the two agree over the full RULES.md (kind, keyword) cross product | Unit | P1 | FR-093-AC-6, FR-093-CON-4 | 🚧 planned |
+| TC-1226 | A JsonObject cell emits the open JsonObject record once per package at type/JsonObject and one DECLARED_LOSS info naming unconstrained-value; every taken loss has a losses.json row citing #78 | Unit | P1 | FR-093-AC-7, FR-093-CON-3 | 🚧 planned |
+| TC-1227 | A 1..* field emits presence required, a * field optional, and one DECLARED_LOSS naming required-collection-presence per 0..*-declared collection the module marks required | Unit | P1 | FR-093-AC-8 | 🚧 planned |
+| TC-1228 | The legacy free-column FR-006 emits no record and one non-blocking ARTIFACT_NOT_LOWERED naming legacy-form; a both-forms artifact emits a blocking one naming both-forms | Unit | P1 | FR-093-AC-9 | 🚧 planned |
+| TC-1229 | Renaming every field to a random identifier changes only name, identity, and diagnosticCode, never multiplicity, presence, nullable, or typeRef; no other value derives from a name or path | Property | P1 | FR-093-AC-10, FR-093-CON-2 | 🚧 planned |
+| TC-1230 | Every emitted fixture document passes the FR-050 reader and decide with zero agent-ix.semantic-ir.* diagnostics | Integration | P1 | FR-093-AC-11 | 🚧 planned |
+| TC-1231 | The FR-006 frontmatter entry {target: FR-005, type: references} lowers to one relationship references, traceability, composite false, target the ConfigOverlay identity, multiplicity {1,1}, origin at FR-006 line 1 column 1 | Unit | P1 | FR-094-AC-1 | 🚧 planned |
+| TC-1232 | A contains edge under a domain and an aggregates edge under an aggregate_root lower to structural, composite true (inverse part_of); a composes edge under a value_object lowers to structural, composite false | Unit | P1 | FR-094-AC-2 | 🚧 planned |
+| TC-1233 | A references edge lowers to traceability, composite false; an owns edge under an entity lowers to dependency, composite false | Unit | P1 | FR-094-AC-3 | 🚧 planned |
+| TC-1234 | Under a test module whose entity allowed_links lists frobnicates while no edge_types declares it, a frobnicates edge raises UNKNOWN_EDGE_VERB at line 1 column 1, blocking, and no document is written | Unit | P1 | FR-094-AC-4 | 🚧 planned |
+| TC-1235 | A references edge targeting Nonesuch raises UNRESOLVED_RELATIONSHIP_TARGET at line 1 column 1 naming Nonesuch, blocking; one targeting a legacy-form artifact raises the same code naming it | Unit | P1 | FR-094-AC-5 | 🚧 planned |
+| TC-1236 | An entity carrying traces_to, implements, and depends_on edges lowers with zero relationships and zero diagnostics from them; adding one references edge yields exactly one relationship; no body list is read | Unit | P1 | FR-094-AC-6, FR-094-CON-1 | 🚧 planned |
+| TC-1237 | Two frontmatter entries with the same (verb, target) yield one relationship; two entries with the same target and different allowed verbs yield two relationships with distinct identities | Unit | P1 | FR-094-AC-7 | 🚧 planned |
+| TC-1238 | The parent ConfigVersion 0..1 row appears as a field, not a relationship, and the document differs from the #34 hand fixture at exactly that node in relationships[]; the #34 fixture is byte-unchanged | Snapshot | P1 | FR-094-AC-8, FR-094-CON-4 | 🚧 planned |
+| TC-1239 | The immutable ocl fence lowers to one clause with language ocl, clauseId immutable, text byte-identical to clause_text, the engine's sourceSpan, and origin at the span start | Unit | P1 | FR-094-AC-9 | 🚧 planned |
+| TC-1240 | A clause whose text carries leading whitespace, trailing newlines, and a tab reaches the IR byte-identical to the engine's clause_text | Unit | P1 | FR-094-AC-10, FR-094-CON-3 | 🚧 planned |
+| TC-1241 | The operations fixture lowers each OperationDecl with params as fields under param/<record-slug>-<op-slug>-<param-slug>, returns nullable false, pre and post as clauseId lists, and no second clause node | Unit | P1 | FR-094-AC-11 | 🚧 planned |
+| TC-1242 | An operation whose Returns: names an unresolved token raises the FR-092 diagnostic at the Returns: line | Unit | P1 | FR-094-AC-12 | 🚧 planned |
+| TC-1243 | Every relationship, operation, parameter, and clause identity on the fixture matches the FR-095 minting pattern, asserted by regex over every emitted node | Property | P1 | FR-094-AC-13 | 🚧 planned |
+| TC-1244 | Renaming a verb's target changes only target and the relationship identity, never category or composite; renaming the registry inverse from part_of flips composite with no code change | Property | P1 | FR-094-AC-14, FR-094-CON-2 | 🚧 planned |
+| TC-1245 | Every emitted fixture document passes the FR-050 reader and decide with zero UNRESOLVED_RELATIONSHIP_TARGET, UNKNOWN_EDGE_CATEGORY, COMPOSITE_CYCLE, DANGLING_CLAUSE_REF, or MISSING_SOURCE_SPAN | Integration | P1 | FR-094-AC-15 | 🚧 planned |
+| TC-1246 | The config-version-table fixture lifts with source.identity ix://agent-ix/config-service/spec, source.dialect spec-bundle as the only stamped value, and package.identity agent-ix/config-service | Unit | P0 | FR-095-AC-1, FR-095-CON-3 | 🚧 planned |
+| TC-1247 | A spec.md with version: 2.1.0 yields source.version and package.version 2.1.0; one without yields 0.0.0 | Unit | P1 | FR-095-AC-2 | 🚧 planned |
+| TC-1248 | source.digest equals a sha256sum over the path, NUL, bytes, NUL recipe assembled outside the crate, and changing one byte of one document changes it | Unit | P1 | FR-095-AC-3 | 🚧 planned |
+| TC-1249 | package.manifestDigest equals the sha256sum of the manifest bytes and lockDigest the sha256sum of the sorted package@version:sha256 lines, each computed outside the crate | Unit | P1 | FR-095-AC-4 | 🚧 planned |
+| TC-1250 | mappingVersions is [1.0.0] for the vendored spec-objects-business module, profileVersions is [], and occurrences and top-level extensions are [] | Unit | P1 | FR-095-AC-5 | 🚧 planned |
+| TC-1251 | Every identity in the emitted business fixture document matches exactly one pattern of the closed list, including param/ and variant/, and semanticIdentity, asserted by regex over every node | Property | P1 | FR-095-AC-6 | 🚧 planned |
+| TC-1252 | slug("Config Version") is config-version, slug("A__B--C") is a-b-c, slug("--") is Unsluggable, and an artifact titled "---" raises UNSLUGGABLE_NAME at its frontmatter, blocking | Unit | P1 | FR-095-AC-7 | 🚧 planned |
+| TC-1253 | Lifting one checkout twice from two working directories and two HOME values yields documents and provenance records byte-identical to each other and to the committed golden | Snapshot | P0 | FR-095-AC-8, FR-095-CON-1 | 🚧 planned |
+| TC-1254 | The provenance record names the quire-rs version and git revision and the frontend crate version that Cargo.lock pins, asserted against the lock read by the test, with the revision at or after a874fb6 | Unit | P1 | FR-095-AC-9 | 🚧 planned |
+| TC-1255 | A pattern scan over the provenance record and the document finds no absolute path, ISO 8601 timestamp, hostname, or username, including when invoked with an absolute BUNDLE= path | Unit | P1 | FR-095-AC-10 | 🚧 planned |
+| TC-1256 | The objects-extra module loaded beside the vendored module yields manifestDigest over both manifests in module-name order, unchanged when the caller's module roots are swapped | Property | P1 | FR-095-AC-11 | 🚧 planned |
+| TC-1257 | grep of src/ finds no git2, no Command::new("git"), no std::env::var, no env!, and no option_env!; planting env!("CARGO_PKG_VERSION") in envelope.rs fails the gate | Static | P1 | FR-095-AC-12, FR-095-CON-2 | 🚧 planned |
+| TC-1258 | The emitted envelope of every positive fixture passes agent_ix_semantic_ir::decide at lift time with zero INVALID_IR diagnostics | Unit | P1 | FR-095-AC-13 | 🚧 planned |
+| TC-1259 | Every Code variant serialises to a code matching the published pattern and, instantiated with and without a locus, validates as a diagnostic against common.schema.json | Property | P1 | FR-096-AC-1 | 🚧 planned |
+| TC-1260 | The severity and blocking table holds variant by variant as a function of Code alone plus the engine severity and the ARTIFACT_NOT_LOWERED reason, including the five error-blocking codes and KERNEL_NAME_SHADOWED | Unit | P0 | FR-096-AC-2, FR-096-CON-1 | 🚧 planned |
+| TC-1261 | grep of src/ finds no string literal beginning agent-ix.extraction-frontend., agent-ix.compiler., or agent-ix.semantic-ir.; the enum's Display is the only spelling; a planted literal in lower.rs fails the gate | Static | P1 | FR-096-AC-3 | 🚧 planned |
+| TC-1262 | The legacy fixture yields one warning ENGINE_DIAGNOSTIC whose message begins semantic.legacy-properties-form, whose causes[0] reproduces the engine code and reason, and whose locus is line 17 column 1 | Unit | P1 | FR-096-AC-4 | 🚧 planned |
+| TC-1263 | An engine advisory maps to info, non-blocking; an engine error maps to error, blocking; the wire code of each is agent-ix.extraction-frontend.ENGINE_DIAGNOSTIC | Unit | P1 | FR-096-AC-5 | 🚧 planned |
+| TC-1264 | A Type cell Sting at row 14 yields UNRESOLVED_TYPE_TOKEN with locus path, startLine 14, startColumn 3 and sourceIdentity ix://agent-ix/config-service/spec | Unit | P0 | FR-096-AC-6 | 🚧 planned |
+| TC-1265 | A refused module yields MODULE_REFUSED with locus at the manifest, line 1, column 1 | Unit | P1 | FR-096-AC-7 | 🚧 planned |
+| TC-1266 | sort_diagnostics yields the same order for a list and its reverse, and across two LC_ALL settings, with every locus-free diagnostic first | Property | P1 | FR-096-AC-8 | 🚧 planned |
+| TC-1267 | The negatives/DUPLICATE_TYPE_NAME fixture lifted twice produces diagnostic bytes identical to each other and to its committed expected/diagnostics.json | Snapshot | P1 | FR-096-AC-9, FR-096-CON-3 | 🚧 planned |
+| TC-1268 | A blocking lift leaves a fresh --out absent and a pre-existing --out byte-unchanged and exits 1; a warning-only lift writes the file and exits 0 | E2E | P0 | FR-096-AC-10 | 🚧 planned |
+| TC-1269 | A 4000-character type token appears in no message longer than 120 characters | Unit | P1 | FR-096-AC-11 | 🚧 planned |
+| TC-1270 | A pattern scan over every diagnostic emitted across the fixture corpus finds no absolute path, timestamp, hostname, or duration | Property | P1 | FR-096-AC-12 | 🚧 planned |
+| TC-1271 | extraction-frontend-diagnostics.md lists every code with severity, blocking, and owner, and regenerating it from the enum reproduces the committed file byte for byte | Snapshot | P1 | FR-096-AC-13 | 🚧 planned |
+| TC-1272 | The set of fixtures/negatives/<CODE>/ directories FR-098 lists equals the set of Code variants, so every registry code has one fixture or one named constructing test | Static | P1 | FR-096-AC-14 | 🚧 planned |
+| TC-1273 | Cargo.toml names agent-ix-semantic-ir under [dependencies] with path = "../semantic-ir" and no jsonschema; cargo tree lists no jsonschema; crates/semantic-ir is byte-unchanged | Static | P0 | FR-097-AC-1, FR-097-CON-1 | 🚧 planned |
+| TC-1274 | A fault-injected document missing unknownPolicy on one type yields exactly one blocking INVALID_IR naming that type's instance pointer, and no document, fingerprint, or provenance file is written | Unit | P1 | FR-097-AC-2 | 🚧 planned |
+| TC-1275 | The bytes written for config-version-table equal decide({"ir": doc}).normalized and the committed expected/semantic-ir.json; parsing them and calling normalized again reproduces them | Snapshot | P1 | FR-097-AC-3 | 🚧 planned |
+| TC-1276 | Every node list in the written document is sorted by identity under code-point order, and the order is unchanged against Intl.Collator orderings for at least two locales | Property | P1 | FR-097-AC-4 | 🚧 planned |
+| TC-1277 | node -e importing src/compiler/ir/normalize.mjs and applying FR-050 normalizeIr to every emitted fixture document returns the emitted bytes unchanged | Integration | P1 | FR-097-AC-5 | 🚧 planned |
+| TC-1278 | The .fingerprint sidecar parses to exactly domain quire.verification.jcs, version rfc8785-v1, algorithm sha256, and digest sha256-jcs:<64 hex> equal to sha256sum over the written document bytes | Unit | P1 | FR-097-AC-6 | 🚧 planned |
+| TC-1279 | Two consecutive lifts of the config-version-table fixture produce documents and sidecars byte-identical to each other and to the committed expected/ goldens | Snapshot | P0 | FR-097-AC-7 | 🚧 planned |
+| TC-1280 | A lift run with a different CARGO_TARGET_DIR, working directory, HOME, and LC_ALL produces the same bytes as TC-1279 and as the committed golden | Snapshot | P0 | FR-097-AC-8 | 🚧 planned |
+| TC-1281 | A blocking lift leaves a pre-existing document, fingerprint, and provenance sidecar byte-unchanged, writes the diagnostics sidecar, and leaves no other new file in the output directory | E2E | P0 | FR-097-AC-9 | 🚧 planned |
+| TC-1282 | A lift into a directory that does not exist refuses with OUTPUT_UNWRITABLE naming the path and exits 2 | E2E | P1 | FR-097-AC-10 | 🚧 planned |
+| TC-1283 | node src/compiler/cli.mjs inspect --ir reports zero diagnostics for every emitted fixture document, and the test fails naming node when it is absent | Integration | P1 | FR-097-AC-11 | 🚧 planned |
+| TC-1284 | decide returns success with zero diagnostics for every emitted positive fixture, asserted from the lift's own verdict and again by the test calling decide on the written bytes | Integration | P1 | FR-097-AC-12 | 🚧 planned |
+| TC-1285 | Every document under fixtures/ is named in its PROVENANCE.json with repository, revision, and path or as authored; config-version-* rows name the quire-rs revision and the added relationships: block; the module row names d1840b8 | Unit | P0 | FR-098-AC-1, FR-098-CON-2 | 🚧 planned |
+| TC-1286 | Regenerating every fixture into a scratch directory reproduces each committed expected/ file byte for byte and equals decide normalized; a one-byte golden change fails naming the fixture and offset | Snapshot | P0 | FR-098-AC-2 | 🚧 planned |
+| TC-1287 | The business golden carries record, enum, and scalar definitions, one enum with at least two variants, one operation with params and a returns, one ocl clause, and one structural and one dependency relationship | Unit | P1 | FR-098-AC-3 | 🚧 planned |
+| TC-1288 | Every FR-096 code is emitted by its negatives/<CODE>/ bundle or the test constructed.json names, at the golden's recorded line and column or with no locus, and no negatives bundle emits a second code | Snapshot | P1 | FR-098-AC-4 | 🚧 planned |
+| TC-1289 | After lifting a committed copy of each fixture bundle, git status --porcelain is empty and every file hash under the bundle and module roots is unchanged, for a clean lift and for a blocking lift | E2E | P0 | FR-098-AC-5 | 🚧 planned |
+| TC-1290 | cases.json names typespec and spec-bundle sources for records-and-scalars and spec-bundle null with a reason naming scalar for each of the three existing cases; the parity test asserts exactly one two-dialect case | Integration | P1 | FR-098-AC-6 | 🚧 planned |
+| TC-1291 | For records-and-scalars, normalized of the projected spec-bundle lift equals normalized of the projected node cli.mjs compile output byte for byte, and the test fails naming node when it is absent | Integration | P0 | FR-098-AC-7 | 🚧 planned |
+| TC-1292 | generate --target rust and generate --target typescript over the lifted config-version-table document each exit zero with zero diagnostics | Integration | P0 | FR-098-AC-8 | 🚧 planned |
+| TC-1293 | A ConfigVersion payload validates against the test-derived schema, versionNumber 0 fails at versionNumber, and the helper is not reachable from the crate's public surface | Unit | P0 | FR-098-AC-9 | 🚧 planned |
+| TC-1294 | The FR-098 change set outside the crate is exactly cases.json, shared/typespec/records-and-scalars/, and files under shared/spec-bundle/; src/compiler/frontend/** and test/compiler-core.test.ts are byte-unchanged | Static | P1 | FR-098-AC-10, FR-098-CON-1 | 🚧 planned |
+| TC-1295 | lift over config-version-table exits 0 and writes the document, .fingerprint, .diagnostics.json, and .provenance.json; with --diagnostics d.json --provenance p.json it writes those in their place with the same document bytes | E2E | P0 | FR-099-AC-1 | 🚧 planned |
+| TC-1296 | lift over negatives/UNRESOLVED_TYPE_TOKEN exits 1 writing only the diagnostics sidecar; lift without --module, under negatives/MODULE_WITHOUT_SEMANTIC_BLOCK, and with --out under the bundle root each exit 2 writing nothing | E2E | P1 | FR-099-AC-2 | 🚧 planned |
+| TC-1297 | inspect --ir over a lifted document prints one line per type in types order and exits 0; over a document missing contractVersion it prints INVALID_IR and exits 1 | E2E | P1 | FR-099-AC-3 | 🚧 planned |
+| TC-1298 | make extraction-frontend-build, -test, -check, -deny, and -audit succeed on 1.98.1; with EXTRACTION_TOOLCHAIN=0.0.0 each fails naming 0.0.0 and none skips | Static | P1 | FR-099-AC-4 | 🚧 planned |
+| TC-1299 | The change set outside the crate and the FR-098 set is exactly the members line, Cargo.lock, the Makefile block, and extraction-frontend-diagnostics.md; the seven prohibited paths are byte-unchanged | Static | P1 | FR-099-AC-5, FR-099-CON-1, FR-099-CON-2 | 🚧 planned |
+| TC-1300 | Two lifts of config-version-table, within one run and across two runs, produce IR and diagnostic bytes identical to each other, to the committed expected/ goldens, and to decide normalized | Snapshot | P0 | NFR-031-AC-1 | 🚧 planned |
+| TC-1301 | A lift with the working directory changed, HOME at an empty directory, and TZ, LANG, LC_ALL, and CARGO_TARGET_DIR varied produces bytes identical to the committed golden | Snapshot | P0 | NFR-031-AC-2 | 🚧 planned |
+| TC-1302 | The config-version-table and config-version-fence bundle roots, each holding one copy of FR-006 at the same bundle-relative path, lift to identical bytes | Snapshot | P0 | NFR-031-AC-3 | 🚧 planned |
+| TC-1303 | The crate enumerates no directory itself: every document and module arrives through load_repo and load_module_set, whose results are path-sorted (quire-rs walk.rs, TC-473), so enumeration order cannot reach the output | Static | P1 | NFR-031-AC-4 | 🚧 planned |
+| TC-1304 | No module under src/ references SystemTime, Instant, std::env, env!, option_env!, a hostname API, an RNG, std::net, or Command; std::fs only in write.rs; the gate fails on a planted std::env::var in lower.rs | Static | P0 | NFR-031-AC-5 | 🚧 planned |
+| TC-1305 | For each of the five limits.json limits, a bundle one past it yields exactly one blocking LIMIT_* diagnostic at the offending document within 512 MiB and 30 s, naming the file's value | Unit | P0 | NFR-031-AC-6 | 🚧 planned |
+| TC-1306 | The crate suite run under unshare -n with cargo in offline mode passes, and the crate declares no dependency that opens a socket | Static | P1 | NFR-031-AC-7 | 🚧 planned |
+| TC-1307 | The HashMap audit over src/ reports zero hits with an empty exemption list, fails on a planted HashMap in lower.rs, and every map whose iteration order reaches the output is a BTreeMap or IndexMap | Static | P1 | NFR-031-AC-8 | 🚧 planned |
+| TC-1308 | The crate root carries #![forbid(unsafe_code)] and a compile_fail doctest proves an injected unsafe block does not build under cargo +1.98.1 | Compile | P0 | NFR-031-AC-9 | 🚧 planned |
+| TC-1309 | Over 256 bundle trees generated by the crate's proptest bundle-tree strategy the frontend returns a result or a diagnostic and never panics | Fuzz | P0 | NFR-031-AC-10 | 🚧 planned |
+| TC-1310 | Every path in this change's own set, resolved from the two sentinels and unioned over --first-parent --no-merges, is permitted and none is prohibited | Static | P0 | NFR-032-AC-1 | 🚧 planned |
+| TC-1311 | cargo metadata shows no edge from agent-ix-semantic-ir or agent-ix-conformance-adapter to the extraction frontend, and the frontend's edge to agent-ix-semantic-ir is its only path edge | Unit | P1 | NFR-032-AC-2 | 🚧 planned |
+| TC-1312 | The root Cargo.toml differs from the range's base only in the members line, and rust-toolchain.toml and the workspace rust-version are byte-unchanged | Static | P1 | NFR-032-AC-3 | 🚧 planned |
+| TC-1313 | cases.json differs from the base only by spec-bundle and reason members and the added records-and-scalars case; every pre-existing shared/** path and the spec-bundle seam file are byte-unchanged | Static | P1 | NFR-032-AC-4 | 🚧 planned |
+| TC-1314 | After the full crate suite runs, git status --porcelain is empty in this repository's fixture directories and in every corpus repository the fixtures name | E2E | P0 | NFR-032-AC-5 | 🚧 planned |
+| TC-1315 | Every crate manifest in the change set carries publish = false and license = "AGPL-3.0-only", and no command in the Makefile block or the crate names a registry | Static | P1 | NFR-032-AC-6 | 🚧 planned |
+| TC-1316 | make test and make rust, driven by the harness suite-compare verb on the range's base and head, produce the same pass/fail outcome for every pre-existing row | Static | P1 | NFR-032-AC-7 | 🚧 planned |
+| TC-1317 | The full suite passes on a revert of this change's range, driven by the harness revert-rehearsal verb | Static | P1 | NFR-032-AC-8 | 🚧 planned |
+| TC-1318 | On a synthetic history built by the harness accretion-rehearsal verb with an unrelated sibling on top, the path set does not grow, and a prohibited path no later commit owns still fails the gate | Static | P1 | NFR-032-AC-9 | 🚧 planned |
+| TC-1319 | git log --merges over the range is empty, and package.json and pnpm-lock.yaml are byte-unchanged | Static | P1 | NFR-032-AC-10 | 🚧 planned |
+| TC-1320 | The crate manifest declares rust-version 1.98.1, license AGPL-3.0-only, publish = false, edition 2021; the workspace rust-version, rust-toolchain.toml, and other members' Cargo.lock entries are unchanged from base | Static | P1 | NFR-033-AC-1 | 🚧 planned |
+| TC-1321 | Every cargo invocation in the Makefile extraction-frontend block carries +1.98.1, and with EXTRACTION_TOOLCHAIN=0.0.0 each gate exits non-zero naming 0.0.0 | Static | P1 | NFR-033-AC-2 | 🚧 planned |
+| TC-1322 | quire-rs is a git dep at exact rev 8b8020e or later with no branch, ix-trace-rs dev at v0.1.1, semantic-ir by path, serde pins exact, sha2 and clap exact, no jsonschema, no outside path/file/link dep; module PROVENANCE names d1840b8 | Static | P1 | NFR-033-AC-3 | 🚧 planned |
+| TC-1323 | make extraction-frontend-deny passes with zero errors against a deny.toml whose allowlist is exactly the permitted set, with quire-rs AGPL-3.0-or-later admitted by an explicit entry | Static | P1 | NFR-033-AC-4 | 🚧 planned |
+| TC-1324 | make extraction-frontend-audit reports zero advisories against the locked graph | Static | P1 | NFR-033-AC-5 | 🚧 planned |
+| TC-1325 | Every third-party crate reachable in Cargo.lock has a THIRD-PARTY-NOTICES.md entry naming version and licence, and the crate ships a LICENSE file carrying AGPL-3.0-only | Static | P1 | NFR-033-AC-6 | 🚧 planned |
+| TC-1326 | cargo +1.98.1 clippy --all-targets --locked -- -D warnings and cargo +1.98.1 fmt --check both pass | Static | P1 | NFR-033-AC-7 | 🚧 planned |
+| TC-1327 | Every requirement test carries a #[trace("TC-NNNN", "...-AC-N")] marker and a tc_NNNN_ name, and every named TC id exists in spec/tests.md, which carries TC-1200..1329 before the first traced test | Static | P1 | NFR-033-AC-8 | 🚧 planned |
+| TC-1328 | With quire coverage --scope . --json confirmed to bind the Rust #[trace] form, removing one marker turns its matrix row into a status lie, proving the binding is by symbol | Static | P1 | NFR-033-AC-9 | 🚧 planned |
+| TC-1329 | cargo +1.98.1 build --locked --offline succeeds from a warm cache, so every dependency resolves without a network | Integration | P1 | NFR-033-AC-10 | 🚧 planned |
+| TC-1330 | grep of src/ finds load_repo and load_module_set only in bundle.rs and std::fs only in write.rs; resolve.rs classifies from the engine target, reason, index, object, pass-one outcomes, and scalar table alone; the binary reads no environment | Static | P1 | FR-091-CON-2, FR-092-CON-2, FR-099-CON-3 | 🚧 planned |
+| TC-1331 | A bundle holding two documents with id: FR-006 refuses with DUPLICATE_ARTIFACT_ID at the second path naming both; an engine diagnostic injected with line: 0 reaches the array with no locus and the path in related, validating against the schema | Unit | P1 | FR-091-AC-11 | 🚧 planned |
+| TC-1332 | A one-pass implementation is refuted: with pass one stubbed to report every artifact as lowered, TC-1215 fails; with the real pass one it passes | Unit | P1 | FR-092-AC-11 | 🚧 planned |
+| TC-1333 | The business enumeration artifact lowers to one kind: enum with one variant per ## Values row named verbatim at variant/<enum-slug>-<value-slug> with origin at the row line column 3; no ## Values emits blocking ARTIFACT_NOT_LOWERED; no fixture carries kind: alias | Unit | P1 | FR-093-AC-12 | 🚧 planned |
+| TC-1334 | Documents titled Status and status raise DUPLICATE_TYPE_NAME at the second path naming both; a row reading min: 1, min: 2 and fields versionNumber and version_number each carrying min raise DUPLICATE_CONSTRAINT at the second row | Unit | P1 | FR-093-AC-13 | 🚧 planned |
+| TC-1335 | A domain artifact with no ## Properties (fields.state not_applicable) lowers to a record with fields: [] that the reader accepts; an extraction with availability.fields.lossy true yields one DECLARED_LOSS naming lossy-extraction | Unit | P1 | FR-093-AC-14 | 🚧 planned |
+| TC-1336 | grep of src/ finds no serde_json::to_string, to_vec, or to_writer and no serializer other than agent_ix_semantic_ir::normalize::normalized, and every write of the document is dominated by a decide call with a success verdict | Static | P1 | FR-097-CON-2, FR-097-CON-3 | 🚧 planned |
+| TC-1337 | Issue #36 AC-5: the json-schema target accepts the lifted config-version-table document; no IR-reading json-schema backend exists, no test is behind this row, and it stays blocked on issue #85 | Manual | P0 | US-015 (issue #36 AC-5, json-schema target; blocked on filament-core-data#85) | 🚧 blocked on issue #85 |
+| TC-1338 | The payload-schema helper lives under crates/extraction-frontend/tests/ only, is exported by no module under src/, and is unreachable from the lift and inspect commands, asserted by grep over src/ and the public surface | Static | P1 | FR-098-CON-3 | 🚧 planned |
+| TC-1340 | A lift with --out under the bundle root, and one with --out under a module root, each refuse with OUTPUT_UNWRITABLE naming the path before any document is loaded and write nothing | E2E | P0 | FR-097-AC-13 | 🚧 planned |
+| TC-1341 | A warning-only lift with no --diagnostics or --provenance option writes the document, .fingerprint, .diagnostics.json, and .provenance.json, and those four are the only new files in the output directory | E2E | P1 | FR-097-AC-14 | 🚧 planned |
+| TC-1342 | The negatives/INVALID_IR bundle whose frontmatter declares A contains B and B contains A refuses at lift time with INVALID_IR carrying the reader's COMPOSITE_CYCLE in causes[0] and writes no document | Integration | P1 | FR-097-AC-15 | 🚧 planned |
+| TC-1343 | The set of directories under fixtures/, fixtures/negatives/, and fixtures/modules/ equals the FR-098 inventory, and every constructed.json names a test function that exists under crates/extraction-frontend/tests/ | Static | P1 | FR-098-AC-11 | 🚧 planned |
+| TC-1344 | parity::project applied to the config-version-table golden yields types as its only member, no origin or extensions at any depth, every identity beginning ix://shared/, and is idempotent when applied twice | Property | P1 | FR-098-AC-12 | 🚧 planned |
+| TC-1345 | An engine diagnostic injected with line: Some(0) serialises with no locus, with the document path in its message, and validates against common.schema.json | Unit | P1 | FR-096-AC-15 | 🚧 planned |
+| TC-1346 | A reader diagnostic returned by decide at lift time appears as exactly one INVALID_IR with no locus, the reader's code and instance pointer in the message, and the reader's diagnostic in causes[0], and under no other code | Unit | P1 | FR-096-AC-16, FR-096-CON-2 | 🚧 planned |
+| TC-1347 | Two records titled Status and status slug to the same status, and lifting a bundle holding both refuses at the second document with DUPLICATE_TYPE_NAME and mints no field/status-* identity twice | Unit | P1 | FR-095-AC-14 | 🚧 planned |
+| TC-1348 | The provenance record's entry for the vendored spec-objects-business module carries the manifest sha256 that fixtures/modules/spec-objects-business/PROVENANCE.json records for revision d1840b8 | Unit | P1 | FR-095-AC-15 | 🚧 planned |
+| TC-1349 | extraction-frontend-deny and extraction-frontend-audit each exit non-zero when a crate with a licence outside the deny.toml allow list, or a yanked version, is planted in a scratch manifest, and exit zero on the committed one | Static | P1 | FR-099-AC-6 | 🚧 planned |
 
 ## Option Permutation Matrix
 
@@ -1411,6 +1583,19 @@ than deciding it.
 | TC-865 | sealed object schema | `unevaluatedProperties` only | preparation pass skipped | Generated model is open, which is the defect the pass closes |
 | TC-856, TC-865 | open object schema | `additionalProperties` absent | `--extra-fields` not declared | Generated model stays open, so closure is decided by the schema and not by a blanket flag |
 | TC-856 | non-nullable field with a default | `--strict-nullable` declared | Pydantic family | Renders `T` rather than `T | None`, so no null the contract forbids is admitted |
+| TC-1220, TC-1302 | typed declaration | table form, in its own bundle root | `ARTIFACT_NOT_LOWERED` disposition `warning` | Lowered; bytes identical to the fence-form root under the same module |
+| TC-1220, TC-1302 | typed declaration | `sysml` fence form, in its own bundle root | `ARTIFACT_NOT_LOWERED` disposition `warning` | Lowered; bytes identical to the table-form root |
+| TC-1209, TC-1228 | legacy free-column table | engine reason `legacy-form` | `ARTIFACT_NOT_LOWERED` disposition `warning` | No record; one non-blocking diagnostic; document written, exit 0 |
+| TC-1228, TC-1260 | legacy free-column table | engine reason other than `legacy-form` (`both-forms`, `missing`) | `ARTIFACT_NOT_LOWERED` disposition `error` | No record; blocking diagnostic; diagnostics sidecar only, exit 1 |
+| TC-1295 | `--module` count | one module root | `lift` | Bundle loaded under exactly that module; exit 0 |
+| TC-1256, TC-1295 | `--module` count | two module roots | `lift` | `manifestDigest` over both in module-name order, independent of argument order |
+| TC-1296 | `--module` count | zero | `lift` | Exit 2 naming the missing option; no ambient module location is tried |
+| TC-1268, TC-1296 | diagnostic set | at least one blocking, lift not refused | `lift` | Diagnostics sidecar written and nothing else; pre-existing output unchanged; exit 1 |
+| TC-1268, TC-1341 | diagnostic set | non-blocking only | `lift` | Document and three sidecars written, diagnostics reported on stderr, exit 0 |
+| TC-1296, TC-1340 | refusal before lowering | `MODULE_*`, `BUNDLE_UNIDENTIFIED`, `DUPLICATE_ARTIFACT_ID`, `OUTPUT_UNWRITABLE`, or a malformed option | `lift` | No file written; exit 2 |
+| TC-1263, TC-1262 | engine diagnostic severity | `advisory` / `warning` / `error` | `ENGINE_DIAGNOSTIC` mapping | `info` non-blocking / `warning` non-blocking / `error` blocking; never dropped or re-ranked |
+| TC-1295, TC-1341 | `lift` sidecar options | `--diagnostics` and `--provenance` given or absent | `lift` | Given: the sidecar is written at the named path instead; absent: at `<out>.diagnostics.json` and `<out>.provenance.json`; always written on a non-blocking lift |
+| TC-1290, TC-1291 | shared case dialects | `typespec` + `spec-bundle` (`records-and-scalars`) / `spec-bundle: null` with a `scalar` reason (three existing cases) | parity projection | Two-dialect case compared byte for byte after projection; single-dialect cases recorded with their reason, never compared on a remainder |
 
 ## Constraint Boundary Tests
 
@@ -1588,6 +1773,31 @@ than deciding it.
 | FR-078-CON-2 | Prohibited | A generated module importing outside the allow-list | TC-912 | Inspection refuses naming the import |
 | FR-080-CON-1 | Prohibited | A `type: ignore` in generated or example source | TC-928 | Static gate fails |
 | FR-079-CON-1 | Prohibited | A generated path added to a published manifest | TC-924, TC-925 | Packaging gate fails |
+| NFR-031-AC-6 | Allowed | A bundle one document under `maxDocuments` | TC-1305 | Lift proceeds |
+| NFR-031-AC-6 | Boundary | A bundle of exactly `maxDocuments` documents | TC-1305 | Lift proceeds |
+| NFR-031-AC-6 | Prohibited | A bundle one document over `maxDocuments` | TC-1305 | One blocking `LIMIT_MAX_DOCUMENTS` naming the file's value; no document |
+| NFR-031-AC-6 | Allowed | A document one byte under `maxDocumentBytes` | TC-1305 | Lift proceeds |
+| NFR-031-AC-6 | Boundary | A document of exactly `maxDocumentBytes` | TC-1305 | Lift proceeds |
+| NFR-031-AC-6 | Prohibited | A document one byte over `maxDocumentBytes` | TC-1305 | One blocking `LIMIT_MAX_DOCUMENT_BYTES` at that document |
+| NFR-031-AC-6 | Allowed | A record one field under `maxFieldsPerRecord` | TC-1305 | Lift proceeds |
+| NFR-031-AC-6 | Boundary | A record of exactly `maxFieldsPerRecord` fields | TC-1305 | Lift proceeds |
+| NFR-031-AC-6 | Prohibited | A record one field over `maxFieldsPerRecord` | TC-1305 | One blocking `LIMIT_MAX_FIELDS_PER_RECORD` at that document |
+| NFR-031-AC-6 | Allowed | A clause fence one byte under `maxClauseBytes` | TC-1305 | Lift proceeds |
+| NFR-031-AC-6 | Boundary | A clause fence of exactly `maxClauseBytes` | TC-1305 | Lift proceeds |
+| NFR-031-AC-6 | Prohibited | A clause fence one byte over `maxClauseBytes` | TC-1305 | One blocking `LIMIT_MAX_CLAUSE_BYTES` at the fence |
+| NFR-031-AC-6 | Allowed | A bundle tree one level under `maxDepth` | TC-1305 | Lift proceeds |
+| NFR-031-AC-6 | Boundary | A bundle tree of exactly `maxDepth` | TC-1305 | Lift proceeds |
+| NFR-031-AC-6 | Prohibited | A bundle tree one level over `maxDepth` | TC-1305 | One blocking `LIMIT_MAX_DEPTH`; terminates within 512 MiB and 30 s |
+| FR-093-AC-3 | Allowed | Multiplicity `1` | TC-1222 | `{lower: 1, upper: 1}`, `presence: required` |
+| FR-093-AC-3 | Allowed | Multiplicity `0..1` | TC-1222 | `{lower: 0, upper: 1}`, `presence: optional` |
+| FR-093-AC-8 | Allowed | Multiplicity `0..*` | TC-1227 | `lower: 0`, `upper` absent, `presence: optional`; one `DECLARED_LOSS` where the module marks it required |
+| FR-093-AC-8 | Allowed | Multiplicity `1..*` | TC-1227 | `lower: 1`, `upper` absent, `presence: required` |
+| FR-094-AC-1 | Boundary | A frontmatter relationship, which authors no bound | TC-1231 | `multiplicity {1,1}` always; no suffix grammar exists on the frontmatter axis |
+| FR-093-AC-13 | Prohibited | One field row carrying `min` twice | TC-1334 | `DUPLICATE_CONSTRAINT` at that row, blocking |
+| FR-093-AC-13 | Prohibited | Two fields whose `SCREAMING_FIELD` forms collide (`versionNumber`, `version_number`) each carrying `min` | TC-1334 | `DUPLICATE_CONSTRAINT` at the second row, blocking |
+| FR-096-AC-11 | Boundary | A 100-character type token in a diagnostic | TC-1269 | Token appears whole; no truncation mark |
+| FR-096-AC-11 | Prohibited | A 101-character type token in a diagnostic | TC-1269 | Token truncated with `…`; message at most 120 characters |
+| FR-096-AC-11 | Prohibited | A 4000-character type token in a diagnostic | TC-1269 | Message at most 120 characters |
 
 ## State Transition Matrix
 
@@ -1658,6 +1868,26 @@ than deciding it.
 | `not-qualified` family | package emission requested | no package emitted, reason recorded | TC-923 |
 | generated tree | a degraded annotation is found in enforcing mode | nothing written under the generated tree | TC-923, TC-937 |
 | unavailable `python-backend` adapter slot | corpus account requested | rows recorded unmet, decided cases reported separately, none recorded as passing | TC-903 |
+| extraction `fields` `available` | artifact lowered | one `record` emitted with its fields; no `ARTIFACT_NOT_LOWERED` | TC-1200, TC-1221 |
+| extraction `fields` `unavailable`, reason `legacy-form` | lowering attempted | not lowered; one non-blocking `ARTIFACT_NOT_LOWERED`; document still written, exit 0 | TC-1209, TC-1228 |
+| extraction `fields` `unavailable`, reason `both-forms` | lowering attempted | not lowered; blocking `ARTIFACT_NOT_LOWERED`; diagnostics sidecar only, exit 1 | TC-1228, TC-1268 |
+| extraction `fields` `missing` | lowering attempted | not lowered; blocking `ARTIFACT_NOT_LOWERED` naming the engine reason; diagnostics sidecar only, exit 1 | TC-1228, TC-1260 |
+| extraction `fields` `not_applicable` (object type requires no `## Properties`) | lowering attempted | lowered as a record with `fields: []`; no diagnostic | TC-1335 |
+| extraction `fields` `available`, `lossy` `true` | lowering attempted | lowered; one `DECLARED_LOSS` naming `lossy-extraction` | TC-1335 |
+| pass one incomplete | a token is classified | never: `Stale` is decidable only after every artifact's outcome is known | TC-1332 |
+| pass one complete, target artifact not lowered | token classified | `Unresolved::Stale` with `related` at the cause | TC-1215, TC-1332 |
+| module supplied, `semantic` block present and accepted | `lift` | bundle loaded, extraction proceeds | TC-1200, TC-1295 |
+| module supplied, no `semantic` block | `lift` | refused with `MODULE_WITHOUT_SEMANTIC_BLOCK`; nothing lowered; no file; exit 2 | TC-1201, TC-1296 |
+| module supplied, `semantic` block refused by the engine | `lift` | refused with `MODULE_REFUSED` carrying the engine code; nothing lowered as empty; exit 2 | TC-1202, TC-1265 |
+| `--out` under the bundle root or a module root | `lift` | refused with `OUTPUT_UNWRITABLE` before the bundle is loaded; no file; exit 2 | TC-1340, TC-1296 |
+| bundle assembled, node lists sorted | `decide` | success verdict: write proceeds; any reader diagnostic: one blocking `INVALID_IR` each, no document | TC-1284, TC-1342, TC-1346 |
+| bundle assembled, no blocking diagnostic | write | diagnostics, provenance, fingerprint, then document renamed into place in that order; exit 0 | TC-1279, TC-1295, TC-1341 |
+| bundle assembled, at least one blocking diagnostic | write | diagnostics sidecar written; no temporary file left; pre-existing document, fingerprint, and provenance byte-unchanged; exit 1 | TC-1268, TC-1281 |
+| bundle assembled, output directory absent or unwritable | write | `OUTPUT_UNWRITABLE` naming the path; nothing written; exit 2 | TC-1282 |
+| written document | `inspect --ir` | one line per type in `types` order; exit 0 | TC-1297 |
+| document missing `contractVersion` | `inspect --ir` | `INVALID_IR` printed; exit 1 | TC-1297 |
+| `EXTRACTION_TOOLCHAIN` resolvable | any `extraction-frontend-*` Make target | gate runs on `cargo +1.98.1` | TC-1298, TC-1321 |
+| `EXTRACTION_TOOLCHAIN=0.0.0` | any `extraction-frontend-*` Make target | gate fails naming `0.0.0`; never skips | TC-1298, TC-1321 |
 
 ## Error Paths
 
@@ -1837,6 +2067,32 @@ than deciding it.
 | ERR-141 | A generated annotation cannot be attributed to any schema pointer | Classified unattributed and fails | TC-915 |
 | ERR-142 | A construct measured as lost is missing from `gaps.json` | Qualification gate fails | TC-898 |
 | ERR-143 | A guard's change range cannot be located from history | Guard fails saying it did not run | TC-943 |
+| ERR-250 | A supplied module manifest carries no `semantic` block | `MODULE_WITHOUT_SEMANTIC_BLOCK` naming the module; refusal; no file; exit 2 | TC-1201, TC-1296 |
+| ERR-251 | quire-rs refuses a module's `semantic` block (unsupported `semantic_core`, duplicate object type) | `MODULE_REFUSED` carrying the engine's `semantic.*` code at the manifest, line 1, column 1; no artifact lowered as empty; exit 2 | TC-1202, TC-1265 |
+| ERR-252 | `spec/spec.md` is absent, lacks `org` or `name`, or carries one outside the `packageIdentity` grammar; an object-typed document has no `id` | `BUNDLE_UNIDENTIFIED` at `spec/spec.md` or the document's frontmatter naming the offending value; refusal; exit 2 | TC-1204 |
+| ERR-253 | Two loaded documents carry the same frontmatter `id` | `DUPLICATE_ARTIFACT_ID` at the second document in path order naming both paths; refusal; exit 2 | TC-1331 |
+| ERR-254 | A document's `object` names a type no loaded module declares | `UNKNOWN_OBJECT_TYPE` at the frontmatter; document not lowered | TC-1205 |
+| ERR-255 | A `Type` cell or `Returns:` token is an unknown token, has no bundle index, or names an import the engine could not resolve | `UNRESOLVED_TYPE_TOKEN` at the row's line and column naming the token; blocking | TC-1212, TC-1242, TC-1264 |
+| ERR-256 | A token names an artifact whose pass-one outcome is not a definition | `STALE_TYPE_TOKEN` naming the artifact with `related` at the cause; blocking | TC-1215, TC-1332 |
+| ERR-257 | A token names `ix://<package>/type/<Name>` for a package other than the bundle | `IMPORT_UNSUPPORTED` naming the package; blocking | TC-1214 |
+| ERR-258 | A bundle artifact's `title` or `name` equals a kernel scalar name | `KERNEL_NAME_SHADOWED` `warning`, non-blocking, at that artifact's frontmatter | TC-1217 |
+| ERR-259 | Neither the artifact's frontmatter `name` nor its `title` is a semantic-core `Identifier` | `UNNAMEABLE_ARTIFACT` at the frontmatter; blocking; exercised by its `negatives/` bundle | TC-1272, TC-1288 |
+| ERR-260 | `availability.fields` is `unavailable` or `missing`, an enumeration's `values_table` locator is unsatisfied, or the engine dropped a row on `semantic.ambiguous-type` | `ARTIFACT_NOT_LOWERED` naming the engine reason; `warning` for `legacy-form`, `error` and blocking otherwise | TC-1209, TC-1213, TC-1228, TC-1333 |
+| ERR-261 | Two documents lower to `displayName` values with equal slugs, or two enumeration rows slug alike | `DUPLICATE_TYPE_NAME` at the second document or row naming both; blocking | TC-1334, TC-1347 |
+| ERR-262 | Two constraints of one record yield the same `diagnosticCode`, or one row carries a keyword twice | `DUPLICATE_CONSTRAINT` at the second row; blocking | TC-1334 |
+| ERR-263 | A constraint keyword is not applicable to the resolved kind under the RULES.md table | `CONSTRAINT_NOT_APPLICABLE` at the row; blocking; the reader agrees at the same field | TC-1225 |
+| ERR-264 | A `JsonObject` cell, a required `0..*` collection, or a `lossy` extraction is lowered | `DECLARED_LOSS` `info`, non-blocking, naming the `losses.json` row; one per occurrence | TC-1226, TC-1227, TC-1335 |
+| ERR-265 | A frontmatter edge's target resolves to no indexed artifact or to one whose pass-one outcome is not a definition | `UNRESOLVED_RELATIONSHIP_TARGET` at line 1, column 1 naming the target; blocking | TC-1235 |
+| ERR-266 | A verb the object type lists under `allowed_links` is declared by no loaded module's `edge_types` | `UNKNOWN_EDGE_VERB` at line 1, column 1; blocking; no category guessed | TC-1234 |
+| ERR-267 | A name slugs to the empty string | `UNSLUGGABLE_NAME` at the declaration; blocking | TC-1252 |
+| ERR-268 | The output directory does not exist or is not writable, or `--out` or a sidecar lies under the bundle or a module root | `OUTPUT_UNWRITABLE` naming the path; refusal before any load or write; exit 2 | TC-1282, TC-1340 |
+| ERR-269 | A bundle carries more documents than `maxDocuments` | `LIMIT_MAX_DOCUMENTS` naming the `limits.json` value; blocking | TC-1305 |
+| ERR-270 | A document exceeds `maxDocumentBytes` | `LIMIT_MAX_DOCUMENT_BYTES` at that document; blocking | TC-1305 |
+| ERR-271 | A record declares more fields than `maxFieldsPerRecord` | `LIMIT_MAX_FIELDS_PER_RECORD` at that document; blocking | TC-1305 |
+| ERR-272 | A clause fence exceeds `maxClauseBytes` | `LIMIT_MAX_CLAUSE_BYTES` at the fence; blocking | TC-1305 |
+| ERR-273 | The bundle tree exceeds `maxDepth` | `LIMIT_MAX_DEPTH`; blocking; terminates within the declared budget | TC-1305 |
+| ERR-274 | The engine returns a `SemanticDiagnostic`, with or without a usable line | `ENGINE_DIAGNOSTIC` reproducing the engine code, message, and reason in `causes[0]`; severity mapped, blocking iff `error`; no `locus` when `line` is 0 | TC-1208, TC-1262, TC-1263, TC-1345 |
+| ERR-275 | `decide` returns any diagnostic at lift time, or `inspect` reads a document the reader rejects | `INVALID_IR` with no `locus`, the reader's code and pointer in the message, and the reader's diagnostic in `causes[0]`; blocking; no document; `inspect` exits 1 | TC-1274, TC-1297, TC-1342, TC-1346 |
 
 ## Edge Cases
 
@@ -1946,6 +2202,21 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-079 | The generator renames or de-duplicates a symbol, so a generated name is not a schema name | FR-078 | TC-917 | Attribution silently fails and every finding becomes unattributed, or the check is relaxed |
 | EC-080 | A patch-level interpreter or formatter bump moves a byte-compared artefact with no input change | NFR-027 | TC-940 | The issue #42 host coupling is reproduced and the gate goes red for nothing |
 | EC-081 | Six merged suites resolve their changed-path gates against a moving ref | NFR-027 | TC-943 | A seventh permitted-path entry is added and the guards are disabled incrementally |
+| EC-140 | A bundle holding only `spec/spec.md` and no artifact document | FR-091, FR-095, FR-097 | TC-1204, TC-1258 | An empty `types[]` envelope is emitted invalid, or the frontend derives a value from the host to fill it |
+| EC-141 | A bundle whose every document is a requirement, use-case, or review artifact with no `object` | FR-091 | TC-1205 | Non-domain artifacts are lowered as records, or each raises a diagnostic on a valid bundle |
+| EC-142 | An artifact whose typed `## Properties` table has a header row and zero body rows, and a `domain` with no `## Properties` at all | FR-093 | TC-1221, TC-1335, TC-1309 | A record with no fields is confused with `fields` `unavailable`, or the lowering panics on an empty list |
+| EC-143 | A field whose target is the declaring record itself (`parent ConfigVersion 0..1`) | FR-092, FR-093 | TC-1222, TC-1245 | Pass two reports the self-reference `Stale` because its own record's outcome is read before pass one completes |
+| EC-144 | Two records each declaring a `contains` frontmatter edge to the other | FR-094, FR-097 | TC-1342 | A schema-valid document with a composite cycle is written and fingerprinted before the reader sees it |
+| EC-145 | An artifact whose title is entirely punctuation and slugs to the empty string | FR-095 | TC-1252 | An identity ending in `/field/-name` is minted and passes the pattern by accident |
+| EC-146 | A `Type` cell holding a 4000-character token | FR-096 | TC-1269 | A diagnostic message carries the whole token and the diagnostics file balloons or breaks a line-oriented consumer |
+| EC-147 | Documents saved with CRLF line endings | FR-091, FR-096 | TC-1208, TC-1309 | Loci drift by a column, `clause_text` carries `\r`, and the table-form and fence-form lifts differ by a byte |
+| EC-148 | A `spec.md` or artifact beginning with a UTF-8 BOM | FR-091 | TC-1204, TC-1309 | Frontmatter is not recognised and a valid bundle refuses with `BUNDLE_UNIDENTIFIED` or lowers nothing |
+| EC-149 | A module manifest declaring the same object type twice | FR-091 | TC-1202 | The second declaration silently wins, or the module is treated as an empty model rather than refused |
+| EC-150 | Two loaded modules exporting the same type name, or an artifact named like a kernel scalar | FR-092, FR-095 | TC-1213, TC-1217, TC-1256 | The first module on the command line wins and the lift depends on argument order, or the shadowed artifact is silently unreferenceable |
+| EC-151 | A bundle root reached through a symlink | FR-095, NFR-031 | TC-1253, TC-1301 | Bundle-root-relative paths differ between the symlinked and real root, changing `source.digest` and every locus |
+| EC-152 | A bundle directory that is read-only to the lifting process, or an `--out` pointing inside it | FR-097, FR-098, NFR-032 | TC-1289, TC-1314, TC-1340 | A scratch or temporary file is placed inside the bundle and the lift fails, or writes into the corpus when it can |
+| EC-153 | An engine diagnostic reported at `line` 0 or with no line | FR-091, FR-096 | TC-1331, TC-1345 | A fabricated locus at line 0 fails the schema, or the diagnostic is dropped for lack of one |
+| EC-154 | Two documents whose titles differ only by case (`Status`, `status`) | FR-093, FR-095 | TC-1334, TC-1347 | Distinct `type/` identities mint colliding `field/`, `constraint/`, and `relationship/` identities |
 
 ## Coverage Gaps
 
@@ -2111,20 +2382,51 @@ has covered are recorded unmet with their reason under TC-717, not listed as
 supported. GAP-002 is not a gap here: TC-682 and TC-683 close it with a proved
 validator and its differential harness.
 
+Issue #36 (the spec-bundle extraction frontend) is mapped at TC-1200..TC-1349
+less the unused TC-1339, and every one of its 149 rows is `🚧`, because the
+crate `crates/extraction-frontend` does not exist yet and a `✅` on a row no
+test binds is the defect this matrix exists to prevent; the `Blocked` column
+carries all 149 until each is measured. The 145 ids the reviewed requirement
+files name (TC-1200..1299 for FR-091..FR-099, TC-1300..1329 for NFR-031..033,
+TC-1331..1335 and TC-1340..1349 for the criteria the composite review added)
+are used exactly as named; a replaced criterion keeps the id its predecessor
+held and the row was rewritten against the replacement. The 28 named
+constraints join the row whose test decides them, in the issue #22 form, except
+those no acceptance test decides, which take four allocated Static rows:
+TC-1330 (FR-091-CON-2, FR-092-CON-2, FR-099-CON-3: the file-system and
+environment reach of the crate), TC-1336 (FR-097-CON-2, FR-097-CON-3: one
+serializer and a `decide` before every write), and TC-1338 (FR-098-CON-3: the
+payload helper is unreachable), because FR-098 fixes that TC-1293 traces to
+FR-098-AC-9 alone. Issue #36's fifth acceptance criterion — the `json-schema`
+target accepts the lifted document — is the one `Manual` row of this block,
+TC-1337, traced to US-015 and blocked on `agent-ix/filament-core-data#85`
+with no test behind it, because no IR-reading `json-schema` backend exists;
+TC-1293's payload derivation evidences the test author's schema only and is
+not that target. FR-096 now declares `INVALID_IR` as the frontend's own code,
+carrying the reader's diagnostic in `causes[0]` (FR-096-AC-16, TC-1346), so
+the prefix disagreement an earlier revision of this paragraph recorded is
+closed. Relationships are lowered from frontmatter `relationships:` edges only
+until `agent-ix/quire-rs#418` ships `RelationDecl` extraction (FR-094-CON-1,
+TC-1236); cross-frontend parity is structural under the FR-098 projection over
+the `records-and-scalars` shared case (TC-1291, TC-1344), never byte parity of
+whole documents; and wiring the Rust binary into the node `spec-bundle` seam is
+`filament-core-data#86`, outside this block.
+
 ## Test Execution Summary
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 236 | 201 | 0 | 35 | 100% mapped (236/236) |
-| Manual | 47 | 45 | 0 | 2 | 100% mapped (47/47) |
+| Static | 270 | 201 | 0 | 69 | 100% mapped (270/270) |
+| Manual | 48 | 45 | 0 | 3 | 100% mapped (48/48) |
 | Analysis | 47 | 29 | 0 | 18 | 100% mapped (47/47) |
-| Property | 115 | 58 | 0 | 57 | 100% mapped (115/115) |
-| Unit | 425 | 329 | 0 | 96 | 100% mapped (425/425) |
-| Integration | 104 | 64 | 0 | 40 | 100% mapped (104/104) |
-| Fuzz | 12 | 7 | 0 | 5 | 100% mapped (12/12) |
-| Snapshot | 54 | 21 | 0 | 33 | 100% mapped (54/54) |
-| Compile | 14 | 3 | 0 | 11 | 100% mapped (14/14) |
-| **Total** | **1054** | **757** | **0** | **297** | **100% mapped (1054/1054)** |
+| Property | 128 | 58 | 0 | 70 | 100% mapped (128/128) |
+| Unit | 485 | 329 | 0 | 156 | 100% mapped (485/485) |
+| Integration | 119 | 64 | 0 | 55 | 100% mapped (119/119) |
+| Fuzz | 13 | 7 | 0 | 6 | 100% mapped (13/13) |
+| Snapshot | 67 | 21 | 0 | 46 | 100% mapped (67/67) |
+| Compile | 15 | 3 | 0 | 12 | 100% mapped (15/15) |
+| E2E | 11 | 0 | 0 | 11 | 100% mapped (11/11) |
+| **Total** | **1203** | **757** | **0** | **446** | **100% mapped (1203/1203)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

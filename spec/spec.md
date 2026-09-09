@@ -104,9 +104,10 @@ Rust workspace member that reads a repository's spec bundle through the Quire
 extraction contract (`agent-ix/quire-rs#388`) in-process, resolves every type
 token to a declared artifact, enumeration, kernel scalar, or an explicit
 failure state, and lowers the result to one semantic IR v1.1 document — a
-domain package `ix://<org>/<repo>` — byte-deterministically, with
-source-located diagnostics, provenance-tracked read-only fixtures, and
-cross-frontend parity against the TypeSpec frontend on the shared cases.
+domain package `ix://<org>/<repo>` — byte-deterministically, validated at
+lift time by the independent Rust reader, with source-located diagnostics,
+provenance-tracked read-only fixtures, and structural (not byte) parity
+against the TypeSpec frontend on a shared case authored in both dialects.
 
 ## 2. Scope
 
@@ -202,13 +203,15 @@ cross-frontend parity against the TypeSpec frontend on the shared cases.
   cross-language agreement measurement over a shared golden corpus of kernel
   instances.
 - The spec-bundle extraction frontend: bundle and module loading through
-  quire-rs, the closed type-token resolver, the lowering of field, relationship,
-  operation, and clause declarations to IR v1.1, package identity and provenance
-  minting, the `agent-ix.extraction-frontend.*` diagnostic registry, the
-  canonical serialization and fingerprint, provenance-tracked fixtures with
-  goldens and negatives, the shared-case parity gate, and the `extraction-frontend`
-  command line with its Make targets — all under exact Rust 1.98.1 and
-  AGPL-3.0-only, none of it published.
+  quire-rs, the closed type-token resolver, the lowering of field, enumeration,
+  frontmatter-relationship, operation, and clause declarations to IR v1.1,
+  package identity and provenance minting, the
+  `agent-ix.extraction-frontend.*` diagnostic registry, lift-time validation
+  and canonical bytes through `crates/semantic-ir`, the fingerprint sidecar,
+  provenance-tracked fixtures with goldens and negatives, the structural
+  shared-case parity gate, and the `extraction-frontend` command line with its
+  Make targets — all under exact Rust 1.98.1 and AGPL-3.0-only, none of it
+  published.
 
 ### 2.2 Out of Scope
 
@@ -220,7 +223,19 @@ cross-frontend parity against the TypeSpec frontend on the shared cases.
   `config-service` FR-006 is consumed as the provenance-tracked re-authoring
   quire-rs vendors, and the live file is a read-only negative control.
 - Ruling issues #77, #78, #67, or #61; each requirement that touches one states
-  the reading it takes and cites the issue.
+  the reading it takes and cites the issue, the owner rules them, and a ruling
+  that contradicts a reading re-cuts the affected goldens as one deliberate
+  commit under FR-098-CON-2.
+- Cross-package imports in a domain package; a domain package has no lock to
+  resolve an import against, so an imported or foreign type token is refused
+  with `IMPORT_UNSUPPORTED` rather than lowered.
+- Extracting `## Relationships` body lists; quire-rs exposes no located
+  per-document edge extraction, so this delivery lowers relationships from
+  frontmatter `relationships:` edges only and the body-list form waits on
+  `agent-ix/quire-rs#418`.
+- Wiring the Rust binary into the node-side `spec-bundle` seam
+  (`src/compiler/frontend/spec-bundle/frontend.mjs`), which stays
+  `FRONTEND_NOT_IMPLEMENTED` under this delivery; that bridge is issue #86.
 
 - Publishing any kernel package to npm, crates.io, or a Python index, adding one
   to a packed manifest surface, or pushing a release tag. Publication passes

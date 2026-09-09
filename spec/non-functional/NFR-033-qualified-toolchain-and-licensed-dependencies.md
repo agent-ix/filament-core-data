@@ -17,24 +17,29 @@ relationships:
 
 ## Statement
 
-The extraction frontend SHALL build, lint, and test on exactly Rust 1.98.1,
-declare every dependency at an exact, reviewed, licence-compatible version,
-and carry its own licence and attribution files, so that the crate is
-qualified on the toolchain the program has fixed for first-party Rust rather
-than on whichever compiler is on the path, and so that nothing it links can
-change the licence of what it produces.
+The extraction frontend SHALL build, lint, and test on exactly Rust 1.98.1
+through `cargo +1.98.1`, with every dependency declared at an exact, reviewed,
+licence-compatible version and its own licence and attribution files beside
+it, so that the crate is qualified on the toolchain
+the program has fixed for first-party Rust rather than on whichever compiler is
+on the path, and so that nothing it links can change the licence of what it
+produces.
 
 ## Scope
 
 - Applies to: `crates/extraction-frontend/Cargo.toml`, its `deny.toml`,
-  `LICENSE`, `THIRD-PARTY-NOTICES.md`, its test sources, and every gate the
-  `Makefile` block of FR-099 runs over the crate.
+  `LICENSE`, `THIRD-PARTY-NOTICES.md`, its test sources, the vendored module
+  fixture under `crates/extraction-frontend/fixtures/modules/`, and every gate
+  the `Makefile` block of FR-099 runs over the crate.
 - Does not apply to: the workspace's other members, which stay on the
   workspace's own `rust-version = "1.85.0"` and the `rust-toolchain.toml`
   channel `1.94.1`. Those pins belong to quire-agent-c's Rust 1.98.1
   qualification sweep — `agent-ix/quire-rs#417`, `agent-ix/quire-cli#82`,
   `agent-ix/ix-trace-rs#6`, and `agent-ix/quire-contract-ir` PR #62 — and
-  this change consumes that sweep rather than pre-empting it.
+  this change consumes that sweep rather than pre-empting it. The claim
+  "qualified on 1.98.1" covers this crate alone: `quire-rs` at the pinned
+  revision declares `rust-version = "1.75"` and is compiled, not qualified, on
+  1.98.1 until quire-rs#417 closes.
 - Operational context: an authoring host with `1.98.1-x86_64-unknown-linux-gnu`
   installed through `rustup` beside the workspace channel; every gate for this
   crate invokes `cargo +1.98.1` explicitly.
@@ -51,17 +56,44 @@ point, and moving it moves every Rust backend golden. Running this crate's gates
 with `cargo +1.98.1` is what makes "qualified on 1.98.1" a measured claim
 rather than a manifest line; a gate that runs on whatever `cargo` resolves to
 measures the host, not the crate. An absent 1.98.1 toolchain is therefore a red
-gate naming the toolchain, in the NFR-022 form, never a skip.
+gate naming the toolchain — the never-skip rule is FR-099's (FR-099-AC-4);
+this requirement measures it and does not restate it.
 
-The dependency posture follows the Phase 0 gate. `quire-rs` at the revision
-containing `agent-ix/quire-rs#388` is the extraction contract this crate
-consumes in-process; no release tag contains that commit, so the pin is an
-exact git `rev`, in the same shape `quire-rs` itself pins `ix-trace-rs`, and
-moves to a tag when quire-agent-c cuts one. A caret range on a git dependency
-would let a `cargo update` silently change the extraction semantics this crate
-is measured against. `serde` and `serde_json` take the workspace's own exact
-pins; `jsonschema` takes the `~0.18` `quire-rs` already resolves, so one
-validator, not two, is linked; `sha2` and `clap` are pinned exact.
+Two cargos touch one lockfile. The workspace `Cargo.lock` was resolved under
+the `rust-toolchain.toml` channel `1.94.1`; this crate's additions are resolved
+under `cargo +1.98.1`, and every gate of this crate passes `--locked`, so a
+resolver or lockfile-format difference between the two cargos surfaces as a
+red gate with a `Cargo.lock` diff rather than as a silent rewrite. The first
+plan task proves `cargo +1.98.1 build --locked` leaves every other member's
+lock entries byte-unchanged; if quire-agent-c's sweep moves the workspace
+channel first, this branch rebases onto it.
+
+The dependency posture follows the Phase 0 gate. `quire-rs` is the extraction
+contract this crate consumes in-process; FR-091 loads modules only through
+`Registry::load_module_set`, which landed in `agent-ix/quire-rs#411` at
+`a874fb6`, two commits after `agent-ix/quire-rs#388`, so the pin is at or after
+`a874fb6` — not "the revision containing #388". No release tag contains either
+commit (`v0.45.0` predates both), so the pin is an exact git `rev`, `8b8020e`,
+the `origin/main` head as of 2026-09-08, in the same shape `quire-rs` itself
+pins `ix-trace-rs`. The migration from `rev` to a tag is owned by
+quire-agent-c's sweep, `agent-ix/quire-rs#417`, and the provenance re-golden
+that follows any engine move is one deliberate `--write-goldens` commit per
+bump under FR-098-CON-2. A caret range on a git dependency would let a
+`cargo update` silently change the extraction semantics this crate is measured
+against. `serde` and `serde_json` take the workspace's own exact pins; `sha2`
+and `clap` are pinned exact. No `jsonschema` crate is linked: schema and
+cross-field validation and the canonical bytes come from
+`agent-ix-semantic-ir` (FR-097), a member of this workspace consumed by
+`path`. A `path` dependency is permitted only on a member of this workspace
+and forbidden outside it; `file:` and `link:` specifiers are forbidden
+everywhere, because a path that leaves the workspace is a pin on a checkout.
+
+The module the fixtures are lifted under is pinned the same way the engine is.
+`spec-objects-business` `0.3.0` exists only on that repository's untagged
+`main`, so the module (`manifest.yaml` and `schemas/`) is vendored under
+`crates/extraction-frontend/fixtures/modules/spec-objects-business/` from
+repository revision `d1840b8` with a `PROVENANCE.json` naming that revision,
+and is never loaded from `~/.ix`.
 
 Licence compatibility is a program mandate, not a preference: every original
 source is AGPL-3.0-only, and a dependency under an incompatible licence would
@@ -70,13 +102,24 @@ program promises. `quire-rs` is AGPL-3.0-or-later, which an AGPL-3.0-only
 consumer may link. The crate carries its own `deny.toml` allowlist and its own
 `THIRD-PARTY-NOTICES.md` because the root `THIRD-PARTY-NOTICES.md` is outside
 this change's permitted paths under NFR-032; an attribution file the change
-cannot edit is not an attribution file.
+cannot edit is not an attribution file. `cargo deny` and `cargo audit` are on
+the authoring host today, and FR-099 gives each a Make target
+(`extraction-frontend-deny`, `extraction-frontend-audit`) so that the gate is
+a target a reviewer runs rather than a tool a reviewer remembers.
 
 Every requirement test carries an `ix-trace-rs` `#[trace]` marker and the
 `tc_NNNN_` name so that the Test Matrix binds to a symbol rather than to a
-row someone remembered to tick; that convention is the one `quire-rs` and the
-Rust backend already use, and it is what lets `quire coverage` report a status
-lie rather than a green row.
+row someone remembered to tick. That convention is the one `quire-rs` uses
+(`tests/robustness.rs`); it is not yet this repository's — the
+`crates/conformance-adapter` tests carry `tc_NNN_` names and no `#[trace]`
+marker, and no workspace member depends on `ix-trace-rs` today — so this crate
+is the first member to adopt it. Two consequences follow for the evidence:
+`spec/tests.md` ends at TC-1108, so the plan lands TC-1200..1329 in the matrix
+before the first traced test or the cross-check of NFR-033-AC-8 is vacuous;
+and the status-lie criterion of NFR-033-AC-9 presumes `quire coverage` binds
+the Rust attribute form under the module's `traceability:` model, which the
+first traced test confirms with `quire coverage --scope . --json` before the
+row is promised.
 
 ## Measurement and Evaluation
 
@@ -84,14 +127,17 @@ lie rather than a green row.
 |---|---|---|---|
 | `rust-version` declared by the crate manifest | `1.98.1` | exact | Manifest inspection |
 | Gates in the `Makefile` block that invoke `cargo` without `+1.98.1` | 0 | 0 | Makefile inspection |
-| Gates that skip rather than fail when `1.98.1` is absent | 0 | 0 | Run with the toolchain hidden |
+| Gates that skip rather than fail when `1.98.1` is absent (FR-099-AC-4) | 0 | 0 | Run with the toolchain hidden |
 | Changes to the workspace `rust-version` and `rust-toolchain.toml` | 0 | 0 | Change-set diff |
-| Dependencies declared with a caret, tilde, wildcard, or branch specifier, other than `jsonschema ~0.18` | 0 | 0 | Manifest inspection |
-| `quire-rs` pinned other than by exact `rev` (or an exact `tag` once one exists) | 0 | 0 | Manifest inspection |
-| `path`, `file:`, or `link:` dependencies | 0 | 0 | Manifest inspection |
-| Crates in `Cargo.lock` reachable from this crate whose licence is outside the `deny.toml` allowlist | 0 | 0 | `cargo deny check licenses` |
-| `cargo deny check` errors (advisories, bans, sources) | 0 | 0 | `cargo deny check` |
-| `cargo audit` advisories against the resolved graph | 0 | 0 | `cargo audit` |
+| `Cargo.lock` entries of other workspace members moved by `cargo +1.98.1 --locked` | 0 | 0 | Lock diff against the range's base |
+| Dependencies declared with a caret, tilde, wildcard, or branch specifier | 0 | 0 | Manifest inspection |
+| `quire-rs` pinned other than by exact `rev` at or after `a874fb6` (or an exact `tag` once quire-rs#417 cuts one) | 0 | 0 | Manifest inspection |
+| `path` dependencies on crates outside this workspace; `file:` or `link:` dependencies anywhere | 0 | 0 | Manifest inspection against the workspace `members` |
+| `jsonschema` crates reachable from this crate | 0 | 0 | `cargo +1.98.1 tree --locked` |
+| Vendored module fixtures without a `PROVENANCE.json` naming the source repository revision | 0 | 0 | Fixture inspection |
+| Crates in `Cargo.lock` reachable from this crate whose licence is outside the `deny.toml` allowlist | 0 | 0 | `make extraction-frontend-deny` |
+| `cargo deny check` errors (advisories, bans, sources) | 0 | 0 | `make extraction-frontend-deny` |
+| `cargo audit` advisories against the resolved graph | 0 | 0 | `make extraction-frontend-audit` |
 | Third-party crates reachable from this crate without an entry in the crate's `THIRD-PARTY-NOTICES.md` | 0 | 0 | Lock-to-notices comparison |
 | Crate manifests without `license = "AGPL-3.0-only"` and `publish = false` | 0 | 0 | Manifest inspection |
 | `cargo +1.98.1 clippy --all-targets -- -D warnings` warnings | 0 | 0 | Clippy run |
@@ -103,13 +149,15 @@ lie rather than a green row.
 
 Read `rust-version` from the crate manifest; grep the `Makefile` block for every
 `cargo` invocation and confirm each carries `+1.98.1`; run the block with
-`RUSTUP_TOOLCHAIN` pointed at a name no toolchain answers to and confirm each
-gate fails naming `1.98.1` rather than passing; diff the workspace `Cargo.toml`
-`rust-version` key and `rust-toolchain.toml` against the range's base; inspect
-every `[dependencies]` and `[dev-dependencies]` specifier; run
-`cargo +1.98.1 deny check` and `cargo +1.98.1 audit --locked` from the crate
-directory; list every third-party crate in `cargo +1.98.1 tree --locked
---edges normal,build` and confirm each has a notices entry; run
+`EXTRACTION_TOOLCHAIN=0.0.0` and confirm each gate fails naming `0.0.0` rather
+than passing; diff the workspace `Cargo.toml` `rust-version` key,
+`rust-toolchain.toml`, and every `Cargo.lock` entry of another member against
+the range's base; inspect every `[dependencies]` and `[dev-dependencies]`
+specifier against the workspace `members` list; confirm the vendored module
+fixture's `PROVENANCE.json` names `d1840b8`; run `make extraction-frontend-deny`
+and `make extraction-frontend-audit`; list every third-party crate in
+`cargo +1.98.1 tree --locked --edges normal,build` and confirm each has a
+notices entry and none is `jsonschema`; run
 `cargo +1.98.1 clippy --all-targets --locked -- -D warnings` and
 `cargo +1.98.1 fmt --check`; scan every test under the crate for the trace
 marker and the name convention, and cross-check each named TC id against
@@ -120,18 +168,18 @@ reports the metric it could not measure.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| NFR-033-AC-1 | `crates/extraction-frontend/Cargo.toml` declares `rust-version = "1.98.1"`, `license = "AGPL-3.0-only"`, `publish = false`, and `edition = "2021"`; the workspace `rust-version` and `rust-toolchain.toml` are byte-unchanged from the range's base. | Analysis (TC-1320) |
-| NFR-033-AC-2 | Every `cargo` invocation in the `Makefile` extraction-frontend block carries `+1.98.1`, and with that toolchain hidden each gate exits non-zero naming `1.98.1`. | Test (TC-1321) |
-| NFR-033-AC-3 | `quire-rs` is declared as a git dependency with an exact `rev` (or an exact `tag`) and no `branch`; `ix-trace-rs` is a dev-dependency at tag `v0.1.1`; `serde` and `serde_json` are the workspace's exact pins; `sha2` and `clap` are exact; `jsonschema` is `~0.18`; no `path`, `file:`, or `link:` dependency exists. | Analysis (TC-1322) |
-| NFR-033-AC-4 | `cargo +1.98.1 deny check` from the crate directory passes with zero errors against a `deny.toml` whose licence allowlist is exactly the set the program permits, and `quire-rs`'s `AGPL-3.0-or-later` is admitted by an explicit entry. | Test (TC-1323) |
-| NFR-033-AC-5 | `cargo +1.98.1 audit --locked` reports zero advisories. | Test (TC-1324) |
+| NFR-033-AC-1 | `crates/extraction-frontend/Cargo.toml` declares `rust-version = "1.98.1"`, `license = "AGPL-3.0-only"`, `publish = false`, and `edition = "2021"`; the workspace `rust-version`, `rust-toolchain.toml`, and every `Cargo.lock` entry of another workspace member are byte-unchanged from the range's base after `cargo +1.98.1 build --locked`. | Analysis (TC-1320) |
+| NFR-033-AC-2 | Every `cargo` invocation in the `Makefile` extraction-frontend block carries `+1.98.1`, and with `EXTRACTION_TOOLCHAIN=0.0.0` each gate exits non-zero naming `0.0.0`. | Static (TC-1321) |
+| NFR-033-AC-3 | `quire-rs` is declared as a git dependency with an exact `rev` at or after `a874fb6` — `8b8020e` at authoring — and no `branch`; `ix-trace-rs` is a dev-dependency at tag `v0.1.1`; `agent-ix-semantic-ir` is a `path` dependency on `../semantic-ir`; `serde` and `serde_json` are the workspace's exact pins; `sha2` and `clap` are exact; no `jsonschema` crate is declared; no `path` dependency names a crate outside the workspace `members`, and no `file:` or `link:` dependency exists; the vendored module under `crates/extraction-frontend/fixtures/modules/spec-objects-business/` carries a `PROVENANCE.json` naming repository revision `d1840b8`. | Analysis (TC-1322) |
+| NFR-033-AC-4 | `make extraction-frontend-deny` passes with zero errors against a `deny.toml` whose licence allowlist is exactly the set the program permits, and `quire-rs`'s `AGPL-3.0-or-later` is admitted by an explicit entry. | Static (TC-1323) |
+| NFR-033-AC-5 | `make extraction-frontend-audit` reports zero advisories against the locked graph. | Static (TC-1324) |
 | NFR-033-AC-6 | Every third-party crate reachable from this crate in `Cargo.lock` has an entry in `crates/extraction-frontend/THIRD-PARTY-NOTICES.md` naming its version and licence, and the crate ships a `LICENSE` file carrying AGPL-3.0-only. | Analysis (TC-1325) |
 | NFR-033-AC-7 | `cargo +1.98.1 clippy --all-targets --locked -- -D warnings` and `cargo +1.98.1 fmt --check` both pass. | Test (TC-1326) |
-| NFR-033-AC-8 | Every requirement test in the crate carries `#[trace("TC-NNNN", "<FR or NFR>-AC-N")]` and is named `tc_NNNN_…`, and every named TC id exists in `spec/tests.md`. | Analysis (TC-1327) |
-| NFR-033-AC-9 | Removing a `#[trace]` marker from one test turns its matrix row into a status lie under `quire coverage`, proving the binding is by symbol rather than by row. | Test (TC-1328) |
+| NFR-033-AC-8 | Every requirement test in the crate carries `#[trace("TC-NNNN", "<FR or NFR>-AC-N")]` and is named `tc_NNNN_…`, and every named TC id exists in `spec/tests.md`, which carries TC-1200 through TC-1329 before the first traced test lands. | Analysis (TC-1327) |
+| NFR-033-AC-9 | With `quire coverage --scope . --json` confirmed to bind the Rust `#[trace]` form, removing a `#[trace]` marker from one test turns its matrix row into a status lie under `quire coverage`, proving the binding is by symbol rather than by row. | Static (TC-1328) |
 | NFR-033-AC-10 | `cargo +1.98.1 build --locked --offline` succeeds from a warm cache, proving every dependency is resolvable without a network. | Test (TC-1329) |
 
 ## Dependencies
 
-- **Upstream**: [NFR-022](./NFR-022-deterministic-and-hermetic-rust-generation.md), [NFR-032](./NFR-032-non-disruptive-extraction-frontend.md), `agent-ix/quire-rs#417`, `agent-ix/quire-cli#82`, `agent-ix/ix-trace-rs#6`, `agent-ix/quire-contract-ir` PR #62
-- **Downstream**: [FR-099](../functional/FR-099-provide-the-extraction-frontend-command-line.md), [FR-098](../functional/FR-098-prove-fixture-goldens-and-cross-frontend-parity.md)
+- **Upstream**: [NFR-022](./NFR-022-deterministic-and-hermetic-rust-generation.md), [NFR-032](./NFR-032-non-disruptive-extraction-frontend.md), `agent-ix/quire-rs#411`, `agent-ix/quire-rs#417`, `agent-ix/quire-cli#82`, `agent-ix/ix-trace-rs#6`, `agent-ix/quire-contract-ir` PR #62
+- **Downstream**: [FR-099](../functional/FR-099-provide-the-extraction-frontend-command-line.md), [FR-098](../functional/FR-098-prove-fixture-goldens-and-cross-frontend-parity.md), [FR-097](../functional/FR-097-normalize-validate-and-write-the-lifted-document.md)
