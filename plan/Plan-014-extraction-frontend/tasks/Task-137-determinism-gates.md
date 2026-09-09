@@ -2,7 +2,7 @@
 id: Task-137
 title: "NFR-031 determinism, hermeticity, limits and fuzz gates"
 type: Task
-status: todo
+status: done
 track: G
 priority: P0
 relationships:
@@ -42,9 +42,9 @@ this task does not re-verify them.
 
 ## Subtasks
 
-- [ ] **Red.** `tests/determinism.rs`: `tc_1300_` (two lifts in-process and across two processes == each other == goldens == `decide(...).normalized`), `tc_1301_` (cwd, empty `HOME`, `TZ`, `LANG`, `LC_ALL`, `CARGO_TARGET_DIR` varied → golden bytes), `tc_1302_` (two roots, same relative path, identical bytes). `tests/audits.rs`: `tc_1303_` (`Analysis`: no directory enumeration under `src/`; cites quire-rs `walk.rs` TC-473 and the FR-091-CON-2 gate), `tc_1304_` (grep for `SystemTime`, `Instant`, `std::env`, `env!`, `option_env!`, hostname, RNG, `std::net`, `Command`; exemptions exactly `write.rs` for `std::fs` and `main.rs` argument parsing for `std::env`; planted `std::env::var` in `lower.rs` fails), `tc_1307_` (`HashMap`/`HashSet` audit, empty exemption list, planted token fails), `tc_1306_` (suite under `unshare -n` with `--offline` passes; no socket-opening dependency in the tree), `tc_1308_` (`compile_fail` doctest on an injected `unsafe` block under `cargo +1.98.1`), `tc_1309_` (256 proptest bundle trees under a failing panic hook: result or diagnostic, never a panic).
-- [ ] **Green.** Fix whatever the audits surface (a stray `HashMap`, an ordering that reaches the output) in the owning module; add the `proptest` bundle-tree strategy under `tests/strategies/`.
-- [ ] **Falsify.** Every grep gate is run once against its planted-token scratch copy and must fail; record the measured number each gate reports.
+- [x] **Red.** `tests/determinism.rs`: `tc_1300_` (two lifts in-process and across two processes == each other == goldens == `decide(...).normalized`), `tc_1301_` (cwd, empty `HOME`, `TZ`, `LANG`, `LC_ALL`, `CARGO_TARGET_DIR` varied → golden bytes), `tc_1302_` (two roots, same relative path, identical bytes). `tests/audits.rs`: `tc_1303_` (`Analysis`: no directory enumeration under `src/`; cites quire-rs `walk.rs` TC-473 and the FR-091-CON-2 gate), `tc_1304_` (grep for `SystemTime`, `Instant`, `std::env`, `env!`, `option_env!`, hostname, RNG, `std::net`, `Command`; exemptions exactly `write.rs` for `std::fs` and `main.rs` argument parsing for `std::env`; planted `std::env::var` in `lower.rs` fails), `tc_1307_` (`HashMap`/`HashSet` audit, empty exemption list, planted token fails), `tc_1306_` (suite under `unshare -n` with `--offline` passes; no socket-opening dependency in the tree), `tc_1308_` (`compile_fail` doctest on an injected `unsafe` block under `cargo +1.98.1`), `tc_1309_` (256 proptest bundle trees under a failing panic hook: result or diagnostic, never a panic).
+- [x] **Green.** Fix whatever the audits surface (a stray `HashMap`, an ordering that reaches the output) in the owning module; add the `proptest` bundle-tree strategy under `tests/strategies/`.
+- [x] **Falsify.** Every grep gate is run once against its planted-token scratch copy and must fail; record the measured number each gate reports.
 
 ## Deliverables
 

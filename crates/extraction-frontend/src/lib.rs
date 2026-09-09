@@ -9,6 +9,23 @@
 //! (FR-094); Task-134 assembles the document, decides it through the
 //! independent reader, canonicalizes, fingerprints and writes it atomically
 //! (FR-097) behind the [`lift`] entry the command line calls.
+//!
+//! # No first-party `unsafe`
+//!
+//! The crate root forbids `unsafe_code` (NFR-031-AC-9, mirrored by
+//! `[lints.rust]` in `Cargo.toml`). The doctest below proves the posture
+//! on the qualification toolchain: an injected `unsafe` block under the
+//! same attribute does not build (TC-1308 compiles this exact text with
+//! `rustc +1.98.1` as well, and the same text without the attribute).
+//!
+//! ```compile_fail
+//! #![forbid(unsafe_code)]
+//! pub fn injected() -> u8 {
+//!     let byte = 7u8;
+//!     let pointer = &byte as *const u8;
+//!     unsafe { *pointer }
+//! }
+//! ```
 #![forbid(unsafe_code)]
 
 pub mod bundle;
