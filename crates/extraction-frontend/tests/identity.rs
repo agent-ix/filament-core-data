@@ -138,8 +138,23 @@ fn tc_1252_slug_lowercases_collapses_runs_and_an_all_punctuation_title_is_unslug
     );
 
     // An artifact titled `---` raises UNSLUGGABLE_NAME at its frontmatter,
-    // blocking (EC-145).
-    let root = fixture("negatives/UNSLUGGABLE_NAME");
+    // blocking (EC-145). The bundle is constructed here: through `lift`
+    // such a title is refused earlier as UNNAMEABLE_ARTIFACT (it is no
+    // Identifier), so `negatives/UNSLUGGABLE_NAME` holds the one
+    // lift-reachable case instead, an enumeration value (Task-136).
+    let scratch = tempfile::tempdir().expect("tempdir");
+    let root = scratch.path().to_path_buf();
+    fs::create_dir_all(root.join("spec/functional")).expect("mkdir");
+    fs::copy(
+        fixture("negatives/UNSLUGGABLE_NAME/spec/spec.md"),
+        root.join("spec/spec.md"),
+    )
+    .expect("copy spec.md");
+    fs::write(
+        root.join("spec/functional/FR-008-punctuation.md"),
+        "---\nid: FR-008\ntitle: \"---\"\nobject: entity\ntype: FR\n---\n\n# FR-008: ---\n\n## Properties\n\n| Field | Type | Multiplicity | Constraints |\n|-------|------|--------------|-------------|\n| id | UUID | 1 | identity |\n",
+    )
+    .expect("write FR-008");
     let bundle = Bundle::load(&root, &[&business_module()]).expect("the bundle loads");
     let out = extract(&bundle);
     let path = "spec/functional/FR-008-punctuation.md";

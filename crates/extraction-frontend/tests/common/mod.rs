@@ -173,7 +173,7 @@ pub fn request(name: &str, out_dir: &Path) -> LiftRequest {
 pub fn request_at(bundle_root: &Path, out_dir: &Path) -> LiftRequest {
     LiftRequest {
         bundle_root: bundle_root.to_path_buf(),
-        module_roots: module_roots(),
+        module_roots: declared_module_roots(bundle_root),
         out: out_dir.join("semantic-ir.json"),
         diagnostics: None,
         provenance: None,
@@ -346,4 +346,138 @@ pub fn entries(dir: &Path) -> Vec<String> {
         .collect();
     names.sort();
     names
+}
+
+// ---------------------------------------------------------------------------
+// FR-098 helpers (Task-136): the fixture inventory, declared module roots,
+// scratch directories under the target directory, and hashing.
+// ---------------------------------------------------------------------------
+
+use std::collections::BTreeMap;
+
+use sha2::{Digest, Sha256};
+
+/// The fixture inventory root.
+pub fn fixtures_root() -> PathBuf {
+    crate_dir().join("fixtures")
+}
+
+/// The module roots a fixture bundle is lifted under, exactly as the
+/// golden writer decides them (`write::fixture_module_roots`): the roots
+/// its `modules.json` names, else its own `modules/*`, else the default
+/// pair.
+pub fn declared_module_roots(bundle_root: &Path) -> Vec<PathBuf> {
+    agent_ix_extraction_frontend::write::fixture_module_roots(
+        bundle_root,
+        &fixtures_root(),
+        &module_roots(),
+    )
+    .unwrap_or_else(|e| panic!("{}: module roots: {e}", bundle_root.display()))
+}
+
+/// The cargo target directory the test binary runs from
+/// (`<target>/debug/deps/<test>`), so a scratch directory under it is
+/// under `CARGO_TARGET_DIR` (FR-098-AC-2).
+pub fn target_dir() -> PathBuf {
+    let exe = std::env::current_exe().expect("current_exe");
+    exe.parent()
+        .and_then(Path::parent)
+        .and_then(Path::parent)
+        .expect("<target>/<profile>/deps/<exe>")
+        .to_path_buf()
+}
+
+/// `<target>/extraction-frontend-scratch/<label>`, emptied.
+pub fn scratch_dir(label: &str) -> PathBuf {
+    let dir = target_dir().join("extraction-frontend-scratch").join(label);
+    if dir.exists() {
+        fs::remove_dir_all(&dir).expect("remove scratch");
+    }
+    fs::create_dir_all(&dir).expect("create scratch");
+    dir
+}
+
+/// Every regular file under `root`, recursively, as `root`-relative
+/// `/`-joined paths in code-point order, each with its SHA-256 hex.
+pub fn hash_tree(root: &Path) -> BTreeMap<String, String> {
+    fn walk(dir: &Path, root: &Path, out: &mut BTreeMap<String, String>) {
+        let mut entries: Vec<PathBuf> = fs::read_dir(dir)
+            .expect("read_dir")
+            .map(|e| e.expect("entry").path())
+            .collect();
+        entries.sort();
+        for entry in entries {
+            if entry.file_name().is_some_and(|n| n == ".git") {
+                continue;
+            }
+            if entry.is_dir() {
+                walk(&entry, root, out);
+            } else {
+                let rel = entry
+                    .strip_prefix(root)
+                    .expect("under root")
+                    .components()
+                    .map(|c| c.as_os_str().to_string_lossy().into_owned())
+                    .collect::<Vec<_>>()
+                    .join("/");
+                let bytes = fs::read(&entry).expect("read");
+                out.insert(rel, format!("{:x}", Sha256::digest(&bytes)));
+            }
+        }
+    }
+    let mut out = BTreeMap::new();
+    walk(root, root, &mut out);
+    out
+}
+
+/// Copy `src` into `dst` recursively (files and directories only).
+pub fn copy_tree(src: &Path, dst: &Path) {
+    fs::create_dir_all(dst).expect("create");
+    for entry in fs::read_dir(src).expect("read_dir") {
+        let entry = entry.expect("entry");
+        let target = dst.join(entry.file_name());
+        if entry.path().is_dir() {
+            copy_tree(&entry.path(), &target);
+        } else {
+            fs::copy(entry.path(), &target).expect("copy");
+        }
+    }
+}
+
+/// The parsed JSON of `path`.
+pub fn read_json(path: &Path) -> Value {
+    serde_json::from_slice(&fs::read(path).unwrap_or_else(|e| panic!("{}: {e}", path.display())))
+        .unwrap_or_else(|e| panic!("{} is not JSON: {e}", path.display()))
+}
+
+/// The offset of the first differing byte of `a` and `b`, when they differ.
+pub fn first_difference(a: &[u8], b: &[u8]) -> Option<usize> {
+    a.iter()
+        .zip(b)
+        .position(|(x, y)| x != y)
+        .or_else(|| (a.len() != b.len()).then_some(a.len().min(b.len())))
+}
+
+/// `git <args>` in `cwd`: the trimmed stdout, or the failure text.
+pub fn git(cwd: &Path, args: &[&str]) -> Result<String, String> {
+    let output = Command::new("git")
+        .arg("-c")
+        .arg("user.name=Task-136")
+        .arg("-c")
+        .arg("user.email=task-136@example.invalid")
+        .arg("-c")
+        .arg("commit.gpgsign=false")
+        .args(args)
+        .current_dir(cwd)
+        .output()
+        .map_err(|e| format!("`git` could not be started ({e}): git is needed on PATH"))?;
+    if output.status.success() {
+        Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
+    } else {
+        Err(format!(
+            "git {} failed: {}",
+            args.join(" "),
+            String::from_utf8_lossy(&output.stderr)
+        ))
+    }
 }

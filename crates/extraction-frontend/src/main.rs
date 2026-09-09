@@ -10,8 +10,9 @@
 //!
 //! `lift --write-goldens --fixtures <dir>` is the one sanctioned writer of
 //! `fixtures/*/expected/` (FR-098 "Goldens"). Each fixture bundle is
-//! lifted under its own `modules/*` roots when it carries some, otherwise
-//! under `<fixtures>/modules/spec-objects-business` and
+//! lifted under the inventory roots its `modules.json` names when it
+//! carries one, else under its own `modules/*` roots when it carries some,
+//! otherwise under `<fixtures>/modules/spec-objects-business` and
 //! `<fixtures>/modules/edge-vocabulary`. With `--staging <dir>` each lift
 //! lands in `<staging>/<fixture>/` and is then installed as
 //! `<fixture>/expected/` (a bundle root refuses a direct write, FR-097);
@@ -207,7 +208,7 @@ fn write_goldens(args: &LiftArgs) -> u8 {
     };
     for bundle in &bundles {
         let name = bundle.strip_prefix(fixtures).unwrap_or(bundle);
-        if let Err(message) = write_golden(bundle, name, &defaults, &destination) {
+        if let Err(message) = write_golden(bundle, name, fixtures, &defaults, &destination) {
             eprintln!("{}: {message}", name.display());
             return EXIT_REFUSED;
         }
@@ -219,10 +220,11 @@ fn write_goldens(args: &LiftArgs) -> u8 {
 fn write_golden(
     bundle: &Path,
     name: &Path,
+    fixtures: &Path,
     defaults: &[PathBuf],
     destination: &Destination<'_>,
 ) -> Result<(), String> {
-    let module_roots = fixture_module_roots(bundle, defaults)
+    let module_roots = fixture_module_roots(bundle, fixtures, defaults)
         .map_err(|error| format!("its modules cannot be listed: {error}"))?;
     let (work, install) = match destination {
         Destination::Staging(staging) => (staging.join(name), Some(bundle.join(EXPECTED_DIR))),

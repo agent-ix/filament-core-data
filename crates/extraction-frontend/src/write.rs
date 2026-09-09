@@ -323,6 +323,11 @@ pub const EXPECTED_DIR: &str = "expected";
 /// The directory a fixture's own module roots live in, when it carries
 /// some (`negatives/MODULE_REFUSED/modules/*`).
 pub const FIXTURE_MODULES_DIR: &str = "modules";
+/// The file a fixture names its module roots in, when it is lifted under
+/// roots of the shared inventory other than the default pair
+/// (`negatives/UNKNOWN_EDGE_VERB/modules.json` names `modules/frobnicates`
+/// alone): `{"roots": ["<path relative to the inventory root>", ...]}`.
+pub const FIXTURE_MODULES_FILE: &str = "modules.json";
 
 /// The JSON document `inspect --ir <path>` names, read whole. The error
 /// names the path.
@@ -360,10 +365,40 @@ pub fn fixture_bundles(fixtures: &Path) -> io::Result<Vec<PathBuf>> {
     Ok(out)
 }
 
-/// The module roots `bundle` is lifted under: every subdirectory of
+/// The module roots `bundle` is lifted under, in precedence order: the
+/// roots `<bundle>/modules.json` names, each relative to `fixtures` (the
+/// inventory root), in the file's order; else every subdirectory of
 /// `<bundle>/modules/`, in path order, when the fixture carries its own
-/// modules; otherwise `defaults`.
-pub fn fixture_module_roots(bundle: &Path, defaults: &[PathBuf]) -> io::Result<Vec<PathBuf>> {
+/// modules; else `defaults`. A `modules.json` that does not parse or names
+/// no root is an error naming the file.
+pub fn fixture_module_roots(
+    bundle: &Path,
+    fixtures: &Path,
+    defaults: &[PathBuf],
+) -> io::Result<Vec<PathBuf>> {
+    let named = bundle.join(FIXTURE_MODULES_FILE);
+    if named.is_file() {
+        let value: serde_json::Value = serde_json::from_slice(&fs::read(&named)?)
+            .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error.to_string()))?;
+        let roots: Vec<PathBuf> = value
+            .get("roots")
+            .and_then(serde_json::Value::as_array)
+            .map(|roots| {
+                roots
+                    .iter()
+                    .filter_map(serde_json::Value::as_str)
+                    .map(|root| fixtures.join(root))
+                    .collect()
+            })
+            .unwrap_or_default();
+        if roots.is_empty() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("{} names no module root", named.display()),
+            ));
+        }
+        return Ok(roots);
+    }
     let own = bundle.join(FIXTURE_MODULES_DIR);
     if !own.is_dir() {
         return Ok(defaults.to_vec());
