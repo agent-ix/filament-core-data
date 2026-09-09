@@ -154,3 +154,12 @@ precondition: the FR-050-gated criteria are tasked after PR #84 lands and this
 branch rebases onto it. The condition on the verdict is therefore discharged
 except for that ordering, which only history can discharge.
 
+Two open items were added by CR-036-6 (2026-09-09) after Task-136 measured
+them: filament-core-data#87, structural parity on `records-and-scalars` cannot
+hold because FR-053 and FR-095 mint identities by different closed rules
+(TC-1290, TC-1291 blocked on it), and filament-core-data#88, the TypeScript
+backend refuses every document carrying two kernel-scalar extensions with
+`DUPLICATE_IDENTITY`, FR-046's own assurance output included (the TypeScript
+half of TC-1292 blocked on it). Neither reopens a finding above; both are
+recorded in `spec/log.md` and on the FR-098 criteria they block.
+
