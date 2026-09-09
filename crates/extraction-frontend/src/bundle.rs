@@ -29,7 +29,7 @@ pub struct Refusal {
 }
 
 impl Refusal {
-    fn new(diagnostic: Diagnostic) -> Self {
+    pub(crate) fn new(diagnostic: Diagnostic) -> Self {
         Self {
             diagnostic: Box::new(diagnostic),
         }
