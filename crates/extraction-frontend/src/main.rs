@@ -25,6 +25,7 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use agent_ix_extraction_frontend::diagnostics::{Code, Diagnostic};
+use agent_ix_extraction_frontend::limits::Limits;
 use agent_ix_extraction_frontend::write::{
     fixture_bundles, fixture_module_roots, fresh_dir, install_golden, read_json, write_lift,
     Emission, EXPECTED_DIR, GOLDEN_DIAGNOSTICS, GOLDEN_DOCUMENT, GOLDEN_PROVENANCE,
@@ -275,7 +276,16 @@ fn write_golden(
 /// `agent_ix_semantic_ir::decide`; print `identity kind displayName` per
 /// type in `types` order, or one `INVALID_IR` line per reader diagnostic.
 fn inspect(args: &InspectArgs) -> u8 {
-    let document = match read_json(&args.ir) {
+    // SR-169 FND-1498: the read is bounded by the crate's own
+    // `maxDocumentBytes`, the one document bound `limits.json` declares.
+    let limits = match Limits::declared() {
+        Ok(limits) => limits,
+        Err(error) => {
+            eprintln!("--ir cannot be read: {error}");
+            return EXIT_REFUSED;
+        }
+    };
+    let document = match read_json(&args.ir, limits.max_document_bytes) {
         Ok(document) => document,
         Err(message) => {
             eprintln!("--ir {message}");

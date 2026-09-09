@@ -435,27 +435,141 @@ impl<'a> ResolvedKind<'a> {
     }
 }
 
+/// The FR-029 constraint keywords, one per variant of the engine's
+/// `Constraint` (SR-169 FND-1499): the closed match domain of
+/// [`applies_to`]. [`Keyword::of`] matches the engine's enum exhaustively,
+/// so a variant the engine adds is a compile error here, never a keyword
+/// deemed applicable to every kind.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Keyword {
+    Min,
+    Max,
+    ExclusiveMin,
+    ExclusiveMax,
+    MinLength,
+    MaxLength,
+    Pattern,
+    EnumValues,
+    NonEmpty,
+    Unique,
+    Format,
+}
+
+impl Keyword {
+    /// The keyword of one engine constraint.
+    pub fn of(constraint: &Constraint) -> Self {
+        match constraint {
+            Constraint::Min { .. } => Keyword::Min,
+            Constraint::Max { .. } => Keyword::Max,
+            Constraint::ExclusiveMin { .. } => Keyword::ExclusiveMin,
+            Constraint::ExclusiveMax { .. } => Keyword::ExclusiveMax,
+            Constraint::MinLength { .. } => Keyword::MinLength,
+            Constraint::MaxLength { .. } => Keyword::MaxLength,
+            Constraint::Pattern { .. } => Keyword::Pattern,
+            Constraint::EnumValues { .. } => Keyword::EnumValues,
+            Constraint::NonEmpty => Keyword::NonEmpty,
+            Constraint::Unique => Keyword::Unique,
+            Constraint::Format { .. } => Keyword::Format,
+        }
+    }
+
+    /// The keyword spelled `name`, as the engine's `Constraint` tag and
+    /// the IR `keyword` member spell it.
+    pub fn from_name(name: &str) -> Option<Self> {
+        KEYWORDS
+            .iter()
+            .zip(Self::ALL)
+            .find(|(spelling, _)| **spelling == name)
+            .map(|(_, keyword)| keyword)
+    }
+
+    /// Every keyword, in [`KEYWORDS`] order.
+    pub const ALL: [Keyword; 11] = [
+        Keyword::Min,
+        Keyword::Max,
+        Keyword::ExclusiveMin,
+        Keyword::ExclusiveMax,
+        Keyword::MinLength,
+        Keyword::MaxLength,
+        Keyword::Pattern,
+        Keyword::EnumValues,
+        Keyword::NonEmpty,
+        Keyword::Unique,
+        Keyword::Format,
+    ];
+}
+
+/// The IR `kind` of the type a constraint is checked against
+/// (`semantic-ir.schema.json#/$defs/typeDefinition/kind`), the closed
+/// domain of the RULES.md applicability table.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum IrKind {
+    Scalar,
+    Record,
+    Enum,
+    Union,
+    Alias,
+    Sequence,
+    Map,
+    Reference,
+}
+
+impl IrKind {
+    fn from_name(name: &str) -> Option<Self> {
+        Some(match name {
+            "scalar" => IrKind::Scalar,
+            "record" => IrKind::Record,
+            "enum" => IrKind::Enum,
+            "union" => IrKind::Union,
+            "alias" => IrKind::Alias,
+            "sequence" => IrKind::Sequence,
+            "map" => IrKind::Map,
+            "reference" => IrKind::Reference,
+            _ => return None,
+        })
+    }
+}
+
 /// The RULES.md applicability table, keyword by resolved `(kind, scalar)`;
 /// the reader (`agent_ix_semantic_ir::decide`) decides the same table, and
-/// FR-093-CON-4 asserts the two agree over the full cross product.
+/// FR-093-CON-4 asserts the two agree over the full cross product. The
+/// match is exhaustive over [`Keyword`] and [`IrKind`] with no catch-all
+/// (SR-169 FND-1499): a keyword or kind outside either closed set is not
+/// applicable, so it is refused at the row as `CONSTRAINT_NOT_APPLICABLE`
+/// rather than reaching the reader.
 pub fn applies_to(keyword: &str, kind: &str, scalar: &str) -> bool {
-    match keyword {
-        "min" | "max" | "exclusiveMin" | "exclusiveMax" => {
-            kind == "scalar"
-                && matches!(
-                    scalar,
-                    "integer" | "number" | "date" | "datetime" | "duration"
-                )
-        }
-        "minLength" | "maxLength" => kind == "scalar" && matches!(scalar, "string" | "bytes"),
-        "pattern" | "format" => kind == "scalar" && scalar == "string",
-        "enumValues" => kind == "scalar" || kind == "enum",
-        "nonEmpty" => {
-            (kind == "scalar" && matches!(scalar, "string" | "bytes"))
-                || matches!(kind, "sequence" | "map")
-        }
-        "unique" => matches!(kind, "sequence" | "map"),
-        _ => true,
+    let (Some(keyword), Some(kind)) = (Keyword::from_name(keyword), IrKind::from_name(kind)) else {
+        return false;
+    };
+    let ordered = matches!(
+        scalar,
+        "integer" | "number" | "date" | "datetime" | "duration"
+    );
+    let sized = matches!(scalar, "string" | "bytes");
+    match (keyword, kind) {
+        (
+            Keyword::Min | Keyword::Max | Keyword::ExclusiveMin | Keyword::ExclusiveMax,
+            IrKind::Scalar,
+        ) => ordered,
+        (Keyword::MinLength | Keyword::MaxLength, IrKind::Scalar) => sized,
+        (Keyword::Pattern | Keyword::Format, IrKind::Scalar) => scalar == "string",
+        (Keyword::EnumValues, IrKind::Scalar | IrKind::Enum) => true,
+        (Keyword::NonEmpty, IrKind::Scalar) => sized,
+        (Keyword::NonEmpty | Keyword::Unique, IrKind::Sequence | IrKind::Map) => true,
+        (
+            Keyword::Min
+            | Keyword::Max
+            | Keyword::ExclusiveMin
+            | Keyword::ExclusiveMax
+            | Keyword::MinLength
+            | Keyword::MaxLength
+            | Keyword::Pattern
+            | Keyword::Format
+            | Keyword::EnumValues
+            | Keyword::NonEmpty
+            | Keyword::Unique,
+            _,
+        ) => false,
     }
 }
 
@@ -1085,7 +1199,10 @@ pub fn lower_bundle(
                     let operations = lower_operations(
                         &extracted.extraction,
                         &resolutions.resolutions,
-                        &operation_rows(document.raw()),
+                        &operation_rows(
+                            document.raw(),
+                            extracted.extraction.operations.as_deref().unwrap_or(&[]),
+                        ),
                         &ctx,
                     )?;
                     lowering.definition.relationships = Some(relationships);

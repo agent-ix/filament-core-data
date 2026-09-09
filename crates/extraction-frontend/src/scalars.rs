@@ -55,16 +55,49 @@ struct Library {
     scalars: BTreeMap<std::string::String, LibraryEntry>,
 }
 
-/// The parsed library. The file is part of this repository and is checked
-/// by FR-032's own tests, so a parse failure is a build defect, not a
-/// runtime state; the empty map makes every lookup miss rather than panic.
-fn library() -> &'static Library {
-    static PARSED: OnceLock<Library> = OnceLock::new();
+/// The embedded `kernel-scalars.json` does not parse: a build defect,
+/// surfaced by [`check_library`] at the start of every lift (SR-169
+/// FND-1494) rather than hidden behind an empty map.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LibraryError {
+    pub message: std::string::String,
+}
+
+impl std::fmt::Display for LibraryError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "kernel-scalars.json does not parse: {}", self.message)
+    }
+}
+
+impl std::error::Error for LibraryError {}
+
+/// The parsed library, or the parse error, decided once.
+fn parsed() -> &'static Result<Library, LibraryError> {
+    static PARSED: OnceLock<Result<Library, LibraryError>> = OnceLock::new();
     PARSED.get_or_init(|| {
-        serde_json::from_str(LIBRARY).unwrap_or(Library {
-            scalars: BTreeMap::new(),
+        serde_json::from_str(LIBRARY).map_err(|e| LibraryError {
+            message: e.to_string(),
         })
     })
+}
+
+/// Refuse a lift whose embedded library does not parse. Every lift calls
+/// this before any `Type` cell is classified, so the empty-map lookups
+/// below are reached only when the file parsed.
+pub fn check_library() -> Result<(), LibraryError> {
+    parsed().as_ref().map(|_| ()).map_err(Clone::clone)
+}
+
+/// The parsed library; empty when the file did not parse, a state
+/// [`check_library`] refuses before any lookup runs in a lift.
+fn library() -> &'static Library {
+    static EMPTY: OnceLock<Library> = OnceLock::new();
+    match parsed() {
+        Ok(library) => library,
+        Err(_) => EMPTY.get_or_init(|| Library {
+            scalars: BTreeMap::new(),
+        }),
+    }
 }
 
 impl KernelScalar {

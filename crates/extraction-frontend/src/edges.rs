@@ -33,8 +33,6 @@
 //! [`lower_relationships`] and the relationship goldens are re-cut in one
 //! commit.
 
-use std::collections::BTreeSet;
-
 use quire_rs::corpus::harvest_edges;
 use quire_rs::semantic::Multiplicity;
 use quire_rs::vocab::EdgeCategory;
@@ -53,11 +51,9 @@ const RELATIONSHIPS: &str = "relationships";
 /// The frontmatter keys of one entry, as the engine reads them.
 const TARGET: &str = "target";
 const TYPE: &str = "type";
-/// The verb the engine gives an entry without a `type`.
+/// The verb the engine gives an entry without a `type`, and the one verb a
+/// body `ix://` autolink is harvested under.
 const DEFAULT_VERB: &str = "references";
-/// The scheme the engine strips from a `target` before taking its last
-/// segment.
-const SCHEME: &str = "ix://";
 
 /// `semantic-ir.schema.json#/$defs/relationship`.
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -71,19 +67,24 @@ pub struct Relationship {
     pub origin: Origin,
 }
 
-/// The last `/`-segment of a frontmatter `target`, as the engine's
-/// `extract_target_id` reduces it before `harvest_edges` returns the pair:
-/// `ix://agent-ix/config-service/FR-005` and `FR-005` both name `FR-005`.
-fn target_token(target: &str) -> &str {
-    let rest = target.strip_prefix(SCHEME).unwrap_or(target);
-    rest.rsplit('/').next().unwrap_or(rest)
-}
-
 /// The `(target, verb)` pairs `harvest_edges` returns for `document` that
 /// its frontmatter `relationships:` list declares, in the engine's order,
 /// de-duplicated on `(verb, target)` by the engine.
+///
+/// Every pair, and every reduced target id in it, is the engine's
+/// (`quire_rs::corpus::harvest_edges`); nothing here reduces a target
+/// (SR-169 FND-1493). The frontmatter subset is decided against the
+/// engine's parsed frontmatter map, never by re-lexing: a harvested pair
+/// is kept when the `relationships:` list carries an entry with the same
+/// verb whose authored `target` names the engine's id — the id itself, or
+/// the id as the last `/`-segment of the authored URI, which is the
+/// engine's documented reduction contract (quire-rs FR-026-AC-6). A verb
+/// other than `references` can only come from frontmatter (a body autolink
+/// is always `references`), so only `references` pairs need the target
+/// check; when the engine's reduction changes, the goldens move and
+/// TC-1231/TC-1236 fail naming the pair.
 pub fn frontmatter_edges(document: &Document) -> Vec<(String, String)> {
-    let declared: BTreeSet<(String, String)> = document
+    let declared: Vec<(&str, &str)> = document
         .frontmatter()
         .and_then(|fm| fm.get(RELATIONSHIPS))
         .and_then(|v| v.as_array())
@@ -96,14 +97,24 @@ pub fn frontmatter_edges(document: &Document) -> Vec<(String, String)> {
                         .get(TYPE)
                         .and_then(|v| v.as_str())
                         .unwrap_or(DEFAULT_VERB);
-                    Some((target_token(target).to_string(), verb.to_string()))
+                    Some((target, verb))
                 })
                 .collect()
         })
         .unwrap_or_default();
+    let names = |authored: &str, id: &str| {
+        authored == id
+            || authored
+                .strip_suffix(id)
+                .is_some_and(|prefix| prefix.ends_with('/'))
+    };
     harvest_edges(document.loaded())
         .into_iter()
-        .filter(|pair| declared.contains(pair))
+        .filter(|(id, verb)| {
+            declared
+                .iter()
+                .any(|(target, declared_verb)| *declared_verb == verb && names(target, id))
+        })
         .collect()
 }
 

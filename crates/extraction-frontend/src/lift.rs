@@ -11,6 +11,7 @@
 use std::path::{Path, PathBuf};
 
 use agent_ix_semantic_ir::ResultState;
+use quire_rs::loader::manifest::parse_manifest;
 use serde_json::Value;
 
 use crate::bundle::{Bundle, Refusal};
@@ -22,8 +23,11 @@ use crate::limits::Limits;
 use crate::lower::lower_bundle;
 use crate::provenance::{provenance_record, Provenance};
 use crate::resolve::resolve;
+use crate::scalars::check_library;
 use crate::validate::validate;
-use crate::write::{check_output, read_manifest, write_lift, Emission, Fingerprint, OutputPaths};
+use crate::write::{
+    check_output, read_manifest, write_lift, Emission, Fingerprint, OutputPaths, MANIFEST,
+};
 
 /// One lift as the command line names it.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -83,14 +87,29 @@ impl LiftOutcome {
     }
 }
 
-/// The `name:` a manifest declares, read from its first top-level `name:`
-/// line; the module name the registry loaded it under.
-fn manifest_name(bytes: &[u8]) -> Option<String> {
-    String::from_utf8_lossy(bytes)
-        .lines()
-        .find_map(|line| line.strip_prefix("name:"))
-        .map(|name| name.trim().trim_matches('"').trim_matches('\'').to_string())
-        .filter(|name| !name.is_empty())
+/// The module name the registry loaded `root`'s manifest under: the
+/// `name` the engine's own manifest parser (`quire_rs::loader::manifest::
+/// parse_manifest`) reads from `bytes`, or, when the manifest declares
+/// none, the root's directory name — the engine's FR-014-AC-7 fallback
+/// (SR-169 FND-1491: no YAML is read by a scanner of this crate's own). A
+/// manifest the engine cannot parse is refused as `MODULE_REFUSED` naming
+/// the root and the engine's error.
+fn manifest_name(root: &Path, bytes: &[u8]) -> Result<String, Refusal> {
+    let manifest = parse_manifest(bytes).map_err(|error| {
+        Refusal::new(Diagnostic::frontend(
+            Code::ModuleRefused,
+            format!(
+                "module root {} has a {MANIFEST} the engine does not parse: {error}",
+                root.display()
+            ),
+            None,
+        ))
+    })?;
+    Ok(manifest.name.unwrap_or_else(|| {
+        root.file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_default()
+    }))
 }
 
 /// The manifest of every module root as the envelope sees it.
@@ -99,7 +118,7 @@ fn manifests(bundle: &Bundle, module_roots: &[&Path]) -> Result<Vec<ModuleManife
         .iter()
         .map(|root| {
             let bytes = read_manifest(root)?;
-            let name = manifest_name(&bytes).unwrap_or_default();
+            let name = manifest_name(root, &bytes)?;
             ModuleManifest::from_bundle(bundle, &name, bytes).ok_or_else(|| {
                 Refusal::new(Diagnostic::frontend(
                     Code::ModuleRefused,
@@ -151,6 +170,16 @@ pub fn lift(request: &LiftRequest) -> LiftOutcome {
             )));
         }
     };
+    // SR-169 FND-1494: an unparseable embedded kernel-scalar library is a
+    // build defect surfaced here, never an empty map that turns every
+    // `Type` cell into `UNRESOLVED_TYPE_TOKEN`.
+    if let Err(error) = check_library() {
+        return LiftOutcome::Refused(Refusal::new(Diagnostic::frontend(
+            Code::OutputUnwritable,
+            format!("the crate's embedded kernel-scalars.json does not parse: {error}"),
+            None,
+        )));
+    }
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let lowered = lower_bundle(

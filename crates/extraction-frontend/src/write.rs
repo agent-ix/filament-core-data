@@ -245,10 +245,27 @@ struct Temp {
 }
 
 impl Temp {
+    /// Create `<final>.tmp` and write `bytes` to it. The file is opened
+    /// with `create_new`, so a pre-existing temporary — a concurrent lift's,
+    /// a stale leftover, or a planted symlink into a root `check_output`
+    /// fenced — is refused rather than followed or truncated (SR-169
+    /// FND-1490); the error names the temporary path.
     fn create(final_path: &Path, bytes: &[u8]) -> io::Result<Self> {
+        use std::io::Write as _;
         let path = with_suffix(final_path, TEMP_SUFFIX);
+        let mut file = fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&path)
+            .map_err(|error| {
+                io::Error::new(
+                    error.kind(),
+                    format!("temporary file {} {error}", path.display()),
+                )
+            })?;
         let temp = Temp { path, kept: false };
-        fs::write(&temp.path, bytes)?;
+        file.write_all(bytes)?;
+        file.flush()?;
         Ok(temp)
     }
 
@@ -329,9 +346,19 @@ pub const FIXTURE_MODULES_DIR: &str = "modules";
 /// alone): `{"roots": ["<path relative to the inventory root>", ...]}`.
 pub const FIXTURE_MODULES_FILE: &str = "modules.json";
 
-/// The JSON document `inspect --ir <path>` names, read whole. The error
-/// names the path.
-pub fn read_json(path: &Path) -> Result<serde_json::Value, String> {
+/// The JSON document `inspect --ir <path>` names, read whole once its size
+/// is known to be at most `max_bytes` (`limits.json` `maxDocumentBytes`,
+/// SR-169 FND-1498). The error names the path.
+pub fn read_json(path: &Path, max_bytes: usize) -> Result<serde_json::Value, String> {
+    let size = fs::metadata(path)
+        .map_err(|error| format!("{} cannot be read: {error}", path.display()))?
+        .len();
+    if usize::try_from(size).map_or(true, |size| size > max_bytes) {
+        return Err(format!(
+            "{} is {size} bytes; limits.json maxDocumentBytes is {max_bytes}",
+            path.display()
+        ));
+    }
     let bytes =
         fs::read(path).map_err(|error| format!("{} cannot be read: {error}", path.display()))?;
     serde_json::from_slice(&bytes)
@@ -369,8 +396,9 @@ pub fn fixture_bundles(fixtures: &Path) -> io::Result<Vec<PathBuf>> {
 /// roots `<bundle>/modules.json` names, each relative to `fixtures` (the
 /// inventory root), in the file's order; else every subdirectory of
 /// `<bundle>/modules/`, in path order, when the fixture carries its own
-/// modules; else `defaults`. A `modules.json` that does not parse or names
-/// no root is an error naming the file.
+/// modules; else `defaults`. A `modules.json` that does not parse, names
+/// no root, or names a root that is absolute or steps outside the
+/// inventory root (`..`, SR-169 FND-1498) is an error naming the file.
 pub fn fixture_module_roots(
     bundle: &Path,
     fixtures: &Path,
@@ -380,17 +408,29 @@ pub fn fixture_module_roots(
     if named.is_file() {
         let value: serde_json::Value = serde_json::from_slice(&fs::read(&named)?)
             .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error.to_string()))?;
-        let roots: Vec<PathBuf> = value
+        let mut roots: Vec<PathBuf> = Vec::new();
+        for root in value
             .get("roots")
             .and_then(serde_json::Value::as_array)
-            .map(|roots| {
-                roots
-                    .iter()
-                    .filter_map(serde_json::Value::as_str)
-                    .map(|root| fixtures.join(root))
-                    .collect()
-            })
-            .unwrap_or_default();
+            .into_iter()
+            .flatten()
+            .filter_map(serde_json::Value::as_str)
+        {
+            let relative = Path::new(root);
+            let fenced = relative
+                .components()
+                .all(|component| matches!(component, std::path::Component::Normal(_)));
+            if !fenced {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    format!(
+                        "{} names the module root {root:?}, which is not a plain path under the inventory root",
+                        named.display()
+                    ),
+                ));
+            }
+            roots.push(fixtures.join(relative));
+        }
         if roots.is_empty() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,

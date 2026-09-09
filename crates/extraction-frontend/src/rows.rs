@@ -21,9 +21,13 @@
 //! fence authored with the same two-column lead-in as a table row locates
 //! its rows at the same column (FR-093-AC-1: the two forms of one
 //! declaration lower to identical bytes).
+//!
+//! Operations: the operation set is the engine's `OperationDecl` list;
+//! [`operation_rows`] only locates each returned name (SR-169 FND-1492).
 
 use quire_rs::semantic::properties::{fence_rows, is_param_header, table_rows};
 use quire_rs::semantic::scan::{blocks_in, level2_sections, lines, lines_outside_fences, Block};
+use quire_rs::semantic::OperationDecl;
 
 /// The level-2 heading the engine reads field declarations under
 /// (quire-rs FR-070). Named here only to find the block again.
@@ -100,8 +104,11 @@ pub fn locate<'a>(rows: &'a [RowLocus], index: usize, name: &str) -> Option<&'a 
 /// FR-071). Named here only to find the block again.
 const OPERATIONS_SECTION: &str = "Operations";
 /// The level-3 heading prefix of one operation, as the engine reads it.
+/// Used only to locate a heading whose name the engine already returned
+/// (see [`operation_rows`]); never to decide what an operation is.
 const OPERATION_HEADING: &str = "### ";
-/// The key of the `Returns:` line, as the engine reads it.
+/// The key of the `Returns:` line, as the engine reads it. Used only to
+/// locate the line of a `returns` the engine already returned.
 const RETURNS_KEY: &str = "Returns:";
 
 /// Where one `OperationDecl` sits: its `### <name>` heading, the rows of
@@ -118,29 +125,53 @@ pub struct OperationLocus {
     pub returns: Option<(usize, usize)>,
 }
 
-/// The operations of `raw`, in document order, re-read the way
-/// `extract_operations` reads them: the first `Operations` section, one
-/// `### <name>` heading per operation outside any fence, the first table
-/// under it with the `Param | Type | Multiplicity | Constraints` header,
-/// and the first `Returns:` line outside a fence.
-pub fn operation_rows(raw: &str) -> Vec<OperationLocus> {
+/// The loci of `decls`, the operations the engine's `extract_operations`
+/// returned for `raw`, in the engine's order.
+///
+/// The operation *set* is the engine's: nothing here decides what an
+/// operation is, and a heading the engine did not return as an
+/// `OperationDecl` yields no locus (SR-169 FND-1492). The engine keeps its
+/// level-3 heading walk private (`clauses::level3_headings`) and its
+/// `scan::Block` has no heading variant, so the *locus* of each returned
+/// name is found here by the minimal match the engine itself applies —
+/// a line outside any fence, in the first `Operations` section, reading
+/// `### <name>` — and the `Returns:` line by the key the engine reads, both
+/// through `scan::{level2_sections, lines_outside_fences}`; the parameter
+/// rows come from `scan::blocks_in` and `properties::table_rows`, the
+/// engine's own readers. A declaration whose heading this match does not
+/// find is located at the document head by the callers, never dropped.
+pub fn operation_rows(raw: &str, decls: &[OperationDecl]) -> Vec<OperationLocus> {
     let lines = lines(raw);
     let Some(&(start, end)) = level2_sections(&lines, OPERATIONS_SECTION).first() else {
         return Vec::new();
     };
-    let headings: Vec<(usize, String)> = lines_outside_fences(&lines, start + 1, end)
-        .into_iter()
-        .filter_map(|l| {
-            let text = lines[l - 1].trim_end_matches('\r');
-            text.strip_prefix(OPERATION_HEADING)
-                .map(|rest| (l, rest.trim().to_string()))
-        })
-        .collect();
-    headings
+    let outside: Vec<usize> = lines_outside_fences(&lines, start + 1, end);
+    let heading_text = |l: usize| -> Option<&str> {
+        lines
+            .get(l - 1)
+            .map(|text| text.trim_end_matches('\r'))
+            .and_then(|text| text.strip_prefix(OPERATION_HEADING))
+            .map(str::trim)
+    };
+    // Every level-3 heading line, so a located operation's section ends at
+    // the next heading whatever the engine made of that heading.
+    let heading_lines: Vec<usize> = outside
         .iter()
-        .enumerate()
-        .map(|(i, (line, name))| {
-            let section_end = headings.get(i + 1).map_or(end, |(next, _)| *next);
+        .copied()
+        .filter(|&l| heading_text(l).is_some())
+        .collect();
+    decls
+        .iter()
+        .filter_map(|decl| {
+            let line = heading_lines
+                .iter()
+                .copied()
+                .find(|&l| heading_text(l) == Some(decl.name.as_str()))?;
+            let section_end = heading_lines
+                .iter()
+                .copied()
+                .find(|&l| l > line)
+                .unwrap_or(end);
             let params = blocks_in(&lines, line + 1, section_end)
                 .into_iter()
                 .find_map(|block| match block {
@@ -158,21 +189,24 @@ pub fn operation_rows(raw: &str) -> Vec<OperationLocus> {
                         .collect()
                 })
                 .unwrap_or_default();
-            let returns = lines_outside_fences(&lines, line + 1, section_end)
-                .into_iter()
-                .find(|&l| {
-                    lines[l - 1]
-                        .trim_end_matches('\r')
-                        .trim()
-                        .starts_with(RETURNS_KEY)
-                })
-                .map(|l| (l, text_column(lines[l - 1])));
-            OperationLocus {
-                name: name.clone(),
-                line: *line,
+            let returns = decl.returns.as_ref().and_then(|_| {
+                outside
+                    .iter()
+                    .copied()
+                    .filter(|&l| l > line && l < section_end)
+                    .find(|&l| {
+                        lines.get(l - 1).is_some_and(|text| {
+                            text.trim_end_matches('\r').trim().starts_with(RETURNS_KEY)
+                        })
+                    })
+                    .map(|l| (l, lines.get(l - 1).map_or(1, |raw| text_column(raw))))
+            });
+            Some(OperationLocus {
+                name: decl.name.clone(),
+                line,
                 params,
                 returns,
-            }
+            })
         })
         .collect()
 }

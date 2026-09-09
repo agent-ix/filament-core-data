@@ -372,7 +372,7 @@ pub fn pass_two(bundle: &Bundle, extractions: &Extractions, outcomes: &Outcomes)
         // token is a `Type` cell resolved the same way (FR-094-AC-12).
         if let Some(operations) = extracted.extraction.operations.as_deref() {
             let rows = document
-                .map(|d| operation_rows(d.raw()))
+                .map(|d| operation_rows(d.raw(), operations))
                 .unwrap_or_default();
             for operation in operations {
                 let located = rows.iter().find(|r| r.name == operation.name);
