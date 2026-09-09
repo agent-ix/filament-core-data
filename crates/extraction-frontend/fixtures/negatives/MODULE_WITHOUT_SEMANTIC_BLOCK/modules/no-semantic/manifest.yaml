@@ -1,0 +1,21 @@
+manifest_version: 1.0.0
+name: no-semantic
+version: 0.1.0
+description: A module declaring an entity object type with no semantic block (FR-091-AC-2 control)
+archetypes: []
+grammars: []
+artifact_types: []
+lint_rules: []
+object_types:
+- name: entity
+  body_extraction:
+    yield_pattern:
+      match:
+        id:
+          from: frontmatter_field
+          path: [id]
+          required: true
+        properties:
+          from: section_body
+          after_heading: Properties
+          required: true
