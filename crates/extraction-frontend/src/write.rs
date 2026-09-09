@@ -2,9 +2,10 @@
 //! file-system seam (NFR-031-AC-5).
 //!
 //! `std::fs` appears in this module and nowhere else under `src/`. It
-//! reaches the file system for exactly three things: the module manifest
+//! reaches the file system for the module manifest
 //! bytes the envelope digests ([`read_manifest`]), the output-path checks
-//! ([`check_output`]) and the temp-and-rename write ([`write_lift`]). Every
+//! ([`check_output`]), the temp-and-rename write ([`write_lift`]), and the
+//! binary's `inspect` read and FR-098 golden installation. Every
 //! byte written comes from [`crate::canonical::canonical_bytes`]; the
 //! document's bytes come only inside a [`ValidDocument`], which only
 //! [`crate::validate::validate`] constructs (FR-097-CON-3).
@@ -302,6 +303,108 @@ pub fn write_lift(
         temp.rename_over(path).map_err(|error| {
             unwritable(format!("{} cannot be replaced: {error}", path.display()))
         })?;
+    }
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// FR-099 `inspect` and FR-098 goldens: the binary's other file-system needs,
+// kept in this module so `std::fs` stays confined to it (NFR-031-AC-5).
+// ---------------------------------------------------------------------------
+
+/// The file name of the document golden under `expected/` (FR-098).
+pub const GOLDEN_DOCUMENT: &str = "semantic-ir.json";
+/// The file name of the diagnostics golden under `expected/`.
+pub const GOLDEN_DIAGNOSTICS: &str = "diagnostics.json";
+/// The file name of the provenance golden under `expected/`.
+pub const GOLDEN_PROVENANCE: &str = "provenance.json";
+/// The directory a fixture's goldens live in.
+pub const EXPECTED_DIR: &str = "expected";
+/// The directory a fixture's own module roots live in, when it carries
+/// some (`negatives/MODULE_REFUSED/modules/*`).
+pub const FIXTURE_MODULES_DIR: &str = "modules";
+
+/// The JSON document `inspect --ir <path>` names, read whole. The error
+/// names the path.
+pub fn read_json(path: &Path) -> Result<serde_json::Value, String> {
+    let bytes =
+        fs::read(path).map_err(|error| format!("{} cannot be read: {error}", path.display()))?;
+    serde_json::from_slice(&bytes)
+        .map_err(|error| format!("{} is not a JSON document: {error}", path.display()))
+}
+
+/// Every fixture bundle root under `fixtures` (a directory holding
+/// `spec/spec.md`), depth first in code-point path order, never descending
+/// into a `modules` directory. A bundle root's own subdirectories are not
+/// searched.
+pub fn fixture_bundles(fixtures: &Path) -> io::Result<Vec<PathBuf>> {
+    fn walk(dir: &Path, out: &mut Vec<PathBuf>) -> io::Result<()> {
+        if dir.join("spec/spec.md").is_file() {
+            out.push(dir.to_path_buf());
+            return Ok(());
+        }
+        let mut entries: Vec<PathBuf> = fs::read_dir(dir)?
+            .map(|entry| entry.map(|e| e.path()))
+            .collect::<io::Result<_>>()?;
+        entries.sort();
+        for entry in entries {
+            let is_modules = entry.file_name().is_some_and(|n| n == FIXTURE_MODULES_DIR);
+            if entry.is_dir() && !is_modules {
+                walk(&entry, out)?;
+            }
+        }
+        Ok(())
+    }
+    let mut out = Vec::new();
+    walk(fixtures, &mut out)?;
+    Ok(out)
+}
+
+/// The module roots `bundle` is lifted under: every subdirectory of
+/// `<bundle>/modules/`, in path order, when the fixture carries its own
+/// modules; otherwise `defaults`.
+pub fn fixture_module_roots(bundle: &Path, defaults: &[PathBuf]) -> io::Result<Vec<PathBuf>> {
+    let own = bundle.join(FIXTURE_MODULES_DIR);
+    if !own.is_dir() {
+        return Ok(defaults.to_vec());
+    }
+    let mut roots: Vec<PathBuf> = fs::read_dir(&own)?
+        .map(|entry| entry.map(|e| e.path()))
+        .collect::<io::Result<_>>()?;
+    roots.retain(|p| p.is_dir());
+    roots.sort();
+    Ok(roots)
+}
+
+/// `dir`, emptied: removed when present and created anew with its parents.
+pub fn fresh_dir(dir: &Path) -> io::Result<()> {
+    if dir.exists() {
+        fs::remove_dir_all(dir)?;
+    }
+    fs::create_dir_all(dir)
+}
+
+/// Install the files a golden lift staged in `staged` as `expected`:
+/// `expected` is emptied and every regular file of `staged` is moved into
+/// it under its own name (FR-098 "Goldens"). The staging step exists
+/// because `expected/` lies under the fixture's bundle root, which
+/// [`check_output`] refuses as a lift output.
+pub fn install_golden(staged: &Path, expected: &Path) -> io::Result<()> {
+    fresh_dir(expected)?;
+    let mut files: Vec<PathBuf> = fs::read_dir(staged)?
+        .map(|entry| entry.map(|e| e.path()))
+        .collect::<io::Result<_>>()?;
+    files.sort();
+    for file in files.iter().filter(|p| p.is_file()) {
+        let Some(name) = file.file_name() else {
+            continue;
+        };
+        let target = expected.join(name);
+        if fs::rename(file, &target).is_err() {
+            // Across devices a rename fails; copy and remove instead.
+            fs::copy(file, &target)?;
+            fs::remove_file(file)?;
+        }
     }
     Ok(())
 }

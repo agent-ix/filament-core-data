@@ -359,8 +359,22 @@ semantic-kernel-check:
 # newer lint set would measure another member's code against a toolchain it
 # does not claim; NFR-033's "qualified on 1.98.1" covers this crate alone.
 #
-# Task-127 lands the toolchain gate, build and test; lift, goldens, check,
-# deny and audit land in Task-135 (FR-099).
+# Task-127 landed the toolchain gate, build and test; Task-135 (FR-099) the
+# rest. `extraction-frontend-lift` takes BUNDLE, MODULES (space-separated,
+# each one `--module`; the fixtures need both module roots) and OUT.
+# `extraction-frontend-goldens` is the only writer of `fixtures/*/expected/`:
+# it lifts every fixture bundle into a staging directory under
+# CARGO_TARGET_DIR and installs the result, because a bundle root refuses a
+# direct write (FR-097). `extraction-frontend-check` regenerates into a scratch
+# directory under CARGO_TARGET_DIR and `diff -ru`s each committed `expected/`
+# against it; it never writes under `fixtures/`, and a fixture that is not a
+# bundle root (`negatives/<CODE>/constructed.json`) is not regenerated and so
+# not diffed. `extraction-frontend-audit` scans the workspace lock (cargo
+# audit reads it as written and has no `--locked`); `--deny yanked` mirrors
+# the crate's `deny.toml` advisory policy, which cargo audit cannot read.
+# EXTRACTION_FIXTURES, EXTRACTION_MANIFEST and EXTRACTION_LOCKFILE point the
+# check, deny and audit gates at a scratch copy so `tests/make.rs` can
+# falsify them without touching the tree.
 
 EXTRACTION_TOOLCHAIN ?= 1.98.1
 EXTRACTION_CRATE := agent-ix-extraction-frontend
@@ -378,3 +392,41 @@ extraction-frontend-build: extraction-frontend-toolchain
 extraction-frontend-test: extraction-frontend-toolchain
 	cargo +$(EXTRACTION_TOOLCHAIN) test --locked -p $(EXTRACTION_CRATE)
 	cargo +$(EXTRACTION_TOOLCHAIN) clippy --locked -p $(EXTRACTION_CRATE) --no-deps --all-targets -- -D warnings
+
+EXTRACTION_FIXTURES ?= crates/extraction-frontend/fixtures
+EXTRACTION_MANIFEST ?= crates/extraction-frontend/Cargo.toml
+EXTRACTION_LOCKFILE ?= Cargo.lock
+EXTRACTION_GOLDEN_STAGING := $(CARGO_TARGET_DIR)/extraction-frontend-goldens
+EXTRACTION_CHECK_SCRATCH := $(CARGO_TARGET_DIR)/extraction-frontend-check
+EXTRACTION_RUN := cargo +$(EXTRACTION_TOOLCHAIN) run --locked -p $(EXTRACTION_CRATE) --bin extraction-frontend --
+MODULES ?= $(EXTRACTION_FIXTURES)/modules/spec-objects-business $(EXTRACTION_FIXTURES)/modules/edge-vocabulary
+
+.PHONY: extraction-frontend-lift
+extraction-frontend-lift: extraction-frontend-toolchain
+	@test -n "$(BUNDLE)" || { echo "BUNDLE=<bundle root> is required"; exit 2; }
+	@test -n "$(OUT)" || { echo "OUT=<document path> is required"; exit 2; }
+	$(EXTRACTION_RUN) lift --bundle $(BUNDLE) $(foreach module,$(MODULES),--module $(module)) --out $(OUT)
+
+.PHONY: extraction-frontend-goldens
+extraction-frontend-goldens: extraction-frontend-toolchain
+	rm -rf $(EXTRACTION_GOLDEN_STAGING)
+	$(EXTRACTION_RUN) lift --write-goldens --fixtures $(EXTRACTION_FIXTURES) --staging $(EXTRACTION_GOLDEN_STAGING)
+
+.PHONY: extraction-frontend-check
+extraction-frontend-check: extraction-frontend-toolchain
+	rm -rf $(EXTRACTION_CHECK_SCRATCH)
+	$(EXTRACTION_RUN) lift --write-goldens --fixtures $(EXTRACTION_FIXTURES) --into $(EXTRACTION_CHECK_SCRATCH)
+	@status=0; for expected in $$(find $(EXTRACTION_FIXTURES) -type d -name expected | sort); do \
+	  test -f "$$expected/../spec/spec.md" || continue; \
+	  rel=$${expected#$(EXTRACTION_FIXTURES)/}; \
+	  echo "diff -ru $$expected $(EXTRACTION_CHECK_SCRATCH)/$$rel"; \
+	  diff -ru "$$expected" "$(EXTRACTION_CHECK_SCRATCH)/$$rel" || status=1; \
+	done; exit $$status
+
+.PHONY: extraction-frontend-deny
+extraction-frontend-deny: extraction-frontend-toolchain
+	cargo +$(EXTRACTION_TOOLCHAIN) deny --manifest-path $(EXTRACTION_MANIFEST) check
+
+.PHONY: extraction-frontend-audit
+extraction-frontend-audit: extraction-frontend-toolchain
+	cargo +$(EXTRACTION_TOOLCHAIN) audit --file $(EXTRACTION_LOCKFILE) --deny yanked

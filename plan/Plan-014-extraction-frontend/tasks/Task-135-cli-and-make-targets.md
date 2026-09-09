@@ -2,7 +2,7 @@
 id: Task-135
 title: "FR-099 lift / inspect binary and Make targets"
 type: Task
-status: todo
+status: done
 track: A
 priority: P0
 relationships:
@@ -36,11 +36,11 @@ in the contiguous block Task-127 opened. The binary precedes FR-098 because
 
 ## Subtasks
 
-- [ ] **Red.** `tests/cli.rs` (spawning the built binary via `CARGO_BIN_EXE_extraction-frontend`): `tc_1295_` (exit 0, four files; `--diagnostics d.json --provenance p.json` renames, same document bytes), `tc_1296_` (`negatives/UNRESOLVED_TYPE_TOKEN` exit 1 diagnostics only; no `--module`, `MODULE_WITHOUT_SEMANTIC_BLOCK`, `--out` under root each exit 2 and write nothing), `tc_1297_` (`inspect` one line per type in `types` order; missing `contractVersion` → `INVALID_IR`, exit 1), `tc_1268_` (fresh `--out` absent / pre-existing unchanged on exit 1; warning-only lift writes and exits 0). `tests/make.rs` as `Static` evidence scripts: `tc_1298_` (five targets succeed on 1.98.1; `EXTRACTION_TOOLCHAIN=0.0.0` fails naming it, none skips), `tc_1349_` (deny/audit fail on a planted bad licence / yanked version in a scratch manifest, pass on the committed one).
-- [ ] **Green: `lift`.** `clap` derive; `--out` and every sidecar path checked against the bundle and module roots before loading (also refuse `--diagnostics`/`--provenance` equal to `<out>`, `<out>.fingerprint` or each other as `OUTPUT_UNWRITABLE`, SR-168 FND-1483); diagnostics printed to stderr one per line in FR-096 order on every lift; exit `2` on refusals and malformed options, `1` on a blocking lowering diagnostic, `0` otherwise; `--write-goldens` iterates the FR-098 inventory into each fixture's `expected/`.
-- [ ] **Green: `inspect`.** Read `--ir`, run `decide`, print `identity kind displayName` per type; any reader diagnostic → `INVALID_IR` lines, exit 1.
-- [ ] **Green: Makefile.** `-lift` (`BUNDLE`, `MODULES` → repeated `--module`, `OUT`), `-goldens`, `-check` (regenerate into `$(CARGO_TARGET_DIR)/extraction-frontend-check/` and `diff -ru` against `fixtures/*/expected`; never writes under `fixtures/`), `-deny` (`cargo +$(EXTRACTION_TOOLCHAIN) deny --manifest-path crates/extraction-frontend/Cargo.toml check`), `-audit` (`cargo +$(EXTRACTION_TOOLCHAIN) audit --locked` with the crate's `deny.toml` advisory policy); every target depends on the toolchain check and uses the exported `CARGO_TARGET_DIR`.
-- [ ] **Falsify.** Run `-check` after a one-byte edit to a scratch golden and prove it fails naming the file.
+- [x] **Red.** `tests/cli.rs` (spawning the built binary via `CARGO_BIN_EXE_extraction-frontend`): `tc_1295_` (exit 0, four files; `--diagnostics d.json --provenance p.json` renames, same document bytes), `tc_1296_` (`negatives/UNRESOLVED_TYPE_TOKEN` exit 1 diagnostics only; no `--module`, `MODULE_WITHOUT_SEMANTIC_BLOCK`, `--out` under root each exit 2 and write nothing), `tc_1297_` (`inspect` one line per type in `types` order; missing `contractVersion` → `INVALID_IR`, exit 1), `tc_1268_` (fresh `--out` absent / pre-existing unchanged on exit 1; warning-only lift writes and exits 0). `tests/make.rs` as `Static` evidence scripts: `tc_1298_` (five targets succeed on 1.98.1; `EXTRACTION_TOOLCHAIN=0.0.0` fails naming it, none skips), `tc_1349_` (deny/audit fail on a planted bad licence / yanked version in a scratch manifest, pass on the committed one).
+- [x] **Green: `lift`.** `clap` derive; `--out` and every sidecar path checked against the bundle and module roots before loading (also refuse `--diagnostics`/`--provenance` equal to `<out>`, `<out>.fingerprint` or each other as `OUTPUT_UNWRITABLE`, SR-168 FND-1483); diagnostics printed to stderr one per line in FR-096 order on every lift; exit `2` on refusals and malformed options, `1` on a blocking lowering diagnostic, `0` otherwise; `--write-goldens` iterates the FR-098 inventory into each fixture's `expected/`.
+- [x] **Green: `inspect`.** Read `--ir`, run `decide`, print `identity kind displayName` per type; any reader diagnostic → `INVALID_IR` lines, exit 1.
+- [x] **Green: Makefile.** `-lift` (`BUNDLE`, `MODULES` → repeated `--module`, `OUT`), `-goldens`, `-check` (regenerate into `$(CARGO_TARGET_DIR)/extraction-frontend-check/` and `diff -ru` against `fixtures/*/expected`; never writes under `fixtures/`), `-deny` (`cargo +$(EXTRACTION_TOOLCHAIN) deny --manifest-path crates/extraction-frontend/Cargo.toml check`), `-audit` (`cargo +$(EXTRACTION_TOOLCHAIN) audit --locked` with the crate's `deny.toml` advisory policy); every target depends on the toolchain check and uses the exported `CARGO_TARGET_DIR`.
+- [x] **Falsify.** Run `-check` after a one-byte edit to a scratch golden and prove it fails naming the file.
 
 ## Deliverables
 
