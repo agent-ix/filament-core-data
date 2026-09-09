@@ -11,11 +11,15 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::Mutex;
 
+mod common;
+
 use agent_ix_extraction_frontend::diagnostics::{Code, Diagnostic, Severity, WireCode};
 use agent_ix_extraction_frontend::{extract, Bundle, Extractions, Refusal};
 use ix_trace_rs::trace;
 use quire_rs::semantic::{AvailabilityState, SemanticDiagnostic, SemanticSeverity};
 use serde_json::{json, Value};
+
+use crate::common::{common_schema, diagnostic_schema_violations};
 
 /// `tc_1203_` rewrites `HOME`; `tc_1328_` spawns `quire`, which inherits it.
 /// Process-wide state, so the two serialise.
@@ -84,135 +88,26 @@ fn entity_md(id: &str, title: &str, rows: &[&str]) -> String {
     s
 }
 
+/// The engine code each `ENGINE_DIAGNOSTIC` opens its message with.
 fn engine_codes(d: &[Diagnostic]) -> Vec<String> {
     d.iter()
         .filter(|d| d.code == WireCode::Registry(Code::EngineDiagnostic))
-        .map(|d| d.causes[0].code.to_string())
+        .map(|d| engine_code_of(&d.message).to_string())
         .collect()
 }
 
-/// A walk of `common.schema.json#/$defs/diagnostic` over one instance: the
-/// required keys, the closed key set, the code pattern, the severity enum,
-/// and the same rules over `causes` and `related`. Returns the JSON
-/// pointers of every violation. No jsonschema crate is declared (NFR-033),
-/// and `agent_ix_semantic_ir::decide` walks IR bundles, not diagnostics,
-/// so this test walks the definition itself.
-fn diagnostic_schema_violations(instance: &Value, schema: &Value, at: &str) -> Vec<String> {
-    let def = &schema["$defs"]["diagnostic"];
-    let locus_def = &schema["$defs"]["sourceLocus"];
-    let mut out = Vec::new();
-    let Some(map) = instance.as_object() else {
-        return vec![at.to_string()];
-    };
-    for key in def["required"].as_array().expect("required") {
-        if !map.contains_key(key.as_str().expect("key")) {
-            out.push(format!("{at}/{}", key.as_str().expect("key")));
-        }
-    }
-    let allowed = def["properties"].as_object().expect("properties");
-    for key in map.keys() {
-        if !allowed.contains_key(key) {
-            out.push(format!("{at}/{key}"));
-        }
-    }
-    let code = map.get("code").and_then(Value::as_str).unwrap_or("");
-    // `^agent-ix\.[a-z0-9-]+\.[A-Z][A-Z0-9_]+$`
-    let code_ok = code.strip_prefix("agent-ix.").is_some_and(|rest| {
-        rest.split_once('.').is_some_and(|(component, name)| {
-            !component.is_empty()
-                && component
-                    .chars()
-                    .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
-                && name.chars().next().is_some_and(|c| c.is_ascii_uppercase())
-                && name.len() >= 2
-                && name
-                    .chars()
-                    .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit() || c == '_')
-        })
-    });
-    if !code_ok {
-        out.push(format!("{at}/code"));
-    }
-    let severities = def["properties"]["severity"]["enum"]
-        .as_array()
-        .expect("enum");
-    if !severities.contains(&map["severity"]) {
-        out.push(format!("{at}/severity"));
-    }
-    if map
-        .get("message")
-        .and_then(Value::as_str)
-        .is_none_or(str::is_empty)
-    {
-        out.push(format!("{at}/message"));
-    }
-    if !map
-        .get("owner")
-        .and_then(Value::as_str)
-        .is_some_and(|o| o.starts_with("ix://"))
-    {
-        out.push(format!("{at}/owner"));
-    }
-    if !map.get("blocking").is_some_and(Value::is_boolean) {
-        out.push(format!("{at}/blocking"));
-    }
-    let locus_ok = |v: &Value, at: &str, out: &mut Vec<String>| {
-        let Some(l) = v.as_object() else {
-            out.push(at.to_string());
-            return;
-        };
-        for key in locus_def["required"].as_array().expect("required") {
-            let key = key.as_str().expect("key");
-            if !l.contains_key(key) {
-                out.push(format!("{at}/{key}"));
-            }
-        }
-        for key in ["startLine", "startColumn"] {
-            if l.get(key).and_then(Value::as_u64).is_none_or(|n| n < 1) {
-                out.push(format!("{at}/{key}"));
-            }
-        }
-        if l.get("path")
-            .and_then(Value::as_str)
-            .is_none_or(|p| p.is_empty() || p.starts_with('/'))
-        {
-            out.push(format!("{at}/path"));
-        }
-    };
-    if let Some(locus) = map.get("locus") {
-        locus_ok(locus, &format!("{at}/locus"), &mut out);
-    }
-    match map.get("related").and_then(Value::as_array) {
-        Some(related) => {
-            for (i, r) in related.iter().enumerate() {
-                locus_ok(r, &format!("{at}/related/{i}"), &mut out);
-            }
-        }
-        None => out.push(format!("{at}/related")),
-    }
-    match map.get("causes").and_then(Value::as_array) {
-        Some(causes) => {
-            for (i, c) in causes.iter().enumerate() {
-                out.extend(diagnostic_schema_violations(
-                    c,
-                    schema,
-                    &format!("{at}/causes/{i}"),
-                ));
-            }
-        }
-        None => out.push(format!("{at}/causes")),
-    }
-    out
+/// `<engine code>` of a `<engine code> (reason: <reason>): <engine message>`
+/// or `<engine code>: <engine message>` message.
+fn engine_code_of(message: &str) -> &str {
+    message.split([' ', ':']).next().unwrap_or_default()
 }
 
-fn common_schema() -> Value {
-    let path = crate_dir()
-        .parent()
-        .and_then(Path::parent)
-        .expect("workspace root")
-        .join("schema/semantic/v1/common.schema.json");
-    serde_json::from_str(&fs::read_to_string(&path).expect("common.schema.json"))
-        .expect("common.schema.json is JSON")
+/// The FR-091 / FR-096 message of one wrapped engine diagnostic.
+fn engine_head(e: &SemanticDiagnostic) -> String {
+    match &e.reason {
+        Some(reason) => format!("{} (reason: {reason}): {}", e.code, e.message),
+        None => format!("{}: {}", e.code, e.message),
+    }
 }
 
 #[trace("TC-1200", "FR-091-AC-1")]
@@ -305,17 +200,17 @@ fn tc_1202_unsupported_semantic_core_refuses_with_the_engine_code_and_lowers_not
     let refusal = Bundle::load(&root, &[&root.join("modules/spec-objects-business")])
         .expect_err("refused rather than loaded as an empty model");
     assert_eq!(refusal.code(), Code::ModuleRefused);
-    assert_eq!(
-        refusal.diagnostic.causes[0].code.to_string(),
-        "semantic.unsupported-semantic-core"
-    );
     assert!(
         refusal
             .diagnostic
             .message
-            .starts_with("semantic.unsupported-semantic-core"),
-        "{}",
+            .starts_with("semantic.unsupported-semantic-core: "),
+        "the engine code opens the message: {}",
         refusal.diagnostic.message
+    );
+    assert!(
+        refusal.diagnostic.causes.is_empty(),
+        "a `semantic.*` code cannot live in `causes` (FR-096 \"Engine diagnostics\")"
     );
     assert!(refusal.diagnostic.message.contains("9.9.9"));
     let locus = refusal.diagnostic.locus.as_ref().expect("manifest locus");
@@ -660,10 +555,12 @@ fn tc_1208_every_engine_diagnostic_is_one_engine_diagnostic_with_mapped_severity
             "{name}: one wrapper per engine diagnostic"
         );
         for (w, (path, e)) in wrapped.iter().zip(&engine) {
-            assert_eq!(w.causes.len(), 1);
-            assert_eq!(w.causes[0].code.to_string(), e.code);
-            assert_eq!(w.causes[0].message, e.message);
-            assert!(w.message.starts_with(&e.code), "{}", w.message);
+            assert!(w.causes.is_empty(), "{name}: causes stay empty");
+            assert!(
+                w.message.starts_with(&engine_head(e)),
+                "{name}: `<code> (reason: <reason>): <message>` opens the wrapper: {}",
+                w.message
+            );
             let expected = match e.severity {
                 SemanticSeverity::Advisory => Severity::Info,
                 SemanticSeverity::Warning => Severity::Warning,
@@ -716,11 +613,7 @@ fn tc_1209_legacy_free_column_table_is_unavailable_with_the_engine_warning_at_li
     let wrapped = out
         .diagnostics
         .iter()
-        .find(|d| {
-            d.causes
-                .first()
-                .is_some_and(|c| c.code.to_string() == "semantic.legacy-properties-form")
-        })
+        .find(|d| d.message.starts_with("semantic.legacy-properties-form"))
         .expect("wrapped");
     assert_eq!(wrapped.severity, Severity::Warning);
     assert!(!wrapped.blocking);
@@ -766,25 +659,23 @@ fn tc_1331_duplicate_id_refuses_at_the_second_path_and_a_line_zero_diagnostic_ha
     assert!(wrapped.message.contains(path));
     assert_eq!(wrapped.severity, Severity::Info);
     assert!(!wrapped.blocking);
-    assert_eq!(
-        wrapped.causes[0].code.to_string(),
-        "semantic.unresolved-type"
+    assert!(
+        wrapped
+            .message
+            .starts_with("semantic.unresolved-type (reason: unknown-token): "),
+        "{}",
+        wrapped.message
     );
-    assert!(wrapped.message.contains("(reason: unknown-token)"));
+    assert!(wrapped.causes.is_empty());
     let value = serde_json::to_value(&wrapped).expect("json");
     assert!(
         value.get("locus").is_none(),
         "no fabricated locus at line 0"
     );
-    // FR-091-AC-9 makes `causes[0].code` the engine's own `semantic.*` code,
-    // while `common.schema.json#/$defs/diagnostic` types `causes[]` as
-    // `diagnostic` again, whose `code` pattern admits only
-    // `agent-ix.<component>.<NAME>`. The two cannot both hold; the wrapper
-    // itself validates and the one violation is exactly the reproduced
-    // engine code (reported as a spec defect with Task-128).
     assert_eq!(
         diagnostic_schema_violations(&value, &schema, ""),
-        ["/causes/0/code"]
+        Vec::<String>::new(),
+        "the wrapper validates whole, causes included (CR-036-2)"
     );
     let with_line = Diagnostic::engine(
         &SemanticDiagnostic {

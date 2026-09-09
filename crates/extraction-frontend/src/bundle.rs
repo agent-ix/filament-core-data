@@ -15,7 +15,7 @@ use quire_rs::semantic::{BundleIndex, SemanticModule};
 use quire_rs::CompiledArchetype;
 use quire_rs::{LoadedDocument, Registry};
 
-use crate::diagnostics::{Code, Diagnostic, Locus, WireCode};
+use crate::diagnostics::{Code, Diagnostic, Locus};
 
 /// The bundle-root-relative path of the package identity document.
 const SPEC_MD: &str = "spec/spec.md";
@@ -152,8 +152,8 @@ impl Bundle {
     ///
     /// Refuses, in this order, with `BUNDLE_UNIDENTIFIED` (no `spec/spec.md`,
     /// no `org`/`name`, or one outside `[a-z0-9][a-z0-9-]*`), `MODULE_REFUSED`
-    /// (the engine refused the module; the engine `semantic.*` code rides in
-    /// `causes[0]`), `MODULE_WITHOUT_SEMANTIC_BLOCK`, `DUPLICATE_ARTIFACT_ID`
+    /// (the engine refused the module; the engine `semantic.*` code opens
+    /// the message), `MODULE_WITHOUT_SEMANTIC_BLOCK`, `DUPLICATE_ARTIFACT_ID`
     /// (at the second document in path order) and `BUNDLE_UNIDENTIFIED` again
     /// for an object-typed document without an `id`.
     pub fn load(root: &Path, module_roots: &[&Path]) -> Result<Self, Refusal> {
@@ -338,7 +338,10 @@ fn accepted_modules(
             }
             _ => (None, failure.reason.clone()),
         };
-        let mut diagnostic = Diagnostic::frontend(
+        // The engine's `semantic.*` code opens the message and `causes` stays
+        // empty, for the reason FR-096 "Engine diagnostics" gives: the
+        // `diagnostic` schema admits no `semantic.*` code in `causes`.
+        let diagnostic = Diagnostic::frontend(
             Code::ModuleRefused,
             match &code {
                 Some(code) => format!("{code}: {message} (module {})", failure.module),
@@ -346,19 +349,6 @@ fn accepted_modules(
             },
             Some(locus),
         );
-        if let Some(code) = code {
-            let cause = Diagnostic {
-                code: WireCode::Foreign(code),
-                severity: diagnostic.severity,
-                message,
-                owner: crate::diagnostics::OWNER.to_string(),
-                locus: None,
-                blocking: diagnostic.blocking,
-                causes: Vec::new(),
-                related: Vec::new(),
-            };
-            diagnostic = diagnostic.with_cause(cause);
-        }
         return Err(Refusal::new(diagnostic));
     }
     let mut modules = BTreeMap::new();

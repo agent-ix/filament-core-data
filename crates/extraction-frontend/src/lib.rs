@@ -7,8 +7,17 @@
 
 pub mod bundle;
 pub mod diagnostics;
+pub mod envelope;
 pub mod extract;
+pub mod identity;
+pub mod provenance;
 
 pub use bundle::{Bundle, Document, ObjectType, Package, Refusal};
-pub use diagnostics::{Code, Diagnostic, Locus, Severity};
+pub use diagnostics::{
+    is_blocked, message_with_token, render_registry_doc, sort_diagnostics, Code, Diagnostic,
+    Disposition, Locus, NotLoweredReason, Severity, WireCode,
+};
+pub use envelope::{Envelope, ModuleManifest, PackageBlock, SourceBlock};
 pub use extract::{extract, Extracted, Extractions};
+pub use identity::{slug, NodeKind, PackageIdentity, Unsluggable};
+pub use provenance::{provenance_record, Provenance};
