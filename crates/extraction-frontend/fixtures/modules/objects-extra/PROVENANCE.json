@@ -1,0 +1,11 @@
+{
+  "source": "authored",
+  "module": "objects-extra",
+  "module_version": "0.1.0",
+  "paths": [
+    "manifest.yaml",
+    "schemas/Widget.json"
+  ],
+  "edits": [],
+  "note": "Authored for FR-095-AC-11 (TC-1256): a second module declaring one object type (widget) with a semantic block, loaded beside the vendored spec-objects-business module so package.manifestDigest covers two manifests concatenated in module-name order (objects-extra sorts before spec-objects-business) regardless of the order of the caller's module roots. The body_extraction block copies the vendored entity shape; Widget.json is a minimal reference-form data_schema whose digest the manifest records."
+}

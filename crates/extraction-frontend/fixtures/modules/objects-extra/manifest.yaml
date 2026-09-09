@@ -1,0 +1,46 @@
+manifest_version: 1.0.0
+name: objects-extra
+version: 0.1.0
+description: One extra object type (widget) loaded beside the vendored module (FR-095-AC-11)
+semantic:
+  contract_version: 1.0.0
+  semantic_core: 0.1.0
+  package: agent-ix/objects-extra
+  exports:
+  - widget
+  imports: {}
+  targets: [json-schema]
+  mappings: [typed-table]
+  compatibility_posture: additive
+  legacy_forms: warning
+archetypes: []
+grammars: []
+artifact_types: []
+lint_rules: []
+object_types:
+- name: widget
+  roles: [domain-object]
+  allowed_links:
+    references: [widget]
+  data_schema:
+    schema: schemas/Widget.json
+    digest: sha256:205efa11fed10ab8e131452319ed7321a672d250d67825e57f356a05a4cd9135
+  body_extraction:
+    yield_pattern:
+      match:
+        id:
+          from: frontmatter_field
+          path: [id]
+          required: true
+        title:
+          from: frontmatter_field
+          path: [title]
+          required: true
+        type:
+          from: frontmatter_field
+          path: [type]
+          required: true
+        properties:
+          from: section_body
+          after_heading: Properties
+          required: true

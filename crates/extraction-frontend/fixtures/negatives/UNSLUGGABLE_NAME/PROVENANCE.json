@@ -1,0 +1,11 @@
+{
+  "source": "authored",
+  "code": "UNSLUGGABLE_NAME",
+  "files": [
+    "spec/functional/FR-008-punctuation.md",
+    "spec/spec.md"
+  ],
+  "derived": [],
+  "edits": [],
+  "note": "FR-008 carries title \"---\" and no name, so its displayName slugs to the empty string: UNSLUGGABLE_NAME at spec/functional/FR-008-punctuation.md line 1 column 1 (the frontmatter block), blocking (FR-095-AC-7, EC-145). The bundle loads and extracts; the refusal belongs to the identity minter."
+}

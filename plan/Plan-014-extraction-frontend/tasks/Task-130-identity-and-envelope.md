@@ -2,7 +2,7 @@
 id: Task-130
 title: "FR-095 identity minters, envelope digests, provenance"
 type: Task
-status: todo
+status: done
 track: B
 priority: P0
 relationships:
@@ -43,12 +43,12 @@ Task-129.
 
 ## Subtasks
 
-- [ ] **Fixtures.** Author `fixtures/modules/objects-extra/` (one object type, `PROVENANCE.json` `authored`) for TC-1256; author `fixtures/negatives/UNSLUGGABLE_NAME/` (artifact titled `---`).
-- [ ] **Red.** `tests/identity.rs`: `tc_1252_` (`slug("Config Version")`, `slug("A__B--C")`, `slug("--")` → `Unsluggable`, artifact `---` → `UNSLUGGABLE_NAME` blocking at frontmatter), `tc_1257_` (grep gate: no `git2`, `Command::new("git")`, `std::env::var`, `env!`, `option_env!`; planted `env!("CARGO_PKG_VERSION")` in `envelope.rs` fails). `tests/envelope.rs`: `tc_1246_` (identity/dialect/package over the loaded `config-version-table` bundle), `tc_1247_` (`version: 2.1.0` / absent → `0.0.0`), `tc_1248_` (`source.digest` vs `sha256sum` over path‖NUL‖bytes‖NUL in code-point path order, one-byte change flips it), `tc_1249_` (`manifestDigest`, `lockDigest` vs external `sha256sum`), `tc_1250_` (`mappingVersions ["1.0.0"]`, `profileVersions []`, `occurrences []`, `extensions []`), `tc_1254_` (provenance names quire-rs version + rev ≥ `a874fb6` and crate version from the lock the test reads), `tc_1256_` (proptest: module-root order swapped, digest unchanged), `tc_1348_` (module entry sha256 equals the vendored `PROVENANCE.json` value).
-- [ ] **Green: slug and minters.** Lowercase, runs of non-alphanumerics → one `-`, trimmed; empty → `Unsluggable`. `type_identity` uses `displayName` verbatim; `field/`, `constraint/`, `relationship/`, `operation/`, `param/`, `variant/`, `clause/` use slugs (D8). All match `semanticIdentity`.
-- [ ] **Green: envelope.** `source` (`ix://<org>/<name>/spec`, `spec-bundle`, version, digest), `package` (`<org>/<name>`, version, `manifestDigest` in module-name order, `mappingVersions`, `profileVersions`, `lockDigest` over sorted `<pkg>@<ver>:<sha256>\n` lines).
-- [ ] **Green: provenance.** `include_str!("../../../Cargo.lock")` parsed for the `quire-rs` `source = "git+…#<rev>"` and version and the crate's own version; modules by `name`, `version`, manifest sha256 in name order; vendored semantic-core version; no roots, clock, hostname, username, absolute path.
-- [ ] **Falsify.** Plant `env!` in a scratch `envelope.rs` and prove `tc_1257_` fails.
+- [x] **Fixtures.** Author `fixtures/modules/objects-extra/` (one object type, `PROVENANCE.json` `authored`) for TC-1256; author `fixtures/negatives/UNSLUGGABLE_NAME/` (artifact titled `---`).
+- [x] **Red.** `tests/identity.rs`: `tc_1252_` (`slug("Config Version")`, `slug("A__B--C")`, `slug("--")` → `Unsluggable`, artifact `---` → `UNSLUGGABLE_NAME` blocking at frontmatter), `tc_1257_` (grep gate: no `git2`, `Command::new("git")`, `std::env::var`, `env!`, `option_env!`; planted `env!("CARGO_PKG_VERSION")` in `envelope.rs` fails). `tests/envelope.rs`: `tc_1246_` (identity/dialect/package over the loaded `config-version-table` bundle), `tc_1247_` (`version: 2.1.0` / absent → `0.0.0`), `tc_1248_` (`source.digest` vs `sha256sum` over path‖NUL‖bytes‖NUL in code-point path order, one-byte change flips it), `tc_1249_` (`manifestDigest`, `lockDigest` vs external `sha256sum`), `tc_1250_` (`mappingVersions ["1.0.0"]`, `profileVersions []`, `occurrences []`, `extensions []`), `tc_1254_` (provenance names quire-rs version + rev ≥ `a874fb6` and crate version from the lock the test reads), `tc_1256_` (proptest: module-root order swapped, digest unchanged), `tc_1348_` (module entry sha256 equals the vendored `PROVENANCE.json` value).
+- [x] **Green: slug and minters.** Lowercase, runs of non-alphanumerics → one `-`, trimmed; empty → `Unsluggable`. `type_identity` uses `displayName` verbatim; `field/`, `constraint/`, `relationship/`, `operation/`, `param/`, `variant/`, `clause/` use slugs (D8). All match `semanticIdentity`.
+- [x] **Green: envelope.** `source` (`ix://<org>/<name>/spec`, `spec-bundle`, version, digest), `package` (`<org>/<name>`, version, `manifestDigest` in module-name order, `mappingVersions`, `profileVersions`, `lockDigest` over sorted `<pkg>@<ver>:<sha256>\n` lines).
+- [x] **Green: provenance.** `include_str!("../../../Cargo.lock")` parsed for the `quire-rs` `source = "git+…#<rev>"` and version and the crate's own version; modules by `name`, `version`, manifest sha256 in name order; vendored semantic-core version; no roots, clock, hostname, username, absolute path.
+- [x] **Falsify.** Plant `env!` in a scratch `envelope.rs` and prove `tc_1257_` fails.
 
 ## Deliverables
 
