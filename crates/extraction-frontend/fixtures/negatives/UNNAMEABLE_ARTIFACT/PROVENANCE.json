@@ -1,0 +1,11 @@
+{
+  "source": "authored",
+  "code": "UNNAMEABLE_ARTIFACT",
+  "files": [
+    "spec/spec.md",
+    "spec/functional/FR-005-config-overlay-entity.md"
+  ],
+  "derived": [],
+  "edits": [],
+  "note": "An entity titled `Config Overlay Entity` with no frontmatter `name`: neither value is a semantic-core Identifier, so no `type/` segment can be taken from it. The frontend raises blocking UNNAMEABLE_ARTIFACT at the frontmatter (line 1 column 1) and emits no record (FR-093 'The record')."
+}

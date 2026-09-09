@@ -1,0 +1,13 @@
+{
+  "repository": "https://github.com/agent-ix/filament-core-data",
+  "revision": "Task-129",
+  "paths": [
+    {
+      "source": "crates/extraction-frontend/src/diagnostics.rs (render_registry_doc)",
+      "fixture": "expected/extraction-frontend-diagnostics.md",
+      "edits": []
+    }
+  ],
+  "edits": [],
+  "note": "Not a copy of another repository: the expected bytes of `render_registry_doc()`, rendered by `tests/diagnostics.rs` with `EXTRACTION_FRONTEND_RENDER_DOC=<scratch path>` and copied here deliberately when the registry changes. Task-138 writes the same bytes to docs/semantic-data-system/extraction-frontend-diagnostics.md (NFR-032's closing sentinel; TC-1271)."
+}

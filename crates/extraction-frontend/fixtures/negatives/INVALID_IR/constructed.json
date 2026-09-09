@@ -1,0 +1,6 @@
+{
+  "source": "constructed",
+  "code": "INVALID_IR",
+  "constructed_by": "crates/extraction-frontend/tests/document.rs::tc_1274_a_document_missing_unknown_policy_yields_one_invalid_ir_at_the_type_and_writes_only_diagnostics",
+  "note": "The schema-layer case: the test lifts config-version-table in memory, removes `unknownPolicy` from one type of the assembled document, and hands the fault-injected value to `emit`, which must raise exactly one blocking INVALID_IR naming that type's instance pointer and write only the diagnostics sidecar (FR-097-AC-2). No committed bundle can express a missing member the frontend always emits, so the fault is injected after assembly and before the reader."
+}

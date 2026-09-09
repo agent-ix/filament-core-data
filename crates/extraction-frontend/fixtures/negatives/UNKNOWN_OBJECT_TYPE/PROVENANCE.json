@@ -1,0 +1,19 @@
+{
+  "source": "authored",
+  "code": "UNKNOWN_OBJECT_TYPE",
+  "files": [
+    "spec/functional/FR-005-config-overlay-entity.md",
+    "spec/functional/FR-007-widget.md",
+    "spec/spec.md",
+    "spec/usecase/US-001-configure.md"
+  ],
+  "derived": [
+    {
+      "fixture": "spec/functional/FR-005-config-overlay-entity.md",
+      "from": "../../config-version-table/spec/functional/FR-005-config-overlay-entity.md",
+      "edits": []
+    }
+  ],
+  "edits": [],
+  "note": "FR-007 carries object: widget, which no module declares (UNKNOWN_OBJECT_TYPE at spec/functional/FR-007-widget.md, not lowered); US-001 carries no object and yields no diagnostic; FR-005 lifts (FR-091-AC-6)."
+}

@@ -1,0 +1,32 @@
+{
+  "source": "authored",
+  "code": "DUPLICATE_ARTIFACT_ID",
+  "files": [
+    "spec/functional/FR-005-config-overlay-entity.md",
+    "spec/functional/FR-006-config-version-entity.md",
+    "spec/functional/FR-006-config-version-second.md",
+    "spec/spec.md"
+  ],
+  "derived": [
+    {
+      "fixture": "spec/functional/FR-005-config-overlay-entity.md",
+      "from": "../../config-version-table/spec/functional/FR-005-config-overlay-entity.md",
+      "edits": []
+    },
+    {
+      "fixture": "spec/functional/FR-006-config-version-entity.md",
+      "from": "../../config-version-table/spec/functional/FR-006-config-version-entity.md",
+      "edits": []
+    },
+    {
+      "fixture": "spec/functional/FR-006-config-version-second.md",
+      "from": "../../config-version-table/spec/functional/FR-006-config-version-entity.md",
+      "edits": [
+        "title suffixed ` (second declaration)`",
+        "name: ConfigVersion -> ConfigVersionAgain (so only the id collides)"
+      ]
+    }
+  ],
+  "edits": [],
+  "note": "FR-006-config-version-entity.md and FR-006-config-version-second.md both carry id: FR-006; loading refuses with DUPLICATE_ARTIFACT_ID at the second path in path order naming both (FR-091-AC-11)."
+}

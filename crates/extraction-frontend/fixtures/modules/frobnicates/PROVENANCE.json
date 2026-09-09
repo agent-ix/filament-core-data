@@ -1,0 +1,20 @@
+{
+  "source": "authored",
+  "module": "frobnicates",
+  "module_version": "0.1.0",
+  "paths": [
+    "manifest.yaml",
+    "schemas/Entity.json"
+  ],
+  "derived": [
+    {
+      "fixture": "schemas/Entity.json",
+      "from": "../objects-extra/schemas/Widget.json",
+      "edits": [
+        "$id renamed to agent-ix/frobnicates/0.1.0/Entity.json"
+      ]
+    }
+  ],
+  "edits": [],
+  "note": "The test module of FR-094-AC-4 (TC-1234): declares `entity` alone, with allowed_links {frobnicates, references} and no edge_types registry, and is loaded ALONE (never beside spec-objects-business, which declares entity too) so that no loaded module's edge_types declares frobnicates. The body_extraction block copies the objects-extra shape."
+}

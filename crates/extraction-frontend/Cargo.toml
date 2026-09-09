@@ -1,0 +1,44 @@
+# The spec-bundle extraction frontend (agent-ix/filament-core-data#36).
+#
+# Qualified on exactly Rust 1.98.1 (NFR-033): the qualification compiler is
+# named once in the Makefile (`EXTRACTION_TOOLCHAIN ?= 1.98.1`) and every gate
+# over this crate runs `cargo +$(EXTRACTION_TOOLCHAIN)`. `rust-version` is the
+# workspace's supported minimum, because cargo enforces every member's
+# `rust-version` under `--workspace` and a member-level 1.98.1 broke
+# `make rust-build` on the workspace channel (CR-036-1). Every dependency is an exact pin:
+# `quire-rs` by git `rev` because no release tag contains `Registry::load_module_set`
+# (quire-rs#411 at a874fb6); `serde`/`serde_json` through the workspace's own
+# exact pins; the rest with `=`. No `jsonschema` is declared: validation and
+# canonical bytes come from `agent-ix-semantic-ir` (FR-097).
+[package]
+name = "agent-ix-extraction-frontend"
+version = "0.0.0"
+description = "Lifts a quire spec bundle into the Filament semantic IR."
+edition = "2021"
+rust-version.workspace = true
+license = "AGPL-3.0-only"
+publish = false
+
+[lib]
+name = "agent_ix_extraction_frontend"
+path = "src/lib.rs"
+
+[[bin]]
+name = "extraction-frontend"
+path = "src/main.rs"
+
+[dependencies]
+quire-rs = { git = "https://github.com/agent-ix/quire-rs", rev = "8b8020e" }
+agent-ix-semantic-ir = { path = "../semantic-ir" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = "=0.10.9"
+clap = { version = "=4.6.6", features = ["derive"] }
+
+[dev-dependencies]
+ix-trace-rs = { git = "https://github.com/agent-ix/ix-trace-rs", tag = "v0.1.1" }
+tempfile = "=3.27.0"
+proptest = "=1.11.0"
+
+[lints.rust]
+unsafe_code = "forbid"

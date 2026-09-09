@@ -1,0 +1,17 @@
+{
+  "source": "authored",
+  "code": "BUNDLE_UNIDENTIFIED",
+  "files": [
+    "spec/functional/FR-005-config-overlay-entity.md",
+    "spec/spec.md"
+  ],
+  "derived": [
+    {
+      "fixture": "spec/functional/FR-005-config-overlay-entity.md",
+      "from": "../../config-version-table/spec/functional/FR-005-config-overlay-entity.md",
+      "edits": []
+    }
+  ],
+  "edits": [],
+  "note": "spec/spec.md carries name but no org: loading refuses with BUNDLE_UNIDENTIFIED at spec/spec.md (FR-091-AC-5). The `Config Service` name, the absent spec.md and the object-typed document without id are test-constructed bundles (tempdir) because one directory holds one spec.md."
+}

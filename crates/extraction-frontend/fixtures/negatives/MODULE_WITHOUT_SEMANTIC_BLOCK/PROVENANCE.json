@@ -1,0 +1,18 @@
+{
+  "source": "authored",
+  "code": "MODULE_WITHOUT_SEMANTIC_BLOCK",
+  "files": [
+    "modules/no-semantic/manifest.yaml",
+    "spec/functional/FR-005-config-overlay-entity.md",
+    "spec/spec.md"
+  ],
+  "derived": [
+    {
+      "fixture": "spec/functional/FR-005-config-overlay-entity.md",
+      "from": "../../config-version-table/spec/functional/FR-005-config-overlay-entity.md",
+      "edits": []
+    }
+  ],
+  "edits": [],
+  "note": "Bundle root plus modules/no-semantic/: a manifest declaring an entity object type and no semantic block. Loading with modules/no-semantic as the module root refuses with MODULE_WITHOUT_SEMANTIC_BLOCK naming no-semantic (FR-091-AC-2)."
+}

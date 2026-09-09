@@ -1,0 +1,1 @@
+[{"blocking":true,"causes":[],"code":"agent-ix.extraction-frontend.BUNDLE_UNIDENTIFIED","locus":{"path":"spec/spec.md","sourceIdentity":"ix://local/bundle/spec","startColumn":1,"startLine":1},"message":"spec/spec.md carries no `org`","owner":"ix://agent-ix/filament-core-data/extraction-frontend","related":[],"severity":"error"}]
