@@ -1,23 +1,37 @@
 {
-	"$comment": "Shared frontend fixture cases (FR-045). Each case names one source tree per dialect; the harness runs every *implemented* dialect the case supplies and compares the normalized serialization of FR-050. With only `typespec` implemented, each case is recorded as single-dialect rather than as cross-frontend agreement it never observed — the spec-bundle column is issue #36's to fill in.",
+	"$comment": "Shared frontend fixture cases (FR-045, FR-098). Each case names one source tree per dialect; the harness runs every *implemented* dialect the case supplies and compares the normalized serialization of FR-050. A case whose `spec-bundle` is null is recorded as single-dialect with the reason, rather than as cross-frontend agreement it never observed. The spec-bundle dialect is lifted by crates/extraction-frontend (issue #36) and compared from that crate's tests under the FR-098 projection; the node seam stays FRONTEND_NOT_IMPLEMENTED until filament-core-data#86.",
 	"cases": [
 		{
 			"id": "scalars-and-records",
 			"sources": {
-				"typespec": "shared/typespec/scalars-and-records"
-			}
+				"typespec": "shared/typespec/scalars-and-records",
+				"spec-bundle": null
+			},
+			"reason": "declares the package-local scalar `Text` (`scalar Text extends string` with `@minLength(1)`), which the spec-bundle typed table cannot author: its Type cell names a kernel scalar or a bundle artifact, never a new scalar"
 		},
 		{
 			"id": "collections-and-units",
 			"sources": {
-				"typespec": "shared/typespec/collections-and-units"
-			}
+				"typespec": "shared/typespec/collections-and-units",
+				"spec-bundle": null
+			},
+			"reason": "declares the package-local scalars `Text` and `Seconds` (`scalar ... extends string|float64`), which the spec-bundle typed table cannot author"
 		},
 		{
 			"id": "enums-and-unions",
 			"sources": {
-				"typespec": "shared/typespec/enums-and-unions"
-			}
+				"typespec": "shared/typespec/enums-and-unions",
+				"spec-bundle": null
+			},
+			"reason": "declares the package-local scalar `Text` and the union `Either`; the spec-bundle typed table authors neither a scalar nor a union (FR-093 emits no `union` kind)"
+		},
+		{
+			"id": "records-and-scalars",
+			"sources": {
+				"typespec": "shared/typespec/records-and-scalars",
+				"spec-bundle": null
+			},
+			"reason": "authored in both dialects (shared/spec-bundle/records-and-scalars holds the spec-bundle half) over kernel scalars only, but the two frontends disagree under the FR-098 projection by construction, so the case is recorded single-dialect: (1) the spec-bundle record carries `clauses: []`, `operations: []` and `relationships: []` where the TypeSpec record omits the three members; (2) field identities are `field/note-id` (FR-095 slug) versus `field/Note-id` (FR-046 verbatim names); (3) the constrained field's alias is `type/Note.revision` (CR-036-4) versus `type/NoteRevision` (FR-053 `<Name><Field>`), so the field's `typeRef`, the constraint's `appliesTo` and the alias node itself differ; (4) the constraint identity is `constraint/note-revision-min` versus `constraint/Note-revision-min`, and its `diagnosticCode` is `agent-ix.records-and-scalars.REVISION_MIN` versus `agent-ix.records-and-scalars.NOTE_REVISION_MIN`. Reported with Task-136; the projection was not widened to hide any of the four"
 		}
 	]
 }

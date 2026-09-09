@@ -1,0 +1,11 @@
+{
+  "source": "authored",
+  "code": "CONSTRAINT_NOT_APPLICABLE",
+  "files": [
+    "spec/spec.md",
+    "spec/functional/FR-001-person.md"
+  ],
+  "derived": [],
+  "edits": [],
+  "note": "`name | String | 1 | min: 1`: a numeric bound on a string scalar, which the RULES.md applicability table does not admit. The frontend raises blocking CONSTRAINT_NOT_APPLICABLE at row line 19 column 3 and emits no record; the reader raises its own CONSTRAINT_NOT_APPLICABLE over the same constraint when appliesTo names the string scalar (FR-093-AC-6; TC-1225)."
+}

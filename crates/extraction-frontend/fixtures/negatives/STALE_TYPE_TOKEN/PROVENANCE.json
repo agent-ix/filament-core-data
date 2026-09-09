@@ -1,0 +1,14 @@
+{
+  "source": "authored",
+  "code": "STALE_TYPE_TOKEN",
+  "files": [
+    "spec/functional/FR-005-config-overlay-entity.md",
+    "spec/functional/FR-006-config-version-entity.md",
+    "spec/spec.md"
+  ],
+  "derived": [
+    "FR-005's `## Properties` block copies the legacy free-column shape of fixtures/legacy (quire-rs tests/fixtures/semantic/quoin/mapping/config-version.legacy.md at 8b8020e), retitled ConfigOverlay with two columns."
+  ],
+  "edits": [],
+  "note": "FR-005 is a legacy-form entity: the engine leaves its fields unavailable (reason legacy-form), so pass one records no definition for it and raises a non-blocking ARTIFACT_NOT_LOWERED at its frontmatter. FR-006's `overlay | ConfigOverlay` cell at line 15 resolves through the index by title to ix://agent-ix/config-service/type/ConfigOverlay; pass two classifies it Unresolved::Stale(FR-005) and raises blocking STALE_TYPE_TOKEN at line 15 column 3 with `related` at FR-005's ARTIFACT_NOT_LOWERED locus (FR-092-AC-6; TC-1215, TC-1332). The cell names FR-005 by title, not by id: the engine's Type-cell grammar (quire-rs FR-070 is_identifier) rejects `FR-005` with semantic.invalid-type-token before any index lookup, so an id-form cell can never reach the classifier (spec defect reported against FR-092-AC-6)."
+}

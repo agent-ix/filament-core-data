@@ -1,0 +1,6 @@
+{
+  "source": "constructed",
+  "code": "OUTPUT_UNWRITABLE",
+  "constructed_by": "crates/extraction-frontend/tests/write.rs::{tc_1282_,tc_1340_,tc_1339_}",
+  "note": "Every OUTPUT_UNWRITABLE case is a path, not a bundle: `--out` in a directory that does not exist (TC-1282), `--out` under the bundle root and under a module root (TC-1340), and two of the four output paths resolving to one file (TC-1339). Each test constructs the paths against a scratch copy or the committed config-version-table bundle; no committed file expresses a path."
+}

@@ -1,0 +1,12 @@
+{
+  "source": "authored",
+  "code": "ARTIFACT_NOT_LOWERED",
+  "files": [
+    "spec/spec.md",
+    "spec/functional/FR-001-both-forms.md",
+    "spec/functional/EN-001-colour.md"
+  ],
+  "derived": [],
+  "edits": [],
+  "note": "FR-001 carries both a typed table and a `sysml` fence under one `## Properties`: the engine reports availability.fields unavailable with reason `both-forms`, so the frontend raises blocking ARTIFACT_NOT_LOWERED naming `both-forms` (FR-093-AC-9; TC-1228). EN-001 is an `object: enumeration` with no `## Values`: the module's required values_table locator is unsatisfied, so the frontend raises blocking ARTIFACT_NOT_LOWERED naming the evaluator's reason (FR-093-AC-12; TC-1333). The non-blocking `legacy-form` case is fixtures/legacy/."
+}

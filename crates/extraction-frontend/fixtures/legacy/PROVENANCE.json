@@ -1,0 +1,20 @@
+{
+  "repository": "https://github.com/agent-ix/config-service",
+  "revision": "6de6cd9",
+  "revision_full": "6de6cd98718a8c8b516434172fb9b2dd4fe18978",
+  "paths": [
+    {
+      "source": "spec/functional/FR-006-config-version-entity.md",
+      "source_sha256": "b395b2c001744672a2a5f50e5ca9d975b90f764cb199e64e3ac5a77b7b62ca8a",
+      "fixture": "spec/functional/FR-006-config-version-entity.md",
+      "edits": []
+    },
+    {
+      "source": "spec/spec.md",
+      "fixture": "spec/spec.md",
+      "edits": ["truncated to the frontmatter block and the first H1 line; every kept byte is verbatim"]
+    }
+  ],
+  "edits": [],
+  "note": "The live, free-column (`Column | Type | Constraints`) FR-006: the legacy-form control of FR-091-AC-9/AC-10 and FR-096-AC-4. Never edited; the engine's semantic.legacy-properties-form warning at line 17 is the assertion."
+}

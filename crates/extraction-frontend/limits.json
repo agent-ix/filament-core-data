@@ -1,0 +1,8 @@
+{
+	"$comment": "NFR-031 declared limits (agent-ix/filament-core-data#36). Read at run time by src/limits.rs; the value a LIMIT_* diagnostic names is taken from this file, never restated in code. maxDocuments and maxDocumentBytes bound what is lowered after quire_rs::corpus::load_repo has returned (FR-091-CON-2 permits no other read); maxDepth is the number of `/`-separated segments of a document's bundle-relative path; maxFieldsPerRecord counts FieldDecl entries of one extraction; maxClauseBytes is the UTF-8 length of one clause's text.",
+	"maxDocuments": 4096,
+	"maxDocumentBytes": 4194304,
+	"maxFieldsPerRecord": 1024,
+	"maxClauseBytes": 65536,
+	"maxDepth": 16
+}

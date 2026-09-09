@@ -1,0 +1,3 @@
+{
+  "roots": ["modules/spec-objects-business", "modules/acme-other"]
+}

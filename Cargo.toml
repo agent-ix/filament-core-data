@@ -17,7 +17,7 @@
 
 [workspace]
 resolver = "2"
-members = ["crates/semantic-ir", "crates/conformance-adapter"]
+members = ["crates/semantic-ir", "crates/conformance-adapter", "crates/extraction-frontend"]
 exclude = ["crates/consumer-compile-time", "crates/consumer-runtime"]
 
 [workspace.package]

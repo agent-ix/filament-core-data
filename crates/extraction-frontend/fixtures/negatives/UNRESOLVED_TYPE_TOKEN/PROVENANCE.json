@@ -1,0 +1,11 @@
+{
+  "source": "authored",
+  "code": "UNRESOLVED_TYPE_TOKEN",
+  "files": [
+    "spec/functional/FR-006-config-version-entity.md",
+    "spec/spec.md"
+  ],
+  "derived": [],
+  "edits": [],
+  "note": "FR-006's typed table carries the typo `Sting` in the Type cell of the row at line 14 (the first data row of a table whose header sits at line 12). The engine resolves it to the placeholder ix://agent-ix/config-service/unresolved/Sting with a `semantic.unresolved-type` advisory (reason unknown-token); the frontend classifies it Unresolved::UnknownToken and raises one blocking UNRESOLVED_TYPE_TOKEN at line 14 column 3 (FR-092-AC-3, FR-096-AC-6; TC-1212, TC-1264). spec.md gives the bundle the identity agent-ix/config-service the TC names."
+}

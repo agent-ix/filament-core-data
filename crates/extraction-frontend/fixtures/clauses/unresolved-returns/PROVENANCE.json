@@ -1,0 +1,21 @@
+{
+  "source": "authored",
+  "case": "unresolved-returns",
+  "files": [
+    "spec/functional/FR-006-config-version-entity.md",
+    "spec/spec.md"
+  ],
+  "derived": [
+    {
+      "fixture": "spec/functional/FR-006-config-version-entity.md",
+      "from": "../../config-version-table/spec/functional/FR-006-config-version-entity.md",
+      "edits": [
+        "frontmatter relationships dropped",
+        "Properties reduced to two rows; Invariants dropped",
+        "an Operations section with one operation `latest` whose Returns: names the unknown token Nonesuch"
+      ]
+    }
+  ],
+  "edits": [],
+  "note": "The Returns: line (line 26) names `Nonesuch`, which the engine resolves to the unresolved placeholder with a semantic.unresolved-type advisory; FR-092 pass two classifies it UnknownToken and raises one blocking UNRESOLVED_TYPE_TOKEN at line 26, column 1 (the Returns: line), so no operation is lowered (FR-094-AC-12; TC-1242)."
+}
