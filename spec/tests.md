@@ -254,7 +254,7 @@ and "next free" is not a fact either branch can establish.
 | FR-094 | FR-094-AC-1..15, FR-094-CON-1..4 | TC-1231..TC-1245 | 🚧 In progress |
 | FR-095 | FR-095-AC-1..15, FR-095-CON-1..3 | TC-1246..TC-1258, TC-1347, TC-1348 | 🚧 In progress |
 | FR-096 | FR-096-AC-1..16, FR-096-CON-1..3 | TC-1259..TC-1272, TC-1345, TC-1346 | 🚧 In progress |
-| FR-097 | FR-097-AC-1..15, FR-097-CON-1..3 | TC-1273..TC-1284, TC-1336, TC-1340..TC-1342 | 🚧 In progress |
+| FR-097 | FR-097-AC-1..16, FR-097-CON-1..3 | TC-1273..TC-1284, TC-1336, TC-1340..TC-1342, TC-1339 | 🚧 In progress |
 | FR-098 | FR-098-AC-1..12, FR-098-CON-1..3 | TC-1285..TC-1294, TC-1338, TC-1343, TC-1344 | 🚧 In progress |
 | FR-099 | FR-099-AC-1..6, FR-099-CON-1..3 | TC-1295..TC-1299, TC-1330, TC-1349 | 🚧 In progress |
 
@@ -1493,6 +1493,7 @@ and "next free" is not a fact either branch can establish.
 | TC-1336 | grep of src/ finds no serde_json::to_string, to_vec, or to_writer and no serializer other than agent_ix_semantic_ir::normalize::normalized, and every write of the document is dominated by a decide call with a success verdict | Static | P1 | FR-097-CON-2, FR-097-CON-3 | 🚧 planned |
 | TC-1337 | Issue #36 AC-5: the json-schema target accepts the lifted config-version-table document; no IR-reading json-schema backend exists, no test is behind this row, and it stays blocked on issue #85 | Manual | P0 | US-015 (issue #36 AC-5, json-schema target; blocked on filament-core-data#85) | 🚧 blocked on issue #85 |
 | TC-1338 | The payload-schema helper lives under crates/extraction-frontend/tests/ only, is exported by no module under src/, and is unreachable from the lift and inspect commands, asserted by grep over src/ and the public surface | Static | P1 | FR-098-CON-3 | 🚧 planned |
+| TC-1339 | lift --out o.json --diagnostics o.json, and --diagnostics d.json --provenance d.json, each refuse with OUTPUT_UNWRITABLE naming both colliding options, exit 2, and write nothing | E2E | P1 | FR-097-AC-16 | 🚧 planned |
 | TC-1340 | A lift with --out under the bundle root, and one with --out under a module root, each refuse with OUTPUT_UNWRITABLE naming the path before any document is loaded and write nothing | E2E | P0 | FR-097-AC-13 | 🚧 planned |
 | TC-1341 | A warning-only lift with no --diagnostics or --provenance option writes the document, .fingerprint, .diagnostics.json, and .provenance.json, and those four are the only new files in the output directory | E2E | P1 | FR-097-AC-14 | 🚧 planned |
 | TC-1342 | The negatives/INVALID_IR bundle whose frontmatter declares A contains B and B contains A refuses at lift time with INVALID_IR carrying the reader's COMPOSITE_CYCLE in causes[0] and writes no document | Integration | P1 | FR-097-AC-15 | 🚧 planned |
@@ -2425,8 +2426,8 @@ whole documents; and wiring the Rust binary into the node `spec-bundle` seam is
 | Fuzz | 13 | 7 | 0 | 6 | 100% mapped (13/13) |
 | Snapshot | 67 | 21 | 0 | 46 | 100% mapped (67/67) |
 | Compile | 15 | 3 | 0 | 12 | 100% mapped (15/15) |
-| E2E | 11 | 0 | 0 | 11 | 100% mapped (11/11) |
-| **Total** | **1203** | **757** | **0** | **446** | **100% mapped (1203/1203)** |
+| E2E | 12 | 0 | 0 | 12 | 100% mapped (12/12) |
+| **Total** | **1204** | **757** | **0** | **447** | **100% mapped (1204/1204)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

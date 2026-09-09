@@ -66,8 +66,7 @@ evidence produced by the named targets, not by `cargo test`.
 - The command SHALL exit `0` when no diagnostic is blocking.
 - The command SHALL exit `1` when any diagnostic is blocking and the lift was not refused.
 - The command SHALL exit `2` on a refusal: `MODULE_WITHOUT_SEMANTIC_BLOCK`, `MODULE_REFUSED`, `BUNDLE_UNIDENTIFIED`, `DUPLICATE_ARTIFACT_ID`, `OUTPUT_UNWRITABLE`, or a missing or malformed option.
-- If the exit code is `1`, then the command SHALL write the diagnostics sidecar and no other file.
-- If the exit code is `2`, then the command SHALL write no file.
+- The command SHALL leave which files a blocking lift or a refusal writes to FR-097, which owns the write rules; the exit code adds no write of its own.
 - If `--module` is absent, then the command SHALL exit `2` naming the missing option.
 - If `--out` lies under the bundle root or a module root, then the command SHALL exit `2` with `OUTPUT_UNWRITABLE` per FR-097 before loading the bundle.
 - The command SHALL accept `lift --write-goldens`, which writes the FR-098 goldens for every fixture.

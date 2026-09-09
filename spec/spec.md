@@ -291,9 +291,9 @@ against the TypeSpec frontend on a shared case authored in both dialects.
 - Repairing the retained issue #4 evidence's host couplings (issue #42); issue
   #27 records them and fixes only the lockfile seeding, which changes no
   retained byte.
-- Implementing the spec-bundle extraction frontend (issue #36); issue #19 builds
-  the seam and the shared fixture harness it will plug into, and registers the
-  dialect as declared-unimplemented.
+- Wiring the spec-bundle extraction frontend into the issue #19 node seam
+  (issue #86); issue #19 registers the dialect as declared-unimplemented and
+  issue #36 delivers the frontend as a Rust workspace member beside it.
 - Editing the frozen prototype path or regenerating the four issue #4 goldens as
   part of issue #19; the contract IR is a second lowering beside the prototype,
   not a rewrite of it.

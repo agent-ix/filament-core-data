@@ -106,6 +106,7 @@ test suite.
 
 - If `<out>` or any sidecar path lies under the bundle root or under a module root, then the frontend SHALL refuse with `OUTPUT_UNWRITABLE` naming the path before loading the bundle.
 - If the output directory does not exist or is not writable, then the frontend SHALL refuse with `OUTPUT_UNWRITABLE` naming the path.
+- If two of `<out>`, the fingerprint sidecar path, the diagnostics sidecar path, and the provenance sidecar path resolve to one file, then the frontend SHALL refuse with `OUTPUT_UNWRITABLE` naming both options before loading the bundle.
 - The frontend SHALL treat an `OUTPUT_UNWRITABLE` refusal as blocking and write nothing.
 - The frontend SHALL write each of `<out>.diagnostics.json`, `<out>.provenance.json`, `<out>.fingerprint`, and `<out>` to a temporary file in the output file's own directory and rename it over its final path.
 - The frontend SHALL rename the four files in the order `<out>.diagnostics.json`, `<out>.provenance.json`, `<out>.fingerprint`, `<out>`, so that a reader observing `<out>` observes its sidecars.
@@ -118,7 +119,7 @@ test suite.
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-097-CON-1 | The frontend SHALL depend on `crates/semantic-ir` as a runtime `path` dependency on that workspace member, changing no byte of it. | Integrity | Static analysis |
+| FR-097-CON-1 | The frontend SHALL depend on `crates/semantic-ir` only as a runtime `path` dependency on that workspace member, whose bytes stay unchanged under NFR-032. | Integrity | Static analysis |
 | FR-097-CON-2 | The frontend SHALL reach every written byte through `agent_ix_semantic_ir::normalize::normalized`, calling no `serde_json` serializer under `src/`. | Determinism | Static analysis |
 | FR-097-CON-3 | The frontend SHALL call `decide` on every document before any write of `<out>`; no code path writes `<out>` without a success verdict. | Integrity | Static analysis |
 
@@ -141,6 +142,7 @@ test suite.
 | FR-097-AC-13 | A lift with `--out` under the bundle root, and one with `--out` under a module root, each refuse with `OUTPUT_UNWRITABLE` naming the path before any document is loaded and write nothing. | Test (TC-1340) |
 | FR-097-AC-14 | A warning-only lift with no `--diagnostics` or `--provenance` option writes `<out>`, `<out>.fingerprint`, `<out>.diagnostics.json`, and `<out>.provenance.json`; the four are the only new files in the output directory. | Test (TC-1341) |
 | FR-097-AC-15 | The `negatives/INVALID_IR` bundle, whose frontmatter declares `A contains B` and `B contains A`, refuses at lift time with `INVALID_IR` carrying the reader's `COMPOSITE_CYCLE` in `causes[0]` and writes no document. | Test (TC-1342) |
+| FR-097-AC-16 | `lift --out o.json --diagnostics o.json` and `lift --out o.json --diagnostics d.json --provenance d.json` each refuse with `OUTPUT_UNWRITABLE` naming both colliding options, exit `2`, and write nothing. | Test (TC-1339) |
 
 ## Dependencies
 

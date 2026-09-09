@@ -28,6 +28,10 @@ clause text from the engine verbatim, so that a domain declaration's edges,
 behavior signatures, and formal clauses reach the IR as nodes rather than as
 prose.
 
+Artifact-axis verbs such as `traces_to`, `implements`, `satisfies`, and
+`depends_on` are requirement lineage rather than domain relationships, which is
+why only verbs the object type lists under `allowed_links` are lowered.
+
 ## Inputs
 
 - The `(target, verb)` pairs `quire_rs::corpus::harvest_edges` returns for each lowered document's frontmatter `relationships:` list
@@ -48,7 +52,7 @@ prose.
 
 - The frontend SHALL take one relationship per `(target, verb)` pair `harvest_edges` returns for the record's document, de-duplicated on `(verb, target)`.
 - The frontend SHALL lower a pair only when the record's object type lists its verb under `allowed_links` in the loaded module.
-- The frontend SHALL skip, without a diagnostic, every pair whose verb the object type does not list under `allowed_links`; artifact-axis verbs such as `traces_to`, `implements`, `satisfies`, and `depends_on` are requirement lineage, not domain relationships.
+- The frontend SHALL skip, without a diagnostic, every pair whose verb the object type does not list under `allowed_links`.
 - The frontend SHALL set `verb` to the pair's verb as authored.
 - The frontend SHALL set `category` to the `category` of the `EdgeTypeDef` the merged registry declares for that verb.
 - If a verb the object type lists under `allowed_links` is declared by no loaded module's `edge_types`, then the frontend SHALL raise `agent-ix.extraction-frontend.UNKNOWN_EDGE_VERB` at the document's line 1, column 1, blocking.

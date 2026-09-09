@@ -58,7 +58,7 @@ is one diagnostic at the token's source locus.
 - If the engine placeholder's companion diagnostic carries `reason: unknown-token`, then the frontend SHALL return `Unresolved::UnknownToken`.
 - If that diagnostic carries `reason: no-bundle-index`, then the frontend SHALL return `Unresolved::NoBundleIndex`.
 - If that diagnostic carries `reason: import-unresolved`, then the frontend SHALL return `Unresolved::ImportUnresolved`.
-- If a bundle artifact's `title` or frontmatter `name` equals a kernel scalar name, then the frontend SHALL emit `agent-ix.extraction-frontend.KERNEL_NAME_SHADOWED` (warning, non-blocking) at that artifact's frontmatter, because the engine resolves the token to the kernel scalar and the artifact is unreferenceable by that name.
+- If a bundle artifact's `title` or frontmatter `name` equals a kernel scalar name, then the frontend SHALL emit `agent-ix.extraction-frontend.KERNEL_NAME_SHADOWED` (warning, non-blocking) at that artifact's frontmatter; the engine resolves such a token to the kernel scalar, so the artifact is unreferenceable by that name.
 
 ### Diagnostics
 

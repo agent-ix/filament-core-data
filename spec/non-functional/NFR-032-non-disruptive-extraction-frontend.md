@@ -79,8 +79,8 @@ the crates whose agreement is evidence remain independent of it.
   time (FR-097), and the reverse edge — from `crates/semantic-ir` or
   `crates/conformance-adapter` to this crate — is what the metric below
   forbids.
-- The maintainer SHALL trace every permitted entry to a requirement Output or
-  to a named Verification step of this requirement. The `members` line is
+- Every permitted entry traces to a requirement Output or to a named
+  Verification step of this requirement. The `members` line is
   permitted because a workspace member cannot exist without it; the `Makefile`
   block because FR-099 names it; the shared-case members because FR-045
   reserved the column for this ticket by name and FR-098 owns the `reason`
