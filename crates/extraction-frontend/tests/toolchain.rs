@@ -466,3 +466,366 @@ fn tc_1329_locked_offline_build_succeeds_from_a_warm_cache() {
         String::from_utf8_lossy(&out.stderr)
     );
 }
+
+// ---------------------------------------------------------------------------
+// Task-138: the whole-crate gates (NFR-033-AC-2, AC-4, AC-5, AC-7, AC-8)
+// ---------------------------------------------------------------------------
+
+/// The `extraction-frontend` block of the root Makefile, from its section
+/// header to the next section header or the end of the file.
+fn makefile_block() -> Vec<String> {
+    let makefile = read(&workspace_dir().join("Makefile"));
+    let lines: Vec<&str> = makefile.lines().collect();
+    let start = lines
+        .iter()
+        .position(|l| l.contains("Spec-bundle extraction frontend (issue #36)"))
+        .expect("the Makefile block header")
+        .saturating_sub(1);
+    // The header is fenced by two `# ----` lines; the block ends at the next
+    // such line after the fence, or at the end of the file.
+    let end = lines[start + 3..]
+        .iter()
+        .position(|l| l.starts_with("# ----"))
+        .map(|i| i + start + 3)
+        .unwrap_or(lines.len());
+    lines[start..end].iter().map(|l| l.to_string()).collect()
+}
+
+/// `make -C <workspace> <target> <VAR=value>...`.
+fn make(target: &str, assignments: &[&str]) -> std::process::Output {
+    Command::new("make")
+        .arg("-C")
+        .arg(workspace_dir())
+        .arg(target)
+        .args(assignments)
+        .output()
+        .expect("spawn make")
+}
+
+fn output_text(output: &std::process::Output) -> String {
+    format!(
+        "{}\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    )
+}
+
+#[trace("TC-1321", "NFR-033-AC-2")]
+#[test]
+fn tc_1321_every_cargo_in_the_makefile_block_is_pinned_and_each_gate_fails_naming_0_0_0() {
+    let block = makefile_block();
+    let cargo_lines: Vec<&String> = block
+        .iter()
+        .filter(|l| !l.trim_start().starts_with('#'))
+        .filter(|l| {
+            l.split(|c: char| !c.is_alphanumeric())
+                .any(|w| w == "cargo")
+        })
+        .collect();
+    assert!(cargo_lines.len() >= 6, "{cargo_lines:?}");
+    for line in &cargo_lines {
+        assert!(
+            line.contains("cargo +$(EXTRACTION_TOOLCHAIN)")
+                || line.contains("rustup run $(EXTRACTION_TOOLCHAIN) cargo"),
+            "a cargo invocation without +$(EXTRACTION_TOOLCHAIN): {line}"
+        );
+    }
+
+    let targets: Vec<String> = block
+        .iter()
+        .filter_map(|l| l.strip_prefix(".PHONY: "))
+        .map(str::to_string)
+        .collect();
+    assert!(
+        targets.iter().any(|t| t == "extraction-frontend-deny")
+            && targets.iter().any(|t| t == "extraction-frontend-audit")
+            && targets.len() >= 8,
+        "{targets:?}"
+    );
+    for target in &targets {
+        let output = make(target, &["EXTRACTION_TOOLCHAIN=0.0.0"]);
+        let text = output_text(&output);
+        assert!(
+            !output.status.success(),
+            "{target} skipped under 0.0.0:\n{text}"
+        );
+        assert!(
+            text.contains("0.0.0"),
+            "{target} does not name 0.0.0:\n{text}"
+        );
+        assert!(
+            text.contains("failure rather than a skip"),
+            "{target}:\n{text}"
+        );
+    }
+}
+
+#[trace("TC-1323", "NFR-033-AC-4")]
+#[test]
+#[ignore = "Static evidence: drives make and the network-backed cargo deny; run with --ignored"]
+fn tc_1323_make_extraction_frontend_deny_passes_with_zero_errors_and_the_allowlist_is_the_permitted_set(
+) {
+    let output = make("extraction-frontend-deny", &[]);
+    let text = output_text(&output);
+    assert!(output.status.success(), "{text}");
+    assert!(
+        !text.lines().any(|l| l.starts_with("error")),
+        "cargo deny reported an error:\n{text}"
+    );
+    for check in ["advisories ok", "bans ok", "licenses ok", "sources ok"] {
+        assert!(
+            text.contains(check),
+            "cargo deny did not report `{check}`:\n{text}"
+        );
+    }
+
+    let deny = read(&crate_dir().join("deny.toml"));
+    let allow: Vec<String> = deny
+        .lines()
+        .skip_while(|l| l.trim() != "allow = [")
+        .skip(1)
+        .take_while(|l| l.trim() != "]")
+        .filter_map(|l| quoted(l.trim().trim_end_matches(',')))
+        .collect();
+    assert_eq!(
+        allow,
+        [
+            "MIT",
+            "Apache-2.0",
+            "BSD-2-Clause",
+            "BSD-3-Clause",
+            "CDLA-Permissive-2.0",
+            "ISC",
+            "Unicode-3.0",
+            "Zlib",
+        ],
+        "the licence allowlist is exactly the permitted set"
+    );
+    assert!(
+        deny.contains("{ allow = [\"AGPL-3.0-or-later\"], crate = \"quire-rs\" }"),
+        "quire-rs's AGPL-3.0-or-later is admitted by an explicit entry"
+    );
+    assert!(!allow.iter().any(|l| l.starts_with("AGPL")));
+}
+
+#[trace("TC-1324", "NFR-033-AC-5")]
+#[test]
+#[ignore = "Static evidence: drives make and the network-backed cargo audit; run with --ignored"]
+fn tc_1324_make_extraction_frontend_audit_reports_zero_advisories_against_the_locked_graph() {
+    let output = make("extraction-frontend-audit", &[]);
+    let text = output_text(&output);
+    assert!(output.status.success(), "{text}");
+    assert!(
+        text.contains("Scanning Cargo.lock for vulnerabilities"),
+        "{text}"
+    );
+    assert!(
+        !text.contains("vulnerabilities found") && !text.lines().any(|l| l.starts_with("error")),
+        "cargo audit reported advisories:\n{text}"
+    );
+}
+
+#[trace("TC-1326", "NFR-033-AC-7")]
+#[test]
+fn tc_1326_clippy_no_deps_all_targets_with_deny_warnings_and_fmt_check_both_pass() {
+    let clippy = cargo()
+        .args([
+            "clippy",
+            "--no-deps",
+            "--all-targets",
+            "--locked",
+            "--offline",
+            "-p",
+            PACKAGE,
+            "--",
+            "-D",
+            "warnings",
+        ])
+        .output()
+        .expect("spawn cargo clippy");
+    assert!(
+        clippy.status.success(),
+        "cargo +{TOOLCHAIN} clippy failed:\n{}",
+        String::from_utf8_lossy(&clippy.stderr)
+    );
+    let fmt = cargo()
+        .args(["fmt", "-p", PACKAGE, "--", "--check"])
+        .output()
+        .expect("spawn cargo fmt");
+    assert!(
+        fmt.status.success(),
+        "cargo +{TOOLCHAIN} fmt --check failed:\n{}{}",
+        String::from_utf8_lossy(&fmt.stdout),
+        String::from_utf8_lossy(&fmt.stderr)
+    );
+}
+
+/// One `#[test]` item of the crate: its name, its `#[trace]` ids, and
+/// whether it is a requirement test.
+struct TestItem {
+    file: String,
+    name: String,
+    traces: Vec<(String, String)>,
+}
+
+/// Every `#[test]` function under `tests/` and `src/`, with the attribute
+/// block immediately above it.
+fn test_items() -> Vec<TestItem> {
+    fn walk(dir: &Path, out: &mut Vec<PathBuf>) {
+        let mut entries: Vec<PathBuf> = fs::read_dir(dir)
+            .expect("read_dir")
+            .map(|e| e.expect("entry").path())
+            .collect();
+        entries.sort();
+        for entry in entries {
+            if entry.is_dir() {
+                walk(&entry, out);
+            } else if entry.extension().is_some_and(|x| x == "rs") {
+                out.push(entry);
+            }
+        }
+    }
+    let mut files = Vec::new();
+    walk(&crate_dir().join("tests"), &mut files);
+    walk(&crate_dir().join("src"), &mut files);
+    let mut items = Vec::new();
+    for file in files {
+        let text = read(&file);
+        let lines: Vec<&str> = text.lines().collect();
+        for (i, line) in lines.iter().enumerate() {
+            let t = line.trim_start();
+            let Some(rest) = t.strip_prefix("pub fn ").or_else(|| t.strip_prefix("fn ")) else {
+                continue;
+            };
+            let name: String = rest
+                .chars()
+                .take_while(|c| c.is_alphanumeric() || *c == '_')
+                .collect();
+            // The contiguous attribute and doc-comment block above the item.
+            let mut j = i;
+            let mut attrs = Vec::new();
+            while j > 0 {
+                let above = lines[j - 1].trim();
+                if above.starts_with("#[") || above.starts_with("///") || above.starts_with("//") {
+                    attrs.push(above);
+                    j -= 1;
+                } else {
+                    break;
+                }
+            }
+            if !attrs.contains(&"#[test]") {
+                continue;
+            }
+            let traces = attrs
+                .iter()
+                .filter_map(|a| {
+                    let inner = a.strip_prefix("#[trace(")?.strip_suffix(")]")?;
+                    let (tc, criterion) = inner.split_once(',')?;
+                    Some((quoted(tc.trim())?, quoted(criterion.trim())?))
+                })
+                .collect();
+            items.push(TestItem {
+                file: file
+                    .strip_prefix(crate_dir())
+                    .expect("under the crate")
+                    .to_string_lossy()
+                    .into_owned(),
+                name,
+                traces,
+            });
+        }
+    }
+    items
+}
+
+/// The tests that are not requirement tests, by name. Any other untraced
+/// test fails the gate.
+const NOT_REQUIREMENT_TESTS: [&str; 2] = [
+    // The generator's self-check; FR-096-AC-13's row is `tests/docs.rs`'s
+    // tc_1271 over the published page.
+    "registry_doc_renders_every_code_with_severity_blocking_and_owner",
+    // The child half of tc_1280 (`tests/write.rs`): an `#[ignore]`d body the
+    // traced parent re-executes in a scrubbed environment.
+    "tc_1280_child",
+];
+
+#[trace("TC-1327", "NFR-033-AC-8")]
+#[test]
+fn tc_1327_every_requirement_test_carries_trace_and_tc_name_and_every_id_is_in_the_matrix() {
+    let items = test_items();
+    assert!(items.len() > 100, "{} tests found", items.len());
+    let matrix = read(&workspace_dir().join("spec/tests.md"));
+    let in_matrix = |id: &str| matrix.contains(&format!("| {id} |"));
+    for id in 1200..=1329 {
+        assert!(
+            in_matrix(&format!("TC-{id}")),
+            "TC-{id} is not in spec/tests.md"
+        );
+    }
+
+    let mut problems = Vec::new();
+    for item in &items {
+        if NOT_REQUIREMENT_TESTS.contains(&item.name.as_str()) {
+            assert!(
+                item.traces.is_empty(),
+                "{}::{} is listed as a non-requirement test but is traced",
+                item.file,
+                item.name
+            );
+            continue;
+        }
+        let prefix: Option<String> = item
+            .name
+            .strip_prefix("tc_")
+            .and_then(|r| r.get(..4))
+            .filter(|d| d.chars().all(|c| c.is_ascii_digit()))
+            .filter(|_| item.name.as_bytes().get(7) == Some(&b'_'))
+            .map(|d| format!("TC-{d}"));
+        let Some(named) = prefix else {
+            problems.push(format!(
+                "{}::{} is not named tc_NNNN_",
+                item.file, item.name
+            ));
+            continue;
+        };
+        if item.traces.is_empty() {
+            problems.push(format!("{}::{} carries no #[trace]", item.file, item.name));
+            continue;
+        }
+        for (tc, criterion) in &item.traces {
+            // A test deciding several rows is named for its first and names
+            // every other as a `tc_NNNN` token (`tc_1243_and_tc_1251_…`).
+            let token = format!("tc_{}", &tc[3..]);
+            if tc != &named && !item.name.contains(&token) {
+                problems.push(format!(
+                    "{}::{} traces {tc} but its name carries neither {named} nor {token}",
+                    item.file, item.name
+                ));
+            }
+            let ok = criterion
+                .rsplit_once('-')
+                .and_then(|(head, n)| n.chars().all(|c| c.is_ascii_digit()).then_some(head))
+                .and_then(|head| head.rsplit_once('-'))
+                .is_some_and(|(req, kind)| {
+                    (kind == "AC" || kind == "CON")
+                        && req.split_once('-').is_some_and(|(p, n)| {
+                            p.chars().all(|c| c.is_ascii_uppercase())
+                                && n.chars().all(|c| c.is_ascii_digit())
+                        })
+                });
+            if !ok {
+                problems.push(format!(
+                    "{}::{} traces `{criterion}`, not an <FR|NFR|US>-NNN-AC-N form",
+                    item.file, item.name
+                ));
+            }
+            if !in_matrix(tc) {
+                problems.push(format!(
+                    "{}::{} names {tc}, absent from spec/tests.md",
+                    item.file, item.name
+                ));
+            }
+        }
+    }
+    assert!(problems.is_empty(), "{}", problems.join("\n"));
+}
