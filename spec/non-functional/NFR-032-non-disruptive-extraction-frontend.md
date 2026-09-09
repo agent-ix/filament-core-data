@@ -50,8 +50,13 @@ the crates whose agreement is evidence remain independent of it.
   `members` line of the root `Cargo.toml` and the `Cargo.lock` entries that
   line adds, resolved under `cargo +1.98.1 --locked` so that no other member's
   entry moves (NFR-033); one `extraction-frontend` block in the root
-  `Makefile`; the `spec-bundle` and `reason` members of each case in
-  `test/fixtures/compiler/shared/cases.json`,
+  `Makefile`; additive rows in the root `THIRD-PARTY-NOTICES.md` for exactly
+  the crates this change adds to `Cargo.lock` — a row per newly locked package
+  version, no line of the register removed or changed, no row for a crate the
+  lock does not carry (CR-036-8); the `spec-bundle` and `reason` members of
+  each case in `test/fixtures/compiler/shared/cases.json` and its top-level
+  `$comment`, whose sentence reserved the column for this ticket (FR-045) and
+  is rewritten to say the column is filled,
   `test/fixtures/compiler/shared/spec-bundle/**`, and the new shared case
   `test/fixtures/compiler/shared/typespec/records-and-scalars/**` beside its
   `spec-bundle/records-and-scalars/**` twin, authored in both dialects for
@@ -82,9 +87,15 @@ the crates whose agreement is evidence remain independent of it.
 - Every permitted entry traces to a requirement Output or to a named
   Verification step of this requirement. The `members` line is
   permitted because a workspace member cannot exist without it; the `Makefile`
-  block because FR-099 names it; the shared-case members because FR-045
-  reserved the column for this ticket by name and FR-098 owns the `reason`
-  member and the `records-and-scalars` case; the vendored module because
+  block because FR-099 names it; the root register rows because NFR-023-AC-7
+  requires every third-party crate in `Cargo.lock` to hold an entry there and
+  its gate (`test/rust-backend.test.ts` TC-742) reads the lock this change
+  produces, so a register that omits a locked crate is the defect NFR-023
+  forbids, not a path this change may leave alone — the widening is bounded
+  to the additions the lock proves; the shared-case members and the
+  `$comment` because FR-045 reserved the column for this ticket by name and
+  FR-098 owns the `reason` member and the `records-and-scalars` case; the
+  vendored module because
   NFR-033 pins it there; and the diagnostics document because FR-096 names it
   as the published registry.
 
@@ -122,6 +133,17 @@ trunk's paths as its own, measured at 456 paths, 74 of them the trunk's, against
 a true change set of 182. This branch rebases rather than merges, and the gate
 unions per-commit path sets over `--first-parent --no-merges`.
 
+One pre-existing suite fails on this branch and this change does not edit it.
+`test/semantic-kernel.test.ts`, issue #11's NFR-030 non-disruption gate,
+measures its change set as `git diff --name-only main...HEAD` — a range fixed
+at its base and open at its head, the defect class this requirement's own
+range is fixed against — so every later branch, this one included, is
+attributed issue #11's paths and fails that gate. It is filed as
+filament-core-data#89. `test/*.test.ts` is prohibited here, the failure is
+issue #11's to repair, and the suite-compare rehearsal (NFR-032-AC-7)
+compares that row's outcome on the range's base against its head like every
+other pre-existing row rather than excusing it.
+
 No publication follows from the issue #21 safety gate, which has not moved:
 every crate manifest this work produces carries `publish = false`, and no step
 contacts a registry. No consumer is migrated because a domain package is a
@@ -139,7 +161,9 @@ migration ticket, not this one.
 | Dependencies from `crates/semantic-ir` or `crates/conformance-adapter` to `crates/extraction-frontend` | 0 | 0 | `cargo metadata` inspection |
 | Changes to `package.json`, `pnpm-lock.yaml`, `rust-toolchain.toml`, and the workspace `rust-version` | 0 | 0 | Change-set diff |
 | Lines of the root `Cargo.toml` changed other than the `members` line | 0 | 0 | Line diff |
-| Lines of `test/fixtures/compiler/shared/cases.json` changed outside a `spec-bundle` or `reason` member, or outside the added `records-and-scalars` case, and files added under `shared/typespec/` outside `records-and-scalars/` | 0 | 0 | Line diff |
+| Lines of `test/fixtures/compiler/shared/cases.json` changed outside a `spec-bundle` or `reason` member, the top-level `$comment`, or the added `records-and-scalars` case, and files added under `shared/typespec/` outside `records-and-scalars/` | 0 | 0 | Line diff |
+| Lines of the root `THIRD-PARTY-NOTICES.md` removed or changed, and rows added for a crate the workspace `Cargo.lock` does not carry | 0 | 0 | Line diff against the range's base; row names against `Cargo.lock` |
+| Third-party crates in the workspace `Cargo.lock` without a row in the root `THIRD-PARTY-NOTICES.md` | 0 | 0 | `test/rust-backend.test.ts` TC-742 (NFR-023-AC-7) |
 | Files in any corpus repository changed or created by a test run | 0 | 0 | `git status --porcelain` in each after every run |
 | Crates published by this work | 0 | 0 | Registry inspection and command inspection |
 | Crate manifests without `publish = false` | 0 | 0 | Manifest inspection |
@@ -163,7 +187,11 @@ Output or a Verification step here. Run `cargo metadata` and confirm no
 workspace member other than this crate depends on it, and that its only
 `path` edge points at `agent-ix-semantic-ir`. Line-diff the root `Cargo.toml`
 and the shared-case manifest against the range's base, and confirm the
-`spec-bundle` seam file is byte-unchanged. Run the
+`spec-bundle` seam file is byte-unchanged. Line-diff the root
+`THIRD-PARTY-NOTICES.md` against the range's base and confirm the diff is
+additions only, that every added row names a crate the workspace
+`Cargo.lock` carries, and that `test/rust-backend.test.ts` TC-742 passes on
+the head. Run the
 full crate suite and then `git status --porcelain` in this repository and in
 every corpus repository the fixtures name, confirming each is empty. Inspect
 every crate manifest for `publish = false` and every added manifest for the
@@ -172,20 +200,22 @@ and compare outcomes row for row. Re-run the full suite on a revert of the
 range. Rehearse the range on a synthetic history in which an unrelated change
 lands on top, and confirm the set does not grow and that a prohibited path no
 later commit owns still fails the gate. The three rehearsals are verbs of
-`scripts/extraction-frontend-harness.mjs`, typed `Static` in the matrix, in
-the form `test/changed-paths.ts` already takes; none is a `cargo test`.
+`crates/extraction-frontend/scripts/extraction-frontend-harness.mjs` (the
+repository-root `scripts/` is not a permitted path), typed `Static` in the
+matrix, in the form `test/changed-paths.ts` already takes; none is a
+`cargo test`.
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 |---|---|---|
-| NFR-032-AC-1 | Every path in this change's own set, resolved from the two sentinels and unioned over `--first-parent --no-merges`, is permitted and none is prohibited. | Analysis (TC-1310) |
+| NFR-032-AC-1 | Every path in this change's own set, resolved from the two sentinels and unioned over `--first-parent --no-merges`, is permitted and none is prohibited; the root `THIRD-PARTY-NOTICES.md` differs from the range's base by added rows only, each naming a crate the workspace `Cargo.lock` carries. | Analysis (TC-1310) |
 | NFR-032-AC-2 | `cargo metadata` shows no dependency edge from `agent-ix-semantic-ir` or `agent-ix-conformance-adapter` to the extraction frontend crate; the edge from the extraction frontend crate to `agent-ix-semantic-ir` is present and is the only path edge it declares. | Test (TC-1311) |
 | NFR-032-AC-3 | The root `Cargo.toml` differs from the range's base only in the `members` line, and `rust-toolchain.toml` and the workspace `rust-version` are byte-unchanged. | Analysis (TC-1312) |
-| NFR-032-AC-4 | `test/fixtures/compiler/shared/cases.json` differs from the base only by `spec-bundle` and `reason` members and the added `records-and-scalars` case; every pre-existing path under `test/fixtures/compiler/shared/**` and `src/compiler/frontend/spec-bundle/frontend.mjs` are byte-unchanged. | Analysis (TC-1313) |
+| NFR-032-AC-4 | `test/fixtures/compiler/shared/cases.json` differs from the base only by `spec-bundle` and `reason` members, the rewritten top-level `$comment`, and the added `records-and-scalars` case; every pre-existing path under `test/fixtures/compiler/shared/**` and `src/compiler/frontend/spec-bundle/frontend.mjs` are byte-unchanged. | Analysis (TC-1313) |
 | NFR-032-AC-5 | After the full crate suite runs, `git status --porcelain` is empty in this repository's fixture directories and in every corpus repository the fixtures name. | Test (TC-1314) |
 | NFR-032-AC-6 | Every crate manifest in the change set carries `publish = false` and `license = "AGPL-3.0-only"`, and no command in the `Makefile` block or the crate names a registry. | Analysis (TC-1315) |
-| NFR-032-AC-7 | `make test` and `make rust`, driven by the `scripts/extraction-frontend-harness.mjs` `suite-compare` verb on the range's base and on its head, produce the same pass/fail outcome for every pre-existing row. | Static (TC-1316) |
+| NFR-032-AC-7 | `make test` and `make rust`, driven by the `crates/extraction-frontend/scripts/extraction-frontend-harness.mjs` `suite-compare` verb on the range's base and on its head, produce the same pass/fail outcome for every pre-existing row. | Static (TC-1316) |
 | NFR-032-AC-8 | The full suite passes on a revert of this change's range, driven by the harness's `revert-rehearsal` verb. | Static (TC-1317) |
 | NFR-032-AC-9 | On a synthetic history built by the harness's `accretion-rehearsal` verb, where an unrelated sibling change lands on top, this change's path set does not grow, and a prohibited path no later commit owns still fails the gate. | Static (TC-1318) |
 | NFR-032-AC-10 | `git log --merges` over the range is empty, and `package.json` and `pnpm-lock.yaml` are byte-unchanged. | Analysis (TC-1319) |

@@ -87,6 +87,7 @@ const PERMITTED = Object.freeze([
 	{ name: "Cargo.toml (members line)", test: (p) => p === "Cargo.toml" },
 	{ name: "Cargo.lock", test: (p) => p === "Cargo.lock" },
 	{ name: "Makefile (one extraction-frontend block)", test: (p) => p === "Makefile" },
+	{ name: "THIRD-PARTY-NOTICES.md (additive rows for the crates Cargo.lock adds; CR-036-8)", test: (p) => p === "THIRD-PARTY-NOTICES.md" },
 	{ name: "test/fixtures/compiler/shared/cases.json", test: (p) => p === "test/fixtures/compiler/shared/cases.json" },
 	{ name: "test/fixtures/compiler/shared/spec-bundle/**", test: (p) => p.startsWith("test/fixtures/compiler/shared/spec-bundle/") },
 	{ name: "test/fixtures/compiler/shared/typespec/records-and-scalars/**", test: (p) => p.startsWith("test/fixtures/compiler/shared/typespec/records-and-scalars/") },

@@ -694,6 +694,7 @@ fn tc_1299_outside_the_crate_and_fr098_the_change_set_is_members_lock_makefile_b
             "Cargo.lock",
             "Cargo.toml",
             "Makefile",
+            "THIRD-PARTY-NOTICES.md",
             "docs/semantic-data-system/extraction-frontend-diagnostics.md",
         ]
     );
@@ -726,6 +727,36 @@ fn tc_1299_outside_the_crate_and_fr098_the_change_set_is_members_lock_makefile_b
         .skip_while(|l| l.trim().is_empty())
         .collect();
     assert_eq!(added, block, "the hunk is exactly the block");
+
+    // CR-036-8: the root attribution register gains rows for the crates the
+    // lock adds and nothing else (NFR-032-AC-1; NFR-023-AC-7 via TC-742).
+    let mut args = vec!["diff", "--no-renames", "-U0", base.as_str()];
+    if squashed {
+        args.push(tip.as_str());
+    }
+    args.extend(["--", "THIRD-PARTY-NOTICES.md"]);
+    let diff = git(&workspace_dir(), &args).unwrap_or_else(|e| panic!("{e}"));
+    let removed = diff
+        .lines()
+        .filter(|l| l.starts_with('-') && !l.starts_with("---"))
+        .count();
+    assert_eq!(removed, 0, "the notices register removes nothing:\n{diff}");
+    let lock = read(&workspace_dir().join("Cargo.lock"));
+    let locked: BTreeSet<&str> = lock
+        .lines()
+        .filter_map(|l| l.strip_prefix("name = \""))
+        .map(|l| l.trim_end_matches('"'))
+        .collect();
+    let unlocked: Vec<&str> = diff
+        .lines()
+        .filter_map(|l| l.strip_prefix("+| `"))
+        .filter_map(|l| l.split('`').next())
+        .filter(|name| !locked.contains(name))
+        .collect();
+    assert!(
+        unlocked.is_empty(),
+        "notices rows for crates Cargo.lock does not carry: {unlocked:?}"
+    );
 
     // The seven prohibited paths are byte-unchanged.
     let frozen = [
