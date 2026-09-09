@@ -554,7 +554,7 @@ impl fmt::Display for Diagnostic {
 /// code point and never consults the locale. Stable, so equal keys keep
 /// their input order.
 pub fn sort_diagnostics(diagnostics: &mut [Diagnostic]) {
-    diagnostics.sort_by(|a, b| compare(a, b));
+    diagnostics.sort_by(compare);
 }
 
 fn compare(a: &Diagnostic, b: &Diagnostic) -> Ordering {

@@ -1,0 +1,11 @@
+{
+  "source": "authored",
+  "code": "IMPORT_UNSUPPORTED",
+  "files": [
+    "spec/functional/FR-001-order-entity.md",
+    "spec/spec.md"
+  ],
+  "derived": [],
+  "edits": [],
+  "note": "Loaded beside fixtures/modules/acme-other (package acme/other, exports Thing) and the vendored business module. The engine resolves the `thing | Thing` cell at line 15 through the import table to ix://acme/other/type/Thing; the bundle package is acme/shop, so pass two classifies it Unresolved::ImportUnsupported(\"acme/other\") and raises blocking IMPORT_UNSUPPORTED naming acme/other (FR-092-AC-5; TC-1214). Cross-package imports are out of scope for this delivery (spec.md Out of Scope)."
+}

@@ -1,0 +1,14 @@
+{
+  "source": "authored",
+  "case": "by-title",
+  "files": [
+    "spec/functional/FR-005-config-overlay-entity.md",
+    "spec/functional/FR-006-config-version-entity.md",
+    "spec/spec.md"
+  ],
+  "derived": [
+    "spec/functional/FR-005-config-overlay-entity.md is a byte copy of config-version-table's FR-005."
+  ],
+  "edits": [],
+  "note": "FR-006's `overlay | ConfigOverlay` cell at line 15 names FR-005 by title; the engine returns type/ConfigOverlay and the classifier returns Resolution::Object(FR-005) whose typeRef is FR-005's type/ identity (FR-092-AC-2; TC-1211). The by-id half of AC-2 is exercised on the classifier directly with the type/FR-005 form the engine mints for an identifier-shaped id: a Type cell reading `FR-005` is rejected by the engine's Identifier grammar (semantic.invalid-type-token) and never reaches the classifier, which TC-1211 also records (spec defect reported against FR-092-AC-2)."
+}
