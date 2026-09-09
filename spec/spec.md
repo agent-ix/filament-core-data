@@ -99,6 +99,15 @@ independent consumer examples and a cross-language agreement measurement. It
 generates every package and publishes none of them: publication passes
 `agent-ix/quoin#290`, a human sign-off that has not been given.
 
+The twelfth delivery is the spec-bundle extraction frontend (issue #36): a
+Rust workspace member that reads a repository's spec bundle through the Quire
+extraction contract (`agent-ix/quire-rs#388`) in-process, resolves every type
+token to a declared artifact, enumeration, kernel scalar, or an explicit
+failure state, and lowers the result to one semantic IR v1.1 document — a
+domain package `ix://<org>/<repo>` — byte-deterministically, with
+source-located diagnostics, provenance-tracked read-only fixtures, and
+cross-frontend parity against the TypeSpec frontend on the shared cases.
+
 ## 2. Scope
 
 ### 2.1 In Scope
@@ -192,8 +201,26 @@ generates every package and publishes none of them: publication passes
   Schema index beside them, independent per-language consumer examples, and the
   cross-language agreement measurement over a shared golden corpus of kernel
   instances.
+- The spec-bundle extraction frontend: bundle and module loading through
+  quire-rs, the closed type-token resolver, the lowering of field, relationship,
+  operation, and clause declarations to IR v1.1, package identity and provenance
+  minting, the `agent-ix.extraction-frontend.*` diagnostic registry, the
+  canonical serialization and fingerprint, provenance-tracked fixtures with
+  goldens and negatives, the shared-case parity gate, and the `extraction-frontend`
+  command line with its Make targets — all under exact Rust 1.98.1 and
+  AGPL-3.0-only, none of it published.
 
 ### 2.2 Out of Scope
+
+- An IR-reading `json-schema` generation backend; the target is delegated to the
+  upstream TypeSpec emitter (ADR-0005) and a domain package cannot reach it, so
+  issue #36's fifth acceptance criterion is carried as a declared gap under
+  issue #85.
+- Re-authoring any corpus repository's artifacts into the typed-table form;
+  `config-service` FR-006 is consumed as the provenance-tracked re-authoring
+  quire-rs vendors, and the live file is a read-only negative control.
+- Ruling issues #77, #78, #67, or #61; each requirement that touches one states
+  the reading it takes and cites the issue.
 
 - Publishing any kernel package to npm, crates.io, or a Python index, adding one
   to a packed manifest surface, or pushing a release tag. Publication passes
@@ -372,6 +399,9 @@ Authority is assigned by concern:
 | User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-014](./usecase/US-014-consume-the-semantic-kernel-natively.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, package-author, Rust-consumer, TypeScript-consumer, Python-consumer, and semantic-kernel-consumer outcomes |
 | Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-090](./functional/FR-090-prove-cross-language-agreement.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, prototype-promotion, compiler-core, Rust/Serde, TypeScript, qualified Python generation, and semantic kernel packaging behavior |
 | Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-030](./non-functional/NFR-030-non-disruptive-kernel-packaging.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic and hermetic kernel generation, portable dependency-free kernel packages, and non-disruptive kernel packaging behind the publication gate |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-015](./usecase/US-015-lift-a-spec-bundle-into-a-domain-package.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, package-author, Rust-consumer, TypeScript-consumer, Python-consumer, semantic-kernel-consumer, and domain-author outcomes |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-099](./functional/FR-099-provide-the-extraction-frontend-command-line.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, prototype-promotion, compiler-core, Rust/Serde, TypeScript, qualified Python generation, semantic kernel packaging, and spec-bundle extraction frontend behavior |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-033](./non-functional/NFR-033-qualified-toolchain-and-licensed-dependencies.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic and hermetic kernel generation, portable dependency-free kernel packages, non-disruptive kernel packaging, deterministic and hermetic lifting, non-disruptive extraction frontend, and qualified toolchain and licensed dependencies |
 
 ## 6. Decision Status Model
 
