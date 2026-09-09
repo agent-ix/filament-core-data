@@ -114,8 +114,9 @@ unlisted or listed and absent.
 
 ### Goldens
 
-- The frontend SHALL write goldens only through `extraction-frontend lift --write-goldens`.
-- The frontend SHALL write, for each fixture, the document, its fingerprint sidecar, its diagnostics sidecar, and its provenance sidecar into the fixture's `expected/`.
+- The frontend SHALL write goldens only through `extraction-frontend lift --write-goldens --fixtures <dir> --staging <dir>` (FR-099), which lifts into the staging directory outside every bundle root and installs each `expected/` by rename.
+- The frontend SHALL write, for each fixture whose root holds a `spec/spec.md`, the document, its fingerprint sidecar, its diagnostics sidecar, and its provenance sidecar into the fixture's `expected/`.
+- The frontend SHALL neither regenerate nor diff a constructed negative's `expected/diagnostics.json` through `--write-goldens` or `extraction-frontend-check`; that file is authored and asserted by TC-1288 alone.
 - The frontend SHALL NOT rewrite a committed golden from any test.
 - The frontend SHALL record in each `negatives/<CODE>/expected/diagnostics.json` the single expected code with its line and column, or no locus where FR-096 assigns none.
 
@@ -150,7 +151,7 @@ unlisted or listed and absent.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-098-AC-1 | Every document under `fixtures/` is named in its `PROVENANCE.json` with repository, revision, and path or as `authored`; the `config-version-*` rows name the quire-rs revision and the added `relationships:` block; the `modules/spec-objects-business` row names revision `d1840b8`. | Test (TC-1285) |
-| FR-098-AC-2 | Regenerating every fixture into a scratch directory under `CARGO_TARGET_DIR` reproduces each committed `expected/` file byte for byte, and each regenerated document equals `decide({"ir": doc}).normalized`; a one-byte change to a golden fails the test naming the fixture and the byte offset. | Test (TC-1286) |
+| FR-098-AC-2 | Regenerating every fixture whose root holds a `spec/spec.md` into a scratch directory under `CARGO_TARGET_DIR` reproduces each committed `expected/` file byte for byte, and each regenerated document equals `decide({"ir": doc}).normalized`; a one-byte change to a golden fails the test naming the fixture and the byte offset. | Test (TC-1286) |
 | FR-098-AC-3 | The `business` fixture's golden carries at least one `record`, `enum`, `scalar`, and `alias` definition (the last a constrained field's, FR-093), one `enum` with at least two `variants`, one operation with parameters and a `returns`, one `ocl` clause, and one relationship of each of the categories `structural` and `dependency`. | Test (TC-1287) |
 | FR-098-AC-4 | Every code FR-096 declares is emitted by its `negatives/<CODE>/` bundle or by the test `constructed.json` names, at the golden's recorded line and column or with no locus, and no `negatives` bundle emits a second code. | Test (TC-1288) |
 | FR-098-AC-5 | After lifting a committed copy of each fixture bundle, `git status --porcelain` is empty and every file's hash under the bundle and module roots is unchanged, for a clean lift and for a lift with a blocking diagnostic. | Test (TC-1289) |
