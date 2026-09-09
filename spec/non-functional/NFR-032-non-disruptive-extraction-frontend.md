@@ -188,7 +188,11 @@ Resolve this change's own commit range from history — the parent of the
 earliest commit that added a sentinel, through the latest commit that added
 one — with `changeRange` from `test/changed-paths.ts`, passing `--no-renames`
 to every `git diff`, and take the union of the per-commit path sets over
-`git log --first-parent --no-merges`. Confirm every path in that union, and
+`git log --first-parent --no-merges`. While the sentinels sit in different
+commits the range's tip is `HEAD`, which must descend from the closing
+sentinel's commit, so the review and change-request commits the branch makes
+after that sentinel are measured; once the range is one squash commit the
+pinned tip is used, and the two forms coincide at the merge (CR-036-9). Confirm every path in that union, and
 every uncommitted path in the tree no later commit has taken over, is permitted
 and none prohibited; confirm each permitted entry is named by a requirement
 Output or a Verification step here. Run `cargo metadata` and confirm no

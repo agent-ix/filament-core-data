@@ -111,3 +111,20 @@ module beyond `lib.rs`.
   (FR-098-AC-4, FND-1501). Ordered by requirement, the mapping given for
   AC-11 in the brief (TC-1208) was corrected to the spec's own row TC-1331;
   TC-1208 belongs to FR-091-AC-9.
+
+## Dispositions
+
+Recorded at the CR-036-9 fix pass; each row names what changed or why not.
+
+| Finding | Disposition |
+| --- | --- |
+| FND-1500 | applied — the Rust half runs the backend's own writer `generateRust` through the new `rust-generate --ir --out` verb of `scripts/extraction-frontend-harness.mjs`, with the request `rust-serde/cli.mjs` builds; run honestly it refuses the golden with `NAME_COLLISION` (the backend's reserved `Uuid` re-export against the `UUID` kernel scalar), so TC-1292 is split into an `#[ignore = "blocked: …"]` Rust test, an `#[ignore = "blocked: #88"]` TypeScript test, and two un-ignored measurements of each refusal; FR-098-AC-8, the Rationale and the matrix row restated (CR-036-9); the backend defect is reported for filing, not fixed here (`src/compiler/**` is prohibited) |
+| FND-1501 | applied — FR-098-AC-4 and the inventory name `{DECLARED_LOSS, ENGINE_DIAGNOSTIC}` as the non-blocking pair; TC-1288 asserts the code is the first blocking diagnostic in FR-096 order and that a non-blocking negative carries none |
+| FND-1502 | not applied, recorded — PR #84 is still open, so Task-134's rebase subtask stays unticked and the plan log says why; TC-1219, TC-1230, TC-1245, TC-1258, TC-1283 are re-run after the rebase |
+| FND-1503 | applied — 138 rows `✅ passed`, 9 `✅ static evidence (make extraction-frontend-evidence)`, the FR/NFR/US-015 summary rows `✅ Complete` (FR-098 `⚠️` naming its blocked rows), plan.md checkboxes ticked and the "TC-1339 unused" note corrected; `status: active` is kept deliberately while Task-134's rebase subtask is open |
+| FND-1504 | applied — FR-099 owns `lift --write-goldens --into <dir>` (option list, the `extraction-frontend-check` bullet, FR-099-AC-4), TC ids unchanged |
+| FND-1505 | applied — `make extraction-frontend-evidence` runs `cargo +$(EXTRACTION_TOOLCHAIN) test -p agent-ix-extraction-frontend --locked --offline --no-fail-fast -- --ignored`, skipping by name only the tests blocked on open issues (TC-1290..1292, which fail by design); FR-099 names it; run at the fix pass, seven of the nine rows pass (TC-1298, TC-1306, TC-1314, TC-1318, TC-1323, TC-1324, TC-1349), TC-1316 fails on `test/semantic-kernel.test.ts` (issue #89, recorded by CR-036-8) and TC-1317 fails because the revert rehearsal's scratch clone lacks the Python and generated-binding environment (48 pytest/vitest rows and `rust-check` red there independent of the revert) — both rows `🚧` in the matrix, the second reported for a harness follow-up |
+| FND-1506 | applied — `tc_1347_` carries a second `#[trace("TC-1347", "FR-093-AC-13")]`; the TC-1347 row names FR-093-AC-13 and the FR-093 summary row lists it |
+| FND-1507 | not applied — the three residues (FR-091-AC-11 injected through `extract.rs`, a JSON-Schema validator over the diagnostics array, the module-root path in FR-097-AC-13's message, the pointer after `validate` re-sorts) each need a test redesign beyond a fix pass; carried to the follow-up ticket |
+| FND-1508 | applied — the untagged `registry_doc_renders_…` helper's doc comment no longer names a TC or requirement id, `tests/backend.rs` module doc rewritten for the CR-036-9 route, `tests/payload.rs` prose no longer names TC-1337 |
+| FND-1509 | applied — `without` and `sha256sum` live once in `tests/common/mod.rs`; the four copies are gone |

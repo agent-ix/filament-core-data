@@ -466,6 +466,30 @@ fn tc_1288_every_negative_emits_its_code_at_the_golden_locus_and_only_its_pinned
             "{}: a second code {extra:?} beside the pinned set: {diagnostics:?}",
             code.name()
         );
+        // FR-098-AC-4: the code is the *first blocking* diagnostic in FR-096
+        // order, and the non-blocking negatives are exactly `DECLARED_LOSS`
+        // and `ENGINE_DIAGNOSTIC` (CR-036-9, SR-170 FND-1501).
+        let first_blocking = diagnostics
+            .iter()
+            .find(|d| d.blocking)
+            .and_then(Diagnostic::registry_code);
+        let non_blocking = matches!(code, Code::DeclaredLoss | Code::EngineDiagnostic);
+        if non_blocking {
+            assert_eq!(
+                first_blocking,
+                None,
+                "{}: a non-blocking negative carries a blocking diagnostic: {diagnostics:?}",
+                code.name()
+            );
+        } else {
+            assert_eq!(
+                first_blocking,
+                Some(expected_code),
+                "{}: the first blocking diagnostic is not {}: {diagnostics:?}",
+                code.name(),
+                expected_code.name()
+            );
+        }
         // The code's diagnostics sit at the golden's line and column, or
         // carry no locus where FR-096 assigns none: the sidecar bytes are
         // the golden's.

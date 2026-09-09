@@ -564,11 +564,12 @@ fn tc_1346_a_reader_diagnostic_appears_as_exactly_one_invalid_ir_with_the_reader
         .all(|d| d.registry_code() == Some(Code::InvalidIr)));
 }
 
-/// The generator of `docs/semantic-data-system/extraction-frontend-diagnostics.md`
-/// (FR-096-AC-13) renders every code with severity, blocking and owner, and
-/// reproduces the committed expectation byte for byte. The docs page itself
-/// is written by the closing task (NFR-032's sentinel); TC-1271 there
-/// compares the page against this same generator.
+/// The generator of the diagnostics registry page renders every code with
+/// severity, blocking and owner, and reproduces the committed expectation
+/// byte for byte. The docs page itself is written by the closing task (the
+/// non-disruption sentinel); the traced test in `tests/docs.rs` compares the
+/// page against this same generator. Untraced by design: it is a helper
+/// check behind that row, not a row of its own (SR-170 FND-1508).
 #[test]
 fn registry_doc_renders_every_code_with_severity_blocking_and_owner() {
     let doc = render_registry_doc();

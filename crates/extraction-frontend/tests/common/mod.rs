@@ -481,3 +481,34 @@ pub fn git(cwd: &Path, args: &[&str]) -> Result<String, String> {
         ))
     }
 }
+
+/// `value` with the members named in `drop` removed at the top level
+/// (shared by the FR-093 and FR-094 renaming properties, SR-170 FND-1509).
+pub fn without(value: &Value, drop: &[&str]) -> Value {
+    let mut out = value.clone();
+    if let Some(map) = out.as_object_mut() {
+        for key in drop {
+            map.remove(*key);
+        }
+    }
+    out
+}
+
+/// `sha256sum` over `bytes`, computed outside the crate (the FR-095 and
+/// FR-097 digest oracles, SR-170 FND-1509).
+pub fn sha256sum(bytes: &[u8]) -> String {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("input");
+    fs::write(&path, bytes).expect("write");
+    let out = Command::new("sha256sum")
+        .arg(&path)
+        .output()
+        .expect("spawn sha256sum");
+    assert!(out.status.success(), "sha256sum failed");
+    String::from_utf8(out.stdout)
+        .expect("utf-8")
+        .split_whitespace()
+        .next()
+        .expect("digest column")
+        .to_string()
+}

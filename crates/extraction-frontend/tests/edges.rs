@@ -12,6 +12,7 @@ use agent_ix_extraction_frontend::{
     extract, frontmatter_edges, is_blocked, lower_bundle, resolve, Bundle, Extractions, Limits,
     Lowered, Resolutions, PART_OF,
 };
+use common::without;
 use ix_trace_rs::trace;
 use proptest::prelude::*;
 use proptest::test_runner::{Config, TestRunner};
@@ -119,17 +120,6 @@ fn copy_tree(from: &Path, to: &Path) {
             fs::copy(entry.path(), &target).expect("copy");
         }
     }
-}
-
-/// `value` with the members named in `drop` removed at the top level.
-fn without(value: &Value, drop: &[&str]) -> Value {
-    let mut out = value.clone();
-    if let Some(map) = out.as_object_mut() {
-        for key in drop {
-            map.remove(*key);
-        }
-    }
-    out
 }
 
 const FR_006: &str = "spec/functional/FR-006-config-version-entity.md";

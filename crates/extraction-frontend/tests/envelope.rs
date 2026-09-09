@@ -6,9 +6,12 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+mod common;
+
 use agent_ix_extraction_frontend::envelope::{self, ModuleManifest};
 use agent_ix_extraction_frontend::provenance::{parse_lock, ENGINE_CRATE, FRONTEND_CRATE};
 use agent_ix_extraction_frontend::{provenance_record, Bundle, Envelope};
+use common::sha256sum;
 use ix_trace_rs::trace;
 use proptest::prelude::*;
 use serde_json::{json, Value};
@@ -63,23 +66,6 @@ fn load(root: &Path, roots: &[&Path]) -> (Bundle, Vec<ModuleManifest>) {
 
 fn load_table() -> (Bundle, Vec<ModuleManifest>) {
     load(&fixture("config-version-table"), &[&business_module()])
-}
-
-/// `sha256sum` over `bytes`, computed outside the crate.
-fn sha256sum(bytes: &[u8]) -> String {
-    let dir = tempfile::tempdir().expect("tempdir");
-    let path = dir.path().join("input");
-    fs::write(&path, bytes).expect("write");
-    let out = Command::new("sha256sum")
-        .arg(&path)
-        .output()
-        .expect("spawn sha256sum");
-    assert!(out.status.success(), "sha256sum failed");
-    let text = String::from_utf8(out.stdout).expect("utf-8");
-    text.split_whitespace()
-        .next()
-        .expect("digest column")
-        .to_string()
 }
 
 fn write(path: &Path, text: &str) {

@@ -48,26 +48,30 @@ registry. Every original file is AGPL-3.0-only.
 
 ## Requirements covered
 
-US-015, FR-091..FR-099, NFR-031..NFR-033 — mapped to TC-1200..TC-1349 in
-`spec/tests.md` (149 rows, TC-1339 unused, every row `🚧` at planning time).
+US-015, FR-091..FR-099, NFR-031..NFR-033 — mapped to TC-1200..TC-1350 in
+`spec/tests.md` (151 rows; TC-1339 is FR-097-AC-16 and TC-1350 NFR-033's
+last row, both allocated during delivery; every row `🚧` at planning time,
+145 flipped `✅` at CR-036-9; four blocked on issues #85, #87, #88 and the
+rust-serde `NAME_COLLISION` defect; TC-1316 red on issue #89 and TC-1317 red
+in the revert rehearsal's scratch-clone environment).
 
 ### Functional requirements
 
-- [ ] **FR-091** — read a bundle through `load_repo` + `load_module_set`; one `SemanticExtraction` per object-typed artifact
-- [ ] **FR-092** — classify every engine `TypeRef.target` into the closed `Resolution` enum in two passes
-- [ ] **FR-093** — lower records, fields, constraints, enumerations; `losses.json`
-- [ ] **FR-094** — lower frontmatter relationships, operations, clauses
-- [ ] **FR-095** — package identity, envelope digests, node identity minters, provenance
-- [ ] **FR-096** — closed `Code` registry, locus rule, `ENGINE_DIAGNOSTIC` / `INVALID_IR` wraps, generated docs page
-- [ ] **FR-097** — `decide` at lift time, `normalized` bytes, fingerprint sidecar, atomic write
-- [ ] **FR-098** — fixture inventory, provenance, goldens, read-only lifting, structural parity, backend acceptance
-- [ ] **FR-099** — `lift` / `inspect` binary, exit codes, Make targets
+- [x] **FR-091** — read a bundle through `load_repo` + `load_module_set`; one `SemanticExtraction` per object-typed artifact
+- [x] **FR-092** — classify every engine `TypeRef.target` into the closed `Resolution` enum in two passes
+- [x] **FR-093** — lower records, fields, constraints, enumerations; `losses.json`
+- [x] **FR-094** — lower frontmatter relationships, operations, clauses
+- [x] **FR-095** — package identity, envelope digests, node identity minters, provenance
+- [x] **FR-096** — closed `Code` registry, locus rule, `ENGINE_DIAGNOSTIC` / `INVALID_IR` wraps, generated docs page
+- [x] **FR-097** — `decide` at lift time, `normalized` bytes, fingerprint sidecar, atomic write
+- [x] **FR-098** — fixture inventory, provenance, goldens, read-only lifting, structural parity, backend acceptance (TC-1290..1292 blocked on #87, #88 and the rust-serde `NAME_COLLISION` defect; every other row green)
+- [x] **FR-099** — `lift` / `inspect` binary, exit codes, Make targets
 
 ### Non-functional requirements
 
-- [ ] **NFR-031** — deterministic and hermetic lifting; `limits.json`; ambient-input and `HashMap` audits
-- [ ] **NFR-032** — non-disruptive change set fixed by two sentinels; `cargo metadata` edge check
-- [ ] **NFR-033** — Rust 1.98.1 via `cargo +1.98.1`; exact pins; `deny.toml`; notices; `#[trace]` convention
+- [x] **NFR-031** — deterministic and hermetic lifting; `limits.json`; ambient-input and `HashMap` audits
+- [x] **NFR-032** — non-disruptive change set fixed by two sentinels; `cargo metadata` edge check
+- [x] **NFR-033** — Rust 1.98.1 via `cargo +1.98.1`; exact pins; `deny.toml`; notices; `#[trace]` convention
 
 ## Dependency graph
 
@@ -130,26 +134,26 @@ single enumeration, grouped by the module under test.
 
 ### Unit and integration tests (`crates/extraction-frontend/tests/`)
 
-- [ ] `bundle.rs` / `extract.rs` (FR-091): TC-1200..TC-1209, TC-1331
-- [ ] `diagnostics.rs` (FR-096): TC-1259, TC-1260, TC-1262, TC-1263, TC-1265, TC-1266, TC-1269, TC-1345, TC-1346; corpus-wide TC-1267, TC-1270, TC-1272 after goldens; TC-1264 with the resolver; TC-1268 with the binary
-- [ ] `identity.rs` / `envelope.rs` (FR-095): TC-1246..TC-1252, TC-1254, TC-1256, TC-1347, TC-1348; TC-1253, TC-1255 against goldens; TC-1258 at lift time
-- [ ] `resolve.rs` (FR-092): TC-1210..TC-1218, TC-1332; TC-1219 over emitted documents
-- [ ] `lower.rs` (FR-093): TC-1220..TC-1229, TC-1333..TC-1335; TC-1230 over emitted documents; limit probes TC-1305
-- [ ] `edges.rs` / `clauses.rs` (FR-094): TC-1231..TC-1244; TC-1245 over emitted documents
-- [ ] `validate.rs` / `canonical.rs` / `write.rs` (FR-097): TC-1274..TC-1284, TC-1340..TC-1342
-- [ ] `main.rs` (FR-099): TC-1295..TC-1297
-- [ ] fixtures, goldens, parity (FR-098): TC-1285..TC-1293, TC-1344
+- [x] `bundle.rs` / `extract.rs` (FR-091): TC-1200..TC-1209, TC-1331
+- [x] `diagnostics.rs` (FR-096): TC-1259, TC-1260, TC-1262, TC-1263, TC-1265, TC-1266, TC-1269, TC-1345, TC-1346; corpus-wide TC-1267, TC-1270, TC-1272 after goldens; TC-1264 with the resolver; TC-1268 with the binary
+- [x] `identity.rs` / `envelope.rs` (FR-095): TC-1246..TC-1252, TC-1254, TC-1256, TC-1347, TC-1348; TC-1253, TC-1255 against goldens; TC-1258 at lift time
+- [x] `resolve.rs` (FR-092): TC-1210..TC-1218, TC-1332; TC-1219 over emitted documents
+- [x] `lower.rs` (FR-093): TC-1220..TC-1229, TC-1333..TC-1335; TC-1230 over emitted documents; limit probes TC-1305
+- [x] `edges.rs` / `clauses.rs` (FR-094): TC-1231..TC-1244; TC-1245 over emitted documents
+- [x] `validate.rs` / `canonical.rs` / `write.rs` (FR-097): TC-1274..TC-1284, TC-1340..TC-1342
+- [x] `main.rs` (FR-099): TC-1295..TC-1297
+- [x] fixtures, goldens, parity (FR-098): TC-1285..TC-1293, TC-1344 (TC-1290..1292 blocked, see above)
 
 ### Static gates and analyses (grep, manifest, change-set; each with a planted-token control)
 
-- [ ] FR-091-AC-8 TC-1207; FR-095-AC-12 TC-1257; FR-096-AC-3 TC-1261; FR-097-AC-1 TC-1273, TC-1336; FR-098-AC-10/11 TC-1294, TC-1338, TC-1343; FR-099-AC-4..6 TC-1298, TC-1299, TC-1349; three-CON grep TC-1330
-- [ ] NFR-031: TC-1300..TC-1304, TC-1306..TC-1309
-- [ ] NFR-032: TC-1310..TC-1319
-- [ ] NFR-033: TC-1320..TC-1329, TC-1350
+- [x] FR-091-AC-8 TC-1207; FR-095-AC-12 TC-1257; FR-096-AC-3 TC-1261; FR-097-AC-1 TC-1273, TC-1336; FR-098-AC-10/11 TC-1294, TC-1338, TC-1343; FR-099-AC-4..6 TC-1298, TC-1299, TC-1349; three-CON grep TC-1330
+- [x] NFR-031: TC-1300..TC-1304, TC-1306..TC-1309
+- [x] NFR-032: TC-1310..TC-1319
+- [x] NFR-033: TC-1320..TC-1329, TC-1350
 
 ### Property and fuzz tests (`proptest`)
 
-- [ ] TC-1208, TC-1210, TC-1218, TC-1229, TC-1243, TC-1244, TC-1251, TC-1256, TC-1259, TC-1266, TC-1270, TC-1276, TC-1344, TC-1309
+- [x] TC-1208, TC-1210, TC-1218, TC-1229, TC-1243, TC-1244, TC-1251, TC-1256, TC-1259, TC-1266, TC-1270, TC-1276, TC-1344, TC-1309
 
 ### Manual / blocked
 

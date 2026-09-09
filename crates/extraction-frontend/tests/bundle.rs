@@ -688,8 +688,10 @@ fn tc_1331_duplicate_id_refuses_at_the_second_path_and_a_line_zero_diagnostic_ha
     assert!(with_line.locus.is_none());
 }
 
-/// A scratch repository: this crate's `spec/` tree with one matrix row
-/// flipped to a passed status, plus one Rust test file.
+/// A scratch repository: this crate's `spec/` tree with one matrix row at
+/// a passed status (flipped from `🚧 planned` when it still is, kept when
+/// the matrix already marks it `✅ passed`, as it does since CR-036-9),
+/// plus one Rust test file.
 fn coverage_scope(row: &str, test_source: &str) -> tempfile::TempDir {
     let dir = tempfile::tempdir().expect("tempdir");
     let crate_dir = crate_dir();
@@ -712,12 +714,15 @@ fn coverage_scope(row: &str, test_source: &str) -> tempfile::TempDir {
         if line.starts_with(&format!("| {row} |")) && line.ends_with("| 🚧 planned |") {
             flipped.push_str(&line.replace("| 🚧 planned |", "| ✅ passed |"));
             hit = true;
+        } else if line.starts_with(&format!("| {row} |")) && line.ends_with("| ✅ passed |") {
+            flipped.push_str(line);
+            hit = true;
         } else {
             flipped.push_str(line);
         }
         flipped.push('\n');
     }
-    assert!(hit, "{row} is a planned row of spec/tests.md");
+    assert!(hit, "{row} is a planned or passed row of spec/tests.md");
     fs::write(&tests, flipped).expect("write");
     write(
         &dir.path()

@@ -22,6 +22,7 @@ use agent_ix_extraction_frontend::{
 use agent_ix_semantic_ir::json::parse as parse_json;
 use agent_ix_semantic_ir::normalize::normalized;
 use agent_ix_semantic_ir::{decide, ResultState};
+use common::without;
 use ix_trace_rs::trace;
 use proptest::prelude::*;
 use proptest::test_runner::{Config, TestRunner};
@@ -939,17 +940,6 @@ fn renames(count: usize) -> impl Strategy<Value = Vec<String>> {
         .prop_map(|set| set.into_iter().collect())
 }
 
-/// `value` with the members named in `drop` removed at the top level.
-fn without(value: &Value, drop: &[&str]) -> Value {
-    let mut out = value.clone();
-    if let Some(map) = out.as_object_mut() {
-        for key in drop {
-            map.remove(*key);
-        }
-    }
-    out
-}
-
 #[trace("TC-1229", "FR-093-AC-10")]
 #[trace("TC-1229", "FR-093-CON-2")]
 #[test]
@@ -1330,6 +1320,7 @@ fn tc_1335_a_domain_without_properties_lowers_to_an_empty_record_and_lossy_yield
 }
 
 #[trace("TC-1347", "FR-095-AC-14")]
+#[trace("TC-1347", "FR-093-AC-13")]
 #[test]
 fn tc_1347_status_and_status_slug_alike_refuse_at_the_second_document_and_mint_no_field_twice() {
     let lift = lift("negatives/DUPLICATE_TYPE_NAME");

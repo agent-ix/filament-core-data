@@ -15,7 +15,9 @@ use agent_ix_extraction_frontend::write::{
     OutputPaths, DIGEST_PREFIX, FINGERPRINT_ALGORITHM, FINGERPRINT_DOMAIN, FINGERPRINT_VERSION,
 };
 use agent_ix_extraction_frontend::{lift, LiftOutcome, LiftRequest};
-use common::{business_module, entries, fixture, inspect, lift_fixture, positive_lifts, request};
+use common::{
+    business_module, entries, fixture, inspect, lift_fixture, positive_lifts, request, sha256sum,
+};
 use ix_trace_rs::trace;
 use serde_json::Value;
 
@@ -40,24 +42,6 @@ fn read_all(request: &LiftRequest) -> Vec<(&'static str, Vec<u8>)> {
             )
         })
         .collect()
-}
-
-/// `sha256sum` over `bytes`, computed outside the crate.
-fn sha256sum(bytes: &[u8]) -> String {
-    let dir = tempfile::tempdir().expect("tempdir");
-    let path = dir.path().join("input");
-    fs::write(&path, bytes).expect("write");
-    let out = Command::new("sha256sum")
-        .arg(&path)
-        .output()
-        .expect("spawn sha256sum");
-    assert!(out.status.success());
-    String::from_utf8(out.stdout)
-        .expect("utf-8")
-        .split_whitespace()
-        .next()
-        .expect("digest")
-        .to_string()
 }
 
 fn refused_code(outcome: &LiftOutcome) -> (Code, String) {

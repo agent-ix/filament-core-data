@@ -8,9 +8,18 @@
  * commit, and `docs/semantic-data-system/extraction-frontend-diagnostics.md`,
  * created by the last — through `changeRange` of `test/changed-paths.ts`,
  * and its path set is the union of the per-commit name lists over
- * `git log --first-parent --no-merges` (`changedPathsUnion`). Nothing here
- * reimplements that range logic; the helper is imported, so the fifth face
- * of the merge-degrading defect it documents is not rediscovered.
+ * `git log --first-parent --no-merges`. Nothing here reimplements the
+ * sentinel resolution; the helper is imported, so the fifth face of the
+ * merge-degrading defect it documents is not rediscovered.
+ *
+ * One refinement on the *tip* (CR-036-9): while the change is in flight the
+ * sentinels sit in different commits and the branch keeps moving past the
+ * closing one — review fixes, change requests — so the range's tip is `HEAD`,
+ * which must be a descendant of the closing sentinel's commit, and its base is
+ * the opening sentinel's parent. Once the pull request is squash-merged both
+ * sentinels and `HEAD`-at-merge are one commit, the history-pinned form and
+ * this form coincide, and the pinned tip is used from then on so later
+ * tickets are not annexed. `workingRange` below is that rule.
  *
  * Verbs that only read the repository (`change-range`, `changed-paths`,
  * `merge-commits`, `gate`) run against `--root` (default: the repository this
@@ -73,7 +82,96 @@ const HOME_ROOT = resolve(dirname(SELF), "..");
 const helpers = await import(
 	pathToFileURL(join(HOME_ROOT, "test", "changed-paths.ts")).href
 );
-const { changeRange, changedPathsUnion, mergeCommitsIn } = helpers;
+const { changeRange, REGENERATED_IN_PLACE } = helpers;
+
+/** True when `ancestor` is an ancestor of (or equal to) `descendant`. */
+function isAncestor(root, ancestor, descendant) {
+	const result = spawnSync(
+		"git",
+		["merge-base", "--is-ancestor", ancestor, descendant],
+		{ cwd: root, stdio: "ignore" },
+	);
+	return result.status === 0;
+}
+
+/**
+ * This change's range as the gates read it (CR-036-9): `changeRange`'s base
+ * and, while the sentinels are in different commits, `HEAD` as the tip —
+ * which must descend from the closing sentinel's commit, or the checkout is
+ * not this change's branch and the gate cannot assert. Once squashed, the
+ * pinned tip. `pinnedTip` carries `changeRange`'s own tip either way.
+ */
+export function workingRange(root) {
+	const pinned = changeRange(root, SENTINELS);
+	if (pinned.squashed) return { ...pinned, pinnedTip: pinned.tip };
+	const head = git(root, "rev-parse", "HEAD");
+	if (!isAncestor(root, pinned.tip, head)) {
+		throw new Error(
+			`HEAD ${head} does not descend from the closing sentinel's commit ${pinned.tip}: this checkout is not the change's branch, so the range cannot be located`,
+		);
+	}
+	return { base: pinned.base, tip: head, squashed: false, pinnedTip: pinned.tip };
+}
+
+/**
+ * The paths of the working range: the union of the per-commit name lists
+ * over `git log --first-parent --no-merges` from base to tip, plus every
+ * uncommitted path in the tree that differs from `HEAD` (the in-flight end
+ * state; `test/changed-paths.ts` `changedPathsUnion` folds the tree in the
+ * same way), minus the artefacts that suite regenerates in place.
+ */
+export function workingPathsUnion(root) {
+	const { base, tip } = workingRange(root);
+	const committed = git(
+		root,
+		"log",
+		"--first-parent",
+		"--no-merges",
+		"--no-renames",
+		"--format=",
+		"--name-only",
+		`${base}..${tip}`,
+	)
+		.split("\n")
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0);
+	// Raw, not through `git()`: its `trim()` would eat the leading status
+	// column of the first line and misname that path.
+	const working = execFileSync(
+		"git",
+		[...GIT_IDENTITY, "status", "--porcelain", "--untracked-files=all"],
+		{ cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+	)
+		.split("\n")
+		.filter((line) => line.trim().length > 0)
+		.map((line) => line.slice(3).trim())
+		.filter((path) => path.length > 0)
+		.filter((path) => !REGENERATED_IN_PLACE.has(path))
+		.filter((path) => !matchesHead(root, path));
+	return [...new Set([...committed, ...working])].sort();
+}
+
+/** True when the working-tree file at `path` is byte-identical to `HEAD`'s. */
+function matchesHead(root, path) {
+	const absolute = resolve(root, path);
+	if (!existsSync(absolute)) return false;
+	const shown = spawnSync("git", ["show", `HEAD:${path}`], {
+		cwd: root,
+		maxBuffer: 64 * 1024 * 1024,
+		stdio: ["ignore", "pipe", "ignore"],
+	});
+	if (shown.status !== 0) return false;
+	return readFileSync(absolute).equals(shown.stdout);
+}
+
+/** Merge commits inside the working range. NFR-023 requires none. */
+export function workingMergeCommits(root) {
+	const { base, tip } = workingRange(root);
+	return git(root, "log", "--merges", "--format=%H", `${base}..${tip}`)
+		.split("\n")
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0);
+}
 
 /** The two sentinels NFR-032 names, first and last commit of the change. */
 export const SENTINELS = Object.freeze([
@@ -88,7 +186,7 @@ const PERMITTED = Object.freeze([
 	{ name: "Cargo.lock", test: (p) => p === "Cargo.lock" },
 	{ name: "Makefile (one extraction-frontend block)", test: (p) => p === "Makefile" },
 	{ name: "THIRD-PARTY-NOTICES.md (additive rows for the crates Cargo.lock adds; CR-036-8)", test: (p) => p === "THIRD-PARTY-NOTICES.md" },
-	{ name: "scripts/extraction-frontend-harness.mjs (the NFR-032 rehearsal harness; CR-036-8)", test: (p) => p === "scripts/extraction-frontend-harness.mjs" },
+	{ name: "scripts/extraction-frontend-harness.mjs (the NFR-032 rehearsal harness, CR-036-8; the FR-098 rust-generate runner, CR-036-9)", test: (p) => p === "scripts/extraction-frontend-harness.mjs" },
 	{ name: "test/fixtures/compiler/shared/cases.json", test: (p) => p === "test/fixtures/compiler/shared/cases.json" },
 	{ name: "test/fixtures/compiler/shared/spec-bundle/**", test: (p) => p.startsWith("test/fixtures/compiler/shared/spec-bundle/") },
 	{ name: "test/fixtures/compiler/shared/typespec/records-and-scalars/**", test: (p) => p.startsWith("test/fixtures/compiler/shared/typespec/records-and-scalars/") },
@@ -140,20 +238,80 @@ function classify(path) {
 
 /** The gate: every path of the change's own set, classified. */
 export function gate(root) {
-	const range = changeRange(root, SENTINELS);
-	const paths = changedPathsUnion(root, SENTINELS);
+	const range = workingRange(root);
+	const paths = workingPathsUnion(root);
 	const classified = paths.map(classify);
 	return {
 		root,
 		base: range.base,
 		tip: range.tip,
+		pinnedTip: range.pinnedTip,
 		squashed: range.squashed,
 		paths,
 		permitted: classified.filter((c) => c.verdict === "permitted").length,
 		prohibited: classified.filter((c) => c.verdict === "prohibited"),
 		unclassified: classified.filter((c) => c.verdict === "unclassified"),
-		merges: mergeCommitsIn(root, SENTINELS),
+		merges: workingMergeCommits(root),
 	};
+}
+
+// ---------------------------------------------------------------------------
+// FR-098-AC-8, the Rust half: the rust-serde backend over one lifted document
+// ---------------------------------------------------------------------------
+
+/**
+ * `rust-generate --ir <file> --out <dir> [--output-root <name>]`: run the
+ * Rust backend (`generateRust` of `src/compiler/backends/rust-serde/index.mjs`,
+ * the backend's own writer) over one IR document, the way
+ * `src/compiler/backends/rust-serde/cli.mjs generate` runs it over the
+ * conformance bases, and write `<out>/<root>.output-manifest.json`. Every
+ * diagnostic is printed; the exit status is `1` when any diagnostic blocks,
+ * so a refusal is a failure rather than a manifest nobody reads
+ * (SR-170 FND-1500). The request is built exactly as `cli.mjs` `requestFor`
+ * builds one — its exported `BACKEND`, `DEFAULT_PROFILE` and `DEFAULT_LIMITS`,
+ * `mappings: []`, and a `lockFingerprint` over the document.
+ */
+async function rustGenerate(argv) {
+	const ir = flag(argv, "--ir");
+	const out = flag(argv, "--out");
+	if (!ir || !out) {
+		throw new Error("rust-generate requires --ir <file> and --out <dir>");
+	}
+	const outputRoot = flag(argv, "--output-root") ?? "lifted";
+	const { createHash } = await import("node:crypto");
+	const backend = await import(
+		pathToFileURL(join(HOME_ROOT, "src", "compiler", "backends", "rust-serde", "index.mjs")).href
+	);
+	const cli = await import(
+		pathToFileURL(join(HOME_ROOT, "src", "compiler", "backends", "rust-serde", "cli.mjs")).href
+	);
+	const document = JSON.parse(readFileSync(resolve(ir), "utf8"));
+	const request = {
+		contractVersion: "1.0.0",
+		lockFingerprint: `sha256:${createHash("sha256").update(JSON.stringify(document), "utf8").digest("hex")}`,
+		ir: document,
+		profile: cli.DEFAULT_PROFILE,
+		mappings: [],
+		backend: cli.BACKEND,
+		outputRoot,
+		limits: cli.DEFAULT_LIMITS,
+	};
+	mkdirSync(resolve(out), { recursive: true });
+	const manifest = backend.generateRust(request, backend.directorySink(resolve(out)), {
+		licenseText: backend.readLicense(HOME_ROOT),
+	});
+	writeFileSync(
+		join(resolve(out), `${outputRoot}.output-manifest.json`),
+		`${JSON.stringify(manifest, null, "\t")}\n`,
+		"utf8",
+	);
+	process.stdout.write(
+		`${outputRoot}: state=${manifest.state} files=${manifest.files.length} diagnostics=${manifest.diagnostics.length}\n`,
+	);
+	for (const entry of manifest.diagnostics) {
+		process.stdout.write(`  ${entry.severity} ${entry.code}: ${entry.message}\n`);
+	}
+	return manifest.diagnostics.some((entry) => entry.blocking) ? 1 : 0;
 }
 
 function gateOk(report) {
@@ -540,19 +698,21 @@ function suiteCompare(argv) {
 	return differing.length === 0 && missing.length === 0 ? 0 : 1;
 }
 
-function main(argv) {
+async function main(argv) {
 	const verb = argv[0];
 	const root = resolve(flag(argv, "--root") ?? HOME_ROOT);
 	switch (verb) {
 		case "change-range":
-			emit(changeRange(root, SENTINELS));
+			emit(workingRange(root));
 			return 0;
 		case "changed-paths":
-			emit(changedPathsUnion(root, SENTINELS));
+			emit(workingPathsUnion(root));
 			return 0;
 		case "merge-commits":
-			emit(mergeCommitsIn(root, SENTINELS));
+			emit(workingMergeCommits(root));
 			return 0;
+		case "rust-generate":
+			return rustGenerate(argv);
 		case "gate": {
 			const report = gate(root);
 			emit(report);
@@ -574,6 +734,7 @@ function main(argv) {
 		default:
 			process.stderr.write(
 				"usage: extraction-frontend-harness.mjs <change-range | changed-paths | merge-commits | gate | suite-run> [--root DIR]\n" +
+					"       extraction-frontend-harness.mjs rust-generate --ir FILE --out DIR [--output-root NAME]\n" +
 					"       extraction-frontend-harness.mjs <squash-rehearsal | accretion-rehearsal [--plant-prohibited] | revert-rehearsal | suite-compare> --scratch DIR [--root DIR]\n",
 			);
 			return 1;
@@ -582,7 +743,7 @@ function main(argv) {
 
 if (process.argv[1] === SELF) {
 	try {
-		process.exitCode = main(process.argv.slice(2));
+		process.exitCode = await main(process.argv.slice(2));
 	} catch (error) {
 		process.stderr.write(`${error.message ?? error}\n`);
 		process.exitCode = 1;

@@ -6,11 +6,13 @@
 //! inside `cargo test` would recurse. Run them deliberately:
 //!
 //! ```text
-//! CARGO_TARGET_DIR=$PWD/node_modules/.cache/rust-target \
-//!   cargo +1.98.1 test -p agent-ix-extraction-frontend --test make -- --ignored
+//! make extraction-frontend-evidence
 //! ```
 //!
-//! They spawn `make -C <workspace>` and assert on its exit status and
+//! (which is `cargo +1.98.1 test -p agent-ix-extraction-frontend --locked
+//! --offline --no-fail-fast -- --ignored` under the Makefile's
+//! `CARGO_TARGET_DIR`, skipping only the tests blocked on open issues). They
+//! spawn `make -C <workspace>` and assert on its exit status and
 //! output; the gates they drive at a scratch copy are pointed there through
 //! the `EXTRACTION_FIXTURES`, `EXTRACTION_MANIFEST` and `EXTRACTION_LOCKFILE`
 //! Make variables, so nothing here writes into the tree.

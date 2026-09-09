@@ -3,7 +3,8 @@
 //! `config-version-table` golden, kept here and nowhere under `src/`.
 //!
 //! The helper evidences the test author's derivation only (issue #36 AC-5's
-//! `json-schema` target is filament-core-data#85, TC-1337 `Blocked`): it
+//! `json-schema` target is filament-core-data#85, a Manual matrix row with
+//! no test behind it): it
 //! reads a record's fields, follows each `typeRef` through aliases to a
 //! kernel scalar or a record, and checks a JSON object against the
 //! presence, scalar and `min`/`max`/`minLength`/`maxLength`/`nonEmpty`

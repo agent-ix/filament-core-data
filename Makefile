@@ -393,6 +393,19 @@ extraction-frontend-test: extraction-frontend-toolchain
 	cargo +$(EXTRACTION_TOOLCHAIN) test --locked -p $(EXTRACTION_CRATE)
 	cargo +$(EXTRACTION_TOOLCHAIN) clippy --locked -p $(EXTRACTION_CRATE) --no-deps --all-targets -- -D warnings
 
+# `extraction-frontend-evidence` runs the crate's `#[ignore]`d static-evidence
+# tests (the Make, change-set, audit and toolchain rehearsals, which nest
+# `cargo test`, `make`, or the network-backed `cargo deny`/`cargo audit`), so
+# the rows they bind have a named producer (SR-170 FND-1505). The tests
+# `#[ignore]`d as *blocked* on an open issue (TC-1290/1291 on #87, TC-1292 on
+# #88 and the rust-serde NAME_COLLISION defect) fail by design until the issue
+# closes and are skipped here by name; run one deliberately with
+# `cargo +1.98.1 test -p agent-ix-extraction-frontend -- --ignored --exact <name>`.
+EXTRACTION_BLOCKED_TESTS := tc_1290_ tc_1291_ tc_1292_rust_generate tc_1292_generate_typescript
+.PHONY: extraction-frontend-evidence
+extraction-frontend-evidence: extraction-frontend-toolchain
+	cargo +$(EXTRACTION_TOOLCHAIN) test -p $(EXTRACTION_CRATE) --locked --offline --no-fail-fast -- --ignored $(foreach test,$(EXTRACTION_BLOCKED_TESTS),--skip $(test))
+
 EXTRACTION_FIXTURES ?= crates/extraction-frontend/fixtures
 EXTRACTION_MANIFEST ?= crates/extraction-frontend/Cargo.toml
 EXTRACTION_LOCKFILE ?= Cargo.lock
