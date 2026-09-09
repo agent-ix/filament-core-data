@@ -26,7 +26,7 @@ The extraction frontend SHALL lower each object-typed artifact to one IR
 `typeDefinition` (`kind: record`, or `kind: enum` for an enumeration) whose
 every field, multiplicity, constraint, identity, and nullability value is
 taken from the engine's declaration and never from a name, so that the table
-form and the fence form of one declaration produce identical IR.
+form and the fence form of one declaration produce identical `types[]`.
 
 ## Inputs
 
@@ -49,7 +49,7 @@ form and the fence form of one declaration produce identical IR.
 
 - The frontend SHALL set `displayName` to the artifact's frontmatter `name` when that value is a semantic-core `Identifier`, and otherwise to the artifact's `title` verbatim.
 - If neither the frontmatter `name` nor the `title` is a semantic-core `Identifier`, then the frontend SHALL raise `agent-ix.extraction-frontend.UNNAMEABLE_ARTIFACT` at the frontmatter.
-- The frontend SHALL set `roles` to `<module short name>:<object type>` (for example `business:entity`) followed by each manifest role as `<module short name>:<role>`, sorted and de-duplicated.
+- The frontend SHALL set `roles` to `<module short name>:<object type>` (for example `business:entity`) followed by each manifest role as `<module short name>:<role>`, sorted and de-duplicated, where the module short name is the manifest `name` with its `spec-objects-` prefix removed (`spec-objects-business` → `business`).
 - The frontend SHALL set `unknownPolicy` to `reject`.
 - The frontend SHALL set the record's `origin.source` to the artifact's `path` at line 1, column 1, with `sourceIdentity` `ix://<org>/<name>/spec`.
 - If `availability.fields.state` is `not_applicable` (the object type requires no `## Properties`), then the frontend SHALL emit the record with `fields: []`.
@@ -57,18 +57,19 @@ form and the fence form of one declaration produce identical IR.
 - If `availability.fields.state` is `unavailable` or `missing`, then the frontend SHALL emit `agent-ix.extraction-frontend.ARTIFACT_NOT_LOWERED` at the artifact naming the engine's `reason`, non-blocking when the reason is `legacy-form` and blocking otherwise.
 - If `availability.fields.lossy` is `true`, then the frontend SHALL emit one `DECLARED_LOSS` info naming the register row `lossy-extraction`.
 - If two documents in one bundle lower to `displayName` values whose FR-095 slugs are equal, then the frontend SHALL raise `agent-ix.extraction-frontend.DUPLICATE_TYPE_NAME` at the second document in path order, naming both.
+- If a document's `displayName` equals the name of a kernel scalar the bundle uses (FR-092), then the frontend SHALL raise blocking `DUPLICATE_TYPE_NAME` at that document naming the kernel scalar, because the minted `type/<Name>` collides with the FR-092 scalar definition.
 
 ### The fields
 
 - The frontend SHALL set `name` from `FieldDecl.name`, `typeRef` from the FR-092 resolution, `multiplicity` from `FieldDecl.type_ref.multiplicity` with `{lower: 1, upper: 1}` where absent, `presence` to `required` when `multiplicity.lower >= 1` and `optional` otherwise, `nullable` from `FieldDecl.nullable` with `false` where absent, `defaultKind` to `none`, and `unit` from `FieldDecl.type_ref.unit`.
-- The frontend SHALL set the field's `origin.source` to the artifact's path at the row's line and column 3 for a table row, and at the fence line for a fence line, exactly as the engine reports them.
+- The frontend SHALL set the field's `origin.source` to the artifact's path at the line the engine's scan reports for the declaration and at the column where the declaration text begins: the start of the name cell for a table row, the first non-blank column for a fence line.
 - If `FieldDecl.identity` is `true`, then the frontend SHALL carry it as the extension `ix://agent-ix/semantic-core/ext/identity-field` (version `1.0.0`, `required: false`, payload `{}`); IR v1.1 declares no `identity` member on a field.
 - If `FieldDecl.type_ref.decimal` is present, then the frontend SHALL carry it as the extension `ix://agent-ix/semantic-core/ext/decimal-policy` (version `1.0.0`, `required: false`) with payload `{precision, scale}`.
-- The frontend SHALL lower each `Constraint` to one IR `constraint` under FR-029 with `appliesTo` the field's identity, `diagnosticCode` `agent-ix.<name>.<SCREAMING_FIELD>_<KEYWORD>`, and the row's origin; `pattern` carries `{regex, dialect}`, `enumValues` carries `{values}`, `format` carries `{name}`, and the bound keywords carry `{value}`.
+- The frontend SHALL lower each `Constraint` to one IR `constraint` under FR-029 with `appliesTo` the field's identity, `diagnosticCode` `agent-ix.<name>.<SCREAMING_FIELD>_<KEYWORD>` where `<KEYWORD>` is the constraint keyword in SCREAMING_SNAKE (`maxLength` → `MAX_LENGTH`), and the row's origin; `pattern` carries `{regex, dialect}`, `enumValues` carries `{values}`, `format` carries `{name}`, and the bound keywords carry `{value}`.
 - The frontend SHALL form `<SCREAMING_FIELD>` by splitting the field name at each `_`, `-`, and lower-to-upper case boundary, upper-casing every part, and joining with `_` (`versionNumber` and `version_number` both yield `VERSION_NUMBER`).
 - If two constraints of one record yield the same `diagnosticCode`, then the frontend SHALL raise `agent-ix.extraction-frontend.DUPLICATE_CONSTRAINT` at the second row, blocking.
 - If one field row carries the same constraint keyword twice, then the frontend SHALL raise `DUPLICATE_CONSTRAINT` at that row, blocking.
-- If a constraint keyword is not applicable to the resolved kind under the RULES.md applicability table, then the frontend SHALL raise `agent-ix.extraction-frontend.CONSTRAINT_NOT_APPLICABLE` at the row, blocking, rather than dropping the constraint.
+- If a constraint keyword is not applicable to the resolved kind under the RULES.md applicability table, then the frontend SHALL raise `agent-ix.extraction-frontend.CONSTRAINT_NOT_APPLICABLE` at the row, blocking, rather than dropping the constraint; this gate is the frontend's own, because the `crates/semantic-ir` reader checks applicability only for a type-scoped `appliesTo` and every constraint here is field-scoped (FR-034's alias-per-constrained-field form is not used: no `alias` kind is emitted).
 
 ### Enumeration artifacts
 
@@ -85,6 +86,7 @@ form and the fence form of one declaration produce identical IR.
 - The frontend SHALL lower a `JsonObject` target to one package-local `record` named `JsonObject` at `ix://<org>/<name>/type/JsonObject` with `fields: []` and `unknownPolicy: preserve`, as `kernel-scalars.json` prescribes.
 - The frontend SHALL record the row `unconstrained-value` in `losses.json` citing #78.
 - The frontend SHALL derive `presence` from `multiplicity.lower`, so a required-but-possibly-empty collection is emitted as `optional`.
+- The frontend SHALL emit one `DECLARED_LOSS` naming `required-collection-presence` per collection field declared `0..*` or `*`; no module marker distinguishes a required-but-possibly-empty collection, so every such field is the loss.
 - The frontend SHALL record the row `required-collection-presence` in `losses.json` citing #78.
 - The frontend SHALL record the row `lossy-extraction` in `losses.json` citing quire-rs FR-072 (`availability.*.lossy`).
 - The frontend SHALL emit each declared loss as one non-blocking `info` diagnostic per occurrence, coded `agent-ix.extraction-frontend.DECLARED_LOSS` naming the register row, so that a consumer can count them.
@@ -95,33 +97,42 @@ the `JsonObject` record, the presence derivation, the two #78 rows, and every
 golden that carries a `DECLARED_LOSS` are then removed in one commit. The
 reader's `PRESENCE_MULTIPLICITY_MISMATCH` (`crates/semantic-ir/RULES.md`) is
 coupled to the same reading, so the frontend cannot move before the reader.
+Field origins are re-derived through the engine's scan and `table_rows`
+rather than read from the extraction, because `SemanticExtraction.fields`
+carries no per-field locus (agent-ix/quire-rs#420); the engine's scanner is
+still the only reader of the Markdown, as FR-091-CON-3 requires. The
+`ext/identity-field` and `ext/decimal-policy` extensions (`required: false`)
+are distinct by design from the `ext/identity` and `ext/decimal` extensions
+(`required: true`) that FR-034 and `lowering.json` stamp on the semantic-core
+kernel path: those describe the kernel's own declarations, these a domain
+bundle's.
 
 ## Constraints
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-093-CON-1 | The frontend SHALL lower a record as a pure function of the `SemanticExtraction`, the resolutions, and the module roles, with `fields_form` influencing no emitted byte. | Determinism | Property |
+| FR-093-CON-1 | The frontend SHALL lower a record as a pure function of the `SemanticExtraction`, the resolutions, and the module roles, with `fields_form` influencing no emitted byte of `types[]` or of the diagnostics (`source.digest` differs between forms by construction, being a digest of the source bytes). | Determinism | Property |
 | FR-093-CON-2 | The frontend SHALL derive no emitted field value from the field's name, the artifact's title, or the file path, other than `origin.source.path`, `identity`, and `diagnosticCode`. | Correctness | Property |
 | FR-093-CON-3 | The frontend SHALL record every loss it takes as a row in `losses.json`, so that an occurrence of a loss with no row fails the frontend's own test. | Integrity | Test |
-| FR-093-CON-4 | The frontend SHALL agree with `agent_ix_semantic_ir::decide` on `CONSTRAINT_NOT_APPLICABLE` for every (kind, keyword) pair of the RULES.md table, asserted by one contract test over the full cross product. | Integrity | Test |
+| FR-093-CON-4 | The frontend SHALL agree with `agent_ix_semantic_ir::decide` on `CONSTRAINT_NOT_APPLICABLE` for every (kind, keyword) pair of the RULES.md table, asserted by one contract test that compares the frontend's applicability table with the reader's over type-scoped subjects for the full cross product. | Integrity | Test |
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-093-AC-1 | Two bundle roots, `fixtures/config-version-table/` and `fixtures/config-version-fence/`, each holding `FR-006` at the same relative path `spec/functional/FR-006-config-version-entity.md` in the table form and the fence form respectively, lift to byte-identical IR documents. | Test (TC-1220) |
+| FR-093-AC-1 | Two bundle roots, `fixtures/config-version-table/` and `fixtures/config-version-fence/`, each holding `FR-006` at the same relative path `spec/functional/FR-006-config-version-entity.md` in the table form and the fence form respectively and line-aligned so field origins agree, lift to byte-identical `types[]` and diagnostics; only `source.digest` differs, by construction. | Test (TC-1220) |
 | FR-093-AC-2 | The lifted `ConfigVersion` record carries `roles: ["business:domain-object", "business:entity", "business:persistable"]`, `unknownPolicy: reject`, and seven fields in declaration order before normalization. | Test (TC-1221) |
 | FR-093-AC-3 | `id | UUID | 1 | identity` lowers to `multiplicity {1,1}`, `presence required`, `nullable false`, `defaultKind none`, and the `identity-field` extension; `parent | ConfigVersion | 0..1` lowers to `{0,1}` and `optional`. | Test (TC-1222) |
 | FR-093-AC-4 | `versionNumber | Integer | 1 | min: 1` emits one `min` constraint with `operands.value: 1`, `appliesTo` the field identity, and `diagnosticCode` `agent-ix.<name>.VERSION_NUMBER_MIN`. | Test (TC-1223) |
 | FR-093-AC-5 | `createdBy | String | 1 | maxLength: 64` emits `maxLength` with `{value: 64}`; a `pattern /^[a-z]+$/` cell emits `{regex, dialect: "ecma-262"}`; an `enumValues a\|b` cell emits `{values: ["a","b"]}`. | Test (TC-1224) |
-| FR-093-AC-6 | A `min` constraint on a `String` field raises `agent-ix.extraction-frontend.CONSTRAINT_NOT_APPLICABLE` at the row, blocking, and the document is not written; the same document handed to `decide` yields the reader's `CONSTRAINT_NOT_APPLICABLE` at the same field. | Test (TC-1225) |
+| FR-093-AC-6 | A `min` constraint on a `String` field raises `agent-ix.extraction-frontend.CONSTRAINT_NOT_APPLICABLE` at the row, blocking, and the document is not written; the reader checks applicability only for a type-scoped `appliesTo`, so the same (kind, keyword) pair restated on a type-scoped subject and handed to `decide` yields the reader's `CONSTRAINT_NOT_APPLICABLE`, and the two applicability tables agree over the full RULES.md cross product. | Test (TC-1225) |
 | FR-093-AC-7 | A `JsonObject` cell emits the `JsonObject` open record once per package at `type/JsonObject` and one `DECLARED_LOSS` info naming `unconstrained-value`; `losses.json` carries that row citing #78. | Test (TC-1226) |
-| FR-093-AC-8 | A `1..*` collection field emits `presence: required`; a `*` field emits `optional`, and the register row `required-collection-presence` is cited by one `DECLARED_LOSS` per `0..*`-declared collection the module marks required. | Test (TC-1227) |
+| FR-093-AC-8 | A `1..*` collection field emits `presence: required`; a `*` field emits `optional`, and the register row `required-collection-presence` is cited by one `DECLARED_LOSS` per collection field declared `0..*` or `*` (no module marker of requiredness exists). | Test (TC-1227) |
 | FR-093-AC-9 | The legacy free-column FR-006 emits no record and one non-blocking `ARTIFACT_NOT_LOWERED` naming `legacy-form`; a `both-forms` artifact emits a blocking one naming `both-forms`. | Test (TC-1228) |
 | FR-093-AC-10 | Renaming every field to a random identifier changes only `name`, `identity`, and `diagnosticCode` values, never `multiplicity`, `presence`, `nullable`, or `typeRef`. | Property (TC-1229) |
 | FR-093-AC-11 | Every emitted fixture document passes the FR-050 reader and `decide` with zero `agent-ix.semantic-ir.*` diagnostics. | Test (TC-1230) |
 | FR-093-AC-12 | The `business` fixture's `object: enumeration` artifact lowers to one `kind: enum` definition with one `variant` per `## Values` row, each named by its `Value` cell verbatim with identity `variant/<enum-slug>-<value-slug>` and origin at the row's line, column 3; an enumeration with no `## Values` section emits blocking `ARTIFACT_NOT_LOWERED`; no fixture document carries a `kind: alias` definition. | Test (TC-1333) |
-| FR-093-AC-13 | Two documents titled `Status` and `status` raise `DUPLICATE_TYPE_NAME` at the second path naming both; a row reading `min: 1, min: 2` raises `DUPLICATE_CONSTRAINT` at that row; fields `versionNumber` and `version_number` each carrying `min` raise `DUPLICATE_CONSTRAINT` at the second row. | Test (TC-1334) |
+| FR-093-AC-13 | Two documents titled `Status` and `status` raise `DUPLICATE_TYPE_NAME` at the second path naming both; a row reading `min: 1, min: 2` raises `DUPLICATE_CONSTRAINT` at that row; fields `versionNumber` and `version_number` each carrying `min` raise `DUPLICATE_CONSTRAINT` at the second row; a document whose `displayName` is a kernel scalar name the bundle uses raises blocking `DUPLICATE_TYPE_NAME` at that document naming the scalar (the lift-level outcome of FR-092-AC-8's fixture, also asserted by TC-1347). | Test (TC-1334) |
 | FR-093-AC-14 | A `domain` artifact with no `## Properties` (`fields.state == not_applicable`) lowers to a record with `fields: []` that the reader accepts; an extraction whose `availability.fields.lossy` is `true` yields one `DECLARED_LOSS` naming `lossy-extraction`. | Test (TC-1335) |
 
 ## Dependencies

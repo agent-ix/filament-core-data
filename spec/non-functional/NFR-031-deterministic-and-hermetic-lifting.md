@@ -74,7 +74,8 @@ documents on two machines and call both correct.
 
 Hermeticity is the same property stated as an obligation on inputs. The
 frontend reads two things — a bundle root and a set of module roots — through
-the engine's own loaders, and nothing else. The cargo target directory is named
+the engine's own loaders (plus each module root's `manifest.yaml`, read once by
+`bundle.rs` for FR-095's digests, FR-091-CON-2), and nothing else. The cargo target directory is named
 explicitly because the workspace `Makefile` sets it per checkout for exactly the
 reason NFR-022 gives: a shared target directory serves a determinism gate an
 artifact another checkout built.
@@ -125,11 +126,11 @@ widened at implementation time measures whatever was widened.
 | Byte difference between a lift of one bundle and its committed golden, and between two lifts in one process | 0 | 0 | Golden comparison and repeat-run comparison |
 | Byte difference between two lifts in separate processes and the committed golden | 0 | 0 | Repeat-run comparison over the command line |
 | Byte difference across a changed working directory, `HOME`, `TZ`, `LANG`, `LC_ALL`, and `CARGO_TARGET_DIR` | 0 | 0 | Varied-environment run against the golden |
-| Byte difference between the table-form and fence-form lift of one declaration at one bundle-relative path | 0 | 0 | Cross-form comparison over two bundle roots |
+| Byte difference in `types[]` and diagnostics between the table-form and fence-form lift of one declaration at one bundle-relative path (`source.digest` differs by construction) | 0 | 0 | Cross-form comparison over two line-aligned bundle roots |
 | Directories enumerated by the crate outside `quire_rs::corpus::load_repo` and `Registry::load_module_set` | 0 | 0 | Static analysis citing quire-rs path-sorted loading (TC-473) |
 | Ambient inputs read without an explicit parameter (cwd, `HOME`, environment, clock, hostname, RNG) | 0 | 0 | Static analysis with a named exemption list and a planted-token control |
 | Network connections opened during a lift | 0 | 0 | Offline run under `unshare -n` |
-| Files opened by the crate itself, outside the engine's loaders and `write.rs`, while lifting a bundle | 0 | 0 | Static analysis + instrumented run |
+| Files opened by the crate itself, outside the engine's loaders, `write.rs`, and the `bundle.rs` read of `<module root>/manifest.yaml`, while lifting a bundle | 0 | 0 | Static analysis + instrumented run |
 | Declared limits in `limits.json` not enforced by a blocking diagnostic | 0 | 0 | Limit-probe tests, one per limit |
 | Limit values named in a diagnostic that differ from `limits.json` | 0 | 0 | Test reading both |
 | Peak resident memory and wall time of a limit-probe lift over the fixture set | < 512 MiB, < 30 s | 512 MiB, 30 s | Limit-probe tests under a memory and time cap |
@@ -146,8 +147,8 @@ bytes against the committed golden and against
 and with `HOME` pointed at an empty directory, `TZ`, `LANG`, `LC_ALL`, and
 `CARGO_TARGET_DIR` set to values a second host would carry, and compare across
 every run; lift the `config-version-table` and `config-version-fence` bundle
-roots, whose copies of `FR-006` sit at the same bundle-relative path, and
-compare; cite `quire-rs/src/corpus/walk.rs` for path-sorted loading and the
+roots, whose line-aligned copies of `FR-006` sit at the same bundle-relative
+path, and compare their `types[]` and diagnostics; cite `quire-rs/src/corpus/walk.rs` for path-sorted loading and the
 FR-091-CON-2 gate for the absence of any other read; grep the crate's source
 for `SystemTime`, `Instant`, `std::env`, `env!`, `option_env!`, `hostname`,
 `rand`, `HashMap`, `HashSet`, `std::fs`, `std::net`, and `Command`, confirm
@@ -170,9 +171,9 @@ and a gate that cannot run fails saying so rather than passing.
 |---|---|---|
 | NFR-031-AC-1 | Two lifts of the `config-version-table` fixture bundle, within one program run and across two program runs, produce IR and diagnostic bytes identical to each other, to the committed `expected/semantic-ir.json` and `expected/diagnostics.json`, and to `decide({"ir": doc}).normalized`. | Test (TC-1300) |
 | NFR-031-AC-2 | A lift with the working directory changed, `HOME` pointed at an empty directory, and `TZ`, `LANG`, `LC_ALL`, and `CARGO_TARGET_DIR` set to values differing from the first run produces bytes identical to the committed golden. | Test (TC-1301) |
-| NFR-031-AC-3 | The `config-version-table` and `config-version-fence` bundle roots, each holding one copy of `FR-006` at `spec/functional/FR-006-config-version-entity.md`, lift to identical bytes. | Test (TC-1302) |
+| NFR-031-AC-3 | The `config-version-table` and `config-version-fence` bundle roots, each holding one line-aligned copy of `FR-006` at `spec/functional/FR-006-config-version-entity.md`, lift to identical `types[]` and diagnostics bytes; only `source.digest` differs, by construction. | Test (TC-1302) |
 | NFR-031-AC-4 | The crate enumerates no directory itself: every document and module reaches it through `quire_rs::corpus::load_repo` and `Registry::load_module_set`, whose results are sorted by path (`quire-rs/src/corpus/walk.rs`, TC-473), so enumeration order cannot reach the output. | Analysis (TC-1303) |
-| NFR-031-AC-5 | No module under `crates/extraction-frontend/src/` references `SystemTime`, `Instant`, `std::env`, `env!`, `option_env!`, a hostname API, an RNG, `std::net`, or `std::process::Command`; `std::fs` appears only in `write.rs`, and `bundle.rs` reaches the file system only through `quire_rs::corpus::load_repo` and `Registry::load_module_set`; the exemption list is exactly `write.rs` for `std::fs` and the command-line binary's argument parsing for `std::env`; and the gate fails on a scratch copy with a planted `std::env::var` in `lower.rs`. | Analysis (TC-1304) |
+| NFR-031-AC-5 | No module under `crates/extraction-frontend/src/` references `SystemTime`, `Instant`, `std::env`, `env!`, `option_env!`, a hostname API, an RNG, `std::net`, or `std::process::Command`; `std::fs` appears only in `write.rs` and in `bundle.rs`, whose one `std::fs::read` site reads exactly `<module root>/manifest.yaml` per supplied module root (FR-091-CON-2), and `bundle.rs` otherwise reaches the file system only through `quire_rs::corpus::load_repo` and `Registry::load_module_set`; the exemption list is exactly `write.rs` and the `bundle.rs` manifest read for `std::fs` and the command-line binary's argument parsing for `std::env`; and the gate fails on a scratch copy with a planted `std::env::var` in `lower.rs`. | Analysis (TC-1304) |
 | NFR-031-AC-6 | `limits.json` declares `maxDocuments`, `maxDocumentBytes`, `maxFieldsPerRecord`, `maxClauseBytes`, and `maxDepth`; for each, a bundle one past the limit yields exactly one blocking `agent-ix.extraction-frontend.LIMIT_*` diagnostic at the offending document, within 512 MiB resident memory and 30 s wall time, and the value the diagnostic names equals the file's. | Test (TC-1305) |
 | NFR-031-AC-7 | The crate suite run under `unshare -n` with cargo in offline mode passes, and the crate declares no dependency that opens a socket. | Static (TC-1306) |
 | NFR-031-AC-8 | The `HashMap` audit over `crates/extraction-frontend/src/` reports zero hits with an empty exemption list, fails on a scratch copy with a planted `HashMap` in `lower.rs`, and every map whose iteration order reaches the output is a `BTreeMap` or an `IndexMap`. | Analysis (TC-1307) |

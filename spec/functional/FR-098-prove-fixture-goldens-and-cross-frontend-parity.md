@@ -43,7 +43,11 @@ is an emitted byte. The vendored copies carry a `relationships:` frontmatter
 block the quire-rs originals lack (FR-094 lowers relationships from frontmatter
 only); `PROVENANCE.json` records the added block. The spec-objects-business
 module is vendored from repository revision `d1840b8` because `0.3.0` is on
-untagged `main` and the `~/.ix` copy is `0.2.0`.
+untagged `main` and the `~/.ix` copy is `0.2.0`. That revision declares
+`allowed_links` but no `edge_types`; the FR-040 registry FR-094 reads lives in
+spec-artifacts-iso, whose manifest cannot be vendored whole for one registry,
+so `modules/edge-vocabulary/` carries the registry alone and every lift loads
+both module roots.
 
 Byte parity of whole documents between the two frontends is unmeetable by
 construction: envelopes differ (FR-046 stamps `source/typespec` and an FR-048
@@ -87,7 +91,8 @@ unlisted or listed and absent.
 - `crates/extraction-frontend/fixtures/business/`: one typed artifact per exported object type of spec-objects-business — `domain`, `entity`, `value_object`, `aggregate_root`, `nested_entity`, `repository`, `event`, `state_machine`, `process`, `enumeration` — exercising every declaration kind, operations with parameters and returns, clauses, an enumeration with a `values_table`, and the `operations.md` artifact FR-094 names; `PROVENANCE.json` (authored) and `expected/`
 - `crates/extraction-frontend/fixtures/both-forms/`: the artifact FR-093 names that carries both a table and a fence; `expected/`
 - `crates/extraction-frontend/fixtures/negatives/<CODE>/`: one directory per FR-096 code, holding a bundle root, a module root, or both, plus `expected/diagnostics.json`. The following codes cannot be expressed by a file and are exercised by a test-constructed bundle in a scratch directory; their directory holds `expected/diagnostics.json` and a `constructed.json` naming the constructing test function: `OUTPUT_UNWRITABLE`, `LIMIT_MAX_DOCUMENTS`, `LIMIT_MAX_DOCUMENT_BYTES`, `LIMIT_MAX_FIELDS_PER_RECORD`, `LIMIT_MAX_CLAUSE_BYTES`, `LIMIT_MAX_DEPTH`. `INVALID_IR` holds both a file-expressible bundle (the composite cycle of FR-097-AC-15) and a `constructed.json` for the fault-injected schema case. `MODULE_WITHOUT_SEMANTIC_BLOCK` and `MODULE_REFUSED` hold a module root. `DUPLICATE_TYPE_NAME`, `DUPLICATE_ARTIFACT_ID`, and `STALE_TYPE_TOKEN` hold two-document bundles. `ENGINE_DIAGNOSTIC`, `ARTIFACT_NOT_LOWERED`, `KERNEL_NAME_SHADOWED`, and `DECLARED_LOSS` are non-blocking and their `expected/` also holds `semantic-ir.json`.
-- `crates/extraction-frontend/fixtures/modules/spec-objects-business/`: `manifest.yaml` and `schemas/` vendored from spec-objects-business revision `d1840b8`, with `PROVENANCE.json`; the frontend loads this module and never `~/.ix`
+- `crates/extraction-frontend/fixtures/modules/spec-objects-business/`: `manifest.yaml` and `schemas/` vendored from spec-objects-business revision `d1840b8`, with `PROVENANCE.json`; the frontend loads this module (beside `edge-vocabulary`) and never `~/.ix`
+- `crates/extraction-frontend/fixtures/modules/edge-vocabulary/`: a `manifest.yaml` carrying the FR-040 `edge_types` and `roles` registries copied byte for byte from spec-artifacts-iso revision `6686f11`, `spec_artifacts_iso/manifest.yaml` lines 872–975, under an authored header with an empty `semantic` block; `PROVENANCE.json` names the source lines and every authored line; loaded beside `spec-objects-business` by every lift, since `d1840b8` declares no `edge_types`
 - `crates/extraction-frontend/fixtures/modules/objects-extra/`: an authored second module declaring one object type, for FR-095-AC-11; `PROVENANCE.json` (authored)
 - `crates/extraction-frontend/fixtures/modules/conflicting/`: an authored module whose `semantic` block would change a `config-version` field, planted under a fake `HOME/.ix` and `QUIRE_MODULES` as the FR-091 ambient-isolation control; `PROVENANCE.json` (authored)
 - `test/fixtures/compiler/shared/typespec/records-and-scalars/` and `test/fixtures/compiler/shared/spec-bundle/records-and-scalars/`: the new shared case, authored in both dialects with kernel scalars only

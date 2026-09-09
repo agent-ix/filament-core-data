@@ -59,6 +59,7 @@ is one diagnostic at the token's source locus.
 - If that diagnostic carries `reason: no-bundle-index`, then the frontend SHALL return `Unresolved::NoBundleIndex`.
 - If that diagnostic carries `reason: import-unresolved`, then the frontend SHALL return `Unresolved::ImportUnresolved`.
 - If a bundle artifact's `title` or frontmatter `name` equals a kernel scalar name, then the frontend SHALL emit `agent-ix.extraction-frontend.KERNEL_NAME_SHADOWED` (warning, non-blocking) at that artifact's frontmatter; the engine resolves such a token to the kernel scalar, so the artifact is unreferenceable by that name.
+- If a bundle artifact's `displayName` equals a kernel scalar name that the bundle uses, then the frontend SHALL raise blocking `DUPLICATE_TYPE_NAME` (FR-093) at that artifact naming the kernel scalar, because the minted `type/<Name>` collides with the scalar definition; `KERNEL_NAME_SHADOWED` alone (warning) applies only when the bundle does not use that scalar.
 
 ### Diagnostics
 
@@ -72,7 +73,9 @@ is one diagnostic at the token's source locus.
 
 Rationale: the engine has already resolved every token (quire-rs FR-070:
 `id` before `names`, two name matches an `error` `semantic.ambiguous-type`
-that drops the row). A second resolver in this crate disagreed with it on
+that drops the row; only an identifier-shaped token is matched at all, so a
+cell reading `FR-005` fails `is_identifier` on the hyphen and is rejected
+upstream as `semantic.invalid-type-token` before by-id resolution applies). A second resolver in this crate disagreed with it on
 the same bundle (SR-163 FND-1412); this requirement therefore consumes the
 engine's verdict and adds only what the engine cannot know: whether the
 target artifact produced a definition. Cross-package imports are out of
@@ -92,13 +95,13 @@ document to point at.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-092-AC-1 | Every kernel scalar name resolves to `KernelScalar`, and the `config-version-table` fixture emits exactly the four scalar definitions it uses (`UUID`, `Integer`, `String`, `Timestamp`) plus the `JsonObject` record, each once, each scalar at `ix://<org>/<name>/type/<KernelScalar>` carrying the kernel-scalar extension. | Test (TC-1210) |
-| FR-092-AC-2 | `ConfigOverlay` in a `Type` cell resolves to `Object(FR-005)` by title, and `FR-005` resolves to the same artifact by id. | Test (TC-1211) |
+| FR-092-AC-2 | `ConfigOverlay` in a `Type` cell resolves to `Object(FR-005)` by title (or by an identifier-shaped id); a cell reading `FR-005` is rejected upstream by quire-rs FR-070 `is_identifier` as `semantic.invalid-type-token`, so by-id resolution applies only to identifier-shaped ids. | Test (TC-1211) |
 | FR-092-AC-3 | A `Type` cell reading `Sting` yields `Unresolved::UnknownToken` and one blocking `UNRESOLVED_TYPE_TOKEN` at that row's line and column, naming `Sting`; no IR document is written. | Test (TC-1212) |
 | FR-092-AC-4 | Two artifacts titled `Status` make the engine emit `semantic.ambiguous-type`; the referring artifact yields `ARTIFACT_NOT_LOWERED` plus one `ENGINE_DIAGNOSTIC`, and no `Resolution` value is produced for the dropped row. | Test (TC-1213) |
 | FR-092-AC-5 | A cell naming `ix://acme/other/type/Thing` yields `Unresolved::ImportUnsupported("acme/other")` and blocking `IMPORT_UNSUPPORTED` naming `acme/other`. | Test (TC-1214) |
-| FR-092-AC-6 | In a two-document bundle where `FR-006` refers to a legacy-form `FR-005`, the `FR-005` cell yields `Unresolved::Stale` and `STALE_TYPE_TOKEN` naming `FR-005` with `related` at `FR-005`'s `ARTIFACT_NOT_LOWERED` locus. | Test (TC-1215) |
+| FR-092-AC-6 | In a two-document bundle where `FR-006` refers by title (or by an identifier-shaped id) to a legacy-form `FR-005`, the referring cell yields `Unresolved::Stale` and `STALE_TYPE_TOKEN` naming `FR-005` with `related` at `FR-005`'s `ARTIFACT_NOT_LOWERED` locus. | Test (TC-1215) |
 | FR-092-AC-7 | An artifact with `object: enumeration` named in a cell resolves to `Enumeration`, its `typeRef` is the enumeration's `type/` identity, and the same title under `object: entity` resolves to `Object`. | Test (TC-1216) |
-| FR-092-AC-8 | An artifact titled `String` yields one `KERNEL_NAME_SHADOWED` warning at its frontmatter, a cell reading `String` resolves to `KernelScalar`, and the lift is not blocked. | Test (TC-1217) |
+| FR-092-AC-8 | An artifact titled `String` yields one `KERNEL_NAME_SHADOWED` warning at its frontmatter at the resolve layer, a cell reading `String` resolves to `KernelScalar`, and a lift of a bundle that uses no `String` cell is not blocked; the `KERNEL_NAME_SHADOWED` fixture, which uses the scalar, is refused at lift level with `DUPLICATE_TYPE_NAME` (FR-093, TC-1347). | Test (TC-1217) |
 | FR-092-AC-9 | Over 256 mutated tokens the resolver returns a `Resolution` and never panics, and every `Unresolved` value maps to exactly one diagnostic code. | Property (TC-1218) |
 | FR-092-AC-10 | No `typeRef` in any emitted fixture document names an identity that no `types[]` entry declares, asserted by the FR-050 reader and `agent_ix_semantic_ir::decide` each returning zero `UNRESOLVED_TYPE_REF`. | Test (TC-1219) |
 | FR-092-AC-11 | A one-pass implementation is refuted: with pass one stubbed to report every artifact as lowered, TC-1215 fails; with the real pass one it passes. | Test (TC-1332) |

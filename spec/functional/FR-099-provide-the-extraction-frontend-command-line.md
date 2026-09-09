@@ -83,7 +83,7 @@ evidence produced by the named targets, not by `cargo test`.
 
 - `extraction-frontend-build` SHALL run `cargo +$(EXTRACTION_TOOLCHAIN) build --locked -p agent-ix-extraction-frontend` and `cargo +$(EXTRACTION_TOOLCHAIN) fmt -p agent-ix-extraction-frontend -- --check`.
 - `extraction-frontend-test` SHALL run `cargo +$(EXTRACTION_TOOLCHAIN) test --locked -p agent-ix-extraction-frontend` and `cargo +$(EXTRACTION_TOOLCHAIN) clippy --locked -p agent-ix-extraction-frontend --no-deps --all-targets -- -D warnings` (`--no-deps` because the other workspace members are qualified on the workspace channel, not on `1.98.1`'s newer lint set).
-- `extraction-frontend-lift` SHALL run `lift` with `BUNDLE`, `MODULES` (space-separated, each becoming one `--module`), and `OUT`.
+- `extraction-frontend-lift` SHALL run `lift` with `BUNDLE`, `MODULES` (space-separated, each becoming one `--module`; the fixtures need both `fixtures/modules/spec-objects-business` and `fixtures/modules/edge-vocabulary`), and `OUT`.
 - `extraction-frontend-goldens` SHALL run `lift --write-goldens`.
 - `extraction-frontend-check` SHALL regenerate every fixture into a scratch directory under `CARGO_TARGET_DIR` and `diff -ru` it against the committed goldens.
 - `extraction-frontend-check` SHALL NOT write under `fixtures/`.
@@ -104,7 +104,7 @@ evidence produced by the named targets, not by `cargo test`.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-099-AC-1 | `lift` over the `config-version-table` fixture with its module exits `0` and writes `<out>`, `<out>.fingerprint`, `<out>.diagnostics.json`, and `<out>.provenance.json`; with `--diagnostics d.json --provenance p.json` it writes `d.json` and `p.json` in their place and the same document bytes. | Test (TC-1295) |
+| FR-099-AC-1 | `lift` over the `config-version-table` fixture with its two module roots (`--module fixtures/modules/spec-objects-business --module fixtures/modules/edge-vocabulary`) exits `0` and writes `<out>`, `<out>.fingerprint`, `<out>.diagnostics.json`, and `<out>.provenance.json`; with `--diagnostics d.json --provenance p.json` it writes `d.json` and `p.json` in their place and the same document bytes. | Test (TC-1295) |
 | FR-099-AC-2 | `lift` over `negatives/UNRESOLVED_TYPE_TOKEN` exits `1`, writes the diagnostics sidecar, and writes no document; `lift` without `--module`, `lift` under `negatives/MODULE_WITHOUT_SEMANTIC_BLOCK`, and `lift` with `--out` under the bundle root each exit `2` and write nothing. | Test (TC-1296) |
 | FR-099-AC-3 | `inspect --ir` over a lifted document prints one line per type in `types` order and exits `0`; over a document missing `contractVersion` it prints `INVALID_IR` and exits `1`. | Test (TC-1297) |
 | FR-099-AC-4 | `make extraction-frontend-build extraction-frontend-test extraction-frontend-check extraction-frontend-deny extraction-frontend-audit` succeed on `1.98.1`; with `EXTRACTION_TOOLCHAIN=0.0.0` each fails naming `0.0.0` and none skips. | Static (TC-1298) |

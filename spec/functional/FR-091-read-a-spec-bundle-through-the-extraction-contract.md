@@ -46,9 +46,9 @@ mapping.
 - The frontend SHALL NOT read `~/.ix`, `$HOME`, `QUIRE_MODULES`, or any other environment variable while loading modules.
 - The frontend SHALL take each module's `semantic` block from `Registry::semantic_module`, which is the FR-069 reading quire-rs already performed at load.
 - If a supplied module carries no `semantic` block, then the frontend SHALL refuse with `agent-ix.extraction-frontend.MODULE_WITHOUT_SEMANTIC_BLOCK` naming the module.
-- If quire-rs refuses a module's `semantic` block, then the frontend SHALL refuse with `agent-ix.extraction-frontend.MODULE_REFUSED` carrying the engine's own `semantic.*` code and path.
+- If quire-rs refuses a module's `semantic` block, then the frontend SHALL refuse with `agent-ix.extraction-frontend.MODULE_REFUSED` whose message begins with the engine's own `semantic.*` code, whose `causes` is empty, and whose locus is the manifest path (the same reading as `ENGINE_DIAGNOSTIC`, CR-036-2: `causes.items` admits only `agent-ix.*` codes).
 - If quire-rs refuses a module's `semantic` block, then the frontend SHALL lower no artifact of that bundle.
-- If a module's `semantic_core` names a version the pinned engine has no vendored bundle for, then the frontend SHALL refuse with `MODULE_REFUSED` carrying `semantic.unsupported-semantic-core` rather than loading the module as an empty model.
+- If a module's `semantic_core` names a version the pinned engine has no vendored bundle for, then the frontend SHALL refuse with `MODULE_REFUSED` whose message begins with `semantic.unsupported-semantic-core` rather than loading the module as an empty model.
 - If the bundle's `spec.md` is absent, then the frontend SHALL refuse with `agent-ix.extraction-frontend.BUNDLE_UNIDENTIFIED` at `spec/spec.md`.
 - If `spec.md` carries no `org` or no `name`, then the frontend SHALL refuse with `BUNDLE_UNIDENTIFIED` at `spec/spec.md`.
 - If `org` or `name` does not match the `packageIdentity` segment grammar (`[a-z0-9][a-z0-9-]*`), then the frontend SHALL refuse with `BUNDLE_UNIDENTIFIED` at `spec/spec.md` naming the offending value.
@@ -80,7 +80,7 @@ mapping.
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-091-CON-1 | The frontend SHALL consume `FieldDecl`, `ClauseRef`, `OperationDecl`, `SemanticExtraction`, `SemanticContext`, `BundleIndex`, and `SemanticDiagnostic` as types of the `quire-rs` crate. | Integrity | Static analysis |
-| FR-091-CON-2 | The frontend SHALL read the file system, while loading a bundle, only through `quire_rs::corpus::load_repo` and `quire_rs::Registry::load_module_set`; `crates/extraction-frontend/src/bundle.rs` is the only module that names either, and the atomic writer of FR-097 (`write.rs`) is the only module that opens `std::fs`. | Security | Static analysis |
+| FR-091-CON-2 | The frontend SHALL read the file system, while loading a bundle, only through `quire_rs::corpus::load_repo` and `quire_rs::Registry::load_module_set`; `crates/extraction-frontend/src/bundle.rs` is the only module that names either; `std::fs` is opened only by the atomic writer of FR-097 (`write.rs`) and by one `std::fs::read` site in `bundle.rs` that reads exactly `<module root>/manifest.yaml` for each supplied module root, because quire-rs exposes no manifest-bytes API and FR-095 digests those bytes. | Security | Static analysis |
 | FR-091-CON-3 | The frontend SHALL NOT parse `## Properties`, `## Invariants`, `## Operations`, or `## Relationships` itself; the engine's `SemanticExtraction` and `harvest_edges` are the only sources of a declaration. | Integrity | Static analysis |
 
 Rationale: a second definition of any type CON-1 names is the drift this
@@ -93,7 +93,7 @@ contract today; FR-094-CON-1 records the upstream dependency.
 |---|---|---|
 | FR-091-AC-1 | Loading the `config-version-table` fixture bundle under the vendored spec-objects-business `0.3.0` module (`fixtures/modules/spec-objects-business/`, NFR-033) yields one `SemanticExtraction` for `FR-006` with `fields` `available` and seven fields, and one for `FR-005`, keyed by id. | Test (TC-1200) |
 | FR-091-AC-2 | A module root whose manifest carries no `semantic` block refuses with `MODULE_WITHOUT_SEMANTIC_BLOCK` naming the module and lowers nothing. | Test (TC-1201) |
-| FR-091-AC-3 | A module whose `semantic.semantic_core` is `9.9.9` refuses with `MODULE_REFUSED` carrying `semantic.unsupported-semantic-core`, and no artifact of the bundle is lowered to an empty record. | Test (TC-1202) |
+| FR-091-AC-3 | A module whose `semantic.semantic_core` is `9.9.9` refuses with `MODULE_REFUSED` whose message begins with `semantic.unsupported-semantic-core` and whose `causes` is empty, and no artifact of the bundle is lowered to an empty record. | Test (TC-1202) |
 | FR-091-AC-4 | With `HOME` pointed at a directory whose `.ix/filament/modules/spec-objects-business/manifest.yaml` is a conflicting module (one whose `semantic` block declares `compatibility_posture: declared-lossy` and `legacy_forms: error`, so the same fixture lifts to different bytes under it) and `QUIRE_MODULES` pointed at the same directory, the fixture lifts byte-identically to the lift with the explicit module root and no environment set; the control lift with the conflicting module supplied explicitly differs. | Test (TC-1203) |
 | FR-091-AC-5 | A bundle whose `spec.md` lacks `org` refuses with `BUNDLE_UNIDENTIFIED` at `spec/spec.md`; a bundle whose `name` is `Config Service` refuses with `BUNDLE_UNIDENTIFIED` naming `Config Service`. | Test (TC-1204) |
 | FR-091-AC-6 | A document with `object: widget`, which no module declares, yields `UNKNOWN_OBJECT_TYPE` at that document and is not lowered; a document with no `object` yields no diagnostic. | Test (TC-1205) |

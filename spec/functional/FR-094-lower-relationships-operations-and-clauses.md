@@ -35,15 +35,15 @@ why only verbs the object type lists under `allowed_links` are lowered.
 ## Inputs
 
 - The `(target, verb)` pairs `quire_rs::corpus::harvest_edges` returns for each lowered document's frontmatter `relationships:` list
-- The `allowed_links` map (verb → target object types) of the document's object type in the loaded module, through `Registry::resolve_allowed_links`
-- The merged `edge_types` registry of the loaded module set: verb → `EdgeTypeDef { category, inverse }` (`EdgeCategory` is one of `structural`, `behavioral`, `dataflow`, `dependency`, `realization`, `governance`, `traceability`)
+- The `allowed_links` map (verb → target object types) of the document's object type in the loaded module, through `Registry::resolve_allowed_links` called for the object archetype only, never for the artifact axis, whose `allowed_links` would admit `traces_to` and `implements`
+- The merged `edge_types` registry of the loaded module set: verb → `EdgeTypeDef { category, inverse }` (`EdgeCategory` is one of `structural`, `behavioral`, `dataflow`, `dependency`, `realization`, `governance`, `traceability`). spec-objects-business `d1840b8` declares `allowed_links` but no `edge_types`; the FR-040 registry lives in spec-artifacts-iso (lines 872–975 of its manifest) and is vendored as `fixtures/modules/edge-vocabulary/` (FR-098), so every lift loads both module roots
 - `SemanticExtraction.clauses`, `clause_text`, and `operations` from FR-091
 - The resolutions of FR-092, the pass-one lowering outcomes of FR-092, and the record identities of FR-093
 
 ## Outputs
 
 - `crates/extraction-frontend/src/edges.rs`: `lower_relationships(record, edges, registries, index) -> Result<Vec<Relationship>, Vec<Diagnostic>>`
-- `crates/extraction-frontend/src/clauses.rs`: `lower_clauses(record, extraction) -> Vec<Clause>` and `lower_operations(record, extraction, resolutions) -> Result<Vec<Operation>, Vec<Diagnostic>>`
+- `crates/extraction-frontend/src/clauses.rs`: `lower_clauses(record, extraction) -> Result<Vec<Clause>, LowerError>` (`UNSLUGGABLE_NAME` when a `clauseId` slugs to the empty string) and `lower_operations(record, extraction, resolutions) -> Result<Vec<Operation>, Vec<Diagnostic>>`
 - One `relationship`, `operation`, and `clause` node per declaration, each carrying `identity` and `origin`
 
 ## Behavior
@@ -51,7 +51,7 @@ why only verbs the object type lists under `allowed_links` are lowered.
 ### Relationships
 
 - The frontend SHALL take one relationship per `(target, verb)` pair `harvest_edges` returns for the record's document, de-duplicated on `(verb, target)`.
-- The frontend SHALL lower a pair only when the record's object type lists its verb under `allowed_links` in the loaded module.
+- The frontend SHALL lower a pair only when the record's object type lists its verb under `allowed_links` in the loaded module, resolved for the object archetype only and never for the artifact axis.
 - The frontend SHALL skip, without a diagnostic, every pair whose verb the object type does not list under `allowed_links`.
 - The frontend SHALL set `verb` to the pair's verb as authored.
 - The frontend SHALL set `category` to the `category` of the `EdgeTypeDef` the merged registry declares for that verb.
@@ -67,7 +67,7 @@ why only verbs the object type lists under `allowed_links` are lowered.
 
 ### Operations
 
-- The frontend SHALL lower each `OperationDecl` to one `operation` with `name`, `params` lowered as FR-093 fields, `returns` as `{typeRef, multiplicity, nullable: false}` from the FR-092 resolution of `OperationDecl.returns`, `pre` and `post` as the `clause_id` values of the engine's `ClauseRef` lists, and `origin.source` at the `### <name>` heading line.
+- The frontend SHALL lower each `OperationDecl` to one `operation` with `name`, `params` lowered as FR-093 fields, `returns` as `{typeRef, multiplicity, nullable: false}` from the FR-092 resolution of `OperationDecl.returns`, `pre` and `post` as the `clause_id` values of the engine's `ClauseRef` lists, and `origin.source` at the `### <name>` heading line; a parameter row's constraint cells are not lowered, because an IR `operation.params[]` item is a `field`, to which `schema/semantic/v1/semantic-ir.schema.json` gives no `constraints` member.
 - The frontend SHALL mint the operation's `identity` through FR-095's `operation_identity` as `ix://<org>/<name>/operation/<record-slug>-<op-slug>`.
 - The frontend SHALL mint each parameter's `identity` through FR-095's `param_identity` as `ix://<org>/<name>/param/<record-slug>-<op-slug>-<param-slug>`.
 - If `returns` resolves to an `Unresolved` state, then the frontend SHALL emit the FR-092 diagnostic for that state at the `Returns:` line.
@@ -86,9 +86,13 @@ exists in no contract (SR-166 FND-1463, SR-165 FND-1451). Parsing it here
 would be the second Markdown reading FR-091-CON-3 forbids. The hand-authored
 issue #34 fixture `fixtures/semantic/v1/positive/config-version-v1-1.json`
 lifts the `parent` row as a `derives_from` relationship; this frontend emits
-`parent` as a field because it is a `## Properties` row, and the golden for
-this frontend is regenerated under FR-098 while the #34 fixture is not
-edited and is not the comparison target.
+`parent` as a field because it is a `## Properties` row. That fixture differs
+from this frontend's output in more than the `parent` node: its `belongs_to`
+relationship came from the removed `## Relationships` bullet grammar and its
+identity patterns predate FR-095, so it is compared node by node on the
+remaining relationship's `target` and `multiplicity`, never byte for byte; the
+golden for this frontend is regenerated under FR-098 while the #34 fixture is
+not edited (its sha256 is pinned) and is not the comparison target.
 
 ## Constraints
 
@@ -104,13 +108,13 @@ edited and is not the comparison target.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-094-AC-1 | The `config-version-table` fixture's `FR-006` frontmatter entry `{target: FR-005, type: references}` lowers to one relationship `verb: references`, `category: traceability`, `composite: false`, `target` the `ConfigOverlay` identity, `multiplicity {1,1}`, `origin` at `FR-006`'s path, line 1, column 1. | Test (TC-1231) |
-| FR-094-AC-2 | A `contains` frontmatter edge under a `domain` artifact lowers to `category: structural`, `composite: true` (registry `inverse: part_of`); an `aggregates` edge under an `aggregate_root` does the same; a `composes` edge under a `value_object` lowers to `category: structural`, `composite: false` (`inverse: composed_by`). | Test (TC-1232) |
-| FR-094-AC-3 | A `references` edge lowers to `category: traceability`, `composite: false`; an `owns` edge under an `entity` to `category: dependency`, `composite: false`. | Test (TC-1233) |
+| FR-094-AC-2 | Under the two module roots spec-objects-business and edge-vocabulary (the FR-040 registry), a `contains` frontmatter edge under a `domain` artifact lowers to `category: structural`, `composite: true` (registry `inverse: part_of`); an `aggregates` edge under an `aggregate_root` does the same; a `composes` edge under a `value_object` lowers to `category: structural`, `composite: false` (`inverse: composed_by`). | Test (TC-1232) |
+| FR-094-AC-3 | Under the same two module roots, a `references` edge lowers to `category: traceability`, `composite: false`; an `owns` edge under an `entity` to `category: dependency`, `composite: false`. | Test (TC-1233) |
 | FR-094-AC-4 | Under a test module whose `entity` `allowed_links` lists `frobnicates` while no loaded `edge_types` declares it, a `frobnicates` frontmatter edge raises `UNKNOWN_EDGE_VERB` at line 1, column 1, blocking, and no document is written. | Test (TC-1234) |
 | FR-094-AC-5 | A `references` frontmatter edge targeting `Nonesuch` raises `UNRESOLVED_RELATIONSHIP_TARGET` at line 1, column 1 naming `Nonesuch`, blocking; one targeting a legacy-form artifact raises the same code naming that artifact. | Test (TC-1235) |
 | FR-094-AC-6 | An `entity` whose frontmatter carries `traces_to`, `implements`, and `depends_on` edges lowers with zero relationships from them and zero diagnostics about them; the same document with one `references` edge added lowers to exactly one relationship. | Test (TC-1236) |
 | FR-094-AC-7 | Two frontmatter entries with the same `(verb, target)` yield one relationship; two entries with the same target and different allowed verbs yield two relationships with distinct identities. | Test (TC-1237) |
-| FR-094-AC-8 | The `parent | ConfigVersion | 0..1` row appears as a field and not as a relationship, and the emitted document differs from the #34 hand fixture exactly at that node and nowhere else in `relationships[]`. | Test (TC-1238) |
+| FR-094-AC-8 | The `parent | ConfigVersion | 0..1` row appears as a field and not as a relationship: the emitted `relationships[]` carries no `parent` relationship, the remaining relationship node agrees with the #34 hand fixture on `target` and `multiplicity`, and the #34 fixture's sha256 is pinned and unchanged (it differs elsewhere by construction: its `belongs_to` came from the removed `## Relationships` bullet grammar and its identity patterns differ). | Test (TC-1238) |
 | FR-094-AC-9 | The `immutable` `ocl` fence lowers to one clause with `language: ocl`, `clauseId: immutable`, `text` byte-identical to `clause_text`, `sourceSpan` `{startLine, startColumn: 1, endLine, endColumn}` as the engine reports, and `origin.source` at the span start. | Test (TC-1239) |
 | FR-094-AC-10 | A clause whose text carries leading whitespace, trailing newlines, and a `\t` reaches the IR byte-identical. | Test (TC-1240) |
 | FR-094-AC-11 | The `operations` fixture (FR-098) lowers each `OperationDecl` to an operation with its params as fields under `param/<record-slug>-<op-slug>-<param-slug>`, `returns` from the resolved type with `nullable: false`, and `pre`/`post` as `clauseId` lists; no second clause node is emitted for a `pre`/`post` reference. | Test (TC-1241) |
