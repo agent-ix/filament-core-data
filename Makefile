@@ -337,3 +337,44 @@ semantic-kernel:
 .PHONY: semantic-kernel-check
 semantic-kernel-check:
 	node scripts/build-semantic-kernel.mjs --check
+
+# -----------------------------------------------------------------------------
+# Spec-bundle extraction frontend (issue #36)
+# -----------------------------------------------------------------------------
+# `crates/extraction-frontend` is qualified on exactly Rust 1.98.1 (NFR-033)
+# while the rest of the workspace stays on `rust-toolchain.toml`'s 1.94.1, so
+# every gate here invokes `cargo +$(EXTRACTION_TOOLCHAIN)` explicitly. A gate
+# that ran on whatever `cargo` resolves to would measure the host, not the
+# crate. An absent toolchain is a red gate naming the toolchain — never a skip
+# (FR-099-AC-4, NFR-033-AC-2).
+#
+# `--locked` on every cargo call: the workspace lock was resolved under 1.94.1
+# and this crate's additions under 1.98.1, so a resolver difference surfaces
+# as a red gate with a Cargo.lock diff rather than as a silent rewrite.
+# CARGO_TARGET_DIR is the per-worktree directory exported above.
+#
+# `clippy --no-deps`: the crate's path dependency `agent-ix-semantic-ir` is a
+# workspace member qualified on 1.94.1's clippy, and cargo lints workspace
+# path dependencies along with the requested package. Linting it under 1.98.1's
+# newer lint set would measure another member's code against a toolchain it
+# does not claim; NFR-033's "qualified on 1.98.1" covers this crate alone.
+#
+# Task-127 lands the toolchain gate, build and test; lift, goldens, check,
+# deny and audit land in Task-135 (FR-099).
+
+EXTRACTION_TOOLCHAIN ?= 1.98.1
+EXTRACTION_CRATE := agent-ix-extraction-frontend
+
+.PHONY: extraction-frontend-toolchain
+extraction-frontend-toolchain:
+	@rustup run $(EXTRACTION_TOOLCHAIN) cargo --version >/dev/null 2>&1 || { echo "Rust toolchain $(EXTRACTION_TOOLCHAIN) is not installed (rustup toolchain install $(EXTRACTION_TOOLCHAIN)): the extraction-frontend gates cannot run, and this is a failure rather than a skip"; exit 1; }
+
+.PHONY: extraction-frontend-build
+extraction-frontend-build: extraction-frontend-toolchain
+	cargo +$(EXTRACTION_TOOLCHAIN) build --locked -p $(EXTRACTION_CRATE)
+	cargo +$(EXTRACTION_TOOLCHAIN) fmt -p $(EXTRACTION_CRATE) -- --check
+
+.PHONY: extraction-frontend-test
+extraction-frontend-test: extraction-frontend-toolchain
+	cargo +$(EXTRACTION_TOOLCHAIN) test --locked -p $(EXTRACTION_CRATE)
+	cargo +$(EXTRACTION_TOOLCHAIN) clippy --locked -p $(EXTRACTION_CRATE) --no-deps --all-targets -- -D warnings

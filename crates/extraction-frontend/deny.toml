@@ -1,0 +1,57 @@
+# cargo-deny policy for agent-ix-extraction-frontend (NFR-033-AC-4, AC-5).
+#
+# Run through `make extraction-frontend-deny` / `make extraction-frontend-audit`
+# (FR-099), never through whichever cargo is on the path. Modelled on
+# quire-rs/deny.toml: the allowlist is the permissive set the program permits
+# and nothing more; AGPL is admitted only for the two first-party crates named
+# below, so a third-party AGPL crate still fails the gate.
+
+[licenses]
+version = 2
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "CDLA-Permissive-2.0",
+    "ISC",
+    "Unicode-3.0",
+    "Zlib",
+]
+# The extraction contract this crate consumes in-process is AGPL-3.0-or-later,
+# which an AGPL-3.0-only consumer may link. Admitted by an explicit entry
+# WITHOUT permitting AGPL in third-party dependencies.
+exceptions = [
+    { allow = ["AGPL-3.0-or-later"], crate = "quire-rs" },
+    # The trace marker is AGPL like the rest of the toolchain. A dev-dependency
+    # only, and not transitive, so this admits nothing into a consumer's graph.
+    { allow = ["AGPL-3.0-or-later"], crate = "ix-trace-rs" },
+]
+confidence-threshold = 0.9
+# The two workspace crates in this graph (this one and agent-ix-semantic-ir)
+# are AGPL-3.0-only and `publish = false`; they are what the allowlist protects,
+# not what it inspects.
+private = { ignore = true }
+
+[bans]
+multiple-versions = "allow"
+# cargo-deny counts a git or path dependency with no `version` as a wildcard.
+# Those are exactly the pinned `rev`/`tag`/workspace-path forms NFR-033-AC-3
+# requires, and `tests/toolchain.rs::tc_1322_…` rejects a real `*` or caret
+# specifier, so the manifest gate lives there rather than here.
+wildcards = "allow"
+
+[advisories]
+version = 2
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+# The only git sources: the pinned extraction engine (no release tag contains
+# `Registry::load_module_set`, so the pin is an exact `rev`) and the trace
+# marker crate, which is not published to a registry. Listed explicitly so
+# `unknown-git = "deny"` keeps its teeth.
+allow-git = [
+    "https://github.com/agent-ix/quire-rs",
+    "https://github.com/agent-ix/ix-trace-rs",
+]
