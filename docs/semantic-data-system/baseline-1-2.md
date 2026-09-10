@@ -180,7 +180,7 @@ one of these half-open coverage forms:
 | `clockFamily` | Required coverage selection | Native correspondence |
 | --- | --- | --- |
 | `event-position` | Integer `startInclusive` and `endExclusive` positions in the producer's declared event sequence. | Native positions in `[startInclusive, endExclusive)`; no timestamp is invented. |
-| `rational-sample` | Rational `origin`, positive rational `period`, and integer `startInclusive`/`endExclusive` sample indexes. | Native sample `origin + index × period` for each selected index; rational values are exact, not binary floating point. |
+| `fixed-sample` | Exact `epoch`, positive rational `period`, declared `unit`, and integer `startInclusive`/`endExclusive` sample indexes. | Native sample `epoch + index × period` for each selected index; rational values are exact, not binary floating point. |
 | `timestamp` | RFC 3339 UTC `startInclusive` and `endExclusive` instants. | Producer membership remains half-open; a native temporal interval whose deadline is inclusive is covered only when the selected timestamp coverage explicitly contains that deadline. |
 
 The producer supplies either the complete ordered observation-record identities
@@ -259,8 +259,8 @@ selection and correspondence record, never digest substitution.
 3. `1`, `1.0`, and `1e0` digest as the same producer decimal value, whereas
    the adjacent integers `9007199254740992` and `9007199254740993` do not.
 4. An event-position window `[4, 7)` maps positions 4, 5, and 6 without a
-   timestamp; a rational-sample window maps exact `origin + i × period`; and a
-   timestamp window ending at `T` does not imply coverage at a native inclusive
+   timestamp; a fixed-sample window maps exact `epoch + i × period` with its
+   declared unit; and a timestamp window ending at `T` does not imply coverage at a native inclusive
    deadline `T` unless that coverage is explicitly selected.
 5. A producer canonical-object digest and a native raw-definition-byte digest
    may both be valid yet are not interchangeable; substituting either in the
