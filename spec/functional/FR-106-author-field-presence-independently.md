@@ -1,5 +1,5 @@
 ---
-id: FR-100
+id: FR-106
 title: "Author field presence independently of multiplicity"
 type: FR
 relationships:
@@ -8,7 +8,7 @@ relationships:
   - target: "ix://agent-ix/filament-core-data/FR-093"
     type: "depends_on"
 ---
-# FR-100: Author field presence independently of multiplicity
+# FR-106: Author field presence independently of multiplicity
 
 ## Description
 
@@ -31,6 +31,11 @@ and default semantics.
 
 - The baseline model SHALL admit only `required` and `optional` as presence values.
 - The baseline model SHALL require `multiplicity` on every field.
+- The baseline model SHALL retain each declared `ordered` and `unique` value as
+  part of multiplicity rather than deriving either from cardinality.
+- The baseline model SHALL retain the declared default as either absent or one
+  admissible default value; an adapter SHALL report named loss when it cannot
+  preserve that distinction.
 - The baseline model SHALL retain explicit null separately from an absent member.
 - A baseline adapter SHALL mark a field presence as `authored` only when its source declaration carries that value.
 - A legacy adapter SHALL NOT derive a baseline presence value from multiplicity.
@@ -40,17 +45,18 @@ and default semantics.
 
 | ID | Constraint | Type | Validation |
 | --- | --- | --- | --- |
-| FR-100-CON-1 | The baseline field contract SHALL distinguish a required empty collection from an optional nonempty collection. | Correctness | Test |
-| FR-100-CON-2 | A producer SHALL NOT collapse absent, null, invalid, and unavailable states. | Integrity | Test |
+| FR-106-CON-1 | The baseline field contract SHALL distinguish a required empty collection from an optional nonempty collection. | Correctness | Test |
+| FR-106-CON-2 | A producer SHALL NOT collapse absent, null, invalid, unavailable, default, ordered, or unique states. | Integrity | Test |
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 | --- | --- | --- |
-| FR-100-AC-1 | A required `0..*` field is accepted as present with an empty collection. | Test |
-| FR-100-AC-2 | An optional `1..*` field is accepted when absent and rejected when present with zero values. | Test |
-| FR-100-AC-3 | A v1.1 source lacking authored presence refuses baseline 1.2 projection with a named loss. | Test |
-| FR-100-AC-4 | A v1.2 field whose presence equals the v1.1 derivation projects without a presence loss. | Test |
+| FR-106-AC-1 | A required `0..*` field is accepted as present with an empty collection. | Test |
+| FR-106-AC-2 | An optional `1..*` field is accepted when absent and rejected when present with zero values. | Test |
+| FR-106-AC-3 | A v1.1 source lacking authored presence refuses baseline 1.2 projection with a named loss. | Test |
+| FR-106-AC-4 | A v1.2 field whose presence equals the v1.1 derivation projects without a presence loss. | Test |
+| FR-106-AC-5 | Two otherwise equal fields differing only in default, ordered, or unique retain that distinction or refuse with named loss. | Test |
 
 ## Dependencies
 

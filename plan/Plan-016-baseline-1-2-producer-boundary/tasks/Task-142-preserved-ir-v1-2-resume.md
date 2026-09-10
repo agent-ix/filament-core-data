@@ -8,7 +8,7 @@ priority: P0
 relationships:
   - { target: "ix://agent-ix/filament-core-data/Task-140", type: depends_on }
   - { target: "ix://agent-ix/filament-core-data/Task-141", type: depends_on }
-  - { target: "ix://agent-ix/filament-core-data/FR-100", type: references }
+  - { target: "ix://agent-ix/filament-core-data/FR-106", type: references }
 ---
 # Task-142: Preserved IR v1.2 resume decision
 

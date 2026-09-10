@@ -1,9 +1,9 @@
 ---
-id: SR-185
+id: SR-195
 title: "Scope-boundary review of the baseline 1.2 producer and ecosystem contracts"
 type: SpecReview
 analysis: scope-boundary
-scope: "FR-102..FR-105 and baseline-1-2.md ecosystem sections"
+scope: "FR-106..FR-111 and baseline-1-2.md ecosystem sections"
 review_set: all
 ---
 # Scope-boundary review
@@ -16,7 +16,7 @@ Targeted review of producer, consumer, observation, assurance, and integration o
 
 | ID | Severity | Summary | Refs |
 | --- | --- | --- | --- |
-| FND-1611 | low | No defect found: the requirements neither extend native grammar nor reassign C's assurance campaign. | FR-102..FR-105 |
+| FND-1686 | low | No defect found: the requirements neither extend native grammar nor reassign C's assurance campaign. | FR-106..FR-111 |
 
 ## Verdict
 
@@ -29,6 +29,7 @@ forms.
 
 | Boundary | Allocation |
 | --- | --- |
+| Field and relationship source semantics | D producer contract; not native clause syntax |
 | Producer object/schema and ecosystem contract | D / #95, after acceptance |
 | Native static package and consumer boundary | A and the accepted package contract |
 | Observation interpretation and temporal successor selections | F/E |
