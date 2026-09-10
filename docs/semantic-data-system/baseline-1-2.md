@@ -248,6 +248,60 @@ presentation-only re-encoding can preserve the producer canonical object while
 changing native raw bytes; it therefore requires an explicit new native
 selection and correspondence record, never digest substitution.
 
+## Ecosystem inventory and compatibility contract
+
+The producer-side ecosystem contract is a locked, finite configuration
+inventory. It extends neither the native clause grammar nor F's observation
+semantics. It names exactly the selected repositories, components, model/profile
+objects, contracts, builds, deployments, and their immutable revisions/digests
+for one admission or assessment. A repository is a source container; a component
+is a deployable or logical unit inside it; a role is an authored responsibility;
+and a runtime instance is a concrete execution binding. None substitutes for
+another merely because names or payload shapes agree.
+
+### Locked inventory and bindings
+
+Each inventory entry SHALL retain a repository identity and revision, component
+identity and revision, declared imports/exports, selected model/profile and
+producer contracts, and the digest domain/value for every immutable selection.
+The inventory SHALL declare its completeness boundary. Missing imports,
+conflicting selections for one imported identity, or a component outside a
+claimed closed inventory refuse admission; an inventory that is explicitly
+incomplete retains an unknown result rather than silently shrinking its
+denominator.
+
+A role-to-component binding SHALL name the role identity, component identity,
+build identity, and deployment or metadata-only environment selection. One
+component may serve multiple explicitly permitted roles, and one repository may
+contain multiple components. A live assessment additionally requires an
+authorized deployment binding; metadata-only analysis SHALL be labeled as such
+and cannot be presented as runtime monitoring evidence. Related workflow
+instances, finite populations, snapshots, windows, and observation records
+remain separately identified assessment inputs under the selected D/F/E
+contracts.
+
+### Compatibility and impact conclusions
+
+A compatibility assessment SHALL retain a declared policy, the required
+mixed-version combinations, exact selected dependency paths, and one conclusion
+per assessed subject. The conclusion vocabulary is deliberately orthogonal:
+
+| Conclusion | Meaning |
+| --- | --- |
+| `structurally-compatible` | Selected schemas/interfaces and immutable bindings admit the stated combination. This does not assert behavior. |
+| `payload-breaking` | A required payload/schema contract is not admitted by the stated combination. |
+| `behaviorally-regressed` | A supported behavioral assessment at unchanged structural shape establishes a regression with its exact evidence. |
+| `affected` | A changed dependency reaches a claim/evidence subject under the retained path. Reachability alone is not breakage. |
+| `stale` | A prior result's selected dependency differs from the candidate and it requires re-assessment under the declared policy. Staleness is not falsehood. |
+| `unknown` | Required inventory, mixed-version combination, dependency support, or assessment evidence is absent, unresolved, circular, or outside the admitted domain. |
+
+An additive schema revision, payload break, behavioral regression with unchanged
+schema, and absence of evidence SHALL remain distinguishable. Circular or
+unresolved support is retained as a path and `unknown`; it is not erased, treated
+as no impact, or promoted to behavioral failure. Historical result bytes remain
+immutable; a later `affected` or `stale` conclusion records a new assessment,
+not a rewrite of that result.
+
 ### Distinguishing cases
 
 1. A package with no population compiles and type-checks against its selected

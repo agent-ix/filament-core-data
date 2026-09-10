@@ -26,6 +26,11 @@ configuration references explicit, versioned, and content-digested inputs.
 - The configuration SHALL declare loss/refusal policy and finite resource limits.
 - A consumer SHALL refuse an unknown configuration version or digest mismatch.
 - A consumer SHALL NOT select semantic behavior from an environment variable, working directory, or network lookup.
+- A linker SHALL distinguish the static model/profile/configuration selections
+  needed for admission from the concrete population, window, and observation
+  inputs required only by a selected assessment.
+- A consumer SHALL retain a producer-object/native-artifact correspondence with
+  each digest's named domain and SHALL refuse cross-domain substitution.
 
 ## Constraints
 
@@ -41,6 +46,8 @@ configuration references explicit, versioned, and content-digested inputs.
 | FR-103-AC-1 | An unknown profile reference is refused before model or population evaluation. | Test |
 | FR-103-AC-2 | Changing only a resource-limit value changes the configuration identity and remains observable in the result. | Test |
 | FR-103-AC-3 | A consumer with no explicit configuration refuses rather than selecting a current-directory or environment default. | Test |
+| FR-103-AC-4 | A clause package links against an exact model/profile/configuration closure with no population records, while an assessment needing an absent selected window reports its own missing-input disposition. | Test |
+| FR-103-AC-5 | A producer canonical-object digest and a native raw-byte digest both validate only in their named domain; substituting either for the other refuses the binding. | Test |
 
 ## Dependencies
 
