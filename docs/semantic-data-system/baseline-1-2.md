@@ -91,17 +91,19 @@ relationship-instance endpoint identities. A snapshot adds `snapshotIdentity`,
 `populationIdentity`, `observedAt`, and an immutable membership digest.
 
 A window is a declared observation selection, not an implicit clock query. It
-SHALL carry `windowIdentity`, `populationIdentity`, inclusive `start` and
-exclusive `end` instants, and `memberObjectIdentities[]` or a content digest of
-that ordered set. A member belongs to a snapshot or window only when its exact
-`objectIdentity` is listed or covered by the declared digest. An unavailable
-observation remains `incomplete`; it is not omitted or interpreted as a false
-property result.
+SHALL carry `windowIdentity`, `populationIdentity`, a `clockFamily`, that
+family's inclusive-start/exclusive-end coverage selection, and ordered
+observation-record identities with their member-object identities (or the
+content digest of that ordered record set). A member belongs to a snapshot or
+window only when its exact `objectIdentity` is listed or covered by the
+declared digest. An unavailable observation remains an explicit availability
+fact; the selected evaluator, not membership omission, determines whether it
+prevents a truth result.
 
 ### Configuration and closure inputs
 
 A configuration document SHALL carry `configurationIdentity`,
-`baselineVersion`, `digest`, `modelAuthority`, `profileIdentities`,
+`baselineVersion`, a complete digest triple, `modelAuthority`, `profileIdentities`,
 `adapterIdentities`, `mappingTargets`, `lossPolicy`, `resourceLimits`, and
 `trustedReferences`. `closure` is explicit and declares the selected model,
 population or snapshot, window when used, configuration, and every digest that
@@ -119,7 +121,11 @@ The minimum interchange shape is:
   "snapshotIdentity": "ix://agent-ix/commerce/snapshot/orders-2026-09-10T00-00-00Z",
   "windowIdentity": "ix://agent-ix/commerce/window/orders-2026-09-10T00-00-00Z-PT1H",
   "configurationIdentity": "ix://agent-ix/commerce/config/evaluation-default",
-  "digest": "sha256:<content-digest>"
+  "digest": {
+    "algorithm": "sha256",
+    "domain": "filament-canonical-json-1",
+    "value": "sha256:<lowercase-hex>"
+  }
 }
 ```
 
@@ -132,52 +138,133 @@ make an OCL, FRETish, SysML, or TL document authoritative.
 
 ### Model and configuration binding
 
-Before a clause is type-checked or evaluated, the binding SHALL provide the
-following immutable tuple:
+The producer supplies two different immutable input classes.  **Static linking**
+supplies the model, profile, configuration *meaning*, and their correspondence;
+it is sufficient for recognition, resolution and type/profile admission.  It
+MUST NOT require an as-yet-unobserved population, snapshot, window, progress
+record, or runtime instance.  **Assessment binding** supplies the concrete
+population/snapshot/window and observation authority only when the selected
+claim consumes them.  A runtime selection cannot replace a static selection;
+doing so requires a newly linked subject.
+
+The binding tuple is therefore partitioned as follows:
 
 | Member | Required meaning |
 | --- | --- |
-| `modelIdentity` / `modelDigest` | One versioned model whose exported type, field, relationship, operation, and scalar identities form the available vocabulary. |
-| `profileIdentity` / `profileDigest` | The selected native Quire profile and its admissible semantic operators. |
-| `configurationIdentity` / `configurationDigest` | The explicit adapter, mapping-target, loss-policy, resource-limit, and trusted-reference selection. |
-| `populationIdentity` / `populationDigest` | The finite observation universe supplied to evaluation, or an explicit absent population where the profile permits none. |
-| `snapshotIdentity` / `snapshotDigest` | The immutable observation cut when evaluation reads a snapshot. |
-| `windowIdentity` / `windowDigest` | The declared finite selection when evaluation is temporal or choreography-aware. |
+| `modelIdentity` / `modelDigest` | **Static.** One versioned model whose exported type, field, relationship, operation, and scalar identities form the available vocabulary. |
+| `profileIdentity` / `profileDigest` | **Static.** The selected native Quire profile and its admissible semantic operators. |
+| `configurationIdentity` / `configurationDigest` | **Static selection; runtime contents when consumed.** The explicit adapter, mapping-target, loss-policy, resource-limit, and trusted-reference selection. |
+| `populationIdentity` / `populationDigest` | **Assessment.** The finite observation universe supplied to a claim, or explicit absence where that selected profile permits none. |
+| `snapshotIdentity` / `snapshotDigest` | **Assessment.** The immutable observation cut when the claim reads a snapshot. |
+| `windowIdentity` / `windowDigest` | **Assessment.** The declared finite selection when the claim is temporal or choreography-aware. |
 
-The standard SHALL refuse a clause binding when a required member is missing,
+The standard SHALL refuse linking when a required static member is missing,
 when a referenced identity and digest do not name the same immutable object, or
 when the model fails to export a type or relationship identity used by the
-clause. It SHALL report `incomplete`, not a satisfied or violated result, when
-the declared population or window reports unavailable observation data.
+clause.  It SHALL refuse an assessment binding lacking a concrete input the
+selected claim requires.  Availability and completeness are retained as their
+own result dimensions: unavailable relevant support yields that evaluator's
+unavailable/incomplete disposition, but unrelated unavailable observations
+SHALL NOT erase a satisfied or violated result that the selected evaluator has
+already decisively established from its exact admitted support.  Removing that
+support (for example, an eventuality witness) makes that claim unavailable;
+overall conformance/adequacy remains incomplete whenever its own rule requires
+the missing scope.
 
 ### Window mapping
 
 `windowIdentity` selects a finite, ordered observation subset of exactly one
-population or snapshot. Its `start` is inclusive, its `end` is exclusive, and
-both are RFC 3339 UTC instants. The producer supplies either the complete
-ordered `memberObjectIdentities[]` or `memberSetDigest` plus a retrievable
-immutable member-set document. The standard maps a window only to that ordered
-set and its declared relationship instances; it SHALL NOT infer membership
-from wall-clock time, database state, event arrival order, or a query default.
+population or snapshot.  Its selection has a declared `clockFamily` and exactly
+one of these half-open coverage forms:
+
+| `clockFamily` | Required coverage selection | Native correspondence |
+| --- | --- | --- |
+| `event-position` | Integer `startInclusive` and `endExclusive` positions in the producer's declared event sequence. | Native positions in `[startInclusive, endExclusive)`; no timestamp is invented. |
+| `rational-sample` | Rational `origin`, positive rational `period`, and integer `startInclusive`/`endExclusive` sample indexes. | Native sample `origin + index × period` for each selected index; rational values are exact, not binary floating point. |
+| `timestamp` | RFC 3339 UTC `startInclusive` and `endExclusive` instants. | Producer membership remains half-open; a native temporal interval whose deadline is inclusive is covered only when the selected timestamp coverage explicitly contains that deadline. |
+
+The producer supplies either the complete ordered observation-record identities
+and their member-object identities, or a digest of that ordered record set plus
+a retrievable immutable set document.  Object membership and observation
+coverage are distinct: two observations of one object remain two records.  The
+standard maps only that declared coverage and its declared relationship
+instances; it SHALL NOT infer membership or elapsed time from wall-clock time,
+database state, event arrival order, or a query default.
 
 For a non-temporal state profile, the binding may omit `windowIdentity` only
 when it names one snapshot directly. A temporal or choreography profile SHALL
-refuse a missing window rather than constructing one. This gives every
-evaluation result a stable model/population/window/configuration provenance
-tuple.
+refuse a missing or clock-family-incompatible window rather than constructing
+one. This gives every evaluation result a stable
+model/population/window/configuration provenance tuple without making UTC a
+requirement for timestamp-free profiles.
 
 ### Canonical digests
 
-Every `*Digest` uses `sha256:<lowercase-hex>` over the UTF-8 canonical JSON
-bytes of its object. Canonical JSON sorts object keys by Unicode code point,
-uses the normalized JSON number spelling, emits no insignificant whitespace,
-and represents identity references by their complete identity and digest.
-An object's own digest member is excluded from the bytes it digests. Arrays
-whose order is semantic — notably `memberObjectIdentities[]`, relationship
-instances, and temporal observations — retain producer-declared order; arrays
-that are sets are sorted by the canonical bytes of their members before
-digesting. A digest mismatch is a blocking configuration/input refusal, never
-a cache miss, warning, or invitation to refetch a different version.
+Every producer-object `*Digest` is the triple `{ algorithm: "sha256",
+domain: "filament-canonical-json-1", value: "sha256:<lowercase-hex>" }` over
+the UTF-8 bytes of **Filament Canonical JSON 1**. An object's own digest member
+is excluded from the bytes it digests. A bare hash spelling carries no digest
+domain and is insufficient for a binding.
+
+Filament Canonical JSON 1 emits no insignificant whitespace; sorts object keys
+by Unicode scalar-value order; and emits strings as their Unicode scalar values
+without normalization, escaping `"`, `\\`, and U+0000 through U+001F as
+lowercase `\\u00xx` escapes. Invalid Unicode refuses. Its numeric domain is
+versioned exact decimal: parse a JSON number into an arbitrary-precision signed
+base-10 coefficient and exponent, reject non-JSON values and binary floating
+point coercion, remove trailing coefficient zeroes, and serialize zero as `0`
+and every nonzero value as the shortest ordinary decimal expansion with no
+exponent, no leading plus, no leading zero, and no trailing fractional zero.
+Thus `1`, `1.0`, and `1e0` have the same canonical bytes (`1`), while
+`9007199254740992` and `9007199254740993` have different exact canonical bytes.
+An implementation resource limit may refuse a number before canonicalization;
+it MUST NOT round or silently substitute a binary64 value.
+
+Arrays whose order is semantic — notably ordered observation records,
+relationship instances, and temporal observations — retain producer-declared
+order; arrays that are sets are sorted by the canonical bytes of their members
+before digesting. A digest mismatch, an unknown domain, or a domain substituted
+for another is a blocking configuration/input refusal, never a cache miss,
+warning, or invitation to refetch a different version.
+
+### Producer/native correspondence
+
+For every native clause role that consumes a producer model or profile, the
+producer SHALL provide one immutable correspondence record. It contains: (1)
+the producer object kind, identity, revision, and complete producer digest
+triple; (2) the native artifact or definition identity, revision, raw-byte
+`sha256` digest, and raw-byte digest domain `quire-native-bytes-1`; (3) the
+exact required native definition-closure identities and raw-byte digest
+triples; and (4) the producer-declared binding relation identity and its
+configuration provenance. The record declares a relation; equal-looking values
+or matching hash text are not evidence of semantic equivalence.
+
+The consumer SHALL validate each digest only in its named domain and then
+validate the relation, kinds, exports, and closure under the selected producer
+interface. Replacing a producer canonical digest with a native raw-byte digest,
+or the reverse, changing either selection while retaining the old relation, or
+cross-binding a foreign export SHALL refuse the affected binding. A
+presentation-only re-encoding can preserve the producer canonical object while
+changing native raw bytes; it therefore requires an explicit new native
+selection and correspondence record, never digest substitution.
+
+### Distinguishing cases
+
+1. A package with no population compiles and type-checks against its selected
+   model/profile/configuration correspondence; an eventuality assessment then
+   refuses or is unavailable only if that claim requires an absent window.
+2. A time-29 witness establishes an eventuality on an open, partly observed
+   scope. Its result remains satisfied with an explicit incomplete surrounding
+   coverage dimension; removing the witness makes that claim unavailable.
+3. `1`, `1.0`, and `1e0` digest as the same producer decimal value, whereas
+   the adjacent integers `9007199254740992` and `9007199254740993` do not.
+4. An event-position window `[4, 7)` maps positions 4, 5, and 6 without a
+   timestamp; a rational-sample window maps exact `origin + i × period`; and a
+   timestamp window ending at `T` does not imply coverage at a native inclusive
+   deadline `T` unless that coverage is explicitly selected.
+5. A producer canonical-object digest and a native raw-definition-byte digest
+   may both be valid yet are not interchangeable; substituting either in the
+   other domain refuses the correspondence.
 
 ## Compatibility
 
