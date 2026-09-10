@@ -427,7 +427,7 @@ Authority is assigned by concern:
 | User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-015](./usecase/US-015-lift-a-spec-bundle-into-a-domain-package.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, package-author, Rust-consumer, TypeScript-consumer, Python-consumer, semantic-kernel-consumer, and domain-author outcomes |
 | Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-099](./functional/FR-099-provide-the-extraction-frontend-command-line.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, prototype-promotion, compiler-core, Rust/Serde, TypeScript, qualified Python generation, semantic kernel packaging, and spec-bundle extraction frontend behavior |
 | Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-033](./non-functional/NFR-033-qualified-toolchain-and-licensed-dependencies.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic and hermetic kernel generation, portable dependency-free kernel packages, non-disruptive kernel packaging, deterministic and hermetic lifting, non-disruptive extraction frontend, and qualified toolchain and licensed dependencies |
-| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-103](./functional/FR-103-declare-ecosystem-configuration-contracts.md) | Architecture, census, feasibility, semantic IR and baseline model contracts, package, mapping, generation, compatibility, compiler, backend, semantic-kernel, and extraction-frontend behavior |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-105](./functional/FR-105-classify-mixed-version-impact.md) | Architecture, census, feasibility, semantic IR and baseline model, ecosystem inventory, compatibility-impact, package, mapping, generation, compiler, backend, semantic-kernel, and extraction-frontend behavior |
 
 ## 6. Decision Status Model
 
@@ -441,7 +441,7 @@ normative. Exact metamodel fields, generated package registry names, and
 individual migration dispositions remain provisional until their owning tickets
 pass.
 
-The baseline 1.2 contracts in FR-100 through FR-103 are provisional: they
+The baseline 1.2 contracts in FR-100 through FR-105 are provisional: they
 select the source-of-truth and implementation boundary for issue #95, but do
 not claim that a schema, frontend, evaluator, or population producer has yet
 implemented them.
