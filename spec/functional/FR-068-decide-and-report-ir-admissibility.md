@@ -248,7 +248,7 @@ not.
 | FR-068-AC-23 | A document whose only diagnostics are non-error generates, and its output manifest carries `state: "lossy"` with a non-empty `files` array; a document carrying a representability loss emits zero files under `state: "unsupported"`. | Test |
 | FR-068-AC-24 | An IR carrying a `union` at `unknownPolicy: "surface"` and a `map` at `unknownPolicy: "preserve"` — both of which the committed bases carry — yields neither a diagnostic nor a declared loss for the policy. | Unit |
 | FR-068-AC-25 | A document declaring three `kind: scalar` definitions each carrying one extension with `identity` `ix://agent-ix/semantic-core/ext/kernel-scalar` yields `resultState` `success` and zero diagnostics; the same document with two extensions both at `identity` `ix://agent-ix/semantic-core/ext/doc` on one field yields exactly one `DUPLICATE_IDENTITY` at `/ir/types/N/fields/M/extensions/1/identity` and no diagnostic at any type's `extensions` pointer. | Unit (TC-1355) |
-| FR-068-AC-26 | `node src/compiler/cli.mjs generate --target typescript` over the IR lowered from `test/fixtures/compiler/packages/assurance` — whose definitions carry the kernel-scalar extension more than once — exits zero with zero diagnostics and writes a non-empty file set. | Integration (TC-1356) |
+| FR-068-AC-26 | `node src/compiler/cli.mjs generate --target typescript` over the lifted `config-version-table` IR — whose definitions carry the kernel-scalar extension more than once — exits zero with zero diagnostics and writes a non-empty file set. | Integration (TC-1356) |
 
 ## Dependencies
 

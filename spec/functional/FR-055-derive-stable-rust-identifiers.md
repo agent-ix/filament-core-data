@@ -107,18 +107,23 @@ that a rename in the generated crate can only follow a change in the contract.
   positional suffix, because such a suffix moves when an unrelated declaration is
   added and the generated name would then depend on document order rather than on
   the contract.
-- If a `kind: scalar` definition whose `scalar` is one of `date`, `datetime`,
-  `duration`, or `uuid` derives the type identifier that is the support type of
-  that same scalar (`Date`, `DateTime`, `Duration`, or `Uuid`), then the backend
-  SHALL map the definition onto the support type: it SHALL emit no newtype for
-  it, SHALL render every `typeRef` to it as `crate::support::<Support>`, and
-  SHALL treat the crate's existing re-export of that support type as the
-  definition's rendering, because a kernel scalar is a known quantity and not a
-  user type (agent-ix/filament-core-data#90, owner ruling of 2026-09-09).
-- A definition that derives a reserved crate name with any other `scalar`, or
-  with any kind other than `scalar`, SHALL keep raising `NAME_COLLISION` under
-  the rule above, so the mapping onto a support type is admitted only where the
-  derived name and the scalar agree.
+- If a `kind: scalar` definition's `scalar` selects a support-type mapping row
+  in `mapping-table.json`, then the backend SHALL emit no newtype for it.
+- If a `kind: scalar` definition's `scalar` selects a support-type mapping row
+  in `mapping-table.json`, then the backend SHALL render every `typeRef` to it
+  as the row's `crate::support::<Support>` type.
+- If a `kind: scalar` definition's `scalar` selects a support-type mapping row
+  in `mapping-table.json`, then the backend SHALL treat the crate's existing
+  re-export of that support type as the definition's rendering.
+- If a definition derives a reserved crate name and is not a `kind: scalar`
+  definition whose `scalar` selects that support-type mapping row, then the
+  backend SHALL raise `NAME_COLLISION` naming both identities and SHALL write no
+  file.
+
+The support-type rows are `date`, `datetime`, `duration`, and `uuid`; a kernel
+scalar is a known quantity rather than a user type (agent-ix/filament-core-data#90,
+owner ruling of 2026-09-09). The backend decides this mapping before entering
+the derived identifier into the crate scope.
 
 ### Stability
 
