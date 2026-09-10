@@ -123,6 +123,62 @@ The minimum interchange shape is:
 }
 ```
 
+## Standard-facing binding and digest semantics
+
+This is the interface from the producer-owned semantic baseline to the native
+Quire standard. It supplies typed model and observation inputs to a Quire
+profile; it does not add a second clause language, reinterpret a clause, or
+make an OCL, FRETish, SysML, or TL document authoritative.
+
+### Model and configuration binding
+
+Before a clause is type-checked or evaluated, the binding SHALL provide the
+following immutable tuple:
+
+| Member | Required meaning |
+| --- | --- |
+| `modelIdentity` / `modelDigest` | One versioned model whose exported type, field, relationship, operation, and scalar identities form the available vocabulary. |
+| `profileIdentity` / `profileDigest` | The selected native Quire profile and its admissible semantic operators. |
+| `configurationIdentity` / `configurationDigest` | The explicit adapter, mapping-target, loss-policy, resource-limit, and trusted-reference selection. |
+| `populationIdentity` / `populationDigest` | The finite observation universe supplied to evaluation, or an explicit absent population where the profile permits none. |
+| `snapshotIdentity` / `snapshotDigest` | The immutable observation cut when evaluation reads a snapshot. |
+| `windowIdentity` / `windowDigest` | The declared finite selection when evaluation is temporal or choreography-aware. |
+
+The standard SHALL refuse a clause binding when a required member is missing,
+when a referenced identity and digest do not name the same immutable object, or
+when the model fails to export a type or relationship identity used by the
+clause. It SHALL report `incomplete`, not a satisfied or violated result, when
+the declared population or window reports unavailable observation data.
+
+### Window mapping
+
+`windowIdentity` selects a finite, ordered observation subset of exactly one
+population or snapshot. Its `start` is inclusive, its `end` is exclusive, and
+both are RFC 3339 UTC instants. The producer supplies either the complete
+ordered `memberObjectIdentities[]` or `memberSetDigest` plus a retrievable
+immutable member-set document. The standard maps a window only to that ordered
+set and its declared relationship instances; it SHALL NOT infer membership
+from wall-clock time, database state, event arrival order, or a query default.
+
+For a non-temporal state profile, the binding may omit `windowIdentity` only
+when it names one snapshot directly. A temporal or choreography profile SHALL
+refuse a missing window rather than constructing one. This gives every
+evaluation result a stable model/population/window/configuration provenance
+tuple.
+
+### Canonical digests
+
+Every `*Digest` uses `sha256:<lowercase-hex>` over the UTF-8 canonical JSON
+bytes of its object. Canonical JSON sorts object keys by Unicode code point,
+uses the normalized JSON number spelling, emits no insignificant whitespace,
+and represents identity references by their complete identity and digest.
+An object's own digest member is excluded from the bytes it digests. Arrays
+whose order is semantic — notably `memberObjectIdentities[]`, relationship
+instances, and temporal observations — retain producer-declared order; arrays
+that are sets are sorted by the canonical bytes of their members before
+digesting. A digest mismatch is a blocking configuration/input refusal, never
+a cache miss, warning, or invitation to refetch a different version.
+
 ## Compatibility
 
 Baseline 1.2 is additive: v1.1 bytes retain their v1.1 meaning. A v1.2 to v1.1
