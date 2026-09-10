@@ -59,6 +59,70 @@ of environment variables, current working-directory defaults, or implicit
 network lookups. A changed configuration is a different semantic input even
 when the model and source bytes are unchanged.
 
+## Producer interface 1.2.0
+
+The producer-owned interchange surface is a versioned input bundle, not an
+inferred convention. A producer SHALL set `baselineVersion` to `1.2.0`, retain
+the exact `modelIdentity`, `populationIdentity`, and `configurationIdentity`
+on every result, and content-digest each referenced document. Consumers SHALL
+refuse an unknown version, a missing required identity, or a digest mismatch.
+
+### Relationship declarations
+
+Each relationship declaration SHALL carry its producer-selected stable
+`relationshipIdentity`, a declared `relationshipName`, `source` and `target`
+endpoint objects, and a `semantics` object. An endpoint object carries
+`typeIdentity`, `role`, and `multiplicity`; `semantics` carries `category`,
+`direction`, `composite`, and lifecycle/ownership values. Identity is never
+reconstructed from a foreign key or from a relationship instance.
+
+For the order domain, the producer declares distinct identities such as
+`relationship/Order-shipment`, `relationship/Order-payment-attempt`, and
+`relationship/Order-refund`; each supplies the relevant endpoint role and
+type identity. The spelling is illustrative: a consumer relies on the emitted
+identity, not an assumed English vocabulary.
+
+### Population, snapshot, and window membership
+
+A population document SHALL carry `populationIdentity`, `modelIdentity`,
+`profileIdentity`, `closedWorld`, and a finite `members[]` set. Each member
+has a stable `objectIdentity`, a `typeIdentity`, its field-member states, and
+relationship-instance endpoint identities. A snapshot adds `snapshotIdentity`,
+`populationIdentity`, `observedAt`, and an immutable membership digest.
+
+A window is a declared observation selection, not an implicit clock query. It
+SHALL carry `windowIdentity`, `populationIdentity`, inclusive `start` and
+exclusive `end` instants, and `memberObjectIdentities[]` or a content digest of
+that ordered set. A member belongs to a snapshot or window only when its exact
+`objectIdentity` is listed or covered by the declared digest. An unavailable
+observation remains `incomplete`; it is not omitted or interpreted as a false
+property result.
+
+### Configuration and closure inputs
+
+A configuration document SHALL carry `configurationIdentity`,
+`baselineVersion`, `digest`, `modelAuthority`, `profileIdentities`,
+`adapterIdentities`, `mappingTargets`, `lossPolicy`, `resourceLimits`, and
+`trustedReferences`. `closure` is explicit and declares the selected model,
+population or snapshot, window when used, configuration, and every digest that
+must be held fixed for evaluation. Consumers SHALL use no environment,
+working-directory, current-time, or network default to complete a closure.
+
+The minimum interchange shape is:
+
+```json
+{
+  "baselineVersion": "1.2.0",
+  "modelIdentity": "ix://agent-ix/commerce/model/order-1-2",
+  "relationshipIdentity": "ix://agent-ix/commerce/relationship/Order-shipment",
+  "populationIdentity": "ix://agent-ix/commerce/population/orders-2026-09-10",
+  "snapshotIdentity": "ix://agent-ix/commerce/snapshot/orders-2026-09-10T00-00-00Z",
+  "windowIdentity": "ix://agent-ix/commerce/window/orders-2026-09-10T00-00-00Z-PT1H",
+  "configurationIdentity": "ix://agent-ix/commerce/config/evaluation-default",
+  "digest": "sha256:<content-digest>"
+}
+```
+
 ## Compatibility
 
 Baseline 1.2 is additive: v1.1 bytes retain their v1.1 meaning. A v1.2 to v1.1
