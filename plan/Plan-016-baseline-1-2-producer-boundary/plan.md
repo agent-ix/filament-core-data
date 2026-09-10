@@ -4,12 +4,12 @@ title: "Baseline 1.2 producer and consumer boundary"
 type: Plan
 status: pending
 relationships:
-  - { target: "ix://agent-ix/filament-core-data/FR-100", type: references }
-  - { target: "ix://agent-ix/filament-core-data/FR-101", type: references }
-  - { target: "ix://agent-ix/filament-core-data/FR-102", type: references }
-  - { target: "ix://agent-ix/filament-core-data/FR-103", type: references }
-  - { target: "ix://agent-ix/filament-core-data/FR-104", type: references }
-  - { target: "ix://agent-ix/filament-core-data/FR-105", type: references }
+  - { target: "ix://agent-ix/filament-core-data/FR-106", type: references }
+  - { target: "ix://agent-ix/filament-core-data/FR-107", type: references }
+  - { target: "ix://agent-ix/filament-core-data/FR-108", type: references }
+  - { target: "ix://agent-ix/filament-core-data/FR-109", type: references }
+  - { target: "ix://agent-ix/filament-core-data/FR-110", type: references }
+  - { target: "ix://agent-ix/filament-core-data/FR-111", type: references }
 ---
 # Implementation Plan: Baseline 1.2 producer and consumer boundary
 
@@ -21,31 +21,31 @@ at `c95dff8` until those selections and this plan are accepted.
 
 ## Requirements and dependency graph
 
-- FR-100/101 define the producer model/schema delta.
-- FR-102 defines finite populations, record/member identity, availability, and
+- FR-106/107 define the producer model/schema delta.
+- FR-108 defines finite populations, record/member identity, availability, and
   all three half-open clock forms.
-- FR-103 defines static closure, assessment inputs, and digest domains.
-- FR-104/105 are future IN01/IN02 integration controls, not a new repository
+- FR-109 defines static closure, assessment inputs, and digest domains.
+- FR-110/111 are future IN01/IN02 integration controls, not a new repository
   or an implied C delivery.
 
-`accepted FR-100/101 -> Task-140 producer schema -> accepted FR-102/103
-interface -> Task-141 native consumer boundary -> Task-142 #93 resume decision`.
+`accepted FR-106..FR-111 -> Task-140 producer schema and producer interface
+-> Task-141 native consumer boundary -> Task-142 #93 resume decision`.
 
 ## Test plan
 
 | Work | Planned evidence |
 | --- | --- |
-| Producer schema and distinguishing cases | TC-1355..TC-1361 |
-| Static/assessment consumer boundary and digest correspondence | TC-1362..TC-1363 |
-| Future IN01 inventory controls | TC-1364..TC-1366 |
-| Future IN02 compatibility-impact controls | TC-1367..TC-1369 |
+| Producer schema and distinguishing cases | TC-1373..TC-1379 |
+| Static/assessment consumer boundary and digest correspondence | TC-1380..TC-1381 |
+| Future IN01 inventory controls | TC-1382..TC-1384 |
+| Future IN02 compatibility-impact controls | TC-1385..TC-1387 |
 
 ## Task file mapping
 
 | Task | Exit condition | Status |
 | --- | --- | --- |
-| Task-140 | Producer preserves the accepted model, population, clock, and digest domains; TC-1355..TC-1361 become traced controls | blocked on acceptance |
-| Task-141 | A/D static and assessment boundaries agree; TC-1362..TC-1363 become traced controls | blocked on acceptance and A selection |
+| Task-140 | Producer preserves the accepted model, population, clock, and digest domains; TC-1373..TC-1379 become traced controls | blocked on acceptance |
+| Task-141 | A/D static and assessment boundaries agree; TC-1380..TC-1381 become traced controls | blocked on acceptance and A selection |
 | Task-142 | #93 is rebased or preserved only with exact selected SHAs and loss/refusal evidence | blocked on Tasks 140–141 |
 
 ## Coordination rules

@@ -5,4 +5,4 @@ type: log
 ---
 ## History
 
-* 2026-09-10 - Created after targeted FR-102..FR-105 review; no dependent implementation has started.
+* 2026-09-10 - Created after targeted FR-108..FR-111 review; no dependent implementation has started.

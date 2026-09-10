@@ -6,17 +6,17 @@ status: todo
 track: A
 priority: P0
 relationships:
-  - { target: "ix://agent-ix/filament-core-data/FR-100", type: references }
-  - { target: "ix://agent-ix/filament-core-data/FR-101", type: references }
-  - { target: "ix://agent-ix/filament-core-data/FR-102", type: references }
-  - { target: "ix://agent-ix/filament-core-data/FR-103", type: references }
-  - { target: "ix://agent-ix/filament-core-data/TC-1355", type: verifies }
-  - { target: "ix://agent-ix/filament-core-data/TC-1356", type: verifies }
-  - { target: "ix://agent-ix/filament-core-data/TC-1357", type: verifies }
-  - { target: "ix://agent-ix/filament-core-data/TC-1358", type: verifies }
-  - { target: "ix://agent-ix/filament-core-data/TC-1359", type: verifies }
-  - { target: "ix://agent-ix/filament-core-data/TC-1360", type: verifies }
-  - { target: "ix://agent-ix/filament-core-data/TC-1361", type: verifies }
+  - { target: "ix://agent-ix/filament-core-data/FR-106", type: references }
+  - { target: "ix://agent-ix/filament-core-data/FR-107", type: references }
+  - { target: "ix://agent-ix/filament-core-data/FR-108", type: references }
+  - { target: "ix://agent-ix/filament-core-data/FR-109", type: references }
+  - { target: "ix://agent-ix/filament-core-data/TC-1373", type: verifies }
+  - { target: "ix://agent-ix/filament-core-data/TC-1374", type: verifies }
+  - { target: "ix://agent-ix/filament-core-data/TC-1375", type: verifies }
+  - { target: "ix://agent-ix/filament-core-data/TC-1376", type: verifies }
+  - { target: "ix://agent-ix/filament-core-data/TC-1377", type: verifies }
+  - { target: "ix://agent-ix/filament-core-data/TC-1378", type: verifies }
+  - { target: "ix://agent-ix/filament-core-data/TC-1379", type: verifies }
 ---
 # Task-140: Baseline 1.2 producer schema and distinguishing fixtures
 
@@ -32,7 +32,7 @@ or interpret temporal/protocol semantics.
 - Preserve absence/null/value and record/member identities.
 - Emit exactly one accepted clock family with its half-open coverage form.
 - Meet accepted decimal and digest-domain rules.
-- Make TC-1355..TC-1361 traced executable controls, including adverse cases.
+- Make TC-1373..TC-1379 traced executable controls, including adverse cases.
 
 ## Admission
 

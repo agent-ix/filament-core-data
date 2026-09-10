@@ -1,9 +1,9 @@
 ---
-id: SR-181
+id: SR-191
 title: "Integrity review of the baseline 1.2 producer and ecosystem contracts"
 type: SpecReview
 analysis: integrity
-scope: "FR-102..FR-105, baseline-1-2.md ecosystem sections, spec/tests.md TC-1358..TC-1369"
+scope: "FR-106..FR-111, baseline-1-2.md ecosystem sections, spec/tests.md TC-1373..TC-1387"
 review_set: all
 ---
 # Integrity review
@@ -16,7 +16,7 @@ Targeted review of identity, digest, truth, and historical-result separation.
 
 | ID | Severity | Summary | Refs |
 | --- | --- | --- | --- |
-| FND-1607 | low | No defect found: no identity or truth-domain collapse remains in the reviewed requirements. | FR-102..FR-105 |
+| FND-1682 | low | No defect found: no identity or truth-domain collapse remains in the reviewed requirements. | FR-106..FR-111 |
 
 ## Verdict
 
@@ -30,8 +30,10 @@ violated behavioral claim. Historical result bytes are immutable.
 
 | Invariant | Evidence |
 | --- | --- |
-| Presence, null, and value are distinct | FR-102-AC-1 / TC-1358 |
-| Record and member identities remain distinct | FR-102-AC-4 / TC-1360 |
-| Named digest domains cannot substitute | FR-103-AC-5 / TC-1363 |
-| Role/component/runtime identities do not collapse | FR-104-CON-2 / TC-1365 |
-| Reachability and stale evidence are not falsehood | FR-105-CON-1..2 / TC-1369 |
+| Presence, multiplicity, default, ordered, and unique do not collapse | FR-106-AC-5 / TC-1373 |
+| Relationship and field declarations do not substitute | FR-107-AC-2 / TC-1375 |
+| Presence, null, and value are distinct | FR-108-AC-1 / TC-1376 |
+| Record and member identities remain distinct | FR-108-AC-4 / TC-1378 |
+| Named digest domains cannot substitute | FR-109-AC-5 / TC-1381 |
+| Role/component/runtime identities do not collapse | FR-110-CON-2 / TC-1383 |
+| Reachability and stale evidence are not falsehood | FR-111-CON-1..2 / TC-1387 |

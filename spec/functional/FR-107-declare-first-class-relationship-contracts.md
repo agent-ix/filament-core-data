@@ -1,5 +1,5 @@
 ---
-id: FR-101
+id: FR-107
 title: "Declare first-class relationship contracts"
 type: FR
 relationships:
@@ -8,13 +8,21 @@ relationships:
   - target: "ix://agent-ix/filament-core-data/FR-094"
     type: "depends_on"
 ---
-# FR-101: Declare first-class relationship contracts
+# FR-107: Declare first-class relationship contracts
 
 ## Description
 
 The baseline model contract SHALL represent every domain relationship as a
 first-class declaration with independently authored endpoints, roles,
 multiplicities, category, containment semantics, and origin.
+
+## Inputs
+
+- A versioned source relationship declaration and its endpoint declarations.
+
+## Outputs
+
+- A stable relationship contract or a named loss/refusal record.
 
 ## Behavior
 
@@ -28,16 +36,16 @@ multiplicities, category, containment semantics, and origin.
 
 | ID | Constraint | Type | Validation |
 | --- | --- | --- | --- |
-| FR-101-CON-1 | A relationship contract SHALL name stable source and target type identities. | Integrity | Test |
-| FR-101-CON-2 | A composite relationship graph SHALL remain acyclic. | Correctness | Test |
+| FR-107-CON-1 | A relationship contract SHALL name stable source and target type identities. | Integrity | Test |
+| FR-107-CON-2 | A composite relationship graph SHALL remain acyclic. | Correctness | Test |
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 | --- | --- | --- |
-| FR-101-AC-1 | A relationship with distinct endpoint multiplicities preserves both values through normalization. | Test |
-| FR-101-AC-2 | A field-only source cannot create a relationship declaration without an explicit mapping contract. | Test |
-| FR-101-AC-3 | A relationship-to-field projection that loses endpoint role reports the loss with the relationship identity. | Test |
+| FR-107-AC-1 | A relationship with distinct endpoint multiplicities preserves both values through normalization. | Test |
+| FR-107-AC-2 | A field-only source cannot create a relationship declaration without an explicit mapping contract. | Test |
+| FR-107-AC-3 | A relationship-to-field projection that loses endpoint role reports the loss with the relationship identity. | Test |
 
 ## Dependencies
 

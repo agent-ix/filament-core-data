@@ -282,6 +282,18 @@ contracts.
 
 ### Compatibility and impact conclusions
 
+**IN01 — locked ecosystem inventory** is the finite inventory and binding
+boundary in this section: it owns the three-repository order/payment/fulfillment
+selection, exact imports, role/component/build/deployment bindings, related
+workflow instances, and their finite population/window/record identities.
+FR-110 and TC-1382..TC-1384 are its planned controls.
+
+**IN02 — mixed-version compatibility and evidence impact** is the conclusion
+boundary in this section: it owns required version combinations, auditable
+dependency paths, and the separate structural, payload, behavioral, affected,
+stale, and unknown outcomes. FR-111 and TC-1385..TC-1387 are its planned
+controls.
+
 A compatibility assessment SHALL retain a declared policy, the required
 mixed-version combinations, exact selected dependency paths, and one conclusion
 per assessed subject. The conclusion vocabulary is deliberately orthogonal:
@@ -307,7 +319,7 @@ not a rewrite of that result.
 1. A package with no population compiles and type-checks against its selected
    model/profile/configuration correspondence; an eventuality assessment then
    refuses or is unavailable only if that claim requires an absent window.
-2. A time-29 witness establishes an eventuality on an open, partly observed
+2. A decisive witness at producer event position 29 establishes an eventuality on an open, partly observed
    scope. Its result remains satisfied with an explicit incomplete surrounding
    coverage dimension; removing the witness makes that claim unavailable.
 3. `1`, `1.0`, and `1e0` digest as the same producer decimal value, whereas

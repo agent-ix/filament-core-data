@@ -1,9 +1,9 @@
 ---
-id: SR-184
+id: SR-194
 title: "Risk and complexity review of the baseline 1.2 producer and ecosystem contracts"
 type: SpecReview
 analysis: risk-complexity
-scope: "FR-102..FR-105, baseline-1-2.md ecosystem sections"
+scope: "FR-106..FR-111, baseline-1-2.md ecosystem sections"
 review_set: all
 ---
 # Risk and complexity review
@@ -16,7 +16,7 @@ Targeted review of bounded producer and cross-repository coordination risks.
 
 | ID | Severity | Summary | Refs |
 | --- | --- | --- | --- |
-| FND-1610 | low | No defect found: risks are bounded by finite inventories, explicit identities, and parked implementation. | FR-102..FR-105 |
+| FND-1685 | low | No defect found: risks are bounded by finite inventories, explicit identities, and parked implementation. | FR-106..FR-111 |
 
 ## Verdict
 
@@ -28,8 +28,9 @@ inventory, and the parked #93 dependency.
 
 | Risk | Containment |
 | --- | --- |
-| Mixing static admission with runtime observation | FR-103-AC-4; separate bindings |
-| Conflating three clock families | FR-102-AC-5; exact half-open correspondence |
-| Treating schema reachability as behavior | FR-105-CON-1 and distinct conclusions |
-| Rewriting historical evidence | FR-105-AC-3 and immutable-result rule |
+| Collapsing independent field axes or relationships | FR-106/107 and TC-1373..TC-1375 |
+| Mixing static admission with runtime observation | FR-109-AC-4; separate bindings |
+| Conflating three clock families | FR-108-AC-5; exact half-open correspondence |
+| Treating schema reachability as behavior | FR-111-CON-1 and distinct conclusions |
+| Rewriting historical evidence | FR-111-AC-3 and immutable-result rule |
 | Creating an unbounded integration roadmap | IN01/IN02 are finite inventories and planned controls only |
