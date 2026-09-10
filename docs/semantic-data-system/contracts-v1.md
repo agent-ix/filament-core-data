@@ -95,6 +95,11 @@ its `typeRef` resolves, through aliases, to a scalar. The normalized
 serialization materializes `multiplicity`, `presence`, and `nullable` on every
 `1.1.0` field and adds no bytes to a `1.0.0` document.
 
+This paragraph is the retained v1.1 contract, not the new baseline. The
+provisional [Semantic baseline 1.2](baseline-1-2.md) selects independently
+authored presence and specifies the refusal required when a v1.1 source cannot
+carry that source information.
+
 A record type definition carries first-class `relationships[]` (verb, FR-040
 category, `composite` flag, target identity, multiplicity, origin),
 `operations[]` (params as field nodes, bounded `returns`, `pre[]`/`post[]`
