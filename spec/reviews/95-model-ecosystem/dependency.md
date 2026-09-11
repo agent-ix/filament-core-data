@@ -32,6 +32,6 @@ and schema contracts rather than silently becoming their implementation.
 | --- | --- | --- |
 | Static clause linking | Exact model/profile/configuration closure | Population, window, or runtime evidence |
 | Assessment | Selected population/window/observation authority where the claim needs it | A replacement for static closure |
-| IN01 inventory | FR-107..103 identities and bindings | A new native grammar feature |
+| IN01 inventory | FR-107..109 identities and bindings | A new native grammar feature |
 | IN02 classification | FR-109 configuration and FR-110 inventory | Behavioral truth from reachability alone |
 | #93 implementation | Accepted #95 producer/schema plan and interface | Permission to begin implementation now |

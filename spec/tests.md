@@ -100,9 +100,9 @@ under it, TC-1316 fails on issue #89 and TC-1317 fails in the rehearsal's
 scratch-clone environment (both `🚧`).
 
 Issue #95 (the provisional baseline 1.2 producer contract) reserves
-TC-1373..1369 after checking the current matrix for those unused ids. They are
+TC-1373..1387 after checking every live branch for those unused ids. They are
 planned contract controls, not evidence that a producer, schema, reader, or
-evaluator exists. They cover FR-106..105's authored-presence, relationship,
+evaluator exists. They cover FR-106..111's authored-presence, relationship,
 population/availability, configuration, locked-inventory, and mixed-version
 impact obligations. #93 remains parked until the affected contracts and its
 producer/schema plan are accepted.
@@ -122,7 +122,7 @@ producer/schema plan are accepted.
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001..US-010, US-012, US-013, US-015, FR-001..FR-053, FR-063..FR-080, FR-091..FR-111 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944, TC-1200..1350, TC-1373..1384 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch; TC-1373..1384 planned on #95 |
+| StR-001 | US-001..US-010, US-012, US-013, US-015, FR-001..FR-053, FR-063..FR-080, FR-091..FR-111 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944, TC-1200..1350, TC-1373..1387 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch; TC-1373..1387 planned on #95 |
 
 ### User Story Coverage
 
@@ -167,6 +167,7 @@ producer/schema plan are accepted.
 | US-015 | US-015-EX-3 (illustrative) implemented by FR-092 and FR-096 | TC-1212, TC-1264, TC-1268 | ✅ Complete |
 | US-015 | US-015-EX-4 (illustrative) implemented by FR-097, FR-098 and NFR-032 | TC-1289, TC-1314, TC-1340, TC-1341 | ✅ Complete |
 | US-015 | US-015-EX-5 (illustrative) implemented by FR-091 | TC-1202, TC-1265 | ✅ Complete |
+| US-015 | Provisional ecosystem configuration boundary implemented by FR-109 | TC-1376..TC-1381 | 🚧 #95 controls planned |
 | US-015 | Issue #36 AC-5 (json-schema target), no test behind it | TC-1337 | 🚧 Blocked on issue #85 |
 
 ### Functional Requirement Coverage
