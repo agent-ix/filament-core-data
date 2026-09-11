@@ -1,0 +1,158 @@
+{
+  "baselineVersion": "1.2.0",
+  "model": {
+    "modelIdentity": "ix://agent-ix/commerce/model/order-1-2",
+    "digest": {"algorithm": "sha256", "domain": "filament-canonical-json-1", "value": "sha256:7d26a78547130e1b97e4b5409981bf930b030115c31c36877c7352b46f40b12c"},
+    "profileIdentities": ["ix://agent-ix/quire/profile/order-assessment-1-2"],
+    "types": {
+      "ix://agent-ix/commerce/type/Order": {
+        "typeIdentity": "ix://agent-ix/commerce/type/Order",
+        "fields": {
+          "ix://agent-ix/commerce/field/Order-labels": {
+            "fieldIdentity": "ix://agent-ix/commerce/field/Order-labels",
+            "presence": "required",
+            "multiplicity": {"lower": 0, "ordered": true, "unique": true},
+            "nullable": false,
+            "defaultKind": "none"
+          },
+          "ix://agent-ix/commerce/field/Order-note": {
+            "fieldIdentity": "ix://agent-ix/commerce/field/Order-note",
+            "presence": "optional",
+            "multiplicity": {"lower": 1, "upper": 1},
+            "nullable": true,
+            "defaultKind": "none"
+          }
+        }
+      },
+      "ix://agent-ix/commerce/type/Shipment": {
+        "typeIdentity": "ix://agent-ix/commerce/type/Shipment",
+        "fields": {}
+      }
+    }
+  },
+  "relationships": [{
+    "relationshipIdentity": "ix://agent-ix/commerce/relationship/Order-shipment",
+    "relationshipName": "shipment",
+    "source": {
+      "endpointIdentity": "ix://agent-ix/commerce/endpoint/Order-shipment-source",
+      "typeIdentity": "ix://agent-ix/commerce/type/Order",
+      "role": "order",
+      "multiplicity": {"lower": 0, "upper": 1}
+    },
+    "target": {
+      "endpointIdentity": "ix://agent-ix/commerce/endpoint/Order-shipment-target",
+      "typeIdentity": "ix://agent-ix/commerce/type/Shipment",
+      "role": "shipment",
+      "multiplicity": {"lower": 1, "upper": 1}
+    },
+    "semantics": {
+      "category": "structural",
+      "direction": "source-to-target",
+      "composite": true,
+      "lifecycle": "order-owned",
+      "ownership": "order"
+    }
+  }],
+  "population": {
+    "populationIdentity": "ix://agent-ix/commerce/population/orders-2026-09-10",
+    "digest": {"algorithm": "sha256", "domain": "filament-canonical-json-1", "value": "sha256:883e64152365727eec6e2289c81621ad60c9f90c07401a317d2ea0c6ca31d2d3"},
+    "modelIdentity": "ix://agent-ix/commerce/model/order-1-2",
+    "profileIdentity": "ix://agent-ix/quire/profile/order-assessment-1-2",
+    "closedWorld": true,
+    "declaredObjectIdentities": [
+      "ix://agent-ix/commerce/object/order-1001",
+      "ix://agent-ix/commerce/object/shipment-9001"
+    ],
+    "members": [{
+      "objectIdentity": "ix://agent-ix/commerce/object/order-1001",
+      "typeIdentity": "ix://agent-ix/commerce/type/Order",
+      "fields": {
+        "ix://agent-ix/commerce/field/Order-labels": {"state": "present-value", "value": []},
+        "ix://agent-ix/commerce/field/Order-note": {"state": "present-null"}
+      }
+    }, {
+      "objectIdentity": "ix://agent-ix/commerce/object/shipment-9001",
+      "typeIdentity": "ix://agent-ix/commerce/type/Shipment",
+      "fields": {}
+    }],
+    "relationshipInstances": [{
+      "relationshipIdentity": "ix://agent-ix/commerce/relationship/Order-shipment",
+      "sourceObjectIdentity": "ix://agent-ix/commerce/object/order-1001",
+      "targetObjectIdentity": "ix://agent-ix/commerce/object/shipment-9001"
+    }]
+  },
+  "observationRecords": [{
+    "observationRecordIdentity": "ix://agent-ix/commerce/observation/order-1001-4",
+    "memberObjectIdentity": "ix://agent-ix/commerce/object/order-1001",
+    "sequence": 4
+  }, {
+    "observationRecordIdentity": "ix://agent-ix/commerce/observation/order-1001-5",
+    "memberObjectIdentity": "ix://agent-ix/commerce/object/order-1001",
+    "sequence": 5
+  }, {
+    "observationRecordIdentity": "ix://agent-ix/commerce/observation/shipment-9001-6",
+    "memberObjectIdentity": "ix://agent-ix/commerce/object/shipment-9001",
+    "sequence": 6
+  }],
+  "availability": [{
+    "observationRecordIdentity": "ix://agent-ix/commerce/observation/order-1001-5",
+    "reason": "upstream-delivery-report-unavailable"
+  }],
+  "window": {
+    "windowIdentity": "ix://agent-ix/commerce/window/orders-4-7",
+    "digest": {"algorithm": "sha256", "domain": "filament-canonical-json-1", "value": "sha256:111dd4aec9ef2c7fe5847582c074ce7cd48f6c1a108b5fbcf5d0126a99056eb9"},
+    "populationIdentity": "ix://agent-ix/commerce/population/orders-2026-09-10",
+    "coverage": {
+      "clockFamily": "event-position",
+      "startInclusive": 4,
+      "endExclusive": 7
+    },
+    "observationRecordIdentities": [
+      "ix://agent-ix/commerce/observation/order-1001-4",
+      "ix://agent-ix/commerce/observation/order-1001-5",
+      "ix://agent-ix/commerce/observation/shipment-9001-6"
+    ]
+  },
+  "configuration": {
+    "configurationIdentity": "ix://agent-ix/commerce/config/evaluation-default",
+    "baselineVersion": "1.2.0",
+    "digest": {"algorithm": "sha256", "domain": "filament-canonical-json-1", "value": "sha256:6e19be7300757242a7180f136534d7ce7c5a56a05858ff72706fc8f0297f5097"},
+    "modelAuthority": "ix://agent-ix/commerce/model-authority/primary",
+    "profileIdentities": ["ix://agent-ix/quire/profile/order-assessment-1-2"],
+    "adapterIdentities": ["ix://agent-ix/commerce/adapter/orders"],
+    "mappingTargets": ["ix://agent-ix/quire/profile/order-assessment-1-2"],
+    "lossPolicy": "ix://agent-ix/commerce/loss-policy/refuse",
+    "resourceLimits": {"maxCanonicalNumberDigits": 4096},
+    "trustedReferences": ["ix://agent-ix/commerce/trust/model-registry"]
+  },
+  "closure": {
+    "modelIdentity": "ix://agent-ix/commerce/model/order-1-2",
+    "modelDigest": {"algorithm": "sha256", "domain": "filament-canonical-json-1", "value": "sha256:7d26a78547130e1b97e4b5409981bf930b030115c31c36877c7352b46f40b12c"},
+    "configurationIdentity": "ix://agent-ix/commerce/config/evaluation-default",
+    "configurationDigest": {"algorithm": "sha256", "domain": "filament-canonical-json-1", "value": "sha256:6e19be7300757242a7180f136534d7ce7c5a56a05858ff72706fc8f0297f5097"},
+    "populationIdentity": "ix://agent-ix/commerce/population/orders-2026-09-10",
+    "populationDigest": {"algorithm": "sha256", "domain": "filament-canonical-json-1", "value": "sha256:883e64152365727eec6e2289c81621ad60c9f90c07401a317d2ea0c6ca31d2d3"},
+    "windowIdentity": "ix://agent-ix/commerce/window/orders-4-7",
+    "windowDigest": {"algorithm": "sha256", "domain": "filament-canonical-json-1", "value": "sha256:111dd4aec9ef2c7fe5847582c074ce7cd48f6c1a108b5fbcf5d0126a99056eb9"}
+  },
+  "correspondences": [{
+    "bindingRelationIdentity": "ix://agent-ix/commerce/binding/order-model-to-quire-profile",
+    "producer": {
+      "objectKind": "model",
+      "identity": "ix://agent-ix/commerce/model/order-1-2",
+      "revision": "1.2.0",
+      "digest": {"algorithm": "sha256", "domain": "filament-canonical-json-1", "value": "sha256:7d26a78547130e1b97e4b5409981bf930b030115c31c36877c7352b46f40b12c"}
+    },
+    "native": {
+      "identity": "ix://agent-ix/quire/profile/order-assessment-1-2",
+      "revision": "1.2.0",
+      "rawByteDigest": {"algorithm": "sha256", "domain": "quire-native-bytes-1", "value": "sha256:928be83c6ca8939f90d7c46f9b543456152c49bb7b4309316240a6d7a0a00757"}
+    },
+    "nativeDefinitionClosure": [{
+      "identity": "ix://agent-ix/quire/definition/core-assessment-1-2",
+      "revision": "1.2.0",
+      "rawByteDigest": {"algorithm": "sha256", "domain": "quire-native-bytes-1", "value": "sha256:40c160e3825bf722fd01849522531126517174446bfb48cdde4780c9b7193e7a"}
+    }],
+    "configurationIdentity": "ix://agent-ix/commerce/config/evaluation-default"
+  }]
+}

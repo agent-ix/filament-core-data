@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Agent-IX
+
+[package]
+name = "agent-ix-baseline-producer"
+version = "0.0.0"
+description = "Authoritative Baseline 1.2.0 producer contract and validation."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = "=0.10.9"
+
+[lints.rust]
+unsafe_code = "forbid"
