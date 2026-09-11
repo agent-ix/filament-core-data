@@ -137,7 +137,7 @@ producer/schema plan are accepted.
 | US-004 | US-004-AC-1 | TC-127 | ✅ Complete |
 | US-004 | US-004-AC-2 | TC-128 | ✅ Complete |
 | US-005 | Informal story outcome implemented by FR-019..FR-026 | TC-130..176 | ✅ Complete |
-| US-006 | US-006-EX-1..4 (illustrative) implemented by FR-027..FR-030 and provisional FR-106..FR-111 | TC-203, TC-210, TC-214, TC-220, TC-1373..TC-1387 | 🚧 #95 controls planned |
+| US-006 | US-006-EX-1..4 (illustrative) implemented by FR-027..FR-030 and provisional FR-106..FR-108, FR-110..FR-111 | TC-203, TC-210, TC-214, TC-220, TC-1373..TC-1378, TC-1382..TC-1387 | 🚧 #95 controls planned |
 | US-007 | US-007-EX-1..4 (illustrative) implemented by FR-031..FR-034 | TC-262, TC-271, TC-258, TC-277 | ✅ Complete |
 | US-008 | US-008-EX-1..5 (illustrative) implemented by FR-035..FR-039 | TC-282, TC-303, TC-305, TC-304, TC-318 | ✅ Complete |
 | US-009 | US-009-EX-1 (illustrative) implemented by FR-041 | TC-337, TC-343, TC-344 | ✅ Complete |
@@ -167,7 +167,7 @@ producer/schema plan are accepted.
 | US-015 | US-015-EX-3 (illustrative) implemented by FR-092 and FR-096 | TC-1212, TC-1264, TC-1268 | ✅ Complete |
 | US-015 | US-015-EX-4 (illustrative) implemented by FR-097, FR-098 and NFR-032 | TC-1289, TC-1314, TC-1340, TC-1341 | ✅ Complete |
 | US-015 | US-015-EX-5 (illustrative) implemented by FR-091 | TC-1202, TC-1265 | ✅ Complete |
-| US-015 | Provisional ecosystem configuration boundary implemented by FR-109 | TC-1376..TC-1381 | 🚧 #95 controls planned |
+| US-015 | Provisional ecosystem configuration boundary implemented by FR-109 | TC-1379..TC-1381 | 🚧 #95 controls planned |
 | US-015 | Issue #36 AC-5 (json-schema target), no test behind it | TC-1337 | 🚧 Blocked on issue #85 |
 
 ### Functional Requirement Coverage
