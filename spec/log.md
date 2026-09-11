@@ -7,6 +7,8 @@ description: "Chronological log of structural changes to the requirements bundle
 
 ## History
 
+* **2026-09-10** — Issue #95: selected a provisional baseline 1.2 source contract rather than deriving field presence from multiplicity. Added FR-106 through FR-111 and `docs/semantic-data-system/baseline-1-2.md`: presence is independently authored; relationships are first-class with endpoint semantics; finite populations preserve absent/null/value and availability separately from evaluator truth; ecosystem configuration is explicit, versioned, and content-digested; and the selected ecosystem inventory/compatibility contract preserves role/component/build/deployment bindings, mixed-version policy, dependency paths, and structural/behavioral/affected/stale/unknown conclusions. Existing v1.1 remains historical compatibility behavior and a lossful v1.2-to-v1.1 projection refuses. This is specification-only: implementation and promotion remain pending review of issue #95. The dependent IR v1.2 branch is preserved separately and may resume after this baseline is reviewed and its implementation plan names the producer and schema changes.
+
 * **2026-08-29** — Initialized the semantic data architecture requirements bundle for issue #8.
 * **2026-08-29** — Added the read-only Filament contract-census requirements for issue #10.
 * **2026-08-29** — Added the pinned, isolated TypeSpec feasibility and structural-schema decision requirements for issue #4.

@@ -99,6 +99,14 @@ blocked on issue #85. Nine rows are `Static` evidence produced by
 under it, TC-1316 fails on issue #89 and TC-1317 fails in the rehearsal's
 scratch-clone environment (both `🚧`).
 
+Issue #95 (the provisional baseline 1.2 producer contract) reserves
+TC-1373..1387 after checking every live branch for those unused ids. They are
+planned contract controls, not evidence that a producer, schema, reader, or
+evaluator exists. They cover FR-106..111's authored-presence, relationship,
+population/availability, configuration, locked-inventory, and mixed-version
+impact obligations. #93 remains parked until the affected contracts and its
+producer/schema plan are accepted.
+
 ## Test Matrix Rules
 
 1. Every acceptance criterion and named constraint has at least one test case.
@@ -114,7 +122,7 @@ scratch-clone environment (both `🚧`).
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001..US-010, US-012, US-013, US-015, FR-001..FR-053, FR-063..FR-080, FR-091..FR-099 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944, TC-1200..1349 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch |
+| StR-001 | US-001..US-010, US-012, US-013, US-015, FR-001..FR-053, FR-063..FR-080, FR-091..FR-111 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944, TC-1200..1350, TC-1373..1387 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch; TC-1373..1387 planned on #95 |
 
 ### User Story Coverage
 
@@ -129,7 +137,7 @@ scratch-clone environment (both `🚧`).
 | US-004 | US-004-AC-1 | TC-127 | ✅ Complete |
 | US-004 | US-004-AC-2 | TC-128 | ✅ Complete |
 | US-005 | Informal story outcome implemented by FR-019..FR-026 | TC-130..176 | ✅ Complete |
-| US-006 | US-006-EX-1..4 (illustrative) implemented by FR-027..FR-030 | TC-203, TC-210, TC-214, TC-220 | ✅ Complete |
+| US-006 | US-006-EX-1..4 (illustrative) implemented by FR-027..FR-030 and provisional FR-106..FR-108, FR-110..FR-111 | TC-203, TC-210, TC-214, TC-220, TC-1373..TC-1378, TC-1382..TC-1387 | 🚧 #95 controls planned |
 | US-007 | US-007-EX-1..4 (illustrative) implemented by FR-031..FR-034 | TC-262, TC-271, TC-258, TC-277 | ✅ Complete |
 | US-008 | US-008-EX-1..5 (illustrative) implemented by FR-035..FR-039 | TC-282, TC-303, TC-305, TC-304, TC-318 | ✅ Complete |
 | US-009 | US-009-EX-1 (illustrative) implemented by FR-041 | TC-337, TC-343, TC-344 | ✅ Complete |
@@ -159,6 +167,7 @@ scratch-clone environment (both `🚧`).
 | US-015 | US-015-EX-3 (illustrative) implemented by FR-092 and FR-096 | TC-1212, TC-1264, TC-1268 | ✅ Complete |
 | US-015 | US-015-EX-4 (illustrative) implemented by FR-097, FR-098 and NFR-032 | TC-1289, TC-1314, TC-1340, TC-1341 | ✅ Complete |
 | US-015 | US-015-EX-5 (illustrative) implemented by FR-091 | TC-1202, TC-1265 | ✅ Complete |
+| US-015 | Provisional ecosystem configuration boundary implemented by FR-109 | TC-1379..TC-1381 | 🚧 #95 controls planned |
 | US-015 | Issue #36 AC-5 (json-schema target), no test behind it | TC-1337 | 🚧 Blocked on issue #85 |
 
 ### Functional Requirement Coverage
@@ -264,6 +273,12 @@ scratch-clone environment (both `🚧`).
 | FR-097 | FR-097-AC-1..16, FR-097-CON-1..3 | TC-1273..TC-1284, TC-1336, TC-1339..TC-1342 | ✅ Complete |
 | FR-098 | FR-098-AC-1..12, FR-098-CON-1..3 | TC-1285..TC-1294, TC-1338, TC-1343, TC-1344 | ⚠️ TC-1290, TC-1291 blocked on issue #87; TC-1292 blocked on issue #88 and the rust-serde NAME_COLLISION defect |
 | FR-099 | FR-099-AC-1..6, FR-099-CON-1..3 | TC-1295..TC-1299, TC-1330, TC-1349 | ✅ Complete |
+| FR-106 | FR-106-AC-1..5, FR-106-CON-1..2 | TC-1373, TC-1374 | 🚧 planned — #95 producer/schema boundary |
+| FR-107 | FR-107-AC-1..3, FR-107-CON-1..2 | TC-1375 | 🚧 planned — #95 producer/schema boundary |
+| FR-108 | FR-108-AC-1..5, FR-108-CON-1..2 | TC-1376..TC-1378 | 🚧 planned — #95 producer/evaluator boundary |
+| FR-109 | FR-109-AC-1..5, FR-109-CON-1..2 | TC-1379..TC-1381 | 🚧 planned — #95 consumer boundary |
+| FR-110 | FR-110-AC-1..4, FR-110-CON-1..2 | TC-1382..TC-1384 | 🚧 planned — IN01 implementation boundary |
+| FR-111 | FR-111-AC-1..4, FR-111-CON-1..2 | TC-1385..TC-1387 | 🚧 planned — IN02 implementation boundary |
 
 ### Non-Functional Requirement Coverage
 
@@ -1512,6 +1527,21 @@ scratch-clone environment (both `🚧`).
 | TC-1348 | The provenance record's entry for the vendored spec-objects-business module carries the manifest sha256 that fixtures/modules/spec-objects-business/PROVENANCE.json records for revision d1840b8 | Unit | P1 | FR-095-AC-15 | ✅ passed |
 | TC-1349 | extraction-frontend-deny exits non-zero when a crate with a licence outside the deny.toml allow list is planted in a scratch manifest, extraction-frontend-audit (--deny yanked) exits non-zero when a yanked version is planted, and each exits zero on the committed one | Static | P1 | FR-099-AC-6 | ✅ static evidence (make extraction-frontend-evidence) |
 | TC-1350 | cargo check -p agent-ix-extraction-frontend --locked --offline on the rust-toolchain.toml channel (1.94.1) exits zero, so a --workspace build on the workspace channel still compiles the crate and make rust-build and rust-test are not broken by it (CR-036-1) | Integration | P1 | NFR-033-AC-11 | ✅ passed |
+| TC-1373 | A baseline field distinguishes required empty `0..*`, optional absent `1..*`, explicit null, invalid input, unavailable observation, and otherwise-equal default/ordered/unique variants; a v1.1 source lacking authored presence refuses baseline projection with named loss | Unit | P0 | FR-106-AC-1, FR-106-AC-2, FR-106-AC-3, FR-106-AC-5, FR-106-CON-1, FR-106-CON-2 | 🚧 planned — #95 producer/schema boundary |
+| TC-1374 | A v1.2 field whose authored presence matches the historical v1.1 derivation projects without a presence loss | Unit | P1 | FR-106-AC-4 | 🚧 planned — #95 producer/schema boundary |
+| TC-1375 | Relationship declarations preserve distinct endpoint multiplicities and stable endpoints, reject a field-only invented relationship, retain endpoint-role loss, and refuse a composite cycle | Integration | P0 | FR-107-AC-1, FR-107-AC-2, FR-107-AC-3, FR-107-CON-1, FR-107-CON-2 | 🚧 planned — #95 producer/schema boundary |
+| TC-1376 | A closed population distinguishes absent/null/value, rejects an undeclared relationship endpoint, and rejects an object outside its declared universe | Integration | P0 | FR-108-AC-1, FR-108-AC-2, FR-108-CON-1 | 🚧 planned — #95 producer/schema boundary |
+| TC-1377 | An unavailable observation outside exact support leaves a decisive result plus explicit availability incomplete, while removing required support returns unavailable/incomplete and retains its observation-record identity | Integration | P0 | FR-108-AC-3, FR-108-CON-2 | 🚧 planned — evaluator/producer boundary |
+| TC-1378 | Two records for one member remain ordered records, and event-position, fixed-sample, and timestamp windows preserve selected half-open coverage and reject family mismatch | Integration | P0 | FR-108-AC-4, FR-108-AC-5 | 🚧 planned — D/F/E correspondence |
+| TC-1379 | An unknown profile and a missing explicit configuration refuse before evaluation; changing only a resource limit changes retained configuration identity | Unit | P0 | FR-109-AC-1, FR-109-AC-2, FR-109-AC-3, FR-109-CON-1, FR-109-CON-2 | 🚧 planned — #95 consumer boundary |
+| TC-1380 | A package statically links an exact model/profile/configuration closure with no records; an assessment missing its selected window reports its own missing-input disposition | Integration | P0 | FR-109-AC-4 | 🚧 planned — A/D consumer boundary |
+| TC-1381 | A producer canonical-object digest and a native raw-byte digest are accepted only in their named domains, and substitution refuses | Unit | P0 | FR-109-AC-5 | 🚧 planned — A/D correspondence |
+| TC-1382 | A locked order/payment/fulfillment inventory resolves all imports and refuses missing or conflicting selected imports and any unlisted component or runtime binding | Integration | P0 | FR-110-AC-1, FR-110-CON-1 | 🚧 planned — IN01 implementation boundary |
+| TC-1383 | Two roles bind one permitted component and two components reside in one repository without collapsing role, component, or workflow-instance identity | Integration | P1 | FR-110-AC-2, FR-110-CON-2 | 🚧 planned — IN01 implementation boundary |
+| TC-1384 | Metadata-only analysis is not live evidence without authorized deployment binding, and related workflow populations/windows retain member and record identities separately | Integration | P0 | FR-110-AC-3, FR-110-AC-4 | 🚧 planned — IN01 implementation boundary |
+| TC-1385 | Additive schema compatibility, payload break, unchanged-schema behavioral regression, and absent evidence receive distinct conclusions | Unit | P0 | FR-111-AC-1 | 🚧 planned — IN02 implementation boundary |
+| TC-1386 | Every policy-required mixed-version combination is assessed; an omitted required combination yields unknown | Integration | P0 | FR-111-AC-2 | 🚧 planned — IN02 implementation boundary |
+| TC-1387 | Changed model/binding/assumption/tool/environment paths retain affected or stale conclusions without rewriting historical results; unresolved and circular support retains unknown and is neither behavioral regression nor proof of falsehood | Integration | P0 | FR-111-AC-3, FR-111-AC-4, FR-111-CON-1, FR-111-CON-2 | 🚧 planned — IN02 implementation boundary |
 
 ## Option Permutation Matrix
 
@@ -2433,13 +2463,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 48 | 45 | 0 | 3 | 100% mapped (48/48) |
 | Analysis | 47 | 29 | 0 | 18 | 100% mapped (47/47) |
 | Property | 128 | 71 | 0 | 57 | 100% mapped (128/128) |
-| Unit | 485 | 389 | 0 | 96 | 100% mapped (485/485) |
-| Integration | 120 | 77 | 0 | 43 | 100% mapped (120/120) |
+| Unit | 490 | 389 | 0 | 101 | 100% mapped (490/490) |
+| Integration | 130 | 77 | 0 | 53 | 100% mapped (130/130) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 67 | 34 | 0 | 33 | 100% mapped (67/67) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1205** | **902** | **0** | **303** | **100% mapped (1205/1205)** |
+| **Total** | **1220** | **902** | **0** | **318** | **100% mapped (1220/1220)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.
