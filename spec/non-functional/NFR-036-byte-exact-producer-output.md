@@ -8,14 +8,17 @@ relationships:
     type: "constrains"
   - target: "ix://agent-ix/filament-core-data/FR-117"
     type: "constrains"
+  - target: "ix://agent-ix/filament-core-data/FR-119"
+    type: "constrains"
 ---
 # NFR-036: Byte-exact producer output
 
 ## Statement
 
 The producer SHALL emit byte-identical Filament Canonical JSON 1 bytes and
-byte-identical digests for one admitted static bundle across repeated runs,
-across separate processes, across host architectures, and across member
+byte-identical digests for every document this interface digests — one admitted
+static bundle and every assessment document the producer emits — across repeated
+runs, across separate processes, across host architectures, and across member
 insertion orders.
 
 The producer SHALL derive no canonical byte from a locale, an environment
@@ -24,13 +27,20 @@ variable, a working directory, a wall clock, or a network read.
 ## Scope
 
 - Applies to: the canonical bytes and the digest values the producer emits for
-  one admitted static bundle — its model, components, endpoints, relationships,
-  configuration, static closure, and correspondence records.
-- Does not apply to: populations, snapshots, windows, workflow instances,
-  relationship instances, observations, progress records, and observation
-  closures, which are separate later assessment inputs and are not members of
-  the static bundle.
-- Operational context: an offline run over a fixed static bundle, with every
+  every document this interface digests, on both halves — one admitted static
+  bundle, meaning its model, components, endpoints, relationships,
+  configuration, static prerequisite closure, and correspondence records, and
+  every assessment document bound to it, meaning its population, snapshot,
+  observation-record, window, and availability documents and their
+  correspondence records.
+- Does not apply to: the semantic correctness of an admitted document, which is
+  the obligation of the requirement that emits it; the refusal of a hostile or
+  oversized assessment document at a configuration-declared bound, which is
+  [NFR-037](./NFR-037-bounded-assessment-documents.md); and any later input this
+  interface does not digest, such as a workflow instance, a progress record, or
+  an observation closure, none of which this producer emits.
+- Operational context: an offline run over a fixed static bundle and the fixed
+  assessment document set bound to it, with every
   selection — digest domain, digest normalization revision, revision namespace,
   canonical-form domain, and the `numericResourceLimit` of
   [FR-118](../functional/FR-118-validate-filament-canonical-json-1.md) —
@@ -42,8 +52,12 @@ variable, a working directory, a wall clock, or a network read.
 ## Rationale
 
 A digest is only a binding if the bytes under it are a function of the declared
-document alone. If two runs of the producer over one admitted static bundle
-disagree by a byte, then every digest a consumer validates becomes a claim about
+document alone. That holds for an assessment document exactly as it holds for a
+static one: an assessment document carries a canonical digest selection, and a
+stale binding is detected by comparing digest selections, so a host-varying
+assessment digest would make one architecture bind where another refuses as
+stale. If two runs of the producer over one digested document disagree by a
+byte, then every digest a consumer validates becomes a claim about
 one host on one afternoon, and a genuine digest mismatch cannot be told from a
 host difference — which is precisely the refusal
 [FR-112](../functional/FR-112-emit-versioned-digest-selections.md) makes
@@ -78,18 +92,18 @@ architecture of the named set; without that agreement two hosts could report
 
 | Metric | Target | Threshold | Method |
 |---|---|---|---|
-| Digested documents of one admitted static bundle whose canonical byte string agrees between two runs in one process and between two runs in two separate processes, as a percentage of that bundle's digested documents | 100% | 100% | Repeat-run byte comparison of every digested document against that bundle's committed golden byte strings (`golden-approval-testing`) |
-| Digested documents whose digest is unchanged when the bundle's object keys and set-array members are supplied in a permuted insertion order, as a percentage of that bundle's digested documents over the declared permutation set | 100% | 100% | Paired-run digest comparison, one pair per permutation in the declared set, differing only in insertion order (`metamorphic-testing`) |
-| Digested documents whose canonical byte string agrees across the named architecture set, and admit-versus-refuse decisions that agree across it under one configuration document's declared `numericResourceLimit`, as a percentage of that bundle's digested documents and of its refused numeric values | 100% | 100% | Per-architecture byte and refusal comparison against one committed golden, run on `x86_64-unknown-linux-gnu` and on `aarch64-unknown-linux-gnu` (`golden-approval-testing`) |
-| Digested documents whose canonical byte string agrees across a changed locale, environment, and working directory, as a percentage of that bundle's digested documents | 100% | 100% | Varied-environment run compared against the same committed golden (`golden-approval-testing`) |
+| Digested documents of one admitted static bundle and of the assessment document set bound to it whose canonical byte string agrees between two runs in one process and between two runs in two separate processes, as a percentage of those digested documents | 100% | 100% | Repeat-run byte comparison of every digested document of both halves against its committed golden byte string (`golden-approval-testing`) |
+| Digested documents of both halves whose digest is unchanged when their object keys and set-array members are supplied in a permuted insertion order, as a percentage of those digested documents over the declared permutation set | 100% | 100% | Paired-run digest comparison, one pair per permutation in the declared set, differing only in insertion order (`metamorphic-testing`) |
+| Digested documents of both halves whose canonical byte string agrees across the named architecture set, and admit-versus-refuse decisions that agree across it under one configuration document's declared `numericResourceLimit`, as a percentage of those digested documents and of the refused numeric values | 100% | 100% | Per-architecture byte and refusal comparison against one committed golden, run on `x86_64-unknown-linux-gnu` and on `aarch64-unknown-linux-gnu` (`golden-approval-testing`) |
+| Digested documents of both halves whose canonical byte string agrees across a changed locale, environment, and working directory, as a percentage of those digested documents | 100% | 100% | Varied-environment run compared against the same committed golden (`golden-approval-testing`) |
 | Binary floating-point coercion sites reached by a numeric value between parsing and serialization, counted over the declared numeric-path population — the producer crate's number parse seam, its coefficient-and-exponent representation, its canonical serializer, and the pinned JSON parser entry point each of those calls (unit: coercion sites) | 0 | 0 | Static analysis of that declared population, with a planted float conversion on a scratch copy as the control that the scan fails (`sast`) |
-| Semantic-order arrays of one admitted static bundle whose emitted member order differs from the producer-declared order (unit: arrays) | 0 | 0 | Per-array comparison of the emitted order against the declared order, with a permuted-array paired run whose digest must differ (`metamorphic-testing`) |
-| Ambient inputs read while canonicalizing one admitted static bundle — a locale, an environment variable, a working directory, a clock, or a network read — counted with no exemption, since the Statement excludes them outright (unit: reads) | 0 | 0 | Static analysis of the canonicalization call graph, plus an instrumented offline run in an unprivileged network namespace recording every such read (`sast` plus `runtime-monitoring`) |
+| Semantic-order arrays of one admitted static bundle and of the assessment document set bound to it whose emitted member order differs from the producer-declared order (unit: arrays) | 0 | 0 | Per-array comparison of the emitted order against the declared order, with a permuted-array paired run whose digest must differ (`metamorphic-testing`) |
+| Ambient inputs read while canonicalizing one admitted static bundle or one assessment document — a locale, an environment variable, a working directory, a clock, or a network read — counted with no exemption, since the Statement excludes them outright (unit: reads) | 0 | 0 | Static analysis of the canonicalization call graph, plus an instrumented offline run in an unprivileged network namespace recording every such read (`sast` plus `runtime-monitoring`) |
 
 ## Verification
 
-Canonicalize and digest one admitted static bundle twice within one process and
-twice in two separate processes, and compare every run's bytes and digests
+Canonicalize and digest one admitted static bundle and the assessment document
+set bound to it twice within one process and twice in two separate processes, and compare every run's bytes and digests
 against each other and against the committed golden bytes; repeat the run with
 the object keys and the set-array members supplied in a permuted insertion
 order and confirm the digests are unchanged, and with one semantic-order array
@@ -116,8 +130,9 @@ the gate depending on it fails reporting that it did not run.
 
 ## Dependencies
 
-- **Upstream**: [FR-118](../functional/FR-118-validate-filament-canonical-json-1.md) defines the canonical form, the digest input, and the declared `numericResourceLimit` these measurements hold byte-exact; [FR-117](../functional/FR-117-admit-a-static-producer-bundle.md) admits the static producer bundle whose bytes and digests are measured
-- **Downstream**: none — no artifact in this repository depends on this requirement; its own declared edges `constrains` FR-118 and FR-117
+- **Upstream**: [FR-118](../functional/FR-118-validate-filament-canonical-json-1.md) defines the canonical form, the digest input, and the declared `numericResourceLimit` these measurements hold byte-exact; [FR-117](../functional/FR-117-admit-a-static-producer-bundle.md) admits the static producer bundle whose bytes and digests are measured; [FR-119](../functional/FR-119-emit-assessment-document-selections.md) emits the assessment documents whose canonical digest selections these measurements hold byte-exact on the assessment half
+- **Sibling constraint**: [NFR-037](./NFR-037-bounded-assessment-documents.md) holds the admit-versus-refuse decision for an assessment document identical at a configuration-declared bound; this requirement holds the canonical bytes and digests of every document this interface digests byte-exact, on both halves, so the two together are why byte agreement is measured over one document set rather than two
+- **Downstream**: none — no artifact in this repository depends on this requirement; its own declared edges `constrains` FR-118, FR-117, and FR-119
 - **Assumed external contract, not owned here**: the consumer contract at `ix://agent-ix/quire-spec-language/src/protocol_artifact/wire.rs`, pinned at revision `72507f856457ba0922719bd5d9f5cadcce4058cd`, whose `SelectedDigest` and `Revision` members carry the digests these measurements hold byte-exact; a consumer recomputes a digest by canonicalizing the received document under FR-118, so this requirement's byte agreement is what makes that recomputation reproducible
 - **Apparatus owner**: Plan-017 owns the committed golden, the second architecture of the named set, the planted-token control, the instrumented ambient-read run, and the offline namespace
 - [Baseline 1.2 contract](../../docs/semantic-data-system/baseline-1-2.md) is the authoritative producer contract for Filament Canonical JSON 1 and for the producer/native correspondence these bytes carry

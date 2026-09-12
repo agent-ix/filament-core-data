@@ -43,7 +43,9 @@ selected members the configuration document declares explicitly.
   revision-namespace vocabulary of this interface.
 - The producer SHALL emit the namespace `filament-core-data/producer-object-revision-1`
   for every producer model, profile, configuration, component, endpoint, and
-  relationship object revision.
+  relationship object revision, and for every assessment document revision the
+  producer emits: a population document, a snapshot document, a window document,
+  an observation-record document, and an availability document.
 - The producer SHALL emit the namespace `quire-native/definition-revision-1`
   for every native artifact and native definition revision.
 - The producer SHALL emit only the revision namespaces that the configuration

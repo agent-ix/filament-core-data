@@ -5,6 +5,8 @@ type: FR
 relationships:
   - target: "ix://agent-ix/filament-core-data/US-016"
     type: "implements"
+  - target: "ix://agent-ix/filament-core-data/FR-109"
+    type: "depends_on"
 ---
 # FR-118: Validate Filament Canonical JSON 1
 

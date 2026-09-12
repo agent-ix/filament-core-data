@@ -26,17 +26,23 @@ architecture of the set
 
 ## Scope
 
-- Applies to: the parse, admission, and membership-validation path for every
-  assessment document the producer reads — the population document, its finite
-  `members` set, its field-member states, and its relationship-instance endpoint
-  identities — and the blocking refusal that path emits when a declared bound is
-  exceeded.
+- Applies to: the parse, admission, and validation path for every document this
+  interface reads, in both halves. On the assessment side that is the population
+  document, its finite `members` set, its field-member states, and its
+  relationship-instance endpoint identities. On the static side that is the
+  externally authored declaration source the component and endpoint loci cite and
+  the correspondence input, whose byte, nesting-depth, and member-count bounds are
+  the same declared bounds. The blocking refusal that path emits when a declared
+  bound is exceeded is in scope on both sides.
 - Does not apply to: the semantic correctness of an admitted assessment
   document, which is the obligation of
   [FR-121](../functional/FR-121-emit-finite-population-membership-records.md)
   and the requirements it cites; the canonical byte and digest agreement of an
-  admitted document, which is NFR-036; and the static bundle's own admission,
-  which reads no assessment input at all
+  admitted document, which
+  [NFR-036](./NFR-036-byte-exact-producer-output.md) holds for every document
+  this interface digests, assessment documents included, and which this
+  requirement therefore cites rather than states; and the static bundle's own
+  admission, which reads no assessment input at all
   ([FR-117](../functional/FR-117-admit-a-static-producer-bundle.md)).
 - Operational context: an offline run over a fixed assessment document set with
   every bound — document byte bound, nesting-depth bound, member-count bound —
@@ -151,7 +157,7 @@ depending on it fails reporting that it did not run.
 
 - **Upstream**: [FR-119](../functional/FR-119-emit-assessment-document-selections.md) defines the assessment document selections whose reading these bounds hold; [FR-121](../functional/FR-121-emit-finite-population-membership-records.md) defines the finite `members` set, field-member states, and relationship-instance endpoint identities the member-count and nesting-depth bounds are counted over; [FR-109](../functional/FR-109-declare-ecosystem-configuration-contracts.md) declares the finite resource limits these bounds are read from and makes a changed limit a distinct configuration identity
 - **Downstream**: none — no artifact in this repository depends on this requirement; its own declared edges `constrains` FR-119 and FR-121
-- **Sibling constraint**: [NFR-036](./NFR-036-byte-exact-producer-output.md) names the architecture set over which the refusal-decision agreement above is measured and holds the admitted document's bytes byte-exact; this requirement holds the admit-versus-refuse decision identical, and the two together are why byte agreement is measured over one document set rather than two
+- **Sibling constraint**: [NFR-036](./NFR-036-byte-exact-producer-output.md) names the architecture set over which the refusal-decision agreement above is measured and owns the byte-exactness of every document this interface digests, including every assessment document these bounds govern; this requirement carries the bounded-input duty alone, holding the admit-versus-refuse decision identical, and the two together are why byte agreement is measured over one document set rather than two
 - **Apparatus owner**: Plan-017 owns the bounded-input probe set, the fuzz corpus and runner, the memory and time instrumentation, the committed refusal-decision golden, the second architecture of the named set, and the planted host-derived-bound control; a gate whose apparatus is missing fails reporting that it did not run
 - **Assumed external contract, not owned here**: the consumer contract at `ix://agent-ix/quire-spec-language`, file `src/protocol_artifact/wire.rs`, pinned at revision `72507f856457ba0922719bd5d9f5cadcce4058cd`, whose records the assessment documents these bounds govern are read into; this increment maps onto that contract rather than owning it, and the consumer's own input bounds are that repository's obligation
 - [Baseline 1.2 contract](../../docs/semantic-data-system/baseline-1-2.md) is the authoritative producer contract for the population, snapshot, and window documents these bounds govern and for the configuration document's declared resource limits
