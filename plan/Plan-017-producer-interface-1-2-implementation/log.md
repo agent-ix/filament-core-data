@@ -117,3 +117,22 @@ type: log
   traced executable controls in `tests/declarations.rs`; synthesizing a locus for
   an unlocated declaration in a scratch copy failed TC-1416, and reconstructing a
   component identity from its locus path failed TC-1413.
+* 2026-09-11 - **Task-146 complete.** `RelationshipDeclaration` moved to
+  `src/relationship.rs` and completed: `relationship_revision`, the canonical
+  `digest`, the declaring `RelationshipOwnership { model_identity,
+  profile_identity, configuration_identity }` triple and `inventory_membership`
+  are now members, and each `source` and `target` endpoint record joins a
+  **declared** FR-114 endpoint through its `endpoint_identity` against the
+  bundle's declared endpoint records, with the refusal naming both the
+  relationship and the vocabulary it resolved against (D7, FND-1726, E8/FND-1809).
+  The two endpoint records stay independent members under one type identity, so a
+  self-relationship emits two records retaining their own identities, roles and
+  multiplicities. The requested endpoint projection is fallible: it returns a
+  named `EndpointProjectionLoss` carrying the relationship identity and both
+  authored roles and multiplicities rather than guessing a collapsed value. The
+  new members are `Option`s because absence is a representable state the producer
+  refuses naming the absent member — the `resourceLimits.numericResourceLimit`
+  precedent — which is also what keeps the Plan-016 fixture loading unchanged.
+  TC-1417..TC-1422 are traced executable controls in `tests/relationships.rs`;
+  joining by coinciding type identity in a scratch copy failed TC-1421 and
+  reconstructing an absent role instead of refusing failed TC-1420.

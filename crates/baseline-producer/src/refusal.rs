@@ -111,3 +111,16 @@ pub const INVENTORY_MEMBER_UNLISTED: &str = "INVENTORY_MEMBER_UNLISTED";
 /// a completeness its inventory declaration contradicts refuses under this code
 /// in either direction (FR-114-CON-6).
 pub const INVENTORY_INCOMPLETE_UNKNOWN: &str = "INVENTORY_INCOMPLETE_UNKNOWN";
+
+/// A relationship record declares no revision, digest, name, or inventory membership.
+pub const RELATIONSHIP_MEMBER_ABSENT: &str = "RELATIONSHIP_MEMBER_ABSENT";
+/// A relationship record names no owning model, profile and configuration triple.
+pub const RELATIONSHIP_OWNERSHIP_ABSENT: &str = "RELATIONSHIP_OWNERSHIP_ABSENT";
+/// A relationship endpoint's `endpointIdentity` names no declared endpoint.
+///
+/// The refusal names the relationship and the vocabulary it resolved against —
+/// the bundle's declared endpoint records (E8, FND-1809) — because the join is by
+/// identity and never by a coinciding type identity, role, or display name.
+pub const RELATIONSHIP_ENDPOINT_UNKNOWN: &str = "RELATIONSHIP_ENDPOINT_UNKNOWN";
+/// A requested endpoint projection would collapse two roles or two multiplicities.
+pub const RELATIONSHIP_ENDPOINT_PROJECTION_LOSS: &str = "RELATIONSHIP_ENDPOINT_PROJECTION_LOSS";

@@ -22,6 +22,7 @@ mod endpoint;
 mod inventory;
 mod locus;
 pub mod refusal;
+mod relationship;
 mod revision;
 
 pub use canonical::{
@@ -43,6 +44,10 @@ pub use locus::{
     WireReference,
 };
 pub use refusal::Refusal;
+pub use relationship::{
+    EndpointProjectionLoss, RelationshipDeclaration, RelationshipEndpoint, RelationshipOwnership,
+    RelationshipSemantics, RequestedEndpointProjection,
+};
 pub use revision::{
     NativeSourceLabel, Revision, ADMISSIBLE_REVISION_NAMESPACES, NATIVE_REVISION_NAMESPACE,
     PRODUCER_REVISION_NAMESPACE,
@@ -203,52 +208,6 @@ pub struct ModelContract {
     pub profile_identities: BTreeSet<String>,
     /// Exported types by stable identity.
     pub types: BTreeMap<String, ModelType>,
-}
-
-/// One independently identified relationship endpoint.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct RelationshipEndpoint {
-    /// Stable endpoint identity.
-    pub endpoint_identity: String,
-    /// Exported type identity.
-    pub type_identity: String,
-    /// Authored endpoint role.
-    pub role: String,
-    /// Endpoint multiplicity.
-    pub multiplicity: Multiplicity,
-}
-
-/// Explicit relationship category, direction, containment, lifecycle, and ownership.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct RelationshipSemantics {
-    /// Producer-defined relationship category.
-    pub category: String,
-    /// Producer-defined direction.
-    pub direction: String,
-    /// Whether the relationship forms the composite graph.
-    pub composite: bool,
-    /// Declared lifecycle semantics.
-    pub lifecycle: String,
-    /// Declared ownership semantics.
-    pub ownership: String,
-}
-
-/// A first-class relationship declaration; it is never inferred from a field.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct RelationshipDeclaration {
-    /// Producer-selected stable relationship identity.
-    pub relationship_identity: String,
-    /// Authored relationship name.
-    pub relationship_name: String,
-    /// Independently identified source endpoint.
-    pub source: RelationshipEndpoint,
-    /// Independently identified target endpoint.
-    pub target: RelationshipEndpoint,
-    /// Explicit semantics.
-    pub semantics: RelationshipSemantics,
 }
 
 /// A member's field state; absence, null, and a concrete value never collapse.
@@ -785,9 +744,13 @@ impl ProducerBundle {
                 ));
             }
             for endpoint in [&relationship.source, &relationship.target] {
-                endpoint
-                    .multiplicity
-                    .validate(&endpoint.endpoint_identity)?;
+                let Some(multiplicity) = endpoint.multiplicity.as_ref() else {
+                    return Err(Refusal::new(
+                        refusal::ENDPOINT_MULTIPLICITY_ABSENT,
+                        endpoint.endpoint_identity.clone(),
+                    ));
+                };
+                multiplicity.validate(&endpoint.endpoint_identity)?;
                 if !self.model.types.contains_key(&endpoint.type_identity) {
                     return Err(Refusal::new(
                         "UNKNOWN_RELATIONSHIP_ENDPOINT_TYPE",
