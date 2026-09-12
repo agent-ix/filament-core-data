@@ -3,11 +3,12 @@
 
 //! Traced Task-140 controls for the Baseline 1.2.0 producer boundary.
 
+use agent_ix_baseline_producer::refusal;
 use agent_ix_baseline_producer::{
     canonical_digest, canonical_json, configuration_digest, document_digest, ArrayDeclarations,
-    AvailabilityDisposition, CanonicalPolicy, DecisiveDisposition, DefaultKind, DigestTriple,
+    AvailabilityDisposition, CanonicalPolicy, DecisiveDisposition, DefaultKind, DigestSelection,
     FieldMemberState, LegacyV1Field, NativeArtifactReference, NumericResourceLimit, ProducerBundle,
-    ProducerNativeCorrespondence, ProducerObjectReference, V1Projection, WindowCoverage,
+    ProducerNativeCorrespondence, ProducerObjectReference, Revision, V1Projection, WindowCoverage,
     CANONICAL_JSON_DOMAIN, NATIVE_BYTES_DOMAIN,
 };
 use serde_json::json;
@@ -439,22 +440,20 @@ fn tc_1381_keeps_producer_and_native_digest_domains_distinct() {
 
     let producer = canonical_digest(&json!({"n": 9007199254740993_u64}), &policy())
         .expect("exact producer digest");
-    let native = DigestTriple {
-        algorithm: "sha256".into(),
-        domain: NATIVE_BYTES_DOMAIN.into(),
-        value: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".into(),
-    };
+    let native = DigestSelection::native_bytes(
+        "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    );
     let correspondence = ProducerNativeCorrespondence {
         binding_relation_identity: "ix://agent-ix/commerce/binding/model-to-profile".into(),
         producer: ProducerObjectReference {
             object_kind: "model".into(),
             identity: "ix://agent-ix/commerce/model/order-1-2".into(),
-            revision: "1.2.0".into(),
+            revision: Revision::producer("1.2.0"),
             digest: producer.clone(),
         },
         native: NativeArtifactReference {
             identity: "ix://agent-ix/quire/profile/order-assessment-1-2".into(),
-            revision: "1.2.0".into(),
+            revision: Revision::native("1.2.0"),
             raw_byte_digest: native.clone(),
         },
         native_definition_closure: vec![],
@@ -470,7 +469,7 @@ fn tc_1381_keeps_producer_and_native_digest_domains_distinct() {
             .validate("ix://agent-ix/commerce/config/evaluation-default")
             .expect_err("domain substitution refuses")
             .code,
-        "DIGEST_DOMAIN_MISMATCH"
+        refusal::DIGEST_DOMAIN_SUBSTITUTED
     );
 }
 

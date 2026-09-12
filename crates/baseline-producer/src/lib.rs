@@ -16,90 +16,28 @@ use serde_json::Value;
 
 mod canonical;
 mod decimal;
+mod digest;
+pub mod refusal;
+mod revision;
 
 pub use canonical::{
     canonical_digest, canonical_json, canonical_json_from_bytes, configuration_digest,
     document_digest, ArrayDeclarations, ArrayDisposition, CanonicalPolicy, NumericResourceLimit,
 };
 pub use decimal::ProducerDecimal;
+pub use digest::{
+    DigestDomainSelection, DigestSelection, RawByteDigest, ADMISSIBLE_DIGEST_SELECTIONS,
+    CANONICAL_JSON_DOMAIN, DIGEST_ALGORITHM, DIGEST_DOMAIN_VERSION, NATIVE_BYTES_DOMAIN,
+};
+pub use refusal::Refusal;
+pub use revision::{
+    NativeSourceLabel, Revision, ADMISSIBLE_REVISION_NAMESPACES, NATIVE_REVISION_NAMESPACE,
+    PRODUCER_REVISION_NAMESPACE,
+};
 
 /// The only baseline producer interface version accepted by this crate.
 pub const BASELINE_VERSION: &str = "1.2.0";
-/// The canonical producer-object digest domain.
-pub const CANONICAL_JSON_DOMAIN: &str = "filament-canonical-json-1";
-/// The raw-byte digest domain owned by a native consumer artifact.
-pub const NATIVE_BYTES_DOMAIN: &str = "quire-native-bytes-1";
 const MAX_PRODUCER_DOCUMENT_BYTES: usize = 1_048_576;
-
-/// A validation refusal with an identity-preserving, stable code.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Refusal {
-    /// Stable refusal code.
-    pub code: &'static str,
-    /// Human-readable, deterministic detail.
-    pub message: String,
-}
-
-impl Refusal {
-    fn new(code: &'static str, message: impl Into<String>) -> Self {
-        Self {
-            code,
-            message: message.into(),
-        }
-    }
-}
-
-impl std::fmt::Display for Refusal {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(formatter, "{}: {}", self.code, self.message)
-    }
-}
-
-impl std::error::Error for Refusal {}
-
-/// A content digest and the domain in which it is meaningful.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct DigestTriple {
-    /// Digest algorithm; Baseline 1.2.0 fixes this to SHA-256.
-    pub algorithm: String,
-    /// The named byte domain.
-    pub domain: String,
-    /// `sha256:` followed by lowercase hexadecimal.
-    pub value: String,
-}
-
-impl DigestTriple {
-    /// Validates the exact named domain and the required SHA-256 spelling.
-    pub fn validate_domain(&self, domain: &str) -> Result<(), Refusal> {
-        if self.algorithm != "sha256" || self.domain != domain {
-            return Err(Refusal::new(
-                "DIGEST_DOMAIN_MISMATCH",
-                format!(
-                    "expected sha256/{domain}, got {}/{}",
-                    self.algorithm, self.domain
-                ),
-            ));
-        }
-        let Some(hex) = self.value.strip_prefix("sha256:") else {
-            return Err(Refusal::new(
-                "INVALID_DIGEST",
-                "digest lacks sha256: prefix",
-            ));
-        };
-        if hex.len() != 64
-            || !hex
-                .bytes()
-                .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
-        {
-            return Err(Refusal::new(
-                "INVALID_DIGEST",
-                "digest is not lowercase SHA-256 hexadecimal",
-            ));
-        }
-        Ok(())
-    }
-}
 
 /// A field's explicitly authored presence axis.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -247,7 +185,7 @@ pub struct ModelContract {
     /// Producer-selected model identity.
     pub model_identity: String,
     /// Canonical digest of this model document with this member omitted.
-    pub digest: DigestTriple,
+    pub digest: DigestSelection,
     /// The profiles this model permits.
     pub profile_identities: BTreeSet<String>,
     /// Exported types by stable identity.
@@ -354,7 +292,7 @@ pub struct PopulationDocument {
     /// Stable population identity.
     pub population_identity: String,
     /// Canonical digest of this population document with this member omitted.
-    pub digest: DigestTriple,
+    pub digest: DigestSelection,
     /// Exact model identity this population binds.
     pub model_identity: String,
     /// Selected semantic profile identity.
@@ -493,7 +431,7 @@ pub struct WindowDocument {
     /// Stable window identity.
     pub window_identity: String,
     /// Canonical digest of this window document with this member omitted.
-    pub digest: DigestTriple,
+    pub digest: DigestSelection,
     /// The one population this window selects from.
     pub population_identity: String,
     /// Exactly one clock-family coverage selection.
@@ -511,7 +449,7 @@ pub struct ConfigurationDocument {
     /// Must be exactly `1.2.0`.
     pub baseline_version: String,
     /// Canonical digest of this document with this member omitted.
-    pub digest: DigestTriple,
+    pub digest: DigestSelection,
     /// Model-authority identity.
     pub model_authority: String,
     /// Explicit profiles.
@@ -524,6 +462,12 @@ pub struct ConfigurationDocument {
     pub loss_policy: String,
     /// Finite resource limits, declared and never taken from the host.
     pub resource_limits: ResourceLimits,
+    /// The digest domain/version pairs this configuration selects (FR-112-CON-5).
+    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    pub digest_selections: BTreeSet<DigestDomainSelection>,
+    /// The revision namespaces this configuration declares (FR-113-CON-5).
+    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    pub revision_namespaces: BTreeSet<String>,
     /// Trusted references by stable identity.
     pub trusted_references: BTreeSet<String>,
 }
@@ -553,23 +497,23 @@ pub struct Closure {
     /// Static model selection.
     pub model_identity: String,
     /// Canonical digest of the selected model document.
-    pub model_digest: DigestTriple,
+    pub model_digest: DigestSelection,
     /// Static configuration selection.
     pub configuration_identity: String,
     /// Canonical digest of the selected configuration document.
-    pub configuration_digest: DigestTriple,
+    pub configuration_digest: DigestSelection,
     /// Assessment population when selected.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub population_identity: Option<String>,
     /// Canonical digest of the selected population document when one is selected.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub population_digest: Option<DigestTriple>,
+    pub population_digest: Option<DigestSelection>,
     /// Assessment window when selected.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub window_identity: Option<String>,
     /// Canonical digest of the selected window document when one is selected.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub window_digest: Option<DigestTriple>,
+    pub window_digest: Option<DigestSelection>,
 }
 
 /// The producer-side identity and digest of one immutable object.
@@ -580,10 +524,10 @@ pub struct ProducerObjectReference {
     pub object_kind: String,
     /// Exact producer object identity.
     pub identity: String,
-    /// Exact immutable producer revision.
-    pub revision: String,
+    /// Exact immutable producer revision, namespaced.
+    pub revision: Revision,
     /// Canonical producer-object digest.
-    pub digest: DigestTriple,
+    pub digest: DigestSelection,
 }
 
 /// The native artifact selected by a correspondence record.
@@ -592,10 +536,10 @@ pub struct ProducerObjectReference {
 pub struct NativeArtifactReference {
     /// Native artifact or definition identity.
     pub identity: String,
-    /// Exact immutable native revision.
-    pub revision: String,
+    /// Exact immutable native revision, namespaced.
+    pub revision: Revision,
     /// Digest of raw native bytes, never a producer canonical digest.
-    pub raw_byte_digest: DigestTriple,
+    pub raw_byte_digest: DigestSelection,
 }
 
 /// An immutable producer/native relation; matching text is not equivalence.
@@ -625,14 +569,14 @@ impl ProducerNativeCorrespondence {
         }
         self.producer
             .digest
-            .validate_domain(CANONICAL_JSON_DOMAIN)?;
+            .validate_domain(CANONICAL_JSON_DOMAIN, DIGEST_DOMAIN_VERSION)?;
         self.native
             .raw_byte_digest
-            .validate_domain(NATIVE_BYTES_DOMAIN)?;
+            .validate_domain(NATIVE_BYTES_DOMAIN, DIGEST_DOMAIN_VERSION)?;
         for definition in &self.native_definition_closure {
             definition
                 .raw_byte_digest
-                .validate_domain(NATIVE_BYTES_DOMAIN)?;
+                .validate_domain(NATIVE_BYTES_DOMAIN, DIGEST_DOMAIN_VERSION)?;
         }
         Ok(())
     }

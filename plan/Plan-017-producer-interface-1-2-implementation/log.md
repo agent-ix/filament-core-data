@@ -80,3 +80,21 @@ type: log
   at the pinned tip `bb1bc4d` and that commit predates `crates/baseline-producer`.
   `tc_1294` in the same crate's `tests/fixtures.rs` was already red before this
   task's first edit. TC status rows stay `🚧`; moving them is Task-151's job.
+* 2026-09-11 - **Task-144 complete.** `DigestTriple` is gone: every digest the
+  producer authors is `DigestSelection { algorithm, domain, version, value }` with
+  `version` a separately authored member no domain spelling supplies
+  (FR-112-CON-3), and every bare revision string is gone: every revision is
+  `Revision { namespace, value }` (FR-113-CON-2). Both map member for member onto
+  the pinned consumer `SelectedDigest` and `Revision`. The closed vocabularies are
+  fixed in code, the configuration document declares `digestSelections` and
+  `revisionNamespaces`, and outside-the-vocabulary and inside-but-undeclared stay
+  two separate refusals (FND-1723). The two consumer-owned carve-outs are typed
+  rather than excepted: `RawByteDigest` is one raw-byte digest string and
+  `NativeSourceLabel` an editable native authority label, both admitted and
+  neither refused as a malformed selection (FR-112-CON-4, FR-113-CON-4). TC-1400
+  ..TC-1410 are traced executable controls in `tests/digest.rs` and
+  `tests/revision.rs`; deriving `version` from the domain spelling in a scratch
+  copy failed TC-1400 and defaulting an absent namespace failed TC-1408 and
+  TC-1404. Plan-016's TC-1373..TC-1381 pass over the new shapes and
+  `fixtures/baseline-1-2/relationship-population-a.json` still loads, with its
+  configuration digest recomputed over the two new declared-selection members.

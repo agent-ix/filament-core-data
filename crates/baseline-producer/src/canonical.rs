@@ -28,7 +28,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest as _, Sha256};
 
-use crate::{ConfigurationDocument, DigestTriple, Refusal, CANONICAL_JSON_DOMAIN};
+use crate::{ConfigurationDocument, DigestSelection, Refusal};
 
 /// The structural nesting bound of the canonicalizer.
 ///
@@ -165,10 +165,12 @@ impl ArrayDeclarations {
         for member in [
             "adapterIdentities",
             "componentIdentities",
+            "digestSelections",
             "endpointIdentities",
             "mappingTargets",
             "profileIdentities",
             "relationshipIdentities",
+            "revisionNamespaces",
             "roleIdentities",
             "trustedReferences",
         ] {
@@ -289,7 +291,7 @@ impl CanonicalPolicy {
 /// Returns a configuration's canonical semantic-input digest, excluding its own digest member.
 pub fn configuration_digest(
     configuration: &ConfigurationDocument,
-) -> Result<DigestTriple, Refusal> {
+) -> Result<DigestSelection, Refusal> {
     let policy = CanonicalPolicy::from_configuration(configuration)?;
     document_digest(configuration, &policy)
 }
@@ -301,7 +303,7 @@ pub fn configuration_digest(
 pub fn document_digest<T: Serialize>(
     document: &T,
     policy: &CanonicalPolicy,
-) -> Result<DigestTriple, Refusal> {
+) -> Result<DigestSelection, Refusal> {
     let mut value = serde_json::to_value(document)
         .map_err(|error| Refusal::new("SERIALIZATION_FAILURE", error.to_string()))?;
     let Some(object) = value.as_object_mut() else {
@@ -315,13 +317,15 @@ pub fn document_digest<T: Serialize>(
 }
 
 /// Returns the canonical producer-object digest for a JSON value.
-pub fn canonical_digest(value: &Value, policy: &CanonicalPolicy) -> Result<DigestTriple, Refusal> {
+pub fn canonical_digest(
+    value: &Value,
+    policy: &CanonicalPolicy,
+) -> Result<DigestSelection, Refusal> {
     let bytes = canonical_json(value, policy)?.into_bytes();
-    Ok(DigestTriple {
-        algorithm: "sha256".into(),
-        domain: CANONICAL_JSON_DOMAIN.into(),
-        value: format!("sha256:{:x}", Sha256::digest(bytes)),
-    })
+    Ok(DigestSelection::canonical(format!(
+        "sha256:{:x}",
+        Sha256::digest(bytes)
+    )))
 }
 
 /// Emits Filament Canonical JSON 1 for a JSON value.

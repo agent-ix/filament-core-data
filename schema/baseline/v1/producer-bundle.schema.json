@@ -43,11 +43,26 @@
 		"digest": {
 			"type": "object",
 			"additionalProperties": false,
-			"required": ["algorithm", "domain", "value"],
+			"required": ["algorithm", "domain", "version", "value"],
 			"properties": {
 				"algorithm": { "const": "sha256" },
-				"domain": { "type": "string", "minLength": 1 },
+				"domain": { "enum": ["filament-canonical-json-1", "quire-native-bytes-1"] },
+				"version": { "const": "1" },
 				"value": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+			}
+		},
+		"revision": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["namespace", "value"],
+			"properties": {
+				"namespace": {
+					"enum": [
+						"filament-core-data/producer-object-revision-1",
+						"quire-native/definition-revision-1"
+					]
+				},
+				"value": { "type": "string", "minLength": 1 }
 			}
 		},
 		"multiplicity": {
@@ -380,6 +395,29 @@
 					"uniqueItems": true
 				},
 				"lossPolicy": { "$ref": "#/$defs/identity" },
+				"digestSelections": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"additionalProperties": false,
+						"required": ["domain", "version"],
+						"properties": {
+							"domain": { "enum": ["filament-canonical-json-1", "quire-native-bytes-1"] },
+							"version": { "const": "1" }
+						}
+					},
+					"uniqueItems": true
+				},
+				"revisionNamespaces": {
+					"type": "array",
+					"items": {
+						"enum": [
+							"filament-core-data/producer-object-revision-1",
+							"quire-native/definition-revision-1"
+						]
+					},
+					"uniqueItems": true
+				},
 				"resourceLimits": {
 					"type": "object",
 					"additionalProperties": false,
@@ -436,7 +474,7 @@
 			"required": ["identity", "revision", "rawByteDigest"],
 			"properties": {
 				"identity": { "$ref": "#/$defs/identity" },
-				"revision": { "type": "string", "minLength": 1 },
+				"revision": { "$ref": "#/$defs/revision" },
 				"rawByteDigest": { "$ref": "#/$defs/digest" }
 			}
 		},
@@ -459,7 +497,7 @@
 					"properties": {
 						"objectKind": { "type": "string", "minLength": 1 },
 						"identity": { "$ref": "#/$defs/identity" },
-						"revision": { "type": "string", "minLength": 1 },
+						"revision": { "$ref": "#/$defs/revision" },
 						"digest": { "$ref": "#/$defs/digest" }
 					}
 				},

@@ -15,7 +15,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use agent_ix_baseline_producer::{
     canonical_digest, canonical_json, canonical_json_from_bytes, configuration_digest,
     document_digest, ArrayDeclarations, ArrayDisposition, CanonicalPolicy, ConfigurationDocument,
-    DigestTriple, NumericResourceLimit, ProducerDecimal, ResourceLimits,
+    DigestDomainSelection, DigestSelection, NumericResourceLimit, ProducerDecimal, ResourceLimits,
+    ADMISSIBLE_REVISION_NAMESPACES,
 };
 use serde_json::{json, Value};
 
@@ -102,17 +103,18 @@ fn configuration(resource_limits: ResourceLimits) -> ConfigurationDocument {
     ConfigurationDocument {
         configuration_identity: "ix://agent-ix/commerce/config/evaluation-default".into(),
         baseline_version: "1.2.0".into(),
-        digest: DigestTriple {
-            algorithm: "sha256".into(),
-            domain: "filament-canonical-json-1".into(),
-            value: format!("sha256:{}", "0".repeat(64)),
-        },
+        digest: DigestSelection::canonical(format!("sha256:{}", "0".repeat(64))),
         model_authority: "ix://agent-ix/commerce/model-authority/primary".into(),
         profile_identities: BTreeSet::new(),
         adapter_identities: BTreeSet::new(),
         mapping_targets: BTreeSet::new(),
         loss_policy: "ix://agent-ix/commerce/loss-policy/refuse".into(),
         resource_limits,
+        digest_selections: DigestDomainSelection::baseline(),
+        revision_namespaces: ADMISSIBLE_REVISION_NAMESPACES
+            .iter()
+            .map(|namespace| (*namespace).to_owned())
+            .collect(),
         trusted_references: BTreeSet::new(),
     }
 }
