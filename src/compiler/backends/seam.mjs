@@ -36,6 +36,7 @@ import {
 	errorPointer,
 	schemaValidators,
 } from "../schema-validate.mjs";
+import { rustBackend } from "./rust-serde/backend.mjs";
 import { BACKEND_TARGETS } from "./targets.mjs";
 import {
 	canonicalize,
@@ -85,7 +86,15 @@ const REGISTRY = new Map([
 			implemented: true,
 		},
 	],
-	["rust", declaredUnimplemented("rust", "agent-ix/filament-core-data#21")],
+	[
+		"rust",
+		{
+			target: "rust",
+			owner: rustBackend.owningIssue,
+			backend: rustBackend,
+			implemented: true,
+		},
+	],
 	[
 		"python-pydantic-v2",
 		declaredUnimplemented(
