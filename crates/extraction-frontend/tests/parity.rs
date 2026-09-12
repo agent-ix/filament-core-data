@@ -2,14 +2,8 @@
 //! `records-and-scalars` comparison against `node src/compiler/cli.mjs
 //! compile`, and the projection's own properties.
 //!
-//! The comparison is authored and runs, and it fails: under the FR-098
-//! projection the two frontends disagree on every record by construction
-//! (the spec-bundle record carries `clauses: []`, `operations: []` and
-//! `relationships: []`; field, alias and constraint identities are minted
-//! by FR-095's slug rule on one side and FR-046/FR-053's verbatim names on
-//! the other). The case is therefore recorded single-dialect in
-//! `cases.json` with those four differences as its reason, and TC-1290 and
-//! TC-1291 are `#[ignore]`d as blocked rather than widened (Task-136).
+//! The shared case is authored in both dialects. Under the documented
+//! FR-098 projection, its normalized serializations are byte-identical.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -60,7 +54,6 @@ fn case_rows() -> Vec<CaseRow> {
 
 #[trace("TC-1290", "FR-098-AC-6")]
 #[test]
-#[ignore = "blocked: records-and-scalars is recorded single-dialect because the two frontends disagree under the FR-098 projection (cases.json reason); FR-098-AC-6 wants exactly one two-dialect case"]
 fn tc_1290_cases_json_names_both_sources_for_records_and_scalars_and_a_scalar_reason_for_the_rest()
 {
     let rows = case_rows();
@@ -90,8 +83,8 @@ fn tc_1290_cases_json_names_both_sources_for_records_and_scalars_and_a_scalar_re
     }
 }
 
-/// The FR-098 record of the three single-dialect cases, which holds
-/// whatever the shared case's own row says.
+/// The FR-098 record of the three single-dialect cases, while the shared
+/// case names both source trees.
 #[trace("TC-1290", "FR-098-AC-6")]
 #[test]
 fn tc_1290_the_three_existing_cases_are_single_dialect_with_a_scalar_reason_and_the_shared_case_names_its_trees(
@@ -100,12 +93,13 @@ fn tc_1290_the_three_existing_cases_are_single_dialect_with_a_scalar_reason_and_
     assert_eq!(rows.len(), 4);
     for (id, ts, sb, reason) in &rows {
         assert!(ts.is_some(), "{id}: no typespec source");
-        assert!(sb.is_none(), "{id}: spec-bundle is not null");
-        let reason = reason
-            .as_deref()
-            .unwrap_or_else(|| panic!("{id}: no reason"));
         if id == SHARED_CASE {
-            // Both trees exist and the reason names every differing node.
+            assert_eq!(
+                sb.as_deref(),
+                Some("shared/spec-bundle/records-and-scalars"),
+                "{id}: spec-bundle source"
+            );
+            assert!(reason.is_none(), "{id}: unexpected reason: {reason:?}");
             for tree in [
                 "shared/typespec/records-and-scalars/types/main.tsp",
                 "shared/spec-bundle/records-and-scalars/spec/functional/FR-001-note.md",
@@ -118,23 +112,12 @@ fn tc_1290_the_three_existing_cases_are_single_dialect_with_a_scalar_reason_and_
                     "{tree}"
                 );
             }
-            for token in [
-                "shared/spec-bundle/records-and-scalars",
-                "clauses: []",
-                "field/note-id",
-                "field/Note-id",
-                "type/Note.revision",
-                "type/NoteRevision",
-                "constraint/note-revision-min",
-                "REVISION_MIN",
-            ] {
-                assert!(
-                    reason.contains(token),
-                    "{id}: reason lacks {token}: {reason}"
-                );
-            }
             continue;
         }
+        assert!(sb.is_none(), "{id}: spec-bundle is not null");
+        let reason = reason
+            .as_deref()
+            .unwrap_or_else(|| panic!("{id}: no reason"));
         assert!(reason.contains("scalar"), "{id}: {reason}");
         if id == "enums-and-unions" {
             assert!(reason.contains("union"), "{id}: {reason}");
@@ -243,7 +226,6 @@ fn first_differing_node(a: &Value, b: &Value, path: &str, out: &mut Vec<String>)
 
 #[trace("TC-1291", "FR-098-AC-7")]
 #[test]
-#[ignore = "blocked: the two projections differ on the record's empty clauses/operations/relationships members and on field, alias and constraint identities (cases.json reason); run with --ignored to list every differing node"]
 fn tc_1291_projected_spec_bundle_lift_equals_projected_node_compile_byte_for_byte() {
     let scratch = tempfile::tempdir().expect("tempdir");
     let typespec = compile_typespec(&shared_dir("typespec"), &scratch.path().join("ts.json"))

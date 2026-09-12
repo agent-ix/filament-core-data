@@ -158,7 +158,7 @@ fn tc_1239_the_immutable_ocl_fence_lowers_to_one_clause_with_the_engine_span_and
     assert_eq!(clause["clauseId"], "immutable");
     assert_eq!(
         clause["identity"],
-        "ix://agent-ix/config-service/clause/configversion-immutable"
+        "ix://agent-ix/config-service/clause/ConfigVersion-immutable"
     );
     let extraction = &lift.extractions.artifacts["FR-006"].extraction;
     let text = &extraction.clause_text.as_ref().expect("clause_text")["immutable"];
@@ -233,7 +233,7 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
     let add_line = named(operations, "name", "addLine");
     assert_eq!(
         add_line["identity"],
-        "ix://agent-ix/orders/operation/basket-addline"
+        "ix://agent-ix/orders/operation/Basket-addLine"
     );
     assert_eq!(
         add_line["origin"],
@@ -243,7 +243,7 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
     assert_eq!(params.len(), 2);
     assert_eq!(
         params[0]["identity"],
-        "ix://agent-ix/orders/param/basket-addline-line"
+        "ix://agent-ix/orders/field/Basket-addLine-line"
     );
     assert_eq!(params[0]["name"], "line");
     assert_eq!(params[0]["typeRef"], "ix://agent-ix/orders/type/OrderLine");
@@ -256,7 +256,7 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
     );
     assert_eq!(
         params[1]["identity"],
-        "ix://agent-ix/orders/param/basket-addline-quantity"
+        "ix://agent-ix/orders/field/Basket-addLine-quantity"
     );
     assert_eq!(params[1]["typeRef"], "ix://agent-ix/orders/type/Integer");
     assert_eq!(
@@ -324,7 +324,7 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
     assert_eq!(find["returns"]["nullable"], false);
     assert_eq!(
         list(find, "params")[0]["identity"],
-        "ix://agent-ix/orders/param/orderrepository-findbyid-id"
+        "ix://agent-ix/orders/field/OrderRepository-findById-id"
     );
 }
 
@@ -407,9 +407,7 @@ fn node_kind(identity: &str, package: &str) -> Option<NodeKind> {
                     && !tail.starts_with('-')
                     && !tail.ends_with('-')
                     && !tail.contains("--")
-                    && tail
-                        .chars()
-                        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
+                    && tail.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
             }
         })
         .collect();
@@ -470,7 +468,7 @@ fn tc_1243_and_tc_1251_every_identity_of_the_business_document_matches_one_fr_09
             Some("constraints") => NodeKind::Constraint,
             Some("relationships") => NodeKind::Relationship,
             Some("operations") => NodeKind::Operation,
-            Some("params") => NodeKind::Param,
+            Some("params") => NodeKind::Field,
             Some("variants") => NodeKind::Variant,
             Some("clauses") => NodeKind::Clause,
             other => panic!("{pointer}: unexpected node list {other:?}"),
@@ -482,7 +480,7 @@ fn tc_1243_and_tc_1251_every_identity_of_the_business_document_matches_one_fr_09
     assert_eq!(
         kinds.into_iter().collect::<Vec<_>>(),
         NodeKind::ALL,
-        "the business fixture exercises every node kind, param/ and variant/ included"
+        "the business fixture exercises every node kind, including parameter fields and variants"
     );
     assert!(found.len() > 60, "{} identities", found.len());
     // Every reference to an identity is a semanticIdentity too.

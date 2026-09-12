@@ -60,7 +60,7 @@ why only verbs the object type lists under `allowed_links` are lowered.
 - The frontend SHALL resolve `target` through the `BundleIndex` by `id`, `title`, or `name` and classify the resolved artifact by FR-092's pass-one outcome (`Object`, `Enumeration`, or `Stale`).
 - If `target` resolves to no indexed artifact, or the artifact's pass-one outcome is not a definition, then the frontend SHALL raise `agent-ix.extraction-frontend.UNRESOLVED_RELATIONSHIP_TARGET` at the document's line 1, column 1, blocking, naming the target token.
 - The frontend SHALL set `multiplicity` to `{lower: 1, upper: 1}`; frontmatter authors no bound.
-- The frontend SHALL mint `identity` through FR-095's `relationship_identity` as `ix://<org>/<name>/relationship/<record-slug>-<verb>-<target-slug>`.
+- The frontend SHALL mint `identity` through FR-095's `relationship_identity` as `ix://<org>/<name>/relationship/<Name>-<verb>-<TargetName>`, where `<TargetName>` is the resolved target artifact's `displayName`, every part slugged.
 - The frontend SHALL set `origin.source` to the document's path at line 1, column 1, the frontmatter block.
 - The frontend SHALL NOT emit a relationship from a `## Properties` row.
 - The frontend SHALL NOT read a `## Relationships` section.
@@ -68,14 +68,14 @@ why only verbs the object type lists under `allowed_links` are lowered.
 ### Operations
 
 - The frontend SHALL lower each `OperationDecl` to one `operation` with `name`, `params` lowered as FR-093 fields, `returns` as `{typeRef, multiplicity, nullable: false}` from the FR-092 resolution of `OperationDecl.returns`, `pre` and `post` as the `clause_id` values of the engine's `ClauseRef` lists, and `origin.source` at the `### <name>` heading line; a parameter row's constraint cells are not lowered, because an IR `operation.params[]` item is a `field`, to which `schema/semantic/v1/semantic-ir.schema.json` gives no `constraints` member.
-- The frontend SHALL mint the operation's `identity` through FR-095's `operation_identity` as `ix://<org>/<name>/operation/<record-slug>-<op-slug>`.
-- The frontend SHALL mint each parameter's `identity` through FR-095's `param_identity` as `ix://<org>/<name>/param/<record-slug>-<op-slug>-<param-slug>`.
+- The frontend SHALL mint the operation's `identity` through FR-095's `operation_identity` as `ix://<org>/<name>/operation/<Name>-<operation>`.
+- The frontend SHALL mint each parameter's `identity` through FR-095's `field_identity` with the operation as the middle part, as `ix://<org>/<name>/field/<Name>-<operation>-<param>`. Note: a parameter is a field of its operation under `contracts-v1.md` §Identity minting (issue #87), and there is no `param/` slot.
 - If `returns` resolves to an `Unresolved` state, then the frontend SHALL emit the FR-092 diagnostic for that state at the `Returns:` line.
 
 ### Clauses
 
 - The frontend SHALL lower each `ClauseRef` carrying a `source_span` to one `clause` with `language` and `clauseId` from the `ClauseRef`, `text` taken byte for byte from `clause_text[clause_id]`, `sourceSpan` from `ClauseRef.source_span` (`sourceIdentity`, `path`, `startLine`, `startColumn`, `endLine`, `endColumn`), and `origin.source` at the span's start.
-- The frontend SHALL mint the clause's `identity` through FR-095's `clause_identity` as `ix://<org>/<name>/clause/<record-slug>-<clauseId>`.
+- The frontend SHALL mint the clause's `identity` through FR-095's `clause_identity` as `ix://<org>/<name>/clause/<Name>-<clauseId>`.
 - The frontend SHALL NOT parse, trim, normalize, or typecheck clause text.
 - The frontend SHALL take from a `ClauseRef` carried inside an operation's `pre` or `post` (whose `source_span` is `None`) only its `clause_id`, emitting no second clause node.
 
@@ -117,7 +117,7 @@ not edited (its sha256 is pinned) and is not the comparison target.
 | FR-094-AC-8 | The `parent | ConfigVersion | 0..1` row appears as a field and not as a relationship: the emitted `relationships[]` carries no `parent` relationship, the remaining relationship node agrees with the #34 hand fixture on `target` and `multiplicity`, and the #34 fixture's sha256 is pinned and unchanged (it differs elsewhere by construction: its `belongs_to` came from the removed `## Relationships` bullet grammar and its identity patterns differ). | Test (TC-1238) |
 | FR-094-AC-9 | The `immutable` `ocl` fence lowers to one clause with `language: ocl`, `clauseId: immutable`, `text` byte-identical to `clause_text`, `sourceSpan` `{startLine, startColumn: 1, endLine, endColumn}` as the engine reports, and `origin.source` at the span start. | Test (TC-1239) |
 | FR-094-AC-10 | A clause whose text carries leading whitespace, trailing newlines, and a `\t` reaches the IR byte-identical. | Test (TC-1240) |
-| FR-094-AC-11 | The `operations` fixture (FR-098) lowers each `OperationDecl` to an operation with its params as fields under `param/<record-slug>-<op-slug>-<param-slug>`, `returns` from the resolved type with `nullable: false`, and `pre`/`post` as `clauseId` lists; no second clause node is emitted for a `pre`/`post` reference. | Test (TC-1241) |
+| FR-094-AC-11 | The `operations` fixture (FR-098) lowers each `OperationDecl` to an operation with its params as fields under `field/<Name>-<operation>-<param>` (no `param/` identity is emitted), `returns` from the resolved type with `nullable: false`, and `pre`/`post` as `clauseId` lists; no second clause node is emitted for a `pre`/`post` reference. | Test (TC-1241) |
 | FR-094-AC-12 | An operation whose `Returns:` names an unresolved token raises the FR-092 diagnostic at the `Returns:` line. | Test (TC-1242) |
 | FR-094-AC-13 | Relationship, operation, parameter, and clause identities on the fixture match the minting patterns of FR-095 exactly, asserted by regex over every emitted node. | Test (TC-1243) |
 | FR-094-AC-14 | Renaming a verb's target artifact changes only `target` and the relationship `identity`, never `category` or `composite`; renaming the verb's registry `inverse` from `part_of` to another value flips `composite` with no code change. | Property (TC-1244) |

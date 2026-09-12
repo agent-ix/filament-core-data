@@ -57,7 +57,7 @@ pub const MESSAGE_LIMIT: usize = 120;
 /// The truncation mark.
 pub const ELLIPSIS: char = '…';
 
-/// The closed registry (FR-096 "The registry"): exactly these 26 codes.
+/// The closed registry (FR-096 "The registry").
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Code {
     ModuleWithoutSemanticBlock,
@@ -72,6 +72,7 @@ pub enum Code {
     UnnameableArtifact,
     ArtifactNotLowered,
     DuplicateTypeName,
+    DuplicateIdentity,
     DuplicateConstraint,
     ConstraintNotApplicable,
     DeclaredLoss,
@@ -158,7 +159,7 @@ pub enum Disposition {
 
 impl Code {
     /// Every variant, in registry order.
-    pub const ALL: [Code; 26] = [
+    pub const ALL: [Code; 27] = [
         Code::ModuleWithoutSemanticBlock,
         Code::ModuleRefused,
         Code::BundleUnidentified,
@@ -171,6 +172,7 @@ impl Code {
         Code::UnnameableArtifact,
         Code::ArtifactNotLowered,
         Code::DuplicateTypeName,
+        Code::DuplicateIdentity,
         Code::DuplicateConstraint,
         Code::ConstraintNotApplicable,
         Code::DeclaredLoss,
@@ -202,6 +204,7 @@ impl Code {
             Code::UnnameableArtifact => "UNNAMEABLE_ARTIFACT",
             Code::ArtifactNotLowered => "ARTIFACT_NOT_LOWERED",
             Code::DuplicateTypeName => "DUPLICATE_TYPE_NAME",
+            Code::DuplicateIdentity => "DUPLICATE_IDENTITY",
             Code::DuplicateConstraint => "DUPLICATE_CONSTRAINT",
             Code::ConstraintNotApplicable => "CONSTRAINT_NOT_APPLICABLE",
             Code::DeclaredLoss => "DECLARED_LOSS",
@@ -255,6 +258,7 @@ impl Code {
                 "the engine left an artifact's fields unavailable; the availability reason names why"
             }
             Code::DuplicateTypeName => "two artifacts derive one type slug",
+            Code::DuplicateIdentity => "two admitted nodes mint the same semantic identity",
             Code::DuplicateConstraint => "one row carries one constraint keyword twice",
             Code::ConstraintNotApplicable => {
                 "a constraint keyword does not apply to the resolved type of its row"
