@@ -12,6 +12,9 @@ status: normative
 | [ADR-0003: Best-fit representations](0003-best-fit-representations.md) | normative | — | — |
 | [ADR-0004: Conditional TypeSpec source](0004-conditional-typespec-source.md) | historical | — | resolved by [ADR-0005](0005-typespec-structural-source.md) |
 | [ADR-0005: TypeSpec structural source](0005-typespec-structural-source.md) | normative | ADR-0004 | — |
+| [ADR-0006: Inject the extraction producer](0006-frontend-host-boundary.md) | normative | — | — |
+| [ADR-0007: Emitted-set contract](0007-emitted-set-contract.md) | normative | — | — |
+| [ADR-0008: One backend delivery path](0008-one-backend-delivery-path.md) | normative | — | — |
 
 Accepted decisions remain normative until an indexed successor explicitly
 supersedes them. A historical decision links exactly one current successor. The
