@@ -75,7 +75,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | a source-originated clause carries a `sourceSpan` | `agent-ix.semantic-ir.MISSING_SOURCE_SPAN` |
 | operation `pre` and `post` name a declared `clauseId` | `agent-ix.semantic-ir.DANGLING_CLAUSE_REF` |
 | operation parameter names are unique | `agent-ix.semantic-ir.DUPLICATE_PARAM` |
-| node identities are unique within each list | `agent-ix.semantic-ir.DUPLICATE_IDENTITY` |
+| node identities are unique within each list; an extension `identity` is unique per node (within one node's `extensions[]` and within the document-level `extensions[]`) and is never entered into the declaration-identity set, so two definitions each carrying `ix://agent-ix/semantic-core/ext/kernel-scalar` are admissible | `agent-ix.semantic-ir.DUPLICATE_IDENTITY` |
 | the document is an object | `agent-ix.semantic-ir.INVALID_DOCUMENT` |
 
 - For a `1.0.0` document, `readContractIr` SHALL derive each field's multiplicity from its `presence` by the rule `optional → { lower: 0, upper: 1 }`, `required → { lower: 1, upper: 1 }`, which is the derivation FR-027 published.

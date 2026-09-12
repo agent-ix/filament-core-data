@@ -91,7 +91,7 @@ not.
 | An occurrence's `definition` resolves to a declared definition | `UNRESOLVED_OCCURRENCE_DEFINITION` |
 | An alias chain revisits no definition already on the chain | `ALIAS_CYCLE` |
 | A resolution walk stays within the declared depth bound | `DEPTH_LIMIT_EXCEEDED` |
-| Node identities are unique within each list | `DUPLICATE_IDENTITY` |
+| Node identities are unique within each list; an extension `identity` is unique per node — within one node's `extensions[]` and within the document-level `extensions[]` — and is never entered into the declaration-identity set, so two definitions each carrying `ix://agent-ix/semantic-core/ext/kernel-scalar` are admissible | `DUPLICATE_IDENTITY` |
 | Field names are unique within a record | `DUPLICATE_FIELD_NAME` |
 | Operation parameter names are unique within an operation | `DUPLICATE_PARAM` |
 | `clauseId` is unique within a type | `DUPLICATE_CLAUSE_ID` |
@@ -114,6 +114,8 @@ not.
 | A mapping that loses information declares that loss | `UNDECLARED_LOSS` |
 | A `required: true` extension names a capability the consumer policy admits | `UNKNOWN_REQUIRED_EXTENSION` |
 
+- `admitIr` SHALL decide the uniqueness of an extension `identity` against a set local to the node that carries the `extensions[]` list, so that two entries of one node's `extensions[]`, or two entries of the document-level `extensions[]`, sharing an `identity` raise `DUPLICATE_IDENTITY` at the second entry's `identity` pointer.
+- `admitIr` SHALL NOT enter an extension `identity` into the declaration-identity set it decides `DUPLICATE_IDENTITY` over for `types`, `fields`, `variants`, `operations`, `relationships`, `clauses`, and `occurrences`, because an extension identity names a capability the node carries and not a declaration the document makes; a document whose several definitions each carry `ix://agent-ix/semantic-core/ext/kernel-scalar` is admissible (agent-ix/filament-core-data#88, owner ruling of 2026-09-09).
 - Every code in the table SHALL be written with the `agent-ix.semantic-ir.` prefix the register publishes.
 - If an alias chain is both cyclic and deeper than the bound, then `admitIr` SHALL report `ALIAS_CYCLE`, because a cycle is the more specific fact and a depth report would hide it.
 - `admit.mjs` SHALL declare its own closed code register as an exported frozen object, in the manner of `DIAGNOSTIC_CODES`, and SHALL spell a code nowhere else.
@@ -245,6 +247,8 @@ not.
 | FR-068-AC-22 | `admitIr` applies a declared depth bound of 256 where the caller supplies no `limits`, and does not read `DEFAULT_LIMITS` from `src/compiler/diagnostics.mjs`. | Static |
 | FR-068-AC-23 | A document whose only diagnostics are non-error generates, and its output manifest carries `state: "lossy"` with a non-empty `files` array; a document carrying a representability loss emits zero files under `state: "unsupported"`. | Test |
 | FR-068-AC-24 | An IR carrying a `union` at `unknownPolicy: "surface"` and a `map` at `unknownPolicy: "preserve"` — both of which the committed bases carry — yields neither a diagnostic nor a declared loss for the policy. | Unit |
+| FR-068-AC-25 | A document declaring three `kind: scalar` definitions each carrying one extension with `identity` `ix://agent-ix/semantic-core/ext/kernel-scalar` yields `resultState` `success` and zero diagnostics; the same document with two extensions both at `identity` `ix://agent-ix/semantic-core/ext/doc` on one field yields exactly one `DUPLICATE_IDENTITY` at `/ir/types/N/fields/M/extensions/1/identity` and no diagnostic at any type's `extensions` pointer. | Unit (TC-1355) |
+| FR-068-AC-26 | `node src/compiler/cli.mjs generate --target typescript` over the lifted `config-version-table` IR — whose definitions carry the kernel-scalar extension more than once — exits zero with zero diagnostics and writes a non-empty file set. | Integration (TC-1356) |
 
 ## Dependencies
 
