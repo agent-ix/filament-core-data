@@ -318,6 +318,7 @@ producer/schema plan are accepted.
 | NFR-031 | NFR-031-AC-1..10: golden, repeat-run, varied-environment, and cross-root byte comparison; enumeration-order analysis citing path-sorted loading; ambient-input and HashMap audits with planted-token controls; one limit probe per limits.json entry under a 512 MiB / 30 s budget; unshare -rn offline run; forbid(unsafe_code) compile_fail doctest; proptest bundle-tree fuzz | TC-1300..TC-1309 | ✅ Complete |
 | NFR-032 | NFR-032-AC-1..10: changed-path gate fixed at both ends by sentinels and unioned over --first-parent --no-merges, cargo metadata edge check, Cargo.toml and cases.json line diffs, root THIRD-PARTY-NOTICES.md additive-row diff against Cargo.lock, corpus git status after the suite, publish and licence inspection, harness suite-compare, revert-rehearsal, and accretion-rehearsal verbs | TC-1310..TC-1319 | ⚠️ TC-1316 blocked on issue #89; TC-1317 red in the scratch-clone environment, reported |
 | NFR-033 | NFR-033-AC-1..11: manifest, lock, and toolchain inspection, EXTRACTION_TOOLCHAIN=0.0.0 gate run, dependency-specifier inspection against the workspace members, make extraction-frontend-deny and -audit, lock-to-notices comparison, clippy --no-deps and fmt, trace-marker scan and status-lie rehearsal, offline build, workspace-channel check | TC-1320..TC-1329, TC-1350 | ✅ Complete |
+| NFR-038 | NFR-038-AC-1..7: one named make target reaching every Rust gate, dispatch-only triggers across every workflow, a two-platform two-architecture matrix that reports both, workspace-wide clippy, generated-crate artifacts per platform, and toolchain checks that fail naming what they could not run | TC-1396..TC-1402 | ✅ Complete |
 
 ## Test Case Summary
 
@@ -1552,6 +1553,13 @@ producer/schema plan are accepted.
 | TC-1385 | Additive schema compatibility, payload break, unchanged-schema behavioral regression, and absent evidence receive distinct conclusions | Unit | P0 | FR-111-AC-1 | 🚧 planned — IN02 implementation boundary |
 | TC-1386 | Every policy-required mixed-version combination is assessed; an omitted required combination yields unknown | Integration | P0 | FR-111-AC-2 | 🚧 planned — IN02 implementation boundary |
 | TC-1387 | Changed model/binding/assumption/tool/environment paths retain affected or stale conclusions without rewriting historical results; unresolved and circular support retains unknown and is neither behavioral regression nor proof of falsehood | Integration | P0 | FR-111-AC-3, FR-111-AC-4, FR-111-CON-1, FR-111-CON-2 | 🚧 planned — IN02 implementation boundary |
+| TC-1396 | make test-rust names rust and extraction-frontend-test; make rust names check, build, clippy, test and conformance; make test-node names neither rust nor cargo | Unit | P0 | NFR-038-AC-1, NFR-038-AC-5 | ✅ passed |
+| TC-1397 | Every workflow declares workflow_dispatch and no push, pull_request or schedule trigger | Unit | P0 | NFR-038-AC-2 | ✅ passed |
+| TC-1398 | The Rust lane's matrix names ubuntu-latest and macos-latest with fail-fast false, so a single-platform defect reports rather than cancelling its sibling | Unit | P0 | NFR-038-AC-3 | ✅ passed |
+| TC-1399 | rust-clippy runs --workspace --no-deps with -D warnings, so every member is linted and no dependency's lints are reported | Unit | P0 | NFR-038-AC-4 | ✅ passed |
+| TC-1400 | Both platforms upload their generated crates and an empty upload is an error, so the cross-platform comparison has evidence to run over | Unit | P1 | NFR-038-AC-6 | ✅ passed |
+| TC-1401 | Both toolchain checks exit non-zero naming the toolchain they could not run, and every Rust gate depends on one | Unit | P1 | NFR-038-AC-7 | ✅ passed |
+| TC-1402 | The lane reads the qualification toolchain from make and names no version of its own, so a bump cannot leave it pinned | Unit | P1 | NFR-038-AC-1 | ✅ passed |
 
 ## Option Permutation Matrix
 
@@ -2478,13 +2486,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 48 | 45 | 0 | 3 | 100% mapped (48/48) |
 | Analysis | 48 | 30 | 0 | 18 | 100% mapped (48/48) |
 | Property | 128 | 71 | 0 | 57 | 100% mapped (128/128) |
-| Unit | 496 | 395 | 0 | 101 | 100% mapped (496/496) |
+| Unit | 503 | 402 | 0 | 101 | 100% mapped (503/503) |
 | Integration | 131 | 80 | 0 | 51 | 100% mapped (131/131) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 68 | 35 | 0 | 33 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1229** | **913** | **0** | **316** | **100% mapped (1229/1229)** |
+| **Total** | **1236** | **920** | **0** | **316** | **100% mapped (1236/1236)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.
