@@ -957,9 +957,24 @@ fn tc_1228_legacy_form_emits_no_record_and_a_warning_while_both_forms_blocks() {
     );
 }
 
-/// A random distinct identifier per field.
+/// A random identifier per field, distinct *after slugging*.
+///
+/// Distinct names are not enough. The shared identity rule (#87) replaces every
+/// non-alphanumeric run with `-` and trims the ends, so `k` and `k_` are two
+/// names and one identity segment — and the rule refuses that collision rather
+/// than minting a second `k`, which is the behaviour a different case asserts.
+/// Generating over names that collide after slugging made this property assert
+/// that a legitimate refusal is a rename failure, and it failed on whichever
+/// seed happened to produce such a pair.
 fn renames(count: usize) -> impl Strategy<Value = Vec<String>> {
     proptest::collection::btree_set("[a-z][A-Za-z0-9_]{0,10}", count)
+        .prop_filter("names must remain distinct once slugged", |set| {
+            let slugs: BTreeSet<String> = set
+                .iter()
+                .filter_map(|name| agent_ix_extraction_frontend::identity::slug(name).ok())
+                .collect();
+            slugs.len() == set.len()
+        })
         .prop_map(|set| set.into_iter().collect())
 }
 
