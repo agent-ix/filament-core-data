@@ -13,13 +13,22 @@ install:
 build:
 	pnpm run build
 
+# The three halves of the suite, one per toolchain, because one per toolchain is
+# what a lane can install (issue #60).
+#
+# `test` was `test-node test-python`, and `test-node` ran `$(MAKE) rust` — so
+# the Node lane, which installs no Rust toolchain, has been invoking cargo
+# through a target named for another language. `make test-all` is the local
+# everything; each named half is what a CI lane with that toolchain can run.
 .PHONY: test
 test: test-node test-python
+
+.PHONY: test-all
+test-all: test-node test-rust test-python
 
 .PHONY: test-node
 test-node:
 	pnpm run test
-	$(MAKE) rust
 
 # The Python half of the suite (issue #23, FR-072). Before this target the
 # repository had no entry point that ran pytest at all: `make test` was vitest
@@ -292,6 +301,15 @@ rust-build: rust-toolchain-check
 	cargo build --offline --workspace --locked
 	cargo fmt --all -- --check
 
+# The workspace lint gate (issue #60). Until this target existed, `cargo clippy`
+# ran over exactly one crate — `extraction-frontend-test` — so every other
+# member's lints were unmeasured. `--no-deps` keeps the gate about this
+# workspace's own code, as NFR-033-AC-7 already requires of the crate-level run.
+.PHONY: rust-clippy
+rust-clippy: rust-toolchain-check
+	@command -v cargo-clippy >/dev/null 2>&1 || cargo clippy --version >/dev/null 2>&1 || { echo "cargo clippy is not installed (rustup component add clippy): the workspace lint gate cannot run, and this is a failure rather than a skip"; exit 1; }
+	cargo clippy --workspace --locked --all-targets --no-deps -- -D warnings
+
 .PHONY: rust-test
 rust-test: rust-toolchain-check
 	cargo test --offline --workspace --locked
@@ -321,7 +339,24 @@ rust-fuzz: rust-toolchain-check
 # with no Rust toolchain fails here naming what it could not run. That is the
 # intended reading: an absent toolchain is a red suite, never a green one.
 .PHONY: rust
-rust: rust-check rust-build rust-test rust-conformance rust-install-from-artifact
+rust: rust-check rust-build rust-clippy rust-test rust-conformance rust-install-from-artifact
+
+# The Rust half of the suite, named where a reader looks for it (issue #60).
+#
+# Every gate below already ran, but only as a step inside `test-node` — so the
+# Makefile's own vocabulary said this repository had a Node half and a Python
+# half, and anyone asking "what runs the Rust gates" had to read the recipe of a
+# target named for another language. The extraction-frontend crate's gates were
+# not in `make test` at any depth.
+.PHONY: test-rust
+test-rust: rust extraction-frontend-test
+
+# The qualification toolchain, for a CI lane that has to install it before it can
+# run anything. Printed rather than duplicated in the workflow, so the version
+# lives in exactly one place (NFR-033: named once in the Makefile).
+.PHONY: print-extraction-toolchain
+print-extraction-toolchain:
+	@echo $(EXTRACTION_TOOLCHAIN)
 
 .PHONY: rust-deep
 rust-deep: rust-mutate rust-fuzz

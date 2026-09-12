@@ -1,0 +1,98 @@
+name: Rust
+
+# The Rust gates (issue #60). Until this workflow existed they ran in no lane at
+# all: `build-test.yml` delegates to agent-ix/nodejs-actions, which installs
+# Node and runs `make install` and `make test` with no Rust toolchain, so
+# `cargo clippy`, `cargo fmt --check` and every Rust test suite were unreachable
+# from CI. `.github/**` was a prohibited changed path for issues #21, #22 and
+# #23, so none of the three tickets that introduced Rust was permitted to add a
+# Rust job; #60 lifts that fence explicitly.
+#
+# `workflow_dispatch` is the only trigger, deliberately and by standing policy.
+# Do not add `push` or `pull_request` here. Correctness is gated locally before
+# pushing, and a pipeline that goes red for reasons unrelated to the change
+# trains everyone to ignore it.
+#
+# Two platforms, because #21 requires byte-identical output across platforms and
+# one runner cannot evidence that. `macos-latest` is arm64 and `ubuntu-latest`
+# is x86_64, so the pair also crosses architectures — which the dev host cannot
+# do locally, having neither a cross linker nor qemu for aarch64 (PR #99).
+
+on:
+  workflow_dispatch:
+    inputs:
+      deep:
+        description: "Also run the mutation and fuzz batteries (slow)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Both platforms always report. Cancelling the sibling on the first
+      # failure is what hides a defect that reproduces on one platform only,
+      # which is the entire question this matrix exists to answer.
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      # The Rust gates shell out to `node src/compiler/backends/rust-serde/cli.mjs`
+      # and to several scripts under `scripts/`, so the Node dependencies are a
+      # prerequisite of the Rust lane rather than a separate concern. Every
+      # dependency this repository declares is public npm; none comes from a
+      # private registry.
+      - name: Install Node dependencies
+        run: make install
+
+      # Both toolchains the repository pins: the workspace channel from
+      # rust-toolchain.toml, and the exact qualification toolchain the
+      # extraction-frontend gates run under (Makefile EXTRACTION_TOOLCHAIN).
+      - name: Install the workspace toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - name: Install the extraction-frontend qualification toolchain
+        run: |
+          toolchain="$(make --no-print-directory print-extraction-toolchain)"
+          rustup toolchain install "$toolchain" --component clippy,rustfmt
+          rustup component add clippy rustfmt
+
+      # `make rust-build` and `make rust-test` pass `--offline`, so the registry
+      # has to be populated before they run. Fetching with `--locked` here also
+      # makes a lockfile that does not resolve a lane failure with a clear
+      # cause, rather than an opaque offline error inside a later target.
+      - name: Fetch dependencies
+        run: cargo fetch --locked
+
+      - name: Rust gates
+        run: make test-rust
+
+      - name: Deep batteries
+        if: ${{ inputs.deep }}
+        run: make rust-deep
+
+      # The cross-platform question #21 asks. Each platform uploads the crates it
+      # generated; comparing two runs is a separate deliberate act rather than
+      # something this lane silently asserts.
+      - name: Upload generated crates
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-crates-${{ matrix.os }}
+          path: test/fixtures/rust-serde/goldens/
+          if-no-files-found: error

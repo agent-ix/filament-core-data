@@ -989,10 +989,35 @@ fn tc_1270_no_diagnostic_across_the_corpus_carries_an_absolute_path_timestamp_ho
 fn tc_1294_the_change_set_outside_the_crate_is_the_three_shared_case_paths_and_the_seam_is_untouched(
 ) {
     let workspace = workspace_dir();
-    let base = git(&workspace, &["merge-base", "HEAD", "main"]).unwrap_or_else(|e| panic!("{e}"));
+    // The base is this change's own, resolved from history through NFR-032's
+    // sentinels, not `merge-base HEAD main`.
+    //
+    // `merge-base HEAD main` is `main` itself on any branch cut from it, so the
+    // diff is empty and this case fails on a later branch that did nothing —
+    // the positive face of issue #51's annexation defect, where the negative
+    // face passes vacuously instead. Both ends of the harness range come from
+    // history, so the answer is the same before and after this change merges.
+    let range = common::run_node(
+        &["scripts/extraction-frontend-harness.mjs", "change-range"],
+        &[],
+        None,
+    )
+    .unwrap_or_else(|error| panic!("harness change-range: {error}"));
+    assert_eq!(range.status, 0, "{}", range.stderr);
+    let range: serde_json::Value = serde_json::from_slice(&range.stdout)
+        .unwrap_or_else(|error| panic!("harness change-range output: {error}"));
+    let base = range["base"].as_str().expect("base").to_string();
+    let tip = range["tip"].as_str().expect("tip").to_string();
     let changed = git(
         &workspace,
-        &["diff", "--name-only", &base, "--", "test/fixtures/compiler"],
+        &[
+            "diff",
+            "--name-only",
+            &base,
+            &tip,
+            "--",
+            "test/fixtures/compiler",
+        ],
     )
     .unwrap_or_else(|e| panic!("{e}"));
     let untracked = git(
@@ -1025,6 +1050,7 @@ fn tc_1294_the_change_set_outside_the_crate_is_the_three_shared_case_paths_and_t
             "diff",
             "--name-only",
             &base,
+            &tip,
             "--",
             "src/compiler/frontend",
             "test/compiler-core.test.ts",
