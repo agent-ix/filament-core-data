@@ -124,3 +124,27 @@ pub const RELATIONSHIP_OWNERSHIP_ABSENT: &str = "RELATIONSHIP_OWNERSHIP_ABSENT";
 pub const RELATIONSHIP_ENDPOINT_UNKNOWN: &str = "RELATIONSHIP_ENDPOINT_UNKNOWN";
 /// A requested endpoint projection would collapse two roles or two multiplicities.
 pub const RELATIONSHIP_ENDPOINT_PROJECTION_LOSS: &str = "RELATIONSHIP_ENDPOINT_PROJECTION_LOSS";
+
+/// An export mapping carries no formal export locus.
+pub const EXPORT_LOCUS_ABSENT: &str = "EXPORT_LOCUS_ABSENT";
+/// An export mapping carries no ordered export path.
+pub const EXPORT_PATH_ABSENT: &str = "EXPORT_PATH_ABSENT";
+/// An export mapping names an export its named producer object does not export.
+pub const EXPORT_FOREIGN: &str = "EXPORT_FOREIGN";
+/// An export mapping names an export owned by another correspondence's producer object.
+pub const EXPORT_CROSS_BOUND: &str = "EXPORT_CROSS_BOUND";
+/// A declared component, endpoint or relationship record carries no export mapping.
+pub const EXPORT_ABSENT: &str = "EXPORT_ABSENT";
+/// A correspondence record retains its binding relation over a changed selection.
+pub const CORRESPONDENCE_STALE_SELECTION: &str = "CORRESPONDENCE_STALE_SELECTION";
+/// A correspondence record carries no configuration provenance at all.
+pub const CORRESPONDENCE_CONFIGURATION_ABSENT: &str = "CORRESPONDENCE_CONFIGURATION_ABSENT";
+/// A correspondence record names a configuration that did not authorize its relation.
+pub const CORRESPONDENCE_CONFIGURATION_MISMATCH: &str = "CORRESPONDENCE_CONFIGURATION_MISMATCH";
+/// A correspondence record enumerates an incomplete native definition closure.
+///
+/// Distinct from the static prerequisite closure FR-117 owns, which carries its
+/// own refusal (FR-117-CON-5, FND-1727).
+pub const CORRESPONDENCE_CLOSURE_INCOMPLETE: &str = "CORRESPONDENCE_CLOSURE_INCOMPLETE";
+/// Two correspondence records name one selected pair; all of them are refused.
+pub const CORRESPONDENCE_DUPLICATE_PAIR: &str = "CORRESPONDENCE_DUPLICATE_PAIR";

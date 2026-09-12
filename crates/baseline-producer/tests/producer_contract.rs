@@ -447,6 +447,7 @@ fn tc_1381_keeps_producer_and_native_digest_domains_distinct() {
         binding_relation_identity: "ix://agent-ix/commerce/binding/model-to-profile".into(),
         producer: ProducerObjectReference {
             object_kind: "model".into(),
+            authority: "ix://agent-ix/commerce/model-authority/primary".into(),
             identity: "ix://agent-ix/commerce/model/order-1-2".into(),
             revision: Revision::producer("1.2.0"),
             digest: producer.clone(),
@@ -457,16 +458,18 @@ fn tc_1381_keeps_producer_and_native_digest_domains_distinct() {
             raw_byte_digest: native.clone(),
         },
         native_definition_closure: vec![],
-        configuration_identity: "ix://agent-ix/commerce/config/evaluation-default".into(),
+        required_native_definition_identities: Default::default(),
+        configuration_identity: Some("ix://agent-ix/commerce/config/evaluation-default".into()),
+        exports: vec![],
     };
     correspondence
-        .validate("ix://agent-ix/commerce/config/evaluation-default")
+        .validate_selections(&fixture_a.configuration)
         .expect("named domains validate");
     let mut substituted = correspondence;
     substituted.native.raw_byte_digest = producer;
     assert_eq!(
         substituted
-            .validate("ix://agent-ix/commerce/config/evaluation-default")
+            .validate_selections(&fixture_a.configuration)
             .expect_err("domain substitution refuses")
             .code,
         refusal::DIGEST_DOMAIN_SUBSTITUTED

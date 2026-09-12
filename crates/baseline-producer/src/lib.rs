@@ -16,9 +16,11 @@ use serde_json::Value;
 
 mod canonical;
 mod component;
+mod correspondence;
 mod decimal;
 mod digest;
 mod endpoint;
+mod export;
 mod inventory;
 mod locus;
 pub mod refusal;
@@ -30,12 +32,17 @@ pub use canonical::{
     document_digest, ArrayDeclarations, ArrayDisposition, CanonicalPolicy, NumericResourceLimit,
 };
 pub use component::ComponentDeclaration;
+pub use correspondence::{
+    select_correspondences, validate_correspondence_set, NativeArtifactReference,
+    ProducerNativeCorrespondence, ProducerObjectReference, SelectedPair,
+};
 pub use decimal::ProducerDecimal;
 pub use digest::{
     DigestDomainSelection, DigestSelection, RawByteDigest, ADMISSIBLE_DIGEST_SELECTIONS,
     CANONICAL_JSON_DOMAIN, DIGEST_ALGORITHM, DIGEST_DOMAIN_VERSION, NATIVE_BYTES_DOMAIN,
 };
 pub use endpoint::EndpointDeclaration;
+pub use export::{DeclaredExports, ExportKind, ExportRecord};
 pub use inventory::{
     InventoryCompleteness, InventoryDeclaration, InventoryMemberKind, InventoryMembership,
 };
@@ -488,72 +495,6 @@ pub struct Closure {
     pub window_digest: Option<DigestSelection>,
 }
 
-/// The producer-side identity and digest of one immutable object.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ProducerObjectReference {
-    /// Producer object kind (for example `model` or `profile`).
-    pub object_kind: String,
-    /// Exact producer object identity.
-    pub identity: String,
-    /// Exact immutable producer revision, namespaced.
-    pub revision: Revision,
-    /// Canonical producer-object digest.
-    pub digest: DigestSelection,
-}
-
-/// The native artifact selected by a correspondence record.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct NativeArtifactReference {
-    /// Native artifact or definition identity.
-    pub identity: String,
-    /// Exact immutable native revision, namespaced.
-    pub revision: Revision,
-    /// Digest of raw native bytes, never a producer canonical digest.
-    pub raw_byte_digest: DigestSelection,
-}
-
-/// An immutable producer/native relation; matching text is not equivalence.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ProducerNativeCorrespondence {
-    /// Producer-declared binding relation identity.
-    pub binding_relation_identity: String,
-    /// Producer object being related.
-    pub producer: ProducerObjectReference,
-    /// Native artifact being selected.
-    pub native: NativeArtifactReference,
-    /// Native definitions that must close the selected artifact.
-    pub native_definition_closure: Vec<NativeArtifactReference>,
-    /// Configuration whose declared policy authorized this relation.
-    pub configuration_identity: String,
-}
-
-impl ProducerNativeCorrespondence {
-    /// Refuses a missing configuration provenance or any cross-domain digest use.
-    pub fn validate(&self, configuration_identity: &str) -> Result<(), Refusal> {
-        if self.configuration_identity != configuration_identity {
-            return Err(Refusal::new(
-                "CORRESPONDENCE_CONFIGURATION_MISMATCH",
-                self.binding_relation_identity.clone(),
-            ));
-        }
-        self.producer
-            .digest
-            .validate_domain(CANONICAL_JSON_DOMAIN, DIGEST_DOMAIN_VERSION)?;
-        self.native
-            .raw_byte_digest
-            .validate_domain(NATIVE_BYTES_DOMAIN, DIGEST_DOMAIN_VERSION)?;
-        for definition in &self.native_definition_closure {
-            definition
-                .raw_byte_digest
-                .validate_domain(NATIVE_BYTES_DOMAIN, DIGEST_DOMAIN_VERSION)?;
-        }
-        Ok(())
-    }
-}
-
 /// A complete producer fixture/bundle that native consumers can read without inference.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -720,7 +661,7 @@ impl ProducerBundle {
         self.validate_population()?;
         self.validate_window()?;
         for correspondence in &self.correspondences {
-            correspondence.validate(&self.configuration.configuration_identity)?;
+            correspondence.validate_selections(&self.configuration)?;
             if correspondence.producer.identity != self.model.model_identity
                 || correspondence.producer.digest != self.model.digest
             {

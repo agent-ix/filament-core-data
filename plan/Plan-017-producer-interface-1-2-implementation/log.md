@@ -136,3 +136,26 @@ type: log
   TC-1417..TC-1422 are traced executable controls in `tests/relationships.rs`;
   joining by coinciding type identity in a scratch copy failed TC-1421 and
   reconstructing an absent role instead of refusing failed TC-1420.
+* 2026-09-11 - **Task-147 complete.** `ProducerNativeCorrespondence` is complete
+  in the producer's own bundle document (FND-1710, D3): the **five** authored
+  producer-object members `kind`, `authority`, `identity`, namespaced `revision`
+  and canonical `digest` selection — and no sixth, the consumer's `interface`
+  `u32` index being absent from the type entirely (FND-1805, E2) — beside the
+  native selection, the per-entry native definition closure with its own
+  revisions and raw-byte digests, the required-closure identities, the binding
+  relation identity, the configuration provenance, and one `ExportRecord` per
+  exported component, endpoint and relationship record carrying its `exportKind`,
+  its ordered `exportPath` and its formal export locus. `ExportKind` is the
+  eleven-member subset of the consumer's closed vocabulary this producer emits:
+  the `population` kind FR-120 partitions to the assessment side is not a variant
+  at all (E3, FND-1803, FND-1825), so a static export of that kind is
+  unrepresentable rather than merely refused. Foreign, cross-bound,
+  duplicate-pair — refusing **both** records by name — stale-selection,
+  absent-provenance and incomplete-closure inputs each refuse blocking.
+  TC-1423..TC-1430 are traced executable controls in `tests/correspondence.rs`,
+  TC-1423 as a `Compile` control (exhaustive destructuring plus a `compile_fail`
+  doctest on the `interface` read) and TC-1430 as a `Static` scan with a planted
+  `interface: u32` control. Planting that member in a scratch copy failed both
+  TC-1423 (the pattern no longer mentions the field) and the `compile_fail`
+  doctest; substituting a digest under a retained binding relation failed TC-1425
+  and TC-1426.
