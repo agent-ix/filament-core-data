@@ -159,3 +159,37 @@ type: log
   TC-1423 (the pattern no longer mentions the field) and the `compile_fail`
   doctest; substituting a digest under a retained binding relation failed TC-1425
   and TC-1426.
+* 2026-09-11 - **Task-148 complete.** `StaticProducerBundle` carries four header
+  members — bundle identity, namespaced bundle revision, canonical digest
+  selection, and the producer interface version `1.2.0` FR-126 declares — and
+  exactly nine content member classes, closed over those classes and over the
+  assessment exclusion and over no header member (E1, FND-1800, FND-1820).
+  `AdmittedStaticBundle` is reachable only from `StaticProducerBundle::admit` and
+  `admit_json`, which construct and validate indivisibly: it has no public
+  constructor, no public member and no `Deserialize`, and a refused admission
+  yields no value of it. `ProducerBundle`, `from_json` and the public `validate`
+  no longer exist; Plan-016's population, window, observation and availability
+  types moved to `src/assessment.rs` unchanged, carried by `AssessmentBundle`
+  (the moved carrier, renamed), and nothing in the static path references that
+  module. A static admission requires and mints no population, snapshot, window,
+  workflow instance, relationship instance, observation record, progress record or
+  observation closure, and completes from the configuration document and the
+  inventory declaration alone; the configuration's static prerequisite closure and
+  FR-116's native definition closure are distinct members with distinct refusals
+  (`STATIC_CLOSURE_ABSENT` vs `CORRESPONDENCE_CLOSURE_INCOMPLETE`, FR-117-CON-5,
+  FND-1727). `AdmissionRegistry` keys an admitted bundle by identity + revision +
+  digest together, refuses an identity collision naming both selections, and
+  refuses a binding to a superseded bundle as stale naming both rather than
+  resolving forward (E9, FND-1823). TC-1431..TC-1436, TC-1438 and TC-1439 are
+  traced executable controls in `tests/static_bundle.rs`, with five
+  `compile_fail` doctests and five compiling twins carrying the `Compile` halves
+  of TC-1432 and TC-1435. Adding `Deserialize` to the admitted type in a scratch
+  copy made the third TC-1435 control fail to fail — the breach the control exists
+  to report — and reading `std::env::var` on the admission path failed TC-1436.
+  `make rust-build`, `cargo fmt --all -- --check` and
+  `cargo test --offline -p agent-ix-baseline-producer` (74 rows over 9 targets plus
+  9 doctests) are green; the full `make rust-test` is green except exactly three
+  rows, all of the issue #36 changed-path gate family this plan does not own:
+  `tc_1294` in `crates/extraction-frontend/tests/fixtures.rs`, already red before
+  this task, and `tc_1299` and `tc_1310` in the same crate's `tests/change_set.rs`,
+  which go red the moment any #95 path is added. TC status rows stay `🚧`.

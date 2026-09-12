@@ -148,3 +148,27 @@ pub const CORRESPONDENCE_CONFIGURATION_MISMATCH: &str = "CORRESPONDENCE_CONFIGUR
 pub const CORRESPONDENCE_CLOSURE_INCOMPLETE: &str = "CORRESPONDENCE_CLOSURE_INCOMPLETE";
 /// Two correspondence records name one selected pair; all of them are refused.
 pub const CORRESPONDENCE_DUPLICATE_PAIR: &str = "CORRESPONDENCE_DUPLICATE_PAIR";
+
+/// A header member of the static bundle other than its identity is absent.
+pub const BUNDLE_HEADER_MEMBER_ABSENT: &str = "BUNDLE_HEADER_MEMBER_ABSENT";
+/// A required content member class of the static bundle is absent.
+pub const STATIC_MEMBER_ABSENT: &str = "STATIC_MEMBER_ABSENT";
+/// The configuration's static prerequisite closure is absent or supplies nothing.
+///
+/// Distinct from [`CORRESPONDENCE_CLOSURE_INCOMPLETE`], which the native
+/// definition closure FR-116 owns carries (FR-117-CON-5, FND-1727).
+pub const STATIC_CLOSURE_ABSENT: &str = "STATIC_CLOSURE_ABSENT";
+/// An assessment member, document, or export kind was offered at a static admission.
+pub const ASSESSMENT_INPUT_IN_STATIC_BUNDLE: &str = "ASSESSMENT_INPUT_IN_STATIC_BUNDLE";
+/// Two bundles carry one identity and revision under different digest selections.
+pub const BUNDLE_IDENTITY_COLLISION: &str = "BUNDLE_IDENTITY_COLLISION";
+/// A binding names an admitted bundle superseded by a later admission.
+pub const BUNDLE_BINDING_STALE: &str = "BUNDLE_BINDING_STALE";
+/// Two members that must name one identity name two.
+pub const IDENTITY_MISMATCH: &str = "IDENTITY_MISMATCH";
+/// A document declares an interface or baseline version this crate does not accept.
+pub const UNKNOWN_BASELINE_VERSION: &str = "UNKNOWN_BASELINE_VERSION";
+/// A transmitted document is not a readable producer document.
+pub const INVALID_PRODUCER_DOCUMENT: &str = "INVALID_PRODUCER_DOCUMENT";
+/// A transmitted document is past the declared document bound.
+pub const DOCUMENT_RESOURCE_LIMIT: &str = "DOCUMENT_RESOURCE_LIMIT";

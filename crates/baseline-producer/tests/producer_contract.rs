@@ -3,13 +3,16 @@
 
 //! Traced Task-140 controls for the Baseline 1.2.0 producer boundary.
 
+use agent_ix_baseline_producer::assessment::{
+    AssessmentBundle, AvailabilityDisposition, DecisiveDisposition, FieldMemberState,
+    WindowCoverage,
+};
 use agent_ix_baseline_producer::refusal;
 use agent_ix_baseline_producer::{
     canonical_digest, canonical_json, configuration_digest, document_digest, ArrayDeclarations,
-    AvailabilityDisposition, CanonicalPolicy, DecisiveDisposition, DefaultKind, DigestSelection,
-    FieldMemberState, LegacyV1Field, NativeArtifactReference, NumericResourceLimit, ProducerBundle,
-    ProducerNativeCorrespondence, ProducerObjectReference, Revision, V1Projection, WindowCoverage,
-    CANONICAL_JSON_DOMAIN, NATIVE_BYTES_DOMAIN,
+    CanonicalPolicy, DefaultKind, DigestSelection, LegacyV1Field, NativeArtifactReference,
+    NumericResourceLimit, ProducerNativeCorrespondence, ProducerObjectReference, Revision,
+    V1Projection, CANONICAL_JSON_DOMAIN, NATIVE_BYTES_DOMAIN,
 };
 use serde_json::json;
 
@@ -25,20 +28,20 @@ fn policy() -> CanonicalPolicy {
     )
 }
 
-fn fixture() -> ProducerBundle {
-    ProducerBundle::from_json(include_bytes!(
+fn fixture() -> AssessmentBundle {
+    AssessmentBundle::from_json(include_bytes!(
         "../../../fixtures/baseline-1-2/relationship-population-a.json"
     ))
     .expect("fixture A is a valid producer bundle")
 }
 
-fn refresh_population_digest(bundle: &mut ProducerBundle) {
+fn refresh_population_digest(bundle: &mut AssessmentBundle) {
     bundle.population.digest =
         document_digest(&bundle.population, &policy()).expect("population digest computes");
     bundle.closure.population_digest = Some(bundle.population.digest.clone());
 }
 
-fn refresh_model_digest(bundle: &mut ProducerBundle) {
+fn refresh_model_digest(bundle: &mut AssessmentBundle) {
     bundle.model.digest = document_digest(&bundle.model, &policy()).expect("model digest computes");
     bundle.closure.model_digest = bundle.model.digest.clone();
     for correspondence in &mut bundle.correspondences {
@@ -46,7 +49,7 @@ fn refresh_model_digest(bundle: &mut ProducerBundle) {
     }
 }
 
-fn refresh_window_digest(bundle: &mut ProducerBundle) {
+fn refresh_window_digest(bundle: &mut AssessmentBundle) {
     bundle.window.digest =
         document_digest(&bundle.window, &policy()).expect("window digest computes");
     bundle.closure.window_digest = Some(bundle.window.digest.clone());
@@ -380,7 +383,7 @@ fn tc_1379_refuses_unknown_profile_before_population_evaluation() {
         .expect("producer bundle is an object")
         .remove("configuration");
     assert_eq!(
-        ProducerBundle::from_json(
+        AssessmentBundle::from_json(
             &serde_json::to_vec(&no_configuration).expect("modified fixture serializes"),
         )
         .expect_err("configuration is required and never ambient")
@@ -407,13 +410,13 @@ fn tc_1379_configuration_content_digest_changes_with_only_a_resource_limit() {
 fn tc_1373_1379_parser_refuses_unknown_fields_and_oversize_inputs() {
     let unknown = br#"{"baselineVersion":"1.2.0","unexpected":true}"#;
     assert_eq!(
-        ProducerBundle::from_json(unknown)
+        AssessmentBundle::from_json(unknown)
             .expect_err("unknown field refuses")
             .code,
         "INVALID_PRODUCER_DOCUMENT"
     );
     assert_eq!(
-        ProducerBundle::from_json(&vec![b' '; 1_048_577])
+        AssessmentBundle::from_json(&vec![b' '; 1_048_577])
             .expect_err("oversize input refuses")
             .code,
         "DOCUMENT_RESOURCE_LIMIT"
