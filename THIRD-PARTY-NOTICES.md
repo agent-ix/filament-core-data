@@ -204,9 +204,9 @@ register that NFR-033-AC-6 checks against the same lock. `quire-rs` and
 | `same-file` | 1.0.6 | `Unlicense/MIT` | https://github.com/BurntSushi/same-file | licence files in the published crate archive |
 | `scoped-tls` | 1.0.1 | `MIT/Apache-2.0` | https://github.com/alexcrichton/scoped-tls | licence files in the published crate archive |
 | `scopeguard` | 1.2.0 | `MIT OR Apache-2.0` | https://github.com/bluss/scopeguard | licence files in the published crate archive |
-| `serde` | 1.0.229 | `MIT OR Apache-2.0` | https://github.com/serde-rs/serde | licence files in the published crate archive |
-| `serde_core` | 1.0.229 | `MIT OR Apache-2.0` | https://github.com/serde-rs/serde | licence files in the published crate archive |
-| `serde_derive` | 1.0.229 | `MIT OR Apache-2.0` | https://github.com/serde-rs/serde | licence files in the published crate archive |
+| `serde` | 1.0.228 | `MIT OR Apache-2.0` | https://github.com/serde-rs/serde | licence files in the published crate archive |
+| `serde_core` | 1.0.228 | `MIT OR Apache-2.0` | https://github.com/serde-rs/serde | licence files in the published crate archive |
+| `serde_derive` | 1.0.228 | `MIT OR Apache-2.0` | https://github.com/serde-rs/serde | licence files in the published crate archive |
 | `serde_json` | 1.0.151 | `MIT OR Apache-2.0` | https://github.com/serde-rs/json | licence files in the published crate archive |
 | `serde_yaml` | 0.9.34+deprecated | `MIT OR Apache-2.0` | https://github.com/dtolnay/serde-yaml | licence files in the published crate archive |
 | `sha2` | 0.10.9 | `MIT OR Apache-2.0` | https://github.com/RustCrypto/hashes | licence files in the published crate archive |
