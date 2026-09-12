@@ -113,7 +113,19 @@ The thirteenth delivery is the provisional semantic baseline 1.2 (issue #95):
 the source-of-truth model contract for independently authored field presence,
 first-class relationship declarations, model-bound finite populations, and
 explicit ecosystem configuration. It specifies the compatibility boundary for
-v1.1 without changing an existing producer, wire schema, or runtime.
+v1.1 without changing a wire schema or runtime; the fourteenth delivery is what
+changes the producer.
+
+The fourteenth delivery completes the Producer interface 1.2.0 static producer
+boundary (issue #95): versioned digest selections, namespaced revisions,
+first-class component and endpoint declarations with source provenance,
+complete relationship records, producer/native correspondence records, an
+admitted static bundle that mints no assessment input, and exact Filament
+Canonical JSON 1 normalization. It replaces the digest and revision member
+shapes the shipped `crates/baseline-producer` emits, which is a breaking
+producer-interface change this delivery owns. It maps onto, and does not own,
+the native consumer contract in `ix://agent-ix/quire-spec-language` at the
+pinned revision `72507f856457ba0922719bd5d9f5cadcce4058cd`.
 
 ## 2. Scope
 
@@ -154,6 +166,15 @@ v1.1 without changing an existing producer, wire schema, or runtime.
   dynamic-module, and non-disruption requirements.
 - IR v1.1 node shapes for multiplicity, units, relationships, operations,
   clauses, and typed constraints, with golden and negative fixtures.
+- The Producer interface 1.2.0 static producer boundary: four-member versioned
+  digest selections, two-member namespaced revisions over a closed namespace
+  vocabulary, component and endpoint declarations carrying identity, revision,
+  canonical digest, source provenance locus, role/type ownership and inventory
+  membership, complete relationship records with independent endpoint records
+  and model/profile/configuration ownership, producer/native correspondence
+  records with their export mapping and definition closure, the admitted static
+  bundle and its indivisible admission, and exact Filament Canonical JSON 1
+  arbitrary-precision decimal normalization.
 - The provisional baseline 1.2 model contract: independently authored field
   presence; first-class relationship endpoints; model-bound finite populations;
   and explicit, versioned ecosystem configuration inputs, including v1.1
@@ -264,6 +285,19 @@ v1.1 without changing an existing producer, wire schema, or runtime.
 - Modifying Quire parsing, validation, extraction, or byte-splice behavior.
 - Modifying Quoin catalog installation or module enforcement.
 - Migrating persisted data, rewriting the corpus, or removing legacy contracts.
+- Minting or requiring any assessment input for the static producer boundary:
+  populations, snapshots, windows, workflow instances, relationship instances,
+  observation records, progress records, and observation closure remain later
+  D and F campaign inputs, and producing the static bundle is not acceptance of
+  an assessment claim.
+- Located extraction of component and endpoint source loci; this delivery
+  refuses a record whose locus is absent rather than synthesizing one, and the
+  located-extraction work stays with `agent-ix/quire-rs#418`.
+- The native consumer's package assembly and its `u32` table indices; the
+  consumer assigns them and this delivery declares the identity, export kind,
+  and export path it addresses them by.
+- Owning the native consumer contract itself; this delivery maps onto the
+  pinned revision named in section 1 and changes nothing in that repository.
 - Self-promoting or self-rejecting a schema source from the spike; the decision
   is the owner's.
 - Correcting any contract finding while the issue #10 census is being collected.
@@ -444,9 +478,10 @@ individual migration dispositions remain provisional until their owning tickets
 pass.
 
 The Producer interface 1.2.0 static-boundary contracts in FR-112 through
-FR-118 and NFR-036 are normative for the producer side of that interface once
-their review and implementation gates pass; emitting an admitted static bundle
-is not acceptance of any assessment claim.
+FR-118 and NFR-036 are provisional: their named gates are this increment's
+specification review and the Plan-017 implementation evidence, and neither has
+passed. Emitting an admitted static bundle is not acceptance of any assessment
+claim.
 
 The baseline 1.2 contracts in FR-106 through FR-111 are provisional: they
 select the source-of-truth and implementation boundary for issue #95, but do
