@@ -26,9 +26,9 @@ use agent_ix_baseline_producer::{
     InventoryDeclaration, InventoryMembership, ModelSelection, Multiplicity,
     NativeArtifactReference, NativeSourceLabel, NumericResourceLimit, ProducerNativeCorrespondence,
     ProducerObjectReference, ProfileSelection, RawByteDigest, RelationshipDeclaration,
-    RelationshipEndpoint, RelationshipOwnership, RelationshipSemantics, ResourceLimits, Revision,
-    SourceLocus, Span, StaticClosure, StaticProducerBundle, WireReference,
-    ADMISSIBLE_REVISION_NAMESPACES, ASSESSMENT_MEMBER_NAMES, INTERFACE_VERSION,
+    RelationshipDirection, RelationshipEndpoint, RelationshipOwnership, RelationshipSemantics,
+    ResourceLimits, Revision, SourceLocus, Span, StaticClosure, StaticProducerBundle,
+    WireReference, ADMISSIBLE_REVISION_NAMESPACES, ASSESSMENT_MEMBER_NAMES, INTERFACE_VERSION,
 };
 use serde_json::{json, Value};
 
@@ -226,7 +226,7 @@ fn relationship() -> RelationshipDeclaration {
         },
         semantics: RelationshipSemantics {
             category: "structural".into(),
-            direction: "source-to-target".into(),
+            direction: RelationshipDirection::SourceToTarget,
             composite: true,
             lifecycle: "order-owned".into(),
             ownership: "order".into(),
@@ -293,6 +293,8 @@ fn correspondence() -> ProducerNativeCorrespondence {
             export(ExportKind::Endpoint, ENDPOINT_SOURCE),
             export(ExportKind::Endpoint, ENDPOINT_TARGET),
             export(ExportKind::Relationship, RELATIONSHIP),
+            export(ExportKind::Object, "ix://agent-ix/commerce/type/Order"),
+            export(ExportKind::Record, "ix://agent-ix/commerce/type/Shipment"),
         ],
     }
 }

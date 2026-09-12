@@ -32,9 +32,9 @@ use agent_ix_baseline_producer::{
     InventoryDeclaration, InventoryMembership, ModelSelection, Multiplicity,
     NativeArtifactReference, NativeSourceLabel, NumericResourceLimit, ProducerNativeCorrespondence,
     ProducerObjectReference, ProfileSelection, RawByteDigest, RelationshipDeclaration,
-    RelationshipEndpoint, RelationshipOwnership, RelationshipSemantics, ResourceLimits, Revision,
-    SourceLocus, Span, StaticClosure, StaticProducerBundle, WireReference,
-    ADMISSIBLE_REVISION_NAMESPACES, INTERFACE_VERSION,
+    RelationshipDirection, RelationshipEndpoint, RelationshipOwnership, RelationshipSemantics,
+    ResourceLimits, Revision, SourceLocus, Span, StaticClosure, StaticProducerBundle,
+    WireReference, ADMISSIBLE_REVISION_NAMESPACES, INTERFACE_VERSION,
 };
 use serde_json::{json, Value};
 
@@ -414,7 +414,7 @@ fn bundle() -> StaticProducerBundle {
             ),
             RelationshipSemantics {
                 category: "structural".into(),
-                direction: "source-to-target".into(),
+                direction: RelationshipDirection::SourceToTarget,
                 composite: true,
                 lifecycle: "order-owned".into(),
                 ownership: "order".into(),
@@ -438,7 +438,7 @@ fn bundle() -> StaticProducerBundle {
             ),
             RelationshipSemantics {
                 category: "associative".into(),
-                direction: "source-to-target".into(),
+                direction: RelationshipDirection::SourceToTarget,
                 composite: false,
                 lifecycle: "order-independent".into(),
                 ownership: "none".into(),
@@ -586,6 +586,20 @@ fn bundle() -> StaticProducerBundle {
                     RELATIONSHIP_SHIPMENT,
                     &["orders", "Order", "shipment"],
                     order_locus(240, 320),
+                ),
+                export(
+                    ExportKind::Object,
+                    MODEL,
+                    TYPE_ORDER,
+                    &["orders", "Order"],
+                    order_locus(64, 192),
+                ),
+                export(
+                    ExportKind::Record,
+                    MODEL,
+                    TYPE_SHIPMENT,
+                    &["shipments", "Shipment"],
+                    shipment_locus(32, 160),
                 ),
             ],
         },

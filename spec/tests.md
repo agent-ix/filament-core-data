@@ -332,6 +332,9 @@ above records.
 | FR-124 | FR-124-AC-1..9, FR-124-CON-1..6 | TC-1482..TC-1486 | 🚧 planned — #95 assessment half, not in this increment |
 | FR-125 | FR-125-AC-1..9, FR-125-CON-1..6 | TC-1487..TC-1490 | 🚧 planned — #95 assessment half, not in this increment |
 | FR-126 | FR-126-AC-1..12, FR-126-CON-1..6 | TC-1491..TC-1495 | 🚧 planned — #95 assessment half, not in this increment |
+| FR-127 | FR-127-AC-1..12, FR-127-CON-1..9 | TC-1500..TC-1512 | 🚧 planned — #95 producer interface extension |
+| FR-128 | FR-128-AC-1..9, FR-128-CON-1..6 | TC-1513..TC-1521 | 🚧 planned — #95 producer interface extension |
+| FR-129 | FR-129-AC-1..12, FR-129-CON-1..7 | TC-1522..TC-1533 | 🚧 planned — #95 producer interface extension |
 
 ### Non-Functional Requirement Coverage
 

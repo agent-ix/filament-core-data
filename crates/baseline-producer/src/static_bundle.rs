@@ -129,7 +129,7 @@ use crate::configuration::ConfigurationDocument;
 use crate::correspondence::{validate_correspondence_set, ProducerNativeCorrespondence};
 use crate::digest::{DigestSelection, CANONICAL_JSON_DOMAIN, DIGEST_DOMAIN_VERSION};
 use crate::endpoint::EndpointDeclaration;
-use crate::export::DeclaredExports;
+use crate::export::{DeclaredExports, ExportRecord};
 use crate::inventory::InventoryDeclaration;
 use crate::locus::DeclarationSource;
 use crate::model::{ModelSelection, ProfileSelection};
@@ -670,6 +670,53 @@ impl AdmittedStaticBundle {
     /// Content: the correspondence records.
     pub fn correspondences(&self) -> &[ProducerNativeCorrespondence] {
         &self.correspondences
+    }
+
+    /// The export mapping that resolves one endpoint's named model type.
+    ///
+    /// This is the resolution FR-127 admits: the returned record carries the
+    /// exact native export [`kind`] and ordered [`path`] of the type the endpoint
+    /// names, so a consumer reads both as members and never recovers a type by
+    /// parsing a path segment, an endpoint identity, or a display name.
+    ///
+    /// A bundle that reached this type resolved every endpoint's model type
+    /// already — an unresolved one refuses at admission under
+    /// `ENDPOINT_TYPE_EXPORT_ABSENT` — so `None` here means only that no endpoint
+    /// carries `endpoint_identity`.
+    ///
+    /// [`kind`]: ExportRecord::kind
+    /// [`path`]: ExportRecord::export_path
+    pub fn endpoint_type_export(&self, endpoint_identity: &str) -> Option<&ExportRecord> {
+        let endpoint = self
+            .endpoints
+            .iter()
+            .find(|endpoint| endpoint.endpoint_identity == endpoint_identity)?;
+        self.type_export_of(&endpoint.type_identity)
+    }
+
+    /// The export mapping that resolves one declared model type identity.
+    ///
+    /// Resolution is by identity against the export mappings the bundle's own
+    /// correspondence records carry, never by a coinciding export path.
+    pub fn type_export_of(&self, type_identity: &str) -> Option<&ExportRecord> {
+        self.correspondences
+            .iter()
+            .flat_map(|correspondence| correspondence.exports.iter())
+            .find(|export| export.export_identity == type_identity && export.kind.is_type())
+    }
+
+    /// Every endpoint identity paired with the export mapping resolving its type.
+    ///
+    /// The pairs are ordered by endpoint identity so two runs over one admitted
+    /// bundle yield the identical sequence.
+    pub fn endpoint_type_exports(&self) -> BTreeMap<&str, &ExportRecord> {
+        self.endpoints
+            .iter()
+            .filter_map(|endpoint| {
+                let export = self.type_export_of(&endpoint.type_identity)?;
+                Some((endpoint.endpoint_identity.as_str(), export))
+            })
+            .collect()
     }
 }
 

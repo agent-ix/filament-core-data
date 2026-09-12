@@ -34,8 +34,8 @@ use crate::export::{DeclaredExports, ExportRecord};
 use crate::refusal::{
     Refusal, CORRESPONDENCE_CLOSURE_INCOMPLETE, CORRESPONDENCE_CONFIGURATION_ABSENT,
     CORRESPONDENCE_CONFIGURATION_MISMATCH, CORRESPONDENCE_DUPLICATE_PAIR,
-    CORRESPONDENCE_STALE_SELECTION, EXPORT_ABSENT, EXPORT_CROSS_BOUND, EXPORT_FOREIGN,
-    IDENTITY_ABSENT,
+    CORRESPONDENCE_STALE_SELECTION, ENDPOINT_TYPE_EXPORT_ABSENT, EXPORT_ABSENT, EXPORT_CROSS_BOUND,
+    EXPORT_FOREIGN, IDENTITY_ABSENT,
 };
 use crate::revision::{NATIVE_REVISION_NAMESPACE, PRODUCER_REVISION_NAMESPACE};
 use crate::{
@@ -277,26 +277,7 @@ impl ProducerNativeCorrespondence {
                     ),
                 ));
             }
-            let Some(kind) = declared.kind_of(&export.export_identity) else {
-                return Err(Refusal::new(
-                    EXPORT_FOREIGN,
-                    format!(
-                        "{} names no component, endpoint or relationship record declared in the producer's own bundle document",
-                        export.export_identity
-                    ),
-                ));
-            };
-            if kind != export.kind {
-                return Err(Refusal::new(
-                    EXPORT_FOREIGN,
-                    format!(
-                        "{} is declared as {} but its export mapping carries {}",
-                        export.export_identity,
-                        kind.as_str(),
-                        export.kind.as_str()
-                    ),
-                ));
-            }
+            declared.validate_kind(&export.export_identity, export.kind)?;
         }
         Ok(())
     }
@@ -395,12 +376,21 @@ pub fn validate_correspondence_set(
         }
     }
     for identity in declared.identities() {
-        if !owners.contains_key(identity) {
+        if owners.contains_key(identity) {
+            continue;
+        }
+        if declared.is_declared_type(identity) {
             return Err(Refusal::new(
-                EXPORT_ABSENT,
-                format!("{identity} is declared but no correspondence record exports it"),
+                ENDPOINT_TYPE_EXPORT_ABSENT,
+                format!(
+                    "{identity} is named as an endpoint's model type but no correspondence record exports it, so no native type export resolves it"
+                ),
             ));
         }
+        return Err(Refusal::new(
+            EXPORT_ABSENT,
+            format!("{identity} is declared but no correspondence record exports it"),
+        ));
     }
     Ok(())
 }

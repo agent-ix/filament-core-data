@@ -24,7 +24,10 @@ use serde::{Deserialize, Serialize};
 use crate::component::ComponentDeclaration;
 use crate::endpoint::EndpointDeclaration;
 use crate::locus::SourceLocus;
-use crate::refusal::{Refusal, EXPORT_LOCUS_ABSENT, EXPORT_PATH_ABSENT, IDENTITY_ABSENT};
+use crate::refusal::{
+    Refusal, ENDPOINT_TYPE_EXPORT_KIND_FOREIGN, EXPORT_FOREIGN, EXPORT_LOCUS_ABSENT,
+    EXPORT_PATH_ABSENT, IDENTITY_ABSENT,
+};
 use crate::relationship::RelationshipDeclaration;
 use crate::ConfigurationDocument;
 
@@ -71,6 +74,35 @@ impl ExportKind {
         Self::Scalar,
         Self::Variant,
     ];
+
+    /// The kinds that name a native type rather than a member or a record.
+    ///
+    /// An endpoint's `typeIdentity` resolves to an export of one of these kinds
+    /// and no other (FR-114-CON-7). `Component`, `Endpoint` and `Relationship`
+    /// name producer records; `Field` and `Operation` name members of a type,
+    /// not a type. The assessment-side `population` kind is not a variant of
+    /// this vocabulary at all, so it cannot appear here or anywhere else.
+    pub const TYPE_KINDS: [Self; 6] = [
+        Self::Enum,
+        Self::Object,
+        Self::Record,
+        Self::Reference,
+        Self::Scalar,
+        Self::Variant,
+    ];
+
+    /// Whether this kind names a native type an endpoint may resolve to.
+    pub const fn is_type(self) -> bool {
+        matches!(
+            self,
+            Self::Enum
+                | Self::Object
+                | Self::Record
+                | Self::Reference
+                | Self::Scalar
+                | Self::Variant
+        )
+    }
 
     /// The exact closed spelling the consumer's vocabulary declares.
     pub const fn as_str(self) -> &'static str {
@@ -142,56 +174,142 @@ impl ExportRecord {
     }
 }
 
-/// The exported records declared in the producer's own bundle document.
+/// What one declared identity admits as its export mapping's kind.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Admits {
+    /// A producer record, admitting exactly the one kind it is declared as.
+    Record(ExportKind),
+    /// An endpoint's named model type, admitting any of [`ExportKind::TYPE_KINDS`].
+    ///
+    /// The kind is open across that closed subset because the *native* artifact
+    /// decides whether a type is an object, a record, a scalar and so on. The
+    /// producer does not pre-empt that decision, and the consumer does not
+    /// recover it by parsing export-path segments (FR-114-CON-7).
+    Type,
+}
+
+/// The exported records and model types declared in the producer's own bundle.
 ///
 /// This is the vocabulary an export mapping is resolved against: a component,
 /// endpoint or relationship identity resolves against these declarations, and the
-/// refusal names which one it resolved against (E8, FND-1809).
+/// refusal names which one it resolved against (E8, FND-1809). Every endpoint's
+/// `typeIdentity` is declared here too, so a type that no export mapping resolves
+/// is a named refusal rather than a path the consumer is left to parse.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct DeclaredExports {
-    kinds: BTreeMap<String, ExportKind>,
+    declared: BTreeMap<String, Admits>,
 }
 
 impl DeclaredExports {
-    /// Indexes every exported component, endpoint and relationship record.
+    /// Indexes every exported record and every endpoint's named model type.
+    ///
+    /// A type identity that coincides with a declared record identity keeps the
+    /// record's exact-kind admission: the record is the more specific
+    /// declaration, and nothing here mints a second entry for it.
     pub fn new(
         components: &[ComponentDeclaration],
         endpoints: &[EndpointDeclaration],
         relationships: &[RelationshipDeclaration],
     ) -> Self {
-        let mut kinds = BTreeMap::new();
+        let mut declared = BTreeMap::new();
         for component in components {
-            kinds.insert(component.component_identity.clone(), ExportKind::Component);
-        }
-        for endpoint in endpoints {
-            kinds.insert(endpoint.endpoint_identity.clone(), ExportKind::Endpoint);
-        }
-        for relationship in relationships {
-            kinds.insert(
-                relationship.relationship_identity.clone(),
-                ExportKind::Relationship,
+            declared.insert(
+                component.component_identity.clone(),
+                Admits::Record(ExportKind::Component),
             );
         }
-        Self { kinds }
+        for endpoint in endpoints {
+            declared.insert(
+                endpoint.endpoint_identity.clone(),
+                Admits::Record(ExportKind::Endpoint),
+            );
+        }
+        for relationship in relationships {
+            declared.insert(
+                relationship.relationship_identity.clone(),
+                Admits::Record(ExportKind::Relationship),
+            );
+        }
+        for endpoint in endpoints {
+            declared
+                .entry(endpoint.type_identity.clone())
+                .or_insert(Admits::Type);
+        }
+        Self { declared }
     }
 
-    /// The declared kind of one exported identity, if it is declared at all.
+    /// The declared kind of one exported *record*, if it is declared as one.
+    ///
+    /// A declared model type returns `None`: its kind is the native artifact's
+    /// to state, not the producer's, so there is no single kind to return.
+    /// Use [`Self::is_declared_type`] to tell an undeclared identity from a type.
     pub fn kind_of(&self, identity: &str) -> Option<ExportKind> {
-        self.kinds.get(identity).copied()
+        match self.declared.get(identity) {
+            Some(Admits::Record(kind)) => Some(*kind),
+            Some(Admits::Type) | None => None,
+        }
     }
 
-    /// Every declared exported identity.
+    /// Whether this identity is declared as an endpoint's named model type.
+    pub fn is_declared_type(&self, identity: &str) -> bool {
+        matches!(self.declared.get(identity), Some(Admits::Type))
+    }
+
+    /// Whether this identity is declared at all, as a record or as a type.
+    pub fn is_declared(&self, identity: &str) -> bool {
+        self.declared.contains_key(identity)
+    }
+
+    /// Every declared identity, records and model types alike.
     pub fn identities(&self) -> BTreeSet<&str> {
-        self.kinds.keys().map(String::as_str).collect()
+        self.declared.keys().map(String::as_str).collect()
     }
 
-    /// The number of exported records one export mapping each is owed for.
+    /// The number of declarations one export mapping each is owed for.
     pub fn len(&self) -> usize {
-        self.kinds.len()
+        self.declared.len()
     }
 
-    /// Whether any record is declared at all.
+    /// Whether any record or type is declared at all.
     pub fn is_empty(&self) -> bool {
-        self.kinds.is_empty()
+        self.declared.is_empty()
+    }
+
+    /// Refuses an export mapping whose kind the declared identity does not admit.
+    ///
+    /// A record admits exactly its declared kind. A model type admits any of
+    /// [`ExportKind::TYPE_KINDS`] and refuses every other, so an endpoint can
+    /// never resolve to a `field`, an `operation` or another producer record.
+    pub fn validate_kind(&self, identity: &str, offered: ExportKind) -> Result<(), Refusal> {
+        match self.declared.get(identity) {
+            None => Err(Refusal::new(
+                EXPORT_FOREIGN,
+                format!(
+                    "{identity} names no component, endpoint, relationship or endpoint model type declared in the producer's own bundle document"
+                ),
+            )),
+            Some(Admits::Record(declared)) if *declared != offered => Err(Refusal::new(
+                EXPORT_FOREIGN,
+                format!(
+                    "{identity} is declared as {} but its export mapping carries {}",
+                    declared.as_str(),
+                    offered.as_str()
+                ),
+            )),
+            Some(Admits::Record(_)) => Ok(()),
+            Some(Admits::Type) if !offered.is_type() => Err(Refusal::new(
+                ENDPOINT_TYPE_EXPORT_KIND_FOREIGN,
+                format!(
+                    "{identity} is a declared endpoint model type, so its export mapping cannot carry {}; the admissible kinds are {}",
+                    offered.as_str(),
+                    ExportKind::TYPE_KINDS
+                        .iter()
+                        .map(|kind| kind.as_str())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                ),
+            )),
+            Some(Admits::Type) => Ok(()),
+        }
     }
 }

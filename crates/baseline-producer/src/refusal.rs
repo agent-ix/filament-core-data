@@ -135,6 +135,27 @@ pub const EXPORT_FOREIGN: &str = "EXPORT_FOREIGN";
 pub const EXPORT_CROSS_BOUND: &str = "EXPORT_CROSS_BOUND";
 /// A declared component, endpoint or relationship record carries no export mapping.
 pub const EXPORT_ABSENT: &str = "EXPORT_ABSENT";
+/// A relationship endpoint's `typeIdentity` differs from its joined endpoint's.
+///
+/// The join is by `endpointIdentity` (FR-115), and the relationship side restates
+/// the type the endpoint declares. Neither side corrects the other: a
+/// disagreement is refused naming both spellings (FR-127-CON-7).
+pub const ENDPOINT_TYPE_IDENTITY_DISAGREES: &str = "ENDPOINT_TYPE_IDENTITY_DISAGREES";
+/// An endpoint `typeIdentity` resolves through no export mapping at all.
+///
+/// Distinct from [`EXPORT_ABSENT`] on purpose: that code names a declared
+/// *record* owed a mapping, this one names a declared *type* the consumer would
+/// otherwise have to recover by parsing an export path (FR-114-CON-7).
+pub const ENDPOINT_TYPE_EXPORT_ABSENT: &str = "ENDPOINT_TYPE_EXPORT_ABSENT";
+/// An endpoint `typeIdentity` resolves to an export whose kind names no type.
+///
+/// The admissible kinds are exactly [`ExportKind::TYPE_KINDS`]. An endpoint that
+/// resolved to a `component`, `endpoint`, `field`, `operation` or `relationship`
+/// export would give the consumer a member, not a type, and the assessment-side
+/// `population` kind is not a variant of the vocabulary at all.
+///
+/// [`ExportKind::TYPE_KINDS`]: crate::ExportKind::TYPE_KINDS
+pub const ENDPOINT_TYPE_EXPORT_KIND_FOREIGN: &str = "ENDPOINT_TYPE_EXPORT_KIND_FOREIGN";
 /// A correspondence record retains its binding relation over a changed selection.
 pub const CORRESPONDENCE_STALE_SELECTION: &str = "CORRESPONDENCE_STALE_SELECTION";
 /// A correspondence record carries no configuration provenance at all.

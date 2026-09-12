@@ -66,8 +66,8 @@ pub use model::{
 };
 pub use refusal::Refusal;
 pub use relationship::{
-    EndpointProjectionLoss, RelationshipDeclaration, RelationshipEndpoint, RelationshipOwnership,
-    RelationshipSemantics, RequestedEndpointProjection,
+    EndpointProjectionLoss, RelationshipDeclaration, RelationshipDirection, RelationshipEndpoint,
+    RelationshipOwnership, RelationshipSemantics, RequestedEndpointProjection,
 };
 pub use revision::{
     NativeSourceLabel, Revision, ADMISSIBLE_REVISION_NAMESPACES, NATIVE_REVISION_NAMESPACE,

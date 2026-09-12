@@ -471,6 +471,80 @@
             }
           },
           "producerObjectIdentity": "ix://agent-ix/commerce/model/order-1-2"
+        },
+        {
+          "exportIdentity": "ix://agent-ix/commerce/type/Order",
+          "exportPath": [
+            "orders",
+            "Order"
+          ],
+          "kind": "object",
+          "locus": {
+            "formal": {
+              "document": "ix://agent-ix/commerce/formal/order-declarations",
+              "revision": {
+                "namespace": "filament-core-data/producer-object-revision-1",
+                "value": "2026-09-11-1"
+              }
+            },
+            "source": {
+              "authority": "ix://agent-ix/commerce/model-authority/primary",
+              "digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "identity": "ix://agent-ix/commerce/source/order-declarations",
+              "kind": "source",
+              "refVersion": "3",
+              "revision": {
+                "namespace": "filament-core-data/producer-object-revision-1",
+                "value": "2026-09-11-1"
+              },
+              "wire": {
+                "identity": "filament-core-data/producer-bundle",
+                "version": "1.2.0"
+              }
+            },
+            "span": {
+              "end": 192,
+              "start": 64
+            }
+          },
+          "producerObjectIdentity": "ix://agent-ix/commerce/model/order-1-2"
+        },
+        {
+          "exportIdentity": "ix://agent-ix/commerce/type/Shipment",
+          "exportPath": [
+            "shipments",
+            "Shipment"
+          ],
+          "kind": "record",
+          "locus": {
+            "formal": {
+              "document": "ix://agent-ix/commerce/formal/shipment-declarations",
+              "revision": {
+                "namespace": "filament-core-data/producer-object-revision-1",
+                "value": "2026-09-11-1"
+              }
+            },
+            "source": {
+              "authority": "ix://agent-ix/commerce/model-authority/primary",
+              "digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+              "identity": "ix://agent-ix/commerce/source/shipment-declarations",
+              "kind": "source",
+              "refVersion": "3",
+              "revision": {
+                "namespace": "filament-core-data/producer-object-revision-1",
+                "value": "2026-09-11-1"
+              },
+              "wire": {
+                "identity": "filament-core-data/producer-bundle",
+                "version": "1.2.0"
+              }
+            },
+            "span": {
+              "end": 160,
+              "start": 32
+            }
+          },
+          "producerObjectIdentity": "ix://agent-ix/commerce/model/order-1-2"
         }
       ],
       "native": {
@@ -628,7 +702,7 @@
   "digest": {
     "algorithm": "sha256",
     "domain": "filament-canonical-json-1",
-    "value": "sha256:c46974ce8020fd289affe5aac5c4502625b20435b686d086764b3d895e2da270",
+    "value": "sha256:282c6ad49d84159b87998c68a9c842ab8ea99f085d3c92b73cf3ec9886a0fd34",
     "version": "1"
   },
   "endpoints": [

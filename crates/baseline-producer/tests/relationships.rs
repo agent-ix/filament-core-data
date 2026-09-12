@@ -14,9 +14,9 @@ use agent_ix_baseline_producer::{
     ArtifactKind, ArtifactReference, ConfigurationDocument, DigestDomainSelection, DigestSelection,
     EndpointDeclaration, FormalDocument, InventoryCompleteness, InventoryDeclaration,
     InventoryMembership, Multiplicity, NumericResourceLimit, RawByteDigest,
-    RelationshipDeclaration, RelationshipEndpoint, RelationshipOwnership, RelationshipSemantics,
-    RequestedEndpointProjection, ResourceLimits, Revision, SourceLocus, Span, WireReference,
-    ADMISSIBLE_REVISION_NAMESPACES,
+    RelationshipDeclaration, RelationshipDirection, RelationshipEndpoint, RelationshipOwnership,
+    RelationshipSemantics, RequestedEndpointProjection, ResourceLimits, Revision, SourceLocus,
+    Span, WireReference, ADMISSIBLE_REVISION_NAMESPACES,
 };
 use serde_json::Value;
 
@@ -25,6 +25,7 @@ const INVENTORY: &str = "ix://agent-ix/commerce/inventory/orders-2026-09-11";
 const RELATIONSHIP: &str = "ix://agent-ix/commerce/relationship/Order-shipment";
 const SOURCE_ENDPOINT: &str = "ix://agent-ix/commerce/endpoint/Order-shipment-source";
 const TARGET_ENDPOINT: &str = "ix://agent-ix/commerce/endpoint/Order-shipment-target";
+const SELF_TARGET_ENDPOINT: &str = "ix://agent-ix/commerce/endpoint/Order-successor-target";
 
 fn configuration() -> ConfigurationDocument {
     ConfigurationDocument {
@@ -155,7 +156,7 @@ fn relationship() -> RelationshipDeclaration {
         },
         semantics: RelationshipSemantics {
             category: "structural".into(),
-            direction: "source-to-target".into(),
+            direction: RelationshipDirection::SourceToTarget,
             composite: true,
             lifecycle: "order-owned".into(),
             ownership: "order".into(),
@@ -231,12 +232,21 @@ fn tc_1417_a_relationship_record_carries_every_authored_member() {
 /// Tracing: TC-1418
 #[test]
 fn tc_1418_the_two_endpoint_records_stay_independent_members() {
-    let endpoints = declared_endpoints();
+    // A self-relationship: two separately declared endpoint records naming one
+    // type identity. The second endpoint declares that type itself rather than
+    // the relationship side restating a type its endpoint does not carry, which
+    // FR-127-CON-7 refuses.
+    let mut endpoints = declared_endpoints();
+    endpoints.push(declared_endpoint(
+        SELF_TARGET_ENDPOINT,
+        "ix://agent-ix/commerce/type/Order",
+        "successor",
+    ));
     let index = EndpointDeclaration::index(&endpoints);
     let mut relationship = relationship();
     // Both endpoints name one type identity; they stay independent records.
     relationship.target.type_identity = relationship.source.type_identity.clone();
-    relationship.target.endpoint_identity = TARGET_ENDPOINT.into();
+    relationship.target.endpoint_identity = SELF_TARGET_ENDPOINT.into();
     relationship
         .validate(&configuration(), &inventory(), &index)
         .expect("independent endpoint records are admitted under one type identity");

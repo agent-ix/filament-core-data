@@ -30,8 +30,8 @@ use serde::{Deserialize, Serialize};
 use crate::endpoint::EndpointDeclaration;
 use crate::inventory::{InventoryDeclaration, InventoryMemberKind, InventoryMembership};
 use crate::refusal::{
-    Refusal, ENDPOINT_MULTIPLICITY_ABSENT, ENDPOINT_ROLE_ABSENT, IDENTITY_ABSENT,
-    RELATIONSHIP_ENDPOINT_PROJECTION_LOSS, RELATIONSHIP_ENDPOINT_UNKNOWN,
+    Refusal, ENDPOINT_MULTIPLICITY_ABSENT, ENDPOINT_ROLE_ABSENT, ENDPOINT_TYPE_IDENTITY_DISAGREES,
+    IDENTITY_ABSENT, RELATIONSHIP_ENDPOINT_PROJECTION_LOSS, RELATIONSHIP_ENDPOINT_UNKNOWN,
     RELATIONSHIP_MEMBER_ABSENT, RELATIONSHIP_OWNERSHIP_ABSENT,
 };
 use crate::revision::PRODUCER_REVISION_NAMESPACE;
@@ -94,7 +94,7 @@ impl RelationshipEndpoint {
         // The join is by `endpointIdentity` against a declared FR-114 endpoint,
         // and by nothing else: no coinciding type identity, role, or display
         // name resolves it.
-        if !endpoints.contains_key(self.endpoint_identity.as_str()) {
+        let Some(declared) = endpoints.get(self.endpoint_identity.as_str()) else {
             return Err(Refusal::new(
                 RELATIONSHIP_ENDPOINT_UNKNOWN,
                 format!(
@@ -102,8 +102,114 @@ impl RelationshipEndpoint {
                     self.endpoint_identity
                 ),
             ));
+        };
+        // The relationship side restates the type identity its joined endpoint
+        // declares. A disagreement is refused rather than resolved in either
+        // direction: the relationship side is not authority over the endpoint's
+        // type, and the endpoint does not silently correct the relationship
+        // (FR-127-CON-7). Without this the relationship could name a type that
+        // is in no export vocabulary, owes no export mapping, and refuses
+        // nothing.
+        if declared.type_identity != self.type_identity {
+            return Err(Refusal::new(
+                ENDPOINT_TYPE_IDENTITY_DISAGREES,
+                format!(
+                    "{relationship_identity} {side} names typeIdentity {} but its joined endpoint {} declares {}",
+                    self.type_identity, self.endpoint_identity, declared.type_identity
+                ),
+            ));
         }
         Ok(())
+    }
+}
+
+/// The closed direction vocabulary of a relationship declaration.
+///
+/// # Operand order
+///
+/// A direction never permutes the declaration's members. [`source`] is always
+/// the `source` member and [`target`] is always the `target` member, in every
+/// variant. Direction states which *traversals* the relationship admits; it does
+/// not restate which operand is which, and a consumer that swapped the two on
+/// reading `TargetToSource` would be reading a different relationship.
+///
+/// The exact mapping, for a relationship declared `source = S`, `target = T`:
+///
+/// | Variant | Wire spelling | Admitted traversal | First argument | Second argument |
+/// |---|---|---|---|---|
+/// | [`SourceToTarget`] | `source-to-target` | `S -> T` only | `S` | `T` |
+/// | [`TargetToSource`] | `target-to-source` | `T -> S` only | `S` | `T` |
+/// | [`Bidirectional`] | `bidirectional` | `S -> T` and `T -> S` | `S` | `T` |
+/// | [`Undirected`] | `undirected` | neither is oriented | `S` | `T` |
+///
+/// [`SourceToTarget`] and [`TargetToSource`] differ only in admitted traversal.
+/// Both keep `S` as the first argument, so the pair is not a spelling of one
+/// relationship authored two ways.
+///
+/// [`Bidirectional`] admits both traversals of one relationship.
+/// [`Undirected`] admits neither: the relationship holds between `S` and `T`
+/// without orientation, and a consumer must not manufacture one. The two are
+/// distinct states and neither is the other's default.
+///
+/// An out-of-vocabulary direction is unrepresentable in this type rather than
+/// merely refused by it, which is the same guarantee
+/// [`ExportKind`](crate::ExportKind) gives for the assessment-side `population`
+/// kind: no value of this type spells a direction the consumer cannot interpret.
+///
+/// [`source`]: RelationshipDeclaration::source
+/// [`target`]: RelationshipDeclaration::target
+/// [`SourceToTarget`]: RelationshipDirection::SourceToTarget
+/// [`TargetToSource`]: RelationshipDirection::TargetToSource
+/// [`Bidirectional`]: RelationshipDirection::Bidirectional
+/// [`Undirected`]: RelationshipDirection::Undirected
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum RelationshipDirection {
+    /// Traversal runs from the `source` member to the `target` member only.
+    SourceToTarget,
+    /// Traversal runs from the `target` member to the `source` member only.
+    TargetToSource,
+    /// Both traversals are admitted.
+    Bidirectional,
+    /// Neither traversal is oriented; the relationship carries no direction.
+    Undirected,
+}
+
+impl RelationshipDirection {
+    /// Every admissible direction.
+    pub const ADMITTED: [Self; 4] = [
+        Self::SourceToTarget,
+        Self::TargetToSource,
+        Self::Bidirectional,
+        Self::Undirected,
+    ];
+
+    /// The exact closed wire spelling.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::SourceToTarget => "source-to-target",
+            Self::TargetToSource => "target-to-source",
+            Self::Bidirectional => "bidirectional",
+            Self::Undirected => "undirected",
+        }
+    }
+
+    /// Whether traversal from the `source` member to the `target` member is admitted.
+    pub const fn admits_source_to_target(self) -> bool {
+        matches!(self, Self::SourceToTarget | Self::Bidirectional)
+    }
+
+    /// Whether traversal from the `target` member to the `source` member is admitted.
+    pub const fn admits_target_to_source(self) -> bool {
+        matches!(self, Self::TargetToSource | Self::Bidirectional)
+    }
+
+    /// Whether the relationship is oriented at all.
+    ///
+    /// [`Undirected`](Self::Undirected) is the only variant that is not, and it
+    /// is an authored state rather than an absent one.
+    pub const fn is_oriented(self) -> bool {
+        !matches!(self, Self::Undirected)
     }
 }
 
@@ -113,8 +219,11 @@ impl RelationshipEndpoint {
 pub struct RelationshipSemantics {
     /// Producer-defined relationship category.
     pub category: String,
-    /// Producer-defined direction.
-    pub direction: String,
+    /// The relationship's direction, from the closed admissible vocabulary.
+    ///
+    /// See [`RelationshipDirection`] for the exact mapping of each variant to
+    /// the `source`/`target` operand order; no variant permutes the two.
+    pub direction: RelationshipDirection,
     /// Whether the relationship forms the composite graph.
     pub composite: bool,
     /// Declared lifecycle semantics.
