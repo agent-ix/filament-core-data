@@ -185,7 +185,8 @@ pub fn lower_enum(rows: &[ValueRow], ctx: &ArtifactContext<'_>) -> Result<Loweri
     let source = ctx.package.source();
     let mut diagnostics: Vec<Diagnostic> = Vec::new();
     let mut blocked = false;
-    let mut seen: std::collections::BTreeMap<String, Locus> = std::collections::BTreeMap::new();
+    let mut seen: std::collections::BTreeMap<String, (String, Locus)> =
+        std::collections::BTreeMap::new();
     let mut variants = Vec::with_capacity(rows.len());
     for row in rows {
         let locus = Locus::new(&source, ctx.path, row.line, row.column);
@@ -197,22 +198,33 @@ pub fn lower_enum(rows: &[ValueRow], ctx: &ArtifactContext<'_>) -> Result<Loweri
                 continue;
             }
         };
-        if let Some(first) = seen.get(&identity) {
+        if let Some((first_value, first)) = seen.get(&identity) {
             blocked = true;
             diagnostics.push(
                 Diagnostic::frontend(
-                    Code::DuplicateTypeName,
-                    format!(
-                        "value `{}` of enumeration {} slugs to the variant identity {identity}, already minted at line {}",
-                        row.value, ctx.display_name, first.start_line
-                    ),
+                    if first_value == &row.value {
+                        Code::DuplicateTypeName
+                    } else {
+                        Code::UnsluggableName
+                    },
+                    if first_value == &row.value {
+                        format!(
+                            "value `{}` of enumeration {} slugs to the variant identity {identity}, already minted at line {}",
+                            row.value, ctx.display_name, first.start_line
+                        )
+                    } else {
+                        format!(
+                            "value `{}` and earlier value `{first_value}` of enumeration {} both slug to the variant identity {identity}; no distinct identity segment can be minted",
+                            row.value, ctx.display_name
+                        )
+                    },
                     Some(locus),
                 )
                 .with_related(first.clone()),
             );
             continue;
         }
-        seen.insert(identity.clone(), locus.clone());
+        seen.insert(identity.clone(), (row.value.clone(), locus.clone()));
         variants.push(Variant {
             identity,
             name: row.value.clone(),
@@ -224,7 +236,10 @@ pub fn lower_enum(rows: &[ValueRow], ctx: &ArtifactContext<'_>) -> Result<Loweri
     }
     Ok(Lowering {
         definition: TypeDefinition {
-            identity: ctx.package.type_identity(ctx.display_name),
+            identity: ctx
+                .package
+                .type_identity(ctx.display_name)
+                .expect("enumeration names are validated before lowering"),
             display_name: ctx.display_name.to_string(),
             kind: Kind::Enum,
             roles: ctx.roles.clone(),

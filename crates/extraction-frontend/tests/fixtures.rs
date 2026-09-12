@@ -47,12 +47,13 @@ const BUSINESS_REVISION: &str = "d1840b8";
 /// `negatives/ARTIFACT_NOT_LOWERED`; the rest are the bundles FR-091..FR-097
 /// name in their criteria and FR-098 does not repeat (reported with
 /// Task-136).
-const TOP_LEVEL: [&str; 11] = [
+const TOP_LEVEL: [&str; 12] = [
     "business",
     "clauses",
     "config-version-fence",
     "config-version-table",
     "edges",
+    "identity-cases",
     "legacy",
     "lower",
     "modules",
@@ -375,7 +376,7 @@ fn tc_1272_the_negatives_directory_set_equals_the_code_enum() {
     let actual: BTreeSet<String> = dirs(&negatives_dir()).into_iter().collect();
     let actual: BTreeSet<&str> = actual.iter().map(String::as_str).collect();
     assert_eq!(actual, expected);
-    assert_eq!(expected.len(), 26);
+    assert_eq!(expected.len(), 27);
     for code in Code::ALL {
         let dir = negatives_dir().join(code.name());
         let bundle = dir.join("spec/spec.md").is_file();

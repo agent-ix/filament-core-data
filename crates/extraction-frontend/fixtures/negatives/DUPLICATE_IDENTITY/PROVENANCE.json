@@ -1,0 +1,12 @@
+{
+  "source": "authored",
+  "code": "DUPLICATE_IDENTITY",
+  "files": [
+    "spec/spec.md",
+    "spec/functional/FR-001-note.md",
+    "spec/functional/FR-002-note-revision.md"
+  ],
+  "derived": [],
+  "edits": [],
+  "note": "The constrained field Note.revision mints type/NoteRevision before the later authored NoteRevision definition. The frontend raises blocking DUPLICATE_IDENTITY with the alias locus in related."
+}

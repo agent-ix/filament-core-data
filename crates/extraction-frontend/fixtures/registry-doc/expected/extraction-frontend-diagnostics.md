@@ -7,7 +7,7 @@ status: normative
 # Extraction frontend diagnostic registry
 
 The closed `agent-ix.extraction-frontend.*` set, rendered from
-`crates/extraction-frontend/src/diagnostics.rs`. 26 codes.
+`crates/extraction-frontend/src/diagnostics.rs`. 27 codes.
 
 Every code the frontend emits is one variant of this enum, and the wire
 spelling exists only in the enum's `Display`; no module under
@@ -38,6 +38,7 @@ never placed in `causes`: `ENGINE_DIAGNOSTIC` opens its message with
 | `agent-ix.extraction-frontend.UNNAMEABLE_ARTIFACT` | error | yes | an artifact has no title from which a definition name can be taken |
 | `agent-ix.extraction-frontend.ARTIFACT_NOT_LOWERED` | warning (`legacy-form`), else error | no (`legacy-form`), else yes | the engine left an artifact's fields unavailable; the availability reason names why |
 | `agent-ix.extraction-frontend.DUPLICATE_TYPE_NAME` | error | yes | two artifacts derive one type slug |
+| `agent-ix.extraction-frontend.DUPLICATE_IDENTITY` | error | yes | two admitted nodes mint the same semantic identity |
 | `agent-ix.extraction-frontend.DUPLICATE_CONSTRAINT` | error | yes | one row carries one constraint keyword twice |
 | `agent-ix.extraction-frontend.CONSTRAINT_NOT_APPLICABLE` | error | yes | a constraint keyword does not apply to the resolved type of its row |
 | `agent-ix.extraction-frontend.DECLARED_LOSS` | info | no | the frontend dropped a construct the extraction contract declares lossy |

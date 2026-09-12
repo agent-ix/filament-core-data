@@ -362,37 +362,28 @@ pub fn roles(module: &str, object: &str, manifest_roles: &[String]) -> Vec<Strin
     set.into_iter().collect()
 }
 
-/// `<SCREAMING_FIELD>`: the name split at each `_`, `-` and
-/// lower-to-upper case boundary, every part upper-cased, joined with `_`
-/// (`versionNumber` and `version_number` both yield `VERSION_NUMBER`).
+/// `UPPER_SNAKE`: the slug with `-` replaced by `_` and every letter
+/// upper-cased. A camel-case boundary is not inserted.
 pub fn screaming(name: &str) -> String {
-    let mut parts: Vec<String> = Vec::new();
-    let mut current = String::new();
-    let mut previous: Option<char> = None;
-    for c in name.chars() {
-        let separator = c == '_' || c == '-';
-        let boundary = previous.is_some_and(|p| p.is_lowercase()) && c.is_uppercase();
-        if (separator || boundary) && !current.is_empty() {
-            parts.push(std::mem::take(&mut current));
-        }
-        if !separator {
-            current.extend(c.to_uppercase());
-        }
-        previous = Some(c);
-    }
-    if !current.is_empty() {
-        parts.push(current);
-    }
-    parts.join("_")
+    slug(name)
+        .expect("diagnostic-code parts are validated before lowering")
+        .replace('-', "_")
+        .to_ascii_uppercase()
 }
 
-/// `agent-ix.<name>.<SCREAMING_FIELD>_<KEYWORD>`, the keyword in the same
-/// screaming form (`maxLength` → `MAX_LENGTH`).
-pub fn diagnostic_code(package: &PackageIdentity, field: &str, keyword: &str) -> String {
+/// `agent-ix.<slug(package, lower-case)>.<SCREAMING_OWNER>_<KEYWORD>`.
+pub fn diagnostic_code(
+    package: &PackageIdentity,
+    record: &str,
+    field: &str,
+    keyword: &str,
+) -> String {
     format!(
         "agent-ix.{}.{}_{}",
-        package.name(),
-        screaming(field),
+        slug(package.name())
+            .expect("validated package name")
+            .to_ascii_lowercase(),
+        screaming(&format!("{record}-{field}")),
         screaming(keyword)
     )
 }
@@ -745,6 +736,7 @@ pub fn lower_record(
     let mut fields = Vec::with_capacity(decls.len());
     let mut aliases = Vec::new();
     let mut codes: BTreeMap<String, Locus> = BTreeMap::new();
+    let mut field_slugs: BTreeMap<String, (String, Locus)> = BTreeMap::new();
     for (index, decl) in decls.iter().enumerate() {
         let locus = locate(rows, index, &decl.name)
             .map(|r| ctx.at(r.line, r.column))
@@ -753,6 +745,31 @@ pub fn lower_record(
             .iter()
             .find(|r| r.artifact == ctx.id && r.site == Site::Field && r.field == decl.name)
             .map(|r| &r.resolution);
+        let field_slug = match slug(&decl.name) {
+            Ok(slug) => slug,
+            Err(unsluggable) => {
+                sink.push(unsluggable.diagnostic(locus.clone()));
+                continue;
+            }
+        };
+        if let Some((first_name, first_locus)) = field_slugs.get(&field_slug) {
+            if first_name != &decl.name {
+                sink.push(
+                    Diagnostic::frontend(
+                        Code::UnsluggableName,
+                        format!(
+                            "field `{}` and earlier field `{first_name}` both slug to `{field_slug}`; no distinct identity segment can be minted",
+                            decl.name
+                        ),
+                        Some(locus.clone()),
+                    )
+                    .with_related(first_locus.clone()),
+                );
+                continue;
+            }
+        } else {
+            field_slugs.insert(field_slug, (decl.name.clone(), locus.clone()));
+        }
         let identity = match ctx.package.field_identity(ctx.display_name, &decl.name) {
             Ok(identity) => identity,
             Err(unsluggable) => {
@@ -763,7 +780,13 @@ pub fn lower_record(
         let mut field = lower_field(decl, resolved, identity, locus.clone(), ctx, &mut sink)?;
         if decl.constraints.as_deref().is_some_and(|c| !c.is_empty()) {
             let kind = resolved.and_then(ResolvedKind::of);
-            let alias_identity = ctx.package.alias_identity(ctx.display_name, &decl.name);
+            let alias_identity = match ctx.package.alias_identity(ctx.display_name, &decl.name) {
+                Ok(identity) => identity,
+                Err(unsluggable) => {
+                    sink.push(unsluggable.diagnostic(locus.clone()));
+                    continue;
+                }
+            };
             let mut constraints = Vec::new();
             lower_constraints(
                 decl,
@@ -797,7 +820,10 @@ pub fn lower_record(
     }
     sink.finish(
         TypeDefinition {
-            identity: ctx.package.type_identity(ctx.display_name),
+            identity: ctx
+                .package
+                .type_identity(ctx.display_name)
+                .expect("record names are validated before lowering"),
             display_name: ctx.display_name.to_string(),
             kind: Kind::Record,
             roles: ctx.roles.clone(),
@@ -929,7 +955,7 @@ fn lower_constraints(
             ));
             continue;
         }
-        let code = diagnostic_code(ctx.package, &decl.name, &keyword);
+        let code = diagnostic_code(ctx.package, ctx.display_name, &decl.name, &keyword);
         if let Some(first) = codes.get(&code) {
             sink.push(
                 Diagnostic::frontend(
@@ -990,7 +1016,9 @@ fn lower_constraints(
 /// preserve`), minted once per package that uses it.
 pub fn json_object_record(package: &PackageIdentity, generator_version: &str) -> TypeDefinition {
     TypeDefinition {
-        identity: package.type_identity(JSON_OBJECT),
+        identity: package
+            .type_identity(JSON_OBJECT)
+            .expect("JsonObject is slug-safe"),
         display_name: JSON_OBJECT.to_string(),
         kind: Kind::Record,
         roles: Vec::new(),
@@ -1070,7 +1098,7 @@ pub fn lower_bundle(
 
     // Type names: every kernel scalar the bundle uses is a `type/`
     // definition already, so an artifact of the same slug collides with it.
-    let mut taken: BTreeMap<String, Locus> = BTreeMap::new();
+    let mut taken: BTreeMap<String, (String, Locus)> = BTreeMap::new();
     let kernel_slugs: BTreeMap<String, KernelScalar> = resolutions
         .scalars_used
         .iter()
@@ -1113,17 +1141,26 @@ pub fn lower_bundle(
                 continue;
             }
         };
-        if let Some(first) = taken.get(&type_slug) {
+        if let Some((first_name, first)) = taken.get(&type_slug) {
+            let code = if first_name == &artifact.display_name {
+                Code::DuplicateTypeName
+            } else {
+                Code::UnsluggableName
+            };
             own.push(
                 Diagnostic::frontend(
-                    Code::DuplicateTypeName,
-                    format!(
-                        "artifact {} ({}) lowers to type name `{}`, whose slug `{type_slug}` is already taken by {}",
-                        document.id(),
-                        document.path(),
-                        artifact.display_name,
-                        first.path
-                    ),
+                    code,
+                    if code == Code::DuplicateTypeName {
+                        format!(
+                            "artifact {} ({}) lowers to type name `{}`, whose slug `{type_slug}` is already taken by {}",
+                            document.id(), document.path(), artifact.display_name, first.path
+                        )
+                    } else {
+                        format!(
+                            "artifact {} ({}) name `{}` and earlier name `{first_name}` both slug to `{type_slug}`; no distinct identity segment can be minted",
+                            document.id(), document.path(), artifact.display_name
+                        )
+                    },
                     Some(head),
                 )
                 .with_related(first.clone()),
@@ -1146,7 +1183,7 @@ pub fn lower_bundle(
             superseded.insert(document.path().to_string());
             continue;
         }
-        taken.insert(type_slug, head.clone());
+        taken.insert(type_slug, (artifact.display_name.clone(), head.clone()));
 
         let extraction_breaches = check_extraction(extracted, &source_identity, limits);
         if !extraction_breaches.is_empty() {
@@ -1223,6 +1260,7 @@ pub fn lower_bundle(
         }
     }
 
+    own.extend(identity_collisions(&types));
     let mut diagnostics: Vec<Diagnostic> = resolutions
         .diagnostics
         .iter()
@@ -1236,6 +1274,96 @@ pub fn lower_bundle(
         .collect();
     diagnostics.extend(own);
     Lowered { types, diagnostics }
+}
+
+/// Check every node the frontend admitted after the name-level pass. Name
+/// collisions are intentionally handled earlier as `DUPLICATE_TYPE_NAME`;
+/// this pass catches cross-kind collisions such as an authored `NoteRevision`
+/// type and the alias minted for `Note.revision`.
+fn identity_collisions(types: &[TypeDefinition]) -> Vec<Diagnostic> {
+    let mut seen: BTreeMap<String, Option<Locus>> = BTreeMap::new();
+    let mut diagnostics = Vec::new();
+    for definition in types {
+        for (identity, locus) in identities_of(definition) {
+            if let Some(first) = seen.get(&identity) {
+                let mut diagnostic = Diagnostic::frontend(
+                    Code::DuplicateIdentity,
+                    format!("identity `{identity}` is already minted by an earlier node"),
+                    locus.clone(),
+                );
+                if let Some(first) = first {
+                    diagnostic = diagnostic.with_related(first.clone());
+                }
+                diagnostics.push(diagnostic);
+            } else {
+                seen.insert(identity, locus);
+            }
+        }
+    }
+    diagnostics
+}
+
+fn source_locus(origin: &Origin) -> Option<Locus> {
+    match origin {
+        Origin::Source(locus) => Some(locus.clone()),
+        Origin::Generated(_) => None,
+    }
+}
+
+fn identities_of(definition: &TypeDefinition) -> Vec<(String, Option<Locus>)> {
+    let mut out = vec![(
+        definition.identity.clone(),
+        source_locus(&definition.origin),
+    )];
+    out.extend(
+        definition
+            .constraints
+            .iter()
+            .map(|node| (node.identity.clone(), source_locus(&node.origin))),
+    );
+    out.extend(
+        definition
+            .fields
+            .iter()
+            .flatten()
+            .map(|field| (field.identity.clone(), source_locus(&field.origin))),
+    );
+    out.extend(
+        definition
+            .variants
+            .iter()
+            .flatten()
+            .map(|variant| (variant.identity.clone(), source_locus(&variant.origin))),
+    );
+    out.extend(
+        definition
+            .relationships
+            .iter()
+            .flatten()
+            .map(|relationship| {
+                (
+                    relationship.identity.clone(),
+                    source_locus(&relationship.origin),
+                )
+            }),
+    );
+    for operation in definition.operations.iter().flatten() {
+        out.push((operation.identity.clone(), source_locus(&operation.origin)));
+        out.extend(
+            operation
+                .params
+                .iter()
+                .map(|param| (param.identity.clone(), source_locus(&param.origin))),
+        );
+    }
+    out.extend(
+        definition
+            .clauses
+            .iter()
+            .flatten()
+            .map(|clause| (clause.identity.clone(), source_locus(&clause.origin))),
+    );
+    out
 }
 
 /// The document of `bundle` at `path`.

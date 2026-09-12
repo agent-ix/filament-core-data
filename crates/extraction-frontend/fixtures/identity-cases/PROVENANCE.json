@@ -1,0 +1,8 @@
+{
+  "source": "authored",
+  "case": "identity-cases",
+  "files": ["identity-cases.json"],
+  "derived": [],
+  "edits": [],
+  "note": "The shared identity examples are authored from contracts-v1.md §Identity minting and consumed unchanged by identity.rs and identity.mjs through the extraction frontend harness (FR-095-AC-16)."
+}

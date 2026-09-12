@@ -378,6 +378,46 @@ function flag(argv, name) {
 	return index === -1 ? undefined : argv[index + 1];
 }
 
+/**
+ * Evaluate the shared FR-095 identity table through the TypeSpec identity
+ * implementation. `identity.mjs` exposes a pure minter; this adapter makes
+ * its empty-slug precondition explicit, so an empty part is the contract's
+ * `UNSLUGGABLE_NAME` refusal rather than a silently shortened identity.
+ */
+async function identityCases(argv) {
+	const table = flag(argv, "--table");
+	if (!table) throw new Error("identity-cases requires --table <file>");
+	const rows = JSON.parse(readFileSync(resolve(table), "utf8")).rows;
+	if (!Array.isArray(rows)) throw new Error("identity-cases table has no rows array");
+	const identity = await import(
+		pathToFileURL(join(HOME_ROOT, "src", "compiler", "frontend", "typespec", "identity.mjs")).href,
+	);
+	const output = rows.map((row) => {
+		const refuse = (parts) => parts.some((part) => identity.slug(part).length === 0);
+		if (row.kind === "refusal") {
+			return { kind: row.kind, refuses: refuse(row.parts) ? "UNSLUGGABLE_NAME" : null };
+		}
+		if (row.kind === "identity") {
+			return { kind: row.kind, identity: refuse(row.parts) ? null : identity.mintIdentity(row.package, row.slot, row.parts) };
+		}
+		if (row.kind === "alias") {
+			const parts = [row.record, row.field];
+			const tail = `${identity.slug(row.record)}${identity.capitalize(identity.slug(row.field))}`;
+			return {
+				kind: row.kind,
+				identity: refuse(parts) ? null : identity.mintIdentity(row.package, "type", [tail]),
+				displayName: `${row.record}${identity.capitalize(row.field)}`,
+			};
+		}
+		if (row.kind === "diagnosticCode") {
+			return { kind: row.kind, code: identity.constraintDiagnosticCode(row.package, row.parts, row.keyword) };
+		}
+		throw new Error(`identity-cases row has unknown kind ${row.kind}`);
+	});
+	emit(output);
+	return 0;
+}
+
 function requireScratch(argv, verb) {
 	const scratch = flag(argv, "--scratch");
 	if (!scratch) {
@@ -713,6 +753,8 @@ async function main(argv) {
 			return 0;
 		case "rust-generate":
 			return rustGenerate(argv);
+		case "identity-cases":
+			return identityCases(argv);
 		case "gate": {
 			const report = gate(root);
 			emit(report);
@@ -734,6 +776,7 @@ async function main(argv) {
 		default:
 			process.stderr.write(
 				"usage: extraction-frontend-harness.mjs <change-range | changed-paths | merge-commits | gate | suite-run> [--root DIR]\n" +
+				"       extraction-frontend-harness.mjs identity-cases --table FILE\n" +
 					"       extraction-frontend-harness.mjs rust-generate --ir FILE --out DIR [--output-root NAME]\n" +
 					"       extraction-frontend-harness.mjs <squash-rehearsal | accretion-rehearsal [--plant-prohibited] | revert-rehearsal | suite-compare> --scratch DIR [--root DIR]\n",
 			);

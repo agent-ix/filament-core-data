@@ -6,8 +6,11 @@
 //! `occurrences`; drops every `extensions` member at every node; rewrites
 //! every identity prefix `ix://<pkg>/` to `ix://shared/`, where `<pkg>` is
 //! the document's `package.identity`; and sorts every node list by
-//! `identity` under code-point comparison. Nothing else is touched: a
-//! member one frontend emits and the other omits stays a difference.
+//! `identity` under code-point comparison; and materializes absent
+//! `relationships`, `operations`, and `clauses` node lists as empty arrays.
+//! Nothing else is touched: a member one frontend emits and the other omits
+//! stays a difference, except that absent record `relationships`,
+//! `operations`, and `clauses` are deliberately equivalent to empty lists.
 #![allow(dead_code)]
 
 use agent_ix_extraction_frontend::canonical_bytes;
@@ -57,13 +60,24 @@ pub fn projected_bytes(document: &Value) -> Vec<u8> {
 /// every `<package>` prefix rewritten in every string.
 fn strip(value: &Value, package: Option<&str>) -> Value {
     match value {
-        Value::Object(members) => Value::Object(
-            members
+        Value::Object(members) => {
+            let mut stripped: Map<String, Value> = members
                 .iter()
                 .filter(|(key, _)| key.as_str() != "origin" && key.as_str() != "extensions")
                 .map(|(key, member)| (key.clone(), strip(member, package)))
-                .collect(),
-        ),
+                .collect();
+            // The IR permits these record members to be omitted. The
+            // parity projection deliberately compares absence and `[]` as
+            // equivalent for the three empty node lists.
+            if members.get("kind").and_then(Value::as_str) == Some("record") {
+                for key in ["relationships", "operations", "clauses"] {
+                    stripped
+                        .entry(key.to_string())
+                        .or_insert_with(|| Value::Array(Vec::new()));
+                }
+            }
+            Value::Object(stripped)
+        }
         Value::Array(items) => Value::Array(items.iter().map(|v| strip(v, package)).collect()),
         Value::String(s) => Value::String(match package {
             Some(prefix) if s.starts_with(prefix) => {

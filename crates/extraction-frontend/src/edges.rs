@@ -196,7 +196,13 @@ pub fn lower_relationships(
             verb,
             category: definition.category,
             composite: definition.inverse.as_deref() == Some(PART_OF),
-            target: ctx.package.type_identity(&target.display_name),
+            target: match ctx.package.type_identity(&target.display_name) {
+                Ok(identity) => identity,
+                Err(unsluggable) => {
+                    sink.push(unsluggable.diagnostic(head.clone()));
+                    continue;
+                }
+            },
             multiplicity: Multiplicity::one(),
             origin: Origin::Source(head.clone()),
         });

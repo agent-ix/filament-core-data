@@ -132,9 +132,9 @@ impl Resolution {
     /// which reaches no document.
     pub fn type_ref(&self, package: &PackageIdentity) -> Option<String> {
         match self {
-            Resolution::KernelScalar(scalar) => Some(package.type_identity(scalar.name())),
+            Resolution::KernelScalar(scalar) => package.type_identity(scalar.name()).ok(),
             Resolution::Object(artifact) | Resolution::Enumeration(artifact) => {
-                Some(package.type_identity(&artifact.display_name))
+                package.type_identity(&artifact.display_name).ok()
             }
             Resolution::Unresolved(_) => None,
         }

@@ -119,6 +119,107 @@ formats, each defined once in `common.schema.json`. The worked example
 `fixtures/semantic/v1/positive/config-version-v1-1.json` lifts config-service
 FR-006 `ConfigVersion` with zero declared loss (`config-version-v1-1-loss.json`).
 
+### Identity minting (issue #87)
+
+There is one identity-minting rule, and it is stated here once. FR-034, the
+semantic-core lowering, is its origin: where this section differs from
+FR-034's shorter form (the case-preserving `slug` applied to every part, the
+`variant` slot, the package-identity root, the slugged and lower-cased code
+namespace), this section governs. Its two implementations are the TypeSpec
+frontend (FR-053, `src/compiler/frontend/typespec/identity.mjs`) and the
+spec-bundle extraction frontend (FR-095,
+`crates/extraction-frontend/src/identity.rs`); each implements it unchanged,
+neither widens, narrows, nor restyles it, and an identity is a function of the
+declaration and its package alone — no decorator, frontmatter key, or option
+overrides one. Two frontends reading the same declaration therefore mint the
+same identity, which is what makes their documents comparable (FR-098). The
+shared table `crates/extraction-frontend/fixtures/identity-cases/identity-cases.json`
+(FR-095-AC-16) is authored from this section and is the evidence that both
+implementations agree.
+
+Every identity is rooted at the package identity, `ix://<package identity>/`,
+and occupies exactly one of these slots, whose parts are listed in order.
+Every part of every slot is slugged, the `type` name included:
+
+| Slot | Identity | Parts |
+|---|---|---|
+| `type` | `type/<slug(Name)>` | the type's name; a kernel scalar definition is `type/<KernelScalar>` (a kernel scalar name is alphanumeric, so its slug is itself) |
+| `field` | `field/<Name>-<field>` | owner type, field; an operation parameter is `field/<Name>-<operation>-<param>` (there is no `param/` slot) |
+| `variant` | `variant/<Name>-<member>` | owner enum or union, member |
+| `relationship` | `relationship/<Name>-<verb>-<TargetName>` | owner record, verb, target type name |
+| `operation` | `operation/<Name>-<name>` | owner record, operation |
+| `clause` | `clause/<Name>-<clauseId>` | owner type, clause id |
+| `constraint` | `constraint/<Name>-<field>-<keyword>` for a field constraint; `constraint/<Name>-<keyword>` for a type constraint | owner, (field,) keyword |
+
+The alias a constrained field mints is a `type` identity whose tail is
+`slug(Name)` followed by `slug(field)` with its first character upper-cased:
+`Note`, `revision` → `type/NoteRevision`; `Note`, `created_at` →
+`type/NoteCreated-at`. The alias node's `displayName` is `<Name>` followed by
+the field name verbatim with its first character upper-cased: `NoteRevision`,
+`NoteCreated_at`. The field's `typeRef` is retargeted to the alias identity and
+the constraint's `appliesTo` names it.
+
+`slug(value)` replaces every run of characters outside `[A-Za-z0-9]` with one
+`-` and trims leading and trailing `-`; case is preserved (`Config Version` →
+`Config-Version`, `Config_Version` → `Config-Version`, `created_at` →
+`created-at`, `versionNumber` → `versionNumber`). Each part is slugged and
+the parts are joined by `-`. A part is never dropped: if a part slugs to the
+empty string (`_`, `--`, `***`), the frontend raises `UNSLUGGABLE_NAME` at
+that declaration and mints nothing for it. Because parts may themselves
+contain `-`, the parts are not recoverable from an identity, which is why the
+collision rule below runs over every minted identity of every slot rather
+than per list.
+
+A constraint's `diagnosticCode` is
+`agent-ix.<slug(package name) lower-cased>.<UPPER_SNAKE(owner parts…)>_<UPPER_SNAKE(keyword)>`,
+where `UPPER_SNAKE` is `slug` with every `-` replaced by `_` and every letter
+upper-cased, and `<package name>` is the part of the package identity after
+`<org>/`. The `agent-ix.` prefix is the literal the `diagnostic.code` pattern
+of `common.schema.json` requires and does not vary with `<org>`. A camelCase
+keyword or name is not split: `minLength` is `MINLENGTH`. Package
+`agent-ix/records-and-scalars`, record `Note`, field `revision`, keyword `min`
+gives `agent-ix.records-and-scalars.NOTE_REVISION_MIN`. The code is a datum of
+the document, the code a consumer raises when the constraint fails, and always
+matches the `diagnostic.code` pattern. A `diagnosticCode` is not an identity:
+because `UPPER_SNAKE` folds case, two constraints on distinct identities may
+carry one code across records (`Status.id` and `status.id` under `min` both
+give `STATUS_ID_MIN`), and only FR-093's per-record duplicate check
+(`DUPLICATE_CONSTRAINT`) refuses a repeated code.
+
+Three cases partition the ways two nodes can claim one name or one identity,
+and they are checked in this order:
+
+- (a) **Equal names, before minting.** Two documents with equal verbatim
+  `displayName`, or a `displayName` equal to a kernel scalar the bundle uses,
+  are refused as `DUPLICATE_TYPE_NAME` at the later document, before any
+  identity of either is minted. (The TypeSpec compiler refuses duplicate
+  declarations itself, so the TypeSpec frontend never reaches this case.)
+- (b) **Distinct names, one slug.** Two distinct declaration names whose
+  slugs coincide (`created_at` beside `created__at`; two enumeration rows
+  `a b` and `a_b`) are refused as `UNSLUGGABLE_NAME` at the later
+  declaration, FR-053's rule, which the spec-bundle frontend adopts.
+- (c) **Any other two nodes minting one identity** — a minted alias beside an
+  author-named type (`NoteRevision` beside `Note.revision`), a field beside
+  an operation parameter of the same owner — are refused as
+  `DUPLICATE_IDENTITY` (an `error`, blocking) at the later node, naming both
+  identities and carrying the earlier locus as a related locus; the frontend
+  never emits a colliding identity.
+
+"Later" is by this order: a kernel definition ranks before every authored
+declaration; authored declarations rank by source path relative to the
+package root (the bundle root, for a spec bundle), then start line, then
+start column. Distinct names with distinct slugs — `Status` and `status` —
+are distinct identities, not a collision under any case.
+
+Code namespaces are frontend-owned: the spec-bundle frontend raises every
+case under `agent-ix.extraction-frontend.*`; on the TypeSpec side case (b) is
+the compiler's `agent-ix.compiler.UNSLUGGABLE_NAME` and case (c) is refused by
+the reader as `agent-ix.semantic-ir.DUPLICATE_IDENTITY`. Two known deviations
+of the TypeSpec frontend from this section — `identity.mjs` drops an empty
+part instead of raising `UNSLUGGABLE_NAME`, and `lower.mjs` leaves case (c)
+to the reader instead of refusing it before emission — are
+filament-core-data#94.
+
 ## Packages, locks, and fingerprints
 
 A package identity is opaque `owner/name`, independent of registry URL or
