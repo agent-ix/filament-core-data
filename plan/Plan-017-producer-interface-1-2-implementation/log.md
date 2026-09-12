@@ -51,3 +51,32 @@ type: log
   lists this increment's paths as unpermitted. Issue #92 retires those gates. No
   task edits them, none adds its paths to their permitted list, and their failure is
   not reported as this plan's.
+* 2026-09-11 - **Task-143 complete.** The exact-decimal canonical seam landed:
+  `serde_json`'s `arbitrary_precision` enabled for `crates/baseline-producer`, the
+  numeric lexeme read through `Number::as_str` instead of `Number::to_string()`,
+  `ProducerDecimal` added so an authored decimal never passes through binary64,
+  the numeric bounds taken from the configuration's declared
+  `resourceLimits.numericResourceLimit` (E8/E11, FND-1814) in place of the retired
+  `MAX_CANONICAL_NUMBER_DIGITS` host constant, object keys sorted by the
+  canonicalizer itself in Unicode scalar-value order (D15, FND-1751), and set
+  versus semantic-order arrays declared explicitly per member (FR-118-CON-3).
+  `canonical_number`'s algorithm is unchanged; the only edit inside it is the
+  source of its two limits, which the plan's own Green subtask directs.
+  Re-measured, not cited: `0.1000000000000000055511151231257827` canonicalized to
+  `0.1` before and to itself after;
+  `123456789012345678901234567890.12345678901234567890` to
+  `123456789012345680000000000000` before and to
+  `123456789012345678901234567890.1234567890123456789` after;
+  `0.3333333333333333333333333333333333` to `0.33333333333333337` before and to
+  itself after. TC-1440..TC-1447, TC-1449 and TC-1454 are traced executable
+  controls in `crates/baseline-producer/tests/canonical.rs` and
+  `tests/numeric_audit.rs`, each reporting the number it measured; the planted
+  `as f64` and the planted locale-collation key sort were each shown to fail
+  TC-1454 and TC-1443 respectively. `make rust-build`, `make rust-test` and
+  `cargo fmt --all -- --check` are green for the whole workspace under feature
+  unification except the issue #36 changed-path gates, which now number three
+  rather than two: `tc_1315` in `crates/extraction-frontend/tests/change_set.rs`
+  joins `tc_1299` and `tc_1310`, because it reads every manifest of the change set
+  at the pinned tip `bb1bc4d` and that commit predates `crates/baseline-producer`.
+  `tc_1294` in the same crate's `tests/fixtures.rs` was already red before this
+  task's first edit. TC status rows stay `🚧`; moving them is Task-151's job.

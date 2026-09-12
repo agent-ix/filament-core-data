@@ -4,13 +4,25 @@
 //! Traced Task-140 controls for the Baseline 1.2.0 producer boundary.
 
 use agent_ix_baseline_producer::{
-    canonical_digest, canonical_json, configuration_digest, document_digest,
-    AvailabilityDisposition, DecisiveDisposition, DefaultKind, DigestTriple, FieldMemberState,
-    LegacyV1Field, NativeArtifactReference, ProducerBundle, ProducerNativeCorrespondence,
-    ProducerObjectReference, V1Projection, WindowCoverage, CANONICAL_JSON_DOMAIN,
-    NATIVE_BYTES_DOMAIN,
+    canonical_digest, canonical_json, configuration_digest, document_digest, ArrayDeclarations,
+    AvailabilityDisposition, CanonicalPolicy, DecisiveDisposition, DefaultKind, DigestTriple,
+    FieldMemberState, LegacyV1Field, NativeArtifactReference, NumericResourceLimit, ProducerBundle,
+    ProducerNativeCorrespondence, ProducerObjectReference, V1Projection, WindowCoverage,
+    CANONICAL_JSON_DOMAIN, NATIVE_BYTES_DOMAIN,
 };
 use serde_json::json;
+
+/// The declared canonical policy these Plan-016 controls canonicalize under.
+///
+/// FR-118 takes every numeric limit from the configuration document, so a test
+/// that canonicalizes a bare value declares the limit the same way a
+/// configuration document does.
+fn policy() -> CanonicalPolicy {
+    CanonicalPolicy::new(
+        NumericResourceLimit::new(4096, 6144),
+        ArrayDeclarations::baseline(),
+    )
+}
 
 fn fixture() -> ProducerBundle {
     ProducerBundle::from_json(include_bytes!(
@@ -21,12 +33,12 @@ fn fixture() -> ProducerBundle {
 
 fn refresh_population_digest(bundle: &mut ProducerBundle) {
     bundle.population.digest =
-        document_digest(&bundle.population).expect("population digest computes");
+        document_digest(&bundle.population, &policy()).expect("population digest computes");
     bundle.closure.population_digest = Some(bundle.population.digest.clone());
 }
 
 fn refresh_model_digest(bundle: &mut ProducerBundle) {
-    bundle.model.digest = document_digest(&bundle.model).expect("model digest computes");
+    bundle.model.digest = document_digest(&bundle.model, &policy()).expect("model digest computes");
     bundle.closure.model_digest = bundle.model.digest.clone();
     for correspondence in &mut bundle.correspondences {
         correspondence.producer.digest = bundle.model.digest.clone();
@@ -34,7 +46,8 @@ fn refresh_model_digest(bundle: &mut ProducerBundle) {
 }
 
 fn refresh_window_digest(bundle: &mut ProducerBundle) {
-    bundle.window.digest = document_digest(&bundle.window).expect("window digest computes");
+    bundle.window.digest =
+        document_digest(&bundle.window, &policy()).expect("window digest computes");
     bundle.closure.window_digest = Some(bundle.window.digest.clone());
 }
 
@@ -47,15 +60,15 @@ fn tc_1373_1374_preserves_authored_presence_and_member_states() {
         bundle.configuration.digest
     );
     assert_eq!(
-        document_digest(&bundle.model).expect("model digest computes"),
+        document_digest(&bundle.model, &policy()).expect("model digest computes"),
         bundle.model.digest
     );
     assert_eq!(
-        document_digest(&bundle.population).expect("population digest computes"),
+        document_digest(&bundle.population, &policy()).expect("population digest computes"),
         bundle.population.digest
     );
     assert_eq!(
-        document_digest(&bundle.window).expect("window digest computes"),
+        document_digest(&bundle.window, &policy()).expect("window digest computes"),
         bundle.window.digest
     );
     bundle.validate().expect("fixture A validates");
@@ -381,9 +394,7 @@ fn tc_1379_configuration_content_digest_changes_with_only_a_resource_limit() {
     let bundle = fixture();
     let original = configuration_digest(&bundle.configuration).expect("original digest");
     let mut changed = bundle.configuration;
-    changed
-        .resource_limits
-        .insert("maxCanonicalNumberDigits".into(), 2048);
+    changed.resource_limits.numeric_resource_limit = Some(NumericResourceLimit::new(2048, 6144));
     assert_ne!(
         configuration_digest(&changed).expect("changed digest"),
         original
@@ -426,8 +437,8 @@ fn tc_1381_keeps_producer_and_native_digest_domains_distinct() {
         NATIVE_BYTES_DOMAIN
     );
 
-    let producer =
-        canonical_digest(&json!({"n": 9007199254740993_u64})).expect("exact producer digest");
+    let producer = canonical_digest(&json!({"n": 9007199254740993_u64}), &policy())
+        .expect("exact producer digest");
     let native = DigestTriple {
         algorithm: "sha256".into(),
         domain: NATIVE_BYTES_DOMAIN.into(),
@@ -467,23 +478,25 @@ fn tc_1381_keeps_producer_and_native_digest_domains_distinct() {
 #[test]
 fn tc_1373_1381_canonical_decimal_is_exact_and_never_binary64() {
     assert_eq!(
-        canonical_json(&json!(1)).unwrap(),
-        canonical_json(&serde_json::from_str("1.0").unwrap()).unwrap()
+        canonical_json(&json!(1), &policy()).unwrap(),
+        canonical_json(&serde_json::from_str("1.0").unwrap(), &policy()).unwrap()
     );
     assert_eq!(
-        canonical_json(&serde_json::from_str("1e0").unwrap()).unwrap(),
+        canonical_json(&serde_json::from_str("1e0").unwrap(), &policy()).unwrap(),
         "1"
     );
     assert_ne!(
-        canonical_digest(&json!(9007199254740992_u64)).unwrap(),
-        canonical_digest(&json!(9007199254740993_u64)).unwrap()
+        canonical_digest(&json!(9007199254740992_u64), &policy()).unwrap(),
+        canonical_digest(&json!(9007199254740993_u64), &policy()).unwrap()
     );
     assert_eq!(
-        canonical_digest(&json!({"x": 1})).unwrap().domain,
+        canonical_digest(&json!({"x": 1}), &policy())
+            .unwrap()
+            .domain,
         CANONICAL_JSON_DOMAIN
     );
     assert_eq!(
-        canonical_json(&json!("\u{0008}\n\\\"")).unwrap(),
+        canonical_json(&json!("\u{0008}\n\\\""), &policy()).unwrap(),
         "\"\\u0008\\u000a\\\\\\\"\""
     );
 }

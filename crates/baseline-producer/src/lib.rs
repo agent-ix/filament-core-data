@@ -13,7 +13,15 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use sha2::{Digest as _, Sha256};
+
+mod canonical;
+mod decimal;
+
+pub use canonical::{
+    canonical_digest, canonical_json, canonical_json_from_bytes, configuration_digest,
+    document_digest, ArrayDeclarations, ArrayDisposition, CanonicalPolicy, NumericResourceLimit,
+};
+pub use decimal::ProducerDecimal;
 
 /// The only baseline producer interface version accepted by this crate.
 pub const BASELINE_VERSION: &str = "1.2.0";
@@ -21,7 +29,6 @@ pub const BASELINE_VERSION: &str = "1.2.0";
 pub const CANONICAL_JSON_DOMAIN: &str = "filament-canonical-json-1";
 /// The raw-byte digest domain owned by a native consumer artifact.
 pub const NATIVE_BYTES_DOMAIN: &str = "quire-native-bytes-1";
-const MAX_CANONICAL_NUMBER_DIGITS: usize = 4096;
 const MAX_PRODUCER_DOCUMENT_BYTES: usize = 1_048_576;
 
 /// A validation refusal with an identity-preserving, stable code.
@@ -515,10 +522,28 @@ pub struct ConfigurationDocument {
     pub mapping_targets: BTreeSet<String>,
     /// Producer-declared loss/refusal policy identity.
     pub loss_policy: String,
-    /// Finite resource limits by stable name.
-    pub resource_limits: BTreeMap<String, u64>,
+    /// Finite resource limits, declared and never taken from the host.
+    pub resource_limits: ResourceLimits,
     /// Trusted references by stable identity.
     pub trusted_references: BTreeSet<String>,
+}
+
+/// The configuration document's declared finite resource limits.
+///
+/// One spelling across the interface: `resourceLimits`, with
+/// `numericResourceLimit` inside it, which FR-109 owns and declares
+/// (FND-1814, E11). The numeric member is an `Option` because absence is a
+/// representable state the producer refuses, naming the absent member, rather
+/// than a state a host default fills in (FR-118-AC-12).
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ResourceLimits {
+    /// The declared numeric resource limit FR-118 reads.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub numeric_resource_limit: Option<NumericResourceLimit>,
+    /// Remaining finite document bounds by stable name.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub declared_bounds: BTreeMap<String, u64>,
 }
 
 /// Static and assessment selections held fixed by the producer.
@@ -733,15 +758,16 @@ impl ProducerBundle {
                 "baselineVersion must be exactly 1.2.0",
             ));
         }
+        let policy = CanonicalPolicy::from_configuration(&self.configuration)?;
         if configuration_digest(&self.configuration)? != self.configuration.digest {
             return Err(Refusal::new(
                 "CONFIGURATION_DIGEST_MISMATCH",
                 self.configuration.configuration_identity.clone(),
             ));
         }
-        if document_digest(&self.model)? != self.model.digest
-            || document_digest(&self.population)? != self.population.digest
-            || document_digest(&self.window)? != self.window.digest
+        if document_digest(&self.model, &policy)? != self.model.digest
+            || document_digest(&self.population, &policy)? != self.population.digest
+            || document_digest(&self.window, &policy)? != self.window.digest
         {
             return Err(Refusal::new(
                 "DOCUMENT_DIGEST_MISMATCH",
@@ -1144,27 +1170,6 @@ fn parse_rfc3339_utc(value: &str) -> Result<UtcInstant, Refusal> {
     })
 }
 
-/// Returns a configuration's canonical semantic-input digest, excluding its own digest member.
-pub fn configuration_digest(
-    configuration: &ConfigurationDocument,
-) -> Result<DigestTriple, Refusal> {
-    document_digest(configuration)
-}
-
-/// Returns a document's canonical digest, excluding its top-level `digest` member.
-pub fn document_digest<T: Serialize>(document: &T) -> Result<DigestTriple, Refusal> {
-    let mut value = serde_json::to_value(document)
-        .map_err(|error| Refusal::new("SERIALIZATION_FAILURE", error.to_string()))?;
-    let Some(object) = value.as_object_mut() else {
-        return Err(Refusal::new(
-            "SERIALIZATION_FAILURE",
-            "configuration did not serialize as an object",
-        ));
-    };
-    object.remove("digest");
-    canonical_digest(&value)
-}
-
 fn composite_cycle<'a>(
     origin: &'a str,
     current: &'a str,
@@ -1182,142 +1187,4 @@ fn composite_cycle<'a>(
     });
     visiting.remove(current);
     cycle
-}
-
-/// Returns the canonical producer-object digest for a JSON value.
-pub fn canonical_digest(value: &Value) -> Result<DigestTriple, Refusal> {
-    let bytes = canonical_json(value)?.into_bytes();
-    Ok(DigestTriple {
-        algorithm: "sha256".into(),
-        domain: CANONICAL_JSON_DOMAIN.into(),
-        value: format!("sha256:{:x}", Sha256::digest(bytes)),
-    })
-}
-
-/// Emits Filament Canonical JSON 1 for a JSON value.
-pub fn canonical_json(value: &Value) -> Result<String, Refusal> {
-    canonical_json_at(value, 0)
-}
-
-fn canonical_json_at(value: &Value, depth: usize) -> Result<String, Refusal> {
-    if depth > 128 {
-        return Err(Refusal::new(
-            "NESTING_RESOURCE_LIMIT",
-            "canonical JSON nesting exceeds 128",
-        ));
-    }
-    match value {
-        Value::Null => Ok("null".into()),
-        Value::Bool(boolean) => Ok(boolean.to_string()),
-        Value::Number(number) => canonical_number(&number.to_string()),
-        Value::String(string) => Ok(canonical_string(string)),
-        Value::Array(values) => values
-            .iter()
-            .map(|item| canonical_json_at(item, depth + 1))
-            .collect::<Result<Vec<_>, _>>()
-            .map(|parts| format!("[{}]", parts.join(","))),
-        Value::Object(object) => object
-            .iter()
-            .map(|(key, value)| {
-                Ok(format!(
-                    "{}:{}",
-                    canonical_string(key),
-                    canonical_json_at(value, depth + 1)?
-                ))
-            })
-            .collect::<Result<Vec<_>, Refusal>>()
-            .map(|parts| format!("{{{}}}", parts.join(","))),
-    }
-}
-
-fn canonical_string(value: &str) -> String {
-    let mut output = String::with_capacity(value.len() + 2);
-    output.push('"');
-    for character in value.chars() {
-        match character {
-            '"' => output.push_str("\\\""),
-            '\\' => output.push_str("\\\\"),
-            '\u{0000}'..='\u{001f}' => {
-                use std::fmt::Write as _;
-                write!(output, "\\u{:04x}", u32::from(character))
-                    .expect("writing to String cannot fail");
-            }
-            _ => output.push(character),
-        }
-    }
-    output.push('"');
-    output
-}
-
-fn canonical_number(raw: &str) -> Result<String, Refusal> {
-    if raw.len() > MAX_CANONICAL_NUMBER_DIGITS {
-        return Err(Refusal::new(
-            "NUMBER_RESOURCE_LIMIT",
-            "numeric input exceeds canonicalization limit",
-        ));
-    }
-    let negative = raw.starts_with('-');
-    let unsigned = raw.strip_prefix('-').unwrap_or(raw);
-    let (coefficient, exponent) = match unsigned.split_once(['e', 'E']) {
-        Some((coefficient, exponent)) => (
-            coefficient,
-            exponent
-                .parse::<i32>()
-                .map_err(|_| Refusal::new("INVALID_NUMBER", raw))?,
-        ),
-        None => (unsigned, 0),
-    };
-    let (integer, fraction) = coefficient.split_once('.').unwrap_or((coefficient, ""));
-    if integer.is_empty()
-        || !integer.bytes().all(|byte| byte.is_ascii_digit())
-        || !fraction.bytes().all(|byte| byte.is_ascii_digit())
-    {
-        return Err(Refusal::new("INVALID_NUMBER", raw));
-    }
-    let mut digits = format!("{integer}{fraction}");
-    let mut decimal = i64::try_from(integer.len())
-        .map_err(|_| Refusal::new("NUMBER_RESOURCE_LIMIT", "numeric input is too large"))?
-        + i64::from(exponent);
-    while digits.starts_with('0') {
-        digits.remove(0);
-        decimal -= 1;
-    }
-    if digits.is_empty() {
-        return Ok("0".into());
-    }
-    while digits.ends_with('0') {
-        digits.pop();
-    }
-    let result = if decimal <= 0 {
-        let zeroes = usize::try_from(-decimal).map_err(|_| {
-            Refusal::new(
-                "NUMBER_RESOURCE_LIMIT",
-                "decimal expansion is outside resource limit",
-            )
-        })?;
-        format!("0.{}{}", "0".repeat(zeroes), digits)
-    } else {
-        let position = usize::try_from(decimal).map_err(|_| {
-            Refusal::new(
-                "NUMBER_RESOURCE_LIMIT",
-                "decimal expansion is outside resource limit",
-            )
-        })?;
-        if position >= digits.len() {
-            format!("{}{}", digits, "0".repeat(position - digits.len()))
-        } else {
-            format!("{}.{}", &digits[..position], &digits[position..])
-        }
-    };
-    if result.len() > MAX_CANONICAL_NUMBER_DIGITS {
-        return Err(Refusal::new(
-            "NUMBER_RESOURCE_LIMIT",
-            "canonical decimal exceeds resource limit",
-        ));
-    }
-    Ok(if negative {
-        format!("-{result}")
-    } else {
-        result
-    })
 }

@@ -12,7 +12,7 @@ publish = false
 
 [dependencies]
 serde = { workspace = true }
-serde_json = { workspace = true }
+serde_json = { workspace = true, features = ["arbitrary_precision"] }
 sha2 = "=0.10.9"
 
 [lints.rust]
