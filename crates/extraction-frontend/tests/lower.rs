@@ -3,6 +3,7 @@
 //! module. Nothing here reads the environment.
 
 use std::collections::{BTreeMap, BTreeSet};
+use std::fs;
 use std::path::{Path, PathBuf};
 
 mod common;
@@ -80,6 +81,26 @@ fn lift(name: &str) -> Lift {
     lift_at(&fixture(name), &[&business_module(), &edge_vocabulary()])
 }
 
+fn write_fixture(root: &Path, relative: &str, text: &str) {
+    let path = root.join(relative);
+    fs::create_dir_all(path.parent().expect("fixture parent")).expect("create fixture parent");
+    fs::write(&path, text).unwrap_or_else(|error| panic!("write {}: {error}", path.display()));
+}
+
+fn scratch_spec(root: &Path) {
+    write_fixture(
+        root,
+        "spec/spec.md",
+        "---\ntype: master-requirements\nname: identity-collision\norg: agent-ix\ntitle: \"Identity collision\"\n---\n# Identity collision\n",
+    );
+}
+
+fn entity(id: &str, name: &str, fields: &str) -> String {
+    format!(
+        "---\nid: {id}\ntitle: {name}\nname: {name}\nobject: entity\ntype: FR\n---\n# {name}\n\n## Properties\n\n| Field | Type | Multiplicity | Constraints |\n| --- | --- | --- | --- |\n{fields}"
+    )
+}
+
 fn with_code(diagnostics: &[Diagnostic], code: Code) -> Vec<&Diagnostic> {
     diagnostics
         .iter()
@@ -103,9 +124,9 @@ fn type_named<'a>(types: &'a [Value], display_name: &str) -> &'a Value {
 }
 
 /// The alias definitions minted for `record`'s constrained fields (FR-093
-/// "The fields": `type/<DisplayName>.<fieldName>`), in `types` order.
+/// "The fields": `type/<slug(DisplayName)><Field>`), in `types` order.
 fn aliases_of<'a>(types: &'a [Value], record: &str) -> Vec<&'a Value> {
-    let prefix = format!("{record}.");
+    let prefix = record.to_string();
     types
         .iter()
         .filter(|t| t["kind"] == "alias")
@@ -342,7 +363,7 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     assert_eq!(id["typeRef"], "ix://agent-ix/config-service/type/UUID");
     assert_eq!(
         id["identity"],
-        "ix://agent-ix/config-service/field/configversion-id"
+        "ix://agent-ix/config-service/field/ConfigVersion-id"
     );
     assert_eq!(
         id["extensions"],
@@ -380,9 +401,9 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     assert_eq!(total["unit"], "USD");
     // `min: 0` on the row: the typeRef names the field's alias, whose
     // target is the resolved scalar.
-    assert_eq!(total["typeRef"], "ix://agent-ix/orders/type/Order.total");
+    assert_eq!(total["typeRef"], "ix://agent-ix/orders/type/OrderTotal");
     assert_eq!(
-        type_named(&types, "Order.total")["target"],
+        type_named(&types, "OrderTotal")["target"],
         "ix://agent-ix/orders/type/Decimal"
     );
     assert_eq!(
@@ -406,10 +427,10 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_alias_wi
     // The record carries no constraint of its own: each lives on the alias
     // minted for its field (FR-034's form), which the field's typeRef names.
     assert_eq!(record["constraints"], json!([]));
-    let alias = type_named(&types, "ConfigVersion.versionNumber");
+    let alias = type_named(&types, "ConfigVersionVersionNumber");
     assert_eq!(
         alias["identity"],
-        "ix://agent-ix/config-service/type/ConfigVersion.versionNumber"
+        "ix://agent-ix/config-service/type/ConfigVersionVersionNumber"
     );
     assert_eq!(alias["kind"], "alias");
     assert_eq!(alias["target"], "ix://agent-ix/config-service/type/Integer");
@@ -439,11 +460,11 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_alias_wi
     assert_eq!(min["appliesTo"], alias["identity"]);
     assert_eq!(
         min["diagnosticCode"],
-        "agent-ix.config-service.VERSION_NUMBER_MIN"
+        "agent-ix.config-service.CONFIGVERSION_VERSIONNUMBER_MIN"
     );
     assert_eq!(
         min["identity"],
-        "ix://agent-ix/config-service/constraint/configversion-versionnumber-min"
+        "ix://agent-ix/config-service/constraint/ConfigVersion-versionNumber-min"
     );
     assert_eq!(min["origin"]["source"]["startLine"], 23, "the row's origin");
     assert_eq!(min["origin"]["source"]["startColumn"], 3);
@@ -461,33 +482,34 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_alias_wi
     assert_eq!(
         alias_names,
         [
-            "ConfigVersion.versionNumber",
-            "ConfigVersion.hash",
-            "ConfigVersion.createdBy"
+            "ConfigVersionVersionNumber",
+            "ConfigVersionHash",
+            "ConfigVersionCreatedBy"
         ]
     );
     for field in record["fields"].as_array().expect("fields") {
-        let name = field["name"].as_str().expect("name");
-        let aliased = alias_names.contains(&format!("ConfigVersion.{name}").as_str());
-        assert_eq!(
-            field["typeRef"]
-                .as_str()
-                .expect("typeRef")
-                .starts_with("ix://agent-ix/config-service/type/ConfigVersion."),
-            aliased,
-            "{name}"
-        );
+        let type_ref = field["typeRef"].as_str().expect("typeRef");
+        let aliased = aliases_of(&types, "ConfigVersion")
+            .iter()
+            .any(|alias| alias["identity"] == type_ref);
+        if aliased {
+            assert!(
+                type_ref.starts_with("ix://agent-ix/config-service/type/ConfigVersion"),
+                "{type_ref}"
+            );
+        }
     }
-    // The screaming rule.
-    assert_eq!(screaming("versionNumber"), "VERSION_NUMBER");
+    // The contract does not split camel case.
+    assert_eq!(screaming("versionNumber"), "VERSIONNUMBER");
     assert_eq!(screaming("version_number"), "VERSION_NUMBER");
     assert_eq!(screaming("version-number"), "VERSION_NUMBER");
-    assert_eq!(screaming("maxLength"), "MAX_LENGTH");
+    assert_eq!(screaming("created__at"), "CREATED_AT");
+    assert_eq!(screaming("maxLength"), "MAXLENGTH");
     assert_eq!(screaming("id"), "ID");
     let package = PackageIdentity::new("agent-ix", "config-service");
     assert_eq!(
-        diagnostic_code(&package, "createdBy", "maxLength"),
-        "agent-ix.config-service.CREATED_BY_MAX_LENGTH"
+        diagnostic_code(&package, "ConfigVersion", "createdBy", "maxLength"),
+        "agent-ix.config-service.CONFIGVERSION_CREATEDBY_MAXLENGTH"
     );
 }
 
@@ -504,14 +526,14 @@ fn tc_1224_max_length_pattern_and_enum_values_carry_their_operand_shapes() {
     assert_eq!(max_length["operands"], json!({"value": 64}));
     assert_eq!(
         max_length["appliesTo"],
-        "ix://agent-ix/config-service/type/ConfigVersion.createdBy"
+        "ix://agent-ix/config-service/type/ConfigVersionCreatedBy"
     );
     assert_eq!(
         field_named(record, "createdBy")["typeRef"],
-        "ix://agent-ix/config-service/type/ConfigVersion.createdBy"
+        "ix://agent-ix/config-service/type/ConfigVersionCreatedBy"
     );
     assert_eq!(
-        type_named(&types, "ConfigVersion.createdBy")["target"],
+        type_named(&types, "ConfigVersionCreatedBy")["target"],
         "ix://agent-ix/config-service/type/String"
     );
 
@@ -553,15 +575,16 @@ fn tc_1224_max_length_pattern_and_enum_values_carry_their_operand_shapes() {
     for alias in &aliases {
         let field = alias["displayName"]
             .as_str()
-            .and_then(|n| n.strip_prefix("Audit."))
-            .expect("Audit.<field>");
-        assert_eq!(field_named(record, field)["typeRef"], alias["identity"]);
+            .and_then(|n| n.strip_prefix("Audit"))
+            .map(|tail| format!("{}{}", tail[0..1].to_ascii_lowercase(), &tail[1..]))
+            .expect("Audit<Field>");
+        assert_eq!(field_named(record, &field)["typeRef"], alias["identity"]);
         for c in alias["constraints"].as_array().expect("constraints") {
             assert_eq!(c["appliesTo"], alias["identity"]);
         }
     }
     assert_eq!(
-        type_named(&types, "Audit.count")["constraints"]
+        type_named(&types, "AuditCount")["constraints"]
             .as_array()
             .map(Vec::len),
         Some(2)
@@ -1001,7 +1024,7 @@ fn tc_1229_renaming_every_field_changes_only_name_identity_alias_identity_applie
                 // field's typeRef is untouched.
                 let aliased = b["typeRef"]
                     .as_str()
-                    .is_some_and(|t| t.contains("/type/Audit."));
+                    .is_some_and(|t| t.contains("/type/Audit"));
                 let moved: &[&str] = if aliased {
                     &["name", "identity", "typeRef"]
                 } else {
@@ -1070,10 +1093,10 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     assert_eq!(
         identities,
         [
-            "ix://agent-ix/orders/variant/orderstatus-draft",
-            "ix://agent-ix/orders/variant/orderstatus-placed",
-            "ix://agent-ix/orders/variant/orderstatus-shipped",
-            "ix://agent-ix/orders/variant/orderstatus-cancelled",
+            "ix://agent-ix/orders/variant/OrderStatus-draft",
+            "ix://agent-ix/orders/variant/OrderStatus-placed",
+            "ix://agent-ix/orders/variant/OrderStatus-shipped",
+            "ix://agent-ix/orders/variant/OrderStatus-cancelled",
         ]
     );
     for (i, v) in variants.iter().enumerate() {
@@ -1152,10 +1175,17 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
             );
         }
         for alias in types.iter().filter(|t| t["kind"] == "alias") {
-            let (record, field) = alias["displayName"]
-                .as_str()
-                .and_then(|n| n.split_once('.'))
-                .unwrap_or_else(|| panic!("{name}: {alias} is not <DisplayName>.<fieldName>"));
+            let display_name = alias["displayName"].as_str().expect("displayName");
+            let record = types
+                .iter()
+                .filter_map(|candidate| candidate["displayName"].as_str())
+                .filter(|candidate| {
+                    display_name.starts_with(candidate) && *candidate != display_name
+                })
+                .max_by_key(|candidate| candidate.len())
+                .unwrap_or_else(|| panic!("{name}: {alias} has no owning record prefix"));
+            let tail = &display_name[record.len()..];
+            let field = format!("{}{}", tail[0..1].to_ascii_lowercase(), &tail[1..]);
             let target = type_named(&types, record);
             let referencing: Vec<&Value> = target["fields"]
                 .as_array()
@@ -1209,7 +1239,7 @@ fn tc_1334_status_and_status_collide_and_repeated_or_colliding_constraints_are_d
 
     let lift = self::lift("negatives/DUPLICATE_CONSTRAINT");
     let dup = with_code(&lift.lowered.diagnostics, Code::DuplicateConstraint);
-    assert_eq!(dup.len(), 2, "{:?}", lift.lowered.diagnostics);
+    assert_eq!(dup.len(), 1, "{:?}", lift.lowered.diagnostics);
     assert!(dup.iter().all(|d| d.blocking));
     assert_eq!(
         dup[0].locus,
@@ -1217,23 +1247,9 @@ fn tc_1334_status_and_status_collide_and_repeated_or_colliding_constraints_are_d
         "`min: 1, min: 2` at that row"
     );
     assert!(dup[0].message.contains("twice"), "{}", dup[0].message);
-    assert_eq!(
-        dup[1].locus,
-        Some(locus(&lift, "spec/functional/FR-002-pair.md", 19, 3)),
-        "`version_number` at the second row"
-    );
     assert!(
-        dup[1].message.contains("VERSION_NUMBER_MIN"),
-        "{}",
-        dup[1].message
-    );
-    assert_eq!(
-        dup[1].related,
-        vec![locus(&lift, "spec/functional/FR-002-pair.md", 18, 3)]
-    );
-    assert!(
-        lift.lowered.types.iter().all(|t| t.kind == Kind::Scalar),
-        "neither record is emitted: {:?}",
+        lift.lowered.types.iter().any(|t| t.display_name == "Pair"),
+        "the distinct diagnostic codes permit the Pair record: {:?}",
         lift.lowered.types
     );
 
@@ -1258,6 +1274,92 @@ fn tc_1334_status_and_status_collide_and_repeated_or_colliding_constraints_are_d
         unnameable[0].message
     );
     assert!(lift.lowered.types.iter().all(|t| t.kind == Kind::Scalar));
+}
+
+#[trace("TC-1334", "FR-093-AC-13")]
+#[test]
+fn tc_1334_distinct_names_with_one_slug_refuse_at_type_field_and_variant_levels() {
+    let types = tempfile::tempdir().expect("type collision fixture");
+    scratch_spec(types.path());
+    write_fixture(
+        types.path(),
+        "spec/functional/FR-001.md",
+        &entity("FR-001", "Config_Version", "| id | UUID | 1 | identity |\n"),
+    );
+    write_fixture(
+        types.path(),
+        "spec/functional/FR-002.md",
+        &entity(
+            "FR-002",
+            "Config__Version",
+            "| id | UUID | 1 | identity |\n",
+        ),
+    );
+    let type_lift = lift_at(types.path(), &[&business_module(), &edge_vocabulary()]);
+    let type_diagnostics = with_code(&type_lift.lowered.diagnostics, Code::UnsluggableName);
+    assert_eq!(
+        type_diagnostics.len(),
+        1,
+        "{:?}",
+        type_lift.lowered.diagnostics
+    );
+    assert_eq!(
+        type_diagnostics[0]
+            .locus
+            .as_ref()
+            .map(|locus| locus.path.as_str()),
+        Some("spec/functional/FR-002.md")
+    );
+
+    let fields = tempfile::tempdir().expect("field collision fixture");
+    scratch_spec(fields.path());
+    write_fixture(
+        fields.path(),
+        "spec/functional/FR-001.md",
+        &entity(
+            "FR-001",
+            "Note",
+            "| created_at | String | 1 | |\n| created__at | String | 1 | |\n",
+        ),
+    );
+    let field_lift = lift_at(fields.path(), &[&business_module(), &edge_vocabulary()]);
+    let field_diagnostics = with_code(&field_lift.lowered.diagnostics, Code::UnsluggableName);
+    assert_eq!(
+        field_diagnostics.len(),
+        1,
+        "{:?}",
+        field_lift.lowered.diagnostics
+    );
+    assert_eq!(
+        field_diagnostics[0]
+            .locus
+            .as_ref()
+            .map(|locus| locus.start_line),
+        Some(15)
+    );
+
+    let variants = tempfile::tempdir().expect("variant collision fixture");
+    scratch_spec(variants.path());
+    write_fixture(
+        variants.path(),
+        "spec/functional/EN-001.md",
+        "---\nid: EN-001\ntitle: Marks\nname: Marks\nobject: enumeration\ntype: FR\n---\n# Marks\n\n## Values\n\n| Value | Description |\n| --- | --- |\n| a b | first |\n| a_b | second |\n",
+    );
+    let variant_lift = lift_at(variants.path(), &[&business_module(), &edge_vocabulary()]);
+    let variant_diagnostics = with_code(&variant_lift.lowered.diagnostics, Code::UnsluggableName);
+    assert_eq!(
+        variant_diagnostics.len(),
+        1,
+        "{:?}",
+        variant_lift.lowered.diagnostics
+    );
+    assert_eq!(
+        variant_diagnostics[0]
+            .locus
+            .as_ref()
+            .map(|locus| locus.start_line),
+        Some(15)
+    );
 }
 
 #[trace("TC-1335", "FR-093-AC-14")]
@@ -1322,12 +1424,8 @@ fn tc_1335_a_domain_without_properties_lowers_to_an_empty_record_and_lossy_yield
 #[trace("TC-1347", "FR-095-AC-14")]
 #[trace("TC-1347", "FR-093-AC-13")]
 #[test]
-fn tc_1347_status_and_status_slug_alike_refuse_at_the_second_document_and_mint_no_field_twice() {
+fn tc_1347_equal_status_names_refuse_at_the_second_document_and_mint_no_field_twice() {
     let lift = lift("negatives/DUPLICATE_TYPE_NAME");
-    assert_eq!(
-        agent_ix_extraction_frontend::slug("Status"),
-        agent_ix_extraction_frontend::slug("status")
-    );
     let dup = with_code(&lift.lowered.diagnostics, Code::DuplicateTypeName);
     assert_eq!(dup.len(), 1);
     assert!(dup[0].blocking, "the lift refuses");
@@ -1355,7 +1453,7 @@ fn tc_1347_status_and_status_slug_alike_refuse_at_the_second_document_and_mint_n
     );
     let status_fields: Vec<&String> = identities
         .iter()
-        .filter(|i| i.contains("/field/status-"))
+        .filter(|i| i.contains("/field/Status-"))
         .collect();
     assert_eq!(
         status_fields.len(),

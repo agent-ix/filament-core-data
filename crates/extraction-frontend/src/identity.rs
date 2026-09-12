@@ -1,12 +1,10 @@
 //! FR-095 "Node identities": the package identity, the slug, and the
 //! closed list of node-identity patterns.
 //!
-//! Every identity the frontend emits is minted here and nowhere else. The
-//! `type/` segment carries the record's `displayName` verbatim (FR-046's
-//! rule), or `<DisplayName>.<fieldName>` for the alias FR-093 mints per
-//! constrained field (FR-034's form; `semanticIdentity` admits the dot);
-//! every other segment is a [`slug`] (decision D8). A name that slugs to the
-//! empty string is [`Unsluggable`], which the caller raises as
+//! Every identity the frontend emits is minted here and nowhere else. Every
+//! identity part, including the `type/` tail and a constrained-field alias,
+//! is a case-preserving [`slug`] (the shared #87 contract). A name that slugs
+//! to the empty string is [`Unsluggable`], which the caller raises as
 //! `UNSLUGGABLE_NAME` at the declaration's locus, blocking.
 
 use std::fmt;
@@ -42,7 +40,7 @@ impl fmt::Display for Unsluggable {
 
 impl std::error::Error for Unsluggable {}
 
-/// The slug of a source name: lowercased, every run of non-alphanumeric
+/// The slug of a source name: case-preserving, every run of non-alphanumeric
 /// characters replaced by one `-`, no leading or trailing `-`.
 ///
 /// Alphanumeric means ASCII alphanumeric: `semanticIdentity` admits only
@@ -57,7 +55,7 @@ pub fn slug(name: &str) -> Result<String, Unsluggable> {
                 out.push('-');
             }
             separator_pending = false;
-            out.push(c.to_ascii_lowercase());
+            out.push(c);
         } else {
             separator_pending = true;
         }
@@ -80,20 +78,18 @@ pub enum NodeKind {
     Constraint,
     Relationship,
     Operation,
-    Param,
     Variant,
     Clause,
 }
 
 impl NodeKind {
     /// Every kind, in FR-095's order.
-    pub const ALL: [NodeKind; 8] = [
+    pub const ALL: [NodeKind; 7] = [
         NodeKind::Type,
         NodeKind::Field,
         NodeKind::Constraint,
         NodeKind::Relationship,
         NodeKind::Operation,
-        NodeKind::Param,
         NodeKind::Variant,
         NodeKind::Clause,
     ];
@@ -106,7 +102,6 @@ impl NodeKind {
             NodeKind::Constraint => "constraint",
             NodeKind::Relationship => "relationship",
             NodeKind::Operation => "operation",
-            NodeKind::Param => "param",
             NodeKind::Variant => "variant",
             NodeKind::Clause => "clause",
         }
@@ -154,19 +149,15 @@ impl PackageIdentity {
         format!("ix://{}/{}/{}/{tail}", self.org, self.name, kind.segment())
     }
 
-    /// `ix://<org>/<name>/type/<DisplayName>`: the `displayName` verbatim,
-    /// or the kernel scalar's name verbatim for a scalar definition.
-    pub fn type_identity(&self, display_name: &str) -> String {
-        self.node(NodeKind::Type, display_name)
+    /// `ix://<org>/<name>/type/<slug(DisplayName)>`.
+    pub fn type_identity(&self, display_name: &str) -> Result<String, Unsluggable> {
+        Ok(self.node(NodeKind::Type, &slug(display_name)?))
     }
 
-    /// `ix://<org>/<name>/type/<DisplayName>.<fieldName>`: the alias a
-    /// constrained field's `typeRef` names, whose `constraints[]` carry the
-    /// row's keywords (FR-093 "The fields", FR-095 "Node identities"). Both
-    /// segments are `Identifier`s, so the tail is verbatim; two fields of
-    /// one record cannot share a name (`DUPLICATE_FIELD` is the engine's).
-    pub fn alias_identity(&self, record: &str, field: &str) -> String {
-        self.node(NodeKind::Type, &alias_display_name(record, field))
+    /// `ix://<org>/<name>/type/<slug(DisplayName)><Slug(Field)>`: the alias a
+    /// constrained field's `typeRef` names.
+    pub fn alias_identity(&self, record: &str, field: &str) -> Result<String, Unsluggable> {
+        Ok(self.node(NodeKind::Type, &alias_identity_tail(record, field)?))
     }
 
     /// `ix://<org>/<name>/field/<record-slug>-<field-slug>`.
@@ -199,14 +190,14 @@ impl PackageIdentity {
         Ok(self.node(NodeKind::Operation, &join(&[record, op])?))
     }
 
-    /// `ix://<org>/<name>/param/<record-slug>-<op-slug>-<param-slug>`.
+    /// `ix://<org>/<name>/field/<record-slug>-<op-slug>-<param-slug>`.
     pub fn param_identity(
         &self,
         record: &str,
         op: &str,
         param: &str,
     ) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Param, &join(&[record, op, param])?))
+        Ok(self.node(NodeKind::Field, &join(&[record, op, param])?))
     }
 
     /// `ix://<org>/<name>/variant/<enum-slug>-<value-slug>`.
@@ -226,10 +217,25 @@ impl From<&Package> for PackageIdentity {
     }
 }
 
-/// `<DisplayName>.<fieldName>`: the `displayName` of the alias minted for
-/// a constrained field, and the tail of its identity.
+/// `<slug(DisplayName)><Slug(fieldName)>`: the tail of the constrained-field
+/// alias identity. The field component is capitalized after slugging.
+fn alias_identity_tail(record: &str, field: &str) -> Result<String, Unsluggable> {
+    let record = slug(record)?;
+    let mut field = slug(field)?;
+    if let Some(first) = field.get_mut(0..1) {
+        first.make_ascii_uppercase();
+    }
+    Ok(format!("{record}{field}"))
+}
+
+/// `<DisplayName><fieldName>`: the display name of the constrained-field
+/// alias. The field component is verbatim except for its first character.
 pub fn alias_display_name(record: &str, field: &str) -> String {
-    format!("{record}.{field}")
+    let mut field = field.to_string();
+    if let Some(first) = field.get_mut(0..1) {
+        first.make_ascii_uppercase();
+    }
+    format!("{record}{field}")
 }
 
 /// The slugs of `names`, joined by `-`. The first unsluggable name is the

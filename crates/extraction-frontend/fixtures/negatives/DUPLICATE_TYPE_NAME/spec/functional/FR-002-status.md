@@ -1,11 +1,11 @@
 ---
 id: FR-002
-title: status
+title: Status
 object: entity
 type: FR
 ---
 
-# FR-002: status
+# FR-002: Status
 
 ## Description
 

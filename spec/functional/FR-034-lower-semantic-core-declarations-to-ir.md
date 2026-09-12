@@ -25,6 +25,16 @@ instance's declarations to IR v1.1 nodes as a table plus a test-scoped
 reference lowerer, with zero declared loss, proven on the FR-006
 `ConfigVersion` declarations.
 
+## Rationale
+
+The identity, alias, and `diagnosticCode` rules in Behavior are the origin of
+the identity-minting rule; `docs/semantic-data-system/contracts-v1.md`
+§Identity minting and FR-053 are its complete statement and supersede this
+section's shorter form where they differ — the case-preserving `slug` applied
+to every part, the `variant` slot, the package-identity root, and the slugged
+and lower-cased code namespace (issue #87, CR-087-2). FR-053 and FR-095 are
+the two implementations of that statement.
+
 ## Inputs
 
 - One archetype instance: `{ name, kind: record | enum, fields: FieldDecl[], relations: RelationDecl[], operations: OperationDecl[], clauses: ClauseRef[], enumValues: EnumValue[] }` supplied by a module
@@ -80,4 +90,4 @@ reference lowerer, with zero declared loss, proven on the FR-006
 ## Dependencies
 
 - **Upstream**: [FR-031](./FR-031-define-the-semantic-core-declaration-grammar.md), [FR-032](./FR-032-define-the-kernel-scalar-library.md), [FR-027](./FR-027-declare-field-multiplicity-and-units.md), [FR-028](./FR-028-represent-relationships-operations-and-clauses.md), [FR-029](./FR-029-close-the-constraint-keyword-vocabulary.md)
-- **Downstream**: extraction frontend (issue #36), `agent-ix/quire-contract-ir#53`
+- **Downstream**: [FR-053](./FR-053-declare-the-typespec-semantic-vocabulary.md), [FR-095](./FR-095-mint-package-identity-and-provenance.md) (extraction frontend, issue #36), `agent-ix/quire-contract-ir#53`

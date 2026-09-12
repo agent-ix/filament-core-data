@@ -155,7 +155,7 @@ fn tc_1231_fr_006_references_fr_005_lowers_to_one_traceability_relationship_at_t
     );
     assert_eq!(
         rel["identity"],
-        "ix://agent-ix/config-service/relationship/configversion-references-configoverlay"
+        "ix://agent-ix/config-service/relationship/ConfigVersion-references-ConfigOverlay"
     );
     // The pair reached the frontend as the engine's `harvest_edges` returns
     // it: the target reduced to its last segment.
@@ -245,7 +245,7 @@ fn tc_1233_references_is_traceability_and_owns_is_dependency_neither_composite()
     );
     assert_eq!(
         owns[0]["identity"],
-        "ix://agent-ix/orders/relationship/order-owns-orderlifecycle"
+        "ix://agent-ix/orders/relationship/Order-owns-OrderLifecycle"
     );
 }
 
