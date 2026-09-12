@@ -41,3 +41,26 @@ impl SemanticType {
         }
     }
 }
+
+/// Every extension identity the contract this crate was generated from
+/// declares, ordered by code point.
+pub const DECLARED_EXTENSION_IDENTITIES: &[&str] = &[];
+
+/// The capabilities this crate admits.
+///
+/// Empty, and empty is a stated decision rather than an omission.
+/// `consumer-policy.schema.json` is sealed and carries no capability
+/// member, and the published `rust` target contract declares no capability
+/// list, so there is no published input a non-empty set could be read from.
+/// That is GAP-007 in `conformance/contract-gaps.json`, owned by issue #9.
+/// A crate that claimed to admit a capability nobody published would be
+/// inventing the rule the gap records as missing.
+pub const ADMITTED_CAPABILITIES: &[&str] = &[];
+
+/// Decides one extension against this crate's declared set.
+///
+/// An empty result is acceptance; a blocking diagnostic is rejection. A
+/// `required: false` extension is always preserved, whatever its identity.
+pub fn decide_extension(extension: &support::Extension) -> Vec<support::Diagnostic> {
+    extension.decide(DECLARED_EXTENSION_IDENTITIES, ADMITTED_CAPABILITIES)
+}

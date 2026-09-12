@@ -253,23 +253,32 @@ fn tc_1273_the_manifest_names_semantic_ir_by_path_and_no_jsonschema_and_the_read
         .output()
         .expect("spawn git");
     assert_eq!(String::from_utf8_lossy(&status.stdout).trim(), "");
-    let main = Command::new("git")
-        .args(["rev-parse", "--verify", "--quiet", "main"])
-        .current_dir(workspace_dir())
-        .output()
-        .expect("spawn git");
-    if main.status.success() {
-        let diff = Command::new("git")
-            .args(["diff", "--stat", "main...HEAD", "--", "crates/semantic-ir"])
-            .current_dir(workspace_dir())
-            .output()
-            .expect("spawn git");
-        assert_eq!(
-            String::from_utf8_lossy(&diff.stdout).trim(),
-            "",
-            "crates/semantic-ir differs from main"
-        );
-    }
+    // The committed half is measured over *this change's* range, resolved from
+    // history through NFR-032's sentinels, not over `main...HEAD`.
+    //
+    // `main...HEAD` measures whichever branch happens to be checked out. On the
+    // merged trunk it is empty and this assertion passes vacuously; on any later
+    // branch that touches `crates/semantic-ir` for a reason of its own it fails
+    // and names issue #36, which did nothing. That is the annexation defect of
+    // issue #51, and the harness already resolves the honest range — the same
+    // `changed-paths` verb `change_set.rs` asserts over.
+    let paths = common::run_node(
+        &["scripts/extraction-frontend-harness.mjs", "changed-paths"],
+        &[],
+        None,
+    )
+    .unwrap_or_else(|error| panic!("harness changed-paths: {error}"));
+    assert_eq!(paths.status, 0, "{}", paths.stderr);
+    let changed: Vec<String> = serde_json::from_slice(&paths.stdout)
+        .unwrap_or_else(|error| panic!("harness changed-paths output: {error}: {}", paths.stderr));
+    let touched: Vec<&String> = changed
+        .iter()
+        .filter(|path| path.starts_with("crates/semantic-ir/"))
+        .collect();
+    assert!(
+        touched.is_empty(),
+        "this change touches crates/semantic-ir: {touched:?}"
+    );
 }
 
 #[trace("TC-1274", "FR-097-AC-2")]
