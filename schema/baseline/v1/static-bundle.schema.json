@@ -1,0 +1,653 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/filament-core-data/baseline/v1/static-bundle.schema.json",
+	"title": "Filament Baseline 1.2.0 static producer bundle",
+	"description": "The wire form of the static bundle FR-117 admits: four header members, exactly nine content member classes, and no assessment member class. Every assessment member name is prohibited explicitly as well as by additionalProperties, so an offered assessment member is rejected by name rather than as an unknown field.",
+	"type": "object",
+	"additionalProperties": false,
+	"required": [
+		"bundleIdentity",
+		"bundleRevision",
+		"digest",
+		"interfaceVersion",
+		"model",
+		"profile",
+		"components",
+		"endpoints",
+		"relationships",
+		"inventory",
+		"configuration",
+		"staticClosure",
+		"correspondences"
+	],
+	"properties": {
+		"availability": { "not": {} },
+		"observationClosure": { "not": {} },
+		"observationRecords": { "not": {} },
+		"population": { "not": {} },
+		"populationIdentity": { "not": {} },
+		"progress": { "not": {} },
+		"progressRecords": { "not": {} },
+		"relationshipInstances": { "not": {} },
+		"snapshot": { "not": {} },
+		"window": { "not": {} },
+		"windowIdentity": { "not": {} },
+		"workflowInstance": { "not": {} },
+		"bundleIdentity": { "$ref": "#/$defs/identity" },
+		"bundleRevision": { "$ref": "#/$defs/producerRevision" },
+		"digest": { "$ref": "#/$defs/canonicalDigest" },
+		"interfaceVersion": { "const": "1.2.0" },
+		"model": { "$ref": "#/$defs/modelSelection" },
+		"profile": { "$ref": "#/$defs/profileSelection" },
+		"components": {
+			"type": "array",
+			"minItems": 1,
+			"items": { "$ref": "#/$defs/component" }
+		},
+		"endpoints": {
+			"type": "array",
+			"minItems": 1,
+			"items": { "$ref": "#/$defs/endpoint" }
+		},
+		"relationships": {
+			"type": "array",
+			"minItems": 1,
+			"items": { "$ref": "#/$defs/relationship" }
+		},
+		"inventory": { "$ref": "#/$defs/inventory" },
+		"configuration": { "$ref": "#/$defs/configuration" },
+		"staticClosure": { "$ref": "#/$defs/staticClosure" },
+		"correspondences": {
+			"type": "array",
+			"minItems": 1,
+			"items": { "$ref": "#/$defs/correspondence" }
+		}
+	},
+	"$defs": {
+		"identity": { "type": "string", "minLength": 1 },
+		"digest": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["algorithm", "domain", "version", "value"],
+			"properties": {
+				"algorithm": { "const": "sha256" },
+				"domain": {
+					"enum": ["filament-canonical-json-1", "quire-native-bytes-1"]
+				},
+				"version": { "const": "1" },
+				"value": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+			}
+		},
+		"canonicalDigest": {
+			"allOf": [
+				{ "$ref": "#/$defs/digest" },
+				{ "type": "object", "properties": { "domain": { "const": "filament-canonical-json-1" } } }
+			]
+		},
+		"nativeBytesDigest": {
+			"allOf": [
+				{ "$ref": "#/$defs/digest" },
+				{ "type": "object", "properties": { "domain": { "const": "quire-native-bytes-1" } } }
+			]
+		},
+		"rawByteDigest": {
+			"description": "The consumer-owned ArtifactRef.digest: one raw-byte digest string, deliberately not a four-member selection (FR-112-CON-4).",
+			"type": "string",
+			"pattern": "^sha256:[0-9a-f]{64}$"
+		},
+		"revision": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["namespace", "value"],
+			"properties": {
+				"namespace": {
+					"enum": [
+						"filament-core-data/producer-object-revision-1",
+						"quire-native/definition-revision-1"
+					]
+				},
+				"value": { "type": "string", "minLength": 1 }
+			}
+		},
+		"producerRevision": {
+			"allOf": [
+				{ "$ref": "#/$defs/revision" },
+				{
+					"type": "object",
+					"properties": {
+						"namespace": {
+							"const": "filament-core-data/producer-object-revision-1"
+						}
+					}
+				}
+			]
+		},
+		"nativeRevision": {
+			"allOf": [
+				{ "$ref": "#/$defs/revision" },
+				{
+					"type": "object",
+					"properties": {
+						"namespace": { "const": "quire-native/definition-revision-1" }
+					}
+				}
+			]
+		},
+		"nativeSourceLabel": {
+			"description": "The consumer-owned NativeSource record: an editable native authority label, never a formal revision (FR-113-CON-4).",
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["identity", "revision"],
+			"properties": {
+				"identity": { "$ref": "#/$defs/identity" },
+				"revision": { "type": "string", "minLength": 1 }
+			}
+		},
+		"multiplicity": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["lower"],
+			"properties": {
+				"lower": { "type": "integer", "minimum": 0 },
+				"upper": { "type": "integer", "minimum": 0 },
+				"ordered": { "type": "boolean" },
+				"unique": { "type": "boolean" }
+			}
+		},
+		"wire": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["identity", "version"],
+			"properties": {
+				"identity": { "type": "string", "minLength": 1 },
+				"version": { "type": "string", "minLength": 1 }
+			}
+		},
+		"artifactReference": {
+			"description": "All seven members of the consumer's ArtifactRef record.",
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"refVersion",
+				"kind",
+				"authority",
+				"identity",
+				"revision",
+				"digest",
+				"wire"
+			],
+			"properties": {
+				"refVersion": { "type": "string", "minLength": 1 },
+				"kind": {
+					"enum": [
+						"binding",
+						"dependency-closure",
+						"environment",
+						"executable-projection",
+						"fault-model",
+						"generated-artifact",
+						"invocation",
+						"linked-package",
+						"model-lock",
+						"model-manifest",
+						"model-package",
+						"observation",
+						"oracle",
+						"property",
+						"review-disposition",
+						"review-procedure",
+						"run-artifact",
+						"snapshot",
+						"source",
+						"trace"
+					]
+				},
+				"authority": { "$ref": "#/$defs/identity" },
+				"identity": { "$ref": "#/$defs/identity" },
+				"revision": { "$ref": "#/$defs/revision" },
+				"digest": { "$ref": "#/$defs/rawByteDigest" },
+				"wire": { "$ref": "#/$defs/wire" }
+			}
+		},
+		"formalDocument": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["document", "revision"],
+			"properties": {
+				"document": { "$ref": "#/$defs/identity" },
+				"revision": { "$ref": "#/$defs/producerRevision" }
+			}
+		},
+		"span": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["start", "end"],
+			"properties": {
+				"start": { "type": "integer", "minimum": 0 },
+				"end": { "type": "integer", "minimum": 0 }
+			}
+		},
+		"sourceLocus": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["source", "formal", "span"],
+			"properties": {
+				"source": { "$ref": "#/$defs/artifactReference" },
+				"formal": { "$ref": "#/$defs/formalDocument" },
+				"span": { "$ref": "#/$defs/span" }
+			}
+		},
+		"inventoryMembership": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["inventoryIdentity", "completeness"],
+			"properties": {
+				"inventoryIdentity": { "$ref": "#/$defs/identity" },
+				"completeness": { "enum": ["complete", "incomplete"] }
+			}
+		},
+		"modelSelection": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["modelIdentity", "modelRevision", "digest"],
+			"properties": {
+				"modelIdentity": { "$ref": "#/$defs/identity" },
+				"modelRevision": { "$ref": "#/$defs/producerRevision" },
+				"digest": { "$ref": "#/$defs/canonicalDigest" }
+			}
+		},
+		"profileSelection": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["profileIdentity", "profileRevision", "digest"],
+			"properties": {
+				"profileIdentity": { "$ref": "#/$defs/identity" },
+				"profileRevision": { "$ref": "#/$defs/producerRevision" },
+				"digest": { "$ref": "#/$defs/canonicalDigest" }
+			}
+		},
+		"component": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"componentIdentity",
+				"componentRevision",
+				"digest",
+				"repositoryIdentity",
+				"repositoryRevision",
+				"roleIdentities",
+				"owningTypeIdentity",
+				"sourceLocus",
+				"inventoryMembership"
+			],
+			"properties": {
+				"componentIdentity": { "$ref": "#/$defs/identity" },
+				"componentRevision": { "$ref": "#/$defs/producerRevision" },
+				"digest": { "$ref": "#/$defs/canonicalDigest" },
+				"repositoryIdentity": { "$ref": "#/$defs/identity" },
+				"repositoryRevision": { "$ref": "#/$defs/producerRevision" },
+				"roleIdentities": {
+					"type": "array",
+					"minItems": 1,
+					"uniqueItems": true,
+					"items": { "$ref": "#/$defs/identity" }
+				},
+				"owningTypeIdentity": { "$ref": "#/$defs/identity" },
+				"sourceLocus": { "$ref": "#/$defs/sourceLocus" },
+				"inventoryMembership": { "$ref": "#/$defs/inventoryMembership" }
+			}
+		},
+		"endpoint": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"endpointIdentity",
+				"endpointRevision",
+				"digest",
+				"componentIdentity",
+				"typeIdentity",
+				"role",
+				"multiplicity",
+				"sourceLocus",
+				"inventoryMembership"
+			],
+			"properties": {
+				"endpointIdentity": { "$ref": "#/$defs/identity" },
+				"endpointRevision": { "$ref": "#/$defs/producerRevision" },
+				"digest": { "$ref": "#/$defs/canonicalDigest" },
+				"componentIdentity": { "$ref": "#/$defs/identity" },
+				"typeIdentity": { "$ref": "#/$defs/identity" },
+				"role": { "type": "string", "minLength": 1 },
+				"multiplicity": { "$ref": "#/$defs/multiplicity" },
+				"sourceLocus": { "$ref": "#/$defs/sourceLocus" },
+				"inventoryMembership": { "$ref": "#/$defs/inventoryMembership" }
+			}
+		},
+		"relationshipEndpoint": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["endpointIdentity", "typeIdentity", "role", "multiplicity"],
+			"properties": {
+				"endpointIdentity": { "$ref": "#/$defs/identity" },
+				"typeIdentity": { "$ref": "#/$defs/identity" },
+				"role": { "type": "string", "minLength": 1 },
+				"multiplicity": { "$ref": "#/$defs/multiplicity" }
+			}
+		},
+		"relationshipSemantics": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"category",
+				"direction",
+				"composite",
+				"lifecycle",
+				"ownership"
+			],
+			"properties": {
+				"category": { "type": "string", "minLength": 1 },
+				"direction": { "type": "string", "minLength": 1 },
+				"composite": { "type": "boolean" },
+				"lifecycle": { "type": "string", "minLength": 1 },
+				"ownership": { "type": "string", "minLength": 1 }
+			}
+		},
+		"relationshipOwnership": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"modelIdentity",
+				"profileIdentity",
+				"configurationIdentity"
+			],
+			"properties": {
+				"modelIdentity": { "$ref": "#/$defs/identity" },
+				"profileIdentity": { "$ref": "#/$defs/identity" },
+				"configurationIdentity": { "$ref": "#/$defs/identity" }
+			}
+		},
+		"relationship": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"relationshipIdentity",
+				"relationshipName",
+				"relationshipRevision",
+				"digest",
+				"source",
+				"target",
+				"semantics",
+				"ownership",
+				"inventoryMembership"
+			],
+			"properties": {
+				"relationshipIdentity": { "$ref": "#/$defs/identity" },
+				"relationshipName": { "type": "string", "minLength": 1 },
+				"relationshipRevision": { "$ref": "#/$defs/producerRevision" },
+				"digest": { "$ref": "#/$defs/canonicalDigest" },
+				"source": { "$ref": "#/$defs/relationshipEndpoint" },
+				"target": { "$ref": "#/$defs/relationshipEndpoint" },
+				"semantics": { "$ref": "#/$defs/relationshipSemantics" },
+				"ownership": { "$ref": "#/$defs/relationshipOwnership" },
+				"inventoryMembership": { "$ref": "#/$defs/inventoryMembership" }
+			}
+		},
+		"inventory": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"inventoryIdentity",
+				"completeness",
+				"componentIdentities",
+				"endpointIdentities",
+				"relationshipIdentities"
+			],
+			"properties": {
+				"inventoryIdentity": { "$ref": "#/$defs/identity" },
+				"completeness": { "enum": ["complete", "incomplete"] },
+				"componentIdentities": {
+					"type": "array",
+					"uniqueItems": true,
+					"items": { "$ref": "#/$defs/identity" }
+				},
+				"endpointIdentities": {
+					"type": "array",
+					"uniqueItems": true,
+					"items": { "$ref": "#/$defs/identity" }
+				},
+				"relationshipIdentities": {
+					"type": "array",
+					"uniqueItems": true,
+					"items": { "$ref": "#/$defs/identity" }
+				}
+			}
+		},
+		"numericResourceLimit": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["maximumCoefficientDigits", "maximumExponentMagnitude"],
+			"properties": {
+				"maximumCoefficientDigits": { "type": "integer", "minimum": 1 },
+				"maximumExponentMagnitude": { "type": "integer", "minimum": 1 }
+			}
+		},
+		"resourceLimits": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["numericResourceLimit"],
+			"properties": {
+				"numericResourceLimit": { "$ref": "#/$defs/numericResourceLimit" },
+				"declaredBounds": {
+					"type": "object",
+					"additionalProperties": { "type": "integer", "minimum": 0 }
+				}
+			}
+		},
+		"digestDomainSelection": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["domain", "version"],
+			"properties": {
+				"domain": {
+					"enum": ["filament-canonical-json-1", "quire-native-bytes-1"]
+				},
+				"version": { "const": "1" }
+			}
+		},
+		"configuration": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"configurationIdentity",
+				"baselineVersion",
+				"digest",
+				"modelAuthority",
+				"profileIdentities",
+				"adapterIdentities",
+				"mappingTargets",
+				"lossPolicy",
+				"resourceLimits",
+				"digestSelections",
+				"revisionNamespaces",
+				"trustedReferences"
+			],
+			"properties": {
+				"configurationIdentity": { "$ref": "#/$defs/identity" },
+				"baselineVersion": { "const": "1.2.0" },
+				"digest": { "$ref": "#/$defs/canonicalDigest" },
+				"modelAuthority": { "$ref": "#/$defs/identity" },
+				"profileIdentities": {
+					"type": "array",
+					"uniqueItems": true,
+					"items": { "$ref": "#/$defs/identity" }
+				},
+				"adapterIdentities": {
+					"type": "array",
+					"uniqueItems": true,
+					"items": { "$ref": "#/$defs/identity" }
+				},
+				"mappingTargets": {
+					"type": "array",
+					"uniqueItems": true,
+					"items": { "$ref": "#/$defs/identity" }
+				},
+				"lossPolicy": { "$ref": "#/$defs/identity" },
+				"resourceLimits": { "$ref": "#/$defs/resourceLimits" },
+				"digestSelections": {
+					"type": "array",
+					"minItems": 1,
+					"uniqueItems": true,
+					"items": { "$ref": "#/$defs/digestDomainSelection" }
+				},
+				"revisionNamespaces": {
+					"type": "array",
+					"minItems": 1,
+					"uniqueItems": true,
+					"items": {
+						"enum": [
+							"filament-core-data/producer-object-revision-1",
+							"quire-native/definition-revision-1"
+						]
+					}
+				},
+				"trustedReferences": {
+					"type": "array",
+					"uniqueItems": true,
+					"items": { "$ref": "#/$defs/identity" }
+				}
+			}
+		},
+		"declarationSource": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["source", "native", "path", "formal"],
+			"properties": {
+				"source": { "$ref": "#/$defs/artifactReference" },
+				"native": { "$ref": "#/$defs/nativeSourceLabel" },
+				"path": { "type": "string", "minLength": 1 },
+				"formal": { "$ref": "#/$defs/formalDocument" }
+			}
+		},
+		"staticClosure": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"configurationIdentity",
+				"configurationDigest",
+				"modelIdentity",
+				"modelDigest",
+				"profileIdentity",
+				"profileDigest",
+				"declarationSources"
+			],
+			"properties": {
+				"configurationIdentity": { "$ref": "#/$defs/identity" },
+				"configurationDigest": { "$ref": "#/$defs/canonicalDigest" },
+				"modelIdentity": { "$ref": "#/$defs/identity" },
+				"modelDigest": { "$ref": "#/$defs/canonicalDigest" },
+				"profileIdentity": { "$ref": "#/$defs/identity" },
+				"profileDigest": { "$ref": "#/$defs/canonicalDigest" },
+				"declarationSources": {
+					"type": "array",
+					"minItems": 1,
+					"items": { "$ref": "#/$defs/declarationSource" }
+				}
+			}
+		},
+		"producerObject": {
+			"description": "The five producer-object members the producer authors. There is no sixth: the consumer's `interface` u32 index is not a member (FR-116-CON-5).",
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["objectKind", "authority", "identity", "revision", "digest"],
+			"properties": {
+				"objectKind": { "type": "string", "minLength": 1 },
+				"authority": { "$ref": "#/$defs/identity" },
+				"identity": { "$ref": "#/$defs/identity" },
+				"revision": { "$ref": "#/$defs/producerRevision" },
+				"digest": { "$ref": "#/$defs/canonicalDigest" }
+			}
+		},
+		"nativeArtifact": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["identity", "revision", "rawByteDigest"],
+			"properties": {
+				"identity": { "$ref": "#/$defs/identity" },
+				"revision": { "$ref": "#/$defs/nativeRevision" },
+				"rawByteDigest": { "$ref": "#/$defs/nativeBytesDigest" }
+			}
+		},
+		"exportRecord": {
+			"description": "One export mapping. The `population` kind FR-120 partitions to the assessment side is not an admitted value here.",
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"producerObjectIdentity",
+				"exportIdentity",
+				"exportPath",
+				"locus"
+			],
+			"properties": {
+				"kind": {
+					"enum": [
+						"component",
+						"endpoint",
+						"enum",
+						"field",
+						"object",
+						"operation",
+						"record",
+						"reference",
+						"relationship",
+						"scalar",
+						"variant"
+					]
+				},
+				"producerObjectIdentity": { "$ref": "#/$defs/identity" },
+				"exportIdentity": { "$ref": "#/$defs/identity" },
+				"exportPath": {
+					"type": "array",
+					"minItems": 1,
+					"items": { "type": "string", "minLength": 1 }
+				},
+				"locus": { "$ref": "#/$defs/sourceLocus" }
+			}
+		},
+		"correspondence": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"bindingRelationIdentity",
+				"producer",
+				"native",
+				"nativeDefinitionClosure",
+				"requiredNativeDefinitionIdentities",
+				"configurationIdentity",
+				"exports"
+			],
+			"properties": {
+				"bindingRelationIdentity": { "$ref": "#/$defs/identity" },
+				"producer": { "$ref": "#/$defs/producerObject" },
+				"native": { "$ref": "#/$defs/nativeArtifact" },
+				"nativeDefinitionClosure": {
+					"type": "array",
+					"minItems": 1,
+					"items": { "$ref": "#/$defs/nativeArtifact" }
+				},
+				"requiredNativeDefinitionIdentities": {
+					"type": "array",
+					"minItems": 1,
+					"uniqueItems": true,
+					"items": { "$ref": "#/$defs/identity" }
+				},
+				"configurationIdentity": { "$ref": "#/$defs/identity" },
+				"exports": {
+					"type": "array",
+					"minItems": 1,
+					"items": { "$ref": "#/$defs/exportRecord" }
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,127 @@
+{
+  "declaredBy": "Plan-017 Task-149",
+  "documents": [
+    {
+      "golden": "golden/bundle.canonical-json.txt",
+      "name": "bundle",
+      "path": []
+    },
+    {
+      "golden": "golden/model.canonical-json.txt",
+      "name": "model",
+      "path": [
+        "model"
+      ]
+    },
+    {
+      "golden": "golden/profile.canonical-json.txt",
+      "name": "profile",
+      "path": [
+        "profile"
+      ]
+    },
+    {
+      "golden": "golden/configuration.canonical-json.txt",
+      "name": "configuration",
+      "path": [
+        "configuration"
+      ]
+    },
+    {
+      "golden": "golden/static-closure.canonical-json.txt",
+      "name": "static-closure",
+      "path": [
+        "staticClosure"
+      ]
+    },
+    {
+      "golden": "golden/components-0.canonical-json.txt",
+      "name": "components-0",
+      "path": [
+        "components",
+        "0"
+      ]
+    },
+    {
+      "golden": "golden/components-1.canonical-json.txt",
+      "name": "components-1",
+      "path": [
+        "components",
+        "1"
+      ]
+    },
+    {
+      "golden": "golden/endpoints-0.canonical-json.txt",
+      "name": "endpoints-0",
+      "path": [
+        "endpoints",
+        "0"
+      ]
+    },
+    {
+      "golden": "golden/endpoints-1.canonical-json.txt",
+      "name": "endpoints-1",
+      "path": [
+        "endpoints",
+        "1"
+      ]
+    },
+    {
+      "golden": "golden/endpoints-2.canonical-json.txt",
+      "name": "endpoints-2",
+      "path": [
+        "endpoints",
+        "2"
+      ]
+    },
+    {
+      "golden": "golden/endpoints-3.canonical-json.txt",
+      "name": "endpoints-3",
+      "path": [
+        "endpoints",
+        "3"
+      ]
+    },
+    {
+      "golden": "golden/endpoints-4.canonical-json.txt",
+      "name": "endpoints-4",
+      "path": [
+        "endpoints",
+        "4"
+      ]
+    },
+    {
+      "golden": "golden/relationships-0.canonical-json.txt",
+      "name": "relationships-0",
+      "path": [
+        "relationships",
+        "0"
+      ]
+    },
+    {
+      "golden": "golden/relationships-1.canonical-json.txt",
+      "name": "relationships-1",
+      "path": [
+        "relationships",
+        "1"
+      ]
+    },
+    {
+      "golden": "golden/correspondences-0.canonical-json.txt",
+      "name": "correspondences-0",
+      "path": [
+        "correspondences",
+        "0"
+      ]
+    },
+    {
+      "golden": "golden/correspondences-1.canonical-json.txt",
+      "name": "correspondences-1",
+      "path": [
+        "correspondences",
+        "1"
+      ]
+    }
+  ],
+  "requirement": "NFR-036"
+}
