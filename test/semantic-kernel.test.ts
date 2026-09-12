@@ -43,6 +43,7 @@ import {
 	kernelDigestInputs,
 } from "../src/compiler/frontend/json-schema/bundle.mjs";
 import { DIAGNOSTIC_CODES } from "../src/compiler/diagnostics.mjs";
+import { changedPathsOf } from "./changed-paths.js";
 
 const root = resolve(import.meta.dirname, "..");
 const read = (p: string) =>
@@ -66,8 +67,15 @@ const PERMITTED = [
 	"scripts/build-semantic-kernel.mjs",
 	"test/semantic-kernel.test.ts",
 	"test/changed-paths.ts",
+	"test/compiler-core.test.ts",
 	"tests/test_semantic_kernel.py",
 	"Makefile",
+];
+
+/** NFR-030's two declared sentinels, in the order it declares them. */
+const SENTINELS = [
+	"spec/usecase/US-014-consume-the-semantic-kernel-natively.md",
+	"docs/semantic-data-system/semantic-kernel-packages.md",
 ];
 
 /** NFR-030's prohibited prefixes: paths this change writes no byte of. */
@@ -92,14 +100,19 @@ const PROHIBITED = [
 	".github/",
 ];
 
+/**
+ * Issue #11's change set, both endpoints resolved from history.
+ *
+ * This gate previously read `git diff main...HEAD`, which measures whatever
+ * branch happens to be checked out rather than the change NFR-030 is about.
+ * On the merged trunk that range is empty and every prohibition below passes
+ * vacuously; on any later branch that touches `src/compiler/backends/` it fails
+ * and names the wrong ticket. `changedPathsOf` pins the range to the commit
+ * that added the sentinel, so the gate asserts about issue #11 from either
+ * side of its merge — the form issues #19 and #54 already settled here.
+ */
 function changedPaths(): string[] {
-	return execFileSync(
-		"git",
-		["diff", "--no-renames", "--name-only", "main...HEAD"],
-		{ cwd: root, encoding: "utf8" },
-	)
-		.split("\n")
-		.filter((line) => line.length > 0);
+	return changedPathsOf(root, SENTINELS);
 }
 
 function treeOf(dir: string): [string, string][] {

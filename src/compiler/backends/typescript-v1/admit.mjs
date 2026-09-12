@@ -632,7 +632,8 @@ export function admitIr(bundle, options = {}) {
 	const claimExtensions = (node, pointer, owner, locus) => {
 		const seen = new Set();
 		for (const [position, extension] of (node?.extensions ?? []).entries()) {
-			if (!isObject(extension) || typeof extension.identity !== "string") continue;
+			if (!isObject(extension) || typeof extension.identity !== "string")
+				continue;
 			if (seen.has(extension.identity)) {
 				emit(
 					ADMISSIBILITY_CODES.DUPLICATE_IDENTITY,
@@ -755,7 +756,12 @@ export function admitIr(bundle, options = {}) {
 				constraint?.identity,
 				constraintLocus,
 			);
-			claimExtensions(constraint, constraintPointer, constraint?.identity, constraintLocus);
+			claimExtensions(
+				constraint,
+				constraintPointer,
+				constraint?.identity,
+				constraintLocus,
+			);
 			if (!isObject(constraint)) continue;
 			const subject = resolvedScalar(types, constraint.appliesTo, maxDepth);
 			const subjectKind = resolvedKind(types, constraint.appliesTo, maxDepth);
@@ -830,7 +836,12 @@ export function admitIr(bundle, options = {}) {
 				relationship?.identity,
 				relationshipLocus,
 			);
-			claimExtensions(relationship, relationshipPointer, relationship?.identity, relationshipLocus);
+			claimExtensions(
+				relationship,
+				relationshipPointer,
+				relationship?.identity,
+				relationshipLocus,
+			);
 			if (!isObject(relationship)) continue;
 			/*
 			 * "Relationship targets resolve to a document type or a lock export"
@@ -865,7 +876,12 @@ export function admitIr(bundle, options = {}) {
 				operation?.identity,
 				operationLocus,
 			);
-			claimExtensions(operation, operationPointer, operation?.identity, operationLocus);
+			claimExtensions(
+				operation,
+				operationPointer,
+				operation?.identity,
+				operationLocus,
+			);
 			if (!isObject(operation)) continue;
 			const paramNames = new Set();
 			for (const [slot, param] of (operation.params ?? []).entries()) {
@@ -941,7 +957,6 @@ export function admitIr(bundle, options = {}) {
 				);
 			}
 		}
-
 	}
 
 	function fieldChecks(field, fieldPointer, fieldLocus) {
@@ -1026,7 +1041,12 @@ export function admitIr(bundle, options = {}) {
 			occurrence?.identity,
 			undefined,
 		);
-		claimExtensions(occurrence, occurrencePointer, occurrence?.identity, undefined);
+		claimExtensions(
+			occurrence,
+			occurrencePointer,
+			occurrence?.identity,
+			undefined,
+		);
 		if (!isObject(occurrence)) continue;
 		if (!types.has(occurrence.definition)) {
 			emit(
