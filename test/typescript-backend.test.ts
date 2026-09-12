@@ -21,6 +21,10 @@ import { reachableSymbols } from "../src/compiler/backends/typescript-v1/package
 import { auditRenderedNodes } from "../src/compiler/backends/typescript-v1/metadata.mjs";
 import { buildModel } from "../src/compiler/backends/typescript-v1/model.mjs";
 import {
+	SCHEMA_FILES,
+	admitIr,
+} from "../src/compiler/backends/typescript-v1/admit.mjs";
+import {
 	VARIANT_ADDITION_POLICIES,
 	VARIANT_ADDITION_POLICY,
 	classifySurface,
@@ -34,6 +38,9 @@ const tsc = resolve(root, "node_modules/.bin/tsc");
 const generator = resolve(root, "src/compiler/cli.mjs");
 const fixtureIr = resolve(fixture, "input/semantic-ir.json");
 const instances = resolve(fixture, "instances");
+const admissionSchemas = SCHEMA_FILES.map((path) =>
+	JSON.parse(readFileSync(resolve(root, path), "utf8")),
+);
 const SLASH = "/";
 // Built rather than written as a literal: a regex literal carrying a double
 // quote defeats the trace binder's TypeScript brace scanner, and an unreadable
@@ -293,6 +300,38 @@ async function generatedValidators(ir: string, directory: string) {
 		`${pathToFileURL(resolve(compiled, "index.js")).href}?${Date.now()}`
 	) as Promise<Record<string, unknown>>;
 }
+
+describe("TC-1355 extension identity admission (FR-068)", () => {
+	/** Traces: TC-1355; FR-068-AC-25. */
+	it("admits repeated kernel-scalar extensions across nodes and rejects a duplicate on one field", () => {
+		const ir = JSON.parse(readFileSync(fixtureIr, "utf8"));
+		const kernelScalar = {
+			identity: "ix://agent-ix/semantic-core/ext/kernel-scalar",
+			version: "1.0.0",
+			required: false,
+			capability: "semantic-core-kernel-scalar",
+			payload: { name: "UUID" },
+		};
+		for (const type of ir.types) type.extensions = [kernelScalar];
+		const admitted = admitIr({ ir }, { schemas: admissionSchemas });
+		expect(admitted.diagnostics).toEqual([]);
+
+		const field = ir.types
+			.flatMap((type: { fields?: unknown[] }) => type.fields ?? [])
+			.at(0) as { extensions?: unknown[] } | undefined;
+		expect(field).toBeDefined();
+		field!.extensions = [
+			{ ...kernelScalar, identity: "ix://agent-ix/semantic-core/ext/doc" },
+			{ ...kernelScalar, identity: "ix://agent-ix/semantic-core/ext/doc" },
+		];
+		const refused = admitIr({ ir }, { schemas: admissionSchemas });
+		expect(refused.diagnostics).toHaveLength(1);
+		expect(refused.diagnostics[0]).toMatchObject({
+			pointer: expect.stringMatching(/\/fields\/0\/extensions\/1\/identity$/),
+			diagnostic: { code: "agent-ix.semantic-ir.DUPLICATE_IDENTITY" },
+		});
+	});
+});
 
 describe("TypeScript backend fixture (FR-071)", () => {
 	it("TC-834 generates byte-identically across directories and C/Turkish locales", () => {

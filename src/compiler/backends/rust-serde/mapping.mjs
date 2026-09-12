@@ -59,6 +59,17 @@ export const GENERATED_SCALARS = Object.freeze([
 	"Uuid",
 ]);
 
+/** The existing support type that renders a matching kernel scalar definition. */
+function supportTypeFor(definition, renderedName) {
+	if (definition?.kind !== "scalar") return undefined;
+	const scalar = definition.scalar;
+	const rustType = KERNEL_SCALARS[scalar];
+	if (typeof rustType !== "string" || !rustType.startsWith("crate::support::"))
+		return undefined;
+	const support = rustType.slice("crate::support::".length);
+	return renderedName === support ? rustType : undefined;
+}
+
 /**
  * Names the generated crate owns at its re-export namespace before a single IR
  * type is mapped. Seeding the type scope with them turns a contract that
@@ -199,7 +210,7 @@ export function mapDocument(ir, options = {}) {
 		if (model === undefined) continue;
 		diagnostics.push(...model.diagnostics);
 		delete model.diagnostics;
-		models.push(model);
+		if (model.supportType !== true) models.push(model);
 	}
 	diagnostics.push(...collisionsIn(SCOPES.CRATE_TYPES, typeScope));
 
@@ -295,6 +306,10 @@ function mapType(definition, context) {
 	if (name.ok !== true) {
 		raise(RUST_BACKEND_CODES.UNRENDERABLE_NAME, name.diagnostic.message, locus);
 		return undefined;
+	}
+	const supportType = supportTypeFor(definition, name.value);
+	if (supportType !== undefined) {
+		return { diagnostics: [], supportType: true };
 	}
 	const module = moduleName(definition);
 	if (module.ok !== true) {
@@ -567,6 +582,8 @@ function referenceTo(ref, edgeKey, position, owner, context) {
 		);
 		return undefined;
 	}
+	const supportType = supportTypeFor(definition, rendered.value);
+	if (supportType !== undefined) return supportType;
 	const base = `crate::${rendered.value}`;
 	return graph.boxed.has(edgeKey) ? `Box<${base}>` : base;
 }

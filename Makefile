@@ -397,11 +397,16 @@ extraction-frontend-test: extraction-frontend-toolchain
 # tests (the Make, change-set, audit and toolchain rehearsals, which nest
 # `cargo test`, `make`, or the network-backed `cargo deny`/`cargo audit`), so
 # the rows they bind have a named producer (SR-170 FND-1505). The tests
-# `#[ignore]`d as *blocked* on an open issue (TC-1290/1291 on #87, TC-1292 on
-# #88 and the rust-serde NAME_COLLISION defect) fail by design until the issue
-# closes and are skipped here by name; run one deliberately with
+# `#[ignore]`d as *blocked* on an open issue (TC-1290/1291 on #87) fail by
+# design until the issue closes and are skipped here by name; run one
+# deliberately with
 # `cargo +1.98.1 test -p agent-ix-extraction-frontend -- --ignored --exact <name>`.
-EXTRACTION_BLOCKED_TESTS := tc_1290_ tc_1291_ tc_1292_rust_generate tc_1292_generate_typescript
+#
+# TC-1292's two halves are no longer here: issues #88 and #90 closed the
+# backend defects they were blocked on, their `#[ignore]`s are gone, and they
+# now run in `extraction-frontend-test` with every other live test. Leaving
+# them named here would skip nothing and would keep asserting they are blocked.
+EXTRACTION_BLOCKED_TESTS := tc_1290_ tc_1291_
 .PHONY: extraction-frontend-evidence
 extraction-frontend-evidence: extraction-frontend-toolchain
 	cargo +$(EXTRACTION_TOOLCHAIN) test -p $(EXTRACTION_CRATE) --locked --offline --no-fail-fast -- --ignored $(foreach test,$(EXTRACTION_BLOCKED_TESTS),--skip $(test))

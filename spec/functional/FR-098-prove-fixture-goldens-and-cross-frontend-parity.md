@@ -67,22 +67,19 @@ frontend's identity rule. That is filed as filament-core-data#87 and
 decides; TC-1290 and TC-1291 are blocked on it. The projection also
 materialises an absent `relationships`, `operations`, or `clauses` as `[]`,
 which is the FR-028-CON-1 reading of absence as empty, not a widening.
-Task-136 also measured that `generate --target typescript` refuses every
-document carrying two kernel-scalar extensions with `DUPLICATE_IDENTITY`,
-including FR-046's own assurance output (filed as filament-core-data#88), and
-that `--target rust` through the generic `src/compiler/cli.mjs` is
+Task-136 measured the two former backend defects: `generate --target
+typescript` refused repeated kernel-scalar extensions with `DUPLICATE_IDENTITY`
+(filed as filament-core-data#88), and the Rust backend's writer refused the
+`config-version-table` document with `NAME_COLLISION` on `UUID` (filed as
+filament-core-data#90). Both are resolved; the acceptance tests below run the
+two successful paths. `--target rust` through the generic `src/compiler/cli.mjs` is
 `BACKEND_NOT_IMPLEMENTED`; the Rust backend's entry is its writer
 `generateRust` (`src/compiler/backends/rust-serde/index.mjs`), which
 `src/compiler/backends/rust-serde/cli.mjs generate` runs over the fixed
 conformance corpus and which the `rust-generate` verb of
 `scripts/extraction-frontend-harness.mjs` runs over one lifted document with
 the request `cli.mjs` builds (CR-036-9, SR-170 FND-1500). Run that way, the
-Rust backend refuses the `config-version-table` document with
-`agent-ix.rust-backend.NAME_COLLISION`: its reserved re-export `Uuid`
-collides with the FR-092 kernel-scalar definition `type/UUID`, whose Rust
-identifier is also `Uuid`, for every document that uses the `UUID` kernel
-scalar — a backend defect outside this frontend, reported for filing, on
-which the Rust half of TC-1292 is blocked. The FR-045 node seam
+Rust backend is the acceptance path for this document. The FR-045 node seam
 (`src/compiler/frontend/spec-bundle/frontend.mjs`) is a prohibited path and
 keeps returning `FRONTEND_NOT_IMPLEMENTED`; wiring the Rust binary into that
 seam and its harness is filed as filament-core-data#86, so the parity test runs
@@ -163,8 +160,8 @@ unlisted or listed and absent.
 
 ### Backend acceptance and the payload check (declared gap, issue #85)
 
-- The frontend SHALL emit a `config-version-table` document that the Rust backend's writer `generateRust` (`src/compiler/backends/rust-serde/index.mjs`, run over the document by `node scripts/extraction-frontend-harness.mjs rust-generate --ir <file> --out <dir>` with the request `src/compiler/backends/rust-serde/cli.mjs` builds; `node src/compiler/cli.mjs generate --target rust` is `BACKEND_NOT_IMPLEMENTED`) accepts with zero diagnostics once the backend's reserved `Uuid` re-export no longer collides with the `UUID` kernel scalar; until then that backend refuses every document using `UUID` with `NAME_COLLISION`, and the Rust half of TC-1292 is blocked on that defect.
-- The frontend SHALL emit a `config-version-table` document that `node src/compiler/cli.mjs generate --target typescript` accepts with zero diagnostics once filament-core-data#88 is fixed; until then that backend refuses every document carrying two kernel-scalar extensions, FR-046's own assurance output included, with `DUPLICATE_IDENTITY`, and the TypeScript half of TC-1292 is blocked on #88.
+- The frontend SHALL emit a `config-version-table` document that the Rust backend's writer `generateRust` (`src/compiler/backends/rust-serde/index.mjs`, run over the document by `node scripts/extraction-frontend-harness.mjs rust-generate --ir <file> --out <dir>` with the request `src/compiler/backends/rust-serde/cli.mjs` builds; `node src/compiler/cli.mjs generate --target rust` remains `BACKEND_NOT_IMPLEMENTED`.
+- The frontend SHALL emit a `config-version-table` document that `node src/compiler/cli.mjs generate --target typescript` accepts with zero diagnostics.
 - The frontend SHALL keep the payload-schema helper under `crates/extraction-frontend/tests/` only, unexported and unreachable from `lift` and `inspect`.
 
 ## Constraints
@@ -186,7 +183,7 @@ unlisted or listed and absent.
 | FR-098-AC-5 | After lifting a committed copy of each fixture bundle, `git status --porcelain` is empty and every file's hash under the bundle and module roots is unchanged, for a clean lift and for a lift with a blocking diagnostic. | Test (TC-1289) |
 | FR-098-AC-6 | `cases.json` carries `records-and-scalars` with both source trees present and `"spec-bundle": null` with a `reason` naming filament-core-data#87 and the differing identity rules, and `"spec-bundle": null` with a `reason` naming `scalar` for each of the three existing cases; the parity test asserts zero two-dialect cases until #87 decides; the projection materialises an absent `relationships`, `operations`, or `clauses` as `[]`. | Test (TC-1290, blocked on filament-core-data#87) |
 | FR-098-AC-7 | For `records-and-scalars`, once filament-core-data#87 decides a shared identity rule, `normalized` of the projection of the spec-bundle lift equals `normalized` of the projection of the `node src/compiler/cli.mjs compile` output byte for byte, and the test fails naming `node` when it is absent; until #87 decides, the comparison cannot hold because FR-053 and FR-095 mint identities by different closed rules and the case is recorded single-dialect with that reason. | Test (TC-1291, blocked on filament-core-data#87) |
-| FR-098-AC-8 | `node scripts/extraction-frontend-harness.mjs rust-generate` (the Rust backend's `generateRust` over the lifted `config-version-table` document, with the request `rust-serde/cli.mjs` builds) exits zero with zero diagnostics once the backend's reserved `Uuid` re-export no longer collides with the `UUID` kernel scalar (until then it refuses the document with exactly one `NAME_COLLISION` naming `Uuid`, `rust-backend/reserved/Uuid` and `type/UUID`, writes no crate, and that half of TC-1292 is blocked); `node src/compiler/cli.mjs generate --target typescript` over the same document exits zero with zero diagnostics once filament-core-data#88 is fixed (until then it refuses the document with `DUPLICATE_IDENTITY` and that half of TC-1292 is blocked); each refusal is measured by an un-ignored test. | Test (TC-1292, Rust half blocked on the rust-serde `NAME_COLLISION` defect, TypeScript half blocked on filament-core-data#88) |
+| FR-098-AC-8 | `node scripts/extraction-frontend-harness.mjs rust-generate` (the Rust backend's `generateRust` over the lifted `config-version-table` document, with the request `rust-serde/cli.mjs` builds) and `node src/compiler/cli.mjs generate --target typescript` over that same document each exit zero with zero diagnostics and a non-empty file set. | Test (TC-1292) |
 | FR-098-AC-9 | A representative `ConfigVersion` payload validates against the test-derived schema, `{"versionNumber": 0}` fails at `versionNumber`, and the helper is not reachable from the crate's public surface. | Test (TC-1293) |
 | FR-098-AC-10 | The change set of this requirement outside the crate is exactly `cases.json`, `test/fixtures/compiler/shared/typespec/records-and-scalars/`, and files under `test/fixtures/compiler/shared/spec-bundle/`; `src/compiler/frontend/**` and `test/compiler-core.test.ts` are byte-unchanged. | Static (TC-1294) |
 | FR-098-AC-11 | The set of directories under `fixtures/`, `fixtures/negatives/`, and `fixtures/modules/` equals the inventory above, and every `constructed.json` names a test function that exists in `crates/extraction-frontend/tests/`. | Static (TC-1343) |
@@ -195,5 +192,5 @@ unlisted or listed and absent.
 ## Dependencies
 
 - **Upstream**: [FR-096](./FR-096-emit-stable-source-located-frontend-diagnostics.md), [FR-097](./FR-097-normalize-validate-and-write-the-lifted-document.md), [FR-045](./FR-045-define-the-frontend-seam.md), [FR-046](./FR-046-lower-typespec-to-contract-ir.md), [FR-030](./FR-030-bind-source-dialect-and-manifest-targets.md)
-- **Downstream**: [FR-099](./FR-099-provide-the-extraction-frontend-command-line.md), issue #37, `agent-ix/quire-contract-ir#52`, filament-core-data#86, filament-core-data#87, filament-core-data#88
+- **Downstream**: [FR-099](./FR-099-provide-the-extraction-frontend-command-line.md), issue #37, `agent-ix/quire-contract-ir#52`, filament-core-data#86, filament-core-data#87, filament-core-data#88, filament-core-data#90
 - **Constrained by**: [NFR-031](../non-functional/NFR-031-deterministic-and-hermetic-lifting.md), [NFR-032](../non-functional/NFR-032-non-disruptive-extraction-frontend.md)

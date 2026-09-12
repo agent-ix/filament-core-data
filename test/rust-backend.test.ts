@@ -1340,6 +1340,78 @@ function treeDigest(directory: string): Map<string, string> {
 }
 
 describe("TC-725..730 the branch register, the properties and the mutation catalogue", () => {
+	/** Traces: TC-1357, TC-1358; FR-055-AC-15, FR-055-AC-16. */
+	it("maps matching support scalars without newtypes and preserves reserved-name collisions", async () => {
+		const { mapping } = await loadOnce().then((loaded) => loaded.backend);
+		const base = {
+			contractVersion: "1.1.0",
+			package: { identity: "agent-ix/test" },
+			source: {},
+			occurrences: [],
+			extensions: [],
+		};
+		const supportRows = [
+			["date", "Date", "Date"],
+			["datetime", "DateTime", "DateTime"],
+			["duration", "Duration", "Duration"],
+			["uuid", "Uuid", "UUID"],
+		] as const;
+		for (const [scalar, support, identityName] of supportRows) {
+			const definition = {
+				identity: `ix://agent-ix/test/type/${identityName}`,
+				kind: "scalar",
+				scalar,
+				displayName: identityName,
+				unknownPolicy: "reject",
+				roles: [],
+			};
+			const mapped = mapping.mapDocument({ ...base, types: [definition] }, {});
+			expect(mapped.diagnostics).toEqual([]);
+			expect(mapped.model.types).toEqual([]);
+			const reference = mapping.mapDocument(
+				{
+					...base,
+					types: [
+						definition,
+						{
+							identity: "ix://agent-ix/test/type/Holder",
+							kind: "record",
+							displayName: "Holder",
+							unknownPolicy: "reject",
+							roles: [],
+							fields: [
+								{
+									identity: "ix://agent-ix/test/field/Holder-value",
+									name: "value",
+									typeRef: definition.identity,
+									presence: "required",
+									nullable: false,
+								},
+							],
+						},
+					],
+				},
+				{},
+			);
+			expect(reference.model.types[0].fields[0].element).toBe(
+				`crate::support::${support}`,
+			);
+		}
+		for (const definition of [
+			{ identity: "ix://agent-ix/test/type/Uuid", kind: "scalar", scalar: "string" },
+			{ identity: "ix://agent-ix/test/type/Date", kind: "record" },
+		]) {
+			const result = mapping.mapDocument({
+				...base,
+				types: [{ ...definition, displayName: definition.identity.split("/").at(-1), unknownPolicy: "reject", roles: [], fields: [] }],
+			}, {});
+			expect(result.model).toBeUndefined();
+			expect(result.diagnostics.map((entry: { code: string }) => entry.code)).toEqual([
+				"agent-ix.rust-backend.NAME_COLLISION",
+			]);
+		}
+	});
+
 	/**
 	 * Traces: TC-725; FR-062-AC-1, FR-062-AC-8.
 	 *
@@ -1357,7 +1429,8 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	 *
 	 * Branches: scalar:boolean, scalar:bytes, scalar:date, scalar:datetime,
 	 * scalar:duration, scalar:integer, scalar:number, scalar:string,
-	 * scalar:uuid;
+	 * scalar:uuid, support-type:date, support-type:datetime,
+	 * support-type:duration, support-type:uuid;
 	 */
 	it("TC-725 every kernel scalar maps to the Rust base the mapping table states", async () => {
 		await runDetectorCase(
@@ -1540,7 +1613,7 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 			"TC-729 the degradation scan names a declaration that carries a degraded type",
 		);
 	});
-	/** Traces: TC-725; FR-062-AC-1. */
+	/** Traces: TC-725, TC-1359; FR-062-AC-1, FR-062-AC-15. */
 	it("TC-725 every register row names a case the suite carries, and the register is not stale", async () => {
 		const branchRegister = await import(modulePathOf("branch-register.mjs"));
 		const suiteText = read(resolve(root, "test/rust-backend.test.ts"));

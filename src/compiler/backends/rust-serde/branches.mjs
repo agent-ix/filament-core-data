@@ -111,6 +111,18 @@ export function enumerateBranches(table) {
 		);
 	}
 
+	for (const one of table.rows) {
+		if (typeof one.supportType !== "string") continue;
+		rows.push(
+			row(
+				`support-type:${one.selector}`,
+				"support-type",
+				"mapping-table.json",
+				`the ${one.selector} kernel scalar rendered by crate::support::${one.supportType}`,
+			),
+		);
+	}
+
 	for (const [keyword, subjects] of Object.entries(KEYWORD_APPLICABILITY)) {
 		for (const subject of subjects) {
 			rows.push(

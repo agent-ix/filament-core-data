@@ -97,6 +97,15 @@ construct's disposition is written down rather than decided at the keyboard.
 | `duration` | `Duration`, the generated ISO 8601 duration newtype | JSON string |
 | `uuid` | `Uuid`, the generated 8-4-4-4-12 newtype | JSON string |
 
+- The `date`, `datetime`, `duration`, and `uuid` scalar rows SHALL each declare
+  their generated support type in `mapping-table.json`. When a `kind: scalar`
+  definition derives that same support-type identifier, the backend SHALL map
+  the definition onto the existing `crate::support::<Support>` type rather than
+  emit a second newtype; every reference to the definition SHALL render that
+  support type. This exception is decided before crate-scope collision
+  insertion. A scalar whose derived name or scalar selector does not match the
+  row remains a user declaration and is governed by FR-055's collision rule.
+
 - If a type definition declares `scalar: "bytes"`, then the backend SHALL raise
   a blocking `agent-ix.rust-backend.UNDECLARED_WIRE_FORM` and SHALL emit no
   file. No published artifact states the JSON representation of `bytes`:
