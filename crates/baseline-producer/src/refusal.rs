@@ -81,3 +81,33 @@ pub const REVISION_VALUE_ABSENT: &str = "REVISION_VALUE_ABSENT";
 
 /// An authored identity is absent where the interface requires one.
 pub const IDENTITY_ABSENT: &str = "IDENTITY_ABSENT";
+
+/// A component record declares no source provenance locus.
+pub const COMPONENT_PROVENANCE_ABSENT: &str = "COMPONENT_PROVENANCE_ABSENT";
+/// No declaration source document supplies a component's locus.
+///
+/// Distinct from [`COMPONENT_PROVENANCE_ABSENT`]: the record carries a locus, but
+/// no supplied declaration source document accounts for it, and none is
+/// synthesized for it (FR-114-CON-5, FND-1765).
+pub const COMPONENT_PROVENANCE_UNSUPPLIED: &str = "COMPONENT_PROVENANCE_UNSUPPLIED";
+/// An endpoint record declares no source provenance locus.
+pub const ENDPOINT_PROVENANCE_ABSENT: &str = "ENDPOINT_PROVENANCE_ABSENT";
+/// No declaration source document supplies an endpoint's locus.
+pub const ENDPOINT_PROVENANCE_UNSUPPLIED: &str = "ENDPOINT_PROVENANCE_UNSUPPLIED";
+/// An endpoint record names no authored role.
+pub const ENDPOINT_ROLE_ABSENT: &str = "ENDPOINT_ROLE_ABSENT";
+/// An endpoint record names no multiplicity.
+pub const ENDPOINT_MULTIPLICITY_ABSENT: &str = "ENDPOINT_MULTIPLICITY_ABSENT";
+/// A locus names no formal document.
+pub const FORMAL_DOCUMENT_ABSENT: &str = "FORMAL_DOCUMENT_ABSENT";
+/// A locus names no authored formal document revision.
+pub const FORMAL_REVISION_ABSENT: &str = "FORMAL_REVISION_ABSENT";
+/// A declared record lies outside a closed declared inventory, or claims another one.
+pub const INVENTORY_MEMBER_UNLISTED: &str = "INVENTORY_MEMBER_UNLISTED";
+/// A membership carries a completeness disposition the FR-110 declaration does not declare.
+///
+/// The `unknown` disposition an explicitly incomplete inventory retains is
+/// FR-110's; a record may carry it but may not mint it, so a membership claiming
+/// a completeness its inventory declaration contradicts refuses under this code
+/// in either direction (FR-114-CON-6).
+pub const INVENTORY_INCOMPLETE_UNKNOWN: &str = "INVENTORY_INCOMPLETE_UNKNOWN";

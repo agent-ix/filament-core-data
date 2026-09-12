@@ -15,8 +15,12 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 mod canonical;
+mod component;
 mod decimal;
 mod digest;
+mod endpoint;
+mod inventory;
+mod locus;
 pub mod refusal;
 mod revision;
 
@@ -24,10 +28,19 @@ pub use canonical::{
     canonical_digest, canonical_json, canonical_json_from_bytes, configuration_digest,
     document_digest, ArrayDeclarations, ArrayDisposition, CanonicalPolicy, NumericResourceLimit,
 };
+pub use component::ComponentDeclaration;
 pub use decimal::ProducerDecimal;
 pub use digest::{
     DigestDomainSelection, DigestSelection, RawByteDigest, ADMISSIBLE_DIGEST_SELECTIONS,
     CANONICAL_JSON_DOMAIN, DIGEST_ALGORITHM, DIGEST_DOMAIN_VERSION, NATIVE_BYTES_DOMAIN,
+};
+pub use endpoint::EndpointDeclaration;
+pub use inventory::{
+    InventoryCompleteness, InventoryDeclaration, InventoryMemberKind, InventoryMembership,
+};
+pub use locus::{
+    ArtifactKind, ArtifactReference, DeclarationSource, FormalDocument, SourceLocus, Span,
+    WireReference,
 };
 pub use refusal::Refusal;
 pub use revision::{

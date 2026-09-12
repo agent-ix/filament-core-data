@@ -98,3 +98,22 @@ type: log
   TC-1404. Plan-016's TC-1373..TC-1381 pass over the new shapes and
   `fixtures/baseline-1-2/relationship-population-a.json` still loads, with its
   configuration digest recomputed over the two new declared-selection members.
+* 2026-09-11 - **Task-145 complete.** The four types the crate had no
+  representation for at all: `SourceLocus` mapping member for member onto the
+  pinned consumer `ForeignLocus` with all **seven** `ArtifactRef` members, its
+  `formal` document and revision and its `span` (D2, FND-1705 — a five-member
+  locus is a wrong answer); `ComponentDeclaration` and `EndpointDeclaration` as
+  first-class records whose identity, namespaced revision, canonical digest
+  selection, locus, ownership and inventory membership are six separate authored
+  members, the endpoint adding its owning component identity, type identity, role
+  and multiplicity; and `InventoryMembership` / `InventoryDeclaration` carrying
+  membership only. Inventory closure and the `unknown` disposition stay FR-110's:
+  `InventoryCompleteness::disposition()` returns FR-110's `unknown` spelling and a
+  membership claiming a completeness the declaration contradicts refuses rather
+  than minting one (FR-114-CON-6, FND-1762). A locus is never synthesized: a
+  record whose locus no declaration source document supplies refuses
+  `COMPONENT_PROVENANCE_UNSUPPLIED` / `ENDPOINT_PROVENANCE_UNSUPPLIED`, distinct
+  from the absent-locus refusal (FR-114-CON-5, FND-1765). TC-1411..TC-1416 are
+  traced executable controls in `tests/declarations.rs`; synthesizing a locus for
+  an unlocated declaration in a scratch copy failed TC-1416, and reconstructing a
+  component identity from its locus path failed TC-1413.
