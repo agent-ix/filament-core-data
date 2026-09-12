@@ -427,6 +427,9 @@ Authority is assigned by concern:
 | User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-015](./usecase/US-015-lift-a-spec-bundle-into-a-domain-package.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, package-author, Rust-consumer, TypeScript-consumer, Python-consumer, semantic-kernel-consumer, and domain-author outcomes |
 | Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-111](./functional/FR-111-classify-mixed-version-impact.md) | Architecture, census, feasibility, semantic IR and baseline model, ecosystem inventory, compatibility-impact, package, mapping, generation, compiler, backend, semantic-kernel, and extraction-frontend behavior |
 | Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-033](./non-functional/NFR-033-qualified-toolchain-and-licensed-dependencies.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic and hermetic kernel generation, portable dependency-free kernel packages, non-disruptive kernel packaging, deterministic and hermetic lifting, non-disruptive extraction frontend, and qualified toolchain and licensed dependencies |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-016](./usecase/US-016-link-a-static-producer-boundary.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, package-author, Rust-consumer, TypeScript-consumer, Python-consumer, semantic-kernel-consumer, domain-author, and native-consumer outcomes |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-118](./functional/FR-118-validate-filament-canonical-json-1.md) | Architecture, census, feasibility, semantic IR and baseline model, ecosystem inventory, compatibility-impact, package, mapping, generation, compiler, backend, semantic-kernel, extraction-frontend, and Producer interface 1.2.0 static-boundary behavior |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-036](./non-functional/NFR-036-byte-exact-producer-output.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic and hermetic generation, portable packages, deterministic and hermetic lifting, non-disruptive extraction frontend, qualified toolchain and licensed dependencies, and byte-exact producer output |
 
 ## 6. Decision Status Model
 
@@ -439,6 +442,11 @@ The architecture principles and the TypeSpec source decision (ADR-0005) are
 normative. Exact metamodel fields, generated package registry names, and
 individual migration dispositions remain provisional until their owning tickets
 pass.
+
+The Producer interface 1.2.0 static-boundary contracts in FR-112 through
+FR-118 and NFR-036 are normative for the producer side of that interface once
+their review and implementation gates pass; emitting an admitted static bundle
+is not acceptance of any assessment claim.
 
 The baseline 1.2 contracts in FR-106 through FR-111 are provisional: they
 select the source-of-truth and implementation boundary for issue #95, but do
