@@ -26,6 +26,7 @@ okf_version: "0.1"
 * [US-014: Consume the semantic kernel as a native package in every implementation language](./usecase/US-014-consume-the-semantic-kernel-natively.md) - Kernel-consumer outcome for the generated Rust, TypeScript, Python, and JSON Schema kernel packages.
 * [US-015: Lift a spec bundle into a domain package](./usecase/US-015-lift-a-spec-bundle-into-a-domain-package.md) - Domain-author outcome for the spec-bundle extraction frontend.
 * [US-016: Link a static producer boundary without inference](./usecase/US-016-link-a-static-producer-boundary.md) - Native-consumer outcome for the completed Producer interface 1.2.0 static boundary.
+* [US-017: Assess against a bound static selection](./usecase/US-017-assess-against-a-bound-static-selection.md) - Native-consumer outcome for the assessment half of Producer interface 1.2.0.
 * [Functional requirements](./functional/) - Required architecture-record, census, feasibility, semantic-contract, package, projection, and compatibility behavior.
 * [Non-functional requirements](./non-functional/) - Traceability, reproducibility, parity, security, portability, evidence honesty, isolation, and safety qualities.
 * [Update log](./log.md) - Chronological bundle changes.

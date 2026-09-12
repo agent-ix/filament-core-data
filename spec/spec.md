@@ -116,12 +116,21 @@ explicit ecosystem configuration. It specifies the compatibility boundary for
 v1.1 without changing a wire schema or runtime; the fourteenth delivery is what
 changes the producer.
 
-The fourteenth delivery completes the Producer interface 1.2.0 static producer
-boundary (issue #95): versioned digest selections, namespaced revisions,
-first-class component and endpoint declarations with source provenance,
-complete relationship records, producer/native correspondence records, an
-admitted static bundle that mints no assessment input, and exact Filament
-Canonical JSON 1 normalization. It replaces the digest and revision member
+The fourteenth delivery completes the Producer interface 1.2.0 (issue #95) as
+one design. Its static half specifies versioned digest selections, namespaced
+revisions, first-class component and endpoint declarations with source
+provenance, complete relationship records, producer/native correspondence
+records, an admitted static bundle that mints no assessment input, and exact
+Filament Canonical JSON 1 normalization. Its assessment half specifies the
+documents a claim consumes when it consumes them: assessment document
+selections, their one-directional binding to an admitted static bundle, finite
+population membership, snapshot and window selections across the three clock
+families, availability facts held separate from truth, assessment
+correspondence, the v1.1 projection or its named loss, the interface's own
+version and compatibility rule, and bounded hostile documents. Both halves are
+specified before either is implemented, because specifying one side of the
+boundary alone is what the static half's review charged as its remaining
+condition. It replaces the digest and revision member
 shapes the shipped `crates/baseline-producer` emits, which is a breaking
 producer-interface change this delivery owns. It maps onto, and does not own,
 the native consumer contract in `ix://agent-ix/quire-spec-language` at the
@@ -175,6 +184,17 @@ pinned revision `72507f856457ba0922719bd5d9f5cadcce4058cd`.
   records with their export mapping and definition closure, the admitted static
   bundle and its indivisible admission, and exact Filament Canonical JSON 1
   arbitrary-precision decimal normalization.
+- The assessment half of that interface: assessment document identity, revision
+  and digest selections; the one-directional binding of an assessment document
+  to one admitted static bundle by identity and canonical digest; finite
+  population membership with absence, explicit null and value kept distinct;
+  snapshot and window selections across the event-position, fixed-sample and
+  timestamp clock families; availability facts the producer declares and whose
+  truth consequence the selected evaluator decides; assessment correspondence
+  and its export mapping; the v1.1 projection or its identity-preserving named
+  loss record; the producer interface version and its patch, minor and major
+  compatibility rule; and refusal of a hostile or oversized document within the
+  configuration's declared bounds.
 - The provisional baseline 1.2 model contract: independently authored field
   presence; first-class relationship endpoints; model-bound finite populations;
   and explicit, versioned ecosystem configuration inputs, including v1.1
@@ -285,11 +305,16 @@ pinned revision `72507f856457ba0922719bd5d9f5cadcce4058cd`.
 - Modifying Quire parsing, validation, extraction, or byte-splice behavior.
 - Modifying Quoin catalog installation or module enforcement.
 - Migrating persisted data, rewriting the corpus, or removing legacy contracts.
-- Minting or requiring any assessment input for the static producer boundary:
-  populations, snapshots, windows, workflow instances, relationship instances,
-  observation records, progress records, and observation closure remain later
-  D and F campaign inputs, and producing the static bundle is not acceptance of
-  an assessment claim.
+- Minting or requiring any assessment input for a static link. This delivery
+  specifies the interface for emitting population, snapshot, window,
+  observation-record and availability documents; observing the populations,
+  snapshots, windows, workflow instances, relationship instances, progress
+  records and observation closure that would fill them remains a later D and F
+  campaign activity. Static admission requires none of them, and emitting any of
+  them is not acceptance of an assessment claim.
+- Evaluating a claim, deciding a truth disposition, or interpreting a clause, a
+  protocol or a clock. The producer declares availability and the selected
+  evaluator decides what an unavailable fact prevents.
 - Located extraction of component and endpoint source loci; this delivery
   refuses a record whose locus is absent rather than synthesizing one, and the
   located-extraction work stays with `agent-ix/quire-rs#418`.
@@ -464,6 +489,9 @@ Authority is assigned by concern:
 | User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-016](./usecase/US-016-link-a-static-producer-boundary.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, package-author, Rust-consumer, TypeScript-consumer, Python-consumer, semantic-kernel-consumer, domain-author, and native-consumer outcomes |
 | Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-118](./functional/FR-118-validate-filament-canonical-json-1.md) | Architecture, census, feasibility, semantic IR and baseline model, ecosystem inventory, compatibility-impact, package, mapping, generation, compiler, backend, semantic-kernel, extraction-frontend, and Producer interface 1.2.0 static-boundary behavior |
 | Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-036](./non-functional/NFR-036-byte-exact-producer-output.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic and hermetic generation, portable packages, deterministic and hermetic lifting, non-disruptive extraction frontend, qualified toolchain and licensed dependencies, and byte-exact producer output |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-017](./usecase/US-017-assess-against-a-bound-static-selection.md) | Adds the native-consumer outcomes for the static producer boundary and for assessment against a bound static selection |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-126](./functional/FR-126-declare-the-producer-interface-version.md) | Adds the complete Producer interface 1.2.0: both its static boundary and its assessment half, including the interface's own version and compatibility rule |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-037](./non-functional/NFR-037-bounded-assessment-documents.md) | Adds byte-exact producer output and bounded assessment documents |
 
 ## 6. Decision Status Model
 
@@ -477,11 +505,12 @@ normative. Exact metamodel fields, generated package registry names, and
 individual migration dispositions remain provisional until their owning tickets
 pass.
 
-The Producer interface 1.2.0 static-boundary contracts in FR-112 through
-FR-118 and NFR-036 are provisional: their named gates are this increment's
-specification review and the Plan-017 implementation evidence, and neither has
-passed. Emitting an admitted static bundle is not acceptance of any assessment
-claim.
+The Producer interface 1.2.0 contracts in FR-112 through FR-126, NFR-036 and
+NFR-037 are provisional: their named gates are this increment's specification
+review and the Plan-017 implementation evidence, and the implementation gate has
+not passed. Emitting an admitted static bundle or any assessment document is not
+acceptance of an assessment claim, and no requirement in this range asserts a
+truth disposition.
 
 The baseline 1.2 contracts in FR-106 through FR-111 are provisional: they
 select the source-of-truth and implementation boundary for issue #95, but do
