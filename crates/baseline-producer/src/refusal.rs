@@ -141,6 +141,14 @@ pub const EXPORT_ABSENT: &str = "EXPORT_ABSENT";
 /// the type the endpoint declares. Neither side corrects the other: a
 /// disagreement is refused naming both spellings (FR-127-CON-7).
 pub const ENDPOINT_TYPE_IDENTITY_DISAGREES: &str = "ENDPOINT_TYPE_IDENTITY_DISAGREES";
+/// One identity is declared both as a producer record and as an endpoint's type.
+///
+/// A record admits exactly its own export kind and a model type admits any type
+/// kind, so one identity declared as both can satisfy neither admission without
+/// violating the other. Refusing names the collision instead of silently keeping
+/// the record admission, which would leave an admitted endpoint whose model type
+/// resolves to nothing (FR-127-CON-8).
+pub const IDENTITY_KIND_AMBIGUOUS: &str = "IDENTITY_KIND_AMBIGUOUS";
 /// An endpoint `typeIdentity` resolves through no export mapping at all.
 ///
 /// Distinct from [`EXPORT_ABSENT`] on purpose: that code names a declared

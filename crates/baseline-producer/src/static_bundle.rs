@@ -363,6 +363,7 @@ impl StaticProducerBundle {
             relationship.validate(&configuration, &inventory, &endpoint_index)?;
         }
         let declared = DeclaredExports::new(&self.components, &self.endpoints, &self.relationships);
+        declared.validate_no_kind_collision(&self.endpoints)?;
         validate_correspondence_set(&self.correspondences, &configuration, &declared)?;
 
         let admitted = AdmittedStaticBundle {

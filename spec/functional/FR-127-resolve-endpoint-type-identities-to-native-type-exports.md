@@ -88,10 +88,7 @@ here, while remaining representable on the assessment side that FR-120 owns.
   side, which FR-120 owns, so this requirement narrows no assessment obligation.
 - The producer SHALL retain the exact ordered export path the export mapping
   carries, in the order the native artifact declared it.
-- If an export mapping's ordered path differs from the path the native artifact's
-  export table declares for that export, by ordering, truncation, or
-  re-segmentation, then the producer SHALL refuse the bundle under the stable code
-  `EXPORT_PATH_DISAGREES`.
+
 - The producer SHALL NOT derive a model type identity from any export path
   segment, nor treat a coinciding final path segment as a resolution.
 - The producer SHALL NOT derive a model type identity from an endpoint identity,
@@ -99,10 +96,10 @@ here, while remaining representable on the assessment side that FR-120 owns.
 - The producer SHALL copy the native export kind of a declared model type from the
   native artifact's own export table, selecting, defaulting, and narrowing none of
   them.
-- If an export mapping's `kind` differs from the kind the native artifact's export
-  table declares for that export, then the producer SHALL refuse the bundle under
-  the stable code `EXPORT_KIND_DISAGREES`, so a substituted kind is observed
-  rather than asserted absent.
+- The producer SHALL verify each type export mapping's `kind` and ordered path
+  against the native artifact's own export table where that table is held, which
+  is verification under FR-129 rather than admission here: a static bundle
+  carries no native bytes, so admission has no table to compare against.
 - While two endpoints name one model type identity, the producer SHALL resolve
   both to the one export mapping that model type is owed, and SHALL NOT owe a
   second mapping for the repeated identity.
@@ -123,10 +120,9 @@ here, while remaining representable on the assessment side that FR-120 owns.
   the refusal is about.
 - The producer SHALL apply the cross-bound export prohibition to a model type's
   export mapping exactly as it applies it to a record's.
-- If two export mappings under one producer object resolve one declared model
-  type, then the producer SHALL refuse the bundle under the stable code
-  `ENDPOINT_TYPE_EXPORT_DUPLICATE`, which is distinct from the cross-bound code
-  raised when the two mappings belong to different producer objects.
+- If two export mappings resolve one declared model type, then the producer SHALL
+  refuse the bundle under `EXPORT_CROSS_BOUND`, whose message distinguishes two
+  mappings under one producer object from two under different ones.
 - The producer SHALL NOT introduce a wire, reference, or tracing schema for the
   native side; the existing correspondence record carries every export mapping
   relied on here.
@@ -144,7 +140,7 @@ here, while remaining representable on the assessment side that FR-120 owns.
 | FR-127-CON-2 | The producer SHALL admit for a declared model type only the closed kinds `enum`, `object`, `record`, `reference`, `scalar`, and `variant`, never a kind naming a producer record or a member of a type. | Correctness | Test |
 | FR-127-CON-3 | The producer SHALL keep the assessment-side `population` kind absent from the static export vocabulary, so a native export of that kind is unrepresentable rather than refused, while leaving it representable on the assessment side FR-120 owns. | Interface | Compile |
 | FR-127-CON-4 | The producer SHALL raise a refusal distinct from the declared-record one when a declared model type carries no export mapping, naming the model type identity. | Traceability | Test |
-| FR-127-CON-5 | The producer SHALL refuse any export mapping whose kind or ordered path disagrees with the native artifact's own export table for that export. | Integrity | Test |
+| FR-127-CON-5 | The producer SHALL verify each type export mapping's kind and ordered path against the native artifact's export table wherever that table is held, which FR-129 evidences. | Integrity | Test |
 | FR-127-CON-6 | The producer SHALL raise each refusal of this requirement under a stable named code, never by message text alone. | Traceability | Test |
 | FR-127-CON-7 | The producer SHALL require each relationship endpoint record's `typeIdentity` to equal that of the endpoint declaration it joins, refusing any disagreement. | Correctness | Test |
 | FR-127-CON-8 | The producer SHALL refuse an identity declared both as a record and as an endpoint model type, rather than leaving it unresolvable. | Correctness | Test |
@@ -157,13 +153,13 @@ here, while remaining representable on the assessment side that FR-120 owns.
 | FR-127-AC-1 | An admitted bundle resolves every endpoint's `typeIdentity` to exactly one export mapping whose native export kind and ordered export path are each readable as separate members, with no path segment parsed to obtain the type. | Test |
 | FR-127-AC-2 | A bundle whose endpoint names a model type that no correspondence record exports is refused under `ENDPOINT_TYPE_EXPORT_ABSENT`, and the refusal names that model type identity and carries a code distinct from the `EXPORT_ABSENT` raised for a declared record carrying no export mapping. | Test |
 | FR-127-AC-3 | Five bundles, one per kind, whose declared model type is exported under `field`, `operation`, `component`, `endpoint`, and `relationship` respectively, are each refused under `ENDPOINT_TYPE_EXPORT_KIND_FOREIGN`, and each refusal names the model type and the offered kind. | Test |
-| FR-127-AC-4 | Six bundles, one per kind, whose declared model type is exported under `enum`, `object`, `record`, `reference`, `scalar`, and `variant` respectively, are each admitted when the mapping's kind equals the native export table's, and a bundle whose mapping substitutes a different one of the six is refused under `EXPORT_KIND_DISAGREES`. | Test |
+| FR-127-AC-4 | Six bundles, one per kind, whose declared model type is exported under `enum`, `object`, `record`, `reference`, `scalar`, and `variant` respectively, are each admitted, with the producer selecting none of the six; agreement with the native export table is verified under FR-129 where that table is held. | Test |
 | FR-127-AC-5 | Two endpoints naming one model type identity resolve to the one export mapping that identity is owed, and the bundle is not refused for a missing second mapping. | Test |
 | FR-127-AC-6 | A bundle in which one identity is declared both as a record and as an endpoint's named model type is refused under `IDENTITY_KIND_AMBIGUOUS`, naming that identity and both roles, rather than being admitted under either. | Test |
 | FR-127-AC-7 | A model type's export mapping owned by another correspondence's producer object is refused under `EXPORT_CROSS_BOUND`, exactly as a record's is. | Test |
 | FR-127-AC-10 | A relationship endpoint record whose `typeIdentity` differs from that of the endpoint declaration it joins is refused under `ENDPOINT_TYPE_IDENTITY_DISAGREES`, naming both spellings. | Test |
-| FR-127-AC-11 | Two export mappings under one producer object resolving one declared model type are refused under `ENDPOINT_TYPE_EXPORT_DUPLICATE`, distinctly from the cross-bound refusal. | Test |
-| FR-127-AC-12 | An export mapping whose ordered path is reordered, truncated, or re-segmented relative to the native export table is refused under `EXPORT_PATH_DISAGREES`. | Test |
+| FR-127-AC-11 | Two export mappings resolving one declared model type are refused under `EXPORT_CROSS_BOUND`, whose message distinguishes one producer object from two. | Test |
+| FR-127-AC-12 | An export mapping's ordered path is retained verbatim in the order authored, and agreement with the native export table is verified under FR-129 against real native bytes. | Test |
 | FR-127-AC-8 | The export vocabulary offers no `population` variant, so a static export of that kind cannot be constructed in the typed API rather than being constructed and refused. | Compile |
 | FR-127-AC-9 | The authored members of `EndpointDeclaration`, `ProducerNativeCorrespondence`, `ProducerObjectReference`, and `NativeArtifactReference` are unchanged by this requirement, and no wire, reference, or tracing schema is introduced for the native side. | Compile |
 

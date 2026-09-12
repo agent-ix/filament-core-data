@@ -1,0 +1,152 @@
+{
+	"note": "Export table of the native rule-model artifact, as the native producer emitted it. Kinds and paths are the native artifact's to declare; this repository selects against them and mints none.",
+	"artifactIdentity": "ix://agent-ix/quire-spec-language/examples/protocol-handoff/model",
+	"artifactRawByteDigest": "sha256:1a9441ec11c899c05d21c2c6f45392ce626a2d659255800a5f04eaec58d4f6a8",
+	"profile": "native-state-model/2",
+	"exports": [
+		{
+			"kind": "field",
+			"path": [
+				"Notice",
+				"ready"
+			]
+		},
+		{
+			"kind": "field",
+			"path": [
+				"Workflow",
+				"exact"
+			]
+		},
+		{
+			"kind": "field",
+			"path": [
+				"Workflow",
+				"peer"
+			]
+		},
+		{
+			"kind": "field",
+			"path": [
+				"Workflow",
+				"ratio"
+			]
+		},
+		{
+			"kind": "field",
+			"path": [
+				"Workflow",
+				"ready"
+			]
+		},
+		{
+			"kind": "field",
+			"path": [
+				"Workflow",
+				"receipts"
+			]
+		},
+		{
+			"kind": "field",
+			"path": [
+				"Workflow",
+				"tally"
+			]
+		},
+		{
+			"kind": "field",
+			"path": [
+				"Workflow",
+				"total"
+			]
+		},
+		{
+			"kind": "field",
+			"path": [
+				"Workflow",
+				"wide"
+			]
+		},
+		{
+			"kind": "field",
+			"path": [
+				"WorkflowRef",
+				"id"
+			]
+		},
+		{
+			"kind": "object",
+			"path": [
+				"Workflow"
+			]
+		},
+		{
+			"kind": "operation",
+			"path": [
+				"Workflow",
+				"apply"
+			]
+		},
+		{
+			"kind": "population",
+			"path": [
+				"Workflow",
+				"workflows"
+			]
+		},
+		{
+			"kind": "record",
+			"path": [
+				"Notice"
+			]
+		},
+		{
+			"kind": "reference",
+			"path": [
+				"WorkflowRef"
+			]
+		},
+		{
+			"kind": "scalar",
+			"path": [
+				"Amount"
+			]
+		},
+		{
+			"kind": "scalar",
+			"path": [
+				"Exact"
+			]
+		},
+		{
+			"kind": "scalar",
+			"path": [
+				"ObjectId"
+			]
+		},
+		{
+			"kind": "scalar",
+			"path": [
+				"Ratio"
+			]
+		},
+		{
+			"kind": "scalar",
+			"path": [
+				"Tally"
+			]
+		},
+		{
+			"kind": "scalar",
+			"path": [
+				"Total"
+			]
+		},
+		{
+			"kind": "scalar",
+			"path": [
+				"Wide"
+			]
+		}
+	]
+}

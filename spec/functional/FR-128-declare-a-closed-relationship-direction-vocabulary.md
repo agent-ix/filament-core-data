@@ -41,6 +41,16 @@ direction is the whole point of the member; it is recorded here and in the
 delivery log rather than being carried silently by an "otherwise unchanged"
 clause.
 
+Two refusals here are less specific than the rest of this interface, and the
+limitation is recorded rather than hidden: an out-of-vocabulary direction and an
+absent direction both refuse at the wire seam under `INVALID_PRODUCER_DOCUMENT`,
+which carries the offered spelling or the absent member name but does **not**
+name the offending relationship identity. Every other relationship member whose
+absence or foreignness refuses does name its record. Closing the gap needs a
+pre-parse pass over `relationships[].semantics.direction`; the closed type
+already prevents an uninterpretable direction from ever reaching an admitted
+bundle, so the gap is in the diagnostic, not in the guarantee.
+
 ## Inputs
 
 - The relationship declarations of the bundle, each carrying explicit semantics
@@ -88,11 +98,13 @@ clause.
   typed interface, so no admitted value spells a direction the consumer cannot
   interpret.
 - If a wire document offers a direction outside the four, then the producer SHALL
-  refuse it under the stable code `RELATIONSHIP_DIRECTION_UNKNOWN`, naming the
-  offending relationship identity and the offered spelling.
+  refuse it at the admission seam under `INVALID_PRODUCER_DOCUMENT`, carrying the
+  offered spelling.
 - If a relationship record carries no direction member at all, then
-  the producer SHALL refuse it under the stable code
-  `RELATIONSHIP_DIRECTION_ABSENT`, naming the offending relationship identity.
+  the producer SHALL refuse it at the admission seam under
+  `INVALID_PRODUCER_DOCUMENT`, naming the absent member.
+- The producer SHALL NOT admit a bundle carrying either, so the closed vocabulary
+  is enforced rather than advisory.
 - The producer SHALL NOT default an absent direction to any of the four.
 - The producer SHALL NOT derive a direction from the relationship's category,
   lifecycle, ownership, or composite membership.
@@ -129,7 +141,7 @@ clause.
 |----|----------|--------------|
 | FR-128-AC-1 | An admitted bundle carries a relationship direction from exactly four values, and the interface states for each value its admitted traversals and which declaration member supplies each argument. | Inspection |
 | FR-128-AC-2 | A relationship admitted under each of the four directions in turn retains the same `source` member as its first argument and the same `target` member as its second, with no permutation under any value. | Test |
-| FR-128-AC-3 | A wire document offering a direction outside the four is refused under `RELATIONSHIP_DIRECTION_UNKNOWN`, naming the relationship identity and the offered spelling, and a record carrying no direction member is refused under `RELATIONSHIP_DIRECTION_ABSENT`. | Test |
+| FR-128-AC-3 | A wire document offering a direction outside the four is refused at the admission seam under `INVALID_PRODUCER_DOCUMENT` carrying the offered spelling, and a record carrying no direction member is refused under the same code naming the absent member; neither yields an admitted bundle. | Test |
 | FR-128-AC-4 | A relationship whose direction is `source-to-target` admits traversal from `source` to `target` only, and one whose direction is `target-to-source` admits traversal from `target` to `source` only, while both retain `source` as the first argument. | Test |
 | FR-128-AC-5 | A relationship whose direction is `bidirectional` admits both traversals as separately oriented, while one whose direction is `undirected` holds symmetrically between its two members without either being the oriented one, and neither value is produced by defaulting the other. | Test |
 | FR-128-AC-6 | A relationship whose category, lifecycle, ownership, composite membership, roles, and multiplicities are varied while its direction is held constant retains that direction unchanged. | Test |

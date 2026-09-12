@@ -26,7 +26,7 @@ use crate::endpoint::EndpointDeclaration;
 use crate::locus::SourceLocus;
 use crate::refusal::{
     Refusal, ENDPOINT_TYPE_EXPORT_KIND_FOREIGN, EXPORT_FOREIGN, EXPORT_LOCUS_ABSENT,
-    EXPORT_PATH_ABSENT, IDENTITY_ABSENT,
+    EXPORT_PATH_ABSENT, IDENTITY_ABSENT, IDENTITY_KIND_AMBIGUOUS,
 };
 use crate::relationship::RelationshipDeclaration;
 use crate::ConfigurationDocument;
@@ -236,6 +236,34 @@ impl DeclaredExports {
                 .or_insert(Admits::Type);
         }
         Self { declared }
+    }
+
+    /// Refuses an identity declared both as a producer record and as a model type.
+    ///
+    /// The two admissions are mutually exclusive: a record admits exactly its own
+    /// kind, a model type admits any type kind, and no single export mapping
+    /// satisfies both. Keeping the record admission silently would leave an
+    /// admitted endpoint whose model type resolves to no type export at all, so
+    /// the collision is named instead (FR-127-CON-8).
+    pub fn validate_no_kind_collision(
+        &self,
+        endpoints: &[EndpointDeclaration],
+    ) -> Result<(), Refusal> {
+        for endpoint in endpoints {
+            if matches!(
+                self.declared.get(&endpoint.type_identity),
+                Some(Admits::Record(_))
+            ) {
+                return Err(Refusal::new(
+                    IDENTITY_KIND_AMBIGUOUS,
+                    format!(
+                        "{} is declared as a producer record and is also named as the model type of endpoint {}; one identity cannot admit both",
+                        endpoint.type_identity, endpoint.endpoint_identity
+                    ),
+                ));
+            }
+        }
+        Ok(())
     }
 
     /// The declared kind of one exported *record*, if it is declared as one.
