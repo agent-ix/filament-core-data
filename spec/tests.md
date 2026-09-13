@@ -287,6 +287,8 @@ producer/schema plan are accepted.
 | FR-100 | FR-100-AC-1..6, FR-100-CON-1..3 | TC-1361..TC-1366 | ✅ Complete |
 | FR-130 | FR-130-AC-1..8, FR-130-CON-1..3 | TC-1388..TC-1395 | ✅ Complete |
 | FR-131 | FR-131-AC-1..8, FR-131-CON-1..3 | TC-1403..TC-1409 | ✅ Complete |
+| FR-132 | FR-132-AC-1..7, FR-132-CON-1..3 | TC-1414..TC-1417 | 🚧 planned on issue #65 |
+| FR-133 | FR-133-AC-1..7, FR-133-CON-1..3 | TC-1418..TC-1421 | 🚧 planned on issue #80 |
 
 ### Non-Functional Requirement Coverage
 
@@ -327,6 +329,7 @@ producer/schema plan are accepted.
 | NFR-032 | NFR-032-AC-1..10: changed-path gate fixed at both ends by sentinels and unioned over --first-parent --no-merges, cargo metadata edge check, Cargo.toml and cases.json line diffs, root THIRD-PARTY-NOTICES.md additive-row diff against Cargo.lock, corpus git status after the suite, publish and licence inspection, harness suite-compare, revert-rehearsal, and accretion-rehearsal verbs | TC-1310..TC-1319 | ⚠️ TC-1316 blocked on issue #89; TC-1317 red in the scratch-clone environment, reported |
 | NFR-033 | NFR-033-AC-1..11: manifest, lock, and toolchain inspection, EXTRACTION_TOOLCHAIN=0.0.0 gate run, dependency-specifier inspection against the workspace members, make extraction-frontend-deny and -audit, lock-to-notices comparison, clippy --no-deps and fmt, trace-marker scan and status-lie rehearsal, offline build, workspace-channel check | TC-1320..TC-1329, TC-1350 | ✅ Complete |
 | NFR-038 | NFR-038-AC-1..7: one named make target reaching every Rust gate, dispatch-only triggers across every workflow, a two-platform two-architecture matrix that reports both, workspace-wide clippy, generated-crate artifacts per platform, and toolchain checks that fail naming what they could not run | TC-1396..TC-1402 | ✅ Complete |
+| NFR-039 | NFR-039-AC-1..6 | TC-1410..TC-1413 | 🚧 planned on issue #92 |
 
 ## Test Case Summary
 
@@ -1583,6 +1586,18 @@ producer/schema plan are accepted.
 | TC-1407 | A dialect registered unimplemented is refused with FRONTEND_NOT_IMPLEMENTED naming its owner, over a synthetic registration rather than whichever dialect is unbuilt today | Unit | P1 | FR-131-AC-6 | ✅ passed |
 | TC-1408 | No module under src/compiler/frontend/ imports a process-starting built-in, and extraction.mjs is unreachable from the frontend seam | Unit | P0 | FR-131-AC-7, FR-131-CON-1, FR-131-CON-2 | ✅ passed |
 | TC-1409 | A request supplying no producer raises rather than returning a diagnostic | Unit | P1 | FR-131-AC-8 | ✅ passed |
+| TC-1410 | No change-set gate resolves a range end against main, origin/main or HEAD, and every one reads both ends from the shared sentinel helper | Analysis | P0 | NFR-039-AC-1, NFR-039-AC-5 | 🚧 planned on issue #92 |
+| TC-1411 | A gate whose sentinels are absent from history fails naming what it could not locate, and a commit landing after a change's range does not enter that range even when it touches a prohibited path | Unit | P0 | NFR-039-AC-2, NFR-039-AC-3 | 🚧 planned on issue #92 |
+| TC-1412 | A gate comparing a historical hunk reads the other side at that hunk's own commit, so a later change editing those lines leaves it green | Analysis | P1 | NFR-039-AC-4 | 🚧 planned on issue #92 |
+| TC-1413 | Every change-set gate passes on a clean checkout carrying no state beyond the commit under test | Integration | P0 | NFR-039-AC-6 | 🚧 planned on issue #92 |
+| TC-1414 | The Python reader answers every corpus case, the slot's unmet count reaches zero, and its code set equals the published registry in both directions | Integration | P0 | FR-132-AC-1, FR-132-AC-2 | 🚧 planned on issue #65 |
+| TC-1415 | UNRESOLVED_TYPE_REF, PRESENCE_MULTIPLICITY_MISMATCH and V1_1_NODE_IN_V1_0 are each emitted by at least one case, and the reader's normalized form agrees with the Rust and TypeScript adapters or the disagreement is a recorded finding | Integration | P0 | FR-132-AC-3, FR-132-AC-4 | 🚧 planned on issue #65 |
+| TC-1416 | An undecidable document yields an undecided verdict counted as neither pass nor failure; with the reader absent the slot reports unavailable naming its issue and no case passes | Unit | P1 | FR-132-AC-5, FR-132-AC-7, FR-132-CON-3 | 🚧 planned on issue #65 |
+| TC-1417 | The Python reader imports no module of the generated Python package and shares no code with the TypeScript or Rust readers | Unit | P1 | FR-132-AC-6, FR-132-CON-1 | 🚧 planned on issue #65 |
+| TC-1418 | The Rust kernel crate generates from the kernel IR with zero blocking diagnostics, and both the reserved identifier and the minted construct are present naming different types | Integration | P0 | FR-133-AC-1, FR-133-AC-2 | 🚧 planned on issue #80 |
+| TC-1419 | Every typeRef to the minted construct renders the resolved identifier and none renders the reserved one; every affected semantic identity is byte-unchanged | Unit | P0 | FR-133-AC-3, FR-133-AC-7, FR-133-CON-1 | 🚧 planned on issue #80 |
+| TC-1420 | A pair the rule does not cover still raises NAME_COLLISION naming both identities and writes no file | Unit | P1 | FR-133-AC-4 | 🚧 planned on issue #80 |
+| TC-1421 | Over arbitrary minted and reserved names, no two distinct constructs share one generated identifier, and the register carries the resolution bound to a case | Property | P1 | FR-133-AC-5, FR-133-AC-6, FR-133-CON-2 | 🚧 planned on issue #80 |
 
 | TC-1360 | The `json-schema` registry entry generates the lifted ConfigVersion golden through the seam, returning a success manifest with a SHA-256 digest for every emitted file. | Integration | P0 | FR-063-AC-22 | ✅ passed — issue #85 |
 | TC-1361 | A synthetic IR containing all eight structural kinds and every kernel scalar emits one Ajv-compilable JSON Schema 2020-12 document per definition. | Unit | P0 | FR-100-AC-1 | ✅ passed — issue #85 |
@@ -2515,15 +2530,15 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 |---|---|---|---|---|---|
 | Static | 270 | 233 | 0 | 37 | 100% mapped (270/270) |
 | Manual | 47 | 45 | 0 | 2 | 100% mapped (47/47) |
-| Analysis | 48 | 30 | 0 | 18 | 100% mapped (48/48) |
-| Property | 128 | 71 | 0 | 57 | 100% mapped (128/128) |
-| Unit | 523 | 422 | 0 | 101 | 100% mapped (523/523) |
-| Integration | 134 | 84 | 0 | 50 | 100% mapped (134/134) |
+| Analysis | 50 | 30 | 0 | 20 | 100% mapped (50/50) |
+| Property | 129 | 71 | 0 | 58 | 100% mapped (129/129) |
+| Unit | 528 | 422 | 0 | 106 | 100% mapped (528/528) |
+| Integration | 138 | 84 | 0 | 54 | 100% mapped (138/138) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 68 | 35 | 0 | 33 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1258** | **944** | **0** | **314** | **100% mapped (1258/1258)** |
+| **Total** | **1270** | **944** | **0** | **326** | **100% mapped (1270/1270)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.
