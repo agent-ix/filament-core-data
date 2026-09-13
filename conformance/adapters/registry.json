@@ -35,15 +35,21 @@
 			"status": "available",
 			"pointerCompatible": true,
 			"command": ["node", "adapters/typescript-backend/adapter.mjs"],
-			"rationale": "Issue #22 landed the TypeScript generation backend under src/compiler/backends/typescript-v1/. The adapter answers every case from that backend's own decision modules \u2014 admitIr for the result state and the diagnostics, normalizeIrForTarget for the canonical form, classifySurface for a compatibility case's classification \u2014 and calls neither oracleVerdict nor compare. pointerCompatible stays true because the backend locates by the same RFC 6901 scheme this oracle uses."
+			"rationale": "Issue #22 landed the TypeScript generation backend under src/compiler/backends/typescript-v1/. The adapter answers every case from that backend's own decision modules — admitIr for the result state and the diagnostics, normalizeIrForTarget for the canonical form, classifySurface for a compatibility case's classification — and calls neither oracleVerdict nor compare. pointerCompatible stays true because the backend locates by the same RFC 6901 scheme this oracle uses."
 		},
 		{
 			"id": "python-backend",
 			"language": "python",
 			"owningIssue": "agent-ix/filament-core-data#23",
-			"status": "unavailable",
+			"status": "available",
 			"pointerCompatible": true,
-			"rationale": "No generated Python package exists; the merged issue #34 reader is evidence for that issue, not an adapter, and the oracle may not import it."
+			"rationale": "Issue #23's adapter answers every case from this repository's own Python reader, tests/semantic_ir_reader.py, for the cross-field diagnostics and the normalized bytes, from the published v1 schemas for the schema layer, and from its own statement of the contract's compatibility rules for a classification. It imports nothing under conformance/oracle/ and cannot: the import surface is an ES module and this adapter is Python, which makes accidental transcription impossible rather than merely prohibited. Cases arrive materialized from tools/materialize-cases.mjs, so a patch-application defect cannot present as a reader divergence. pointerCompatible stays true because it locates by the same RFC 6901 scheme this oracle uses. The command runs through poetry because the reader's schema layer needs the project's pinned jsonschema, and a bare interpreter resolves whichever one the machine happens to carry.",
+			"command": [
+				"poetry",
+				"run",
+				"python",
+				"adapters/python-backend/adapter.py"
+			]
 		}
 	]
 }

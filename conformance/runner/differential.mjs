@@ -12,15 +12,16 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import {
-	ROOT,
 	compare,
 	corpusGates,
 	loadCorpus,
 	oracleVerdict,
+	ROOT,
 } from "../corpus.mjs";
 import { canonical, compareCodePoint } from "../oracle/json.mjs";
-import { formatJson } from "../tools/format-json.mjs";
 import { validateConformance } from "../oracle/schema-layer.mjs";
+import { formatJson } from "../tools/format-json.mjs";
+import { materializeCases } from "../tools/materialize-cases.mjs";
 
 const REGISTRY_PATH = join(ROOT, "adapters", "registry.json");
 const DIVERGENCES_PATH = join(ROOT, "divergences.json");
@@ -135,6 +136,11 @@ export function run(options = {}) {
 			});
 		}
 	}
+
+	// Every adapter that cannot import this corpus reads it from here instead.
+	// Materializing once, before any adapter starts, keeps every adapter's
+	// answers computed from one assembly of the cases rather than from its own.
+	materializeCases(join(ROOT, ".cases"));
 
 	for (const adapter of [...registry.adapters].sort((left, right) =>
 		compareCodePoint(left.id, right.id),

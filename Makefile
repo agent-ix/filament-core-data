@@ -8,6 +8,11 @@
 .PHONY: install
 install:
 	pnpm install
+# The Node conformance suite starts the `python-backend` adapter as a process
+# (conformance/adapters/registry.json), so the Python environment is a
+# prerequisite of `make test-node` and not only of `make test-python`. Before
+# this line `make install` provisioned half of what `make test` runs.
+	poetry install
 
 .PHONY: build
 build:

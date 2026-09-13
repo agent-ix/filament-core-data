@@ -1,22 +1,22 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
 import {
 	validateClauseRef,
 	validateFieldDecl,
 	validateMultiplicity,
 } from "../packages/semantic-kernel/typescript/validators.js";
 
-import { readdirSync } from "node:fs";
-
 import { generateRust } from "../src/compiler/backends/rust-serde/index.mjs";
 import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
-import { createHost } from "../src/compiler/host.mjs";
-
+import { DIAGNOSTIC_CODES } from "../src/compiler/diagnostics.mjs";
+import {
+	checkKernelBundle,
+	checkKernelFreshness,
+	kernelDigest,
+	kernelDigestInputs,
+} from "../src/compiler/frontend/json-schema/bundle.mjs";
 import {
 	RECOGNISED_KEYWORDS,
 	unrecognisedKeywords,
@@ -28,21 +28,15 @@ import {
 	segment,
 } from "../src/compiler/frontend/json-schema/mint.mjs";
 import {
-	KERNEL_LOSSES,
-	checkLossBijection,
-	decide,
-} from "../src/compiler/frontend/json-schema/representability.mjs";
-import {
 	hostLeaks,
 	provenanceOf,
 } from "../src/compiler/frontend/json-schema/provenance.mjs";
 import {
-	checkKernelBundle,
-	checkKernelFreshness,
-	kernelDigest,
-	kernelDigestInputs,
-} from "../src/compiler/frontend/json-schema/bundle.mjs";
-import { DIAGNOSTIC_CODES } from "../src/compiler/diagnostics.mjs";
+	checkLossBijection,
+	decide,
+	KERNEL_LOSSES,
+} from "../src/compiler/frontend/json-schema/representability.mjs";
+import { createHost } from "../src/compiler/host.mjs";
 import { changedPathsOf } from "./changed-paths.js";
 
 const root = resolve(import.meta.dirname, "..");
@@ -676,7 +670,11 @@ describe("TC-1085..1089 cross-language agreement through the corpus (FR-090)", (
 
 	// TC-1085
 	it("agrees with the independent oracle on every case, for every live adapter", () => {
-		for (const name of ["rust-backend", "typescript-backend"]) {
+		for (const name of [
+			"python-backend",
+			"rust-backend",
+			"typescript-backend",
+		]) {
 			const row = byAdapter.get(name);
 			expect(row?.status, name).toBe("available");
 			expect(row?.matched, name).toBe(report.coverage.totalCases);
@@ -687,7 +685,7 @@ describe("TC-1085..1089 cross-language agreement through the corpus (FR-090)", (
 
 	// TC-1086 — an absent adapter must never read as agreement.
 	it("counts an unavailable adapter as unmet, never as a pass", () => {
-		for (const name of ["compiler-frontend", "python-backend"]) {
+		for (const name of ["compiler-frontend"]) {
 			const row = byAdapter.get(name);
 			expect(row?.status, name).toBe("unavailable");
 			expect(row?.matched, name).toBe(0);
@@ -710,11 +708,11 @@ describe("TC-1085..1089 cross-language agreement through the corpus (FR-090)", (
 		const live = report.coverage.adapters.filter(
 			(a) => a.status === "available",
 		).length;
-		// Two of four. FR-090's claim is established for the languages that can
-		// answer and is open for the two that cannot — issue #80 blocks the Rust
-		// kernel crate and issue #81 blocks the Python one, so neither absence
-		// is silent.
-		expect(live).toBe(2);
+		// Three of four. FR-090's claim is established for the languages that
+		// can answer and is open for the one that cannot — the compiler
+		// frontend slot stays unavailable pending the GAP-011 ruling in issue
+		// #9, so the absence is stated rather than silent.
+		expect(live).toBe(3);
 		expect(report.coverage.adapters).toHaveLength(4);
 	});
 
