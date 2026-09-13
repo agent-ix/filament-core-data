@@ -11,7 +11,7 @@
 /// The semantic identity of the contract package this consumer exchanges
 /// values with, read back from the generated crate rather than written out.
 pub fn package_identity() -> &'static str {
-    agent_ix_conformance::identity::PACKAGE_IDENTITY
+    agent_ix_conformance::provenance::PACKAGE_IDENTITY
 }
 
 /// The number of types the generated crate exports.

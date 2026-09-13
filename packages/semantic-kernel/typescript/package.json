@@ -33,9 +33,9 @@
 			"types": "./identity.ts",
 			"default": "./identity.ts"
 		},
-		"./metadata": {
-			"types": "./metadata.ts",
-			"default": "./metadata.ts"
+		"./provenance": {
+			"types": "./provenance.ts",
+			"default": "./provenance.ts"
 		}
 	}
 }

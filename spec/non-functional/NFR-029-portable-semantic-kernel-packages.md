@@ -73,7 +73,7 @@ provenance metadata — remain reachable, but through an explicit, validated API
 rather than by reflection over the package. That is the acceptance criterion
 issue #11 states as "finite static exports while dynamic values remain available
 through an explicit validated API", and the TypeScript backend's
-`identity.ts`/`metadata.ts` split already implements it.
+`identity.ts`/`provenance.ts` split already implements it.
 
 The second is **runtime validation without a runtime dependency**. Each package
 validates untrusted input against the contract using code it carries, not a

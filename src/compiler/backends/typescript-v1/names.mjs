@@ -126,6 +126,7 @@ export const RESERVED_NAMES = Object.freeze([
 	"ValidationResult",
 	"VALIDATION_CODES",
 	"SEMANTIC_METADATA",
+	"PROVENANCE",
 	"TYPE_IDENTITIES",
 	"FIELD_IDENTITIES",
 	"TYPE_ROLES",

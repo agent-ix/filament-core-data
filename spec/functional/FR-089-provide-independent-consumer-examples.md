@@ -58,10 +58,10 @@ and every one of them will compile.
   one language at a time and never compares languages, which is FR-090's
   obligation
 - The identity and provenance surfaces each package already emits: the validated
-  dynamic `identity.ts` and `metadata.ts` API of the TypeScript backend, the
-  identity constants of the Rust crate that
+  dynamic `identity.ts` and `provenance.ts` API of the TypeScript backend, the
+  provenance constants of the Rust crate that
   `crates/consumer-runtime/src/lib.rs` reads through
-  `agent_ix_conformance::identity::PACKAGE_IDENTITY`, and the `PROVENANCE.json`
+  `agent_ix_conformance::provenance::PACKAGE_IDENTITY`, and the `PROVENANCE.json`
   content fingerprint [FR-079](./FR-079-emit-the-python-package-layout.md)
   requires of every emitted Python package
 - The two existing independent consumers read as the shape to match:

@@ -302,3 +302,207 @@ export const FIELD_EXTENSIONS = {
 export const FIELD_UNIT = {
 	"Node.elapsed": "ms",
 } as const satisfies Partial<Record<ExportedFieldKey, string>>;
+
+/** The extensions the document declares at its top level. */
+export const DOCUMENT_EXTENSIONS = [
+	{
+		identity: "ix://agent-ix/conformance/ext/doc",
+		version: "1.0.0",
+		required: false,
+		capability: "documentation",
+		payload: {
+			text: "conformance base",
+		},
+	},
+] as const satisfies readonly ExtensionDescriptor[];
+
+/** The occurrences the document carries; empty where it carries none. */
+export const OCCURRENCES = [
+	{
+		identity: "ix://agent-ix/conformance/occurrence/root-1",
+		definition: "ix://agent-ix/conformance/type/Root",
+		observedAt: "2026-01-01T00:00:00Z",
+		value: {
+			name: "root",
+			node: "ix://agent-ix/conformance/type/Node",
+		},
+	},
+] as const satisfies readonly OccurrenceDescriptor[];
+
+/**
+ * The operations each type declares, as data.
+ *
+ * No executable function is generated for an operation. The generated surface
+ * is data, and rendering an operation as a readonly descriptor is not the
+ * degradation `contracts-v1.md` prohibits — that is a fall back to `any`, a
+ * generic map, or an empty model, and this is none of those.
+ */
+export const TYPE_OPERATIONS = {
+	Count: [],
+	Millis: [],
+	Node: [],
+	NodeRef: [],
+	Payload: [],
+	Root: [
+		{
+			identity: "ix://agent-ix/conformance/operation/root-resize",
+			name: "resize",
+			params: [
+				{
+					identity: "ix://agent-ix/conformance/field/root-resize-size",
+					name: "size",
+					typeRef: "ix://agent-ix/conformance/type/Count",
+					optional: false,
+					nullable: false,
+					collection: false,
+					lower: 1,
+					upper: 1,
+				},
+			],
+			returns: {
+				typeRef: "ix://agent-ix/conformance/type/Node",
+				nullable: false,
+				lower: 1,
+				upper: 1,
+			},
+			pre: ["size-non-negative"],
+			post: ["node-returned"],
+		},
+	],
+	Status: [],
+	Text: [],
+	TextList: [],
+	TextMap: [],
+} as const satisfies Record<ExportedTypeName, readonly OperationDescriptor[]>;
+
+/**
+ * The clauses each type declares, with their text carried opaquely.
+ *
+ * The text is never parsed here: `agent-ix/quire-contract-ir#52` owns clause
+ * semantics and the IR itself carries the text without parsing it.
+ */
+export const TYPE_CLAUSES = {
+	Count: [],
+	Millis: [],
+	Node: [],
+	NodeRef: [],
+	Payload: [],
+	Root: [
+		{
+			identity: "ix://agent-ix/conformance/clause/root-size-non-negative",
+			language: "ocl",
+			clauseId: "size-non-negative",
+			text: "size >= 0",
+			sourceSpan: {
+				path: "model/root.tsp",
+				startLine: 9,
+				startColumn: 3,
+			},
+		},
+		{
+			identity: "ix://agent-ix/conformance/clause/root-node-returned",
+			language: "ocl",
+			clauseId: "node-returned",
+			text: "result.oclIsKindOf(Node)",
+			sourceSpan: {
+				path: "model/root.tsp",
+				startLine: 10,
+				startColumn: 3,
+			},
+		},
+	],
+	Status: [],
+	Text: [],
+	TextList: [],
+	TextMap: [],
+} as const satisfies Record<ExportedTypeName, readonly ClauseDescriptor[]>;
+
+/** The enum and union members, including their semantic identities. */
+export const TYPE_VARIANTS = {
+	Count: [],
+	Millis: [],
+	Node: [],
+	NodeRef: [],
+	Payload: [
+		{
+			identity: "ix://agent-ix/conformance/variant/payload-count",
+			name: "count",
+			payloadType: "ix://agent-ix/conformance/type/Count",
+		},
+		{
+			identity: "ix://agent-ix/conformance/variant/payload-text",
+			name: "text",
+			payloadType: "ix://agent-ix/conformance/type/Text",
+		},
+	],
+	Root: [],
+	Status: [
+		{
+			identity: "ix://agent-ix/conformance/variant/status-draft",
+			name: "draft",
+			payloadType: "",
+		},
+		{
+			identity: "ix://agent-ix/conformance/variant/status-final",
+			name: "final",
+			payloadType: "",
+		},
+	],
+	Text: [],
+	TextList: [],
+	TextMap: [],
+} as const satisfies Record<ExportedTypeName, readonly VariantDescriptor[]>;
+
+/** The constraints each type carries, including their semantic identities. */
+export const TYPE_CONSTRAINTS = {
+	Count: [
+		{
+			identity: "ix://agent-ix/conformance/constraint/count-min",
+			keyword: "min",
+			appliesTo: "ix://agent-ix/conformance/type/Count",
+			diagnosticCode: "agent-ix.conformance.COUNT_MIN",
+			operands: {
+				value: 0,
+			},
+		},
+	],
+	Millis: [],
+	Node: [],
+	NodeRef: [],
+	Payload: [],
+	Root: [],
+	Status: [],
+	Text: [
+		{
+			identity: "ix://agent-ix/conformance/constraint/text-min-length",
+			keyword: "minLength",
+			appliesTo: "ix://agent-ix/conformance/type/Text",
+			diagnosticCode: "agent-ix.conformance.TEXT_MIN_LENGTH",
+			operands: {
+				value: 1,
+			},
+		},
+	],
+	TextList: [],
+	TextMap: [],
+} as const satisfies Record<ExportedTypeName, readonly ConstraintDescriptor[]>;
+
+/**
+ * The declared default of each exported field.
+ *
+ * A `representation` or `migration` default appears here even though the
+ * generated validator applies only a `semantic` one, so a consumer can see a
+ * default the semantic contract declines to substitute.
+ */
+export const FIELD_DEFAULT = {
+	"Node.attrs": { kind: "none", value: null },
+	"Node.children": { kind: "none", value: null },
+	"Node.elapsed": { kind: "none", value: null },
+	"Node.id": { kind: "none", value: null },
+	"Node.label": { kind: "none", value: null },
+	"Node.payload": { kind: "none", value: null },
+	"Node.status": { kind: "semantic", value: "draft" },
+	"Node.tags": { kind: "none", value: null },
+	"Root.name": { kind: "none", value: null },
+	"Root.node": { kind: "none", value: null },
+} as const satisfies Record<ExportedFieldKey, DefaultDescriptor>;

@@ -7,7 +7,7 @@
 //! it compiling too. `make rust-install-from-artifact` rehearses both failures
 //! against a deliberately modified document rather than asserting them.
 
-use agent_ix_conformance::metadata::{ClauseMeta, OperationMeta, RelationshipMeta, TypeMeta};
+use agent_ix_conformance::identity::{ClauseMeta, OperationMeta, RelationshipMeta, TypeMeta};
 use agent_ix_conformance::{SemanticType, TYPES};
 
 /// The number of types the contract this consumer was written against declares.
@@ -86,7 +86,7 @@ fn root() -> &'static TypeMeta {
 
 /// One identity constant, read from the generated provenance module.
 pub fn package_identity() -> &'static str {
-    agent_ix_conformance::identity::PACKAGE_IDENTITY
+    agent_ix_conformance::provenance::PACKAGE_IDENTITY
 }
 
 /// One role, read from the generated type metadata.

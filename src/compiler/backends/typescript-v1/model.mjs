@@ -2,7 +2,7 @@
  * The resolved type model (FR-064, Task-105).
  *
  * This is the one artifact `renderTypes`, `renderValidators`, `renderIdentity`,
- * `renderMetadata` and `renderPackage` all consume. Four requirements named it
+ * `renderProvenance` and `renderPackage` all consume. Four requirements named it
  * before it had an owner, which is how five modules end up with five slightly
  * different ideas of the shape they exchange; declaring it once is the point.
  *

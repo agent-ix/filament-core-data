@@ -92,7 +92,7 @@ against the contract owner, in that order.
 ### The fingerprint the generated packages carry
 
 - Each of the four generated packages SHALL carry the same fingerprint triple: `source.digest`, `package.version`, and the `fingerprintIr` of the emitted IR document computed by `src/compiler/ir/normalize.mjs`.
-- The TypeScript package SHALL carry it in the `metadata.ts` [FR-067](./FR-067-generate-identity-and-fingerprint-metadata.md) generates; the Rust crate, the Python package, and the modular JSON Schema package SHALL each carry the identical three values in the metadata surface their own backend emits.
+- The TypeScript package SHALL carry it in the `provenance.ts` [FR-067](./FR-067-generate-identity-and-fingerprint-metadata.md) generates; the Rust crate, the Python package, and the modular JSON Schema package SHALL each carry the identical three values in the metadata surface their own backend emits.
 - The three values SHALL be byte-identical across the four packages, asserted by a test that reads all four rather than by generating one and asserting about the others.
 - A consumer holding two of the four packages SHALL be able to decide whether they came from the same kernel by comparing the triple alone, without a network call and without reading this repository.
 - The fingerprint SHALL NOT include a build timestamp, a host name, a tool path, or a package-manager version, because any of those would make two generations of the same bundle compare unequal and would destroy the only property the fingerprint exists to provide.
