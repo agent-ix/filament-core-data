@@ -2,9 +2,8 @@
 //! FR-098-CON-3): a payload validator the test derives from the lifted
 //! `config-version-table` golden, kept here and nowhere under `src/`.
 //!
-//! The helper evidences the test author's derivation only (issue #36 AC-5's
-//! `json-schema` target is filament-core-data#85, a Manual matrix row with
-//! no test behind it): it
+//! The helper evidences the test author's derivation only; the #85 backend
+//! acceptance is tested separately below. It
 //! reads a record's fields, follows each `typeRef` through aliases to a
 //! kernel scalar or a record, and checks a JSON object against the
 //! presence, scalar and `min`/`max`/`minLength`/`maxLength`/`nonEmpty`
@@ -17,7 +16,7 @@ use std::path::Path;
 
 mod common;
 
-use common::{crate_dir, fixture, read_json};
+use common::{crate_dir, fixture, read_json, run_node};
 use ix_trace_rs::trace;
 use serde_json::Value;
 
@@ -165,6 +164,35 @@ fn tc_1293_a_config_version_payload_validates_and_version_number_zero_fails_at_v
         !violations.iter().any(|v| v.starts_with("parent")),
         "{violations:?}"
     );
+}
+
+#[trace("TC-1337", "FR-100-AC-2")]
+#[test]
+fn tc_1337_json_schema_target_accepts_the_lifted_config_version_table_document() {
+    let out = tempfile::tempdir().expect("tempdir");
+    let golden = fixture("config-version-table/expected/semantic-ir.json");
+    let manifest = out.path().join("manifest.json");
+    let run = run_node(
+        &[
+            "src/compiler/cli.mjs",
+            "generate",
+            "--ir",
+            &golden.to_string_lossy(),
+            "--target",
+            "json-schema",
+            "--out-root",
+            &out.path().join("out").to_string_lossy(),
+            "--manifest",
+            &manifest.to_string_lossy(),
+        ],
+        &[],
+        None,
+    )
+    .unwrap_or_else(|e| panic!("{e}"));
+    assert_eq!(run.status, 0, "{}", run.stderr);
+    let output = read_json(&manifest);
+    assert_eq!(output["state"], "success");
+    assert!(out.path().join("out/ConfigVersion.json").is_file());
 }
 
 /// Every Rust source under `dir`, recursively.
