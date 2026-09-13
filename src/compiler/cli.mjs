@@ -18,6 +18,7 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { biomeFormatter, FormatterError } from "./backends/format.mjs";
+import { poetryProducer } from "./backends/python-v1/produce.mjs";
 import {
 	BACKEND_TARGETS,
 	generateTarget,
@@ -304,6 +305,12 @@ function backendDescriptor(target) {
 	};
 }
 
+/** The targets whose generation runs through the injected Python producer. */
+const PYTHON_TARGETS = Object.freeze([
+	"python-pydantic-v2",
+	"python-dataclass",
+]);
+
 /**
  * Generates a language package from one IR document (FR-071).
  *
@@ -390,6 +397,14 @@ async function generate(options) {
 					rendered.set(path, text);
 					return text;
 				},
+				// The Python targets generate through a Python program, and
+				// ADR-0006 makes that effect injected rather than reached for. The
+				// CLI is the one place that constructs it, in the same breath as
+				// the host and the formatter, so no module beneath here starts a
+				// process on its own.
+				...(PYTHON_TARGETS.includes(target)
+					? { produce: poetryProducer() }
+					: {}),
 			});
 			emitted = {
 				manifest,
