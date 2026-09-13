@@ -76,6 +76,21 @@ drift from the one a `json-schema` consumer receives.
 - The command-line entry point SHALL inject the repository's producer when the
   caller selects a Python target.
 
+## Emitted set (ADR-0007)
+
+[ADR-0007](../../docs/semantic-data-system/adr/0007-emitted-set-contract.md) specifies
+the emitted set as five concepts realised idiomatically per language, not as a
+filename contract. This section names where each concept lands in this target, as
+that decision requires.
+
+| ADR-0007 concept | Where it lands in this target |
+|---|---|
+| Types | one module per source schema document, under the selected profile's model style |
+| Validation | Pydantic's own validation, a property of the wrapped generator's chosen library and a legitimate realisation rather than a gap |
+| Diagnostics | the seam's registry-coded refusals returned with the generation; this target emits no diagnostics module |
+| Semantic identity | **not carried today.** `datamodel-code-generator` drops the `x-agent-ix-semantic-id` annotation the JSON Schema documents carry, so no emitted module declares it. Declared here as a gap owned by this requirement's backend rather than left unstated |
+| Provenance | `PROVENANCE.json` |
+
 ## Constraints
 
 | ID | Constraint | Type | Validation |

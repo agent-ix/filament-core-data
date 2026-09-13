@@ -34,12 +34,14 @@ still exists, redeploying the removed code is the only recovery, and that is a
 restore rather than a rollback. Everything this story asks for exists to keep
 that one case from happening.
 
-The scope is smaller than the risk suggests. Exactly one external consumer of
-the legacy contract is known — `filament-ide`'s `coredb` sync path — and no
-Python consumer of the published package exists outside this repository. That is
-a finding rather than an assumption: a census taken once and trusted afterwards
-is precisely how a reader gets missed, so it is re-measured immediately before
-anything is removed rather than cited from a document.
+The scope is smaller than the risk suggests. No external consumer of the legacy
+contract is known, and no Python consumer of the published package exists outside
+this repository. The one an earlier census named, `filament-ide`'s `coredb` sync
+path, was superseded on 2026-08-14 by `filament-ide-rs` and is out of scope by
+owner amendment of 2026-09-13. That census is a finding rather than an
+assumption: a census taken once and trusted afterwards is precisely how a reader
+gets missed, so it is re-measured immediately before anything is removed rather
+than cited from a document.
 
 A freeze precedes the migration, and its real content is a decision rather than
 a document set. The candidate schemas, locks, compatibility report and rollback
@@ -108,9 +110,11 @@ changes.
 ## Dependencies (Contextual)
 
 Relationships observed while scoping. Upstream: the generated packages and the
-version matrix that says which combinations are supported. Downstream:
-`filament-ide`'s sync path, the only known external consumer. These are
-potential relationships, not formal traceability.
+version matrix that says which combinations are supported. Downstream: whatever
+the re-measured census names, which today is nothing outside this repository.
+These are
+potential relationships, not formal traceability. `filament-ide` is not among
+them: it was superseded and is out of scope.
 
 ## Priority and Risk (Informative)
 
