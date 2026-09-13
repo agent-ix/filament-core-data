@@ -316,17 +316,17 @@
 	"adapters": [
 		{
 			"adapter": "compiler-frontend",
-			"status": "unavailable",
-			"matched": 0,
-			"unmet": 111,
+			"status": "available",
+			"matched": 111,
+			"unmet": 0,
 			"failed": 0
 		},
 		{
 			"adapter": "python-backend",
 			"status": "available",
-			"matched": 111,
+			"matched": 0,
 			"unmet": 0,
-			"failed": 0
+			"failed": 111
 		},
 		{
 			"adapter": "rust-backend",
@@ -343,7 +343,7 @@
 			"failed": 0
 		}
 	],
-	"unmetCases": 111,
+	"unmetCases": 0,
 	"unmetAreas": [
 		{
 			"id": "UA-serialization-parity",
