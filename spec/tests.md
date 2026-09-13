@@ -286,6 +286,7 @@ producer/schema plan are accepted.
 | FR-111 | FR-111-AC-1..4, FR-111-CON-1..2 | TC-1385..TC-1387 | 🚧 planned — IN02 implementation boundary |
 | FR-100 | FR-100-AC-1..6, FR-100-CON-1..3 | TC-1361..TC-1366 | ✅ Complete |
 | FR-130 | FR-130-AC-1..8, FR-130-CON-1..3 | TC-1388..TC-1395 | ✅ Complete |
+| FR-131 | FR-131-AC-1..8, FR-131-CON-1..3 | TC-1403..TC-1409 | ✅ Complete |
 
 ### Non-Functional Requirement Coverage
 
@@ -1575,6 +1576,13 @@ producer/schema plan are accepted.
 | TC-1400 | Both platforms upload their generated crates and an empty upload is an error, so the cross-platform comparison has evidence to run over | Unit | P1 | NFR-038-AC-6 | ✅ passed |
 | TC-1401 | Both toolchain checks exit non-zero naming the toolchain they could not run, and every Rust gate depends on one | Unit | P1 | NFR-038-AC-7 | ✅ passed |
 | TC-1402 | The lane reads the qualification toolchain from make and names no version of its own, so a bump cannot leave it pinned | Unit | P1 | NFR-038-AC-1 | ✅ passed |
+| TC-1403 | A producer exiting non-zero with no diagnostic, and one exiting zero with no document, each yield exactly FRONTEND_CONTRACT_VIOLATION; a producer refusing with a reason has its own diagnostics forwarded unchanged | Unit | P0 | FR-131-AC-4, FR-131-AC-5 | ✅ passed |
+| TC-1404 | The spec-bundle dialect is registered implemented and the seam routes a request for it to the frontend | Unit | P0 | FR-131-AC-1 | ✅ passed |
+| TC-1405 | A request whose producer returns a document yields that document, its diagnostics, and exactly one producer call carrying what the request named | Unit | P0 | FR-131-AC-2 | ✅ passed |
+| TC-1406 | A request naming no bundle root is refused with INVALID_REQUEST and the producer is never called | Unit | P1 | FR-131-AC-3 | ✅ passed |
+| TC-1407 | A dialect registered unimplemented is refused with FRONTEND_NOT_IMPLEMENTED naming its owner, over a synthetic registration rather than whichever dialect is unbuilt today | Unit | P1 | FR-131-AC-6 | ✅ passed |
+| TC-1408 | No module under src/compiler/frontend/ imports a process-starting built-in, and extraction.mjs is unreachable from the frontend seam | Unit | P0 | FR-131-AC-7, FR-131-CON-1, FR-131-CON-2 | ✅ passed |
+| TC-1409 | A request supplying no producer raises rather than returning a diagnostic | Unit | P1 | FR-131-AC-8 | ✅ passed |
 
 | TC-1360 | The `json-schema` registry entry generates the lifted ConfigVersion golden through the seam, returning a success manifest with a SHA-256 digest for every emitted file. | Integration | P0 | FR-063-AC-22 | ✅ passed — issue #85 |
 | TC-1361 | A synthetic IR containing all eight structural kinds and every kernel scalar emits one Ajv-compilable JSON Schema 2020-12 document per definition. | Unit | P0 | FR-100-AC-1 | ✅ passed — issue #85 |
@@ -2509,13 +2517,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 47 | 45 | 0 | 2 | 100% mapped (47/47) |
 | Analysis | 48 | 30 | 0 | 18 | 100% mapped (48/48) |
 | Property | 128 | 71 | 0 | 57 | 100% mapped (128/128) |
-| Unit | 516 | 415 | 0 | 101 | 100% mapped (516/516) |
+| Unit | 523 | 422 | 0 | 101 | 100% mapped (523/523) |
 | Integration | 134 | 84 | 0 | 50 | 100% mapped (134/134) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 68 | 35 | 0 | 33 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1251** | **937** | **0** | **314** | **100% mapped (1251/1251)** |
+| **Total** | **1258** | **944** | **0** | **314** | **100% mapped (1258/1258)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

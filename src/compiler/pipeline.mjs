@@ -13,9 +13,9 @@
  */
 import { resolve } from "node:path";
 import {
+	applyDiagnosticLimit,
 	DEFAULT_LIMITS,
 	DIAGNOSTIC_CODES,
-	applyDiagnosticLimit,
 	hasBlocking,
 } from "./diagnostics.mjs";
 import { runFrontend } from "./frontend/seam.mjs";
@@ -52,6 +52,12 @@ export async function compilePackage(request) {
 		entrypoint = "main.tsp",
 		lockPath,
 		limits = DEFAULT_LIMITS,
+		// The injected extraction producer (ADR-0006). Passed through rather than
+		// reached for, exactly as the generation seam passes `format` through to a
+		// backend: no module in this path may start a process, and the dialect
+		// that needs one receives the capability from whoever called the compile.
+		lift,
+		moduleRoots = [],
 		onPhase = () => {},
 	} = request;
 	const diagnostics = [];
@@ -124,6 +130,8 @@ export async function compilePackage(request) {
 		entrypoint,
 		limits,
 		host,
+		lift,
+		moduleRoots,
 	});
 	diagnostics.push(...result.diagnostics);
 	if (hasBlocking(diagnostics)) return stop("invalid");
