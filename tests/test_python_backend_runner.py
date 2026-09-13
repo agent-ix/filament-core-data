@@ -280,7 +280,11 @@ def test_provisioning_failure_and_declared_limits() -> None:
 # below with the assertion that no backend can reach it — which is the half that
 # matters, and which a blanket "no process anywhere" never made. The JS side of
 # the same gate carries the identical named exemption in `test/compiler.test.ts`.
-PROCESS_STARTING = ("backends/format.mjs",)
+# Issue #86 adds the second, for the same reason on the input side: ADR-0006
+# requires the spec-bundle frontend to reach the Rust extraction producer as an
+# injected capability, so `extraction.mjs` starts the process and no module under
+# `frontend/` imports it. The node half of this gate carries the identical pair.
+PROCESS_STARTING = ("backends/format.mjs", "extraction.mjs")
 
 
 def test_no_compiler_module_spawns_or_imports_the_generator() -> None:

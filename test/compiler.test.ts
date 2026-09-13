@@ -4,8 +4,8 @@ import {
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
-	readFileSync,
 	readdirSync,
+	readFileSync,
 	rmSync,
 	statSync,
 	writeFileSync,
@@ -14,22 +14,22 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { changeRange, changedPathsOf } from "./changed-paths.js";
 import {
-	SEMANTIC_IR_SCHEMA_VERSION,
-	compileSemanticIr,
-	emitRust,
-	emitTypeScript,
-	normalizeJsonSchemaForPython,
-} from "../src/compiler/index.mjs";
+	DATAMODEL_CODEGEN_VERSION,
+	PYDANTIC_VERSION,
+} from "../src/compiler/backends/python-pins.mjs";
 import type {
 	SemanticIrDocument,
 	SemanticIrType,
 } from "../src/compiler/index.d.mts";
 import {
-	DATAMODEL_CODEGEN_VERSION,
-	PYDANTIC_VERSION,
-} from "../src/compiler/backends/python-pins.mjs";
+	compileSemanticIr,
+	emitRust,
+	emitTypeScript,
+	normalizeJsonSchemaForPython,
+	SEMANTIC_IR_SCHEMA_VERSION,
+} from "../src/compiler/index.mjs";
+import { changedPathsOf, changeRange } from "./changed-paths.js";
 
 /**
  * Issue #27 (promote the issue #4 prototype emitters into src/) matrix trace
@@ -986,7 +986,12 @@ describe("promoted language backends (FR-042)", () => {
 		// it is paired with the assertion below that no backend can reach it —
 		// which is the half that matters. A blanket "no process anywhere" was
 		// the weaker claim: it said nothing about *which* code could start one.
-		const PROCESS_STARTING = ["backends/format.mjs"];
+		// Issue #86 adds the second, for the same reason on the input side.
+		// ADR-0006 requires the `spec-bundle` frontend to reach the Rust
+		// extraction producer as an *injected* capability, so `extraction.mjs`
+		// starts the process and no module under `frontend/` imports it — which
+		// is what keeps NFR-020-AC-5 true of that directory without narrowing it.
+		const PROCESS_STARTING = ["backends/format.mjs", "extraction.mjs"];
 		for (const path of walk(compilerRoot)) {
 			if (!path.endsWith(".mjs")) continue;
 			if (PROCESS_STARTING.includes(path)) continue;
@@ -1029,6 +1034,35 @@ describe("promoted language backends (FR-042)", () => {
 			expect(
 				contractReachable.has(permitted),
 				`${permitted} is reachable from the contract backend`,
+			).toBe(false);
+		}
+
+		// The same half that matters, on the input side: every frontend receives
+		// its producer as an injected function, so no module under `frontend/`
+		// imports the one that starts a process. Without this the exemption above
+		// would be a hole rather than a boundary.
+		const frontendReachable = new Set<string>();
+		const visitFrontend = (relPath: string) => {
+			if (frontendReachable.has(relPath)) return;
+			frontendReachable.add(relPath);
+			const source = read(resolve(compilerRoot, relPath));
+			for (const match of source.matchAll(
+				/(?:from|import)\s*\(?\s*"(\.[^"]+)"/g,
+			)) {
+				if (!match[1].endsWith(".mjs")) continue;
+				visitFrontend(
+					relative(
+						compilerRoot,
+						resolve(dirname(resolve(compilerRoot, relPath)), match[1]),
+					),
+				);
+			}
+		};
+		visitFrontend("frontend/seam.mjs");
+		for (const permitted of PROCESS_STARTING) {
+			expect(
+				frontendReachable.has(permitted),
+				`${permitted} is reachable from the frontend seam`,
 			).toBe(false);
 		}
 	});
