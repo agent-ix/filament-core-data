@@ -92,10 +92,10 @@ composite review, its ids reserved as an exclusive range against `main` at
 3b75e01 because PR #84 is open in parallel and "next free" is not a fact
 either branch can establish. Of its 155 rows (TC-1200..1354), 151 are `✅`
 after the Plan-014 delivery, the SR-169/SR-170 fix pass (CR-036-9), and the
-shared-identity implementation (CR-087-1). Four are `🚧`: TC-1292 is blocked
-on issue #88 (TypeScript half) and the rust-serde `NAME_COLLISION` defect (Rust
-half); TC-1337, the Manual row, is blocked on issue #85; TC-1316 is blocked on
-issue #89; and TC-1317 is blocked in the rehearsal's scratch-clone environment.
+shared-identity implementation (CR-087-1). Three are `🚧`: TC-1337, the Manual
+row, is blocked on issue #85; TC-1316 is blocked on issue #89; and TC-1317 is
+blocked in the rehearsal's scratch-clone environment. TC-1292 passed when issues
+#88 and #90 closed, and FR-130 gave its Rust half the generic command line.
 Nine rows are `Static` evidence produced by `make extraction-frontend-evidence`,
 the crate's `--ignored` run; seven pass under it and TC-1316/TC-1317 remain
 blocked as stated above.
@@ -170,6 +170,10 @@ producer/schema plan are accepted.
 | US-015 | US-015-EX-5 (illustrative) implemented by FR-091 | TC-1202, TC-1265 | ✅ Complete |
 | US-015 | Provisional ecosystem configuration boundary implemented by FR-109 | TC-1379..TC-1381 | 🚧 #95 controls planned |
 | US-015 | Issue #36 AC-5 (json-schema target), no test behind it | TC-1337 | 🚧 Blocked on issue #85 |
+| US-019 | US-019-EX-1 (illustrative) implemented by FR-130 | TC-1388, TC-1389 | ✅ Complete |
+| US-019 | US-019-EX-2 (illustrative) implemented by FR-130 | TC-1390 | ✅ Complete |
+| US-019 | US-019-EX-3 (illustrative) implemented by FR-130 | TC-1391 | ✅ Complete |
+| US-019 | US-019-EX-4 (illustrative) implemented by FR-130 | TC-1392 | ✅ Complete |
 
 ### Functional Requirement Coverage
 
@@ -272,7 +276,7 @@ producer/schema plan are accepted.
 | FR-095 | FR-095-AC-1..16, FR-095-CON-1..3 | TC-1246..TC-1258, TC-1347, TC-1348, TC-1351..TC-1354 | ✅ Complete |
 | FR-096 | FR-096-AC-1..16, FR-096-CON-1..3 | TC-1259..TC-1272, TC-1345, TC-1346 | ✅ Complete |
 | FR-097 | FR-097-AC-1..16, FR-097-CON-1..3 | TC-1273..TC-1284, TC-1336, TC-1339..TC-1342 | ✅ Complete |
-| FR-098 | FR-098-AC-1..12, FR-098-CON-1..3 | TC-1285..TC-1294, TC-1338, TC-1343, TC-1344 | 🚧 TC-1292 blocked on issue #88 and the rust-serde NAME_COLLISION defect |
+| FR-098 | FR-098-AC-1..12, FR-098-CON-1..3 | TC-1285..TC-1294, TC-1338, TC-1343, TC-1344 | ✅ Complete |
 | FR-099 | FR-099-AC-1..6, FR-099-CON-1..3 | TC-1295..TC-1299, TC-1330, TC-1349 | ✅ Complete |
 | FR-106 | FR-106-AC-1..5, FR-106-CON-1..2 | TC-1373, TC-1374 | 🚧 planned — #95 producer/schema boundary |
 | FR-107 | FR-107-AC-1..3, FR-107-CON-1..2 | TC-1375 | 🚧 planned — #95 producer/schema boundary |
@@ -280,6 +284,7 @@ producer/schema plan are accepted.
 | FR-109 | FR-109-AC-1..5, FR-109-CON-1..2 | TC-1379..TC-1381 | 🚧 planned — #95 consumer boundary |
 | FR-110 | FR-110-AC-1..4, FR-110-CON-1..2 | TC-1382..TC-1384 | 🚧 planned — IN01 implementation boundary |
 | FR-111 | FR-111-AC-1..4, FR-111-CON-1..2 | TC-1385..TC-1387 | 🚧 planned — IN02 implementation boundary |
+| FR-130 | FR-130-AC-1..8, FR-130-CON-1..3 | TC-1388..TC-1395 | ✅ Complete |
 
 ### Non-Functional Requirement Coverage
 
@@ -1470,7 +1475,7 @@ producer/schema plan are accepted.
 | TC-1289 | After lifting a committed copy of each fixture bundle, git status --porcelain is empty and every file hash under the bundle and module roots is unchanged, for a clean lift and for a blocking lift | E2E | P0 | FR-098-AC-5 | ✅ passed |
 | TC-1290 | cases.json carries records-and-scalars with both source trees and both typespec and spec-bundle non-null, and spec-bundle null with a reason naming scalar for each of the three existing cases; the parity test finds exactly one two-dialect case and compares it; the projection materialises absent relationships, operations, and clauses as [] | Integration | P1 | FR-098-AC-6 | ✅ passed |
 | TC-1291 | For records-and-scalars, normalized of the projected spec-bundle lift equals normalized of the projected node cli.mjs compile output byte for byte, every identity, the type/NoteRevision alias, and every diagnosticCode included, and the test fails naming node when it is absent | Integration | P0 | FR-098-AC-7 | ✅ passed |
-| TC-1292 | The rust-serde backend, run through its own writer by the harness rust-generate verb over the lifted config-version-table document, exits zero with zero diagnostics once its reserved Uuid re-export no longer collides with the UUID kernel scalar, refusing it with NAME_COLLISION until then; generate --target typescript over the same document exits zero once issue #88 is fixed, refusing it with DUPLICATE_IDENTITY until then; both refusals are measured by un-ignored tests | Integration | P0 | FR-098-AC-8 | 🚧 blocked: Rust half on the rust-serde NAME_COLLISION defect (issue to be filed), TypeScript half on issue #88 |
+| TC-1292 | The generic CLI over the lifted config-version-table document exits zero with zero diagnostics for --target rust (writing src/lib.rs) and for --target typescript, and the rust-serde backend run through its own writer by the harness rust-generate verb does the same | Integration | P0 | FR-098-AC-8 | ✅ passed |
 | TC-1293 | A ConfigVersion payload validates against the test-derived schema, versionNumber 0 fails at versionNumber, and the helper is not reachable from the crate's public surface | Unit | P0 | FR-098-AC-9 | ✅ passed |
 | TC-1294 | The FR-098 change set outside the crate is exactly cases.json, shared/typespec/records-and-scalars/, and files under shared/spec-bundle/; src/compiler/frontend/** and test/compiler-core.test.ts are byte-unchanged | Static | P1 | FR-098-AC-10, FR-098-CON-1 | ✅ passed |
 | TC-1295 | lift over config-version-table exits 0 and writes the document, .fingerprint, .diagnostics.json, and .provenance.json; with --diagnostics d.json --provenance p.json it writes those in their place with the same document bytes | E2E | P0 | FR-099-AC-1 | ✅ passed |
@@ -1553,6 +1558,14 @@ producer/schema plan are accepted.
 | TC-1385 | Additive schema compatibility, payload break, unchanged-schema behavioral regression, and absent evidence receive distinct conclusions | Unit | P0 | FR-111-AC-1 | 🚧 planned — IN02 implementation boundary |
 | TC-1386 | Every policy-required mixed-version combination is assessed; an omitted required combination yields unknown | Integration | P0 | FR-111-AC-2 | 🚧 planned — IN02 implementation boundary |
 | TC-1387 | Changed model/binding/assumption/tool/environment paths retain affected or stale conclusions without rewriting historical results; unresolved and circular support retains unknown and is neither behavioral regression nor proof of falsehood | Integration | P0 | FR-111-AC-3, FR-111-AC-4, FR-111-CON-1, FR-111-CON-2 | 🚧 planned — IN02 implementation boundary |
+| TC-1388 | A rust target request over an accepted IR document returns state success with a non-empty file set, src/lib.rs among the paths, and zero blocking diagnostics | Unit | P0 | FR-130-AC-1 | ✅ passed |
+| TC-1389 | The manifest a rust target request returns names the Rust backend's own identity and no TypeScript identity | Unit | P0 | FR-130-AC-2 | ✅ passed |
+| TC-1390 | Generating one document through the seam and through generateRust yields the same path set and a byte-identical digest at every path | Integration | P0 | FR-130-AC-3, FR-130-CON-1 | ✅ passed |
+| TC-1391 | The generated crate's src/identity.rs renders GENERATOR_IDENTITY as the Rust backend and never as the TypeScript backend | Unit | P0 | FR-130-AC-4 | ✅ passed |
+| TC-1392 | A target with no implementation returns state unavailable, zero files, and BACKEND_NOT_IMPLEMENTED naming the owning issue | Unit | P1 | FR-130-AC-5 | ✅ passed |
+| TC-1393 | A rust request whose IR declares contract version 1.0.0 returns state unsupported naming 1.1.0, and the backend declares 1.1.0 alone | Unit | P1 | FR-130-AC-6, FR-130-CON-3 | ✅ passed |
+| TC-1394 | A rust request with no injected host returns state invalid with at least one diagnostic and zero files | Unit | P1 | FR-130-AC-7 | ✅ passed |
+| TC-1395 | The registered rust backend module imports no file-system module, and the seam's rust entry resolves to it as implemented | Unit | P1 | FR-130-AC-8, FR-130-CON-2 | ✅ passed |
 | TC-1396 | make test-rust names rust and extraction-frontend-test; make rust names check, build, clippy, test and conformance; make test-node names neither rust nor cargo | Unit | P0 | NFR-038-AC-1, NFR-038-AC-5 | ✅ passed |
 | TC-1397 | Every workflow declares workflow_dispatch and no push, pull_request or schedule trigger | Unit | P0 | NFR-038-AC-2 | ✅ passed |
 | TC-1398 | The Rust lane's matrix names ubuntu-latest and macos-latest with fail-fast false, so a single-platform defect reports rather than cancelling its sibling | Unit | P0 | NFR-038-AC-3 | ✅ passed |
@@ -2486,13 +2499,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 48 | 45 | 0 | 3 | 100% mapped (48/48) |
 | Analysis | 48 | 30 | 0 | 18 | 100% mapped (48/48) |
 | Property | 128 | 71 | 0 | 57 | 100% mapped (128/128) |
-| Unit | 503 | 402 | 0 | 101 | 100% mapped (503/503) |
-| Integration | 131 | 80 | 0 | 51 | 100% mapped (131/131) |
+| Unit | 510 | 409 | 0 | 101 | 100% mapped (510/510) |
+| Integration | 132 | 82 | 0 | 50 | 100% mapped (132/132) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 68 | 35 | 0 | 33 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1236** | **920** | **0** | **316** | **100% mapped (1236/1236)** |
+| **Total** | **1244** | **929** | **0** | **315** | **100% mapped (1244/1244)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.
