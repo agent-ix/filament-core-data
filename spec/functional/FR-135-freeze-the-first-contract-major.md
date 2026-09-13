@@ -12,6 +12,10 @@ relationships:
 
 ## Description
 
+This requirement answers
+[filament-core-data#12](https://github.com/agent-ix/filament-core-data/issues/12), the gate that approves
+downstream migration readiness and freezes the first contract major.
+
 The first contract major SHALL be frozen by a recorded human decision, taken
 against a published candidate set, and SHALL NOT be derived from the absence of
 known objections.

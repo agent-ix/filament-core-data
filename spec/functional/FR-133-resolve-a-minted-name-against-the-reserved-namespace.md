@@ -13,7 +13,9 @@ relationships:
 ## Description
 
 This requirement answers
-[filament-core-data#80](https://github.com/agent-ix/filament-core-data/issues/80).
+[filament-core-data#80](https://github.com/agent-ix/filament-core-data/issues/80) and the reserved-namespace half of
+[#90](https://github.com/agent-ix/filament-core-data/issues/90), which is the same collision reached from the kernel side: a
+package-local scalar named `UUID` against the backend's reserved `Uuid`.
 
 Where a minted name and a reserved backend identifier derive the same Rust
 identifier, the backend SHALL resolve the collision without relaxing its

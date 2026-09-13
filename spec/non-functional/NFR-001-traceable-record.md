@@ -39,6 +39,8 @@ current and why it governs downstream work.
 | Broken internal links | 0 | 0 | automated link test |
 | Unstatused indexed artifacts | 0 | 0 | schema and inventory test |
 | Known conflicts without disposition | 0 | 0 | review inspection |
+| Register rows naming a requirement that does not exist | 0 | 0 | automated register test |
+| Register rows the named requirement does not confirm | 0 | 0 | automated register test |
 
 ## Verification
 
@@ -53,6 +55,8 @@ status, gate, relationship, and supersession invariants.
 | NFR-001-AC-2 | The architecture bundle contains zero broken internal links. | Test (TC-039) |
 | NFR-001-AC-3 | The root index contains zero artifacts without exactly one current status. | Test (TC-040) |
 | NFR-001-AC-4 | The conflict register contains zero known conflicts without a disposition. | Review (TC-041) |
+| NFR-001-AC-5 | Every issue the programme issue backing register names resolves to a requirement artifact that exists. | Test (TC-1584) |
+| NFR-001-AC-6 | Every requirement the register names carries that issue's link in its own text, so the register and the requirement cannot disagree silently. | Test (TC-1585) |
 
 ## Dependencies
 
