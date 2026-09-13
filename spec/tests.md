@@ -174,6 +174,7 @@ producer/schema plan are accepted.
 | US-019 | US-019-EX-2 (illustrative) implemented by FR-130 | TC-1390 | ✅ Complete |
 | US-019 | US-019-EX-3 (illustrative) implemented by FR-130 | TC-1391 | ✅ Complete |
 | US-019 | US-019-EX-4 (illustrative) implemented by FR-130 | TC-1392 | ✅ Complete |
+| US-019 | US-019-EX-1, US-019-EX-2 (illustrative) implemented by FR-136 | TC-1530..TC-1536 | ✅ Complete |
 | US-020 | US-020-EX-1, US-020-EX-2 (illustrative) implemented by FR-134 | TC-1431 | 🚧 planned on issue #6 |
 | US-020 | US-020-EX-3, US-020-EX-5 (illustrative) implemented by FR-134 | TC-1430, TC-1432 | 🚧 planned on issue #6 |
 | US-020 | US-020-EX-4 (illustrative) implemented by FR-135 | TC-1429 | 🚧 planned on issue #12 |
@@ -1616,6 +1617,13 @@ producer/schema plan are accepted.
 | TC-1431 | No persisted payload is readable only by removed code over the retained corpus, and a boundary with a remaining reader keeps its legacy representation | Integration | P0 | FR-134-AC-3, FR-134-AC-4, FR-134-CON-1, FR-134-CON-2 | 🚧 planned on issue #6 |
 | TC-1432 | Reverting any single removal restores that boundary without reverting another | Manual | P1 | FR-134-AC-5, FR-134-CON-3 | 🚧 planned on issue #6 |
 | TC-1433 | filament-ide's coredb sync path reads the generated contract and no longer reads the legacy one, and the records name the retired and retained boundaries | Integration | P0 | FR-134-AC-6, FR-134-AC-7 | 🚧 planned on issue #6 |
+| TC-1530 | Both Python targets are registered implemented and select a backend naming ix://agent-ix/filament-core-data/backend/python | Unit | P0 | FR-136-AC-1 | ✅ passed |
+| TC-1531 | A python-pydantic-v2 request over an accepted IR document returns state success with a non-empty file set, __init__.py among the paths, and zero blocking diagnostics | Integration | P0 | FR-136-AC-2 | ✅ passed |
+| TC-1532 | A python-dataclass request over the same document returns state success under the pydantic_v2_dataclass profile | Integration | P0 | FR-136-AC-3 | ✅ passed |
+| TC-1533 | A Python request with no injected producer returns state unavailable with BACKEND_CONTRACT_VIOLATION and zero files, rather than an empty package | Unit | P0 | FR-136-AC-4 | ✅ passed |
+| TC-1534 | A producer that exits non-zero returns state invalid with BACKEND_CONTRACT_VIOLATION naming the profile, and zero files | Unit | P0 | FR-136-AC-5 | ✅ passed |
+| TC-1535 | The documents handed to the producer are the json-schema target's own documents under its own names, and exclude its index.json manifest | Unit | P0 | FR-136-AC-6, FR-136-CON-3 | ✅ passed |
+| TC-1536 | The registered Python backend module imports no file-system and no child-process module | Unit | P1 | FR-136-AC-7, FR-136-CON-2 | ✅ passed |
 
 | TC-1360 | The `json-schema` registry entry generates the lifted ConfigVersion golden through the seam, returning a success manifest with a SHA-256 digest for every emitted file. | Integration | P0 | FR-063-AC-22 | ✅ passed — issue #85 |
 | TC-1361 | A synthetic IR containing all eight structural kinds and every kernel scalar emits one Ajv-compilable JSON Schema 2020-12 document per definition. | Unit | P0 | FR-100-AC-1 | ✅ passed — issue #85 |

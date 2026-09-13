@@ -37,6 +37,10 @@ import {
 	schemaValidators,
 } from "../schema-validate.mjs";
 import { jsonSchemaBackend } from "./json-schema-v1/index.mjs";
+import {
+	pythonDataclassBackend,
+	pythonPydanticBackend,
+} from "./python-v1/index.mjs";
 import { rustBackend } from "./rust-serde/backend.mjs";
 import { BACKEND_TARGETS } from "./targets.mjs";
 import {
@@ -65,8 +69,16 @@ const DEFAULT_MEDIA_TYPE = "text/plain";
  * diagnostic for an `unavailable` state, and a diagnostic that says only "not
  * implemented" sends the reader looking for the ticket. Following the
  * `frontend/spec-bundle/frontend.mjs` precedent, the registration carries it.
+ *
+ * Every declared target is implemented as of issue #23, so nothing in the
+ * registry below calls this today. It is exported rather than deleted because
+ * it is the mechanism, not a leftover: the seam's stated rule is that an
+ * unimplemented target is *registered* rather than absent, and deleting the
+ * only way to do that would leave the next target to be added the cheapest
+ * wrong move — omitting it, so the compiler answers "that is not a target"
+ * instead of naming the ticket that owns it.
  */
-function declaredUnimplemented(target, owner) {
+export function declaredUnimplemented(target, owner) {
 	return { target, owner, backend: null, implemented: false };
 }
 
@@ -98,14 +110,21 @@ const REGISTRY = new Map([
 	],
 	[
 		"python-pydantic-v2",
-		declaredUnimplemented(
-			"python-pydantic-v2",
-			"agent-ix/filament-core-data#23",
-		),
+		{
+			target: "python-pydantic-v2",
+			owner: pythonPydanticBackend.owningIssue,
+			backend: pythonPydanticBackend,
+			implemented: true,
+		},
 	],
 	[
 		"python-dataclass",
-		declaredUnimplemented("python-dataclass", "agent-ix/filament-core-data#23"),
+		{
+			target: "python-dataclass",
+			owner: pythonDataclassBackend.owningIssue,
+			backend: pythonDataclassBackend,
+			implemented: true,
+		},
 	],
 	[
 		"json-schema",
@@ -367,9 +386,14 @@ export function generateTarget(request, options = {}) {
 		});
 	}
 
+	// `produce` travels the same route `format` does, and for the same reason:
+	// ADR-0006 makes an out-of-process effect an injected argument rather than
+	// something a backend reaches for, so the seam carries it and no module
+	// under `backends/python-v1/` learns that a process exists.
 	const generation = backend.generate(request, {
 		host: options.host,
 		format,
+		produce: options.produce,
 	});
 	assertBackendContract(backend, generation, request.outputRoot);
 

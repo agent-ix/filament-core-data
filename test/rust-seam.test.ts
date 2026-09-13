@@ -19,9 +19,14 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { generateTarget, selectBackend } from "../src/compiler/backends/seam.mjs";
 import { rustBackend } from "../src/compiler/backends/rust-serde/backend.mjs";
 import { generateRust } from "../src/compiler/backends/rust-serde/index.mjs";
+import {
+	declaredUnimplemented,
+	generateTarget,
+	registryWith,
+	selectBackend,
+} from "../src/compiler/backends/seam.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -171,11 +176,28 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 		);
 	});
 
-	/** Traces: TC-1392; FR-130-AC-5. */
+	/**
+	 * Traces: TC-1392; FR-130-AC-5.
+	 *
+	 * Exercised over a synthetic registration rather than a real target, which
+	 * is the reason `selectBackend` carries a registry seam at all: this
+	 * assertion used to name `python-pydantic-v2`, and so was an assertion
+	 * about issue #23's *absence*. It went red the moment #23 registered its
+	 * backend, on a branch that did nothing wrong. Every declared target is
+	 * implemented now, so the refusal arm has no real target left to stand on
+	 * — and the mechanism it guards outlives all of them.
+	 */
 	it("still refuses a target this repository has not implemented", () => {
+		const registry = registryWith({
+			"python-pydantic-v2": declaredUnimplemented(
+				"python-pydantic-v2",
+				"agent-ix/filament-core-data#23",
+			),
+		});
 		const manifest = generateTarget(rustRequest(), {
 			target: "python-pydantic-v2",
 			host: host(),
+			registry,
 		}) as never as Manifest;
 
 		expect(manifest.state).toBe("unavailable");
@@ -185,7 +207,7 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 		);
 		expect(refusal?.message).toContain("agent-ix/filament-core-data#23");
 		console.log(
-			`TC-1392 measured: python-pydantic-v2 state=${manifest.state} code=${refusal?.code}`,
+			`TC-1392 measured: an unimplemented registration state=${manifest.state} code=${refusal?.code}`,
 		);
 	});
 
@@ -256,9 +278,9 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 		// Over the module's imports, not over its prose: the header names
 		// `node:fs` to say why it is absent, and a substring search would read
 		// that explanation as the violation it documents.
-		const imported = [...source.matchAll(/^import[^;]*?from\s+"([^"]+)";/gm)].map(
-			(match) => match[1],
-		);
+		const imported = [
+			...source.matchAll(/^import[^;]*?from\s+"([^"]+)";/gm),
+		].map((match) => match[1]);
 		expect(imported.length).toBeGreaterThan(0);
 		expect(imported).not.toContain("node:fs");
 		expect(imported).not.toContain("fs");
