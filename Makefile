@@ -354,7 +354,7 @@ rust: rust-check rust-build rust-clippy rust-test rust-conformance rust-install-
 # target named for another language. The extraction-frontend crate's gates were
 # not in `make test` at any depth.
 .PHONY: test-rust
-test-rust: rust extraction-frontend-test
+test-rust: rust extraction-frontend-test spec-to-targets
 
 # The qualification toolchain, for a CI lane that has to install it before it can
 # run anything. Printed rather than duplicated in the workflow, so the version
@@ -481,6 +481,29 @@ extraction-frontend-check: extraction-frontend-toolchain
 	  echo "diff -ru $$expected $(EXTRACTION_CHECK_SCRATCH)/$$rel"; \
 	  diff -ru "$$expected" "$(EXTRACTION_CHECK_SCRATCH)/$$rel" || status=1; \
 	done; exit $$status
+
+# -----------------------------------------------------------------------------
+# The end-to-end spec path (EPIC #100 criterion 2)
+# -----------------------------------------------------------------------------
+# One gate for the whole chain: markdown bundle -> Rust lift -> semantic IR ->
+# every generated target. The lift and each backend already have gates of their
+# own; none of them asserts that the two halves join, because every backend gate
+# reads a hand-written IR fixture rather than the frontend's actual output.
+#
+# `SPEC_PIPELINE_BUNDLE` is overridable so the chain can be run against any
+# bundle root on the dev host without editing this file. The default is the
+# business bundle, which is the repository's only bundle authored wholly in the
+# typed-table form the lift requires.
+
+SPEC_PIPELINE_BUNDLE ?= $(EXTRACTION_FIXTURES)/business
+SPEC_PIPELINE_STAGING := $(CARGO_TARGET_DIR)/spec-to-targets
+
+.PHONY: spec-to-targets
+spec-to-targets: extraction-frontend-toolchain
+	rm -rf $(SPEC_PIPELINE_STAGING)
+	mkdir -p $(SPEC_PIPELINE_STAGING)
+	$(EXTRACTION_RUN) lift --bundle $(SPEC_PIPELINE_BUNDLE) $(foreach module,$(MODULES),--module $(module)) --out $(SPEC_PIPELINE_STAGING)/semantic-ir.json
+	node scripts/spec-to-targets.mjs $(SPEC_PIPELINE_STAGING)/semantic-ir.json $(SPEC_PIPELINE_STAGING)
 
 .PHONY: extraction-frontend-deny
 extraction-frontend-deny: extraction-frontend-toolchain
