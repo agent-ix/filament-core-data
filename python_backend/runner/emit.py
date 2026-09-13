@@ -21,7 +21,7 @@ from typing import Any
 
 from python_backend import ROOT
 from python_backend.adapter.jcs import digest
-from python_backend.adapter.prepare import prepare_input_set
+from python_backend.adapter.prepare import Prepared, prepare_input_set
 from python_backend.adapter.profiles import profile_by_id
 from python_backend.adapter.render import render
 from python_backend.runner.generate import generate
@@ -202,11 +202,27 @@ def _content_fingerprint(files: dict[str, str]) -> str:
 
 
 def build(profile_id: str) -> dict[str, str]:
+    """The committed package, from this repository's published v1 schemas."""
+
+    return build_from(
+        prepare_input_set(sorted(PUBLISHED.glob("*.schema.json"))), profile_id
+    )
+
+
+def build_from(prepared: Prepared, profile_id: str) -> dict[str, str]:
+    """One package from an already-prepared input set.
+
+    `build` reaches for the published schemas because that is the package this
+    repository commits. The backend seam reaches here instead, with the schemas
+    a compilation just derived from its own IR, so that a package generated
+    through the seam and a package committed under `generated/` are the same
+    bytes for the same input rather than two emissions that happen to agree.
+    """
+
     profile = profile_by_id(profile_id)
     report = json.loads(REPORT.read_text(encoding="utf-8"))
     verdict = next(row for row in report["verdicts"] if row["profileId"] == profile_id)
 
-    prepared = prepare_input_set(sorted(PUBLISHED.glob("*.schema.json")))
     result = generate(
         prepared,
         profile_id,

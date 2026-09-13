@@ -991,7 +991,16 @@ describe("promoted language backends (FR-042)", () => {
 		// extraction producer as an *injected* capability, so `extraction.mjs`
 		// starts the process and no module under `frontend/` imports it — which
 		// is what keeps NFR-020-AC-5 true of that directory without narrowing it.
-		const PROCESS_STARTING = ["backends/format.mjs", "extraction.mjs"];
+		// Issue #23 adds the third, on the output side and for the same reason.
+		// `datamodel-code-generator` is a Python program, so FR-136's backend
+		// reaches it as an injected producer: `backends/python-v1/produce.mjs`
+		// starts the process and no module under `backends/python-v1/` imports
+		// it — asserted below alongside the TypeScript backend's.
+		const PROCESS_STARTING = [
+			"backends/format.mjs",
+			"backends/python-v1/produce.mjs",
+			"extraction.mjs",
+		];
 		for (const path of walk(compilerRoot)) {
 			if (!path.endsWith(".mjs")) continue;
 			if (PROCESS_STARTING.includes(path)) continue;
@@ -1030,6 +1039,7 @@ describe("promoted language backends (FR-042)", () => {
 			}
 		};
 		visitContract("backends/typescript-v1/index.mjs");
+		visitContract("backends/python-v1/index.mjs");
 		for (const permitted of PROCESS_STARTING) {
 			expect(
 				contractReachable.has(permitted),
