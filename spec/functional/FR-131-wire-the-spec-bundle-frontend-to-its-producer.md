@@ -74,6 +74,7 @@ made normative for the generation half.
 | FR-131-AC-6 | A dialect registered as unimplemented is refused with `FRONTEND_NOT_IMPLEMENTED` naming its owner, exercised over a synthetic registration rather than over whichever dialect is unbuilt today | Test (TC-1407) |
 | FR-131-AC-7 | No module under `src/compiler/frontend/` imports a process-starting built-in, and `extraction.mjs` is unreachable from the frontend seam | Test (TC-1408) |
 | FR-131-AC-8 | A request supplying no producer raises rather than returning a diagnostic, because an absent capability is a defect in the calling program | Test (TC-1409) |
+| FR-131-AC-9 | One markdown bundle lifted by the producer reaches generated files in every declared target, and every target reports the same IR fingerprint from that single lift | Test (TC-1586) |
 
 ## Dependencies
 

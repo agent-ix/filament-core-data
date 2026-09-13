@@ -294,7 +294,7 @@ producer/schema plan are accepted.
 | FR-111 | FR-111-AC-1..4, FR-111-CON-1..2 | TC-1385..TC-1387 | 🚧 planned — IN02 implementation boundary |
 | FR-100 | FR-100-AC-1..6, FR-100-CON-1..3 | TC-1361..TC-1366 | ✅ Complete |
 | FR-130 | FR-130-AC-1..8, FR-130-CON-1..3 | TC-1388..TC-1395 | ✅ Complete |
-| FR-131 | FR-131-AC-1..8, FR-131-CON-1..3 | TC-1403..TC-1409 | ✅ Complete |
+| FR-131 | FR-131-AC-1..9, FR-131-CON-1..3 | TC-1403..TC-1409, TC-1586 | ✅ Complete |
 | FR-132 | FR-132-AC-1..7, FR-132-CON-1..3 | TC-1414..TC-1417 | 🚧 planned on issue #65 |
 | FR-133 | FR-133-AC-1..7, FR-133-CON-1..3 | TC-1418..TC-1421 | 🚧 planned on issue #80 |
 | FR-134 | FR-134-AC-1..7, FR-134-CON-1..3 | TC-1430..TC-1433 | 🚧 planned on issue #6 |
@@ -1603,6 +1603,7 @@ producer/schema plan are accepted.
 | TC-1407 | A dialect registered unimplemented is refused with FRONTEND_NOT_IMPLEMENTED naming its owner, over a synthetic registration rather than whichever dialect is unbuilt today | Unit | P1 | FR-131-AC-6 | ✅ passed |
 | TC-1408 | No module under src/compiler/frontend/ imports a process-starting built-in, and extraction.mjs is unreachable from the frontend seam | Unit | P0 | FR-131-AC-7, FR-131-CON-1, FR-131-CON-2 | ✅ passed |
 | TC-1409 | A request supplying no producer raises rather than returning a diagnostic | Unit | P1 | FR-131-AC-8 | ✅ passed |
+| TC-1586 | One markdown bundle lifted by the extraction producer generates files in every declared target, and all five targets report the same IR fingerprint from that single lift | Integration | P0 | FR-131-AC-9 | ✅ passed |
 | TC-1410 | No change-set gate resolves a range end against main, origin/main or HEAD, and every one reads both ends from the shared sentinel helper | Analysis | P0 | NFR-039-AC-1, NFR-039-AC-5 | 🚧 planned on issue #92 |
 | TC-1411 | A gate whose sentinels are absent from history fails naming what it could not locate, and a commit landing after a change's range does not enter that range even when it touches a prohibited path | Unit | P0 | NFR-039-AC-2, NFR-039-AC-3 | 🚧 planned on issue #92 |
 | TC-1412 | A gate comparing a historical hunk reads the other side at that hunk's own commit, so a later change editing those lines leaves it green | Analysis | P1 | NFR-039-AC-4 | 🚧 planned on issue #92 |
@@ -2619,12 +2620,12 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 129 | 71 | 0 | 58 | 100% mapped (129/129) |
 | Unit | 553 | 437 | 0 | 116 | 100% mapped (553/553) |
-| Integration | 157 | 86 | 0 | 71 | 100% mapped (157/157) |
+| Integration | 158 | 87 | 0 | 71 | 100% mapped (158/158) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 68 | 35 | 0 | 33 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1338** | **961** | **0** | **377** | **100% mapped (1338/1338)** |
+| **Total** | **1339** | **962** | **0** | **377** | **100% mapped (1339/1339)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.
