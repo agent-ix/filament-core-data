@@ -24,6 +24,10 @@ relationships:
 
 ## Description
 
+This requirement opens the bundle answering
+[filament-core-data#21](https://github.com/agent-ix/filament-core-data/issues/21), the Rust/Serde semantic codegen
+backend.
+
 The Rust backend SHALL map every construct the semantic IR can express to a
 declared Rust/Serde form by one published total mapping keyed on `kind`, so that
 the Rust type a consumer receives is a function of the contract alone and every

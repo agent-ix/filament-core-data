@@ -121,13 +121,13 @@ producer/schema plan are accepted.
 
 ### Stakeholder Requirement Coverage
 
-| Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
+| Stakeholder Req | Trace to US/FR | Test/Validation | Status |
 |---|---|---|---|
 | StR-001 | US-001..US-010, US-012, US-013, US-015, FR-001..FR-053, FR-063..FR-080, FR-091..FR-111 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944, TC-1200..1350, TC-1373..1387 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch; TC-1373..1387 planned on #95 |
 
 ### User Story Coverage
 
-| User Story | Acceptance Criteria | Test Cases | Coverage Status |
+| User Story | Acceptance Criteria | Test Cases | Status |
 |---|---|---|---|
 | US-001 | US-001-AC-1 | TC-034 | ✅ Complete |
 | US-001 | US-001-AC-2 | TC-035 | ✅ Complete |
@@ -179,10 +179,13 @@ producer/schema plan are accepted.
 | US-020 | US-020-EX-1, US-020-EX-2 (illustrative) implemented by FR-134 | TC-1431 | 🚧 planned on issue #6 |
 | US-020 | US-020-EX-3, US-020-EX-5 (illustrative) implemented by FR-134 | TC-1430, TC-1432 | 🚧 planned on issue #6 |
 | US-020 | US-020-EX-4 (illustrative) implemented by FR-135 | TC-1429 | 🚧 planned on issue #12 |
+| US-019 | The SysML v2 textual interchange target implemented by FR-138 | TC-1545..TC-1551 | 🚧 planned on issue #37 |
+| US-006 | An unconstrained value expressed without narrowing, implemented by FR-139 | TC-1552..TC-1557 | 🚧 planned on issue #93 |
+| US-008 | The compiler judged by the independent corpus, implemented by FR-140 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
 
 ### Functional Requirement Coverage
 
-| Functional Req | Acceptance Criteria | Test Cases | Coverage Status |
+| Functional Req | Acceptance Criteria | Test Cases | Status |
 |---|---|---|---|
 | FR-001 | FR-001-AC-1..5, FR-001-CON-1 | TC-001..004, TC-053 | ✅ Complete |
 | FR-002 | FR-002-AC-1..4 | TC-005..008 | ✅ Complete |
@@ -296,12 +299,15 @@ producer/schema plan are accepted.
 | FR-133 | FR-133-AC-1..7, FR-133-CON-1..3 | TC-1418..TC-1421 | 🚧 planned on issue #80 |
 | FR-134 | FR-134-AC-1..7, FR-134-CON-1..3 | TC-1430..TC-1433 | 🚧 planned on issue #6 |
 | FR-135 | FR-135-AC-1..7, FR-135-CON-1..3 | TC-1426..TC-1429 | 🚧 planned on issue #12 |
+| FR-138 | FR-138-AC-1..7, FR-138-CON-1..3 | TC-1545..TC-1551 | 🚧 planned on issue #37 |
+| FR-139 | FR-139-AC-1..6, FR-139-CON-1..3 | TC-1552..TC-1557 | 🚧 planned on issue #93 |
+| FR-140 | FR-140-AC-1..7, FR-140-CON-1..3 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
 
 ### Non-Functional Requirement Coverage
 
 | Non-Functional Req | Verification Method | Evidence/Test Cases | Status |
 |---|---|---|---|
-| NFR-001 | Static tests and review | TC-038..041 | ✅ Complete |
+| NFR-001 | Static tests and review | TC-038..041, TC-1584, TC-1585 | ✅ Complete |
 | NFR-002 | Structured review | TC-042..044 | ✅ Complete |
 | NFR-003 | Diff, release, and review inspection | TC-045..048 | ✅ Complete |
 | NFR-004 | Schema, determinism, source-locus, and assessment checks | TC-082..085 | ✅ Complete |
@@ -338,6 +344,9 @@ producer/schema plan are accepted.
 | NFR-038 | NFR-038-AC-1..7: one named make target reaching every Rust gate, dispatch-only triggers across every workflow, a two-platform two-architecture matrix that reports both, workspace-wide clippy, generated-crate artifacts per platform, and toolchain checks that fail naming what they could not run | TC-1396..TC-1402 | ✅ Complete |
 | NFR-039 | NFR-039-AC-1..6 | TC-1410..TC-1413 | 🚧 planned on issue #92 |
 | NFR-040 | NFR-040-AC-1..7 | TC-1422..TC-1425 | 🚧 planned on issue #26 |
+| NFR-041 | NFR-041-AC-1..7 | TC-1565..TC-1571 | 🚧 planned on issue #63 |
+| NFR-042 | NFR-042-AC-1..6 | TC-1572..TC-1577 | 🚧 planned on issue #66 |
+| NFR-043 | NFR-043-AC-1..6 | TC-1578..TC-1583 | 🚧 planned on issue #92 |
 
 ## Test Case Summary
 
@@ -1643,6 +1652,48 @@ producer/schema plan are accepted.
 | TC-1366 | A required extension without an annotation mapping yields `UNDECLARED_LOSS` and no schema file. | Unit | P0 | FR-100-AC-6, FR-100-CON-2 | ✅ passed — issue #85 |
 | TC-1367 | Reversing the admitted IR type order leaves every emitted JSON Schema byte-identical; static inspection confirms the backend imports neither a source frontend nor a filesystem module. | Unit/Static | P0 | NFR-034-AC-1, FR-100-CON-1 | ✅ passed — issue #85 |
 
+| TC-1545 | The seam registers the sysml-v2-textual target implemented, and a request for it over an accepted document returns a non-empty file set with zero blocking diagnostics | Integration | P0 | FR-138-AC-1 | 🚧 planned on issue #37 |
+| TC-1546 | Every emitted .sysml file carries exactly one top-level package declaration | Unit | P0 | FR-138-AC-2 | 🚧 planned on issue #37 |
+| TC-1547 | The pinned SysML v2 pilot validator accepts every package emitted from the kernel and from one domain bundle, and runs in the gate alone rather than as a package dependency | Integration | P0 | FR-138-AC-3, FR-138-CON-3 | 🚧 planned on issue #37 |
+| TC-1548 | Two runs over one input produce byte-identical output across working directory, locale and time zone | Integration | P0 | FR-138-AC-4, FR-138-CON-1 | 🚧 planned on issue #37 |
+| TC-1549 | Every IR node either maps to a named SysML construct or produces a diagnostic carrying its source locus | Unit | P0 | FR-138-AC-5 | 🚧 planned on issue #37 |
+| TC-1550 | A node with no mapping produces a diagnostic and no silently truncated file is written | Unit | P0 | FR-138-AC-6 | 🚧 planned on issue #37 |
+| TC-1551 | The target declares a one-way round trip and no module of this repository reads a .sysml file | Static | P1 | FR-138-AC-7, FR-138-CON-2 | 🚧 planned on issue #37 |
+| TC-1552 | A default of a number, string, boolean, null and array each round-trips through the IR without narrowing to an object | Unit | P0 | FR-139-AC-1 | 🚧 planned on issue #93 |
+| TC-1553 | An unconstrained value and a zero-field record produce distinct IR documents and distinct generated declarations, and compare unequal at every layer | Unit | P0 | FR-139-AC-2, FR-139-CON-1 | 🚧 planned on issue #93 |
+| TC-1554 | Every document valid under the prior contract version validates byte-unchanged under the revised one | Integration | P0 | FR-139-AC-3, FR-139-CON-2 | 🚧 planned on issue #93 |
+| TC-1555 | A prior-version reader refuses a document carrying the new declaration with the published later-revision diagnostic and never reads it as a record | Unit | P0 | FR-139-AC-4 | 🚧 planned on issue #93 |
+| TC-1556 | A backend unable to carry the declaration records a named loss naming the construct and its locus, and emits no narrowed substitute | Unit | P0 | FR-139-AC-5, FR-139-CON-3 | 🚧 planned on issue #93 |
+| TC-1557 | The contract document states the normative reading, and no emitter is the only place it can be found | Manual | P1 | FR-139-AC-6 | 🚧 planned on issue #93 |
+| TC-1558 | The compiler-frontend slot reports available and answers every corpus case | Integration | P0 | FR-140-AC-1 | 🚧 planned on issue #52 |
+| TC-1559 | The slot's unmet count reaches zero and every other slot stays unavailable naming its owning issue | Integration | P0 | FR-140-AC-2 | 🚧 planned on issue #52 |
+| TC-1560 | Every recorded divergence carries a disposition, a named owner and a review date | Manual | P0 | FR-140-AC-3 | 🚧 planned on issue #52 |
+| TC-1561 | The reference-target resolution rule is recorded in the contract before the slot reports available | Manual | P0 | FR-140-AC-4 | 🚧 planned on issue #52 |
+| TC-1562 | A corpus expectation changed by the reference-target ruling moves with a major corpus version increment and a recorded verdict | Integration | P0 | FR-140-AC-5, FR-140-CON-3 | 🚧 planned on issue #52 |
+| TC-1563 | The adapter imports no module of the oracle and the oracle imports no module of the compiler | Static | P0 | FR-140-AC-6, FR-140-CON-1 | 🚧 planned on issue #52 |
+| TC-1564 | With the adapter command removed the slot reports unavailable and no case is counted as passing | Unit | P1 | FR-140-AC-7, FR-140-CON-2 | 🚧 planned on issue #52 |
+| TC-1565 | One named command regenerates every shared generated artifact | Static | P0 | NFR-041-AC-1 | 🚧 planned on issue #63 |
+| TC-1566 | On a clean trunk every committed shared generated artifact reproduces byte for byte | Integration | P0 | NFR-041-AC-2 | 🚧 planned on issue #63 |
+| TC-1567 | Each shared artifact perturbed by one byte fails the gate, and the failure names the generator to re-run rather than only the differing path | Integration | P0 | NFR-041-AC-3 | 🚧 planned on issue #63 |
+| TC-1568 | The regeneration rule is recorded where a rebase will find it | Manual | P1 | NFR-041-AC-4 | 🚧 planned on issue #63 |
+| TC-1569 | No acceptance criterion in any bundle asserts a whole-corpus absolute that a sibling merge falsifies | Manual | P1 | NFR-041-AC-5 | 🚧 planned on issue #63 |
+| TC-1570 | Two branches regenerating one shared artifact reconcile by regeneration, and a committed textual merge of the two is reported rather than accepted | Integration | P0 | NFR-041-AC-6 | 🚧 planned on issue #63 |
+| TC-1571 | An artifact derived at check time rather than committed passes without a reproduction gate | Unit | P1 | NFR-041-AC-7 | 🚧 planned on issue #63 |
+| TC-1572 | One named command runs every declared gate in every language | Static | P0 | NFR-042-AC-1 | 🚧 planned on issue #66 |
+| TC-1573 | The dispatchable lane invokes that command and runs no gate outside it | Static | P0 | NFR-042-AC-2 | 🚧 planned on issue #66 |
+| TC-1574 | A deliberately broken assertion in each language fails that command, demonstrated per language rather than asserted once | Integration | P0 | NFR-042-AC-3 | 🚧 planned on issue #66 |
+| TC-1575 | A missing toolchain fails the command naming the toolchain it could not run, and never skips | Integration | P0 | NFR-042-AC-4 | 🚧 planned on issue #66 |
+| TC-1576 | The trigger decision and its reasoning are recorded, and no workflow gains an event trigger | Static | P0 | NFR-042-AC-5 | 🚧 planned on issue #66 |
+| TC-1577 | No gate is reachable only through a target named for another language | Static | P1 | NFR-042-AC-6 | 🚧 planned on issue #66 |
+| TC-1578 | No suite, crate test or harness script computes a changed-path range | Static | P0 | NFR-043-AC-1 | 🚧 planned on issue #92 |
+| TC-1579 | Every affected requirement retains and verifies each property it stated other than the path assertion | Manual | P0 | NFR-043-AC-2 | 🚧 planned on issue #92 |
+| TC-1580 | The prohibited-path lists remain as review guidance and are verified by no gate | Manual | P1 | NFR-043-AC-3 | 🚧 planned on issue #92 |
+| TC-1581 | No matrix row or review disposition cites a removed measurement as its evidence | Manual | P1 | NFR-043-AC-4 | 🚧 planned on issue #92 |
+| TC-1582 | No surviving permitted-path list gains an entry as part of the retirement | Static | P0 | NFR-043-AC-5 | 🚧 planned on issue #92 |
+| TC-1583 | The zero-publication and unchanged-surface properties are each still verified by at least one case | Integration | P0 | NFR-043-AC-6 | 🚧 planned on issue #92 |
+| TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
+| TC-1585 | Every requirement the register names carries that issue's own link, and a row whose requirement omits it is reported | Unit | P0 | NFR-001-AC-6 | ✅ passed |
+
 ## Option Permutation Matrix
 
 | Test Case | Concern or State | Authority or Status | Projection or Gate | Expected Behavior |
@@ -2563,17 +2614,17 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 270 | 233 | 0 | 37 | 100% mapped (270/270) |
-| Manual | 53 | 45 | 0 | 8 | 100% mapped (53/53) |
+| Static | 279 | 233 | 0 | 46 | 100% mapped (279/279) |
+| Manual | 61 | 45 | 0 | 16 | 100% mapped (61/61) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 129 | 71 | 0 | 58 | 100% mapped (129/129) |
-| Unit | 529 | 422 | 0 | 107 | 100% mapped (529/529) |
-| Integration | 142 | 84 | 0 | 58 | 100% mapped (142/142) |
+| Unit | 553 | 437 | 0 | 116 | 100% mapped (553/553) |
+| Integration | 157 | 86 | 0 | 71 | 100% mapped (157/157) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 68 | 35 | 0 | 33 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1282** | **944** | **0** | **338** | **100% mapped (1282/1282)** |
+| **Total** | **1338** | **961** | **0** | **377** | **100% mapped (1338/1338)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.
