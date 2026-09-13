@@ -12,6 +12,9 @@ relationships:
 
 ## Description
 
+This requirement answers
+[filament-core-data#80](https://github.com/agent-ix/filament-core-data/issues/80).
+
 Where a minted name and a reserved backend identifier derive the same Rust
 identifier, the backend SHALL resolve the collision without relaxing its
 collision check and without either side silently overwriting the other.

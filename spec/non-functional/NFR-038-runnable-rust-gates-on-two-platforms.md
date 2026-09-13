@@ -29,6 +29,8 @@ two platforms differing in operating system and processor architecture.
 
 ## Rationale
 
+This requirement answers [filament-core-data#60](https://github.com/agent-ix/filament-core-data/issues/60).
+
 The Rust gates ran in no lane at all. The reused Node workflow installs no Rust
 toolchain, so `cargo clippy`, `cargo fmt --check` and every Rust suite were
 unreachable from continuous integration — while `make test` invoked them through

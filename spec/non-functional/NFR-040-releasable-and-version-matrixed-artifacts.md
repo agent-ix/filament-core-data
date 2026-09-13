@@ -28,6 +28,8 @@ The release process SHALL declare a version combination as supported only where 
 
 ## Rationale
 
+This requirement answers [filament-core-data#26](https://github.com/agent-ix/filament-core-data/issues/26).
+
 Four things version independently here and are consumed independently: the
 compiler, the IR contract, each backend, and each generated package. A consumer
 holds some combination of them, and today nothing states which combinations are
