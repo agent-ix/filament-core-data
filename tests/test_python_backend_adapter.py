@@ -18,7 +18,7 @@ REPO = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from python_backend.adapter import guard, prepare, profiles  # noqa: E402
-from tests.change_range import changed_paths  # noqa: E402
+from tests.change_range import changed_paths_of_commits  # noqa: E402
 
 PUBLISHED = sorted((REPO / "schema" / "semantic" / "v1").glob("*.schema.json"))
 SPIKE = (
@@ -31,9 +31,10 @@ SPIKE = (
     / "input.schema.json"
 )
 #: Both ends of this change's range come from history. See `tests/change_range.py`.
+#: One per commit that delivered part of issue #23; see `tests/change_range.py`.
 SENTINELS = [
     "spec/usecase/US-013-generate-governed-python-types.md",
-    "test/python-backend.test.ts",
+    "conformance/adapters/python-backend/adapter.py",
 ]
 FAMILIES = [
     "pydantic_v2.BaseModel",
@@ -328,7 +329,7 @@ def test_the_merged_artefacts_are_untouched() -> None:
         "spikes/typespec-feasibility/generated/custom/python/input.schema.json",
         *[f"schema/semantic/v1/{path.name}" for path in PUBLISHED],
     ]
-    assert changed_paths(REPO, SENTINELS, *frozen) == []
+    assert changed_paths_of_commits(REPO, SENTINELS, *frozen) == []
 
 
 APPLICATORS = [
