@@ -176,10 +176,13 @@ implementations come to disagree.
   exist as a resolvable package for that fixture. Whether that means adding the
   package or dropping `ActorRef` is a question about the fixture, owned by
   [#52](https://github.com/agent-ix/filament-core-data/issues/52).
-- REF-001..004 move with a `corpus-defect` verdict and a major `corpusVersion`
-  bump, which the corpus disposition already anticipates. The oracle's rule is
-  upheld; what changes is that an unresolvable target now has a stated remedy
-  rather than only a refusal.
+- REF-001..004 stay as authored, and no `corpusVersion` bump is owed. The
+  disposition anticipated a move only if the oracle's reading were the one that
+  changed; Option D upholds it. Read against the ruling, all four expected
+  results are the rule: REF-001 and REF-003 accept targets that resolve inside
+  the document, REF-002 refuses one that resolves nowhere, and REF-004 classifies
+  a changed target as breaking. What changes is that an unresolvable target now
+  has a stated remedy rather than only a refusal.
 - #52 unblocks: the `compiler-frontend` adapter can be wired against a rule both
   implementations can be measured for. #7 follows.
 - No backend gains an obligation to emit something for a target it knows nothing
@@ -188,7 +191,11 @@ implementations come to disagree.
 ## Status
 
 **Accepted.** The rule is normative for `contracts-v1.md` and for the issue #20
-oracle. GAP-011's register row moves to `ruled` under
-[#59](https://github.com/agent-ix/filament-core-data/issues/59), and the fixture
-repair and corpus move are carried by
-[#52](https://github.com/agent-ix/filament-core-data/issues/52).
+oracle. GAP-011's register row stays `open` under
+[#59](https://github.com/agent-ix/filament-core-data/issues/59) — not because the
+ruling is unsettled, but because the issue #19 reader does not yet implement it:
+`readContractIr` resolves a field's `typeRef` and nothing else, which
+`conformance/divergences.json` records against ALIAS-002, REF-002, SEQMAP-002,
+UNION-002 and IDENT-005. The fixture repair is carried by
+[#52](https://github.com/agent-ix/filament-core-data/issues/52); the reader
+repair by [#19](https://github.com/agent-ix/filament-core-data/issues/19).

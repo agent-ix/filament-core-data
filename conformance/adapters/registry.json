@@ -6,9 +6,10 @@
 			"id": "compiler-frontend",
 			"language": "typescript",
 			"owningIssue": "agent-ix/filament-core-data#19",
-			"status": "unavailable",
-			"pointerCompatible": true,
-			"rationale": "The TypeSpec frontend and IR compiler core are not implemented; the prototype under spikes/ emits a document the published schema rejects (conformance/defects.json DEF-PROTO-001)."
+			"status": "available",
+			"pointerCompatible": false,
+			"rationale": "Issue #19 landed the TypeSpec frontend and IR compiler core under src/compiler/. The adapter answers every case from that compiler's own decision modules — readContractIr for the diagnostics, which is the same function `inspect` calls, hasBlocking for the result state, normalizeIr for the canonical form, and diffSemanticContract's aggregateDisposition for a compatibility case's classification. It imports nothing under conformance/oracle/ but the declared import surface and calls neither oracleVerdict nor compare. pointerCompatible is false because the compiler locates a defect by source locus — a position in the artifact its user edits — and carries no RFC 6901 pointer into the IR document; the comparison drops the pointer from the key rather than this adapter inventing one. The reader is passed importedExports \"unknown\" because the corpus supplies one document and no package resolution, so a cross-package edge is suppressed rather than decided.",
+			"command": ["node", "adapters/compiler-frontend/adapter.mjs"]
 		},
 		{
 			"id": "rust-backend",

@@ -316,9 +316,9 @@
 	"adapters": [
 		{
 			"adapter": "compiler-frontend",
-			"status": "unavailable",
-			"matched": 0,
-			"unmet": 111,
+			"status": "available",
+			"matched": 111,
+			"unmet": 0,
 			"failed": 0
 		},
 		{
@@ -343,7 +343,7 @@
 			"failed": 0
 		}
 	],
-	"unmetCases": 111,
+	"unmetCases": 0,
 	"unmetAreas": [
 		{
 			"id": "UA-serialization-parity",
