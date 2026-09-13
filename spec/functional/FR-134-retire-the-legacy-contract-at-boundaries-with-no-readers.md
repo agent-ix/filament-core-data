@@ -12,6 +12,9 @@ relationships:
 
 ## Description
 
+This requirement answers
+[filament-core-data#6](https://github.com/agent-ix/filament-core-data/issues/6).
+
 The retirement SHALL remove the legacy Avro contract only at a boundary proven to have no remaining readers.
 
 The retirement SHALL keep every removal reversible until the compatibility window it depends on has closed.
