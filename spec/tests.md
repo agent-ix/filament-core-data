@@ -92,9 +92,9 @@ composite review, its ids reserved as an exclusive range against `main` at
 3b75e01 because PR #84 is open in parallel and "next free" is not a fact
 either branch can establish. Of its 155 rows (TC-1200..1354), 151 are `✅`
 after the Plan-014 delivery, the SR-169/SR-170 fix pass (CR-036-9), and the
-shared-identity implementation (CR-087-1). Three are `🚧`: TC-1337, the Manual
-row, is blocked on issue #85; TC-1316 is blocked on issue #89; and TC-1317 is
-blocked in the rehearsal's scratch-clone environment. TC-1292 passed when issues
+shared-identity implementation (CR-087-1). Two are `🚧`: TC-1316 is blocked on
+issue #89, and TC-1317 is blocked in the rehearsal's scratch-clone environment.
+TC-1337 passed when issue #85 delivered the JSON Schema backend. TC-1292 passed when issues
 #88 and #90 closed, and FR-130 gave its Rust half the generic command line.
 Nine rows are `Static` evidence produced by `make extraction-frontend-evidence`,
 the crate's `--ignored` run; seven pass under it and TC-1316/TC-1317 remain
@@ -169,7 +169,7 @@ producer/schema plan are accepted.
 | US-015 | US-015-EX-4 (illustrative) implemented by FR-097, FR-098 and NFR-032 | TC-1289, TC-1314, TC-1340, TC-1341 | ✅ Complete |
 | US-015 | US-015-EX-5 (illustrative) implemented by FR-091 | TC-1202, TC-1265 | ✅ Complete |
 | US-015 | Provisional ecosystem configuration boundary implemented by FR-109 | TC-1379..TC-1381 | 🚧 #95 controls planned |
-| US-015 | Issue #36 AC-5 (json-schema target), no test behind it | TC-1337 | 🚧 Blocked on issue #85 |
+| US-015 | Issue #36 AC-5 (json-schema target) | TC-1337 | ✅ Complete |
 | US-019 | US-019-EX-1 (illustrative) implemented by FR-130 | TC-1388, TC-1389 | ✅ Complete |
 | US-019 | US-019-EX-2 (illustrative) implemented by FR-130 | TC-1390 | ✅ Complete |
 | US-019 | US-019-EX-3 (illustrative) implemented by FR-130 | TC-1391 | ✅ Complete |
@@ -284,6 +284,7 @@ producer/schema plan are accepted.
 | FR-109 | FR-109-AC-1..5, FR-109-CON-1..2 | TC-1379..TC-1381 | 🚧 planned — #95 consumer boundary |
 | FR-110 | FR-110-AC-1..4, FR-110-CON-1..2 | TC-1382..TC-1384 | 🚧 planned — IN01 implementation boundary |
 | FR-111 | FR-111-AC-1..4, FR-111-CON-1..2 | TC-1385..TC-1387 | 🚧 planned — IN02 implementation boundary |
+| FR-100 | FR-100-AC-1..6, FR-100-CON-1..3 | TC-1361..TC-1366 | ✅ Complete |
 | FR-130 | FR-130-AC-1..8, FR-130-CON-1..3 | TC-1388..TC-1395 | ✅ Complete |
 
 ### Non-Functional Requirement Coverage
@@ -316,6 +317,7 @@ producer/schema plan are accepted.
 | NFR-022 | Two-run and cross-environment byte comparison, ambient-input scan, dependency inspection, offline run, formatter check, table-driven degradation scan with fault injection, two-language number-format agreement, reader fuzz | TC-711, TC-712, TC-716, TC-731..TC-736 | ✅ Complete |
 | NFR-023 | Changed-path gate over a range fixed at both ends by history and unioned over `--first-parent --no-merges`, permitted-entry traceability, manifest comparison, frozen-path byte comparison, publication, third-party attribution and licence inspection, scripted restore rehearsal, post-merge and accretion rehearsal | TC-709, TC-737..TC-744 | ✅ Complete |
 | NFR-026 | Malicious-schema corpus, advisory gate, socket and filesystem instrumentation, non-executing source inspection, emission ordering, provisioning-failure and changed-path checks | TC-936..939 | ✅ Complete |
+| NFR-034 | Input-order byte comparison and ambient-input static inspection | TC-1367 | ✅ Complete |
 | NFR-027 | Double-generation byte comparison, report `--check`, changed-path and manifest analysis, guard-range conversion with post-merge perturbation, revert rehearsal and skip census | TC-940..943 | ✅ Complete |
 | NFR-028 | NFR-028-AC/CON x8 | TC-1098..TC-1100 | 🚧 In progress |
 | NFR-029 | NFR-029-AC/CON x10 | TC-1101..TC-1104 | 🚧 In progress |
@@ -1520,7 +1522,7 @@ producer/schema plan are accepted.
 | TC-1334 | Two documents both titled Status under distinct ids (the re-authored negatives/DUPLICATE_TYPE_NAME fixture) raise DUPLICATE_TYPE_NAME at the second path naming both, while Status and status raise nothing here; a row reading min: 1, min: 2 raises DUPLICATE_CONSTRAINT at that row; fields versionNumber and version_number each carrying min yield the distinct codes VERSIONNUMBER_MIN and VERSION_NUMBER_MIN and raise nothing; fields created_at and created__at on one record raise UNSLUGGABLE_NAME at the later row, and enumeration rows a b and a_b raise UNSLUGGABLE_NAME at the second row | Unit | P1 | FR-093-AC-13 | ✅ passed |
 | TC-1335 | A domain artifact with no ## Properties (fields.state not_applicable) lowers to a record with fields: [] that the reader accepts; an extraction with availability.fields.lossy true yields one DECLARED_LOSS naming lossy-extraction | Unit | P1 | FR-093-AC-14 | ✅ passed |
 | TC-1336 | grep of src/ finds no serde_json::to_string, to_vec, or to_writer and no serializer other than agent_ix_semantic_ir::normalize::normalized, and every write of the document is dominated by a decide call with a success verdict | Static | P1 | FR-097-CON-2, FR-097-CON-3 | ✅ passed |
-| TC-1337 | Issue #36 AC-5: the json-schema target accepts the lifted config-version-table document; no IR-reading json-schema backend exists, no test is behind this row, and it stays blocked on issue #85 | Manual | P0 | US-015 (issue #36 AC-5, json-schema target; blocked on filament-core-data#85) | 🚧 blocked on issue #85 |
+| TC-1337 | The json-schema target accepts the lifted config-version-table document, exits zero, writes `ConfigVersion.json`, and records a success manifest (issue #36 AC-5, delivered by #85) | Integration | P0 | FR-100-AC-2 | ✅ passed |
 | TC-1338 | The payload-schema helper lives under crates/extraction-frontend/tests/ only, is exported by no module under src/, and is unreachable from the lift and inspect commands, asserted by grep over src/ and the public surface | Static | P1 | FR-098-CON-3 | ✅ passed |
 | TC-1339 | lift --out o.json --diagnostics o.json, and --diagnostics d.json --provenance d.json, each refuse with OUTPUT_UNWRITABLE naming both colliding options, exit 2, and write nothing | E2E | P1 | FR-097-AC-16 | ✅ passed |
 | TC-1340 | A lift with --out under the bundle root, and one with --out under a module root, each refuse with OUTPUT_UNWRITABLE naming the path before any document is loaded and write nothing | E2E | P0 | FR-097-AC-13 | ✅ passed |
@@ -1573,6 +1575,15 @@ producer/schema plan are accepted.
 | TC-1400 | Both platforms upload their generated crates and an empty upload is an error, so the cross-platform comparison has evidence to run over | Unit | P1 | NFR-038-AC-6 | ✅ passed |
 | TC-1401 | Both toolchain checks exit non-zero naming the toolchain they could not run, and every Rust gate depends on one | Unit | P1 | NFR-038-AC-7 | ✅ passed |
 | TC-1402 | The lane reads the qualification toolchain from make and names no version of its own, so a bump cannot leave it pinned | Unit | P1 | NFR-038-AC-1 | ✅ passed |
+
+| TC-1360 | The `json-schema` registry entry generates the lifted ConfigVersion golden through the seam, returning a success manifest with a SHA-256 digest for every emitted file. | Integration | P0 | FR-063-AC-22 | ✅ passed — issue #85 |
+| TC-1361 | A synthetic IR containing all eight structural kinds and every kernel scalar emits one Ajv-compilable JSON Schema 2020-12 document per definition. | Unit | P0 | FR-100-AC-1 | ✅ passed — issue #85 |
+| TC-1362 | The lifted config-version-table golden emits `ConfigVersion.json` with its seven properties, six required fields, and declared minimum constraint. | Unit | P0 | FR-100-AC-2 | ✅ passed — issue #85 |
+| TC-1363 | Generated sibling schemas accept a valid ConfigVersion payload and reject a zero `versionNumber`. | Unit | P0 | FR-100-AC-3 | ✅ passed — issue #85 |
+| TC-1364 | `reject` records refuse extra properties; `preserve` and `surface` accept them and retain their distinct policy annotations. | Unit | P0 | FR-100-AC-4 | ✅ passed — issue #85 |
+| TC-1365 | Every generated reference is a sibling `./*.json` path and no emitted reference has a parent traversal. | Unit | P0 | FR-100-AC-5, FR-100-CON-3 | ✅ passed — issue #85 |
+| TC-1366 | A required extension without an annotation mapping yields `UNDECLARED_LOSS` and no schema file. | Unit | P0 | FR-100-AC-6, FR-100-CON-2 | ✅ passed — issue #85 |
+| TC-1367 | Reversing the admitted IR type order leaves every emitted JSON Schema byte-identical; static inspection confirms the backend imports neither a source frontend nor a filesystem module. | Unit/Static | P0 | NFR-034-AC-1, FR-100-CON-1 | ✅ passed — issue #85 |
 
 ## Option Permutation Matrix
 
@@ -2473,10 +2484,9 @@ environment reach of the crate), TC-1336 (FR-097-CON-2, FR-097-CON-3: one
 serializer and a `decide` before every write), and TC-1338 (FR-098-CON-3: the
 payload helper is unreachable), because FR-098 fixes that TC-1293 traces to
 FR-098-AC-9 alone. Issue #36's fifth acceptance criterion — the `json-schema`
-target accepts the lifted document — is the one `Manual` row of this block,
-TC-1337, traced to US-015 and blocked on `agent-ix/filament-core-data#85`
-with no test behind it, because no IR-reading `json-schema` backend exists;
-TC-1293's payload derivation evidences the test author's schema only and is
+target accepts the lifted document — is TC-1337, traced to US-015 and passed
+by the issue #85 backend over the lifted `config-version-table` golden;
+TC-1293's payload derivation remains evidence only for the test author's schema,
 not that target. FR-096 now declares `INVALID_IR` as the frontend's own code,
 carrying the reader's diagnostic in `causes[0]` (FR-096-AC-16, TC-1346), so
 the prefix disagreement an earlier revision of this paragraph recorded is
@@ -2496,16 +2506,16 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
 | Static | 270 | 233 | 0 | 37 | 100% mapped (270/270) |
-| Manual | 48 | 45 | 0 | 3 | 100% mapped (48/48) |
+| Manual | 47 | 45 | 0 | 2 | 100% mapped (47/47) |
 | Analysis | 48 | 30 | 0 | 18 | 100% mapped (48/48) |
 | Property | 128 | 71 | 0 | 57 | 100% mapped (128/128) |
-| Unit | 510 | 409 | 0 | 101 | 100% mapped (510/510) |
-| Integration | 132 | 82 | 0 | 50 | 100% mapped (132/132) |
+| Unit | 516 | 415 | 0 | 101 | 100% mapped (516/516) |
+| Integration | 134 | 84 | 0 | 50 | 100% mapped (134/134) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 68 | 35 | 0 | 33 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1244** | **929** | **0** | **315** | **100% mapped (1244/1244)** |
+| **Total** | **1251** | **937** | **0** | **314** | **100% mapped (1251/1251)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

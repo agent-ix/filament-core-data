@@ -18,7 +18,11 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { biomeFormatter, FormatterError } from "./backends/format.mjs";
-import { BACKEND_TARGETS, selectBackend } from "./backends/seam.mjs";
+import {
+	BACKEND_TARGETS,
+	generateTarget,
+	selectBackend,
+} from "./backends/seam.mjs";
 import { fingerprintIrForTarget } from "./backends/typescript-v1/canonical.mjs";
 import { emitTypeScriptPackage } from "./backends/typescript-v1/emit.mjs";
 import { diffSemanticContract } from "./compat/diff.mjs";
@@ -369,11 +373,32 @@ async function generate(options) {
 
 	let emitted;
 	try {
-		emitted = emitTypeScriptPackage(request, {
-			target,
-			host,
-			format: biomeFormatter(),
-		});
+		if (target === "typescript") {
+			emitted = emitTypeScriptPackage(request, {
+				target,
+				host,
+				format: biomeFormatter(),
+			});
+		} else {
+			const rendered = new Map();
+			const manifest = generateTarget(request, {
+				target,
+				host,
+				// JSON Schema bytes are serialized canonically by the backend. Unlike
+				// generated source, there is no language formatter to invoke here.
+				format(text, path) {
+					rendered.set(path, text);
+					return text;
+				},
+			});
+			emitted = {
+				manifest,
+				files: manifest.files.map((file) => ({
+					path: file.path,
+					text: rendered.get(file.path),
+				})),
+			};
+		}
 	} catch (error) {
 		if (error instanceof FormatterError) {
 			process.stderr.write(`${error.message}\n`);

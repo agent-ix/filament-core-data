@@ -36,6 +36,7 @@ import {
 	errorPointer,
 	schemaValidators,
 } from "../schema-validate.mjs";
+import { jsonSchemaBackend } from "./json-schema-v1/index.mjs";
 import { rustBackend } from "./rust-serde/backend.mjs";
 import { BACKEND_TARGETS } from "./targets.mjs";
 import {
@@ -108,10 +109,12 @@ const REGISTRY = new Map([
 	],
 	[
 		"json-schema",
-		declaredUnimplemented(
-			"json-schema",
-			"the upstream @typespec/json-schema emitter (ADR-0005)",
-		),
+		{
+			target: "json-schema",
+			owner: jsonSchemaBackend.owningIssue,
+			backend: jsonSchemaBackend,
+			implemented: true,
+		},
 	],
 ]);
 
