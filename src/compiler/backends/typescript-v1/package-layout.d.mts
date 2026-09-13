@@ -23,7 +23,7 @@ export interface PackageParts {
 	readonly validators: string;
 	readonly errors: string;
 	readonly identity: string;
-	readonly metadata: string;
+	readonly provenance: string;
 }
 
 /** What `renderPackage` returns: a file map, never a write. */

@@ -1,4 +1,4 @@
-/** Declarations for the generated identity and provenance metadata (FR-067). */
+/** Declarations for the generated `identity.ts` and `provenance.ts` (FR-067, FR-137). */
 import type { ResolvedModel } from "./model.d.mts";
 
 /** One extension the document declares, at any of its three levels. */
@@ -45,8 +45,8 @@ export interface ConstraintDescriptor {
 	readonly operands: unknown;
 }
 
-/** The provenance the generated `metadata.ts` exports. */
-export interface SemanticMetadata {
+/** The provenance the generated `provenance.ts` exports as `PROVENANCE`. */
+export interface Provenance {
 	readonly contractVersion: string;
 	readonly sourceIdentity: string;
 	readonly sourceVersion: string;
@@ -73,13 +73,13 @@ export declare function bannerFor(
 export declare function renderIdentity(model: ResolvedModel): string;
 
 /**
- * The body of the generated `metadata.ts`.
+ * The body of the generated `provenance.ts`.
  *
  * The fingerprint is taken over the *normalized* document, which the resolved
  * model does not carry, so the caller supplies either the fingerprint or the
  * document it is taken over. Supplying neither is a caller defect and throws.
  */
-export declare function renderMetadata(
+export declare function renderProvenance(
 	model: ResolvedModel,
 	options?: { fingerprint?: string; ir?: unknown },
 ): string;

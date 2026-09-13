@@ -7,11 +7,11 @@
 //! it should be hand-edited.
 
 pub mod identity;
-pub mod metadata;
+pub mod provenance;
 pub mod support;
 pub mod types;
 
-pub use crate::metadata::{FieldMeta, TypeMeta, TYPES};
+pub use crate::identity::{FieldMeta, TypeMeta, TYPES};
 pub use crate::types::leaf::Leaf;
 pub use crate::types::text::Text;
 

@@ -4,8 +4,8 @@
  *
  * `renderPackage` assembles; it does not render the module bodies. The five
  * source modules come from their owning requirements — `types.ts` from FR-064,
- * `validators.ts` and `errors.ts` from FR-066, `identity.ts` and `metadata.ts`
- * from FR-067 — and arrive here as text. This module owns the manifest, the
+ * `validators.ts` and `errors.ts` from FR-066, `identity.ts` and
+ * `provenance.ts` from FR-067 and FR-137 — and arrive here as text. This module owns the manifest, the
  * barrel, the licence, the headers, and the two static analyses.
  *
  * It writes no file. The caller decides where a package lands, which is what
@@ -39,8 +39,8 @@ export const PACKAGE_FILES = Object.freeze([
 	"errors.ts",
 	"identity.ts",
 	"index.ts",
-	"metadata.ts",
 	"package.json",
+	"provenance.ts",
 	"types.ts",
 	"validators.ts",
 ]);
@@ -51,7 +51,7 @@ const SOURCE_MODULES = Object.freeze([
 	"validators",
 	"errors",
 	"identity",
-	"metadata",
+	"provenance",
 ]);
 
 /** The prefix half of the package-name rule, stated once so its inverse can be. */
@@ -100,8 +100,8 @@ export function identityFromPackageName(name) {
  * for a map, so the renderer's name is authoritative and this list follows it —
  * `TYPE_IDENTITY` rather than `TYPE_IDENTITIES`, `FIELD_IDENTITY` rather than
  * `FIELD_IDENTITIES`, `TYPE_RELATIONSHIPS` rather than `RELATIONSHIPS`,
- * `FIELD_UNIT` rather than `FIELD_UNITS`, and `SEMANTIC_METADATA` rather than
- * `CONTRACT_METADATA`. `ExportedTypeName` is the one name FR-067 does state, in
+ * `FIELD_UNIT` rather than `FIELD_UNITS`, and `PROVENANCE` rather than
+ * `SEMANTIC_METADATA`. `ExportedTypeName` is the one name FR-067 does state, in
  * its `Record<ExportedTypeName, string>` typing rule, and it is public for that
  * reason.
  *
@@ -143,7 +143,7 @@ export const FIXED_API_SURFACE = Object.freeze([
 	"FIELD_EXTENSIONS",
 	"FIELD_UNIT",
 	// The provenance and document-level data (FR-067).
-	"SEMANTIC_METADATA",
+	"PROVENANCE",
 	"DOCUMENT_EXTENSIONS",
 	"OCCURRENCES",
 	"TYPE_OPERATIONS",
