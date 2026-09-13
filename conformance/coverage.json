@@ -323,9 +323,9 @@
 		},
 		{
 			"adapter": "python-backend",
-			"status": "unavailable",
-			"matched": 0,
-			"unmet": 111,
+			"status": "available",
+			"matched": 111,
+			"unmet": 0,
 			"failed": 0
 		},
 		{
@@ -343,7 +343,7 @@
 			"failed": 0
 		}
 	],
-	"unmetCases": 222,
+	"unmetCases": 111,
 	"unmetAreas": [
 		{
 			"id": "UA-serialization-parity",

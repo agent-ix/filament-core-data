@@ -6,6 +6,7 @@
 			"!**/dist/**",
 			"!**/*.map",
 			"!**/.venv/**",
+			"!conformance/.cases/**",
 			"!spikes/typespec-feasibility/generated/**",
 			"!spikes/typespec-feasibility/evidence/**",
 			"!test/fixtures/compiler/compatibility/cases/**",

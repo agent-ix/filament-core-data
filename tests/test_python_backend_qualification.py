@@ -180,9 +180,18 @@ def test_the_corpus_account_is_honest_about_what_it_did_not_decide() -> None:
     counts = ACCOUNT["counts"]
     assert counts["agreed"] + counts["surfaceOverStrict"] == counts["decided"]
     assert counts["decided"] + counts["undecidable"] == counts["cases"]
-    assert counts["unmetCorpusRows"] == counts["cases"]
-    assert ACCOUNT["adapterSlot"]["status"] == "unavailable"
-    assert "UNMET" in ACCOUNT["adapterSlot"]["statement"]
+    # The honest property is that this account never reads as corpus coverage,
+    # whichever way the slot stands. It said so by asserting the slot was
+    # unavailable, which stopped being a statement about honesty the moment
+    # issue #23's adapter landed and the slot went available.
+    status = ACCOUNT["adapterSlot"]["status"]
+    statement = ACCOUNT["adapterSlot"]["statement"]
+    if status == "available":
+        assert counts["unmetCorpusRows"] == 0
+        assert "is not this surface" in statement
+    else:
+        assert counts["unmetCorpusRows"] == counts["cases"]
+        assert "UNMET" in statement
     assert "not corpus coverage" in ACCOUNT["notCoverage"]
 
 
