@@ -660,6 +660,10 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 					// backend decision modules. It is judged by the differential runner,
 					// not a published compiler API consumer.
 					path === "conformance/adapters/typescript-backend/adapter.mjs" ||
+					// Issue #52's adapter is the same case for the frontend: it answers
+					// the corpus from the compiler's own decision modules so that the
+					// corpus judges the shipped reader rather than a restatement of it.
+					path === "conformance/adapters/compiler-frontend/adapter.mjs" ||
 					path === "spikes/typespec-feasibility/scripts/run-experiment.mjs",
 				path,
 			).toBe(true);

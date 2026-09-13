@@ -671,6 +671,7 @@ describe("TC-1085..1089 cross-language agreement through the corpus (FR-090)", (
 	// TC-1085
 	it("agrees with the independent oracle on every case, for every live adapter", () => {
 		for (const name of [
+			"compiler-frontend",
 			"python-backend",
 			"rust-backend",
 			"typescript-backend",
@@ -684,13 +685,36 @@ describe("TC-1085..1089 cross-language agreement through the corpus (FR-090)", (
 	});
 
 	// TC-1086 — an absent adapter must never read as agreement.
-	it("counts an unavailable adapter as unmet, never as a pass", () => {
-		for (const name of ["compiler-frontend"]) {
-			const row = byAdapter.get(name);
-			expect(row?.status, name).toBe("unavailable");
-			expect(row?.matched, name).toBe(0);
-			expect(row?.unmet, name).toBe(report.coverage.totalCases);
+	it("counts an unavailable adapter as unmet, never as a pass", async () => {
+		// Every declared slot answers since issue #52 wired the compiler
+		// frontend, so the property is checked against a slot this test declares
+		// unavailable rather than against an empty population. A check that
+		// passed because nothing was left to check would be no check at all.
+		// The harness is asked directly rather than through the command line,
+		// because the registry is what has to change and the command line reads
+		// the committed one. Editing the committed registry to run a test would
+		// make the test's subject its own working tree.
+		const { run: runHarness } = await import(
+			"../conformance/runner/differential.mjs"
+		);
+		const registry = JSON.parse(
+			readFileSync(resolve(root, "conformance/adapters/registry.json"), "utf8"),
+		) as { adapters: { id: string; status: string; command?: string[] }[] };
+		for (const entry of registry.adapters) {
+			if (entry.id !== "compiler-frontend") continue;
+			entry.status = "unavailable";
+			// A slot with no command is what an unavailable slot is; leaving the
+			// command in place would let the adapter answer and the row would
+			// record agreement under an unavailable status.
+			entry.command = undefined;
 		}
+		const withSlotDark = runHarness({ registry }) as typeof report;
+		const row = withSlotDark.coverage.adapters.find(
+			(a) => a.adapter === "compiler-frontend",
+		);
+		expect(row?.status).toBe("unavailable");
+		expect(row?.matched).toBe(0);
+		expect(row?.unmet).toBe(withSlotDark.coverage.totalCases);
 	});
 
 	// TC-1087
@@ -708,11 +732,12 @@ describe("TC-1085..1089 cross-language agreement through the corpus (FR-090)", (
 		const live = report.coverage.adapters.filter(
 			(a) => a.status === "available",
 		).length;
-		// Three of four. FR-090's claim is established for the languages that
-		// can answer and is open for the one that cannot — the compiler
-		// frontend slot stays unavailable pending the GAP-011 ruling in issue
-		// #9, so the absence is stated rather than silent.
-		expect(live).toBe(3);
+		// Four of four since issue #52 wired the compiler frontend against the
+		// ADR-0009 ruling. FR-090's claim is now established for every declared
+		// slot; where the frontend disagrees with the oracle the disagreement is
+		// carried by `conformance/divergences.json` with a verdict and an owner,
+		// never by a slot that declines to answer.
+		expect(live).toBe(4);
 		expect(report.coverage.adapters).toHaveLength(4);
 	});
 

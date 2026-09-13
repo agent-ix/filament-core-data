@@ -732,18 +732,6 @@
 			"verdict": "implementation-defect",
 			"rationale": "The corpus expects `conditional`; `diffSemanticContract` returns `additive` for a document moving from contract 1.0.0 to 1.1.0 with no other change. The compiler's uplift rule (`src/compiler/compat/diff.mjs:193`) projects the new document back to 1.0.0, finds the projection byte-identical to the old document, and reports `additive`. The projection argument establishes that the uplift added no node — it does not establish that a known consumer tolerates the new contract version, and the contract requires exactly that for an additive promotion (\"Unknown or stale consumers remain visible and prevent a compatible promotion\"). This case declares no consumer policy, so `conditional` is the floor. Same root as COMP-005 at a third call site: consumer evidence is treated as optional.",
 			"reviewBy": "2026-12-31"
-		},
-		{
-			"id": "DIV-TEST",
-			"case": "ENV-001",
-			"adapter": "typescript-backend",
-			"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
-			"owner": "test",
-			"owningIssue": "agent-ix/filament-core-data#20",
-			"severity": "low",
-			"verdict": "corpus-defect",
-			"rationale": "seeded by TC-306",
-			"reviewBy": "2099-01-01"
 		}
 	]
 }
