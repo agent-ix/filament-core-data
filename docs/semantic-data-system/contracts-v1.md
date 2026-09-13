@@ -107,7 +107,10 @@ bound by `clauseId`), and any type definition carries `clauses[]`
 (`language` of `ocl`, `sysml`, `fretish`, or `<ns>:<name>`; `clauseId` unique
 per type; opaque `text`; `sourceSpan` when source-originated). The IR never
 parses clause text. Relationship targets resolve to a document type or a lock
-export; composite relationship graphs are acyclic.
+export; composite relationship graphs are acyclic. The same rule governs a
+`reference`-kind definition's `target`, and for both kinds a third source
+resolves: an export named by a declared manifest import. A target resolving to
+none of the three is refused (ADR-0009).
 
 The constraint `keyword` is a closed set (`min`, `max`, `exclusiveMin`,
 `exclusiveMax`, `pattern`, `minLength`, `maxLength`, `enumValues`, `nonEmpty`,

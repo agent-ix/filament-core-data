@@ -136,28 +136,21 @@ export const IMPLEMENTED_FORMATS = Object.freeze([
  * The single named GAP-011 policy: whether an unresolvable `reference` target
  * is a defect.
  *
- * `docs/semantic-data-system/contracts-v1.md` states a resolution rule for
- * *relationship* targets — "Relationship targets resolve to a document type or
- * a lock export" — and states none for the `target` of a `reference`-kind type
- * definition. `conformance/contract-gaps.json` GAP-011 records that, and its
- * own consequence text says the question lands here: "a generated-package
- * backend must decide whether to emit a type for a reference it cannot
- * resolve".
+ * ADR-0009 settled it under `agent-ix/filament-core-data#59`:
+ * `docs/semantic-data-system/contracts-v1.md` now applies its relationship
+ * rule to a `reference`-kind definition's `target` too, and admits a declared
+ * manifest import as a third resolving source for both kinds. A target
+ * resolving to none of the three is refused.
  *
- * `strict` is the corpus's published reading, which cases REF-001..004 pin. It
- * is the default because conforming to the published yardstick is not the same
- * act as ruling on the contract, and this backend does not rule. The GAP-011
- * row names `agent-ix/filament-core-data#9` as its owner and that issue is
- * closed, so no live ticket can settle it today;
- * `agent-ix/filament-core-data#59` records exactly that and asks for a live
- * owner.
- *
- * When an owner settles it, changing this backend to the settled reading is one
- * edit here and nowhere else.
+ * `strict` is that reading, and was already this backend's default because it
+ * is what cases REF-001..004 pin. The ruling makes it normative rather than a
+ * choice, so `open` is no longer a conforming setting;
+ * `agent-ix/filament-core-data#52` retires it alongside the corpus move and the
+ * `assurance` fixture repair, in the PR where a case can cover the removal.
  */
 export const REFERENCE_POLICY = "strict";
 
-/** The two settings the policy admits, so a third is a visible change. */
+/** Retained until #52 retires `open`; see the ruling above. */
 export const REFERENCE_POLICIES = Object.freeze(["strict", "open"]);
 
 function scalarOf(types, identity, seen = new Set()) {
