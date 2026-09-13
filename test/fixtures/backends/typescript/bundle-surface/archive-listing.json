@@ -21,8 +21,8 @@
 	},
 	{
 		"path": "output-manifest.json",
-		"size": 2534,
-		"sha256": "a136df2502a6482bb20f4b2b47963deb677161d173f35d8133397781d1a60fa5"
+		"size": 2471,
+		"sha256": "066f3621558e9f7c34d60210f4121d9ccde88e96a3f82aded229ec37b0c040ea"
 	},
 	{
 		"path": "package.json",
