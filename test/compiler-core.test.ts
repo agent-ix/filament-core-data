@@ -19,6 +19,7 @@ import { changeRange, changedPathsOf } from "./changed-paths.js";
 import {
 	assertBackendContract,
 	generateTarget,
+	registryWith,
 } from "../src/compiler/backends/seam.mjs";
 import { diffSemanticContract } from "../src/compiler/compat/diff.mjs";
 import {
@@ -4751,8 +4752,21 @@ describe("generation backend seam registry codes (FR-063)", () => {
 
 	/** Traces: TC-746, TC-747; FR-063-AC-3, FR-063-AC-4. */
 	it("fires the unimplemented-target and invalid-request codes", () => {
+		// Over a synthetic registration, not over whichever committed target
+		// happens to be unimplemented today. This arm named `rust` until FR-130
+		// registered that backend, at which point the assertion went red on a
+		// branch that had done nothing wrong — which is the failure mode
+		// FR-063's own `registryWith` seam exists to prevent, and the reason it
+		// is used here rather than a second real target being borrowed.
 		const unavailable = generateTarget(generationRequest(), {
-			target: "rust",
+			target: "probe",
+			registry: registryWith({
+				probe: {
+					owner: "agent-ix/filament-core-data#0",
+					backend: null,
+					implemented: false,
+				},
+			}),
 		}) as never as { state: string; diagnostics: Diagnostic[] };
 		note(unavailable.diagnostics);
 		expect(unavailable.state).toBe("unavailable");

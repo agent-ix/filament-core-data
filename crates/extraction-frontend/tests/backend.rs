@@ -104,13 +104,6 @@ fn generate(target: &str, out_root: &Path) -> (i32, String, Vec<Value>) {
     (run.status, run.stderr, diagnostics)
 }
 
-fn codes(diagnostics: &[Value]) -> Vec<&str> {
-    diagnostics
-        .iter()
-        .filter_map(|d| d["code"].as_str())
-        .collect()
-}
-
 #[trace("TC-1292", "FR-098-AC-8")]
 #[test]
 fn tc_1292_rust_generate_over_the_config_version_table_golden_exits_zero_with_no_diagnostics() {
@@ -139,15 +132,28 @@ fn tc_1292_generate_typescript_over_the_config_version_table_golden_exits_zero_w
     );
 }
 
-/// The generic compiler CLI still has no Rust target (filament-core-data#21).
+/// The generic compiler CLI reaches the Rust target (FR-130).
+///
+/// This case asserted the opposite until FR-130 registered the backend in the
+/// generation seam: the crate was complete and the seam answered
+/// `BACKEND_NOT_IMPLEMENTED`, so the test pinned the defect rather than the
+/// behaviour. Pinning a defect is the right thing to do while it stands — it is
+/// what made the refusal measured rather than assumed — and inverting the
+/// assertion is what closing it looks like.
 #[trace("TC-1292", "FR-098-AC-8")]
 #[test]
-fn tc_1292_generic_cli_still_declares_rust_unimplemented() {
+fn tc_1292_generic_cli_generates_the_rust_target() {
     let out_root = tempfile::tempdir().expect("tempdir");
-    let (status, _stderr, diagnostics) = generate("rust", out_root.path());
-    assert_eq!(status, 1);
-    assert_eq!(
-        codes(&diagnostics),
-        ["agent-ix.compiler.BACKEND_NOT_IMPLEMENTED"]
+    let (status, stderr, diagnostics) = generate("rust", out_root.path());
+    assert_eq!(status, 0, "{stderr}");
+    assert!(
+        diagnostics.is_empty(),
+        "{} diagnostic(s): {diagnostics:?}",
+        diagnostics.len()
+    );
+    assert!(
+        out_root.path().join("src/lib.rs").is_file(),
+        "the generated crate has no src/lib.rs under {}",
+        out_root.path().display()
     );
 }
