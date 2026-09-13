@@ -72,12 +72,38 @@ jobs:
           rustup toolchain install "$toolchain" --component clippy,rustfmt
           rustup component add clippy rustfmt
 
-      # `make rust-build` and `make rust-test` pass `--offline`, so the registry
-      # has to be populated before they run. Fetching with `--locked` here also
-      # makes a lockfile that does not resolve a lane failure with a clear
-      # cause, rather than an opaque offline error inside a later target.
-      - name: Fetch dependencies
-        run: cargo fetch --locked
+      # Provisioning, which is not a gate.
+      #
+      # `.cargo/config.toml` sets `net.offline = true` for the whole repository,
+      # because FR-061-CON-1 forbids contacting a registry to resolve as well as
+      # to publish and NFR-022 measures the gates' network calls at zero. That
+      # property is about the gates. A runner that has never seen this
+      # repository has an empty registry, so something has to populate it once,
+      # before any gate runs — and the honest way to do that is a named step
+      # that is visibly not a gate, rather than by relaxing the setting the
+      # gates run under.
+      #
+      # `CARGO_NET_OFFLINE=false` therefore applies to this step alone. Every
+      # target after it inherits the committed `offline = true`, so a gate that
+      # reaches the network still fails, which is the property NFR-022 asserts.
+      #
+      # `quire-rs` is a private repository in this organisation, so cargo needs a
+      # credential to clone it. The default `GITHUB_TOKEN` is scoped to this
+      # repository alone and will not read a sibling; an organisation token is
+      # required, and the step says so rather than failing with cargo's
+      # "offline mode" message, which names the wrong cause.
+      - name: Provision the cargo registry
+        env:
+          CARGO_NET_OFFLINE: "false"
+          GIT_TOKEN: ${{ secrets.REGISTRY_TOKEN || github.token }}
+        run: |
+          git config --global \
+            url."https://x-access-token:${GIT_TOKEN}@github.com/".insteadOf \
+            "https://github.com/"
+          cargo fetch --locked || {
+            echo "::error::cargo could not fetch the private git dependency \`quire-rs\`. This lane needs an organisation-scoped token with read access to agent-ix/quire-rs; the default GITHUB_TOKEN is scoped to this repository alone."
+            exit 1
+          }
 
       - name: Rust gates
         run: make test-rust
