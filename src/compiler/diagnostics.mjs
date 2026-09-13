@@ -99,6 +99,14 @@ const COMPILER_CODES = [
 	"INVALID_REQUEST",
 	"UNSUPPORTED_IR_VERSION",
 	"BACKEND_CONTRACT_VIOLATION",
+	// The input half of the same defect (FR-131). A frontend that reaches an
+	// out-of-process producer can be told something no input could cause: an exit
+	// code with no diagnostic behind it, or a zero exit with no readable
+	// document. Neither is a defect in the bundle, so neither may be reported as
+	// one — a reader who saw a bundle-shaped code would go looking in the bundle.
+	// It is the symmetric twin of BACKEND_CONTRACT_VIOLATION and is spelled to
+	// say so.
+	"FRONTEND_CONTRACT_VIOLATION",
 ];
 
 /**
