@@ -22,6 +22,10 @@ relationships:
 
 ## Description
 
+This requirement opens the bundle answering
+[filament-core-data#22](https://github.com/agent-ix/filament-core-data/issues/22), the TypeScript semantic codegen
+and validator backend.
+
 The compiler SHALL reach every generated target through one seam keyed on the
 published `target` vocabulary, so that a caller submits a
 `compiler-request.schema.json` document and receives an

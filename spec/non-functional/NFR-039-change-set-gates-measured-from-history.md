@@ -28,6 +28,9 @@ after the change merges and never annexes a later change's paths.
 
 ## Rationale
 
+This requirement answers [filament-core-data#51](https://github.com/agent-ix/filament-core-data/issues/51), which records
+the non-disruption suites baselining their gates on a moving trunk.
+
 A merged change's path set is a fixed historical fact. Encoding it as a live
 computation against a moving reference degrades in four distinct ways, and this
 repository has now been dragged back by every one of them:
