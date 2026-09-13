@@ -62,7 +62,7 @@ it came from.
   starting one, and importing `cli.mjs` rather than the other way round
 - A generated crate rooted at the request's `outputRoot`, containing
   `Cargo.toml`, `LICENSE`, `README.md`, `src/lib.rs`, `src/support.rs`,
-  `src/identity.rs`, `src/metadata.rs`, and one module per IR type
+  `src/identity.rs`, `src/provenance.rs`, and one module per IR type
 - An `output-manifest.schema.json` document naming every emitted file with its
   digest, media type, and the semantic identities it carries
 - `THIRD-PARTY-NOTICES.md`: the third-party attribution register, one entry per
@@ -226,6 +226,21 @@ not restated here.
   `outputRoot` carrying a leading `/`, a drive letter, a backslash, or a `..`
   segment is refused by the published `compiler-request.schema.json` pattern
   before any write, and the run's result state is `invalid`.
+
+## Emitted set (ADR-0007)
+
+[ADR-0007](../../docs/semantic-data-system/adr/0007-emitted-set-contract.md) specifies
+the emitted set as five concepts realised idiomatically per language, not as a
+filename contract. This section names where each concept lands in this target, as
+that decision requires.
+
+| ADR-0007 concept | Where it lands in this target |
+|---|---|
+| Types | `src/types/<type>.rs`, re-exported by `src/types.rs` |
+| Validation | `deny_unknown_fields` on each `…Wire` deserializer, the fallible `try_new` constructors, and `validate()`, all in `src/types/<type>.rs` |
+| Diagnostics | `src/support.rs`, which declares the `Diagnostic` type and the closed refusal vocabulary |
+| Semantic identity | `src/identity.rs` — `TypeMeta`, `FieldMeta`, `TYPES`, `OCCURRENCES`, `PACKAGE_EXTENSIONS` |
+| Provenance | `src/provenance.rs` — source, package, contract, generator identity, and the lock and manifest digests |
 
 ## Constraints
 

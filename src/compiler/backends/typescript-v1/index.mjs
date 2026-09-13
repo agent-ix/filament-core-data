@@ -26,7 +26,7 @@ import { refusesGeneration, representability } from "./loss.mjs";
 import {
 	auditRenderedNodes,
 	renderIdentity,
-	renderMetadata,
+	renderProvenance,
 } from "./metadata.mjs";
 import { buildModel } from "./model.mjs";
 import { renderPackage } from "./package-layout.mjs";
@@ -194,7 +194,7 @@ export const typescriptBackend = Object.freeze({
 			validators: renderValidators(model),
 			errors: renderErrors(),
 			identity: renderIdentity(model),
-			metadata: renderMetadata(model, { fingerprint }),
+			provenance: renderProvenance(model, { fingerprint }),
 		});
 		const unrendered = auditRenderedNodes(model, rendered.files);
 		if (unrendered.length > 0) {

@@ -5,7 +5,7 @@
 use serde::{Deserialize, Serialize};
 
 /// The fields of `Leaf`, in the order the contract declares them.
-pub const FIELDS: &[crate::metadata::FieldMeta] = &[crate::metadata::FieldMeta {
+pub const FIELDS: &[crate::identity::FieldMeta] = &[crate::identity::FieldMeta {
     identity: "ix://agent-ix/conformance/field/leaf-id",
     name: "id",
     rust_name: "id",
@@ -14,7 +14,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[crate::metadata::FieldMeta {
     row: "field:single/non-null/required",
     presence: "required",
     nullable: false,
-    multiplicity: crate::metadata::MultiplicityMeta {
+    multiplicity: crate::identity::MultiplicityMeta {
         lower: 1,
         upper: Some(1),
         ordered: None,
@@ -23,8 +23,8 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[crate::metadata::FieldMeta {
     unit: None,
     default_kind: "none",
     default_value: None,
-    origin: crate::metadata::OriginMeta {
-        source: Some(crate::metadata::SourceLocusMeta {
+    origin: crate::identity::OriginMeta {
+        source: Some(crate::identity::SourceLocusMeta {
             source_identity: "ix://agent-ix/filament-core-data/source/typespec",
             path: "model/leaf.tsp",
             start_line: 2,

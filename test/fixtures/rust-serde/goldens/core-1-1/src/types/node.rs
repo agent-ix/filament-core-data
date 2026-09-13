@@ -5,8 +5,8 @@
 use serde::{Deserialize, Serialize};
 
 /// The fields of `Node`, in the order the contract declares them.
-pub const FIELDS: &[crate::metadata::FieldMeta] = &[
-    crate::metadata::FieldMeta {
+pub const FIELDS: &[crate::identity::FieldMeta] = &[
+    crate::identity::FieldMeta {
         identity: "ix://agent-ix/conformance/field/node-id",
         name: "id",
         rust_name: "id",
@@ -15,7 +15,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         row: "field:single/non-null/required",
         presence: "required",
         nullable: false,
-        multiplicity: crate::metadata::MultiplicityMeta {
+        multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
             ordered: None,
@@ -24,8 +24,8 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         unit: None,
         default_kind: "none",
         default_value: None,
-        origin: crate::metadata::OriginMeta {
-            source: Some(crate::metadata::SourceLocusMeta {
+        origin: crate::identity::OriginMeta {
+            source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/filament-core-data/source/typespec",
                 path: "model/node.tsp",
                 start_line: 5,
@@ -36,7 +36,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
             generated: None,
         },
     },
-    crate::metadata::FieldMeta {
+    crate::identity::FieldMeta {
         identity: "ix://agent-ix/conformance/field/node-label",
         name: "label",
         rust_name: "label",
@@ -45,7 +45,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         row: "field:single/nullable/optional",
         presence: "optional",
         nullable: true,
-        multiplicity: crate::metadata::MultiplicityMeta {
+        multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: Some(1),
             ordered: None,
@@ -54,8 +54,8 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         unit: None,
         default_kind: "none",
         default_value: None,
-        origin: crate::metadata::OriginMeta {
-            source: Some(crate::metadata::SourceLocusMeta {
+        origin: crate::identity::OriginMeta {
+            source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/filament-core-data/source/typespec",
                 path: "model/node.tsp",
                 start_line: 6,
@@ -66,7 +66,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
             generated: None,
         },
     },
-    crate::metadata::FieldMeta {
+    crate::identity::FieldMeta {
         identity: "ix://agent-ix/conformance/field/node-elapsed",
         name: "elapsed",
         rust_name: "elapsed",
@@ -75,7 +75,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         row: "field:single/non-null/required",
         presence: "required",
         nullable: false,
-        multiplicity: crate::metadata::MultiplicityMeta {
+        multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
             ordered: None,
@@ -84,8 +84,8 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         unit: Some("ms"),
         default_kind: "none",
         default_value: None,
-        origin: crate::metadata::OriginMeta {
-            source: Some(crate::metadata::SourceLocusMeta {
+        origin: crate::identity::OriginMeta {
+            source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/filament-core-data/source/typespec",
                 path: "model/node.tsp",
                 start_line: 7,
@@ -96,7 +96,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
             generated: None,
         },
     },
-    crate::metadata::FieldMeta {
+    crate::identity::FieldMeta {
         identity: "ix://agent-ix/conformance/field/node-status",
         name: "status",
         rust_name: "status",
@@ -105,7 +105,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         row: "field:single/non-null/required",
         presence: "required",
         nullable: false,
-        multiplicity: crate::metadata::MultiplicityMeta {
+        multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
             ordered: None,
@@ -114,8 +114,8 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         unit: None,
         default_kind: "semantic",
         default_value: Some("\"draft\""),
-        origin: crate::metadata::OriginMeta {
-            source: Some(crate::metadata::SourceLocusMeta {
+        origin: crate::identity::OriginMeta {
+            source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/filament-core-data/source/typespec",
                 path: "model/node.tsp",
                 start_line: 8,
@@ -126,7 +126,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
             generated: None,
         },
     },
-    crate::metadata::FieldMeta {
+    crate::identity::FieldMeta {
         identity: "ix://agent-ix/conformance/field/node-children",
         name: "children",
         rust_name: "children",
@@ -135,7 +135,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         row: "field:collection/non-null/optional",
         presence: "optional",
         nullable: false,
-        multiplicity: crate::metadata::MultiplicityMeta {
+        multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: None,
             ordered: Some(true),
@@ -144,8 +144,8 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         unit: None,
         default_kind: "none",
         default_value: None,
-        origin: crate::metadata::OriginMeta {
-            source: Some(crate::metadata::SourceLocusMeta {
+        origin: crate::identity::OriginMeta {
+            source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/filament-core-data/source/typespec",
                 path: "model/node.tsp",
                 start_line: 9,
@@ -156,7 +156,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
             generated: None,
         },
     },
-    crate::metadata::FieldMeta {
+    crate::identity::FieldMeta {
         identity: "ix://agent-ix/conformance/field/node-tags",
         name: "tags",
         rust_name: "tags",
@@ -165,7 +165,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         row: "field:single/non-null/optional",
         presence: "optional",
         nullable: false,
-        multiplicity: crate::metadata::MultiplicityMeta {
+        multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: Some(1),
             ordered: None,
@@ -174,8 +174,8 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         unit: None,
         default_kind: "none",
         default_value: None,
-        origin: crate::metadata::OriginMeta {
-            source: Some(crate::metadata::SourceLocusMeta {
+        origin: crate::identity::OriginMeta {
+            source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/filament-core-data/source/typespec",
                 path: "model/node.tsp",
                 start_line: 10,
@@ -186,7 +186,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
             generated: None,
         },
     },
-    crate::metadata::FieldMeta {
+    crate::identity::FieldMeta {
         identity: "ix://agent-ix/conformance/field/node-attrs",
         name: "attrs",
         rust_name: "attrs",
@@ -195,7 +195,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         row: "field:single/non-null/optional",
         presence: "optional",
         nullable: false,
-        multiplicity: crate::metadata::MultiplicityMeta {
+        multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: Some(1),
             ordered: None,
@@ -204,8 +204,8 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         unit: None,
         default_kind: "none",
         default_value: None,
-        origin: crate::metadata::OriginMeta {
-            source: Some(crate::metadata::SourceLocusMeta {
+        origin: crate::identity::OriginMeta {
+            source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/filament-core-data/source/typespec",
                 path: "model/node.tsp",
                 start_line: 11,
@@ -216,7 +216,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
             generated: None,
         },
     },
-    crate::metadata::FieldMeta {
+    crate::identity::FieldMeta {
         identity: "ix://agent-ix/conformance/field/node-payload",
         name: "payload",
         rust_name: "payload",
@@ -225,7 +225,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         row: "field:single/non-null/optional",
         presence: "optional",
         nullable: false,
-        multiplicity: crate::metadata::MultiplicityMeta {
+        multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: Some(1),
             ordered: None,
@@ -234,8 +234,8 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         unit: None,
         default_kind: "none",
         default_value: None,
-        origin: crate::metadata::OriginMeta {
-            source: Some(crate::metadata::SourceLocusMeta {
+        origin: crate::identity::OriginMeta {
+            source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/filament-core-data/source/typespec",
                 path: "model/node.tsp",
                 start_line: 12,

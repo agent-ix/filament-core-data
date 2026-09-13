@@ -134,7 +134,7 @@ function sha256(text) {
 	return `sha256:${createHash("sha256").update(text, "utf8").digest("hex")}`;
 }
 
-const META = "crate::metadata";
+const META = "crate::identity";
 
 function optionStr(value) {
 	return value === undefined || value === null
@@ -308,9 +308,9 @@ export function emitCrate(request, options = {}) {
 	files.push(["Cargo.toml", renderCargoToml(model)]);
 	files.push(["LICENSE", options.licenseText ?? ""]);
 	files.push(["README.md", renderReadme(model)]);
-	files.push(["src/identity.rs", renderIdentity(request, model)]);
+	files.push(["src/identity.rs", renderIdentity(model)]);
 	files.push(["src/lib.rs", renderLib(model)]);
-	files.push(["src/metadata.rs", renderMetadata(model)]);
+	files.push(["src/provenance.rs", renderProvenance(request, model)]);
 	files.push(["src/support.rs", renderSupport()]);
 	files.push(["src/types.rs", renderTypesModule(model)]);
 
@@ -460,7 +460,7 @@ function renderReadme(model) {
 		`- Contract version: \`${model.contractVersion}\``,
 		"",
 		"The same values are exported as `&'static str` constants from",
-		"`src/identity.rs`, so a consumer can assert against them at run time.",
+		"`src/provenance.rs`, so a consumer can assert against them at run time.",
 		"",
 		"## Declared gaps",
 		"",
@@ -502,7 +502,7 @@ function renderReadme(model) {
 	return lines.join("\n");
 }
 
-const IDENTITY_TABLE = [
+const PROVENANCE_TABLE = [
 	["SOURCE_IDENTITY", (request) => request.ir.source.identity],
 	["SOURCE_VERSION", (request) => request.ir.source.version],
 	["SOURCE_DIGEST", (request) => request.ir.source.digest],
@@ -516,7 +516,7 @@ const IDENTITY_TABLE = [
 	["GENERATOR_VERSION", (request) => request.backend?.version],
 ];
 
-const IDENTITY_DOCS = {
+const PROVENANCE_DOCS = {
 	SOURCE_IDENTITY:
 		"The semantic identity of the source the contract was read from.",
 	SOURCE_VERSION: "The version of the source the contract was read from.",
@@ -533,7 +533,7 @@ const IDENTITY_DOCS = {
 	GENERATOR_VERSION: "The version of the backend that generated this crate.",
 };
 
-function renderIdentity(request, model) {
+function renderProvenance(request, model) {
 	const lines = [
 		"//! Provenance constants, each taken verbatim from the compiler request.",
 		"//!",
@@ -548,9 +548,9 @@ function renderIdentity(request, model) {
 		"//! written here or anywhere else in the crate.",
 		"",
 	];
-	for (const [name, read] of IDENTITY_TABLE) {
+	for (const [name, read] of PROVENANCE_TABLE) {
 		const value = read(request);
-		lines.push(`/// ${IDENTITY_DOCS[name]}`);
+		lines.push(`/// ${PROVENANCE_DOCS[name]}`);
 		lines.push(
 			...constItem("pub ", name, "&str", atom(rustString(value ?? ""))),
 		);
@@ -649,11 +649,11 @@ function renderLib(model) {
 		"//! it should be hand-edited.",
 		"",
 		"pub mod identity;",
-		"pub mod metadata;",
+		"pub mod provenance;",
 		"pub mod support;",
 		"pub mod types;",
 		"",
-		"pub use crate::metadata::{FieldMeta, TypeMeta, TYPES};",
+		"pub use crate::identity::{FieldMeta, TypeMeta, TYPES};",
 	];
 	const reexports = model.types
 		.map(
@@ -734,16 +734,23 @@ function renderLib(model) {
 }
 
 // ---------------------------------------------------------------------------
-// Metadata
+// Semantic identity
 // ---------------------------------------------------------------------------
 
-const METADATA_PRELUDE = `//! Contract metadata, emitted beside the types it belongs to.
+const IDENTITY_PRELUDE = `//! The semantic identity of everything this crate declares, emitted beside
+//! the types it belongs to.
 //!
 //! Every member the IR carries survives generation into a \`const\` here:
 //! \`roles\`, \`origin\`, \`relationships\`, \`operations\`, \`clauses\`,
 //! \`occurrences\` and \`extensions\`. An \`operation\` reaches the crate as
-//! metadata and never as a Rust function: it has no body in the IR, so a
+//! data and never as a Rust function: it has no body in the IR, so a
 //! generated function would have nothing to put in one.
+//!
+//! The crate's *provenance* — what it was generated from and by — is a
+//! different concept and lives in \`provenance.rs\` (FR-137, ADR-0007). The two
+//! were once named \`identity.rs\` and \`metadata.rs\` here and the opposite way
+//! round in the generated TypeScript package, which is the defect that
+//! renaming repairs.
 
 /// A source locus the IR carried.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -1099,8 +1106,8 @@ function occurrenceMeta(occurrence) {
 	]);
 }
 
-function renderMetadata(model) {
-	const lines = [METADATA_PRELUDE.replace(/\n+$/, ""), ""];
+function renderIdentity(model) {
+	const lines = [IDENTITY_PRELUDE.replace(/\n+$/, ""), ""];
 
 	for (const type of model.types) {
 		if (type.relationships.length > 0) {
@@ -1921,7 +1928,7 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 		...constItem(
 			"pub ",
 			"FIELDS",
-			"&[crate::metadata::FieldMeta]",
+			"&[crate::identity::FieldMeta]",
 			slice(type.fields.map(fieldMeta)),
 		),
 		"",

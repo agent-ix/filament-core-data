@@ -449,9 +449,21 @@ describe("TypeScript backend fixture (FR-071)", () => {
 		);
 	});
 
-	it("TC-787 preserves the fixture's identity and metadata surface without retaining validators", () => {
+	/**
+	 * The two modules this reads were named `identity.ts` and `metadata.ts`
+	 * until FR-137. The rename is not cosmetic and the assertions move with it:
+	 * a document's extensions and occurrences are contract data and are now
+	 * declared beside the semantic identity they qualify, while `provenance.ts`
+	 * carries what the package was generated from and by, and nothing else. So
+	 * this case reads each concept from the module that now owns it, rather
+	 * than reading one file and finding both.
+	 */
+	it("TC-787 preserves the fixture's identity and provenance surface without retaining validators", () => {
 		const identity = readFileSync(resolve(expected, "identity.ts"), "utf8");
-		const metadata = readFileSync(resolve(expected, "metadata.ts"), "utf8");
+		const provenance = readFileSync(
+			resolve(expected, "provenance.ts"),
+			"utf8",
+		);
 		const ir = JSON.parse(readFileSync(fixtureIr, "utf8")) as {
 			types: {
 				identity: string;
@@ -466,14 +478,17 @@ describe("TypeScript backend fixture (FR-071)", () => {
 				expect(identity).toContain(JSON.stringify(field.identity));
 		}
 		for (const extension of ir.extensions)
-			expect(metadata).toContain(JSON.stringify(extension.identity));
+			expect(identity).toContain(JSON.stringify(extension.identity));
 		for (const occurrence of ir.occurrences)
-			expect(metadata).toContain(JSON.stringify(occurrence.identity));
-		expect(metadata).toContain("sourceIdentity:");
-		expect(metadata).toContain("packageLockDigest:");
-		expect(metadata).toContain("fingerprint:");
+			expect(identity).toContain(JSON.stringify(occurrence.identity));
+		expect(provenance).toContain("sourceIdentity:");
+		expect(provenance).toContain("packageLockDigest:");
+		expect(provenance).toContain("fingerprint:");
+		// Provenance is one concept in one module: it names no descriptor type,
+		// so it imports nothing at all (FR-137).
+		expect(provenance).not.toMatch(/^import\s/m);
 		expect(identity).not.toMatch(/from "\.\/validators\.js"/);
-		expect(metadata).not.toMatch(/from "\.\/validators\.js"/);
+		expect(provenance).not.toMatch(/from "\.\/validators\.js"/);
 	});
 
 	it("TC-787 audits every identity-bearing model node and rejects a seeded dropped node", () => {

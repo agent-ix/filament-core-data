@@ -25,12 +25,15 @@ removed. A removal that runs ahead of that order leaves a persisted payload
 readable by no deployed code, which is the one failure in this requirement that
 cannot be undone by redeploying.
 
-The scope is smaller than it looks. Exactly one external consumer of the legacy
-contract exists — `filament-ide`'s `coredb` sync path — and no Python consumer
-of the published package exists outside this repository. That census is the
+The scope is smaller than it looks. No consumer of the legacy contract outside
+this repository is known, and no Python consumer of the published package exists
+outside it either. The one consumer an earlier census named, `filament-ide`'s
+`coredb` sync path, is not one: that implementation was superseded on 2026-08-14
+by `filament-ide-rs` and is out of this programme's scope by owner amendment of
+2026-09-13, so no cutover of it is required here. That census is the
 requirement's foundation and is stated as a finding to be re-measured rather
 than assumed, because a census taken once and trusted afterwards is how a reader
-gets missed.
+gets missed — and because this amendment is what re-measuring one produced.
 
 ## Inputs
 
@@ -74,7 +77,7 @@ gets missed.
 | FR-134-AC-3 | No persisted payload is readable only by removed code, demonstrated over the retained corpus | Test |
 | FR-134-AC-4 | At a boundary with one remaining reader, the legacy representation is retained and the reader's owner is named | Inspection |
 | FR-134-AC-5 | Reverting any single removal restores that boundary without reverting another | Demonstration |
-| FR-134-AC-6 | `filament-ide`'s `coredb` sync path reads the generated contract and no longer reads the legacy one | Test |
+| FR-134-AC-6 | A consumer named by the re-measured census either reads the generated contract and no longer reads the legacy one, or is recorded as retired with the evidence that retired it | Test |
 | FR-134-AC-7 | Architecture records, migration notes and package deprecations name the retired boundaries and the retained ones | Inspection |
 
 ## Dependencies

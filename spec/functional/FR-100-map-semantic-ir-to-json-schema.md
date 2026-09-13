@@ -103,6 +103,21 @@ frontend, a generated programming-language package, or an ambient registry.
   for it, then the backend SHALL return a blocking declared-loss diagnostic and
   emit no schema file.
 
+## Emitted set (ADR-0007)
+
+[ADR-0007](../../docs/semantic-data-system/adr/0007-emitted-set-contract.md) specifies
+the emitted set as five concepts realised idiomatically per language, not as a
+filename contract. This section names where each concept lands in this target, as
+that decision requires.
+
+| ADR-0007 concept | Where it lands in this target |
+|---|---|
+| Types | one `<TypeName>.json` document per declared type |
+| Validation | the JSON Schema 2020-12 keywords those documents carry, checked by any conforming validator; nothing further is emitted because the document *is* the validator |
+| Diagnostics | the seam's registry-coded refusals returned with the generation; this target emits no diagnostics file, and that is the realisation rather than a gap |
+| Semantic identity | the `x-agent-ix-semantic-id` annotation carried inline on each definition |
+| Provenance | `index.json` |
+
 ## Constraints
 
 | ID | Constraint | Type | Validation |

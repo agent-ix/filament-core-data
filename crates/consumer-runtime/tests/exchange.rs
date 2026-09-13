@@ -305,7 +305,7 @@ fn tc_722_unknown_closed_enum_variant() {
 /// because the refusal alone would be indistinguishable from class 2.
 #[test]
 fn tc_722_required_extension_the_crate_does_not_admit() {
-    let sealing = agent_ix_conformance::metadata::PACKAGE_EXTENSIONS
+    let sealing = agent_ix_conformance::identity::PACKAGE_EXTENSIONS
         .iter()
         .find(|entry| entry.identity == "ix://agent-ix/conformance/ext/sealing")
         .expect("the contract declares the sealing extension");

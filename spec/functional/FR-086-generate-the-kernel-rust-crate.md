@@ -48,7 +48,7 @@ requirement restates none of them.
 
 ## Outputs
 
-- `packages/semantic-kernel/rust/`: the committed generated crate — `Cargo.toml`, `LICENSE`, `README.md`, `src/lib.rs`, `src/support.rs`, `src/identity.rs`, `src/metadata.rs`, `src/types.rs`, and one module under `src/types/` per kernel IR type
+- `packages/semantic-kernel/rust/`: the committed generated crate — `Cargo.toml`, `LICENSE`, `README.md`, `src/lib.rs`, `src/support.rs`, `src/identity.rs`, `src/provenance.rs`, `src/types.rs`, and one module under `src/types/` per kernel IR type
 - `packages/semantic-kernel/rust-digests.json`: the digest baseline over the committed crate, written by a different entry point from the one that writes the crate
 - `scripts/build-semantic-kernel.mjs`, the orchestrating generator shared with [FR-085](./FR-085-generate-the-kernel-typescript-package.md): this requirement adds its Rust half, calling `cli.mjs generate` and carrying the `--check` verb
 - `scripts/build-semantic-kernel-digests.mjs`, which writes `packages/semantic-kernel/rust-digests.json` and nothing else, reaching the emitter through `crate.mjs`'s pure `emitCrate` rather than through the writing path the tree came from. It is a *different* script from the one that writes the crate, because FR-060-CON-6 requires the baseline and the artifact it baselines to be written by two entry points
