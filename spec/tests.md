@@ -174,6 +174,9 @@ producer/schema plan are accepted.
 | US-019 | US-019-EX-2 (illustrative) implemented by FR-130 | TC-1390 | ✅ Complete |
 | US-019 | US-019-EX-3 (illustrative) implemented by FR-130 | TC-1391 | ✅ Complete |
 | US-019 | US-019-EX-4 (illustrative) implemented by FR-130 | TC-1392 | ✅ Complete |
+| US-020 | US-020-EX-1, US-020-EX-2 (illustrative) implemented by FR-134 | TC-1431 | 🚧 planned on issue #6 |
+| US-020 | US-020-EX-3, US-020-EX-5 (illustrative) implemented by FR-134 | TC-1430, TC-1432 | 🚧 planned on issue #6 |
+| US-020 | US-020-EX-4 (illustrative) implemented by FR-135 | TC-1429 | 🚧 planned on issue #12 |
 
 ### Functional Requirement Coverage
 
@@ -289,6 +292,8 @@ producer/schema plan are accepted.
 | FR-131 | FR-131-AC-1..8, FR-131-CON-1..3 | TC-1403..TC-1409 | ✅ Complete |
 | FR-132 | FR-132-AC-1..7, FR-132-CON-1..3 | TC-1414..TC-1417 | 🚧 planned on issue #65 |
 | FR-133 | FR-133-AC-1..7, FR-133-CON-1..3 | TC-1418..TC-1421 | 🚧 planned on issue #80 |
+| FR-134 | FR-134-AC-1..7, FR-134-CON-1..3 | TC-1430..TC-1433 | 🚧 planned on issue #6 |
+| FR-135 | FR-135-AC-1..7, FR-135-CON-1..3 | TC-1426..TC-1429 | 🚧 planned on issue #12 |
 
 ### Non-Functional Requirement Coverage
 
@@ -330,6 +335,7 @@ producer/schema plan are accepted.
 | NFR-033 | NFR-033-AC-1..11: manifest, lock, and toolchain inspection, EXTRACTION_TOOLCHAIN=0.0.0 gate run, dependency-specifier inspection against the workspace members, make extraction-frontend-deny and -audit, lock-to-notices comparison, clippy --no-deps and fmt, trace-marker scan and status-lie rehearsal, offline build, workspace-channel check | TC-1320..TC-1329, TC-1350 | ✅ Complete |
 | NFR-038 | NFR-038-AC-1..7: one named make target reaching every Rust gate, dispatch-only triggers across every workflow, a two-platform two-architecture matrix that reports both, workspace-wide clippy, generated-crate artifacts per platform, and toolchain checks that fail naming what they could not run | TC-1396..TC-1402 | ✅ Complete |
 | NFR-039 | NFR-039-AC-1..6 | TC-1410..TC-1413 | 🚧 planned on issue #92 |
+| NFR-040 | NFR-040-AC-1..7 | TC-1422..TC-1425 | 🚧 planned on issue #26 |
 
 ## Test Case Summary
 
@@ -1598,6 +1604,18 @@ producer/schema plan are accepted.
 | TC-1419 | Every typeRef to the minted construct renders the resolved identifier and none renders the reserved one; every affected semantic identity is byte-unchanged | Unit | P0 | FR-133-AC-3, FR-133-AC-7, FR-133-CON-1 | 🚧 planned on issue #80 |
 | TC-1420 | A pair the rule does not cover still raises NAME_COLLISION naming both identities and writes no file | Unit | P1 | FR-133-AC-4 | 🚧 planned on issue #80 |
 | TC-1421 | Over arbitrary minted and reserved names, no two distinct constructs share one generated identifier, and the register carries the resolution bound to a case | Property | P1 | FR-133-AC-5, FR-133-AC-6, FR-133-CON-2 | 🚧 planned on issue #80 |
+| TC-1422 | Every published artifact identifies its source, compiler, IR, backend and schema fingerprints, and two builds from one source produce identical bytes | Integration | P0 | NFR-040-AC-1, NFR-040-AC-3 | 🚧 planned on issue #26 |
+| TC-1423 | Every combination the version matrix declares carries a conformance corpus run, and removing a run removes its row | Analysis | P0 | NFR-040-AC-2 | 🚧 planned on issue #26 |
+| TC-1424 | A rehearsed rollback leaves previously published compatible artifacts retrievable; no artifact reaches a public registry and every release workflow is manually dispatched | Manual | P0 | NFR-040-AC-4, NFR-040-AC-5 | 🚧 planned on issue #26 |
+| TC-1425 | An install-from-artifact consumer exists per generated language and builds against the published artifact; the first supported version and its canaries are named by a recorded decision | Integration | P1 | NFR-040-AC-6, NFR-040-AC-7 | 🚧 planned on issue #26 |
+| TC-1426 | Every known producer and consumer carries a disposition and an owner; every P0 compatibility finding is resolved and each accepted lower finding names an owner and an expiry condition | Manual | P0 | FR-135-AC-1, FR-135-AC-2 | 🚧 planned on issue #12 |
+| TC-1427 | The candidate schema set and locks are published before the decision, and the compatibility window names each retained legacy representation exactly | Manual | P0 | FR-135-AC-3, FR-135-AC-4, FR-135-CON-2 | 🚧 planned on issue #12 |
+| TC-1428 | Changing a published schema byte within the frozen major is detected and refused | Unit | P0 | FR-135-AC-5, FR-135-CON-1 | 🚧 planned on issue #12 |
+| TC-1429 | The recorded decision names a human and its conditions, no artifact treats silence as approval, and the rollback is rehearsed rather than described | Manual | P1 | FR-135-AC-6, FR-135-AC-7, FR-135-CON-3 | 🚧 planned on issue #12 |
+| TC-1430 | Every known consumer is migrated, deferred with a named owner, or proven retired, and a census re-measured before a removal agrees with the plan or stops it | Manual | P0 | FR-134-AC-1, FR-134-AC-2 | 🚧 planned on issue #6 |
+| TC-1431 | No persisted payload is readable only by removed code over the retained corpus, and a boundary with a remaining reader keeps its legacy representation | Integration | P0 | FR-134-AC-3, FR-134-AC-4, FR-134-CON-1, FR-134-CON-2 | 🚧 planned on issue #6 |
+| TC-1432 | Reverting any single removal restores that boundary without reverting another | Manual | P1 | FR-134-AC-5, FR-134-CON-3 | 🚧 planned on issue #6 |
+| TC-1433 | filament-ide's coredb sync path reads the generated contract and no longer reads the legacy one, and the records name the retired and retained boundaries | Integration | P0 | FR-134-AC-6, FR-134-AC-7 | 🚧 planned on issue #6 |
 
 | TC-1360 | The `json-schema` registry entry generates the lifted ConfigVersion golden through the seam, returning a success manifest with a SHA-256 digest for every emitted file. | Integration | P0 | FR-063-AC-22 | ✅ passed — issue #85 |
 | TC-1361 | A synthetic IR containing all eight structural kinds and every kernel scalar emits one Ajv-compilable JSON Schema 2020-12 document per definition. | Unit | P0 | FR-100-AC-1 | ✅ passed — issue #85 |
@@ -2529,16 +2547,16 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
 | Static | 270 | 233 | 0 | 37 | 100% mapped (270/270) |
-| Manual | 47 | 45 | 0 | 2 | 100% mapped (47/47) |
-| Analysis | 50 | 30 | 0 | 20 | 100% mapped (50/50) |
+| Manual | 53 | 45 | 0 | 8 | 100% mapped (53/53) |
+| Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 129 | 71 | 0 | 58 | 100% mapped (129/129) |
-| Unit | 528 | 422 | 0 | 106 | 100% mapped (528/528) |
-| Integration | 138 | 84 | 0 | 54 | 100% mapped (138/138) |
+| Unit | 529 | 422 | 0 | 107 | 100% mapped (529/529) |
+| Integration | 142 | 84 | 0 | 58 | 100% mapped (142/142) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 68 | 35 | 0 | 33 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1270** | **944** | **0** | **326** | **100% mapped (1270/1270)** |
+| **Total** | **1282** | **944** | **0** | **338** | **100% mapped (1282/1282)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

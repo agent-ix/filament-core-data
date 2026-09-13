@@ -26,6 +26,7 @@ okf_version: "0.1"
 * [US-014: Consume the semantic kernel as a native package in every implementation language](./usecase/US-014-consume-the-semantic-kernel-natively.md) - Kernel-consumer outcome for the generated Rust, TypeScript, Python, and JSON Schema kernel packages.
 * [US-015: Lift a spec bundle into a domain package](./usecase/US-015-lift-a-spec-bundle-into-a-domain-package.md) - Domain-author outcome for the spec-bundle extraction frontend.
 * [US-019: Reach every generated target through one seam](./usecase/US-019-reach-every-generated-target-through-one-seam.md) - Consumer outcome for backends delivered only by a private command.
+* [US-020: Migrate off the legacy contract without losing a reader](./usecase/US-020-migrate-off-the-legacy-contract-without-losing-a-reader.md) - Owner outcome for the coordinated cutover and the first-major freeze.
 * [Functional requirements](./functional/) - Required architecture-record, census, feasibility, semantic-contract, package, projection, and compatibility behavior.
 * [Non-functional requirements](./non-functional/) - Traceability, reproducibility, parity, security, portability, evidence honesty, isolation, and safety qualities.
 * [Update log](./log.md) - Chronological bundle changes.
