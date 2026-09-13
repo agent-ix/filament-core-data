@@ -12,6 +12,9 @@ relationships:
 
 ## Description
 
+This requirement answers
+[filament-core-data#65](https://github.com/agent-ix/filament-core-data/issues/65).
+
 A Python IR reader SHALL answer every conformance case with a result state, a
 diagnostic list carrying registry codes, and a normalized form, so the corpus's
 `python-backend` adapter slot reports a verdict rather than remaining
