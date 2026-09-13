@@ -24,7 +24,10 @@ KERNEL_SCHEMAS = pathlib.Path("packages/semantic-core/generated/json-schema")
 
 
 def test_the_kernel_schemas_are_absolute_by_design() -> None:
-    """TC-1061: FR-087-AC-1. The emitter writes absolute ``$id``s; the normalization is a no-op."""
+    """TC-1061: FR-087-AC-1.
+
+    The emitter writes absolute ``$id``s; the normalization is a no-op.
+    """
     import json
 
     toolchain = json.loads(

@@ -145,3 +145,62 @@ def changed_paths(
     if paths:
         argv += ["--", *paths]
     return [line for line in _git(repo, *argv).splitlines() if line]
+
+
+def commits_adding(repo: pathlib.Path, sentinels: list[str]) -> list[str]:
+    """The commits that added each sentinel, earliest first."""
+
+    found = [
+        commit
+        for commit in (
+            _git(repo, "log", "--diff-filter=A", "--format=%H", "-1", "--", path)
+            for path in sentinels
+        )
+        if commit
+    ]
+    if len(found) != len(sentinels):
+        msg = (
+            f"no commit in history adds one of {sentinels}: the commit set for "
+            "this gate cannot be located, so it cannot assert"
+        )
+        raise RangeNotLocatedError(msg)
+    unique = list(dict.fromkeys(found))
+    ordered: list[str] = []
+    for commit in unique:
+        index = 0
+        while index < len(ordered) and _is_ancestor(repo, ordered[index], commit):
+            index += 1
+        ordered.insert(index, commit)
+    return ordered
+
+
+def changed_paths_of_commits(
+    repo: pathlib.Path,
+    sentinels: list[str],
+    *paths: str,
+) -> list[str]:
+    """The paths a change made, when it reached the trunk as several commits.
+
+    The Python mirror of `test/changed-paths.ts`'s `changedPathsOfCommits`, and
+    it exists for the same reason `change_range` above does not suffice. A range
+    is exact only while a change occupies a contiguous stretch of history, and
+    issue #23 does not: it landed as PR #70 and, ten tickets later, as PR #113.
+    A range across the two annexes every commit in between — issue #21's
+    `.cargo/config.toml`, issue #60's `.github/workflows/rust.yml` — and fails
+    issue #23 for them.
+
+    So the commits are named rather than spanned. One sentinel per delivering
+    commit, and the union of those commits' own name lists is the path set. A
+    later commit delivering more of the same change must add its own sentinel or
+    go unmeasured, which is the right cost: unmeasured is silent, while a range
+    that reaches for it is loudly wrong about somebody else.
+    """
+
+    wanted = tuple(paths)
+    touched: list[str] = []
+    for commit in commits_adding(repo, sentinels):
+        argv = ["show", "--no-renames", "--format=", "--name-only", commit]
+        if wanted:
+            argv += ["--", *wanted]
+        touched += [line for line in _git(repo, *argv).splitlines() if line]
+    return sorted(dict.fromkeys(touched))

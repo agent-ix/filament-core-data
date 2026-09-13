@@ -368,3 +368,99 @@ export function mergeCommitsIn(
 		.map((line) => line.trim())
 		.filter((line) => line.length > 0);
 }
+
+/**
+ * The commits that added each of `sentinels`, earliest first.
+ *
+ * Exported because the sixth face of the merge-degrading defect needs them
+ * individually rather than as a range — see `changedPathsOfCommits`.
+ */
+export function commitsAdding(
+	root: string,
+	sentinels: readonly string[],
+): string[] {
+	const found = sentinels
+		.map((path) =>
+			execFileSync(
+				"git",
+				["log", "--diff-filter=A", "--format=%H", "-1", "--", path],
+				{ cwd: root, encoding: "utf8" },
+			).trim(),
+		)
+		.filter((commit) => commit.length > 0);
+	if (found.length !== sentinels.length) {
+		throw new Error(
+			`no commit in history adds one of ${sentinels.join(", ")}: the commit set for this gate cannot be located, so it cannot assert`,
+		);
+	}
+	const unique = [...new Set(found)];
+	return unique.sort((left, right) => {
+		try {
+			execFileSync("git", ["merge-base", "--is-ancestor", left, right], {
+				cwd: root,
+				stdio: "ignore",
+			});
+			return -1;
+		} catch {
+			return 1;
+		}
+	});
+}
+
+/**
+ * The paths a change made, when the change reached the trunk as *several*
+ * squash commits rather than one.
+ *
+ * This is the sixth face of the merge-degrading defect, and neither helper
+ * above covers it. Both of those measure `base..tip` — a contiguous range — and
+ * that is exact only while a change occupies a contiguous stretch of history.
+ * Issue #23 does not: it landed as PR #70 and then, ten tickets later, as PR
+ * #113, and every commit in between belongs to somebody else. A range across
+ * the two annexes all of them, which is what took this gate red on the trunk
+ * the moment #113 merged — `.cargo/config.toml` and `.github/workflows/rust.yml`
+ * are issue #21's and issue #60's, and this gate was failing issue #23 for them.
+ *
+ * So the commits are named rather than spanned. Each sentinel identifies one
+ * commit that delivered part of the change, the union of those commits' own
+ * name lists is the change's path set, and a commit nobody named contributes
+ * nothing however close to them it sits. The working tree is folded in on the
+ * same terms `changedPathsOf` uses, so the gate still discriminates before the
+ * work is committed.
+ *
+ * The cost is that a later commit delivering more of the same change must add
+ * its own sentinel here, or its paths go unmeasured. That is a real cost and it
+ * is the right one: an unnamed commit is silently unmeasured, while a range
+ * that reaches for it is loudly wrong about somebody else.
+ */
+export function changedPathsOfCommits(
+	root: string,
+	sentinels: readonly string[],
+): string[] {
+	const commits = commitsAdding(root, sentinels);
+	const committed = commits.flatMap((commit) =>
+		execFileSync(
+			"git",
+			["show", "--no-renames", "--format=", "--name-only", commit],
+			{ cwd: root, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 },
+		)
+			.split("\n")
+			.map((line) => line.trim())
+			.filter((line) => line.length > 0),
+	);
+
+	const latest = commits[commits.length - 1];
+	const working = execFileSync(
+		"git",
+		["status", "--porcelain", "--untracked-files=all"],
+		{ cwd: root, encoding: "utf8" },
+	)
+		.split("\n")
+		.filter((line) => line.trim().length > 0)
+		.map((line) => line.slice(3).trim())
+		.filter((path) => path.length > 0)
+		.filter((path) => !REGENERATED_IN_PLACE.has(path))
+		.filter((path) => !matchesBase(root, "HEAD", path))
+		.filter((path) => !changedAfter(root, latest, path));
+
+	return [...new Set([...committed, ...working])].sort();
+}

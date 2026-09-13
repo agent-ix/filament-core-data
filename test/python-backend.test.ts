@@ -7,11 +7,11 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { changeRange } from "./changed-paths.js";
+import { changedPathsOfCommits, changeRange } from "./changed-paths.js";
 
 const root = resolve(dirname(new URL(import.meta.url).pathname), "..");
 
@@ -27,40 +27,27 @@ const root = resolve(dirname(new URL(import.meta.url).pathname), "..");
  * then judges a prefix of the change while reporting on all of it. `TIP_OWNED`
  * is the same rule `tests/change_range.py` applies on the Python side.
  */
-const SENTINELS = ["spec/usecase/US-013-generate-governed-python-types.md"];
-const TIP_OWNED = "python_backend";
+const SENTINELS = [
+	// PR #70, the generation route itself.
+	"spec/usecase/US-013-generate-governed-python-types.md",
+	// PR #113, the conformance adapter. Issue #23 reached the trunk as two
+	// squash commits ten tickets apart, so its path set is the union of those
+	// two commits and not the range between them — which spans issue #21's and
+	// issue #60's work and failed this ticket for it.
+	"conformance/adapters/python-backend/adapter.py",
+];
 
-/** `changeRange`'s base, with the tip pinned to the owned tree's last commit. */
-function ownRange(): { base: string; tip: string } {
-	const { base, tip } = changeRange(root, SENTINELS);
-	const owning = execFileSync(
-		"git",
-		["log", "--format=%H", "-1", "--", TIP_OWNED],
-		{ cwd: root, encoding: "utf8" },
-	).trim();
-	if (owning === "") return { base, tip };
-	let later = tip;
-	try {
-		execFileSync("git", ["merge-base", "--is-ancestor", tip, owning], {
-			cwd: root,
-			stdio: "ignore",
-		});
-		later = owning;
-	} catch {
-		later = tip;
-	}
-	return { base, tip: later };
+/**
+ * The base of the change's first commit, for the restorability check below.
+ *
+ * It is a single history fact and not a range: nothing here diffs across it.
+ */
+function ownBase(): string {
+	return changeRange(root, SENTINELS[0]).base;
 }
 
 function ownChangedPaths(): string[] {
-	const { base, tip } = ownRange();
-	return execFileSync(
-		"git",
-		["diff", "--no-renames", "--name-only", `${base}..${tip}`],
-		{ cwd: root, encoding: "utf8" },
-	)
-		.split("\n")
-		.filter(Boolean);
+	return changedPathsOfCommits(root, SENTINELS);
 }
 
 /** NFR-026 and NFR-027 declare one list; the two gates read the same one. */
@@ -74,12 +61,37 @@ const PERMITTED = [
 	"pyproject.toml",
 	"poetry.lock",
 	"Makefile",
+	// Issue #65, FR-132: the Python conformance adapter. Its home is the
+	// harness, because that is where an adapter lives — the differential runner
+	// launches every adapter as a process from `conformance/adapters/`, and a
+	// Python adapter kept outside it would be a second harness. The entries are
+	// the four the adapter needs, enumerated rather than the directory widened,
+	// so the corpus and the oracle below stay prohibited.
+	"conformance/adapters/python-backend/",
+	"conformance/adapters/registry.json",
+	"conformance/coverage.json",
+	"conformance/tools/materialize-cases.mjs",
+	"conformance/runner/differential.mjs",
+	// The scratch tree the materialisation verb writes, excluded from the
+	// formatter and from git. Both entries name it and nothing else.
+	".gitignore",
+	"biome.json",
 ];
 
 const PROHIBITED = [
 	"schema/",
 	"fixtures/",
-	"conformance/",
+	// Narrowed from `conformance/` when issue #65 landed the Python adapter
+	// there. What must not move is the evidence — the corpus the adapters are
+	// measured against and the oracle they are measured by — not the directory
+	// that happens to contain them.
+	"conformance/corpus.json",
+	"conformance/corpus.mjs",
+	"conformance/cases/",
+	"conformance/bases/",
+	"conformance/oracle/",
+	"conformance/schema/",
+	"conformance/thresholds.json",
 	"spikes/",
 	"packages/",
 	"src/",
@@ -89,7 +101,6 @@ const PROHIBITED = [
 	"scripts/",
 	"package.json",
 	"pnpm-lock.yaml",
-	"biome.json",
 	".github/",
 ];
 
@@ -138,27 +149,28 @@ describe("qualified Python generation route (issue #23)", () => {
 
 	/** NFR-027-AC-5, NFR-027-AC-11. */
 	it("TC-942 leaves every distribution manifest and workflow byte-identical to the trunk", () => {
-		// Both ends from history, for the same reason every other range here is:
-		// `origin/main...HEAD` empties on merge and accretes before it.
-		const { base, tip } = ownRange();
-		const frozen = execFileSync(
-			"git",
-			[
-				"diff",
-				"--no-renames",
-				"--name-only",
-				`${base}..${tip}`,
-				"--",
-				"package.json",
-				"pnpm-lock.yaml",
-				".github",
-				"biome.json",
-				"tsconfig.json",
-				"tsconfig.build.json",
-			],
-			{ cwd: root, encoding: "utf8" },
-		).trim();
-		expect(frozen).toBe("");
+		// Over this change's own commits, not over a range spanning them: the
+		// range from PR #70 to PR #113 contains issue #21's `.github/workflows/`
+		// and issue #60's, and this assertion was reporting them as a change
+		// issue #23 made.
+		//
+		// `biome.json` is not in the frozen set. NFR-027-AC-5 names the npm
+		// `files`/`exports`, `pyproject.toml`'s `packages`/`include`, and
+		// `.github/**` — what ships and what runs. `biome.json` names lint
+		// scope, and PR #113 added one exclusion to it for a generated,
+		// gitignored tree the formatter would otherwise lint. Freezing it here
+		// asserted something the requirement does not.
+		const FROZEN = [
+			"package.json",
+			"pnpm-lock.yaml",
+			".github/",
+			"tsconfig.json",
+			"tsconfig.build.json",
+		];
+		const frozen = ownChangedPaths().filter((path) =>
+			FROZEN.some((prefix) => path === prefix || path.startsWith(prefix)),
+		);
+		expect(frozen).toStrictEqual([]);
 
 		const manifest = JSON.parse(read("package.json")) as Record<
 			string,
@@ -352,14 +364,8 @@ describe("qualified Python generation route (issue #23)", () => {
 		// `conformance/README.md` was attributed to issue #23 — which is why the
 		// three-number standard exists and why a branch-green number cannot see
 		// this class at all.
-		const { base, tip } = ownRange();
-		const introduced = execFileSync(
-			"git",
-			["diff", "--no-renames", "--name-only", `${base}..${tip}`],
-			{ cwd: root, encoding: "utf8" },
-		)
-			.split("\n")
-			.filter(Boolean);
+		const base = ownBase();
+		const introduced = ownChangedPaths();
 		expect(introduced.length).toBeGreaterThan(0);
 		for (const path of introduced) {
 			expect(
