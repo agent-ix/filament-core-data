@@ -1,0 +1,653 @@
+{
+	"$comment": "Issue #11, FR-087. Regenerated, never hand-edited.",
+	"source": {
+		"documents": [
+			"ClauseLanguage.json",
+			"ClauseRef.json",
+			"ConstraintDecl.json",
+			"ConstraintKeyword.json",
+			"DecimalPolicy.json",
+			"DefaultDecl.json",
+			"DefaultKind.json",
+			"EdgeCategory.json",
+			"EnumValue.json",
+			"EnumValuesConstraint.json",
+			"ExclusiveMaxConstraint.json",
+			"ExclusiveMinConstraint.json",
+			"FieldDecl.json",
+			"FormatConstraint.json",
+			"Identifier.json",
+			"KernelScalar.json",
+			"MaxConstraint.json",
+			"MaxLengthConstraint.json",
+			"MinConstraint.json",
+			"MinLengthConstraint.json",
+			"Multiplicity.json",
+			"NonEmptyConstraint.json",
+			"OperationDecl.json",
+			"PatternConstraint.json",
+			"RelationDecl.json",
+			"SemanticId.json",
+			"SourceLocus.json",
+			"TypeRef.json",
+			"UniqueConstraint.json",
+			"UnitSymbol.json"
+		],
+		"inputDigest": "sha256:c455c47d19d3d1aead05e72330b727b9d6cb7216d976d7f5079922486348e1e9",
+		"bundle": {
+			"base": "https://schemas.agent-ix.org/semantic-core/0.1.0/",
+			"digest": "sha256:dd33c886f70e908b14507c35e078d163b76308c3d170d2b54ddf933d1a4ebb52",
+			"semanticCoreVersion": "0.1.0"
+		},
+		"localization": [
+			{
+				"rule": "drop-root-id",
+				"document": "ClauseLanguage.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "ClauseLanguage.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "ClauseRef.json",
+				"pointer": "/properties/language/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "ClauseRef.json",
+				"pointer": "/properties/clauseId/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "ClauseRef.json",
+				"pointer": "/properties/sourceSpan/$ref"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "ClauseRef.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "ClauseRef.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "ConstraintDecl.json",
+				"pointer": "/anyOf/0/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "ConstraintDecl.json",
+				"pointer": "/anyOf/1/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "ConstraintDecl.json",
+				"pointer": "/anyOf/2/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "ConstraintDecl.json",
+				"pointer": "/anyOf/3/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "ConstraintDecl.json",
+				"pointer": "/anyOf/4/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "ConstraintDecl.json",
+				"pointer": "/anyOf/5/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "ConstraintDecl.json",
+				"pointer": "/anyOf/6/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "ConstraintDecl.json",
+				"pointer": "/anyOf/7/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "ConstraintDecl.json",
+				"pointer": "/anyOf/8/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "ConstraintDecl.json",
+				"pointer": "/anyOf/9/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "ConstraintDecl.json",
+				"pointer": "/anyOf/10/$ref"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "ConstraintDecl.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "ConstraintDecl.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "ConstraintKeyword.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "ConstraintKeyword.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "DecimalPolicy.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "DecimalPolicy.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "DefaultDecl.json",
+				"pointer": "/properties/kind/$ref"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "DefaultDecl.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "DefaultDecl.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "DefaultKind.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "DefaultKind.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "EdgeCategory.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "EdgeCategory.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "EnumValue.json",
+				"pointer": "/properties/value/$ref"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "EnumValue.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "EnumValue.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "EnumValuesConstraint.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "EnumValuesConstraint.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "ExclusiveMaxConstraint.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "ExclusiveMaxConstraint.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "ExclusiveMinConstraint.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "ExclusiveMinConstraint.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "FieldDecl.json",
+				"pointer": "/properties/name/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "FieldDecl.json",
+				"pointer": "/properties/type/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "FieldDecl.json",
+				"pointer": "/properties/default/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "FieldDecl.json",
+				"pointer": "/properties/constraints/items/$ref"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "FieldDecl.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "FieldDecl.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "FormatConstraint.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "FormatConstraint.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "Identifier.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "Identifier.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "KernelScalar.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "KernelScalar.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "MaxConstraint.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "MaxConstraint.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "MaxLengthConstraint.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "MaxLengthConstraint.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "MinConstraint.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "MinConstraint.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "MinLengthConstraint.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "MinLengthConstraint.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "Multiplicity.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "Multiplicity.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "NonEmptyConstraint.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "NonEmptyConstraint.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "OperationDecl.json",
+				"pointer": "/properties/name/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "OperationDecl.json",
+				"pointer": "/properties/params/items/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "OperationDecl.json",
+				"pointer": "/properties/returns/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "OperationDecl.json",
+				"pointer": "/properties/pre/items/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "OperationDecl.json",
+				"pointer": "/properties/post/items/$ref"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "OperationDecl.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "OperationDecl.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "PatternConstraint.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "PatternConstraint.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "RelationDecl.json",
+				"pointer": "/properties/verb/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "RelationDecl.json",
+				"pointer": "/properties/category/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "RelationDecl.json",
+				"pointer": "/properties/target/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "RelationDecl.json",
+				"pointer": "/properties/multiplicity/$ref"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "RelationDecl.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "RelationDecl.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "SemanticId.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "SemanticId.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "SourceLocus.json",
+				"pointer": "/properties/sourceIdentity/$ref"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "SourceLocus.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "SourceLocus.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "TypeRef.json",
+				"pointer": "/properties/target/anyOf/0/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "TypeRef.json",
+				"pointer": "/properties/target/anyOf/1/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "TypeRef.json",
+				"pointer": "/properties/multiplicity/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "TypeRef.json",
+				"pointer": "/properties/unit/$ref"
+			},
+			{
+				"rule": "absolute-ref-to-sibling",
+				"document": "TypeRef.json",
+				"pointer": "/properties/decimal/$ref"
+			},
+			{ "rule": "drop-root-id", "document": "TypeRef.json", "pointer": "/$id" },
+			{
+				"rule": "document-title-from-filename",
+				"document": "TypeRef.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "UniqueConstraint.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "UniqueConstraint.json",
+				"pointer": "/title"
+			},
+			{
+				"rule": "drop-root-id",
+				"document": "UnitSymbol.json",
+				"pointer": "/$id"
+			},
+			{
+				"rule": "document-title-from-filename",
+				"document": "UnitSymbol.json",
+				"pointer": "/title"
+			}
+		],
+		"preparation": [
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "ClauseRef.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "DecimalPolicy.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "DefaultDecl.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "EnumValue.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "EnumValuesConstraint.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "ExclusiveMaxConstraint.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "ExclusiveMinConstraint.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "FieldDecl.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "FormatConstraint.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "MaxConstraint.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "MaxLengthConstraint.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "MinConstraint.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "MinLengthConstraint.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "Multiplicity.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "NonEmptyConstraint.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "OperationDecl.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "PatternConstraint.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "RelationDecl.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "SourceLocus.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "TypeRef.json",
+				"pointer": ""
+			},
+			{
+				"rule": "unevaluated-properties-to-additional",
+				"document": "UniqueConstraint.json",
+				"pointer": ""
+			}
+		]
+	},
+	"profile": {
+		"id": "msgspec_struct",
+		"digest": "sha256:c22081156b8894c95079b63d0e883ab929a208c3082f3ba779213d057e4f3278"
+	},
+	"toolchainFingerprint": "sha256:8d7baad97ee981562cff5f6ad0c9c779756db3afb57d947b04916e5306ac8e42",
+	"generator": {
+		"distribution": "datamodel-code-generator",
+		"version": "0.76.0",
+		"license": "MIT",
+		"attribution": "Generated by datamodel-code-generator (MIT). Copyright (c) 2019 Koudai Takahashi. The generator is an attributed, pinned third-party dependency; its licence is preserved and its source is neither vendored nor forked."
+	},
+	"generatedSourceLicense": "AGPL-3.0-only",
+	"nameCollisions": {},
+	"published": false,
+	"publicationGate": "agent-ix/quoin#290",
+	"findings": [
+		{
+			"id": "F1",
+			"issue": "agent-ix/filament-core-data#79",
+			"summary": "`ConstraintKeyword.format` is a `StrEnum` member that shadows `str.format`, so `mypy --strict` reports one error at `ConstraintKeyword.py:20`. FR-029's keyword vocabulary is closed and owned by `#35`; the pinned generator renders a member name verbatim.",
+			"types": ["ConstraintKeyword"]
+		},
+		{
+			"id": "F2",
+			"issue": "agent-ix/filament-core-data#125",
+			"summary": "`msgspec` cannot construct a decoder for four of the thirty kernel types. `TypeRef.target` is a union of a pattern-constrained string and a string enum, which `msgspec` refuses as two str-like members; `FieldDecl` and `OperationDecl` reach it; and `ConstraintDecl` is eleven untagged structs, because the generator does not carry the schema's stated `keyword` discriminator into a `tag_field`.",
+			"types": ["ConstraintDecl", "FieldDecl", "OperationDecl", "TypeRef"]
+		}
+	],
+	"contentFingerprint": "sha256:5fdf8f203461b5797b354aad685a55b86f965f9682bf02711386afb693200f63"
+}
