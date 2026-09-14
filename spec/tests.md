@@ -1165,6 +1165,7 @@ producer/schema plan are accepted.
 | TC-711 | Two generations of one request are byte-identical over an actual second run | Snapshot | P0 | FR-060-AC-1, FR-060-CON-2 | 🚧 planned |
 | TC-712 | Generation is byte-unchanged across the declared environment perturbations | Unit | P0 | FR-060-AC-2 | 🚧 planned |
 | TC-713 | The formatter reports no change over every generated crate | Integration | P0 | FR-060-AC-3 | 🚧 planned |
+| TC-1587 | Match arms over identities too long for one line survive `rustfmt --check` | Integration | P0 | FR-060-AC-3, FR-060-CON-2 | ✅ Complete |
 | TC-714 | The committed goldens equal a fresh generation and an emitter edit fails the check | Snapshot | P0 | FR-060-AC-4, FR-060-CON-1 | 🚧 planned |
 | TC-715 | The golden check leaves the working tree clean | Integration | P0 | FR-060-AC-5 | 🚧 planned |
 | TC-716 | The generator's live graph reaches no clock, RNG, environment, cwd or child process | Static | P0 | FR-060-AC-6, FR-060-CON-4 | 🚧 planned |

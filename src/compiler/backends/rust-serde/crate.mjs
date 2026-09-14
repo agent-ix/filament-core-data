@@ -21,26 +21,28 @@
 
 import { createHash } from "node:crypto";
 import {
-	RUST_BACKEND_CODES,
 	applyDiagnosticLimit,
 	diagnostic,
 	fragment,
 	hasBlocking,
+	RUST_BACKEND_CODES,
 } from "./diagnostics.mjs";
 import { byCodePoint, enforceLimits, mapDocument } from "./mapping.mjs";
-import { PUBLISHED_PATTERNS, lowerPattern } from "./patterns.mjs";
+import { lowerPattern, PUBLISHED_PATTERNS } from "./patterns.mjs";
 import {
-	MAX_WIDTH,
-	STRUCT_LIT_WIDTH,
 	atom,
+	callArm,
 	callLines,
-	FN_CALL_WIDTH,
 	constItem,
+	FN_CALL_WIDTH,
+	MAX_WIDTH,
+	matchArm,
+	STRUCT_LIT_WIDTH,
 	slice,
 	some,
 	struct,
 } from "./rust-format.mjs";
-import { SUPPORT_PRELUDE, renderProgram } from "./support-source.mjs";
+import { renderProgram, SUPPORT_PRELUDE } from "./support-source.mjs";
 
 /** The exact `serde` version the generated crate pins. */
 export const SERDE_VERSION = "1.0.229";
@@ -685,7 +687,11 @@ function renderLib(model) {
 	);
 	for (const type of model.types) {
 		lines.push(
-			`            SemanticType::${type.typeName} => ${rustString(type.identity)},`,
+			...matchArm(
+				"            ",
+				`SemanticType::${type.typeName}`,
+				rustString(type.identity),
+			),
 		);
 	}
 	lines.push("        }", "    }", "}");
@@ -1735,11 +1741,19 @@ function stringEnumImpls(type) {
 	);
 	for (const variant of type.variants) {
 		lines.push(
-			`            ${type.typeName}::${variant.ident} => ${rustString(variant.name)},`,
+			...matchArm(
+				"            ",
+				`${type.typeName}::${variant.ident}`,
+				rustString(variant.name),
+			),
 		);
 	}
 	lines.push(
-		`            ${type.typeName}::Unknown(tag) => tag.as_str(),`,
+		...matchArm(
+			"            ",
+			`${type.typeName}::Unknown(tag)`,
+			"tag.as_str()",
+		),
 		"        })",
 		"    }",
 		"}",
@@ -1754,11 +1768,15 @@ function stringEnumImpls(type) {
 	);
 	for (const variant of type.variants) {
 		lines.push(
-			`            ${rustString(variant.name)} => ${type.typeName}::${variant.ident},`,
+			...matchArm(
+				"            ",
+				rustString(variant.name),
+				`${type.typeName}::${variant.ident}`,
+			),
 		);
 	}
 	lines.push(
-		`            _ => ${type.typeName}::Unknown(tag),`,
+		...matchArm("            ", "_", `${type.typeName}::Unknown(tag)`),
 		"        })",
 		"    }",
 		"}",
@@ -1780,9 +1798,10 @@ function unionImpls(type) {
 	for (const variant of type.variants) {
 		if (variant.payload === undefined) {
 			lines.push(
-				...callLines(
+				...callArm(
 					"            ",
-					`${type.typeName}::${variant.ident} => serializer.serialize_str`,
+					`${type.typeName}::${variant.ident}`,
+					"serializer.serialize_str",
 					[rustString(variant.name)],
 					",",
 				),
@@ -1798,7 +1817,11 @@ function unionImpls(type) {
 		);
 	}
 	lines.push(
-		`            ${type.typeName}::Unknown(unknown) => unknown.serialize(serializer),`,
+		...matchArm(
+			"            ",
+			`${type.typeName}::Unknown(unknown)`,
+			"unknown.serialize(serializer)",
+		),
 		"        }",
 		"    }",
 		"}",
@@ -1830,13 +1853,18 @@ function unionImpls(type) {
 	for (const variant of type.variants) {
 		if (variant.payload !== undefined) continue;
 		lines.push(
-			`            ${rustString(variant.name)} => ${type.typeName}::${variant.ident},`,
+			...matchArm(
+				"            ",
+				rustString(variant.name),
+				`${type.typeName}::${variant.ident}`,
+			),
 		);
 	}
 	lines.push(
-		...callLines(
+		...callArm(
 			"            ",
-			`_ => ${type.typeName}::Unknown(crate::support::UnknownVariant::Tag`,
+			"_",
+			`${type.typeName}::Unknown(crate::support::UnknownVariant::Tag`,
 			["tag.to_owned()"],
 			"),",
 		),
@@ -1868,18 +1896,20 @@ function unionImpls(type) {
 			continue;
 		}
 		lines.push(
-			...callLines(
+			...callArm(
 				"            ",
-				`${rustString(variant.name)} => ${type.typeName}::${variant.ident}`,
+				rustString(variant.name),
+				`${type.typeName}::${variant.ident}`,
 				["access.next_value()?"],
 				",",
 			),
 		);
 	}
 	lines.push(
-		...callLines(
+		...callArm(
 			"            ",
-			`_ => ${type.typeName}::Unknown(crate::support::UnknownVariant::Tagged`,
+			"_",
+			`${type.typeName}::Unknown(crate::support::UnknownVariant::Tagged`,
 			["tag", "access.next_value()?"],
 			"),",
 		),
