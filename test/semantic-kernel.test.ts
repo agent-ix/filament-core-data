@@ -881,20 +881,37 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 		for (const path of changedPaths())
 			expect(path.startsWith("src/compiler/backends/"), path).toBe(false);
 
-		// CON-2. Read out of the recorded command list, never by eye.
-		const commands = `${recipes(
-			"semantic-kernel",
-			"semantic-kernel-digests",
-			"semantic-kernel-check",
-		)}\n${sources.tree}\n${sources.digests}\n${sources.gates}`;
-		for (const forbidden of [
-			"cargo publish",
-			'"publish"]',
-			"--registry",
-			"--index",
-			"--dry-run",
-		]) {
-			expect(commands.includes(forbidden), forbidden).toBe(false);
+		// CON-2. Read out of the recorded command list, never by eye: the recipe
+		// lines `make` reports, plus every argument vector the three scripts
+		// hand to `spawnSync`. Prose about `cargo publish` is not a command, and
+		// scanning the sources as text would fail on this requirement's own
+		// record of what it refuses to run.
+		const commands = [
+			...recipes(
+				"semantic-kernel",
+				"semantic-kernel-digests",
+				"semantic-kernel-check",
+			)
+				.split("\n")
+				.filter((line) => line.trim().length > 0),
+			...[sources.tree, sources.digests, sources.gates].flatMap((source) =>
+				[...source.matchAll(/spawnSync\(([\s\S]*?)\n\t*\)/g)].map(
+					(one) => one[1],
+				),
+			),
+		];
+		expect(commands.length).toBeGreaterThan(0);
+		for (const command of commands) {
+			for (const forbidden of [
+				"publish",
+				"--registry",
+				"--index",
+				"--dry-run",
+			]) {
+				expect(command.includes(forbidden), `${forbidden} in ${command}`).toBe(
+					false,
+				);
+			}
 		}
 
 		// CON-3. Every scratch the check names is outside the working tree.
@@ -910,10 +927,16 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 	it("TC-1049 writes the crate and its baseline from two scripts through two entry points", () => {
 		// CON-4. The tree comes from the writing half, the baseline from the pure
 		// one, and neither script reaches the other's entry point.
-		expect(sources.tree).toContain("generateRust");
-		expect(sources.tree).not.toContain("emitCrate");
-		expect(sources.digests).toContain("emitCrate");
-		expect(sources.digests).not.toContain("generateRust");
+		// The import statement is what settles which entry point a script can
+		// reach; prose naming the other one is a record, not a route.
+		const imports = (source: string) =>
+			[...source.matchAll(/import\s*\{([\s\S]*?)\}\s*from/g)]
+				.flatMap((one) => one[1].split(","))
+				.map((name) => name.trim().split(" ")[0]);
+		expect(imports(sources.tree)).toContain("generateRust");
+		expect(imports(sources.tree)).not.toContain("emitCrate");
+		expect(imports(sources.digests)).toContain("emitCrate");
+		expect(imports(sources.digests)).not.toContain("generateRust");
 
 		// CON-5. #21's two artifacts are not this branch's to move.
 		for (const path of changedPaths()) {
@@ -921,7 +944,11 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 		}
 
 		// CON-6. The build gate runs cargo; it does not read a recorded result.
-		expect(sources.gates).toContain('"build", "--offline", "--locked"');
+		// Whitespace-insensitive: the formatter decides how the argument vector
+		// wraps, and the claim is about the vector, not its line breaks.
+		expect(sources.gates.replace(/\s+/g, " ")).toContain(
+			'"build", "--offline", "--locked"',
+		);
 		const check = recipes("semantic-kernel-check");
 		expect(check).not.toContain("rust-check");
 		expect(check).not.toContain("node_modules/.cache/rust-target");
@@ -1037,7 +1064,7 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 			readFileSync(target, "utf8").replace("publish = false\n", ""),
 		);
 		const failed = gate(
-			["scripts/check-semantic-kernel-crate.mjs", "--publish"],
+			["scripts/check-semantic-kernel-crate.mjs", "--manifest"],
 			{
 				KERNEL_CRATE_ROOT: resolve(mutated, "rust"),
 			},
@@ -1186,7 +1213,7 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 		expect(row).toBeDefined();
 		expect(row).toContain("MIT");
 		const missing = gate(
-			["scripts/check-semantic-kernel-crate.mjs", "--publish"],
+			["scripts/check-semantic-kernel-crate.mjs", "--manifest"],
 			{
 				KERNEL_CRATE_ROOT: resolve(
 					(() => {

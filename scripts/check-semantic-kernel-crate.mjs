@@ -21,7 +21,7 @@
  *
  * Usage:
  *   --tree <scratch>    regenerate into <scratch> and compare, then the manifest
- *   --publish           the committed manifest's publish, lint, dependency and metadata claims
+ *   --manifest          the committed manifest's publish, lint, dependency and metadata claims
  *   --rustfmt           the pinned formatter, then rustfmt --check over the committed crate
  *   --build <scratch>   cargo build --offline --locked over a scratch copy
  *   --gate              the publication gate and the inherited-defect record
@@ -259,7 +259,7 @@ function deniedLints(text) {
  * removing any of them fails here naming the manifest (FR-086-AC-3,
  * FR-086-AC-11, FR-086-AC-12).
  */
-function publish() {
+function manifestGate() {
 	const problems = [];
 	let text;
 	try {
@@ -599,7 +599,7 @@ function gate() {
 
 const MODES = {
 	"--tree": () => tree(process.argv[3]),
-	"--publish": publish,
+	"--manifest": manifestGate,
 	"--rustfmt": rustfmtGate,
 	"--build": () => build(process.argv[3]),
 	"--gate": gate,

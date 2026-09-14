@@ -395,7 +395,7 @@ semantic-kernel-check:
 	node scripts/build-semantic-kernel.mjs --check
 	node scripts/check-semantic-kernel-crate.mjs --tree $(KERNEL_SCRATCH)/tree
 	node scripts/build-semantic-kernel-digests.mjs --check
-	node scripts/check-semantic-kernel-crate.mjs --publish
+	node scripts/check-semantic-kernel-crate.mjs --manifest
 	node scripts/check-semantic-kernel-crate.mjs --rustfmt
 	node scripts/check-semantic-kernel-crate.mjs --build $(KERNEL_SCRATCH)/build
 	node scripts/check-semantic-kernel-crate.mjs --gate
