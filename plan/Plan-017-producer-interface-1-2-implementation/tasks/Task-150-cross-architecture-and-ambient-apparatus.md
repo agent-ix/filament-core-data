@@ -2,7 +2,7 @@
 id: Task-150
 title: "NFR-036 cross-architecture, numeric-refusal and ambient-read apparatus"
 type: Task
-status: in_progress
+status: done
 track: D
 priority: P0
 relationships:
@@ -38,11 +38,11 @@ determinism beyond that set is not asserted.
   Makefile target beside the existing `rust-*` targets, naming its runner explicitly.
   A run that cannot reach the second architecture **fails saying so** and reports
   which architecture it could not reach; it never passes vacuously and never skips.
-- [ ] **Red: cross-architecture bytes.** `tc_1652_` (every digested document's
+- [x] **Red: cross-architecture bytes.** `tc_1652_` (every digested document's
   canonical byte string agrees across both architectures of the named set against the
   one committed golden Task-149 cut, and every admit-versus-refuse decision agrees
   too; the gate reports the document count and the architecture it ran on).
-- [ ] **Red: cross-architecture numeric refusals.** `tc_1648_` (one configuration
+- [x] **Red: cross-architecture numeric refusals.** `tc_1648_` (one configuration
   document's declared `numericResourceLimit` refuses the same numbers and admits the
   same numbers on each architecture of the named set, so no admit-versus-refuse
   decision differs by host; the refused set is compared element by element, not by

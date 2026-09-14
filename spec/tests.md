@@ -201,7 +201,7 @@ above records.
 | US-016 | US-016-EX-2 (illustrative) implemented by FR-112 | TC-1601, TC-1602 | ✅ Complete |
 | US-016 | US-016-EX-3 (illustrative) implemented by FR-113 | TC-1607, TC-1608 | ✅ Complete |
 | US-016 | US-016-EX-4 (illustrative) implemented by FR-114 and FR-115 | TC-1612, TC-1618, TC-1620 | ✅ Complete |
-| US-016 | Static producer boundary implemented by FR-112..FR-118 and NFR-036 | TC-1600..TC-1656 | ✅ Complete — TC-1648 and TC-1652 measured on x86_64-unknown-linux-gnu only |
+| US-016 | Static producer boundary implemented by FR-112..FR-118 and NFR-036 | TC-1600..TC-1656 | ✅ Complete |
 | US-017 | US-017-EX-1 (illustrative) implemented by FR-119 and FR-120 | TC-1657, TC-1663, TC-1665 | 🚧 planned — #95 assessment half, not in this increment |
 | US-017 | US-017-EX-2 (illustrative) implemented by FR-120 | TC-1667 | 🚧 planned — #95 assessment half, not in this increment |
 | US-017 | US-017-EX-3 (illustrative) implemented by FR-123 | TC-1679, TC-1681 | 🚧 planned — #95 assessment half, not in this increment |
@@ -397,7 +397,7 @@ above records.
 | NFR-031 | NFR-031-AC-1..10: golden, repeat-run, varied-environment, and cross-root byte comparison; enumeration-order analysis citing path-sorted loading; ambient-input and HashMap audits with planted-token controls; one limit probe per limits.json entry under a 512 MiB / 30 s budget; unshare -rn offline run; forbid(unsafe_code) compile_fail doctest; proptest bundle-tree fuzz | TC-1300..TC-1309 | ✅ Complete |
 | NFR-032 | NFR-032-AC-1..10: changed-path gate fixed at both ends by sentinels and unioned over --first-parent --no-merges, cargo metadata edge check, Cargo.toml and cases.json line diffs, root THIRD-PARTY-NOTICES.md additive-row diff against Cargo.lock, corpus git status after the suite, publish and licence inspection, harness suite-compare, revert-rehearsal, and accretion-rehearsal verbs | TC-1310..TC-1319 | ⚠️ TC-1316 blocked on issue #89; TC-1317 red in the scratch-clone environment, reported |
 | NFR-033 | NFR-033-AC-1..11: manifest, lock, and toolchain inspection, EXTRACTION_TOOLCHAIN=0.0.0 gate run, dependency-specifier inspection against the workspace members, make extraction-frontend-deny and -audit, lock-to-notices comparison, clippy --no-deps and fmt, trace-marker scan and status-lie rehearsal, offline build, workspace-channel check | TC-1320..TC-1329, TC-1350 | ✅ Complete |
-| NFR-036 | Repeat-run and two-process byte comparison against a committed golden, permuted-insertion-order paired runs, cross-architecture byte and refusal comparison over `x86_64-unknown-linux-gnu` and `aarch64-unknown-linux-gnu`, varied locale/environment/working-directory run, float-coercion-site audit with a planted control, per-array semantic-order comparison, ambient-read call-graph audit and instrumented offline namespace run | TC-1650..TC-1656 | ✅ Complete — cross-architecture agreement is apparatus only; aarch64-unknown-linux-gnu unreachable on this host |
+| NFR-036 | Repeat-run and two-process byte comparison against a committed golden, permuted-insertion-order paired runs, cross-architecture byte and refusal comparison over `x86_64-unknown-linux-gnu` and `aarch64-unknown-linux-gnu`, varied locale/environment/working-directory run, float-coercion-site audit with a planted control, per-array semantic-order comparison, ambient-read call-graph audit and instrumented offline namespace run | TC-1650..TC-1656 | ✅ Complete |
 | NFR-037 | One-past-the-bound byte, nesting-depth, and member-count probes; instrumented resident-memory and wall-time caps; cross-architecture refusal-decision golden with declared-value comparison and a planted host-derived-bound control; raw-byte and grammar-based fuzzing under a failing panic hook | TC-1696..TC-1699 | 🚧 planned — #95 assessment half, not in this increment |
 | NFR-038 | NFR-038-AC-1..7: one named make target reaching every Rust gate, dispatch-only triggers across every workflow, a two-platform two-architecture matrix that reports both, workspace-wide clippy, generated-crate artifacts per platform, and toolchain checks that fail naming what they could not run | TC-1396..TC-1402 | ✅ Complete |
 | NFR-039 | NFR-039-AC-1..6 | TC-1410..TC-1413 | 🚧 planned on issue #92 |
@@ -1688,11 +1688,11 @@ above records.
 | TC-1645 | Two documents differing only in the member order of one set array digest identically, two documents differing only in the member order of one semantic-order array digest differently, and a set array's membership stays a separate declaration from a semantic-order array's order | Property | P0 | FR-118-AC-7, FR-118-CON-3 | ✅ passed |
 | TC-1646 | A number exceeding the configuration document's declared `maximumCoefficientDigits` or `maximumExponentMagnitude` refuses before canonicalization with neither a rounded nor a substituted binary64 value, and a configuration document declaring no `numericResourceLimit` member refuses naming that absent member with no host-chosen limit applied in its place | Unit | P0 | FR-118-AC-8, FR-118-AC-12, FR-118-CON-7 | ✅ passed |
 | TC-1647 | A document assembled in an insertion-order-preserving map canonicalizes in Unicode scalar-value order with a permuted iteration order changing no byte, and a document whose members arrive in the consumer wire member order `domain, version, algorithm, value` canonicalizes to the emitted byte string and recomputes the declared digest | Unit | P0 | FR-118-AC-9, FR-118-AC-10, FR-118-CON-6 | ✅ passed |
-| TC-1648 | One configuration document's declared `numericResourceLimit` refuses the same numbers and admits the same numbers on each architecture of the set NFR-036 names, so no admit-versus-refuse decision differs by host | Integration | P0 | FR-118-AC-11 | 🚧 x86_64-unknown-linux-gnu measured; cross-architecture agreement unrun — aarch64-unknown-linux-gnu is unreachable on this host (no cross linker, no qemu runner) and `make baseline-producer-cross-architecture` reds naming it rather than skipping |
+| TC-1648 | One configuration document's declared `numericResourceLimit` refuses the same numbers and admits the same numbers on each architecture of the set NFR-036 names, so no admit-versus-refuse decision differs by host | Integration | P0 | FR-118-AC-11 | ✅ passed — 20/20 decisions and all 4 refused values agree element for element across x86_64 and aarch64 |
 | TC-1649 | An object's own digest member is excluded from the canonical bytes that object digests, and this exclusion is applied only here rather than restated by a digest consumer | Unit | P0 | FR-118-CON-4 | ✅ passed |
 | TC-1650 | Every digested document of one admitted static bundle canonicalizes to the same byte string and digest across two runs in one process and two runs in two separate processes, and to the committed golden byte string | Snapshot | P0 | NFR-036 | ✅ passed |
 | TC-1651 | Every digested document's digest is unchanged when its object keys and set-array members are supplied in a permuted insertion order, over the declared permutation set, one paired run per permutation | Property | P0 | NFR-036 | ✅ passed |
-| TC-1652 | Every digested document's canonical byte string, and every admit-versus-refuse decision under one configuration document's declared `numericResourceLimit`, agrees across `x86_64-unknown-linux-gnu` and `aarch64-unknown-linux-gnu` against one committed golden | Snapshot | P0 | NFR-036 | 🚧 x86_64-unknown-linux-gnu measured; cross-architecture agreement unrun — aarch64-unknown-linux-gnu is unreachable on this host (no cross linker, no qemu runner) and `make baseline-producer-cross-architecture` reds naming it rather than skipping |
+| TC-1652 | Every digested document's canonical byte string, and every admit-versus-refuse decision under one configuration document's declared `numericResourceLimit`, agrees across `x86_64-unknown-linux-gnu` and `aarch64-unknown-linux-gnu` against one committed golden | Snapshot | P0 | NFR-036 | ✅ passed — 16/16 canonical byte strings, 16/16 digests, and 20/20 decisions agree across x86_64 and aarch64 |
 | TC-1653 | Every digested document's canonical byte string agrees across a changed locale, environment, and working directory against the same committed golden | Snapshot | P0 | NFR-036 | ✅ passed |
 | TC-1654 | The declared numeric-path population reaches zero binary floating-point coercion sites between parsing and serialization, and the audit fails on a scratch copy carrying a planted float conversion | Static | P0 | NFR-036 | ✅ passed |
 | TC-1655 | Every semantic-order array is emitted in the producer-declared order, measured per array against that declaration, with a permuted-array paired run whose digest must differ | Property | P0 | NFR-036 | ✅ passed |
@@ -2906,10 +2906,9 @@ now asserts `rust-version.workspace = true` and the single Makefile line naming
 the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 
 The Producer interface 1.2.0 rows distinguish measured evidence from planned
-work. TC-1600..1656 implement the reviewed static boundary, except that TC-1648
-and TC-1652 retain measured x86_64 evidence and explicitly unrun
-cross-architecture agreement. TC-1657..1699 are the deliberately unimplemented
-assessment half and remain planned. TC-1700..1729 execute the later reviewed
+work. TC-1600..1656 implement the reviewed static boundary, including measured
+x86_64/aarch64 agreement at TC-1648 and TC-1652. TC-1657..1699 are the
+deliberately unimplemented assessment half and remain planned. TC-1700..1732 execute the later reviewed
 endpoint-type, relationship-direction and real-native-byte extensions. FND-1880
 is an external dependency on the consumer's
 repository — no consumer artifact kind admits a population document and no kind
@@ -2925,13 +2924,13 @@ the route the design takes around it rather than as a defect closed here.
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 136 | 83 | 0 | 53 | 100% mapped (136/136) |
 | Unit | 646 | 506 | 0 | 140 | 100% mapped (646/646) |
-| Integration | 170 | 102 | 0 | 68 | 100% mapped (170/170) |
+| Integration | 170 | 103 | 0 | 67 | 100% mapped (170/170) |
 | Fuzz | 14 | 8 | 0 | 6 | 100% mapped (14/14) |
-| Snapshot | 71 | 43 | 0 | 28 | 100% mapped (71/71) |
+| Snapshot | 71 | 44 | 0 | 27 | 100% mapped (71/71) |
 | Compile | 22 | 7 | 0 | 15 | 100% mapped (22/22) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
 | Benchmark | 1 | 0 | 0 | 1 | 100% mapped (1/1) |
-| **Total** | **1474** | **1083** | **0** | **391** | **100% mapped (1474/1474)** |
+| **Total** | **1474** | **1085** | **0** | **389** | **100% mapped (1474/1474)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.
@@ -2952,7 +2951,7 @@ point at all before this change added `make test-python`.
 
 **Producer interface 1.2.0 status: static producer admission executed;
 assessment planned.** TC-1600..1656 implement the reviewed static boundary,
-with TC-1648 and TC-1652 explicitly retaining the unrun aarch64 agreement.
-TC-1657..1699 remain planned for the assessment half. TC-1700..1729 execute the
+including the x86_64/aarch64 agreement at TC-1648 and TC-1652.
+TC-1657..1699 remain planned for the assessment half. TC-1700..1732 execute the
 later reviewed static extensions. No planned assessment row is presented as
 passing.

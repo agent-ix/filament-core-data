@@ -16,13 +16,13 @@ qualification changes, using the repository's `rustfmt.toml`, root Cargo
 workspace policy, and the Rust review checklist. The crate is unpublished,
 contains no unsafe code or placeholder path, and exposes one admitted static
 bundle boundary with stable refusals. Five review defects were fixed. No Rust
-code defect remains; the separate two-architecture evidence gate is still
-blocked on a missing local aarch64 linker and runner.
+code defect remains; the two-architecture evidence gate subsequently completed
+through the pinned local cross runner recorded below.
 
 ## Verdict
 
-**CONDITIONAL** — code review passes with all findings fixed. PR completion is
-still conditional on the Plan-017 gap verdict for TC-1648 and TC-1652.
+**PASS** — all Rust findings are fixed and the required local evidence gates are
+green.
 
 ## Findings
 
@@ -49,10 +49,13 @@ All final recorded Cargo gates ran locally and offline with
 `CARGO_BUILD_JOBS=1` under `/tmp/quire-heavy-check.lock` and used
 `target-codex-backends`.
 
-## Remaining evidence condition
+## Evidence condition resolution
 
-`baseline-producer-cross-architecture` records 16 canonical documents and 20
-numeric decisions on `x86_64-unknown-linux-gnu`, then fails explicitly because
-`aarch64-linux-gnu-gcc` is absent. Neither qemu aarch64 runner is installed and
-the inspected local Docker base images are amd64. This is not waived or called a
-pass; it is the open Plan-017 gap recorded by the gap analysis.
+The host-native runner initially failed because no system aarch64 linker or qemu
+binary was installed. The final evidence used official `cross` v0.2.5 at commit
+`88f49ff7`, installed under `/tmp`, and the official
+`ghcr.io/cross-rs/aarch64-unknown-linux-gnu:main` image at digest
+`sha256:99294ae75048aa07d00bb4f1a18a017e0812ff25753768d21d5938bf7562b40a`.
+The aarch64 test binary ran under Rust 1.94.1 and produced its own record. The
+host comparison then passed 20/20 numeric decisions, 16/16 canonical byte
+strings and 16/16 digests against the independently produced x86_64 record.

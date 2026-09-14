@@ -208,3 +208,16 @@ type: log
   process. The producer-local verifier qualifies only committed artifact bytes
   and export-table evidence; it does not duplicate the downstream
   `quire-spec-language` native-model admission seam.
+* 2026-09-14 - Cleared the two-architecture gate without hosted CI or a system
+  package change. Official Rust `cross` v0.2.5 (`88f49ff7`) ran the producer
+  test binary under `aarch64-unknown-linux-gnu` using the official
+  `ghcr.io/cross-rs/aarch64-unknown-linux-gnu:main` image at digest
+  `sha256:99294ae75048aa07d00bb4f1a18a017e0812ff25753768d21d5938bf7562b40a`
+  and Rust 1.94.1. Its independently produced record was compared with the
+  x86_64 record by the host agreement controls: TC-1648 passes 20/20 numeric
+  decisions and all four refused values element for element; TC-1652 passes
+  16/16 canonical byte strings, 16/16 digests and 20/20 decisions. Generated
+  records and cross build products stayed under `target-codex-backends` and
+  were not committed. Tasks 150 and 151, NFR-036 and Plan-017 are complete;
+  TC-1600..TC-1656 and TC-1700..TC-1732 are all passed, while the deliberately
+  unimplemented assessment half TC-1657..TC-1699 remains planned.

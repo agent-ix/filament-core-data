@@ -2,7 +2,7 @@
 id: Task-151
 title: "Report the static producer boundary to A, as static admission only"
 type: Task
-status: in_progress
+status: done
 track: E
 priority: P1
 relationships:
@@ -68,7 +68,7 @@ at `ix://agent-ix/quire-spec-language`, `src/protocol_artifact/wire.rs`, revisio
   Two upstream gaps stay open cross-repo items on A's side: a population document has
   no admissible consumer artifact kind (FND-1812) and no consumer vocabulary carries a
   `window` member (FND-1862).
-- [ ] **Green: the matrix.** Move TC-1600..TC-1656 off `🚧` in `spec/tests.md` as each
+- [x] **Green: the matrix.** Move TC-1600..TC-1656 off `🚧` in `spec/tests.md` as each
   landed, confirm `quire coverage --scope . --json` binds every one of those rows, and
   leave TC-1657..TC-1699 `🚧`.
 

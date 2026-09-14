@@ -2,7 +2,7 @@
 id: Plan-017
 title: "Producer interface 1.2 static half: digest selections, declarations, and one admitted static bundle"
 type: Plan
-status: active
+status: complete
 relationships:
   - target: "ix://agent-ix/filament-core-data/US-016"
     type: references
@@ -72,7 +72,7 @@ and no row is owned twice.
 
 ### Non-functional requirements
 
-- [ ] **NFR-036** — byte-exact canonical bytes and digests: repeat-run and two-process goldens, the declared insertion-order permutation set, the named architecture set, varied locale/environment/working directory, the zero-float-coercion audit with its planted control, per-array semantic-order comparison, and the zero-ambient-read audit plus instrumented offline run. This plan is the declared **apparatus owner** (NFR-036 Verification, FND-1756/FND-1767): the committed goldens, the second architecture and its runner, the planted-token control, the instrumented ambient-read run and the unprivileged network namespace are Tasks 149 and 150.
+- [x] **NFR-036** — byte-exact canonical bytes and digests: repeat-run and two-process goldens, the declared insertion-order permutation set, the named architecture set, varied locale/environment/working directory, the zero-float-coercion audit with its planted control, per-array semantic-order comparison, and the zero-ambient-read audit plus instrumented offline run. This plan is the declared **apparatus owner** (NFR-036 Verification, FND-1756/FND-1767): the committed goldens, the second architecture and its runner, the planted-token control, the instrumented ambient-read run and the unprivileged network namespace are Tasks 149 and 150.
 
 ### Post-plan static extension on PR #99
 
@@ -320,7 +320,7 @@ enumeration, grouped by the module under test. Every test lives in
 
 ### Snapshot tests against committed goldens
 
-- [ ] TC-1650 (two runs in one process, two runs in two processes, against the golden), TC-1652 (`x86_64-unknown-linux-gnu` and `aarch64-unknown-linux-gnu` bytes and refusal sets against one golden), TC-1653 (changed locale, environment, working directory), TC-1648 (one configuration's `numericResourceLimit` refuses and admits the same numbers on both architectures)
+- [x] TC-1650 (two runs in one process, two runs in two processes, against the golden), TC-1652 (`x86_64-unknown-linux-gnu` and `aarch64-unknown-linux-gnu` bytes and refusal sets against one golden), TC-1653 (changed locale, environment, working directory), TC-1648 (one configuration's `numericResourceLimit` refuses and admits the same numbers on both architectures)
 
 ### Manual
 
