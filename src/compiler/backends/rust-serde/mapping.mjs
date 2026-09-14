@@ -23,16 +23,17 @@
  */
 
 import { lowerConstraints } from "./constraints.mjs";
-import { RUST_BACKEND_CODES, diagnostic, fragment } from "./diagnostics.mjs";
+import { diagnostic, fragment, RUST_BACKEND_CODES } from "./diagnostics.mjs";
 import { buildGraph, isCollection } from "./graph.mjs";
 import {
-	SCOPES,
 	collisionsIn,
 	constantName,
 	crateName,
 	identitySegment,
 	memberName,
 	moduleName,
+	packageQualifier,
+	SCOPES,
 	serdeRename,
 	typeName,
 	variantName,
@@ -96,6 +97,39 @@ export const RESERVED_CRATE_NAMES = Object.freeze([
 	"FieldMeta",
 	"MatcherError",
 ]);
+
+const RESERVED_SET = new Set(RESERVED_CRATE_NAMES);
+
+/**
+ * The crate-level identifier a document-derived type takes (FR-133).
+ *
+ * FR-083 mints `SourceLocusPath` for `SourceLocus.path` and FR-055 reserves
+ * `SourceLocusPath` for the crate's own locus type. Both rules are right and
+ * they meet on one identifier, so one of them has to yield. The reserved one
+ * does not: a consumer already writes `crate::SourceLocusPath` and a resolution
+ * that moved it would silently change what that reference targets. The
+ * document-derived identifier yields instead, by taking the package its own
+ * semantic identity names as a prefix — `SemanticCoreSourceLocusPath`.
+ *
+ * The rule is a derivation over the identity, not a table of known pairs: any
+ * minted or authored name that lands on any reserved identifier resolves the
+ * same way. Nothing about the semantic document changes; only the generated
+ * identifier moves. Where the qualified identifier is itself taken — by a
+ * reserved name or by another type — the scope check still raises
+ * `NAME_COLLISION` naming both identities, because the alternative is two
+ * constructs sharing one generated name.
+ */
+export function resolveReserved(rendered, identity) {
+	if (rendered.ok !== true || !RESERVED_SET.has(rendered.value))
+		return rendered;
+	const qualifier = packageQualifier(identity);
+	if (qualifier.ok !== true) return qualifier;
+	return {
+		ok: true,
+		value: `${qualifier.value}${rendered.value}`,
+		allowRaw: rendered.allowRaw,
+	};
+}
 
 /** The IR members a `1.1.0` document may carry and a `1.0.0` document may not. */
 const V1_1_NODES = Object.freeze([
@@ -311,6 +345,18 @@ function mapType(definition, context) {
 	if (supportType !== undefined) {
 		return { diagnostics: [], supportType: true };
 	}
+	// The reserved resolution runs after the support-type check, so a kernel
+	// scalar the crate already renders keeps mapping onto that support type
+	// rather than being qualified into a second declaration of it (issue #90).
+	const resolvedName = resolveReserved(name, identity);
+	if (resolvedName.ok !== true) {
+		raise(
+			RUST_BACKEND_CODES.UNRENDERABLE_NAME,
+			resolvedName.diagnostic.message,
+			locus,
+		);
+		return undefined;
+	}
 	const module = moduleName(definition);
 	if (module.ok !== true) {
 		raise(
@@ -320,7 +366,7 @@ function mapType(definition, context) {
 		);
 		return undefined;
 	}
-	typeScope.push({ identifier: name.value, identity });
+	typeScope.push({ identifier: resolvedName.value, identity });
 
 	const resolved = resolveKind(byIdentity, identity);
 	const lowered = lowerConstraints(definition, resolved, {});
@@ -345,7 +391,7 @@ function mapType(definition, context) {
 		unknownDisposition: unknownDisposition(kind, definition.unknownPolicy),
 		origin: definition.origin,
 		extensions: definition.extensions ?? [],
-		typeName: name.value,
+		typeName: resolvedName.value,
 		moduleName: module.value,
 		constantName: constant.value,
 		doc: docParts(definition, { roles: definition.roles }),
@@ -584,7 +630,16 @@ function referenceTo(ref, edgeKey, position, owner, context) {
 	}
 	const supportType = supportTypeFor(definition, rendered.value);
 	if (supportType !== undefined) return supportType;
-	const base = `crate::${rendered.value}`;
+	const resolvedName = resolveReserved(rendered, definition.identity);
+	if (resolvedName.ok !== true) {
+		raise(
+			RUST_BACKEND_CODES.UNRENDERABLE_NAME,
+			resolvedName.diagnostic.message,
+			definition.origin?.source,
+		);
+		return undefined;
+	}
+	const base = `crate::${resolvedName.value}`;
 	return graph.boxed.has(edgeKey) ? `Box<${base}>` : base;
 }
 

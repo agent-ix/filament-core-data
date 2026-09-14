@@ -11,11 +11,11 @@
 	],
 	"contributions": {
 		"diagnostics.mjs": 22,
-		"mapping-table.json": 52,
+		"mapping-table.json": 53,
 		"names.mjs": 10,
 		"src/compiler/ir/applicability.mjs": 40
 	},
-	"rowCount": 124,
+	"rowCount": 125,
 	"unmetCount": 0,
 	"unreachableCount": 1,
 	"rows": [
@@ -902,6 +902,15 @@
 			"construct": "the `moduleName` identifier derivation",
 			"cases": [
 				"TC-725 every identifier renderer derives from the source the requirement names and refuses a collision"
+			]
+		},
+		{
+			"branchId": "name:reserved-resolution",
+			"axis": "name",
+			"vocabulary": "mapping-table.json",
+			"construct": "pub struct <Package><N>;",
+			"cases": [
+				"generates the kernel IR whose minted name is reserved, and moves only the generated identifier"
 			]
 		},
 		{
