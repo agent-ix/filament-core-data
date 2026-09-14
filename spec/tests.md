@@ -273,7 +273,7 @@ producer/schema plan are accepted.
 | FR-084 | FR-084-AC/CON x30 | TC-1028..TC-1037 | 🚧 In progress |
 | FR-085 | FR-085-AC/CON x28 | TC-1038..TC-1047 | 🚧 In progress |
 | FR-086 | FR-086-AC/CON x30 | TC-1048..TC-1057 | ✅ Complete |
-| FR-087 | FR-087-AC/CON x26 | TC-1058..TC-1066 | 🚧 In progress |
+| FR-087 | FR-087-AC/CON x26 | TC-1058..TC-1066 | ✅ Complete |
 | FR-088 | FR-088-AC/CON x25 | TC-1067..TC-1075 | 🚧 In progress |
 | FR-089 | FR-089-AC/CON x28 | TC-1076..TC-1085 | 🚧 In progress |
 | FR-090 | FR-090-AC/CON x34 | TC-1086..TC-1097 | 🚧 In progress |
@@ -1356,15 +1356,15 @@ producer/schema plan are accepted.
 | TC-1055 | THIRD-PARTY-NOTICES.md carries a row for serde at the exact pinned version with its SPDX identifier and the location of its preserved upstream licence | Snapshot | P0 | FR-086-AC-12, FR-086-AC-13, FR-086-AC-14 | ✅ Complete |
 | TC-1056 | The committed crate name equals the value crate.mjs derives from the kernel document's package.identity | Snapshot | P0 | FR-086-AC-15, FR-086-AC-16, FR-086-AC-17 | ✅ Complete |
 | TC-1057 | Make semantic-kernel-check reports on every run that Rust publication is blocked on agent-ix/quoin#290, that publish = false in the generated manifest | Property | P0 | FR-086-AC-18, FR-086-AC-19, FR-086-AC-20 | ✅ Complete |
-| TC-1058 | The maintainer does not widen python_backend/refusals.json, relax a guard, add a guard exemption, or add a generator option to make the kernel bundle | Static | P0 | FR-087-CON-1, FR-087-CON-2, FR-087-CON-3 | 🚧 planned |
-| TC-1059 | The maintainer does not emit a package for a family the qualification judges not-qualified, nor re-run the qualification with an altered probe set to | Static | P0 | FR-087-CON-4, FR-087-CON-5, FR-087-CON-6 | 🚧 planned |
-| TC-1060 | Every existing path under python_backend/adapter/, python_backend/runner/, python_backend/qualification/, and python_backend/generated/, and every exi | Snapshot | P0 | FR-087-CON-7, FR-087-CON-8, FR-087-AC-1 | 🚧 planned |
-| TC-1061 | After localize_bundle, no document carries a root $id, every $ref is a bare sibling filename naming a document present in the input set | Snapshot | P0 | FR-087-AC-2, FR-087-AC-3, FR-087-AC-4 | 🚧 planned |
-| TC-1062 | Calling localize_bundle twice returns deep-equal results and leaves every input document deep-equal to its pre-call state | Property | P0 | FR-087-AC-5, FR-087-AC-6, FR-087-AC-7 | 🚧 planned |
-| TC-1063 | A package tree exists under packages/semantic-kernel/python/ for exactly the families recorded as qualified-with-conditions, NOT-QUALIFIED.md records | Property | P0 | FR-087-AC-8, FR-087-AC-9, FR-087-AC-10 | 🚧 planned |
-| TC-1064 | PROVENANCE.json carries the input digest, the profile digest, the toolchain fingerprint, the content fingerprint, the kernel bundle base and digest, t | Snapshot | P0 | FR-087-AC-11, FR-087-AC-12, FR-087-AC-13 | 🚧 planned |
-| TC-1065 | No byte under packages/semantic-core/ changes | Snapshot | P0 | FR-087-AC-14, FR-087-AC-15, FR-087-AC-16 | 🚧 planned |
-| TC-1066 | Python_backend/kernel/emit.py reaches the issue #23 route only by import | Unit | P0 | FR-087-AC-17, FR-087-AC-18 | 🚧 planned |
+| TC-1058 | The guard, the refusal register and the profiles are unmoved, packages/semantic-core/ changes no byte, and the localization pass is schema-to-schema: it imports nothing that can reach generated source | Static | P0 | FR-087-CON-1, FR-087-CON-2, FR-087-CON-3 | ✅ Complete |
+| TC-1059 | No not-qualified family emits and the qualification is not re-run, no distribution manifest or workflow names the tree, and the generator stays one pinned attributed third-party dependency at 0.76.0 | Static | P0 | FR-087-CON-4, FR-087-CON-5, FR-087-CON-6 | ✅ Complete |
+| TC-1060 | Every python_backend/ path the route owns and pyproject.toml are byte-identical to origin/main, the committed bundle is refused with PY-REF-010 on the scheme, and the same unmodified guard admits the localized bundle | Snapshot | P0 | FR-087-CON-7, FR-087-CON-8, FR-087-AC-1 | ✅ Complete |
+| TC-1061 | After localize_bundle no document carries a root $id, every $ref names a sibling present in the input set, every document carries the title its filename states, a foreign $ref survives byte-identical and is refused, and the two passes walk the same subschema vocabulary | Snapshot | P0 | FR-087-AC-2, FR-087-AC-3, FR-087-AC-4 | ✅ Complete |
+| TC-1062 | localize_bundle is pure and deep-equal on every call, the localization record attributes 35 refs, 30 dropped $ids and 30 restored titles by document and pointer, and the FR-074 closure pass then seals all 21 sealed objects | Property | P0 | FR-087-AC-5, FR-087-AC-6, FR-087-AC-7 | ✅ Complete |
+| TC-1063 | A tree exists for exactly the qualified-with-conditions families, NOT-QUALIFIED.md records each refused family, each __init__.py __all__ is sorted complete and collision-free, and every module imports with no warning and no unresolved forward reference | Property | P0 | FR-087-AC-8, FR-087-AC-9, FR-087-AC-10 | ✅ Complete |
+| TC-1064 | PROVENANCE.json carries the digests, fingerprints, bundle identity, MIT attribution, AGPL-3.0-only, published false and the quoin#290 gate with no clock or host reading; mypy --strict reports exactly the three finding-F1 errors and no type: ignore exists; two scratch roots and the committed tree agree byte-for-byte | Snapshot | P0 | FR-087-AC-11, FR-087-AC-12, FR-087-AC-13 | ✅ Complete |
+| TC-1065 | A full generation moves no byte under packages/semantic-core/, no packed distribution file starts with packages/semantic-kernel, every example runs clean under -W error, and msgspec refuses exactly the four finding-F2 kernel types | Snapshot | P0 | FR-087-AC-14, FR-087-AC-15, FR-087-AC-16 | ✅ Complete |
+| TC-1066 | python_backend/kernel/emit.py reaches the route only by import, its re-derived layout rules produce byte-identical exports, __init__.py text and content fingerprint, and no emitted file carries a date, host path, user name or hostname | Unit | P0 | FR-087-AC-17, FR-087-AC-18 | ✅ Complete |
 | TC-1067 | Change no byte anywhere under packages/semantic-core/. Those documents are the official emitter's output under ADR-0005 and FR-033, and an index that | Static | P0 | FR-088-CON-1, FR-088-CON-2, FR-088-CON-3 | 🚧 planned |
 | TC-1068 | Scripts/build-semantic-kernel.mjs recompute the bundle digest in the index, never copy it from generated/toolchain.json, so the equality of the two is | Static | P0 | FR-088-CON-4, FR-088-CON-5, FR-088-CON-6 | 🚧 planned |
 | TC-1069 | No registry publication and no publication workflow change happen here | Unit | P0 | FR-088-CON-7, FR-088-CON-8, FR-088-AC-1 | 🚧 planned |

@@ -401,6 +401,18 @@ semantic-kernel-check:
 	node scripts/check-semantic-kernel-crate.mjs --gate
 	rm -rf $(KERNEL_SCRATCH)
 
+# The kernel's Python packages (FR-087). `semantic-kernel-python` regenerates
+# the tree through the qualified issue #23 route; `--check` writes nothing and
+# fails naming the first path a fresh generation would change. Generation only:
+# publication passes agent-ix/quoin#290 and the issue #23 safety gate.
+.PHONY: semantic-kernel-python
+semantic-kernel-python:
+	poetry run python -m python_backend.kernel.emit
+
+.PHONY: semantic-kernel-python-check
+semantic-kernel-python-check:
+	poetry run python -m python_backend.kernel.emit --check
+
 # -----------------------------------------------------------------------------
 # Spec-bundle extraction frontend (issue #36)
 # -----------------------------------------------------------------------------
