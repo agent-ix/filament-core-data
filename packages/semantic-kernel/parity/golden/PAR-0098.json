@@ -1,0 +1,23 @@
+{
+	"id": "PAR-0098",
+	"title": "`Identifier` refuses `has space`",
+	"declaration": "Identifier",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "not-applicable",
+	"instance": "has space",
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/Identifier.json",
+			"locator": "#/pattern",
+			"quote": "\"pattern\": \"^[A-Za-z_][A-Za-z0-9_]*$\","
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

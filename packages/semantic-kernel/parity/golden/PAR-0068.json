@@ -1,0 +1,25 @@
+{
+	"id": "PAR-0068",
+	"title": "An operation missing its required parameter list",
+	"declaration": "OperationDecl",
+	"class": "negative",
+	"properties": ["presence-versus-null"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"name": "close"
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/OperationDecl.json",
+			"locator": "#/required",
+			"quote": "\"required\": [\"name\", \"params\"],"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

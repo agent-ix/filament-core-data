@@ -1,0 +1,26 @@
+{
+	"id": "PAR-0029",
+	"title": "`min` with the wrong discriminant",
+	"declaration": "MinConstraint",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "nonEmpty",
+		"value": 0
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/MinConstraint.json",
+			"locator": "#/properties/keyword/const",
+			"quote": "\"const\": \"min\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

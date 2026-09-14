@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0030",
+	"title": "`max` with a numeric operand",
+	"declaration": "MaxConstraint",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "max",
+		"value": 100
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"keyword": "max",
+			"value": 100
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/MaxConstraint.json",
+			"locator": "#/properties/keyword/const",
+			"quote": "\"const\": \"max\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

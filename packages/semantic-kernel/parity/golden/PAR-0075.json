@@ -1,0 +1,38 @@
+{
+	"id": "PAR-0075",
+	"title": "A source span carrying every declared member",
+	"declaration": "SourceLocus",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"sourceIdentity": "ix://agent-ix/semantic-core",
+		"path": "packages/semantic-core/main.tsp",
+		"startLine": 202,
+		"startColumn": 1,
+		"endLine": 208,
+		"endColumn": 2
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"sourceIdentity": "ix://agent-ix/semantic-core",
+			"path": "packages/semantic-core/main.tsp",
+			"startLine": 202,
+			"startColumn": 1,
+			"endLine": 208,
+			"endColumn": 2
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/SourceLocus.json",
+			"locator": "#/description",
+			"quote": "\"description\": \"Source span of a declaration or clause, same shape as the IR `sourceLocus`.\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

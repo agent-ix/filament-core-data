@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0028",
+	"title": "`min` with an ISO 8601 string operand",
+	"declaration": "MinConstraint",
+	"class": "boundary",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "min",
+		"value": "2026-01-01T00:00:00Z"
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"keyword": "min",
+			"value": "2026-01-01T00:00:00Z"
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/MinConstraint.json",
+			"locator": "#/properties/value/anyOf",
+			"quote": "\"anyOf\": ["
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

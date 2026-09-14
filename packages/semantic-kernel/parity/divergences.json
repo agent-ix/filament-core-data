@@ -1,0 +1,1085 @@
+{
+	"$comment": [
+		"The FR-090 parity divergence register.",
+		"`adjudication` is authored: one entry per root cause, package and property,",
+		"naming the exact golden documents it explains, which side is wrong, and the",
+		"issue that adjudicates it. A disagreement no entry covers leaves its row",
+		"unadjudicated, and the gate rejects an unadjudicated row. An entry the run",
+		"does not reproduce fails the run.",
+		"`rows` is written by packages/semantic-kernel/parity/run.mjs and is never",
+		"edited by hand: a disagreement is closed by the owner named here, never",
+		"by editing a golden document, a base, the oracle, or this file."
+	],
+	"adjudication": [
+		{
+			"cause": "ir-tags-untagged-unions::rust::decision",
+			"wrongSide": "rust",
+			"property": "decision",
+			"issue": "agent-ix/filament-core-data#128",
+			"documents": [
+				"PAR-0006",
+				"PAR-0007",
+				"PAR-0008",
+				"PAR-0021",
+				"PAR-0022",
+				"PAR-0023",
+				"PAR-0027",
+				"PAR-0028",
+				"PAR-0030",
+				"PAR-0031",
+				"PAR-0033",
+				"PAR-0035",
+				"PAR-0045",
+				"PAR-0046",
+				"PAR-0065",
+				"PAR-0066",
+				"PAR-0080",
+				"PAR-0081"
+			],
+			"why": "An untagged `anyOf` of scalars lowers to a tagged IR union, so the package demands a `kind` discriminant the source schema never states — and for the constraint-operand unions the IR variants carry no `payloadType` at all, losing the operand. The package renders the IR faithfully; the defect is the lowering under #11."
+		},
+		{
+			"cause": "ir-tags-untagged-unions::typescript::decision",
+			"wrongSide": "typescript",
+			"property": "decision",
+			"issue": "agent-ix/filament-core-data#128",
+			"documents": [
+				"PAR-0006",
+				"PAR-0007",
+				"PAR-0008",
+				"PAR-0021",
+				"PAR-0022",
+				"PAR-0023",
+				"PAR-0027",
+				"PAR-0028",
+				"PAR-0030",
+				"PAR-0031",
+				"PAR-0033",
+				"PAR-0035",
+				"PAR-0045",
+				"PAR-0046",
+				"PAR-0065",
+				"PAR-0066",
+				"PAR-0080",
+				"PAR-0081"
+			],
+			"why": "An untagged `anyOf` of scalars lowers to a tagged IR union, so the package demands a `kind` discriminant the source schema never states — and for the constraint-operand unions the IR variants carry no `payloadType` at all, losing the operand. The package renders the IR faithfully; the defect is the lowering under #11."
+		},
+		{
+			"cause": "ir-drops-string-scalar-constraints::rust::decision",
+			"wrongSide": "rust",
+			"property": "decision",
+			"issue": "agent-ix/filament-core-data#127",
+			"documents": [
+				"PAR-0039",
+				"PAR-0053",
+				"PAR-0063",
+				"PAR-0071",
+				"PAR-0074",
+				"PAR-0078",
+				"PAR-0097",
+				"PAR-0098",
+				"PAR-0100",
+				"PAR-0101",
+				"PAR-0104",
+				"PAR-0105",
+				"PAR-0110",
+				"PAR-0111"
+			],
+			"why": "A string scalar's `pattern` and `minLength` never reach the IR: every string scalar in semantic-ir.json carries `constraints: []` while every integer scalar carries its `min`/`max`. The package renders the IR faithfully; the lowering under #11 lost the constraint, so the package accepts identifiers, clause languages, format names and locus paths the published JSON Schema refuses."
+		},
+		{
+			"cause": "ir-drops-string-scalar-constraints::typescript::decision",
+			"wrongSide": "typescript",
+			"property": "decision",
+			"issue": "agent-ix/filament-core-data#127",
+			"documents": [
+				"PAR-0039",
+				"PAR-0053",
+				"PAR-0063",
+				"PAR-0071",
+				"PAR-0074",
+				"PAR-0078",
+				"PAR-0097",
+				"PAR-0098",
+				"PAR-0100",
+				"PAR-0101",
+				"PAR-0104",
+				"PAR-0105",
+				"PAR-0110",
+				"PAR-0111"
+			],
+			"why": "A string scalar's `pattern` and `minLength` never reach the IR: every string scalar in semantic-ir.json carries `constraints: []` while every integer scalar carries its `min`/`max`. The package renders the IR faithfully; the lowering under #11 lost the constraint, so the package accepts identifiers, clause languages, format names and locus paths the published JSON Schema refuses."
+		},
+		{
+			"cause": "ir-unconstrained-value::rust::decision",
+			"wrongSide": "rust",
+			"property": "decision",
+			"issue": "agent-ix/filament-core-data#78",
+			"documents": ["PAR-0015", "PAR-0016", "PAR-0017"],
+			"why": "`DefaultDecl.value` is `{}` in the schema — any JSON value — and IR v1.1 has no any-type, so it lowers to a record with no fields. packages/semantic-kernel/losses.json records this as `unconstrained-value`; #78 is the expressiveness gap and #93 the v1.2 fix."
+		},
+		{
+			"cause": "ir-unconstrained-value::typescript::decision",
+			"wrongSide": "typescript",
+			"property": "decision",
+			"issue": "agent-ix/filament-core-data#78",
+			"documents": ["PAR-0015", "PAR-0016", "PAR-0017", "PAR-0019"],
+			"why": "`DefaultDecl.value` is `{}` in the schema — any JSON value — and IR v1.1 has no any-type, so it lowers to a record with no fields. packages/semantic-kernel/losses.json records this as `unconstrained-value`; #78 is the expressiveness gap and #93 the v1.2 fix."
+		},
+		{
+			"cause": "ir-required-collection-presence::rust::decision",
+			"wrongSide": "rust",
+			"property": "decision",
+			"issue": "agent-ix/filament-core-data#78",
+			"documents": ["PAR-0068"],
+			"why": "`OperationDecl.params` is required-but-possibly-empty, which IR v1.1 cannot express, so it lowers to optional and the package admits a document omitting it. packages/semantic-kernel/losses.json records this as `required-collection-presence`; #78 is the expressiveness gap and #93 the v1.2 fix."
+		},
+		{
+			"cause": "ir-required-collection-presence::typescript::decision",
+			"wrongSide": "typescript",
+			"property": "decision",
+			"issue": "agent-ix/filament-core-data#78",
+			"documents": ["PAR-0068"],
+			"why": "`OperationDecl.params` is required-but-possibly-empty, which IR v1.1 cannot express, so it lowers to optional and the package admits a document omitting it. packages/semantic-kernel/losses.json records this as `required-collection-presence`; #78 is the expressiveness gap and #93 the v1.2 fix."
+		},
+		{
+			"cause": "null-erased-on-serialization::python::serialized-member-names",
+			"wrongSide": "python",
+			"property": "serialized-member-names",
+			"issue": "agent-ix/filament-core-data#129",
+			"documents": ["PAR-0019"],
+			"why": "An authored `null` on an unconstrained member is erased on the way back out — Rust by `skip_serializing_if = \"Option::is_none\"`, Python by `exclude_none=True` in the documented serialization path — so the round trip drops a member the contract preserves."
+		},
+		{
+			"cause": "null-erased-on-serialization::rust::serialized-member-names",
+			"wrongSide": "rust",
+			"property": "serialized-member-names",
+			"issue": "agent-ix/filament-core-data#129",
+			"documents": ["PAR-0019"],
+			"why": "An authored `null` on an unconstrained member is erased on the way back out — Rust by `skip_serializing_if = \"Option::is_none\"`, Python by `exclude_none=True` in the documented serialization path — so the round trip drops a member the contract preserves."
+		},
+		{
+			"cause": "null-accepted-for-non-nullable-optional::python::decision",
+			"wrongSide": "python",
+			"property": "decision",
+			"issue": "agent-ix/filament-core-data#129",
+			"documents": ["PAR-0024"],
+			"why": "A non-nullable optional member typed `str | None` accepts a written `null`, which the published schema refuses: optional and nullable are the same type in the generated package."
+		}
+	],
+	"rows": [
+		{
+			"document": "PAR-0006",
+			"declaration": "TypeRef",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0006",
+			"declaration": "TypeRef",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0007",
+			"declaration": "TypeRef",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0007",
+			"declaration": "TypeRef",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0008",
+			"declaration": "TypeRef",
+			"class": "boundary",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0008",
+			"declaration": "TypeRef",
+			"class": "boundary",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0015",
+			"declaration": "DefaultDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#78"
+		},
+		{
+			"document": "PAR-0015",
+			"declaration": "DefaultDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#78"
+		},
+		{
+			"document": "PAR-0016",
+			"declaration": "DefaultDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#78"
+		},
+		{
+			"document": "PAR-0016",
+			"declaration": "DefaultDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#78"
+		},
+		{
+			"document": "PAR-0017",
+			"declaration": "DefaultDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#78"
+		},
+		{
+			"document": "PAR-0017",
+			"declaration": "DefaultDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#78"
+		},
+		{
+			"document": "PAR-0019",
+			"declaration": "DefaultDecl",
+			"class": "boundary",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#78"
+		},
+		{
+			"document": "PAR-0019",
+			"declaration": "DefaultDecl",
+			"class": "boundary",
+			"property": "serialized-member-names",
+			"decisions": {
+				"contract": "success",
+				"python": "success"
+			},
+			"wrongSide": "python",
+			"adjudicatedBy": "agent-ix/filament-core-data#129"
+		},
+		{
+			"document": "PAR-0019",
+			"declaration": "DefaultDecl",
+			"class": "boundary",
+			"property": "serialized-member-names",
+			"decisions": {
+				"contract": "success",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#129"
+		},
+		{
+			"document": "PAR-0021",
+			"declaration": "FieldDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0021",
+			"declaration": "FieldDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0022",
+			"declaration": "FieldDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0022",
+			"declaration": "FieldDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0023",
+			"declaration": "FieldDecl",
+			"class": "boundary",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0023",
+			"declaration": "FieldDecl",
+			"class": "boundary",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0024",
+			"declaration": "FieldDecl",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"python": "success"
+			},
+			"wrongSide": "python",
+			"adjudicatedBy": "agent-ix/filament-core-data#129"
+		},
+		{
+			"document": "PAR-0027",
+			"declaration": "MinConstraint",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0027",
+			"declaration": "MinConstraint",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0028",
+			"declaration": "MinConstraint",
+			"class": "boundary",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0028",
+			"declaration": "MinConstraint",
+			"class": "boundary",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0030",
+			"declaration": "MaxConstraint",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0030",
+			"declaration": "MaxConstraint",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0031",
+			"declaration": "MaxConstraint",
+			"class": "boundary",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0031",
+			"declaration": "MaxConstraint",
+			"class": "boundary",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0033",
+			"declaration": "ExclusiveMinConstraint",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0033",
+			"declaration": "ExclusiveMinConstraint",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0035",
+			"declaration": "ExclusiveMaxConstraint",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0035",
+			"declaration": "ExclusiveMaxConstraint",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0039",
+			"declaration": "PatternConstraint",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"typescript": "success"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0039",
+			"declaration": "PatternConstraint",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0045",
+			"declaration": "EnumValuesConstraint",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0045",
+			"declaration": "EnumValuesConstraint",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0046",
+			"declaration": "EnumValuesConstraint",
+			"class": "boundary",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0046",
+			"declaration": "EnumValuesConstraint",
+			"class": "boundary",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0053",
+			"declaration": "FormatConstraint",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"typescript": "success"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0053",
+			"declaration": "FormatConstraint",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0063",
+			"declaration": "RelationDecl",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"typescript": "success"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0063",
+			"declaration": "RelationDecl",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0065",
+			"declaration": "OperationDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0065",
+			"declaration": "OperationDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0066",
+			"declaration": "OperationDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0066",
+			"declaration": "OperationDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0068",
+			"declaration": "OperationDecl",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"typescript": "success"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#78"
+		},
+		{
+			"document": "PAR-0068",
+			"declaration": "OperationDecl",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#78"
+		},
+		{
+			"document": "PAR-0071",
+			"declaration": "ClauseRef",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"typescript": "success"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0071",
+			"declaration": "ClauseRef",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0074",
+			"declaration": "EnumValue",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"typescript": "success"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0074",
+			"declaration": "EnumValue",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0078",
+			"declaration": "SourceLocus",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"typescript": "success"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0078",
+			"declaration": "SourceLocus",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0080",
+			"declaration": "ConstraintDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0080",
+			"declaration": "ConstraintDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0081",
+			"declaration": "ConstraintDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"typescript": "invalid"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0081",
+			"declaration": "ConstraintDecl",
+			"class": "positive",
+			"property": "decision",
+			"decisions": {
+				"contract": "success",
+				"rust": "invalid"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#128"
+		},
+		{
+			"document": "PAR-0097",
+			"declaration": "Identifier",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"typescript": "success"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0097",
+			"declaration": "Identifier",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0098",
+			"declaration": "Identifier",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"typescript": "success"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0098",
+			"declaration": "Identifier",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0100",
+			"declaration": "SemanticId",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"typescript": "success"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0100",
+			"declaration": "SemanticId",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0101",
+			"declaration": "SemanticId",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"typescript": "success"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0101",
+			"declaration": "SemanticId",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0104",
+			"declaration": "UnitSymbol",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"typescript": "success"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0104",
+			"declaration": "UnitSymbol",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0105",
+			"declaration": "UnitSymbol",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"typescript": "success"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0105",
+			"declaration": "UnitSymbol",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0110",
+			"declaration": "ClauseLanguage",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"typescript": "success"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0110",
+			"declaration": "ClauseLanguage",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0111",
+			"declaration": "ClauseLanguage",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"typescript": "success"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0111",
+			"declaration": "ClauseLanguage",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		}
+	]
+}

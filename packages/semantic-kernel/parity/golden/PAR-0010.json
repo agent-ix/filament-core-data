@@ -1,0 +1,26 @@
+{
+	"id": "PAR-0010",
+	"title": "An undeclared member beside a valid target",
+	"declaration": "TypeRef",
+	"class": "negative",
+	"properties": ["unknown-member-states"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"target": "String",
+		"extra": true
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/TypeRef.json",
+			"locator": "#/unevaluatedProperties",
+			"quote": "\"unevaluatedProperties\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

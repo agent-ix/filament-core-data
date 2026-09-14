@@ -1,0 +1,24 @@
+{
+	"id": "PAR-0087",
+	"title": "`EdgeCategory` admits the declared member `traceability`",
+	"declaration": "EdgeCategory",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "not-applicable",
+	"instance": "traceability",
+	"expected": {
+		"resultState": "success",
+		"wire": "traceability"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/EdgeCategory.json",
+			"locator": "#/enum",
+			"quote": "\"enum\": ["
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

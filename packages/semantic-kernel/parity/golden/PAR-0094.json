@@ -1,0 +1,23 @@
+{
+	"id": "PAR-0094",
+	"title": "`DefaultKind` refuses a member outside the closed set",
+	"declaration": "DefaultKind",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "not-applicable",
+	"instance": "none",
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/DefaultKind.json",
+			"locator": "#/enum",
+			"quote": "\"enum\": [\"semantic\", \"representation\", \"migration\"],"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

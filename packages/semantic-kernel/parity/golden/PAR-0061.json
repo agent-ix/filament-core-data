@@ -1,0 +1,44 @@
+{
+	"id": "PAR-0061",
+	"title": "A composite relation carrying an ordered unique multiplicity",
+	"declaration": "RelationDecl",
+	"class": "positive",
+	"properties": ["relation-semantics", "serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"verb": "contains",
+		"category": "structural",
+		"composite": true,
+		"target": "ix://agent-ix/semantic-core/type/EnumValue",
+		"multiplicity": {
+			"lower": 0,
+			"ordered": true,
+			"unique": true
+		}
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"verb": "contains",
+			"category": "structural",
+			"composite": true,
+			"target": "ix://agent-ix/semantic-core/type/EnumValue",
+			"multiplicity": {
+				"lower": 0,
+				"ordered": true,
+				"unique": true
+			}
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/RelationDecl.json",
+			"locator": "#/description",
+			"quote": "\"description\": \"A relationship declaration (FR-028). Absent multiplicity lowers to 0..1; absent composite to false.\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

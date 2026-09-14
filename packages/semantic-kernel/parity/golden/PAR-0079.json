@@ -1,0 +1,29 @@
+{
+	"id": "PAR-0079",
+	"title": "An undeclared member on a sealed source span",
+	"declaration": "SourceLocus",
+	"class": "negative",
+	"properties": ["unknown-member-states"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"sourceIdentity": "ix://agent-ix/semantic-core",
+		"path": "a.tsp",
+		"startLine": 1,
+		"startColumn": 1,
+		"endOffset": 40
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/SourceLocus.json",
+			"locator": "#/unevaluatedProperties",
+			"quote": "\"unevaluatedProperties\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

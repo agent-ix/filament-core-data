@@ -1,0 +1,27 @@
+{
+	"id": "PAR-0038",
+	"title": "A pattern constraint naming an undeclared dialect",
+	"declaration": "PatternConstraint",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "pattern",
+		"regex": "^a$",
+		"dialect": "re2"
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/PatternConstraint.json",
+			"locator": "#/properties/dialect/const",
+			"quote": "\"const\": \"ecma-262\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

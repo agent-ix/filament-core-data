@@ -1,0 +1,29 @@
+{
+	"id": "PAR-0026",
+	"title": "An undeclared member on a sealed field declaration",
+	"declaration": "FieldDecl",
+	"class": "negative",
+	"properties": ["unknown-member-states"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"name": "title",
+		"type": {
+			"target": "String"
+		},
+		"undeclared": 1
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/FieldDecl.json",
+			"locator": "#/unevaluatedProperties",
+			"quote": "\"unevaluatedProperties\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

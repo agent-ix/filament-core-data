@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0011",
+	"title": "Precision and scale for a Decimal target",
+	"declaration": "DecimalPolicy",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"precision": 18,
+		"scale": 6
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"precision": 18,
+			"scale": 6
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/DecimalPolicy.json",
+			"locator": "#/description",
+			"quote": "\"description\": \"Precision and scale for a `Decimal` target (FR-032).\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

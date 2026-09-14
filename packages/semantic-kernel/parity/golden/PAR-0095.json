@@ -1,0 +1,24 @@
+{
+	"id": "PAR-0095",
+	"title": "`Identifier` admits `valid_name`",
+	"declaration": "Identifier",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "not-applicable",
+	"instance": "valid_name",
+	"expected": {
+		"resultState": "success",
+		"wire": "valid_name"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/Identifier.json",
+			"locator": "#/pattern",
+			"quote": "\"pattern\": \"^[A-Za-z_][A-Za-z0-9_]*$\","
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

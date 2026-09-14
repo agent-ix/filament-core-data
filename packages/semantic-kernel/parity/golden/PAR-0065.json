@@ -1,0 +1,44 @@
+{
+	"id": "PAR-0065",
+	"title": "An operation with one parameter and no clauses",
+	"declaration": "OperationDecl",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"name": "rename",
+		"params": [
+			{
+				"name": "to",
+				"type": {
+					"target": "String"
+				}
+			}
+		]
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"name": "rename",
+			"params": [
+				{
+					"name": "to",
+					"type": {
+						"target": "String"
+					}
+				}
+			]
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/OperationDecl.json",
+			"locator": "#/required",
+			"quote": "\"required\": [\"name\", \"params\"],"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

@@ -1,0 +1,42 @@
+{
+	"id": "PAR-0070",
+	"title": "A namespaced clause language carrying a source span",
+	"declaration": "ClauseRef",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"language": "acme:dsl",
+		"clauseId": "rule_7",
+		"sourceSpan": {
+			"sourceIdentity": "ix://agent-ix/semantic-core",
+			"path": "packages/semantic-core/main.tsp",
+			"startLine": 202,
+			"startColumn": 1
+		}
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"language": "acme:dsl",
+			"clauseId": "rule_7",
+			"sourceSpan": {
+				"sourceIdentity": "ix://agent-ix/semantic-core",
+				"path": "packages/semantic-core/main.tsp",
+				"startLine": 202,
+				"startColumn": 1
+			}
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/ClauseRef.json",
+			"locator": "#/description",
+			"quote": "\"description\": \"A clause reference: language, id, and where the clause text lives. Text itself is never parsed here.\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

@@ -1,0 +1,23 @@
+{
+	"id": "PAR-0105",
+	"title": "`UnitSymbol` refuses ``",
+	"declaration": "UnitSymbol",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "not-applicable",
+	"instance": "",
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/UnitSymbol.json",
+			"locator": "#/pattern",
+			"quote": "\"pattern\": \"^[!-~]+$\","
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

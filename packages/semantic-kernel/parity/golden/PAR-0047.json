@@ -1,0 +1,26 @@
+{
+	"id": "PAR-0047",
+	"title": "An empty value set",
+	"declaration": "EnumValuesConstraint",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "enumValues",
+		"values": []
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/EnumValuesConstraint.json",
+			"locator": "#/properties/values/minItems",
+			"quote": "\"minItems\": 1"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

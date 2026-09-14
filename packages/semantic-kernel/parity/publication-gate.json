@@ -1,0 +1,92 @@
+{
+	"$comment": [
+		"FR-090 publication gate. Authored, not generated.",
+		"Publication of all four generated kernel packages is blocked on",
+		"agent-ix/quoin#290. The step is stated `blocked` for every package and is",
+		"stated nowhere as complete, skipped, not applicable, or out of scope: a",
+		"package whose publication is merely 'not applicable' is a package nothing",
+		"is holding back.",
+		"`recordedCommands` is the exact command list this requirement's run starts.",
+		"No entry runs `cargo publish`, `npm publish`, a PyPI upload or a tag push,",
+		"and none passes `--registry`, `--index` or a publish `--dry-run` \u2014 a",
+		"dry-run publish still contacts an index."
+	],
+	"blockingIssue": "agent-ix/quoin#290",
+	"packages": [
+		{
+			"package": "rust",
+			"artifact": "packages/semantic-kernel/rust",
+			"manifest": "packages/semantic-kernel/rust/Cargo.toml",
+			"nonPublishableMarker": "publish = false",
+			"step": "blocked",
+			"blockedBy": "agent-ix/quoin#290"
+		},
+		{
+			"package": "typescript",
+			"artifact": "packages/semantic-kernel/typescript",
+			"manifest": "packages/semantic-kernel/typescript/package.json",
+			"nonPublishableMarker": "no registry entry: no `publishConfig`, no `registry`",
+			"step": "blocked",
+			"blockedBy": "agent-ix/quoin#290"
+		},
+		{
+			"package": "python",
+			"artifact": "packages/semantic-kernel/python",
+			"manifest": "packages/semantic-kernel/python/NOT-QUALIFIED.md",
+			"nonPublishableMarker": "no distribution manifest and no registry entry; the package is not a distribution",
+			"step": "blocked",
+			"blockedBy": "agent-ix/quoin#290"
+		},
+		{
+			"package": "json-schema",
+			"artifact": "packages/semantic-kernel/json-schema",
+			"manifest": "packages/semantic-kernel/json-schema/index.json",
+			"nonPublishableMarker": "no registry entry: the index is a manifest of documents, not a distribution",
+			"step": "blocked",
+			"blockedBy": "agent-ix/quoin#290"
+		}
+	],
+	"recordedCommands": [
+		{
+			"package": "json-schema",
+			"command": "node",
+			"args": ["packages/semantic-kernel/parity/emitters/json-schema.mjs"],
+			"inProcess": true
+		},
+		{
+			"package": "typescript",
+			"command": "node",
+			"args": [
+				"--experimental-strip-types",
+				"--import",
+				"./packages/semantic-kernel/parity/emitters/ts-register.mjs",
+				"packages/semantic-kernel/parity/emitters/typescript.mjs"
+			],
+			"inProcess": true
+		},
+		{
+			"package": "python",
+			"command": "poetry",
+			"args": [
+				"run",
+				"python",
+				"packages/semantic-kernel/parity/emitters/python.py"
+			],
+			"inProcess": false
+		},
+		{
+			"package": "rust",
+			"command": "cargo",
+			"args": [
+				"run",
+				"--quiet",
+				"--manifest-path",
+				"packages/semantic-kernel/parity/emitters/rust/Cargo.toml",
+				"--target-dir",
+				"target/parity-emitter"
+			],
+			"inProcess": false
+		}
+	],
+	"publicationCommandsRun": []
+}

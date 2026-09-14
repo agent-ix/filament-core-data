@@ -1,0 +1,26 @@
+{
+	"id": "PAR-0053",
+	"title": "A format name outside the declared pattern",
+	"declaration": "FormatConstraint",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "format",
+		"name": "uuid"
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/FormatConstraint.json",
+			"locator": "#/properties/name/pattern",
+			"quote": "\"pattern\": \"^[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*$\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

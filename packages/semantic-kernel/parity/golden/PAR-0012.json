@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0012",
+	"title": "Precision at its declared minimum and scale at zero",
+	"declaration": "DecimalPolicy",
+	"class": "boundary",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"precision": 1,
+		"scale": 0
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"precision": 1,
+			"scale": 0
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/DecimalPolicy.json",
+			"locator": "#/properties/precision/minimum",
+			"quote": "\"minimum\": 1,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

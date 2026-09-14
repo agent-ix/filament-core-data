@@ -1,0 +1,26 @@
+{
+	"id": "PAR-0071",
+	"title": "A clause language outside the declared pattern",
+	"declaration": "ClauseRef",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"language": "OCL",
+		"clauseId": "inv_1"
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/ClauseRef.json",
+			"locator": "#/properties/language",
+			"quote": "\"language\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

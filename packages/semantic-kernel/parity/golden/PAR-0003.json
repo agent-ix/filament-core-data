@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0003",
+	"title": "`lower` at its declared minimum",
+	"declaration": "Multiplicity",
+	"class": "boundary",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"lower": 0,
+		"upper": 2147483647
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"lower": 0,
+			"upper": 2147483647
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/Multiplicity.json",
+			"locator": "#/properties/upper/maximum",
+			"quote": "\"maximum\": 2147483647"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

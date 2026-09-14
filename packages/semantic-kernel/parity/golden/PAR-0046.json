@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0046",
+	"title": "A single-member value set",
+	"declaration": "EnumValuesConstraint",
+	"class": "boundary",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "enumValues",
+		"values": ["only"]
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"keyword": "enumValues",
+			"values": ["only"]
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/EnumValuesConstraint.json",
+			"locator": "#/properties/values/minItems",
+			"quote": "\"minItems\": 1"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

@@ -1,0 +1,23 @@
+{
+	"id": "PAR-0085",
+	"title": "`KernelScalar` refuses a member outside the closed set",
+	"declaration": "KernelScalar",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "not-applicable",
+	"instance": "Decimal128",
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/KernelScalar.json",
+			"locator": "#/enum",
+			"quote": "\"enum\": ["
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}
