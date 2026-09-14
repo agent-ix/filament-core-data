@@ -497,24 +497,33 @@ describe("TC-1046..1060 the generated language trees (FR-085, FR-086)", () => {
 		expect(result.files.map((f) => f.path).sort()).toContain("types.ts");
 	});
 
-	// TC-1047 — the Rust target refuses, and the refusal is the finding.
-	it("records the Rust name collision rather than working around it", () => {
+	// TC-1047 — the Rust target generates, and the resolved name is the finding.
+	it("resolves the Rust name collision without moving the reserved identifier", () => {
+		const written = new Map<string, string>();
 		const manifest = generateRust(
 			kernelRequest("packages/semantic-kernel/rust"),
-			{ clear() {}, write() {} },
+			{
+				clear() {},
+				write(_outputRoot: string, path: string, text: string) {
+					written.set(path, text);
+				},
+			},
 			{ root },
 		) as { state: string; diagnostics?: { code: string; message: string }[] };
 
-		// Issue #80: FR-083 mints `SourceLocusPath` from `SourceLocus.path`, and
-		// the Rust backend reserves the same identifier. The backend refuses
-		// rather than letting one definition overwrite the other, which is why
-		// this was caught by trying rather than shipped.
-		expect(manifest.state).toBe("unsupported");
-		const collision = (manifest.diagnostics ?? []).find((d) =>
-			d.code.endsWith("NAME_COLLISION"),
+		// Issue #80: FR-083 mints `SourceLocusPath` from `SourceLocus.path` and
+		// the Rust backend reserves the same identifier. ADR-0010 rules that the
+		// reserved identifier keeps its meaning and the document-derived one
+		// yields, qualified by the package its own identity names. The refusal
+		// this case used to pin was the finding; the resolution is now.
+		expect(manifest.diagnostics ?? []).toEqual([]);
+		expect(manifest.state).toBe("success");
+		expect(written.get("src/types/source_locus_path.rs")).toContain(
+			"pub struct SemanticCoreSourceLocusPath",
 		);
-		expect(collision?.message).toContain("SourceLocusPath");
-		expect(collision?.message).toContain("reserved");
+		expect(written.get("src/support.rs")).toContain(
+			"pub struct SourceLocusPath(String)",
+		);
 	});
 });
 
