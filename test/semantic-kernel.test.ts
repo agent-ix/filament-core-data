@@ -1,6 +1,18 @@
 import { execFileSync } from "node:child_process";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import {
+	cpSync,
+	existsSync,
+	mkdirSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+	statSync,
+	writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import Ajv2020 from "ajv/dist/2020.js";
+import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
 import {
 	validateClauseRef,
@@ -8,6 +20,11 @@ import {
 	validateMultiplicity,
 } from "../packages/semantic-kernel/typescript/validators.js";
 
+import {
+	BACKEND as RUST_BACKEND,
+	DEFAULT_LIMITS as RUST_LIMITS,
+	DEFAULT_PROFILE as RUST_PROFILE,
+} from "../src/compiler/backends/rust-serde/cli.mjs";
 import { generateRust } from "../src/compiler/backends/rust-serde/index.mjs";
 import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import { DIAGNOSTIC_CODES } from "../src/compiler/diagnostics.mjs";
@@ -37,11 +54,36 @@ import {
 	KERNEL_LOSSES,
 } from "../src/compiler/frontend/json-schema/representability.mjs";
 import { createHost } from "../src/compiler/host.mjs";
-import { changedPathsOf } from "./changed-paths.js";
+import { changedPathsOfCommits, commitsAdding } from "./changed-paths.js";
 
 const root = resolve(import.meta.dirname, "..");
 const read = (p: string) =>
 	JSON.parse(readFileSync(resolve(root, p), "utf8")) as Record<string, unknown>;
+
+/**
+ * The published contract schemas, so the kernel generation's output manifest is
+ * judged by `output-manifest.schema.json` rather than by a restatement of it.
+ */
+const ajv = new Ajv2020({
+	allErrors: true,
+	strict: true,
+	strictRequired: false,
+});
+addFormats(ajv);
+for (const name of readdirSync(resolve(root, "schema/semantic/v1")).sort()) {
+	if (!name.endsWith(".schema.json")) continue;
+	ajv.addSchema(
+		JSON.parse(readFileSync(resolve(root, "schema/semantic/v1", name), "utf8")),
+	);
+}
+const manifestSchema = (value: unknown): boolean => {
+	const validate = ajv.getSchema(
+		"https://schemas.agent-ix.org/filament-core-data/v1/output-manifest.schema.json",
+	);
+	if (!validate)
+		throw new Error("output-manifest.schema.json was not registered");
+	return validate(value) as boolean;
+};
 
 const bundle = read("packages/semantic-kernel/bundle.json");
 const inventory = read("packages/semantic-core/inventory.json");
@@ -58,7 +100,11 @@ const PERMITTED = [
 	"src/compiler/diagnostics.mjs",
 	"src/compiler/inventory.json",
 	"packages/semantic-kernel/",
+	"docs/semantic-data-system/semantic-kernel-packages.md",
 	"scripts/build-semantic-kernel.mjs",
+	"scripts/build-semantic-kernel-digests.mjs",
+	"scripts/check-semantic-kernel-crate.mjs",
+	"Cargo.toml",
 	"test/semantic-kernel.test.ts",
 	"test/changed-paths.ts",
 	"test/compiler-core.test.ts",
@@ -106,7 +152,14 @@ const PROHIBITED = [
  * side of its merge — the form issues #19 and #54 already settled here.
  */
 function changedPaths(): string[] {
-	return changedPathsOf(root, SENTINELS);
+	// Issue #11 reached the trunk as more than one squash commit — `#82`, and
+	// then FR-086's — and a *range* across them annexes every ticket that
+	// landed in between, failing this gate for somebody else's paths. The
+	// commits are named instead of spanned, which is the sixth face of the
+	// merge-degrading defect `changed-paths.ts` records and the helper it
+	// promoted for it. A later commit delivering more of issue #11 adds its own
+	// sentinel above, or its paths go unmeasured.
+	return changedPathsOfCommits(root, SENTINELS);
 }
 
 function treeOf(dir: string): [string, string][] {
@@ -754,5 +807,531 @@ describe("TC-1085..1089 cross-language agreement through the corpus (FR-090)", (
 	it("runs clean", () => {
 		expect(report.exitCode).toBe(0);
 		expect(report.coverage.totalCases).toBe(111);
+	});
+});
+
+describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", () => {
+	const crate = resolve(root, "packages/semantic-kernel/rust");
+	const crateManifest = readFileSync(resolve(crate, "Cargo.toml"), "utf8");
+	const scratchRoot = resolve(tmpdir(), "fcd-fr086-tests");
+
+	/** The three scripts FR-086 adds or extends, read as text. */
+	const sources = {
+		tree: readFileSync(
+			resolve(root, "scripts/build-semantic-kernel.mjs"),
+			"utf8",
+		),
+		digests: readFileSync(
+			resolve(root, "scripts/build-semantic-kernel-digests.mjs"),
+			"utf8",
+		),
+		gates: readFileSync(
+			resolve(root, "scripts/check-semantic-kernel-crate.mjs"),
+			"utf8",
+		),
+	};
+
+	/** The recipe lines `make` would run, read from `make` rather than by eye. */
+	const recipes = (...targets: string[]) =>
+		execFileSync("make", ["-n", ...targets], { cwd: root, encoding: "utf8" });
+
+	/** Runs one gate and reports what it measured, pass or fail. */
+	function gate(
+		args: string[],
+		env: NodeJS.ProcessEnv = {},
+	): { ok: boolean; output: string } {
+		try {
+			const stdout = execFileSync(process.execPath, args, {
+				cwd: root,
+				encoding: "utf8",
+				env: { ...process.env, ...env },
+				stdio: "pipe",
+			});
+			return { ok: true, output: stdout };
+		} catch (error) {
+			const failure = error as { stdout?: string; stderr?: string };
+			return {
+				ok: false,
+				output: `${failure.stdout ?? ""}${failure.stderr ?? ""}`,
+			};
+		}
+	}
+
+	/** A scratch copy of the committed crate, for a falsification to edit. */
+	function copyCrate(label: string): string {
+		const target = resolve(scratchRoot, label);
+		rmSync(target, { recursive: true, force: true });
+		mkdirSync(target, { recursive: true });
+		cpSync(crate, resolve(target, "rust"), { recursive: true });
+		cpSync(
+			resolve(root, "packages/semantic-kernel/rust-digests.json"),
+			resolve(target, "rust-digests.json"),
+		);
+		return target;
+	}
+
+	/** Traces: TC-1048; FR-086-CON-1, FR-086-CON-2, FR-086-CON-3. */
+	it("TC-1048 adds no emitter branch, names no publish verb, and keeps every scratch outside the tree", () => {
+		// CON-1. The kernel is generated by the route the corpus bases take: the
+		// two exported halves are imported, and no byte under the backend moves.
+		expect(sources.tree).toContain(
+			'from "../src/compiler/backends/rust-serde/cli.mjs"',
+		);
+		expect(sources.tree).toContain("generateRust(");
+		for (const path of changedPaths())
+			expect(path.startsWith("src/compiler/backends/"), path).toBe(false);
+
+		// CON-2. Read out of the recorded command list, never by eye.
+		const commands = `${recipes(
+			"semantic-kernel",
+			"semantic-kernel-digests",
+			"semantic-kernel-check",
+		)}\n${sources.tree}\n${sources.digests}\n${sources.gates}`;
+		for (const forbidden of [
+			"cargo publish",
+			'"publish"]',
+			"--registry",
+			"--index",
+			"--dry-run",
+		]) {
+			expect(commands.includes(forbidden), forbidden).toBe(false);
+		}
+
+		// CON-3. Every scratch the check names is outside the working tree.
+		const scratches = [
+			...recipes("semantic-kernel-check").matchAll(/ (\/\S+)\/(tree|build)\b/g),
+		].map((one) => one[1]);
+		expect(scratches.length).toBeGreaterThan(0);
+		for (const dir of scratches)
+			expect(dir.startsWith(`${root}/`), dir).toBe(false);
+	});
+
+	/** Traces: TC-1049; FR-086-CON-4, FR-086-CON-5, FR-086-CON-6. */
+	it("TC-1049 writes the crate and its baseline from two scripts through two entry points", () => {
+		// CON-4. The tree comes from the writing half, the baseline from the pure
+		// one, and neither script reaches the other's entry point.
+		expect(sources.tree).toContain("generateRust");
+		expect(sources.tree).not.toContain("emitCrate");
+		expect(sources.digests).toContain("emitCrate");
+		expect(sources.digests).not.toContain("generateRust");
+
+		// CON-5. #21's two artifacts are not this branch's to move.
+		for (const path of changedPaths()) {
+			expect(path.startsWith("test/fixtures/rust-serde/"), path).toBe(false);
+		}
+
+		// CON-6. The build gate runs cargo; it does not read a recorded result.
+		expect(sources.gates).toContain('"build", "--offline", "--locked"');
+		const check = recipes("semantic-kernel-check");
+		expect(check).not.toContain("rust-check");
+		expect(check).not.toContain("node_modules/.cache/rust-target");
+	});
+
+	/** Traces: TC-1050; FR-086-CON-7, FR-086-CON-8, FR-086-CON-9. */
+	it("TC-1050 resolves offline, fails on an absent toolchain, and emits no unsafe block", () => {
+		// CON-7. Every cargo invocation the gates make carries `--offline`.
+		const invocations = [
+			...sources.gates.matchAll(/spawnSync\(\s*"cargo",\s*\[([^\]]*)\]/g),
+		];
+		expect(invocations.length).toBeGreaterThan(0);
+		for (const [, args] of invocations) {
+			if (args.includes("--version")) continue;
+			expect(args.includes('"--offline"'), args).toBe(true);
+		}
+
+		// CON-8. An absent toolchain is a failure naming what could not run.
+		const withoutCargo = gate(
+			[
+				"scripts/check-semantic-kernel-crate.mjs",
+				"--build",
+				resolve(scratchRoot, "no-cargo"),
+			],
+			{ PATH: "/nonexistent" },
+		);
+		expect(withoutCargo.ok).toBe(false);
+		expect(withoutCargo.output).toContain("cargo is not on PATH");
+		expect(withoutCargo.output).toContain("rather than a skip");
+
+		// CON-9. `unsafe_code = "forbid"` enforces this at compile time; the
+		// source carries no `unsafe` block for it to catch.
+		for (const [path, text] of treeOf(crate)) {
+			if (!path.endsWith(".rs")) continue;
+			expect(/\bunsafe\s*\{/.test(text), path).toBe(false);
+		}
+	});
+
+	/** Traces: TC-1051; FR-086-CON-10, FR-086-AC-1, FR-086-AC-2. */
+	it("TC-1051 leaves every prohibited path unchanged and equals a fresh generation", () => {
+		// CON-10. The root manifest moves by exactly one added exclude entry.
+		const changed = changedPaths();
+		for (const path of changed) {
+			for (const prefix of [
+				"src/compiler/backends/",
+				"rust-toolchain.toml",
+				"rustfmt.toml",
+				".cargo/config.toml",
+				"package.json",
+				"tsconfig.json",
+				".github/",
+				"Cargo.lock",
+			]) {
+				expect(path.startsWith(prefix), `${path} is prohibited`).toBe(false);
+			}
+		}
+		const workspace = readFileSync(resolve(root, "Cargo.toml"), "utf8");
+		expect(workspace).toContain('"packages/semantic-kernel/rust"');
+
+		// AC-1 and AC-2, measured in one generation: the manifest is
+		// `output-manifest.schema.json`-valid, carries `state: "success"`, one
+		// `files[]` entry per emitted file and no blocking diagnostic, and the
+		// bytes it describes equal the committed ones.
+		const written = new Map<string, string>();
+		const generated = generateRust(
+			{
+				contractVersion: "1.0.0",
+				lockFingerprint: (
+					read("packages/semantic-kernel/provenance.json") as {
+						inputDigest: string;
+					}
+				).inputDigest,
+				ir: read("packages/semantic-kernel/semantic-ir.json"),
+				profile: RUST_PROFILE,
+				mappings: [],
+				backend: RUST_BACKEND,
+				outputRoot: "packages/semantic-kernel/rust",
+				limits: RUST_LIMITS,
+			},
+			{
+				clear() {},
+				write(_outputRoot: string, path: string, text: string) {
+					written.set(path, text);
+				},
+			},
+			{ root },
+		) as {
+			state: string;
+			files: { path: string }[];
+			diagnostics?: { severity?: string }[];
+		};
+		expect(manifestSchema(generated), JSON.stringify(ajv.errors)).toBe(true);
+		expect(generated.state).toBe("success");
+		expect(generated.files).toHaveLength(written.size);
+		expect(generated.diagnostics ?? []).toEqual([]);
+		const committed = treeOf(crate).map(
+			([path, text]) =>
+				[path.slice("packages/semantic-kernel/rust/".length), text] as const,
+		);
+		expect(committed).toHaveLength(written.size);
+		for (const [path, text] of committed)
+			expect(written.get(path), path).toBe(text);
+	});
+
+	/** Traces: TC-1052; FR-086-AC-3, FR-086-AC-4, FR-086-AC-5. */
+	it("TC-1052 enforces publication by the marker, and measures the build", () => {
+		// AC-3, and the falsification: removing the marker fails naming the file.
+		expect(crateManifest).toContain("publish = false");
+		const mutated = copyCrate("no-publish-marker");
+		const target = resolve(mutated, "rust/Cargo.toml");
+		writeFileSync(
+			target,
+			readFileSync(target, "utf8").replace("publish = false\n", ""),
+		);
+		const failed = gate(
+			["scripts/check-semantic-kernel-crate.mjs", "--publish"],
+			{
+				KERNEL_CRATE_ROOT: resolve(mutated, "rust"),
+			},
+		);
+		expect(failed.ok).toBe(false);
+		expect(failed.output).toContain("Cargo.toml");
+		expect(failed.output).toContain("publish = false");
+
+		// AC-4 is asserted against the recorded command list in TC-1048; AC-5 is
+		// the real build, over the committed bytes, offline.
+		const built = gate([
+			"scripts/check-semantic-kernel-crate.mjs",
+			"--build",
+			resolve(scratchRoot, "build"),
+		]);
+		expect(built.output).not.toContain("warning:");
+		expect(built.ok, built.output).toBe(true);
+		// The denied lints are read out of the committed manifest, not restated.
+		for (const lint of ["unsafe_code", "missing_docs", "warnings"])
+			expect(built.output).toContain(lint);
+	}, 300_000);
+
+	/** Traces: TC-1053; FR-086-AC-6, FR-086-AC-7, FR-086-AC-8. */
+	it("TC-1053 proves the lints in force, the formatter clean, and one byte fatal twice", () => {
+		// AC-6. Two violations, each failing the build the manifest governs.
+		const docs = copyCrate("missing-docs");
+		const lib = resolve(docs, "rust/src/lib.rs");
+		writeFileSync(
+			lib,
+			`${readFileSync(lib, "utf8")}\npub fn undocumented_item() {}\n`,
+		);
+		const docsBuild = gate(
+			[
+				"scripts/check-semantic-kernel-crate.mjs",
+				"--build",
+				resolve(scratchRoot, "b1"),
+			],
+			{ KERNEL_CRATE_ROOT: resolve(docs, "rust") },
+		);
+		expect(docsBuild.ok).toBe(false);
+		expect(docsBuild.output).toContain("missing_docs");
+
+		const unsafeCopy = copyCrate("unsafe-block");
+		const unsafeLib = resolve(unsafeCopy, "rust/src/lib.rs");
+		writeFileSync(
+			unsafeLib,
+			`${readFileSync(unsafeLib, "utf8")}\n/// An unsafe block the manifest forbids.\npub fn forbidden() {\n    unsafe { std::ptr::null::<u8>(); }\n}\n`,
+		);
+		const unsafeBuild = gate(
+			[
+				"scripts/check-semantic-kernel-crate.mjs",
+				"--build",
+				resolve(scratchRoot, "b2"),
+			],
+			{ KERNEL_CRATE_ROOT: resolve(unsafeCopy, "rust") },
+		);
+		expect(unsafeBuild.ok).toBe(false);
+		expect(unsafeBuild.output).toContain("unsafe");
+
+		// AC-7. The pinned formatter reports no change over the committed crate.
+		const formatted = gate([
+			"scripts/check-semantic-kernel-crate.mjs",
+			"--rustfmt",
+		]);
+		expect(formatted.ok, formatted.output).toBe(true);
+		expect(formatted.output).toContain("reports no change");
+
+		// AC-8. One changed byte fails twice, from two scripts.
+		const edited = copyCrate("one-byte");
+		const types = resolve(edited, "rust/src/types.rs");
+		writeFileSync(types, `${readFileSync(types, "utf8")}// edited\n`);
+		const tree = gate(
+			[
+				"scripts/check-semantic-kernel-crate.mjs",
+				"--tree",
+				resolve(scratchRoot, "t1"),
+			],
+			{ KERNEL_CRATE_ROOT: resolve(edited, "rust") },
+		);
+		expect(tree.ok).toBe(false);
+		expect(tree.output).toContain("src/types.rs");
+		const baseline = gate(
+			["scripts/build-semantic-kernel-digests.mjs", "--check"],
+			{
+				KERNEL_CRATE_ROOT: resolve(edited, "rust"),
+				KERNEL_DIGESTS: resolve(edited, "rust-digests.json"),
+			},
+		);
+		expect(baseline.ok).toBe(false);
+		expect(baseline.output).toContain("digest baseline");
+		expect(baseline.output).toContain("src/types.rs");
+	}, 600_000);
+
+	/** Traces: TC-1054; FR-086-AC-9, FR-086-AC-10, FR-086-AC-11. */
+	it("TC-1054 leaves the tree clean, shares no scratch with rust-check, and declares serde alone", () => {
+		// AC-9. The gates write nothing: the working tree is what it was.
+		const before = execFileSync("git", ["status", "--porcelain"], {
+			cwd: root,
+			encoding: "utf8",
+		});
+		gate([
+			"scripts/check-semantic-kernel-crate.mjs",
+			"--tree",
+			resolve(scratchRoot, "clean"),
+		]);
+		gate(["scripts/build-semantic-kernel-digests.mjs", "--check"]);
+		expect(
+			execFileSync("git", ["status", "--porcelain"], {
+				cwd: root,
+				encoding: "utf8",
+			}),
+		).toBe(before);
+		expect(existsSync(resolve(crate, "Cargo.lock"))).toBe(false);
+		expect(existsSync(resolve(crate, "target"))).toBe(false);
+
+		// AC-10. #21's artifacts are untouched and the two gates share nothing.
+		const kernel = recipes("semantic-kernel-check");
+		const rust = recipes("rust-check");
+		const rustScratch = [...rust.matchAll(/(\S*rust-target\S*)/g)].map(
+			(m) => m[1],
+		);
+		expect(rustScratch.length).toBeGreaterThan(0);
+		for (const dir of rustScratch) expect(kernel.includes(dir)).toBe(false);
+
+		// AC-11. One dependency, at an exact pin, with the declared metadata.
+		const deps = /\n\[dependencies\]\n([\s\S]*?)(?:\n\[|$)/.exec(crateManifest);
+		expect(deps?.[1].trim()).toBe(
+			'serde = { version = "=1.0.229", features = ["derive"] }',
+		);
+		expect(crateManifest).not.toContain("serde_json");
+		expect(crateManifest).toContain('license = "AGPL-3.0-only"');
+		expect(crateManifest).toContain('edition = "2021"');
+		expect(crateManifest).toContain('rust-version = "1.85.0"');
+	}, 120_000);
+
+	/** Traces: TC-1055; FR-086-AC-12, FR-086-AC-13, FR-086-AC-14. */
+	it("TC-1055 attributes the pin, builds offline, and generates identically under perturbation", () => {
+		// AC-12. The register answers for the pin that is actually declared.
+		const notices = readFileSync(
+			resolve(root, "THIRD-PARTY-NOTICES.md"),
+			"utf8",
+		);
+		const row = notices
+			.split("\n")
+			.find((line) => line.includes("serde") && line.includes("1.0.229"));
+		expect(row).toBeDefined();
+		expect(row).toContain("MIT");
+		const missing = gate(
+			["scripts/check-semantic-kernel-crate.mjs", "--publish"],
+			{
+				KERNEL_CRATE_ROOT: resolve(
+					(() => {
+						const copy = copyCrate("moved-pin");
+						const target = resolve(copy, "rust/Cargo.toml");
+						writeFileSync(
+							target,
+							readFileSync(target, "utf8").replace("=1.0.229", "=0.0.0"),
+						);
+						return copy;
+					})(),
+					"rust",
+				),
+			},
+		);
+		expect(missing.ok).toBe(false);
+		expect(missing.output).toContain("THIRD-PARTY-NOTICES.md");
+
+		// AC-13. The offline resolve and build succeed with the network denied.
+		const offline = gate([
+			"scripts/check-semantic-kernel-crate.mjs",
+			"--build",
+			resolve(scratchRoot, "offline"),
+		]);
+		expect(offline.ok, offline.output).toBe(true);
+
+		// AC-14. Each perturbed generation is compared against the committed
+		// bytes, so agreeing with them is agreeing with each other.
+		const perturbations: NodeJS.ProcessEnv[] = [
+			{ TZ: "UTC" },
+			{ TZ: "Pacific/Kiritimati" },
+			{ LANG: "C", LC_ALL: "C" },
+			{ LANG: "tr_TR.UTF-8", LC_ALL: "tr_TR.UTF-8" },
+			{ HOME: resolve(scratchRoot, "home-a") },
+			{ HOME: resolve(scratchRoot, "home-b") },
+		];
+		for (const env of perturbations) {
+			const result = gate(
+				[
+					"scripts/check-semantic-kernel-crate.mjs",
+					"--tree",
+					resolve(scratchRoot, "d"),
+				],
+				env,
+			);
+			expect(result.ok, `${JSON.stringify(env)}: ${result.output}`).toBe(true);
+		}
+	}, 300_000);
+
+	/** Traces: TC-1056; FR-086-AC-15, FR-086-AC-16, FR-086-AC-17. */
+	it("TC-1056 derives the crate name, carries this repository's LICENCE, and fails on a hand edit", () => {
+		// AC-15. The name is the emitter's, derived from `package.identity`.
+		const ir = read("packages/semantic-kernel/semantic-ir.json") as {
+			package?: { identity?: string };
+		};
+		expect(ir.package?.identity).toContain("agent-ix/semantic-kernel");
+		expect(crateManifest).toContain('name = "agent-ix-semantic-kernel"');
+		expect(readFileSync(resolve(crate, "LICENSE"), "utf8")).toBe(
+			readFileSync(resolve(root, "LICENSE"), "utf8"),
+		);
+
+		// AC-16. An absent formatter fails naming it, and never skips.
+		const withoutRustfmt = gate(
+			["scripts/check-semantic-kernel-crate.mjs", "--rustfmt"],
+			{ PATH: "/nonexistent" },
+		);
+		expect(withoutRustfmt.ok).toBe(false);
+		expect(withoutRustfmt.output).toContain("not on PATH");
+		expect(withoutRustfmt.output).toContain("rather than a skip");
+
+		// AC-17. A hand edit to a generated file fails naming that file.
+		const edited = copyCrate("hand-edit");
+		const support = resolve(edited, "rust/src/support.rs");
+		writeFileSync(
+			support,
+			readFileSync(support, "utf8").replace("//!", "//! "),
+		);
+		const result = gate(
+			[
+				"scripts/check-semantic-kernel-crate.mjs",
+				"--tree",
+				resolve(scratchRoot, "t2"),
+			],
+			{ KERNEL_CRATE_ROOT: resolve(edited, "rust") },
+		);
+		expect(result.ok).toBe(false);
+		expect(result.output).toContain("src/support.rs");
+	}, 120_000);
+
+	/** Traces: TC-1057; FR-086-AC-18, FR-086-AC-19, FR-086-AC-20. */
+	it("TC-1057 reports the publication gate on every run and records it in the document", () => {
+		const kernelCommit = commitsAdding(root, [SENTINELS[1]])[0];
+		// AC-18. Reported by the gate, for a reader who never opens the document.
+		const reported = gate([
+			"scripts/check-semantic-kernel-crate.mjs",
+			"--gate",
+		]);
+		expect(reported.ok, reported.output).toBe(true);
+		expect(reported.output).toContain("agent-ix/quoin#290");
+		expect(reported.output).toContain("publish = false");
+		expect(reported.output).toContain("agent-ix/filament-core-data#21");
+
+		// AC-19. The root manifest's diff is exactly one added exclude entry.
+		const diff = execFileSync(
+			"git",
+			[
+				"diff",
+				"--unified=0",
+				"--no-renames",
+				// This change's own commit, not a range across every ticket that
+				// landed between issue #11's two squash commits.
+				`${kernelCommit}^..${kernelCommit}`,
+				"--",
+				"Cargo.toml",
+			],
+			{ cwd: root, encoding: "utf8" },
+		)
+			.split("\n")
+			.filter((line) => /^[+-][^+-]/.test(line));
+		for (const line of diff) expect(line).toContain("exclude = [");
+		expect(diff.filter((line) => line.startsWith("+"))).toHaveLength(
+			diff.filter((line) => line.startsWith("-")).length,
+		);
+		expect(
+			diff.filter(
+				(line) =>
+					line.startsWith("+") &&
+					line.includes("packages/semantic-kernel/rust"),
+			),
+		).toHaveLength(1);
+
+		// AC-20. Recorded in the document, for a reader who never runs the gate.
+		const doc = readFileSync(
+			resolve(root, "docs/semantic-data-system/semantic-kernel-packages.md"),
+			"utf8",
+		);
+		for (const needle of [
+			"agent-ix/quoin#290",
+			"publish = false",
+			"agent-ix/filament-core-data#21",
+			"65ea7fa",
+			"89e0ea1",
+			"01cc31f",
+		]) {
+			expect(doc, needle).toContain(needle);
+		}
 	});
 });
