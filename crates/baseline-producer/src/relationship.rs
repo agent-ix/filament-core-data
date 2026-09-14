@@ -367,14 +367,16 @@ impl RelationshipDeclaration {
     pub fn project_endpoints(
         &self,
         requested: &RequestedEndpointProjection,
-    ) -> Result<RelationshipEndpoint, EndpointProjectionLoss> {
-        let loss = |detail: String| EndpointProjectionLoss {
-            relationship_identity: self.relationship_identity.clone(),
-            source_role: self.source.role.clone(),
-            target_role: self.target.role.clone(),
-            source_multiplicity: self.source.multiplicity.clone(),
-            target_multiplicity: self.target.multiplicity.clone(),
-            refusal: Refusal::new(RELATIONSHIP_ENDPOINT_PROJECTION_LOSS, detail),
+    ) -> Result<RelationshipEndpoint, Box<EndpointProjectionLoss>> {
+        let loss = |detail: String| {
+            Box::new(EndpointProjectionLoss {
+                relationship_identity: self.relationship_identity.clone(),
+                source_role: self.source.role.clone(),
+                target_role: self.target.role.clone(),
+                source_multiplicity: self.source.multiplicity.clone(),
+                target_multiplicity: self.target.multiplicity.clone(),
+                refusal: Refusal::new(RELATIONSHIP_ENDPOINT_PROJECTION_LOSS, detail),
+            })
         };
         if self.source.role != self.target.role {
             return Err(loss(format!(

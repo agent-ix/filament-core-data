@@ -14,6 +14,7 @@
 //! message text; a message is only ever asserted to *name* the identity or the
 //! offered kind the requirement says it must name.
 
+use ix_trace_rs::trace;
 use std::collections::{BTreeMap, BTreeSet};
 
 use agent_ix_baseline_producer::refusal::{
@@ -64,8 +65,11 @@ const FOREIGN_KINDS: [ExportKind; 5] = [
 /// The `export.rs` source text, for the vocabulary census of TC-1707.
 const EXPORT_SOURCE: &str = include_str!("../src/export.rs");
 
-/// The `refusal.rs` source text, for the stable-code census of TC-1705 and TC-1710.
-const REFUSAL_SOURCE: &str = include_str!("../src/refusal.rs");
+/// The crate manifest and affected declaration modules for TC-1731's static seam guard.
+const CRATE_MANIFEST: &str = include_str!("../Cargo.toml");
+const ENDPOINT_SOURCE_TEXT: &str = include_str!("../src/endpoint.rs");
+const CORRESPONDENCE_SOURCE: &str = include_str!("../src/correspondence.rs");
+const RELATIONSHIP_SOURCE: &str = include_str!("../src/relationship.rs");
 
 fn configuration() -> ConfigurationDocument {
     let mut configuration = ConfigurationDocument {
@@ -384,7 +388,9 @@ fn with_type_export(
     resealed(bundle)
 }
 
-/// Tracing: TC-1700
+/// Tracing: TC-1700; FR-127-AC-1, FR-127-CON-1
+#[trace("TC-1700", "FR-127-AC-1")]
+#[trace("TC-1700", "FR-127-CON-1")]
 #[test]
 fn tc_1700_every_endpoint_type_identity_resolves_to_exactly_one_export_mapping() {
     let admitted = bundle()
@@ -448,7 +454,10 @@ fn tc_1700_every_endpoint_type_identity_resolves_to_exactly_one_export_mapping()
     );
 }
 
-/// Tracing: TC-1701
+/// Tracing: TC-1701; FR-127-AC-2, FR-127-CON-4, FR-127-CON-6
+#[trace("TC-1701", "FR-127-AC-2")]
+#[trace("TC-1701", "FR-127-CON-4")]
+#[trace("TC-1701", "FR-127-CON-6")]
 #[test]
 fn tc_1701_an_unexported_model_type_refuses_distinctly_from_an_unexported_record() {
     let mut unexported_type = bundle();
@@ -490,7 +499,9 @@ fn tc_1701_an_unexported_model_type_refuses_distinctly_from_an_unexported_record
     );
 }
 
-/// Tracing: TC-1702
+/// Tracing: TC-1702; FR-127-AC-3, FR-127-CON-2
+#[trace("TC-1702", "FR-127-AC-3")]
+#[trace("TC-1702", "FR-127-CON-2")]
 #[test]
 fn tc_1702_each_non_type_kind_offered_for_a_model_type_refuses_as_kind_foreign() {
     let mut refused = 0;
@@ -523,7 +534,9 @@ fn tc_1702_each_non_type_kind_offered_for_a_model_type_refuses_as_kind_foreign()
     println!("TC-1702 measured: {refused} refused non-type kinds, each under ENDPOINT_TYPE_EXPORT_KIND_FOREIGN");
 }
 
-/// Tracing: TC-1703
+/// Tracing: TC-1703; FR-127-AC-4, FR-127-CON-2
+#[trace("TC-1703", "FR-127-AC-4")]
+#[trace("TC-1703", "FR-127-CON-2")]
 #[test]
 fn tc_1703_each_of_the_six_type_kinds_is_admitted_for_a_declared_model_type() {
     let mut admitted_kinds = 0;
@@ -550,7 +563,8 @@ fn tc_1703_each_of_the_six_type_kinds_is_admitted_for_a_declared_model_type() {
     println!("TC-1703 measured: {admitted_kinds} admitted type kinds");
 }
 
-/// Tracing: TC-1704
+/// Tracing: TC-1704; FR-127-AC-5
+#[trace("TC-1704", "FR-127-AC-5")]
 #[test]
 fn tc_1704_two_endpoints_naming_one_type_resolve_to_the_one_mapping_it_is_owed() {
     let mut shared = bundle();
@@ -588,7 +602,9 @@ fn tc_1704_two_endpoints_naming_one_type_resolve_to_the_one_mapping_it_is_owed()
     );
 }
 
-/// Tracing: TC-1705
+/// Tracing: TC-1705; FR-127-AC-6, FR-127-CON-8
+#[trace("TC-1705", "FR-127-AC-6")]
+#[trace("TC-1705", "FR-127-CON-8")]
 #[test]
 fn tc_1705_an_identity_declared_as_a_record_and_as_a_model_type_refuses() {
     // One identity cannot admit both: a record admits exactly its own kind and a
@@ -638,7 +654,9 @@ fn tc_1705_an_identity_declared_as_a_record_and_as_a_model_type_refuses() {
     );
 }
 
-/// Tracing: TC-1706
+/// Tracing: TC-1706; FR-127-AC-7, FR-129-AC-12
+#[trace("TC-1706", "FR-127-AC-7")]
+#[trace("TC-1706", "FR-129-AC-12")]
 #[test]
 fn tc_1706_a_model_type_mapping_owned_by_another_producer_object_refuses_as_cross_bound() {
     let mut cross_bound = bundle();
@@ -668,7 +686,9 @@ fn tc_1706_a_model_type_mapping_owned_by_another_producer_object_refuses_as_cros
     );
 }
 
-/// Tracing: TC-1707
+/// Tracing: TC-1707; FR-127-AC-8, FR-127-CON-3
+#[trace("TC-1707", "FR-127-AC-8")]
+#[trace("TC-1707", "FR-127-CON-3")]
 #[test]
 fn tc_1707_the_export_vocabulary_is_eleven_kinds_of_which_exactly_six_name_a_type() {
     assert_eq!(ExportKind::EMITTED.len(), 11);
@@ -721,7 +741,8 @@ fn tc_1707_the_export_vocabulary_is_eleven_kinds_of_which_exactly_six_name_a_typ
     );
 }
 
-/// Tracing: TC-1708
+/// Tracing: TC-1708; FR-127-AC-1
+#[trace("TC-1708", "FR-127-AC-1")]
 #[test]
 fn tc_1708_type_export_lookup_is_total_over_declared_endpoints_and_stable_across_calls() {
     let admitted = bundle().admit().expect("the fixture admits");
@@ -762,7 +783,9 @@ fn tc_1708_type_export_lookup_is_total_over_declared_endpoints_and_stable_across
     );
 }
 
-/// Tracing: TC-1709
+/// Tracing: TC-1709; FR-127-AC-10, FR-127-CON-7
+#[trace("TC-1709", "FR-127-AC-10")]
+#[trace("TC-1709", "FR-127-CON-7")]
 #[test]
 fn tc_1709_a_relationship_end_disagreeing_with_its_joined_endpoint_refuses() {
     let mut disagreeing = bundle();
@@ -784,12 +807,10 @@ fn tc_1709_a_relationship_end_disagreeing_with_its_joined_endpoint_refuses() {
     );
 }
 
-/// Tracing: TC-1710
+/// Tracing: TC-1710; FR-127-AC-11
+#[trace("TC-1710", "FR-127-AC-11")]
 #[test]
 fn tc_1710_two_mappings_for_one_model_type_under_one_producer_object_refuse_as_cross_bound() {
-    // FR-127 specifies `ENDPOINT_TYPE_EXPORT_DUPLICATE` for this case. No such
-    // code exists in `refusal.rs`; the implemented behaviour folds it into the
-    // cross-bound refusal, which distinguishes the two cases by message alone.
     let mut duplicated = bundle();
     duplicated.correspondences[0]
         .exports
@@ -804,23 +825,14 @@ fn tc_1710_two_mappings_for_one_model_type_under_one_producer_object_refuse_as_c
         "the refusal names the model type and the one owning producer object: {}",
         refusal.message
     );
-    assert!(
-        !REFUSAL_SOURCE.contains("ENDPOINT_TYPE_EXPORT_DUPLICATE"),
-        "no ENDPOINT_TYPE_EXPORT_DUPLICATE code is declared"
-    );
-    assert!(
-        !REFUSAL_SOURCE.contains("EXPORT_PATH_DISAGREES")
-            && !REFUSAL_SOURCE.contains("EXPORT_KIND_DISAGREES"),
-        "neither disagreement code is declared"
-    );
-
     println!(
-        "TC-1710 measured: 2 export mappings for 1 model type under 1 producer object, refused under {} rather than a distinct duplicate code",
+        "TC-1710 measured: 2 export mappings for 1 model type under 1 producer object, refused under {}",
         refusal.code
     );
 }
 
-/// Tracing: TC-1711
+/// Tracing: TC-1711; FR-127-AC-12
+#[trace("TC-1711", "FR-127-AC-12")]
 #[test]
 fn tc_1711_the_authored_ordered_export_path_is_retained_exactly_as_offered() {
     let authored = vec![
@@ -844,10 +856,9 @@ fn tc_1711_the_authored_ordered_export_path_is_retained_exactly_as_offered() {
     assert_eq!(retained.export_path, authored, "the order is retained");
     assert_eq!(retained.export_path.len(), 4);
 
-    // FR-127 specifies `EXPORT_PATH_DISAGREES` for a path reordered, truncated or
-    // re-segmented relative to the native artifact's own export table. The static
-    // bundle carries no native export table, so the reordered path below is
-    // admitted and retained rather than refused.
+    // Static admission deliberately has no native table to consult. It retains
+    // either authored order; TC-1724 owns agreement with the explicit table
+    // supplied at the separate fixture-qualification boundary.
     let reordered: Vec<String> = authored.iter().rev().cloned().collect();
     let permuted = with_type_export(
         bundle(),
@@ -868,11 +879,12 @@ fn tc_1711_the_authored_ordered_export_path_is_retained_exactly_as_offered() {
     assert_ne!(authored, reordered);
 
     println!(
-        "TC-1711 measured: 2 admissions over 4-segment export paths, both retained in the authored order, 0 EXPORT_PATH_DISAGREES refusals implemented"
+        "TC-1711 measured: 2 static admissions over 4-segment export paths, each retained in its authored order"
     );
 }
 
-/// Tracing: TC-1712
+/// Tracing: TC-1712; FR-127-CON-1
+#[trace("TC-1712", "FR-127-CON-1")]
 #[test]
 fn tc_1712_resolution_is_by_identity_not_by_path_and_is_identical_across_admissions() {
     // The Shipment mapping's final path segment spells `Order`. A coinciding
@@ -917,5 +929,94 @@ fn tc_1712_resolution_is_by_identity_not_by_path_and_is_identical_across_admissi
     println!(
         "TC-1712 measured: 1 coinciding final path segment resolving 0 types by path, {} endpoint/mapping pairs identical in order across 2 admissions of one document",
         first.len()
+    );
+}
+
+/// Tracing: TC-1731; FR-127-AC-9, FR-128-AC-9, FR-129-AC-9, FR-129-CON-7
+#[trace("TC-1731", "FR-127-AC-9")]
+#[trace("TC-1731", "FR-128-AC-9")]
+#[trace("TC-1731", "FR-129-AC-9")]
+#[trace("TC-1731", "FR-129-CON-7")]
+#[test]
+fn tc_1731_the_extension_preserves_authored_shapes_and_adds_no_native_reader() {
+    let EndpointDeclaration {
+        endpoint_identity: _,
+        endpoint_revision: _,
+        digest: _,
+        component_identity: _,
+        type_identity: _,
+        role: _,
+        multiplicity: _,
+        source_locus: _,
+        inventory_membership: _,
+    } = endpoint(ENDPOINT_SOURCE, TYPE_ORDER, "order");
+    let ProducerNativeCorrespondence {
+        binding_relation_identity: _,
+        producer,
+        native,
+        native_definition_closure: _,
+        required_native_definition_identities: _,
+        configuration_identity: _,
+        exports: _,
+    } = correspondence();
+    let ProducerObjectReference {
+        object_kind: _,
+        authority: _,
+        identity: _,
+        revision: _,
+        digest: _,
+    } = producer;
+    let NativeArtifactReference {
+        identity: _,
+        revision: _,
+        raw_byte_digest: _,
+    } = native;
+    let RelationshipDeclaration {
+        relationship_identity: _,
+        relationship_name: _,
+        relationship_revision: _,
+        digest: _,
+        source: _,
+        target: _,
+        semantics,
+        ownership: _,
+        inventory_membership: _,
+    } = relationship();
+    let RelationshipSemantics {
+        category: _,
+        direction: _,
+        composite: _,
+        lifecycle: _,
+        ownership: _,
+    } = semantics;
+
+    let affected_source = [
+        ENDPOINT_SOURCE_TEXT,
+        CORRESPONDENCE_SOURCE,
+        RELATIONSHIP_SOURCE,
+        EXPORT_SOURCE,
+    ]
+    .concat();
+    for forbidden in [
+        "NativeExportTable",
+        "NativeArtifactReader",
+        "NativeModelReader",
+        "NativeWireSchema",
+        "NativeTracingSchema",
+    ] {
+        assert!(
+            !affected_source.contains(forbidden),
+            "the producer source must not add the downstream native concern {forbidden}"
+        );
+    }
+    assert!(
+        !CRATE_MANIFEST.contains("quire-spec-language"),
+        "fixture qualification must not import the downstream native consumer"
+    );
+    assert_eq!(ExportKind::EMITTED.len(), 11);
+    assert_eq!(ExportKind::TYPE_KINDS.len(), 6);
+
+    println!(
+        "TC-1731 measured: 4 declaration shapes exhaustively destructured, 5 downstream native reader/schema names absent, and the 11-kind producer vocabulary retained"
     );
 }

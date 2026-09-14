@@ -33,6 +33,7 @@
 use std::fs;
 
 use agent_ix_baseline_producer::{CanonicalPolicy, NumericResourceLimit};
+use ix_trace_rs::trace;
 
 mod nfr036;
 mod static_fixture;
@@ -147,7 +148,8 @@ fn read_record(triple: &str) -> String {
 // TC-1652: canonical bytes across the named architecture set
 // ---------------------------------------------------------------------------
 
-/// Tracing: TC-1652
+/// Tracing: TC-1652; NFR-036
+#[trace("TC-1652", "NFR-036")]
 #[test]
 fn tc_1652_this_architecture_records_every_digested_documents_canonical_bytes_and_decisions() {
     let triple = compiled_target_triple();
@@ -212,7 +214,8 @@ fn tc_1652_this_architecture_records_every_digested_documents_canonical_bytes_an
     );
 }
 
-/// Tracing: TC-1652
+/// Tracing: TC-1652; NFR-036
+#[trace("TC-1652", "NFR-036")]
 #[test]
 #[ignore = "Cross-architecture evidence: needs an agreement record from each of x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu, so one host alone cannot hold both; run `make baseline-producer-cross-architecture`, which supplies the second architecture and fails naming it when its runner is absent"]
 fn tc_1652_the_named_architecture_set_agrees_element_for_element_on_bytes_and_digests() {
@@ -262,7 +265,8 @@ fn tc_1652_the_named_architecture_set_agrees_element_for_element_on_bytes_and_di
 // TC-1648: the refused numeric set across the named architecture set
 // ---------------------------------------------------------------------------
 
-/// Tracing: TC-1648
+/// Tracing: TC-1648; FR-118-AC-11
+#[trace("TC-1648", "FR-118-AC-11")]
 #[test]
 fn tc_1648_the_declared_numeric_limit_decides_the_same_numbers_on_this_architecture() {
     let triple = compiled_target_triple();
@@ -367,7 +371,8 @@ fn tc_1648_the_declared_numeric_limit_decides_the_same_numbers_on_this_architect
     );
 }
 
-/// Tracing: TC-1648
+/// Tracing: TC-1648; FR-118-AC-11
+#[trace("TC-1648", "FR-118-AC-11")]
 #[test]
 #[ignore = "Cross-architecture evidence: needs an agreement record from each of x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu, so one host alone cannot hold both; run `make baseline-producer-cross-architecture`, which supplies the second architecture and fails naming it when its runner is absent"]
 fn tc_1648_the_refused_numeric_set_agrees_element_for_element_across_the_named_architecture_set() {

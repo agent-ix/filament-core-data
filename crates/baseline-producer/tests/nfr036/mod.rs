@@ -92,16 +92,20 @@ pub fn crate_dir() -> PathBuf {
 /// Where the per-architecture records live.
 ///
 /// `NFR036_RECORD_DIR` names it when the Makefile runs the two architectures
-/// into one shared directory; `CARGO_TARGET_DIR` is the repository's
-/// per-worktree cargo directory otherwise. Reading these is a property of the
-/// *harness*, not of the producer: no crate source under audit names either.
+/// into one shared directory. Otherwise the running test executable identifies
+/// the target directory selected by Cargo, including a command-line
+/// `--target-dir`; the ambient `CARGO_TARGET_DIR` variable is deliberately not
+/// trusted because Cargo does not rewrite it when that option overrides a
+/// developer-global value. Reading these is a property of the *harness*, not of
+/// the producer: no crate source under audit names either.
 pub fn record_dir() -> PathBuf {
     if let Ok(named) = std::env::var("NFR036_RECORD_DIR") {
         return PathBuf::from(named);
     }
-    let target = std::env::var("CARGO_TARGET_DIR")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| workspace_dir().join("target"));
+    let target = std::env::current_exe()
+        .ok()
+        .and_then(|executable| executable.ancestors().nth(3).map(Path::to_path_buf))
+        .unwrap_or_else(|| workspace_dir().join("target"));
     target.join("nfr-036-agreement")
 }
 

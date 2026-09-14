@@ -12,6 +12,7 @@
 //! the unvalidated offer type, so the controls measure the seal rather than a
 //! typo. The rows below carry their runtime halves.
 
+use ix_trace_rs::trace;
 use std::collections::{BTreeMap, BTreeSet};
 
 use agent_ix_baseline_producer::refusal::{
@@ -408,7 +409,8 @@ fn keys_of(value: &Value, collected: &mut BTreeSet<String>) {
     keys(value, collected);
 }
 
-/// Tracing: TC-1631
+/// Tracing: TC-1631; FR-117-AC-1
+#[trace("TC-1631", "FR-117-AC-1")]
 #[test]
 fn tc_1631_a_complete_static_selection_is_admitted_as_one_immutable_typed_bundle() {
     let admitted = bundle()
@@ -468,7 +470,9 @@ fn tc_1631_a_complete_static_selection_is_admitted_as_one_immutable_typed_bundle
     );
 }
 
-/// Tracing: TC-1632
+/// Tracing: TC-1632; FR-117-AC-1, FR-117-CON-1
+#[trace("TC-1632", "FR-117-AC-1")]
+#[trace("TC-1632", "FR-117-CON-1")]
 #[test]
 fn tc_1632_the_bundle_type_is_closed_over_its_content_classes_and_the_assessment_exclusion() {
     // The `Compile` half is the two `compile_fail` doctests on
@@ -506,7 +510,8 @@ fn tc_1632_the_bundle_type_is_closed_over_its_content_classes_and_the_assessment
     );
 }
 
-/// Tracing: TC-1633
+/// Tracing: TC-1633; FR-117-AC-2
+#[trace("TC-1633", "FR-117-AC-2")]
 #[test]
 fn tc_1633_a_bundle_omitting_any_required_member_refuses_naming_it() {
     type Case = (
@@ -635,7 +640,9 @@ fn tc_1633_a_bundle_omitting_any_required_member_refuses_naming_it() {
     println!("TC-1633 measured: {measured} absent-member cases, one per member class, each refused blocking and each naming the absent member");
 }
 
-/// Tracing: TC-1634
+/// Tracing: TC-1634; FR-117-AC-3, FR-117-AC-7
+#[trace("TC-1634", "FR-117-AC-3")]
+#[trace("TC-1634", "FR-117-AC-7")]
 #[test]
 fn tc_1634_an_assessment_member_document_or_export_refuses_naming_it() {
     let admissible = wire(&bundle());
@@ -686,7 +693,9 @@ fn tc_1634_an_assessment_member_document_or_export_refuses_naming_it() {
     println!("TC-1634 measured: 3 assessment offers — 1 member, 1 document, 1 export kind — each refused {ASSESSMENT_INPUT_IN_STATIC_BUNDLE} naming what was offered, and 0 retained");
 }
 
-/// Tracing: TC-1635
+/// Tracing: TC-1635; FR-117-AC-4, FR-117-CON-2
+#[trace("TC-1635", "FR-117-AC-4")]
+#[trace("TC-1635", "FR-117-CON-2")]
 #[test]
 fn tc_1635_a_refused_admission_yields_no_value_of_the_admitted_type() {
     // The `Compile` half is the three `compile_fail` doctests on
@@ -715,7 +724,9 @@ fn tc_1635_a_refused_admission_yields_no_value_of_the_admitted_type() {
     println!("TC-1635 measured: 1 refused admission yielding 0 values of the admitted type, 3 compile_fail controls with 3 compiling twins, and 1 round trip that goes back in only through the admission operation");
 }
 
-/// Tracing: TC-1636
+/// Tracing: TC-1636; FR-117-AC-5, FR-117-CON-3
+#[trace("TC-1636", "FR-117-AC-5")]
+#[trace("TC-1636", "FR-117-CON-3")]
 #[test]
 fn tc_1636_an_admission_reads_no_ambient_input() {
     let first = bundle().admit().expect("the bundle is admitted");
@@ -771,7 +782,10 @@ fn tc_1636_an_admission_reads_no_ambient_input() {
     );
 }
 
-/// Tracing: TC-1638
+/// Tracing: TC-1638; FR-117-AC-8, FR-117-CON-4, FR-117-CON-5
+#[trace("TC-1638", "FR-117-AC-8")]
+#[trace("TC-1638", "FR-117-CON-4")]
+#[trace("TC-1638", "FR-117-CON-5")]
 #[test]
 fn tc_1638_a_static_admission_completes_from_static_inputs_alone() {
     // The bundle carries no population, snapshot, window, instance, observation,
@@ -809,7 +823,11 @@ fn tc_1638_a_static_admission_completes_from_static_inputs_alone() {
     println!("TC-1638 measured: 1 admission from the configuration document and the inventory declaration alone, reaching 0 population obligations, and 2 distinct closure refusals over 2 distinct members");
 }
 
-/// Tracing: TC-1639
+/// Tracing: TC-1639; FR-117-AC-10, FR-117-AC-11, FR-117-CON-6, FR-117-CON-7
+#[trace("TC-1639", "FR-117-AC-10")]
+#[trace("TC-1639", "FR-117-AC-11")]
+#[trace("TC-1639", "FR-117-CON-6")]
+#[trace("TC-1639", "FR-117-CON-7")]
 #[test]
 fn tc_1639_the_admitted_bundle_key_is_identity_revision_and_digest_together() {
     let mut registry = AdmissionRegistry::new();

@@ -4,6 +4,7 @@
 //! Traced FR-115 controls for the complete relationship record (Plan-017
 //! Task-146). Every control reports the number it measured.
 
+use ix_trace_rs::trace;
 use std::collections::{BTreeMap, BTreeSet};
 
 use agent_ix_baseline_producer::refusal::{
@@ -173,7 +174,9 @@ fn relationship() -> RelationshipDeclaration {
     }
 }
 
-/// Tracing: TC-1617
+/// Tracing: TC-1617; FR-115-AC-1, FR-115-CON-4
+#[trace("TC-1617", "FR-115-AC-1")]
+#[trace("TC-1617", "FR-115-CON-4")]
 #[test]
 fn tc_1617_a_relationship_record_carries_every_authored_member() {
     let endpoints = declared_endpoints();
@@ -229,7 +232,9 @@ fn tc_1617_a_relationship_record_carries_every_authored_member() {
     );
 }
 
-/// Tracing: TC-1618
+/// Tracing: TC-1618; FR-115-AC-1, FR-115-CON-3
+#[trace("TC-1618", "FR-115-AC-1")]
+#[trace("TC-1618", "FR-115-CON-3")]
 #[test]
 fn tc_1618_the_two_endpoint_records_stay_independent_members() {
     // A self-relationship: two separately declared endpoint records naming one
@@ -268,7 +273,8 @@ fn tc_1618_the_two_endpoint_records_stay_independent_members() {
     println!("TC-1618 measured: 2 endpoint records under 1 shared type identity retained 2 endpoint identities, 2 roles and 2 multiplicities");
 }
 
-/// Tracing: TC-1619
+/// Tracing: TC-1619; FR-115-AC-2
+#[trace("TC-1619", "FR-115-AC-2")]
 #[test]
 fn tc_1619_a_self_relationship_emits_two_independent_endpoint_records() {
     let self_type = "ix://agent-ix/commerce/type/Order";
@@ -301,7 +307,8 @@ fn tc_1619_a_self_relationship_emits_two_independent_endpoint_records() {
     );
 }
 
-/// Tracing: TC-1620
+/// Tracing: TC-1620; FR-115-AC-3
+#[trace("TC-1620", "FR-115-AC-3")]
 #[test]
 fn tc_1620_absent_roles_multiplicities_and_collapsed_projections_refuse() {
     let endpoints = declared_endpoints();
@@ -365,7 +372,10 @@ fn tc_1620_absent_roles_multiplicities_and_collapsed_projections_refuse() {
     println!("TC-1620 measured: 4 blocking member refusals naming the relationship, and 1 refused projection emitting a named loss record carrying the relationship identity and both authored roles and multiplicities");
 }
 
-/// Tracing: TC-1621
+/// Tracing: TC-1621; FR-115-AC-4, FR-115-AC-5, FR-115-CON-5
+#[trace("TC-1621", "FR-115-AC-4")]
+#[trace("TC-1621", "FR-115-AC-5")]
+#[trace("TC-1621", "FR-115-CON-5")]
 #[test]
 fn tc_1621_every_endpoint_join_goes_through_a_declared_endpoint_identity() {
     let endpoints = declared_endpoints();
@@ -412,7 +422,9 @@ fn tc_1621_every_endpoint_join_goes_through_a_declared_endpoint_identity() {
     );
 }
 
-/// Tracing: TC-1622
+/// Tracing: TC-1622; FR-115-CON-1, FR-115-CON-2
+#[trace("TC-1622", "FR-115-CON-1")]
+#[trace("TC-1622", "FR-115-CON-2")]
 #[test]
 fn tc_1622_a_relationship_identity_is_authored_and_names_no_population_member() {
     let endpoints = declared_endpoints();

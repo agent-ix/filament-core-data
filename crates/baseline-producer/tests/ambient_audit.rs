@@ -35,6 +35,7 @@
 //! A run that cannot create the namespace, or cannot compile the instrument,
 //! fails saying which — never a skip and never a vacuous pass.
 
+use ix_trace_rs::trace;
 use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -388,7 +389,8 @@ fn declared_modules(lib_rs: &str) -> BTreeSet<String> {
 // TC-1656, the call-graph half
 // ---------------------------------------------------------------------------
 
-/// Tracing: TC-1656
+/// Tracing: TC-1656; NFR-036
+#[trace("TC-1656", "NFR-036")]
 #[test]
 fn tc_1656_the_canonicalization_call_graph_reads_zero_ambient_inputs_with_no_exemption_list() {
     // The population is the whole crate: every module `src/lib.rs` declares has
@@ -698,7 +700,8 @@ fn instrumented_run(label: &str, plant: Option<&str>) -> (Vec<String>, Output) {
     (region, output)
 }
 
-/// Tracing: TC-1656
+/// Tracing: TC-1656; NFR-036
+#[trace("TC-1656", "NFR-036")]
 #[test]
 #[ignore = "Runtime evidence: compiles tests/probe/ambient_probe.rs, re-invokes this test binary under `unshare -rn` with the instrument preloaded, and plants two ambient reads to prove the instrument records them; run `make baseline-producer-ambient-evidence`"]
 fn tc_1656_the_instrumented_offline_run_in_a_network_namespace_records_zero_ambient_reads() {
@@ -753,7 +756,8 @@ fn tc_1656_the_instrumented_offline_run_in_a_network_namespace_records_zero_ambi
     }
 }
 
-/// Tracing: TC-1656
+/// Tracing: TC-1656; NFR-036
+#[trace("TC-1656", "NFR-036")]
 #[test]
 #[ignore = "child process of tc_1656_the_instrumented_offline_run_in_a_network_namespace_records_zero_ambient_reads; run by the parent with --ignored --exact under the preloaded instrument"]
 fn tc_1656_child_canonicalizes_the_population_under_the_instrument() {

@@ -11,6 +11,7 @@
 //! read-only context here: this crate maps onto it member for member and never
 //! edits it (FND-1760).
 
+use ix_trace_rs::trace;
 use std::collections::{BTreeMap, BTreeSet};
 
 use agent_ix_baseline_producer::refusal::{
@@ -95,7 +96,9 @@ fn wire_orders(entries: &[(&str, Value)]) -> Vec<String> {
     out
 }
 
-/// Tracing: TC-1600
+/// Tracing: TC-1600; FR-112-AC-1, FR-112-CON-3
+#[trace("TC-1600", "FR-112-AC-1")]
+#[trace("TC-1600", "FR-112-CON-3")]
 #[test]
 fn tc_1600_every_authored_digest_is_the_four_member_selection() {
     let canonical = canonical_digest(
@@ -145,7 +148,8 @@ fn tc_1600_every_authored_digest_is_the_four_member_selection() {
     );
 }
 
-/// Tracing: TC-1601
+/// Tracing: TC-1601; FR-112-AC-2
+#[trace("TC-1601", "FR-112-AC-2")]
 #[test]
 fn tc_1601_a_digest_offered_in_the_other_domain_refuses() {
     let canonical = canonical_digest(
@@ -176,7 +180,8 @@ fn tc_1601_a_digest_offered_in_the_other_domain_refuses() {
     println!("TC-1601 measured: 2 substitution directions, both refused {DIGEST_DOMAIN_SUBSTITUTED}, over 1 coinciding hash text");
 }
 
-/// Tracing: TC-1602
+/// Tracing: TC-1602; FR-112-AC-3
+#[trace("TC-1602", "FR-112-AC-3")]
 #[test]
 fn tc_1602_a_recomputed_value_differing_from_the_declared_value_refuses() {
     let document = json!({"modelIdentity": "ix://agent-ix/commerce/model/order-1-2"});
@@ -200,7 +205,11 @@ fn tc_1602_a_recomputed_value_differing_from_the_declared_value_refuses() {
     println!("TC-1602 measured: 1 agreeing recomputation admitted, 1 differing recomputation refused {DIGEST_MISMATCH} blocking, naming both values");
 }
 
-/// Tracing: TC-1603
+/// Tracing: TC-1603; FR-112-AC-4, FR-112-AC-5, FR-112-CON-1, FR-112-CON-5
+#[trace("TC-1603", "FR-112-AC-4")]
+#[trace("TC-1603", "FR-112-AC-5")]
+#[trace("TC-1603", "FR-112-CON-1")]
+#[trace("TC-1603", "FR-112-CON-5")]
 #[test]
 fn tc_1603_absent_unknown_unselected_and_bare_digests_refuse() {
     let configuration = configuration();
@@ -271,7 +280,9 @@ fn tc_1603_absent_unknown_unselected_and_bare_digests_refuse() {
     println!("TC-1603 measured: 5 refusals over 4 axes — absent version, unknown domain, unknown version, unselected in-vocabulary pair, bare hash — each binding nothing");
 }
 
-/// Tracing: TC-1604
+/// Tracing: TC-1604; FR-112-AC-6, FR-112-CON-4
+#[trace("TC-1604", "FR-112-AC-6")]
+#[trace("TC-1604", "FR-112-CON-4")]
 #[test]
 fn tc_1604_the_consumer_owned_locus_members_are_admitted() {
     // `ArtifactRef.digest` is one raw-byte digest string, and
@@ -307,7 +318,9 @@ fn tc_1604_the_consumer_owned_locus_members_are_admitted() {
     println!("TC-1604 measured: 2 consumer-owned locus members admitted (1 raw-byte digest string, 1 editable authority label), and 2 producer-authored refusals over the same text");
 }
 
-/// Tracing: TC-1605
+/// Tracing: TC-1605; FR-112-AC-7, FR-112-CON-2
+#[trace("TC-1605", "FR-112-AC-7")]
+#[trace("TC-1605", "FR-112-CON-2")]
 #[test]
 fn tc_1605_one_object_under_every_wire_member_order_yields_one_digest_value() {
     let entries = [

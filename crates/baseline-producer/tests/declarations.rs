@@ -11,6 +11,7 @@
 //! revision `72507f856457ba0922719bd5d9f5cadcce4058cd` — which this crate maps
 //! onto member for member and never edits.
 
+use ix_trace_rs::trace;
 use std::collections::{BTreeMap, BTreeSet};
 
 use agent_ix_baseline_producer::refusal::{
@@ -171,7 +172,9 @@ fn supplied() -> BTreeSet<&'static str> {
     BTreeSet::from([SOURCE_DOCUMENT])
 }
 
-/// Tracing: TC-1611
+/// Tracing: TC-1611; FR-114-AC-1, FR-114-CON-3
+#[trace("TC-1611", "FR-114-AC-1")]
+#[trace("TC-1611", "FR-114-CON-3")]
 #[test]
 fn tc_1611_a_component_record_carries_its_six_authored_members() {
     let configuration = configuration();
@@ -211,7 +214,8 @@ fn tc_1611_a_component_record_carries_its_six_authored_members() {
     );
 }
 
-/// Tracing: TC-1612
+/// Tracing: TC-1612; FR-114-AC-1
+#[trace("TC-1612", "FR-114-AC-1")]
 #[test]
 fn tc_1612_an_endpoint_record_adds_its_four_own_members() {
     let configuration = configuration();
@@ -253,7 +257,10 @@ fn tc_1612_an_endpoint_record_adds_its_four_own_members() {
     );
 }
 
-/// Tracing: TC-1613
+/// Tracing: TC-1613; FR-114-AC-1, FR-114-CON-1, FR-114-CON-2
+#[trace("TC-1613", "FR-114-AC-1")]
+#[trace("TC-1613", "FR-114-CON-1")]
+#[trace("TC-1613", "FR-114-CON-2")]
 #[test]
 fn tc_1613_four_identities_sharing_one_display_name_stay_four_identities() {
     let configuration = configuration();
@@ -313,7 +320,9 @@ fn tc_1613_four_identities_sharing_one_display_name_stay_four_identities() {
     );
 }
 
-/// Tracing: TC-1614
+/// Tracing: TC-1614; FR-114-AC-2, FR-114-CON-4
+#[trace("TC-1614", "FR-114-AC-2")]
+#[trace("TC-1614", "FR-114-CON-4")]
 #[test]
 fn tc_1614_an_absent_locus_and_an_absent_formal_revision_refuse() {
     let configuration = configuration();
@@ -352,7 +361,9 @@ fn tc_1614_an_absent_locus_and_an_absent_formal_revision_refuse() {
     println!("TC-1614 measured: 3 blocking locus refusals — absent locus, absent formal revision, native label substituted for it — each naming the offending record");
 }
 
-/// Tracing: TC-1615
+/// Tracing: TC-1615; Closed refuses the outsider; explicitly incomplete admits it carrying FR-110's retained `unknown`
+#[trace("TC-1615", "FR-114-AC-3")]
+#[trace("TC-1615", "FR-114-CON-6")]
 #[test]
 fn tc_1615_a_closed_inventory_refuses_an_unlisted_member_and_an_incomplete_one_admits_it() {
     let configuration = configuration();
@@ -393,7 +404,10 @@ fn tc_1615_a_closed_inventory_refuses_an_unlisted_member_and_an_incomplete_one_a
     println!("TC-1615 measured: 1 component over 2 inventories — refused {INVENTORY_MEMBER_UNLISTED} under the closed one, admitted under the explicitly incomplete one carrying the retained unknown disposition — plus 1 minted-disposition refusal");
 }
 
-/// Tracing: TC-1616
+/// Tracing: TC-1616; FR-114-AC-4, FR-114-AC-5, FR-114-CON-5
+#[trace("TC-1616", "FR-114-AC-4")]
+#[trace("TC-1616", "FR-114-AC-5")]
+#[trace("TC-1616", "FR-114-CON-5")]
 #[test]
 fn tc_1616_a_full_locus_is_admitted_and_an_unsupplied_locus_refuses() {
     let configuration = configuration();

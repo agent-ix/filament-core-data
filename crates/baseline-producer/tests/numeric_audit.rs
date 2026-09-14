@@ -12,6 +12,8 @@
 //! it measured rather than a pass verdict, and it fails on a scratch copy
 //! carrying a planted conversion.
 
+use ix_trace_rs::trace;
+
 /// The declared numeric-path population, as path and source text.
 ///
 /// The sources are embedded at compile time rather than read at run time, so
@@ -59,7 +61,8 @@ fn audit(path: &str, source: &str) -> Vec<CoercionSite> {
     sites
 }
 
-/// Tracing: TC-1654
+/// Tracing: TC-1654; NFR-036
+#[trace("TC-1654", "NFR-036")]
 #[test]
 fn tc_1654_the_numeric_path_reaches_zero_binary_floating_point_coercion_sites() {
     let mut sites = Vec::new();

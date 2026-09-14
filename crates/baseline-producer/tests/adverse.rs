@@ -36,6 +36,7 @@ use agent_ix_baseline_producer::refusal::{
     REVISION_NAMESPACE_SUBSTITUTED,
 };
 use agent_ix_baseline_producer::{Refusal, StaticProducerBundle};
+use ix_trace_rs::trace;
 
 mod static_fixture;
 
@@ -198,7 +199,8 @@ fn measure(index: usize) -> (Refusal, Vec<String>) {
     (refusal, changed)
 }
 
-/// Tracing: TC-1631
+/// Tracing: TC-1631; FR-117-AC-1
+#[trace("TC-1631", "FR-117-AC-1")]
 #[test]
 fn tc_1631_the_good_static_bundle_fixture_is_admitted_from_its_wire_form() {
     let admitted = StaticProducerBundle::admit_json(&fixture_bytes(GOOD_FIXTURE))
@@ -267,7 +269,8 @@ fn tc_1631_the_good_static_bundle_fixture_is_admitted_from_its_wire_form() {
     );
 }
 
-/// Tracing: TC-1633
+/// Tracing: TC-1633; FR-117-AC-2
+#[trace("TC-1633", "FR-117-AC-2")]
 #[test]
 fn tc_1633_the_missing_identity_axis_refuses_naming_the_absent_identity() {
     let (refusal, changed) = measure(0);
@@ -282,7 +285,8 @@ fn tc_1633_the_missing_identity_axis_refuses_naming_the_absent_identity() {
     );
 }
 
-/// Tracing: TC-1601
+/// Tracing: TC-1601; FR-112-AC-2
+#[trace("TC-1601", "FR-112-AC-2")]
 #[test]
 fn tc_1601_the_digest_domain_substitution_axis_refuses_the_substituted_domain() {
     let (refusal, changed) = measure(1);
@@ -297,7 +301,8 @@ fn tc_1601_the_digest_domain_substitution_axis_refuses_the_substituted_domain() 
     );
 }
 
-/// Tracing: TC-1607
+/// Tracing: TC-1607; FR-113-AC-2
+#[trace("TC-1607", "FR-113-AC-2")]
 #[test]
 fn tc_1607_the_revision_namespace_substitution_axis_refuses_the_substituted_namespace() {
     let (refusal, changed) = measure(2);
@@ -314,7 +319,8 @@ fn tc_1607_the_revision_namespace_substitution_axis_refuses_the_substituted_name
     );
 }
 
-/// Tracing: TC-1624
+/// Tracing: TC-1624; FR-116-AC-2
+#[trace("TC-1624", "FR-116-AC-2")]
 #[test]
 fn tc_1624_the_foreign_export_axis_refuses_naming_the_export_and_the_object() {
     let (refusal, changed) = measure(3);
@@ -334,7 +340,8 @@ fn tc_1624_the_foreign_export_axis_refuses_naming_the_export_and_the_object() {
     );
 }
 
-/// Tracing: TC-1620
+/// Tracing: TC-1620; FR-115-AC-3
+#[trace("TC-1620", "FR-115-AC-3")]
 #[test]
 fn tc_1620_the_endpoint_multiplicity_loss_axis_refuses_rather_than_defaulting() {
     let (refusal, changed) = measure(4);
@@ -352,7 +359,9 @@ fn tc_1620_the_endpoint_multiplicity_loss_axis_refuses_rather_than_defaulting() 
     );
 }
 
-/// Tracing: TC-1614
+/// Tracing: TC-1614; FR-114-AC-2, FR-114-CON-4
+#[trace("TC-1614", "FR-114-AC-2")]
+#[trace("TC-1614", "FR-114-CON-4")]
 #[test]
 fn tc_1614_the_absent_provenance_axis_refuses_naming_the_record() {
     let (refusal, changed) = measure(5);
@@ -369,7 +378,8 @@ fn tc_1614_the_absent_provenance_axis_refuses_naming_the_record() {
     );
 }
 
-/// Tracing: TC-1625
+/// Tracing: TC-1625; FR-116-AC-3
+#[trace("TC-1625", "FR-116-AC-3")]
 #[test]
 fn tc_1625_the_stale_correspondence_axis_refuses_the_changed_selection() {
     declared_axis_table();
@@ -415,7 +425,9 @@ fn tc_1625_the_stale_correspondence_axis_refuses_the_changed_selection() {
     );
 }
 
-/// Tracing: TC-1615
+/// Tracing: TC-1615; Closed refuses the outsider; explicitly incomplete admits it carrying FR-110's retained `unknown`
+#[trace("TC-1615", "FR-114-AC-3")]
+#[trace("TC-1615", "FR-114-CON-6")]
 #[test]
 fn tc_1615_the_incomplete_inventory_axis_refuses_the_unlisted_member() {
     let (refusal, changed) = measure(7);

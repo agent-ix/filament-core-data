@@ -149,13 +149,13 @@ above records.
 
 ### Stakeholder Requirement Coverage
 
-| Stakeholder Req | Trace to US/FR | Test/Validation | Status |
+| Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
 | StR-001 | US-001..US-010, US-012, US-013, US-015..US-017, FR-001..FR-053, FR-063..FR-080, FR-091..FR-126 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944, TC-1200..1350, TC-1373..1387, TC-1600..1499 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch; TC-1373..1387 planned on #95; TC-1600..1456 planned on the #95 static half and TC-1657..1499 planned on the #95 assessment half, which this increment does not implement |
 
 ### User Story Coverage
 
-| User Story | Acceptance Criteria | Test Cases | Status |
+| User Story | Acceptance Criteria | Test Cases | Coverage Status |
 |---|---|---|---|
 | US-001 | US-001-AC-1 | TC-034 | ✅ Complete |
 | US-001 | US-001-AC-2 | TC-035 | ✅ Complete |
@@ -223,7 +223,7 @@ above records.
 
 ### Functional Requirement Coverage
 
-| Functional Req | Acceptance Criteria | Test Cases | Status |
+| Functional Req | Acceptance Criteria | Test Cases | Coverage Status |
 |---|---|---|---|
 | FR-001 | FR-001-AC-1..5, FR-001-CON-1 | TC-001..004, TC-053 | ✅ Complete |
 | FR-002 | FR-002-AC-1..4 | TC-005..008 | ✅ Complete |
@@ -345,9 +345,9 @@ above records.
 | FR-124 | FR-124-AC-1..9, FR-124-CON-1..6 | TC-1682..TC-1686 | 🚧 planned — #95 assessment half, not in this increment |
 | FR-125 | FR-125-AC-1..9, FR-125-CON-1..6 | TC-1687..TC-1690 | 🚧 planned — #95 assessment half, not in this increment |
 | FR-126 | FR-126-AC-1..12, FR-126-CON-1..6 | TC-1691..TC-1695 | 🚧 planned — #95 assessment half, not in this increment |
-| FR-127 | FR-127-AC-1..12, FR-127-CON-1..9 | TC-1700..TC-1712 | ✅ Complete |
-| FR-128 | FR-128-AC-1..9, FR-128-CON-1..6 | TC-1713..TC-1721 | ✅ Complete |
-| FR-129 | FR-129-AC-1..12, FR-129-CON-1..7 | TC-1722..TC-1729 | ✅ Complete |
+| FR-127 | FR-127-AC-1..12, FR-127-CON-1..9 | TC-1700..TC-1712, TC-1724, TC-1731 | ✅ Complete |
+| FR-128 | FR-128-AC-1..9, FR-128-CON-1..6 | TC-1713..TC-1721, TC-1731 | ✅ Complete |
+| FR-129 | FR-129-AC-1..13, FR-129-CON-1..8 | TC-1706, TC-1722..TC-1732 | ✅ Complete |
 | FR-100 | FR-100-AC-1..6, FR-100-CON-1..3 | TC-1361..TC-1366 | ✅ Complete |
 | FR-130 | FR-130-AC-1..8, FR-130-CON-1..3 | TC-1388..TC-1395 | ✅ Complete |
 | FR-131 | FR-131-AC-1..9, FR-131-CON-1..3 | TC-1403..TC-1409, TC-1586 | ✅ Complete |
@@ -1746,7 +1746,7 @@ above records.
 | TC-1703 | Each of the six admitted native type export kinds is retained without narrowing | Unit | P0 | FR-127-AC-4, FR-127-CON-2 | ✅ passed |
 | TC-1704 | Two endpoints naming one model type resolve to the one export mapping that identity is owed | Unit | P1 | FR-127-AC-5 | ✅ passed |
 | TC-1705 | One identity declared both as a producer record and as a model type refuses as identity-kind ambiguous | Unit | P0 | FR-127-AC-6, FR-127-CON-8 | ✅ passed |
-| TC-1706 | A model-type export owned by another producer object refuses as cross-bound | Unit | P0 | FR-127-AC-7 | ✅ passed |
+| TC-1706 | A model-type export owned by another producer object refuses as cross-bound | Unit | P0 | FR-127-AC-7, FR-129-AC-12 | ✅ passed |
 | TC-1707 | The static export vocabulary contains exactly its emitted kinds, exactly six type kinds, and no population variant | Static | P0 | FR-127-AC-8, FR-127-CON-3 | ✅ passed |
 | TC-1708 | Type-export lookup is total over declared endpoints, absent for an unknown endpoint, ordered, and stable across calls | Unit | P1 | FR-127-AC-1 | ✅ passed |
 | TC-1709 | A relationship endpoint type differing from its joined endpoint declaration refuses naming both spellings | Unit | P0 | FR-127-AC-10, FR-127-CON-7 | ✅ passed |
@@ -1764,12 +1764,15 @@ above records.
 | TC-1721 | All four direction values remain distinct copyable, ordered, and hashable typed keys | Unit | P1 | FR-128-AC-8 | ✅ passed |
 | TC-1722 | The declared native raw-byte digest recomputes from the committed artifact bytes in the native digest domain | Integration | P0 | FR-129-AC-1, FR-129-CON-1 | ✅ passed |
 | TC-1723 | Hashing a reserialized JSON rendering differs from hashing the native artifact's exact raw bytes | Unit | P0 | FR-129-AC-2, FR-129-CON-2 | ✅ passed |
-| TC-1724 | Every endpoint model type resolves to a kind and ordered path present in the committed native export table | Integration | P0 | FR-129-AC-3, FR-129-CON-4 | ✅ passed |
+| TC-1724 | Every endpoint model type resolves to a kind and ordered path present in the committed native export table | Integration | P0 | FR-127-AC-12, FR-127-CON-5, FR-129-AC-3, FR-129-CON-4 | ✅ passed |
 | TC-1725 | The fixture relationship resolves its two ends to two distinct native type exports | Integration | P0 | FR-129-AC-4, FR-129-AC-7, FR-129-CON-5 | ✅ passed |
-| TC-1726 | Altering one character of the declared native digest refuses under DIGEST_MISMATCH | Unit | P0 | FR-129-AC-5, FR-129-AC-11 | ✅ passed |
+| TC-1726 | A resealed bundle carrying an altered native digest and replacement native bytes each refuse under `DIGEST_MISMATCH`, while a changed native type-export path refuses under `EXPORT_FOREIGN` | Unit | P0 | FR-129-AC-5, FR-129-AC-11 | ✅ passed |
 | TC-1727 | The real native export table exposes population as the one kind absent from the static vocabulary | Static | P1 | FR-129-AC-6 | ✅ passed |
 | TC-1728 | The fixture's native digest is a recomputed hash rather than repeated placeholder fill | Static | P1 | FR-129-AC-1 | ✅ passed |
-| TC-1729 | Two admissions of the same native-backed fixture produce identical bundle digests and resolution cardinality | Property | P1 | FR-129-AC-8, FR-129-CON-6 | ✅ passed |
+| TC-1729 | Fixture qualification produces the identical bundle digest in an offline child process with an empty environment, changed timezone, and changed working directory | Integration | P1 | FR-129-AC-8, FR-129-CON-6 | ✅ passed |
+| TC-1730 | Each native artifact-byte, export-table-byte, export-count, export-path-segment, and definition-closure bound admits its exact maximum and refuses one unit past it under `DOCUMENT_RESOURCE_LIMIT` naming the dimension | Unit | P0 | FR-129-AC-13, FR-129-CON-8 | ✅ passed |
+| TC-1731 | Inspection of the extension diff confirms the named authored producer members remain present and no native wire, reference, tracing schema, artifact reader, or export vocabulary was added | Static | P1 | FR-127-AC-9, FR-128-AC-9, FR-129-AC-9, FR-129-CON-7 | ✅ passed |
+| TC-1732 | The delivery record and PR scope describe the fixture solely as static producer qualification and make no assessment-campaign acceptance claim | Manual | P1 | FR-129-AC-10 | ✅ passed |
 | TC-1388 | A rust target request over an accepted IR document returns state success with a non-empty file set, src/lib.rs among the paths, and zero blocking diagnostics | Unit | P0 | FR-130-AC-1 | ✅ passed |
 | TC-1389 | The manifest a rust target request returns names the Rust backend's own identity and no TypeScript identity | Unit | P0 | FR-130-AC-2 | ✅ passed |
 | TC-1390 | Generating one document through the seam and through generateRust yields the same path set and a byte-identical digest at every path | Integration | P0 | FR-130-AC-3, FR-130-CON-1 | ✅ passed |
@@ -2917,18 +2920,18 @@ the route the design takes around it rather than as a defect closed here.
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 286 | 244 | 0 | 42 | 100% mapped (286/286) |
-| Manual | 63 | 46 | 0 | 17 | 100% mapped (63/63) |
+| Static | 287 | 245 | 0 | 42 | 100% mapped (287/287) |
+| Manual | 64 | 47 | 0 | 17 | 100% mapped (64/64) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
-| Property | 137 | 84 | 0 | 53 | 100% mapped (137/137) |
-| Unit | 645 | 505 | 0 | 140 | 100% mapped (645/645) |
-| Integration | 169 | 101 | 0 | 68 | 100% mapped (169/169) |
+| Property | 136 | 83 | 0 | 53 | 100% mapped (136/136) |
+| Unit | 646 | 506 | 0 | 140 | 100% mapped (646/646) |
+| Integration | 170 | 102 | 0 | 68 | 100% mapped (170/170) |
 | Fuzz | 14 | 8 | 0 | 6 | 100% mapped (14/14) |
 | Snapshot | 71 | 43 | 0 | 28 | 100% mapped (71/71) |
 | Compile | 22 | 7 | 0 | 15 | 100% mapped (22/22) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
 | Benchmark | 1 | 0 | 0 | 1 | 100% mapped (1/1) |
-| **Total** | **1471** | **1080** | **0** | **391** | **100% mapped (1471/1471)** |
+| **Total** | **1474** | **1083** | **0** | **391** | **100% mapped (1474/1474)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

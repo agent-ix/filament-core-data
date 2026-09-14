@@ -10,6 +10,7 @@
 //! `Revision { namespace, value }` and the `NativeSource.revision` authority
 //! label this requirement excludes.
 
+use ix_trace_rs::trace;
 use std::collections::{BTreeMap, BTreeSet};
 
 use agent_ix_baseline_producer::refusal::{
@@ -49,7 +50,9 @@ fn configuration() -> ConfigurationDocument {
     }
 }
 
-/// Tracing: TC-1606
+/// Tracing: TC-1606; FR-113-AC-1, FR-113-CON-1
+#[trace("TC-1606", "FR-113-AC-1")]
+#[trace("TC-1606", "FR-113-CON-1")]
 #[test]
 fn tc_1606_producer_and_native_revisions_carry_their_two_declared_namespaces() {
     let configuration = configuration();
@@ -113,7 +116,8 @@ fn tc_1606_producer_and_native_revisions_carry_their_two_declared_namespaces() {
     );
 }
 
-/// Tracing: TC-1607
+/// Tracing: TC-1607; FR-113-AC-2
+#[trace("TC-1607", "FR-113-AC-2")]
 #[test]
 fn tc_1607_a_revision_under_the_other_classs_namespace_refuses() {
     let native_under_producer = Revision::producer("1.2.0");
@@ -133,7 +137,9 @@ fn tc_1607_a_revision_under_the_other_classs_namespace_refuses() {
     println!("TC-1607 measured: 2 substitution directions, both refused {REVISION_NAMESPACE_SUBSTITUTED}");
 }
 
-/// Tracing: TC-1608
+/// Tracing: TC-1608; FR-113-AC-3, FR-113-CON-2
+#[trace("TC-1608", "FR-113-AC-3")]
+#[trace("TC-1608", "FR-113-CON-2")]
 #[test]
 fn tc_1608_a_bare_revision_string_refuses_and_binds_nothing() {
     let refusal = Revision::from_wire(&json!("1.2.0"))
@@ -157,7 +163,9 @@ fn tc_1608_a_bare_revision_string_refuses_and_binds_nothing() {
     println!("TC-1608 measured: 3 namespace-absent forms — bare string, absent member, empty spelling — each refused {REVISION_NAMESPACE_ABSENT}, binding nothing");
 }
 
-/// Tracing: TC-1609
+/// Tracing: TC-1609; FR-113-AC-4, FR-113-CON-5
+#[trace("TC-1609", "FR-113-AC-4")]
+#[trace("TC-1609", "FR-113-CON-5")]
 #[test]
 fn tc_1609_outside_the_vocabulary_and_undeclared_are_two_separate_refusals() {
     let configuration = configuration();
@@ -188,7 +196,11 @@ fn tc_1609_outside_the_vocabulary_and_undeclared_are_two_separate_refusals() {
     println!("TC-1609 measured: 2 separate refusals over 1 namespace each — {REVISION_NAMESPACE_UNKNOWN} outside the closed vocabulary, {REVISION_NAMESPACE_UNDECLARED} inside it but undeclared");
 }
 
-/// Tracing: TC-1610
+/// Tracing: TC-1610; FR-113-AC-5, FR-113-AC-6, FR-113-CON-3, FR-113-CON-4
+#[trace("TC-1610", "FR-113-AC-5")]
+#[trace("TC-1610", "FR-113-AC-6")]
+#[trace("TC-1610", "FR-113-CON-3")]
+#[trace("TC-1610", "FR-113-CON-4")]
 #[test]
 fn tc_1610_one_value_spelling_under_two_namespaces_stays_two_revisions() {
     let producer = Revision::producer("1.2.0");

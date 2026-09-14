@@ -31,6 +31,7 @@
 //! refused by the admission entry point, which is the division of labour
 //! `tests/adverse.rs` measures.
 
+use ix_trace_rs::trace;
 use std::collections::BTreeSet;
 
 use serde_json::Value;
@@ -112,7 +113,8 @@ fn required_of(schema: &Value) -> BTreeSet<String> {
         .collect()
 }
 
-/// Tracing: TC-1633
+/// Tracing: TC-1633; FR-117-AC-2
+#[trace("TC-1633", "FR-117-AC-2")]
 #[test]
 fn tc_1633_the_published_schema_requires_four_header_and_nine_content_members() {
     let schema = schema();
@@ -165,7 +167,9 @@ fn tc_1633_the_published_schema_requires_four_header_and_nine_content_members() 
     );
 }
 
-/// Tracing: TC-1634
+/// Tracing: TC-1634; FR-117-AC-3, FR-117-AC-7
+#[trace("TC-1634", "FR-117-AC-3")]
+#[trace("TC-1634", "FR-117-AC-7")]
 #[test]
 fn tc_1634_the_published_schema_prohibits_every_assessment_member_by_name() {
     let schema = schema();
@@ -205,7 +209,8 @@ fn tc_1634_the_published_schema_prohibits_every_assessment_member_by_name() {
     );
 }
 
-/// Tracing: TC-1631
+/// Tracing: TC-1631; FR-117-AC-1
+#[trace("TC-1631", "FR-117-AC-1")]
 #[test]
 fn tc_1631_the_published_schema_accepts_the_good_fixture_and_rejects_the_shape_violations() {
     let schema = schema();

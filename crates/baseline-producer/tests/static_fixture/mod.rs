@@ -283,7 +283,7 @@ fn write_permuted(
     }
 }
 
-fn reorder<T>(items: &mut Vec<T>, order: &str, seed: u64) {
+fn reorder<T>(items: &mut [T], order: &str, seed: u64) {
     match order {
         "declared" => {}
         "reverse" => items.reverse(),

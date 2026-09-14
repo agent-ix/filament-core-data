@@ -15,9 +15,13 @@
 //! closed content classes. The recomputation below is verification, which is
 //! where FR-129 puts it.
 
+use ix_trace_rs::trace;
 use std::collections::{BTreeMap, BTreeSet};
+use std::process::Command;
 
-use agent_ix_baseline_producer::refusal::DIGEST_MISMATCH;
+use agent_ix_baseline_producer::refusal::{
+    DIGEST_MISMATCH, DOCUMENT_RESOURCE_LIMIT, EXPORT_FOREIGN, INVALID_PRODUCER_DOCUMENT,
+};
 use agent_ix_baseline_producer::{
     ArtifactKind, ArtifactReference, ComponentDeclaration, ConfigurationDocument,
     DeclarationSource, DigestDomainSelection, DigestSelection, EndpointDeclaration, ExportKind,
@@ -28,6 +32,7 @@ use agent_ix_baseline_producer::{
     RelationshipSemantics, ResourceLimits, Revision, SourceLocus, Span, StaticClosure,
     StaticProducerBundle, WireReference, ADMISSIBLE_REVISION_NAMESPACES,
 };
+use serde::Deserialize;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 
@@ -45,6 +50,12 @@ const NATIVE_ARTIFACT: &str = "ix://agent-ix/quire-spec-language/examples/protoc
 /// The digest the native producer itself records for those bytes.
 const NATIVE_RAW_DIGEST: &str =
     "sha256:1a9441ec11c899c05d21c2c6f45392ce626a2d659255800a5f04eaec58d4f6a8";
+
+const MAXIMUM_NATIVE_ARTIFACT_BYTES: &str = "maximumNativeArtifactBytes";
+const MAXIMUM_NATIVE_EXPORT_TABLE_BYTES: &str = "maximumNativeExportTableBytes";
+const MAXIMUM_NATIVE_EXPORTS: &str = "maximumNativeExports";
+const MAXIMUM_NATIVE_EXPORT_PATH_SEGMENTS: &str = "maximumNativeExportPathSegments";
+const MAXIMUM_NATIVE_DEFINITION_CLOSURE_ENTRIES: &str = "maximumNativeDefinitionClosureEntries";
 
 const AUTHORITY: &str = "ix://agent-ix/quire-spec-language";
 const MODEL: &str = "ix://agent-ix/protocol-handoff/model/workflow-1-2";
@@ -64,37 +75,162 @@ const ENDPOINT_SOURCE: &str = "ix://agent-ix/protocol-handoff/endpoint/workflow-
 const ENDPOINT_TARGET: &str = "ix://agent-ix/protocol-handoff/endpoint/workflow-notice-target";
 const RELATIONSHIP: &str = "ix://agent-ix/protocol-handoff/relationship/workflow-notice";
 
+/// The adjacent export-table manifest emitted by the native producer recipe.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct NativeExportTable {
+    note: String,
+    artifact_identity: String,
+    artifact_raw_byte_digest: String,
+    profile: String,
+    exports: Vec<NativeExport>,
+}
+
 /// One entry of the native artifact's own export table.
+#[derive(Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct NativeExport {
     kind: String,
     path: Vec<String>,
 }
 
+#[derive(Debug, PartialEq, Eq)]
+struct FixtureRefusal {
+    code: &'static str,
+    subject: String,
+}
+
+impl FixtureRefusal {
+    fn new(code: &'static str, subject: impl Into<String>) -> Self {
+        Self {
+            code,
+            subject: subject.into(),
+        }
+    }
+}
+
+fn checked_bound(subject: &'static str, actual: usize, maximum: u64) -> Result<(), FixtureRefusal> {
+    let actual =
+        u64::try_from(actual).map_err(|_| FixtureRefusal::new(DOCUMENT_RESOURCE_LIMIT, subject))?;
+    if actual > maximum {
+        return Err(FixtureRefusal::new(DOCUMENT_RESOURCE_LIMIT, subject));
+    }
+    Ok(())
+}
+
+fn declared_bound(
+    admitted: &agent_ix_baseline_producer::AdmittedStaticBundle,
+    subject: &'static str,
+) -> Result<u64, FixtureRefusal> {
+    admitted
+        .configuration()
+        .resource_limits
+        .declared_bounds
+        .get(subject)
+        .copied()
+        .ok_or_else(|| FixtureRefusal::new(DOCUMENT_RESOURCE_LIMIT, subject))
+}
+
+fn parse_native_exports(
+    admitted: &agent_ix_baseline_producer::AdmittedStaticBundle,
+    table_bytes: &[u8],
+) -> Result<NativeExportTable, FixtureRefusal> {
+    checked_bound(
+        MAXIMUM_NATIVE_EXPORT_TABLE_BYTES,
+        table_bytes.len(),
+        declared_bound(admitted, MAXIMUM_NATIVE_EXPORT_TABLE_BYTES)?,
+    )?;
+    let table: NativeExportTable = serde_json::from_slice(table_bytes)
+        .map_err(|_| FixtureRefusal::new(INVALID_PRODUCER_DOCUMENT, "nativeExportTable"))?;
+    if table.note.is_empty() || table.profile != "native-state-model/2" {
+        return Err(FixtureRefusal::new(
+            INVALID_PRODUCER_DOCUMENT,
+            "nativeExportTable",
+        ));
+    }
+    checked_bound(
+        MAXIMUM_NATIVE_EXPORTS,
+        table.exports.len(),
+        declared_bound(admitted, MAXIMUM_NATIVE_EXPORTS)?,
+    )?;
+    let maximum_path_segments = declared_bound(admitted, MAXIMUM_NATIVE_EXPORT_PATH_SEGMENTS)?;
+    for export in &table.exports {
+        checked_bound(
+            MAXIMUM_NATIVE_EXPORT_PATH_SEGMENTS,
+            export.path.len(),
+            maximum_path_segments,
+        )?;
+    }
+    Ok(table)
+}
+
+/// Qualify the producer-owned fixture evidence without duplicating native-model admission.
+fn verify_native_fixture(
+    bundle: StaticProducerBundle,
+    native_bytes: &[u8],
+    table_bytes: &[u8],
+) -> Result<agent_ix_baseline_producer::AdmittedStaticBundle, FixtureRefusal> {
+    let admitted = bundle
+        .admit()
+        .map_err(|refusal| FixtureRefusal::new(refusal.code, refusal.message))?;
+    checked_bound(
+        MAXIMUM_NATIVE_ARTIFACT_BYTES,
+        native_bytes.len(),
+        declared_bound(&admitted, MAXIMUM_NATIVE_ARTIFACT_BYTES)?,
+    )?;
+    for correspondence in admitted.correspondences() {
+        checked_bound(
+            MAXIMUM_NATIVE_DEFINITION_CLOSURE_ENTRIES,
+            correspondence.native_definition_closure.len(),
+            declared_bound(&admitted, MAXIMUM_NATIVE_DEFINITION_CLOSURE_ENTRIES)?,
+        )?;
+    }
+
+    let table = parse_native_exports(&admitted, table_bytes)?;
+    let mut correspondences = admitted.correspondences().iter().filter(|candidate| {
+        candidate.producer.identity == admitted.model().model_identity
+            && candidate.native.identity == table.artifact_identity
+    });
+    let correspondence = correspondences
+        .next()
+        .ok_or_else(|| FixtureRefusal::new(EXPORT_FOREIGN, table.artifact_identity.clone()))?;
+    if correspondences.next().is_some() {
+        return Err(FixtureRefusal::new(EXPORT_FOREIGN, table.artifact_identity));
+    }
+
+    let recomputed = format!("sha256:{:x}", Sha256::digest(native_bytes));
+    if correspondence.native.raw_byte_digest.value != recomputed
+        || table.artifact_raw_byte_digest != recomputed
+    {
+        return Err(FixtureRefusal::new(DIGEST_MISMATCH, NATIVE_ARTIFACT));
+    }
+
+    for endpoint in admitted.endpoints() {
+        let mut mappings = correspondence.exports.iter().filter(|export| {
+            export.export_identity == endpoint.type_identity && export.kind.is_type()
+        });
+        let mapping = mappings
+            .next()
+            .ok_or_else(|| FixtureRefusal::new(EXPORT_FOREIGN, endpoint.type_identity.clone()))?;
+        if mappings.next().is_some()
+            || !table.exports.iter().any(|native| {
+                native.kind == mapping.kind.as_str() && native.path == mapping.export_path
+            })
+        {
+            return Err(FixtureRefusal::new(
+                EXPORT_FOREIGN,
+                endpoint.type_identity.clone(),
+            ));
+        }
+    }
+    Ok(admitted)
+}
+
 /// The native artifact's export table, read from its committed bytes.
 fn native_exports() -> Vec<NativeExport> {
-    let table: Value = serde_json::from_str(NATIVE_EXPORT_TABLE).expect("the export table parses");
-    table["exports"]
-        .as_array()
-        .expect("the table carries exports")
-        .iter()
-        .map(|export| NativeExport {
-            kind: export["kind"]
-                .as_str()
-                .expect("an export names its kind")
-                .to_owned(),
-            path: export["path"]
-                .as_array()
-                .expect("an export carries a path")
-                .iter()
-                .map(|segment| {
-                    segment
-                        .as_str()
-                        .expect("a path segment is a string")
-                        .to_owned()
-                })
-                .collect(),
-        })
-        .collect()
+    serde_json::from_str::<NativeExportTable>(NATIVE_EXPORT_TABLE)
+        .expect("the export table parses")
+        .exports
 }
 
 /// The one native export of `kind` whose final path segment is `name`.
@@ -124,7 +260,13 @@ fn configuration() -> ConfigurationDocument {
         loss_policy: "ix://agent-ix/protocol-handoff/loss-policy/refuse".into(),
         resource_limits: ResourceLimits {
             numeric_resource_limit: Some(NumericResourceLimit::new(4096, 6144)),
-            declared_bounds: BTreeMap::new(),
+            declared_bounds: BTreeMap::from([
+                (MAXIMUM_NATIVE_ARTIFACT_BYTES.to_owned(), 4_096),
+                (MAXIMUM_NATIVE_EXPORT_TABLE_BYTES.to_owned(), 4_096),
+                (MAXIMUM_NATIVE_EXPORTS.to_owned(), 32),
+                (MAXIMUM_NATIVE_EXPORT_PATH_SEGMENTS.to_owned(), 4),
+                (MAXIMUM_NATIVE_DEFINITION_CLOSURE_ENTRIES.to_owned(), 8),
+            ]),
         },
         digest_selections: DigestDomainSelection::baseline(),
         revision_namespaces: ADMISSIBLE_REVISION_NAMESPACES
@@ -390,7 +532,31 @@ fn bundle() -> StaticProducerBundle {
     bundle
 }
 
-/// Tracing: TC-1722
+fn bundle_with_native_bounds(bounds: BTreeMap<String, u64>) -> StaticProducerBundle {
+    let mut bundle = bundle();
+    let configuration = bundle
+        .configuration
+        .as_mut()
+        .expect("the fixture carries its configuration");
+    configuration.resource_limits.declared_bounds = bounds;
+    configuration.digest = agent_ix_baseline_producer::configuration_digest(configuration)
+        .expect("the bounded configuration digest computes");
+    bundle
+        .static_closure
+        .as_mut()
+        .expect("the fixture carries its static closure")
+        .configuration_digest = configuration.digest.clone();
+    bundle.digest = Some(
+        bundle
+            .canonical_digest_selection()
+            .expect("the bounded bundle's own canonical digest computes"),
+    );
+    bundle
+}
+
+/// Tracing: TC-1722; FR-129-AC-1, FR-129-CON-1
+#[trace("TC-1722", "FR-129-AC-1")]
+#[trace("TC-1722", "FR-129-CON-1")]
 #[test]
 fn tc_1722_the_declared_native_digest_recomputes_from_the_committed_bytes() {
     let recomputed = format!("sha256:{:x}", Sha256::digest(NATIVE_MODEL_BYTES));
@@ -399,9 +565,9 @@ fn tc_1722_the_declared_native_digest_recomputes_from_the_committed_bytes() {
         "the declared native raw-byte digest is the SHA-256 of the committed bytes"
     );
 
-    let admitted = bundle()
-        .admit()
-        .expect("the native-backed bundle is admitted");
+    let admitted =
+        verify_native_fixture(bundle(), NATIVE_MODEL_BYTES, NATIVE_EXPORT_TABLE.as_bytes())
+            .expect("the native-backed bundle evidence qualifies");
     let declared = &admitted.correspondences()[0].native.raw_byte_digest;
     assert_eq!(
         declared.value, recomputed,
@@ -419,7 +585,9 @@ fn tc_1722_the_declared_native_digest_recomputes_from_the_committed_bytes() {
     );
 }
 
-/// Tracing: TC-1723
+/// Tracing: TC-1723; FR-129-AC-2, FR-129-CON-2
+#[trace("TC-1723", "FR-129-AC-2")]
+#[trace("TC-1723", "FR-129-CON-2")]
 #[test]
 fn tc_1723_a_canonical_json_rendering_yields_a_different_digest() {
     let parsed: Value = serde_json::from_slice(NATIVE_MODEL_BYTES).expect("the artifact parses");
@@ -439,12 +607,16 @@ fn tc_1723_a_canonical_json_rendering_yields_a_different_digest() {
     );
 }
 
-/// Tracing: TC-1724
+/// Tracing: TC-1724; FR-127-AC-12, FR-127-CON-5, FR-129-AC-3, FR-129-CON-4
+#[trace("TC-1724", "FR-127-AC-12")]
+#[trace("TC-1724", "FR-127-CON-5")]
+#[trace("TC-1724", "FR-129-AC-3")]
+#[trace("TC-1724", "FR-129-CON-4")]
 #[test]
 fn tc_1724_every_endpoint_type_resolves_to_the_native_export_table() {
-    let admitted = bundle()
-        .admit()
-        .expect("the native-backed bundle is admitted");
+    let admitted =
+        verify_native_fixture(bundle(), NATIVE_MODEL_BYTES, NATIVE_EXPORT_TABLE.as_bytes())
+            .expect("the native-backed bundle evidence qualifies");
     let table = native_exports();
 
     let mut resolved = 0;
@@ -472,7 +644,10 @@ fn tc_1724_every_endpoint_type_resolves_to_the_native_export_table() {
     );
 }
 
-/// Tracing: TC-1725
+/// Tracing: TC-1725; FR-129-AC-4, FR-129-AC-7, FR-129-CON-5
+#[trace("TC-1725", "FR-129-AC-4")]
+#[trace("TC-1725", "FR-129-AC-7")]
+#[trace("TC-1725", "FR-129-CON-5")]
 #[test]
 fn tc_1725_the_relationship_resolves_two_distinct_native_types() {
     let admitted = bundle()
@@ -507,39 +682,58 @@ fn tc_1725_the_relationship_resolves_two_distinct_native_types() {
     );
 }
 
-/// Tracing: TC-1726
+/// Tracing: TC-1726; FR-129-AC-5, FR-129-AC-11
+#[trace("TC-1726", "FR-129-AC-5")]
+#[trace("TC-1726", "FR-129-AC-11")]
 #[test]
 fn tc_1726_an_altered_native_digest_refuses() {
     let mut altered = bundle();
-    // One character of the declared native raw-byte digest, changed. The bundle
-    // was sealed over the original, so the change is caught at admission rather
-    // than admitted and left for a later reader to notice.
+    // Change the selected native digest, then correctly reseal the producer
+    // bundle so the outer canonical seal cannot be the source of the refusal.
     altered.correspondences[0].native.raw_byte_digest.value =
         NATIVE_RAW_DIGEST.replace("1a9441ec", "1a9441ed");
-    let refusal = altered
-        .admit()
-        .expect_err("an altered native digest is refused");
+    altered.digest = Some(
+        altered
+            .canonical_digest_selection()
+            .expect("the altered producer bundle reseals"),
+    );
+    let refusal =
+        verify_native_fixture(altered, NATIVE_MODEL_BYTES, NATIVE_EXPORT_TABLE.as_bytes())
+            .expect_err("the resealed bundle is refused against unchanged native bytes");
     assert_eq!(
         refusal.code, DIGEST_MISMATCH,
-        "the altered native digest refuses under the mismatch code"
+        "native-evidence verification, not the outer seal, detects the mismatch"
     );
 
-    // And the altered value is not the digest of the committed bytes either.
-    let recomputed = format!("sha256:{:x}", Sha256::digest(NATIVE_MODEL_BYTES));
-    assert_ne!(
-        NATIVE_RAW_DIGEST.replace("1a9441ec", "1a9441ed"),
-        recomputed,
-        "the altered digest does not equal the committed bytes"
-    );
+    let mut regenerated = NATIVE_MODEL_BYTES.to_vec();
+    regenerated.push(b'\n');
+    let bytes_refusal =
+        verify_native_fixture(bundle(), &regenerated, NATIVE_EXPORT_TABLE.as_bytes())
+            .expect_err("replacement bytes refuse against the retained selection");
+    assert_eq!(bytes_refusal.code, DIGEST_MISMATCH);
+
+    let mut changed_table: Value =
+        serde_json::from_str(NATIVE_EXPORT_TABLE).expect("the export table parses");
+    changed_table["exports"]
+        .as_array_mut()
+        .expect("exports is an array")
+        .iter_mut()
+        .find(|export| export["path"] == serde_json::json!(["Workflow"]))
+        .expect("Workflow is exported")["path"] = serde_json::json!(["Workflow", "Reordered"]);
+    let changed_table = serde_json::to_vec(&changed_table).expect("the changed table serializes");
+    let export_refusal = verify_native_fixture(bundle(), NATIVE_MODEL_BYTES, &changed_table)
+        .expect_err("a changed native export path refuses");
+    assert_eq!(export_refusal.code, EXPORT_FOREIGN);
 
     println!(
-        "TC-1726 measured: 1 altered digest character, refused {}, over {} committed bytes",
+        "TC-1726 measured: 1 resealed selected-digest mismatch, 1 replacement-byte mismatch, and 1 changed export path refused under {} / {}",
         refusal.code,
-        NATIVE_MODEL_BYTES.len()
+        export_refusal.code
     );
 }
 
-/// Tracing: TC-1727
+/// Tracing: TC-1727; FR-129-AC-6
+#[trace("TC-1727", "FR-129-AC-6")]
 #[test]
 fn tc_1727_the_native_table_carries_kinds_the_static_vocabulary_cannot_spell() {
     let table = native_exports();
@@ -576,7 +770,8 @@ fn tc_1727_the_native_table_carries_kinds_the_static_vocabulary_cannot_spell() {
     );
 }
 
-/// Tracing: TC-1728
+/// Tracing: TC-1728; FR-129-AC-1
+#[trace("TC-1728", "FR-129-AC-1")]
 #[test]
 fn tc_1728_no_fixture_digest_is_placeholder_fill() {
     let admitted = bundle()
@@ -596,25 +791,123 @@ fn tc_1728_no_fixture_digest_is_placeholder_fill() {
     );
 }
 
-/// Tracing: TC-1729
+/// Tracing: TC-1729; FR-129-AC-8, FR-129-CON-6
+#[trace("TC-1729", "FR-129-AC-8")]
+#[trace("TC-1729", "FR-129-CON-6")]
 #[test]
-fn tc_1729_the_admission_is_stable_over_two_runs() {
-    let first = bundle().admit().expect("the first admission succeeds");
-    let second = bundle().admit().expect("the second admission succeeds");
-    assert_eq!(
-        first.digest().value,
-        second.digest().value,
-        "two admissions of one selection agree byte for byte"
+fn tc_1729_fixture_qualification_is_stable_under_an_empty_environment_and_changed_directory() {
+    let first = verify_native_fixture(bundle(), NATIVE_MODEL_BYTES, NATIVE_EXPORT_TABLE.as_bytes())
+        .expect("the parent qualification succeeds");
+    let expected = format!("QUALIFIED:{}", first.digest().value);
+
+    let executable = std::env::current_exe().expect("the test executable is named");
+    let mut command = if cfg!(target_os = "linux") {
+        let mut command = Command::new("unshare");
+        command.arg("-Urn").arg(&executable);
+        command
+    } else {
+        Command::new(&executable)
+    };
+    let output = command
+        .arg("--ignored")
+        .arg("--exact")
+        .arg("tc_1729_child_qualifies_only_explicit_inputs")
+        .arg("--nocapture")
+        .env_clear()
+        .env("TZ", "Pacific/Kiritimati")
+        .current_dir(std::env::temp_dir())
+        .output()
+        .expect("the child qualification runs");
+    assert!(
+        output.status.success(),
+        "the altered-environment child succeeds: {}",
+        String::from_utf8_lossy(&output.stderr)
     );
-    assert_eq!(
-        first.endpoint_type_exports().len(),
-        second.endpoint_type_exports().len()
+    assert!(
+        String::from_utf8_lossy(&output.stdout).contains(&expected),
+        "the child emits the identical qualified bundle digest"
     );
-    let refusal = DIGEST_MISMATCH;
-    assert!(!refusal.is_empty(), "the mismatch code is named");
 
     println!(
-        "TC-1729 measured: 2 admissions, 1 identical document digest, {} resolved endpoint types each",
-        first.endpoint_type_exports().len()
+        "TC-1729 measured: 2 qualifications with identical digest, second under an empty environment, changed TZ, changed working directory, and (on Linux) an isolated network namespace"
     );
+}
+
+#[test]
+#[ignore = "child process of TC-1729"]
+fn tc_1729_child_qualifies_only_explicit_inputs() {
+    let admitted =
+        verify_native_fixture(bundle(), NATIVE_MODEL_BYTES, NATIVE_EXPORT_TABLE.as_bytes())
+            .expect("explicit fixture inputs qualify");
+    println!("QUALIFIED:{}", admitted.digest().value);
+}
+
+/// Tracing: TC-1730; FR-129-AC-13, FR-129-CON-8
+#[trace("TC-1730", "FR-129-AC-13")]
+#[trace("TC-1730", "FR-129-CON-8")]
+#[test]
+fn tc_1730_each_native_evidence_bound_admits_at_limit_and_refuses_one_past() {
+    let table = serde_json::from_str::<NativeExportTable>(NATIVE_EXPORT_TABLE)
+        .expect("the export table parses");
+    let maximum_path_segments = table
+        .exports
+        .iter()
+        .map(|export| export.path.len())
+        .max()
+        .expect("the native table has exports");
+    let exact_bounds = BTreeMap::from([
+        (
+            MAXIMUM_NATIVE_ARTIFACT_BYTES.to_owned(),
+            u64::try_from(NATIVE_MODEL_BYTES.len()).expect("artifact length fits u64"),
+        ),
+        (
+            MAXIMUM_NATIVE_EXPORT_TABLE_BYTES.to_owned(),
+            u64::try_from(NATIVE_EXPORT_TABLE.len()).expect("table length fits u64"),
+        ),
+        (
+            MAXIMUM_NATIVE_EXPORTS.to_owned(),
+            u64::try_from(table.exports.len()).expect("export count fits u64"),
+        ),
+        (
+            MAXIMUM_NATIVE_EXPORT_PATH_SEGMENTS.to_owned(),
+            u64::try_from(maximum_path_segments).expect("path length fits u64"),
+        ),
+        (
+            MAXIMUM_NATIVE_DEFINITION_CLOSURE_ENTRIES.to_owned(),
+            u64::try_from(bundle().correspondences[0].native_definition_closure.len())
+                .expect("closure count fits u64"),
+        ),
+    ]);
+
+    verify_native_fixture(
+        bundle_with_native_bounds(exact_bounds.clone()),
+        NATIVE_MODEL_BYTES,
+        NATIVE_EXPORT_TABLE.as_bytes(),
+    )
+    .expect("all five native evidence inputs admit at their exact bounds");
+
+    for subject in [
+        MAXIMUM_NATIVE_ARTIFACT_BYTES,
+        MAXIMUM_NATIVE_EXPORT_TABLE_BYTES,
+        MAXIMUM_NATIVE_EXPORTS,
+        MAXIMUM_NATIVE_EXPORT_PATH_SEGMENTS,
+        MAXIMUM_NATIVE_DEFINITION_CLOSURE_ENTRIES,
+    ] {
+        let mut one_below = exact_bounds.clone();
+        let maximum = one_below
+            .get_mut(subject)
+            .expect("every native evidence bound is declared");
+        *maximum = maximum
+            .checked_sub(1)
+            .expect("every measured input is nonzero");
+        let refusal = verify_native_fixture(
+            bundle_with_native_bounds(one_below),
+            NATIVE_MODEL_BYTES,
+            NATIVE_EXPORT_TABLE.as_bytes(),
+        )
+        .expect_err("an actual input one past its declared bound refuses");
+        assert_eq!(refusal.code, DOCUMENT_RESOURCE_LIMIT);
+        assert_eq!(refusal.subject, subject);
+    }
+    println!("TC-1730 measured: 5 exact bounds admitted and 5 one-past values refused");
 }

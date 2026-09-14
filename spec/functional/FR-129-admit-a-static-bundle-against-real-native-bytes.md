@@ -5,6 +5,8 @@ type: FR
 relationships:
   - target: "ix://agent-ix/filament-core-data/US-018"
     type: "implements"
+  - target: "ix://agent-ix/filament-core-data/FR-109"
+    type: "depends_on"
   - target: "ix://agent-ix/filament-core-data/FR-112"
     type: "depends_on"
   - target: "ix://agent-ix/filament-core-data/FR-116"
@@ -37,12 +39,25 @@ matches no artifact as evidence that endpoint model types resolve, because a
 digest with no artifact behind it has no export table for a type to resolve
 against.
 
+This requirement owns the repository-local fixture qualification boundary, not
+native-model admission. The fixture verifier SHALL consume the committed native
+artifact bytes and the adjacent export-table manifest emitted by the pinned
+native producer recipe as explicit inputs. The runtime seam that admits a
+constructor-admitted native model together with an `AdmittedStaticBundle`
+remains owned by `quire-spec-language::linking::composed::producer`; this
+repository SHALL NOT duplicate that native reader, model admission, or
+hard-clamped compiler work accounting.
+
 ## Inputs
 
 - The exact bytes of one native rule-model artifact that the native language
   admits as a native model
 - That artifact's declared export table, carrying each export's kind and ordered
   path
+- The configuration-declared `maximumNativeArtifactBytes`,
+  `maximumNativeExportTableBytes`, `maximumNativeExports`,
+  `maximumNativeExportPathSegments`, and
+  `maximumNativeDefinitionClosureEntries` bounds
 - The configuration document that selects the admissible digest domains, digest
   versions, and revision namespaces
 - The endpoint, relationship, component, and correspondence declarations of the
@@ -112,6 +127,21 @@ against.
 - The producer SHALL recompute the declared native raw-byte digest from the
   committed fixture asset during verification rather than during admission, which
   reads no native bytes.
+- While qualifying the committed fixture, the fixture verifier SHALL first admit
+  the static bundle, then enforce every named native-evidence bound from that
+  admitted bundle's configuration before parsing or iterating the bounded input.
+- If the native artifact bytes, export-table bytes, export count, export-path
+  segment count, or native definition-closure count exceeds its declared bound,
+  then the fixture verifier SHALL refuse under `DOCUMENT_RESOURCE_LIMIT`, naming
+  the exceeded bound.
+- While qualifying the committed fixture, the fixture verifier SHALL require the
+  export-table manifest's artifact identity and raw-byte digest to equal the
+  selected native artifact identity and the recomputed digest, and SHALL require
+  each endpoint model-type mapping to match one table entry by both kind and
+  ordered path.
+- If a model-type mapping's kind or ordered path is absent from the selected
+  native artifact's export-table manifest, then the fixture verifier SHALL refuse
+  under `EXPORT_FOREIGN`; it SHALL NOT accept a coinciding final path segment.
 - If a regenerated artifact replaces the committed fixture asset, then the
   producer SHALL refuse the fixture until its declared digest and export mappings
   are updated to match the replacing bytes.
@@ -138,6 +168,7 @@ against.
 | FR-129-CON-5 | The producer SHALL resolve the fixture relationship's `source` and `target` to two distinct native type exports, never to one export reached twice. | Correctness | Test |
 | FR-129-CON-6 | The producer SHALL keep the fixture's admission independent of environment variables, working directory, wall clock, and network reachability. | Portability | Test |
 | FR-129-CON-7 | The producer SHALL vendor no part of the native artifact's format, reader, or export vocabulary into this repository, selecting against them instead. | Interface | Inspection |
+| FR-129-CON-8 | The fixture verifier SHALL enforce the configuration-declared native artifact byte, export-table byte, export-count, export-path-segment, and native definition-closure bounds before parsing or iterating those inputs; the runtime native-model admission and its compiler work limits remain owned by the downstream native consumer. | Resource | Test |
 
 ## Acceptance Criteria
 
@@ -145,19 +176,23 @@ against.
 |----|----------|--------------|
 | FR-129-AC-1 | One admitted static fixture names a real native rule-model artifact, and the SHA-256 recomputed from that artifact's exact bytes equals the fixture's declared native raw-byte digest. | Test |
 | FR-129-AC-2 | The fixture's declared native raw-byte digest differs from the digest of any canonical-JSON rendering of the same artifact, and the producer canonical-JSON and native raw-byte domains remain distinct members that neither substitutes for. | Test |
-| FR-129-AC-3 | Every endpoint `typeIdentity` of the fixture resolves to a type export of the named artifact's own export table, each carrying the kind and ordered path that table declares. | Test |
+| FR-129-AC-3 | The bounded export-table manifest names the selected native artifact and its recomputed raw-byte digest, and every endpoint `typeIdentity` of the fixture resolves to a type export carrying the exact kind and ordered path that manifest declares. | Test |
 | FR-129-AC-4 | The fixture's relationship resolves its `source` and its `target` to two distinct native type exports of that table, and neither end is reached by resolving the other. | Test |
-| FR-129-AC-5 | A fixture whose declared native raw-byte digest is altered by one character is refused under `DIGEST_MISMATCH`, rather than admitted against the unchanged bytes. | Test |
+| FR-129-AC-5 | A fixture whose declared native raw-byte digest is altered by one character and whose producer bundle digest is then correctly resealed passes static admission but is refused by native-evidence verification under `DIGEST_MISMATCH`, rather than being rejected only because its outer producer digest is stale. | Test |
 | FR-129-AC-6 | Every native export whose kind the static vocabulary does not represent is absent from the fixture's export mappings, and its absence is recorded as a stated partition of the assessment half. | Inspection |
 | FR-129-AC-7 | The fixture carries one direction from the closed vocabulary, and its two endpoint records remain independent members. | Test |
 | FR-129-AC-8 | The fixture's admission run with altered environment variables, working directory, wall clock, and no network reachability produces the identical admitted bundle. | Test |
-| FR-129-AC-11 | Replacing the committed fixture asset with a regenerated artifact whose export table differs causes the fixture to refuse, because the asset's recomputed digest no longer equals the declared one. | Test |
+| FR-129-AC-11 | Replacing the committed native artifact bytes while retaining the fixture's declared native digest causes native-evidence verification to refuse under `DIGEST_MISMATCH`; changing a model-type kind or ordered path in the export-table manifest while retaining the bytes causes verification to refuse under `EXPORT_FOREIGN`. | Test |
 | FR-129-AC-12 | Each endpoint's model type resolves through an export mapping carried by the correspondence binding that endpoint's own producer object and native artifact, and a bundle resolving it through another correspondence's mapping is refused. | Test |
+| FR-129-AC-13 | Each of the five native-evidence dimensions is admitted at its configuration-declared bound and refuses under `DOCUMENT_RESOURCE_LIMIT`, naming that dimension, when offered one unit beyond it. | Test |
 | FR-129-AC-9 | No part of the native artifact's format, reader, or export vocabulary is vendored into this repository — the committed fixture asset is artifact bytes only — and the authored members of `ProducerNativeCorrespondence`, `ProducerObjectReference`, and `NativeArtifactReference` are unchanged. | Compile |
 | FR-129-AC-10 | Production of this fixture is recorded as static admission against real native bytes only, and is not presented as campaign acceptance of any assessment claim. | Inspection |
 
 ## Dependencies
 
+- [FR-109](./FR-109-declare-ecosystem-configuration-contracts.md) owns the
+  configuration document and its explicitly named finite bounds, from which
+  the fixture verifier reads every native-evidence limit.
 - [FR-127](./FR-127-resolve-endpoint-type-identities-to-native-type-exports.md)
   defines the endpoint type-export resolution that this requirement evidences
   against a real export table.
@@ -182,9 +217,10 @@ against.
   admitted native model, and `src/protocol_artifact/wire.rs` declares the closed
   `ExportKind` vocabulary whose export table this requirement's fixture selects
   against. The `native_protocol_handoff` example emits the native rule-model
-  artifact the fixture names. It is an assumed external contract this
-  increment maps onto rather than owns. A change on the consumer side is not
-  detected by this requirement, except a regenerated artifact replacing the
-  committed fixture asset, which changes that asset's digest and refuses.
+  artifact and adjacent export-table manifest the fixture qualification tests
+  consume. The downstream seam owns constructor admission of the native model,
+  byte-digest comparison under hard-clamped work limits, and final composed
+  admission. This repository qualifies the committed producer fixture against
+  those emitted artifacts and does not duplicate the downstream native reader.
 - [Baseline 1.2 contract](../../docs/semantic-data-system/baseline-1-2.md) is the
   authoritative producer contract.

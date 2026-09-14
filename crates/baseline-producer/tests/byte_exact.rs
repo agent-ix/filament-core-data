@@ -27,6 +27,7 @@
 //! order is measured across the seam, which is the direction the requirement
 //! states — no insertion order may reach a canonical byte.
 
+use ix_trace_rs::trace;
 use std::collections::BTreeMap;
 use std::process::Command;
 
@@ -132,7 +133,8 @@ fn emit_canonical_bytes() {
     }
 }
 
-/// Tracing: TC-1650
+/// Tracing: TC-1650; NFR-036
+#[trace("TC-1650", "NFR-036")]
 #[test]
 fn tc_1650_every_digested_document_reproduces_its_golden_across_runs_and_processes() {
     let goldens = committed_goldens();
@@ -188,7 +190,8 @@ fn tc_1650_every_digested_document_reproduces_its_golden_across_runs_and_process
     );
 }
 
-/// Tracing: TC-1653
+/// Tracing: TC-1653; NFR-036
+#[trace("TC-1653", "NFR-036")]
 #[test]
 fn tc_1653_every_digested_document_reproduces_its_golden_under_a_changed_environment() {
     let goldens = committed_goldens();
@@ -208,7 +211,8 @@ fn tc_1653_every_digested_document_reproduces_its_golden_under_a_changed_environ
     );
 }
 
-/// Tracing: TC-1651
+/// Tracing: TC-1651; NFR-036
+#[trace("TC-1651", "NFR-036")]
 #[test]
 fn tc_1651_no_declared_insertion_order_reaches_a_canonical_byte_or_a_digest() {
     let bundle = admitted_good_fixture();
@@ -266,7 +270,8 @@ fn tc_1651_no_declared_insertion_order_reaches_a_canonical_byte_or_a_digest() {
     );
 }
 
-/// Tracing: TC-1655
+/// Tracing: TC-1655; NFR-036
+#[trace("TC-1655", "NFR-036")]
 #[test]
 fn tc_1655_every_semantic_order_array_is_emitted_in_the_declared_order() {
     let bundle = admitted_good_fixture();

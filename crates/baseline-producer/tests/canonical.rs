@@ -10,6 +10,7 @@
 //! round-trips exactly. Without it the same rows returned `0.1`, a corrupted
 //! integer, and an invented digit.
 
+use ix_trace_rs::trace;
 use std::collections::{BTreeMap, BTreeSet};
 
 use agent_ix_baseline_producer::{
@@ -135,7 +136,8 @@ fn permutations<T: Clone>(items: &[T]) -> Vec<Vec<T>> {
     all
 }
 
-/// Tracing: TC-1640
+/// Tracing: TC-1640; One canonical byte string and one digest for all three
+#[trace("TC-1640", "FR-118-AC-1")]
 #[test]
 fn tc_1640_one_two_and_one_exponent_zero_are_one_byte_string_and_one_digest() {
     let rows = ["1", "1.0", "1e0"];
@@ -161,7 +163,8 @@ fn tc_1640_one_two_and_one_exponent_zero_are_one_byte_string_and_one_digest() {
     );
 }
 
-/// Tracing: TC-1641
+/// Tracing: TC-1641; FR-118-AC-2
+#[trace("TC-1641", "FR-118-AC-2")]
 #[test]
 fn tc_1641_adjacent_integers_past_binary64_stay_two_documents() {
     let low = "9007199254740992";
@@ -178,7 +181,9 @@ fn tc_1641_adjacent_integers_past_binary64_stay_two_documents() {
     );
 }
 
-/// Tracing: TC-1642
+/// Tracing: TC-1642; FR-118-AC-3, FR-118-CON-1
+#[trace("TC-1642", "FR-118-AC-3")]
+#[trace("TC-1642", "FR-118-CON-1")]
 #[test]
 fn tc_1642_exact_decimals_round_trip_to_the_same_coefficient_and_exponent() {
     // The five probe rows of the design measurement of 2026-09-11 are the seed
@@ -242,7 +247,10 @@ fn tc_1642_exact_decimals_round_trip_to_the_same_coefficient_and_exponent() {
     );
 }
 
-/// Tracing: TC-1643
+/// Tracing: TC-1643; FR-118-AC-4, FR-118-CON-2, FR-118-CON-5
+#[trace("TC-1643", "FR-118-AC-4")]
+#[trace("TC-1643", "FR-118-CON-2")]
+#[trace("TC-1643", "FR-118-CON-5")]
 #[test]
 fn tc_1643_keys_emit_in_unicode_scalar_value_order_sorted_by_the_canonicalizer() {
     // Scalar-value order: Z(U+005A) a(U+0061) z(U+007A) zzzz ä(U+00E4) é(U+00E9).
@@ -281,7 +289,9 @@ fn tc_1643_keys_emit_in_unicode_scalar_value_order_sorted_by_the_canonicalizer()
     );
 }
 
-/// Tracing: TC-1644
+/// Tracing: TC-1644; FR-118-AC-5, FR-118-AC-6
+#[trace("TC-1644", "FR-118-AC-5")]
+#[trace("TC-1644", "FR-118-AC-6")]
 #[test]
 fn tc_1644_escapes_are_lowercase_and_invalid_unicode_refuses_before_any_digest() {
     let emitted = canonical_json(&json!("a\"b\\c\u{0000}d\u{001f}e"), &policy())
@@ -306,7 +316,9 @@ fn tc_1644_escapes_are_lowercase_and_invalid_unicode_refuses_before_any_digest()
     );
 }
 
-/// Tracing: TC-1645
+/// Tracing: TC-1645; Permuting a set array changes no digest; permuting a semantic-order array changes it
+#[trace("TC-1645", "FR-118-AC-7")]
+#[trace("TC-1645", "FR-118-CON-3")]
 #[test]
 fn tc_1645_set_membership_and_semantic_order_are_two_separate_declarations() {
     let declarations = ArrayDeclarations::new()
@@ -369,7 +381,10 @@ fn tc_1645_set_membership_and_semantic_order_are_two_separate_declarations() {
     );
 }
 
-/// Tracing: TC-1646
+/// Tracing: TC-1646; FR-118-AC-8, FR-118-AC-12, FR-118-CON-7
+#[trace("TC-1646", "FR-118-AC-8")]
+#[trace("TC-1646", "FR-118-AC-12")]
+#[trace("TC-1646", "FR-118-CON-7")]
 #[test]
 fn tc_1646_numeric_limits_are_the_configuration_s_and_absence_refuses() {
     let declared = NumericResourceLimit::new(5, 3);
@@ -426,7 +441,10 @@ fn tc_1646_numeric_limits_are_the_configuration_s_and_absence_refuses() {
     );
 }
 
-/// Tracing: TC-1647
+/// Tracing: TC-1647; FR-118-AC-9, FR-118-AC-10, FR-118-CON-6
+#[trace("TC-1647", "FR-118-AC-9")]
+#[trace("TC-1647", "FR-118-AC-10")]
+#[trace("TC-1647", "FR-118-CON-6")]
 #[test]
 fn tc_1647_insertion_and_wire_member_order_reach_no_canonical_byte() {
     let members = ["domain", "version", "algorithm", "value"];
@@ -479,7 +497,8 @@ fn tc_1647_insertion_and_wire_member_order_reach_no_canonical_byte() {
     );
 }
 
-/// Tracing: TC-1649
+/// Tracing: TC-1649; FR-118-CON-4
+#[trace("TC-1649", "FR-118-CON-4")]
 #[test]
 fn tc_1649_an_object_s_own_digest_member_is_excluded_only_by_the_digest_seam() {
     let mut document = json!({

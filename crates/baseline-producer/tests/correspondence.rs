@@ -12,6 +12,7 @@
 //! `ProducerObjectReference`. TC-1630 scans the two module sources for a consumer
 //! `u32` table index with a planted-token control beside it.
 
+use ix_trace_rs::trace;
 use std::collections::{BTreeMap, BTreeSet};
 
 use agent_ix_baseline_producer::refusal::{
@@ -229,7 +230,9 @@ fn audit_indices(path: &str, source: &str) -> Vec<IndexSite> {
     sites
 }
 
-/// Tracing: TC-1623
+/// Tracing: TC-1623; FR-116-AC-1, FR-116-CON-1
+#[trace("TC-1623", "FR-116-AC-1")]
+#[trace("TC-1623", "FR-116-CON-1")]
 #[test]
 fn tc_1623_one_selected_pair_yields_one_record_of_five_producer_object_members() {
     let configuration = configuration();
@@ -294,7 +297,8 @@ fn tc_1623_one_selected_pair_yields_one_record_of_five_producer_object_members()
     );
 }
 
-/// Tracing: TC-1624
+/// Tracing: TC-1624; FR-116-AC-2
+#[trace("TC-1624", "FR-116-AC-2")]
 #[test]
 fn tc_1624_foreign_and_cross_bound_export_mappings_refuse() {
     let configuration = configuration();
@@ -335,7 +339,8 @@ fn tc_1624_foreign_and_cross_bound_export_mappings_refuse() {
     println!("TC-1624 measured: 3 export refusals — 1 foreign producer object, 1 undeclared export identity, 1 cross-bound export — each naming the offending export");
 }
 
-/// Tracing: TC-1625
+/// Tracing: TC-1625; FR-116-AC-3
+#[trace("TC-1625", "FR-116-AC-3")]
 #[test]
 fn tc_1625_a_changed_selection_under_a_retained_relation_refuses() {
     let prior = correspondence();
@@ -367,7 +372,8 @@ fn tc_1625_a_changed_selection_under_a_retained_relation_refuses() {
     println!("TC-1625 measured: 2 changed selections refused {CORRESPONDENCE_STALE_SELECTION} under 1 retained binding relation, and 1 unchanged selection admitted");
 }
 
-/// Tracing: TC-1626
+/// Tracing: TC-1626; FR-116-AC-3
+#[trace("TC-1626", "FR-116-AC-3")]
 #[test]
 fn tc_1626_a_presentation_only_reencoding_needs_a_new_selection_and_a_new_record() {
     let configuration = configuration();
@@ -404,7 +410,9 @@ fn tc_1626_a_presentation_only_reencoding_needs_a_new_selection_and_a_new_record
     println!("TC-1626 measured: 1 refused digest substitution under a retained relation, and 1 admitted re-encoding carrying a new native artifact selection and a new correspondence record");
 }
 
-/// Tracing: TC-1627
+/// Tracing: TC-1627; FR-116-AC-4, FR-116-AC-5
+#[trace("TC-1627", "FR-116-AC-4")]
+#[trace("TC-1627", "FR-116-AC-5")]
 #[test]
 fn tc_1627_absent_provenance_and_an_incomplete_closure_refuse() {
     let configuration = configuration();
@@ -438,7 +446,10 @@ fn tc_1627_absent_provenance_and_an_incomplete_closure_refuse() {
     println!("TC-1627 measured: 3 refusals — absent configuration provenance, mismatched provenance, incomplete native definition closure — each naming the absent or foreign member");
 }
 
-/// Tracing: TC-1628
+/// Tracing: TC-1628; FR-116-AC-6, FR-116-AC-7, FR-116-CON-4
+#[trace("TC-1628", "FR-116-AC-6")]
+#[trace("TC-1628", "FR-116-AC-7")]
+#[trace("TC-1628", "FR-116-CON-4")]
 #[test]
 fn tc_1628_a_duplicated_pair_refuses_both_records_and_an_unselected_object_yields_none() {
     let configuration = configuration();
@@ -482,7 +493,10 @@ fn tc_1628_a_duplicated_pair_refuses_both_records_and_an_unselected_object_yield
     );
 }
 
-/// Tracing: TC-1629
+/// Tracing: TC-1629; FR-116-AC-8, FR-116-AC-9, FR-116-CON-2
+#[trace("TC-1629", "FR-116-AC-8")]
+#[trace("TC-1629", "FR-116-AC-9")]
+#[trace("TC-1629", "FR-116-CON-2")]
 #[test]
 fn tc_1629_every_export_mapping_carries_its_identity_kind_path_and_locus() {
     let configuration = configuration();
@@ -526,7 +540,9 @@ fn tc_1629_every_export_mapping_carries_its_identity_kind_path_and_locus() {
     );
 }
 
-/// Tracing: TC-1630
+/// Tracing: TC-1630; FR-116-CON-3, FR-116-CON-5
+#[trace("TC-1630", "FR-116-CON-3")]
+#[trace("TC-1630", "FR-116-CON-5")]
 #[test]
 fn tc_1630_distinct_digest_members_and_no_assigned_consumer_index() {
     // Coinciding hash text never merges the two digest classes.

@@ -9,6 +9,7 @@
 //! from every other relationship member, and the value semantics of the typed
 //! vocabulary. Every control reports the number it measured.
 
+use ix_trace_rs::trace;
 use std::collections::{BTreeMap, BTreeSet};
 
 use agent_ix_baseline_producer::refusal::INVALID_PRODUCER_DOCUMENT;
@@ -187,7 +188,10 @@ fn good_document() -> Value {
         .expect("the good fixture is a JSON document")
 }
 
-/// Tracing: TC-1713
+/// Tracing: TC-1713; FR-128-AC-1, FR-128-CON-1, FR-128-CON-3
+#[trace("TC-1713", "FR-128-AC-1")]
+#[trace("TC-1713", "FR-128-CON-1")]
+#[trace("TC-1713", "FR-128-CON-3")]
 #[test]
 fn tc_1713_the_direction_vocabulary_is_exactly_four_admitted_values() {
     assert_eq!(
@@ -230,7 +234,9 @@ fn tc_1713_the_direction_vocabulary_is_exactly_four_admitted_values() {
     );
 }
 
-/// Tracing: TC-1714
+/// Tracing: TC-1714; FR-128-AC-2, FR-128-CON-2
+#[trace("TC-1714", "FR-128-AC-2")]
+#[trace("TC-1714", "FR-128-CON-2")]
 #[test]
 fn tc_1714_no_direction_permutes_the_source_and_target_members() {
     let endpoints = declared_endpoints();
@@ -290,7 +296,10 @@ fn tc_1714_no_direction_permutes_the_source_and_target_members() {
     );
 }
 
-/// Tracing: TC-1715
+/// Tracing: TC-1715; FR-128-AC-4, FR-128-AC-5, FR-128-CON-3
+#[trace("TC-1715", "FR-128-AC-4")]
+#[trace("TC-1715", "FR-128-AC-5")]
+#[trace("TC-1715", "FR-128-CON-3")]
 #[test]
 fn tc_1715_each_direction_admits_exactly_its_stated_traversals() {
     let expected: [(RelationshipDirection, bool, bool, bool); 4] = [
@@ -349,7 +358,8 @@ fn tc_1715_each_direction_admits_exactly_its_stated_traversals() {
     );
 }
 
-/// Tracing: TC-1716
+/// Tracing: TC-1716; FR-128-AC-1
+#[trace("TC-1716", "FR-128-AC-1")]
 #[test]
 fn tc_1716_each_direction_round_trips_through_its_exact_wire_spelling() {
     let mut round_trips = 0;
@@ -373,7 +383,8 @@ fn tc_1716_each_direction_round_trips_through_its_exact_wire_spelling() {
     println!("TC-1716 measured: {round_trips} direction values round tripped through their exact kebab-case wire spellings");
 }
 
-/// Tracing: TC-1717
+/// Tracing: TC-1717; FR-128-AC-3
+#[trace("TC-1717", "FR-128-AC-3")]
 #[test]
 fn tc_1717_a_direction_outside_the_four_is_refused_at_the_admission_seam() {
     // The committed good fixture is admissible as authored.
@@ -420,7 +431,9 @@ fn tc_1717_a_direction_outside_the_four_is_refused_at_the_admission_seam() {
     println!("TC-1717 measured: {refused} out-of-vocabulary direction spellings, each refused {INVALID_PRODUCER_DOCUMENT} at the admission seam and each yielding 0 admitted bundles");
 }
 
-/// Tracing: TC-1718
+/// Tracing: TC-1718; FR-128-AC-3, FR-128-CON-3
+#[trace("TC-1718", "FR-128-AC-3")]
+#[trace("TC-1718", "FR-128-CON-3")]
 #[test]
 fn tc_1718_a_relationship_carrying_no_direction_member_is_refused() {
     let mut document = good_document();
@@ -466,7 +479,10 @@ fn tc_1718_a_relationship_carrying_no_direction_member_is_refused() {
 /// One named relationship member and the variation TC-1719 applies to it.
 type Mutation = (&'static str, fn(&mut RelationshipDeclaration));
 
-/// Tracing: TC-1719
+/// Tracing: TC-1719; FR-128-AC-6, FR-128-CON-4, FR-128-CON-5
+#[trace("TC-1719", "FR-128-AC-6")]
+#[trace("TC-1719", "FR-128-CON-4")]
+#[trace("TC-1719", "FR-128-CON-5")]
 #[test]
 fn tc_1719_the_direction_is_independent_of_every_other_relationship_member() {
     let endpoints = declared_endpoints();
@@ -541,7 +557,8 @@ fn tc_1719_the_direction_is_independent_of_every_other_relationship_member() {
     println!("TC-1719 measured: {varied} varied relationship members — category, lifecycle, ownership, composite, 2 roles and 2 multiplicities — with the direction unchanged in all {varied}");
 }
 
-/// Tracing: TC-1720
+/// Tracing: TC-1720; FR-128-AC-7
+#[trace("TC-1720", "FR-128-AC-7")]
 #[test]
 fn tc_1720_a_self_relationship_retains_two_endpoint_records_under_every_direction() {
     // Both ends join declared endpoints that themselves declare the one type
@@ -611,7 +628,8 @@ fn tc_1720_a_self_relationship_retains_two_endpoint_records_under_every_directio
     );
 }
 
-/// Tracing: TC-1721
+/// Tracing: TC-1721; FR-128-AC-8
+#[trace("TC-1721", "FR-128-AC-8")]
 #[test]
 fn tc_1721_the_direction_is_a_copyable_orderable_hashable_key() {
     // Copy: the value is used after being passed by value.
