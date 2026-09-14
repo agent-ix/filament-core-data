@@ -1,0 +1,25 @@
+{
+	"id": "PAR-0014",
+	"title": "`scale` absent where the contract requires it",
+	"declaration": "DecimalPolicy",
+	"class": "negative",
+	"properties": ["presence-versus-null"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"precision": 9
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/DecimalPolicy.json",
+			"locator": "#/required",
+			"quote": "\"required\": [\"precision\", \"scale\"],"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

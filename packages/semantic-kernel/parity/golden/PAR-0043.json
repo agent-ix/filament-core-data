@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0043",
+	"title": "A maximum length",
+	"declaration": "MaxLengthConstraint",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "maxLength",
+		"value": 255
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"keyword": "maxLength",
+			"value": 255
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/MaxLengthConstraint.json",
+			"locator": "#/properties/keyword/const",
+			"quote": "\"const\": \"maxLength\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

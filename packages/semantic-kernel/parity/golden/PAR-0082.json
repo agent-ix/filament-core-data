@@ -1,0 +1,26 @@
+{
+	"id": "PAR-0082",
+	"title": "A keyword outside the union's eleven members",
+	"declaration": "ConstraintDecl",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "between",
+		"value": 1
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/ConstraintDecl.json",
+			"locator": "#/description",
+			"quote": "\"description\": \"FR-029 constraint declaration, discriminated on `keyword`.\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

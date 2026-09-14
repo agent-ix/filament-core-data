@@ -1,0 +1,23 @@
+{
+	"id": "PAR-0111",
+	"title": "`ClauseLanguage` refuses `acme:`",
+	"declaration": "ClauseLanguage",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "not-applicable",
+	"instance": "acme:",
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/ClauseLanguage.json",
+			"locator": "#/pattern",
+			"quote": "\"pattern\": \"^(ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$\","
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

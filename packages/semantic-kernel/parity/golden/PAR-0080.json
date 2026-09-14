@@ -1,0 +1,28 @@
+{
+	"id": "PAR-0080",
+	"title": "The union admits a keyword-only member",
+	"declaration": "ConstraintDecl",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "nonEmpty"
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"keyword": "nonEmpty"
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/ConstraintDecl.json",
+			"locator": "#/description",
+			"quote": "\"description\": \"FR-029 constraint declaration, discriminated on `keyword`.\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

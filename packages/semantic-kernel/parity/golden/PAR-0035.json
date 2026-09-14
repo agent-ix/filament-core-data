@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0035",
+	"title": "`exclusiveMax` with a numeric operand",
+	"declaration": "ExclusiveMaxConstraint",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "exclusiveMax",
+		"value": 1
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"keyword": "exclusiveMax",
+			"value": 1
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/ExclusiveMaxConstraint.json",
+			"locator": "#/properties/keyword/const",
+			"quote": "\"const\": \"exclusiveMax\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

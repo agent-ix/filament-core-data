@@ -1,0 +1,24 @@
+{
+	"id": "PAR-0096",
+	"title": "`Identifier` admits `_x9`",
+	"declaration": "Identifier",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "not-applicable",
+	"instance": "_x9",
+	"expected": {
+		"resultState": "success",
+		"wire": "_x9"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/Identifier.json",
+			"locator": "#/pattern",
+			"quote": "\"pattern\": \"^[A-Za-z_][A-Za-z0-9_]*$\","
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

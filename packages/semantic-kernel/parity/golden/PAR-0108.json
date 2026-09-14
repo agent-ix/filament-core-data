@@ -1,0 +1,24 @@
+{
+	"id": "PAR-0108",
+	"title": "`ClauseLanguage` admits `fretish`",
+	"declaration": "ClauseLanguage",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "not-applicable",
+	"instance": "fretish",
+	"expected": {
+		"resultState": "success",
+		"wire": "fretish"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/ClauseLanguage.json",
+			"locator": "#/pattern",
+			"quote": "\"pattern\": \"^(ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$\","
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

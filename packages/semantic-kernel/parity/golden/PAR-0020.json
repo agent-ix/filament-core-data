@@ -1,0 +1,25 @@
+{
+	"id": "PAR-0020",
+	"title": "A default kind outside the declared enum",
+	"declaration": "DefaultDecl",
+	"class": "negative",
+	"properties": ["defaults"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"kind": "none"
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/DefaultDecl.json",
+			"locator": "#/properties/kind",
+			"quote": "\"kind\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

@@ -1,0 +1,34 @@
+{
+	"id": "PAR-0076",
+	"title": "A source span with the two optional end members absent",
+	"declaration": "SourceLocus",
+	"class": "boundary",
+	"properties": ["presence-versus-null", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"sourceIdentity": "ix://agent-ix/semantic-core",
+		"path": "packages/semantic-core/main.tsp",
+		"startLine": 1,
+		"startColumn": 1
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"sourceIdentity": "ix://agent-ix/semantic-core",
+			"path": "packages/semantic-core/main.tsp",
+			"startLine": 1,
+			"startColumn": 1
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/SourceLocus.json",
+			"locator": "#/required",
+			"quote": "\"required\": [\"sourceIdentity\", \"path\", \"startLine\", \"startColumn\"],"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

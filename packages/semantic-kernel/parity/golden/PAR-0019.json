@@ -1,0 +1,31 @@
+{
+	"id": "PAR-0019",
+	"title": "A default whose declared value is a written null",
+	"declaration": "DefaultDecl",
+	"class": "boundary",
+	"properties": ["defaults", "presence-versus-null", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"kind": "representation",
+		"value": null
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"kind": "representation",
+			"value": null
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/DefaultDecl.json",
+			"locator": "#/properties/value",
+			"quote": "\"value\": {}"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	},
+	"note": "`value` is unconstrained: a written null is a value, not an absent member."
+}

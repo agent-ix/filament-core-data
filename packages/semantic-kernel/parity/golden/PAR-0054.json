@@ -1,0 +1,32 @@
+{
+	"id": "PAR-0054",
+	"title": "A relation in the `structural` edge category",
+	"declaration": "RelationDecl",
+	"class": "positive",
+	"properties": ["relation-semantics", "serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"verb": "owns",
+		"category": "structural",
+		"target": "ix://agent-ix/semantic-core/type/FieldDecl"
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"verb": "owns",
+			"category": "structural",
+			"target": "ix://agent-ix/semantic-core/type/FieldDecl"
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/RelationDecl.json",
+			"locator": "#/properties/category",
+			"quote": "\"category\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

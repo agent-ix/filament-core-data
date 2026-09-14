@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0067",
+	"title": "An operation with an empty parameter list",
+	"declaration": "OperationDecl",
+	"class": "boundary",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"name": "close",
+		"params": []
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"name": "close",
+			"params": []
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/OperationDecl.json",
+			"locator": "#/properties/params",
+			"quote": "\"params\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

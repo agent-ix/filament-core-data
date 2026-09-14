@@ -1,0 +1,28 @@
+{
+	"id": "PAR-0077",
+	"title": "A start line below its declared minimum",
+	"declaration": "SourceLocus",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"sourceIdentity": "ix://agent-ix/semantic-core",
+		"path": "a.tsp",
+		"startLine": 0,
+		"startColumn": 1
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/SourceLocus.json",
+			"locator": "#/properties/startLine",
+			"quote": "\"startLine\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

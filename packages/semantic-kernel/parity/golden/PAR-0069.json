@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0069",
+	"title": "A clause reference in a reserved language",
+	"declaration": "ClauseRef",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"language": "sysml",
+		"clauseId": "inv_1"
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"language": "sysml",
+			"clauseId": "inv_1"
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/ClauseRef.json",
+			"locator": "#/required",
+			"quote": "\"required\": [\"language\", \"clauseId\"],"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

@@ -18,7 +18,16 @@
 [workspace]
 resolver = "2"
 members = ["crates/semantic-ir", "crates/conformance-adapter", "crates/extraction-frontend"]
-exclude = ["crates/consumer-compile-time", "crates/consumer-runtime", "packages/semantic-kernel/rust"]
+exclude = [
+	"crates/consumer-compile-time",
+	"crates/consumer-runtime",
+	"packages/semantic-kernel/rust",
+	# The FR-090 parity decision emitter is a measurement harness, not a
+	# workspace crate: it is excluded so that the root `Cargo.lock` — which
+	# NFR-030 does not permit this issue to write — stays byte-unchanged. It
+	# carries its own lock file beside its manifest.
+	"packages/semantic-kernel/parity/emitters/rust",
+]
 
 [workspace.package]
 edition = "2021"

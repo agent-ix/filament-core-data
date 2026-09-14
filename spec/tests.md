@@ -276,7 +276,7 @@ producer/schema plan are accepted.
 | FR-087 | FR-087-AC/CON x26 | TC-1058..TC-1066 | ✅ Complete |
 | FR-088 | FR-088-AC/CON x25 | TC-1067..TC-1075 | 🚧 In progress |
 | FR-089 | FR-089-AC/CON x28 | TC-1076..TC-1085 | 🚧 In progress |
-| FR-090 | FR-090-AC/CON x34 | TC-1086..TC-1097 | 🚧 In progress |
+| FR-090 | FR-090-AC/CON x34 | TC-1086..TC-1097 | ✅ Complete |
 | FR-091 | FR-091-AC-1..11, FR-091-CON-1..3 | TC-1200..TC-1209, TC-1330, TC-1331 | ✅ Complete |
 | FR-092 | FR-092-AC-1..11, FR-092-CON-1..2 | TC-1210..TC-1219, TC-1330, TC-1332 | ✅ Complete |
 | FR-093 | FR-093-AC-1..14, FR-093-CON-1..4 | TC-1220..TC-1230, TC-1333..TC-1335, TC-1347 | ✅ Complete |
@@ -1384,18 +1384,18 @@ producer/schema plan are accepted.
 | TC-1083 | No example is skipped, marked expected-to-fail, or conditionally disabled, checked over the collected test inventory of all three suites rather than b | Compile | P0 | FR-089-AC-12, FR-089-AC-13, FR-089-AC-14 | 🚧 planned |
 | TC-1084 | No example's source matches Date.now, new Date, process.env, process.cwd, datetime.now, os.environ, std::time, std::env, or any socket API, and two ru | Snapshot | P0 | FR-089-AC-15, FR-089-AC-16, FR-089-AC-17 | 🚧 planned |
 | TC-1085 | Where the Python package excludes a colliding type name from __all__, the example reaches that type as <module>.<Name> and no example re-exports the e | Unit | P0 | FR-089-AC-18 | 🚧 planned |
-| TC-1086 | Every one of the four kernel packages decide every golden document. The harness count a package excused from a document as unmet, never as passed, fol | Static | P0 | FR-090-CON-1, FR-090-CON-2, FR-090-CON-3 | 🚧 planned |
-| TC-1087 | No package decision emitter import conformance/oracle/index.mjs or call oracleVerdict or compare | Static | P0 | FR-090-CON-4, FR-090-CON-5, FR-090-CON-6 | 🚧 planned |
-| TC-1088 | No published schema under schema/semantic/v1/ and no artifact under docs/semantic-data-system/ be edited. A disagreement with the published contract i | Static | P0 | FR-090-CON-7, FR-090-CON-8, FR-090-CON-9 | 🚧 planned |
-| TC-1089 | Adds nothing under packages/semantic-kernel/, packages/semantic-core/generated/, or conformance/ to the npm package's files or exports, the Python dis | Static | P0 | FR-090-CON-10, FR-090-CON-11, FR-090-CON-12 | 🚧 planned |
-| TC-1090 | The golden corpus under packages/semantic-kernel/parity/golden/ carries positive, negative | Property | P0 | FR-090-AC-1, FR-090-AC-2, FR-090-AC-3 | 🚧 planned |
-| TC-1091 | For every golden document, the serialized member name of every declared member is identical across the four packages | Property | P0 | FR-090-AC-4, FR-090-AC-5, FR-090-AC-6 | 🚧 planned |
-| TC-1092 | For each of preserve, reject | Snapshot | P0 | FR-090-AC-7, FR-090-AC-8, FR-090-AC-9 | 🚧 planned |
-| TC-1093 | A full parity run leaves every file under conformance/ byte-unchanged, including conformance/corpus.json, conformance/coverage.json, conformance/diver | Property | P0 | FR-090-AC-10, FR-090-AC-11, FR-090-AC-12 | 🚧 planned |
-| TC-1094 | A divergence row without an adjudicating owner is rejected by the gate | Unit | P0 | FR-090-AC-13, FR-090-AC-14, FR-090-AC-15 | 🚧 planned |
-| TC-1095 | No file under schema/semantic/v1/ or docs/semantic-data-system/ differs before and after this requirement's run | Property | P0 | FR-090-AC-16, FR-090-AC-17, FR-090-AC-18 | 🚧 planned |
-| TC-1096 | Packages/semantic-kernel/parity/publication-gate.json names agent-ix/quoin#290 for each of the four packages, states the step as blocked | Property | P0 | FR-090-AC-19, FR-090-AC-20, FR-090-AC-21 | 🚧 planned |
-| TC-1097 | Two consecutive full runs produce a byte-identical packages/semantic-kernel/parity/agreement.json | Snapshot | P0 | FR-090-AC-22 | 🚧 planned |
+| TC-1086 | Every one of the four kernel packages decides every golden document; an undecided answer is counted unmet; the run writes nothing under conformance/ and imports only conformance/oracle/index.mjs | Static | P0 | FR-090-CON-1, FR-090-CON-2, FR-090-CON-3 | ✅ passed |
+| TC-1087 | No package decision emitter reaches conformance/, oracleVerdict or compare, and the harness defines no verdict, canonicalization or comparison of its own | Static | P0 | FR-090-CON-4, FR-090-CON-5, FR-090-CON-6 | ✅ passed |
+| TC-1088 | No published schema or docs/semantic-data-system/ artifact is written, no publication command is recorded, and a contract disagreement is reported as a filed issue rather than a contract-gaps.json row | Static | P0 | FR-090-CON-7, FR-090-CON-8, FR-090-CON-9 | ✅ passed |
+| TC-1089 | Nothing under packages/semantic-kernel/, packages/semantic-core/generated/ or conformance/ appears in the npm files or exports, or in the Python distribution | Static | P0 | FR-090-CON-10, FR-090-CON-11, FR-090-CON-12 | ✅ passed |
+| TC-1090 | The golden corpus carries positive, negative and boundary documents over all 30 kernel declarations, each grounded in a quoted line of a published artifact | Property | P0 | FR-090-AC-1, FR-090-AC-2, FR-090-AC-3 | ✅ passed |
+| TC-1091 | All five properties are measured, the report's property account equals the corpus's declared properties, and the headline figure is the row count | Property | P0 | FR-090-AC-4, FR-090-AC-5, FR-090-AC-6 | ✅ passed |
+| TC-1092 | Every package states an unknown-member fate for every document, and agreement is text equality of two substantive projections | Snapshot | P0 | FR-090-AC-7, FR-090-AC-8, FR-090-AC-9 | ✅ passed |
+| TC-1093 | A full run leaves conformance/ byte-unchanged, adds no adapter slot, and every divergence row names the document, the property, both decisions, the wrong side and an adjudicating issue | Property | P0 | FR-090-AC-10, FR-090-AC-11, FR-090-AC-12 | ✅ passed |
+| TC-1094 | An unadjudicated row fails the run, an adjudication entry the run does not reproduce throws, and the evidence document names the issue filed against the corpus owner | Unit | P0 | FR-090-AC-13, FR-090-AC-14, FR-090-AC-15 | ✅ passed |
+| TC-1095 | A full run leaves schema/semantic/v1/ and docs/semantic-data-system/ unchanged, the recorded command list carries no publication command, and every manifest keeps its non-publishable marker | Property | P0 | FR-090-AC-16, FR-090-AC-17, FR-090-AC-18 | ✅ passed |
+| TC-1096 | publication-gate.json names agent-ix/quoin#290 as blocked for all four packages and nowhere as complete, skipped, not applicable or out of scope; each package's own documentation names it; no module reads a clock, an environment variable or a socket | Property | P0 | FR-090-AC-19, FR-090-AC-20, FR-090-AC-21 | ✅ passed |
+| TC-1097 | Two consecutive full runs produce a byte-identical agreement.json, and git status names no path under conformance/ after a run | Snapshot | P0 | FR-090-AC-22 | ✅ passed |
 | TC-1098 | Two generations of the same kernel bundle, from different working directories and under different locales, produce byte-identical trees for all four t | Snapshot | P1 | NFR-028-AC-1, NFR-028-AC-2, NFR-028-AC-3 | 🚧 planned |
 | TC-1099 | Every --check verb regenerates into a directory outside the working tree | Snapshot | P1 | NFR-028-AC-4, NFR-028-AC-5, NFR-028-AC-6 | 🚧 planned |
 | TC-1100 | The generated trees carry no generation timestamp, build date, hostname, machine identifier, user name, home directory, working directory, absolute pa | Property | P1 | NFR-028-AC-7, NFR-028-AC-8 | 🚧 planned |
@@ -1788,6 +1788,11 @@ producer/schema plan are accepted.
 | TC-1263, TC-1262 | engine diagnostic severity | `advisory` / `warning` / `error` | `ENGINE_DIAGNOSTIC` mapping | `info` non-blocking / `warning` non-blocking / `error` blocking; never dropped or re-ranked |
 | TC-1295, TC-1341 | `lift` sidecar options | `--diagnostics` and `--provenance` given or absent | `lift` | Given: the sidecar is written at the named path instead; absent: at `<out>.diagnostics.json` and `<out>.provenance.json`; always written on a non-blocking lift |
 | TC-1290, TC-1291 | shared case dialects | both dialects non-null (`records-and-scalars`, both source trees present) / `spec-bundle: null` with a `scalar` reason (three existing cases) | parity projection | Exactly one two-dialect case, compared byte for byte after `normalized` under the shared identity rule (issue #87, CR-087-1); single-dialect cases recorded with their reason, never compared on a remainder |
+| TC-1588 | Every live adapter agrees with the independent oracle on every corpus case, with zero failed and zero unmet rows | Integration | P0 | FR-090-CON-1 | ✅ passed |
+| TC-1589 | An adapter declared unavailable records zero matched and every case unmet, never agreement | Integration | P0 | FR-090-CON-1 | ✅ passed |
+| TC-1590 | The corpus unmet total is the sum of the unavailable slots times the case total | Unit | P0 | FR-090-CON-1 | ✅ passed |
+| TC-1591 | The corpus reports how much of the agreement claim four of four declared slots actually cover | Unit | P0 | FR-090-CON-1 | ✅ passed |
+| TC-1592 | The corpus run exits clean over all 111 cases | Integration | P0 | FR-090-CON-1 | ✅ passed |
 
 ## Constraint Boundary Tests
 
@@ -2616,17 +2621,17 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 279 | 233 | 0 | 46 | 100% mapped (279/279) |
+| Static | 279 | 242 | 0 | 37 | 100% mapped (279/279) |
 | Manual | 61 | 45 | 0 | 16 | 100% mapped (61/61) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
-| Property | 129 | 71 | 0 | 58 | 100% mapped (129/129) |
-| Unit | 553 | 437 | 0 | 116 | 100% mapped (553/553) |
-| Integration | 158 | 87 | 0 | 71 | 100% mapped (158/158) |
+| Property | 129 | 82 | 0 | 47 | 100% mapped (129/129) |
+| Unit | 555 | 445 | 0 | 110 | 100% mapped (555/555) |
+| Integration | 162 | 92 | 0 | 70 | 100% mapped (162/162) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
-| Snapshot | 68 | 35 | 0 | 33 | 100% mapped (68/68) |
+| Snapshot | 68 | 43 | 0 | 25 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1339** | **962** | **0** | **377** | **100% mapped (1339/1339)** |
+| **Total** | **1345** | **1003** | **0** | **342** | **100% mapped (1345/1345)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

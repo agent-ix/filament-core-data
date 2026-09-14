@@ -1,0 +1,24 @@
+{
+	"id": "PAR-0102",
+	"title": "`UnitSymbol` admits `mg/dL`",
+	"declaration": "UnitSymbol",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "not-applicable",
+	"instance": "mg/dL",
+	"expected": {
+		"resultState": "success",
+		"wire": "mg/dL"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/UnitSymbol.json",
+			"locator": "#/pattern",
+			"quote": "\"pattern\": \"^[!-~]+$\","
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

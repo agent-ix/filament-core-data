@@ -1,0 +1,27 @@
+{
+	"id": "PAR-0064",
+	"title": "An edge category outside the closed vocabulary",
+	"declaration": "RelationDecl",
+	"class": "negative",
+	"properties": ["relation-semantics"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"verb": "owns",
+		"category": "aggregation",
+		"target": "ix://agent-ix/semantic-core/type/FieldDecl"
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/RelationDecl.json",
+			"locator": "#/properties/category",
+			"quote": "\"category\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

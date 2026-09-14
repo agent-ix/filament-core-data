@@ -1,0 +1,28 @@
+{
+	"id": "PAR-0050",
+	"title": "The keyword-only uniqueness constraint",
+	"declaration": "UniqueConstraint",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "unique"
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"keyword": "unique"
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/UniqueConstraint.json",
+			"locator": "#/properties/keyword/const",
+			"quote": "\"const\": \"unique\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

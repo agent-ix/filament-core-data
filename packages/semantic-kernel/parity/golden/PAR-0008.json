@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0008",
+	"title": "A unit symbol on a unit-allowed scalar",
+	"declaration": "TypeRef",
+	"class": "boundary",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"target": "Decimal",
+		"unit": "mg/dL"
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"target": "Decimal",
+			"unit": "mg/dL"
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/TypeRef.json",
+			"locator": "#/description",
+			"quote": "\"description\": \"A reference to a kernel scalar or a semantic type. Reader: `decimal` iff target is Decimal; `unit` only on unit-allowed scalars.\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

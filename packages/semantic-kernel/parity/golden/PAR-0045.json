@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0045",
+	"title": "An enumerated value set of mixed scalar kinds",
+	"declaration": "EnumValuesConstraint",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "enumValues",
+		"values": ["draft", 1, true]
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"keyword": "enumValues",
+			"values": ["draft", 1, true]
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/EnumValuesConstraint.json",
+			"locator": "#/properties/keyword/const",
+			"quote": "\"const\": \"enumValues\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

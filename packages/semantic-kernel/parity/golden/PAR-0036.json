@@ -1,0 +1,26 @@
+{
+	"id": "PAR-0036",
+	"title": "`exclusiveMax` with the wrong discriminant",
+	"declaration": "ExclusiveMaxConstraint",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "nonEmpty",
+		"value": 1
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/ExclusiveMaxConstraint.json",
+			"locator": "#/properties/keyword/const",
+			"quote": "\"const\": \"exclusiveMax\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}
