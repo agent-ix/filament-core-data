@@ -14,7 +14,7 @@ determinism gate that compares two generations byte for byte.
 - Contract version: `1.0.0`
 
 The same values are exported as `&'static str` constants from
-`src/identity.rs`, so a consumer can assert against them at run time.
+`src/provenance.rs`, so a consumer can assert against them at run time.
 
 ## Declared gaps
 
@@ -30,6 +30,16 @@ as choosing a JSON wire form for the `bytes` kernel scalar, which is filed
 as issue #58. Every `format` operand therefore raises
 `agent-ix.rust-backend.UNKNOWN_FORMAT` and stops generation until a
 definition is published.
+
+The set of capabilities this crate admits is empty, and the emptiness is a
+stated decision rather than an omission. `consumer-policy.schema.json` is
+sealed and carries no capability member, and the published `rust` row of
+`target-contracts.json` declares no capability list, so there is no
+published input a non-empty set could be read from. That is GAP-007 in
+`conformance/contract-gaps.json`, owned by issue #9. It follows that a
+required extension naming any capability is rejected, and that a
+`required: false` extension is preserved whatever its identity — see
+`decide_extension`.
 
 The `sourceLocus.path` pattern's published language and its intended
 language differ, because each of the pattern's guards is a lookahead over

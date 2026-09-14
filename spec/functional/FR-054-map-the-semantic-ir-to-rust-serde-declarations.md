@@ -24,6 +24,10 @@ relationships:
 
 ## Description
 
+This requirement opens the bundle answering
+[filament-core-data#21](https://github.com/agent-ix/filament-core-data/issues/21), the Rust/Serde semantic codegen
+backend.
+
 The Rust backend SHALL map every construct the semantic IR can express to a
 declared Rust/Serde form by one published total mapping keyed on `kind`, so that
 the Rust type a consumer receives is a function of the contract alone and every
@@ -96,6 +100,15 @@ construct's disposition is written down rather than decided at the keyboard.
 | `datetime` | `DateTime`, the generated RFC 3339 date-time newtype | JSON string |
 | `duration` | `Duration`, the generated ISO 8601 duration newtype | JSON string |
 | `uuid` | `Uuid`, the generated 8-4-4-4-12 newtype | JSON string |
+
+- The `date`, `datetime`, `duration`, and `uuid` scalar rows SHALL each declare
+  their generated support type in `mapping-table.json`. When a `kind: scalar`
+  definition derives that same support-type identifier, the backend SHALL map
+  the definition onto the existing `crate::support::<Support>` type rather than
+  emit a second newtype; every reference to the definition SHALL render that
+  support type. This exception is decided before crate-scope collision
+  insertion. A scalar whose derived name or scalar selector does not match the
+  row remains a user declaration and is governed by FR-055's collision rule.
 
 - If a type definition declares `scalar: "bytes"`, then the backend SHALL raise
   a blocking `agent-ix.rust-backend.UNDECLARED_WIRE_FORM` and SHALL emit no

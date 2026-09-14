@@ -1,0 +1,23 @@
+{
+	"contractVersion": "1.0.0",
+	"target": "json-schema",
+	"nativeApi": ["modular schemas", "stable $id and $ref"],
+	"runtimeValidation": "JSON Schema 2020-12 validator with explicit format policy",
+	"identityMetadata": "$id plus x-agent-ix-semantic-id",
+	"unsupportedFeaturePolicy": "fail",
+	"prohibitedDependencies": [
+		"ui",
+		"orm",
+		"sqlalchemy",
+		"tauri",
+		"network-client",
+		"database-migration",
+		"application-service"
+	],
+	"runtimeDependencies": [],
+	"executableGeneratorDependencies": [],
+	"securityFindings": [],
+	"backendQualification": "upstream-qualified",
+	"qualificationEvidence": "spikes/typespec-feasibility/evidence/official.json",
+	"customSourceLicense": "AGPL-3.0-or-later"
+}

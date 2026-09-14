@@ -623,11 +623,35 @@ export function admitIr(bundle, options = {}) {
 		}
 		seenIdentities.add(node.identity);
 	};
+	/*
+	 * An extension describes a capability carried by its enclosing node. It is
+	 * consequently unique only among that node's extensions, not among the
+	 * document declarations. In particular, each package-local kernel scalar
+	 * may carry the same ext/kernel-scalar capability.
+	 */
+	const claimExtensions = (node, pointer, owner, locus) => {
+		const seen = new Set();
+		for (const [position, extension] of (node?.extensions ?? []).entries()) {
+			if (!isObject(extension) || typeof extension.identity !== "string")
+				continue;
+			if (seen.has(extension.identity)) {
+				emit(
+					ADMISSIBILITY_CODES.DUPLICATE_IDENTITY,
+					`${pointer}/extensions/${position}/identity`,
+					"an extension identity is declared once by one node",
+					{ owner: owner ?? extension.identity, locus },
+				);
+				continue;
+			}
+			seen.add(extension.identity);
+		}
+	};
 
 	for (const [index, type] of ir.types.entries()) {
 		const typePointer = pointerOf("ir", "types", index);
 		const typeLocus = locusOf(type);
 		claimIdentity(type, typePointer, type.identity, typeLocus);
+		claimExtensions(type, typePointer, type.identity, typeLocus);
 
 		/* 1.1.0-only nodes in a 1.0.0 document */
 		if (version === "1.0.0") {
@@ -707,6 +731,7 @@ export function admitIr(bundle, options = {}) {
 			const variantPointer = `${typePointer}/variants/${position}`;
 			const variantLocus = nearestLocus(variant, type);
 			claimIdentity(variant, variantPointer, variant?.identity, variantLocus);
+			claimExtensions(variant, variantPointer, variant?.identity, variantLocus);
 			variantNames.add(variant?.name);
 			if (
 				variant?.payloadType !== undefined &&
@@ -726,6 +751,12 @@ export function admitIr(bundle, options = {}) {
 			const constraintPointer = `${typePointer}/constraints/${position}`;
 			const constraintLocus = nearestLocus(constraint, type);
 			claimIdentity(
+				constraint,
+				constraintPointer,
+				constraint?.identity,
+				constraintLocus,
+			);
+			claimExtensions(
 				constraint,
 				constraintPointer,
 				constraint?.identity,
@@ -777,6 +808,7 @@ export function admitIr(bundle, options = {}) {
 			const fieldPointer = `${typePointer}/fields/${position}`;
 			const fieldLocus = nearestLocus(field, type);
 			claimIdentity(field, fieldPointer, field?.identity, fieldLocus);
+			claimExtensions(field, fieldPointer, field?.identity, fieldLocus);
 			if (!isObject(field)) continue;
 
 			if (fieldNames.has(field.name)) {
@@ -799,6 +831,12 @@ export function admitIr(bundle, options = {}) {
 			const relationshipPointer = `${typePointer}/relationships/${position}`;
 			const relationshipLocus = nearestLocus(relationship, type);
 			claimIdentity(
+				relationship,
+				relationshipPointer,
+				relationship?.identity,
+				relationshipLocus,
+			);
+			claimExtensions(
 				relationship,
 				relationshipPointer,
 				relationship?.identity,
@@ -838,12 +876,19 @@ export function admitIr(bundle, options = {}) {
 				operation?.identity,
 				operationLocus,
 			);
+			claimExtensions(
+				operation,
+				operationPointer,
+				operation?.identity,
+				operationLocus,
+			);
 			if (!isObject(operation)) continue;
 			const paramNames = new Set();
 			for (const [slot, param] of (operation.params ?? []).entries()) {
 				const paramPointer = `${operationPointer}/params/${slot}`;
 				const paramLocus = nearestLocus(param, operation, type);
 				claimIdentity(param, paramPointer, param?.identity, paramLocus);
+				claimExtensions(param, paramPointer, param?.identity, paramLocus);
 				if (!isObject(param)) continue;
 				if (paramNames.has(param.name)) {
 					emit(
@@ -890,6 +935,7 @@ export function admitIr(bundle, options = {}) {
 			const clausePointer = `${typePointer}/clauses/${position}`;
 			const clauseLocus = nearestLocus(clause, type);
 			claimIdentity(clause, clausePointer, clause?.identity, clauseLocus);
+			claimExtensions(clause, clausePointer, clause?.identity, clauseLocus);
 			if (!isObject(clause)) continue;
 			if (clauseIds.has(clause.clauseId)) {
 				emit(
@@ -910,16 +956,6 @@ export function admitIr(bundle, options = {}) {
 					{ owner: clause.identity, locus: clauseLocus },
 				);
 			}
-		}
-
-		/* extensions on the type and its fields */
-		for (const [position, extension] of (type.extensions ?? []).entries()) {
-			claimIdentity(
-				extension,
-				`${typePointer}/extensions/${position}`,
-				extension?.identity,
-				typeLocus,
-			);
 		}
 	}
 
@@ -1005,6 +1041,12 @@ export function admitIr(bundle, options = {}) {
 			occurrence?.identity,
 			undefined,
 		);
+		claimExtensions(
+			occurrence,
+			occurrencePointer,
+			occurrence?.identity,
+			undefined,
+		);
 		if (!isObject(occurrence)) continue;
 		if (!types.has(occurrence.definition)) {
 			emit(
@@ -1021,9 +1063,9 @@ export function admitIr(bundle, options = {}) {
 
 	/* document extensions */
 	const policy = bundle.consumerPolicy;
+	claimExtensions(ir, pointerOf("ir"), ir.package?.identity, undefined);
 	for (const [index, extension] of (ir.extensions ?? []).entries()) {
 		const extensionPointer = pointerOf("ir", "extensions", index);
-		claimIdentity(extension, extensionPointer, extension?.identity, undefined);
 		if (!isObject(extension) || extension.required !== true) continue;
 		if (!isObject(policy)) {
 			suppress("unknown-required-extension", extension.identity);

@@ -220,7 +220,9 @@ pub fn definitions(
         let Some(scalar) = member.ir_scalar() else {
             continue;
         };
-        let identity = package.type_identity(member.name());
+        let identity = package
+            .type_identity(member.name())
+            .expect("kernel scalar names are slug-safe");
         out.entry(identity.clone())
             .or_insert_with(|| ScalarDefinition {
                 identity,

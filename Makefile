@@ -8,18 +8,32 @@
 .PHONY: install
 install:
 	pnpm install
+# The Node conformance suite starts the `python-backend` adapter as a process
+# (conformance/adapters/registry.json), so the Python environment is a
+# prerequisite of `make test-node` and not only of `make test-python`. Before
+# this line `make install` provisioned half of what `make test` runs.
+	poetry install
 
 .PHONY: build
 build:
 	pnpm run build
 
+# The three halves of the suite, one per toolchain, because one per toolchain is
+# what a lane can install (issue #60).
+#
+# `test` was `test-node test-python`, and `test-node` ran `$(MAKE) rust` — so
+# the Node lane, which installs no Rust toolchain, has been invoking cargo
+# through a target named for another language. `make test-all` is the local
+# everything; each named half is what a CI lane with that toolchain can run.
 .PHONY: test
 test: test-node test-python
+
+.PHONY: test-all
+test-all: test-node test-rust test-python
 
 .PHONY: test-node
 test-node:
 	pnpm run test
-	$(MAKE) rust
 
 # The Python half of the suite (issue #23, FR-072). Before this target the
 # repository had no entry point that ran pytest at all: `make test` was vitest
@@ -292,6 +306,15 @@ rust-build: rust-toolchain-check
 	cargo build --offline --workspace --locked
 	cargo fmt --all -- --check
 
+# The workspace lint gate (issue #60). Until this target existed, `cargo clippy`
+# ran over exactly one crate — `extraction-frontend-test` — so every other
+# member's lints were unmeasured. `--no-deps` keeps the gate about this
+# workspace's own code, as NFR-033-AC-7 already requires of the crate-level run.
+.PHONY: rust-clippy
+rust-clippy: rust-toolchain-check
+	@command -v cargo-clippy >/dev/null 2>&1 || cargo clippy --version >/dev/null 2>&1 || { echo "cargo clippy is not installed (rustup component add clippy): the workspace lint gate cannot run, and this is a failure rather than a skip"; exit 1; }
+	cargo clippy --workspace --locked --all-targets --no-deps -- -D warnings
+
 .PHONY: rust-test
 rust-test: rust-toolchain-check
 	cargo test --offline --workspace --locked
@@ -321,7 +344,24 @@ rust-fuzz: rust-toolchain-check
 # with no Rust toolchain fails here naming what it could not run. That is the
 # intended reading: an absent toolchain is a red suite, never a green one.
 .PHONY: rust
-rust: rust-check rust-build rust-test rust-conformance rust-install-from-artifact
+rust: rust-check rust-build rust-clippy rust-test rust-conformance rust-install-from-artifact
+
+# The Rust half of the suite, named where a reader looks for it (issue #60).
+#
+# Every gate below already ran, but only as a step inside `test-node` — so the
+# Makefile's own vocabulary said this repository had a Node half and a Python
+# half, and anyone asking "what runs the Rust gates" had to read the recipe of a
+# target named for another language. The extraction-frontend crate's gates were
+# not in `make test` at any depth.
+.PHONY: test-rust
+test-rust: rust extraction-frontend-test spec-to-targets
+
+# The qualification toolchain, for a CI lane that has to install it before it can
+# run anything. Printed rather than duplicated in the workflow, so the version
+# lives in exactly one place (NFR-033: named once in the Makefile).
+.PHONY: print-extraction-toolchain
+print-extraction-toolchain:
+	@echo $(EXTRACTION_TOOLCHAIN)
 
 .PHONY: rust-deep
 rust-deep: rust-mutate rust-fuzz
@@ -334,9 +374,44 @@ rust-deep: rust-mutate rust-fuzz
 semantic-kernel:
 	node scripts/build-semantic-kernel.mjs
 
+# The digest baseline is written by a *different* script from the one that
+# writes the crate, and the two reach the emitter through different entry
+# points, so one emitter change has to move two artifacts by two deliberate
+# acts before the check goes green again (FR-086-CON-4).
+.PHONY: semantic-kernel-digests
+semantic-kernel-digests:
+	node scripts/build-semantic-kernel-digests.mjs --write
+
+# The kernel scratch lives outside the working tree, and outside every
+# CARGO_TARGET_DIR a `rust-*` target writes to, so no check can pass by
+# comparing a file to itself, none can be served a stale artifact another gate
+# left behind, and none can leave the tree dirty (FR-086-CON-3, FR-086-AC-10).
+KERNEL_SCRATCH := $(shell printf '%s/fcd-semantic-kernel-%s' "$${TMPDIR:-/tmp}" "$(notdir $(CURDIR))")
+
+# Neither writing target is a prerequisite here: a check that regenerates its
+# own baseline compares a file to itself.
 .PHONY: semantic-kernel-check
 semantic-kernel-check:
 	node scripts/build-semantic-kernel.mjs --check
+	node scripts/check-semantic-kernel-crate.mjs --tree $(KERNEL_SCRATCH)/tree
+	node scripts/build-semantic-kernel-digests.mjs --check
+	node scripts/check-semantic-kernel-crate.mjs --manifest
+	node scripts/check-semantic-kernel-crate.mjs --rustfmt
+	node scripts/check-semantic-kernel-crate.mjs --build $(KERNEL_SCRATCH)/build
+	node scripts/check-semantic-kernel-crate.mjs --gate
+	rm -rf $(KERNEL_SCRATCH)
+
+# The kernel's Python packages (FR-087). `semantic-kernel-python` regenerates
+# the tree through the qualified issue #23 route; `--check` writes nothing and
+# fails naming the first path a fresh generation would change. Generation only:
+# publication passes agent-ix/quoin#290 and the issue #23 safety gate.
+.PHONY: semantic-kernel-python
+semantic-kernel-python:
+	poetry run python -m python_backend.kernel.emit
+
+.PHONY: semantic-kernel-python-check
+semantic-kernel-python-check:
+	poetry run python -m python_backend.kernel.emit --check
 
 # -----------------------------------------------------------------------------
 # Spec-bundle extraction frontend (issue #36)
@@ -396,12 +471,18 @@ extraction-frontend-test: extraction-frontend-toolchain
 # `extraction-frontend-evidence` runs the crate's `#[ignore]`d static-evidence
 # tests (the Make, change-set, audit and toolchain rehearsals, which nest
 # `cargo test`, `make`, or the network-backed `cargo deny`/`cargo audit`), so
-# the rows they bind have a named producer (SR-170 FND-1505). The tests
-# `#[ignore]`d as *blocked* on an open issue (TC-1290/1291 on #87, TC-1292 on
-# #88 and the rust-serde NAME_COLLISION defect) fail by design until the issue
-# closes and are skipped here by name; run one deliberately with
+# the rows they bind have a named producer (SR-170 FND-1505). A test
+# `#[ignore]`d as *blocked* on an open issue fails by design until the issue
+# closes and is skipped here by name; run one deliberately with
 # `cargo +1.98.1 test -p agent-ix-extraction-frontend -- --ignored --exact <name>`.
-EXTRACTION_BLOCKED_TESTS := tc_1290_ tc_1291_ tc_1292_rust_generate tc_1292_generate_typescript
+#
+# The list is empty, and empty is the point rather than an omission. Every test
+# that was ever named here is now live: TC-1290 and TC-1291 unblocked when #87
+# closed, TC-1292's two halves when #88 and #90 did. An entry left behind after
+# its issue closes skips nothing while still asserting the test is blocked, so
+# the list is emptied as each one lands rather than kept as a record of what
+# used to be.
+EXTRACTION_BLOCKED_TESTS :=
 .PHONY: extraction-frontend-evidence
 extraction-frontend-evidence: extraction-frontend-toolchain
 	cargo +$(EXTRACTION_TOOLCHAIN) test -p $(EXTRACTION_CRATE) --locked --offline --no-fail-fast -- --ignored $(foreach test,$(EXTRACTION_BLOCKED_TESTS),--skip $(test))
@@ -435,6 +516,29 @@ extraction-frontend-check: extraction-frontend-toolchain
 	  echo "diff -ru $$expected $(EXTRACTION_CHECK_SCRATCH)/$$rel"; \
 	  diff -ru "$$expected" "$(EXTRACTION_CHECK_SCRATCH)/$$rel" || status=1; \
 	done; exit $$status
+
+# -----------------------------------------------------------------------------
+# The end-to-end spec path (EPIC #100 criterion 2)
+# -----------------------------------------------------------------------------
+# One gate for the whole chain: markdown bundle -> Rust lift -> semantic IR ->
+# every generated target. The lift and each backend already have gates of their
+# own; none of them asserts that the two halves join, because every backend gate
+# reads a hand-written IR fixture rather than the frontend's actual output.
+#
+# `SPEC_PIPELINE_BUNDLE` is overridable so the chain can be run against any
+# bundle root on the dev host without editing this file. The default is the
+# business bundle, which is the repository's only bundle authored wholly in the
+# typed-table form the lift requires.
+
+SPEC_PIPELINE_BUNDLE ?= $(EXTRACTION_FIXTURES)/business
+SPEC_PIPELINE_STAGING := $(CARGO_TARGET_DIR)/spec-to-targets
+
+.PHONY: spec-to-targets
+spec-to-targets: extraction-frontend-toolchain
+	rm -rf $(SPEC_PIPELINE_STAGING)
+	mkdir -p $(SPEC_PIPELINE_STAGING)
+	$(EXTRACTION_RUN) lift --bundle $(SPEC_PIPELINE_BUNDLE) $(foreach module,$(MODULES),--module $(module)) --out $(SPEC_PIPELINE_STAGING)/semantic-ir.json
+	node scripts/spec-to-targets.mjs $(SPEC_PIPELINE_STAGING)/semantic-ir.json $(SPEC_PIPELINE_STAGING)
 
 .PHONY: extraction-frontend-deny
 extraction-frontend-deny: extraction-frontend-toolchain

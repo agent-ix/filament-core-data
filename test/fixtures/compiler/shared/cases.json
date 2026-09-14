@@ -29,9 +29,8 @@
 			"id": "records-and-scalars",
 			"sources": {
 				"typespec": "shared/typespec/records-and-scalars",
-				"spec-bundle": null
-			},
-			"reason": "authored in both dialects (shared/spec-bundle/records-and-scalars holds the spec-bundle half) over kernel scalars only, but the two frontends disagree under the FR-098 projection by construction, so the case is recorded single-dialect: (1) the spec-bundle record carries `clauses: []`, `operations: []` and `relationships: []` where the TypeSpec record omits the three members; (2) field identities are `field/note-id` (FR-095 slug) versus `field/Note-id` (FR-046 verbatim names); (3) the constrained field's alias is `type/Note.revision` (CR-036-4) versus `type/NoteRevision` (FR-053 `<Name><Field>`), so the field's `typeRef`, the constraint's `appliesTo` and the alias node itself differ; (4) the constraint identity is `constraint/note-revision-min` versus `constraint/Note-revision-min`, and its `diagnosticCode` is `agent-ix.records-and-scalars.REVISION_MIN` versus `agent-ix.records-and-scalars.NOTE_REVISION_MIN`. Reported with Task-136; the projection was not widened to hide any of the four"
+				"spec-bundle": "shared/spec-bundle/records-and-scalars"
+			}
 		}
 	]
 }

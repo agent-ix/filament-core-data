@@ -12,6 +12,21 @@ relationships:
 
 ## Description
 
+This requirement answers
+[filament-core-data#95](https://github.com/agent-ix/filament-core-data/issues/95),
+which asks which source contract independently authored field presence is read
+from, and the presence half of
+[#93](https://github.com/agent-ix/filament-core-data/issues/93). The trace is
+written here rather than left to be inferred from a matrix row: an issue whose
+requirement can only be found by recognising the subject matter is an issue that
+traces to nothing a reader can follow.
+
+It also answers the presence half of
+[#78](https://github.com/agent-ix/filament-core-data/issues/78), which reaches the same seam from the other side: the
+rule deriving presence from multiplicity makes a required-but-possibly-empty
+collection inexpressible. The unconstrained-value half of #78 is answered by
+[FR-139](./FR-139-express-an-unconstrained-value-in-the-semantic-ir.md).
+
 The baseline model contract SHALL require every baseline field declaration to
 carry an authored `presence` value independently of multiplicity, nullability,
 and default semantics.

@@ -519,8 +519,12 @@ impl Serialize for UnknownVariant {
 /// A declared extension carried beside a contract node.
 ///
 /// An extension is never folded into an unknown member: the two mean different
-/// things and the contract carries both.
+/// things and the contract carries both. This is the *value* type — the type a
+/// consumer deserializes an extension into and asks for a verdict on — and it
+/// is separate from the `ExtensionMeta` constant, which records what the
+/// contract declared at generation time.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Extension {
     /// The extension's semantic identity.
     pub identity: String,
@@ -533,6 +537,84 @@ pub struct Extension {
     pub capability: Option<String>,
     /// The extension payload.
     pub payload: SemanticValue,
+}
+
+impl Extension {
+    /// Builds an extension, checking the shape of its identity.
+    ///
+    /// The payload is deliberately unchecked: an extension payload is opaque to
+    /// the contract that carries it, which is the whole point of the member.
+    pub fn try_new(
+        identity: String,
+        version: String,
+        required: bool,
+        capability: Option<String>,
+        payload: SemanticValue,
+    ) -> Result<Self, ValidationError> {
+        SemanticIdentity::try_new(identity.clone())?;
+        Ok(Self {
+            identity,
+            version,
+            required,
+            capability,
+            payload,
+        })
+    }
+
+    /// Decides this extension against what the generated crate declares.
+    ///
+    /// `declared` is every extension identity the contract this crate was
+    /// generated from carries. `admitted` is the set of capabilities the crate
+    /// admits, which is **empty**, and empty is a stated decision rather than an
+    /// omission: `consumer-policy.schema.json` is sealed and carries no
+    /// capability member, and the published `rust` target contract declares no
+    /// capability list either, so there is no published input from which a
+    /// non-empty set could be read. That is GAP-007, owned by issue #9. A crate
+    /// that claimed to admit a capability nobody published would be inventing
+    /// the very rule the gap records as missing.
+    ///
+    /// Two rules follow, and they are the whole decision:
+    ///
+    /// - An extension whose `required` is false is preserved whatever its
+    ///   identity, and carries no diagnostic. Forward compatibility is what the
+    ///   member is for.
+    /// - An extension whose `required` is true is rejected when its identity is
+    ///   not one the contract declares, or when it names any capability at all,
+    ///   because the admitted set is empty.
+    ///
+    /// A blocking diagnostic in the returned list is the rejection; an empty
+    /// list is acceptance.
+    pub fn decide(&self, declared: &[&str], admitted: &[&str]) -> Vec<Diagnostic> {
+        if !self.required {
+            return Vec::new();
+        }
+        let known = declared.contains(&self.identity.as_str());
+        let capability_admitted = match &self.capability {
+            None => true,
+            Some(capability) => admitted.contains(&capability.as_str()),
+        };
+        if known && capability_admitted {
+            return Vec::new();
+        }
+        let reason = match &self.capability {
+            Some(capability) if !capability_admitted => format!(
+                "it requires the capability {}, which this crate admits none of",
+                truncate_echo(capability)
+            ),
+            _ => "this contract does not declare it".to_owned(),
+        };
+        vec![Diagnostic::new(
+            UNKNOWN_REQUIRED_EXTENSION_CODE,
+            UNKNOWN_REQUIRED_EXTENSION_SEVERITY,
+            UNKNOWN_REQUIRED_EXTENSION_OWNER,
+            true,
+            format!(
+                "the required extension {} is rejected because {}",
+                truncate_echo(&self.identity),
+                reason
+            ),
+        )]
+    }
 }
 
 /// One instruction of a generated matcher program.
@@ -1155,3 +1237,16 @@ pub const SEMANTIC_IDENTITY_PATTERN: &[MatcherInst] = &[
     MatcherInst::Eol,
     MatcherInst::Match,
 ];
+
+/// The code a rejected required extension is reported under.
+///
+/// It carries the published reader spelling rather than a generator one,
+/// because `conformance/diagnostic-codes.json` already names this defect and
+/// a second spelling for one defect is two registries that have to agree.
+pub const UNKNOWN_REQUIRED_EXTENSION_CODE: &str = "agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION";
+
+/// The severity the registry declares for that code.
+pub const UNKNOWN_REQUIRED_EXTENSION_SEVERITY: &str = "error";
+
+/// The owner the registry declares for that code.
+pub const UNKNOWN_REQUIRED_EXTENSION_OWNER: &str = "ix://agent-ix/filament-core-data/semantic-ir";

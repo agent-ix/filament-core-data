@@ -8,19 +8,20 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import {
-	ROOT,
 	compare,
 	corpusGates,
 	loadCorpus,
 	oracleVerdict,
+	ROOT,
 } from "../corpus.mjs";
 import { canonical, compareCodePoint } from "../oracle/json.mjs";
-import { formatJson } from "../tools/format-json.mjs";
 import { validateConformance } from "../oracle/schema-layer.mjs";
+import { formatJson } from "../tools/format-json.mjs";
+import { materializeCases } from "../tools/materialize-cases.mjs";
 
 const REGISTRY_PATH = join(ROOT, "adapters", "registry.json");
 const DIVERGENCES_PATH = join(ROOT, "divergences.json");
@@ -31,13 +32,19 @@ const MUTATIONS_PATH = join(ROOT, "mutations.json");
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
 
 /**
+ * Distinguishes two runs inside one process, so that the staging directory a
+ * run materializes into is its own even when a second `run()` overlaps it.
+ */
+let stagingCounter = 0;
+
+/**
  * Runs one adapter over the corpus.
  *
  * An adapter with no `command` and a registry `status` of `unavailable` answers
  * `unavailable` for every case; that is a recorded unmet row, not a pass. An
  * adapter with a command is started as a process and never imported.
  */
-function runAdapter(adapter, cases, manifest) {
+function runAdapter(adapter, cases, manifest, stagingDirectory) {
 	if (!adapter.command) {
 		if (adapter.status !== "unavailable") {
 			return {
@@ -59,11 +66,15 @@ function runAdapter(adapter, cases, manifest) {
 	}
 	let stdout;
 	try {
-		stdout = execFileSync(adapter.command[0], adapter.command.slice(1), {
-			cwd: ROOT,
-			encoding: "utf8",
-			maxBuffer: 64 * 1024 * 1024,
-		});
+		stdout = execFileSync(
+			adapter.command[0],
+			[...adapter.command.slice(1), stagingDirectory],
+			{
+				cwd: ROOT,
+				encoding: "utf8",
+				maxBuffer: 64 * 1024 * 1024,
+			},
+		);
 	} catch (error) {
 		return {
 			failed: true,
@@ -136,173 +147,200 @@ export function run(options = {}) {
 		}
 	}
 
-	for (const adapter of [...registry.adapters].sort((left, right) =>
-		compareCodePoint(left.id, right.id),
-	)) {
-		const supplied = adapterResults?.[adapter.id];
-		const outcome = supplied
-			? { failed: false, results: supplied }
-			: runAdapter(adapter, cases, manifest);
-		if (outcome.failed) {
-			problems.push({
-				kind: "adapter",
-				adapter: adapter.id,
-				message: outcome.reason,
-			});
+	// Every adapter that cannot import this corpus reads it from here instead.
+	// Materializing once, before any adapter starts, keeps every adapter's
+	// answers computed from one assembly of the cases rather than from its own.
+	//
+	// The directory is unique to this run (issue #49). `materializeCases` empties
+	// its target before rewriting it, so a fixed shared path lets two concurrent
+	// runs — two vitest files each calling `run()` — delete each other's cases
+	// mid-flight, which surfaces as an adapter failing to open a case file that
+	// was there a moment ago. It is nested under the ignored `.cases/` so the
+	// staging tree stays out of the working tree's changed set, and it is removed
+	// when the run ends.
+	stagingCounter += 1;
+	const stagingDirectory = join(
+		ROOT,
+		".cases",
+		`run-${process.pid}-${stagingCounter}`,
+	);
+	materializeCases(stagingDirectory);
+	try {
+		for (const adapter of [...registry.adapters].sort((left, right) =>
+			compareCodePoint(left.id, right.id),
+		)) {
+			const supplied = adapterResults?.[adapter.id];
+			const outcome = supplied
+				? { failed: false, results: supplied }
+				: runAdapter(adapter, cases, manifest, stagingDirectory);
+			if (outcome.failed) {
+				problems.push({
+					kind: "adapter",
+					adapter: adapter.id,
+					message: outcome.reason,
+				});
+				adapterRows.push({
+					adapter: adapter.id,
+					status: adapter.status,
+					matched: 0,
+					unmet: 0,
+					failed: cases.length,
+				});
+				continue;
+			}
+			const answered = new Map();
+			let matched = 0;
+			let unmetCount = 0;
+			let failedCount = 0;
+			for (const result of outcome.results) {
+				const errors = validateConformance(
+					"adapter-result.schema.json",
+					result,
+				);
+				if (errors.length > 0) {
+					problems.push({
+						kind: "adapter-result",
+						adapter: adapter.id,
+						case: result?.caseId ?? null,
+						message: errors
+							.map((error) => `${error.instancePath} ${error.message}`)
+							.join("; "),
+					});
+					failedCount += 1;
+					continue;
+				}
+				if (!byId.has(result.caseId)) {
+					problems.push({
+						kind: "unknown-case",
+						adapter: adapter.id,
+						case: result.caseId,
+						message: "the corpus declares no such case",
+					});
+					failedCount += 1;
+					continue;
+				}
+				if (answered.has(result.caseId)) {
+					problems.push({
+						kind: "duplicate-answer",
+						adapter: adapter.id,
+						case: result.caseId,
+						message: "the adapter answered this case twice",
+					});
+					failedCount += 1;
+					continue;
+				}
+				answered.set(result.caseId, result);
+				if (result.caseDigest !== byId.get(result.caseId).digest) {
+					problems.push({
+						kind: "case-digest",
+						adapter: adapter.id,
+						case: result.caseId,
+						message:
+							"the answer names a case digest the manifest does not carry",
+					});
+					failedCount += 1;
+					continue;
+				}
+				const entry = cases.find((one) => one.id === result.caseId);
+				if (result.support === "unavailable") {
+					if (adapter.status !== "unavailable") {
+						problems.push({
+							kind: "unavailable",
+							adapter: adapter.id,
+							case: result.caseId,
+							message: "an available adapter answered unavailable",
+						});
+						failedCount += 1;
+						continue;
+					}
+					unmet.push({
+						adapter: adapter.id,
+						case: result.caseId,
+						owningIssue: adapter.owningIssue,
+					});
+					unmetCount += 1;
+					continue;
+				}
+				if (result.support === "unsupported") {
+					const declared = (entry.unsupportedBy ?? []).find(
+						(one) => one.adapter === adapter.id,
+					);
+					if (!declared) {
+						problems.push({
+							kind: "unsupported",
+							adapter: adapter.id,
+							case: result.caseId,
+							message:
+								"the case does not declare this adapter in unsupportedBy",
+						});
+						failedCount += 1;
+						continue;
+					}
+					unmet.push({
+						adapter: adapter.id,
+						case: result.caseId,
+						owningIssue: declared.owningIssue,
+					});
+					unmetCount += 1;
+					continue;
+				}
+				const outcomeOfCase = compare(entry, result, {
+					pointerCompatible: adapter.pointerCompatible !== false,
+				});
+				if (outcomeOfCase.matches) {
+					matched += 1;
+					continue;
+				}
+				let suppressed = true;
+				for (const problem of outcomeOfCase.problems) {
+					const code =
+						problem.kind === "diagnostic"
+							? (outcomeOfCase.expected.diagnostics[problem.index]?.diagnostic
+									?.code ??
+								result.diagnostics?.[problem.index]?.diagnostic?.code ??
+								problem.kind)
+							: problem.kind;
+					const key = divergenceKey(result.caseId, adapter.id, code);
+					const suppression = register.divergences.find(
+						(one) => divergenceKey(one.case, one.adapter, one.code) === key,
+					);
+					divergences.push({
+						case: result.caseId,
+						adapter: adapter.id,
+						code,
+						pointer: problem.pointer,
+						locus: problem.locus ?? null,
+						expected: problem.expected,
+						observed: problem.observed,
+						suppressedBy: suppression ? suppression.id : null,
+					});
+					if (suppression) usedRegisterKeys.add(key);
+					else suppressed = false;
+				}
+				if (suppressed) matched += 1;
+				else failedCount += 1;
+			}
+			for (const row of manifest.cases) {
+				if (!answered.has(row.id)) {
+					problems.push({
+						kind: "missing-answer",
+						adapter: adapter.id,
+						case: row.id,
+						message: "the adapter returned no result for this case",
+					});
+					failedCount += 1;
+				}
+			}
 			adapterRows.push({
 				adapter: adapter.id,
 				status: adapter.status,
-				matched: 0,
-				unmet: 0,
-				failed: cases.length,
+				matched,
+				unmet: unmetCount,
+				failed: failedCount,
 			});
-			continue;
 		}
-		const answered = new Map();
-		let matched = 0;
-		let unmetCount = 0;
-		let failedCount = 0;
-		for (const result of outcome.results) {
-			const errors = validateConformance("adapter-result.schema.json", result);
-			if (errors.length > 0) {
-				problems.push({
-					kind: "adapter-result",
-					adapter: adapter.id,
-					case: result?.caseId ?? null,
-					message: errors
-						.map((error) => `${error.instancePath} ${error.message}`)
-						.join("; "),
-				});
-				failedCount += 1;
-				continue;
-			}
-			if (!byId.has(result.caseId)) {
-				problems.push({
-					kind: "unknown-case",
-					adapter: adapter.id,
-					case: result.caseId,
-					message: "the corpus declares no such case",
-				});
-				failedCount += 1;
-				continue;
-			}
-			if (answered.has(result.caseId)) {
-				problems.push({
-					kind: "duplicate-answer",
-					adapter: adapter.id,
-					case: result.caseId,
-					message: "the adapter answered this case twice",
-				});
-				failedCount += 1;
-				continue;
-			}
-			answered.set(result.caseId, result);
-			if (result.caseDigest !== byId.get(result.caseId).digest) {
-				problems.push({
-					kind: "case-digest",
-					adapter: adapter.id,
-					case: result.caseId,
-					message: "the answer names a case digest the manifest does not carry",
-				});
-				failedCount += 1;
-				continue;
-			}
-			const entry = cases.find((one) => one.id === result.caseId);
-			if (result.support === "unavailable") {
-				if (adapter.status !== "unavailable") {
-					problems.push({
-						kind: "unavailable",
-						adapter: adapter.id,
-						case: result.caseId,
-						message: "an available adapter answered unavailable",
-					});
-					failedCount += 1;
-					continue;
-				}
-				unmet.push({
-					adapter: adapter.id,
-					case: result.caseId,
-					owningIssue: adapter.owningIssue,
-				});
-				unmetCount += 1;
-				continue;
-			}
-			if (result.support === "unsupported") {
-				const declared = (entry.unsupportedBy ?? []).find(
-					(one) => one.adapter === adapter.id,
-				);
-				if (!declared) {
-					problems.push({
-						kind: "unsupported",
-						adapter: adapter.id,
-						case: result.caseId,
-						message: "the case does not declare this adapter in unsupportedBy",
-					});
-					failedCount += 1;
-					continue;
-				}
-				unmet.push({
-					adapter: adapter.id,
-					case: result.caseId,
-					owningIssue: declared.owningIssue,
-				});
-				unmetCount += 1;
-				continue;
-			}
-			const outcomeOfCase = compare(entry, result, {
-				pointerCompatible: adapter.pointerCompatible !== false,
-			});
-			if (outcomeOfCase.matches) {
-				matched += 1;
-				continue;
-			}
-			let suppressed = true;
-			for (const problem of outcomeOfCase.problems) {
-				const code =
-					problem.kind === "diagnostic"
-						? (outcomeOfCase.expected.diagnostics[problem.index]?.diagnostic
-								?.code ??
-							result.diagnostics?.[problem.index]?.diagnostic?.code ??
-							problem.kind)
-						: problem.kind;
-				const key = divergenceKey(result.caseId, adapter.id, code);
-				const suppression = register.divergences.find(
-					(one) => divergenceKey(one.case, one.adapter, one.code) === key,
-				);
-				divergences.push({
-					case: result.caseId,
-					adapter: adapter.id,
-					code,
-					pointer: problem.pointer,
-					locus: problem.locus ?? null,
-					expected: problem.expected,
-					observed: problem.observed,
-					suppressedBy: suppression ? suppression.id : null,
-				});
-				if (suppression) usedRegisterKeys.add(key);
-				else suppressed = false;
-			}
-			if (suppressed) matched += 1;
-			else failedCount += 1;
-		}
-		for (const row of manifest.cases) {
-			if (!answered.has(row.id)) {
-				problems.push({
-					kind: "missing-answer",
-					adapter: adapter.id,
-					case: row.id,
-					message: "the adapter returned no result for this case",
-				});
-				failedCount += 1;
-			}
-		}
-		adapterRows.push({
-			adapter: adapter.id,
-			status: adapter.status,
-			matched,
-			unmet: unmetCount,
-			failed: failedCount,
-		});
+	} finally {
+		rmSync(stagingDirectory, { recursive: true, force: true });
 	}
 
 	for (const entry of register.divergences) {

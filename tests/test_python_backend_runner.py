@@ -280,7 +280,20 @@ def test_provisioning_failure_and_declared_limits() -> None:
 # below with the assertion that no backend can reach it — which is the half that
 # matters, and which a blanket "no process anywhere" never made. The JS side of
 # the same gate carries the identical named exemption in `test/compiler.test.ts`.
-PROCESS_STARTING = ("backends/format.mjs",)
+# Issue #86 adds the second, for the same reason on the input side: ADR-0006
+# requires the spec-bundle frontend to reach the Rust extraction producer as an
+# injected capability, so `extraction.mjs` starts the process and no module under
+# `frontend/` imports it. The node half of this gate carries the identical pair.
+# Issue #23 adds the third, on the output side and for the same reason.
+# `datamodel-code-generator` is a Python program, so FR-136's backend reaches
+# it as an injected producer: `backends/python-v1/produce.mjs` starts the
+# process and no module under `backends/python-v1/` imports it, asserted below
+# alongside the other backends.
+PROCESS_STARTING = (
+    "backends/format.mjs",
+    "backends/python-v1/produce.mjs",
+    "extraction.mjs",
+)
 
 
 def test_no_compiler_module_spawns_or_imports_the_generator() -> None:
@@ -301,6 +314,7 @@ def test_no_compiler_module_spawns_or_imports_the_generator() -> None:
         "backends/typescript.mjs",
         "backends/rust.mjs",
         "backends/typescript-v1/index.mjs",
+        "backends/python-v1/index.mjs",
     ):
         for reached in _reachable(compiler, entrypoint):
             assert reached not in exempt, f"{entrypoint} reaches {reached}"

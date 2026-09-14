@@ -16,6 +16,10 @@ relationships:
 
 ## Description
 
+This requirement opens the bundle answering
+[filament-core-data#20](https://github.com/agent-ix/filament-core-data/issues/20), the conformance corpus and its
+independent differential oracle.
+
 The repository SHALL publish a versioned semantic conformance corpus under
 `conformance/` in which every case is a declarative, minimized input bundle
 built from a shared base plus an ordered patch, and whose expected result cites

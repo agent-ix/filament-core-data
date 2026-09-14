@@ -1,0 +1,124 @@
+name: Rust
+
+# The Rust gates (issue #60). Until this workflow existed they ran in no lane at
+# all: `build-test.yml` delegates to agent-ix/nodejs-actions, which installs
+# Node and runs `make install` and `make test` with no Rust toolchain, so
+# `cargo clippy`, `cargo fmt --check` and every Rust test suite were unreachable
+# from CI. `.github/**` was a prohibited changed path for issues #21, #22 and
+# #23, so none of the three tickets that introduced Rust was permitted to add a
+# Rust job; #60 lifts that fence explicitly.
+#
+# `workflow_dispatch` is the only trigger, deliberately and by standing policy.
+# Do not add `push` or `pull_request` here. Correctness is gated locally before
+# pushing, and a pipeline that goes red for reasons unrelated to the change
+# trains everyone to ignore it.
+#
+# Two platforms, because #21 requires byte-identical output across platforms and
+# one runner cannot evidence that. `macos-latest` is arm64 and `ubuntu-latest`
+# is x86_64, so the pair also crosses architectures — which the dev host cannot
+# do locally, having neither a cross linker nor qemu for aarch64 (PR #99).
+
+on:
+  workflow_dispatch:
+    inputs:
+      deep:
+        description: "Also run the mutation and fuzz batteries (slow)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Both platforms always report. Cancelling the sibling on the first
+      # failure is what hides a defect that reproduces on one platform only,
+      # which is the entire question this matrix exists to answer.
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      # The Rust gates shell out to `node src/compiler/backends/rust-serde/cli.mjs`
+      # and to several scripts under `scripts/`, so the Node dependencies are a
+      # prerequisite of the Rust lane rather than a separate concern. Every
+      # dependency this repository declares is public npm; none comes from a
+      # private registry.
+      - name: Install Node dependencies
+        run: make install
+
+      # Both toolchains the repository pins: the workspace channel from
+      # rust-toolchain.toml, and the exact qualification toolchain the
+      # extraction-frontend gates run under (Makefile EXTRACTION_TOOLCHAIN).
+      - name: Install the workspace toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - name: Install the extraction-frontend qualification toolchain
+        run: |
+          toolchain="$(make --no-print-directory print-extraction-toolchain)"
+          rustup toolchain install "$toolchain" --component clippy,rustfmt
+          rustup component add clippy rustfmt
+
+      # Provisioning, which is not a gate.
+      #
+      # `.cargo/config.toml` sets `net.offline = true` for the whole repository,
+      # because FR-061-CON-1 forbids contacting a registry to resolve as well as
+      # to publish and NFR-022 measures the gates' network calls at zero. That
+      # property is about the gates. A runner that has never seen this
+      # repository has an empty registry, so something has to populate it once,
+      # before any gate runs — and the honest way to do that is a named step
+      # that is visibly not a gate, rather than by relaxing the setting the
+      # gates run under.
+      #
+      # `CARGO_NET_OFFLINE=false` therefore applies to this step alone. Every
+      # target after it inherits the committed `offline = true`, so a gate that
+      # reaches the network still fails, which is the property NFR-022 asserts.
+      #
+      # `quire-rs` is a private repository in this organisation, so cargo needs a
+      # credential to clone it. The default `GITHUB_TOKEN` is scoped to this
+      # repository alone and will not read a sibling; an organisation token is
+      # required, and the step says so rather than failing with cargo's
+      # "offline mode" message, which names the wrong cause.
+      - name: Provision the cargo registry
+        env:
+          CARGO_NET_OFFLINE: "false"
+          GIT_TOKEN: ${{ secrets.REGISTRY_TOKEN || github.token }}
+        run: |
+          git config --global \
+            url."https://x-access-token:${GIT_TOKEN}@github.com/".insteadOf \
+            "https://github.com/"
+          cargo fetch --locked || {
+            echo "::error::cargo could not fetch the private git dependency \`quire-rs\`. This lane needs an organisation-scoped token with read access to agent-ix/quire-rs; the default GITHUB_TOKEN is scoped to this repository alone."
+            exit 1
+          }
+
+      - name: Rust gates
+        run: make test-rust
+
+      - name: Deep batteries
+        if: ${{ inputs.deep }}
+        run: make rust-deep
+
+      # The cross-platform question #21 asks. Each platform uploads the crates it
+      # generated; comparing two runs is a separate deliberate act rather than
+      # something this lane silently asserts.
+      - name: Upload generated crates
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-crates-${{ matrix.os }}
+          path: test/fixtures/rust-serde/goldens/
+          if-no-files-found: error

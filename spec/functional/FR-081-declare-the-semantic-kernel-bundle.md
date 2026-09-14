@@ -16,6 +16,10 @@ relationships:
 
 ## Description
 
+This requirement opens the bundle answering
+[filament-core-data#11](https://github.com/agent-ix/filament-core-data/issues/11), which generates and publishes
+the semantic-core packages.
+
 This repository SHALL declare, in one committed artifact, exactly which schema
 documents compose the semantic kernel, what package identity and version the
 kernel carries, which targets are generated from it, where each generated tree

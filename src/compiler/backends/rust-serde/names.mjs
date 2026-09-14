@@ -52,7 +52,8 @@ function readPinnedTable(name) {
 		);
 	}
 }
-import { RUST_BACKEND_CODES, diagnostic, fragment } from "./diagnostics.mjs";
+
+import { diagnostic, fragment, RUST_BACKEND_CODES } from "./diagnostics.mjs";
 
 const RESERVED = JSON.parse(readPinnedTable("reserved-words.json"));
 
@@ -233,6 +234,24 @@ export function typeName(definition) {
 		definition.identity,
 		pascal,
 	);
+}
+
+/**
+ * The `UpperCamelCase` qualifier for the package a semantic identity names.
+ *
+ * `ix://agent-ix/semantic-core/type/SourceLocusPath` qualifies as
+ * `SemanticCore`. FR-133 uses it to move a document-derived identifier out of
+ * the way of a reserved one: the qualifier names the namespace the construct
+ * came from, so the resolved identifier still says what it is rather than
+ * carrying a counter or a suffix that means nothing.
+ */
+export function packageQualifier(identity) {
+	const text = String(identity);
+	const scheme = text.indexOf("://");
+	const path = scheme === -1 ? text : text.slice(scheme + 3);
+	const parts = path.split("/").filter((part) => part.length > 0);
+	const source = parts.length > 1 ? parts[1] : (parts[0] ?? "");
+	return render(source, identity, pascal);
 }
 
 /** `UpperCamelCase` variant name, derived from the variant's wire name. */

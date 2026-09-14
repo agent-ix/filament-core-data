@@ -5,8 +5,8 @@
 use serde::{Deserialize, Serialize};
 
 /// The fields of `Root`, in the order the contract declares them.
-pub const FIELDS: &[crate::metadata::FieldMeta] = &[
-    crate::metadata::FieldMeta {
+pub const FIELDS: &[crate::identity::FieldMeta] = &[
+    crate::identity::FieldMeta {
         identity: "ix://agent-ix/conformance/field/root-name",
         name: "name",
         rust_name: "name",
@@ -15,7 +15,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         row: "field:single/non-null/required",
         presence: "required",
         nullable: false,
-        multiplicity: crate::metadata::MultiplicityMeta {
+        multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
             ordered: None,
@@ -24,8 +24,8 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         unit: None,
         default_kind: "none",
         default_value: None,
-        origin: crate::metadata::OriginMeta {
-            source: Some(crate::metadata::SourceLocusMeta {
+        origin: crate::identity::OriginMeta {
+            source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/filament-core-data/source/typespec",
                 path: "model/root.tsp",
                 start_line: 2,
@@ -36,7 +36,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
             generated: None,
         },
     },
-    crate::metadata::FieldMeta {
+    crate::identity::FieldMeta {
         identity: "ix://agent-ix/conformance/field/root-node",
         name: "node",
         rust_name: "node",
@@ -45,7 +45,7 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         row: "field:single/non-null/required",
         presence: "required",
         nullable: false,
-        multiplicity: crate::metadata::MultiplicityMeta {
+        multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
             ordered: None,
@@ -54,8 +54,8 @@ pub const FIELDS: &[crate::metadata::FieldMeta] = &[
         unit: None,
         default_kind: "none",
         default_value: None,
-        origin: crate::metadata::OriginMeta {
-            source: Some(crate::metadata::SourceLocusMeta {
+        origin: crate::identity::OriginMeta {
+            source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/filament-core-data/source/typespec",
                 path: "model/root.tsp",
                 start_line: 3,

@@ -18,7 +18,7 @@
 [workspace]
 resolver = "2"
 members = ["crates/semantic-ir", "crates/conformance-adapter", "crates/extraction-frontend", "crates/baseline-producer"]
-exclude = ["crates/consumer-compile-time", "crates/consumer-runtime"]
+exclude = ["crates/consumer-compile-time", "crates/consumer-runtime", "packages/semantic-kernel/rust"]
 
 [workspace.package]
 edition = "2021"

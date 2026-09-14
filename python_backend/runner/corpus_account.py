@@ -186,16 +186,7 @@ def build() -> dict[str, Any]:
             "id": slot["id"],
             "status": slot["status"],
             "owningIssue": slot["owningIssue"],
-            "statement": (
-                "The slot remains `unavailable` and this backend's corpus rows "
-                "remain UNMET. Wiring it needs a reader that emits one "
-                "`conformance/schema/adapter-result.schema.json` document per "
-                "case, carrying a `resultState`, contract diagnostics with "
-                "registry codes, and a `normalized` form. A package of generated "
-                "types cannot produce those: the oracle's readings are "
-                "cross-field judgements over a resolved document. That reader is "
-                "filed as its own ticket rather than claimed here."
-            ),
+            "statement": _slot_statement(slot["status"]),
         },
         "surface": "python_backend/generated/pydantic_v2_basemodel",
         "counts": {
@@ -204,18 +195,56 @@ def build() -> dict[str, Any]:
             "agreed": len(agreed),
             "surfaceOverStrict": len(over_strict),
             "undecidable": len(undecidable),
-            "unmetCorpusRows": len(rows),
+            "unmetCorpusRows": 0 if slot["status"] == "available" else len(rows),
         },
         "agreementOverDecidedCases": (
             f"{len(agreed)}/{len(decided_rows)}" if decided_rows else "0/0"
         ),
-        "notCoverage": (
-            "The agreement figure is over the cases this surface decided. It is "
-            "not corpus coverage and must not be reported as such: every corpus "
-            "row for this backend is unmet."
-        ),
+        "notCoverage": _not_coverage(slot["status"]),
         "cases": rows,
     }
+
+
+def _slot_statement(status: str) -> str:
+    """State what the slot is, rather than what it was when this was written."""
+    if status == "available":
+        return (
+            "The slot is `available` and this backend's corpus rows are met by "
+            "`conformance/adapters/python-backend/adapter.py`, which answers "
+            "every case from `tests/semantic_ir_reader.py`, the published v1 "
+            "schemas and its own statement of the contract's compatibility "
+            "rules. That adapter is not this surface: the account below "
+            "measures what a package of generated Pydantic types can decide, "
+            "which remains a strictly smaller question than the one the "
+            "adapter answers."
+        )
+    return (
+        "The slot remains `unavailable` and this backend's corpus rows remain "
+        "UNMET. Wiring it needs a reader that emits one "
+        "`conformance/schema/adapter-result.schema.json` document per case, "
+        "carrying a `resultState`, contract diagnostics with registry codes, "
+        "and a `normalized` form. A package of generated types cannot produce "
+        "those: the oracle's readings are cross-field judgements over a "
+        "resolved document. That reader is filed as its own ticket rather "
+        "than claimed here."
+    )
+
+
+def _not_coverage(status: str) -> str:
+    """The agreement figure is never corpus coverage, whatever the slot says."""
+    if status == "available":
+        return (
+            "The agreement figure is over the cases this generated surface "
+            "decided. It is not corpus coverage and must not be reported as "
+            "such. The slot's coverage is the adapter's, reported by "
+            "`conformance/coverage.json`, and is a separate measurement of a "
+            "separate artefact."
+        )
+    return (
+        "The agreement figure is over the cases this surface decided. It is "
+        "not corpus coverage and must not be reported as such: every corpus "
+        "row for this backend is unmet."
+    )
 
 
 def main(argv: list[str] | None = None) -> int:

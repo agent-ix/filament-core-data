@@ -7,7 +7,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -773,9 +773,14 @@ describe("TC-302..313 the differential harness (FR-037)", () => {
 			);
 		});
 		expect(report.exitCode).toBe(1);
-		expect(report.divergences.length).toBeGreaterThan(0);
-		expect(report.divergences[0].adapter).toBe("typescript-backend");
-		expect(report.divergences[0].case).toMatch(/^[A-Z]/);
+		// The seeded diagnostic is on typescript-backend, but the report carries
+		// every adapter's divergences and orders them by adapter; the assertion
+		// names the seeded one rather than whichever sorts first.
+		const seededRow = report.divergences.find(
+			(row) => row.adapter === "typescript-backend",
+		);
+		expect(seededRow, "the report names the seeded adapter").toBeDefined();
+		expect(seededRow?.case).toMatch(/^[A-Z]/);
 	});
 
 	it("TC-303 a missing diagnostic fails", () => {
@@ -1174,7 +1179,9 @@ describe("TC-302..313 the differential harness (FR-037)", () => {
 
 	it("TC-310 the harness starts an adapter as a process and imports no adapter internals", () => {
 		const text = readFileSync(join(CONF, "runner", "differential.mjs"), "utf8");
-		expect(text).toContain("execFileSync(adapter.command[0]");
+		// Matched across whatever line breaks the formatter chooses: the claim is
+		// that the command is started as a process, not that it fits on one line.
+		expect(text).toMatch(/execFileSync\(\s*adapter\.command\[0\]/);
 		expect(text).not.toMatch(/import\([^)]*adapters/);
 		expect(text).not.toMatch(/from\s+"\.\.\/adapters\//);
 	});
@@ -2030,8 +2037,7 @@ describe("TC-635..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		]);
 		const corpusSource = readFileSync(join(CONF, "corpus.mjs"), "utf8");
 		expect(
-			(corpusSource.match(new RegExp(`execFileSync\\("git"`, "g")) ?? [])
-				.length,
+			(corpusSource.match(/execFileSync\("git"/g) ?? []).length,
 			"more than one git invocation under conformance/",
 		).toBe(1);
 		expect(corpusSource).toContain("predecessor");

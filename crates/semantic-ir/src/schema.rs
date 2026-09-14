@@ -351,7 +351,7 @@ fn expect_shape(
     };
     match value.as_str() {
         Some(text) if ok(text) => {}
-        _ => f.push(pointer, format!("{what}")),
+        _ => f.push(pointer, what.to_string()),
     }
 }
 
@@ -362,7 +362,7 @@ fn expect_integer(value: Option<&Json>, pointer: &str, min: i64, what: &str, f: 
     };
     match value.as_i64() {
         Some(number) if number >= min => {}
-        _ => f.push(pointer, format!("{what}")),
+        _ => f.push(pointer, what.to_string()),
     }
 }
 

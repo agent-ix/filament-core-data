@@ -26,6 +26,10 @@ relationships:
 
 ## Description
 
+This requirement answers
+[filament-core-data#7](https://github.com/agent-ix/filament-core-data/issues/7), the gate whose passing releases
+the Rust burn-down's first stages.
+
 The four emitted kernel packages SHALL be shown to decide one shared golden
 corpus of kernel instance documents the same way, over five named properties,
 through the conformance corpus and oracle that already exist rather than through

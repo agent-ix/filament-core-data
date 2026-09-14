@@ -47,7 +47,7 @@ and it publishes nothing.
 - `packages/semantic-kernel/python/NOT-QUALIFIED.md`: the recorded absence of a package for every family the qualification judged `not-qualified`
 - `packages/semantic-kernel/examples/python/<profile-id>.py`: one ordinary consumer per demonstrated family, authored under [FR-089](./FR-089-provide-independent-consumer-examples.md) so every language keeps its examples in one place
 - `tests/test_semantic_kernel.py`, the gate for everything this requirement asserts
-- The `localization` record inside each `PROVENANCE.json`: every rewritten `$ref` and every dropped `$id`, by document and JSON pointer
+- The `localization` record inside each `PROVENANCE.json`: every rewritten `$ref`, every dropped `$id`, and every restored `title`, by document and JSON pointer
 
 ## Behavior
 
@@ -57,7 +57,9 @@ and it publishes nothing.
 - `localize_bundle` SHALL rewrite a `$ref` whose value begins with the declared package base to the remainder of that value — the bare sibling document filename, optionally followed by its `#`-fragment — leaving a local `#`-pointer untouched.
 - If a `$ref` does not begin with the declared package base, then `localize_bundle` SHALL leave it byte-identical, so an unexpected reference reaches `assert_schema_safe` and is refused there rather than being localized into acceptability.
 - `localize_bundle` SHALL delete the per-document `$id` member, and only the document-root `$id`, because the localized bundle resolves by relative filename and a retained absolute `$id` would re-establish the absolute base the sibling references were just rewritten away from.
-- `localize_bundle` SHALL preserve `$schema` and every other keyword byte-for-byte, introduce no keyword the input did not carry, and delete no constraint keyword.
+- `localize_bundle` SHALL give a document that carries no `title` the `title` its own filename states — the `.json` basename — and SHALL leave a document that already carries one untouched. The official `@typespec/json-schema` emitter states a model's identity as its absolute `$id` and emits no `title`; none of the thirty kernel documents carries one. The generator derives a class name from a `title` or a `$defs` key and from nothing else, so without this rule every one of the thirty modules declares `class Model`, the FR-079 collision rule correctly excludes a name thirty modules each declare, and `__all__` comes out empty — a naming failure misreported as a thirty-way collision.
+- The restored `title` is recovered, not invented: it is the same identity the document's `$id` encodes, the same name its filename states, and the same name the Rust, TypeScript, and JSON Schema kernel targets already carry. Restoring it also restores FR-078 attribution for the document-root node, whose pointer is the empty string and which is therefore corroborated by no `$defs` key; without the `title` that node is `unattributed` and the `enforce`-mode inspection refuses the package. The repair belongs to the input here too — `python_backend/runner/inspect_source.py` stays byte-identical to `origin/main`.
+- `localize_bundle` SHALL preserve `$schema` and every other keyword byte-for-byte, SHALL introduce no keyword the input did not carry other than the `title` the preceding rule restores, and SHALL delete no constraint keyword.
 - `localize_bundle` SHALL be a pure function: deep-equal on every call, inputs unmutated, no clock, no network, no filesystem write — the same purity `python_backend/adapter/prepare.py` holds, and asserted the same way.
 - The pass SHALL record each rewrite with its rule, its document, and its JSON pointer, so a generated difference is attributable to a rule rather than to the pass as a whole.
 - The pipeline SHALL be: read the committed documents, `localize_bundle`, then `prepare_documents` — the in-memory form `python_backend/adapter/prepare.py` already exposes for exactly this case — then `assert_schema_safe` over every prepared document and `assert_argv_safe` over the resolved vector, then `generate`. Localization SHALL run before the preparation pass and therefore before the guard-facing input `prepare_input_set` would otherwise produce, so that what the guard inspects is what the generator receives.
@@ -126,23 +128,57 @@ and it publishes nothing.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-087-AC-1 | Every one of the thirty-five absolute `$ref` values in the committed kernel bundle is refused by `assert_schema_safe` with `PY-REF-010` before localization, and every localized document passes the same unmodified guard afterwards. | Test |
-| FR-087-AC-2 | After `localize_bundle`, no document carries a root `$id`, every `$ref` is a bare sibling filename naming a document present in the input set, and `$schema` and every constraint keyword are byte-identical to the committed document. | Property |
+| FR-087-AC-2 | After `localize_bundle`, no document carries a root `$id`, every `$ref` is a bare sibling filename naming a document present in the input set, every document carries a `title` equal to its filename stem, and `$schema` and every constraint keyword are byte-identical to the committed document. `title` is the only keyword the pass may introduce. | Property |
 | FR-087-AC-3 | A `$ref` whose value does not begin with the declared package base survives `localize_bundle` byte-identical and is then refused by `assert_schema_safe` with its own code. | Test |
 | FR-087-AC-4 | `python_backend/refusals.json`, `python_backend/profiles.json`, `python_backend/limits.json`, `python_backend/toolchain.json`, every file under `python_backend/adapter/`, `python_backend/runner/`, `python_backend/qualification/`, and `python_backend/generated/`, and `pyproject.toml` are byte-identical to `origin/main` on this branch. | Analysis |
 | FR-087-AC-5 | Calling `localize_bundle` twice returns deep-equal results and leaves every input document deep-equal to its pre-call state; the pass opens no socket, reads no clock, and writes no file. | Property |
-| FR-087-AC-6 | The `localization` record names every rewritten `$ref` and every dropped `$id` by document and pointer, and its counts equal the bundle's measured thirty-five references and thirty documents. | Test |
+| FR-087-AC-6 | The `localization` record names every rewritten `$ref` and every dropped `$id` by document and pointer, and its counts equal the bundle's measured thirty-five references, thirty dropped `$id`s, and thirty restored titles. | Test |
 | FR-087-AC-7 | Every sealed kernel object schema generates a closed Python model — `extra='forbid'` in both Pydantic families — and generating the same bundle without the preparation pass yields an open one, asserted in both directions. | Integration |
 | FR-087-AC-8 | A package tree exists under `packages/semantic-kernel/python/` for exactly the families recorded as `qualified-with-conditions`, `NOT-QUALIFIED.md` records each `not-qualified` family with its verdict and lost constructs, and no tree exists for either. | Test |
 | FR-087-AC-9 | Each emitted kernel package has one module per kernel document and an `__init__.py` whose `__all__` is sorted, complete, and free of every name more than one module declares; those names are reachable as `<module>.<Name>` and listed in `PROVENANCE.json`. | Test |
 | FR-087-AC-10 | Each emitted kernel package imports under the declared interpreter with no exception and no warning, and no model retains an unresolved forward reference. | Integration |
 | FR-087-AC-11 | `PROVENANCE.json` carries the input digest, the profile digest, the toolchain fingerprint, the content fingerprint, the kernel bundle base and digest, the `localization` and `preparation` records, the verbatim MIT attribution for `datamodel-code-generator 0.76.0`, `AGPL-3.0-only`, `published: false`, and `agent-ix/quoin#290`; and carries no clock reading and no host-observed version. | Test |
-| FR-087-AC-12 | The pinned `mypy` reports zero errors under `--strict` over every module and example under `packages/semantic-kernel/python/`, invoked by path with no configuration change; no generated or example source contains `type: ignore`; and `pyproject.toml` declares no override for that tree. | Analysis |
+| FR-087-AC-12 | The pinned `mypy` reports zero errors under `--strict` over every module and example under `packages/semantic-kernel/python/`, invoked by path with no configuration change; no generated or example source contains `type: ignore`; and `pyproject.toml` declares no override for that tree. Blocked by finding F1 below. | Analysis |
 | FR-087-AC-13 | Regenerating from the unchanged committed bundle reproduces the kernel tree byte-for-byte, `--check` fails naming a mutated committed file, and two generations into fresh scratch roots agree byte-for-byte and in fingerprint. | Snapshot |
 | FR-087-AC-14 | No byte under `packages/semantic-core/` changes, and `make semantic-core-check` passes, after a full kernel generation. | Analysis |
 | FR-087-AC-15 | No path under `packages/semantic-kernel/` appears in the packed file list of any distribution this repository builds, checked against the packed list rather than the manifest text alone; and `.github/` is byte-identical to `origin/main`. | Test |
-| FR-087-AC-16 | Each kernel example runs, constructs a conforming kernel value, round-trips it, and raises on a value the kernel bundle forbids. | Integration |
+| FR-087-AC-16 | Each kernel example runs, constructs a conforming kernel value, round-trips it, and raises on a value the kernel bundle forbids. For `msgspec_struct` the conforming value is one of the twenty-six kernel types that family can decode, and the example additionally pins the four it cannot as finding F2 below. | Integration |
 | FR-087-AC-17 | `python_backend/kernel/emit.py` reaches the issue #23 route only by import, and for one file map its `__init__.py` text and content fingerprint are identical to what `python_backend/runner/emit.py` produces. | Test |
 | FR-087-AC-18 | No generated kernel file contains a date, a time, an absolute path from the generating host, a user name, or a hostname, and no socket is opened during a kernel generation. | Integration |
+
+## Findings
+
+Two measured facts this requirement records rather than repairs. Neither is a
+defect in the input, in the guard, or in the checker, and neither may be
+silenced here: the route is imported, not edited, and a gate made green by
+hiding a measurement is worth nothing.
+
+### F1 — a `StrEnum` member that shadows a `str` method
+
+FR-029's closed constraint-keyword vocabulary contains `format`. The pinned
+generator renders an enum member verbatim as an attribute name, and on a
+`StrEnum` that attribute shadows `str.format`, which `mypy --strict` rejects:
+one error per family, three in total, all at `ConstraintKeyword.py:20`. The
+input is correct, the shadowing is real, and the four available silencings each
+trade a measured fact for a green gate. FR-087-AC-12 is therefore blocked, not
+satisfied, and the decision belongs to `agent-ix/filament-core-data#79`, which
+states the options and names `#35` as the vocabulary's owner.
+
+### F2 — `msgspec_struct` cannot decode four of the thirty kernel types
+
+Both Pydantic families carry all thirty kernel types. `msgspec_struct` carries
+twenty-six: `TypeRef` fails because `target` is a union of a pattern-constrained
+string and a string enum, which `msgspec` refuses as two str-like members;
+`FieldDecl` and `OperationDecl` fail through their `TypeRef`s; and
+`ConstraintDecl` fails because the generator does not carry the schema's stated
+`keyword` discriminator into a `tag_field`, leaving eleven untagged structs.
+All four raise `TypeError` at decoder construction, not at decode time. Neither
+union shape occurs in the thirteen published documents the issue #23
+qualification probed, so neither is a `python_backend/qualification/gaps.json`
+row, and FR-087-CON-4 and FR-087-CON-7 both forbid closing that hole from here.
+The family is emitted with the loss recorded — in its `README.md`, in its
+`PROVENANCE.json`, and as an executable assertion in its example — and the
+decision belongs to `agent-ix/filament-core-data#125`.
 
 ## Dependencies
 

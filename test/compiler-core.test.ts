@@ -4,8 +4,8 @@ import {
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
-	readFileSync,
 	readdirSync,
+	readFileSync,
 	rmSync,
 	statSync,
 	symlinkSync,
@@ -15,21 +15,21 @@ import { tmpdir } from "node:os";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
-import { changeRange, changedPathsOf } from "./changed-paths.js";
 import {
 	assertBackendContract,
 	generateTarget,
+	registryWith,
 } from "../src/compiler/backends/seam.mjs";
 import { diffSemanticContract } from "../src/compiler/compat/diff.mjs";
 import {
 	CONTRACT_VERSIONS,
-	V1_1_ADDED_NODES,
 	readIrAsContract,
+	V1_1_ADDED_NODES,
 } from "../src/compiler/compat/evolution.mjs";
 import {
+	applyDiagnosticLimit,
 	DEFAULT_LIMITS,
 	DIAGNOSTIC_CODES,
-	applyDiagnosticLimit,
 	diagnostic,
 	fragment,
 	hasBlocking,
@@ -37,6 +37,7 @@ import {
 } from "../src/compiler/diagnostics.mjs";
 import {
 	FRONTEND_DIALECTS,
+	registryWith as frontendRegistryWith,
 	isImplemented,
 	runFrontend,
 	selectFrontend,
@@ -51,14 +52,13 @@ import {
 import { VOCABULARY } from "../src/compiler/frontend/typespec/lib/lib.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 import { formatInspection, inspectIr } from "../src/compiler/inspect.mjs";
-import { normalizeIr, fingerprintIr } from "../src/compiler/ir/normalize.mjs";
+import { fingerprintIr, normalizeIr } from "../src/compiler/ir/normalize.mjs";
 import { readContractIr } from "../src/compiler/ir/reader.mjs";
 import { validateIrDocument } from "../src/compiler/ir/schema.mjs";
 import { canonicalize, digest } from "../src/compiler/packages/canonical.mjs";
-import { schemaValidators } from "../src/compiler/schema-validate.mjs";
 import {
-	CANONICALIZATION,
 	buildLock,
+	CANONICALIZATION,
 	contentDigest,
 	fingerprint,
 	schemaBytes,
@@ -74,6 +74,8 @@ import {
 	satisfies,
 } from "../src/compiler/packages/resolve.mjs";
 import { compilePackage, PHASES } from "../src/compiler/pipeline.mjs";
+import { schemaValidators } from "../src/compiler/schema-validate.mjs";
+import { changedPathsOf, changeRange } from "./changed-paths.js";
 
 /**
  * Issue #19 (the TypeSpec frontend and the versioned semantic IR compiler core)
@@ -349,13 +351,35 @@ describe("frontend seam and dialect registry (FR-045)", () => {
 	});
 
 	/** Traces: TC-400, TC-408; FR-045-AC-3, FR-045-CON-1. */
-	it("names issue #36 rather than guessing at the unimplemented dialect", async () => {
-		expect(isImplemented("spec-bundle")).toBe(false);
-		const result = await runFrontend({
-			dialect: "spec-bundle",
-			resolution: compiled.resolution as never,
-			entrypoint: "types/main.tsp",
+	it("names the owning ticket rather than guessing at an unimplemented dialect", async () => {
+		// Over a synthetic registration, not over whichever declared dialect
+		// happens to be unimplemented today. This arm named `spec-bundle` until
+		// FR-131 wired it, at which point the assertion went red on a branch that
+		// had done nothing wrong — and once every declared dialect is built there
+		// would be no dialect left to exercise it with at all. The arm outlives
+		// the dialects, so it is exercised over a registration of its own.
+		// A registration and nothing else: the seam itself mints the refusal from
+		// the entry's owner, so an unimplemented dialect needs no placeholder
+		// module. `spec-bundle`'s placeholder outlived its own ticket — it still
+		// named issue #36, closed and merged, when the accurate owner was #86.
+		const registry = frontendRegistryWith({
+			probe: {
+				frontend: null,
+				implemented: false,
+				owner: "agent-ix/filament-core-data#0",
+			},
 		});
+		expect(isImplemented("probe", registry)).toBe(false);
+		expect(isImplemented("spec-bundle")).toBe(true);
+
+		const result = await runFrontend(
+			{
+				dialect: "probe",
+				resolution: compiled.resolution as never,
+				entrypoint: "types/main.tsp",
+			},
+			registry,
+		);
 		note(result.diagnostics as never);
 		expect(result.ir).toBeNull();
 		expect(result.diagnostics).toHaveLength(1);
@@ -363,7 +387,123 @@ describe("frontend seam and dialect registry (FR-045)", () => {
 			DIAGNOSTIC_CODES.FRONTEND_NOT_IMPLEMENTED.code,
 		);
 		expect(result.diagnostics[0].blocking).toBe(true);
-		expect(result.diagnostics[0].message).toContain("#36");
+		expect(result.diagnostics[0].message).toContain("#0");
+	});
+
+	/** Traces: TC-1404, TC-1405; FR-131-AC-1, FR-131-AC-2. */
+	it("routes the spec-bundle dialect to its frontend and returns the producer's document", async () => {
+		expect(isImplemented("spec-bundle")).toBe(true);
+		const document = {
+			contractVersion: "1.1.0",
+			package: { identity: "agent-ix/probe", version: "0.0.0" },
+			types: [],
+		};
+		const calls: { bundleRoot: string; moduleRoots: string[] }[] = [];
+		const result = await runFrontend({
+			dialect: "spec-bundle",
+			bundleRoot: "/probe/bundle",
+			moduleRoots: ["/probe/module"],
+			lift: (request: { bundleRoot: string; moduleRoots: string[] }) => {
+				calls.push(request);
+				return {
+					status: 0,
+					stderr: "",
+					document: JSON.stringify(document),
+					diagnostics: "[]",
+				};
+			},
+		});
+		note(result.diagnostics as never);
+		expect(result.diagnostics).toEqual([]);
+		expect(result.ir).toEqual(document);
+		// Once per request, with what the request named and nothing invented.
+		expect(calls).toEqual([
+			{ bundleRoot: "/probe/bundle", moduleRoots: ["/probe/module"] },
+		]);
+	});
+
+	/** Traces: TC-1406; FR-131-AC-3. */
+	it("refuses a request naming no bundle root without calling the producer", async () => {
+		let called = 0;
+		const result = await runFrontend({
+			dialect: "spec-bundle",
+			lift: () => {
+				called += 1;
+				return { status: 0, stderr: "", document: "{}" };
+			},
+		});
+		note(result.diagnostics as never);
+		expect(result.ir).toBeNull();
+		expect(codesOf(result.diagnostics as never)).toEqual([
+			DIAGNOSTIC_CODES.INVALID_REQUEST.code,
+		]);
+		expect(called).toBe(0);
+	});
+
+	/** Traces: TC-1409; FR-131-AC-8. */
+	it("raises rather than diagnosing when the caller supplied no producer", async () => {
+		// An absent capability is a defect in the calling program, and the seam's
+		// rule is that only those throw. A diagnostic here would tell a bundle
+		// author to fix a bundle that is not at fault.
+		await expect(
+			runFrontend({ dialect: "spec-bundle", bundleRoot: "/probe/bundle" }),
+		).rejects.toThrow(/request\.lift/);
+	});
+
+	/** Traces: TC-1403; FR-131-AC-4, FR-131-AC-5. */
+	it("reports a producer failure as the producer's, never as the bundle's", async () => {
+		// A producer can fail in ways no input can cause. Neither of these is a
+		// defect in the bundle, so neither may carry a bundle-shaped code: a
+		// reader who saw one would go looking in the bundle.
+		const silent = await runFrontend({
+			dialect: "spec-bundle",
+			bundleRoot: "/nonexistent/bundle",
+			lift: () => ({ status: 3, stderr: "boom", diagnostics: undefined }),
+		});
+		note(silent.diagnostics as never);
+		expect(silent.ir).toBeNull();
+		expect(codesOf(silent.diagnostics as never)).toEqual([
+			DIAGNOSTIC_CODES.FRONTEND_CONTRACT_VIOLATION.code,
+		]);
+		expect(silent.diagnostics[0].message).toContain("boom");
+
+		const empty = await runFrontend({
+			dialect: "spec-bundle",
+			bundleRoot: "/nonexistent/bundle",
+			lift: () => ({ status: 0, stderr: "", document: undefined }),
+		});
+		note(empty.diagnostics as never);
+		expect(empty.ir).toBeNull();
+		expect(codesOf(empty.diagnostics as never)).toEqual([
+			DIAGNOSTIC_CODES.FRONTEND_CONTRACT_VIOLATION.code,
+		]);
+
+		// A producer that refuses *and* says why is forwarded unchanged: its
+		// diagnostics are the answer, and wrapping them would bury the reason.
+		const refused = await runFrontend({
+			dialect: "spec-bundle",
+			bundleRoot: "/nonexistent/bundle",
+			lift: () => ({
+				status: 1,
+				stderr: "",
+				diagnostics: JSON.stringify([
+					{
+						code: "agent-ix.extraction-frontend.MODULE_REFUSED",
+						severity: "error",
+						message: "the module was refused",
+						owner: "ix://agent-ix/filament-core-data/extraction-frontend",
+						blocking: true,
+						causes: [],
+						related: [],
+					},
+				]),
+			}),
+		});
+		note(refused.diagnostics as never);
+		expect(refused.ir).toBeNull();
+		expect(codesOf(refused.diagnostics as never)).toEqual([
+			"agent-ix.extraction-frontend.MODULE_REFUSED",
+		]);
 	});
 
 	/** Traces: TC-401; FR-045-AC-4. */
@@ -384,8 +524,20 @@ describe("frontend seam and dialect registry (FR-045)", () => {
 		};
 		expect(manifest.cases.length).toBeGreaterThan(0);
 		for (const shared of manifest.cases) {
-			const implemented = Object.keys(shared.sources).filter((dialect) =>
-				isImplemented(dialect),
+			// Implemented *and* runnable from this suite. Both halves are
+			// implemented since FR-131, but the `spec-bundle` half reaches an
+			// out-of-process producer that needs a Rust toolchain, which the Node
+			// lane does not install. Its equivalence with the TypeSpec half is
+			// measured where the toolchain exists — TC-1290 and TC-1291 in
+			// `crates/extraction-frontend/tests/parity.rs`, over these same cases
+			// — and asserting it twice from two lanes would not make it truer.
+			//
+			// This is a statement about the suite, not a skip: nothing here claims
+			// the spec-bundle half passes, and nothing here would go green if it
+			// stopped passing elsewhere.
+			const runnable = new Set(["typespec"]);
+			const implemented = Object.keys(shared.sources).filter(
+				(dialect) => isImplemented(dialect) && runnable.has(dialect),
 			);
 			expect(implemented.length).toBeGreaterThan(0);
 			const results: string[] = [];
@@ -2011,7 +2163,7 @@ describe("package graph resolution (FR-047)", () => {
 
 		// `maxDepth` bounds canonicalisation, which is where unbounded nesting
 		// would otherwise recurse.
-		let deep: Json = {};
+		const deep: Json = {};
 		let cursor = deep;
 		for (let level = 0; level < 40; level += 1) {
 			cursor.child = {};
@@ -2412,7 +2564,7 @@ describe("canonicalization, digests, and the lock (FR-048)", () => {
 
 	/** Traces: TC-487, TC-491; FR-048-AC-11, FR-048-CON-4. */
 	it("bounds canonicalisation and defines every digest by its byte set", () => {
-		let deep: Json = {};
+		const deep: Json = {};
 		let cursor = deep;
 		for (let level = 0; level < 200; level += 1) {
 			cursor.child = {};
@@ -4751,8 +4903,21 @@ describe("generation backend seam registry codes (FR-063)", () => {
 
 	/** Traces: TC-746, TC-747; FR-063-AC-3, FR-063-AC-4. */
 	it("fires the unimplemented-target and invalid-request codes", () => {
+		// Over a synthetic registration, not over whichever committed target
+		// happens to be unimplemented today. This arm named `rust` until FR-130
+		// registered that backend, at which point the assertion went red on a
+		// branch that had done nothing wrong — which is the failure mode
+		// FR-063's own `registryWith` seam exists to prevent, and the reason it
+		// is used here rather than a second real target being borrowed.
 		const unavailable = generateTarget(generationRequest(), {
-			target: "rust",
+			target: "probe",
+			registry: registryWith({
+				probe: {
+					owner: "agent-ix/filament-core-data#0",
+					backend: null,
+					implemented: false,
+				},
+			}),
 		}) as never as { state: string; diagnostics: Diagnostic[] };
 		note(unavailable.diagnostics);
 		expect(unavailable.state).toBe("unavailable");

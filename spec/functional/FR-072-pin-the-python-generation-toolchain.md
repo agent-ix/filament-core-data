@@ -14,6 +14,10 @@ relationships:
 
 ## Description
 
+This requirement opens the bundle answering
+[filament-core-data#23](https://github.com/agent-ix/filament-core-data/issues/23), the qualified Python and
+Pydantic generation route.
+
 The repository SHALL record one declared version for every tool that
 participates in Python generation, and the advisory gate SHALL refuse any
 `datamodel-code-generator` version affected by GHSA-386q-5hp3-95m9 or

@@ -17,22 +17,26 @@
  */
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { FormatterError, biomeFormatter } from "./backends/format.mjs";
-import { BACKEND_TARGETS } from "./backends/seam.mjs";
+import { biomeFormatter, FormatterError } from "./backends/format.mjs";
+import { poetryProducer } from "./backends/python-v1/produce.mjs";
+import {
+	BACKEND_TARGETS,
+	generateTarget,
+	selectBackend,
+} from "./backends/seam.mjs";
 import { fingerprintIrForTarget } from "./backends/typescript-v1/canonical.mjs";
 import { emitTypeScriptPackage } from "./backends/typescript-v1/emit.mjs";
-import { typescriptBackend } from "./backends/typescript-v1/index.mjs";
-import { compileSemanticIr } from "./compile.mjs";
 import { diffSemanticContract } from "./compat/diff.mjs";
+import { compileSemanticIr } from "./compile.mjs";
 import {
 	DEFAULT_LIMITS,
 	hasBlocking,
 	sortDiagnostics,
 } from "./diagnostics.mjs";
 import { createHost } from "./host.mjs";
+import { formatInspection, inspectIr, inspectionJson } from "./inspect.mjs";
 import { serializeIr } from "./ir/normalize.mjs";
 import { serializeSemanticIr } from "./ir.mjs";
-import { formatInspection, inspectIr, inspectionJson } from "./inspect.mjs";
 import { REPO_ROOT, serializeLock } from "./packages/lock.mjs";
 import { compilePackage } from "./pipeline.mjs";
 
@@ -273,6 +277,41 @@ async function diff(options) {
 }
 
 /**
+ * The selected target's own backend descriptor, in the shape
+ * `compiler-request.schema.json` requires.
+ *
+ * A target the contract declares but this repository has not implemented has no
+ * identity, version or feature list to report. The request still has to carry a
+ * `backend` member to validate, so the registered target name stands in: it
+ * names what was asked for rather than claiming some other backend answered.
+ */
+function backendDescriptor(target) {
+	const { backend } = selectBackend(target);
+	if (backend == null) {
+		return {
+			identity: `ix://agent-ix/filament-core-data/backend/${target}`,
+			version: "0.0.0",
+			supportedIrVersions: [],
+			supportedFeatures: [],
+			options: {},
+		};
+	}
+	return {
+		identity: backend.identity,
+		version: backend.version,
+		supportedIrVersions: [...backend.supportedIrVersions],
+		supportedFeatures: [...backend.supportedFeatures],
+		options: {},
+	};
+}
+
+/** The targets whose generation runs through the injected Python producer. */
+const PYTHON_TARGETS = Object.freeze([
+	"python-pydantic-v2",
+	"python-dataclass",
+]);
+
+/**
  * Generates a language package from one IR document (FR-071).
  *
  * The CLI is the one place that reads a flag, constructs the injected host and
@@ -284,6 +323,7 @@ async function diff(options) {
  * under it byte-unchanged, and the only way to promise that is to decide
  * before the first write rather than to unwind after one.
  */
+
 async function generate(options) {
 	require_(options, "ir", "out-root");
 	const target = options.target ?? "typescript";
@@ -318,13 +358,17 @@ async function generate(options) {
 		ir,
 		profile,
 		mappings: [],
-		backend: {
-			identity: typescriptBackend.identity,
-			version: typescriptBackend.version,
-			supportedIrVersions: [...typescriptBackend.supportedIrVersions],
-			supportedFeatures: [...typescriptBackend.supportedFeatures],
-			options: {},
-		},
+		// The descriptor of the backend the caller selected, not of whichever
+		// backend this module happens to import. While `typescript` was the only
+		// implemented target the two were the same object and the difference could
+		// not be observed; once `rust` is registered it can, and it is observable
+		// in the worst possible place — `src/identity.rs` renders
+		// `GENERATOR_IDENTITY` from `request.backend.identity`, so a hardcoded
+		// descriptor made a generated Rust crate claim the TypeScript backend
+		// produced it. An unimplemented target has no descriptor of its own; the
+		// seam refuses it as `unavailable` before reading this member, and the
+		// stand-in exists only so the request still satisfies its schema.
+		backend: backendDescriptor(target),
 		// A declared label, never the caller's directory. `--out-root` decides
 		// where the bytes land; putting it in the request would put the caller's
 		// path into the output manifest, and two runs into two different
@@ -336,11 +380,40 @@ async function generate(options) {
 
 	let emitted;
 	try {
-		emitted = emitTypeScriptPackage(request, {
-			target,
-			host,
-			format: biomeFormatter(),
-		});
+		if (target === "typescript") {
+			emitted = emitTypeScriptPackage(request, {
+				target,
+				host,
+				format: biomeFormatter(),
+			});
+		} else {
+			const rendered = new Map();
+			const manifest = generateTarget(request, {
+				target,
+				host,
+				// JSON Schema bytes are serialized canonically by the backend. Unlike
+				// generated source, there is no language formatter to invoke here.
+				format(text, path) {
+					rendered.set(path, text);
+					return text;
+				},
+				// The Python targets generate through a Python program, and
+				// ADR-0006 makes that effect injected rather than reached for. The
+				// CLI is the one place that constructs it, in the same breath as
+				// the host and the formatter, so no module beneath here starts a
+				// process on its own.
+				...(PYTHON_TARGETS.includes(target)
+					? { produce: poetryProducer() }
+					: {}),
+			});
+			emitted = {
+				manifest,
+				files: manifest.files.map((file) => ({
+					path: file.path,
+					text: rendered.get(file.path),
+				})),
+			};
+		}
 	} catch (error) {
 		if (error instanceof FormatterError) {
 			process.stderr.write(`${error.message}\n`);

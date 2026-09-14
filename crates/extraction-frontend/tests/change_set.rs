@@ -510,7 +510,15 @@ fn tc_1314_after_the_full_suite_git_status_is_empty_in_the_fixtures_and_every_co
 /// The `extraction-frontend` block of the root Makefile: from its section
 /// header to the next section header or the end of the file.
 fn makefile_block() -> Vec<String> {
-    let makefile = read(&workspace_dir().join("Makefile"));
+    makefile_block_of(&read(&workspace_dir().join("Makefile")))
+}
+
+/// The block, parsed out of a given `Makefile` text.
+///
+/// Split from `makefile_block` so a caller can ask what the block looked like at
+/// a commit rather than in the working tree. The two questions are different and
+/// only one of them is a historical fact.
+fn makefile_block_of(makefile: &str) -> Vec<String> {
     let lines: Vec<&str> = makefile.lines().collect();
     let start = lines
         .iter()
@@ -569,13 +577,18 @@ fn tc_1315_every_manifest_in_the_change_set_is_unpublished_and_agpl_and_nothing_
             );
         }
     }
-    // Nothing the crate itself runs names a registry either: its sources,
-    // its binary, and the harness.
-    let mut sources = Vec::new();
-    for dir in ["src", "scripts"] {
-        for entry in fs::read_dir(crate_dir().join(dir)).expect("read_dir") {
-            sources.push(entry.expect("entry").path());
-        }
+    // Nothing the crate itself runs names a registry either: its sources, its
+    // binary, and the harness.
+    //
+    // The harness is read by its own path rather than by scanning a crate-local
+    // `scripts/` directory. CR-036-8 moved it to the workspace root — every
+    // tracked `.mjs` naming `src/compiler` must live under the root `scripts/` —
+    // so `crates/extraction-frontend/scripts/` is in no commit, and reading it
+    // made this case fail on every clean checkout while passing wherever a
+    // stray empty directory happened to survive the move.
+    let mut sources = vec![harness_path()];
+    for entry in fs::read_dir(crate_dir().join("src")).expect("read_dir") {
+        sources.push(entry.expect("entry").path());
     }
     for path in sources {
         let text = read(&path);
@@ -718,7 +731,18 @@ fn tc_1299_outside_the_crate_and_fr098_the_change_set_is_members_lock_makefile_b
         "the Makefile block is one contiguous hunk:\n{diff}"
     );
     assert_eq!(removed, 0, "the Makefile block removes nothing:\n{diff}");
-    let block = makefile_block();
+    // The block as *this change* left it, not as the working tree holds it now.
+    //
+    // The hunk on the left of this comparison is a historical fact and cannot
+    // move. Reading the right from the working tree made the assertion mean "no
+    // later ticket may edit these lines", which is a prohibition #36 never
+    // stated and cannot enforce — issue #88 removing its own name from
+    // `EXTRACTION_BLOCKED_TESTS` is exactly the edit it should permit. Read at
+    // the tip, both sides are fixed and the case says what it meant to say.
+    let block = makefile_block_of(
+        &git(&workspace_dir(), &["show", &format!("{tip}:Makefile")])
+            .unwrap_or_else(|e| panic!("{e}")),
+    );
     assert!(block.iter().any(|l| l == "EXTRACTION_TOOLCHAIN ?= 1.98.1"));
     let added: Vec<&str> = diff
         .lines()

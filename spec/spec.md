@@ -540,6 +540,52 @@ implemented them.
   (resolved; ADR-0005).
 - Corpus reviews: `agent-ix/filament-core-data#10` and `agent-ix/quoin#288`.
 
+### 8.1 Programme issue backing register
+
+Every open issue of the `#100` programme traces to at least one requirement.
+The register is the trace, in one place, so that following it does not depend on
+recognising an issue's subject matter in a requirement title. An issue whose
+requirement can only be found by reading every requirement traces to nothing a
+reader can follow.
+
+The programme is the issue set EPIC #100 names across its phases and its
+specification-work section. An open issue of this repository outside that set
+is governed by its own epic and is not a row here; the boundary is stated so
+that a missing row reads as out of scope or as a defect, and never as either
+depending on who is asking.
+
+A row names the requirement that opens the issue's backing, not every
+requirement that touches it. Where a bundle answers an issue, the row names the
+bundle's first requirement and the bundle's own dependencies carry the rest.
+
+| Issue | Backed by |
+|-------|-----------|
+| #6 | FR-134 |
+| #7 | FR-090 |
+| #11 | FR-081 |
+| #12 | FR-135 |
+| #20 | FR-035 |
+| #21 | FR-054 |
+| #22 | FR-063 |
+| #23 | FR-072 |
+| #26 | NFR-040 |
+| #37 | FR-138 |
+| #51 | NFR-039 |
+| #52 | FR-140 |
+| #63 | NFR-041 |
+| #66 | NFR-042 |
+| #78 | FR-106 |
+| #80 | FR-133 |
+| #92 | NFR-043 |
+| #93 | FR-106 |
+| #95 | FR-106 |
+
+Each named requirement carries the issue's link in its own text, so the register
+and the requirement agree or the gate that reads both fails. Issues #60, #65 and
+#90 were open when the programme plan was written and are backed by NFR-038,
+FR-132 and FR-133 respectively; they closed before this register was authored
+and are recorded here rather than in the table, which states the open set.
+
 ## 9. Change Management
 
 Changes to normative principles require an ADR that identifies affected
