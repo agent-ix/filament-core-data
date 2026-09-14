@@ -135,9 +135,9 @@ fn permutations<T: Clone>(items: &[T]) -> Vec<Vec<T>> {
     all
 }
 
-/// Tracing: TC-1440
+/// Tracing: TC-1640
 #[test]
-fn tc_1440_one_two_and_one_exponent_zero_are_one_byte_string_and_one_digest() {
+fn tc_1640_one_two_and_one_exponent_zero_are_one_byte_string_and_one_digest() {
     let rows = ["1", "1.0", "1e0"];
     let digests: BTreeSet<String> = rows
         .iter()
@@ -154,16 +154,16 @@ fn tc_1440_one_two_and_one_exponent_zero_are_one_byte_string_and_one_digest() {
         .collect();
     assert_eq!(digests.len(), 1, "one digest covers all three spellings");
     println!(
-        "TC-1440 measured: {} spellings, {} distinct canonical byte strings, {} distinct filament-canonical-json-1 digests",
+        "TC-1640 measured: {} spellings, {} distinct canonical byte strings, {} distinct filament-canonical-json-1 digests",
         rows.len(),
         1,
         digests.len()
     );
 }
 
-/// Tracing: TC-1441
+/// Tracing: TC-1641
 #[test]
-fn tc_1441_adjacent_integers_past_binary64_stay_two_documents() {
+fn tc_1641_adjacent_integers_past_binary64_stay_two_documents() {
     let low = "9007199254740992";
     let high = "9007199254740993";
     assert_eq!(canonical(low), low);
@@ -173,14 +173,14 @@ fn tc_1441_adjacent_integers_past_binary64_stay_two_documents() {
     let high_digest = canonical_digest(&parse(high), &policy()).expect("digest computes");
     assert_ne!(low_digest, high_digest);
     println!(
-        "TC-1441 measured: 2 adjacent integers, 2 distinct canonical byte strings, 2 distinct digests ({} != {})",
+        "TC-1641 measured: 2 adjacent integers, 2 distinct canonical byte strings, 2 distinct digests ({} != {})",
         low_digest.value, high_digest.value
     );
 }
 
-/// Tracing: TC-1442
+/// Tracing: TC-1642
 #[test]
-fn tc_1442_exact_decimals_round_trip_to_the_same_coefficient_and_exponent() {
+fn tc_1642_exact_decimals_round_trip_to_the_same_coefficient_and_exponent() {
     // The five probe rows of the design measurement of 2026-09-11 are the seed
     // cases. The third column is what each returned before the parse seam kept
     // the lexeme: `0.1`, a corrupted integer, and an invented digit.
@@ -236,15 +236,15 @@ fn tc_1442_exact_decimals_round_trip_to_the_same_coefficient_and_exponent() {
         );
     }
     println!(
-        "TC-1442 measured: {} seed rows and {} generated rows round-tripped to an identical coefficient and exponent; 0 rows rounded, 0 binary64 substitutions",
+        "TC-1642 measured: {} seed rows and {} generated rows round-tripped to an identical coefficient and exponent; 0 rows rounded, 0 binary64 substitutions",
         seeds.len(),
         population.len()
     );
 }
 
-/// Tracing: TC-1443
+/// Tracing: TC-1643
 #[test]
-fn tc_1443_keys_emit_in_unicode_scalar_value_order_sorted_by_the_canonicalizer() {
+fn tc_1643_keys_emit_in_unicode_scalar_value_order_sorted_by_the_canonicalizer() {
     // Scalar-value order: Z(U+005A) a(U+0061) z(U+007A) zzzz ä(U+00E4) é(U+00E9).
     // A German locale collation would place "ä" beside "a"; an encoded-byte-length
     // order would place the two-byte keys before "zzzz". Neither is admissible.
@@ -275,15 +275,15 @@ fn tc_1443_keys_emit_in_unicode_scalar_value_order_sorted_by_the_canonicalizer()
         );
     }
     println!(
-        "TC-1443 measured: {} keys, {} insertion permutations, 1 emitted byte string in Unicode scalar-value order, 0 emissions in locale-collation or encoded-byte-length order",
+        "TC-1643 measured: {} keys, {} insertion permutations, 1 emitted byte string in Unicode scalar-value order, 0 emissions in locale-collation or encoded-byte-length order",
         keys.len(),
         permuted.len()
     );
 }
 
-/// Tracing: TC-1444
+/// Tracing: TC-1644
 #[test]
-fn tc_1444_escapes_are_lowercase_and_invalid_unicode_refuses_before_any_digest() {
+fn tc_1644_escapes_are_lowercase_and_invalid_unicode_refuses_before_any_digest() {
     let emitted = canonical_json(&json!("a\"b\\c\u{0000}d\u{001f}e"), &policy())
         .expect("a valid Unicode string canonicalizes");
     assert_eq!(emitted, "\"a\\\"b\\\\c\\u0000d\\u001fe\"");
@@ -302,13 +302,13 @@ fn tc_1444_escapes_are_lowercase_and_invalid_unicode_refuses_before_any_digest()
         .expect_err("a lone surrogate refuses");
     assert_eq!(surrogate.code, "INVALID_UNICODE");
     println!(
-        "TC-1444 measured: 4 escape sequences emitted as lowercase escapes, 2 not-valid-Unicode documents refused, 0 digests computed over a refused document"
+        "TC-1644 measured: 4 escape sequences emitted as lowercase escapes, 2 not-valid-Unicode documents refused, 0 digests computed over a refused document"
     );
 }
 
-/// Tracing: TC-1445
+/// Tracing: TC-1645
 #[test]
-fn tc_1445_set_membership_and_semantic_order_are_two_separate_declarations() {
+fn tc_1645_set_membership_and_semantic_order_are_two_separate_declarations() {
     let declarations = ArrayDeclarations::new()
         .with_set("tags")
         .expect("tags is declared a set")
@@ -362,16 +362,16 @@ fn tc_1445_set_membership_and_semantic_order_are_two_separate_declarations() {
         "every member order of a semantic-order array digests differently"
     );
     println!(
-        "TC-1445 measured: {} member orders, {} distinct set-array digest, {} distinct semantic-order-array digests, 1 refused disposition conflict",
+        "TC-1645 measured: {} member orders, {} distinct set-array digest, {} distinct semantic-order-array digests, 1 refused disposition conflict",
         orders.len(),
         set_digests.len(),
         semantic_digests.len()
     );
 }
 
-/// Tracing: TC-1446
+/// Tracing: TC-1646
 #[test]
-fn tc_1446_numeric_limits_are_the_configuration_s_and_absence_refuses() {
+fn tc_1646_numeric_limits_are_the_configuration_s_and_absence_refuses() {
     let declared = NumericResourceLimit::new(5, 3);
     let policy = CanonicalPolicy::new(declared.clone(), ArrayDeclarations::baseline());
     // At the declared limits, admitted.
@@ -422,13 +422,13 @@ fn tc_1446_numeric_limits_are_the_configuration_s_and_absence_refuses() {
         "NUMERIC_RESOURCE_LIMIT_ABSENT"
     );
     println!(
-        "TC-1446 measured: 2 values admitted at the declared maximumCoefficientDigits 5 and maximumExponentMagnitude 3, {refusals} refused one step past them, 1 configuration refused for an absent numericResourceLimit, 0 host-chosen limits applied"
+        "TC-1646 measured: 2 values admitted at the declared maximumCoefficientDigits 5 and maximumExponentMagnitude 3, {refusals} refused one step past them, 1 configuration refused for an absent numericResourceLimit, 0 host-chosen limits applied"
     );
 }
 
-/// Tracing: TC-1447
+/// Tracing: TC-1647
 #[test]
-fn tc_1447_insertion_and_wire_member_order_reach_no_canonical_byte() {
+fn tc_1647_insertion_and_wire_member_order_reach_no_canonical_byte() {
     let members = ["domain", "version", "algorithm", "value"];
     let value = |member: &str| match member {
         "domain" => json!("filament-canonical-json-1"),
@@ -472,16 +472,16 @@ fn tc_1447_insertion_and_wire_member_order_reach_no_canonical_byte() {
         *digests.iter().next().expect("one digest")
     );
     println!(
-        "TC-1447 measured: {} member orders including the consumer wire order domain/version/algorithm/value, {} distinct canonical byte string, {} distinct digest",
+        "TC-1647 measured: {} member orders including the consumer wire order domain/version/algorithm/value, {} distinct canonical byte string, {} distinct digest",
         orders.len(),
         emitted.len(),
         digests.len()
     );
 }
 
-/// Tracing: TC-1449
+/// Tracing: TC-1649
 #[test]
-fn tc_1449_an_object_s_own_digest_member_is_excluded_only_by_the_digest_seam() {
+fn tc_1649_an_object_s_own_digest_member_is_excluded_only_by_the_digest_seam() {
     let mut document = json!({
         "configurationIdentity": "ix://agent-ix/commerce/config/evaluation-default",
         "digest": {"algorithm": "sha256", "domain": "filament-canonical-json-1", "value": format!("sha256:{}", "a".repeat(64))},
@@ -510,6 +510,6 @@ fn tc_1449_an_object_s_own_digest_member_is_excluded_only_by_the_digest_seam() {
         "the canonicalizer does not silently drop a member: {emitted}"
     );
     println!(
-        "TC-1449 measured: 1 excluded digest member at the digest seam, 2 digest-member values yielding 1 digest, 1 canonical byte string retaining the member when canonicalized directly"
+        "TC-1649 measured: 1 excluded digest member at the digest seam, 2 digest-member values yielding 1 digest, 1 canonical byte string retaining the member when canonicalized directly"
     );
 }

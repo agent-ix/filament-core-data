@@ -112,9 +112,9 @@ fn required_of(schema: &Value) -> BTreeSet<String> {
         .collect()
 }
 
-/// Tracing: TC-1433
+/// Tracing: TC-1633
 #[test]
-fn tc_1433_the_published_schema_requires_four_header_and_nine_content_members() {
+fn tc_1633_the_published_schema_requires_four_header_and_nine_content_members() {
     let schema = schema();
     assert_eq!(
         schema["additionalProperties"],
@@ -159,15 +159,15 @@ fn tc_1433_the_published_schema_requires_four_header_and_nine_content_members() 
     );
 
     println!(
-        "TC-1433 measured: {} header members and {} content member classes required by the published schema, 4 digest members, 2 revision members, 1 string-typed raw-byte digest",
+        "TC-1633 measured: {} header members and {} content member classes required by the published schema, 4 digest members, 2 revision members, 1 string-typed raw-byte digest",
         HEADER_MEMBERS.len(),
         CONTENT_MEMBERS.len()
     );
 }
 
-/// Tracing: TC-1434
+/// Tracing: TC-1634
 #[test]
-fn tc_1434_the_published_schema_prohibits_every_assessment_member_by_name() {
+fn tc_1634_the_published_schema_prohibits_every_assessment_member_by_name() {
     let schema = schema();
     let properties = schema["properties"]
         .as_object()
@@ -200,14 +200,14 @@ fn tc_1434_the_published_schema_prohibits_every_assessment_member_by_name() {
     }
 
     println!(
-        "TC-1434 measured: {} assessment member classes prohibited by name and rejected naming the member, 0 admitted",
+        "TC-1634 measured: {} assessment member classes prohibited by name and rejected naming the member, 0 admitted",
         ASSESSMENT_MEMBERS.len()
     );
 }
 
-/// Tracing: TC-1431
+/// Tracing: TC-1631
 #[test]
-fn tc_1431_the_published_schema_accepts_the_good_fixture_and_rejects_the_shape_violations() {
+fn tc_1631_the_published_schema_accepts_the_good_fixture_and_rejects_the_shape_violations() {
     let schema = schema();
     let good = fixture_document(GOOD_FIXTURE);
     let errors = validate(&schema, &schema, &good, "");
@@ -248,7 +248,7 @@ fn tc_1431_the_published_schema_accepts_the_good_fixture_and_rejects_the_shape_v
         "every adverse fixture is classified as a shape or a cross-member violation"
     );
     println!(
-        "TC-1431 measured: 1 good fixture accepted, {} shape-violating adverse fixtures rejected, {} cross-member adverse fixtures admitted by shape and refused at admission, 1 undeclared member rejected",
+        "TC-1631 measured: 1 good fixture accepted, {} shape-violating adverse fixtures rejected, {} cross-member adverse fixtures admitted by shape and refused at admission, 1 undeclared member rejected",
         SHAPE_VIOLATIONS.len(),
         CROSS_MEMBER_VIOLATIONS.len()
     );

@@ -7,7 +7,7 @@
 //! one reason: FR-117 requires that a static link never require, contain or mint
 //! a population, a snapshot, a window, a workflow instance, a relationship
 //! instance, an observation record, a progress record or an observation closure,
-//! and **nothing in the static path references this module** (TC-1432).
+//! and **nothing in the static path references this module** (TC-1632).
 //!
 //! The one edit is the carrier's name: Plan-016's `ProducerBundle` is
 //! `AssessmentBundle` here, because the bundle a producer emits is now

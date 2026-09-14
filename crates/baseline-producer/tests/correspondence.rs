@@ -4,12 +4,12 @@
 //! Traced FR-116 controls for the correspondence record and its export mappings
 //! (Plan-017 Task-147). Every control reports the number it measured.
 //!
-//! TC-1423 is a `Compile` control and TC-1430 a `Static` one. Both are carried
-//! here rather than as runtime assertions: TC-1423 destructures the producer
+//! TC-1623 is a `Compile` control and TC-1630 a `Static` one. Both are carried
+//! here rather than as runtime assertions: TC-1623 destructures the producer
 //! object exhaustively, so a sixth authored member or a missing one fails the
 //! typecheck of this test binary and never reaches the assertions, and the
 //! `interface` read itself is a `compile_fail` doctest on
-//! `ProducerObjectReference`. TC-1430 scans the two module sources for a consumer
+//! `ProducerObjectReference`. TC-1630 scans the two module sources for a consumer
 //! `u32` table index with a planted-token control beside it.
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -41,7 +41,7 @@ const COMPONENT: &str = "ix://agent-ix/commerce/component/orders";
 const ENDPOINT: &str = "ix://agent-ix/commerce/endpoint/Order-shipment-source";
 const RELATION: &str = "ix://agent-ix/commerce/binding/order-model-to-quire-artifact";
 
-/// The population of the TC-1430 static scan, as path and source text.
+/// The population of the TC-1630 static scan, as path and source text.
 const UNASSIGNED_INDEX_POPULATION: [(&str, &str); 2] = [
     (
         "src/correspondence.rs",
@@ -229,9 +229,9 @@ fn audit_indices(path: &str, source: &str) -> Vec<IndexSite> {
     sites
 }
 
-/// Tracing: TC-1423
+/// Tracing: TC-1623
 #[test]
-fn tc_1423_one_selected_pair_yields_one_record_of_five_producer_object_members() {
+fn tc_1623_one_selected_pair_yields_one_record_of_five_producer_object_members() {
     let configuration = configuration();
     let record = correspondence();
     record
@@ -288,15 +288,15 @@ fn tc_1423_one_selected_pair_yields_one_record_of_five_producer_object_members()
     assert!(!emitted.iter().any(|member| *member == "interface"));
 
     println!(
-        "TC-1423 measured: 1 selected pair, 1 correspondence record, {} authored producer-object members and 0 authored interface members, over {} separately readable record members",
+        "TC-1623 measured: 1 selected pair, 1 correspondence record, {} authored producer-object members and 0 authored interface members, over {} separately readable record members",
         emitted.len(),
         7
     );
 }
 
-/// Tracing: TC-1424
+/// Tracing: TC-1624
 #[test]
-fn tc_1424_foreign_and_cross_bound_export_mappings_refuse() {
+fn tc_1624_foreign_and_cross_bound_export_mappings_refuse() {
     let configuration = configuration();
     let declared = declared();
 
@@ -332,12 +332,12 @@ fn tc_1424_foreign_and_cross_bound_export_mappings_refuse() {
     assert_eq!(refusal.code, EXPORT_CROSS_BOUND);
     assert!(refusal.message.contains(COMPONENT) && refusal.message.contains(PROFILE));
 
-    println!("TC-1424 measured: 3 export refusals — 1 foreign producer object, 1 undeclared export identity, 1 cross-bound export — each naming the offending export");
+    println!("TC-1624 measured: 3 export refusals — 1 foreign producer object, 1 undeclared export identity, 1 cross-bound export — each naming the offending export");
 }
 
-/// Tracing: TC-1425
+/// Tracing: TC-1625
 #[test]
-fn tc_1425_a_changed_selection_under_a_retained_relation_refuses() {
+fn tc_1625_a_changed_selection_under_a_retained_relation_refuses() {
     let prior = correspondence();
 
     let mut changed_producer = correspondence();
@@ -364,12 +364,12 @@ fn tc_1425_a_changed_selection_under_a_retained_relation_refuses() {
         .validate_against_prior(&prior)
         .expect("an unchanged selection under the retained relation is admitted");
 
-    println!("TC-1425 measured: 2 changed selections refused {CORRESPONDENCE_STALE_SELECTION} under 1 retained binding relation, and 1 unchanged selection admitted");
+    println!("TC-1625 measured: 2 changed selections refused {CORRESPONDENCE_STALE_SELECTION} under 1 retained binding relation, and 1 unchanged selection admitted");
 }
 
-/// Tracing: TC-1426
+/// Tracing: TC-1626
 #[test]
-fn tc_1426_a_presentation_only_reencoding_needs_a_new_selection_and_a_new_record() {
+fn tc_1626_a_presentation_only_reencoding_needs_a_new_selection_and_a_new_record() {
     let configuration = configuration();
     let prior = correspondence();
 
@@ -401,12 +401,12 @@ fn tc_1426_a_presentation_only_reencoding_needs_a_new_selection_and_a_new_record
         .expect("the new native selection is admitted");
     assert_ne!(reencoded.selected_pair(), prior.selected_pair());
 
-    println!("TC-1426 measured: 1 refused digest substitution under a retained relation, and 1 admitted re-encoding carrying a new native artifact selection and a new correspondence record");
+    println!("TC-1626 measured: 1 refused digest substitution under a retained relation, and 1 admitted re-encoding carrying a new native artifact selection and a new correspondence record");
 }
 
-/// Tracing: TC-1427
+/// Tracing: TC-1627
 #[test]
-fn tc_1427_absent_provenance_and_an_incomplete_closure_refuse() {
+fn tc_1627_absent_provenance_and_an_incomplete_closure_refuse() {
     let configuration = configuration();
 
     let mut no_provenance = correspondence();
@@ -435,12 +435,12 @@ fn tc_1427_absent_provenance_and_an_incomplete_closure_refuse() {
     assert_eq!(third.code, CORRESPONDENCE_CLOSURE_INCOMPLETE);
     assert!(third.message.contains(DEFINITION));
 
-    println!("TC-1427 measured: 3 refusals — absent configuration provenance, mismatched provenance, incomplete native definition closure — each naming the absent or foreign member");
+    println!("TC-1627 measured: 3 refusals — absent configuration provenance, mismatched provenance, incomplete native definition closure — each naming the absent or foreign member");
 }
 
-/// Tracing: TC-1428
+/// Tracing: TC-1628
 #[test]
-fn tc_1428_a_duplicated_pair_refuses_both_records_and_an_unselected_object_yields_none() {
+fn tc_1628_a_duplicated_pair_refuses_both_records_and_an_unselected_object_yields_none() {
     let configuration = configuration();
     let declared = declared();
 
@@ -477,14 +477,14 @@ fn tc_1428_a_duplicated_pair_refuses_both_records_and_an_unselected_object_yield
     assert_eq!(emitted[0].producer.identity, MODEL);
 
     println!(
-        "TC-1428 measured: 1 duplicated pair refusing {} records by name, and 1 unselected producer object yielding {} correspondence records",
+        "TC-1628 measured: 1 duplicated pair refusing {} records by name, and 1 unselected producer object yielding {} correspondence records",
         2, 0
     );
 }
 
-/// Tracing: TC-1429
+/// Tracing: TC-1629
 #[test]
-fn tc_1429_every_export_mapping_carries_its_identity_kind_path_and_locus() {
+fn tc_1629_every_export_mapping_carries_its_identity_kind_path_and_locus() {
     let configuration = configuration();
     let record = correspondence();
     record
@@ -520,15 +520,15 @@ fn tc_1429_every_export_mapping_carries_its_identity_kind_path_and_locus() {
     assert!(!emitted.contains("population"));
 
     println!(
-        "TC-1429 measured: {} export mappings each carrying 5 members, over an emitted export-kind vocabulary of {} kinds, 0 of which is the assessment-side population kind, and 0 consumer table indices",
+        "TC-1629 measured: {} export mappings each carrying 5 members, over an emitted export-kind vocabulary of {} kinds, 0 of which is the assessment-side population kind, and 0 consumer table indices",
         exports.len(),
         emitted.len()
     );
 }
 
-/// Tracing: TC-1430
+/// Tracing: TC-1630
 #[test]
-fn tc_1430_distinct_digest_members_and_no_assigned_consumer_index() {
+fn tc_1630_distinct_digest_members_and_no_assigned_consumer_index() {
     // Coinciding hash text never merges the two digest classes.
     let text = format!("sha256:{}", "9".repeat(64));
     let producer = DigestSelection::canonical(text.clone());
@@ -603,7 +603,7 @@ fn tc_1430_distinct_digest_members_and_no_assigned_consumer_index() {
     assert!(planted_sites[0].text.contains("interface: u32"));
 
     println!(
-        "TC-1430 measured: 1 coinciding hash text over 2 distinct digest members, {} numeric wire members (all consumer Span byte offsets), {} files and {lines} lines scanned for the {} consumer table indices with {} site(s) found, and {} site(s) on the planted scratch copy",
+        "TC-1630 measured: 1 coinciding hash text over 2 distinct digest members, {} numeric wire members (all consumer Span byte offsets), {} files and {lines} lines scanned for the {} consumer table indices with {} site(s) found, and {} site(s) on the planted scratch copy",
         numeric.len(),
         UNASSIGNED_INDEX_POPULATION.len(),
         CONSUMER_TABLE_INDICES.len(),

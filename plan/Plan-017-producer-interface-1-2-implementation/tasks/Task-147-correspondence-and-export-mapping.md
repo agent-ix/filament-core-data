@@ -10,21 +10,21 @@ relationships:
     type: depends_on
   - target: "ix://agent-ix/filament-core-data/FR-116"
     type: references
-  - target: "ix://agent-ix/filament-core-data/TC-1423"
+  - target: "ix://agent-ix/filament-core-data/TC-1623"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1424"
+  - target: "ix://agent-ix/filament-core-data/TC-1624"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1425"
+  - target: "ix://agent-ix/filament-core-data/TC-1625"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1426"
+  - target: "ix://agent-ix/filament-core-data/TC-1626"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1427"
+  - target: "ix://agent-ix/filament-core-data/TC-1627"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1428"
+  - target: "ix://agent-ix/filament-core-data/TC-1628"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1429"
+  - target: "ix://agent-ix/filament-core-data/TC-1629"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1430"
+  - target: "ix://agent-ix/filament-core-data/TC-1630"
     type: verifies
 ---
 # Task-147: FR-116 correspondence records and their export mappings
@@ -51,32 +51,32 @@ likewise left unassigned (FR-116-CON-5).
 
 ## Subtasks
 
-- [ ] **Red: shape.** `tests/correspondence.rs`: `tc_1423_` (`Compile`: one
+- [ ] **Red: shape.** `tests/correspondence.rs`: `tc_1623_` (`Compile`: one
   selected pair yields exactly one correspondence record whose five authored
   producer-object members, native selection, native definition closure,
   binding-relation identity, configuration provenance and export mappings are
   each readable as separate members, and whose producer object carries **no**
   authored interface member — a compile-time control that the type has five
-  producer-object members and no sixth), `tc_1429_` (every emitted export mapping
+  producer-object members and no sixth), `tc_1629_` (every emitted export mapping
   carries its exporting producer object identity, its `exportKind` from the
   consumer's closed export-kind vocabulary, its ordered `exportPath` segments and
   its formal export locus; the record carries no consumer table index and no
   producer-object interface index; and no export kind FR-120 partitions to the
-  assessment side is emitted), `tc_1430_` (`Static`: a producer canonical digest
+  assessment side is emitted), `tc_1630_` (`Static`: a producer canonical digest
   selection and a native raw-byte digest selection stay distinct members when
   their hash text coincides, and every consumer `u32` table index including the
   interface index is left unassigned).
-- [ ] **Red: export refusals.** `tc_1424_` (an export mapping naming an export its
+- [ ] **Red: export refusals.** `tc_1624_` (an export mapping naming an export its
   named producer object does not export refuses — foreign; one naming an export
   owned by another correspondence's producer object refuses — cross-bound).
-- [ ] **Red: staleness and provenance.** `tc_1425_` (changing the producer object
+- [ ] **Red: staleness and provenance.** `tc_1625_` (changing the producer object
   selection or the native artifact selection while retaining the prior binding
-  relation refuses), `tc_1426_` (a presentation-only native re-encoding is admitted
+  relation refuses), `tc_1626_` (a presentation-only native re-encoding is admitted
   only through a new native artifact selection and a new correspondence record,
-  never through a digest substitution under the retained relation), `tc_1427_` (a
+  never through a digest substitution under the retained relation), `tc_1627_` (a
   record submitted without the configuration provenance that authorized its
   relation refuses; one whose required native definition-closure identities are
-  incomplete refuses), `tc_1428_` (two correspondence records naming one selected
+  incomplete refuses), `tc_1628_` (two correspondence records naming one selected
   pair refuse — **both** of them, per FR-116's Behavior — and a producer object the
   consumer does not select yields no correspondence record).
 - [ ] **Green: export record.** `ExportRecord { kind: ExportKind, identity,
@@ -96,8 +96,8 @@ likewise left unassigned (FR-116-CON-5).
   `CORRESPONDENCE_CLOSURE_INCOMPLETE`, plus the duplicate-pair refusal — each
   blocking, each naming the absent, foreign, duplicated, or stale member.
 - [ ] **Falsify.** Assign a `u32` interface index in a scratch copy and prove
-  `tc_1430_` fails. Substitute a digest under a retained relation in a scratch
-  copy and prove `tc_1426_` fails.
+  `tc_1630_` fails. Substitute a digest under a retained relation in a scratch
+  copy and prove `tc_1626_` fails.
 
 ## Exit conditions
 
@@ -108,7 +108,7 @@ likewise left unassigned (FR-116-CON-5).
   incomplete-closure inputs all refuse blocking, each naming the offending member.
 - No consumer `u32` index is assigned anywhere, and matching hash text is never
   presented as evidence of semantic equivalence.
-- TC-1423..TC-1430 are traced executable controls.
+- TC-1623..TC-1630 are traced executable controls.
 - `make rust-build`, `make rust-test` and `cargo fmt --check` green apart from
   the two pre-existing reds.
 

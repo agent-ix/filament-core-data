@@ -47,7 +47,7 @@ registry. Every original file is AGPL-3.0-only.
 
 ## Requirements covered
 
-US-016, FR-112..FR-118 and NFR-036 — mapped to TC-1400..TC-1456 in
+US-016, FR-112..FR-118 and NFR-036 — mapped to TC-1600..TC-1656 in
 `spec/tests.md` (57 rows, every one `🚧 planned — #95 static half, not yet
 implemented` at planning time). Every row is owned by exactly one task below,
 and no row is owned twice.
@@ -69,7 +69,7 @@ and no row is owned twice.
 ## What this plan does not implement
 
 The assessment half — US-017, FR-119..FR-126, NFR-037, and matrix rows
-TC-1457..TC-1499 — is designed and reviewed but is **not** implemented here,
+TC-1657..TC-1699 — is designed and reviewed but is **not** implemented here,
 and its rows stay `🚧` when this plan closes.
 
 The reason is the obligation itself, not sequencing convenience. FR-117
@@ -78,7 +78,7 @@ snapshot, a window, a workflow instance, a relationship instance, an
 observation record, a progress record, or an observation closure in order for a
 static link to exist. A plan that implemented the assessment half alongside the
 static half would be free to satisfy a static admission from an assessment
-input and never notice; keeping the halves apart is how TC-1438 can measure
+input and never notice; keeping the halves apart is how TC-1638 can measure
 that a static admission completes from the static members of the FR-109
 configuration document and the FR-110 inventory declaration alone. Those
 assessment inputs remain later D and F campaign inputs, authored when there is
@@ -86,7 +86,7 @@ something observed to author them from.
 
 Producing the static bundle is therefore **static admission only**. It is not
 campaign acceptance of any assessment claim, and no task in this plan may be
-reported as one (FR-117-AC-6, TC-1437, Task-151).
+reported as one (FR-117-AC-6, TC-1637, Task-151).
 
 Two adjacent boundaries follow from that split and are recorded here so no task
 quietly crosses them:
@@ -103,7 +103,7 @@ quietly crosses them:
   `WindowDocument`, `WindowCoverage`, `AvailabilityFact` and the availability
   assessment types that Plan-016 Task-140 landed are moved under an `assessment`
   module unchanged. They keep their Plan-016 controls (TC-1373..TC-1381) green
-  and are not reachable from `StaticProducerBundle` (TC-1432, verified at
+  and are not reachable from `StaticProducerBundle` (TC-1632, verified at
   compile time).
 
 ## What the shipped crate contradicts
@@ -134,7 +134,7 @@ rather than implied, because each line below is a task's starting condition:
   is precisely the construct-then-validate bypass FR-117 now forbids**: a fully
   public, `Deserialize`-derived struct with public members yields an unvalidated
   value of the bundle type to any caller who simply never calls `validate`.
-  FR-117-CON-2 and TC-1435 require the opposite: no public constructor, no
+  FR-117-CON-2 and TC-1635 require the opposite: no public constructor, no
   public member, no deserialization path that bypasses admission, and no value
   of the type on refusal.
 - **The canonicalizer was being fed binary64-rounded lexemes.**
@@ -172,7 +172,7 @@ breaks the shipped producer.
 - `FR-114 -> FR-115`
   Reason: a relationship's `source` and `target` join a declared endpoint
   through `endpoint_identity`, and a join naming no declared endpoint refuses
-  (FND-1726, TC-1421). The endpoint declarations must exist to be joined.
+  (FND-1726, TC-1621). The endpoint declarations must exist to be joined.
 - `FR-114 + FR-115 -> FR-116`
   Reason: the correspondence declares one export mapping per exported
   component, endpoint and relationship record, and its cross-bound refusal is
@@ -273,39 +273,39 @@ Task-151 the report.
 
 ## Test plan
 
-The TC ids are the `spec/tests.md` rows TC-1400..TC-1456. Each task's `verifies`
+The TC ids are the `spec/tests.md` rows TC-1600..TC-1656. Each task's `verifies`
 edges name the rows whose test it writes; the table below is the single
 enumeration, grouped by the module under test. Every test lives in
 `crates/baseline-producer/tests/`.
 
 ### Unit and integration tests
 
-- [ ] `canonical.rs` (FR-118): TC-1440, TC-1441, TC-1443, TC-1444, TC-1446, TC-1447, TC-1449
-- [ ] `digest.rs` / `revision.rs` (FR-112, FR-113): TC-1400..TC-1404, TC-1406..TC-1410
-- [ ] `declarations.rs` (FR-114): TC-1411..TC-1414, TC-1416; inventory closure integration TC-1415
-- [ ] `relationships.rs` (FR-115): TC-1417..TC-1420, TC-1422; endpoint-join integration TC-1421
-- [ ] `correspondence.rs` (FR-116): TC-1423..TC-1429
-- [ ] `static_bundle.rs` (FR-117): TC-1431..TC-1434, TC-1439; admission-source integration TC-1438; varied-environment integration TC-1436
+- [ ] `canonical.rs` (FR-118): TC-1640, TC-1641, TC-1643, TC-1644, TC-1646, TC-1647, TC-1649
+- [ ] `digest.rs` / `revision.rs` (FR-112, FR-113): TC-1600..TC-1604, TC-1606..TC-1610
+- [ ] `declarations.rs` (FR-114): TC-1611..TC-1614, TC-1616; inventory closure integration TC-1615
+- [ ] `relationships.rs` (FR-115): TC-1617..TC-1620, TC-1622; endpoint-join integration TC-1621
+- [ ] `correspondence.rs` (FR-116): TC-1623..TC-1629
+- [ ] `static_bundle.rs` (FR-117): TC-1631..TC-1634, TC-1639; admission-source integration TC-1638; varied-environment integration TC-1636
 
 ### Compile-time and static gates (each with a planted-token control)
 
-- [ ] FR-116-CON-3/CON-5 unassigned-index and distinct-domain scan TC-1430
-- [ ] FR-117-CON-1 member-set closure TC-1432 and FR-117-CON-2 unconstructibility TC-1435, both `Compile` (FND-1745): a `compile_fail` doctest per prohibited construction — a struct literal, a public-member read, and a `serde_json::from_slice::<StaticProducerBundle>`
-- [ ] FR-116-AC-1 five-member compile control TC-1423
-- [ ] NFR-036-M-5 float-coercion audit over the declared numeric-path population TC-1454
-- [ ] NFR-036-M-7 ambient-read call-graph audit plus instrumented offline run TC-1456
+- [ ] FR-116-CON-3/CON-5 unassigned-index and distinct-domain scan TC-1630
+- [ ] FR-117-CON-1 member-set closure TC-1632 and FR-117-CON-2 unconstructibility TC-1635, both `Compile` (FND-1745): a `compile_fail` doctest per prohibited construction — a struct literal, a public-member read, and a `serde_json::from_slice::<StaticProducerBundle>`
+- [ ] FR-116-AC-1 five-member compile control TC-1623
+- [ ] NFR-036-M-5 float-coercion audit over the declared numeric-path population TC-1654
+- [ ] NFR-036-M-7 ambient-read call-graph audit plus instrumented offline run TC-1656
 
 ### Property tests
 
-- [ ] TC-1405 (one object, two wire member orders, one digest `value`), TC-1442 (exact decimal round-trip; no binary64 between parse and serialization), TC-1445 (set array permuted digests identically, semantic-order array permuted digests differently), TC-1451 (declared insertion-order permutation set), TC-1455 (per-array semantic order, with the permuted paired run whose digest must differ)
+- [ ] TC-1605 (one object, two wire member orders, one digest `value`), TC-1642 (exact decimal round-trip; no binary64 between parse and serialization), TC-1645 (set array permuted digests identically, semantic-order array permuted digests differently), TC-1651 (declared insertion-order permutation set), TC-1655 (per-array semantic order, with the permuted paired run whose digest must differ)
 
 ### Snapshot tests against committed goldens
 
-- [ ] TC-1450 (two runs in one process, two runs in two processes, against the golden), TC-1452 (`x86_64-unknown-linux-gnu` and `aarch64-unknown-linux-gnu` bytes and refusal sets against one golden), TC-1453 (changed locale, environment, working directory), TC-1448 (one configuration's `numericResourceLimit` refuses and admits the same numbers on both architectures)
+- [ ] TC-1650 (two runs in one process, two runs in two processes, against the golden), TC-1652 (`x86_64-unknown-linux-gnu` and `aarch64-unknown-linux-gnu` bytes and refusal sets against one golden), TC-1653 (changed locale, environment, working directory), TC-1648 (one configuration's `numericResourceLimit` refuses and admits the same numbers on both architectures)
 
 ### Manual
 
-- [ ] TC-1437 — FR-117-AC-6 and AC-9: every member read without parsing prose, defaulting, or inferring, and production of the bundle recorded as static admission only. Owned by Task-151; `Inspection`/`Manual` is the correct method for a presentation claim with no executable oracle (FND-1748).
+- [ ] TC-1637 — FR-117-AC-6 and AC-9: every member read without parsing prose, defaulting, or inferring, and production of the bundle recorded as static admission only. Owned by Task-151; `Inspection`/`Manual` is the correct method for a presentation claim with no executable oracle (FND-1748).
 
 ## Quality gates
 
@@ -322,9 +322,9 @@ enumeration, grouped by the module under test. Every test lives in
    `fixtures/baseline-1-2/relationship-population-a.json` still loads. Plan-016
    is complete work; this plan may reshape what it emits but may not leave its
    controls red.
-3. **After Task-148 (admission)** — the three `compile_fail` controls of TC-1435
+3. **After Task-148 (admission)** — the three `compile_fail` controls of TC-1635
    fail to compile (struct literal, public-member read, bypassing
-   deserialization) and TC-1432 shows the bundle type closed over the nine
+   deserialization) and TC-1632 shows the bundle type closed over the nine
    content classes with no assessment member reachable. If any of the three
    compiles, the type is not sealed and Task-149 does not start: a golden over
    an unsealed type measures nothing.
@@ -336,7 +336,7 @@ enumeration, grouped by the module under test. Every test lives in
 5. **Before the pull request (Task-151)** — `make rust-build`, `make rust-test`
    and `cargo fmt --check` green; the repo's Rust review route run
    (`agent-skills:rust-review` via `code-review`) with its findings dispositioned;
-   `quire coverage --scope . --json` binding every TC-1400..TC-1456 row; and
+   `quire coverage --scope . --json` binding every TC-1600..TC-1656 row; and
    every one of those rows moved off `🚧` in `spec/tests.md`.
 
 ### Named gates
@@ -376,7 +376,7 @@ says so explicitly rather than quietly excluding them.
 - **A gate whose apparatus is missing fails saying so.** NFR-036's Verification
   and FND-1756/FND-1767 name this plan as the apparatus owner; until Task-150
   provides the second architecture, the instrumented run and the namespace,
-  TC-1448, TC-1452 and TC-1456 fail reporting that they did not run. They are
+  TC-1648, TC-1652 and TC-1656 fail reporting that they did not run. They are
   never marked passing vacuously and never skipped.
 - **No assessment input reaches a static admission.** If a task finds itself
   needing a population, a snapshot, a window, an instance, an observation, a
@@ -402,4 +402,4 @@ says so explicitly rather than quietly excluding them.
 | FND-1812 a population document has no admissible consumer artifact kind | Open cross-repo item on the assessment half; not reached by the static bundle, no task here |
 | FND-1862 no `window` member in any consumer vocabulary | Open cross-repo item on the assessment half; no window export mapping is required, no task here |
 | FND-1829 availability containment without retrieval | Assessment half; recorded so no task here introduces a retrieval |
-| TC-1457..TC-1499 | Assessment half, un-tasked by design; rows stay `🚧`. See "What this plan does not implement" |
+| TC-1657..TC-1699 | Assessment half, un-tasked by design; rows stay `🚧`. See "What this plan does not implement" |

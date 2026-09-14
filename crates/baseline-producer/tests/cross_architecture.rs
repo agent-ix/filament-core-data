@@ -27,7 +27,7 @@
 //! Agreement is compared element by element and never by count, because
 //! FND-1716 is the case where two architectures report the same number of
 //! refused values while disagreeing about which values those were. That is why
-//! the refusal half (TC-1448) is measured beside the byte half (TC-1452) rather
+//! the refusal half (TC-1648) is measured beside the byte half (TC-1652) rather
 //! than assumed from it.
 
 use std::fs;
@@ -144,12 +144,12 @@ fn read_record(triple: &str) -> String {
 }
 
 // ---------------------------------------------------------------------------
-// TC-1452: canonical bytes across the named architecture set
+// TC-1652: canonical bytes across the named architecture set
 // ---------------------------------------------------------------------------
 
-/// Tracing: TC-1452
+/// Tracing: TC-1652
 #[test]
-fn tc_1452_this_architecture_records_every_digested_documents_canonical_bytes_and_decisions() {
+fn tc_1652_this_architecture_records_every_digested_documents_canonical_bytes_and_decisions() {
     let triple = compiled_target_triple();
     assert_named_architecture(&triple);
 
@@ -203,7 +203,7 @@ fn tc_1452_this_architecture_records_every_digested_documents_canonical_bytes_an
     assert_eq!(digests.len(), documents.len());
     assert_eq!(numerics.len(), numeric_probe_set().len());
     println!(
-        "TC-1452 measured on {triple}: {} digested document(s) of one admitted static bundle, {} canonical byte string(s), {} digest(s) and {} admit-versus-refuse decision(s), recorded at {}. The architecture set NFR-036 names is {NAMED_ARCHITECTURES:?}; the agreement verdict over both is tc_1452_the_named_architecture_set_agrees_element_for_element, which this run does not reach.",
+        "TC-1652 measured on {triple}: {} digested document(s) of one admitted static bundle, {} canonical byte string(s), {} digest(s) and {} admit-versus-refuse decision(s), recorded at {}. The architecture set NFR-036 names is {NAMED_ARCHITECTURES:?}; the agreement verdict over both is tc_1652_the_named_architecture_set_agrees_element_for_element, which this run does not reach.",
         documents.len(),
         bytes.len(),
         digests.len(),
@@ -212,10 +212,10 @@ fn tc_1452_this_architecture_records_every_digested_documents_canonical_bytes_an
     );
 }
 
-/// Tracing: TC-1452
+/// Tracing: TC-1652
 #[test]
 #[ignore = "Cross-architecture evidence: needs an agreement record from each of x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu, so one host alone cannot hold both; run `make baseline-producer-cross-architecture`, which supplies the second architecture and fails naming it when its runner is absent"]
-fn tc_1452_the_named_architecture_set_agrees_element_for_element_on_bytes_and_digests() {
+fn tc_1652_the_named_architecture_set_agrees_element_for_element_on_bytes_and_digests() {
     let records: Vec<(&str, String)> = NAMED_ARCHITECTURES
         .iter()
         .map(|triple| (*triple, read_record(triple)))
@@ -237,7 +237,7 @@ fn tc_1452_the_named_architecture_set_agrees_element_for_element_on_bytes_and_di
             "{left_triple} and {right_triple} disagree on a {unit}"
         );
         println!(
-            "TC-1452 agreement on {unit}: {}/{} element(s), 100% ({left_triple} against {right_triple})",
+            "TC-1652 agreement on {unit}: {}/{} element(s), 100% ({left_triple} against {right_triple})",
             left_section.len(),
             left_section.len().max(right_section.len())
         );
@@ -252,19 +252,19 @@ fn tc_1452_the_named_architecture_set_agrees_element_for_element_on_bytes_and_di
         "{left_triple} and {right_triple} disagree on an admit-versus-refuse decision"
     );
     println!(
-        "TC-1452 agreement on admit-versus-refuse decisions: {}/{} element(s), 100%",
+        "TC-1652 agreement on admit-versus-refuse decisions: {}/{} element(s), 100%",
         left_numerics.len(),
         left_numerics.len().max(right_numerics.len())
     );
 }
 
 // ---------------------------------------------------------------------------
-// TC-1448: the refused numeric set across the named architecture set
+// TC-1648: the refused numeric set across the named architecture set
 // ---------------------------------------------------------------------------
 
-/// Tracing: TC-1448
+/// Tracing: TC-1648
 #[test]
-fn tc_1448_the_declared_numeric_limit_decides_the_same_numbers_on_this_architecture() {
+fn tc_1648_the_declared_numeric_limit_decides_the_same_numbers_on_this_architecture() {
     let triple = compiled_target_triple();
     assert_named_architecture(&triple);
 
@@ -355,7 +355,7 @@ fn tc_1448_the_declared_numeric_limit_decides_the_same_numbers_on_this_architect
     );
 
     println!(
-        "TC-1448 measured on {triple}: {} declared numeric probe(s), {} admitted and {} refused under the configuration-declared numericResourceLimit ({} coefficient digits, exponent magnitude {}); refused set {refused:?}. The planted host-derived limit ({} coefficient digits, exponent magnitude {}) is detected at {}. Agreement across {NAMED_ARCHITECTURES:?} is tc_1448_the_refused_numeric_set_agrees_element_for_element, which this run does not reach.",
+        "TC-1648 measured on {triple}: {} declared numeric probe(s), {} admitted and {} refused under the configuration-declared numericResourceLimit ({} coefficient digits, exponent magnitude {}); refused set {refused:?}. The planted host-derived limit ({} coefficient digits, exponent magnitude {}) is detected at {}. Agreement across {NAMED_ARCHITECTURES:?} is tc_1648_the_refused_numeric_set_agrees_element_for_element, which this run does not reach.",
         measured.len(),
         admitted.len(),
         refused.len(),
@@ -367,10 +367,10 @@ fn tc_1448_the_declared_numeric_limit_decides_the_same_numbers_on_this_architect
     );
 }
 
-/// Tracing: TC-1448
+/// Tracing: TC-1648
 #[test]
 #[ignore = "Cross-architecture evidence: needs an agreement record from each of x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu, so one host alone cannot hold both; run `make baseline-producer-cross-architecture`, which supplies the second architecture and fails naming it when its runner is absent"]
-fn tc_1448_the_refused_numeric_set_agrees_element_for_element_across_the_named_architecture_set() {
+fn tc_1648_the_refused_numeric_set_agrees_element_for_element_across_the_named_architecture_set() {
     let records: Vec<(&str, String)> = NAMED_ARCHITECTURES
         .iter()
         .map(|triple| (*triple, read_record(triple)))
@@ -420,7 +420,7 @@ fn tc_1448_the_refused_numeric_set_agrees_element_for_element_across_the_named_a
         "the refused set is compared element by element, not by count"
     );
     println!(
-        "TC-1448 agreement across {left_triple} and {right_triple}: {}/{} decision(s) agree, 100%; {} refused value(s) agree element for element ({left_refused:?})",
+        "TC-1648 agreement across {left_triple} and {right_triple}: {}/{} decision(s) agree, 100%; {} refused value(s) agree element for element ({left_refused:?})",
         left_numerics.len(),
         left_numerics.len().max(right_numerics.len()),
         left_refused.len()

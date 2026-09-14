@@ -10,17 +10,17 @@ relationships:
     type: depends_on
   - target: "ix://agent-ix/filament-core-data/FR-115"
     type: references
-  - target: "ix://agent-ix/filament-core-data/TC-1417"
+  - target: "ix://agent-ix/filament-core-data/TC-1617"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1418"
+  - target: "ix://agent-ix/filament-core-data/TC-1618"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1419"
+  - target: "ix://agent-ix/filament-core-data/TC-1619"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1420"
+  - target: "ix://agent-ix/filament-core-data/TC-1620"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1421"
+  - target: "ix://agent-ix/filament-core-data/TC-1621"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1422"
+  - target: "ix://agent-ix/filament-core-data/TC-1622"
     type: verifies
 ---
 # Task-146: FR-115 complete relationship records with independent endpoints and ownership
@@ -43,24 +43,24 @@ carrying the relationship identity; it never guesses.
 
 ## Subtasks
 
-- [ ] **Red: record shape.** `tests/relationships.rs`: `tc_1417_` (one
+- [ ] **Red: record shape.** `tests/relationships.rs`: `tc_1617_` (one
   relationship record carries identity, namespaced revision, canonical digest,
   authored name, `semantics` with category, direction, composite flag, lifecycle
   and ownership, and the owning model, profile and configuration identities as
-  separate members), `tc_1418_` (the `source` and `target` endpoint records each
+  separate members), `tc_1618_` (the `source` and `target` endpoint records each
   carry their own `endpointIdentity`, `typeIdentity`, `role` and `multiplicity`
-  as independent members even when both name one type identity), `tc_1419_` (a
+  as independent members even when both name one type identity), `tc_1619_` (a
   self-relationship whose `source` and `target` name one type identity emits two
   independent endpoint records retaining their own endpoint identities, roles and
   multiplicities).
-- [ ] **Red: refusals and loss.** `tc_1420_` (a relationship whose `source` omits
+- [ ] **Red: refusals and loss.** `tc_1620_` (a relationship whose `source` omits
   its role refuses; one whose `target` omits its multiplicity refuses; a requested
   endpoint projection collapsing the two roles into one refuses with a named loss
   record carrying the relationship identity rather than a guessed value),
-  `tc_1421_` (integration: each endpoint record joins a declared FR-114 endpoint
+  `tc_1621_` (integration: each endpoint record joins a declared FR-114 endpoint
   through its `endpointIdentity` and never through a coinciding type identity,
   role, or display name, and a `source` `endpointIdentity` naming no declared
-  endpoint refuses naming the relationship), `tc_1422_` (a relationship identity
+  endpoint refuses naming the relationship), `tc_1622_` (a relationship identity
   is authored rather than reconstructed from a foreign key, a field, or a
   relationship instance, and the emitted record carries no population member and
   no relationship instance).
@@ -76,8 +76,8 @@ carrying the relationship identity; it never guesses.
   `RELATIONSHIP_OWNERSHIP_ABSENT` / the projection loss record rather than
   collapsing; the loss record carries the relationship identity.
 - [ ] **Falsify.** Join an endpoint by coinciding type identity in a scratch copy
-  and prove `tc_1421_` fails. Reconstruct the target role from the source role in
-  a scratch copy and prove `tc_1420_` fails.
+  and prove `tc_1621_` fails. Reconstruct the target role from the source role in
+  a scratch copy and prove `tc_1620_` fails.
 
 ## Exit conditions
 
@@ -86,7 +86,7 @@ carrying the relationship identity; it never guesses.
 - Every endpoint join goes through `endpoint_identity` against a declared FR-114
   endpoint, and an unknown identity refuses naming the relationship.
 - No relationship record names a population member or a relationship instance.
-- TC-1417..TC-1422 are traced executable controls.
+- TC-1617..TC-1622 are traced executable controls.
 - `make rust-build`, `make rust-test` and `cargo fmt --check` green apart from
   the two pre-existing reds.
 

@@ -385,12 +385,12 @@ fn declared_modules(lib_rs: &str) -> BTreeSet<String> {
 }
 
 // ---------------------------------------------------------------------------
-// TC-1456, the call-graph half
+// TC-1656, the call-graph half
 // ---------------------------------------------------------------------------
 
-/// Tracing: TC-1456
+/// Tracing: TC-1656
 #[test]
-fn tc_1456_the_canonicalization_call_graph_reads_zero_ambient_inputs_with_no_exemption_list() {
+fn tc_1656_the_canonicalization_call_graph_reads_zero_ambient_inputs_with_no_exemption_list() {
     // The population is the whole crate: every module `src/lib.rs` declares has
     // an entry, so a module added after this gate was written cannot escape it.
     let lib_rs = AMBIENT_POPULATION
@@ -519,14 +519,14 @@ fn tc_1456_the_canonicalization_call_graph_reads_zero_ambient_inputs_with_no_exe
             summary(&planted_reads)
         );
         println!(
-            "TC-1456 planted control ({label} in src/canonical.rs, scratch copy): {} read(s) measured, named at {}",
+            "TC-1656 planted control ({label} in src/canonical.rs, scratch copy): {} read(s) measured, named at {}",
             planted_reads.len(),
             summary(&planted_reads).lines().next().unwrap_or_default()
         );
     }
 
     println!(
-        "TC-1456 call-graph audit: {} file(s) and {lines} line(s) of the crate, {} token(s) over {} categories, 0 exemptions, {} ambient read(s) measured (target 0, threshold 0) and {} host-derived site(s) measured",
+        "TC-1656 call-graph audit: {} file(s) and {lines} line(s) of the crate, {} token(s) over {} categories, 0 exemptions, {} ambient read(s) measured (target 0, threshold 0) and {} host-derived site(s) measured",
         AMBIENT_POPULATION.len(),
         AMBIENT_TOKENS.len(),
         categories.len(),
@@ -536,7 +536,7 @@ fn tc_1456_the_canonicalization_call_graph_reads_zero_ambient_inputs_with_no_exe
 }
 
 // ---------------------------------------------------------------------------
-// TC-1456, the instrumented run
+// TC-1656, the instrumented run
 // ---------------------------------------------------------------------------
 
 /// The symbols the instrument interposes, by the category they belong to.
@@ -629,7 +629,7 @@ fn instrumented_run(label: &str, plant: Option<&str>) -> (Vec<String>, Output) {
         .args([
             "--ignored",
             "--exact",
-            "tc_1456_child_canonicalizes_the_population_under_the_instrument",
+            "tc_1656_child_canonicalizes_the_population_under_the_instrument",
             "--test-threads=1",
             "--nocapture",
         ])
@@ -698,10 +698,10 @@ fn instrumented_run(label: &str, plant: Option<&str>) -> (Vec<String>, Output) {
     (region, output)
 }
 
-/// Tracing: TC-1456
+/// Tracing: TC-1656
 #[test]
 #[ignore = "Runtime evidence: compiles tests/probe/ambient_probe.rs, re-invokes this test binary under `unshare -rn` with the instrument preloaded, and plants two ambient reads to prove the instrument records them; run `make baseline-producer-ambient-evidence`"]
-fn tc_1456_the_instrumented_offline_run_in_a_network_namespace_records_zero_ambient_reads() {
+fn tc_1656_the_instrumented_offline_run_in_a_network_namespace_records_zero_ambient_reads() {
     assert_namespace_available();
 
     // The measured run: no plant.
@@ -711,7 +711,7 @@ fn tc_1456_the_instrumented_offline_run_in_a_network_namespace_records_zero_ambi
         .lines()
         // `--nocapture` puts the harness's own `test <name> ...` prefix on the
         // same line, so the count is found inside the line and not at its start.
-        .find_map(|line| line.split_once("TC-1456 child canonicalized "))
+        .find_map(|line| line.split_once("TC-1656 child canonicalized "))
         .and_then(|(_, rest)| rest.split_whitespace().next())
         .and_then(|count| count.parse().ok())
         .unwrap_or_else(|| panic!("the child reported the population it canonicalized:\n{stdout}"));
@@ -723,7 +723,7 @@ fn tc_1456_the_instrumented_offline_run_in_a_network_namespace_records_zero_ambi
         region.join("\n")
     );
     println!(
-        "TC-1456 instrumented run under `unshare -rn`: {documents} digested document(s) canonicalized and digested, {} interposed symbol(s) over {} categories, {} ambient read(s) recorded (target 0, threshold 0)",
+        "TC-1656 instrumented run under `unshare -rn`: {documents} digested document(s) canonicalized and digested, {} interposed symbol(s) over {} categories, {} ambient read(s) recorded (target 0, threshold 0)",
         INSTRUMENTED_SYMBOLS.len(),
         INSTRUMENTED_SYMBOLS
             .iter()
@@ -746,17 +746,17 @@ fn tc_1456_the_instrumented_offline_run_in_a_network_namespace_records_zero_ambi
             planted.join("\n")
         );
         println!(
-            "TC-1456 planted control ({plant} read inside the measured region): {} {symbol} call(s) recorded, {} line(s) in the region",
+            "TC-1656 planted control ({plant} read inside the measured region): {} {symbol} call(s) recorded, {} line(s) in the region",
             recorded.len(),
             planted.len()
         );
     }
 }
 
-/// Tracing: TC-1456
+/// Tracing: TC-1656
 #[test]
-#[ignore = "child process of tc_1456_the_instrumented_offline_run_in_a_network_namespace_records_zero_ambient_reads; run by the parent with --ignored --exact under the preloaded instrument"]
-fn tc_1456_child_canonicalizes_the_population_under_the_instrument() {
+#[ignore = "child process of tc_1656_the_instrumented_offline_run_in_a_network_namespace_records_zero_ambient_reads; run by the parent with --ignored --exact under the preloaded instrument"]
+fn tc_1656_child_canonicalizes_the_population_under_the_instrument() {
     // Read outside the measured region: reading the harness's own configuration
     // is not a producer read, and the markers are what separates the two.
     let instrumented = std::env::var(LOG_VARIABLE).ok();
@@ -769,7 +769,7 @@ fn tc_1456_child_canonicalizes_the_population_under_the_instrument() {
 
     let Some(path) = instrumented else {
         println!(
-            "TC-1456 child canonicalized {warm} document(s) outside the instrument: no {LOG_VARIABLE} in the environment, so nothing was recorded. The gate is the parent, tc_1456_the_instrumented_offline_run_in_a_network_namespace_records_zero_ambient_reads."
+            "TC-1656 child canonicalized {warm} document(s) outside the instrument: no {LOG_VARIABLE} in the environment, so nothing was recorded. The gate is the parent, tc_1656_the_instrumented_offline_run_in_a_network_namespace_records_zero_ambient_reads."
         );
         return;
     };
@@ -814,7 +814,7 @@ fn tc_1456_child_canonicalizes_the_population_under_the_instrument() {
     mark(END);
 
     println!(
-        "TC-1456 child canonicalized {} document(s) inside the measured region (plant: {})",
+        "TC-1656 child canonicalized {} document(s) inside the measured region (plant: {})",
         documents.len(),
         plant.as_deref().unwrap_or("none")
     );

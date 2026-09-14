@@ -13,8 +13,8 @@ type: log
   are the next task's members. Task-140 is complete; Task-141 and Task-142 belong
   to Plan-016 and are untouched.
 * 2026-09-11 - Scope fixed as the **static half only**: US-016, FR-112..FR-118,
-  NFR-036, matrix rows TC-1400..TC-1456. The assessment half — US-017,
-  FR-119..FR-126, NFR-037, TC-1457..TC-1499 — is designed and reviewed and
+  NFR-036, matrix rows TC-1600..TC-1656. The assessment half — US-017,
+  FR-119..FR-126, NFR-037, TC-1657..TC-1699 — is designed and reviewed and
   deliberately not implemented, because FR-117 requires that a static link never
   require or mint a population, snapshot, window, workflow instance, relationship
   instance, observation, progress record or closure; those remain later D and F
@@ -68,11 +68,11 @@ type: log
   `123456789012345680000000000000` before and to
   `123456789012345678901234567890.1234567890123456789` after;
   `0.3333333333333333333333333333333333` to `0.33333333333333337` before and to
-  itself after. TC-1440..TC-1447, TC-1449 and TC-1454 are traced executable
+  itself after. TC-1640..TC-1647, TC-1649 and TC-1654 are traced executable
   controls in `crates/baseline-producer/tests/canonical.rs` and
   `tests/numeric_audit.rs`, each reporting the number it measured; the planted
   `as f64` and the planted locale-collation key sort were each shown to fail
-  TC-1454 and TC-1443 respectively. `make rust-build`, `make rust-test` and
+  TC-1654 and TC-1643 respectively. `make rust-build`, `make rust-test` and
   `cargo fmt --all -- --check` are green for the whole workspace under feature
   unification except the issue #36 changed-path gates, which now number three
   rather than two: `tc_1315` in `crates/extraction-frontend/tests/change_set.rs`
@@ -91,11 +91,11 @@ type: log
   two separate refusals (FND-1723). The two consumer-owned carve-outs are typed
   rather than excepted: `RawByteDigest` is one raw-byte digest string and
   `NativeSourceLabel` an editable native authority label, both admitted and
-  neither refused as a malformed selection (FR-112-CON-4, FR-113-CON-4). TC-1400
-  ..TC-1410 are traced executable controls in `tests/digest.rs` and
+  neither refused as a malformed selection (FR-112-CON-4, FR-113-CON-4). TC-1600
+  ..TC-1610 are traced executable controls in `tests/digest.rs` and
   `tests/revision.rs`; deriving `version` from the domain spelling in a scratch
-  copy failed TC-1400 and defaulting an absent namespace failed TC-1408 and
-  TC-1404. Plan-016's TC-1373..TC-1381 pass over the new shapes and
+  copy failed TC-1600 and defaulting an absent namespace failed TC-1608 and
+  TC-1604. Plan-016's TC-1373..TC-1381 pass over the new shapes and
   `fixtures/baseline-1-2/relationship-population-a.json` still loads, with its
   configuration digest recomputed over the two new declared-selection members.
 * 2026-09-11 - **Task-145 complete.** The four types the crate had no
@@ -113,10 +113,10 @@ type: log
   than minting one (FR-114-CON-6, FND-1762). A locus is never synthesized: a
   record whose locus no declaration source document supplies refuses
   `COMPONENT_PROVENANCE_UNSUPPLIED` / `ENDPOINT_PROVENANCE_UNSUPPLIED`, distinct
-  from the absent-locus refusal (FR-114-CON-5, FND-1765). TC-1411..TC-1416 are
+  from the absent-locus refusal (FR-114-CON-5, FND-1765). TC-1611..TC-1616 are
   traced executable controls in `tests/declarations.rs`; synthesizing a locus for
-  an unlocated declaration in a scratch copy failed TC-1416, and reconstructing a
-  component identity from its locus path failed TC-1413.
+  an unlocated declaration in a scratch copy failed TC-1616, and reconstructing a
+  component identity from its locus path failed TC-1613.
 * 2026-09-11 - **Task-146 complete.** `RelationshipDeclaration` moved to
   `src/relationship.rs` and completed: `relationship_revision`, the canonical
   `digest`, the declaring `RelationshipOwnership { model_identity,
@@ -133,9 +133,9 @@ type: log
   new members are `Option`s because absence is a representable state the producer
   refuses naming the absent member — the `resourceLimits.numericResourceLimit`
   precedent — which is also what keeps the Plan-016 fixture loading unchanged.
-  TC-1417..TC-1422 are traced executable controls in `tests/relationships.rs`;
-  joining by coinciding type identity in a scratch copy failed TC-1421 and
-  reconstructing an absent role instead of refusing failed TC-1420.
+  TC-1617..TC-1622 are traced executable controls in `tests/relationships.rs`;
+  joining by coinciding type identity in a scratch copy failed TC-1621 and
+  reconstructing an absent role instead of refusing failed TC-1620.
 * 2026-09-11 - **Task-147 complete.** `ProducerNativeCorrespondence` is complete
   in the producer's own bundle document (FND-1710, D3): the **five** authored
   producer-object members `kind`, `authority`, `identity`, namespaced `revision`
@@ -152,13 +152,13 @@ type: log
   unrepresentable rather than merely refused. Foreign, cross-bound,
   duplicate-pair — refusing **both** records by name — stale-selection,
   absent-provenance and incomplete-closure inputs each refuse blocking.
-  TC-1423..TC-1430 are traced executable controls in `tests/correspondence.rs`,
-  TC-1423 as a `Compile` control (exhaustive destructuring plus a `compile_fail`
-  doctest on the `interface` read) and TC-1430 as a `Static` scan with a planted
+  TC-1623..TC-1630 are traced executable controls in `tests/correspondence.rs`,
+  TC-1623 as a `Compile` control (exhaustive destructuring plus a `compile_fail`
+  doctest on the `interface` read) and TC-1630 as a `Static` scan with a planted
   `interface: u32` control. Planting that member in a scratch copy failed both
-  TC-1423 (the pattern no longer mentions the field) and the `compile_fail`
-  doctest; substituting a digest under a retained binding relation failed TC-1425
-  and TC-1426.
+  TC-1623 (the pattern no longer mentions the field) and the `compile_fail`
+  doctest; substituting a digest under a retained binding relation failed TC-1625
+  and TC-1626.
 * 2026-09-11 - **Task-148 complete.** `StaticProducerBundle` carries four header
   members — bundle identity, namespaced bundle revision, canonical digest
   selection, and the producer interface version `1.2.0` FR-126 declares — and
@@ -180,12 +180,12 @@ type: log
   FND-1727). `AdmissionRegistry` keys an admitted bundle by identity + revision +
   digest together, refuses an identity collision naming both selections, and
   refuses a binding to a superseded bundle as stale naming both rather than
-  resolving forward (E9, FND-1823). TC-1431..TC-1436, TC-1438 and TC-1439 are
+  resolving forward (E9, FND-1823). TC-1631..TC-1636, TC-1638 and TC-1639 are
   traced executable controls in `tests/static_bundle.rs`, with five
   `compile_fail` doctests and five compiling twins carrying the `Compile` halves
-  of TC-1432 and TC-1435. Adding `Deserialize` to the admitted type in a scratch
-  copy made the third TC-1435 control fail to fail — the breach the control exists
-  to report — and reading `std::env::var` on the admission path failed TC-1436.
+  of TC-1632 and TC-1635. Adding `Deserialize` to the admitted type in a scratch
+  copy made the third TC-1635 control fail to fail — the breach the control exists
+  to report — and reading `std::env::var` on the admission path failed TC-1636.
   `make rust-build`, `cargo fmt --all -- --check` and
   `cargo test --offline -p agent-ix-baseline-producer` (74 rows over 9 targets plus
   9 doctests) are green; the full `make rust-test` is green except exactly three
@@ -193,5 +193,5 @@ type: log
   `tc_1294` in `crates/extraction-frontend/tests/fixtures.rs`, already red before
   this task, and `tc_1299` and `tc_1310` in the same crate's `tests/change_set.rs`,
   which go red the moment any #95 path is added. TC status rows stay `🚧`.
-* 2026-09-11 - Task-149 landed the wire-level evidence: `fixtures/baseline-1-2/static-bundle-a.json` (admitted through `StaticProducerBundle::admit_json`; 2 components, 5 endpoints over one self-relationship, 2 relationships, 2 correspondence records covering the `component`, `endpoint` and `relationship` export kinds, the `orders` display-name collision quartet, and one authored exact integer past binary64 in `resourceLimits.declaredBounds`), the published `schema/baseline/v1/static-bundle.schema.json` validated by the repo's Ajv gate and by `tests/schema.rs`, eight one-axis adverse fixtures under `fixtures/baseline-1-2/adverse/` each refusing with exactly one stable code and each proven one axis wide by a structural diff against the good fixture, and 16 committed goldens under `fixtures/baseline-1-2/golden/` with the declared digested-document set and the declared 8-permutation insertion-order set beside them, cut once by the ignored writer `tests/golden_writer.rs`; TC-1450, TC-1451, TC-1453 and TC-1455 measure 16 documents, 64 byte comparisons, 128 paired permutation runs and 36 semantic-order arrays; the stale-correspondence axis is measured across two admissions because FR-116-AC-3 is stated over a prior selection and `validate_correspondence_set` compares no two records of one set, which is recorded rather than patched; `make rust-build`, `cargo fmt --all -- --check`, `cargo test --offline -p agent-ix-baseline-producer` and `test/baseline-producer.test.ts` are green, and `make rust-test` is green except `tc_1299` and `tc_1310` of the issue #36 changed-path gate family this plan does not own. TC status rows stay `🚧`.
-* 2026-09-11 - Task-150 landed the cross-architecture and ambient apparatus over Task-149's committed evidence: `tests/nfr036/` builds one per-architecture agreement record — 16 digested documents' canonical byte strings and digests, each anchored to its one committed golden, plus 20 declared numeric probes' admit-versus-refuse decisions under the fixture's own declared `numericResourceLimit` (4096 coefficient digits, exponent magnitude 6144) — and `tests/cross_architecture.rs` carries TC-1452 and TC-1448 as a recording control per architecture plus an `#[ignore]`d agreement control that compares two records element by element and fails **naming** the architecture whose record is absent, never by count and never vacuously (FND-1716); on this `x86_64-unknown-linux-gnu` host the recording halves measure 16/16 documents against the golden and 16 admitted + 4 refused probes, the planted host-derived limit (a pointer-width derivation, 2048 digits) is detected at `coefficient-at-limit`, and `aarch64-unknown-linux-gnu` is **not reached**: `make baseline-producer-second-architecture` fails naming the absent `aarch64-linux-gnu-gcc` and `qemu-aarch64-static`, so the cross-architecture agreement is apparatus-complete and unrun, rehearsed only against a fabricated peer record outside the tree. `tests/ambient_audit.rs` carries TC-1456 in both halves: the call-graph audit over all 17 crate sources (4897 lines, 34 tokens, five categories, **no exemption member to widen** — the token type has none) measures 0 ambient reads and 0 host-derived sites, falsified by a planted `std::env::var` and a planted `SystemTime::now` on the canonicalization path in scratch copies; the instrumented run preloads `tests/probe/ambient_probe.rs` over the suite inside `unshare -rn` and **records** 0 ambient reads while canonicalizing all 16 documents, falsified by a planted clock read (1 `clock_gettime` recorded) and a planted environment read (1 `getenv` recorded) inside the measured region. `sha2`'s `cpufeatures` CPU-capability read is recorded rather than exempted: it is not one of the five categories and selects between implementations emitting identical bytes. New Makefile targets `baseline-producer-record`, `baseline-producer-second-architecture`, `baseline-producer-cross-architecture`, `baseline-producer-ambient-evidence` and `baseline-producer-evidence`, each failing rather than skipping when its toolchain, linker, runner or namespace is absent. `make rust-build`, `cargo fmt --all -- --check` and `cargo test --offline -p agent-ix-baseline-producer` (87 rows, 0 failed, 6 ignored) are green, and `make rust-test` is red on exactly the three issue #36 changed-path rows this plan does not own (`tc_1294`, `tc_1299`, `tc_1310`). TC status rows stay `🚧`.
+* 2026-09-11 - Task-149 landed the wire-level evidence: `fixtures/baseline-1-2/static-bundle-a.json` (admitted through `StaticProducerBundle::admit_json`; 2 components, 5 endpoints over one self-relationship, 2 relationships, 2 correspondence records covering the `component`, `endpoint` and `relationship` export kinds, the `orders` display-name collision quartet, and one authored exact integer past binary64 in `resourceLimits.declaredBounds`), the published `schema/baseline/v1/static-bundle.schema.json` validated by the repo's Ajv gate and by `tests/schema.rs`, eight one-axis adverse fixtures under `fixtures/baseline-1-2/adverse/` each refusing with exactly one stable code and each proven one axis wide by a structural diff against the good fixture, and 16 committed goldens under `fixtures/baseline-1-2/golden/` with the declared digested-document set and the declared 8-permutation insertion-order set beside them, cut once by the ignored writer `tests/golden_writer.rs`; TC-1650, TC-1651, TC-1653 and TC-1655 measure 16 documents, 64 byte comparisons, 128 paired permutation runs and 36 semantic-order arrays; the stale-correspondence axis is measured across two admissions because FR-116-AC-3 is stated over a prior selection and `validate_correspondence_set` compares no two records of one set, which is recorded rather than patched; `make rust-build`, `cargo fmt --all -- --check`, `cargo test --offline -p agent-ix-baseline-producer` and `test/baseline-producer.test.ts` are green, and `make rust-test` is green except `tc_1299` and `tc_1310` of the issue #36 changed-path gate family this plan does not own. TC status rows stay `🚧`.
+* 2026-09-11 - Task-150 landed the cross-architecture and ambient apparatus over Task-149's committed evidence: `tests/nfr036/` builds one per-architecture agreement record — 16 digested documents' canonical byte strings and digests, each anchored to its one committed golden, plus 20 declared numeric probes' admit-versus-refuse decisions under the fixture's own declared `numericResourceLimit` (4096 coefficient digits, exponent magnitude 6144) — and `tests/cross_architecture.rs` carries TC-1652 and TC-1648 as a recording control per architecture plus an `#[ignore]`d agreement control that compares two records element by element and fails **naming** the architecture whose record is absent, never by count and never vacuously (FND-1716); on this `x86_64-unknown-linux-gnu` host the recording halves measure 16/16 documents against the golden and 16 admitted + 4 refused probes, the planted host-derived limit (a pointer-width derivation, 2048 digits) is detected at `coefficient-at-limit`, and `aarch64-unknown-linux-gnu` is **not reached**: `make baseline-producer-second-architecture` fails naming the absent `aarch64-linux-gnu-gcc` and `qemu-aarch64-static`, so the cross-architecture agreement is apparatus-complete and unrun, rehearsed only against a fabricated peer record outside the tree. `tests/ambient_audit.rs` carries TC-1656 in both halves: the call-graph audit over all 17 crate sources (4897 lines, 34 tokens, five categories, **no exemption member to widen** — the token type has none) measures 0 ambient reads and 0 host-derived sites, falsified by a planted `std::env::var` and a planted `SystemTime::now` on the canonicalization path in scratch copies; the instrumented run preloads `tests/probe/ambient_probe.rs` over the suite inside `unshare -rn` and **records** 0 ambient reads while canonicalizing all 16 documents, falsified by a planted clock read (1 `clock_gettime` recorded) and a planted environment read (1 `getenv` recorded) inside the measured region. `sha2`'s `cpufeatures` CPU-capability read is recorded rather than exempted: it is not one of the five categories and selects between implementations emitting identical bytes. New Makefile targets `baseline-producer-record`, `baseline-producer-second-architecture`, `baseline-producer-cross-architecture`, `baseline-producer-ambient-evidence` and `baseline-producer-evidence`, each failing rather than skipping when its toolchain, linker, runner or namespace is absent. `make rust-build`, `cargo fmt --all -- --check` and `cargo test --offline -p agent-ix-baseline-producer` (87 rows, 0 failed, 6 ignored) are green, and `make rust-test` is red on exactly the three issue #36 changed-path rows this plan does not own (`tc_1294`, `tc_1299`, `tc_1310`). TC status rows stay `🚧`.

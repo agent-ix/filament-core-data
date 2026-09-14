@@ -12,13 +12,13 @@ relationships:
     type: references
   - target: "ix://agent-ix/filament-core-data/FR-117"
     type: references
-  - target: "ix://agent-ix/filament-core-data/TC-1450"
+  - target: "ix://agent-ix/filament-core-data/TC-1650"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1451"
+  - target: "ix://agent-ix/filament-core-data/TC-1651"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1453"
+  - target: "ix://agent-ix/filament-core-data/TC-1653"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1455"
+  - target: "ix://agent-ix/filament-core-data/TC-1655"
     type: verifies
 ---
 # Task-149: static bundle fixture, published JSON Schema, eight one-axis adverse fixtures, and the NFR-036 goldens
@@ -48,7 +48,7 @@ not a producer finding.
   prerequisite closure, and at least two correspondence records whose export mappings
   cover the `component`, `endpoint` and `relationship` kinds. A display-name
   collision across a repository, a component, a role and an endpoint is authored on
-  purpose (TC-1413's input), and one authored exact decimal beyond binary64 exists so
+  purpose (TC-1613's input), and one authored exact decimal beyond binary64 exists so
   the fixture exercises Task-143's seam.
 - [ ] **Green: the published schema.** `schema/baseline/v1/static-bundle.schema.json`,
   in the shape `schema/baseline/v1/producer-bundle.schema.json` already establishes:
@@ -71,22 +71,22 @@ not a producer finding.
   `08-inventory-incomplete.json` (`INVENTORY_MEMBER_UNLISTED` /
   `INVENTORY_INCOMPLETE_UNKNOWN`). Each is diffed against the good fixture in the
   test to prove the mutation is one axis wide.
-- [ ] **Red: goldens.** `tests/byte_exact.rs`: `tc_1450_` (every digested document of
+- [ ] **Red: goldens.** `tests/byte_exact.rs`: `tc_1650_` (every digested document of
   the admitted bundle canonicalizes to the same byte string and digest across two
   runs in one process and two runs in two separate processes, and equals the
-  committed golden), `tc_1453_` (the same bytes under a changed locale, environment
+  committed golden), `tc_1653_` (the same bytes under a changed locale, environment
   and working directory against the same golden).
-- [ ] **Red: order properties.** `tc_1451_` (property: every digested document's
+- [ ] **Red: order properties.** `tc_1651_` (property: every digested document's
   digest is unchanged when its object keys and set-array members are supplied in a
   permuted insertion order, one paired run per permutation of the **declared
   permutation set**, which this task declares and commits beside the golden),
-  `tc_1455_` (property: every semantic-order array is emitted in the
+  `tc_1655_` (property: every semantic-order array is emitted in the
   producer-declared order, measured per array against that declaration, with a
   permuted-array paired run whose digest **must differ**).
 - [ ] **Green: golden bytes.** Commit the golden canonical byte strings under
   `fixtures/baseline-1-2/golden/` — one file per digested document — written once by
   a single sanctioned writer path, never rewritten by a test.
-- [ ] **Falsify.** Perturb one golden byte and prove `tc_1450_` fails naming the
+- [ ] **Falsify.** Perturb one golden byte and prove `tc_1650_` fails naming the
   document. Add a second axis to one adverse fixture and prove its one-axis diff
   check fails.
 
@@ -96,8 +96,8 @@ not a producer finding.
   axis with exactly one code, proven by a one-axis diff against the good fixture.
 - The published JSON Schema validates the good fixture and rejects every shape-level
   adverse fixture.
-- Committed goldens exist for every digested document, and TC-1450, TC-1451, TC-1453
-  and TC-1455 pass against them, each reporting the number it measured.
+- Committed goldens exist for every digested document, and TC-1650, TC-1651, TC-1653
+  and TC-1655 pass against them, each reporting the number it measured.
 - `make rust-build`, `make rust-test` and `cargo fmt --check` green apart from the
   two pre-existing reds.
 
@@ -114,6 +114,6 @@ not a producer finding.
 - This task is half of NFR-036's declared apparatus (NFR-036 Verification,
   FND-1756/FND-1767). The other half — the second architecture, the instrumented
   ambient-read run and the network namespace — is Task-150, and until it lands
-  TC-1448, TC-1452 and TC-1456 fail reporting that they did not run.
+  TC-1648, TC-1652 and TC-1656 fail reporting that they did not run.
 - Goldens are cut once, here. No earlier task commits one and no test rewrites one.
 - Unblocks: Task-150.

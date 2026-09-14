@@ -171,9 +171,9 @@ fn supplied() -> BTreeSet<&'static str> {
     BTreeSet::from([SOURCE_DOCUMENT])
 }
 
-/// Tracing: TC-1411
+/// Tracing: TC-1611
 #[test]
-fn tc_1411_a_component_record_carries_its_six_authored_members() {
+fn tc_1611_a_component_record_carries_its_six_authored_members() {
     let configuration = configuration();
     let component = component("ix://agent-ix/commerce/component/orders");
     component
@@ -206,14 +206,14 @@ fn tc_1411_a_component_record_carries_its_six_authored_members() {
     assert_eq!(component.inventory_membership.inventory_identity, INVENTORY);
 
     println!(
-        "TC-1411 measured: 1 component record, {} emitted members covering 6 authored classes — identity, namespaced revision, canonical digest selection, locus, ownership, inventory membership",
+        "TC-1611 measured: 1 component record, {} emitted members covering 6 authored classes — identity, namespaced revision, canonical digest selection, locus, ownership, inventory membership",
         emitted.len()
     );
 }
 
-/// Tracing: TC-1412
+/// Tracing: TC-1612
 #[test]
-fn tc_1412_an_endpoint_record_adds_its_four_own_members() {
+fn tc_1612_an_endpoint_record_adds_its_four_own_members() {
     let configuration = configuration();
     let endpoint = endpoint("ix://agent-ix/commerce/endpoint/orders-shipment-source");
     endpoint
@@ -248,14 +248,14 @@ fn tc_1412_an_endpoint_record_adds_its_four_own_members() {
     );
 
     println!(
-        "TC-1412 measured: 1 endpoint record, {} emitted members covering 6 shared authored classes plus owning component identity, type identity, role and multiplicity",
+        "TC-1612 measured: 1 endpoint record, {} emitted members covering 6 shared authored classes plus owning component identity, type identity, role and multiplicity",
         emitted.len()
     );
 }
 
-/// Tracing: TC-1413
+/// Tracing: TC-1613
 #[test]
-fn tc_1413_four_identities_sharing_one_display_name_stay_four_identities() {
+fn tc_1613_four_identities_sharing_one_display_name_stay_four_identities() {
     let configuration = configuration();
     let display_name = "orders";
     let repository = format!("ix://agent-ix/commerce/repository/{display_name}");
@@ -308,14 +308,14 @@ fn tc_1413_four_identities_sharing_one_display_name_stay_four_identities() {
     }
 
     println!(
-        "TC-1413 measured: 1 display name over {} distinct identities, and 3 reconstruction sources (path, package name, deployment name) none of which supplies the authored component identity",
+        "TC-1613 measured: 1 display name over {} distinct identities, and 3 reconstruction sources (path, package name, deployment name) none of which supplies the authored component identity",
         identities.len()
     );
 }
 
-/// Tracing: TC-1414
+/// Tracing: TC-1614
 #[test]
-fn tc_1414_an_absent_locus_and_an_absent_formal_revision_refuse() {
+fn tc_1614_an_absent_locus_and_an_absent_formal_revision_refuse() {
     let configuration = configuration();
     let inventory = inventory(InventoryCompleteness::Complete);
 
@@ -349,12 +349,12 @@ fn tc_1414_an_absent_locus_and_an_absent_formal_revision_refuse() {
         .expect_err("a native label is not a formal document revision");
     assert_eq!(third.code, REVISION_NAMESPACE_SUBSTITUTED);
 
-    println!("TC-1414 measured: 3 blocking locus refusals — absent locus, absent formal revision, native label substituted for it — each naming the offending record");
+    println!("TC-1614 measured: 3 blocking locus refusals — absent locus, absent formal revision, native label substituted for it — each naming the offending record");
 }
 
-/// Tracing: TC-1415
+/// Tracing: TC-1615
 #[test]
-fn tc_1415_a_closed_inventory_refuses_an_unlisted_member_and_an_incomplete_one_admits_it() {
+fn tc_1615_a_closed_inventory_refuses_an_unlisted_member_and_an_incomplete_one_admits_it() {
     let configuration = configuration();
     let unlisted = component("ix://agent-ix/commerce/component/payments");
 
@@ -390,12 +390,12 @@ fn tc_1415_a_closed_inventory_refuses_an_unlisted_member_and_an_incomplete_one_a
         INVENTORY_INCOMPLETE_UNKNOWN
     );
 
-    println!("TC-1415 measured: 1 component over 2 inventories — refused {INVENTORY_MEMBER_UNLISTED} under the closed one, admitted under the explicitly incomplete one carrying the retained unknown disposition — plus 1 minted-disposition refusal");
+    println!("TC-1615 measured: 1 component over 2 inventories — refused {INVENTORY_MEMBER_UNLISTED} under the closed one, admitted under the explicitly incomplete one carrying the retained unknown disposition — plus 1 minted-disposition refusal");
 }
 
-/// Tracing: TC-1416
+/// Tracing: TC-1616
 #[test]
-fn tc_1416_a_full_locus_is_admitted_and_an_unsupplied_locus_refuses() {
+fn tc_1616_a_full_locus_is_admitted_and_an_unsupplied_locus_refuses() {
     let configuration = configuration();
     let inventory = inventory(InventoryCompleteness::Complete);
     let declared = component("ix://agent-ix/commerce/component/orders");
@@ -453,7 +453,7 @@ fn tc_1416_a_full_locus_is_admitted_and_an_unsupplied_locus_refuses() {
     assert!(refusal.message.contains("no locus is synthesized"));
 
     println!(
-        "TC-1416 measured: 1 full locus admitted over {} ForeignLocus members and {} ArtifactRef members with 1 raw-byte digest string, and 1 unsupplied locus refused {COMPONENT_PROVENANCE_UNSUPPLIED} with no synthesized locus emitted",
+        "TC-1616 measured: 1 full locus admitted over {} ForeignLocus members and {} ArtifactRef members with 1 raw-byte digest string, and 1 unsupplied locus refused {COMPONENT_PROVENANCE_UNSUPPLIED} with no synthesized locus emitted",
         CONSUMER_FOREIGN_LOCUS_MEMBERS.len(),
         CONSUMER_ARTIFACT_REF_MEMBERS.len()
     );

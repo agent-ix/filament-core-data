@@ -173,9 +173,9 @@ fn relationship() -> RelationshipDeclaration {
     }
 }
 
-/// Tracing: TC-1417
+/// Tracing: TC-1617
 #[test]
-fn tc_1417_a_relationship_record_carries_every_authored_member() {
+fn tc_1617_a_relationship_record_carries_every_authored_member() {
     let endpoints = declared_endpoints();
     let index = EndpointDeclaration::index(&endpoints);
     let relationship = relationship();
@@ -224,14 +224,14 @@ fn tc_1417_a_relationship_record_carries_every_authored_member() {
     assert_eq!(triple.len(), 3, "the ownership triple is three identities");
 
     println!(
-        "TC-1417 measured: 1 relationship record over 9 authored members, 5 semantics members and an ownership triple of {} distinct identities",
+        "TC-1617 measured: 1 relationship record over 9 authored members, 5 semantics members and an ownership triple of {} distinct identities",
         triple.len()
     );
 }
 
-/// Tracing: TC-1418
+/// Tracing: TC-1618
 #[test]
-fn tc_1418_the_two_endpoint_records_stay_independent_members() {
+fn tc_1618_the_two_endpoint_records_stay_independent_members() {
     // A self-relationship: two separately declared endpoint records naming one
     // type identity. The second endpoint declares that type itself rather than
     // the relationship side restating a type its endpoint does not carry, which
@@ -265,12 +265,12 @@ fn tc_1418_the_two_endpoint_records_stay_independent_members() {
         relationship.target.multiplicity
     );
 
-    println!("TC-1418 measured: 2 endpoint records under 1 shared type identity retained 2 endpoint identities, 2 roles and 2 multiplicities");
+    println!("TC-1618 measured: 2 endpoint records under 1 shared type identity retained 2 endpoint identities, 2 roles and 2 multiplicities");
 }
 
-/// Tracing: TC-1419
+/// Tracing: TC-1619
 #[test]
-fn tc_1419_a_self_relationship_emits_two_independent_endpoint_records() {
+fn tc_1619_a_self_relationship_emits_two_independent_endpoint_records() {
     let self_type = "ix://agent-ix/commerce/type/Order";
     let endpoints = vec![
         declared_endpoint(SOURCE_ENDPOINT, self_type, "predecessor"),
@@ -296,14 +296,14 @@ fn tc_1419_a_self_relationship_emits_two_independent_endpoint_records() {
     assert_eq!(identities.len(), 2, "two endpoint identities are retained");
 
     println!(
-        "TC-1419 measured: 1 self-relationship over 1 type identity emitted {} independent endpoint records with 2 roles and 2 multiplicities",
+        "TC-1619 measured: 1 self-relationship over 1 type identity emitted {} independent endpoint records with 2 roles and 2 multiplicities",
         identities.len()
     );
 }
 
-/// Tracing: TC-1420
+/// Tracing: TC-1620
 #[test]
-fn tc_1420_absent_roles_multiplicities_and_collapsed_projections_refuse() {
+fn tc_1620_absent_roles_multiplicities_and_collapsed_projections_refuse() {
     let endpoints = declared_endpoints();
     let index = EndpointDeclaration::index(&endpoints);
     let configuration = configuration();
@@ -362,12 +362,12 @@ fn tc_1420_absent_roles_multiplicities_and_collapsed_projections_refuse() {
     assert_eq!(loss.source_multiplicity, relationship.source.multiplicity);
     assert_eq!(loss.target_multiplicity, relationship.target.multiplicity);
 
-    println!("TC-1420 measured: 4 blocking member refusals naming the relationship, and 1 refused projection emitting a named loss record carrying the relationship identity and both authored roles and multiplicities");
+    println!("TC-1620 measured: 4 blocking member refusals naming the relationship, and 1 refused projection emitting a named loss record carrying the relationship identity and both authored roles and multiplicities");
 }
 
-/// Tracing: TC-1421
+/// Tracing: TC-1621
 #[test]
-fn tc_1421_every_endpoint_join_goes_through_a_declared_endpoint_identity() {
+fn tc_1621_every_endpoint_join_goes_through_a_declared_endpoint_identity() {
     let endpoints = declared_endpoints();
     let index = EndpointDeclaration::index(&endpoints);
     let configuration = configuration();
@@ -407,14 +407,14 @@ fn tc_1421_every_endpoint_join_goes_through_a_declared_endpoint_identity() {
     );
 
     println!(
-        "TC-1421 measured: 2 endpoint joins resolved by identity against {} declared endpoints, and 1 unknown identity refused {RELATIONSHIP_ENDPOINT_UNKNOWN} naming the relationship and its vocabulary",
+        "TC-1621 measured: 2 endpoint joins resolved by identity against {} declared endpoints, and 1 unknown identity refused {RELATIONSHIP_ENDPOINT_UNKNOWN} naming the relationship and its vocabulary",
         index.len()
     );
 }
 
-/// Tracing: TC-1422
+/// Tracing: TC-1622
 #[test]
-fn tc_1422_a_relationship_identity_is_authored_and_names_no_population_member() {
+fn tc_1622_a_relationship_identity_is_authored_and_names_no_population_member() {
     let endpoints = declared_endpoints();
     let index = EndpointDeclaration::index(&endpoints);
     let relationship = relationship();
@@ -449,7 +449,7 @@ fn tc_1422_a_relationship_identity_is_authored_and_names_no_population_member() 
     }
 
     println!(
-        "TC-1422 measured: 3 reconstruction sources none of which supplies the authored relationship identity, and {} emitted member names of which 0 is a population member or a relationship instance",
+        "TC-1622 measured: 3 reconstruction sources none of which supplies the authored relationship identity, and {} emitted member names of which 0 is a population member or a relationship instance",
         keys.len()
     );
 }

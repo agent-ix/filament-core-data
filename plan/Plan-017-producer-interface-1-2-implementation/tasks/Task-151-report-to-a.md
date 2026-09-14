@@ -12,7 +12,7 @@ relationships:
     type: references
   - target: "ix://agent-ix/filament-core-data/US-016"
     type: references
-  - target: "ix://agent-ix/filament-core-data/TC-1437"
+  - target: "ix://agent-ix/filament-core-data/TC-1637"
     type: verifies
 ---
 # Task-151: report the static producer boundary to A, as static admission only
@@ -53,13 +53,13 @@ at `ix://agent-ix/quire-spec-language`, `src/protocol_artifact/wire.rs`, revisio
   plan**: they measure the #36 changed-path diff from base `3b75e01` and list this
   increment's paths as unpermitted, and issue #92 retires them. State that no task
   edited them and that they were not added to any permitted-path list.
-- [ ] **Green: the presentation claim.** `tc_1437_` (`Manual`/`Inspection`,
+- [ ] **Green: the presentation claim.** `tc_1637_` (`Manual`/`Inspection`,
   FR-117-AC-6 and AC-9): record that every member of an admitted static bundle is
   read without parsing prose, defaulting a member, or inferring a field; and that
   production of the bundle is recorded as **static admission only**, not as campaign
   acceptance of any assessment claim.
 - [ ] **Green: what A must not expect.** The assessment half — US-017,
-  FR-119..FR-126, NFR-037, TC-1457..TC-1499 — is designed and reviewed and **not
+  FR-119..FR-126, NFR-037, TC-1657..TC-1699 — is designed and reviewed and **not
   implemented**. A must not read a static admission as evidence of an assessment, and
   must not expect a population, snapshot, window, observation, progress record or
   closure from this interface; those remain later D and F campaign inputs. FR-126's
@@ -68,17 +68,17 @@ at `ix://agent-ix/quire-spec-language`, `src/protocol_artifact/wire.rs`, revisio
   Two upstream gaps stay open cross-repo items on A's side: a population document has
   no admissible consumer artifact kind (FND-1812) and no consumer vocabulary carries a
   `window` member (FND-1862).
-- [ ] **Green: the matrix.** Move TC-1400..TC-1456 off `🚧` in `spec/tests.md` as each
+- [ ] **Green: the matrix.** Move TC-1600..TC-1656 off `🚧` in `spec/tests.md` as each
   landed, confirm `quire coverage --scope . --json` binds every one of those rows, and
-  leave TC-1457..TC-1499 `🚧`.
+  leave TC-1657..TC-1699 `🚧`.
 
 ## Exit conditions
 
 - A has the member-for-member mapping, the unassigned-index list, the two carve-outs
   and the measured numbers.
-- TC-1437 is recorded, and the delivery is stated as static admission only.
-- Every TC-1400..TC-1456 row is bound under `quire coverage` and moved off `🚧`;
-  every TC-1457..TC-1499 row is still `🚧`.
+- TC-1637 is recorded, and the delivery is stated as static admission only.
+- Every TC-1600..TC-1656 row is bound under `quire coverage` and moved off `🚧`;
+  every TC-1657..TC-1699 row is still `🚧`.
 - `make rust-build`, `make rust-test`, `cargo fmt --check` green apart from the two
   pre-existing reds, and the repository's Rust review route
   (`agent-skills:rust-review` via `code-review`) run with its findings dispositioned.
@@ -86,7 +86,7 @@ at `ix://agent-ix/quire-spec-language`, `src/protocol_artifact/wire.rs`, revisio
 ## Deliverables
 
 - The report to A, and its recorded measured numbers
-- `spec/tests.md` rows TC-1400..TC-1456 moved off `🚧`
+- `spec/tests.md` rows TC-1600..TC-1656 moved off `🚧`
 - `plan/Plan-017-producer-interface-1-2-implementation/log.md` closing entry
 
 ## Notes

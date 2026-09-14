@@ -59,9 +59,9 @@ fn audit(path: &str, source: &str) -> Vec<CoercionSite> {
     sites
 }
 
-/// Tracing: TC-1454
+/// Tracing: TC-1654
 #[test]
-fn tc_1454_the_numeric_path_reaches_zero_binary_floating_point_coercion_sites() {
+fn tc_1654_the_numeric_path_reaches_zero_binary_floating_point_coercion_sites() {
     let mut sites = Vec::new();
     let mut lines = 0;
     for (path, source) in NUMERIC_PATH_POPULATION {
@@ -105,7 +105,7 @@ fn tc_1454_the_numeric_path_reaches_zero_binary_floating_point_coercion_sites() 
     assert!(planted_sites[0].text.contains("as f64"));
 
     println!(
-        "TC-1454 measured: {} files and {lines} lines of the declared numeric-path population, {} coercion sites (target 0, threshold 0), 1 pinned parser entry point compiled with arbitrary_precision, and {} site(s) measured on the planted scratch copy",
+        "TC-1654 measured: {} files and {lines} lines of the declared numeric-path population, {} coercion sites (target 0, threshold 0), 1 pinned parser entry point compiled with arbitrary_precision, and {} site(s) measured on the planted scratch copy",
         NUMERIC_PATH_POPULATION.len(),
         sites.len(),
         planted_sites.len()

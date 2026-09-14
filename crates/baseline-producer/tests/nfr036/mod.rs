@@ -18,7 +18,7 @@
 //!
 //! The population is the static half — one admitted static bundle and every
 //! document it digests — because that is the half Plan-017 implements and the
-//! half TC-1452 and TC-1456 name. The assessment half of NFR-036 is not
+//! half TC-1652 and TC-1656 name. The assessment half of NFR-036 is not
 //! measured here and is not claimed.
 //!
 //! The population, its declared order, its configuration-declared numeric limit

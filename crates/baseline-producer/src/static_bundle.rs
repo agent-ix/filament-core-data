@@ -33,7 +33,7 @@
 //! variable, no working directory, no clock, no network and starts no process
 //! (FR-117-CON-3, NFR-036-M-7).
 //!
-//! ## The member-set closure control (TC-1432, `Compile`)
+//! ## The member-set closure control (TC-1632, `Compile`)
 //!
 //! An assessment member is not a member of this type:
 //!
@@ -71,7 +71,7 @@
 //! }
 //! ```
 //!
-//! ## The unconstructibility control (TC-1435, `Compile`)
+//! ## The unconstructibility control (TC-1635, `Compile`)
 //!
 //! A struct literal of the admitted type does not compile, because it has no
 //! public member to initialize:

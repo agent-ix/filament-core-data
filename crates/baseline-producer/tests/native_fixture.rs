@@ -245,7 +245,7 @@ fn correspondence() -> ProducerNativeCorrespondence {
         native: NativeArtifactReference {
             identity: NATIVE_ARTIFACT.into(),
             revision: Revision::native("1"),
-            // The real digest of the committed bytes, recomputed in TC-1522.
+            // The real digest of the committed bytes, recomputed in TC-1722.
             raw_byte_digest: DigestSelection::native_bytes(NATIVE_RAW_DIGEST.to_owned()),
         },
         native_definition_closure: vec![NativeArtifactReference {
@@ -390,9 +390,9 @@ fn bundle() -> StaticProducerBundle {
     bundle
 }
 
-/// Tracing: TC-1522
+/// Tracing: TC-1722
 #[test]
-fn tc_1522_the_declared_native_digest_recomputes_from_the_committed_bytes() {
+fn tc_1722_the_declared_native_digest_recomputes_from_the_committed_bytes() {
     let recomputed = format!("sha256:{:x}", Sha256::digest(NATIVE_MODEL_BYTES));
     assert_eq!(
         recomputed, NATIVE_RAW_DIGEST,
@@ -413,15 +413,15 @@ fn tc_1522_the_declared_native_digest_recomputes_from_the_committed_bytes() {
     );
 
     println!(
-        "TC-1522 measured: 1 native artifact of {} bytes, digest recomputed and equal in domain {}",
+        "TC-1722 measured: 1 native artifact of {} bytes, digest recomputed and equal in domain {}",
         NATIVE_MODEL_BYTES.len(),
         declared.domain
     );
 }
 
-/// Tracing: TC-1523
+/// Tracing: TC-1723
 #[test]
-fn tc_1523_a_canonical_json_rendering_yields_a_different_digest() {
+fn tc_1723_a_canonical_json_rendering_yields_a_different_digest() {
     let parsed: Value = serde_json::from_slice(NATIVE_MODEL_BYTES).expect("the artifact parses");
     let recanonicalized = serde_json::to_vec(&parsed).expect("the artifact reserializes");
     let raw = format!("sha256:{:x}", Sha256::digest(NATIVE_MODEL_BYTES));
@@ -433,15 +433,15 @@ fn tc_1523_a_canonical_json_rendering_yields_a_different_digest() {
     assert_eq!(raw, NATIVE_RAW_DIGEST, "the declared digest is the raw one");
 
     println!(
-        "TC-1523 measured: 2 digests over 1 artifact, raw {} bytes against reserialized {} bytes, unequal",
+        "TC-1723 measured: 2 digests over 1 artifact, raw {} bytes against reserialized {} bytes, unequal",
         NATIVE_MODEL_BYTES.len(),
         recanonicalized.len()
     );
 }
 
-/// Tracing: TC-1524
+/// Tracing: TC-1724
 #[test]
-fn tc_1524_every_endpoint_type_resolves_to_the_native_export_table() {
+fn tc_1724_every_endpoint_type_resolves_to_the_native_export_table() {
     let admitted = bundle()
         .admit()
         .expect("the native-backed bundle is admitted");
@@ -467,14 +467,14 @@ fn tc_1524_every_endpoint_type_resolves_to_the_native_export_table() {
     assert_eq!(resolved, 2, "both endpoints resolved");
 
     println!(
-        "TC-1524 measured: {resolved} endpoint type identities resolved against {} native export-table entries",
+        "TC-1724 measured: {resolved} endpoint type identities resolved against {} native export-table entries",
         table.len()
     );
 }
 
-/// Tracing: TC-1525
+/// Tracing: TC-1725
 #[test]
-fn tc_1525_the_relationship_resolves_two_distinct_native_types() {
+fn tc_1725_the_relationship_resolves_two_distinct_native_types() {
     let admitted = bundle()
         .admit()
         .expect("the native-backed bundle is admitted");
@@ -501,15 +501,15 @@ fn tc_1525_the_relationship_resolves_two_distinct_native_types() {
     assert_eq!(target.kind, ExportKind::Record);
 
     println!(
-        "TC-1525 measured: 1 relationship over 2 distinct native type exports, {} and {}",
+        "TC-1725 measured: 1 relationship over 2 distinct native type exports, {} and {}",
         source.kind.as_str(),
         target.kind.as_str()
     );
 }
 
-/// Tracing: TC-1526
+/// Tracing: TC-1726
 #[test]
-fn tc_1526_an_altered_native_digest_refuses() {
+fn tc_1726_an_altered_native_digest_refuses() {
     let mut altered = bundle();
     // One character of the declared native raw-byte digest, changed. The bundle
     // was sealed over the original, so the change is caught at admission rather
@@ -533,15 +533,15 @@ fn tc_1526_an_altered_native_digest_refuses() {
     );
 
     println!(
-        "TC-1526 measured: 1 altered digest character, refused {}, over {} committed bytes",
+        "TC-1726 measured: 1 altered digest character, refused {}, over {} committed bytes",
         refusal.code,
         NATIVE_MODEL_BYTES.len()
     );
 }
 
-/// Tracing: TC-1527
+/// Tracing: TC-1727
 #[test]
-fn tc_1527_the_native_table_carries_kinds_the_static_vocabulary_cannot_spell() {
+fn tc_1727_the_native_table_carries_kinds_the_static_vocabulary_cannot_spell() {
     let table = native_exports();
     let spellable: BTreeSet<&str> = ExportKind::EMITTED
         .iter()
@@ -565,7 +565,7 @@ fn tc_1527_the_native_table_carries_kinds_the_static_vocabulary_cannot_spell() {
     );
 
     println!(
-        "TC-1527 measured: {} native export kinds, {} unspellable in the static vocabulary: {:?}",
+        "TC-1727 measured: {} native export kinds, {} unspellable in the static vocabulary: {:?}",
         table
             .iter()
             .map(|export| export.kind.as_str())
@@ -576,9 +576,9 @@ fn tc_1527_the_native_table_carries_kinds_the_static_vocabulary_cannot_spell() {
     );
 }
 
-/// Tracing: TC-1528
+/// Tracing: TC-1728
 #[test]
-fn tc_1528_no_fixture_digest_is_placeholder_fill() {
+fn tc_1728_no_fixture_digest_is_placeholder_fill() {
     let admitted = bundle()
         .admit()
         .expect("the native-backed bundle is admitted");
@@ -591,14 +591,14 @@ fn tc_1528_no_fixture_digest_is_placeholder_fill() {
     );
 
     println!(
-        "TC-1528 measured: 1 native digest over {} distinct hexadecimal characters",
+        "TC-1728 measured: 1 native digest over {} distinct hexadecimal characters",
         distinct.len()
     );
 }
 
-/// Tracing: TC-1529
+/// Tracing: TC-1729
 #[test]
-fn tc_1529_the_admission_is_stable_over_two_runs() {
+fn tc_1729_the_admission_is_stable_over_two_runs() {
     let first = bundle().admit().expect("the first admission succeeds");
     let second = bundle().admit().expect("the second admission succeeds");
     assert_eq!(
@@ -614,7 +614,7 @@ fn tc_1529_the_admission_is_stable_over_two_runs() {
     assert!(!refusal.is_empty(), "the mismatch code is named");
 
     println!(
-        "TC-1529 measured: 2 admissions, 1 identical document digest, {} resolved endpoint types each",
+        "TC-1729 measured: 2 admissions, 1 identical document digest, {} resolved endpoint types each",
         first.endpoint_type_exports().len()
     );
 }

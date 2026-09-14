@@ -12,27 +12,27 @@ relationships:
     type: references
   - target: "ix://agent-ix/filament-core-data/FR-113"
     type: references
-  - target: "ix://agent-ix/filament-core-data/TC-1400"
+  - target: "ix://agent-ix/filament-core-data/TC-1600"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1401"
+  - target: "ix://agent-ix/filament-core-data/TC-1601"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1402"
+  - target: "ix://agent-ix/filament-core-data/TC-1602"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1403"
+  - target: "ix://agent-ix/filament-core-data/TC-1603"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1404"
+  - target: "ix://agent-ix/filament-core-data/TC-1604"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1405"
+  - target: "ix://agent-ix/filament-core-data/TC-1605"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1406"
+  - target: "ix://agent-ix/filament-core-data/TC-1606"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1407"
+  - target: "ix://agent-ix/filament-core-data/TC-1607"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1408"
+  - target: "ix://agent-ix/filament-core-data/TC-1608"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1409"
+  - target: "ix://agent-ix/filament-core-data/TC-1609"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1410"
+  - target: "ix://agent-ix/filament-core-data/TC-1610"
     type: verifies
 ---
 # Task-144: FR-112 versioned digest selections and FR-113 namespaced revisions
@@ -55,38 +55,38 @@ neither refuses (FR-112-CON-4, FR-113-CON-4).
 
 ## Subtasks
 
-- [ ] **Red: digest shape.** `tests/digest.rs`: `tc_1400_` (a canonical-object
+- [ ] **Red: digest shape.** `tests/digest.rs`: `tc_1600_` (a canonical-object
   digest and a native raw-byte digest each emitted as the four-member selection
   whose members map member-for-member onto the pinned consumer `SelectedDigest`,
   with `version` a separate authored member that the domain spelling never
-  supplies), `tc_1405_` (property: one producer object serialized for
+  supplies), `tc_1605_` (property: one producer object serialized for
   transmission under two different wire member orders yields one identical digest
   `value`, because the digest input is the FR-118 canonical byte string of
   Task-143 and never the producer's own serializer).
-- [ ] **Red: digest refusals.** `tc_1401_` (a canonical-object digest offered
+- [ ] **Red: digest refusals.** `tc_1601_` (a canonical-object digest offered
   under `quire-native-bytes-1` refuses and a native raw-byte digest offered under
   `filament-canonical-json-1` refuses — neither is revalidated in the other
-  domain nor read as a cache miss), `tc_1402_` (a recomputed value differing from
+  domain nor read as a cache miss), `tc_1602_` (a recomputed value differing from
   the declared value refuses blocking, not as a warning, a cache miss, or a
-  refetch invitation), `tc_1403_` (absent `version`; a domain or version outside
+  refetch invitation), `tc_1603_` (absent `version`; a domain or version outside
   the closed admissible vocabulary; an in-vocabulary pair the configuration
   document does not select; and a bare hash string offered in place of a
-  selection — each refuses and binds nothing), `tc_1404_` (a source-provenance
+  selection — each refuses and binds nothing), `tc_1604_` (a source-provenance
   locus carrying `ArtifactRef.digest` as one raw-byte string and
   `NativeSource.revision` as an authority label is admitted, and neither refuses
   as a malformed digest selection).
-- [ ] **Red: revisions.** `tests/revision.rs`: `tc_1406_` (producer model,
+- [ ] **Red: revisions.** `tests/revision.rs`: `tc_1606_` (producer model,
   component, endpoint and relationship revisions under
   `filament-core-data/producer-object-revision-1`, native artifact and definition
   revisions under `quire-native/definition-revision-1`, both members mapping onto
   the pinned consumer `Revision`, and no third namespace emitted anywhere),
-  `tc_1407_` (a native definition revision under the producer-object namespace
+  `tc_1607_` (a native definition revision under the producer-object namespace
   refuses; a producer-object revision under the native definition namespace
-  refuses), `tc_1408_` (a bare revision string offered in place of a two-member
-  revision the producer authors refuses and binds nothing), `tc_1409_` (a
+  refuses), `tc_1608_` (a bare revision string offered in place of a two-member
+  revision the producer authors refuses and binds nothing), `tc_1609_` (a
   namespace outside the closed vocabulary refuses; one inside it that the
   configuration document does not declare as a selection refuses — two separate
-  refusals, per FND-1723), `tc_1410_` (two revisions sharing one `value` spelling
+  refusals, per FND-1723), `tc_1610_` (two revisions sharing one `value` spelling
   under the two declared namespaces stay two distinct revisions and never merge;
   a locus carrying the consumer-owned `NativeSource.revision` label and
   `ArtifactRef.digest` string is admitted).
@@ -115,15 +115,15 @@ neither refuses (FR-112-CON-4, FR-113-CON-4).
   `DigestTriple` is removed, not aliased: a deprecated-shape fallback is exactly
   what FR-112 forbids.
 - [ ] **Falsify.** Derive `version` from the domain spelling in a scratch copy
-  and prove `tc_1400_` fails (FR-112-CON-3). Default an absent namespace in a
-  scratch copy and prove `tc_1408_` fails.
+  and prove `tc_1600_` fails (FR-112-CON-3). Default an absent namespace in a
+  scratch copy and prove `tc_1608_` fails.
 
 ## Exit conditions
 
 - Every producer-authored digest is four members and every producer-authored
   revision is two members; no bare string and no three-member triple survives in
   `src/` or in any fixture.
-- TC-1400..TC-1410 are traced executable controls, with the two carve-outs
+- TC-1600..TC-1610 are traced executable controls, with the two carve-outs
   admitted rather than refused.
 - Plan-016's TC-1373..TC-1381 controls still pass over the new shapes, and
   `fixtures/baseline-1-2/relationship-population-a.json` still loads.

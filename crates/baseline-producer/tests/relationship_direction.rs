@@ -187,9 +187,9 @@ fn good_document() -> Value {
         .expect("the good fixture is a JSON document")
 }
 
-/// Tracing: TC-1513
+/// Tracing: TC-1713
 #[test]
-fn tc_1513_the_direction_vocabulary_is_exactly_four_admitted_values() {
+fn tc_1713_the_direction_vocabulary_is_exactly_four_admitted_values() {
     assert_eq!(
         RelationshipDirection::ADMITTED.len(),
         4,
@@ -223,16 +223,16 @@ fn tc_1513_the_direction_vocabulary_is_exactly_four_admitted_values() {
     );
 
     println!(
-        "TC-1513 measured: {} admitted direction values over {} distinct wire spellings and {} distinct typed values",
+        "TC-1713 measured: {} admitted direction values over {} distinct wire spellings and {} distinct typed values",
         RelationshipDirection::ADMITTED.len(),
         distinct_spellings.len(),
         distinct_values.len()
     );
 }
 
-/// Tracing: TC-1514
+/// Tracing: TC-1714
 #[test]
-fn tc_1514_no_direction_permutes_the_source_and_target_members() {
+fn tc_1714_no_direction_permutes_the_source_and_target_members() {
     let endpoints = declared_endpoints();
     let index = EndpointDeclaration::index(&endpoints);
     let configuration = configuration();
@@ -284,15 +284,15 @@ fn tc_1514_no_direction_permutes_the_source_and_target_members() {
     );
 
     println!(
-        "TC-1514 measured: {} member identities over {} directions x 2 members, 0 permutations of the source and target members",
+        "TC-1714 measured: {} member identities over {} directions x 2 members, 0 permutations of the source and target members",
         member_identities,
         RelationshipDirection::ADMITTED.len()
     );
 }
 
-/// Tracing: TC-1515
+/// Tracing: TC-1715
 #[test]
-fn tc_1515_each_direction_admits_exactly_its_stated_traversals() {
+fn tc_1715_each_direction_admits_exactly_its_stated_traversals() {
     let expected: [(RelationshipDirection, bool, bool, bool); 4] = [
         (RelationshipDirection::SourceToTarget, true, false, true),
         (RelationshipDirection::TargetToSource, false, true, true),
@@ -345,13 +345,13 @@ fn tc_1515_each_direction_admits_exactly_its_stated_traversals() {
     );
 
     println!(
-        "TC-1515 measured: {predicates} traversal predicates over a 4 x 2 matrix, with {unoriented} of 4 values unoriented"
+        "TC-1715 measured: {predicates} traversal predicates over a 4 x 2 matrix, with {unoriented} of 4 values unoriented"
     );
 }
 
-/// Tracing: TC-1516
+/// Tracing: TC-1716
 #[test]
-fn tc_1516_each_direction_round_trips_through_its_exact_wire_spelling() {
+fn tc_1716_each_direction_round_trips_through_its_exact_wire_spelling() {
     let mut round_trips = 0;
     for (direction, spelling) in RelationshipDirection::ADMITTED.iter().zip(SPELLINGS) {
         let serialized = serde_json::to_value(direction).expect("a direction serializes");
@@ -370,12 +370,12 @@ fn tc_1516_each_direction_round_trips_through_its_exact_wire_spelling() {
 
     assert_eq!(round_trips, 4, "all four values round tripped");
 
-    println!("TC-1516 measured: {round_trips} direction values round tripped through their exact kebab-case wire spellings");
+    println!("TC-1716 measured: {round_trips} direction values round tripped through their exact kebab-case wire spellings");
 }
 
-/// Tracing: TC-1517
+/// Tracing: TC-1717
 #[test]
-fn tc_1517_a_direction_outside_the_four_is_refused_at_the_admission_seam() {
+fn tc_1717_a_direction_outside_the_four_is_refused_at_the_admission_seam() {
     // The committed good fixture is admissible as authored.
     StaticProducerBundle::admit_json(&fixture_bytes(GOOD_FIXTURE))
         .expect("the good fixture is admitted");
@@ -417,12 +417,12 @@ fn tc_1517_a_direction_outside_the_four_is_refused_at_the_admission_seam() {
 
     assert_eq!(refused, 3, "every out-of-vocabulary spelling was refused");
 
-    println!("TC-1517 measured: {refused} out-of-vocabulary direction spellings, each refused {INVALID_PRODUCER_DOCUMENT} at the admission seam and each yielding 0 admitted bundles");
+    println!("TC-1717 measured: {refused} out-of-vocabulary direction spellings, each refused {INVALID_PRODUCER_DOCUMENT} at the admission seam and each yielding 0 admitted bundles");
 }
 
-/// Tracing: TC-1518
+/// Tracing: TC-1718
 #[test]
-fn tc_1518_a_relationship_carrying_no_direction_member_is_refused() {
+fn tc_1718_a_relationship_carrying_no_direction_member_is_refused() {
     let mut document = good_document();
     let semantics = document["relationships"][0]["semantics"]
         .as_object_mut()
@@ -460,15 +460,15 @@ fn tc_1518_a_relationship_carrying_no_direction_member_is_refused() {
         );
     }
 
-    println!("TC-1518 measured: 1 relationship record carrying no direction member, refused {INVALID_PRODUCER_DOCUMENT}, 0 of 4 values defaulted in and 0 admitted bundles");
+    println!("TC-1718 measured: 1 relationship record carrying no direction member, refused {INVALID_PRODUCER_DOCUMENT}, 0 of 4 values defaulted in and 0 admitted bundles");
 }
 
-/// One named relationship member and the variation TC-1519 applies to it.
+/// One named relationship member and the variation TC-1719 applies to it.
 type Mutation = (&'static str, fn(&mut RelationshipDeclaration));
 
-/// Tracing: TC-1519
+/// Tracing: TC-1719
 #[test]
-fn tc_1519_the_direction_is_independent_of_every_other_relationship_member() {
+fn tc_1719_the_direction_is_independent_of_every_other_relationship_member() {
     let endpoints = declared_endpoints();
     let index = EndpointDeclaration::index(&endpoints);
     let configuration = configuration();
@@ -538,12 +538,12 @@ fn tc_1519_the_direction_is_independent_of_every_other_relationship_member() {
 
     assert_eq!(varied, 8, "eight members were varied");
 
-    println!("TC-1519 measured: {varied} varied relationship members — category, lifecycle, ownership, composite, 2 roles and 2 multiplicities — with the direction unchanged in all {varied}");
+    println!("TC-1719 measured: {varied} varied relationship members — category, lifecycle, ownership, composite, 2 roles and 2 multiplicities — with the direction unchanged in all {varied}");
 }
 
-/// Tracing: TC-1520
+/// Tracing: TC-1720
 #[test]
-fn tc_1520_a_self_relationship_retains_two_endpoint_records_under_every_direction() {
+fn tc_1720_a_self_relationship_retains_two_endpoint_records_under_every_direction() {
     // Both ends join declared endpoints that themselves declare the one type
     // identity: a relationship end's typeIdentity must equal its joined
     // endpoint's (FR-127-CON-7), so the self-relationship needs a second
@@ -606,14 +606,14 @@ fn tc_1520_a_self_relationship_retains_two_endpoint_records_under_every_directio
     );
 
     println!(
-        "TC-1520 measured: {retained_records} retained endpoint records over {} directions x 2 members of 1 self-relationship naming 1 type identity",
+        "TC-1720 measured: {retained_records} retained endpoint records over {} directions x 2 members of 1 self-relationship naming 1 type identity",
         RelationshipDirection::ADMITTED.len()
     );
 }
 
-/// Tracing: TC-1521
+/// Tracing: TC-1721
 #[test]
-fn tc_1521_the_direction_is_a_copyable_orderable_hashable_key() {
+fn tc_1721_the_direction_is_a_copyable_orderable_hashable_key() {
     // Copy: the value is used after being passed by value.
     let direction = RelationshipDirection::Bidirectional;
     let copied = direction;
@@ -650,7 +650,7 @@ fn tc_1521_the_direction_is_a_copyable_orderable_hashable_key() {
     assert_eq!(hashed.len(), 4, "four values hash to four distinct members");
 
     println!(
-        "TC-1521 measured: {} direction values sorted stably into 1 declared order and keyed {} BTreeMap entries and {} HashSet members",
+        "TC-1721 measured: {} direction values sorted stably into 1 declared order and keyed {} BTreeMap entries and {} HashSet members",
         ordered.len(),
         keyed.len(),
         hashed.len()

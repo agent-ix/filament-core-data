@@ -2,9 +2,9 @@
 // Copyright (C) 2026 Agent-IX
 
 //! The NFR-036 byte-exactness controls Plan-017 Task-149 owns: the committed
-//! goldens (TC-1450), the declared insertion-order permutation set (TC-1451), the
-//! varied locale, environment and working directory (TC-1453), and the per-array
-//! semantic-order comparison with its permuted paired run (TC-1455).
+//! goldens (TC-1650), the declared insertion-order permutation set (TC-1651), the
+//! varied locale, environment and working directory (TC-1653), and the per-array
+//! semantic-order comparison with its permuted paired run (TC-1655).
 //!
 //! The population is **declared**, not discovered: the digested documents of the
 //! admitted fixture bundle are listed in
@@ -125,16 +125,16 @@ fn canonical_bytes_in_child(varied: bool) -> BTreeMap<String, String> {
 
 /// The two-process emitter. Ignored: it is a run, not a measurement.
 #[test]
-#[ignore = "the two-process and varied-environment emitter, spawned by TC-1450 and TC-1453"]
+#[ignore = "the two-process and varied-environment emitter, spawned by TC-1650 and TC-1653"]
 fn emit_canonical_bytes() {
     for (name, bytes) in canonical_bytes_in_process() {
         println!("{EMITTED}{name}\t{bytes}");
     }
 }
 
-/// Tracing: TC-1450
+/// Tracing: TC-1650
 #[test]
-fn tc_1450_every_digested_document_reproduces_its_golden_across_runs_and_processes() {
+fn tc_1650_every_digested_document_reproduces_its_golden_across_runs_and_processes() {
     let goldens = committed_goldens();
     assert!(
         !goldens.is_empty(),
@@ -180,7 +180,7 @@ fn tc_1450_every_digested_document_reproduces_its_golden_across_runs_and_process
     }
 
     println!(
-        "TC-1450 measured: {} digested documents, {} byte strings compared across 2 runs in 1 process and 2 runs in 2 separate processes against {} committed goldens, {} digests recomputed, 0 differences",
+        "TC-1650 measured: {} digested documents, {} byte strings compared across 2 runs in 1 process and 2 runs in 2 separate processes against {} committed goldens, {} digests recomputed, 0 differences",
         goldens.len(),
         goldens.len() * 4,
         goldens.len(),
@@ -188,9 +188,9 @@ fn tc_1450_every_digested_document_reproduces_its_golden_across_runs_and_process
     );
 }
 
-/// Tracing: TC-1453
+/// Tracing: TC-1653
 #[test]
-fn tc_1453_every_digested_document_reproduces_its_golden_under_a_changed_environment() {
+fn tc_1653_every_digested_document_reproduces_its_golden_under_a_changed_environment() {
     let goldens = committed_goldens();
     let varied = canonical_bytes_in_child(true);
     for (name, golden) in &goldens {
@@ -203,14 +203,14 @@ fn tc_1453_every_digested_document_reproduces_its_golden_under_a_changed_environ
         );
     }
     println!(
-        "TC-1453 measured: {} digested documents compared against the same committed goldens under 1 changed locale, 6 changed environment variables and 1 changed working directory, 0 differences",
+        "TC-1653 measured: {} digested documents compared against the same committed goldens under 1 changed locale, 6 changed environment variables and 1 changed working directory, 0 differences",
         goldens.len()
     );
 }
 
-/// Tracing: TC-1451
+/// Tracing: TC-1651
 #[test]
-fn tc_1451_no_declared_insertion_order_reaches_a_canonical_byte_or_a_digest() {
+fn tc_1651_no_declared_insertion_order_reaches_a_canonical_byte_or_a_digest() {
     let bundle = admitted_good_fixture();
     let policy = fixture_policy();
     let declarations = array_declarations();
@@ -258,7 +258,7 @@ fn tc_1451_no_declared_insertion_order_reaches_a_canonical_byte_or_a_digest() {
     }
 
     println!(
-        "TC-1451 measured: {} declared permutations over {} digested documents = {} paired runs, {} set arrays of more than one member permuted, 1 distinct byte string and 1 distinct digest per document",
+        "TC-1651 measured: {} declared permutations over {} digested documents = {} paired runs, {} set arrays of more than one member permuted, 1 distinct byte string and 1 distinct digest per document",
         permutations.len(),
         goldens.len(),
         pairs,
@@ -266,9 +266,9 @@ fn tc_1451_no_declared_insertion_order_reaches_a_canonical_byte_or_a_digest() {
     );
 }
 
-/// Tracing: TC-1455
+/// Tracing: TC-1655
 #[test]
-fn tc_1455_every_semantic_order_array_is_emitted_in_the_declared_order() {
+fn tc_1655_every_semantic_order_array_is_emitted_in_the_declared_order() {
     let bundle = admitted_good_fixture();
     let policy = fixture_policy();
     let declarations = array_declarations();
@@ -333,7 +333,7 @@ fn tc_1455_every_semantic_order_array_is_emitted_in_the_declared_order() {
 
     assert!(measured > 0, "the fixture carries semantic-order arrays");
     println!(
-        "TC-1455 measured: {measured} semantic-order arrays compared per array against the producer-declared order, {paired_runs} permuted paired runs whose digest differed, {single_member} single-member arrays with no permutation to run, 0 arrays emitted out of order"
+        "TC-1655 measured: {measured} semantic-order arrays compared per array against the producer-declared order, {paired_runs} permuted paired runs whose digest differed, {single_member} single-member arrays with no permutation to run, 0 arrays emitted out of order"
     );
 }
 

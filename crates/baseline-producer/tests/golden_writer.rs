@@ -55,7 +55,7 @@ const AUTHORITY: &str = "ix://agent-ix/commerce/model-authority/primary";
 const ORDER_SOURCE: &str = "ix://agent-ix/commerce/source/order-declarations";
 const SHIPMENT_SOURCE: &str = "ix://agent-ix/commerce/source/shipment-declarations";
 
-/// The display-name collision quartet TC-1413 reads: one display name `orders`
+/// The display-name collision quartet TC-1613 reads: one display name `orders`
 /// carried by a repository, a component, a role and an endpoint, which stay four
 /// distinct identities (FR-114-CON-1, EC-170).
 const REPOSITORY_ORDERS: &str = "ix://agent-ix/commerce/repository/orders";
@@ -694,7 +694,7 @@ fn declared_documents(bundle: &Value) -> Vec<(String, Vec<String>)> {
     declared
 }
 
-/// The declared insertion-order permutation set of TC-1451.
+/// The declared insertion-order permutation set of TC-1651.
 fn permutation_set() -> Vec<DeclaredPermutation> {
     [
         ("declared-order", "declared", "declared", 0),

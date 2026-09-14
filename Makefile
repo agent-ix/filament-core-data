@@ -482,7 +482,7 @@ NFR036_SECOND_ARCHITECTURE := aarch64-unknown-linux-gnu
 NFR036_SECOND_LINKER ?= aarch64-linux-gnu-gcc
 NFR036_SECOND_RUNNER ?= qemu-aarch64-static
 export NFR036_RECORD_DIR ?= $(CARGO_TARGET_DIR)/nfr-036-agreement
-BASELINE_AMBIENT_TEST := tc_1456_the_instrumented_offline_run_in_a_network_namespace_records_zero_ambient_reads
+BASELINE_AMBIENT_TEST := tc_1656_the_instrumented_offline_run_in_a_network_namespace_records_zero_ambient_reads
 
 .PHONY: baseline-producer-record
 baseline-producer-record: rust-toolchain-check

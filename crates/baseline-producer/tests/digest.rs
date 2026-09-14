@@ -95,9 +95,9 @@ fn wire_orders(entries: &[(&str, Value)]) -> Vec<String> {
     out
 }
 
-/// Tracing: TC-1400
+/// Tracing: TC-1600
 #[test]
-fn tc_1400_every_authored_digest_is_the_four_member_selection() {
+fn tc_1600_every_authored_digest_is_the_four_member_selection() {
     let canonical = canonical_digest(
         &json!({"modelIdentity": "ix://agent-ix/commerce/model/order-1-2"}),
         &policy(),
@@ -139,15 +139,15 @@ fn tc_1400_every_authored_digest_is_the_four_member_selection() {
     );
 
     println!(
-        "TC-1400 measured: 2 digest classes, {} members each, matching the {} pinned consumer SelectedDigest members, and 1 authored version member no domain spelling supplies",
+        "TC-1600 measured: 2 digest classes, {} members each, matching the {} pinned consumer SelectedDigest members, and 1 authored version member no domain spelling supplies",
         members(&canonical).len(),
         CONSUMER_SELECTED_DIGEST_MEMBERS.len()
     );
 }
 
-/// Tracing: TC-1401
+/// Tracing: TC-1601
 #[test]
-fn tc_1401_a_digest_offered_in_the_other_domain_refuses() {
+fn tc_1601_a_digest_offered_in_the_other_domain_refuses() {
     let canonical = canonical_digest(
         &json!({"x": ProducerDecimal::new("1.5").expect("lexeme")}),
         &policy(),
@@ -173,12 +173,12 @@ fn tc_1401_a_digest_offered_in_the_other_domain_refuses() {
     assert_eq!(canonical.value, native.value);
     assert_ne!(canonical, native);
 
-    println!("TC-1401 measured: 2 substitution directions, both refused {DIGEST_DOMAIN_SUBSTITUTED}, over 1 coinciding hash text");
+    println!("TC-1601 measured: 2 substitution directions, both refused {DIGEST_DOMAIN_SUBSTITUTED}, over 1 coinciding hash text");
 }
 
-/// Tracing: TC-1402
+/// Tracing: TC-1602
 #[test]
-fn tc_1402_a_recomputed_value_differing_from_the_declared_value_refuses() {
+fn tc_1602_a_recomputed_value_differing_from_the_declared_value_refuses() {
     let document = json!({"modelIdentity": "ix://agent-ix/commerce/model/order-1-2"});
     let declared = canonical_digest(&document, &policy()).expect("a digest computes");
     let recomputed = canonical_digest(
@@ -197,12 +197,12 @@ fn tc_1402_a_recomputed_value_differing_from_the_declared_value_refuses() {
     assert!(refusal.message.contains(&declared.value));
     assert!(refusal.message.contains(&recomputed.value));
 
-    println!("TC-1402 measured: 1 agreeing recomputation admitted, 1 differing recomputation refused {DIGEST_MISMATCH} blocking, naming both values");
+    println!("TC-1602 measured: 1 agreeing recomputation admitted, 1 differing recomputation refused {DIGEST_MISMATCH} blocking, naming both values");
 }
 
-/// Tracing: TC-1403
+/// Tracing: TC-1603
 #[test]
-fn tc_1403_absent_unknown_unselected_and_bare_digests_refuse() {
+fn tc_1603_absent_unknown_unselected_and_bare_digests_refuse() {
     let configuration = configuration();
 
     // An absent `version` member on the wire.
@@ -268,12 +268,12 @@ fn tc_1403_absent_unknown_unselected_and_bare_digests_refuse() {
         DIGEST_VALUE_MALFORMED
     );
 
-    println!("TC-1403 measured: 5 refusals over 4 axes — absent version, unknown domain, unknown version, unselected in-vocabulary pair, bare hash — each binding nothing");
+    println!("TC-1603 measured: 5 refusals over 4 axes — absent version, unknown domain, unknown version, unselected in-vocabulary pair, bare hash — each binding nothing");
 }
 
-/// Tracing: TC-1404
+/// Tracing: TC-1604
 #[test]
-fn tc_1404_the_consumer_owned_locus_members_are_admitted() {
+fn tc_1604_the_consumer_owned_locus_members_are_admitted() {
     // `ArtifactRef.digest` is one raw-byte digest string, and
     // `NativeSource.revision` is an editable authority label. Neither is a
     // producer-authored selection and neither refuses (FR-112-CON-4,
@@ -304,12 +304,12 @@ fn tc_1404_the_consumer_owned_locus_members_are_admitted() {
         agent_ix_baseline_producer::refusal::REVISION_NAMESPACE_ABSENT
     );
 
-    println!("TC-1404 measured: 2 consumer-owned locus members admitted (1 raw-byte digest string, 1 editable authority label), and 2 producer-authored refusals over the same text");
+    println!("TC-1604 measured: 2 consumer-owned locus members admitted (1 raw-byte digest string, 1 editable authority label), and 2 producer-authored refusals over the same text");
 }
 
-/// Tracing: TC-1405
+/// Tracing: TC-1605
 #[test]
-fn tc_1405_one_object_under_every_wire_member_order_yields_one_digest_value() {
+fn tc_1605_one_object_under_every_wire_member_order_yields_one_digest_value() {
     let entries = [
         (
             "modelIdentity",
@@ -355,7 +355,7 @@ fn tc_1405_one_object_under_every_wire_member_order_yields_one_digest_value() {
     assert_eq!(ADMISSIBLE_DIGEST_SELECTIONS.len(), 2);
 
     println!(
-        "TC-1405 measured: {} transmitted member orders of 1 producer object yielded {} distinct digest value(s)",
+        "TC-1605 measured: {} transmitted member orders of 1 producer object yielded {} distinct digest value(s)",
         orders.len(),
         digests.len()
     );

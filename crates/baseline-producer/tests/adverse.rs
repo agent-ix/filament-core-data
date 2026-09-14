@@ -198,9 +198,9 @@ fn measure(index: usize) -> (Refusal, Vec<String>) {
     (refusal, changed)
 }
 
-/// Tracing: TC-1431
+/// Tracing: TC-1631
 #[test]
-fn tc_1431_the_good_static_bundle_fixture_is_admitted_from_its_wire_form() {
+fn tc_1631_the_good_static_bundle_fixture_is_admitted_from_its_wire_form() {
     let admitted = StaticProducerBundle::admit_json(&fixture_bytes(GOOD_FIXTURE))
         .expect("the committed static bundle fixture is admitted");
 
@@ -258,7 +258,7 @@ fn tc_1431_the_good_static_bundle_fixture_is_admitted_from_its_wire_form() {
     }
 
     println!(
-        "TC-1431 measured: 1 admitted static bundle fixture with 4 header members, 9 content member classes, {} components, {} endpoints, {} relationships, {} correspondences and {} identities sharing the display name orders",
+        "TC-1631 measured: 1 admitted static bundle fixture with 4 header members, 9 content member classes, {} components, {} endpoints, {} relationships, {} correspondences and {} identities sharing the display name orders",
         admitted.components().len(),
         admitted.endpoints().len(),
         admitted.relationships().len(),
@@ -267,39 +267,39 @@ fn tc_1431_the_good_static_bundle_fixture_is_admitted_from_its_wire_form() {
     );
 }
 
-/// Tracing: TC-1433
+/// Tracing: TC-1633
 #[test]
-fn tc_1433_the_missing_identity_axis_refuses_naming_the_absent_identity() {
+fn tc_1633_the_missing_identity_axis_refuses_naming_the_absent_identity() {
     let (refusal, changed) = measure(0);
     assert!(
         refusal.message.contains("bundleIdentity"),
         "the refusal names the absent member: {refusal}"
     );
     println!(
-        "TC-1433 measured: 1 adverse fixture refusing {} over {} changed member, 0 members outside the axis",
+        "TC-1633 measured: 1 adverse fixture refusing {} over {} changed member, 0 members outside the axis",
         refusal.code,
         changed.len()
     );
 }
 
-/// Tracing: TC-1401
+/// Tracing: TC-1601
 #[test]
-fn tc_1401_the_digest_domain_substitution_axis_refuses_the_substituted_domain() {
+fn tc_1601_the_digest_domain_substitution_axis_refuses_the_substituted_domain() {
     let (refusal, changed) = measure(1);
     assert!(
         refusal.message.contains("quire-native-bytes-1"),
         "the refusal names the substituted domain: {refusal}"
     );
     println!(
-        "TC-1401 measured: 1 adverse fixture refusing {} over {} changed member, 0 members outside the axis",
+        "TC-1601 measured: 1 adverse fixture refusing {} over {} changed member, 0 members outside the axis",
         refusal.code,
         changed.len()
     );
 }
 
-/// Tracing: TC-1407
+/// Tracing: TC-1607
 #[test]
-fn tc_1407_the_revision_namespace_substitution_axis_refuses_the_substituted_namespace() {
+fn tc_1607_the_revision_namespace_substitution_axis_refuses_the_substituted_namespace() {
     let (refusal, changed) = measure(2);
     assert!(
         refusal
@@ -308,15 +308,15 @@ fn tc_1407_the_revision_namespace_substitution_axis_refuses_the_substituted_name
         "the refusal names the substituted namespace: {refusal}"
     );
     println!(
-        "TC-1407 measured: 1 adverse fixture refusing {} over {} changed member, 0 members outside the axis",
+        "TC-1607 measured: 1 adverse fixture refusing {} over {} changed member, 0 members outside the axis",
         refusal.code,
         changed.len()
     );
 }
 
-/// Tracing: TC-1424
+/// Tracing: TC-1624
 #[test]
-fn tc_1424_the_foreign_export_axis_refuses_naming_the_export_and_the_object() {
+fn tc_1624_the_foreign_export_axis_refuses_naming_the_export_and_the_object() {
     let (refusal, changed) = measure(3);
     assert!(
         refusal
@@ -328,15 +328,15 @@ fn tc_1424_the_foreign_export_axis_refuses_naming_the_export_and_the_object() {
         "the refusal names the export and the foreign producer object: {refusal}"
     );
     println!(
-        "TC-1424 measured: 1 adverse fixture refusing {} over {} changed member, 0 members outside the axis",
+        "TC-1624 measured: 1 adverse fixture refusing {} over {} changed member, 0 members outside the axis",
         refusal.code,
         changed.len()
     );
 }
 
-/// Tracing: TC-1420
+/// Tracing: TC-1620
 #[test]
-fn tc_1420_the_endpoint_multiplicity_loss_axis_refuses_rather_than_defaulting() {
+fn tc_1620_the_endpoint_multiplicity_loss_axis_refuses_rather_than_defaulting() {
     let (refusal, changed) = measure(4);
     assert!(
         refusal
@@ -346,15 +346,15 @@ fn tc_1420_the_endpoint_multiplicity_loss_axis_refuses_rather_than_defaulting() 
         "the refusal names the relationship and the side that lost its multiplicity: {refusal}"
     );
     println!(
-        "TC-1420 measured: 1 adverse fixture refusing {} over {} changed member, 0 members outside the axis",
+        "TC-1620 measured: 1 adverse fixture refusing {} over {} changed member, 0 members outside the axis",
         refusal.code,
         changed.len()
     );
 }
 
-/// Tracing: TC-1414
+/// Tracing: TC-1614
 #[test]
-fn tc_1414_the_absent_provenance_axis_refuses_naming_the_record() {
+fn tc_1614_the_absent_provenance_axis_refuses_naming_the_record() {
     let (refusal, changed) = measure(5);
     assert!(
         refusal
@@ -363,15 +363,15 @@ fn tc_1414_the_absent_provenance_axis_refuses_naming_the_record() {
         "the refusal names the record carrying no locus: {refusal}"
     );
     println!(
-        "TC-1414 measured: 1 adverse fixture refusing {} over {} changed member, 0 members outside the axis",
+        "TC-1614 measured: 1 adverse fixture refusing {} over {} changed member, 0 members outside the axis",
         refusal.code,
         changed.len()
     );
 }
 
-/// Tracing: TC-1425
+/// Tracing: TC-1625
 #[test]
-fn tc_1425_the_stale_correspondence_axis_refuses_the_changed_selection() {
+fn tc_1625_the_stale_correspondence_axis_refuses_the_changed_selection() {
     declared_axis_table();
     let axis = &AXES[6];
 
@@ -405,7 +405,7 @@ fn tc_1425_the_stale_correspondence_axis_refuses_the_changed_selection() {
 
     let changed = one_axis(axis);
     println!(
-        "TC-1425 measured: 1 adverse fixture refusing {} across 2 admissions over {} changed members ({} owned by the axis, the rest the re-sealed derived bundle digest), 0 members outside the axis",
+        "TC-1625 measured: 1 adverse fixture refusing {} across 2 admissions over {} changed members ({} owned by the axis, the rest the re-sealed derived bundle digest), 0 members outside the axis",
         refusal.code,
         changed.len(),
         changed
@@ -415,9 +415,9 @@ fn tc_1425_the_stale_correspondence_axis_refuses_the_changed_selection() {
     );
 }
 
-/// Tracing: TC-1415
+/// Tracing: TC-1615
 #[test]
-fn tc_1415_the_incomplete_inventory_axis_refuses_the_unlisted_member() {
+fn tc_1615_the_incomplete_inventory_axis_refuses_the_unlisted_member() {
     let (refusal, changed) = measure(7);
     assert!(
         refusal
@@ -429,7 +429,7 @@ fn tc_1415_the_incomplete_inventory_axis_refuses_the_unlisted_member() {
         "the refusal names the unlisted record and the closed inventory: {refusal}"
     );
     println!(
-        "TC-1415 measured: 1 adverse fixture refusing {} over {} changed member, 0 members outside the axis",
+        "TC-1615 measured: 1 adverse fixture refusing {} over {} changed member, 0 members outside the axis",
         refusal.code,
         changed.len()
     );

@@ -10,17 +10,17 @@ relationships:
     type: depends_on
   - target: "ix://agent-ix/filament-core-data/FR-114"
     type: references
-  - target: "ix://agent-ix/filament-core-data/TC-1411"
+  - target: "ix://agent-ix/filament-core-data/TC-1611"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1412"
+  - target: "ix://agent-ix/filament-core-data/TC-1612"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1413"
+  - target: "ix://agent-ix/filament-core-data/TC-1613"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1414"
+  - target: "ix://agent-ix/filament-core-data/TC-1614"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1415"
+  - target: "ix://agent-ix/filament-core-data/TC-1615"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1416"
+  - target: "ix://agent-ix/filament-core-data/TC-1616"
     type: verifies
 ---
 # Task-145: FR-114 provenance locus, component, endpoint and inventory declarations
@@ -47,18 +47,18 @@ own and mints no second `unknown`.
 
 ## Subtasks
 
-- [ ] **Red: record shape.** `tests/declarations.rs`: `tc_1411_` (one component
+- [ ] **Red: record shape.** `tests/declarations.rs`: `tc_1611_` (one component
   record carries identity, namespaced revision, canonical digest selection, locus,
-  ownership and inventory membership as six separate members), `tc_1412_` (one
+  ownership and inventory membership as six separate members), `tc_1612_` (one
   endpoint record carries the same six and additionally names its owning component
   identity, its type identity, its role and its multiplicity, none reconstructed
-  from another), `tc_1413_` (a repository, a component, a role and an endpoint
+  from another), `tc_1613_` (a repository, a component, a role and an endpoint
   sharing one display name stay four distinct identities, and no component
   identity is reconstructed from a path, a package name, or a deployment name).
-- [ ] **Red: locus refusals.** `tc_1414_` (a component whose locus is absent
+- [ ] **Red: locus refusals.** `tc_1614_` (a component whose locus is absent
   refuses; an endpoint whose locus names no formal document revision refuses; each
   blocking, each naming the offending record, and neither substituting a native
-  source label for the formal revision — FR-114-CON-4), `tc_1416_` (a full locus
+  source label for the formal revision — FR-114-CON-4), `tc_1616_` (a full locus
   carrying `source` with `refVersion`, a closed-vocabulary `kind`, `authority`,
   `identity`, a namespaced `revision`, one raw-byte `digest` **string** and `wire`
   with its `identity` and `version`, plus `formal` with `document` and a namespaced
@@ -66,7 +66,7 @@ own and mints no second `unknown`.
   digest string rather than refused as a non-canonical selection; and a component
   whose locus no declaration source document supplies refuses with **no
   synthesized locus emitted for it** — FR-114-CON-5, FND-1765).
-- [ ] **Red: inventory.** `tc_1415_` (integration: a component outside a closed
+- [ ] **Red: inventory.** `tc_1615_` (integration: a component outside a closed
   declared inventory refuses admission, while the same component under an
   explicitly incomplete inventory is admitted carrying the completeness member
   with the retained `unknown` disposition FR-110 owns).
@@ -90,15 +90,15 @@ own and mints no second `unknown`.
   `INVENTORY_INCOMPLETE_UNKNOWN`, `IDENTITY_ABSENT` — each blocking, each naming
   the offending record.
 - [ ] **Falsify.** Synthesize a locus from an unlocated declaration in a scratch
-  copy and prove `tc_1416_` fails. Reconstruct a component identity from its
-  path in a scratch copy and prove `tc_1413_` fails.
+  copy and prove `tc_1616_` fails. Reconstruct a component identity from its
+  path in a scratch copy and prove `tc_1613_` fails.
 
 ## Exit conditions
 
 - A component and an endpoint are first-class records with their own identity,
   revision, digest, locus, ownership and inventory membership; nothing is derived
   from a path, a package name, a deployment name, or another member.
-- TC-1411..TC-1416 are traced executable controls, including the closed-versus-
+- TC-1611..TC-1616 are traced executable controls, including the closed-versus-
   incomplete inventory pair.
 - No `unknown` disposition and no inventory closure is minted here; both are read
   from the FR-110 declaration.

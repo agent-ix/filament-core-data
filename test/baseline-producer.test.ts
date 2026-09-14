@@ -82,12 +82,12 @@ describe("Baseline 1.2 producer schema", () => {
 });
 
 describe("Baseline 1.2 static producer bundle schema", () => {
-	/** Tracing: TC-1431 */
+	/** Tracing: TC-1631 */
 	it("accepts the admitted static bundle fixture", () => {
 		expect(validatesStatic(staticBundle)).toBe(true);
 	});
 
-	/** Tracing: TC-1433 */
+	/** Tracing: TC-1633 */
 	it("rejects every shape-violating adverse fixture", () => {
 		for (const name of shapeViolations) {
 			expect(validatesStatic(adverse(name)), name).toBe(false);
@@ -99,7 +99,7 @@ describe("Baseline 1.2 static producer bundle schema", () => {
 	 * mapping, a stale correspondence selection, an unlisted inventory member —
 	 * which no shape schema decides; the admission entry point refuses them.
 	 *
-	 * Tracing: TC-1431
+	 * Tracing: TC-1631
 	 */
 	it("admits the cross-member adverse fixtures by shape", () => {
 		for (const name of crossMemberViolations) {
@@ -107,7 +107,7 @@ describe("Baseline 1.2 static producer bundle schema", () => {
 		}
 	});
 
-	/** Tracing: TC-1434 */
+	/** Tracing: TC-1634 */
 	it("rejects an assessment member offered inside a static bundle", () => {
 		for (const member of [
 			"population",
@@ -122,7 +122,7 @@ describe("Baseline 1.2 static producer bundle schema", () => {
 		}
 	});
 
-	/** Tracing: TC-1433 */
+	/** Tracing: TC-1633 */
 	it("rejects an undeclared producer member on the static bundle", () => {
 		const invalid = structuredClone(staticBundle);
 		invalid.unapprovedAmbientConfiguration = "current-directory";

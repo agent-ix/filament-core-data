@@ -61,10 +61,10 @@ const FOREIGN_KINDS: [ExportKind; 5] = [
     ExportKind::Relationship,
 ];
 
-/// The `export.rs` source text, for the vocabulary census of TC-1507.
+/// The `export.rs` source text, for the vocabulary census of TC-1707.
 const EXPORT_SOURCE: &str = include_str!("../src/export.rs");
 
-/// The `refusal.rs` source text, for the stable-code census of TC-1505 and TC-1510.
+/// The `refusal.rs` source text, for the stable-code census of TC-1705 and TC-1710.
 const REFUSAL_SOURCE: &str = include_str!("../src/refusal.rs");
 
 fn configuration() -> ConfigurationDocument {
@@ -384,9 +384,9 @@ fn with_type_export(
     resealed(bundle)
 }
 
-/// Tracing: TC-1500
+/// Tracing: TC-1700
 #[test]
-fn tc_1500_every_endpoint_type_identity_resolves_to_exactly_one_export_mapping() {
+fn tc_1700_every_endpoint_type_identity_resolves_to_exactly_one_export_mapping() {
     let admitted = bundle()
         .admit()
         .expect("a complete static selection is admitted");
@@ -444,13 +444,13 @@ fn tc_1500_every_endpoint_type_identity_resolves_to_exactly_one_export_mapping()
     );
 
     println!(
-        "TC-1500 measured: {resolved} endpoint type identities, each resolving to exactly 1 export mapping whose kind and 2-segment export_path are read as separate members"
+        "TC-1700 measured: {resolved} endpoint type identities, each resolving to exactly 1 export mapping whose kind and 2-segment export_path are read as separate members"
     );
 }
 
-/// Tracing: TC-1501
+/// Tracing: TC-1701
 #[test]
-fn tc_1501_an_unexported_model_type_refuses_distinctly_from_an_unexported_record() {
+fn tc_1701_an_unexported_model_type_refuses_distinctly_from_an_unexported_record() {
     let mut unexported_type = bundle();
     unexported_type.correspondences[0]
         .exports
@@ -485,14 +485,14 @@ fn tc_1501_an_unexported_model_type_refuses_distinctly_from_an_unexported_record
     );
 
     println!(
-        "TC-1501 measured: 2 refusals under 2 distinct codes, {} for the unexported model type and {} for the unexported declared record",
+        "TC-1701 measured: 2 refusals under 2 distinct codes, {} for the unexported model type and {} for the unexported declared record",
         type_refusal.code, record_refusal.code
     );
 }
 
-/// Tracing: TC-1502
+/// Tracing: TC-1702
 #[test]
-fn tc_1502_each_non_type_kind_offered_for_a_model_type_refuses_as_kind_foreign() {
+fn tc_1702_each_non_type_kind_offered_for_a_model_type_refuses_as_kind_foreign() {
     let mut refused = 0;
     for kind in FOREIGN_KINDS {
         assert!(!kind.is_type(), "{} names no type", kind.as_str());
@@ -520,12 +520,12 @@ fn tc_1502_each_non_type_kind_offered_for_a_model_type_refuses_as_kind_foreign()
         refused += 1;
     }
     assert_eq!(refused, FOREIGN_KINDS.len());
-    println!("TC-1502 measured: {refused} refused non-type kinds, each under ENDPOINT_TYPE_EXPORT_KIND_FOREIGN");
+    println!("TC-1702 measured: {refused} refused non-type kinds, each under ENDPOINT_TYPE_EXPORT_KIND_FOREIGN");
 }
 
-/// Tracing: TC-1503
+/// Tracing: TC-1703
 #[test]
-fn tc_1503_each_of_the_six_type_kinds_is_admitted_for_a_declared_model_type() {
+fn tc_1703_each_of_the_six_type_kinds_is_admitted_for_a_declared_model_type() {
     let mut admitted_kinds = 0;
     for kind in ExportKind::TYPE_KINDS {
         assert!(kind.is_type(), "{} names a type", kind.as_str());
@@ -547,12 +547,12 @@ fn tc_1503_each_of_the_six_type_kinds_is_admitted_for_a_declared_model_type() {
         admitted_kinds += 1;
     }
     assert_eq!(admitted_kinds, ExportKind::TYPE_KINDS.len());
-    println!("TC-1503 measured: {admitted_kinds} admitted type kinds");
+    println!("TC-1703 measured: {admitted_kinds} admitted type kinds");
 }
 
-/// Tracing: TC-1504
+/// Tracing: TC-1704
 #[test]
-fn tc_1504_two_endpoints_naming_one_type_resolve_to_the_one_mapping_it_is_owed() {
+fn tc_1704_two_endpoints_naming_one_type_resolve_to_the_one_mapping_it_is_owed() {
     let mut shared = bundle();
     shared.endpoints[1].type_identity = TYPE_ORDER.into();
     shared.relationships[0].target.type_identity = TYPE_ORDER.into();
@@ -583,14 +583,14 @@ fn tc_1504_two_endpoints_naming_one_type_resolve_to_the_one_mapping_it_is_owed()
     assert_eq!(admitted.endpoints().len(), 2);
 
     println!(
-        "TC-1504 measured: 2 endpoints naming 1 model type identity resolving to {mappings} export mapping, over {} total export mappings",
+        "TC-1704 measured: 2 endpoints naming 1 model type identity resolving to {mappings} export mapping, over {} total export mappings",
         admitted.correspondences()[0].exports.len()
     );
 }
 
-/// Tracing: TC-1505
+/// Tracing: TC-1705
 #[test]
-fn tc_1505_an_identity_declared_as_a_record_and_as_a_model_type_refuses() {
+fn tc_1705_an_identity_declared_as_a_record_and_as_a_model_type_refuses() {
     // One identity cannot admit both: a record admits exactly its own kind and a
     // model type admits any type kind, so no single export mapping satisfies
     // both. Keeping the record admission silently would leave an admitted
@@ -633,14 +633,14 @@ fn tc_1505_an_identity_declared_as_a_record_and_as_a_model_type_refuses() {
     assert_eq!(second.code, IDENTITY_KIND_AMBIGUOUS);
 
     println!(
-        "TC-1505 measured: 1 colliding identity refused {} under 2 offered export kinds, 0 admitted bundles",
+        "TC-1705 measured: 1 colliding identity refused {} under 2 offered export kinds, 0 admitted bundles",
         refusal.code
     );
 }
 
-/// Tracing: TC-1506
+/// Tracing: TC-1706
 #[test]
-fn tc_1506_a_model_type_mapping_owned_by_another_producer_object_refuses_as_cross_bound() {
+fn tc_1706_a_model_type_mapping_owned_by_another_producer_object_refuses_as_cross_bound() {
     let mut cross_bound = bundle();
     cross_bound
         .correspondences
@@ -663,14 +663,14 @@ fn tc_1506_a_model_type_mapping_owned_by_another_producer_object_refuses_as_cros
     );
 
     println!(
-        "TC-1506 measured: 1 model type exported by 2 producer objects, refused under {}",
+        "TC-1706 measured: 1 model type exported by 2 producer objects, refused under {}",
         refusal.code
     );
 }
 
-/// Tracing: TC-1507
+/// Tracing: TC-1707
 #[test]
-fn tc_1507_the_export_vocabulary_is_eleven_kinds_of_which_exactly_six_name_a_type() {
+fn tc_1707_the_export_vocabulary_is_eleven_kinds_of_which_exactly_six_name_a_type() {
     assert_eq!(ExportKind::EMITTED.len(), 11);
     assert_eq!(ExportKind::TYPE_KINDS.len(), 6);
 
@@ -715,15 +715,15 @@ fn tc_1507_the_export_vocabulary_is_eleven_kinds_of_which_exactly_six_name_a_typ
     }
 
     println!(
-        "TC-1507 measured: {} emitted export kinds, {typed} of them type kinds, 0 population variants, {} kinds round-tripping through their closed spelling",
+        "TC-1707 measured: {} emitted export kinds, {typed} of them type kinds, 0 population variants, {} kinds round-tripping through their closed spelling",
         ExportKind::EMITTED.len(),
         ExportKind::EMITTED.len()
     );
 }
 
-/// Tracing: TC-1508
+/// Tracing: TC-1708
 #[test]
-fn tc_1508_type_export_lookup_is_total_over_declared_endpoints_and_stable_across_calls() {
+fn tc_1708_type_export_lookup_is_total_over_declared_endpoints_and_stable_across_calls() {
     let admitted = bundle().admit().expect("the fixture admits");
 
     assert!(
@@ -757,14 +757,14 @@ fn tc_1508_type_export_lookup_is_total_over_declared_endpoints_and_stable_across
     assert_eq!(first.len(), declared);
 
     println!(
-        "TC-1508 measured: 1 unknown endpoint resolving to None, {declared} declared endpoints resolving to Some, {} ordered pairs identical across 2 calls",
+        "TC-1708 measured: 1 unknown endpoint resolving to None, {declared} declared endpoints resolving to Some, {} ordered pairs identical across 2 calls",
         first.len()
     );
 }
 
-/// Tracing: TC-1509
+/// Tracing: TC-1709
 #[test]
-fn tc_1509_a_relationship_end_disagreeing_with_its_joined_endpoint_refuses() {
+fn tc_1709_a_relationship_end_disagreeing_with_its_joined_endpoint_refuses() {
     let mut disagreeing = bundle();
     disagreeing.relationships[0].source.type_identity = TYPE_INVOICE.into();
 
@@ -779,14 +779,14 @@ fn tc_1509_a_relationship_end_disagreeing_with_its_joined_endpoint_refuses() {
     );
 
     println!(
-        "TC-1509 measured: 1 relationship end over 2 named type spellings, refused under {}",
+        "TC-1709 measured: 1 relationship end over 2 named type spellings, refused under {}",
         refusal.code
     );
 }
 
-/// Tracing: TC-1510
+/// Tracing: TC-1710
 #[test]
-fn tc_1510_two_mappings_for_one_model_type_under_one_producer_object_refuse_as_cross_bound() {
+fn tc_1710_two_mappings_for_one_model_type_under_one_producer_object_refuse_as_cross_bound() {
     // FR-127 specifies `ENDPOINT_TYPE_EXPORT_DUPLICATE` for this case. No such
     // code exists in `refusal.rs`; the implemented behaviour folds it into the
     // cross-bound refusal, which distinguishes the two cases by message alone.
@@ -815,14 +815,14 @@ fn tc_1510_two_mappings_for_one_model_type_under_one_producer_object_refuse_as_c
     );
 
     println!(
-        "TC-1510 measured: 2 export mappings for 1 model type under 1 producer object, refused under {} rather than a distinct duplicate code",
+        "TC-1710 measured: 2 export mappings for 1 model type under 1 producer object, refused under {} rather than a distinct duplicate code",
         refusal.code
     );
 }
 
-/// Tracing: TC-1511
+/// Tracing: TC-1711
 #[test]
-fn tc_1511_the_authored_ordered_export_path_is_retained_exactly_as_offered() {
+fn tc_1711_the_authored_ordered_export_path_is_retained_exactly_as_offered() {
     let authored = vec![
         "quire".to_owned(),
         "types".to_owned(),
@@ -868,13 +868,13 @@ fn tc_1511_the_authored_ordered_export_path_is_retained_exactly_as_offered() {
     assert_ne!(authored, reordered);
 
     println!(
-        "TC-1511 measured: 2 admissions over 4-segment export paths, both retained in the authored order, 0 EXPORT_PATH_DISAGREES refusals implemented"
+        "TC-1711 measured: 2 admissions over 4-segment export paths, both retained in the authored order, 0 EXPORT_PATH_DISAGREES refusals implemented"
     );
 }
 
-/// Tracing: TC-1512
+/// Tracing: TC-1712
 #[test]
-fn tc_1512_resolution_is_by_identity_not_by_path_and_is_identical_across_admissions() {
+fn tc_1712_resolution_is_by_identity_not_by_path_and_is_identical_across_admissions() {
     // The Shipment mapping's final path segment spells `Order`. A coinciding
     // segment is not a resolution: the Order endpoint still resolves to the
     // mapping whose *export identity* is the Order type.
@@ -915,7 +915,7 @@ fn tc_1512_resolution_is_by_identity_not_by_path_and_is_identical_across_admissi
     }
 
     println!(
-        "TC-1512 measured: 1 coinciding final path segment resolving 0 types by path, {} endpoint/mapping pairs identical in order across 2 admissions of one document",
+        "TC-1712 measured: 1 coinciding final path segment resolving 0 types by path, {} endpoint/mapping pairs identical in order across 2 admissions of one document",
         first.len()
     );
 }

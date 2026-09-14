@@ -15,7 +15,7 @@
 //! NFR-036 measures over a **declared** population and a **declared**
 //! permutation set: `golden/declared-documents.json` names the digested
 //! documents of the admitted bundle and where each one sits in the bundle, and
-//! `golden/permutation-set.json` names the insertion orders TC-1451 pairs its
+//! `golden/permutation-set.json` names the insertion orders TC-1651 pairs its
 //! runs over.
 
 #![allow(dead_code)]
@@ -263,7 +263,7 @@ fn write_permuted(
         Value::Array(items) => {
             let mut order: Vec<usize> = (0..items.len()).collect();
             // Only a declared set array may be reordered: permuting a
-            // semantic-order array is TC-1455's measurement, in which the digest
+            // semantic-order array is TC-1655's measurement, in which the digest
             // must change, and it is not part of the insertion-order set.
             if member
                 .is_some_and(|member| declarations.disposition(member) == ArrayDisposition::Set)

@@ -49,9 +49,9 @@ fn configuration() -> ConfigurationDocument {
     }
 }
 
-/// Tracing: TC-1406
+/// Tracing: TC-1606
 #[test]
-fn tc_1406_producer_and_native_revisions_carry_their_two_declared_namespaces() {
+fn tc_1606_producer_and_native_revisions_carry_their_two_declared_namespaces() {
     let configuration = configuration();
     // The producer-object classes FR-113 names, each under one namespace.
     let producer_objects = [
@@ -105,7 +105,7 @@ fn tc_1406_producer_and_native_revisions_carry_their_two_declared_namespaces() {
     assert_eq!(ADMISSIBLE_REVISION_NAMESPACES.len(), 2);
 
     println!(
-        "TC-1406 measured: {} producer-object revisions and {} native revisions over exactly {} namespaces, {} members each",
+        "TC-1606 measured: {} producer-object revisions and {} native revisions over exactly {} namespaces, {} members each",
         producer_objects.len(),
         native_objects.len(),
         namespaces.len(),
@@ -113,9 +113,9 @@ fn tc_1406_producer_and_native_revisions_carry_their_two_declared_namespaces() {
     );
 }
 
-/// Tracing: TC-1407
+/// Tracing: TC-1607
 #[test]
-fn tc_1407_a_revision_under_the_other_classs_namespace_refuses() {
+fn tc_1607_a_revision_under_the_other_classs_namespace_refuses() {
     let native_under_producer = Revision::producer("1.2.0");
     let producer_under_native = Revision::native("1.2.0");
 
@@ -130,12 +130,12 @@ fn tc_1407_a_revision_under_the_other_classs_namespace_refuses() {
         assert!(refusal.message.contains("1.2.0"));
     }
 
-    println!("TC-1407 measured: 2 substitution directions, both refused {REVISION_NAMESPACE_SUBSTITUTED}");
+    println!("TC-1607 measured: 2 substitution directions, both refused {REVISION_NAMESPACE_SUBSTITUTED}");
 }
 
-/// Tracing: TC-1408
+/// Tracing: TC-1608
 #[test]
-fn tc_1408_a_bare_revision_string_refuses_and_binds_nothing() {
+fn tc_1608_a_bare_revision_string_refuses_and_binds_nothing() {
     let refusal = Revision::from_wire(&json!("1.2.0"))
         .expect_err("a bare revision string is not a revision selection");
     assert_eq!(refusal.code, REVISION_NAMESPACE_ABSENT);
@@ -154,12 +154,12 @@ fn tc_1408_a_bare_revision_string_refuses_and_binds_nothing() {
         REVISION_NAMESPACE_ABSENT
     );
 
-    println!("TC-1408 measured: 3 namespace-absent forms — bare string, absent member, empty spelling — each refused {REVISION_NAMESPACE_ABSENT}, binding nothing");
+    println!("TC-1608 measured: 3 namespace-absent forms — bare string, absent member, empty spelling — each refused {REVISION_NAMESPACE_ABSENT}, binding nothing");
 }
 
-/// Tracing: TC-1409
+/// Tracing: TC-1609
 #[test]
-fn tc_1409_outside_the_vocabulary_and_undeclared_are_two_separate_refusals() {
+fn tc_1609_outside_the_vocabulary_and_undeclared_are_two_separate_refusals() {
     let configuration = configuration();
     let outside = Revision::new("some-other-authority/revision-1", "1.2.0");
     assert_eq!(
@@ -185,12 +185,12 @@ fn tc_1409_outside_the_vocabulary_and_undeclared_are_two_separate_refusals() {
         .validate_selected(&configuration)
         .expect("the declared namespace is admitted");
 
-    println!("TC-1409 measured: 2 separate refusals over 1 namespace each — {REVISION_NAMESPACE_UNKNOWN} outside the closed vocabulary, {REVISION_NAMESPACE_UNDECLARED} inside it but undeclared");
+    println!("TC-1609 measured: 2 separate refusals over 1 namespace each — {REVISION_NAMESPACE_UNKNOWN} outside the closed vocabulary, {REVISION_NAMESPACE_UNDECLARED} inside it but undeclared");
 }
 
-/// Tracing: TC-1410
+/// Tracing: TC-1610
 #[test]
-fn tc_1410_one_value_spelling_under_two_namespaces_stays_two_revisions() {
+fn tc_1610_one_value_spelling_under_two_namespaces_stays_two_revisions() {
     let producer = Revision::producer("1.2.0");
     let native = Revision::native("1.2.0");
     assert_eq!(producer.value, native.value);
@@ -210,7 +210,7 @@ fn tc_1410_one_value_spelling_under_two_namespaces_stays_two_revisions() {
     assert_eq!(digest.as_str().len(), "sha256:".len() + 64);
 
     println!(
-        "TC-1410 measured: 1 value spelling under {} namespaces stayed {} distinct revisions, beside 2 admitted consumer-owned locus members",
+        "TC-1610 measured: 1 value spelling under {} namespaces stayed {} distinct revisions, beside 2 admitted consumer-owned locus members",
         ADMISSIBLE_REVISION_NAMESPACES.len(),
         distinct.len()
     );

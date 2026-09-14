@@ -4,7 +4,7 @@
 //! Traced FR-117 controls for the static bundle and its one indivisible admission
 //! operation (Plan-017 Task-148). Every control reports the number it measured.
 //!
-//! The `Compile` halves of TC-1432 and TC-1435 are `compile_fail` doctests on
+//! The `Compile` halves of TC-1632 and TC-1635 are `compile_fail` doctests on
 //! `src/static_bundle.rs`, which `cargo test` runs as doctests: a struct literal
 //! of the admitted type, a read of a would-be public member, the `Deserialize`
 //! bound `serde_json::from_slice` requires, an added assessment member, and a
@@ -408,9 +408,9 @@ fn keys_of(value: &Value, collected: &mut BTreeSet<String>) {
     keys(value, collected);
 }
 
-/// Tracing: TC-1431
+/// Tracing: TC-1631
 #[test]
-fn tc_1431_a_complete_static_selection_is_admitted_as_one_immutable_typed_bundle() {
+fn tc_1631_a_complete_static_selection_is_admitted_as_one_immutable_typed_bundle() {
     let admitted = bundle()
         .admit()
         .expect("a complete static selection is admitted");
@@ -460,7 +460,7 @@ fn tc_1431_a_complete_static_selection_is_admitted_as_one_immutable_typed_bundle
     }
 
     println!(
-        "TC-1431 measured: 1 admitted bundle over {} header members and {} content member classes, {} emitted member names at every depth, 0 of the {} assessment member names",
+        "TC-1631 measured: 1 admitted bundle over {} header members and {} content member classes, {} emitted member names at every depth, 0 of the {} assessment member names",
         HEADER_MEMBERS.len(),
         CONTENT_MEMBERS.len(),
         every.len(),
@@ -468,9 +468,9 @@ fn tc_1431_a_complete_static_selection_is_admitted_as_one_immutable_typed_bundle
     );
 }
 
-/// Tracing: TC-1432
+/// Tracing: TC-1632
 #[test]
-fn tc_1432_the_bundle_type_is_closed_over_its_content_classes_and_the_assessment_exclusion() {
+fn tc_1632_the_bundle_type_is_closed_over_its_content_classes_and_the_assessment_exclusion() {
     // The `Compile` half is the two `compile_fail` doctests on
     // `src/static_bundle.rs` — an added assessment member and a match that omits a
     // content class — with a compiling twin that names all thirteen members. This
@@ -493,22 +493,22 @@ fn tc_1432_the_bundle_type_is_closed_over_its_content_classes_and_the_assessment
     // The assessment module is not reachable from the static bundle: no accessor
     // of the admitted bundle returns an assessment type, which the accessors'
     // signatures fix at compile time. The runtime half is that a bundle with none
-    // of them present admits — the whole of TC-1431 — and that the emitted member
+    // of them present admits — the whole of TC-1631 — and that the emitted member
     // set above contains no assessment member class.
     for assessment in ASSESSMENT_MEMBER_NAMES {
         assert!(!declared.contains(assessment));
     }
 
     println!(
-        "TC-1432 measured: {} emitted members equal to the {} declared classes, with 0 assessment member classes and 0 header members inside the closure of content classes",
+        "TC-1632 measured: {} emitted members equal to the {} declared classes, with 0 assessment member classes and 0 header members inside the closure of content classes",
         members.len(),
         declared.len()
     );
 }
 
-/// Tracing: TC-1433
+/// Tracing: TC-1633
 #[test]
-fn tc_1433_a_bundle_omitting_any_required_member_refuses_naming_it() {
+fn tc_1633_a_bundle_omitting_any_required_member_refuses_naming_it() {
     type Case = (
         &'static str,
         &'static str,
@@ -632,12 +632,12 @@ fn tc_1433_a_bundle_omitting_any_required_member_refuses_naming_it() {
         measured += 1;
     }
 
-    println!("TC-1433 measured: {measured} absent-member cases, one per member class, each refused blocking and each naming the absent member");
+    println!("TC-1633 measured: {measured} absent-member cases, one per member class, each refused blocking and each naming the absent member");
 }
 
-/// Tracing: TC-1434
+/// Tracing: TC-1634
 #[test]
-fn tc_1434_an_assessment_member_document_or_export_refuses_naming_it() {
+fn tc_1634_an_assessment_member_document_or_export_refuses_naming_it() {
     let admissible = wire(&bundle());
     StaticProducerBundle::admit_json(&admissible).expect("the static document is admitted");
 
@@ -683,12 +683,12 @@ fn tc_1434_an_assessment_member_document_or_export_refuses_naming_it() {
         .iter()
         .any(|kind| kind.as_str() == "population"));
 
-    println!("TC-1434 measured: 3 assessment offers — 1 member, 1 document, 1 export kind — each refused {ASSESSMENT_INPUT_IN_STATIC_BUNDLE} naming what was offered, and 0 retained");
+    println!("TC-1634 measured: 3 assessment offers — 1 member, 1 document, 1 export kind — each refused {ASSESSMENT_INPUT_IN_STATIC_BUNDLE} naming what was offered, and 0 retained");
 }
 
-/// Tracing: TC-1435
+/// Tracing: TC-1635
 #[test]
-fn tc_1435_a_refused_admission_yields_no_value_of_the_admitted_type() {
+fn tc_1635_a_refused_admission_yields_no_value_of_the_admitted_type() {
     // The `Compile` half is the three `compile_fail` doctests on
     // `src/static_bundle.rs`: a struct literal of the admitted type, a read of a
     // would-be public member, and the `Deserialize` bound `from_slice` requires.
@@ -712,12 +712,12 @@ fn tc_1435_a_refused_admission_yields_no_value_of_the_admitted_type() {
         .expect("the emitted document is admissible again, through admission");
     assert_eq!(readmitted.key(), admitted.key());
 
-    println!("TC-1435 measured: 1 refused admission yielding 0 values of the admitted type, 3 compile_fail controls with 3 compiling twins, and 1 round trip that goes back in only through the admission operation");
+    println!("TC-1635 measured: 1 refused admission yielding 0 values of the admitted type, 3 compile_fail controls with 3 compiling twins, and 1 round trip that goes back in only through the admission operation");
 }
 
-/// Tracing: TC-1436
+/// Tracing: TC-1636
 #[test]
-fn tc_1436_an_admission_reads_no_ambient_input() {
+fn tc_1636_an_admission_reads_no_ambient_input() {
     let first = bundle().admit().expect("the bundle is admitted");
 
     // Altered environment, altered working directory: the admitted bundle is
@@ -764,16 +764,16 @@ fn tc_1436_an_admission_reads_no_ambient_input() {
     );
 
     println!(
-        "TC-1436 measured: 2 admissions under 3 altered environment variables and 1 altered working directory producing 1 identical admitted bundle, and {} files / {lines} lines of the admission call graph carrying {} of the {} prohibited ambient tokens",
+        "TC-1636 measured: 2 admissions under 3 altered environment variables and 1 altered working directory producing 1 identical admitted bundle, and {} files / {lines} lines of the admission call graph carrying {} of the {} prohibited ambient tokens",
         ADMISSION_POPULATION.len(),
         sites.len(),
         AMBIENT_TOKENS.len()
     );
 }
 
-/// Tracing: TC-1438
+/// Tracing: TC-1638
 #[test]
-fn tc_1438_a_static_admission_completes_from_static_inputs_alone() {
+fn tc_1638_a_static_admission_completes_from_static_inputs_alone() {
     // The bundle carries no population, snapshot, window, instance, observation,
     // progress record or observation closure, and admission completes from the
     // static members of the configuration document and the inventory declaration.
@@ -806,12 +806,12 @@ fn tc_1438_a_static_admission_completes_from_static_inputs_alone() {
     assert_eq!(second.code, CORRESPONDENCE_CLOSURE_INCOMPLETE);
     assert_ne!(first.code, second.code, "two closures, two refusals");
 
-    println!("TC-1438 measured: 1 admission from the configuration document and the inventory declaration alone, reaching 0 population obligations, and 2 distinct closure refusals over 2 distinct members");
+    println!("TC-1638 measured: 1 admission from the configuration document and the inventory declaration alone, reaching 0 population obligations, and 2 distinct closure refusals over 2 distinct members");
 }
 
-/// Tracing: TC-1439
+/// Tracing: TC-1639
 #[test]
-fn tc_1439_the_admitted_bundle_key_is_identity_revision_and_digest_together() {
+fn tc_1639_the_admitted_bundle_key_is_identity_revision_and_digest_together() {
     let mut registry = AdmissionRegistry::new();
     let first = registry
         .admit(bundle())
@@ -893,5 +893,5 @@ fn tc_1439_the_admitted_bundle_key_is_identity_revision_and_digest_together() {
     assert_eq!(emitted["bundleIdentity"], emitted["model"]["modelIdentity"]);
     assert_ne!(emitted["digest"], emitted["model"]["digest"]);
 
-    println!("TC-1439 measured: 1 admitted-bundle key of identity + revision + digest, 1 identity collision naming 2 digest selections, 1 re-admission under a second key with 1 stale binding naming 2 selections, and 1 coinciding-spelling bundle whose header members stay distinct from the model's");
+    println!("TC-1639 measured: 1 admitted-bundle key of identity + revision + digest, 1 identity collision naming 2 digest selections, 1 re-admission under a second key with 1 stale binding naming 2 selections, and 1 coinciding-spelling bundle whose header members stay distinct from the model's");
 }

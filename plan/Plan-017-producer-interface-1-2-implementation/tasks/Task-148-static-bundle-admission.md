@@ -12,21 +12,21 @@ relationships:
     type: references
   - target: "ix://agent-ix/filament-core-data/US-016"
     type: references
-  - target: "ix://agent-ix/filament-core-data/TC-1431"
+  - target: "ix://agent-ix/filament-core-data/TC-1631"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1432"
+  - target: "ix://agent-ix/filament-core-data/TC-1632"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1433"
+  - target: "ix://agent-ix/filament-core-data/TC-1633"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1434"
+  - target: "ix://agent-ix/filament-core-data/TC-1634"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1435"
+  - target: "ix://agent-ix/filament-core-data/TC-1635"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1436"
+  - target: "ix://agent-ix/filament-core-data/TC-1636"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1438"
+  - target: "ix://agent-ix/filament-core-data/TC-1638"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1439"
+  - target: "ix://agent-ix/filament-core-data/TC-1639"
     type: verifies
 ---
 # Task-148: FR-117 the static bundle and its one indivisible admission operation
@@ -60,36 +60,36 @@ module unchanged and are not reachable from the static bundle.
 
 ## Subtasks
 
-- [ ] **Red: admitted shape.** `tests/static_bundle.rs`: `tc_1431_` (a complete
+- [ ] **Red: admitted shape.** `tests/static_bundle.rs`: `tc_1631_` (a complete
   static selection is admitted as one immutable typed bundle whose four header
   members and nine content member classes are each read directly as typed members,
   and which carries no population, snapshot, window, instance, observation,
-  progress record or observation closure), `tc_1432_` (`Compile`: the bundle type
+  progress record or observation closure), `tc_1632_` (`Compile`: the bundle type
   is closed over exactly the declared content member classes and that exclusion and
   over no header member — a `compile_fail` doctest on an added assessment member
   and on a match that omits a content class).
-- [ ] **Red: unconstructibility.** `tc_1435_` (`Compile`: three `compile_fail`
+- [ ] **Red: unconstructibility.** `tc_1635_` (`Compile`: three `compile_fail`
   doctests — a struct literal of the admitted type, a read of a would-be public
   member, and `serde_json::from_slice::<AdmittedStaticBundle>` — plus a runtime
   assertion that a refused admission returns `Err` and yields no value).
-- [ ] **Red: missing members and assessment offers.** `tc_1433_` (a bundle omitting
+- [ ] **Red: missing members and assessment offers.** `tc_1633_` (a bundle omitting
   any required member — a header member, an identity, a namespaced revision, a
   digest selection, a provenance locus, an ownership member, an inventory
   membership, or the static prerequisite closure — refuses naming the absent
-  member; one case per member class), `tc_1434_` (an assessment member offered
+  member; one case per member class), `tc_1634_` (an assessment member offered
   inside the static bundle refuses naming that member; an assessment document
   offered in place of a static admission refuses naming that document; a
   correspondence export of the assessment kind FR-120 partitions to the assessment
   side refuses naming that export; none is silently retained).
-- [ ] **Red: closure sources and ambient inputs.** `tc_1438_` (integration: a static
+- [ ] **Red: closure sources and ambient inputs.** `tc_1638_` (integration: a static
   admission completes from the static members of the FR-109 configuration document
   and the FR-110 inventory declaration alone, reaching no FR-108 population
   obligation, with the configuration's static prerequisite closure and the FR-116
   native definition closure kept distinct members carrying **distinct** refusals —
-  FR-117-CON-5, FND-1727), `tc_1436_` (integration: an admission run with altered
+  FR-117-CON-5, FND-1727), `tc_1636_` (integration: an admission run with altered
   environment variables, an altered working directory, an altered wall clock and no
   network reachability produces the identical admitted bundle).
-- [ ] **Red: the admitted-bundle key.** `tc_1439_` (two bundles carrying one bundle
+- [ ] **Red: the admitted-bundle key.** `tc_1639_` (two bundles carrying one bundle
   identity and one namespaced revision with different canonical digest selections
   refuse as an identity collision **naming both** selections; re-admitting one
   bundle identity over different bytes yields a different admitted-bundle key and a
@@ -117,14 +117,14 @@ module unchanged and are not reachable from the static bundle.
   stale-binding refusal — each blocking, each naming what FR-117's Outputs say it
   names.
 - [ ] **Falsify.** Add a `Deserialize` derive to `AdmittedStaticBundle` in a scratch
-  copy and prove `tc_1435_` fails to fail — i.e. the `compile_fail` doctest now
+  copy and prove `tc_1635_` fails to fail — i.e. the `compile_fail` doctest now
   compiles and the control reports the breach. Read `std::env::var` during admission
-  in a scratch copy and prove `tc_1436_` fails.
+  in a scratch copy and prove `tc_1636_` fails.
 
 ## Exit conditions
 
 - One indivisible admission operation is the only way to obtain an
-  `AdmittedStaticBundle`; the three `compile_fail` controls of TC-1435 all fail to
+  `AdmittedStaticBundle`; the three `compile_fail` controls of TC-1635 all fail to
   compile, and a refused admission yields no value of the type.
 - The admitted bundle carries four header members and nine content member classes,
   no assessment member class, and no ambient input reaches admission.
@@ -132,7 +132,7 @@ module unchanged and are not reachable from the static bundle.
   collision refuses naming both digest selections and a prior binding refuses as
   stale rather than resolving forward.
 - `ProducerBundle`, `from_json` and the public `validate` no longer exist.
-- TC-1431..TC-1436, TC-1438 and TC-1439 are traced executable controls, and
+- TC-1631..TC-1636, TC-1638 and TC-1639 are traced executable controls, and
   Plan-016's TC-1373..TC-1381 still pass from the `assessment` module.
 - `make rust-build`, `make rust-test` and `cargo fmt --check` green apart from
   the two pre-existing reds.
@@ -150,7 +150,7 @@ module unchanged and are not reachable from the static bundle.
   `wireSchema` member on every emitted document, the four separately named
   versions, the one-version-per-document-set rule and the v1.1 projection document
   set are out of scope and FR-126's matrix rows stay `🚧`.
-- FR-117-AC-6 and AC-9 (TC-1437) are the presentation claim — static admission
+- FR-117-AC-6 and AC-9 (TC-1637) are the presentation claim — static admission
   only, never campaign acceptance — and are recorded by Task-151, not here.
 - `Compile` is the repository's own spelling for a typecheck-time method
   (FND-1745); the unconstructibility and member-set-closure obligations are
