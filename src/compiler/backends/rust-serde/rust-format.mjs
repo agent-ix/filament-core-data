@@ -57,6 +57,28 @@ export function callLines(indent, head, args, suffix) {
 	) {
 		return [inline];
 	}
+	// A nested call is flattened — the outer call's parenthesis stays on the
+	// head's line and the *inner* argument list breaks. That is what `rustfmt`
+	// does whenever the flattened head fits. When it does not, the flattening
+	// is unavailable and the outer call breaks instead, leaving the inner call
+	// whole on a line of its own.
+	if (
+		nested !== -1 &&
+		joined.length <= FN_CALL_WIDTH &&
+		`${indent}${head}(`.length > MAX_WIDTH
+	) {
+		const inner = `${head.slice(nested + 1)}(${joined}),`;
+		if (`${indent}    ${inner}`.length <= MAX_WIDTH) {
+			// The head carries the outer call's unclosed parenthesis, so the
+			// caller's suffix opens with the parenthesis that closes it. This
+			// form closes the outer call itself and keeps only what follows.
+			return [
+				`${indent}${head.slice(0, nested)}(`,
+				`${indent}    ${inner}`,
+				`${indent})${suffix.startsWith(")") ? suffix.slice(1) : suffix}`,
+			];
+		}
+	}
 	return [
 		`${indent}${head}(`,
 		...args.map((argument) => `${indent}    ${argument},`),
@@ -206,4 +228,46 @@ export function constItem(visibility, name, type, value) {
 	lines[0] = `${prefix}${lines[0]}`;
 	lines[lines.length - 1] = `${lines[lines.length - 1]};`;
 	return lines;
+}
+
+/**
+ * A `match` arm whose body is one expression.
+ *
+ * `rustfmt` writes the arm on one line while it fits inside `max_width`, and
+ * wraps the body into a block when it does not — the block form carries no
+ * trailing comma. The arms this emitter writes carry semantic identities, and
+ * an identity long enough to push the line past 100 columns is ordinary rather
+ * than exotic, so the wrap is a rule the emitter has to reproduce rather than a
+ * case it can assume away (FR-060).
+ */
+export function matchArm(indent, pattern, body) {
+	const inline = `${indent}${pattern} => ${body},`;
+	if (inline.length <= MAX_WIDTH) return [inline];
+	// The block is taken only when the body then fits on one line inside it.
+	// A body too wide for that gains nothing from the wrap, and `rustfmt`
+	// leaves it on the arm's own line rather than indenting it further.
+	if (`${indent}    ${body}`.length > MAX_WIDTH) return [inline];
+	return [`${indent}${pattern} => {`, `${indent}    ${body}`, `${indent}}`];
+}
+
+/**
+ * A `match` arm whose body is a call.
+ *
+ * The same three shapes as {@link matchArm}, measured through
+ * {@link callLines} so the call's own `fn_call_width` bound decides whether it
+ * fits: the arm on one line, the call alone inside a block, or — when neither
+ * holds — the call broken on the arm's own line.
+ */
+export function callArm(indent, pattern, head, args, suffix) {
+	const onArm = callLines(indent, `${pattern} => ${head}`, args, suffix);
+	if (onArm.length === 1) return onArm;
+	// The arm's own separator is the comma the inline form ends with; a block
+	// body carries the rest of the suffix — a nested call's closing
+	// parenthesis — but never that comma.
+	const inner = suffix.endsWith(",") ? suffix.slice(0, -1) : suffix;
+	const body = callLines(`${indent}    `, head, args, inner);
+	if (body.length === 1) {
+		return [`${indent}${pattern} => {`, ...body, `${indent}}`];
+	}
+	return onArm;
 }

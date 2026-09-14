@@ -781,6 +781,75 @@ describe("TC-713 the emitted call rendering is a formatter fixed point", () => {
 			rmSync(scratch, { recursive: true, force: true });
 		}
 	});
+
+	/** Traces: TC-1587; FR-060-AC-3, FR-060-CON-2. */
+	it("TC-1587 match arms over long identities survive rustfmt --check", async () => {
+		// The four corpus bases carry short identities and short variant tags,
+		// so every match arm the goldens hold fits on one line and none of them
+		// exercises the width rule. A semantic identity long enough to push an
+		// arm past `max_width` is ordinary rather than exotic — the kernel
+		// contract has several — and the emitter wrote those arms on one long
+		// line, which `rustfmt` rewrites three different ways depending on
+		// which of the arm, the block body, or the nested call fits. This
+		// fixture reaches all three shapes: the `SemanticType::identity` arms,
+		// a string enum's tag arms in both directions, and an externally tagged
+		// union's serializer, visitor and catch-all.
+		const { emitCrate } = await import(modulePathOf("crate.mjs"));
+		const bundle = readJson(
+			resolve(root, "test/fixtures/rust-serde/long-arms.json"),
+		) as { ir: unknown };
+		const result = emitCrate({
+			contractVersion: "1.0.0",
+			lockFingerprint: `sha256:${"0".repeat(64)}`,
+			ir: bundle.ir,
+			profile: {},
+			mappings: [],
+			backend: {
+				identity: ix("agent-ix/filament-core-data/rust-backend"),
+				version: "0.0.0",
+			},
+			outputRoot: "out",
+			limits: {},
+		}) as { files?: Map<string, string> } | Map<string, string>;
+		const emitted =
+			result instanceof Map ? result : (result.files as Map<string, string>);
+
+		const scratch = temp("long-arms");
+		try {
+			for (const [relative, body] of emitted) {
+				const full = resolve(scratch, relative);
+				mkdirSync(dirname(full), { recursive: true });
+				writeFileSync(full, body);
+			}
+			writeFileSync(
+				resolve(scratch, "rustfmt.toml"),
+				read(resolve(root, "rustfmt.toml")),
+			);
+			const sources = [...emitted.keys()].filter((name) =>
+				name.endsWith(".rs"),
+			);
+
+			// The three shapes are actually present, or the fixture proves
+			// nothing about the branches it was written for.
+			const bodies = sources
+				.map((name) => emitted.get(name) as string)
+				.join("\n");
+			expect(bodies).toMatch(
+				/SemanticType::LongIdentityScalarForMatchArmWidth => \{\n/,
+			);
+			expect(bodies).toMatch(/=> \{\n\s+serializer\.serialize_str\(/);
+			expect(bodies).toMatch(
+				/::Unknown\(\n\s+crate::support::UnknownVariant::/,
+			);
+
+			execFileSync("rustfmt", ["--check", ...sources], {
+				cwd: scratch,
+				stdio: "pipe",
+			});
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
+	});
 });
 
 describe("TC-737..744 non-disruption", () => {
