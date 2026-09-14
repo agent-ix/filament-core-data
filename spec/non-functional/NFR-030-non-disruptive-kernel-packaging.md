@@ -56,6 +56,13 @@ be backed out by reverting this work alone.
   `packages/semantic-kernel/**`, `python_backend/kernel/**`,
   `crates/kernel-consumer/**`, `scripts/build-semantic-kernel.mjs`,
   `scripts/build-semantic-kernel-digests.mjs`,
+  `scripts/check-semantic-kernel-crate.mjs` — permitted for one reason only,
+  stated here so the entry cannot be reused for another: FR-086-CON-4 requires
+  the crate and its digest baseline to be written by two scripts reaching the
+  emitter through two entry points, and neither writer may also be the checker,
+  because a gate that regenerates its own baseline compares a file to itself.
+  The measured gates therefore need a third script that writes nothing, and
+  this entry admits that one and only that one,
   `test/semantic-kernel.test.ts`, `test/changed-paths.ts`,
   `test/compiler-core.test.ts` — permitted for one reason only, stated here so
   the entry cannot be reused for another: FR-049's closing gate requires every

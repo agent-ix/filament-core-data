@@ -272,7 +272,7 @@ producer/schema plan are accepted.
 | FR-083 | FR-083-AC/CON x23 | TC-1020..TC-1027 | 🚧 In progress |
 | FR-084 | FR-084-AC/CON x30 | TC-1028..TC-1037 | 🚧 In progress |
 | FR-085 | FR-085-AC/CON x28 | TC-1038..TC-1047 | 🚧 In progress |
-| FR-086 | FR-086-AC/CON x30 | TC-1048..TC-1057 | 🚧 In progress |
+| FR-086 | FR-086-AC/CON x30 | TC-1048..TC-1057 | ✅ Complete |
 | FR-087 | FR-087-AC/CON x26 | TC-1058..TC-1066 | 🚧 In progress |
 | FR-088 | FR-088-AC/CON x25 | TC-1067..TC-1075 | 🚧 In progress |
 | FR-089 | FR-089-AC/CON x28 | TC-1076..TC-1085 | 🚧 In progress |
@@ -1346,16 +1346,16 @@ producer/schema plan are accepted.
 | TC-1045 | Every import specifier in every committed module begins with ./ or ../, and no committed module names a package in any of the seven prohibited depende | Snapshot | P0 | FR-085-AC-14, FR-085-AC-15, FR-085-AC-16 | 🚧 planned |
 | TC-1046 | Hand-editing one byte of a committed generated file makes make semantic-kernel-check fail naming that file, so the tree cannot drift from the emitter | Property | P0 | FR-085-AC-17, FR-085-AC-18, FR-085-AC-19 | 🚧 planned |
 | TC-1047 | Docs/semantic-data-system/semantic-kernel-packages.md carries one row per blocked criterion | Unit | P0 | FR-085-AC-20 | 🚧 planned |
-| TC-1048 | Adds no module under src/compiler/backends/rust-serde/ and no kernel-specific branch inside the existing emitter. A construct the backend cannot rende | Static | P0 | FR-086-CON-1, FR-086-CON-2, FR-086-CON-3 | 🚧 planned |
-| TC-1049 | The digest baseline be written by a script other than the one that writes the committed crate, reaching the emitter through a different entry point, s | Static | P0 | FR-086-CON-4, FR-086-CON-5, FR-086-CON-6 | 🚧 planned |
-| TC-1050 | No step contact a package registry, either to publish or to resolve | Static | P0 | FR-086-CON-7, FR-086-CON-8, FR-086-CON-9 | 🚧 planned |
-| TC-1051 | Src/compiler/backends/**, Cargo.lock, rust-toolchain.toml, rustfmt.toml, .cargo/config.toml, package.json, tsconfig.json and .github/** are prohibited | Unit | P0 | FR-086-CON-10, FR-086-AC-1, FR-086-AC-2 | 🚧 planned |
-| TC-1052 | The committed Cargo.toml carries publish = false | Property | P0 | FR-086-AC-3, FR-086-AC-4, FR-086-AC-5 | 🚧 planned |
-| TC-1053 | Introducing a missing_docs violation | Unit | P0 | FR-086-AC-6, FR-086-AC-7, FR-086-AC-8 | 🚧 planned |
-| TC-1054 | Make semantic-kernel-check leaves git status --porcelain empty, in the passing case and in each failing case, with no Cargo.lock and no target/ left i | Property | P0 | FR-086-AC-9, FR-086-AC-10, FR-086-AC-11 | 🚧 planned |
-| TC-1055 | THIRD-PARTY-NOTICES.md carries a row for serde at the exact pinned version with its SPDX identifier and the location of its preserved upstream licence | Snapshot | P0 | FR-086-AC-12, FR-086-AC-13, FR-086-AC-14 | 🚧 planned |
-| TC-1056 | The committed crate name equals the value crate.mjs derives from the kernel document's package.identity | Snapshot | P0 | FR-086-AC-15, FR-086-AC-16, FR-086-AC-17 | 🚧 planned |
-| TC-1057 | Make semantic-kernel-check reports on every run that Rust publication is blocked on agent-ix/quoin#290, that publish = false in the generated manifest | Property | P0 | FR-086-AC-18, FR-086-AC-19, FR-086-AC-20 | 🚧 planned |
+| TC-1048 | Adds no module under src/compiler/backends/rust-serde/ and no kernel-specific branch inside the existing emitter. A construct the backend cannot rende | Static | P0 | FR-086-CON-1, FR-086-CON-2, FR-086-CON-3 | ✅ Complete |
+| TC-1049 | The digest baseline be written by a script other than the one that writes the committed crate, reaching the emitter through a different entry point, s | Static | P0 | FR-086-CON-4, FR-086-CON-5, FR-086-CON-6 | ✅ Complete |
+| TC-1050 | No step contact a package registry, either to publish or to resolve | Static | P0 | FR-086-CON-7, FR-086-CON-8, FR-086-CON-9 | ✅ Complete |
+| TC-1051 | Src/compiler/backends/**, Cargo.lock, rust-toolchain.toml, rustfmt.toml, .cargo/config.toml, package.json, tsconfig.json and .github/** are prohibited | Unit | P0 | FR-086-CON-10, FR-086-AC-1, FR-086-AC-2 | ✅ Complete |
+| TC-1052 | The committed Cargo.toml carries publish = false | Property | P0 | FR-086-AC-3, FR-086-AC-4, FR-086-AC-5 | ✅ Complete |
+| TC-1053 | Introducing a missing_docs violation | Unit | P0 | FR-086-AC-6, FR-086-AC-7, FR-086-AC-8 | ✅ Complete |
+| TC-1054 | Make semantic-kernel-check leaves git status --porcelain empty, in the passing case and in each failing case, with no Cargo.lock and no target/ left i | Property | P0 | FR-086-AC-9, FR-086-AC-10, FR-086-AC-11 | ✅ Complete |
+| TC-1055 | THIRD-PARTY-NOTICES.md carries a row for serde at the exact pinned version with its SPDX identifier and the location of its preserved upstream licence | Snapshot | P0 | FR-086-AC-12, FR-086-AC-13, FR-086-AC-14 | ✅ Complete |
+| TC-1056 | The committed crate name equals the value crate.mjs derives from the kernel document's package.identity | Snapshot | P0 | FR-086-AC-15, FR-086-AC-16, FR-086-AC-17 | ✅ Complete |
+| TC-1057 | Make semantic-kernel-check reports on every run that Rust publication is blocked on agent-ix/quoin#290, that publish = false in the generated manifest | Property | P0 | FR-086-AC-18, FR-086-AC-19, FR-086-AC-20 | ✅ Complete |
 | TC-1058 | The maintainer does not widen python_backend/refusals.json, relax a guard, add a guard exemption, or add a generator option to make the kernel bundle | Static | P0 | FR-087-CON-1, FR-087-CON-2, FR-087-CON-3 | 🚧 planned |
 | TC-1059 | The maintainer does not emit a package for a family the qualification judges not-qualified, nor re-run the qualification with an altered probe set to | Static | P0 | FR-087-CON-4, FR-087-CON-5, FR-087-CON-6 | 🚧 planned |
 | TC-1060 | Every existing path under python_backend/adapter/, python_backend/runner/, python_backend/qualification/, and python_backend/generated/, and every exi | Snapshot | P0 | FR-087-CON-7, FR-087-CON-8, FR-087-AC-1 | 🚧 planned |
