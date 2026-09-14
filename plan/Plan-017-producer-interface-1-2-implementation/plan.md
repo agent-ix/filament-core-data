@@ -2,7 +2,7 @@
 id: Plan-017
 title: "Producer interface 1.2 static half: digest selections, declarations, and one admitted static bundle"
 type: Plan
-status: pending
+status: active
 relationships:
   - target: "ix://agent-ix/filament-core-data/US-016"
     type: references
@@ -21,6 +21,14 @@ relationships:
   - target: "ix://agent-ix/filament-core-data/FR-118"
     type: references
   - target: "ix://agent-ix/filament-core-data/NFR-036"
+    type: references
+  - target: "ix://agent-ix/filament-core-data/US-018"
+    type: references
+  - target: "ix://agent-ix/filament-core-data/FR-127"
+    type: references
+  - target: "ix://agent-ix/filament-core-data/FR-128"
+    type: references
+  - target: "ix://agent-ix/filament-core-data/FR-129"
     type: references
 ---
 # Plan-017: producer interface 1.2, static half
@@ -54,17 +62,28 @@ and no row is owned twice.
 
 ### Functional requirements
 
-- [ ] **FR-112** — `DigestSelection { algorithm, domain, version, value }`; closed two-member domain vocabulary; configuration-selected pairs; domain-substitution, mismatch, absent-`version`, unselected-pair and bare-hash refusals; the consumer-owned `ArtifactRef.digest` carve-out
-- [ ] **FR-113** — `Revision { namespace, value }`; closed two-member namespace vocabulary; configuration-declared selections; cross-namespace substitution, bare-string and undeclared-namespace refusals; the consumer-owned `NativeSource.revision` carve-out
-- [ ] **FR-114** — `ComponentDeclaration`, `EndpointDeclaration`, `SourceLocus`, `InventoryDeclaration`/`InventoryMembership`; absent-locus, absent formal revision, unsupplied-locus and closed-inventory refusals; the explicitly incomplete inventory's retained `unknown`
-- [ ] **FR-115** — `RelationshipDeclaration` with `relationship_revision`, `digest`, independently identified `source`/`target` endpoint records joined by `endpoint_identity`, and the owning model/profile/configuration triple; role, multiplicity, projection-collapse and unknown-endpoint refusals with a named loss record
-- [ ] **FR-116** — `ProducerNativeCorrespondence` with the five authored producer-object members, the native selection, the native definition closure, the binding-relation identity, the configuration provenance, and one `ExportRecord` per exported component, endpoint and relationship; foreign, cross-bound, duplicate-pair, stale-selection, absent-provenance and incomplete-closure refusals; no consumer `u32` index assigned
-- [ ] **FR-117** — `StaticProducerBundle` + `AdmittedStaticBundle`: four header members, exactly nine content member classes, no assessment member class, one indivisible admission operation, no public constructor, no public member, no bypassing deserialization, the admitted-bundle key, identity collision and stale re-admission
-- [ ] **FR-118** — Filament Canonical JSON 1 exactly: `arbitrary_precision` parsing, arbitrary-precision coefficient and exponent, Unicode scalar-value key order, escape rules, set versus semantic-order arrays, the configuration's declared `numericResourceLimit`, and the self-digest exclusion
+- [x] **FR-112** — `DigestSelection { algorithm, domain, version, value }`; closed two-member domain vocabulary; configuration-selected pairs; domain-substitution, mismatch, absent-`version`, unselected-pair and bare-hash refusals; the consumer-owned `ArtifactRef.digest` carve-out
+- [x] **FR-113** — `Revision { namespace, value }`; closed two-member namespace vocabulary; configuration-declared selections; cross-namespace substitution, bare-string and undeclared-namespace refusals; the consumer-owned `NativeSource.revision` carve-out
+- [x] **FR-114** — `ComponentDeclaration`, `EndpointDeclaration`, `SourceLocus`, `InventoryDeclaration`/`InventoryMembership`; absent-locus, absent formal revision, unsupplied-locus and closed-inventory refusals; the explicitly incomplete inventory's retained `unknown`
+- [x] **FR-115** — `RelationshipDeclaration` with `relationship_revision`, `digest`, independently identified `source`/`target` endpoint records joined by `endpoint_identity`, and the owning model/profile/configuration triple; role, multiplicity, projection-collapse and unknown-endpoint refusals with a named loss record
+- [x] **FR-116** — `ProducerNativeCorrespondence` with the five authored producer-object members, the native selection, the native definition closure, the binding-relation identity, the configuration provenance, and one `ExportRecord` per exported component, endpoint and relationship; foreign, cross-bound, duplicate-pair, stale-selection, absent-provenance and incomplete-closure refusals; no consumer `u32` index assigned
+- [x] **FR-117** — `StaticProducerBundle` + `AdmittedStaticBundle`: four header members, exactly nine content member classes, no assessment member class, one indivisible admission operation, no public constructor, no public member, no bypassing deserialization, the admitted-bundle key, identity collision and stale re-admission
+- [x] **FR-118** — Filament Canonical JSON 1 exactly: `arbitrary_precision` parsing, arbitrary-precision coefficient and exponent, Unicode scalar-value key order, escape rules, set versus semantic-order arrays, the configuration's declared `numericResourceLimit`, and the self-digest exclusion
 
 ### Non-functional requirements
 
 - [ ] **NFR-036** — byte-exact canonical bytes and digests: repeat-run and two-process goldens, the declared insertion-order permutation set, the named architecture set, varied locale/environment/working directory, the zero-float-coercion audit with its planted control, per-array semantic-order comparison, and the zero-ambient-read audit plus instrumented offline run. This plan is the declared **apparatus owner** (NFR-036 Verification, FND-1756/FND-1767): the committed goldens, the second architecture and its runner, the planted-token control, the instrumented ambient-read run and the unprivileged network namespace are Tasks 149 and 150.
+
+### Post-plan static extension on PR #99
+
+US-018 and FR-127..FR-129 were specified and reviewed after the original nine
+tasks were allocated, then implemented on the same static-boundary branch as
+TC-1700..TC-1732. They close endpoint-type export resolution, the relationship
+direction vocabulary, and producer-local qualification against committed native
+artifact bytes and its export table. SR-214..SR-218 review the extension design;
+SR-219..SR-221 qualify its final native-fixture evidence. This extension does
+not move native-model admission into this repository: the downstream
+`quire-spec-language` composed admission seam remains its owner.
 
 ## What this plan does not implement
 
@@ -280,24 +299,24 @@ enumeration, grouped by the module under test. Every test lives in
 
 ### Unit and integration tests
 
-- [ ] `canonical.rs` (FR-118): TC-1640, TC-1641, TC-1643, TC-1644, TC-1646, TC-1647, TC-1649
-- [ ] `digest.rs` / `revision.rs` (FR-112, FR-113): TC-1600..TC-1604, TC-1606..TC-1610
-- [ ] `declarations.rs` (FR-114): TC-1611..TC-1614, TC-1616; inventory closure integration TC-1615
-- [ ] `relationships.rs` (FR-115): TC-1617..TC-1620, TC-1622; endpoint-join integration TC-1621
-- [ ] `correspondence.rs` (FR-116): TC-1623..TC-1629
-- [ ] `static_bundle.rs` (FR-117): TC-1631..TC-1634, TC-1639; admission-source integration TC-1638; varied-environment integration TC-1636
+- [x] `canonical.rs` (FR-118): TC-1640, TC-1641, TC-1643, TC-1644, TC-1646, TC-1647, TC-1649
+- [x] `digest.rs` / `revision.rs` (FR-112, FR-113): TC-1600..TC-1604, TC-1606..TC-1610
+- [x] `declarations.rs` (FR-114): TC-1611..TC-1614, TC-1616; inventory closure integration TC-1615
+- [x] `relationships.rs` (FR-115): TC-1617..TC-1620, TC-1622; endpoint-join integration TC-1621
+- [x] `correspondence.rs` (FR-116): TC-1623..TC-1629
+- [x] `static_bundle.rs` (FR-117): TC-1631..TC-1634, TC-1639; admission-source integration TC-1638; varied-environment integration TC-1636
 
 ### Compile-time and static gates (each with a planted-token control)
 
-- [ ] FR-116-CON-3/CON-5 unassigned-index and distinct-domain scan TC-1630
-- [ ] FR-117-CON-1 member-set closure TC-1632 and FR-117-CON-2 unconstructibility TC-1635, both `Compile` (FND-1745): a `compile_fail` doctest per prohibited construction — a struct literal, a public-member read, and a `serde_json::from_slice::<StaticProducerBundle>`
-- [ ] FR-116-AC-1 five-member compile control TC-1623
-- [ ] NFR-036-M-5 float-coercion audit over the declared numeric-path population TC-1654
-- [ ] NFR-036-M-7 ambient-read call-graph audit plus instrumented offline run TC-1656
+- [x] FR-116-CON-3/CON-5 unassigned-index and distinct-domain scan TC-1630
+- [x] FR-117-CON-1 member-set closure TC-1632 and FR-117-CON-2 unconstructibility TC-1635, both `Compile` (FND-1745): a `compile_fail` doctest per prohibited construction — a struct literal, a public-member read, and a `serde_json::from_slice::<StaticProducerBundle>`
+- [x] FR-116-AC-1 five-member compile control TC-1623
+- [x] NFR-036-M-5 float-coercion audit over the declared numeric-path population TC-1654
+- [x] NFR-036-M-7 ambient-read call-graph audit plus instrumented offline run TC-1656
 
 ### Property tests
 
-- [ ] TC-1605 (one object, two wire member orders, one digest `value`), TC-1642 (exact decimal round-trip; no binary64 between parse and serialization), TC-1645 (set array permuted digests identically, semantic-order array permuted digests differently), TC-1651 (declared insertion-order permutation set), TC-1655 (per-array semantic order, with the permuted paired run whose digest must differ)
+- [x] TC-1605 (one object, two wire member orders, one digest `value`), TC-1642 (exact decimal round-trip; no binary64 between parse and serialization), TC-1645 (set array permuted digests identically, semantic-order array permuted digests differently), TC-1651 (declared insertion-order permutation set), TC-1655 (per-array semantic order, with the permuted paired run whose digest must differ)
 
 ### Snapshot tests against committed goldens
 
@@ -305,7 +324,7 @@ enumeration, grouped by the module under test. Every test lives in
 
 ### Manual
 
-- [ ] TC-1637 — FR-117-AC-6 and AC-9: every member read without parsing prose, defaulting, or inferring, and production of the bundle recorded as static admission only. Owned by Task-151; `Inspection`/`Manual` is the correct method for a presentation claim with no executable oracle (FND-1748).
+- [x] TC-1637 — FR-117-AC-6 and AC-9: every member read without parsing prose, defaulting, or inferring, and production of the bundle recorded as static admission only. Owned by Task-151; `Inspection`/`Manual` is the correct method for a presentation claim with no executable oracle (FND-1748).
 
 ## Quality gates
 

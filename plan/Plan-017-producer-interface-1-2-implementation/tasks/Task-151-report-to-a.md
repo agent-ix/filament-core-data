@@ -2,7 +2,7 @@
 id: Task-151
 title: "Report the static producer boundary to A, as static admission only"
 type: Task
-status: todo
+status: in_progress
 track: E
 priority: P1
 relationships:
@@ -29,36 +29,36 @@ at `ix://agent-ix/quire-spec-language`, `src/protocol_artifact/wire.rs`, revisio
 
 ## Subtasks
 
-- [ ] **Green: the member-for-member mapping.** Record which producer member
+- [x] **Green: the member-for-member mapping.** Record which producer member
   supplies which consumer member: `DigestSelection` → `SelectedDigest`, `Revision` →
   `Revision`, `SourceLocus` → `ForeignLocus`/`ArtifactRef`/`Formal`/`Span`,
   `ExportRecord` → `Export { kind, path, locus }`, the five authored producer-object
   members → `ProducerObject` minus `interface`, and the admitted bundle's content
   classes → `Model { artifact, profile, exports, correspondence }`.
-- [ ] **Green: the unassigned indices.** State explicitly that every consumer `u32`
+- [x] **Green: the unassigned indices.** State explicitly that every consumer `u32`
   index — `ProducerObject.interface`, `Correspondence.native`,
   `Correspondence.relation`, `Correspondence.exports`, `Definition.requires` — is
   left unassigned and is A's to assign when it assembles its own package
   (FR-116-CON-5, FND-1805).
-- [ ] **Green: the two carve-outs.** State that `ArtifactRef.digest` stays one
+- [x] **Green: the two carve-outs.** State that `ArtifactRef.digest` stays one
   raw-byte digest string and `NativeSource.revision` stays an editable native
   authority label; the producer authors neither as a selection and refuses neither
   (FR-112-CON-4, FR-113-CON-4).
-- [ ] **Green: the measured numbers.** Report what each gate measured, not that it
+- [x] **Green: the measured numbers.** Report what each gate measured, not that it
   passed: the golden document count, the permutation-set size, both architectures,
   the zero float-coercion sites, the zero ambient reads, and the eight adverse axes
   with their one refusal code each.
-- [ ] **Green: the two pre-existing reds.** Report `tc_1299` and `tc_1310` in
+- [x] **Green: the two pre-existing reds.** Report `tc_1299` and `tc_1310` in
   `crates/extraction-frontend/tests/change_set.rs` as red and **not owned by this
   plan**: they measure the #36 changed-path diff from base `3b75e01` and list this
   increment's paths as unpermitted, and issue #92 retires them. State that no task
   edited them and that they were not added to any permitted-path list.
-- [ ] **Green: the presentation claim.** `tc_1637_` (`Manual`/`Inspection`,
+- [x] **Green: the presentation claim.** `tc_1637_` (`Manual`/`Inspection`,
   FR-117-AC-6 and AC-9): record that every member of an admitted static bundle is
   read without parsing prose, defaulting a member, or inferring a field; and that
   production of the bundle is recorded as **static admission only**, not as campaign
   acceptance of any assessment claim.
-- [ ] **Green: what A must not expect.** The assessment half — US-017,
+- [x] **Green: what A must not expect.** The assessment half — US-017,
   FR-119..FR-126, NFR-037, TC-1657..TC-1699 — is designed and reviewed and **not
   implemented**. A must not read a static admission as evidence of an assessment, and
   must not expect a population, snapshot, window, observation, progress record or

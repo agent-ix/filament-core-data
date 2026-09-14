@@ -2,7 +2,7 @@
 id: Task-150
 title: "NFR-036 cross-architecture, numeric-refusal and ambient-read apparatus"
 type: Task
-status: todo
+status: in_progress
 track: D
 priority: P0
 relationships:
@@ -34,7 +34,7 @@ determinism beyond that set is not asserted.
 
 ## Subtasks
 
-- [ ] **Green: the runner.** Add the `aarch64-unknown-linux-gnu` execution path as a
+- [x] **Green: the runner.** Add the `aarch64-unknown-linux-gnu` execution path as a
   Makefile target beside the existing `rust-*` targets, naming its runner explicitly.
   A run that cannot reach the second architecture **fails saying so** and reports
   which architecture it could not reach; it never passes vacuously and never skips.
@@ -48,18 +48,18 @@ determinism beyond that set is not asserted.
   decision differs by host; the refused set is compared element by element, not by
   count — FND-1716 is why this is measured beside byte agreement rather than assumed
   from it).
-- [ ] **Red: ambient reads.** `tc_1656_` (`Static` plus runtime: a call-graph analysis
+- [x] **Red: ambient reads.** `tc_1656_` (`Static` plus runtime: a call-graph analysis
   over the canonicalization and admission path counting locale reads, environment
   reads, working-directory resolutions, clock reads and socket opens — target zero,
   **no exemption list** (FND-1741) — plus an instrumented offline run inside an
   unprivileged network namespace recording every such read; both report the number
   they measured).
-- [ ] **Green: the namespace and instrumentation.** The offline run uses an
+- [x] **Green: the namespace and instrumentation.** The offline run uses an
   unprivileged network namespace; if the namespace cannot be created, the gate fails
   reporting that it did not run. The instrumentation records reads rather than
   asserting their absence, so the evidence is a measured zero and not an unexercised
   assertion.
-- [ ] **Falsify.** Plant a `std::env::var` read on the canonicalization path in a
+- [x] **Falsify.** Plant a `std::env::var` read on the canonicalization path in a
   scratch copy and prove the call-graph half of `tc_1656_` fails naming it; plant a
   clock read and prove the instrumented half records it. Plant a host-derived numeric
   limit in a scratch copy and prove `tc_1648_` fails.

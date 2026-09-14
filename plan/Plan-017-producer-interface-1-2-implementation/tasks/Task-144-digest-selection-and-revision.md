@@ -2,7 +2,7 @@
 id: Task-144
 title: "FR-112 versioned digest selections and FR-113 namespaced revisions"
 type: Task
-status: todo
+status: done
 track: A
 priority: P0
 relationships:
@@ -55,7 +55,7 @@ neither refuses (FR-112-CON-4, FR-113-CON-4).
 
 ## Subtasks
 
-- [ ] **Red: digest shape.** `tests/digest.rs`: `tc_1600_` (a canonical-object
+- [x] **Red: digest shape.** `tests/digest.rs`: `tc_1600_` (a canonical-object
   digest and a native raw-byte digest each emitted as the four-member selection
   whose members map member-for-member onto the pinned consumer `SelectedDigest`,
   with `version` a separate authored member that the domain spelling never
@@ -63,7 +63,7 @@ neither refuses (FR-112-CON-4, FR-113-CON-4).
   transmission under two different wire member orders yields one identical digest
   `value`, because the digest input is the FR-118 canonical byte string of
   Task-143 and never the producer's own serializer).
-- [ ] **Red: digest refusals.** `tc_1601_` (a canonical-object digest offered
+- [x] **Red: digest refusals.** `tc_1601_` (a canonical-object digest offered
   under `quire-native-bytes-1` refuses and a native raw-byte digest offered under
   `filament-canonical-json-1` refuses — neither is revalidated in the other
   domain nor read as a cache miss), `tc_1602_` (a recomputed value differing from
@@ -75,7 +75,7 @@ neither refuses (FR-112-CON-4, FR-113-CON-4).
   locus carrying `ArtifactRef.digest` as one raw-byte string and
   `NativeSource.revision` as an authority label is admitted, and neither refuses
   as a malformed digest selection).
-- [ ] **Red: revisions.** `tests/revision.rs`: `tc_1606_` (producer model,
+- [x] **Red: revisions.** `tests/revision.rs`: `tc_1606_` (producer model,
   component, endpoint and relationship revisions under
   `filament-core-data/producer-object-revision-1`, native artifact and definition
   revisions under `quire-native/definition-revision-1`, both members mapping onto
@@ -90,7 +90,7 @@ neither refuses (FR-112-CON-4, FR-113-CON-4).
   under the two declared namespaces stay two distinct revisions and never merge;
   a locus carrying the consumer-owned `NativeSource.revision` label and
   `ArtifactRef.digest` string is admitted).
-- [ ] **Green: types and constants.** `DigestSelection` with
+- [x] **Green: types and constants.** `DigestSelection` with
   `CANONICAL_JSON_DOMAIN = "filament-canonical-json-1"`,
   `NATIVE_BYTES_DOMAIN = "quire-native-bytes-1"`,
   `DIGEST_DOMAIN_VERSION = "1"`, and
@@ -98,23 +98,23 @@ neither refuses (FR-112-CON-4, FR-113-CON-4).
   version, and a `value` not matching `sha256:<64 lowercase hex>`. `Revision`
   with `PRODUCER_REVISION_NAMESPACE = "filament-core-data/producer-object-revision-1"`
   and `NATIVE_REVISION_NAMESPACE = "quire-native/definition-revision-1"`.
-- [ ] **Green: configuration selections.** The configuration document declares
+- [x] **Green: configuration selections.** The configuration document declares
   `digestSelections` (domain/version pairs) and `revisionNamespaces`; an
   in-vocabulary but undeclared pair or namespace refuses under its own code,
   distinct from the outside-vocabulary code.
-- [ ] **Green: refusal codes.** Add the digest and revision codes of the
+- [x] **Green: refusal codes.** Add the digest and revision codes of the
   `ERR-29x` set: `DIGEST_VERSION_ABSENT`, `DIGEST_VERSION_UNKNOWN`,
   `DIGEST_DOMAIN_SUBSTITUTED`, `DIGEST_VALUE_MALFORMED`, `DIGEST_MISMATCH`,
   `REVISION_NAMESPACE_ABSENT`, `REVISION_NAMESPACE_UNDECLARED`,
   `REVISION_NAMESPACE_SUBSTITUTED`, each blocking, each naming the offending
   selection.
-- [ ] **Green: migrate Plan-016.** Rewrite `ProducerObjectReference.revision`
+- [x] **Green: migrate Plan-016.** Rewrite `ProducerObjectReference.revision`
   and `NativeArtifactReference.revision` to `Revision`, and every
   `DigestTriple` occurrence in `src/` and in
   `fixtures/baseline-1-2/relationship-population-a.json` to `DigestSelection`.
   `DigestTriple` is removed, not aliased: a deprecated-shape fallback is exactly
   what FR-112 forbids.
-- [ ] **Falsify.** Derive `version` from the domain spelling in a scratch copy
+- [x] **Falsify.** Derive `version` from the domain spelling in a scratch copy
   and prove `tc_1600_` fails (FR-112-CON-3). Default an absent namespace in a
   scratch copy and prove `tc_1608_` fails.
 

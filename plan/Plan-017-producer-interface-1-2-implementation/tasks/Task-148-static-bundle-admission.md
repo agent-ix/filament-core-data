@@ -2,7 +2,7 @@
 id: Task-148
 title: "FR-117 the static bundle and its one indivisible admission operation"
 type: Task
-status: todo
+status: done
 track: C
 priority: P0
 relationships:
@@ -60,7 +60,7 @@ module unchanged and are not reachable from the static bundle.
 
 ## Subtasks
 
-- [ ] **Red: admitted shape.** `tests/static_bundle.rs`: `tc_1631_` (a complete
+- [x] **Red: admitted shape.** `tests/static_bundle.rs`: `tc_1631_` (a complete
   static selection is admitted as one immutable typed bundle whose four header
   members and nine content member classes are each read directly as typed members,
   and which carries no population, snapshot, window, instance, observation,
@@ -68,11 +68,11 @@ module unchanged and are not reachable from the static bundle.
   is closed over exactly the declared content member classes and that exclusion and
   over no header member — a `compile_fail` doctest on an added assessment member
   and on a match that omits a content class).
-- [ ] **Red: unconstructibility.** `tc_1635_` (`Compile`: three `compile_fail`
+- [x] **Red: unconstructibility.** `tc_1635_` (`Compile`: three `compile_fail`
   doctests — a struct literal of the admitted type, a read of a would-be public
   member, and `serde_json::from_slice::<AdmittedStaticBundle>` — plus a runtime
   assertion that a refused admission returns `Err` and yields no value).
-- [ ] **Red: missing members and assessment offers.** `tc_1633_` (a bundle omitting
+- [x] **Red: missing members and assessment offers.** `tc_1633_` (a bundle omitting
   any required member — a header member, an identity, a namespaced revision, a
   digest selection, a provenance locus, an ownership member, an inventory
   membership, or the static prerequisite closure — refuses naming the absent
@@ -81,7 +81,7 @@ module unchanged and are not reachable from the static bundle.
   offered in place of a static admission refuses naming that document; a
   correspondence export of the assessment kind FR-120 partitions to the assessment
   side refuses naming that export; none is silently retained).
-- [ ] **Red: closure sources and ambient inputs.** `tc_1638_` (integration: a static
+- [x] **Red: closure sources and ambient inputs.** `tc_1638_` (integration: a static
   admission completes from the static members of the FR-109 configuration document
   and the FR-110 inventory declaration alone, reaching no FR-108 population
   obligation, with the configuration's static prerequisite closure and the FR-116
@@ -89,7 +89,7 @@ module unchanged and are not reachable from the static bundle.
   FR-117-CON-5, FND-1727), `tc_1636_` (integration: an admission run with altered
   environment variables, an altered working directory, an altered wall clock and no
   network reachability produces the identical admitted bundle).
-- [ ] **Red: the admitted-bundle key.** `tc_1639_` (two bundles carrying one bundle
+- [x] **Red: the admitted-bundle key.** `tc_1639_` (two bundles carrying one bundle
   identity and one namespaced revision with different canonical digest selections
   refuse as an identity collision **naming both** selections; re-admitting one
   bundle identity over different bytes yields a different admitted-bundle key and a
@@ -97,26 +97,26 @@ module unchanged and are not reachable from the static bundle.
   selections rather than resolving forward; and the bundle header identity, revision
   and digest stay distinct from the model's and the profile's even when their
   spellings coincide — FR-117-CON-6, CON-7, FND-1823, E9).
-- [ ] **Green: types.** `StaticProducerBundle` with the four header members and the
+- [x] **Green: types.** `StaticProducerBundle` with the four header members and the
   nine content classes; `StaticClosure` for the configuration's static prerequisite
   closure, distinct from `native_definition_closure`; `AdmittedStaticBundle` as the
   sealed wrapper with read-only accessors and the `AdmittedBundleKey { identity,
   revision, digest }`.
-- [ ] **Green: one admission operation.** `admit()` and `admit_json(bytes)` construct
+- [x] **Green: one admission operation.** `admit()` and `admit_json(bytes)` construct
   and validate indivisibly: `admit_json` deserializes into a **private**
   intermediate and never exposes it. Delete `ProducerBundle::from_json` and the
   public `validate`; `ProducerBundle` itself is removed rather than deprecated.
-- [ ] **Green: assessment module split.** Move `PopulationDocument`,
+- [x] **Green: assessment module split.** Move `PopulationDocument`,
   `PopulationMember`, `RelationshipInstance`, `ObservationRecord`, `WindowDocument`,
   `WindowCoverage`, `AvailabilityFact`, `AvailabilityAssessment` and their
   dispositions into `src/assessment.rs` unchanged, keeping Plan-016's
   TC-1373..TC-1381 controls green. Nothing in the static path references that
   module.
-- [ ] **Green: refusal codes.** `ASSESSMENT_INPUT_IN_STATIC_BUNDLE`,
+- [x] **Green: refusal codes.** `ASSESSMENT_INPUT_IN_STATIC_BUNDLE`,
   `IDENTITY_ABSENT` for a header member, the identity-collision refusal and the
   stale-binding refusal — each blocking, each naming what FR-117's Outputs say it
   names.
-- [ ] **Falsify.** Add a `Deserialize` derive to `AdmittedStaticBundle` in a scratch
+- [x] **Falsify.** Add a `Deserialize` derive to `AdmittedStaticBundle` in a scratch
   copy and prove `tc_1635_` fails to fail — i.e. the `compile_fail` doctest now
   compiles and the control reports the breach. Read `std::env::var` during admission
   in a scratch copy and prove `tc_1636_` fails.

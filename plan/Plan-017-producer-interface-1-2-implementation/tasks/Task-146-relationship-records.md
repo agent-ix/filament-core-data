@@ -2,7 +2,7 @@
 id: Task-146
 title: "FR-115 complete relationship records with independent endpoints and ownership"
 type: Task
-status: todo
+status: done
 track: B
 priority: P0
 relationships:
@@ -43,7 +43,7 @@ carrying the relationship identity; it never guesses.
 
 ## Subtasks
 
-- [ ] **Red: record shape.** `tests/relationships.rs`: `tc_1617_` (one
+- [x] **Red: record shape.** `tests/relationships.rs`: `tc_1617_` (one
   relationship record carries identity, namespaced revision, canonical digest,
   authored name, `semantics` with category, direction, composite flag, lifecycle
   and ownership, and the owning model, profile and configuration identities as
@@ -53,7 +53,7 @@ carrying the relationship identity; it never guesses.
   self-relationship whose `source` and `target` name one type identity emits two
   independent endpoint records retaining their own endpoint identities, roles and
   multiplicities).
-- [ ] **Red: refusals and loss.** `tc_1620_` (a relationship whose `source` omits
+- [x] **Red: refusals and loss.** `tc_1620_` (a relationship whose `source` omits
   its role refuses; one whose `target` omits its multiplicity refuses; a requested
   endpoint projection collapsing the two roles into one refuses with a named loss
   record carrying the relationship identity rather than a guessed value),
@@ -64,18 +64,18 @@ carrying the relationship identity; it never guesses.
   is authored rather than reconstructed from a foreign key, a field, or a
   relationship instance, and the emitted record carries no population member and
   no relationship instance).
-- [ ] **Green: members.** Add `relationship_revision: Revision`,
+- [x] **Green: members.** Add `relationship_revision: Revision`,
   `digest: DigestSelection`, `ownership: RelationshipOwnership` and
   `inventory_membership: InventoryMembership` to `RelationshipDeclaration`;
   keep `source`/`target` as independent endpoint records.
-- [ ] **Green: join.** Resolve each `endpoint_identity` against the bundle's
+- [x] **Green: join.** Resolve each `endpoint_identity` against the bundle's
   declared endpoint records — the vocabulary FND-1809 (E8) names — and make the
   refusal say which vocabulary it resolved against.
-- [ ] **Green: projection.** Implement the requested endpoint projection named in
+- [x] **Green: projection.** Implement the requested endpoint projection named in
   FR-115's Inputs and Outputs as a fallible operation that refuses with
   `RELATIONSHIP_OWNERSHIP_ABSENT` / the projection loss record rather than
   collapsing; the loss record carries the relationship identity.
-- [ ] **Falsify.** Join an endpoint by coinciding type identity in a scratch copy
+- [x] **Falsify.** Join an endpoint by coinciding type identity in a scratch copy
   and prove `tc_1621_` fails. Reconstruct the target role from the source role in
   a scratch copy and prove `tc_1620_` fails.
 

@@ -2,7 +2,7 @@
 id: Task-147
 title: "FR-116 correspondence records and their export mappings"
 type: Task
-status: todo
+status: done
 track: C
 priority: P0
 relationships:
@@ -51,7 +51,7 @@ likewise left unassigned (FR-116-CON-5).
 
 ## Subtasks
 
-- [ ] **Red: shape.** `tests/correspondence.rs`: `tc_1623_` (`Compile`: one
+- [x] **Red: shape.** `tests/correspondence.rs`: `tc_1623_` (`Compile`: one
   selected pair yields exactly one correspondence record whose five authored
   producer-object members, native selection, native definition closure,
   binding-relation identity, configuration provenance and export mappings are
@@ -66,10 +66,10 @@ likewise left unassigned (FR-116-CON-5).
   selection and a native raw-byte digest selection stay distinct members when
   their hash text coincides, and every consumer `u32` table index including the
   interface index is left unassigned).
-- [ ] **Red: export refusals.** `tc_1624_` (an export mapping naming an export its
+- [x] **Red: export refusals.** `tc_1624_` (an export mapping naming an export its
   named producer object does not export refuses — foreign; one naming an export
   owned by another correspondence's producer object refuses — cross-bound).
-- [ ] **Red: staleness and provenance.** `tc_1625_` (changing the producer object
+- [x] **Red: staleness and provenance.** `tc_1625_` (changing the producer object
   selection or the native artifact selection while retaining the prior binding
   relation refuses), `tc_1626_` (a presentation-only native re-encoding is admitted
   only through a new native artifact selection and a new correspondence record,
@@ -79,23 +79,23 @@ likewise left unassigned (FR-116-CON-5).
   incomplete refuses), `tc_1628_` (two correspondence records naming one selected
   pair refuse — **both** of them, per FR-116's Behavior — and a producer object the
   consumer does not select yields no correspondence record).
-- [ ] **Green: export record.** `ExportRecord { kind: ExportKind, identity,
+- [x] **Green: export record.** `ExportRecord { kind: ExportKind, identity,
   path: Vec<String>, locus: SourceLocus }` with `ExportKind` the subset of the
   consumer's closed vocabulary this producer actually emits — `component`,
   `endpoint`, `relationship`, `object`, `field`, `scalar`, `enum`, `record`,
   `reference`, `operation`, `variant` — cited from the pinned consumer contract and
   never minted here. The `population` kind FR-120 partitions to the assessment side
   is not in the enum at all (FND-1803, FND-1825, E3).
-- [ ] **Green: correspondence members.** Add `exports: Vec<ExportRecord>`, both
+- [x] **Green: correspondence members.** Add `exports: Vec<ExportRecord>`, both
   sides' `Revision`, per-entry revision and raw-byte digest on each
   `native_definition_closure` entry, `binding_relation_identity` and
   `configuration_identity` as separate members.
-- [ ] **Green: refusal codes.** `EXPORT_FOREIGN`, `EXPORT_CROSS_BOUND`,
+- [x] **Green: refusal codes.** `EXPORT_FOREIGN`, `EXPORT_CROSS_BOUND`,
   `CORRESPONDENCE_STALE_SELECTION`,
   `CORRESPONDENCE_CONFIGURATION_MISMATCH`,
   `CORRESPONDENCE_CLOSURE_INCOMPLETE`, plus the duplicate-pair refusal — each
   blocking, each naming the absent, foreign, duplicated, or stale member.
-- [ ] **Falsify.** Assign a `u32` interface index in a scratch copy and prove
+- [x] **Falsify.** Assign a `u32` interface index in a scratch copy and prove
   `tc_1630_` fails. Substitute a digest under a retained relation in a scratch
   copy and prove `tc_1626_` fails.
 

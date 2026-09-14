@@ -2,7 +2,7 @@
 id: Task-149
 title: "Static bundle fixture, published JSON Schema, eight one-axis adverse fixtures, and the NFR-036 goldens"
 type: Task
-status: todo
+status: done
 track: D
 priority: P0
 relationships:
@@ -39,7 +39,7 @@ not a producer finding.
 
 ## Subtasks
 
-- [ ] **Green: the good fixture.** `fixtures/baseline-1-2/static-bundle-a.json` — one
+- [x] **Green: the good fixture.** `fixtures/baseline-1-2/static-bundle-a.json` — one
   model, one profile, at least two components, at least three endpoints (so a
   self-relationship has two distinct endpoint identities over one type identity), at
   least two relationships including one self-relationship, one inventory declaration,
@@ -50,7 +50,7 @@ not a producer finding.
   collision across a repository, a component, a role and an endpoint is authored on
   purpose (TC-1613's input), and one authored exact decimal beyond binary64 exists so
   the fixture exercises Task-143's seam.
-- [ ] **Green: the published schema.** `schema/baseline/v1/static-bundle.schema.json`,
+- [x] **Green: the published schema.** `schema/baseline/v1/static-bundle.schema.json`,
   in the shape `schema/baseline/v1/producer-bundle.schema.json` already establishes:
   four header members required, the nine content member classes required, every
   assessment member class prohibited (`additionalProperties: false` plus explicit
@@ -58,7 +58,7 @@ not a producer finding.
   `Revision` two members required, and the locus's raw-byte digest typed as a string
   rather than a selection. A schema round-trip test validates the good fixture and
   rejects each adverse fixture that is a shape violation.
-- [ ] **Green: the eight adverse fixtures.** One axis each, one code each:
+- [x] **Green: the eight adverse fixtures.** One axis each, one code each:
   `01-missing-identities.json` (`IDENTITY_ABSENT`);
   `02-digest-domain-substituted.json` (`DIGEST_DOMAIN_SUBSTITUTED` / `DIGEST_MISMATCH`);
   `03-revision-namespace-substituted.json` (`REVISION_NAMESPACE_SUBSTITUTED`);
@@ -71,22 +71,22 @@ not a producer finding.
   `08-inventory-incomplete.json` (`INVENTORY_MEMBER_UNLISTED` /
   `INVENTORY_INCOMPLETE_UNKNOWN`). Each is diffed against the good fixture in the
   test to prove the mutation is one axis wide.
-- [ ] **Red: goldens.** `tests/byte_exact.rs`: `tc_1650_` (every digested document of
+- [x] **Red: goldens.** `tests/byte_exact.rs`: `tc_1650_` (every digested document of
   the admitted bundle canonicalizes to the same byte string and digest across two
   runs in one process and two runs in two separate processes, and equals the
   committed golden), `tc_1653_` (the same bytes under a changed locale, environment
   and working directory against the same golden).
-- [ ] **Red: order properties.** `tc_1651_` (property: every digested document's
+- [x] **Red: order properties.** `tc_1651_` (property: every digested document's
   digest is unchanged when its object keys and set-array members are supplied in a
   permuted insertion order, one paired run per permutation of the **declared
   permutation set**, which this task declares and commits beside the golden),
   `tc_1655_` (property: every semantic-order array is emitted in the
   producer-declared order, measured per array against that declaration, with a
   permuted-array paired run whose digest **must differ**).
-- [ ] **Green: golden bytes.** Commit the golden canonical byte strings under
+- [x] **Green: golden bytes.** Commit the golden canonical byte strings under
   `fixtures/baseline-1-2/golden/` — one file per digested document — written once by
   a single sanctioned writer path, never rewritten by a test.
-- [ ] **Falsify.** Perturb one golden byte and prove `tc_1650_` fails naming the
+- [x] **Falsify.** Perturb one golden byte and prove `tc_1650_` fails naming the
   document. Add a second axis to one adverse fixture and prove its one-axis diff
   check fails.
 

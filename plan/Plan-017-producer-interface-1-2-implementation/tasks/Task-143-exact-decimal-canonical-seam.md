@@ -2,7 +2,7 @@
 id: Task-143
 title: "FR-118 exact-decimal canonical seam and the numeric-path float audit"
 type: Task
-status: todo
+status: done
 track: A
 priority: P0
 relationships:
@@ -53,7 +53,7 @@ hypothesis to re-test.
 
 ## Subtasks
 
-- [ ] **Red: exactness.** `tests/canonical.rs`: `tc_1640_` (`1`, `1.0`, `1e0`
+- [x] **Red: exactness.** `tests/canonical.rs`: `tc_1640_` (`1`, `1.0`, `1e0`
   canonicalize to the one byte string `1` and agree on one
   `filament-canonical-json-1` digest), `tc_1641_` (`9007199254740992` and
   `9007199254740993` canonicalize to different byte strings and different
@@ -64,7 +64,7 @@ hypothesis to re-test.
   `123456789012345678901234567890.12345678901234567890` and
   `0.3333333333333333333333333333333333`, each of which today returns `0.1`,
   a corrupted integer, and an invented digit respectively).
-- [ ] **Red: order and escapes.** `tc_1643_` (keys whose locale collation order
+- [x] **Red: order and escapes.** `tc_1643_` (keys whose locale collation order
   and whose encoded byte length both differ from their Unicode scalar-value order
   emit in scalar-value order, sorted by the canonicalizer itself and not by a map
   implementation's iteration order), `tc_1647_` (a document assembled in an
@@ -76,7 +76,7 @@ hypothesis to re-test.
   backslash and emits each control character as a lowercase `\u00xx` escape; a
   document carrying a string that is not valid Unicode refuses blocking and
   digests nothing).
-- [ ] **Red: sets, limits, self-digest.** `tc_1645_` (property: two documents
+- [x] **Red: sets, limits, self-digest.** `tc_1645_` (property: two documents
   differing only in the member order of one declared set array digest
   identically; two differing only in the member order of one semantic-order array
   digest differently; a set array's membership stays a separate declaration from
@@ -88,29 +88,29 @@ hypothesis to re-test.
   host-chosen limit applied in its place), `tc_1649_` (an object's own digest
   member is excluded from the canonical bytes that object digests, and the
   exclusion is applied only here).
-- [ ] **Red: float audit.** `tc_1654_` (static audit over the declared
+- [x] **Red: float audit.** `tc_1654_` (static audit over the declared
   numeric-path population — the crate's number parse seam, its
   coefficient-and-exponent representation, its canonical serializer, and the
   pinned JSON parser entry point: zero `f32`/`f64` types, zero `as f32`/`as f64`
   conversions, zero `as_f64`/`as_f32` calls; the gate reports the count it
   measured).
-- [ ] **Green: parse seam.** `serde_json = { workspace = true, features =
+- [x] **Green: parse seam.** `serde_json = { workspace = true, features =
   ["arbitrary_precision"] }` in `crates/baseline-producer/Cargo.toml`; replace
   `canonical_number(&number.to_string())` with the exact lexeme from
   `Number::as_str`; add `ProducerDecimal(String)` with a `Serialize`
   implementation that emits the lexeme as a JSON number and a validating
   constructor; keep `canonical_number` byte-for-byte as it stands.
-- [ ] **Green: declared limits.** Replace `MAX_CANONICAL_NUMBER_DIGITS` and the
+- [x] **Green: declared limits.** Replace `MAX_CANONICAL_NUMBER_DIGITS` and the
   nesting constant's numeric role with the configuration document's declared
   `resourceLimits.numericResourceLimit { maximumCoefficientDigits,
   maximumExponentMagnitude }`; refuse a configuration declaring no such member.
   One spelling across the interface: `resourceLimits` with `numericResourceLimit`
   inside it, FR-109 the owner (FND-1814, E11).
-- [ ] **Green: set declaration.** Declare, as an explicit list beside the
+- [x] **Green: set declaration.** Declare, as an explicit list beside the
   canonicalizer, which members are sets (sorted by canonical member bytes before
   digesting) and which carry producer-declared semantic order (emitted in that
   order). No array is a set by inference from its element type.
-- [ ] **Falsify.** Plant an `as f64` conversion in a scratch copy of the numeric
+- [x] **Falsify.** Plant an `as f64` conversion in a scratch copy of the numeric
   path and prove `tc_1654_` fails naming it; record the measured count both ways.
   Plant a locale-collation key sort in a scratch copy and prove `tc_1643_` fails.
 
