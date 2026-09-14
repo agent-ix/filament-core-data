@@ -47,6 +47,36 @@ case of it.
 
 ## Behavior
 
+### The rule
+
+- Where a type's derived Rust identifier equals a reserved crate identifier,
+  the **reserved identifier SHALL keep it** and the document-derived identifier
+  SHALL yield. The reserved set is the crate's own surface and a consumer
+  already writes `crate::SourceLocusPath`; a resolution that moved the reserved
+  side would silently change what that existing reference targets, which is the
+  one outcome this requirement forbids.
+- The yielding identifier SHALL be the reserved identifier prefixed by the
+  `UpperCamelCase` rendering of the package segment of the construct's own
+  semantic identity, so `ix://agent-ix/semantic-core/type/SourceLocusPath`
+  renders `SemanticCoreSourceLocusPath` and a package-local `UUID` in
+  `ix://agent-ix/config-service/type/UUID` renders `ConfigServiceUuid`.
+- The prefix SHALL be derived from the identity the document already carries and
+  from nothing else — not from a counter, a digest, a suffix, or the order the
+  document was walked — so the resolved identifier is a total function of the
+  contract and moves only when the identity moves.
+- The rule SHALL apply to every reserved identifier and to every construct whose
+  derived identifier reaches one; no pair is enumerated and no name is special.
+- A kernel scalar the crate already renders as a support type SHALL be mapped
+  onto that support type before this rule is reached, so `scalar: uuid` named
+  `UUID` continues to resolve to `crate::support::Uuid` rather than to a second
+  declaration of it (issue #90).
+- Where the resolved identifier is itself taken — by a reserved identifier or by
+  another construct in the same crate scope — the backend SHALL raise
+  `NAME_COLLISION` naming both identities and SHALL write no file, because two
+  constructs sharing one generated name is what the check exists to prevent.
+
+### The obligations the rule carries
+
 - The backend SHALL detect that a minted name and a reserved identifier derive
   one Rust identifier.
 - The backend SHALL apply the stated resolution rule rather than refusing the

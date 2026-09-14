@@ -296,7 +296,7 @@ producer/schema plan are accepted.
 | FR-130 | FR-130-AC-1..8, FR-130-CON-1..3 | TC-1388..TC-1395 | ✅ Complete |
 | FR-131 | FR-131-AC-1..9, FR-131-CON-1..3 | TC-1403..TC-1409, TC-1586 | ✅ Complete |
 | FR-132 | FR-132-AC-1..7, FR-132-CON-1..3 | TC-1414..TC-1417 | 🚧 planned on issue #65 |
-| FR-133 | FR-133-AC-1..7, FR-133-CON-1..3 | TC-1418..TC-1421 | 🚧 planned on issue #80 |
+| FR-133 | FR-133-AC-1..7, FR-133-CON-1..3 | TC-1418..TC-1421 | ✅ Complete |
 | FR-134 | FR-134-AC-1..7, FR-134-CON-1..3 | TC-1430..TC-1433 | 🚧 planned on issue #6 |
 | FR-135 | FR-135-AC-1..7, FR-135-CON-1..3 | TC-1426..TC-1429 | 🚧 planned on issue #12 |
 | FR-138 | FR-138-AC-1..7, FR-138-CON-1..3 | TC-1545..TC-1551 | 🚧 planned on issue #37 |
@@ -1612,10 +1612,10 @@ producer/schema plan are accepted.
 | TC-1415 | UNRESOLVED_TYPE_REF, PRESENCE_MULTIPLICITY_MISMATCH and V1_1_NODE_IN_V1_0 are each emitted by at least one case, and the reader's normalized form agrees with the Rust and TypeScript adapters or the disagreement is a recorded finding | Integration | P0 | FR-132-AC-3, FR-132-AC-4 | 🚧 planned on issue #65 |
 | TC-1416 | An undecidable document yields an undecided verdict counted as neither pass nor failure; with the reader absent the slot reports unavailable naming its issue and no case passes | Unit | P1 | FR-132-AC-5, FR-132-AC-7, FR-132-CON-3 | 🚧 planned on issue #65 |
 | TC-1417 | The Python reader imports no module of the generated Python package and shares no code with the TypeScript or Rust readers | Unit | P1 | FR-132-AC-6, FR-132-CON-1 | 🚧 planned on issue #65 |
-| TC-1418 | The Rust kernel crate generates from the kernel IR with zero blocking diagnostics, and both the reserved identifier and the minted construct are present naming different types | Integration | P0 | FR-133-AC-1, FR-133-AC-2 | 🚧 planned on issue #80 |
-| TC-1419 | Every typeRef to the minted construct renders the resolved identifier and none renders the reserved one; every affected semantic identity is byte-unchanged | Unit | P0 | FR-133-AC-3, FR-133-AC-7, FR-133-CON-1 | 🚧 planned on issue #80 |
-| TC-1420 | A pair the rule does not cover still raises NAME_COLLISION naming both identities and writes no file | Unit | P1 | FR-133-AC-4 | 🚧 planned on issue #80 |
-| TC-1421 | Over arbitrary minted and reserved names, no two distinct constructs share one generated identifier, and the register carries the resolution bound to a case | Property | P1 | FR-133-AC-5, FR-133-AC-6, FR-133-CON-2 | 🚧 planned on issue #80 |
+| TC-1418 | The Rust kernel crate generates from the kernel IR with zero blocking diagnostics, and both the reserved identifier and the minted construct are present naming different types | Integration | P0 | FR-133-AC-1, FR-133-AC-2 | ✅ Complete |
+| TC-1419 | Every typeRef to the minted construct renders the resolved identifier and none renders the reserved one; every affected semantic identity is byte-unchanged | Unit | P0 | FR-133-AC-3, FR-133-AC-7, FR-133-CON-1 | ✅ Complete |
+| TC-1420 | A pair the rule does not cover still raises NAME_COLLISION naming both identities and writes no file | Unit | P1 | FR-133-AC-4 | ✅ Complete |
+| TC-1421 | Over arbitrary minted and reserved names, no two distinct constructs share one generated identifier, and the register carries the resolution bound to a case | Property | P1 | FR-133-AC-5, FR-133-AC-6, FR-133-CON-2 | ✅ Complete |
 | TC-1422 | Every published artifact identifies its source, compiler, IR, backend and schema fingerprints, and two builds from one source produce identical bytes | Integration | P0 | NFR-040-AC-1, NFR-040-AC-3 | 🚧 planned on issue #26 |
 | TC-1423 | Every combination the version matrix declares carries a conformance corpus run, and removing a run removes its row | Analysis | P0 | NFR-040-AC-2 | 🚧 planned on issue #26 |
 | TC-1424 | A rehearsed rollback leaves previously published compatible artifacts retrievable; no artifact reaches a public registry and every release workflow is manually dispatched | Manual | P0 | NFR-040-AC-4, NFR-040-AC-5 | 🚧 planned on issue #26 |

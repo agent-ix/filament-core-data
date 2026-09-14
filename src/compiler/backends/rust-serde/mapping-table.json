@@ -419,6 +419,15 @@
 			"diagnosticCode": "agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION"
 		},
 		{
+			"rowKey": "name:reserved-resolution",
+			"axis": "name",
+			"selector": "a derived type identifier that is a reserved crate identifier",
+			"rustForm": "pub struct <Package><N>;",
+			"serdeAttributes": [],
+			"mechanism": "FR-133: the reserved identifier keeps its meaning and the document-derived one yields, taking the package segment of its own semantic identity as a prefix; no semantic identity changes, and a resolved identifier that is itself taken still raises NAME_COLLISION naming both identities",
+			"diagnosticCode": null
+		},
+		{
 			"rowKey": "metadata:contract",
 			"axis": "metadata",
 			"selector": [
