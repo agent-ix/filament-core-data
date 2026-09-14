@@ -34,8 +34,8 @@ import {
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
-	readFileSync,
 	readdirSync,
+	readFileSync,
 	rmSync,
 	statSync,
 	writeFileSync,
@@ -44,8 +44,8 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
-	changeRange,
 	changedPathsUnion,
+	changeRange,
 	contentAsChanged,
 	mergeCommitsIn,
 } from "./changed-paths";
@@ -1340,8 +1340,156 @@ function treeDigest(directory: string): Map<string, string> {
 }
 
 describe("TC-725..730 the branch register, the properties and the mutation catalogue", () => {
-	/** Traces: TC-1357, TC-1358; FR-055-AC-15, FR-055-AC-16. */
-	it("maps matching support scalars without newtypes and preserves reserved-name collisions", async () => {
+	/**
+	 * Traces: TC-1418, TC-1419; FR-133-AC-1, FR-133-AC-2, FR-133-AC-3,
+	 * FR-133-AC-7, FR-133-CON-1.
+	 *
+	 * Branches: name:reserved-resolution;
+	 */
+	it("generates the kernel IR whose minted name is reserved, and moves only the generated identifier", async () => {
+		const cli = await import(modulePathOf("cli.mjs"));
+		const crate = await import(modulePathOf("crate.mjs"));
+		const ir = readJson(
+			resolve(root, "packages/semantic-kernel/semantic-ir.json"),
+		) as Record<string, unknown>;
+		// `emitCrate` rather than `generateRust`: the case is about the
+		// diagnostics and the rendered identifiers, and writing a crate into the
+		// working tree to read them would make the test's subject its own
+		// changed set.
+		const result = crate.emitCrate(
+			{
+				contractVersion: "1.0.0",
+				lockFingerprint: createHash("sha256")
+					.update(JSON.stringify(ir))
+					.digest("hex"),
+				ir,
+				profile: cli.DEFAULT_PROFILE,
+				mappings: [],
+				backend: cli.BACKEND,
+				outputRoot: "packages/semantic-kernel/rust",
+				limits: cli.DEFAULT_LIMITS,
+			},
+			{ licenseText: read(resolve(root, "LICENSE")) },
+		);
+		expect(result.diagnostics).toEqual([]);
+		expect(result.state).toBe("success");
+
+		const files = result.files as Map<string, string>;
+		const locus = files.get("src/types/source_locus_path.rs");
+		expect(locus, "the minted construct is emitted").toBeDefined();
+		// The document-derived identifier yielded; the reserved one did not.
+		expect(locus).toContain("pub struct SemanticCoreSourceLocusPath");
+		expect(files.get("src/support.rs")).toContain(
+			"pub struct SourceLocusPath(String)",
+		);
+		// FR-133-AC-7: the semantic identity is what the resolution may not move.
+		expect(locus).toContain("ix://agent-ix/semantic-core/type/SourceLocusPath");
+		// FR-133-AC-3: no reference reaches the minted construct by the reserved
+		// name, which is the way the resolution could silently change a target.
+		for (const [path, text] of files) {
+			if (!path.startsWith("src/types/")) continue;
+			expect(text, path).not.toContain("crate::SourceLocusPath");
+		}
+	});
+
+	/**
+	 * Traces: TC-1421; FR-133-AC-5, FR-133-AC-6, FR-133-CON-2, FR-133-CON-3.
+	 */
+	it("resolves arbitrary reserved collisions without two constructs sharing one identifier", async () => {
+		const { mapping } = await loadOnce().then((loaded) => loaded.backend);
+		// A fixed generator rather than Math.random: a property that fails on a
+		// draw nobody can reproduce is a property nobody can fix.
+		let seed = 0x9e3779b9;
+		const next = (bound: number): number => {
+			seed = (seed * 1664525 + 1013904223) >>> 0;
+			return seed % bound;
+		};
+		// The alphabet is small and deliberate rather than wide: it carries
+		// reserved names, the identifiers their resolution produces under each
+		// package below, and names that collide with neither, so both arms —
+		// the resolution and the residual refusal — are reached often enough to
+		// be evidence rather than in principle.
+		const alphabet = [
+			"Uuid",
+			"Date",
+			"Nullable",
+			"SourceLocusPath",
+			"TestUuid",
+			"TestNullable",
+			"SemanticCoreDate",
+			"Locus",
+			"Thing",
+		];
+		const packages = ["agent-ix/test", "agent-ix/semantic-core"];
+		// A property checked over a population that never reaches the branch is
+		// not evidence, so the two populations are counted and asserted below.
+		let resolved = 0;
+		let refused = 0;
+		for (let draw = 0; draw < 400; draw += 1) {
+			const names: string[] = [];
+			for (let n = 0; n < 1 + next(5); n += 1) {
+				const candidate = alphabet[next(alphabet.length)];
+				if (!names.includes(candidate)) names.push(candidate);
+			}
+			const packageIdentity = packages[next(packages.length)];
+			const result = mapping.mapDocument(
+				{
+					contractVersion: "1.1.0",
+					package: { identity: packageIdentity },
+					source: {},
+					occurrences: [],
+					extensions: [],
+					types: names.map((name) => ({
+						identity: `ix://${packageIdentity}/type/${name}`,
+						kind: "record",
+						displayName: name,
+						unknownPolicy: "reject",
+						roles: [],
+						fields: [],
+					})),
+				},
+				{},
+			);
+			if (result.model === undefined) {
+				// The only admissible refusal is the collision itself, which names
+				// both identities rather than dropping one.
+				expect(
+					result.diagnostics.map((entry: { code: string }) => entry.code),
+				).toContain("agent-ix.rust-backend.NAME_COLLISION");
+				refused += 1;
+				continue;
+			}
+			for (const name of names) {
+				if (mapping.RESERVED_CRATE_NAMES.includes(name)) resolved += 1;
+			}
+			const identifiers = result.model.types.map(
+				(one: { typeName: string }) => one.typeName,
+			);
+			expect(new Set(identifiers).size, JSON.stringify(names)).toBe(
+				identifiers.length,
+			);
+			// The reserved identifiers keep their own meaning: no emitted type
+			// takes one of them.
+			for (const identifier of identifiers) {
+				expect(mapping.RESERVED_CRATE_NAMES, identifier).not.toContain(
+					identifier,
+				);
+			}
+			// FR-133-AC-5: the register carries the resolution as a row.
+			const register = readJson(
+				resolve(root, "src/compiler/backends/rust-serde/branch-register.json"),
+			) as { rows: { branchId: string; cases: string[] }[] };
+			const resolution = register.rows.find(
+				(one) => one.branchId === "name:reserved-resolution",
+			);
+			expect(resolution?.cases.length).toBeGreaterThan(0);
+		}
+		expect(resolved, "no draw reached the resolution").toBeGreaterThan(0);
+		expect(refused, "no draw reached the residual refusal").toBeGreaterThan(0);
+	});
+
+	/** Traces: TC-1357, TC-1358, TC-1420; FR-055-AC-15, FR-055-AC-16, FR-133-AC-4. */
+	it("maps matching support scalars without newtypes and resolves reserved-name collisions", async () => {
 		const { mapping } = await loadOnce().then((loaded) => loaded.backend);
 		const base = {
 			contractVersion: "1.1.0",
@@ -1397,19 +1545,79 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 				`crate::support::${support}`,
 			);
 		}
+		// A definition that is not the support type's own kernel scalar and whose
+		// derived identifier is reserved resolves under FR-133: the reserved
+		// identifier keeps its meaning and the document-derived one takes the
+		// package its identity names as a prefix.
 		for (const definition of [
-			{ identity: "ix://agent-ix/test/type/Uuid", kind: "scalar", scalar: "string" },
+			{
+				identity: "ix://agent-ix/test/type/Uuid",
+				kind: "scalar",
+				scalar: "string",
+			},
 			{ identity: "ix://agent-ix/test/type/Date", kind: "record" },
 		]) {
-			const result = mapping.mapDocument({
-				...base,
-				types: [{ ...definition, displayName: definition.identity.split("/").at(-1), unknownPolicy: "reject", roles: [], fields: [] }],
-			}, {});
-			expect(result.model).toBeUndefined();
-			expect(result.diagnostics.map((entry: { code: string }) => entry.code)).toEqual([
-				"agent-ix.rust-backend.NAME_COLLISION",
-			]);
+			const result = mapping.mapDocument(
+				{
+					...base,
+					types: [
+						{
+							...definition,
+							displayName: definition.identity.split("/").at(-1),
+							unknownPolicy: "reject",
+							roles: [],
+							fields: [],
+						},
+					],
+				},
+				{},
+			);
+			expect(result.diagnostics).toEqual([]);
+			expect(result.model.types[0].typeName).toBe(
+				`Test${definition.identity.split("/").at(-1)}`,
+			);
+			// The identity is what the resolution may not touch (FR-133-CON-1).
+			expect(result.model.types[0].identity).toBe(definition.identity);
 		}
+		// The pair the rule does not cover: the resolved identifier is itself
+		// taken, so the check still refuses rather than letting two constructs
+		// share one generated name (FR-133-AC-4).
+		const taken = mapping.mapDocument(
+			{
+				...base,
+				types: [
+					{
+						identity: "ix://agent-ix/test/type/Uuid",
+						kind: "scalar",
+						scalar: "string",
+						displayName: "Uuid",
+						unknownPolicy: "reject",
+						roles: [],
+						fields: [],
+					},
+					{
+						identity: "ix://agent-ix/test/type/TestUuid",
+						kind: "scalar",
+						scalar: "string",
+						displayName: "TestUuid",
+						unknownPolicy: "reject",
+						roles: [],
+						fields: [],
+					},
+				],
+			},
+			{},
+		);
+		expect(taken.model).toBeUndefined();
+		expect(
+			taken.diagnostics.map((entry: { code: string }) => entry.code),
+		).toEqual(["agent-ix.rust-backend.NAME_COLLISION"]);
+		expect(taken.diagnostics[0].message).toContain(
+			"ix://agent-ix/test/type/Uuid",
+		);
+		expect(taken.diagnostics[0].message).toContain(
+			"ix://agent-ix/test/type/TestUuid",
+		);
 	});
 
 	/**

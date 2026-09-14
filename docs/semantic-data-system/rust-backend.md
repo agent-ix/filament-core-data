@@ -9,8 +9,8 @@ status: normative
 # Rust/Serde backend mapping and declared decisions
 
 Rendered from `src/compiler/backends/rust-serde/mapping-table.json`, which is
-the single machine-readable mapping table. 47 rows across
-8 axes. A construct that selects no row and no named refusal is an
+the single machine-readable mapping table. 48 rows across
+9 axes. A construct that selects no row and no named refusal is an
 `agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT`; the mapping is total by
 construction, not by claim.
 
@@ -83,6 +83,12 @@ construction, not by claim.
 | Selector | Rust form | Serde | Mechanism | Refusal |
 |---|---|---|---|---|
 | `extensions` | `Vec<Extension>, with the value type Extension carrying identity, version, required, capability and a SemanticValue payload` | — | Extension is a value type with try_new and decide, emitted alongside the ExtensionMeta constant; an extension is never folded into an unknown member. decide is governed by two rules: a required: false extension is preserved whatever its identity and carries no diagnostic, and a required: true extension is rejected when its identity is not one the contract declares or when it names any capability. The admitted-capability set the generated crate carries is EMPTY, and empty is a declared decision rather than an unfilled slot: consumer-policy.schema.json is sealed and carries no capability member and the published rust row of target-contracts.json declares no capability list, so no published artifact states a capability a crate could admit. That is GAP-007 in conformance/contract-gaps.json, owned by issue #9. | `agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION` |
+
+### name
+
+| Selector | Rust form | Serde | Mechanism | Refusal |
+|---|---|---|---|---|
+| `a derived type identifier that is a reserved crate identifier` | `pub struct <Package><N>;` | — | FR-133: the reserved identifier keeps its meaning and the document-derived one yields, taking the package segment of its own semantic identity as a prefix; no semantic identity changes, and a resolved identifier that is itself taken still raises NAME_COLLISION naming both identities | — |
 
 ### metadata
 
@@ -164,7 +170,7 @@ The issue #19 compiler, compiled read-only over its own `test/fixtures/compiler/
 
 **Recorded, not decided.** The Rust reader adopts the corpus oracle's reading,
 so the disagreement stays visible rather than drifting, and `REF-001..004`
-agree by construction. The register names `agent-ix/filament-core-data#9` as the owner, and
+agree by construction. The register names `agent-ix/filament-core-data#59` as the owner, and
 that issue is closed, so nobody can currently settle it; the reassignment is
 filed as [#59](https://github.com/agent-ix/filament-core-data/issues/59).
 
