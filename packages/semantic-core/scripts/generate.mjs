@@ -35,6 +35,11 @@ const NORMALIZATION = {
 	version: "1.0.0",
 	issue: "https://github.com/agent-ix/filament-core-data/issues/31",
 };
+const IDENTITY_ANNOTATION = {
+	name: "fr-137-semantic-identity",
+	version: "1.0.0",
+	issue: "https://github.com/agent-ix/filament-core-data/issues/132",
+};
 
 function version(name) {
 	return JSON.parse(
@@ -70,6 +75,20 @@ function normalize(files, base) {
 		}
 	}
 	return rewritten;
+}
+
+/**
+ * JSON Schema treats unknown extension keywords as annotations.  The TypeSpec
+ * emitter owns the validation vocabulary; this deterministic post-processing
+ * records the semantic identity that the emitted schema realizes without
+ * changing how any conforming validator evaluates it.
+ */
+function annotateSemanticIdentity(files) {
+	for (const [name, schema] of files) {
+		const typeName = name.replace(/\.json$/, "");
+		schema["x-agent-ix-semantic-id"] =
+			`ix://agent-ix/semantic-core/type/${typeName}`;
+	}
 }
 
 function formatJson(name, text) {
@@ -111,6 +130,7 @@ function emit() {
 				]),
 		);
 		const rewritten = normalize(files, base);
+		annotateSemanticIdentity(files);
 		const rendered = new Map(
 			[...files].map(([name, schema]) => [
 				name,
@@ -141,6 +161,7 @@ function emit() {
 						? "no-op: the emitter produced no relative $id"
 						: undefined,
 			},
+			identityAnnotation: IDENTITY_ANNOTATION,
 			base,
 			files: [...rendered.keys()],
 			digest: `sha256:${digest.digest("hex")}`,

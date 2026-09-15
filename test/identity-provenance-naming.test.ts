@@ -222,6 +222,27 @@ describe("FR-137 identity and provenance are spelled alike in every package", ()
 				).toBeGreaterThan(7);
 			}
 		}
+
+		// JSON Schema realizes semantic identity as an annotation keyword on
+		// each delegated schema and realizes provenance in its generated index.
+		// Read the artifacts, not merely the specification that describes them:
+		// otherwise the TypeSpec-emitted tree could silently lose either concept.
+		const schemas = resolve(root, "packages/semantic-core/generated/json-schema");
+		for (const name of readdirSync(schemas).filter((entry) =>
+			entry.endsWith(".json"),
+		)) {
+			const typeName = name.replace(/\.json$/, "");
+			const schema = JSON.parse(read(join(schemas, name))) as Record<string, unknown>;
+			expect(schema["x-agent-ix-semantic-id"], name).toBe(
+				`ix://agent-ix/semantic-core/type/${typeName}`,
+			);
+		}
+		const index = JSON.parse(
+			read(resolve(root, "packages/semantic-kernel/json-schema/index.json")),
+		) as Record<string, unknown>;
+		expect(index["x-agent-ix-provenance"]).toEqual(
+			JSON.parse(read(resolve(root, "packages/semantic-kernel/provenance.json"))),
+		);
 	});
 
 	/** Traces: FR-137-AC-7, FR-137-CON-3 */

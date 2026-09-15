@@ -383,14 +383,15 @@ describe("TC-1009..1030 minted names and the closed keyword set (FR-082, FR-083)
 	});
 
 	// TC-1013
-	it("declares exactly the eighteen recognised keywords", () => {
-		expect(RECOGNISED_KEYWORDS.size).toBe(18);
+	it("declares exactly the nineteen recognised keywords", () => {
+		expect(RECOGNISED_KEYWORDS.size).toBe(19);
 		for (const k of [
 			"$schema",
 			"$id",
 			"$ref",
 			"unevaluatedProperties",
 			"maximum",
+			"x-agent-ix-semantic-id",
 		]) {
 			expect(RECOGNISED_KEYWORDS.has(k)).toBe(true);
 		}

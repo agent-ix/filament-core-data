@@ -11,5 +11,6 @@
 	"required": ["keyword"],
 	"unevaluatedProperties": {
 		"not": {}
-	}
+	},
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/UniqueConstraint"
 }
