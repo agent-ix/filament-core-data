@@ -8,7 +8,7 @@
  * fingerprint: sha256:625aaebb0ff08305a9819ab8640471833f406081d0a2720fe506ebec5decc556
  */
 
-export {
+export type {
 	ClauseLanguage,
 	ClauseRef,
 	ConstraintDecl,
@@ -75,10 +75,13 @@ export {
 	SourceLocusStartLine,
 	TypeRef,
 	TypeRefTarget,
-	UNION_DISCRIMINANT,
 	UniqueConstraint,
 	UniqueConstraintKeyword,
 	UnitSymbol,
+} from "./types.js";
+
+export {
+	UNION_DISCRIMINANT,
 } from "./types.js";
 
 export {
@@ -153,32 +156,39 @@ export {
 	validateUnitSymbol,
 } from "./validators.js";
 
-export {
-	MAX_VALIDATION_DEPTH,
-	PRESERVED_MEMBER,
+export type {
 	StructuralCode,
-	VALIDATION_CODES,
 	ValidationError,
 	ValidationResult,
 } from "./errors.js";
 
 export {
+	MAX_VALIDATION_DEPTH,
+	PRESERVED_MEMBER,
+	VALIDATION_CODES,
+} from "./errors.js";
+
+export type {
 	ClauseDescriptor,
 	ConstraintDescriptor,
-	DOCUMENT_EXTENSIONS,
 	DefaultDescriptor,
 	ExportedFieldKey,
 	ExportedTypeName,
 	ExtensionDescriptor,
+	FieldDescriptor,
+	OccurrenceDescriptor,
+	OperationDescriptor,
+	RelationshipDescriptor,
+	VariantDescriptor,
+} from "./identity.js";
+
+export {
+	DOCUMENT_EXTENSIONS,
 	FIELD_DEFAULT,
 	FIELD_EXTENSIONS,
 	FIELD_IDENTITY,
 	FIELD_UNIT,
-	FieldDescriptor,
 	OCCURRENCES,
-	OccurrenceDescriptor,
-	OperationDescriptor,
-	RelationshipDescriptor,
 	TYPE_CLAUSES,
 	TYPE_CONSTRAINTS,
 	TYPE_EXTENSIONS,
@@ -189,7 +199,6 @@ export {
 	TYPE_ROLES,
 	TYPE_UNKNOWN_POLICY,
 	TYPE_VARIANTS,
-	VariantDescriptor,
 } from "./identity.js";
 
 export {
