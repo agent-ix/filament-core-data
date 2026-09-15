@@ -8,22 +8,23 @@ use serde::{Deserialize, Serialize};
 ///
 /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintValues.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum EnumValuesConstraintValues {
     /// string
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintValues/variant/string.
     #[serde(rename = "string")]
-    String,
+    String(crate::EnumValuesConstraintValuesString),
     /// number
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintValues/variant/number.
     #[serde(rename = "number")]
-    Number,
+    Number(crate::EnumValuesConstraintValuesNumber),
     /// boolean
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintValues/variant/boolean.
     #[serde(rename = "boolean")]
-    Boolean,
+    Boolean(crate::EnumValuesConstraintValuesBoolean),
 }
 
 impl EnumValuesConstraintValues {

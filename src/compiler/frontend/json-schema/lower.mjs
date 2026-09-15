@@ -15,7 +15,7 @@
 
 import { DIAGNOSTIC_CODES } from "../../diagnostics.mjs";
 import { unrecognisedKeywords } from "./keywords.mjs";
-import { mintName } from "./mint.mjs";
+import { mintName, segment } from "./mint.mjs";
 
 const IDENTITY_PREFIX = "ix://agent-ix/semantic-core/type";
 const UNTAGGED_UNION_EXTENSION =
@@ -171,6 +171,37 @@ function lowerProperty(owner, property, schema, isRequired, out, minted, file) {
 		minted.push({ name, ...definition });
 		return identityOf(name);
 	};
+	/**
+	 * JSON Schema's primitive `anyOf` branches carry their value directly.  A
+	 * semantic-IR union can express that only through payload-bearing variants,
+	 * so give each scalar branch a stable, position-derived declaration rather
+	 * than dropping its payload or inventing the tagged `{ kind, value }` form.
+	 *
+	 * @param {readonly { type: keyof typeof SCALAR_OF }[]} branches
+	 */
+	const mintPrimitiveUnion = (branches) => {
+		const name = mintName(owner, property);
+		const variants = branches.map((branch) => {
+			const scalarName = `${name}${segment(branch.type)}`;
+			minted.push({
+				name: scalarName,
+				kind: "scalar",
+				scalar: SCALAR_OF[branch.type],
+			});
+			return completeVariant(
+				name,
+				{ name: branch.type, payloadType: identityOf(scalarName) },
+				file,
+			);
+		});
+		minted.push({
+			name,
+			kind: "union",
+			extensions: [untaggedUnionExtension()],
+			variants,
+		});
+		return identityOf(name);
+	};
 
 	/** @type {string | null} */
 	let typeRef = null;
@@ -194,20 +225,21 @@ function lowerProperty(owner, property, schema, isRequired, out, minted, file) {
 			);
 			return null;
 		}
-		typeRef = mint({
-			kind: "union",
-			// JSON Schema `anyOf` selects a branch from the value itself.  It
-			// does not add the TypeScript backend's `{ kind, value }` envelope.
-			// Preserve that fact for the emitters rather than inventing a tag.
-			...(allRefs ? { extensions: [untaggedUnionExtension()] } : {}),
-			variants: (allRefs
-				? schema.anyOf.map((b) => {
-						const target = nameFromUrl(b.$ref);
-						return { name: target, payloadType: identityOf(target) };
-					})
-				: schema.anyOf.map((b) => ({ name: b.type }))
-			).map((v) => completeVariant(mintName(owner, property), v, file)),
-		});
+		typeRef = allPrimitive
+			? mintPrimitiveUnion(schema.anyOf)
+			: mint({
+					kind: "union",
+					// JSON Schema `anyOf` selects a branch from the value itself.  It
+					// does not add the TypeScript backend's `{ kind, value }` envelope.
+					// Preserve that fact for the emitters rather than inventing a tag.
+					extensions: [untaggedUnionExtension()],
+					variants: schema.anyOf
+						.map((b) => {
+							const target = nameFromUrl(b.$ref);
+							return { name: target, payloadType: identityOf(target) };
+						})
+						.map((v) => completeVariant(mintName(owner, property), v, file)),
+				});
 	} else if (
 		schema &&
 		schema.type === "string" &&
@@ -247,12 +279,7 @@ function lowerProperty(owner, property, schema, isRequired, out, minted, file) {
 			Array.isArray(items.anyOf) &&
 			items.anyOf.every(barePrimitive)
 		) {
-			typeRef = mint({
-				kind: "union",
-				variants: items.anyOf.map((b) =>
-					completeVariant(mintName(owner, property), { name: b.type }, file),
-				),
-			});
+			typeRef = mintPrimitiveUnion(items.anyOf);
 		} else if (barePrimitive(items)) {
 			typeRef = mint({ kind: "scalar", scalar: SCALAR_OF[items.type] });
 		} else {

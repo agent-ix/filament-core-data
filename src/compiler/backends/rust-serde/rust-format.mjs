@@ -225,6 +225,11 @@ export function constItem(visibility, name, type, value) {
 		}
 		return [`${visibility}const ${name}: ${type} =`, `${INDENT}${lines[0]};`];
 	}
+	if (prefix.length + lines[0].length > MAX_WIDTH) {
+		const indented = lines.map((line) => `${INDENT}${line}`);
+		indented[indented.length - 1] = `${indented[indented.length - 1]};`;
+		return [`${prefix.trimEnd()}`, ...indented];
+	}
 	lines[0] = `${prefix}${lines[0]}`;
 	lines[lines.length - 1] = `${lines[lines.length - 1]};`;
 	return lines;
