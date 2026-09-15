@@ -644,6 +644,9 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 			expect(schema.$id, name).toBe(
 				`https://schemas.agent-ix.org/semantic-core/0.1.0/${name}.json`,
 			);
+			expect(schema["x-agent-ix-semantic-id"], name).toBe(
+				`ix://agent-ix/semantic-core/type/${name}`,
+			);
 			if (schema.type === "object") {
 				const sealed =
 					JSON.stringify(schema.unevaluatedProperties) === '{"not":{}}' ||
@@ -761,6 +764,9 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 		expect(normalization.issue).toContain("issues/31");
 		expect(normalization.applied).toBe(false);
 		expect(String(normalization.note)).toContain("no-op");
+		const annotation = object(record.identityAnnotation, "identityAnnotation");
+		expect(annotation.name).toBe("fr-137-semantic-identity");
+		expect(annotation.issue).toContain("issues/132");
 		const script = readFileSync(
 			resolve(packageRoot, "scripts/generate.mjs"),
 			"utf8",

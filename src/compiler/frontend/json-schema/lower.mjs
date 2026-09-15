@@ -49,7 +49,9 @@ function barePrimitive(schema) {
 	return (
 		schema !== null &&
 		typeof schema === "object" &&
-		Object.keys(schema).length === 1 &&
+		Object.keys(schema).every(
+			(key) => key === "type" || key === "x-agent-ix-semantic-id",
+		) &&
 		typeof schema.type === "string" &&
 		schema.type in SCALAR_OF
 	);
@@ -356,6 +358,16 @@ export function lowerBundle(documents, options = {}) {
 		a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0,
 	)) {
 		const name = nameFromUrl(schema.$id ?? file);
+		if (schema["x-agent-ix-semantic-id"] !== identityOf(name)) {
+			out.push(
+				diag(
+					DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
+					`${file} carries no matching x-agent-ix-semantic-id`,
+					`${file}/x-agent-ix-semantic-id`,
+				),
+			);
+			continue;
+		}
 		/** @type {Record<string, unknown>[]} */
 		const minted = [];
 

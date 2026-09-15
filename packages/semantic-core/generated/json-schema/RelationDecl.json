@@ -23,5 +23,6 @@
 	"unevaluatedProperties": {
 		"not": {}
 	},
-	"description": "A relationship declaration (FR-028). Absent multiplicity lowers to 0..1; absent composite to false."
+	"description": "A relationship declaration (FR-028). Absent multiplicity lowers to 0..1; absent composite to false.",
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/RelationDecl"
 }

@@ -36,5 +36,6 @@
 			"$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/FormatConstraint.json"
 		}
 	],
-	"description": "FR-029 constraint declaration, discriminated on `keyword`."
+	"description": "FR-029 constraint declaration, discriminated on `keyword`.",
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/ConstraintDecl"
 }

@@ -3,5 +3,6 @@
 	"$id": "https://schemas.agent-ix.org/semantic-core/0.1.0/Identifier.json",
 	"type": "string",
 	"pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
-	"description": "A declaration name: letters, digits, underscore; no leading digit."
+	"description": "A declaration name: letters, digits, underscore; no leading digit.",
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/Identifier"
 }
