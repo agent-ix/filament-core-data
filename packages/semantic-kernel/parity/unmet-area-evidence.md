@@ -42,14 +42,14 @@ node --experimental-strip-types \
 ## The measured agreement
 
 ```
-73/111 documents agree; 76 divergence rows, 0 unadjudicated
+88/111 documents agree; 47 divergence rows, 0 unadjudicated
 ```
 
 | Property | Agreeing | Documents |
 | --- | --- | --- |
-| serialized-member-names | 60 | 93 |
-| round-trip | 46 | 68 |
-| presence-versus-null | 7 | 11 |
+| serialized-member-names | 74 | 93 |
+| round-trip | 63 | 68 |
+| presence-versus-null | 8 | 11 |
 | unknown-member-states | 5 | 5 |
 | defaults | 3 | 8 |
 | relation-semantics | 10 | 11 |
@@ -57,30 +57,27 @@ node --experimental-strip-types \
 | Package | Agreeing with the contract | Documents |
 | --- | --- | --- |
 | json-schema | 111 | 111 |
-| typescript | 74 | 111 |
+| typescript | 89 | 111 |
 | python | 109 | 111 |
-| rust | 74 | 111 |
+| rust | 88 | 111 |
 
 ## Every divergence, and who owns it
 
-All 76 rows are adjudicated. No row is closed by editing a golden
+All 47 rows are adjudicated. No row is closed by editing a golden
 document, an expectation, a base, the oracle, or this register.
 
 | Cause | Wrong side | Property | Rows | Adjudicated by |
 | --- | --- | --- | --- | --- |
-| `ir-tags-untagged-unions` | rust | decision | 18 | agent-ix/filament-core-data#128 |
-| `ir-tags-untagged-unions` | typescript | decision | 18 | agent-ix/filament-core-data#128 |
-| `ir-drops-string-scalar-constraints` | rust | decision | 14 | agent-ix/filament-core-data#127 |
-| `ir-drops-string-scalar-constraints` | typescript | decision | 14 | agent-ix/filament-core-data#127 |
-| `ir-unconstrained-value` | rust | decision | 3 | agent-ix/filament-core-data#78 |
-| `ir-unconstrained-value` | typescript | decision | 4 | agent-ix/filament-core-data#78 |
+| `ir-drops-string-scalar-constraints` | rust | decision | 16 | agent-ix/filament-core-data#127 |
+| `ir-drops-string-scalar-constraints` | typescript | decision | 16 | agent-ix/filament-core-data#127 |
+| `ir-unconstrained-value` | rust | decision | 4 | agent-ix/filament-core-data#78 |
+| `ir-unconstrained-value` | typescript | decision | 5 | agent-ix/filament-core-data#78 |
 | `ir-required-collection-presence` | rust | decision | 1 | agent-ix/filament-core-data#78 |
 | `ir-required-collection-presence` | typescript | decision | 1 | agent-ix/filament-core-data#78 |
 | `null-erased-on-serialization` | python | serialized-member-names | 1 | agent-ix/filament-core-data#129 |
 | `null-erased-on-serialization` | rust | serialized-member-names | 1 | agent-ix/filament-core-data#129 |
 | `null-accepted-for-non-nullable-optional` | python | decision | 1 | agent-ix/filament-core-data#129 |
-
-**`ir-tags-untagged-unions`** — An untagged `anyOf` of scalars lowers to a tagged IR union, so the package demands a `kind` discriminant the source schema never states — and for the constraint-operand unions the IR variants carry no `payloadType` at all, losing the operand. The package renders the IR faithfully; the defect is the lowering under #11.
+| `null-accepted-for-non-nullable-optional` | rust | decision | 1 | agent-ix/filament-core-data#129 |
 
 **`ir-drops-string-scalar-constraints`** — A string scalar's `pattern` and `minLength` never reach the IR: every string scalar in semantic-ir.json carries `constraints: []` while every integer scalar carries its `min`/`max`. The package renders the IR faithfully; the lowering under #11 lost the constraint, so the package accepts identifiers, clause languages, format names and locus paths the published JSON Schema refuses.
 
@@ -99,12 +96,12 @@ measurement the unmet area names; it does not claim the named defects are fixed.
 
 | Owning issue | Status against `UA-serialization-parity` |
 | --- | --- |
-| `#21` Rust/Serde backend | **Discharged as measured.** The crate decides all 111 documents and agrees on 74. Of its 37 divergence rows, 36 are rendered-from-IR (`#127`, `#128`, `#78`) and 1 is its own (`#129`). |
-| `#22` TypeScript backend | **Discharged as measured.** The package decides all 111 documents and agrees on 74. All 37 of its divergence rows are rendered-from-IR (`#127`, `#128`, `#78`); no divergence is owned by `#22` itself. |
+| `#21` Rust/Serde backend | **Discharged as measured.** The crate decides all 111 documents and agrees on 88. Of its 23 divergence rows, 21 are rendered-from-IR (`#127`, `#78`) and 2 are its own (`#129`). |
+| `#22` TypeScript backend | **Discharged as measured.** The package decides all 111 documents and agrees on 89. All 22 of its divergence rows are rendered-from-IR (`#127`, `#78`); no divergence is owned by `#22` itself. |
 | `#23` Python backend | **Discharged as measured.** The package decides all 111 documents and agrees on 109, the highest of the three IR-independent paths. Both of its divergence rows are its own (`#129`). |
-| `#11` semantic-core packages | **Not discharged.** `#11` owns the JSON Schema package, which agrees on 111 of 111 — but that figure is not independent evidence: the golden expectations are derived from the same published schemas ajv validates against, so the JSON Schema package is the contract's own voice in this measurement, not a fourth witness to it. `#11` also owns the IR lowering, and 73 of the 76 divergence rows are lowering defects (`#127` 28 rows, `#128` 36 rows, plus the `#78` expressiveness losses). |
+| `#11` semantic-core packages | **Not discharged.** `#11` owns the JSON Schema package, which agrees on 111 of 111 — but that figure is not independent evidence: the golden expectations are derived from the same published schemas ajv validates against, so the JSON Schema package is the contract's own voice in this measurement, not a fourth witness to it. `#11` also owns the IR lowering, and 43 of the 47 divergence rows are lowering defects (`#127` 32 rows plus the `#78` expressiveness losses). |
 
-What remains is therefore not an absence of measurement but four named, owned
+What remains is therefore not an absence of measurement but three named, owned
 defects. That is what the issue register records; it is not what an unmet-area
 row records.
 
