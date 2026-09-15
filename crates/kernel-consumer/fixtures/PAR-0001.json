@@ -1,0 +1,34 @@
+{
+	"id": "PAR-0001",
+	"title": "A bounded multiplicity with both collection flags",
+	"declaration": "Multiplicity",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"lower": 0,
+		"upper": 1,
+		"ordered": false,
+		"unique": true
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"lower": 0,
+			"upper": 1,
+			"ordered": false,
+			"unique": true
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/Multiplicity.json",
+			"locator": "#/required",
+			"quote": "\"required\": [\"lower\"],"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

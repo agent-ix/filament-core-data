@@ -33,6 +33,7 @@ test-all: test-node test-rust test-python
 
 .PHONY: test-node
 test-node:
+	node scripts/run-kernel-typescript-consumer.mjs
 	pnpm run test
 
 # The Python half of the suite (issue #23, FR-072). Before this target the
@@ -318,6 +319,7 @@ rust-clippy: rust-toolchain-check
 .PHONY: rust-test
 rust-test: rust-toolchain-check
 	cargo test --offline --workspace --locked
+	node scripts/run-kernel-rust-consumer.mjs
 
 .PHONY: rust-conformance
 rust-conformance: rust-toolchain-check
