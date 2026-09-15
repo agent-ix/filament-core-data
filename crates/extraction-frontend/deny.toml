@@ -19,7 +19,7 @@ allow = [
     "Zlib",
 ]
 # The extraction contract this crate consumes in-process is AGPL-3.0-or-later,
-# which an AGPL-3.0-only consumer may link. Admitted by an explicit entry
+# the same licence as this crate. Admitted by an explicit entry
 # WITHOUT permitting AGPL in third-party dependencies.
 exceptions = [
     { allow = ["AGPL-3.0-or-later"], crate = "quire-rs" },
@@ -29,7 +29,7 @@ exceptions = [
 ]
 confidence-threshold = 0.9
 # The two workspace crates in this graph (this one and agent-ix-semantic-ir)
-# are AGPL-3.0-only and `publish = false`; they are what the allowlist protects,
+# are AGPL-3.0-or-later and `publish = false`; they are what the allowlist protects,
 # not what it inspects.
 private = { ignore = true }
 

@@ -1,7 +1,7 @@
 """Issue #23 — the qualified Python generation route.
 
 The generator is the MIT `datamodel-code-generator`, pinned. This package is
-the AGPL-3.0-only surface around it: the declared pins and advisory floor
+the AGPL-3.0-or-later surface around it: the declared pins and advisory floor
 (FR-072), the immutable target profiles (FR-073), the schema preparation pass
 (FR-074), the refusal guards (FR-075), the sandboxed runner (FR-076), the
 qualification (FR-077), the generated-source inspection (FR-078), the package

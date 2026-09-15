@@ -803,7 +803,7 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 	});
 
 	/** Traces: TC-345, TC-393; FR-041-AC-13, FR-041-CON-5, NFR-018-AC-4. */
-	it("licenses every promoted and added manifest AGPL-3.0-only", () => {
+	it("licenses every promoted and added manifest AGPL-3.0-or-later", () => {
 		// Tree assertion, not a diff assertion: a positive claim about the branch
 		// diff ("my diff adds this manifest") passes vacuously once the branch is
 		// squash-merged and `origin/main...HEAD` is empty, so it can only ever be
@@ -826,7 +826,9 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 			]),
 		];
 		for (const path of manifests) {
-			expect(readJson(resolve(root, path)).license, path).toBe("AGPL-3.0-only");
+			expect(readJson(resolve(root, path)).license, path).toBe(
+				"AGPL-3.0-or-later",
+			);
 		}
 	});
 

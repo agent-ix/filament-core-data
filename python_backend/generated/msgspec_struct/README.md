@@ -41,7 +41,7 @@ types. They are reachable as `<module>.<Name>` and are excluded from
 
 ## Licence
 
-The generated source is AGPL-3.0-only, like the rest of this
+The generated source is AGPL-3.0-or-later, like the rest of this
 repository. The generator is MIT and is attributed in
 `PROVENANCE.json`.
 

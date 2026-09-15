@@ -84,7 +84,7 @@ strictly stronger than the declaration; the kernel packages inherit that
 strength.
 
 The licence position is not decoration either. Everything original is
-AGPL-3.0-only. `serde` is the Rust crate's only third-party dependency, pinned
+AGPL-3.0-or-later. `serde` is the Rust crate's only third-party dependency, pinned
 exactly. `datamodel-code-generator` is MIT, pinned at `0.76.0`, attributed in the
 emitted `PROVENANCE.json`, and is a **build-time** dependency that appears in no
 emitted package's closure.
@@ -99,7 +99,7 @@ emitted package's closure.
 | Third-party runtime dependencies of the emitted Python package beyond the declared Pydantic pin | 0 | 0 | Dependency-closure test |
 | Network or filesystem access performed by an emitted package at run time | 0 | 0 | Instrumented run |
 | `$ref`s in the JSON Schema bundle that do not resolve inside the bundle | 0 | 0 | Offline resolution test |
-| Emitted source files without an AGPL-3.0-only declaration | 0 | 0 | Licence inspection |
+| Emitted source files without an AGPL-3.0-or-later declaration | 0 | 0 | Licence inspection |
 | Unpinned or unattributed third-party dependencies | 0 | 0 | Licence inspection |
 | Kernel type names absent from the package's static export surface | 0 | 0 | Export-set test |
 | Dynamic contract values reachable other than through the declared validated API | 0 | 0 | Analysis |
@@ -129,7 +129,7 @@ attribution.
 | NFR-029-AC-6 | Every `$ref` in the modular JSON Schema bundle resolves inside the bundle with the network disabled. | Test |
 | NFR-029-AC-7 | Each package's static export surface equals the kernel's declared type set plus the minted types, checked in both directions so a missing export and an unexpected one each fail. | Unit |
 | NFR-029-AC-8 | Every contract value that is not a type — identity, constraints, provenance, occurrence data — is reachable through the declared validated API and through no other route, and a consumer that imports a single type does not pull the whole descriptor table into its bundle. | Analysis |
-| NFR-029-AC-9 | Every emitted source file and every emitted package manifest declares AGPL-3.0-only, and every third-party dependency is pinned, licence-compatible, and attributed in the package's own provenance. | Static |
+| NFR-029-AC-9 | Every emitted source file and every emitted package manifest declares AGPL-3.0-or-later, and every third-party dependency is pinned, licence-compatible, and attributed in the package's own provenance. | Static |
 | NFR-029-AC-10 | Each consumer example of [FR-089](../functional/FR-089-provide-independent-consumer-examples.md) satisfies the same closure assertion as the package it consumes, so an example cannot demonstrate portability while depending on a framework. | Test |
 
 ## Dependencies

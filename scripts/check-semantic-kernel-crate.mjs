@@ -292,7 +292,7 @@ function manifestGate() {
 		}
 	}
 	for (const [key, value] of [
-		["license", "AGPL-3.0-only"],
+		["license", "AGPL-3.0-or-later"],
 		["edition", "2021"],
 		["rust-version", "1.85.0"],
 	]) {

@@ -1123,9 +1123,9 @@ describe("TC-737..744 non-disruption", () => {
 	});
 
 	/** Traces: TC-742; NFR-023-AC-6, NFR-023-AC-7. */
-	it("TC-742 every added manifest is AGPL-3.0-only and every third-party crate is attributed", () => {
+	it("TC-742 every added manifest is AGPL-3.0-or-later and every third-party crate is attributed", () => {
 		expect(read(resolve(root, "Cargo.toml"))).toContain(
-			'license = "AGPL-3.0-only"',
+			'license = "AGPL-3.0-or-later"',
 		);
 		const notices = read(resolve(root, "THIRD-PARTY-NOTICES.md"));
 		const lock = read(resolve(root, "Cargo.lock"));

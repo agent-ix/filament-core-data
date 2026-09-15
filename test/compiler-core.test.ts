@@ -1180,17 +1180,17 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 	}, 180000);
 
 	/** Traces: TC-426, TC-431, TC-447, TC-455; FR-053-AC-15, FR-053-CON-5, FR-046-AC-16, FR-046-CON-5. */
-	it("licenses every manifest it adds AGPL-3.0-only and adds no dependency", () => {
+	it("licenses every manifest it adds AGPL-3.0-or-later and adds no dependency", () => {
 		const added = changedPaths().filter(
 			(path) => path.endsWith("package.json") && path.startsWith("src/"),
 		);
 		for (const path of added) {
-			expect(readJson(resolve(root, path)).license, path).toBe("AGPL-3.0-only");
+			expect(readJson(resolve(root, path)).license, path).toBe("AGPL-3.0-or-later");
 		}
 		expect(
 			readJson(resolve(compilerRoot, "frontend/typespec/lib/package.json"))
 				.license,
-		).toBe("AGPL-3.0-only");
+		).toBe("AGPL-3.0-or-later");
 		const before = JSON.parse(
 			git("show", `${baseline()}:package.json`),
 		) as Json;
@@ -4409,7 +4409,7 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 			entry.endsWith("package.json"),
 		)) {
 			if (path === "package.json") continue;
-			expect(readJson(resolve(root, path)).license, path).toBe("AGPL-3.0-only");
+			expect(readJson(resolve(root, path)).license, path).toBe("AGPL-3.0-or-later");
 		}
 		// No publication step exists to trigger.
 		expect(readJson(resolve(root, "package.json"))).not.toHaveProperty(

@@ -79,7 +79,7 @@ The functional requirements settle each of these.
 ## Constraints (Contextual)
 
 The TypeSpec toolchain stays exactly pinned with no upper bounds. Everything
-original is AGPL-3.0-only. No `file:` or `link:` dependency survives. No corpus
+original is AGPL-3.0-or-later. No `file:` or `link:` dependency survives. No corpus
 repository, no published package, and no consumer is touched.
 
 ## Dependencies (Contextual)

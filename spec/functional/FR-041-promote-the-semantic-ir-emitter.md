@@ -64,7 +64,7 @@ than a path under `spikes/`.
 | FR-041-CON-2 | The promoted IR is the issue #4 prototype IR, not a `schema/semantic/v1/semantic-ir.schema.json` document; the maintainer SHALL NOT validate one against the other. Reconciling the two shapes belongs to issue #19. | Compatibility | Inspection |
 | FR-041-CON-3 | The compiler SHALL import only the exactly pinned `@typespec/*` packages already present in `package.json`. | Maintainability | Dependency inspection |
 | FR-041-CON-4 | The promotion SHALL add no dependency to `package.json`. Every `@typespec/*` entry stays a devDependency, and making `src/compiler/` a runtime entry point belongs to issue #11. | Maintainability | Dependency inspection |
-| FR-041-CON-5 | Every package manifest the promotion adds SHALL declare `"license": "AGPL-3.0-only"`, matching the repository's existing posture. | Legal | Licence inspection |
+| FR-041-CON-5 | Every package manifest the promotion adds SHALL declare `"license": "AGPL-3.0-or-later"`, matching the repository's existing posture. | Legal | Licence inspection |
 
 ## Acceptance Criteria
 
@@ -82,7 +82,7 @@ than a path under `spikes/`.
 | FR-041-AC-10 | Two `baseDir` values over the same entrypoint produce different, correctly relativised `source` loci of the form `<path>:<line>`, proving the working directory is a declared input and not an ambient one. | Test |
 | FR-041-AC-11 | Sorting the same type ids under `Intl.Collator` for two different locales and under the implemented code-point comparison yields the implemented order in every case. | Test |
 | FR-041-AC-12 | `make lint` formats and typechecks `src/compiler/`; a deliberate mismatch between `index.d.mts` and `index.mjs` fails `tsc --noEmit`. | Test |
-| FR-041-AC-13 | Every package manifest under `src/compiler/**` in the working tree — including `src/compiler/emitters/semantic-ir/package.json` — and every package manifest the branch adds declares `"license": "AGPL-3.0-only"`, and `package.json` gains no dependency entry. | Analysis |
+| FR-041-AC-13 | Every package manifest under `src/compiler/**` in the working tree — including `src/compiler/emitters/semantic-ir/package.json` — and every package manifest the branch adds declares `"license": "AGPL-3.0-or-later"`, and `package.json` gains no dependency entry. | Analysis |
 
 ## Dependencies
 

@@ -114,10 +114,10 @@ repository revision `d1840b8` with a `PROVENANCE.json` naming that revision,
 and is never loaded from `~/.ix`.
 
 Licence compatibility is a program mandate, not a preference: every original
-source is AGPL-3.0-only, and a dependency under an incompatible licence would
+source is AGPL-3.0-or-later, and a dependency under an incompatible licence would
 make the generated domain packages undistributable under the licence the
-program promises. `quire-rs` is AGPL-3.0-or-later, which an AGPL-3.0-only
-consumer may link. The crate carries its own `deny.toml` allowlist and its own
+program promises. `quire-rs` is AGPL-3.0-or-later, the same licence as this
+crate. The crate carries its own `deny.toml` allowlist and its own
 `THIRD-PARTY-NOTICES.md` because the root `THIRD-PARTY-NOTICES.md` is outside
 this change's permitted paths under NFR-032; an attribution file the change
 cannot edit is not an attribution file. `cargo deny` and `cargo audit` are on
@@ -159,7 +159,7 @@ row is promised.
 | `cargo deny check` errors (advisories, bans, sources) | 0 | 0 | `make extraction-frontend-deny` |
 | `cargo audit` advisories against the resolved graph | 0 | 0 | `make extraction-frontend-audit` |
 | Third-party crates reachable from this crate without an entry in the crate's `THIRD-PARTY-NOTICES.md` | 0 | 0 | Lock-to-notices comparison |
-| Crate manifests without `license = "AGPL-3.0-only"` and `publish = false` | 0 | 0 | Manifest inspection |
+| Crate manifests without `license = "AGPL-3.0-or-later"` and `publish = false` | 0 | 0 | Manifest inspection |
 | `cargo +1.98.1 clippy --no-deps --all-targets -- -D warnings` warnings | 0 | 0 | Clippy run |
 | `cargo +1.98.1 fmt --check` diffs | 0 | 0 | Formatter check |
 | Requirement tests without a `#[trace("TC-NNNN", "…-AC-N")]` marker and a `tc_NNNN_` name | 0 | 0 | Source scan |
@@ -193,12 +193,12 @@ reports the metric it could not measure.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| NFR-033-AC-1 | `crates/extraction-frontend/Cargo.toml` declares `rust-version.workspace = true`, `license = "AGPL-3.0-only"`, `publish = false`, and `edition = "2021"`; the `Makefile` names the qualification compiler on exactly one non-comment line, `EXTRACTION_TOOLCHAIN ?= 1.98.1`; the workspace `rust-version`, `rust-toolchain.toml`, and every `Cargo.lock` entry of another workspace member are byte-unchanged from the range's base after `cargo +1.98.1 build --locked`. | Analysis (TC-1320) |
+| NFR-033-AC-1 | `crates/extraction-frontend/Cargo.toml` declares `rust-version.workspace = true`, `license = "AGPL-3.0-or-later"`, `publish = false`, and `edition = "2021"`; the `Makefile` names the qualification compiler on exactly one non-comment line, `EXTRACTION_TOOLCHAIN ?= 1.98.1`; the workspace `rust-version`, `rust-toolchain.toml`, and every `Cargo.lock` entry of another workspace member are byte-unchanged from the range's base after `cargo +1.98.1 build --locked`. | Analysis (TC-1320) |
 | NFR-033-AC-2 | Every `cargo` invocation in the `Makefile` extraction-frontend block carries `+$(EXTRACTION_TOOLCHAIN)`, and with `EXTRACTION_TOOLCHAIN=0.0.0` each gate exits non-zero naming `0.0.0`. | Static (TC-1321) |
 | NFR-033-AC-3 | `quire-rs` is declared as a git dependency with an exact `rev` at or after `a874fb6` — `8b8020e` at authoring — and no `branch`; `ix-trace-rs` is a dev-dependency at tag `v0.1.1`; `agent-ix-semantic-ir` is a `path` dependency on `../semantic-ir`; `serde` and `serde_json` are the workspace's exact pins; `sha2` and `clap` are exact; no `jsonschema` crate is declared; no `path` dependency names a crate outside the workspace `members`, and no `file:` or `link:` dependency exists; the vendored module under `crates/extraction-frontend/fixtures/modules/spec-objects-business/` carries a `PROVENANCE.json` naming repository revision `d1840b8`. | Analysis (TC-1322) |
 | NFR-033-AC-4 | `make extraction-frontend-deny` passes with zero errors against a `deny.toml` whose licence allowlist is exactly the set the program permits, and `quire-rs`'s `AGPL-3.0-or-later` is admitted by an explicit entry. | Static (TC-1323) |
 | NFR-033-AC-5 | `make extraction-frontend-audit` reports zero advisories against the locked graph. | Static (TC-1324) |
-| NFR-033-AC-6 | Every third-party crate reachable from this crate in `Cargo.lock` has an entry in `crates/extraction-frontend/THIRD-PARTY-NOTICES.md` naming its version and licence, and the crate ships a `LICENSE` file carrying AGPL-3.0-only. | Analysis (TC-1325) |
+| NFR-033-AC-6 | Every third-party crate reachable from this crate in `Cargo.lock` has an entry in `crates/extraction-frontend/THIRD-PARTY-NOTICES.md` naming its version and licence, and the crate ships a `LICENSE` file carrying AGPL-3.0-or-later. | Analysis (TC-1325) |
 | NFR-033-AC-7 | `cargo +1.98.1 clippy --no-deps --all-targets --locked -- -D warnings` and `cargo +1.98.1 fmt --check` both pass. | Test (TC-1326) |
 | NFR-033-AC-8 | Every requirement test in the crate carries `#[trace("TC-NNNN", "<FR or NFR>-AC-N")]` and is named `tc_NNNN_…`, and every named TC id exists in `spec/tests.md`, which carries TC-1200 through TC-1329 before the first traced test lands. | Analysis (TC-1327) |
 | NFR-033-AC-9 | With `quire coverage --scope . --json` confirmed to bind the Rust `#[trace]` form, removing both the `#[trace]` marker and the `tc_NNNN_` name prefix from one test turns its matrix row into a status lie under `quire coverage` (the `rust-test-name-id` form still binds through the name alone), proving the binding is by symbol rather than by row. | Static (TC-1328) |

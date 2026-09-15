@@ -142,7 +142,7 @@ carries `publish = false`, and no step of this work contacts a registry.
 | Paths this change's set gains when a later unrelated ticket lands on top | 0 | 0 | Accretion rehearsal on a synthetic history |
 | Test cases failing after a revert of this change's range | 0 | 0 | Scripted restore rehearsal |
 | Third-party crates without a pinned version, a recorded licence, and an attribution entry | 0 | 0 | Inspection of `Cargo.lock` against `THIRD-PARTY-NOTICES.md` |
-| Added package manifests without `AGPL-3.0-only` | 0 | 0 | Licence inspection |
+| Added package manifests without `AGPL-3.0-or-later` | 0 | 0 | Licence inspection |
 
 ## Verification
 
@@ -184,7 +184,7 @@ that a prohibited path at a path no later commit owns still fails the gate.
 | NFR-023-AC-4 | `schema/**`, `fixtures/**`, `packages/**`, `spikes/**`, `.github/**`, and the frozen prototype backends and emitters are byte-unchanged. | Analysis |
 | NFR-023-AC-5 | Every crate manifest this work produces carries `publish = false` — the emitted one and each of the hand-written crates — and removing that emission, or dropping it from a hand-written manifest, makes a test fail. | Test |
 | NFR-023-AC-6 | No crate was published and no downstream repository was changed. | Inspection |
-| NFR-023-AC-7 | Every added package manifest declares `AGPL-3.0-only`, and every third-party crate in `Cargo.lock` has a pinned version, a recorded SPDX licence compatible with AGPL-3.0-only, and an entry in `THIRD-PARTY-NOTICES.md`. | Analysis |
+| NFR-023-AC-7 | Every added package manifest declares `AGPL-3.0-or-later`, and every third-party crate in `Cargo.lock` has a pinned version, a recorded SPDX licence compatible with AGPL-3.0-or-later, and an entry in `THIRD-PARTY-NOTICES.md`. | Analysis |
 | NFR-023-AC-8 | Reverting this change's own commit range leaves the suite green with the pre-existing case count, rehearsed by a script rather than by hand. | Test |
 | NFR-023-AC-9 | Every gate here resolves both ends of its range from history rather than from a branch ref or a bare `HEAD`, uses `--no-renames`, unions over `--first-parent --no-merges`, and still fails on the same input after this change is merged. | Test |
 | NFR-023-AC-10 | A later unrelated change landing on top of this one adds no path to this change's set, a trunk merge inside the range adds none of the trunk's paths, and a prohibited path at a path no later commit owns still fails the gate. | Test |

@@ -105,7 +105,7 @@ made a hard failure. The functional requirements settle each of these.
 ## Constraints (Contextual)
 
 The upstream stays an attributed, pinned MIT dependency with its licence
-preserved; everything original is AGPL-3.0-only with no carve-outs. No version
+preserved; everything original is AGPL-3.0-or-later with no carve-outs. No version
 affected by either advisory may be installed. No PyPI publication and no backend
 consumer migration happen here. The `datamodel-code-generator[http]` extra is
 not installed, so remote reference fetching has no transport even if a guard

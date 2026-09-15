@@ -48,7 +48,7 @@ example, and SHALL publish none of it.
 - If one module declares a type name twice, then the emitter SHALL raise naming the module and the name, because one declaration would shadow the other inside a single namespace.
 - Where two modules each declare a type of the same name, the emitter SHALL exclude that name from `__all__`, keep both reachable as `<module>.<Name>`, and record the collision in `PROVENANCE.json` and the README. This is the measured case and not a hypothetical: the pinned generator mints a class from an inline enum's *property* name, so two documents that each declare a `preservation` enum both emit a `Preservation`, and they are different types. Seven such names arise across the thirteen published documents. A flat namespace cannot hold both, and re-exporting one would hide the other silently, which is the failure this layout exists to prevent.
 - Each emitted package SHALL import with every forward reference resolved — for the Pydantic families through the generator's own `model_rebuild` — leaving no `PydanticUndefinedAnnotation` and no unresolved `ForwardRef` on any model, where "imports cleanly" means the import completes with no exception and no warning under the declared interpreter.
-- `PROVENANCE.json` SHALL record the upstream generator as MIT with its attribution text and the generated source as AGPL-3.0-only, carrying no clock reading and no host-observed version.
+- `PROVENANCE.json` SHALL record the upstream generator as MIT with its attribution text and the generated source as AGPL-3.0-or-later, carrying no clock reading and no host-observed version.
 - `PROVENANCE.json` SHALL carry the content fingerprint as a required member: the SHA-256 over the package's file map in canonical order, excluding `PROVENANCE.json` itself.
 - Each example SHALL run under the repository's own test suite, importing only from the generated package, the standard library, and the family's runtime, and asserting both the accepting and the rejecting path.
 - Where a family's verdict is `not-qualified`, the emitter SHALL record the reason under `python_backend/generated/` and write no package for it, so the absence is declared rather than silent.
@@ -70,7 +70,7 @@ example, and SHALL publish none of it.
 |---|---|---|
 | FR-079-AC-1 | Each demonstrated profile has a package directory with one module per input document and an `__init__.py` whose `__all__` is sorted and complete. | Test |
 | FR-079-AC-2 | Each generated package imports under the declared interpreter with no exception and no warning, and no model retains an unresolved forward reference. | Integration |
-| FR-079-AC-3 | `PROVENANCE.json` carries the source digest, the profile digest, the toolchain fingerprint, the content fingerprint, the MIT attribution, and `AGPL-3.0-only`, and carries no clock reading or host-observed version. | Test |
+| FR-079-AC-3 | `PROVENANCE.json` carries the source digest, the profile digest, the toolchain fingerprint, the content fingerprint, the MIT attribution, and `AGPL-3.0-or-later`, and carries no clock reading or host-observed version. | Test |
 | FR-079-AC-4 | Regenerating an unchanged input reproduces the committed tree byte-for-byte, and `--check` fails on a mutated committed file. | Snapshot |
 | FR-079-AC-5 | Each example runs, constructs a conforming value, round-trips it through serialization, and raises on a non-conforming value. | Integration |
 | FR-079-AC-6 | A family whose verdict is `not-qualified` has no emitted package and a recorded reason naming the verdict. | Test |

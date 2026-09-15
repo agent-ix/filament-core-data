@@ -106,7 +106,7 @@ workspace `path` dependency for validation and canonical bytes, and it never
 depends on this crate. Relationships are lifted from frontmatter
 `relationships:` edges only; cross-package imports are refused, because a
 domain package has no lock to resolve them against. Everything original is
-AGPL-3.0-only.
+AGPL-3.0-or-later.
 
 ## Dependencies (Contextual)
 

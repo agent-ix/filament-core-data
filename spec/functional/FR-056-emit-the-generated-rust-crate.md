@@ -78,7 +78,7 @@ not restated here.
 
 ### Crate manifest
 
-- `Cargo.toml` SHALL declare `license = "AGPL-3.0-only"`, `publish = false`,
+- `Cargo.toml` SHALL declare `license = "AGPL-3.0-or-later"`, `publish = false`,
   `edition` and `rust-version` from the declared support matrix, and exactly one
   `[dependencies]` entry, `serde` with `features = ["derive"]` at an exact
   `=` version.
@@ -104,7 +104,7 @@ not restated here.
   and `serde_json`, pinned to an exact version and declared as a
   dev-dependency of the consumer crates alone.
 - Both crates are published under `MIT OR Apache-2.0`, which is compatible with
-  `AGPL-3.0-only`, so an AGPL-3.0-only distribution of this work carries them
+  `AGPL-3.0-or-later`, so an AGPL-3.0-or-later distribution of this work carries them
   lawfully.
 - `THIRD-PARTY-NOTICES.md` SHALL carry one entry per third-party crate naming
   its exact version, its SPDX licence identifier, and the location of its
@@ -249,9 +249,9 @@ that decision requires.
 | FR-056-CON-1 | `emitCrate` SHALL be pure — it returns bytes and touches no filesystem — and `generateRust` SHALL be the only module that writes. | Purity | Analysis |
 | FR-056-CON-2 | No emitted byte SHALL depend on the clock, the environment, the hostname, the working directory, the locale, or any absolute path. | Determinism | Analysis and test |
 | FR-056-CON-3 | Every crate manifest this work produces, emitted or hand-written, SHALL carry `publish = false`. | Safety | Analysis and test |
-| FR-056-CON-4 | The emitted `LICENSE` SHALL be the repository's `LICENSE` verbatim, and the crate SHALL declare `AGPL-3.0-only` with no carve-out. | Compliance | Byte comparison |
+| FR-056-CON-4 | The emitted `LICENSE` SHALL be the repository's `LICENSE` verbatim, and the crate SHALL declare `AGPL-3.0-or-later` with no carve-out. | Compliance | Byte comparison |
 | FR-056-CON-5 | Generation SHALL write no file into the repository working tree outside the request's `outputRoot`. | Safety | Test |
-| FR-056-CON-6 | This work SHALL use only third-party crates that are pinned to an exact version, carry an SPDX identifier compatible with `AGPL-3.0-only`, and have an entry in `THIRD-PARTY-NOTICES.md` preserving the upstream licence text location. | Compliance | Analysis |
+| FR-056-CON-6 | This work SHALL use only third-party crates that are pinned to an exact version, carry an SPDX identifier compatible with `AGPL-3.0-or-later`, and have an entry in `THIRD-PARTY-NOTICES.md` preserving the upstream licence text location. | Compliance | Analysis |
 | FR-056-CON-7 | Every diagnostic this requirement raises SHALL name a code the FR-058 registry declares. | Correctness | Analysis |
 | FR-056-CON-8 | Every doc comment the backend emits SHALL be composed by the stated derivation from the node alone. | Determinism | Analysis |
 
@@ -260,7 +260,7 @@ that decision requires.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-056-AC-1 | Generating from each of the four corpus bases produces a crate that `cargo build --offline` compiles with no warning under `-D warnings`, with `#![deny(missing_docs)]` in force. | Test (TC-666) |
-| FR-056-AC-2 | The emitted `Cargo.toml` declares `AGPL-3.0-only`, `publish = false`, exactly one dependency (`serde`) pinned with `=`, and the `rust-version` the support matrix declares. | Analysis (TC-667) |
+| FR-056-AC-2 | The emitted `Cargo.toml` declares `AGPL-3.0-or-later`, `publish = false`, exactly one dependency (`serde`) pinned with `=`, and the `rust-version` the support matrix declares. | Analysis (TC-667) |
 | FR-056-AC-3 | Every constant in `src/identity.rs` equals the request member the correspondence table names, compared constant by constant against that table rather than against a mapping the test invents. | Test (TC-668) |
 | FR-056-AC-4 | `SemanticType` has exactly one variant per generated type, and a consumer matching exhaustively over it fails to compile when a type is added. | Test (TC-669) |
 | FR-056-AC-5 | The output manifest names every emitted file, every named file exists, every digest matches the bytes, and no file exists that the manifest does not name. | Test (TC-670) |
@@ -274,7 +274,7 @@ that decision requires.
 | FR-056-AC-13 | Every public item of a generated crate carries a doc comment equal to the stated derivation applied to its node, checked over every corpus base against the input document rather than against the emitted text; a node with roles carries its roles, a node with a unit carries its unit, and a `displayName` containing a comment terminator is escaped. | Test (TC-666) |
 | FR-056-AC-14 | Every output-manifest file entry carries the `mediaType` its extension row states and at least one semantic identity; a file carrying no type identity carries exactly the IR `package.identity` in `ix://` form; and the manifest validates against `output-manifest.schema.json`. | Test (TC-670) |
 | FR-056-AC-15 | The emitted `[package] name` equals `crateName(package.identity)`, contains no `/`, and is accepted by `cargo metadata`. | Analysis (TC-667) |
-| FR-056-AC-16 | `Cargo.lock` contains no third-party crate absent from `THIRD-PARTY-NOTICES.md`, every entry names an exact version and an SPDX identifier compatible with `AGPL-3.0-only`, and adding an unattributed crate fails the gate. | Analysis (TC-667) |
+| FR-056-AC-16 | `Cargo.lock` contains no third-party crate absent from `THIRD-PARTY-NOTICES.md`, every entry names an exact version and an SPDX identifier compatible with `AGPL-3.0-or-later`, and adding an unattributed crate fails the gate. | Analysis (TC-667) |
 | FR-056-AC-17 | Every crate manifest this work produces carries `publish = false` — the emitted one, the root workspace manifest, and each of the four hand-written crates — and removing it from any one of them fails the gate naming the manifest. | Analysis (TC-667) |
 
 ## Dependencies

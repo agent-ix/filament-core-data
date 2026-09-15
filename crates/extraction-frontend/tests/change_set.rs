@@ -555,6 +555,10 @@ fn tc_1315_every_manifest_in_the_change_set_is_unpublished_and_agpl_and_nothing_
             text.lines().any(|l| l.trim() == "publish = false"),
             "{manifest} lacks publish = false"
         );
+        // `as_changed` reads the manifest as issue #36's squash commit left it,
+        // a history fact. That commit predates the relicensing of #140, so its
+        // bytes carry the licence then in force; the current manifest's
+        // `AGPL-3.0-or-later` is asserted by TC-1320 in `toolchain.rs`.
         assert!(
             text.lines()
                 .any(|l| l.trim() == "license = \"AGPL-3.0-only\""),

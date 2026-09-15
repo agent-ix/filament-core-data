@@ -309,7 +309,7 @@ def test_provenance_carries_every_required_field_and_no_host_reading(
     assert provenance["contentFingerprint"].startswith("sha256:")
     assert provenance["generator"]["license"] == "MIT"
     assert "datamodel-code-generator (MIT)" in provenance["generator"]["attribution"]
-    assert provenance["generatedSourceLicense"] == "AGPL-3.0-only"
+    assert provenance["generatedSourceLicense"] == "AGPL-3.0-or-later"
     assert provenance["published"] is False
     text = json.dumps(provenance)
     assert str(REPO) not in text

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Agent-IX
 //! The complete first-class relationship record of
 //! [FR-115](../../../spec/functional/FR-115-emit-complete-relationship-records.md).
