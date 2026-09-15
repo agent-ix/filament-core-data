@@ -17,7 +17,7 @@ or `make semantic-kernel-parity`.
 Current result:
 
 ```
-73/111 documents agree; 76 divergence rows, 0 unadjudicated
+88/111 documents agree; 47 divergence rows, 0 unadjudicated
 ```
 
 ## What is here
@@ -66,17 +66,17 @@ fails the run, so a fixed defect cannot stay suppressed.
 A disagreement with the published contract rather than between two packages is
 reported by **filing an issue** naming the owner
 `conformance/contract-gaps.json` would assign — not by adding a row to that
-file, which NFR-030 forbids. The four filed so far:
+file, which NFR-030 forbids. The remaining open defect owners are:
 
 | Cause | Rows | Issue |
 | --- | --- | --- |
-| Untagged `anyOf` scalar unions lower to a tagged IR union | 36 | `agent-ix/filament-core-data#128` |
-| String scalar `pattern` / `minLength` dropped in lowering | 28 | `agent-ix/filament-core-data#127` |
-| `DefaultDecl.value` and `OperationDecl.params` IR expressiveness losses | 9 | `agent-ix/filament-core-data#78` |
-| Optional and nullable are the same type in Rust and Python | 3 | `agent-ix/filament-core-data#129` |
+| String scalar `pattern` / `minLength` dropped in lowering | 32 | `agent-ix/filament-core-data#127` |
+| `DefaultDecl.value` and `OperationDecl.params` IR expressiveness losses | 11 | `agent-ix/filament-core-data#78` |
+| Optional and nullable are the same type in Rust and Python | 4 | `agent-ix/filament-core-data#129` |
 
-73 of the 76 rows are IR lowering defects rendered faithfully by the Rust and
-TypeScript packages, not backend defects.
+43 of the 47 rows are IR lowering defects rendered faithfully by the Rust and
+TypeScript packages, not backend defects. The previous untagged-union defect
+(#128) was fixed; its 36 rows no longer occur.
 
 ## Publication
 
