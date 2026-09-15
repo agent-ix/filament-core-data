@@ -71,6 +71,8 @@
 			"property": "decision",
 			"issue": "agent-ix/filament-core-data#127",
 			"documents": [
+				"PAR-0009",
+				"PAR-0025",
 				"PAR-0039",
 				"PAR-0053",
 				"PAR-0063",
@@ -86,7 +88,7 @@
 				"PAR-0110",
 				"PAR-0111"
 			],
-			"why": "A string scalar's `pattern` and `minLength` never reach the IR: every string scalar in semantic-ir.json carries `constraints: []` while every integer scalar carries its `min`/`max`. The package renders the IR faithfully; the lowering under #11 lost the constraint, so the package accepts identifiers, clause languages, format names and locus paths the published JSON Schema refuses."
+			"why": "A string scalar's `pattern` and `minLength` never reach the IR: every string scalar in semantic-ir.json carries `constraints: []` while every integer scalar carries its `min`/`max`. The package renders the IR faithfully; the lowering under #11 lost the constraint, so the package accepts invalid semantic identities, identifiers, clause languages, format names and locus paths the published JSON Schema refuses."
 		},
 		{
 			"cause": "ir-drops-string-scalar-constraints::typescript::decision",
@@ -94,6 +96,8 @@
 			"property": "decision",
 			"issue": "agent-ix/filament-core-data#127",
 			"documents": [
+				"PAR-0009",
+				"PAR-0025",
 				"PAR-0039",
 				"PAR-0053",
 				"PAR-0063",
@@ -109,7 +113,7 @@
 				"PAR-0110",
 				"PAR-0111"
 			],
-			"why": "A string scalar's `pattern` and `minLength` never reach the IR: every string scalar in semantic-ir.json carries `constraints: []` while every integer scalar carries its `min`/`max`. The package renders the IR faithfully; the lowering under #11 lost the constraint, so the package accepts identifiers, clause languages, format names and locus paths the published JSON Schema refuses."
+			"why": "A string scalar's `pattern` and `minLength` never reach the IR: every string scalar in semantic-ir.json carries `constraints: []` while every integer scalar carries its `min`/`max`. The package renders the IR faithfully; the lowering under #11 lost the constraint, so the package accepts invalid semantic identities, identifiers, clause languages, format names and locus paths the published JSON Schema refuses."
 		},
 		{
 			"cause": "ir-unconstrained-value::rust::decision",
@@ -166,80 +170,40 @@
 			"issue": "agent-ix/filament-core-data#129",
 			"documents": ["PAR-0024"],
 			"why": "A non-nullable optional member typed `str | None` accepts a written `null`, which the published schema refuses: optional and nullable are the same type in the generated package."
+		},
+		{
+			"cause": "null-accepted-for-non-nullable-optional::rust::decision",
+			"wrongSide": "rust",
+			"property": "decision",
+			"issue": "agent-ix/filament-core-data#129",
+			"documents": ["PAR-0024"],
+			"why": "A non-nullable optional Rust member is represented as `Option<T>`, so serde accepts a written `null` where the published schema permits only absence."
 		}
 	],
 	"rows": [
 		{
-			"document": "PAR-0006",
+			"document": "PAR-0009",
 			"declaration": "TypeRef",
-			"class": "positive",
+			"class": "negative",
 			"property": "decision",
 			"decisions": {
-				"contract": "success",
-				"typescript": "invalid"
+				"contract": "invalid",
+				"typescript": "success"
 			},
 			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
 		},
 		{
-			"document": "PAR-0006",
+			"document": "PAR-0009",
 			"declaration": "TypeRef",
-			"class": "positive",
+			"class": "negative",
 			"property": "decision",
 			"decisions": {
-				"contract": "success",
-				"rust": "invalid"
+				"contract": "invalid",
+				"rust": "success"
 			},
 			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0007",
-			"declaration": "TypeRef",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"typescript": "invalid"
-			},
-			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0007",
-			"declaration": "TypeRef",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"rust": "invalid"
-			},
-			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0008",
-			"declaration": "TypeRef",
-			"class": "boundary",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"typescript": "invalid"
-			},
-			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0008",
-			"declaration": "TypeRef",
-			"class": "boundary",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"rust": "invalid"
-			},
-			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
 		},
 		{
 			"document": "PAR-0015",
@@ -350,30 +314,6 @@
 			"adjudicatedBy": "agent-ix/filament-core-data#129"
 		},
 		{
-			"document": "PAR-0021",
-			"declaration": "FieldDecl",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"typescript": "invalid"
-			},
-			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0021",
-			"declaration": "FieldDecl",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"rust": "invalid"
-			},
-			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
 			"document": "PAR-0022",
 			"declaration": "FieldDecl",
 			"class": "positive",
@@ -389,30 +329,6 @@
 			"document": "PAR-0022",
 			"declaration": "FieldDecl",
 			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"rust": "invalid"
-			},
-			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0023",
-			"declaration": "FieldDecl",
-			"class": "boundary",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"typescript": "invalid"
-			},
-			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0023",
-			"declaration": "FieldDecl",
-			"class": "boundary",
 			"property": "decision",
 			"decisions": {
 				"contract": "success",
@@ -434,6 +350,42 @@
 			"adjudicatedBy": "agent-ix/filament-core-data#129"
 		},
 		{
+			"document": "PAR-0024",
+			"declaration": "FieldDecl",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#129"
+		},
+		{
+			"document": "PAR-0025",
+			"declaration": "FieldDecl",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"typescript": "success"
+			},
+			"wrongSide": "typescript",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
+			"document": "PAR-0025",
+			"declaration": "FieldDecl",
+			"class": "negative",
+			"property": "decision",
+			"decisions": {
+				"contract": "invalid",
+				"rust": "success"
+			},
+			"wrongSide": "rust",
+			"adjudicatedBy": "agent-ix/filament-core-data#127"
+		},
+		{
 			"document": "PAR-0027",
 			"declaration": "MinConstraint",
 			"class": "positive",
@@ -698,54 +650,6 @@
 			"adjudicatedBy": "agent-ix/filament-core-data#127"
 		},
 		{
-			"document": "PAR-0065",
-			"declaration": "OperationDecl",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"typescript": "invalid"
-			},
-			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0065",
-			"declaration": "OperationDecl",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"rust": "invalid"
-			},
-			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0066",
-			"declaration": "OperationDecl",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"typescript": "invalid"
-			},
-			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0066",
-			"declaration": "OperationDecl",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"rust": "invalid"
-			},
-			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
 			"document": "PAR-0068",
 			"declaration": "OperationDecl",
 			"class": "negative",
@@ -840,54 +744,6 @@
 			},
 			"wrongSide": "rust",
 			"adjudicatedBy": "agent-ix/filament-core-data#127"
-		},
-		{
-			"document": "PAR-0080",
-			"declaration": "ConstraintDecl",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"typescript": "invalid"
-			},
-			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0080",
-			"declaration": "ConstraintDecl",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"rust": "invalid"
-			},
-			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0081",
-			"declaration": "ConstraintDecl",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"typescript": "invalid"
-			},
-			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0081",
-			"declaration": "ConstraintDecl",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"rust": "invalid"
-			},
-			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
 		},
 		{
 			"document": "PAR-0097",

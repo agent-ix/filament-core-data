@@ -520,7 +520,8 @@ impl SemanticType {
 
 /// Every extension identity the contract this crate was generated from
 /// declares, ordered by code point.
-pub const DECLARED_EXTENSION_IDENTITIES: &[&str] = &[];
+pub const DECLARED_EXTENSION_IDENTITIES: &[&str] =
+    &["ix://agent-ix/semantic-core/extension/untagged-union-wire-form"];
 
 /// The capabilities this crate admits.
 ///

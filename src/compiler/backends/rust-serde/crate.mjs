@@ -1670,8 +1670,9 @@ function renderEnum(type) {
 		catchAll
 			? "#[derive(Clone, Debug, PartialEq)]"
 			: "#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]",
-		`pub enum ${type.typeName} {`,
 	);
+	if (union && type.wireForm === "untagged") lines.push("#[serde(untagged)]");
+	lines.push(`pub enum ${type.typeName} {`);
 	for (const variant of type.variants) {
 		lines.push(...docLines(variant.doc, "    "));
 		if (variant.rename !== undefined && !catchAll) {
