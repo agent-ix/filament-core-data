@@ -18,7 +18,7 @@ claim that the originating ADR was formally accepted.
 | Quire validates JSON values generically and does not require typed Rust structs per archetype | Quire FR-002 | Program requires generated Rust types | **Compatible:** Quire remains dynamic/generic; static consumers can use separately generated native packages. Quire core does not depend on them. |
 | Artifact and object declarations remain separate in current module manifests | Installed module manifests and Quire usage guide, observed 2026-08-29 | ADR-0003 expresses unified-archetype intent | **Preserve current compatibility:** do not rewrite module manifests in issue #8. Project 18 review decides migration/disposition with corpus evidence. |
 | Quoin distributes modules and workflows | Quoin installed catalog behavior and quoin#289 | Compiler also consumes module/package definitions | **Compatible ownership:** Quoin distributes; module repos own vocabulary; `filament-core-data` compiles; consumers adapt. |
-| Current shared package is Avro-centered | This repository README, schema, generators, and tests | Target architecture is semantic-first and multi-representation | **Preserve compatibility:** Avro remains current and readable until the Project 17 census, bridges, consumer gates, and final retirement decision pass. |
+| Former shared package was Avro-centered | Historical README, schema, generators, and tests | Target architecture is semantic-first and multi-representation | **Resolved:** the final Project 17 census found zero in-scope readers and the owner approved retirement; the Avro package boundary was removed. |
 
 ## No silent supersession
 

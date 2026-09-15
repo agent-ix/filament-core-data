@@ -1,19 +1,15 @@
 [project]
-name = "agent-ix-core-data"
+name = "filament-core-data-tools"
 dynamic = ["version"]
 license = "AGPL-3.0-only"
 license-files = ["LICENSE"]
 
 [tool.poetry]
-name = "agent-ix-core-data"
+name = "filament-core-data-tools"
 version = "0.1.0"  # Placeholder, dynamically replaced
-description = "Shared Avro-generated core data contract for Filament IDE, core service, parser, and sync packages."
+description = "Semantic contract compiler and generated kernel package tooling."
 authors = ["Agent IX <engineering@agent-ix.com>"]
-packages = [{ include = "agent_ix_core_data" }]
-include = [
-    { path = "schema/avro/core-data.avpr", format = ["sdist", "wheel"] },
-    { path = "fixtures/representative-core-payloads.json", format = ["sdist", "wheel"] },
-]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.13,<3.14"
@@ -35,19 +31,6 @@ poetry-dynamic-versioning = "^1.10.0"
 pytest = "^9.0.2"
 ruff = "^0.14.13"
 jsonschema = "^4.26.0"
-
-[tool.poetry.scripts]
-build-tools = "scripts.build_tools:main"
-
-[tool.poe.tasks]
-
-[tool.poe.tasks.version]
-cmd = "build-tools version"
-help = "Print computed version"
-
-[tool.poe.tasks.info]
-cmd = "build-tools info"
-help = "Show git and version info"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
