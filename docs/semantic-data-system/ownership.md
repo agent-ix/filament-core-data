@@ -44,7 +44,6 @@ generated packages never depend on consumers.
 
 ## Current compatibility baseline
 
-This repository currently owns an Avro protocol and checked-in TypeScript and
-Python bindings. That is an implemented shared compatibility contract. Issue #8
-documents its place in the target architecture but does not regenerate,
-replace, publish, or migrate it.
+The former Avro protocol and checked-in TypeScript/Python bindings were retired
+at the repository boundary after issue #6's final reader census and owner
+approval. This repository now publishes no Avro contract surface.

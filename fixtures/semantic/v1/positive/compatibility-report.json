@@ -14,12 +14,11 @@
 			"targetResults": [
 				{ "target": "rust", "disposition": "additive" },
 				{ "target": "typescript", "disposition": "additive" },
-				{ "target": "python", "disposition": "additive" },
-				{ "target": "avro-v1-reader", "disposition": "additive" }
+				{ "target": "python", "disposition": "additive" }
 			]
 		}
 	],
 	"aggregateDisposition": "additive",
 	"requiredGates": ["known-consumer compatibility"],
-	"retainedBridges": ["avro-v1", "quoin-manifest-legacy-v1"]
+	"retainedBridges": ["quoin-manifest-legacy-v1"]
 }

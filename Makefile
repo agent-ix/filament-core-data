@@ -76,33 +76,6 @@ format:
 format-check:
 	pnpm run format:check
 
-.PHONY: generate
-generate:
-	pnpm run generate
-
-# -----------------------------------------------------------------------------
-# Python distribution (agent-ix-core-data)
-# -----------------------------------------------------------------------------
-# The TypeScript binding ships to npm from release.yml; the Python binding ships
-# to internal-pypi from python-release.yml. agent-ix/python-service-actions calls
-# `make version` to resolve what to publish, so this target is the Python side's
-# contract with that action.
-#
-# Versioning is the house dynamic pattern: build-tools derives the version from
-# the latest git tag, so publishing a new version means tagging, not editing
-# pyproject.toml. The [tool.poetry] version is a placeholder.
-
-POETRY = poetry
-POE = $(POETRY) run poe
-
-.PHONY: version
-version:
-	@$(POE) version
-
-.PHONY: info
-info:
-	@$(POE) info
-
 # -----------------------------------------------------------------------------
 # semantic-core (issue #35) — compiled with the root-installed TypeSpec toolchain
 # -----------------------------------------------------------------------------

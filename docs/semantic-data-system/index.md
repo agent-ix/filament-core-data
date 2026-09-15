@@ -10,10 +10,11 @@ It separates semantic meaning from the documents, database rows, messages,
 generated language types, and analytical files that represent it. Start with
 [principles](principles.md), then use the concern-specific records below.
 
-The record implements [the issue #8 requirements](../../spec/spec.md). Its scope
-is architecture only: it does not change the current Avro contract, generated
-bindings, database state, Quire module enforcement, published packages, or any
-consumer.
+The record implements [the issue #8 requirements](../../spec/spec.md). At
+publication its scope was architecture only: it did not change the then-current
+Avro contract, generated bindings, database state, Quire module enforcement,
+published packages, or any consumer. The zero-reader Avro boundary was
+subsequently retired under recorded owner approval.
 
 ## Status vocabulary
 
@@ -40,7 +41,8 @@ their own ticket before they can become implementation input.
 | [Semantic baseline 1.2](baseline-1-2.md) | provisional | [issue #95](https://github.com/agent-ix/filament-core-data/issues/95) | Selected field-presence, model, relationship, population, and ecosystem-configuration contracts; implementation remains pending |
 | [Generated package contract](generated-packages.md) | normative | — | Cross-language package and consumer boundary |
 | [Representations and transformations](representations-and-transformations.md) | normative | — | Output selection, mappings, profiles, loss, and provenance |
-| [Compatibility policy](compatibility.md) | normative | — | Cross-format evolution and Avro preservation |
+| [Compatibility policy](compatibility.md) | normative | — | Cross-format evolution and retired-boundary policy |
+| [Legacy Avro boundary retirement](legacy-avro-retirement.md) | normative | — | Final census, approval, and retirement scope |
 | [TypeSpec feasibility](typespec-feasibility.md) | historical | — | Capability matrix used by the issue #4 spike; resolved by ADR-0005 |
 | [Corpus review method](corpus-review-method.md) | normative | — | Evidence format for current-type and contract reviews |
 | [Program roadmap](roadmap.md) | normative | — | Ordered waves and human go-or-hold gates |
