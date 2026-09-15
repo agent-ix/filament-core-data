@@ -28,5 +28,6 @@
 	"required": ["keyword", "values"],
 	"unevaluatedProperties": {
 		"not": {}
-	}
+	},
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/EnumValuesConstraint"
 }
