@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0027",
+	"title": "`min` with a numeric operand",
+	"declaration": "MinConstraint",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "min",
+		"value": 0
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"keyword": "min",
+			"value": 0
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/MinConstraint.json",
+			"locator": "#/properties/keyword/const",
+			"quote": "\"const\": \"min\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

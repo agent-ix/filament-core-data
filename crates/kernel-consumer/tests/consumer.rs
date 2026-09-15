@@ -7,6 +7,7 @@ use agent_ix_semantic_kernel::{
 };
 
 const MULTIPLICITY_GOLDEN: &str = include_str!("../fixtures/PAR-0001.json");
+const CONSTRAINT_GOLDEN: &str = include_str!("../fixtures/PAR-0027.json");
 
 fn constructed_field() -> FieldDecl {
 	let multiplicity = Multiplicity::try_new(
@@ -23,6 +24,8 @@ fn constructed_field() -> FieldDecl {
 		None,
 	)
 	.expect("type reference constructs");
+	let constraint: ConstraintDecl = serde_json::from_str(r#"{"keyword":"min","value":0}"#)
+		.expect("the primitive union constraint constructs");
 	FieldDecl::try_new(
 		Identifier::try_new("unitSymbol".to_owned()).expect("identifier constructs"),
 		target,
@@ -30,7 +33,7 @@ fn constructed_field() -> FieldDecl {
 		None,
 		None,
 		None,
-		None,
+		Some(vec![constraint]),
 	)
 	.expect("field declaration constructs")
 }
@@ -64,6 +67,19 @@ fn tc_1545_deserializes_the_shared_positive_golden() {
 		.expect("PAR-0001 deserializes through the packaged crate");
 	assert_eq!(*value.lower.get(), 0);
 	assert_eq!(*value.upper.expect("golden carries upper").get(), 1);
+
+	let golden: serde_json::Value = serde_json::from_str(CONSTRAINT_GOLDEN)
+		.expect("PAR-0027 is JSON");
+	let value: ConstraintDecl = serde_json::from_value(
+		golden.get("instance").expect("PAR-0027 carries an instance").clone(),
+	)
+	.expect("PAR-0027 preserves the numeric constraint operand");
+	assert_eq!(
+		serde_json::to_value(value)
+			.expect("constraint serializes")["value"]
+			.as_f64(),
+		Some(0.0),
+	);
 }
 
 /// TC-1546: every closed grammar class named by FR-089 is refused with its
