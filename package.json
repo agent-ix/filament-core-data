@@ -1,45 +1,19 @@
 {
 	"name": "@agent-ix/filament-core-data",
 	"version": "0.1.0",
-	"description": "Shared Avro-generated core data contract for Filament IDE, core service, parser, and sync packages.",
+	"description": "Semantic contract compiler and generated kernel packages for Agent IX.",
 	"author": "Agent IX",
 	"license": "AGPL-3.0-only",
+	"private": true,
 	"type": "module",
 	"packageManager": "pnpm@10.33.4",
-	"main": "./dist/generated.js",
-	"module": "./dist/generated.js",
-	"types": "./dist/generated.d.ts",
-	"files": [
-		"dist/",
-		"schema/",
-		"fixtures/",
-		"src/",
-		"agent_ix_core_data/",
-		"LICENSE",
-		"README.md",
-		"pyproject.toml"
-	],
-	"exports": {
-		".": {
-			"types": "./dist/generated.d.ts",
-			"default": "./dist/generated.js"
-		},
-		"./generated": {
-			"types": "./dist/generated.d.ts",
-			"default": "./dist/generated.js"
-		},
-		"./schema": "./schema/avro/core-data.avpr",
-		"./fixtures": "./fixtures/representative-core-payloads.json"
-	},
 	"scripts": {
-		"generate": "node scripts/generate-core-data-schema.mjs",
 		"build": "tsc -p tsconfig.build.json",
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit -p tsconfig.json",
 		"lint": "biome format . && tsc --noEmit -p tsconfig.json && node scripts/test-matrix-summary.mjs --check && node scripts/build-compatibility-cases.mjs --check && node scripts/build-evolution-goldens.mjs --check && node scripts/build-compiler-docs.mjs --check",
 		"format": "biome format --write .",
 		"format:check": "biome format .",
-		"prepublishOnly": "pnpm run build",
 		"spike:typespec": "node spikes/typespec-feasibility/scripts/run-experiment.mjs",
 		"spike:typespec:check": "node spikes/typespec-feasibility/scripts/run-experiment.mjs --check"
 	},

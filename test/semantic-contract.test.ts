@@ -1,5 +1,4 @@
 import { createHash } from "node:crypto";
-import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,10 +6,6 @@ import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
 import { changedPathsOf } from "./changed-paths.js";
-import {
-	type CoreDataRecordName,
-	validateCoreDataRecord,
-} from "../src/generated";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const schemaRoot = resolve(root, "schema/semantic/v1");
@@ -284,67 +279,6 @@ describe("semantic package contract v1", () => {
 		expect(contract).toMatch(
 			/Quire retains[\s\S]*Quoin retains[\s\S]*compiler compiles/i,
 		);
-
-		// Scoped by issue #27: the promotion removes the spike emitter's `file:`
-		// devDependency, so a whole-file diff no longer expresses what NFR-012
-		// protects. The published surface and the runtime dependency set are what
-		// must not move, and TC-391 checks the same keys plus dependency-set
-		// equality modulo that one removal.
-		const beforeManifest = JSON.parse(
-			execFileSync("git", ["show", "origin/main:package.json"], {
-				cwd: root,
-				encoding: "utf8",
-			}),
-		) as Record<string, unknown>;
-		const afterManifest = JSON.parse(
-			readFileSync(resolve(root, "package.json"), "utf8"),
-		) as Record<string, unknown>;
-		for (const key of [
-			"name",
-			"version",
-			"description",
-			"author",
-			"license",
-			"type",
-			"packageManager",
-			"main",
-			"module",
-			"types",
-			"exports",
-			"files",
-			"repository",
-			"dependencies",
-		]) {
-			expect(JSON.stringify(afterManifest[key]), key).toBe(
-				JSON.stringify(beforeManifest[key]),
-			);
-		}
-		// Scoped by issue #19: the published surface this criterion protects is
-		// the metadata above, which is unchanged. `scripts` is a developer
-		// interface, and #19 appends four `--check` invocations to `lint` so a
-		// generated fixture or document that drifts fails the gate.
-		//
-		// The scoping is deliberately narrow: the script *set* may not change,
-		// every other command is compared exactly, and `lint` may only differ by
-		// appending `&& node scripts/<name>.mjs --check` clauses. Iterating the
-		// old set alone would have let a new script in unchecked, and a bare
-		// `startsWith` would have let `lint` be appended with `|| true`.
-		const beforeScripts = beforeManifest.scripts as Record<string, string>;
-		const afterScripts = afterManifest.scripts as Record<string, string>;
-		expect(Object.keys(afterScripts).sort()).toEqual(
-			Object.keys(beforeScripts).sort(),
-		);
-		for (const [name, command] of Object.entries(beforeScripts)) {
-			if (name === "lint") continue;
-			expect(afterScripts[name], name).toBe(command);
-		}
-		const appended = afterScripts.lint.slice(beforeScripts.lint.length);
-		expect(afterScripts.lint.startsWith(beforeScripts.lint)).toBe(true);
-		for (const clause of appended.split("&&").filter((part) => part.trim())) {
-			expect(clause.trim(), "lint may only gain --check invocations").toMatch(
-				/^node scripts\/[a-z0-9-]+\.mjs --check$/,
-			);
-		}
 	});
 
 	/** Traces: TC-132, TC-133, TC-135, TC-136, TC-137, TC-138, TC-139, TC-140. */
@@ -823,11 +757,11 @@ describe("semantic package contract v1", () => {
 		).toBe("unknown");
 		expect(
 			array(object(report, "report").retainedBridges, "bridges"),
-		).toContain("avro-v1");
+		).not.toContain("avro-v1");
 	});
 
 	/** Traces: TC-171, TC-172, TC-173, TC-174, TC-175, TC-176, TC-196. */
-	it("keeps dynamic, generated, Quoin, and Avro compatibility boundaries explicit", () => {
+	it("keeps dynamic, generated, and Quoin compatibility boundaries explicit", () => {
 		const policies = array(
 			readJson("positive/consumer-policies.json"),
 			"consumer policies",
@@ -855,8 +789,6 @@ describe("semantic package contract v1", () => {
 			fingerprint(JSON.parse(JSON.stringify(sharedValue))),
 		);
 
-		const adapter = readJson("positive/legacy-adapter.json");
-		expect(validates("legacy-adapter.schema.json", adapter)).toBe(true);
 		const quoin = object(
 			readJson("legacy/quoin-manifests.json"),
 			"Quoin inventory",
@@ -873,26 +805,6 @@ describe("semantic package contract v1", () => {
 			expect(manifest.rewritten).toBe(false);
 			expect(manifest.valid).toBe(true);
 		}
-		const bridge = object(readJson("legacy/avro-bridge.json"), "Avro bridge");
-		expect(bridge.semanticWideningAllowed).toBe(false);
-		expect(existsSync(resolve(root, String(bridge.source)))).toBe(true);
-		expect(existsSync(resolve(root, String(bridge.positiveFixtures)))).toBe(
-			true,
-		);
-		const avroFixtures = JSON.parse(
-			readFileSync(resolve(root, String(bridge.positiveFixtures)), "utf8"),
-		) as Record<CoreDataRecordName, unknown>;
-		for (const [name, payload] of Object.entries(avroFixtures)) {
-			expect(
-				validateCoreDataRecord(name as CoreDataRecordName, payload),
-				name,
-			).toEqual([]);
-		}
-		const invalidEntry = clone(avroFixtures.CoreArtifactEntry) as JsonObject;
-		delete invalidEntry.code;
-		expect(
-			validateCoreDataRecord("CoreArtifactEntry", invalidEntry).length,
-		).toBeGreaterThan(0);
 	});
 
 	/** Traces: TC-177, TC-178, TC-179, TC-180. */
@@ -1192,6 +1104,17 @@ describe("semantic package contract v1", () => {
 			"docs/semantic-data-system/rust-backend",
 			"test/rust-backend.test.ts",
 			"test/fixtures/rust-serde/",
+			"README.md",
+			"fixtures/representative-core-payloads.json",
+			"scripts/build_tools.py",
+			"scripts/generate-core-data-schema.mjs",
+			"test/legacy-avro-retirement.test.ts",
+			".github/workflows/release.yml",
+			".github/workflows/python-release.yml",
+			"schema/avro/core-data.avpr",
+			"src/generated.ts",
+			"agent_ix_core_data/",
+			"agent_ix_core_data/core_data.py",
 			"plan/",
 			"test/",
 		];
@@ -1203,17 +1126,9 @@ describe("semantic package contract v1", () => {
 			if (existsSync(resolve(root, path)))
 				expect(statSync(resolve(root, path)).isFile(), path).toBe(true);
 		}
-		// Issue #27 removes the spike emitter's `file:` devDependency, so
-		// `package.json` and `pnpm-lock.yaml` necessarily move. What these
-		// criteria protect — the published surface and the runtime dependency
-		// set — is pinned exactly by TC-391 in test/compiler.test.ts.
-		for (const prohibited of [
-			"schema/avro/core-data.avpr",
-			"src/generated.ts",
-			"agent_ix_core_data/core_data.py",
-		]) {
-			expect(changedPaths(), prohibited).not.toContain(prohibited);
-		}
+		// Later, separately approved work retired the zero-reader Avro boundary.
+		// Its removals and package metadata changes are pinned by
+		// legacy-avro-retirement.test.ts rather than this historical Issue #9 gate.
 		const plan = readFileSync(
 			resolve(root, "plan/Plan-004-semantic-package-contract/plan.md"),
 			"utf8",
