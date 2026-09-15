@@ -1,0 +1,24 @@
+{
+	"id": "PAR-0092",
+	"title": "`DefaultKind` admits the declared member `semantic`",
+	"declaration": "DefaultKind",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "not-applicable",
+	"instance": "semantic",
+	"expected": {
+		"resultState": "success",
+		"wire": "semantic"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/DefaultKind.json",
+			"locator": "#/enum",
+			"quote": "\"enum\": [\"semantic\", \"representation\", \"migration\"],"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

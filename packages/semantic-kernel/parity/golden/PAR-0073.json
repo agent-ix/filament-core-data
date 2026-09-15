@@ -1,0 +1,28 @@
+{
+	"id": "PAR-0073",
+	"title": "An enum member with the doc member absent",
+	"declaration": "EnumValue",
+	"class": "boundary",
+	"properties": ["presence-versus-null", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"value": "published"
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"value": "published"
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/EnumValue.json",
+			"locator": "#/properties/doc",
+			"quote": "\"doc\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

@@ -1,0 +1,25 @@
+{
+	"id": "PAR-0074",
+	"title": "An enum member value that is not an identifier",
+	"declaration": "EnumValue",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"value": "not an identifier"
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/EnumValue.json",
+			"locator": "#/properties/value",
+			"quote": "\"value\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

@@ -1,0 +1,28 @@
+{
+	"id": "PAR-0018",
+	"title": "A default kind carried with no value member",
+	"declaration": "DefaultDecl",
+	"class": "boundary",
+	"properties": ["defaults", "presence-versus-null", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"kind": "semantic"
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"kind": "semantic"
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/DefaultDecl.json",
+			"locator": "#/required",
+			"quote": "\"required\": [\"kind\"],"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

@@ -1,0 +1,32 @@
+{
+	"id": "PAR-0081",
+	"title": "The union admits an operand-carrying member",
+	"declaration": "ConstraintDecl",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "pattern",
+		"regex": "^a$",
+		"dialect": "ecma-262"
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"keyword": "pattern",
+			"regex": "^a$",
+			"dialect": "ecma-262"
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/ConstraintDecl.json",
+			"locator": "#/anyOf",
+			"quote": "\"anyOf\": ["
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

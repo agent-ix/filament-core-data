@@ -1,0 +1,24 @@
+{
+	"id": "PAR-0090",
+	"title": "`ConstraintKeyword` admits the declared member `format`",
+	"declaration": "ConstraintKeyword",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "not-applicable",
+	"instance": "format",
+	"expected": {
+		"resultState": "success",
+		"wire": "format"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/ConstraintKeyword.json",
+			"locator": "#/enum",
+			"quote": "\"enum\": ["
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

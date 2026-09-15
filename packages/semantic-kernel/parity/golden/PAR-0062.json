@@ -1,0 +1,38 @@
+{
+	"id": "PAR-0062",
+	"title": "Absent multiplicity and absent composite are absent on the wire",
+	"declaration": "RelationDecl",
+	"class": "boundary",
+	"properties": [
+		"relation-semantics",
+		"defaults",
+		"presence-versus-null",
+		"round-trip"
+	],
+	"unknownPolicy": "reject",
+	"instance": {
+		"verb": "refines",
+		"category": "traceability",
+		"target": "ix://agent-ix/semantic-core/type/TypeRef"
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"verb": "refines",
+			"category": "traceability",
+			"target": "ix://agent-ix/semantic-core/type/TypeRef"
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/RelationDecl.json",
+			"locator": "#/description",
+			"quote": "\"description\": \"A relationship declaration (FR-028). Absent multiplicity lowers to 0..1; absent composite to false.\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	},
+	"note": "The contract states the lowering, not a materialized wire default."
+}

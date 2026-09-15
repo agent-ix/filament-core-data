@@ -1,0 +1,27 @@
+{
+	"id": "PAR-0039",
+	"title": "An empty regex",
+	"declaration": "PatternConstraint",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "pattern",
+		"regex": "",
+		"dialect": "ecma-262"
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/PatternConstraint.json",
+			"locator": "#/properties/regex/minLength",
+			"quote": "\"minLength\": 1"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

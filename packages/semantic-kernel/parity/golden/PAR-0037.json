@@ -1,0 +1,32 @@
+{
+	"id": "PAR-0037",
+	"title": "A pattern constraint in the declared dialect",
+	"declaration": "PatternConstraint",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "pattern",
+		"regex": "^[A-Za-z_][A-Za-z0-9_]*$",
+		"dialect": "ecma-262"
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"keyword": "pattern",
+			"regex": "^[A-Za-z_][A-Za-z0-9_]*$",
+			"dialect": "ecma-262"
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/PatternConstraint.json",
+			"locator": "#/properties/dialect/const",
+			"quote": "\"const\": \"ecma-262\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

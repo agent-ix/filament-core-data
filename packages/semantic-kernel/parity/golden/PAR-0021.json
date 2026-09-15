@@ -1,0 +1,34 @@
+{
+	"id": "PAR-0021",
+	"title": "A required single-valued field",
+	"declaration": "FieldDecl",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"name": "unitSymbol",
+		"type": {
+			"target": "String"
+		}
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"name": "unitSymbol",
+			"type": {
+				"target": "String"
+			}
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/FieldDecl.json",
+			"locator": "#/required",
+			"quote": "\"required\": [\"name\", \"type\"],"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

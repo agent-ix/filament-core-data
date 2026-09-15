@@ -1,0 +1,28 @@
+{
+	"id": "PAR-0048",
+	"title": "The keyword-only non-empty constraint",
+	"declaration": "NonEmptyConstraint",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "nonEmpty"
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"keyword": "nonEmpty"
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/NonEmptyConstraint.json",
+			"locator": "#/properties/keyword/const",
+			"quote": "\"const\": \"nonEmpty\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

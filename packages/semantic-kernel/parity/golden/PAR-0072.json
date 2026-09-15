@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0072",
+	"title": "An enum member with documentation",
+	"declaration": "EnumValue",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"value": "draft",
+		"doc": "Not yet published."
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"value": "draft",
+			"doc": "Not yet published."
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/EnumValue.json",
+			"locator": "#/required",
+			"quote": "\"required\": [\"value\"],"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

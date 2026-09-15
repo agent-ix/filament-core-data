@@ -1,0 +1,25 @@
+{
+	"id": "PAR-0051",
+	"title": "The wrong discriminant on a keyword-only constraint",
+	"declaration": "UniqueConstraint",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "nonEmpty"
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/UniqueConstraint.json",
+			"locator": "#/properties/keyword/const",
+			"quote": "\"const\": \"unique\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0015",
+	"title": "A declared default of kind `semantic`",
+	"declaration": "DefaultDecl",
+	"class": "positive",
+	"properties": ["defaults", "serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"kind": "semantic",
+		"value": "draft"
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"kind": "semantic",
+			"value": "draft"
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/DefaultDecl.json",
+			"locator": "#/description",
+			"quote": "\"description\": \"A declared default; `value` shape is decided by the target scalar (FR-031-CON-2 exception).\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

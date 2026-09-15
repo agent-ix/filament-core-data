@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0040",
+	"title": "A minimum length of one",
+	"declaration": "MinLengthConstraint",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "minLength",
+		"value": 1
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"keyword": "minLength",
+			"value": 1
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/MinLengthConstraint.json",
+			"locator": "#/properties/keyword/const",
+			"quote": "\"const\": \"minLength\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

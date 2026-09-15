@@ -1,0 +1,32 @@
+# The FR-090 Rust decision emitter.
+#
+# It path-depends on the generated crate at `packages/semantic-kernel/rust`,
+# which is its own workspace root and is excluded from this repository's
+# workspace, and adds `serde_json` because the generated crate depends on
+# `serde` and on nothing else.
+#
+# It is its own workspace root, excluded from the repository's workspace, so
+# that the root `Cargo.lock` stays byte-unchanged: NFR-030 does not permit this
+# issue to write it. Its own lock file sits beside this manifest. The version
+# pins below repeat the root `[workspace.dependencies]` values exactly, because
+# an excluded crate cannot inherit them and a measurement built against a
+# different serde would be measuring a different serde.
+#
+# `publish = false` is unconditional, like every other manifest in this tree:
+# publication of anything under `packages/semantic-kernel/` passes
+# `agent-ix/quoin#290`.
+
+[workspace]
+
+[package]
+name = "agent-ix-semantic-kernel-parity"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85.0"
+license = "AGPL-3.0-only"
+publish = false
+
+[dependencies]
+agent-ix-semantic-kernel = { path = "../../../rust" }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.151"
