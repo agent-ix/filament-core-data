@@ -8,18 +8,21 @@
  * fingerprint: sha256:e2f0f9228011b4d10fac90ac6835f823bc07ba556c2ad532ba5e1a0327d7380a
  */
 
-export {
+export type {
 	Count,
 	Millis,
 	Node,
 	NodeRef,
-	NodeRefOf,
 	Payload,
 	Root,
 	Status,
 	Text,
 	TextList,
 	TextMap,
+} from "./types.js";
+
+export {
+	NodeRefOf,
 	UNION_DISCRIMINANT,
 } from "./types.js";
 
@@ -36,32 +39,39 @@ export {
 	validateTextMap,
 } from "./validators.js";
 
-export {
-	MAX_VALIDATION_DEPTH,
-	PRESERVED_MEMBER,
+export type {
 	StructuralCode,
-	VALIDATION_CODES,
 	ValidationError,
 	ValidationResult,
 } from "./errors.js";
 
 export {
+	MAX_VALIDATION_DEPTH,
+	PRESERVED_MEMBER,
+	VALIDATION_CODES,
+} from "./errors.js";
+
+export type {
 	ClauseDescriptor,
 	ConstraintDescriptor,
-	DOCUMENT_EXTENSIONS,
 	DefaultDescriptor,
 	ExportedFieldKey,
 	ExportedTypeName,
 	ExtensionDescriptor,
+	FieldDescriptor,
+	OccurrenceDescriptor,
+	OperationDescriptor,
+	RelationshipDescriptor,
+	VariantDescriptor,
+} from "./identity.js";
+
+export {
+	DOCUMENT_EXTENSIONS,
 	FIELD_DEFAULT,
 	FIELD_EXTENSIONS,
 	FIELD_IDENTITY,
 	FIELD_UNIT,
-	FieldDescriptor,
 	OCCURRENCES,
-	OccurrenceDescriptor,
-	OperationDescriptor,
-	RelationshipDescriptor,
 	TYPE_CLAUSES,
 	TYPE_CONSTRAINTS,
 	TYPE_EXTENSIONS,
@@ -72,7 +82,6 @@ export {
 	TYPE_ROLES,
 	TYPE_UNKNOWN_POLICY,
 	TYPE_VARIANTS,
-	VariantDescriptor,
 } from "./identity.js";
 
 export { PROVENANCE } from "./provenance.js";
