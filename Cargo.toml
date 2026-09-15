@@ -21,6 +21,7 @@ members = ["crates/semantic-ir", "crates/conformance-adapter", "crates/extractio
 exclude = [
 	"crates/consumer-compile-time",
 	"crates/consumer-runtime",
+	"crates/kernel-consumer",
 	"packages/semantic-kernel/rust",
 	# The FR-090 parity decision emitter is a measurement harness, not a
 	# workspace crate: it is excluded so that the root `Cargo.lock` — which

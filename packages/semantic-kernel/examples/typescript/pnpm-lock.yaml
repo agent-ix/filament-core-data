@@ -1,0 +1,22 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@agent-ix/semantic-agent-ix__semantic-kernel':
+        specifier: file:../../typescript
+        version: file:../../typescript
+
+packages:
+
+  '@agent-ix/semantic-agent-ix__semantic-kernel@file:../../typescript':
+    resolution: {directory: ../../typescript, type: directory}
+
+snapshots:
+
+  '@agent-ix/semantic-agent-ix__semantic-kernel@file:../../typescript': {}
