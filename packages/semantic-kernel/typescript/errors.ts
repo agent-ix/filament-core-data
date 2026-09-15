@@ -5,7 +5,7 @@
  * backend: ix://agent-ix/filament-core-data/backend/typescript@0.1.0
  * contract: 1.1.0
  * package: agent-ix/semantic-kernel@0.1.0
- * fingerprint: sha256:fdb692d0468da40155ca18d244bd47b754bb7ecd11559207b48541f2bb997df5
+ * fingerprint: sha256:e2156fccd90950500c5094cced8b5f70b92f68eadf6df82aef1a8ebba798cb67
  */
 
 /**

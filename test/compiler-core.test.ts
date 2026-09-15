@@ -5038,6 +5038,54 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 		);
 	});
 
+	/** Traces: TC-1548; FR-082; issue #128. */
+	it("preserves primitive JSON Schema anyOf values as an untagged payload union", async () => {
+		const lower = await import(
+			"../src/compiler/frontend/json-schema/lower.mjs"
+		);
+		const result = lower.lowerBundle([
+			[
+				"Constraint.json",
+				{
+					$id: "https://schemas.example.test/Constraint.json",
+					"x-agent-ix-semantic-id":
+						"ix://agent-ix/semantic-core/type/Constraint",
+					type: "object",
+					unevaluatedProperties: { not: {} },
+					properties: {
+						value: { anyOf: [{ type: "number" }, { type: "string" }] },
+					},
+					required: ["value"],
+				},
+			],
+		]);
+		expect(result.diagnostics).toBeUndefined();
+		const value = result.document.types.find(
+			(entry) => entry.displayName === "ConstraintValue",
+		);
+		expect(value.extensions).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					identity:
+						"ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
+					payload: { wireForm: "untagged" },
+				}),
+			]),
+		);
+		expect(value.variants).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					name: "number",
+					payloadType: lower.identityOf("ConstraintValueNumber"),
+				}),
+				expect.objectContaining({
+					name: "string",
+					payloadType: lower.identityOf("ConstraintValueString"),
+				}),
+			]),
+		);
+	});
+
 	// Every code this repository registers must be emitted by a test in this
 	// file (FR-049's closing gate). Issue #11 adds six, and fires each one here
 	// from the module that raises it, rather than asserting the code exists.
