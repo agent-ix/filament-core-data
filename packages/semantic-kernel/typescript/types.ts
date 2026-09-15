@@ -5,7 +5,7 @@
  * backend: ix://agent-ix/filament-core-data/backend/typescript@0.1.0
  * contract: 1.1.0
  * package: agent-ix/semantic-kernel@0.1.0
- * fingerprint: sha256:625aaebb0ff08305a9819ab8640471833f406081d0a2720fe506ebec5decc556
+ * fingerprint: sha256:fdb692d0468da40155ca18d244bd47b754bb7ecd11559207b48541f2bb997df5
  */
 
 /**
@@ -22,18 +22,7 @@ export interface ClauseRef {
 	readonly sourceSpan?: SourceLocus;
 }
 
-export type ConstraintDecl =
-	| { readonly kind: "EnumValuesConstraint"; readonly value: EnumValuesConstraint }
-	| { readonly kind: "ExclusiveMaxConstraint"; readonly value: ExclusiveMaxConstraint }
-	| { readonly kind: "ExclusiveMinConstraint"; readonly value: ExclusiveMinConstraint }
-	| { readonly kind: "FormatConstraint"; readonly value: FormatConstraint }
-	| { readonly kind: "MaxConstraint"; readonly value: MaxConstraint }
-	| { readonly kind: "MaxLengthConstraint"; readonly value: MaxLengthConstraint }
-	| { readonly kind: "MinConstraint"; readonly value: MinConstraint }
-	| { readonly kind: "MinLengthConstraint"; readonly value: MinLengthConstraint }
-	| { readonly kind: "NonEmptyConstraint"; readonly value: NonEmptyConstraint }
-	| { readonly kind: "PatternConstraint"; readonly value: PatternConstraint }
-	| { readonly kind: "UniqueConstraint"; readonly value: UniqueConstraint };
+export type ConstraintDecl = EnumValuesConstraint | ExclusiveMaxConstraint | ExclusiveMinConstraint | FormatConstraint | MaxConstraint | MaxLengthConstraint | MinConstraint | MinLengthConstraint | NonEmptyConstraint | PatternConstraint | UniqueConstraint;
 
 export type ConstraintKeyword = "enumValues" | "exclusiveMax" | "exclusiveMin" | "format" | "max" | "maxLength" | "min" | "minLength" | "nonEmpty" | "pattern" | "unique";
 
@@ -252,9 +241,7 @@ export interface TypeRef {
 	readonly unit?: UnitSymbol;
 }
 
-export type TypeRefTarget =
-	| { readonly kind: "KernelScalar"; readonly value: KernelScalar }
-	| { readonly kind: "SemanticId"; readonly value: SemanticId };
+export type TypeRefTarget = KernelScalar | SemanticId;
 
 export interface UniqueConstraint {
 	readonly keyword: UniqueConstraintKeyword;

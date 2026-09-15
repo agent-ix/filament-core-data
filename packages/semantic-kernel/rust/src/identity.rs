@@ -240,6 +240,22 @@ pub struct OccurrenceMeta {
     pub value: &'static str,
 }
 
+const CONSTRAINT_DECL_EXTENSIONS: &[ExtensionMeta] = &[crate::identity::ExtensionMeta {
+    identity: "ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
+    version: "1.0.0",
+    required: false,
+    capability: None,
+    payload: "{\"wireForm\":\"untagged\"}",
+}];
+
+const TYPE_REF_TARGET_EXTENSIONS: &[ExtensionMeta] = &[crate::identity::ExtensionMeta {
+    identity: "ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
+    version: "1.0.0",
+    required: false,
+    capability: None,
+    payload: "{\"wireForm\":\"untagged\"}",
+}];
+
 /// Every generated type, in the order the contract declares them.
 pub const TYPES: &[TypeMeta] = &[
     crate::identity::TypeMeta {
@@ -312,7 +328,7 @@ pub const TYPES: &[TypeMeta] = &[
         relationships: &[],
         operations: &[],
         clauses: &[],
-        extensions: &[],
+        extensions: CONSTRAINT_DECL_EXTENSIONS,
     },
     crate::identity::TypeMeta {
         identity: "ix://agent-ix/semantic-core/type/ConstraintKeyword",
@@ -1824,7 +1840,7 @@ pub const TYPES: &[TypeMeta] = &[
         relationships: &[],
         operations: &[],
         clauses: &[],
-        extensions: &[],
+        extensions: TYPE_REF_TARGET_EXTENSIONS,
     },
     crate::identity::TypeMeta {
         identity: "ix://agent-ix/semantic-core/type/UniqueConstraint",

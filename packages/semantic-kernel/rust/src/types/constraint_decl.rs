@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 ///
 /// Semantic identity: ix://agent-ix/semantic-core/type/ConstraintDecl.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum ConstraintDecl {
     /// MinConstraint
     ///
