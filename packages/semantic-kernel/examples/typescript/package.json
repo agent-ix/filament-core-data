@@ -1,0 +1,9 @@
+{
+	"name": "semantic-kernel-typescript-consumer",
+	"private": true,
+	"type": "module",
+	"license": "AGPL-3.0-only",
+	"dependencies": {
+		"@agent-ix/semantic-agent-ix__semantic-kernel": "file:../../typescript"
+	}
+}
