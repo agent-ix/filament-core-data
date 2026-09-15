@@ -32,5 +32,6 @@
 	"unevaluatedProperties": {
 		"not": {}
 	},
-	"description": "A field declaration (one typed Properties row). Reader: unique by name; identity only on 1..1 non-JsonObject."
+	"description": "A field declaration (one typed Properties row). Reader: unique by name; identity only on 1..1 non-JsonObject.",
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/FieldDecl"
 }

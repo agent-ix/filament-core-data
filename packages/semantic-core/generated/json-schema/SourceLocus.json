@@ -35,5 +35,6 @@
 	"unevaluatedProperties": {
 		"not": {}
 	},
-	"description": "Source span of a declaration or clause, same shape as the IR `sourceLocus`."
+	"description": "Source span of a declaration or clause, same shape as the IR `sourceLocus`.",
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/SourceLocus"
 }

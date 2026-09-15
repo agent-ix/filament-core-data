@@ -117,6 +117,13 @@ function main(argv) {
 			readFileSync(join(SCHEMA_DIR, name), "utf8"),
 		]),
 	);
+	const jsonSchemaProvenance = provenanceOf({
+		target: "json-schema",
+		semanticCore: manifest.version,
+		emissionDigest: toolchain.digest,
+		inputDigest,
+		losses: KERNEL_LOSSES,
+	});
 
 	/** @type {[string, string][]} */
 	const artifacts = [
@@ -132,6 +139,7 @@ function main(argv) {
 					"Issue #11, FR-088. An index over packages/semantic-core/generated/json-schema/, never a copy of it.",
 				base: toolchain.base,
 				emissionDigest: toolchain.digest,
+				"x-agent-ix-provenance": jsonSchemaProvenance,
 				documents: documents.map(([name]) => ({
 					name,
 					path: `../../semantic-core/generated/json-schema/${name}`,
@@ -140,15 +148,7 @@ function main(argv) {
 		],
 		[
 			"provenance.json",
-			serialize(
-				provenanceOf({
-					target: "json-schema",
-					semanticCore: manifest.version,
-					emissionDigest: toolchain.digest,
-					inputDigest,
-					losses: KERNEL_LOSSES,
-				}),
-			),
+			serialize(jsonSchemaProvenance),
 		],
 	];
 

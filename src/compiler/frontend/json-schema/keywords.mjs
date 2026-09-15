@@ -14,7 +14,7 @@
  */
 
 /**
- * Exactly the eighteen keywords FR-082 declares. Frozen: a caller that could
+ * Exactly the declared JSON Schema and Agent IX annotation keywords. Frozen: a caller that could
  * push onto this set could widen the contract at run time, which is the
  * failure this set exists to prevent.
  */
@@ -38,6 +38,7 @@ export const RECOGNISED_KEYWORDS = Object.freeze(
 		"minLength",
 		"minimum",
 		"maximum",
+		"x-agent-ix-semantic-id",
 	]),
 );
 

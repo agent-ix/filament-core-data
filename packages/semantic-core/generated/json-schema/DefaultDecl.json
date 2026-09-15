@@ -12,5 +12,6 @@
 	"unevaluatedProperties": {
 		"not": {}
 	},
-	"description": "A declared default; `value` shape is decided by the target scalar (FR-031-CON-2 exception)."
+	"description": "A declared default; `value` shape is decided by the target scalar (FR-031-CON-2 exception).",
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/DefaultDecl"
 }

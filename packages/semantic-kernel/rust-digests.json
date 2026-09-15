@@ -8,7 +8,7 @@
 		"README.md": "sha256:84f10fb02149349873649b8ac1e1f92bcc61551e9abd762f4de9ae6be4548169",
 		"src/identity.rs": "sha256:64bbf91018c9bd40b32d67486902da3c38958bf94f2a5fe6b06422a3ad98bf5e",
 		"src/lib.rs": "sha256:da2167e9bb9522de95ccd1b84eaa163013fc896e356a6754f5ac63be59db4ddd",
-		"src/provenance.rs": "sha256:5f1515a44f12ade2ea772a56081bfeb33d942c1970983b750657c46c710b9b85",
+		"src/provenance.rs": "sha256:bdb8a38cc52c21ca2f68758b83afa36c1a4915f47157f016cc798c39387ac237",
 		"src/support.rs": "sha256:3aee013db5d9dd98d42a4eb9ba6a642cb81724ec438972f76870522d2c8b5477",
 		"src/types.rs": "sha256:6a2519bc39490aeda7e7ad04ffe247c8b1d7b3d0ee0b5d5af1c96560d576415f",
 		"src/types/clause_language.rs": "sha256:e8205b2361d02b24e9d7b7e98e7ed6cf01b5f20b895ef3c551b37adb38a0092b",
@@ -81,5 +81,5 @@
 		"src/types/unique_constraint_keyword.rs": "sha256:b0d77f6936de5d6e006d9c0ce2349e8aeaba6cf8df4210e890afebd1d694701b",
 		"src/types/unit_symbol.rs": "sha256:e0542c657776e799bb9b5e45e15c85bdb839bc0947d2ec8dd27ed9504801d30a"
 	},
-	"crate": "sha256:e34e1d0d55bb4ca49c28721ca0d070a47624bae86d7c1d4102bcfbe32c1b6c65"
+	"crate": "sha256:7e6a1634cd53400ce539825c6380926a07af851d2f34c5cde0f3d9b7eb07ec29"
 }
