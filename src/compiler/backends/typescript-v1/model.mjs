@@ -54,6 +54,17 @@ function isObject(value) {
 	return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
+const UNTAGGED_UNION_EXTENSION =
+	"ix://agent-ix/semantic-core/extension/untagged-union-wire-form";
+
+function wireFormOf(extensions) {
+	for (const extension of extensions ?? []) {
+		if (extension?.identity !== UNTAGGED_UNION_EXTENSION) continue;
+		if (extension?.payload?.wireForm === "untagged") return "untagged";
+	}
+	return undefined;
+}
+
 /**
  * The scalar an identity resolves to through the alias chain, or `undefined`.
  *
@@ -275,6 +286,10 @@ export function buildModel(ir, options = {}) {
 		}
 
 		if (type.kind === "enum" || type.kind === "union") {
+			if (type.kind === "union") {
+				const wireForm = wireFormOf(type.extensions);
+				if (wireForm !== undefined) entry.wireForm = wireForm;
+			}
 			entry.variants = Object.freeze(
 				byIdentity((type.variants ?? []).filter(isObject)).map((variant) => {
 					const rendered = {

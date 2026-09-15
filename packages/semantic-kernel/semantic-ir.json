@@ -128,7 +128,16 @@
 				}
 			},
 			"constraints": [],
-			"extensions": [],
+			"extensions": [
+				{
+					"identity": "ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
+					"version": "1.0.0",
+					"required": false,
+					"payload": {
+						"wireForm": "untagged"
+					}
+				}
+			],
 			"unknownPolicy": "reject",
 			"variants": [
 				{
@@ -3554,7 +3563,16 @@
 				}
 			},
 			"constraints": [],
-			"extensions": [],
+			"extensions": [
+				{
+					"identity": "ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
+					"version": "1.0.0",
+					"required": false,
+					"payload": {
+						"wireForm": "untagged"
+					}
+				}
+			],
 			"unknownPolicy": "reject",
 			"variants": [
 				{

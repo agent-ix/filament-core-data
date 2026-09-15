@@ -4991,6 +4991,53 @@ describe("generation backend seam registry codes (FR-063)", () => {
 // ---------------------------------------------------------------------------
 
 describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
+	/** Traces: TC-1543; FR-082. */
+	it("preserves an all-reference JSON Schema anyOf as an untagged union", async () => {
+		const lower = await import(
+			"../src/compiler/frontend/json-schema/lower.mjs"
+		);
+		const schema = (name: string) => ({
+			$id: `https://schemas.example.test/${name}.json`,
+			"x-agent-ix-semantic-id": `ix://agent-ix/semantic-core/type/${name}`,
+			type: "string",
+		});
+		const result = lower.lowerBundle([
+			[
+				"Choice.json",
+				{
+					$id: "https://schemas.example.test/Choice.json",
+					"x-agent-ix-semantic-id":
+						"ix://agent-ix/semantic-core/type/Choice",
+					anyOf: [
+						{ $ref: "https://schemas.example.test/Left.json" },
+						{ $ref: "https://schemas.example.test/Right.json" },
+					],
+				},
+			],
+			["Left.json", schema("Left")],
+			["Right.json", schema("Right")],
+		]);
+		expect(result.diagnostics).toBeUndefined();
+		const choice = result.document.types.find(
+			(entry) => entry.displayName === "Choice",
+		);
+		expect(choice.extensions).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					identity:
+						"ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
+					payload: { wireForm: "untagged" },
+				}),
+			]),
+		);
+		expect(choice.variants).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ payloadType: lower.identityOf("Left") }),
+				expect.objectContaining({ payloadType: lower.identityOf("Right") }),
+			]),
+		);
+	});
+
 	// Every code this repository registers must be emitted by a test in this
 	// file (FR-049's closing gate). Issue #11 adds six, and fires each one here
 	// from the module that raises it, rather than asserting the code exists.

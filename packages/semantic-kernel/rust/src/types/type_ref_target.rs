@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 ///
 /// Semantic identity: ix://agent-ix/semantic-core/type/TypeRefTarget.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum TypeRefTarget {
     /// SemanticId
     ///

@@ -39,6 +39,17 @@ import {
 	variantName,
 } from "./names.mjs";
 
+const UNTAGGED_UNION_EXTENSION =
+	"ix://agent-ix/semantic-core/extension/untagged-union-wire-form";
+
+function wireFormOf(extensions) {
+	for (const extension of extensions ?? []) {
+		if (extension?.identity !== UNTAGGED_UNION_EXTENSION) continue;
+		if (extension?.payload?.wireForm === "untagged") return "untagged";
+	}
+	return undefined;
+}
+
 /** The nine kernel scalars and their Rust bases; `bytes` is the one refusal. */
 export const KERNEL_SCALARS = Object.freeze({
 	boolean: "bool",
@@ -451,6 +462,8 @@ function mapType(definition, context) {
 		case "enum":
 		case "union": {
 			model.row = `kind:${kind}`;
+			model.wireForm =
+				kind === "union" ? wireFormOf(definition.extensions) : undefined;
 			model.variants = [];
 			for (const variant of definition.variants ?? []) {
 				if (kind === "enum" && variant.payloadType !== undefined) {
