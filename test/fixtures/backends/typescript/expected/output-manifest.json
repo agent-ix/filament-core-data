@@ -14,7 +14,7 @@
 		},
 		{
 			"path": "errors.ts",
-			"digest": "sha256:0887a7924ff6fb5e407dedf275be7adc57e3be39da818715afa3db3ab95fc8ba",
+			"digest": "sha256:ab6a5b5f439a8757e45e8729af6bfa37bd05c9e27a7404f6c6f5ed2dec4842f9",
 			"mediaType": "text/typescript",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance"
@@ -22,7 +22,7 @@
 		},
 		{
 			"path": "identity.ts",
-			"digest": "sha256:b30eceb1df2776317142498ea754b2f82dcaf19c1e0c4be034d3e8a7f91e0dd4",
+			"digest": "sha256:091b85a78a50883d1ec3abdb978d81c6be26d4dfc009aad0b02f44d9b38e10f5",
 			"mediaType": "text/typescript",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance"
@@ -30,7 +30,7 @@
 		},
 		{
 			"path": "index.ts",
-			"digest": "sha256:fceb7145983196f72d7f09e3dd01a24fc65e1311a0cad46ab61d5040f558e7c3",
+			"digest": "sha256:1628bb1fb8e97d46b19130d2d1bd925dcaf012cfdb526a4bf471006d938e0169",
 			"mediaType": "text/typescript",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance"
@@ -38,7 +38,7 @@
 		},
 		{
 			"path": "package.json",
-			"digest": "sha256:e67fedef23cbeaeef9c99e603c076b8042769697d54e549c76b89ef03a32ce91",
+			"digest": "sha256:dac0bd5e9fdf17939541204086876255412fa1c71063911fd2adfec7f76f1cf7",
 			"mediaType": "application/json",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance"
@@ -46,7 +46,7 @@
 		},
 		{
 			"path": "provenance.ts",
-			"digest": "sha256:38e4d3017dbe05ca325d4698d8afaf3164595da812a8704a89cb3cd36cb2d15d",
+			"digest": "sha256:9c9b955a4dc0bb60a53546ccb8f9fbabac003092175d53cbff0f2a75d19c2e84",
 			"mediaType": "text/typescript",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance"
@@ -54,7 +54,7 @@
 		},
 		{
 			"path": "types.ts",
-			"digest": "sha256:f97061c2e47dc3961c700a32afab94756d5611d8ca7a1652d6e2c3db43247f48",
+			"digest": "sha256:c9ef4aef6b4e5409e7d9b75bbe5ea4c891944f28c311fc4a918e74ab639002ab",
 			"mediaType": "text/typescript",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance/type/Count",
@@ -71,7 +71,7 @@
 		},
 		{
 			"path": "validators.ts",
-			"digest": "sha256:420ebfdf3c5deff8bf367c8c59e8425421b4a218010ee4fe611aed917d2dc2ee",
+			"digest": "sha256:ce5f21c35603d5042394894314ccfcded3268e5d36e359b65b82dc97ed03f07f",
 			"mediaType": "text/typescript",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance"

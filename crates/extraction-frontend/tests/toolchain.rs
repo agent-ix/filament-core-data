@@ -255,7 +255,7 @@ fn tc_1320_manifest_pins_toolchain_and_lock_entries_of_other_members_hold() {
     );
     assert_eq!(
         key(&package, "license").as_deref(),
-        Some("\"AGPL-3.0-only\"")
+        Some("\"AGPL-3.0-or-later\"")
     );
     assert_eq!(key(&package, "publish").as_deref(), Some("false"));
     assert_eq!(key(&package, "edition").as_deref(), Some("\"2021\""));

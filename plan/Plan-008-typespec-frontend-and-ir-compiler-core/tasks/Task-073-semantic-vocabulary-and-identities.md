@@ -58,7 +58,7 @@ The fifteen decorators, their argument validation, and the one identity minting 
 ## Subtasks
 
 - [x] `src/compiler/frontend/typespec/lib/main.tsp` and `lib.mjs`: the fifteen `extern dec` declarations and their `$decorators` implementations, each storing into a program state map, each validating its arguments at its own locus.
-- [x] `lib/package.json` declaring `AGPL-3.0-only`.
+- [x] `lib/package.json` declaring `AGPL-3.0-or-later`.
 - [x] `src/compiler/frontend/typespec/identity.mjs`: `slug`, `mintIdentity` for each of the seven slots exactly as FR-034 mints them, `constraintDiagnosticCode`, and the `UNSLUGGABLE_NAME` collision check.
 - [x] A shared identity table driving both the minting code and its test, so the FR-034 correspondence is one table rather than two lists.
 - [x] `src/compiler/frontend/typespec/vocabulary.mjs`: read the state maps, apply repeatability, and raise `DUPLICATE_DECORATOR`.

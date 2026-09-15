@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Agent-IX
 //! The selected model and profile: field contracts, exported types, and the
 //! three-member selections the static bundle carries.

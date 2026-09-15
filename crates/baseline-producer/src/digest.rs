@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Agent-IX
 //! The four-member digest selection of
 //! [FR-112](../../../spec/functional/FR-112-emit-versioned-digest-selections.md).

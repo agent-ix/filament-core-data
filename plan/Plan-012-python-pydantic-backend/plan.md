@@ -94,7 +94,7 @@ Task-081 --/                        +-> Task-085 -> Task-086 -> Task-087 -> Task
 - No permitted-path entry is added to any merged suite's list. Task-081 fixes the encoding instead.
 - Nothing is published. The safety gate on #23 forbids PyPI publication and consumer migration; publication is issue #11 and additionally passes agent-ix/quoin#290.
 - No file under `conformance/` changes. The `python-backend` adapter slot stays `unavailable` and its rows stay unmet.
-- Every original file is AGPL-3.0-only; the MIT upstream stays an attributed, pinned dependency with its licence preserved.
+- Every original file is AGPL-3.0-or-later; the MIT upstream stays an attributed, pinned dependency with its licence preserved.
 
 ## The Seams
 

@@ -70,7 +70,7 @@ them to any registry.
 
 - The index SHALL copy the `compiler`, `emitter`, and `normalization` records of `packages/semantic-core/generated/toolchain.json` verbatim, including the issue #31 normalization's recorded no-op, so a reader learns what produced these bytes without opening a second file, and so the recorded provenance cannot silently disagree with the one FR-033-AC-5 already ties to the lockfile.
 - The index SHALL name the JSON Schema dialect the documents declare, `https://json-schema.org/draft/2020-12/schema`, read from the documents rather than asserted.
-- The index SHALL record `AGPL-3.0-only` as the licence of the emitted documents, matching `packages/semantic-core/package.json`.
+- The index SHALL record `AGPL-3.0-or-later` as the licence of the emitted documents, matching `packages/semantic-core/package.json`.
 
 ### Resolvable offline
 

@@ -183,7 +183,7 @@ def _readme(
         [
             "## Licence",
             "",
-            "The generated source is AGPL-3.0-only, like the rest of this",
+            "The generated source is AGPL-3.0-or-later, like the rest of this",
             "repository. The generator is MIT and is attributed in",
             "`PROVENANCE.json`.",
             "",
@@ -250,7 +250,7 @@ def build_from(prepared: Prepared, profile_id: str) -> dict[str, str]:
             "license": "MIT",
             "attribution": UPSTREAM_ATTRIBUTION,
         },
-        "generatedSourceLicense": "AGPL-3.0-only",
+        "generatedSourceLicense": "AGPL-3.0-or-later",
         "nameCollisions": collisions(exports),
         "published": False,
         "contentFingerprint": _content_fingerprint(files),

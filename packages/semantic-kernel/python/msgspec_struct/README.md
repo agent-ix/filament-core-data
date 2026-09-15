@@ -5,7 +5,7 @@ Runtime validation: validating.
 Qualification verdict: **qualified-with-conditions**.
 
 Generated from the semantic kernel bundle
-`https://schemas.agent-ix.org/semantic-core/0.1.0/` (`@agent-ix/semantic-core` 0.1.0, digest `sha256:dd33c886f70e908b14507c35e078d163b76308c3d170d2b54ddf933d1a4ebb52`)
+`https://schemas.agent-ix.org/semantic-core/0.1.0/` (`@agent-ix/semantic-core` 0.1.0, digest `sha256:b07073a16922fa4e311104fc97724727154a8aa4e1745c5a13f86a54a8e00264`)
 through `python_backend/kernel/emit.py`, by the pinned
 `datamodel-code-generator`. Do not edit by hand: the tree is
 regenerated and byte-compared.
@@ -69,7 +69,7 @@ already carry.
 
 ## Licence
 
-The generated source is AGPL-3.0-only, like the rest of this
+The generated source is AGPL-3.0-or-later, like the rest of this
 repository. The generator is MIT and is attributed in
 `PROVENANCE.json`.
 

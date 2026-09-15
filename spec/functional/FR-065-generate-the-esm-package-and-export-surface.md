@@ -59,7 +59,7 @@ type without acquiring the rest and no framework enters the dependency closure.
 
 - The generated `package.json` SHALL declare `"type": "module"`.
 - The generated `package.json` SHALL declare `"sideEffects": false`, because a side-effecting module cannot be dropped by a bundler.
-- The generated `package.json` SHALL declare `"license": "AGPL-3.0-only"`.
+- The generated `package.json` SHALL declare `"license": "AGPL-3.0-or-later"`.
 - The generated `package.json` SHALL declare a `version` equal to the IR document's `package.version`.
 - The generated `package.json` SHALL declare an `exports` map carrying a `"."` entry and one subpath entry for each of `types`, `validators`, `errors`, `identity`, and `metadata`.
 - Every `exports` entry SHALL list its `types` condition before its `default` condition, because a condition map is matched in declaration order.
@@ -95,9 +95,9 @@ type without acquiring the rest and no framework enters the dependency closure.
 
 ### Provenance and typechecking
 
-- Every generated file SHALL carry an `SPDX-License-Identifier: AGPL-3.0-only` header.
+- Every generated file SHALL carry an `SPDX-License-Identifier: AGPL-3.0-or-later` header.
 - Every generated file SHALL carry a banner naming the backend identity, the backend version, and the IR fingerprint it was generated from.
-- The generated `LICENSE` SHALL be the AGPL-3.0-only text this repository already ships, copied rather than restated.
+- The generated `LICENSE` SHALL be the AGPL-3.0-or-later text this repository already ships, copied rather than restated.
 - The generated package SHALL typecheck with zero errors under `strict`, `exactOptionalPropertyTypes`, `noUnusedLocals`, and `noUnusedParameters`, because `exactOptionalPropertyTypes` is what makes the absent-versus-`undefined` distinction of FR-064 real rather than nominal, and the two unused-symbol rules are what the repository's own configuration already applies to everything it compiles.
 - The authoritative configuration for that typecheck SHALL be `test/fixtures/backends/typescript/tsconfig.json`, named here so that no reader has to infer which of two configurations governs.
 - The root `tsconfig.json` SHALL exclude `test/fixtures/backends/typescript`, because its `include` names `test`, it does not set `exactOptionalPropertyTypes`, and `make lint` runs it — so a generated package left inside that program would be checked under weaker options than this requirement demands, and the deliberately-uncompilable fixtures of [FR-071](./FR-071-provide-the-generate-command-and-surface-fixtures.md) would fail the repository's own lint.
@@ -139,7 +139,7 @@ that decision requires.
 | FR-065-CON-3 | The prohibited-dependency check SHALL be a static assertion over the generated source's import specifiers, not a runtime probe, so that it holds for a package nobody has executed. | Security | Static analysis |
 | FR-065-CON-4 | The reachable-surface measurement SHALL be a static walk over the generated package's own import and export graph, adding no dependency to either lockfile. No bundler is available to do it: `esbuild`, `rollup`, and `vite` sit in `pnpm-lock.yaml` only as transitive dependencies of `vitest`, neither `import("esbuild")` nor `import("rollup")` resolves from the repository root, and declaring one would change `package.json` and `pnpm-lock.yaml`, which NFR-025 asserts unchanged. For a package that declares `sideEffects: false`, imports nothing outside itself, and re-exports only by name, the walk computes what a tree-shaker retains. | Non-disruption | Lockfile comparison |
 | FR-065-CON-5 | Every *type-derived* export of the generated package SHALL trace to a semantic identity the IR carries, leaving the package's fixed API surface — the closed list this requirement declares — as the only other permitted source of a public name, so that the export set is bounded without forbidding the package the names its own API needs. | Traceability | Export-set test |
-| FR-065-CON-6 | The emitted `LICENSE` SHALL be AGPL-3.0-only with no carve-out, so that a generated file lacking its SPDX header fails the licence gate. This is the *generated package's* licence, which the programme mandates; it is a different member from the `customSourceLicense` of the committed target-contract fixture, which reads `AGPL-3.0-or-later` and which `agent-ix/filament-core-data#57` owns. | Licence | Licence inspection |
+| FR-065-CON-6 | The emitted `LICENSE` SHALL be AGPL-3.0-or-later with no carve-out, so that a generated file lacking its SPDX header fails the licence gate. This is the *generated package's* licence, which the programme mandates; it is a different member from the `customSourceLicense` of the committed target-contract fixture, which also reads `AGPL-3.0-or-later` since `agent-ix/filament-core-data#140`. | Licence | Licence inspection |
 
 ## Acceptance Criteria
 

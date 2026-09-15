@@ -51,7 +51,7 @@ and E1..E14 (change record CR-095-2, review
 reading those decisions recorded; a task that contradicts one is wrong.
 
 **Build only.** `publish = false` on the crate manifest; no step contacts a
-registry. Every original file is AGPL-3.0-only.
+registry. Every original file is AGPL-3.0-or-later.
 
 ## Requirements covered
 

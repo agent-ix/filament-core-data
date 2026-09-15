@@ -44,7 +44,7 @@ orchestrator decisions D1..D15 recorded after the composite review
 SR-160..SR-168.
 
 **Build only.** `publish = false` on the crate manifest; no step contacts a
-registry. Every original file is AGPL-3.0-only.
+registry. Every original file is AGPL-3.0-or-later.
 
 ## Requirements covered
 

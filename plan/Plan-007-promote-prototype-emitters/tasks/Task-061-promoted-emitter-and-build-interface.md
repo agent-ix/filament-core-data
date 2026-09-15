@@ -59,7 +59,7 @@ Move the `$onEmit` semantic-IR emitter into `src/compiler/` behind one six-symbo
 
 - [x] `src/compiler/ir.mjs`: `buildSemanticIr(program, { generator, baseDir })` and `SEMANTIC_IR_SCHEMA_VERSION`. Walk with `navigateProgram`; keep only `AgentIx.Semantic` and descendants; order by `id` with a code-point comparison, never `localeCompare`; relativise loci against `baseDir` as `<path>:<line>`; record `synthetic` when there is no location.
 - [x] `src/compiler/compile.mjs`: `compileSemanticIr({ entrypoint, generator, baseDir })` over `NodeHost`, rejecting with the diagnostics rather than emitting a partial IR.
-- [x] `src/compiler/emitters/semantic-ir/index.mjs` and `package.json` (`@agent-ix/semantic-ir-emitter`, AGPL-3.0-only, private): `$onEmit` reading `context.options.generator`, defaulting to its own `name@version`.
+- [x] `src/compiler/emitters/semantic-ir/index.mjs` and `package.json` (`@agent-ix/semantic-ir-emitter`, AGPL-3.0-or-later, private): `$onEmit` reading `context.options.generator`, defaulting to its own `name@version`.
 - [x] `src/compiler/index.mjs` exporting exactly the six symbols, and `src/compiler/index.d.mts` declaring them.
 - [x] `src/compiler/cli.mjs` with `emit-ir --entrypoint --generator --out`, serialising as `JSON.stringify(ir, null, 2)` plus one newline; `make compiler-emit-ir`.
 - [x] Tests TC-331..348, including the `tsp --emit <absolute path> --option "@agent-ix/semantic-ir-emitter.generator=<id>"` parity run and the two-locale collator check.

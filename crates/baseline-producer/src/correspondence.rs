@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Agent-IX
 //! The producer/native correspondence record of
 //! [FR-116](../../../spec/functional/FR-116-emit-producer-native-correspondence-records.md).

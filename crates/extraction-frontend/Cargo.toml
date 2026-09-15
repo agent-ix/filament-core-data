@@ -16,7 +16,7 @@ version = "0.0.0"
 description = "Lifts a quire spec bundle into the Filament semantic IR."
 edition = "2021"
 rust-version.workspace = true
-license = "AGPL-3.0-only"
+license = "AGPL-3.0-or-later"
 publish = false
 
 [lib]

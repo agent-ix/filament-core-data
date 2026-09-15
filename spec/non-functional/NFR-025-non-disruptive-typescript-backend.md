@@ -135,7 +135,7 @@ copy of the rule.
 | Paths this change's set gains when a later ticket lands on top of it | 0 | 0 | Accretion rehearsal |
 | Downstream repositories changed | 0 | 0 | Inspection |
 | Test cases failing after a revert of this branch | 0 | 0 | Restore rehearsal |
-| Added package manifests without an AGPL-3.0-only declaration | 0 | 0 | Licence inspection |
+| Added package manifests without an AGPL-3.0-or-later declaration | 0 | 0 | Licence inspection |
 | Third-party dependencies added to either lockfile | 0 | 0 | Lockfile comparison |
 
 ## Verification
@@ -167,7 +167,7 @@ for the licence and confirm no registry publication occurred.
 | NFR-025-AC-6 | `src/compiler/backends/typescript.mjs`, `rust.mjs`, and `type-names.mjs` and the four issue #4 goldens are absent from this change's own path set, and the golden comparisons still pass in the checked-out tree — a tree assertion, so it gives the same verdict on the branch and on the trunk. | Snapshot |
 | NFR-025-AC-7 | No corpus case, base, oracle module, harness module, threshold, defect row, gap row, mutation row, or conformance schema changed a byte. | Analysis |
 | NFR-025-AC-8 | No file this work generates is written under a path this repository publishes, and `npm pack --dry-run` over this repository lists no generated-package file. | Analysis |
-| NFR-025-AC-9 | Every generated `package.json` and every added source file declares AGPL-3.0-only. | Static |
+| NFR-025-AC-9 | Every generated `package.json` and every added source file declares AGPL-3.0-or-later. | Static |
 | NFR-025-AC-10 | Reverting this change's commit range leaves the full suite passing. | Integration |
 | NFR-025-AC-11 | Every gate in this requirement still fails on the input it exists to catch after this change is merged, rehearsed on a synthetic history in which the branch is squashed onto the trunk and `origin/main` is repointed at it. | Test |
 | NFR-025-AC-12 | `conformance/divergences.json` is byte-unchanged, so no measured disagreement with the oracle was converted into a pass by suppressing it. | Analysis |

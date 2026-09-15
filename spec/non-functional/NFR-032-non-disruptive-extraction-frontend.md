@@ -180,7 +180,7 @@ migration ticket, not this one.
 | Paths this change's set gains when a later unrelated ticket lands on top | 0 | 0 | Accretion rehearsal on a synthetic history |
 | Change in the outcome of `make test` and `make rust` on the pre-existing suite | 0 | 0 | Suite comparison before and after |
 | Test cases failing after a revert of this change's range | 0 | 0 | Scripted restore rehearsal |
-| Added manifests without `AGPL-3.0-only` | 0 | 0 | Licence inspection |
+| Added manifests without `AGPL-3.0-or-later` | 0 | 0 | Licence inspection |
 
 ## Verification
 
@@ -224,7 +224,7 @@ the form `test/changed-paths.ts` already takes; none is a `cargo test`.
 | NFR-032-AC-3 | The root `Cargo.toml` differs from the range's base only in the `members` line, and `rust-toolchain.toml` and the workspace `rust-version` are byte-unchanged. | Analysis (TC-1312) |
 | NFR-032-AC-4 | `test/fixtures/compiler/shared/cases.json` differs from the base only by `spec-bundle` and `reason` members, the rewritten top-level `$comment`, and the added `records-and-scalars` case; every pre-existing path under `test/fixtures/compiler/shared/**` and `src/compiler/frontend/spec-bundle/frontend.mjs` are byte-unchanged. | Analysis (TC-1313) |
 | NFR-032-AC-5 | After the full crate suite runs, `git status --porcelain` is empty in this repository's fixture directories and in every corpus repository the fixtures name. | Test (TC-1314) |
-| NFR-032-AC-6 | Every crate manifest in the change set carries `publish = false` and `license = "AGPL-3.0-only"`, and no command in the `Makefile` block or the crate names a registry. | Analysis (TC-1315) |
+| NFR-032-AC-6 | Every crate manifest in the change set carries `publish = false` and `license = "AGPL-3.0-or-later"`, and no command in the `Makefile` block or the crate names a registry. | Analysis (TC-1315) |
 | NFR-032-AC-7 | `make test` and `make rust`, driven by the `scripts/extraction-frontend-harness.mjs` `suite-compare` verb on the range's base and on its head, produce the same pass/fail outcome for every pre-existing row. | Static (TC-1316) |
 | NFR-032-AC-8 | The full suite passes on a revert of this change's range, driven by the harness's `revert-rehearsal` verb. | Static (TC-1317) |
 | NFR-032-AC-9 | On a synthetic history built by the harness's `accretion-rehearsal` verb, where an unrelated sibling change lands on top, this change's path set does not grow, and a prohibited path no later commit owns still fails the gate. | Static (TC-1318) |
