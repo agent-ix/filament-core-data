@@ -19,6 +19,7 @@ import type {
 	TypeRef,
 } from "@agent-ix/semantic-agent-ix__semantic-kernel";
 import PAR_0001 from "./PAR-0001.json" with { type: "json" };
+import PAR_0027 from "./PAR-0027.json" with { type: "json" };
 
 let assertions = 0;
 
@@ -39,6 +40,7 @@ export function run(): number {
 			target: "String",
 			multiplicity: { lower: 1, upper: 1, ordered: false, unique: false },
 		},
+		constraints: [{ keyword: "min", value: 0 }],
 	};
 	const constructed = validateFieldDecl(field);
 	assert(constructed.ok, "a valid FieldDecl with multiplicity was rejected");
@@ -59,6 +61,10 @@ export function run(): number {
 	const positive = validateMultiplicity(PAR_0001.instance);
 	assert(positive.ok, "PAR-0001 did not deserialize");
 	if (positive.ok) assert(positive.value.upper === 1, "PAR-0001 lost upper");
+	const constraint = validateConstraintDecl(PAR_0027.instance);
+	assert(constraint.ok, "PAR-0027 did not preserve its numeric operand");
+	if (constraint.ok)
+		assert(constraint.value.keyword === "min", "PAR-0027 lost its keyword");
 
 	rejected(
 		validateFieldDecl({ ...field, undeclared: 1 }),

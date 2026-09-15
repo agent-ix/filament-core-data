@@ -21,6 +21,7 @@ const PACKAGE = join(ROOT, "packages/semantic-kernel/typescript");
 const NAME = "@agent-ix/semantic-agent-ix__semantic-kernel";
 const TSC = join(ROOT, "node_modules/.bin/tsc");
 const GOLDEN = join(ROOT, "packages/semantic-kernel/parity/golden/PAR-0001.json");
+const CONSTRAINT_GOLDEN = join(ROOT, "packages/semantic-kernel/parity/golden/PAR-0027.json");
 const CLOSURES = join(ROOT, "packages/semantic-kernel/examples/closures.json");
 
 function run(command, args, options) {
@@ -28,7 +29,9 @@ function run(command, args, options) {
 		return execFileSync(command, args, { encoding: "utf8", ...options });
 	} catch (error) {
 		const output = `${error.stdout ?? ""}${error.stderr ?? ""}`;
-		throw new Error(`${command} ${args.join(" ")} failed:\n${output}`);
+		throw new Error(
+			`${command} ${args.join(" ")} failed: ${error.message ?? "unknown error"}\n${output}`,
+		);
 	}
 }
 
@@ -57,6 +60,12 @@ try {
 	) {
 		throw new Error("the TypeScript consumer fixture diverged from golden PAR-0001");
 	}
+	if (
+		readFileSync(join(app, "PAR-0027.json"), "utf8") !==
+		readFileSync(CONSTRAINT_GOLDEN, "utf8")
+	) {
+		throw new Error("the TypeScript consumer fixture diverged from golden PAR-0027");
+	}
 
 	// Keep the published type entry intact for the type check, then add the JS
 	// runtime entry a compiler would produce. Node never strips files inside
@@ -75,6 +84,7 @@ try {
 	});
 	run(TSC, ["--outDir", join(app, "dist"), "--module", "NodeNext", "--moduleResolution", "NodeNext", "--target", "ES2022", "--strict", "true", "--resolveJsonModule", "true", "consumer.ts"], { cwd: app });
 	cpSync(join(app, "PAR-0001.json"), join(app, "dist", "PAR-0001.json"));
+	cpSync(join(app, "PAR-0027.json"), join(app, "dist", "PAR-0027.json"));
 	writeFileSync(
 		join(app, "dist", "run.mjs"),
 		'import { run } from "./consumer.js";\nconst assertions = run();\nif (assertions === 0) throw new Error("zero assertions");\nconsole.log(`kernel TypeScript consumer: ${assertions} assertions`);\n',

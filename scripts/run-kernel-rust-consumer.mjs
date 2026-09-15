@@ -20,6 +20,7 @@ const KERNEL = join(ROOT, "packages/semantic-kernel/rust");
 const CONSUMER = join(ROOT, "crates/kernel-consumer");
 const CRATE = "agent-ix-semantic-kernel-0.1.0";
 const GOLDEN = join(ROOT, "packages/semantic-kernel/parity/golden/PAR-0001.json");
+const CONSTRAINT_GOLDEN = join(ROOT, "packages/semantic-kernel/parity/golden/PAR-0027.json");
 const CLOSURES = join(ROOT, "packages/semantic-kernel/examples/closures.json");
 
 function run(command, args, options) {
@@ -52,6 +53,12 @@ try {
 		readFileSync(GOLDEN, "utf8")
 	) {
 		throw new Error("the Rust consumer fixture diverged from golden PAR-0001");
+	}
+	if (
+		readFileSync(join(CONSUMER, "fixtures/PAR-0027.json"), "utf8") !==
+		readFileSync(CONSTRAINT_GOLDEN, "utf8")
+	) {
+		throw new Error("the Rust consumer fixture diverged from golden PAR-0027");
 	}
 	const target = join(scratch, "target");
 	run("cargo", ["package", "--offline", "--no-verify", "--target-dir", target], {
