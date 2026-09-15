@@ -5,7 +5,7 @@
  * backend: ix://agent-ix/filament-core-data/backend/typescript@0.1.0
  * contract: 1.1.0
  * package: agent-ix/semantic-kernel@0.1.0
- * fingerprint: sha256:fdb692d0468da40155ca18d244bd47b754bb7ecd11559207b48541f2bb997df5
+ * fingerprint: sha256:e2156fccd90950500c5094cced8b5f70b92f68eadf6df82aef1a8ebba798cb67
  */
 
 /**
@@ -52,12 +52,19 @@ import type {
 	EnumValuesConstraint,
 	EnumValuesConstraintKeyword,
 	EnumValuesConstraintValues,
+	EnumValuesConstraintValuesBoolean,
+	EnumValuesConstraintValuesNumber,
+	EnumValuesConstraintValuesString,
 	ExclusiveMaxConstraint,
 	ExclusiveMaxConstraintKeyword,
 	ExclusiveMaxConstraintValue,
+	ExclusiveMaxConstraintValueNumber,
+	ExclusiveMaxConstraintValueString,
 	ExclusiveMinConstraint,
 	ExclusiveMinConstraintKeyword,
 	ExclusiveMinConstraintValue,
+	ExclusiveMinConstraintValueNumber,
+	ExclusiveMinConstraintValueString,
 	FieldDecl,
 	FieldDeclDoc,
 	FieldDeclIdentity,
@@ -70,12 +77,16 @@ import type {
 	MaxConstraint,
 	MaxConstraintKeyword,
 	MaxConstraintValue,
+	MaxConstraintValueNumber,
+	MaxConstraintValueString,
 	MaxLengthConstraint,
 	MaxLengthConstraintKeyword,
 	MaxLengthConstraintValue,
 	MinConstraint,
 	MinConstraintKeyword,
 	MinConstraintValue,
+	MinConstraintValueNumber,
+	MinConstraintValueString,
 	MinLengthConstraint,
 	MinLengthConstraintKeyword,
 	MinLengthConstraintValue,
@@ -1486,6 +1497,9 @@ export function validateEnumValuesConstraintKeyword(input: unknown): ValidationR
 
 function prepareEnumValuesConstraintValues(value: unknown, depth: number): unknown {
 	if (depth > MAX_VALIDATION_DEPTH) return value;
+	if (checkEnumValuesConstraintValuesBoolean(value, "", [], [], depth + 1)) return prepareEnumValuesConstraintValuesBoolean(value, depth + 1);
+	if (checkEnumValuesConstraintValuesNumber(value, "", [], [], depth + 1)) return prepareEnumValuesConstraintValuesNumber(value, depth + 1);
+	if (checkEnumValuesConstraintValuesString(value, "", [], [], depth + 1)) return prepareEnumValuesConstraintValuesString(value, depth + 1);
 	return value;
 }
 
@@ -1493,7 +1507,7 @@ function checkEnumValuesConstraintValues(
 	candidate: unknown,
 	pointer: string,
 	errors: ValidationError[],
-	_surfaced: ValidationError[],
+	surfaced: ValidationError[],
 	depth: number,
 ): candidate is EnumValuesConstraintValues {
 	const before = errors.length;
@@ -1506,41 +1520,20 @@ function checkEnumValuesConstraintValues(
 		);
 		return false;
 	}
-	if (!isPlainObject(candidate)) {
-		fail(errors, pointer, CODES.NOT_AN_OBJECT, "the value is not an object");
-		return false;
-	}
-	const tag = ownMember(candidate, "kind");
-	if (tag.state !== "value" || typeof tag.value !== "string") {
-		fail(
-			errors,
-			pointer,
-			CODES.MISSING_DISCRIMINANT,
-			"the discriminant is absent or is not a string",
-		);
-		return false;
-	}
-	switch (tag.value) {
-		case "boolean": {
-			break;
-		}
-		case "number": {
-			break;
-		}
-		case "string": {
-			break;
-		}
-		default: {
-			fail(
-				errors,
-				pointer,
-				CODES.NOT_A_DECLARED_VARIANT,
-				"the discriminant names no declared variant",
-			);
-			break;
-		}
-	}
-	return errors.length === before;
+	const branchErrors: ValidationError[] = [];
+	branchErrors.length = 0;
+	if (checkEnumValuesConstraintValuesBoolean(candidate, pointer, branchErrors, surfaced, depth + 1)) return true;
+	branchErrors.length = 0;
+	if (checkEnumValuesConstraintValuesNumber(candidate, pointer, branchErrors, surfaced, depth + 1)) return true;
+	branchErrors.length = 0;
+	if (checkEnumValuesConstraintValuesString(candidate, pointer, branchErrors, surfaced, depth + 1)) return true;
+	fail(
+		errors,
+		pointer,
+		CODES.SHAPE_MISMATCH,
+		"the value matches no declared union branch",
+	);
+	return false;
 }
 
 /** Decide an untrusted value against `ix://agent-ix/semantic-core/type/EnumValuesConstraintValues`. */
@@ -1549,6 +1542,134 @@ export function validateEnumValuesConstraintValues(input: unknown): ValidationRe
 	const surfaced: ValidationError[] = [];
 	const value = prepareEnumValuesConstraintValues(input, 0);
 	if (checkEnumValuesConstraintValues(value, "", errors, surfaced, 0)) {
+		return { ok: true, value, surfaced: sortErrors(surfaced) };
+	}
+	return { ok: false, errors: sortErrors(errors) };
+}
+
+function prepareEnumValuesConstraintValuesBoolean(value: unknown, depth: number): unknown {
+	if (depth > MAX_VALIDATION_DEPTH) return value;
+	return value;
+}
+
+function checkEnumValuesConstraintValuesBoolean(
+	candidate: unknown,
+	pointer: string,
+	errors: ValidationError[],
+	_surfaced: ValidationError[],
+	depth: number,
+): candidate is EnumValuesConstraintValuesBoolean {
+	const before = errors.length;
+	if (depth > MAX_VALIDATION_DEPTH) {
+		fail(
+			errors,
+			pointer,
+			CODES.DEPTH_LIMIT_EXCEEDED,
+			"the value nests past the declared bound",
+		);
+		return false;
+	}
+	if (!(typeof candidate === "boolean")) {
+		fail(errors, pointer, CODES.NOT_A_BOOLEAN, "the value is of the wrong type");
+		return false;
+	}
+	return errors.length === before;
+}
+
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesBoolean`. */
+export function validateEnumValuesConstraintValuesBoolean(input: unknown): ValidationResult<EnumValuesConstraintValuesBoolean> {
+	const errors: ValidationError[] = [];
+	const surfaced: ValidationError[] = [];
+	const value = prepareEnumValuesConstraintValuesBoolean(input, 0);
+	if (checkEnumValuesConstraintValuesBoolean(value, "", errors, surfaced, 0)) {
+		return { ok: true, value, surfaced: sortErrors(surfaced) };
+	}
+	return { ok: false, errors: sortErrors(errors) };
+}
+
+function prepareEnumValuesConstraintValuesNumber(value: unknown, depth: number): unknown {
+	if (depth > MAX_VALIDATION_DEPTH) return value;
+	return value;
+}
+
+function checkEnumValuesConstraintValuesNumber(
+	candidate: unknown,
+	pointer: string,
+	errors: ValidationError[],
+	_surfaced: ValidationError[],
+	depth: number,
+): candidate is EnumValuesConstraintValuesNumber {
+	const before = errors.length;
+	if (depth > MAX_VALIDATION_DEPTH) {
+		fail(
+			errors,
+			pointer,
+			CODES.DEPTH_LIMIT_EXCEEDED,
+			"the value nests past the declared bound",
+		);
+		return false;
+	}
+	if (!(typeof candidate === "number")) {
+		fail(errors, pointer, CODES.NOT_A_NUMBER, "the value is of the wrong type");
+		return false;
+	}
+	if (Number.isNaN(candidate)) {
+		fail(errors, pointer, CODES.NOT_A_NUMBER_VALUE, "the value is NaN");
+		return false;
+	}
+	if (!Number.isFinite(candidate)) {
+		fail(errors, pointer, CODES.NOT_FINITE, "the value is not finite");
+		return false;
+	}
+	return errors.length === before;
+}
+
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesNumber`. */
+export function validateEnumValuesConstraintValuesNumber(input: unknown): ValidationResult<EnumValuesConstraintValuesNumber> {
+	const errors: ValidationError[] = [];
+	const surfaced: ValidationError[] = [];
+	const value = prepareEnumValuesConstraintValuesNumber(input, 0);
+	if (checkEnumValuesConstraintValuesNumber(value, "", errors, surfaced, 0)) {
+		return { ok: true, value, surfaced: sortErrors(surfaced) };
+	}
+	return { ok: false, errors: sortErrors(errors) };
+}
+
+function prepareEnumValuesConstraintValuesString(value: unknown, depth: number): unknown {
+	if (depth > MAX_VALIDATION_DEPTH) return value;
+	return value;
+}
+
+function checkEnumValuesConstraintValuesString(
+	candidate: unknown,
+	pointer: string,
+	errors: ValidationError[],
+	_surfaced: ValidationError[],
+	depth: number,
+): candidate is EnumValuesConstraintValuesString {
+	const before = errors.length;
+	if (depth > MAX_VALIDATION_DEPTH) {
+		fail(
+			errors,
+			pointer,
+			CODES.DEPTH_LIMIT_EXCEEDED,
+			"the value nests past the declared bound",
+		);
+		return false;
+	}
+	if (!(typeof candidate === "string")) {
+		fail(errors, pointer, CODES.NOT_A_STRING, "the value is of the wrong type");
+		return false;
+	}
+	return errors.length === before;
+}
+
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesString`. */
+export function validateEnumValuesConstraintValuesString(input: unknown): ValidationResult<EnumValuesConstraintValuesString> {
+	const errors: ValidationError[] = [];
+	const surfaced: ValidationError[] = [];
+	const value = prepareEnumValuesConstraintValuesString(input, 0);
+	if (checkEnumValuesConstraintValuesString(value, "", errors, surfaced, 0)) {
 		return { ok: true, value, surfaced: sortErrors(surfaced) };
 	}
 	return { ok: false, errors: sortErrors(errors) };
@@ -1762,6 +1883,8 @@ export function validateExclusiveMaxConstraintKeyword(input: unknown): Validatio
 
 function prepareExclusiveMaxConstraintValue(value: unknown, depth: number): unknown {
 	if (depth > MAX_VALIDATION_DEPTH) return value;
+	if (checkExclusiveMaxConstraintValueNumber(value, "", [], [], depth + 1)) return prepareExclusiveMaxConstraintValueNumber(value, depth + 1);
+	if (checkExclusiveMaxConstraintValueString(value, "", [], [], depth + 1)) return prepareExclusiveMaxConstraintValueString(value, depth + 1);
 	return value;
 }
 
@@ -1769,7 +1892,7 @@ function checkExclusiveMaxConstraintValue(
 	candidate: unknown,
 	pointer: string,
 	errors: ValidationError[],
-	_surfaced: ValidationError[],
+	surfaced: ValidationError[],
 	depth: number,
 ): candidate is ExclusiveMaxConstraintValue {
 	const before = errors.length;
@@ -1782,38 +1905,18 @@ function checkExclusiveMaxConstraintValue(
 		);
 		return false;
 	}
-	if (!isPlainObject(candidate)) {
-		fail(errors, pointer, CODES.NOT_AN_OBJECT, "the value is not an object");
-		return false;
-	}
-	const tag = ownMember(candidate, "kind");
-	if (tag.state !== "value" || typeof tag.value !== "string") {
-		fail(
-			errors,
-			pointer,
-			CODES.MISSING_DISCRIMINANT,
-			"the discriminant is absent or is not a string",
-		);
-		return false;
-	}
-	switch (tag.value) {
-		case "number": {
-			break;
-		}
-		case "string": {
-			break;
-		}
-		default: {
-			fail(
-				errors,
-				pointer,
-				CODES.NOT_A_DECLARED_VARIANT,
-				"the discriminant names no declared variant",
-			);
-			break;
-		}
-	}
-	return errors.length === before;
+	const branchErrors: ValidationError[] = [];
+	branchErrors.length = 0;
+	if (checkExclusiveMaxConstraintValueNumber(candidate, pointer, branchErrors, surfaced, depth + 1)) return true;
+	branchErrors.length = 0;
+	if (checkExclusiveMaxConstraintValueString(candidate, pointer, branchErrors, surfaced, depth + 1)) return true;
+	fail(
+		errors,
+		pointer,
+		CODES.SHAPE_MISMATCH,
+		"the value matches no declared union branch",
+	);
+	return false;
 }
 
 /** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue`. */
@@ -1822,6 +1925,94 @@ export function validateExclusiveMaxConstraintValue(input: unknown): ValidationR
 	const surfaced: ValidationError[] = [];
 	const value = prepareExclusiveMaxConstraintValue(input, 0);
 	if (checkExclusiveMaxConstraintValue(value, "", errors, surfaced, 0)) {
+		return { ok: true, value, surfaced: sortErrors(surfaced) };
+	}
+	return { ok: false, errors: sortErrors(errors) };
+}
+
+function prepareExclusiveMaxConstraintValueNumber(value: unknown, depth: number): unknown {
+	if (depth > MAX_VALIDATION_DEPTH) return value;
+	return value;
+}
+
+function checkExclusiveMaxConstraintValueNumber(
+	candidate: unknown,
+	pointer: string,
+	errors: ValidationError[],
+	_surfaced: ValidationError[],
+	depth: number,
+): candidate is ExclusiveMaxConstraintValueNumber {
+	const before = errors.length;
+	if (depth > MAX_VALIDATION_DEPTH) {
+		fail(
+			errors,
+			pointer,
+			CODES.DEPTH_LIMIT_EXCEEDED,
+			"the value nests past the declared bound",
+		);
+		return false;
+	}
+	if (!(typeof candidate === "number")) {
+		fail(errors, pointer, CODES.NOT_A_NUMBER, "the value is of the wrong type");
+		return false;
+	}
+	if (Number.isNaN(candidate)) {
+		fail(errors, pointer, CODES.NOT_A_NUMBER_VALUE, "the value is NaN");
+		return false;
+	}
+	if (!Number.isFinite(candidate)) {
+		fail(errors, pointer, CODES.NOT_FINITE, "the value is not finite");
+		return false;
+	}
+	return errors.length === before;
+}
+
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueNumber`. */
+export function validateExclusiveMaxConstraintValueNumber(input: unknown): ValidationResult<ExclusiveMaxConstraintValueNumber> {
+	const errors: ValidationError[] = [];
+	const surfaced: ValidationError[] = [];
+	const value = prepareExclusiveMaxConstraintValueNumber(input, 0);
+	if (checkExclusiveMaxConstraintValueNumber(value, "", errors, surfaced, 0)) {
+		return { ok: true, value, surfaced: sortErrors(surfaced) };
+	}
+	return { ok: false, errors: sortErrors(errors) };
+}
+
+function prepareExclusiveMaxConstraintValueString(value: unknown, depth: number): unknown {
+	if (depth > MAX_VALIDATION_DEPTH) return value;
+	return value;
+}
+
+function checkExclusiveMaxConstraintValueString(
+	candidate: unknown,
+	pointer: string,
+	errors: ValidationError[],
+	_surfaced: ValidationError[],
+	depth: number,
+): candidate is ExclusiveMaxConstraintValueString {
+	const before = errors.length;
+	if (depth > MAX_VALIDATION_DEPTH) {
+		fail(
+			errors,
+			pointer,
+			CODES.DEPTH_LIMIT_EXCEEDED,
+			"the value nests past the declared bound",
+		);
+		return false;
+	}
+	if (!(typeof candidate === "string")) {
+		fail(errors, pointer, CODES.NOT_A_STRING, "the value is of the wrong type");
+		return false;
+	}
+	return errors.length === before;
+}
+
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueString`. */
+export function validateExclusiveMaxConstraintValueString(input: unknown): ValidationResult<ExclusiveMaxConstraintValueString> {
+	const errors: ValidationError[] = [];
+	const surfaced: ValidationError[] = [];
+	const value = prepareExclusiveMaxConstraintValueString(input, 0);
+	if (checkExclusiveMaxConstraintValueString(value, "", errors, surfaced, 0)) {
 		return { ok: true, value, surfaced: sortErrors(surfaced) };
 	}
 	return { ok: false, errors: sortErrors(errors) };
@@ -2035,6 +2226,8 @@ export function validateExclusiveMinConstraintKeyword(input: unknown): Validatio
 
 function prepareExclusiveMinConstraintValue(value: unknown, depth: number): unknown {
 	if (depth > MAX_VALIDATION_DEPTH) return value;
+	if (checkExclusiveMinConstraintValueNumber(value, "", [], [], depth + 1)) return prepareExclusiveMinConstraintValueNumber(value, depth + 1);
+	if (checkExclusiveMinConstraintValueString(value, "", [], [], depth + 1)) return prepareExclusiveMinConstraintValueString(value, depth + 1);
 	return value;
 }
 
@@ -2042,7 +2235,7 @@ function checkExclusiveMinConstraintValue(
 	candidate: unknown,
 	pointer: string,
 	errors: ValidationError[],
-	_surfaced: ValidationError[],
+	surfaced: ValidationError[],
 	depth: number,
 ): candidate is ExclusiveMinConstraintValue {
 	const before = errors.length;
@@ -2055,38 +2248,18 @@ function checkExclusiveMinConstraintValue(
 		);
 		return false;
 	}
-	if (!isPlainObject(candidate)) {
-		fail(errors, pointer, CODES.NOT_AN_OBJECT, "the value is not an object");
-		return false;
-	}
-	const tag = ownMember(candidate, "kind");
-	if (tag.state !== "value" || typeof tag.value !== "string") {
-		fail(
-			errors,
-			pointer,
-			CODES.MISSING_DISCRIMINANT,
-			"the discriminant is absent or is not a string",
-		);
-		return false;
-	}
-	switch (tag.value) {
-		case "number": {
-			break;
-		}
-		case "string": {
-			break;
-		}
-		default: {
-			fail(
-				errors,
-				pointer,
-				CODES.NOT_A_DECLARED_VARIANT,
-				"the discriminant names no declared variant",
-			);
-			break;
-		}
-	}
-	return errors.length === before;
+	const branchErrors: ValidationError[] = [];
+	branchErrors.length = 0;
+	if (checkExclusiveMinConstraintValueNumber(candidate, pointer, branchErrors, surfaced, depth + 1)) return true;
+	branchErrors.length = 0;
+	if (checkExclusiveMinConstraintValueString(candidate, pointer, branchErrors, surfaced, depth + 1)) return true;
+	fail(
+		errors,
+		pointer,
+		CODES.SHAPE_MISMATCH,
+		"the value matches no declared union branch",
+	);
+	return false;
 }
 
 /** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue`. */
@@ -2095,6 +2268,94 @@ export function validateExclusiveMinConstraintValue(input: unknown): ValidationR
 	const surfaced: ValidationError[] = [];
 	const value = prepareExclusiveMinConstraintValue(input, 0);
 	if (checkExclusiveMinConstraintValue(value, "", errors, surfaced, 0)) {
+		return { ok: true, value, surfaced: sortErrors(surfaced) };
+	}
+	return { ok: false, errors: sortErrors(errors) };
+}
+
+function prepareExclusiveMinConstraintValueNumber(value: unknown, depth: number): unknown {
+	if (depth > MAX_VALIDATION_DEPTH) return value;
+	return value;
+}
+
+function checkExclusiveMinConstraintValueNumber(
+	candidate: unknown,
+	pointer: string,
+	errors: ValidationError[],
+	_surfaced: ValidationError[],
+	depth: number,
+): candidate is ExclusiveMinConstraintValueNumber {
+	const before = errors.length;
+	if (depth > MAX_VALIDATION_DEPTH) {
+		fail(
+			errors,
+			pointer,
+			CODES.DEPTH_LIMIT_EXCEEDED,
+			"the value nests past the declared bound",
+		);
+		return false;
+	}
+	if (!(typeof candidate === "number")) {
+		fail(errors, pointer, CODES.NOT_A_NUMBER, "the value is of the wrong type");
+		return false;
+	}
+	if (Number.isNaN(candidate)) {
+		fail(errors, pointer, CODES.NOT_A_NUMBER_VALUE, "the value is NaN");
+		return false;
+	}
+	if (!Number.isFinite(candidate)) {
+		fail(errors, pointer, CODES.NOT_FINITE, "the value is not finite");
+		return false;
+	}
+	return errors.length === before;
+}
+
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueNumber`. */
+export function validateExclusiveMinConstraintValueNumber(input: unknown): ValidationResult<ExclusiveMinConstraintValueNumber> {
+	const errors: ValidationError[] = [];
+	const surfaced: ValidationError[] = [];
+	const value = prepareExclusiveMinConstraintValueNumber(input, 0);
+	if (checkExclusiveMinConstraintValueNumber(value, "", errors, surfaced, 0)) {
+		return { ok: true, value, surfaced: sortErrors(surfaced) };
+	}
+	return { ok: false, errors: sortErrors(errors) };
+}
+
+function prepareExclusiveMinConstraintValueString(value: unknown, depth: number): unknown {
+	if (depth > MAX_VALIDATION_DEPTH) return value;
+	return value;
+}
+
+function checkExclusiveMinConstraintValueString(
+	candidate: unknown,
+	pointer: string,
+	errors: ValidationError[],
+	_surfaced: ValidationError[],
+	depth: number,
+): candidate is ExclusiveMinConstraintValueString {
+	const before = errors.length;
+	if (depth > MAX_VALIDATION_DEPTH) {
+		fail(
+			errors,
+			pointer,
+			CODES.DEPTH_LIMIT_EXCEEDED,
+			"the value nests past the declared bound",
+		);
+		return false;
+	}
+	if (!(typeof candidate === "string")) {
+		fail(errors, pointer, CODES.NOT_A_STRING, "the value is of the wrong type");
+		return false;
+	}
+	return errors.length === before;
+}
+
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueString`. */
+export function validateExclusiveMinConstraintValueString(input: unknown): ValidationResult<ExclusiveMinConstraintValueString> {
+	const errors: ValidationError[] = [];
+	const surfaced: ValidationError[] = [];
+	const value = prepareExclusiveMinConstraintValueString(input, 0);
+	if (checkExclusiveMinConstraintValueString(value, "", errors, surfaced, 0)) {
 		return { ok: true, value, surfaced: sortErrors(surfaced) };
 	}
 	return { ok: false, errors: sortErrors(errors) };
@@ -3131,6 +3392,8 @@ export function validateMaxConstraintKeyword(input: unknown): ValidationResult<M
 
 function prepareMaxConstraintValue(value: unknown, depth: number): unknown {
 	if (depth > MAX_VALIDATION_DEPTH) return value;
+	if (checkMaxConstraintValueNumber(value, "", [], [], depth + 1)) return prepareMaxConstraintValueNumber(value, depth + 1);
+	if (checkMaxConstraintValueString(value, "", [], [], depth + 1)) return prepareMaxConstraintValueString(value, depth + 1);
 	return value;
 }
 
@@ -3138,7 +3401,7 @@ function checkMaxConstraintValue(
 	candidate: unknown,
 	pointer: string,
 	errors: ValidationError[],
-	_surfaced: ValidationError[],
+	surfaced: ValidationError[],
 	depth: number,
 ): candidate is MaxConstraintValue {
 	const before = errors.length;
@@ -3151,38 +3414,18 @@ function checkMaxConstraintValue(
 		);
 		return false;
 	}
-	if (!isPlainObject(candidate)) {
-		fail(errors, pointer, CODES.NOT_AN_OBJECT, "the value is not an object");
-		return false;
-	}
-	const tag = ownMember(candidate, "kind");
-	if (tag.state !== "value" || typeof tag.value !== "string") {
-		fail(
-			errors,
-			pointer,
-			CODES.MISSING_DISCRIMINANT,
-			"the discriminant is absent or is not a string",
-		);
-		return false;
-	}
-	switch (tag.value) {
-		case "number": {
-			break;
-		}
-		case "string": {
-			break;
-		}
-		default: {
-			fail(
-				errors,
-				pointer,
-				CODES.NOT_A_DECLARED_VARIANT,
-				"the discriminant names no declared variant",
-			);
-			break;
-		}
-	}
-	return errors.length === before;
+	const branchErrors: ValidationError[] = [];
+	branchErrors.length = 0;
+	if (checkMaxConstraintValueNumber(candidate, pointer, branchErrors, surfaced, depth + 1)) return true;
+	branchErrors.length = 0;
+	if (checkMaxConstraintValueString(candidate, pointer, branchErrors, surfaced, depth + 1)) return true;
+	fail(
+		errors,
+		pointer,
+		CODES.SHAPE_MISMATCH,
+		"the value matches no declared union branch",
+	);
+	return false;
 }
 
 /** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MaxConstraintValue`. */
@@ -3191,6 +3434,94 @@ export function validateMaxConstraintValue(input: unknown): ValidationResult<Max
 	const surfaced: ValidationError[] = [];
 	const value = prepareMaxConstraintValue(input, 0);
 	if (checkMaxConstraintValue(value, "", errors, surfaced, 0)) {
+		return { ok: true, value, surfaced: sortErrors(surfaced) };
+	}
+	return { ok: false, errors: sortErrors(errors) };
+}
+
+function prepareMaxConstraintValueNumber(value: unknown, depth: number): unknown {
+	if (depth > MAX_VALIDATION_DEPTH) return value;
+	return value;
+}
+
+function checkMaxConstraintValueNumber(
+	candidate: unknown,
+	pointer: string,
+	errors: ValidationError[],
+	_surfaced: ValidationError[],
+	depth: number,
+): candidate is MaxConstraintValueNumber {
+	const before = errors.length;
+	if (depth > MAX_VALIDATION_DEPTH) {
+		fail(
+			errors,
+			pointer,
+			CODES.DEPTH_LIMIT_EXCEEDED,
+			"the value nests past the declared bound",
+		);
+		return false;
+	}
+	if (!(typeof candidate === "number")) {
+		fail(errors, pointer, CODES.NOT_A_NUMBER, "the value is of the wrong type");
+		return false;
+	}
+	if (Number.isNaN(candidate)) {
+		fail(errors, pointer, CODES.NOT_A_NUMBER_VALUE, "the value is NaN");
+		return false;
+	}
+	if (!Number.isFinite(candidate)) {
+		fail(errors, pointer, CODES.NOT_FINITE, "the value is not finite");
+		return false;
+	}
+	return errors.length === before;
+}
+
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MaxConstraintValueNumber`. */
+export function validateMaxConstraintValueNumber(input: unknown): ValidationResult<MaxConstraintValueNumber> {
+	const errors: ValidationError[] = [];
+	const surfaced: ValidationError[] = [];
+	const value = prepareMaxConstraintValueNumber(input, 0);
+	if (checkMaxConstraintValueNumber(value, "", errors, surfaced, 0)) {
+		return { ok: true, value, surfaced: sortErrors(surfaced) };
+	}
+	return { ok: false, errors: sortErrors(errors) };
+}
+
+function prepareMaxConstraintValueString(value: unknown, depth: number): unknown {
+	if (depth > MAX_VALIDATION_DEPTH) return value;
+	return value;
+}
+
+function checkMaxConstraintValueString(
+	candidate: unknown,
+	pointer: string,
+	errors: ValidationError[],
+	_surfaced: ValidationError[],
+	depth: number,
+): candidate is MaxConstraintValueString {
+	const before = errors.length;
+	if (depth > MAX_VALIDATION_DEPTH) {
+		fail(
+			errors,
+			pointer,
+			CODES.DEPTH_LIMIT_EXCEEDED,
+			"the value nests past the declared bound",
+		);
+		return false;
+	}
+	if (!(typeof candidate === "string")) {
+		fail(errors, pointer, CODES.NOT_A_STRING, "the value is of the wrong type");
+		return false;
+	}
+	return errors.length === before;
+}
+
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MaxConstraintValueString`. */
+export function validateMaxConstraintValueString(input: unknown): ValidationResult<MaxConstraintValueString> {
+	const errors: ValidationError[] = [];
+	const surfaced: ValidationError[] = [];
+	const value = prepareMaxConstraintValueString(input, 0);
+	if (checkMaxConstraintValueString(value, "", errors, surfaced, 0)) {
 		return { ok: true, value, surfaced: sortErrors(surfaced) };
 	}
 	return { ok: false, errors: sortErrors(errors) };
@@ -3675,6 +4006,8 @@ export function validateMinConstraintKeyword(input: unknown): ValidationResult<M
 
 function prepareMinConstraintValue(value: unknown, depth: number): unknown {
 	if (depth > MAX_VALIDATION_DEPTH) return value;
+	if (checkMinConstraintValueNumber(value, "", [], [], depth + 1)) return prepareMinConstraintValueNumber(value, depth + 1);
+	if (checkMinConstraintValueString(value, "", [], [], depth + 1)) return prepareMinConstraintValueString(value, depth + 1);
 	return value;
 }
 
@@ -3682,7 +4015,7 @@ function checkMinConstraintValue(
 	candidate: unknown,
 	pointer: string,
 	errors: ValidationError[],
-	_surfaced: ValidationError[],
+	surfaced: ValidationError[],
 	depth: number,
 ): candidate is MinConstraintValue {
 	const before = errors.length;
@@ -3695,38 +4028,18 @@ function checkMinConstraintValue(
 		);
 		return false;
 	}
-	if (!isPlainObject(candidate)) {
-		fail(errors, pointer, CODES.NOT_AN_OBJECT, "the value is not an object");
-		return false;
-	}
-	const tag = ownMember(candidate, "kind");
-	if (tag.state !== "value" || typeof tag.value !== "string") {
-		fail(
-			errors,
-			pointer,
-			CODES.MISSING_DISCRIMINANT,
-			"the discriminant is absent or is not a string",
-		);
-		return false;
-	}
-	switch (tag.value) {
-		case "number": {
-			break;
-		}
-		case "string": {
-			break;
-		}
-		default: {
-			fail(
-				errors,
-				pointer,
-				CODES.NOT_A_DECLARED_VARIANT,
-				"the discriminant names no declared variant",
-			);
-			break;
-		}
-	}
-	return errors.length === before;
+	const branchErrors: ValidationError[] = [];
+	branchErrors.length = 0;
+	if (checkMinConstraintValueNumber(candidate, pointer, branchErrors, surfaced, depth + 1)) return true;
+	branchErrors.length = 0;
+	if (checkMinConstraintValueString(candidate, pointer, branchErrors, surfaced, depth + 1)) return true;
+	fail(
+		errors,
+		pointer,
+		CODES.SHAPE_MISMATCH,
+		"the value matches no declared union branch",
+	);
+	return false;
 }
 
 /** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MinConstraintValue`. */
@@ -3735,6 +4048,94 @@ export function validateMinConstraintValue(input: unknown): ValidationResult<Min
 	const surfaced: ValidationError[] = [];
 	const value = prepareMinConstraintValue(input, 0);
 	if (checkMinConstraintValue(value, "", errors, surfaced, 0)) {
+		return { ok: true, value, surfaced: sortErrors(surfaced) };
+	}
+	return { ok: false, errors: sortErrors(errors) };
+}
+
+function prepareMinConstraintValueNumber(value: unknown, depth: number): unknown {
+	if (depth > MAX_VALIDATION_DEPTH) return value;
+	return value;
+}
+
+function checkMinConstraintValueNumber(
+	candidate: unknown,
+	pointer: string,
+	errors: ValidationError[],
+	_surfaced: ValidationError[],
+	depth: number,
+): candidate is MinConstraintValueNumber {
+	const before = errors.length;
+	if (depth > MAX_VALIDATION_DEPTH) {
+		fail(
+			errors,
+			pointer,
+			CODES.DEPTH_LIMIT_EXCEEDED,
+			"the value nests past the declared bound",
+		);
+		return false;
+	}
+	if (!(typeof candidate === "number")) {
+		fail(errors, pointer, CODES.NOT_A_NUMBER, "the value is of the wrong type");
+		return false;
+	}
+	if (Number.isNaN(candidate)) {
+		fail(errors, pointer, CODES.NOT_A_NUMBER_VALUE, "the value is NaN");
+		return false;
+	}
+	if (!Number.isFinite(candidate)) {
+		fail(errors, pointer, CODES.NOT_FINITE, "the value is not finite");
+		return false;
+	}
+	return errors.length === before;
+}
+
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MinConstraintValueNumber`. */
+export function validateMinConstraintValueNumber(input: unknown): ValidationResult<MinConstraintValueNumber> {
+	const errors: ValidationError[] = [];
+	const surfaced: ValidationError[] = [];
+	const value = prepareMinConstraintValueNumber(input, 0);
+	if (checkMinConstraintValueNumber(value, "", errors, surfaced, 0)) {
+		return { ok: true, value, surfaced: sortErrors(surfaced) };
+	}
+	return { ok: false, errors: sortErrors(errors) };
+}
+
+function prepareMinConstraintValueString(value: unknown, depth: number): unknown {
+	if (depth > MAX_VALIDATION_DEPTH) return value;
+	return value;
+}
+
+function checkMinConstraintValueString(
+	candidate: unknown,
+	pointer: string,
+	errors: ValidationError[],
+	_surfaced: ValidationError[],
+	depth: number,
+): candidate is MinConstraintValueString {
+	const before = errors.length;
+	if (depth > MAX_VALIDATION_DEPTH) {
+		fail(
+			errors,
+			pointer,
+			CODES.DEPTH_LIMIT_EXCEEDED,
+			"the value nests past the declared bound",
+		);
+		return false;
+	}
+	if (!(typeof candidate === "string")) {
+		fail(errors, pointer, CODES.NOT_A_STRING, "the value is of the wrong type");
+		return false;
+	}
+	return errors.length === before;
+}
+
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MinConstraintValueString`. */
+export function validateMinConstraintValueString(input: unknown): ValidationResult<MinConstraintValueString> {
+	const errors: ValidationError[] = [];
+	const surfaced: ValidationError[] = [];
+	const value = prepareMinConstraintValueString(input, 0);
+	if (checkMinConstraintValueString(value, "", errors, surfaced, 0)) {
 		return { ok: true, value, surfaced: sortErrors(surfaced) };
 	}
 	return { ok: false, errors: sortErrors(errors) };

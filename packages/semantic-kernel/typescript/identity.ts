@@ -5,7 +5,7 @@
  * backend: ix://agent-ix/filament-core-data/backend/typescript@0.1.0
  * contract: 1.1.0
  * package: agent-ix/semantic-kernel@0.1.0
- * fingerprint: sha256:fdb692d0468da40155ca18d244bd47b754bb7ecd11559207b48541f2bb997df5
+ * fingerprint: sha256:e2156fccd90950500c5094cced8b5f70b92f68eadf6df82aef1a8ebba798cb67
  */
 
 /**
@@ -149,12 +149,19 @@ export type ExportedTypeName =
 	| "EnumValuesConstraint"
 	| "EnumValuesConstraintKeyword"
 	| "EnumValuesConstraintValues"
+	| "EnumValuesConstraintValuesBoolean"
+	| "EnumValuesConstraintValuesNumber"
+	| "EnumValuesConstraintValuesString"
 	| "ExclusiveMaxConstraint"
 	| "ExclusiveMaxConstraintKeyword"
 	| "ExclusiveMaxConstraintValue"
+	| "ExclusiveMaxConstraintValueNumber"
+	| "ExclusiveMaxConstraintValueString"
 	| "ExclusiveMinConstraint"
 	| "ExclusiveMinConstraintKeyword"
 	| "ExclusiveMinConstraintValue"
+	| "ExclusiveMinConstraintValueNumber"
+	| "ExclusiveMinConstraintValueString"
 	| "FieldDecl"
 	| "FieldDeclDoc"
 	| "FieldDeclIdentity"
@@ -167,12 +174,16 @@ export type ExportedTypeName =
 	| "MaxConstraint"
 	| "MaxConstraintKeyword"
 	| "MaxConstraintValue"
+	| "MaxConstraintValueNumber"
+	| "MaxConstraintValueString"
 	| "MaxLengthConstraint"
 	| "MaxLengthConstraintKeyword"
 	| "MaxLengthConstraintValue"
 	| "MinConstraint"
 	| "MinConstraintKeyword"
 	| "MinConstraintValue"
+	| "MinConstraintValueNumber"
+	| "MinConstraintValueString"
 	| "MinLengthConstraint"
 	| "MinLengthConstraintKeyword"
 	| "MinLengthConstraintValue"
@@ -288,18 +299,32 @@ export const TYPE_IDENTITY = {
 		"ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword",
 	EnumValuesConstraintValues:
 		"ix://agent-ix/semantic-core/type/EnumValuesConstraintValues",
+	EnumValuesConstraintValuesBoolean:
+		"ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesBoolean",
+	EnumValuesConstraintValuesNumber:
+		"ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesNumber",
+	EnumValuesConstraintValuesString:
+		"ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesString",
 	ExclusiveMaxConstraint:
 		"ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint",
 	ExclusiveMaxConstraintKeyword:
 		"ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintKeyword",
 	ExclusiveMaxConstraintValue:
 		"ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue",
+	ExclusiveMaxConstraintValueNumber:
+		"ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueNumber",
+	ExclusiveMaxConstraintValueString:
+		"ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueString",
 	ExclusiveMinConstraint:
 		"ix://agent-ix/semantic-core/type/ExclusiveMinConstraint",
 	ExclusiveMinConstraintKeyword:
 		"ix://agent-ix/semantic-core/type/ExclusiveMinConstraintKeyword",
 	ExclusiveMinConstraintValue:
 		"ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue",
+	ExclusiveMinConstraintValueNumber:
+		"ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueNumber",
+	ExclusiveMinConstraintValueString:
+		"ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueString",
 	FieldDecl: "ix://agent-ix/semantic-core/type/FieldDecl",
 	FieldDeclDoc: "ix://agent-ix/semantic-core/type/FieldDeclDoc",
 	FieldDeclIdentity: "ix://agent-ix/semantic-core/type/FieldDeclIdentity",
@@ -313,6 +338,10 @@ export const TYPE_IDENTITY = {
 	MaxConstraint: "ix://agent-ix/semantic-core/type/MaxConstraint",
 	MaxConstraintKeyword: "ix://agent-ix/semantic-core/type/MaxConstraintKeyword",
 	MaxConstraintValue: "ix://agent-ix/semantic-core/type/MaxConstraintValue",
+	MaxConstraintValueNumber:
+		"ix://agent-ix/semantic-core/type/MaxConstraintValueNumber",
+	MaxConstraintValueString:
+		"ix://agent-ix/semantic-core/type/MaxConstraintValueString",
 	MaxLengthConstraint: "ix://agent-ix/semantic-core/type/MaxLengthConstraint",
 	MaxLengthConstraintKeyword:
 		"ix://agent-ix/semantic-core/type/MaxLengthConstraintKeyword",
@@ -321,6 +350,10 @@ export const TYPE_IDENTITY = {
 	MinConstraint: "ix://agent-ix/semantic-core/type/MinConstraint",
 	MinConstraintKeyword: "ix://agent-ix/semantic-core/type/MinConstraintKeyword",
 	MinConstraintValue: "ix://agent-ix/semantic-core/type/MinConstraintValue",
+	MinConstraintValueNumber:
+		"ix://agent-ix/semantic-core/type/MinConstraintValueNumber",
+	MinConstraintValueString:
+		"ix://agent-ix/semantic-core/type/MinConstraintValueString",
 	MinLengthConstraint: "ix://agent-ix/semantic-core/type/MinLengthConstraint",
 	MinLengthConstraintKeyword:
 		"ix://agent-ix/semantic-core/type/MinLengthConstraintKeyword",
@@ -379,12 +412,19 @@ export const TYPE_KIND = {
 	EnumValuesConstraint: "record",
 	EnumValuesConstraintKeyword: "enum",
 	EnumValuesConstraintValues: "union",
+	EnumValuesConstraintValuesBoolean: "scalar",
+	EnumValuesConstraintValuesNumber: "scalar",
+	EnumValuesConstraintValuesString: "scalar",
 	ExclusiveMaxConstraint: "record",
 	ExclusiveMaxConstraintKeyword: "enum",
 	ExclusiveMaxConstraintValue: "union",
+	ExclusiveMaxConstraintValueNumber: "scalar",
+	ExclusiveMaxConstraintValueString: "scalar",
 	ExclusiveMinConstraint: "record",
 	ExclusiveMinConstraintKeyword: "enum",
 	ExclusiveMinConstraintValue: "union",
+	ExclusiveMinConstraintValueNumber: "scalar",
+	ExclusiveMinConstraintValueString: "scalar",
 	FieldDecl: "record",
 	FieldDeclDoc: "scalar",
 	FieldDeclIdentity: "scalar",
@@ -397,12 +437,16 @@ export const TYPE_KIND = {
 	MaxConstraint: "record",
 	MaxConstraintKeyword: "enum",
 	MaxConstraintValue: "union",
+	MaxConstraintValueNumber: "scalar",
+	MaxConstraintValueString: "scalar",
 	MaxLengthConstraint: "record",
 	MaxLengthConstraintKeyword: "enum",
 	MaxLengthConstraintValue: "scalar",
 	MinConstraint: "record",
 	MinConstraintKeyword: "enum",
 	MinConstraintValue: "union",
+	MinConstraintValueNumber: "scalar",
+	MinConstraintValueString: "scalar",
 	MinLengthConstraint: "record",
 	MinLengthConstraintKeyword: "enum",
 	MinLengthConstraintValue: "scalar",
@@ -452,12 +496,19 @@ export const TYPE_ROLES = {
 	EnumValuesConstraint: [],
 	EnumValuesConstraintKeyword: [],
 	EnumValuesConstraintValues: [],
+	EnumValuesConstraintValuesBoolean: [],
+	EnumValuesConstraintValuesNumber: [],
+	EnumValuesConstraintValuesString: [],
 	ExclusiveMaxConstraint: [],
 	ExclusiveMaxConstraintKeyword: [],
 	ExclusiveMaxConstraintValue: [],
+	ExclusiveMaxConstraintValueNumber: [],
+	ExclusiveMaxConstraintValueString: [],
 	ExclusiveMinConstraint: [],
 	ExclusiveMinConstraintKeyword: [],
 	ExclusiveMinConstraintValue: [],
+	ExclusiveMinConstraintValueNumber: [],
+	ExclusiveMinConstraintValueString: [],
 	FieldDecl: [],
 	FieldDeclDoc: [],
 	FieldDeclIdentity: [],
@@ -470,12 +521,16 @@ export const TYPE_ROLES = {
 	MaxConstraint: [],
 	MaxConstraintKeyword: [],
 	MaxConstraintValue: [],
+	MaxConstraintValueNumber: [],
+	MaxConstraintValueString: [],
 	MaxLengthConstraint: [],
 	MaxLengthConstraintKeyword: [],
 	MaxLengthConstraintValue: [],
 	MinConstraint: [],
 	MinConstraintKeyword: [],
 	MinConstraintValue: [],
+	MinConstraintValueNumber: [],
+	MinConstraintValueString: [],
 	MinLengthConstraint: [],
 	MinLengthConstraintKeyword: [],
 	MinLengthConstraintValue: [],
@@ -531,12 +586,19 @@ export const TYPE_UNKNOWN_POLICY = {
 	EnumValuesConstraint: "reject",
 	EnumValuesConstraintKeyword: "reject",
 	EnumValuesConstraintValues: "reject",
+	EnumValuesConstraintValuesBoolean: "reject",
+	EnumValuesConstraintValuesNumber: "reject",
+	EnumValuesConstraintValuesString: "reject",
 	ExclusiveMaxConstraint: "reject",
 	ExclusiveMaxConstraintKeyword: "reject",
 	ExclusiveMaxConstraintValue: "reject",
+	ExclusiveMaxConstraintValueNumber: "reject",
+	ExclusiveMaxConstraintValueString: "reject",
 	ExclusiveMinConstraint: "reject",
 	ExclusiveMinConstraintKeyword: "reject",
 	ExclusiveMinConstraintValue: "reject",
+	ExclusiveMinConstraintValueNumber: "reject",
+	ExclusiveMinConstraintValueString: "reject",
 	FieldDecl: "reject",
 	FieldDeclDoc: "reject",
 	FieldDeclIdentity: "reject",
@@ -549,12 +611,16 @@ export const TYPE_UNKNOWN_POLICY = {
 	MaxConstraint: "reject",
 	MaxConstraintKeyword: "reject",
 	MaxConstraintValue: "reject",
+	MaxConstraintValueNumber: "reject",
+	MaxConstraintValueString: "reject",
 	MaxLengthConstraint: "reject",
 	MaxLengthConstraintKeyword: "reject",
 	MaxLengthConstraintValue: "reject",
 	MinConstraint: "reject",
 	MinConstraintKeyword: "reject",
 	MinConstraintValue: "reject",
+	MinConstraintValueNumber: "reject",
+	MinConstraintValueString: "reject",
 	MinLengthConstraint: "reject",
 	MinLengthConstraintKeyword: "reject",
 	MinLengthConstraintValue: "reject",
@@ -612,13 +678,47 @@ export const TYPE_EXTENSIONS = {
 	EnumValueDoc: [],
 	EnumValuesConstraint: [],
 	EnumValuesConstraintKeyword: [],
-	EnumValuesConstraintValues: [],
+	EnumValuesConstraintValues: [
+		{
+			identity: "ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
+			version: "1.0.0",
+			required: false,
+			payload: {
+				wireForm: "untagged",
+			},
+		},
+	],
+	EnumValuesConstraintValuesBoolean: [],
+	EnumValuesConstraintValuesNumber: [],
+	EnumValuesConstraintValuesString: [],
 	ExclusiveMaxConstraint: [],
 	ExclusiveMaxConstraintKeyword: [],
-	ExclusiveMaxConstraintValue: [],
+	ExclusiveMaxConstraintValue: [
+		{
+			identity: "ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
+			version: "1.0.0",
+			required: false,
+			payload: {
+				wireForm: "untagged",
+			},
+		},
+	],
+	ExclusiveMaxConstraintValueNumber: [],
+	ExclusiveMaxConstraintValueString: [],
 	ExclusiveMinConstraint: [],
 	ExclusiveMinConstraintKeyword: [],
-	ExclusiveMinConstraintValue: [],
+	ExclusiveMinConstraintValue: [
+		{
+			identity: "ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
+			version: "1.0.0",
+			required: false,
+			payload: {
+				wireForm: "untagged",
+			},
+		},
+	],
+	ExclusiveMinConstraintValueNumber: [],
+	ExclusiveMinConstraintValueString: [],
 	FieldDecl: [],
 	FieldDeclDoc: [],
 	FieldDeclIdentity: [],
@@ -630,13 +730,35 @@ export const TYPE_EXTENSIONS = {
 	KernelScalar: [],
 	MaxConstraint: [],
 	MaxConstraintKeyword: [],
-	MaxConstraintValue: [],
+	MaxConstraintValue: [
+		{
+			identity: "ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
+			version: "1.0.0",
+			required: false,
+			payload: {
+				wireForm: "untagged",
+			},
+		},
+	],
+	MaxConstraintValueNumber: [],
+	MaxConstraintValueString: [],
 	MaxLengthConstraint: [],
 	MaxLengthConstraintKeyword: [],
 	MaxLengthConstraintValue: [],
 	MinConstraint: [],
 	MinConstraintKeyword: [],
-	MinConstraintValue: [],
+	MinConstraintValue: [
+		{
+			identity: "ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
+			version: "1.0.0",
+			required: false,
+			payload: {
+				wireForm: "untagged",
+			},
+		},
+	],
+	MinConstraintValueNumber: [],
+	MinConstraintValueString: [],
 	MinLengthConstraint: [],
 	MinLengthConstraintKeyword: [],
 	MinLengthConstraintValue: [],
@@ -695,12 +817,19 @@ export const TYPE_RELATIONSHIPS = {
 	EnumValuesConstraint: [],
 	EnumValuesConstraintKeyword: [],
 	EnumValuesConstraintValues: [],
+	EnumValuesConstraintValuesBoolean: [],
+	EnumValuesConstraintValuesNumber: [],
+	EnumValuesConstraintValuesString: [],
 	ExclusiveMaxConstraint: [],
 	ExclusiveMaxConstraintKeyword: [],
 	ExclusiveMaxConstraintValue: [],
+	ExclusiveMaxConstraintValueNumber: [],
+	ExclusiveMaxConstraintValueString: [],
 	ExclusiveMinConstraint: [],
 	ExclusiveMinConstraintKeyword: [],
 	ExclusiveMinConstraintValue: [],
+	ExclusiveMinConstraintValueNumber: [],
+	ExclusiveMinConstraintValueString: [],
 	FieldDecl: [],
 	FieldDeclDoc: [],
 	FieldDeclIdentity: [],
@@ -713,12 +842,16 @@ export const TYPE_RELATIONSHIPS = {
 	MaxConstraint: [],
 	MaxConstraintKeyword: [],
 	MaxConstraintValue: [],
+	MaxConstraintValueNumber: [],
+	MaxConstraintValueString: [],
 	MaxLengthConstraint: [],
 	MaxLengthConstraintKeyword: [],
 	MaxLengthConstraintValue: [],
 	MinConstraint: [],
 	MinConstraintKeyword: [],
 	MinConstraintValue: [],
+	MinConstraintValueNumber: [],
+	MinConstraintValueString: [],
 	MinLengthConstraint: [],
 	MinLengthConstraintKeyword: [],
 	MinLengthConstraintValue: [],
@@ -972,12 +1105,19 @@ export const TYPE_OPERATIONS = {
 	EnumValuesConstraint: [],
 	EnumValuesConstraintKeyword: [],
 	EnumValuesConstraintValues: [],
+	EnumValuesConstraintValuesBoolean: [],
+	EnumValuesConstraintValuesNumber: [],
+	EnumValuesConstraintValuesString: [],
 	ExclusiveMaxConstraint: [],
 	ExclusiveMaxConstraintKeyword: [],
 	ExclusiveMaxConstraintValue: [],
+	ExclusiveMaxConstraintValueNumber: [],
+	ExclusiveMaxConstraintValueString: [],
 	ExclusiveMinConstraint: [],
 	ExclusiveMinConstraintKeyword: [],
 	ExclusiveMinConstraintValue: [],
+	ExclusiveMinConstraintValueNumber: [],
+	ExclusiveMinConstraintValueString: [],
 	FieldDecl: [],
 	FieldDeclDoc: [],
 	FieldDeclIdentity: [],
@@ -990,12 +1130,16 @@ export const TYPE_OPERATIONS = {
 	MaxConstraint: [],
 	MaxConstraintKeyword: [],
 	MaxConstraintValue: [],
+	MaxConstraintValueNumber: [],
+	MaxConstraintValueString: [],
 	MaxLengthConstraint: [],
 	MaxLengthConstraintKeyword: [],
 	MaxLengthConstraintValue: [],
 	MinConstraint: [],
 	MinConstraintKeyword: [],
 	MinConstraintValue: [],
+	MinConstraintValueNumber: [],
+	MinConstraintValueString: [],
 	MinLengthConstraint: [],
 	MinLengthConstraintKeyword: [],
 	MinLengthConstraintValue: [],
@@ -1050,12 +1194,19 @@ export const TYPE_CLAUSES = {
 	EnumValuesConstraint: [],
 	EnumValuesConstraintKeyword: [],
 	EnumValuesConstraintValues: [],
+	EnumValuesConstraintValuesBoolean: [],
+	EnumValuesConstraintValuesNumber: [],
+	EnumValuesConstraintValuesString: [],
 	ExclusiveMaxConstraint: [],
 	ExclusiveMaxConstraintKeyword: [],
 	ExclusiveMaxConstraintValue: [],
+	ExclusiveMaxConstraintValueNumber: [],
+	ExclusiveMaxConstraintValueString: [],
 	ExclusiveMinConstraint: [],
 	ExclusiveMinConstraintKeyword: [],
 	ExclusiveMinConstraintValue: [],
+	ExclusiveMinConstraintValueNumber: [],
+	ExclusiveMinConstraintValueString: [],
 	FieldDecl: [],
 	FieldDeclDoc: [],
 	FieldDeclIdentity: [],
@@ -1068,12 +1219,16 @@ export const TYPE_CLAUSES = {
 	MaxConstraint: [],
 	MaxConstraintKeyword: [],
 	MaxConstraintValue: [],
+	MaxConstraintValueNumber: [],
+	MaxConstraintValueString: [],
 	MaxLengthConstraint: [],
 	MaxLengthConstraintKeyword: [],
 	MaxLengthConstraintValue: [],
 	MinConstraint: [],
 	MinConstraintKeyword: [],
 	MinConstraintValue: [],
+	MinConstraintValueNumber: [],
+	MinConstraintValueString: [],
 	MinLengthConstraint: [],
 	MinLengthConstraintKeyword: [],
 	MinLengthConstraintValue: [],
@@ -1296,19 +1451,22 @@ export const TYPE_VARIANTS = {
 		{
 			identity: "ix://agent-ix/semantic-core/type/EnumValuesConstraintValues/variant/boolean",
 			name: "boolean",
-			payloadType: "",
+			payloadType: "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesBoolean",
 		},
 		{
 			identity: "ix://agent-ix/semantic-core/type/EnumValuesConstraintValues/variant/number",
 			name: "number",
-			payloadType: "",
+			payloadType: "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesNumber",
 		},
 		{
 			identity: "ix://agent-ix/semantic-core/type/EnumValuesConstraintValues/variant/string",
 			name: "string",
-			payloadType: "",
+			payloadType: "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesString",
 		},
 	],
+	EnumValuesConstraintValuesBoolean: [],
+	EnumValuesConstraintValuesNumber: [],
+	EnumValuesConstraintValuesString: [],
 	ExclusiveMaxConstraint: [],
 	ExclusiveMaxConstraintKeyword: [
 		{
@@ -1321,14 +1479,16 @@ export const TYPE_VARIANTS = {
 		{
 			identity: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue/variant/number",
 			name: "number",
-			payloadType: "",
+			payloadType: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueNumber",
 		},
 		{
 			identity: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue/variant/string",
 			name: "string",
-			payloadType: "",
+			payloadType: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueString",
 		},
 	],
+	ExclusiveMaxConstraintValueNumber: [],
+	ExclusiveMaxConstraintValueString: [],
 	ExclusiveMinConstraint: [],
 	ExclusiveMinConstraintKeyword: [
 		{
@@ -1341,14 +1501,16 @@ export const TYPE_VARIANTS = {
 		{
 			identity: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue/variant/number",
 			name: "number",
-			payloadType: "",
+			payloadType: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueNumber",
 		},
 		{
 			identity: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue/variant/string",
 			name: "string",
-			payloadType: "",
+			payloadType: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueString",
 		},
 	],
+	ExclusiveMinConstraintValueNumber: [],
+	ExclusiveMinConstraintValueString: [],
 	FieldDecl: [],
 	FieldDeclDoc: [],
 	FieldDeclIdentity: [],
@@ -1422,14 +1584,16 @@ export const TYPE_VARIANTS = {
 		{
 			identity: "ix://agent-ix/semantic-core/type/MaxConstraintValue/variant/number",
 			name: "number",
-			payloadType: "",
+			payloadType: "ix://agent-ix/semantic-core/type/MaxConstraintValueNumber",
 		},
 		{
 			identity: "ix://agent-ix/semantic-core/type/MaxConstraintValue/variant/string",
 			name: "string",
-			payloadType: "",
+			payloadType: "ix://agent-ix/semantic-core/type/MaxConstraintValueString",
 		},
 	],
+	MaxConstraintValueNumber: [],
+	MaxConstraintValueString: [],
 	MaxLengthConstraint: [],
 	MaxLengthConstraintKeyword: [
 		{
@@ -1451,14 +1615,16 @@ export const TYPE_VARIANTS = {
 		{
 			identity: "ix://agent-ix/semantic-core/type/MinConstraintValue/variant/number",
 			name: "number",
-			payloadType: "",
+			payloadType: "ix://agent-ix/semantic-core/type/MinConstraintValueNumber",
 		},
 		{
 			identity: "ix://agent-ix/semantic-core/type/MinConstraintValue/variant/string",
 			name: "string",
-			payloadType: "",
+			payloadType: "ix://agent-ix/semantic-core/type/MinConstraintValueString",
 		},
 	],
+	MinConstraintValueNumber: [],
+	MinConstraintValueString: [],
 	MinLengthConstraint: [],
 	MinLengthConstraintKeyword: [
 		{
@@ -1587,12 +1753,19 @@ export const TYPE_CONSTRAINTS = {
 	EnumValuesConstraint: [],
 	EnumValuesConstraintKeyword: [],
 	EnumValuesConstraintValues: [],
+	EnumValuesConstraintValuesBoolean: [],
+	EnumValuesConstraintValuesNumber: [],
+	EnumValuesConstraintValuesString: [],
 	ExclusiveMaxConstraint: [],
 	ExclusiveMaxConstraintKeyword: [],
 	ExclusiveMaxConstraintValue: [],
+	ExclusiveMaxConstraintValueNumber: [],
+	ExclusiveMaxConstraintValueString: [],
 	ExclusiveMinConstraint: [],
 	ExclusiveMinConstraintKeyword: [],
 	ExclusiveMinConstraintValue: [],
+	ExclusiveMinConstraintValueNumber: [],
+	ExclusiveMinConstraintValueString: [],
 	FieldDecl: [],
 	FieldDeclDoc: [],
 	FieldDeclIdentity: [],
@@ -1605,6 +1778,8 @@ export const TYPE_CONSTRAINTS = {
 	MaxConstraint: [],
 	MaxConstraintKeyword: [],
 	MaxConstraintValue: [],
+	MaxConstraintValueNumber: [],
+	MaxConstraintValueString: [],
 	MaxLengthConstraint: [],
 	MaxLengthConstraintKeyword: [],
 	MaxLengthConstraintValue: [
@@ -1630,6 +1805,8 @@ export const TYPE_CONSTRAINTS = {
 	MinConstraint: [],
 	MinConstraintKeyword: [],
 	MinConstraintValue: [],
+	MinConstraintValueNumber: [],
+	MinConstraintValueString: [],
 	MinLengthConstraint: [],
 	MinLengthConstraintKeyword: [],
 	MinLengthConstraintValue: [

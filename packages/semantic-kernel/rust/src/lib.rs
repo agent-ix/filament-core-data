@@ -28,12 +28,19 @@ pub use crate::types::enum_value_doc::EnumValueDoc;
 pub use crate::types::enum_values_constraint::EnumValuesConstraint;
 pub use crate::types::enum_values_constraint_keyword::EnumValuesConstraintKeyword;
 pub use crate::types::enum_values_constraint_values::EnumValuesConstraintValues;
+pub use crate::types::enum_values_constraint_values_boolean::EnumValuesConstraintValuesBoolean;
+pub use crate::types::enum_values_constraint_values_number::EnumValuesConstraintValuesNumber;
+pub use crate::types::enum_values_constraint_values_string::EnumValuesConstraintValuesString;
 pub use crate::types::exclusive_max_constraint::ExclusiveMaxConstraint;
 pub use crate::types::exclusive_max_constraint_keyword::ExclusiveMaxConstraintKeyword;
 pub use crate::types::exclusive_max_constraint_value::ExclusiveMaxConstraintValue;
+pub use crate::types::exclusive_max_constraint_value_number::ExclusiveMaxConstraintValueNumber;
+pub use crate::types::exclusive_max_constraint_value_string::ExclusiveMaxConstraintValueString;
 pub use crate::types::exclusive_min_constraint::ExclusiveMinConstraint;
 pub use crate::types::exclusive_min_constraint_keyword::ExclusiveMinConstraintKeyword;
 pub use crate::types::exclusive_min_constraint_value::ExclusiveMinConstraintValue;
+pub use crate::types::exclusive_min_constraint_value_number::ExclusiveMinConstraintValueNumber;
+pub use crate::types::exclusive_min_constraint_value_string::ExclusiveMinConstraintValueString;
 pub use crate::types::field_decl::FieldDecl;
 pub use crate::types::field_decl_doc::FieldDeclDoc;
 pub use crate::types::field_decl_identity::FieldDeclIdentity;
@@ -46,12 +53,16 @@ pub use crate::types::kernel_scalar::KernelScalar;
 pub use crate::types::max_constraint::MaxConstraint;
 pub use crate::types::max_constraint_keyword::MaxConstraintKeyword;
 pub use crate::types::max_constraint_value::MaxConstraintValue;
+pub use crate::types::max_constraint_value_number::MaxConstraintValueNumber;
+pub use crate::types::max_constraint_value_string::MaxConstraintValueString;
 pub use crate::types::max_length_constraint::MaxLengthConstraint;
 pub use crate::types::max_length_constraint_keyword::MaxLengthConstraintKeyword;
 pub use crate::types::max_length_constraint_value::MaxLengthConstraintValue;
 pub use crate::types::min_constraint::MinConstraint;
 pub use crate::types::min_constraint_keyword::MinConstraintKeyword;
 pub use crate::types::min_constraint_value::MinConstraintValue;
+pub use crate::types::min_constraint_value_number::MinConstraintValueNumber;
+pub use crate::types::min_constraint_value_string::MinConstraintValueString;
 pub use crate::types::min_length_constraint::MinLengthConstraint;
 pub use crate::types::min_length_constraint_keyword::MinLengthConstraintKeyword;
 pub use crate::types::min_length_constraint_value::MinLengthConstraintValue;
@@ -149,6 +160,18 @@ pub enum SemanticType {
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword.
     EnumValuesConstraintKeyword,
+    /// EnumValuesConstraintValuesString
+    ///
+    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesString.
+    EnumValuesConstraintValuesString,
+    /// EnumValuesConstraintValuesNumber
+    ///
+    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesNumber.
+    EnumValuesConstraintValuesNumber,
+    /// EnumValuesConstraintValuesBoolean
+    ///
+    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesBoolean.
+    EnumValuesConstraintValuesBoolean,
     /// EnumValuesConstraintValues
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintValues.
@@ -161,6 +184,14 @@ pub enum SemanticType {
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintKeyword.
     ExclusiveMaxConstraintKeyword,
+    /// ExclusiveMaxConstraintValueNumber
+    ///
+    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueNumber.
+    ExclusiveMaxConstraintValueNumber,
+    /// ExclusiveMaxConstraintValueString
+    ///
+    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueString.
+    ExclusiveMaxConstraintValueString,
     /// ExclusiveMaxConstraintValue
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue.
@@ -173,6 +204,14 @@ pub enum SemanticType {
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraintKeyword.
     ExclusiveMinConstraintKeyword,
+    /// ExclusiveMinConstraintValueNumber
+    ///
+    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueNumber.
+    ExclusiveMinConstraintValueNumber,
+    /// ExclusiveMinConstraintValueString
+    ///
+    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueString.
+    ExclusiveMinConstraintValueString,
     /// ExclusiveMinConstraintValue
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue.
@@ -221,6 +260,14 @@ pub enum SemanticType {
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraintKeyword.
     MaxConstraintKeyword,
+    /// MaxConstraintValueNumber
+    ///
+    /// Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraintValueNumber.
+    MaxConstraintValueNumber,
+    /// MaxConstraintValueString
+    ///
+    /// Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraintValueString.
+    MaxConstraintValueString,
     /// MaxConstraintValue
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraintValue.
@@ -245,6 +292,14 @@ pub enum SemanticType {
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/type/MinConstraintKeyword.
     MinConstraintKeyword,
+    /// MinConstraintValueNumber
+    ///
+    /// Semantic identity: ix://agent-ix/semantic-core/type/MinConstraintValueNumber.
+    MinConstraintValueNumber,
+    /// MinConstraintValueString
+    ///
+    /// Semantic identity: ix://agent-ix/semantic-core/type/MinConstraintValueString.
+    MinConstraintValueString,
     /// MinConstraintValue
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/type/MinConstraintValue.
@@ -394,6 +449,15 @@ impl SemanticType {
             SemanticType::EnumValuesConstraintKeyword => {
                 "ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword"
             }
+            SemanticType::EnumValuesConstraintValuesString => {
+                "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesString"
+            }
+            SemanticType::EnumValuesConstraintValuesNumber => {
+                "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesNumber"
+            }
+            SemanticType::EnumValuesConstraintValuesBoolean => {
+                "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesBoolean"
+            }
             SemanticType::EnumValuesConstraintValues => {
                 "ix://agent-ix/semantic-core/type/EnumValuesConstraintValues"
             }
@@ -403,6 +467,12 @@ impl SemanticType {
             SemanticType::ExclusiveMaxConstraintKeyword => {
                 "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintKeyword"
             }
+            SemanticType::ExclusiveMaxConstraintValueNumber => {
+                "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueNumber"
+            }
+            SemanticType::ExclusiveMaxConstraintValueString => {
+                "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueString"
+            }
             SemanticType::ExclusiveMaxConstraintValue => {
                 "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue"
             }
@@ -411,6 +481,12 @@ impl SemanticType {
             }
             SemanticType::ExclusiveMinConstraintKeyword => {
                 "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintKeyword"
+            }
+            SemanticType::ExclusiveMinConstraintValueNumber => {
+                "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueNumber"
+            }
+            SemanticType::ExclusiveMinConstraintValueString => {
+                "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueString"
             }
             SemanticType::ExclusiveMinConstraintValue => {
                 "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue"
@@ -432,6 +508,12 @@ impl SemanticType {
             SemanticType::MaxConstraintKeyword => {
                 "ix://agent-ix/semantic-core/type/MaxConstraintKeyword"
             }
+            SemanticType::MaxConstraintValueNumber => {
+                "ix://agent-ix/semantic-core/type/MaxConstraintValueNumber"
+            }
+            SemanticType::MaxConstraintValueString => {
+                "ix://agent-ix/semantic-core/type/MaxConstraintValueString"
+            }
             SemanticType::MaxConstraintValue => {
                 "ix://agent-ix/semantic-core/type/MaxConstraintValue"
             }
@@ -447,6 +529,12 @@ impl SemanticType {
             SemanticType::MinConstraint => "ix://agent-ix/semantic-core/type/MinConstraint",
             SemanticType::MinConstraintKeyword => {
                 "ix://agent-ix/semantic-core/type/MinConstraintKeyword"
+            }
+            SemanticType::MinConstraintValueNumber => {
+                "ix://agent-ix/semantic-core/type/MinConstraintValueNumber"
+            }
+            SemanticType::MinConstraintValueString => {
+                "ix://agent-ix/semantic-core/type/MinConstraintValueString"
             }
             SemanticType::MinConstraintValue => {
                 "ix://agent-ix/semantic-core/type/MinConstraintValue"
