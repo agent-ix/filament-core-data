@@ -332,6 +332,21 @@ function enumCheckBody(model, entry) {
 
 /** The body of a `union` type's `check` predicate. */
 function unionCheckBody(entry) {
+	if (entry.wireForm === "untagged") {
+		const lines = ["\tconst branchErrors: ValidationError[] = [];"];
+		for (const variant of entry.variants ?? []) {
+			if (variant.payload?.declared !== true) continue;
+			lines.push(
+				"\tbranchErrors.length = 0;",
+				`\tif (${checkCall(variant.payload, "candidate", "pointer").replace("errors", "branchErrors")}) return true;`,
+			);
+		}
+		lines.push(
+			'\tfail(errors, pointer, CODES.SHAPE_MISMATCH, "the value matches no declared union branch");',
+			"\treturn false;",
+		);
+		return lines;
+	}
 	const lines = [
 		"\tif (!isPlainObject(candidate)) {",
 		'\t\tfail(errors, pointer, CODES.NOT_AN_OBJECT, "the value is not an object");',
@@ -516,10 +531,10 @@ function fieldStatements(field) {
 /** A `const name = [...]` binding, broken across lines where it must be. */
 function nameSet(indent, name, names) {
 	const inline = `[${names.map((member) => literal(member)).join(", ")}]`;
-	const single = `${indent}const ${name} = ${inline};`;
+	const single = `${indent}const ${name}: readonly string[] = ${inline};`;
 	if (single.length <= LINE_WIDTH) return [single];
 	return [
-		`${indent}const ${name} = [`,
+		`${indent}const ${name}: readonly string[] = [`,
 		...names.map((member) => `${indent}\t${literal(member)},`),
 		`${indent}];`,
 	];
@@ -624,6 +639,17 @@ function prepareBody(model, entry) {
 }
 
 function unionPrepareBody(entry) {
+	if (entry.wireForm === "untagged") {
+		const lines = [];
+		for (const variant of entry.variants ?? []) {
+			if (variant.payload?.declared !== true) continue;
+			lines.push(
+				`\tif (check${variant.payload.identifier}(value, "", [], [], depth + 1)) return prepare${variant.payload.identifier}(value, depth + 1);`,
+			);
+		}
+		lines.push("\treturn value;");
+		return lines;
+	}
 	const withPayload = (entry.variants ?? []).filter(
 		(variant) => variant.payload?.declared === true,
 	);

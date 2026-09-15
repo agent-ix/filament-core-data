@@ -148,6 +148,16 @@ function renderEnum(entry) {
 }
 
 function renderUnion(entry) {
+	if (entry.wireForm === "untagged") {
+		const members = entry.variants.map((variant) =>
+			variant.payload === undefined ? "never" : elementType(variant.payload),
+		);
+		const body = members.length > 0 ? members.join(" | ") : "never";
+		return [
+			jsdoc([docTextOf(entry)], ""),
+			`export type ${entry.identifier} = ${body};`,
+		].join("");
+	}
 	const members = entry.variants.map((variant) => {
 		const tag = `readonly ${UNION_DISCRIMINANT}: ${JSON.stringify(variant.name)}`;
 		return variant.payload === undefined

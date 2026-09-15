@@ -9,19 +9,19 @@
 	],
 	"packages": ["json-schema", "typescript", "python", "rust"],
 	"documents": 111,
-	"agreeing": 73,
+	"agreeing": 80,
 	"byProperty": {
 		"serialized-member-names": {
 			"documents": 93,
-			"agreeing": 60
+			"agreeing": 66
 		},
 		"round-trip": {
 			"documents": 68,
-			"agreeing": 46
+			"agreeing": 55
 		},
 		"presence-versus-null": {
 			"documents": 11,
-			"agreeing": 7
+			"agreeing": 8
 		},
 		"unknown-member-states": {
 			"documents": 5,
@@ -197,7 +197,7 @@
 			"class": "positive",
 			"properties": ["serialized-member-names", "round-trip"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "success",
@@ -205,8 +205,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -215,8 +215,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -227,7 +227,7 @@
 			"class": "positive",
 			"properties": ["serialized-member-names", "round-trip"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "success",
@@ -235,8 +235,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -245,8 +245,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -257,7 +257,7 @@
 			"class": "boundary",
 			"properties": ["serialized-member-names", "round-trip"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "success",
@@ -265,8 +265,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -275,8 +275,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -287,7 +287,7 @@
 			"class": "negative",
 			"properties": ["serialized-member-names"],
 			"decidedBy": 4,
-			"agreement": true,
+			"agreement": false,
 			"decisions": {
 				"json-schema": {
 					"resultState": "invalid",
@@ -295,8 +295,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": true,
+					"resultState": "success",
+					"agreesWithContract": false,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -305,8 +305,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": true,
+					"resultState": "success",
+					"agreesWithContract": false,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -647,7 +647,7 @@
 			"class": "positive",
 			"properties": ["serialized-member-names", "round-trip"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "success",
@@ -655,8 +655,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -665,8 +665,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -707,7 +707,7 @@
 			"class": "boundary",
 			"properties": ["presence-versus-null", "round-trip"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "success",
@@ -715,8 +715,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -725,8 +725,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -755,8 +755,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": true,
+					"resultState": "success",
+					"agreesWithContract": false,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -767,7 +767,7 @@
 			"class": "negative",
 			"properties": ["serialized-member-names"],
 			"decidedBy": 4,
-			"agreement": true,
+			"agreement": false,
 			"decisions": {
 				"json-schema": {
 					"resultState": "invalid",
@@ -775,8 +775,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": true,
+					"resultState": "success",
+					"agreesWithContract": false,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -785,8 +785,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": true,
+					"resultState": "success",
+					"agreesWithContract": false,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -2004,7 +2004,7 @@
 			"class": "positive",
 			"properties": ["serialized-member-names", "round-trip"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "success",
@@ -2012,8 +2012,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -2022,8 +2022,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -2034,7 +2034,7 @@
 			"class": "positive",
 			"properties": ["serialized-member-names", "round-trip"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "success",
@@ -2042,8 +2042,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -2052,8 +2052,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -2454,7 +2454,7 @@
 			"class": "positive",
 			"properties": ["serialized-member-names", "round-trip"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "success",
@@ -2462,8 +2462,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -2472,8 +2472,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -2484,7 +2484,7 @@
 			"class": "positive",
 			"properties": ["serialized-member-names", "round-trip"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "success",
@@ -2492,8 +2492,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -2502,8 +2502,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}

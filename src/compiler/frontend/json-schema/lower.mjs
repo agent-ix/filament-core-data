@@ -18,6 +18,8 @@ import { unrecognisedKeywords } from "./keywords.mjs";
 import { mintName } from "./mint.mjs";
 
 const IDENTITY_PREFIX = "ix://agent-ix/semantic-core/type";
+const UNTAGGED_UNION_EXTENSION =
+	"ix://agent-ix/semantic-core/extension/untagged-union-wire-form";
 
 /** @param {string} name */
 export function identityOf(name) {
@@ -113,6 +115,16 @@ function completeVariant(owner, variant, file) {
 	};
 }
 
+/** The source wire form is carried through the IR's declared extension surface. */
+function untaggedUnionExtension() {
+	return {
+		identity: UNTAGGED_UNION_EXTENSION,
+		version: "1.0.0",
+		required: false,
+		payload: { wireForm: "untagged" },
+	};
+}
+
 function diag(entry, message, locus_) {
 	return { code: entry.code, message, locus: locus_ };
 }
@@ -184,6 +196,10 @@ function lowerProperty(owner, property, schema, isRequired, out, minted, file) {
 		}
 		typeRef = mint({
 			kind: "union",
+			// JSON Schema `anyOf` selects a branch from the value itself.  It
+			// does not add the TypeScript backend's `{ kind, value }` envelope.
+			// Preserve that fact for the emitters rather than inventing a tag.
+			...(allRefs ? { extensions: [untaggedUnionExtension()] } : {}),
 			variants: (allRefs
 				? schema.anyOf.map((b) => {
 						const target = nameFromUrl(b.$ref);
@@ -325,7 +341,7 @@ function complete(definition, file) {
 			},
 		},
 		constraints: definition.constraints ?? [],
-		extensions: [],
+		extensions: definition.extensions ?? [],
 		unknownPolicy: definition.unknownPolicy ?? "reject",
 		...(definition.fields ? { fields: definition.fields } : {}),
 		...(definition.variants ? { variants: definition.variants } : {}),
@@ -476,6 +492,7 @@ export function lowerBundle(documents, options = {}) {
 						name,
 						identity: identityOf(name),
 						kind: "union",
+						extensions: [untaggedUnionExtension()],
 						variants: schema.anyOf.map((b) => {
 							const target = nameFromUrl(b.$ref);
 							return completeVariant(

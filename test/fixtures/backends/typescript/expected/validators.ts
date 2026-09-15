@@ -260,7 +260,7 @@ function prepareNode(value: unknown, depth: number): unknown {
 			accessor = true;
 		}
 	}
-	const declared = [
+	const declared: readonly string[] = [
 		"attrs",
 		"children",
 		"elapsed",
@@ -555,7 +555,7 @@ function checkNode(
 			checkTextList(member.value, at, errors, surfaced, depth + 1);
 		}
 	}
-	const declared = [
+	const declared: readonly string[] = [
 		"attrs",
 		"children",
 		"elapsed",
@@ -774,7 +774,7 @@ function prepareRoot(value: unknown, depth: number): unknown {
 			accessor = true;
 		}
 	}
-	const declared = ["name", "node"];
+	const declared: readonly string[] = ["name", "node"];
 	for (const key of ownKeys(value)) {
 		if (declared.includes(key)) continue;
 		const member = ownMember(value, key);
@@ -865,7 +865,7 @@ function checkRoot(
 			checkNodeRef(member.value, at, errors, surfaced, depth + 1);
 		}
 	}
-	const declared = ["name", "node"];
+	const declared: readonly string[] = ["name", "node"];
 	for (const key of ownKeys(candidate)) {
 		if (declared.includes(key)) continue;
 		fail(
@@ -915,7 +915,7 @@ function checkStatus(
 		fail(errors, pointer, CODES.NOT_A_STRING, "the value is of the wrong type");
 		return false;
 	}
-	const variants = ["draft", "final"];
+	const variants: readonly string[] = ["draft", "final"];
 	if (!variants.includes(candidate)) {
 		fail(
 			errors,
