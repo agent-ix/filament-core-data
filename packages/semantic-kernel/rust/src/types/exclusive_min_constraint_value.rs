@@ -8,17 +8,18 @@ use serde::{Deserialize, Serialize};
 ///
 /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum ExclusiveMinConstraintValue {
     /// number
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue/variant/number.
     #[serde(rename = "number")]
-    Number,
+    Number(crate::ExclusiveMinConstraintValueNumber),
     /// string
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue/variant/string.
     #[serde(rename = "string")]
-    String,
+    String(crate::ExclusiveMinConstraintValueString),
 }
 
 impl ExclusiveMinConstraintValue {

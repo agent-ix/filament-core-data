@@ -5,7 +5,7 @@
  * backend: ix://agent-ix/filament-core-data/backend/typescript@0.1.0
  * contract: 1.1.0
  * package: agent-ix/semantic-kernel@0.1.0
- * fingerprint: sha256:fdb692d0468da40155ca18d244bd47b754bb7ecd11559207b48541f2bb997df5
+ * fingerprint: sha256:e2156fccd90950500c5094cced8b5f70b92f68eadf6df82aef1a8ebba798cb67
  */
 
 /**
@@ -66,10 +66,13 @@ export interface EnumValuesConstraint {
 
 export type EnumValuesConstraintKeyword = "enumValues";
 
-export type EnumValuesConstraintValues =
-	| { readonly kind: "boolean" }
-	| { readonly kind: "number" }
-	| { readonly kind: "string" };
+export type EnumValuesConstraintValues = EnumValuesConstraintValuesBoolean | EnumValuesConstraintValuesNumber | EnumValuesConstraintValuesString;
+
+export type EnumValuesConstraintValuesBoolean = boolean;
+
+export type EnumValuesConstraintValuesNumber = number;
+
+export type EnumValuesConstraintValuesString = string;
 
 export interface ExclusiveMaxConstraint {
 	readonly keyword: ExclusiveMaxConstraintKeyword;
@@ -78,9 +81,11 @@ export interface ExclusiveMaxConstraint {
 
 export type ExclusiveMaxConstraintKeyword = "exclusiveMax";
 
-export type ExclusiveMaxConstraintValue =
-	| { readonly kind: "number" }
-	| { readonly kind: "string" };
+export type ExclusiveMaxConstraintValue = ExclusiveMaxConstraintValueNumber | ExclusiveMaxConstraintValueString;
+
+export type ExclusiveMaxConstraintValueNumber = number;
+
+export type ExclusiveMaxConstraintValueString = string;
 
 export interface ExclusiveMinConstraint {
 	readonly keyword: ExclusiveMinConstraintKeyword;
@@ -89,9 +94,11 @@ export interface ExclusiveMinConstraint {
 
 export type ExclusiveMinConstraintKeyword = "exclusiveMin";
 
-export type ExclusiveMinConstraintValue =
-	| { readonly kind: "number" }
-	| { readonly kind: "string" };
+export type ExclusiveMinConstraintValue = ExclusiveMinConstraintValueNumber | ExclusiveMinConstraintValueString;
+
+export type ExclusiveMinConstraintValueNumber = number;
+
+export type ExclusiveMinConstraintValueString = string;
 
 export interface FieldDecl {
 	readonly constraints?: readonly ConstraintDecl[];
@@ -129,9 +136,11 @@ export interface MaxConstraint {
 
 export type MaxConstraintKeyword = "max";
 
-export type MaxConstraintValue =
-	| { readonly kind: "number" }
-	| { readonly kind: "string" };
+export type MaxConstraintValue = MaxConstraintValueNumber | MaxConstraintValueString;
+
+export type MaxConstraintValueNumber = number;
+
+export type MaxConstraintValueString = string;
 
 export interface MaxLengthConstraint {
 	readonly keyword: MaxLengthConstraintKeyword;
@@ -149,9 +158,11 @@ export interface MinConstraint {
 
 export type MinConstraintKeyword = "min";
 
-export type MinConstraintValue =
-	| { readonly kind: "number" }
-	| { readonly kind: "string" };
+export type MinConstraintValue = MinConstraintValueNumber | MinConstraintValueString;
+
+export type MinConstraintValueNumber = number;
+
+export type MinConstraintValueString = string;
 
 export interface MinLengthConstraint {
 	readonly keyword: MinLengthConstraintKeyword;
