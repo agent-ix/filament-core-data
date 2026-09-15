@@ -66,7 +66,7 @@
 			"wrongSide": "rust",
 			"property": "decision",
 			"issue": "agent-ix/filament-core-data#78",
-			"documents": ["PAR-0015", "PAR-0016", "PAR-0017"],
+			"documents": ["PAR-0015", "PAR-0016", "PAR-0017", "PAR-0022"],
 			"why": "`DefaultDecl.value` is `{}` in the schema — any JSON value — and IR v1.1 has no any-type, so it lowers to a record with no fields. packages/semantic-kernel/losses.json records this as `unconstrained-value`; #78 is the expressiveness gap and #93 the v1.2 fix."
 		},
 		{
@@ -74,7 +74,7 @@
 			"wrongSide": "typescript",
 			"property": "decision",
 			"issue": "agent-ix/filament-core-data#78",
-			"documents": ["PAR-0015", "PAR-0016", "PAR-0017", "PAR-0019"],
+			"documents": ["PAR-0015", "PAR-0016", "PAR-0017", "PAR-0019", "PAR-0022"],
 			"why": "`DefaultDecl.value` is `{}` in the schema — any JSON value — and IR v1.1 has no any-type, so it lowers to a record with no fields. packages/semantic-kernel/losses.json records this as `unconstrained-value`; #78 is the expressiveness gap and #93 the v1.2 fix."
 		},
 		{
@@ -269,7 +269,7 @@
 				"typescript": "invalid"
 			},
 			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
+			"adjudicatedBy": "agent-ix/filament-core-data#78"
 		},
 		{
 			"document": "PAR-0022",
@@ -281,7 +281,7 @@
 				"rust": "invalid"
 			},
 			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
+			"adjudicatedBy": "agent-ix/filament-core-data#78"
 		},
 		{
 			"document": "PAR-0024",
@@ -332,150 +332,6 @@
 			"adjudicatedBy": "agent-ix/filament-core-data#127"
 		},
 		{
-			"document": "PAR-0027",
-			"declaration": "MinConstraint",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"typescript": "invalid"
-			},
-			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0027",
-			"declaration": "MinConstraint",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"rust": "invalid"
-			},
-			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0028",
-			"declaration": "MinConstraint",
-			"class": "boundary",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"typescript": "invalid"
-			},
-			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0028",
-			"declaration": "MinConstraint",
-			"class": "boundary",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"rust": "invalid"
-			},
-			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0030",
-			"declaration": "MaxConstraint",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"typescript": "invalid"
-			},
-			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0030",
-			"declaration": "MaxConstraint",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"rust": "invalid"
-			},
-			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0031",
-			"declaration": "MaxConstraint",
-			"class": "boundary",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"typescript": "invalid"
-			},
-			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0031",
-			"declaration": "MaxConstraint",
-			"class": "boundary",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"rust": "invalid"
-			},
-			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0033",
-			"declaration": "ExclusiveMinConstraint",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"typescript": "invalid"
-			},
-			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0033",
-			"declaration": "ExclusiveMinConstraint",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"rust": "invalid"
-			},
-			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0035",
-			"declaration": "ExclusiveMaxConstraint",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"typescript": "invalid"
-			},
-			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0035",
-			"declaration": "ExclusiveMaxConstraint",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"rust": "invalid"
-			},
-			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
 			"document": "PAR-0039",
 			"declaration": "PatternConstraint",
 			"class": "negative",
@@ -498,54 +354,6 @@
 			},
 			"wrongSide": "rust",
 			"adjudicatedBy": "agent-ix/filament-core-data#127"
-		},
-		{
-			"document": "PAR-0045",
-			"declaration": "EnumValuesConstraint",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"typescript": "invalid"
-			},
-			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0045",
-			"declaration": "EnumValuesConstraint",
-			"class": "positive",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"rust": "invalid"
-			},
-			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0046",
-			"declaration": "EnumValuesConstraint",
-			"class": "boundary",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"typescript": "invalid"
-			},
-			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
-		},
-		{
-			"document": "PAR-0046",
-			"declaration": "EnumValuesConstraint",
-			"class": "boundary",
-			"property": "decision",
-			"decisions": {
-				"contract": "success",
-				"rust": "invalid"
-			},
-			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#128"
 		},
 		{
 			"document": "PAR-0053",
