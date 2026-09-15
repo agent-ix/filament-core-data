@@ -1,0 +1,54 @@
+{
+  "declaredBy": "Plan-017 Task-149",
+  "permutations": [
+    {
+      "keyOrder": "declared",
+      "name": "declared-order",
+      "seed": 0,
+      "setOrder": "declared"
+    },
+    {
+      "keyOrder": "reverse",
+      "name": "reversed-keys",
+      "seed": 0,
+      "setOrder": "declared"
+    },
+    {
+      "keyOrder": "declared",
+      "name": "reversed-set-members",
+      "seed": 0,
+      "setOrder": "reverse"
+    },
+    {
+      "keyOrder": "reverse",
+      "name": "reversed-keys-and-set-members",
+      "seed": 0,
+      "setOrder": "reverse"
+    },
+    {
+      "keyOrder": "rotate",
+      "name": "rotated-keys-and-set-members",
+      "seed": 0,
+      "setOrder": "rotate"
+    },
+    {
+      "keyOrder": "seeded",
+      "name": "seeded-shuffle-1",
+      "seed": 1,
+      "setOrder": "seeded"
+    },
+    {
+      "keyOrder": "seeded",
+      "name": "seeded-shuffle-7",
+      "seed": 7,
+      "setOrder": "seeded"
+    },
+    {
+      "keyOrder": "seeded",
+      "name": "seeded-shuffle-104729",
+      "seed": 104729,
+      "setOrder": "seeded"
+    }
+  ],
+  "requirement": "NFR-036"
+}
