@@ -105,9 +105,9 @@ features; this crate declares no `jsonschema` dependency of its own
 | `ryu` | `1.0.23` | Apache-2.0 OR BSL-1.0 | crates.io |
 | `same-file` | `1.0.6` | Unlicense/MIT | crates.io |
 | `scopeguard` | `1.2.0` | MIT OR Apache-2.0 | crates.io |
-| `serde` | `1.0.229` | MIT OR Apache-2.0 | crates.io |
-| `serde_core` | `1.0.229` | MIT OR Apache-2.0 | crates.io |
-| `serde_derive` | `1.0.229` | MIT OR Apache-2.0 | crates.io |
+| `serde` | `1.0.228` | MIT OR Apache-2.0 | crates.io |
+| `serde_core` | `1.0.228` | MIT OR Apache-2.0 | crates.io |
+| `serde_derive` | `1.0.228` | MIT OR Apache-2.0 | crates.io |
 | `serde_json` | `1.0.151` | MIT OR Apache-2.0 | crates.io |
 | `serde_yaml` | `0.9.34+deprecated` | MIT OR Apache-2.0 | crates.io |
 | `sha2` | `0.10.9` | MIT OR Apache-2.0 | crates.io |
