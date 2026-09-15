@@ -9,15 +9,15 @@
 	],
 	"packages": ["json-schema", "typescript", "python", "rust"],
 	"documents": 111,
-	"agreeing": 80,
+	"agreeing": 88,
 	"byProperty": {
 		"serialized-member-names": {
 			"documents": 93,
-			"agreeing": 66
+			"agreeing": 74
 		},
 		"round-trip": {
 			"documents": 68,
-			"agreeing": 55
+			"agreeing": 63
 		},
 		"presence-versus-null": {
 			"documents": 11,
@@ -827,7 +827,7 @@
 			"class": "positive",
 			"properties": ["serialized-member-names", "round-trip"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "success",
@@ -835,8 +835,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -845,8 +845,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -857,7 +857,7 @@
 			"class": "boundary",
 			"properties": ["serialized-member-names", "round-trip"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "success",
@@ -865,8 +865,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -875,8 +875,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -917,7 +917,7 @@
 			"class": "positive",
 			"properties": ["serialized-member-names", "round-trip"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "success",
@@ -925,8 +925,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -935,8 +935,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -947,7 +947,7 @@
 			"class": "boundary",
 			"properties": ["serialized-member-names", "round-trip"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "success",
@@ -955,8 +955,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -965,8 +965,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -1007,7 +1007,7 @@
 			"class": "positive",
 			"properties": ["serialized-member-names", "round-trip"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "success",
@@ -1015,8 +1015,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -1025,8 +1025,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -1067,7 +1067,7 @@
 			"class": "positive",
 			"properties": ["serialized-member-names", "round-trip"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "success",
@@ -1075,8 +1075,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -1085,8 +1085,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -1367,7 +1367,7 @@
 			"class": "positive",
 			"properties": ["serialized-member-names", "round-trip"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "success",
@@ -1375,8 +1375,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -1385,8 +1385,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}
@@ -1397,7 +1397,7 @@
 			"class": "boundary",
 			"properties": ["serialized-member-names", "round-trip"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "success",
@@ -1405,8 +1405,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -1415,8 +1415,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "invalid",
-					"agreesWithContract": false,
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}
