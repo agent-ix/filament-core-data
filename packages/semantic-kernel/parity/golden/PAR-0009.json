@@ -1,0 +1,25 @@
+{
+	"id": "PAR-0009",
+	"title": "A target that is neither a semantic identity nor a kernel scalar",
+	"declaration": "TypeRef",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"target": "not a target"
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/TypeRef.json",
+			"locator": "#/properties/target",
+			"quote": "\"target\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

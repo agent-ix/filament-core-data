@@ -1,0 +1,24 @@
+{
+	"id": "PAR-0089",
+	"title": "`ConstraintKeyword` admits the declared member `min`",
+	"declaration": "ConstraintKeyword",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "not-applicable",
+	"instance": "min",
+	"expected": {
+		"resultState": "success",
+		"wire": "min"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/ConstraintKeyword.json",
+			"locator": "#/enum",
+			"quote": "\"enum\": ["
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

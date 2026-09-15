@@ -1,0 +1,74 @@
+{
+	"id": "PAR-0066",
+	"title": "An operation carrying a return type and both clause lists",
+	"declaration": "OperationDecl",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"name": "withdraw",
+		"params": [
+			{
+				"name": "amount",
+				"type": {
+					"target": "Decimal"
+				}
+			}
+		],
+		"returns": {
+			"target": "Boolean"
+		},
+		"pre": [
+			{
+				"language": "ocl",
+				"clauseId": "sufficient_funds"
+			}
+		],
+		"post": [
+			{
+				"language": "fretish",
+				"clauseId": "balance_decreases"
+			}
+		]
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"name": "withdraw",
+			"params": [
+				{
+					"name": "amount",
+					"type": {
+						"target": "Decimal"
+					}
+				}
+			],
+			"returns": {
+				"target": "Boolean"
+			},
+			"pre": [
+				{
+					"language": "ocl",
+					"clauseId": "sufficient_funds"
+				}
+			],
+			"post": [
+				{
+					"language": "fretish",
+					"clauseId": "balance_decreases"
+				}
+			]
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/OperationDecl.json",
+			"locator": "#/description",
+			"quote": "\"description\": \"An operation declaration (FR-028). Reader: params unique by name; returns carries no unit.\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

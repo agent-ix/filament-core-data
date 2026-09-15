@@ -1,0 +1,26 @@
+{
+	"id": "PAR-0044",
+	"title": "A maximum length that is not an integer",
+	"declaration": "MaxLengthConstraint",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "maxLength",
+		"value": 1.5
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/MaxLengthConstraint.json",
+			"locator": "#/properties/value/type",
+			"quote": "\"type\": \"integer\","
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

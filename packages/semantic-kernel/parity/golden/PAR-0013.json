@@ -1,0 +1,26 @@
+{
+	"id": "PAR-0013",
+	"title": "Precision below its declared minimum",
+	"declaration": "DecimalPolicy",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"precision": 0,
+		"scale": 0
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/DecimalPolicy.json",
+			"locator": "#/properties/precision/minimum",
+			"quote": "\"minimum\": 1,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

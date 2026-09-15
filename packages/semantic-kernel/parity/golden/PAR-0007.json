@@ -1,0 +1,44 @@
+{
+	"id": "PAR-0007",
+	"title": "A reference to a semantic type carrying a decimal policy",
+	"declaration": "TypeRef",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"target": "ix://agent-ix/semantic-core/type/DecimalPolicy",
+		"decimal": {
+			"precision": 18,
+			"scale": 6
+		},
+		"multiplicity": {
+			"lower": 1,
+			"upper": 1
+		}
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"target": "ix://agent-ix/semantic-core/type/DecimalPolicy",
+			"decimal": {
+				"precision": 18,
+				"scale": 6
+			},
+			"multiplicity": {
+				"lower": 1,
+				"upper": 1
+			}
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/TypeRef.json",
+			"locator": "#/description",
+			"quote": "\"description\": \"A reference to a kernel scalar or a semantic type. Reader: `decimal` iff target is Decimal; `unit` only on unit-allowed scalars.\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

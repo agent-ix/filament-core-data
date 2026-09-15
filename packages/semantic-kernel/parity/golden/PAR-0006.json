@@ -1,0 +1,28 @@
+{
+	"id": "PAR-0006",
+	"title": "A reference to a kernel scalar",
+	"declaration": "TypeRef",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"target": "String"
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"target": "String"
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/TypeRef.json",
+			"locator": "#/required",
+			"quote": "\"required\": [\"target\"],"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

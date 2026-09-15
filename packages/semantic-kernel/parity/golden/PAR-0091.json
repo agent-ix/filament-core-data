@@ -1,0 +1,23 @@
+{
+	"id": "PAR-0091",
+	"title": "`ConstraintKeyword` refuses a member outside the closed set",
+	"declaration": "ConstraintKeyword",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "not-applicable",
+	"instance": "between",
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/ConstraintKeyword.json",
+			"locator": "#/enum",
+			"quote": "\"enum\": ["
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

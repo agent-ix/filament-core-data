@@ -1,0 +1,24 @@
+{
+	"id": "PAR-0086",
+	"title": "`EdgeCategory` admits the declared member `structural`",
+	"declaration": "EdgeCategory",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "not-applicable",
+	"instance": "structural",
+	"expected": {
+		"resultState": "success",
+		"wire": "structural"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/EdgeCategory.json",
+			"locator": "#/enum",
+			"quote": "\"enum\": ["
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

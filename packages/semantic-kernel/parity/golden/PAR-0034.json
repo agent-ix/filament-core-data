@@ -1,0 +1,26 @@
+{
+	"id": "PAR-0034",
+	"title": "`exclusiveMin` with the wrong discriminant",
+	"declaration": "ExclusiveMinConstraint",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "nonEmpty",
+		"value": 0
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/ExclusiveMinConstraint.json",
+			"locator": "#/properties/keyword/const",
+			"quote": "\"const\": \"exclusiveMin\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

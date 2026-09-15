@@ -1,0 +1,26 @@
+{
+	"id": "PAR-0042",
+	"title": "A negative minimum length",
+	"declaration": "MinLengthConstraint",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "minLength",
+		"value": -1
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/MinLengthConstraint.json",
+			"locator": "#/properties/value/minimum",
+			"quote": "\"minimum\": 0,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0052",
+	"title": "A namespaced format name",
+	"declaration": "FormatConstraint",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "format",
+		"name": "ix:uuid"
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"keyword": "format",
+			"name": "ix:uuid"
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/FormatConstraint.json",
+			"locator": "#/properties/keyword/const",
+			"quote": "\"const\": \"format\""
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

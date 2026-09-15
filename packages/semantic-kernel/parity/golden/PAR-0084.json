@@ -1,0 +1,24 @@
+{
+	"id": "PAR-0084",
+	"title": "`KernelScalar` admits the declared member `JsonObject`",
+	"declaration": "KernelScalar",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "not-applicable",
+	"instance": "JsonObject",
+	"expected": {
+		"resultState": "success",
+		"wire": "JsonObject"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/KernelScalar.json",
+			"locator": "#/enum",
+			"quote": "\"enum\": ["
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

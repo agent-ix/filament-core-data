@@ -1,0 +1,27 @@
+{
+	"id": "PAR-0063",
+	"title": "A relation target that is not a semantic identity",
+	"declaration": "RelationDecl",
+	"class": "negative",
+	"properties": ["relation-semantics"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"verb": "owns",
+		"category": "structural",
+		"target": "FieldDecl"
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/RelationDecl.json",
+			"locator": "#/properties/target",
+			"quote": "\"target\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

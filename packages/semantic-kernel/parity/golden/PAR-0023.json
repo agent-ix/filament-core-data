@@ -1,0 +1,34 @@
+{
+	"id": "PAR-0023",
+	"title": "An optional member absent is not the same as present-and-null",
+	"declaration": "FieldDecl",
+	"class": "boundary",
+	"properties": ["presence-versus-null", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"name": "title",
+		"type": {
+			"target": "String"
+		}
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"name": "title",
+			"type": {
+				"target": "String"
+			}
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/FieldDecl.json",
+			"locator": "#/properties/doc",
+			"quote": "\"doc\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

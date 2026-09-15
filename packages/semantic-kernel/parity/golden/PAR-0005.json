@@ -1,0 +1,25 @@
+{
+	"id": "PAR-0005",
+	"title": "`lower` present with a written null is not an absent member",
+	"declaration": "Multiplicity",
+	"class": "negative",
+	"properties": ["presence-versus-null"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"lower": null
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/Multiplicity.json",
+			"locator": "#/properties/lower",
+			"quote": "\"lower\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

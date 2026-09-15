@@ -1,0 +1,3412 @@
+{
+	"$comment": [
+		"FR-090. Written by packages/semantic-kernel/parity/run.mjs.",
+		"Comparison form: agent-ix-conformance-jcs-v1, through substantive()",
+		"imported from conformance/oracle/index.mjs. Not RFC8785-JCS-with-",
+		"identity-sorted-sets-v1, which conformance/contract-gaps.json GAP-004",
+		"records as named but undefined.",
+		"An undecided answer is counted unmet, never as a pass."
+	],
+	"packages": ["json-schema", "typescript", "python", "rust"],
+	"documents": 111,
+	"agreeing": 73,
+	"byProperty": {
+		"serialized-member-names": {
+			"documents": 93,
+			"agreeing": 60
+		},
+		"round-trip": {
+			"documents": 68,
+			"agreeing": 46
+		},
+		"presence-versus-null": {
+			"documents": 11,
+			"agreeing": 7
+		},
+		"unknown-member-states": {
+			"documents": 5,
+			"agreeing": 5
+		},
+		"defaults": {
+			"documents": 8,
+			"agreeing": 3
+		},
+		"relation-semantics": {
+			"documents": 11,
+			"agreeing": 10
+		}
+	},
+	"rows": [
+		{
+			"document": "PAR-0001",
+			"declaration": "Multiplicity",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0002",
+			"declaration": "Multiplicity",
+			"class": "boundary",
+			"properties": [
+				"serialized-member-names",
+				"presence-versus-null",
+				"round-trip"
+			],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0003",
+			"declaration": "Multiplicity",
+			"class": "boundary",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0004",
+			"declaration": "Multiplicity",
+			"class": "negative",
+			"properties": ["unknown-member-states"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				}
+			}
+		},
+		{
+			"document": "PAR-0005",
+			"declaration": "Multiplicity",
+			"class": "negative",
+			"properties": ["presence-versus-null"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0006",
+			"declaration": "TypeRef",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0007",
+			"declaration": "TypeRef",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0008",
+			"declaration": "TypeRef",
+			"class": "boundary",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0009",
+			"declaration": "TypeRef",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0010",
+			"declaration": "TypeRef",
+			"class": "negative",
+			"properties": ["unknown-member-states"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				}
+			}
+		},
+		{
+			"document": "PAR-0011",
+			"declaration": "DecimalPolicy",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0012",
+			"declaration": "DecimalPolicy",
+			"class": "boundary",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0013",
+			"declaration": "DecimalPolicy",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0014",
+			"declaration": "DecimalPolicy",
+			"class": "negative",
+			"properties": ["presence-versus-null"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0015",
+			"declaration": "DefaultDecl",
+			"class": "positive",
+			"properties": ["defaults", "serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0016",
+			"declaration": "DefaultDecl",
+			"class": "positive",
+			"properties": ["defaults", "serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0017",
+			"declaration": "DefaultDecl",
+			"class": "positive",
+			"properties": ["defaults", "serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0018",
+			"declaration": "DefaultDecl",
+			"class": "boundary",
+			"properties": ["defaults", "presence-versus-null", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0019",
+			"declaration": "DefaultDecl",
+			"class": "boundary",
+			"properties": ["defaults", "presence-versus-null", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0020",
+			"declaration": "DefaultDecl",
+			"class": "negative",
+			"properties": ["defaults"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0021",
+			"declaration": "FieldDecl",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0022",
+			"declaration": "FieldDecl",
+			"class": "positive",
+			"properties": ["serialized-member-names", "defaults", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0023",
+			"declaration": "FieldDecl",
+			"class": "boundary",
+			"properties": ["presence-versus-null", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0024",
+			"declaration": "FieldDecl",
+			"class": "negative",
+			"properties": ["presence-versus-null"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0025",
+			"declaration": "FieldDecl",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0026",
+			"declaration": "FieldDecl",
+			"class": "negative",
+			"properties": ["unknown-member-states"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				}
+			}
+		},
+		{
+			"document": "PAR-0027",
+			"declaration": "MinConstraint",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0028",
+			"declaration": "MinConstraint",
+			"class": "boundary",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0029",
+			"declaration": "MinConstraint",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0030",
+			"declaration": "MaxConstraint",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0031",
+			"declaration": "MaxConstraint",
+			"class": "boundary",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0032",
+			"declaration": "MaxConstraint",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0033",
+			"declaration": "ExclusiveMinConstraint",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0034",
+			"declaration": "ExclusiveMinConstraint",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0035",
+			"declaration": "ExclusiveMaxConstraint",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0036",
+			"declaration": "ExclusiveMaxConstraint",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0037",
+			"declaration": "PatternConstraint",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0038",
+			"declaration": "PatternConstraint",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0039",
+			"declaration": "PatternConstraint",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0040",
+			"declaration": "MinLengthConstraint",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0041",
+			"declaration": "MinLengthConstraint",
+			"class": "boundary",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0042",
+			"declaration": "MinLengthConstraint",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0043",
+			"declaration": "MaxLengthConstraint",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0044",
+			"declaration": "MaxLengthConstraint",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0045",
+			"declaration": "EnumValuesConstraint",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0046",
+			"declaration": "EnumValuesConstraint",
+			"class": "boundary",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0047",
+			"declaration": "EnumValuesConstraint",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0048",
+			"declaration": "NonEmptyConstraint",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0049",
+			"declaration": "NonEmptyConstraint",
+			"class": "negative",
+			"properties": ["unknown-member-states"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				}
+			}
+		},
+		{
+			"document": "PAR-0050",
+			"declaration": "UniqueConstraint",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0051",
+			"declaration": "UniqueConstraint",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0052",
+			"declaration": "FormatConstraint",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0053",
+			"declaration": "FormatConstraint",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0054",
+			"declaration": "RelationDecl",
+			"class": "positive",
+			"properties": [
+				"relation-semantics",
+				"serialized-member-names",
+				"round-trip"
+			],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0055",
+			"declaration": "RelationDecl",
+			"class": "positive",
+			"properties": [
+				"relation-semantics",
+				"serialized-member-names",
+				"round-trip"
+			],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0056",
+			"declaration": "RelationDecl",
+			"class": "positive",
+			"properties": [
+				"relation-semantics",
+				"serialized-member-names",
+				"round-trip"
+			],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0057",
+			"declaration": "RelationDecl",
+			"class": "positive",
+			"properties": [
+				"relation-semantics",
+				"serialized-member-names",
+				"round-trip"
+			],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0058",
+			"declaration": "RelationDecl",
+			"class": "positive",
+			"properties": [
+				"relation-semantics",
+				"serialized-member-names",
+				"round-trip"
+			],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0059",
+			"declaration": "RelationDecl",
+			"class": "positive",
+			"properties": [
+				"relation-semantics",
+				"serialized-member-names",
+				"round-trip"
+			],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0060",
+			"declaration": "RelationDecl",
+			"class": "positive",
+			"properties": [
+				"relation-semantics",
+				"serialized-member-names",
+				"round-trip"
+			],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0061",
+			"declaration": "RelationDecl",
+			"class": "positive",
+			"properties": [
+				"relation-semantics",
+				"serialized-member-names",
+				"round-trip"
+			],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0062",
+			"declaration": "RelationDecl",
+			"class": "boundary",
+			"properties": [
+				"relation-semantics",
+				"defaults",
+				"presence-versus-null",
+				"round-trip"
+			],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0063",
+			"declaration": "RelationDecl",
+			"class": "negative",
+			"properties": ["relation-semantics"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0064",
+			"declaration": "RelationDecl",
+			"class": "negative",
+			"properties": ["relation-semantics"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0065",
+			"declaration": "OperationDecl",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0066",
+			"declaration": "OperationDecl",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0067",
+			"declaration": "OperationDecl",
+			"class": "boundary",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0068",
+			"declaration": "OperationDecl",
+			"class": "negative",
+			"properties": ["presence-versus-null"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0069",
+			"declaration": "ClauseRef",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0070",
+			"declaration": "ClauseRef",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0071",
+			"declaration": "ClauseRef",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0072",
+			"declaration": "EnumValue",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0073",
+			"declaration": "EnumValue",
+			"class": "boundary",
+			"properties": ["presence-versus-null", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0074",
+			"declaration": "EnumValue",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0075",
+			"declaration": "SourceLocus",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0076",
+			"declaration": "SourceLocus",
+			"class": "boundary",
+			"properties": ["presence-versus-null", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0077",
+			"declaration": "SourceLocus",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0078",
+			"declaration": "SourceLocus",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0079",
+			"declaration": "SourceLocus",
+			"class": "negative",
+			"properties": ["unknown-member-states"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				}
+			}
+		},
+		{
+			"document": "PAR-0080",
+			"declaration": "ConstraintDecl",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0081",
+			"declaration": "ConstraintDecl",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": false,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0082",
+			"declaration": "ConstraintDecl",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0083",
+			"declaration": "KernelScalar",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0084",
+			"declaration": "KernelScalar",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0085",
+			"declaration": "KernelScalar",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0086",
+			"declaration": "EdgeCategory",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0087",
+			"declaration": "EdgeCategory",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0088",
+			"declaration": "EdgeCategory",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0089",
+			"declaration": "ConstraintKeyword",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0090",
+			"declaration": "ConstraintKeyword",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0091",
+			"declaration": "ConstraintKeyword",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0092",
+			"declaration": "DefaultKind",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0093",
+			"declaration": "DefaultKind",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0094",
+			"declaration": "DefaultKind",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0095",
+			"declaration": "Identifier",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0096",
+			"declaration": "Identifier",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0097",
+			"declaration": "Identifier",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0098",
+			"declaration": "Identifier",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0099",
+			"declaration": "SemanticId",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0100",
+			"declaration": "SemanticId",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0101",
+			"declaration": "SemanticId",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0102",
+			"declaration": "UnitSymbol",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0103",
+			"declaration": "UnitSymbol",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0104",
+			"declaration": "UnitSymbol",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0105",
+			"declaration": "UnitSymbol",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0106",
+			"declaration": "ClauseLanguage",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0107",
+			"declaration": "ClauseLanguage",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0108",
+			"declaration": "ClauseLanguage",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0109",
+			"declaration": "ClauseLanguage",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0110",
+			"declaration": "ClauseLanguage",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0111",
+			"declaration": "ClauseLanguage",
+			"class": "negative",
+			"properties": ["serialized-member-names"],
+			"decidedBy": 4,
+			"agreement": false,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": false,
+					"unknownFate": "not-applicable"
+				}
+			}
+		}
+	]
+}

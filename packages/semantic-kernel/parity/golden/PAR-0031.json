@@ -1,0 +1,30 @@
+{
+	"id": "PAR-0031",
+	"title": "`max` with an ISO 8601 string operand",
+	"declaration": "MaxConstraint",
+	"class": "boundary",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"keyword": "max",
+		"value": "2026-12-31T23:59:59Z"
+	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"keyword": "max",
+			"value": "2026-12-31T23:59:59Z"
+		}
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/MaxConstraint.json",
+			"locator": "#/properties/value/anyOf",
+			"quote": "\"anyOf\": ["
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

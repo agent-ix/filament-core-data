@@ -413,6 +413,25 @@ semantic-kernel-python:
 semantic-kernel-python-check:
 	poetry run python -m python_backend.kernel.emit --check
 
+# The kernel's cross-language parity measurement (FR-090).
+# `semantic-kernel-parity` runs every package's decision emitter over the shared
+# golden corpus and writes `agreement.json` and `divergences.json`;
+# `--check` writes nothing and fails if a fresh run would change either. Both
+# fail on a divergence row no adjudication entry owns, and on an adjudication
+# entry the run does not reproduce. Measurement only: nothing here publishes,
+# and publication of all four packages passes agent-ix/quoin#290.
+PARITY_RUN := node --experimental-strip-types \
+	--import ./packages/semantic-kernel/parity/emitters/ts-register.mjs \
+	packages/semantic-kernel/parity/run.mjs
+
+.PHONY: semantic-kernel-parity
+semantic-kernel-parity:
+	$(PARITY_RUN)
+
+.PHONY: semantic-kernel-parity-check
+semantic-kernel-parity-check:
+	$(PARITY_RUN) --check
+
 # -----------------------------------------------------------------------------
 # Spec-bundle extraction frontend (issue #36)
 # -----------------------------------------------------------------------------

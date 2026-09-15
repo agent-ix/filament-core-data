@@ -1,0 +1,28 @@
+{
+	"id": "PAR-0025",
+	"title": "A field name with a leading digit",
+	"declaration": "FieldDecl",
+	"class": "negative",
+	"properties": ["serialized-member-names"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"name": "1nvalid",
+		"type": {
+			"target": "String"
+		}
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/FieldDecl.json",
+			"locator": "#/properties/name",
+			"quote": "\"name\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "FR-090",
+		"blessedFromRun": false
+	}
+}

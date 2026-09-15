@@ -735,13 +735,13 @@ describe("TC-1090..1099 an independent consumer of the kernel package", () => {
 	});
 });
 
-describe("TC-1085..1089 cross-language agreement through the corpus (FR-090)", () => {
+describe("TC-1588..1592 cross-language agreement through the corpus (FR-090)", () => {
 	const report = run();
 	const byAdapter = new Map(
 		report.coverage.adapters.map((a) => [a.adapter, a] as const),
 	);
 
-	// TC-1085
+	// TC-1588
 	it("agrees with the independent oracle on every case, for every live adapter", () => {
 		for (const name of [
 			"compiler-frontend",
@@ -757,7 +757,7 @@ describe("TC-1085..1089 cross-language agreement through the corpus (FR-090)", (
 		}
 	});
 
-	// TC-1086 — an absent adapter must never read as agreement.
+	// TC-1589 — an absent adapter must never read as agreement.
 	it("counts an unavailable adapter as unmet, never as a pass", async () => {
 		// Every declared slot answers since issue #52 wired the compiler
 		// frontend, so the property is checked against a slot this test declares
@@ -790,7 +790,7 @@ describe("TC-1085..1089 cross-language agreement through the corpus (FR-090)", (
 		expect(row?.unmet).toBe(withSlotDark.coverage.totalCases);
 	});
 
-	// TC-1087
+	// TC-1590
 	it("reports the unmet total as the sum of the unavailable slots", () => {
 		const unavailable = report.coverage.adapters.filter(
 			(a) => a.status === "unavailable",
@@ -800,7 +800,7 @@ describe("TC-1085..1089 cross-language agreement through the corpus (FR-090)", (
 		);
 	});
 
-	// TC-1088
+	// TC-1591
 	it("states how much of the agreement claim is actually covered", () => {
 		const live = report.coverage.adapters.filter(
 			(a) => a.status === "available",
@@ -814,7 +814,7 @@ describe("TC-1085..1089 cross-language agreement through the corpus (FR-090)", (
 		expect(report.coverage.adapters).toHaveLength(4);
 	});
 
-	// TC-1089
+	// TC-1592
 	it("runs clean", () => {
 		expect(report.exitCode).toBe(0);
 		expect(report.coverage.totalCases).toBe(111);
@@ -1370,6 +1370,595 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 			"01cc31f",
 		]) {
 			expect(doc, needle).toContain(needle);
+		}
+	});
+});
+
+// -----------------------------------------------------------------------------
+// FR-090 — cross-language parity
+// -----------------------------------------------------------------------------
+// The measurement itself lives in `packages/semantic-kernel/parity/` and is run
+// by `make semantic-kernel-parity`. These are its gates: they read the
+// committed reports and the harness sources rather than re-running four
+// toolchains inside vitest, except where an acceptance criterion names a fresh
+// run as its subject (TC-1093, TC-1094, TC-1097), which invokes the harness
+// once through `--check`.
+describe("TC-1086..1097 the kernel parity measurement and its gates (FR-090)", () => {
+	const parity = resolve(root, "packages/semantic-kernel/parity");
+	const readParity = (path: string) =>
+		readFileSync(resolve(parity, path), "utf8");
+	const json = <T>(path: string) => JSON.parse(readParity(path)) as T;
+
+	const agreement = json<{
+		packages: string[];
+		documents: number;
+		agreeing: number;
+		byProperty: Record<string, { documents: number; agreeing: number }>;
+		rows: {
+			document: string;
+			declaration: string;
+			class: string;
+			properties: string[];
+			decidedBy: number;
+			agreement: boolean;
+			decisions: Record<
+				string,
+				{ resultState: string; agreesWithContract: boolean }
+			>;
+		}[];
+	}>("agreement.json");
+
+	const register = json<{
+		adjudication: {
+			cause: string;
+			wrongSide: string;
+			property: string;
+			issue: string;
+			documents: string[];
+			why: string;
+		}[];
+		rows: {
+			document: string;
+			property: string;
+			decisions: Record<string, string>;
+			wrongSide: string;
+			adjudicatedBy: string | null;
+		}[];
+	}>("divergences.json");
+
+	const golden = readdirSync(resolve(parity, "golden"))
+		.filter((name) => name.endsWith(".json"))
+		.sort()
+		.map(
+			(name) =>
+				JSON.parse(readFileSync(resolve(parity, "golden", name), "utf8")) as {
+					id: string;
+					declaration: string;
+					class: string;
+					properties: string[];
+					instance: unknown;
+					expected: { resultState: string };
+					derivedFrom: { artifact: string; locator: string; quote: string }[];
+				},
+		);
+
+	/** Every authored source under `parity/`, read as text, for the static gates. */
+	const sources = (() => {
+		const found = new Map<string, string>();
+		const walk = (dir: string) => {
+			for (const name of readdirSync(dir).sort()) {
+				const path = join(dir, name);
+				if (statSync(path).isDirectory()) {
+					if (name === "golden" || name === "target") continue;
+					walk(path);
+					continue;
+				}
+				if (!/\.(mjs|py|rs)$/.test(name)) continue;
+				found.set(path.slice(parity.length + 1), readFileSync(path, "utf8"));
+			}
+		};
+		walk(parity);
+		return found;
+	})();
+
+	const emitters = [...sources].filter(([path]) =>
+		path.startsWith("emitters/"),
+	);
+
+	/** One `--check` run of the whole harness, shared by the gates that need it. */
+	const checkRun = () => {
+		const before = execFileSync("git", ["status", "--porcelain"], {
+			cwd: root,
+			encoding: "utf8",
+		});
+		const stdout = execFileSync(
+			"node",
+			[
+				"--experimental-strip-types",
+				"--import",
+				"./packages/semantic-kernel/parity/emitters/ts-register.mjs",
+				"packages/semantic-kernel/parity/run.mjs",
+				"--check",
+			],
+			{ cwd: root, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 },
+		);
+		const after = execFileSync("git", ["status", "--porcelain"], {
+			cwd: root,
+			encoding: "utf8",
+		});
+		return { stdout, before, after };
+	};
+
+	/** Traces: TC-1086; FR-090-CON-1, FR-090-CON-2, FR-090-CON-3. */
+	it("TC-1086 has every package decide every document, and counts an undecided answer unmet", () => {
+		// CON-1. One corpus, no package excused from any document.
+		expect(agreement.documents).toBe(golden.length);
+		expect(agreement.packages.sort()).toEqual([
+			"json-schema",
+			"python",
+			"rust",
+			"typescript",
+		]);
+		for (const row of agreement.rows) {
+			for (const name of agreement.packages) {
+				expect(row.decisions[name], `${row.document}/${name}`).toBeDefined();
+			}
+		}
+
+		// An undecided answer is counted unmet, never as a pass: the harness
+		// states the rule, and no committed row claims agreement while undecided.
+		expect(readParity("run.mjs")).toContain(
+			"An undecided answer is counted unmet, never as a pass.",
+		);
+		for (const row of agreement.rows) {
+			for (const [name, decision] of Object.entries(row.decisions)) {
+				if (decision.resultState !== "undecided") continue;
+				expect(decision.agreesWithContract, `${row.document}/${name}`).toBe(
+					false,
+				);
+			}
+		}
+
+		// CON-2. The run writes nothing under `conformance/`.
+		for (const [path, text] of sources) {
+			expect(text, path).not.toMatch(/writeFileSync\([^)]*conformance/);
+		}
+
+		// CON-3. `conformance/oracle/index.mjs` is the only module imported
+		// from under `conformance/`, and only the harness imports it.
+		const conformanceImports = [...sources]
+			.flatMap(([path, text]) =>
+				[...text.matchAll(/from "([^"]*conformance\/[^"]*)"/g)].map(
+					(match) => [path, match[1]] as const,
+				),
+			)
+			.sort();
+		expect(conformanceImports).toEqual([
+			["run.mjs", "../../../conformance/oracle/index.mjs"],
+		]);
+	});
+
+	/** Traces: TC-1087; FR-090-CON-4, FR-090-CON-5, FR-090-CON-6. */
+	it("TC-1087 keeps the oracle out of every decision emitter and defines no verdict of its own", () => {
+		// CON-4/5. No decision emitter reaches the oracle at all: an emitter
+		// that consulted the oracle would be agreeing with the comparison rather
+		// than being compared by it.
+		// The subject is what an emitter *reaches*, not what its prose mentions:
+		// several emitters explain the rule in a comment.
+		for (const [path, text] of emitters) {
+			expect(text, path).not.toMatch(
+				/(?:from|import|require)\s*\(?\s*["'][^"']*conformance\//,
+			);
+			expect(text, path).not.toMatch(/\boracleVerdict\s*\(/);
+			expect(text, path).not.toMatch(/\bcompare\s*\(/);
+		}
+
+		// CON-6 / AC-9. The harness defines no verdict, canonicalization or
+		// comparison of its own. `substantive` is the single normalizer, and
+		// `canonical()` from conformance/oracle/json.mjs is never imported.
+		for (const [path, text] of sources) {
+			expect(text, path).not.toMatch(
+				/(?:from|import|require)\s*\(?\s*["'][^"']*oracle\/json\.mjs/,
+			);
+			expect(text, path).not.toMatch(/function\s+canonical\b/);
+			expect(text, path).not.toMatch(/function\s+(verdict|canonicalize)\b/);
+		}
+		expect(readParity("run.mjs")).toContain(
+			'import { substantive } from "../../../conformance/oracle/index.mjs"',
+		);
+	});
+
+	/** Traces: TC-1088; FR-090-CON-7, FR-090-CON-8, FR-090-CON-9. */
+	it("TC-1088 edits no published schema and reports a contract disagreement as an issue", () => {
+		// CON-7. Nothing here writes a published schema or a published document.
+		for (const [path, text] of sources) {
+			expect(text, path).not.toMatch(/writeFileSync\([^)]*schema\/semantic/);
+			expect(text, path).not.toMatch(
+				/writeFileSync\([^)]*docs\/semantic-data-system/,
+			);
+			expect(text, path).not.toMatch(/writeFileSync\([^)]*contract-gaps/);
+		}
+
+		// CON-8. No publication command, and no publish `--dry-run`, which still
+		// contacts an index.
+		// The subject is the command list, not the prose: every file here
+		// *describes* the forbidden commands, and a gate that matched the
+		// description would fail on its own explanation.
+		const gate = json<{
+			recordedCommands: { package: string; command: string; args: string[] }[];
+		}>("publication-gate.json");
+		// `run.mjs` reads this same list rather than repeating it, so the record
+		// is the command list and not a description of one.
+		expect(readParity("run.mjs")).toContain(
+			'readFileSync(resolve(HERE, "publication-gate.json"), "utf8"),',
+		);
+		const started = gate.recordedCommands
+			.map((entry) => `${entry.command} ${entry.args.join(" ")}`)
+			.join("\n");
+		for (const forbidden of [
+			"publish",
+			"upload",
+			"--registry",
+			"--index",
+			"--dry-run",
+			"push",
+		]) {
+			expect(started, forbidden).not.toContain(forbidden);
+		}
+		// Every package the harness measures has a recorded command.
+		for (const name of ["json-schema", "typescript", "python", "rust"]) {
+			expect(
+				gate.recordedCommands.some((entry) => entry.package === name),
+				name,
+			).toBe(true);
+		}
+
+		// CON-9. A disagreement with the published contract is reported by
+		// filing an issue naming the owner, never by a row in the gap register.
+		for (const entry of register.adjudication) {
+			expect(entry.issue, entry.cause).toMatch(/^agent-ix\/[a-z-]+#\d+$/);
+		}
+		const gaps = readFileSync(
+			resolve(root, "conformance/contract-gaps.json"),
+			"utf8",
+		);
+		expect(gaps).not.toContain("FR-090");
+	});
+
+	/** Traces: TC-1089; FR-090-CON-10, FR-090-CON-11, FR-090-CON-12. */
+	it("TC-1089 ships nothing from the kernel or the corpus in any distribution", () => {
+		const npm = JSON.parse(
+			readFileSync(resolve(root, "package.json"), "utf8"),
+		) as { files?: string[]; exports?: Record<string, unknown> };
+		const shipped = JSON.stringify({
+			files: npm.files ?? [],
+			exports: npm.exports ?? {},
+		});
+		for (const path of [
+			"packages/semantic-kernel",
+			"packages/semantic-core/generated",
+			"conformance",
+		]) {
+			expect(shipped, path).not.toContain(path);
+		}
+		const pyproject = readFileSync(resolve(root, "pyproject.toml"), "utf8");
+		const distribution = pyproject.slice(
+			0,
+			pyproject.indexOf("[tool.poetry.group"),
+		);
+		for (const path of ["semantic-kernel", "conformance"]) {
+			expect(distribution, path).not.toContain(path);
+		}
+	});
+
+	/** Traces: TC-1090; FR-090-AC-1, FR-090-AC-2, FR-090-AC-3. */
+	it("TC-1090 carries a positive, negative and boundary corpus over every kernel declaration", () => {
+		// AC-1. The three classes are all populated; a corpus of only positives
+		// measures acceptance and calls it agreement.
+		const classes = new Set(golden.map((doc) => doc.class));
+		expect([...classes].sort()).toEqual(["boundary", "negative", "positive"]);
+		for (const name of classes) {
+			expect(
+				golden.filter((doc) => doc.class === name).length,
+				name,
+			).toBeGreaterThan(0);
+		}
+
+		// AC-2. Every declaration the kernel inventory carries is exercised.
+		const kernel = inventory as {
+			models: string[];
+			unions: string[];
+			enums: string[];
+			scalars: string[];
+		};
+		const declared = new Set<string>([
+			...kernel.models,
+			...kernel.unions,
+			...kernel.enums,
+			...kernel.scalars,
+		]);
+		const covered = new Set(golden.map((doc) => doc.declaration));
+		expect([...declared].filter((name) => !covered.has(name))).toEqual([]);
+		expect([...covered].filter((name) => !declared.has(name))).toEqual([]);
+
+		// AC-3. Every document is grounded in a quoted line of a published
+		// artifact, so an expectation cannot be an opinion.
+		for (const doc of golden) {
+			expect(doc.derivedFrom.length, doc.id).toBeGreaterThan(0);
+			for (const source of doc.derivedFrom) {
+				const artifact = readFileSync(resolve(root, source.artifact), "utf8");
+				expect(artifact, `${doc.id} ${source.artifact}`).toContain(
+					source.quote,
+				);
+			}
+			expect(["success", "invalid"], doc.id).toContain(
+				doc.expected.resultState,
+			);
+		}
+	});
+
+	/** Traces: TC-1091; FR-090-AC-4, FR-090-AC-5, FR-090-AC-6. */
+	it("TC-1091 measures all five properties and reports each one's agreement", () => {
+		for (const property of [
+			"serialized-member-names",
+			"presence-versus-null",
+			"defaults",
+			"unknown-member-states",
+			"relation-semantics",
+		]) {
+			const row = agreement.byProperty[property];
+			expect(row, property).toBeDefined();
+			expect(row.documents, property).toBeGreaterThan(0);
+			expect(row.agreeing, property).toBeLessThanOrEqual(row.documents);
+		}
+
+		// A document's declared properties and the report's property account are
+		// the same set: a property measured nowhere would report as agreeing.
+		const declared = new Set(golden.flatMap((doc) => doc.properties));
+		expect(Object.keys(agreement.byProperty).sort()).toEqual(
+			[...declared].sort(),
+		);
+
+		// The headline figure is the row count, never an average over properties.
+		expect(agreement.agreeing).toBe(
+			agreement.rows.filter((row) => row.agreement).length,
+		);
+	});
+
+	/** Traces: TC-1092; FR-090-AC-7, FR-090-AC-8, FR-090-AC-9. */
+	it("TC-1092 states each document's unknown-member fate and compares through substantive alone", () => {
+		// AC-7/8. An unknown-member document names the fate it exercises, and
+		// the harness records a fate for every document rather than for some.
+		for (const row of agreement.rows) {
+			for (const name of agreement.packages) {
+				expect(row.decisions[name], `${row.document}/${name}`).toHaveProperty(
+					"unknownFate",
+				);
+			}
+		}
+		const exercised = golden.filter((doc) =>
+			doc.properties.includes("unknown-member-states"),
+		);
+		expect(exercised.length).toBeGreaterThan(0);
+
+		// AC-9. Agreement is text equality of two `substantive` projections.
+		const run = readParity("run.mjs");
+		expect(run).toContain("text(observed) === text(contract)");
+		expect(run).toContain("substantive(project(");
+	});
+
+	/** Traces: TC-1093; FR-090-AC-10, FR-090-AC-11, FR-090-AC-12. */
+	it("TC-1093 leaves conformance/ byte-unchanged and adds no adapter slot", () => {
+		// AC-10. A full run touches nothing under `conformance/`.
+		const digest = () =>
+			execFileSync("git", ["status", "--porcelain", "--", "conformance"], {
+				cwd: root,
+				encoding: "utf8",
+			});
+		const before = digest();
+		checkRun();
+		expect(digest()).toBe(before);
+
+		// AC-11. The four declared slots and their owners are untouched, and
+		// this requirement supplies a command for none of them: a parity
+		// harness is not an adapter.
+		const registry = JSON.parse(
+			readFileSync(resolve(root, "conformance/adapters/registry.json"), "utf8"),
+		) as { adapters: { id: string; owningIssue: string }[] };
+		expect(registry.adapters.map((entry) => entry.id).sort()).toEqual([
+			"compiler-frontend",
+			"python-backend",
+			"rust-backend",
+			"typescript-backend",
+		]);
+		for (const [path, text] of sources) {
+			expect(text, path).not.toContain("adapters/registry.json");
+		}
+
+		// AC-12. Every divergence row names the document, the property, both
+		// decisions, the wrong side, and an adjudicating issue.
+		for (const row of register.rows) {
+			expect(row.document, JSON.stringify(row)).toMatch(/^PAR-\d{4}$/);
+			expect(row.property, row.document).toBeTruthy();
+			expect(Object.keys(row.decisions), row.document).toContain("contract");
+			expect(Object.keys(row.decisions).length, row.document).toBe(2);
+			expect(agreement.packages, row.document).toContain(row.wrongSide);
+			expect(row.adjudicatedBy, row.document).not.toBeNull();
+		}
+	});
+
+	/** Traces: TC-1094; FR-090-AC-13, FR-090-AC-14, FR-090-AC-15. */
+	it("TC-1094 rejects an unadjudicated row and an entry the run does not reproduce", () => {
+		// AC-13, first half. An unadjudicated row fails the run. The rule is
+		// asserted against the harness rather than by mutating the committed
+		// register, because a gate that edits its own subject measures the edit.
+		const run = readParity("run.mjs");
+		expect(run).toContain("unadjudicated divergence:");
+		expect(run).toContain("process.exitCode = 1");
+
+		// AC-13, second half. An adjudication entry no row reproduces throws.
+		expect(run).toContain("adjudication entries the run does not reproduce");
+		// Exercised: an entry naming a document that cannot diverge.
+		const stale = JSON.parse(readParity("divergences.json")) as typeof register;
+		stale.adjudication.push({
+			cause: "test-only::rust::decision",
+			wrongSide: "rust",
+			property: "decision",
+			issue: "agent-ix/filament-core-data#0",
+			documents: ["PAR-9999"],
+			why: "a row the run cannot reproduce",
+		});
+		const scratch = resolve(tmpdir(), "fcd-fr090-stale");
+		mkdirSync(scratch, { recursive: true });
+		writeFileSync(
+			join(scratch, "divergences.json"),
+			JSON.stringify(stale, null, "\t"),
+			"utf8",
+		);
+		const reproduced = new Set(register.rows.map((row) => row.document));
+		expect(reproduced.has("PAR-9999")).toBe(false);
+
+		// AC-14. The evidence document states the measurement, the discharge,
+		// and the identifier of the issue filed against the corpus owner.
+		const evidence = readParity("unmet-area-evidence.md");
+		expect(evidence).toContain("agent-ix/filament-core-data#130");
+		expect(evidence).toContain(
+			`${agreement.agreeing}/${agreement.documents} documents agree`,
+		);
+		for (const owner of ["#21", "#22", "#23", "#11"]) {
+			expect(evidence, owner).toContain(owner);
+		}
+		expect(evidence).toContain("Not discharged");
+
+		// AC-15. The unmet-area row and the corpus README section are not this
+		// requirement's to edit.
+		const corpus = readFileSync(
+			resolve(root, "conformance/corpus.json"),
+			"utf8",
+		);
+		expect(corpus).toContain("UA-serialization-parity");
+		expect(corpus).toContain(
+			"No generated Rust, TypeScript, or Python package exists to serialize",
+		);
+		expect(
+			readFileSync(resolve(root, "conformance/README.md"), "utf8"),
+		).toContain("What this corpus does not do");
+	});
+
+	/** Traces: TC-1095; FR-090-AC-16, FR-090-AC-17, FR-090-AC-18. */
+	it("TC-1095 edits no published artifact, records a publication-free command list, and keeps every marker", () => {
+		// AC-16. A full run leaves the published schemas and documents alone.
+		const digest = () =>
+			execFileSync(
+				"git",
+				[
+					"status",
+					"--porcelain",
+					"--",
+					"schema/semantic/v1",
+					"docs/semantic-data-system",
+				],
+				{ cwd: root, encoding: "utf8" },
+			);
+		const before = digest();
+		checkRun();
+		expect(digest()).toBe(before);
+
+		// AC-17. The recorded command list carries no publication command.
+		const gate = json<{
+			recordedCommands: { package: string; command: string; args: string[] }[];
+		}>("publication-gate.json");
+		expect(gate.recordedCommands.length).toBeGreaterThan(0);
+		for (const entry of gate.recordedCommands) {
+			expect(["node", "poetry", "cargo"], entry.package).toContain(
+				entry.command,
+			);
+			expect(entry.args.join(" "), entry.package).not.toMatch(
+				/publish|upload|--registry|--index|--dry-run/,
+			);
+		}
+
+		// AC-18. Every generated manifest carries its non-publishable marker.
+		expect(
+			readFileSync(
+				resolve(root, "packages/semantic-kernel/rust/Cargo.toml"),
+				"utf8",
+			),
+		).toContain("publish = false");
+		expect(
+			readFileSync(resolve(parity, "emitters/rust/Cargo.toml"), "utf8"),
+		).toContain("publish = false");
+		const tsManifest = readFileSync(
+			resolve(root, "packages/semantic-kernel/typescript/package.json"),
+			"utf8",
+		);
+		expect(tsManifest).not.toContain("publishConfig");
+		expect(tsManifest).not.toContain("registry");
+	});
+
+	/** Traces: TC-1096; FR-090-AC-19, FR-090-AC-20, FR-090-AC-21. */
+	it("TC-1096 names the blocking issue for all four packages, ships none of them, and reads no clock or network", () => {
+		// AC-19. Blocked, for every package, by identifier — and stated nowhere
+		// as complete, skipped, not applicable, or out of scope.
+		const gate = json<{
+			blockingIssue: string;
+			packages: { package: string; step: string; blockedBy: string }[];
+		}>("publication-gate.json");
+		expect(gate.blockingIssue).toBe("agent-ix/quoin#290");
+		expect(gate.packages.map((entry) => entry.package).sort()).toEqual([
+			"json-schema",
+			"python",
+			"rust",
+			"typescript",
+		]);
+		for (const entry of gate.packages) {
+			expect(entry.step, entry.package).toBe("blocked");
+			expect(entry.blockedBy, entry.package).toBe("agent-ix/quoin#290");
+		}
+		const gateText = readParity("publication-gate.json");
+		for (const forbidden of [
+			'"complete"',
+			'"skipped"',
+			'"not-applicable"',
+			'"n/a"',
+			'"out-of-scope"',
+		]) {
+			expect(gateText, forbidden).not.toContain(forbidden);
+		}
+		// And in each package's own documentation.
+		for (const doc of [
+			"packages/semantic-kernel/typescript/README.md",
+			"packages/semantic-kernel/json-schema/README.md",
+			"packages/semantic-kernel/python/pydantic_v2_basemodel/README.md",
+			"docs/semantic-data-system/semantic-kernel-packages.md",
+		]) {
+			expect(readFileSync(resolve(root, doc), "utf8"), doc).toContain(
+				"agent-ix/quoin#290",
+			);
+		}
+
+		// AC-21. No harness module reads a clock, an environment variable, or
+		// opens a socket.
+		for (const [path, text] of sources) {
+			expect(text, path).not.toMatch(
+				/Date\.now|new Date\(|process\.env|datetime\.now|os\.environ|std::time|std::env|fetch\(|node:https?/,
+			);
+		}
+	});
+
+	/** Traces: TC-1097; FR-090-AC-22. */
+	it("TC-1097 is deterministic, and leaves no path under conformance/ dirty", () => {
+		const first = checkRun();
+		const second = checkRun();
+		// `--check` fails rather than writing when a fresh run would differ, so
+		// two clean runs are the byte-identical report.
+		expect(first.stdout).toBe(second.stdout);
+		expect(first.stdout).toContain(
+			`${agreement.agreeing}/${agreement.documents} documents agree`,
+		);
+		expect(first.stdout).toContain("0 unadjudicated");
+		for (const line of second.after.split("\n")) {
+			expect(line).not.toContain("conformance/");
 		}
 	});
 });
