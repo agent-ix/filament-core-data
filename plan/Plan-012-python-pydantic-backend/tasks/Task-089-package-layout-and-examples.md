@@ -37,7 +37,7 @@ Write the emitted tree for every demonstrated profile, with provenance, a conten
 
 - [x] Implement `emit.py`: run the enforcing inspection, then write one module per document, an `__init__.py` with a sorted `__all__`, `PROVENANCE.json`, and `README.md`.
 - [x] Raise on a duplicate type name across two documents rather than let one shadow the other.
-- [x] Record the MIT attribution verbatim beside `AGPL-3.0-only`, with no clock reading and no host-observed version.
+- [x] Record the MIT attribution verbatim beside `AGPL-3.0-or-later`, with no clock reading and no host-observed version.
 - [x] Write one example per demonstrated profile that constructs, round-trips, and rejects.
 - [x] Add the `--check` mode over the committed tree and the packed-file reachability gate.
 - [x] Record the reason for each `not-qualified` family in place of a package.

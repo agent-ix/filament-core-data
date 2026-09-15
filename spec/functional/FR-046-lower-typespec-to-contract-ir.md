@@ -141,7 +141,7 @@ source or by the manifest and none is inferred from a type's spelling.
 | FR-046-AC-13 | `occurrences` is the empty array for every fixture package. | Test |
 | FR-046-AC-14 | Every emitted array is sorted by `identity` under code-point comparison, and the order is unchanged when compared against `Intl.Collator` orderings for at least two distinct locales. | Property |
 | FR-046-AC-15 | `src/compiler/ir.mjs`, `compile.mjs`, `identity.mjs`, `emitters/**`, and `backends/**` are byte-unchanged from `origin/main`, and the four committed issue #4 goldens are byte-unchanged. | Analysis |
-| FR-046-AC-16 | No file under `src/compiler/frontend/` imports a target-facing TypeSpec library or `node:fs`, `package.json` gains no dependency, and every added manifest declares `AGPL-3.0-only`. | Analysis |
+| FR-046-AC-16 | No file under `src/compiler/frontend/` imports a target-facing TypeSpec library or `node:fs`, `package.json` gains no dependency, and every added manifest declares `AGPL-3.0-or-later`. | Analysis |
 | FR-046-AC-17 | A package whose entrypoint imports a file outside its root raises `PATH_ESCAPE`, a package shipping a `.mjs` file that its sources import raises `UNTRUSTED_MODULE`, and every emitted `origin.source.path` is relative, `/`-separated, and free of `..`. | Test |
 | FR-046-AC-18 | A declaration reached through an imported package carries a generated origin naming the frontend and that package's source identity, not a `..` path. | Test |
 | FR-046-AC-19 | A lowering that would emit a document failing `semantic-ir.schema.json` returns `ir: null` with the validation diagnostics, proven by a fault-injected lowering. | Test |

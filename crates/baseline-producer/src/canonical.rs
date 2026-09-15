@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Agent-IX
 //! Filament Canonical JSON 1: the exact-decimal canonical seam of
 //! [FR-118](../../../spec/functional/FR-118-validate-filament-canonical-json-1.md).

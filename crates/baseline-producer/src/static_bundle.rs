@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Agent-IX
 //! The static producer bundle and its one indivisible admission operation
 //! ([FR-117](../../../spec/functional/FR-117-admit-a-static-producer-bundle.md)).

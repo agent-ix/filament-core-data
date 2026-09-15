@@ -1,10 +1,10 @@
 # Third-party notices
 
-This repository is licensed AGPL-3.0-only with no carve-outs. The crates listed
+This repository is licensed AGPL-3.0-or-later with no carve-outs. The crates listed
 here are third-party works redistributed or depended upon by the Rust side of
 this repository; their upstream licences are preserved and are reproduced at the
 locations named below. Nothing here relicenses a third-party work, and nothing
-here weakens the AGPL-3.0-only terms of this repository's own source or of the
+here weakens the AGPL-3.0-or-later terms of this repository's own source or of the
 source its compiler generates.
 
 The list is closed. Issue #21's FR-056 declares that exactly two third-party
@@ -23,7 +23,7 @@ acquired crate is therefore a failing gate, not a silent addition.
 is what the published `rust` row of
 `fixtures/semantic/v1/positive/target-contracts.json` declares
 (`"runtimeDependencies": ["serde"]`). It is pinned with `=` so a resolve cannot
-move it, and it is compatible with AGPL-3.0-only: a permissive licence may be
+move it, and it is compatible with AGPL-3.0-or-later: a permissive licence may be
 combined into a copyleft distribution, and the reverse is what is forbidden.
 
 `serde` with `features = ["derive"]` pulls `serde_derive` and its proc-macro
@@ -76,7 +76,7 @@ reads the workspace lock and fails on any locked crate absent from this file;
 NFR-032 admits these rows as the additions that lock proves and nothing else.
 `crates/extraction-frontend/THIRD-PARTY-NOTICES.md` carries the crate-local
 register that NFR-033-AC-6 checks against the same lock. `quire-rs` and
-`ix-trace-rs` are AGPL-3.0-or-later, which an AGPL-3.0-only work may link.
+`ix-trace-rs` are AGPL-3.0-or-later, the same licence as this work.
 
 | Crate | Version | SPDX | Upstream | Licence text |
 |---|---|---|---|---|

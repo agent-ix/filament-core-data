@@ -1207,7 +1207,7 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 			'serde = { version = "=1.0.229", features = ["derive"] }',
 		);
 		expect(crateManifest).not.toContain("serde_json");
-		expect(crateManifest).toContain('license = "AGPL-3.0-only"');
+		expect(crateManifest).toContain('license = "AGPL-3.0-or-later"');
 		expect(crateManifest).toContain('edition = "2021"');
 		expect(crateManifest).toContain('rust-version = "1.85.0"');
 	}, 120_000);

@@ -1,7 +1,7 @@
 [project]
 name = "filament-core-data-tools"
 dynamic = ["version"]
-license = "AGPL-3.0-only"
+license = "AGPL-3.0-or-later"
 license-files = ["LICENSE"]
 
 [tool.poetry]

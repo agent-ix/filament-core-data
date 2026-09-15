@@ -415,7 +415,7 @@ def test_provenance_type_checking_and_reproducibility(tmp_path: Any) -> None:
         assert provenance["generator"]["version"] == "0.76.0"
         assert provenance["generator"]["license"] == "MIT"
         assert provenance["generator"]["attribution"] == route.UPSTREAM_ATTRIBUTION
-        assert provenance["generatedSourceLicense"] == "AGPL-3.0-only"
+        assert provenance["generatedSourceLicense"] == "AGPL-3.0-or-later"
         assert provenance["published"] is False
         assert provenance["publicationGate"] == emit.PUBLICATION_GATE
         assert provenance["findings"] == emit.FINDINGS[profile_id]

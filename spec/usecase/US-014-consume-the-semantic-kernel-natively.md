@@ -151,7 +151,7 @@ comfortable is no longer the grammar. The published contract schemas under
 cannot carry a construct, that is recorded as a loss with an owner rather than
 repaired by widening a closed vocabulary. The conformance corpus, its bases, its
 oracle, its harness, and its divergence register are read and never edited, for
-the reason `conformance/README.md` gives. Everything original is AGPL-3.0-only;
+the reason `conformance/README.md` gives. Everything original is AGPL-3.0-or-later;
 every third-party dependency is pinned, license-compatible, and attributed.
 
 ## Dependencies (Contextual)

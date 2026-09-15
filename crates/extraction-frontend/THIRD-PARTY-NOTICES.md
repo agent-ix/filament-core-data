@@ -1,6 +1,6 @@
 # Third-party notices — agent-ix-extraction-frontend
 
-This crate is licensed AGPL-3.0-only (see `LICENSE`). It links the crates
+This crate is licensed AGPL-3.0-or-later (see `LICENSE`). It links the crates
 below, each under the licence its manifest declares. The list is generated
 from the locked graph (`cargo +1.98.1 tree --locked --edges normal,build -p
 agent-ix-extraction-frontend`) and is checked against `Cargo.lock` by
@@ -8,7 +8,7 @@ agent-ix-extraction-frontend`) and is checked against `Cargo.lock` by
 reachable from this crate over normal and build edges has a row naming its
 version and licence. Regenerate the tables when the lock moves.
 
-`quire-rs` is AGPL-3.0-or-later, which an AGPL-3.0-only consumer may link;
+`quire-rs` is AGPL-3.0-or-later, the same licence as this crate;
 `deny.toml` admits it by an explicit entry rather than by widening the
 allowlist. `jsonschema` reaches the graph only through `quire-rs`'s default
 features; this crate declares no `jsonschema` dependency of its own

@@ -261,7 +261,7 @@ pinned revision `72507f856457ba0922719bd5d9f5cadcce4058cd`.
   and canonical bytes through `crates/semantic-ir`, the fingerprint sidecar,
   provenance-tracked fixtures with goldens and negatives, the structural
   shared-case parity gate, and the `extraction-frontend` command line with its
-  Make targets — all under exact Rust 1.98.1 and AGPL-3.0-only, none of it
+  Make targets — all under exact Rust 1.98.1 and AGPL-3.0-or-later, none of it
   published.
 
 ### 2.2 Out of Scope

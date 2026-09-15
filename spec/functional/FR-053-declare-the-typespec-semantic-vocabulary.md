@@ -38,7 +38,7 @@ no semantic value is inferred from a declaration's spelling.
 
 - `src/compiler/frontend/typespec/lib/main.tsp`: the `extern dec` declarations of namespace `AgentIx.Semantic.Decorators`
 - `src/compiler/frontend/typespec/lib/lib.mjs`: their implementations, exported as `$decorators`
-- `src/compiler/frontend/typespec/lib/package.json`, declaring `"license": "AGPL-3.0-only"`
+- `src/compiler/frontend/typespec/lib/package.json`, declaring `"license": "AGPL-3.0-or-later"`
 - `src/compiler/frontend/typespec/identity.mjs`: `mintIdentity(slot, parts, packageIdentity)`, `constraintDiagnosticCode(parts, keyword, packageName)`, and `slug(value)`
 - `src/compiler/frontend/typespec/vocabulary.mjs`: the decorator state readers used by the lowering
 
@@ -104,7 +104,7 @@ no semantic value is inferred from a declaration's spelling.
 | FR-053-CON-2 | The library SHALL declare no decorator beyond the fifteen named here; adding one is a compatibility change under FR-051. | Portability | Test |
 | FR-053-CON-3 | The frontend SHALL reach the library by the absolute path it supplies to `additionalImports`, so the library enters neither `package.json` nor a `file:` or `link:` specifier. | Maintainability | Dependency inspection |
 | FR-053-CON-4 | The library SHALL declare no decorator that overrides a minted identity or that lets an IR value be derived from a declaration's name, namespace, or file path. | Correctness | Metamorphic test |
-| FR-053-CON-5 | Every manifest this requirement adds SHALL declare `"license": "AGPL-3.0-only"`. | Legal | Licence inspection |
+| FR-053-CON-5 | Every manifest this requirement adds SHALL declare `"license": "AGPL-3.0-or-later"`. | Legal | Licence inspection |
 
 ## Acceptance Criteria
 
@@ -124,7 +124,7 @@ no semantic value is inferred from a declaration's spelling.
 | FR-053-AC-12 | Relationships, operations, and clauses lower with the FR-034 defaults for `composite`, relationship multiplicity, and `returns.nullable`. | Test |
 | FR-053-AC-13 | Each of the four extension lowerings produces the identity, version, `required` flag, and payload FR-034 names, and `@semanticExtension` carries an arbitrary parsed payload. | Test |
 | FR-053-AC-14 | An enum member with an assigned value raises `UNSUPPORTED_LOSS` at the member's locus, and no document is written. | Test |
-| FR-053-AC-15 | Every added manifest declares `AGPL-3.0-only`, and `package.json` gains no dependency and no `file:`/`link:` specifier. | Analysis |
+| FR-053-AC-15 | Every added manifest declares `AGPL-3.0-or-later`, and `package.json` gains no dependency and no `file:`/`link:` specifier. | Analysis |
 
 ## Dependencies
 

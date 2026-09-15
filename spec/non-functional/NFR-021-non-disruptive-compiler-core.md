@@ -65,7 +65,7 @@ actually did.
 | Paths this change's set gains when a later ticket lands on top of it | 0 | 0 | Accretion rehearsal |
 | Downstream repositories changed | 0 | 0 | Inspection |
 | Test cases failing after a revert of this branch | 0 | 0 | Restore rehearsal |
-| Added package manifests without `AGPL-3.0-only` | 0 | 0 | Licence inspection |
+| Added package manifests without `AGPL-3.0-or-later` | 0 | 0 | Licence inspection |
 
 ## Verification
 
@@ -89,7 +89,7 @@ grow.
 | NFR-021-AC-4 | The four committed issue #4 goldens and every file under `spikes/` are byte-unchanged. | Analysis |
 | NFR-021-AC-5 | Nothing under `conformance/` is changed by this change. | Analysis |
 | NFR-021-AC-6 | Reverting this change's own commit range leaves the suite green with the pre-existing case count, rehearsed by a script rather than by hand. | Test |
-| NFR-021-AC-7 | Every added package manifest declares `"license": "AGPL-3.0-only"`. | Analysis |
+| NFR-021-AC-7 | Every added package manifest declares `"license": "AGPL-3.0-or-later"`. | Analysis |
 | NFR-021-AC-8 | No package was published and no downstream repository was changed. | Inspection |
 | NFR-021-AC-9 | Every gate in this requirement resolves both ends of its range from history rather than from a branch ref or the current head, and still fails on the same input after the change is merged. | Test |
 | NFR-021-AC-10 | A later unrelated change landing on top of this one adds no path to this change's set, and a prohibited path at a path no later commit owns still fails the gate. | Test |

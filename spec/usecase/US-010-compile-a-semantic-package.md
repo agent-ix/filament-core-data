@@ -88,7 +88,7 @@ exactly. The functional requirements settle each of these.
 ## Constraints (Contextual)
 
 The TypeSpec toolchain stays exactly pinned with no upper bounds. Everything
-original is AGPL-3.0-only. Nothing here publishes a package or moves a consumer.
+original is AGPL-3.0-or-later. Nothing here publishes a package or moves a consumer.
 No backend-specific decorator — `@typespec/json-schema`, `@typespec/protobuf`,
 or any other emitter's vocabulary — may become the authority for an IR value.
 

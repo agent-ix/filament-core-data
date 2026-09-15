@@ -429,7 +429,7 @@ name = "${model.crateName}"
 version = "${model.package.version}"
 edition = "${CRATE_EDITION}"
 rust-version = "${CRATE_RUST_VERSION}"
-license = "AGPL-3.0-only"
+license = "AGPL-3.0-or-later"
 publish = false
 
 [workspace]
@@ -498,7 +498,7 @@ function renderReadme(model) {
 		"",
 		"## Licence",
 		"",
-		"AGPL-3.0-only. The repository `LICENSE` is carried verbatim beside this file.",
+		"AGPL-3.0-or-later. The repository `LICENSE` is carried verbatim beside this file.",
 		"",
 	];
 	return lines.join("\n");

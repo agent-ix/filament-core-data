@@ -50,4 +50,4 @@ other. The divergence is GAP-002 and issue #56.
 
 ## Licence
 
-AGPL-3.0-only. The repository `LICENSE` is carried verbatim beside this file.
+AGPL-3.0-or-later. The repository `LICENSE` is carried verbatim beside this file.

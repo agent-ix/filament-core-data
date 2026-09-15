@@ -104,7 +104,7 @@ Task-068 -> Task-069 -> Task-070 -> Task-071 -> Task-072 -> Task-073 -> Task-074
 
 - NFR-019 permits `src/compiler/{frontend,packages,ir,compat}/**`, `src/compiler/{diagnostics,inspect,json-locus,pipeline,host,cli,index}.mjs`, `src/compiler/index.d.mts`, `test/fixtures/compiler/**`, `test/**`, `spec/**`, `plan/**`, `reviews/**`, `scripts/**`, the two new `docs/semantic-data-system/` documents, `Makefile`, and `package.json` `scripts`.
 - Prohibited, meaning no byte changes: `src/compiler/{ir,compile,identity}.mjs`, `src/compiler/emitters/**`, `src/compiler/backends/**`, `src/compiler/inventory.json`, `schema/**`, `fixtures/semantic/**`, `fixtures/semantic-core/**`, `packages/**`, `spikes/**`, `conformance/**`, `tests/**`, `test/semantic-ir-v1-1-reader.ts`, `test/semantic-core-reader.ts`, `test/semantic-core-lowerer.ts`, `agent_ix_core_data/**`, `src/generated.ts`, `audit/**`, `.github/**`, and every corpus repository. Reading them, and invoking `poetry run python tests/semantic_ir_reader.py`, remain permitted.
-- No dependency is added; `@typespec/*` stay exact devDependency pins. No `file:`/`link:` specifier. No `.npmrc` is committed. Every added manifest is AGPL-3.0-only.
+- No dependency is added; `@typespec/*` stay exact devDependency pins. No `file:`/`link:` specifier. No `.npmrc` is committed. Every added manifest is AGPL-3.0-or-later.
 - Every changed-path gate uses `git diff --no-renames`, the lesson Plan-007's Task-067 paid for.
 - The four committed issue #4 goldens and the frozen prototype modules are the differential oracle for the promotion and are never touched.
 

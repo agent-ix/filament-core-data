@@ -131,7 +131,7 @@ TypeScript decorators do not become the schema source; TypeSpec is the
 structural source (ADR-0005) and the IR is what a backend reads. Nothing here
 publishes a package to any registry or moves a downstream consumer. The frozen
 issue #4 goldens and the issue #20 corpus cases, bases, oracle, and harness are
-read, never edited. Everything original is AGPL-3.0-only and every third-party
+read, never edited. Everything original is AGPL-3.0-or-later and every third-party
 dependency is pinned, license-compatible, and attributed.
 
 ## Dependencies (Contextual)

@@ -189,7 +189,7 @@ const PER_TYPE_SURFACE = Object.freeze([
 ]);
 
 /** `SPDX-License-Identifier`, on every generated file, source or not. */
-const SPDX = "SPDX-License-Identifier: AGPL-3.0-only";
+const SPDX = "SPDX-License-Identifier: AGPL-3.0-or-later";
 
 /**
  * The provenance banner. It names the backend, its version and the fingerprint
@@ -241,7 +241,7 @@ function renderManifest(model, fingerprint) {
 		),
 		name: packageNameFor(model.package.identity),
 		version: model.package.version,
-		license: "AGPL-3.0-only",
+		license: "AGPL-3.0-or-later",
 		type: "module",
 		sideEffects: false,
 		exports: exportsMap,

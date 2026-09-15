@@ -369,7 +369,7 @@ describe("TypeScript backend fixture (FR-071)", () => {
 		for (const { path, text } of files.filter(({ path }) =>
 			path.endsWith(".ts"),
 		)) {
-			expect(text, path).toContain("SPDX-License-Identifier: AGPL-3.0-only");
+			expect(text, path).toContain("SPDX-License-Identifier: AGPL-3.0-or-later");
 			for (const match of text.matchAll(RELATIVE_IMPORT)) {
 				expect(match[1], `${path} imports ${match[1]}`).toMatch(/^\./);
 			}
@@ -847,7 +847,7 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 		for (const { path, text } of fixtureFiles(expected).filter((file) =>
 			file.path.endsWith(".ts"),
 		)) {
-			expect(text, path).toContain("SPDX-License-Identifier: AGPL-3.0-only");
+			expect(text, path).toContain("SPDX-License-Identifier: AGPL-3.0-or-later");
 			expect(text, path).not.toMatch(
 				/@ts-expect-error|:\s*any\b|<any>|\bas\s+any\b/,
 			);
