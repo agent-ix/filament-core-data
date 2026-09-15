@@ -258,7 +258,7 @@ function renderManifest(model, fingerprint) {
  */
 const EXPORT_DECLARATION =
 	/^export\s+(?:type|interface|const|function|class)\s+([A-Za-z_$][\w$]*)/gm;
-const EXPORT_LIST = /^export\s*\{([^}]*)\}(?:\s*from\s*"([^"]*)")?/gm;
+const EXPORT_LIST = /^export\s+(?:type\s+)?\{([^}]*)\}(?:\s*from\s*"([^"]*)")?/gm;
 const EXPORT_STAR = /^export\s*\*/m;
 const IMPORT_FROM = /^import\s[^"]*"([^"]*)"/gm;
 
@@ -275,6 +275,16 @@ export function exportedNames(source) {
 		}
 	}
 	return [...names].sort(compareCodeUnits);
+}
+
+/** Names that exist only in TypeScript's type namespace. */
+function exportedTypeNames(source) {
+	const names = new Set();
+	for (const match of source.matchAll(
+		/^export\s+(?:type|interface)\s+([A-Za-z_$][\w$]*)/gm,
+	))
+		names.add(match[1]);
+	return names;
 }
 
 /** The names a module re-exports, with the specifier each came from. */
@@ -333,10 +343,17 @@ function renderBarrel(model, fingerprint, modules) {
 			}
 		}
 		const published = names.filter((entry) => permitted.has(entry));
-		if (published.length === 0) continue;
-		blocks.push(
-			`export {\n${published.map((entry) => `\t${entry},`).join("\n")}\n} from "./${name}.js";\n`,
-		);
+		const typeNames = new Set(exportedTypeNames(modules[name] ?? ""));
+		const typeExports = published.filter((entry) => typeNames.has(entry));
+		const valueExports = published.filter((entry) => !typeNames.has(entry));
+		if (typeExports.length > 0)
+			blocks.push(
+				`export type {\n${typeExports.map((entry) => `\t${entry},`).join("\n")}\n} from "./${name}.js";\n`,
+			);
+		if (valueExports.length > 0)
+			blocks.push(
+				`export {\n${valueExports.map((entry) => `\t${entry},`).join("\n")}\n} from "./${name}.js";\n`,
+			);
 	}
 	// A name that is neither public API nor a declared cross-module internal is a
 	// surface leak. Refusing here is deliberate: the alternative — dropping it
