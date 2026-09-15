@@ -1,34 +1,14 @@
 # Filament Core Data
 
-`filament-core-data` currently owns the shared Avro compatibility contract for
-Filament IDE, `filament-core-service`, `filament-parser-lib`, and Agent IX sync
-packages. The target system is semantic-first and uses concern-specific
-representations rather than treating Avro—or any one format—as universal.
+`filament-core-data` owns the semantic contract compiler and generated kernel
+packages. The retired Avro compatibility boundary had zero in-scope readers at
+its final census; it is no longer exported, generated, or released.
 
 The durable design record is the
 [semantic data system architecture](docs/semantic-data-system/index.md). It
 defines authority, ownership, metamodel and package boundaries, projections,
 compatibility, feasibility gates, and the staged non-disruptive roadmap.
 
-The canonical schema lives at:
-
-```text
-schema/avro/core-data.avpr
-```
-
-Generated bindings are checked in:
-
-- TypeScript: `src/generated.ts`
-- Python: `agent_ix_core_data/core_data.py`
-
-Regenerate after schema edits:
-
-```sh
-pnpm run generate
-```
-
-Validate generated output and representative payload compatibility:
-
-```sh
-pnpm test
-```
+The generated kernel packages under `packages/semantic-kernel/` are the
+supported consumer surface. Their deterministic build and parity gates are
+available through the repository Make targets.

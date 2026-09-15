@@ -49,13 +49,13 @@ must agree.
 | Arrow/Parquet | Field IDs/names/types/nullability, metadata/provenance, old dataset readability |
 | Markdown | Quire parse/validate/extract behavior, stable identity, structural and semantic round trips |
 
-## Avro compatibility baseline
+## Retired Avro boundary
 
-The current `schema/avro/core-data.avpr` and its generated TypeScript/Python
-bindings remain an Avro compatibility representation. Issue #8 neither changes
-nor deprecates them. Avro remains readable until the consumer census is complete,
-bridges and cross-language golden fixtures pass, every known reader has cut over,
-and the final human retirement gate approves removal.
+The checked-in Avro protocol and its generated TypeScript/Python bindings were
+retired after the final consumer census found zero in-scope readers and the
+owner approved the irreversible cutover for issue #6. The repository retains
+Avro only as a representation vocabulary where semantic contracts explicitly
+name it; it no longer ships an Avro contract, adapter, or language binding.
 
 ## Unknown and stale consumers
 
