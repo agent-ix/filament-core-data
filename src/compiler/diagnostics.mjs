@@ -83,8 +83,10 @@ const COMPILER_CODES = [
 	"UNSUPPORTED_CANONICALIZATION",
 	// IR document, schema level
 	"INVALID_IR",
-	// Compatibility and evolution
-	"MISSING_TARGET_DIALECT",
+	// Contract-version refusal (FR-063): the single contract version the
+	// compiler accepts is 2.0.0, and this names the exact reason a request
+	// carrying any other version is refused, rather than falling through to a
+	// generic schema-validation message.
 	"UNKNOWN_CONTRACT_VERSION",
 	// Limits
 	"LIMIT_MAX_INPUT_BYTES",

@@ -64,7 +64,6 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.LIMIT_MAX_INPUT_BYTES` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.LIMIT_MAX_NODES` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.LOCK_GRAPH_MISMATCH` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
-| `agent-ix.compiler.MISSING_TARGET_DIALECT` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.MULTIPLICITY_CONTRADICTS_OPTIONALITY` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.PACKAGE_CYCLE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.PATH_ESCAPE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
