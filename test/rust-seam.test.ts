@@ -352,6 +352,29 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 		expect(recordSource).not.toContain("IDENTITY_FIELDS");
 	});
 
+	/** Traces: TC-1766; FR-055-AC-17. */
+	it("names each generated type by its display name while its identity stays the artifact id", () => {
+		const ir = readJson(
+			"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json",
+		);
+		const written = new Map<string, string>();
+		generateRust(rustRequest({ ir }), {
+			clear() {},
+			write(_outputRoot: string, path: string, text: string) {
+				written.set(path, text);
+			},
+		});
+		const version = written.get("src/types/config_version.rs");
+		expect(version).toBeDefined();
+		expect(version).toContain("pub struct ConfigVersion {");
+		expect([...written.keys()].some((path) => /fr_00/.test(path))).toBe(false);
+		const lib = written.get("src/lib.rs") as string;
+		expect(lib).toContain(
+			'SemanticType::ConfigVersion => "ix://agent-ix/config-service/type/FR-006"',
+		);
+		expect(lib).not.toMatch(/\bFr00\d/);
+	});
+
 	/** Traces: TC-1394; FR-130-AC-7. */
 	it("reports a diagnostic rather than reading the repository without a host", () => {
 		const manifest = generateTarget(rustRequest(), {

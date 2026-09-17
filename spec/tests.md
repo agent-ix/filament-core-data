@@ -168,7 +168,7 @@ blocked as stated above.
 | US-019 | US-019-EX-2 (illustrative) implemented by FR-130 | TC-1390 | ✅ Complete |
 | US-019 | US-019-EX-3 (illustrative) implemented by FR-130 | TC-1391 | ✅ Complete |
 | US-019 | US-019-EX-4 (illustrative) implemented by FR-130 | TC-1392 | ✅ Complete |
-| US-019 | US-019-EX-1, US-019-EX-2 (illustrative) implemented by FR-136 | TC-1530..TC-1536, TC-1765 | ✅ Complete |
+| US-019 | US-019-EX-1, US-019-EX-2 (illustrative) implemented by FR-136 | TC-1530..TC-1536, TC-1765, TC-1769 | ✅ Complete |
 | US-021 | US-021-EX-1..US-021-EX-4 (illustrative) implemented by FR-137 | TC-1537..TC-1544 | ✅ Complete |
 | US-020 | US-020-EX-1, US-020-EX-2 (illustrative) implemented by FR-134 | TC-1431 | 🚧 planned on issue #6 |
 | US-020 | US-020-EX-3, US-020-EX-5 (illustrative) implemented by FR-134 | TC-1430, TC-1432 | 🚧 planned on issue #6 |
@@ -237,7 +237,7 @@ blocked as stated above.
 | FR-052 | FR-052-AC-1..16, FR-052-CON-1..4 | TC-547..TC-566 | ✅ Complete |
 | FR-053 | FR-053-AC-1..15, FR-053-CON-1..5 | TC-412..TC-431, TC-604 | ✅ Complete |
 | FR-063 | FR-063-AC-1..21, FR-063-CON-1..6 | TC-745..TC-754 | 🚧 In progress |
-| FR-064 | FR-064-AC-1..23, FR-064-CON-1..7 | TC-755..TC-765, TC-1763 | 🚧 In progress |
+| FR-064 | FR-064-AC-1..24, FR-064-CON-1..7 | TC-755..TC-765, TC-1763, TC-1767 | 🚧 In progress |
 | FR-065 | FR-065-AC-1..22, FR-065-CON-1..6 | TC-766..TC-775 | 🚧 In progress |
 | FR-066 | FR-066-AC-1..29, FR-066-CON-1..9 | TC-776..TC-786 | 🚧 In progress |
 | FR-067 | FR-067-AC-1..19, FR-067-CON-1..6 | TC-787..TC-794, TC-1763 | 🚧 In progress |
@@ -246,7 +246,7 @@ blocked as stated above.
 | FR-070 | FR-070-AC-1..20, FR-070-CON-1..8 | TC-815..TC-824 | 🚧 In progress |
 | FR-071 | FR-071-AC-1..20, FR-071-CON-1..8 | TC-825..TC-833 | 🚧 In progress |
 | FR-054 | FR-054-AC-1..16, FR-054-CON-1..6 | TC-645..TC-657, TC-674, TC-694, TC-740, TC-1762 | ✅ Complete |
-| FR-055 | FR-055-AC-1..16, FR-055-CON-1..4 | TC-658..TC-665, TC-1357, TC-1358 | 🚧 In progress |
+| FR-055 | FR-055-AC-1..17, FR-055-CON-1..4 | TC-658..TC-665, TC-1357, TC-1358, TC-1766 | 🚧 In progress |
 | FR-056 | FR-056-AC-1..17, FR-056-CON-1..8 | TC-666..TC-676 | ✅ Complete |
 | FR-057 | FR-057-AC-1..14, FR-057-CON-1..6 | TC-677..TC-689 | ✅ Complete |
 | FR-058 | FR-058-AC-1..13, FR-058-CON-1..5 | TC-690..TC-697, TC-1762 | ✅ Complete |
@@ -260,7 +260,7 @@ blocked as stated above.
 | FR-075 | FR-075-AC-1..11, FR-075-CON-1..3 | TC-873..882 | ✅ Complete |
 | FR-076 | FR-076-AC-1..14, FR-076-CON-1..5 | TC-883..894 | ✅ Complete |
 | FR-077 | FR-077-AC-1..13, FR-077-CON-1..4 | TC-895..907, TC-944 | ✅ Complete |
-| FR-078 | FR-078-AC-1..11, FR-078-CON-1..3 | TC-908..917 | ✅ Complete |
+| FR-078 | FR-078-AC-1..12, FR-078-CON-1..3 | TC-908..917, TC-1770 | ✅ Complete |
 | FR-079 | FR-079-AC-1..11, FR-079-CON-1..4 | TC-918..926, TC-944 | ✅ Complete |
 | FR-080 | FR-080-AC-1..9, FR-080-CON-1..3 | TC-927..935, TC-944 | ✅ Complete |
 | FR-081 | FR-081-AC/CON x26 | TC-1000..TC-1008 | 🚧 In progress |
@@ -283,7 +283,7 @@ blocked as stated above.
 | FR-098 | FR-098-AC-1..12, FR-098-CON-1..3 | TC-1285..TC-1294, TC-1338, TC-1343, TC-1344 | ✅ Complete |
 | FR-099 | FR-099-AC-1..6, FR-099-CON-1..3 | TC-1295..TC-1299, TC-1330, TC-1349 | ✅ Complete |
 | FR-106 | FR-106-AC-1..6, FR-106-CON-1..2 | TC-1373..TC-1378 | 🚧 TC-1374, TC-1375 planned on issue #93 |
-| FR-100 | FR-100-AC-1..7, FR-100-CON-1..3 | TC-1361..TC-1366, TC-1764 | ✅ Complete |
+| FR-100 | FR-100-AC-1..8, FR-100-CON-1..3 | TC-1361..TC-1366, TC-1764, TC-1768 | ✅ Complete |
 | FR-130 | FR-130-AC-1..8, FR-130-CON-1..3 | TC-1388..TC-1395 | ✅ Complete |
 | FR-131 | FR-131-AC-1..9, FR-131-CON-1..3 | TC-1403..TC-1409, TC-1586 | 🚧 TC-1586 blocked on issue #147 |
 | FR-132 | FR-132-AC-1..7, FR-132-CON-1..3 | TC-1414..TC-1417 | 🚧 planned on issue #65 |
@@ -1705,6 +1705,11 @@ blocked as stated above.
 | TC-1763 | A `1.2.0` entity renders as a TypeScript interface with a record validator that compiles under `tsc`, `TYPE_KIND` records `entity`, and `TYPE_IDENTITY_FIELDS` names its identity fields while a record has no entry | Unit | P0 | FR-064-AC-23, FR-067-AC-19 | ✅ passed |
 | TC-1764 | A `1.2.0` entity renders as an object schema filed under its declared name, carrying `x-agent-ix-kind: entity` and its identity field names in `x-agent-ix-identity-fields`, while a record carries neither | Unit | P0 | FR-100-AC-7 | ✅ passed |
 | TC-1765 | Both Python targets generate an entity as the record's model class, and the generated modules carry no identity-field marking, which is the gap FR-136 declares | Integration | P0 | FR-136-AC-8 | ✅ passed |
+| TC-1766 | The lifted config-version-table golden generates a Rust crate whose `ConfigVersion` struct and `config_version` module are named by display name, with no artifact-id-named module or type, while `SemanticType::ConfigVersion` maps to the `FR-006` identity | Unit | P0 | FR-055-AC-17 | ✅ passed |
+| TC-1767 | The lifted config-version-table golden generates a TypeScript package exporting `validateConfigVersion` whose `TYPE_IDENTITY` maps `ConfigVersion` to the `FR-006` identity, with no exported name derived from an artifact id | Integration | P0 | FR-064-AC-24 | ✅ passed |
+| TC-1768 | The lifted config-version-table golden renders `ConfigVersion.json` with a display-name `$id` and the `FR-006` semantic id | Unit | P0 | FR-100-AC-8 | ✅ passed |
+| TC-1769 | Both Python targets generate the lifted config-version-table golden with display-name modules, including `JsonObject.py`, and no artifact-id-named module | Integration | P0 | FR-136-AC-9 | ✅ passed |
+| TC-1770 | The inspection sanctions a `RootModel[Any]` over an `any` kernel scalar document carrying only descriptive annotations, and refuses the same document carrying `x-agent-ix-constraints` as degraded | Unit | P0 | FR-078-AC-12 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
 | TC-1585 | Every requirement the register names carries that issue's own link, and a row whose requirement omits it is reported | Unit | P0 | NFR-001-AC-6 | ✅ passed |
 
@@ -2638,13 +2643,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 130 | 83 | 0 | 47 | 100% mapped (130/130) |
-| Unit | 576 | 470 | 0 | 106 | 100% mapped (576/576) |
-| Integration | 157 | 95 | 0 | 62 | 100% mapped (157/157) |
+| Unit | 579 | 473 | 0 | 106 | 100% mapped (579/579) |
+| Integration | 159 | 97 | 0 | 62 | 100% mapped (159/159) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 68 | 43 | 0 | 25 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1363** | **1033** | **0** | **330** | **100% mapped (1363/1363)** |
+| **Total** | **1368** | **1038** | **0** | **330** | **100% mapped (1368/1368)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

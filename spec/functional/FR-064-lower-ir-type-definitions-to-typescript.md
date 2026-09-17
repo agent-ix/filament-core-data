@@ -177,6 +177,7 @@ rather than the raw document.
 | FR-064-AC-21 | A `union` declaring `surface` and a `map` declaring `preserve` — both present in the committed conformance bases — render with no index signature and no unknown-member marker, while their policies appear in the generated metadata. | Unit |
 | FR-064-AC-22 | Changing only a definition's `displayName` changes the generated identifier and the generated identity map's key, while the identity that map records is unchanged, so a rename is visible in a package diff. | Unit |
 | FR-064-AC-23 | A `1.2.0` document whose `ConfigVersion` and `ConfigOverlay` are `entity` constructs generates an interface and a validator for each that compile under `tsc`, the validator refuses a value missing the identity field, and `TYPE_KIND` records `entity`. | Unit (TC-1763) |
+| FR-064-AC-24 | Generating the lifted `config-version-table` golden, whose types carry artifact-id identities and declared display names, exports `validateConfigVersion` and a `TYPE_IDENTITY` map whose `ConfigVersion` entry is `ix://agent-ix/config-service/type/FR-006`, and no exported type name derives from an artifact id. | Test (TC-1767) |
 
 ## Dependencies
 

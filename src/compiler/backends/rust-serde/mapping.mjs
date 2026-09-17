@@ -387,7 +387,11 @@ function mapType(definition, context) {
 	for (const entry of lowered.diagnostics) {
 		if (entry.locus === undefined && locus !== undefined) entry.locus = locus;
 	}
-	const constant = constantName({ identity, name: identitySegment(identity) });
+	const constant = constantName({
+		identity,
+		name:
+			typeof definition.displayName === "string" ? definition.displayName : "",
+	});
 	if (constant.ok !== true) {
 		raise(
 			RUST_BACKEND_CODES.UNRENDERABLE_NAME,

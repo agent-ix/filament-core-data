@@ -753,6 +753,32 @@ describe("TC-1763 an entity construct rendered by the TypeScript backend (FR-064
 	}, 120000);
 });
 
+describe("TC-1767 generated TypeScript names come from display names (FR-064)", () => {
+	/** Traces: TC-1767; FR-064-AC-24. */
+	it("names each exported type by its display name while TYPE_IDENTITY keeps the artifact id", async () => {
+		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-typescript-names-"));
+		try {
+			const module = await generatedValidators(
+				resolve(
+					root,
+					"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json",
+				),
+				resolve(scratch, "names"),
+			);
+			const identities = module.TYPE_IDENTITY as Record<string, string>;
+			expect(identities.ConfigVersion).toBe(
+				"ix://agent-ix/config-service/type/FR-006",
+			);
+			expect(
+				Object.keys(identities).some((name) => /^Fr?-?00/i.test(name)),
+			).toBe(false);
+			expect(typeof module.validateConfigVersion).toBe("function");
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
+	}, 120000);
+});
+
 describe("TC-811 IR-surface classification rules (FR-069)", () => {
 	/** Traces: TC-811; FR-069-AC-17. */
 	it("TC-811 classifies every removal and required addition breaking", () => {

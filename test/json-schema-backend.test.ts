@@ -247,6 +247,20 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		expect(recordSchema["x-agent-ix-identity-fields"]).toBeUndefined();
 	});
 
+	/** Traces: TC-1768; FR-100-AC-8. */
+	it("files and identifies each schema by its display name while its semantic id stays the artifact id", () => {
+		const ir = JSON.parse(readFileSync(golden, "utf8"));
+		const result = jsonSchemaBackend.generate({ ir });
+		expect(result.state).toBe("success");
+		const file = result.files.find((one) => one.path === "ConfigVersion.json");
+		if (!file) throw new Error("ConfigVersion schema was not emitted");
+		const schema = JSON.parse(file.text);
+		expect(schema.$id.endsWith("/ConfigVersion.json")).toBe(true);
+		expect(schema["x-agent-ix-semantic-id"]).toBe(
+			"ix://agent-ix/config-service/type/FR-006",
+		);
+	});
+
 	/** Traces: TC-1363; FR-100-AC-3. */
 	it("validates ConfigVersion payloads through generated sibling references", () => {
 		const ir = JSON.parse(readFileSync(configVersion12, "utf8"));

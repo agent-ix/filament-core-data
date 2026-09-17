@@ -14,15 +14,16 @@ relationships:
 
 ## Description
 
-The Rust backend SHALL derive every generated Rust identifier from the semantic
-identity that owns it by one pure, total function, and SHALL refuse generation
+The Rust backend SHALL derive every generated Rust identifier from the declared
+name or wire name of the node that owns it by one pure, total function, and SHALL refuse generation
 rather than emit two declarations that collide or a name it silently changed, so
 that a rename in the generated crate can only follow a change in the contract.
 
 ## Inputs
 
-- A type definition's `identity`, whose final `/`-delimited segment is the
-  derivation source
+- A type definition's `displayName`, the declared class name, which is the
+  derivation source, and its `identity`, the artifact id, which the collision
+  and refusal diagnostics name
 - A field's, variant's, operation's, and parameter's `identity` and its wire
   `name`
 - The IR `package.identity`, of the form `owner/name`
@@ -42,20 +43,23 @@ that a rename in the generated crate can only follow a change in the contract.
 
 ### The derivation source
 
-- `typeName` SHALL derive from the final `/`-delimited segment of the type's
-  `identity`, because a type has no wire name and its `displayName` is not
-  unique.
-- `variantName`, `memberName`, and `constantName` SHALL derive from the node's
+- `typeName` and `moduleName` SHALL derive from the type's `displayName`, the
+  declared class name. The type's `identity` is the artifact id (`FR-006`),
+  which names the contract; the declared name (`ConfigVersion`) names the class,
+  and it is what a consumer of the crate writes.
+- A type's constant prefix (`<TYPE>_RELATIONSHIPS`, `<TYPE>_OPERATIONS`) SHALL
+  derive from its `displayName` by the same rule.
+- `variantName`, `memberName`, and a member's `constantName` SHALL derive from the node's
   wire `name`, because a member's wire name *is* its contract and the
   cross-field rules already make it unique within its scope — a duplicate field
   name and a duplicate parameter name are both published defects. The node's
   `identity` is carried into the collision diagnostic so a refusal names the two
   identities and not two spellings of one name.
-- The backend SHALL NOT derive an identifier from `displayName`. `displayName`
-  is constrained only to `minLength: 1`, no rule makes it unique, and two
-  records whose display names are `HTTPStatusCode` and `HTTP status code` carry
-  distinct identities and distinct wire names while rendering one identifier.
-  `displayName` reaches the crate only as documentation text.
+- The backend SHALL NOT derive a type identifier from the type's `identity`.
+- `displayName` is constrained only to `minLength: 1` and no rule makes it
+  unique, so two types whose display names are `HTTPStatusCode` and
+  `HTTP status code` render one identifier; the crate's re-export scope SHALL
+  refuse that pair with `NAME_COLLISION` naming both identities.
 - `crateName` SHALL be the `package.identity` with its `/` replaced by `-`,
   because a Cargo package name may not contain `/`.
 
@@ -145,7 +149,7 @@ the derived identifier into the crate scope.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-055-AC-1 | Identities ending `HTTPStatusCode`, `http_status_code`, `httpStatusCode`, and `HTTP-status-code` all derive the type name `HttpStatusCode`; wire names `HTTPStatusCode`, `http_status_code`, `httpStatusCode`, and `HTTP status code` all derive the member name `http_status_code`. | Test (TC-658) |
+| FR-055-AC-1 | Display names `HTTPStatusCode`, `http_status_code`, `httpStatusCode`, and `HTTP-status-code` all derive the type name `HttpStatusCode`; wire names `HTTPStatusCode`, `http_status_code`, `httpStatusCode`, and `HTTP status code` all derive the member name `http_status_code`. | Test (TC-658) |
 | FR-055-AC-2 | Every Rust reserved word used as a member name derives `r#<word>` and the emitted crate compiles; `crate`, `self`, `super`, and `Self` each raise `UNRENDERABLE_NAME` and write no file. | Test (TC-659) |
 | FR-055-AC-3 | A name rendering to the empty string raises `UNRENDERABLE_NAME` naming the semantic identity. | Test (TC-660) |
 | FR-055-AC-4 | A name beginning with a digit derives an identifier prefixed with `_` and the crate compiles. | Test (TC-661) |
@@ -157,10 +161,11 @@ the derived identifier into the crate scope.
 | FR-055-AC-10 | The pinned reserved-word list equals the Rust reserved and reserved-for-future word set for the declared edition, compared against a transcribed copy of the language reference table committed beside it. | Analysis (TC-665) |
 | FR-055-AC-11 | `Größe`, `naïve size`, `Ärger`, and a CJK name each render faithfully to a legal Rust identifier and the emitted crate compiles; a character `XID_Continue` does not admit raises `UNRENDERABLE_NAME`. In no case is a name silently rendered to `GrE`, `NaVeSize`, `Rger`, or the empty string. | Test (TC-660) |
 | FR-055-AC-12 | Derivation under `LANG=tr_TR.UTF-8` produces identifiers identical to derivation under `LANG=C`, for a source containing `i` and `I`. | Test (TC-664) |
-| FR-055-AC-13 | Two records whose `displayName` values render one identifier but whose identities differ generate two distinct types with no collision, proving the type derivation reads the identity and not the display name; and a field whose identity's final segment differs from its wire `name` derives its member name from the wire `name`, so the emitted member needs no `serde(rename)`. | Test (TC-658) |
+| FR-055-AC-13 | A type whose identity is `ix://agent-ix/config-service/type/FR-006` and whose `displayName` is `ConfigVersion` derives the type name `ConfigVersion` and the module name `config_version`, and two types whose `displayName` values render one identifier raise one `NAME_COLLISION` in the re-export scope naming both identities; and a field whose identity's final segment differs from its wire `name` derives its member name from the wire `name`, so the emitted member needs no `serde(rename)`. | Test (TC-658) |
 | FR-055-AC-14 | `crateName` of `agent-ix/assurance` is `agent-ix-assurance`, and a Cargo manifest carrying it is accepted by `cargo metadata`. | Test (TC-665) |
-| FR-055-AC-15 | A document declaring a `kind: scalar`, `scalar: uuid` definition whose identity's final segment is `UUID`, and a record field whose `typeRef` names it, generates with zero diagnostics, emits no newtype for the definition, and renders the field's type as `crate::support::Uuid`; the same holds for `date`, `datetime`, and `duration` definitions deriving `Date`, `DateTime`, and `Duration`. | Test (TC-1357) |
-| FR-055-AC-16 | A `kind: scalar`, `scalar: string` definition whose identity's final segment is `Uuid` raises one `NAME_COLLISION` naming both `ix://agent-ix/filament-core-data/rust-backend/reserved/Uuid` and the definition's identity, and writes no file; a `kind: record` definition deriving `Date` raises the same. | Test (TC-1358) |
+| FR-055-AC-15 | A document declaring a `kind: scalar`, `scalar: uuid` definition whose `displayName` is `UUID`, and a record field whose `typeRef` names it, generates with zero diagnostics, emits no newtype for the definition, and renders the field's type as `crate::support::Uuid`; the same holds for `date`, `datetime`, and `duration` definitions deriving `Date`, `DateTime`, and `Duration`. | Test (TC-1357) |
+| FR-055-AC-16 | A `kind: scalar`, `scalar: string` definition whose `displayName` is `Uuid` raises one `NAME_COLLISION` naming both `ix://agent-ix/filament-core-data/rust-backend/reserved/Uuid` and the definition's identity, and writes no file; a `kind: record` definition deriving `Date` raises the same. | Test (TC-1358) |
+| FR-055-AC-17 | Generating the lifted `config-version-table` golden, whose types carry artifact-id identities and declared display names, emits `src/types/config_version.rs` declaring `pub struct ConfigVersion`, emits no module or type named from an artifact id, and maps `SemanticType::ConfigVersion` to the identity `ix://agent-ix/config-service/type/FR-006`. | Test (TC-1766) |
 
 ## Dependencies
 

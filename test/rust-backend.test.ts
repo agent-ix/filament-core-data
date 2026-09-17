@@ -530,8 +530,9 @@ describe("TC-655, TC-697 the published tables and the closed code sets", () => {
 
 describe("TC-658..665 identifier derivation", () => {
 	const modulePath = "src/compiler/backends/rust-serde/names.mjs";
-	const type = (segment: string) => ({
-		identity: ix(`agent-ix/pkg/type/${segment}`),
+	const type = (displayName: string) => ({
+		identity: ix("agent-ix/pkg/type/FR-001"),
+		displayName,
 	});
 	const member = (name: string, identity = ix("agent-ix/pkg/field/x")) => ({
 		name,
@@ -541,13 +542,15 @@ describe("TC-658..665 identifier derivation", () => {
 	/** Traces: TC-658; FR-055-AC-1. */
 	it("TC-658 acronyms, separators and casings render one identifier", async () => {
 		const m = await import(`../${modulePath}`);
-		for (const segment of [
+		for (const displayName of [
 			"HTTPStatusCode",
 			"http_status_code",
 			"httpStatusCode",
 			"HTTP-status-code",
 		]) {
-			expect(m.typeName(type(segment)).value, segment).toBe("HttpStatusCode");
+			expect(m.typeName(type(displayName)).value, displayName).toBe(
+				"HttpStatusCode",
+			);
 		}
 		for (const name of [
 			"HTTPStatusCode",
@@ -559,12 +562,19 @@ describe("TC-658..665 identifier derivation", () => {
 		}
 	});
 
-	/** Traces: TC-658; FR-055-AC-1. */
-	it("TC-658 a type name reads the identity, not the display name", async () => {
+	/** Traces: TC-658; FR-055-AC-13. */
+	it("TC-658 a type name reads the display name, not the identity", async () => {
 		const m = await import(`../${modulePath}`);
-		// Two records whose display names render one identifier but whose
-		// identities differ. Deriving from `displayName` would refuse a document
-		// whose wire names never collide (SR-082 FND-950).
+		// The identity is the artifact id; the declared name is the class name.
+		const version = {
+			identity: ix("agent-ix/config-service/type/FR-006"),
+			displayName: "ConfigVersion",
+		};
+		expect(m.typeName(version).value).toBe("ConfigVersion");
+		expect(m.moduleName(version).value).toBe("config_version");
+		expect(version.identity).toBe(ix("agent-ix/config-service/type/FR-006"));
+		// Two identities whose display names render one identifier derive one
+		// identifier; the re-export scope refuses the pair, naming both.
 		const first = {
 			identity: ix("agent-ix/pkg/type/StatusCode"),
 			displayName: "HTTPStatusCode",
@@ -573,9 +583,16 @@ describe("TC-658..665 identifier derivation", () => {
 			identity: ix("agent-ix/pkg/type/ResultCode"),
 			displayName: "HTTP status code",
 		};
-		expect(m.typeName(first).value).toBe("StatusCode");
-		expect(m.typeName(second).value).toBe("ResultCode");
-		expect(m.typeName(first).value).not.toBe(m.typeName(second).value);
+		expect(m.typeName(first).value).toBe("HttpStatusCode");
+		expect(m.typeName(second).value).toBe("HttpStatusCode");
+		const collisions = m.collisionsIn(m.SCOPES.CRATE_TYPES, [
+			{ identifier: m.typeName(first).value, identity: first.identity },
+			{ identifier: m.typeName(second).value, identity: second.identity },
+		]);
+		expect(collisions).toHaveLength(1);
+		expect(collisions[0].code).toBe("agent-ix.rust-backend.NAME_COLLISION");
+		expect(collisions[0].message).toContain(first.identity);
+		expect(collisions[0].message).toContain(second.identity);
 	});
 
 	/** Traces: TC-659; FR-055-AC-2. */

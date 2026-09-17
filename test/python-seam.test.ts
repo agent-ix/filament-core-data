@@ -168,6 +168,39 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 		}
 	}, 300000);
 
+	/** Traces: TC-1769, TC-1770; FR-136-AC-9, FR-078-AC-12. */
+	it("generates both Python targets from the lifted golden, naming each module by its display name", () => {
+		const golden =
+			"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json";
+		const schemas = jsonSchemaBackend.generate({ ir: readJson(golden) }) as {
+			files: { path: string; text: string }[];
+		};
+		const versionSchema = schemas.files.find(
+			(file) => file.path === "ConfigVersion.json",
+		);
+		if (!versionSchema) throw new Error("no ConfigVersion.json");
+		expect(JSON.parse(versionSchema.text)["x-agent-ix-semantic-id"]).toBe(
+			"ix://agent-ix/config-service/type/FR-006",
+		);
+		for (const backend of [pythonPydanticBackend, pythonDataclassBackend]) {
+			const result = backend.generate(pythonRequest(backend, golden), {
+				produce: poetryProducer(),
+			}) as {
+				state: string;
+				diagnostics: { message: string }[];
+				files: { path: string; text: string }[];
+			};
+			expect(
+				result.state,
+				`${backend.target}: ${result.diagnostics.map((d) => d.message).join("; ")}`,
+			).toBe("success");
+			const paths = result.files.map((file) => file.path);
+			expect(paths).toContain("ConfigVersion.py");
+			expect(paths).toContain("JsonObject.py");
+			expect(paths.some((path) => /^FR[-_]?0/.test(path))).toBe(false);
+		}
+	}, 300000);
+
 	/** Traces: TC-1532; FR-136-AC-3. */
 	it("generates a package for the python-dataclass target under its own profile", () => {
 		const manifest = generateTarget(pythonRequest(pythonDataclassBackend), {

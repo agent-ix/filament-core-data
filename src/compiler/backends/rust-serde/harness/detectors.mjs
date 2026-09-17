@@ -877,19 +877,19 @@ export const DETECTORS = Object.freeze([
 		caseId:
 			"TC-725 every identifier renderer derives from the source the requirement names and refuses a collision",
 		run(backend) {
-			const type = (segment) => ({
-				identity: `${NS}/type/${segment}`,
-				displayName: "ignored display name",
+			const type = (displayName) => ({
+				identity: `${NS}/type/FR-001`,
+				displayName,
 			});
 			assert(
 				backend.names.typeName(type("http-status-code")).value ===
 					"HttpStatusCode",
-				"typeName does not derive UpperCamelCase from the identity segment",
+				"typeName does not derive UpperCamelCase from the display name",
 			);
 			assert(
 				backend.names.moduleName(type("HTTPStatusCode")).value ===
 					"http_status_code",
-				"moduleName does not derive snake_case from the identity segment",
+				"moduleName does not derive snake_case from the display name",
 			);
 			assert(
 				backend.names.constantName({
