@@ -2250,14 +2250,19 @@ mod tests {
     use super::is_clause_language;
 
     #[test]
-    fn tc_214_accepts_the_core_clause_languages_and_a_namespaced_one() {
-        for language in ["quire", "ocl", "sysml", "fretish", "acme:tla"] {
+    fn tc_214_accepts_the_core_clause_languages() {
+        for language in ["quire", "ocl", "sysml", "fretish"] {
             assert!(is_clause_language(language), "{language}");
         }
     }
 
     #[test]
-    fn tc_214_refuses_a_bare_unknown_an_uppercase_and_an_empty_name() {
+    fn tc_215_accepts_a_namespaced_clause_language() {
+        assert!(is_clause_language("acme:tla"));
+    }
+
+    #[test]
+    fn tc_215_refuses_a_bare_unknown_an_uppercase_and_an_empty_name() {
         for language in ["tla", "OCL", "acme:"] {
             assert!(!is_clause_language(language), "{language}");
         }
