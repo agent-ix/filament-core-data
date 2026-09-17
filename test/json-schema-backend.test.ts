@@ -247,6 +247,38 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		expect(recordSchema["x-agent-ix-identity-fields"]).toBeUndefined();
 	});
 
+	/** Traces: TC-1771; FR-100-AC-9. */
+	it("refuses two display names that derive one file name, naming both identities and writing no file", () => {
+		const ir = JSON.parse(readFileSync(golden, "utf8"));
+		const overlay = ir.types.find(
+			(type: { displayName?: string }) => type.displayName === "ConfigOverlay",
+		);
+		const version = ir.types.find(
+			(type: { displayName?: string }) => type.displayName === "ConfigVersion",
+		);
+		overlay.displayName = "Config Overlay";
+		version.displayName = "Config-Overlay";
+		const result = jsonSchemaBackend.generate({ ir });
+		expect(result.state).toBe("unsupported");
+		expect(result.files).toStrictEqual([]);
+		expect(result.diagnostics).toHaveLength(1);
+		const [refusal] = result.diagnostics;
+		expect(refusal.blocking).toBe(true);
+		expect(refusal.message).toContain("Config-Overlay.json");
+		expect(refusal.message).toContain(overlay.identity);
+		expect(refusal.message).toContain(version.identity);
+
+		// A definition named `index` would overwrite the backend's own index.
+		const indexed = JSON.parse(readFileSync(golden, "utf8"));
+		indexed.types.find(
+			(type: { displayName?: string }) => type.displayName === "ConfigOverlay",
+		).displayName = "index";
+		const refused = jsonSchemaBackend.generate({ ir: indexed });
+		expect(refused.state).toBe("unsupported");
+		expect(refused.files).toStrictEqual([]);
+		expect(refused.diagnostics[0].message).toContain("index.json");
+	});
+
 	/** Traces: TC-1768; FR-100-AC-8. */
 	it("files and identifies each schema by its display name while its semantic id stays the artifact id", () => {
 		const ir = JSON.parse(readFileSync(golden, "utf8"));

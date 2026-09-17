@@ -283,7 +283,7 @@ blocked as stated above.
 | FR-098 | FR-098-AC-1..12, FR-098-CON-1..3 | TC-1285..TC-1294, TC-1338, TC-1343, TC-1344 | ✅ Complete |
 | FR-099 | FR-099-AC-1..6, FR-099-CON-1..3 | TC-1295..TC-1299, TC-1330, TC-1349 | ✅ Complete |
 | FR-106 | FR-106-AC-1..6, FR-106-CON-1..2 | TC-1373..TC-1378 | 🚧 TC-1374, TC-1375 planned on issue #93 |
-| FR-100 | FR-100-AC-1..8, FR-100-CON-1..3 | TC-1361..TC-1366, TC-1764, TC-1768 | ✅ Complete |
+| FR-100 | FR-100-AC-1..9, FR-100-CON-1..3 | TC-1361..TC-1366, TC-1764, TC-1768, TC-1771 | ✅ Complete |
 | FR-130 | FR-130-AC-1..8, FR-130-CON-1..3 | TC-1388..TC-1395 | ✅ Complete |
 | FR-131 | FR-131-AC-1..9, FR-131-CON-1..3 | TC-1403..TC-1409, TC-1586 | 🚧 TC-1586 blocked on issue #147 |
 | FR-132 | FR-132-AC-1..7, FR-132-CON-1..3 | TC-1414..TC-1417 | 🚧 planned on issue #65 |
@@ -1710,6 +1710,7 @@ blocked as stated above.
 | TC-1768 | The lifted config-version-table golden renders `ConfigVersion.json` with a display-name `$id` and the `FR-006` semantic id | Unit | P0 | FR-100-AC-8 | ✅ passed |
 | TC-1769 | Both Python targets generate the lifted config-version-table golden with display-name modules, including `JsonObject.py`, and no artifact-id-named module | Integration | P0 | FR-136-AC-9 | ✅ passed |
 | TC-1770 | The inspection sanctions a `RootModel[Any]` over an `any` kernel scalar document carrying only descriptive annotations, and refuses the same document carrying `x-agent-ix-constraints` as degraded | Unit | P0 | FR-078-AC-12 | ✅ passed |
+| TC-1771 | Two display names deriving one JSON Schema file name, or a definition named `index`, are refused with both identities named and no file written | Unit | P0 | FR-100-AC-9 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
 | TC-1585 | Every requirement the register names carries that issue's own link, and a row whose requirement omits it is reported | Unit | P0 | NFR-001-AC-6 | ✅ passed |
 

@@ -56,6 +56,28 @@ function nameOf(type) {
 			: String(type.identity).split("/").at(-1);
 	return declared.replace(/[^A-Za-z0-9._-]/g, "-");
 }
+/**
+ * Every emitted path two sources claim: two definitions deriving one file name,
+ * or a definition deriving the `index.json` the backend writes itself.
+ */
+function fileNameCollisions(definitions) {
+	const claims = new Map([["index.json", ["index.json"]]]);
+	for (const type of [...definitions].sort(byIdentity)) {
+		const path = `${nameOf(type)}.json`;
+		claims.set(path, [...(claims.get(path) ?? []), String(type.identity)]);
+	}
+	return [...claims.entries()]
+		.filter(([, identities]) => identities.length > 1)
+		.map(([path, identities]) => ({ path, identities }))
+		.sort((left, right) =>
+			left.path < right.path ? -1 : left.path > right.path ? 1 : 0,
+		);
+}
+function byIdentity(left, right) {
+	const a = String(left.identity);
+	const b = String(right.identity);
+	return a < b ? -1 : a > b ? 1 : 0;
+}
 function byName(left, right) {
 	const a = String(left.name ?? left.identity);
 	const b = String(right.name ?? right.identity);
@@ -359,6 +381,20 @@ export const jsonSchemaBackend = Object.freeze({
 		const types = new Map(
 			(ir.types ?? []).map((type) => [type.identity, type]),
 		);
+		// Two definitions whose names derive one file name, or a definition whose
+		// name derives `index.json`, would overwrite one another. Each is refused
+		// with both identities named, and no file is written (FR-100-AC-9).
+		const collisions = fileNameCollisions([...types.values()]);
+		if (collisions.length > 0)
+			return {
+				state: "unsupported",
+				files: [],
+				diagnostics: collisions.map(({ path, identities }) =>
+					diagnostic(DIAGNOSTIC_CODES.UNDECLARED_LOSS, {
+						message: `${path}: JSON Schema backend derives one file name for ${identities.join(" and ")}`,
+					}),
+				),
+			};
 		const files = [...types.values()].sort(byName).map((type) => ({
 			path: `${nameOf(type)}.json`,
 			text: text(renderType(ir, type, types)),

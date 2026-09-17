@@ -55,6 +55,9 @@ frontend, a generated programming-language package, or an ambient registry.
   render a sibling relative `$ref` to that definition's emitted `.json` file.
 - The backend SHALL sort emitted definitions by semantic identity and object
   members by code-unit order.
+- If two definitions derive one file name, or a definition derives
+  `index.json`, then the backend SHALL return a blocking diagnostic naming the
+  path and every identity that derives it, and emit no file.
 
 ### Structural kinds and scalars
 
@@ -148,6 +151,7 @@ that decision requires.
 | FR-100-AC-6 | A required unknown extension produces a blocking diagnostic and zero emitted files. | Test (TC-1366) |
 | FR-100-AC-7 | The lifted config-version-table golden renders `ConfigOverlay.json` and `ConfigVersion.json` as object schemas carrying `x-agent-ix-kind: entity` and `x-agent-ix-identity-fields: ["id"]`, no file is named from an artifact id, and a record schema carries neither annotation. | Test (TC-1764) |
 | FR-100-AC-8 | The lifted config-version-table golden renders `ConfigVersion.json` whose `$id` ends `/ConfigVersion.json` and whose `x-agent-ix-semantic-id` is `ix://agent-ix/config-service/type/FR-006`: the file and `$id` carry the declared name and the annotation carries the artifact id. | Test (TC-1768) |
+| FR-100-AC-9 | Two definitions whose display names `Config Overlay` and `Config-Overlay` derive `Config-Overlay.json`, or a definition named `index`, produce one blocking diagnostic naming the path and both identities, and zero emitted files. | Test (TC-1771) |
 
 ## Dependencies
 
