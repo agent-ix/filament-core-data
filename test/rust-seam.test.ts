@@ -535,6 +535,32 @@ describe("identity, abstract types and member scopes in the Rust backend (FR-054
 			held.blocking.map((d) => [d.code, d.message.includes("abstract type")]),
 		).toContainEqual(["agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT", true]);
 
+		// A reference holds an identity, not a value, so it may name Party.
+		const referring = constructsIr();
+		const reference = JSON.parse(JSON.stringify(typeNamed(referring, "Party")));
+		for (const member of [
+			"fields",
+			"clauses",
+			"abstract",
+			"identityFields",
+			"operations",
+			"relationships",
+		])
+			delete reference[member];
+		Object.assign(reference, {
+			identity: "ix://agent-ix/orders/type/PartyRef",
+			displayName: "PartyRef",
+			kind: "reference",
+			target: typeNamed(referring, "Party").identity,
+		});
+		referring.types.push(reference);
+		const referred = generateConstructs(referring);
+		expect(referred.blocking.map((d) => d.message)).toStrictEqual([]);
+		expect(referred.manifest.state).toBe("success");
+		expect(referred.module("party_ref")).toContain(
+			"crate::support::SemanticIdentity",
+		);
+
 		const narrowed = constructsIr();
 		const order = typeNamed(narrowed, "Order");
 		const labels = order.fields.find((field: Json) => field.name === "labels");

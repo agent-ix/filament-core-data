@@ -20,16 +20,17 @@ is rendered:
 
 - an `entity`, `nested_entity`, `aggregate_root` or `process` compares and
   hashes by its identity fields: `__eq__` and `__hash__` over their canonical
-  JSON form;
+  JSON form, and each identity field is read-only once constructed;
 - an `event` is frozen: `ConfigDict(frozen=True)` on a pydantic model and
-  `@dataclass(frozen=True)` on a dataclass;
+  `@dataclass(frozen=True)` on a dataclass, and unhashable (`__hash__ = None`);
 - an abstract type is an `abc.ABC` whose abstract properties are its fields,
   and every subtype registers with it, so `isinstance` holds and the abstract
   class does not construct.
 
 A shape either step cannot state is refused with `ConstructError`, never
-approximated: a generated module named `constructs.py`, a type holding an
-abstract type, a name that is not a Python identifier, and a class or identity
+approximated: a generated module named `constructs.py` in any case, a type
+holding a value of an abstract type (a `reference` to one holds an identity
+and is allowed), a name that is not a Python identifier, and a class or identity
 field the generated source does not declare.
 
 A `repository` and a `domain` have no instance, and their schema admits no
@@ -258,7 +259,7 @@ def render(
     populations = (index or {}).get("x-agent-ix-populations") or []
     if not constructs and not populations:
         return None
-    if MODULE in files:
+    if any(path.lower() == MODULE for path in files):
         msg = (
             f"a generated module is named {MODULE}, the module that carries the"
             " construct metadata; rename the type it is generated from"
@@ -606,26 +607,53 @@ def _import_standard(source: str, statement: str) -> str:
     """`source` importing the standard-library `statement` after `__future__`."""
 
     future = next(
-        node.end_lineno or node.lineno
-        for node in ast.parse(source).body
-        if isinstance(node, ast.ImportFrom) and node.module == "__future__"
+        (
+            node.end_lineno or node.lineno
+            for node in ast.parse(source).body
+            if isinstance(node, ast.ImportFrom) and node.module == "__future__"
+        ),
+        None,
     )
+    if future is None:
+        msg = "the generated source has no `from __future__` import to follow"
+        raise ConstructError(msg)
     lines = source.split("\n")
     return "\n".join([*lines[:future], "", statement, *lines[future:]])
 
 
 def _import_last(source: str, statement: str) -> str:
-    """`source` importing `statement` after its last import."""
+    """`source` importing the relative `statement` in sorted order.
+
+    It goes before the first relative import that sorts after it, or after the
+    last import when none does, so the block stays sorted as generated.
+    """
 
     if statement in source.split("\n"):
         return source
-    last = max(
-        node.end_lineno or node.lineno
+    imports = [
+        node
         for node in ast.parse(source).body
         if isinstance(node, ast.Import | ast.ImportFrom)
+    ]
+    if not imports:
+        msg = "the generated source imports nothing to place an import beside"
+        raise ConstructError(msg)
+    later = next(
+        (
+            node
+            for node in imports
+            if isinstance(node, ast.ImportFrom)
+            and node.level > 0
+            and ast.unparse(node) > statement
+        ),
+        None,
     )
     lines = source.split("\n")
-    return "\n".join([*lines[:last], statement, *lines[last:]])
+    if later is not None:
+        at = later.lineno - 1
+    else:
+        at = max(node.end_lineno or node.lineno for node in imports)
+    return "\n".join([*lines[:at], statement, *lines[at:]])
 
 
 def _drop_unused_imports(source: str) -> str:
@@ -731,7 +759,26 @@ def _identity_equality(source: str, name: str, fields: list[str]) -> str:
     )
     other = own.replace("self.", "other.")
     listed = ", ".join(f"`{field}`" for field in fields)
+    names = _literal(tuple(fields))
     rendered = [
+        "",
+        "    def __setattr__(self, name: str, value: object) -> None:",
+        f'        """Identity fields ({listed}) are read-only once constructed."""',
+        f"        if name in {names} and name in self.__dict__:",
+        "            msg = (",
+        f'                f"{{name}} is an identity field of {name}"',
+        '                " and is read-only once constructed"',
+        "            )",
+        "            raise AttributeError(msg)",
+        "        super().__setattr__(name, value)",
+        "",
+        "    def __delattr__(self, name: str) -> None:",
+        f'        """Identity fields ({listed}) are never deleted."""',
+        f"        if name in {names}:",
+        f'            msg = f"{{name}} is an identity field of {name}"',
+        '            msg += " and is never deleted"',
+        "            raise AttributeError(msg)",
+        "        super().__delattr__(name)",
         "",
         "    def __eq__(self, other: object) -> bool:",
         f'        """One instance when every identity field is equal: {listed}."""',
@@ -749,8 +796,24 @@ def _identity_equality(source: str, name: str, fields: list[str]) -> str:
 
 
 def _frozen(source: str, name: str) -> str:
-    """The generated class `name` frozen, in its own profile's form."""
+    """The generated class `name` frozen and declared unhashable.
 
+    An event records one occurrence: it is frozen in its own profile's form,
+    and `__hash__ = None` states that it has no identity to hash by.
+    """
+
+    node = _class_of(source, name)
+    end = node.end_lineno or node.lineno
+    source = _replace_lines(
+        source,
+        end + 1,
+        end,
+        [
+            "",
+            "    #: An occurrence has no identity to hash by.",
+            "    __hash__ = None  # type: ignore[assignment]",
+        ],
+    )
     node = _class_of(source, name)
     if _profile(node) == "dataclass":
         for decorator in node.decorator_list:

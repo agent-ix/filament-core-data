@@ -974,6 +974,33 @@ describe("TC-1781 identifiers and abstract types the TypeScript backend refuses 
 		status.typeRef = party.identity;
 		expect(blockingCodes(held)).toStrictEqual(["ABSTRACT_TYPE_HELD"]);
 
+		// A reference holds Party's identity, not a value of it.
+		const referring = constructsDocument();
+		const declared = typeNamed(referring, "Party") as unknown as Record<
+			string,
+			unknown
+		>;
+		const reference: Record<string, unknown> = JSON.parse(
+			JSON.stringify(declared),
+		);
+		for (const member of [
+			"fields",
+			"clauses",
+			"abstract",
+			"identityFields",
+			"operations",
+			"relationships",
+		])
+			delete reference[member];
+		Object.assign(reference, {
+			identity: "ix://agent-ix/orders/type/PartyRef",
+			displayName: "PartyRef",
+			kind: "reference",
+			target: declared.identity,
+		});
+		referring.types.push(reference as never);
+		expect(generateDocument(referring).state).toBe("success");
+
 		const collided = constructsDocument();
 		const id = typeNamed(collided, "Order").fields?.find(
 			(field) => field.name === "id",

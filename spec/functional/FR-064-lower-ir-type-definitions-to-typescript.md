@@ -82,7 +82,7 @@ rather than the raw document.
 - A `value_object` SHALL also render `<Name>Equals(left, right)`, true exactly when every member is equal.
 - An `entity`, `nested_entity`, `aggregate_root` or `process` that is not abstract SHALL also render `<Name>Equals(left, right)`, true exactly when every identity field is equal by canonical form, whatever its other fields hold.
 - An abstract type SHALL render as an exported interface with no validator and no `<Name>Equals`, because no value is an instance of an abstract type except through a subtype.
-- If a field, item, value, alias target or union payload names an abstract type, then the backend SHALL raise `ABSTRACT_TYPE_HELD` at that member and write no file.
+- If a field, item, value, alias target or union payload names an abstract type, then the backend SHALL raise `ABSTRACT_TYPE_HELD` at that member and write no file. A `reference` MAY target an abstract type, since it holds the target's identity rather than a value of it.
 - An `event` renders every property `readonly`, which is its immutability.
 - A `state_machine` SHALL also render `export type <Name>State`, a union of the string literals of its state names.
 - An `enumeration` definition SHALL render as an `enum` renders, with its validator.
@@ -191,7 +191,7 @@ rather than the raw document.
 | FR-064-AC-23 | A `1.2.0` document whose `ConfigVersion` and `ConfigOverlay` are `entity` constructs generates an interface and a validator for each that compile under `tsc`, the validator refuses a value missing the identity field, and `TYPE_KIND` records `entity`. | Unit (TC-1763) |
 | FR-064-AC-24 | Generating the lifted `config-version-table` golden, whose types carry artifact-id identities and declared display names, exports `validateConfigVersion` and a `TYPE_IDENTITY` map whose `ConfigVersion` entry is `ix://agent-ix/config-service/type/FR-006`, and no exported type name derives from an artifact id. | Test (TC-1767) |
 | FR-064-AC-25 | Generating the contract `1.2.0` constructs fixture succeeds and compiles under `tsc`: each record-shaped construct exports an interface and a validator, `OrderLineEquals` compares members, `OrderEquals` compares `id` alone, `Party` exports an interface with no validator and no `PartyEquals`, `OrderLifecycleState` is the union of the state names, `OrderStatus` is the union of its variants, `OrderRepository` is an interface of its method signatures, `Ordering` exports no type, and `Order` carries its own fields and the fields it redefines once each. | Test (TC-1773) |
-| FR-064-AC-26 | Generating the constructs fixture with `OrderStatus` renamed `OrderLifecycleState`, `OrderEquals` or `OrderLineEquals` raises `IDENTIFIER_COLLISION`; with `Order.status` naming the abstract `Party` raises `ABSTRACT_TYPE_HELD`; with `Order.id` redefining nothing raises `IDENTIFIER_COLLISION`; each writes no file. With an unredefined `Party.remark` subsetting `labels`, `FIELD_SUBSETS` keys it `Party.remark` alone. | Test (TC-1781) |
+| FR-064-AC-26 | Generating the constructs fixture with `OrderStatus` renamed `OrderLifecycleState`, `OrderEquals` or `OrderLineEquals` raises `IDENTIFIER_COLLISION`; with `Order.status` naming the abstract `Party` raises `ABSTRACT_TYPE_HELD`, while a `reference` type targeting `Party` generates; with `Order.id` redefining nothing raises `IDENTIFIER_COLLISION`; each writes no file. With an unredefined `Party.remark` subsetting `labels`, `FIELD_SUBSETS` keys it `Party.remark` alone. | Test (TC-1781) |
 
 ## Dependencies
 

@@ -111,12 +111,12 @@ repository or a domain, which has no class, its `displayName` in class case, so
 
 | Construct or member | Rendering |
 |---|---|
-| `entity`, `nested_entity`, `aggregate_root`, `process` | the record's model class, whose `__eq__` and `__hash__` compare the canonical JSON form of its identity fields, so two instances with equal identity fields are one instance; `IDENTITY_FIELDS` names those fields |
+| `entity`, `nested_entity`, `aggregate_root`, `process` | the record's model class, whose `__eq__` and `__hash__` compare the canonical JSON form of its identity fields, so two instances with equal identity fields are one instance. Each identity field is read-only once constructed, because identity is the artifact id and does not change: assigning or deleting it raises `AttributeError`, while its other fields stay assignable. `IDENTITY_FIELDS` names those fields |
 | `value_object` | the record's model class, whose generated equality is field-by-field; `VALUE_EQUALITY` marks it |
 | `nested_entity` | `OWNER` names the owner class |
 | `aggregate_root`, `domain` | `MEMBERS` names the member classes |
 | `enumeration` | a `StrEnum` of its variants |
-| `event` | the record's model class, frozen: `ConfigDict(frozen=True)` on a pydantic model and `@dataclass(frozen=True)` on a dataclass; `OCCURRENCE_FIELD` names the occurrence field and `IMMUTABLE` marks it |
+| `event` | the record's model class, frozen: `ConfigDict(frozen=True)` on a pydantic model and `@dataclass(frozen=True)` on a dataclass, and declared unhashable with `__hash__ = None`, since an occurrence has no identity to hash by; `OCCURRENCE_FIELD` names the occurrence field and `IMMUTABLE` marks it |
 | `state_machine` | the machine's model class plus a `<Name>State` `StrEnum` of its states; `TRANSITIONS` lists each transition as (from, to, trigger, guard, emitted events) |
 | `process` | `STEPS` lists its ordered steps as (name, step kind, consumed events, emitted events) |
 | `repository` | a `typing.Protocol` in `constructs.py` whose methods are its operations, snake-cased, typed by the generated classes; `PERSISTS` names the persisted classes. No module of its own, since its schema admits no value |
@@ -139,7 +139,7 @@ Carried, not enforced: clauses
 non-blocking `CONSTRUCT_MEMBER_UNENFORCED` per member kind the document declares.
 
 The runner refuses, and the producer exits non-zero, when a generated module is
-named `constructs.py`, a type's field holds an abstract type, a type's name
+named `constructs.py` in any letter case, a type's field holds a value of an abstract type (a `reference` to one holds its identity and is allowed), a type's name
 derives no Python class name, or an identity field is no attribute of its
 generated class.
 
@@ -165,8 +165,8 @@ generated class.
 | FR-136-AC-8 | A `python-pydantic-v2` and a `python-dataclass` request over a `1.2.0` document whose `ConfigVersion` is an `entity` each return state `success` with a `ConfigVersion.py` module declaring class `ConfigVersion`, and a `constructs.py` whose `TYPE_KIND` maps it to `entity` and whose `IDENTITY_FIELDS` maps it to `id` | Test (TC-1765) |
 | FR-136-AC-9 | A `python-pydantic-v2` and a `python-dataclass` request over the lifted config-version-table golden each return state `success` with `ConfigVersion.py` and `JsonObject.py` modules and no module named from an artifact id, while the `json-schema` document the modules generate from carries `x-agent-ix-semantic-id` `ix://agent-ix/config-service/type/FR-006` | Test (TC-1769) |
 | FR-136-AC-10 | A `python-pydantic-v2` and a `python-dataclass` request over the constructs fixture each return state `success`; every class is named by its type's `displayName` and none is named `Model`; `OrderLifecycle.py` declares `OrderLifecycleState`; no module is named for the repository or the domain; and `constructs.py` carries each construct table row and the `OrderRepository` protocol | Test (TC-1775) |
-| FR-136-AC-11 | Over the constructs fixture, in both Python targets, two `Order` instances with one `id` and different other fields are equal and hash equal, instances with different `id`s are unequal, an `Order` is an instance of `Party`, `Party()` raises `TypeError`, and assigning a field of an `OrderPlaced` instance raises | Test (TC-1783) |
-| FR-136-AC-12 | `constructs.py` over an entity titled `Config Overlay` and a repository titled `Order Repository` keys every table `ConfigOverlay` and `OrderRepository` and compiles; rendering beside a generated `constructs.py`, refining a type whose field holds an abstract type, and refining an identity field its class does not declare each raise `ConstructError` | Test (TC-1784) |
+| FR-136-AC-11 | Over the constructs fixture, in both Python targets, two `Order` instances with one `id` and different other fields are equal and hash equal, instances with different `id`s are unequal, an `Order` is an instance of `Party`, `Party()` raises `TypeError`, assigning an `Order`'s `id` raises `AttributeError` while assigning its `status` succeeds, assigning a field of an `OrderPlaced` instance raises, and `hash` of an `OrderPlaced` raises `TypeError` | Test (TC-1783) |
+| FR-136-AC-12 | `constructs.py` over an entity titled `Config Overlay` and a repository titled `Order Repository` keys every table `ConfigOverlay` and `OrderRepository` and compiles; rendering beside a generated `constructs.py` or `Constructs.py`, refining a type whose field holds an abstract type, and refining an identity field its class does not declare each raise `ConstructError`, while a field holding a `reference` to the abstract type refines | Test (TC-1784) |
 
 ## Dependencies
 

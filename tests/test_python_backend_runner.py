@@ -595,12 +595,13 @@ def test_construct_rendering_refuses_what_python_cannot_state() -> None:
         "x-agent-ix-identity-fields": ["id"],
         "properties": {"id": {"type": "string"}},
     }
-    with pytest.raises(constructs.ConstructError, match="constructs.py"):
-        constructs.render(
-            {"constructs.json": kind},
-            None,
-            {"constructs.py": "class Constructs:\n    id: str\n"},
-        )
+    for module in ("constructs.py", "Constructs.py"):
+        with pytest.raises(constructs.ConstructError, match="constructs.py"):
+            constructs.render(
+                {"constructs.json": kind},
+                None,
+                {module: "class Constructs:\n    id: str\n"},
+            )
 
     documents = {
         "Party.json": {
@@ -626,6 +627,26 @@ def test_construct_rendering_refuses_what_python_cannot_state() -> None:
     }
     with pytest.raises(constructs.ConstructError, match="Basket holds the abstract"):
         constructs.refine(documents, files)
+
+    # A reference holds the abstract type's identity, not a value of it.
+    documents["PartyRef.json"] = {
+        "title": "PartyRef",
+        "x-agent-ix-semantic-id": "ix://agent-ix/orders/type/PartyRef",
+        "type": "string",
+        "x-agent-ix-reference-target": "ix://agent-ix/orders/type/FR-000",
+    }
+    documents["Basket.json"]["properties"]["holder"] = {"$ref": "./PartyRef.json"}
+    source = (
+        "from __future__ import annotations\n\n" "from pydantic import BaseModel\n\n\n"
+    )
+    referring = {
+        "Party.py": source + "class Party(BaseModel):\n    id: str\n",
+        "Basket.py": source
+        + "class Basket(BaseModel):\n    id: str\n    holder: str\n",
+        "PartyRef.py": source + "class PartyRef(BaseModel):\n    root: str\n",
+    }
+    assert "__eq__" in constructs.refine(documents, referring)["Basket.py"]
+    del documents["PartyRef.json"]
 
     del documents["Basket.json"]["properties"]["holder"]
     documents["Basket.json"]["x-agent-ix-identity-fields"] = ["key"]

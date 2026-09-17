@@ -145,8 +145,9 @@ construct's disposition is written down rather than decided at the keyboard.
   `identity.rs` exactly when the crate carries a construct member beyond
   identity fields or a population.
 - An abstract type has no value of its own: no struct, constructor or
-  `Deserialize` is generated for it. If a member, parameter, return or target
-  names an abstract type, or a concrete subtype's field maps to a Rust type
+  `Deserialize` is generated for it. A `reference` MAY target an abstract type,
+  since it holds the target's identity rather than a value of it. If a member,
+  parameter, return, alias target, item or value names an abstract type, or a concrete subtype's field maps to a Rust type
   other than the one the abstract supertype's accessor returns, then the
   backend SHALL raise `UNSUPPORTED_CONSTRUCT` and write no file.
 - `subsets` are carried, not enforced: the subset relation is Quire meaning
@@ -381,7 +382,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | FR-054-AC-16 | A `1.2.0` `entity` selects the `kind:entity` row: it renders the record struct, its module declares `IDENTITY_FIELDS` naming its identity fields in declared order, and a `record` in the same document declares no `IDENTITY_FIELDS`. | Test (TC-1762) |
 | FR-054-AC-17 | Generating the contract `1.2.0` constructs fixture succeeds, each construct kind selects its own `kind:` row and each model member its `construct:` row, and the emitted crate carries the form each row states: `IDENTITY_FIELDS` and `OWNER` on a nested entity, `MEMBERS` on an aggregate root and a domain, private members and accessors on an event, `<Name>State` and `TRANSITIONS` on a state machine, `STEPS` on a process, a trait on a repository, a unit struct on a domain, the inherited members and `SUPERTYPES` on a subtype, `ABSTRACT`, `FIELD_SUBSETS`, `FIELD_REDEFINES`, `OPERATION_CONTRACTS` and `POPULATIONS`. | Test (TC-1772) |
 | FR-054-AC-18 | Generating the constructs fixture renders each `entity`, `nested_entity`, `aggregate_root` and `process` with no derived `PartialEq` and with `PartialEq`, `Eq` and `Hash` over its identity fields, and a `value_object` with the derived `PartialEq`; a newtype an identity field reaches derives `Eq` and `Hash`; and an identity field of a `number` scalar is refused with `UNSUPPORTED_CONSTRUCT` and no file. | Test (TC-1777) |
-| FR-054-AC-19 | Generating the constructs fixture renders the abstract `Party` as a trait of accessors with no struct or constructor and `Order` implementing it; a field naming `Party`, and an `Order` field redefining an inherited field with another Rust type, are each refused with `UNSUPPORTED_CONSTRUCT` and no file. | Test (TC-1778) |
+| FR-054-AC-19 | Generating the constructs fixture renders the abstract `Party` as a trait of accessors with no struct or constructor and `Order` implementing it; a `reference` type targeting `Party` generates; a field naming `Party`, and an `Order` field redefining an inherited field with another Rust type, are each refused with `UNSUPPORTED_CONSTRUCT` and no file. | Test (TC-1778) |
 | FR-054-AC-20 | A repository operation whose frame is empty renders a method taking `&self`, and an operation with no frame renders a method taking `&mut self`. | Test (TC-1780) |
 
 ## Dependencies

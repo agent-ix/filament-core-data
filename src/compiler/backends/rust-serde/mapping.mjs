@@ -852,9 +852,11 @@ function referenceTo(ref, edgeKey, position, owner, context) {
 		);
 		return undefined;
 	}
-	if (definition.abstract === true) {
+	if (definition.abstract === true && position !== "reference target") {
 		// An abstract type renders as a trait, which is no value type a member
-		// can hold: every instance is an instance of a subtype.
+		// can hold: every instance is an instance of a subtype. A `reference`
+		// holds the target's identity rather than a value of it, so it may name
+		// an abstract type.
 		raise(
 			RUST_BACKEND_CODES.UNSUPPORTED_CONSTRUCT,
 			`the ${position} of ${fragment(owner.identity)} names the abstract type ${fragment(ref)}, which has no Rust value type of its own`,
