@@ -459,9 +459,15 @@ def render(
                     )
                 )
             inline = [
-                f"{member!r}: {_literal(tuple(map(_clause, operation[member])))}"
-                for member in ("requires", "ensures")
-                if operation.get(member)
+                f"{member!r}: {_literal(tuple(map(_clause, bound)))}"
+                for member in ("pre", "post")
+                if (
+                    bound := [
+                        item
+                        for item in operation.get(member) or []
+                        if isinstance(item, dict)
+                    ]
+                )
             ]
             if inline:
                 clauses.append((key, "{" + ", ".join(inline) + "}"))

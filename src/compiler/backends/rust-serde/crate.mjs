@@ -1061,13 +1061,17 @@ function operationMeta(operation, constant, model) {
 		{
 			name: "pre",
 			value: slice(
-				(operation.pre ?? []).map((entry) => atom(rustString(entry))),
+				(operation.pre ?? [])
+					.filter((entry) => typeof entry === "string")
+					.map((entry) => atom(rustString(entry))),
 			),
 		},
 		{
 			name: "post",
 			value: slice(
-				(operation.post ?? []).map((entry) => atom(rustString(entry))),
+				(operation.post ?? [])
+					.filter((entry) => typeof entry === "string")
+					.map((entry) => atom(rustString(entry))),
 			),
 		},
 		{ name: "origin", value: originMeta(operation.origin) },
@@ -2576,8 +2580,8 @@ function operationContractMeta(operation, contract) {
 	return struct(`${META}::OperationContractMeta`, [
 		{ name: "operation", value: atom(rustString(operation)) },
 		{ name: "frame", value: frame },
-		{ name: "requires", value: clauses(contract.requires) },
-		{ name: "ensures", value: clauses(contract.ensures) },
+		{ name: "pre", value: clauses(contract.pre) },
+		{ name: "post", value: clauses(contract.post) },
 	]);
 }
 
@@ -2759,10 +2763,10 @@ pub struct OperationContractMeta {
     pub operation: &'static str,
     /// The operation's frame, where it declares one.
     pub frame: Option<FrameMeta>,
-    /// The preconditions.
-    pub requires: &'static [InlineClauseMeta],
-    /// The postconditions.
-    pub ensures: &'static [InlineClauseMeta],
+    /// The inline clauses of the operation's \`pre\`.
+    pub pre: &'static [InlineClauseMeta],
+    /// The inline clauses of the operation's \`post\`.
+    pub post: &'static [InlineClauseMeta],
 }
 
 /// One member type of a population and its extent.

@@ -965,16 +965,14 @@
 				"pre": {
 					"type": "array",
 					"items": {
-						"type": "string",
-						"minLength": 1
+						"$ref": "#/$defs/contractItem"
 					},
 					"uniqueItems": true
 				},
 				"post": {
 					"type": "array",
 					"items": {
-						"type": "string",
-						"minLength": 1
+						"$ref": "#/$defs/contractItem"
 					},
 					"uniqueItems": true
 				},
@@ -983,18 +981,6 @@
 				},
 				"frame": {
 					"$ref": "#/$defs/frame"
-				},
-				"requires": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/inlineClause"
-					}
-				},
-				"ensures": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/inlineClause"
-					}
 				}
 			},
 			"additionalProperties": false
@@ -1160,6 +1146,17 @@
 				}
 			},
 			"additionalProperties": false
+		},
+		"contractItem": {
+			"anyOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"$ref": "#/$defs/inlineClause"
+				}
+			]
 		},
 		"inlineClause": {
 			"type": "object",
@@ -1473,8 +1470,18 @@
 										"type": "object",
 										"properties": {
 											"frame": false,
-											"requires": false,
-											"ensures": false
+											"pre": {
+												"type": "array",
+												"items": {
+													"type": "string"
+												}
+											},
+											"post": {
+												"type": "array",
+												"items": {
+													"type": "string"
+												}
+											}
 										}
 									}
 								}

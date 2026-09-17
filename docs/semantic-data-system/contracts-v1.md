@@ -258,7 +258,7 @@ nullable values and keeps the authored presence.
 | `subsets` | field | Supertype fields whose values include this field's values | `UNRESOLVED_FEATURE_REF` |
 | `redefines` | field | The supertype field this field narrows; its multiplicity lies within the redefined bounds | `UNRESOLVED_FEATURE_REF`, `INVALID_REDEFINITION` |
 | `frame` | operation | Feature paths the operation `modifies`, `creates` and `deletes`, each starting at a field or parameter | `UNRESOLVED_FRAME_PATH` |
-| `requires`, `ensures` | operation | Inline pre- and postconditions, each `{language, text}` | — |
+| `pre`, `post` items | operation | A `pre` or `post` item is a clause id or an inline clause `{language, text}` | `DANGLING_CLAUSE_REF` for an id item |
 | `populations` | document | Named instance extents: type references with a multiplicity | `UNRESOLVED_TYPE_REF` |
 
 Clauses are Quire: a clause `language` is `ocl`, `sysml`, `fretish`, `quire`

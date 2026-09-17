@@ -56,7 +56,7 @@ construction, not by claim.
 | `abstract` | `pub trait N { fn <field>(&self) -> &T; .. } with pub const ABSTRACT: bool = true` | — | no value type: one accessor per effective field, implemented by each concrete subtype; a member naming the abstract type, and a subtype field of another Rust type, are refused with UNSUPPORTED_CONSTRUCT | — |
 | `subsets` | `pub const FIELD_SUBSETS: &[FieldLinkMeta]` | — | carried, not enforced: each member and the members its values are a subset of, by wire name; the subset relation is Quire meaning over values | — |
 | `redefines` | `pub const FIELD_REDEFINES: &[FieldLinkMeta]` | — | the redefining member stands in the struct in place of the inherited one, and the constant names the member it redefines | — |
-| `operation-contract` | `pub const OPERATION_CONTRACTS: &[OperationContractMeta]` | — | each operation's frame and inline Quire requires and ensures clauses, carried as text; an interface method whose frame is empty takes &self | — |
+| `operation-contract` | `pub const OPERATION_CONTRACTS: &[OperationContractMeta]` | — | each operation's frame and inline Quire pre and post clauses, carried as text; an interface method whose frame is empty takes &self | — |
 | `populations` | `pub const POPULATIONS: &[PopulationMeta] in identity.rs` | — | each population's identity, display name, member types and extents, in document order | — |
 
 ### scalar

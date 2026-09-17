@@ -9,10 +9,10 @@
 			"declaredTypes": 163,
 			"validatingTypes": 104,
 			"nonValidatingDeclarations": 59,
-			"exercisedTypes": 63,
-			"unexercisedValidatingTypes": 41,
+			"exercisedTypes": 65,
+			"unexercisedValidatingTypes": 39,
 			"constraintsExercised": 188,
-			"typesRejectingAnEmptyOrUndeclaredValue": 86,
+			"typesRejectingAnEmptyOrUndeclaredValue": 88,
 			"typesAcceptingAnything": [
 				"common_schema.FilamentSemanticContractCommonTypesV1",
 				"compatibility_report_schema.AffectedConsumer",
@@ -26,8 +26,6 @@
 				"representation_schema.NonUs",
 				"representation_schema.ReservedName",
 				"representation_schema.ReservedNumber",
-				"semantic_ir_schema.PostItem",
-				"semantic_ir_schema.PreItem",
 				"semantic_ir_schema.ReferencesAdditionalPropertyItem",
 				"semantic_ir_schema.Role",
 				"semantic_ir_schema.Value",
@@ -566,6 +564,22 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "ContractItem",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "ContractItem1",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "FeaturePath",
 					"exercised": true,
 					"acceptsAConformingValue": true,
@@ -699,18 +713,6 @@
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 1
-				},
-				{
-					"module": "semantic_ir_schema",
-					"type": "PostItem",
-					"exercised": false,
-					"why": "no schema node carries this type's property set"
-				},
-				{
-					"module": "semantic_ir_schema",
-					"type": "PreItem",
-					"exercised": false,
-					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "semantic_ir_schema",

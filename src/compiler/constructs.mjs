@@ -609,7 +609,7 @@ export function constructOf(type, byIdentity = new Map()) {
 }
 
 /**
- * An operation's frame and inline clauses (FR-141), or `undefined` when it
+ * An operation's frame and the inline clauses of its `pre` and `post` (FR-141), or `undefined` when it
  * carries none. An empty frame is kept: it states that the operation changes
  * nothing, which is a claim, not an absence.
  */
@@ -621,12 +621,14 @@ export function operationContract(operation) {
 			creates: [...list(operation.frame.creates)],
 			deletes: [...list(operation.frame.deletes)],
 		};
-	for (const member of ["requires", "ensures"])
-		if (list(operation?.[member]).length > 0)
-			contract[member] = operation[member].map((clause) => ({
+	for (const member of ["pre", "post"]) {
+		const inline = list(operation?.[member]).filter(isObject);
+		if (inline.length > 0)
+			contract[member] = inline.map((clause) => ({
 				language: clause.language,
 				text: clause.text,
 			}));
+	}
 	return Object.keys(contract).length > 0 ? contract : undefined;
 }
 
@@ -709,8 +711,8 @@ export function unenforcedMemberPointers(ir) {
 		const at = `/ir/types/${index}`;
 		if (list(type.clauses).length > 0) note("clauses", `${at}/clauses`);
 		list(type.operations).forEach((operation, position) => {
-			for (const member of ["requires", "ensures"])
-				if (list(operation?.[member]).length > 0)
+			for (const member of ["pre", "post"])
+				if (list(operation?.[member]).some(isObject))
 					note("clauses", `${at}/operations/${position}/${member}`);
 			if (isObject(operation?.frame))
 				note("frames", `${at}/operations/${position}/frame`);

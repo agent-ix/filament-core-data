@@ -96,7 +96,7 @@ frontend, a generated programming-language package, or an ambient registry.
   carry `x-agent-ix-supertypes`. A redefining property SHALL carry
   `x-agent-ix-redefines` and a subsetting property `x-agent-ix-subsets`, each
   naming field identities. An abstract type SHALL carry
-  `x-agent-ix-abstract: true`. An operation's `frame`, `requires` and `ensures`
+  `x-agent-ix-abstract: true`. An operation's `frame`, `pre` and `post`
   SHALL be carried in `x-agent-ix-operations`, and the document's populations
   in `index.json` as `x-agent-ix-populations`.
 - The construct annotations of a subtype SHALL be read from the document as

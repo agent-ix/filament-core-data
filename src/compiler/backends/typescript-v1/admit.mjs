@@ -906,7 +906,8 @@ export function admitIr(bundle, options = {}) {
 			);
 			for (const list of ["pre", "post"]) {
 				for (const [slot, reference] of (operation[list] ?? []).entries()) {
-					if (!declared.has(reference)) {
+					// An inline clause binds no clause id.
+					if (typeof reference === "string" && !declared.has(reference)) {
 						emit(
 							ADMISSIBILITY_CODES.DANGLING_CLAUSE_REF,
 							`${operationPointer}/${list}/${slot}`,

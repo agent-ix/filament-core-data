@@ -742,8 +742,8 @@ export interface OperationContractDescriptor {
 		readonly creates: readonly string[];
 		readonly deletes: readonly string[];
 	};
-	readonly requires?: readonly { readonly language: string; readonly text: string }[];
-	readonly ensures?: readonly { readonly language: string; readonly text: string }[];
+	readonly pre?: readonly { readonly language: string; readonly text: string }[];
+	readonly post?: readonly { readonly language: string; readonly text: string }[];
 }
 
 /** One population: the type extents it gathers. */

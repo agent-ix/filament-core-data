@@ -121,7 +121,7 @@ ${V1_1_ADDED_NODES.map((node) => `- \`${node}\``).join("\n")}
 
 Contract \`2.0.0\` adds the scalar \`any\`, authored field presence, the model
 members (\`supertypes\`, \`abstract\`, \`subsets\`, \`redefines\`, operation \`frame\`,
-\`requires\`, \`ensures\`, document \`populations\`), module construct kinds
+inline \`pre\` and \`post\` clauses, document \`populations\`), module construct kinds
 \`{module, name}\` declared as module data, and the \`constructs\` table that
 carries each used kind's declaration
 ([ADR-0011](adr/0011-domain-packages-construct-kinds-are-module-data.md)). The \`1.1.0\` → \`2.0.0\` revision is additive: a \`2.0.0\`

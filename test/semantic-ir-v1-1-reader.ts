@@ -399,8 +399,11 @@ function checkTypeDefinition(
 		}
 		// FR-141: `quire` is the one checked clause language; an inline clause
 		// in any other admitted language is carried unchecked (an advisory).
-		for (const side of ["requires", "ensures"] as const) {
-			for (const [clauseIndex, clause] of asArray(operation[side]).entries()) {
+		for (const side of ["pre", "post"] as const) {
+			for (const [clauseIndex, clause] of (Array.isArray(operation[side])
+				? operation[side]
+				: []
+			).entries()) {
 				if (isObject(clause) && clause.language !== "quire") {
 					diagnostics.push({
 						code: "agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED",
@@ -415,7 +418,7 @@ function checkTypeDefinition(
 				? operation[side]
 				: []
 			).entries()) {
-				if (!clauseIds.has(String(ref))) {
+				if (!isObject(ref) && !clauseIds.has(String(ref))) {
 					diagnostics.push({
 						code: "agent-ix.semantic-ir.DANGLING_CLAUSE_REF",
 						path: `${path}.operations.${index}.${side}.${refIndex}`,

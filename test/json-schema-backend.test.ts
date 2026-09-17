@@ -251,7 +251,10 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 			creates: [],
 			deletes: [],
 		});
-		expect(advance.requires[0].text).toBe("to <> current");
+		// Traces: TC-1796; FR-141-AC-9. A mixed list keeps its order and forms.
+		expect(advance.pre[0]).toBe("can_ship");
+		expect(advance.pre[1].text).toBe("to <> current");
+		expect(advance.post[0].text).toBe("current = to");
 		expect(
 			schema("Fulfilment")["x-agent-ix-steps"].map(
 				(step: { name: string }) => step.name,

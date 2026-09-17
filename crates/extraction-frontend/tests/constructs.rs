@@ -181,7 +181,14 @@ fn tc_1740_and_tc_1745_every_model_member_and_construct_kind_reads_clean_in_rust
     };
     assert!(has("supertypes") && has("abstract"));
     assert!(field_has("subsets") && field_has("redefines") && field_has("presence"));
-    assert!(operation_has("frame") && operation_has("requires") && operation_has("ensures"));
+    let inline_in = |member: &str| {
+        types
+            .iter()
+            .flat_map(|t| t["operations"].as_array().into_iter().flatten())
+            .flat_map(|o| o[member].as_array().into_iter().flatten())
+            .any(Value::is_object)
+    };
+    assert!(operation_has("frame") && inline_in("pre") && inline_in("post"));
     assert!(types.iter().any(|t| t["scalar"] == "any"));
     assert!(!document["populations"]
         .as_array()
@@ -190,14 +197,14 @@ fn tc_1740_and_tc_1745_every_model_member_and_construct_kind_reads_clean_in_rust
     let languages: Vec<&str> = types
         .iter()
         .flat_map(|t| t["operations"].as_array().into_iter().flatten())
-        .flat_map(|o| o["requires"].as_array().into_iter().flatten())
+        .flat_map(|o| o["pre"].as_array().into_iter().flatten())
         .filter_map(|c| c["language"].as_str())
         .collect();
     assert!(languages.contains(&"quire"), "{languages:?}");
     // FR-141-CON-2: a clause language outside the closed set is refused.
     let mut unknown = positive();
     let sm = type_mut(&mut unknown, "SM-001");
-    sm["operations"][0]["requires"][0]["language"] = json!("english");
+    sm["operations"][0]["pre"][1]["language"] = json!("english");
     assert_refused_by_schema("unregistered inline clause language", &unknown);
 }
 
@@ -343,15 +350,15 @@ fn tc_1744_and_tc_1756_every_1_2_member_and_kind_inside_a_1_1_document_is_refuse
             }),
         ),
         (
-            "requires",
+            "inline pre clause",
             Box::new({
                 let quire = quire.clone();
-                move |d| d["types"][record]["operations"][0]["requires"] = quire.clone()
+                move |d| d["types"][record]["operations"][0]["pre"] = quire.clone()
             }),
         ),
         (
-            "ensures",
-            Box::new(move |d| d["types"][record]["operations"][0]["ensures"] = quire.clone()),
+            "inline post clause",
+            Box::new(move |d| d["types"][record]["operations"][0]["post"] = quire.clone()),
         ),
         ("populations", Box::new(|d| d["populations"] = json!([]))),
         (
@@ -394,18 +401,18 @@ fn tc_1759_an_inline_clause_outside_quire_is_carried_with_one_advisory_in_rust_a
     let clean = positive();
     let machine = position(&clean, &type_ref("SM-001"));
     assert_eq!(
-        clean["types"][machine]["operations"][0]["requires"][0]["language"],
+        clean["types"][machine]["operations"][0]["pre"][1]["language"],
         "quire"
     );
     assert!(rust_codes(&clean).is_empty(), "{:?}", rust_codes(&clean));
 
-    for (member, language) in [("requires", "ocl"), ("ensures", "acme:tla")] {
+    for (member, slot, language) in [("pre", 1, "ocl"), ("post", 0, "acme:tla")] {
         let mut document = positive();
-        document["types"][machine]["operations"][0][member][0]["language"] = json!(language);
+        document["types"][machine]["operations"][0][member][slot]["language"] = json!(language);
         let text = serde_json::to_string(&json!({ "ir": document })).expect("serialises");
         let verdict = decide(&parse_json(&text).expect("parses"));
         assert_eq!(verdict.result_state, ResultState::Success, "{member}");
-        let pointer = format!("/ir/types/{machine}/operations/0/{member}/0/language");
+        let pointer = format!("/ir/types/{machine}/operations/0/{member}/{slot}/language");
         let found: Vec<_> = verdict
             .diagnostics
             .iter()
@@ -424,6 +431,41 @@ fn tc_1759_an_inline_clause_outside_quire_is_carried_with_one_advisory_in_rust_a
         let node = node_codes(&document);
         assert_eq!(node, ["CLAUSE_LANGUAGE_UNCHECKED"], "{member}: node reader");
     }
+}
+
+#[trace("TC-1795", "FR-141-AC-8")]
+#[test]
+fn tc_1795_a_pre_or_post_list_mixes_clause_ids_and_inline_clauses_and_binds_only_the_ids() {
+    let clean = positive();
+    let machine = position(&clean, &type_ref("SM-001"));
+    let pre = &clean["types"][machine]["operations"][0]["pre"];
+    assert!(pre[0].is_string() && pre[1].is_object(), "{pre}");
+    assert!(rust_codes(&clean).is_empty(), "{:?}", rust_codes(&clean));
+    assert!(node_codes(&clean).is_empty(), "{:?}", node_codes(&clean));
+
+    // Clause-id resolution reads only the string items: a dangling id beside
+    // an inline clause is reported at its own slot, and the inline clause is
+    // never read as an id.
+    let mut dangling = positive();
+    dangling["types"][machine]["operations"][0]["pre"][0] = json!("no_such_clause");
+    assert_eq!(
+        rust_codes(&dangling),
+        [format!(
+            "DANGLING_CLAUSE_REF at /ir/types/{machine}/operations/0/pre/0"
+        )]
+    );
+    assert_eq!(node_codes(&dangling), ["DANGLING_CLAUSE_REF"]);
+
+    // The same inline clause twice in one list is refused, as a repeated id is.
+    let mut repeated = positive();
+    let inline = repeated["types"][machine]["operations"][0]["pre"][1].clone();
+    repeated["types"][machine]["operations"][0]["pre"] = json!(["can_ship", inline, inline]);
+    assert_refused_by_schema("a repeated inline clause", &repeated);
+
+    // An item that is neither a clause id nor an inline clause is refused.
+    let mut neither = positive();
+    neither["types"][machine]["operations"][0]["post"][0] = json!(7);
+    assert_refused_by_schema("a numeric pre/post item", &neither);
 }
 
 /// For each kind, a required member and a member the kind does not carry.

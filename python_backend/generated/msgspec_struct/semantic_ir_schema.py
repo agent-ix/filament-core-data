@@ -148,6 +148,9 @@ class ConstructKind(Struct):
     name: Annotated[str, Meta(pattern='^[a-z][a-z0-9_]*$')]
 
 
+type ContractItem1 = Annotated[str, Meta(min_length=1)]
+
+
 type FeaturePath = Annotated[
     str, Meta(pattern='^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$')
 ]
@@ -186,12 +189,6 @@ class Occurrence(Struct):
     identity: common_schema.SemanticIdentity
     observedAt: str
     value: Any
-
-
-type PostItem = Annotated[str, Meta(min_length=1)]
-
-
-type PreItem = Annotated[str, Meta(min_length=1)]
 
 
 class Returns(Struct):
@@ -375,19 +372,6 @@ class InlineClause(Struct):
     sourceSpan: common_schema.SourceLocus | UnsetType = UNSET
 
 
-class Operation(Struct):
-    identity: common_schema.SemanticIdentity
-    name: Annotated[str, Meta(min_length=1)]
-    origin: common_schema.Origin
-    params: list[Field]
-    post: list[PostItem]
-    pre: list[PreItem]
-    ensures: list[InlineClause] | UnsetType = UNSET
-    frame: Frame | UnsetType = UNSET
-    requires: list[InlineClause] | UnsetType = UNSET
-    returns: Returns | UnsetType = UNSET
-
-
 class Population(Struct):
     displayName: Annotated[str, Meta(min_length=1)]
     identity: common_schema.SemanticIdentity
@@ -441,6 +425,20 @@ class Variant(Struct):
     name: Annotated[str, Meta(min_length=1)]
     origin: common_schema.Origin
     payloadType: common_schema.SemanticIdentity | UnsetType = UNSET
+
+
+type ContractItem = ContractItem1 | InlineClause
+
+
+class Operation(Struct):
+    identity: common_schema.SemanticIdentity
+    name: Annotated[str, Meta(min_length=1)]
+    origin: common_schema.Origin
+    params: list[Field]
+    post: list[ContractItem]
+    pre: list[ContractItem]
+    frame: Frame | UnsetType = UNSET
+    returns: Returns | UnsetType = UNSET
 
 
 class TypeDefinition(Struct):

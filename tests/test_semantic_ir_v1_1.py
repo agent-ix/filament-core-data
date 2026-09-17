@@ -164,8 +164,8 @@ class TestContract20:
                 "frame",
                 set_operation("frame", {"modifies": [], "creates": [], "deletes": []}),
             ),
-            ("requires", set_operation("requires", quire)),
-            ("ensures", set_operation("ensures", quire)),
+            ("inline pre clause", set_operation("pre", quire)),
+            ("inline post clause", set_operation("post", quire)),
             ("populations", lambda d: d.__setitem__("populations", [])),
             ("scalar any", lambda d: d["types"][scalar].__setitem__("scalar", "any")),
             (
@@ -269,6 +269,33 @@ class TestContract20:
         )
         assert not schema_valid(validator, document)
 
+    def test_a_pre_list_mixes_clause_ids_and_inline_clauses_and_binds_only_the_ids(
+        self, validator
+    ) -> None:
+        """Criteria: FR-141-AC-8 (TC-1795)."""
+        document = _fixture(CONSTRUCTS)
+        machine = next(
+            i
+            for i, t in enumerate(document["types"])
+            if t["identity"].endswith("/type/SM-001")
+        )
+        operation = document["types"][machine]["operations"][0]
+        assert isinstance(operation["pre"][0], str)
+        assert isinstance(operation["pre"][1], dict)
+        assert validator.is_valid(document)
+        assert read_semantic_ir(document) == []
+        operation["pre"][0] = "no_such_clause"
+        assert [(d["code"], d["path"]) for d in read_semantic_ir(document)] == [
+            (
+                "agent-ix.semantic-ir.DANGLING_CLAUSE_REF",
+                f"types.{machine}.operations.0.pre.0",
+            )
+        ]
+        operation["pre"] = ["can_ship", operation["pre"][1], operation["pre"][1]]
+        assert not validator.is_valid(document)
+        operation["pre"] = ["can_ship", 7]
+        assert not validator.is_valid(document)
+
     def test_an_inline_clause_outside_quire_is_carried_with_an_advisory(
         self, validator
     ) -> None:
@@ -280,9 +307,9 @@ class TestContract20:
             if t["identity"].endswith("/type/SM-001")
         )
         operation = document["types"][machine]["operations"][0]
-        assert operation["requires"][0]["language"] == "quire"
+        assert operation["pre"][1]["language"] == "quire"
         assert read_semantic_ir(document) == []
-        operation["ensures"][0]["language"] = "ocl"
+        operation["post"][0]["language"] = "ocl"
         assert validator.is_valid(document)
         assert [d["code"] for d in read_semantic_ir(document)] == [
             "agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED"

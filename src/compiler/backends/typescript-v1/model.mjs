@@ -310,8 +310,16 @@ export function buildModel(ir, options = {}) {
 									),
 								})
 							: undefined,
-						pre: Object.freeze([...(operation.pre ?? [])]),
-						post: Object.freeze([...(operation.post ?? [])]),
+						pre: Object.freeze(
+							(operation.pre ?? []).filter(
+								(entry) => typeof entry === "string",
+							),
+						),
+						post: Object.freeze(
+							(operation.post ?? []).filter(
+								(entry) => typeof entry === "string",
+							),
+						),
 						origin: operation.origin,
 					}),
 				),

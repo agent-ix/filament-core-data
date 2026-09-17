@@ -126,7 +126,7 @@ construct shaped `interface` or `namespace`, which has no class, its `displayNam
 | `supertypes` | the subtype's class carries its supertypes' fields and registers with each abstract ancestor, so `isinstance` holds; `SUPERTYPES` names the supertypes |
 | `abstract` | an `abc.ABC` with one abstract property per field, which does not construct; `ABSTRACT` marks the type |
 | `subsets`, `redefines` | `FIELD_SUBSETS` and `FIELD_REDEFINES`, by class and field name |
-| operation `frame`, `requires`, `ensures` | `OPERATION_FRAMES` and `OPERATION_CLAUSES`, keyed `<Class>.<operation>` |
+| operation `frame` and inline `pre` and `post` clauses | `OPERATION_FRAMES` and `OPERATION_CLAUSES`, keyed `<Class>.<operation>` |
 | document `populations` | `POPULATIONS`, each member as (class, lower, upper extent), read from `index.json` |
 | `TYPE_KIND` | the construct kind of each type |
 

@@ -3257,7 +3257,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		) as Json;
 		const operation = (machine.operations as Json[])[0];
 		expect([...note(readContractIr(document as never))]).toEqual([]);
-		((operation.requires as Json[])[0] as Json).language = "ocl";
+		((operation.pre as Json[])[1] as Json).language = "ocl";
 		expect(validateIrDocument(document as never)).toEqual([]);
 		const found = [...note(readContractIr(document as never))];
 		expect(found.map((one) => [one.code, one.severity, one.blocking])).toEqual([

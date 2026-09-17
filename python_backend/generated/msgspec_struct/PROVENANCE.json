@@ -16,14 +16,14 @@
 			"semantic-ir.schema.json",
 			"target-contract.schema.json"
 		],
-		"inputDigest": "sha256:58aa520326a85c5b8acb57a00d77e9e069c85c577eaa962c132a937e20dc8e92",
+		"inputDigest": "sha256:cf2dfcd3dfc386ee6bf88784ec691f48638d000932092c26e2ebe42dcb35311f",
 		"preparation": []
 	},
 	"profile": {
 		"id": "msgspec_struct",
 		"digest": "sha256:c22081156b8894c95079b63d0e883ab929a208c3082f3ba779213d057e4f3278"
 	},
-	"toolchainFingerprint": "sha256:5e8a0a4f05c1da6a275c2b59b31d2ee9051e42d47faa8f3643ca5e76e1c30855",
+	"toolchainFingerprint": "sha256:8bdc8e44d466bee6833c140858ae3ede70b2c06b24453aef59e55fad7302d013",
 	"generator": {
 		"distribution": "datamodel-code-generator",
 		"version": "0.76.0",
@@ -45,5 +45,5 @@
 		"RoundTrip": ["profile_schema", "representation_schema"]
 	},
 	"published": false,
-	"contentFingerprint": "sha256:6540b56d962417ea50e173819960aaea88a2e17af21d66db56b2cb119a84953d"
+	"contentFingerprint": "sha256:a66b44a8a051a85315a04d3142620c0f8cd39fc3b27e2229de01bc925024de56"
 }

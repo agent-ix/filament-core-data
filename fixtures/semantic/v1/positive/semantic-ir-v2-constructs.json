@@ -1820,22 +1820,22 @@
 							"typeRef": "ix://agent-ix/orders/type/EN-001"
 						}
 					],
-					"post": [],
-					"pre": [],
-					"returns": {
-						"multiplicity": {
-							"lower": 1,
-							"upper": 1
-						},
-						"nullable": false,
-						"typeRef": "ix://agent-ix/orders/type/EN-001"
-					},
-					"frame": {
-						"modifies": ["current"],
-						"creates": [],
-						"deletes": []
-					},
-					"requires": [
+					"post": [
+						{
+							"language": "quire",
+							"text": "current = to",
+							"origin": {
+								"source": {
+									"path": "spec/functional/SM-001-order-lifecycle.md",
+									"sourceIdentity": "ix://agent-ix/orders/spec",
+									"startColumn": 1,
+									"startLine": 30
+								}
+							}
+						}
+					],
+					"pre": [
+						"can_ship",
 						{
 							"language": "quire",
 							"text": "to <> current",
@@ -1849,20 +1849,19 @@
 							}
 						}
 					],
-					"ensures": [
-						{
-							"language": "quire",
-							"text": "current = to",
-							"origin": {
-								"source": {
-									"path": "spec/functional/SM-001-order-lifecycle.md",
-									"sourceIdentity": "ix://agent-ix/orders/spec",
-									"startColumn": 1,
-									"startLine": 30
-								}
-							}
-						}
-					]
+					"returns": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1
+						},
+						"nullable": false,
+						"typeRef": "ix://agent-ix/orders/type/EN-001"
+					},
+					"frame": {
+						"modifies": ["current"],
+						"creates": [],
+						"deletes": []
+					}
 				}
 			],
 			"origin": {

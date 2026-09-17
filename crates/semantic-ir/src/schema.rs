@@ -1666,8 +1666,7 @@ fn relationship_schema(relationship: &Json, at: &str, f: &mut Findings) {
 }
 
 const OPERATION_MEMBERS: &[&str] = &[
-    "identity", "name", "params", "returns", "pre", "post", "origin", "frame", "requires",
-    "ensures",
+    "identity", "name", "params", "returns", "pre", "post", "origin", "frame",
 ];
 const FRAME_MEMBERS: &[&str] = &["modifies", "creates", "deletes"];
 const INLINE_CLAUSE_MEMBERS: &[&str] = &["language", "text", "sourceSpan", "origin"];
@@ -1740,6 +1739,29 @@ fn inline_clause_schema(clause: &Json, at: &str, f: &mut Findings) {
         origin_schema(origin, &child(at, "origin"), f);
     }
 }
+/// One `pre` or `post` item: a clause id, or from contract 2.0.0 an inline
+/// clause.
+fn contract_item_schema(item: &Json, at: &str, revision: Revision, f: &mut Findings) {
+    if item.as_str().is_some() || !revision.v2 {
+        expect_string(Some(item), at, 1, "a clause id", f);
+        return;
+    }
+    inline_clause_schema(item, at, f);
+}
+
+/// Whether two items of `items` are the same JSON value.
+fn has_duplicate_items(items: &[Json]) -> bool {
+    let mut seen: Vec<String> = Vec::new();
+    for item in items {
+        let canonical = crate::json::to_canonical_string(item);
+        if seen.contains(&canonical) {
+            return true;
+        }
+        seen.push(canonical);
+    }
+    false
+}
+
 const RETURNS_MEMBERS: &[&str] = &["typeRef", "multiplicity", "nullable"];
 
 fn operation_schema(operation: &Json, at: &str, revision: Revision, f: &mut Findings) {
@@ -1775,42 +1797,20 @@ fn operation_schema(operation: &Json, at: &str, revision: Revision, f: &mut Find
             }
         }
     }
-    gate_v2(
-        operation,
-        at,
-        &["frame", "requires", "ensures"],
-        revision,
-        f,
-    );
+    gate_v2(operation, at, &["frame"], revision, f);
     if let Some(frame) = operation.get("frame") {
         frame_schema(frame, &child(at, "frame"), f);
     }
-    for name in ["requires", "ensures"] {
-        if let Some(clauses) = operation.get(name) {
-            let clauses_at = child(at, name);
-            if expect_array(clauses, &clauses_at, name, f) {
-                for (position, clause) in clauses.as_array().unwrap_or(&[]).iter().enumerate() {
-                    inline_clause_schema(clause, &index(&clauses_at, position), f);
-                }
-            }
-        }
-    }
     for name in ["pre", "post"] {
-        if let Some(clause_ids) = operation.get(name) {
-            let clause_ids_at = child(at, name);
-            if expect_array(clause_ids, &clause_ids_at, name, f) {
-                let items = clause_ids.as_array().unwrap_or(&[]);
-                for (position, clause_id) in items.iter().enumerate() {
-                    expect_string(
-                        Some(clause_id),
-                        &index(&clause_ids_at, position),
-                        1,
-                        "a clause id",
-                        f,
-                    );
+        if let Some(bound) = operation.get(name) {
+            let bound_at = child(at, name);
+            if expect_array(bound, &bound_at, name, f) {
+                let items = bound.as_array().unwrap_or(&[]);
+                for (position, item) in items.iter().enumerate() {
+                    contract_item_schema(item, &index(&bound_at, position), revision, f);
                 }
-                if has_duplicate_strings(items) {
-                    f.push(&clause_ids_at, format!("{name} entries are unique"));
+                if has_duplicate_items(items) {
+                    f.push(&bound_at, format!("{name} entries are unique"));
                 }
             }
         }

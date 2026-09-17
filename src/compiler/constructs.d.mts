@@ -97,8 +97,8 @@ export interface ConstructStep {
 }
 export interface OperationContract {
 	frame?: { modifies: string[]; creates: string[]; deletes: string[] };
-	requires?: { language: string; text: string }[];
-	ensures?: { language: string; text: string }[];
+	pre?: { language: string; text: string }[];
+	post?: { language: string; text: string }[];
 }
 export interface ConstructFacts {
 	kind?: string;

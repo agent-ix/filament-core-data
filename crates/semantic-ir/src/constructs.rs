@@ -617,14 +617,14 @@ fn frames(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut 
     }
 }
 
-/// The advisory `CLAUSE_LANGUAGE_UNCHECKED` at every inline `requires` or
-/// `ensures` clause whose language is not `quire`: the clause is carried, and
+/// The advisory `CLAUSE_LANGUAGE_UNCHECKED` at every inline `pre` or `post`
+/// clause whose language is not `quire`: the clause is carried, and
 /// no reader checks or re-reads its text.
 fn inline_clauses(definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
     let operations_at = child(type_at, "operations");
     for (position, operation) in items(definition, "operations").iter().enumerate() {
         let operation_at = index(&operations_at, position);
-        for member in ["requires", "ensures"] {
+        for member in ["pre", "post"] {
             let member_at = child(&operation_at, member);
             for (slot, clause) in items(operation, member).iter().enumerate() {
                 let Some(language) = clause.get("language").and_then(Json::as_str) else {

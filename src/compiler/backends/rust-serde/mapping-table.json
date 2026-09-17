@@ -198,7 +198,7 @@
 			"selector": "operation-contract",
 			"rustForm": "pub const OPERATION_CONTRACTS: &[OperationContractMeta]",
 			"serdeAttributes": [],
-			"mechanism": "each operation's frame and inline Quire requires and ensures clauses, carried as text; an interface method whose frame is empty takes &self",
+			"mechanism": "each operation's frame and inline Quire pre and post clauses, carried as text; an interface method whose frame is empty takes &self",
 			"diagnosticCode": null
 		},
 		{

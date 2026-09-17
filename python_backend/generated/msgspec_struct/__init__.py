@@ -17,7 +17,7 @@ from .package_lock_schema import Canonicalization, ExcludedEnum, FilamentSemanti
 from .package_manifest_schema import Capability, CompatibilityPosture, Export, Export1, FilamentSemanticPackageManifestV1, Import, Profile, SourceRoot, Visibility
 from .profile_schema import EditDirection, FilamentRepresentationProfileV1, MaterializationLifetime
 from .representation_schema import Avro, BestFitItem, Columnar, Delimited, EnumNumbersAdditionalProperty, FieldNumbersAdditionalProperty, FilamentRepresentationContractV1, Json, Kind2, Locus, Markdown, NonUs, Postgresql, Protobuf, ReservedName, ReservedNumber
-from .semantic_ir_schema import Category, Clause, ConnectionEnd, Constraint, Constraint1, Constraint2, Constraint3, Constraint4, Constraint5, Constraint6, Construct, ConstructDeclaration, ConstructKind, ContractVersion, DefaultKind, Direction, FeaturePath, Field, FilamentSemanticIrV1ContractVersions100110And200, FlowDirection, Frame, Identity, IdentityList, InlineClause, Keyword, Keyword1, Keyword2, Keyword3, Keyword4, Keyword5, Member, Members, Multiplicity, Occurrence, Operands, Operands1, Operands2, Operands3, Operands4, Operation, Population, PostItem, PreItem, Presence, ReferencesAdditionalProperty, ReferencesAdditionalPropertyItem, Relationship, Returns, Role, Rule, Scalar, Shape, Source, State, Step, StepKind, Term, Transition, TypeDefinition, Value, Variant
+from .semantic_ir_schema import Category, Clause, ConnectionEnd, Constraint, Constraint1, Constraint2, Constraint3, Constraint4, Constraint5, Constraint6, Construct, ConstructDeclaration, ConstructKind, ContractItem, ContractItem1, ContractVersion, DefaultKind, Direction, FeaturePath, Field, FilamentSemanticIrV1ContractVersions100110And200, FlowDirection, Frame, Identity, IdentityList, InlineClause, Keyword, Keyword1, Keyword2, Keyword3, Keyword4, Keyword5, Member, Members, Multiplicity, Occurrence, Operands, Operands1, Operands2, Operands3, Operands4, Operation, Population, Presence, ReferencesAdditionalProperty, ReferencesAdditionalPropertyItem, Relationship, Returns, Role, Rule, Scalar, Shape, Source, State, Step, StepKind, Term, Transition, TypeDefinition, Value, Variant
 from .target_contract_schema import BackendQualification, ExecutableGeneratorDependency, FilamentGeneratedTargetContractV1, NativeApiItem, ProhibitedDependency, PythonAuthoring, SecurityFinding, UnsupportedFeaturePolicy
 
 __all__ = [
@@ -47,6 +47,8 @@ __all__ = [
     "ConstructDeclaration",
     "ConstructKind",
     "ConsumerEvidenceStatus",
+    "ContractItem",
+    "ContractItem1",
     "ContractVersion",
     "Correspondence",
     "DecodePolicy",
@@ -124,9 +126,7 @@ __all__ = [
     "Origin2",
     "PackageIdentity",
     "Population",
-    "PostItem",
     "Postgresql",
-    "PreItem",
     "Presence",
     "Profile",
     "ProhibitedDependency",

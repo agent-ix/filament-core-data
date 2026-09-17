@@ -920,10 +920,17 @@ describe("TC-1773 every construct kind and model member rendered by the TypeScri
 					"OrderLifecycle.advance"
 				],
 			).toStrictEqual({
-				ensures: [{ language: "quire", text: "current = to" }],
 				frame: { creates: [], deletes: [], modifies: ["current"] },
-				requires: [{ language: "quire", text: "to <> current" }],
+				post: [{ language: "quire", text: "current = to" }],
+				pre: [{ language: "quire", text: "to <> current" }],
 			});
+			// Traces: TC-1796; FR-141-AC-9. The operation descriptor keeps the
+			// clause ids of the same mixed list.
+			expect(
+				(
+					module.TYPE_OPERATIONS as Record<string, { pre: string[] }[]>
+				).OrderLifecycle[0].pre,
+			).toStrictEqual(["can_ship"]);
 			expect(
 				(module.POPULATIONS as { displayName: string }[]).map(
 					(one) => one.displayName,

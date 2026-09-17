@@ -162,7 +162,7 @@ visible in the run rather than invisible in the generated source.
 
 | Construct | Carried as | Not stated by the type |
 |---|---|---|
-| Construct `clauses`; transition guards; operation `requires` and `ensures` | the clause text in the type's metadata constant and `OPERATION_CONTRACTS`; a guard by clause identifier | the Quire meaning of each clause over instances; no generated method evaluates a clause; clauses [#159](https://github.com/agent-ix/filament-core-data/issues/159), guards [#160](https://github.com/agent-ix/filament-core-data/issues/160) |
+| Construct `clauses`; transition guards; operation `pre` and `post` | the clause text in the type's metadata constant and `OPERATION_CONTRACTS`; a guard by clause identifier | the Quire meaning of each clause over instances; no generated method evaluates a clause; clauses [#159](https://github.com/agent-ix/filament-core-data/issues/159), guards [#160](https://github.com/agent-ix/filament-core-data/issues/160) |
 | `transitions` | `<Name>State` and `TRANSITIONS` | which transition fires: a trigger fires only when its guard holds, which is a clause; [#161](https://github.com/agent-ix/filament-core-data/issues/161) |
 | `subsets` | `FIELD_SUBSETS` | that the member's values are a subset of the named members' values; [#162](https://github.com/agent-ix/filament-core-data/issues/162) |
 | operation `frame` | `OPERATION_CONTRACTS`; an `interface`-shaped construct's method whose frame is empty takes `&self` | that an operation changes only the members its frame names; [#163](https://github.com/agent-ix/filament-core-data/issues/163) |

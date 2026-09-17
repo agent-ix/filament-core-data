@@ -506,6 +506,22 @@ function generateConstructs(ir: unknown) {
 }
 
 describe("identity, abstract types and member scopes in the Rust backend (FR-054, FR-055)", () => {
+	/** Traces: TC-1796; FR-141-AC-9. */
+	it("renders a mixed pre list as its clause ids and its inline clauses", () => {
+		const written = new Map<string, string>();
+		generateRust(rustRequest({ ir: constructsIr() }), {
+			clear() {},
+			write(_outputRoot: string, path: string, text: string) {
+				written.set(path, text);
+			},
+		});
+		const flat = [...written.values()].join("\n").replace(/\s+/g, " ");
+		expect(flat).toContain('pre: &["can_ship"], post: &[], origin:');
+		expect(flat).toContain(
+			'operation: "advance", frame: Some(crate::identity::FrameMeta { modifies: &["current"], creates: &[], deletes: &[], }), pre: &[crate::identity::InlineClauseMeta { language: "quire", text: "to <> current", }], post: &[crate::identity::InlineClauseMeta { language: "quire", text: "current = to", }], }',
+		);
+	});
+
 	/** Traces: TC-1777; FR-054-AC-18. */
 	it("compares and hashes an identified construct by its identity fields and a value object by every member", () => {
 		const { manifest, module } = generateConstructs(constructsIr());

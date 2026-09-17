@@ -119,7 +119,7 @@ blocked as stated above.
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001..US-010, US-012, US-013, US-015, FR-001..FR-053, FR-063..FR-080, FR-091..FR-106, FR-139, FR-141..FR-143 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944, TC-1200..1350, TC-1373..1378, TC-1552..1557, TC-1740..1761, TC-1786..1794 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch; TC-1374, TC-1375, TC-1552, TC-1554..1557 planned on issue #93 |
+| StR-001 | US-001..US-010, US-012, US-013, US-015, FR-001..FR-053, FR-063..FR-080, FR-091..FR-106, FR-139, FR-141..FR-143 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944, TC-1200..1350, TC-1373..1378, TC-1552..1557, TC-1740..1761, TC-1786..1796 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch; TC-1374, TC-1375, TC-1552, TC-1554..1557 planned on issue #93 |
 
 ### User Story Coverage
 
@@ -176,7 +176,7 @@ blocked as stated above.
 | US-020 | US-020-EX-4 (illustrative) implemented by FR-135 | TC-1429 | 🚧 planned on issue #12 |
 | US-019 | The SysML v2 textual interchange target implemented by FR-138 | TC-1545..TC-1551 | 🚧 planned on issue #37 |
 | US-006 | An unconstrained value expressed without narrowing, implemented by FR-139 | TC-1552..TC-1557 | 🚧 TC-1552, TC-1554..TC-1557 planned on issue #93 |
-| US-006 | The model members and construct kinds declared as module data, implemented by FR-141 and FR-142 | TC-1740..TC-1750, TC-1786..TC-1789, TC-1791, TC-1793 | 🚧 In progress |
+| US-006 | The model members and construct kinds declared as module data, implemented by FR-141 and FR-142 | TC-1740..TC-1750, TC-1786..TC-1789, TC-1791, TC-1793, TC-1795, TC-1796 | 🚧 In progress |
 | US-015 | Object-type artifacts lifted to their constructs, implemented by FR-143 | TC-1751..TC-1755, TC-1785, TC-1790, TC-1792, TC-1794 | 🚧 In progress |
 | US-008 | The compiler judged by the independent corpus, implemented by FR-140 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
 
@@ -294,7 +294,7 @@ blocked as stated above.
 | FR-138 | FR-138-AC-1..7, FR-138-CON-1..3 | TC-1545..TC-1551 | 🚧 planned on issue #37 |
 | FR-139 | FR-139-AC-1..6, FR-139-CON-1..3 | TC-1552..TC-1557 | 🚧 TC-1552, TC-1554..TC-1557 planned on issue #93 |
 | FR-140 | FR-140-AC-1..7, FR-140-CON-1..3 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
-| FR-141 | FR-141-AC-1..7, FR-141-CON-1..2 | TC-1740..TC-1744, TC-1759, TC-1761 | ✅ Complete |
+| FR-141 | FR-141-AC-1..9, FR-141-CON-1..2 | TC-1740..TC-1744, TC-1759, TC-1761, TC-1795, TC-1796 | ✅ Complete |
 | FR-142 | FR-142-AC-1..13, FR-142-CON-1..2 | TC-1745..TC-1750, TC-1776, TC-1786..TC-1789, TC-1791, TC-1793 | 🚧 In progress |
 | FR-143 | FR-143-AC-1..9, FR-143-CON-1..2 | TC-1751..TC-1755, TC-1785, TC-1790, TC-1792, TC-1794 | 🚧 In progress |
 
@@ -1680,7 +1680,7 @@ blocked as stated above.
 | TC-1581 | No matrix row or review disposition cites a removed measurement as its evidence | Manual | P1 | NFR-043-AC-4 | 🚧 planned on issue #92 |
 | TC-1582 | No surviving permitted-path list gains an entry as part of the retirement | Static | P0 | NFR-043-AC-5 | 🚧 planned on issue #92 |
 | TC-1583 | The zero-publication and unchanged-surface properties are each still verified by at least one case | Integration | P0 | NFR-043-AC-6 | 🚧 planned on issue #92 |
-| TC-1740 | A `2.0.0` document carrying `supertypes`, `abstract`, `subsets`, `redefines`, `frame`, `requires`, `ensures`, `populations` and a `quire` clause is accepted by the Rust, Node and Python readers | Unit | P0 | FR-141-AC-1 | ✅ passed |
+| TC-1740 | A `2.0.0` document carrying `supertypes`, `abstract`, `subsets`, `redefines`, `frame`, inline `pre` and `post` clauses, `populations` and a `quire` clause is accepted by the Rust, Node and Python readers | Unit | P0 | FR-141-AC-1 | ✅ passed |
 | TC-1741 | An unresolved supertype, a supertype of another kind and a generalization cycle raise `UNRESOLVED_CONSTRUCT_REF`, `CONSTRUCT_TARGET_KIND` and `SUPERTYPE_CYCLE` | Unit | P0 | FR-141-AC-2 | ✅ passed |
 | TC-1742 | An unresolved `subsets` entry raises `UNRESOLVED_FEATURE_REF` and a widening `redefines` raises `INVALID_REDEFINITION` | Unit | P0 | FR-141-AC-3 | ✅ passed |
 | TC-1743 | An unresolved frame path raises `UNRESOLVED_FRAME_PATH` and an unresolved population member raises `UNRESOLVED_TYPE_REF` | Unit | P0 | FR-141-AC-4 | ✅ passed |
@@ -1699,7 +1699,7 @@ blocked as stated above.
 | TC-1756 | Published `1.0.0` and `1.1.0` fixtures keep reader verdicts and canonical bytes, and a `1.1.0` document carrying a `2.0.0` node is refused | Integration | P0 | NFR-044-AC-1 | ✅ passed |
 | TC-1757 | The `1.1.0` to `2.0.0` uplift of a document declaring types classifies additive, and the reverse change conditional | Unit | P0 | NFR-044-AC-2 | ✅ passed |
 | TC-1758 | An artifact with id _ and one with a non-ASCII-only id each raise one blocking UNSLUGGABLE_NAME at the frontmatter and lower to no definition, with no panic; an artifact with id UUID in a bundle using UUID raises DUPLICATE_TYPE_NAME naming type/UUID | Unit | P1 | FR-095-AC-17 | ✅ passed |
-| TC-1759 | An inline requires clause in ocl and an ensures clause in acme:tla are each accepted by the Rust, Node and Python readers with exactly one non-blocking info CLAUSE_LANGUAGE_UNCHECKED at the clause language; a quire clause raises nothing | Unit | P0 | FR-141-AC-6, FR-141-CON-2 | ✅ passed |
+| TC-1759 | An inline pre clause in ocl and an inline post clause in acme:tla are each accepted by the Rust, Node and Python readers with exactly one non-blocking info CLAUSE_LANGUAGE_UNCHECKED at the clause language; a quire clause raises nothing | Unit | P0 | FR-141-AC-6, FR-141-CON-2 | ✅ passed |
 | TC-1761 | A TypeSpec member of type `unknown` lowers to a field whose type is the kernel scalar `any`, identified `type/JsonObject` as the spec bundles identify it, with no blocking diagnostic and no zero-field record | Unit | P0 | FR-141-AC-7 | ✅ passed |
 | TC-1762 | A `2.0.0` entity selects the Rust `kind:entity` row: its struct renders as a record's and its module declares `IDENTITY_FIELDS` naming the identity fields in declared order, while a record declares none | Unit | P0 | FR-054-AC-16, FR-058-AC-13 | ✅ passed |
 | TC-1763 | A `2.0.0` entity renders as a TypeScript interface with a record validator that compiles under `tsc`, `TYPE_KIND` records `entity`, and `TYPE_IDENTITY_FIELDS` names its identity fields while a record has no entry | Unit | P0 | FR-064-AC-23, FR-067-AC-19 | ✅ passed |
@@ -1734,6 +1734,8 @@ blocked as stated above.
 | TC-1792 | A manifest declaration missing `meaning`, naming a member or rule outside the vocabulary, selecting a rule whose member presence it does not declare, admitting `*`, or referencing an undeclared role yields one blocking diagnostic naming the module and object type, and no artifact of that type lowers | Unit | P0 | FR-143-AC-8 | ✅ passed |
 | TC-1793 | A `featureOrder` naming its type's own fields and operations each once reads clean; an omitted operation raises `INCOMPLETE_FEATURE_ORDER`, another type's operation `UNRESOLVED_CONSTRUCT_REF`, and a repeated entry, an empty order, an order the declaration forbids and a missing required order `SCHEMA_VIOLATION` | Unit | P0 | FR-142-AC-13 | ✅ passed |
 | TC-1794 | Under a module whose `entity` declaration requires `featureOrder`, every `entity` artifact of the `business` fixture is refused with one blocking `ARTIFACT_NOT_LOWERED` naming the member and emits no type | Unit | P0 | FR-143-AC-9 | ✅ passed |
+| TC-1795 | A `pre` list mixing a clause id and an inline clause is accepted by the Rust, Node and Python readers; a dangling id item raises `DANGLING_CLAUSE_REF` at its own slot, and a repeated inline clause or a non-clause item is refused by the schema | Unit | P0 | FR-141-AC-8 | ✅ passed |
+| TC-1796 | For an operation whose `pre` mixes a clause id and an inline clause, the Rust, TypeScript and JSON Schema outputs carry the id and every inline language and text, and the Python output carries every inline language and text | Unit | P0 | FR-141-AC-9 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
 | TC-1585 | Every requirement the register names carries that issue's own link, and a row whose requirement omits it is reported | Unit | P0 | NFR-001-AC-6 | ✅ passed |
 

@@ -179,6 +179,10 @@ class ConstructKind(BaseModel):
     name: Annotated[str, Field(pattern='^[a-z][a-z0-9_]*$')]
 
 
+class ContractItem1(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+
+
 class FeaturePath(RootModel[str]):
     root: Annotated[
         str, Field(pattern='^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$')
@@ -228,14 +232,6 @@ class Occurrence(BaseModel):
     identity: common_schema.SemanticIdentity
     observedAt: AwareDatetime
     value: Any
-
-
-class PostItem(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
-
-
-class PreItem(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
 
 
 class Returns(BaseModel):
@@ -469,22 +465,6 @@ class InlineClause(BaseModel):
     text: str
 
 
-class Operation(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-    )
-    ensures: list[InlineClause] | None = None
-    frame: Frame | None = None
-    identity: common_schema.SemanticIdentity
-    name: Annotated[str, Field(min_length=1)]
-    origin: common_schema.Origin
-    params: list[FieldModel]
-    post: list[PostItem]
-    pre: list[PreItem]
-    requires: list[InlineClause] | None = None
-    returns: Returns | None = None
-
-
 class Population(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -559,6 +539,24 @@ class Variant(BaseModel):
     name: Annotated[str, Field(min_length=1)]
     origin: common_schema.Origin
     payloadType: common_schema.SemanticIdentity | None = None
+
+
+class ContractItem(RootModel[ContractItem1 | InlineClause]):
+    root: ContractItem1 | InlineClause
+
+
+class Operation(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    frame: Frame | None = None
+    identity: common_schema.SemanticIdentity
+    name: Annotated[str, Field(min_length=1)]
+    origin: common_schema.Origin
+    params: list[FieldModel]
+    post: list[ContractItem]
+    pre: list[ContractItem]
+    returns: Returns | None = None
 
 
 class TypeDefinition(BaseModel):

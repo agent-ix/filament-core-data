@@ -158,6 +158,9 @@ class ConstructKind:
     name: Annotated[str, Field(pattern='^[a-z][a-z0-9_]*$')]
 
 
+type ContractItem1 = Annotated[str, Field(min_length=1)]
+
+
 type FeaturePath = Annotated[
     str, Field(pattern='^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$')
 ]
@@ -199,12 +202,6 @@ class Occurrence:
     identity: common_schema.SemanticIdentity
     observedAt: AwareDatetime
     value: Any
-
-
-type PostItem = Annotated[str, Field(min_length=1)]
-
-
-type PreItem = Annotated[str, Field(min_length=1)]
 
 
 @dataclass(config=ConfigDict(extra='forbid'))
@@ -402,20 +399,6 @@ class InlineClause:
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
-class Operation:
-    identity: common_schema.SemanticIdentity
-    name: Annotated[str, Field(min_length=1)]
-    origin: common_schema.Origin
-    params: list[FieldModel]
-    post: list[PostItem]
-    pre: list[PreItem]
-    ensures: list[InlineClause] | None = None
-    frame: Frame | None = None
-    requires: list[InlineClause] | None = None
-    returns: Returns | None = None
-
-
-@dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
 class Population:
     displayName: Annotated[str, Field(min_length=1)]
     identity: common_schema.SemanticIdentity
@@ -475,6 +458,21 @@ class Variant:
     name: Annotated[str, Field(min_length=1)]
     origin: common_schema.Origin
     payloadType: common_schema.SemanticIdentity | None = None
+
+
+type ContractItem = ContractItem1 | InlineClause
+
+
+@dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
+class Operation:
+    identity: common_schema.SemanticIdentity
+    name: Annotated[str, Field(min_length=1)]
+    origin: common_schema.Origin
+    params: list[FieldModel]
+    post: list[ContractItem]
+    pre: list[ContractItem]
+    frame: Frame | None = None
+    returns: Returns | None = None
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))

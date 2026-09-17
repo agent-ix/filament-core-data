@@ -539,7 +539,7 @@ export function readContractIr(document, options = {}) {
 			}
 			// FR-141: `quire` is the one checked clause language; an inline
 			// clause in any other admitted language is carried unchecked.
-			for (const side of ["requires", "ensures"]) {
+			for (const side of ["pre", "post"]) {
 				for (const clause of asArray(operation[side])) {
 					if (!isObject(clause) || clause.language === "quire") continue;
 					raise(
@@ -553,7 +553,8 @@ export function readContractIr(document, options = {}) {
 				for (const clauseId of Array.isArray(operation[side])
 					? operation[side]
 					: []) {
-					if (clauseIds.has(String(clauseId))) continue;
+					// An inline clause binds no clause id.
+					if (isObject(clauseId) || clauseIds.has(String(clauseId))) continue;
 					raise(
 						DIAGNOSTIC_CODES.DANGLING_CLAUSE_REF,
 						`${side} names the clause id ${fragment(clauseId)}, which this type does not declare`,
