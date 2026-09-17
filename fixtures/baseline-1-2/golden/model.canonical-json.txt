@@ -1,1 +1,0 @@
-{"modelIdentity":"ix://agent-ix/commerce/model/order-1-2","modelRevision":{"namespace":"filament-core-data/producer-object-revision-1","value":"1.2.0"}}
