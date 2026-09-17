@@ -895,7 +895,7 @@ describe("FR-028 relationships, operations, and clauses", () => {
 		).toBeUndefined();
 		const quire = clone(goldenV11());
 		const quireText =
-			"Requires: self.status <> Status::Archived ∧ count(self.tags) ≥ 1\n";
+			"Pre: self.status <> Status::Archived ∧ count(self.tags) ≥ 1\n";
 		setAt(quire, "types.3.clauses.0.language", "quire");
 		setAt(quire, "types.3.clauses.0.text", quireText);
 		expect(validates("semantic-ir.schema.json", quire)).toBe(true);

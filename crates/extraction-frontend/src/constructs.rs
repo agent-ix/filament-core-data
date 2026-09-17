@@ -462,8 +462,13 @@ fn unlowered_model_feature(
         steps,
         members,
         vocabulary,
+        part,
+        port,
+        connection,
+        allocation,
+        feature_order,
     } = model;
-    let declared: [(bool, &'static str, bool); 11] = [
+    let declared: [(bool, &'static str, bool); 16] = [
         (supertypes.is_some(), "a `specializes` supertype", false),
         (abstract_type.is_some(), "an `abstract` flag", false),
         (
@@ -495,6 +500,11 @@ fn unlowered_model_feature(
             "a `Ubiquitous Language` table",
             admits(Member::Vocabulary),
         ),
+        (part.is_some(), "a systems `part` table", false),
+        (port.is_some(), "a systems `port` table", false),
+        (connection.is_some(), "a systems `connection` table", false),
+        (allocation.is_some(), "a systems `allocation` table", false),
+        (feature_order.is_some(), "a `Features` table", false),
     ];
     declared
         .into_iter()

@@ -45,9 +45,8 @@ fn business_module() -> PathBuf {
     fixture("modules/spec-objects-business")
 }
 
-/// The `edge_types` registry FR-094 categorises frontmatter edges by; the
-/// vendored business module declares none, so a bundle with an allowed
-/// edge lifted under it alone raises `UNKNOWN_EDGE_VERB`.
+/// The `edge_types` registry FR-094 categorises frontmatter edges by,
+/// declaring the business module's verbs byte-identically.
 fn edge_vocabulary() -> PathBuf {
     fixture("modules/edge-vocabulary")
 }
@@ -1099,7 +1098,7 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     assert!(status.get("fields").is_none());
     assert_eq!(
         status["origin"]["source"]["path"],
-        "spec/functional/EN-001-order-status.md"
+        "spec/functional/EN_001-order-status.md"
     );
     let variants = status["variants"].as_array().expect("variants");
     let names: Vec<&str> = variants
@@ -1125,7 +1124,7 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
             v["origin"]["source"],
             json!({
                 "sourceIdentity": "ix://agent-ix/orders/spec",
-                "path": "spec/functional/EN-001-order-status.md",
+                "path": "spec/functional/EN_001-order-status.md",
                 "startLine": 15 + i, "startColumn": 3
             })
         );
@@ -1145,12 +1144,12 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     let colour: Vec<&Diagnostic> =
         with_code(&missing.lowered.diagnostics, Code::ArtifactNotLowered)
             .into_iter()
-            .filter(|d| d.message.contains("EN-001"))
+            .filter(|d| d.message.contains("EN_001"))
             .collect();
     assert_eq!(colour.len(), 1, "{:?}", missing.lowered.diagnostics);
     assert!(colour[0].blocking);
     assert!(
-        colour[0].message.contains("values_table"),
+        colour[0].message.contains("`values`"),
         "{}",
         colour[0].message
     );
@@ -1161,7 +1160,7 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     );
     assert_eq!(
         colour[0].locus,
-        Some(locus(&missing, "spec/functional/EN-001-colour.md", 1, 1))
+        Some(locus(&missing, "spec/functional/EN_001-colour.md", 1, 1))
     );
     assert!(!missing
         .lowered
@@ -1359,8 +1358,8 @@ fn tc_1334_distinct_names_with_one_slug_refuse_at_type_field_and_variant_levels(
     scratch_spec(variants.path());
     write_fixture(
         variants.path(),
-        "spec/functional/EN-001.md",
-        "---\nid: EN-001\ntitle: Marks\nname: Marks\nobject: enumeration\ntype: FR\n---\n# Marks\n\n## Values\n\n| Value | Description |\n| --- | --- |\n| a_b | first |\n| a__b | second |\n",
+        "spec/functional/EN_001.md",
+        "---\nid: EN_001\ntitle: Marks\nname: Marks\nobject: enumeration\ntype: FR\n---\n# Marks\n\n## Values\n\n| Value | Description |\n| --- | --- |\n| a_b | first |\n| a__b | second |\n",
     );
     let variant_lift = lift_at(variants.path(), &[&business_module(), &edge_vocabulary()]);
     let variant_diagnostics = with_code(&variant_lift.lowered.diagnostics, Code::UnsluggableName);
@@ -1439,7 +1438,7 @@ fn tc_1335_a_domain_without_properties_lowers_to_an_empty_record_and_lossy_yield
     assert!(domain.get("fields").is_none(), "{domain}");
     assert_eq!(domain["roles"], json!(["business:domain"]));
     assert_eq!(
-        lift.extractions.artifacts["DM-001"]
+        lift.extractions.artifacts["DM_001"]
             .extraction
             .availability
             .fields
@@ -1451,7 +1450,7 @@ fn tc_1335_a_domain_without_properties_lowers_to_an_empty_record_and_lossy_yield
             .lowered
             .diagnostics
             .iter()
-            .any(|d| d.message.contains("DM-001")),
+            .any(|d| d.message.contains("DM_001")),
         "no diagnostic for the domain: {:?}",
         lift.lowered.diagnostics
     );
@@ -1465,9 +1464,9 @@ fn tc_1335_a_domain_without_properties_lowers_to_an_empty_record_and_lossy_yield
 
     // A lossy extraction: one DECLARED_LOSS naming lossy-extraction.
     let package = PackageIdentity::from(lift.bundle.package());
-    let artifact = artifact_ref(&lift, "DM-001");
-    let ctx = context(&lift, &package, "DM-001", &artifact);
-    let mut lossy = lift.extractions.artifacts["DM-001"].extraction.clone();
+    let artifact = artifact_ref(&lift, "DM_001");
+    let ctx = context(&lift, &package, "DM_001", &artifact);
+    let mut lossy = lift.extractions.artifacts["DM_001"].extraction.clone();
     lossy.availability.fields.lossy = true;
     let lowered = lower_record(&lossy, &lift.resolutions.resolutions, &[], &ctx).expect("lowers");
     assert_eq!(lowered.diagnostics.len(), 1, "{:?}", lowered.diagnostics);
@@ -1482,7 +1481,7 @@ fn tc_1335_a_domain_without_properties_lowers_to_an_empty_record_and_lossy_yield
     assert!(!loss.blocking);
     assert_eq!(
         loss.locus,
-        Some(locus(&lift, "spec/domain/DM-001-ordering.md", 1, 1))
+        Some(locus(&lift, "spec/domain/DM_001-ordering.md", 1, 1))
     );
     assert_eq!(lowered.definition.fields, Some(Vec::new()));
 }

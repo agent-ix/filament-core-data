@@ -5,11 +5,11 @@ object: entity
 type: FR
 name: Order
 relationships:
-  - target: SM-001
+  - target: SM_001
     type: owns
-  - target: EN-001
+  - target: EN_001
     type: references
-  - target: NE-001
+  - target: NE_001
     type: contains
   - target: US-001
     type: traces_to

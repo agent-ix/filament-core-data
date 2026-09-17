@@ -18,7 +18,7 @@ const OUT: &str = "semantic-ir.json";
 
 /// The engine's non-blocking advisory for FR-006's `ocl` clause in
 /// `config-version-table`: `ocl` is carried by clause id, unchecked.
-const OCL_UNCHECKED: &str = "agent-ix.extraction-frontend.ENGINE_DIAGNOSTIC: semantic.clause-language-unchecked: clause immutable: language ocl is carried unchecked (spec/functional/FR-006-config-version-entity.md:38:1)";
+const OCL_UNCHECKED: &str = "agent-ix.extraction-frontend.ENGINE_DIAGNOSTIC: semantic.clause-language-unchecked: clause immutable: language ocl is carried unchecked (spec/functional/FR-006-config-version-entity.md:34:1)";
 
 fn bin() -> Command {
     Command::new(env!("CARGO_BIN_EXE_extraction-frontend"))

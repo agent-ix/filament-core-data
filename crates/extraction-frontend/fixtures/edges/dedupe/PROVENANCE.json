@@ -2,7 +2,7 @@
   "source": "authored",
   "case": "dedupe",
   "files": [
-    "spec/functional/EN-001-colour.md",
+    "spec/functional/EN_001-colour.md",
     "spec/functional/FR-005-config-overlay-entity.md",
     "spec/functional/FR-006-config-version-entity.md",
     "spec/spec.md"
@@ -17,7 +17,7 @@
       "fixture": "spec/functional/FR-006-config-version-entity.md",
       "from": "../../config-version-table/spec/functional/FR-006-config-version-entity.md",
       "edits": [
-        "frontmatter relationships: references EN-001 twice (bare id and ix:// form), contains FR-005 and references FR-005",
+        "frontmatter relationships: references EN_001 twice (bare id and ix:// form), contains FR-005 and references FR-005",
         "Properties reduced to two rows; Invariants dropped"
       ]
     }

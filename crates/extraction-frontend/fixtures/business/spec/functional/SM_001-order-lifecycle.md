@@ -1,17 +1,17 @@
 ---
-id: SM-001
+id: SM_001
 title: Order Lifecycle
 object: state_machine
 type: FR
 name: OrderLifecycle
 relationships:
-  - target: EV-001
+  - target: EV_001
     type: raises
-  - target: EN-001
+  - target: EN_001
     type: references
 ---
 
-# SM-001: Order Lifecycle
+# SM_001: Order Lifecycle
 
 ## Description
 
@@ -46,6 +46,6 @@ Returns: OrderStatus [1]
 
 | From | To | Trigger | Guard | Emits |
 |------|----|---------|-------|-------|
-| draft | placed | advance | | EV-001 |
+| draft | placed | advance | | EV_001 |
 | placed | shipped | advance | | |
 | placed | cancelled | advance | | |

@@ -7,14 +7,18 @@
       "source": "spec/functional/FR-006-config-version-entity.md",
       "source_sha256": "b395b2c001744672a2a5f50e5ca9d975b90f764cb199e64e3ac5a77b7b62ca8a",
       "fixture": "spec/functional/FR-006-config-version-entity.md",
-      "edits": []
+      "edits": [
+        "the body `## Relationships` bullet list removed: under spec-objects-business 0.6.0 a `## Relationships` section is a `Name | Verb | Target | Multiplicity` table the engine extracts, and a bullet list is refused as semantic.feature-not-extractable"
+      ]
     },
     {
       "source": "spec/spec.md",
       "fixture": "spec/spec.md",
-      "edits": ["truncated to the frontmatter block and the first H1 line; every kept byte is verbatim"]
+      "edits": [
+        "truncated to the frontmatter block and the first H1 line; every kept byte is verbatim"
+      ]
     }
   ],
   "edits": [],
-  "note": "The live, free-column (`Column | Type | Constraints`) FR-006: the legacy-form control of FR-091-AC-9/AC-10 and FR-096-AC-4. Never edited; the engine's semantic.legacy-properties-form warning at line 17 is the assertion."
+  "note": "The live, free-column (`Column | Type | Constraints`) FR-006: the legacy-form control of FR-091-AC-9/AC-10 and FR-096-AC-4. Edited only as `edits` records; the engine's semantic.legacy-properties-form warning at line 17 is the assertion."
 }

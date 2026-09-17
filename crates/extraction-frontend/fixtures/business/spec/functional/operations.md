@@ -44,12 +44,12 @@ context Basket inv capped: self.lines->size() <= 100
 | quantity | Integer | 1 | |
 
 Returns: Basket [1]
-Requires: non_empty
-Ensures: capped, non_empty
+Pre: non_empty
+Post: capped, non_empty
 
 ### clear
 
-Ensures: non_empty
+Post: non_empty
 
 ### total
 

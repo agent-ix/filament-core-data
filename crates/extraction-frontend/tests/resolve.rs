@@ -464,10 +464,10 @@ fn tc_1216_an_enumeration_artifact_resolves_to_enumeration_and_an_entity_of_the_
     let status = resolution_of(&lift.resolutions, "FR-006", "status");
     match &status.resolution {
         Resolution::Enumeration(artifact) => {
-            assert_eq!(artifact.id, "EN-001");
-            assert_eq!(artifact.path, "spec/functional/EN-001-status.md");
+            assert_eq!(artifact.id, "EN_001");
+            assert_eq!(artifact.path, "spec/functional/EN_001-status.md");
         }
-        other => panic!("expected Enumeration(EN-001), got {other:?}"),
+        other => panic!("expected Enumeration(EN_001), got {other:?}"),
     }
     let package = PackageIdentity::from(bundle.package());
     assert_eq!(

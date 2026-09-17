@@ -1260,7 +1260,7 @@ pub fn lower_bundle(
                         Code::ArtifactNotLowered,
                         Disposition::NotLowered(NotLoweredReason::Other),
                         format!(
-                            "artifact {} ({}) lowers to no definition: the `values_table` locator is unsatisfied ({unsatisfied})",
+                            "artifact {} ({}) lowers to no definition: the `values` locator is unsatisfied ({unsatisfied})",
                             document.id(),
                             document.path()
                         ),

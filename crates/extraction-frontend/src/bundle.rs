@@ -8,11 +8,9 @@
 //!
 //! # Construct declarations
 //!
-//! Each object type's `construct` declaration (FR-142) is read behind one
-//! seam, [`declared_construct`], which returns the raw declaration as
-//! `CompiledArchetype::construct()` will once the pinned engine carries it
-//! (quire-rs#445); until then it reads the manifest's
-//! `object_types[].construct` through the engine's own manifest parser.
+//! Each object type's `construct` declaration (FR-142) is read through one
+//! seam, `CompiledArchetype::construct()`, which returns the declaration raw
+//! as the engine loaded it.
 //! Every declaration is checked against the core vocabulary and the roles
 //! the loaded object types carry, and refused as `MODULE_REFUSED` naming the
 //! module and the object type (FR-143 "Declarations").
@@ -235,7 +233,8 @@ impl Bundle {
         let carriers = role_carriers(active.iter().map(|(archetype, _)| *archetype));
         let mut object_types = BTreeMap::new();
         for (archetype, semantic) in active {
-            let construct = declared_construct(&manifests, archetype)
+            let construct = archetype
+                .construct()
                 .map(|raw| {
                     let loaded = Loaded {
                         registry: &registry,
@@ -462,11 +461,9 @@ pub(crate) fn parsed_manifest(root: &Path, bytes: &[u8]) -> Result<(String, Mani
     Ok((name, manifest))
 }
 
-/// One module's manifest as the construct seam reads it.
+/// One module's manifest as a construct kind cites it.
 struct ModuleManifest {
     digest: String,
-    /// Each object type's raw `construct` declaration, by object type name.
-    constructs: BTreeMap<String, serde_json::Value>,
 }
 
 /// The manifest of every module root, keyed by module name; the first root
@@ -475,35 +472,12 @@ fn module_manifests(module_roots: &[&Path]) -> Result<BTreeMap<String, ModuleMan
     let mut out = BTreeMap::new();
     for root in module_roots {
         let bytes = read_manifest(root)?;
-        let (name, manifest) = parsed_manifest(root, &bytes)?;
-        let constructs = manifest
-            .object_types
-            .into_iter()
-            .filter_map(|object_type| {
-                let raw = object_type.extras.get("construct")?.clone();
-                Some((object_type.name, raw))
-            })
-            .collect();
+        let (name, _) = parsed_manifest(root, &bytes)?;
         out.entry(name).or_insert(ModuleManifest {
             digest: sha256_prefixed(&bytes),
-            constructs,
         });
     }
     Ok(out)
-}
-
-/// The seam: the raw `construct` declaration of `archetype`, as
-/// `CompiledArchetype::construct() -> Option<&serde_json::Value>` returns it
-/// once the pinned engine carries it (quire-rs#445). Nothing else reads a
-/// declaration.
-fn declared_construct<'a>(
-    manifests: &'a BTreeMap<String, ModuleManifest>,
-    archetype: &CompiledArchetype,
-) -> Option<&'a serde_json::Value> {
-    manifests
-        .get(&archetype.module)?
-        .constructs
-        .get(&archetype.name)
 }
 
 /// Every role a loaded object type carries, with the short names of the

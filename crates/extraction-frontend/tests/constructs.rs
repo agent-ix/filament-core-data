@@ -49,12 +49,18 @@ fn v1_1() -> Value {
     read_json(&workspace_dir().join("fixtures/semantic/v1/positive/semantic-ir-v1-1.json"))
 }
 
+/// The identity segment of artifact `id`: its slug (FR-095), so an
+/// underscore id such as `AR_001` mints `AR-001`.
+fn segment(id: &str) -> String {
+    id.replace('_', "-")
+}
+
 fn type_ref(id: &str) -> String {
-    format!("{PREFIX}type/{id}")
+    format!("{PREFIX}type/{}", segment(id))
 }
 
 fn field_ref(owner: &str, name: &str) -> String {
-    format!("{PREFIX}field/{owner}-{name}")
+    format!("{PREFIX}field/{}-{name}", segment(owner))
 }
 
 /// The index of the type whose identity is `identity` in `document`.
@@ -1077,15 +1083,15 @@ fn tc_1751_the_business_fixture_lifts_to_one_construct_of_each_kind_the_reader_a
     );
     for (id, kind) in [
         ("FR-001", "entity"),
-        ("VO-001", "value_object"),
-        ("NE-001", "nested_entity"),
-        ("AR-001", "aggregate_root"),
-        ("EN-001", "enumeration"),
-        ("EV-001", "event"),
-        ("SM-001", "state_machine"),
-        ("PR-001", "process"),
-        ("RP-001", "repository"),
-        ("DM-001", "domain"),
+        ("VO_001", "value_object"),
+        ("NE_001", "nested_entity"),
+        ("AR_001", "aggregate_root"),
+        ("EN_001", "enumeration"),
+        ("EV_001", "event"),
+        ("SM_001", "state_machine"),
+        ("PR_001", "process"),
+        ("RP_001", "repository"),
+        ("DM_001", "domain"),
     ] {
         assert_eq!(
             construct(&document, id)["kind"],
@@ -1099,28 +1105,28 @@ fn tc_1751_the_business_fixture_lifts_to_one_construct_of_each_kind_the_reader_a
         json!([field_ref("FR-001", "id")])
     );
     assert_eq!(
-        construct(&document, "PR-001")["identityFields"],
-        json!([field_ref("PR-001", "id")])
+        construct(&document, "PR_001")["identityFields"],
+        json!([field_ref("PR_001", "id")])
     );
     assert_eq!(
-        construct(&document, "AR-001")["members"],
-        refs(&["FR-001", "VO-001"])
+        construct(&document, "AR_001")["members"],
+        refs(&["FR-001", "VO_001"])
     );
     assert_eq!(
-        construct(&document, "NE-001")["owner"],
+        construct(&document, "NE_001")["owner"],
         json!(type_ref("FR-001"))
     );
     assert_eq!(
-        construct(&document, "EV-001")["occurrenceField"],
-        json!(field_ref("EV-001", "placedAt"))
+        construct(&document, "EV_001")["occurrenceField"],
+        json!(field_ref("EV_001", "placedAt"))
     );
     assert_eq!(
-        construct(&document, "RP-001")["persists"],
+        construct(&document, "RP_001")["persists"],
         refs(&["FR-001"])
     );
     assert_eq!(
-        construct(&document, "DM-001")["members"],
-        refs(&["AR-001", "EN-001", "FR-001"])
+        construct(&document, "DM_001")["members"],
+        refs(&["AR_001", "EN_001", "FR-001"])
     );
 }
 
@@ -1131,17 +1137,17 @@ fn tc_1752_type_identities_carry_the_artifact_id_and_a_rename_leaves_relationshi
 {
     let document = business_document();
     for (id, name) in [
-        ("AR-001", "OrderAggregate"),
-        ("DM-001", "Ordering"),
-        ("EN-001", "OrderStatus"),
-        ("EV-001", "OrderPlaced"),
+        ("AR_001", "OrderAggregate"),
+        ("DM_001", "Ordering"),
+        ("EN_001", "OrderStatus"),
+        ("EV_001", "OrderPlaced"),
         ("FR-001", "Order"),
-        ("NE-001", "Shipment"),
+        ("NE_001", "Shipment"),
         ("OP-001", "Basket"),
-        ("PR-001", "Fulfilment"),
-        ("RP-001", "OrderRepository"),
-        ("SM-001", "OrderLifecycle"),
-        ("VO-001", "OrderLine"),
+        ("PR_001", "Fulfilment"),
+        ("RP_001", "OrderRepository"),
+        ("SM_001", "OrderLifecycle"),
+        ("VO_001", "OrderLine"),
     ] {
         assert_eq!(construct(&document, id)["displayName"], name, "{id}");
     }
@@ -1149,7 +1155,7 @@ fn tc_1752_type_identities_carry_the_artifact_id_and_a_rename_leaves_relationshi
     let dir = tempfile::tempdir().expect("tempdir");
     let root = dir.path().join("business");
     copy_tree(&fixture("business"), &root);
-    let path = root.join("spec/domain/DM-001-ordering.md");
+    let path = root.join("spec/domain/DM_001-ordering.md");
     let text = fs::read_to_string(&path).expect("read");
     fs::write(
         &path,
@@ -1169,7 +1175,7 @@ fn tc_1752_type_identities_carry_the_artifact_id_and_a_rename_leaves_relationshi
             "{}",
             before["identity"]
         );
-        if before["identity"] == type_ref("DM-001") {
+        if before["identity"] == type_ref("DM_001") {
             assert_eq!(after["displayName"], "Commerce");
         } else {
             assert_eq!(before, after);
@@ -1217,15 +1223,15 @@ fn lower_mutated(mutate: impl Fn(&mut Extractions)) -> Lowered {
     lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0")
 }
 
-/// Transition `index` of `SM-001`, as the engine recorded it.
+/// Transition `index` of `SM_001`, as the engine recorded it.
 fn sm_001_transition(extractions: &mut Extractions, index: usize) -> &mut TransitionDecl {
     extractions
         .artifacts
-        .get_mut("SM-001")
+        .get_mut("SM_001")
         .and_then(|a| a.extraction.model.as_mut())
         .and_then(|m| m.transitions.as_mut())
         .and_then(|t| t.get_mut(index))
-        .expect("SM-001 carries the transition")
+        .expect("SM_001 carries the transition")
 }
 
 /// The `ARTIFACT_NOT_LOWERED` construct refusals of `lowered`.
@@ -1302,14 +1308,14 @@ const PROPERTIES: &str = "## Properties\n\n| Field | Type | Multiplicity | Const
 fn tc_1753_each_broken_built_in_rule_is_one_blocking_refusal_and_emits_no_type() {
     let cases: Vec<(&str, &str, Edit, &str)> = vec![
         (
-            "PR-001",
-            "spec/functional/PR-001-fulfilment.md",
+            "PR_001",
+            "spec/functional/PR_001-fulfilment.md",
             Box::new(|t| t.replace("| id | UUID | 1 | identity |", "| id | UUID | 1 | |")),
             "no identity field",
         ),
         (
-            "VO-001",
-            "spec/functional/VO-001-order-line.md",
+            "VO_001",
+            "spec/functional/VO_001-order-line.md",
             Box::new(|t| {
                 t.replace(
                     "| sku | String | 1 |",
@@ -1319,14 +1325,14 @@ fn tc_1753_each_broken_built_in_rule_is_one_blocking_refusal_and_emits_no_type()
             "declares an identity field",
         ),
         (
-            "AR-001",
-            "spec/functional/AR-001-order-aggregate.md",
+            "AR_001",
+            "spec/functional/AR_001-order-aggregate.md",
             Box::new(|t| t[..t.find("## Invariants").expect("invariants")].to_string()),
             "declares no invariant",
         ),
         (
-            "EV-001",
-            "spec/functional/EV-001-order-placed.md",
+            "EV_001",
+            "spec/functional/EV_001-order-placed.md",
             Box::new(|t| {
                 t.replace(
                     "| placedAt | Timestamp | 1 | |",
@@ -1336,8 +1342,8 @@ fn tc_1753_each_broken_built_in_rule_is_one_blocking_refusal_and_emits_no_type()
             "declares 2 Timestamp fields",
         ),
         (
-            "SM-001",
-            "spec/functional/SM-001-order-lifecycle.md",
+            "SM_001",
+            "spec/functional/SM_001-order-lifecycle.md",
             Box::new(|t| {
                 // Without an operation the engine refuses every trigger, so
                 // the transitions go too and the states alone reach the rule.
@@ -1349,20 +1355,20 @@ fn tc_1753_each_broken_built_in_rule_is_one_blocking_refusal_and_emits_no_type()
             "declares no operation, and the construct requires one",
         ),
         (
-            "RP-001",
-            "spec/functional/RP-001-order-repository.md",
+            "RP_001",
+            "spec/functional/RP_001-order-repository.md",
             Box::new(|t| t.replace("## Invariants", &format!("{PROPERTIES}## Invariants"))),
             "declares fields, and the construct carries none",
         ),
         (
-            "RP-001",
-            "spec/functional/RP-001-order-repository.md",
+            "RP_001",
+            "spec/functional/RP_001-order-repository.md",
             Box::new(|t| t[..t.find("## Operations").expect("operations")].to_string()),
             "declares no operation, and the construct requires one",
         ),
         (
-            "DM-001",
-            "spec/domain/DM-001-ordering.md",
+            "DM_001",
+            "spec/domain/DM_001-ordering.md",
             Box::new(|t| {
                 t.replace(
                     "## Bounded Context",
@@ -1381,19 +1387,19 @@ fn tc_1753_each_broken_built_in_rule_is_one_blocking_refusal_and_emits_no_type()
 #[test]
 fn tc_1754_a_nested_entity_with_no_owner_or_two_owners_is_refused_naming_the_owner_rule() {
     let orphan = lower_edited("spec/functional/FR-001-order.md", |t| {
-        t.replace("  - target: NE-001\n    type: contains\n", "")
+        t.replace("  - target: NE_001\n    type: contains\n", "")
     });
-    assert_refused(&orphan, "NE-001", "0 types contain it");
+    assert_refused(&orphan, "NE_001", "0 types contain it");
 
-    let shared = lower_edited("spec/functional/AR-001-order-aggregate.md", |t| {
+    let shared = lower_edited("spec/functional/AR_001-order-aggregate.md", |t| {
         t.replace(
-            "  - target: VO-001\n    type: contains\n",
-            "  - target: VO-001\n    type: contains\n  - target: NE-001\n    type: contains\n",
+            "  - target: VO_001\n    type: contains\n",
+            "  - target: VO_001\n    type: contains\n  - target: NE_001\n    type: contains\n",
         )
     });
-    assert_refused(&shared, "NE-001", "2 types contain it");
+    assert_refused(&shared, "NE_001", "2 types contain it");
 
-    // B (NE-001) is refused, and C (NE-002) is owned only by B: the fixed
+    // B (NE_001) is refused, and C (NE_002) is owned only by B: the fixed
     // point refuses C too, and keeps C's own diagnostics.
     let dir = tempfile::tempdir().expect("tempdir");
     let root = dir.path().join("business");
@@ -1402,30 +1408,30 @@ fn tc_1754_a_nested_entity_with_no_owner_or_two_owners_is_refused_naming_the_own
     let text = fs::read_to_string(&order).expect("read");
     fs::write(
         &order,
-        text.replace("  - target: NE-001\n    type: contains\n", ""),
+        text.replace("  - target: NE_001\n    type: contains\n", ""),
     )
     .expect("write");
-    let shipment = root.join("spec/functional/NE-001-shipment.md");
+    let shipment = root.join("spec/functional/NE_001-shipment.md");
     let text = fs::read_to_string(&shipment).expect("read");
     fs::write(
         &shipment,
         text.replace(
             "relationships:\n",
-            "relationships:\n  - target: NE-002\n    type: contains\n",
+            "relationships:\n  - target: NE_002\n    type: contains\n",
         ),
     )
     .expect("write");
     fs::write(
-        root.join("spec/functional/NE-002-parcel.md"),
-        "---\nid: NE-002\ntitle: Parcel\nobject: nested_entity\ntype: FR\nname: Parcel\n---\n\n# NE-002: Parcel\n\n## Description\n\nA parcel of one shipment.\n\n## Properties\n\n| Field | Type | Multiplicity | Constraints |\n|-------|------|--------------|-------------|\n| id | UUID | 1 | identity |\n| tags | String | 0..* | |\n",
+        root.join("spec/functional/NE_002-parcel.md"),
+        "---\nid: NE_002\ntitle: Parcel\nobject: nested_entity\ntype: FR\nname: Parcel\n---\n\n# NE_002: Parcel\n\n## Description\n\nA parcel of one shipment.\n\n## Properties\n\n| Field | Type | Multiplicity | Constraints |\n|-------|------|--------------|-------------|\n| id | UUID | 1 | identity |\n| tags | String | 0..* | |\n",
     )
     .expect("write");
     let chained = lower(&root);
     let ids = refused_ids(&chained);
-    assert!(ids.contains(&"NE-001".to_owned()), "{ids:?}");
+    assert!(ids.contains(&"NE_001".to_owned()), "{ids:?}");
     let parcel: Vec<_> = refusals(&chained)
         .into_iter()
-        .filter(|d| d.message.contains("artifact NE-002 "))
+        .filter(|d| d.message.contains("artifact NE_002 "))
         .collect();
     assert_eq!(parcel.len(), 1, "{:#?}", chained.diagnostics);
     assert!(
@@ -1440,8 +1446,8 @@ fn tc_1754_a_nested_entity_with_no_owner_or_two_owners_is_refused_naming_the_own
             .any(|d| d.code == WireCode::Registry(Code::DeclaredLoss)
                 && d.locus
                     .as_ref()
-                    .is_some_and(|l| l.path.ends_with("NE-002-parcel.md"))),
-        "NE-002's own declared loss is dropped: {:#?}",
+                    .is_some_and(|l| l.path.ends_with("NE_002-parcel.md"))),
+        "NE_002's own declared loss is dropped: {:#?}",
         chained.diagnostics
     );
     assert_no_edge_to_refused(&chained);
@@ -1461,7 +1467,7 @@ fn names(construct: &Value, member: &str, key: &str) -> Vec<String> {
 #[test]
 fn tc_1755_state_machine_process_and_domain_lift_their_engine_members() {
     let document = business_document();
-    let machine = construct(&document, "SM-001");
+    let machine = construct(&document, "SM_001");
     let mut states = names(machine, "states", "name");
     states.sort();
     assert_eq!(states, ["cancelled", "draft", "placed", "shipped"]);
@@ -1491,12 +1497,12 @@ fn tc_1755_state_machine_process_and_domain_lift_their_engine_members() {
         );
     }
     assert_eq!(
-        names(construct(&document, "PR-001"), "steps", "name"),
+        names(construct(&document, "PR_001"), "steps", "name"),
         ["placed", "picked", "shipped"]
     );
     assert!(
-        !names(construct(&document, "DM-001"), "vocabulary", "term").is_empty(),
-        "DM-001 lifts no vocabulary"
+        !names(construct(&document, "DM_001"), "vocabulary", "term").is_empty(),
+        "DM_001 lifts no vocabulary"
     );
 }
 
@@ -1506,31 +1512,31 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
     type Edit = Box<dyn Fn(&str) -> String>;
     let cases: Vec<(&str, &str, Edit, &str)> = vec![
         (
-            "SM-001",
-            "spec/functional/SM-001-order-lifecycle.md",
+            "SM_001",
+            "spec/functional/SM_001-order-lifecycle.md",
             Box::new(|t| {
                 t.replace(
-                    "| draft | placed | advance | | EV-001 |",
-                    "| draft | placed | advance | | EN-001 |",
+                    "| draft | placed | advance | | EV_001 |",
+                    "| draft | placed | advance | | EN_001 |",
                 )
             }),
-            "names `EN-001`, which is the artifact id of no type of the bundle the construct's transitions admit",
+            "names `EN_001`, which is the artifact id of no type of the bundle the construct's transitions admit",
         ),
         (
-            "PR-001",
-            "spec/functional/PR-001-fulfilment.md",
-            Box::new(|t| t.replace("| placed | event | EV-001 |", "| placed | event | EV-999 |")),
-            "names `EV-999`, which is the artifact id of no type of the bundle the construct's steps admit",
+            "PR_001",
+            "spec/functional/PR_001-fulfilment.md",
+            Box::new(|t| t.replace("| placed | event | EV_001 |", "| placed | event | EV_999 |")),
+            "names `EV_999`, which is the artifact id of no type of the bundle the construct's steps admit",
         ),
         (
-            "VO-001",
-            "spec/functional/VO-001-order-line.md",
+            "VO_001",
+            "spec/functional/VO_001-order-line.md",
             Box::new(|t| t.replacen("type: FR\n", "type: FR\nabstract: true\n", 1)),
             "it declares an `abstract` flag, which no member of the construct lowers",
         ),
         (
-            "SM-001",
-            "spec/functional/SM-001-order-lifecycle.md",
+            "SM_001",
+            "spec/functional/SM_001-order-lifecycle.md",
             Box::new(|t| {
                 t.replace(
                     "| placed | cancelled | advance | | |",
@@ -1540,19 +1546,19 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
             "the engine's model extraction is unavailable",
         ),
         (
-            "SM-001",
-            "spec/functional/SM-001-order-lifecycle.md",
+            "SM_001",
+            "spec/functional/SM_001-order-lifecycle.md",
             Box::new(|t| {
                 t.replace(
-                    "| draft | placed | advance | | EV-001 |",
-                    "| draft | placed | advance | | EV-001, EV-001 |",
+                    "| draft | placed | advance | | EV_001 |",
+                    "| draft | placed | advance | | EV_001, EV_001 |",
                 )
             }),
-            "names `EV-001` twice, and one cell names each type at most once",
+            "names `EV_001` twice, and one cell names each type at most once",
         ),
         (
-            "VO-001",
-            "spec/functional/VO-001-order-line.md",
+            "VO_001",
+            "spec/functional/VO_001-order-line.md",
             Box::new(|t| {
                 t.replace(
                     "relationships:\n",
@@ -1562,8 +1568,8 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
             "it declares a `specializes` supertype, which no member of the construct lowers",
         ),
         (
-            "VO-001",
-            "spec/functional/VO-001-order-line.md",
+            "VO_001",
+            "spec/functional/VO_001-order-line.md",
             Box::new(|t| {
                 t.replace(
                     "| Field | Type | Multiplicity | Constraints |\n|-------|------|--------------|-------------|",
@@ -1577,8 +1583,8 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
             "it declares Presence, Subsets or Redefines cells, which no member of the construct lowers",
         ),
         (
-            "SM-001",
-            "spec/functional/SM-001-order-lifecycle.md",
+            "SM_001",
+            "spec/functional/SM_001-order-lifecycle.md",
             Box::new(|t| {
                 t.replace(
                     "Returns: OrderStatus [1]\n",
@@ -1588,8 +1594,8 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
             "it declares Modifies, Creates or Deletes lines, which no member of the construct lowers",
         ),
         (
-            "AR-001",
-            "spec/functional/AR-001-order-aggregate.md",
+            "AR_001",
+            "spec/functional/AR_001-order-aggregate.md",
             // Members derive from composite relationships (FR-143); the
             // module's `Members` table is refused, never read.
             Box::new(|t| {
@@ -1601,8 +1607,8 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
             "it declares a `Members` table, which no member of the construct lowers",
         ),
         (
-            "EN-001",
-            "spec/functional/EN-001-order-status.md",
+            "EN_001",
+            "spec/functional/EN_001-order-status.md",
             Box::new(|t| t.replacen("type: FR\n", "type: FR\nabstract: true\n", 1)),
             "lowers to no `enumeration` construct: it declares an `abstract` flag, which no member of the construct lowers",
         ),
@@ -1612,7 +1618,22 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
     }
 
     // A population artifact: its `Members` table has no construct member.
+    // The engine reads a model table only under the locator key that names
+    // it (quire-rs#449), and the vendored manifest still declares the
+    // population extent table under `members`, so the key is renamed for
+    // this case (agent-ix/spec-objects-business#18).
     let dir = tempfile::tempdir().expect("tempdir");
+    let module = dir.path().join("spec-objects-business");
+    copy_tree(&business_module(), &module);
+    let manifest = module.join("manifest.yaml");
+    let text = fs::read_to_string(&manifest).expect("manifest");
+    let keyed = text.replacen(
+        "        members:\n          from: table_row\n          under_section: Members\n          required: true\n          assert:\n            columns: [Type, Extent]",
+        "        population:\n          from: table_row\n          under_section: Members\n          required: true\n          assert:\n            columns: [Type, Extent]",
+        1,
+    );
+    assert_ne!(keyed, text, "the population table is keyed `members`");
+    fs::write(&manifest, keyed).expect("write manifest");
     let root = dir.path().join("business");
     copy_tree(&fixture("business"), &root);
     fs::write(
@@ -1620,8 +1641,19 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
         "---\nid: PO-001\ntitle: Open Orders\nobject: population\ntype: FR\nname: OpenOrders\n---\n\n# PO-001: Open Orders\n\n## Description\n\nThe open orders.\n\n## Members\n\n| Type | Extent |\n|------|--------|\n| Order | 0..* |\n",
     )
     .expect("write");
+    let bundle = Bundle::load(&root, &[module.as_path(), edge_vocabulary().as_path()])
+        .unwrap_or_else(|r| panic!("refused: {r}"));
+    let extractions = extract(&bundle);
+    let resolutions = resolve(&bundle, &extractions);
+    let population = lower_bundle(
+        &bundle,
+        &extractions,
+        &resolutions,
+        &Limits::declared().expect("limits.json parses"),
+        "0.0.0",
+    );
     assert_refused(
-        &lower(&root),
+        &population,
         "PO-001",
         "it declares a population `Members` table, which no member of the construct lowers",
     );
@@ -1632,31 +1664,31 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
     let trigger = lower_mutated(|e| sm_001_transition(e, 1).trigger = "halt".to_string());
     assert_refused(
         &trigger,
-        "SM-001",
+        "SM_001",
         "transition placed -> shipped on halt: its trigger names no operation of the artifact",
     );
     let guard = lower_mutated(|e| sm_001_transition(e, 1).guard = Some("nope".to_string()));
     assert_refused(
         &guard,
-        "SM-001",
+        "SM_001",
         "its guard `nope` names no clause of the artifact",
     );
 
     // An emitted event that lowers to nothing refuses the state machine. The
     // `raises` edge is removed so the event rule, not the relationship rule,
-    // is the one SM-001 reaches.
+    // is the one SM_001 reaches.
     let dir = tempfile::tempdir().expect("tempdir");
     let root = dir.path().join("business");
     copy_tree(&fixture("business"), &root);
     for (relative, from, to) in [
         (
-            "spec/functional/EV-001-order-placed.md",
+            "spec/functional/EV_001-order-placed.md",
             "| placedAt | Timestamp | 1 | |",
             "| placedAt | Timestamp | 1 | |\n| paidAt | Timestamp | 1 | |",
         ),
         (
-            "spec/functional/SM-001-order-lifecycle.md",
-            "  - target: EV-001\n    type: raises\n",
+            "spec/functional/SM_001-order-lifecycle.md",
+            "  - target: EV_001\n    type: raises\n",
             "",
         ),
     ] {
@@ -1671,37 +1703,44 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
         .map(|d| d.message.as_str())
         .collect();
     let event_rule = format!(
-        "artifact SM-001 (spec/functional/SM-001-order-lifecycle.md) lowers to no `state_machine` construct: a transition or step names the type {}, which lowers to nothing",
-        type_ref("EV-001")
+        "artifact SM_001 (spec/functional/SM_001-order-lifecycle.md) lowers to no `state_machine` construct: a transition or step names the type {}, which lowers to nothing",
+        type_ref("EV_001")
     );
     assert!(messages.contains(&event_rule.as_str()), "{messages:#?}");
     assert!(
         messages
             .iter()
-            .any(|m| m.starts_with("artifact EV-001 ") && m.contains("2 Timestamp fields")),
+            .any(|m| m.starts_with("artifact EV_001 ") && m.contains("2 Timestamp fields")),
         "{messages:#?}"
     );
     assert!(refusals(&lowered).iter().all(|d| d.blocking));
     assert_no_edge_to_refused(&lowered);
 
-    // FR-076 relationship rows. Module 0.4.0 does not declare the
-    // `relationships` mapping, so the engine itself refuses the table with a
-    // blocking error; under a module that declares it, the frontend refuses
-    // the artifact (#156 lowers the rows).
+    // FR-076 relationship rows. Under a module that does not declare the
+    // `relationships` mapping the engine itself refuses the table with a
+    // blocking error; under the vendored module, which declares it, the
+    // frontend refuses the artifact (#156 lowers the rows).
     let relationships = |t: &str| {
         format!("{t}\n## Relationships\n\n| Name | Verb | Target | Multiplicity |\n|------|------|--------|--------------|\n| order | references | FR-001 | 1..1 |\n")
     };
     let dir = tempfile::tempdir().expect("tempdir");
+    let module = dir.path().join("spec-objects-business");
+    copy_tree(&business_module(), &module);
+    let manifest = module.join("manifest.yaml");
+    let text = fs::read_to_string(&manifest).expect("manifest");
+    let undeclared_manifest = text.replacen(", relationships]", "]", 1);
+    assert_ne!(
+        undeclared_manifest, text,
+        "the vendored manifest declares the relationships mapping"
+    );
+    fs::write(&manifest, undeclared_manifest).expect("write manifest");
     let root = dir.path().join("business");
     copy_tree(&fixture("business"), &root);
-    let path = root.join("spec/functional/VO-001-order-line.md");
+    let path = root.join("spec/functional/VO_001-order-line.md");
     let text = fs::read_to_string(&path).expect("read");
     fs::write(&path, relationships(&text)).expect("write");
-    let bundle = Bundle::load(
-        &root,
-        &[business_module().as_path(), edge_vocabulary().as_path()],
-    )
-    .unwrap_or_else(|r| panic!("refused: {r}"));
+    let bundle = Bundle::load(&root, &[module.as_path(), edge_vocabulary().as_path()])
+        .unwrap_or_else(|r| panic!("refused: {r}"));
     let undeclared = extract(&bundle);
     assert!(
         undeclared.diagnostics.iter().any(|d| d.blocking
@@ -1712,28 +1751,11 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
         undeclared.diagnostics
     );
 
-    let dir = tempfile::tempdir().expect("tempdir");
-    let module = dir.path().join("spec-objects-business");
-    copy_tree(&business_module(), &module);
-    let manifest = module.join("manifest.yaml");
-    let text = fs::read_to_string(&manifest).expect("manifest");
-    let declared = text.replacen(
-        "mappings: [typed-table,",
-        "mappings: [relationships, typed-table,",
-        1,
-    );
-    assert_ne!(
-        declared, text,
-        "the manifest declares the relationships mapping"
-    );
-    fs::write(&manifest, declared).expect("write manifest");
-    let root = dir.path().join("business");
-    copy_tree(&fixture("business"), &root);
-    let path = root.join("spec/functional/VO-001-order-line.md");
-    let text = fs::read_to_string(&path).expect("read");
-    fs::write(&path, relationships(&text)).expect("write");
-    let bundle = Bundle::load(&root, &[module.as_path(), edge_vocabulary().as_path()])
-        .unwrap_or_else(|r| panic!("refused: {r}"));
+    let bundle = Bundle::load(
+        &root,
+        &[business_module().as_path(), edge_vocabulary().as_path()],
+    )
+    .unwrap_or_else(|r| panic!("refused: {r}"));
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
@@ -1742,7 +1764,7 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
     // are read but not extracted: refused, never dropped behind an advisory.
     assert_refused(
         &lowered,
-        "VO-001",
+        "VO_001",
         "it declares relationship rows (quire-rs FR-076) the engine did not extract (no-relation-vocabulary)",
     );
 }
@@ -1775,7 +1797,7 @@ fn tc_1790_the_business_lift_carries_each_used_kind_s_manifest_declaration() {
     assert_eq!(entries.len(), used.len(), "no kind declared twice");
     for entry in entries {
         assert_eq!(entry["kind"]["module"], BUSINESS, "{entry}");
-        assert_eq!(entry["moduleVersion"], "0.4.0", "{entry}");
+        assert_eq!(entry["moduleVersion"], "0.6.0", "{entry}");
         assert_eq!(entry["manifestDigest"], digest.as_str(), "{entry}");
     }
     let entry = |name: &str| {
@@ -1809,13 +1831,20 @@ fn tc_1790_the_business_lift_carries_each_used_kind_s_manifest_declaration() {
         json!({ "transitions": ["business:event-like"] })
     );
 
-    // The one seam: only `bundle.rs` reads a `construct` declaration.
+    // The one seam: only `bundle.rs` reads a `construct` declaration, once,
+    // through `CompiledArchetype::construct()`; no source reads the manifest
+    // key itself.
     let src = common::crate_dir().join("src");
     let mut readers = Vec::new();
     for file in fs::read_dir(&src).expect("src") {
         let path = file.expect("entry").path();
         let text = fs::read_to_string(&path).expect("read");
-        if text.contains("extras.get(\"construct\")") {
+        assert!(
+            !text.contains("get(\"construct\")"),
+            "{} reads the manifest key",
+            path.display()
+        );
+        if text.contains(".construct()") {
             readers.push(
                 path.file_name()
                     .expect("name")
@@ -1826,9 +1855,7 @@ fn tc_1790_the_business_lift_carries_each_used_kind_s_manifest_declaration() {
     }
     assert_eq!(readers, ["bundle.rs"]);
     let bundle_rs = fs::read_to_string(src.join("bundle.rs")).expect("bundle.rs");
-    assert_eq!(bundle_rs.matches("extras.get(\"construct\")").count(), 1);
-    assert_eq!(bundle_rs.matches("fn declared_construct").count(), 1);
-    assert_eq!(bundle_rs.matches("= declared_construct(").count(), 1);
+    assert_eq!(bundle_rs.matches(".construct()").count(), 1);
 }
 
 #[trace("TC-1792", "FR-143-AC-8")]

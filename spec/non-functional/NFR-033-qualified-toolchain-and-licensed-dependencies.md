@@ -86,9 +86,10 @@ contract this crate consumes in-process; FR-091 loads modules only through
 `Registry::load_module_set`, which landed in `agent-ix/quire-rs#411` at
 `a874fb6`, two commits after `agent-ix/quire-rs#388`, so the pin is at or after
 `a874fb6` — not "the revision containing #388". No release tag contains either
-commit (`v0.45.0` predates both), so the pin is an exact git `rev`, `d86f7d6`
-(`agent-ix/quire-rs#443`, which makes `SemanticContext::with_body_extraction`
-and `RequiredSections::from_extraction` public), in the same shape `quire-rs`
+commit (`v0.45.0` predates both), so the pin is an exact git `rev`, `ae84bdf`
+(`agent-ix/quire-rs#450`, after `agent-ix/quire-rs#443` makes
+`SemanticContext::with_body_extraction` and `RequiredSections::from_extraction`
+public and `agent-ix/quire-rs#445` carries `CompiledArchetype::construct()`), in the same shape `quire-rs`
 itself pins `ix-trace-rs`. The migration from `rev` to a tag is owned by
 quire-agent-c's sweep, `agent-ix/quire-rs#417`, and the provenance re-golden
 that follows any engine move is one deliberate `--write-goldens` commit per
@@ -105,10 +106,10 @@ and forbidden outside it; `file:` and `link:` specifiers are forbidden
 everywhere, because a path that leaves the workspace is a pin on a checkout.
 
 The module the fixtures are lifted under is pinned the same way the engine is.
-`spec-objects-business` `0.4.0` is vendored: the module (`manifest.yaml` and
+`spec-objects-business` `0.6.0` is vendored: the module (`manifest.yaml` and
 `schemas/`) lives under
 `crates/extraction-frontend/fixtures/modules/spec-objects-business/` from
-repository revision `f7fdfda` with a `PROVENANCE.json` naming that revision,
+repository revision `5e4acf4` with a `PROVENANCE.json` naming that revision,
 and is never loaded from `~/.ix`.
 
 Licence compatibility is a program mandate, not a preference: every original
@@ -176,7 +177,7 @@ than passing; diff the workspace `Cargo.toml` `rust-version` key,
 `rust-toolchain.toml`, and every `Cargo.lock` entry not reachable only from
 this crate against the range's base; inspect every `[dependencies]` and `[dev-dependencies]`
 specifier against the workspace `members` list; confirm the vendored module
-fixture's `PROVENANCE.json` names `f7fdfda`; run `make extraction-frontend-deny`
+fixture's `PROVENANCE.json` names `5e4acf4`; run `make extraction-frontend-deny`
 and `make extraction-frontend-audit`; list every third-party crate in
 `cargo +1.98.1 tree --locked --edges normal,build` and confirm each has a
 notices entry, and confirm no `jsonschema` crate is declared under
@@ -193,7 +194,7 @@ reports the metric it could not measure.
 |---|---|---|
 | NFR-033-AC-1 | `crates/extraction-frontend/Cargo.toml` declares `rust-version.workspace = true`, `license = "AGPL-3.0-or-later"`, `publish = false`, and `edition = "2021"`; the `Makefile` names the qualification compiler on exactly one non-comment line, `EXTRACTION_TOOLCHAIN ?= 1.98.1`; the workspace `rust-version` is byte-unchanged, `rust-toolchain.toml` pins channel `1.98.1`, and every `Cargo.lock` entry of the range's base is byte-unchanged after `cargo +1.98.1 build --locked` except the entries of crates reachable only from this crate: computed from the base lock, those this crate reaches and no other workspace member reaches (a member's own entry, and a crate another member also reaches, never move). | Analysis (TC-1320) |
 | NFR-033-AC-2 | Every `cargo` invocation in the `Makefile` extraction-frontend block carries `+$(EXTRACTION_TOOLCHAIN)`, and with `EXTRACTION_TOOLCHAIN=0.0.0` each gate exits non-zero naming `0.0.0`. | Static (TC-1321) |
-| NFR-033-AC-3 | `quire-rs` is declared as a git dependency with an exact `rev` at or after `a874fb6`, `d86f7d6`, and no `branch`; `ix-trace-rs` is a dev-dependency at tag `v0.1.1`; `agent-ix-semantic-ir` is a `path` dependency on `../semantic-ir`; `serde` and `serde_json` are the workspace's exact pins; `sha2` and `clap` are exact; no `jsonschema` crate is declared; no `path` dependency names a crate outside the workspace `members`, and no `file:` or `link:` dependency exists; the vendored module under `crates/extraction-frontend/fixtures/modules/spec-objects-business/` carries a `PROVENANCE.json` naming repository revision `f7fdfda`. | Analysis (TC-1322) |
+| NFR-033-AC-3 | `quire-rs` is declared as a git dependency with an exact `rev` at or after `a874fb6`, `ae84bdf`, and no `branch`; `ix-trace-rs` is a dev-dependency at tag `v0.1.1`; `agent-ix-semantic-ir` is a `path` dependency on `../semantic-ir`; `serde` and `serde_json` are the workspace's exact pins; `sha2` and `clap` are exact; no `jsonschema` crate is declared; no `path` dependency names a crate outside the workspace `members`, and no `file:` or `link:` dependency exists; the vendored module under `crates/extraction-frontend/fixtures/modules/spec-objects-business/` carries a `PROVENANCE.json` naming repository revision `5e4acf4`. | Analysis (TC-1322) |
 | NFR-033-AC-4 | `make extraction-frontend-deny` passes with zero errors against a `deny.toml` whose licence allowlist is exactly the set the program permits, and `quire-rs`'s `AGPL-3.0-or-later` is admitted by an explicit entry. | Static (TC-1323) |
 | NFR-033-AC-5 | `make extraction-frontend-audit` reports zero advisories against the locked graph. | Static (TC-1324) |
 | NFR-033-AC-6 | Every third-party crate reachable from this crate in `Cargo.lock` has an entry in `crates/extraction-frontend/THIRD-PARTY-NOTICES.md` naming its version and licence, and the crate ships a `LICENSE` file carrying AGPL-3.0-or-later. | Analysis (TC-1325) |

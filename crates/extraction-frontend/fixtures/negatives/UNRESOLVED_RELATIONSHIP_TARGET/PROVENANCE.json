@@ -11,7 +11,8 @@
       "fixture": "spec/functional/FR-005-config-overlay-entity.md",
       "from": "../../legacy/spec/functional/FR-006-config-version-entity.md",
       "edits": [
-        "id FR-006 -> FR-005, title and H1 ConfigVersion -> ConfigOverlay; the legacy free-column table is kept so the artifact is legacy-form"
+        "id FR-006 -> FR-005, title and H1 ConfigVersion -> ConfigOverlay; the legacy free-column table is kept so the artifact is legacy-form",
+        "the body `## Relationships` bullet list removed: under spec-objects-business 0.6.0 a `## Relationships` section is a `Name | Verb | Target | Multiplicity` table the engine extracts, and a bullet list is refused as semantic.feature-not-extractable"
       ]
     },
     {

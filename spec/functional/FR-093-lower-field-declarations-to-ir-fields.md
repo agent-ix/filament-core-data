@@ -37,13 +37,13 @@ form and the fence form of one declaration produce identical `types[]`.
 - The resolutions of FR-092
 - The module's object-type `roles` (`domain-object`, `persistable`, …) and `body_extraction` from the loaded manifest
 - The FR-029 closed constraint vocabulary and the applicability table `crates/semantic-ir/RULES.md` publishes for `CONSTRAINT_NOT_APPLICABLE`
-- For an `object: enumeration` artifact, the rows the engine's body-extraction evaluator (`quire_rs::extract`, quire-rs FR-011) returns for the object type's `values_table` locator
+- For an `object: enumeration` artifact, the rows the engine's body-extraction evaluator (`quire_rs::extract`, quire-rs FR-011) returns for the object type's `values` locator
 
 ## Outputs
 
 - `crates/extraction-frontend/src/lower.rs`: `lower_record(extraction, resolutions, ctx) -> Result<TypeDefinition, Vec<Diagnostic>>` and `lower_enum(document, rows, ctx) -> Result<TypeDefinition, Vec<Diagnostic>>`
 - One `record` per lowered object artifact; one `field` per `FieldDecl`; one `alias` per `FieldDecl` carrying one or more constraints; one `constraint` per `Constraint` entry, on that alias
-- One `enum` per lowered enumeration artifact; one `variant` per `values_table` row
+- One `enum` per lowered enumeration artifact; one `variant` per `values` row
 - `crates/extraction-frontend/losses.json`: the closed register of representability losses this frontend declares, with a code, the construct, and the issue that owns it
 
 ## Behavior
@@ -83,10 +83,10 @@ form and the fence form of one declaration produce identical `types[]`.
 ### Enumeration artifacts
 
 - The frontend SHALL lower an `object: enumeration` artifact to one `typeDefinition` of `kind: enumeration` with `displayName`, `roles`, and `origin` set by the record rules above.
-- The frontend SHALL obtain the enumeration's rows by running the engine's body-extraction evaluator (`quire_rs::extract`, quire-rs FR-011) with the object type's `values_table` locator from the loaded module.
+- The frontend SHALL obtain the enumeration's rows by running the engine's body-extraction evaluator (`quire_rs::extract`, quire-rs FR-011) with the object type's `values` locator from the loaded module.
 - The frontend SHALL NOT parse the `## Values` table itself.
 - The frontend SHALL lower each row to one `variant` whose `name` is the row's `Value` cell verbatim, whose `identity` is `ix://<org>/<name>/variant/<Name>-<value>` (FR-095, both parts slugged), and whose `origin.source` is the row's line at column 3.
-- If the evaluator reports the `values_table` locator unsatisfied (no `## Values` section or fewer than `min_rows` rows), then the frontend SHALL emit `ARTIFACT_NOT_LOWERED` at the artifact naming the evaluator's reason, blocking.
+- If the evaluator reports the `values` locator unsatisfied (no `## Values` section or fewer than `min_rows` rows), then the frontend SHALL emit `ARTIFACT_NOT_LOWERED` at the artifact naming the evaluator's reason, blocking.
 - If two rows of one enumeration carry distinct `Value` cells whose slugs coincide under the case-preserving slug (`a_b` and `a__b`, not `Active` and `active`), then the frontend SHALL raise `agent-ix.extraction-frontend.UNSLUGGABLE_NAME` at the second row, blocking (contract case (b)).
 - The frontend SHALL NOT emit a `typeDefinition` of `kind: alias` for an enumeration artifact; the only alias the frontend emits is the constrained-field alias of "The fields".
 

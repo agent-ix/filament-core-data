@@ -1,11 +1,11 @@
 ---
-id: EN-001
+id: EN_001
 title: Marks
 object: enumeration
 type: FR
 ---
 
-# EN-001: Marks
+# EN_001: Marks
 
 ## Description
 

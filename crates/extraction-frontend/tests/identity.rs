@@ -120,17 +120,17 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
         Ok("ix://agent-ix/config-service/clause/ConfigVersion-immutable")
     );
     assert_eq!(
-        package.state_identity("SM-001", "placed").as_deref(),
+        package.state_identity("SM_001", "placed").as_deref(),
         Ok("ix://agent-ix/config-service/state/SM-001-placed")
     );
     assert_eq!(
         package
-            .transition_identity("SM-001", "placed", "shipped", "advance")
+            .transition_identity("SM_001", "placed", "shipped", "advance")
             .as_deref(),
         Ok("ix://agent-ix/config-service/transition/SM-001-placed-shipped-advance")
     );
     assert_eq!(
-        package.step_identity("PR-001", "picked").as_deref(),
+        package.step_identity("PR_001", "picked").as_deref(),
         Ok("ix://agent-ix/config-service/step/PR-001-picked")
     );
     assert_eq!(

@@ -17,7 +17,7 @@ of these as a construct the backends generate and the readers check, and the
 extraction frontend (FR-143) must lift each artifact to it.
 
 Every domain package is authored and versioned outside this repository. The
-business module ships at `0.4.0`, the systems module is being authored under
+business module ships at `0.6.0`, the systems module is being authored under
 [agent-ix/spec-objects-systems#10](https://github.com/agent-ix/spec-objects-systems/issues/10),
 and more domains are planned. The IR contract, its three readers and five
 backends are released from this repository on their own cadence.
@@ -106,10 +106,9 @@ manifest defect is reported against the manifest that holds it.
 - `schema/semantic/v1/construct-vocabulary.json` is the one source of the core
   vocabulary; the Rust, TypeScript and Python readers agree with it
   (FR-142-AC-11).
-- The frontend reads a declaration through one seam over the manifest bytes.
-  When [agent-ix/quire-rs#445](https://github.com/agent-ix/quire-rs/issues/445)
-  lands on the pinned engine, the seam reads
-  `CompiledArchetype::construct()` and nothing else changes.
+- The frontend reads a declaration through one seam,
+  `CompiledArchetype::construct()`
+  ([agent-ix/quire-rs#445](https://github.com/agent-ix/quire-rs/issues/445)).
 - A domain module gains a construct by editing its manifest. A construct needing
   a member, shape or rule the vocabulary lacks is a contract change, filed
   against this repository.

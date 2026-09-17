@@ -121,7 +121,7 @@ fn tc_1200_config_version_table_lifts_seven_fields_for_fr_006_and_one_extraction
     assert_eq!(module.semantic_core, "0.2.0");
     assert_eq!(
         bundle.module_version("spec-objects-business"),
-        Some("0.4.0")
+        Some("0.6.0")
     );
 
     let out = extract(&bundle);
@@ -154,7 +154,7 @@ fn tc_1200_config_version_table_lifts_seven_fields_for_fr_006_and_one_extraction
     );
     assert_eq!(
         fr006.schema_digest.as_deref(),
-        Some("sha256:f3f7fcd604abab7e09427066287df94fac3d7a470e146b289e2ded74ef2f7d43"),
+        Some("sha256:22dec6fb9a189f2a406cdf2397fdeec966935e3e01196c60ea36a725255ff0e4"),
         "the module's reference-form data_schema digest is passed through"
     );
     assert_eq!(

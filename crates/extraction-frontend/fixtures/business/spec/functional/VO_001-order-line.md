@@ -1,15 +1,15 @@
 ---
-id: VO-001
+id: VO_001
 title: Order Line
 object: value_object
 type: FR
 name: OrderLine
 relationships:
-  - target: EN-001
+  - target: EN_001
     type: composes
 ---
 
-# VO-001: Order Line
+# VO_001: Order Line
 
 ## Description
 
