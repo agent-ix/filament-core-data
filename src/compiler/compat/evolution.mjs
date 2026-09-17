@@ -27,7 +27,7 @@ export const V1_1_ADDED_NODES = Object.freeze([
 	"source.dialect (frontend)",
 ]);
 
-export const CONTRACT_VERSIONS = Object.freeze(["1.0.0", "1.1.0"]);
+export const CONTRACT_VERSIONS = Object.freeze(["1.0.0", "1.1.0", "1.2.0"]);
 
 function asArray(value) {
 	return Array.isArray(value) ? value : [];
@@ -98,7 +98,7 @@ export function readIrAsContract(document, targetVersion, options = {}) {
 		};
 	}
 	const projected = structuredClone(document);
-	projected.contractVersion = "1.1.0";
+	projected.contractVersion = targetVersion;
 	projected.source = { ...projected.source, dialect: options.dialect };
 	for (const definition of asArray(projected.types)) {
 		for (const field of asArray(definition.fields)) {

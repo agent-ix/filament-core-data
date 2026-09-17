@@ -4,12 +4,13 @@
  * Three rules carry the whole requirement, and each exists because the obvious
  * alternative is a defect.
  *
- * A *type* name derives from the final segment of its semantic identity, never
- * from `displayName`. `displayName` is constrained only to `minLength: 1`, no
- * rule makes it unique, and `src/compiler/ir/reader.mjs` never checks it — so
- * two records with distinct identities and distinct wire names but display
- * names `HTTPStatusCode` and `HTTP status code` would derive one identifier and
- * refuse a document whose wire names never collide (SR-082 FND-950).
+ * A *type* name derives from the type's `displayName`, the declared name of
+ * the class, never from its semantic identity. The identity is the artifact id
+ * a spec bundle assigns (`FR-006`), which names the contract rather than the
+ * class; the declared name (`ConfigVersion`) is what a consumer writes. Nothing
+ * makes a `displayName` unique, so two types whose display names render one
+ * identifier raise `NAME_COLLISION` in the crate's re-export namespace, naming
+ * both identities, rather than being suffixed apart.
  *
  * A *member* name — a field, a variant, an operation, a parameter — derives
  * from its wire `name`, because a member's wire name is its contract and the
@@ -227,13 +228,19 @@ function render(source, identity, shape) {
 	return finish(shape(parts.segments), identity, { allowRaw: true });
 }
 
-/** `UpperCamelCase` type name, derived from the identity's final segment. */
+/**
+ * The declared name a type's identifiers derive from: its `displayName`. A
+ * definition without one renders the empty identifier, which refuses.
+ */
+function declaredName(definition) {
+	return typeof definition.displayName === "string"
+		? definition.displayName
+		: "";
+}
+
+/** `UpperCamelCase` type name, derived from the type's `displayName`. */
 export function typeName(definition) {
-	return render(
-		identitySegment(definition.identity),
-		definition.identity,
-		pascal,
-	);
+	return render(declaredName(definition), definition.identity, pascal);
 }
 
 /**
@@ -264,13 +271,9 @@ export function memberName(node) {
 	return render(node.name, node.identity, snake);
 }
 
-/** `snake_case` module name, derived from a type's identity segment. */
+/** `snake_case` module name, derived from the type's `displayName`. */
 export function moduleName(definition) {
-	return render(
-		identitySegment(definition.identity),
-		definition.identity,
-		snake,
-	);
+	return render(declaredName(definition), definition.identity, snake);
 }
 
 /** `SCREAMING_SNAKE_CASE` constant name. */

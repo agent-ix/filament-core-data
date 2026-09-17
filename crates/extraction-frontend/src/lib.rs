@@ -31,6 +31,7 @@
 pub mod bundle;
 pub mod canonical;
 pub mod clauses;
+pub mod constructs;
 pub mod diagnostics;
 pub mod document;
 pub mod edges;

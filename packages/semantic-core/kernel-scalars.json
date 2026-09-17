@@ -50,9 +50,9 @@
 			"unitAllowed": false
 		},
 		"JsonObject": {
-			"irLowering": "open-record",
-			"bounds": "opaque, never typed further",
-			"serialization": "JSON object; kind: record, fields: [], unknownPolicy: preserve",
+			"irScalar": "any",
+			"bounds": "any JSON value",
+			"serialization": "JSON value",
 			"unitAllowed": false
 		}
 	}

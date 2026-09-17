@@ -59,6 +59,8 @@ export interface ModelType {
 	readonly origin: unknown;
 	readonly scalar?: string;
 	readonly fields?: readonly ModelField[];
+	/** An `entity`'s identity field names, in the order the document declares them. */
+	readonly identityFields?: readonly string[];
 	readonly variants?: readonly ModelVariant[];
 	readonly relationships?: readonly Record<string, unknown>[];
 	readonly operations?: readonly Record<string, unknown>[];

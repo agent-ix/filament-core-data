@@ -5,6 +5,10 @@ import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
 import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
 import { generateTarget } from "../src/compiler/backends/seam.mjs";
+import {
+	CONSTRUCT_KINDS,
+	RENDERED_CONSTRUCT_KINDS,
+} from "../src/compiler/constructs.mjs";
 import { DEFAULT_LIMITS } from "../src/compiler/diagnostics.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 
@@ -13,12 +17,27 @@ const golden = resolve(
 	root,
 	"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json",
 );
+/** A `1.2.0` ConfigVersion document of records, which the backend renders. */
+const configVersion12 = resolve(
+	root,
+	"fixtures/semantic/v1/positive/config-version-v1-2.json",
+);
+/** The same document at `1.1.0`, which the backend also reads. */
+const configVersion11 = resolve(
+	root,
+	"fixtures/semantic/v1/positive/config-version-v1-1.json",
+);
+/** One construct of each kind and every model member, which it refuses. */
+const constructs = resolve(
+	root,
+	"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
+);
 const profile = resolve(root, "fixtures/semantic/v1/positive/profile.json");
 
 describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 	/** Traces: TC-1360; FR-063-AC-22. */
 	it("registers through the seam and publishes digests for every JSON Schema file", () => {
-		const ir = JSON.parse(readFileSync(golden, "utf8"));
+		const ir = JSON.parse(readFileSync(configVersion12, "utf8"));
 		const manifest = generateTarget(
 			{
 				contractVersion: "1.0.0",
@@ -140,6 +159,34 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		expect(schemas.every((schema) => ajv.getSchema(schema.$id))).toBe(true);
 	});
 
+	it("renders a 1.1.0 document", () => {
+		const ir = JSON.parse(readFileSync(configVersion11, "utf8"));
+		const result = jsonSchemaBackend.generate({ ir });
+		expect(result.state).toBe("success");
+		expect(result.files.map((one) => one.path)).toContain("ConfigVersion.json");
+	});
+
+	/** Traces: TC-1749; FR-142-AC-5, FR-142-CON-2. */
+	it("refuses every construct kind it does not render at its pointer and writes no file", () => {
+		const ir = JSON.parse(readFileSync(constructs, "utf8"));
+		const result = jsonSchemaBackend.generate({ ir });
+		expect(result.state).toBe("unsupported");
+		expect(result.files).toStrictEqual([]);
+		ir.types.forEach((type: { kind: string }, index: number) => {
+			if (
+				!CONSTRUCT_KINDS.includes(type.kind) ||
+				RENDERED_CONSTRUCT_KINDS.includes(type.kind)
+			)
+				return;
+			expect(
+				result.diagnostics.some((one) =>
+					one.message.startsWith(`/ir/types/${index}/kind:`),
+				),
+				`no refusal at /ir/types/${index}/kind`,
+			).toBe(true);
+		});
+	});
+
 	/** Traces: TC-1362; FR-100-AC-2. */
 	it("emits ConfigVersion properties, required fields, and constraints", () => {
 		const ir = JSON.parse(readFileSync(golden, "utf8"));
@@ -171,9 +218,110 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		expect(result.files.some((one) => one.path === "index.json")).toBe(true);
 	});
 
+	/** Traces: TC-1764; FR-100-AC-7. */
+	it("renders an entity as a record schema naming its kind and identity fields, filed under its declared name", () => {
+		const ir = JSON.parse(readFileSync(golden, "utf8"));
+		const result = jsonSchemaBackend.generate({ ir });
+		expect(result.state).toBe("success");
+		const paths = result.files.map((one) => one.path);
+		expect(paths.some((path) => path.startsWith("FR-"))).toBe(false);
+		for (const name of ["ConfigOverlay", "ConfigVersion"]) {
+			const file = result.files.find((one) => one.path === `${name}.json`);
+			if (!file) throw new Error(`${name} schema was not emitted`);
+			const schema = JSON.parse(file.text);
+			expect(schema.type).toBe("object");
+			expect(schema["x-agent-ix-kind"]).toBe("entity");
+			expect(schema["x-agent-ix-identity-fields"]).toStrictEqual(["id"]);
+			expect(schema.required).toContain("id");
+		}
+		// A record carries neither annotation.
+		const records = jsonSchemaBackend.generate({
+			ir: JSON.parse(readFileSync(configVersion12, "utf8")),
+		});
+		const record = records.files.find(
+			(one) => one.path === "ConfigVersion.json",
+		);
+		if (!record) throw new Error("ConfigVersion schema was not emitted");
+		const recordSchema = JSON.parse(record.text);
+		expect(recordSchema["x-agent-ix-kind"]).toBeUndefined();
+		expect(recordSchema["x-agent-ix-identity-fields"]).toBeUndefined();
+	});
+
+	/** Traces: TC-1771; FR-100-AC-9. */
+	it("refuses two display names that derive one file name, case-insensitively, naming both identities and writing no file", () => {
+		const ir = JSON.parse(readFileSync(golden, "utf8"));
+		const overlay = ir.types.find(
+			(type: { displayName?: string }) => type.displayName === "ConfigOverlay",
+		);
+		const version = ir.types.find(
+			(type: { displayName?: string }) => type.displayName === "ConfigVersion",
+		);
+		overlay.displayName = "Config Overlay";
+		version.displayName = "Config-Overlay";
+		const result = jsonSchemaBackend.generate({ ir });
+		expect(result.state).toBe("unsupported");
+		expect(result.files).toStrictEqual([]);
+		expect(result.diagnostics).toHaveLength(1);
+		const [refusal] = result.diagnostics;
+		expect(refusal.blocking).toBe(true);
+		expect(refusal.message).toContain("Config-Overlay.json");
+		expect(refusal.message).toContain(overlay.identity);
+		expect(refusal.message).toContain(version.identity);
+
+		// A definition named `index` would overwrite the backend's own index.
+		const indexed = JSON.parse(readFileSync(golden, "utf8"));
+		indexed.types.find(
+			(type: { displayName?: string }) => type.displayName === "ConfigOverlay",
+		).displayName = "index";
+		const refused = jsonSchemaBackend.generate({ ir: indexed });
+		expect(refused.state).toBe("unsupported");
+		expect(refused.files).toStrictEqual([]);
+		expect(refused.diagnostics).toHaveLength(1);
+		expect(refused.diagnostics[0].message).toContain(
+			"collides with the backend's index.json",
+		);
+		expect(refused.diagnostics[0].message).not.toContain(
+			"one file name, compared case-insensitively",
+		);
+
+		// `Status` and `status` are one file on a case-insensitive file system.
+		const cased = JSON.parse(readFileSync(golden, "utf8"));
+		const upper = cased.types.find(
+			(type: { displayName?: string }) => type.displayName === "ConfigOverlay",
+		);
+		const lower = cased.types.find(
+			(type: { displayName?: string }) => type.displayName === "ConfigVersion",
+		);
+		upper.displayName = "Status";
+		lower.displayName = "status";
+		const folded = jsonSchemaBackend.generate({ ir: cased });
+		expect(folded.state).toBe("unsupported");
+		expect(folded.files).toStrictEqual([]);
+		expect(folded.diagnostics).toHaveLength(1);
+		expect(folded.diagnostics[0].message).toContain(
+			"Status.json and status.json",
+		);
+		expect(folded.diagnostics[0].message).toContain(upper.identity);
+		expect(folded.diagnostics[0].message).toContain(lower.identity);
+	});
+
+	/** Traces: TC-1768; FR-100-AC-8. */
+	it("files and identifies each schema by its display name while its semantic id stays the artifact id", () => {
+		const ir = JSON.parse(readFileSync(golden, "utf8"));
+		const result = jsonSchemaBackend.generate({ ir });
+		expect(result.state).toBe("success");
+		const file = result.files.find((one) => one.path === "ConfigVersion.json");
+		if (!file) throw new Error("ConfigVersion schema was not emitted");
+		const schema = JSON.parse(file.text);
+		expect(schema.$id.endsWith("/ConfigVersion.json")).toBe(true);
+		expect(schema["x-agent-ix-semantic-id"]).toBe(
+			"ix://agent-ix/config-service/type/FR-006",
+		);
+	});
+
 	/** Traces: TC-1363; FR-100-AC-3. */
 	it("validates ConfigVersion payloads through generated sibling references", () => {
-		const ir = JSON.parse(readFileSync(golden, "utf8"));
+		const ir = JSON.parse(readFileSync(configVersion12, "utf8"));
 		const result = jsonSchemaBackend.generate({ ir });
 		const schemas = result.files
 			.filter((one) => one.path.endsWith(".json") && one.path !== "index.json")
@@ -371,7 +519,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 
 	/** Traces: TC-1365; FR-100-AC-5, FR-100-CON-3. */
 	it("uses generated sibling files for every reference", () => {
-		const ir = JSON.parse(readFileSync(golden, "utf8"));
+		const ir = JSON.parse(readFileSync(configVersion12, "utf8"));
 		const refs = jsonSchemaBackend
 			.generate({ ir })
 			.files.flatMap((file) => [...file.text.matchAll(/"\$ref":\s*"([^"]+)"/g)])
@@ -384,7 +532,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 
 	/** Traces: TC-1366; FR-100-AC-6. */
 	it("refuses a required extension at a field with no schema mapping", () => {
-		const ir = JSON.parse(readFileSync(golden, "utf8"));
+		const ir = JSON.parse(readFileSync(configVersion12, "utf8"));
 		ir.types
 			.find((one: { identity: string }) =>
 				one.identity.endsWith("/ConfigVersion"),
@@ -406,7 +554,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 
 	/** Traces: TC-1366; FR-100-AC-6. */
 	it("refuses a required extension on an operation parameter", () => {
-		const ir = JSON.parse(readFileSync(golden, "utf8"));
+		const ir = JSON.parse(readFileSync(configVersion12, "utf8"));
 		ir.types.find((one: { identity: string }) =>
 			one.identity.endsWith("/ConfigVersion"),
 		).operations = [
@@ -460,7 +608,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 
 	/** Traces: TC-1366; FR-100-CON-2. */
 	it("admits through its injected host before emitting a schema", () => {
-		const ir = JSON.parse(readFileSync(golden, "utf8"));
+		const ir = JSON.parse(readFileSync(configVersion12, "utf8"));
 		ir.types[0].identity = "not-a-semantic-identity";
 		const result = jsonSchemaBackend.generate(
 			{ ir },
@@ -544,7 +692,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 
 	/** Traces: TC-1367; NFR-034-AC-1. */
 	it("is byte-deterministic across input type ordering", () => {
-		const ir = JSON.parse(readFileSync(golden, "utf8"));
+		const ir = JSON.parse(readFileSync(configVersion12, "utf8"));
 		const reversed = structuredClone(ir);
 		reversed.types.reverse();
 		const first = jsonSchemaBackend
@@ -635,7 +783,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 
 	/** Traces: TC-1361; FR-100-AC-1. */
 	it("retains non-structural type and field metadata as annotations", () => {
-		const ir = JSON.parse(readFileSync(golden, "utf8"));
+		const ir = JSON.parse(readFileSync(configVersion12, "utf8"));
 		const type = ir.types.find((one: { identity: string }) =>
 			one.identity.endsWith("/ConfigVersion"),
 		);
@@ -648,7 +796,8 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 				name: "parent",
 			},
 		];
-		type.fields[0].unit = "s";
+		type.fields.find((one: { name: string }) => one.name === "createdAt").unit =
+			"s";
 		ir.extensions = [
 			{
 				identity: "ix://agent-ix/config-service/ext/document-note",

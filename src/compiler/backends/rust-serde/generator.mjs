@@ -30,6 +30,7 @@ export const DEFAULT_SEED = 0x5eed0062;
 
 /** The kernel scalars a document may declare — `bytes` is the refusal row. */
 export const GENERATED_KERNEL_SCALARS = Object.freeze([
+	"any",
 	"boolean",
 	"integer",
 	"number",

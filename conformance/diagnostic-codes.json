@@ -328,6 +328,78 @@
 			"rule": "A required extension the consumer policy does not list while it rejects unknown extensions.",
 			"citation": "unknown modules and extensions are preserved, rejected, or surfaced. Legacy",
 			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNRESOLVED_CONSTRUCT_REF",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A construct member, supertype or identity field naming a type, state, operation or field the document does not declare.",
+			"citation": "A broken construct reference raises `UNRESOLVED_CONSTRUCT_REF`",
+			"exercisedBy": "test:TC-1747"
+		},
+		{
+			"code": "agent-ix.semantic-ir.CONSTRUCT_TARGET_KIND",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A construct member or supertype naming a type of a kind its member excludes.",
+			"citation": "`CONSTRUCT_TARGET_KIND`; a wrong occurrence field raises",
+			"exercisedBy": "test:TC-1747"
+		},
+		{
+			"code": "agent-ix.semantic-ir.INVALID_OCCURRENCE_FIELD",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "An event occurrence field that does not resolve to scalar datetime.",
+			"citation": "`INVALID_OCCURRENCE_FIELD`; a guard naming no clause raises",
+			"exercisedBy": "test:TC-1748"
+		},
+		{
+			"code": "agent-ix.semantic-ir.SUPERTYPE_CYCLE",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A type that reaches itself through supertypes.",
+			"citation": "The types this type specializes, of the same kind; the graph is acyclic",
+			"exercisedBy": "test:TC-1741"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNRESOLVED_FEATURE_REF",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A subsets or redefines entry naming no field of a transitive supertype.",
+			"citation": "Supertype fields whose values include this field's values",
+			"exercisedBy": "test:TC-1742"
+		},
+		{
+			"code": "agent-ix.semantic-ir.INVALID_REDEFINITION",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A redefinition whose multiplicity lies outside the redefined field's bounds.",
+			"citation": "its multiplicity lies within the redefined bounds",
+			"exercisedBy": "test:TC-1742"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNRESOLVED_FRAME_PATH",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "An operation frame path starting at neither a field of the owning type nor a parameter.",
+			"citation": "each starting at a field or parameter",
+			"exercisedBy": "test:TC-1743"
+		},
+		{
+			"code": "agent-ix.semantic-ir.MULTIPLE_DOMAIN_MEMBERSHIP",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A type named by the members of two domains.",
+			"citation": "a type belongs to at most one domain",
+			"exercisedBy": "test:TC-1748"
 		}
 	]
 }

@@ -159,7 +159,7 @@ fn field_named<'a>(record: &'a Value, name: &str) -> &'a Value {
 fn ir_document(lift: &Lift) -> Value {
     let envelope = Envelope::new(&lift.bundle, &[]);
     let mut doc = serde_json::to_value(&envelope).expect("envelope serialises");
-    doc["contractVersion"] = json!("1.1.0");
+    doc["contractVersion"] = json!("1.2.0");
     doc["types"] = Value::Array(types_json(lift));
     json!({ "ir": doc })
 }
@@ -286,10 +286,10 @@ fn tc_1221_config_version_carries_three_roles_reject_policy_and_seven_fields_in_
     let lift = lift("config-version-table");
     let types = types_json(&lift);
     let record = type_named(&types, "ConfigVersion");
-    assert_eq!(record["kind"], "record");
+    assert_eq!(record["kind"], "entity");
     assert_eq!(
         record["identity"],
-        "ix://agent-ix/config-service/type/ConfigVersion"
+        "ix://agent-ix/config-service/type/FR-006"
     );
     assert_eq!(
         record["roles"],
@@ -363,7 +363,7 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     assert_eq!(id["typeRef"], "ix://agent-ix/config-service/type/UUID");
     assert_eq!(
         id["identity"],
-        "ix://agent-ix/config-service/field/ConfigVersion-id"
+        "ix://agent-ix/config-service/field/FR-006-id"
     );
     assert_eq!(
         id["extensions"],
@@ -388,7 +388,7 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     assert_eq!(parent["presence"], "optional");
     assert_eq!(parent["nullable"], false);
     assert_eq!(
-        parent["typeRef"], "ix://agent-ix/config-service/type/ConfigVersion",
+        parent["typeRef"], "ix://agent-ix/config-service/type/FR-006",
         "the self-reference resolves to the record itself (EC-143)"
     );
     assert_eq!(parent["extensions"], json!([]));
@@ -401,7 +401,7 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     assert_eq!(total["unit"], "USD");
     // `min: 0` on the row: the typeRef names the field's alias, whose
     // target is the resolved scalar.
-    assert_eq!(total["typeRef"], "ix://agent-ix/orders/type/OrderTotal");
+    assert_eq!(total["typeRef"], "ix://agent-ix/orders/type/FR-001Total");
     assert_eq!(
         type_named(&types, "OrderTotal")["target"],
         "ix://agent-ix/orders/type/Decimal"
@@ -430,7 +430,7 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_alias_wi
     let alias = type_named(&types, "ConfigVersionVersionNumber");
     assert_eq!(
         alias["identity"],
-        "ix://agent-ix/config-service/type/ConfigVersionVersionNumber"
+        "ix://agent-ix/config-service/type/FR-006VersionNumber"
     );
     assert_eq!(alias["kind"], "alias");
     assert_eq!(alias["target"], "ix://agent-ix/config-service/type/Integer");
@@ -464,7 +464,7 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_alias_wi
     );
     assert_eq!(
         min["identity"],
-        "ix://agent-ix/config-service/constraint/ConfigVersion-versionNumber-min"
+        "ix://agent-ix/config-service/constraint/FR-006-versionNumber-min"
     );
     assert_eq!(min["origin"]["source"]["startLine"], 23, "the row's origin");
     assert_eq!(min["origin"]["source"]["startColumn"], 3);
@@ -494,7 +494,7 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_alias_wi
             .any(|alias| alias["identity"] == type_ref);
         if aliased {
             assert!(
-                type_ref.starts_with("ix://agent-ix/config-service/type/ConfigVersion"),
+                type_ref.starts_with("ix://agent-ix/config-service/type/FR-006"),
                 "{type_ref}"
             );
         }
@@ -526,11 +526,11 @@ fn tc_1224_max_length_pattern_and_enum_values_carry_their_operand_shapes() {
     assert_eq!(max_length["operands"], json!({"value": 64}));
     assert_eq!(
         max_length["appliesTo"],
-        "ix://agent-ix/config-service/type/ConfigVersionCreatedBy"
+        "ix://agent-ix/config-service/type/FR-006CreatedBy"
     );
     assert_eq!(
         field_named(record, "createdBy")["typeRef"],
-        "ix://agent-ix/config-service/type/ConfigVersionCreatedBy"
+        "ix://agent-ix/config-service/type/FR-006CreatedBy"
     );
     assert_eq!(
         type_named(&types, "ConfigVersionCreatedBy")["target"],
@@ -656,7 +656,7 @@ fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
         }]
     });
     json!({"ir": {
-        "contractVersion": "1.1.0",
+        "contractVersion": "1.2.0",
         "source": {"identity": "ix://agent-ix/test/spec", "version": "0.0.0",
                    "dialect": "spec-bundle", "digest": format!("sha256:{}", "0".repeat(64))},
         "package": {"identity": "agent-ix/test", "version": "0.0.0",
@@ -762,44 +762,34 @@ fn tc_1225_min_on_string_is_blocking_constraint_not_applicable_and_the_reader_ag
 
 #[trace("TC-1226", "FR-093-AC-7")]
 #[trace("TC-1226", "FR-093-CON-3")]
+#[trace("TC-1553", "FR-139-AC-2")]
 #[test]
-fn tc_1226_json_object_emits_the_open_record_once_and_a_declared_loss_with_a_registered_row() {
+fn tc_1226_and_tc_1553_json_object_emits_an_any_scalar_without_a_declared_loss() {
     let lift = lift("negatives/DECLARED_LOSS");
     let types = types_json(&lift);
-    let open: Vec<&Value> = types
+    let any: Vec<&Value> = types
         .iter()
         .filter(|t| t["identity"] == "ix://agent-ix/blob-service/type/JsonObject")
         .collect();
-    assert_eq!(open.len(), 1, "once per package: {types:?}");
-    let open = open[0];
-    assert_eq!(open["kind"], "record");
-    assert_eq!(open["displayName"], "JsonObject");
-    assert_eq!(open["fields"], json!([]));
-    assert_eq!(open["unknownPolicy"], "preserve");
-    assert!(open["origin"]["generated"].is_object(), "{open}");
+    assert_eq!(any.len(), 1, "once per package: {types:?}");
+    let any = any[0];
+    assert_eq!(any["kind"], "scalar");
+    assert_eq!(any["displayName"], "JsonObject");
+    assert_eq!(any["scalar"], "any");
+    assert!(any["origin"]["generated"].is_object(), "{any}");
     let blob = type_named(&types, "Blob");
     assert_eq!(
         field_named(blob, "data")["typeRef"],
         "ix://agent-ix/blob-service/type/JsonObject"
     );
-    assert!(
-        !types
-            .iter()
-            .any(|t| t["scalar"].as_str().is_some_and(|s| s.contains("json"))),
-        "no scalar definition is minted for JsonObject"
-    );
+    assert!(types.iter().any(|t| t["scalar"] == "any"));
 
     let losses = with_code(&lift.lowered.diagnostics, Code::DeclaredLoss);
-    let unconstrained: Vec<&&Diagnostic> = losses
-        .iter()
-        .filter(|d| d.message.contains("`unconstrained-value`"))
-        .collect();
-    assert_eq!(unconstrained.len(), 1, "{losses:?}");
-    assert_eq!(unconstrained[0].severity, Severity::Info);
-    assert!(!unconstrained[0].blocking);
-    assert_eq!(
-        unconstrained[0].locus,
-        Some(locus(&lift, "spec/functional/FR-001-blob.md", 19, 3))
+    assert!(
+        !losses.iter().any(
+            |d| d.message.contains("JsonObject") || d.message.contains("`unconstrained-value`")
+        ),
+        "{losses:?}"
     );
     assert!(
         !lift.lowered.diagnostics.iter().any(|d| d.blocking),
@@ -808,8 +798,7 @@ fn tc_1226_json_object_emits_the_open_record_once_and_a_declared_loss_with_a_reg
     );
     assert_eq!(reader_codes(&ir_document(&lift)), Vec::<String>::new());
 
-    // The register: every Loss variant has a row, the #78 rows cite #78,
-    // and every DECLARED_LOSS emitted over the fixtures names a row.
+    // The register is closed over the losses that remain after IR v1.2.
     let register = loss_register().expect("losses.json parses");
     let rows: BTreeMap<&str, _> = register.iter().map(|r| (r.code.as_str(), r)).collect();
     for loss in Loss::ALL {
@@ -819,9 +808,11 @@ fn tc_1226_json_object_emits_the_open_record_once_and_a_declared_loss_with_a_reg
         assert_eq!(row.diagnostic, Code::DeclaredLoss.to_string());
     }
     assert_eq!(rows.len(), Loss::ALL.len(), "the register is closed");
-    assert!(rows["unconstrained-value"].owner.ends_with("#78"));
-    assert!(rows["required-collection-presence"].owner.ends_with("#78"));
     assert!(rows["lossy-extraction"].owner.contains("FR-072"));
+    assert!(!rows.contains_key("unconstrained-value"));
+    assert!(rows["required-collection-presence"]
+        .owner
+        .ends_with("FR-106"));
     for name in [
         "negatives/DECLARED_LOSS",
         "config-version-table",
@@ -1039,7 +1030,7 @@ fn tc_1229_renaming_every_field_changes_only_name_identity_alias_identity_applie
                 // field's typeRef is untouched.
                 let aliased = b["typeRef"]
                     .as_str()
-                    .is_some_and(|t| t.contains("/type/Audit"));
+                    .is_some_and(|t| t.contains("/type/FR-001"));
                 let moved: &[&str] = if aliased {
                     &["name", "identity", "typeRef"]
                 } else {
@@ -1084,8 +1075,8 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     );
     let types = types_json(&lift);
     let status = type_named(&types, "OrderStatus");
-    assert_eq!(status["kind"], "enum");
-    assert_eq!(status["identity"], "ix://agent-ix/orders/type/OrderStatus");
+    assert_eq!(status["kind"], "enumeration");
+    assert_eq!(status["identity"], "ix://agent-ix/orders/type/EN-001");
     assert_eq!(status["roles"], json!(["business:enumeration"]));
     assert_eq!(status["unknownPolicy"], "reject");
     assert_eq!(status["constraints"], json!([]));
@@ -1108,10 +1099,10 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     assert_eq!(
         identities,
         [
-            "ix://agent-ix/orders/variant/OrderStatus-draft",
-            "ix://agent-ix/orders/variant/OrderStatus-placed",
-            "ix://agent-ix/orders/variant/OrderStatus-shipped",
-            "ix://agent-ix/orders/variant/OrderStatus-cancelled",
+            "ix://agent-ix/orders/variant/EN-001-draft",
+            "ix://agent-ix/orders/variant/EN-001-placed",
+            "ix://agent-ix/orders/variant/EN-001-shipped",
+            "ix://agent-ix/orders/variant/EN-001-cancelled",
         ]
     );
     for (i, v) in variants.iter().enumerate() {
@@ -1129,7 +1120,7 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     let order = type_named(&types, "Order");
     assert_eq!(
         field_named(order, "status")["typeRef"],
-        "ix://agent-ix/orders/type/OrderStatus"
+        "ix://agent-ix/orders/type/EN-001"
     );
     assert_eq!(reader_codes(&ir_document(&lift)), Vec::<String>::new());
 
@@ -1183,7 +1174,19 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
             assert!(
                 matches!(
                     t.kind,
-                    Kind::Scalar | Kind::Record | Kind::Enum | Kind::Alias
+                    Kind::Scalar
+                        | Kind::Record
+                        | Kind::Alias
+                        | Kind::Entity
+                        | Kind::ValueObject
+                        | Kind::NestedEntity
+                        | Kind::AggregateRoot
+                        | Kind::Enumeration
+                        | Kind::Event
+                        | Kind::StateMachine
+                        | Kind::Process
+                        | Kind::Repository
+                        | Kind::Domain
                 ),
                 "{name}: {:?}",
                 t.kind
@@ -1299,16 +1302,12 @@ fn tc_1334_distinct_names_with_one_slug_refuse_at_type_field_and_variant_levels(
     write_fixture(
         types.path(),
         "spec/functional/FR-001.md",
-        &entity("FR-001", "Config_Version", "| id | UUID | 1 | identity |\n"),
+        &entity("FR_001", "ConfigVersion", "| id | UUID | 1 | identity |\n"),
     );
     write_fixture(
         types.path(),
         "spec/functional/FR-002.md",
-        &entity(
-            "FR-002",
-            "Config__Version",
-            "| id | UUID | 1 | identity |\n",
-        ),
+        &entity("FR__001", "ConfigOverlay", "| id | UUID | 1 | identity |\n"),
     );
     let type_lift = lift_at(types.path(), &[&business_module(), &edge_vocabulary()]);
     let type_diagnostics = with_code(&type_lift.lowered.diagnostics, Code::UnsluggableName);
@@ -1377,6 +1376,52 @@ fn tc_1334_distinct_names_with_one_slug_refuse_at_type_field_and_variant_levels(
     );
 }
 
+#[trace("TC-1758", "FR-095-AC-17")]
+#[test]
+fn tc_1758_an_artifact_id_that_slugs_to_nothing_raises_unsluggable_name_and_no_panic() {
+    for id in ["_", "\u{00e9}\u{00e8}"] {
+        let bundle = tempfile::tempdir().expect("id fixture");
+        scratch_spec(bundle.path());
+        write_fixture(
+            bundle.path(),
+            "spec/functional/FR-001.md",
+            &entity(id, "Note", "| id | UUID | 1 | identity |\n"),
+        );
+        let lift = lift_at(bundle.path(), &[&business_module(), &edge_vocabulary()]);
+        let refused = with_code(&lift.lowered.diagnostics, Code::UnsluggableName);
+        assert_eq!(refused.len(), 1, "{id}: {:?}", lift.lowered.diagnostics);
+        assert!(refused[0].blocking, "{id}");
+        assert_eq!(
+            refused[0].locus,
+            Some(locus(&lift, "spec/functional/FR-001.md", 1, 1)),
+            "{id}"
+        );
+        assert!(
+            lift.lowered.types.iter().all(|t| t.display_name != "Note"),
+            "{id}: {:?}",
+            lift.lowered.types
+        );
+    }
+
+    // An id slugging to a kernel scalar the bundle uses mints that scalar's
+    // identity: blocking `DUPLICATE_TYPE_NAME`, whatever the declared name.
+    let bundle = tempfile::tempdir().expect("kernel id fixture");
+    scratch_spec(bundle.path());
+    write_fixture(
+        bundle.path(),
+        "spec/functional/FR-001.md",
+        &entity("UUID", "Note", "| id | UUID | 1 | identity |\n"),
+    );
+    let lift = lift_at(bundle.path(), &[&business_module(), &edge_vocabulary()]);
+    let refused = with_code(&lift.lowered.diagnostics, Code::DuplicateTypeName);
+    assert_eq!(refused.len(), 1, "{:?}", lift.lowered.diagnostics);
+    assert!(
+        refused[0].message.contains("mints type/UUID"),
+        "{}",
+        refused[0].message
+    );
+}
+
 #[trace("TC-1335", "FR-093-AC-14")]
 #[test]
 fn tc_1335_a_domain_without_properties_lowers_to_an_empty_record_and_lossy_yields_one_declared_loss(
@@ -1384,8 +1429,8 @@ fn tc_1335_a_domain_without_properties_lowers_to_an_empty_record_and_lossy_yield
     let lift = lift("business");
     let types = types_json(&lift);
     let domain = type_named(&types, "Ordering");
-    assert_eq!(domain["kind"], "record");
-    assert_eq!(domain["fields"], json!([]));
+    assert_eq!(domain["kind"], "domain");
+    assert!(domain.get("fields").is_none(), "{domain}");
     assert_eq!(domain["roles"], json!(["business:domain"]));
     assert_eq!(
         lift.extractions.artifacts["DM-001"]
@@ -1468,7 +1513,7 @@ fn tc_1347_equal_status_names_refuse_at_the_second_document_and_mint_no_field_tw
     );
     let status_fields: Vec<&String> = identities
         .iter()
-        .filter(|i| i.contains("/field/Status-"))
+        .filter(|i| i.contains("/field/FR-001-"))
         .collect();
     assert_eq!(
         status_fields.len(),

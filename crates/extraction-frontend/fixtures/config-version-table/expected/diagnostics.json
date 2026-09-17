@@ -1,1 +1,1 @@
-[{"blocking":false,"causes":[],"code":"agent-ix.extraction-frontend.DECLARED_LOSS","locus":{"path":"spec/functional/FR-006-config-version-entity.md","sourceIdentity":"ix://agent-ix/config-service/spec","startColumn":3,"startLine":24},"message":"field data is a JsonObject: declared loss `unconstrained-value` (losses.json)","owner":"ix://agent-ix/filament-core-data/extraction-frontend","related":[],"severity":"info"}]
+[]

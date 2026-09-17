@@ -1,5 +1,5 @@
 /**
- * Test-scoped reader for semantic IR contract 1.1.0 (issue #34).
+ * Test-scoped reader for semantic IR contract 1.2.0 (issues #34 and #93).
  *
  * JSON Schema validates shape; this module implements the cross-field rules
  * of FR-027..FR-030 that a schema cannot express, and the normalized
@@ -70,6 +70,23 @@ function asArray(value: unknown): JsonObject[] {
 }
 
 type Resolved = { kind: string; scalar?: string } | undefined;
+
+/**
+ * The kinds that may carry relationships and operations: a record and every
+ * contract 1.2.0 construct except `enumeration` (FR-142).
+ */
+export const EDGE_KINDS: ReadonlySet<string> = new Set([
+	"record",
+	"entity",
+	"value_object",
+	"nested_entity",
+	"aggregate_root",
+	"event",
+	"state_machine",
+	"process",
+	"repository",
+	"domain",
+]);
 
 /** Resolves a typeRef through alias definitions to its structural kind. */
 export function resolveKind(
@@ -157,11 +174,11 @@ function checkField(
 	}
 	let multiplicity: Multiplicity | undefined;
 	if (field.multiplicity === undefined) {
-		if (version === "1.1.0") {
+		if (version === "1.1.0" || version === "1.2.0") {
 			diagnostics.push({
 				code: "agent-ix.semantic-ir.MISSING_MULTIPLICITY",
 				path: `${path}.multiplicity`,
-				message: "1.1.0 fields must declare multiplicity",
+				message: `${version} fields must declare multiplicity`,
 			});
 		}
 		multiplicity = multiplicityFromPresence(field.presence);
@@ -174,7 +191,11 @@ function checkField(
 	}
 	if (multiplicity) {
 		const derived = multiplicity.lower >= 1 ? "required" : "optional";
-		if (field.presence !== undefined && field.presence !== derived) {
+		if (
+			version !== "1.2.0" &&
+			field.presence !== undefined &&
+			field.presence !== derived
+		) {
 			diagnostics.push({
 				code: "agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH",
 				path: `${path}.presence`,
@@ -270,7 +291,7 @@ function checkTypeDefinition(
 	lockExports: Set<string>,
 	diagnostics: Diagnostic[],
 ): void {
-	const isRecord = definition.kind === "record";
+	const isRecord = EDGE_KINDS.has(String(definition.kind));
 	for (const [index, field] of asArray(definition.fields).entries())
 		checkField(field, `${path}.fields.${index}`, version, types, diagnostics);
 	for (const [index, constraint] of asArray(definition.constraints).entries())
@@ -384,6 +405,19 @@ function checkTypeDefinition(
 				`${path}.operations.${index}.returns.multiplicity`,
 				diagnostics,
 			);
+		}
+		// FR-141: `quire` is the one checked clause language; an inline clause
+		// in any other admitted language is carried unchecked (an advisory).
+		for (const side of ["requires", "ensures"] as const) {
+			for (const [clauseIndex, clause] of asArray(operation[side]).entries()) {
+				if (isObject(clause) && clause.language !== "quire") {
+					diagnostics.push({
+						code: "agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED",
+						path: `${path}.operations.${index}.${side}.${clauseIndex}.language`,
+						message: "carried unchecked",
+					});
+				}
+			}
 		}
 		for (const side of ["pre", "post"] as const) {
 			for (const [refIndex, ref] of (Array.isArray(operation[side])
@@ -510,19 +544,25 @@ export function canonical(value: unknown): string {
 }
 
 /**
- * Normalized serialization (FR-027): 1.1.0 documents materialize multiplicity,
- * presence, and nullable on every field; 1.0.0 documents gain no bytes.
+ * Normalized serialization (FR-027): 1.1.0 and 1.2.0 documents materialize
+ * multiplicity, presence, and nullable on every field, a 1.2.0 field keeping its
+ * authored presence; 1.0.0 documents gain no bytes.
  */
 export function normalize(document: unknown): string {
 	if (!isObject(document)) return canonical(document);
 	const copy = structuredClone(document) as JsonObject;
-	if (copy.contractVersion === "1.1.0") {
+	const version = copy.contractVersion;
+	if (version === "1.1.0" || version === "1.2.0") {
 		const materialize = (field: JsonObject): void => {
 			const multiplicity = isObject(field.multiplicity)
 				? (field.multiplicity as Multiplicity)
 				: multiplicityFromPresence(field.presence);
 			field.multiplicity = multiplicity;
-			field.presence = multiplicity.lower >= 1 ? "required" : "optional";
+			if (
+				version !== "1.2.0" ||
+				(field.presence !== "required" && field.presence !== "optional")
+			)
+				field.presence = multiplicity.lower >= 1 ? "required" : "optional";
 			field.nullable = field.nullable === true;
 		};
 		for (const definition of asArray(copy.types)) {

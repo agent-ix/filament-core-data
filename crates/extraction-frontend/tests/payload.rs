@@ -21,7 +21,7 @@ use ix_trace_rs::trace;
 use serde_json::Value;
 
 /// The record this test validates payloads of.
-const RECORD: &str = "ix://agent-ix/config-service/type/ConfigVersion";
+const RECORD: &str = "ix://agent-ix/config-service/type/FR-006";
 
 /// One derived field rule: the scalar it resolves to (or `record`), its
 /// presence, and its constraints as (keyword, operands).
@@ -57,7 +57,10 @@ fn payload_schema(document: &Value, record: &str) -> Vec<FieldRule> {
             match node["kind"].as_str() {
                 Some("alias") => target = node["target"].as_str().expect("target"),
                 Some("scalar") => break node["scalar"].as_str().expect("scalar").to_string(),
-                Some("record") => break "record".to_string(),
+                Some(
+                    "record" | "entity" | "value_object" | "nested_entity" | "aggregate_root"
+                    | "event" | "process",
+                ) => break "record".to_string(),
                 other => panic!("{target}: kind {other:?}"),
             }
         };
@@ -95,6 +98,7 @@ fn validate_payload(schema: &[FieldRule], payload: &Value) -> Vec<String> {
             "number" => value.is_number(),
             "boolean" => value.is_boolean(),
             "record" => value.is_object(),
+            "any" => true,
             other => panic!("unmapped scalar {other}"),
         };
         if !scalar_ok {

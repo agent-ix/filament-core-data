@@ -1,18 +1,11 @@
 {
-	"$comment": "The closed register of representability losses the spec-bundle extraction frontend declares (FR-093 \"Declared losses\"). Every DECLARED_LOSS diagnostic names exactly one `code` of this register; a loss with no row fails the crate's own test (FR-093-CON-3). The two #78 rows are the frontend's reading of an unruled issue: a ruling that gives the IR an any-type or a presence independent of multiplicity.lower removes them, the JsonObject record, the presence derivation and every golden carrying them in one commit.",
+	"$comment": "The closed register of representability losses the spec-bundle extraction frontend declares (FR-093 \"Declared losses\"). Every DECLARED_LOSS diagnostic names exactly one `code` of this register; a loss with no row fails the crate's own test (FR-093-CON-3). IR v1.2 represents unconstrained values directly, so an unconstrained value is not a loss; a source that authors no presence beyond its multiplicity column is (FR-106-AC-5).",
 	"losses": [
 		{
-			"code": "unconstrained-value",
-			"construct": "a `JsonObject` Type cell: an unconstrained JSON value",
-			"lowering": "one package-local `record` named `JsonObject` at `ix://<org>/<name>/type/JsonObject` with `fields: []` and `unknownPolicy: preserve`, as packages/semantic-core/kernel-scalars.json prescribes; any JSON value is narrowed to any JSON object",
-			"owner": "agent-ix/filament-core-data#78",
-			"diagnostic": "agent-ix.extraction-frontend.DECLARED_LOSS"
-		},
-		{
 			"code": "required-collection-presence",
-			"construct": "a `0..*` (or `*`) collection field: the source cannot say whether the member must be present and may be empty, and the IR derives `presence` from `multiplicity.lower`",
-			"lowering": "`presence: optional`; the IR identifies an absent collection with an empty one, so a required-but-possibly-empty collection is emitted as optional",
-			"owner": "agent-ix/filament-core-data#78",
+			"construct": "a `0..*` (or `*`) collection field: the multiplicity column is the only presence the source authors, and it cannot say whether the member must appear and may be empty",
+			"lowering": "`presence: optional`, the presence a lower bound of `0` authors; a required-but-possibly-empty collection is not expressible in the source",
+			"owner": "ix://agent-ix/filament-core-data/FR-106",
 			"diagnostic": "agent-ix.extraction-frontend.DECLARED_LOSS"
 		},
 		{

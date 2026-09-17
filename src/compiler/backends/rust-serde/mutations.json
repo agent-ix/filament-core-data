@@ -336,7 +336,7 @@
 			"branches": ["constraint:pattern/string", "unknownPolicy:inert"],
 			"site": "\"kind\": \"scalar|alias|sequence|map|reference\"",
 			"detectedBy": [
-				"TC-725 the unknownPolicy rows dispose each of the eight kinds exactly once"
+				"TC-725 the unknownPolicy rows dispose each of the nine kinds exactly once"
 			]
 		},
 		{

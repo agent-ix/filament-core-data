@@ -156,6 +156,15 @@ function buildRegistry() {
 	// The one advisory code. Reaching `maxDiagnostics` truncates the report; it
 	// does not invalidate the compile, so a warning-only run still writes its
 	// document (FR-049, SR-066 FND-509).
+	// The one reader advisory. An inline clause in a language other than
+	// `quire` is carried as authored and never checked (FR-141); the document
+	// is accepted.
+	registry.CLAUSE_LANGUAGE_UNCHECKED = {
+		code: "agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED",
+		severity: "info",
+		blocking: false,
+		owner: READER,
+	};
 	registry.DIAGNOSTIC_LIMIT_REACHED = {
 		code: "agent-ix.compiler.DIAGNOSTIC_LIMIT_REACHED",
 		...advisory(COMPILER),

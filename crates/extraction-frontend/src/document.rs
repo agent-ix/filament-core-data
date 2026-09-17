@@ -15,7 +15,7 @@ use crate::envelope::Envelope;
 use crate::lower::TypeDefinition;
 
 /// The one `contractVersion` this frontend emits.
-pub const CONTRACT_VERSION: &str = "1.1.0";
+pub const CONTRACT_VERSION: &str = "1.2.0";
 
 /// `{contractVersion, source, package, types, occurrences, extensions}` over
 /// `envelope` and `types`, every node list sorted by identity.

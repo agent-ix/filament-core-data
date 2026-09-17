@@ -1,6 +1,6 @@
 {
-	"corpusVersion": "1.0.1",
-	"contractVersions": ["1.0.0", "1.1.0"],
+	"corpusVersion": "2.0.0",
+	"contractVersions": ["1.0.0", "1.1.0", "1.2.0"],
 	"canonicalForm": "agent-ix-conformance-jcs-v1",
 	"caseIdPattern": "^[A-Z][A-Z0-9]*(-[A-Z0-9]+)*-[0-9]{3}$",
 	"minimizationBudget": 64,
@@ -14,7 +14,7 @@
 	"predecessor": {
 		"state": "required",
 		"ref": "origin/main:conformance/corpus.json",
-		"rationale": "origin/main carries the corpus, so every corpusVersion change is compared against it."
+		"rationale": "Contract 1.2.0 changes the established ENV-002 expectation because 1.2.0 is now valid; the resulting major corpus version compares against the committed predecessor."
 	},
 	"familyPrefixes": {
 		"envelope": "ENV",
@@ -629,8 +629,8 @@
 			"path": "conformance/cases/envelope/ENV-002.json",
 			"family": "envelope",
 			"class": "negative",
-			"digest": "sha256:850f42b6e364cf49752b86985a2e19cc3c7d366d113c26bc0f5ad83f81f8594e",
-			"expectedDigest": "sha256:a21f120df45a58b4708027cd530a0a4f3e083f533a3893493d66e64cd8d3900f"
+			"digest": "sha256:8e979ca611f248da6266266df0e7c77be69da0de8fbfbba2527f200cb5111e59",
+			"expectedDigest": "sha256:4c4f45e379d1d2ac909438cfccb24cfc3f651f7c254b7cf425fbddfe69a1f665"
 		},
 		{
 			"id": "ENV-003",
@@ -1265,5 +1265,5 @@
 			"expectedDigest": "sha256:4d8c58cacba5665d772325195e70d588e515d8f3f4cd32b2fe325effe985650c"
 		}
 	],
-	"corpusDigest": "sha256:fa14167f9e909f0f1577473f9f05e842fbe8e7aa5ef62878e4d473ea8a8c5f66"
+	"corpusDigest": "sha256:ac3456665b9f64a66325cd8b680fe7df56a8d12ae9093c2d1b0aa290cce9d59f"
 }

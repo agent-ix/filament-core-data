@@ -22,6 +22,15 @@
 			"diagnosticCode": null
 		},
 		{
+			"rowKey": "kind:entity",
+			"axis": "kind",
+			"selector": "entity",
+			"rustForm": "pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str]",
+			"serdeAttributes": [],
+			"mechanism": "the record row, plus the names of the fields that tell the entity's instances apart in declared order, beside FIELDS in the type's module",
+			"diagnosticCode": null
+		},
+		{
 			"rowKey": "kind:enum",
 			"axis": "kind",
 			"selector": "enum",
@@ -73,6 +82,15 @@
 			"rustForm": "pub struct N(SemanticIdentity);",
 			"serdeAttributes": ["transparent"],
 			"mechanism": "newtype over the validated identity, not over the target's Rust type, plus a validating Deserialize",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "scalar:any",
+			"axis": "scalar",
+			"selector": "any",
+			"rustForm": "SemanticValue",
+			"serdeAttributes": [],
+			"mechanism": "lossless JSON value retained by crate::support::SemanticValue",
 			"diagnosticCode": null
 		},
 		{
@@ -293,7 +311,7 @@
 			"rowKey": "unknownPolicy:record/reject",
 			"axis": "unknownPolicy",
 			"selector": {
-				"kind": "record",
+				"kind": "record|entity",
 				"policy": "reject"
 			},
 			"rustForm": "pub struct N { .. }",
@@ -305,7 +323,7 @@
 			"rowKey": "unknownPolicy:record/preserve",
 			"axis": "unknownPolicy",
 			"selector": {
-				"kind": "record",
+				"kind": "record|entity",
 				"policy": "preserve"
 			},
 			"rustForm": "UnknownMembers",
@@ -317,7 +335,7 @@
 			"rowKey": "unknownPolicy:record/surface",
 			"axis": "unknownPolicy",
 			"selector": {
-				"kind": "record",
+				"kind": "record|entity",
 				"policy": "surface"
 			},
 			"rustForm": "UnknownMembers",

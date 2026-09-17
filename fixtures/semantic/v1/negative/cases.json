@@ -185,7 +185,7 @@
 		"base": "positive/semantic-ir-v1-1.json",
 		"set": {
 			"path": "contractVersion",
-			"value": "1.2.0"
+			"value": "1.3.0"
 		},
 		"code": "agent-ix.semantic-ir.UNSUPPORTED_VERSION"
 	},

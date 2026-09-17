@@ -1,4 +1,4 @@
-"""Independent Python reader for semantic IR contract 1.1.0 (issue #34, TC-232).
+"""Independent Python reader for semantic IR contract 1.2.0 (issue #93, TC-232).
 
 This is test-only evidence: it is the second reader that FR-020-AC-8 requires,
 implemented without reference to the TypeScript reader's code so that the two
@@ -61,6 +61,22 @@ APPLICABILITY: dict[str, set[str]] = {
     "nonEmpty": {"string", "bytes", "sequence", "map"},
     "unique": {"sequence"},
     "format": {"string"},
+}
+
+
+# The kinds that may carry relationships and operations: a record and every
+# contract 1.2.0 construct except `enumeration` (FR-142).
+EDGE_KINDS = {
+    "record",
+    "entity",
+    "value_object",
+    "nested_entity",
+    "aggregate_root",
+    "event",
+    "state_machine",
+    "process",
+    "repository",
+    "domain",
 }
 
 
@@ -152,12 +168,12 @@ def _check_field(
             )
         )
     if "multiplicity" not in field:
-        if version == "1.1.0":
+        if version in {"1.1.0", "1.2.0"}:
             out.append(
                 _diag(
                     "agent-ix.semantic-ir.MISSING_MULTIPLICITY",
                     f"{path}.multiplicity",
-                    "1.1.0 requires multiplicity",
+                    f"{version} requires multiplicity",
                 )
             )
         multiplicity: dict[str, Any] | None = multiplicity_from_presence(
@@ -169,7 +185,7 @@ def _check_field(
         )
     if multiplicity is not None:
         derived = "required" if multiplicity["lower"] >= 1 else "optional"
-        if "presence" in field and field["presence"] != derived:
+        if version != "1.2.0" and "presence" in field and field["presence"] != derived:
             out.append(
                 _diag(
                     "agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH",
@@ -279,7 +295,7 @@ def _check_type(
     exports: set[str],
     out: list[dict[str, str]],
 ) -> None:
-    is_record = definition.get("kind") == "record"
+    is_record = definition.get("kind") in EDGE_KINDS
     for index, field in enumerate(_objects(definition.get("fields"))):
         _check_field(field, f"{path}.fields.{index}", version, types, out)
     for index, constraint in enumerate(_objects(definition.get("constraints"))):
@@ -384,6 +400,18 @@ def _check_type(
                 f"{path}.operations.{index}.returns.multiplicity",
                 out,
             )
+        # FR-141: `quire` is the one checked clause language; an inline clause
+        # in any other admitted language is carried unchecked (an advisory).
+        for side in ("requires", "ensures"):
+            for clause_index, clause in enumerate(_objects(operation.get(side))):
+                if clause.get("language") != "quire":
+                    out.append(
+                        _diag(
+                            "agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED",
+                            f"{path}.operations.{index}.{side}.{clause_index}.language",
+                            "carried unchecked",
+                        )
+                    )
         for side in ("pre", "post"):
             refs = operation.get(side) if isinstance(operation.get(side), list) else []
             for ref_index, ref in enumerate(refs):
@@ -489,11 +517,12 @@ def canonical(value: Any) -> str:
 
 
 def normalize(document: Any) -> str:
-    """Normalized bytes: 1.1.0 materializes field views; 1.0.0 gains no bytes."""
+    """Normalized bytes materialize 1.1/1.2 field views; 1.2 keeps authored presence."""
     if not isinstance(document, dict):
         return canonical(document)
     copy_ = copy.deepcopy(document)
-    if copy_.get("contractVersion") == "1.1.0":
+    if copy_.get("contractVersion") in {"1.1.0", "1.2.0"}:
+        version = copy_["contractVersion"]
 
         def materialize(field: dict[str, Any]) -> None:
             multiplicity = (
@@ -502,7 +531,13 @@ def normalize(document: Any) -> str:
                 else multiplicity_from_presence(field.get("presence"))
             )
             field["multiplicity"] = multiplicity
-            field["presence"] = "required" if multiplicity["lower"] >= 1 else "optional"
+            if version != "1.2.0" or field.get("presence") not in {
+                "required",
+                "optional",
+            }:
+                field["presence"] = (
+                    "required" if multiplicity["lower"] >= 1 else "optional"
+                )
             field["nullable"] = field.get("nullable") is True
 
         for definition in _objects(copy_.get("types")):

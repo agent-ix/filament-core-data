@@ -6,13 +6,13 @@
 	},
 	{
 		"path": "identity.ts",
-		"size": 14138,
-		"sha256": "091b85a78a50883d1ec3abdb978d81c6be26d4dfc009aad0b02f44d9b38e10f5"
+		"size": 14393,
+		"sha256": "ded5ab4cf93448bea2b0f701ea44ae206f4b1872f581bb5236792973f81f68b3"
 	},
 	{
 		"path": "index.ts",
-		"size": 1541,
-		"sha256": "1628bb1fb8e97d46b19130d2d1bd925dcaf012cfdb526a4bf471006d938e0169"
+		"size": 1564,
+		"sha256": "6d0a0eaaa2376650b431717e219f9b89d7030a78b55f80f4f2d6261977d0e32a"
 	},
 	{
 		"path": "LICENSE",
@@ -22,7 +22,7 @@
 	{
 		"path": "output-manifest.json",
 		"size": 2534,
-		"sha256": "a19572a914447bfcab1d829af403a390b483b484fdb72f3f013906d016d7fd18"
+		"sha256": "1e8306421c31f3d681a2e6b1519605ff5c70307fd54a28a3a1a6f75e500f3ee8"
 	},
 	{
 		"path": "package.json",

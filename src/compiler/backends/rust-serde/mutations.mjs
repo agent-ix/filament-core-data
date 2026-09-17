@@ -347,7 +347,7 @@ export function structureOf(catalogue) {
 }
 
 /**
- * Copies the backend, and the one module it imports from outside its own
+ * Copies the backend, and the two modules it imports from outside its own
  * directory, into a scratch tree. Nothing in the working tree is written.
  */
 export function scratchCopy(root, label) {
@@ -369,6 +369,9 @@ export function scratchCopy(root, label) {
 		join(root, "src", "compiler", "ir", "applicability.mjs"),
 		applicability,
 	);
+	// The construct list, which the mapping reads for the kinds it renders.
+	const constructs = join(base, "src", "compiler", "constructs.mjs");
+	cpSync(join(root, "src", "compiler", "constructs.mjs"), constructs);
 	// The contract-gap register too: the branch register cites a gap id and
 	// resolves it, so a copy without it reports that it could not run — which
 	// is the right answer to the wrong question.

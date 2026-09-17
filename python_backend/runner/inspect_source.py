@@ -43,6 +43,52 @@ ALLOWED_IMPORT_ROOTS: frozenset[str] = frozenset(
 )
 
 PERMISSIVE_NAMES: frozenset[str] = frozenset({"Any", "object"})
+
+#: The descriptive `x-agent-ix-*` annotations the JSON Schema backend writes on
+#: every node (FR-100). An unknown keyword is an annotation under JSON Schema
+#: 2020-12 and asserts nothing, and each of these describes the node rather
+#: than restricting its values, so a node carrying only these and metadata is
+#: typeless. The annotations that carry meaning JSON Schema cannot assert —
+#: `x-agent-ix-constraints`, `x-agent-ix-clauses`, `x-agent-ix-relationships`,
+#: `x-agent-ix-operations`, `x-agent-ix-reference-target`,
+#: `x-agent-ix-extensions` — stay constraining, so a permissive annotation over
+#: them is `degraded` (FR-078-CON-1). An extension can carry wire-affecting
+#: meaning, so an extension list is descriptive only when every extension in it
+#: is one `DESCRIPTIVE_EXTENSIONS` names.
+DESCRIPTIVE_ANNOTATIONS: frozenset[str] = frozenset(
+    {
+        "x-agent-ix-semantic-id",
+        "x-agent-ix-origin",
+        "x-agent-ix-roles",
+        "x-agent-ix-unit",
+        "x-agent-ix-occurrences",
+        "x-agent-ix-unknown-policy",
+    }
+)
+#: The extensions that describe a node without restricting its values: the
+#: kernel scalar a definition names, and its documentation text.
+DESCRIPTIVE_EXTENSIONS: frozenset[str] = frozenset(
+    {
+        "ix://agent-ix/semantic-core/ext/kernel-scalar",
+        "ix://agent-ix/semantic-core/ext/doc",
+    }
+)
+
+
+def _descriptive(key: str, value: Any) -> bool:
+    """Whether an `x-agent-ix-*` annotation describes a node, restricting nothing."""
+
+    if key in DESCRIPTIVE_ANNOTATIONS:
+        return True
+    if key != "x-agent-ix-extensions" or not isinstance(value, list):
+        return False
+    return all(
+        isinstance(extension, dict)
+        and extension.get("identity") in DESCRIPTIVE_EXTENSIONS
+        for extension in value
+    )
+
+
 BARE_CONTAINERS: frozenset[str] = frozenset({"dict", "list", "Dict", "List", "Mapping"})
 
 _VARIANT = re.compile(r"^(?P<stem>.+?)(?P<suffix>\d+)$")
@@ -114,6 +160,7 @@ def _unconstrained(node: Any) -> bool:
             "$defs",
             "definitions",
         }
+        and not _descriptive(key, node[key])
     }
     if not meaningful:
         return True

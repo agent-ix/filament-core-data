@@ -11,7 +11,11 @@
 //! --target rust` is `BACKEND_NOT_IMPLEMENTED` (filament-core-data#21) and
 //! is measured, not relied on.
 //!
-//! Issues #88 and #90 make both generated-package paths accept the golden:
+//! The golden declares two `entity` constructs (FR-143), which every backend
+//! renders as a record-shaped type naming its identity fields (FR-054, FR-064,
+//! FR-100).
+//!
+//! Issues #88 and #90 make both generated-package paths accept a record golden:
 //! extension identities are unique within their owning node, and matching
 //! package-local kernel scalars render as the Rust support type rather than a
 //! colliding newtype. The two ordinary tests below are the lasting acceptance

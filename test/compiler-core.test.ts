@@ -14,13 +14,17 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import Ajv2020 from "ajv/dist/2020.js";
 import { beforeAll, describe, expect, it } from "vitest";
+import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
+import { rustBackend } from "../src/compiler/backends/rust-serde/backend.mjs";
 import {
 	assertBackendContract,
 	generateTarget,
 	registryWith,
 } from "../src/compiler/backends/seam.mjs";
 import { diffSemanticContract } from "../src/compiler/compat/diff.mjs";
+import { CONSTRUCT_KINDS, EDGE_KINDS } from "../src/compiler/constructs.mjs";
 import {
 	CONTRACT_VERSIONS,
 	readIrAsContract,
@@ -76,6 +80,19 @@ import {
 import { compilePackage, PHASES } from "../src/compiler/pipeline.mjs";
 import { schemaValidators } from "../src/compiler/schema-validate.mjs";
 import { changedPathsOf, changeRange } from "./changed-paths.js";
+import { EDGE_KINDS as READER_EDGE_KINDS } from "./semantic-ir-v1-1-reader";
+
+/** The `typeDefinition.kind` values of contract 1.0.0 and 1.1.0. */
+const CONTRACT_KINDS_BEFORE_CONSTRUCTS = [
+	"scalar",
+	"record",
+	"enum",
+	"union",
+	"alias",
+	"sequence",
+	"map",
+	"reference",
+];
 
 /**
  * Issue #19 (the TypeSpec frontend and the versioned semantic IR compiler core)
@@ -729,7 +746,7 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			),
 		].map((match) => match[1]);
 		expect(declarations.sort()).toEqual([...VOCABULARY]);
-		expect(declarations).toHaveLength(15);
+		expect(declarations).toHaveLength(16);
 	});
 
 	/** Traces: TC-413, TC-429, TC-453; FR-053-AC-2, FR-053-CON-3, FR-046-CON-3. */
@@ -775,6 +792,52 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 		);
 		expect(entry?.locus?.startLine).toBe(5);
 		expect(entry?.related).toHaveLength(1);
+	}, 60000);
+
+	/** Traces: TC-1373; FR-106-AC-1, FR-106-CON-1. */
+	it("lowers @presence independently of multiplicity in contract 1.2.0", async () => {
+		const result = await compileSource(
+			[
+				"using AgentIx.Semantic.Decorators;",
+				"namespace AgentIx.Semantic;",
+				"scalar Text extends string;",
+				"model Thing {",
+				'  @multiplicity(0) @presence("required") values: Text[];',
+				'  @multiplicity(1) @presence("optional") tags?: Text[];',
+				"}",
+			].join("\n"),
+		);
+		expect(codesOf(result.diagnostics as never)).toEqual([]);
+		expect((result.ir as Json).contractVersion).toBe("1.2.0");
+		expect(validateIrDocument(result.ir as never)).toEqual([]);
+		expect([...readContractIr(result.ir as never)]).toEqual([]);
+		const thing = ((result.ir as Json).types as Json[]).find(
+			(type) => type.displayName === "Thing",
+		) as Json;
+		const named = (name: string) =>
+			(thing.fields as Json[]).find((one) => one.name === name) as Json;
+		const values = named("values");
+		const tags = named("tags");
+		expect(values.multiplicity).toEqual({ lower: 0 });
+		expect(values.presence).toBe("required");
+		expect(tags.multiplicity).toEqual({ lower: 1 });
+		expect(tags.presence).toBe("optional");
+
+		// The payload level: a present empty collection is admitted and an
+		// absent required member is refused, through the rendered schema.
+		const rendered = jsonSchemaBackend.generate({ ir: result.ir as never });
+		const schemas = rendered.files
+			.filter((one) => one.path.endsWith(".json") && one.path !== "index.json")
+			.map((one) => JSON.parse(one.text));
+		const ajv = new Ajv2020({ strict: false });
+		for (const schema of schemas) ajv.addSchema(schema);
+		const thingSchema = schemas.find((one) => one.$id.endsWith("/Thing.json"));
+		const validate = thingSchema && ajv.getSchema(thingSchema.$id);
+		if (!validate) throw new Error("Thing schema was not emitted");
+		expect(validate({ values: [] })).toBe(true);
+		expect(validate({})).toBe(false);
+		expect(validate({ values: [], tags: ["a"] })).toBe(true);
+		expect(validate({ values: [], tags: [] })).toBe(false);
 	}, 60000);
 
 	/** Traces: TC-415, TC-604; FR-053-AC-4. */
@@ -1185,7 +1248,9 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			(path) => path.endsWith("package.json") && path.startsWith("src/"),
 		);
 		for (const path of added) {
-			expect(readJson(resolve(root, path)).license, path).toBe("AGPL-3.0-or-later");
+			expect(readJson(resolve(root, path)).license, path).toBe(
+				"AGPL-3.0-or-later",
+			);
 		}
 		expect(
 			readJson(resolve(compilerRoot, "frontend/typespec/lib/package.json"))
@@ -1218,9 +1283,9 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		) as Json;
 
 	/** Traces: TC-432, TC-450, TC-614; FR-046-AC-1, FR-046-AC-19. */
-	it("emits a valid 1.1.0 document with no reader diagnostics", () => {
+	it("emits a valid 1.2.0 document with no reader diagnostics", () => {
 		expect(compiled.ir).not.toBeNull();
-		expect((compiled.ir as Json).contractVersion).toBe("1.1.0");
+		expect((compiled.ir as Json).contractVersion).toBe("1.2.0");
 		expect(((compiled.ir as Json).source as Json).dialect).toBe("typespec");
 		expect(validateIrDocument(compiled.ir)).toEqual([]);
 		expect(codesOf(readContractIr(compiled.ir) as never)).toEqual([]);
@@ -1518,15 +1583,32 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(
 			codesOf(readContractIr(document, { importedExports: [] }) as never),
 		).toContain(DIAGNOSTIC_CODES.UNRESOLVED_RELATIONSHIP_TARGET.code);
+	}, 60000);
 
-		const unresolved = await compileSource(
+	/** Traces: TC-1761; FR-141-AC-7. */
+	it("lowers a TypeSpec unknown member to the kernel scalar any", async () => {
+		const unconstrained = await compileSource(
 			["namespace AgentIx.Semantic;", "model Thing { value: unknown; }"].join(
 				"\n",
 			),
 		);
-		expect(codesOf(unresolved.diagnostics as never)).toContain(
-			DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF.code,
-		);
+		expect(hasBlocking(unconstrained.diagnostics as never)).toBe(false);
+		const types = (unconstrained.ir as Json).types as Json[];
+		const thing = types.find((type) => type.displayName === "Thing") as Json;
+		const target = types.find(
+			(type) => type.identity === ((thing.fields as Json[])[0] as Json).typeRef,
+		) as Json;
+		expect([target.kind, target.scalar]).toEqual(["scalar", "any"]);
+		// One identity with the spec bundles, which name the same scalar JsonObject.
+		expect(String(target.identity).endsWith("/type/JsonObject")).toBe(true);
+		expect(
+			types.filter(
+				(type) =>
+					type.kind === "record" &&
+					type !== thing &&
+					(type.fields as Json[] | undefined)?.length === 0,
+			),
+		).toEqual([]);
 	}, 60000);
 
 	/** Traces: TC-443, TC-485; FR-046-AC-12, FR-048-AC-9. */
@@ -2774,8 +2856,10 @@ describe("the diagnostic registry (FR-049)", () => {
 		// A cross-field defect located by a JSON pointer takes the offending
 		// node's own source position.
 		const document = JSON.parse(JSON.stringify(compiled.ir)) as never as {
+			contractVersion: string;
 			types: Json[];
 		};
+		document.contractVersion = "1.1.0";
 		const artifact = document.types.find(
 			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
 		) as Json;
@@ -3075,8 +3159,10 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 	/** Traces: TC-514, TC-515, TC-525; FR-050-AC-5, FR-050-AC-6, FR-050-CON-3. */
 	it("materializes the 1.1.0 members, leaves 1.0.0 alone, and is idempotent", () => {
 		const document = JSON.parse(JSON.stringify(compiled.ir)) as never as {
+			contractVersion: string;
 			types: Json[];
 		};
+		document.contractVersion = "1.1.0";
 		const artifact = document.types.find(
 			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
 		) as Json;
@@ -3121,6 +3207,186 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 				normalizeIr(fixture),
 			);
 		}
+	});
+
+	/** Traces: TC-1376; FR-106-AC-4. */
+	it("accepts the v1.2 Any scalar and preserves authored presence", () => {
+		const document = JSON.parse(JSON.stringify(compiled.ir)) as never as {
+			contractVersion: string;
+			types: Json[];
+		};
+		document.contractVersion = "1.2.0";
+		const scalar = document.types.find(
+			(type) => type.kind === "scalar",
+		) as Json;
+		scalar.scalar = "any";
+		const record = document.types.find(
+			(type) => Array.isArray(type.fields) && type.fields.length > 0,
+		) as Json;
+		const field = (record.fields as Json[])[0];
+		field.presence = "optional";
+		expect(validateIrDocument(document)).toEqual([]);
+		expect(
+			codesOf(readContractIr(document) as never as Diagnostic[]),
+		).not.toContain(DIAGNOSTIC_CODES.PRESENCE_MULTIPLICITY_MISMATCH.code);
+		const normalized = JSON.parse(normalizeIr(document)) as never as {
+			types: Json[];
+		};
+		const normalizedRecord = normalized.types.find(
+			(type) => Array.isArray(type.fields) && type.fields.length > 0,
+		) as Json;
+		expect((normalizedRecord.fields as Json[])[0].presence).toBe("optional");
+	});
+
+	/** Traces: TC-1759; FR-141-AC-6, FR-141-CON-2. */
+	it("carries an inline clause outside quire with one non-blocking advisory", () => {
+		const document = readJson(
+			resolve(
+				root,
+				"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
+			),
+		) as never as { types: Json[] };
+		const machine = document.types.find((type) =>
+			String(type.identity).endsWith("/type/SM-001"),
+		) as Json;
+		const operation = (machine.operations as Json[])[0];
+		expect([...note(readContractIr(document as never))]).toEqual([]);
+		((operation.requires as Json[])[0] as Json).language = "ocl";
+		expect(validateIrDocument(document as never)).toEqual([]);
+		const found = [...note(readContractIr(document as never))];
+		expect(found.map((one) => [one.code, one.severity, one.blocking])).toEqual([
+			[DIAGNOSTIC_CODES.CLAUSE_LANGUAGE_UNCHECKED.code, "info", false],
+		]);
+	});
+
+	/** Traces: TC-1760; FR-142-AC-7. */
+	it("spells the construct kinds exactly as the schema does", () => {
+		const definition = (
+			readJson(
+				resolve(root, "schema/semantic/v1/semantic-ir.schema.json"),
+			) as never as {
+				$defs: {
+					typeDefinition: {
+						properties: { kind: { enum: string[] } };
+						allOf: { if: { properties: { kind: { enum?: string[] } } } }[];
+					};
+				};
+			}
+		).$defs.typeDefinition;
+		const before = new Set(CONTRACT_KINDS_BEFORE_CONSTRUCTS);
+		expect([...CONSTRUCT_KINDS]).toEqual(
+			definition.properties.kind.enum.filter((kind) => !before.has(kind)),
+		);
+		const edges = definition.allOf
+			.map((branch) => branch.if.properties.kind.enum)
+			.filter((kinds) => kinds?.includes("record") && kinds.length > 1);
+		expect(edges).toHaveLength(1);
+		expect([...EDGE_KINDS].sort()).toEqual([...(edges[0] ?? [])].sort());
+		expect([...READER_EDGE_KINDS].sort()).toEqual([...EDGE_KINDS].sort());
+	});
+
+	/** Traces: TC-1553; FR-139-AC-2, FR-139-CON-1. */
+	it("keeps an any scalar and a zero-field record distinct at every layer", () => {
+		const record = readJson(
+			resolve(root, "fixtures/semantic/v1/positive/config-version-v1-2.json"),
+		) as never as { contractVersion: string; types: Json[] };
+		const scalar = JSON.parse(JSON.stringify(record)) as typeof record;
+		const identity = "ix://agent-ix/config-service/type/JsonObject";
+		const at = scalar.types.findIndex((type) => type.identity === identity);
+		const { fields: _fields, ...head } = scalar.types[at];
+		scalar.types[at] = { ...head, kind: "scalar", scalar: "any" };
+
+		// The IR layer: both documents are valid and their nodes differ.
+		for (const document of [record, scalar]) {
+			expect(validateIrDocument(document as never)).toEqual([]);
+			expect([...readContractIr(document as never)]).toEqual([]);
+		}
+		const node = (document: typeof record) =>
+			document.types.find((type) => type.identity === identity) as Json;
+		expect(node(record)).not.toEqual(node(scalar));
+
+		// The normalized and fingerprinted layers.
+		expect(normalizeIr(record as never)).not.toBe(normalizeIr(scalar as never));
+		expect(fingerprintIr(record as never)).not.toBe(
+			fingerprintIr(scalar as never),
+		);
+
+		// The compatibility layer names the change on that identity.
+		const report = diffSemanticContract({
+			old: record,
+			new: scalar,
+		}) as never as { changes: { identity: string }[] };
+		expect(report.changes.some((change) => change.identity === identity)).toBe(
+			true,
+		);
+
+		// The generated declarations: the JSON Schema backend renders the two
+		// as different schemas.
+		const rendered = (document: typeof record) =>
+			jsonSchemaBackend
+				.generate({ ir: document as never })
+				.files.find((file) => file.path === "JsonObject.json")?.text;
+		expect(rendered(record)).toBeDefined();
+		expect(rendered(scalar)).toBeDefined();
+		expect(rendered(record)).not.toBe(rendered(scalar));
+
+		// The Rust backend, reached through the seam, renders them differently.
+		const rust = (document: typeof record) => {
+			const texts: string[] = [];
+			const manifest = generateTarget(
+				{
+					contractVersion: "1.0.0",
+					lockFingerprint: `sha256:${"a".repeat(64)}`,
+					ir: document,
+					profile: readJson(
+						resolve(root, "fixtures/semantic/v1/positive/profile.json"),
+					),
+					mappings: [],
+					backend: {
+						identity: rustBackend.identity,
+						version: rustBackend.version,
+						supportedIrVersions: [...rustBackend.supportedIrVersions],
+						supportedFeatures: [...rustBackend.supportedFeatures],
+						options: {},
+					},
+					outputRoot: "generated/rust",
+					limits: { ...DEFAULT_LIMITS },
+				} as never,
+				{
+					target: "rust",
+					host: createHost({ readRoots: [root] }),
+					format(text: string) {
+						texts.push(text);
+						return text;
+					},
+				} as never,
+			) as never as { state: string };
+			expect(manifest.state).toBe("success");
+			return texts.join("\n");
+		};
+		expect(rust(record)).not.toBe(rust(scalar));
+	});
+
+	/** Traces: TC-1376; FR-106-AC-4. */
+	it("rejects authored presence that contradicts multiplicity in v1.1", () => {
+		const document = JSON.parse(JSON.stringify(compiled.ir)) as never as {
+			contractVersion: string;
+			types: Json[];
+		};
+		document.contractVersion = "1.1.0";
+		const record = document.types.find(
+			(type) => Array.isArray(type.fields) && type.fields.length > 1,
+		) as Json;
+		const [required, optional] = record.fields as Json[];
+		required.presence = "required";
+		required.multiplicity = { lower: 0, upper: 2 };
+		optional.presence = "optional";
+		optional.multiplicity = { lower: 1, upper: 2 };
+		expect(codesOf(readContractIr(document) as never as Diagnostic[])).toEqual(
+			expect.arrayContaining([
+				DIAGNOSTIC_CODES.PRESENCE_MULTIPLICITY_MISMATCH.code,
+			]),
+		);
 	});
 
 	/** Traces: TC-516; FR-050-AC-7. */
@@ -3654,13 +3920,13 @@ describe("compatibility and evolution (FR-051)", () => {
 			DIAGNOSTIC_CODES.UNKNOWN_CONTRACT_VERSION.code,
 		]);
 
-		const same = readIrAsContract(compiled.ir, "1.1.0") as never as {
+		const same = readIrAsContract(compiled.ir, "1.2.0") as never as {
 			document: Json;
 			loss: string[];
 		};
 		expect(same.document).toBe(compiled.ir);
 		expect(same.loss).toEqual([]);
-		expect([...CONTRACT_VERSIONS]).toEqual(["1.0.0", "1.1.0"]);
+		expect([...CONTRACT_VERSIONS]).toEqual(["1.0.0", "1.1.0", "1.2.0"]);
 	});
 
 	/** Traces: TC-541; FR-051-AC-15. */
@@ -3767,7 +4033,7 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 			expect(read(firstDiagnostics)).toBe(read(secondDiagnostics));
 			expect(read(firstDiagnostics).trim()).toBe("[]");
 			const document = readJson(first);
-			expect(document.contractVersion).toBe("1.1.0");
+			expect(document.contractVersion).toBe("1.2.0");
 			expect(validateIrDocument(document)).toEqual([]);
 		} finally {
 			rmSync(directory, { recursive: true, force: true });
@@ -3935,7 +4201,7 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 			const first = runCli(["inspect", "--ir", out, "--package", assurance]);
 			const second = runCli(["inspect", "--ir", out, "--package", assurance]);
 			expect(first.stdout).toBe(second.stdout);
-			expect(first.stdout).toContain("contract        1.1.0");
+			expect(first.stdout).toContain("contract        1.2.0");
 			expect(first.stdout).toContain("agent-ix/assurance");
 			for (const type of (readJson(out) as never as { types: Json[] }).types) {
 				expect(first.stdout).toContain(String(type.identity));
@@ -3974,7 +4240,11 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 			expect(suppressed.status).toBe(0);
 
 			const invalid = resolve(directory, "invalid.json");
-			const broken2 = JSON.parse(read(out)) as never as { types: Json[] };
+			const broken2 = JSON.parse(read(out)) as never as {
+				contractVersion: string;
+				types: Json[];
+			};
+			broken2.contractVersion = "1.1.0";
 			const target = broken2.types.find(
 				(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
 			) as Json;
@@ -4409,7 +4679,9 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 			entry.endsWith("package.json"),
 		)) {
 			if (path === "package.json") continue;
-			expect(readJson(resolve(root, path)).license, path).toBe("AGPL-3.0-or-later");
+			expect(readJson(resolve(root, path)).license, path).toBe(
+				"AGPL-3.0-or-later",
+			);
 		}
 		// No publication step exists to trigger.
 		expect(readJson(resolve(root, "package.json"))).not.toHaveProperty(
@@ -5006,8 +5278,7 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 				"Choice.json",
 				{
 					$id: "https://schemas.example.test/Choice.json",
-					"x-agent-ix-semantic-id":
-						"ix://agent-ix/semantic-core/type/Choice",
+					"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/Choice",
 					anyOf: [
 						{ $ref: "https://schemas.example.test/Left.json" },
 						{ $ref: "https://schemas.example.test/Right.json" },

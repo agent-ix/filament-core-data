@@ -16,7 +16,13 @@
 import { byCodePoint } from "./mapping.mjs";
 
 /** Scalar forms the table names that the crate materializes under `support`. */
-const SUPPORT_TYPES = Object.freeze(["Date", "DateTime", "Duration", "Uuid"]);
+const SUPPORT_TYPES = Object.freeze([
+	"Date",
+	"DateTime",
+	"Duration",
+	"SemanticValue",
+	"Uuid",
+]);
 
 /** The Rust type the table states for a scalar row. */
 export function expectedScalarType(rustForm) {

@@ -245,14 +245,15 @@ export const DETECTORS = Object.freeze([
 		run(backend) {
 			const declared = kinds(backend.table);
 			assert(
-				declared.length === 8,
-				`the table declares ${declared.length} kinds, not eight`,
+				declared.length === 9,
+				`the table declares ${declared.length} kinds, not nine`,
 			);
 			const ir = document(backend);
 			const model = mapped(backend, ir);
 			const observed = new Set(model.types.map((one) => one.kind));
 			for (const kind of declared) {
-				if (kind === "reference" || observed.has(kind)) continue;
+				if (kind === "reference" || kind === "entity" || observed.has(kind))
+					continue;
 				assert(
 					false,
 					`no generated declaration selected the kind row \`${kind}\``,
@@ -303,6 +304,50 @@ export const DETECTORS = Object.freeze([
 						"a scalar carries no base type",
 					);
 			}
+			// The contract 1.2.0 `entity` construct, which the generated 1.1.0
+			// document cannot carry: its own row, the record's member list and its
+			// identity field names in declared order.
+			const entity = backend.mapping.mapDocument(
+				{
+					...documentOf([
+						scalarType("Key", "string"),
+						{
+							identity: `${NS}/type/Account`,
+							displayName: "Account",
+							kind: "entity",
+							roles: [],
+							constraints: [],
+							extensions: [],
+							unknownPolicy: "reject",
+							identityFields: [`${NS}/field/account-key`],
+							fields: [
+								{
+									identity: `${NS}/field/account-key`,
+									name: "key",
+									typeRef: `${NS}/type/Key`,
+									presence: "required",
+									nullable: false,
+									defaultKind: "none",
+									multiplicity: { lower: 1, upper: 1 },
+								},
+							],
+						},
+					]),
+					contractVersion: "1.2.0",
+				},
+				{},
+			);
+			const account = entity.model?.types.find(
+				(one) => one.identity === `${NS}/type/Account`,
+			);
+			assert(
+				account?.row === "kind:entity" &&
+					forms.has("entity") &&
+					Array.isArray(account.fields) &&
+					account.fields.length === 1 &&
+					JSON.stringify(account.identityFields) === '["key"]',
+				`an entity selected ${account?.row} with identity fields ${JSON.stringify(account?.identityFields)}`,
+			);
 			// The one kind the generated document cannot carry inside itself: a
 			// kind outside the eight is refused rather than mapped.
 			const invalid = backend.mapping.mapDocument(
@@ -327,8 +372,8 @@ export const DETECTORS = Object.freeze([
 		run(backend) {
 			const rows = backend.table.rows.filter((row) => row.axis === "scalar");
 			assert(
-				rows.length === 9,
-				`the table declares ${rows.length} kernel scalars, not nine`,
+				rows.length === 10,
+				`the table declares ${rows.length} kernel scalars, not ten`,
 			);
 			for (const row of rows) {
 				const result = backend.mapping.mapDocument(
@@ -468,7 +513,7 @@ export const DETECTORS = Object.freeze([
 	},
 	{
 		caseId:
-			"TC-725 the unknownPolicy rows dispose each of the eight kinds exactly once",
+			"TC-725 the unknownPolicy rows dispose each of the nine kinds exactly once",
 		run(backend) {
 			const rows = backend.table.rows.filter(
 				(row) => row.axis === "unknownPolicy",
@@ -500,6 +545,11 @@ export const DETECTORS = Object.freeze([
 			// And the disposition the mapper takes is the one the row names.
 			const expected = {
 				record: {
+					reject: "record-reject",
+					preserve: "record-retain",
+					surface: "record-retain",
+				},
+				entity: {
 					reject: "record-reject",
 					preserve: "record-retain",
 					surface: "record-retain",
@@ -827,19 +877,19 @@ export const DETECTORS = Object.freeze([
 		caseId:
 			"TC-725 every identifier renderer derives from the source the requirement names and refuses a collision",
 		run(backend) {
-			const type = (segment) => ({
-				identity: `${NS}/type/${segment}`,
-				displayName: "ignored display name",
+			const type = (displayName) => ({
+				identity: `${NS}/type/FR-001`,
+				displayName,
 			});
 			assert(
 				backend.names.typeName(type("http-status-code")).value ===
 					"HttpStatusCode",
-				"typeName does not derive UpperCamelCase from the identity segment",
+				"typeName does not derive UpperCamelCase from the display name",
 			);
 			assert(
 				backend.names.moduleName(type("HTTPStatusCode")).value ===
 					"http_status_code",
-				"moduleName does not derive snake_case from the identity segment",
+				"moduleName does not derive snake_case from the display name",
 			);
 			assert(
 				backend.names.constantName({

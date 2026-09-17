@@ -365,6 +365,41 @@ def test_each_sanctioned_shape_passes_in_both_modes(node: Any) -> None:
     inspect_source.inspect_generated(files, {"m.json": document}, "enforce")
 
 
+def test_an_any_scalar_root_is_sanctioned_and_a_carried_constraint_is_not() -> None:
+    """TC-1770: FR-078-AC-12."""
+    root = {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://agent-ix.dev/schema/agent-ix/pkg/JsonObject.json",
+        "x-agent-ix-semantic-id": "ix://agent-ix/pkg/type/JsonObject",
+        "x-agent-ix-unknown-policy": "reject",
+        "x-agent-ix-origin": {"generated": {"generatorVersion": "0.0.0"}},
+        "x-agent-ix-extensions": [
+            {"identity": "ix://agent-ix/semantic-core/ext/kernel-scalar"}
+        ],
+    }
+    files = {
+        "JsonObject.py": (
+            "from typing import Any\n\nfrom pydantic import RootModel\n\n\n"
+            "class Model(RootModel[Any]):\n    root: Any\n"
+        )
+    }
+    report = inspect_source.inspect_generated(
+        files, {"JsonObject.json": root}, "enforce"
+    )
+    assert [finding.classification for finding in report.findings] == ["sanctioned"]
+    constrained = {**root, "x-agent-ix-constraints": [{"keyword": "min"}]}
+    extended = {
+        **root,
+        "x-agent-ix-extensions": [{"identity": "ix://agent-ix/semantic-core/ext/x"}],
+    }
+    for refused in (constrained, extended):
+        with pytest.raises(inspect_source.InspectionError) as raised:
+            inspect_source.inspect_generated(
+                files, {"JsonObject.json": refused}, "enforce"
+            )
+        assert "degraded" in str(raised.value)
+
+
 @pytest.mark.parametrize("profile_id", PROFILE_IDS)
 def test_the_published_set_yields_no_degraded_or_unattributed_finding(
     profile_id: str,
