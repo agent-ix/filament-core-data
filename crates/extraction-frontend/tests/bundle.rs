@@ -168,11 +168,16 @@ fn tc_1200_config_version_table_lifts_seven_fields_for_fr_006_and_one_extraction
         AvailabilityState::Available
     );
     assert_eq!(fr005.fields.as_deref().map(<[_]>::len), Some(2));
-    assert!(
-        out.diagnostics.is_empty(),
+    // The only diagnostic is the engine's non-blocking advisory that the `ocl`
+    // clause on FR-006 is carried unchecked (semantic_core 0.2.0).
+    let messages: Vec<&str> = out.diagnostics.iter().map(|d| d.message.as_str()).collect();
+    assert_eq!(
+        messages,
+        ["semantic.clause-language-unchecked: clause immutable: language ocl is carried unchecked"],
         "a typed bundle lifts clean: {:?}",
         out.diagnostics
     );
+    assert!(out.diagnostics.iter().all(|d| !d.blocking));
 }
 
 #[trace("TC-1201", "FR-091-AC-2")]
