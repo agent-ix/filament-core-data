@@ -5,10 +5,7 @@ import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
 import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
 import { generateTarget } from "../src/compiler/backends/seam.mjs";
-import {
-	CONSTRUCT_KINDS,
-	RENDERED_CONSTRUCT_KINDS,
-} from "../src/compiler/constructs.mjs";
+import { CONSTRUCT_KINDS } from "../src/compiler/constructs.mjs";
 import { DEFAULT_LIMITS } from "../src/compiler/diagnostics.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 
@@ -27,7 +24,7 @@ const configVersion11 = resolve(
 	root,
 	"fixtures/semantic/v1/positive/config-version-v1-1.json",
 );
-/** One construct of each kind and every model member, which it refuses. */
+/** One construct of each kind and every model member, which it renders. */
 const constructs = resolve(
 	root,
 	"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
@@ -167,24 +164,115 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 	});
 
 	/** Traces: TC-1749; FR-142-AC-5, FR-142-CON-2. */
-	it("refuses every construct kind it does not render at its pointer and writes no file", () => {
+	it("renders every construct kind as its own kind and none as another", () => {
 		const ir = JSON.parse(readFileSync(constructs, "utf8"));
 		const result = jsonSchemaBackend.generate({ ir });
-		expect(result.state).toBe("unsupported");
-		expect(result.files).toStrictEqual([]);
-		ir.types.forEach((type: { kind: string }, index: number) => {
-			if (
-				!CONSTRUCT_KINDS.includes(type.kind) ||
-				RENDERED_CONSTRUCT_KINDS.includes(type.kind)
-			)
-				return;
-			expect(
-				result.diagnostics.some((one) =>
-					one.message.startsWith(`/ir/types/${index}/kind:`),
-				),
-				`no refusal at /ir/types/${index}/kind`,
-			).toBe(true);
+		expect(result.state).toBe("success");
+		expect(result.diagnostics).toStrictEqual([]);
+		const seen = new Set<string>();
+		for (const type of ir.types as { kind: string; displayName: string }[]) {
+			if (!CONSTRUCT_KINDS.includes(type.kind)) continue;
+			const file = result.files.find(
+				(one) => one.path === `${type.displayName}.json`,
+			);
+			if (!file) throw new Error(`${type.displayName} schema was not emitted`);
+			expect(JSON.parse(file.text)["x-agent-ix-kind"], type.displayName).toBe(
+				type.kind,
+			);
+			seen.add(type.kind);
+		}
+		expect([...seen].sort()).toStrictEqual([...CONSTRUCT_KINDS].sort());
+	});
+
+	/** Traces: TC-1774; FR-100-AC-10. */
+	it("renders each construct's members and every model member", () => {
+		const ir = JSON.parse(readFileSync(constructs, "utf8"));
+		const result = jsonSchemaBackend.generate({ ir });
+		const schema = (name: string) => {
+			const file = result.files.find((one) => one.path === `${name}.json`);
+			if (!file) throw new Error(`${name} schema was not emitted`);
+			return JSON.parse(file.text);
+		};
+		const ajv = new Ajv2020({ strict: false, allErrors: true });
+		addFormats(ajv);
+
+		const line = schema("OrderLine");
+		expect(line.type).toBe("object");
+		expect(line["x-agent-ix-equality"]).toBe("value");
+		expect(schema("OrderPlaced").readOnly).toBe(true);
+		expect(schema("OrderPlaced")["x-agent-ix-occurrence-field"]).toBe(
+			"placedAt",
+		);
+		expect(schema("Shipment")["x-agent-ix-owner"]).toBe(
+			"ix://agent-ix/orders/type/FR-001",
+		);
+		expect(schema("Shipment")["x-agent-ix-identity-fields"]).toStrictEqual([
+			"id",
+		]);
+		expect(schema("OrderAggregate")["x-agent-ix-members"]).toStrictEqual([
+			"ix://agent-ix/orders/type/FR-001",
+			"ix://agent-ix/orders/type/VO-001",
+		]);
+		expect(schema("OrderStatus").enum).toStrictEqual([
+			"cancelled",
+			"draft",
+			"placed",
+			"shipped",
+		]);
+		const lifecycle = schema("OrderLifecycle");
+		expect(lifecycle.$defs.OrderLifecycleState).toStrictEqual({
+			type: "string",
+			enum: ["placed", "shipped"],
 		});
+		expect(lifecycle["x-agent-ix-transitions"][0]).toMatchObject({
+			from: "placed",
+			to: "shipped",
+			trigger: "advance",
+			guard: "can_ship",
+		});
+		const advance = lifecycle["x-agent-ix-operations"][0];
+		expect(advance.frame).toStrictEqual({
+			modifies: ["current"],
+			creates: [],
+			deletes: [],
+		});
+		expect(advance.requires[0].text).toBe("to <> current");
+		expect(
+			schema("Fulfilment")["x-agent-ix-steps"].map(
+				(step: { name: string }) => step.name,
+			),
+		).toStrictEqual(["fulfil"]);
+
+		// A repository and a domain have no instances: no value validates.
+		for (const name of ["OrderRepository", "Ordering"]) {
+			const instanceless = schema(name);
+			expect(instanceless.not, name).toStrictEqual({});
+			expect(ajv.validate({ ...instanceless, $id: undefined }, {}), name).toBe(
+				false,
+			);
+		}
+		expect(schema("OrderRepository")["x-agent-ix-persists"]).toStrictEqual([
+			"ix://agent-ix/orders/type/FR-001",
+		]);
+		expect(schema("Ordering")["x-agent-ix-vocabulary"]).toStrictEqual([
+			{ term: "Order", doc: "A customer's request for goods." },
+		]);
+
+		const order = schema("Order");
+		expect(order["x-agent-ix-supertypes"]).toStrictEqual([
+			"ix://agent-ix/orders/type/FR-000",
+		]);
+		expect(Object.keys(order.properties)).toContain("labels");
+		expect(order.properties.labels["x-agent-ix-redefines"]).toBe(
+			"ix://agent-ix/orders/field/FR-000-labels",
+		);
+		expect(order.properties.badges["x-agent-ix-subsets"]).toStrictEqual([
+			"ix://agent-ix/orders/field/FR-000-labels",
+		]);
+		expect(schema("Party")["x-agent-ix-abstract"]).toBe(true);
+		expect(schema("index")["x-agent-ix-populations"][0].displayName).toBe(
+			"OpenOrders",
+		);
 	});
 
 	/** Traces: TC-1362; FR-100-AC-2. */
