@@ -70,13 +70,13 @@ PINNED_DIGESTS = {
         "sha256:13889607403535b12c52e9115a08ea5baac6c67c81ecb08108c2ce73b0b6e5a1"
     ),
     "python_backend/runner": (
-        "sha256:05e16ee1a73f58a6aff5109582d377442cd04f0c6a0970be83b09200959b4c37"
+        "sha256:df2d8dbd7544f94a509bf89fb7add4f3932b2cbdf06e879c2acc3cb3ed326079"
     ),
     "python_backend/qualification": (
-        "sha256:1f79212ed36825b55817e02e633c0505115f2d32e4b4ee89146b729665ef9081"
+        "sha256:79cfd6b5025cd4aae2452a317dccb0a004c5aafec724091fcc91e83dd0fb75d4"
     ),
     "python_backend/generated": (
-        "sha256:32753077b92cb6b434c47322a9021971b5805a79e6f7d0fcba690d9ec05d216d"
+        "sha256:b9cb8c682ec37979db0422edf1ccfa0eddf994b01cebe5f9fdf460edc56d873e"
     ),
     "python_backend/profiles.json": (
         "sha256:3c6fc254a7c346c88b6ea91fdaeb7d3a3b55f8065b8a6ebc6ddab3a447547345"
