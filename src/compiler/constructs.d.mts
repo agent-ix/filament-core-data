@@ -70,3 +70,20 @@ export declare function populationsOf(ir: unknown): {
 export declare function inheritedNameCollisions(
 	ir: unknown,
 ): { pointer: string; name: string }[];
+export declare const UNENFORCED_MEMBERS: readonly {
+	member: string;
+	issue: string;
+}[];
+export declare function unenforcedMemberPointers(
+	ir: unknown,
+): Map<string, string>;
+export declare function unenforcedMemberAdvisories(
+	ir: unknown,
+	backend: string,
+): {
+	code: string;
+	severity: string;
+	message: string;
+	owner: string;
+	blocking: boolean;
+}[];

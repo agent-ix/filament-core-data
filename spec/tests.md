@@ -295,7 +295,7 @@ blocked as stated above.
 | FR-139 | FR-139-AC-1..6, FR-139-CON-1..3 | TC-1552..TC-1557 | 🚧 TC-1552, TC-1554..TC-1557 planned on issue #93 |
 | FR-140 | FR-140-AC-1..7, FR-140-CON-1..3 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
 | FR-141 | FR-141-AC-1..7, FR-141-CON-1..2 | TC-1740..TC-1744, TC-1759, TC-1761 | ✅ Complete |
-| FR-142 | FR-142-AC-1..7, FR-142-CON-1..2 | TC-1745..TC-1750, TC-1760 | ✅ Complete |
+| FR-142 | FR-142-AC-1..8, FR-142-CON-1..2 | TC-1745..TC-1750, TC-1760, TC-1776 | ✅ Complete |
 | FR-143 | FR-143-AC-1..5, FR-143-CON-1..2 | TC-1751..TC-1755 | 🚧 TC-1755 blocked on issue #154 |
 
 ### Non-Functional Requirement Coverage
@@ -1689,7 +1689,7 @@ blocked as stated above.
 | TC-1746 | Each kind missing a required member, or carrying a member of another kind, is refused with `SCHEMA_VIOLATION` | Unit | P0 | FR-142-AC-2, FR-142-CON-1 | ✅ passed |
 | TC-1747 | Owner, aggregate member, persisted type and domain member of an excluded kind, or naming no type, raise their reader code at the member pointer | Unit | P0 | FR-142-AC-3 | ✅ passed |
 | TC-1748 | A non-`datetime` occurrence field, an undeclared transition state or trigger, a dangling guard and a type in two domains raise their reader codes | Unit | P0 | FR-142-AC-4 | ✅ passed |
-| TC-1749 | The Rust, TypeScript and JSON Schema backends generate one construct of every kind with state `success` and no diagnostic, rendering none as another kind | Unit | P0 | FR-142-AC-5, FR-142-CON-2 | ✅ passed |
+| TC-1749 | The Rust, TypeScript and JSON Schema backends generate one construct of every kind with state `success` and no blocking diagnostic, rendering none as another kind | Unit | P0 | FR-142-AC-5, FR-142-CON-2 | ✅ passed |
 | TC-1750 | `contracts-v1.md` states the members, built-in rules and Quire meaning of every construct | Manual | P1 | FR-142-AC-6 | ✅ passed |
 | TC-1751 | The `business` fixture lifts to one construct of each kind with the identity fields, members, owner, occurrence field and persisted types its fields and edges name, accepted by the reader | Integration | P0 | FR-143-AC-1, FR-143-CON-2 | ✅ passed |
 | TC-1752 | Every `business` type identity ends in its artifact id and every `displayName` is its declared name; a declared-name rename leaves relationships byte-identical | Property | P0 | FR-143-AC-2, FR-143-CON-1 | ✅ passed |
@@ -1716,6 +1716,7 @@ blocked as stated above.
 | TC-1773 | Every construct kind and model member of the constructs fixture renders in TypeScript by its own form: value equality, readonly event, state enum, repository interface, no type for a domain, and each construct map, compiling under `tsc` | Unit | P0 | FR-064-AC-25, FR-067-AC-20 | ✅ passed |
 | TC-1774 | Every construct kind and model member renders in JSON Schema by its own annotations, a state `$defs` for a state machine and `not: {}` for a repository and a domain | Unit | P0 | FR-100-AC-10 | ✅ passed |
 | TC-1775 | Both Python targets generate the constructs fixture with every class named by its display name, a state enum, no module for a repository or a domain, and `constructs.py` carrying each construct row and the repository protocol | Integration | P0 | FR-136-AC-10 | ✅ passed |
+| TC-1776 | The Rust, TypeScript, JSON Schema and Python backends each generate the constructs fixture with one non-blocking `CONSTRUCT_MEMBER_UNENFORCED` per clauses, guards, transitions, subsets, frames and populations, each naming its pointer and owning issue, and the v1.1 ConfigVersion fixture with none | Unit | P0 | FR-142-AC-8 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
 | TC-1585 | Every requirement the register names carries that issue's own link, and a row whose requirement omits it is reported | Unit | P0 | NFR-001-AC-6 | ✅ passed |
 
@@ -2649,13 +2650,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 130 | 83 | 0 | 47 | 100% mapped (130/130) |
-| Unit | 583 | 477 | 0 | 106 | 100% mapped (583/583) |
+| Unit | 584 | 478 | 0 | 106 | 100% mapped (584/584) |
 | Integration | 160 | 99 | 0 | 61 | 100% mapped (160/160) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 68 | 43 | 0 | 25 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1373** | **1044** | **0** | **329** | **100% mapped (1373/1373)** |
+| **Total** | **1374** | **1045** | **0** | **329** | **100% mapped (1374/1374)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

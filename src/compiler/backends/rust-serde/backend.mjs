@@ -22,6 +22,7 @@
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../../diagnostics.mjs";
+import { unenforcedMemberAdvisories } from "../../constructs.mjs";
 import { emitCrate, mediaTypeOf } from "./crate.mjs";
 import {
 	RUST_BACKEND_CODES,
@@ -132,7 +133,13 @@ export const rustBackend = Object.freeze({
 				identities: identitiesByPath.get(path),
 				mediaType: mediaTypeOf(path),
 			})),
-			diagnostics: result.diagnostics,
+			diagnostics:
+				result.state === "success"
+					? [
+							...result.diagnostics,
+							...unenforcedMemberAdvisories(request.ir, "Rust"),
+						]
+					: result.diagnostics,
 		};
 	},
 });

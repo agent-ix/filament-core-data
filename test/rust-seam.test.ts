@@ -275,9 +275,9 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 			host: host(),
 		}) as never as Manifest;
 
-		expect(
-			manifest.diagnostics.map((d) => `${d.code}: ${d.message}`),
-		).toStrictEqual([]);
+		expect(manifest.diagnostics.map((d) => [d.code, d.blocking])).toStrictEqual(
+			Array(6).fill(["agent-ix.compiler.CONSTRUCT_MEMBER_UNENFORCED", false]),
+		);
 		expect(manifest.state).toBe("success");
 		const written = new Map<string, string>();
 		generateRust(rustRequest({ ir: constructs }), {
@@ -323,7 +323,9 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 			host: host(),
 		}) as never as Manifest;
 		expect(manifest.state).toBe("success");
-		expect(manifest.diagnostics).toStrictEqual([]);
+		expect(manifest.diagnostics.map((d) => [d.code, d.blocking])).toStrictEqual(
+			[["agent-ix.compiler.CONSTRUCT_MEMBER_UNENFORCED", false]],
+		);
 
 		const written = new Map<string, string>();
 		generateRust(rustRequest({ ir }), {

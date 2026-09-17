@@ -55,7 +55,10 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 			{ target: "json-schema", host: createHost({ readRoots: [root] }) },
 		);
 		expect(manifest.state).toBe("success");
-		expect(manifest.diagnostics).toEqual([]);
+		// Its clauses are carried as data: one advisory declared loss (FR-142-AC-8).
+		expect(manifest.diagnostics.map((d) => [d.code, d.blocking])).toEqual([
+			["agent-ix.compiler.CONSTRUCT_MEMBER_UNENFORCED", false],
+		]);
 		expect(
 			manifest.files.some((file) => file.path === "ConfigVersion.json"),
 		).toBe(true);
@@ -168,7 +171,14 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		const ir = JSON.parse(readFileSync(constructs, "utf8"));
 		const result = jsonSchemaBackend.generate({ ir });
 		expect(result.state).toBe("success");
-		expect(result.diagnostics).toStrictEqual([]);
+		expect(
+			result.diagnostics.map((d: { code: string; blocking: boolean }) => [
+				d.code,
+				d.blocking,
+			]),
+		).toEqual(
+			Array(6).fill(["agent-ix.compiler.CONSTRUCT_MEMBER_UNENFORCED", false]),
+		);
 		const seen = new Set<string>();
 		for (const type of ir.types as { kind: string; displayName: string }[]) {
 			if (!CONSTRUCT_KINDS.includes(type.kind)) continue;
@@ -280,7 +290,9 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		const ir = JSON.parse(readFileSync(golden, "utf8"));
 		const result = jsonSchemaBackend.generate({ ir });
 		expect(result.state).toBe("success");
-		expect(result.diagnostics).toEqual([]);
+		expect(result.diagnostics.map((d) => d.code)).toEqual([
+			"agent-ix.compiler.CONSTRUCT_MEMBER_UNENFORCED",
+		]);
 		const file = result.files.find((one) => one.path === "ConfigVersion.json");
 		expect(file).toBeDefined();
 		if (!file) throw new Error("ConfigVersion schema was not emitted");

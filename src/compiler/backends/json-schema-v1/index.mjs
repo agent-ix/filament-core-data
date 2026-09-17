@@ -10,6 +10,7 @@ import {
 	isRecordShaped,
 	populationsOf,
 	renderingView,
+	unenforcedMemberAdvisories,
 } from "../../constructs.mjs";
 import { DIAGNOSTIC_CODES, diagnostic } from "../../diagnostics.mjs";
 import { admitIr, SCHEMA_FILES } from "../typescript-v1/admit.mjs";
@@ -516,6 +517,10 @@ export const jsonSchemaBackend = Object.freeze({
 			identities: [`ix://${ir.package.identity}`],
 			mediaType: "application/json",
 		});
-		return { state: "success", files, diagnostics: [] };
+		return {
+			state: "success",
+			files,
+			diagnostics: unenforcedMemberAdvisories(request.ir, "JSON Schema"),
+		};
 	},
 });

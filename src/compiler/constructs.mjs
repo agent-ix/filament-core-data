@@ -6,9 +6,11 @@
  * kinds from here; the schema's `kind` enum and the Rust and Python copies are
  * held to it by a parity test.
  *
- * A leaf module: it imports nothing, so a backend may read it without reaching
- * the reader, the schema layer or the filesystem.
+ * It imports only the diagnostic registry, so a backend may read it without
+ * reaching the reader, the schema layer or the filesystem.
  */
+
+import { DIAGNOSTIC_CODES, diagnostic } from "./diagnostics.mjs";
 
 /** One construct kind per business object type, in schema order. */
 export const CONSTRUCT_KINDS = Object.freeze([
@@ -324,4 +326,81 @@ export function inheritedNameCollisions(ir) {
 		}
 	});
 	return found;
+}
+
+/**
+ * The model members every backend carries as data and none enforces, each
+ * with the issue that owns its enforcement (FR-142). Order is the order the
+ * advisories are raised in.
+ */
+export const UNENFORCED_MEMBERS = Object.freeze([
+	Object.freeze({
+		member: "clauses",
+		issue: "agent-ix/filament-core-data#159",
+	}),
+	Object.freeze({ member: "guards", issue: "agent-ix/filament-core-data#160" }),
+	Object.freeze({
+		member: "transitions",
+		issue: "agent-ix/filament-core-data#161",
+	}),
+	Object.freeze({
+		member: "subsets",
+		issue: "agent-ix/filament-core-data#162",
+	}),
+	Object.freeze({ member: "frames", issue: "agent-ix/filament-core-data#163" }),
+	Object.freeze({
+		member: "populations",
+		issue: "agent-ix/filament-core-data#164",
+	}),
+]);
+
+/**
+ * The pointer of the first occurrence of each unenforced member kind in a
+ * contract 1.2.0 document, keyed by member kind; a kind the document never
+ * declares is absent.
+ */
+export function unenforcedMemberPointers(ir) {
+	const found = new Map();
+	if (ir?.contractVersion !== "1.2.0") return found;
+	const note = (member, pointer) => {
+		if (!found.has(member)) found.set(member, pointer);
+	};
+	list(ir?.types).forEach((type, index) => {
+		if (!isObject(type)) return;
+		const at = `/ir/types/${index}`;
+		if (list(type.clauses).length > 0) note("clauses", `${at}/clauses`);
+		list(type.operations).forEach((operation, position) => {
+			for (const member of ["requires", "ensures"])
+				if (list(operation?.[member]).length > 0)
+					note("clauses", `${at}/operations/${position}/${member}`);
+			if (isObject(operation?.frame))
+				note("frames", `${at}/operations/${position}/frame`);
+		});
+		list(type.transitions).forEach((transition, position) => {
+			note("transitions", `${at}/transitions/${position}`);
+			if (typeof transition?.guard === "string")
+				note("guards", `${at}/transitions/${position}/guard`);
+		});
+		list(type.fields).forEach((field, position) => {
+			if (list(field?.subsets).length > 0)
+				note("subsets", `${at}/fields/${position}/subsets`);
+		});
+	});
+	if (list(ir?.populations).length > 0) note("populations", "/ir/populations");
+	return found;
+}
+
+/**
+ * One non-blocking `CONSTRUCT_MEMBER_UNENFORCED` per unenforced member kind the
+ * document declares: the backend carries the member as data and enforces
+ * none of it, a declared loss named with its owning issue (FR-142).
+ */
+export function unenforcedMemberAdvisories(ir, backend) {
+	const pointers = unenforcedMemberPointers(ir);
+	return UNENFORCED_MEMBERS.filter(({ member }) => pointers.has(member)).map(
+		({ member, issue }) =>
+			diagnostic(DIAGNOSTIC_CODES.CONSTRUCT_MEMBER_UNENFORCED, {
+				message: `${pointers.get(member)}: the ${backend} backend carries ${member} as data and enforces none (declared loss, ${issue})`,
+			}),
+	);
 }

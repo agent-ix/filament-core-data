@@ -19,7 +19,11 @@
  */
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { inheritedNameCollisions, renderingView } from "../../constructs.mjs";
+import {
+	inheritedNameCollisions,
+	renderingView,
+	unenforcedMemberAdvisories,
+} from "../../constructs.mjs";
 import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../../diagnostics.mjs";
 import { SCHEMA_FILES, admitIr } from "./admit.mjs";
 import { fingerprintIrForTarget } from "./canonical.mjs";
@@ -247,7 +251,10 @@ export const typescriptBackend = Object.freeze({
 			// it writes. A path that already carried the root would be checked
 			// against it twice and written under it twice.
 			files: rendered.files,
-			diagnostics: admission.diagnostics.map(manifestDiagnostic),
+			diagnostics: [
+				...admission.diagnostics.map(manifestDiagnostic),
+				...unenforcedMemberAdvisories(request.ir, "TypeScript"),
+			],
 		};
 	},
 });

@@ -172,7 +172,7 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 		}
 	}, 300000);
 
-	/** Traces: TC-1775; FR-136-AC-10. */
+	/** Traces: TC-1775, TC-1776; FR-136-AC-10, FR-142-AC-8. */
 	it("renders every construct kind and model member in both Python targets, each class named by its display name", () => {
 		const document =
 			"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json";
@@ -191,6 +191,14 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 				result.state,
 				`${backend.target}: ${result.diagnostics.map((d) => d.message).join("; ")}`,
 			).toBe("success");
+			expect(
+				(result.diagnostics as { code?: string; blocking?: boolean }[]).map(
+					(d) => [d.code, d.blocking],
+				),
+				backend.target,
+			).toEqual(
+				Array(6).fill(["agent-ix.compiler.CONSTRUCT_MEMBER_UNENFORCED", false]),
+			);
 			const text = (path: string) => {
 				const file = result.files.find((one) => one.path === path);
 				if (!file) throw new Error(`${backend.target}: no ${path}`);

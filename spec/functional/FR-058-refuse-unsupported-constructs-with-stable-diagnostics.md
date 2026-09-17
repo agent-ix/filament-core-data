@@ -153,19 +153,22 @@ visible in the run rather than invisible in the generated source.
 
 ### Carried, not enforced
 
-- A construct whose document data the crate carries in full, and whose meaning
-  over instances no Rust type states, SHALL be listed here. It raises no
-  diagnostic, because nothing the document carries is dropped:
+- A construct member whose document data the crate carries in full, and whose
+  meaning over instances no generated Rust code enforces, SHALL be listed here
+  with the issue that owns its enforcement. For each member kind the document
+  declares, the backend SHALL emit one non-blocking
+  `CONSTRUCT_MEMBER_UNENFORCED` naming that issue, the declared loss of
+  [FR-142](./FR-142-declare-one-construct-per-object-type.md):
 
 | Construct | Carried as | Not stated by the type |
 |---|---|---|
 | `entity`, `nested_entity`, `aggregate_root`, `process` | the record struct and `IDENTITY_FIELDS` | that instances are told apart by the identity fields and persist across changes to the other fields; the derived `PartialEq` compares every member |
-| `aggregate_root`, `state_machine` and `repository` clauses; transition guards; operation `requires` and `ensures` | the clause text in the type's metadata constant and `OPERATION_CONTRACTS`; a guard by clause identifier | the Quire meaning of each clause over instances; no generated method evaluates a clause |
-| `state_machine` transitions | `<Name>State` and `TRANSITIONS` | which transition fires: a trigger fires only when its guard holds, which is a clause |
+| `aggregate_root`, `state_machine` and `repository` clauses; transition guards; operation `requires` and `ensures` | the clause text in the type's metadata constant and `OPERATION_CONTRACTS`; a guard by clause identifier | the Quire meaning of each clause over instances; no generated method evaluates a clause; clauses [#159](https://github.com/agent-ix/filament-core-data/issues/159), guards [#160](https://github.com/agent-ix/filament-core-data/issues/160) |
+| `state_machine` transitions | `<Name>State` and `TRANSITIONS` | which transition fires: a trigger fires only when its guard holds, which is a clause; [#161](https://github.com/agent-ix/filament-core-data/issues/161) |
 | `abstract` | the generated struct and `ABSTRACT` | that every instance is an instance of a subtype; Rust has no abstract struct |
-| `subsets` | `FIELD_SUBSETS` | that the member's values are a subset of the named members' values |
-| operation `frame` | `OPERATION_CONTRACTS`; a repository method whose frame is empty takes `&self` | that an operation changes only the members its frame names |
-| `populations` | `POPULATIONS` | the extent of each member type over a population |
+| `subsets` | `FIELD_SUBSETS` | that the member's values are a subset of the named members' values; [#162](https://github.com/agent-ix/filament-core-data/issues/162) |
+| operation `frame` | `OPERATION_CONTRACTS`; a repository method whose frame is empty takes `&self` | that an operation changes only the members its frame names; [#163](https://github.com/agent-ix/filament-core-data/issues/163) |
+| `populations` | `POPULATIONS` | the extent of each member type over a population; [#164](https://github.com/agent-ix/filament-core-data/issues/164) |
 
 ## Constraints
 

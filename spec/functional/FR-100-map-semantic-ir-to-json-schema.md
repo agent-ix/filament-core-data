@@ -99,7 +99,10 @@ frontend, a generated programming-language package, or an ambient registry.
   SHALL be carried in `x-agent-ix-operations`, and the document's populations
   in `index.json` as `x-agent-ix-populations`.
 - Value equality, abstractness, subsets, clauses, guards and frames are Quire
-  meaning no schema keyword states; the annotations carry them. If two
+  meaning no schema keyword states; the annotations carry them. For clauses
+  [#159](https://github.com/agent-ix/filament-core-data/issues/159), guards [#160](https://github.com/agent-ix/filament-core-data/issues/160), transitions [#161](https://github.com/agent-ix/filament-core-data/issues/161), subsets [#162](https://github.com/agent-ix/filament-core-data/issues/162), frames
+  [#163](https://github.com/agent-ix/filament-core-data/issues/163) and populations [#164](https://github.com/agent-ix/filament-core-data/issues/164) the backend SHALL emit one non-blocking
+  `CONSTRUCT_MEMBER_UNENFORCED` per member kind the document declares. If two
   effective fields of a subtype carry one name, then the backend SHALL return a
   blocking diagnostic at the type's `fields` and emit no file.
 - An `enum` definition SHALL render an `enum` array of its variant wire names.

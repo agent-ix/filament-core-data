@@ -638,7 +638,15 @@ fn tc_1749_backends_render_every_construct_kind_and_refuse_none() {
         let manifest = read_json(&manifest_path);
         assert_eq!(run.status, 0, "{target}: {}", manifest["diagnostics"]);
         assert_eq!(manifest["state"], "success", "{target}");
-        assert_eq!(manifest["diagnostics"], json!([]), "{target}");
+        let diagnostics = manifest["diagnostics"].as_array().expect("diagnostics");
+        assert_eq!(diagnostics.len(), 6, "{target}: {diagnostics:?}");
+        for entry in diagnostics {
+            assert_eq!(
+                entry["code"], "agent-ix.compiler.CONSTRUCT_MEMBER_UNENFORCED",
+                "{target}"
+            );
+            assert_eq!(entry["blocking"], false, "{target}");
+        }
         let files = manifest["files"].as_array().expect("files");
         assert!(!files.is_empty(), "{target} wrote no file");
     }

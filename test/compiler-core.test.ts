@@ -18,6 +18,7 @@ import Ajv2020 from "ajv/dist/2020.js";
 import { beforeAll, describe, expect, it } from "vitest";
 import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
 import { rustBackend } from "../src/compiler/backends/rust-serde/backend.mjs";
+import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import {
 	assertBackendContract,
 	generateTarget,
@@ -3257,6 +3258,85 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		expect(found.map((one) => [one.code, one.severity, one.blocking])).toEqual([
 			[DIAGNOSTIC_CODES.CLAUSE_LANGUAGE_UNCHECKED.code, "info", false],
 		]);
+	});
+
+	/** Traces: TC-1776; FR-142-AC-8. */
+	it("declares one advisory loss per unenforced construct member kind in every backend", () => {
+		const generate = (
+			backend: typeof rustBackend | typeof jsonSchemaBackend,
+			target: string,
+			document: string,
+		) =>
+			generateTarget(
+				{
+					contractVersion: "1.0.0",
+					lockFingerprint: `sha256:${"a".repeat(64)}`,
+					ir: readJson(resolve(root, document)),
+					profile: readJson(
+						resolve(root, "fixtures/semantic/v1/positive/profile.json"),
+					),
+					mappings: [],
+					backend: {
+						identity: backend.identity,
+						version: backend.version,
+						supportedIrVersions: [...backend.supportedIrVersions],
+						supportedFeatures: [...backend.supportedFeatures],
+						options: {},
+					},
+					outputRoot: `generated/${target}`,
+					limits: { ...DEFAULT_LIMITS },
+				} as never,
+				{ target, host: createHost({ readRoots: [root] }) } as never,
+			) as never as { state: string; diagnostics: Diagnostic[] };
+		const expected = (label: string) =>
+			[
+				["/ir/types/0/clauses", "clauses", 159],
+				["/ir/types/16/transitions/0/guard", "guards", 160],
+				["/ir/types/16/transitions/0", "transitions", 161],
+				["/ir/types/6/fields/7/subsets", "subsets", 162],
+				["/ir/types/16/operations/0/frame", "frames", 163],
+				["/ir/populations", "populations", 164],
+			]
+				.map(([pointer, member, issue]) => [
+					DIAGNOSTIC_CODES.CONSTRUCT_MEMBER_UNENFORCED.code,
+					false,
+					`${pointer}: the ${label} backend carries ${member} as data and enforces none (declared loss, agent-ix/filament-core-data#${issue})`,
+				])
+				// The seam orders diagnostics by message.
+				.sort((a, b) => (String(a[2]) < String(b[2]) ? -1 : 1));
+		for (const [backend, target, label] of [
+			[rustBackend, "rust", "Rust"],
+			[typescriptBackend, "typescript", "TypeScript"],
+			[jsonSchemaBackend, "json-schema", "JSON Schema"],
+		] as const) {
+			const manifest = generate(
+				backend as never,
+				target,
+				"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
+			);
+			expect(manifest.state, target).toBe("success");
+			expect(
+				[...note(manifest.diagnostics)].map((one) => [
+					one.code,
+					one.blocking,
+					one.message,
+				]),
+				target,
+			).toEqual(expected(label));
+			const plain = generate(
+				backend as never,
+				target,
+				"fixtures/semantic/v1/positive/config-version-v1-1.json",
+			);
+			expect(plain.state, target).toBe("success");
+			expect(
+				plain.diagnostics.filter(
+					(one) =>
+						one.code === DIAGNOSTIC_CODES.CONSTRUCT_MEMBER_UNENFORCED.code,
+				),
+				target,
+			).toEqual([]);
+		}
 	});
 
 	/** Traces: TC-1760; FR-142-AC-7. */

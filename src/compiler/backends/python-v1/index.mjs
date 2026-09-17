@@ -21,6 +21,7 @@
  * refusal, never an empty package.
  */
 
+import { unenforcedMemberAdvisories } from "../../constructs.mjs";
 import { DIAGNOSTIC_CODES, diagnostic } from "../../diagnostics.mjs";
 import { jsonSchemaBackend } from "../json-schema-v1/index.mjs";
 
@@ -154,7 +155,9 @@ function pythonBackendFor(target) {
 						identities: [],
 						mediaType: mediaTypeOf(path),
 					})),
-				diagnostics: [],
+				// The lowering's own advisories name the json-schema target; this
+				// target's generated package carries the same members unenforced.
+				diagnostics: unenforcedMemberAdvisories(request.ir, target),
 			};
 		},
 	});
