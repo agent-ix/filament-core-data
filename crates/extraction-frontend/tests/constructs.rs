@@ -602,43 +602,20 @@ fn tc_1748_occurrence_transition_guard_and_domain_membership_rules_raise_their_c
 #[trace("TC-1749", "FR-142-AC-5")]
 #[trace("TC-1749", "FR-142-CON-2")]
 #[test]
-fn tc_1749_backends_refuse_every_unrendered_construct_kind_and_write_no_file() {
+fn tc_1749_backends_render_every_construct_kind_and_refuse_none() {
     let document = positive();
-    let constructs: Vec<(String, String)> = document["types"]
+    let kinds: std::collections::BTreeSet<&str> = document["types"]
         .as_array()
         .expect("types")
         .iter()
-        // `entity` renders (FR-054, FR-064, FR-100); the other nine refuse.
-        .filter(|t| {
-            !matches!(
-                t["kind"].as_str(),
-                Some("record" | "scalar" | "alias" | "entity")
-            )
-        })
-        .map(|t| {
-            (
-                t["identity"].as_str().expect("identity").to_string(),
-                t["kind"].as_str().expect("kind").to_string(),
-            )
-        })
+        .filter_map(|t| t["kind"].as_str())
+        .filter(|kind| !matches!(*kind, "record" | "scalar" | "alias"))
         .collect();
-    let kinds: std::collections::BTreeSet<&str> =
-        constructs.iter().map(|(_, kind)| kind.as_str()).collect();
-    assert_eq!(
-        kinds.len(),
-        9,
-        "one construct of each unrendered kind: {kinds:?}"
-    );
+    assert_eq!(kinds.len(), 10, "one construct of each kind: {kinds:?}");
     let ir = positive_path();
     let dir = tempfile::tempdir().expect("tempdir");
 
-    for (target, code) in [
-        ("rust", "agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT"),
-        (
-            "typescript",
-            "agent-ix.typescript-backend.CONSTRUCT_NOT_RENDERED",
-        ),
-    ] {
+    for target in ["rust", "typescript", "json-schema"] {
         let out = dir.path().join(target);
         let manifest_path = dir.path().join(format!("{target}.manifest.json"));
         let run = run_node(
@@ -658,41 +635,12 @@ fn tc_1749_backends_refuse_every_unrendered_construct_kind_and_write_no_file() {
             None,
         )
         .unwrap_or_else(|e| panic!("{e}"));
-        assert_ne!(run.status, 0, "{target} generate accepts constructs");
         let manifest = read_json(&manifest_path);
-        assert_eq!(manifest["files"], json!([]), "{target}");
-        assert_refusals(target, &manifest, code, &document, &constructs);
-        let written: Vec<_> = fs::read_dir(&out)
-            .map(|entries| entries.map(|e| e.expect("entry").file_name()).collect())
-            .unwrap_or_default();
-        assert!(written.is_empty(), "{target}: {written:?}");
-    }
-}
-
-/// Every construct of `constructs` is refused by exactly one `code` diagnostic
-/// at its own `/kind` pointer that names its kind.
-fn assert_refusals(
-    backend: &str,
-    manifest: &Value,
-    code: &str,
-    document: &Value,
-    constructs: &[(String, String)],
-) {
-    let messages: Vec<&str> = manifest["diagnostics"]
-        .as_array()
-        .expect("diagnostics")
-        .iter()
-        .filter(|d| d["code"] == code)
-        .filter_map(|d| d["message"].as_str())
-        .collect();
-    for (identity, kind) in constructs {
-        let pointer = format!("/ir/types/{}/kind:", position(document, identity));
-        let at_kind: Vec<_> = messages
-            .iter()
-            .filter(|m| m.starts_with(&pointer))
-            .collect();
-        assert_eq!(at_kind.len(), 1, "{backend}: {identity} in {messages:?}");
-        assert!(at_kind[0].contains(kind.as_str()), "{backend}: {at_kind:?}");
+        assert_eq!(run.status, 0, "{target}: {}", manifest["diagnostics"]);
+        assert_eq!(manifest["state"], "success", "{target}");
+        assert_eq!(manifest["diagnostics"], json!([]), "{target}");
+        let files = manifest["files"].as_array().expect("files");
+        assert!(!files.is_empty(), "{target} wrote no file");
     }
 }
 
