@@ -119,7 +119,7 @@ test suite.
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-097-CON-1 | The frontend SHALL depend on `crates/semantic-ir` only as a runtime `path` dependency on that workspace member, whose bytes stay unchanged under NFR-032. | Integrity | Static analysis |
+| FR-097-CON-1 | The frontend SHALL depend on `crates/semantic-ir` only as one runtime `path` dependency on that workspace member (`agent-ix-semantic-ir = { path = "../semantic-ir" }` under `[dependencies]`), never as a registry or git dependency and never a second time under another dependency table. | Integrity | Static analysis |
 | FR-097-CON-2 | The frontend SHALL reach every written byte through `agent_ix_semantic_ir::normalize::normalized`, calling no `serde_json` serializer under `src/`. | Determinism | Static analysis |
 | FR-097-CON-3 | The frontend SHALL call `decide` on every document before any write of `<out>`; no code path writes `<out>` without a success verdict. | Integrity | Static analysis |
 

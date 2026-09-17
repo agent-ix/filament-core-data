@@ -197,6 +197,15 @@ fn tc_1273_the_manifest_names_semantic_ir_by_path_and_no_direct_jsonschema() {
         .lines()
         .filter(|l| !l.trim_start().starts_with('#'))
         .collect();
+    let naming: Vec<&&str> = code_lines
+        .iter()
+        .filter(|l| l.contains("agent-ix-semantic-ir"))
+        .collect();
+    assert_eq!(
+        naming,
+        [&"agent-ix-semantic-ir = { path = \"../semantic-ir\" }"],
+        "FR-097-CON-1: one path dependency, no registry, git or second table"
+    );
     assert!(
         !code_lines.iter().any(|l| l.contains("jsonschema")),
         "{code_lines:?}"
