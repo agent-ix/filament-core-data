@@ -99,7 +99,7 @@ form and the fence form of one declaration produce identical `types[]`.
 - The frontend SHALL record the row `lossy-extraction` in `losses.json` citing quire-rs FR-072 (`availability.*.lossy`).
 - The frontend SHALL emit each declared loss as one non-blocking `info` diagnostic per occurrence, coded `agent-ix.extraction-frontend.DECLARED_LOSS` naming the register row, so that a consumer can count them.
 
-Rationale: contract `1.2.0` carries the unconstrained value as scalar `any`
+Rationale: contract `2.0.0` carries the unconstrained value as scalar `any`
 (FR-139) and presence as an authored member (FR-106). A source row authors no
 presence, so the `required-collection-presence` loss stays declared until the
 row grammar carries one.

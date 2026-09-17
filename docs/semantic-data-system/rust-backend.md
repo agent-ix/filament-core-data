@@ -9,8 +9,8 @@ status: normative
 # Rust/Serde backend mapping and declared decisions
 
 Rendered from `src/compiler/backends/rust-serde/mapping-table.json`, which is
-the single machine-readable mapping table. 65 rows across
-10 axes. A construct that selects no row and no named refusal is an
+the single machine-readable mapping table. 64 rows across
+12 axes. A construct that selects no row and no named refusal is an
 `agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT`; the mapping is total by
 construction, not by claim.
 
@@ -22,22 +22,31 @@ construction, not by claim.
 |---|---|---|---|---|
 | `scalar` | `pub struct N(B);` | `transparent` | newtype over the kernel base with try_new and a validating Deserialize | — |
 | `record` | `pub struct N { .. }` | — | derived Serialize, member attributes per the field axes, Deserialize routed through try_new | — |
-| `entity` | `pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str], and PartialEq, Eq and Hash over the identity fields` | — | the record row without the derived PartialEq, plus the names of the fields that tell the entity's instances apart in declared order beside FIELDS, and PartialEq, Eq and Hash written over those fields; every generated newtype an identity field reaches derives Eq and Hash, and an identity field whose Rust type has neither is refused with UNSUPPORTED_CONSTRUCT | — |
 | `enum` | `pub enum N { .. } (fieldless)` | `rename = "<variant name>"` | derived Serialize and Deserialize; the rename is emitted only where the derived identifier differs from the variant name | — |
 | `union` | `pub enum N { .. } (unit variant without payloadType, one-field variant with)` | `rename = "<variant name>"` | externally tagged, serde's default; the same conditional rename | — |
 | `alias` | `pub struct N(T);` | `transparent` | newtype over the target's Rust type with try_new | — |
 | `sequence` | `pub struct N(Vec<I>);` | `transparent` | newtype over the items type with try_new | — |
 | `map` | `pub struct N(BTreeMap<String, V>);` | `transparent` | newtype over the values type with try_new; BTreeMap and the fixed String key serialize in one order | — |
 | `reference` | `pub struct N(SemanticIdentity);` | `transparent` | newtype over the validated identity, not over the target's Rust type, plus a validating Deserialize | — |
-| `value_object` | `pub struct N { .. }` | — | the record row; the derived PartialEq compares every member, which is the value equality the construct declares | — |
-| `nested_entity` | `pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str] and pub const OWNER: &str` | — | the entity row, plus the semantic identity of the owning type beside FIELDS in the type's module | — |
-| `aggregate_root` | `pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str] and pub const MEMBERS: &[&str]` | — | the entity row, plus the semantic identities of the aggregate's members; its clauses are carried in the type's metadata constant | — |
-| `enumeration` | `pub enum N { .. } (fieldless)` | `rename = "<variant name>"` | the enum row: one variant per declared variant, the closed set the construct declares | — |
-| `event` | `pub struct N { .. } with private members, one accessor per member, and pub const OCCURRENCE_FIELD: &str` | — | the record row with every member private: a value is built through try_new or Deserialize and read through accessors, so it is not changed after construction | — |
-| `state_machine` | `pub struct N { .. } with pub enum NState { .. } and pub const TRANSITIONS: &[TransitionMeta]` | — | the record row, plus one fieldless enum variant per state, serde-named by the state name, and each transition's from and to states, trigger operation, guard clause and emitted events | — |
-| `process` | `pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str] and pub const STEPS: &[StepMeta]` | — | the entity row, plus each step's name, kind, consumed events and emitted events in declared order | — |
-| `repository` | `pub trait N { fn op(&mut self, ..) -> R; .. } with pub const PERSISTS: &[&str]` | — | one trait method per operation, holding no state; parameters and the return map through the field-axis rows; the receiver is &self when the operation declares an empty frame | — |
-| `domain` | `pub struct N; with pub const MEMBERS: &[&str] and pub const VOCABULARY: &[TermMeta]` | — | a unit struct naming the namespace, plus its members' semantic identities and its vocabulary; a domain has no instance data | — |
+
+### shape
+
+| Selector | Rust form | Serde | Mechanism | Refusal |
+|---|---|---|---|---|
+| `record` | `pub struct N { .. }` | — | the record row for a construct its declaration shapes as a record; each admitted member it carries renders beside FIELDS: pub const OWNER: &str, pub const MEMBERS: &[&str], pub const STEPS: &[StepMeta], and, where the declaration admits occurrenceField, pub const OCCURRENCE_FIELD: &str with every member private and read through one accessor, so a value is not changed after construction | — |
+| `sequence` | `pub struct N { .. }` | — | the record row for a construct its declaration shapes as an ordered sequence of steps, with its admitted members as the record shape carries them | — |
+| `enumeration` | `pub enum N { .. } (fieldless)` | — | the enum row: one variant per declared variant, the closed set the construct declares | — |
+| `state_machine` | `pub struct N { .. } with pub enum NState { .. } and pub const TRANSITIONS: &[TransitionMeta]` | — | the record row, plus one fieldless enum variant per state, serde-named by the state name, and each transition's from and to states, trigger operation, guard clause and emitted occurrences | — |
+| `interface` | `pub trait N { fn op(&mut self, ..) -> R; .. } with pub const PERSISTS: &[&str]` | — | one trait method per operation, holding no state; parameters and the return map through the field-axis rows; the receiver is &self when the operation declares an empty frame | — |
+| `namespace` | `pub struct N; with pub const MEMBERS: &[&str] and pub const VOCABULARY: &[TermMeta]` | — | a unit struct naming the namespace, plus its members' semantic identities and its vocabulary; a namespace has no instance data | — |
+
+### identity
+
+| Selector | Rust form | Serde | Mechanism | Refusal |
+|---|---|---|---|---|
+| `identified` | `pub const IDENTITY_FIELDS: &[&str], and PartialEq, Eq and Hash over the identity fields` | — | the shape's row without the derived PartialEq, plus the names of the fields that tell the construct's instances apart in declared order beside FIELDS, and PartialEq, Eq and Hash written over those fields; every generated newtype an identity field reaches derives Eq and Hash, and an identity field whose Rust type has neither is refused with UNSUPPORTED_CONSTRUCT | — |
+| `value` | `derived PartialEq` | — | the shape's row; the derived PartialEq compares every member, which is the value equality the construct declares | — |
+| `none` | `the shape's row unchanged` | — | the shape's row with no equality beyond what the shape derives; a construct with no identity declares no IDENTITY_FIELDS | — |
 
 ### construct
 
@@ -47,7 +56,7 @@ construction, not by claim.
 | `abstract` | `pub trait N { fn <field>(&self) -> &T; .. } with pub const ABSTRACT: bool = true` | — | no value type: one accessor per effective field, implemented by each concrete subtype; a member naming the abstract type, and a subtype field of another Rust type, are refused with UNSUPPORTED_CONSTRUCT | — |
 | `subsets` | `pub const FIELD_SUBSETS: &[FieldLinkMeta]` | — | carried, not enforced: each member and the members its values are a subset of, by wire name; the subset relation is Quire meaning over values | — |
 | `redefines` | `pub const FIELD_REDEFINES: &[FieldLinkMeta]` | — | the redefining member stands in the struct in place of the inherited one, and the constant names the member it redefines | — |
-| `operation-contract` | `pub const OPERATION_CONTRACTS: &[OperationContractMeta]` | — | each operation's frame and inline Quire requires and ensures clauses, carried as text; a repository method whose frame is empty takes &self | — |
+| `operation-contract` | `pub const OPERATION_CONTRACTS: &[OperationContractMeta]` | — | each operation's frame and inline Quire requires and ensures clauses, carried as text; an interface method whose frame is empty takes &self | — |
 | `populations` | `pub const POPULATIONS: &[PopulationMeta] in identity.rs` | — | each population's identity, display name, member types and extents, in document order | — |
 
 ### scalar
@@ -89,7 +98,7 @@ construction, not by claim.
 | `[object Object]` | `pub enum N { .. }` | — | serde's own default, under which an unrecognised variant is a deserialization error | — |
 | `[object Object]` | `a generated catch-all variant Unknown(String) on an enum, Unknown(UnknownVariant) on a union` | — | a hand-written Serialize and Deserialize that keep the unrecognised tag and, for a union, its payload as a SemanticValue, and round-trip unchanged; validate returns no diagnostic | — |
 | `[object Object]` | `a generated catch-all variant Unknown(String) on an enum, Unknown(UnknownVariant) on a union` | — | as preserve, and validate returns one UNKNOWN_MEMBER_SURFACED for an unrecognised variant | `agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED` |
-| `[object Object]` | `null` | — | inert: a scalar has no members, a sequence and a map admit every element and every key by construction, and an alias and a reference are transparent, and a repository and a domain carry no instance data. The declared value is carried verbatim into the type's metadata constant and stated inert in the generated documentation; it is never dropped and never refused | — |
+| `[object Object]` | `null` | — | inert: a scalar has no members, a sequence and a map admit every element and every key by construction, and an alias and a reference are transparent, and an interface and a namespace construct carry no instance data. The declared value is carried verbatim into the type's metadata constant and stated inert in the generated documentation; it is never dropped and never refused | — |
 
 ### defaultKind
 

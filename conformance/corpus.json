@@ -1,6 +1,6 @@
 {
 	"corpusVersion": "2.0.0",
-	"contractVersions": ["1.0.0", "1.1.0", "1.2.0"],
+	"contractVersions": ["1.0.0", "1.1.0", "2.0.0"],
 	"canonicalForm": "agent-ix-conformance-jcs-v1",
 	"caseIdPattern": "^[A-Z][A-Z0-9]*(-[A-Z0-9]+)*-[0-9]{3}$",
 	"minimizationBudget": 64,
@@ -14,7 +14,7 @@
 	"predecessor": {
 		"state": "required",
 		"ref": "origin/main:conformance/corpus.json",
-		"rationale": "Contract 1.2.0 changes the established ENV-002 expectation because 1.2.0 is now valid; the resulting major corpus version compares against the committed predecessor."
+		"rationale": "Contract 2.0.0 replaces 1.2.0 in the declared contract versions and removes 1.2.0 with no compatibility; the resulting major corpus version compares against the committed predecessor."
 	},
 	"familyPrefixes": {
 		"envelope": "ENV",

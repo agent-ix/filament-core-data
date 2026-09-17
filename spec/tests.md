@@ -96,7 +96,7 @@ shared-identity implementation (CR-087-1). Two are `🚧`: TC-1316 is blocked on
 issue #89, and TC-1317 is blocked in the rehearsal's scratch-clone environment.
 TC-1337 passed when issue #85 delivered the JSON Schema backend. TC-1292 passed when issues
 #88 and #90 closed, and FR-130 gave its Rust half the generic command line.
-The lifted `config-version-table` document carries contract 1.2.0 `entity`
+The lifted `config-version-table` document carries contract 2.0.0 `entity`
 constructs, which every backend renders (TC-1762..TC-1765), so both pass over
 it. Every backend renders every construct kind (TC-1772..TC-1775), so TC-1586
 passes over the lifted `business` bundle.
@@ -119,7 +119,7 @@ blocked as stated above.
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001..US-010, US-012, US-013, US-015, FR-001..FR-053, FR-063..FR-080, FR-091..FR-106, FR-139, FR-141..FR-143 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944, TC-1200..1350, TC-1373..1378, TC-1552..1557, TC-1740..1761 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch; TC-1374, TC-1375, TC-1552, TC-1554..1557 planned on issue #93 |
+| StR-001 | US-001..US-010, US-012, US-013, US-015, FR-001..FR-053, FR-063..FR-080, FR-091..FR-106, FR-139, FR-141..FR-143 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944, TC-1200..1350, TC-1373..1378, TC-1552..1557, TC-1740..1761, TC-1786..1794 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch; TC-1374, TC-1375, TC-1552, TC-1554..1557 planned on issue #93 |
 
 ### User Story Coverage
 
@@ -176,8 +176,8 @@ blocked as stated above.
 | US-020 | US-020-EX-4 (illustrative) implemented by FR-135 | TC-1429 | 🚧 planned on issue #12 |
 | US-019 | The SysML v2 textual interchange target implemented by FR-138 | TC-1545..TC-1551 | 🚧 planned on issue #37 |
 | US-006 | An unconstrained value expressed without narrowing, implemented by FR-139 | TC-1552..TC-1557 | 🚧 TC-1552, TC-1554..TC-1557 planned on issue #93 |
-| US-006 | The model members and one construct per object type, implemented by FR-141 and FR-142 | TC-1740..TC-1750 | ✅ Complete |
-| US-015 | Object-type artifacts lifted to their constructs, implemented by FR-143 | TC-1751..TC-1755, TC-1785 | ✅ |
+| US-006 | The model members and construct kinds declared as module data, implemented by FR-141 and FR-142 | TC-1740..TC-1750, TC-1786..TC-1789, TC-1791, TC-1793 | 🚧 In progress |
+| US-015 | Object-type artifacts lifted to their constructs, implemented by FR-143 | TC-1751..TC-1755, TC-1785, TC-1790, TC-1792, TC-1794 | 🚧 In progress |
 | US-008 | The compiler judged by the independent corpus, implemented by FR-140 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
 
 ### Functional Requirement Coverage
@@ -295,8 +295,8 @@ blocked as stated above.
 | FR-139 | FR-139-AC-1..6, FR-139-CON-1..3 | TC-1552..TC-1557 | 🚧 TC-1552, TC-1554..TC-1557 planned on issue #93 |
 | FR-140 | FR-140-AC-1..7, FR-140-CON-1..3 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
 | FR-141 | FR-141-AC-1..7, FR-141-CON-1..2 | TC-1740..TC-1744, TC-1759, TC-1761 | ✅ Complete |
-| FR-142 | FR-142-AC-1..8, FR-142-CON-1..2 | TC-1745..TC-1750, TC-1760, TC-1776 | ✅ Complete |
-| FR-143 | FR-143-AC-1..6, FR-143-CON-1..2 | TC-1751..TC-1755, TC-1785 | ✅ |
+| FR-142 | FR-142-AC-1..13, FR-142-CON-1..2 | TC-1745..TC-1750, TC-1776, TC-1786..TC-1789, TC-1791, TC-1793 | 🚧 In progress |
+| FR-143 | FR-143-AC-1..9, FR-143-CON-1..2 | TC-1751..TC-1755, TC-1785, TC-1790, TC-1792, TC-1794 | 🚧 In progress |
 
 ### Non-Functional Requirement Coverage
 
@@ -1554,10 +1554,10 @@ blocked as stated above.
 | TC-1348 | The provenance record's entry for the vendored spec-objects-business module carries the manifest sha256 that fixtures/modules/spec-objects-business/PROVENANCE.json records for revision f7fdfda | Unit | P1 | FR-095-AC-15 | ✅ passed |
 | TC-1349 | extraction-frontend-deny exits non-zero when a crate with a licence outside the deny.toml allow list is planted in a scratch manifest, extraction-frontend-audit (--deny yanked) exits non-zero when a yanked version is planted, and each exits zero on the committed one | Static | P1 | FR-099-AC-6 | ✅ static evidence (make extraction-frontend-evidence) |
 | TC-1350 | cargo check -p agent-ix-extraction-frontend --locked --offline on the rust-toolchain.toml channel (1.98.1) exits zero, so a --workspace build on the workspace channel still compiles the crate and make rust-build and rust-test are not broken by it (CR-036-1) | Integration | P1 | NFR-033-AC-11 | ✅ passed |
-| TC-1373 | A required `0..*` field and an optional `1..*` field compile to a `1.2.0` document both readers accept; through the rendered JSON Schema a present empty collection is admitted and an absent required member refused, and the optional field admits absence and refuses a present empty list | Unit | P0 | FR-106-AC-1, FR-106-CON-1 | ✅ passed |
+| TC-1373 | A required `0..*` field and an optional `1..*` field compile to a `2.0.0` document both readers accept; through the rendered JSON Schema a present empty collection is admitted and an absent required member refused, and the optional field admits absence and refuses a present empty list | Unit | P0 | FR-106-AC-1, FR-106-CON-1 | ✅ passed |
 | TC-1374 | An optional `1..*` field admits an absent member and refuses a present empty collection | Unit | P0 | FR-106-AC-2, FR-106-CON-1 | 🚧 planned on issue #93 |
 | TC-1375 | Two fields differing only in `presence` produce distinct IR `Field` declarations and distinct generated declarations | Integration | P0 | FR-106-AC-3 | 🚧 planned on issue #93 |
-| TC-1376 | A `1.2.0` field whose presence differs from `multiplicity.lower` validates without `PRESENCE_MULTIPLICITY_MISMATCH`, and the same field in a `1.1.0` document reports it | Unit | P0 | FR-106-AC-4 | ✅ passed |
+| TC-1376 | A `2.0.0` field whose presence differs from `multiplicity.lower` validates without `PRESENCE_MULTIPLICITY_MISMATCH`, and the same field in a `1.1.0` document reports it | Unit | P0 | FR-106-AC-4 | ✅ passed |
 | TC-1377 | A source field with no authored presence yields a named loss naming the field and its locus | Integration | P1 | FR-106-AC-5 | ✅ passed |
 | TC-1378 | Changing only one of `presence`, `nullable`, or default kind changes only that member of the emitted `Field`, and none is derived from another | Unit | P1 | FR-106-AC-6, FR-106-CON-2 | ✅ passed |
 | TC-1351 | The negatives/DUPLICATE_IDENTITY bundle, an artifact NoteRevision beside a record Note with a constrained field revision (contract case (c): distinct names, distinct slugs, one identity), is refused at the later path with DUPLICATE_IDENTITY naming both type/NoteRevision identities and carrying the earlier locus in related, blocking, and no document is written | Snapshot | P1 | FR-095-AC-14 | ✅ passed |
@@ -1680,31 +1680,30 @@ blocked as stated above.
 | TC-1581 | No matrix row or review disposition cites a removed measurement as its evidence | Manual | P1 | NFR-043-AC-4 | 🚧 planned on issue #92 |
 | TC-1582 | No surviving permitted-path list gains an entry as part of the retirement | Static | P0 | NFR-043-AC-5 | 🚧 planned on issue #92 |
 | TC-1583 | The zero-publication and unchanged-surface properties are each still verified by at least one case | Integration | P0 | NFR-043-AC-6 | 🚧 planned on issue #92 |
-| TC-1740 | A `1.2.0` document carrying `supertypes`, `abstract`, `subsets`, `redefines`, `frame`, `requires`, `ensures`, `populations` and a `quire` clause is accepted by the Rust, Node and Python readers | Unit | P0 | FR-141-AC-1 | ✅ passed |
+| TC-1740 | A `2.0.0` document carrying `supertypes`, `abstract`, `subsets`, `redefines`, `frame`, `requires`, `ensures`, `populations` and a `quire` clause is accepted by the Rust, Node and Python readers | Unit | P0 | FR-141-AC-1 | ✅ passed |
 | TC-1741 | An unresolved supertype, a supertype of another kind and a generalization cycle raise `UNRESOLVED_CONSTRUCT_REF`, `CONSTRUCT_TARGET_KIND` and `SUPERTYPE_CYCLE` | Unit | P0 | FR-141-AC-2 | ✅ passed |
 | TC-1742 | An unresolved `subsets` entry raises `UNRESOLVED_FEATURE_REF` and a widening `redefines` raises `INVALID_REDEFINITION` | Unit | P0 | FR-141-AC-3 | ✅ passed |
 | TC-1743 | An unresolved frame path raises `UNRESOLVED_FRAME_PATH` and an unresolved population member raises `UNRESOLVED_TYPE_REF` | Unit | P0 | FR-141-AC-4 | ✅ passed |
-| TC-1744 | Every `1.2.0` model member and construct kind in a `1.1.0` document is refused with `SCHEMA_VIOLATION` | Unit | P0 | FR-141-AC-5, FR-141-CON-1 | ✅ passed |
-| TC-1745 | A `1.2.0` document with one construct of each of the ten kinds is accepted by the Rust, Node and Python readers | Unit | P0 | FR-142-AC-1 | ✅ passed |
+| TC-1744 | Every `2.0.0` model member and construct kind in a `1.1.0` document is refused with `SCHEMA_VIOLATION` | Unit | P0 | FR-141-AC-5, FR-141-CON-1 | ✅ passed |
+| TC-1745 | A `2.0.0` document with one construct of each of the ten kinds is accepted by the Rust, Node and Python readers | Unit | P0 | FR-142-AC-1 | ✅ passed |
 | TC-1746 | Each kind missing a required member, or carrying a member of another kind, is refused with `SCHEMA_VIOLATION` | Unit | P0 | FR-142-AC-2, FR-142-CON-1 | ✅ passed |
 | TC-1747 | Owner, aggregate member, persisted type and domain member of an excluded kind, or naming no type, raise their reader code at the member pointer | Unit | P0 | FR-142-AC-3 | ✅ passed |
 | TC-1748 | A non-`datetime` occurrence field, an undeclared transition state or trigger, a dangling guard and a type in two domains raise their reader codes | Unit | P0 | FR-142-AC-4 | ✅ passed |
 | TC-1749 | The Rust, TypeScript and JSON Schema backends generate one construct of every kind with state `success` and no blocking diagnostic, rendering none as another kind | Unit | P0 | FR-142-AC-5, FR-142-CON-2 | ✅ passed |
-| TC-1750 | `contracts-v1.md` states the members, built-in rules and Quire meaning of every construct | Manual | P1 | FR-142-AC-6 | ✅ passed |
+| TC-1750 | `contracts-v1.md` states the construct vocabulary, its rules, and the declaration and Quire meaning of every business construct kind | Manual | P1 | FR-142-AC-6 | ✅ passed |
 | TC-1751 | The `business` fixture lifts to one construct of each kind with the identity fields, members, owner, occurrence field and persisted types its fields and edges name, accepted by the reader | Integration | P0 | FR-143-AC-1, FR-143-CON-2 | ✅ passed |
 | TC-1752 | Every `business` type identity ends in its artifact id and every `displayName` is its declared name; a declared-name rename leaves relationships byte-identical | Property | P0 | FR-143-AC-2, FR-143-CON-1 | ✅ passed |
-| TC-1753 | Each broken built-in rule yields one blocking `ARTIFACT_NOT_LOWERED` naming it, and no type of that artifact is emitted | Unit | P0 | FR-143-AC-3 | ✅ passed |
+| TC-1753 | Each broken declared rule yields one blocking `ARTIFACT_NOT_LOWERED` naming it, and no type of that artifact is emitted | Unit | P0 | FR-143-AC-3 | ✅ passed |
 | TC-1754 | A `nested_entity` with no owner and one with two owners are each refused naming the owner rule; a nested entity owned only by a refused one is refused too at the fixed point, keeping its own declared loss, and no emitted owner or relationship names a refused artifact | Unit | P0 | FR-143-AC-4 | ✅ passed |
 | TC-1755 | `SM-001` lifts its four states and three transitions, `PR-001` its three ordered steps, and `DM-001` a non-empty vocabulary | Unit | P1 | FR-143-AC-5 | ✅ passed |
-| TC-1756 | Published `1.0.0` and `1.1.0` fixtures keep reader verdicts and canonical bytes, and a `1.1.0` document carrying a `1.2.0` node is refused | Integration | P0 | NFR-044-AC-1 | ✅ passed |
-| TC-1757 | The `1.1.0` to `1.2.0` uplift of a document declaring types classifies additive, and the reverse change conditional | Unit | P0 | NFR-044-AC-2 | ✅ passed |
+| TC-1756 | Published `1.0.0` and `1.1.0` fixtures keep reader verdicts and canonical bytes, and a `1.1.0` document carrying a `2.0.0` node is refused | Integration | P0 | NFR-044-AC-1 | ✅ passed |
+| TC-1757 | The `1.1.0` to `2.0.0` uplift of a document declaring types classifies additive, and the reverse change conditional | Unit | P0 | NFR-044-AC-2 | ✅ passed |
 | TC-1758 | An artifact with id _ and one with a non-ASCII-only id each raise one blocking UNSLUGGABLE_NAME at the frontmatter and lower to no definition, with no panic; an artifact with id UUID in a bundle using UUID raises DUPLICATE_TYPE_NAME naming type/UUID | Unit | P1 | FR-095-AC-17 | ✅ passed |
 | TC-1759 | An inline requires clause in ocl and an ensures clause in acme:tla are each accepted by the Rust, Node and Python readers with exactly one non-blocking info CLAUSE_LANGUAGE_UNCHECKED at the clause language; a quire clause raises nothing | Unit | P0 | FR-141-AC-6, FR-141-CON-2 | ✅ passed |
-| TC-1760 | The construct kinds of the Rust reader, the extraction frontend and `src/compiler/constructs.mjs` equal the schema's `1.2.0` kinds in order, and the edge kinds of `constructs.mjs` and the Node and Python readers equal the schema's | Unit | P1 | FR-142-AC-7 | ✅ passed |
 | TC-1761 | A TypeSpec member of type `unknown` lowers to a field whose type is the kernel scalar `any`, identified `type/JsonObject` as the spec bundles identify it, with no blocking diagnostic and no zero-field record | Unit | P0 | FR-141-AC-7 | ✅ passed |
-| TC-1762 | A `1.2.0` entity selects the Rust `kind:entity` row: its struct renders as a record's and its module declares `IDENTITY_FIELDS` naming the identity fields in declared order, while a record declares none | Unit | P0 | FR-054-AC-16, FR-058-AC-13 | ✅ passed |
-| TC-1763 | A `1.2.0` entity renders as a TypeScript interface with a record validator that compiles under `tsc`, `TYPE_KIND` records `entity`, and `TYPE_IDENTITY_FIELDS` names its identity fields while a record has no entry | Unit | P0 | FR-064-AC-23, FR-067-AC-19 | ✅ passed |
-| TC-1764 | A `1.2.0` entity renders as an object schema filed under its declared name, carrying `x-agent-ix-kind: entity` and its identity field names in `x-agent-ix-identity-fields`, while a record carries neither | Unit | P0 | FR-100-AC-7 | ✅ passed |
+| TC-1762 | A `2.0.0` entity selects the Rust `kind:entity` row: its struct renders as a record's and its module declares `IDENTITY_FIELDS` naming the identity fields in declared order, while a record declares none | Unit | P0 | FR-054-AC-16, FR-058-AC-13 | ✅ passed |
+| TC-1763 | A `2.0.0` entity renders as a TypeScript interface with a record validator that compiles under `tsc`, `TYPE_KIND` records `entity`, and `TYPE_IDENTITY_FIELDS` names its identity fields while a record has no entry | Unit | P0 | FR-064-AC-23, FR-067-AC-19 | ✅ passed |
+| TC-1764 | A `2.0.0` entity renders as an object schema filed under its declared name, carrying `x-agent-ix-kind: entity` and its identity field names in `x-agent-ix-identity-fields`, while a record carries neither | Unit | P0 | FR-100-AC-7 | ✅ passed |
 | TC-1765 | Both Python targets generate an entity as the record's model class, and `constructs.py` records its kind and identity fields | Integration | P0 | FR-136-AC-8 | ✅ passed |
 | TC-1766 | The lifted config-version-table golden generates a Rust crate whose `ConfigVersion` struct and `config_version` module are named by display name, with no artifact-id-named module or type, while `SemanticType::ConfigVersion` maps to the `FR-006` identity | Unit | P0 | FR-055-AC-17 | ✅ passed |
 | TC-1767 | The lifted config-version-table golden generates a TypeScript package exporting `validateConfigVersion` whose `TYPE_IDENTITY` maps `ConfigVersion` to the `FR-006` identity, with no exported name derived from an artifact id | Integration | P0 | FR-064-AC-24 | ✅ passed |
@@ -1726,6 +1725,15 @@ blocked as stated above.
 | TC-1783 | Both Python targets compare identified constructs by their identity fields, register a subtype with its abstract `abc` supertype, refuse to construct the abstract class, keep identity fields read-only, and freeze an event and declare it unhashable | Integration | P0 | FR-136-AC-11 | ✅ passed |
 | TC-1784 | `constructs.py` keys every table by the generated class name for spaced display names, and refuses a generated `constructs.py` in any case, a held abstract type (allowing a reference to one) and an undeclared identity field | Unit | P0 | FR-136-AC-12 | ✅ passed |
 | TC-1785 | A transition emitting or a step consuming a name that is no event artifact id, one event named twice in a cell, an `abstract` flag on a value object or an enumeration, a `specializes` supertype, a `Presence` column, a `Modifies:` line, an aggregate or population `Members` table (the population refusal is retired by filament-core-data#171), a transition to an undeclared state (model unavailable), an engine transition record with an unknown trigger or a dangling guard, a transition emitting an event that lowers to nothing, and `## Relationships` rows under a module declaring the `relationships` mapping each refuse the artifact with one blocking `ARTIFACT_NOT_LOWERED` naming the declaration; under module 0.4.0 the rows are the engine's blocking `feature-not-extractable` | Unit | P0 | FR-143-AC-6 | ✅ passed |
+| TC-1786 | The Rust, Node and Python readings of the core construct vocabulary each equal `construct-vocabulary.json` and the schema's `constructDeclaration`: identities, shapes, presences, member defaults, reference items and rule requirements | Unit | P0 | FR-142-AC-11 | ✅ passed |
+| TC-1787 | No business construct kind name appears as a string literal in `src/`, `crates/*/src` or `python_backend/` outside fixtures, goldens, generated code and tests, a name that is also a core shape term counting as that shape; a planted `kind.name === "entity"` fails the gate | Unit | P0 | FR-142-AC-7 | ✅ passed |
+| TC-1788 | Reading a construct declaration refuses an unknown identity, an unknown member, a rule whose member presence is undeclared, a reference to a forbidden member, a wildcard or repeated role, a reference on a non-reference member, a repeated rule, an unknown declaration member and a missing required member at their pointers, and reads a declaration without `references` and `rules` | Unit | P0 | FR-142-AC-12 | ✅ passed |
+| TC-1789 | A kind with no `constructs` entry, an unused entry, a duplicate entry, a `2.0.0` document without `constructs`, a wildcard role and an undeclared rule presence each refuse with `SCHEMA_VIOLATION`; widening admitted roles admits a reference its former roles refused, and removing the role from the target type refuses it | Unit | P0 | FR-142-AC-9 | ✅ passed |
+| TC-1790 | The `business` fixture lifts with one `constructs` entry per used kind carrying module version `0.4.0`, the `sha256:` manifest digest and the manifest declaration with roles qualified `business:<role>`, read through the one manifest seam | Integration | P0 | FR-143-AC-7 | ✅ passed |
+| TC-1791 | A systems `port` kind carrying `owner`, `direction`, `interfaceType` and `multiplicity`, and a `connection` carrying `flowDirection` and two ends, read clean in the Rust and Node readers and render by shape and identity; a `direction` outside `in`/`out`/`inout`, a missing required member and an owner without the admitted role refuse | Unit | P0 | FR-142-AC-10 | ✅ passed |
+| TC-1792 | A manifest declaration missing `meaning`, naming a member or rule outside the vocabulary, selecting a rule whose member presence it does not declare, admitting `*`, or referencing an undeclared role yields one blocking diagnostic naming the module and object type, and no artifact of that type lowers | Unit | P0 | FR-143-AC-8 | ✅ passed |
+| TC-1793 | A `featureOrder` naming its type's own fields and operations each once reads clean; an omitted operation raises `INCOMPLETE_FEATURE_ORDER`, another type's operation `UNRESOLVED_CONSTRUCT_REF`, and a repeated entry, an empty order, an order the declaration forbids and a missing required order `SCHEMA_VIOLATION` | Unit | P0 | FR-142-AC-13 | ✅ passed |
+| TC-1794 | Under a module whose `entity` declaration requires `featureOrder`, every `entity` artifact of the `business` fixture is refused with one blocking `ARTIFACT_NOT_LOWERED` naming the member and emits no type | Unit | P0 | FR-143-AC-9 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
 | TC-1585 | Every requirement the register names carries that issue's own link, and a row whose requirement omits it is reported | Unit | P0 | NFR-001-AC-6 | ✅ passed |
 
@@ -1877,7 +1885,7 @@ blocked as stated above.
 | FR-029 operands | Min | `minLength: 0` | TC-219 | Valid |
 | FR-029 operands | Below min | `minLength: -1` | TC-221 | Fail validation |
 | FR-029 applicability | Prohibited | `minLength` on `integer`, `min` on `record` | TC-244 | Fail validation at the constraint locus |
-| FR-030 contractVersion | Allowed | `"1.0.0"`, `"1.1.0"`, `"1.2.0"` | TC-227, TC-231, TC-1376 | Pass under the single schema file |
+| FR-030 contractVersion | Allowed | `"1.0.0"`, `"1.1.0"`, `"2.0.0"` | TC-227, TC-231, TC-1376 | Pass under the single schema file |
 | FR-030 contractVersion | Prohibited | `"1.3.0"`, `"0.9.0"` | TC-246 | Fail before emission |
 | FR-031-CON-1 | Allowed | Grammar under `packages/semantic-core/` | TC-254 | Pass |
 | FR-031-CON-1 | Prohibited | `spikes/` importing the grammar | TC-254 | Fail |
@@ -2168,7 +2176,7 @@ blocked as stated above.
 | ERR-041 | Composite relationship graph contains a cycle | Validation fails at the closing relationship | TC-240 |
 | ERR-042 | Duplicate `clauseId` within one type definition | Validation fails at the second clause | TC-241 |
 | ERR-043 | Constraint keyword applied outside its applicability, or regex fails to compile | Validation fails at the constraint locus | TC-244, TC-245 |
-| ERR-044 | `contractVersion` outside `1.0.0`/`1.1.0`/`1.2.0`, or a v1.1/v1.2 dialect outside `typespec`/`spec-bundle` | Fails before emission with a machine-readable diagnostic | TC-246 |
+| ERR-044 | `contractVersion` outside `1.0.0`/`1.1.0`/`2.0.0`, or a v1.1/v2.0 dialect outside `typespec`/`spec-bundle` | Fails before emission with a machine-readable diagnostic | TC-246 |
 | ERR-045 | Kernel declares a domain archetype or an `Any` scalar | Scope test fails naming the declaration | TC-249, TC-258, TC-273 |
 | ERR-046 | Emitted projection differs from committed bytes | `check` script exits non-zero naming the file | TC-264 |
 | ERR-047 | `Decimal` `TypeRef` without `decimal`, or `decimal` on a non-Decimal target | Semantic-core reader rejects at the declaration | TC-256, TC-277 |

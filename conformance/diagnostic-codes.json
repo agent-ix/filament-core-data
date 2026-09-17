@@ -343,7 +343,7 @@
 			"provenance": "minted",
 			"decidedBy": "cross-field",
 			"sources": ["docs/semantic-data-system/contracts-v1.md"],
-			"rule": "A construct member or supertype naming a type of a kind its member excludes.",
+			"rule": "A construct reference naming a type carrying none of the roles its declaration admits, a supertype of another kind, or a namespace named as a member under members_not_namespace.",
 			"citation": "`CONSTRUCT_TARGET_KIND`; a wrong occurrence field raises",
 			"exercisedBy": "test:TC-1747"
 		},
@@ -355,6 +355,15 @@
 			"rule": "An event occurrence field that does not resolve to scalar datetime.",
 			"citation": "`INVALID_OCCURRENCE_FIELD`; a guard naming no clause raises",
 			"exercisedBy": "test:TC-1748"
+		},
+		{
+			"code": "agent-ix.semantic-ir.INCOMPLETE_FEATURE_ORDER",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A featureOrder omitting a field or operation the type declares itself.",
+			"citation": "a field or operation it omits raises",
+			"exercisedBy": "test:TC-1793"
 		},
 		{
 			"code": "agent-ix.semantic-ir.SUPERTYPE_CYCLE",
@@ -397,8 +406,8 @@
 			"provenance": "minted",
 			"decidedBy": "cross-field",
 			"sources": ["docs/semantic-data-system/contracts-v1.md"],
-			"rule": "A type named by the members of two domains.",
-			"citation": "a type belongs to at most one domain",
+			"rule": "A type named by the members of two types whose declarations select exclusive_membership.",
+			"citation": "a type named by two exclusive memberships raises",
 			"exercisedBy": "test:TC-1748"
 		}
 	]

@@ -432,8 +432,8 @@ normative. Exact metamodel fields, generated package registry names, and
 individual migration dispositions remain provisional until their owning tickets
 pass.
 
-FR-106, FR-139 and FR-141 through FR-143 are normative: contract `1.2.0`
-(issues #93 and #146) implements them in the schema, the readers and the
+FR-106, FR-139 and FR-141 through FR-143 are normative: contract `2.0.0`
+(issues #93, #146 and #172) implements them in the schema, the readers and the
 spec-bundle frontend.
 
 ## 7. Verification Strategy

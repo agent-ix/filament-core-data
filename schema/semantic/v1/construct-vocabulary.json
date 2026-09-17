@@ -1,0 +1,182 @@
+{
+	"$comment": "The closed core vocabulary of semantic IR contract 2.0.0 construct declarations (FR-142). A module declares each construct kind as data in terms of these names; the Rust reader, the Node compiler and the Python backend read this file, and each language's parity test compares its reading to semantic-ir.schema.json. Member defaults apply to a member a declaration does not list. A member with referenceItems is a reference member whose entries name types: an empty list when the member itself names them, else the members of each item that do, an item being an element of a list member or the member's own object; a declaration constrains a reference member by the roles it admits. Each rule names the member presence it requires of the declaration; rules are listed in the order the extraction frontend decides them at an artifact.",
+	"identities": ["identified", "value", "none"],
+	"shapes": [
+		"record",
+		"enumeration",
+		"interface",
+		"state_machine",
+		"sequence",
+		"namespace"
+	],
+	"presences": ["required", "optional", "forbidden"],
+	"members": [
+		{
+			"name": "fields",
+			"default": "optional"
+		},
+		{
+			"name": "variants",
+			"default": "optional"
+		},
+		{
+			"name": "relationships",
+			"default": "optional"
+		},
+		{
+			"name": "operations",
+			"default": "optional"
+		},
+		{
+			"name": "clauses",
+			"default": "optional"
+		},
+		{
+			"name": "supertypes",
+			"default": "optional"
+		},
+		{
+			"name": "abstract",
+			"default": "optional"
+		},
+		{
+			"name": "identityFields",
+			"default": "forbidden"
+		},
+		{
+			"name": "owner",
+			"default": "forbidden",
+			"referenceItems": []
+		},
+		{
+			"name": "members",
+			"default": "forbidden",
+			"referenceItems": []
+		},
+		{
+			"name": "occurrenceField",
+			"default": "forbidden"
+		},
+		{
+			"name": "states",
+			"default": "forbidden"
+		},
+		{
+			"name": "transitions",
+			"default": "forbidden",
+			"referenceItems": ["emits"]
+		},
+		{
+			"name": "steps",
+			"default": "forbidden",
+			"referenceItems": ["consumes", "emits"]
+		},
+		{
+			"name": "persists",
+			"default": "forbidden",
+			"referenceItems": []
+		},
+		{
+			"name": "vocabulary",
+			"default": "forbidden"
+		},
+		{
+			"name": "direction",
+			"default": "forbidden"
+		},
+		{
+			"name": "interfaceType",
+			"default": "forbidden",
+			"referenceItems": []
+		},
+		{
+			"name": "multiplicity",
+			"default": "forbidden"
+		},
+		{
+			"name": "declaredType",
+			"default": "forbidden",
+			"referenceItems": []
+		},
+		{
+			"name": "flowDirection",
+			"default": "forbidden"
+		},
+		{
+			"name": "sourceEnd",
+			"default": "forbidden",
+			"referenceItems": ["type"]
+		},
+		{
+			"name": "targetEnd",
+			"default": "forbidden",
+			"referenceItems": ["type"]
+		},
+		{
+			"name": "sourceElement",
+			"default": "forbidden",
+			"referenceItems": []
+		},
+		{
+			"name": "targetElement",
+			"default": "forbidden",
+			"referenceItems": []
+		},
+		{
+			"name": "featureOrder",
+			"default": "forbidden"
+		}
+	],
+	"rules": [
+		{
+			"name": "identity_field_required",
+			"member": "identityFields",
+			"presence": "required"
+		},
+		{
+			"name": "identity_field_forbidden",
+			"member": "identityFields",
+			"presence": "forbidden"
+		},
+		{
+			"name": "min_clauses",
+			"member": "clauses",
+			"presence": "required"
+		},
+		{
+			"name": "occurrence_field_required",
+			"member": "occurrenceField",
+			"presence": "required"
+		},
+		{
+			"name": "no_fields",
+			"member": "fields",
+			"presence": "forbidden"
+		},
+		{
+			"name": "no_operations",
+			"member": "operations",
+			"presence": "forbidden"
+		},
+		{
+			"name": "min_operations",
+			"member": "operations",
+			"presence": "required"
+		},
+		{
+			"name": "single_owner",
+			"member": "owner",
+			"presence": "required"
+		},
+		{
+			"name": "exclusive_membership",
+			"member": "members",
+			"presence": "required"
+		},
+		{
+			"name": "members_not_namespace",
+			"member": "members",
+			"presence": "required"
+		}
+	]
+}

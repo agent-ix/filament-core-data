@@ -19,7 +19,7 @@ relationships:
 This requirement answers the model-member part of
 [filament-core-data#93](https://github.com/agent-ix/filament-core-data/issues/93).
 
-The semantic IR at contract `1.2.0` SHALL carry the model members that the
+The semantic IR at contract `2.0.0` SHALL carry the model members that the
 quire-spec model definition (AD-006) declares, so that a checked model reads
 generalization, feature presence, subsetting, redefinition, operation frames,
 inline pre- and postconditions and populations from the IR rather than from
@@ -53,7 +53,7 @@ an advisory, and a reader never re-reads its text in another language.
 
 ## Behavior
 
-- The schema SHALL admit each member of the table only in a `1.2.0` document and SHALL refuse it in a `1.0.0` or `1.1.0` document with `SCHEMA_VIOLATION`.
+- The schema SHALL admit each member of the table only in a `2.0.0` document and SHALL refuse it in a `1.0.0` or `1.1.0` document with `SCHEMA_VIOLATION`.
 - A reader SHALL raise `UNRESOLVED_CONSTRUCT_REF` for a supertype naming no declared type, `CONSTRUCT_TARGET_KIND` for a supertype of another kind, and `SUPERTYPE_CYCLE` for a type that reaches itself through `supertypes`.
 - A reader SHALL raise `UNRESOLVED_FEATURE_REF` for a `subsets` or `redefines` entry naming no field of a transitive supertype, and `INVALID_REDEFINITION` for a redefinition whose multiplicity lies outside the redefined field's bounds.
 - A reader SHALL raise `UNRESOLVED_FRAME_PATH` for a frame path whose first segment names neither a field of the owning type or its supertypes nor a parameter of the operation.
@@ -73,12 +73,12 @@ an advisory, and a reader never re-reads its text in another language.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-141-AC-1 | A `1.2.0` document carrying every member of the table is accepted by the Rust, Node and Python readers. | Test (TC-1740) |
+| FR-141-AC-1 | A `2.0.0` document carrying every member of the table is accepted by the Rust, Node and Python readers. | Test (TC-1740) |
 | FR-141-AC-2 | A supertype naming no type, a supertype of another kind and a two-type generalization cycle raise `UNRESOLVED_CONSTRUCT_REF`, `CONSTRUCT_TARGET_KIND` and `SUPERTYPE_CYCLE` at the `supertypes` pointer. | Test (TC-1741) |
 | FR-141-AC-3 | A `subsets` entry naming no supertype field raises `UNRESOLVED_FEATURE_REF`, and a `redefines` widening the redefined upper bound raises `INVALID_REDEFINITION`. | Test (TC-1742) |
 | FR-141-AC-4 | A frame path starting at no field or parameter raises `UNRESOLVED_FRAME_PATH`, and a population member naming no type raises `UNRESOLVED_TYPE_REF`. | Test (TC-1743) |
 | FR-141-AC-5 | Each member of the table inside a `1.1.0` document is refused with `SCHEMA_VIOLATION` by every reader. | Test (TC-1744) |
-| FR-141-AC-6 | A `1.2.0` document whose inline `requires` clause declares `ocl`, or whose `ensures` clause declares `acme:tla`, is accepted by the Rust, Node and Python readers with exactly one non-blocking `CLAUSE_LANGUAGE_UNCHECKED` at that clause's `language`; the same clause in `quire` raises nothing. | Test (TC-1759) |
+| FR-141-AC-6 | A `2.0.0` document whose inline `requires` clause declares `ocl`, or whose `ensures` clause declares `acme:tla`, is accepted by the Rust, Node and Python readers with exactly one non-blocking `CLAUSE_LANGUAGE_UNCHECKED` at that clause's `language`; the same clause in `quire` raises nothing. | Test (TC-1759) |
 | FR-141-AC-7 | A TypeSpec model member of type `unknown` compiles without a blocking diagnostic to a field whose `typeRef` resolves to a `scalar` definition of scalar `any` whose identity ends `/type/JsonObject`, the identity a spec bundle mints for the same scalar, and no zero-field record is emitted for it. | Test (TC-1761) |
 
 ## Dependencies

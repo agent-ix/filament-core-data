@@ -68,27 +68,28 @@ frontend, a generated programming-language package, or an ambient registry.
 - A `record` definition SHALL render as an object schema whose `properties`
   members are its fields and whose `required` array contains exactly fields
   whose presence is `required`.
-- A contract `1.2.0` `entity` definition SHALL render as a `record` renders,
-  and SHALL carry `x-agent-ix-kind: "entity"` and its identity field names, in
-  the order `identityFields` declares them, as `x-agent-ix-identity-fields`.
-  An entity's instances being told apart by those fields is its Quire meaning
-  over instances, which no schema keyword states; the annotation carries the
-  names.
+- A contract `2.0.0` `identified` × `record` construct SHALL render as a
+  `record` renders, and SHALL carry its identity field names, in the order
+  `identityFields` declares them, as `x-agent-ix-identity-fields`. Its
+  instances being told apart by those fields is its Quire meaning over
+  instances, which no schema keyword states; the annotation carries the names.
 - Every construct kind of
   [FR-142](./FR-142-declare-one-construct-per-object-type.md) SHALL carry
-  `x-agent-ix-kind` naming its kind, and SHALL render by this table:
+  `x-agent-ix-kind` set to `kind.name`, and SHALL render by the row of its
+  identity and shape and the members it carries; the backend names no module
+  construct kind in its source:
 
-| `kind` | Schema | Annotations |
+| Identity × shape | Schema | Annotations |
 |---|---|---|
-| `value_object` | as for `record` | `x-agent-ix-equality: "value"` |
-| `nested_entity` | as for `entity` | `x-agent-ix-owner` |
-| `aggregate_root` | as for `entity` | `x-agent-ix-members`; its clauses in `x-agent-ix-clauses` |
-| `enumeration` | as for `enum` | none |
-| `event` | as for `record`, plus `readOnly: true` | `x-agent-ix-occurrence-field` |
-| `state_machine` | as for `record`, plus `$defs.<Name>State`, a string `enum` of its state names | `x-agent-ix-states`, `x-agent-ix-transitions` |
-| `process` | as for `entity` | `x-agent-ix-steps` |
-| `repository` | `not: {}`, which no instance satisfies | `x-agent-ix-persists`; its operations in `x-agent-ix-operations` |
-| `domain` | `not: {}`, which no instance satisfies | `x-agent-ix-members`, `x-agent-ix-vocabulary` |
+| `value` × `record` (business `value_object`) | as for `record` | `x-agent-ix-equality: "value"` |
+| `identified` × `record` carrying `owner` (business `nested_entity`) | as for `identified` × `record` | `x-agent-ix-owner` |
+| `identified` × `record` carrying `members` (business `aggregate_root`) | as for `identified` × `record` | `x-agent-ix-members`; its clauses in `x-agent-ix-clauses` |
+| `none` × `enumeration` (business `enumeration`) | as for `enum` | none |
+| `none` × `record` carrying `occurrenceField` (business `event`) | as for `record`, plus `readOnly: true` | `x-agent-ix-occurrence-field` |
+| `none` × `state_machine` (business `state_machine`) | as for `record`, plus `$defs.<Name>State`, a string `enum` of its state names | `x-agent-ix-states`, `x-agent-ix-transitions` |
+| `identified` × `sequence` (business `process`) | as for `identified` × `record` | `x-agent-ix-steps` |
+| `none` × `interface` (business `repository`) | `not: {}`, which no instance satisfies | `x-agent-ix-persists`; its operations in `x-agent-ix-operations` |
+| `none` × `namespace` (business `domain`) | `not: {}`, which no instance satisfies | `x-agent-ix-members`, `x-agent-ix-vocabulary` |
 
 - A subtype SHALL render its effective fields: its supertypes' fields,
   farthest first, then its own, with each redefined field left out, and SHALL
@@ -188,7 +189,7 @@ that decision requires.
 | FR-100-AC-7 | The lifted config-version-table golden renders `ConfigOverlay.json` and `ConfigVersion.json` as object schemas carrying `x-agent-ix-kind: entity` and `x-agent-ix-identity-fields: ["id"]`, no file is named from an artifact id, and a record schema carries neither annotation. | Test (TC-1764) |
 | FR-100-AC-8 | The lifted config-version-table golden renders `ConfigVersion.json` whose `$id` ends `/ConfigVersion.json` and whose `x-agent-ix-semantic-id` is `ix://agent-ix/config-service/type/FR-006`: the file and `$id` carry the declared name and the annotation carries the artifact id. | Test (TC-1768) |
 | FR-100-AC-9 | Two definitions whose display names `Config Overlay` and `Config-Overlay` derive `Config-Overlay.json`, or `Status` and `status`, produce one blocking diagnostic naming the paths and both identities; a definition named `index` produces one blocking diagnostic stating it collides with the backend's `index.json`; each emits zero files. | Test (TC-1771) |
-| FR-100-AC-10 | Generating the contract `1.2.0` constructs fixture emits one schema per construct carrying its kind's schema and annotations: value equality, `readOnly` and the occurrence field on an event, owner and identity fields on a nested entity, members on an aggregate root and a domain, the variant `enum` of an enumeration, `$defs.OrderLifecycleState` and the transitions of a state machine, the steps of a process, `not: {}` and `x-agent-ix-persists` on a repository, the vocabulary of a domain, and supertypes, redefines, subsets, abstract, operation frame and clauses, and populations. | Test (TC-1774) |
+| FR-100-AC-10 | Generating the contract `2.0.0` constructs fixture emits one schema per construct carrying its kind's schema and annotations: value equality, `readOnly` and the occurrence field on an event, owner and identity fields on a nested entity, members on an aggregate root and a domain, the variant `enum` of an enumeration, `$defs.OrderLifecycleState` and the transitions of a state machine, the steps of a process, `not: {}` and `x-agent-ix-persists` on a repository, the vocabulary of a domain, and supertypes, redefines, subsets, abstract, operation frame and clauses, and populations. | Test (TC-1774) |
 | FR-100-AC-11 | Generating the constructs fixture with an unredefined `Party.remark` that subsets `labels` succeeds, `Order.json` carries `remark` with that subset and `x-agent-ix-identity-fields: ["id"]`; with `Order.id` redefining nothing it returns one blocking diagnostic at `/ir/types/<Order>/fields` naming `id` and emits no file. | Test (TC-1782) |
 
 ## Dependencies
