@@ -95,10 +95,11 @@ its `typeRef` resolves, through aliases, to a scalar. The normalized
 serialization materializes `multiplicity`, `presence`, and `nullable` on every
 `1.1.0` field and adds no bytes to a `1.0.0` document.
 
-This paragraph is the retained v1.1 contract, not the new baseline. The
-provisional [Semantic baseline 1.2](baseline-1-2.md) selects independently
-authored presence and specifies the refusal required when a v1.1 source cannot
-carry that source information.
+Field presence is authored rather than derived in contract `1.2.0`
+([issue #93](https://github.com/agent-ix/filament-core-data/issues/93)):
+[FR-106](../../spec/functional/FR-106-author-field-presence-independently.md)
+states the rule that carries `Field.presence` as `required` or `optional`
+independently of `multiplicity`, `nullable`, and the default kind.
 
 A record type definition carries first-class `relationships[]` (verb, FR-040
 category, `composite` flag, target identity, multiplicity, origin),

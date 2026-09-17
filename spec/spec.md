@@ -109,33 +109,6 @@ lift time by the independent Rust reader, with source-located diagnostics,
 provenance-tracked read-only fixtures, and structural (not byte) parity
 against the TypeSpec frontend on a shared case authored in both dialects.
 
-The thirteenth delivery is the provisional semantic baseline 1.2 (issue #95):
-the source-of-truth model contract for independently authored field presence,
-first-class relationship declarations, model-bound finite populations, and
-explicit ecosystem configuration. It specifies the compatibility boundary for
-v1.1 without changing a wire schema or runtime; the fourteenth delivery is what
-changes the producer.
-
-The fourteenth delivery completes the Producer interface 1.2.0 (issue #95) as
-one design. Its static half specifies versioned digest selections, namespaced
-revisions, first-class component and endpoint declarations with source
-provenance, complete relationship records, producer/native correspondence
-records, an admitted static bundle that mints no assessment input, and exact
-Filament Canonical JSON 1 normalization. Its assessment half specifies the
-documents a claim consumes when it consumes them: assessment document
-selections, their one-directional binding to an admitted static bundle, finite
-population membership, snapshot and window selections across the three clock
-families, availability facts held separate from truth, assessment
-correspondence, the v1.1 projection or its named loss, the interface's own
-version and compatibility rule, and bounded hostile documents. Both halves are
-specified before either is implemented, because specifying one side of the
-boundary alone is what the static half's review charged as its remaining
-condition. It replaces the digest and revision member
-shapes the shipped `crates/baseline-producer` emits, which is a breaking
-producer-interface change this delivery owns. It maps onto, and does not own,
-the native consumer contract in `ix://agent-ix/quire-spec-language` at the
-pinned revision `72507f856457ba0922719bd5d9f5cadcce4058cd`.
-
 ## 2. Scope
 
 ### 2.1 In Scope
@@ -175,30 +148,8 @@ pinned revision `72507f856457ba0922719bd5d9f5cadcce4058cd`.
   dynamic-module, and non-disruption requirements.
 - IR v1.1 node shapes for multiplicity, units, relationships, operations,
   clauses, and typed constraints, with golden and negative fixtures.
-- The Producer interface 1.2.0 static producer boundary: four-member versioned
-  digest selections, two-member namespaced revisions over a closed namespace
-  vocabulary, component and endpoint declarations carrying identity, revision,
-  canonical digest, source provenance locus, role/type ownership and inventory
-  membership, complete relationship records with independent endpoint records
-  and model/profile/configuration ownership, producer/native correspondence
-  records with their export mapping and definition closure, the admitted static
-  bundle and its indivisible admission, and exact Filament Canonical JSON 1
-  arbitrary-precision decimal normalization.
-- The assessment half of that interface: assessment document identity, revision
-  and digest selections; the one-directional binding of an assessment document
-  to one admitted static bundle by identity and canonical digest; finite
-  population membership with absence, explicit null and value kept distinct;
-  snapshot and window selections across the event-position, fixed-sample and
-  timestamp clock families; availability facts the producer declares and whose
-  truth consequence the selected evaluator decides; assessment correspondence
-  and its export mapping; the v1.1 projection or its identity-preserving named
-  loss record; the producer interface version and its patch, minor and major
-  compatibility rule; and refusal of a hostile or oversized document within the
-  configuration's declared bounds.
-- The provisional baseline 1.2 model contract: independently authored field
-  presence; first-class relationship endpoints; model-bound finite populations;
-  and explicit, versioned ecosystem configuration inputs, including v1.1
-  projection refusal where source information would be lost.
+- Field presence authored independently of multiplicity and carried as
+  `Field.presence` in the semantic IR.
 - The semantic-core L3 declaration grammar and kernel scalar library in
   TypeSpec under `packages/semantic-core/`, its emitted JSON Schema, and its
   lowering table to IR v1.1.
@@ -305,24 +256,6 @@ pinned revision `72507f856457ba0922719bd5d9f5cadcce4058cd`.
 - Modifying Quire parsing, validation, extraction, or byte-splice behavior.
 - Modifying Quoin catalog installation or module enforcement.
 - Migrating persisted data, rewriting the corpus, or removing legacy contracts.
-- Minting or requiring any assessment input for a static link. This delivery
-  specifies the interface for emitting population, snapshot, window,
-  observation-record and availability documents; observing the populations,
-  snapshots, windows, workflow instances, relationship instances, progress
-  records and observation closure that would fill them remains a later D and F
-  campaign activity. Static admission requires none of them, and emitting any of
-  them is not acceptance of an assessment claim.
-- Evaluating a claim, deciding a truth disposition, or interpreting a clause, a
-  protocol or a clock. The producer declares availability and the selected
-  evaluator decides what an unavailable fact prevents.
-- Located extraction of component and endpoint source loci; this delivery
-  refuses a record whose locus is absent rather than synthesizing one, and the
-  located-extraction work stays with `agent-ix/quire-rs#418`.
-- The native consumer's package assembly and its `u32` table indices; the
-  consumer assigns them and this delivery declares the identity, export kind,
-  and export path it addresses them by.
-- Owning the native consumer contract itself; this delivery maps onto the
-  pinned revision named in section 1 and changes nothing in that repository.
 - Self-promoting or self-rejecting a schema source from the spike; the decision
   is the owner's.
 - Correcting any contract finding while the issue #10 census is being collected.
@@ -483,15 +416,9 @@ Authority is assigned by concern:
 | User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-014](./usecase/US-014-consume-the-semantic-kernel-natively.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, package-author, Rust-consumer, TypeScript-consumer, Python-consumer, and semantic-kernel-consumer outcomes |
 | Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-090](./functional/FR-090-prove-cross-language-agreement.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, prototype-promotion, compiler-core, Rust/Serde, TypeScript, qualified Python generation, and semantic kernel packaging behavior |
 | Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-030](./non-functional/NFR-030-non-disruptive-kernel-packaging.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic and hermetic kernel generation, portable dependency-free kernel packages, and non-disruptive kernel packaging behind the publication gate |
-| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-015](./usecase/US-015-lift-a-spec-bundle-into-a-domain-package.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, package-author, Rust-consumer, TypeScript-consumer, Python-consumer, semantic-kernel-consumer, and domain-author outcomes |
-| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-111](./functional/FR-111-classify-mixed-version-impact.md) | Architecture, census, feasibility, semantic IR and baseline model, ecosystem inventory, compatibility-impact, package, mapping, generation, compiler, backend, semantic-kernel, and extraction-frontend behavior |
-| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-033](./non-functional/NFR-033-qualified-toolchain-and-licensed-dependencies.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic and hermetic kernel generation, portable dependency-free kernel packages, non-disruptive kernel packaging, deterministic and hermetic lifting, non-disruptive extraction frontend, and qualified toolchain and licensed dependencies |
-| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-016](./usecase/US-016-link-a-static-producer-boundary.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, package-author, Rust-consumer, TypeScript-consumer, Python-consumer, semantic-kernel-consumer, domain-author, and native-consumer outcomes |
-| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-118](./functional/FR-118-validate-filament-canonical-json-1.md) | Architecture, census, feasibility, semantic IR and baseline model, ecosystem inventory, compatibility-impact, package, mapping, generation, compiler, backend, semantic-kernel, extraction-frontend, and Producer interface 1.2.0 static-boundary behavior |
-| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-036](./non-functional/NFR-036-byte-exact-producer-output.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic and hermetic generation, portable packages, deterministic and hermetic lifting, non-disruptive extraction frontend, qualified toolchain and licensed dependencies, and byte-exact producer output |
-| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-017](./usecase/US-017-assess-against-a-bound-static-selection.md) | Adds the native-consumer outcomes for the static producer boundary and for assessment against a bound static selection |
-| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-126](./functional/FR-126-declare-the-producer-interface-version.md) | Adds the complete Producer interface 1.2.0: both its static boundary and its assessment half, including the interface's own version and compatibility rule |
-| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-037](./non-functional/NFR-037-bounded-assessment-documents.md) | Adds byte-exact producer output and bounded assessment documents |
+| User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-015](./usecase/US-015-lift-a-spec-bundle-into-a-domain-package.md), and [US-019](./usecase/US-019-reach-every-generated-target-through-one-seam.md) through [US-021](./usecase/US-021-read-a-generated-package-without-knowing-its-language.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, package-author, Rust-consumer, TypeScript-consumer, Python-consumer, semantic-kernel-consumer, domain-author, generation-seam, contract-migration, and cross-language package-reader outcomes |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-106](./functional/FR-106-author-field-presence-independently.md), and [FR-130](./functional/FR-130-register-the-rust-backend-in-the-generation-seam.md) through [FR-140](./functional/FR-140-answer-the-conformance-corpus-from-the-compiler-frontend.md) | Architecture, census, feasibility, semantic IR and field presence, package, mapping, generation, compiler, backend, semantic-kernel, extraction-frontend, generation-seam registration, contract retirement and freeze, SysML v2 target, unconstrained values, and compiler-frontend conformance behavior |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-034](./non-functional/NFR-034-deterministic-json-schema-generation.md), and [NFR-038](./non-functional/NFR-038-runnable-rust-gates-on-two-platforms.md) through [NFR-043](./non-functional/NFR-043-retire-the-per-ticket-changed-path-gates.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic and hermetic kernel generation, portable dependency-free kernel packages, non-disruptive kernel packaging, deterministic and hermetic lifting, non-disruptive extraction frontend, qualified toolchain and licensed dependencies, deterministic JSON Schema generation, runnable and releasable gates, single-owner regeneration, and one gate entry point |
 
 ## 6. Decision Status Model
 
@@ -505,17 +432,8 @@ normative. Exact metamodel fields, generated package registry names, and
 individual migration dispositions remain provisional until their owning tickets
 pass.
 
-The Producer interface 1.2.0 contracts in FR-112 through FR-126, NFR-036 and
-NFR-037 are provisional: their named gates are this increment's specification
-review and the Plan-017 implementation evidence, and the implementation gate has
-not passed. Emitting an admitted static bundle or any assessment document is not
-acceptance of an assessment claim, and no requirement in this range asserts a
-truth disposition.
-
-The baseline 1.2 contracts in FR-106 through FR-111 are provisional: they
-select the source-of-truth and implementation boundary for issue #95, but do
-not claim that a schema, frontend, evaluator, or population producer has yet
-implemented them.
+FR-106 is provisional: its named gate is the contract `1.2.0` revision
+that issue #93 carries, and no schema, reader, or frontend implements it yet.
 
 ## 7. Verification Strategy
 
@@ -578,7 +496,6 @@ bundle's first requirement and the bundle's own dependencies carry the rest.
 | #80 | FR-133 |
 | #92 | NFR-043 |
 | #93 | FR-106 |
-| #95 | FR-106 |
 
 Each named requirement carries the issue's link in its own text, so the register
 and the requirement agree or the gate that reads both fails. Issues #60, #65 and
