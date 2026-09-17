@@ -91,7 +91,7 @@ contract today; FR-094-CON-1 records the upstream dependency.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-091-AC-1 | Loading the `config-version-table` fixture bundle under the vendored spec-objects-business `0.6.0` module (`fixtures/modules/spec-objects-business/`, NFR-033) yields one `SemanticExtraction` for `FR-006` with `fields` `available` and seven fields, and one for `FR-005`, keyed by id. | Test (TC-1200) |
+| FR-091-AC-1 | Loading the `config-version-table` fixture bundle under the vendored spec-objects-business `0.7.0` module (`fixtures/modules/spec-objects-business/`, NFR-033) yields one `SemanticExtraction` for `FR-006` with `fields` `available` and seven fields, and one for `FR-005`, keyed by id. | Test (TC-1200) |
 | FR-091-AC-2 | A module root whose manifest carries no `semantic` block refuses with `MODULE_WITHOUT_SEMANTIC_BLOCK` naming the module and lowers nothing. | Test (TC-1201) |
 | FR-091-AC-3 | A module whose `semantic.semantic_core` is `9.9.9` refuses with `MODULE_REFUSED` whose message begins with `semantic.unsupported-semantic-core` and whose `causes` is empty, and no artifact of the bundle is lowered to an empty record. | Test (TC-1202) |
 | FR-091-AC-4 | With `HOME` pointed at a directory whose `.ix/filament/modules/spec-objects-business/manifest.yaml` is a conflicting module (one whose `semantic` block declares `compatibility_posture: declared-lossy` and `legacy_forms: error`, so the same fixture lifts to different bytes under it) and `QUIRE_MODULES` pointed at the same directory, the fixture lifts byte-identically to the lift with the explicit module root and no environment set; the control lift with the conflicting module supplied explicitly differs. | Test (TC-1203) |

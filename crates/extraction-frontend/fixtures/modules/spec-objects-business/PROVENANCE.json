@@ -1,9 +1,9 @@
 {
   "repository": "https://github.com/agent-ix/spec-objects-business",
-  "revision": "5e4acf4",
-  "revision_full": "5e4acf4cacde6b7581c908095d215f35bbce7f6f",
+  "revision": "7b7b0bc",
+  "revision_full": "7b7b0bc62d16676b9a7dc81b57c833009966408d",
   "module": "spec-objects-business",
-  "module_version": "0.6.0",
+  "module_version": "0.7.0",
   "source_root": "spec_objects_business",
   "paths": [
     "manifest.yaml",
@@ -30,7 +30,7 @@
     "schemas/ValueObject.json",
     "schemas/toolchain.json"
   ],
-  "manifest_sha256": "2ba11a9159eb130650bb0a94d37156ed220619d85ea8a51f432acc0cdbc751ed",
+  "manifest_sha256": "a4437088244aa6693cb494637dd568387fead272eda7aec116c419fbd0f3b87c",
   "edits": [],
-  "note": "Copied byte-for-byte with `git show 5e4acf4:<path>`; never loaded from ~/.ix (NFR-033-AC-3). skeletons/ are not vendored: the frontend consumes manifest.yaml and schemas/ only. Revision 5e4acf4 (0.6.0, agent-ix/spec-objects-business#13) declares each object type's `construct:` (identity, shape, members, references, rules, meaning), the `aggregate-member` and `composite-owner` roles its references name, the FR-208 Quire meaning ids, the underscore object id pattern (FR-009) and the enumeration `values` locator. The engine carries each construct key raw on CompiledArchetype::construct() (agent-ix/quire-rs#445)."
+  "note": "Copied byte-for-byte with `git show 7b7b0bc:<path>`; never loaded from ~/.ix (NFR-033-AC-3). Revision 7b7b0bc (0.7.0, agent-ix/spec-objects-business#20) is 5e4acf4 plus #17 and #20: the event construct declares `immutable: true`, and each object schema refuses what FR-208 refuses (no operations on a value_object or an event, no clauses on a repository or a domain, no non-empty operation pre/post on a repository), which moved the Domain, Entity, ValueObject, AggregateRoot, NestedEntity, Repository and Event schema digests. skeletons/ are not vendored: the frontend consumes manifest.yaml and schemas/ only. The engine carries each construct key raw on CompiledArchetype::construct() (agent-ix/quire-rs#445) and validates `immutable` against the re-copied FR-035 schema (agent-ix/quire-rs#456)."
 }

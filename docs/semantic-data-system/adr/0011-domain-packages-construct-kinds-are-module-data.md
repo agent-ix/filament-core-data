@@ -17,7 +17,7 @@ of these as a construct the backends generate and the readers check, and the
 extraction frontend (FR-143) must lift each artifact to it.
 
 Every domain package is authored and versioned outside this repository. The
-business module ships at `0.6.0`, the systems module is being authored under
+business module ships at `0.7.0`, the systems module is being authored under
 [agent-ix/spec-objects-systems#10](https://github.com/agent-ix/spec-objects-systems/issues/10),
 and more domains are planned. The IR contract, its three readers and five
 backends are released from this repository on their own cadence.

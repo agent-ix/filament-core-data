@@ -449,7 +449,7 @@ fn tc_1322_every_dependency_is_exact_reviewed_and_inside_the_workspace() {
     );
     assert_eq!(
         quire.rev.as_deref(),
-        Some("ae84bdf"),
+        Some("08d39ea"),
         "quire-rs rev is at or after a874fb6"
     );
     assert_eq!(
@@ -482,7 +482,7 @@ fn tc_1322_every_dependency_is_exact_reviewed_and_inside_the_workspace() {
         &crate_dir().join("fixtures/modules/spec-objects-business/PROVENANCE.json"),
     ))
     .expect("PROVENANCE.json is JSON");
-    assert_eq!(provenance["revision"], "5e4acf4");
+    assert_eq!(provenance["revision"], "7b7b0bc");
     assert_eq!(
         provenance["repository"],
         "https://github.com/agent-ix/spec-objects-business"

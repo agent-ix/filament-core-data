@@ -1793,7 +1793,7 @@ fn tc_1790_the_business_lift_carries_each_used_kind_s_manifest_declaration() {
     assert_eq!(entries.len(), used.len(), "no kind declared twice");
     for entry in entries {
         assert_eq!(entry["kind"]["module"], BUSINESS, "{entry}");
-        assert_eq!(entry["moduleVersion"], "0.6.0", "{entry}");
+        assert_eq!(entry["moduleVersion"], "0.7.0", "{entry}");
         assert_eq!(entry["manifestDigest"], digest.as_str(), "{entry}");
     }
     let entry = |name: &str| {

@@ -36,7 +36,7 @@ use serde_json::Value;
 /// pinned `rev`, so the copies were not re-taken when the pin moved.
 const QUIRE_RS_REVISION: &str = "8b8020e";
 /// The spec-objects-business revision the module was vendored at.
-const BUSINESS_REVISION: &str = "5e4acf4";
+const BUSINESS_REVISION: &str = "7b7b0bc";
 
 // ---------------------------------------------------------------------------
 // The inventory (FR-098 "Fixture inventory")

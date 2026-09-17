@@ -979,7 +979,7 @@ checksum = "a1d01941d82fa2ab50be1e79e6714289dd7cde78eba4c074bc5a4374f650dfe0"
 [[package]]
 name = "quire-rs"
 version = "0.46.0"
-source = "git+https://github.com/agent-ix/quire-rs?rev=ae84bdf#ae84bdfe22cf36a610aaef03f95958cf20c18b8e"
+source = "git+https://github.com/agent-ix/quire-rs?rev=08d39ea#08d39ea2ce50db35812f836df65cac18757daa4b"
 dependencies = [
  "globset",
  "ignore",
