@@ -107,8 +107,8 @@ a guess in either direction.
 - `assertBackendContract` SHALL reject a registered backend that does not expose `identity`, `version`, `supportedIrVersions`, `supportedFeatures`, and `generate`.
 - `assertBackendContract` SHALL reject a backend whose returned manifest names a file path the request's `outputRoot` does not contain.
 - If a request names a `contractVersion` the selected backend does not list in `supportedIrVersions`, then `generateTarget` SHALL return `state: "unsupported"` naming the version rather than attempting the generation.
-- The `typescript` backend SHALL declare `supportedIrVersions` of exactly `["1.1.0"]`, because the prototype `1.0.0` document is the frozen FR-041 shape and is not a contract IR document.
-- The `json-schema` backend SHALL declare `supportedIrVersions` of exactly `["1.1.0"]`.
+- The `typescript` backend SHALL declare `supportedIrVersions` of exactly `["2.0.0"]`, because the prototype `1.0.0` document is the frozen FR-041 shape and is not a contract IR document, and the `1.1.0` contract no longer exists (fcd#179).
+- The `json-schema` backend SHALL declare `supportedIrVersions` of exactly `["2.0.0"]`.
 - The seam SHALL write no file, so that file placement belongs to the caller and a package layout can change without editing a backend.
 - The seam SHALL import no module under `src/compiler/frontend/`, so no frontend can influence what a backend emits.
 - Every backend SHALL read each file through the injected host, reaching the file system through no other route.

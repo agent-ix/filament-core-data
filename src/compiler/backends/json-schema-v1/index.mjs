@@ -383,7 +383,8 @@ export const jsonSchemaBackend = Object.freeze({
 	version: "0.1.0",
 	target: "json-schema",
 	owningIssue: "agent-ix/filament-core-data#85",
-	supportedIrVersions: Object.freeze(["1.1.0", "2.0.0"]),
+	// Only the 2.0.0 contract (fcd#179); 1.1.0 no longer exists to accept.
+	supportedIrVersions: Object.freeze(["2.0.0"]),
 	supportedFeatures: Object.freeze([
 		"scalar",
 		"record",

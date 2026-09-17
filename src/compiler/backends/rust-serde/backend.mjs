@@ -56,16 +56,20 @@ export const identity = "ix://agent-ix/filament-core-data/rust-backend";
 /**
  * The Rust/Serde generated target.
  *
- * `supportedIrVersions` is `["1.1.0", "2.0.0"]` through the seam, while
- * `rust-serde/cli.mjs` keeps `["1.0.0", "1.1.0", "2.0.0"]` for its own
- * development path. Every contract 2.0.0 construct kind renders by the
+ * `supportedIrVersions` is `["2.0.0"]` through the seam (fcd#179: the 1.1.0
+ * contract no longer exists to accept). `rust-serde/cli.mjs` keeps its own,
+ * separate `BACKEND.supportedIrVersions` for its conformance-corpus
+ * development path, which generates directly against `conformance/bases/`
+ * without going through this seam-facing declaration or the seam's check;
+ * that corpus is fcd#180's to re-base, not this one's.
+ * Every contract 2.0.0 construct kind renders by the
  * `shape:` and `identity:` rows its declaration selects, and every model
  * member by its `construct:` row (FR-054).
  * The narrowing is FR-063-CON-5 applied consistently rather than a capability
  * this backend lacks: the frozen FR-041 prototype document also calls itself
  * `1.0.0` and is a different shape entirely, so a seam that accepted `1.0.0`
  * would make a prototype-shaped document reachable through the contract path.
- * The TypeScript backend declares `["1.1.0"]` for the same reason.
+ * The TypeScript and json-schema backends declare `["2.0.0"]` for the same reason.
  *
  * `supportedFeatures` is the vocabulary this backend already publishes in its
  * own manifests (`kind:`-prefixed), not the TypeScript backend's unprefixed
@@ -78,7 +82,7 @@ export const rustBackend = Object.freeze({
 	version: "0.1.0",
 	target: "rust",
 	owningIssue: "agent-ix/filament-core-data#21",
-	supportedIrVersions: Object.freeze(["1.1.0", "2.0.0"]),
+	supportedIrVersions: Object.freeze(["2.0.0"]),
 	supportedFeatures: Object.freeze([
 		"kind:scalar",
 		"kind:record",
