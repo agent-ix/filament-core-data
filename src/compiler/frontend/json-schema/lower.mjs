@@ -559,13 +559,13 @@ export function lowerBundle(documents, options = {}) {
 			contractVersion: "1.1.0",
 			source: options.source ?? {
 				identity: "ix://agent-ix/semantic-core",
-				version: "0.1.0",
+				version: "0.2.0",
 				dialect: "spec-bundle",
 				digest: `sha256:${"0".repeat(64)}`,
 			},
 			package: options.package ?? {
 				identity: "agent-ix/semantic-kernel",
-				version: "0.1.0",
+				version: "0.2.0",
 				manifestDigest: `sha256:${"0".repeat(64)}`,
 				mappingVersions: [],
 				profileVersions: [],

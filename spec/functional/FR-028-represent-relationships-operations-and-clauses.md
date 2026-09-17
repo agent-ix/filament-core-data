@@ -51,7 +51,9 @@ identity and origin rather than prose.
 - The `text` value SHALL be the clause bytes exactly as extracted, without normalization.
 - Within one type definition, `relationships[]`, `operations[]`, and `clauses[]` entries SHALL be unique by `identity`.
 - An operation's `params[]` SHALL be unique by `name`.
-- The `language` value SHALL be `ocl`, `sysml`, `fretish`, or a namespaced extension language of the form `<namespace>:<name>`.
+- The `language` value SHALL be `quire`, `ocl`, `sysml`, `fretish`, or a namespaced extension language of the form `<namespace>:<name>`.
+- `quire` SHALL be the checked clause language: a `quire` clause is typed, checked, and evaluated by Quire (QSpec AD-006, `ix://agent-ix/quire-specification/AD-006`).
+- A clause in any language other than `quire` SHALL be carried with its text and span and SHALL NOT be evaluated or used as a proof obligation.
 - This contract owns the core language set; adding a core language is an additive IR revision, while a namespaced language needs no revision.
 - The IR SHALL carry clause text opaquely.
 - The IR SHALL NOT parse, normalize, or typecheck clause text.
@@ -75,7 +77,7 @@ identity and origin rather than prose.
 | FR-028-AC-2 | A relationship with an unknown `category` fails validation with the relationship's locus. | Test |
 | FR-028-AC-3 | An operation with two params, a bounded return, and one `pre` and one `post` clause validates when both clauses are present. | Test |
 | FR-028-AC-4 | An operation whose `post[]` names an absent clause identity fails validation with the operation's locus. | Test |
-| FR-028-AC-5 | A clause with `language: ocl`, `text`, and a `sourceSpan` validates; the IR schema declares no property for parsed clause content. | Test |
+| FR-028-AC-5 | A clause with `language: ocl`, `text`, and a `sourceSpan` validates, and a clause with `language: quire` validates; the IR schema declares no property for parsed clause content. | Test |
 | FR-028-AC-6 | A clause with `language: acme:tla` validates; a bare unknown language such as `tla` fails. | Test |
 | FR-028-AC-7 | `relationships[]` or `operations[]` on a non-record type definition fails validation. | Test |
 | FR-028-AC-8 | The config-service FR-006 `overlay` relationship and an `## Invariants` `ocl` fence are expressed in `fixtures/semantic/v1/positive/config-version-v1-1.json` with zero declared loss. | Analysis |

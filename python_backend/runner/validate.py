@@ -166,7 +166,7 @@ _SAMPLES: dict[str, str] = {
     "^application/": "application/json",
     "^(?:ui|orm|sqlalchemy|tauri|network-client|database-migration"
     "|application-service)$": "ui",
-    "^(ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$": "ocl",
+    "^(quire|ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$": "ocl",
     "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\u0000]+$": "a/b.json",
 }
 

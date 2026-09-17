@@ -5,7 +5,7 @@ Runtime validation: validating.
 Qualification verdict: **qualified-with-conditions**.
 
 Generated from the semantic kernel bundle
-`https://schemas.agent-ix.org/semantic-core/0.1.0/` (`@agent-ix/semantic-core` 0.1.0, digest `sha256:b07073a16922fa4e311104fc97724727154a8aa4e1745c5a13f86a54a8e00264`)
+`https://schemas.agent-ix.org/semantic-core/0.2.0/` (`@agent-ix/semantic-core` 0.2.0, digest `sha256:ef79c5dea98c19643b20daa8899951a4782d6248527a0647c114c6f76cca8aea`)
 through `python_backend/kernel/emit.py`, by the pinned
 `datamodel-code-generator`. Do not edit by hand: the tree is
 regenerated and byte-compared.

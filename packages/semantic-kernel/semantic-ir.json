@@ -2,13 +2,13 @@
 	"contractVersion": "1.1.0",
 	"source": {
 		"identity": "ix://agent-ix/semantic-core",
-		"version": "0.1.0",
+		"version": "0.2.0",
 		"dialect": "spec-bundle",
 		"digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
 	},
 	"package": {
 		"identity": "agent-ix/semantic-kernel",
-		"version": "0.1.0",
+		"version": "0.2.0",
 		"manifestDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
 		"mappingVersions": [],
 		"profileVersions": [],

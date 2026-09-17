@@ -30,7 +30,7 @@ them to any registry.
 ## Inputs
 
 - The thirty committed documents of `packages/semantic-core/generated/json-schema/`, produced by the pinned official `@typespec/json-schema` emitter under [FR-033](./FR-033-emit-semantic-core-json-schema.md) and byte-gated by `make semantic-core-check`
-- `packages/semantic-core/generated/toolchain.json`: `compiler` `@typespec/compiler` `1.15.0`, `emitter` `@typespec/json-schema` `1.15.0`, the issue #31 `normalization` record (`applied: false`, a recorded no-op), the `base` `https://schemas.agent-ix.org/semantic-core/0.1.0/`, the ordered `files` list, and the bundle `digest`
+- `packages/semantic-core/generated/toolchain.json`: `compiler` `@typespec/compiler` `1.15.0`, `emitter` `@typespec/json-schema` `1.15.0`, the issue #31 `normalization` record (`applied: false`, a recorded no-op), the `base` `https://schemas.agent-ix.org/semantic-core/0.2.0/`, the ordered `files` list, and the bundle `digest`
 - `packages/semantic-core/package.json`, whose `version` the `base` encodes
 - The kernel bundle declaration of FR-081, which names this bundle as the kernel's structural source
 

@@ -29,7 +29,7 @@
 		{
 			"artifact": "docs/semantic-data-system/contracts-v1.md",
 			"locator": "Contract 1.1.0 (issue #34)",
-			"quote": "(`language` of `ocl`, `sysml`, `fretish`, or `<ns>:<name>`; `clauseId` unique"
+			"quote": "(`language` of `quire`, `ocl`, `sysml`, `fretish`, or `<ns>:<name>`; `clauseId` unique"
 		}
 	],
 	"provenance": {

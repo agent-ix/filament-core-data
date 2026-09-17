@@ -607,7 +607,7 @@ function grammarAjv(): Ajv2020 {
 
 function validatesModel(ajv: Ajv2020, model: string, value: unknown): boolean {
 	const validate = ajv.getSchema(
-		`https://schemas.agent-ix.org/semantic-core/0.1.0/${model}.json`,
+		`https://schemas.agent-ix.org/semantic-core/0.2.0/${model}.json`,
 	);
 	if (!validate) throw new Error(`no emitted schema for ${model}`);
 	return validate(value) as boolean;
@@ -642,7 +642,7 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 		expect([...schemas.keys()].sort()).toEqual(expected);
 		for (const [name, schema] of schemas) {
 			expect(schema.$id, name).toBe(
-				`https://schemas.agent-ix.org/semantic-core/0.1.0/${name}.json`,
+				`https://schemas.agent-ix.org/semantic-core/0.2.0/${name}.json`,
 			);
 			expect(schema["x-agent-ix-semantic-id"], name).toBe(
 				`ix://agent-ix/semantic-core/type/${name}`,
@@ -810,15 +810,15 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 				JSON.parse(readFileSync(resolve(dir, "package.json"), "utf8")),
 				"manifest",
 			);
-			manifest.version = "0.2.0";
+			manifest.version = "0.3.0";
 			writeFileSync(
 				resolve(dir, "package.json"),
 				`${JSON.stringify(manifest, null, "\t")}\n`,
 			);
 			const source = readFileSync(resolve(dir, "main.tsp"), "utf8")
-				.replace("semantic-core/0.1.0/", "semantic-core/0.2.0/")
+				.replace("semantic-core/0.2.0/", "semantic-core/0.3.0/")
 				.concat(
-					"\n/** Added at 0.2.0. */\nmodel AddedDecl {\n  name: Identifier;\n}\n",
+					"\n/** Added at 0.3.0. */\nmodel AddedDecl {\n  name: Identifier;\n}\n",
 				);
 			writeFileSync(resolve(dir, "main.tsp"), source);
 			const scratch = resolve(dir, "out");
@@ -843,8 +843,8 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 			for (const [name, schema] of before) {
 				const after = JSON.parse(
 					readFileSync(resolve(scratch, `${name}.json`), "utf8").replaceAll(
+						"semantic-core/0.3.0/",
 						"semantic-core/0.2.0/",
-						"semantic-core/0.1.0/",
 					),
 				);
 				expect(after, name).toEqual(schema);

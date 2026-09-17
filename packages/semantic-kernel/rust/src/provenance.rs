@@ -14,7 +14,7 @@
 pub const SOURCE_IDENTITY: &str = "ix://agent-ix/semantic-core";
 
 /// The version of the source the contract was read from.
-pub const SOURCE_VERSION: &str = "0.1.0";
+pub const SOURCE_VERSION: &str = "0.2.0";
 
 /// The digest of the source the contract was read from.
 pub const SOURCE_DIGEST: &str =
@@ -24,7 +24,7 @@ pub const SOURCE_DIGEST: &str =
 pub const PACKAGE_IDENTITY: &str = "agent-ix/semantic-kernel";
 
 /// The version of the semantic contract package.
-pub const PACKAGE_VERSION: &str = "0.1.0";
+pub const PACKAGE_VERSION: &str = "0.2.0";
 
 /// The digest of the package manifest.
 pub const MANIFEST_DIGEST: &str =
@@ -36,7 +36,7 @@ pub const LOCK_DIGEST: &str =
 
 /// The lock fingerprint the compiler request carried.
 pub const LOCK_FINGERPRINT: &str =
-    "sha256:2a05c7fa95879dade12a9d5858e10168405e0b7187c0d4bdbb622455e5ce65c2";
+    "sha256:ec363330f20163e40b1ca2cc70745c3138a312736c7dc23b0e4b9af67daad61b";
 
 /// The IR contract version the document declared.
 pub const CONTRACT_VERSION: &str = "1.1.0";

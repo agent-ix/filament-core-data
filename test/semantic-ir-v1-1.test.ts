@@ -888,6 +888,15 @@ describe("FR-028 relationships, operations, and clauses", () => {
 			object(generated, "generated clause").sourceSpan,
 			"generated origin needs no span",
 		).toBeUndefined();
+		const quire = clone(goldenV11());
+		setAt(quire, "types.3.clauses.0.language", "quire");
+		expect(validates("semantic-ir.schema.json", quire)).toBe(true);
+		expect(
+			readSemanticIr(quire).filter(
+				(diagnostic) =>
+					diagnostic.code === "agent-ix.semantic-ir.UNKNOWN_CLAUSE_LANGUAGE",
+			),
+		).toEqual([]);
 	});
 
 	/** Traces: TC-215; FR-028-AC-6. */

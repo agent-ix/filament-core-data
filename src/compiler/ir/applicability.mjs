@@ -50,7 +50,12 @@ export const EDGE_CATEGORIES = Object.freeze([
 ]);
 
 /** The core clause languages; anything else must be `<ns>:<name>`. */
-export const CORE_CLAUSE_LANGUAGES = Object.freeze(["ocl", "sysml", "fretish"]);
+export const CORE_CLAUSE_LANGUAGES = Object.freeze([
+	"quire",
+	"ocl",
+	"sysml",
+	"fretish",
+]);
 
 export const NAMESPACED_LANGUAGE =
 	/^[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*$/;

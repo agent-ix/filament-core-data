@@ -40,9 +40,9 @@ consume it.
 
 - `packages/semantic-core/inventory.json`: the FR-031 declaration inventory of `AgentIx.Semantic.Core` — twenty-one `models`, one `unions` member (`ConstraintDecl`), four `enums`, and four `scalars`
 - `packages/semantic-core/generated/json-schema/`: the thirty JSON Schema 2020-12 documents the pinned official `@typespec/json-schema` emitter projects from `packages/semantic-core/main.tsp`
-- `packages/semantic-core/generated/toolchain.json`: the recorded emission toolchain — `@typespec/compiler` `1.15.0`, `@typespec/json-schema` `1.15.0`, the `issue-31-absolute-id` normalization at `1.0.0` with `applied: false`, the base `https://schemas.agent-ix.org/semantic-core/0.1.0/`, the thirty-entry `files` array, and the emission digest `sha256:dd33c886f70e908b14507c35e078d163b76308c3d170d2b54ddf933d1a4ebb52`
+- `packages/semantic-core/generated/toolchain.json`: the recorded emission toolchain — `@typespec/compiler` `1.15.0`, `@typespec/json-schema` `1.15.0`, the `issue-31-absolute-id` normalization at `1.0.0` with `applied: false`, the base `https://schemas.agent-ix.org/semantic-core/0.2.0/`, the thirty-entry `files` array, and the emission digest `sha256:ef79c5dea98c19643b20daa8899951a4782d6248527a0647c114c6f76cca8aea`
 - `packages/semantic-core/kernel-scalars.json` and `packages/semantic-core/lowering.json`
-- `packages/semantic-core/package.json`, whose `name` is `@agent-ix/semantic-core` and whose `version` is `0.1.0`
+- `packages/semantic-core/package.json`, whose `name` is `@agent-ix/semantic-core` and whose `version` is `0.2.0`
 - The closed `target` vocabulary of `schema/semantic/v1/common.schema.json#/$defs/target`: `json-schema`, `rust`, `typescript`, `python-pydantic-v2`, `python-dataclass`
 - The FR-048 canonicalization and `digest`
 - The injected host of NFR-019 and NFR-020, through which every read a compiler module makes is performed
@@ -74,9 +74,9 @@ consume it.
 ### The kernel package identity
 
 - The bundle SHALL declare the kernel package identity `agent-ix/semantic-core`, which satisfies the `packageIdentity` pattern `^[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$` of `common.schema.json`.
-- The bundle SHALL declare the kernel package version `0.1.0`.
+- The bundle SHALL declare the kernel package version `0.2.0`.
 - `checkKernelBundle` SHALL check the declared identity against the `name` of `packages/semantic-core/package.json` under the rule that `@agent-ix/semantic-core` yields `agent-ix/semantic-core`, and the declared version against that file's `version`, emitting `agent-ix.compiler.KERNEL_INVENTORY_MISMATCH` on either disagreement.
-- The bundle SHALL declare the schema base `https://schemas.agent-ix.org/semantic-core/0.1.0/` and SHALL check it against the `base` member of `generated/toolchain.json` and against the `@jsonSchema` base declared in `packages/semantic-core/main.tsp`, which `packages/semantic-core/scripts/generate.mjs` already refuses to emit under when it disagrees with the package version.
+- The bundle SHALL declare the schema base `https://schemas.agent-ix.org/semantic-core/0.2.0/` and SHALL check it against the `base` member of `generated/toolchain.json` and against the `@jsonSchema` base declared in `packages/semantic-core/main.tsp`, which `packages/semantic-core/scripts/generate.mjs` already refuses to emit under when it disagrees with the package version.
 - Every kernel type identity SHALL be `ix://agent-ix/semantic-core/<TypeName>`, which satisfies the `semanticIdentity` pattern of `common.schema.json`; the bundle declares that form once and no generator restates it.
 
 ### The declared targets and their trees
@@ -131,7 +131,7 @@ consume it.
 | FR-081-AC-1 | The enumerated document set of `packages/semantic-kernel/bundle.json` has exactly thirty members and equals the set derived from `packages/semantic-core/inventory.json` by mapping each of the twenty-one `models`, one `unions` member, four `enums`, and four `scalars` to `<name>.json`. | Test |
 | FR-081-AC-2 | The same thirty-member set equals the `files` array of `packages/semantic-core/generated/toolchain.json`; a test that reads all three sources fails when any one changes alone. | Test |
 | FR-081-AC-3 | Adding a name to `inventory.json` without adding it to the enumeration, and removing one from the enumeration without removing it from `inventory.json`, each produce a `KERNEL_INVENTORY_MISMATCH` diagnostic naming the offending name, once per direction. | Unit |
-| FR-081-AC-4 | The declared kernel package identity is `agent-ix/semantic-core`, it matches `common.schema.json#/$defs/packageIdentity`, and it equals the `name` of `packages/semantic-core/package.json` under the scope-stripping rule; the declared version is `0.1.0` and equals that file's `version`. | Test |
+| FR-081-AC-4 | The declared kernel package identity is `agent-ix/semantic-core`, it matches `common.schema.json#/$defs/packageIdentity`, and it equals the `name` of `packages/semantic-core/package.json` under the scope-stripping rule; the declared version is `0.2.0` and equals that file's `version`. | Test |
 | FR-081-AC-5 | The declared schema base equals `base` in `generated/toolchain.json` and the `@jsonSchema` argument in `packages/semantic-core/main.tsp`; changing the package version alone makes the check fail. | Test |
 | FR-081-AC-6 | The bundle declares exactly the four targets `json-schema`, `rust`, `typescript`, and `python-pydantic-v2`; every token is a member of the enum `src/compiler/backends/targets.mjs` reads, and `python-dataclass` is present as an explicitly out-of-scope record with a stated reason. | Test |
 | FR-081-AC-7 | A bundle declaring a target token outside that enum is rejected, and the rejection names the value and the five published targets. | Unit |

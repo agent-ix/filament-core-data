@@ -1,10 +1,10 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schemas.agent-ix.org/semantic-core/0.1.0/SourceLocus.json",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.2.0/SourceLocus.json",
 	"type": "object",
 	"properties": {
 		"sourceIdentity": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/SemanticId.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.2.0/SemanticId.json"
 		},
 		"path": {
 			"type": "string",

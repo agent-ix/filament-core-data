@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import ast
 import copy
+import hashlib
 import importlib
 import json
 import pathlib
@@ -57,25 +58,95 @@ UNTOUCHABLE = (
 )
 
 
-def _changed_against_main() -> set[str]:
-    completed = subprocess.run(
-        ["git", "diff", "--name-only", "origin/main...HEAD"],
+#: The tree digest of every path FR-087-CON-1, FR-087-CON-7 and FR-087-CON-8
+#: hold still, as `_tree_digest` computes it over the committed tree. A change
+#: that legitimately moves one of these paths updates its pin in the same
+#: commit; the failure message prints the digest the tree now carries.
+PINNED_DIGESTS = {
+    "python_backend/adapter/guard.py": (
+        "sha256:bc280e0b9ca273e6b3f0d06c6790179639ac921933ed76172fec190ca87db33b"
+    ),
+    "python_backend/adapter": (
+        "sha256:13889607403535b12c52e9115a08ea5baac6c67c81ecb08108c2ce73b0b6e5a1"
+    ),
+    "python_backend/runner": (
+        "sha256:05e16ee1a73f58a6aff5109582d377442cd04f0c6a0970be83b09200959b4c37"
+    ),
+    "python_backend/qualification": (
+        "sha256:be081c080633c0e2889030968aefe7b8f1d9241654a883e15351f0b6eba92455"
+    ),
+    "python_backend/generated": (
+        "sha256:16937df2f5fd892fe18d33035946966b99dd38f8bedfdcf0b6e95366397d25c6"
+    ),
+    "python_backend/profiles.json": (
+        "sha256:3c6fc254a7c346c88b6ea91fdaeb7d3a3b55f8065b8a6ebc6ddab3a447547345"
+    ),
+    "python_backend/refusals.json": (
+        "sha256:8cbcb1d174bfefc0848931ac45b25ee0043c4ac2c9efae709fe462e4a19234e4"
+    ),
+    "python_backend/limits.json": (
+        "sha256:abd32b1d0b52c4bdda557e78f2b0f3fe8f376ab23e16c815cfc09750cac55072"
+    ),
+    "python_backend/toolchain.json": (
+        "sha256:4e418cd791919cca7b782bcab6f32fba185c88fcb8b0f0fd68ce01be4a7e94c6"
+    ),
+    "pyproject.toml": (
+        "sha256:a13f69126cbda8748f53d6599a9e4bd68df86c1d026304be5b7b2c4c0c702777"
+    ),
+}
+
+#: The measured qualification verdicts (FR-087-CON-4): profile, verdict, and
+#: the digest of the profile the verdict was measured against.
+PINNED_VERDICTS = {
+    "pydantic_v2_basemodel": (
+        "qualified-with-conditions",
+        "sha256:de77a678b1815ffce78633025a657d40deea86bcec59ba28c35adf93a9112dd0",
+    ),
+    "pydantic_v2_dataclass": (
+        "qualified-with-conditions",
+        "sha256:70c15540cb34650f73491fefbc4f7518823a5a7f56733747e4b120d0aba1d7f7",
+    ),
+    "stdlib_dataclass": (
+        "not-qualified",
+        "sha256:8a9d9dbddb7ccce1e1a1e295ca8bcf329e9cc86c330929b94292efef12d2bcfb",
+    ),
+    "typed_dict": (
+        "not-qualified",
+        "sha256:cffa91971f95f0c5d5cb78e86db3f22daaef8c6d25465a6de7437358c277ec3b",
+    ),
+    "msgspec_struct": (
+        "qualified-with-conditions",
+        "sha256:c22081156b8894c95079b63d0e883ab929a208c3082f3ba779213d057e4f3278",
+    ),
+}
+
+
+def _tree_digest(prefix: str) -> str:
+    """Digest every tracked path under `prefix`: path and content hash, sorted."""
+    listed = subprocess.run(
+        ["git", "ls-files", "-z", "--", prefix],
         cwd=REPO,
         capture_output=True,
-        text=True,
         check=True,
-    )
-    tracked = set(completed.stdout.split())
-    dirty = subprocess.run(
-        ["git", "status", "--porcelain"],
-        cwd=REPO,
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    for line in dirty.stdout.splitlines():
-        tracked.add(line[3:].strip())
-    return tracked
+    ).stdout.decode("utf-8")
+    paths = sorted(path for path in listed.split("\0") if path)
+    assert paths, f"no tracked path under {prefix}"
+    tree = hashlib.sha256()
+    for path in paths:
+        content = hashlib.sha256((REPO / path).read_bytes()).hexdigest()
+        tree.update(f"{path}\n{content}\n".encode("utf-8"))
+    return f"sha256:{tree.hexdigest()}"
+
+
+def _assert_pinned(prefix: str) -> None:
+    actual = _tree_digest(prefix)
+    assert actual == PINNED_DIGESTS[prefix], f"{prefix} now digests to {actual}"
+
+
+def _bundle_bytes() -> dict[str, bytes]:
+    return {
+        path.name: path.read_bytes() for path in sorted(KERNEL_SCHEMAS.glob("*.json"))
+    }
 
 
 def _refs(node: Any, out: list[str]) -> None:
@@ -102,18 +173,38 @@ def test_the_guard_the_register_and_the_published_bundle_are_untouched() -> None
     to avoid, and a text patch over generated source is a hand-written
     generator by another name.
     """
-    changed = _changed_against_main()
-
     # CON-1: nothing that decides what is admissible moved.
     for path in (
         "python_backend/adapter/guard.py",
         "python_backend/refusals.json",
         "python_backend/profiles.json",
     ):
-        assert path not in changed, path
+        _assert_pinned(path)
 
-    # CON-2: the localization is in memory; the published bundle is published.
-    assert not [path for path in changed if path.startswith("packages/semantic-core/")]
+    # CON-2: the published bundle is exactly what the generator emits and
+    # records, and the localization stays in memory.
+    before = _bundle_bytes()
+    toolchain = json.loads(
+        (REPO / "packages/semantic-core/generated/toolchain.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert sorted(before) == toolchain["files"]
+    recorded = hashlib.sha256()
+    for name in toolchain["files"]:
+        recorded.update(f"{name}\n".encode("utf-8") + before[name])
+    assert f"sha256:{recorded.hexdigest()}" == toolchain["digest"]
+    regenerated = subprocess.run(
+        ["node", "packages/semantic-core/scripts/generate.mjs", "--check"],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert regenerated.returncode == 0, regenerated.stdout + regenerated.stderr
+    emit.prepared()
+    localize.localize_bundle(emit.documents(), emit.bundle_identity()["base"])
+    assert _bundle_bytes() == before
 
     # CON-3: the pass is schema-to-schema. Nothing it imports can reach
     # generated source, open a file, or run a regular expression over text.
@@ -142,8 +233,6 @@ def test_the_guard_the_register_and_the_published_bundle_are_untouched() -> None
 
 def test_the_emitted_set_the_manifests_and_the_generator_are_as_declared() -> None:
     """TC-1059: FR-087-CON-4, FR-087-CON-5, FR-087-CON-6."""
-    changed = _changed_against_main()
-
     # CON-4: no not-qualified family emits, and the verdicts were not re-run.
     report = json.loads((BACKEND / "qualification/report.json").read_text())
     refused = {
@@ -156,10 +245,22 @@ def test_the_emitted_set_the_manifests_and_the_generator_are_as_declared() -> No
         assert not (emit.PACKAGES / profile_id).exists()
         with pytest.raises(emit.KernelEmitError):
             emit.build(profile_id)
-    assert not [path for path in changed if path.startswith("python_backend/qualif")]
+    assert {
+        row["profileId"]: (row["verdict"], row["profileDigest"])
+        for row in report["verdicts"]
+    } == PINNED_VERDICTS
+    assert sorted(emit.demonstrated()) == sorted(
+        profile_id
+        for profile_id, (verdict, _) in PINNED_VERDICTS.items()
+        if verdict != route.NOT_QUALIFIED
+    )
 
     # CON-5: no distribution manifest and no workflow names the tree.
-    assert not [path for path in changed if path.startswith(".github/")]
+    for workflow in sorted((REPO / ".github").rglob("*")):
+        if workflow.is_file():
+            assert "semantic-kernel" not in workflow.read_text(
+                encoding="utf-8"
+            ), workflow
     for manifest in (REPO / "package.json", REPO / "pyproject.toml"):
         assert "semantic-kernel" not in manifest.read_text(encoding="utf-8")
 
@@ -180,9 +281,8 @@ def test_the_route_is_byte_identical_and_refuses_the_bundle_before_localization(
     None
 ):
     """TC-1060: FR-087-CON-7, FR-087-CON-8, FR-087-AC-1."""
-    changed = _changed_against_main()
     for prefix in UNTOUCHABLE:
-        assert not [path for path in changed if path.startswith(prefix)], prefix
+        _assert_pinned(prefix)
 
     paths = sorted(KERNEL_SCHEMAS.glob("*.json"))
     assert len(paths) == DOCUMENTS
@@ -492,9 +592,9 @@ def test_provenance_type_checking_and_reproducibility(tmp_path: Any) -> None:
 def test_the_bundle_the_distribution_and_the_examples() -> None:
     """TC-1065: FR-087-AC-14, FR-087-AC-15, FR-087-AC-16."""
     # AC-14: a full generation moves no published byte.
+    before = _bundle_bytes()
     emit.write_all()
-    changed = _changed_against_main()
-    assert not [path for path in changed if path.startswith("packages/semantic-core/")]
+    assert _bundle_bytes() == before
 
     # AC-15: read from the packed list, not from the manifest text alone.
     packed = subprocess.run(

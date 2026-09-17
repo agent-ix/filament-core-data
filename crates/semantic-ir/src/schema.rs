@@ -180,7 +180,7 @@ fn is_namespaced_name(text: &str) -> bool {
 }
 
 fn is_clause_language(text: &str) -> bool {
-    matches!(text, "ocl" | "sysml" | "fretish") || is_namespaced_name(text)
+    matches!(text, "quire" | "ocl" | "sysml" | "fretish") || is_namespaced_name(text)
 }
 
 fn is_unit(text: &str) -> bool {

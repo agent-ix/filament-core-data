@@ -2,10 +2,10 @@
 	"$comment": "Issue #11, FR-081. The kernel bundle declaration: what is generated, where it lands, and how staleness is detected. Read at run time; never restated in a module.",
 	"kernel": {
 		"name": "@agent-ix/semantic-kernel",
-		"version": "0.1.0"
+		"version": "0.2.0"
 	},
-	"semanticCore": "0.1.0",
-	"emissionDigest": "sha256:b07073a16922fa4e311104fc97724727154a8aa4e1745c5a13f86a54a8e00264",
+	"semanticCore": "0.2.0",
+	"emissionDigest": "sha256:ef79c5dea98c19643b20daa8899951a4782d6248527a0647c114c6f76cca8aea",
 	"inventoryCounts": {
 		"models": 21,
 		"unions": 1,
