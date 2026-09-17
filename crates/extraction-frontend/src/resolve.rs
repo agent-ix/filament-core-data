@@ -41,8 +41,6 @@ const ENGINE_UNRESOLVED_TYPE: &str = "semantic.unresolved-type";
 const REASON_UNKNOWN_TOKEN: &str = "unknown-token";
 const REASON_NO_BUNDLE_INDEX: &str = "no-bundle-index";
 const REASON_IMPORT_UNRESOLVED: &str = "import-unresolved";
-/// The frontmatter `object` value that makes an artifact an enumeration.
-const ENUMERATION: &str = "enumeration";
 /// The identity scheme prefix and the two segments the engine mints.
 const SCHEME: &str = "ix://";
 const TYPE_SEGMENT: &str = "type";
@@ -477,7 +475,7 @@ pub fn classify(
             Some(document) => {
                 let artifact = ArtifactRef::of(document);
                 match outcomes.get(&artifact.id) {
-                    Some(Outcome::Definition) if document.object() == Some(ENUMERATION) => {
+                    Some(Outcome::Definition) if bundle.is_enumeration(document) => {
                         Resolution::Enumeration(artifact)
                     }
                     Some(Outcome::Definition) => Resolution::Object(artifact),

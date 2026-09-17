@@ -311,12 +311,18 @@ fn inspect(args: &InspectArgs) -> u8 {
                 .and_then(Value::as_str)
                 .unwrap_or_default()
         };
-        println!(
-            "{} {} {}",
-            field("identity"),
-            field("kind"),
-            field("displayName")
-        );
+        // A construct kind prints as `<module>/<name>`.
+        let kind = match definition.get("kind") {
+            Some(Value::Object(kind)) => format!(
+                "{}/{}",
+                kind.get("module")
+                    .and_then(Value::as_str)
+                    .unwrap_or_default(),
+                kind.get("name").and_then(Value::as_str).unwrap_or_default()
+            ),
+            _ => field("kind").to_string(),
+        };
+        println!("{} {kind} {}", field("identity"), field("displayName"));
     }
     EXIT_OK
 }

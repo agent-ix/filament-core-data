@@ -77,15 +77,16 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 
+use agent_ix_semantic_ir::vocabulary::Shape;
 use quire_rs::semantic::decl::is_identifier;
 use quire_rs::semantic::{AvailabilityState, Constraint, Multiplicity, SemanticExtraction};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::bundle::{Bundle, Document};
+use crate::bundle::{Bundle, Construct, ConstructKind, Document};
 use crate::clauses::{lower_clauses, lower_operations, Clause, Operation};
 use crate::constructs::{
-    assign_owners, construct_kind, refusal, shape, unlowered_declaration, ConstructMembers, Pending,
+    assign_owners, refusal, shape, unlowered_declaration, ConstructMembers, Pending,
 };
 use crate::diagnostics::{Code, Diagnostic, Disposition, Locus, NotLoweredReason};
 use crate::edges::{lower_relationships, Relationship};
@@ -101,8 +102,6 @@ use crate::scalars::{definitions, GeneratedOrigin, KernelScalar, ScalarDefinitio
 const LOSSES: &str = include_str!("../losses.json");
 /// The manifest-name prefix [`module_short_name`] strips.
 const MODULE_PREFIX: &str = "spec-objects-";
-/// The frontmatter `object` value of an enumeration artifact.
-const ENUMERATION: &str = "enumeration";
 /// The field extension FR-093 carries `FieldDecl.identity` as.
 pub const IDENTITY_FIELD_EXTENSION: &str = "ix://agent-ix/semantic-core/ext/identity-field";
 /// The field extension FR-093 carries `TypeRef.decimal` as.
@@ -115,24 +114,28 @@ pub const FIELD_EXTENSION_VERSION: &str = "1.0.0";
 // ---------------------------------------------------------------------------
 
 /// `typeDefinition.kind` as this frontend emits it: `alias` only for the
-/// definition minted per constrained field; never `union`, `sequence`,
-/// `map` or `reference` (FR-093 "Enumeration artifacts").
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "snake_case")]
+/// definition minted per constrained field; never `enum`, `union`,
+/// `sequence`, `map` or `reference`; a module-declared construct kind for an
+/// artifact whose object type declares one (FR-143).
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Kind {
     Scalar,
     Record,
     Alias,
-    Entity,
-    ValueObject,
-    NestedEntity,
-    AggregateRoot,
-    Enumeration,
-    Event,
-    StateMachine,
-    Process,
-    Repository,
-    Domain,
+    /// `{module, name}`: the construct kind the artifact's object type
+    /// declares.
+    Construct(ConstructKind),
+}
+
+impl Serialize for Kind {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match self {
+            Kind::Scalar => serializer.serialize_str("scalar"),
+            Kind::Record => serializer.serialize_str("record"),
+            Kind::Alias => serializer.serialize_str("alias"),
+            Kind::Construct(kind) => kind.serialize(serializer),
+        }
+    }
 }
 
 /// `common.schema.json#/$defs/unknownPolicy`, the two values emitted.
@@ -511,9 +514,10 @@ enum IrKind {
     Sequence,
     Map,
     Reference,
+    /// A construct kind whose declared shape is `enumeration`.
     Enumeration,
-    /// The nine contract 1.2.0 constructs other than `enumeration`, none of
-    /// which a constraint keyword applies to.
+    /// A construct kind of any other shape, which no constraint keyword
+    /// applies to.
     Construct,
 }
 
@@ -529,8 +533,7 @@ impl IrKind {
             "map" => IrKind::Map,
             "reference" => IrKind::Reference,
             "enumeration" => IrKind::Enumeration,
-            "entity" | "value_object" | "nested_entity" | "aggregate_root" | "event"
-            | "state_machine" | "process" | "repository" | "domain" => IrKind::Construct,
+            "construct" => IrKind::Construct,
             _ => return None,
         })
     }
@@ -627,9 +630,19 @@ pub struct ArtifactContext<'a> {
     pub display_name: &'a str,
     /// The definition's `roles`, sorted and de-duplicated.
     pub roles: Vec<String>,
+    /// The construct the artifact's object type declares, if any.
+    pub construct: Option<&'a Construct>,
 }
 
 impl<'a> ArtifactContext<'a> {
+    /// The IR `kind` a definition of the artifact carries: its construct
+    /// kind, or `record`.
+    pub fn kind(&self) -> Kind {
+        self.construct.map_or(Kind::Record, |construct| {
+            Kind::Construct(construct.kind.clone())
+        })
+    }
+
     pub(crate) fn head(&self) -> Locus {
         Locus::head(&self.package.source(), self.path)
     }
@@ -1042,6 +1055,8 @@ fn lower_constraints(
 pub struct Lowered {
     pub types: Vec<TypeDefinition>,
     pub diagnostics: Vec<Diagnostic>,
+    /// The construct kinds `types` use, each once, sorted by kind.
+    pub constructs: Vec<Construct>,
 }
 
 /// Lower every artifact of `bundle` under `limits` (FR-093, NFR-031).
@@ -1063,6 +1078,7 @@ pub fn lower_bundle(
         return Lowered {
             types: Vec::new(),
             diagnostics: bundle_breaches,
+            constructs: Vec::new(),
         };
     }
     let package = PackageIdentity::from(bundle.package());
@@ -1093,13 +1109,19 @@ pub fn lower_bundle(
     // The `type/` identities of artifacts whose lowering failed: an edge
     // naming one is refused with its source (`assign_owners`).
     let mut lowered_to_nothing: BTreeSet<String> = BTreeSet::new();
-    // The ids of the bundle's event artifacts: what a transition's or step's
-    // event reference names (FR-143).
-    let events: BTreeSet<String> = bundle
+    // The IR roles of every object-typed artifact of the bundle, by id: what
+    // a construct reference names and is admitted by (FR-143).
+    let artifact_roles: BTreeMap<String, Vec<String>> = bundle
         .documents()
         .iter()
-        .filter(|d| d.object().map(construct_kind) == Some(Kind::Event))
-        .map(|d| d.id().to_string())
+        .filter_map(|d| {
+            let object = d.object()?;
+            let object_type = bundle.object_type(object)?;
+            Some((
+                d.id().to_string(),
+                roles(&object_type.module, object, object_type.archetype.roles()),
+            ))
+        })
         .collect();
 
     for document in bundle.documents() {
@@ -1219,16 +1241,15 @@ pub fn lower_bundle(
             path: document.path(),
             display_name: &artifact.display_name,
             roles: roles(&object_type.module, object, object_type.archetype.roles()),
+            construct: object_type.construct.as_ref(),
         };
-        let outcome = if object == ENUMERATION {
-            if let Some(rule) = unlowered_declaration(Kind::Enumeration, &extracted.extraction) {
-                own.push(refusal(
-                    document.id(),
-                    document.path(),
-                    ENUMERATION,
-                    &rule,
-                    head,
-                ));
+        let declaration = object_type
+            .construct
+            .as_ref()
+            .map(|construct| &construct.declaration);
+        let outcome = if declaration.is_some_and(|d| d.shape == Shape::Enumeration) {
+            if let Some(rule) = unlowered_declaration(declaration, &extracted.extraction) {
+                own.push(refusal(document.id(), document.path(), object, &rule, head));
                 lowered_to_nothing.extend(package.type_identity(document.id()).ok());
                 continue;
             }
@@ -1278,7 +1299,7 @@ pub fn lower_bundle(
                     shape(
                         object,
                         &extracted.extraction,
-                        &events,
+                        &artifact_roles,
                         &mut lowering.definition,
                         &resolutions.resolutions,
                         &ctx,
@@ -1299,12 +1320,19 @@ pub fn lower_bundle(
                 object: object.to_string(),
                 head,
                 lowering,
+                construct: object_type.construct.clone(),
             }),
             Err(LowerError::Blocked(diagnostics)) => own.extend(diagnostics),
             Err(LowerError::NotLowered) | Err(LowerError::Unresolved { .. }) => {}
         }
     }
     let refusals = assign_owners(&mut pending, lowered_to_nothing);
+    let mut constructs: BTreeMap<ConstructKind, Construct> = BTreeMap::new();
+    for construct in pending.iter().filter_map(|item| item.construct.as_ref()) {
+        constructs
+            .entry(construct.kind.clone())
+            .or_insert_with(|| construct.clone());
+    }
     for item in pending {
         own.extend(item.lowering.diagnostics);
         types.push(item.lowering.definition);
@@ -1325,7 +1353,11 @@ pub fn lower_bundle(
         .cloned()
         .collect();
     diagnostics.extend(own);
-    Lowered { types, diagnostics }
+    Lowered {
+        types,
+        diagnostics,
+        constructs: constructs.into_values().collect(),
+    }
 }
 
 /// Check every node the frontend admitted after the name-level pass. Name

@@ -28,18 +28,32 @@ use serde_json::{Map, Value};
 /// The prefix every identity is rewritten to.
 pub const SHARED_PREFIX: &str = "ix://shared/";
 
-/// The record-shaped construct kinds, compared as `record`.
-const RECORD_SHAPED: [&str; 9] = [
-    "entity",
-    "value_object",
-    "nested_entity",
-    "aggregate_root",
-    "event",
-    "state_machine",
-    "process",
-    "repository",
-    "domain",
-];
+/// A construct kind as `(module, name)`, whatever else its object carries.
+fn kind_key(kind: &Value) -> Option<(&str, &str)> {
+    Some((kind.get("module")?.as_str()?, kind.get("name")?.as_str()?))
+}
+
+/// The construct kinds of `document` compared as `record`: every kind its
+/// `constructs` table declares with a shape other than `enumeration`.
+fn record_shaped(document: &Value) -> Vec<(String, String)> {
+    document
+        .get("constructs")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter(|entry| entry["construct"]["shape"] != "enumeration")
+        .filter_map(|entry| {
+            let (module, name) = kind_key(&entry["kind"])?;
+            Some((module.to_string(), name.to_string()))
+        })
+        .collect()
+}
+
+/// Whether `kind` is one of `records`.
+fn is_record(kind: &Value, records: &[(String, String)]) -> bool {
+    kind_key(kind)
+        .is_some_and(|(module, name)| records.iter().any(|(m, n)| m == module && n == name))
+}
 
 /// The construct members the projection drops.
 const CONSTRUCT_MEMBERS: [&str; 9] = [
@@ -77,8 +91,9 @@ pub fn project(document: &Value) -> Value {
         .get("types")
         .cloned()
         .unwrap_or_else(|| Value::Array(Vec::new()));
-    let renames = artifact_names(&types);
-    let projected = strip(&types, package.as_deref(), &renames);
+    let records = record_shaped(document);
+    let renames = artifact_names(&types, &records);
+    let projected = strip(&types, package.as_deref(), &renames, &records);
     let mut out = Map::new();
     out.insert("types".to_string(), projected);
     let mut out = Value::Object(out);
@@ -94,18 +109,22 @@ pub fn projected_bytes(document: &Value) -> Vec<u8> {
 
 /// `value` without `origin` and `extensions` members at any depth and with
 /// every `<package>` prefix rewritten in every string.
-fn strip(value: &Value, package: Option<&str>, renames: &[(String, String)]) -> Value {
+fn strip(
+    value: &Value,
+    package: Option<&str>,
+    renames: &[(String, String)],
+    records: &[(String, String)],
+) -> Value {
     match value {
         Value::Object(members) => {
             let construct = members
                 .get("kind")
-                .and_then(Value::as_str)
-                .is_some_and(|kind| RECORD_SHAPED.contains(&kind));
+                .is_some_and(|kind| is_record(kind, records));
             let mut stripped: Map<String, Value> = members
                 .iter()
                 .filter(|(key, _)| key.as_str() != "origin" && key.as_str() != "extensions")
                 .filter(|(key, _)| !(construct && CONSTRUCT_MEMBERS.contains(&key.as_str())))
-                .map(|(key, member)| (key.clone(), strip(member, package, renames)))
+                .map(|(key, member)| (key.clone(), strip(member, package, renames, records)))
                 .collect();
             if construct {
                 stripped.insert("kind".to_string(), Value::String("record".to_string()));
@@ -122,9 +141,12 @@ fn strip(value: &Value, package: Option<&str>, renames: &[(String, String)]) -> 
             }
             Value::Object(stripped)
         }
-        Value::Array(items) => {
-            Value::Array(items.iter().map(|v| strip(v, package, renames)).collect())
-        }
+        Value::Array(items) => Value::Array(
+            items
+                .iter()
+                .map(|v| strip(v, package, renames, records))
+                .collect(),
+        ),
         Value::String(s) => Value::String(match package {
             Some(prefix) if s.starts_with(prefix) => {
                 format!("{SHARED_PREFIX}{}", renamed(&s[prefix.len()..], renames))
@@ -137,16 +159,12 @@ fn strip(value: &Value, package: Option<&str>, renames: &[(String, String)]) -> 
 
 /// `(artifact id, slug of displayName)` for every record-shaped construct
 /// whose identity tail is not its declared name.
-fn artifact_names(types: &Value) -> Vec<(String, String)> {
+fn artifact_names(types: &Value, records: &[(String, String)]) -> Vec<(String, String)> {
     let mut out: Vec<(String, String)> = types
         .as_array()
         .into_iter()
         .flatten()
-        .filter(|t| {
-            t["kind"]
-                .as_str()
-                .is_some_and(|kind| RECORD_SHAPED.contains(&kind))
-        })
+        .filter(|t| is_record(&t["kind"], records))
         .filter_map(|t| {
             let tail = t["identity"].as_str()?.rsplit_once("/type/")?.1;
             let name =

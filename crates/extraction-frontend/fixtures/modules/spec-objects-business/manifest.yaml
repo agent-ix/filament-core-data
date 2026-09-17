@@ -37,6 +37,12 @@ artifact_types: []
 lint_rules: []
 object_types:
 - name: domain
+  construct:
+    identity: none
+    shape: namespace
+    members: {members: required, vocabulary: required, fields: forbidden, operations: forbidden}
+    rules: [no_fields, no_operations, exclusive_membership, members_not_namespace]
+    meaning: quire.meaning.namespace
   allowed_links:
     contains: [entity, aggregate_root, value_object, repository, event, state_machine, process, enumeration]
   data_schema:
@@ -87,7 +93,13 @@ object_types:
             columns: [Term, Description]
             min_rows: 1
 - name: entity
-  roles: [domain-object, persistable]
+  roles: [domain-object, persistable, aggregate-member, composite-owner]
+  construct:
+    identity: identified
+    shape: record
+    members: {fields: required, identityFields: required}
+    rules: [identity_field_required]
+    meaning: quire.meaning.model.object-type/v1
   allowed_links:
     specializes: [entity]
     contains: [nested_entity, value_object]
@@ -111,7 +123,13 @@ object_types:
           after_heading: Properties
           required: true
 - name: value_object
-  roles: [domain-object]
+  roles: [domain-object, aggregate-member]
+  construct:
+    identity: value
+    shape: record
+    members: {fields: required}
+    rules: [identity_field_forbidden]
+    meaning: quire.meaning.model.value-type/v1
   allowed_links:
     specializes: [value_object]
     composes: [value_object, enumeration]
@@ -138,7 +156,15 @@ object_types:
           after_heading: Fields
           required: false
 - name: aggregate_root
-  roles: [domain-object, persistable]
+  roles: [domain-object, persistable, composite-owner]
+  construct:
+    identity: identified
+    shape: record
+    members: {fields: required, identityFields: required, clauses: required, members: required}
+    references:
+      members: [aggregate-member]
+    rules: [identity_field_required, min_clauses]
+    meaning: quire.meaning.model.object-type/v1
   allowed_links:
     specializes: [aggregate_root]
     aggregates: [entity, nested_entity]
@@ -170,7 +196,15 @@ object_types:
             columns: [Member, Multiplicity]
             min_rows: 1
 - name: nested_entity
-  roles: [domain-object]
+  roles: [domain-object, aggregate-member, composite-owner]
+  construct:
+    identity: identified
+    shape: record
+    members: {fields: required, identityFields: required, owner: required}
+    references:
+      owner: [composite-owner]
+    rules: [identity_field_required, single_owner]
+    meaning: quire.meaning.model.object-type/v1
   allowed_links:
     specializes: [nested_entity]
     contains: [value_object]
@@ -197,6 +231,14 @@ object_types:
           after_heading: Parent
           required: true
 - name: repository
+  construct:
+    identity: none
+    shape: interface
+    members: {operations: required, persists: required, fields: forbidden}
+    references:
+      persists: [persistable]
+    rules: [no_fields, min_operations]
+    meaning: quire.meaning.persistence-interface
   allowed_links:
     persists: [aggregate_root, entity]
     references: [data_schema]
@@ -215,6 +257,12 @@ object_types:
           required: true
 - name: event
   roles: [event-like]
+  construct:
+    identity: none
+    shape: record
+    members: {fields: required, occurrenceField: required}
+    rules: [identity_field_forbidden, occurrence_field_required]
+    meaning: quire.meaning.model.value-type/v1
   allowed_links:
     specializes: [event]
     carries: [value_object, entity]
@@ -242,6 +290,14 @@ object_types:
           required: true
           language: json
 - name: state_machine
+  construct:
+    identity: none
+    shape: state_machine
+    members: {operations: required, states: required, transitions: required}
+    references:
+      transitions: [event-like]
+    rules: [min_operations]
+    meaning: quire.meaning.state-machine
   allowed_links:
     specializes: [state_machine]
     transitions_to: [state_machine]
@@ -284,6 +340,14 @@ object_types:
             min_rows: 1
 - name: process
   roles: [measurable]
+  construct:
+    identity: identified
+    shape: sequence
+    members: {fields: required, identityFields: required, steps: required}
+    references:
+      steps: [event-like]
+    rules: [identity_field_required]
+    meaning: quire.meaning.process
   allowed_links:
     specializes: [process]
     triggers: [process, action]
@@ -332,6 +396,13 @@ object_types:
           after_heading: Algorithm
           required: false
 - name: enumeration
+  roles: [aggregate-member]
+  construct:
+    identity: none
+    shape: enumeration
+    members: {variants: required, fields: forbidden, relationships: forbidden, operations: forbidden}
+    rules: []
+    meaning: quire.meaning.model.variant-type/v1
   allowed_links:
     references: [enumeration]
   data_schema:

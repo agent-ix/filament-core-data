@@ -1,4 +1,4 @@
-//! The IR v1.1 document this frontend assembles: the FR-095 envelope around
+//! The IR 2.0.0 document this frontend assembles: the FR-095 envelope around
 //! the FR-093/FR-094 definitions, with every node list in FR-097's order.
 //!
 //! [`assemble`] is a pure function of the envelope and the lowered
@@ -10,16 +10,20 @@
 
 use serde_json::{Map, Value};
 
+use agent_ix_semantic_ir::json::to_canonical_string;
+
+use crate::bundle::Construct;
 use crate::canonical::sort_node_lists;
 use crate::envelope::Envelope;
 use crate::lower::TypeDefinition;
 
 /// The one `contractVersion` this frontend emits.
-pub const CONTRACT_VERSION: &str = "1.2.0";
+pub const CONTRACT_VERSION: &str = "2.0.0";
 
-/// `{contractVersion, source, package, types, occurrences, extensions}` over
-/// `envelope` and `types`, every node list sorted by identity.
-pub fn assemble(envelope: &Envelope, types: &[TypeDefinition]) -> Value {
+/// `{contractVersion, source, package, types, occurrences, extensions,
+/// constructs}` over `envelope`, `types` and the construct kinds they use,
+/// every node list sorted by identity and `constructs` in the given order.
+pub fn assemble(envelope: &Envelope, types: &[TypeDefinition], constructs: &[Construct]) -> Value {
     let mut members = Map::new();
     members.insert(
         "contractVersion".to_string(),
@@ -39,6 +43,10 @@ pub fn assemble(envelope: &Envelope, types: &[TypeDefinition]) -> Value {
         "extensions".to_string(),
         Value::Array(envelope.extensions.clone()),
     );
+    members.insert(
+        "constructs".to_string(),
+        Value::Array(constructs.iter().map(construct_entry).collect()),
+    );
     let mut document = Value::Object(members);
     sort_node_lists(&mut document);
     document
@@ -50,4 +58,24 @@ pub fn assemble(envelope: &Envelope, types: &[TypeDefinition]) -> Value {
 /// surfaced as `null`, which the reader refuses.
 fn to_value<T: serde::Serialize>(node: &T) -> Value {
     serde_json::to_value(node).unwrap_or(Value::Null)
+}
+
+/// `semantic-ir.schema.json#/$defs/construct`: one `constructs` entry. The
+/// declaration is the reader's own rendering of it, so the table carries
+/// exactly what the reader reads back.
+fn construct_entry(construct: &Construct) -> Value {
+    let declaration = serde_json::from_str(&to_canonical_string(&construct.declaration.to_json()))
+        .unwrap_or(Value::Null);
+    let mut entry = Map::new();
+    entry.insert("kind".to_string(), to_value(&construct.kind));
+    entry.insert(
+        "moduleVersion".to_string(),
+        Value::String(construct.module_version.clone()),
+    );
+    entry.insert(
+        "manifestDigest".to_string(),
+        Value::String(construct.manifest_digest.clone()),
+    );
+    entry.insert("construct".to_string(), declaration);
+    Value::Object(entry)
 }

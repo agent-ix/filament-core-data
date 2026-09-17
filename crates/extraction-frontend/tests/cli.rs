@@ -218,10 +218,17 @@ fn tc_1297_inspect_lists_every_type_in_order_and_rejects_a_document_without_cont
         .expect("types")
         .iter()
         .map(|t| {
+            let kind = match &t["kind"] {
+                Value::String(kind) => kind.clone(),
+                kind => format!(
+                    "{}/{}",
+                    kind["module"].as_str().expect("module"),
+                    kind["name"].as_str().expect("name")
+                ),
+            };
             format!(
-                "{} {} {}",
+                "{} {kind} {}",
                 t["identity"].as_str().expect("identity"),
-                t["kind"].as_str().expect("kind"),
                 t["displayName"].as_str().expect("displayName")
             )
         })

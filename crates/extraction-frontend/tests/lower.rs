@@ -9,6 +9,7 @@ use std::path::{Path, PathBuf};
 mod common;
 
 use agent_ix_extraction_frontend::diagnostics::{Code, Diagnostic, Locus, Severity, WireCode};
+use agent_ix_extraction_frontend::document::{assemble, CONTRACT_VERSION};
 use agent_ix_extraction_frontend::enumeration::VALUE_COLUMN;
 use agent_ix_extraction_frontend::lower::{
     applies_to, diagnostic_code, loss_register, roles, screaming, Kind, Presence,
@@ -159,8 +160,9 @@ fn field_named<'a>(record: &'a Value, name: &str) -> &'a Value {
 fn ir_document(lift: &Lift) -> Value {
     let envelope = Envelope::new(&lift.bundle, &[]);
     let mut doc = serde_json::to_value(&envelope).expect("envelope serialises");
-    doc["contractVersion"] = json!("1.2.0");
+    doc["contractVersion"] = json!(CONTRACT_VERSION);
     doc["types"] = Value::Array(types_json(lift));
+    doc["constructs"] = assemble(&envelope, &[], &lift.lowered.constructs)["constructs"].clone();
     json!({ "ir": doc })
 }
 
@@ -204,6 +206,7 @@ fn context<'a>(
         path: &artifact.path,
         display_name: &artifact.display_name,
         roles: roles(&object_type.module, object, object_type.archetype.roles()),
+        construct: object_type.construct.as_ref(),
     }
 }
 
@@ -286,7 +289,10 @@ fn tc_1221_config_version_carries_three_roles_reject_policy_and_seven_fields_in_
     let lift = lift("config-version-table");
     let types = types_json(&lift);
     let record = type_named(&types, "ConfigVersion");
-    assert_eq!(record["kind"], "entity");
+    assert_eq!(
+        record["kind"],
+        json!({"module": "agent-ix/spec-objects-business", "name": "entity"})
+    );
     assert_eq!(
         record["identity"],
         "ix://agent-ix/config-service/type/FR-006"
@@ -294,6 +300,8 @@ fn tc_1221_config_version_carries_three_roles_reject_policy_and_seven_fields_in_
     assert_eq!(
         record["roles"],
         json!([
+            "business:aggregate-member",
+            "business:composite-owner",
             "business:domain-object",
             "business:entity",
             "business:persistable"
@@ -656,7 +664,8 @@ fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
         }]
     });
     json!({"ir": {
-        "contractVersion": "1.2.0",
+        "contractVersion": "2.0.0",
+        "constructs": [],
         "source": {"identity": "ix://agent-ix/test/spec", "version": "0.0.0",
                    "dialect": "spec-bundle", "digest": format!("sha256:{}", "0".repeat(64))},
         "package": {"identity": "agent-ix/test", "version": "0.0.0",
@@ -1075,9 +1084,15 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     );
     let types = types_json(&lift);
     let status = type_named(&types, "OrderStatus");
-    assert_eq!(status["kind"], "enumeration");
+    assert_eq!(
+        status["kind"],
+        json!({"module": "agent-ix/spec-objects-business", "name": "enumeration"})
+    );
     assert_eq!(status["identity"], "ix://agent-ix/orders/type/EN-001");
-    assert_eq!(status["roles"], json!(["business:enumeration"]));
+    assert_eq!(
+        status["roles"],
+        json!(["business:aggregate-member", "business:enumeration"])
+    );
     assert_eq!(status["unknownPolicy"], "reject");
     assert_eq!(status["constraints"], json!([]));
     assert_eq!(status["extensions"], json!([]));
@@ -1174,19 +1189,7 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
             assert!(
                 matches!(
                     t.kind,
-                    Kind::Scalar
-                        | Kind::Record
-                        | Kind::Alias
-                        | Kind::Entity
-                        | Kind::ValueObject
-                        | Kind::NestedEntity
-                        | Kind::AggregateRoot
-                        | Kind::Enumeration
-                        | Kind::Event
-                        | Kind::StateMachine
-                        | Kind::Process
-                        | Kind::Repository
-                        | Kind::Domain
+                    Kind::Scalar | Kind::Record | Kind::Alias | Kind::Construct(_)
                 ),
                 "{name}: {:?}",
                 t.kind
@@ -1429,7 +1432,10 @@ fn tc_1335_a_domain_without_properties_lowers_to_an_empty_record_and_lossy_yield
     let lift = lift("business");
     let types = types_json(&lift);
     let domain = type_named(&types, "Ordering");
-    assert_eq!(domain["kind"], "domain");
+    assert_eq!(
+        domain["kind"],
+        json!({"module": "agent-ix/spec-objects-business", "name": "domain"})
+    );
     assert!(domain.get("fields").is_none(), "{domain}");
     assert_eq!(domain["roles"], json!(["business:domain"]));
     assert_eq!(

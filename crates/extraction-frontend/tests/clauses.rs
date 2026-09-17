@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 mod common;
 
 use agent_ix_extraction_frontend::diagnostics::{Code, Diagnostic, Locus, WireCode};
+use agent_ix_extraction_frontend::document::{assemble, CONTRACT_VERSION};
 use agent_ix_extraction_frontend::{
     extract, is_blocked, lower_bundle, resolve, Bundle, Envelope, Extractions, Limits, Lowered,
     NodeKind, Resolutions,
@@ -130,8 +131,9 @@ fn locus(lift: &Lift, path: &str, line: usize, column: usize) -> Value {
 fn ir_document(lift: &Lift) -> Value {
     let envelope = Envelope::new(&lift.bundle, &[]);
     let mut doc = serde_json::to_value(&envelope).expect("envelope serialises");
-    doc["contractVersion"] = json!("1.2.0");
+    doc["contractVersion"] = json!(CONTRACT_VERSION);
     doc["types"] = Value::Array(types_json(lift));
+    doc["constructs"] = assemble(&envelope, &[], &lift.lowered.constructs)["constructs"].clone();
     json!({ "ir": doc })
 }
 

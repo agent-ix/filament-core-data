@@ -418,8 +418,8 @@ fn tc_1304_no_ambient_input_outside_the_exemption_list_and_a_planted_env_var_in_
         .collect();
     assert_eq!(
         manifest_readers,
-        ["lift.rs", "write.rs"],
-        "read_manifest is defined in write.rs and called from the lift"
+        ["bundle.rs", "lift.rs", "write.rs"],
+        "read_manifest is defined in write.rs and called from the lift and the construct seam"
     );
 
     // The planted control: `std::env::var` in `lower.rs`.

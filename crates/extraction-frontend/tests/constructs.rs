@@ -1,6 +1,6 @@
-//! FR-141, FR-142, FR-143 and NFR-044: the contract `1.2.0` model members and
-//! object-type constructs, read by the Rust reader over the committed
-//! `semantic-ir-v1-2-constructs.json` positive and its one-rule mutations, by
+//! FR-141, FR-142, FR-143 and NFR-044: the contract `2.0.0` model members and
+//! module-declared construct kinds, read by the Rust reader over the committed
+//! `semantic-ir-v2-constructs.json` positive and its one-rule mutations, by
 //! the FR-050 node reader over the same documents, refused by both backends,
 //! and lifted from the `business` fixture and its one-rule edits.
 
@@ -9,7 +9,6 @@ use std::path::{Path, PathBuf};
 
 mod common;
 
-use agent_ix_extraction_frontend::constructs::construct_kind;
 use agent_ix_extraction_frontend::diagnostics::{Code, Diagnostic, WireCode};
 use agent_ix_extraction_frontend::{
     extract, lower_bundle, resolve, Bundle, Extractions, LiftOutcome, Limits, Lowered,
@@ -26,16 +25,19 @@ use serde_json::{json, Value};
 
 const PREFIX: &str = "ix://agent-ix/orders/";
 
+/// The package of the module declaring the business construct kinds.
+const BUSINESS: &str = "agent-ix/spec-objects-business";
+
 /// One in-place change to an IR document.
 type Mutation = Box<dyn Fn(&mut Value)>;
 
 /// One change to an artifact's text.
 type Edit = Box<dyn Fn(&str) -> String>;
 
-/// The committed `1.2.0` positive carrying every model member and one
+/// The committed `2.0.0` positive carrying every model member and one
 /// construct of each kind.
 fn positive_path() -> PathBuf {
-    workspace_dir().join("fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json")
+    workspace_dir().join("fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json")
 }
 
 fn positive() -> Value {
@@ -133,7 +135,7 @@ fn assert_rust(label: &str, document: &Value, expected: &[String]) {
 #[test]
 fn tc_1740_and_tc_1745_every_model_member_and_construct_kind_reads_clean_in_rust_and_node() {
     let document = positive();
-    assert_eq!(document["contractVersion"], "1.2.0");
+    assert_eq!(document["contractVersion"], "2.0.0");
     let text = serde_json::to_string(&json!({ "ir": document })).expect("serialises");
     let verdict = decide(&parse_json(&text).expect("parses"));
     assert_eq!(
@@ -144,7 +146,10 @@ fn tc_1740_and_tc_1745_every_model_member_and_construct_kind_reads_clean_in_rust
     );
     assert_eq!(node_codes(&document), Vec::<String>::new());
     let types = document["types"].as_array().expect("types");
-    let mut kinds: Vec<&str> = types.iter().filter_map(|t| t["kind"].as_str()).collect();
+    let mut kinds: Vec<&str> = types
+        .iter()
+        .filter_map(|t| t["kind"]["name"].as_str())
+        .collect();
     kinds.sort_unstable();
     kinds.dedup();
     for kind in [
@@ -356,7 +361,7 @@ fn tc_1744_and_tc_1756_every_1_2_member_and_kind_inside_a_1_1_document_is_refuse
         (
             "construct kind",
             Box::new(move |d| {
-                d["types"][record]["kind"] = json!("value_object");
+                d["types"][record]["kind"] = json!({ "module": BUSINESS, "name": "value_object" });
             }),
         ),
     ];
@@ -600,6 +605,352 @@ fn tc_1748_occurrence_transition_guard_and_domain_membership_rules_raise_their_c
     );
 }
 
+/// The `constructs` entry of the business kind `name` in `document`.
+fn entry_mut<'a>(document: &'a mut Value, name: &str) -> &'a mut Value {
+    document["constructs"]
+        .as_array_mut()
+        .expect("constructs")
+        .iter_mut()
+        .find(|entry| entry["kind"]["name"] == name)
+        .unwrap_or_else(|| panic!("no constructs entry {name}"))
+}
+
+/// Asserts the Rust reader refuses `document` in its schema layer at
+/// `pointer`.
+fn assert_rust_schema_at(label: &str, document: &Value, pointer: &str) {
+    let codes = rust_codes(document);
+    assert!(
+        codes.contains(&format!("SCHEMA_VIOLATION at {pointer}")),
+        "{label}: {codes:?}"
+    );
+    assert!(
+        codes.iter().all(|c| c.starts_with("SCHEMA_VIOLATION at ")),
+        "{label}: {codes:?}"
+    );
+}
+
+#[trace("TC-1789", "FR-142-AC-9")]
+#[test]
+fn tc_1789_the_constructs_table_is_checked_and_references_are_admitted_by_role() {
+    let document = positive();
+    let at = |id: &str| position(&document, &type_ref(id));
+    let constructs = |name: &str| {
+        document["constructs"]
+            .as_array()
+            .expect("constructs")
+            .iter()
+            .position(|entry| entry["kind"]["name"] == name)
+            .expect("an entry")
+    };
+
+    // A kind naming no entry, an entry no type uses, a kind declared twice,
+    // and a 2.0.0 document without the table.
+    let mut missing = positive();
+    let event = constructs("event");
+    missing["constructs"]
+        .as_array_mut()
+        .expect("constructs")
+        .remove(event);
+    assert_rust_schema_at(
+        "a kind naming no entry",
+        &missing,
+        &format!("/ir/types/{}/kind", at("EV-001")),
+    );
+    let mut unused = positive();
+    let mut extra = unused["constructs"][event].clone();
+    extra["kind"]["name"] = json!("ledger");
+    unused["constructs"]
+        .as_array_mut()
+        .expect("constructs")
+        .push(extra.clone());
+    let last = unused["constructs"].as_array().expect("constructs").len() - 1;
+    assert_rust_schema_at(
+        "an unused entry",
+        &unused,
+        &format!("/ir/constructs/{last}/kind"),
+    );
+    let mut twice = positive();
+    let copy = twice["constructs"][event].clone();
+    twice["constructs"]
+        .as_array_mut()
+        .expect("constructs")
+        .push(copy);
+    let last = twice["constructs"].as_array().expect("constructs").len() - 1;
+    assert_rust_schema_at(
+        "a kind declared twice",
+        &twice,
+        &format!("/ir/constructs/{last}/kind"),
+    );
+    let mut untabled = positive();
+    untabled
+        .as_object_mut()
+        .expect("document")
+        .remove("constructs");
+    assert_refused_by_schema("a 2.0.0 document without constructs", &untabled);
+
+    // A declaration defect is refused at its pointer inside the entry.
+    let mut defect = positive();
+    entry_mut(&mut defect, "nested_entity")["construct"]["references"]["owner"] = json!(["*"]);
+    assert_rust_schema_at(
+        "a wildcard role",
+        &defect,
+        &format!(
+            "/ir/constructs/{}/construct/references/owner/0",
+            constructs("nested_entity")
+        ),
+    );
+    let mut inconsistent = positive();
+    entry_mut(&mut inconsistent, "aggregate_root")["construct"]["members"]["clauses"] =
+        json!("optional");
+    assert_rust_schema_at(
+        "a rule whose member presence is not declared",
+        &inconsistent,
+        &format!(
+            "/ir/constructs/{}/construct/rules/1",
+            constructs("aggregate_root")
+        ),
+    );
+
+    // The admitted roles are the declaration's data: widen the owner roles
+    // and a value object owner reads clean; drop the role from the named type
+    // and the same owner is refused.
+    let mut widened = positive();
+    type_mut(&mut widened, "NE-001")["owner"] = json!(type_ref("VO-001"));
+    entry_mut(&mut widened, "nested_entity")["construct"]["references"]["owner"] =
+        json!(["business:composite-owner", "business:aggregate-member"]);
+    assert_rust("a widened owner role", &widened, &[]);
+    let mut narrowed = positive();
+    let owner = narrowed["types"][at("NE-001")]["owner"]
+        .as_str()
+        .expect("an owner")
+        .to_owned();
+    let owner_at = position(&narrowed, &owner);
+    narrowed["types"][owner_at]["roles"]
+        .as_array_mut()
+        .expect("roles")
+        .retain(|role| role != "business:composite-owner");
+    assert_rust(
+        "an owner without the admitted role",
+        &narrowed,
+        &[format!(
+            "CONSTRUCT_TARGET_KIND at /ir/types/{}/owner",
+            at("NE-001")
+        )],
+    );
+    let mut unconstrained = positive();
+    type_mut(&mut unconstrained, "NE-001")["owner"] = json!(type_ref("VO-001"));
+    entry_mut(&mut unconstrained, "nested_entity")["construct"]
+        .as_object_mut()
+        .expect("a declaration")
+        .remove("references");
+    assert_rust("an unconstrained owner", &unconstrained, &[]);
+}
+
+#[trace("TC-1791", "FR-142-AC-10")]
+#[test]
+fn tc_1791_a_kind_no_reader_code_names_reads_by_its_declaration_alone() {
+    // A systems module's port and part: identity, direction, interface type,
+    // multiplicity and owner are declared data, not reader code.
+    let mut document = positive();
+    let origin = document["types"][position(&document, &type_ref("VO-001"))]["origin"].clone();
+    let text = type_ref("VO-001");
+    let part = json!({
+        "identity": format!("{PREFIX}type/PT-001"),
+        "displayName": "Engine",
+        "kind": { "module": "acme/spec-objects-systems", "name": "part" },
+        "roles": ["systems:part"],
+        "origin": origin,
+        "constraints": [],
+        "extensions": [],
+        "unknownPolicy": "reject",
+        "fields": []
+    });
+    let port = json!({
+        "identity": format!("{PREFIX}type/PO-001"),
+        "displayName": "FuelIn",
+        "kind": { "module": "acme/spec-objects-systems", "name": "port" },
+        "roles": ["systems:port"],
+        "origin": origin,
+        "constraints": [],
+        "extensions": [],
+        "unknownPolicy": "reject",
+        "owner": format!("{PREFIX}type/PT-001"),
+        "direction": "in",
+        "interfaceType": text,
+        "multiplicity": { "lower": 1, "upper": 2 }
+    });
+    let declaration = |name: &str, construct: Value| {
+        json!({
+            "kind": { "module": "acme/spec-objects-systems", "name": name },
+            "moduleVersion": "0.1.0",
+            "manifestDigest": format!("sha256:{}", "0".repeat(64)),
+            "construct": construct
+        })
+    };
+    let connection = json!({
+        "identity": format!("{PREFIX}type/CN-001"),
+        "displayName": "FuelLine",
+        "kind": { "module": "acme/spec-objects-systems", "name": "connection" },
+        "roles": ["systems:connection"],
+        "origin": origin,
+        "constraints": [],
+        "extensions": [],
+        "unknownPolicy": "reject",
+        "flowDirection": "source-to-target",
+        "sourceEnd": { "type": format!("{PREFIX}type/PO-001"), "multiplicity": { "lower": 1, "upper": 1 } },
+        "targetEnd": { "type": format!("{PREFIX}type/PO-001") }
+    });
+    let types = document["types"].as_array_mut().expect("types");
+    types.push(part);
+    types.push(connection);
+    types.push(port);
+    let constructs = document["constructs"].as_array_mut().expect("constructs");
+    constructs.push(declaration(
+        "part",
+        json!({ "identity": "identified", "shape": "record", "members": {}, "meaning": "quire.meaning.systems.part/v1" }),
+    ));
+    constructs.push(declaration(
+        "port",
+        json!({
+            "identity": "identified",
+            "shape": "record",
+            "members": {
+                "owner": "required", "direction": "required",
+                "interfaceType": "required", "multiplicity": "optional", "fields": "forbidden"
+            },
+            "references": { "owner": ["systems:part"], "interfaceType": ["business:domain-object"] },
+            "meaning": "quire.meaning.systems.port/v1"
+        }),
+    ));
+    constructs.push(declaration(
+        "connection",
+        json!({
+            "identity": "identified",
+            "shape": "record",
+            "members": {
+                "flowDirection": "required", "sourceEnd": "required",
+                "targetEnd": "required", "fields": "forbidden"
+            },
+            "references": { "sourceEnd": ["systems:port"], "targetEnd": ["systems:port"] },
+            "meaning": "quire.meaning.systems.connection/v1"
+        }),
+    ));
+    assert_rust("a systems part, port and connection", &document, &[]);
+    assert_eq!(node_codes(&document), Vec::<String>::new());
+
+    let port_at = document["types"].as_array().expect("types").len() - 1;
+    let mut wrong_direction = document.clone();
+    wrong_direction["types"][port_at]["direction"] = json!("sideways");
+    assert_refused_by_schema("a direction outside in, out and inout", &wrong_direction);
+    let mut no_direction = document.clone();
+    no_direction["types"][port_at]
+        .as_object_mut()
+        .expect("a type")
+        .remove("direction");
+    assert_refused_by_schema("a port without its required direction", &no_direction);
+    let connection_at = port_at - 1;
+    let mut wrong_flow = document.clone();
+    wrong_flow["types"][connection_at]["flowDirection"] = json!("in");
+    assert_refused_by_schema(
+        "a flow direction outside the connection's three",
+        &wrong_flow,
+    );
+    let mut endless = document.clone();
+    endless["types"][connection_at]
+        .as_object_mut()
+        .expect("a type")
+        .remove("targetEnd");
+    assert_refused_by_schema("a connection without its required target end", &endless);
+    let mut foreign_end = document.clone();
+    foreign_end["types"][connection_at]["sourceEnd"]["type"] =
+        json!(format!("{PREFIX}type/PT-001"));
+    assert_rust(
+        "a connection end naming a type without the port role",
+        &foreign_end,
+        &[format!(
+            "CONSTRUCT_TARGET_KIND at /ir/types/{connection_at}/sourceEnd/type"
+        )],
+    );
+    let mut foreign_owner = document.clone();
+    foreign_owner["types"][port_at]["owner"] = json!(type_ref("VO-001"));
+    assert_rust(
+        "a port owned by a type without the part role",
+        &foreign_owner,
+        &[format!(
+            "CONSTRUCT_TARGET_KIND at /ir/types/{port_at}/owner"
+        )],
+    );
+}
+
+#[trace("TC-1793", "FR-142-AC-13")]
+#[test]
+fn tc_1793_feature_order_names_each_own_field_and_operation_exactly_once() {
+    let at = |document: &Value| position(document, &type_ref("OP-001"));
+    let feature = |kind: &str, name: &str| json!(format!("{PREFIX}{kind}/OP-001-{name}"));
+    let order = json!([
+        feature("operation", "clear"),
+        feature("field", "id"),
+        feature("operation", "addLine"),
+        feature("field", "lines"),
+        feature("operation", "total")
+    ]);
+    let mut forbidden = positive();
+    type_mut(&mut forbidden, "OP-001")["featureOrder"] = order.clone();
+    assert_refused_by_rust_schema("featureOrder on a construct forbidding it", &forbidden);
+
+    let mut ordered = forbidden.clone();
+    entry_mut(&mut ordered, "entity")["construct"]["members"]["featureOrder"] = json!("optional");
+    assert_rust("fields and operations in authored order", &ordered, &[]);
+    let type_at = at(&ordered);
+
+    let mut omitted = ordered.clone();
+    type_mut(&mut omitted, "OP-001")["featureOrder"]
+        .as_array_mut()
+        .expect("an order")
+        .pop();
+    assert_rust(
+        "an order omitting an operation",
+        &omitted,
+        &[format!(
+            "INCOMPLETE_FEATURE_ORDER at /ir/types/{type_at}/featureOrder"
+        )],
+    );
+
+    let mut foreign = ordered.clone();
+    type_mut(&mut foreign, "OP-001")["featureOrder"][4] =
+        json!(format!("{PREFIX}operation/SM-001-advance"));
+    let mut codes = rust_codes(&foreign);
+    codes.sort();
+    assert_eq!(
+        codes,
+        [
+            format!("INCOMPLETE_FEATURE_ORDER at /ir/types/{type_at}/featureOrder"),
+            format!("UNRESOLVED_CONSTRUCT_REF at /ir/types/{type_at}/featureOrder/4"),
+        ],
+        "an entry naming another type's operation"
+    );
+
+    let mut repeated = ordered.clone();
+    type_mut(&mut repeated, "OP-001")["featureOrder"][4] = feature("field", "id");
+    assert_refused_by_rust_schema("an entry named twice", &repeated);
+    let mut empty = ordered.clone();
+    type_mut(&mut empty, "OP-001")["featureOrder"] = json!([]);
+    assert_refused_by_rust_schema("an empty order", &empty);
+
+    let mut required = positive();
+    entry_mut(&mut required, "entity")["construct"]["members"]["featureOrder"] = json!("required");
+    assert_refused_by_rust_schema("an entity without its required order", &required);
+}
+
+/// The Rust reader refuses `document` with `SCHEMA_VIOLATION` alone.
+fn assert_refused_by_rust_schema(label: &str, document: &Value) {
+    let rust = rust_codes(document);
+    assert!(
+        !rust.is_empty() && rust.iter().all(|c| c.starts_with("SCHEMA_VIOLATION at ")),
+        "{label}: rust reader {rust:?}"
+    );
+}
+
 #[trace("TC-1749", "FR-142-AC-5")]
 #[trace("TC-1749", "FR-142-CON-2")]
 #[test]
@@ -609,8 +960,7 @@ fn tc_1749_backends_render_every_construct_kind_and_refuse_none() {
         .as_array()
         .expect("types")
         .iter()
-        .filter_map(|t| t["kind"].as_str())
-        .filter(|kind| !matches!(*kind, "record" | "scalar" | "alias"))
+        .filter_map(|t| t["kind"]["name"].as_str())
         .collect();
     assert_eq!(kinds.len(), 10, "one construct of each kind: {kinds:?}");
     let ir = positive_path();
@@ -677,7 +1027,7 @@ fn construct<'a>(document: &'a Value, id: &str) -> &'a Value {
 #[test]
 fn tc_1751_the_business_fixture_lifts_to_one_construct_of_each_kind_the_reader_accepts() {
     let document = business_document();
-    assert_eq!(document["contractVersion"], "1.2.0");
+    assert_eq!(document["contractVersion"], "2.0.0");
     assert!(
         rust_codes(&document).is_empty(),
         "{:?}",
@@ -695,7 +1045,11 @@ fn tc_1751_the_business_fixture_lifts_to_one_construct_of_each_kind_the_reader_a
         ("RP-001", "repository"),
         ("DM-001", "domain"),
     ] {
-        assert_eq!(construct(&document, id)["kind"], kind, "{id}");
+        assert_eq!(
+            construct(&document, id)["kind"],
+            json!({ "module": BUSINESS, "name": kind }),
+            "{id}"
+        );
     }
     let refs = |ids: &[&str]| Value::from(ids.iter().map(|id| type_ref(id)).collect::<Vec<_>>());
     assert_eq!(
@@ -875,7 +1229,7 @@ fn assert_refused(lowered: &Lowered, id: &str, rule: &str) {
         assert!(other.blocking, "{}", other.message);
         assert!(
             other.message.contains("relationship targets")
-                || other.message.contains("entities contain it"),
+                || other.message.contains("types contain it"),
             "{id}: an underived refusal {}",
             other.message
         );
@@ -950,19 +1304,19 @@ fn tc_1753_each_broken_built_in_rule_is_one_blocking_refusal_and_emits_no_type()
                 let end = t.find("## Transitions").expect("transitions");
                 format!("{}{}", &t[..from], &t[to..end])
             }),
-            "declares no operation, and every transition",
+            "declares no operation, and the construct requires one",
         ),
         (
             "RP-001",
             "spec/functional/RP-001-order-repository.md",
             Box::new(|t| t.replace("## Invariants", &format!("{PROPERTIES}## Invariants"))),
-            "declares fields, and a repository",
+            "declares fields, and the construct carries none",
         ),
         (
             "RP-001",
             "spec/functional/RP-001-order-repository.md",
             Box::new(|t| t[..t.find("## Operations").expect("operations")].to_string()),
-            "declares no operation, and a repository",
+            "declares no operation, and the construct requires one",
         ),
         (
             "DM-001",
@@ -973,7 +1327,7 @@ fn tc_1753_each_broken_built_in_rule_is_one_blocking_refusal_and_emits_no_type()
                     &format!("{PROPERTIES}## Bounded Context"),
                 )
             }),
-            "declares fields or operations",
+            "declares fields, and the construct carries none",
         ),
     ];
     for (id, relative, edit, rule) in cases {
@@ -987,7 +1341,7 @@ fn tc_1754_a_nested_entity_with_no_owner_or_two_owners_is_refused_naming_the_own
     let orphan = lower_edited("spec/functional/FR-001-order.md", |t| {
         t.replace("  - target: NE-001\n    type: contains\n", "")
     });
-    assert_refused(&orphan, "NE-001", "0 entities contain it");
+    assert_refused(&orphan, "NE-001", "0 types contain it");
 
     let shared = lower_edited("spec/functional/AR-001-order-aggregate.md", |t| {
         t.replace(
@@ -995,7 +1349,7 @@ fn tc_1754_a_nested_entity_with_no_owner_or_two_owners_is_refused_naming_the_own
             "  - target: VO-001\n    type: contains\n  - target: NE-001\n    type: contains\n",
         )
     });
-    assert_refused(&shared, "NE-001", "2 entities contain it");
+    assert_refused(&shared, "NE-001", "2 types contain it");
 
     // B (NE-001) is refused, and C (NE-002) is owned only by B: the fixed
     // point refuses C too, and keeps C's own diagnostics.
@@ -1033,7 +1387,7 @@ fn tc_1754_a_nested_entity_with_no_owner_or_two_owners_is_refused_naming_the_own
         .collect();
     assert_eq!(parcel.len(), 1, "{:#?}", chained.diagnostics);
     assert!(
-        parcel[0].message.contains("0 entities contain it"),
+        parcel[0].message.contains("0 types contain it"),
         "{}",
         parcel[0].message
     );
@@ -1059,42 +1413,6 @@ fn names(construct: &Value, member: &str, key: &str) -> Vec<String> {
         .iter()
         .map(|entry| entry[key].as_str().unwrap_or_default().to_owned())
         .collect()
-}
-
-/// Construct-kind parity: each of the schema's 1.2.0 kinds is the construct
-/// its business object type lowers to, and any other object type is a record.
-#[trace("TC-1760", "FR-142-AC-7")]
-#[test]
-fn tc_1760_every_schema_construct_kind_is_the_kind_its_object_type_lowers_to() {
-    let schema = read_json(&workspace_dir().join("schema/semantic/v1/semantic-ir.schema.json"));
-    let before_constructs = [
-        "scalar",
-        "record",
-        "enum",
-        "union",
-        "alias",
-        "sequence",
-        "map",
-        "reference",
-    ];
-    let kinds: Vec<&str> = schema["$defs"]["typeDefinition"]["properties"]["kind"]["enum"]
-        .as_array()
-        .expect("typeDefinition.kind is an enum")
-        .iter()
-        .filter_map(Value::as_str)
-        .filter(|kind| !before_constructs.contains(kind))
-        .collect();
-    assert_eq!(kinds.len(), 10);
-    for kind in kinds {
-        assert_eq!(
-            serde_json::to_value(construct_kind(kind)).expect("a kind serialises"),
-            json!(kind)
-        );
-    }
-    assert_eq!(
-        serde_json::to_value(construct_kind("requirement")).expect("a kind serialises"),
-        json!("record")
-    );
 }
 
 #[trace("TC-1755", "FR-143-AC-5")]
@@ -1154,13 +1472,13 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
                     "| draft | placed | advance | | EN-001 |",
                 )
             }),
-            "names `EN-001`, which is the artifact id of no event of the bundle",
+            "names `EN-001`, which is the artifact id of no type of the bundle the construct's transitions admit",
         ),
         (
             "PR-001",
             "spec/functional/PR-001-fulfilment.md",
             Box::new(|t| t.replace("| placed | event | EV-001 |", "| placed | event | EV-999 |")),
-            "names `EV-999`, which is the artifact id of no event of the bundle",
+            "names `EV-999`, which is the artifact id of no type of the bundle the construct's steps admit",
         ),
         (
             "VO-001",
@@ -1188,7 +1506,7 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
                     "| draft | placed | advance | | EV-001, EV-001 |",
                 )
             }),
-            "names `EV-001` twice, and one cell names each event at most once",
+            "names `EV-001` twice, and one cell names each type at most once",
         ),
         (
             "VO-001",
@@ -1273,13 +1591,13 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
     assert_refused(
         &trigger,
         "SM-001",
-        "transition placed -> shipped on halt: its trigger names no operation of the state machine",
+        "transition placed -> shipped on halt: its trigger names no operation of the artifact",
     );
     let guard = lower_mutated(|e| sm_001_transition(e, 1).guard = Some("nope".to_string()));
     assert_refused(
         &guard,
         "SM-001",
-        "its guard `nope` names no clause of the state machine",
+        "its guard `nope` names no clause of the artifact",
     );
 
     // An emitted event that lowers to nothing refuses the state machine. The
@@ -1311,7 +1629,7 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
         .map(|d| d.message.as_str())
         .collect();
     let event_rule = format!(
-        "artifact SM-001 (spec/functional/SM-001-order-lifecycle.md) lowers to no `state_machine` construct: a transition or step names the event {}, which lowers to nothing",
+        "artifact SM-001 (spec/functional/SM-001-order-lifecycle.md) lowers to no `state_machine` construct: a transition or step names the type {}, which lowers to nothing",
         type_ref("EV-001")
     );
     assert!(messages.contains(&event_rule.as_str()), "{messages:#?}");
@@ -1384,5 +1702,336 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
         &lowered,
         "VO-001",
         "it declares relationship rows (quire-rs FR-076) the engine did not extract (no-relation-vocabulary)",
+    );
+}
+
+#[trace("TC-1790", "FR-143-AC-7")]
+#[test]
+fn tc_1790_the_business_lift_carries_each_used_kind_s_manifest_declaration() {
+    let (_dir, request, outcome) = lift_fixture("business");
+    assert!(
+        matches!(outcome, LiftOutcome::Written { .. }),
+        "{outcome:?}"
+    );
+    let document = read_json(&request.out);
+    let manifest = fs::read(business_module().join("manifest.yaml")).expect("manifest");
+    let digest = format!("sha256:{}", common::sha256sum(&manifest));
+
+    let used: std::collections::BTreeSet<String> = document["types"]
+        .as_array()
+        .expect("types")
+        .iter()
+        .filter(|t| t["kind"].is_object())
+        .map(|t| t["kind"].to_string())
+        .collect();
+    let entries = document["constructs"].as_array().expect("constructs");
+    let declared: std::collections::BTreeSet<String> = entries
+        .iter()
+        .map(|entry| entry["kind"].to_string())
+        .collect();
+    assert_eq!(declared, used, "one entry per used kind");
+    assert_eq!(entries.len(), used.len(), "no kind declared twice");
+    for entry in entries {
+        assert_eq!(entry["kind"]["module"], BUSINESS, "{entry}");
+        assert_eq!(entry["moduleVersion"], "0.4.0", "{entry}");
+        assert_eq!(entry["manifestDigest"], digest.as_str(), "{entry}");
+    }
+    let entry = |name: &str| {
+        entries
+            .iter()
+            .find(|entry| entry["kind"]["name"] == name)
+            .unwrap_or_else(|| panic!("no entry {name}"))
+    };
+    // The manifest's declarations, with each bare role qualified by the
+    // short name of the module whose object types carry it.
+    assert_eq!(
+        entry("aggregate_root")["construct"],
+        json!({
+            "identity": "identified",
+            "shape": "record",
+            "members": {
+                "fields": "required", "identityFields": "required",
+                "clauses": "required", "members": "required"
+            },
+            "references": { "members": ["business:aggregate-member"] },
+            "rules": ["identity_field_required", "min_clauses"],
+            "meaning": "quire.meaning.model.object-type/v1"
+        })
+    );
+    assert_eq!(
+        entry("nested_entity")["construct"]["references"],
+        json!({ "owner": ["business:composite-owner"] })
+    );
+    assert_eq!(
+        entry("state_machine")["construct"]["references"],
+        json!({ "transitions": ["business:event-like"] })
+    );
+
+    // The one seam: only `bundle.rs` reads a `construct` declaration.
+    let src = common::crate_dir().join("src");
+    let mut readers = Vec::new();
+    for file in fs::read_dir(&src).expect("src") {
+        let path = file.expect("entry").path();
+        let text = fs::read_to_string(&path).expect("read");
+        if text.contains("extras.get(\"construct\")") {
+            readers.push(
+                path.file_name()
+                    .expect("name")
+                    .to_string_lossy()
+                    .into_owned(),
+            );
+        }
+    }
+    assert_eq!(readers, ["bundle.rs"]);
+    let bundle_rs = fs::read_to_string(src.join("bundle.rs")).expect("bundle.rs");
+    assert_eq!(bundle_rs.matches("extras.get(\"construct\")").count(), 1);
+    assert_eq!(bundle_rs.matches("fn declared_construct").count(), 1);
+    assert_eq!(bundle_rs.matches("= declared_construct(").count(), 1);
+}
+
+#[trace("TC-1792", "FR-143-AC-8")]
+#[test]
+fn tc_1792_a_broken_manifest_declaration_refuses_naming_the_module_and_object_type() {
+    const ENTITY: &str = "  construct:\n    identity: identified\n    shape: record\n    members: {fields: required, identityFields: required}\n    rules: [identity_field_required]\n    meaning: quire.meaning.model.object-type/v1\n";
+    let cases: [(&str, String); 6] = [
+        (
+            "no meaning",
+            ENTITY.replace("    meaning: quire.meaning.model.object-type/v1\n", ""),
+        ),
+        (
+            "a member outside the vocabulary",
+            ENTITY.replace("identityFields: required}", "identityFields: required, colour: required}"),
+        ),
+        (
+            "a rule outside the vocabulary",
+            ENTITY.replace("[identity_field_required]", "[identity_field_required, be_nice]"),
+        ),
+        (
+            "a rule whose member presence is undeclared",
+            ENTITY.replace("{fields: required, identityFields: required}", "{fields: required}"),
+        ),
+        (
+            "a wildcard role",
+            ENTITY.replace(
+                "identityFields: required}\n",
+                "identityFields: required, owner: optional}\n    references: {owner: ['*']}\n",
+            ),
+        ),
+        (
+            "a role no loaded object type carries",
+            ENTITY.replace(
+                "identityFields: required}\n",
+                "identityFields: required, owner: optional}\n    references: {owner: [no-such-role]}\n",
+            ),
+        ),
+    ];
+    let original = fs::read_to_string(business_module().join("manifest.yaml")).expect("manifest");
+    assert_eq!(
+        original.matches(ENTITY).count(),
+        1,
+        "the entity declaration"
+    );
+    for (label, broken) in cases {
+        assert_ne!(broken, ENTITY, "{label}: the edit applies");
+        let dir = tempfile::tempdir().expect("tempdir");
+        let module = dir.path().join("spec-objects-business");
+        copy_tree(&business_module(), &module);
+        fs::write(
+            module.join("manifest.yaml"),
+            original.replace(ENTITY, &broken),
+        )
+        .expect("write");
+        let refusal = Bundle::load(
+            &fixture("business"),
+            &[module.as_path(), edge_vocabulary().as_path()],
+        )
+        .expect_err(label);
+        assert_eq!(refusal.code(), Code::ModuleRefused, "{label}");
+        let diagnostic = &refusal.diagnostic;
+        assert!(diagnostic.blocking, "{label}");
+        assert!(
+            diagnostic.message.starts_with(
+                "module spec-objects-business object type entity declares no valid construct: "
+            ),
+            "{label}: {}",
+            diagnostic.message
+        );
+        let locus = diagnostic.locus.as_ref().expect("a manifest locus");
+        assert_eq!(locus.path, "spec-objects-business/manifest.yaml", "{label}");
+    }
+}
+
+/// Every file under `dir` with one of `extensions`, skipping `generated`
+/// and `node_modules` directories, in path order.
+fn source_files(dir: &Path, extensions: &[&str], out: &mut Vec<PathBuf>) {
+    let Ok(read) = fs::read_dir(dir) else {
+        return;
+    };
+    let mut paths: Vec<PathBuf> = read.map(|entry| entry.expect("entry").path()).collect();
+    paths.sort();
+    for path in paths {
+        let name = path
+            .file_name()
+            .expect("name")
+            .to_string_lossy()
+            .into_owned();
+        if path.is_dir() {
+            if !matches!(name.as_str(), "generated" | "node_modules" | "__pycache__") {
+                source_files(&path, extensions, out);
+            }
+        } else if path
+            .extension()
+            .is_some_and(|e| extensions.contains(&e.to_string_lossy().as_ref()))
+        {
+            out.push(path);
+        }
+    }
+}
+
+/// `file:line: literal` for every quoted business kind name in the code of
+/// `files`, comment lines skipped, relative to `root`.
+fn kind_name_literals(root: &Path, files: &[PathBuf], names: &[String]) -> Vec<String> {
+    let mut out = Vec::new();
+    for file in files {
+        let text = fs::read_to_string(file).expect("read");
+        let relative = file
+            .strip_prefix(root)
+            .unwrap_or(file)
+            .display()
+            .to_string();
+        for (number, line) in text.lines().enumerate() {
+            let code = line.trim_start();
+            if ["//", "/*", "*", "#"].iter().any(|c| code.starts_with(c)) {
+                continue;
+            }
+            for name in names {
+                for quote in ['"', '\'', '`'] {
+                    let literal = format!("{quote}{name}{quote}");
+                    if code.contains(&literal) {
+                        out.push(format!("{relative}:{}: {literal}", number + 1));
+                    }
+                }
+            }
+        }
+    }
+    out
+}
+
+#[trace("TC-1787", "FR-142-AC-7")]
+#[test]
+fn tc_1787_no_business_kind_name_is_a_literal_in_source() {
+    let root = workspace_dir();
+    // The business kinds are the vendored module's object type names.
+    let manifest = fs::read_to_string(business_module().join("manifest.yaml")).expect("manifest");
+    let kinds: Vec<String> = manifest
+        .lines()
+        .filter_map(|line| line.strip_prefix("- name: "))
+        .map(str::to_string)
+        .collect();
+    assert_eq!(kinds.len(), 11, "{kinds:?}");
+    // A kind name that is also a core shape term (`enumeration`,
+    // `state_machine`) names the shape, which backends dispatch on.
+    let vocabulary = read_json(&root.join("schema/semantic/v1/construct-vocabulary.json"));
+    let shapes: Vec<&str> = vocabulary["shapes"]
+        .as_array()
+        .expect("shapes")
+        .iter()
+        .filter_map(Value::as_str)
+        .collect();
+    let names: Vec<String> = kinds
+        .into_iter()
+        .filter(|kind| !shapes.contains(&kind.as_str()))
+        .collect();
+
+    let mut files = Vec::new();
+    source_files(
+        &root.join("src"),
+        &["mjs", "js", "mts", "ts", "json"],
+        &mut files,
+    );
+    for krate in fs::read_dir(root.join("crates")).expect("crates") {
+        source_files(
+            &krate.expect("crate").path().join("src"),
+            &["rs"],
+            &mut files,
+        );
+    }
+    source_files(&root.join("python_backend"), &["py", "json"], &mut files);
+    assert!(files.len() > 100, "{} source files", files.len());
+
+    // Two literals name something other than a construct kind: the `event`
+    // step kind of the sequence vocabulary, and the `entity` role the 1.x
+    // declared-loss rule reads.
+    const NOT_A_KIND: [(&str, &str); 2] = [
+        ("crates/semantic-ir/src/schema.rs", "\"event\""),
+        ("crates/semantic-ir/src/rules.rs", "\"entity\""),
+    ];
+    let hits: Vec<String> = kind_name_literals(&root, &files, &names)
+        .into_iter()
+        .filter(|hit| {
+            !NOT_A_KIND.iter().any(|(file, literal)| {
+                hit.starts_with(&format!("{file}:")) && hit.ends_with(literal)
+            })
+        })
+        .collect();
+    assert_eq!(hits, Vec::<String>::new(), "business kind names in source");
+
+    // The planted control: a backend matching on `entity` fails the gate.
+    let dir = tempfile::tempdir().expect("tempdir");
+    let planted = dir.path().join("planted.mjs");
+    fs::write(&planted, "if (kind.name === \"entity\") render();\n").expect("write");
+    assert_eq!(
+        kind_name_literals(dir.path(), &[planted], &names),
+        ["planted.mjs:1: \"entity\""]
+    );
+}
+
+#[trace("TC-1794", "FR-143-AC-9")]
+#[test]
+fn tc_1794_a_construct_requiring_feature_order_refuses_its_artifacts_for_want_of_a_source() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let module = dir.path().join("spec-objects-business");
+    copy_tree(&business_module(), &module);
+    let manifest = module.join("manifest.yaml");
+    let text = fs::read_to_string(&manifest).expect("manifest");
+    let from = "    members: {fields: required, identityFields: required}\n    rules: [identity_field_required]\n";
+    assert_eq!(text.matches(from).count(), 1, "the entity declaration");
+    fs::write(
+        &manifest,
+        text.replace(
+            from,
+            "    members: {fields: required, identityFields: required, featureOrder: required}\n    rules: [identity_field_required]\n",
+        ),
+    )
+    .expect("write");
+    let root = fixture("business");
+    let bundle = Bundle::load(&root, &[module.as_path(), edge_vocabulary().as_path()])
+        .unwrap_or_else(|r| panic!("the declaration is valid vocabulary: {r}"));
+    let extractions = extract(&bundle);
+    let resolutions = resolve(&bundle, &extractions);
+    let limits = Limits::declared().expect("limits.json parses");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    // Every entity artifact, and only those, is refused naming the member.
+    let rule = "lowers to no `entity` construct: the construct requires featureOrder, which this frontend has no source for";
+    let entity_refusals: Vec<&str> = refusals(&lowered)
+        .iter()
+        .map(|d| d.message.as_str())
+        .filter(|m| m.contains(rule))
+        .collect();
+    for id in ["FR-001", "OP-001"] {
+        assert!(
+            entity_refusals
+                .iter()
+                .any(|m| m.starts_with(&format!("artifact {id} "))),
+            "{id}: {entity_refusals:#?}"
+        );
+    }
+    assert!(refusals(&lowered).iter().all(|d| d.blocking));
+    assert!(
+        !lowered
+            .types
+            .iter()
+            .any(|t| t.identity == type_ref("FR-001")),
+        "no type of the refused entity is emitted"
     );
 }

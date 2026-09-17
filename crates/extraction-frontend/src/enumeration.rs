@@ -27,7 +27,7 @@ use crate::bundle::{Document, ObjectType};
 use crate::constructs::ConstructMembers;
 use crate::diagnostics::{Code, Diagnostic, Locus};
 use crate::lower::{
-    ArtifactContext, Kind, LowerError, Lowering, Origin, TypeDefinition, UnknownPolicy, Variant,
+    ArtifactContext, LowerError, Lowering, Origin, TypeDefinition, UnknownPolicy, Variant,
 };
 
 /// The `match:` key of the enumeration's row locator.
@@ -240,7 +240,7 @@ pub fn lower_enum(rows: &[ValueRow], ctx: &ArtifactContext<'_>) -> Result<Loweri
         definition: TypeDefinition {
             identity: type_identity,
             display_name: ctx.display_name.to_string(),
-            kind: Kind::Enumeration,
+            kind: ctx.kind(),
             roles: ctx.roles.clone(),
             origin: Origin::Source(Locus::head(&source, ctx.path)),
             constraints: Vec::new(),

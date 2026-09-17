@@ -28,7 +28,10 @@
     "schemas/ValueObject.json",
     "schemas/toolchain.json"
   ],
-  "manifest_sha256": "e09ce2c27096f5ea27f5329debc1565ae90fdbfb68173629ded0141441c5e43f",
-  "edits": [],
+  "manifest_sha256": "cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
+  "edits": [
+    "manifest.yaml: a `construct:` declaration (identity, shape, members, references, rules, meaning) inserted after `roles` (or after `name` where the object type declares no roles) in each of the ten object types domain, entity, value_object, aggregate_root, nested_entity, repository, event, state_machine, process and enumeration (filament-core-data#172). `population` declares none and lowers to a record. The key is read raw from these bytes until quire-rs carries it on CompiledArchetype (agent-ix/quire-rs#445); the upstream declarations land in agent-ix/spec-objects-business and replace this edit when the pin moves.",
+    "manifest.yaml: two roles added so each declaration's references name roles, never object type names: `aggregate-member` on entity, value_object, nested_entity and enumeration (the types an aggregate root's members name), and `composite-owner` on entity, aggregate_root and nested_entity (the types a nested entity's owner names)."
+  ],
   "note": "Copied byte-for-byte with `git show f7fdfda:<path>`; never loaded from ~/.ix (NFR-033-AC-3). skeletons/ are not vendored: the frontend consumes manifest.yaml and schemas/ only. Revision f7fdfda (0.4.0, filament-core-data#154) is the first revision whose object types declare the FR-075 model tables (States, Transitions, Workflow steps, Ubiquitous Language, Members) quire-rs 6eec7e8+ gates extraction on; 48b213a (0.5.0) adds the `relationships` token and `## Relationships` tables, which are FR-076 relation extraction and belong to filament-core-data#155/#156."
 }
