@@ -83,21 +83,66 @@ construct's disposition is written down rather than decided at the keyboard.
 | `reference` | `pub struct N(SemanticIdentity);` newtype over the validated identity, not over the target's Rust type | `#[serde(transparent)]` plus a validating `Deserialize` |
 | `entity` | `pub struct N { .. }` as for `record`, plus `pub const IDENTITY_FIELDS: &[&str]` in the type's module, naming the fields that tell its instances apart in the order `identityFields` declares them | as for `record` |
 
-- `entity` is the one contract `1.2.0` construct kind this backend renders. Its
-  built-in rule, that `identityFields` is non-empty and names fields of the
-  type, is decided by the reader before generation; the backend carries the
-  identity field names. Its Quire meaning, that instances are told apart by
-  the identity fields and persist across changes to the other fields, is a
-  property of instances rather than of one value, so the generated
-  `PartialEq` compares every member and a consumer compares instances by
-  `IDENTITY_FIELDS`. That is the carried-not-enforced row
+| `value_object` | `pub struct N { .. }` as for `record` | as for `record`; the derived `PartialEq` compares every member, which is the construct's value equality |
+| `nested_entity` | as for `entity`, plus `pub const OWNER: &str`, the owning type's semantic identity | as for `record` |
+| `aggregate_root` | as for `entity`, plus `pub const MEMBERS: &[&str]`, the members' semantic identities | as for `record` |
+| `enumeration` | fieldless `pub enum N { .. }`, one variant per declared variant | as for `enum` |
+| `event` | `pub struct N { .. }` with every member private, one `&self` accessor per member, and `pub const OCCURRENCE_FIELD: &str` | as for `record`; `try_new` and `Deserialize` are the only ways to build a value |
+| `state_machine` | `pub struct N { .. }` as for `record`, plus `pub enum NState { .. }`, one fieldless variant per state, and `pub const TRANSITIONS: &[TransitionMeta]` | as for `record`; each state variant carries `#[serde(rename = "<state name>")]` where the identifier differs |
+| `process` | as for `entity`, plus `pub const STEPS: &[StepMeta]` | as for `record` |
+| `repository` | `pub trait N { .. }`, one method per operation, its parameters and return mapped by the field rules, plus `pub const PERSISTS: &[&str]` | none: a repository holds no state |
+| `domain` | `pub struct N;` unit struct, plus `pub const MEMBERS: &[&str]` and `pub const VOCABULARY: &[TermMeta]` | none: a domain has no instance data |
+
+- Each construct kind of
+  [FR-142](./FR-142-declare-one-construct-per-object-type.md) selects its own
+  row. The reader decides every built-in rule before generation, so the backend
+  renders what the construct declares:
+  - an `entity`, `nested_entity`, `aggregate_root` or `process` module declares
+    `IDENTITY_FIELDS`, the names of its identity fields in the order
+    `identityFields` declares them, including a field a supertype declares;
+  - an `event` is immutable: no member is public, so a value cannot change
+    after `try_new` or `Deserialize` builds it;
+  - a `state_machine` transition names its `from` and `to` states and its
+    trigger operation by name, its guard by clause identifier, and its emitted
+    events by semantic identity;
+  - a `repository` method takes `&self` where its operation declares an empty
+    frame, and `&mut self` otherwise.
+- Instance identity, and an aggregate root's, state machine's or repository's
+  clauses, are Quire meaning over instances rather than over one value. The
+  generated `PartialEq` compares every member, and a consumer compares
+  instances by `IDENTITY_FIELDS`. That is the carried-not-enforced row
   [FR-058](./FR-058-refuse-unsupported-constructs-with-stable-diagnostics.md)
   declares.
-- Every other construct kind of
-  [FR-142](./FR-142-declare-one-construct-per-object-type.md), and every model
-  member of [FR-141](./FR-141-carry-the-model-members-in-the-semantic-ir.md),
-  selects no row and SHALL be refused with `UNSUPPORTED_CONSTRUCT` at its
-  pointer.
+
+### Model members
+
+- The backend SHALL render each model member of
+  [FR-141](./FR-141-carry-the-model-members-in-the-semantic-ir.md) by this
+  table. A module declares a member's constant only where the type carries the
+  member, so a `record` or `entity` module carries none of them:
+
+| Member | Rust form |
+|---|---|
+| `supertypes` | the subtype's struct carries its effective members: the supertypes' fields, farthest first, then its own, each redefined field left out; `pub const SUPERTYPES: &[&str]` names the direct supertypes |
+| `abstract` | `pub const ABSTRACT: bool = true`; the struct is generated |
+| `subsets` | `pub const FIELD_SUBSETS: &[FieldLinkMeta]`, each member and the members its values are a subset of, by wire name |
+| `redefines` | the redefining member replaces the inherited one in the struct; `pub const FIELD_REDEFINES: &[FieldLinkMeta]` names the member it redefines |
+| operation `frame`, `requires`, `ensures` | `pub const OPERATION_CONTRACTS: &[OperationContractMeta]`, each operation's frame and inline Quire clauses as text |
+| `populations` | `pub const POPULATIONS: &[PopulationMeta]` in `identity.rs`, each population's identity, display name, member types and extents |
+
+- The descriptor types `TransitionMeta`, `StepMeta`, `TermMeta`,
+  `FieldLinkMeta`, `FrameMeta`, `InlineClauseMeta`, `OperationContractMeta`,
+  `PopulationMemberMeta` and `PopulationMeta` SHALL be declared in
+  `identity.rs` exactly when the crate carries a construct member beyond
+  identity fields or a population.
+- `abstract` and `subsets` are carried, not enforced: Rust has no abstract
+  struct, and the subset relation is Quire meaning over values. That is the
+  carried-not-enforced row
+  [FR-058](./FR-058-refuse-unsupported-constructs-with-stable-diagnostics.md)
+  declares.
+- If an inherited field and another effective field of a type derive one
+  member name, then the backend SHALL raise the member-scope collision of
+  [FR-055](./FR-055-derive-stable-rust-identifiers.md) and write no file.
 
 - If a variant of a `kind: "enum"` type carries a `payloadType`, then the
   backend SHALL raise a blocking
@@ -219,13 +264,13 @@ construct's disposition is written down rather than decided at the keyboard.
 
 | `kind` | `reject` | `preserve` or `surface` |
 |---|---|---|
-| `record`, `entity` | `#[serde(deny_unknown_fields)]` | one `#[serde(flatten)]` `UnknownMembers` member |
-| `enum`, `union` | serde's default, under which an unrecognised variant is a deserialization error | a generated catch-all variant `Unknown`, carrying the unrecognised tag and, for a `union`, its payload as a `SemanticValue` |
-| `scalar`, `alias`, `sequence`, `map`, `reference` | inert | inert |
+| `record`, `entity`, `value_object`, `nested_entity`, `aggregate_root`, `event`, `state_machine`, `process` | `#[serde(deny_unknown_fields)]` | one `#[serde(flatten)]` `UnknownMembers` member |
+| `enum`, `enumeration`, `union` | serde's default, under which an unrecognised variant is a deserialization error | a generated catch-all variant `Unknown`, carrying the unrecognised tag and, for a `union`, its payload as a `SemanticValue` |
+| `scalar`, `alias`, `sequence`, `map`, `reference`, `repository`, `domain` | inert | inert |
 
 - A `scalar` has no members; a `sequence` and a `map` admit every element and
-  every key by construction; an `alias` and a `reference` are transparent. On
-  those five kinds there is no unknown member for a policy to govern, so the
+  every key by construction; an `alias` and a `reference` are transparent; a
+  `repository` and a `domain` carry no instance data. On those seven kinds there is no unknown member for a policy to govern, so the
   backend SHALL carry the declared value verbatim into the type's metadata
   constant and SHALL state in the generated documentation that it is inert for
   the kind. Recording it is what stops it being dropped; refusing it would
@@ -321,6 +366,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | FR-054-AC-14 | The generated crate's `Cargo.toml` names `serde` as its only `[dependencies]` entry, at the pinned exact version. | Inspection (TC-655) |
 | FR-054-AC-15 | A `SemanticValue` retaining a repeated object member name and an unsorted member order re-serializes to the bytes it came from, and a number re-serializes through the declared ECMAScript formatter — so `1.0` becomes `1`, which is what `JSON.parse` then `JSON.stringify` produces and what the corpus's canonical form compares. Byte identity is claimed for the members the crate retains bytes for and for no others: serde's data model hands a visitor a parsed `f64` and never the source lexeme, and the alternative would need `serde_json`, which the published `rust` target contract's `serde`-only runtime forbids. | Test (TC-650) |
 | FR-054-AC-16 | A `1.2.0` `entity` selects the `kind:entity` row: it renders the record struct, its module declares `IDENTITY_FIELDS` naming its identity fields in declared order, and a `record` in the same document declares no `IDENTITY_FIELDS`. | Test (TC-1762) |
+| FR-054-AC-17 | Generating the contract `1.2.0` constructs fixture succeeds, each construct kind selects its own `kind:` row and each model member its `construct:` row, and the emitted crate carries the form each row states: `IDENTITY_FIELDS` and `OWNER` on a nested entity, `MEMBERS` on an aggregate root and a domain, private members and accessors on an event, `<Name>State` and `TRANSITIONS` on a state machine, `STEPS` on a process, a trait on a repository, a unit struct on a domain, the inherited members and `SUPERTYPES` on a subtype, `ABSTRACT`, `FIELD_SUBSETS`, `FIELD_REDEFINES`, `OPERATION_CONTRACTS` and `POPULATIONS`. | Test (TC-1772) |
 
 ## Dependencies
 

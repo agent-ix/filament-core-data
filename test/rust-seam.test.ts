@@ -27,10 +27,7 @@ import {
 	registryWith,
 	selectBackend,
 } from "../src/compiler/backends/seam.mjs";
-import {
-	CONSTRUCT_KINDS,
-	RENDERED_CONSTRUCT_KINDS,
-} from "../src/compiler/constructs.mjs";
+import { CONSTRUCT_KINDS } from "../src/compiler/constructs.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -269,7 +266,7 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 	});
 
 	/** Traces: TC-1749; FR-142-AC-5, FR-142-CON-2. */
-	it("refuses every construct kind it does not render and every model member at its pointer and writes no file", () => {
+	it("renders every construct kind by its own kind row and refuses none", () => {
 		const constructs = readJson(
 			"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
 		) as { types: { kind: string }[] };
@@ -278,34 +275,27 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 			host: host(),
 		}) as never as Manifest;
 
-		expect(manifest.state).toBe("unsupported");
-		expect(manifest.files).toStrictEqual([]);
-		const refused = manifest.diagnostics
-			.filter((d) => d.code === "agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT")
-			.map((d) => d.message);
-		for (const kind of CONSTRUCT_KINDS.filter(
-			(one) => !RENDERED_CONSTRUCT_KINDS.includes(one),
-		))
-			expect(
-				refused.some((message) =>
-					message.endsWith(`contract 1.2.0 kind ${kind}`),
-				),
-				`no refusal names kind ${kind}`,
-			).toBe(true);
-		for (const member of [
-			"supertypes",
-			"abstract",
-			"subsets",
-			"redefines",
-			"frame",
-			"requires",
-			"ensures",
-			"populations",
-		])
-			expect(
-				refused.some((message) => message.endsWith(` ${member}`)),
-				`no refusal names ${member}`,
-			).toBe(true);
+		expect(
+			manifest.diagnostics.map((d) => `${d.code}: ${d.message}`),
+		).toStrictEqual([]);
+		expect(manifest.state).toBe("success");
+		const written = new Map<string, string>();
+		generateRust(rustRequest({ ir: constructs }), {
+			clear() {},
+			write(_outputRoot: string, path: string, text: string) {
+				written.set(path, text);
+			},
+		});
+		const identity = written.get("src/identity.rs");
+		if (!identity) throw new Error("no src/identity.rs");
+		const declared = new Set(constructs.types.map((type) => type.kind));
+		for (const kind of CONSTRUCT_KINDS) {
+			expect(declared.has(kind), `the fixture declares no ${kind}`).toBe(true);
+			expect(identity, `no TYPES row of kind ${kind}`).toContain(
+				`kind: "${kind}",`,
+			);
+		}
+		expect(identity).toContain("pub const POPULATIONS: &[PopulationMeta]");
 	});
 
 	/** Traces: TC-1762; FR-054-AC-16, FR-058-AC-13. */

@@ -179,8 +179,8 @@ export const OPERATORS = Object.freeze([
 			[/!Object\.hasOwn\(KERNEL_SCALARS, scalar\)/, "false"],
 			[/!applies\(keyword, resolved\.kind, resolved\.scalar\)/, "false"],
 			[
-				/"kind": "scalar\|alias\|sequence\|map\|reference"/,
-				'"kind": "scalar|alias|sequence|map|record|reference"',
+				/"kind": "scalar\|alias\|sequence\|map\|reference\|repository\|domain"/,
+				'"kind": "scalar|alias|sequence|map|record|reference|repository|domain"',
 			],
 		],
 	},

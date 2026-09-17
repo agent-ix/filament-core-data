@@ -159,7 +159,13 @@ visible in the run rather than invisible in the generated source.
 
 | Construct | Carried as | Not stated by the type |
 |---|---|---|
-| `entity` | the record struct and `IDENTITY_FIELDS` | that instances are told apart by the identity fields and persist across changes to the other fields; the derived `PartialEq` compares every member |
+| `entity`, `nested_entity`, `aggregate_root`, `process` | the record struct and `IDENTITY_FIELDS` | that instances are told apart by the identity fields and persist across changes to the other fields; the derived `PartialEq` compares every member |
+| `aggregate_root`, `state_machine` and `repository` clauses; transition guards; operation `requires` and `ensures` | the clause text in the type's metadata constant and `OPERATION_CONTRACTS`; a guard by clause identifier | the Quire meaning of each clause over instances; no generated method evaluates a clause |
+| `state_machine` transitions | `<Name>State` and `TRANSITIONS` | which transition fires: a trigger fires only when its guard holds, which is a clause |
+| `abstract` | the generated struct and `ABSTRACT` | that every instance is an instance of a subtype; Rust has no abstract struct |
+| `subsets` | `FIELD_SUBSETS` | that the member's values are a subset of the named members' values |
+| operation `frame` | `OPERATION_CONTRACTS`; a repository method whose frame is empty takes `&self` | that an operation changes only the members its frame names |
+| `populations` | `POPULATIONS` | the extent of each member type over a population |
 
 ## Constraints
 
@@ -188,6 +194,7 @@ visible in the run rather than invisible in the generated source.
 | FR-058-AC-11 | Reverting the refusal branch for `UNSUPPORTED_PATTERN` makes at least one test fail, demonstrated by a falsification run. | Test (TC-697) |
 | FR-058-AC-12 | Each of the four size limits raises `LIMIT_EXCEEDED` naming the limit and emits no file. | Test (TC-692) |
 | FR-058-AC-13 | Generating a `1.2.0` `entity` raises no diagnostic and emits `IDENTITY_FIELDS`, the carried-not-enforced row this requirement declares. | Test (TC-1762) |
+| FR-058-AC-14 | Generating the contract `1.2.0` constructs fixture, which carries every construct kind and model member, raises no diagnostic and emits the constant each carried-not-enforced row names. | Test (TC-1772) |
 
 ## Dependencies
 

@@ -22,7 +22,14 @@
  * network, or working directory is read on any path through this module.
  */
 
-import { identityFieldNames } from "../../constructs.mjs";
+import {
+	constructOf,
+	IDENTIFIED_KINDS,
+	identityFieldNames,
+	isEnumerationShaped,
+	isRecordShaped,
+	populationsOf,
+} from "../../constructs.mjs";
 import { lowerConstraints } from "./constraints.mjs";
 import { diagnostic, fragment, RUST_BACKEND_CODES } from "./diagnostics.mjs";
 import { buildGraph, isCollection } from "./graph.mjs";
@@ -180,9 +187,8 @@ const V1_1_NODES = Object.freeze([
  */
 export function unknownDisposition(kind, policy) {
 	const retains = policy === "preserve" || policy === "surface";
-	if (kind === "record" || kind === "entity")
-		return retains ? "record-retain" : "record-reject";
-	if (kind === "enum" || kind === "union") {
+	if (isRecordShaped(kind)) return retains ? "record-retain" : "record-reject";
+	if (isEnumerationShaped(kind) || kind === "union") {
 		return retains ? "variant-catchall" : "variant-closed";
 	}
 	return "inert";
@@ -222,6 +228,9 @@ export function mapDocument(ir, options = {}) {
 	const byIdentity = new Map();
 	for (const definition of definitions)
 		byIdentity.set(definition.identity, definition);
+	// The construct facts read the authored document, not the rendering view:
+	// a subtype's own fields are the ones that redefine or subset (FR-141).
+	const authored = options.authored ?? byIdentity;
 
 	if (version === "1.0.0") checkV11Nodes(definitions, raise);
 
@@ -254,6 +263,7 @@ export function mapDocument(ir, options = {}) {
 			version,
 			raise,
 			typeScope,
+			authored,
 		});
 		if (model === undefined) continue;
 		diagnostics.push(...model.diagnostics);
@@ -277,6 +287,7 @@ export function mapDocument(ir, options = {}) {
 			types: models,
 			occurrences: ir.occurrences ?? [],
 			extensions: ir.extensions ?? [],
+			populations: populationsOf(ir),
 			componentOf: graph.componentOf,
 			boxedEdges: [...graph.boxed].sort(byCodePoint),
 		},
@@ -345,7 +356,7 @@ function docParts(node, { fallbackIdentity, roles, unit } = {}) {
 }
 
 function mapType(definition, context) {
-	const { byIdentity, omitted, graph, version, raise, typeScope } = context;
+	const { byIdentity, graph, version, raise, typeScope, authored } = context;
 	const locus = definition.origin?.source;
 	const identity = definition.identity;
 	const kind = String(definition.kind);
@@ -419,6 +430,8 @@ function mapType(definition, context) {
 		operations: definition.operations ?? [],
 		clauses: definition.clauses ?? [],
 	};
+	const construct = constructOf(authored.get(identity) ?? definition, authored);
+	if (construct !== undefined) model.construct = construct;
 	// The constraint diagnostics belong to the run, not to the model; the model
 	// carries them only until `mapDocument` drains them into the run's list.
 	model.diagnostics = lowered.diagnostics;
@@ -451,12 +464,18 @@ function mapType(definition, context) {
 			break;
 		}
 		case "record":
-		case "entity": {
-			// An entity selects its own row: the record's rendering plus its
-			// identity field names (FR-054).
+		case "entity":
+		case "value_object":
+		case "nested_entity":
+		case "aggregate_root":
+		case "event":
+		case "process":
+		case "state_machine": {
+			// Each record-shaped construct selects its own row: the record's
+			// rendering plus the construct's members (FR-054, FR-142).
 			model.row = `kind:${kind}`;
-			if (kind === "entity")
-				model.identityFields = identityFieldNames(definition);
+			if (IDENTIFIED_KINDS.includes(kind))
+				model.identityFields = identityFieldNames(definition, authored);
 			model.fields = [];
 			for (const field of definition.fields ?? []) {
 				const mapped = mapField(field, definition, context, version);
@@ -469,16 +488,51 @@ function mapType(definition, context) {
 			model.diagnostics.push(
 				...collisionsIn(SCOPES.RECORD_MEMBERS, memberScope),
 			);
+			if (kind === "state_machine") {
+				// The states render as the variants of `<Name>State`.
+				model.states = [];
+				for (const state of definition.states ?? []) {
+					const rendered = variantName(state);
+					if (rendered.ok !== true) {
+						raise(
+							RUST_BACKEND_CODES.UNRENDERABLE_NAME,
+							rendered.diagnostic.message,
+							state.origin?.source ?? locus,
+						);
+						continue;
+					}
+					model.states.push({
+						identity: state.identity,
+						name: state.name,
+						ident: rendered.value,
+						rename: serdeRename(rendered.value, state.name),
+					});
+				}
+				model.diagnostics.push(
+					...collisionsIn(
+						SCOPES.ENUM_VARIANTS,
+						model.states.map((state) => ({
+							identifier: state.ident,
+							identity: state.identity,
+						})),
+					),
+				);
+				typeScope.push({
+					identifier: `${resolvedName.value}State`,
+					identity: `${identity}#states`,
+				});
+			}
 			break;
 		}
 		case "enum":
+		case "enumeration":
 		case "union": {
 			model.row = `kind:${kind}`;
 			model.wireForm =
 				kind === "union" ? wireFormOf(definition.extensions) : undefined;
 			model.variants = [];
 			for (const variant of definition.variants ?? []) {
-				if (kind === "enum" && variant.payloadType !== undefined) {
+				if (kind !== "union" && variant.payloadType !== undefined) {
 					raise(
 						RUST_BACKEND_CODES.PAYLOAD_ON_ENUM_VARIANT,
 						`the enum variant ${fragment(variant.identity)} carries a payloadType, which only a union variant may`,
@@ -532,6 +586,31 @@ function mapType(definition, context) {
 			model.diagnostics.push(
 				...collisionsIn(SCOPES.ENUM_VARIANTS, variantScope),
 			);
+			break;
+		}
+		case "repository": {
+			// An interface holding no state: one trait method per operation.
+			model.row = "kind:repository";
+			model.methods = [];
+			for (const operation of definition.operations ?? []) {
+				const method = mapMethod(operation, definition, context, version);
+				if (method !== undefined) model.methods.push(method);
+			}
+			model.diagnostics.push(
+				...collisionsIn(
+					SCOPES.RECORD_MEMBERS,
+					model.methods.map((method) => ({
+						identifier: method.ident,
+						identity: method.identity,
+					})),
+				),
+			);
+			break;
+		}
+		case "domain": {
+			// A namespace, not a data type: a unit struct carrying its members and
+			// vocabulary as associated constants.
+			model.row = "kind:domain";
 			break;
 		}
 		case "alias": {
@@ -666,6 +745,69 @@ function referenceTo(ref, edgeKey, position, owner, context) {
 	}
 	const base = `crate::${resolvedName.value}`;
 	return graph.boxed.has(edgeKey) ? `Box<${base}>` : base;
+}
+
+/**
+ * One repository operation as a trait method: its parameters and return map
+ * through the member rows, so a parameter's Rust type is the one a field of the
+ * same shape carries.
+ */
+function mapMethod(operation, owner, context, version) {
+	const { raise } = context;
+	const locus = operation.origin?.source ?? owner.origin?.source;
+	const rendered = memberName(operation);
+	if (rendered.ok !== true) {
+		raise(
+			RUST_BACKEND_CODES.UNRENDERABLE_NAME,
+			rendered.diagnostic.message,
+			locus,
+		);
+		return undefined;
+	}
+	const params = [];
+	for (const param of operation.params ?? []) {
+		const mapped = mapField(param, owner, context, version);
+		if (mapped === undefined) return undefined;
+		params.push(mapped);
+	}
+	let returns;
+	if (operation.returns !== undefined) {
+		const mapped = mapField(
+			{
+				identity: `${operation.identity}#returns`,
+				name: "returns",
+				typeRef: operation.returns.typeRef,
+				nullable: operation.returns.nullable,
+				multiplicity: operation.returns.multiplicity ?? {
+					lower: 1,
+					upper: 1,
+				},
+			},
+			owner,
+			context,
+			version,
+		);
+		if (mapped === undefined) return undefined;
+		returns = mapped.rustType;
+	}
+	const frame = operation.frame;
+	const readsOnly =
+		frame !== undefined &&
+		[frame.modifies, frame.creates, frame.deletes].every(
+			(list) => (list ?? []).length === 0,
+		);
+	return {
+		identity: operation.identity,
+		name: operation.name,
+		ident: rendered.value,
+		params,
+		returns,
+		receiver: readsOnly ? "&self" : "&mut self",
+		doc: docParts(
+			{ displayName: operation.name },
+			{ fallbackIdentity: operation.identity },
+		),
+	};
 }
 
 function mapField(field, owner, context, version) {

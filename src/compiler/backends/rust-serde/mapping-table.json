@@ -85,6 +85,141 @@
 			"diagnosticCode": null
 		},
 		{
+			"rowKey": "kind:value_object",
+			"axis": "kind",
+			"selector": "value_object",
+			"rustForm": "pub struct N { .. }",
+			"serdeAttributes": [],
+			"mechanism": "the record row; the derived PartialEq compares every member, which is the value equality the construct declares",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "kind:nested_entity",
+			"axis": "kind",
+			"selector": "nested_entity",
+			"rustForm": "pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str] and pub const OWNER: &str",
+			"serdeAttributes": [],
+			"mechanism": "the entity row, plus the semantic identity of the owning type beside FIELDS in the type's module",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "kind:aggregate_root",
+			"axis": "kind",
+			"selector": "aggregate_root",
+			"rustForm": "pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str] and pub const MEMBERS: &[&str]",
+			"serdeAttributes": [],
+			"mechanism": "the entity row, plus the semantic identities of the aggregate's members; its clauses are carried in the type's metadata constant",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "kind:enumeration",
+			"axis": "kind",
+			"selector": "enumeration",
+			"rustForm": "pub enum N { .. } (fieldless)",
+			"serdeAttributes": ["rename = \"<variant name>\""],
+			"mechanism": "the enum row: one variant per declared variant, the closed set the construct declares",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "kind:event",
+			"axis": "kind",
+			"selector": "event",
+			"rustForm": "pub struct N { .. } with private members, one accessor per member, and pub const OCCURRENCE_FIELD: &str",
+			"serdeAttributes": [],
+			"mechanism": "the record row with every member private: a value is built through try_new or Deserialize and read through accessors, so it is not changed after construction",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "kind:state_machine",
+			"axis": "kind",
+			"selector": "state_machine",
+			"rustForm": "pub struct N { .. } with pub enum NState { .. } and pub const TRANSITIONS: &[TransitionMeta]",
+			"serdeAttributes": [],
+			"mechanism": "the record row, plus one fieldless enum variant per state, serde-named by the state name, and each transition's from and to states, trigger operation, guard clause and emitted events",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "kind:process",
+			"axis": "kind",
+			"selector": "process",
+			"rustForm": "pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str] and pub const STEPS: &[StepMeta]",
+			"serdeAttributes": [],
+			"mechanism": "the entity row, plus each step's name, kind, consumed events and emitted events in declared order",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "kind:repository",
+			"axis": "kind",
+			"selector": "repository",
+			"rustForm": "pub trait N { fn op(&mut self, ..) -> R; .. } with pub const PERSISTS: &[&str]",
+			"serdeAttributes": [],
+			"mechanism": "one trait method per operation, holding no state; parameters and the return map through the field-axis rows; the receiver is &self when the operation declares an empty frame",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "kind:domain",
+			"axis": "kind",
+			"selector": "domain",
+			"rustForm": "pub struct N; with pub const MEMBERS: &[&str] and pub const VOCABULARY: &[TermMeta]",
+			"serdeAttributes": [],
+			"mechanism": "a unit struct naming the namespace, plus its members' semantic identities and its vocabulary; a domain has no instance data",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "construct:supertypes",
+			"axis": "construct",
+			"selector": "supertypes",
+			"rustForm": "pub const SUPERTYPES: &[&str]; the subtype's struct carries every inherited member",
+			"serdeAttributes": [],
+			"mechanism": "the effective member list: the supertypes' fields, farthest first, then the type's own, with each redefined field left out; the direct supertypes' semantic identities beside FIELDS",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "construct:abstract",
+			"axis": "construct",
+			"selector": "abstract",
+			"rustForm": "pub const ABSTRACT: bool = true",
+			"serdeAttributes": [],
+			"mechanism": "carried, not enforced: Rust has no abstract struct, so the struct is generated and the constant states that every instance belongs to a subtype",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "construct:subsets",
+			"axis": "construct",
+			"selector": "subsets",
+			"rustForm": "pub const FIELD_SUBSETS: &[FieldLinkMeta]",
+			"serdeAttributes": [],
+			"mechanism": "carried, not enforced: each member and the members its values are a subset of, by wire name; the subset relation is Quire meaning over values",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "construct:redefines",
+			"axis": "construct",
+			"selector": "redefines",
+			"rustForm": "pub const FIELD_REDEFINES: &[FieldLinkMeta]",
+			"serdeAttributes": [],
+			"mechanism": "the redefining member replaces the inherited one in the struct, and the constant names the member it redefines",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "construct:operation-contract",
+			"axis": "construct",
+			"selector": "operation-contract",
+			"rustForm": "pub const OPERATION_CONTRACTS: &[OperationContractMeta]",
+			"serdeAttributes": [],
+			"mechanism": "each operation's frame and inline Quire requires and ensures clauses, carried as text; a repository method whose frame is empty takes &self",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "construct:populations",
+			"axis": "construct",
+			"selector": "populations",
+			"rustForm": "pub const POPULATIONS: &[PopulationMeta] in identity.rs",
+			"serdeAttributes": [],
+			"mechanism": "each population's identity, display name, member types and extents, in document order",
+			"diagnosticCode": null
+		},
+		{
 			"rowKey": "scalar:any",
 			"axis": "scalar",
 			"selector": "any",
@@ -299,9 +434,7 @@
 		{
 			"rowKey": "field:multiplicity/upper-zero",
 			"axis": "field",
-			"selector": {
-				"upper": 0
-			},
+			"selector": { "upper": 0 },
 			"rustForm": null,
 			"serdeAttributes": [],
 			"mechanism": "refused: a member that may never be present has no Rust form serde round-trips",
@@ -311,7 +444,7 @@
 			"rowKey": "unknownPolicy:record/reject",
 			"axis": "unknownPolicy",
 			"selector": {
-				"kind": "record|entity",
+				"kind": "record|entity|value_object|nested_entity|aggregate_root|event|state_machine|process",
 				"policy": "reject"
 			},
 			"rustForm": "pub struct N { .. }",
@@ -323,7 +456,7 @@
 			"rowKey": "unknownPolicy:record/preserve",
 			"axis": "unknownPolicy",
 			"selector": {
-				"kind": "record|entity",
+				"kind": "record|entity|value_object|nested_entity|aggregate_root|event|state_machine|process",
 				"policy": "preserve"
 			},
 			"rustForm": "UnknownMembers",
@@ -335,7 +468,7 @@
 			"rowKey": "unknownPolicy:record/surface",
 			"axis": "unknownPolicy",
 			"selector": {
-				"kind": "record|entity",
+				"kind": "record|entity|value_object|nested_entity|aggregate_root|event|state_machine|process",
 				"policy": "surface"
 			},
 			"rustForm": "UnknownMembers",
@@ -346,10 +479,7 @@
 		{
 			"rowKey": "unknownPolicy:variants/reject",
 			"axis": "unknownPolicy",
-			"selector": {
-				"kind": "enum|union",
-				"policy": "reject"
-			},
+			"selector": { "kind": "enum|enumeration|union", "policy": "reject" },
 			"rustForm": "pub enum N { .. }",
 			"serdeAttributes": [],
 			"mechanism": "serde's own default, under which an unrecognised variant is a deserialization error",
@@ -358,10 +488,7 @@
 		{
 			"rowKey": "unknownPolicy:variants/preserve",
 			"axis": "unknownPolicy",
-			"selector": {
-				"kind": "enum|union",
-				"policy": "preserve"
-			},
+			"selector": { "kind": "enum|enumeration|union", "policy": "preserve" },
 			"rustForm": "a generated catch-all variant Unknown(String) on an enum, Unknown(UnknownVariant) on a union",
 			"serdeAttributes": [],
 			"mechanism": "a hand-written Serialize and Deserialize that keep the unrecognised tag and, for a union, its payload as a SemanticValue, and round-trip unchanged; validate returns no diagnostic",
@@ -370,10 +497,7 @@
 		{
 			"rowKey": "unknownPolicy:variants/surface",
 			"axis": "unknownPolicy",
-			"selector": {
-				"kind": "enum|union",
-				"policy": "surface"
-			},
+			"selector": { "kind": "enum|enumeration|union", "policy": "surface" },
 			"rustForm": "a generated catch-all variant Unknown(String) on an enum, Unknown(UnknownVariant) on a union",
 			"serdeAttributes": [],
 			"mechanism": "as preserve, and validate returns one UNKNOWN_MEMBER_SURFACED for an unrecognised variant",
@@ -383,12 +507,12 @@
 			"rowKey": "unknownPolicy:inert",
 			"axis": "unknownPolicy",
 			"selector": {
-				"kind": "scalar|alias|sequence|map|reference",
+				"kind": "scalar|alias|sequence|map|reference|repository|domain",
 				"policy": "any"
 			},
 			"rustForm": null,
 			"serdeAttributes": [],
-			"mechanism": "inert: a scalar has no members, a sequence and a map admit every element and every key by construction, and an alias and a reference are transparent. The declared value is carried verbatim into the type's metadata constant and stated inert in the generated documentation; it is never dropped and never refused",
+			"mechanism": "inert: a scalar has no members, a sequence and a map admit every element and every key by construction, and an alias and a reference are transparent, and a repository and a domain carry no instance data. The declared value is carried verbatim into the type's metadata constant and stated inert in the generated documentation; it is never dropped and never refused",
 			"diagnosticCode": null
 		},
 		{

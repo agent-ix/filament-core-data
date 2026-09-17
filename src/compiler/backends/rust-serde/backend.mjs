@@ -21,7 +21,6 @@
  */
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { unrenderedNodes } from "../../constructs.mjs";
 import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../../diagnostics.mjs";
 import { emitCrate, mediaTypeOf } from "./crate.mjs";
 import {
@@ -55,9 +54,8 @@ export const identity = "ix://agent-ix/filament-core-data/rust-backend";
  *
  * `supportedIrVersions` is `["1.1.0", "1.2.0"]` through the seam, while
  * `rust-serde/cli.mjs` keeps `["1.0.0", "1.1.0", "1.2.0"]` for its own
- * development path. A contract 1.2.0 `entity` renders by the `kind:entity`
- * row; every other construct kind, and every model member, is refused with
- * `UNSUPPORTED_CONSTRUCT` at its pointer (filament-core-data#147).
+ * development path. Every contract 1.2.0 construct kind renders by its own
+ * `kind:` row, and every model member by its `construct:` row (FR-054).
  * The narrowing is FR-063-CON-5 applied consistently rather than a capability
  * this backend lacks: the frozen FR-041 prototype document also calls itself
  * `1.0.0` and is a different shape entirely, so a seam that accepted `1.0.0`
@@ -80,6 +78,15 @@ export const rustBackend = Object.freeze({
 		"kind:scalar",
 		"kind:record",
 		"kind:entity",
+		"kind:value_object",
+		"kind:nested_entity",
+		"kind:aggregate_root",
+		"kind:enumeration",
+		"kind:event",
+		"kind:state_machine",
+		"kind:process",
+		"kind:repository",
+		"kind:domain",
 		"kind:enum",
 		"kind:union",
 		"kind:alias",
@@ -102,18 +109,6 @@ export const rustBackend = Object.freeze({
 				],
 			};
 		}
-
-		const unrendered = unrenderedNodes(request.ir);
-		if (unrendered.length > 0)
-			return {
-				state: "unsupported",
-				files: [],
-				diagnostics: unrendered.map((node) =>
-					rustDiagnostic(RUST_BACKEND_CODES.UNSUPPORTED_CONSTRUCT, {
-						message: `/ir${node.pointer}: the Rust backend renders no contract 1.2.0 ${node.member}`,
-					}),
-				),
-			};
 
 		const result = emitCrate(request, { licenseText });
 
