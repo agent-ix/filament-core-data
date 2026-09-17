@@ -1710,7 +1710,7 @@ blocked as stated above.
 | TC-1768 | The lifted config-version-table golden renders `ConfigVersion.json` with a display-name `$id` and the `FR-006` semantic id | Unit | P0 | FR-100-AC-8 | ✅ passed |
 | TC-1769 | Both Python targets generate the lifted config-version-table golden with display-name modules, including `JsonObject.py`, and no artifact-id-named module | Integration | P0 | FR-136-AC-9 | ✅ passed |
 | TC-1770 | The inspection sanctions a `RootModel[Any]` over an `any` kernel scalar document carrying only descriptive annotations and the `kernel-scalar` extension, and refuses the same document carrying `x-agent-ix-constraints` or any other extension as degraded | Unit | P0 | FR-078-AC-12 | ✅ passed |
-| TC-1771 | Two display names deriving one JSON Schema file name, or a definition named `index`, are refused with both identities named and no file written | Unit | P0 | FR-100-AC-9 | ✅ passed |
+| TC-1771 | Two display names deriving one JSON Schema file name, including names differing only in case, are refused with both identities named, and a definition named `index` is refused as colliding with the backend's `index.json`, each writing no file | Unit | P0 | FR-100-AC-9 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
 | TC-1585 | Every requirement the register names carries that issue's own link, and a row whose requirement omits it is reported | Unit | P0 | NFR-001-AC-6 | ✅ passed |
 

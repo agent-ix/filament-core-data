@@ -57,21 +57,41 @@ function nameOf(type) {
 	return declared.replace(/[^A-Za-z0-9._-]/g, "-");
 }
 /**
- * Every emitted path two sources claim: two definitions deriving one file name,
- * or a definition deriving the `index.json` the backend writes itself.
+ * Every emitted file name two sources claim, compared case-insensitively
+ * because a case-insensitive file system holds `Status.json` and
+ * `status.json` as one file: two definitions deriving one name, or a
+ * definition deriving the `index.json` the backend writes itself.
  */
 function fileNameCollisions(definitions) {
-	const claims = new Map([["index.json", ["index.json"]]]);
+	const claims = new Map();
 	for (const type of [...definitions].sort(byIdentity)) {
 		const path = `${nameOf(type)}.json`;
-		claims.set(path, [...(claims.get(path) ?? []), String(type.identity)]);
+		const key = path.toLowerCase();
+		const claim = claims.get(key) ?? { paths: [], identities: [] };
+		if (!claim.paths.includes(path)) claim.paths.push(path);
+		claim.identities.push(String(type.identity));
+		claims.set(key, claim);
 	}
 	return [...claims.entries()]
-		.filter(([, identities]) => identities.length > 1)
-		.map(([path, identities]) => ({ path, identities }))
+		.filter(
+			([key, claim]) => key === "index.json" || claim.identities.length > 1,
+		)
+		.map(([key, claim]) => ({
+			key,
+			paths: claim.paths.sort(),
+			identities: claim.identities,
+			reserved: key === "index.json",
+		}))
 		.sort((left, right) =>
-			left.path < right.path ? -1 : left.path > right.path ? 1 : 0,
+			left.key < right.key ? -1 : left.key > right.key ? 1 : 0,
 		);
+}
+/** The refusal message for one file-name collision. */
+function collisionMessage({ paths, identities, reserved }) {
+	const named = paths.join(" and ");
+	return reserved
+		? `${named}: JSON Schema backend derives a file name for ${identities.join(" and ")} that collides with the backend's index.json`
+		: `${named}: JSON Schema backend derives one file name, compared case-insensitively, for ${identities.join(" and ")}`;
 }
 function byIdentity(left, right) {
 	const a = String(left.identity);
@@ -389,9 +409,9 @@ export const jsonSchemaBackend = Object.freeze({
 			return {
 				state: "unsupported",
 				files: [],
-				diagnostics: collisions.map(({ path, identities }) =>
+				diagnostics: collisions.map((collision) =>
 					diagnostic(DIAGNOSTIC_CODES.UNDECLARED_LOSS, {
-						message: `${path}: JSON Schema backend derives one file name for ${identities.join(" and ")}`,
+						message: collisionMessage(collision),
 					}),
 				),
 			};

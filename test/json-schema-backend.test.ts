@@ -248,7 +248,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 	});
 
 	/** Traces: TC-1771; FR-100-AC-9. */
-	it("refuses two display names that derive one file name, naming both identities and writing no file", () => {
+	it("refuses two display names that derive one file name, case-insensitively, naming both identities and writing no file", () => {
 		const ir = JSON.parse(readFileSync(golden, "utf8"));
 		const overlay = ir.types.find(
 			(type: { displayName?: string }) => type.displayName === "ConfigOverlay",
@@ -276,7 +276,33 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		const refused = jsonSchemaBackend.generate({ ir: indexed });
 		expect(refused.state).toBe("unsupported");
 		expect(refused.files).toStrictEqual([]);
-		expect(refused.diagnostics[0].message).toContain("index.json");
+		expect(refused.diagnostics).toHaveLength(1);
+		expect(refused.diagnostics[0].message).toContain(
+			"collides with the backend's index.json",
+		);
+		expect(refused.diagnostics[0].message).not.toContain(
+			"one file name, compared case-insensitively",
+		);
+
+		// `Status` and `status` are one file on a case-insensitive file system.
+		const cased = JSON.parse(readFileSync(golden, "utf8"));
+		const upper = cased.types.find(
+			(type: { displayName?: string }) => type.displayName === "ConfigOverlay",
+		);
+		const lower = cased.types.find(
+			(type: { displayName?: string }) => type.displayName === "ConfigVersion",
+		);
+		upper.displayName = "Status";
+		lower.displayName = "status";
+		const folded = jsonSchemaBackend.generate({ ir: cased });
+		expect(folded.state).toBe("unsupported");
+		expect(folded.files).toStrictEqual([]);
+		expect(folded.diagnostics).toHaveLength(1);
+		expect(folded.diagnostics[0].message).toContain(
+			"Status.json and status.json",
+		);
+		expect(folded.diagnostics[0].message).toContain(upper.identity);
+		expect(folded.diagnostics[0].message).toContain(lower.identity);
 	});
 
 	/** Traces: TC-1768; FR-100-AC-8. */
