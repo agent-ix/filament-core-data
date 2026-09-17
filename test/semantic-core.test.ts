@@ -1172,7 +1172,7 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 				readFileSync(
 					resolve(
 						root,
-						"fixtures/semantic/v1/positive/config-version-v1-1.json",
+						"fixtures/semantic/v1/positive/config-version-v2.json",
 					),
 					"utf8",
 				),

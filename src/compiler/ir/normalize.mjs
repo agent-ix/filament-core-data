@@ -46,21 +46,19 @@ export function canonicalIr(document, options = {}) {
 }
 
 /**
- * The normalized serialization. For a `1.1.0` document every field and every
- * operation parameter carries an explicit `multiplicity`, `presence` and
- * `nullable` before canonicalisation.
+ * The normalized serialization. Every field and every operation parameter
+ * carries an explicit `multiplicity`, `presence` and `nullable` before
+ * canonicalisation.
  */
 export function normalizeIr(document, options = {}) {
 	if (!isObject(document)) return canonicalIr(document, options);
 	const copy = structuredClone(document);
-	if (copy.contractVersion === "1.1.0" || copy.contractVersion === "2.0.0") {
+	if (copy.contractVersion === "2.0.0") {
 		const materialize = (field) => {
 			const multiplicity = isObject(field.multiplicity)
 				? field.multiplicity
 				: multiplicityFromPresence(field.presence);
 			field.multiplicity = multiplicity;
-			if (copy.contractVersion === "1.1.0")
-				field.presence = multiplicity.lower >= 1 ? "required" : "optional";
 			field.nullable = field.nullable === true;
 		};
 		for (const definition of asArray(copy.types)) {

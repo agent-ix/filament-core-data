@@ -170,6 +170,7 @@ a guess in either direction.
 | FR-063-AC-20 | Every emitted file's `files[]` digest equals the SHA-256 of the text after `options.format` ran, and a generation given a formatter that uppercases its input produces digests that differ from the same generation given the identity formatter. | Unit |
 | FR-063-AC-21 | `seam.mjs` and every module it imports below the injected formatter start no child process, asserted by an instrumented `node:child_process` during a fixture generation. | Test |
 | FR-063-AC-22 | The `json-schema` registry entry is implemented, owned by `agent-ix/filament-core-data#85`, and a CLI request for it carries the registered backend declaration rather than the TypeScript declaration. | Test (TC-1360) |
+| FR-063-AC-23 | A request naming a registered, implemented backend whose declared `supportedIrVersions` excludes the request's `ir.contractVersion` returns `state: "unsupported"` with a blocking `agent-ix.compiler.UNSUPPORTED_IR_VERSION` diagnostic naming the version seen and the versions the backend declares, and emits no file, exercised over a synthetic registration since no committed backend declares support narrower than `2.0.0` (fcd#179). | Unit (TC-1797) |
 
 ## Dependencies
 

@@ -299,14 +299,11 @@ export function readContractIr(document, options = {}) {
 		}
 		let multiplicity;
 		if (field.multiplicity === undefined) {
-			if (version === "1.1.0" || version === "2.0.0") {
-				raise(
-					DIAGNOSTIC_CODES.MISSING_MULTIPLICITY,
-					"a 1.1.0 field declares its multiplicity",
-					locusOf(field),
-				);
-			}
-			multiplicity = multiplicityFromPresence(field.presence);
+			raise(
+				DIAGNOSTIC_CODES.MISSING_MULTIPLICITY,
+				"a field declares its multiplicity",
+				locusOf(field),
+			);
 		} else {
 			multiplicity = checkMultiplicity(field.multiplicity, field);
 		}

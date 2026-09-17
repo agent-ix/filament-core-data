@@ -1633,6 +1633,7 @@ blocked as stated above.
 | TC-1544 | The fixed TypeScript API surface carries PROVENANCE and not SEMANTIC_METADATA, and the barrel re-exports provenance.js and names no metadata module | Unit | P0 | FR-137-AC-8, FR-137-CON-2 | ✅ passed |
 
 | TC-1360 | The `json-schema` registry entry generates the lifted ConfigVersion golden through the seam, returning a success manifest with a SHA-256 digest for every emitted file. | Integration | P0 | FR-063-AC-22 | ✅ passed — issue #85 |
+| TC-1797 | A request naming a registered, implemented backend whose declared `supportedIrVersions` excludes the request's `ir.contractVersion`, exercised over a synthetic registration, returns `state: "unsupported"` with a blocking `UNSUPPORTED_IR_VERSION` diagnostic and no file. | Unit | P0 | FR-063-AC-23 | ✅ passed — fcd#179 |
 | TC-1361 | A synthetic IR containing all eight structural kinds and every kernel scalar emits one Ajv-compilable JSON Schema 2020-12 document per definition. | Unit | P0 | FR-100-AC-1 | ✅ passed — issue #85 |
 | TC-1362 | The lifted config-version-table golden emits `ConfigVersion.json` with its seven properties, six required fields, and declared minimum constraint. | Unit | P0 | FR-100-AC-2 | ✅ passed — issue #85 |
 | TC-1363 | Generated sibling schemas accept a valid ConfigVersion payload and reject a zero `versionNumber`. | Unit | P0 | FR-100-AC-3 | ✅ passed — issue #85 |

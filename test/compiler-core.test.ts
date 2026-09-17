@@ -3066,21 +3066,6 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		return document;
 	}
 
-	/** Traces: TC-510; FR-050-AC-1. */
-	it("accepts every published positive 1.1.0 fixture", () => {
-		for (const name of readdirSync(positives)) {
-			if (!name.endsWith(".json")) continue;
-			const document = readJson(resolve(positives, name));
-			if (document.contractVersion !== "1.1.0") continue;
-			expect(validateIrDocument(document), name).toEqual([]);
-			const diagnostics = readContractIr(document, {
-				importedExports: "unknown",
-			}) as never as Diagnostic[];
-			note(diagnostics);
-			expect(codesOf(diagnostics), name).toEqual([]);
-		}
-	});
-
 	/** Traces: TC-511, TC-520; FR-050-AC-2, FR-050-AC-11. */
 	it("produces the expected code for every published reader case", () => {
 		expect(readerCases.length).toBeGreaterThan(0);
@@ -3160,12 +3145,12 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 	});
 
 	/** Traces: TC-514, TC-515, TC-525; FR-050-AC-5, FR-050-AC-6, FR-050-CON-3. */
-	it("materializes the 1.1.0 members, leaves 1.0.0 alone, and is idempotent", () => {
+	it("materializes the members on a 2.0.0 document, leaves any other version alone, and is idempotent", () => {
 		const document = JSON.parse(JSON.stringify(compiled.ir)) as never as {
 			contractVersion: string;
 			types: Json[];
 		};
-		document.contractVersion = "1.1.0";
+		document.contractVersion = "2.0.0";
 		const artifact = document.types.find(
 			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
 		) as Json;
@@ -3180,10 +3165,16 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 				(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
 			) as Json
 		).fields as Json[];
-		expect(restored[0].presence).toBeDefined();
+		// normalizeIr never derived presence for a 2.0.0 document (unlike the
+		// deleted 1.1.0 contract, which forced it from multiplicity); a deleted
+		// presence stays deleted here. Whether that is the right rule for 2.0.0
+		// is fcd#182's open question, not restated by fcd#179's deletion.
+		expect(restored[0].presence).toBeUndefined();
 		expect(restored[0].nullable).toBe(false);
 		expect(restored[0].multiplicity).toBeDefined();
 
+		// Any non-2.0.0 tag takes this path unchanged; "1.0.0" is illustrative,
+		// not a version normalizeIr treats specially (fcd#179: none does).
 		const legacy = {
 			contractVersion: "1.0.0",
 			types: [
@@ -3267,13 +3258,16 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		const generate = (
 			backend: typeof rustBackend | typeof jsonSchemaBackend,
 			target: string,
-			document: string,
+			document: string | Json,
 		) =>
 			generateTarget(
 				{
 					contractVersion: "1.0.0",
 					lockFingerprint: `sha256:${"a".repeat(64)}`,
-					ir: readJson(resolve(root, document)),
+					ir:
+						typeof document === "string"
+							? readJson(resolve(root, document))
+							: document,
 					profile: readJson(
 						resolve(root, "fixtures/semantic/v1/positive/profile.json"),
 					),
@@ -3325,11 +3319,15 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 				]),
 				target,
 			).toEqual(expected(label));
-			const plain = generate(
-				backend as never,
-				target,
-				"fixtures/semantic/v1/positive/config-version-v1-1.json",
-			);
+			// config-version-v2.json carries one clause on ConfigVersion (FR-006's
+			// immutability invariant), which is itself an unenforced construct
+			// member; strip it so "plain" tests a document with none of them,
+			// proving the diagnostic does not fire where nothing warrants it.
+			const plainDocument = readJson(
+				resolve(root, "fixtures/semantic/v1/positive/config-version-v2.json"),
+			) as { types: { clauses?: unknown }[] };
+			for (const type of plainDocument.types) delete type.clauses;
+			const plain = generate(backend as never, target, plainDocument as Json);
 			expect(plain.state, target).toBe("success");
 			expect(
 				plain.diagnostics.filter(
@@ -5337,6 +5335,42 @@ describe("generation backend seam registry codes (FR-063)", () => {
 		expect(result.state).toBe("invalid");
 		expect(codesOf(result.diagnostics)).toContain(
 			DIAGNOSTIC_CODES.UNKNOWN_CONTRACT_VERSION.code,
+		);
+	});
+
+	/**
+	 * Traces: TC-1797; FR-063-AC-23.
+	 *
+	 * `supportedIrVersions` is a backend's own declared versioning capability,
+	 * not a compatibility layer (fcd#179): a backend may support less than the
+	 * contract admits, and the seam still has to refuse that honestly. No
+	 * committed backend declares narrower support than `2.0.0` today, so this
+	 * is exercised over a synthetic registration the same way FR-063-AC-3/AC-4
+	 * exercise an unimplemented target above — the alternative would be
+	 * deleting `UNSUPPORTED_IR_VERSION` as unreachable, which would delete a
+	 * live mechanism rather than dead code.
+	 */
+	it("fires the unsupported-ir-version code for a backend that declares narrower support than the contract", () => {
+		const result = generateTarget(generationRequest(), {
+			target: "probe",
+			registry: registryWith({
+				probe: {
+					owner: "agent-ix/filament-core-data#0",
+					implemented: true,
+					backend: {
+						identity: "ix://agent-ix/filament-core-data/backend/probe",
+						version: "1.0.0",
+						supportedIrVersions: [],
+						supportedFeatures: [],
+						generate: () => ({ state: "success", files: [], diagnostics: [] }),
+					},
+				},
+			}),
+		}) as never as { state: string; diagnostics: Diagnostic[] };
+		note(result.diagnostics);
+		expect(result.state).toBe("unsupported");
+		expect(codesOf(result.diagnostics)).toContain(
+			DIAGNOSTIC_CODES.UNSUPPORTED_IR_VERSION.code,
 		);
 	});
 

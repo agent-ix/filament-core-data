@@ -18,11 +18,6 @@ const configVersion12 = resolve(
 	root,
 	"fixtures/semantic/v1/positive/config-version-v2.json",
 );
-/** The same document at `1.1.0`, which the backend also reads. */
-const configVersion11 = resolve(
-	root,
-	"fixtures/semantic/v1/positive/config-version-v1-1.json",
-);
 /** One construct of each kind and every model member, which it renders. */
 const constructs = resolve(
 	root,
@@ -156,13 +151,6 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		addFormats(ajv);
 		for (const schema of schemas) ajv.addSchema(schema);
 		expect(schemas.every((schema) => ajv.getSchema(schema.$id))).toBe(true);
-	});
-
-	it("renders a 1.1.0 document", () => {
-		const ir = JSON.parse(readFileSync(configVersion11, "utf8"));
-		const result = jsonSchemaBackend.generate({ ir });
-		expect(result.state).toBe("success");
-		expect(result.files.map((one) => one.path)).toContain("ConfigVersion.json");
 	});
 
 	/** Traces: TC-1749; FR-142-AC-5, FR-142-CON-2. */
