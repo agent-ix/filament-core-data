@@ -234,7 +234,7 @@ blocked as stated above.
 | FR-048 | FR-048-AC-1..11, FR-048-CON-1..4 | TC-477..TC-491, TC-613 | ✅ Complete |
 | FR-049 | FR-049-AC-1..14, FR-049-CON-1..4 | TC-492..TC-509, TC-605, TC-608, TC-609 | ✅ Complete |
 | FR-050 | FR-050-AC-1..13, FR-050-CON-1..4 | TC-510..TC-526, TC-600, TC-611, TC-617 | ✅ Complete |
-| FR-051 | FR-051-AC-1..15, FR-051-CON-1..5 | TC-527..TC-546, TC-602, TC-612, TC-619 | ✅ Complete |
+| FR-051 | FR-051-AC-1..6, FR-051-AC-11, FR-051-AC-15, FR-051-CON-1, FR-051-CON-2, FR-051-CON-4, FR-051-CON-5 | TC-527..TC-532, TC-537, TC-541..TC-546, TC-602 | ✅ Complete |
 | FR-052 | FR-052-AC-1..16, FR-052-CON-1..4 | TC-547..TC-566 | ✅ Complete |
 | FR-053 | FR-053-AC-1..15, FR-053-CON-1..5 | TC-412..TC-431, TC-604 | ✅ Complete |
 | FR-063 | FR-063-AC-1..21, FR-063-CON-1..6 | TC-745..TC-754 | 🚧 In progress |
@@ -880,18 +880,10 @@ blocked as stated above.
 | TC-530 | A diff run with no profile, mapping, reservation, or target-result inputs omits the `profile`, `authority`, `mapping`, `protobuf-reservation` | Unit | P0 | FR-051-AC-4 | ✅ passed |
 | TC-531 | Every produced report validates against `compatibility-report.schema.json` | Unit | P0 | FR-051-AC-5 | ✅ passed |
 | TC-532 | Diffing a document against itself yields one `patch` change identified by `source.identity` and an aggregate of `patch` | Unit | P0 | FR-051-AC-6 | ✅ passed |
-| TC-533 | The forward projection of `fixtures/semantic/v1/positive/semantic-ir-v1-1.json` equals the committed golden byte for byte | Snapshot | P0 | FR-051-AC-7 | ✅ passed |
-| TC-534 | The backward projection of a `1.0.0` document with a declared dialect equals the committed golden byte for byte and reports empty loss | Snapshot | P0 | FR-051-AC-8 | ✅ passed |
-| TC-535 | A `1.0.0` document projected to `1.1.0` and back is byte-identical to the original | Property | P0 | FR-051-AC-9 | ✅ passed |
-| TC-536 | Both projections validate against the published schema at their target `contractVersion` | Unit | P0 | FR-051-AC-10 | ✅ passed |
 | TC-537 | Two runs of the diff over the same inputs produce byte-identical reports | Snapshot | P0 | FR-051-AC-11 | ✅ passed |
-| TC-538 | The published policy document states the four evolution rules, and a test fails when the document and the implemented ranking disagree | Unit | P0 | FR-051-AC-12 | ✅ passed |
-| TC-539 | Projecting to `1.1.0` with no dialect yields `MISSING_TARGET_DIALECT` and no document; projecting to `2.0.0` yields `UNKNOWN_CONTRACT_VERSION` | Unit | P0 | FR-051-AC-13 | ✅ passed |
-| TC-540 | A projection carries `source.digest` and the `package` block verbatim from the input | Unit | P0 | FR-051-AC-14 | ✅ passed |
 | TC-541 | A revision that removes a member, retypes a member, or narrows a closed vocabulary is classified `breaking` | Unit | P0 | FR-051-AC-15 | ✅ passed |
 | TC-542 | The diff SHALL NOT classify a family from an input it was not given; an absent input is a named gap, never a `patch` | Unit | P1 | FR-051-CON-1 | ✅ passed |
 | TC-543 | The disposition rank SHALL be exactly `patch < additive < conditional < unknown < breaking < invalid` | Unit | P1 | FR-051-CON-2 | ✅ passed |
-| TC-544 | A forward projection SHALL report every dropped identity; silently dropping a `1.1.0` member is a defect, not a projection | Unit | P1 | FR-051-CON-3 | ✅ passed |
 | TC-545 | The diff SHALL NOT import a target backend; per-target dispositions are an input | Static | P1 | FR-051-CON-4 | ✅ passed |
 | TC-546 | `fixtures/semantic/v1/compatibility/cases.json` SHALL remain byte-unchanged; it is the read-only case index | Static | P1 | FR-051-CON-5 | ✅ passed |
 | TC-547 | `emit-ir` over the spike entrypoint reproduces the committed golden `spikes/typespec-feasibility/generated/custom/semantic-ir.json` byte for byte | Snapshot | P0 | FR-052-AC-1 | ✅ passed |
@@ -959,14 +951,12 @@ blocked as stated above.
 | TC-609 | Every registry code fires at least once across the fixture corpus | Unit | P0 | FR-049-AC-3 | ✅ passed |
 | TC-610 | A manifest that is not JSON at all yields `INVALID_MANIFEST` at line 1 | Unit | P1 | FR-047-AC-6 | ✅ passed |
 | TC-611 | An IR document at an unknown `contractVersion` is refused with a pointer | Unit | P1 | FR-050-AC-10 | ✅ passed |
-| TC-612 | A `1.0.0` document survives the `1.1.0` reader and the return projection | Property | P0 | FR-051-AC-9 | ✅ passed |
 | TC-613 | A lock moves from fresh to stale by a source byte and by a manifest byte | Unit | P1 | FR-048-AC-5 | ✅ passed |
 | TC-614 | A package with one type and no imports compiles | Unit | P2 | FR-046-AC-1 | ✅ passed |
 | TC-615 | A diamond import graph resolves each package once | Unit | P1 | FR-047-AC-1, FR-047-AC-16 | ✅ passed |
 | TC-616 | Two cycles sharing an edge yield two diagnostics and no duplicate | Unit | P1 | FR-047-AC-4 | ✅ passed |
 | TC-617 | A relationship target resolving to an imported export validates | Unit | P1 | FR-050-AC-1, FR-050-AC-12 | ✅ passed |
 | TC-618 | A caret constraint selects the highest satisfying version across two search directories | Unit | P1 | FR-047-AC-11 | ✅ passed |
-| TC-619 | A projection to the document's own version returns it unchanged | Unit | P1 | FR-051-AC-13 | ✅ passed |
 | TC-620 | Every NFR-021 gate resolves both ends of its range from history — neither a moving base nor a moving head — and still fails on the same input in a simulated post-merge tree where the branch diff and `git status` are both empty | Integration | P0 | NFR-021-AC-9 | ✅ passed |
 | TC-621 | An unaccounted-for file under `src/compiler/` fails the promotion-inventory gate in that same post-merge tree | Static | P0 | NFR-021-AC-9 | ✅ passed |
 | TC-622 | A union variant whose `payloadType` no type declares is rejected at that variant's locus; two variants sharing one payload type are accepted | Unit | P0 | FR-038-AC-7 | ✅ passed — conformance corpus (PR pending) |
@@ -1790,7 +1780,6 @@ blocked as stated above.
 | TC-433, TC-600 | structural kind | scalar / alias / record / sequence / map / enum / union / reference | constraint keyword applicability | Every kind lowers once by first-match precedence; an inapplicable keyword is refused, not coerced |
 | TC-400, TC-601 | frontend dialect | `typespec` implemented / `spec-bundle` unimplemented | shared fixture harness | Implemented dialects are compared; the unimplemented one is named, not guessed |
 | TC-527, TC-602 | enum member addition | consumer policy `reject` / `surface` / `preserve` | consumer evidence current / stale / unknown | Disposition follows declared policy and evidence, never a language default |
-| TC-533, TC-534 | IR contract version | `1.0.0` / `1.1.0` | forward or backward projection | Forward projection declares its loss; backward projection derives multiplicity |
 | TC-466, TC-618 | version constraint | exact / caret | one or two search directories offering candidates | Highest satisfying version wins; the earlier declared directory breaks a tie |
 | TC-760, TC-778 | field state | `presence` required / optional | `nullable` true / false | All four combinations are four distinct rendered forms and four distinct runtime decisions |
 | TC-762, TC-782 | `unknownPolicy` | `preserve` / `reject` / `surface` | one undeclared member in the payload | Carried through unchanged, rejected at its own pointer, or surfaced without failing the value |
@@ -2051,10 +2040,6 @@ blocked as stated above.
 | normative | successor ADR is accepted | historical with one current successor | TC-004 |
 | historical chain | a successor points to its predecessor | validation failure | TC-053 |
 | blocked migration | all named gates pass and a human promotes it | eligible for later implementation | TC-028, TC-037 |
-| contract `1.1.0` document | read by a `1.0.0` reader | `1.0.0` projection with every dropped identity declared as loss | TC-533, TC-544 |
-| contract `1.0.0` document | read by a `1.1.0` reader with a declared dialect | `1.1.0` projection with multiplicity derived from presence and empty loss | TC-534 |
-| contract `1.0.0` document | read by a `1.1.0` reader with no declared dialect | blocking `MISSING_TARGET_DIALECT`, no document | TC-539 |
-| contract `1.0.0` document | projected to `1.1.0` and back | byte-identical `1.0.0` document | TC-535, TC-612 |
 | fresh lock | a source byte changes | `STALE_LOCK_PACKAGE` at the package entry locus | TC-481, TC-613 |
 | fresh lock | a manifest byte changes | `STALE_LOCK` at the fingerprint locus | TC-481 |
 | resolved graph | a package is added or removed | `LOCK_GRAPH_MISMATCH` naming the identity | TC-481 |
@@ -2246,7 +2231,7 @@ blocked as stated above.
 | ERR-093 | The diagnostic count exceeds `maxDiagnostics` after sorting | Truncation plus the non-blocking `DIAGNOSTIC_LIMIT_REACHED` | TC-499, TC-505, TC-605 |
 | ERR-094 | An emitted or read IR document fails its published schema | Blocking `INVALID_IR` naming the pointer, no file written | TC-517, TC-519, TC-611 |
 | ERR-095 | An IR document breaks a cross-field rule of the code table | The rule's own `agent-ix.semantic-ir.*` code | TC-520 |
-| ERR-096 | A projection to `1.1.0` declares no dialect, or names an unknown version | `MISSING_TARGET_DIALECT` or `UNKNOWN_CONTRACT_VERSION`, no document | TC-539 |
+| ERR-096 | A generation request's `ir.contractVersion` is outside the published contract (fcd#179: `2.0.0` is the only one; `MISSING_TARGET_DIALECT` was deleted with the 1.0.0/1.1.0 projection it served) | Blocking `UNKNOWN_CONTRACT_VERSION`, no document | TC-748 |
 | ERR-097 | A manifest declares two profiles and the caller names none | `AMBIGUOUS_PROFILE` and exit `1` | TC-552 |
 | ERR-098 | An unknown command, unknown flag, missing flag, or unreadable `--limits` | Usage text and exit `2` | TC-557 |
 | ERR-099 | An input exceeds one of the four size limits | A distinct blocking limit diagnostic naming the limit | TC-579, TC-587, TC-606 |
