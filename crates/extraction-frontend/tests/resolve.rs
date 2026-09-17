@@ -472,7 +472,7 @@ fn tc_1216_an_enumeration_artifact_resolves_to_enumeration_and_an_entity_of_the_
     let package = PackageIdentity::from(bundle.package());
     assert_eq!(
         status.resolution.type_ref(&package).as_deref(),
-        Some("ix://agent-ix/config-service/type/EN-001")
+        Some("ix://agent-ix/config-service/type/EN_001")
     );
 
     let (bundle, extractions) = load_business("resolve/entity-titled-status");

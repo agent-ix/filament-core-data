@@ -143,11 +143,12 @@ implementations agree.
 
 Every identity is rooted at the package identity, `ix://<package identity>/`,
 and occupies exactly one of these slots, whose parts are listed in order.
-Every part of every slot is slugged, the `type` name included:
+Every name part of every slot is slugged; an artifact id part (`<Name>` in
+the spec-bundle frontend) is verbatim, as the paragraph below the table states:
 
 | Slot | Identity | Parts |
 |---|---|---|
-| `type` | `type/<slug(Name)>` | the type's name; a kernel scalar definition is `type/<KernelScalar>` (a kernel scalar name is alphanumeric, so its slug is itself) |
+| `type` | `type/<Name>` | the type's name; a kernel scalar definition is `type/<KernelScalar>` (a kernel scalar name is alphanumeric, so its slug is itself) |
 | `field` | `field/<Name>-<field>` | owner type, field; an operation parameter is `field/<Name>-<operation>-<param>` (there is no `param/` slot) |
 | `variant` | `variant/<Name>-<member>` | owner enum or union, member |
 | `relationship` | `relationship/<Name>-<verb>-<TargetName>` | owner record, verb, target type name |
@@ -159,13 +160,21 @@ Every part of every slot is slugged, the `type` name included:
 | `constraint` | `constraint/<Name>-<field>-<keyword>` for a field constraint; `constraint/<Name>-<keyword>` for a type constraint | owner, (field,) keyword |
 
 `<Name>` is the declaring type's name part. The TypeSpec frontend takes it
-from the declaration name. The spec-bundle frontend takes it from the
-declaring artifact's id (FR-143): artifact `FR-001` titled `Order` has
-identity `type/FR-001` and `displayName` `Order`, and its field `note` is
-`field/FR-001-note`. The type's name is its `displayName`.
+from the declaration name, and slugs it. The spec-bundle frontend takes it
+from the declaring artifact's id (FR-143) and passes that id through
+verbatim: artifact `FR-001` titled `Order` has identity `type/FR-001` and
+`displayName` `Order`, and its field `note` is `field/FR-001-note`; artifact
+`AR_001` has identity `type/AR_001`, not `type/AR-001`. An id is not slugged
+because an object id carries `_` and no `-` and `semanticIdentity` admits `_`
+inside a segment (`[A-Za-z0-9._~:/-]`), so slugging an id would rewrite a
+datum the pattern already accepts. An id carrying a character that pattern
+does not admit inside a segment, or no ASCII alphanumeric at all (`_`), mints
+no segment and is refused as `UNSLUGGABLE_NAME`. Every other part — a field,
+member, verb, keyword, state, step, or clause name — is slugged on both
+sides. The type's name is its `displayName`.
 
 The alias a constrained field mints is a `type` identity whose tail is
-`slug(Name)` followed by `slug(field)` with its first character upper-cased:
+`<Name>` followed by `slug(field)` with its first character upper-cased:
 `Note`, `revision` → `type/NoteRevision`; `Note`, `created_at` →
 `type/NoteCreated-at`. The alias node's `displayName` is `<Name>` followed by
 the field name verbatim with its first character upper-cased: `NoteRevision`,

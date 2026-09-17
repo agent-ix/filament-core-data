@@ -234,15 +234,15 @@ fn tc_1233_references_is_traceability_and_owns_is_dependency_neither_composite()
     assert_eq!(references.len(), 1, "{order:?}");
     assert_eq!(references[0]["category"], "traceability");
     assert_eq!(references[0]["composite"], false);
-    assert_eq!(references[0]["target"], "ix://agent-ix/orders/type/EN-001");
+    assert_eq!(references[0]["target"], "ix://agent-ix/orders/type/EN_001");
     let owns = with_verb(&order, "owns");
     assert_eq!(owns.len(), 1, "{order:?}");
     assert_eq!(owns[0]["category"], "dependency");
     assert_eq!(owns[0]["composite"], false);
-    assert_eq!(owns[0]["target"], "ix://agent-ix/orders/type/SM-001");
+    assert_eq!(owns[0]["target"], "ix://agent-ix/orders/type/SM_001");
     assert_eq!(
         owns[0]["identity"],
-        "ix://agent-ix/orders/relationship/FR-001-owns-SM-001"
+        "ix://agent-ix/orders/relationship/FR-001-owns-SM_001"
     );
 }
 
@@ -376,7 +376,7 @@ fn tc_1237_same_verb_and_target_dedupe_and_two_verbs_on_one_target_mint_two_iden
     assert_eq!(rels.len(), 3, "{rels:?}");
     let to_colour: Vec<&Value> = rels
         .iter()
-        .filter(|r| r["target"] == "ix://agent-ix/config-service/type/EN-001")
+        .filter(|r| r["target"] == "ix://agent-ix/config-service/type/EN_001")
         .collect();
     assert_eq!(to_colour.len(), 1, "two entries, one relationship");
     assert_eq!(to_colour[0]["verb"], "references");
@@ -485,7 +485,7 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
     let base_types = types_json(&base);
     let base_order = relationships(type_named(&base_types, "Order"));
     let base_owns = with_verb(&base_order, "owns")[0].clone();
-    assert_eq!(base_owns["target"], "ix://agent-ix/orders/type/SM-001");
+    assert_eq!(base_owns["target"], "ix://agent-ix/orders/type/SM_001");
 
     // Part one: rename the `owns` target (SM_001, referenced by no Type
     // cell) and lift again. The target's identity is its artifact id, so
@@ -517,7 +517,7 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
             prop_assert_eq!(owns, &base_owns);
             let renamed_target = types
                 .iter()
-                .find(|t| t["identity"] == "ix://agent-ix/orders/type/SM-001")
+                .find(|t| t["identity"] == "ix://agent-ix/orders/type/SM_001")
                 .expect("SM_001 keeps its identity");
             prop_assert_eq!(&renamed_target["displayName"], &Value::String(name));
             // Every other relationship of the record is byte-identical.
@@ -586,13 +586,10 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
                     .strip_prefix("artifact ")
                     .and_then(|rest| rest.split(' ').next())
                     .expect("a refusal names its artifact");
-                // The identity segment is the id's slug (FR-095).
-                refused.push(format!(
-                    "ix://agent-ix/orders/type/{}",
-                    id.replace('_', "-")
-                ));
+                // The identity segment is the id verbatim (FR-095).
+                refused.push(format!("ix://agent-ix/orders/type/{id}"));
             }
-            prop_assert!(refused.iter().any(|r| r.ends_with("/NE-001")));
+            prop_assert!(refused.iter().any(|r| r.ends_with("/NE_001")));
             prop_assert!(
                 refused.iter().any(|r| r.ends_with("/FR-001")),
                 "{:?}",

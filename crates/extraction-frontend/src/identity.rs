@@ -1,11 +1,15 @@
 //! FR-095 "Node identities": the package identity, the slug, and the
 //! closed list of node-identity patterns.
 //!
-//! Every identity the frontend emits is minted here and nowhere else. Every
-//! identity part, including the `type/` tail and a constrained-field alias,
-//! is a case-preserving [`slug`] (the shared #87 contract). A name that slugs
-//! to the empty string is [`Unsluggable`], which the caller raises as
-//! `UNSLUGGABLE_NAME` at the declaration's locus, blocking.
+//! Every identity the frontend emits is minted here and nowhere else. An
+//! identity part taken from a source *name* is a case-preserving [`slug`]
+//! (the shared #87 contract); an identity part taken from an artifact *id* is
+//! the id verbatim, through [`id_segment`], because an object id carries
+//! underscores and `semanticIdentity` admits them, so `AR_001` mints
+//! `type/AR_001`. A name that slugs to the empty string, and an id carrying a
+//! character `semanticIdentity` does not admit, are both [`Unsluggable`],
+//! which the caller raises as `UNSLUGGABLE_NAME` at the declaration's locus,
+//! blocking.
 
 use std::fmt;
 
@@ -66,6 +70,30 @@ pub fn slug(name: &str) -> Result<String, Unsluggable> {
         });
     }
     Ok(out)
+}
+
+/// The characters an identity segment carries beyond the ASCII alphanumerics:
+/// those `semanticIdentity` admits inside a segment. `:` and `/` are admitted
+/// by the pattern but separate segments, so an id carrying either is refused.
+const SEGMENT_CHARACTERS: &[char] = &['.', '_', '~', '-'];
+
+/// The identity segment of an artifact id: the id verbatim.
+///
+/// An object id carries underscores and no hyphens, and `semanticIdentity`
+/// admits `_` (`[A-Za-z0-9._~:/-]`), so an id is never slugged: `AR_001` mints
+/// `type/AR_001`, not `type/AR-001`. An id carrying a character the pattern
+/// does not admit inside a segment, or carrying no ASCII alphanumeric at all,
+/// is [`Unsluggable`].
+pub fn id_segment(id: &str) -> Result<String, Unsluggable> {
+    let admitted = id
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || SEGMENT_CHARACTERS.contains(&c));
+    if !admitted || !id.chars().any(|c| c.is_ascii_alphanumeric()) {
+        return Err(Unsluggable {
+            name: id.to_string(),
+        });
+    }
+    Ok(id.to_string())
 }
 
 /// The closed list of node kinds the frontend mints identities for (FR-095
@@ -158,75 +186,79 @@ impl PackageIdentity {
         format!("ix://{}/{}/{}/{tail}", self.org, self.name, kind.segment())
     }
 
-    /// `ix://<org>/<name>/type/<slug(artifact id)>`: a definition's identity
-    /// comes from its artifact id, never from its `displayName`. A kernel
-    /// scalar definition passes its scalar name, which is its own slug.
+    /// `ix://<org>/<name>/type/<artifact id>`: a definition's identity comes
+    /// from its artifact id, verbatim, never from its `displayName`. A kernel
+    /// scalar definition passes its scalar name, which is its own segment.
     pub fn type_identity(&self, artifact_id: &str) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Type, &slug(artifact_id)?))
+        Ok(self.node(NodeKind::Type, &id_segment(artifact_id)?))
     }
 
-    /// `ix://<org>/<name>/type/<slug(artifact id)><Slug(Field)>`: the alias a
+    /// `ix://<org>/<name>/type/<artifact id><Slug(Field)>`: the alias a
     /// constrained field's `typeRef` names. `record` is the owner's artifact id.
     pub fn alias_identity(&self, record: &str, field: &str) -> Result<String, Unsluggable> {
         Ok(self.node(NodeKind::Type, &alias_identity_tail(record, field)?))
     }
 
-    /// `ix://<org>/<name>/field/<record-slug>-<field-slug>`.
+    /// `ix://<org>/<name>/field/<record id>-<field-slug>`.
     pub fn field_identity(&self, record: &str, field: &str) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Field, &join(&[record, field])?))
+        Ok(self.node(NodeKind::Field, &join(record, &[field])?))
     }
 
-    /// `ix://<org>/<name>/constraint/<record-slug>-<field-slug>-<keyword>`.
+    /// `ix://<org>/<name>/constraint/<record id>-<field-slug>-<keyword>`.
     pub fn constraint_identity(
         &self,
         record: &str,
         field: &str,
         keyword: &str,
     ) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Constraint, &join(&[record, field, keyword])?))
+        Ok(self.node(NodeKind::Constraint, &join(record, &[field, keyword])?))
     }
 
-    /// `ix://<org>/<name>/relationship/<record-slug>-<verb>-<target-slug>`.
+    /// `ix://<org>/<name>/relationship/<record id>-<verb>-<target id>`.
     pub fn relationship_identity(
         &self,
         record: &str,
         verb: &str,
         target: &str,
     ) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Relationship, &join(&[record, verb, target])?))
+        let target = id_segment(target)?;
+        Ok(self.node(
+            NodeKind::Relationship,
+            &format!("{}-{target}", join(record, &[verb])?),
+        ))
     }
 
-    /// `ix://<org>/<name>/operation/<record-slug>-<op-slug>`.
+    /// `ix://<org>/<name>/operation/<record id>-<op-slug>`.
     pub fn operation_identity(&self, record: &str, op: &str) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Operation, &join(&[record, op])?))
+        Ok(self.node(NodeKind::Operation, &join(record, &[op])?))
     }
 
-    /// `ix://<org>/<name>/field/<record-slug>-<op-slug>-<param-slug>`.
+    /// `ix://<org>/<name>/field/<record id>-<op-slug>-<param-slug>`.
     pub fn param_identity(
         &self,
         record: &str,
         op: &str,
         param: &str,
     ) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Field, &join(&[record, op, param])?))
+        Ok(self.node(NodeKind::Field, &join(record, &[op, param])?))
     }
 
-    /// `ix://<org>/<name>/variant/<enum-slug>-<value-slug>`.
+    /// `ix://<org>/<name>/variant/<enumeration id>-<value-slug>`.
     pub fn variant_identity(&self, enumeration: &str, value: &str) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Variant, &join(&[enumeration, value])?))
+        Ok(self.node(NodeKind::Variant, &join(enumeration, &[value])?))
     }
 
-    /// `ix://<org>/<name>/clause/<record-slug>-<clause-slug>`.
+    /// `ix://<org>/<name>/clause/<record id>-<clause-slug>`.
     pub fn clause_identity(&self, record: &str, clause: &str) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Clause, &join(&[record, clause])?))
+        Ok(self.node(NodeKind::Clause, &join(record, &[clause])?))
     }
 
-    /// `ix://<org>/<name>/state/<machine-slug>-<state-slug>`.
+    /// `ix://<org>/<name>/state/<machine id>-<state-slug>`.
     pub fn state_identity(&self, machine: &str, state: &str) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::State, &join(&[machine, state])?))
+        Ok(self.node(NodeKind::State, &join(machine, &[state])?))
     }
 
-    /// `ix://<org>/<name>/transition/<machine-slug>-<from-slug>-<to-slug>-<trigger-slug>`:
+    /// `ix://<org>/<name>/transition/<machine id>-<from-slug>-<to-slug>-<trigger-slug>`:
     /// a transition row has no name, so its from state, to state and trigger
     /// operation are its parts.
     pub fn transition_identity(
@@ -236,12 +268,12 @@ impl PackageIdentity {
         to: &str,
         trigger: &str,
     ) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Transition, &join(&[machine, from, to, trigger])?))
+        Ok(self.node(NodeKind::Transition, &join(machine, &[from, to, trigger])?))
     }
 
-    /// `ix://<org>/<name>/step/<process-slug>-<step-slug>`.
+    /// `ix://<org>/<name>/step/<process id>-<step-slug>`.
     pub fn step_identity(&self, process: &str, step: &str) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Step, &join(&[process, step])?))
+        Ok(self.node(NodeKind::Step, &join(process, &[step])?))
     }
 }
 
@@ -251,10 +283,11 @@ impl From<&Package> for PackageIdentity {
     }
 }
 
-/// `<slug(artifact id)><Slug(fieldName)>`: the tail of the constrained-field
-/// alias identity. The field component is capitalized after slugging.
+/// `<artifact id><Slug(fieldName)>`: the tail of the constrained-field alias
+/// identity. The record component is its id verbatim; the field component is
+/// capitalized after slugging.
 fn alias_identity_tail(record: &str, field: &str) -> Result<String, Unsluggable> {
-    let record = slug(record)?;
+    let record = id_segment(record)?;
     let mut field = slug(field)?;
     if let Some(first) = field.get_mut(0..1) {
         first.make_ascii_uppercase();
@@ -272,12 +305,12 @@ pub fn alias_display_name(record: &str, field: &str) -> String {
     format!("{record}{field}")
 }
 
-/// The slugs of `names`, joined by `-`. The first unsluggable name is the
-/// error.
-fn join(names: &[&str]) -> Result<String, Unsluggable> {
-    let slugs = names
-        .iter()
-        .map(|n| slug(n))
-        .collect::<Result<Vec<_>, _>>()?;
-    Ok(slugs.join("-"))
+/// The identity segment of `id`, then the slugs of `names`, joined by `-`.
+/// The first part that mints no segment is the error.
+fn join(id: &str, names: &[&str]) -> Result<String, Unsluggable> {
+    let mut parts = vec![id_segment(id)?];
+    for name in names {
+        parts.push(slug(name)?);
+    }
+    Ok(parts.join("-"))
 }

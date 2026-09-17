@@ -92,7 +92,7 @@ use crate::diagnostics::{Code, Diagnostic, Disposition, Locus, NotLoweredReason}
 use crate::edges::{lower_relationships, Relationship};
 use crate::enumeration::{lower_enum, values_rows};
 use crate::extract::Extractions;
-use crate::identity::{alias_display_name, slug, PackageIdentity};
+use crate::identity::{alias_display_name, id_segment, slug, PackageIdentity};
 use crate::limits::{check_bundle, check_extraction, Limits};
 use crate::resolve::{ArtifactRef, Outcome, Resolution, Resolutions, Resolved, Site};
 use crate::rows::{field_rows, locate, operation_rows, RowLocus};
@@ -651,8 +651,9 @@ impl<'a> ArtifactContext<'a> {
         Locus::new(&self.package.source(), self.path, line, column)
     }
 
-    /// `type/<slug(id)>`: the definition's identity, minted from the artifact
-    /// id. An id with no ASCII alphanumeric is `UNSLUGGABLE_NAME` at the head.
+    /// `type/<id>`: the definition's identity, minted from the artifact id
+    /// verbatim. An id that mints no segment is `UNSLUGGABLE_NAME` at the
+    /// head.
     pub(crate) fn type_identity(&self) -> Result<String, LowerError> {
         self.package
             .type_identity(self.id)
@@ -1152,9 +1153,10 @@ pub fn lower_bundle(
             ));
             continue;
         }
-        // The identity is `type/<slug(id)>`: an id with no ASCII alphanumeric
-        // mints no identity, whatever the declared name.
-        let id_slug = match slug(document.id()) {
+        // The identity is `type/<id>`: the id verbatim, so an id carrying a
+        // character `semanticIdentity` does not admit, or no ASCII
+        // alphanumeric at all, mints no identity, whatever the declared name.
+        let id_slug = match id_segment(document.id()) {
             Ok(s) => s,
             Err(unsluggable) => {
                 own.push(unsluggable.diagnostic(head));
@@ -1212,7 +1214,7 @@ pub fn lower_bundle(
                 Diagnostic::frontend(
                     Code::UnsluggableName,
                     format!(
-                        "artifact {} ({}) id and earlier id `{first_id}` both slug to `{id_slug}`; no distinct identity segment can be minted",
+                        "artifact {} ({}) id and earlier id `{first_id}` both mint the identity segment `{id_slug}`; no distinct identity segment can be minted",
                         document.id(),
                         document.path()
                     ),

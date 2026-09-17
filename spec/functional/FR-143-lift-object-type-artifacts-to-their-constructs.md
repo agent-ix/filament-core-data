@@ -51,7 +51,7 @@ declaration raw as the engine loaded it; nothing else reads the key.
 
 ### Identity
 
-- The frontend SHALL set a type definition's `identity` to `ix://<org>/<name>/type/<slug(artifact id)>` and its `displayName` to the artifact's declared name: its `name`, else its `title`.
+- The frontend SHALL set a type definition's `identity` to `ix://<org>/<name>/type/<artifact id>` (the id verbatim, FR-095) and its `displayName` to the artifact's declared name: its `name`, else its `title`.
 - The frontend SHALL use the artifact id as the `<Name>` part of every field, alias, constraint, relationship, operation, variant, clause, state, transition and step identity of the artifact (FR-095).
 - Renaming an artifact's declared name SHALL change only the type's `displayName`, its aliases' `displayName`, and constraint `diagnosticCode` values.
 

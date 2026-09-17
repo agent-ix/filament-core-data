@@ -49,18 +49,14 @@ fn v1_1() -> Value {
     read_json(&workspace_dir().join("fixtures/semantic/v1/positive/semantic-ir-v1-1.json"))
 }
 
-/// The identity segment of artifact `id`: its slug (FR-095), so an
-/// underscore id such as `AR_001` mints `AR-001`.
-fn segment(id: &str) -> String {
-    id.replace('_', "-")
-}
-
+/// The identity segment of artifact `id`: the id verbatim (FR-095), so
+/// `AR_001` mints `AR_001`.
 fn type_ref(id: &str) -> String {
-    format!("{PREFIX}type/{}", segment(id))
+    format!("{PREFIX}type/{id}")
 }
 
 fn field_ref(owner: &str, name: &str) -> String {
-    format!("{PREFIX}field/{}-{name}", segment(owner))
+    format!("{PREFIX}field/{owner}-{name}")
 }
 
 /// The index of the type whose identity is `identity` in `document`.

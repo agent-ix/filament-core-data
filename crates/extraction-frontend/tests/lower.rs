@@ -1088,7 +1088,7 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
         status["kind"],
         json!({"module": "agent-ix/spec-objects-business", "name": "enumeration"})
     );
-    assert_eq!(status["identity"], "ix://agent-ix/orders/type/EN-001");
+    assert_eq!(status["identity"], "ix://agent-ix/orders/type/EN_001");
     assert_eq!(
         status["roles"],
         json!(["business:aggregate-member", "business:enumeration"])
@@ -1114,10 +1114,10 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     assert_eq!(
         identities,
         [
-            "ix://agent-ix/orders/variant/EN-001-draft",
-            "ix://agent-ix/orders/variant/EN-001-placed",
-            "ix://agent-ix/orders/variant/EN-001-shipped",
-            "ix://agent-ix/orders/variant/EN-001-cancelled",
+            "ix://agent-ix/orders/variant/EN_001-draft",
+            "ix://agent-ix/orders/variant/EN_001-placed",
+            "ix://agent-ix/orders/variant/EN_001-shipped",
+            "ix://agent-ix/orders/variant/EN_001-cancelled",
         ]
     );
     for (i, v) in variants.iter().enumerate() {
@@ -1135,7 +1135,7 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     let order = type_named(&types, "Order");
     assert_eq!(
         field_named(order, "status")["typeRef"],
-        "ix://agent-ix/orders/type/EN-001"
+        "ix://agent-ix/orders/type/EN_001"
     );
     assert_eq!(reader_codes(&ir_document(&lift)), Vec::<String>::new());
 
@@ -1299,7 +1299,11 @@ fn tc_1334_status_and_status_collide_and_repeated_or_colliding_constraints_are_d
 
 #[trace("TC-1334", "FR-093-AC-13")]
 #[test]
-fn tc_1334_distinct_names_with_one_slug_refuse_at_type_field_and_variant_levels() {
+fn tc_1334_distinct_names_with_one_slug_refuse_at_field_and_variant_levels() {
+    // Contract case (b) does not reach the type level: an artifact id is its
+    // identity segment verbatim, so two distinct ids mint two distinct
+    // `type/` identities and neither is refused. Only a name — a field, a
+    // variant — is slugged, and only a slug can fold two names into one.
     let types = tempfile::tempdir().expect("type collision fixture");
     scratch_spec(types.path());
     write_fixture(
@@ -1313,19 +1317,21 @@ fn tc_1334_distinct_names_with_one_slug_refuse_at_type_field_and_variant_levels(
         &entity("FR__001", "ConfigOverlay", "| id | UUID | 1 | identity |\n"),
     );
     let type_lift = lift_at(types.path(), &[&business_module(), &edge_vocabulary()]);
-    let type_diagnostics = with_code(&type_lift.lowered.diagnostics, Code::UnsluggableName);
-    assert_eq!(
-        type_diagnostics.len(),
-        1,
+    assert!(
+        with_code(&type_lift.lowered.diagnostics, Code::UnsluggableName).is_empty(),
         "{:?}",
         type_lift.lowered.diagnostics
     );
-    assert_eq!(
-        type_diagnostics[0]
-            .locus
-            .as_ref()
-            .map(|locus| locus.path.as_str()),
-        Some("spec/functional/FR-002.md")
+    let minted: Vec<&str> = type_lift
+        .lowered
+        .types
+        .iter()
+        .map(|t| t.identity.as_str())
+        .collect();
+    assert!(
+        minted.contains(&"ix://agent-ix/identity-collision/type/FR_001")
+            && minted.contains(&"ix://agent-ix/identity-collision/type/FR__001"),
+        "{minted:?}"
     );
 
     let fields = tempfile::tempdir().expect("field collision fixture");
