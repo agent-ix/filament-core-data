@@ -63,7 +63,7 @@ mapping.
 
 ### Extraction
 
-- For every document whose frontmatter `object` names an object type that one loaded module declares, the frontend SHALL call `extract_semantic` with a `SemanticContext` whose `path` is the document's bundle-root-relative path with `/` separators, whose `source_identity` is `ix://<org>/<name>/spec`, whose `RequiredSections` are read from that object type's `body_extraction` with `RequiredSections::from_dsl`, and to which that typed `body_extraction` is given with `SemanticContext::with_body_extraction` (quire-rs#442), so the engine reads exactly the FR-075 model tables the object type declares.
+- For every document whose frontmatter `object` names an object type that one loaded module declares, the frontend SHALL call `extract_semantic` with a `SemanticContext` whose `path` is the document's bundle-root-relative path with `/` separators, whose `source_identity` is `ix://<org>/<name>/spec`, whose `RequiredSections` are read with `RequiredSections::from_extraction` over that object type's typed `body_extraction`, and to which that typed `body_extraction` is given with `SemanticContext::with_body_extraction` (quire-rs#442), so the engine reads exactly the FR-075 model tables the object type declares.
 - The frontend SHALL pass the module's reference-form `data_schema` digest for the object type as `schema_digest`.
 - The frontend SHALL NOT call `extract_semantic_json`.
 - The frontend SHALL NOT declare a type named `FieldDecl`, `TypeRef`, `Multiplicity`, `Constraint`, `ClauseRef`, `SourceLocus`, or `OperationDecl`.
