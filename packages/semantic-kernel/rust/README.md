@@ -1,6 +1,6 @@
 # agent-ix-semantic-kernel
 
-Generated Rust/Serde declarations for the semantic contract `agent-ix/semantic-kernel` at version `0.1.0`.
+Generated Rust/Serde declarations for the semantic contract `agent-ix/semantic-kernel` at version `0.2.0`.
 
 This crate is generated. Edit the contract, not this crate: the next
 generation overwrites every file here, and a hand edit is invisible to the
@@ -9,7 +9,7 @@ determinism gate that compares two generations byte for byte.
 ## Provenance
 
 - Source identity: `ix://agent-ix/semantic-core`
-- Source version: `0.1.0`
+- Source version: `0.2.0`
 - Source digest: `sha256:0000000000000000000000000000000000000000000000000000000000000000`
 - Contract version: `1.1.0`
 

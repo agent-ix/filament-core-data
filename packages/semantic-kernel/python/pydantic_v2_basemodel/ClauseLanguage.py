@@ -12,8 +12,8 @@ class ClauseLanguage(RootModel[str]):
     root: Annotated[
         str,
         Field(
-            description='`ocl`, `sysml`, `fretish`, or a namespaced `<ns>:<name>` language (FR-028).',
-            pattern='^(ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$',
+            description='`quire` (checked by Quire), `ocl`, `sysml`, `fretish`, or a namespaced `<ns>:<name>` language (FR-028).',
+            pattern='^(quire|ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$',
             title='ClauseLanguage',
         ),
     ]

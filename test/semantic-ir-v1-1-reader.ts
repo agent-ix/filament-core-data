@@ -34,7 +34,7 @@ const CATEGORIES = new Set([
 	"traceability",
 ]);
 
-const CORE_LANGUAGES = new Set(["ocl", "sysml", "fretish"]);
+const CORE_LANGUAGES = new Set(["quire", "ocl", "sysml", "fretish"]);
 
 /** Keyword → the resolved structural kinds (or scalar names) it may apply to. */
 const KEYWORD_APPLICABILITY: Record<string, Set<string>> = {

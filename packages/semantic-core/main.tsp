@@ -13,7 +13,7 @@ using TypeSpec.JsonSchema;
  * are enforced by the semantic-core reader (FR-031, "Grammar rules the reader
  * enforces").
  */
-@jsonSchema("https://schemas.agent-ix.org/semantic-core/0.1.0/")
+@jsonSchema("https://schemas.agent-ix.org/semantic-core/0.2.0/")
 namespace AgentIx.Semantic.Core;
 
 // ---------------------------------------------------------------------------
@@ -32,8 +32,8 @@ scalar SemanticId extends string;
 @pattern("^[!-~]+$")
 scalar UnitSymbol extends string;
 
-/** `ocl`, `sysml`, `fretish`, or a namespaced `<ns>:<name>` language (FR-028). */
-@pattern("^(ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$")
+/** `quire` (checked by Quire), `ocl`, `sysml`, `fretish`, or a namespaced `<ns>:<name>` language (FR-028). */
+@pattern("^(quire|ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$")
 scalar ClauseLanguage extends string;
 
 // ---------------------------------------------------------------------------

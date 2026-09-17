@@ -1,14 +1,14 @@
 {
-	"id": "PAR-0109",
-	"title": "`ClauseLanguage` admits `acme:dsl`",
+	"id": "PAR-0112",
+	"title": "`ClauseLanguage` admits `quire`",
 	"declaration": "ClauseLanguage",
 	"class": "positive",
 	"properties": ["serialized-member-names", "round-trip"],
 	"unknownPolicy": "not-applicable",
-	"instance": "acme:dsl",
+	"instance": "quire",
 	"expected": {
 		"resultState": "success",
-		"wire": "acme:dsl"
+		"wire": "quire"
 	},
 	"derivedFrom": [
 		{

@@ -179,7 +179,7 @@
 				"fixtures/semantic/v1/negative/reader-cases.json"
 			],
 			"rule": "A clauseId declared twice on one type.",
-			"citation": "(`language` of `ocl`, `sysml`, `fretish`, or `<ns>:<name>`; `clauseId` unique",
+			"citation": "(`language` of `quire`, `ocl`, `sysml`, `fretish`, or `<ns>:<name>`; `clauseId` unique",
 			"exercisedBy": "case"
 		},
 		{

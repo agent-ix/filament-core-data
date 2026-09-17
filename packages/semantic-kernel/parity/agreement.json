@@ -8,16 +8,16 @@
 		"An undecided answer is counted unmet, never as a pass."
 	],
 	"packages": ["json-schema", "typescript", "python", "rust"],
-	"documents": 111,
-	"agreeing": 88,
+	"documents": 112,
+	"agreeing": 89,
 	"byProperty": {
 		"serialized-member-names": {
-			"documents": 93,
-			"agreeing": 74
+			"documents": 94,
+			"agreeing": 75
 		},
 		"round-trip": {
-			"documents": 68,
-			"agreeing": 63
+			"documents": 69,
+			"agreeing": 64
 		},
 		"presence-versus-null": {
 			"documents": 11,
@@ -3404,6 +3404,36 @@
 				"rust": {
 					"resultState": "success",
 					"agreesWithContract": false,
+					"unknownFate": "not-applicable"
+				}
+			}
+		},
+		{
+			"document": "PAR-0112",
+			"declaration": "ClauseLanguage",
+			"class": "positive",
+			"properties": ["serialized-member-names", "round-trip"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"typescript": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"python": {
+					"resultState": "success",
+					"agreesWithContract": true,
+					"unknownFate": "not-applicable"
+				},
+				"rust": {
+					"resultState": "success",
+					"agreesWithContract": true,
 					"unknownFate": "not-applicable"
 				}
 			}

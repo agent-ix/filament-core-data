@@ -1,4 +1,4 @@
-# Generated from the semantic contract agent-ix/semantic-kernel@0.1.0.
+# Generated from the semantic contract agent-ix/semantic-kernel@0.2.0.
 #
 # `publish = false` is unconditional: the issue #21 safety gate forbids crate
 # publication, and a manifest that permits it is one command away from breaching
@@ -19,7 +19,7 @@
 
 [package]
 name = "agent-ix-semantic-kernel"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 rust-version = "1.85.0"
 license = "AGPL-3.0-or-later"

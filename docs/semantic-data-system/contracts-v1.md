@@ -105,7 +105,7 @@ A record type definition carries first-class `relationships[]` (verb, FR-040
 category, `composite` flag, target identity, multiplicity, origin),
 `operations[]` (params as field nodes, bounded `returns`, `pre[]`/`post[]`
 bound by `clauseId`), and any type definition carries `clauses[]`
-(`language` of `ocl`, `sysml`, `fretish`, or `<ns>:<name>`; `clauseId` unique
+(`language` of `quire`, `ocl`, `sysml`, `fretish`, or `<ns>:<name>`; `clauseId` unique
 per type; opaque `text`; `sourceSpan` when source-originated). The IR never
 parses clause text. Relationship targets resolve to a document type or a lock
 export; composite relationship graphs are acyclic. The same rule governs a
