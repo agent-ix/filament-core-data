@@ -14,7 +14,10 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import Ajv2020 from "ajv/dist/2020.js";
 import { beforeAll, describe, expect, it } from "vitest";
+import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
+import { rustBackend } from "../src/compiler/backends/rust-serde/backend.mjs";
 import {
 	assertBackendContract,
 	generateTarget,
@@ -786,17 +789,41 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 				"scalar Text extends string;",
 				"model Thing {",
 				'  @multiplicity(0) @presence("required") values: Text[];',
+				'  @multiplicity(1) @presence("optional") tags?: Text[];',
 				"}",
 			].join("\n"),
 		);
 		expect(codesOf(result.diagnostics as never)).toEqual([]);
 		expect((result.ir as Json).contractVersion).toBe("1.2.0");
+		expect(validateIrDocument(result.ir as never)).toEqual([]);
+		expect([...readContractIr(result.ir as never)]).toEqual([]);
 		const thing = ((result.ir as Json).types as Json[]).find(
 			(type) => type.displayName === "Thing",
 		) as Json;
-		const field = (thing.fields as Json[])[0];
-		expect(field.multiplicity).toEqual({ lower: 0 });
-		expect(field.presence).toBe("required");
+		const named = (name: string) =>
+			(thing.fields as Json[]).find((one) => one.name === name) as Json;
+		const values = named("values");
+		const tags = named("tags");
+		expect(values.multiplicity).toEqual({ lower: 0 });
+		expect(values.presence).toBe("required");
+		expect(tags.multiplicity).toEqual({ lower: 1 });
+		expect(tags.presence).toBe("optional");
+
+		// The payload level: a present empty collection is admitted and an
+		// absent required member is refused, through the rendered schema.
+		const rendered = jsonSchemaBackend.generate({ ir: result.ir as never });
+		const schemas = rendered.files
+			.filter((one) => one.path.endsWith(".json") && one.path !== "index.json")
+			.map((one) => JSON.parse(one.text));
+		const ajv = new Ajv2020({ strict: false });
+		for (const schema of schemas) ajv.addSchema(schema);
+		const thingSchema = schemas.find((one) => one.$id.endsWith("/Thing.json"));
+		const validate = thingSchema && ajv.getSchema(thingSchema.$id);
+		if (!validate) throw new Error("Thing schema was not emitted");
+		expect(validate({ values: [] })).toBe(true);
+		expect(validate({})).toBe(false);
+		expect(validate({ values: [], tags: ["a"] })).toBe(true);
+		expect(validate({ values: [], tags: [] })).toBe(false);
 	}, 60000);
 
 	/** Traces: TC-415, TC-604; FR-053-AC-4. */
@@ -3154,7 +3181,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		}
 	});
 
-	/** Traces: TC-1553; FR-139-AC-2. TC-1376; FR-106-AC-4. */
+	/** Traces: TC-1376; FR-106-AC-4. */
 	it("accepts the v1.2 Any scalar and preserves authored presence", () => {
 		const document = JSON.parse(JSON.stringify(compiled.ir)) as never as {
 			contractVersion: string;
@@ -3181,6 +3208,88 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			(type) => Array.isArray(type.fields) && type.fields.length > 0,
 		) as Json;
 		expect((normalizedRecord.fields as Json[])[0].presence).toBe("optional");
+	});
+
+	/** Traces: TC-1553; FR-139-AC-2, FR-139-CON-1. */
+	it("keeps an any scalar and a zero-field record distinct at every layer", () => {
+		const record = readJson(
+			resolve(root, "fixtures/semantic/v1/positive/config-version-v1-2.json"),
+		) as never as { contractVersion: string; types: Json[] };
+		const scalar = JSON.parse(JSON.stringify(record)) as typeof record;
+		const identity = "ix://agent-ix/config-service/type/JsonObject";
+		const at = scalar.types.findIndex((type) => type.identity === identity);
+		const { fields: _fields, ...head } = scalar.types[at];
+		scalar.types[at] = { ...head, kind: "scalar", scalar: "any" };
+
+		// The IR layer: both documents are valid and their nodes differ.
+		for (const document of [record, scalar]) {
+			expect(validateIrDocument(document as never)).toEqual([]);
+			expect([...readContractIr(document as never)]).toEqual([]);
+		}
+		const node = (document: typeof record) =>
+			document.types.find((type) => type.identity === identity) as Json;
+		expect(node(record)).not.toEqual(node(scalar));
+
+		// The normalized and fingerprinted layers.
+		expect(normalizeIr(record as never)).not.toBe(normalizeIr(scalar as never));
+		expect(fingerprintIr(record as never)).not.toBe(
+			fingerprintIr(scalar as never),
+		);
+
+		// The compatibility layer names the change on that identity.
+		const report = diffSemanticContract({
+			old: record,
+			new: scalar,
+		}) as never as { changes: { identity: string }[] };
+		expect(report.changes.some((change) => change.identity === identity)).toBe(
+			true,
+		);
+
+		// The generated declarations: the JSON Schema backend renders the two
+		// as different schemas.
+		const rendered = (document: typeof record) =>
+			jsonSchemaBackend
+				.generate({ ir: document as never })
+				.files.find((file) => file.path === "JsonObject.json")?.text;
+		expect(rendered(record)).toBeDefined();
+		expect(rendered(scalar)).toBeDefined();
+		expect(rendered(record)).not.toBe(rendered(scalar));
+
+		// The Rust backend, reached through the seam, renders them differently.
+		const rust = (document: typeof record) => {
+			const texts: string[] = [];
+			const manifest = generateTarget(
+				{
+					contractVersion: "1.0.0",
+					lockFingerprint: `sha256:${"a".repeat(64)}`,
+					ir: document,
+					profile: readJson(
+						resolve(root, "fixtures/semantic/v1/positive/profile.json"),
+					),
+					mappings: [],
+					backend: {
+						identity: rustBackend.identity,
+						version: rustBackend.version,
+						supportedIrVersions: [...rustBackend.supportedIrVersions],
+						supportedFeatures: [...rustBackend.supportedFeatures],
+						options: {},
+					},
+					outputRoot: "generated/rust",
+					limits: { ...DEFAULT_LIMITS },
+				} as never,
+				{
+					target: "rust",
+					host: createHost({ readRoots: [root] }),
+					format(text: string) {
+						texts.push(text);
+						return text;
+					},
+				} as never,
+			) as never as { state: string };
+			expect(manifest.state).toBe("success");
+			return texts.join("\n");
+		};
+		expect(rust(record)).not.toBe(rust(scalar));
 	});
 
 	/** Traces: TC-1376; FR-106-AC-4. */
