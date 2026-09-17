@@ -164,7 +164,16 @@ pub fn lift(request: &LiftRequest) -> LiftOutcome {
     let mut diagnostics = extractions.diagnostics;
     diagnostics.extend(lowered.diagnostics);
     let envelope = Envelope::new(&bundle, &modules);
-    let document = assemble(&envelope, &lowered.types, &lowered.constructs);
+    let document = match assemble(&envelope, &lowered.types, &lowered.constructs) {
+        Ok(document) => document,
+        Err(error) => {
+            return LiftOutcome::Refused(Refusal::new(Diagnostic::frontend(
+                Code::OutputUnwritable,
+                format!("a construct declaration does not render as JSON: {error}"),
+                None,
+            )));
+        }
+    };
     emit(&paths, document, diagnostics, &provenance)
 }
 

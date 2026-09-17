@@ -12,6 +12,7 @@
 use crate::diag::{child, index};
 use crate::json::Json;
 use crate::rules::{Document, Sink, DANGLING_CLAUSE_REF, DEPTH_LIMIT, UNRESOLVED_TYPE_REF};
+use crate::schema::SCHEMA_VIOLATION;
 use crate::vocabulary::{Declaration, Member, Rule, Shape};
 
 macro_rules! codes {
@@ -66,21 +67,39 @@ struct Declarations {
     entries: Vec<(Json, Declaration)>,
 }
 
+/// A `constructs` entry the rules cannot read: the pointer to the defect
+/// and what is wrong. The schema layer refuses every such entry first, so a
+/// document reaching the rules through [`crate::decide`] carries none.
+struct UnreadEntry {
+    pointer: String,
+    message: String,
+}
+
 impl Declarations {
-    fn read(document: &Document<'_>) -> Self {
+    fn read(document: &Document<'_>) -> Result<Self, UnreadEntry> {
         let entries = document
             .ir
             .get("constructs")
             .and_then(Json::as_array)
-            .unwrap_or(&[])
-            .iter()
-            .filter_map(|entry| {
-                let kind = entry.get("kind")?.clone();
-                let declaration = Declaration::read(entry.get("construct")?).ok()?;
-                Some((kind, declaration))
-            })
-            .collect();
-        Declarations { entries }
+            .unwrap_or(&[]);
+        let mut read = Vec::with_capacity(entries.len());
+        for (position, entry) in entries.iter().enumerate() {
+            let entry_at = index("/ir/constructs", position);
+            let member = |name: &str| {
+                entry.get(name).ok_or_else(|| UnreadEntry {
+                    pointer: entry_at.clone(),
+                    message: format!("a constructs entry carries {name}"),
+                })
+            };
+            let kind = member("kind")?.clone();
+            let declaration =
+                Declaration::read(member("construct")?).map_err(|refused| UnreadEntry {
+                    pointer: format!("{}{}", child(&entry_at, "construct"), refused.pointer),
+                    message: refused.message,
+                })?;
+            read.push((kind, declaration));
+        }
+        Ok(Declarations { entries: read })
     }
 
     /// The declaration of `definition`'s construct kind; `None` for a core kind.
@@ -159,7 +178,13 @@ fn roles_of(definition: &Json) -> Vec<&str> {
 
 /// Decides every contract 2.0.0 cross-field rule.
 pub(crate) fn decide(document: &Document<'_>, sink: &mut Sink<'_>) {
-    let declarations = Declarations::read(document);
+    let declarations = match Declarations::read(document) {
+        Ok(declarations) => declarations,
+        Err(unread) => {
+            sink.emit(unread.pointer, SCHEMA_VIOLATION, unread.message);
+            return;
+        }
+    };
     for (position, definition) in document.types.iter().enumerate() {
         let type_at = index("/ir/types", position);
         supertypes(document, definition, &type_at, sink);
@@ -645,7 +670,10 @@ fn inline_clauses(definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
 /// `exclusive_membership`: a type is named by the members of at most one type
 /// whose construct selects the rule.
 fn exclusive_membership(document: &Document<'_>, declarations: &Declarations, sink: &mut Sink<'_>) {
-    let mut seen: Vec<&str> = Vec::new();
+    // Each named type with the position of the first type naming it. A type
+    // named twice by one owner is the schema's `uniqueItems` refusal, not a
+    // second membership.
+    let mut seen: Vec<(&str, usize)> = Vec::new();
     for (position, definition) in document.types.iter().enumerate() {
         if !declarations
             .of(definition)
@@ -655,14 +683,14 @@ fn exclusive_membership(document: &Document<'_>, declarations: &Declarations, si
         }
         let members_at = child(&index("/ir/types", position), "members");
         for (slot, name) in strings(definition.get("members")) {
-            if seen.contains(&name) {
-                sink.emit(
+            match seen.iter().find(|(named, _)| *named == name) {
+                Some((_, owner)) if *owner == position => {}
+                Some(_) => sink.emit(
                     index(&members_at, slot),
                     MULTIPLE_DOMAIN_MEMBERSHIP,
                     "a type is a member of at most one type of an exclusive-membership construct",
-                );
-            } else {
-                seen.push(name);
+                ),
+                None => seen.push((name, position)),
             }
         }
     }

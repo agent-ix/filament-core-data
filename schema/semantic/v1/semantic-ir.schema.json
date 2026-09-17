@@ -1345,6 +1345,9 @@
 				"meaning": {
 					"type": "string",
 					"minLength": 1
+				},
+				"immutable": {
+					"type": "boolean"
 				}
 			},
 			"additionalProperties": false

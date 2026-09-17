@@ -514,14 +514,6 @@ fn reader_json(value: &serde_json::Value) -> Json {
     }
 }
 
-/// `^[a-z][a-z0-9_]*$`: the name of a construct kind.
-fn is_construct_name(name: &str) -> bool {
-    matches!(name.chars().next(), Some(c) if c.is_ascii_lowercase())
-        && name
-            .chars()
-            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
-}
-
 /// What a declaration is checked against at load.
 struct Loaded<'a> {
     registry: &'a Registry,
@@ -555,7 +547,7 @@ impl Loaded<'_> {
                 )),
             ))
         };
-        if !is_construct_name(object) {
+        if !agent_ix_semantic_ir::schema::is_construct_name(object) {
             return Err(refuse(format!(
                 "a construct kind's name matches ^[a-z][a-z0-9_]*$, and {object} does not"
             )));

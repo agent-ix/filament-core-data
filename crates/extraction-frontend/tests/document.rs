@@ -72,7 +72,7 @@ fn assembled(name: &str) -> (Value, agent_ix_extraction_frontend::Provenance) {
     );
     let envelope = Envelope::new(&bundle, &modules);
     (
-        assemble(&envelope, &lowered.types, &lowered.constructs),
+        assemble(&envelope, &lowered.types, &lowered.constructs).expect("assemble"),
         provenance,
     )
 }

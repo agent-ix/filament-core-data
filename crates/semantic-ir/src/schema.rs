@@ -16,7 +16,7 @@
 
 use crate::diag::{child, index, is_semantic_identity, Located, Severity};
 use crate::json::Json;
-use crate::vocabulary::{Declaration, Member, Presence, Rule};
+use crate::vocabulary::{Declaration, Member, Presence};
 
 /// The code every schema-layer defect carries.
 pub const SCHEMA_VIOLATION: &str = "agent-ix.semantic-ir.SCHEMA_VIOLATION";
@@ -527,8 +527,8 @@ fn construct_kind<'a>(kind: &'a Json, at: &str, f: &mut Findings) -> Option<(&'a
     (is_package_identity(module) && is_construct_name(name)).then_some((module, name))
 }
 
-/// `^[a-z][a-z0-9_]*$`.
-fn is_construct_name(text: &str) -> bool {
+/// `^[a-z][a-z0-9_]*$`: the name of a construct kind.
+pub fn is_construct_name(text: &str) -> bool {
     matches!(text.chars().next(), Some(c) if c.is_ascii_lowercase())
         && text
             .chars()
@@ -1224,8 +1224,7 @@ fn type_definition(
 }
 
 /// The requirements a type's construct declaration places on it: each
-/// member's presence, and the cardinality the `min_clauses` and
-/// `min_operations` rules state.
+/// member's presence, and the cardinality each `nonEmpty` rule states.
 fn construct_schema(
     definition: &Json,
     at: &str,
@@ -1248,20 +1247,8 @@ fn construct_schema(
             Presence::Required | Presence::Optional | Presence::Forbidden => {}
         }
     }
-    for rule in &declaration.rules {
-        let non_empty = match rule {
-            Rule::MinClauses => Member::Clauses,
-            Rule::MinOperations => Member::Operations,
-            Rule::IdentityFieldRequired
-            | Rule::IdentityFieldForbidden
-            | Rule::OccurrenceFieldRequired
-            | Rule::NoFields
-            | Rule::NoOperations
-            | Rule::SingleOwner
-            | Rule::ExclusiveMembership
-            | Rule::MembersNotNamespace => continue,
-        };
-        let name = non_empty.name();
+    for rule in declaration.rules.iter().filter(|rule| rule.non_empty()) {
+        let name = rule.requires().0.name();
         if definition
             .get(name)
             .and_then(Json::as_array)

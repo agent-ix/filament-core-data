@@ -133,7 +133,8 @@ fn ir_document(lift: &Lift) -> Value {
     let mut doc = serde_json::to_value(&envelope).expect("envelope serialises");
     doc["contractVersion"] = json!(CONTRACT_VERSION);
     doc["types"] = Value::Array(types_json(lift));
-    doc["constructs"] = assemble(&envelope, &[], &lift.lowered.constructs)["constructs"].clone();
+    doc["constructs"] =
+        assemble(&envelope, &[], &lift.lowered.constructs).expect("assemble")["constructs"].clone();
     json!({ "ir": doc })
 }
 

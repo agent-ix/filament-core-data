@@ -23,7 +23,16 @@ pub const CONTRACT_VERSION: &str = "2.0.0";
 /// `{contractVersion, source, package, types, occurrences, extensions,
 /// constructs}` over `envelope`, `types` and the construct kinds they use,
 /// every node list sorted by identity and `constructs` in the given order.
-pub fn assemble(envelope: &Envelope, types: &[TypeDefinition], constructs: &[Construct]) -> Value {
+///
+/// # Errors
+///
+/// A construct declaration whose reader rendering is not JSON `serde_json`
+/// reads back.
+pub fn assemble(
+    envelope: &Envelope,
+    types: &[TypeDefinition],
+    constructs: &[Construct],
+) -> Result<Value, serde_json::Error> {
     let mut members = Map::new();
     members.insert(
         "contractVersion".to_string(),
@@ -45,11 +54,16 @@ pub fn assemble(envelope: &Envelope, types: &[TypeDefinition], constructs: &[Con
     );
     members.insert(
         "constructs".to_string(),
-        Value::Array(constructs.iter().map(construct_entry).collect()),
+        Value::Array(
+            constructs
+                .iter()
+                .map(construct_entry)
+                .collect::<Result<_, _>>()?,
+        ),
     );
     let mut document = Value::Object(members);
     sort_node_lists(&mut document);
-    document
+    Ok(document)
 }
 
 /// `serde_json::to_value` over a node this crate defines. Every emitted
@@ -63,9 +77,8 @@ fn to_value<T: serde::Serialize>(node: &T) -> Value {
 /// `semantic-ir.schema.json#/$defs/construct`: one `constructs` entry. The
 /// declaration is the reader's own rendering of it, so the table carries
 /// exactly what the reader reads back.
-fn construct_entry(construct: &Construct) -> Value {
-    let declaration = serde_json::from_str(&to_canonical_string(&construct.declaration.to_json()))
-        .unwrap_or(Value::Null);
+fn construct_entry(construct: &Construct) -> Result<Value, serde_json::Error> {
+    let declaration = serde_json::from_str(&to_canonical_string(&construct.declaration.to_json()))?;
     let mut entry = Map::new();
     entry.insert("kind".to_string(), to_value(&construct.kind));
     entry.insert(
@@ -77,5 +90,5 @@ fn construct_entry(construct: &Construct) -> Value {
         Value::String(construct.manifest_digest.clone()),
     );
     entry.insert("construct".to_string(), declaration);
-    Value::Object(entry)
+    Ok(Value::Object(entry))
 }

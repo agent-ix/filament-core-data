@@ -259,6 +259,45 @@ impl Rule {
             }
         }
     }
+
+    /// Whether the rule also asks its list member for at least one item.
+    pub const fn non_empty(self) -> bool {
+        match self {
+            Rule::MinClauses | Rule::MinOperations => true,
+            Rule::IdentityFieldRequired
+            | Rule::IdentityFieldForbidden
+            | Rule::OccurrenceFieldRequired
+            | Rule::NoFields
+            | Rule::NoOperations
+            | Rule::SingleOwner
+            | Rule::ExclusiveMembership
+            | Rule::MembersNotNamespace => false,
+        }
+    }
+}
+
+impl Identity {
+    /// The member presence a declaration of this identity declares, if any.
+    pub const fn requires(self) -> Option<(Member, Presence)> {
+        match self {
+            Identity::Identified => Some((Member::IdentityFields, Presence::Required)),
+            Identity::Value | Identity::None => None,
+        }
+    }
+}
+
+impl Shape {
+    /// The member presence a declaration of this shape declares, if any.
+    pub const fn requires(self) -> Option<(Member, Presence)> {
+        match self {
+            Shape::Enumeration => Some((Member::Variants, Presence::Required)),
+            Shape::Record
+            | Shape::Interface
+            | Shape::StateMachine
+            | Shape::Sequence
+            | Shape::Namespace => None,
+        }
+    }
 }
 
 /// A module's declaration of one construct kind.
@@ -277,6 +316,9 @@ pub struct Declaration {
     pub rules: Vec<Rule>,
     /// The Quire meaning id, carried opaquely.
     pub meaning: String,
+    /// Whether an instance never changes once created; `false` when the
+    /// declaration does not state it.
+    pub immutable: bool,
 }
 
 /// Why a JSON value is not a declaration: a pointer relative to the
@@ -303,9 +345,10 @@ const DECLARATION_MEMBERS: &[&str] = &[
     "references",
     "rules",
     "meaning",
+    "immutable",
 ];
 /// The members a declaration always states; `references` and `rules` default
-/// to none.
+/// to none, and `immutable` to `false`.
 const DECLARATION_REQUIRED: &[&str] = &["identity", "shape", "members", "meaning"];
 /// The role spelling no reference admits: a wildcard.
 const WILDCARD_ROLE: &str = "*";
@@ -449,6 +492,11 @@ impl Declaration {
             .filter(|text| !text.is_empty())
             .ok_or_else(|| error("/meaning", "meaning is a non-empty Quire meaning id"))?
             .to_string();
+        let immutable = match value.get("immutable") {
+            None => false,
+            Some(Json::Bool(flag)) => *flag,
+            Some(_) => return Err(error("/immutable", "immutable is a boolean")),
+        };
         let declaration = Declaration {
             identity,
             shape,
@@ -456,6 +504,7 @@ impl Declaration {
             references,
             rules,
             meaning,
+            immutable,
         };
         declaration.check_consistency()?;
         Ok(declaration)
@@ -549,9 +598,28 @@ impl Declaration {
         Ok(out)
     }
 
-    /// Every selected rule's member presence is declared, and every
-    /// constrained reference is to a member the declaration admits.
+    /// The member presence the identity, the shape and every selected rule
+    /// require is declared, and every constrained reference is to a member
+    /// the declaration admits.
     fn check_consistency(&self) -> Result<(), DeclarationError> {
+        for (pointer, term, required) in [
+            ("/identity", self.identity.name(), self.identity.requires()),
+            ("/shape", self.shape.name(), self.shape.requires()),
+        ] {
+            let Some((member, presence)) = required else {
+                continue;
+            };
+            if self.presence(member) != presence {
+                return Err(error(
+                    pointer,
+                    format!(
+                        "a {term} declaration requires {} to be {}",
+                        member.name(),
+                        presence.name()
+                    ),
+                ));
+            }
+        }
         for (position, rule) in self.rules.iter().enumerate() {
             let (member, presence) = rule.requires();
             if self.presence(member) != presence {
@@ -583,7 +651,7 @@ impl Declaration {
     /// The declaration as the document carries it.
     pub fn to_json(&self) -> Json {
         let text = |value: &str| Json::Str(value.to_string());
-        Json::Object(vec![
+        let mut members = vec![
             ("identity".to_string(), text(self.identity.name())),
             ("shape".to_string(), text(self.shape.name())),
             (
@@ -616,7 +684,11 @@ impl Declaration {
                 Json::Array(self.rules.iter().map(|rule| text(rule.name())).collect()),
             ),
             ("meaning".to_string(), text(&self.meaning)),
-        ])
+        ];
+        if self.immutable {
+            members.push(("immutable".to_string(), Json::Bool(true)));
+        }
+        Json::Object(members)
     }
 }
 
@@ -686,7 +758,52 @@ mod tests {
                 entry.get("presence").and_then(Json::as_str),
                 Some(presence.name())
             );
+            assert_eq!(
+                entry
+                    .get("nonEmpty")
+                    .and_then(Json::as_bool)
+                    .unwrap_or(false),
+                rule.non_empty(),
+                "{}",
+                rule.name()
+            );
         }
+        let requirements = |key: &str, term: &str| -> Vec<(String, (&str, &str))> {
+            vocabulary
+                .get(key)
+                .and_then(Json::as_array)
+                .expect("requirements")
+                .iter()
+                .map(|entry| {
+                    let at = |name: &str| entry.get(name).and_then(Json::as_str).expect(name);
+                    (at(term).to_string(), (at("member"), at("presence")))
+                })
+                .collect()
+        };
+        let stated = |required: Option<(Member, Presence)>| {
+            required.map(|(member, presence)| (member.name(), presence.name()))
+        };
+        let identities = requirements("identityRequirements", "identity");
+        for identity in Identity::ALL {
+            let listed = identities
+                .iter()
+                .find(|(term, _)| term == identity.name())
+                .map(|(_, requirement)| *requirement);
+            assert_eq!(listed, stated(identity.requires()), "{}", identity.name());
+        }
+        let shapes = requirements("shapeRequirements", "shape");
+        for shape in Shape::ALL {
+            let listed = shapes
+                .iter()
+                .find(|(term, _)| term == shape.name())
+                .map(|(_, requirement)| *requirement);
+            assert_eq!(listed, stated(shape.requires()), "{}", shape.name());
+        }
+        assert_eq!(
+            names_of(vocabulary.get("flags"), "name"),
+            ["immutable"],
+            "the flags Declaration reads"
+        );
 
         let schema = parse(SCHEMA).expect("the schema is JSON");
         let defs = schema.get("$defs").expect("$defs");
@@ -738,6 +855,18 @@ mod tests {
                     .and_then(|p| p.get("enum"))
             )
         );
+        for flag in vocabulary.get("flags").and_then(Json::as_array).unwrap() {
+            let name = flag.get("name").and_then(Json::as_str).unwrap();
+            assert_eq!(
+                declaration
+                    .get(name)
+                    .and_then(|p| p.get("type"))
+                    .and_then(Json::as_str),
+                Some("boolean"),
+                "{name}"
+            );
+            assert_eq!(flag.get("default").and_then(Json::as_bool), Some(false));
+        }
     }
 
     fn declaration(text: &str) -> Result<Declaration, super::DeclarationError> {
@@ -760,6 +889,17 @@ mod tests {
         )
         .expect("references and rules may be absent");
         assert!(bare.references.is_empty() && bare.rules.is_empty());
+        assert!(
+            !read.immutable && !bare.immutable,
+            "immutable defaults to false"
+        );
+        let immutable = r#"{"identity":"none","shape":"record","members":{},"references":{},"rules":[],"meaning":"m","immutable":true}"#;
+        let flagged = declaration(immutable).expect("immutable may be stated");
+        assert!(flagged.immutable);
+        assert_eq!(
+            to_canonical_string(&flagged.to_json()),
+            to_canonical_string(&parse(immutable).unwrap())
+        );
         assert_eq!(
             to_canonical_string(&read.to_json()),
             to_canonical_string(&parse(text).unwrap())
@@ -806,6 +946,18 @@ mod tests {
                 "",
             ),
             (r#"{"shape":"record","members":{},"meaning":"m"}"#, ""),
+            (
+                r#"{"identity":"identified","shape":"record","members":{},"meaning":"m"}"#,
+                "/identity",
+            ),
+            (
+                r#"{"identity":"none","shape":"enumeration","members":{"variants":"optional"},"meaning":"m"}"#,
+                "/shape",
+            ),
+            (
+                r#"{"identity":"none","shape":"record","members":{},"meaning":"m","immutable":"yes"}"#,
+                "/immutable",
+            ),
             (
                 r#"{"identity":"none","shape":"record","members":{},"references":{},"rules":[],"meaning":""}"#,
                 "/meaning",

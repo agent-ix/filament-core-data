@@ -855,12 +855,12 @@ fn tc_1791_a_kind_no_reader_code_names_reads_by_its_declaration_alone() {
     let constructs = document["constructs"].as_array_mut().expect("constructs");
     constructs.push(declaration(
         "part",
-        json!({ "identity": "identified", "shape": "record", "members": {}, "meaning": "quire.meaning.systems.part/v1" }),
+        json!({ "identity": "none", "shape": "record", "members": {}, "meaning": "quire.meaning.systems.part/v1" }),
     ));
     constructs.push(declaration(
         "port",
         json!({
-            "identity": "identified",
+            "identity": "none",
             "shape": "record",
             "members": {
                 "owner": "required", "direction": "required",
@@ -873,7 +873,7 @@ fn tc_1791_a_kind_no_reader_code_names_reads_by_its_declaration_alone() {
     constructs.push(declaration(
         "connection",
         json!({
-            "identity": "identified",
+            "identity": "none",
             "shape": "record",
             "members": {
                 "flowDirection": "required", "sourceEnd": "required",
@@ -2028,18 +2028,36 @@ fn tc_1787_no_business_kind_name_is_a_literal_in_source() {
     source_files(&root.join("python_backend"), &["py", "json"], &mut files);
     assert!(files.len() > 100, "{} source files", files.len());
 
-    // Two literals name something other than a construct kind: the `event`
-    // step kind of the sequence vocabulary, and the `entity` role the 1.x
-    // declared-loss rule reads.
+    // Two source lines name something other than a construct kind: the
+    // `event` step kind of the sequence vocabulary, and the `entity` role
+    // the 1.x declared-loss rule reads. Each is allowed as that exact line
+    // only, so another literal in either file still fails.
     const NOT_A_KIND: [(&str, &str); 2] = [
-        ("crates/semantic-ir/src/schema.rs", "\"event\""),
-        ("crates/semantic-ir/src/rules.rs", "\"entity\""),
+        (
+            "crates/semantic-ir/src/schema.rs",
+            r#"const STEP_KINDS: &[&str] = &["command", "event", "decision", "compensation", "wait"];"#,
+        ),
+        (
+            "crates/semantic-ir/src/rules.rs",
+            r#".any(|role| role.rsplit(':').next() == Some("entity"));"#,
+        ),
     ];
     let hits: Vec<String> = kind_name_literals(&root, &files, &names)
         .into_iter()
         .filter(|hit| {
-            !NOT_A_KIND.iter().any(|(file, literal)| {
-                hit.starts_with(&format!("{file}:")) && hit.ends_with(literal)
+            !NOT_A_KIND.iter().any(|(file, allowed)| {
+                let Some(line) = hit
+                    .strip_prefix(&format!("{file}:"))
+                    .and_then(|rest| rest.split(':').next())
+                    .and_then(|number| number.parse::<usize>().ok())
+                else {
+                    return false;
+                };
+                fs::read_to_string(root.join(file))
+                    .expect("read")
+                    .lines()
+                    .nth(line - 1)
+                    .is_some_and(|text| text.trim() == *allowed)
             })
         })
         .collect();
