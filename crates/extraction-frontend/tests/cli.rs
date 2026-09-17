@@ -16,6 +16,10 @@ use serde_json::Value;
 /// The document's default file name in a scratch directory.
 const OUT: &str = "semantic-ir.json";
 
+/// The engine's non-blocking advisory for FR-006's `ocl` clause in
+/// `config-version-table`: `ocl` is carried by clause id, unchecked.
+const OCL_UNCHECKED: &str = "agent-ix.extraction-frontend.ENGINE_DIAGNOSTIC: semantic.clause-language-unchecked: clause immutable: language ocl is carried unchecked (spec/functional/FR-006-config-version-entity.md:38:1)";
+
 fn bin() -> Command {
     Command::new(env!("CARGO_BIN_EXE_extraction-frontend"))
 }
@@ -106,14 +110,16 @@ fn tc_1295_lift_writes_four_files_and_the_sidecar_options_rename_them() {
             "semantic-ir.json.provenance.json",
         ]
     );
-    // IR v1.2 represents this fixture without a representability loss.
+    // IR v1.2 represents this fixture without a representability loss: the
+    // one line is the engine's advisory that FR-006's `ocl` clause is carried
+    // unchecked (quire-rs FR-071; `quire` is the only checked language).
     let lines: Vec<&str> = output
         .stderr
         .split(|b| *b == b'\n')
         .filter(|l| !l.is_empty())
         .map(|l| std::str::from_utf8(l).expect("utf-8"))
         .collect();
-    assert!(lines.is_empty(), "{lines:?}");
+    assert_eq!(lines, [OCL_UNCHECKED], "{lines:?}");
 
     let renamed = tempfile::tempdir().expect("tempdir");
     let out2 = renamed.path().join(OUT);
@@ -285,13 +291,14 @@ fn tc_1268_a_blocking_lift_leaves_out_untouched_and_a_warning_only_lift_writes_i
         .iter()
         .any(|d| d["blocking"] == Value::Bool(true)));
 
-    // The v1.2 fixture succeeds with all four files and no diagnostics.
+    // The v1.2 fixture succeeds with all four files and only the advisory
+    // that its `ocl` clause is carried unchecked.
     let dir = tempfile::tempdir().expect("tempdir");
     let output = run(&lift_args(
         &fixture("config-version-table"),
         &dir.path().join(OUT),
     ));
     assert_eq!(code(&output), 0, "stderr:\n{}", stderr(&output));
-    assert!(stderr(&output).is_empty(), "{}", stderr(&output));
+    assert_eq!(stderr(&output).trim_end(), OCL_UNCHECKED);
     assert_eq!(files(dir.path()).len(), 4);
 }

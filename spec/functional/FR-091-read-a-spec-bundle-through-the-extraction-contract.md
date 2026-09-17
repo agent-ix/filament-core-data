@@ -63,7 +63,7 @@ mapping.
 
 ### Extraction
 
-- For every document whose frontmatter `object` names an object type that one loaded module declares, the frontend SHALL call `extract_semantic` with a `SemanticContext` whose `path` is the document's bundle-root-relative path with `/` separators, whose `source_identity` is `ix://<org>/<name>/spec`, and whose `RequiredSections` are read from that object type's `body_extraction` with `RequiredSections::from_dsl`.
+- For every document whose frontmatter `object` names an object type that one loaded module declares, the frontend SHALL call `extract_semantic` with a `SemanticContext` whose `path` is the document's bundle-root-relative path with `/` separators, whose `source_identity` is `ix://<org>/<name>/spec`, whose `RequiredSections` are read from that object type's `body_extraction` with `RequiredSections::from_dsl`, and to which that typed `body_extraction` is given with `SemanticContext::with_body_extraction` (quire-rs#442), so the engine reads exactly the FR-075 model tables the object type declares.
 - The frontend SHALL pass the module's reference-form `data_schema` digest for the object type as `schema_digest`.
 - The frontend SHALL NOT call `extract_semantic_json`.
 - The frontend SHALL NOT declare a type named `FieldDecl`, `TypeRef`, `Multiplicity`, `Constraint`, `ClauseRef`, `SourceLocus`, or `OperationDecl`.
@@ -91,7 +91,7 @@ contract today; FR-094-CON-1 records the upstream dependency.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-091-AC-1 | Loading the `config-version-table` fixture bundle under the vendored spec-objects-business `0.3.0` module (`fixtures/modules/spec-objects-business/`, NFR-033) yields one `SemanticExtraction` for `FR-006` with `fields` `available` and seven fields, and one for `FR-005`, keyed by id. | Test (TC-1200) |
+| FR-091-AC-1 | Loading the `config-version-table` fixture bundle under the vendored spec-objects-business `0.4.0` module (`fixtures/modules/spec-objects-business/`, NFR-033) yields one `SemanticExtraction` for `FR-006` with `fields` `available` and seven fields, and one for `FR-005`, keyed by id. | Test (TC-1200) |
 | FR-091-AC-2 | A module root whose manifest carries no `semantic` block refuses with `MODULE_WITHOUT_SEMANTIC_BLOCK` naming the module and lowers nothing. | Test (TC-1201) |
 | FR-091-AC-3 | A module whose `semantic.semantic_core` is `9.9.9` refuses with `MODULE_REFUSED` whose message begins with `semantic.unsupported-semantic-core` and whose `causes` is empty, and no artifact of the bundle is lowered to an empty record. | Test (TC-1202) |
 | FR-091-AC-4 | With `HOME` pointed at a directory whose `.ix/filament/modules/spec-objects-business/manifest.yaml` is a conflicting module (one whose `semantic` block declares `compatibility_posture: declared-lossy` and `legacy_forms: error`, so the same fixture lifts to different bytes under it) and `QUIRE_MODULES` pointed at the same directory, the fixture lifts byte-identically to the lift with the explicit module root and no environment set; the control lift with the conflicting module supplied explicitly differs. | Test (TC-1203) |

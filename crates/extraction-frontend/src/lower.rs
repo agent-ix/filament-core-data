@@ -84,7 +84,9 @@ use serde_json::Value;
 
 use crate::bundle::{Bundle, Document};
 use crate::clauses::{lower_clauses, lower_operations, Clause, Operation};
-use crate::constructs::{assign_owners, shape, ConstructMembers, Pending};
+use crate::constructs::{
+    assign_owners, construct_kind, shape, unlowered_declaration, ConstructMembers, Pending,
+};
 use crate::diagnostics::{Code, Diagnostic, Disposition, Locus, NotLoweredReason};
 use crate::edges::{lower_relationships, Relationship};
 use crate::enumeration::{lower_enum, values_rows};
@@ -1091,6 +1093,14 @@ pub fn lower_bundle(
     // The `type/` identities of artifacts whose lowering failed: an edge
     // naming one is refused with its source (`assign_owners`).
     let mut lowered_to_nothing: BTreeSet<String> = BTreeSet::new();
+    // The ids of the bundle's event artifacts: what a transition's or step's
+    // event reference names (FR-143).
+    let events: BTreeSet<String> = bundle
+        .documents()
+        .iter()
+        .filter(|d| d.object().map(construct_kind) == Some(Kind::Event))
+        .map(|d| d.id().to_string())
+        .collect();
 
     for document in bundle.documents() {
         let Some(object) = document.object() else {
@@ -1211,6 +1221,20 @@ pub fn lower_bundle(
             roles: roles(&object_type.module, object, object_type.archetype.roles()),
         };
         let outcome = if object == ENUMERATION {
+            if let Some(rule) = unlowered_declaration(Kind::Enumeration, &extracted.extraction) {
+                own.push(Diagnostic::with_disposition(
+                    Code::ArtifactNotLowered,
+                    Disposition::NotLowered(NotLoweredReason::Other),
+                    format!(
+                        "artifact {} ({}) lowers to no definition: {rule}",
+                        document.id(),
+                        document.path()
+                    ),
+                    Some(head),
+                ));
+                lowered_to_nothing.extend(package.type_identity(document.id()).ok());
+                continue;
+            }
             match values_rows(document, object_type) {
                 Ok(rows) => lower_enum(&rows, &ctx),
                 Err(unsatisfied) => {
@@ -1256,6 +1280,8 @@ pub fn lower_bundle(
                     // FR-143: the construct the object type names.
                     shape(
                         object,
+                        &extracted.extraction,
+                        &events,
                         &mut lowering.definition,
                         &resolutions.resolutions,
                         &ctx,
@@ -1391,6 +1417,27 @@ fn identities_of(definition: &TypeDefinition) -> Vec<(String, Option<Locus>)> {
             .iter()
             .flatten()
             .map(|clause| (clause.identity.clone(), source_locus(&clause.origin))),
+    );
+    let construct = &definition.construct;
+    out.extend(
+        construct
+            .states
+            .iter()
+            .flatten()
+            .map(|state| (state.identity.clone(), source_locus(&state.origin))),
+    );
+    out.extend(construct.transitions.iter().flatten().map(|transition| {
+        (
+            transition.identity.clone(),
+            source_locus(&transition.origin),
+        )
+    }));
+    out.extend(
+        construct
+            .steps
+            .iter()
+            .flatten()
+            .map(|step| (step.identity.clone(), source_locus(&step.origin))),
     );
     out
 }

@@ -57,7 +57,7 @@ declare none at all and carry their own JSON layer.
 
 The extraction frontend, `crates/extraction-frontend` (issue #36, FR-091..099,
 NFR-031..033), is the third workspace member and the first to declare
-dependencies: `quire-rs` (git, rev `8b8020e`) for the spec-bundle engine,
+dependencies: `quire-rs` (git, rev `96df8b1`) for the spec-bundle engine,
 `agent-ix-semantic-ir` by `path`, and `serde`, `serde_json`, `sha2` and `clap`
 directly, with `ix-trace-rs` and `tempfile` as development dependencies. Every
 crate in this section reaches the workspace `Cargo.lock` through those
@@ -153,6 +153,7 @@ register that NFR-033-AC-6 checks against the same lock. `quire-rs` and
 | `jsonschema` | 0.18.3 | `MIT` | https://github.com/Stranger6667/jsonschema-rs | licence files in the published crate archive |
 | `lazy_static` | 1.5.0 | `MIT OR Apache-2.0` | https://github.com/rust-lang-nursery/lazy-static.rs | licence files in the published crate archive |
 | `libc` | 0.2.189 | `MIT OR Apache-2.0` | https://github.com/rust-lang/libc | licence files in the published crate archive |
+| `libyaml-rs` | 0.3.0 | `MIT` | https://github.com/yaml/libyaml-rs | licence files in the published crate archive |
 | `linux-raw-sys` | 0.12.1 | `Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT` | https://github.com/sunfishcode/linux-raw-sys | licence files in the published crate archive |
 | `litemap` | 0.8.3 | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
 | `lock_api` | 0.4.14 | `MIT OR Apache-2.0` | https://github.com/Amanieu/parking_lot | licence files in the published crate archive |
@@ -208,7 +209,6 @@ register that NFR-033-AC-6 checks against the same lock. `quire-rs` and
 | `serde_core` | 1.0.228 | `MIT OR Apache-2.0` | https://github.com/serde-rs/serde | licence files in the published crate archive |
 | `serde_derive` | 1.0.228 | `MIT OR Apache-2.0` | https://github.com/serde-rs/serde | licence files in the published crate archive |
 | `serde_json` | 1.0.151 | `MIT OR Apache-2.0` | https://github.com/serde-rs/json | licence files in the published crate archive |
-| `serde_yaml` | 0.9.34+deprecated | `MIT OR Apache-2.0` | https://github.com/dtolnay/serde-yaml | licence files in the published crate archive |
 | `sha2` | 0.10.9 | `MIT OR Apache-2.0` | https://github.com/RustCrypto/hashes | licence files in the published crate archive |
 | `sharded-slab` | 0.1.7 | `MIT` | https://github.com/hawkw/sharded-slab | licence files in the published crate archive |
 | `shlex` | 2.0.1 | `MIT OR Apache-2.0` | https://github.com/comex/rust-shlex | licence files in the published crate archive |
@@ -237,7 +237,6 @@ register that NFR-033-AC-6 checks against the same lock. `quire-rs` and
 | `unarray` | 0.1.4 | `MIT OR Apache-2.0` | https://github.com/cameron1024/unarray | licence files in the published crate archive |
 | `unicode-ident` | 1.0.24 | `(MIT OR Apache-2.0) AND Unicode-3.0` | https://github.com/dtolnay/unicode-ident | licence files in the published crate archive |
 | `unicode-normalization` | 0.1.25 | `MIT OR Apache-2.0` | https://github.com/unicode-rs/unicode-normalization | licence files in the published crate archive |
-| `unsafe-libyaml` | 0.2.11 | `MIT` | https://github.com/dtolnay/unsafe-libyaml | licence files in the published crate archive |
 | `url` | 2.5.8 | `MIT OR Apache-2.0` | https://github.com/servo/rust-url | licence files in the published crate archive |
 | `utf8_iter` | 1.0.4 | `Apache-2.0 OR MIT` | https://github.com/hsivonen/utf8_iter | licence files in the published crate archive |
 | `utf8parse` | 0.2.2 | `Apache-2.0 OR MIT` | https://github.com/alacritty/vte | licence files in the published crate archive |
@@ -258,6 +257,7 @@ register that NFR-033-AC-6 checks against the same lock. `quire-rs` and
 | `windows-sys` | 0.61.2 | `MIT OR Apache-2.0` | https://github.com/microsoft/windows-rs | licence files in the published crate archive |
 | `wit-bindgen` | 0.57.1 | `Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT` | https://github.com/bytecodealliance/wit-bindgen | licence files in the published crate archive |
 | `writeable` | 0.6.4 | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
+| `yaml_serde` | 0.10.7 | `MIT OR Apache-2.0` | https://github.com/yaml/yaml-serde | licence files in the published crate archive |
 | `yoke` | 0.8.3 | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
 | `yoke-derive` | 0.8.2 | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
 | `zerocopy` | 0.8.57 | `BSD-2-Clause OR Apache-2.0 OR MIT` | https://github.com/google/zerocopy | licence files in the published crate archive |

@@ -34,15 +34,13 @@ of what it produces.
   `LICENSE`, `THIRD-PARTY-NOTICES.md`, its test sources, the vendored module
   fixture under `crates/extraction-frontend/fixtures/modules/`, and every gate
   the `Makefile` block of FR-099 runs over the crate.
-- Does not apply to: the workspace's other members, which stay on the
-  workspace's own `rust-version = "1.85.0"` and the `rust-toolchain.toml`
-  channel `1.94.1`. Those pins belong to quire-agent-c's Rust 1.98.1
-  qualification sweep — `agent-ix/quire-rs#417`, `agent-ix/quire-cli#82`,
-  `agent-ix/ix-trace-rs#6`, and `agent-ix/quire-contract-ir` PR #62 — and
-  this change consumes that sweep rather than pre-empting it. The claim
-  "qualified on 1.98.1" covers this crate alone: `quire-rs` at the pinned
-  revision declares `rust-version = "1.75"` and is compiled, not qualified, on
-  1.98.1 until quire-rs#417 closes.
+- Does not apply to: the workspace's other members, which keep the
+  workspace's own `rust-version = "1.85.0"`. The `rust-toolchain.toml` channel
+  is `1.98.1`: quire-agent-c's Rust 1.98.1 qualification sweep
+  (`agent-ix/quire-rs#417`) made `quire-rs` declare `rust-version = "1.98.1"`,
+  so from the revision issue #154 pins (at or after `6eec7e8`) no older
+  channel compiles this crate, and the workspace channel moved with it. The
+  claim "qualified on 1.98.1" covers this crate alone.
 - Operational context: an authoring host with `1.98.1-x86_64-unknown-linux-gnu`
   installed through `rustup` beside the workspace channel; every gate for this
   crate invokes `cargo +1.98.1` explicitly.
@@ -56,15 +54,16 @@ PR #62 fixed. The manifest declares `rust-version.workspace = true` — the
 workspace's `1.85.0`, as the sibling members do — because `cargo` enforces
 every member's `rust-version` under `--workspace`, so a member-level
 `rust-version = "1.98.1"` would make `make rust-build` and `make rust-test` on
-the `rust-toolchain.toml` channel `1.94.1` refuse the whole workspace
+an older `rust-toolchain.toml` channel refuse the whole workspace
 ("rustc 1.94.1 is not supported by agent-ix-extraction-frontend") and break
 `make test` for every other member — the non-disruption NFR-032 forbids
 (CR-036-1). The qualification compiler is exact `1.98.1`, named once as
 `EXTRACTION_TOOLCHAIN ?= 1.98.1` in the `Makefile`, and every gate of this
-crate runs `cargo +$(EXTRACTION_TOOLCHAIN)`; the workspace pin and
-`rust-toolchain.toml` stay untouched. Bumping either for the whole workspace is
-another ticket's change: `rust-toolchain.toml` is the FR-060 rustfmt fixed
-point, and moving it moves every Rust backend golden. Running this crate's gates
+crate runs `cargo +$(EXTRACTION_TOOLCHAIN)`; the workspace `rust-version`
+stays untouched. `rust-toolchain.toml` is the FR-060 rustfmt fixed point; it
+moved to `1.98.1` in issue #154 because the pinned `quire-rs` requires that
+compiler, and `make rust-check` measured every Rust backend golden unchanged
+under `rustfmt 1.9.0-stable`. Running this crate's gates
 with `cargo +1.98.1` is what makes "qualified on 1.98.1" a measured claim
 rather than a manifest line; a gate that runs on whatever `cargo` resolves to
 measures the host, not the crate. An absent 1.98.1 toolchain is therefore a red
@@ -76,13 +75,12 @@ newer than the supported minimum surfaces as a red gate rather than as a
 broken `make test`.
 
 Two cargos touch one lockfile. The workspace `Cargo.lock` was resolved under
-the `rust-toolchain.toml` channel `1.94.1`; this crate's additions are resolved
+the `rust-toolchain.toml` channel; this crate's additions are resolved
 under `cargo +1.98.1`, and every gate of this crate passes `--locked`, so a
 resolver or lockfile-format difference between the two cargos surfaces as a
 red gate with a `Cargo.lock` diff rather than as a silent rewrite. The first
-plan task proves `cargo +1.98.1 build --locked` leaves every other member's
-lock entries byte-unchanged; if quire-agent-c's sweep moves the workspace
-channel first, this branch rebases onto it.
+plan task proves `cargo +1.98.1 build --locked` leaves every lock entry
+outside this crate's graph byte-unchanged.
 
 The dependency posture follows the Phase 0 gate. `quire-rs` is the extraction
 contract this crate consumes in-process; FR-091 loads modules only through
@@ -193,9 +191,9 @@ reports the metric it could not measure.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| NFR-033-AC-1 | `crates/extraction-frontend/Cargo.toml` declares `rust-version.workspace = true`, `license = "AGPL-3.0-or-later"`, `publish = false`, and `edition = "2021"`; the `Makefile` names the qualification compiler on exactly one non-comment line, `EXTRACTION_TOOLCHAIN ?= 1.98.1`; the workspace `rust-version`, `rust-toolchain.toml`, and every `Cargo.lock` entry of another workspace member are byte-unchanged from the range's base after `cargo +1.98.1 build --locked`. | Analysis (TC-1320) |
+| NFR-033-AC-1 | `crates/extraction-frontend/Cargo.toml` declares `rust-version.workspace = true`, `license = "AGPL-3.0-or-later"`, `publish = false`, and `edition = "2021"`; the `Makefile` names the qualification compiler on exactly one non-comment line, `EXTRACTION_TOOLCHAIN ?= 1.98.1`; the workspace `rust-version` is byte-unchanged, `rust-toolchain.toml` pins channel `1.98.1`, and every `Cargo.lock` entry outside this crate's graph (a workspace member's own entry, and every crate only another member reaches) is byte-unchanged from the range's base after `cargo +1.98.1 build --locked`. | Analysis (TC-1320) |
 | NFR-033-AC-2 | Every `cargo` invocation in the `Makefile` extraction-frontend block carries `+$(EXTRACTION_TOOLCHAIN)`, and with `EXTRACTION_TOOLCHAIN=0.0.0` each gate exits non-zero naming `0.0.0`. | Static (TC-1321) |
-| NFR-033-AC-3 | `quire-rs` is declared as a git dependency with an exact `rev` at or after `a874fb6` — `8b8020e` at authoring — and no `branch`; `ix-trace-rs` is a dev-dependency at tag `v0.1.1`; `agent-ix-semantic-ir` is a `path` dependency on `../semantic-ir`; `serde` and `serde_json` are the workspace's exact pins; `sha2` and `clap` are exact; no `jsonschema` crate is declared; no `path` dependency names a crate outside the workspace `members`, and no `file:` or `link:` dependency exists; the vendored module under `crates/extraction-frontend/fixtures/modules/spec-objects-business/` carries a `PROVENANCE.json` naming repository revision `d1840b8`. | Analysis (TC-1322) |
+| NFR-033-AC-3 | `quire-rs` is declared as a git dependency with an exact `rev` at or after `a874fb6` — `8b8020e` at authoring, `96df8b1` since issue #154 — and no `branch`; `ix-trace-rs` is a dev-dependency at tag `v0.1.1`; `agent-ix-semantic-ir` is a `path` dependency on `../semantic-ir`; `serde` and `serde_json` are the workspace's exact pins; `sha2` and `clap` are exact; no `jsonschema` crate is declared; no `path` dependency names a crate outside the workspace `members`, and no `file:` or `link:` dependency exists; the vendored module under `crates/extraction-frontend/fixtures/modules/spec-objects-business/` carries a `PROVENANCE.json` naming repository revision `d1840b8`. | Analysis (TC-1322) |
 | NFR-033-AC-4 | `make extraction-frontend-deny` passes with zero errors against a `deny.toml` whose licence allowlist is exactly the set the program permits, and `quire-rs`'s `AGPL-3.0-or-later` is admitted by an explicit entry. | Static (TC-1323) |
 | NFR-033-AC-5 | `make extraction-frontend-audit` reports zero advisories against the locked graph. | Static (TC-1324) |
 | NFR-033-AC-6 | Every third-party crate reachable from this crate in `Cargo.lock` has an entry in `crates/extraction-frontend/THIRD-PARTY-NOTICES.md` naming its version and licence, and the crate ships a `LICENSE` file carrying AGPL-3.0-or-later. | Analysis (TC-1325) |
@@ -203,7 +201,7 @@ reports the metric it could not measure.
 | NFR-033-AC-8 | Every requirement test in the crate carries `#[trace("TC-NNNN", "<FR or NFR>-AC-N")]` and is named `tc_NNNN_…`, and every named TC id exists in `spec/tests.md`, which carries TC-1200 through TC-1329 before the first traced test lands. | Analysis (TC-1327) |
 | NFR-033-AC-9 | With `quire coverage --scope . --json` confirmed to bind the Rust `#[trace]` form, removing both the `#[trace]` marker and the `tc_NNNN_` name prefix from one test turns its matrix row into a status lie under `quire coverage` (the `rust-test-name-id` form still binds through the name alone), proving the binding is by symbol rather than by row. | Static (TC-1328) |
 | NFR-033-AC-10 | `cargo +1.98.1 build --locked --offline` succeeds from a warm cache, proving every dependency is resolvable without a network. | Test (TC-1329) |
-| NFR-033-AC-11 | `cargo check -p agent-ix-extraction-frontend --locked --offline` on the `rust-toolchain.toml` channel (`cargo +1.94.1` at authoring) exits zero, proving a `--workspace` build on the workspace channel still compiles the crate and `make rust-build` and `make rust-test` are not broken by it. | Test (TC-1350) |
+| NFR-033-AC-11 | `cargo check -p agent-ix-extraction-frontend --locked --offline` on the `rust-toolchain.toml` channel (`cargo +1.94.1` at authoring, `cargo +1.98.1` since issue #154) exits zero, proving a `--workspace` build on the workspace channel still compiles the crate and `make rust-build` and `make rust-test` are not broken by it. | Test (TC-1350) |
 
 ## Dependencies
 

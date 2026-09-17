@@ -267,41 +267,106 @@ fn tc_1320_manifest_pins_toolchain_and_lock_entries_of_other_members_hold() {
         Some("\"1.85.0\""),
         "the workspace rust-version belongs to quire-rs#417's sweep, not this crate"
     );
+    // quire-rs 6eec7e8 and later declare `rust-version = "1.98.1"`, so the
+    // workspace channel is the qualification compiler (#154).
     let toolchain = read(&workspace_dir().join("rust-toolchain.toml"));
     assert_eq!(
         key(&section(&toolchain, "[toolchain]"), "channel").as_deref(),
-        Some("\"1.94.1\"")
+        Some(&*format!("\"{TOOLCHAIN}\""))
     );
 
-    // Every lock entry of another member is byte-unchanged from the base: the
-    // diff against it may add lines (this crate's graph) but never remove one.
+    // Every lock entry outside this crate's graph is byte-unchanged from the
+    // base: a workspace member's own entry, and every crate only another
+    // member reaches. This crate's graph (at the base or now) may move with
+    // its pins; the entries of the other members may not.
     let base = std::env::var("EXTRACTION_LOCK_BASE").unwrap_or_else(|_| "main".to_string());
     let out = Command::new("git")
         .args([
             "-C",
             &workspace_dir().to_string_lossy(),
-            "diff",
-            &base,
-            "--",
-            "Cargo.lock",
+            "show",
+            &format!("{base}:Cargo.lock"),
         ])
         .output()
-        .expect("spawn git diff");
+        .expect("spawn git show");
     assert!(
         out.status.success(),
-        "git diff {base} -- Cargo.lock failed: {}",
+        "git show {base}:Cargo.lock failed: {}",
         String::from_utf8_lossy(&out.stderr)
     );
-    let diff = String::from_utf8_lossy(&out.stdout);
-    let removed: Vec<&str> = diff
-        .lines()
-        .filter(|l| l.starts_with('-') && !l.starts_with("---"))
+    let before = String::from_utf8(out.stdout).expect("utf-8 lock");
+    let now = read(&workspace_dir().join("Cargo.lock"));
+    let before = lock_entries(&before);
+    let now = lock_entries(&now);
+    let mut ours = graph_of(&before, PACKAGE);
+    ours.extend(graph_of(&now, PACKAGE));
+    let moved: Vec<&str> = before
+        .iter()
+        .filter(|entry| {
+            entry.source.is_none() && entry.name != PACKAGE || !ours.contains(&entry.name)
+        })
+        .filter(|entry| !now.iter().any(|other| other.text == entry.text))
+        .map(|entry| entry.text.as_str())
         .collect();
     assert!(
-        removed.is_empty(),
-        "Cargo.lock entries moved relative to {base} (D11, FND-1457):\n{}",
-        removed.join("\n")
+        moved.is_empty(),
+        "Cargo.lock entries outside {PACKAGE}'s graph moved relative to {base} (D11, FND-1457):\n{}",
+        moved.join("\n")
     );
+}
+
+/// One `[[package]]` entry of a `Cargo.lock`: its bytes, name, source and
+/// the names its `dependencies` list.
+struct LockEntry {
+    text: String,
+    name: String,
+    source: Option<String>,
+    dependencies: Vec<String>,
+}
+
+fn lock_entries(lock: &str) -> Vec<LockEntry> {
+    lock.split("[[package]]\n")
+        .skip(1)
+        .map(|block| {
+            let text = block.trim_end().to_string();
+            let field = |name: &str| {
+                text.lines()
+                    .find_map(|l| l.strip_prefix(&format!("{name} = ")))
+                    .and_then(quoted)
+            };
+            let dependencies = text
+                .split_once("dependencies = [\n")
+                .map(|(_, rest)| {
+                    rest.lines()
+                        .take_while(|l| *l != "]")
+                        .filter_map(|l| quoted(l.trim().trim_end_matches(',')))
+                        .map(|d| d.split(' ').next().unwrap_or_default().to_string())
+                        .collect()
+                })
+                .unwrap_or_default();
+            LockEntry {
+                name: field("name").expect("a lock entry names its package"),
+                source: field("source"),
+                dependencies,
+                text,
+            }
+        })
+        .collect()
+}
+
+/// The package names `root` reaches in `entries`, `root` included.
+fn graph_of(entries: &[LockEntry], root: &str) -> BTreeSet<String> {
+    let mut seen = BTreeSet::new();
+    let mut stack = vec![root.to_string()];
+    while let Some(name) = stack.pop() {
+        if !seen.insert(name.clone()) {
+            continue;
+        }
+        for entry in entries.iter().filter(|e| e.name == name) {
+            stack.extend(entry.dependencies.iter().cloned());
+        }
+    }
+    seen
 }
 
 #[trace("TC-1322", "NFR-033-AC-3")]
@@ -353,7 +418,7 @@ fn tc_1322_every_dependency_is_exact_reviewed_and_inside_the_workspace() {
     );
     assert_eq!(
         quire.rev.as_deref(),
-        Some("8b8020e"),
+        Some("96df8b1"),
         "quire-rs rev is at or after a874fb6"
     );
     assert_eq!(
@@ -386,7 +451,7 @@ fn tc_1322_every_dependency_is_exact_reviewed_and_inside_the_workspace() {
         &crate_dir().join("fixtures/modules/spec-objects-business/PROVENANCE.json"),
     ))
     .expect("PROVENANCE.json is JSON");
-    assert_eq!(provenance["revision"], "d1840b8");
+    assert_eq!(provenance["revision"], "f7fdfda");
     assert_eq!(
         provenance["repository"],
         "https://github.com/agent-ix/spec-objects-business"

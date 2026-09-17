@@ -458,6 +458,9 @@ fn tc_1243_and_tc_1251_every_identity_of_the_business_document_matches_one_fr_09
             Some("params") => NodeKind::Field,
             Some("variants") => NodeKind::Variant,
             Some("clauses") => NodeKind::Clause,
+            Some("states") => NodeKind::State,
+            Some("transitions") => NodeKind::Transition,
+            Some("steps") => NodeKind::Step,
             other => panic!("{pointer}: unexpected node list {other:?}"),
         };
         assert_eq!(kind, expected, "{pointer}: {identity}");

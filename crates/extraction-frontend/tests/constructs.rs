@@ -916,9 +916,12 @@ fn tc_1753_each_broken_built_in_rule_is_one_blocking_refusal_and_emits_no_type()
             "SM-001",
             "spec/functional/SM-001-order-lifecycle.md",
             Box::new(|t| {
+                // Without an operation the engine refuses every trigger, so
+                // the transitions go too and the states alone reach the rule.
                 let from = t.find("## Operations").expect("operations");
                 let to = t.find("## States").expect("states");
-                format!("{}{}", &t[..from], &t[to..])
+                let end = t.find("## Transitions").expect("transitions");
+                format!("{}{}", &t[..from], &t[to..end])
             }),
             "declares no operation, and every transition",
         ),
@@ -1068,7 +1071,6 @@ fn tc_1760_every_schema_construct_kind_is_the_kind_its_object_type_lowers_to() {
 }
 
 #[trace("TC-1755", "FR-143-AC-5")]
-#[ignore = "Blocked on filament-core-data#154: the pinned quire-rs revision extracts no states, transitions, steps or vocabulary; #154 bumps it to 6eec7e8 and lifts them"]
 #[test]
 fn tc_1755_state_machine_process_and_domain_lift_their_engine_members() {
     let document = business_document();
@@ -1108,5 +1110,112 @@ fn tc_1755_state_machine_process_and_domain_lift_their_engine_members() {
     assert!(
         !names(construct(&document, "DM-001"), "vocabulary", "term").is_empty(),
         "DM-001 lifts no vocabulary"
+    );
+}
+
+#[trace("TC-1785", "FR-143-AC-6")]
+#[test]
+fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact() {
+    type Edit = Box<dyn Fn(&str) -> String>;
+    let cases: Vec<(&str, &str, Edit, &str)> = vec![
+        (
+            "SM-001",
+            "spec/functional/SM-001-order-lifecycle.md",
+            Box::new(|t| {
+                t.replace(
+                    "| draft | placed | advance | | EV-001 |",
+                    "| draft | placed | advance | | EN-001 |",
+                )
+            }),
+            "names `EN-001`, which is the artifact id of no event of the bundle",
+        ),
+        (
+            "PR-001",
+            "spec/functional/PR-001-fulfilment.md",
+            Box::new(|t| t.replace("| placed | event | EV-001 |", "| placed | event | EV-999 |")),
+            "names `EV-999`, which is the artifact id of no event of the bundle",
+        ),
+        (
+            "VO-001",
+            "spec/functional/VO-001-order-line.md",
+            Box::new(|t| t.replacen("type: FR\n", "type: FR\nabstract: true\n", 1)),
+            "it declares an `abstract` flag, which no member of the construct lowers",
+        ),
+        (
+            "SM-001",
+            "spec/functional/SM-001-order-lifecycle.md",
+            Box::new(|t| {
+                t.replace(
+                    "| placed | cancelled | advance | | |",
+                    "| placed | lost | advance | | |",
+                )
+            }),
+            "the engine's model extraction is unavailable",
+        ),
+    ];
+    for (id, relative, edit, rule) in cases {
+        assert_refused(&lower_edited(relative, edit), id, rule);
+    }
+
+    // FR-076 relationship rows. Module 0.4.0 does not declare the
+    // `relationships` mapping, so the engine itself refuses the table with a
+    // blocking error; under a module that declares it, the frontend refuses
+    // the artifact (#156 lowers the rows).
+    let relationships = |t: &str| {
+        format!("{t}\n## Relationships\n\n| Name | Verb | Target | Multiplicity |\n|------|------|--------|--------------|\n| order | references | FR-001 | 1..1 |\n")
+    };
+    let dir = tempfile::tempdir().expect("tempdir");
+    let root = dir.path().join("business");
+    copy_tree(&fixture("business"), &root);
+    let path = root.join("spec/functional/VO-001-order-line.md");
+    let text = fs::read_to_string(&path).expect("read");
+    fs::write(&path, relationships(&text)).expect("write");
+    let bundle = Bundle::load(
+        &root,
+        &[business_module().as_path(), edge_vocabulary().as_path()],
+    )
+    .unwrap_or_else(|r| panic!("refused: {r}"));
+    let undeclared = extract(&bundle);
+    assert!(
+        undeclared.diagnostics.iter().any(|d| d.blocking
+            && d.code == WireCode::Registry(Code::EngineDiagnostic)
+            && d.message
+                .starts_with("semantic.feature-not-extractable (reason: relationships)")),
+        "{:#?}",
+        undeclared.diagnostics
+    );
+
+    let dir = tempfile::tempdir().expect("tempdir");
+    let module = dir.path().join("spec-objects-business");
+    copy_tree(&business_module(), &module);
+    let manifest = module.join("manifest.yaml");
+    let text = fs::read_to_string(&manifest).expect("manifest");
+    let declared = text.replacen(
+        "mappings: [typed-table,",
+        "mappings: [relationships, typed-table,",
+        1,
+    );
+    assert_ne!(
+        declared, text,
+        "the manifest declares the relationships mapping"
+    );
+    fs::write(&manifest, declared).expect("write manifest");
+    let root = dir.path().join("business");
+    copy_tree(&fixture("business"), &root);
+    let path = root.join("spec/functional/VO-001-order-line.md");
+    let text = fs::read_to_string(&path).expect("read");
+    fs::write(&path, relationships(&text)).expect("write");
+    let bundle = Bundle::load(&root, &[module.as_path(), edge_vocabulary().as_path()])
+        .unwrap_or_else(|r| panic!("refused: {r}"));
+    let extractions = extract(&bundle);
+    let resolutions = resolve(&bundle, &extractions);
+    let limits = Limits::declared().expect("limits.json parses");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    // This frontend supplies the engine no relation vocabulary, so the rows
+    // are read but not extracted: refused, never dropped behind an advisory.
+    assert_refused(
+        &lowered,
+        "VO-001",
+        "it declares relationship rows (quire-rs FR-076) the engine did not extract (no-relation-vocabulary)",
     );
 }

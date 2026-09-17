@@ -2,6 +2,14 @@
 //!
 //! The engine reads every declaration; this module only decides which
 //! documents to hand it, under which context, and records what it says.
+//!
+//! # The object type's model tables
+//!
+//! quire-rs FR-075 reads a model table (`States`, `Transitions`, `Workflow`
+//! steps, `Ubiquitous Language`, `Members`, `Values`) only where the object
+//! type's `body_extraction` declares a `table_row` locator for it, and
+//! refuses one it does not declare. The frontend hands that typed DSL to
+//! the engine with `SemanticContext::with_body_extraction` (quire-rs#442).
 
 use std::collections::BTreeMap;
 
@@ -51,18 +59,21 @@ pub fn extract(bundle: &Bundle) -> Extractions {
             ));
             continue;
         };
-        let dsl = object_type
-            .archetype
-            .body_extraction()
-            .and_then(|dsl| serde_json::to_value(dsl).ok())
-            .unwrap_or(serde_json::Value::Null);
-        let required = RequiredSections::from_dsl(&dsl);
+        let dsl = object_type.archetype.body_extraction();
+        let required = RequiredSections::from_dsl(
+            &dsl.and_then(|dsl| serde_json::to_value(dsl).ok())
+                .unwrap_or(serde_json::Value::Null),
+        );
         let context = SemanticContext::new(
             object_type.semantic.clone(),
             document.path(),
             bundle.index().clone(),
         )
         .with_source_identity(source_identity.clone());
+        let context = match dsl {
+            Some(dsl) => context.with_body_extraction(dsl),
+            None => context,
+        };
         let extraction = extract_semantic(
             document.raw(),
             &context,

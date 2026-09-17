@@ -7,6 +7,8 @@ description: "Chronological log of structural changes to the requirements bundle
 
 ## History
 
+* **2026-09-17** — Issue #154: the extraction frontend pins `quire-rs` `96df8b1` and module `spec-objects-business@0.4.0`, and lifts states, transitions, steps and vocabulary into the IR. FR-143 gains AC-6 (TC-1785: an engine declaration the construct cannot lower refuses the artifact, including relationship rows the engine did not extract); TC-1755 is un-blocked. FR-091, FR-095 (state/transition/step identity slots), FR-098 (module revision `f7fdfda`), FR-086 and NFR-033 (workspace channel `1.98.1`, which the pinned `quire-rs` requires) are amended.
+
 * **2026-09-16** — Issue #93 (presence half): FR-106 states the semantic IR presence rule. `Field.presence` is authored as `required` or `optional` and carried independently of `multiplicity`, `nullable` and the default kind; `PRESENCE_MULTIPLICITY_MISMATCH` applies to `1.1.0` documents only.
 
 * **2026-08-29** — Initialized the semantic data architecture requirements bundle for issue #8.

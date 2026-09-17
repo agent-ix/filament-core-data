@@ -11,9 +11,9 @@ that measured it or the issue that owns its absence.
 
 ## The pin
 
-- Toolchain channel, from `rust-toolchain.toml`: `1.94.1`
-- `rustfmt` version: `1.8.0-stable`, built from `e408947bfd` — the same commit
-  as `rustc 1.94.1`, which is what makes it that toolchain's component rather
+- Toolchain channel, from `rust-toolchain.toml`: `1.98.1`
+- `rustfmt` version: `1.9.0-stable`, built from `48a229ceae` — the same commit
+  as `rustc 1.98.1`, which is what makes it that toolchain's component rather
   than a formatter that happens to be installed
 - Rust edition: `2021`
 - MSRV: `1.85.0`, carried into every generated `Cargo.toml` as `rust-version`
@@ -48,7 +48,7 @@ bump:
 
 | Target triple | Status | Toolchain | `rustfmt` | Evidence or owning issue |
 |---|---|---|---|---|
-| `x86_64-unknown-linux-gnu` | supported | `1.94.1` | `1.8.0-stable` | Measured on the authoring host on 2026-09-04 by `make rust-check` (goldens, digest baseline, determinism matrix, `rustfmt --check` over 56 generated files) and `make rust-install-from-artifact` (both consumers built from the packaged artifact with `-D warnings`). |
+| `x86_64-unknown-linux-gnu` | supported | `1.98.1` | `1.9.0-stable` | Measured on the authoring host on 2026-09-17 by `make rust-check` (goldens, digest baseline, determinism matrix, `rustfmt --check` over 56 generated files) and `make rust-install-from-artifact` (both consumers built from the packaged artifact with `-D warnings`). |
 | `aarch64-unknown-linux-gnu` | unmet | — | — | No run has covered it. Owned by https://github.com/agent-ix/filament-core-data/issues/60. |
 | `x86_64-apple-darwin` | unmet | — | — | No run has covered it. Owned by https://github.com/agent-ix/filament-core-data/issues/60. |
 | `aarch64-apple-darwin` | unmet | — | — | No run has covered it. Owned by https://github.com/agent-ix/filament-core-data/issues/60. |

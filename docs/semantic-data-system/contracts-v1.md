@@ -153,6 +153,9 @@ Every part of every slot is slugged, the `type` name included:
 | `relationship` | `relationship/<Name>-<verb>-<TargetName>` | owner record, verb, target type name |
 | `operation` | `operation/<Name>-<name>` | owner record, operation |
 | `clause` | `clause/<Name>-<clauseId>` | owner type, clause id |
+| `state` | `state/<Name>-<state>` | owner state machine, state |
+| `transition` | `transition/<Name>-<from>-<to>-<trigger>` | owner state machine, from state, to state, trigger operation (a transition row has no name) |
+| `step` | `step/<Name>-<step>` | owner process, step |
 | `constraint` | `constraint/<Name>-<field>-<keyword>` for a field constraint; `constraint/<Name>-<keyword>` for a type constraint | owner, (field,) keyword |
 
 `<Name>` is the declaring type's name part. The TypeSpec frontend takes it

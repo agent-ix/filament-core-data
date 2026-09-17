@@ -32,10 +32,11 @@ use ix_trace_rs::trace;
 use serde_json::Value;
 
 /// The quire-rs revision the `config-version-*` documents were copied at
-/// (FR-098-AC-1); the crate's `Cargo.toml` pins the same `rev`.
+/// (FR-098-AC-1). The source documents are byte-identical at the crate's
+/// pinned `rev`, so the copies were not re-taken when the pin moved.
 const QUIRE_RS_REVISION: &str = "8b8020e";
 /// The spec-objects-business revision the module was vendored at.
-const BUSINESS_REVISION: &str = "d1840b8";
+const BUSINESS_REVISION: &str = "f7fdfda";
 
 // ---------------------------------------------------------------------------
 // The inventory (FR-098 "Fixture inventory")

@@ -770,7 +770,12 @@ fn tc_1299_outside_the_crate_and_fr098_the_change_set_is_members_lock_makefile_b
         .filter(|l| l.starts_with('-') && !l.starts_with("---"))
         .count();
     assert_eq!(removed, 0, "the notices register removes nothing:\n{diff}");
-    let lock = read(&workspace_dir().join("Cargo.lock"));
+    // The lock as this change left it, for the reason the Makefile block is
+    // read at the tip: a later ticket that drops a crate (#154 replaced
+    // `serde_yaml`/`unsafe-libyaml` with `yaml_serde`/`libyaml-rs`) does not
+    // rewrite what #36 added.
+    let lock = String::from_utf8(as_changed("Cargo.lock").expect("Cargo.lock as changed"))
+        .expect("utf-8 lock");
     let locked: BTreeSet<&str> = lock
         .lines()
         .filter_map(|l| l.strip_prefix("name = \""))

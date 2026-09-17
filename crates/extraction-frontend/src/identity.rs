@@ -80,11 +80,14 @@ pub enum NodeKind {
     Operation,
     Variant,
     Clause,
+    State,
+    Transition,
+    Step,
 }
 
 impl NodeKind {
     /// Every kind, in FR-095's order.
-    pub const ALL: [NodeKind; 7] = [
+    pub const ALL: [NodeKind; 10] = [
         NodeKind::Type,
         NodeKind::Field,
         NodeKind::Constraint,
@@ -92,6 +95,9 @@ impl NodeKind {
         NodeKind::Operation,
         NodeKind::Variant,
         NodeKind::Clause,
+        NodeKind::State,
+        NodeKind::Transition,
+        NodeKind::Step,
     ];
 
     /// The path segment naming the kind.
@@ -104,6 +110,9 @@ impl NodeKind {
             NodeKind::Operation => "operation",
             NodeKind::Variant => "variant",
             NodeKind::Clause => "clause",
+            NodeKind::State => "state",
+            NodeKind::Transition => "transition",
+            NodeKind::Step => "step",
         }
     }
 }
@@ -210,6 +219,29 @@ impl PackageIdentity {
     /// `ix://<org>/<name>/clause/<record-slug>-<clause-slug>`.
     pub fn clause_identity(&self, record: &str, clause: &str) -> Result<String, Unsluggable> {
         Ok(self.node(NodeKind::Clause, &join(&[record, clause])?))
+    }
+
+    /// `ix://<org>/<name>/state/<machine-slug>-<state-slug>`.
+    pub fn state_identity(&self, machine: &str, state: &str) -> Result<String, Unsluggable> {
+        Ok(self.node(NodeKind::State, &join(&[machine, state])?))
+    }
+
+    /// `ix://<org>/<name>/transition/<machine-slug>-<from-slug>-<to-slug>-<trigger-slug>`:
+    /// a transition row has no name, so its from state, to state and trigger
+    /// operation are its parts.
+    pub fn transition_identity(
+        &self,
+        machine: &str,
+        from: &str,
+        to: &str,
+        trigger: &str,
+    ) -> Result<String, Unsluggable> {
+        Ok(self.node(NodeKind::Transition, &join(&[machine, from, to, trigger])?))
+    }
+
+    /// `ix://<org>/<name>/step/<process-slug>-<step-slug>`.
+    pub fn step_identity(&self, process: &str, step: &str) -> Result<String, Unsluggable> {
+        Ok(self.node(NodeKind::Step, &join(&[process, step])?))
     }
 }
 
