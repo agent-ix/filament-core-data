@@ -73,9 +73,41 @@ frontend, a generated programming-language package, or an ambient registry.
   the order `identityFields` declares them, as `x-agent-ix-identity-fields`.
   An entity's instances being told apart by those fields is its Quire meaning
   over instances, which no schema keyword states; the annotation carries the
-  names. Every other construct kind of
-  [FR-142](./FR-142-declare-one-construct-per-object-type.md), and every model
-  member, SHALL be refused by name with no schema file emitted.
+  names.
+- Every construct kind of
+  [FR-142](./FR-142-declare-one-construct-per-object-type.md) SHALL carry
+  `x-agent-ix-kind` naming its kind, and SHALL render by this table:
+
+| `kind` | Schema | Annotations |
+|---|---|---|
+| `value_object` | as for `record` | `x-agent-ix-equality: "value"` |
+| `nested_entity` | as for `entity` | `x-agent-ix-owner` |
+| `aggregate_root` | as for `entity` | `x-agent-ix-members`; its clauses in `x-agent-ix-clauses` |
+| `enumeration` | as for `enum` | none |
+| `event` | as for `record`, plus `readOnly: true` | `x-agent-ix-occurrence-field` |
+| `state_machine` | as for `record`, plus `$defs.<Name>State`, a string `enum` of its state names | `x-agent-ix-states`, `x-agent-ix-transitions` |
+| `process` | as for `entity` | `x-agent-ix-steps` |
+| `repository` | `not: {}`, which no instance satisfies | `x-agent-ix-persists`; its operations in `x-agent-ix-operations` |
+| `domain` | `not: {}`, which no instance satisfies | `x-agent-ix-members`, `x-agent-ix-vocabulary` |
+
+- A subtype SHALL render its effective fields: its supertypes' fields,
+  farthest first, then its own, with each redefined field left out, and SHALL
+  carry `x-agent-ix-supertypes`. A redefining property SHALL carry
+  `x-agent-ix-redefines` and a subsetting property `x-agent-ix-subsets`, each
+  naming field identities. An abstract type SHALL carry
+  `x-agent-ix-abstract: true`. An operation's `frame`, `requires` and `ensures`
+  SHALL be carried in `x-agent-ix-operations`, and the document's populations
+  in `index.json` as `x-agent-ix-populations`.
+- The construct annotations of a subtype SHALL be read from the document as
+  authored, where the subtype's fields are its own; an inherited property
+  carries its own `x-agent-ix-subsets`.
+- Value equality, abstractness, subsets, clauses, guards and frames are Quire
+  meaning no schema keyword states; the annotations carry them. For clauses
+  [#159](https://github.com/agent-ix/filament-core-data/issues/159), guards [#160](https://github.com/agent-ix/filament-core-data/issues/160), transitions [#161](https://github.com/agent-ix/filament-core-data/issues/161), subsets [#162](https://github.com/agent-ix/filament-core-data/issues/162), frames
+  [#163](https://github.com/agent-ix/filament-core-data/issues/163) and populations [#164](https://github.com/agent-ix/filament-core-data/issues/164) the backend SHALL emit one non-blocking
+  `CONSTRUCT_MEMBER_UNENFORCED` per member kind the document declares. If two
+  effective fields of a subtype carry one name, then the backend SHALL return a
+  blocking diagnostic at the type's `fields` and emit no file.
 - An `enum` definition SHALL render an `enum` array of its variant wire names.
 - A `union` definition SHALL render a `oneOf` with one branch per variant; a
   payload-free variant SHALL constrain its tag alone and a payload-carrying
@@ -156,6 +188,8 @@ that decision requires.
 | FR-100-AC-7 | The lifted config-version-table golden renders `ConfigOverlay.json` and `ConfigVersion.json` as object schemas carrying `x-agent-ix-kind: entity` and `x-agent-ix-identity-fields: ["id"]`, no file is named from an artifact id, and a record schema carries neither annotation. | Test (TC-1764) |
 | FR-100-AC-8 | The lifted config-version-table golden renders `ConfigVersion.json` whose `$id` ends `/ConfigVersion.json` and whose `x-agent-ix-semantic-id` is `ix://agent-ix/config-service/type/FR-006`: the file and `$id` carry the declared name and the annotation carries the artifact id. | Test (TC-1768) |
 | FR-100-AC-9 | Two definitions whose display names `Config Overlay` and `Config-Overlay` derive `Config-Overlay.json`, or `Status` and `status`, produce one blocking diagnostic naming the paths and both identities; a definition named `index` produces one blocking diagnostic stating it collides with the backend's `index.json`; each emits zero files. | Test (TC-1771) |
+| FR-100-AC-10 | Generating the contract `1.2.0` constructs fixture emits one schema per construct carrying its kind's schema and annotations: value equality, `readOnly` and the occurrence field on an event, owner and identity fields on a nested entity, members on an aggregate root and a domain, the variant `enum` of an enumeration, `$defs.OrderLifecycleState` and the transitions of a state machine, the steps of a process, `not: {}` and `x-agent-ix-persists` on a repository, the vocabulary of a domain, and supertypes, redefines, subsets, abstract, operation frame and clauses, and populations. | Test (TC-1774) |
+| FR-100-AC-11 | Generating the constructs fixture with an unredefined `Party.remark` that subsets `labels` succeeds, `Order.json` carries `remark` with that subset and `x-agent-ix-identity-fields: ["id"]`; with `Order.id` redefining nothing it returns one blocking diagnostic at `/ir/types/<Order>/fields` naming `id` and emits no file. | Test (TC-1782) |
 
 ## Dependencies
 

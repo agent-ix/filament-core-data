@@ -21,6 +21,12 @@
 
 import { createHash } from "node:crypto";
 import {
+	isEnumerationShaped,
+	isRecordShaped,
+	renderingView,
+	typeIndex,
+} from "../../constructs.mjs";
+import {
 	applyDiagnosticLimit,
 	diagnostic,
 	fragment,
@@ -293,8 +299,12 @@ export function emitCrate(request, options = {}) {
 		return finish(new Map(), diagnostics, request, "invalid");
 	}
 
-	const mapped = mapDocument(ir, {
+	// A subtype renders with its inherited fields; the construct facts read the
+	// authored document (FR-141).
+	const view = renderingView(ir);
+	const mapped = mapDocument(view, {
 		allowedOmissions: request.profile?.allowedOmissions ?? [],
+		authored: typeIndex(ir),
 	});
 	diagnostics.push(...mapped.diagnostics);
 	if (mapped.model === undefined) {
@@ -302,7 +312,7 @@ export function emitCrate(request, options = {}) {
 	}
 
 	const byIdentity = new Map();
-	for (const definition of ir.types ?? [])
+	for (const definition of view.types ?? [])
 		byIdentity.set(definition.identity, definition);
 
 	const model = mapped.model;
@@ -1075,10 +1085,9 @@ function clauseMeta(clause) {
 }
 
 function typeMeta(type) {
-	const fields =
-		type.kind === "record" || type.kind === "entity"
-			? atom(`crate::types::${type.moduleName}::FIELDS`)
-			: slice([]);
+	const fields = isRecordShaped(type.kind)
+		? atom(`crate::types::${type.moduleName}::FIELDS`)
+		: slice([]);
 	const named = (list, suffix) =>
 		list.length > 0 ? atom(`${type.constantName}_${suffix}`) : slice([]);
 	return struct(`${META}::TypeMeta`, [
@@ -1209,6 +1218,7 @@ function renderIdentity(model) {
 			slice(model.extensions.map(extensionMeta)),
 		),
 	);
+	if (carriesConstructData(model)) lines.push(...constructPrelude(model));
 	return `${lines.join("\n")}\n`;
 }
 
@@ -1311,16 +1321,15 @@ function tryNewCall(indent, arguments_) {
 }
 
 function renderType(type, model, byIdentity, diagnostics) {
-	switch (type.kind) {
-		case "record":
-		case "entity":
-			return renderRecord(type, model, byIdentity, diagnostics);
-		case "enum":
-		case "union":
-			return renderEnum(type);
-		default:
-			return renderNewtype(type, model, byIdentity, diagnostics);
-	}
+	if (isRecordShaped(type.kind) && type.abstract === true)
+		return renderAbstract(type);
+	if (isRecordShaped(type.kind))
+		return renderRecord(type, model, byIdentity, diagnostics);
+	if (isEnumerationShaped(type.kind) || type.kind === "union")
+		return renderEnum(type);
+	if (type.kind === "repository") return renderRepository(type);
+	if (type.kind === "domain") return renderDomain(type);
+	return renderNewtype(type, model, byIdentity, diagnostics);
 }
 
 /**
@@ -1595,7 +1604,10 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 	lines.push(...checkConstants(type, checks, byIdentity));
 	lines.push(...docLines(type.doc));
 	lines.push(
-		"#[derive(Clone, Debug, PartialEq, Serialize)]",
+		// A newtype an identity field reaches has `Eq` and `Hash` (FR-054).
+		type.derivesHash === true
+			? "#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize)]"
+			: "#[derive(Clone, Debug, PartialEq, Serialize)]",
 		"#[serde(transparent)]",
 		`pub struct ${type.typeName}(${inner});`,
 		"",
@@ -1952,31 +1964,12 @@ const SURFACED = RUST_BACKEND_CODES.UNKNOWN_MEMBER_SURFACED;
 function renderRecord(type, model, byIdentity, diagnostics) {
 	const lines = moduleHeader(type);
 	const retains = type.unknownPolicy !== "reject";
+	// An event is immutable: its members are private and read through accessors.
+	const immutable = type.construct?.immutable === true;
+	const visibility = immutable ? "" : "pub ";
 	lines.push("use serde::{Deserialize, Serialize};", "");
 
-	// Field metadata lives beside the record it belongs to.
-	lines.push(
-		`/// The fields of \`${type.typeName}\`, in the order the contract declares them.`,
-		...constItem(
-			"pub ",
-			"FIELDS",
-			"&[crate::identity::FieldMeta]",
-			slice(type.fields.map(fieldMeta)),
-		),
-		"",
-	);
-	if (type.kind === "entity") {
-		lines.push(
-			`/// The fields that tell instances of \`${type.typeName}\` apart, in the order the contract declares them.`,
-			...constItem(
-				"pub ",
-				"IDENTITY_FIELDS",
-				"&[&str]",
-				slice(type.identityFields.map((name) => atom(rustString(name)))),
-			),
-			"",
-		);
-	}
+	lines.push(...recordItems(type));
 
 	for (const field of type.fields) {
 		if (field.defaultKind !== "semantic") continue;
@@ -1999,7 +1992,14 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 	}
 
 	lines.push(...docLines(type.doc));
-	lines.push("#[derive(Clone, Debug, PartialEq, Serialize)]");
+	// An identified construct compares and hashes by its identity fields, so
+	// its `PartialEq` is written out rather than derived (FR-054).
+	const byIdentityFields = (type.identityMembers ?? []).length > 0;
+	lines.push(
+		byIdentityFields
+			? "#[derive(Clone, Debug, Serialize)]"
+			: "#[derive(Clone, Debug, PartialEq, Serialize)]",
+	);
 	// A record with no members at all is written `{}` on one line, which is the
 	// form `rustfmt` produces and the form an empty brace pair collapses to.
 	const empty = type.fields.length === 0 && !retains;
@@ -2016,17 +2016,20 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 		if (attributes.length > 0) {
 			lines.push(`    #[serde(${attributes.join(", ")})]`);
 		}
-		lines.push(`    pub ${field.ident}: ${field.rustType},`);
+		lines.push(`    ${visibility}${field.ident}: ${field.rustType},`);
 	}
 	if (retains) {
 		lines.push(
 			"    /// The members the contract did not declare, retained under this",
 			`    /// record's \`${type.unknownPolicy}\` unknown policy.`,
 			"    #[serde(flatten)]",
-			"    pub unknown_members: crate::support::UnknownMembers,",
+			`    ${visibility}unknown_members: crate::support::UnknownMembers,`,
 		);
 	}
 	lines.push(...(empty ? [""] : ["}", ""]));
+	if (byIdentityFields) lines.push(...identityEquality(type));
+	for (const supertype of type.implements ?? [])
+		lines.push(...supertypeImpl(type, supertype));
 
 	// The wire struct carries the deserialization half of the attribute set.
 	lines.push(
@@ -2120,6 +2123,8 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 	}
 	lines.push("    }", "}", "");
 
+	if (immutable) lines.push(...accessors(type, retains));
+
 	const arity = type.fields.length + (retains ? 1 : 0);
 	lines.push(
 		`impl<'de> Deserialize<'de> for ${type.typeName} {`,
@@ -2136,6 +2141,125 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 	if (retains) arguments_.push("wire.unknown_members");
 	lines.push(...tryNewCall("        ", arguments_));
 	lines.push("    }", "}");
+	return `${lines.join("\n")}\n`;
+}
+
+/**
+ * The metadata constants of a record-shaped type: its fields, its identity
+ * fields where it carries them, its construct members and its states.
+ */
+function recordItems(type) {
+	// Field metadata lives beside the record it belongs to.
+	const lines = [
+		`/// The fields of \`${type.typeName}\`, in the order the contract declares them.`,
+		...constItem(
+			"pub ",
+			"FIELDS",
+			"&[crate::identity::FieldMeta]",
+			slice(type.fields.map(fieldMeta)),
+		),
+		"",
+	];
+	if (type.identityFields !== undefined) {
+		lines.push(
+			`/// The fields that tell instances of \`${type.typeName}\` apart, in the order the contract declares them.`,
+			...constItem(
+				"pub ",
+				"IDENTITY_FIELDS",
+				"&[&str]",
+				slice(type.identityFields.map((name) => atom(rustString(name)))),
+			),
+			"",
+		);
+	}
+	lines.push(...constructItems(type));
+	if (type.states !== undefined) lines.push(...renderStates(type));
+	return lines;
+}
+
+/**
+ * `PartialEq`, `Eq` and `Hash` over an identified construct's identity fields:
+ * two instances with equal identity fields are one instance (FR-054).
+ */
+function identityEquality(type) {
+	const members = type.identityMembers;
+	const comparisons = members.map((ident) => `self.${ident} == other.${ident}`);
+	const inline = `        ${comparisons.join(" && ")}`;
+	const body =
+		inline.length <= MAX_WIDTH
+			? [inline]
+			: comparisons.map((one, index) =>
+					index === 0 ? `        ${one}` : `            && ${one}`,
+				);
+	const hashes = members.flatMap((ident) => {
+		const call = `        ::std::hash::Hash::hash(&self.${ident}, state);`;
+		return call.length <= MAX_WIDTH
+			? [call]
+			: [
+					"        ::std::hash::Hash::hash(",
+					`            &self.${ident},`,
+					"            state,",
+					"        );",
+				];
+	});
+	return [
+		`/// Instances of \`${type.typeName}\` are equal when their identity fields are equal.`,
+		`impl PartialEq for ${type.typeName} {`,
+		"    fn eq(&self, other: &Self) -> bool {",
+		...body,
+		"    }",
+		"}",
+		"",
+		`impl Eq for ${type.typeName} {}`,
+		"",
+		`/// Instances of \`${type.typeName}\` hash by their identity fields.`,
+		`impl ::std::hash::Hash for ${type.typeName} {`,
+		"    fn hash<H: ::std::hash::Hasher>(&self, state: &mut H) {",
+		...hashes,
+		"    }",
+		"}",
+		"",
+	];
+}
+
+/** A concrete subtype's implementation of an abstract supertype's trait. */
+function supertypeImpl(type, supertype) {
+	if (supertype.members.length === 0)
+		return [`impl ${supertype.path} for ${type.typeName} {}`, ""];
+	const lines = [`impl ${supertype.path} for ${type.typeName} {`];
+	supertype.members.forEach((member, index) => {
+		if (index > 0) lines.push("");
+		lines.push(
+			`    fn ${member.ident}(&self) -> &${member.rustType} {`,
+			`        &self.${member.ident}`,
+			"    }",
+		);
+	});
+	lines.push("}", "");
+	return lines;
+}
+
+/**
+ * An abstract record-shaped type: a trait with one accessor per field, which
+ * each concrete subtype implements. No value of the type itself exists
+ * (FR-054).
+ */
+function renderAbstract(type) {
+	const lines = moduleHeader(type);
+	lines.push(...recordItems(type), ...docLines(type.doc));
+	if (type.fields.length === 0) {
+		lines.push(`pub trait ${type.typeName} {}`);
+		return `${lines.join("\n")}\n`;
+	}
+	lines.push(`pub trait ${type.typeName} {`);
+	type.fields.forEach((field, index) => {
+		if (index > 0) lines.push("");
+		lines.push(
+			...docLines(field.doc, "    "),
+			`    fn ${field.ident}(&self) -> &${field.rustType};`,
+		);
+	});
+	lines.push("}");
 	return `${lines.join("\n")}\n`;
 }
 
@@ -2281,4 +2405,423 @@ function scalarLiteral(scalar, value) {
 				? `String::from(${rustString(value)})`
 				: undefined;
 	}
+}
+
+// ---------------------------------------------------------------------------
+// Constructs (FR-142)
+// ---------------------------------------------------------------------------
+
+const strings = (list) => slice(list.map((one) => atom(rustString(one))));
+
+/**
+ * The module constants a construct carries beside its type: each member the
+ * construct declares, and none it does not, so a plain `record` or `entity`
+ * module is unchanged.
+ */
+function constructItems(type) {
+	const facts = type.construct ?? {};
+	const lines = [];
+	const item = (doc, name, rustType, value) =>
+		lines.push(`/// ${doc}`, ...constItem("pub ", name, rustType, value), "");
+	const named = `\`${type.typeName}\``;
+	if (facts.supertypes !== undefined)
+		item(
+			`The semantic identities of the direct supertypes of ${named}.`,
+			"SUPERTYPES",
+			"&[&str]",
+			strings(facts.supertypes),
+		);
+	if (facts.abstract === true)
+		item(
+			`Whether ${named} is abstract: every instance is an instance of a subtype.`,
+			"ABSTRACT",
+			"bool",
+			atom("true"),
+		);
+	if (facts.owner !== undefined)
+		item(
+			`The semantic identity of the type that owns ${named}.`,
+			"OWNER",
+			"&str",
+			atom(rustString(facts.owner)),
+		);
+	if (facts.members !== undefined)
+		item(
+			`The semantic identities of the members of ${named}.`,
+			"MEMBERS",
+			"&[&str]",
+			strings(facts.members),
+		);
+	if (facts.occurrenceField !== undefined)
+		item(
+			`The member of ${named} that records when the occurrence happened.`,
+			"OCCURRENCE_FIELD",
+			"&str",
+			atom(rustString(facts.occurrenceField)),
+		);
+	if (facts.transitions !== undefined)
+		item(
+			`The transitions of ${named}, in the order the contract declares them.`,
+			"TRANSITIONS",
+			"&[crate::identity::TransitionMeta]",
+			slice(facts.transitions.map(transitionMeta)),
+		);
+	if (facts.steps !== undefined)
+		item(
+			`The steps of ${named}, in the order the contract declares them.`,
+			"STEPS",
+			"&[crate::identity::StepMeta]",
+			slice(facts.steps.map(stepMeta)),
+		);
+	if (facts.persists !== undefined)
+		item(
+			`The semantic identities of the types ${named} persists.`,
+			"PERSISTS",
+			"&[&str]",
+			strings(facts.persists),
+		);
+	if (facts.vocabulary !== undefined)
+		item(
+			`The vocabulary of ${named}, in the order the contract declares it.`,
+			"VOCABULARY",
+			"&[crate::identity::TermMeta]",
+			slice(
+				facts.vocabulary.map((term) =>
+					struct(`${META}::TermMeta`, [
+						{ name: "term", value: atom(rustString(term.term)) },
+						{ name: "doc", value: atom(rustString(term.doc)) },
+					]),
+				),
+			),
+		);
+	const links = (map) =>
+		slice(
+			Object.entries(map).map(([field, targets]) =>
+				struct(`${META}::FieldLinkMeta`, [
+					{ name: "field", value: atom(rustString(field)) },
+					{ name: "targets", value: strings([targets].flat()) },
+				]),
+			),
+		);
+	if (facts.subsets !== undefined)
+		item(
+			`The members of ${named} whose values are a subset of other members' values.`,
+			"FIELD_SUBSETS",
+			"&[crate::identity::FieldLinkMeta]",
+			links(facts.subsets),
+		);
+	if (facts.redefines !== undefined)
+		item(
+			`The members of ${named} that redefine an inherited member.`,
+			"FIELD_REDEFINES",
+			"&[crate::identity::FieldLinkMeta]",
+			links(facts.redefines),
+		);
+	if (facts.operationContracts !== undefined)
+		item(
+			`The frame and inline Quire clauses of the operations of ${named}.`,
+			"OPERATION_CONTRACTS",
+			"&[crate::identity::OperationContractMeta]",
+			slice(
+				Object.entries(facts.operationContracts).map(([operation, contract]) =>
+					operationContractMeta(operation, contract),
+				),
+			),
+		);
+	return lines;
+}
+
+function transitionMeta(transition) {
+	return struct(`${META}::TransitionMeta`, [
+		{ name: "identity", value: atom(rustString(transition.identity)) },
+		{ name: "from", value: atom(rustString(transition.from)) },
+		{ name: "to", value: atom(rustString(transition.to)) },
+		{ name: "trigger", value: atom(rustString(transition.trigger)) },
+		{ name: "guard", value: optionStr(transition.guard) },
+		{ name: "emits", value: strings(transition.emits) },
+	]);
+}
+
+function stepMeta(step) {
+	return struct(`${META}::StepMeta`, [
+		{ name: "identity", value: atom(rustString(step.identity)) },
+		{ name: "name", value: atom(rustString(step.name)) },
+		{ name: "step_kind", value: atom(rustString(step.stepKind)) },
+		{ name: "consumes", value: strings(step.consumes) },
+		{ name: "emits", value: strings(step.emits) },
+	]);
+}
+
+function operationContractMeta(operation, contract) {
+	const clauses = (list) =>
+		slice(
+			(list ?? []).map((clause) =>
+				struct(`${META}::InlineClauseMeta`, [
+					{ name: "language", value: atom(rustString(clause.language)) },
+					{ name: "text", value: atom(rustString(clause.text)) },
+				]),
+			),
+		);
+	const frame =
+		contract.frame === undefined
+			? atom("None")
+			: some(
+					struct(`${META}::FrameMeta`, [
+						{ name: "modifies", value: strings(contract.frame.modifies) },
+						{ name: "creates", value: strings(contract.frame.creates) },
+						{ name: "deletes", value: strings(contract.frame.deletes) },
+					]),
+				);
+	return struct(`${META}::OperationContractMeta`, [
+		{ name: "operation", value: atom(rustString(operation)) },
+		{ name: "frame", value: frame },
+		{ name: "requires", value: clauses(contract.requires) },
+		{ name: "ensures", value: clauses(contract.ensures) },
+	]);
+}
+
+/** A state machine's states: one fieldless enum, serde-named by state name. */
+function renderStates(type) {
+	const lines = [
+		`/// The states of \`${type.typeName}\`, in the order the contract declares them.`,
+		"#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]",
+		`pub enum ${type.typeName}State {`,
+	];
+	for (const state of type.states) {
+		lines.push(
+			`    /// ${escapeDoc(state.name)}`,
+			"    ///",
+			`    /// Semantic identity: ${escapeDoc(state.identity)}.`,
+		);
+		if (state.rename !== undefined)
+			lines.push(`    #[serde(rename = ${rustString(state.rename)})]`);
+		lines.push(`    ${state.ident},`);
+	}
+	lines.push("}", "");
+	return lines;
+}
+
+/** The read accessors of an immutable record's private members. */
+function accessors(type, retains) {
+	const members = type.fields.map((field) => ({
+		ident: field.ident,
+		rustType: field.rustType,
+		doc: `The \`${escapeDoc(field.name)}\` member.`,
+	}));
+	if (retains)
+		members.push({
+			ident: "unknown_members",
+			rustType: "crate::support::UnknownMembers",
+			doc: "The members the contract did not declare.",
+		});
+	if (members.length === 0) return [];
+	const lines = [`impl ${type.typeName} {`];
+	members.forEach((member, index) => {
+		if (index > 0) lines.push("");
+		lines.push(
+			`    /// ${member.doc}`,
+			`    pub fn ${member.ident}(&self) -> &${member.rustType} {`,
+			`        &self.${member.ident}`,
+			"    }",
+		);
+	});
+	lines.push("}", "");
+	return lines;
+}
+
+/** A repository: a trait with one method per operation, holding no state. */
+function renderRepository(type) {
+	const lines = moduleHeader(type);
+	lines.push(...constructItems(type));
+	lines.push(...docLines(type.doc), `pub trait ${type.typeName} {`);
+	type.methods.forEach((method, index) => {
+		if (index > 0) lines.push("");
+		lines.push(...docLines(method.doc, "    "));
+		const parameters = [
+			method.receiver,
+			...method.params.map((param) => `${param.ident}: ${param.rustType}`),
+		];
+		const tail = method.returns === undefined ? ";" : ` -> ${method.returns};`;
+		const inline = `    fn ${method.ident}(${parameters.join(", ")})${tail}`;
+		if (inline.length <= MAX_WIDTH) lines.push(inline);
+		else
+			lines.push(
+				`    fn ${method.ident}(`,
+				...parameters.map((parameter) => `        ${parameter},`),
+				`    )${tail}`,
+			);
+	});
+	lines.push("}");
+	return `${lines.join("\n")}\n`;
+}
+
+/** A domain: a namespace, rendered as a unit struct beside its members. */
+function renderDomain(type) {
+	const lines = moduleHeader(type);
+	lines.push(...constructItems(type));
+	lines.push(
+		...docLines(type.doc),
+		"#[derive(Clone, Copy, Debug, PartialEq, Eq)]",
+		`pub struct ${type.typeName};`,
+	);
+	return `${lines.join("\n")}\n`;
+}
+
+/**
+ * Whether the crate carries a construct member beyond identity fields, and so
+ * the descriptor types those members' constants are written with.
+ */
+function carriesConstructData(model) {
+	const plain = new Set(["kind", "identityFields", "equality", "immutable"]);
+	return (
+		model.populations.length > 0 ||
+		model.types.some((type) =>
+			Object.keys(type.construct ?? {}).some((key) => !plain.has(key)),
+		)
+	);
+}
+
+const CONSTRUCT_PRELUDE = `/// One transition of a state machine.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct TransitionMeta {
+    /// The transition's semantic identity.
+    pub identity: &'static str,
+    /// The state the transition leaves.
+    pub from: &'static str,
+    /// The state the transition enters.
+    pub to: &'static str,
+    /// The operation that fires the transition.
+    pub trigger: &'static str,
+    /// The identifier of the clause that must hold, where one guards it.
+    pub guard: Option<&'static str>,
+    /// The semantic identities of the events the transition emits.
+    pub emits: &'static [&'static str],
+}
+
+/// One step of a process.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct StepMeta {
+    /// The step's semantic identity.
+    pub identity: &'static str,
+    /// The step's name.
+    pub name: &'static str,
+    /// The step kind.
+    pub step_kind: &'static str,
+    /// The semantic identities of the events the step consumes.
+    pub consumes: &'static [&'static str],
+    /// The semantic identities of the events the step emits.
+    pub emits: &'static [&'static str],
+}
+
+/// One term of a domain's vocabulary.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct TermMeta {
+    /// The term.
+    pub term: &'static str,
+    /// What the term means.
+    pub doc: &'static str,
+}
+
+/// A member linked to other members by \`subsets\` or \`redefines\`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct FieldLinkMeta {
+    /// The member's wire name.
+    pub field: &'static str,
+    /// The wire names of the members it links to.
+    pub targets: &'static [&'static str],
+}
+
+/// An operation's frame: the members and types it may change.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct FrameMeta {
+    /// The members the operation may modify.
+    pub modifies: &'static [&'static str],
+    /// The types the operation may create instances of.
+    pub creates: &'static [&'static str],
+    /// The types the operation may delete instances of.
+    pub deletes: &'static [&'static str],
+}
+
+/// An inline clause an operation carried.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct InlineClauseMeta {
+    /// The clause language.
+    pub language: &'static str,
+    /// The clause text.
+    pub text: &'static str,
+}
+
+/// An operation's frame and inline clauses.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct OperationContractMeta {
+    /// The operation's wire name.
+    pub operation: &'static str,
+    /// The operation's frame, where it declares one.
+    pub frame: Option<FrameMeta>,
+    /// The preconditions.
+    pub requires: &'static [InlineClauseMeta],
+    /// The postconditions.
+    pub ensures: &'static [InlineClauseMeta],
+}
+
+/// One member type of a population and its extent.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct PopulationMemberMeta {
+    /// The member type's semantic identity.
+    pub type_ref: &'static str,
+    /// The extent, as canonical JSON text.
+    pub extent: &'static str,
+}
+
+/// A population the contract declared.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct PopulationMeta {
+    /// The population's semantic identity.
+    pub identity: &'static str,
+    /// The population's display name.
+    pub display_name: &'static str,
+    /// The member types and their extents.
+    pub members: &'static [PopulationMemberMeta],
+}`;
+
+function constructPrelude(model) {
+	return [
+		"",
+		CONSTRUCT_PRELUDE,
+		"",
+		"/// Every population the contract declared, in document order.",
+		...constItem(
+			"pub ",
+			"POPULATIONS",
+			"&[PopulationMeta]",
+			slice(
+				model.populations.map((population) =>
+					struct(`${META}::PopulationMeta`, [
+						{ name: "identity", value: atom(rustString(population.identity)) },
+						{
+							name: "display_name",
+							value: atom(rustString(population.displayName)),
+						},
+						{
+							name: "members",
+							value: slice(
+								population.members.map((member) =>
+									struct(`${META}::PopulationMemberMeta`, [
+										{
+											name: "type_ref",
+											value: atom(rustString(member.typeRef)),
+										},
+										{
+											name: "extent",
+											value: atom(rustString(canonicalJson(member.extent))),
+										},
+									]),
+								),
+							),
+						},
+					]),
+				),
+			),
+		),
+	];
 }

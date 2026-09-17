@@ -2,7 +2,17 @@
 import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { identityFieldNames, unrenderedNodes } from "../../constructs.mjs";
+import {
+	constructOf,
+	inheritedNameCollisions,
+	isEnumerationShaped,
+	isInstanceless,
+	isRecordShaped,
+	populationsOf,
+	renderingView,
+	typeIndex,
+	unenforcedMemberAdvisories,
+} from "../../constructs.mjs";
 import { DIAGNOSTIC_CODES, diagnostic } from "../../diagnostics.mjs";
 import { admitIr, SCHEMA_FILES } from "../typescript-v1/admit.mjs";
 
@@ -148,6 +158,9 @@ function annotated(schema, node) {
 		schema["x-agent-ix-occurrences"] = node.occurrences;
 	if (node.extensions?.length)
 		schema["x-agent-ix-extensions"] = node.extensions;
+	if (node.subsets?.length) schema["x-agent-ix-subsets"] = node.subsets;
+	if (typeof node.redefines === "string")
+		schema["x-agent-ix-redefines"] = node.redefines;
 	if (node.constraints?.length)
 		schema["x-agent-ix-constraints"] = node.constraints;
 	return schema;
@@ -179,41 +192,87 @@ function fieldSchema(field, types) {
 	for (const one of field.constraints ?? []) constraint(schema, one, target);
 	return annotated(schema, field);
 }
-function renderType(ir, type, types) {
+/**
+ * The construct members a schema carries beside its instance shape (FR-100,
+ * FR-142), one `x-agent-ix-*` annotation per member. Names where the member
+ * names a field, state, operation or clause; identities where it names a type.
+ */
+const CONSTRUCT_ANNOTATIONS = Object.freeze([
+	["kind", "x-agent-ix-kind"],
+	["supertypes", "x-agent-ix-supertypes"],
+	["abstract", "x-agent-ix-abstract"],
+	["identityFields", "x-agent-ix-identity-fields"],
+	["owner", "x-agent-ix-owner"],
+	["members", "x-agent-ix-members"],
+	["occurrenceField", "x-agent-ix-occurrence-field"],
+	["equality", "x-agent-ix-equality"],
+	["states", "x-agent-ix-states"],
+	["transitions", "x-agent-ix-transitions"],
+	["steps", "x-agent-ix-steps"],
+	["persists", "x-agent-ix-persists"],
+	["vocabulary", "x-agent-ix-vocabulary"],
+]);
+
+function constructAnnotations(schema, facts) {
+	for (const [member, keyword] of CONSTRUCT_ANNOTATIONS)
+		if (facts?.[member] !== undefined) schema[keyword] = facts[member];
+	return schema;
+}
+
+function recordSchema(type, types) {
+	const properties = Object.fromEntries(
+		[...(type.fields ?? [])]
+			.sort(byName)
+			.map((field) => [field.name, fieldSchema(field, types)]),
+	);
+	const schema = { type: "object", properties };
+	const required = [...(type.fields ?? [])]
+		.sort(byName)
+		.filter((field) => field.presence === "required")
+		.map((field) => field.name);
+	if (required.length) schema.required = required;
+	if (type.unknownPolicy === "reject") schema.additionalProperties = false;
+	return schema;
+}
+
+function renderType(ir, type, types, authored) {
 	let schema;
-	switch (type.kind) {
-		case "scalar":
+	// Construct members are read from the authored document: in the rendering
+	// view a subtype also holds its inherited fields (FR-141).
+	const facts = constructOf(authored.get(type.identity) ?? type, authored);
+	switch (true) {
+		case type.kind === "scalar":
 			schema = { ...(scalarSchema[type.scalar] ?? {}) };
 			break;
-		case "record":
-		case "entity": {
-			const properties = Object.fromEntries(
-				[...(type.fields ?? [])]
-					.sort(byName)
-					.map((field) => [field.name, fieldSchema(field, types)]),
-			);
-			schema = { type: "object", properties };
-			const required = [...(type.fields ?? [])]
-				.sort(byName)
-				.filter((field) => field.presence === "required")
-				.map((field) => field.name);
-			if (required.length) schema.required = required;
-			if (type.unknownPolicy === "reject") schema.additionalProperties = false;
-			// An entity is the record schema plus its construct kind and the
-			// names of the fields that tell its instances apart (FR-100).
-			if (type.kind === "entity") {
-				schema["x-agent-ix-kind"] = "entity";
-				schema["x-agent-ix-identity-fields"] = identityFieldNames(type);
-			}
+		case isRecordShaped(type.kind): {
+			// A record-shaped construct is the record schema over its effective
+			// fields. An event's instance is immutable, which JSON Schema states
+			// as `readOnly`; a state machine's states are a string enum under
+			// `$defs` (FR-100).
+			schema = recordSchema(type, types);
+			if (facts?.immutable) schema.readOnly = true;
+			if (facts?.states?.length)
+				schema.$defs = {
+					[`${nameOf(type)}State`]: {
+						type: "string",
+						enum: [...facts.states],
+					},
+				};
 			break;
 		}
-		case "enum":
+		case isEnumerationShaped(type.kind):
 			schema = {
 				type: "string",
 				enum: [...(type.variants ?? [])].sort(byName).map((one) => one.name),
 			};
 			break;
-		case "union":
+		case isInstanceless(type.kind):
+			// A repository holds no state and a domain is a namespace: neither
+			// has an instance, so no JSON value validates against its schema,
+			// and the schema carries its members as annotations (FR-100).
+			schema = { not: {} };
+			break;
+		case type.kind === "union":
 			schema = {
 				oneOf: [...(type.variants ?? [])].sort(byName).map((one) => {
 					const branch = one.payloadType
@@ -236,19 +295,19 @@ function renderType(ir, type, types) {
 				}),
 			};
 			break;
-		case "alias":
+		case type.kind === "alias":
 			schema = { allOf: [ref(types, type.target)] };
 			break;
-		case "sequence":
+		case type.kind === "sequence":
 			schema = { type: "array", items: ref(types, type.items) };
 			break;
-		case "map":
+		case type.kind === "map":
 			schema = {
 				type: "object",
 				additionalProperties: ref(types, type.values),
 			};
 			break;
-		case "reference":
+		case type.kind === "reference":
 			schema = { type: "string", "x-agent-ix-reference-target": type.target };
 			break;
 		default:
@@ -258,7 +317,8 @@ function renderType(ir, type, types) {
 	return {
 		$schema: DRAFT,
 		$id: schemaId(ir, type),
-		...annotated(schema, type),
+		title: type.displayName,
+		...constructAnnotations(annotated(schema, type), facts),
 	};
 }
 function text(value) {
@@ -327,6 +387,19 @@ export const jsonSchemaBackend = Object.freeze({
 		"scalar",
 		"record",
 		"entity",
+		"value_object",
+		"nested_entity",
+		"aggregate_root",
+		"enumeration",
+		"event",
+		"state_machine",
+		"process",
+		"repository",
+		"domain",
+		"supertypes",
+		"feature-redefinition",
+		"operation-contract",
+		"populations",
 		"enum",
 		"union",
 		"alias",
@@ -341,7 +414,9 @@ export const jsonSchemaBackend = Object.freeze({
 		"identity-metadata",
 	]),
 	generate(request, options = {}) {
-		const ir = request.ir;
+		// Rendered from the view in which a subtype carries its inherited
+		// fields; admission reads the request's own document.
+		const ir = renderingView(request.ir);
 		let admission;
 		try {
 			admission = admit(request, options.host);
@@ -362,17 +437,16 @@ export const jsonSchemaBackend = Object.freeze({
 				files: [],
 				diagnostics: admission.diagnostics.map(admissionDiagnostic),
 			};
-		// A contract 1.2.0 construct kind other than `entity`, or a model member,
-		// has no JSON Schema rendering (filament-core-data#147). Each is refused by name: an
-		// object schema in its place would drop its built-in rules (FR-142-CON-2).
-		const unrendered = unrenderedNodes(ir);
-		if (unrendered.length > 0)
+		// Two effective fields of one name would render one property and drop
+		// the other; each is refused by name (FR-141).
+		const inherited = inheritedNameCollisions(request.ir);
+		if (inherited.length > 0)
 			return {
 				state: "unsupported",
 				files: [],
-				diagnostics: unrendered.map((node) =>
+				diagnostics: inherited.map((one) =>
 					diagnostic(DIAGNOSTIC_CODES.UNDECLARED_LOSS, {
-						message: `/ir${node.pointer}: JSON Schema backend renders no contract 1.2.0 ${node.member}`,
+						message: `/ir${one.pointer}: two effective fields are named ${one.name}; one would be dropped, since neither redefines the other`,
 					}),
 				),
 			};
@@ -401,6 +475,7 @@ export const jsonSchemaBackend = Object.freeze({
 		const types = new Map(
 			(ir.types ?? []).map((type) => [type.identity, type]),
 		);
+		const authored = typeIndex(request.ir);
 		// Two definitions whose names derive one file name, or a definition whose
 		// name derives `index.json`, would overwrite one another. Each is refused
 		// with both identities named, and no file is written (FR-100-AC-9).
@@ -417,7 +492,7 @@ export const jsonSchemaBackend = Object.freeze({
 			};
 		const files = [...types.values()].sort(byName).map((type) => ({
 			path: `${nameOf(type)}.json`,
-			text: text(renderType(ir, type, types)),
+			text: text(renderType(ir, type, types, authored)),
 			identities: [type.identity],
 			mediaType: "application/schema+json",
 		}));
@@ -438,11 +513,18 @@ export const jsonSchemaBackend = Object.freeze({
 				...(ir.occurrences?.length
 					? { "x-agent-ix-occurrences": ir.occurrences }
 					: {}),
+				...(ir.populations?.length
+					? { "x-agent-ix-populations": populationsOf(ir) }
+					: {}),
 				schemas: index,
 			}),
 			identities: [`ix://${ir.package.identity}`],
 			mediaType: "application/json",
 		});
-		return { state: "success", files, diagnostics: [] };
+		return {
+			state: "success",
+			files,
+			diagnostics: unenforcedMemberAdvisories(request.ir, "JSON Schema"),
+		};
 	},
 });

@@ -51,6 +51,8 @@
  * owner rather than a suppression this work may register.
  */
 
+import { isInstanceless, isRecordShaped } from "../../constructs.mjs";
+import { hasEquality } from "./model.mjs";
 import { UNION_DISCRIMINANT } from "./names.mjs";
 
 /**
@@ -593,8 +595,16 @@ const CHECK_BODIES = Object.freeze({
 	alias: (model, entry) => delegatingCheckBody(model, entry),
 	reference: (model, entry) => delegatingCheckBody(model, entry),
 	record: (model, entry) => recordCheckBody(model, entry),
-	// An entity is checked as its record shape (FR-066).
+	// Every construct whose instances carry fields is checked as its record
+	// shape, and an enumeration as an enum (FR-066, FR-142).
 	entity: (model, entry) => recordCheckBody(model, entry),
+	nested_entity: (model, entry) => recordCheckBody(model, entry),
+	aggregate_root: (model, entry) => recordCheckBody(model, entry),
+	event: (model, entry) => recordCheckBody(model, entry),
+	process: (model, entry) => recordCheckBody(model, entry),
+	value_object: (model, entry) => recordCheckBody(model, entry),
+	state_machine: (model, entry) => recordCheckBody(model, entry),
+	enumeration: (model, entry) => enumCheckBody(model, entry),
 });
 
 /**
@@ -607,8 +617,7 @@ const CHECK_BODIES = Object.freeze({
  * than being rejected by a pass whose errors nobody collected.
  */
 function prepareBody(model, entry) {
-	if (entry.kind === "record" || entry.kind === "entity")
-		return recordPrepareBody(entry);
+	if (isRecordShaped(entry.kind)) return recordPrepareBody(entry);
 	if (entry.kind === "sequence") {
 		return [
 			"\tif (!Array.isArray(value)) return value;",
@@ -1040,9 +1049,56 @@ export function sortErrors(
 `;
 }
 
+/**
+ * `<Name>Equals` (FR-064, FR-142). A value object has no identity: two values
+ * are one value exactly when they share a canonical form, the rule `unique`
+ * collections use. An identified construct compares by its identity fields in
+ * declared order, each by canonical form: two instances with equal identity
+ * fields are one instance.
+ */
+function equalityFunction(entry) {
+	const name = entry.identifier;
+	const head = `export function ${name}Equals(left: ${name}, right: ${name}): boolean {`;
+	if (entry.kind === "value_object")
+		return [
+			`/** Whether two \`${name}\` values are one value: every field equal. */`,
+			head,
+			"\treturn !isUniqueCollection([left, right]);",
+			"}",
+		].join("\n");
+	const member = (side, field) =>
+		/^[A-Za-z_$][\w$]*$/.test(field)
+			? `${side}.${field}`
+			: `${side}[${literal(field)}]`;
+	const same = (entry.identityFields ?? []).map(
+		(field) =>
+			`isUniqueCollection([${member("left", field)}, ${member("right", field)}])`,
+	);
+	const lines = [
+		`/** Whether two \`${name}\` values are one instance: every identity field equal. */`,
+		head,
+	];
+	same.forEach((unique, index) => {
+		lines.push(
+			index === same.length - 1
+				? `\treturn !${unique};`
+				: `\tif (${unique}) return false;`,
+		);
+	});
+	if (same.length === 0) lines.push("\treturn false;");
+	lines.push("}");
+	return lines.join("\n");
+}
+
 /** The generated `validators.ts`: one `validate<Type>` per exported type. */
 export function renderValidators(model) {
-	const types = model.types ?? [];
+	// A repository and a domain have no instance data, and an abstract type has
+	// no instance of its own, so no value validates against any of them (FR-142,
+	// FR-141).
+	const types = (model.types ?? []).filter(
+		(entry) =>
+			!isInstanceless(entry.kind) && entry.construct?.abstract !== true,
+	);
 	const names = types.map((entry) => entry.identifier);
 	const blocks = [];
 	for (const entry of types) {
@@ -1075,15 +1131,20 @@ export function renderValidators(model) {
 		const surfacedName = checkBody.includes("surfaced")
 			? "surfaced"
 			: "_surfaced";
+		// The `any` kernel scalar admits every value, so its check never reads the
+		// candidate; the parameter takes the same exemption.
+		const candidateName = /\bcandidate\b/.test(checkBody)
+			? "candidate"
+			: "_candidate";
 		blocks.push(
 			[
 				`function check${entry.identifier}(`,
-				"\tcandidate: unknown,",
+				`\t${candidateName}: unknown,`,
 				"\tpointer: string,",
 				"\terrors: ValidationError[],",
 				`\t${surfacedName}: ValidationError[],`,
 				"\tdepth: number,",
-				`): candidate is ${entry.identifier} {`,
+				`): ${candidateName} is ${entry.identifier} {`,
 				checkBody,
 				"}",
 			].join("\n"),
@@ -1102,6 +1163,7 @@ export function renderValidators(model) {
 				"}",
 			].join("\n"),
 		);
+		if (hasEquality(entry)) blocks.push(equalityFunction(entry));
 	}
 
 	const header = `/**

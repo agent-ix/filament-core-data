@@ -2049,4 +2049,3 @@ export const FIELD_DEFAULT = {
 	"TypeRef.unit": { kind: "none", value: null },
 	"UniqueConstraint.keyword": { kind: "none", value: null },
 } as const satisfies Record<ExportedFieldKey, DefaultDescriptor>;
-

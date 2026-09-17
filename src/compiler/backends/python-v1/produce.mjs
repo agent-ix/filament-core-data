@@ -64,13 +64,17 @@ export function poetryProducer({
 	root = REPO_ROOT,
 	command = PRODUCER_COMMAND,
 } = {}) {
-	return function produce(documents, profileId) {
+	return function produce(documents, profileId, index) {
 		let raw;
 		try {
 			raw = execFileSync(command[0], command.slice(1), {
 				cwd: root,
 				encoding: "utf8",
-				input: JSON.stringify({ profileId, documents }),
+				input: JSON.stringify(
+					index === undefined
+						? { profileId, documents }
+						: { profileId, documents, index },
+				),
 				maxBuffer: 256 * 1024 * 1024,
 				stdio: ["pipe", "pipe", "pipe"],
 			});

@@ -20,6 +20,8 @@ import { describe, expect, it } from "vitest";
 import { reachableSymbols } from "../src/compiler/backends/typescript-v1/package-layout.mjs";
 import { auditRenderedNodes } from "../src/compiler/backends/typescript-v1/metadata.mjs";
 import { buildModel } from "../src/compiler/backends/typescript-v1/model.mjs";
+import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
+import { createHost } from "../src/compiler/host.mjs";
 import {
 	SCHEMA_FILES,
 	admitIr,
@@ -751,6 +753,288 @@ describe("TC-1763 an entity construct rendered by the TypeScript backend (FR-064
 			rmSync(scratch, { recursive: true, force: true });
 		}
 	}, 120000);
+});
+
+describe("TC-1773 every construct kind and model member rendered by the TypeScript backend (FR-064, FR-067)", () => {
+	/** Traces: TC-1773; FR-064-AC-25, FR-067-AC-20. */
+	it("renders each construct by its own rendering and carries every model member", async () => {
+		const scratch = mkdtempSync(
+			resolve(tmpdir(), "fcd-typescript-constructs-"),
+		);
+		try {
+			const module = await generatedValidators(
+				resolve(
+					root,
+					"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
+				),
+				resolve(scratch, "constructs"),
+			);
+			const types = readFileSync(
+				resolve(scratch, "constructs/generated/types.ts"),
+				"utf8",
+			);
+			for (const name of [
+				"OrderPlaced",
+				"Shipment",
+				"OrderAggregate",
+				"Fulfilment",
+				"OrderLifecycle",
+				"OrderLine",
+				"OrderStatus",
+			])
+				expect(typeof module[`validate${name}`], name).toBe("function");
+			expect(types).toContain(
+				'export type OrderLifecycleState = "placed" | "shipped";',
+			);
+			expect(types).toContain(
+				'export type OrderStatus = "cancelled" | "draft" | "placed" | "shipped";',
+			);
+			expect(types).toContain(
+				"export interface OrderRepository {\n\tfindById(id: UUID): Order | undefined;\n\tsave(order: Order): Order;\n}",
+			);
+			expect(types).not.toMatch(/\bOrdering\b/);
+			expect(module.validateOrdering).toBeUndefined();
+			expect(module.validateOrderRepository).toBeUndefined();
+			const order = /export interface Order \{([^}]*)\}/.exec(types)?.[1] ?? "";
+			for (const field of ["id", "labels", "badges", "lines", "status"])
+				expect(
+					order.split(`readonly ${field}`).length - 1,
+					`Order.${field}`,
+				).toBe(1);
+
+			const equals = module.OrderLineEquals as (
+				left: unknown,
+				right: unknown,
+			) => boolean;
+			const line = { sku: "A-1", quantity: 1, kind: "goods" };
+			expect(equals(line, { ...line })).toBe(true);
+			expect(equals(line, { ...line, quantity: 2 })).toBe(false);
+
+			// An identified construct is one instance when its identity fields
+			// are equal, whatever its other fields hold; an abstract type has no
+			// instance of its own, so no validator and no Equals.
+			const orderEquals = module.OrderEquals as (
+				left: unknown,
+				right: unknown,
+			) => boolean;
+			const placed = {
+				id: "7c1e0f8a-0000-4000-8000-000000000001",
+				status: "draft",
+			};
+			expect(orderEquals(placed, { ...placed, status: "placed" })).toBe(true);
+			expect(
+				orderEquals(placed, {
+					...placed,
+					id: "7c1e0f8a-0000-4000-8000-000000000002",
+				}),
+			).toBe(false);
+			expect(module.validateParty).toBeUndefined();
+			expect(module.PartyEquals).toBeUndefined();
+			expect(types).toContain("export interface Party {");
+
+			expect(module.TYPE_IDENTITY_FIELDS).toMatchObject({
+				Order: ["id"],
+				Shipment: ["id"],
+				OrderAggregate: ["id"],
+				Fulfilment: ["id"],
+			});
+			expect(module.TYPE_SUPERTYPES).toStrictEqual({
+				Order: ["ix://agent-ix/orders/type/FR-000"],
+			});
+			expect(module.TYPE_ABSTRACT).toStrictEqual({ Party: true });
+			expect(module.TYPE_OWNER).toStrictEqual({
+				Shipment: "ix://agent-ix/orders/type/FR-001",
+			});
+			expect(module.TYPE_EQUALITY).toStrictEqual({ OrderLine: "value" });
+			expect(module.TYPE_IMMUTABLE).toStrictEqual({ OrderPlaced: true });
+			expect(module.TYPE_STATES).toStrictEqual({
+				OrderLifecycle: ["placed", "shipped"],
+			});
+			expect(module.TYPE_PERSISTS).toStrictEqual({
+				OrderRepository: ["ix://agent-ix/orders/type/FR-001"],
+			});
+			expect(
+				(
+					module.TYPE_STEPS as Record<string, { name: string }[]>
+				).Fulfilment.map((step) => step.name),
+			).toStrictEqual(["fulfil"]);
+			expect(
+				(
+					module.TYPE_VOCABULARY as Record<string, { term: string }[]>
+				).Ordering.map((term) => term.term),
+			).toStrictEqual(["Order"]);
+			expect(
+				(module.TYPE_TRANSITIONS as Record<string, { trigger: string }[]>)
+					.OrderLifecycle[0].trigger,
+			).toBe("advance");
+			expect(module.FIELD_SUBSETS).toStrictEqual({
+				"Order.badges": ["labels"],
+			});
+			expect(
+				(module.OPERATION_CONTRACTS as Record<string, unknown>)[
+					"OrderLifecycle.advance"
+				],
+			).toStrictEqual({
+				ensures: [{ language: "quire", text: "current = to" }],
+				frame: { creates: [], deletes: [], modifies: ["current"] },
+				requires: [{ language: "quire", text: "to <> current" }],
+			});
+			expect(
+				(module.POPULATIONS as { displayName: string }[]).map(
+					(one) => one.displayName,
+				),
+			).toStrictEqual(["OpenOrders"]);
+
+			const golden = await generatedValidators(
+				resolve(
+					root,
+					"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json",
+				),
+				resolve(scratch, "golden"),
+			);
+			for (const name of [
+				"TYPE_SUPERTYPES",
+				"OPERATION_CONTRACTS",
+				"POPULATIONS",
+			])
+				expect(golden[name], name).toBeUndefined();
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
+	}, 120000);
+});
+
+function constructsDocument() {
+	return JSON.parse(
+		readFileSync(
+			resolve(
+				root,
+				"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
+			),
+			"utf8",
+		),
+	) as {
+		types: {
+			displayName: string;
+			identity: string;
+			fields?: { name: string; typeRef?: string; redefines?: string }[];
+		}[];
+	};
+}
+
+function generateDocument(ir: unknown) {
+	return typescriptBackend.generate(
+		{ ir } as never,
+		{
+			host: createHost({ readRoots: [root] }),
+		} as never,
+	) as {
+		state: string;
+		files: unknown[];
+		diagnostics: { code: string; message: string; blocking: boolean }[];
+	};
+}
+
+describe("TC-1781 identifiers and abstract types the TypeScript backend refuses (FR-064)", () => {
+	/** Traces: TC-1781; FR-064-AC-26. */
+	it("refuses a type named for another's State or Equals, a field holding an abstract type, and an inherited field collision", () => {
+		const blockingCodes = (ir: unknown) => {
+			const manifest = generateDocument(ir);
+			expect(manifest.files).toStrictEqual([]);
+			return manifest.diagnostics
+				.filter((one) => one.blocking)
+				.map((one) => one.code.split(".").pop());
+		};
+		const typeNamed = (
+			ir: ReturnType<typeof constructsDocument>,
+			name: string,
+		) => {
+			const found = ir.types.find((type) => type.displayName === name);
+			if (!found) throw new Error(`no type ${name}`);
+			return found;
+		};
+
+		expect(generateDocument(constructsDocument()).state).toBe("success");
+
+		for (const [renamed, clash] of [
+			["OrderStatus", "OrderLifecycleState"],
+			["OrderStatus", "OrderEquals"],
+			["OrderStatus", "OrderLineEquals"],
+		]) {
+			const ir = constructsDocument();
+			typeNamed(ir, renamed).displayName = clash;
+			expect(blockingCodes(ir), clash).toContain("IDENTIFIER_COLLISION");
+		}
+
+		const held = constructsDocument();
+		const party = typeNamed(held, "Party");
+		const order = typeNamed(held, "Order");
+		const status = order.fields?.find((field) => field.name === "status");
+		if (!status) throw new Error("Order declares no status field");
+		status.typeRef = party.identity;
+		expect(blockingCodes(held)).toStrictEqual(["ABSTRACT_TYPE_HELD"]);
+
+		// A reference holds Party's identity, not a value of it.
+		const referring = constructsDocument();
+		const declared = typeNamed(referring, "Party") as unknown as Record<
+			string,
+			unknown
+		>;
+		const reference: Record<string, unknown> = JSON.parse(
+			JSON.stringify(declared),
+		);
+		for (const member of [
+			"fields",
+			"clauses",
+			"abstract",
+			"identityFields",
+			"operations",
+			"relationships",
+		])
+			delete reference[member];
+		Object.assign(reference, {
+			identity: "ix://agent-ix/orders/type/PartyRef",
+			displayName: "PartyRef",
+			kind: "reference",
+			target: declared.identity,
+		});
+		referring.types.push(reference as never);
+		expect(generateDocument(referring).state).toBe("success");
+
+		const collided = constructsDocument();
+		const id = typeNamed(collided, "Order").fields?.find(
+			(field) => field.name === "id",
+		);
+		if (!id) throw new Error("Order declares no id field");
+		delete id.redefines;
+		expect(blockingCodes(collided)).toStrictEqual(["IDENTIFIER_COLLISION"]);
+
+		// A subtype's construct members are read from the authored document:
+		// an inherited field's `subsets` stays keyed by the type declaring it.
+		const inherited = constructsDocument();
+		const declaring = typeNamed(inherited, "Party");
+		const labels = declaring.fields?.[1] as Record<string, unknown>;
+		declaring.fields?.push({
+			...(labels as { name: string }),
+			name: "remark",
+			identity: "ix://agent-ix/orders/field/FR-000-remark",
+			subsets: [labels.identity as string],
+		} as never);
+		const manifest = generateDocument(inherited) as unknown as {
+			state: string;
+			files: { path: string; text: string }[];
+		};
+		expect(manifest.state).toBe("success");
+		const identity = manifest.files.find((file) =>
+			file.path.endsWith("identity.ts"),
+		);
+		if (!identity) throw new Error("identity.ts was not emitted");
+		const subsets =
+			/FIELD_SUBSETS[^=]*= \{([^}]*)\}/.exec(identity.text)?.[1] ?? "";
+		expect(subsets).toContain('"Party.remark": ["labels"]');
+		expect(subsets).toContain('"Order.badges"');
+		expect(subsets).not.toContain("Order.remark");
+	});
 });
 
 describe("TC-1767 generated TypeScript names come from display names (FR-064)", () => {

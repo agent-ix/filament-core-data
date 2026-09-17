@@ -29,6 +29,13 @@ export const MAX_WIDTH = 100;
 /** `use_small_heuristics = "Default"` fixes `struct_lit_width` at 18. */
 export const STRUCT_LIT_WIDTH = 18;
 
+/**
+ * `use_small_heuristics = "Default"` fixes `array_width` at 60: a slice of two
+ * or more elements stays on one line only while its elements, joined by `, `,
+ * are at most 60 characters wide.
+ */
+export const ARRAY_WIDTH = 60;
+
 /** `use_small_heuristics = "Default"` fixes `fn_call_width` at 60. */
 export const FN_CALL_WIDTH = 60;
 
@@ -127,7 +134,7 @@ function inlineOf(value) {
 	}
 }
 
-function structFitsInline(value, column) {
+function structFitsInline(value, column, trail = 0) {
 	// `struct_lit_width` bounds the *body* of the literal, not the whole of it,
 	// so `Self { name, node }` stays on one line while a nineteen-character
 	// measurement of the whole would wrongly break it.
@@ -136,8 +143,26 @@ function structFitsInline(value, column) {
 		.join(", ");
 	return (
 		body.length <= STRUCT_LIT_WIDTH &&
-		column + inlineOf(value).length <= MAX_WIDTH
+		column + inlineOf(value).length + trail <= MAX_WIDTH &&
+		value.fields.every((field) => nestedFitsInline(field.value))
 	);
+}
+
+/**
+ * Whether a value nested inside a one-line literal may itself stay on one line:
+ * a struct literal only inside `struct_lit_width`, at any depth.
+ */
+function nestedFitsInline(value) {
+	switch (value.kind) {
+		case "struct":
+			return structFitsInline(value, 0);
+		case "call":
+			return nestedFitsInline(value.value);
+		case "slice":
+			return value.items.every(nestedFitsInline);
+		default:
+			return true;
+	}
 }
 
 /**
@@ -145,8 +170,10 @@ function structFitsInline(value, column) {
  *
  * The first line carries no indentation — the caller places it after whatever
  * prefix it is emitting — and every later line is indented from `depth`.
+ * `trail` is the width of what the caller writes after the last line: the `,`
+ * after a field or element, which counts against `max_width` too.
  */
-export function renderValue(value, depth, column) {
+export function renderValue(value, depth, column, trail = 0) {
 	const pad = INDENT.repeat(depth);
 	switch (value.kind) {
 		case "atom":
@@ -154,30 +181,37 @@ export function renderValue(value, depth, column) {
 		case "call": {
 			const inner = value.value;
 			if (
-				(inner.kind === "atom" || inner.kind === "slice") &&
-				column + inlineOf(value).length <= MAX_WIDTH
+				(inner.kind === "atom" ||
+					(inner.kind === "slice" && nestedFitsInline(inner))) &&
+				column + inlineOf(value).length + trail <= MAX_WIDTH
 			) {
 				return [inlineOf(value)];
 			}
 			if (
 				inner.kind === "struct" &&
-				structFitsInline(inner, column + value.path.length + 1)
+				structFitsInline(inner, column + value.path.length + 1, trail + 1)
 			) {
 				return [inlineOf(value)];
 			}
-			const lines = renderValue(inner, depth, column + value.path.length + 1);
+			const lines = renderValue(
+				inner,
+				depth,
+				column + value.path.length + 1,
+				trail + 1,
+			);
 			lines[0] = `${value.path}(${lines[0]}`;
 			lines[lines.length - 1] = `${lines[lines.length - 1]})`;
 			return lines;
 		}
 		case "struct": {
-			if (structFitsInline(value, column)) return [inlineOf(value)];
+			if (structFitsInline(value, column, trail)) return [inlineOf(value)];
 			const lines = [`${value.path} {`];
 			for (const field of value.fields) {
 				const inner = renderValue(
 					field.value,
 					depth + 1,
 					pad.length + INDENT.length + field.name.length + 2,
+					1,
 				);
 				inner[0] = `${pad}${INDENT}${field.name}: ${inner[0]}`;
 				inner[inner.length - 1] = `${inner[inner.length - 1]},`;
@@ -188,18 +222,28 @@ export function renderValue(value, depth, column) {
 		}
 		case "slice": {
 			const inline = inlineOf(value);
-			if (column + inline.length <= MAX_WIDTH) return [inline];
+			if (
+				column + inline.length + trail <= MAX_WIDTH &&
+				nestedFitsInline(value) &&
+				(value.items.length < 2 || inline.length - 3 <= ARRAY_WIDTH)
+			)
+				return [inline];
 			if (value.items.length === 1) {
 				// `rustfmt` overflows a sole element onto the bracket's line rather
 				// than giving it a line of its own.
-				const inner = renderValue(value.items[0], depth, column + 2);
+				const inner = renderValue(value.items[0], depth, column + 2, trail + 1);
 				inner[0] = `&[${inner[0]}`;
 				inner[inner.length - 1] = `${inner[inner.length - 1]}]`;
 				return inner;
 			}
 			const lines = ["&["];
 			for (const item of value.items) {
-				const inner = renderValue(item, depth + 1, pad.length + INDENT.length);
+				const inner = renderValue(
+					item,
+					depth + 1,
+					pad.length + INDENT.length,
+					1,
+				);
 				inner[0] = `${pad}${INDENT}${inner[0]}`;
 				inner[inner.length - 1] = `${inner[inner.length - 1]},`;
 				lines.push(...inner);

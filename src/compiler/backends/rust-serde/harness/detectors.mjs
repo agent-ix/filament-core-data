@@ -23,7 +23,14 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { CONSTRUCT_KINDS } from "../../../constructs.mjs";
 import { KEYWORD_APPLICABILITY } from "../../../ir/applicability.mjs";
+
+/** The contract 1.2.0 fixture carrying every construct kind and model member. */
+const CONSTRUCTS_FIXTURE = new URL(
+	"../../../../../fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
+	import.meta.url,
+);
 
 /** The nine kernel scalar names, read from the table rather than restated. */
 function kernelScalars(table) {
@@ -32,7 +39,7 @@ function kernelScalars(table) {
 		.map((row) => row.selector);
 }
 
-/** The eight kind names, read from the table. */
+/** The kind names, read from the table. */
 function kinds(table) {
 	return table.rows
 		.filter((row) => row.axis === "kind")
@@ -245,14 +252,20 @@ export const DETECTORS = Object.freeze([
 		run(backend) {
 			const declared = kinds(backend.table);
 			assert(
-				declared.length === 9,
-				`the table declares ${declared.length} kinds, not nine`,
+				declared.length === 18,
+				`the table declares ${declared.length} kinds, not eighteen`,
 			);
 			const ir = document(backend);
 			const model = mapped(backend, ir);
 			const observed = new Set(model.types.map((one) => one.kind));
 			for (const kind of declared) {
-				if (kind === "reference" || kind === "entity" || observed.has(kind))
+				// The generated 1.1.0 document carries no construct kind; the
+				// constructs case measures those rows.
+				if (
+					kind === "reference" ||
+					CONSTRUCT_KINDS.includes(kind) ||
+					observed.has(kind)
+				)
 					continue;
 				assert(
 					false,
@@ -364,6 +377,101 @@ export const DETECTORS = Object.freeze([
 				),
 				"a kind outside the eight raised no UNSUPPORTED_CONSTRUCT",
 			);
+		},
+	},
+	{
+		caseId:
+			"TC-1772 every construct kind and model member selects the Rust form the mapping table states",
+		run(backend) {
+			const rows = new Map(backend.table.rows.map((row) => [row.rowKey, row]));
+			for (const kind of CONSTRUCT_KINDS)
+				assert(rows.has(`kind:${kind}`), `no kind row for \`${kind}\``);
+			const ir = JSON.parse(readFileSync(CONSTRUCTS_FIXTURE, "utf8"));
+			const result = emitted(backend, ir);
+			assert(
+				result.state === "success",
+				`the constructs fixture was refused: ${result.diagnostics.map((one) => `${one.code} ${one.message}`).join("; ")}`,
+			);
+			assert(
+				result.diagnostics.length === 0,
+				`the constructs fixture raised ${result.diagnostics.map((one) => one.code).join(", ")}`,
+			);
+			const file = (name) => {
+				const text = result.files.get(`src/types/${name}.rs`);
+				assert(typeof text === "string", `no module ${name}.rs was emitted`);
+				return text;
+			};
+			const has = (name, needle, row) => {
+				assert(rows.has(row), `the table carries no row \`${row}\``);
+				assert(
+					file(name).includes(needle),
+					`${name}.rs carries no \`${needle}\`, which the row \`${row}\` states`,
+				);
+			};
+			has(
+				"order_line",
+				"#[derive(Clone, Debug, PartialEq, Serialize)]",
+				"kind:value_object",
+			);
+			has("shipment", "pub const OWNER: &str", "kind:nested_entity");
+			has(
+				"shipment",
+				"pub const IDENTITY_FIELDS: &[&str]",
+				"kind:nested_entity",
+			);
+			has(
+				"order_aggregate",
+				"pub const MEMBERS: &[&str]",
+				"kind:aggregate_root",
+			);
+			has("order_status", "pub enum OrderStatus {", "kind:enumeration");
+			has("order_placed", "pub const OCCURRENCE_FIELD: &str", "kind:event");
+			has("order_placed", "pub fn placed_at(&self)", "kind:event");
+			assert(
+				!file("order_placed").includes("    pub placed_at:"),
+				"an event's member is public, so a value can change after construction",
+			);
+			has(
+				"order_lifecycle",
+				"pub enum OrderLifecycleState {",
+				"kind:state_machine",
+			);
+			has("order_lifecycle", "pub const TRANSITIONS:", "kind:state_machine");
+			has("fulfilment", "pub const STEPS:", "kind:process");
+			has("order_repository", "pub trait OrderRepository {", "kind:repository");
+			has(
+				"order_repository",
+				"fn find_by_id(&mut self, id:",
+				"kind:repository",
+			);
+			has("order_repository", "pub const PERSISTS: &[&str]", "kind:repository");
+			has("ordering", "pub struct Ordering;", "kind:domain");
+			has("ordering", "pub const VOCABULARY:", "kind:domain");
+			has("order", "pub const SUPERTYPES: &[&str]", "construct:supertypes");
+			has("order", "    pub labels:", "construct:supertypes");
+			has("party", "pub const ABSTRACT: bool = true;", "construct:abstract");
+			has("order", "pub const FIELD_SUBSETS:", "construct:subsets");
+			has("order", "pub const FIELD_REDEFINES:", "construct:redefines");
+			has(
+				"order_lifecycle",
+				"pub const OPERATION_CONTRACTS:",
+				"construct:operation-contract",
+			);
+			assert(rows.has("construct:populations"), "no populations row");
+			assert(
+				result.files
+					.get("src/identity.rs")
+					.includes("pub const POPULATIONS: &[PopulationMeta]"),
+				"identity.rs carries no POPULATIONS, which the row `construct:populations` states",
+			);
+			const model = mapped(backend, ir);
+			for (const type of model.types) {
+				if (!CONSTRUCT_KINDS.includes(type.kind)) continue;
+				assert(
+					type.row === `kind:${type.kind}`,
+					`the ${type.kind} ${type.identity} selected ${type.row}`,
+				);
+			}
 		},
 	},
 	{
@@ -512,8 +620,7 @@ export const DETECTORS = Object.freeze([
 		},
 	},
 	{
-		caseId:
-			"TC-725 the unknownPolicy rows dispose each of the nine kinds exactly once",
+		caseId: "TC-725 the unknownPolicy rows dispose each kind exactly once",
 		run(backend) {
 			const rows = backend.table.rows.filter(
 				(row) => row.axis === "unknownPolicy",
@@ -543,7 +650,24 @@ export const DETECTORS = Object.freeze([
 				}
 			}
 			// And the disposition the mapper takes is the one the row names.
+			const records = {
+				reject: "record-reject",
+				preserve: "record-retain",
+				surface: "record-retain",
+			};
+			const variants = {
+				reject: "variant-closed",
+				preserve: "variant-catchall",
+				surface: "variant-catchall",
+			};
 			const expected = {
+				value_object: records,
+				nested_entity: records,
+				aggregate_root: records,
+				event: records,
+				state_machine: records,
+				process: records,
+				enumeration: variants,
 				record: {
 					reject: "record-reject",
 					preserve: "record-retain",
