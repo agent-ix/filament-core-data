@@ -59,6 +59,7 @@ an advisory, and a reader never re-reads its text in another language.
 - A reader SHALL raise `UNRESOLVED_FRAME_PATH` for a frame path whose first segment names neither a field of the owning type or its supertypes nor a parameter of the operation.
 - A reader SHALL raise `UNRESOLVED_TYPE_REF` for a population member naming no declared type.
 - The Node, Python and Rust readers SHALL agree on the schema verdict of every document.
+- The TypeSpec frontend SHALL lower a member of the intrinsic type `unknown` to the kernel scalar `any`, never to a record.
 - If an inline `requires` or `ensures` clause declares an admitted language other than `quire`, then each reader SHALL accept the document and raise the advisory `agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED` (severity `info`, non-blocking) at that clause's `language`: the IR reader form of the engine's `semantic.clause-language-unchecked`.
 
 ## Constraints
@@ -78,6 +79,7 @@ an advisory, and a reader never re-reads its text in another language.
 | FR-141-AC-4 | A frame path starting at no field or parameter raises `UNRESOLVED_FRAME_PATH`, and a population member naming no type raises `UNRESOLVED_TYPE_REF`. | Test (TC-1743) |
 | FR-141-AC-5 | Each member of the table inside a `1.1.0` document is refused with `SCHEMA_VIOLATION` by every reader. | Test (TC-1744) |
 | FR-141-AC-6 | A `1.2.0` document whose inline `requires` clause declares `ocl`, or whose `ensures` clause declares `acme:tla`, is accepted by the Rust, Node and Python readers with exactly one non-blocking `CLAUSE_LANGUAGE_UNCHECKED` at that clause's `language`; the same clause in `quire` raises nothing. | Test (TC-1759) |
+| FR-141-AC-7 | A TypeSpec model member of type `unknown` compiles without a blocking diagnostic to a field whose `typeRef` resolves to a `scalar` definition of scalar `any`, and no zero-field record is emitted for it. | Test (TC-1761) |
 
 ## Dependencies
 

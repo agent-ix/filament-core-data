@@ -26,7 +26,7 @@ and no architecture construct.
 |---|---|---|---|
 | `entity` | `fields`, `identityFields` | `identityFields` is non-empty and names fields of the type or a supertype | A class whose instances are told apart by the identity fields and persist across changes to other fields |
 | `value_object` | `fields` | No `identityFields` | A datatype: two values are equal when every field is equal |
-| `nested_entity` | `fields`, `identityFields`, `owner` | `owner` is an `entity`, `nested_entity` or `aggregate_root`; identity is unique within the owner | A class composed by its owner; an instance exists only within one owner instance |
+| `nested_entity` | `fields`, `identityFields`, `owner` | `owner` is an `entity`, `nested_entity` or `aggregate_root` | A class composed by its owner; an instance exists only within one owner instance, and its identity fields tell instances apart within that owner instance |
 | `aggregate_root` | `fields`, `identityFields`, `clauses`, `members` | At least one clause; `members` are `entity`, `value_object`, `nested_entity` or `enumeration` types | A class that is a consistency boundary; its clauses are invariants ranging over its members |
 | `enumeration` | `variants` | No `fields`; the variant set is closed | An enumeration whose literals are exactly the variants |
 | `event` | `fields`, `occurrenceField` | No `identityFields`; `occurrenceField` names a field resolving to scalar `datetime` | An immutable datatype recording one occurrence at the occurrence field's instant |
@@ -36,6 +36,9 @@ and no architecture construct.
 | `domain` | `members`, `vocabulary` | No `fields` and no `operations`; a member is not a domain; a type is a member of at most one domain | A namespace for its members and their vocabulary, not a data type |
 
 Construct members other than those a kind carries are refused on that kind.
+A built-in rule is decided on the document; a rule over instances, such as a
+nested entity's identity being local to its owner instance, is the construct's
+Quire meaning, since a document carries no instances.
 Every construct except `enumeration` carries `relationships` and `operations`
 as a record does.
 
@@ -76,6 +79,7 @@ as a record does.
 | FR-142-AC-4 | An event whose occurrence field is a string raises `INVALID_OCCURRENCE_FIELD`; a transition naming an undeclared state or operation raises `UNRESOLVED_CONSTRUCT_REF`; a guard naming no clause raises `DANGLING_CLAUSE_REF`; one type in two domains raises `MULTIPLE_DOMAIN_MEMBERSHIP`. | Test (TC-1748) |
 | FR-142-AC-5 | The Rust and TypeScript backends refuse a document carrying a construct kind with a named diagnostic and emit no record in its place. | Test (TC-1749) |
 | FR-142-AC-6 | The contract document states the members, built-in rules and Quire meaning of every construct. | Inspection (TC-1750) |
+| FR-142-AC-7 | The construct kinds the Rust reader, the extraction frontend, the Node constructs list and the Node and Python readers spell are exactly the schema's `1.2.0` `typeDefinition.kind` values, and their edge-carrying kinds are exactly the schema's. | Test (TC-1760) |
 
 ## Dependencies
 

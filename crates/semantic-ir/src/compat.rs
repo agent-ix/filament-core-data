@@ -591,15 +591,38 @@ mod tests {
     use super::{classify, Classification};
     use crate::json::parse;
 
+    /// The uplift of a document declaring types, changing nothing but the
+    /// contract version, is additive; any other version change is not.
     #[test]
     fn tc_1757_classifies_the_1_1_to_1_2_contract_uplift_as_additive() {
-        let before =
-            parse(r#"{"ir":{"contractVersion":"1.1.0","types":[]}}"#).expect("before document");
-        let after =
-            parse(r#"{"ir":{"contractVersion":"1.2.0","types":[]}}"#).expect("after document");
+        let v11 = include_str!("../../../fixtures/semantic/v1/positive/config-version-v1-1.json");
+        let wrap = |text: &str| parse(&format!(r#"{{"ir":{text}}}"#)).expect("a document");
+        let before = wrap(v11);
+        let after = wrap(&v11.replacen(
+            r#""contractVersion": "1.1.0""#,
+            r#""contractVersion": "1.2.0""#,
+            1,
+        ));
+        let types = after
+            .get("ir")
+            .and_then(|ir| ir.get("types"))
+            .and_then(crate::json::Json::as_array)
+            .expect("types");
+        assert!(!types.is_empty());
+        assert_eq!(
+            after
+                .get("ir")
+                .and_then(|ir| ir.get("contractVersion"))
+                .and_then(crate::json::Json::as_str),
+            Some("1.2.0")
+        );
         assert_eq!(
             classify(&before, &after, true, true),
             Classification::Additive
+        );
+        assert_eq!(
+            classify(&after, &before, true, true),
+            Classification::Conditional
         );
     }
 }

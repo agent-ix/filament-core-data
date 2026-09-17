@@ -71,12 +71,11 @@ function asArray(value: unknown): JsonObject[] {
 
 type Resolved = { kind: string; scalar?: string } | undefined;
 
-/** Resolves a typeRef through alias definitions to its structural kind. */
 /**
  * The kinds that may carry relationships and operations: a record and every
  * contract 1.2.0 construct except `enumeration` (FR-142).
  */
-const EDGE_KINDS = new Set([
+export const EDGE_KINDS: ReadonlySet<string> = new Set([
 	"record",
 	"entity",
 	"value_object",
@@ -89,6 +88,7 @@ const EDGE_KINDS = new Set([
 	"domain",
 ]);
 
+/** Resolves a typeRef through alias definitions to its structural kind. */
 export function resolveKind(
 	types: Map<string, JsonObject>,
 	typeRef: unknown,

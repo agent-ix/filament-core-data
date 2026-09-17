@@ -9,6 +9,7 @@ use std::path::{Path, PathBuf};
 
 mod common;
 
+use agent_ix_extraction_frontend::constructs::construct_kind;
 use agent_ix_extraction_frontend::diagnostics::{Code, Diagnostic, WireCode};
 use agent_ix_extraction_frontend::{
     extract, lower_bundle, resolve, Bundle, LiftOutcome, Limits, Lowered,
@@ -1062,6 +1063,42 @@ fn names(construct: &Value, member: &str, key: &str) -> Vec<String> {
         .iter()
         .map(|entry| entry[key].as_str().unwrap_or_default().to_owned())
         .collect()
+}
+
+/// Construct-kind parity: each of the schema's 1.2.0 kinds is the construct
+/// its business object type lowers to, and any other object type is a record.
+#[trace("TC-1760", "FR-142-AC-7")]
+#[test]
+fn tc_1760_every_schema_construct_kind_is_the_kind_its_object_type_lowers_to() {
+    let schema = read_json(&workspace_dir().join("schema/semantic/v1/semantic-ir.schema.json"));
+    let before_constructs = [
+        "scalar",
+        "record",
+        "enum",
+        "union",
+        "alias",
+        "sequence",
+        "map",
+        "reference",
+    ];
+    let kinds: Vec<&str> = schema["$defs"]["typeDefinition"]["properties"]["kind"]["enum"]
+        .as_array()
+        .expect("typeDefinition.kind is an enum")
+        .iter()
+        .filter_map(Value::as_str)
+        .filter(|kind| !before_constructs.contains(kind))
+        .collect();
+    assert_eq!(kinds.len(), 10);
+    for kind in kinds {
+        assert_eq!(
+            serde_json::to_value(construct_kind(kind)).expect("a kind serialises"),
+            json!(kind)
+        );
+    }
+    assert_eq!(
+        serde_json::to_value(construct_kind("requirement")).expect("a kind serialises"),
+        json!("record")
+    );
 }
 
 #[trace("TC-1755", "FR-143-AC-5")]

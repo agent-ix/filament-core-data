@@ -24,6 +24,7 @@ import {
 	registryWith,
 } from "../src/compiler/backends/seam.mjs";
 import { diffSemanticContract } from "../src/compiler/compat/diff.mjs";
+import { CONSTRUCT_KINDS, EDGE_KINDS } from "../src/compiler/constructs.mjs";
 import {
 	CONTRACT_VERSIONS,
 	readIrAsContract,
@@ -79,6 +80,19 @@ import {
 import { compilePackage, PHASES } from "../src/compiler/pipeline.mjs";
 import { schemaValidators } from "../src/compiler/schema-validate.mjs";
 import { changedPathsOf, changeRange } from "./changed-paths.js";
+import { EDGE_KINDS as READER_EDGE_KINDS } from "./semantic-ir-v1-1-reader";
+
+/** The `typeDefinition.kind` values of contract 1.0.0 and 1.1.0. */
+const CONTRACT_KINDS_BEFORE_CONSTRUCTS = [
+	"scalar",
+	"record",
+	"enum",
+	"union",
+	"alias",
+	"sequence",
+	"map",
+	"reference",
+];
 
 /**
  * Issue #19 (the TypeSpec frontend and the versioned semantic IR compiler core)
@@ -1569,20 +1583,30 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(
 			codesOf(readContractIr(document, { importedExports: [] }) as never),
 		).toContain(DIAGNOSTIC_CODES.UNRESOLVED_RELATIONSHIP_TARGET.code);
+	}, 60000);
 
+	/** Traces: TC-1761; FR-141-AC-7. */
+	it("lowers a TypeSpec unknown member to the kernel scalar any", async () => {
 		const unconstrained = await compileSource(
 			["namespace AgentIx.Semantic;", "model Thing { value: unknown; }"].join(
 				"\n",
 			),
 		);
-		expect(codesOf(unconstrained.diagnostics as never)).not.toContain(
-			DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF.code,
-		);
+		expect(hasBlocking(unconstrained.diagnostics as never)).toBe(false);
+		const types = (unconstrained.ir as Json).types as Json[];
+		const thing = types.find((type) => type.displayName === "Thing") as Json;
+		const target = types.find(
+			(type) => type.identity === ((thing.fields as Json[])[0] as Json).typeRef,
+		) as Json;
+		expect([target.kind, target.scalar]).toEqual(["scalar", "any"]);
 		expect(
-			((unconstrained.ir as Json).types as Json[]).some(
-				(type) => type.kind === "scalar" && type.scalar === "any",
+			types.filter(
+				(type) =>
+					type.kind === "record" &&
+					type !== thing &&
+					(type.fields as Json[] | undefined)?.length === 0,
 			),
-		).toBe(true);
+		).toEqual([]);
 	}, 60000);
 
 	/** Traces: TC-443, TC-485; FR-046-AC-12, FR-048-AC-9. */
@@ -3231,6 +3255,32 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		expect(found.map((one) => [one.code, one.severity, one.blocking])).toEqual([
 			[DIAGNOSTIC_CODES.CLAUSE_LANGUAGE_UNCHECKED.code, "info", false],
 		]);
+	});
+
+	/** Traces: TC-1760; FR-142-AC-7. */
+	it("spells the construct kinds exactly as the schema does", () => {
+		const definition = (
+			readJson(
+				resolve(root, "schema/semantic/v1/semantic-ir.schema.json"),
+			) as never as {
+				$defs: {
+					typeDefinition: {
+						properties: { kind: { enum: string[] } };
+						allOf: { if: { properties: { kind: { enum?: string[] } } } }[];
+					};
+				};
+			}
+		).$defs.typeDefinition;
+		const before = new Set(CONTRACT_KINDS_BEFORE_CONSTRUCTS);
+		expect([...CONSTRUCT_KINDS]).toEqual(
+			definition.properties.kind.enum.filter((kind) => !before.has(kind)),
+		);
+		const edges = definition.allOf
+			.map((branch) => branch.if.properties.kind.enum)
+			.filter((kinds) => kinds?.includes("record") && kinds.length > 1);
+		expect(edges).toHaveLength(1);
+		expect([...EDGE_KINDS].sort()).toEqual([...(edges[0] ?? [])].sort());
+		expect([...READER_EDGE_KINDS].sort()).toEqual([...EDGE_KINDS].sort());
 	});
 
 	/** Traces: TC-1553; FR-139-AC-2, FR-139-CON-1. */

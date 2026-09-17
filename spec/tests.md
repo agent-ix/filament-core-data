@@ -117,7 +117,7 @@ blocked as stated above.
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001..US-010, US-012, US-013, US-015, FR-001..FR-053, FR-063..FR-080, FR-091..FR-106, FR-139, FR-141..FR-143 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944, TC-1200..1350, TC-1373..1378, TC-1552..1557, TC-1740..1757 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch; TC-1374, TC-1375, TC-1552, TC-1554..1557 planned on issue #93 |
+| StR-001 | US-001..US-010, US-012, US-013, US-015, FR-001..FR-053, FR-063..FR-080, FR-091..FR-106, FR-139, FR-141..FR-143 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944, TC-1200..1350, TC-1373..1378, TC-1552..1557, TC-1740..1761 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch; TC-1374, TC-1375, TC-1552, TC-1554..1557 planned on issue #93 |
 
 ### User Story Coverage
 
@@ -292,8 +292,8 @@ blocked as stated above.
 | FR-138 | FR-138-AC-1..7, FR-138-CON-1..3 | TC-1545..TC-1551 | 🚧 planned on issue #37 |
 | FR-139 | FR-139-AC-1..6, FR-139-CON-1..3 | TC-1552..TC-1557 | 🚧 TC-1552, TC-1554..TC-1557 planned on issue #93 |
 | FR-140 | FR-140-AC-1..7, FR-140-CON-1..3 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
-| FR-141 | FR-141-AC-1..5, FR-141-CON-1..2 | TC-1740..TC-1744 | ✅ Complete |
-| FR-142 | FR-142-AC-1..6, FR-142-CON-1..2 | TC-1745..TC-1750 | ✅ Complete |
+| FR-141 | FR-141-AC-1..7, FR-141-CON-1..2 | TC-1740..TC-1744, TC-1759, TC-1761 | ✅ Complete |
+| FR-142 | FR-142-AC-1..7, FR-142-CON-1..2 | TC-1745..TC-1750, TC-1760 | ✅ Complete |
 | FR-143 | FR-143-AC-1..5, FR-143-CON-1..2 | TC-1751..TC-1755 | 🚧 TC-1755 blocked on issue #154 |
 
 ### Non-Functional Requirement Coverage
@@ -1695,9 +1695,11 @@ blocked as stated above.
 | TC-1754 | A `nested_entity` with no owner and one with two owners are each refused naming the owner rule; a nested entity owned only by a refused one is refused too at the fixed point, keeping its own declared loss, and no emitted owner or relationship names a refused artifact | Unit | P0 | FR-143-AC-4 | ✅ passed |
 | TC-1755 | `SM-001` lifts its four states and three transitions, `PR-001` its three ordered steps, and `DM-001` a non-empty vocabulary | Unit | P1 | FR-143-AC-5 | 🚧 blocked on issue #154 |
 | TC-1756 | Published `1.0.0` and `1.1.0` fixtures keep reader verdicts and canonical bytes, and a `1.1.0` document carrying a `1.2.0` node is refused | Integration | P0 | NFR-044-AC-1 | ✅ passed |
-| TC-1757 | The `1.1.0` to `1.2.0` uplift of one document classifies additive | Unit | P0 | NFR-044-AC-2 | ✅ passed |
+| TC-1757 | The `1.1.0` to `1.2.0` uplift of a document declaring types classifies additive, and the reverse change conditional | Unit | P0 | NFR-044-AC-2 | ✅ passed |
 | TC-1758 | An artifact with id _ and one with a non-ASCII-only id each raise one blocking UNSLUGGABLE_NAME at the frontmatter and lower to no definition, with no panic; an artifact with id UUID in a bundle using UUID raises DUPLICATE_TYPE_NAME naming type/UUID | Unit | P1 | FR-095-AC-17 | ✅ passed |
 | TC-1759 | An inline requires clause in ocl and an ensures clause in acme:tla are each accepted by the Rust, Node and Python readers with exactly one non-blocking info CLAUSE_LANGUAGE_UNCHECKED at the clause language; a quire clause raises nothing | Unit | P0 | FR-141-AC-6, FR-141-CON-2 | ✅ passed |
+| TC-1760 | The construct kinds of the Rust reader, the extraction frontend and `src/compiler/constructs.mjs` equal the schema's `1.2.0` kinds in order, and the edge kinds of `constructs.mjs` and the Node and Python readers equal the schema's | Unit | P1 | FR-142-AC-7 | ✅ passed |
+| TC-1761 | A TypeSpec member of type `unknown` lowers to a field whose type is the kernel scalar `any`, with no blocking diagnostic and no zero-field record | Unit | P0 | FR-141-AC-7 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
 | TC-1585 | Every requirement the register names carries that issue's own link, and a row whose requirement omits it is reported | Unit | P0 | NFR-001-AC-6 | ✅ passed |
 
@@ -2632,13 +2634,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 130 | 83 | 0 | 47 | 100% mapped (130/130) |
-| Unit | 569 | 463 | 0 | 106 | 100% mapped (569/569) |
+| Unit | 573 | 466 | 0 | 107 | 100% mapped (573/573) |
 | Integration | 156 | 92 | 0 | 64 | 100% mapped (156/156) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 68 | 43 | 0 | 25 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1355** | **1023** | **0** | **332** | **100% mapped (1355/1355)** |
+| **Total** | **1359** | **1026** | **0** | **333** | **100% mapped (1359/1359)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

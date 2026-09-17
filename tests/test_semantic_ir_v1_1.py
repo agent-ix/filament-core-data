@@ -11,7 +11,9 @@ import json
 import pytest
 
 from tests.semantic_ir_reader import (
+    EDGE_KINDS,
     FIXTURE_ROOT,
+    SCHEMA_ROOT,
     _schema_validator,
     normalize,
     read_semantic_ir,
@@ -201,6 +203,17 @@ class TestContract12:
                 "ix://agent-ix/orders/type/FR-001" if foreign == "owner" else []
             )
             assert not validator.is_valid(document), f"{suffix} with {foreign}"
+
+    def test_the_edge_kinds_are_the_schema_edge_kinds(self) -> None:
+        """Criteria: FR-142-AC-7 (TC-1760)."""
+        schema = json.loads((SCHEMA_ROOT / "semantic-ir.schema.json").read_text())
+        branches = [
+            branch["if"]["properties"]["kind"].get("enum", [])
+            for branch in schema["$defs"]["typeDefinition"]["allOf"]
+        ]
+        edges = [kinds for kinds in branches if "record" in kinds and len(kinds) > 1]
+        assert len(edges) == 1
+        assert set(edges[0]) == EDGE_KINDS
 
     def test_an_inline_clause_outside_quire_is_carried_with_an_advisory(
         self, validator

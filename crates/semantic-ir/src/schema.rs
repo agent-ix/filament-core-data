@@ -211,19 +211,59 @@ const KINDS: &[&str] = &[
     "repository",
     "domain",
 ];
-/// The contract 1.2.0 kinds: one construct per modelling object type.
-const CONSTRUCT_KINDS: &[&str] = &[
-    "entity",
-    "value_object",
-    "nested_entity",
-    "aggregate_root",
-    "enumeration",
-    "event",
-    "state_machine",
-    "process",
-    "repository",
-    "domain",
-];
+/// The contract 1.2.0 kinds: one construct per modelling object type, in the
+/// order of `typeDefinition.kind`'s enum.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Construct {
+    Entity,
+    ValueObject,
+    NestedEntity,
+    AggregateRoot,
+    Enumeration,
+    Event,
+    StateMachine,
+    Process,
+    Repository,
+    Domain,
+}
+
+impl Construct {
+    const ALL: [Self; 10] = [
+        Self::Entity,
+        Self::ValueObject,
+        Self::NestedEntity,
+        Self::AggregateRoot,
+        Self::Enumeration,
+        Self::Event,
+        Self::StateMachine,
+        Self::Process,
+        Self::Repository,
+        Self::Domain,
+    ];
+
+    /// The schema spelling of this construct kind.
+    const fn name(self) -> &'static str {
+        match self {
+            Self::Entity => "entity",
+            Self::ValueObject => "value_object",
+            Self::NestedEntity => "nested_entity",
+            Self::AggregateRoot => "aggregate_root",
+            Self::Enumeration => "enumeration",
+            Self::Event => "event",
+            Self::StateMachine => "state_machine",
+            Self::Process => "process",
+            Self::Repository => "repository",
+            Self::Domain => "domain",
+        }
+    }
+
+    /// The construct `kind` spells, or `None` for a 1.0.0 kind or an unknown one.
+    fn parse(kind: &str) -> Option<Self> {
+        Self::ALL
+            .into_iter()
+            .find(|construct| construct.name() == kind)
+    }
+}
 /// The construct members, each with the kinds that carry it.
 const CONSTRUCT_MEMBERS: &[(&str, &[&str])] = &[
     (
@@ -540,10 +580,9 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
         v11: matches!(version, Some("1.1.0" | "1.2.0")),
         v12: version == Some("1.2.0"),
     };
-    let is_v11 = revision.v11;
 
     if let Some(source) = ir.get("source") {
-        ir_source(source, &child(at, "source"), is_v11, f);
+        ir_source(source, &child(at, "source"), revision, f);
     }
     if let Some(package) = ir.get("package") {
         ir_package(package, &child(at, "package"), f);
@@ -636,7 +675,7 @@ fn population_schema(population: &Json, at: &str, f: &mut Findings) {
 
 const SOURCE_MEMBERS: &[&str] = &["identity", "version", "dialect", "digest"];
 
-fn ir_source(source: &Json, at: &str, is_v11: bool, f: &mut Findings) {
+fn ir_source(source: &Json, at: &str, revision: Revision, f: &mut Findings) {
     if !expect_object(source, at, "the source envelope", f) {
         return;
     }
@@ -666,7 +705,7 @@ fn ir_source(source: &Json, at: &str, is_v11: bool, f: &mut Findings) {
     if let Some(dialect) = source.get("dialect") {
         let dialect_at = child(at, "dialect");
         let text = dialect.as_str().unwrap_or("");
-        if is_v11 {
+        if revision.v11 {
             if !matches!(text, "typespec" | "spec-bundle") {
                 f.push(
                     &dialect_at,
@@ -886,10 +925,11 @@ fn type_definition(definition: &Json, at: &str, revision: Revision, f: &mut Find
                 f.push(at, "a map type definition requires values");
             }
         }
-        construct if CONSTRUCT_KINDS.contains(&construct) => {
-            construct_schema(definition, at, construct, revision, f);
+        other => {
+            if let Some(construct) = Construct::parse(other) {
+                construct_schema(definition, at, construct, revision, f);
+            }
         }
-        _ => {}
     }
     gate_v12(definition, at, TYPE_MEMBERS_V12, revision, f);
     for (member, kinds) in CONSTRUCT_MEMBERS {
@@ -928,7 +968,9 @@ fn type_definition(definition: &Json, at: &str, revision: Revision, f: &mut Find
         );
     }
     construct_lists(definition, at, f);
-    if !(kind == "record" || (CONSTRUCT_KINDS.contains(&kind) && kind != "enumeration")) {
+    if !(kind == "record"
+        || Construct::parse(kind).is_some_and(|construct| construct != Construct::Enumeration))
+    {
         for name in ["relationships", "operations"] {
             if definition.has(name) {
                 f.push(
@@ -1006,7 +1048,14 @@ fn type_definition(definition: &Json, at: &str, revision: Revision, f: &mut Find
 }
 
 /// The per-construct requirements of `typeDefinition`'s `allOf`.
-fn construct_schema(definition: &Json, at: &str, kind: &str, revision: Revision, f: &mut Findings) {
+fn construct_schema(
+    definition: &Json,
+    at: &str,
+    construct: Construct,
+    revision: Revision,
+    f: &mut Findings,
+) {
+    let kind = construct.name();
     if !revision.v12 {
         f.push(
             &child(at, "kind"),
@@ -1014,27 +1063,33 @@ fn construct_schema(definition: &Json, at: &str, kind: &str, revision: Revision,
         );
         return;
     }
-    let required: &[&str] = match kind {
-        "entity" => &["fields", "identityFields"],
-        "value_object" => &["fields"],
-        "nested_entity" => &["fields", "identityFields", "owner"],
-        "aggregate_root" => &["fields", "identityFields", "clauses", "members"],
-        "enumeration" => &["variants"],
-        "event" => &["fields", "occurrenceField"],
-        "state_machine" => &["operations", "states", "transitions"],
-        "process" => &["fields", "identityFields", "steps"],
-        "repository" => &["operations", "persists"],
-        _ => &["members", "vocabulary"],
+    let required: &[&str] = match construct {
+        Construct::Entity => &["fields", "identityFields"],
+        Construct::ValueObject => &["fields"],
+        Construct::NestedEntity => &["fields", "identityFields", "owner"],
+        Construct::AggregateRoot => &["fields", "identityFields", "clauses", "members"],
+        Construct::Enumeration => &["variants"],
+        Construct::Event => &["fields", "occurrenceField"],
+        Construct::StateMachine => &["operations", "states", "transitions"],
+        Construct::Process => &["fields", "identityFields", "steps"],
+        Construct::Repository => &["operations", "persists"],
+        Construct::Domain => &["members", "vocabulary"],
     };
     for name in required {
         if !definition.has(name) {
             f.push(at, format!("a {kind} construct requires {name}"));
         }
     }
-    let forbidden: &[&str] = match kind {
-        "repository" | "enumeration" => &["fields"],
-        "domain" => &["fields", "operations"],
-        _ => &[],
+    let forbidden: &[&str] = match construct {
+        Construct::Repository | Construct::Enumeration => &["fields"],
+        Construct::Domain => &["fields", "operations"],
+        Construct::Entity
+        | Construct::ValueObject
+        | Construct::NestedEntity
+        | Construct::AggregateRoot
+        | Construct::Event
+        | Construct::StateMachine
+        | Construct::Process => &[],
     };
     for name in forbidden {
         if definition.has(name) {
@@ -1044,10 +1099,16 @@ fn construct_schema(definition: &Json, at: &str, kind: &str, revision: Revision,
             );
         }
     }
-    let non_empty: &[&str] = match kind {
-        "aggregate_root" => &["clauses"],
-        "state_machine" | "repository" => &["operations"],
-        _ => &[],
+    let non_empty: &[&str] = match construct {
+        Construct::AggregateRoot => &["clauses"],
+        Construct::StateMachine | Construct::Repository => &["operations"],
+        Construct::Entity
+        | Construct::ValueObject
+        | Construct::NestedEntity
+        | Construct::Enumeration
+        | Construct::Event
+        | Construct::Process
+        | Construct::Domain => &[],
     };
     for name in non_empty {
         if definition
@@ -2763,7 +2824,45 @@ fn consumer_policy(policy: &Json, at: &str, f: &mut Findings) {
 
 #[cfg(test)]
 mod tests {
-    use super::is_clause_language;
+    use super::{is_clause_language, Construct, Json};
+
+    /// Construct-kind parity: `Construct::ALL` is exactly the schema's
+    /// 1.2.0 kinds, in the order of `typeDefinition.kind`'s enum.
+    #[test]
+    fn tc_1760_the_construct_kinds_are_the_schema_construct_kinds() {
+        let schema = crate::json::parse(include_str!(
+            "../../../schema/semantic/v1/semantic-ir.schema.json"
+        ))
+        .expect("the published schema is JSON");
+        let before_constructs = [
+            "scalar",
+            "record",
+            "enum",
+            "union",
+            "alias",
+            "sequence",
+            "map",
+            "reference",
+        ];
+        let kinds: Vec<&str> = schema
+            .get("$defs")
+            .and_then(|defs| defs.get("typeDefinition"))
+            .and_then(|definition| definition.get("properties"))
+            .and_then(|properties| properties.get("kind"))
+            .and_then(|kind| kind.get("enum"))
+            .and_then(Json::as_array)
+            .expect("typeDefinition.kind is an enum")
+            .iter()
+            .filter_map(Json::as_str)
+            .filter(|kind| !before_constructs.contains(kind))
+            .collect();
+        let ours: Vec<&str> = Construct::ALL.into_iter().map(Construct::name).collect();
+        assert_eq!(ours, kinds);
+        for construct in Construct::ALL {
+            assert_eq!(Construct::parse(construct.name()), Some(construct));
+        }
+        assert_eq!(Construct::parse("record"), None);
+    }
 
     #[test]
     fn tc_214_accepts_the_core_clause_languages() {
