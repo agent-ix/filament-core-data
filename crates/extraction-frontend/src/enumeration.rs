@@ -4,7 +4,7 @@
 //!
 //! The rows come from the engine's body-extraction evaluator (quire-rs
 //! FR-011, decision D4): [`values_rows`] takes the object type's
-//! `values_table` locator from the loaded module verbatim and evaluates it
+//! `values` locator from the loaded module verbatim and evaluates it
 //! with `quire_rs::extract::locator::eval_locator` — the primitive
 //! `quire_rs::extract::extract` itself calls, without the single-value
 //! collapse a `match:` key applies — then checks the locator's `assert`
@@ -27,11 +27,11 @@ use crate::bundle::{Document, ObjectType};
 use crate::constructs::ConstructMembers;
 use crate::diagnostics::{Code, Diagnostic, Locus};
 use crate::lower::{
-    ArtifactContext, Kind, LowerError, Lowering, Origin, TypeDefinition, UnknownPolicy, Variant,
+    ArtifactContext, LowerError, Lowering, Origin, TypeDefinition, UnknownPolicy, Variant,
 };
 
 /// The `match:` key of the enumeration's row locator.
-pub const VALUES_TABLE: &str = "values_table";
+pub const VALUES_TABLE: &str = "values";
 /// The column whose cell names the variant.
 pub const VALUE_COLUMN: &str = "Value";
 /// Column of a table row's first cell text.
@@ -46,10 +46,10 @@ pub struct ValueRow {
     pub column: usize,
 }
 
-/// Why the `values_table` locator yielded no rows to lower.
+/// Why the `values` locator yielded no rows to lower.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Unsatisfied {
-    /// The object type declares no `values_table` locator.
+    /// The object type declares no `values` locator.
     NoLocator,
     /// The locator is not a `table_row` primitive.
     NotTableRow,
@@ -68,10 +68,10 @@ impl fmt::Display for Unsatisfied {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Unsatisfied::NoLocator => {
-                f.write_str("no-locator: the object type declares no `values_table`")
+                f.write_str("no-locator: the object type declares no `values`")
             }
             Unsatisfied::NotTableRow => {
-                f.write_str("not-table-row: `values_table` is not a table_row locator")
+                f.write_str("not-table-row: `values` is not a table_row locator")
             }
             Unsatisfied::Missing { section } => {
                 write!(f, "missing: `## {section}` holds no table row")
@@ -94,7 +94,7 @@ impl fmt::Display for Unsatisfied {
 impl std::error::Error for Unsatisfied {}
 
 /// The rows of `document`'s `## Values` table as the engine evaluates the
-/// object type's `values_table` locator, each with its line.
+/// object type's `values` locator, each with its line.
 pub fn values_rows(
     document: &Document,
     object_type: &ObjectType,
@@ -240,7 +240,7 @@ pub fn lower_enum(rows: &[ValueRow], ctx: &ArtifactContext<'_>) -> Result<Loweri
         definition: TypeDefinition {
             identity: type_identity,
             display_name: ctx.display_name.to_string(),
-            kind: Kind::Enumeration,
+            kind: ctx.kind(),
             roles: ctx.roles.clone(),
             origin: Origin::Source(Locus::head(&source, ctx.path)),
             constraints: Vec::new(),

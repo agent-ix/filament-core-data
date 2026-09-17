@@ -37,13 +37,13 @@ form and the fence form of one declaration produce identical `types[]`.
 - The resolutions of FR-092
 - The module's object-type `roles` (`domain-object`, `persistable`, …) and `body_extraction` from the loaded manifest
 - The FR-029 closed constraint vocabulary and the applicability table `crates/semantic-ir/RULES.md` publishes for `CONSTRAINT_NOT_APPLICABLE`
-- For an `object: enumeration` artifact, the rows the engine's body-extraction evaluator (`quire_rs::extract`, quire-rs FR-011) returns for the object type's `values_table` locator
+- For an `object: enumeration` artifact, the rows the engine's body-extraction evaluator (`quire_rs::extract`, quire-rs FR-011) returns for the object type's `values` locator
 
 ## Outputs
 
 - `crates/extraction-frontend/src/lower.rs`: `lower_record(extraction, resolutions, ctx) -> Result<TypeDefinition, Vec<Diagnostic>>` and `lower_enum(document, rows, ctx) -> Result<TypeDefinition, Vec<Diagnostic>>`
 - One `record` per lowered object artifact; one `field` per `FieldDecl`; one `alias` per `FieldDecl` carrying one or more constraints; one `constraint` per `Constraint` entry, on that alias
-- One `enum` per lowered enumeration artifact; one `variant` per `values_table` row
+- One `enum` per lowered enumeration artifact; one `variant` per `values` row
 - `crates/extraction-frontend/losses.json`: the closed register of representability losses this frontend declares, with a code, the construct, and the issue that owns it
 
 ## Behavior
@@ -59,7 +59,7 @@ form and the fence form of one declaration produce identical `types[]`.
 - If `availability.fields.state` is `unavailable` or `missing`, then the frontend SHALL NOT emit a record for that artifact.
 - If `availability.fields.state` is `unavailable` or `missing`, then the frontend SHALL emit `agent-ix.extraction-frontend.ARTIFACT_NOT_LOWERED` at the artifact naming the engine's `reason`, non-blocking when the reason is `legacy-form` and blocking otherwise.
 - If `availability.fields.lossy` is `true`, then the frontend SHALL emit one `DECLARED_LOSS` info naming the register row `lossy-extraction`.
-- If two documents in one bundle lower to the same verbatim `displayName`, then the frontend SHALL raise `agent-ix.extraction-frontend.DUPLICATE_TYPE_NAME` at the second document in path order, naming both, before any identity of either is minted. Note: `displayName` is compared verbatim, so `Status` and `status` are two names (contract case (a)); two distinct artifact ids whose slugs coincide mint one `type/` identity and are `UNSLUGGABLE_NAME` (case (b), FR-095), and two distinct names with distinct slugs that nonetheless mint one identity are FR-095's `DUPLICATE_IDENTITY` (case (c)).
+- If two documents in one bundle lower to the same verbatim `displayName`, then the frontend SHALL raise `agent-ix.extraction-frontend.DUPLICATE_TYPE_NAME` at the second document in path order, naming both, before any identity of either is minted. Note: `displayName` is compared verbatim, so `Status` and `status` are two names (contract case (a)); two distinct artifact ids mint two distinct `type/` identities, because an id is its identity segment verbatim (FR-095), so case (b) reaches no type, and two distinct names with distinct slugs that nonetheless mint one identity are FR-095's `DUPLICATE_IDENTITY` (case (c)).
 - If a document's `displayName` equals the name of a kernel scalar the bundle uses (FR-092), then the frontend SHALL raise blocking `DUPLICATE_TYPE_NAME` at that document naming the kernel scalar, before any identity of the document is minted (contract case (a)).
 
 ### The fields
@@ -68,7 +68,7 @@ form and the fence form of one declaration produce identical `types[]`.
 - The frontend SHALL set the field's `origin.source` to the artifact's path at the line the engine's scan reports for the declaration and at the column where the declaration text begins: the start of the name cell for a table row, the first non-blank column for a fence line.
 - If `FieldDecl.identity` is `true`, then the frontend SHALL carry it as the extension `ix://agent-ix/semantic-core/ext/identity-field` (version `1.0.0`, `required: false`, payload `{}`); IR v1.1 declares no `identity` member on a field.
 - If `FieldDecl.type_ref.decimal` is present, then the frontend SHALL carry it as the extension `ix://agent-ix/semantic-core/ext/decimal-policy` (version `1.0.0`, `required: false`) with payload `{precision, scale}`.
-- If a `FieldDecl` carries one or more constraints, then the frontend SHALL mint one `typeDefinition` of `kind: alias` at the alias identity of `contracts-v1.md` §Identity minting, `ix://<org>/<name>/type/<slug(artifact id)><Field>` with `<Field>` the slugged field name with its first character upper-cased (`FR-006`, `versionNumber` → `type/FR-006VersionNumber`; `FR-001`, `created_at` → `type/FR-001Created-at`), with `displayName` `<DisplayName>` followed by the field name verbatim with its first character upper-cased (`ConfigVersionVersionNumber`; `NoteCreated_at`), `target` the FR-092 resolution of the field's type (a kernel scalar, record, or enum definition; never another alias), `roles: []`, `unknownPolicy: reject`, `extensions: []`, `origin.source` the row's locus, and the row's constraints as its `constraints[]`.
+- If a `FieldDecl` carries one or more constraints, then the frontend SHALL mint one `typeDefinition` of `kind: alias` at the alias identity of `contracts-v1.md` §Identity minting, `ix://<org>/<name>/type/<artifact id><Field>` with the id verbatim and `<Field>` the slugged field name with its first character upper-cased (`FR-006`, `versionNumber` → `type/FR-006VersionNumber`; `FR-001`, `created_at` → `type/FR-001Created-at`), with `displayName` `<DisplayName>` followed by the field name verbatim with its first character upper-cased (`ConfigVersionVersionNumber`; `NoteCreated_at`), `target` the FR-092 resolution of the field's type (a kernel scalar, record, or enum definition; never another alias), `roles: []`, `unknownPolicy: reject`, `extensions: []`, `origin.source` the row's locus, and the row's constraints as its `constraints[]`.
 - If a `FieldDecl` carries one or more constraints, then the frontend SHALL set the field's `typeRef` to that alias identity.
 - If two field rows of one record carry distinct names whose slugs coincide (`created_at` beside `created__at`), then the frontend SHALL raise `agent-ix.extraction-frontend.UNSLUGGABLE_NAME` at the later row, blocking (contract case (b)).
 - If a `FieldDecl` carries no constraint, then the frontend SHALL mint no alias for it, and its `typeRef` SHALL be the FR-092 resolution directly.
@@ -83,10 +83,10 @@ form and the fence form of one declaration produce identical `types[]`.
 ### Enumeration artifacts
 
 - The frontend SHALL lower an `object: enumeration` artifact to one `typeDefinition` of `kind: enumeration` with `displayName`, `roles`, and `origin` set by the record rules above.
-- The frontend SHALL obtain the enumeration's rows by running the engine's body-extraction evaluator (`quire_rs::extract`, quire-rs FR-011) with the object type's `values_table` locator from the loaded module.
+- The frontend SHALL obtain the enumeration's rows by running the engine's body-extraction evaluator (`quire_rs::extract`, quire-rs FR-011) with the object type's `values` locator from the loaded module.
 - The frontend SHALL NOT parse the `## Values` table itself.
-- The frontend SHALL lower each row to one `variant` whose `name` is the row's `Value` cell verbatim, whose `identity` is `ix://<org>/<name>/variant/<Name>-<value>` (FR-095, both parts slugged), and whose `origin.source` is the row's line at column 3.
-- If the evaluator reports the `values_table` locator unsatisfied (no `## Values` section or fewer than `min_rows` rows), then the frontend SHALL emit `ARTIFACT_NOT_LOWERED` at the artifact naming the evaluator's reason, blocking.
+- The frontend SHALL lower each row to one `variant` whose `name` is the row's `Value` cell verbatim, whose `identity` is `ix://<org>/<name>/variant/<Name>-<value>` (FR-095, the owner id verbatim and the value slugged), and whose `origin.source` is the row's line at column 3.
+- If the evaluator reports the `values` locator unsatisfied (no `## Values` section or fewer than `min_rows` rows), then the frontend SHALL emit `ARTIFACT_NOT_LOWERED` at the artifact naming the evaluator's reason, blocking.
 - If two rows of one enumeration carry distinct `Value` cells whose slugs coincide under the case-preserving slug (`a_b` and `a__b`, not `Active` and `active`), then the frontend SHALL raise `agent-ix.extraction-frontend.UNSLUGGABLE_NAME` at the second row, blocking (contract case (b)).
 - The frontend SHALL NOT emit a `typeDefinition` of `kind: alias` for an enumeration artifact; the only alias the frontend emits is the constrained-field alias of "The fields".
 
@@ -99,7 +99,7 @@ form and the fence form of one declaration produce identical `types[]`.
 - The frontend SHALL record the row `lossy-extraction` in `losses.json` citing quire-rs FR-072 (`availability.*.lossy`).
 - The frontend SHALL emit each declared loss as one non-blocking `info` diagnostic per occurrence, coded `agent-ix.extraction-frontend.DECLARED_LOSS` naming the register row, so that a consumer can count them.
 
-Rationale: contract `1.2.0` carries the unconstrained value as scalar `any`
+Rationale: contract `2.0.0` carries the unconstrained value as scalar `any`
 (FR-139) and presence as an authored member (FR-106). A source row authors no
 presence, so the `required-collection-presence` loss stays declared until the
 row grammar carries one.
@@ -117,7 +117,7 @@ resolves `constraint.appliesTo` as a type identity and raises
 `UNRESOLVED_TYPE_REF` over a field-scoped subject, while
 `agent_ix_semantic_ir::decide` accepts either; the one form both readers
 resolve, and the repository's established form, is the alias whose `target`
-is the resolved type. The alias identity `type/<slug(artifact id)><Field>`
+is the resolved type. The alias identity `type/<artifact id><Field>`
 and its `displayName` `<DisplayName><Field verbatim, capitalised>` are the
 shared rule's (issue #87, CR-087-1, CR-087-2; `contracts-v1.md` §Identity
 minting), exactly what `src/compiler/frontend/typespec/lower.mjs` produces,
@@ -155,7 +155,7 @@ the contract's three cases in order.
 | FR-093-AC-9 | The legacy free-column FR-006 emits no record and one non-blocking `ARTIFACT_NOT_LOWERED` naming `legacy-form`; a `both-forms` artifact emits a blocking one naming `both-forms`. | Test (TC-1228) |
 | FR-093-AC-10 | Renaming every field to a random identifier changes only `name`, `identity`, `diagnosticCode`, and — for a constrained field — the alias `identity`, `displayName`, and `appliesTo` its `typeRef` names; never `multiplicity`, `presence`, `nullable`, an unconstrained field's `typeRef`, or an alias's `target`, `origin`, or operands. | Property (TC-1229) |
 | FR-093-AC-11 | Every emitted fixture document passes the FR-050 reader and `decide` with zero `agent-ix.semantic-ir.*` diagnostics. | Test (TC-1230) |
-| FR-093-AC-12 | The `business` fixture's `object: enumeration` artifact lowers to one `kind: enumeration` definition with one `variant` per `## Values` row, each named by its `Value` cell verbatim with identity `variant/<Name>-<value>` and origin at the row's line, column 3; an enumeration with no `## Values` section emits blocking `ARTIFACT_NOT_LOWERED`; every `kind: alias` definition in a fixture document is a constrained field's alias (identity `type/<slug(artifact id)><Field>`, `displayName` `<DisplayName>` plus the verbatim field name capitalised, targeting a non-alias definition, named by exactly that field's `typeRef`, carrying at least one constraint), and no alias is emitted for any other reason. | Test (TC-1333) |
+| FR-093-AC-12 | The `business` fixture's `object: enumeration` artifact lowers to one `kind: enumeration` definition with one `variant` per `## Values` row, each named by its `Value` cell verbatim with identity `variant/<Name>-<value>` and origin at the row's line, column 3; an enumeration with no `## Values` section emits blocking `ARTIFACT_NOT_LOWERED`; every `kind: alias` definition in a fixture document is a constrained field's alias (identity `type/<artifact id><Field>`, `displayName` `<DisplayName>` plus the verbatim field name capitalised, targeting a non-alias definition, named by exactly that field's `typeRef`, carrying at least one constraint), and no alias is emitted for any other reason. | Test (TC-1333) |
 | FR-093-AC-13 | Two documents both titled `Status` under distinct ids (the re-authored `negatives/DUPLICATE_TYPE_NAME` fixture) raise `DUPLICATE_TYPE_NAME` at the second path naming both, while `Status` and `status` are two names and raise nothing here (FR-095-AC-14); a row reading `min: 1, min: 2` raises `DUPLICATE_CONSTRAINT` at that row; fields `versionNumber` and `version_number` each carrying `min` yield the distinct codes `…VERSIONNUMBER_MIN` and `…VERSION_NUMBER_MIN` and raise nothing, because the shared rule does not split a case boundary; fields `created_at` and `created__at` on one record raise `UNSLUGGABLE_NAME` at the later row, and enumeration rows `a_b` and `a__b` raise `UNSLUGGABLE_NAME` at the second row; a document whose `displayName` is a kernel scalar name the bundle uses raises blocking `DUPLICATE_TYPE_NAME` at that document naming the scalar (the lift-level outcome of FR-092-AC-8's fixture, also asserted by TC-1347). | Test (TC-1334) |
 | FR-093-AC-14 | A `domain` artifact with no `## Properties` (`fields.state == not_applicable`) lowers to a `domain` construct with no `fields` member that the reader accepts; an extraction whose `availability.fields.lossy` is `true` yields one `DECLARED_LOSS` naming `lossy-extraction`. | Test (TC-1335) |
 

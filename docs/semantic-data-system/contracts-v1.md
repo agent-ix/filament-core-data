@@ -95,7 +95,7 @@ its `typeRef` resolves, through aliases, to a scalar. The normalized
 serialization materializes `multiplicity`, `presence`, and `nullable` on every
 `1.1.0` field and adds no bytes to a `1.0.0` document.
 
-Field presence is authored rather than derived in contract `1.2.0`
+Field presence is authored rather than derived in contract `2.0.0`
 ([issue #93](https://github.com/agent-ix/filament-core-data/issues/93)):
 [FR-106](../../spec/functional/FR-106-author-field-presence-independently.md)
 states the rule that carries `Field.presence` as `required` or `optional`
@@ -143,11 +143,12 @@ implementations agree.
 
 Every identity is rooted at the package identity, `ix://<package identity>/`,
 and occupies exactly one of these slots, whose parts are listed in order.
-Every part of every slot is slugged, the `type` name included:
+Every name part of every slot is slugged; an artifact id part (`<Name>` in
+the spec-bundle frontend) is verbatim, as the paragraph below the table states:
 
 | Slot | Identity | Parts |
 |---|---|---|
-| `type` | `type/<slug(Name)>` | the type's name; a kernel scalar definition is `type/<KernelScalar>` (a kernel scalar name is alphanumeric, so its slug is itself) |
+| `type` | `type/<Name>` | the type's name; a kernel scalar definition is `type/<KernelScalar>` (a kernel scalar name is alphanumeric, so its slug is itself) |
 | `field` | `field/<Name>-<field>` | owner type, field; an operation parameter is `field/<Name>-<operation>-<param>` (there is no `param/` slot) |
 | `variant` | `variant/<Name>-<member>` | owner enum or union, member |
 | `relationship` | `relationship/<Name>-<verb>-<TargetName>` | owner record, verb, target type name |
@@ -159,13 +160,21 @@ Every part of every slot is slugged, the `type` name included:
 | `constraint` | `constraint/<Name>-<field>-<keyword>` for a field constraint; `constraint/<Name>-<keyword>` for a type constraint | owner, (field,) keyword |
 
 `<Name>` is the declaring type's name part. The TypeSpec frontend takes it
-from the declaration name. The spec-bundle frontend takes it from the
-declaring artifact's id (FR-143): artifact `FR-001` titled `Order` has
-identity `type/FR-001` and `displayName` `Order`, and its field `note` is
-`field/FR-001-note`. The type's name is its `displayName`.
+from the declaration name, and slugs it. The spec-bundle frontend takes it
+from the declaring artifact's id (FR-143) and passes that id through
+verbatim: artifact `FR-001` titled `Order` has identity `type/FR-001` and
+`displayName` `Order`, and its field `note` is `field/FR-001-note`; artifact
+`AR_001` has identity `type/AR_001`, not `type/AR-001`. An id is not slugged
+because an object id carries `_` and no `-` and `semanticIdentity` admits `_`
+inside a segment (`[A-Za-z0-9._~:/-]`), so slugging an id would rewrite a
+datum the pattern already accepts. An id carrying a character that pattern
+does not admit inside a segment, or no ASCII alphanumeric at all (`_`), mints
+no segment and is refused as `UNSLUGGABLE_NAME`. Every other part — a field,
+member, verb, keyword, state, step, or clause name — is slugged on both
+sides. The type's name is its `displayName`.
 
 The alias a constrained field mints is a `type` identity whose tail is
-`slug(Name)` followed by `slug(field)` with its first character upper-cased:
+`<Name>` followed by `slug(field)` with its first character upper-cased:
 `Note`, `revision` → `type/NoteRevision`; `Note`, `created_at` →
 `type/NoteCreated-at`. The alias node's `displayName` is `<Name>` followed by
 the field name verbatim with its first character upper-cased: `NoteRevision`,
@@ -233,10 +242,12 @@ part instead of raising `UNSLUGGABLE_NAME`, and `lower.mjs` leaves case (c)
 to the reader instead of refusing it before emission — are
 filament-core-data#94.
 
-### Contract 1.2.0 (issues #93 and #146)
+### Contract 2.0.0 (issues #93, #146 and #172)
 
-Contract `1.2.0` is additive to `1.1.0`. A `1.1.0` document carrying any node
-this section adds is refused with `SCHEMA_VIOLATION`.
+Contract `2.0.0` extends `1.1.0` with model members and construct kinds
+declared as module data ([ADR-0011](adr/0011-domain-packages-construct-kinds-are-module-data.md)).
+A `1.1.0` document carrying any node this section adds is refused with
+`SCHEMA_VIOLATION`.
 
 **Unconstrained value.** The scalar `any` is an unconstrained JSON value:
 number, string, boolean, null, array or object. It is never a zero-field
@@ -256,38 +267,89 @@ nullable values and keeps the authored presence.
 | `subsets` | field | Supertype fields whose values include this field's values | `UNRESOLVED_FEATURE_REF` |
 | `redefines` | field | The supertype field this field narrows; its multiplicity lies within the redefined bounds | `UNRESOLVED_FEATURE_REF`, `INVALID_REDEFINITION` |
 | `frame` | operation | Feature paths the operation `modifies`, `creates` and `deletes`, each starting at a field or parameter | `UNRESOLVED_FRAME_PATH` |
-| `requires`, `ensures` | operation | Inline pre- and postconditions, each `{language, text}` | — |
+| `pre`, `post` items | operation | A `pre` or `post` item is a clause id or an inline clause `{language, text}` | `DANGLING_CLAUSE_REF` for an id item |
 | `populations` | document | Named instance extents: type references with a multiplicity | `UNRESOLVED_TYPE_REF` |
 
 Clauses are Quire: a clause `language` is `ocl`, `sysml`, `fretish`, `quire`
 or a registered `namespace:name`. No reader translates a clause between
 languages, and an unsupported meaning is refused, never approximated.
 
-**Constructs.** One type-definition `kind` per business object type. Each
-construct carries its built-in rules; a member outside its kind's list is
-refused. Every construct except `enumeration` may carry `relationships` and
-`operations`.
+**Construct kinds.** A type's `kind` is one of the eight core kinds (`scalar`,
+`record`, `enum`, `union`, `alias`, `sequence`, `map`, `reference`) or a module
+construct kind `{module, name}`. The module owns the kind's declaration; the
+contract owns only the vocabulary the declaration is written in, published as
+`schema/semantic/v1/construct-vocabulary.json`.
 
-| `kind` | Required members | Built-in rules | Quire meaning |
+| Vocabulary | Names |
+|---|---|
+| Identities | `identified`, `value`, `none` |
+| Shapes | `record`, `enumeration`, `interface`, `state_machine`, `sequence`, `namespace` |
+| Presences | `required`, `optional`, `forbidden` |
+| Members, default `optional` | `fields`, `variants`, `relationships`, `operations`, `clauses`, `supertypes`, `abstract` |
+| Members, default `forbidden` | `identityFields`, `owner`, `members`, `occurrenceField`, `states`, `transitions`, `steps`, `persists`, `vocabulary`, `direction`, `interfaceType`, `multiplicity`, `declaredType`, `flowDirection`, `sourceEnd`, `targetEnd`, `sourceElement`, `targetElement`, `featureOrder` |
+| Reference members | `owner`, `members`, `persists`, `interfaceType`, `declaredType`, `sourceElement`, `targetElement` name types; `sourceEnd` and `targetEnd` name one in `type`; `transitions` name them in `emits`; `steps` in `consumes` and `emits` |
+
+A declaration carries a required `identity`, `shape`, `members` (a presence per
+member; an unlisted member takes its default) and `meaning`, and an optional
+`references` and `rules`. `references` maps a reference member to the unique,
+non-empty roles it admits, each spelled `<module short name>:<role>`; `*` is
+not a role, and a module frontend admits only a role some loaded object type
+carries. `rules` is a unique list of rules, each requiring one member
+presence of the declaration. `meaning` is an opaque id owned by QSpec.
+
+| Rule | Requires | The reader or frontend refuses |
+|---|---|---|
+| `identity_field_required` | `identityFields` required | An empty `identityFields` |
+| `identity_field_forbidden` | `identityFields` forbidden | Any `identityFields` |
+| `min_clauses` | `clauses` required | No clause |
+| `occurrence_field_required` | `occurrenceField` required | No occurrence field |
+| `no_fields` | `fields` forbidden | Any field |
+| `no_operations` | `operations` forbidden | Any operation |
+| `min_operations` | `operations` required | No operation |
+| `single_owner` | `owner` required | No admitted owner, or more than one |
+| `exclusive_membership` | `members` required | A type named by the members of two types selecting the rule |
+| `members_not_namespace` | `members` required | A member whose construct's shape is `namespace` |
+
+A document using a module construct kind carries a `constructs` table with
+exactly one entry per used kind: `kind`, `moduleVersion`, `manifestDigest` and
+the `construct` declaration. A kind with no entry, an entry no type uses, a
+kind declared twice and a declaration outside the vocabulary are refused with
+`SCHEMA_VIOLATION`. A member whose presence is `forbidden` is refused, and a
+`required` member must be present.
+
+The business module declares ten construct kinds; `population` declares none.
+
+| `kind` | Identity × shape | Admitted references | Rules |
 |---|---|---|---|
-| `entity` | `fields`, `identityFields` | `identityFields` non-empty, naming fields of the type or a supertype | A class whose instances are told apart by the identity fields |
-| `value_object` | `fields` | No `identityFields` | A datatype equal by all fields |
-| `nested_entity` | `fields`, `identityFields`, `owner` | `owner` is an `entity`, `nested_entity` or `aggregate_root` | A class composed by its owner; identity is local to the owner |
-| `aggregate_root` | `fields`, `identityFields`, `clauses`, `members` | At least one clause; members are `entity`, `value_object`, `nested_entity` or `enumeration` | A consistency boundary whose clauses are invariants over its members |
-| `enumeration` | `variants` | No `fields`; the variant set is closed | An enumeration of exactly its variants |
-| `event` | `fields`, `occurrenceField` | No `identityFields`; the occurrence field resolves to scalar `datetime` | An immutable record of one occurrence at that instant |
-| `state_machine` | `operations`, `states`, `transitions` | At least one operation; `from`/`to` name states, `trigger` names an operation, `guard` names a clause by `clauseId`, `emits` names events | A state machine firing a transition on its trigger when its guard holds |
-| `process` | `fields`, `identityFields`, `steps` | Step `consumes`/`emits` name events | A class whose instances run steps that consume and emit events |
-| `repository` | `operations`, `persists` | At least one operation; no `fields`; `persists` names `entity` or `aggregate_root` types | An interface of persistence operations holding no state |
-| `domain` | `members`, `vocabulary` | No `fields` or `operations`; no member is a domain; a type belongs to at most one domain | A namespace for its members and vocabulary, not a data type |
+| `domain` | `none` × `namespace` | — | `no_fields`, `no_operations`, `exclusive_membership`, `members_not_namespace` |
+| `entity` | `identified` × `record` | — | `identity_field_required` |
+| `value_object` | `value` × `record` | — | `identity_field_forbidden` |
+| `aggregate_root` | `identified` × `record` | `members`: `aggregate-member` | `identity_field_required`, `min_clauses` |
+| `nested_entity` | `identified` × `record` | `owner`: `composite-owner` | `identity_field_required`, `single_owner` |
+| `repository` | `none` × `interface` | `persists`: `persistable` | `no_fields`, `min_operations` |
+| `event` | `none` × `record` | — | `identity_field_forbidden`, `occurrence_field_required` |
+| `state_machine` | `none` × `state_machine` | `transitions`: `event-like` | `min_operations` |
+| `process` | `identified` × `sequence` | `steps`: `event-like` | `identity_field_required` |
+| `enumeration` | `none` × `enumeration` | — | — |
+
+A port's `direction` is `in`, `out` or `inout`; a connection's
+`flowDirection` is `source-to-target`, `target-to-source` or `bidirectional`,
+and each of its ends carries a `type` and an optional `multiplicity`.
+`featureOrder` lists the identities of the type's own fields and operations in
+authored order: an entry naming no single own field or operation raises
+`UNRESOLVED_CONSTRUCT_REF`, and a field or operation it omits raises
+`INCOMPLETE_FEATURE_ORDER`. A backend that renders no feature order ignores it.
 
 A broken construct reference raises `UNRESOLVED_CONSTRUCT_REF` or
 `CONSTRUCT_TARGET_KIND`; a wrong occurrence field raises
 `INVALID_OCCURRENCE_FIELD`; a guard naming no clause raises
-`DANGLING_CLAUSE_REF`; a type in two domains raises
-`MULTIPLE_DOMAIN_MEMBERSHIP`. A backend without a rendering for a construct
-refuses the document and never renders the construct as a record; the
-per-construct renderings are filament-core-data#147 and #150.
+`DANGLING_CLAUSE_REF`; a type named by two exclusive memberships raises
+`MULTIPLE_DOMAIN_MEMBERSHIP`. `CONSTRUCT_TARGET_KIND` covers a reference to a
+type carrying none of the admitted roles, a supertype of another kind, and a
+namespace member under `members_not_namespace`. An occurrence field resolves,
+through aliases, to scalar `datetime`. A backend dispatches a construct on its
+shape and identity, renders its name from `kind.name`, and never renders a
+construct it cannot represent as a record.
 
 ## Packages, locks, and fingerprints
 

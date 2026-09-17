@@ -2,10 +2,10 @@
   "source": "authored",
   "code": "UNSLUGGABLE_NAME",
   "files": [
-    "spec/functional/EN-001-marks.md",
+    "spec/functional/EN_001-marks.md",
     "spec/spec.md"
   ],
   "derived": [],
   "edits": [],
-  "note": "EN-001 is an `object: enumeration` whose `## Values` row `_` (an Identifier with no ASCII alphanumeric) slugs to the empty string, so the variant identity `variant/marks-<value-slug>` cannot be minted: UNSLUGGABLE_NAME at spec/functional/EN-001-marks.md line 18 column 3 (the row), blocking (FR-095 \"Node identities\"; EC-145). This is the only lift-reachable path to the code: an artifact title or name that is not an Identifier is refused earlier as UNNAMEABLE_ARTIFACT (ERR-259), and the engine validates field, operation, clause and enumeration value names as Identifiers, of which only an underscore-only name such as `_` slugs to the empty string. Before Task-136 this directory held an artifact titled `---`, which lifts to UNNAMEABLE_ARTIFACT, not UNSLUGGABLE_NAME; TC-1252's `---` slug assertions now run over a bundle the test constructs in a scratch directory. The bundle loads and extracts; the refusal belongs to the identity minter."
+  "note": "EN_001 is an `object: enumeration` whose `## Values` row `_` (an Identifier with no ASCII alphanumeric) slugs to the empty string, so the variant identity `variant/marks-<value-slug>` cannot be minted: UNSLUGGABLE_NAME at spec/functional/EN_001-marks.md line 18 column 3 (the row), blocking (FR-095 \"Node identities\"; EC-145). This is the only lift-reachable path to the code: an artifact title or name that is not an Identifier is refused earlier as UNNAMEABLE_ARTIFACT (ERR-259), and the engine validates field, operation, clause and enumeration value names as Identifiers, of which only an underscore-only name such as `_` slugs to the empty string. Before Task-136 this directory held an artifact titled `---`, which lifts to UNNAMEABLE_ARTIFACT, not UNSLUGGABLE_NAME; TC-1252's `---` slug assertions now run over a bundle the test constructs in a scratch directory. The bundle loads and extracts; the refusal belongs to the identity minter."
 }

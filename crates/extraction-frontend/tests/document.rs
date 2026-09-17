@@ -71,7 +71,10 @@ fn assembled(name: &str) -> (Value, agent_ix_extraction_frontend::Provenance) {
         "{name} lifts unblocked"
     );
     let envelope = Envelope::new(&bundle, &modules);
-    (assemble(&envelope, &lowered.types), provenance)
+    (
+        assemble(&envelope, &lowered.types, &lowered.constructs).expect("assemble"),
+        provenance,
+    )
 }
 
 fn written_bytes(outcome: &LiftOutcome) -> &[u8] {
@@ -398,7 +401,7 @@ fn document_strategy() -> impl Strategy<Value = Value> {
     )
         .prop_map(|(types, occurrences, extensions)| {
             json!({
-                "contractVersion": "1.2.0",
+                "contractVersion": "2.0.0",
                 "types": types,
                 "occurrences": occurrences,
                 "extensions": extensions,

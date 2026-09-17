@@ -1,17 +1,17 @@
 ---
-id: EV-001
+id: EV_001
 title: Order Placed
 object: event
 type: FR
 name: OrderPlaced
 relationships:
-  - target: VO-001
+  - target: VO_001
     type: carries
-  - target: AR-001
+  - target: AR_001
     type: references
 ---
 
-# EV-001: Order Placed
+# EV_001: Order Placed
 
 ## Description
 

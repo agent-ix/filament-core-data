@@ -26,10 +26,6 @@ The service SHALL persist configuration versions as immutable `ConfigVersion` en
 | createdAt | Timestamp | 1 | |
 | createdBy | String | 1 | maxLength: 64 |
 
-## Relationships
-
-- `overlay`: belongs_to → ConfigOverlay (FR-005)
-
 ## Invariants
 
 ### immutable

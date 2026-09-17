@@ -5,7 +5,6 @@ import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
 import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
 import { generateTarget } from "../src/compiler/backends/seam.mjs";
-import { CONSTRUCT_KINDS } from "../src/compiler/constructs.mjs";
 import { DEFAULT_LIMITS } from "../src/compiler/diagnostics.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 
@@ -14,10 +13,10 @@ const golden = resolve(
 	root,
 	"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json",
 );
-/** A `1.2.0` ConfigVersion document of records, which the backend renders. */
+/** A `2.0.0` ConfigVersion document of records, which the backend renders. */
 const configVersion12 = resolve(
 	root,
-	"fixtures/semantic/v1/positive/config-version-v1-2.json",
+	"fixtures/semantic/v1/positive/config-version-v2.json",
 );
 /** The same document at `1.1.0`, which the backend also reads. */
 const configVersion11 = resolve(
@@ -27,7 +26,7 @@ const configVersion11 = resolve(
 /** One construct of each kind and every model member, which it renders. */
 const constructs = resolve(
 	root,
-	"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
+	"fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json",
 );
 const profile = resolve(root, "fixtures/semantic/v1/positive/profile.json");
 
@@ -179,19 +178,25 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		).toEqual(
 			Array(6).fill(["agent-ix.compiler.CONSTRUCT_MEMBER_UNENFORCED", false]),
 		);
+		const declared = (ir.constructs as { kind: { name: string } }[]).map(
+			(entry) => entry.kind.name,
+		);
 		const seen = new Set<string>();
-		for (const type of ir.types as { kind: string; displayName: string }[]) {
-			if (!CONSTRUCT_KINDS.includes(type.kind)) continue;
+		for (const type of ir.types as {
+			kind: string | { name: string };
+			displayName: string;
+		}[]) {
+			if (typeof type.kind !== "object") continue;
 			const file = result.files.find(
 				(one) => one.path === `${type.displayName}.json`,
 			);
 			if (!file) throw new Error(`${type.displayName} schema was not emitted`);
 			expect(JSON.parse(file.text)["x-agent-ix-kind"], type.displayName).toBe(
-				type.kind,
+				type.kind.name,
 			);
-			seen.add(type.kind);
+			seen.add(type.kind.name);
 		}
-		expect([...seen].sort()).toStrictEqual([...CONSTRUCT_KINDS].sort());
+		expect([...seen].sort()).toStrictEqual([...declared].sort());
 	});
 
 	/** Traces: TC-1774; FR-100-AC-10. */
@@ -210,6 +215,24 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		expect(line.type).toBe("object");
 		expect(line["x-agent-ix-equality"]).toBe("value");
 		expect(schema("OrderPlaced").readOnly).toBe(true);
+		// `readOnly` is the declared `immutable` flag, not the presence of an
+		// occurrence field: the same document with the flag withdrawn renders the
+		// event mutable (FR-142-AC-14, FR-100-AC-10).
+		const mutable = JSON.parse(readFileSync(constructs, "utf8")) as {
+			constructs: { construct: { immutable?: boolean } }[];
+		};
+		const flagged = mutable.constructs.filter(
+			(entry) => entry.construct.immutable === true,
+		);
+		expect(flagged.length).toBeGreaterThan(0);
+		for (const entry of flagged) delete entry.construct.immutable;
+		const withoutFlag = jsonSchemaBackend.generate({ ir: mutable });
+		const withoutFlagSchema = JSON.parse(
+			withoutFlag.files.find((one) => one.path === "OrderPlaced.json")?.text ??
+				"{}",
+		);
+		expect(withoutFlagSchema.readOnly).toBeUndefined();
+		expect(withoutFlagSchema["x-agent-ix-occurrence-field"]).toBe("placedAt");
 		expect(schema("OrderPlaced")["x-agent-ix-occurrence-field"]).toBe(
 			"placedAt",
 		);
@@ -246,7 +269,10 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 			creates: [],
 			deletes: [],
 		});
-		expect(advance.requires[0].text).toBe("to <> current");
+		// Traces: TC-1796; FR-141-AC-9. A mixed list keeps its order and forms.
+		expect(advance.pre[0]).toBe("can_ship");
+		expect(advance.pre[1].text).toBe("to <> current");
+		expect(advance.post[0].text).toBe("current = to");
 		expect(
 			schema("Fulfilment")["x-agent-ix-steps"].map(
 				(step: { name: string }) => step.name,

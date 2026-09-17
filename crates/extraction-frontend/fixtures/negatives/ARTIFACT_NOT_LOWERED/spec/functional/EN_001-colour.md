@@ -1,11 +1,11 @@
 ---
-id: EN-001
+id: EN_001
 title: Colour
 object: enumeration
 type: FR
 ---
 
-# EN-001: Colour
+# EN_001: Colour
 
 ## Description
 

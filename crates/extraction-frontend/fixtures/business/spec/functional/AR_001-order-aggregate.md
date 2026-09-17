@@ -1,5 +1,5 @@
 ---
-id: AR-001
+id: AR_001
 title: Order Aggregate
 object: aggregate_root
 type: FR
@@ -7,15 +7,15 @@ name: OrderAggregate
 relationships:
   - target: FR-001
     type: aggregates
-  - target: VO-001
+  - target: VO_001
     type: contains
-  - target: EV-001
+  - target: EV_001
     type: emits
-  - target: EN-001
+  - target: EN_001
     type: references
 ---
 
-# AR-001: Order Aggregate
+# AR_001: Order Aggregate
 
 ## Description
 

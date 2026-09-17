@@ -22,10 +22,10 @@ pub fn normalized(bundle: &Json) -> String {
         None => return to_canonical_string(&Json::Null),
     };
     let version = ir.get("contractVersion").and_then(Json::as_str);
-    if !matches!(version, Some("1.1.0" | "1.2.0")) {
+    if !matches!(version, Some("1.1.0" | "2.0.0")) {
         return to_canonical_string(ir);
     }
-    to_canonical_string(&materialize_ir(ir, version == Some("1.2.0")))
+    to_canonical_string(&materialize_ir(ir, version == Some("2.0.0")))
 }
 
 fn materialize_ir(ir: &Json, authored_presence: bool) -> Json {
@@ -218,19 +218,19 @@ mod tests {
     #[test]
     fn tc_1378_preserves_authored_presence_in_a_1_2_0_field() {
         let bundle = parse(
-            r#"{"ir":{"contractVersion":"1.2.0","types":[{"kind":"record","fields":[{"name":"a","presence":"optional","multiplicity":{"lower":1,"upper":1}}]}]}}"#,
+            r#"{"ir":{"contractVersion":"2.0.0","types":[{"kind":"record","fields":[{"name":"a","presence":"optional","multiplicity":{"lower":1,"upper":1}}]}]}}"#,
         )
         .expect("a well-formed document");
         assert_eq!(
             normalized(&bundle),
-            r#"{"contractVersion":"1.2.0","types":[{"fields":[{"multiplicity":{"lower":1,"upper":1},"name":"a","nullable":false,"presence":"optional"}],"kind":"record"}]}"#
+            r#"{"contractVersion":"2.0.0","types":[{"fields":[{"multiplicity":{"lower":1,"upper":1},"name":"a","nullable":false,"presence":"optional"}],"kind":"record"}]}"#
         );
     }
 
-    /// A `1.2.0` document of one field whose members are spliced in.
+    /// A `2.0.0` document of one field whose members are spliced in.
     fn one_field(presence: &str, nullable: &str, default_kind: &str) -> String {
         let bundle = parse(&format!(
-            r#"{{"ir":{{"contractVersion":"1.2.0","types":[{{"kind":"record","fields":[{{"name":"a","multiplicity":{{"lower":0,"upper":1}},"presence":"{presence}","nullable":{nullable},"defaultKind":"{default_kind}"}}]}}]}}}}"#
+            r#"{{"ir":{{"contractVersion":"2.0.0","types":[{{"kind":"record","fields":[{{"name":"a","multiplicity":{{"lower":0,"upper":1}},"presence":"{presence}","nullable":{nullable},"defaultKind":"{default_kind}"}}]}}]}}}}"#
         ))
         .expect("a well-formed document");
         normalized(&bundle)
@@ -242,7 +242,7 @@ mod tests {
         // Nothing is derived: a lower bound of 0 leaves `required` authored.
         assert_eq!(
             base,
-            r#"{"contractVersion":"1.2.0","types":[{"fields":[{"defaultKind":"none","multiplicity":{"lower":0,"upper":1},"name":"a","nullable":false,"presence":"required"}],"kind":"record"}]}"#
+            r#"{"contractVersion":"2.0.0","types":[{"fields":[{"defaultKind":"none","multiplicity":{"lower":0,"upper":1},"name":"a","nullable":false,"presence":"required"}],"kind":"record"}]}"#
         );
         let cases = [
             (

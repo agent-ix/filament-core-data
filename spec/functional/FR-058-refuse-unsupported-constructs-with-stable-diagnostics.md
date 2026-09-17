@@ -162,10 +162,10 @@ visible in the run rather than invisible in the generated source.
 
 | Construct | Carried as | Not stated by the type |
 |---|---|---|
-| `aggregate_root`, `state_machine` and `repository` clauses; transition guards; operation `requires` and `ensures` | the clause text in the type's metadata constant and `OPERATION_CONTRACTS`; a guard by clause identifier | the Quire meaning of each clause over instances; no generated method evaluates a clause; clauses [#159](https://github.com/agent-ix/filament-core-data/issues/159), guards [#160](https://github.com/agent-ix/filament-core-data/issues/160) |
-| `state_machine` transitions | `<Name>State` and `TRANSITIONS` | which transition fires: a trigger fires only when its guard holds, which is a clause; [#161](https://github.com/agent-ix/filament-core-data/issues/161) |
+| Construct `clauses`; transition guards; operation `pre` and `post` | the clause text in the type's metadata constant and `OPERATION_CONTRACTS`; a guard by clause identifier | the Quire meaning of each clause over instances; no generated method evaluates a clause; clauses [#159](https://github.com/agent-ix/filament-core-data/issues/159), guards [#160](https://github.com/agent-ix/filament-core-data/issues/160) |
+| `transitions` | `<Name>State` and `TRANSITIONS` | which transition fires: a trigger fires only when its guard holds, which is a clause; [#161](https://github.com/agent-ix/filament-core-data/issues/161) |
 | `subsets` | `FIELD_SUBSETS` | that the member's values are a subset of the named members' values; [#162](https://github.com/agent-ix/filament-core-data/issues/162) |
-| operation `frame` | `OPERATION_CONTRACTS`; a repository method whose frame is empty takes `&self` | that an operation changes only the members its frame names; [#163](https://github.com/agent-ix/filament-core-data/issues/163) |
+| operation `frame` | `OPERATION_CONTRACTS`; an `interface`-shaped construct's method whose frame is empty takes `&self` | that an operation changes only the members its frame names; [#163](https://github.com/agent-ix/filament-core-data/issues/163) |
 | `populations` | `POPULATIONS` | the extent of each member type over a population; [#164](https://github.com/agent-ix/filament-core-data/issues/164) |
 
 ## Constraints
@@ -194,8 +194,8 @@ visible in the run rather than invisible in the generated source.
 | FR-058-AC-10 | The published code table and the registry agree exactly in both directions, and every code named in an FR's prose, an error-path row, or an edge-case row of `spec/tests.md` is a member of the generator registry or of `conformance/diagnostic-codes.json`, enforced by a `--check` mode that `make lint` runs through a Make target rather than a `package.json` script. | Analysis (TC-697) |
 | FR-058-AC-11 | Reverting the refusal branch for `UNSUPPORTED_PATTERN` makes at least one test fail, demonstrated by a falsification run. | Test (TC-697) |
 | FR-058-AC-12 | Each of the four size limits raises `LIMIT_EXCEEDED` naming the limit and emits no file. | Test (TC-692) |
-| FR-058-AC-13 | Generating a `1.2.0` `entity` raises no blocking diagnostic and emits `IDENTITY_FIELDS` and `PartialEq`, `Eq` and `Hash` over its identity fields. | Test (TC-1762) |
-| FR-058-AC-14 | Generating the contract `1.2.0` constructs fixture, which carries every construct kind and model member, raises no blocking diagnostic and emits the constant each carried-not-enforced row names. | Test (TC-1772) |
+| FR-058-AC-13 | Generating a `2.0.0` `entity` raises no blocking diagnostic and emits `IDENTITY_FIELDS` and `PartialEq`, `Eq` and `Hash` over its identity fields. | Test (TC-1762) |
+| FR-058-AC-14 | Generating the contract `2.0.0` constructs fixture, which carries every construct kind and model member, raises no blocking diagnostic and emits the constant each carried-not-enforced row names. | Test (TC-1772) |
 
 ## Dependencies
 

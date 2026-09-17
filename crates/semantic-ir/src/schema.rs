@@ -16,6 +16,7 @@
 
 use crate::diag::{child, index, is_semantic_identity, Located, Severity};
 use crate::json::Json;
+use crate::vocabulary::{Declaration, Member, Presence};
 
 /// The code every schema-layer defect carries.
 pub const SCHEMA_VIOLATION: &str = "agent-ix.semantic-ir.SCHEMA_VIOLATION";
@@ -191,7 +192,10 @@ const SCALARS: &[&str] = &[
     "boolean", "integer", "number", "string", "bytes", "date", "datetime", "duration", "uuid",
     "any",
 ];
-const KINDS: &[&str] = &[
+/// The core kinds: every `typeDefinition.kind` that is a string. Every other
+/// kind is a construct kind, `{module, name}`, that the document's
+/// `constructs` table declares.
+const CORE_KINDS: &[&str] = &[
     "scalar",
     "record",
     "enum",
@@ -200,84 +204,6 @@ const KINDS: &[&str] = &[
     "sequence",
     "map",
     "reference",
-    "entity",
-    "value_object",
-    "nested_entity",
-    "aggregate_root",
-    "enumeration",
-    "event",
-    "state_machine",
-    "process",
-    "repository",
-    "domain",
-];
-/// The contract 1.2.0 kinds: one construct per modelling object type, in the
-/// order of `typeDefinition.kind`'s enum.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Construct {
-    Entity,
-    ValueObject,
-    NestedEntity,
-    AggregateRoot,
-    Enumeration,
-    Event,
-    StateMachine,
-    Process,
-    Repository,
-    Domain,
-}
-
-impl Construct {
-    const ALL: [Self; 10] = [
-        Self::Entity,
-        Self::ValueObject,
-        Self::NestedEntity,
-        Self::AggregateRoot,
-        Self::Enumeration,
-        Self::Event,
-        Self::StateMachine,
-        Self::Process,
-        Self::Repository,
-        Self::Domain,
-    ];
-
-    /// The schema spelling of this construct kind.
-    const fn name(self) -> &'static str {
-        match self {
-            Self::Entity => "entity",
-            Self::ValueObject => "value_object",
-            Self::NestedEntity => "nested_entity",
-            Self::AggregateRoot => "aggregate_root",
-            Self::Enumeration => "enumeration",
-            Self::Event => "event",
-            Self::StateMachine => "state_machine",
-            Self::Process => "process",
-            Self::Repository => "repository",
-            Self::Domain => "domain",
-        }
-    }
-
-    /// The construct `kind` spells, or `None` for a 1.0.0 kind or an unknown one.
-    fn parse(kind: &str) -> Option<Self> {
-        Self::ALL
-            .into_iter()
-            .find(|construct| construct.name() == kind)
-    }
-}
-/// The construct members, each with the kinds that carry it.
-const CONSTRUCT_MEMBERS: &[(&str, &[&str])] = &[
-    (
-        "identityFields",
-        &["entity", "nested_entity", "aggregate_root", "process"],
-    ),
-    ("owner", &["nested_entity"]),
-    ("members", &["aggregate_root", "domain"]),
-    ("occurrenceField", &["event"]),
-    ("states", &["state_machine"]),
-    ("transitions", &["state_machine"]),
-    ("steps", &["process"]),
-    ("persists", &["repository"]),
-    ("vocabulary", &["domain"]),
 ];
 const STEP_KINDS: &[&str] = &["command", "event", "decision", "compensation", "wait"];
 const UNKNOWN_POLICIES: &[&str] = &["preserve", "reject", "surface"];
@@ -513,31 +439,176 @@ const IR_OPTIONAL_MEMBERS: &[&str] = &[
     "types",
     "occurrences",
     "extensions",
+    "constructs",
     "populations",
 ];
+/// The members of one `constructs` entry.
+const CONSTRUCT_ENTRY_MEMBERS: &[&str] = &["kind", "moduleVersion", "manifestDigest", "construct"];
+/// The `direction` vocabulary of a port.
+const DIRECTIONS: &[&str] = &["in", "out", "inout"];
+/// The `flowDirection` vocabulary of a connection.
+const FLOW_DIRECTIONS: &[&str] = &["source-to-target", "target-to-source", "bidirectional"];
+/// The members of a connection end.
+const CONNECTION_END_MEMBERS: &[&str] = &["type", "multiplicity"];
+/// The members of a construct kind.
+const CONSTRUCT_KIND_MEMBERS: &[&str] = &["module", "name"];
 
 /// The contract revision a document declares, as the schema layer reads it.
 #[derive(Debug, Clone, Copy)]
 struct Revision {
     /// 1.1.0 or later: explicit multiplicity and frontend dialects.
     v11: bool,
-    /// 1.2.0: the construct kinds and the model members.
-    v12: bool,
+    /// 2.0.0: construct kinds, the `constructs` table and the model members.
+    v2: bool,
 }
 
-/// Reports a 1.2.0 member carried by a 1.0.0 or 1.1.0 document.
-fn gate_v12(value: &Json, at: &str, names: &[&str], revision: Revision, f: &mut Findings) {
-    if revision.v12 {
+/// Reports a 2.0.0 member carried by a 1.0.0 or 1.1.0 document.
+fn gate_v2(value: &Json, at: &str, names: &[&str], revision: Revision, f: &mut Findings) {
+    if revision.v2 {
         return;
     }
     for name in names {
         if value.has(name) {
             f.push(
                 &child(at, name),
-                format!("{name} is a contract 1.2.0 member"),
+                format!("{name} is a contract 2.0.0 member"),
             );
         }
     }
+}
+
+/// One `constructs` entry as the type definitions consult it.
+struct ConstructEntry<'a> {
+    module: &'a str,
+    name: &'a str,
+    /// The declaration, when the entry's `construct` reads as one.
+    declaration: Option<Declaration>,
+    /// Whether a type definition's kind names the entry.
+    used: bool,
+}
+
+/// The document's `constructs` table, keyed by kind.
+struct ConstructTable<'a> {
+    entries: Vec<ConstructEntry<'a>>,
+}
+
+impl<'a> ConstructTable<'a> {
+    fn position(&self, module: &str, name: &str) -> Option<usize> {
+        self.entries
+            .iter()
+            .position(|entry| entry.module == module && entry.name == name)
+    }
+}
+
+/// `{module, name}`: the shape of a construct kind. Returns the pair when it
+/// has that shape.
+fn construct_kind<'a>(kind: &'a Json, at: &str, f: &mut Findings) -> Option<(&'a str, &'a str)> {
+    if !expect_object(kind, at, "a construct kind", f) {
+        return None;
+    }
+    require_members(kind, at, CONSTRUCT_KIND_MEMBERS, f);
+    forbid_extra(kind, at, CONSTRUCT_KIND_MEMBERS, f);
+    expect_shape(
+        kind.get("module"),
+        &child(at, "module"),
+        is_package_identity,
+        "a construct kind's module is a package identity <owner>/<name>",
+        f,
+    );
+    expect_shape(
+        kind.get("name"),
+        &child(at, "name"),
+        is_construct_name,
+        "a construct kind's name is lower-case snake case",
+        f,
+    );
+    let module = kind.get("module").and_then(Json::as_str)?;
+    let name = kind.get("name").and_then(Json::as_str)?;
+    (is_package_identity(module) && is_construct_name(name)).then_some((module, name))
+}
+
+/// `^[a-z][a-z0-9_]*$`: the name of a construct kind.
+pub fn is_construct_name(text: &str) -> bool {
+    matches!(text.chars().next(), Some(c) if c.is_ascii_lowercase())
+        && text
+            .chars()
+            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
+}
+
+/// Walks the `constructs` table: each entry's shape and declaration, and one
+/// entry per kind.
+fn constructs_schema<'a>(constructs: &'a Json, at: &str, f: &mut Findings) -> ConstructTable<'a> {
+    let mut table = ConstructTable {
+        entries: Vec::new(),
+    };
+    if !expect_array(constructs, at, "constructs", f) {
+        return table;
+    }
+    for (position, entry) in constructs.as_array().unwrap_or(&[]).iter().enumerate() {
+        let entry_at = index(at, position);
+        if !expect_object(entry, &entry_at, "a constructs entry", f) {
+            continue;
+        }
+        require_members(entry, &entry_at, CONSTRUCT_ENTRY_MEMBERS, f);
+        forbid_extra(entry, &entry_at, CONSTRUCT_ENTRY_MEMBERS, f);
+        expect_shape(
+            entry.get("moduleVersion"),
+            &child(&entry_at, "moduleVersion"),
+            is_semver,
+            "a module version is a semantic version",
+            f,
+        );
+        expect_shape(
+            entry.get("manifestDigest"),
+            &child(&entry_at, "manifestDigest"),
+            is_sha256,
+            "a digest is sha256:<64 lower-case hex digits>",
+            f,
+        );
+        let construct_at = child(&entry_at, "construct");
+        let declaration = entry.get("construct").and_then(|construct| {
+            Declaration::read(construct)
+                .map_err(|refused| {
+                    f.push(
+                        &format!("{construct_at}{}", refused.pointer),
+                        refused.message,
+                    );
+                })
+                .ok()
+        });
+        if let Some(declaration) = &declaration {
+            let references_at = child(&construct_at, "references");
+            for (member, roles) in &declaration.references {
+                let member_at = child(&references_at, member.name());
+                for (position, role) in roles.iter().enumerate() {
+                    if !is_namespaced_name(role) {
+                        f.push(&index(&member_at, position), "a role is <ns>:<name>");
+                    }
+                }
+            }
+        }
+        let kind_at = child(&entry_at, "kind");
+        let Some((module, name)) = entry
+            .get("kind")
+            .and_then(|kind| construct_kind(kind, &kind_at, f))
+        else {
+            continue;
+        };
+        if table.position(module, name).is_some() {
+            f.push(
+                &kind_at,
+                format!("constructs declares the kind {module}/{name} once"),
+            );
+            continue;
+        }
+        table.entries.push(ConstructEntry {
+            module,
+            name,
+            declaration,
+            used: false,
+        });
+    }
+    table
 }
 
 fn identity_list(value: Option<&Json>, at: &str, what: &str, f: &mut Findings) {
@@ -571,14 +642,14 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
     expect_enum(
         ir.get("contractVersion"),
         &child(at, "contractVersion"),
-        &["1.0.0", "1.1.0", "1.2.0"],
+        &["1.0.0", "1.1.0", "2.0.0"],
         "contractVersion",
         f,
     );
     let version = ir.get("contractVersion").and_then(Json::as_str);
     let revision = Revision {
-        v11: matches!(version, Some("1.1.0" | "1.2.0")),
-        v12: version == Some("1.2.0"),
+        v11: matches!(version, Some("1.1.0" | "2.0.0")),
+        v2: version == Some("2.0.0"),
     };
 
     if let Some(source) = ir.get("source") {
@@ -587,6 +658,17 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
     if let Some(package) = ir.get("package") {
         ir_package(package, &child(at, "package"), f);
     }
+    gate_v2(ir, at, &["constructs"], revision, f);
+    if revision.v2 && !ir.has("constructs") {
+        f.push(at, "a required member constructs is absent");
+    }
+    let constructs_at = child(at, "constructs");
+    let mut table = match ir.get("constructs") {
+        Some(constructs) => constructs_schema(constructs, &constructs_at, f),
+        None => ConstructTable {
+            entries: Vec::new(),
+        },
+    };
     if let Some(types) = ir.get("types") {
         let types_at = child(at, "types");
         if expect_array(types, &types_at, "types", f) {
@@ -595,7 +677,35 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
                 f.push(&types_at, "a document declares at least one type");
             }
             for (position, definition) in items.iter().enumerate() {
-                type_definition(definition, &index(&types_at, position), revision, f);
+                type_definition(
+                    definition,
+                    &index(&types_at, position),
+                    revision,
+                    &mut table,
+                    f,
+                );
+            }
+        }
+    }
+    if revision.v2 {
+        let entries = ir.get("constructs").and_then(Json::as_array).unwrap_or(&[]);
+        for (position, entry) in entries.iter().enumerate() {
+            let Some((module, name)) = entry.get("kind").and_then(|kind| {
+                Some((
+                    kind.get("module").and_then(Json::as_str)?,
+                    kind.get("name").and_then(Json::as_str)?,
+                ))
+            }) else {
+                continue;
+            };
+            if table
+                .position(module, name)
+                .is_some_and(|found| !table.entries[found].used)
+            {
+                f.push(
+                    &child(&index(&constructs_at, position), "kind"),
+                    format!("constructs declares {module}/{name}, and no type definition is of that kind"),
+                );
             }
         }
     }
@@ -610,7 +720,7 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
     if let Some(extensions) = ir.get("extensions") {
         extension_array(extensions, &child(at, "extensions"), f);
     }
-    gate_v12(ir, at, &["populations"], revision, f);
+    gate_v2(ir, at, &["populations"], revision, f);
     if let Some(populations) = ir.get("populations") {
         let populations_at = child(at, "populations");
         if expect_array(populations, &populations_at, "populations", f) {
@@ -806,9 +916,19 @@ const TYPE_MEMBERS: &[&str] = &[
     "steps",
     "persists",
     "vocabulary",
+    "direction",
+    "interfaceType",
+    "multiplicity",
+    "declaredType",
+    "flowDirection",
+    "sourceEnd",
+    "targetEnd",
+    "sourceElement",
+    "targetElement",
+    "featureOrder",
 ];
-/// The type members contract 1.2.0 adds.
-const TYPE_MEMBERS_V12: &[&str] = &[
+/// The type members contract 2.0.0 adds.
+const TYPE_MEMBERS_V2: &[&str] = &[
     "supertypes",
     "abstract",
     "identityFields",
@@ -820,6 +940,16 @@ const TYPE_MEMBERS_V12: &[&str] = &[
     "steps",
     "persists",
     "vocabulary",
+    "direction",
+    "interfaceType",
+    "multiplicity",
+    "declaredType",
+    "flowDirection",
+    "sourceEnd",
+    "targetEnd",
+    "sourceElement",
+    "targetElement",
+    "featureOrder",
 ];
 const TYPE_REQUIRED: &[&str] = &[
     "identity",
@@ -832,7 +962,13 @@ const TYPE_REQUIRED: &[&str] = &[
     "unknownPolicy",
 ];
 
-fn type_definition(definition: &Json, at: &str, revision: Revision, f: &mut Findings) {
+fn type_definition(
+    definition: &Json,
+    at: &str,
+    revision: Revision,
+    table: &mut ConstructTable<'_>,
+    f: &mut Findings,
+) {
     if !expect_object(definition, at, "a type definition", f) {
         return;
     }
@@ -852,7 +988,24 @@ fn type_definition(definition: &Json, at: &str, revision: Revision, f: &mut Find
         "a display name",
         f,
     );
-    expect_enum(definition.get("kind"), &child(at, "kind"), KINDS, "kind", f);
+    let kind_at = child(at, "kind");
+    // A string kind is a core kind; an object kind names a constructs entry.
+    let construct = match definition.get("kind") {
+        Some(Json::Object(_)) => {
+            if revision.v2 {
+                definition
+                    .get("kind")
+                    .and_then(|kind| construct_kind(kind, &kind_at, f))
+            } else {
+                f.push(&kind_at, "a construct kind is a contract 2.0.0 member");
+                None
+            }
+        }
+        other => {
+            expect_enum(other, &kind_at, CORE_KINDS, "kind", f);
+            None
+        }
+    };
     expect_enum(
         definition.get("unknownPolicy"),
         &child(at, "unknownPolicy"),
@@ -894,53 +1047,52 @@ fn type_definition(definition: &Json, at: &str, revision: Revision, f: &mut Find
     }
 
     let kind = definition.get("kind").and_then(Json::as_str).unwrap_or("");
-    match kind {
-        "scalar" => {
-            if !definition.has("scalar") {
-                f.push(at, "a scalar type definition requires scalar");
-            }
-        }
-        "record" => {
-            if !definition.has("fields") {
-                f.push(at, "a record type definition requires fields");
-            }
-        }
-        "enum" | "union" => {
-            if !definition.has("variants") {
-                f.push(at, format!("an {kind} type definition requires variants"));
-            }
-        }
-        "alias" | "reference" => {
-            if !definition.has("target") {
-                f.push(at, format!("an {kind} type definition requires target"));
-            }
-        }
-        "sequence" => {
-            if !definition.has("items") {
-                f.push(at, "a sequence type definition requires items");
-            }
-        }
-        "map" => {
-            if !definition.has("values") {
-                f.push(at, "a map type definition requires values");
-            }
-        }
-        other => {
-            if let Some(construct) = Construct::parse(other) {
-                construct_schema(definition, at, construct, revision, f);
-            }
+    // The member each core kind requires, and the article its name takes.
+    let required = match kind {
+        "scalar" => Some(("a", "scalar")),
+        "record" => Some(("a", "fields")),
+        "enum" | "union" => Some(("an", "variants")),
+        "alias" | "reference" => Some(("an", "target")),
+        "sequence" => Some(("a", "items")),
+        "map" => Some(("a", "values")),
+        _ => None,
+    };
+    if let Some((article, member)) = required {
+        if !definition.has(member) {
+            f.push(
+                at,
+                format!("{article} {kind} type definition requires {member}"),
+            );
         }
     }
-    gate_v12(definition, at, TYPE_MEMBERS_V12, revision, f);
-    for (member, kinds) in CONSTRUCT_MEMBERS {
-        if definition.has(member) && !kinds.contains(&kind) {
-            f.push(
-                &child(at, member),
-                format!(
-                    "{member} is carried by the {} constructs only",
-                    kinds.join(", ")
-                ),
-            );
+    gate_v2(definition, at, TYPE_MEMBERS_V2, revision, f);
+    match construct {
+        Some((module, name)) => match table.position(module, name) {
+            Some(found) => {
+                let entry = &mut table.entries[found];
+                entry.used = true;
+                if let Some(declaration) = &entry.declaration {
+                    construct_schema(definition, at, name, declaration, f);
+                }
+            }
+            None => f.push(
+                &kind_at,
+                format!("the kind {module}/{name} names no constructs entry"),
+            ),
+        },
+        None => {
+            let construct_members = Member::ALL
+                .iter()
+                .filter(|member| member.default_presence() == Presence::Forbidden);
+            for member in construct_members {
+                let name = member.name();
+                if definition.has(name) {
+                    f.push(
+                        &child(at, name),
+                        format!("{name} is carried by a construct kind only"),
+                    );
+                }
+            }
         }
     }
     expect_bool(
@@ -952,13 +1104,39 @@ fn type_definition(definition: &Json, at: &str, revision: Revision, f: &mut Find
     for name in ["supertypes", "members", "persists"] {
         identity_list(definition.get(name), &child(at, name), name, f);
     }
-    identity_list(
-        definition.get("identityFields"),
-        &child(at, "identityFields"),
-        "identityFields",
+    for name in ["identityFields", "featureOrder"] {
+        identity_list(definition.get(name), &child(at, name), name, f);
+    }
+    expect_enum(
+        definition.get("direction"),
+        &child(at, "direction"),
+        DIRECTIONS,
+        "direction",
         f,
     );
-    for name in ["owner", "occurrenceField"] {
+    expect_enum(
+        definition.get("flowDirection"),
+        &child(at, "flowDirection"),
+        FLOW_DIRECTIONS,
+        "flowDirection",
+        f,
+    );
+    if let Some(multiplicity) = definition.get("multiplicity") {
+        multiplicity_schema(multiplicity, &child(at, "multiplicity"), f);
+    }
+    for name in ["sourceEnd", "targetEnd"] {
+        if let Some(end) = definition.get(name) {
+            connection_end(end, &child(at, name), f);
+        }
+    }
+    for name in [
+        "owner",
+        "occurrenceField",
+        "interfaceType",
+        "declaredType",
+        "sourceElement",
+        "targetElement",
+    ] {
         expect_shape(
             definition.get(name),
             &child(at, name),
@@ -968,9 +1146,7 @@ fn type_definition(definition: &Json, at: &str, revision: Revision, f: &mut Find
         );
     }
     construct_lists(definition, at, f);
-    if !(kind == "record"
-        || Construct::parse(kind).is_some_and(|construct| construct != Construct::Enumeration))
-    {
+    if definition.get("kind").and_then(Json::as_str).is_some() && kind != "record" {
         for name in ["relationships", "operations"] {
             if definition.has(name) {
                 f.push(
@@ -988,10 +1164,10 @@ fn type_definition(definition: &Json, at: &str, revision: Revision, f: &mut Find
         "scalar",
         f,
     );
-    if !revision.v12 && definition.get("scalar").and_then(Json::as_str) == Some("any") {
+    if !revision.v2 && definition.get("scalar").and_then(Json::as_str) == Some("any") {
         f.push(
             &child(at, "scalar"),
-            "scalar any is a contract 1.2.0 member",
+            "scalar any is a contract 2.0.0 member",
         );
     }
     for name in ["target", "items", "values"] {
@@ -1047,70 +1223,32 @@ fn type_definition(definition: &Json, at: &str, revision: Revision, f: &mut Find
     }
 }
 
-/// The per-construct requirements of `typeDefinition`'s `allOf`.
+/// The requirements a type's construct declaration places on it: each
+/// member's presence, and the cardinality each `nonEmpty` rule states.
 fn construct_schema(
     definition: &Json,
     at: &str,
-    construct: Construct,
-    revision: Revision,
+    kind: &str,
+    declaration: &Declaration,
     f: &mut Findings,
 ) {
-    let kind = construct.name();
-    if !revision.v12 {
-        f.push(
-            &child(at, "kind"),
-            format!("{kind} is a contract 1.2.0 construct kind"),
-        );
-        return;
-    }
-    let required: &[&str] = match construct {
-        Construct::Entity => &["fields", "identityFields"],
-        Construct::ValueObject => &["fields"],
-        Construct::NestedEntity => &["fields", "identityFields", "owner"],
-        Construct::AggregateRoot => &["fields", "identityFields", "clauses", "members"],
-        Construct::Enumeration => &["variants"],
-        Construct::Event => &["fields", "occurrenceField"],
-        Construct::StateMachine => &["operations", "states", "transitions"],
-        Construct::Process => &["fields", "identityFields", "steps"],
-        Construct::Repository => &["operations", "persists"],
-        Construct::Domain => &["members", "vocabulary"],
-    };
-    for name in required {
-        if !definition.has(name) {
-            f.push(at, format!("a {kind} construct requires {name}"));
+    for member in Member::ALL {
+        let name = member.name();
+        match declaration.presence(*member) {
+            Presence::Required if !definition.has(name) => {
+                f.push(at, format!("a {kind} construct requires {name}"));
+            }
+            Presence::Forbidden if definition.has(name) => {
+                f.push(
+                    &child(at, name),
+                    format!("a {kind} construct carries no {name}"),
+                );
+            }
+            Presence::Required | Presence::Optional | Presence::Forbidden => {}
         }
     }
-    let forbidden: &[&str] = match construct {
-        Construct::Repository | Construct::Enumeration => &["fields"],
-        Construct::Domain => &["fields", "operations"],
-        Construct::Entity
-        | Construct::ValueObject
-        | Construct::NestedEntity
-        | Construct::AggregateRoot
-        | Construct::Event
-        | Construct::StateMachine
-        | Construct::Process => &[],
-    };
-    for name in forbidden {
-        if definition.has(name) {
-            f.push(
-                &child(at, name),
-                format!("a {kind} construct carries no {name}"),
-            );
-        }
-    }
-    let non_empty: &[&str] = match construct {
-        Construct::AggregateRoot => &["clauses"],
-        Construct::StateMachine | Construct::Repository => &["operations"],
-        Construct::Entity
-        | Construct::ValueObject
-        | Construct::NestedEntity
-        | Construct::Enumeration
-        | Construct::Event
-        | Construct::Process
-        | Construct::Domain => &[],
-    };
-    for name in non_empty {
+    for rule in declaration.rules.iter().filter(|rule| rule.non_empty()) {
+        let name = rule.requires().0.name();
         if definition
             .get(name)
             .and_then(Json::as_array)
@@ -1122,15 +1260,17 @@ fn construct_schema(
             );
         }
     }
-    if definition
-        .get("identityFields")
-        .and_then(Json::as_array)
-        .is_some_and(<[Json]>::is_empty)
-    {
-        f.push(
-            &child(at, "identityFields"),
-            "identityFields names at least one field",
-        );
+    for (name, message) in [
+        ("identityFields", "identityFields names at least one field"),
+        ("featureOrder", "featureOrder names at least one feature"),
+    ] {
+        if definition
+            .get(name)
+            .and_then(Json::as_array)
+            .is_some_and(<[Json]>::is_empty)
+        {
+            f.push(&child(at, name), message);
+        }
     }
 }
 
@@ -1299,7 +1439,7 @@ fn field_schema(field: &Json, at: &str, revision: Revision, f: &mut Findings) {
     }
     require_members(field, at, FIELD_REQUIRED, f);
     forbid_extra(field, at, FIELD_MEMBERS, f);
-    gate_v12(field, at, &["subsets", "redefines"], revision, f);
+    gate_v2(field, at, &["subsets", "redefines"], revision, f);
     identity_list(field.get("subsets"), &child(at, "subsets"), "subsets", f);
     expect_shape(
         field.get("redefines"),
@@ -1372,6 +1512,25 @@ fn field_schema(field: &Json, at: &str, revision: Revision, f: &mut Findings) {
 }
 
 const MULTIPLICITY_MEMBERS: &[&str] = &["lower", "upper", "ordered", "unique"];
+
+/// A connection end: the type it attaches to and its optional multiplicity.
+fn connection_end(end: &Json, at: &str, f: &mut Findings) {
+    if !expect_object(end, at, "a connection end", f) {
+        return;
+    }
+    require_members(end, at, &["type"], f);
+    forbid_extra(end, at, CONNECTION_END_MEMBERS, f);
+    expect_shape(
+        end.get("type"),
+        &child(at, "type"),
+        is_semantic_identity,
+        "an identity is ix://<owner>/<name>",
+        f,
+    );
+    if let Some(multiplicity) = end.get("multiplicity") {
+        multiplicity_schema(multiplicity, &child(at, "multiplicity"), f);
+    }
+}
 
 fn multiplicity_schema(multiplicity: &Json, at: &str, f: &mut Findings) {
     if !expect_object(multiplicity, at, "a multiplicity", f) {
@@ -1494,8 +1653,7 @@ fn relationship_schema(relationship: &Json, at: &str, f: &mut Findings) {
 }
 
 const OPERATION_MEMBERS: &[&str] = &[
-    "identity", "name", "params", "returns", "pre", "post", "origin", "frame", "requires",
-    "ensures",
+    "identity", "name", "params", "returns", "pre", "post", "origin", "frame",
 ];
 const FRAME_MEMBERS: &[&str] = &["modifies", "creates", "deletes"];
 const INLINE_CLAUSE_MEMBERS: &[&str] = &["language", "text", "sourceSpan", "origin"];
@@ -1568,6 +1726,29 @@ fn inline_clause_schema(clause: &Json, at: &str, f: &mut Findings) {
         origin_schema(origin, &child(at, "origin"), f);
     }
 }
+/// One `pre` or `post` item: a clause id, or from contract 2.0.0 an inline
+/// clause.
+fn contract_item_schema(item: &Json, at: &str, revision: Revision, f: &mut Findings) {
+    if item.as_str().is_some() || !revision.v2 {
+        expect_string(Some(item), at, 1, "a clause id", f);
+        return;
+    }
+    inline_clause_schema(item, at, f);
+}
+
+/// Whether two items of `items` are the same JSON value.
+fn has_duplicate_items(items: &[Json]) -> bool {
+    let mut seen: Vec<String> = Vec::new();
+    for item in items {
+        let canonical = crate::json::to_canonical_string(item);
+        if seen.contains(&canonical) {
+            return true;
+        }
+        seen.push(canonical);
+    }
+    false
+}
+
 const RETURNS_MEMBERS: &[&str] = &["typeRef", "multiplicity", "nullable"];
 
 fn operation_schema(operation: &Json, at: &str, revision: Revision, f: &mut Findings) {
@@ -1603,42 +1784,20 @@ fn operation_schema(operation: &Json, at: &str, revision: Revision, f: &mut Find
             }
         }
     }
-    gate_v12(
-        operation,
-        at,
-        &["frame", "requires", "ensures"],
-        revision,
-        f,
-    );
+    gate_v2(operation, at, &["frame"], revision, f);
     if let Some(frame) = operation.get("frame") {
         frame_schema(frame, &child(at, "frame"), f);
     }
-    for name in ["requires", "ensures"] {
-        if let Some(clauses) = operation.get(name) {
-            let clauses_at = child(at, name);
-            if expect_array(clauses, &clauses_at, name, f) {
-                for (position, clause) in clauses.as_array().unwrap_or(&[]).iter().enumerate() {
-                    inline_clause_schema(clause, &index(&clauses_at, position), f);
-                }
-            }
-        }
-    }
     for name in ["pre", "post"] {
-        if let Some(clause_ids) = operation.get(name) {
-            let clause_ids_at = child(at, name);
-            if expect_array(clause_ids, &clause_ids_at, name, f) {
-                let items = clause_ids.as_array().unwrap_or(&[]);
-                for (position, clause_id) in items.iter().enumerate() {
-                    expect_string(
-                        Some(clause_id),
-                        &index(&clause_ids_at, position),
-                        1,
-                        "a clause id",
-                        f,
-                    );
+        if let Some(bound) = operation.get(name) {
+            let bound_at = child(at, name);
+            if expect_array(bound, &bound_at, name, f) {
+                let items = bound.as_array().unwrap_or(&[]);
+                for (position, item) in items.iter().enumerate() {
+                    contract_item_schema(item, &index(&bound_at, position), revision, f);
                 }
-                if has_duplicate_strings(items) {
-                    f.push(&clause_ids_at, format!("{name} entries are unique"));
+                if has_duplicate_items(items) {
+                    f.push(&bound_at, format!("{name} entries are unique"));
                 }
             }
         }
@@ -2824,45 +2983,7 @@ fn consumer_policy(policy: &Json, at: &str, f: &mut Findings) {
 
 #[cfg(test)]
 mod tests {
-    use super::{is_clause_language, Construct, Json};
-
-    /// Construct-kind parity: `Construct::ALL` is exactly the schema's
-    /// 1.2.0 kinds, in the order of `typeDefinition.kind`'s enum.
-    #[test]
-    fn tc_1760_the_construct_kinds_are_the_schema_construct_kinds() {
-        let schema = crate::json::parse(include_str!(
-            "../../../schema/semantic/v1/semantic-ir.schema.json"
-        ))
-        .expect("the published schema is JSON");
-        let before_constructs = [
-            "scalar",
-            "record",
-            "enum",
-            "union",
-            "alias",
-            "sequence",
-            "map",
-            "reference",
-        ];
-        let kinds: Vec<&str> = schema
-            .get("$defs")
-            .and_then(|defs| defs.get("typeDefinition"))
-            .and_then(|definition| definition.get("properties"))
-            .and_then(|properties| properties.get("kind"))
-            .and_then(|kind| kind.get("enum"))
-            .and_then(Json::as_array)
-            .expect("typeDefinition.kind is an enum")
-            .iter()
-            .filter_map(Json::as_str)
-            .filter(|kind| !before_constructs.contains(kind))
-            .collect();
-        let ours: Vec<&str> = Construct::ALL.into_iter().map(Construct::name).collect();
-        assert_eq!(ours, kinds);
-        for construct in Construct::ALL {
-            assert_eq!(Construct::parse(construct.name()), Some(construct));
-        }
-        assert_eq!(Construct::parse("record"), None);
-    }
+    use super::is_clause_language;
 
     #[test]
     fn tc_214_accepts_the_core_clause_languages() {

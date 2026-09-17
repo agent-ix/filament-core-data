@@ -44,10 +44,51 @@ import {
 	generateTarget,
 	selectBackend,
 } from "../src/compiler/backends/seam.mjs";
-import { CONSTRUCT_KINDS } from "../src/compiler/constructs.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+
+/**
+ * The constructs fixture's declaration of an identified record carrying no
+ * member beyond its fields and identity fields, read from the fixture rather
+ * than restated.
+ */
+function identifiedRecordConstruct(): {
+	kind: { module: string; name: string };
+	construct: { members: Record<string, string> };
+} {
+	const fixture = JSON.parse(
+		readFileSync(
+			resolve(
+				root,
+				"fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json",
+			),
+			"utf8",
+		),
+	) as {
+		constructs: {
+			kind: { module: string; name: string };
+			construct: {
+				identity: string;
+				shape: string;
+				members: Record<string, string>;
+			};
+		}[];
+	};
+	const entry = fixture.constructs.find(
+		(one) =>
+			one.construct.identity === "identified" &&
+			one.construct.shape === "record" &&
+			Object.entries(one.construct.members)
+				.filter(([, presence]) => presence !== "forbidden")
+				.map(([member]) => member)
+				.sort()
+				.join() === "fields,identityFields",
+	);
+	if (!entry)
+		throw new Error("the constructs fixture declares no identified record");
+	return entry;
+}
 const readJson = (path: string) =>
 	JSON.parse(readFileSync(resolve(root, path), "utf8"));
 
@@ -58,10 +99,10 @@ type Manifest = {
 	diagnostics: { code: string; message: string; blocking?: boolean }[];
 };
 
-/** A generation request over an accepted document, `1.2.0` unless one is named. */
+/** A generation request over an accepted document, `2.0.0` unless one is named. */
 function pythonRequest(
 	backend: { identity: string; version: string },
-	document = "fixtures/semantic/v1/positive/config-version-v1-2.json",
+	document = "fixtures/semantic/v1/positive/config-version-v2.json",
 ) {
 	return {
 		contractVersion: "1.0.0",
@@ -142,10 +183,19 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 	/** Traces: TC-1765; FR-136-AC-8. */
 	it("generates an entity as the record's model class in both Python targets, with its identity fields in the construct module", () => {
 		const request = pythonRequest(pythonPydanticBackend);
+		const document = request.ir as {
+			constructs: unknown[];
+			types: {
+				kind: unknown;
+				displayName: string;
+				identityFields?: string[];
+				fields?: { name: string; identity: string }[];
+			}[];
+		};
 		const entity = (
-			request.ir as {
+			document as {
 				types: {
-					kind: string;
+					kind: unknown;
 					displayName: string;
 					identityFields?: string[];
 					fields?: { name: string; identity: string }[];
@@ -154,7 +204,9 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 		).types.find((type) => type.displayName === "ConfigVersion");
 		const id = entity?.fields?.find((field) => field.name === "id");
 		if (!entity || !id) throw new Error("ConfigVersion declares no id field");
-		entity.kind = "entity";
+		const declared = identifiedRecordConstruct();
+		document.constructs = [declared];
+		entity.kind = declared.kind;
 		entity.identityFields = [id.identity];
 
 		for (const backend of [pythonPydanticBackend, pythonDataclassBackend]) {
@@ -176,16 +228,19 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 			);
 			if (!constructs) throw new Error(`${backend.target}: no constructs.py`);
 			expect(constructs.text).toContain("'ConfigVersion': ('id',),");
-			expect(constructs.text).toContain("'ConfigVersion': 'entity',");
+			expect(constructs.text).toContain(
+				`'ConfigVersion': '${declared.kind.name}',`,
+			);
 		}
 	}, 300000);
 
 	/** Traces: TC-1775, TC-1776; FR-136-AC-10, FR-142-AC-8. */
 	it("renders every construct kind and model member in both Python targets, each class named by its display name", () => {
 		const document =
-			"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json";
+			"fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json";
 		const ir = readJson(document) as {
-			types: { kind: string; displayName: string }[];
+			constructs: { kind: { name: string }; construct: { shape: string } }[];
+			types: { kind: string | { name: string }; displayName: string }[];
 		};
 		for (const backend of [pythonPydanticBackend, pythonDataclassBackend]) {
 			const result = backend.generate(pythonRequest(backend, document), {
@@ -218,11 +273,15 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 				expect(file.text, `${backend.target} ${file.path}`).not.toMatch(
 					/^class Model\b/m,
 				);
+			// A construct of the interface or namespace shape has no instance.
+			const shapes = new Map(
+				ir.constructs.map((entry) => [entry.kind.name, entry.construct.shape]),
+			);
 			for (const type of ir.types.filter(
 				(one) =>
-					CONSTRUCT_KINDS.includes(one.kind) &&
-					one.kind !== "repository" &&
-					one.kind !== "domain",
+					typeof one.kind === "object" &&
+					shapes.get(one.kind.name) !== "interface" &&
+					shapes.get(one.kind.name) !== "namespace",
 			))
 				expect(text(`${type.displayName}.py`)).toMatch(
 					new RegExp(`^class ${type.displayName}\\b`, "m"),
@@ -241,10 +300,13 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 			expect(text("OrderStatus.py")).toMatch(/^class OrderStatus\(StrEnum\):/m);
 
 			const constructs = text("constructs.py");
-			for (const type of ir.types.filter((one) =>
-				CONSTRUCT_KINDS.includes(one.kind),
-			))
-				expect(constructs).toContain(`'${type.displayName}': '${type.kind}',`);
+			for (const type of ir.types) {
+				const kind = type.kind;
+				// A module-declared construct kind is an object; a contract 1.1
+				// kind is its name as a string, and states no construct.
+				if (typeof kind !== "object") continue;
+				expect(constructs).toContain(`'${type.displayName}': '${kind.name}',`);
+			}
 			for (const line of [
 				"'Order': ('Party',),",
 				"'Party': True,",
@@ -259,7 +321,8 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 				"'Order': {'badges': ('labels',)},",
 				"'Order': {'id': 'id', 'labels': 'labels'},",
 				"'OrderLifecycle.advance': {'modifies': ('current',), 'creates': (), 'deletes': ()},",
-				"'OrderLifecycle.advance': {'requires': (('quire', 'to <> current'),), 'ensures': (('quire', 'current = to'),)},",
+				// Traces: TC-1796; FR-141-AC-9. Only the inline items of a mixed list.
+				"'OrderLifecycle.advance': {'pre': (('quire', 'to <> current'),), 'post': (('quire', 'current = to'),)},",
 				"'OpenOrders': (('Order', 0, None),),",
 				"class OrderRepository(Protocol):",
 				"    def find_by_id(self, id: UUIDModel) -> Order | None: ...",
@@ -272,7 +335,7 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 	/** Traces: TC-1783; FR-136-AC-11. */
 	it("compares identified constructs by identity, freezes events and makes abstract types abc classes in both Python targets", () => {
 		const document =
-			"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json";
+			"fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json";
 		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-python-constructs-"));
 		try {
 			const packages: string[] = [];

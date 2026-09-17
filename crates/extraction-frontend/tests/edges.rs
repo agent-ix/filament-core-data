@@ -166,12 +166,18 @@ fn tc_1231_fr_006_references_fr_005_lowers_to_one_traceability_relationship_at_t
         frontmatter_edges(document),
         [("FR-005".to_string(), "references".to_string())]
     );
-    // The same lift under the business module alone has no registry entry
-    // for `references`: an allowed verb no loaded module declares.
+    // The business module declares `references` under its own `edge_types`,
+    // so the same lift under it alone lowers the same relationship.
     let alone = lift_at(&fixture("config-version-table"), &[&business_module()]);
-    let unknown = with_code(&alone.lowered.diagnostics, Code::UnknownEdgeVerb);
-    assert_eq!(unknown.len(), 1, "{:?}", alone.lowered.diagnostics);
-    assert!(unknown[0].blocking);
+    assert!(
+        !is_blocked(&alone.lowered.diagnostics),
+        "{:?}",
+        alone.lowered.diagnostics
+    );
+    assert_eq!(
+        relationships(type_named(&types_json(&alone), "ConfigVersion")),
+        rels
+    );
 }
 
 #[trace("TC-1232", "FR-094-AC-2")]
@@ -228,15 +234,15 @@ fn tc_1233_references_is_traceability_and_owns_is_dependency_neither_composite()
     assert_eq!(references.len(), 1, "{order:?}");
     assert_eq!(references[0]["category"], "traceability");
     assert_eq!(references[0]["composite"], false);
-    assert_eq!(references[0]["target"], "ix://agent-ix/orders/type/EN-001");
+    assert_eq!(references[0]["target"], "ix://agent-ix/orders/type/EN_001");
     let owns = with_verb(&order, "owns");
     assert_eq!(owns.len(), 1, "{order:?}");
     assert_eq!(owns[0]["category"], "dependency");
     assert_eq!(owns[0]["composite"], false);
-    assert_eq!(owns[0]["target"], "ix://agent-ix/orders/type/SM-001");
+    assert_eq!(owns[0]["target"], "ix://agent-ix/orders/type/SM_001");
     assert_eq!(
         owns[0]["identity"],
-        "ix://agent-ix/orders/relationship/FR-001-owns-SM-001"
+        "ix://agent-ix/orders/relationship/FR-001-owns-SM_001"
     );
 }
 
@@ -313,15 +319,12 @@ fn tc_1236_artifact_axis_verbs_lower_to_nothing_silently_and_one_references_edge
     let types = types_json(&lift);
     let record = type_named(&types, "ConfigVersion");
     assert_eq!(relationships(record), Vec::<Value>::new());
-    // The body's Relationships bullet list names `contains` and
-    // `references` edges; none reached the IR.
     let document = lift
         .bundle
         .documents()
         .iter()
         .find(|d| d.path() == FR_006)
         .expect("FR-006");
-    assert!(document.raw().contains("contains → ConfigOverlay"));
     assert_eq!(
         frontmatter_edges(document),
         [
@@ -373,7 +376,7 @@ fn tc_1237_same_verb_and_target_dedupe_and_two_verbs_on_one_target_mint_two_iden
     assert_eq!(rels.len(), 3, "{rels:?}");
     let to_colour: Vec<&Value> = rels
         .iter()
-        .filter(|r| r["target"] == "ix://agent-ix/config-service/type/EN-001")
+        .filter(|r| r["target"] == "ix://agent-ix/config-service/type/EN_001")
         .collect();
     assert_eq!(to_colour.len(), 1, "two entries, one relationship");
     assert_eq!(to_colour[0]["verb"], "references");
@@ -482,13 +485,13 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
     let base_types = types_json(&base);
     let base_order = relationships(type_named(&base_types, "Order"));
     let base_owns = with_verb(&base_order, "owns")[0].clone();
-    assert_eq!(base_owns["target"], "ix://agent-ix/orders/type/SM-001");
+    assert_eq!(base_owns["target"], "ix://agent-ix/orders/type/SM_001");
 
-    // Part one: rename the `owns` target (SM-001, referenced by no Type
+    // Part one: rename the `owns` target (SM_001, referenced by no Type
     // cell) and lift again. The target's identity is its artifact id, so
     // the declared name moves no relationship node (FR-143).
-    let sm_001 = "spec/functional/SM-001-order-lifecycle.md";
-    let original = fs::read_to_string(fixture("business").join(sm_001)).expect("SM-001");
+    let sm_001 = "spec/functional/SM_001-order-lifecycle.md";
+    let original = fs::read_to_string(fixture("business").join(sm_001)).expect("SM_001");
     let mut runner = TestRunner::new(Config::with_cases(12));
     runner
         .run(&"Lifecycle[A-Za-z0-9]{1,8}", |name| {
@@ -514,8 +517,8 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
             prop_assert_eq!(owns, &base_owns);
             let renamed_target = types
                 .iter()
-                .find(|t| t["identity"] == "ix://agent-ix/orders/type/SM-001")
-                .expect("SM-001 keeps its identity");
+                .find(|t| t["identity"] == "ix://agent-ix/orders/type/SM_001")
+                .expect("SM_001 keeps its identity");
             prop_assert_eq!(&renamed_target["displayName"], &Value::String(name));
             // Every other relationship of the record is byte-identical.
             for (b, g) in base_order
@@ -531,20 +534,32 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
 
     // Part two: flip the registry `inverse` and lift again, with no code
     // change: `contains` and `aggregates` lose `part_of`, `composes` gains
-    // it.
+    // it. Both modules declare the three verbs byte-identically, so both
+    // are flipped.
     let manifest = fs::read_to_string(edge_vocabulary().join("manifest.yaml")).expect("manifest");
     assert_eq!(manifest.matches("inverse: part_of").count(), 2);
+    let business_manifest =
+        fs::read_to_string(business_module().join("manifest.yaml")).expect("manifest");
+    assert_eq!(business_manifest.matches("inverse: part_of").count(), 2);
+    let flip = |text: &str, label: &str| {
+        text.replace("inverse: part_of", &format!("inverse: {label}"))
+            .replacen("inverse: composed_by", &format!("inverse: {PART_OF}"), 1)
+    };
     let mut runner = TestRunner::new(Config::with_cases(8));
     runner
         .run(&"x_[a-z]{2,8}", |label| {
             let scratch = tempfile::tempdir().expect("tempdir");
             let module = scratch.path().join("edge-vocabulary");
             copy_tree(&edge_vocabulary(), &module);
-            let flipped = manifest
-                .replace("inverse: part_of", &format!("inverse: {label}"))
-                .replacen("inverse: composed_by", &format!("inverse: {PART_OF}"), 1);
-            fs::write(module.join("manifest.yaml"), flipped).expect("write");
-            let lift = lift_at(&fixture("business"), &[&business_module(), &module]);
+            fs::write(module.join("manifest.yaml"), flip(&manifest, &label)).expect("write");
+            let business = scratch.path().join("spec-objects-business");
+            copy_tree(&business_module(), &business);
+            fs::write(
+                business.join("manifest.yaml"),
+                flip(&business_manifest, &label),
+            )
+            .expect("write");
+            let lift = lift_at(&fixture("business"), &[&business, &module]);
             // A non-composite `contains` leaves the nested entity Shipment
             // with no owner, which its construct refuses (FR-143). Every other
             // blocking diagnostic is a refusal the fixed point derives from
@@ -561,7 +576,7 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
                 let derived = diagnostic.message.contains("relationship targets");
                 prop_assert!(
                     derived
-                        || (diagnostic.message.contains("NE-001")
+                        || (diagnostic.message.contains("NE_001")
                             && diagnostic.message.contains("owner")),
                     "{}",
                     diagnostic.message
@@ -571,9 +586,10 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
                     .strip_prefix("artifact ")
                     .and_then(|rest| rest.split(' ').next())
                     .expect("a refusal names its artifact");
+                // The identity segment is the id verbatim (FR-095).
                 refused.push(format!("ix://agent-ix/orders/type/{id}"));
             }
-            prop_assert!(refused.iter().any(|r| r.ends_with("/NE-001")));
+            prop_assert!(refused.iter().any(|r| r.ends_with("/NE_001")));
             prop_assert!(
                 refused.iter().any(|r| r.ends_with("/FR-001")),
                 "{:?}",

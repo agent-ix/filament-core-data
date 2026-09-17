@@ -1,9 +1,9 @@
 {
   "repository": "https://github.com/agent-ix/spec-objects-business",
-  "revision": "f7fdfda",
-  "revision_full": "f7fdfda39293654424969ced57590b7a1a17c652",
+  "revision": "7b7b0bc",
+  "revision_full": "7b7b0bc62d16676b9a7dc81b57c833009966408d",
   "module": "spec-objects-business",
-  "module_version": "0.4.0",
+  "module_version": "0.7.0",
   "source_root": "spec_objects_business",
   "paths": [
     "manifest.yaml",
@@ -14,6 +14,8 @@
     "schemas/Event.json",
     "schemas/IdentityField.json",
     "schemas/NestedEntity.json",
+    "schemas/ObjectFrontmatter.json",
+    "schemas/ObjectId.json",
     "schemas/OccurrenceField.json",
     "schemas/OccurrenceTypeRef.json",
     "schemas/Population.json",
@@ -28,7 +30,7 @@
     "schemas/ValueObject.json",
     "schemas/toolchain.json"
   ],
-  "manifest_sha256": "e09ce2c27096f5ea27f5329debc1565ae90fdbfb68173629ded0141441c5e43f",
+  "manifest_sha256": "a4437088244aa6693cb494637dd568387fead272eda7aec116c419fbd0f3b87c",
   "edits": [],
-  "note": "Copied byte-for-byte with `git show f7fdfda:<path>`; never loaded from ~/.ix (NFR-033-AC-3). skeletons/ are not vendored: the frontend consumes manifest.yaml and schemas/ only. Revision f7fdfda (0.4.0, filament-core-data#154) is the first revision whose object types declare the FR-075 model tables (States, Transitions, Workflow steps, Ubiquitous Language, Members) quire-rs 6eec7e8+ gates extraction on; 48b213a (0.5.0) adds the `relationships` token and `## Relationships` tables, which are FR-076 relation extraction and belong to filament-core-data#155/#156."
+  "note": "Copied byte-for-byte with `git show 7b7b0bc:<path>`; never loaded from ~/.ix (NFR-033-AC-3). Revision 7b7b0bc (0.7.0, agent-ix/spec-objects-business#20) is 5e4acf4 plus #17 and #20: the event construct declares `immutable: true`, and each object schema refuses what FR-208 refuses (no operations on a value_object or an event, no clauses on a repository or a domain, no non-empty operation pre/post on a repository), which moved the Domain, Entity, ValueObject, AggregateRoot, NestedEntity, Repository and Event schema digests. skeletons/ are not vendored: the frontend consumes manifest.yaml and schemas/ only. The engine carries each construct key raw on CompiledArchetype::construct() (agent-ix/quire-rs#445) and validates `immutable` against the re-copied FR-035 schema (agent-ix/quire-rs#456)."
 }

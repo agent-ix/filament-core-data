@@ -906,7 +906,8 @@ export function admitIr(bundle, options = {}) {
 			);
 			for (const list of ["pre", "post"]) {
 				for (const [slot, reference] of (operation[list] ?? []).entries()) {
-					if (!declared.has(reference)) {
+					// An inline clause binds no clause id.
+					if (typeof reference === "string" && !declared.has(reference)) {
 						emit(
 							ADMISSIBILITY_CODES.DANGLING_CLAUSE_REF,
 							`${operationPointer}/${list}/${slot}`,
@@ -1001,7 +1002,7 @@ export function admitIr(bundle, options = {}) {
 				);
 			}
 			const derived = lower >= 1 ? "required" : "optional";
-			if (version !== "1.2.0" && field.presence !== derived) {
+			if (version !== "2.0.0" && field.presence !== derived) {
 				emit(
 					ADMISSIBILITY_CODES.PRESENCE_MULTIPLICITY_MISMATCH,
 					`${fieldPointer}/presence`,

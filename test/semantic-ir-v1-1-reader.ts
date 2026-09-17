@@ -1,5 +1,5 @@
 /**
- * Test-scoped reader for semantic IR contract 1.2.0 (issues #34 and #93).
+ * Test-scoped reader for semantic IR contract 2.0.0 (issues #34, #93 and #172).
  *
  * JSON Schema validates shape; this module implements the cross-field rules
  * of FR-027..FR-030 that a schema cannot express, and the normalized
@@ -72,21 +72,12 @@ function asArray(value: unknown): JsonObject[] {
 type Resolved = { kind: string; scalar?: string } | undefined;
 
 /**
- * The kinds that may carry relationships and operations: a record and every
- * contract 1.2.0 construct except `enumeration` (FR-142).
+ * Whether a kind may carry relationships and operations: a record and every
+ * contract 2.0.0 construct kind, which its declaration governs (FR-142).
  */
-export const EDGE_KINDS: ReadonlySet<string> = new Set([
-	"record",
-	"entity",
-	"value_object",
-	"nested_entity",
-	"aggregate_root",
-	"event",
-	"state_machine",
-	"process",
-	"repository",
-	"domain",
-]);
+export function isEdgeKind(kind: unknown): boolean {
+	return kind === "record" || isObject(kind);
+}
 
 /** Resolves a typeRef through alias definitions to its structural kind. */
 export function resolveKind(
@@ -174,7 +165,7 @@ function checkField(
 	}
 	let multiplicity: Multiplicity | undefined;
 	if (field.multiplicity === undefined) {
-		if (version === "1.1.0" || version === "1.2.0") {
+		if (version === "1.1.0" || version === "2.0.0") {
 			diagnostics.push({
 				code: "agent-ix.semantic-ir.MISSING_MULTIPLICITY",
 				path: `${path}.multiplicity`,
@@ -192,7 +183,7 @@ function checkField(
 	if (multiplicity) {
 		const derived = multiplicity.lower >= 1 ? "required" : "optional";
 		if (
-			version !== "1.2.0" &&
+			version !== "2.0.0" &&
 			field.presence !== undefined &&
 			field.presence !== derived
 		) {
@@ -291,7 +282,7 @@ function checkTypeDefinition(
 	lockExports: Set<string>,
 	diagnostics: Diagnostic[],
 ): void {
-	const isRecord = EDGE_KINDS.has(String(definition.kind));
+	const isRecord = isEdgeKind(definition.kind);
 	for (const [index, field] of asArray(definition.fields).entries())
 		checkField(field, `${path}.fields.${index}`, version, types, diagnostics);
 	for (const [index, constraint] of asArray(definition.constraints).entries())
@@ -408,8 +399,11 @@ function checkTypeDefinition(
 		}
 		// FR-141: `quire` is the one checked clause language; an inline clause
 		// in any other admitted language is carried unchecked (an advisory).
-		for (const side of ["requires", "ensures"] as const) {
-			for (const [clauseIndex, clause] of asArray(operation[side]).entries()) {
+		for (const side of ["pre", "post"] as const) {
+			for (const [clauseIndex, clause] of (Array.isArray(operation[side])
+				? operation[side]
+				: []
+			).entries()) {
 				if (isObject(clause) && clause.language !== "quire") {
 					diagnostics.push({
 						code: "agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED",
@@ -424,7 +418,7 @@ function checkTypeDefinition(
 				? operation[side]
 				: []
 			).entries()) {
-				if (!clauseIds.has(String(ref))) {
+				if (!isObject(ref) && !clauseIds.has(String(ref))) {
 					diagnostics.push({
 						code: "agent-ix.semantic-ir.DANGLING_CLAUSE_REF",
 						path: `${path}.operations.${index}.${side}.${refIndex}`,
@@ -544,22 +538,22 @@ export function canonical(value: unknown): string {
 }
 
 /**
- * Normalized serialization (FR-027): 1.1.0 and 1.2.0 documents materialize
- * multiplicity, presence, and nullable on every field, a 1.2.0 field keeping its
+ * Normalized serialization (FR-027): 1.1.0 and 2.0.0 documents materialize
+ * multiplicity, presence, and nullable on every field, a 2.0.0 field keeping its
  * authored presence; 1.0.0 documents gain no bytes.
  */
 export function normalize(document: unknown): string {
 	if (!isObject(document)) return canonical(document);
 	const copy = structuredClone(document) as JsonObject;
 	const version = copy.contractVersion;
-	if (version === "1.1.0" || version === "1.2.0") {
+	if (version === "1.1.0" || version === "2.0.0") {
 		const materialize = (field: JsonObject): void => {
 			const multiplicity = isObject(field.multiplicity)
 				? (field.multiplicity as Multiplicity)
 				: multiplicityFromPresence(field.presence);
 			field.multiplicity = multiplicity;
 			if (
-				version !== "1.2.0" ||
+				version !== "2.0.0" ||
 				(field.presence !== "required" && field.presence !== "optional")
 			)
 				field.presence = multiplicity.lower >= 1 ? "required" : "optional";

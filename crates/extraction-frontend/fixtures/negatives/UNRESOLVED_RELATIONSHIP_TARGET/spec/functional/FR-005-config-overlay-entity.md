@@ -24,10 +24,6 @@ The service SHALL define a `ConfigVersion` SQLModel table with the following col
 | `parent_id` | UUID (optional) | nullable, previous version reference |
 | `created_at` | datetime | default=utc_now |
 | `created_by` | str | actor identifier |
-## Relationships
-
-- `overlay`: many-to-one → ConfigOverlay ([FR-005](./FR-005-config-overlay-entity.md)), lazy="noload"
-
 ## Dependencies
 
 - [FR-005](./FR-005-config-overlay-entity.md) (ConfigOverlay) — parent entity

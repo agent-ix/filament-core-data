@@ -6,13 +6,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 152,
-			"validatingTypes": 99,
-			"nonValidatingDeclarations": 53,
-			"exercisedTypes": 59,
-			"unexercisedValidatingTypes": 40,
-			"constraintsExercised": 182,
-			"typesRejectingAnEmptyOrUndeclaredValue": 82,
+			"declaredTypes": 163,
+			"validatingTypes": 104,
+			"nonValidatingDeclarations": 59,
+			"exercisedTypes": 65,
+			"unexercisedValidatingTypes": 39,
+			"constraintsExercised": 188,
+			"typesRejectingAnEmptyOrUndeclaredValue": 88,
 			"typesAcceptingAnything": [
 				"common_schema.FilamentSemanticContractCommonTypesV1",
 				"compatibility_report_schema.AffectedConsumer",
@@ -26,8 +26,7 @@
 				"representation_schema.NonUs",
 				"representation_schema.ReservedName",
 				"representation_schema.ReservedNumber",
-				"semantic_ir_schema.PostItem",
-				"semantic_ir_schema.PreItem",
+				"semantic_ir_schema.ReferencesAdditionalPropertyItem",
 				"semantic_ir_schema.Role",
 				"semantic_ir_schema.Value",
 				"target_contract_schema.NativeApiItem"
@@ -477,6 +476,14 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "ConnectionEnd",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "Constraint",
 					"exercised": false,
 					"acceptsAConformingValue": false,
@@ -533,6 +540,46 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "Construct",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "ConstructDeclaration",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "ConstructKind",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "ContractItem",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "ContractItem1",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "FeaturePath",
 					"exercised": true,
 					"acceptsAConformingValue": true,
@@ -549,7 +596,7 @@
 				},
 				{
 					"module": "semantic_ir_schema",
-					"type": "FilamentSemanticIrV1ContractVersions100110And120",
+					"type": "FilamentSemanticIrV1ContractVersions100110And200",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
@@ -669,13 +716,7 @@
 				},
 				{
 					"module": "semantic_ir_schema",
-					"type": "PostItem",
-					"exercised": false,
-					"why": "no schema node carries this type's property set"
-				},
-				{
-					"module": "semantic_ir_schema",
-					"type": "PreItem",
+					"type": "ReferencesAdditionalPropertyItem",
 					"exercised": false,
 					"why": "no schema node carries this type's property set"
 				},
@@ -747,7 +788,7 @@
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 4
+					"constraintsOnThisType": 6
 				},
 				{
 					"module": "semantic_ir_schema",
@@ -800,13 +841,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 154,
-			"validatingTypes": 72,
-			"nonValidatingDeclarations": 82,
-			"exercisedTypes": 51,
+			"declaredTypes": 166,
+			"validatingTypes": 76,
+			"nonValidatingDeclarations": 90,
+			"exercisedTypes": 55,
 			"unexercisedValidatingTypes": 21,
-			"constraintsExercised": 177,
-			"typesRejectingAnEmptyOrUndeclaredValue": 72,
+			"constraintsExercised": 183,
+			"typesRejectingAnEmptyOrUndeclaredValue": 76,
 			"typesAcceptingAnything": [],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
 			"lost": ["constraints-array-unique"],
@@ -1125,6 +1166,14 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "ConnectionEnd",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "Constraint1",
 					"exercised": false,
 					"acceptsAConformingValue": false,
@@ -1173,6 +1222,30 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "Construct",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "ConstructDeclaration",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "ConstructKind",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "FieldModel",
 					"exercised": false,
 					"acceptsAConformingValue": false,
@@ -1181,7 +1254,7 @@
 				},
 				{
 					"module": "semantic_ir_schema",
-					"type": "FilamentSemanticIrV1ContractVersions100110And120",
+					"type": "FilamentSemanticIrV1ContractVersions100110And200",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
@@ -1353,7 +1426,7 @@
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 4
+					"constraintsOnThisType": 6
 				},
 				{
 					"module": "semantic_ir_schema",
@@ -1432,13 +1505,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 154,
-			"validatingTypes": 72,
-			"nonValidatingDeclarations": 82,
-			"exercisedTypes": 46,
+			"declaredTypes": 166,
+			"validatingTypes": 76,
+			"nonValidatingDeclarations": 90,
+			"exercisedTypes": 50,
 			"unexercisedValidatingTypes": 26,
-			"constraintsExercised": 177,
-			"typesRejectingAnEmptyOrUndeclaredValue": 72,
+			"constraintsExercised": 183,
+			"typesRejectingAnEmptyOrUndeclaredValue": 76,
 			"typesAcceptingAnything": [],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
 			"lost": [
@@ -1764,6 +1837,14 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "ConnectionEnd",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "Constraint1",
 					"exercised": false,
 					"acceptsAConformingValue": false,
@@ -1812,6 +1893,30 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "Construct",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "ConstructDeclaration",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "ConstructKind",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "Field",
 					"exercised": false,
 					"acceptsAConformingValue": false,
@@ -1820,7 +1925,7 @@
 				},
 				{
 					"module": "semantic_ir_schema",
-					"type": "FilamentSemanticIrV1ContractVersions100110And120",
+					"type": "FilamentSemanticIrV1ContractVersions100110And200",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
@@ -1992,7 +2097,7 @@
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 4
+					"constraintsOnThisType": 6
 				},
 				{
 					"module": "semantic_ir_schema",

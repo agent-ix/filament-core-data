@@ -51,6 +51,8 @@ export interface ModelType {
 	readonly displayName: string;
 	readonly identifier: string;
 	readonly kind: string;
+	/** What the type renders as: its core kind, or the rendering its construct's shape selects. */
+	readonly rendering: string | undefined;
 	readonly roles: readonly string[];
 	readonly unknownPolicy: string;
 	readonly constraints: readonly Record<string, unknown>[];
@@ -59,7 +61,7 @@ export interface ModelType {
 	readonly origin: unknown;
 	readonly scalar?: string;
 	readonly fields?: readonly ModelField[];
-	/** An `entity`'s identity field names, in the order the document declares them. */
+	/** An identified construct's identity field names, in the order the document declares them. */
 	readonly identityFields?: readonly string[];
 	readonly variants?: readonly ModelVariant[];
 	readonly relationships?: readonly Record<string, unknown>[];

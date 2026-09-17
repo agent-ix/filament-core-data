@@ -1,5 +1,5 @@
 ---
-id: RP-001
+id: RP_001
 title: Order Repository
 object: repository
 type: FR
@@ -9,7 +9,7 @@ relationships:
     type: persists
 ---
 
-# RP-001: Order Repository
+# RP_001: Order Repository
 
 ## Description
 
@@ -32,7 +32,7 @@ context OrderRepository inv known_id: self.orders->forAll(o | o.id <> null)
 | id | UUID | 1 | |
 
 Returns: Order [0..1]
-Requires: known_id
+Pre: known_id
 
 ### save
 
@@ -41,4 +41,4 @@ Requires: known_id
 | order | Order | 1 | |
 
 Returns: Order [1]
-Ensures: known_id
+Post: known_id

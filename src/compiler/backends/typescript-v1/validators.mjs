@@ -51,7 +51,11 @@
  * owner rather than a suppression this work may register.
  */
 
-import { isInstanceless, isRecordShaped } from "../../constructs.mjs";
+import {
+	equalityOf,
+	isInstanceless,
+	isRecordShaped,
+} from "../../constructs.mjs";
 import { hasEquality } from "./model.mjs";
 import { UNION_DISCRIMINANT } from "./names.mjs";
 
@@ -595,16 +599,9 @@ const CHECK_BODIES = Object.freeze({
 	alias: (model, entry) => delegatingCheckBody(model, entry),
 	reference: (model, entry) => delegatingCheckBody(model, entry),
 	record: (model, entry) => recordCheckBody(model, entry),
-	// Every construct whose instances carry fields is checked as its record
-	// shape, and an enumeration as an enum (FR-066, FR-142).
-	entity: (model, entry) => recordCheckBody(model, entry),
-	nested_entity: (model, entry) => recordCheckBody(model, entry),
-	aggregate_root: (model, entry) => recordCheckBody(model, entry),
-	event: (model, entry) => recordCheckBody(model, entry),
-	process: (model, entry) => recordCheckBody(model, entry),
-	value_object: (model, entry) => recordCheckBody(model, entry),
+	// A construct of a record shape is checked as its record, and one of the
+	// enumeration shape as an enum (FR-066, FR-142).
 	state_machine: (model, entry) => recordCheckBody(model, entry),
-	enumeration: (model, entry) => enumCheckBody(model, entry),
 });
 
 /**
@@ -617,7 +614,7 @@ const CHECK_BODIES = Object.freeze({
  * than being rejected by a pass whose errors nobody collected.
  */
 function prepareBody(model, entry) {
-	if (isRecordShaped(entry.kind)) return recordPrepareBody(entry);
+	if (isRecordShaped(entry)) return recordPrepareBody(entry);
 	if (entry.kind === "sequence") {
 		return [
 			"\tif (!Array.isArray(value)) return value;",
@@ -1059,7 +1056,7 @@ export function sortErrors(
 function equalityFunction(entry) {
 	const name = entry.identifier;
 	const head = `export function ${name}Equals(left: ${name}, right: ${name}): boolean {`;
-	if (entry.kind === "value_object")
+	if (equalityOf(entry) === "value")
 		return [
 			`/** Whether two \`${name}\` values are one value: every field equal. */`,
 			head,
@@ -1092,17 +1089,16 @@ function equalityFunction(entry) {
 
 /** The generated `validators.ts`: one `validate<Type>` per exported type. */
 export function renderValidators(model) {
-	// A repository and a domain have no instance data, and an abstract type has
-	// no instance of its own, so no value validates against any of them (FR-142,
-	// FR-141).
+	// An interface and a namespace construct have no instance data, and an
+	// abstract type has no instance of its own, so no value validates against
+	// any of them (FR-142, FR-141).
 	const types = (model.types ?? []).filter(
-		(entry) =>
-			!isInstanceless(entry.kind) && entry.construct?.abstract !== true,
+		(entry) => !isInstanceless(entry) && entry.construct?.abstract !== true,
 	);
 	const names = types.map((entry) => entry.identifier);
 	const blocks = [];
 	for (const entry of types) {
-		const body = CHECK_BODIES[entry.kind];
+		const body = CHECK_BODIES[entry.rendering];
 		if (body === undefined) {
 			throw new TypeError(
 				`no validator is declared for kind ${JSON.stringify(entry.kind)} on ${entry.identity}`,

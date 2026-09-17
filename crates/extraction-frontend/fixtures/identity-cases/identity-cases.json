@@ -1,11 +1,13 @@
 {
   "source": "docs/semantic-data-system/contracts-v1.md#identity-minting",
   "rows": [
-    { "kind": "identity", "package": "agent-ix/config-service", "slot": "type", "parts": ["Config Version"], "identity": "ix://agent-ix/config-service/type/Config-Version" },
-    { "kind": "identity", "package": "agent-ix/config-service", "slot": "field", "parts": ["Config Version", "Config_Version"], "identity": "ix://agent-ix/config-service/field/Config-Version-Config-Version" },
+    { "kind": "identity", "package": "agent-ix/config-service", "slot": "type", "parts": ["ConfigVersion"], "identity": "ix://agent-ix/config-service/type/ConfigVersion" },
+    { "kind": "identity", "package": "agent-ix/config-service", "slot": "field", "parts": ["ConfigVersion", "Config Version"], "identity": "ix://agent-ix/config-service/field/ConfigVersion-Config-Version" },
+    { "kind": "identity", "package": "agent-ix/config-service", "slot": "variant", "parts": ["ConfigVersion", "Config_Version"], "identity": "ix://agent-ix/config-service/variant/ConfigVersion-Config-Version" },
     { "kind": "identity", "package": "agent-ix/config-service", "slot": "constraint", "parts": ["ConfigVersion", "versionNumber", "minLength"], "identity": "ix://agent-ix/config-service/constraint/ConfigVersion-versionNumber-minLength" },
     { "kind": "alias", "package": "agent-ix/config-service", "record": "Note", "field": "created_at", "identity": "ix://agent-ix/config-service/type/NoteCreated-at", "displayName": "NoteCreated_at" },
     { "kind": "diagnosticCode", "package": "agent-ix/core.data", "parts": ["ConfigVersion", "versionNumber"], "keyword": "minLength", "code": "agent-ix.core-data.CONFIGVERSION_VERSIONNUMBER_MINLENGTH" },
-    { "kind": "refusal", "package": "agent-ix/config-service", "slot": "type", "parts": ["_"], "refuses": "UNSLUGGABLE_NAME" }
+    { "kind": "refusal", "package": "agent-ix/config-service", "slot": "type", "parts": ["_"], "refuses": "UNSLUGGABLE_NAME" },
+    { "kind": "refusal", "package": "agent-ix/config-service", "slot": "field", "parts": ["ConfigVersion", "--"], "refuses": "UNSLUGGABLE_NAME" }
   ]
 }

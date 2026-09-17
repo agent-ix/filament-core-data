@@ -6,6 +6,7 @@
 use crate::diag::{child, index, locus_for, owner_for, Located, Severity};
 use crate::json::Json;
 use crate::regex262;
+use crate::vocabulary::Shape;
 
 /// The declared finite depth bound on an acyclic expansion.
 ///
@@ -61,10 +62,10 @@ pub struct Document<'a> {
     pub ir: &'a Json,
     /// The type definitions, in document order.
     pub types: &'a [Json],
-    /// Whether the document declares contract 1.1.0 or later (1.1.0 or 1.2.0).
+    /// Whether the document declares contract 1.1.0 or later (1.1.0 or 2.0.0).
     pub is_v11: bool,
-    /// Whether the document declares contract 1.2.0, whose presence is authored.
-    pub is_v12: bool,
+    /// Whether the document declares contract 2.0.0, whose presence is authored and whose kinds are declared.
+    pub is_v2: bool,
 }
 
 impl<'a> Document<'a> {
@@ -78,9 +79,9 @@ impl<'a> Document<'a> {
             types,
             is_v11: matches!(
                 ir.get("contractVersion").and_then(Json::as_str),
-                Some("1.1.0" | "1.2.0")
+                Some("1.1.0" | "2.0.0")
             ),
-            is_v12: ir.get("contractVersion").and_then(Json::as_str) == Some("1.2.0"),
+            is_v2: ir.get("contractVersion").and_then(Json::as_str) == Some("2.0.0"),
         })
     }
 
@@ -240,7 +241,7 @@ pub fn decide(bundle: &Json) -> Vec<Located> {
     per_type(&document, &mut sink);
     occurrences(&document, &mut sink);
     composite_graph(&document, &mut sink);
-    if document.is_v12 {
+    if document.is_v2 {
         crate::constructs::decide(&document, &mut sink);
     }
     if !document.is_v11 {
@@ -565,7 +566,7 @@ fn field_rules(
                     }
                 }
             }
-            if !document.is_v12 {
+            if !document.is_v2 {
                 if let Some(lower) = lower {
                     let derived = if lower >= 1 { "required" } else { "optional" };
                     if let Some(stated) = field.get("presence").and_then(Json::as_str) {
@@ -634,7 +635,13 @@ fn constraint_rules(
     let applies = constraint.get("appliesTo").and_then(Json::as_str);
     let resolved = applies.and_then(|identity| document.resolve(identity));
     if let Some(resolved) = resolved {
-        let kind = resolved.get("kind").and_then(Json::as_str).unwrap_or("");
+        // A construct kind decides as `enumeration` when its declared shape
+        // is one, and as no core kind otherwise.
+        let kind = match crate::constructs::shape_of(document, resolved) {
+            Some(Shape::Enumeration) => "enumeration",
+            Some(_) => "construct",
+            None => resolved.get("kind").and_then(Json::as_str).unwrap_or(""),
+        };
         let scalar = resolved.get("scalar").and_then(Json::as_str).unwrap_or("");
         if !applies_to(keyword, kind, scalar) {
             sink.emit(

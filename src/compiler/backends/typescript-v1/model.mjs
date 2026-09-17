@@ -35,27 +35,31 @@
  */
 
 import {
+	adoptDeclaration,
+	bindConstructs,
 	constructOf,
-	IDENTIFIED_KINDS,
+	equalityOf,
 	identityFieldNames,
 	isEnumerationShaped,
 	isInstanceless,
 	isRecordShaped,
+	kindName,
 	populationsOf,
+	renderingOf,
 } from "../../constructs.mjs";
 import { MAX_DEPTH } from "./admit.mjs";
 import { LOSS_CODES } from "./loss.mjs";
 import { reserveNames } from "./names.mjs";
 
 /**
- * Whether a model entry exports `<Name>Equals`: a value object, by every field,
- * or a concrete identified construct, by its identity fields (FR-064).
+ * Whether a model entry exports `<Name>Equals`: a construct of value identity,
+ * by every field, or a concrete identified construct, by its identity fields
+ * (FR-064).
  */
 export function hasEquality(entry) {
-	if (entry.kind === "value_object") return true;
-	return (
-		IDENTIFIED_KINDS.includes(entry.kind) && entry.construct?.abstract !== true
-	);
+	const equality = equalityOf(entry);
+	if (equality === "value") return true;
+	return equality === "identity" && entry.construct?.abstract !== true;
 }
 
 /** Code-unit ordering. Never `localeCompare`, which reads the host's collator. */
@@ -120,7 +124,7 @@ function summaryOf(types, identifiers, identity) {
 	return Object.freeze({
 		identity,
 		identifier: identifiers.get(identity),
-		kind: type?.kind,
+		kind: type === undefined ? undefined : kindName(type.kind),
 		scalar: resolveScalar(types, identity),
 		declared: type !== undefined,
 	});
@@ -204,6 +208,7 @@ function fieldEntry(types, identifiers, field) {
  */
 export function buildModel(ir, options = {}) {
 	const document = isObject(ir) ? ir : {};
+	bindConstructs(document);
 	const declarations = Array.isArray(document.types) ? document.types : [];
 	const types = new Map();
 	for (const type of declarations) {
@@ -252,7 +257,8 @@ export function buildModel(ir, options = {}) {
 			identity: type.identity,
 			displayName: type.displayName,
 			identifier: identifiers.get(type.identity),
-			kind: type.kind,
+			kind: kindName(type.kind),
+			rendering: renderingOf(type),
 			roles: Object.freeze([...(type.roles ?? [])]),
 			unknownPolicy: type.unknownPolicy,
 			constraints: Object.freeze(byIdentity(applied.get(type.identity) ?? [])),
@@ -262,10 +268,10 @@ export function buildModel(ir, options = {}) {
 		const scalar = resolveScalar(types, type.identity);
 		if (scalar !== undefined) entry.scalar = scalar;
 
-		if (isRecordShaped(type.kind) || isInstanceless(type.kind)) {
-			// A repository and a domain carry no fields: they have no instance
-			// data. A repository's operations are its interface (FR-142).
-			if (isRecordShaped(type.kind))
+		if (isRecordShaped(type) || isInstanceless(type)) {
+			// An interface and a namespace construct carry no fields: they have no
+			// instance data. An interface's operations are its interface (FR-142).
+			if (isRecordShaped(type))
 				entry.fields = Object.freeze(
 					byIdentity((type.fields ?? []).filter(isObject)).map((field) =>
 						fieldEntry(types, identifiers, field),
@@ -304,8 +310,16 @@ export function buildModel(ir, options = {}) {
 									),
 								})
 							: undefined,
-						pre: Object.freeze([...(operation.pre ?? [])]),
-						post: Object.freeze([...(operation.post ?? [])]),
+						pre: Object.freeze(
+							(operation.pre ?? []).filter(
+								(entry) => typeof entry === "string",
+							),
+						),
+						post: Object.freeze(
+							(operation.post ?? []).filter(
+								(entry) => typeof entry === "string",
+							),
+						),
 						origin: operation.origin,
 					}),
 				),
@@ -326,7 +340,7 @@ export function buildModel(ir, options = {}) {
 		const construct = constructOf(declared, authored);
 		if (construct !== undefined) entry.construct = Object.freeze(construct);
 
-		if (isEnumerationShaped(type.kind) || type.kind === "union") {
+		if (isEnumerationShaped(type) || type.kind === "union") {
 			if (type.kind === "union") {
 				const wireForm = wireFormOf(type.extensions);
 				if (wireForm !== undefined) entry.wireForm = wireForm;
@@ -363,7 +377,7 @@ export function buildModel(ir, options = {}) {
 		// and a construct that is declared lost is still a construct the model
 		// saw.
 		entry.clauses = Object.freeze([...(type.clauses ?? [])]);
-		return Object.freeze(entry);
+		return adoptDeclaration(Object.freeze(entry), type);
 	});
 
 	// A state machine's state type, and the equality function of a value object
@@ -373,7 +387,7 @@ export function buildModel(ir, options = {}) {
 	const minted = new Set(identifiers.values());
 	for (const entry of entries) {
 		const derived =
-			entry.kind === "state_machine"
+			entry.rendering === "state_machine"
 				? `${entry.identifier}State`
 				: hasEquality(entry)
 					? `${entry.identifier}Equals`

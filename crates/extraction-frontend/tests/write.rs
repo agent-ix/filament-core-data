@@ -281,7 +281,7 @@ fn tc_1283_node_inspect_reports_zero_diagnostics_for_every_emitted_document_and_
             "{name}: {summary}"
         );
         assert_eq!(status, 0, "{name}");
-        assert_eq!(summary["contractVersion"], "1.2.0", "{name}");
+        assert_eq!(summary["contractVersion"], "2.0.0", "{name}");
     }
     // With no `node` on PATH the runner fails naming `node`.
     let error = common::run_node(&["--version"], &[], Some(""))

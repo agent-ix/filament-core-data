@@ -22,15 +22,6 @@
 			"diagnosticCode": null
 		},
 		{
-			"rowKey": "kind:entity",
-			"axis": "kind",
-			"selector": "entity",
-			"rustForm": "pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str], and PartialEq, Eq and Hash over the identity fields",
-			"serdeAttributes": [],
-			"mechanism": "the record row without the derived PartialEq, plus the names of the fields that tell the entity's instances apart in declared order beside FIELDS, and PartialEq, Eq and Hash written over those fields; every generated newtype an identity field reaches derives Eq and Hash, and an identity field whose Rust type has neither is refused with UNSUPPORTED_CONSTRUCT",
-			"diagnosticCode": null
-		},
-		{
 			"rowKey": "kind:enum",
 			"axis": "kind",
 			"selector": "enum",
@@ -85,84 +76,84 @@
 			"diagnosticCode": null
 		},
 		{
-			"rowKey": "kind:value_object",
-			"axis": "kind",
-			"selector": "value_object",
+			"rowKey": "shape:record",
+			"axis": "shape",
+			"selector": "record",
 			"rustForm": "pub struct N { .. }",
 			"serdeAttributes": [],
-			"mechanism": "the record row; the derived PartialEq compares every member, which is the value equality the construct declares",
+			"mechanism": "the record row for a construct its declaration shapes as a record; each admitted member it carries renders beside FIELDS: pub const OWNER: &str, pub const MEMBERS: &[&str], pub const STEPS: &[StepMeta], and, where the declaration admits occurrenceField, pub const OCCURRENCE_FIELD: &str with every member private and read through one accessor, so a value is not changed after construction",
 			"diagnosticCode": null
 		},
 		{
-			"rowKey": "kind:nested_entity",
-			"axis": "kind",
-			"selector": "nested_entity",
-			"rustForm": "pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str] and pub const OWNER: &str",
+			"rowKey": "shape:sequence",
+			"axis": "shape",
+			"selector": "sequence",
+			"rustForm": "pub struct N { .. }",
 			"serdeAttributes": [],
-			"mechanism": "the entity row, plus the semantic identity of the owning type beside FIELDS in the type's module",
+			"mechanism": "the record row for a construct its declaration shapes as an ordered sequence of steps, with its admitted members as the record shape carries them",
 			"diagnosticCode": null
 		},
 		{
-			"rowKey": "kind:aggregate_root",
-			"axis": "kind",
-			"selector": "aggregate_root",
-			"rustForm": "pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str] and pub const MEMBERS: &[&str]",
-			"serdeAttributes": [],
-			"mechanism": "the entity row, plus the semantic identities of the aggregate's members; its clauses are carried in the type's metadata constant",
-			"diagnosticCode": null
-		},
-		{
-			"rowKey": "kind:enumeration",
-			"axis": "kind",
+			"rowKey": "shape:enumeration",
+			"axis": "shape",
 			"selector": "enumeration",
 			"rustForm": "pub enum N { .. } (fieldless)",
-			"serdeAttributes": ["rename = \"<variant name>\""],
+			"serdeAttributes": [],
 			"mechanism": "the enum row: one variant per declared variant, the closed set the construct declares",
 			"diagnosticCode": null
 		},
 		{
-			"rowKey": "kind:event",
-			"axis": "kind",
-			"selector": "event",
-			"rustForm": "pub struct N { .. } with private members, one accessor per member, and pub const OCCURRENCE_FIELD: &str",
-			"serdeAttributes": [],
-			"mechanism": "the record row with every member private: a value is built through try_new or Deserialize and read through accessors, so it is not changed after construction",
-			"diagnosticCode": null
-		},
-		{
-			"rowKey": "kind:state_machine",
-			"axis": "kind",
+			"rowKey": "shape:state_machine",
+			"axis": "shape",
 			"selector": "state_machine",
 			"rustForm": "pub struct N { .. } with pub enum NState { .. } and pub const TRANSITIONS: &[TransitionMeta]",
 			"serdeAttributes": [],
-			"mechanism": "the record row, plus one fieldless enum variant per state, serde-named by the state name, and each transition's from and to states, trigger operation, guard clause and emitted events",
+			"mechanism": "the record row, plus one fieldless enum variant per state, serde-named by the state name, and each transition's from and to states, trigger operation, guard clause and emitted occurrences",
 			"diagnosticCode": null
 		},
 		{
-			"rowKey": "kind:process",
-			"axis": "kind",
-			"selector": "process",
-			"rustForm": "pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str] and pub const STEPS: &[StepMeta]",
-			"serdeAttributes": [],
-			"mechanism": "the entity row, plus each step's name, kind, consumed events and emitted events in declared order",
-			"diagnosticCode": null
-		},
-		{
-			"rowKey": "kind:repository",
-			"axis": "kind",
-			"selector": "repository",
+			"rowKey": "shape:interface",
+			"axis": "shape",
+			"selector": "interface",
 			"rustForm": "pub trait N { fn op(&mut self, ..) -> R; .. } with pub const PERSISTS: &[&str]",
 			"serdeAttributes": [],
 			"mechanism": "one trait method per operation, holding no state; parameters and the return map through the field-axis rows; the receiver is &self when the operation declares an empty frame",
 			"diagnosticCode": null
 		},
 		{
-			"rowKey": "kind:domain",
-			"axis": "kind",
-			"selector": "domain",
+			"rowKey": "shape:namespace",
+			"axis": "shape",
+			"selector": "namespace",
 			"rustForm": "pub struct N; with pub const MEMBERS: &[&str] and pub const VOCABULARY: &[TermMeta]",
 			"serdeAttributes": [],
-			"mechanism": "a unit struct naming the namespace, plus its members' semantic identities and its vocabulary; a domain has no instance data",
+			"mechanism": "a unit struct naming the namespace, plus its members' semantic identities and its vocabulary; a namespace has no instance data",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "identity:identified",
+			"axis": "identity",
+			"selector": "identified",
+			"rustForm": "pub const IDENTITY_FIELDS: &[&str], and PartialEq, Eq and Hash over the identity fields",
+			"serdeAttributes": [],
+			"mechanism": "the shape's row without the derived PartialEq, plus the names of the fields that tell the construct's instances apart in declared order beside FIELDS, and PartialEq, Eq and Hash written over those fields; every generated newtype an identity field reaches derives Eq and Hash, and an identity field whose Rust type has neither is refused with UNSUPPORTED_CONSTRUCT",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "identity:value",
+			"axis": "identity",
+			"selector": "value",
+			"rustForm": "derived PartialEq",
+			"serdeAttributes": [],
+			"mechanism": "the shape's row; the derived PartialEq compares every member, which is the value equality the construct declares",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "identity:none",
+			"axis": "identity",
+			"selector": "none",
+			"rustForm": "the shape's row unchanged",
+			"serdeAttributes": [],
+			"mechanism": "the shape's row with no equality beyond what the shape derives; a construct with no identity declares no IDENTITY_FIELDS",
 			"diagnosticCode": null
 		},
 		{
@@ -207,7 +198,7 @@
 			"selector": "operation-contract",
 			"rustForm": "pub const OPERATION_CONTRACTS: &[OperationContractMeta]",
 			"serdeAttributes": [],
-			"mechanism": "each operation's frame and inline Quire requires and ensures clauses, carried as text; a repository method whose frame is empty takes &self",
+			"mechanism": "each operation's frame and inline Quire pre and post clauses, carried as text; an interface method whose frame is empty takes &self",
 			"diagnosticCode": null
 		},
 		{
@@ -444,7 +435,7 @@
 			"rowKey": "unknownPolicy:record/reject",
 			"axis": "unknownPolicy",
 			"selector": {
-				"kind": "record|entity|value_object|nested_entity|aggregate_root|event|state_machine|process",
+				"kind": "record|shape:record|shape:sequence|shape:state_machine",
 				"policy": "reject"
 			},
 			"rustForm": "pub struct N { .. }",
@@ -456,7 +447,7 @@
 			"rowKey": "unknownPolicy:record/preserve",
 			"axis": "unknownPolicy",
 			"selector": {
-				"kind": "record|entity|value_object|nested_entity|aggregate_root|event|state_machine|process",
+				"kind": "record|shape:record|shape:sequence|shape:state_machine",
 				"policy": "preserve"
 			},
 			"rustForm": "UnknownMembers",
@@ -468,7 +459,7 @@
 			"rowKey": "unknownPolicy:record/surface",
 			"axis": "unknownPolicy",
 			"selector": {
-				"kind": "record|entity|value_object|nested_entity|aggregate_root|event|state_machine|process",
+				"kind": "record|shape:record|shape:sequence|shape:state_machine",
 				"policy": "surface"
 			},
 			"rustForm": "UnknownMembers",
@@ -479,7 +470,10 @@
 		{
 			"rowKey": "unknownPolicy:variants/reject",
 			"axis": "unknownPolicy",
-			"selector": { "kind": "enum|enumeration|union", "policy": "reject" },
+			"selector": {
+				"kind": "enum|shape:enumeration|union",
+				"policy": "reject"
+			},
 			"rustForm": "pub enum N { .. }",
 			"serdeAttributes": [],
 			"mechanism": "serde's own default, under which an unrecognised variant is a deserialization error",
@@ -488,7 +482,10 @@
 		{
 			"rowKey": "unknownPolicy:variants/preserve",
 			"axis": "unknownPolicy",
-			"selector": { "kind": "enum|enumeration|union", "policy": "preserve" },
+			"selector": {
+				"kind": "enum|shape:enumeration|union",
+				"policy": "preserve"
+			},
 			"rustForm": "a generated catch-all variant Unknown(String) on an enum, Unknown(UnknownVariant) on a union",
 			"serdeAttributes": [],
 			"mechanism": "a hand-written Serialize and Deserialize that keep the unrecognised tag and, for a union, its payload as a SemanticValue, and round-trip unchanged; validate returns no diagnostic",
@@ -497,7 +494,10 @@
 		{
 			"rowKey": "unknownPolicy:variants/surface",
 			"axis": "unknownPolicy",
-			"selector": { "kind": "enum|enumeration|union", "policy": "surface" },
+			"selector": {
+				"kind": "enum|shape:enumeration|union",
+				"policy": "surface"
+			},
 			"rustForm": "a generated catch-all variant Unknown(String) on an enum, Unknown(UnknownVariant) on a union",
 			"serdeAttributes": [],
 			"mechanism": "as preserve, and validate returns one UNKNOWN_MEMBER_SURFACED for an unrecognised variant",
@@ -507,12 +507,12 @@
 			"rowKey": "unknownPolicy:inert",
 			"axis": "unknownPolicy",
 			"selector": {
-				"kind": "scalar|alias|sequence|map|reference|repository|domain",
+				"kind": "scalar|alias|sequence|map|reference|shape:interface|shape:namespace",
 				"policy": "any"
 			},
 			"rustForm": null,
 			"serdeAttributes": [],
-			"mechanism": "inert: a scalar has no members, a sequence and a map admit every element and every key by construction, and an alias and a reference are transparent, and a repository and a domain carry no instance data. The declared value is carried verbatim into the type's metadata constant and stated inert in the generated documentation; it is never dropped and never refused",
+			"mechanism": "inert: a scalar has no members, a sequence and a map admit every element and every key by construction, and an alias and a reference are transparent, and an interface and a namespace construct carry no instance data. The declared value is carried verbatim into the type's metadata constant and stated inert in the generated documentation; it is never dropped and never refused",
 			"diagnosticCode": null
 		},
 		{

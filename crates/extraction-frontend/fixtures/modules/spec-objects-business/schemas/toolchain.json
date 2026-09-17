@@ -11,7 +11,7 @@
     "name": "@agent-ix/semantic-core",
     "version": "0.2.0"
   },
-  "base": "https://schemas.agent-ix.org/agent-ix/spec-objects-business/0.4.0/",
+  "base": "https://schemas.agent-ix.org/agent-ix/spec-objects-business/0.7.0/",
   "normalization": {
     "name": "absolute-id-and-ref",
     "version": "1.0.0",
@@ -30,6 +30,8 @@
     "Event.json",
     "IdentityField.json",
     "NestedEntity.json",
+    "ObjectFrontmatter.json",
+    "ObjectId.json",
     "OccurrenceField.json",
     "OccurrenceTypeRef.json",
     "Population.json",
@@ -43,5 +45,5 @@
     "Transition.json",
     "ValueObject.json"
   ],
-  "digest": "sha256:0dd2dce65d8c3e0327579387642efb5008e729a688d11a949a79b24cc3e3690c"
+  "digest": "sha256:4e3dac4ce4f5ad37388a5abdfbdca91ce7c7bf4c2764d03fcbdfeb175e605b0c"
 }

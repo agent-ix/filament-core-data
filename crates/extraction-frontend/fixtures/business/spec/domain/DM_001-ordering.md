@@ -1,18 +1,18 @@
 ---
-id: DM-001
+id: DM_001
 title: Ordering
 object: domain
 type: FR
 relationships:
   - target: FR-001
     type: contains
-  - target: AR-001
+  - target: AR_001
     type: contains
-  - target: EN-001
+  - target: EN_001
     type: contains
 ---
 
-# DM-001: Ordering
+# DM_001: Ordering
 
 ## Bounded Context
 

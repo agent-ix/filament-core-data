@@ -68,9 +68,11 @@ drift from the one a `json-schema` consumer receives.
 - The Python backend SHALL hand the generator the `json-schema` target's
   `index.json` beside the documents, not among them, so the construct module
   can read the document's populations.
-- The Python backend SHALL render every contract `1.2.0` construct kind and
-  model member by its own row in the construct table below, and SHALL NOT
-  render one as another kind.
+- The Python backend SHALL render every contract `2.0.0` construct kind by
+  the rows of its identity and shape and the members it carries, and every
+  model member by its own row, in the construct table below; it SHALL name no
+  module construct kind in its source and SHALL NOT render one construct as
+  another.
 - The Python backend SHALL report a lowering refusal unchanged, rather than
   restating it in a second vocabulary.
 - The Python backend SHALL refuse when no producer is injected, and SHALL NOT
@@ -99,32 +101,32 @@ that decision requires.
 
 ## Constructs (FR-142)
 
-A contract `1.2.0` type reaches this target as the `json-schema` target's
+A contract `2.0.0` type reaches this target as the `json-schema` target's
 schema for it (FR-100). `datamodel-code-generator` reads a document's instance
 shape and drops every `x-agent-ix-*` annotation, so the runner renders the
 construct annotations into one more module of the same package,
 `constructs.py`, read from the same documents, and completes the generated
 classes before it renders that module. Every constant in it is keyed by the
 generated class name: the class the generator declared for the type, or, for a
-repository or a domain, which has no class, its `displayName` in class case, so
+construct shaped `interface` or `namespace`, which has no class, its `displayName` in class case, so
 `Order Repository` is keyed `OrderRepository`.
 
 | Construct or member | Rendering |
 |---|---|
-| `entity`, `nested_entity`, `aggregate_root`, `process` | the record's model class, whose `__eq__` and `__hash__` compare the canonical JSON form of its identity fields, so two instances with equal identity fields are one instance. Each identity field is read-only once constructed, because an instance's identity does not change once constructed: assigning or deleting it raises `AttributeError`, while its other fields stay assignable. `IDENTITY_FIELDS` names those fields |
-| `value_object` | the record's model class, whose generated equality is field-by-field; `VALUE_EQUALITY` marks it |
-| `nested_entity` | `OWNER` names the owner class |
-| `aggregate_root`, `domain` | `MEMBERS` names the member classes |
-| `enumeration` | a `StrEnum` of its variants |
-| `event` | the record's model class, frozen: `ConfigDict(frozen=True)` on a pydantic model and `@dataclass(frozen=True)` on a dataclass, and declared unhashable with `__hash__ = None`, since an occurrence has no identity to hash by; `OCCURRENCE_FIELD` names the occurrence field and `IMMUTABLE` marks it |
-| `state_machine` | the machine's model class plus a `<Name>State` `StrEnum` of its states; `TRANSITIONS` lists each transition as (from, to, trigger, guard, emitted events) |
-| `process` | `STEPS` lists its ordered steps as (name, step kind, consumed events, emitted events) |
-| `repository` | a `typing.Protocol` in `constructs.py` whose methods are its operations, snake-cased, typed by the generated classes; `PERSISTS` names the persisted classes. No module of its own, since its schema admits no value |
-| `domain` | no class, since its schema admits no value; `MEMBERS` and `VOCABULARY` in `constructs.py` |
+| `identified` constructs (business `entity`, `nested_entity`, `aggregate_root`, `process`) | the record's model class, whose `__eq__` and `__hash__` compare the canonical JSON form of its identity fields, so two instances with equal identity fields are one instance. Each identity field is read-only once constructed, because an instance's identity does not change once constructed: assigning or deleting it raises `AttributeError`, while its other fields stay assignable. `IDENTITY_FIELDS` names those fields |
+| `value` × `record` (business `value_object`) | the record's model class, whose generated equality is field-by-field; `VALUE_EQUALITY` marks it |
+| `identified` × `record` carrying `owner` (business `nested_entity`) | `OWNER` names the owner class |
+| constructs carrying `members` (business `aggregate_root`, `domain`) | `MEMBERS` names the member classes |
+| `none` × `enumeration` (business `enumeration`) | a `StrEnum` of its variants |
+| `none` × `record` carrying `occurrenceField` (business `event`) | the record's model class, frozen: `ConfigDict(frozen=True)` on a pydantic model and `@dataclass(frozen=True)` on a dataclass, and declared unhashable with `__hash__ = None`, since an occurrence has no identity to hash by; `OCCURRENCE_FIELD` names the occurrence field and `IMMUTABLE` marks it |
+| `none` × `state_machine` (business `state_machine`) | the machine's model class plus a `<Name>State` `StrEnum` of its states; `TRANSITIONS` lists each transition as (from, to, trigger, guard, emitted events) |
+| `identified` × `sequence` (business `process`) | `STEPS` lists its ordered steps as (name, step kind, consumed events, emitted events) |
+| `none` × `interface` (business `repository`) | a `typing.Protocol` in `constructs.py` whose methods are its operations, snake-cased, typed by the generated classes; `PERSISTS` names the persisted classes. No module of its own, since its schema admits no value |
+| `none` × `namespace` (business `domain`) | no class, since its schema admits no value; `MEMBERS` and `VOCABULARY` in `constructs.py` |
 | `supertypes` | the subtype's class carries its supertypes' fields and registers with each abstract ancestor, so `isinstance` holds; `SUPERTYPES` names the supertypes |
 | `abstract` | an `abc.ABC` with one abstract property per field, which does not construct; `ABSTRACT` marks the type |
 | `subsets`, `redefines` | `FIELD_SUBSETS` and `FIELD_REDEFINES`, by class and field name |
-| operation `frame`, `requires`, `ensures` | `OPERATION_FRAMES` and `OPERATION_CLAUSES`, keyed `<Class>.<operation>` |
+| operation `frame` and inline `pre` and `post` clauses | `OPERATION_FRAMES` and `OPERATION_CLAUSES`, keyed `<Class>.<operation>` |
 | document `populations` | `POPULATIONS`, each member as (class, lower, upper extent), read from `index.json` |
 | `TYPE_KIND` | the construct kind of each type |
 
@@ -162,7 +164,7 @@ generated class.
 | FR-136-AC-5 | A producer that exits non-zero returns state `invalid` carrying `BACKEND_CONTRACT_VIOLATION` naming the profile, and no files | Test (TC-1534) |
 | FR-136-AC-6 | The documents handed to the producer are the `json-schema` target's own documents under its own names, with its manifest excluded | Test (TC-1535) |
 | FR-136-AC-7 | The module the seam imports for the Python backend names no file-system and no child-process module | Test (TC-1536) |
-| FR-136-AC-8 | A `python-pydantic-v2` and a `python-dataclass` request over a `1.2.0` document whose `ConfigVersion` is an `entity` each return state `success` with a `ConfigVersion.py` module declaring class `ConfigVersion`, and a `constructs.py` whose `TYPE_KIND` maps it to `entity` and whose `IDENTITY_FIELDS` maps it to `id` | Test (TC-1765) |
+| FR-136-AC-8 | A `python-pydantic-v2` and a `python-dataclass` request over a `2.0.0` document whose `ConfigVersion` is an `entity` each return state `success` with a `ConfigVersion.py` module declaring class `ConfigVersion`, and a `constructs.py` whose `TYPE_KIND` maps it to `entity` and whose `IDENTITY_FIELDS` maps it to `id` | Test (TC-1765) |
 | FR-136-AC-9 | A `python-pydantic-v2` and a `python-dataclass` request over the lifted config-version-table golden each return state `success` with `ConfigVersion.py` and `JsonObject.py` modules and no module named from an artifact id, while the `json-schema` document the modules generate from carries `x-agent-ix-semantic-id` `ix://agent-ix/config-service/type/FR-006` | Test (TC-1769) |
 | FR-136-AC-10 | A `python-pydantic-v2` and a `python-dataclass` request over the constructs fixture each return state `success`; every class is named by its type's `displayName` and none is named `Model`; `OrderLifecycle.py` declares `OrderLifecycleState`; no module is named for the repository or the domain; and `constructs.py` carries each construct table row and the `OrderRepository` protocol | Test (TC-1775) |
 | FR-136-AC-11 | Over the constructs fixture, in both Python targets, two `Order` instances with one `id` and different other fields are equal and hash equal, instances with different `id`s are unequal, an `Order` is an instance of `Party`, `Party()` raises `TypeError`, assigning an `Order`'s `id` raises `AttributeError` while assigning its `status` succeeds, assigning a field of an `OrderPlaced` instance raises, and `hash` of an `OrderPlaced` raises `TypeError` | Test (TC-1783) |

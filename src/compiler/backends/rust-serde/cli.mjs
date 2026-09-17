@@ -22,6 +22,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { constructFeatures } from "../../constructs.mjs";
 import {
 	buildRegister,
 	checkRegister,
@@ -50,26 +51,17 @@ const ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
 export const BACKEND = Object.freeze({
 	identity: "ix://agent-ix/filament-core-data/rust-backend",
 	version: "0.1.0",
-	supportedIrVersions: ["1.0.0", "1.1.0", "1.2.0"],
+	supportedIrVersions: ["1.0.0", "1.1.0", "2.0.0"],
 	supportedFeatures: [
 		"kind:scalar",
 		"kind:record",
-		"kind:entity",
-		"kind:value_object",
-		"kind:nested_entity",
-		"kind:aggregate_root",
-		"kind:enumeration",
-		"kind:event",
-		"kind:state_machine",
-		"kind:process",
-		"kind:repository",
-		"kind:domain",
 		"kind:enum",
 		"kind:union",
 		"kind:alias",
 		"kind:sequence",
 		"kind:map",
 		"kind:reference",
+		...constructFeatures(),
 	],
 	options: {},
 });

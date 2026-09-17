@@ -179,8 +179,8 @@ export const OPERATORS = Object.freeze([
 			[/!Object\.hasOwn\(KERNEL_SCALARS, scalar\)/, "false"],
 			[/!applies\(keyword, resolved\.kind, resolved\.scalar\)/, "false"],
 			[
-				/"kind": "scalar\|alias\|sequence\|map\|reference\|repository\|domain"/,
-				'"kind": "scalar|alias|sequence|map|record|reference|repository|domain"',
+				/"kind": "scalar\|alias\|sequence\|map\|reference\|shape:interface\|shape:namespace"/,
+				'"kind": "scalar|alias|sequence|map|record|reference|shape:interface|shape:namespace"',
 			],
 		],
 	},
@@ -347,7 +347,7 @@ export function structureOf(catalogue) {
 }
 
 /**
- * Copies the backend, and the two modules it imports from outside its own
+ * Copies the backend, and the modules and data it reads from outside its own
  * directory, into a scratch tree. Nothing in the working tree is written.
  */
 export function scratchCopy(root, label) {
@@ -372,6 +372,13 @@ export function scratchCopy(root, label) {
 	// The construct list, which the mapping reads for the kinds it renders.
 	const constructs = join(base, "src", "compiler", "constructs.mjs");
 	cpSync(join(root, "src", "compiler", "constructs.mjs"), constructs);
+	// The core construct vocabulary and the IR schema the construct module reads
+	// its members, shapes and core kinds from.
+	for (const name of ["construct-vocabulary.json", "semantic-ir.schema.json"]) {
+		const schema = join(base, "schema", "semantic", "v1", name);
+		mkdirSync(dirname(schema), { recursive: true });
+		cpSync(join(root, "schema", "semantic", "v1", name), schema);
+	}
 	// The compiler registry, which the construct list names its advisory from.
 	cpSync(
 		join(root, "src", "compiler", "diagnostics.mjs"),

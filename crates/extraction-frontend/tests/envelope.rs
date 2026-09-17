@@ -209,7 +209,7 @@ fn tc_1249_manifest_digest_and_lock_digest_equal_sha256sum_computed_outside_the_
     let manifest_hex = sha256sum(&manifest);
     assert_eq!(block.manifest_digest, format!("sha256:{manifest_hex}"));
 
-    let lines = format!("agent-ix/spec-objects-business@0.4.0:{manifest_hex}\n");
+    let lines = format!("agent-ix/spec-objects-business@0.7.0:{manifest_hex}\n");
     assert_eq!(
         block.lock_digest,
         format!("sha256:{}", sha256sum(lines.as_bytes()))
@@ -223,7 +223,7 @@ fn tc_1249_manifest_digest_and_lock_digest_equal_sha256sum_computed_outside_the_
     let block = envelope::package_block(&bundle, &modules);
     let extra_hex = sha256sum(&fs::read(extra_module().join("manifest.yaml")).expect("manifest"));
     let lines = format!(
-        "agent-ix/objects-extra@0.1.0:{extra_hex}\nagent-ix/spec-objects-business@0.4.0:{manifest_hex}\n"
+        "agent-ix/objects-extra@0.1.0:{extra_hex}\nagent-ix/spec-objects-business@0.7.0:{manifest_hex}\n"
     );
     assert_eq!(
         block.lock_digest,
@@ -390,7 +390,7 @@ fn tc_1348_provenance_module_entry_carries_the_vendored_manifest_sha256() {
         &fs::read_to_string(business_module().join("PROVENANCE.json")).expect("PROVENANCE.json"),
     )
     .expect("json");
-    assert_eq!(provenance["revision"], "f7fdfda");
+    assert_eq!(provenance["revision"], "7b7b0bc");
     let expected = provenance["manifest_sha256"]
         .as_str()
         .expect("manifest_sha256");

@@ -96,7 +96,7 @@ features; this crate declares no `jsonschema` dependency of its own
 | `potential_utf` | `0.1.6` | Unicode-3.0 | crates.io |
 | `powerfmt` | `0.2.0` | MIT OR Apache-2.0 | crates.io |
 | `proc-macro2` | `1.0.107` | MIT OR Apache-2.0 | crates.io |
-| `quire-rs` | `0.46.0` | AGPL-3.0-or-later | https://github.com/agent-ix/quire-rs?rev=d86f7d6#d86f7d6e |
+| `quire-rs` | `0.46.0` | AGPL-3.0-or-later | https://github.com/agent-ix/quire-rs?rev=08d39ea#08d39ea2 |
 | `quote` | `1.0.47` | MIT OR Apache-2.0 | crates.io |
 | `rayon` | `1.12.0` | MIT OR Apache-2.0 | crates.io |
 | `rayon-core` | `1.13.0` | MIT OR Apache-2.0 | crates.io |

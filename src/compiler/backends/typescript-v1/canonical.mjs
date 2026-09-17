@@ -244,7 +244,7 @@ function materializeField(field, version) {
 		...field,
 		multiplicity,
 		presence:
-			version === "1.2.0" &&
+			version === "2.0.0" &&
 			(field.presence === "required" || field.presence === "optional")
 				? field.presence
 				: lower >= 1
@@ -255,7 +255,7 @@ function materializeField(field, version) {
 }
 
 /**
- * The normalized document: a deep copy with the 1.1/1.2 members materialized.
+ * The normalized document: a deep copy with the 1.1/2.0 members materialized.
  * The argument is left byte-identical (FR-069).
  */
 export function normalizeIr(document) {
@@ -264,7 +264,7 @@ export function normalizeIr(document) {
 		copy === null ||
 		typeof copy !== "object" ||
 		Array.isArray(copy) ||
-		(copy.contractVersion !== "1.1.0" && copy.contractVersion !== "1.2.0") ||
+		(copy.contractVersion !== "1.1.0" && copy.contractVersion !== "2.0.0") ||
 		!Array.isArray(copy.types)
 	) {
 		return copy;
