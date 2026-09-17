@@ -56,11 +56,17 @@ function probeNode(backend, selector) {
 	const shape = selector.slice("shape:".length);
 	const kind = { module: "agent-ix/detector", name: `probe-${shape}` };
 	const node = { kind };
+	// A shape whose declaration must declare a member presence declares it, or
+	// the declaration is refused and the probe binds nothing (FR-142-AC-14).
+	const members = {};
+	for (const requirement of CONSTRUCT_VOCABULARY.shapeRequirements ?? [])
+		if (requirement.shape === shape)
+			members[requirement.member] = requirement.presence;
 	backend.constructs.bindConstructs({
 		constructs: [
 			{
 				kind,
-				construct: { identity: "none", shape, members: {}, meaning: "probe" },
+				construct: { identity: "none", shape, members, meaning: "probe" },
 			},
 		],
 		types: [node],
