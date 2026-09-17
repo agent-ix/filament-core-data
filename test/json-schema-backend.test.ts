@@ -215,6 +215,24 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		expect(line.type).toBe("object");
 		expect(line["x-agent-ix-equality"]).toBe("value");
 		expect(schema("OrderPlaced").readOnly).toBe(true);
+		// `readOnly` is the declared `immutable` flag, not the presence of an
+		// occurrence field: the same document with the flag withdrawn renders the
+		// event mutable (FR-142-AC-14, FR-100-AC-10).
+		const mutable = JSON.parse(readFileSync(constructs, "utf8")) as {
+			constructs: { construct: { immutable?: boolean } }[];
+		};
+		const flagged = mutable.constructs.filter(
+			(entry) => entry.construct.immutable === true,
+		);
+		expect(flagged.length).toBeGreaterThan(0);
+		for (const entry of flagged) delete entry.construct.immutable;
+		const withoutFlag = jsonSchemaBackend.generate({ ir: mutable });
+		const withoutFlagSchema = JSON.parse(
+			withoutFlag.files.find((one) => one.path === "OrderPlaced.json")?.text ??
+				"{}",
+		);
+		expect(withoutFlagSchema.readOnly).toBeUndefined();
+		expect(withoutFlagSchema["x-agent-ix-occurrence-field"]).toBe("placedAt");
 		expect(schema("OrderPlaced")["x-agent-ix-occurrence-field"]).toBe(
 			"placedAt",
 		);

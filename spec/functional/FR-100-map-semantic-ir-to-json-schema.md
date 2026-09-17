@@ -85,7 +85,7 @@ frontend, a generated programming-language package, or an ambient registry.
 | `identified` × `record` carrying `owner` (business `nested_entity`) | as for `identified` × `record` | `x-agent-ix-owner` |
 | `identified` × `record` carrying `members` (business `aggregate_root`) | as for `identified` × `record` | `x-agent-ix-members`; its clauses in `x-agent-ix-clauses` |
 | `none` × `enumeration` (business `enumeration`) | as for `enum` | none |
-| `none` × `record` carrying `occurrenceField` (business `event`) | as for `record`, plus `readOnly: true` | `x-agent-ix-occurrence-field` |
+| `none` × `record` carrying `occurrenceField` (business `event`) | as for `record`, plus `readOnly: true` when the declaration states `immutable` | `x-agent-ix-occurrence-field` |
 | `none` × `state_machine` (business `state_machine`) | as for `record`, plus `$defs.<Name>State`, a string `enum` of its state names | `x-agent-ix-states`, `x-agent-ix-transitions` |
 | `identified` × `sequence` (business `process`) | as for `identified` × `record` | `x-agent-ix-steps` |
 | `none` × `interface` (business `repository`) | `not: {}`, which no instance satisfies | `x-agent-ix-persists`; its operations in `x-agent-ix-operations` |

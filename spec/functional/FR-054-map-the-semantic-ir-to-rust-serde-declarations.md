@@ -90,7 +90,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | `identified` × `record` carrying `owner` (business `nested_entity`) | as for `identified` × `record`, plus `pub const OWNER: &str`, the owning type's semantic identity | as for `record` |
 | `identified` × `record` carrying `members` (business `aggregate_root`) | as for `identified` × `record`, plus `pub const MEMBERS: &[&str]`, the members' semantic identities | as for `record` |
 | `none` × `enumeration` (business `enumeration`) | fieldless `pub enum N { .. }`, one variant per declared variant | as for `enum` |
-| `none` × `record` carrying `occurrenceField` (business `event`) | `pub struct N { .. }` with every member private, one `&self` accessor per member, and `pub const OCCURRENCE_FIELD: &str` | as for `record`; `try_new` and `Deserialize` are the only ways to build a value |
+| `none` × `record` carrying `occurrenceField` and declaring `immutable` (business `event`) | `pub struct N { .. }` with every member private, one `&self` accessor per member, and `pub const OCCURRENCE_FIELD: &str` | as for `record`; `try_new` and `Deserialize` are the only ways to build a value |
 | `none` × `state_machine` (business `state_machine`) | `pub struct N { .. }` as for `record`, plus `pub enum NState { .. }`, one fieldless variant per state, and `pub const TRANSITIONS: &[TransitionMeta]` | as for `record`; each state variant carries `#[serde(rename = "<state name>")]` where the identifier differs |
 | `identified` × `sequence` (business `process`) | as for `identified` × `record`, plus `pub const STEPS: &[StepMeta]` | as for `record` |
 | `none` × `interface` (business `repository`) | `pub trait N { .. }`, one method per operation, its parameters and return mapped by the field rules, plus `pub const PERSISTS: &[&str]` | none: a repository holds no state |
@@ -109,8 +109,9 @@ construct's disposition is written down rather than decided at the keyboard.
     two instances with equal identity fields are one instance; every generated
     newtype an identity field reaches derives `Eq` and `Hash`;
   - a `value` construct derives `PartialEq`, which compares every member;
-  - a construct carrying `occurrenceField` is immutable: no member is public, so a value cannot change
-    after `try_new` or `Deserialize` builds it;
+  - a construct whose declaration states the `immutable` flag renders immutable: no member is public,
+    so a value cannot change after `try_new` or `Deserialize` builds it; a construct that does not
+    state the flag renders mutable, whatever members it carries;
   - a `state_machine`-shaped construct's transition names its `from` and `to` states and its
     trigger operation by name, its guard by clause identifier, and its emitted
     events by semantic identity;

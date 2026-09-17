@@ -587,7 +587,9 @@ export function constructOf(type, byIdentity = new Map()) {
 	)
 		facts.occurrenceField = fieldName(type.occurrenceField);
 	if (equalityOf(type) === "value") facts.equality = "value";
-	if (admits(type, "occurrenceField")) facts.immutable = true;
+	// Immutability is declared, not inferred from a member: a construct is
+	// immutable when its declaration states the `immutable` flag.
+	if (declarationOf(type)?.immutable === true) facts.immutable = true;
 	if (admits(type, "states")) {
 		facts.states = list(type.states).map((state) => state.name);
 	}

@@ -2387,7 +2387,8 @@
 				},
 				"references": {},
 				"rules": ["identity_field_forbidden", "occurrence_field_required"],
-				"meaning": "quire.meaning.model.value-type/v1"
+				"meaning": "quire.meaning.model.value-type/v1",
+				"immutable": true
 			}
 		},
 		{
