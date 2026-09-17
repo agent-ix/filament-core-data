@@ -54,6 +54,7 @@ matches on a construct kind's name. Backends dispatch on a construct's
 
 - Reader diagnostics for every violated declaration or rule, each at a JSON pointer
 - Each backend's rendering of every construct kind, by the mapping row its shape and identity select
+- `src/compiler/constructs.mjs`: the one Node reading of the core vocabulary, the constructs table and a kind's shape and identity, read by the Node reader and every backend
 
 ## Behavior
 
