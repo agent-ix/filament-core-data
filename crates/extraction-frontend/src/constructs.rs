@@ -18,7 +18,7 @@
 //! emitted empty until filament-core-data#154 bumps the engine and lifts
 //! them (TC-1755).
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use serde::Serialize;
 
@@ -320,13 +320,55 @@ pub(crate) struct Pending {
     pub lowering: Lowering,
 }
 
-/// Assign every `nested_entity` its `owner`: the one entity, nested entity
-/// or aggregate root whose composite relationship targets it. A nested
-/// entity with no such owner, or with more than one, is refused and removed
-/// with its aliases.
-pub(crate) fn assign_owners(pending: &mut Vec<Pending>) -> Vec<Diagnostic> {
+/// Assign every `nested_entity` its `owner` and apply refusals to a fixed
+/// point.
+///
+/// A nested entity's owner is the one entity, nested entity or aggregate root
+/// whose composite relationship targets it; with no such owner, or more than
+/// one, it is refused. An artifact whose relationship targets an identity in
+/// `refused` (an artifact of this bundle that lowered to nothing) is refused
+/// too. Each refusal can orphan a nested entity or leave another edge
+/// dangling, so the pass repeats until no artifact is refused, and no emitted
+/// owner or relationship names a refused artifact. A refused artifact is
+/// removed with its aliases; its own diagnostics are kept, before its refusal.
+pub(crate) fn assign_owners(
+    pending: &mut Vec<Pending>,
+    mut refused: BTreeSet<String>,
+) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
+    loop {
+        let owners = composite_owners(pending);
+        let mut round: Vec<(Pending, String)> = Vec::new();
+        let mut kept = Vec::with_capacity(pending.len());
+        for mut item in pending.drain(..) {
+            match refusal_rule(&mut item, &owners, &refused) {
+                Some(rule) => round.push((item, rule)),
+                None => kept.push(item),
+            }
+        }
+        *pending = kept;
+        if round.is_empty() {
+            return diagnostics;
+        }
+        for (item, rule) in round {
+            refused.insert(item.lowering.definition.identity.clone());
+            diagnostics.extend(item.lowering.diagnostics);
+            diagnostics.push(refusal(
+                &item.id,
+                &item.path,
+                &item.object,
+                &rule,
+                item.head,
+            ));
+        }
+    }
+}
+
+/// Every composite target, with the identities of the entities, nested
+/// entities and aggregate roots that contain it.
+fn composite_owners(pending: &[Pending]) -> BTreeMap<String, Vec<String>> {
     let mut owners: BTreeMap<String, Vec<String>> = BTreeMap::new();
-    for item in pending.iter() {
+    for item in pending {
         let definition = &item.lowering.definition;
         if !matches!(
             definition.kind,
@@ -341,31 +383,39 @@ pub(crate) fn assign_owners(pending: &mut Vec<Pending>) -> Vec<Diagnostic> {
             }
         }
     }
-    let mut diagnostics = Vec::new();
-    pending.retain_mut(|item| {
-        if item.lowering.definition.kind != Kind::NestedEntity {
-            return true;
-        }
-        let found = owners
-            .get(&item.lowering.definition.identity)
-            .map(Vec::as_slice)
-            .unwrap_or(&[]);
-        if let [owner] = found {
-            item.lowering.definition.construct.owner = Some(owner.clone());
-            true
-        } else {
-            diagnostics.push(refusal(
-                &item.id,
-                &item.path,
-                &item.object,
-                &format!(
-                    "{} entities contain it, and a nested entity has exactly one owner",
-                    found.len()
-                ),
-                item.head.clone(),
-            ));
-            false
-        }
-    });
-    diagnostics
+    owners
+}
+
+/// The rule `item` breaks this round, or `None` after assigning its owner.
+fn refusal_rule(
+    item: &mut Pending,
+    owners: &BTreeMap<String, Vec<String>>,
+    refused: &BTreeSet<String>,
+) -> Option<String> {
+    let definition = &mut item.lowering.definition;
+    if let Some(edge) = relationships(definition)
+        .iter()
+        .find(|r| refused.contains(&r.target))
+    {
+        return Some(format!(
+            "its `{}` relationship targets {}, which lowers to nothing",
+            edge.verb, edge.target
+        ));
+    }
+    if definition.kind != Kind::NestedEntity {
+        return None;
+    }
+    let found = owners
+        .get(&definition.identity)
+        .map(Vec::as_slice)
+        .unwrap_or(&[]);
+    if let [owner] = found {
+        definition.construct.owner = Some(owner.clone());
+        None
+    } else {
+        Some(format!(
+            "{} entities contain it, and a nested entity has exactly one owner",
+            found.len()
+        ))
+    }
 }

@@ -64,8 +64,10 @@ artifact id. An artifact of any other object type lifts to a `record`.
   - is a `state_machine` with no operation;
   - is a `repository` with a field or with no operation;
   - is a `domain` with a field or an operation;
-  - is a `nested_entity` with no owner or more than one.
-- A refused artifact SHALL emit no type definition and no alias.
+  - is a `nested_entity` with no owner or more than one;
+  - has a relationship whose target is an artifact of the bundle that lowers to nothing.
+- A refused artifact SHALL emit no type definition and no alias, and SHALL keep its own diagnostics.
+- The frontend SHALL apply refusals to a fixed point before it emits any type, so that an owner lost to a refusal refuses its nested entity and no emitted `owner` or relationship names a refused artifact.
 - The frontend SHALL NOT emit a construct with a built-in rule approximated.
 
 ## Constraints
@@ -82,7 +84,7 @@ artifact id. An artifact of any other object type lifts to a `record`.
 | FR-143-AC-1 | The `business` fixture lifts to a `1.2.0` document holding one construct of each of the ten kinds, and the reader accepts it: `FR-001` and `PR-001` name their `id` field in `identityFields`, `AR-001`'s `members` are `FR-001` and `VO-001`, `NE-001`'s `owner` is `FR-001`, `EV-001`'s `occurrenceField` is its `placedAt` field, `RP-001` persists `FR-001`, and `DM-001`'s `members` are `AR-001`, `EN-001` and `FR-001`. | Test (TC-1751) |
 | FR-143-AC-2 | Every type identity of the `business` fixture ends in its artifact id and every `displayName` is its declared name; renaming a declared name leaves every relationship byte-identical. | Test (TC-1752) |
 | FR-143-AC-3 | Each rule of "Built-in rules at the artifact" broken on one artifact yields one blocking `ARTIFACT_NOT_LOWERED` naming that rule, and no type of that artifact is emitted. | Test (TC-1753) |
-| FR-143-AC-4 | A `nested_entity` no composite relationship targets, and one two owners target, are each refused naming the owner rule. | Test (TC-1754) |
+| FR-143-AC-4 | A `nested_entity` no composite relationship targets, and one two owners target, are each refused naming the owner rule; when nested entity `NE-001` is refused and `NE-002` is owned only by `NE-001`, `NE-002` is refused too with its own declared loss kept, and no emitted `owner` or relationship names a refused artifact. | Test (TC-1754) |
 | FR-143-AC-5 | The `business` fixture's `SM-001` lifts the states `draft`, `placed`, `shipped` and `cancelled` with transitions `draft`→`placed`, `placed`→`shipped` and `placed`→`cancelled`; `PR-001` lifts the steps `placed`, `picked` and `shipped` in order; and `DM-001` lifts a non-empty `vocabulary`. | Test (TC-1755) |
 
 ## Dependencies

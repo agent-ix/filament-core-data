@@ -809,22 +809,61 @@ fn refusals(lowered: &Lowered) -> Vec<&Diagnostic> {
         .collect()
 }
 
-/// Exactly one blocking refusal of `id` naming `rule`, and no type of `id`.
+/// The ids every construct refusal of `lowered` names.
+fn refused_ids(lowered: &Lowered) -> Vec<String> {
+    refusals(lowered)
+        .iter()
+        .filter_map(|d| {
+            d.message
+                .strip_prefix("artifact ")
+                .and_then(|rest| rest.split(' ').next())
+                .map(str::to_owned)
+        })
+        .collect()
+}
+
+/// Exactly one blocking refusal of `id` naming `rule`; every other refusal
+/// is one the fixed point derives from it; no type of a refused artifact is
+/// emitted and no emitted owner or relationship names one.
 fn assert_refused(lowered: &Lowered, id: &str, rule: &str) {
     let found = refusals(lowered);
-    assert_eq!(found.len(), 1, "{id}: {found:#?}");
-    let refusal = found[0];
+    let own: Vec<_> = found
+        .iter()
+        .filter(|d| d.message.contains(&format!("artifact {id} ")))
+        .collect();
+    assert_eq!(own.len(), 1, "{id}: {found:#?}");
+    let refusal = own[0];
     assert!(refusal.blocking, "{id}");
-    assert!(
-        refusal.message.contains(&format!("artifact {id} ")) && refusal.message.contains(rule),
-        "{id}: {}",
-        refusal.message
-    );
-    let own = type_ref(id);
-    assert!(
-        lowered.types.iter().all(|t| !t.identity.starts_with(&own)),
-        "{id}: a type is emitted"
-    );
+    assert!(refusal.message.contains(rule), "{id}: {}", refusal.message);
+    for other in found
+        .iter()
+        .filter(|d| !d.message.contains(&format!("artifact {id} ")))
+    {
+        assert!(other.blocking, "{}", other.message);
+        assert!(
+            other.message.contains("relationship targets")
+                || other.message.contains("entities contain it"),
+            "{id}: an underived refusal {}",
+            other.message
+        );
+    }
+    assert_no_edge_to_refused(lowered);
+}
+
+/// No type of a refused artifact is emitted, and no emitted owner or
+/// relationship targets one.
+fn assert_no_edge_to_refused(lowered: &Lowered) {
+    for refused in refused_ids(lowered) {
+        let identity = type_ref(&refused);
+        for t in &lowered.types {
+            assert_ne!(t.identity, identity, "{refused}: a type is emitted");
+            let value = serde_json::to_value(t).expect("serialises");
+            assert_ne!(value["owner"], json!(identity), "{}", t.identity);
+            for edge in value["relationships"].as_array().into_iter().flatten() {
+                assert_ne!(edge["target"], json!(identity), "{}", t.identity);
+            }
+        }
+    }
 }
 
 const PROPERTIES: &str = "## Properties\n\n| Field | Type | Multiplicity | Constraints |\n|-------|------|--------------|-------------|\n| note | String | 1 | |\n\n";
@@ -921,6 +960,59 @@ fn tc_1754_a_nested_entity_with_no_owner_or_two_owners_is_refused_naming_the_own
         )
     });
     assert_refused(&shared, "NE-001", "2 entities contain it");
+
+    // B (NE-001) is refused, and C (NE-002) is owned only by B: the fixed
+    // point refuses C too, and keeps C's own diagnostics.
+    let dir = tempfile::tempdir().expect("tempdir");
+    let root = dir.path().join("business");
+    copy_tree(&fixture("business"), &root);
+    let order = root.join("spec/functional/FR-001-order.md");
+    let text = fs::read_to_string(&order).expect("read");
+    fs::write(
+        &order,
+        text.replace("  - target: NE-001\n    type: contains\n", ""),
+    )
+    .expect("write");
+    let shipment = root.join("spec/functional/NE-001-shipment.md");
+    let text = fs::read_to_string(&shipment).expect("read");
+    fs::write(
+        &shipment,
+        text.replace(
+            "relationships:\n",
+            "relationships:\n  - target: NE-002\n    type: contains\n",
+        ),
+    )
+    .expect("write");
+    fs::write(
+        root.join("spec/functional/NE-002-parcel.md"),
+        "---\nid: NE-002\ntitle: Parcel\nobject: nested_entity\ntype: FR\nname: Parcel\n---\n\n# NE-002: Parcel\n\n## Description\n\nA parcel of one shipment.\n\n## Properties\n\n| Field | Type | Multiplicity | Constraints |\n|-------|------|--------------|-------------|\n| id | UUID | 1 | identity |\n| tags | String | 0..* | |\n",
+    )
+    .expect("write");
+    let chained = lower(&root);
+    let ids = refused_ids(&chained);
+    assert!(ids.contains(&"NE-001".to_owned()), "{ids:?}");
+    let parcel: Vec<_> = refusals(&chained)
+        .into_iter()
+        .filter(|d| d.message.contains("artifact NE-002 "))
+        .collect();
+    assert_eq!(parcel.len(), 1, "{:#?}", chained.diagnostics);
+    assert!(
+        parcel[0].message.contains("0 entities contain it"),
+        "{}",
+        parcel[0].message
+    );
+    assert!(
+        chained
+            .diagnostics
+            .iter()
+            .any(|d| d.code == WireCode::Registry(Code::DeclaredLoss)
+                && d.locus
+                    .as_ref()
+                    .is_some_and(|l| l.path.ends_with("NE-002-parcel.md"))),
+        "NE-002's own declared loss is dropped: {:#?}",
+        chained.diagnostics
+    );
+    assert_no_edge_to_refused(&chained);
 }
 
 /// The names of `member`'s entries, read by `key`.

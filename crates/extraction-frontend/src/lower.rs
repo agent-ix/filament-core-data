@@ -1088,6 +1088,9 @@ pub fn lower_bundle(
         .collect();
     let mut superseded: BTreeSet<String> = BTreeSet::new();
     let mut pending: Vec<Pending> = Vec::new();
+    // The `type/` identities of artifacts whose lowering failed: an edge
+    // naming one is refused with its source (`assign_owners`).
+    let mut lowered_to_nothing: BTreeSet<String> = BTreeSet::new();
 
     for document in bundle.documents() {
         let Some(object) = document.object() else {
@@ -1261,6 +1264,11 @@ pub fn lower_bundle(
                 },
             )
         };
+        if outcome.is_err() {
+            if let Ok(identity) = package.type_identity(document.id()) {
+                lowered_to_nothing.insert(identity);
+            }
+        }
         match outcome {
             Ok(lowering) => pending.push(Pending {
                 id: document.id().to_string(),
@@ -1273,7 +1281,7 @@ pub fn lower_bundle(
             Err(LowerError::NotLowered) | Err(LowerError::Unresolved { .. }) => {}
         }
     }
-    let refusals = assign_owners(&mut pending);
+    let refusals = assign_owners(&mut pending, lowered_to_nothing);
     for item in pending {
         own.extend(item.lowering.diagnostics);
         types.push(item.lowering.definition);

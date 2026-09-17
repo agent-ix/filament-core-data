@@ -1692,7 +1692,7 @@ blocked as stated above.
 | TC-1751 | The `business` fixture lifts to one construct of each kind with the identity fields, members, owner, occurrence field and persisted types its fields and edges name, accepted by the reader | Integration | P0 | FR-143-AC-1, FR-143-CON-2 | ✅ passed |
 | TC-1752 | Every `business` type identity ends in its artifact id and every `displayName` is its declared name; a declared-name rename leaves relationships byte-identical | Property | P0 | FR-143-AC-2, FR-143-CON-1 | ✅ passed |
 | TC-1753 | Each broken built-in rule yields one blocking `ARTIFACT_NOT_LOWERED` naming it, and no type of that artifact is emitted | Unit | P0 | FR-143-AC-3 | ✅ passed |
-| TC-1754 | A `nested_entity` with no owner and one with two owners are each refused naming the owner rule | Unit | P0 | FR-143-AC-4 | ✅ passed |
+| TC-1754 | A `nested_entity` with no owner and one with two owners are each refused naming the owner rule; a nested entity owned only by a refused one is refused too at the fixed point, keeping its own declared loss, and no emitted owner or relationship names a refused artifact | Unit | P0 | FR-143-AC-4 | ✅ passed |
 | TC-1755 | `SM-001` lifts its four states and three transitions, `PR-001` its three ordered steps, and `DM-001` a non-empty vocabulary | Unit | P1 | FR-143-AC-5 | 🚧 blocked on issue #154 |
 | TC-1756 | Published `1.0.0` and `1.1.0` fixtures keep reader verdicts and canonical bytes, and a `1.1.0` document carrying a `1.2.0` node is refused | Integration | P0 | NFR-044-AC-1 | ✅ passed |
 | TC-1757 | The `1.1.0` to `1.2.0` uplift of one document classifies additive | Unit | P0 | NFR-044-AC-2 | ✅ passed |

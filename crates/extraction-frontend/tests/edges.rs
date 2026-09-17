@@ -546,30 +546,53 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
             fs::write(module.join("manifest.yaml"), flipped).expect("write");
             let lift = lift_at(&fixture("business"), &[&business_module(), &module]);
             // A non-composite `contains` leaves the nested entity Shipment
-            // with no owner, which its construct refuses (FR-143); that
-            // refusal is the only blocking diagnostic.
+            // with no owner, which its construct refuses (FR-143). Every other
+            // blocking diagnostic is a refusal the fixed point derives from
+            // it: an artifact whose relationship names a refused one.
             let blocking: Vec<_> = lift
                 .lowered
                 .diagnostics
                 .iter()
                 .filter(|d| d.blocking)
                 .collect();
-            prop_assert_eq!(blocking.len(), 1, "{:?}", blocking);
+            prop_assert!(!blocking.is_empty());
+            let mut refused: Vec<String> = Vec::new();
+            for diagnostic in &blocking {
+                let derived = diagnostic.message.contains("relationship targets");
+                prop_assert!(
+                    derived
+                        || (diagnostic.message.contains("NE-001")
+                            && diagnostic.message.contains("owner")),
+                    "{}",
+                    diagnostic.message
+                );
+                let id = diagnostic
+                    .message
+                    .strip_prefix("artifact ")
+                    .and_then(|rest| rest.split(' ').next())
+                    .expect("a refusal names its artifact");
+                refused.push(format!("ix://agent-ix/orders/type/{id}"));
+            }
+            prop_assert!(refused.iter().any(|r| r.ends_with("/NE-001")));
             prop_assert!(
-                blocking[0].message.contains("NE-001") && blocking[0].message.contains("owner"),
-                "{}",
-                blocking[0].message
+                refused.iter().any(|r| r.ends_with("/FR-001")),
+                "{:?}",
+                refused
             );
             let types = types_json(&lift);
             let base_kept: Vec<&Value> = base_types
                 .iter()
-                .filter(|t| t["identity"] != "ix://agent-ix/orders/type/NE-001")
                 .filter(|t| {
-                    !t["identity"]
-                        .as_str()
-                        .is_some_and(|i| i.starts_with("ix://agent-ix/orders/type/NE-001"))
+                    let identity = t["identity"].as_str().unwrap_or_default();
+                    !refused.iter().any(|r| identity.starts_with(r.as_str()))
                 })
                 .collect();
+            prop_assert!(
+                base_kept
+                    .iter()
+                    .any(|t| t["relationships"].as_array().is_some_and(|r| !r.is_empty())),
+                "no surviving type carries a relationship to flip"
+            );
             prop_assert_eq!(base_kept.len(), types.len());
             for (base_type, flipped_type) in base_kept.into_iter().zip(&types) {
                 prop_assert_eq!(&base_type["displayName"], &flipped_type["displayName"]);
