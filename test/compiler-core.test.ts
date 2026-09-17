@@ -4732,6 +4732,7 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 			"reviews/",
 			"scripts/test-matrix-summary.mjs",
 			"scripts/build-compatibility-cases.mjs",
+			"scripts/build-evolution-goldens.mjs",
 			"scripts/build-compiler-docs.mjs",
 			"docs/semantic-data-system/compiler-diagnostics.md",
 			"docs/semantic-data-system/ir-compatibility-policy.md",
