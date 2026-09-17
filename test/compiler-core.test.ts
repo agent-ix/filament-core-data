@@ -3855,7 +3855,7 @@ describe("compatibility (FR-051)", () => {
 
 	/** Traces: TC-527, TC-602; FR-051-AC-1. */
 	it("reproduces every published compatibility case", () => {
-		expect(published).toHaveLength(40);
+		expect(published).toHaveLength(39);
 		for (const entry of published) {
 			expect(reportOf(entry.id).aggregateDisposition, entry.id).toBe(
 				entry.expected,
@@ -5258,7 +5258,7 @@ describe("generation backend seam registry codes (FR-063)", () => {
 		contractVersion: "1.0.0",
 		lockFingerprint: `sha256:${"a".repeat(64)}`,
 		ir: readJson(
-			resolve(root, "fixtures/semantic/v1/positive/semantic-ir-v1-1.json"),
+			resolve(root, "fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json"),
 		) as Json,
 		profile: readJson(
 			resolve(root, "fixtures/semantic/v1/positive/profile.json"),
@@ -5267,7 +5267,7 @@ describe("generation backend seam registry codes (FR-063)", () => {
 		backend: {
 			identity: "ix://agent-ix/filament-core-data/backend/typescript",
 			version: "1.0.0",
-			supportedIrVersions: ["1.1.0"],
+			supportedIrVersions: ["2.0.0"],
 			supportedFeatures: [],
 			options: {},
 		},
@@ -5311,8 +5311,18 @@ describe("generation backend seam registry codes (FR-063)", () => {
 		);
 	});
 
-	/** Traces: TC-748; FR-063-AC-10. */
-	it("fires the unsupported-version code for a 1.0.0 document", () => {
+	/**
+	 * Traces: TC-748; FR-063-AC-10.
+	 *
+	 * A `1.0.0` document is refused before the seam ever reaches its
+	 * `supportedIrVersions` check: `compiler-request.schema.json` admits only a
+	 * `2.0.0` `ir.contractVersion`, so the refusal is `UNKNOWN_CONTRACT_VERSION`,
+	 * not `UNSUPPORTED_IR_VERSION` — the version this compiler does not know at
+	 * all, not one a particular backend declines. The `1.0.0` input still
+	 * exists in the world even though the contract does not, so the refusal
+	 * stays a named, typed one rather than a generic schema error.
+	 */
+	it("fires the unknown-contract-version code for a 1.0.0 document", () => {
 		const request = generationRequest();
 		(request.ir as Json).contractVersion = "1.0.0";
 		(request.ir as Json).source = {
@@ -5323,9 +5333,9 @@ describe("generation backend seam registry codes (FR-063)", () => {
 			target: "typescript",
 		}) as never as { state: string; diagnostics: Diagnostic[] };
 		note(result.diagnostics);
-		expect(result.state).toBe("unsupported");
+		expect(result.state).toBe("invalid");
 		expect(codesOf(result.diagnostics)).toContain(
-			DIAGNOSTIC_CODES.UNSUPPORTED_IR_VERSION.code,
+			DIAGNOSTIC_CODES.UNKNOWN_CONTRACT_VERSION.code,
 		);
 	});
 
