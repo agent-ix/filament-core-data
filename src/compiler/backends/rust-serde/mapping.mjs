@@ -50,8 +50,9 @@ function wireFormOf(extensions) {
 	return undefined;
 }
 
-/** The nine kernel scalars and their Rust bases; `bytes` is the one refusal. */
+/** The v1.2 kernel scalars and their Rust bases; `bytes` is the one refusal. */
 export const KERNEL_SCALARS = Object.freeze({
+	any: "crate::support::SemanticValue",
 	boolean: "bool",
 	integer: "i64",
 	number: "f64",
@@ -425,7 +426,7 @@ function mapType(definition, context) {
 			if (!Object.hasOwn(KERNEL_SCALARS, scalar)) {
 				raise(
 					RUST_BACKEND_CODES.UNSUPPORTED_SCALAR,
-					`the type ${fragment(identity)} names the scalar ${fragment(scalar)}, which is outside the nine kernel scalars`,
+					`the type ${fragment(identity)} names the scalar ${fragment(scalar)}, which this backend does not support`,
 					locus,
 				);
 				return undefined;

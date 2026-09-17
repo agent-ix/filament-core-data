@@ -9,7 +9,7 @@ status: normative
 # Rust/Serde backend mapping and declared decisions
 
 Rendered from `src/compiler/backends/rust-serde/mapping-table.json`, which is
-the single machine-readable mapping table. 48 rows across
+the single machine-readable mapping table. 49 rows across
 9 axes. A construct that selects no row and no named refusal is an
 `agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT`; the mapping is total by
 construction, not by claim.
@@ -33,6 +33,7 @@ construction, not by claim.
 
 | Selector | Rust form | Serde | Mechanism | Refusal |
 |---|---|---|---|---|
+| `any` | `SemanticValue` | — | lossless JSON value retained by crate::support::SemanticValue | — |
 | `boolean` | `bool` | — | JSON boolean | — |
 | `integer` | `i64` | — | JSON number with no fraction or exponent | — |
 | `number` | `f64` | — | JSON number | — |

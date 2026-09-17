@@ -189,6 +189,7 @@ fn is_unit(text: &str) -> bool {
 
 const SCALARS: &[&str] = &[
     "boolean", "integer", "number", "string", "bytes", "date", "datetime", "duration", "uuid",
+    "any",
 ];
 const KINDS: &[&str] = &[
     "scalar",
@@ -199,7 +200,46 @@ const KINDS: &[&str] = &[
     "sequence",
     "map",
     "reference",
+    "entity",
+    "value_object",
+    "nested_entity",
+    "aggregate_root",
+    "enumeration",
+    "event",
+    "state_machine",
+    "process",
+    "repository",
+    "domain",
 ];
+/// The contract 1.2.0 kinds: one construct per modelling object type.
+const CONSTRUCT_KINDS: &[&str] = &[
+    "entity",
+    "value_object",
+    "nested_entity",
+    "aggregate_root",
+    "enumeration",
+    "event",
+    "state_machine",
+    "process",
+    "repository",
+    "domain",
+];
+/// The construct members, each with the kinds that carry it.
+const CONSTRUCT_MEMBERS: &[(&str, &[&str])] = &[
+    (
+        "identityFields",
+        &["entity", "nested_entity", "aggregate_root", "process"],
+    ),
+    ("owner", &["nested_entity"]),
+    ("members", &["aggregate_root", "domain"]),
+    ("occurrenceField", &["event"]),
+    ("states", &["state_machine"]),
+    ("transitions", &["state_machine"]),
+    ("steps", &["process"]),
+    ("persists", &["repository"]),
+    ("vocabulary", &["domain"]),
+];
+const STEP_KINDS: &[&str] = &["command", "event", "decision", "compensation", "wait"];
 const UNKNOWN_POLICIES: &[&str] = &["preserve", "reject", "surface"];
 const CATEGORIES: &[&str] = &[
     "structural",
@@ -426,21 +466,81 @@ const IR_MEMBERS: &[&str] = &[
     "occurrences",
     "extensions",
 ];
+const IR_OPTIONAL_MEMBERS: &[&str] = &[
+    "contractVersion",
+    "source",
+    "package",
+    "types",
+    "occurrences",
+    "extensions",
+    "populations",
+];
+
+/// The contract revision a document declares, as the schema layer reads it.
+#[derive(Debug, Clone, Copy)]
+struct Revision {
+    /// 1.1.0 or later: explicit multiplicity and frontend dialects.
+    v11: bool,
+    /// 1.2.0: the construct kinds and the model members.
+    v12: bool,
+}
+
+/// Reports a 1.2.0 member carried by a 1.0.0 or 1.1.0 document.
+fn gate_v12(value: &Json, at: &str, names: &[&str], revision: Revision, f: &mut Findings) {
+    if revision.v12 {
+        return;
+    }
+    for name in names {
+        if value.has(name) {
+            f.push(
+                &child(at, name),
+                format!("{name} is a contract 1.2.0 member"),
+            );
+        }
+    }
+}
+
+fn identity_list(value: Option<&Json>, at: &str, what: &str, f: &mut Findings) {
+    let Some(value) = value else {
+        return;
+    };
+    if !expect_array(value, at, what, f) {
+        return;
+    }
+    let items = value.as_array().unwrap_or(&[]);
+    for (position, item) in items.iter().enumerate() {
+        expect_shape(
+            Some(item),
+            &index(at, position),
+            is_semantic_identity,
+            "an identity is ix://<owner>/<name>",
+            f,
+        );
+    }
+    if has_duplicate_strings(items) {
+        f.push(at, format!("{what} entries are unique"));
+    }
+}
 
 fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
     if !expect_object(ir, at, "a semantic IR document", f) {
         return;
     }
     require_members(ir, at, IR_MEMBERS, f);
-    forbid_extra(ir, at, IR_MEMBERS, f);
+    forbid_extra(ir, at, IR_OPTIONAL_MEMBERS, f);
     expect_enum(
         ir.get("contractVersion"),
         &child(at, "contractVersion"),
-        &["1.0.0", "1.1.0"],
+        &["1.0.0", "1.1.0", "1.2.0"],
         "contractVersion",
         f,
     );
-    let is_v11 = ir.get("contractVersion").and_then(Json::as_str) == Some("1.1.0");
+    let version = ir.get("contractVersion").and_then(Json::as_str);
+    let revision = Revision {
+        v11: matches!(version, Some("1.1.0" | "1.2.0")),
+        v12: version == Some("1.2.0"),
+    };
+    let is_v11 = revision.v11;
 
     if let Some(source) = ir.get("source") {
         ir_source(source, &child(at, "source"), is_v11, f);
@@ -456,7 +556,7 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
                 f.push(&types_at, "a document declares at least one type");
             }
             for (position, definition) in items.iter().enumerate() {
-                type_definition(definition, &index(&types_at, position), is_v11, f);
+                type_definition(definition, &index(&types_at, position), revision, f);
             }
         }
     }
@@ -470,6 +570,67 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
     }
     if let Some(extensions) = ir.get("extensions") {
         extension_array(extensions, &child(at, "extensions"), f);
+    }
+    gate_v12(ir, at, &["populations"], revision, f);
+    if let Some(populations) = ir.get("populations") {
+        let populations_at = child(at, "populations");
+        if expect_array(populations, &populations_at, "populations", f) {
+            for (position, population) in populations.as_array().unwrap_or(&[]).iter().enumerate() {
+                population_schema(population, &index(&populations_at, position), f);
+            }
+        }
+    }
+}
+
+const POPULATION_MEMBERS: &[&str] = &["identity", "displayName", "members", "origin"];
+
+fn population_schema(population: &Json, at: &str, f: &mut Findings) {
+    if !expect_object(population, at, "a population", f) {
+        return;
+    }
+    require_members(population, at, POPULATION_MEMBERS, f);
+    forbid_extra(population, at, POPULATION_MEMBERS, f);
+    expect_shape(
+        population.get("identity"),
+        &child(at, "identity"),
+        is_semantic_identity,
+        "an identity is ix://<owner>/<name>",
+        f,
+    );
+    expect_string(
+        population.get("displayName"),
+        &child(at, "displayName"),
+        1,
+        "a display name",
+        f,
+    );
+    if let Some(origin) = population.get("origin") {
+        origin_schema(origin, &child(at, "origin"), f);
+    }
+    let Some(members) = population.get("members") else {
+        return;
+    };
+    let members_at = child(at, "members");
+    if !expect_array(members, &members_at, "members", f) {
+        return;
+    }
+    for (position, member) in members.as_array().unwrap_or(&[]).iter().enumerate() {
+        let member_at = index(&members_at, position);
+        if !expect_object(member, &member_at, "a population member", f) {
+            continue;
+        }
+        require_members(member, &member_at, &["typeRef", "extent"], f);
+        forbid_extra(member, &member_at, &["typeRef", "extent"], f);
+        expect_shape(
+            member.get("typeRef"),
+            &child(&member_at, "typeRef"),
+            is_semantic_identity,
+            "an identity is ix://<owner>/<name>",
+            f,
+        );
+        if let Some(extent) = member.get("extent") {
+            multiplicity_schema(extent, &child(&member_at, "extent"), f);
+        }
     }
 }
 
@@ -595,6 +756,31 @@ const TYPE_MEMBERS: &[&str] = &[
     "relationships",
     "operations",
     "clauses",
+    "supertypes",
+    "abstract",
+    "identityFields",
+    "owner",
+    "members",
+    "occurrenceField",
+    "states",
+    "transitions",
+    "steps",
+    "persists",
+    "vocabulary",
+];
+/// The type members contract 1.2.0 adds.
+const TYPE_MEMBERS_V12: &[&str] = &[
+    "supertypes",
+    "abstract",
+    "identityFields",
+    "owner",
+    "members",
+    "occurrenceField",
+    "states",
+    "transitions",
+    "steps",
+    "persists",
+    "vocabulary",
 ];
 const TYPE_REQUIRED: &[&str] = &[
     "identity",
@@ -607,7 +793,7 @@ const TYPE_REQUIRED: &[&str] = &[
     "unknownPolicy",
 ];
 
-fn type_definition(definition: &Json, at: &str, is_v11: bool, f: &mut Findings) {
+fn type_definition(definition: &Json, at: &str, revision: Revision, f: &mut Findings) {
     if !expect_object(definition, at, "a type definition", f) {
         return;
     }
@@ -700,9 +886,49 @@ fn type_definition(definition: &Json, at: &str, is_v11: bool, f: &mut Findings) 
                 f.push(at, "a map type definition requires values");
             }
         }
+        construct if CONSTRUCT_KINDS.contains(&construct) => {
+            construct_schema(definition, at, construct, revision, f);
+        }
         _ => {}
     }
-    if kind != "record" {
+    gate_v12(definition, at, TYPE_MEMBERS_V12, revision, f);
+    for (member, kinds) in CONSTRUCT_MEMBERS {
+        if definition.has(member) && !kinds.contains(&kind) {
+            f.push(
+                &child(at, member),
+                format!(
+                    "{member} is carried by the {} constructs only",
+                    kinds.join(", ")
+                ),
+            );
+        }
+    }
+    expect_bool(
+        definition.get("abstract"),
+        &child(at, "abstract"),
+        "abstract",
+        f,
+    );
+    for name in ["supertypes", "members", "persists"] {
+        identity_list(definition.get(name), &child(at, name), name, f);
+    }
+    identity_list(
+        definition.get("identityFields"),
+        &child(at, "identityFields"),
+        "identityFields",
+        f,
+    );
+    for name in ["owner", "occurrenceField"] {
+        expect_shape(
+            definition.get(name),
+            &child(at, name),
+            is_semantic_identity,
+            "an identity is ix://<owner>/<name>",
+            f,
+        );
+    }
+    construct_lists(definition, at, f);
+    if !(kind == "record" || (CONSTRUCT_KINDS.contains(&kind) && kind != "enumeration")) {
         for name in ["relationships", "operations"] {
             if definition.has(name) {
                 f.push(
@@ -720,6 +946,12 @@ fn type_definition(definition: &Json, at: &str, is_v11: bool, f: &mut Findings) 
         "scalar",
         f,
     );
+    if !revision.v12 && definition.get("scalar").and_then(Json::as_str) == Some("any") {
+        f.push(
+            &child(at, "scalar"),
+            "scalar any is a contract 1.2.0 member",
+        );
+    }
     for name in ["target", "items", "values"] {
         expect_shape(
             definition.get(name),
@@ -733,7 +965,7 @@ fn type_definition(definition: &Json, at: &str, is_v11: bool, f: &mut Findings) 
         let fields_at = child(at, "fields");
         if expect_array(fields, &fields_at, "fields", f) {
             for (position, field) in fields.as_array().unwrap_or(&[]).iter().enumerate() {
-                field_schema(field, &index(&fields_at, position), is_v11, f);
+                field_schema(field, &index(&fields_at, position), revision, f);
             }
         }
     }
@@ -759,7 +991,7 @@ fn type_definition(definition: &Json, at: &str, is_v11: bool, f: &mut Findings) 
         let operations_at = child(at, "operations");
         if expect_array(operations, &operations_at, "operations", f) {
             for (position, operation) in operations.as_array().unwrap_or(&[]).iter().enumerate() {
-                operation_schema(operation, &index(&operations_at, position), is_v11, f);
+                operation_schema(operation, &index(&operations_at, position), revision, f);
             }
         }
     }
@@ -771,6 +1003,195 @@ fn type_definition(definition: &Json, at: &str, is_v11: bool, f: &mut Findings) 
             }
         }
     }
+}
+
+/// The per-construct requirements of `typeDefinition`'s `allOf`.
+fn construct_schema(definition: &Json, at: &str, kind: &str, revision: Revision, f: &mut Findings) {
+    if !revision.v12 {
+        f.push(
+            &child(at, "kind"),
+            format!("{kind} is a contract 1.2.0 construct kind"),
+        );
+        return;
+    }
+    let required: &[&str] = match kind {
+        "entity" => &["fields", "identityFields"],
+        "value_object" => &["fields"],
+        "nested_entity" => &["fields", "identityFields", "owner"],
+        "aggregate_root" => &["fields", "identityFields", "clauses", "members"],
+        "enumeration" => &["variants"],
+        "event" => &["fields", "occurrenceField"],
+        "state_machine" => &["operations", "states", "transitions"],
+        "process" => &["fields", "identityFields", "steps"],
+        "repository" => &["operations", "persists"],
+        _ => &["members", "vocabulary"],
+    };
+    for name in required {
+        if !definition.has(name) {
+            f.push(at, format!("a {kind} construct requires {name}"));
+        }
+    }
+    let forbidden: &[&str] = match kind {
+        "repository" | "enumeration" => &["fields"],
+        "domain" => &["fields", "operations"],
+        _ => &[],
+    };
+    for name in forbidden {
+        if definition.has(name) {
+            f.push(
+                &child(at, name),
+                format!("a {kind} construct carries no {name}"),
+            );
+        }
+    }
+    let non_empty: &[&str] = match kind {
+        "aggregate_root" => &["clauses"],
+        "state_machine" | "repository" => &["operations"],
+        _ => &[],
+    };
+    for name in non_empty {
+        if definition
+            .get(name)
+            .and_then(Json::as_array)
+            .is_some_and(<[Json]>::is_empty)
+        {
+            f.push(
+                &child(at, name),
+                format!("a {kind} construct declares at least one of {name}"),
+            );
+        }
+    }
+    if definition
+        .get("identityFields")
+        .and_then(Json::as_array)
+        .is_some_and(<[Json]>::is_empty)
+    {
+        f.push(
+            &child(at, "identityFields"),
+            "identityFields names at least one field",
+        );
+    }
+}
+
+/// The shapes of `states`, `transitions`, `steps` and `vocabulary`.
+fn construct_lists(definition: &Json, at: &str, f: &mut Findings) {
+    let each = |name: &str, f: &mut Findings, check: &dyn Fn(&Json, &str, &mut Findings)| {
+        if let Some(items) = definition.get(name) {
+            let items_at = child(at, name);
+            if expect_array(items, &items_at, name, f) {
+                for (position, item) in items.as_array().unwrap_or(&[]).iter().enumerate() {
+                    check(item, &index(&items_at, position), f);
+                }
+            }
+        }
+    };
+    each("states", f, &|state, state_at, f| {
+        named_node(
+            state,
+            state_at,
+            &["identity", "name", "origin"],
+            &[],
+            "a state",
+            f,
+        );
+    });
+    each("transitions", f, &|transition, transition_at, f| {
+        let members = &["identity", "from", "to", "trigger", "emits", "origin"];
+        if !named_node(
+            transition,
+            transition_at,
+            members,
+            &["guard"],
+            "a transition",
+            f,
+        ) {
+            return;
+        }
+        for name in ["from", "to", "trigger"] {
+            expect_shape(
+                transition.get(name),
+                &child(transition_at, name),
+                is_semantic_identity,
+                "an identity is ix://<owner>/<name>",
+                f,
+            );
+        }
+        expect_string(
+            transition.get("guard"),
+            &child(transition_at, "guard"),
+            1,
+            "a guard clause id",
+            f,
+        );
+        identity_list(
+            transition.get("emits"),
+            &child(transition_at, "emits"),
+            "emits",
+            f,
+        );
+    });
+    each("steps", f, &|step, step_at, f| {
+        let members = &[
+            "identity", "name", "stepKind", "consumes", "emits", "origin",
+        ];
+        if !named_node(step, step_at, members, &[], "a step", f) {
+            return;
+        }
+        expect_enum(
+            step.get("stepKind"),
+            &child(step_at, "stepKind"),
+            STEP_KINDS,
+            "the step kind vocabulary",
+            f,
+        );
+        for name in ["consumes", "emits"] {
+            identity_list(step.get(name), &child(step_at, name), name, f);
+        }
+    });
+    each("vocabulary", f, &|term, term_at, f| {
+        if !expect_object(term, term_at, "a term", f) {
+            return;
+        }
+        require_members(term, term_at, &["term", "doc", "origin"], f);
+        forbid_extra(term, term_at, &["term", "doc", "origin"], f);
+        expect_string(term.get("term"), &child(term_at, "term"), 1, "a term", f);
+        if term.get("doc").is_some_and(|doc| doc.as_str().is_none()) {
+            f.push(&child(term_at, "doc"), "a term's doc is a string");
+        }
+        if let Some(origin) = term.get("origin") {
+            origin_schema(origin, &child(term_at, "origin"), f);
+        }
+    });
+}
+
+/// An object with `required` members, `optional` extras, an identity, an
+/// optional name and an origin. Returns whether it is an object.
+fn named_node(
+    node: &Json,
+    at: &str,
+    required: &[&str],
+    optional: &[&str],
+    what: &str,
+    f: &mut Findings,
+) -> bool {
+    if !expect_object(node, at, what, f) {
+        return false;
+    }
+    require_members(node, at, required, f);
+    let allowed: Vec<&str> = required.iter().chain(optional).copied().collect();
+    forbid_extra(node, at, &allowed, f);
+    expect_shape(
+        node.get("identity"),
+        &child(at, "identity"),
+        is_semantic_identity,
+        "an identity is ix://<owner>/<name>",
+        f,
+    );
+    expect_string(node.get("name"), &child(at, "name"), 1, "a name", f);
+    if let Some(origin) = node.get("origin") {
+        origin_schema(origin, &child(at, "origin"), f);
+    }
+    true
 }
 
 fn has_duplicate_strings(items: &[Json]) -> bool {
@@ -798,6 +1219,8 @@ const FIELD_MEMBERS: &[&str] = &[
     "extensions",
     "multiplicity",
     "unit",
+    "subsets",
+    "redefines",
 ];
 const FIELD_REQUIRED: &[&str] = &[
     "identity",
@@ -809,13 +1232,22 @@ const FIELD_REQUIRED: &[&str] = &[
     "origin",
 ];
 
-fn field_schema(field: &Json, at: &str, require_multiplicity: bool, f: &mut Findings) {
+fn field_schema(field: &Json, at: &str, revision: Revision, f: &mut Findings) {
     if !expect_object(field, at, "a field", f) {
         return;
     }
     require_members(field, at, FIELD_REQUIRED, f);
     forbid_extra(field, at, FIELD_MEMBERS, f);
-    if require_multiplicity && !field.has("multiplicity") {
+    gate_v12(field, at, &["subsets", "redefines"], revision, f);
+    identity_list(field.get("subsets"), &child(at, "subsets"), "subsets", f);
+    expect_shape(
+        field.get("redefines"),
+        &child(at, "redefines"),
+        is_semantic_identity,
+        "an identity is ix://<owner>/<name>",
+        f,
+    );
+    if revision.v11 && !field.has("multiplicity") {
         f.push(at, "a 1.1.0 field carries an explicit multiplicity");
     }
     expect_shape(
@@ -850,23 +1282,15 @@ fn field_schema(field: &Json, at: &str, require_multiplicity: bool, f: &mut Find
     );
     let default_kind = field.get("defaultKind").and_then(Json::as_str);
     match default_kind {
-        Some("none") => {
-            if field.has("defaultValue") {
-                f.push(
-                    at,
-                    "a field whose defaultKind is none carries no defaultValue",
-                );
-            }
-        }
-        Some(_) => {
-            if !field.has("defaultValue") {
-                f.push(
-                    at,
-                    "a field whose defaultKind is not none carries a defaultValue",
-                );
-            }
-        }
-        None => {}
+        Some("none") if field.has("defaultValue") => f.push(
+            at,
+            "a field whose defaultKind is none carries no defaultValue",
+        ),
+        Some(kind) if kind != "none" && !field.has("defaultValue") => f.push(
+            at,
+            "a field whose defaultKind is not none carries a defaultValue",
+        ),
+        _ => {}
     }
     if let Some(origin) = field.get("origin") {
         origin_schema(origin, &child(at, "origin"), f);
@@ -1009,11 +1433,83 @@ fn relationship_schema(relationship: &Json, at: &str, f: &mut Findings) {
 }
 
 const OPERATION_MEMBERS: &[&str] = &[
-    "identity", "name", "params", "returns", "pre", "post", "origin",
+    "identity", "name", "params", "returns", "pre", "post", "origin", "frame", "requires",
+    "ensures",
 ];
+const FRAME_MEMBERS: &[&str] = &["modifies", "creates", "deletes"];
+const INLINE_CLAUSE_MEMBERS: &[&str] = &["language", "text", "sourceSpan", "origin"];
+
+/// A dotted feature path: `name(.name)*`.
+fn is_feature_path(text: &str) -> bool {
+    !text.is_empty()
+        && text.split('.').all(|segment| {
+            let mut chars = segment.chars();
+            chars
+                .next()
+                .is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
+                && chars.all(|c| c.is_ascii_alphanumeric() || c == '_')
+        })
+}
+
+fn frame_schema(frame: &Json, at: &str, f: &mut Findings) {
+    if !expect_object(frame, at, "a frame", f) {
+        return;
+    }
+    require_members(frame, at, FRAME_MEMBERS, f);
+    forbid_extra(frame, at, FRAME_MEMBERS, f);
+    for name in FRAME_MEMBERS {
+        let Some(paths) = frame.get(name) else {
+            continue;
+        };
+        let paths_at = child(at, name);
+        if !expect_array(paths, &paths_at, name, f) {
+            continue;
+        }
+        let items = paths.as_array().unwrap_or(&[]);
+        for (position, path) in items.iter().enumerate() {
+            expect_shape(
+                Some(path),
+                &index(&paths_at, position),
+                is_feature_path,
+                "a frame path is a dotted feature path",
+                f,
+            );
+        }
+        if has_duplicate_strings(items) {
+            f.push(&paths_at, format!("{name} entries are unique"));
+        }
+    }
+}
+
+fn inline_clause_schema(clause: &Json, at: &str, f: &mut Findings) {
+    if !expect_object(clause, at, "an inline clause", f) {
+        return;
+    }
+    require_members(clause, at, &["language", "text", "origin"], f);
+    forbid_extra(clause, at, INLINE_CLAUSE_MEMBERS, f);
+    expect_shape(
+        clause.get("language"),
+        &child(at, "language"),
+        is_clause_language,
+        "a clause language is a core language or a namespaced name",
+        f,
+    );
+    if clause
+        .get("text")
+        .is_some_and(|text| text.as_str().is_none())
+    {
+        f.push(&child(at, "text"), "clause text is a string");
+    }
+    if let Some(span) = clause.get("sourceSpan") {
+        source_locus_schema(span, &child(at, "sourceSpan"), f);
+    }
+    if let Some(origin) = clause.get("origin") {
+        origin_schema(origin, &child(at, "origin"), f);
+    }
+}
 const RETURNS_MEMBERS: &[&str] = &["typeRef", "multiplicity", "nullable"];
 
-fn operation_schema(operation: &Json, at: &str, is_v11: bool, f: &mut Findings) {
+fn operation_schema(operation: &Json, at: &str, revision: Revision, f: &mut Findings) {
     if !expect_object(operation, at, "an operation", f) {
         return;
     }
@@ -1042,7 +1538,27 @@ fn operation_schema(operation: &Json, at: &str, is_v11: bool, f: &mut Findings) 
         let params_at = child(at, "params");
         if expect_array(params, &params_at, "params", f) {
             for (position, param) in params.as_array().unwrap_or(&[]).iter().enumerate() {
-                field_schema(param, &index(&params_at, position), is_v11, f);
+                field_schema(param, &index(&params_at, position), revision, f);
+            }
+        }
+    }
+    gate_v12(
+        operation,
+        at,
+        &["frame", "requires", "ensures"],
+        revision,
+        f,
+    );
+    if let Some(frame) = operation.get("frame") {
+        frame_schema(frame, &child(at, "frame"), f);
+    }
+    for name in ["requires", "ensures"] {
+        if let Some(clauses) = operation.get(name) {
+            let clauses_at = child(at, name);
+            if expect_array(clauses, &clauses_at, name, f) {
+                for (position, clause) in clauses.as_array().unwrap_or(&[]).iter().enumerate() {
+                    inline_clause_schema(clause, &index(&clauses_at, position), f);
+                }
             }
         }
     }

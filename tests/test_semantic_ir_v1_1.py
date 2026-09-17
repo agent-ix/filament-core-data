@@ -74,3 +74,80 @@ class TestSecondReader:
                 assert verdict["hit"] is True, verdict["id"]
                 seen += 1
         assert seen >= 30
+
+
+CONSTRUCTS = "positive/semantic-ir-v1-2-constructs.json"
+
+
+class TestContract12:
+    """Python reader over contract 1.2.0 model members and constructs.
+
+    Description: TC-1740, TC-1744, TC-1745 and TC-1746 Python-reader evidence;
+    the committed 1.2.0 positive reads clean, and each member or construct kind
+    inside a 1.1.0 document, and each construct missing a required member, is
+    refused by the schema.
+    Assumptions: the poetry dev group is installed; fixtures are the committed
+    ones under fixtures/semantic/v1.
+    Criteria: FR-141-AC-1, FR-141-AC-5, FR-141-CON-1, FR-142-AC-1, FR-142-AC-2.
+    """
+
+    def test_constructs_document_validates_and_reads_clean(self, validator) -> None:
+        """Criteria: FR-141-AC-1, FR-142-AC-1 (TC-1740, TC-1745)."""
+        document = _fixture(CONSTRUCTS)
+        assert validator.is_valid(document)
+        assert read_semantic_ir(document) == []
+        first = normalize(document)
+        assert normalize(json.loads(first)) == first
+
+    def test_every_1_2_member_in_a_1_1_document_is_refused(self, validator) -> None:
+        """Criteria: FR-141-AC-5, FR-141-CON-1 (TC-1744)."""
+        document = _fixture(CONSTRUCTS)
+        assert validator.is_valid(document)
+        document["contractVersion"] = "1.1.0"
+        assert not validator.is_valid(document)
+        record = next(
+            t
+            for t in _fixture("positive/semantic-ir-v1-1.json")["types"]
+            if t["kind"] == "record" and t.get("operations")
+        )
+        for member, value in (
+            ("supertypes", []),
+            ("abstract", True),
+            ("kind", "entity"),
+        ):
+            base = _fixture("positive/semantic-ir-v1-1.json")
+            at = next(
+                i
+                for i, t in enumerate(base["types"])
+                if t["identity"] == record["identity"]
+            )
+            base["types"][at][member] = value
+            assert not validator.is_valid(base), member
+        base = _fixture("positive/semantic-ir-v1-1.json")
+        base["populations"] = []
+        assert not validator.is_valid(base), "populations"
+
+    def test_each_construct_without_a_required_member_is_refused(
+        self, validator
+    ) -> None:
+        """Criteria: FR-142-AC-2 (TC-1746)."""
+        for suffix, member in (
+            ("FR-001", "identityFields"),
+            ("VO-001", "fields"),
+            ("NE-001", "owner"),
+            ("AR-001", "members"),
+            ("EN-001", "variants"),
+            ("EV-001", "occurrenceField"),
+            ("SM-001", "transitions"),
+            ("PR-001", "steps"),
+            ("RP-001", "persists"),
+            ("DM-001", "vocabulary"),
+        ):
+            document = _fixture(CONSTRUCTS)
+            target = next(
+                t
+                for t in document["types"]
+                if t["identity"].endswith(f"/type/{suffix}")
+            )
+            del target[member]
+            assert not validator.is_valid(document), f"{suffix} without {member}"

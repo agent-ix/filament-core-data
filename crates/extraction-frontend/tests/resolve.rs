@@ -76,7 +76,7 @@ fn object_ref(resolution: &Resolution) -> &ArtifactRef {
 
 #[trace("TC-1210", "FR-092-AC-1")]
 #[test]
-fn tc_1210_every_kernel_name_is_kernel_scalar_and_config_version_mints_four_scalars_once() {
+fn tc_1210_every_kernel_name_is_kernel_scalar_and_config_version_mints_five_scalars_once() {
     let (bundle, extractions) = load_business("config-version-table");
     let outcomes = pass_one(&bundle, &extractions).outcomes;
 
@@ -110,11 +110,12 @@ fn tc_1210_every_kernel_name_is_kernel_scalar_and_config_version_mints_four_scal
         identities,
         [
             "ix://agent-ix/config-service/type/Integer",
+            "ix://agent-ix/config-service/type/JsonObject",
             "ix://agent-ix/config-service/type/String",
             "ix://agent-ix/config-service/type/Timestamp",
             "ix://agent-ix/config-service/type/UUID",
         ],
-        "four scalar definitions, each once, in identity order; JsonObject is FR-093's record"
+        "five scalar definitions, each once, in identity order"
     );
     for def in &defs {
         let json = serde_json::to_value(def).expect("serialises");
@@ -151,6 +152,7 @@ fn tc_1210_every_kernel_name_is_kernel_scalar_and_config_version_mints_four_scal
             ("Integer", "integer"),
             ("String", "string"),
             ("Timestamp", "datetime"),
+            ("JsonObject", "any"),
         ])
     );
     // The whole FR-032 value map.
@@ -169,7 +171,7 @@ fn tc_1210_every_kernel_name_is_kernel_scalar_and_config_version_mints_four_scal
             ("Timestamp", Some("datetime")),
             ("Duration", Some("duration")),
             ("Bytes", Some("bytes")),
-            ("JsonObject", None),
+            ("JsonObject", Some("any")),
         ]
     );
 }
@@ -194,7 +196,7 @@ fn tc_1211_config_overlay_by_title_and_fr_005_by_id_resolve_to_the_same_object()
     let package = PackageIdentity::from(bundle.package());
     assert_eq!(
         overlay.resolution.type_ref(&package).as_deref(),
-        Some("ix://agent-ix/config-service/type/ConfigOverlay"),
+        Some("ix://agent-ix/config-service/type/FR-005"),
         "the typeRef is the definition's identity, not the token's spelling"
     );
 
@@ -213,7 +215,7 @@ fn tc_1211_config_overlay_by_title_and_fr_005_by_id_resolve_to_the_same_object()
     );
     assert_eq!(
         by_id.type_ref(&package).as_deref(),
-        Some("ix://agent-ix/config-service/type/ConfigOverlay")
+        Some("ix://agent-ix/config-service/type/FR-005")
     );
 
     // Recorded, not asserted as behaviour of this crate: a Type cell reading
@@ -470,7 +472,7 @@ fn tc_1216_an_enumeration_artifact_resolves_to_enumeration_and_an_entity_of_the_
     let package = PackageIdentity::from(bundle.package());
     assert_eq!(
         status.resolution.type_ref(&package).as_deref(),
-        Some("ix://agent-ix/config-service/type/Status")
+        Some("ix://agent-ix/config-service/type/EN-001")
     );
 
     let (bundle, extractions) = load_business("resolve/entity-titled-status");
@@ -480,7 +482,7 @@ fn tc_1216_an_enumeration_artifact_resolves_to_enumeration_and_an_entity_of_the_
     assert_eq!(object_ref(&status.resolution).id, "FR-001");
     assert_eq!(
         status.resolution.type_ref(&package).as_deref(),
-        Some("ix://agent-ix/config-service/type/Status")
+        Some("ix://agent-ix/config-service/type/FR-001")
     );
 }
 
@@ -533,7 +535,7 @@ fn any_target() -> impl Strategy<Value = String> {
         ident.prop_map(|t| format!("ix://agent-ix/config-service/type/{t}")),
         ident.prop_map(|t| format!("ix://agent-ix/config-service/unresolved/{t}")),
         (package, ident).prop_map(|(p, t)| format!("ix://{p}/type/{t}")),
-        Just("ix://agent-ix/config-service/type/ConfigOverlay".to_string()),
+        Just("ix://agent-ix/config-service/type/FR-005".to_string()),
         Just("ix://agent-ix/config-service/type/FR-005".to_string()),
         ".{0,40}",
     ]

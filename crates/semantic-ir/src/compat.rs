@@ -80,7 +80,18 @@ pub fn classify(
     };
 
     if before_doc.ir.get("contractVersion") != after_doc.ir.get("contractVersion") {
-        report.note(Classification::Conditional);
+        let additive_v12_uplift = matches!(
+            (
+                before_doc.ir.get("contractVersion").and_then(Json::as_str),
+                after_doc.ir.get("contractVersion").and_then(Json::as_str),
+            ),
+            (Some("1.1.0"), Some("1.2.0"))
+        );
+        report.note(if additive_v12_uplift {
+            Classification::Additive
+        } else {
+            Classification::Conditional
+        });
     }
 
     compare_extensions(&before_doc, &after_doc, &mut report);
@@ -572,5 +583,23 @@ fn strip_origin(node: &Json) -> Json {
                 .collect(),
         ),
         None => node.clone(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{classify, Classification};
+    use crate::json::parse;
+
+    #[test]
+    fn tc_1757_classifies_the_1_1_to_1_2_contract_uplift_as_additive() {
+        let before =
+            parse(r#"{"ir":{"contractVersion":"1.1.0","types":[]}}"#).expect("before document");
+        let after =
+            parse(r#"{"ir":{"contractVersion":"1.2.0","types":[]}}"#).expect("after document");
+        assert_eq!(
+            classify(&before, &after, true, true),
+            Classification::Additive
+        );
     }
 }

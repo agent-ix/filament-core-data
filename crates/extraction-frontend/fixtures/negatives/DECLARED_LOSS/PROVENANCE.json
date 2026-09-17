@@ -7,5 +7,5 @@
   ],
   "derived": [],
   "edits": [],
-  "note": "One `JsonObject` cell (the package-local open record type/JsonObject once, DECLARED_LOSS `unconstrained-value` at row line 19) and one `*` collection (DECLARED_LOSS `required-collection-presence` at row line 20); both info, non-blocking, each naming a losses.json row citing #78 (FR-093-AC-7, FR-093-CON-3; TC-1226)."
+  "note": "One `JsonObject` cell (the package-local scalar `any` type/JsonObject once, no loss) and one `*` collection (DECLARED_LOSS `required-collection-presence` at row line 20, info, non-blocking, naming its losses.json row) (FR-093-AC-7, FR-093-CON-3; TC-1226)."
 }

@@ -32,7 +32,10 @@ import {
 	pythonPydanticBackend,
 } from "../src/compiler/backends/python-v1/index.mjs";
 import { poetryProducer } from "../src/compiler/backends/python-v1/produce.mjs";
-import { generateTarget, selectBackend } from "../src/compiler/backends/seam.mjs";
+import {
+	generateTarget,
+	selectBackend,
+} from "../src/compiler/backends/seam.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -46,14 +49,12 @@ type Manifest = {
 	diagnostics: { code: string; message: string; blocking?: boolean }[];
 };
 
-/** A generation request over a real lifted document. */
+/** A generation request over an accepted `1.1.0` document. */
 function pythonRequest(backend: { identity: string; version: string }) {
 	return {
 		contractVersion: "1.0.0",
 		lockFingerprint: `sha256:${"a".repeat(64)}`,
-		ir: readJson(
-			"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json",
-		),
+		ir: readJson("fixtures/semantic/v1/positive/config-version-v1-1.json"),
 		profile: readJson("fixtures/semantic/v1/positive/profile.json"),
 		mappings: [],
 		backend: {
@@ -207,9 +208,10 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 		);
 		expect(Object.keys(seen[0])).not.toContain("index.json");
 		for (const file of expected)
-			expect(seen[0][file.path], `document differs at ${file.path}`).toStrictEqual(
-				JSON.parse(file.text),
-			);
+			expect(
+				seen[0][file.path],
+				`document differs at ${file.path}`,
+			).toStrictEqual(JSON.parse(file.text));
 		console.log(
 			`TC-1535 measured: ${expected.length} documents handed to the producer under the lowering's own names`,
 		);

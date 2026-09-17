@@ -6,7 +6,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Annotated, Any, Literal
 
-from msgspec import UNSET, Meta, Struct, UnsetType
+from msgspec import UNSET, Meta, Struct, UnsetType, field
 
 from . import common_schema
 
@@ -14,6 +14,7 @@ from . import common_schema
 class ContractVersion(Enum):
     field_1_0_0 = '1.0.0'
     field_1_1_0 = '1.1.0'
+    field_1_2_0 = '1.2.0'
 
 
 class Package(Struct):
@@ -87,6 +88,11 @@ class Operands4(Struct):
     ]
 
 
+type FeaturePath = Annotated[
+    str, Meta(pattern='^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$')
+]
+
+
 class DefaultKind(Enum):
     none = 'none'
     semantic = 'semantic'
@@ -97,6 +103,15 @@ class DefaultKind(Enum):
 class Presence(Enum):
     required = 'required'
     optional = 'optional'
+
+
+class Frame(Struct):
+    creates: list[FeaturePath]
+    deletes: list[FeaturePath]
+    modifies: list[FeaturePath]
+
+
+type IdentityList = list[common_schema.SemanticIdentity]
 
 
 class Multiplicity(Struct):
@@ -125,6 +140,11 @@ class Returns(Struct):
     typeRef: common_schema.SemanticIdentity
 
 
+class Member(Struct):
+    extent: Multiplicity
+    typeRef: common_schema.SemanticIdentity
+
+
 class Category(Enum):
     structural = 'structural'
     behavioral = 'behavioral'
@@ -133,6 +153,14 @@ class Category(Enum):
     realization = 'realization'
     governance = 'governance'
     traceability = 'traceability'
+
+
+class StepKind(Enum):
+    command = 'command'
+    event = 'event'
+    decision = 'decision'
+    compensation = 'compensation'
+    wait = 'wait'
 
 
 class Kind(Enum):
@@ -144,6 +172,16 @@ class Kind(Enum):
     sequence = 'sequence'
     map = 'map'
     reference = 'reference'
+    entity = 'entity'
+    value_object = 'value_object'
+    nested_entity = 'nested_entity'
+    aggregate_root = 'aggregate_root'
+    enumeration = 'enumeration'
+    event = 'event'
+    state_machine = 'state_machine'
+    process = 'process'
+    repository = 'repository'
+    domain = 'domain'
 
 
 type Role = Annotated[
@@ -161,6 +199,7 @@ class Scalar(Enum):
     datetime = 'datetime'
     duration = 'duration'
     uuid = 'uuid'
+    any = 'any'
 
 
 class Clause(Struct):
@@ -245,7 +284,21 @@ class Field(Struct):
     defaultValue: Any | UnsetType = UNSET
     extensions: list[common_schema.Extension] | UnsetType = UNSET
     multiplicity: Multiplicity | UnsetType = UNSET
+    redefines: common_schema.SemanticIdentity | UnsetType = UNSET
+    subsets: IdentityList | UnsetType = UNSET
     unit: Annotated[str, Meta(min_length=1, pattern='^[!-~]+$')] | UnsetType = UNSET
+
+
+class InlineClause(Struct):
+    language: Annotated[
+        str,
+        Meta(
+            pattern='^(quire|ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$'
+        ),
+    ]
+    origin: common_schema.Origin
+    text: str
+    sourceSpan: common_schema.SourceLocus | UnsetType = UNSET
 
 
 class Operation(Struct):
@@ -255,7 +308,17 @@ class Operation(Struct):
     params: list[Field]
     post: list[PostItem]
     pre: list[PreItem]
+    ensures: list[InlineClause] | UnsetType = UNSET
+    frame: Frame | UnsetType = UNSET
+    requires: list[InlineClause] | UnsetType = UNSET
     returns: Returns | UnsetType = UNSET
+
+
+class Population(Struct):
+    displayName: Annotated[str, Meta(min_length=1)]
+    identity: common_schema.SemanticIdentity
+    members: list[Member]
+    origin: common_schema.Origin
 
 
 class Relationship(Struct):
@@ -266,6 +329,37 @@ class Relationship(Struct):
     origin: common_schema.Origin
     target: common_schema.SemanticIdentity
     verb: Annotated[str, Meta(min_length=1)]
+
+
+class State(Struct):
+    identity: common_schema.SemanticIdentity
+    name: Annotated[str, Meta(min_length=1)]
+    origin: common_schema.Origin
+
+
+class Step(Struct):
+    consumes: IdentityList
+    emits: IdentityList
+    identity: common_schema.SemanticIdentity
+    name: Annotated[str, Meta(min_length=1)]
+    origin: common_schema.Origin
+    stepKind: StepKind
+
+
+class Term(Struct):
+    doc: str
+    origin: common_schema.Origin
+    term: Annotated[str, Meta(min_length=1)]
+
+
+class Transition(Struct):
+    emits: IdentityList
+    from_: common_schema.SemanticIdentity = field(name='from')
+    identity: common_schema.SemanticIdentity
+    origin: common_schema.Origin
+    to: common_schema.SemanticIdentity
+    trigger: common_schema.SemanticIdentity
+    guard: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
 
 
 class Variant(Struct):
@@ -284,21 +378,35 @@ class TypeDefinition(Struct):
     origin: common_schema.Origin
     roles: list[Role]
     unknownPolicy: common_schema.UnknownPolicy
+    abstract: bool | UnsetType = UNSET
     clauses: list[Clause] | UnsetType = UNSET
     fields: list[Field] | UnsetType = UNSET
+    identityFields: (
+        Annotated[list[common_schema.SemanticIdentity], Meta(min_length=1)] | UnsetType
+    ) = UNSET
     items: common_schema.SemanticIdentity | UnsetType = UNSET
+    members: IdentityList | UnsetType = UNSET
+    occurrenceField: common_schema.SemanticIdentity | UnsetType = UNSET
     operations: list[Operation] | UnsetType = UNSET
+    owner: common_schema.SemanticIdentity | UnsetType = UNSET
+    persists: IdentityList | UnsetType = UNSET
     relationships: list[Relationship] | UnsetType = UNSET
     scalar: Scalar | UnsetType = UNSET
+    states: list[State] | UnsetType = UNSET
+    steps: list[Step] | UnsetType = UNSET
+    supertypes: IdentityList | UnsetType = UNSET
     target: common_schema.SemanticIdentity | UnsetType = UNSET
+    transitions: list[Transition] | UnsetType = UNSET
     values: common_schema.SemanticIdentity | UnsetType = UNSET
     variants: list[Variant] | UnsetType = UNSET
+    vocabulary: list[Term] | UnsetType = UNSET
 
 
-class FilamentSemanticIrV1ContractVersions100And110(Struct):
+class FilamentSemanticIrV1ContractVersions100110And120(Struct):
     contractVersion: ContractVersion
     extensions: list[common_schema.Extension]
     occurrences: list[Occurrence]
     package: Package
     source: Source
     types: Annotated[list[TypeDefinition], Meta(min_length=1)]
+    populations: list[Population] | UnsetType = UNSET

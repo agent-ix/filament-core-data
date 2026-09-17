@@ -1,6 +1,7 @@
 //! FR-093: lower each object-typed artifact to one IR `typeDefinition` —
-//! `kind: record` from the engine's `FieldDecl`s, or `kind: enum` through
-//! [`crate::enumeration`] — with every field, multiplicity, constraint,
+//! from the engine's `FieldDecl`s, or through [`crate::enumeration`] for an
+//! enumeration, then shaped into its FR-143 construct by
+//! [`crate::constructs`] — with every field, multiplicity, constraint,
 //! identity and nullability value taken from the engine's declaration and
 //! never from a name.
 //!
@@ -21,7 +22,7 @@
 //! # Constraints: one alias per constrained field (FR-034's form)
 //!
 //! A field row carrying one or more constraints lowers to one extra
-//! definition of `kind: alias` at `type/<DisplayName>.<fieldName>`
+//! definition of `kind: alias` at `type/<artifact id><FieldName>`
 //! ([`PackageIdentity::alias_identity`]) whose `target` is the field's
 //! resolved type, whose `constraints[]` carry the row's keywords with
 //! `appliesTo` the alias identity, and whose `origin` is the row; the
@@ -35,16 +36,14 @@
 //! beside it in [`Lowering::aliases`]; [`lower_bundle`] emits them into
 //! `types[]`, which FR-097 sorts by identity.
 //!
-//! # Declared losses (issue #78, unruled)
+//! # Declared losses
 //!
-//! A `JsonObject` cell lowers to the package-local open record
-//! [`json_object_record`] and one `DECLARED_LOSS` naming
-//! `unconstrained-value`; a `0..*` collection lowers to `presence:
-//! optional` and one `DECLARED_LOSS` naming `required-collection-presence`;
-//! an extraction with `availability.fields.lossy` names `lossy-extraction`.
-//! Each row is registered in `losses.json` ([`Loss`]), cited to #78 or to
-//! quire-rs FR-072; a contrary ruling removes the rows, the record, the
-//! presence derivation and every golden carrying them in one commit.
+//! A `JsonObject` cell lowers to the package-local scalar `any` with no
+//! loss (FR-139). A `0..*` collection lowers to `presence: optional` and
+//! one `DECLARED_LOSS` naming `required-collection-presence`, because the
+//! source row authors no presence (FR-106-AC-5); an extraction with
+//! `availability.fields.lossy` names `lossy-extraction`. Each row is
+//! registered in `losses.json` ([`Loss`]).
 //!
 //! # Type names
 //!
@@ -85,7 +84,8 @@ use serde_json::Value;
 
 use crate::bundle::{Bundle, Document};
 use crate::clauses::{lower_clauses, lower_operations, Clause, Operation};
-use crate::diagnostics::{Code, Diagnostic, Disposition, Locus, NotLoweredReason, OWNER};
+use crate::constructs::{assign_owners, shape, ConstructMembers, Pending};
+use crate::diagnostics::{Code, Diagnostic, Disposition, Locus, NotLoweredReason};
 use crate::edges::{lower_relationships, Relationship};
 use crate::enumeration::{lower_enum, values_rows};
 use crate::extract::Extractions;
@@ -107,8 +107,6 @@ pub const IDENTITY_FIELD_EXTENSION: &str = "ix://agent-ix/semantic-core/ext/iden
 pub const DECIMAL_POLICY_EXTENSION: &str = "ix://agent-ix/semantic-core/ext/decimal-policy";
 /// The version of both field extensions.
 pub const FIELD_EXTENSION_VERSION: &str = "1.0.0";
-/// The display name and `type/` segment of the open record.
-pub const JSON_OBJECT: &str = "JsonObject";
 
 // ---------------------------------------------------------------------------
 // IR node shapes (`schema/semantic/v1/semantic-ir.schema.json`)
@@ -118,12 +116,21 @@ pub const JSON_OBJECT: &str = "JsonObject";
 /// definition minted per constrained field; never `union`, `sequence`,
 /// `map` or `reference` (FR-093 "Enumeration artifacts").
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "snake_case")]
 pub enum Kind {
     Scalar,
     Record,
-    Enum,
     Alias,
+    Entity,
+    ValueObject,
+    NestedEntity,
+    AggregateRoot,
+    Enumeration,
+    Event,
+    StateMachine,
+    Process,
+    Repository,
+    Domain,
 }
 
 /// `common.schema.json#/$defs/unknownPolicy`, the two values emitted.
@@ -134,7 +141,7 @@ pub enum UnknownPolicy {
     Reject,
 }
 
-/// `field.presence`, derived from `multiplicity.lower`.
+/// `field.presence`, authored by this frontend independently of multiplicity.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Presence {
@@ -143,7 +150,10 @@ pub enum Presence {
 }
 
 impl Presence {
-    /// `required` when `lower >= 1`, `optional` otherwise (FR-027).
+    /// The presence a multiplicity column authors: `required` when `lower >=
+    /// 1`, `optional` otherwise. A `0..*` collection additionally raises the
+    /// `required-collection-presence` loss, because the column cannot say
+    /// whether the member must appear (FR-106-AC-5).
     pub fn of(multiplicity: &Multiplicity) -> Self {
         if multiplicity.lower >= 1 {
             Presence::Required
@@ -247,6 +257,10 @@ pub struct TypeDefinition {
     /// FR-094: a record's located `ClauseRef`s; absent on scalars and enums.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub clauses: Option<Vec<Clause>>,
+    /// FR-143: the members of the construct `kind` names; all absent on a
+    /// scalar, record or alias.
+    #[serde(flatten)]
+    pub construct: ConstructMembers,
 }
 
 impl From<ScalarDefinition> for TypeDefinition {
@@ -276,6 +290,7 @@ impl From<ScalarDefinition> for TypeDefinition {
             relationships: None,
             operations: None,
             clauses: None,
+            construct: ConstructMembers::default(),
         }
     }
 }
@@ -288,7 +303,6 @@ impl From<ScalarDefinition> for TypeDefinition {
 /// `losses.json` row.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Loss {
-    UnconstrainedValue,
     RequiredCollectionPresence,
     LossyExtraction,
 }
@@ -310,16 +324,11 @@ struct LossRegister {
 
 impl Loss {
     /// Every loss, in register order.
-    pub const ALL: [Loss; 3] = [
-        Loss::UnconstrainedValue,
-        Loss::RequiredCollectionPresence,
-        Loss::LossyExtraction,
-    ];
+    pub const ALL: [Loss; 2] = [Loss::RequiredCollectionPresence, Loss::LossyExtraction];
 
     /// The register row's `code`.
     pub fn row(self) -> &'static str {
         match self {
-            Loss::UnconstrainedValue => "unconstrained-value",
             Loss::RequiredCollectionPresence => "required-collection-presence",
             Loss::LossyExtraction => "lossy-extraction",
         }
@@ -406,9 +415,6 @@ impl<'a> ResolvedKind<'a> {
     /// token, which reaches no document.
     pub fn of(resolution: &Resolution) -> Option<Self> {
         match resolution {
-            Resolution::KernelScalar(scalar) if scalar.is_open_record() => {
-                Some(ResolvedKind::Record)
-            }
             Resolution::KernelScalar(scalar) => scalar.ir_scalar().map(ResolvedKind::Scalar),
             Resolution::Object(_) => Some(ResolvedKind::Record),
             Resolution::Enumeration(_) => Some(ResolvedKind::Enum),
@@ -421,7 +427,7 @@ impl<'a> ResolvedKind<'a> {
         match self {
             ResolvedKind::Scalar(scalar) => ("scalar", scalar),
             ResolvedKind::Record => ("record", ""),
-            ResolvedKind::Enum => ("enum", ""),
+            ResolvedKind::Enum => ("enumeration", ""),
         }
     }
 }
@@ -503,6 +509,10 @@ enum IrKind {
     Sequence,
     Map,
     Reference,
+    Enumeration,
+    /// The nine contract 1.2.0 constructs other than `enumeration`, none of
+    /// which a constraint keyword applies to.
+    Construct,
 }
 
 impl IrKind {
@@ -516,6 +526,9 @@ impl IrKind {
             "sequence" => IrKind::Sequence,
             "map" => IrKind::Map,
             "reference" => IrKind::Reference,
+            "enumeration" => IrKind::Enumeration,
+            "entity" | "value_object" | "nested_entity" | "aggregate_root" | "event"
+            | "state_machine" | "process" | "repository" | "domain" => IrKind::Construct,
             _ => return None,
         })
     }
@@ -544,7 +557,7 @@ pub fn applies_to(keyword: &str, kind: &str, scalar: &str) -> bool {
         ) => ordered,
         (Keyword::MinLength | Keyword::MaxLength, IrKind::Scalar) => sized,
         (Keyword::Pattern | Keyword::Format, IrKind::Scalar) => scalar == "string",
-        (Keyword::EnumValues, IrKind::Scalar | IrKind::Enum) => true,
+        (Keyword::EnumValues, IrKind::Scalar | IrKind::Enum | IrKind::Enumeration) => true,
         (Keyword::NonEmpty, IrKind::Scalar) => sized,
         (Keyword::NonEmpty | Keyword::Unique, IrKind::Sequence | IrKind::Map) => true,
         (
@@ -770,7 +783,7 @@ pub fn lower_record(
         } else {
             field_slugs.insert(field_slug, (decl.name.clone(), locus.clone()));
         }
-        let identity = match ctx.package.field_identity(ctx.display_name, &decl.name) {
+        let identity = match ctx.package.field_identity(ctx.id, &decl.name) {
             Ok(identity) => identity,
             Err(unsluggable) => {
                 sink.push(unsluggable.diagnostic(locus.clone()));
@@ -780,7 +793,7 @@ pub fn lower_record(
         let mut field = lower_field(decl, resolved, identity, locus.clone(), ctx, &mut sink)?;
         if decl.constraints.as_deref().is_some_and(|c| !c.is_empty()) {
             let kind = resolved.and_then(ResolvedKind::of);
-            let alias_identity = match ctx.package.alias_identity(ctx.display_name, &decl.name) {
+            let alias_identity = match ctx.package.alias_identity(ctx.id, &decl.name) {
                 Ok(identity) => identity,
                 Err(unsluggable) => {
                     sink.push(unsluggable.diagnostic(locus.clone()));
@@ -814,6 +827,7 @@ pub fn lower_record(
                 relationships: None,
                 operations: None,
                 clauses: None,
+                construct: ConstructMembers::default(),
             });
         }
         fields.push(field);
@@ -822,8 +836,8 @@ pub fn lower_record(
         TypeDefinition {
             identity: ctx
                 .package
-                .type_identity(ctx.display_name)
-                .expect("record names are validated before lowering"),
+                .type_identity(ctx.id)
+                .expect("artifact ids are validated before lowering"),
             display_name: ctx.display_name.to_string(),
             kind: Kind::Record,
             roles: ctx.roles.clone(),
@@ -842,6 +856,7 @@ pub fn lower_record(
             relationships: Some(Vec::new()),
             operations: Some(Vec::new()),
             clauses: Some(Vec::new()),
+            construct: ConstructMembers::default(),
         },
         aliases,
     )
@@ -852,7 +867,7 @@ pub fn lower_record(
 /// the FR-092 `resolved` classification, multiplicity default `{1,1}`,
 /// presence from `lower`, nullable default `false`, `defaultKind: none`,
 /// the `identity-field` and `decimal-policy` extensions, and the declared
-/// losses for a `JsonObject` cell and a `0..*` collection. Shared by a
+/// loss for a `0..*` collection. Shared by a
 /// record's the Properties table rows and an operation's parameter rows
 /// (FR-094 "Operations"); constraints are the caller's.
 pub(crate) fn lower_field(
@@ -873,19 +888,10 @@ pub(crate) fn lower_field(
         .multiplicity
         .clone()
         .unwrap_or_else(Multiplicity::one);
-    if matches!(
-        resolved,
-        Some(Resolution::KernelScalar(KernelScalar::JsonObject))
-    ) {
-        sink.push(Loss::UnconstrainedValue.diagnostic(
-            &format!("field {} is a JsonObject", decl.name),
-            locus.clone(),
-        ));
-    }
     if multiplicity.lower == 0 && multiplicity.upper.is_none() {
         sink.push(Loss::RequiredCollectionPresence.diagnostic(
             &format!(
-                "field {} is a 0..* collection emitted as optional",
+                "field {} is a 0..* collection whose authored presence is optional",
                 decl.name
             ),
             locus.clone(),
@@ -991,7 +997,7 @@ fn lower_constraints(
         }
         let identity = match ctx
             .package
-            .constraint_identity(ctx.display_name, &decl.name, &keyword)
+            .constraint_identity(ctx.id, &decl.name, &keyword)
         {
             Ok(identity) => identity,
             Err(unsluggable) => {
@@ -1011,35 +1017,6 @@ fn lower_constraints(
     }
 }
 
-/// The package-local open record a `JsonObject` cell resolves to
-/// (`kernel-scalars.json`: `kind: record, fields: [], unknownPolicy:
-/// preserve`), minted once per package that uses it.
-pub fn json_object_record(package: &PackageIdentity, generator_version: &str) -> TypeDefinition {
-    TypeDefinition {
-        identity: package
-            .type_identity(JSON_OBJECT)
-            .expect("JsonObject is slug-safe"),
-        display_name: JSON_OBJECT.to_string(),
-        kind: Kind::Record,
-        roles: Vec::new(),
-        origin: Origin::Generated(GeneratedOrigin {
-            generator_identity: OWNER.to_string(),
-            generator_version: generator_version.to_string(),
-            input_identities: vec![package.source()],
-        }),
-        constraints: Vec::new(),
-        extensions: Vec::new(),
-        unknown_policy: UnknownPolicy::Preserve,
-        scalar: None,
-        target: None,
-        fields: Some(Vec::new()),
-        variants: None,
-        relationships: None,
-        operations: None,
-        clauses: None,
-    }
-}
-
 // ---------------------------------------------------------------------------
 // Lowering the bundle
 // ---------------------------------------------------------------------------
@@ -1047,7 +1024,6 @@ pub fn json_object_record(package: &PackageIdentity, generator_version: &str) ->
 /// Every definition of one lift and the diagnostics of this stage.
 ///
 /// `types` holds the kernel scalar definitions in identity order, the
-/// `JsonObject` record when the bundle uses it, then one definition per
 /// lowered artifact in document path order, each record followed by the
 /// aliases of its constrained fields in field order; FR-097 sorts by
 /// identity.
@@ -1092,9 +1068,6 @@ pub fn lower_bundle(
     .into_iter()
     .map(TypeDefinition::from)
     .collect();
-    if resolutions.scalars_used.contains(&KernelScalar::JsonObject) {
-        types.push(json_object_record(&package, generator_version));
-    }
 
     // Type names: every kernel scalar the bundle uses is a `type/`
     // definition already, so an artifact of the same slug collides with it.
@@ -1105,6 +1078,7 @@ pub fn lower_bundle(
         .filter_map(|k| slug(k.name()).ok().map(|s| (s, *k)))
         .collect();
     let mut superseded: BTreeSet<String> = BTreeSet::new();
+    let mut pending: Vec<Pending> = Vec::new();
 
     for document in bundle.documents() {
         let Some(object) = document.object() else {
@@ -1245,20 +1219,36 @@ pub fn lower_bundle(
                     lowering.definition.relationships = Some(relationships);
                     lowering.definition.clauses = Some(clauses);
                     lowering.definition.operations = Some(operations);
+                    // FR-143: the construct the object type names.
+                    shape(
+                        object,
+                        &mut lowering.definition,
+                        &resolutions.resolutions,
+                        &ctx,
+                    )?;
                     Ok(lowering)
                 },
             )
         };
         match outcome {
-            Ok(lowering) => {
-                own.extend(lowering.diagnostics);
-                types.push(lowering.definition);
-                types.extend(lowering.aliases);
-            }
+            Ok(lowering) => pending.push(Pending {
+                id: document.id().to_string(),
+                path: document.path().to_string(),
+                object: object.to_string(),
+                head,
+                lowering,
+            }),
             Err(LowerError::Blocked(diagnostics)) => own.extend(diagnostics),
             Err(LowerError::NotLowered) | Err(LowerError::Unresolved { .. }) => {}
         }
     }
+    let refusals = assign_owners(&mut pending);
+    for item in pending {
+        own.extend(item.lowering.diagnostics);
+        types.push(item.lowering.definition);
+        types.extend(item.lowering.aliases);
+    }
+    own.extend(refusals);
 
     own.extend(identity_collisions(&types));
     let mut diagnostics: Vec<Diagnostic> = resolutions

@@ -23,6 +23,16 @@ An authored fixture artifact.
 |-------|------|--------------|-------------|
 | current | OrderStatus | 1 | |
 
+## Operations
+
+### advance
+
+| Param | Type | Multiplicity | Constraints |
+|-------|------|--------------|-------------|
+| to | OrderStatus | 1 | |
+
+Returns: OrderStatus [1]
+
 ## States & Transitions
 
 ```mermaid

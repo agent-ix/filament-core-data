@@ -470,13 +470,11 @@ extraction-frontend-test: extraction-frontend-toolchain
 # closes and is skipped here by name; run one deliberately with
 # `cargo +1.98.1 test -p agent-ix-extraction-frontend -- --ignored --exact <name>`.
 #
-# The list is empty, and empty is the point rather than an omission. Every test
-# that was ever named here is now live: TC-1290 and TC-1291 unblocked when #87
-# closed, TC-1292's two halves when #88 and #90 did. An entry left behind after
-# its issue closes skips nothing while still asserting the test is blocked, so
-# the list is emptied as each one lands rather than kept as a record of what
-# used to be.
-EXTRACTION_BLOCKED_TESTS :=
+# The list names the three TC-1292 backend acceptance tests, blocked on
+# filament-core-data#147: the config-version-table golden carries `entity`
+# constructs the backends refuse until they render them. An entry is removed in
+# the change that unblocks its test.
+EXTRACTION_BLOCKED_TESTS := tc_1292_rust_generate_over_the_config_version_table_golden_exits_zero_with_no_diagnostics tc_1292_generate_typescript_over_the_config_version_table_golden_exits_zero_with_no_diagnostics tc_1292_generic_cli_generates_the_rust_target tc_1337_json_schema_target_accepts_the_lifted_config_version_table_document
 .PHONY: extraction-frontend-evidence
 extraction-frontend-evidence: extraction-frontend-toolchain
 	cargo +$(EXTRACTION_TOOLCHAIN) test -p $(EXTRACTION_CRATE) --locked --offline --no-fail-fast -- --ignored $(foreach test,$(EXTRACTION_BLOCKED_TESTS),--skip $(test))

@@ -17,6 +17,7 @@
 #![deny(missing_docs)]
 
 pub mod compat;
+pub mod constructs;
 pub mod diag;
 pub mod json;
 pub mod normalize;

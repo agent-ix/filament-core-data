@@ -17,20 +17,16 @@ This requirement answers the unconstrained-value half of
 and of [#93](https://github.com/agent-ix/filament-core-data/issues/93). The
 presence half of both is answered by
 [FR-106](./FR-106-author-field-presence-independently.md); the two halves are
-separated here because they are independent narrowings that happen to have been
-found together, and a single requirement covering both would be discharged by
-fixing either.
+independent, so each is stated and verified on its own.
 
 The semantic IR SHALL carry a declaration for a value whose shape the source
 contract deliberately leaves open, distinctly from a record with no fields.
 
-The narrowing this replaces is observable and is already inherited by every
-generated package. A kernel grammar declares a default value whose shape "is
-decided by the target scalar", and the nearest published lowering renders it as
-a zero-field record with an open unknown policy. That lowering says *any JSON
-object*. The grammar says *any JSON value*. A default of `3`, `"draft"`, `true`,
-`null`, or `[1, 2]` is expressible in the source and not in the IR, so the loss
-is not at the edge of the contract but in the middle of it.
+A kernel grammar declares a default value whose shape "is decided by the target
+scalar". That grammar means *any JSON value*: a default of `3`, `"draft"`,
+`true`, `null`, or `[1, 2]` is expressible in the source. A zero-field record
+with an open unknown policy means *any JSON object*, so the IR carries the
+unconstrained value as the kernel scalar `any` and never as that record.
 
 The revision is additive within one schema file. A 1.1 document remains a valid
 1.2 document, and a 1.2 document carrying the new declaration is refused by a

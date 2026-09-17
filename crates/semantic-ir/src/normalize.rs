@@ -21,13 +21,14 @@ pub fn normalized(bundle: &Json) -> String {
         Some(ir) => ir,
         None => return to_canonical_string(&Json::Null),
     };
-    if ir.get("contractVersion").and_then(Json::as_str) != Some("1.1.0") {
+    let version = ir.get("contractVersion").and_then(Json::as_str);
+    if !matches!(version, Some("1.1.0" | "1.2.0")) {
         return to_canonical_string(ir);
     }
-    to_canonical_string(&materialize_ir(ir))
+    to_canonical_string(&materialize_ir(ir, version == Some("1.2.0")))
 }
 
-fn materialize_ir(ir: &Json) -> Json {
+fn materialize_ir(ir: &Json, authored_presence: bool) -> Json {
     let members = match ir.as_object() {
         Some(members) => members,
         None => return ir.clone(),
@@ -35,7 +36,7 @@ fn materialize_ir(ir: &Json) -> Json {
     let mut out: Vec<(String, Json)> = Vec::with_capacity(members.len());
     for (name, value) in members {
         if name == "types" {
-            out.push((name.clone(), materialize_types(value)));
+            out.push((name.clone(), materialize_types(value, authored_presence)));
         } else {
             out.push((name.clone(), value.clone()));
         }
@@ -43,15 +44,20 @@ fn materialize_ir(ir: &Json) -> Json {
     Json::Object(out)
 }
 
-fn materialize_types(types: &Json) -> Json {
+fn materialize_types(types: &Json, authored_presence: bool) -> Json {
     let items = match types.as_array() {
         Some(items) => items,
         None => return types.clone(),
     };
-    Json::Array(items.iter().map(materialize_type).collect())
+    Json::Array(
+        items
+            .iter()
+            .map(|item| materialize_type(item, authored_presence))
+            .collect(),
+    )
 }
 
-fn materialize_type(definition: &Json) -> Json {
+fn materialize_type(definition: &Json, authored_presence: bool) -> Json {
     let members = match definition.as_object() {
         Some(members) => members,
         None => return definition.clone(),
@@ -59,15 +65,21 @@ fn materialize_type(definition: &Json) -> Json {
     let mut out: Vec<(String, Json)> = Vec::with_capacity(members.len());
     for (name, value) in members {
         match name.as_str() {
-            "fields" => out.push((name.clone(), materialize_field_array(value))),
-            "operations" => out.push((name.clone(), materialize_operations(value))),
+            "fields" => out.push((
+                name.clone(),
+                materialize_field_array(value, authored_presence),
+            )),
+            "operations" => out.push((
+                name.clone(),
+                materialize_operations(value, authored_presence),
+            )),
             _ => out.push((name.clone(), value.clone())),
         }
     }
     Json::Object(out)
 }
 
-fn materialize_operations(operations: &Json) -> Json {
+fn materialize_operations(operations: &Json, authored_presence: bool) -> Json {
     let items = match operations.as_array() {
         Some(items) => items,
         None => return operations.clone(),
@@ -83,7 +95,10 @@ fn materialize_operations(operations: &Json) -> Json {
                 let mut out: Vec<(String, Json)> = Vec::with_capacity(members.len());
                 for (name, value) in members {
                     if name == "params" {
-                        out.push((name.clone(), materialize_field_array(value)));
+                        out.push((
+                            name.clone(),
+                            materialize_field_array(value, authored_presence),
+                        ));
                     } else {
                         out.push((name.clone(), value.clone()));
                     }
@@ -94,15 +109,20 @@ fn materialize_operations(operations: &Json) -> Json {
     )
 }
 
-fn materialize_field_array(fields: &Json) -> Json {
+fn materialize_field_array(fields: &Json, authored_presence: bool) -> Json {
     let items = match fields.as_array() {
         Some(items) => items,
         None => return fields.clone(),
     };
-    Json::Array(items.iter().map(materialize_field).collect())
+    Json::Array(
+        items
+            .iter()
+            .map(|field| materialize_field(field, authored_presence))
+            .collect(),
+    )
 }
 
-fn materialize_field(field: &Json) -> Json {
+fn materialize_field(field: &Json, authored_presence: bool) -> Json {
     let members = match field.as_object() {
         Some(members) => members,
         None => return field.clone(),
@@ -115,7 +135,16 @@ fn materialize_field(field: &Json) -> Json {
         .get("lower")
         .and_then(Json::as_i64)
         .unwrap_or(0);
-    let presence = if lower >= 1 { "required" } else { "optional" };
+    let presence = if authored_presence {
+        field
+            .get("presence")
+            .and_then(Json::as_str)
+            .unwrap_or("optional")
+    } else if lower >= 1 {
+        "required"
+    } else {
+        "optional"
+    };
     let nullable = truthy(field.get("nullable"));
 
     let mut out: Vec<(String, Json)> = Vec::with_capacity(members.len() + 3);
@@ -183,6 +212,18 @@ mod tests {
         assert_eq!(
             normalized(&bundle),
             r#"{"contractVersion":"1.0.0","types":[{"fields":[{"name":"a","presence":"required"}],"kind":"record"}]}"#
+        );
+    }
+
+    #[test]
+    fn tc_1378_preserves_authored_presence_in_a_1_2_0_field() {
+        let bundle = parse(
+            r#"{"ir":{"contractVersion":"1.2.0","types":[{"kind":"record","fields":[{"name":"a","presence":"optional","multiplicity":{"lower":1,"upper":1}}]}]}}"#,
+        )
+        .expect("a well-formed document");
+        assert_eq!(
+            normalized(&bundle),
+            r#"{"contractVersion":"1.2.0","types":[{"fields":[{"multiplicity":{"lower":1,"upper":1},"name":"a","nullable":false,"presence":"optional"}],"kind":"record"}]}"#
         );
     }
 }

@@ -130,7 +130,7 @@ fn locus(lift: &Lift, path: &str, line: usize, column: usize) -> Value {
 fn ir_document(lift: &Lift) -> Value {
     let envelope = Envelope::new(&lift.bundle, &[]);
     let mut doc = serde_json::to_value(&envelope).expect("envelope serialises");
-    doc["contractVersion"] = json!("1.1.0");
+    doc["contractVersion"] = json!("1.2.0");
     doc["types"] = Value::Array(types_json(lift));
     json!({ "ir": doc })
 }
@@ -158,7 +158,7 @@ fn tc_1239_the_immutable_ocl_fence_lowers_to_one_clause_with_the_engine_span_and
     assert_eq!(clause["clauseId"], "immutable");
     assert_eq!(
         clause["identity"],
-        "ix://agent-ix/config-service/clause/ConfigVersion-immutable"
+        "ix://agent-ix/config-service/clause/FR-006-immutable"
     );
     let extraction = &lift.extractions.artifacts["FR-006"].extraction;
     let text = &extraction.clause_text.as_ref().expect("clause_text")["immutable"];
@@ -233,7 +233,7 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
     let add_line = named(operations, "name", "addLine");
     assert_eq!(
         add_line["identity"],
-        "ix://agent-ix/orders/operation/Basket-addLine"
+        "ix://agent-ix/orders/operation/OP-001-addLine"
     );
     assert_eq!(
         add_line["origin"],
@@ -243,10 +243,10 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
     assert_eq!(params.len(), 2);
     assert_eq!(
         params[0]["identity"],
-        "ix://agent-ix/orders/field/Basket-addLine-line"
+        "ix://agent-ix/orders/field/OP-001-addLine-line"
     );
     assert_eq!(params[0]["name"], "line");
-    assert_eq!(params[0]["typeRef"], "ix://agent-ix/orders/type/OrderLine");
+    assert_eq!(params[0]["typeRef"], "ix://agent-ix/orders/type/VO-001");
     assert_eq!(params[0]["presence"], "required");
     assert_eq!(params[0]["nullable"], false);
     assert_eq!(params[0]["defaultKind"], "none");
@@ -256,13 +256,13 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
     );
     assert_eq!(
         params[1]["identity"],
-        "ix://agent-ix/orders/field/Basket-addLine-quantity"
+        "ix://agent-ix/orders/field/OP-001-addLine-quantity"
     );
     assert_eq!(params[1]["typeRef"], "ix://agent-ix/orders/type/Integer");
     assert_eq!(
         add_line["returns"],
         json!({
-            "typeRef": "ix://agent-ix/orders/type/Basket",
+            "typeRef": "ix://agent-ix/orders/type/OP-001",
             "multiplicity": { "lower": 1, "upper": 1 },
             "nullable": false,
         })
@@ -324,7 +324,7 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
     assert_eq!(find["returns"]["nullable"], false);
     assert_eq!(
         list(find, "params")[0]["identity"],
-        "ix://agent-ix/orders/field/OrderRepository-findById-id"
+        "ix://agent-ix/orders/field/RP-001-findById-id"
     );
 }
 
@@ -379,36 +379,23 @@ fn is_semantic_identity(s: &str) -> bool {
     org_ok && tail_ok
 }
 
-/// An `Identifier`: `[A-Za-z_][A-Za-z0-9_]*`.
-fn is_identifier(s: &str) -> bool {
-    s.chars()
-        .next()
-        .is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
-        && s.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
-}
-
 /// The one FR-095 node kind `identity` matches, if exactly one does: the
 /// segment after `ix://<org>/<name>/` and a tail that is a slug
-/// (`[a-z0-9]+(-[a-z0-9]+)*`), or for `type/` an `Identifier` or, for the
-/// alias of a constrained field, `<Identifier>.<Identifier>`.
+/// (`[A-Za-z0-9]+(-[A-Za-z0-9]+)*`). A `type/` tail is an artifact id, a
+/// kernel scalar name, or the alias of a constrained field
+/// (`<artifact id><Field>`), all of which are slugs (FR-143).
 fn node_kind(identity: &str, package: &str) -> Option<NodeKind> {
     let rest = identity.strip_prefix(&format!("ix://{package}/"))?;
     let (segment, tail) = rest.split_once('/')?;
     let matches: Vec<NodeKind> = NodeKind::ALL
         .into_iter()
         .filter(|kind| kind.segment() == segment)
-        .filter(|kind| match kind {
-            NodeKind::Type => match tail.split_once('.') {
-                Some((record, field)) => is_identifier(record) && is_identifier(field),
-                None => is_identifier(tail),
-            },
-            _ => {
-                !tail.is_empty()
-                    && !tail.starts_with('-')
-                    && !tail.ends_with('-')
-                    && !tail.contains("--")
-                    && tail.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
-            }
+        .filter(|_| {
+            !tail.is_empty()
+                && !tail.starts_with('-')
+                && !tail.ends_with('-')
+                && !tail.contains("--")
+                && tail.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
         })
         .collect();
     match matches.as_slice() {

@@ -50,7 +50,7 @@ const ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
 export const BACKEND = Object.freeze({
 	identity: "ix://agent-ix/filament-core-data/rust-backend",
 	version: "0.1.0",
-	supportedIrVersions: ["1.0.0", "1.1.0"],
+	supportedIrVersions: ["1.0.0", "1.1.0", "1.2.0"],
 	supportedFeatures: [
 		"kind:scalar",
 		"kind:record",

@@ -69,8 +69,10 @@ minting — FR-053's rule, which is FR-034's — implemented by FR-095 unchanged
 With one rule the comparison holds: `records-and-scalars` is recorded with
 both dialects, and TC-1290 and TC-1291 are pending that implementation, not
 blocked. The TypeSpec half declares `@minValue(1) revision: integer`, a
-constrained property that mints the alias `type/NoteRevision`, which the
-spec-bundle half mints for the same row. The projection also
+constrained property that mints the alias `type/NoteRevision`; the spec-bundle
+half mints `type/<artifact id>Revision` for the same row (FR-143), and the
+projection renames each artifact-id segment to the slug of its type's
+`displayName` so the two compare. The projection also
 materialises an absent `relationships`, `operations`, or `clauses` as `[]`,
 which is the FR-028-CON-1 reading of absence as empty, not a widening.
 Task-136 measured the two former backend defects: `generate --target
@@ -157,7 +159,7 @@ unlisted or listed and absent.
 ### Cross-frontend parity
 
 - The frontend SHALL supply the `records-and-scalars` shared case in both dialects, using kernel scalars only, with one record per dialect declaring the same fields, constraints, and multiplicities.
-- The frontend SHALL define the parity projection of an IR document as: keep `types[]` only; drop every `origin` member at every node; drop the top-level `source`, `package`, `extensions`, and `occurrences`; drop every `extensions` member at every node; materialise an absent `relationships`, `operations`, or `clauses` list as `[]` (the FR-028-CON-1 reading of absence as empty); rewrite every identity prefix `ix://<pkg>/` to `ix://shared/`; sort every node list by `identity` under code-point comparison.
+- The frontend SHALL define the parity projection of an IR document as: keep `types[]` only; drop every `origin` member at every node; drop the top-level `source`, `package`, `extensions`, and `occurrences`; drop every `extensions` member at every node; materialise an absent `relationships`, `operations`, or `clauses` list as `[]` (the FR-028-CON-1 reading of absence as empty); rewrite every identity prefix `ix://<pkg>/` to `ix://shared/`; rename every identity segment that is a spec-bundle artifact id to the slug of that artifact's `displayName`; read every record-shaped FR-142 construct `kind` (`entity`, `value_object`, `nested_entity`, `aggregate_root`, `event`, `process`) as `record` and drop its construct members; sort every node list by `identity` under code-point comparison.
 - The frontend SHALL produce, for `records-and-scalars`, a parity projection whose form after `agent_ix_semantic_ir::normalize::normalized` is byte-identical to the normalized projection of the TypeSpec frontend's output for the same case.
 - The frontend SHALL record `records-and-scalars` in `cases.json` with both source trees present and both the `typespec` and the `spec-bundle` dialect non-null.
 - The frontend SHALL record each of `scalars-and-records`, `collections-and-units`, and `enums-and-unions` in `cases.json` with `"spec-bundle": null` and a `reason` naming the package-local `scalar` (and the `union` for `enums-and-unions`) the typed table cannot author.
@@ -166,6 +168,7 @@ unlisted or listed and absent.
 
 ### Backend acceptance and the payload check (declared gap, issue #85)
 
+- The Rust and TypeScript backends SHALL refuse the `config-version-table` document's FR-142 constructs with a named diagnostic until filament-core-data#147 renders them; the two criteria below hold for a document whose type definitions are records.
 - The frontend SHALL emit a `config-version-table` document that the Rust backend's writer `generateRust` (`src/compiler/backends/rust-serde/index.mjs`, run over the document by `node scripts/extraction-frontend-harness.mjs rust-generate --ir <file> --out <dir>` with the request `src/compiler/backends/rust-serde/cli.mjs` builds; `node src/compiler/cli.mjs generate --target rust` remains `BACKEND_NOT_IMPLEMENTED`.
 - The frontend SHALL emit a `config-version-table` document that `node src/compiler/cli.mjs generate --target typescript` accepts with zero diagnostics.
 - The frontend SHALL keep the payload-schema helper under `crates/extraction-frontend/tests/` only, unexported and unreachable from `lift` and `inspect`.
@@ -188,7 +191,7 @@ unlisted or listed and absent.
 | FR-098-AC-4 | Every code FR-096 declares is emitted by its `negatives/<CODE>/` bundle or by the test `constructed.json` names, at the golden's recorded line and column or with no locus, as exactly its code as the first blocking diagnostic in FR-096 order; companion diagnostics that the same defect necessarily produces (an `ENGINE_DIAGNOSTIC` row, an `ARTIFACT_NOT_LOWERED`) are pinned by the test; the non-blocking negatives are exactly two, `DECLARED_LOSS` and `ENGINE_DIAGNOSTIC`, whose lifts carry no blocking diagnostic and write the document, `KERNEL_NAME_SHADOWED`'s fixture being refused with `DUPLICATE_TYPE_NAME` at lift level per FR-092-AC-8. | Test (TC-1288) |
 | FR-098-AC-5 | After lifting a committed copy of each fixture bundle, `git status --porcelain` is empty and every file's hash under the bundle and module roots is unchanged, for a clean lift and for a lift with a blocking diagnostic. | Test (TC-1289) |
 | FR-098-AC-6 | `cases.json` carries `records-and-scalars` with both source trees present and both `typespec` and `spec-bundle` non-null, and `"spec-bundle": null` with a `reason` naming `scalar` for each of the three existing cases; the parity test finds exactly one two-dialect case and compares it; the projection materialises an absent `relationships`, `operations`, or `clauses` as `[]`. | Test (TC-1290) |
-| FR-098-AC-7 | For `records-and-scalars`, `normalized` of the projection of the spec-bundle lift equals `normalized` of the projection of the `node src/compiler/cli.mjs compile` output byte for byte — every identity, the `type/NoteRevision` alias, and every `diagnosticCode` included — and the test fails naming `node` when it is absent. | Test (TC-1291) |
+| FR-098-AC-7 | For `records-and-scalars`, `normalized` of the projection of the spec-bundle lift equals `normalized` of the projection of the `node src/compiler/cli.mjs compile` output byte for byte — every projected identity, the `type/NoteRevision` alias, and every `diagnosticCode` included — and the test fails naming `node` when it is absent. | Test (TC-1291) |
 | FR-098-AC-8 | `node src/compiler/cli.mjs generate` over the lifted `config-version-table` document exits zero with zero diagnostics and a non-empty file set for `--target rust` and for `--target typescript`, and the Rust backend's own `generateRust` route through `node scripts/extraction-frontend-harness.mjs rust-generate` does the same. The generic command line reaches the Rust target from [FR-130](./FR-130-register-the-rust-backend-in-the-generation-seam.md); before that registration only the harness route existed, and this criterion measured it alone. | Test (TC-1292) |
 | FR-098-AC-9 | A representative `ConfigVersion` payload validates against the test-derived schema, `{"versionNumber": 0}` fails at `versionNumber`, and the helper is not reachable from the crate's public surface. | Test (TC-1293) |
 | FR-098-AC-10 | The change set of this requirement outside the crate is exactly `cases.json`, `test/fixtures/compiler/shared/typespec/records-and-scalars/`, and files under `test/fixtures/compiler/shared/spec-bundle/`; `src/compiler/frontend/**` and `test/compiler-core.test.ts` are byte-unchanged. | Static (TC-1294) |

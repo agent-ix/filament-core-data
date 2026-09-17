@@ -64,6 +64,11 @@ export const LOSS_CODES = Object.freeze({
 		severity: "error",
 		blocking: true,
 	}),
+	CONSTRUCT_NOT_RENDERED: Object.freeze({
+		code: TARGET("CONSTRUCT_NOT_RENDERED"),
+		severity: "error",
+		blocking: true,
+	}),
 	IDENTIFIER_COLLISION: Object.freeze({
 		code: TARGET("IDENTIFIER_COLLISION"),
 		severity: "error",
@@ -88,7 +93,32 @@ export const TARGET_LOSSES = Object.freeze([
 		rationale:
 			"ISO-8601 designators admit no total order — P1M and P30D are not comparable without a calendar — so an ordering constraint on a duration subject is refused rather than answered by an invented comparison",
 	}),
+	Object.freeze({
+		construct: "object-type-construct",
+		code: LOSS_CODES.CONSTRUCT_NOT_RENDERED.code,
+		rationale:
+			"a contract 1.2.0 object-type construct carries built-in rules this target renders no check for; filament-core-data#147 declares its rendering, and a record in its place would drop those rules",
+	}),
 ]);
+
+/**
+ * The contract 1.2.0 object-type construct kinds (FR-142). The target renders
+ * none of them, so each is a declared loss rather than a record.
+ */
+export const CONSTRUCT_KINDS = Object.freeze(
+	new Set([
+		"entity",
+		"value_object",
+		"nested_entity",
+		"aggregate_root",
+		"enumeration",
+		"event",
+		"state_machine",
+		"process",
+		"repository",
+		"domain",
+	]),
+);
 
 /**
  * The constructs an earlier draft declared lost and this one renders as data,
@@ -199,6 +229,16 @@ export function representability(ir, options = {}) {
 	for (const [index, type] of ir.types.entries()) {
 		if (type === null || typeof type !== "object") continue;
 		const owner = type.identity;
+
+		if (CONSTRUCT_KINDS.has(type.kind)) {
+			record({
+				code: LOSS_CODES.CONSTRUCT_NOT_RENDERED.code,
+				construct: "object-type-construct",
+				owner,
+				pointer: `/ir/types/${index}/kind`,
+				detail: type.kind,
+			});
+		}
 
 		// An `operation` and a `clause` are rendered as readonly descriptor data
 		// by `metadata.mjs` and are deliberately not recorded here; see the

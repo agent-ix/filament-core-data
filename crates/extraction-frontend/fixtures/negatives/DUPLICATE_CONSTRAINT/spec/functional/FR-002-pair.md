@@ -17,3 +17,4 @@ An authored fixture artifact.
 |-------|------|--------------|-------------|
 | versionNumber | Integer | 1 | min: 1 |
 | version_number | Integer | 1 | min: 2 |
+| id | UUID | 1 | identity |

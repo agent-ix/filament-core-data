@@ -242,6 +242,7 @@ function constraintStatements(model, identity, indent) {
 
 /** The primitive `typeof` guard and structural code for each kernel scalar. */
 const SCALAR_GUARDS = Object.freeze({
+	any: { test: "true", code: "SHAPE_MISMATCH" },
 	boolean: { test: 'typeof candidate === "boolean"', code: "NOT_A_BOOLEAN" },
 	integer: { test: 'typeof candidate === "number"', code: "NOT_A_NUMBER" },
 	number: { test: 'typeof candidate === "number"', code: "NOT_A_NUMBER" },

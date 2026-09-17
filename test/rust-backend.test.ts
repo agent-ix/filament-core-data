@@ -384,6 +384,7 @@ describe("TC-655, TC-697 the published tables and the closed code sets", () => {
 			"reference",
 		];
 		const declaredScalars = [
+			"any",
 			"boolean",
 			"integer",
 			"number",
@@ -1704,7 +1705,7 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	/**
 	 * Traces: TC-725; FR-062-AC-1, FR-062-AC-8.
 	 *
-	 * Branches: scalar:boolean, scalar:bytes, scalar:date, scalar:datetime,
+	 * Branches: scalar:any, scalar:boolean, scalar:bytes, scalar:date, scalar:datetime,
 	 * scalar:duration, scalar:integer, scalar:number, scalar:string,
 	 * scalar:uuid, support-type:date, support-type:datetime,
 	 * support-type:duration, support-type:uuid;

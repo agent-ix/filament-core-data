@@ -141,10 +141,7 @@ fn tc_1231_fr_006_references_fr_005_lowers_to_one_traceability_relationship_at_t
     assert_eq!(rel["verb"], "references");
     assert_eq!(rel["category"], "traceability");
     assert_eq!(rel["composite"], false);
-    assert_eq!(
-        rel["target"],
-        "ix://agent-ix/config-service/type/ConfigOverlay"
-    );
+    assert_eq!(rel["target"], "ix://agent-ix/config-service/type/FR-005");
     assert_eq!(
         rel["multiplicity"],
         serde_json::json!({ "lower": 1, "upper": 1 })
@@ -155,7 +152,7 @@ fn tc_1231_fr_006_references_fr_005_lowers_to_one_traceability_relationship_at_t
     );
     assert_eq!(
         rel["identity"],
-        "ix://agent-ix/config-service/relationship/ConfigVersion-references-ConfigOverlay"
+        "ix://agent-ix/config-service/relationship/FR-006-references-FR-005"
     );
     // The pair reached the frontend as the engine's `harvest_edges` returns
     // it: the target reduced to its last segment.
@@ -199,7 +196,7 @@ fn tc_1232_contains_and_aggregates_are_composite_structural_and_composes_is_not(
     assert_eq!(aggregates.len(), 1, "{aggregate:?}");
     assert_eq!(aggregates[0]["category"], "structural");
     assert_eq!(aggregates[0]["composite"], true);
-    assert_eq!(aggregates[0]["target"], "ix://agent-ix/orders/type/Order");
+    assert_eq!(aggregates[0]["target"], "ix://agent-ix/orders/type/FR-001");
     let value_object = relationships(type_named(&types, "OrderLine"));
     let composes = with_verb(&value_object, "composes");
     assert_eq!(composes.len(), 1, "{value_object:?}");
@@ -231,21 +228,15 @@ fn tc_1233_references_is_traceability_and_owns_is_dependency_neither_composite()
     assert_eq!(references.len(), 1, "{order:?}");
     assert_eq!(references[0]["category"], "traceability");
     assert_eq!(references[0]["composite"], false);
-    assert_eq!(
-        references[0]["target"],
-        "ix://agent-ix/orders/type/OrderStatus"
-    );
+    assert_eq!(references[0]["target"], "ix://agent-ix/orders/type/EN-001");
     let owns = with_verb(&order, "owns");
     assert_eq!(owns.len(), 1, "{order:?}");
     assert_eq!(owns[0]["category"], "dependency");
     assert_eq!(owns[0]["composite"], false);
-    assert_eq!(
-        owns[0]["target"],
-        "ix://agent-ix/orders/type/OrderLifecycle"
-    );
+    assert_eq!(owns[0]["target"], "ix://agent-ix/orders/type/SM-001");
     assert_eq!(
         owns[0]["identity"],
-        "ix://agent-ix/orders/relationship/Order-owns-OrderLifecycle"
+        "ix://agent-ix/orders/relationship/FR-001-owns-SM-001"
     );
 }
 
@@ -364,7 +355,7 @@ fn tc_1236_artifact_axis_verbs_lower_to_nothing_silently_and_one_references_edge
     assert_eq!(rels[0]["verb"], "references");
     assert_eq!(
         rels[0]["target"],
-        "ix://agent-ix/config-service/type/ConfigOverlay"
+        "ix://agent-ix/config-service/type/FR-005"
     );
 }
 
@@ -382,13 +373,13 @@ fn tc_1237_same_verb_and_target_dedupe_and_two_verbs_on_one_target_mint_two_iden
     assert_eq!(rels.len(), 3, "{rels:?}");
     let to_colour: Vec<&Value> = rels
         .iter()
-        .filter(|r| r["target"] == "ix://agent-ix/config-service/type/Colour")
+        .filter(|r| r["target"] == "ix://agent-ix/config-service/type/EN-001")
         .collect();
     assert_eq!(to_colour.len(), 1, "two entries, one relationship");
     assert_eq!(to_colour[0]["verb"], "references");
     let to_overlay: Vec<&Value> = rels
         .iter()
-        .filter(|r| r["target"] == "ix://agent-ix/config-service/type/ConfigOverlay")
+        .filter(|r| r["target"] == "ix://agent-ix/config-service/type/FR-005")
         .collect();
     assert_eq!(to_overlay.len(), 2, "two verbs, two relationships");
     let mut verbs: Vec<&str> = to_overlay
@@ -420,7 +411,7 @@ fn tc_1238_parent_is_a_field_not_a_relationship_and_the_issue_34_fixture_is_byte
         .expect("parent is a field");
     assert_eq!(
         parent["typeRef"],
-        "ix://agent-ix/config-service/type/ConfigVersion"
+        "ix://agent-ix/config-service/type/FR-006"
     );
     assert_eq!(
         parent["multiplicity"],
@@ -429,7 +420,7 @@ fn tc_1238_parent_is_a_field_not_a_relationship_and_the_issue_34_fixture_is_byte
     let ours = relationships(record);
     assert!(
         ours.iter().all(
-            |r| r["target"] != "ix://agent-ix/config-service/type/ConfigVersion"
+            |r| r["target"] != "ix://agent-ix/config-service/type/FR-006"
                 && !r["identity"].as_str().expect("identity").contains("parent")
         ),
         "no relationship from the parent row: {ours:?}"
@@ -460,10 +451,19 @@ fn tc_1238_parent_is_a_field_not_a_relationship_and_the_issue_34_fixture_is_byte
         serde_json::json!(17),
         "the hand fixture lifts the parent row"
     );
-    // What remains on both sides is one edge to ConfigOverlay.
+    // What remains on both sides is one edge to ConfigOverlay: the hand
+    // fixture names it by its declared name, the lift by its artifact id
+    // (FR-143).
     assert_eq!(other_nodes.len(), 1);
     assert_eq!(ours.len(), 1);
-    assert_eq!(other_nodes[0]["target"], ours[0]["target"]);
+    assert_eq!(
+        other_nodes[0]["target"],
+        "ix://agent-ix/config-service/type/ConfigOverlay"
+    );
+    assert_eq!(
+        ours[0]["target"],
+        "ix://agent-ix/config-service/type/FR-005"
+    );
     assert_eq!(other_nodes[0]["multiplicity"], ours[0]["multiplicity"]);
     assert_eq!(other_nodes[0]["composite"], ours[0]["composite"]);
 }
@@ -482,13 +482,11 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
     let base_types = types_json(&base);
     let base_order = relationships(type_named(&base_types, "Order"));
     let base_owns = with_verb(&base_order, "owns")[0].clone();
-    assert_eq!(
-        base_owns["target"],
-        "ix://agent-ix/orders/type/OrderLifecycle"
-    );
+    assert_eq!(base_owns["target"], "ix://agent-ix/orders/type/SM-001");
 
     // Part one: rename the `owns` target (SM-001, referenced by no Type
-    // cell) and lift again.
+    // cell) and lift again. The target's identity is its artifact id, so
+    // the declared name moves no relationship node (FR-143).
     let sm_001 = "spec/functional/SM-001-order-lifecycle.md";
     let original = fs::read_to_string(fixture("business").join(sm_001)).expect("SM-001");
     let mut runner = TestRunner::new(Config::with_cases(12));
@@ -513,15 +511,12 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
             let owns = with_verb(&order, "owns");
             prop_assert_eq!(owns.len(), 1);
             let owns = owns[0];
-            prop_assert_eq!(
-                &owns["target"],
-                &Value::String(format!("ix://agent-ix/orders/type/{name}"))
-            );
-            prop_assert_ne!(&owns["identity"], &base_owns["identity"]);
-            prop_assert_eq!(
-                without(owns, &["target", "identity"]),
-                without(&base_owns, &["target", "identity"])
-            );
+            prop_assert_eq!(owns, &base_owns);
+            let renamed_target = types
+                .iter()
+                .find(|t| t["identity"] == "ix://agent-ix/orders/type/SM-001")
+                .expect("SM-001 keeps its identity");
+            prop_assert_eq!(&renamed_target["displayName"], &Value::String(name));
             // Every other relationship of the record is byte-identical.
             for (b, g) in base_order
                 .iter()
@@ -532,7 +527,7 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
             }
             Ok(())
         })
-        .expect("12 renamings move only target and identity");
+        .expect("12 renamings move no relationship node");
 
     // Part two: flip the registry `inverse` and lift again, with no code
     // change: `contains` and `aggregates` lose `part_of`, `composes` gains
@@ -550,13 +545,33 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
                 .replacen("inverse: composed_by", &format!("inverse: {PART_OF}"), 1);
             fs::write(module.join("manifest.yaml"), flipped).expect("write");
             let lift = lift_at(&fixture("business"), &[&business_module(), &module]);
+            // A non-composite `contains` leaves the nested entity Shipment
+            // with no owner, which its construct refuses (FR-143); that
+            // refusal is the only blocking diagnostic.
+            let blocking: Vec<_> = lift
+                .lowered
+                .diagnostics
+                .iter()
+                .filter(|d| d.blocking)
+                .collect();
+            prop_assert_eq!(blocking.len(), 1, "{:?}", blocking);
             prop_assert!(
-                !is_blocked(&lift.lowered.diagnostics),
-                "{:?}",
-                lift.lowered.diagnostics
+                blocking[0].message.contains("NE-001") && blocking[0].message.contains("owner"),
+                "{}",
+                blocking[0].message
             );
             let types = types_json(&lift);
-            for (base_type, flipped_type) in base_types.iter().zip(&types) {
+            let base_kept: Vec<&Value> = base_types
+                .iter()
+                .filter(|t| t["identity"] != "ix://agent-ix/orders/type/NE-001")
+                .filter(|t| {
+                    !t["identity"]
+                        .as_str()
+                        .is_some_and(|i| i.starts_with("ix://agent-ix/orders/type/NE-001"))
+                })
+                .collect();
+            prop_assert_eq!(base_kept.len(), types.len());
+            for (base_type, flipped_type) in base_kept.into_iter().zip(&types) {
                 prop_assert_eq!(&base_type["displayName"], &flipped_type["displayName"]);
                 let Some(base_rels) = base_type["relationships"].as_array() else {
                     prop_assert_eq!(base_type, flipped_type);
@@ -573,9 +588,23 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
                     };
                     prop_assert_eq!(g["composite"].as_bool(), Some(expected), "{}", b);
                 }
+                // An aggregate root's members are its composite targets.
+                if flipped_type["kind"] == "aggregate_root" {
+                    let composite: Vec<&Value> = rels
+                        .iter()
+                        .filter(|r| r["composite"] == true)
+                        .map(|r| &r["target"])
+                        .collect();
+                    let members: Vec<&Value> = flipped_type["members"]
+                        .as_array()
+                        .expect("members")
+                        .iter()
+                        .collect();
+                    prop_assert_eq!(members, composite);
+                }
                 prop_assert_eq!(
-                    without(base_type, &["relationships"]),
-                    without(flipped_type, &["relationships"])
+                    without(base_type, &["relationships", "members"]),
+                    without(flipped_type, &["relationships", "members"])
                 );
             }
             Ok(())

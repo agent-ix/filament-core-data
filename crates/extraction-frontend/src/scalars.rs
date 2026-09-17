@@ -6,9 +6,7 @@
 //! (FR-032's one source), read at compile time; [`KernelScalar`] is the
 //! closed enum over its members, and [`KernelScalar::ir_scalar`] is the
 //! `irScalar` column of that file, never a spelling of this crate's own.
-//! `JsonObject` carries `irLowering: open-record` instead of an `irScalar`
-//! and lowers to a record under FR-093; no scalar definition is minted for
-//! it here.
+//! `JsonObject` is the source vocabulary's name for IR scalar `any`.
 
 use std::collections::BTreeMap;
 use std::sync::OnceLock;
@@ -46,8 +44,6 @@ pub enum KernelScalar {
 struct LibraryEntry {
     #[serde(default)]
     ir_scalar: Option<std::string::String>,
-    #[serde(default)]
-    ir_lowering: Option<std::string::String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -138,21 +134,12 @@ impl KernelScalar {
         library().scalars.contains_key(name).then_some(member)
     }
 
-    /// The IR `scalar` value of the member (`irScalar` in the library), or
-    /// `None` for `JsonObject`, which lowers to a record.
+    /// The IR `scalar` value of the member (`irScalar` in the library).
     pub fn ir_scalar(self) -> Option<&'static str> {
         library()
             .scalars
             .get(self.name())
             .and_then(|entry| entry.ir_scalar.as_deref())
-    }
-
-    /// Whether the member lowers to an open record rather than a scalar.
-    pub fn is_open_record(self) -> bool {
-        library()
-            .scalars
-            .get(self.name())
-            .is_some_and(|entry| entry.ir_lowering.as_deref() == Some("open-record"))
     }
 }
 
@@ -206,7 +193,7 @@ pub struct ScalarDefinition {
 /// once, in identity order (FR-092 "Kernel scalars"): identity
 /// `ix://<org>/<name>/type/<KernelScalar>` (FR-095), the FR-032 `scalar`
 /// value, and the `ext/kernel-scalar` extension. A member with no
-/// `irScalar` (`JsonObject`) yields no definition here.
+/// Every declared scalar yields one definition here.
 ///
 /// `generator_version` is the frontend's own version as the provenance
 /// record names it (FR-095), never read from the build environment.

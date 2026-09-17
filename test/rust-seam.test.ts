@@ -40,14 +40,12 @@ type Manifest = {
 	diagnostics: { code: string; message: string; blocking?: boolean }[];
 };
 
-/** A generation request for the `rust` target over a real lifted document. */
+/** A generation request for the `rust` target over an accepted `1.1.0` document. */
 function rustRequest(overrides: Record<string, unknown> = {}) {
 	return {
 		contractVersion: "1.0.0",
 		lockFingerprint: `sha256:${"a".repeat(64)}`,
-		ir: readJson(
-			"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json",
-		),
+		ir: readJson("fixtures/semantic/v1/positive/config-version-v1-1.json"),
 		profile: readJson("fixtures/semantic/v1/positive/profile.json"),
 		mappings: [],
 		backend: {

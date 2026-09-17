@@ -76,6 +76,15 @@
 			"diagnosticCode": null
 		},
 		{
+			"rowKey": "scalar:any",
+			"axis": "scalar",
+			"selector": "any",
+			"rustForm": "SemanticValue",
+			"serdeAttributes": [],
+			"mechanism": "lossless JSON value retained by crate::support::SemanticValue",
+			"diagnosticCode": null
+		},
+		{
 			"rowKey": "scalar:boolean",
 			"axis": "scalar",
 			"selector": "boolean",

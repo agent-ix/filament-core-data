@@ -11,7 +11,12 @@
 //! --target rust` is `BACKEND_NOT_IMPLEMENTED` (filament-core-data#21) and
 //! is measured, not relied on.
 //!
-//! Issues #88 and #90 make both generated-package paths accept the golden:
+//! The golden declares two `entity` constructs (FR-143). The three
+//! acceptance tests below are ignored and listed in the Makefile's
+//! `EXTRACTION_BLOCKED_TESTS` until filament-core-data#147 renders the
+//! constructs; `tests/constructs.rs` asserts the named refusal meanwhile.
+//!
+//! Issues #88 and #90 make both generated-package paths accept a record golden:
 //! extension identities are unique within their owning node, and matching
 //! package-local kernel scalars render as the Rust support type rather than a
 //! colliding newtype. The two ordinary tests below are the lasting acceptance
@@ -105,6 +110,7 @@ fn generate(target: &str, out_root: &Path) -> (i32, String, Vec<Value>) {
 }
 
 #[trace("TC-1292", "FR-098-AC-8")]
+#[ignore = "Blocked on filament-core-data#147: the golden carries contract 1.2.0 `entity` constructs, which the backends refuse until they render them (TC-1749)"]
 #[test]
 fn tc_1292_rust_generate_over_the_config_version_table_golden_exits_zero_with_no_diagnostics() {
     let out = tempfile::tempdir().expect("tempdir");
@@ -119,6 +125,7 @@ fn tc_1292_rust_generate_over_the_config_version_table_golden_exits_zero_with_no
 }
 
 #[trace("TC-1292", "FR-098-AC-8")]
+#[ignore = "Blocked on filament-core-data#147: the golden carries contract 1.2.0 `entity` constructs, which the backends refuse until they render them (TC-1749)"]
 #[test]
 fn tc_1292_generate_typescript_over_the_config_version_table_golden_exits_zero_with_no_diagnostics()
 {
@@ -141,6 +148,7 @@ fn tc_1292_generate_typescript_over_the_config_version_table_golden_exits_zero_w
 /// what made the refusal measured rather than assumed — and inverting the
 /// assertion is what closing it looks like.
 #[trace("TC-1292", "FR-098-AC-8")]
+#[ignore = "Blocked on filament-core-data#147: the golden carries contract 1.2.0 `entity` constructs, which the backends refuse until they render them (TC-1749)"]
 #[test]
 fn tc_1292_generic_cli_generates_the_rust_target() {
     let out_root = tempfile::tempdir().expect("tempdir");

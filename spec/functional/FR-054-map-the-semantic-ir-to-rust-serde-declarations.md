@@ -87,10 +87,11 @@ construct's disposition is written down rather than decided at the keyboard.
   `agent-ix.rust-backend.PAYLOAD_ON_ENUM_VARIANT` naming the variant identity,
   because the schema permits the member on any variant while the two kinds mean
   different things and no contract rule reconciles them.
-- The backend SHALL map the nine kernel scalars by this table:
+- The backend SHALL map the ten kernel scalars by this table:
 
 | `scalar` | Rust base `B` | Wire form |
 |---|---|---|
+| `any` | `SemanticValue`, the generated JSON-value representation | JSON value |
 | `boolean` | `bool` | JSON boolean |
 | `integer` | `i64` | JSON number with no fraction or exponent |
 | `number` | `f64` | JSON number |
@@ -288,7 +289,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-054-AC-1 | Every one of the eight `kind` values selects its table row, keyed on `kind` alone, verified by generating from a document declaring one type of each kind and matching the emitted declaration form. | Test (TC-645) |
-| FR-054-AC-2 | Each of the eight supported kernel scalars maps to its declared Rust base, and a `bytes` scalar raises `UNDECLARED_WIRE_FORM` and writes no file. | Test (TC-646) |
+| FR-054-AC-2 | Each of the nine supported kernel scalars maps to its declared Rust base, and a `bytes` scalar raises `UNDECLARED_WIRE_FORM` and writes no file. | Test (TC-646) |
 | FR-054-AC-3 | Each of the eight combinations of collection × nullable × presence produces exactly the Rust member type and serde attribute set the composition table states, the eight are pairwise distinct, and boundedness changes none of them. | Test (TC-647) |
 | FR-054-AC-4 | For a field that is both `optional` and `nullable`, an absent member deserializes to `None`, a present `null` deserializes to `Some(Nullable::Null)`, the two are distinguishable, and each re-serializes to the bytes it came from. | Test (TC-648) |
 | FR-054-AC-5 | A `union` whose variants carry payloads round-trips externally tagged, a variant with no `payloadType` round-trips as a unit variant, and a `payloadType` on an `enum` variant raises `PAYLOAD_ON_ENUM_VARIANT`. | Test (TC-649) |

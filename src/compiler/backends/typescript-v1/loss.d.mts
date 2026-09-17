@@ -9,6 +9,7 @@ export interface LossCode {
 export declare const LOSS_CODES: Readonly<{
 	FORMAT_NOT_IMPLEMENTED: LossCode;
 	DURATION_ORDER_NOT_REPRESENTABLE: LossCode;
+	CONSTRUCT_NOT_RENDERED: LossCode;
 	IDENTIFIER_COLLISION: LossCode;
 }>;
 
@@ -19,6 +20,9 @@ export interface DeclaredLoss {
 }
 
 export declare const TARGET_LOSSES: readonly DeclaredLoss[];
+
+/** The contract 1.2.0 object-type construct kinds (FR-142). */
+export declare const CONSTRUCT_KINDS: ReadonlySet<string>;
 
 /** A construct an earlier draft declared lost and this one renders as data. */
 export interface RenderedConstruct {

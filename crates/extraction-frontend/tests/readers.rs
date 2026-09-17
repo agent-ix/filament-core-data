@@ -157,7 +157,7 @@ fn tc_1258_the_emitted_envelope_of_every_positive_fixture_passes_decide_at_lift_
         );
         let document: Value =
             serde_json::from_slice(&fs::read(&request.out).expect("read")).expect("json");
-        assert_eq!(document["contractVersion"], "1.1.0", "{name}");
+        assert_eq!(document["contractVersion"], "1.2.0", "{name}");
         assert_eq!(document["source"]["dialect"], "spec-bundle", "{name}");
         assert!(document["source"]["identity"]
             .as_str()

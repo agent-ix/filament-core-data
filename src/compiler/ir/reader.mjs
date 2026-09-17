@@ -49,6 +49,20 @@ function depthOf(value, bound, depth = 0) {
 	return depth;
 }
 
+/** The kinds that may carry relationships and operations. */
+const EDGE_KINDS = new Set([
+	"record",
+	"entity",
+	"value_object",
+	"nested_entity",
+	"aggregate_root",
+	"event",
+	"state_machine",
+	"process",
+	"repository",
+	"domain",
+]);
+
 function isObject(value) {
 	return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -189,7 +203,7 @@ export function readContractIr(document, options = {}) {
 		}
 		let multiplicity;
 		if (field.multiplicity === undefined) {
-			if (version === "1.1.0") {
+			if (version === "1.1.0" || version === "1.2.0") {
 				raise(
 					DIAGNOSTIC_CODES.MISSING_MULTIPLICITY,
 					"a 1.1.0 field declares its multiplicity",
@@ -200,7 +214,7 @@ export function readContractIr(document, options = {}) {
 		} else {
 			multiplicity = checkMultiplicity(field.multiplicity, field);
 		}
-		if (multiplicity) {
+		if (multiplicity && version !== "1.2.0") {
 			const derived = multiplicity.lower >= 1 ? "required" : "optional";
 			if (field.presence !== undefined && field.presence !== derived) {
 				raise(
@@ -286,7 +300,9 @@ export function readContractIr(document, options = {}) {
 	};
 
 	const checkDefinition = (definition) => {
-		const isRecord = definition.kind === "record";
+		// Relationships and operations belong to a record and to every
+		// contract 1.2.0 construct except `enumeration` (FR-142).
+		const isRecord = EDGE_KINDS.has(String(definition.kind));
 		const fields = asArray(definition.fields);
 		// Every list, not only the fields: a document with a hundred thousand
 		// clauses is as unbounded as one with a hundred thousand fields.

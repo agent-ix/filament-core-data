@@ -864,7 +864,7 @@ describe("FR-032 kernel scalar table and FR-031 grammar reader (Task-044)", () =
 	}
 
 	/** Traces: TC-255, TC-257; FR-032-AC-1, FR-032-AC-3. */
-	it("records one non-any representation per KernelScalar member mapped into the IR scalar set", () => {
+	it("records one representation per KernelScalar member mapped into the IR scalar set, with JsonObject as any", () => {
 		const table = scalarTable();
 		expect(Object.keys(table).sort()).toEqual([
 			"Boolean",
@@ -890,8 +890,7 @@ describe("FR-032 kernel scalar table and FR-031 grammar reader (Task-044)", () =
 		]);
 		for (const [name, raw] of Object.entries(table)) {
 			const entry = object(raw, name);
-			expect(JSON.stringify(entry).toLowerCase()).not.toContain('"any"');
-			if (name === "JsonObject") expect(entry.irLowering).toBe("open-record");
+			if (name === "JsonObject") expect(entry.irScalar).toBe("any");
 			else expect(irScalars.has(String(entry.irScalar)), name).toBe(true);
 			expect(typeof entry.unitAllowed).toBe("boolean");
 		}

@@ -327,8 +327,8 @@ export const DETECTORS = Object.freeze([
 		run(backend) {
 			const rows = backend.table.rows.filter((row) => row.axis === "scalar");
 			assert(
-				rows.length === 9,
-				`the table declares ${rows.length} kernel scalars, not nine`,
+				rows.length === 10,
+				`the table declares ${rows.length} kernel scalars, not ten`,
 			);
 			for (const row of rows) {
 				const result = backend.mapping.mapDocument(
