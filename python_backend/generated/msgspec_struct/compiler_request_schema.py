@@ -31,7 +31,7 @@ class Limits(Struct):
 class FilamentCompilerRequestV1(Struct):
     backend: Backend
     contractVersion: Literal['1.0.0']
-    ir: semantic_ir_schema.FilamentSemanticIrV1ContractVersions100And110
+    ir: semantic_ir_schema.FilamentSemanticIrV1ContractVersions100110And120
     limits: Limits
     lockFingerprint: common_schema.Sha256
     mappings: list[mapping_schema.FilamentSemanticMappingV1]

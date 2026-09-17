@@ -34,6 +34,7 @@
  * no network, and the argument is left byte-identical.
  */
 
+import { identityFieldNames, isRecordShaped } from "../../constructs.mjs";
 import { MAX_DEPTH } from "./admit.mjs";
 import { reserveNames } from "./names.mjs";
 
@@ -238,7 +239,7 @@ export function buildModel(ir, options = {}) {
 		const scalar = resolveScalar(types, type.identity);
 		if (scalar !== undefined) entry.scalar = scalar;
 
-		if (type.kind === "record") {
+		if (isRecordShaped(type.kind)) {
 			entry.fields = Object.freeze(
 				byIdentity((type.fields ?? []).filter(isObject)).map((field) =>
 					fieldEntry(types, identifiers, field),
@@ -284,6 +285,11 @@ export function buildModel(ir, options = {}) {
 				),
 			);
 		}
+
+		// An entity also names the fields that tell its instances apart (FR-064).
+		const identityFields = identityFieldNames(type);
+		if (identityFields !== undefined)
+			entry.identityFields = Object.freeze(identityFields);
 
 		if (type.kind === "enum" || type.kind === "union") {
 			if (type.kind === "union") {

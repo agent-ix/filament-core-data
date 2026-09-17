@@ -67,7 +67,7 @@ an advisory, and a reader never re-reads its text in another language.
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-141-CON-1 | A member of the table SHALL NOT appear in a `1.0.0` or `1.1.0` document the readers accept. | Compatibility | Test |
-| FR-141-CON-2 | A reader SHALL NOT approximate a clause language: a language outside the admitted set is refused by the schema, and an admitted language other than `quire` is carried unchecked with `CLAUSE_LANGUAGE_UNCHECKED`, never read as `quire`. | Integrity | Test |
+| FR-141-CON-2 | A reader SHALL NOT approximate a clause language: a language outside the admitted set is refused by the schema, and an admitted language other than `quire` is carried unchecked with `CLAUSE_LANGUAGE_UNCHECKED`, never read as `quire`. `agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED` is the IR reader's spelling of the Quire engine's `semantic.clause-language-unchecked`: the two name one condition, a clause whose language the reader carries without checking it as Quire. | Integrity | Test |
 
 ## Acceptance Criteria
 

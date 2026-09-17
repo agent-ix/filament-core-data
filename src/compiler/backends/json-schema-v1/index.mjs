@@ -2,7 +2,7 @@
 import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { unrenderedNodes } from "../../constructs.mjs";
+import { identityFieldNames, unrenderedNodes } from "../../constructs.mjs";
 import { DIAGNOSTIC_CODES, diagnostic } from "../../diagnostics.mjs";
 import { admitIr, SCHEMA_FILES } from "../typescript-v1/admit.mjs";
 
@@ -44,11 +44,17 @@ const FORMAT_MAP = Object.freeze({
 	uri: "uri",
 });
 
+/**
+ * A schema's file name: the definition's declared `displayName`, else the last
+ * segment of its identity. The identity's last segment is an artifact id for a
+ * lifted document, so the declared name is what a consumer looks the file up by.
+ */
 function nameOf(type) {
-	return String(type.identity)
-		.split("/")
-		.at(-1)
-		.replace(/[^A-Za-z0-9._-]/g, "-");
+	const declared =
+		typeof type.displayName === "string" && type.displayName.length > 0
+			? type.displayName
+			: String(type.identity).split("/").at(-1);
+	return declared.replace(/[^A-Za-z0-9._-]/g, "-");
 }
 function byName(left, right) {
 	const a = String(left.name ?? left.identity);
@@ -137,7 +143,8 @@ function renderType(ir, type, types) {
 		case "scalar":
 			schema = { ...(scalarSchema[type.scalar] ?? {}) };
 			break;
-		case "record": {
+		case "record":
+		case "entity": {
 			const properties = Object.fromEntries(
 				[...(type.fields ?? [])]
 					.sort(byName)
@@ -150,6 +157,12 @@ function renderType(ir, type, types) {
 				.map((field) => field.name);
 			if (required.length) schema.required = required;
 			if (type.unknownPolicy === "reject") schema.additionalProperties = false;
+			// An entity is the record schema plus its construct kind and the
+			// names of the fields that tell its instances apart (FR-100).
+			if (type.kind === "entity") {
+				schema["x-agent-ix-kind"] = "entity";
+				schema["x-agent-ix-identity-fields"] = identityFieldNames(type);
+			}
 			break;
 		}
 		case "enum":
@@ -271,6 +284,7 @@ export const jsonSchemaBackend = Object.freeze({
 	supportedFeatures: Object.freeze([
 		"scalar",
 		"record",
+		"entity",
 		"enum",
 		"union",
 		"alias",
@@ -306,8 +320,8 @@ export const jsonSchemaBackend = Object.freeze({
 				files: [],
 				diagnostics: admission.diagnostics.map(admissionDiagnostic),
 			};
-		// A contract 1.2.0 construct kind or model member has no JSON Schema
-		// rendering yet (filament-core-data#147). Each is refused by name: an
+		// A contract 1.2.0 construct kind other than `entity`, or a model member,
+		// has no JSON Schema rendering (filament-core-data#147). Each is refused by name: an
 		// object schema in its place would drop its built-in rules (FR-142-CON-2).
 		const unrendered = unrenderedNodes(ir);
 		if (unrendered.length > 0)

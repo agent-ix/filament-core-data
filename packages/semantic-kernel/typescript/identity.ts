@@ -652,6 +652,14 @@ export const TYPE_UNKNOWN_POLICY = {
 	UnitSymbol: "reject",
 } as const satisfies Record<ExportedTypeName, string>;
 
+/**
+ * The names of the fields that tell an entity's instances apart, in declared
+ * order. A type that is not an entity has no entry.
+ */
+export const TYPE_IDENTITY_FIELDS = {} as const satisfies Partial<
+	Record<ExportedTypeName, readonly string[]>
+>;
+
 /** The extensions each exported type declares. */
 export const TYPE_EXTENSIONS = {
 	ClauseLanguage: [],

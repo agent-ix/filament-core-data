@@ -91,6 +91,16 @@ that decision requires.
 | Semantic identity | **not carried today.** `datamodel-code-generator` drops the `x-agent-ix-semantic-id` annotation the JSON Schema documents carry, so no emitted module declares it. Declared here as a gap owned by this requirement's backend rather than left unstated |
 | Provenance | `PROVENANCE.json` |
 
+A contract `1.2.0` `entity` reaches this target as the `json-schema` target's
+record schema, and renders as that record's model class under the selected
+profile. Its identity field names are **not carried**:
+`datamodel-code-generator` drops the `x-agent-ix-identity-fields` and
+`x-agent-ix-kind` annotations as it drops `x-agent-ix-semantic-id`, so no
+emitted module states which fields tell an entity's instances apart. Declared
+here as a gap owned by this requirement's backend rather than left unstated.
+Every other construct kind is refused by the `json-schema` target before the
+generator runs.
+
 ## Constraints
 
 | ID | Constraint | Type | Validation |
@@ -110,6 +120,7 @@ that decision requires.
 | FR-136-AC-5 | A producer that exits non-zero returns state `invalid` carrying `BACKEND_CONTRACT_VIOLATION` naming the profile, and no files | Test (TC-1534) |
 | FR-136-AC-6 | The documents handed to the producer are the `json-schema` target's own documents under its own names, with its manifest excluded | Test (TC-1535) |
 | FR-136-AC-7 | The module the seam imports for the Python backend names no file-system and no child-process module | Test (TC-1536) |
+| FR-136-AC-8 | A `python-pydantic-v2` and a `python-dataclass` request over a `1.2.0` document whose `ConfigVersion` is an `entity` each return state `success` with a `ConfigVersion.py` module, and no generated module names the identity-field annotation, the gap this requirement declares | Test (TC-1765) |
 
 ## Dependencies
 

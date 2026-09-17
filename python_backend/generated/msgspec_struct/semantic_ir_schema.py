@@ -402,7 +402,7 @@ class TypeDefinition(Struct):
     vocabulary: list[Term] | UnsetType = UNSET
 
 
-class FilamentSemanticIrV1ContractVersions100And110(Struct):
+class FilamentSemanticIrV1ContractVersions100110And120(Struct):
     contractVersion: ContractVersion
     extensions: list[common_schema.Extension]
     occurrences: list[Occurrence]

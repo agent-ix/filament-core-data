@@ -27,7 +27,10 @@ import {
 	registryWith,
 	selectBackend,
 } from "../src/compiler/backends/seam.mjs";
-import { CONSTRUCT_KINDS } from "../src/compiler/constructs.mjs";
+import {
+	CONSTRUCT_KINDS,
+	RENDERED_CONSTRUCT_KINDS,
+} from "../src/compiler/constructs.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -266,7 +269,7 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 	});
 
 	/** Traces: TC-1749; FR-142-AC-5, FR-142-CON-2. */
-	it("refuses every construct kind and model member at its pointer and writes no file", () => {
+	it("refuses every construct kind it does not render and every model member at its pointer and writes no file", () => {
 		const constructs = readJson(
 			"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
 		) as { types: { kind: string }[] };
@@ -280,7 +283,9 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 		const refused = manifest.diagnostics
 			.filter((d) => d.code === "agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT")
 			.map((d) => d.message);
-		for (const kind of CONSTRUCT_KINDS)
+		for (const kind of CONSTRUCT_KINDS.filter(
+			(one) => !RENDERED_CONSTRUCT_KINDS.includes(one),
+		))
 			expect(
 				refused.some((message) =>
 					message.endsWith(`contract 1.2.0 kind ${kind}`),
@@ -301,6 +306,50 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 				refused.some((message) => message.endsWith(` ${member}`)),
 				`no refusal names ${member}`,
 			).toBe(true);
+	});
+
+	/** Traces: TC-1762; FR-054-AC-16, FR-058-AC-13. */
+	it("renders an entity by the kind:entity row with IDENTITY_FIELDS beside the record struct", () => {
+		const ir = readJson(
+			"fixtures/semantic/v1/positive/config-version-v1-2.json",
+		) as {
+			types: {
+				kind: string;
+				displayName: string;
+				identityFields?: string[];
+				fields?: { name: string; identity: string }[];
+			}[];
+		};
+		const entity = ir.types.find(
+			(type) => type.displayName === "ConfigVersion",
+		);
+		const id = entity?.fields?.find((field) => field.name === "id");
+		if (!entity || !id) throw new Error("ConfigVersion declares no id field");
+		entity.kind = "entity";
+		entity.identityFields = [id.identity];
+
+		const manifest = generateTarget(rustRequest({ ir }), {
+			target: "rust",
+			host: host(),
+		}) as never as Manifest;
+		expect(manifest.state).toBe("success");
+		expect(manifest.diagnostics).toStrictEqual([]);
+
+		const written = new Map<string, string>();
+		generateRust(rustRequest({ ir }), {
+			clear() {},
+			write(_outputRoot: string, path: string, text: string) {
+				written.set(path, text);
+			},
+		});
+		const entitySource = written.get("src/types/config_version.rs") as string;
+		expect(entitySource).toContain("pub struct ConfigVersion {");
+		expect(entitySource).toContain(
+			'pub const IDENTITY_FIELDS: &[&str] = &["id"];',
+		);
+		const recordSource = written.get("src/types/config_overlay.rs") as string;
+		expect(recordSource).toContain("pub struct ConfigOverlay {");
+		expect(recordSource).not.toContain("IDENTITY_FIELDS");
 	});
 
 	/** Traces: TC-1394; FR-130-AC-7. */

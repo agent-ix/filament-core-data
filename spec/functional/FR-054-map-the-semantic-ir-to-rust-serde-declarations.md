@@ -81,6 +81,23 @@ construct's disposition is written down rather than decided at the keyboard.
 | `sequence` | `pub struct N(Vec<I>);` newtype over the `items` type, with `try_new` | `#[serde(transparent)]` |
 | `map` | `pub struct N(BTreeMap<String, V>);` newtype over the `values` type, with `try_new` | `#[serde(transparent)]` |
 | `reference` | `pub struct N(SemanticIdentity);` newtype over the validated identity, not over the target's Rust type | `#[serde(transparent)]` plus a validating `Deserialize` |
+| `entity` | `pub struct N { .. }` as for `record`, plus `pub const IDENTITY_FIELDS: &[&str]` in the type's module, naming the fields that tell its instances apart in the order `identityFields` declares them | as for `record` |
+
+- `entity` is the one contract `1.2.0` construct kind this backend renders. Its
+  built-in rule, that `identityFields` is non-empty and names fields of the
+  type, is decided by the reader before generation; the backend carries the
+  identity field names. Its Quire meaning, that instances are told apart by
+  the identity fields and persist across changes to the other fields, is a
+  property of instances rather than of one value, so the generated
+  `PartialEq` compares every member and a consumer compares instances by
+  `IDENTITY_FIELDS`. That is the carried-not-enforced row
+  [FR-058](./FR-058-refuse-unsupported-constructs-with-stable-diagnostics.md)
+  declares.
+- Every other construct kind of
+  [FR-142](./FR-142-declare-one-construct-per-object-type.md), and every model
+  member of [FR-141](./FR-141-carry-the-model-members-in-the-semantic-ir.md),
+  selects no row and SHALL be refused with `UNSUPPORTED_CONSTRUCT` at its
+  pointer.
 
 - If a variant of a `kind: "enum"` type carries a `payloadType`, then the
   backend SHALL raise a blocking
@@ -195,14 +212,14 @@ construct's disposition is written down rather than decided at the keyboard.
 
 ### Unknown members and extensions
 
-- The schema requires `unknownPolicy` on all eight kinds, so the mapping SHALL
-  dispose it on all eight. It is a real obligation on the kinds that have a
+- The schema requires `unknownPolicy` on every kind, so the mapping SHALL
+  dispose it on every kind it renders. It is a real obligation on the kinds that have a
   closed member set and inert on the kinds that do not; neither disposition is
   silence.
 
 | `kind` | `reject` | `preserve` or `surface` |
 |---|---|---|
-| `record` | `#[serde(deny_unknown_fields)]` | one `#[serde(flatten)]` `UnknownMembers` member |
+| `record`, `entity` | `#[serde(deny_unknown_fields)]` | one `#[serde(flatten)]` `UnknownMembers` member |
 | `enum`, `union` | serde's default, under which an unrecognised variant is a deserialization error | a generated catch-all variant `Unknown`, carrying the unrecognised tag and, for a `union`, its payload as a `SemanticValue` |
 | `scalar`, `alias`, `sequence`, `map`, `reference` | inert | inert |
 
@@ -303,6 +320,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | FR-054-AC-13 | `mapping.mjs` returns an identical model for a document and for the same document with every object's key order permuted and every identity-keyed array reordered, and its module graph reads no ambient input. | Analysis (TC-657) |
 | FR-054-AC-14 | The generated crate's `Cargo.toml` names `serde` as its only `[dependencies]` entry, at the pinned exact version. | Inspection (TC-655) |
 | FR-054-AC-15 | A `SemanticValue` retaining a repeated object member name and an unsorted member order re-serializes to the bytes it came from, and a number re-serializes through the declared ECMAScript formatter — so `1.0` becomes `1`, which is what `JSON.parse` then `JSON.stringify` produces and what the corpus's canonical form compares. Byte identity is claimed for the members the crate retains bytes for and for no others: serde's data model hands a visitor a parsed `f64` and never the source lexeme, and the alternative would need `serde_json`, which the published `rust` target contract's `serde`-only runtime forbids. | Test (TC-650) |
+| FR-054-AC-16 | A `1.2.0` `entity` selects the `kind:entity` row: it renders the record struct, its module declares `IDENTITY_FIELDS` naming its identity fields in declared order, and a `record` in the same document declares no `IDENTITY_FIELDS`. | Test (TC-1762) |
 
 ## Dependencies
 

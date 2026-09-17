@@ -382,6 +382,7 @@ describe("TC-655, TC-697 the published tables and the closed code sets", () => {
 			"sequence",
 			"map",
 			"reference",
+			"entity",
 		];
 		const declaredScalars = [
 			"any",
@@ -1693,7 +1694,8 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	/**
 	 * Traces: TC-725; FR-062-AC-1, FR-062-AC-8.
 	 *
-	 * Branches: kind:alias, kind:enum, kind:map, kind:record, kind:reference,
+	 * Branches: kind:alias, kind:entity, kind:enum, kind:map, kind:record,
+	 * kind:reference,
 	 * kind:scalar, kind:sequence, kind:union;
 	 */
 	it("TC-725 every kind row selects the Rust form the mapping table states", async () => {
@@ -1740,9 +1742,9 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	 * unknownPolicy:variants/preserve, unknownPolicy:variants/reject,
 	 * unknownPolicy:variants/surface;
 	 */
-	it("TC-725 the unknownPolicy rows dispose each of the eight kinds exactly once", async () => {
+	it("TC-725 the unknownPolicy rows dispose each of the nine kinds exactly once", async () => {
 		await runDetectorCase(
-			"TC-725 the unknownPolicy rows dispose each of the eight kinds exactly once",
+			"TC-725 the unknownPolicy rows dispose each of the nine kinds exactly once",
 		);
 	});
 

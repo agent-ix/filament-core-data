@@ -61,6 +61,7 @@ as a record does.
 - A reader SHALL raise `DANGLING_CLAUSE_REF` for a transition guard naming no clause of the state machine.
 - A reader SHALL raise `MULTIPLE_DOMAIN_MEMBERSHIP` for a type named by the members of two domains.
 - A backend without a rendering for a construct kind SHALL refuse the document with a named diagnostic and SHALL NOT render the construct as a record.
+- The Rust, TypeScript, JSON Schema and Python backends SHALL render `entity`, each by its own mapping row: [FR-054](./FR-054-map-the-semantic-ir-to-rust-serde-declarations.md) and [FR-058](./FR-058-refuse-unsupported-constructs-with-stable-diagnostics.md), [FR-064](./FR-064-lower-ir-type-definitions-to-typescript.md) and [FR-067](./FR-067-generate-identity-and-fingerprint-metadata.md), [FR-100](./FR-100-map-semantic-ir-to-json-schema.md), and [FR-136](./FR-136-register-the-python-backends-in-the-generation-seam.md). Each refuses the other nine kinds.
 - `docs/semantic-data-system/contracts-v1.md` SHALL state each construct's members, built-in rules and Quire meaning.
 
 ## Constraints
@@ -78,12 +79,12 @@ as a record does.
 | FR-142-AC-2 | For each kind, removing a required member, and adding a member the kind does not carry, is refused with `SCHEMA_VIOLATION`. | Test (TC-1746) |
 | FR-142-AC-3 | An owner of kind `value_object`, an aggregate member of kind `repository`, a repository persisting a `value_object`, a domain member that is a domain, and a construct member naming no type each raise their reader code at the member pointer. | Test (TC-1747) |
 | FR-142-AC-4 | An event whose occurrence field is a string raises `INVALID_OCCURRENCE_FIELD`; a transition naming an undeclared state or operation raises `UNRESOLVED_CONSTRUCT_REF`; a guard naming no clause raises `DANGLING_CLAUSE_REF`; one type in two domains raises `MULTIPLE_DOMAIN_MEMBERSHIP`. | Test (TC-1748) |
-| FR-142-AC-5 | The Rust and TypeScript backends refuse a document carrying a construct kind with a named diagnostic and emit no record in its place. | Test (TC-1749) |
+| FR-142-AC-5 | The Rust, TypeScript and JSON Schema backends refuse a document carrying a construct kind they do not render with a named diagnostic and emit no record in its place. | Test (TC-1749) |
 | FR-142-AC-6 | The contract document states the members, built-in rules and Quire meaning of every construct. | Inspection (TC-1750) |
 | FR-142-AC-7 | The construct kinds the Rust reader, the extraction frontend, the Node constructs list and the Node and Python readers spell are exactly the schema's `1.2.0` `typeDefinition.kind` values, and their edge-carrying kinds are exactly the schema's. | Test (TC-1760) |
 
 ## Dependencies
 
 - **Upstream**: [FR-141](./FR-141-carry-the-model-members-in-the-semantic-ir.md)
-- **Downstream**: [FR-143](./FR-143-lift-object-type-artifacts-to-their-constructs.md); the per-construct Rust, TypeScript and Python renderings are filament-core-data#147 and #150
+- **Downstream**: [FR-143](./FR-143-lift-object-type-artifacts-to-their-constructs.md); the Rust, TypeScript and Python renderings of the nine construct kinds other than `entity` are filament-core-data#147 and #150
 - **Constrained by**: [NFR-044](../non-functional/NFR-044-preserve-semantic-ir-revision-compatibility.md)

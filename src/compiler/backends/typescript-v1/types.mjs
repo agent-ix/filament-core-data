@@ -272,10 +272,15 @@ function renderRecord(entry) {
 	].join("");
 }
 
-/** Exhaustive over the eight kinds; an unhandled kind is a contract failure. */
+/**
+ * Exhaustive over the eight structural kinds and the rendered construct kind
+ * `entity`, which renders as its record interface; an unhandled kind is a
+ * contract failure.
+ */
 const RENDERERS = Object.freeze({
 	scalar: renderScalar,
 	record: renderRecord,
+	entity: renderRecord,
 	enum: renderEnum,
 	union: renderUnion,
 	alias: renderAlias,

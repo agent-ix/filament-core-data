@@ -9,7 +9,7 @@ status: normative
 # Rust/Serde backend mapping and declared decisions
 
 Rendered from `src/compiler/backends/rust-serde/mapping-table.json`, which is
-the single machine-readable mapping table. 49 rows across
+the single machine-readable mapping table. 50 rows across
 9 axes. A construct that selects no row and no named refusal is an
 `agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT`; the mapping is total by
 construction, not by claim.
@@ -22,6 +22,7 @@ construction, not by claim.
 |---|---|---|---|---|
 | `scalar` | `pub struct N(B);` | `transparent` | newtype over the kernel base with try_new and a validating Deserialize | — |
 | `record` | `pub struct N { .. }` | — | derived Serialize, member attributes per the field axes, Deserialize routed through try_new | — |
+| `entity` | `pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str]` | — | the record row, plus the names of the fields that tell the entity's instances apart in declared order, beside FIELDS in the type's module | — |
 | `enum` | `pub enum N { .. } (fieldless)` | `rename = "<variant name>"` | derived Serialize and Deserialize; the rename is emitted only where the derived identifier differs from the variant name | — |
 | `union` | `pub enum N { .. } (unit variant without payloadType, one-field variant with)` | `rename = "<variant name>"` | externally tagged, serde's default; the same conditional rename | — |
 | `alias` | `pub struct N(T);` | `transparent` | newtype over the target's Rust type with try_new | — |

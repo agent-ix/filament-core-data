@@ -33,7 +33,9 @@ frontend, a generated programming-language package, or an ambient registry.
 
 ## Outputs
 
-- One `<derived-type-name>.json` schema document for every IR definition.
+- One `<derived-type-name>.json` schema document for every IR definition, the
+  name derived from the definition's `displayName`, or from the last segment
+  of its identity where it declares none.
 - One `index.json` document listing each emitted schema path, `$id`, SHA-256
   digest, and semantic identity.
 - `src/compiler/backends/json-schema-v1/index.mjs`, which maps IR values to
@@ -59,6 +61,14 @@ frontend, a generated programming-language package, or an ambient registry.
 - A `record` definition SHALL render as an object schema whose `properties`
   members are its fields and whose `required` array contains exactly fields
   whose presence is `required`.
+- A contract `1.2.0` `entity` definition SHALL render as a `record` renders,
+  and SHALL carry `x-agent-ix-kind: "entity"` and its identity field names, in
+  the order `identityFields` declares them, as `x-agent-ix-identity-fields`.
+  An entity's instances being told apart by those fields is its Quire meaning
+  over instances, which no schema keyword states; the annotation carries the
+  names. Every other construct kind of
+  [FR-142](./FR-142-declare-one-construct-per-object-type.md), and every model
+  member, SHALL be refused by name with no schema file emitted.
 - An `enum` definition SHALL render an `enum` array of its variant wire names.
 - A `union` definition SHALL render a `oneOf` with one branch per variant; a
   payload-free variant SHALL constrain its tag alone and a payload-carrying
@@ -136,6 +146,7 @@ that decision requires.
 | FR-100-AC-4 | A record at `unknownPolicy: reject` rejects an extra property; `preserve` and `surface` accept it and retain distinct annotations. | Test (TC-1364) |
 | FR-100-AC-5 | Every emitted `$ref` resolves using only the generated sibling file set, and an external or parent-path reference fails the generator test. | Test (TC-1365) |
 | FR-100-AC-6 | A required unknown extension produces a blocking diagnostic and zero emitted files. | Test (TC-1366) |
+| FR-100-AC-7 | The lifted config-version-table golden renders `ConfigOverlay.json` and `ConfigVersion.json` as object schemas carrying `x-agent-ix-kind: entity` and `x-agent-ix-identity-fields: ["id"]`, no file is named from an artifact id, and a record schema carries neither annotation. | Test (TC-1764) |
 
 ## Dependencies
 

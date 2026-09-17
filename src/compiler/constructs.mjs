@@ -23,6 +23,38 @@ export const CONSTRUCT_KINDS = Object.freeze([
 	"domain",
 ]);
 
+/**
+ * The construct kinds every backend renders (FR-054, FR-064, FR-079, FR-100):
+ * an `entity` is a record-shaped type that also names its identity fields.
+ * Every other construct kind stays refused by name until its rendering lands
+ * (filament-core-data#147).
+ */
+export const RENDERED_CONSTRUCT_KINDS = Object.freeze(["entity"]);
+
+/** Whether `kind` is rendered as a record-shaped type: a record or an entity. */
+export function isRecordShaped(kind) {
+	return kind === "record" || RENDERED_CONSTRUCT_KINDS.includes(kind);
+}
+
+/**
+ * The names of an entity's identity fields, in `identityFields` order, or
+ * `undefined` for a type that is not an entity. An identity field that names
+ * no field of the type is dropped here; the readers refuse such a document
+ * before any backend runs (FR-142).
+ */
+export function identityFieldNames(type) {
+	if (type?.kind !== "entity") return undefined;
+	const byIdentity = new Map(
+		(Array.isArray(type.fields) ? type.fields : []).map((field) => [
+			field?.identity,
+			field?.name,
+		]),
+	);
+	return (Array.isArray(type.identityFields) ? type.identityFields : [])
+		.map((identity) => byIdentity.get(identity))
+		.filter((name) => typeof name === "string");
+}
+
 /** The constructs that carry relationships and operations as a record does. */
 export const EDGE_KINDS = Object.freeze([
 	"record",
@@ -30,7 +62,7 @@ export const EDGE_KINDS = Object.freeze([
 ]);
 
 /**
- * Every contract 1.2.0 model member no backend renders yet, with a pointer to
+ * Every contract 1.2.0 construct kind and model member no backend renders yet, with a pointer to
  * each occurrence in `ir`.
  *
  * `abstract: false`, an empty frame and empty lists carry no meaning a backend could drop, so
@@ -43,7 +75,10 @@ export function unrenderedNodes(ir) {
 		found.push({ pointer: "/populations", member: "populations" });
 	(Array.isArray(ir?.types) ? ir.types : []).forEach((type, index) => {
 		const at = `/types/${index}`;
-		if (CONSTRUCT_KINDS.includes(type?.kind))
+		if (
+			CONSTRUCT_KINDS.includes(type?.kind) &&
+			!RENDERED_CONSTRUCT_KINDS.includes(type.kind)
+		)
 			found.push({ pointer: `${at}/kind`, member: `kind ${type.kind}` });
 		if (nonEmpty(type?.supertypes))
 			found.push({ pointer: `${at}/supertypes`, member: "supertypes" });

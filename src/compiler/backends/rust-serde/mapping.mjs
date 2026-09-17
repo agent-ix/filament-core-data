@@ -22,6 +22,7 @@
  * network, or working directory is read on any path through this module.
  */
 
+import { identityFieldNames } from "../../constructs.mjs";
 import { lowerConstraints } from "./constraints.mjs";
 import { diagnostic, fragment, RUST_BACKEND_CODES } from "./diagnostics.mjs";
 import { buildGraph, isCollection } from "./graph.mjs";
@@ -179,7 +180,8 @@ const V1_1_NODES = Object.freeze([
  */
 export function unknownDisposition(kind, policy) {
 	const retains = policy === "preserve" || policy === "surface";
-	if (kind === "record") return retains ? "record-retain" : "record-reject";
+	if (kind === "record" || kind === "entity")
+		return retains ? "record-retain" : "record-reject";
 	if (kind === "enum" || kind === "union") {
 		return retains ? "variant-catchall" : "variant-closed";
 	}
@@ -444,8 +446,13 @@ function mapType(definition, context) {
 			model.row = `scalar:${scalar}`;
 			break;
 		}
-		case "record": {
-			model.row = "kind:record";
+		case "record":
+		case "entity": {
+			// An entity selects its own row: the record's rendering plus its
+			// identity field names (FR-054).
+			model.row = `kind:${kind}`;
+			if (kind === "entity")
+				model.identityFields = identityFieldNames(definition);
 			model.fields = [];
 			for (const field of definition.fields ?? []) {
 				const mapped = mapField(field, definition, context, version);

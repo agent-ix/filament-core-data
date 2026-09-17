@@ -434,7 +434,7 @@ class TypeDefinition:
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
-class FilamentSemanticIrV1ContractVersions100And110:
+class FilamentSemanticIrV1ContractVersions100110And120:
     contractVersion: ContractVersion
     extensions: list[common_schema.Extension]
     occurrences: list[Occurrence]

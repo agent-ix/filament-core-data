@@ -549,7 +549,7 @@
 				},
 				{
 					"module": "semantic_ir_schema",
-					"type": "FilamentSemanticIrV1ContractVersions100And110",
+					"type": "FilamentSemanticIrV1ContractVersions100110And120",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
@@ -1181,7 +1181,7 @@
 				},
 				{
 					"module": "semantic_ir_schema",
-					"type": "FilamentSemanticIrV1ContractVersions100And110",
+					"type": "FilamentSemanticIrV1ContractVersions100110And120",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
@@ -1820,7 +1820,7 @@
 				},
 				{
 					"module": "semantic_ir_schema",
-					"type": "FilamentSemanticIrV1ContractVersions100And110",
+					"type": "FilamentSemanticIrV1ContractVersions100110And120",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,

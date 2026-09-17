@@ -130,6 +130,44 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 		expect(manifest.files.map((f) => f.path)).toContain("__init__.py");
 	}, 300000);
 
+	/** Traces: TC-1765; FR-136-AC-8. */
+	it("generates an entity as the record's model class in both Python targets, carrying no identity-field marking", () => {
+		const request = pythonRequest(pythonPydanticBackend);
+		const entity = (
+			request.ir as {
+				types: {
+					kind: string;
+					displayName: string;
+					identityFields?: string[];
+					fields?: { name: string; identity: string }[];
+				}[];
+			}
+		).types.find((type) => type.displayName === "ConfigVersion");
+		const id = entity?.fields?.find((field) => field.name === "id");
+		if (!entity || !id) throw new Error("ConfigVersion declares no id field");
+		entity.kind = "entity";
+		entity.identityFields = [id.identity];
+
+		for (const backend of [pythonPydanticBackend, pythonDataclassBackend]) {
+			const result = backend.generate(request, {
+				produce: poetryProducer(),
+			}) as {
+				state: string;
+				files: { path: string; text: string }[];
+			};
+			expect(result.state, backend.target).toBe("success");
+			const module = result.files.find(
+				(file) => file.path === "ConfigVersion.py",
+			);
+			if (!module) throw new Error(`${backend.target}: no ConfigVersion.py`);
+			expect(module.text).toMatch(/\bid: /);
+			for (const file of result.files.filter((one) => one.path.endsWith(".py")))
+				expect(file.text, `${backend.target} ${file.path}`).not.toMatch(
+					/identity-fields|identityFields|IDENTITY_FIELDS/,
+				);
+		}
+	}, 300000);
+
 	/** Traces: TC-1532; FR-136-AC-3. */
 	it("generates a package for the python-dataclass target under its own profile", () => {
 		const manifest = generateTarget(pythonRequest(pythonDataclassBackend), {

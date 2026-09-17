@@ -35,6 +35,7 @@ rather than the raw document.
 
 - A contract IR `1.1.0` document that [FR-068](./FR-068-decide-and-report-ir-admissibility.md) has admitted
 - The eight `kind` values of `schema/semantic/v1/semantic-ir.schema.json#/$defs/typeDefinition`: `scalar`, `record`, `enum`, `union`, `alias`, `sequence`, `map`, `reference`
+- At contract `1.2.0`, the `entity` construct kind of [FR-142](./FR-142-declare-one-construct-per-object-type.md) and its `identityFields`
 - The nine `scalar` values: `boolean`, `integer`, `number`, `string`, `bytes`, `date`, `datetime`, `duration`, `uuid`
 - The `unknownPolicy` vocabulary of `common.schema.json`: `preserve`, `reject`, `surface`
 - The `ix://agent-ix/semantic-core/ext/doc` extension carried on declarations and fields
@@ -77,6 +78,8 @@ rather than the raw document.
 - This requirement SHALL record that reading as a decision rather than present it as settled contract, because issue #21 has recorded a different reading against the same gap and only the contract's owner can reconcile them.
 - The renderer SHALL emit a scalar alias rather than collapse it into its primitive at every use site, so that the semantic name survives in consumer code and a later widening of its representation is one edit.
 - A `record` definition SHALL render as an exported interface whose members are its `fields`.
+- An `entity` definition SHALL render as a `record` renders, with the record's validator, and its model entry SHALL carry its identity field names in declared order for [FR-067](./FR-067-generate-identity-and-fingerprint-metadata.md). Every other construct kind of [FR-142](./FR-142-declare-one-construct-per-object-type.md) SHALL be refused with `CONSTRUCT_NOT_RENDERED` by [FR-068](./FR-068-decide-and-report-ir-admissibility.md) and SHALL NOT render as a record.
+- An entity's Quire meaning, that its instances are told apart by the identity fields and persist across changes to the other fields, is a property of instances rather than of one value; the generated type carries the identity field names and a consumer compares instances by them. `loss.mjs` records the construct in `RENDERED_NOT_LOST`, so the row is named rather than silent, and generation raises no diagnostic for it.
 - A `record` SHALL render with no `extends` clause, because the contract IR carries no base member; inheritance existed only in the frozen FR-041 prototype IR and is not carried forward.
 - An `enum` definition SHALL render as a union of the string literals of its variants' `name` values.
 - An `enum` variant SHALL render without a value, because the contract IR gives a variant no value member and the TypeSpec frontend reports an assigned enum member value as declared loss.
@@ -173,6 +176,7 @@ rather than the raw document.
 | FR-064-AC-20 | A `bytes` scalar renders as `string` and its JSDoc names RFC 4648 §4 base64, and the reading is recorded against `agent-ix/filament-core-data#58` rather than as settled contract. | Snapshot |
 | FR-064-AC-21 | A `union` declaring `surface` and a `map` declaring `preserve` — both present in the committed conformance bases — render with no index signature and no unknown-member marker, while their policies appear in the generated metadata. | Unit |
 | FR-064-AC-22 | Changing only a definition's `displayName` changes the generated identifier and the generated identity map's key, while the identity that map records is unchanged, so a rename is visible in a package diff. | Unit |
+| FR-064-AC-23 | A `1.2.0` document whose `ConfigVersion` and `ConfigOverlay` are `entity` constructs generates an interface and a validator for each that compile under `tsc`, the validator refuses a value missing the identity field, and `TYPE_KIND` records `entity`. | Unit (TC-1763) |
 
 ## Dependencies
 

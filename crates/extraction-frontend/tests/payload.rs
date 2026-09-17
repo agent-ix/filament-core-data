@@ -172,7 +172,6 @@ fn tc_1293_a_config_version_payload_validates_and_version_number_zero_fails_at_v
 
 #[trace("TC-1337", "FR-100-AC-2")]
 #[test]
-#[ignore = "Blocked on filament-core-data#147: the golden carries contract 1.2.0 `entity` constructs, which the json-schema backend refuses until it renders them"]
 fn tc_1337_json_schema_target_accepts_the_lifted_config_version_table_document() {
     let out = tempfile::tempdir().expect("tempdir");
     let golden = fixture("config-version-table/expected/semantic-ir.json");

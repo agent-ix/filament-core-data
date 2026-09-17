@@ -108,8 +108,9 @@ export const TARGET_LOSSES = Object.freeze([
 
 /**
  * The contract 1.2.0 object-type construct kinds (FR-142), read from the one
- * list in `src/compiler/constructs.mjs`. The target renders none of them, so
- * each is a declared loss rather than a record.
+ * list in `src/compiler/constructs.mjs`. The target renders the kinds
+ * `RENDERED_CONSTRUCT_KINDS` names; each other kind is a declared loss rather
+ * than a record.
  */
 export const CONSTRUCT_KINDS = Object.freeze(new Set(SHARED_CONSTRUCT_KINDS));
 
@@ -132,6 +133,13 @@ export const RENDERED_NOT_LOST = Object.freeze([
 			"a readonly clause descriptor carrying its identity, language, clauseId, opaque text, and sourceSpan",
 		rationale:
 			"the IR itself never parses clause text and agent-ix/quire-contract-ir#52 owns clause semantics; carrying the text opaquely loses nothing",
+	}),
+	Object.freeze({
+		construct: "entity",
+		renderedAs:
+			"the record rendering, an exported interface with a record validator, plus its identity field names in declared order in TYPE_IDENTITY_FIELDS",
+		rationale:
+			"an entity's instances being told apart by the identity fields, and persisting across changes to its other fields, is its Quire meaning over instances rather than a property of one value; the generated type carries the identity field names, and a consumer compares instances by them",
 	}),
 	Object.freeze({
 		construct: "default-kind",
@@ -219,9 +227,10 @@ export function representability(ir, options = {}) {
 		losses.push(Object.freeze(entry));
 	};
 
-	// Every contract 1.2.0 construct kind and model member is refused with one
-	// named loss at its pointer: rendering any of them as a record, or dropping
-	// the member, would lose the meaning it carries (FR-142-CON-2).
+	// Every contract 1.2.0 construct kind the target does not render, and every
+	// model member, is refused with one named loss at its pointer: rendering
+	// any of them as a record, or dropping the member, would lose the meaning
+	// it carries (FR-142-CON-2).
 	for (const node of unrenderedNodes(ir)) {
 		const index = Number(node.pointer.split("/")[2]);
 		record({

@@ -5,7 +5,10 @@ import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
 import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
 import { generateTarget } from "../src/compiler/backends/seam.mjs";
-import { CONSTRUCT_KINDS } from "../src/compiler/constructs.mjs";
+import {
+	CONSTRUCT_KINDS,
+	RENDERED_CONSTRUCT_KINDS,
+} from "../src/compiler/constructs.mjs";
 import { DEFAULT_LIMITS } from "../src/compiler/diagnostics.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 
@@ -164,13 +167,17 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 	});
 
 	/** Traces: TC-1749; FR-142-AC-5, FR-142-CON-2. */
-	it("refuses every construct kind at its pointer and writes no file", () => {
+	it("refuses every construct kind it does not render at its pointer and writes no file", () => {
 		const ir = JSON.parse(readFileSync(constructs, "utf8"));
 		const result = jsonSchemaBackend.generate({ ir });
 		expect(result.state).toBe("unsupported");
 		expect(result.files).toStrictEqual([]);
 		ir.types.forEach((type: { kind: string }, index: number) => {
-			if (!CONSTRUCT_KINDS.includes(type.kind)) return;
+			if (
+				!CONSTRUCT_KINDS.includes(type.kind) ||
+				RENDERED_CONSTRUCT_KINDS.includes(type.kind)
+			)
+				return;
 			expect(
 				result.diagnostics.some((one) =>
 					one.message.startsWith(`/ir/types/${index}/kind:`),
@@ -181,9 +188,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 	});
 
 	/** Traces: TC-1362; FR-100-AC-2. */
-	// Blocked on filament-core-data#147: the lifted golden carries contract
-	// 1.2.0 `entity` constructs, which this backend refuses until it renders them.
-	it.skip("emits ConfigVersion properties, required fields, and constraints", () => {
+	it("emits ConfigVersion properties, required fields, and constraints", () => {
 		const ir = JSON.parse(readFileSync(golden, "utf8"));
 		const result = jsonSchemaBackend.generate({ ir });
 		expect(result.state).toBe("success");
@@ -211,6 +216,35 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		]);
 		expect(schema.properties.versionNumber.minimum).toBe(1);
 		expect(result.files.some((one) => one.path === "index.json")).toBe(true);
+	});
+
+	/** Traces: TC-1764; FR-100-AC-7. */
+	it("renders an entity as a record schema naming its kind and identity fields, filed under its declared name", () => {
+		const ir = JSON.parse(readFileSync(golden, "utf8"));
+		const result = jsonSchemaBackend.generate({ ir });
+		expect(result.state).toBe("success");
+		const paths = result.files.map((one) => one.path);
+		expect(paths.some((path) => path.startsWith("FR-"))).toBe(false);
+		for (const name of ["ConfigOverlay", "ConfigVersion"]) {
+			const file = result.files.find((one) => one.path === `${name}.json`);
+			if (!file) throw new Error(`${name} schema was not emitted`);
+			const schema = JSON.parse(file.text);
+			expect(schema.type).toBe("object");
+			expect(schema["x-agent-ix-kind"]).toBe("entity");
+			expect(schema["x-agent-ix-identity-fields"]).toStrictEqual(["id"]);
+			expect(schema.required).toContain("id");
+		}
+		// A record carries neither annotation.
+		const records = jsonSchemaBackend.generate({
+			ir: JSON.parse(readFileSync(configVersion12, "utf8")),
+		});
+		const record = records.files.find(
+			(one) => one.path === "ConfigVersion.json",
+		);
+		if (!record) throw new Error("ConfigVersion schema was not emitted");
+		const recordSchema = JSON.parse(record.text);
+		expect(recordSchema["x-agent-ix-kind"]).toBeUndefined();
+		expect(recordSchema["x-agent-ix-identity-fields"]).toBeUndefined();
 	});
 
 	/** Traces: TC-1363; FR-100-AC-3. */

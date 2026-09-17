@@ -151,6 +151,16 @@ visible in the run rather than invisible in the generated source.
   `maxCollectionItems`, raising `LIMIT_EXCEEDED` naming the limit and emitting
   no file rather than recursing without bound.
 
+### Carried, not enforced
+
+- A construct whose document data the crate carries in full, and whose meaning
+  over instances no Rust type states, SHALL be listed here. It raises no
+  diagnostic, because nothing the document carries is dropped:
+
+| Construct | Carried as | Not stated by the type |
+|---|---|---|
+| `entity` | the record struct and `IDENTITY_FIELDS` | that instances are told apart by the identity fields and persist across changes to the other fields; the derived `PartialEq` compares every member |
+
 ## Constraints
 
 | ID | Constraint | Type | Validation |
@@ -177,6 +187,7 @@ visible in the run rather than invisible in the generated source.
 | FR-058-AC-10 | The published code table and the registry agree exactly in both directions, and every code named in an FR's prose, an error-path row, or an edge-case row of `spec/tests.md` is a member of the generator registry or of `conformance/diagnostic-codes.json`, enforced by a `--check` mode that `make lint` runs through a Make target rather than a `package.json` script. | Analysis (TC-697) |
 | FR-058-AC-11 | Reverting the refusal branch for `UNSUPPORTED_PATTERN` makes at least one test fail, demonstrated by a falsification run. | Test (TC-697) |
 | FR-058-AC-12 | Each of the four size limits raises `LIMIT_EXCEEDED` naming the limit and emits no file. | Test (TC-692) |
+| FR-058-AC-13 | Generating a `1.2.0` `entity` raises no diagnostic and emits `IDENTITY_FIELDS`, the carried-not-enforced row this requirement declares. | Test (TC-1762) |
 
 ## Dependencies
 

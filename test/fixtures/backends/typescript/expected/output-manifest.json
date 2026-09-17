@@ -1,6 +1,6 @@
 {
 	"contractVersion": "1.0.0",
-	"requestFingerprint": "sha256:0d457cfc29a125b2d81ddf13abf39a261e602a499a13233625dab14f33149286",
+	"requestFingerprint": "sha256:aba43dd2fbe9f396477ad23eab9eddfa2ca10f3779c26ed6ff7a172973af2bf4",
 	"backend": "ix://agent-ix/filament-core-data/backend/typescript",
 	"state": "success",
 	"files": [
@@ -22,7 +22,7 @@
 		},
 		{
 			"path": "identity.ts",
-			"digest": "sha256:091b85a78a50883d1ec3abdb978d81c6be26d4dfc009aad0b02f44d9b38e10f5",
+			"digest": "sha256:ded5ab4cf93448bea2b0f701ea44ae206f4b1872f581bb5236792973f81f68b3",
 			"mediaType": "text/typescript",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance"
@@ -30,7 +30,7 @@
 		},
 		{
 			"path": "index.ts",
-			"digest": "sha256:1628bb1fb8e97d46b19130d2d1bd925dcaf012cfdb526a4bf471006d938e0169",
+			"digest": "sha256:6d0a0eaaa2376650b431717e219f9b89d7030a78b55f80f4f2d6261977d0e32a",
 			"mediaType": "text/typescript",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance"

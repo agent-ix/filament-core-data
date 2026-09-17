@@ -593,6 +593,8 @@ const CHECK_BODIES = Object.freeze({
 	alias: (model, entry) => delegatingCheckBody(model, entry),
 	reference: (model, entry) => delegatingCheckBody(model, entry),
 	record: (model, entry) => recordCheckBody(model, entry),
+	// An entity is checked as its record shape (FR-066).
+	entity: (model, entry) => recordCheckBody(model, entry),
 });
 
 /**
@@ -605,7 +607,8 @@ const CHECK_BODIES = Object.freeze({
  * than being rejected by a pass whose errors nobody collected.
  */
 function prepareBody(model, entry) {
-	if (entry.kind === "record") return recordPrepareBody(entry);
+	if (entry.kind === "record" || entry.kind === "entity")
+		return recordPrepareBody(entry);
 	if (entry.kind === "sequence") {
 		return [
 			"\tif (!Array.isArray(value)) return value;",

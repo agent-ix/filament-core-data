@@ -129,7 +129,7 @@ def build() -> dict[str, Any]:
             )
             continue
         try:
-            semantic_ir_schema.FilamentSemanticIrV1ContractVersions100And110.model_validate(
+            semantic_ir_schema.FilamentSemanticIrV1ContractVersions100110And120.model_validate(
                 ir
             )
             decided = "success"

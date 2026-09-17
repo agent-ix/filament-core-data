@@ -602,13 +602,19 @@ fn tc_1748_occurrence_transition_guard_and_domain_membership_rules_raise_their_c
 #[trace("TC-1749", "FR-142-AC-5")]
 #[trace("TC-1749", "FR-142-CON-2")]
 #[test]
-fn tc_1749_the_rust_and_typescript_backends_refuse_every_construct_kind_and_write_no_file() {
+fn tc_1749_backends_refuse_every_unrendered_construct_kind_and_write_no_file() {
     let document = positive();
     let constructs: Vec<(String, String)> = document["types"]
         .as_array()
         .expect("types")
         .iter()
-        .filter(|t| !matches!(t["kind"].as_str(), Some("record" | "scalar" | "alias")))
+        // `entity` renders (FR-054, FR-064, FR-100); the other nine refuse.
+        .filter(|t| {
+            !matches!(
+                t["kind"].as_str(),
+                Some("record" | "scalar" | "alias" | "entity")
+            )
+        })
         .map(|t| {
             (
                 t["identity"].as_str().expect("identity").to_string(),
@@ -618,7 +624,11 @@ fn tc_1749_the_rust_and_typescript_backends_refuse_every_construct_kind_and_writ
         .collect();
     let kinds: std::collections::BTreeSet<&str> =
         constructs.iter().map(|(_, kind)| kind.as_str()).collect();
-    assert_eq!(kinds.len(), 10, "one construct of each kind: {kinds:?}");
+    assert_eq!(
+        kinds.len(),
+        9,
+        "one construct of each unrendered kind: {kinds:?}"
+    );
     let ir = positive_path();
     let dir = tempfile::tempdir().expect("tempdir");
 

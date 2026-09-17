@@ -54,6 +54,7 @@ export const BACKEND = Object.freeze({
 	supportedFeatures: [
 		"kind:scalar",
 		"kind:record",
+		"kind:entity",
 		"kind:enum",
 		"kind:union",
 		"kind:alias",

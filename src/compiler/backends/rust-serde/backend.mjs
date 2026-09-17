@@ -55,9 +55,9 @@ export const identity = "ix://agent-ix/filament-core-data/rust-backend";
  *
  * `supportedIrVersions` is `["1.1.0", "1.2.0"]` through the seam, while
  * `rust-serde/cli.mjs` keeps `["1.0.0", "1.1.0", "1.2.0"]` for its own
- * development path. A contract 1.2.0 construct kind or model member is refused
- * with `UNSUPPORTED_CONSTRUCT` at its pointer until filament-core-data#147
- * renders it.
+ * development path. A contract 1.2.0 `entity` renders by the `kind:entity`
+ * row; every other construct kind, and every model member, is refused with
+ * `UNSUPPORTED_CONSTRUCT` at its pointer (filament-core-data#147).
  * The narrowing is FR-063-CON-5 applied consistently rather than a capability
  * this backend lacks: the frozen FR-041 prototype document also calls itself
  * `1.0.0` and is a different shape entirely, so a seam that accepted `1.0.0`
@@ -79,6 +79,7 @@ export const rustBackend = Object.freeze({
 	supportedFeatures: Object.freeze([
 		"kind:scalar",
 		"kind:record",
+		"kind:entity",
 		"kind:enum",
 		"kind:union",
 		"kind:alias",

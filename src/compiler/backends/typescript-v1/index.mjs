@@ -112,6 +112,7 @@ export const typescriptBackend = Object.freeze({
 	supportedFeatures: Object.freeze([
 		"scalar",
 		"record",
+		"entity",
 		"enum",
 		"union",
 		"alias",
