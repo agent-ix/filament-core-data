@@ -50,7 +50,7 @@ constraint, relation, operation, clause reference, and enum value.
 - `SourceLocus` SHALL have the IR `sourceLocus` shape (`sourceIdentity`, `path`, `startLine`, `startColumn`, `endLine?`, `endColumn?`).
 - `Identifier` SHALL carry the pattern `^[A-Za-z_][A-Za-z0-9_]*$`.
 - `UnitSymbol` SHALL carry the UCUM case-sensitive symbol charset pattern `^[!-~]+$` (printable ASCII, no whitespace).
-- `ClauseLanguage` SHALL carry the pattern `^(ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$`.
+- `ClauseLanguage` SHALL carry the pattern `^(quire|ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$`.
 - `EdgeCategory`, `ConstraintKeyword`, and `ClauseLanguage` SHALL equal the IR schema's `relationship.category`, `constraint.keyword`, and clause-language sets respectively.
 - The package SHALL carry its version in `package.json` as semver, where a grammar addition is a minor version and a removal a major version.
 - The package SHALL be publishable to the internal registry (`publishConfig.registry`) and SHALL NOT be marked `private`, because the Quire object modules resolve `@agent-ix/semantic-core` as a versioned dependency rather than a repository path; FR-031-CON-1 governs where the grammar lives and who imports it, not whether it ships.

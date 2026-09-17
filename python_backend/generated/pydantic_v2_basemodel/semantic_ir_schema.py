@@ -206,7 +206,7 @@ class Clause(BaseModel):
     language: Annotated[
         str,
         Field(
-            pattern='^(ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$'
+            pattern='^(quire|ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$'
         ),
     ]
     origin: common_schema.Origin

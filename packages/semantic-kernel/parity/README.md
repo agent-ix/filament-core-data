@@ -17,14 +17,14 @@ or `make semantic-kernel-parity`.
 Current result:
 
 ```
-88/111 documents agree; 47 divergence rows, 0 unadjudicated
+89/112 documents agree; 47 divergence rows, 0 unadjudicated
 ```
 
 ## What is here
 
 | Path | Written by | What it is |
 | --- | --- | --- |
-| `golden/PAR-NNNN.json` | authored | 111 kernel instance documents, all 30 kernel declarations, classes `positive` / `negative` / `boundary` |
+| `golden/PAR-NNNN.json` | authored | 112 kernel instance documents, all 30 kernel declarations, classes `positive` / `negative` / `boundary` |
 | `golden.mjs` | authored | loads the corpus; names the four packages |
 | `project.mjs` | authored | lifts an emitter answer into the corpus verdict shape |
 | `emitters/*` | authored | one decision path per package; each returns `{id, resultState, wire, unknownFate}` |

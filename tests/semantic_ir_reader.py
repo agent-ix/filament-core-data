@@ -35,7 +35,7 @@ CATEGORIES = {
     "governance",
     "traceability",
 }
-CORE_LANGUAGES = {"ocl", "sysml", "fretish"}
+CORE_LANGUAGES = {"quire", "ocl", "sysml", "fretish"}
 NAMESPACED = re.compile(r"^[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*$")
 BOUNDS = {"min", "max", "exclusiveMin", "exclusiveMax"}
 TEMPORAL = {"date", "datetime", "duration"}

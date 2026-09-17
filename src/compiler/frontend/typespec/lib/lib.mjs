@@ -43,7 +43,7 @@ export const PATTERNS = {
 	semver:
 		/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/,
 	clauseLanguage:
-		/^(ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$/,
+		/^(quire|ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$/,
 };
 
 export const UNKNOWN_POLICIES = ["preserve", "reject", "surface"];

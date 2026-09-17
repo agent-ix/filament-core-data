@@ -1,5 +1,5 @@
 {
-	"corpusVersion": "1.0.0",
+	"corpusVersion": "1.0.1",
 	"contractVersions": ["1.0.0", "1.1.0"],
 	"canonicalForm": "agent-ix-conformance-jcs-v1",
 	"caseIdPattern": "^[A-Z][A-Z0-9]*(-[A-Z0-9]+)*-[0-9]{3}$",
@@ -12,9 +12,9 @@
 		"fixtures/semantic/v1/"
 	],
 	"predecessor": {
-		"state": "none",
+		"state": "required",
 		"ref": "origin/main:conformance/corpus.json",
-		"rationale": "origin/main carries no corpus until this branch merges, so there is nothing to compare a corpusVersion bump against. The gate fails the moment a predecessor becomes readable, which forces this to be flipped to `required` on the next branch instead of staying a silent no-op."
+		"rationale": "origin/main carries the corpus, so every corpusVersion change is compared against it."
 	},
 	"familyPrefixes": {
 		"envelope": "ENV",
@@ -413,7 +413,7 @@
 			"path": "conformance/cases/clause/CLAUSE-001.json",
 			"family": "clause",
 			"class": "positive",
-			"digest": "sha256:330e3120a18f5689986eb06ec94ab933709151a98c4d329cc813b86d5317301f",
+			"digest": "sha256:10fb05af3041941aadac1d807981f5bbf854f951d975d4f925dfc2ebc6b84f6f",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -421,7 +421,7 @@
 			"path": "conformance/cases/clause/CLAUSE-002.json",
 			"family": "clause",
 			"class": "negative",
-			"digest": "sha256:c8167fc562250bde59622f70d525d5c3c05b6a3f41c0f6fe0a9460b9d9a1264e",
+			"digest": "sha256:adee7eabb3eef60a47f7a6eff6c00d9f9f42f614323e15bedff755d3b613dedd",
 			"expectedDigest": "sha256:65291eaa8b82ceddd8ff4877a0604c3d863956a4901b8425352a36f879a023ba"
 		},
 		{
@@ -429,7 +429,7 @@
 			"path": "conformance/cases/clause/CLAUSE-003.json",
 			"family": "clause",
 			"class": "boundary",
-			"digest": "sha256:c3512469f442aa44b8b1069f026e5d9f010671e3508fcc446a60cc01a28cb2dd",
+			"digest": "sha256:a585e2a9ee4414c98c626294c7650ccc38550afa91f97647533c0b85f217701c",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -445,7 +445,7 @@
 			"path": "conformance/cases/clause/CLAUSE-005.json",
 			"family": "clause",
 			"class": "negative",
-			"digest": "sha256:2c2ae705dbeb58cc4be9c441e5b9698e4a1aebc650d3f34f816adfa65f887d34",
+			"digest": "sha256:f7ccb9b89ace25d17d572b771feaf8a2c057ceb93925ae203b812b8b9a56fa6d",
 			"expectedDigest": "sha256:57affb91347130d6bcd186d1da4b8da92b232df2afa4e373008f1706f7a0e3c5"
 		},
 		{
@@ -453,7 +453,7 @@
 			"path": "conformance/cases/clause/CLAUSE-006.json",
 			"family": "clause",
 			"class": "negative",
-			"digest": "sha256:d8b64db302cd4974da8af3436208fc841fd69302091c3ebc8f2f51e178c8caa0",
+			"digest": "sha256:f42768dec446e66203ec356b2a47156d13da54a1f076a3abc27e10537e45a049",
 			"expectedDigest": "sha256:d13a05f12cdf73ead5dcdf2ffc7ae516cab6516586e4e139c6a1861847501f9c"
 		},
 		{
@@ -733,7 +733,7 @@
 			"path": "conformance/cases/operation/OP-002.json",
 			"family": "operation",
 			"class": "negative",
-			"digest": "sha256:4a72ccacb001a8679424c8bcafd7f3ee8802c474c733591c15d5c1692cdffc01",
+			"digest": "sha256:7b5e2030705e455063976cee80144146d6b37a05d130e0e7784a4e15ea346a3b",
 			"expectedDigest": "sha256:2d9fdb371afb093f231e8a302e37ee8147c775b0dcfe64bf1d64fcbbaf36cd03"
 		},
 		{
@@ -1265,5 +1265,5 @@
 			"expectedDigest": "sha256:4d8c58cacba5665d772325195e70d588e515d8f3f4cd32b2fe325effe985650c"
 		}
 	],
-	"corpusDigest": "sha256:2bf9f37ceed9ca4af42adc6d66ba9689ca2d603192bd7607aec93a0db43e3709"
+	"corpusDigest": "sha256:fa14167f9e909f0f1577473f9f05e842fbe8e7aa5ef62878e4d473ea8a8c5f66"
 }

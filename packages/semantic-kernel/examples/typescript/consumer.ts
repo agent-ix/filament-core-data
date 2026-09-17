@@ -82,7 +82,7 @@ export function run(): number {
 		TYPE_IDENTITY.FieldDecl === "ix://agent-ix/semantic-core/type/FieldDecl",
 		"the package identity metadata is wrong",
 	);
-	assert(PROVENANCE.sourceVersion === "0.1.0", "the source version is wrong");
+	assert(PROVENANCE.sourceVersion === "0.2.0", "the source version is wrong");
 	assert(
 		PROVENANCE.sourceDigest ===
 			"sha256:0000000000000000000000000000000000000000000000000000000000000000",

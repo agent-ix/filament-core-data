@@ -18,7 +18,7 @@ missing_docs = "deny"
 warnings = "deny"
 
 [dependencies]
-agent-ix-semantic-kernel = { path = "../agent-ix-semantic-kernel-0.1.0" }
+agent-ix-semantic-kernel = { path = "../agent-ix-semantic-kernel-0.2.0" }
 
 [dev-dependencies]
 serde_json = "=1.0.151"
