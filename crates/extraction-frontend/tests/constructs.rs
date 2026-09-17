@@ -564,80 +564,67 @@ fn tc_1748_occurrence_transition_guard_and_domain_membership_rules_raise_their_c
 #[test]
 fn tc_1749_the_rust_and_typescript_backends_refuse_every_construct_kind_and_write_no_file() {
     let document = positive();
-    let constructs: Vec<String> = document["types"]
+    let constructs: Vec<(String, String)> = document["types"]
         .as_array()
         .expect("types")
         .iter()
-        .filter(|t| !matches!(t["kind"].as_str(), Some("scalar" | "alias")))
-        .map(|t| t["identity"].as_str().expect("identity").to_string())
+        .filter(|t| !matches!(t["kind"].as_str(), Some("record" | "scalar" | "alias")))
+        .map(|t| {
+            (
+                t["identity"].as_str().expect("identity").to_string(),
+                t["kind"].as_str().expect("kind").to_string(),
+            )
+        })
         .collect();
+    let kinds: std::collections::BTreeSet<&str> =
+        constructs.iter().map(|(_, kind)| kind.as_str()).collect();
+    assert_eq!(kinds.len(), 10, "one construct of each kind: {kinds:?}");
     let ir = positive_path();
     let dir = tempfile::tempdir().expect("tempdir");
 
-    let rust_out = dir.path().join("rust");
-    let run = run_node(
-        &[
-            "scripts/extraction-frontend-harness.mjs",
-            "rust-generate",
-            "--ir",
-            &ir.to_string_lossy(),
-            "--out",
-            &rust_out.to_string_lossy(),
-            "--output-root",
-            "lifted",
-        ],
-        &[],
-        None,
-    )
-    .unwrap_or_else(|e| panic!("{e}"));
-    assert_ne!(run.status, 0, "rust-generate accepts constructs");
-    let manifest = read_json(&rust_out.join("lifted.output-manifest.json"));
-    assert_eq!(manifest["files"], json!([]));
-    assert_refusals(
-        "rust",
-        &manifest,
-        "agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT",
-        &constructs,
-    );
-
-    let ts_out = dir.path().join("typescript");
-    let ts_manifest = ts_out.join("m.json");
-    let run = run_node(
-        &[
-            "src/compiler/cli.mjs",
-            "generate",
-            "--ir",
-            &ir.to_string_lossy(),
-            "--target",
-            "typescript",
-            "--out-root",
-            &ts_out.to_string_lossy(),
-            "--manifest",
-            &ts_manifest.to_string_lossy(),
-        ],
-        &[],
-        None,
-    )
-    .unwrap_or_else(|e| panic!("{e}"));
-    assert_ne!(run.status, 0, "typescript generate accepts constructs");
-    let manifest = read_json(&ts_manifest);
-    assert_eq!(manifest["files"], json!([]));
-    assert_refusals(
-        "typescript",
-        &manifest,
-        "agent-ix.typescript-backend.CONSTRUCT_NOT_RENDERED",
-        &constructs,
-    );
-    let written: Vec<_> = fs::read_dir(&ts_out)
-        .expect("read_dir")
-        .map(|e| e.expect("entry").file_name())
-        .filter(|n| n != "m.json")
-        .collect();
-    assert!(written.is_empty(), "{written:?}");
+    for (target, code) in [
+        ("rust", "agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT"),
+        ("typescript", "agent-ix.typescript-backend.CONSTRUCT_NOT_RENDERED"),
+    ] {
+        let out = dir.path().join(target);
+        let manifest_path = dir.path().join(format!("{target}.manifest.json"));
+        let run = run_node(
+            &[
+                "src/compiler/cli.mjs",
+                "generate",
+                "--ir",
+                &ir.to_string_lossy(),
+                "--target",
+                target,
+                "--out-root",
+                &out.to_string_lossy(),
+                "--manifest",
+                &manifest_path.to_string_lossy(),
+            ],
+            &[],
+            None,
+        )
+        .unwrap_or_else(|e| panic!("{e}"));
+        assert_ne!(run.status, 0, "{target} generate accepts constructs");
+        let manifest = read_json(&manifest_path);
+        assert_eq!(manifest["files"], json!([]), "{target}");
+        assert_refusals(target, &manifest, code, &document, &constructs);
+        let written: Vec<_> = fs::read_dir(&out)
+            .map(|entries| entries.map(|e| e.expect("entry").file_name()).collect())
+            .unwrap_or_default();
+        assert!(written.is_empty(), "{target}: {written:?}");
+    }
 }
 
-/// Every construct identity is named by one `code` diagnostic of `manifest`.
-fn assert_refusals(backend: &str, manifest: &Value, code: &str, constructs: &[String]) {
+/// Every construct of `constructs` is refused by exactly one `code` diagnostic
+/// at its own `/kind` pointer that names its kind.
+fn assert_refusals(
+    backend: &str,
+    manifest: &Value,
+    code: &str,
+    document: &Value,
+    constructs: &[(String, String)],
+) {
     let messages: Vec<&str> = manifest["diagnostics"]
         .as_array()
         .expect("diagnostics")
@@ -645,15 +632,14 @@ fn assert_refusals(backend: &str, manifest: &Value, code: &str, constructs: &[St
         .filter(|d| d["code"] == code)
         .filter_map(|d| d["message"].as_str())
         .collect();
-    for identity in constructs {
-        assert_eq!(
-            messages
-                .iter()
-                .filter(|m| m.contains(&format!("{identity} ")))
-                .count(),
-            1,
-            "{backend}: {identity} in {messages:?}"
-        );
+    for (identity, kind) in constructs {
+        let pointer = format!("/ir/types/{}/kind:", position(document, identity));
+        let at_kind: Vec<_> = messages
+            .iter()
+            .filter(|m| m.starts_with(&pointer))
+            .collect();
+        assert_eq!(at_kind.len(), 1, "{backend}: {identity} in {messages:?}");
+        assert!(at_kind[0].contains(kind.as_str()), "{backend}: {at_kind:?}");
     }
 }
 
