@@ -45,7 +45,6 @@ codes! {
     INVALID_PATTERN => "agent-ix.semantic-ir.INVALID_PATTERN",
     UNRESOLVED_RELATIONSHIP_TARGET => "agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET",
     COMPOSITE_CYCLE => "agent-ix.semantic-ir.COMPOSITE_CYCLE",
-    V1_1_NODE_IN_V1_0 => "agent-ix.semantic-ir.V1_1_NODE_IN_V1_0",
     UNRESOLVED_IMPORT => "agent-ix.semantic-ir.UNRESOLVED_IMPORT",
     PACKAGE_CYCLE => "agent-ix.semantic-ir.PACKAGE_CYCLE",
     STALE_LOCK => "agent-ix.semantic-ir.STALE_LOCK",
@@ -62,8 +61,6 @@ pub struct Document<'a> {
     pub ir: &'a Json,
     /// The type definitions, in document order.
     pub types: &'a [Json],
-    /// Whether the document declares contract 1.1.0 or later (1.1.0 or 2.0.0).
-    pub is_v11: bool,
     /// Whether the document declares contract 2.0.0, whose presence is authored and whose kinds are declared.
     pub is_v2: bool,
 }
@@ -77,10 +74,6 @@ impl<'a> Document<'a> {
             bundle,
             ir,
             types,
-            is_v11: matches!(
-                ir.get("contractVersion").and_then(Json::as_str),
-                Some("1.1.0" | "2.0.0")
-            ),
             is_v2: ir.get("contractVersion").and_then(Json::as_str) == Some("2.0.0"),
         })
     }
@@ -243,9 +236,6 @@ pub fn decide(bundle: &Json) -> Vec<Located> {
     composite_graph(&document, &mut sink);
     if document.is_v2 {
         crate::constructs::decide(&document, &mut sink);
-    }
-    if !document.is_v11 {
-        v1_0_purity(&document, &mut sink);
     }
     package_context(&document, &mut sink);
     sink.out
@@ -775,41 +765,6 @@ fn composite_visit(
     }
     stack.pop();
     None
-}
-
-/// A contract 1.1.0 node carried by a contract 1.0.0 document.
-///
-/// The 1.1.0 nodes are exactly the ones `contracts-v1.md` introduces under
-/// "Contract 1.1.0 (issue #34)": a field's `multiplicity` and `unit`, and a
-/// type's `relationships`, `operations` and `clauses`.
-fn v1_0_purity(document: &Document<'_>, sink: &mut Sink<'_>) {
-    for (position, definition) in document.types.iter().enumerate() {
-        let type_at = index("/ir/types", position);
-        for member in ["relationships", "operations", "clauses"] {
-            if definition.has(member) {
-                sink.emit(
-                    child(&type_at, member),
-                    V1_1_NODE_IN_V1_0,
-                    "contract 1.1.0 is additive to 1.0.0 and a 1.0.0 reader has no reader for this node",
-                );
-            }
-        }
-        if let Some(fields) = definition.get("fields").and_then(Json::as_array) {
-            let fields_at = child(&type_at, "fields");
-            for (member, field) in fields.iter().enumerate() {
-                let field_at = index(&fields_at, member);
-                for name in ["multiplicity", "unit"] {
-                    if field.has(name) {
-                        sink.emit(
-                            child(&field_at, name),
-                            V1_1_NODE_IN_V1_0,
-                            "contract 1.1.0 is additive to 1.0.0 and a 1.0.0 reader has no reader for this node",
-                        );
-                    }
-                }
-            }
-        }
-    }
 }
 
 /// The six package-context rules, each decided only when the bundle supplies

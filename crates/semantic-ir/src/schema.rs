@@ -453,30 +453,6 @@ const CONNECTION_END_MEMBERS: &[&str] = &["type", "multiplicity"];
 /// The members of a construct kind.
 const CONSTRUCT_KIND_MEMBERS: &[&str] = &["module", "name"];
 
-/// The contract revision a document declares, as the schema layer reads it.
-#[derive(Debug, Clone, Copy)]
-struct Revision {
-    /// 1.1.0 or later: explicit multiplicity and frontend dialects.
-    v11: bool,
-    /// 2.0.0: construct kinds, the `constructs` table and the model members.
-    v2: bool,
-}
-
-/// Reports a 2.0.0 member carried by a 1.0.0 or 1.1.0 document.
-fn gate_v2(value: &Json, at: &str, names: &[&str], revision: Revision, f: &mut Findings) {
-    if revision.v2 {
-        return;
-    }
-    for name in names {
-        if value.has(name) {
-            f.push(
-                &child(at, name),
-                format!("{name} is a contract 2.0.0 member"),
-            );
-        }
-    }
-}
-
 /// One `constructs` entry as the type definitions consult it.
 struct ConstructEntry<'a> {
     module: &'a str,
@@ -639,27 +615,23 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
     }
     require_members(ir, at, IR_MEMBERS, f);
     forbid_extra(ir, at, IR_OPTIONAL_MEMBERS, f);
+    // fcd#179: contract 2.0.0 is the only one; the 1.0.0/1.1.0 discriminator
+    // this document's shape once turned on is gone.
     expect_enum(
         ir.get("contractVersion"),
         &child(at, "contractVersion"),
-        &["1.0.0", "1.1.0", "2.0.0"],
+        &["2.0.0"],
         "contractVersion",
         f,
     );
-    let version = ir.get("contractVersion").and_then(Json::as_str);
-    let revision = Revision {
-        v11: matches!(version, Some("1.1.0" | "2.0.0")),
-        v2: version == Some("2.0.0"),
-    };
 
     if let Some(source) = ir.get("source") {
-        ir_source(source, &child(at, "source"), revision, f);
+        ir_source(source, &child(at, "source"), f);
     }
     if let Some(package) = ir.get("package") {
         ir_package(package, &child(at, "package"), f);
     }
-    gate_v2(ir, at, &["constructs"], revision, f);
-    if revision.v2 && !ir.has("constructs") {
+    if !ir.has("constructs") {
         f.push(at, "a required member constructs is absent");
     }
     let constructs_at = child(at, "constructs");
@@ -677,17 +649,11 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
                 f.push(&types_at, "a document declares at least one type");
             }
             for (position, definition) in items.iter().enumerate() {
-                type_definition(
-                    definition,
-                    &index(&types_at, position),
-                    revision,
-                    &mut table,
-                    f,
-                );
+                type_definition(definition, &index(&types_at, position), &mut table, f);
             }
         }
     }
-    if revision.v2 {
+    {
         let entries = ir.get("constructs").and_then(Json::as_array).unwrap_or(&[]);
         for (position, entry) in entries.iter().enumerate() {
             let Some((module, name)) = entry.get("kind").and_then(|kind| {
@@ -720,7 +686,6 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
     if let Some(extensions) = ir.get("extensions") {
         extension_array(extensions, &child(at, "extensions"), f);
     }
-    gate_v2(ir, at, &["populations"], revision, f);
     if let Some(populations) = ir.get("populations") {
         let populations_at = child(at, "populations");
         if expect_array(populations, &populations_at, "populations", f) {
@@ -785,7 +750,7 @@ fn population_schema(population: &Json, at: &str, f: &mut Findings) {
 
 const SOURCE_MEMBERS: &[&str] = &["identity", "version", "dialect", "digest"];
 
-fn ir_source(source: &Json, at: &str, revision: Revision, f: &mut Findings) {
+fn ir_source(source: &Json, at: &str, f: &mut Findings) {
     if !expect_object(source, at, "the source envelope", f) {
         return;
     }
@@ -815,18 +780,11 @@ fn ir_source(source: &Json, at: &str, revision: Revision, f: &mut Findings) {
     if let Some(dialect) = source.get("dialect") {
         let dialect_at = child(at, "dialect");
         let text = dialect.as_str().unwrap_or("");
-        if revision.v11 {
-            if !matches!(text, "typespec" | "spec-bundle") {
-                f.push(
-                    &dialect_at,
-                    "a 1.1.0 document declares a frontend dialect, not the 1.0.0 JSON Schema draft URI",
-                );
-            }
-        } else if text != "https://json-schema.org/draft/2020-12/schema" {
-            f.push(
-                &dialect_at,
-                "a 1.0.0 document declares the JSON Schema draft URI as its dialect",
-            );
+        // fcd#179: contract 2.0.0 is the only one; every document declares a
+        // frontend dialect, and the 1.0.0 JSON Schema draft URI dialect that
+        // 1.0.0 documents declared no longer has a contract to belong to.
+        if !matches!(text, "typespec" | "spec-bundle") {
+            f.push(&dialect_at, "a document declares a frontend dialect");
         }
     }
 }
@@ -927,30 +885,6 @@ const TYPE_MEMBERS: &[&str] = &[
     "targetElement",
     "featureOrder",
 ];
-/// The type members contract 2.0.0 adds.
-const TYPE_MEMBERS_V2: &[&str] = &[
-    "supertypes",
-    "abstract",
-    "identityFields",
-    "owner",
-    "members",
-    "occurrenceField",
-    "states",
-    "transitions",
-    "steps",
-    "persists",
-    "vocabulary",
-    "direction",
-    "interfaceType",
-    "multiplicity",
-    "declaredType",
-    "flowDirection",
-    "sourceEnd",
-    "targetEnd",
-    "sourceElement",
-    "targetElement",
-    "featureOrder",
-];
 const TYPE_REQUIRED: &[&str] = &[
     "identity",
     "displayName",
@@ -962,13 +896,7 @@ const TYPE_REQUIRED: &[&str] = &[
     "unknownPolicy",
 ];
 
-fn type_definition(
-    definition: &Json,
-    at: &str,
-    revision: Revision,
-    table: &mut ConstructTable<'_>,
-    f: &mut Findings,
-) {
+fn type_definition(definition: &Json, at: &str, table: &mut ConstructTable<'_>, f: &mut Findings) {
     if !expect_object(definition, at, "a type definition", f) {
         return;
     }
@@ -991,16 +919,9 @@ fn type_definition(
     let kind_at = child(at, "kind");
     // A string kind is a core kind; an object kind names a constructs entry.
     let construct = match definition.get("kind") {
-        Some(Json::Object(_)) => {
-            if revision.v2 {
-                definition
-                    .get("kind")
-                    .and_then(|kind| construct_kind(kind, &kind_at, f))
-            } else {
-                f.push(&kind_at, "a construct kind is a contract 2.0.0 member");
-                None
-            }
-        }
+        Some(Json::Object(_)) => definition
+            .get("kind")
+            .and_then(|kind| construct_kind(kind, &kind_at, f)),
         other => {
             expect_enum(other, &kind_at, CORE_KINDS, "kind", f);
             None
@@ -1065,7 +986,6 @@ fn type_definition(
             );
         }
     }
-    gate_v2(definition, at, TYPE_MEMBERS_V2, revision, f);
     match construct {
         Some((module, name)) => match table.position(module, name) {
             Some(found) => {
@@ -1164,12 +1084,6 @@ fn type_definition(
         "scalar",
         f,
     );
-    if !revision.v2 && definition.get("scalar").and_then(Json::as_str) == Some("any") {
-        f.push(
-            &child(at, "scalar"),
-            "scalar any is a contract 2.0.0 member",
-        );
-    }
     for name in ["target", "items", "values"] {
         expect_shape(
             definition.get(name),
@@ -1183,7 +1097,7 @@ fn type_definition(
         let fields_at = child(at, "fields");
         if expect_array(fields, &fields_at, "fields", f) {
             for (position, field) in fields.as_array().unwrap_or(&[]).iter().enumerate() {
-                field_schema(field, &index(&fields_at, position), revision, f);
+                field_schema(field, &index(&fields_at, position), f);
             }
         }
     }
@@ -1209,7 +1123,7 @@ fn type_definition(
         let operations_at = child(at, "operations");
         if expect_array(operations, &operations_at, "operations", f) {
             for (position, operation) in operations.as_array().unwrap_or(&[]).iter().enumerate() {
-                operation_schema(operation, &index(&operations_at, position), revision, f);
+                operation_schema(operation, &index(&operations_at, position), f);
             }
         }
     }
@@ -1433,13 +1347,12 @@ const FIELD_REQUIRED: &[&str] = &[
     "origin",
 ];
 
-fn field_schema(field: &Json, at: &str, revision: Revision, f: &mut Findings) {
+fn field_schema(field: &Json, at: &str, f: &mut Findings) {
     if !expect_object(field, at, "a field", f) {
         return;
     }
     require_members(field, at, FIELD_REQUIRED, f);
     forbid_extra(field, at, FIELD_MEMBERS, f);
-    gate_v2(field, at, &["subsets", "redefines"], revision, f);
     identity_list(field.get("subsets"), &child(at, "subsets"), "subsets", f);
     expect_shape(
         field.get("redefines"),
@@ -1448,8 +1361,11 @@ fn field_schema(field: &Json, at: &str, revision: Revision, f: &mut Findings) {
         "an identity is ix://<owner>/<name>",
         f,
     );
-    if revision.v11 && !field.has("multiplicity") {
-        f.push(at, "a 1.1.0 field carries an explicit multiplicity");
+    // fcd#179: contract 2.0.0 is the only one; every field carries an
+    // explicit multiplicity (the 1.1.0-vs-1.0.0 discriminator this once was
+    // is gone).
+    if !field.has("multiplicity") {
+        f.push(at, "a field carries an explicit multiplicity");
     }
     expect_shape(
         field.get("identity"),
@@ -1728,8 +1644,8 @@ fn inline_clause_schema(clause: &Json, at: &str, f: &mut Findings) {
 }
 /// One `pre` or `post` item: a clause id, or from contract 2.0.0 an inline
 /// clause.
-fn contract_item_schema(item: &Json, at: &str, revision: Revision, f: &mut Findings) {
-    if item.as_str().is_some() || !revision.v2 {
+fn contract_item_schema(item: &Json, at: &str, f: &mut Findings) {
+    if item.as_str().is_some() {
         expect_string(Some(item), at, 1, "a clause id", f);
         return;
     }
@@ -1751,7 +1667,7 @@ fn has_duplicate_items(items: &[Json]) -> bool {
 
 const RETURNS_MEMBERS: &[&str] = &["typeRef", "multiplicity", "nullable"];
 
-fn operation_schema(operation: &Json, at: &str, revision: Revision, f: &mut Findings) {
+fn operation_schema(operation: &Json, at: &str, f: &mut Findings) {
     if !expect_object(operation, at, "an operation", f) {
         return;
     }
@@ -1780,11 +1696,10 @@ fn operation_schema(operation: &Json, at: &str, revision: Revision, f: &mut Find
         let params_at = child(at, "params");
         if expect_array(params, &params_at, "params", f) {
             for (position, param) in params.as_array().unwrap_or(&[]).iter().enumerate() {
-                field_schema(param, &index(&params_at, position), revision, f);
+                field_schema(param, &index(&params_at, position), f);
             }
         }
     }
-    gate_v2(operation, at, &["frame"], revision, f);
     if let Some(frame) = operation.get("frame") {
         frame_schema(frame, &child(at, "frame"), f);
     }
@@ -1794,7 +1709,7 @@ fn operation_schema(operation: &Json, at: &str, revision: Revision, f: &mut Find
             if expect_array(bound, &bound_at, name, f) {
                 let items = bound.as_array().unwrap_or(&[]);
                 for (position, item) in items.iter().enumerate() {
-                    contract_item_schema(item, &index(&bound_at, position), revision, f);
+                    contract_item_schema(item, &index(&bound_at, position), f);
                 }
                 if has_duplicate_items(items) {
                     f.push(&bound_at, format!("{name} entries are unique"));
