@@ -14,7 +14,7 @@ from . import common_schema
 class ContractVersion(Enum):
     field_1_0_0 = '1.0.0'
     field_1_1_0 = '1.1.0'
-    field_1_2_0 = '1.2.0'
+    field_2_0_0 = '2.0.0'
 
 
 class Package(Struct):
@@ -86,6 +86,66 @@ class Operands4(Struct):
     name: Annotated[
         str, Meta(pattern='^[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*$')
     ]
+
+
+class Identity(Enum):
+    identified = 'identified'
+    value = 'value'
+    none = 'none'
+
+
+class Members(Enum):
+    required = 'required'
+    optional = 'optional'
+    forbidden = 'forbidden'
+
+
+type ReferencesAdditionalPropertyItem = Annotated[
+    str, Meta(pattern='^[a-z0-9][a-z0-9.-]*:[a-zA-Z0-9][a-zA-Z0-9._-]*$')
+]
+
+
+type ReferencesAdditionalProperty = Annotated[
+    list[ReferencesAdditionalPropertyItem], Meta(min_length=1)
+]
+
+
+class Rule(Enum):
+    identity_field_required = 'identity_field_required'
+    identity_field_forbidden = 'identity_field_forbidden'
+    min_clauses = 'min_clauses'
+    occurrence_field_required = 'occurrence_field_required'
+    no_fields = 'no_fields'
+    no_operations = 'no_operations'
+    min_operations = 'min_operations'
+    single_owner = 'single_owner'
+    exclusive_membership = 'exclusive_membership'
+    members_not_namespace = 'members_not_namespace'
+
+
+class Shape(Enum):
+    record = 'record'
+    enumeration = 'enumeration'
+    interface = 'interface'
+    state_machine = 'state_machine'
+    sequence = 'sequence'
+    namespace = 'namespace'
+
+
+class ConstructDeclaration(Struct):
+    identity: Identity
+    meaning: Annotated[str, Meta(min_length=1)]
+    members: dict[Literal['fields', 'variants', 'relationships', 'operations', 'clauses', 'supertypes', 'abstract', 'identityFields', 'owner', 'members', 'occurrenceField', 'states', 'transitions', 'steps', 'persists', 'vocabulary', 'direction', 'interfaceType', 'multiplicity', 'declaredType', 'flowDirection', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement', 'featureOrder'], Members]
+    shape: Shape
+    references: dict[Literal['owner', 'members', 'transitions', 'steps', 'persists', 'interfaceType', 'declaredType', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement'], ReferencesAdditionalProperty] | UnsetType = (
+        UNSET
+    )
+    rules: list[Rule] | UnsetType = UNSET
+
+
+class ConstructKind(Struct):
+    module: common_schema.PackageIdentity
+    name: Annotated[str, Meta(pattern='^[a-z][a-z0-9_]*$')]
 
 
 type FeaturePath = Annotated[
@@ -163,6 +223,18 @@ class StepKind(Enum):
     wait = 'wait'
 
 
+class Direction(Enum):
+    in_ = 'in'
+    out = 'out'
+    inout = 'inout'
+
+
+class FlowDirection(Enum):
+    source_to_target = 'source-to-target'
+    target_to_source = 'target-to-source'
+    bidirectional = 'bidirectional'
+
+
 class Kind(Enum):
     scalar = 'scalar'
     record = 'record'
@@ -172,16 +244,6 @@ class Kind(Enum):
     sequence = 'sequence'
     map = 'map'
     reference = 'reference'
-    entity = 'entity'
-    value_object = 'value_object'
-    nested_entity = 'nested_entity'
-    aggregate_root = 'aggregate_root'
-    enumeration = 'enumeration'
-    event = 'event'
-    state_machine = 'state_machine'
-    process = 'process'
-    repository = 'repository'
-    domain = 'domain'
 
 
 type Role = Annotated[
@@ -214,6 +276,11 @@ class Clause(Struct):
     origin: common_schema.Origin
     text: str
     sourceSpan: common_schema.SourceLocus | UnsetType = UNSET
+
+
+class ConnectionEnd(Struct):
+    type: common_schema.SemanticIdentity
+    multiplicity: Multiplicity | UnsetType = UNSET
 
 
 class Constraint1(Struct):
@@ -271,6 +338,13 @@ class Constraint6(Struct):
 
 
 type Constraint = Constraint1 | Constraint2 | Constraint3 | Constraint4 | Constraint5 | Constraint6
+
+
+class Construct(Struct):
+    construct: ConstructDeclaration
+    kind: ConstructKind
+    manifestDigest: common_schema.Sha256
+    moduleVersion: common_schema.Semver
 
 
 class Field(Struct):
@@ -374,39 +448,52 @@ class TypeDefinition(Struct):
     displayName: Annotated[str, Meta(min_length=1)]
     extensions: list[common_schema.Extension]
     identity: common_schema.SemanticIdentity
-    kind: Kind
+    kind: Kind | ConstructKind
     origin: common_schema.Origin
     roles: list[Role]
     unknownPolicy: common_schema.UnknownPolicy
     abstract: bool | UnsetType = UNSET
     clauses: list[Clause] | UnsetType = UNSET
+    declaredType: common_schema.SemanticIdentity | UnsetType = UNSET
+    direction: Direction | UnsetType = UNSET
+    featureOrder: (
+        Annotated[list[common_schema.SemanticIdentity], Meta(min_length=1)] | UnsetType
+    ) = UNSET
     fields: list[Field] | UnsetType = UNSET
+    flowDirection: FlowDirection | UnsetType = UNSET
     identityFields: (
         Annotated[list[common_schema.SemanticIdentity], Meta(min_length=1)] | UnsetType
     ) = UNSET
+    interfaceType: common_schema.SemanticIdentity | UnsetType = UNSET
     items: common_schema.SemanticIdentity | UnsetType = UNSET
     members: IdentityList | UnsetType = UNSET
+    multiplicity: Multiplicity | UnsetType = UNSET
     occurrenceField: common_schema.SemanticIdentity | UnsetType = UNSET
     operations: list[Operation] | UnsetType = UNSET
     owner: common_schema.SemanticIdentity | UnsetType = UNSET
     persists: IdentityList | UnsetType = UNSET
     relationships: list[Relationship] | UnsetType = UNSET
     scalar: Scalar | UnsetType = UNSET
+    sourceElement: common_schema.SemanticIdentity | UnsetType = UNSET
+    sourceEnd: ConnectionEnd | UnsetType = UNSET
     states: list[State] | UnsetType = UNSET
     steps: list[Step] | UnsetType = UNSET
     supertypes: IdentityList | UnsetType = UNSET
     target: common_schema.SemanticIdentity | UnsetType = UNSET
+    targetElement: common_schema.SemanticIdentity | UnsetType = UNSET
+    targetEnd: ConnectionEnd | UnsetType = UNSET
     transitions: list[Transition] | UnsetType = UNSET
     values: common_schema.SemanticIdentity | UnsetType = UNSET
     variants: list[Variant] | UnsetType = UNSET
     vocabulary: list[Term] | UnsetType = UNSET
 
 
-class FilamentSemanticIrV1ContractVersions100110And120(Struct):
+class FilamentSemanticIrV1ContractVersions100110And200(Struct):
     contractVersion: ContractVersion
     extensions: list[common_schema.Extension]
     occurrences: list[Occurrence]
     package: Package
     source: Source
     types: Annotated[list[TypeDefinition], Meta(min_length=1)]
+    constructs: list[Construct] | UnsetType = UNSET
     populations: list[Population] | UnsetType = UNSET

@@ -1,28 +1,33 @@
 """The construct module of a generated package (FR-079, FR-142).
 
 The generator reads a JSON Schema document's instance shape and drops every
-`x-agent-ix-*` annotation, so a contract 1.2.0 construct's members reach no
+`x-agent-ix-*` annotation, so a contract 2.0.0 construct's members reach no
 generated class. This module renders them into one more module of the same
 package, `constructs.py`, read from the same documents the generator read:
 there is still one lowering, the `json-schema` target's (FR-136).
 
-What each construct becomes:
+A construct kind is module data: nothing here names one. What a type becomes
+is read from the members its schema carries, which its construct declaration
+decided:
 
-- a `state_machine`'s states: the `<Name>State` enum the generator renders from
-  the schema's `$defs`, beside the machine's class;
-- a `repository`: a `typing.Protocol` whose methods are its operations, typed
-  by the generated classes of their parameter and return types;
+- a states member: the `<Name>State` enum the generator renders from the
+  schema's `$defs`, beside the type's class;
+- a type with no instance (its schema is `{"not": {}}`) carrying operations:
+  a `typing.Protocol` whose methods are its operations, typed by the generated
+  classes of their parameter and return types;
 - every other member: a module-level constant keyed by the generated class
-  name, since Python states none of them in a class.
+  name, since Python states none of them in a class; the kind is rendered by
+  its name.
 
 `refine` also completes the generated classes themselves, before this module
 is rendered:
 
-- an `entity`, `nested_entity`, `aggregate_root` or `process` compares and
-  hashes by its identity fields: `__eq__` and `__hash__` over their canonical
-  JSON form, and each identity field is read-only once constructed;
-- an `event` is frozen: `ConfigDict(frozen=True)` on a pydantic model and
-  `@dataclass(frozen=True)` on a dataclass, and unhashable (`__hash__ = None`);
+- a type carrying identity fields compares and hashes by them: `__eq__` and
+  `__hash__` over their canonical JSON form, and each identity field is
+  read-only once constructed;
+- a `readOnly` type (a construct declaring an occurrence field) is frozen:
+  `ConfigDict(frozen=True)` on a pydantic model and `@dataclass(frozen=True)`
+  on a dataclass, and unhashable (`__hash__ = None`);
 - an abstract type is an `abc.ABC` whose abstract properties are its fields,
   and every subtype registers with it, so `isinstance` holds and the abstract
   class does not construct.
@@ -33,9 +38,10 @@ holding a value of an abstract type (a `reference` to one holds an identity
 and is allowed), a name that is not a Python identifier, and a class or identity
 field the generated source does not declare.
 
-A `repository` and a `domain` have no instance, and their schema admits no
-value (`{"not": {}}`), so they never reach the generator: `instance_documents`
-leaves them out, and this module is the whole of their rendering.
+A type of an interface or namespace construct has no instance, and its schema
+admits no value (`{"not": {}}`), so it never reaches the generator:
+`instance_documents` leaves it out, and this module is the whole of its
+rendering.
 
 Pure: the same documents render the same bytes, and nothing is imported, read
 or written.
@@ -52,11 +58,9 @@ MODULE = "constructs.py"
 
 SUBSETS = "x-agent-ix-subsets"
 
-INSTANCELESS_KINDS: frozenset[str] = frozenset({"repository", "domain"})
+IDENTITY_FIELDS = "x-agent-ix-identity-fields"
 
-IDENTIFIED_KINDS: frozenset[str] = frozenset(
-    {"entity", "nested_entity", "aggregate_root", "process"}
-)
+OPERATIONS = "x-agent-ix-operations"
 
 ABSTRACT = "x-agent-ix-abstract"
 
@@ -88,8 +92,18 @@ def _module_name(document: str) -> str:
 
 
 def _kind(document: dict[str, Any]) -> str | None:
+    """The kind's name: a core kind, or a construct kind's `name`."""
+
     kind = document.get("x-agent-ix-kind")
+    if isinstance(kind, dict):
+        kind = kind.get("name")
     return kind if isinstance(kind, str) else None
+
+
+def _instanceless(document: dict[str, Any]) -> bool:
+    """Whether the schema admits no value: a type with no instance."""
+
+    return document.get("not") == {}
 
 
 def instance_documents(
@@ -100,7 +114,7 @@ def instance_documents(
     return {
         name: document
         for name, document in documents.items()
-        if _kind(document) not in INSTANCELESS_KINDS
+        if not (_kind(document) is not None and _instanceless(document))
     }
 
 
@@ -286,7 +300,10 @@ def render(
     body += _mapping(
         "TYPE_KIND",
         "dict[str, str]",
-        rows("x-agent-ix-kind", _literal),
+        [
+            (classes.of(document), _literal(_kind(document)))
+            for document in constructs.values()
+        ],
         "The construct kind of each generated type.",
     )
     body += _mapping(
@@ -304,7 +321,7 @@ def render(
     body += _mapping(
         "IDENTITY_FIELDS",
         "dict[str, tuple[str, ...]]",
-        rows("x-agent-ix-identity-fields", strings),
+        rows(IDENTITY_FIELDS, strings),
         "The fields that tell a type's instances apart, in declared order.",
     )
     body += _mapping(
@@ -426,7 +443,7 @@ def render(
             redefines.append(
                 (classes.of(document), "{" + ", ".join(declared_redefines) + "}")
             )
-        for operation in document.get("x-agent-ix-operations") or []:
+        for operation in document.get(OPERATIONS) or []:
             key = f"{classes.of(document)}.{operation['name']}"
             frame = operation.get("frame")
             if isinstance(frame, dict):
@@ -495,7 +512,7 @@ def render(
     )
 
     for document in constructs.values():
-        if _kind(document) != "repository":
+        if not (_instanceless(document) and OPERATIONS in document):
             continue
         body.append("")
         body.append(f"class {classes.of(document)}(Protocol):")
@@ -506,7 +523,7 @@ def render(
         body.append(
             f'    """Persists {persisted}; an interface holding no state of its own."""'
         )
-        for operation in document.get("x-agent-ix-operations") or []:
+        for operation in document.get(OPERATIONS) or []:
             params = ", ".join(
                 f"{_identifier(param['name'])}: {_typed(classes, param)}"
                 for param in operation.get("params") or []
@@ -924,8 +941,8 @@ def refine(
                 )
             refined[path] = source
             continue
-        if _kind(document) in IDENTIFIED_KINDS:
-            fields = document.get("x-agent-ix-identity-fields") or []
+        if _kind(document) is not None:
+            fields = document.get(IDENTITY_FIELDS) or []
             if fields:
                 source = _identity_equality(source, class_name, list(fields))
         if document.get("readOnly") is True:

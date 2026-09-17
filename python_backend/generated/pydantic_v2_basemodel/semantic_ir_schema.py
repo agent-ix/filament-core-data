@@ -7,6 +7,7 @@ from enum import Enum
 from typing import Annotated, Any, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel
+from typing_extensions import TypeAliasType
 
 from . import common_schema
 
@@ -14,7 +15,7 @@ from . import common_schema
 class ContractVersion(Enum):
     field_1_0_0 = '1.0.0'
     field_1_1_0 = '1.1.0'
-    field_1_2_0 = '1.2.0'
+    field_2_0_0 = '2.0.0'
 
 
 class Package(BaseModel):
@@ -108,6 +109,74 @@ class Operands4(BaseModel):
     name: Annotated[
         str, Field(pattern='^[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*$')
     ]
+
+
+class Identity(Enum):
+    identified = 'identified'
+    value = 'value'
+    none = 'none'
+
+
+class Members(Enum):
+    required = 'required'
+    optional = 'optional'
+    forbidden = 'forbidden'
+
+
+class ReferencesAdditionalPropertyItem(RootModel[str]):
+    root: Annotated[
+        str, Field(pattern='^[a-z0-9][a-z0-9.-]*:[a-zA-Z0-9][a-zA-Z0-9._-]*$')
+    ]
+
+
+ReferencesAdditionalProperty = TypeAliasType(
+    "ReferencesAdditionalProperty",
+    Annotated[list[ReferencesAdditionalPropertyItem], Field(min_length=1)],
+)
+
+
+class Rule(Enum):
+    identity_field_required = 'identity_field_required'
+    identity_field_forbidden = 'identity_field_forbidden'
+    min_clauses = 'min_clauses'
+    occurrence_field_required = 'occurrence_field_required'
+    no_fields = 'no_fields'
+    no_operations = 'no_operations'
+    min_operations = 'min_operations'
+    single_owner = 'single_owner'
+    exclusive_membership = 'exclusive_membership'
+    members_not_namespace = 'members_not_namespace'
+
+
+class Shape(Enum):
+    record = 'record'
+    enumeration = 'enumeration'
+    interface = 'interface'
+    state_machine = 'state_machine'
+    sequence = 'sequence'
+    namespace = 'namespace'
+
+
+class ConstructDeclaration(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    identity: Identity
+    meaning: Annotated[str, Field(min_length=1)]
+    members: dict[Literal['fields', 'variants', 'relationships', 'operations', 'clauses', 'supertypes', 'abstract', 'identityFields', 'owner', 'members', 'occurrenceField', 'states', 'transitions', 'steps', 'persists', 'vocabulary', 'direction', 'interfaceType', 'multiplicity', 'declaredType', 'flowDirection', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement', 'featureOrder'], Members]
+    references: dict[Literal['owner', 'members', 'transitions', 'steps', 'persists', 'interfaceType', 'declaredType', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement'], ReferencesAdditionalProperty] | None = (
+        None
+    )
+    rules: list[Rule] | None = None
+    shape: Shape
+
+
+class ConstructKind(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    module: common_schema.PackageIdentity
+    name: Annotated[str, Field(pattern='^[a-z][a-z0-9_]*$')]
 
 
 class FeaturePath(RootModel[str]):
@@ -204,6 +273,18 @@ class StepKind(Enum):
     wait = 'wait'
 
 
+class Direction(Enum):
+    in_ = 'in'
+    out = 'out'
+    inout = 'inout'
+
+
+class FlowDirection(Enum):
+    source_to_target = 'source-to-target'
+    target_to_source = 'target-to-source'
+    bidirectional = 'bidirectional'
+
+
 class Kind(Enum):
     scalar = 'scalar'
     record = 'record'
@@ -213,16 +294,6 @@ class Kind(Enum):
     sequence = 'sequence'
     map = 'map'
     reference = 'reference'
-    entity = 'entity'
-    value_object = 'value_object'
-    nested_entity = 'nested_entity'
-    aggregate_root = 'aggregate_root'
-    enumeration = 'enumeration'
-    event = 'event'
-    state_machine = 'state_machine'
-    process = 'process'
-    repository = 'repository'
-    domain = 'domain'
 
 
 class Role(RootModel[str]):
@@ -259,6 +330,14 @@ class Clause(BaseModel):
     origin: common_schema.Origin
     sourceSpan: common_schema.SourceLocus | None = None
     text: str
+
+
+class ConnectionEnd(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    multiplicity: Multiplicity | None = None
+    type: common_schema.SemanticIdentity
 
 
 class Constraint1(BaseModel):
@@ -344,6 +423,16 @@ class Constraint(
     ]
 ):
     root: Constraint1 | Constraint2 | Constraint3 | Constraint4 | Constraint5 | Constraint6
+
+
+class Construct(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    construct_: Annotated[ConstructDeclaration, Field(alias='construct')]
+    kind: ConstructKind
+    manifestDigest: common_schema.Sha256
+    moduleVersion: common_schema.Semver
 
 
 class FieldModel(BaseModel):
@@ -479,16 +568,24 @@ class TypeDefinition(BaseModel):
     abstract: bool | None = None
     clauses: list[Clause] | None = None
     constraints: list[Constraint]
+    declaredType: common_schema.SemanticIdentity | None = None
+    direction: Direction | None = None
     displayName: Annotated[str, Field(min_length=1)]
     extensions: list[common_schema.Extension]
+    featureOrder: Annotated[
+        list[common_schema.SemanticIdentity] | None, Field(min_length=1)
+    ] = None
     fields: list[FieldModel] | None = None
+    flowDirection: FlowDirection | None = None
     identity: common_schema.SemanticIdentity
     identityFields: Annotated[
         list[common_schema.SemanticIdentity] | None, Field(min_length=1)
     ] = None
+    interfaceType: common_schema.SemanticIdentity | None = None
     items: common_schema.SemanticIdentity | None = None
-    kind: Kind
+    kind: Kind | ConstructKind
     members: IdentityList | None = None
+    multiplicity: Multiplicity | None = None
     occurrenceField: common_schema.SemanticIdentity | None = None
     operations: list[Operation] | None = None
     origin: common_schema.Origin
@@ -497,10 +594,14 @@ class TypeDefinition(BaseModel):
     relationships: list[Relationship] | None = None
     roles: list[Role]
     scalar: Scalar | None = None
+    sourceElement: common_schema.SemanticIdentity | None = None
+    sourceEnd: ConnectionEnd | None = None
     states: list[State] | None = None
     steps: list[Step] | None = None
     supertypes: IdentityList | None = None
     target: common_schema.SemanticIdentity | None = None
+    targetElement: common_schema.SemanticIdentity | None = None
+    targetEnd: ConnectionEnd | None = None
     transitions: list[Transition] | None = None
     unknownPolicy: common_schema.UnknownPolicy
     values: common_schema.SemanticIdentity | None = None
@@ -508,10 +609,11 @@ class TypeDefinition(BaseModel):
     vocabulary: list[Term] | None = None
 
 
-class FilamentSemanticIrV1ContractVersions100110And120(BaseModel):
+class FilamentSemanticIrV1ContractVersions100110And200(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
+    constructs: list[Construct] | None = None
     contractVersion: ContractVersion
     extensions: list[common_schema.Extension]
     occurrences: list[Occurrence]
