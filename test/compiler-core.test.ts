@@ -1599,6 +1599,8 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 			(type) => type.identity === ((thing.fields as Json[])[0] as Json).typeRef,
 		) as Json;
 		expect([target.kind, target.scalar]).toEqual(["scalar", "any"]);
+		// One identity with the spec bundles, which name the same scalar JsonObject.
+		expect(String(target.identity).endsWith("/type/JsonObject")).toBe(true);
 		expect(
 			types.filter(
 				(type) =>

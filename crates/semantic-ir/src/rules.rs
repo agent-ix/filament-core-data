@@ -61,7 +61,7 @@ pub struct Document<'a> {
     pub ir: &'a Json,
     /// The type definitions, in document order.
     pub types: &'a [Json],
-    /// Whether the document declares contract 1.1.0.
+    /// Whether the document declares contract 1.1.0 or later (1.1.0 or 1.2.0).
     pub is_v11: bool,
     /// Whether the document declares contract 1.2.0, whose presence is authored.
     pub is_v12: bool,

@@ -373,7 +373,9 @@ def test_an_any_scalar_root_is_sanctioned_and_a_carried_constraint_is_not() -> N
         "x-agent-ix-semantic-id": "ix://agent-ix/pkg/type/JsonObject",
         "x-agent-ix-unknown-policy": "reject",
         "x-agent-ix-origin": {"generated": {"generatorVersion": "0.0.0"}},
-        "x-agent-ix-extensions": [{"identity": "ix://agent-ix/semantic-core/ext/x"}],
+        "x-agent-ix-extensions": [
+            {"identity": "ix://agent-ix/semantic-core/ext/kernel-scalar"}
+        ],
     }
     files = {
         "JsonObject.py": (
@@ -386,11 +388,16 @@ def test_an_any_scalar_root_is_sanctioned_and_a_carried_constraint_is_not() -> N
     )
     assert [finding.classification for finding in report.findings] == ["sanctioned"]
     constrained = {**root, "x-agent-ix-constraints": [{"keyword": "min"}]}
-    with pytest.raises(inspect_source.InspectionError) as raised:
-        inspect_source.inspect_generated(
-            files, {"JsonObject.json": constrained}, "enforce"
-        )
-    assert "degraded" in str(raised.value)
+    extended = {
+        **root,
+        "x-agent-ix-extensions": [{"identity": "ix://agent-ix/semantic-core/ext/x"}],
+    }
+    for refused in (constrained, extended):
+        with pytest.raises(inspect_source.InspectionError) as raised:
+            inspect_source.inspect_generated(
+                files, {"JsonObject.json": refused}, "enforce"
+            )
+        assert "degraded" in str(raised.value)
 
 
 @pytest.mark.parametrize("profile_id", PROFILE_IDS)

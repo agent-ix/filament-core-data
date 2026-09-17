@@ -37,6 +37,7 @@ mapping at a position the input schema constrained.
 - The inspection SHALL attribute each finding to a schema node by mapping the enclosing generated symbol to the `$defs` key or `title` the generator derived it from, and the annotated attribute to the property of that node, because the generator preserves both and no option that would carry richer provenance is permitted.
 - Where a generated symbol is a de-duplicated or numbered variant of a declared name, the inspection SHALL attribute it to the declared name it varies and record the variant, so the mapping is visible rather than assumed.
 - The inspection SHALL classify a finding `sanctioned` when the attributed schema node is genuinely unconstrained — the `true` schema, an empty object schema, an `object` type with none of `properties`, `additionalProperties`, or `patternProperties`, or an explicitly typeless node — and `degraded` otherwise.
+- The inspection SHALL treat `x-agent-ix-extensions` as constraining unless every extension it lists is the `kernel-scalar` or `doc` extension, because an extension can carry wire-affecting meaning JSON Schema does not assert.
 - The inspection SHALL classify a finding it cannot attribute as `unattributed`.
 - In `enforce` mode the inspection SHALL raise on a `degraded` finding, naming the module, the symbol, the annotation, and the attributed schema pointer.
 - In `enforce` mode the inspection SHALL raise on an `unattributed` finding, because an unexplained `Any` is the failure this requirement exists to catch and a permissive default would make the whole inspection decorative.
@@ -68,7 +69,7 @@ mapping at a position the input schema constrained.
 | FR-078-AC-9 | In `enforce` mode an unattributable annotation raises; in `report` mode the same input yields an `unattributed` census entry and no failure. | Test |
 | FR-078-AC-10 | With the `degraded` branch of the classifier disabled, the AC-1 probe passes; with it restored, the probe fails — run as a mutation over an injected classifier seam rather than by editing a committed file. | Test |
 | FR-078-AC-11 | A de-duplicated or numbered generated symbol is attributed to the declared name it varies, and the variant is recorded in the report. | Test |
-| FR-078-AC-12 | In `enforce` mode a `RootModel[Any]` generated from the `json-schema` document of an `any` kernel scalar carrying `x-agent-ix-semantic-id`, `x-agent-ix-origin`, `x-agent-ix-extensions`, and `x-agent-ix-unknown-policy` is `sanctioned` and raises nothing; the same document carrying `x-agent-ix-constraints` raises a `degraded` finding. | Test (TC-1770) |
+| FR-078-AC-12 | In `enforce` mode a `RootModel[Any]` generated from the `json-schema` document of an `any` kernel scalar carrying `x-agent-ix-semantic-id`, `x-agent-ix-origin`, `x-agent-ix-unknown-policy`, and an `x-agent-ix-extensions` list holding only the `kernel-scalar` extension is `sanctioned` and raises nothing; the same document carrying `x-agent-ix-constraints`, or an `x-agent-ix-extensions` list holding any other extension, raises a `degraded` finding. | Test (TC-1770) |
 
 ## Dependencies
 
