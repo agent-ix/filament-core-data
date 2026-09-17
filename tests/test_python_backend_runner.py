@@ -22,8 +22,8 @@ REPO = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from python_backend.adapter import guard, prepare  # noqa: E402
+from python_backend.runner import constructs, inspect_source  # noqa: E402
 from python_backend.runner import generate as runner  # noqa: E402
-from python_backend.runner import inspect_source  # noqa: E402
 
 PUBLISHED = sorted((REPO / "schema" / "semantic" / "v1").glob("*.schema.json"))
 SPIKE = json.loads(
@@ -547,6 +547,111 @@ def test_the_classifier_seam_falsifies_the_gate_and_variants_resolve() -> None:
     report = inspect_source.inspect_generated(variant, {"m.json": document}, "report")
     assert report.variants == {"K2": "K"}
     assert report.findings[0].variant_of == "K"
+
+
+def test_construct_tables_are_keyed_by_the_generated_class_name() -> None:
+    """TC-1784: FR-136-AC-12."""
+    documents = {
+        "Config-Overlay.json": {
+            "title": "Config Overlay",
+            "x-agent-ix-semantic-id": "ix://agent-ix/config/type/FR-002",
+            "x-agent-ix-kind": "entity",
+            "x-agent-ix-identity-fields": ["id"],
+            "properties": {"id": {"type": "string"}},
+        },
+        "Order-Repository.json": {
+            "title": "Order Repository",
+            "x-agent-ix-semantic-id": "ix://agent-ix/config/type/RP-001",
+            "x-agent-ix-kind": "repository",
+            "x-agent-ix-persists": ["ix://agent-ix/config/type/FR-002"],
+            "x-agent-ix-operations": [
+                {
+                    "name": "findById",
+                    "params": [],
+                    "frame": {"modifies": [], "creates": [], "deletes": []},
+                }
+            ],
+        },
+    }
+    files = {"Config_Overlay.py": "class ConfigOverlay:\n    id: str\n"}
+    rendered = constructs.render(documents, None, files)
+    assert rendered is not None
+    compile(rendered, "constructs.py", "exec")
+    assert "    'ConfigOverlay': 'entity'," in rendered
+    assert "    'OrderRepository': 'repository'," in rendered
+    assert "    'OrderRepository': ('ConfigOverlay',)," in rendered
+    assert "    'OrderRepository.findById': {" in rendered
+    assert "class OrderRepository(Protocol):" in rendered
+    assert "Config Overlay" not in rendered
+    assert "Order Repository" not in rendered
+
+
+def test_construct_rendering_refuses_what_python_cannot_state() -> None:
+    """TC-1784: FR-136-AC-12."""
+    kind = {
+        "title": "constructs",
+        "x-agent-ix-semantic-id": "ix://agent-ix/config/type/FR-003",
+        "x-agent-ix-kind": "entity",
+        "x-agent-ix-identity-fields": ["id"],
+        "properties": {"id": {"type": "string"}},
+    }
+    for module in ("constructs.py", "Constructs.py"):
+        with pytest.raises(constructs.ConstructError, match="constructs.py"):
+            constructs.render(
+                {"constructs.json": kind},
+                None,
+                {module: "class Constructs:\n    id: str\n"},
+            )
+
+    documents = {
+        "Party.json": {
+            "title": "Party",
+            "x-agent-ix-semantic-id": "ix://agent-ix/orders/type/FR-000",
+            "x-agent-ix-abstract": True,
+            "properties": {"id": {"type": "string"}},
+        },
+        "Basket.json": {
+            "title": "Basket",
+            "x-agent-ix-semantic-id": "ix://agent-ix/orders/type/FR-004",
+            "x-agent-ix-kind": "entity",
+            "x-agent-ix-identity-fields": ["id"],
+            "properties": {
+                "id": {"type": "string"},
+                "holder": {"$ref": "./Party.json"},
+            },
+        },
+    }
+    files = {
+        "Party.py": "class Party(BaseModel):\n    id: str\n",
+        "Basket.py": "class Basket(BaseModel):\n    id: str\n    holder: Party\n",
+    }
+    with pytest.raises(constructs.ConstructError, match="Basket holds the abstract"):
+        constructs.refine(documents, files)
+
+    # A reference holds the abstract type's identity, not a value of it.
+    documents["PartyRef.json"] = {
+        "title": "PartyRef",
+        "x-agent-ix-semantic-id": "ix://agent-ix/orders/type/PartyRef",
+        "type": "string",
+        "x-agent-ix-reference-target": "ix://agent-ix/orders/type/FR-000",
+    }
+    documents["Basket.json"]["properties"]["holder"] = {"$ref": "./PartyRef.json"}
+    source = (
+        "from __future__ import annotations\n\n" "from pydantic import BaseModel\n\n\n"
+    )
+    referring = {
+        "Party.py": source + "class Party(BaseModel):\n    id: str\n",
+        "Basket.py": source
+        + "class Basket(BaseModel):\n    id: str\n    holder: str\n",
+        "PartyRef.py": source + "class PartyRef(BaseModel):\n    root: str\n",
+    }
+    assert "__eq__" in constructs.refine(documents, referring)["Basket.py"]
+    del documents["PartyRef.json"]
+
+    del documents["Basket.json"]["properties"]["holder"]
+    documents["Basket.json"]["x-agent-ix-identity-fields"] = ["key"]
+    with pytest.raises(constructs.ConstructError, match="identity field key"):
+        constructs.refine(documents, files)
 
 
 def _reachable(compiler: Path, entrypoint: str) -> set[Path]:

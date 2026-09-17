@@ -280,6 +280,7 @@
 			"site": "classification === \"unsupported\"",
 			"detectedBy": [
 				"TC-725 every kind row selects the Rust form the mapping table states",
+				"TC-1772 every construct kind and model member selects the Rust form the mapping table states",
 				"TC-725 the eight field-axis rows produce the member type and the serde attributes the table states",
 				"TC-725 every defaultKind, extension and metadata row reaches the emitted crate",
 				"TC-725 every indirection row materializes at the position the table names",
@@ -334,9 +335,9 @@
 			"description": "widen an applicability row so a subject it excludes is admitted",
 			"target": "mapping-table.json",
 			"branches": ["constraint:pattern/string", "unknownPolicy:inert"],
-			"site": "\"kind\": \"scalar|alias|sequence|map|reference\"",
+			"site": "\"kind\": \"scalar|alias|sequence|map|reference|repository|domain\"",
 			"detectedBy": [
-				"TC-725 the unknownPolicy rows dispose each of the nine kinds exactly once"
+				"TC-725 the unknownPolicy rows dispose each kind exactly once"
 			]
 		},
 		{

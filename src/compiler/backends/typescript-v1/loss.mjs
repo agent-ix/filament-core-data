@@ -44,10 +44,7 @@
  * applicability table, or anything under `conformance/`.
  */
 
-import {
-	CONSTRUCT_KINDS as SHARED_CONSTRUCT_KINDS,
-	unrenderedNodes,
-} from "../../constructs.mjs";
+import { CONSTRUCT_KINDS as SHARED_CONSTRUCT_KINDS } from "../../constructs.mjs";
 
 /** The backend's own diagnostic namespace, distinct from the IR namespace. */
 const TARGET = (name) => `agent-ix.typescript-backend.${name}`;
@@ -69,13 +66,13 @@ export const LOSS_CODES = Object.freeze({
 		severity: "error",
 		blocking: true,
 	}),
-	CONSTRUCT_NOT_RENDERED: Object.freeze({
-		code: TARGET("CONSTRUCT_NOT_RENDERED"),
+	IDENTIFIER_COLLISION: Object.freeze({
+		code: TARGET("IDENTIFIER_COLLISION"),
 		severity: "error",
 		blocking: true,
 	}),
-	IDENTIFIER_COLLISION: Object.freeze({
-		code: TARGET("IDENTIFIER_COLLISION"),
+	ABSTRACT_TYPE_HELD: Object.freeze({
+		code: TARGET("ABSTRACT_TYPE_HELD"),
 		severity: "error",
 		blocking: true,
 	}),
@@ -99,18 +96,17 @@ export const TARGET_LOSSES = Object.freeze([
 			"ISO-8601 designators admit no total order — P1M and P30D are not comparable without a calendar — so an ordering constraint on a duration subject is refused rather than answered by an invented comparison",
 	}),
 	Object.freeze({
-		construct: "object-type-construct",
-		code: LOSS_CODES.CONSTRUCT_NOT_RENDERED.code,
+		construct: "abstract-type-held",
+		code: LOSS_CODES.ABSTRACT_TYPE_HELD.code,
 		rationale:
-			"a contract 1.2.0 object-type construct or model member carries meaning this target renders no check for; filament-core-data#147 declares its rendering, and a record in its place, or the member dropped, would lose that meaning",
+			"an abstract type has no validator, since no instance is its own; a field, item, value, target or payload naming one would need a check that accepts every subtype, which the generated validators do not state",
 	}),
 ]);
 
 /**
  * The contract 1.2.0 object-type construct kinds (FR-142), read from the one
- * list in `src/compiler/constructs.mjs`. The target renders the kinds
- * `RENDERED_CONSTRUCT_KINDS` names; each other kind is a declared loss rather
- * than a record.
+ * list in `src/compiler/constructs.mjs`. The target renders every kind, each
+ * by its own rendering; `RENDERED_NOT_LOST` names what each carries as data.
  */
 export const CONSTRUCT_KINDS = Object.freeze(new Set(SHARED_CONSTRUCT_KINDS));
 
@@ -137,9 +133,23 @@ export const RENDERED_NOT_LOST = Object.freeze([
 	Object.freeze({
 		construct: "entity",
 		renderedAs:
-			"the record rendering, an exported interface with a record validator, plus its identity field names in declared order in TYPE_IDENTITY_FIELDS",
+			"the record rendering, an exported interface with a record validator, plus its identity field names in declared order in TYPE_IDENTITY_FIELDS and <Name>Equals comparing those fields",
 		rationale:
-			"an entity's instances being told apart by the identity fields, and persisting across changes to its other fields, is its Quire meaning over instances rather than a property of one value; the generated type carries the identity field names, and a consumer compares instances by them",
+			"an entity's instances are told apart by the identity fields: <Name>Equals holds exactly when every identity field is equal by canonical form, so two instances with equal identity fields are one instance",
+	}),
+	Object.freeze({
+		construct: "construct-kinds",
+		renderedAs:
+			"value_object, nested_entity, aggregate_root, event, process and state_machine as a record interface with its validator; enumeration as a string literal union with its validator; repository as an interface of method signatures; domain as no type; each with its members in the TYPE_ maps: TYPE_OWNER, TYPE_MEMBERS, TYPE_OCCURRENCE_FIELD, TYPE_EQUALITY, TYPE_IMMUTABLE, TYPE_STATES, TYPE_TRANSITIONS, TYPE_STEPS, TYPE_PERSISTS and TYPE_VOCABULARY",
+		rationale:
+			"a value object's value equality and an identified construct's identity equality are <Name>Equals, an event's immutability is its readonly members, and a state machine's states are <Name>State; the Quire meaning of clauses and guards is over instances, so the generated package carries it as data",
+	}),
+	Object.freeze({
+		construct: "model-members",
+		renderedAs:
+			"a subtype's interface carrying its effective fields; an abstract type's interface with no validator; with TYPE_SUPERTYPES, TYPE_ABSTRACT, FIELD_SUBSETS, FIELD_REDEFINES, OPERATION_CONTRACTS and POPULATIONS in the identity module",
+		rationale:
+			"an interface is TypeScript's abstract form: no value validates as an abstract type, only as a subtype; TypeScript has no subset relation between properties, so subsets are carried as data; a redefined field is replaced in the subtype's interface, and an operation's frame and inline Quire clauses are text a consumer reads",
 	}),
 	Object.freeze({
 		construct: "default-kind",
@@ -227,25 +237,6 @@ export function representability(ir, options = {}) {
 		losses.push(Object.freeze(entry));
 	};
 
-	// Every contract 1.2.0 construct kind the target does not render, and every
-	// model member, is refused with one named loss at its pointer: rendering
-	// any of them as a record, or dropping the member, would lose the meaning
-	// it carries (FR-142-CON-2).
-	for (const node of unrenderedNodes(ir)) {
-		const index = Number(node.pointer.split("/")[2]);
-		record({
-			code: LOSS_CODES.CONSTRUCT_NOT_RENDERED.code,
-			construct: "object-type-construct",
-			owner: Number.isInteger(index)
-				? ir.types[index]?.identity
-				: ir.package?.identity,
-			pointer: `/ir${node.pointer}`,
-			detail: node.member.startsWith("kind ")
-				? node.member.slice(5)
-				: node.member,
-		});
-	}
-
 	for (const [index, type] of ir.types.entries()) {
 		if (type === null || typeof type !== "object") continue;
 		const owner = type.identity;
@@ -280,6 +271,32 @@ export function representability(ir, options = {}) {
 					detail: constraint.keyword,
 				});
 			}
+		}
+
+		// A value an abstract type names has no validator to check it (FR-141).
+		const held = [
+			...(type.fields ?? []).map((field, position) => [
+				field?.typeRef,
+				`/ir/types/${index}/fields/${position}/typeRef`,
+			]),
+			...(type.variants ?? []).map((variant, position) => [
+				variant?.payloadType,
+				`/ir/types/${index}/variants/${position}/payloadType`,
+			]),
+			...["target", "items", "values"].map((member) => [
+				type.kind === "reference" ? undefined : type[member],
+				`/ir/types/${index}/${member}`,
+			]),
+		];
+		for (const [ref, pointer] of held) {
+			if (byIdentity.get(ref)?.abstract !== true) continue;
+			record({
+				code: LOSS_CODES.ABSTRACT_TYPE_HELD.code,
+				construct: "abstract-type-held",
+				owner,
+				pointer,
+				detail: ref,
+			});
 		}
 
 		// A `representation` or `migration` default is carried on the field's

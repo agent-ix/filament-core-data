@@ -21,7 +21,15 @@
  * registration rather than a description of it.
  */
 
-import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -36,6 +44,7 @@ import {
 	generateTarget,
 	selectBackend,
 } from "../src/compiler/backends/seam.mjs";
+import { CONSTRUCT_KINDS } from "../src/compiler/constructs.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -131,7 +140,7 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 	}, 300000);
 
 	/** Traces: TC-1765; FR-136-AC-8. */
-	it("generates an entity as the record's model class in both Python targets, carrying no identity-field marking", () => {
+	it("generates an entity as the record's model class in both Python targets, with its identity fields in the construct module", () => {
 		const request = pythonRequest(pythonPydanticBackend);
 		const entity = (
 			request.ir as {
@@ -160,11 +169,185 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 				(file) => file.path === "ConfigVersion.py",
 			);
 			if (!module) throw new Error(`${backend.target}: no ConfigVersion.py`);
+			expect(module.text).toMatch(/^class ConfigVersion\b/m);
 			expect(module.text).toMatch(/\bid: /);
+			const constructs = result.files.find(
+				(file) => file.path === "constructs.py",
+			);
+			if (!constructs) throw new Error(`${backend.target}: no constructs.py`);
+			expect(constructs.text).toContain("'ConfigVersion': ('id',),");
+			expect(constructs.text).toContain("'ConfigVersion': 'entity',");
+		}
+	}, 300000);
+
+	/** Traces: TC-1775, TC-1776; FR-136-AC-10, FR-142-AC-8. */
+	it("renders every construct kind and model member in both Python targets, each class named by its display name", () => {
+		const document =
+			"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json";
+		const ir = readJson(document) as {
+			types: { kind: string; displayName: string }[];
+		};
+		for (const backend of [pythonPydanticBackend, pythonDataclassBackend]) {
+			const result = backend.generate(pythonRequest(backend, document), {
+				produce: poetryProducer(),
+			}) as {
+				state: string;
+				diagnostics: { message: string }[];
+				files: { path: string; text: string }[];
+			};
+			expect(
+				result.state,
+				`${backend.target}: ${result.diagnostics.map((d) => d.message).join("; ")}`,
+			).toBe("success");
+			expect(
+				(result.diagnostics as { code?: string; blocking?: boolean }[]).map(
+					(d) => [d.code, d.blocking],
+				),
+				backend.target,
+			).toEqual(
+				Array(6).fill(["agent-ix.compiler.CONSTRUCT_MEMBER_UNENFORCED", false]),
+			);
+			const text = (path: string) => {
+				const file = result.files.find((one) => one.path === path);
+				if (!file) throw new Error(`${backend.target}: no ${path}`);
+				return file.text;
+			};
+
+			// Every class is named by its type's display name, never `Model`.
 			for (const file of result.files.filter((one) => one.path.endsWith(".py")))
 				expect(file.text, `${backend.target} ${file.path}`).not.toMatch(
-					/identity-fields|identityFields|IDENTITY_FIELDS/,
+					/^class Model\b/m,
 				);
+			for (const type of ir.types.filter(
+				(one) =>
+					CONSTRUCT_KINDS.includes(one.kind) &&
+					one.kind !== "repository" &&
+					one.kind !== "domain",
+			))
+				expect(text(`${type.displayName}.py`)).toMatch(
+					new RegExp(`^class ${type.displayName}\\b`, "m"),
+				);
+
+			// A repository and a domain have no instance: no module of their own.
+			const paths = result.files.map((file) => file.path);
+			expect(paths).not.toContain("OrderRepository.py");
+			expect(paths).not.toContain("Ordering.py");
+
+			// state_machine: the state enum beside the machine's class.
+			expect(text("OrderLifecycle.py")).toMatch(
+				/^class OrderLifecycleState\(StrEnum\):\n {4}placed = 'placed'\n {4}shipped = 'shipped'/m,
+			);
+			// enumeration: a native enum.
+			expect(text("OrderStatus.py")).toMatch(/^class OrderStatus\(StrEnum\):/m);
+
+			const constructs = text("constructs.py");
+			for (const type of ir.types.filter((one) =>
+				CONSTRUCT_KINDS.includes(one.kind),
+			))
+				expect(constructs).toContain(`'${type.displayName}': '${type.kind}',`);
+			for (const line of [
+				"'Order': ('Party',),",
+				"'Party': True,",
+				"'Shipment': 'Order',",
+				"'OrderAggregate': ('Order', 'OrderLine'),",
+				"'OrderPlaced': 'placedAt',",
+				"'OrderLine': True,",
+				"'OrderLifecycle': (('placed', 'shipped', 'advance', 'can_ship', ('OrderPlaced',)),),",
+				"'Fulfilment': (('fulfil', 'event', ('OrderPlaced',), ()),),",
+				"'OrderRepository': ('Order',),",
+				"'Ordering': (('Order', \"A customer's request for goods.\"),),",
+				"'Order': {'badges': ('labels',)},",
+				"'Order': {'id': 'id', 'labels': 'labels'},",
+				"'OrderLifecycle.advance': {'modifies': ('current',), 'creates': (), 'deletes': ()},",
+				"'OrderLifecycle.advance': {'requires': (('quire', 'to <> current'),), 'ensures': (('quire', 'current = to'),)},",
+				"'OpenOrders': (('Order', 0, None),),",
+				"class OrderRepository(Protocol):",
+				"    def find_by_id(self, id: UUIDModel) -> Order | None: ...",
+				"    def save(self, order: Order) -> Order: ...",
+			])
+				expect(constructs, `${backend.target}: ${line}`).toContain(line);
+		}
+	}, 300000);
+
+	/** Traces: TC-1783; FR-136-AC-11. */
+	it("compares identified constructs by identity, freezes events and makes abstract types abc classes in both Python targets", () => {
+		const document =
+			"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json";
+		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-python-constructs-"));
+		try {
+			const packages: string[] = [];
+			for (const backend of [pythonPydanticBackend, pythonDataclassBackend]) {
+				const result = backend.generate(pythonRequest(backend, document), {
+					produce: poetryProducer(),
+				}) as { state: string; files: { path: string; text: string }[] };
+				expect(result.state, backend.target).toBe("success");
+				const name = backend.target.replaceAll("-", "_");
+				packages.push(name);
+				for (const file of result.files) {
+					const path = resolve(scratch, name, file.path);
+					mkdirSync(dirname(path), { recursive: true });
+					writeFileSync(path, file.text);
+				}
+				const party = result.files.find((file) => file.path === "Party.py");
+				expect(party?.text, backend.target).toMatch(/^class Party\(ABC\):/m);
+			}
+			const check = [
+				"import importlib, json, sys",
+				`sys.path.insert(0, ${JSON.stringify(scratch)})`,
+				"out = {}",
+				`for pkg in ${JSON.stringify(packages)}:`,
+				"    m = lambda name: importlib.import_module(f'{pkg}.{name}')",
+				"    line = m('OrderLine').OrderLine(kind='goods', quantity=1, sku='A')",
+				"    order = lambda id, status: m('Order').Order(id=id, lines=[line], status=status, total='1')",
+				"    a = order('7c1e0f8a-0000-4000-8000-000000000001', 'draft')",
+				"    b = order('7c1e0f8a-0000-4000-8000-000000000001', 'placed')",
+				"    c = order('7c1e0f8a-0000-4000-8000-000000000002', 'draft')",
+				"    row = [a == b, hash(a) == hash(b), a == c, isinstance(a, m('Party').Party)]",
+				"    a.status = 'placed'",
+				"    try:",
+				"        a.id = '7c1e0f8a-0000-4000-8000-000000000003'",
+				"        row.append('identity-writable')",
+				"    except AttributeError:",
+				"        row.append('identity-read-only')",
+				"    try:",
+				"        m('Party').Party()",
+				"        row.append('constructed')",
+				"    except TypeError:",
+				"        row.append('abstract')",
+				"    event = m('OrderPlaced').OrderPlaced(orderId='7c1e0f8a-0000-4000-8000-000000000001', placedAt='2026-01-01T00:00:00Z')",
+				"    try:",
+				"        event.orderId = '7c1e0f8a-0000-4000-8000-000000000002'",
+				"        row.append('mutable')",
+				"    except Exception:",
+				"        row.append('frozen')",
+				"    try:",
+				"        hash(event)",
+				"        row.append('hashable')",
+				"    except TypeError:",
+				"        row.append('unhashable')",
+				"    out[pkg] = row",
+				"print(json.dumps(out))",
+			].join("\n");
+			const stdout = execFileSync("poetry", ["run", "python", "-c", check], {
+				cwd: root,
+				encoding: "utf8",
+				stdio: ["ignore", "pipe", "pipe"],
+			});
+			const expected = [
+				true,
+				true,
+				false,
+				true,
+				"identity-read-only",
+				"abstract",
+				"frozen",
+				"unhashable",
+			];
+			expect(JSON.parse(stdout.trim().split("\n").at(-1) ?? "")).toStrictEqual(
+				Object.fromEntries(packages.map((name) => [name, expected])),
+			);
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
 		}
 	}, 300000);
 

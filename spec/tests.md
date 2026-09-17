@@ -98,7 +98,8 @@ TC-1337 passed when issue #85 delivered the JSON Schema backend. TC-1292 passed 
 #88 and #90 closed, and FR-130 gave its Rust half the generic command line.
 The lifted `config-version-table` document carries contract 1.2.0 `entity`
 constructs, which every backend renders (TC-1762..TC-1765), so both pass over
-it.
+it. Every backend renders every construct kind (TC-1772..TC-1775), so TC-1586
+passes over the lifted `business` bundle.
 Nine rows are `Static` evidence produced by `make extraction-frontend-evidence`,
 the crate's `--ignored` run; seven pass under it and TC-1316/TC-1317 remain
 blocked as stated above.
@@ -168,7 +169,7 @@ blocked as stated above.
 | US-019 | US-019-EX-2 (illustrative) implemented by FR-130 | TC-1390 | ✅ Complete |
 | US-019 | US-019-EX-3 (illustrative) implemented by FR-130 | TC-1391 | ✅ Complete |
 | US-019 | US-019-EX-4 (illustrative) implemented by FR-130 | TC-1392 | ✅ Complete |
-| US-019 | US-019-EX-1, US-019-EX-2 (illustrative) implemented by FR-136 | TC-1530..TC-1536, TC-1765, TC-1769 | ✅ Complete |
+| US-019 | US-019-EX-1, US-019-EX-2 (illustrative) implemented by FR-136 | TC-1530..TC-1536, TC-1765, TC-1769, TC-1775, TC-1783, TC-1784 | ✅ Complete |
 | US-021 | US-021-EX-1..US-021-EX-4 (illustrative) implemented by FR-137 | TC-1537..TC-1544 | ✅ Complete |
 | US-020 | US-020-EX-1, US-020-EX-2 (illustrative) implemented by FR-134 | TC-1431 | 🚧 planned on issue #6 |
 | US-020 | US-020-EX-3, US-020-EX-5 (illustrative) implemented by FR-134 | TC-1430, TC-1432 | 🚧 planned on issue #6 |
@@ -237,19 +238,19 @@ blocked as stated above.
 | FR-052 | FR-052-AC-1..16, FR-052-CON-1..4 | TC-547..TC-566 | ✅ Complete |
 | FR-053 | FR-053-AC-1..15, FR-053-CON-1..5 | TC-412..TC-431, TC-604 | ✅ Complete |
 | FR-063 | FR-063-AC-1..21, FR-063-CON-1..6 | TC-745..TC-754 | 🚧 In progress |
-| FR-064 | FR-064-AC-1..24, FR-064-CON-1..7 | TC-755..TC-765, TC-1763, TC-1767 | 🚧 In progress |
+| FR-064 | FR-064-AC-1..26, FR-064-CON-1..7 | TC-755..TC-765, TC-1763, TC-1767, TC-1773, TC-1781 | 🚧 In progress |
 | FR-065 | FR-065-AC-1..22, FR-065-CON-1..6 | TC-766..TC-775 | 🚧 In progress |
 | FR-066 | FR-066-AC-1..29, FR-066-CON-1..9 | TC-776..TC-786 | 🚧 In progress |
-| FR-067 | FR-067-AC-1..19, FR-067-CON-1..6 | TC-787..TC-794, TC-1763 | 🚧 In progress |
+| FR-067 | FR-067-AC-1..20, FR-067-CON-1..6 | TC-787..TC-794, TC-1763, TC-1773 | 🚧 In progress |
 | FR-068 | FR-068-AC-1..26, FR-068-CON-1..8 | TC-795..TC-805, TC-1355, TC-1356 | 🚧 In progress |
 | FR-069 | FR-069-AC-1..25, FR-069-CON-1..7 | TC-806..TC-814 | 🚧 In progress |
 | FR-070 | FR-070-AC-1..20, FR-070-CON-1..8 | TC-815..TC-824 | 🚧 In progress |
 | FR-071 | FR-071-AC-1..20, FR-071-CON-1..8 | TC-825..TC-833 | 🚧 In progress |
-| FR-054 | FR-054-AC-1..16, FR-054-CON-1..6 | TC-645..TC-657, TC-674, TC-694, TC-740, TC-1762 | ✅ Complete |
-| FR-055 | FR-055-AC-1..17, FR-055-CON-1..4 | TC-658..TC-665, TC-1357, TC-1358, TC-1766 | 🚧 In progress |
+| FR-054 | FR-054-AC-1..20, FR-054-CON-1..6 | TC-645..TC-657, TC-674, TC-694, TC-740, TC-1762, TC-1772, TC-1777, TC-1778, TC-1780 | ✅ Complete |
+| FR-055 | FR-055-AC-1..18, FR-055-CON-1..4 | TC-658..TC-665, TC-1357, TC-1358, TC-1766, TC-1779 | 🚧 In progress |
 | FR-056 | FR-056-AC-1..17, FR-056-CON-1..8 | TC-666..TC-676 | ✅ Complete |
 | FR-057 | FR-057-AC-1..14, FR-057-CON-1..6 | TC-677..TC-689 | ✅ Complete |
-| FR-058 | FR-058-AC-1..13, FR-058-CON-1..5 | TC-690..TC-697, TC-1762 | ✅ Complete |
+| FR-058 | FR-058-AC-1..14, FR-058-CON-1..5 | TC-690..TC-697, TC-1762, TC-1772 | ✅ Complete |
 | FR-059 | FR-059-AC-1..15, FR-059-CON-1..6 | TC-698..TC-710 | ✅ Complete |
 | FR-060 | FR-060-AC-1..15, FR-060-CON-1..7 | TC-711..TC-718 | ✅ Complete |
 | FR-061 | FR-061-AC-1..13, FR-061-CON-1..7 | TC-719..TC-724 | ✅ Complete |
@@ -283,9 +284,9 @@ blocked as stated above.
 | FR-098 | FR-098-AC-1..12, FR-098-CON-1..3 | TC-1285..TC-1294, TC-1338, TC-1343, TC-1344 | ✅ Complete |
 | FR-099 | FR-099-AC-1..6, FR-099-CON-1..3 | TC-1295..TC-1299, TC-1330, TC-1349 | ✅ Complete |
 | FR-106 | FR-106-AC-1..6, FR-106-CON-1..2 | TC-1373..TC-1378 | 🚧 TC-1374, TC-1375 planned on issue #93 |
-| FR-100 | FR-100-AC-1..9, FR-100-CON-1..3 | TC-1361..TC-1366, TC-1764, TC-1768, TC-1771 | ✅ Complete |
+| FR-100 | FR-100-AC-1..11, FR-100-CON-1..3 | TC-1361..TC-1366, TC-1764, TC-1768, TC-1771, TC-1774, TC-1782 | ✅ Complete |
 | FR-130 | FR-130-AC-1..8, FR-130-CON-1..3 | TC-1388..TC-1395 | ✅ Complete |
-| FR-131 | FR-131-AC-1..9, FR-131-CON-1..3 | TC-1403..TC-1409, TC-1586 | 🚧 TC-1586 blocked on issue #147 |
+| FR-131 | FR-131-AC-1..9, FR-131-CON-1..3 | TC-1403..TC-1409, TC-1586 | ✅ Complete |
 | FR-132 | FR-132-AC-1..7, FR-132-CON-1..3 | TC-1414..TC-1417 | 🚧 planned on issue #65 |
 | FR-133 | FR-133-AC-1..7, FR-133-CON-1..3 | TC-1418..TC-1421 | ✅ Complete |
 | FR-134 | FR-134-AC-1..7, FR-134-CON-1..3 | TC-1430..TC-1433 | 🚧 planned on issue #6 |
@@ -294,7 +295,7 @@ blocked as stated above.
 | FR-139 | FR-139-AC-1..6, FR-139-CON-1..3 | TC-1552..TC-1557 | 🚧 TC-1552, TC-1554..TC-1557 planned on issue #93 |
 | FR-140 | FR-140-AC-1..7, FR-140-CON-1..3 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
 | FR-141 | FR-141-AC-1..7, FR-141-CON-1..2 | TC-1740..TC-1744, TC-1759, TC-1761 | ✅ Complete |
-| FR-142 | FR-142-AC-1..7, FR-142-CON-1..2 | TC-1745..TC-1750, TC-1760 | ✅ Complete |
+| FR-142 | FR-142-AC-1..8, FR-142-CON-1..2 | TC-1745..TC-1750, TC-1760, TC-1776 | ✅ Complete |
 | FR-143 | FR-143-AC-1..5, FR-143-CON-1..2 | TC-1751..TC-1755 | 🚧 TC-1755 blocked on issue #154 |
 
 ### Non-Functional Requirement Coverage
@@ -1494,7 +1495,7 @@ blocked as stated above.
 | TC-1289 | After lifting a committed copy of each fixture bundle, git status --porcelain is empty and every file hash under the bundle and module roots is unchanged, for a clean lift and for a blocking lift | E2E | P0 | FR-098-AC-5 | ✅ passed |
 | TC-1290 | cases.json carries records-and-scalars with both source trees and both typespec and spec-bundle non-null, and spec-bundle null with a reason naming scalar for each of the three existing cases; the parity test finds exactly one two-dialect case and compares it; the projection materialises absent relationships, operations, and clauses as [] | Integration | P1 | FR-098-AC-6 | ✅ passed |
 | TC-1291 | For records-and-scalars, normalized of the projected spec-bundle lift equals normalized of the projected node cli.mjs compile output byte for byte, every identity, the type/NoteRevision alias, and every diagnosticCode included, and the test fails naming node when it is absent | Integration | P0 | FR-098-AC-7 | ✅ passed |
-| TC-1292 | The generic CLI over the lifted config-version-table document exits zero with zero diagnostics for --target rust (writing src/lib.rs) and for --target typescript, and the rust-serde backend run through its own writer by the harness rust-generate verb does the same | Integration | P0 | FR-098-AC-8 | ✅ passed |
+| TC-1292 | The generic CLI over the lifted config-version-table document exits zero with only the non-blocking clauses advisory for --target rust (writing src/lib.rs) and for --target typescript, and the rust-serde backend run through its own writer by the harness rust-generate verb exits zero with zero diagnostics | Integration | P0 | FR-098-AC-8 | ✅ passed |
 | TC-1293 | A ConfigVersion payload validates against the test-derived schema, versionNumber 0 fails at versionNumber, and the helper is not reachable from the crate's public surface | Unit | P0 | FR-098-AC-9 | ✅ passed |
 | TC-1294 | The FR-098 change set outside the crate is exactly cases.json, shared/typespec/records-and-scalars/, and files under shared/spec-bundle/; src/compiler/frontend/** and test/compiler-core.test.ts are byte-unchanged | Static | P1 | FR-098-AC-10, FR-098-CON-1 | ✅ passed |
 | TC-1295 | lift over config-version-table exits 0 and writes the document, .fingerprint, .diagnostics.json, and .provenance.json; with --diagnostics d.json --provenance p.json it writes those in their place with the same document bytes | E2E | P0 | FR-099-AC-1 | ✅ passed |
@@ -1590,7 +1591,7 @@ blocked as stated above.
 | TC-1407 | A dialect registered unimplemented is refused with FRONTEND_NOT_IMPLEMENTED naming its owner, over a synthetic registration rather than whichever dialect is unbuilt today | Unit | P1 | FR-131-AC-6 | ✅ passed |
 | TC-1408 | No module under src/compiler/frontend/ imports a process-starting built-in, and extraction.mjs is unreachable from the frontend seam | Unit | P0 | FR-131-AC-7, FR-131-CON-1, FR-131-CON-2 | ✅ passed |
 | TC-1409 | A request supplying no producer raises rather than returning a diagnostic | Unit | P1 | FR-131-AC-8 | ✅ passed |
-| TC-1586 | One markdown bundle lifted by the extraction producer generates files in every declared target, and all five targets report the same IR fingerprint from that single lift | Integration | P0 | FR-131-AC-9 | 🚧 blocked on issue #147: the lifted `business` bundle carries every construct kind other than `entity`, and model members, which the backends refuse |
+| TC-1586 | One markdown bundle lifted by the extraction producer generates files in every declared target, and all five targets report the same IR fingerprint from that single lift | Integration | P0 | FR-131-AC-9 | ✅ passed |
 | TC-1410 | No change-set gate resolves a range end against main, origin/main or HEAD, and every one reads both ends from the shared sentinel helper | Analysis | P0 | NFR-039-AC-1, NFR-039-AC-5 | 🚧 planned on issue #92 |
 | TC-1411 | A gate whose sentinels are absent from history fails naming what it could not locate, and a commit landing after a change's range does not enter that range even when it touches a prohibited path | Unit | P0 | NFR-039-AC-2, NFR-039-AC-3 | 🚧 planned on issue #92 |
 | TC-1412 | A gate comparing a historical hunk reads the other side at that hunk's own commit, so a later change editing those lines leaves it green | Analysis | P1 | NFR-039-AC-4 | 🚧 planned on issue #92 |
@@ -1688,7 +1689,7 @@ blocked as stated above.
 | TC-1746 | Each kind missing a required member, or carrying a member of another kind, is refused with `SCHEMA_VIOLATION` | Unit | P0 | FR-142-AC-2, FR-142-CON-1 | ✅ passed |
 | TC-1747 | Owner, aggregate member, persisted type and domain member of an excluded kind, or naming no type, raise their reader code at the member pointer | Unit | P0 | FR-142-AC-3 | ✅ passed |
 | TC-1748 | A non-`datetime` occurrence field, an undeclared transition state or trigger, a dangling guard and a type in two domains raise their reader codes | Unit | P0 | FR-142-AC-4 | ✅ passed |
-| TC-1749 | The Rust, TypeScript and JSON Schema backends refuse each construct kind they do not render with a named diagnostic and emit no record in its place | Unit | P0 | FR-142-AC-5, FR-142-CON-2 | ✅ passed |
+| TC-1749 | The Rust, TypeScript and JSON Schema backends generate one construct of every kind with state `success` and no blocking diagnostic, rendering none as another kind | Unit | P0 | FR-142-AC-5, FR-142-CON-2 | ✅ passed |
 | TC-1750 | `contracts-v1.md` states the members, built-in rules and Quire meaning of every construct | Manual | P1 | FR-142-AC-6 | ✅ passed |
 | TC-1751 | The `business` fixture lifts to one construct of each kind with the identity fields, members, owner, occurrence field and persisted types its fields and edges name, accepted by the reader | Integration | P0 | FR-143-AC-1, FR-143-CON-2 | ✅ passed |
 | TC-1752 | Every `business` type identity ends in its artifact id and every `displayName` is its declared name; a declared-name rename leaves relationships byte-identical | Property | P0 | FR-143-AC-2, FR-143-CON-1 | ✅ passed |
@@ -1704,13 +1705,26 @@ blocked as stated above.
 | TC-1762 | A `1.2.0` entity selects the Rust `kind:entity` row: its struct renders as a record's and its module declares `IDENTITY_FIELDS` naming the identity fields in declared order, while a record declares none | Unit | P0 | FR-054-AC-16, FR-058-AC-13 | ✅ passed |
 | TC-1763 | A `1.2.0` entity renders as a TypeScript interface with a record validator that compiles under `tsc`, `TYPE_KIND` records `entity`, and `TYPE_IDENTITY_FIELDS` names its identity fields while a record has no entry | Unit | P0 | FR-064-AC-23, FR-067-AC-19 | ✅ passed |
 | TC-1764 | A `1.2.0` entity renders as an object schema filed under its declared name, carrying `x-agent-ix-kind: entity` and its identity field names in `x-agent-ix-identity-fields`, while a record carries neither | Unit | P0 | FR-100-AC-7 | ✅ passed |
-| TC-1765 | Both Python targets generate an entity as the record's model class, and the generated modules carry no identity-field marking, which is the gap FR-136 declares | Integration | P0 | FR-136-AC-8 | ✅ passed |
+| TC-1765 | Both Python targets generate an entity as the record's model class, and `constructs.py` records its kind and identity fields | Integration | P0 | FR-136-AC-8 | ✅ passed |
 | TC-1766 | The lifted config-version-table golden generates a Rust crate whose `ConfigVersion` struct and `config_version` module are named by display name, with no artifact-id-named module or type, while `SemanticType::ConfigVersion` maps to the `FR-006` identity | Unit | P0 | FR-055-AC-17 | ✅ passed |
 | TC-1767 | The lifted config-version-table golden generates a TypeScript package exporting `validateConfigVersion` whose `TYPE_IDENTITY` maps `ConfigVersion` to the `FR-006` identity, with no exported name derived from an artifact id | Integration | P0 | FR-064-AC-24 | ✅ passed |
 | TC-1768 | The lifted config-version-table golden renders `ConfigVersion.json` with a display-name `$id` and the `FR-006` semantic id | Unit | P0 | FR-100-AC-8 | ✅ passed |
 | TC-1769 | Both Python targets generate the lifted config-version-table golden with display-name modules, including `JsonObject.py`, and no artifact-id-named module | Integration | P0 | FR-136-AC-9 | ✅ passed |
 | TC-1770 | The inspection sanctions a `RootModel[Any]` over an `any` kernel scalar document carrying only descriptive annotations and the `kernel-scalar` extension, and refuses the same document carrying `x-agent-ix-constraints` or any other extension as degraded | Unit | P0 | FR-078-AC-12 | ✅ passed |
 | TC-1771 | Two display names deriving one JSON Schema file name, including names differing only in case, are refused with both identities named, and a definition named `index` is refused as colliding with the backend's `index.json`, each writing no file | Unit | P0 | FR-100-AC-9 | ✅ passed |
+| TC-1772 | Every construct kind and model member of the constructs fixture selects the Rust form its mapping-table row states, with zero diagnostics, and `identity.rs` declares `POPULATIONS` | Unit | P0 | FR-054-AC-17, FR-058-AC-14 | ✅ passed |
+| TC-1773 | Every construct kind and model member of the constructs fixture renders in TypeScript by its own form: value equality, identity equality, an abstract interface with no validator, readonly event, state enum, repository interface, no type for a domain, and each construct map, compiling under `tsc` | Unit | P0 | FR-064-AC-25, FR-067-AC-20 | ✅ passed |
+| TC-1774 | Every construct kind and model member renders in JSON Schema by its own annotations, a state `$defs` for a state machine and `not: {}` for a repository and a domain | Unit | P0 | FR-100-AC-10 | ✅ passed |
+| TC-1775 | Both Python targets generate the constructs fixture with every class named by its display name, a state enum, no module for a repository or a domain, and `constructs.py` carrying each construct row and the repository protocol | Integration | P0 | FR-136-AC-10 | ✅ passed |
+| TC-1776 | The Rust, TypeScript, JSON Schema and Python backends each generate the constructs fixture with one non-blocking `CONSTRUCT_MEMBER_UNENFORCED` per clauses, guards, transitions, subsets, frames and populations, each naming its pointer and owning issue, and the v1.1 ConfigVersion fixture with none | Unit | P0 | FR-142-AC-8 | ✅ passed |
+| TC-1777 | Each identified construct of the constructs fixture renders `PartialEq`, `Eq` and `Hash` over its identity fields with no derived `PartialEq`, a value object derives `PartialEq`, a newtype an identity field reaches derives `Eq` and `Hash`, and a `number` identity field is refused | Unit | P0 | FR-054-AC-18 | ✅ passed |
+| TC-1778 | The abstract `Party` renders as a trait of accessors that `Order` implements, with no struct; a `reference` targeting `Party` generates; a field naming `Party` and a redefinition changing the accessor's Rust type are refused | Unit | P0 | FR-054-AC-19 | ✅ passed |
+| TC-1779 | An event member named `validate` or `try_new`, and a type named `OrderLifecycleState`, each raise `NAME_COLLISION` and write no file | Unit | P0 | FR-055-AC-18 | ✅ passed |
+| TC-1780 | A repository operation with an empty frame takes `&self` and one with no frame takes `&mut self` | Unit | P0 | FR-054-AC-20 | ✅ passed |
+| TC-1781 | The TypeScript backend refuses a type named for another's `State` or `Equals`, a field holding an abstract type, and an inherited field collision, writing no file, generates a `reference` to an abstract type, and keys an inherited field's subsets by its declaring type | Unit | P0 | FR-064-AC-26 | ✅ passed |
+| TC-1782 | JSON Schema reads a subtype's construct annotations from the authored document and refuses an inherited field collision, emitting no file | Unit | P0 | FR-100-AC-11 | ✅ passed |
+| TC-1783 | Both Python targets compare identified constructs by their identity fields, register a subtype with its abstract `abc` supertype, refuse to construct the abstract class, keep identity fields read-only, and freeze an event and declare it unhashable | Integration | P0 | FR-136-AC-11 | ✅ passed |
+| TC-1784 | `constructs.py` keys every table by the generated class name for spaced display names, and refuses a generated `constructs.py` in any case, a held abstract type (allowing a reference to one) and an undeclared identity field | Unit | P0 | FR-136-AC-12 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
 | TC-1585 | Every requirement the register names carries that issue's own link, and a row whose requirement omits it is reported | Unit | P0 | NFR-001-AC-6 | ✅ passed |
 
@@ -2644,13 +2658,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 130 | 83 | 0 | 47 | 100% mapped (130/130) |
-| Unit | 580 | 474 | 0 | 106 | 100% mapped (580/580) |
-| Integration | 159 | 97 | 0 | 62 | 100% mapped (159/159) |
+| Unit | 591 | 485 | 0 | 106 | 100% mapped (591/591) |
+| Integration | 161 | 100 | 0 | 61 | 100% mapped (161/161) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 68 | 43 | 0 | 25 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1369** | **1039** | **0** | **330** | **100% mapped (1369/1369)** |
+| **Total** | **1382** | **1053** | **0** | **329** | **100% mapped (1382/1382)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

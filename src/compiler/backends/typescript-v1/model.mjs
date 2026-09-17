@@ -34,9 +34,29 @@
  * no network, and the argument is left byte-identical.
  */
 
-import { identityFieldNames, isRecordShaped } from "../../constructs.mjs";
+import {
+	constructOf,
+	IDENTIFIED_KINDS,
+	identityFieldNames,
+	isEnumerationShaped,
+	isInstanceless,
+	isRecordShaped,
+	populationsOf,
+} from "../../constructs.mjs";
 import { MAX_DEPTH } from "./admit.mjs";
+import { LOSS_CODES } from "./loss.mjs";
 import { reserveNames } from "./names.mjs";
+
+/**
+ * Whether a model entry exports `<Name>Equals`: a value object, by every field,
+ * or a concrete identified construct, by its identity fields (FR-064).
+ */
+export function hasEquality(entry) {
+	if (entry.kind === "value_object") return true;
+	return (
+		IDENTIFIED_KINDS.includes(entry.kind) && entry.construct?.abstract !== true
+	);
+}
 
 /** Code-unit ordering. Never `localeCompare`, which reads the host's collator. */
 function compareCodeUnits(left, right) {
@@ -191,6 +211,9 @@ export function buildModel(ir, options = {}) {
 			types.set(type.identity, type);
 		}
 	}
+	// `options.authored` indexes the document as authored when `ir` is its
+	// rendering view (FR-141); without it the document is its own authored form.
+	const authored = options.authored instanceof Map ? options.authored : types;
 
 	// Names are minted, and a collision refused, while the model is built —
 	// before any file map could exist, which is what FR-064-AC-14 asks for.
@@ -239,12 +262,15 @@ export function buildModel(ir, options = {}) {
 		const scalar = resolveScalar(types, type.identity);
 		if (scalar !== undefined) entry.scalar = scalar;
 
-		if (isRecordShaped(type.kind)) {
-			entry.fields = Object.freeze(
-				byIdentity((type.fields ?? []).filter(isObject)).map((field) =>
-					fieldEntry(types, identifiers, field),
-				),
-			);
+		if (isRecordShaped(type.kind) || isInstanceless(type.kind)) {
+			// A repository and a domain carry no fields: they have no instance
+			// data. A repository's operations are its interface (FR-142).
+			if (isRecordShaped(type.kind))
+				entry.fields = Object.freeze(
+					byIdentity((type.fields ?? []).filter(isObject)).map((field) =>
+						fieldEntry(types, identifiers, field),
+					),
+				);
 			// Relationships and operations are carried for FR-067 and FR-068 and
 			// are rendered into no interface: a relationship has no name and is not
 			// part of a record's serialized shape, and an operation is behaviour
@@ -286,12 +312,21 @@ export function buildModel(ir, options = {}) {
 			);
 		}
 
+		// Construct members are read from the authored document, where a
+		// subtype's fields are its own: in the rendering view a subtype also
+		// holds its inherited fields, and would repeat their `subsets`.
+		const declared = authored.get(type.identity) ?? type;
+
 		// An entity also names the fields that tell its instances apart (FR-064).
-		const identityFields = identityFieldNames(type);
+		const identityFields = identityFieldNames(declared, authored);
 		if (identityFields !== undefined)
 			entry.identityFields = Object.freeze(identityFields);
 
-		if (type.kind === "enum" || type.kind === "union") {
+		// Every construct member, read once by the shared reader (FR-142, FR-141).
+		const construct = constructOf(declared, authored);
+		if (construct !== undefined) entry.construct = Object.freeze(construct);
+
+		if (isEnumerationShaped(type.kind) || type.kind === "union") {
 			if (type.kind === "union") {
 				const wireForm = wireFormOf(type.extensions);
 				if (wireForm !== undefined) entry.wireForm = wireForm;
@@ -331,6 +366,30 @@ export function buildModel(ir, options = {}) {
 		return Object.freeze(entry);
 	});
 
+	// A state machine's state type, and the equality function of a value object
+	// or of a concrete identified construct, take names minted from the type's
+	// identifier; one that another definition already mints is refused as the
+	// collision it is, never renamed.
+	const minted = new Set(identifiers.values());
+	for (const entry of entries) {
+		const derived =
+			entry.kind === "state_machine"
+				? `${entry.identifier}State`
+				: hasEquality(entry)
+					? `${entry.identifier}Equals`
+					: undefined;
+		if (derived === undefined || !minted.has(derived)) continue;
+		collisions.push(
+			Object.freeze({
+				code: LOSS_CODES.IDENTIFIER_COLLISION.code,
+				construct: "identifier-collision",
+				owner: entry.identity,
+				pointer: "/ir/types",
+				detail: `${derived} is minted by ${entry.identity} and by a declared type`,
+			}),
+		);
+	}
+
 	return Object.freeze({
 		contractVersion: document.contractVersion,
 		source: document.source,
@@ -345,6 +404,7 @@ export function buildModel(ir, options = {}) {
 		// `fail` policy.
 		occurrences: Object.freeze([...(document.occurrences ?? [])]),
 		extensions: Object.freeze([...(document.extensions ?? [])]),
+		populations: Object.freeze(populationsOf(document)),
 		/** Identifier collisions, in the entry shape `representability` returns. */
 		losses: Object.freeze(collisions),
 		backend: Object.freeze({

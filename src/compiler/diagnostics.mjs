@@ -165,6 +165,14 @@ function buildRegistry() {
 		blocking: false,
 		owner: READER,
 	};
+	// A construct member every backend carries as data and none enforces yet:
+	// a declared loss, raised once per member kind, never blocking (FR-142).
+	registry.CONSTRUCT_MEMBER_UNENFORCED = {
+		code: "agent-ix.compiler.CONSTRUCT_MEMBER_UNENFORCED",
+		severity: "info",
+		blocking: false,
+		owner: COMPILER,
+	};
 	registry.DIAGNOSTIC_LIMIT_REACHED = {
 		code: "agent-ix.compiler.DIAGNOSTIC_LIMIT_REACHED",
 		...advisory(COMPILER),

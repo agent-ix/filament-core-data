@@ -35,6 +35,7 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.AMBIGUOUS_PROFILE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.BACKEND_CONTRACT_VIOLATION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.BACKEND_NOT_IMPLEMENTED` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.compiler.CONSTRUCT_MEMBER_UNENFORCED` | info | no | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.DEFAULT_KIND_WITHOUT_VALUE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.DIAGNOSTIC_LIMIT_REACHED` | warning | no | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.DIGEST_CONFLICT` | error | yes | `ix://agent-ix/filament-core-data/compiler` |

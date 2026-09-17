@@ -74,6 +74,28 @@ fn rust_generate(out: &Path) -> (i32, String, Vec<Value>) {
     )
 }
 
+/// The golden declares clauses and nothing else a backend carries unenforced,
+/// so the seam reports exactly one non-blocking advisory naming #159 (FR-142).
+fn assert_only_the_clauses_advisory(diagnostics: &[Value]) {
+    let seen: Vec<(&str, bool, &str)> = diagnostics
+        .iter()
+        .map(|one| {
+            (
+                one["code"].as_str().unwrap_or_default(),
+                one["blocking"].as_bool().unwrap_or(true),
+                one["message"].as_str().unwrap_or_default(),
+            )
+        })
+        .collect();
+    assert_eq!(seen.len(), 1, "{diagnostics:?}");
+    assert_eq!(seen[0].0, "agent-ix.compiler.CONSTRUCT_MEMBER_UNENFORCED");
+    assert!(!seen[0].1, "{diagnostics:?}");
+    assert!(
+        seen[0].2.ends_with("carries clauses as data and enforces none (declared loss, agent-ix/filament-core-data#159)"),
+        "{diagnostics:?}"
+    );
+}
+
 /// `generate --ir <golden> --target <target> --out-root <dir> --manifest
 /// <dir>/m.json` through the generic compiler CLI: the exit status and the
 /// manifest's diagnostics.
@@ -129,11 +151,7 @@ fn tc_1292_generate_typescript_over_the_config_version_table_golden_exits_zero_w
     let out_root = tempfile::tempdir().expect("tempdir");
     let (status, stderr, diagnostics) = generate("typescript", out_root.path());
     assert_eq!(status, 0, "{stderr}");
-    assert!(
-        diagnostics.is_empty(),
-        "{} diagnostic(s): {diagnostics:?}",
-        diagnostics.len()
-    );
+    assert_only_the_clauses_advisory(&diagnostics);
 }
 
 /// The generic compiler CLI reaches the Rust target (FR-130).
@@ -150,11 +168,7 @@ fn tc_1292_generic_cli_generates_the_rust_target() {
     let out_root = tempfile::tempdir().expect("tempdir");
     let (status, stderr, diagnostics) = generate("rust", out_root.path());
     assert_eq!(status, 0, "{stderr}");
-    assert!(
-        diagnostics.is_empty(),
-        "{} diagnostic(s): {diagnostics:?}",
-        diagnostics.len()
-    );
+    assert_only_the_clauses_advisory(&diagnostics);
     assert!(
         out_root.path().join("src/lib.rs").is_file(),
         "the generated crate has no src/lib.rs under {}",

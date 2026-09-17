@@ -179,8 +179,8 @@ export const OPERATORS = Object.freeze([
 			[/!Object\.hasOwn\(KERNEL_SCALARS, scalar\)/, "false"],
 			[/!applies\(keyword, resolved\.kind, resolved\.scalar\)/, "false"],
 			[
-				/"kind": "scalar\|alias\|sequence\|map\|reference"/,
-				'"kind": "scalar|alias|sequence|map|record|reference"',
+				/"kind": "scalar\|alias\|sequence\|map\|reference\|repository\|domain"/,
+				'"kind": "scalar|alias|sequence|map|record|reference|repository|domain"',
 			],
 		],
 	},
@@ -372,6 +372,11 @@ export function scratchCopy(root, label) {
 	// The construct list, which the mapping reads for the kinds it renders.
 	const constructs = join(base, "src", "compiler", "constructs.mjs");
 	cpSync(join(root, "src", "compiler", "constructs.mjs"), constructs);
+	// The compiler registry, which the construct list names its advisory from.
+	cpSync(
+		join(root, "src", "compiler", "diagnostics.mjs"),
+		join(base, "src", "compiler", "diagnostics.mjs"),
+	);
 	// The contract-gap register too: the branch register cites a gap id and
 	// resolves it, so a copy without it reports that it could not run — which
 	// is the right answer to the wrong question.

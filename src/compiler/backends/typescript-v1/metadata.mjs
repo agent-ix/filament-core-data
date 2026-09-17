@@ -611,7 +611,196 @@ ${mapDeclaration("FIELD_EXTENSIONS", recordLiteral(fieldExtensions), "Record<Exp
 
 /** The unit each declaring field carries. A field declaring none has no entry. */
 ${mapDeclaration("FIELD_UNIT", recordLiteral(fieldUnits), "Partial<Record<ExportedFieldKey, string>>")}
-${contractData(model)}
+${contractData(model)}${constructData(model)}`;
+}
+
+/** A list of string literals on one line, or `[]`. */
+function stringList(values) {
+	return `[${[...(values ?? [])].map((one) => literal(one)).join(", ")}]`;
+}
+
+/**
+ * Whether the document carries anything the construct maps hold: a construct
+ * kind other than `entity`, a model member, or a population. An `entity` alone
+ * is fully carried by `TYPE_KIND` and `TYPE_IDENTITY_FIELDS`.
+ */
+function carriesConstructData(model) {
+	if ((model.populations ?? []).length > 0) return true;
+	return (model.types ?? []).some((entry) => {
+		const facts = entry.construct;
+		if (facts === undefined) return false;
+		if (facts.kind !== undefined && facts.kind !== "entity") return true;
+		return Object.keys(facts).some(
+			(key) => key !== "kind" && key !== "identityFields",
+		);
+	});
+}
+
+/**
+ * The construct members and populations (FR-141, FR-142), appended to
+ * `identity.ts` where the document carries any. Each map names a type or field
+ * only where it declares the member.
+ */
+function constructData(model) {
+	if (!carriesConstructData(model)) return "";
+	const types = model.types ?? [];
+	const typePairs = (read) =>
+		types.flatMap((entry) => {
+			const facts = entry.construct;
+			if (facts === undefined) return [];
+			const rendered = read(facts, entry);
+			return rendered === undefined ? [] : [[entry.identifier, rendered]];
+		});
+	const supertypes = typePairs((facts) =>
+		facts.supertypes ? stringList(facts.supertypes) : undefined,
+	);
+	const abstract = typePairs((facts) => (facts.abstract ? "true" : undefined));
+	const owner = typePairs((facts) =>
+		facts.owner ? literal(facts.owner) : undefined,
+	);
+	const members = typePairs((facts) =>
+		facts.members ? stringList(facts.members) : undefined,
+	);
+	const occurrence = typePairs((facts) =>
+		facts.occurrenceField ? literal(facts.occurrenceField) : undefined,
+	);
+	const equality = typePairs((facts) =>
+		facts.equality ? literal(facts.equality) : undefined,
+	);
+	const immutable = typePairs((facts) =>
+		facts.immutable ? "true" : undefined,
+	);
+	const states = typePairs((facts) =>
+		facts.states ? stringList(facts.states) : undefined,
+	);
+	const transitions = typePairs((facts) =>
+		facts.transitions ? value(facts.transitions, "\t") : undefined,
+	);
+	const steps = typePairs((facts) =>
+		facts.steps ? value(facts.steps, "\t") : undefined,
+	);
+	const persists = typePairs((facts) =>
+		facts.persists ? stringList(facts.persists) : undefined,
+	);
+	const vocabulary = typePairs((facts) =>
+		facts.vocabulary ? value(facts.vocabulary, "\t") : undefined,
+	);
+	const subsets = [];
+	const redefines = [];
+	const contracts = [];
+	for (const entry of types) {
+		const facts = entry.construct ?? {};
+		for (const [field, names] of Object.entries(facts.subsets ?? {}))
+			subsets.push([`${entry.identifier}.${field}`, stringList(names)]);
+		for (const [field, name] of Object.entries(facts.redefines ?? {}))
+			redefines.push([`${entry.identifier}.${field}`, literal(name)]);
+		for (const [operation, contract] of Object.entries(
+			facts.operationContracts ?? {},
+		))
+			contracts.push([
+				`${entry.identifier}.${operation}`,
+				value(contract, "\t"),
+			]);
+	}
+	const populations = value(model.populations ?? [], "");
+
+	return `
+/** One transition of a state machine: state names, trigger operation name. */
+export interface TransitionDescriptor {
+	readonly identity: string;
+	readonly from: string;
+	readonly to: string;
+	readonly trigger: string;
+	readonly guard?: string;
+	readonly emits: readonly string[];
+}
+
+/** One step of a process. */
+export interface StepDescriptor {
+	readonly identity: string;
+	readonly name: string;
+	readonly stepKind: string;
+	readonly consumes: readonly string[];
+	readonly emits: readonly string[];
+}
+
+/** One term of a domain's vocabulary. */
+export interface TermDescriptor {
+	readonly term: string;
+	readonly doc: string;
+}
+
+/**
+ * An operation's frame and its inline clauses. The clause text is Quire the
+ * document states; this package carries it and evaluates none.
+ */
+export interface OperationContractDescriptor {
+	readonly frame?: {
+		readonly modifies: readonly string[];
+		readonly creates: readonly string[];
+		readonly deletes: readonly string[];
+	};
+	readonly requires?: readonly { readonly language: string; readonly text: string }[];
+	readonly ensures?: readonly { readonly language: string; readonly text: string }[];
+}
+
+/** One population: the type extents it gathers. */
+export interface PopulationDescriptor {
+	readonly identity: string;
+	readonly displayName: string;
+	readonly members: readonly {
+		readonly typeRef: string;
+		readonly extent: unknown;
+	}[];
+}
+
+/** The supertype identities each type specializes, in declared order. */
+${mapDeclaration("TYPE_SUPERTYPES", recordLiteral(supertypes), "Partial<Record<ExportedTypeName, readonly string[]>>")}
+
+/** The types declared abstract: no instance is of the type alone. */
+${mapDeclaration("TYPE_ABSTRACT", recordLiteral(abstract), "Partial<Record<ExportedTypeName, true>>")}
+
+/** The owner type identity of each nested entity. */
+${mapDeclaration("TYPE_OWNER", recordLiteral(owner), "Partial<Record<ExportedTypeName, string>>")}
+
+/** The member type identities of each aggregate root and domain. */
+${mapDeclaration("TYPE_MEMBERS", recordLiteral(members), "Partial<Record<ExportedTypeName, readonly string[]>>")}
+
+/** The field naming when each event occurred. */
+${mapDeclaration("TYPE_OCCURRENCE_FIELD", recordLiteral(occurrence), "Partial<Record<ExportedTypeName, string>>")}
+
+/** The value objects, compared by value with \`<Name>Equals\`. */
+${mapDeclaration("TYPE_EQUALITY", recordLiteral(equality), "Partial<Record<ExportedTypeName, string>>")}
+
+/** The events: an event is a record of what occurred and is never changed. */
+${mapDeclaration("TYPE_IMMUTABLE", recordLiteral(immutable), "Partial<Record<ExportedTypeName, true>>")}
+
+/** The state names of each state machine; \`<Name>State\` is their union. */
+${mapDeclaration("TYPE_STATES", recordLiteral(states), "Partial<Record<ExportedTypeName, readonly string[]>>")}
+
+/** The transitions of each state machine. */
+${mapDeclaration("TYPE_TRANSITIONS", recordLiteral(transitions), "Partial<Record<ExportedTypeName, readonly TransitionDescriptor[]>>")}
+
+/** The steps of each process, in declared order. */
+${mapDeclaration("TYPE_STEPS", recordLiteral(steps), "Partial<Record<ExportedTypeName, readonly StepDescriptor[]>>")}
+
+/** The type identities each repository persists. */
+${mapDeclaration("TYPE_PERSISTS", recordLiteral(persists), "Partial<Record<ExportedTypeName, readonly string[]>>")}
+
+/** The vocabulary of each domain. */
+${mapDeclaration("TYPE_VOCABULARY", recordLiteral(vocabulary), "Partial<Record<ExportedTypeName, readonly TermDescriptor[]>>")}
+
+/** The field names each field subsets. */
+${mapDeclaration("FIELD_SUBSETS", recordLiteral(subsets), "Partial<Record<ExportedFieldKey, readonly string[]>>")}
+
+/** The field name each field redefines. */
+${mapDeclaration("FIELD_REDEFINES", recordLiteral(redefines), "Partial<Record<ExportedFieldKey, string>>")}
+
+/** The frame and inline clauses of each \`<Type>.<operation>\` declaring any. */
+${mapDeclaration("OPERATION_CONTRACTS", recordLiteral(contracts), "Record<string, OperationContractDescriptor>")}
+
+/** The populations the document declares. */
+${listDeclaration("POPULATIONS", populations, "readonly PopulationDescriptor[]")}
 `;
 }
 
@@ -808,7 +997,10 @@ function identityNodes(model) {
 			add(operation);
 			for (const param of operation.params ?? []) add(param);
 		}
+		for (const transition of type.construct?.transitions ?? []) add(transition);
+		for (const step of type.construct?.steps ?? []) add(step);
 	}
+	for (const population of model.populations ?? []) add(population);
 	return nodes.sort();
 }
 

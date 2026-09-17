@@ -22,7 +22,15 @@
  * network, or working directory is read on any path through this module.
  */
 
-import { identityFieldNames } from "../../constructs.mjs";
+import {
+	abstractAncestors,
+	constructOf,
+	IDENTIFIED_KINDS,
+	identityFieldNames,
+	isEnumerationShaped,
+	isRecordShaped,
+	populationsOf,
+} from "../../constructs.mjs";
 import { lowerConstraints } from "./constraints.mjs";
 import { diagnostic, fragment, RUST_BACKEND_CODES } from "./diagnostics.mjs";
 import { buildGraph, isCollection } from "./graph.mjs";
@@ -180,9 +188,8 @@ const V1_1_NODES = Object.freeze([
  */
 export function unknownDisposition(kind, policy) {
 	const retains = policy === "preserve" || policy === "surface";
-	if (kind === "record" || kind === "entity")
-		return retains ? "record-retain" : "record-reject";
-	if (kind === "enum" || kind === "union") {
+	if (isRecordShaped(kind)) return retains ? "record-retain" : "record-reject";
+	if (isEnumerationShaped(kind) || kind === "union") {
 		return retains ? "variant-catchall" : "variant-closed";
 	}
 	return "inert";
@@ -222,6 +229,9 @@ export function mapDocument(ir, options = {}) {
 	const byIdentity = new Map();
 	for (const definition of definitions)
 		byIdentity.set(definition.identity, definition);
+	// The construct facts read the authored document, not the rendering view:
+	// a subtype's own fields are the ones that redefine or subset (FR-141).
+	const authored = options.authored ?? byIdentity;
 
 	if (version === "1.0.0") checkV11Nodes(definitions, raise);
 
@@ -254,6 +264,7 @@ export function mapDocument(ir, options = {}) {
 			version,
 			raise,
 			typeScope,
+			authored,
 		});
 		if (model === undefined) continue;
 		diagnostics.push(...model.diagnostics);
@@ -261,6 +272,8 @@ export function mapDocument(ir, options = {}) {
 		if (model.supportType !== true) models.push(model);
 	}
 	diagnostics.push(...collisionsIn(SCOPES.CRATE_TYPES, typeScope));
+	bindIdentityEquality(models, byIdentity, raise);
+	bindAbstractSupertypes(models, raise);
 
 	const crate = crateName(ir.package.identity);
 	if (crate.ok !== true) diagnostics.push(crate.diagnostic);
@@ -277,11 +290,124 @@ export function mapDocument(ir, options = {}) {
 			types: models,
 			occurrences: ir.occurrences ?? [],
 			extensions: ir.extensions ?? [],
+			populations: populationsOf(ir),
 			componentOf: graph.componentOf,
 			boxedEdges: [...graph.boxed].sort(byCodePoint),
 		},
 		diagnostics,
 	};
+}
+
+/** The kernel scalars whose Rust form has `Eq` and `Hash`. */
+const HASHABLE_SCALARS = Object.freeze([
+	"boolean",
+	"integer",
+	"string",
+	"date",
+	"datetime",
+	"duration",
+	"uuid",
+]);
+
+/**
+ * Whether the type `ref` names maps to a Rust type with `Eq` and `Hash`,
+ * adding each generated newtype the answer relies on to `newtypes`. A record,
+ * an enum, a union, a `number` or `any` scalar, and a cycle have no such form.
+ */
+function hashableType(ref, byIdentity, newtypes, seen = new Set()) {
+	const definition = byIdentity.get(ref);
+	if (definition === undefined || seen.has(ref)) return false;
+	const within = new Set(seen).add(ref);
+	let hashable;
+	switch (definition.kind) {
+		case "scalar":
+			hashable = HASHABLE_SCALARS.includes(definition.scalar);
+			break;
+		case "reference":
+			hashable = true;
+			break;
+		case "alias":
+			hashable = hashableType(definition.target, byIdentity, newtypes, within);
+			break;
+		case "sequence":
+			hashable = hashableType(definition.items, byIdentity, newtypes, within);
+			break;
+		case "map":
+			hashable = hashableType(definition.values, byIdentity, newtypes, within);
+			break;
+		default:
+			hashable = false;
+	}
+	if (hashable) newtypes.add(ref);
+	return hashable;
+}
+
+/**
+ * Instances of an identified construct are equal, and hash, by their identity
+ * fields (FR-054): each identity field's Rust type must have `Eq` and `Hash`,
+ * and every generated newtype it reaches derives them. An identity field
+ * without that form is refused rather than compared by every member.
+ */
+function bindIdentityEquality(models, byIdentity, raise) {
+	const newtypes = new Set();
+	for (const model of models) {
+		if (model.identityFields === undefined || model.abstract === true) continue;
+		const members = [];
+		for (const name of model.identityFields) {
+			const field = model.fields.find((one) => one.name === name);
+			if (field === undefined) continue;
+			if (
+				field.nullable ||
+				!hashableType(field.typeRef, byIdentity, newtypes)
+			) {
+				raise(
+					RUST_BACKEND_CODES.UNSUPPORTED_CONSTRUCT,
+					`the identity field ${fragment(field.identity)} of ${fragment(model.identity)} maps to \`${fragment(field.rustType)}\`, which has no Eq and Hash, so instances cannot compare by identity`,
+					field.origin?.source ?? model.origin?.source,
+				);
+				continue;
+			}
+			members.push(field.ident);
+		}
+		model.identityMembers = members;
+	}
+	for (const model of models)
+		if (newtypes.has(model.identity)) model.derivesHash = true;
+}
+
+/**
+ * A concrete subtype implements the trait of each abstract supertype, one
+ * accessor per field the supertype carries (FR-054). A subtype whose field of
+ * that name has another Rust type is refused rather than converted.
+ */
+function bindAbstractSupertypes(models, raise) {
+	const byIdentity = new Map(models.map((model) => [model.identity, model]));
+	for (const model of models) {
+		if (model.abstractSupertypes === undefined || model.abstract === true)
+			continue;
+		model.implements = [];
+		for (const identity of model.abstractSupertypes) {
+			const supertype = byIdentity.get(identity);
+			if (supertype === undefined) continue;
+			const members = [];
+			for (const inherited of supertype.fields) {
+				const own = model.fields.find((one) => one.name === inherited.name);
+				if (own === undefined || own.rustType !== inherited.rustType) {
+					raise(
+						RUST_BACKEND_CODES.UNSUPPORTED_CONSTRUCT,
+						`the field ${fragment(inherited.name)} of ${fragment(model.identity)} does not map to \`${fragment(inherited.rustType)}\`, the type the abstract supertype ${fragment(identity)} reads it as`,
+						own?.origin?.source ?? model.origin?.source,
+					);
+					continue;
+				}
+				members.push({ ident: own.ident, rustType: own.rustType });
+			}
+			model.implements.push({
+				path: `crate::types::${supertype.moduleName}::${supertype.typeName}`,
+				members,
+			});
+		}
+	}
 }
 
 function checkV11Nodes(definitions, raise) {
@@ -345,7 +471,7 @@ function docParts(node, { fallbackIdentity, roles, unit } = {}) {
 }
 
 function mapType(definition, context) {
-	const { byIdentity, omitted, graph, version, raise, typeScope } = context;
+	const { byIdentity, graph, version, raise, typeScope, authored } = context;
 	const locus = definition.origin?.source;
 	const identity = definition.identity;
 	const kind = String(definition.kind);
@@ -419,6 +545,8 @@ function mapType(definition, context) {
 		operations: definition.operations ?? [],
 		clauses: definition.clauses ?? [],
 	};
+	const construct = constructOf(authored.get(identity) ?? definition, authored);
+	if (construct !== undefined) model.construct = construct;
 	// The constraint diagnostics belong to the run, not to the model; the model
 	// carries them only until `mapDocument` drains them into the run's list.
 	model.diagnostics = lowered.diagnostics;
@@ -451,12 +579,24 @@ function mapType(definition, context) {
 			break;
 		}
 		case "record":
-		case "entity": {
-			// An entity selects its own row: the record's rendering plus its
-			// identity field names (FR-054).
+		case "entity":
+		case "value_object":
+		case "nested_entity":
+		case "aggregate_root":
+		case "event":
+		case "process":
+		case "state_machine": {
+			// Each record-shaped construct selects its own row: the record's
+			// rendering plus the construct's members (FR-054, FR-142).
 			model.row = `kind:${kind}`;
-			if (kind === "entity")
-				model.identityFields = identityFieldNames(definition);
+			if (IDENTIFIED_KINDS.includes(kind))
+				model.identityFields = identityFieldNames(definition, authored);
+			if (definition.abstract === true) model.abstract = true;
+			const abstracts = abstractAncestors(
+				authored.get(identity) ?? definition,
+				authored,
+			).map((one) => one.identity);
+			if (abstracts.length > 0) model.abstractSupertypes = abstracts;
 			model.fields = [];
 			for (const field of definition.fields ?? []) {
 				const mapped = mapField(field, definition, context, version);
@@ -466,19 +606,62 @@ function mapType(definition, context) {
 				identifier: field.ident,
 				identity: field.identity,
 			}));
+			// An event reads each member through an accessor method, which shares
+			// the inherent method namespace with `try_new` and `validate`.
+			if (kind === "event")
+				for (const method of ["try_new", "validate"])
+					memberScope.push({
+						identifier: method,
+						identity: `ix://agent-ix/filament-core-data/rust-backend/reserved/${method}`,
+					});
 			model.diagnostics.push(
 				...collisionsIn(SCOPES.RECORD_MEMBERS, memberScope),
 			);
+			if (kind === "state_machine") {
+				// The states render as the variants of `<Name>State`.
+				model.states = [];
+				for (const state of definition.states ?? []) {
+					const rendered = variantName(state);
+					if (rendered.ok !== true) {
+						raise(
+							RUST_BACKEND_CODES.UNRENDERABLE_NAME,
+							rendered.diagnostic.message,
+							state.origin?.source ?? locus,
+						);
+						continue;
+					}
+					model.states.push({
+						identity: state.identity,
+						name: state.name,
+						ident: rendered.value,
+						rename: serdeRename(rendered.value, state.name),
+					});
+				}
+				model.diagnostics.push(
+					...collisionsIn(
+						SCOPES.ENUM_VARIANTS,
+						model.states.map((state) => ({
+							identifier: state.ident,
+							identity: state.identity,
+						})),
+					),
+				);
+				typeScope.push({
+					identifier: `${resolvedName.value}State`,
+					identity: `${identity}#states`,
+				});
+			}
 			break;
 		}
 		case "enum":
+		case "enumeration":
 		case "union": {
 			model.row = `kind:${kind}`;
 			model.wireForm =
 				kind === "union" ? wireFormOf(definition.extensions) : undefined;
 			model.variants = [];
 			for (const variant of definition.variants ?? []) {
-				if (kind === "enum" && variant.payloadType !== undefined) {
+				if (kind !== "union" && variant.payloadType !== undefined) {
 					raise(
 						RUST_BACKEND_CODES.PAYLOAD_ON_ENUM_VARIANT,
 						`the enum variant ${fragment(variant.identity)} carries a payloadType, which only a union variant may`,
@@ -532,6 +715,31 @@ function mapType(definition, context) {
 			model.diagnostics.push(
 				...collisionsIn(SCOPES.ENUM_VARIANTS, variantScope),
 			);
+			break;
+		}
+		case "repository": {
+			// An interface holding no state: one trait method per operation.
+			model.row = "kind:repository";
+			model.methods = [];
+			for (const operation of definition.operations ?? []) {
+				const method = mapMethod(operation, definition, context, version);
+				if (method !== undefined) model.methods.push(method);
+			}
+			model.diagnostics.push(
+				...collisionsIn(
+					SCOPES.RECORD_MEMBERS,
+					model.methods.map((method) => ({
+						identifier: method.ident,
+						identity: method.identity,
+					})),
+				),
+			);
+			break;
+		}
+		case "domain": {
+			// A namespace, not a data type: a unit struct carrying its members and
+			// vocabulary as associated constants.
+			model.row = "kind:domain";
 			break;
 		}
 		case "alias": {
@@ -644,6 +852,18 @@ function referenceTo(ref, edgeKey, position, owner, context) {
 		);
 		return undefined;
 	}
+	if (definition.abstract === true && position !== "reference target") {
+		// An abstract type renders as a trait, which is no value type a member
+		// can hold: every instance is an instance of a subtype. A `reference`
+		// holds the target's identity rather than a value of it, so it may name
+		// an abstract type.
+		raise(
+			RUST_BACKEND_CODES.UNSUPPORTED_CONSTRUCT,
+			`the ${position} of ${fragment(owner.identity)} names the abstract type ${fragment(ref)}, which has no Rust value type of its own`,
+			owner.origin?.source,
+		);
+		return undefined;
+	}
 	const rendered = typeName(definition);
 	if (rendered.ok !== true) {
 		raise(
@@ -666,6 +886,69 @@ function referenceTo(ref, edgeKey, position, owner, context) {
 	}
 	const base = `crate::${resolvedName.value}`;
 	return graph.boxed.has(edgeKey) ? `Box<${base}>` : base;
+}
+
+/**
+ * One repository operation as a trait method: its parameters and return map
+ * through the member rows, so a parameter's Rust type is the one a field of the
+ * same shape carries.
+ */
+function mapMethod(operation, owner, context, version) {
+	const { raise } = context;
+	const locus = operation.origin?.source ?? owner.origin?.source;
+	const rendered = memberName(operation);
+	if (rendered.ok !== true) {
+		raise(
+			RUST_BACKEND_CODES.UNRENDERABLE_NAME,
+			rendered.diagnostic.message,
+			locus,
+		);
+		return undefined;
+	}
+	const params = [];
+	for (const param of operation.params ?? []) {
+		const mapped = mapField(param, owner, context, version);
+		if (mapped === undefined) return undefined;
+		params.push(mapped);
+	}
+	let returns;
+	if (operation.returns !== undefined) {
+		const mapped = mapField(
+			{
+				identity: `${operation.identity}#returns`,
+				name: "returns",
+				typeRef: operation.returns.typeRef,
+				nullable: operation.returns.nullable,
+				multiplicity: operation.returns.multiplicity ?? {
+					lower: 1,
+					upper: 1,
+				},
+			},
+			owner,
+			context,
+			version,
+		);
+		if (mapped === undefined) return undefined;
+		returns = mapped.rustType;
+	}
+	const frame = operation.frame;
+	const readsOnly =
+		frame !== undefined &&
+		[frame.modifies, frame.creates, frame.deletes].every(
+			(list) => (list ?? []).length === 0,
+		);
+	return {
+		identity: operation.identity,
+		name: operation.name,
+		ident: rendered.value,
+		params,
+		returns,
+		receiver: readsOnly ? "&self" : "&mut self",
+		doc: docParts(
+			{ displayName: operation.name },
+			{ fallbackIdentity: operation.identity },
+		),
+	};
 }
 
 function mapField(field, owner, context, version) {

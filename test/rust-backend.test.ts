@@ -383,6 +383,15 @@ describe("TC-655, TC-697 the published tables and the closed code sets", () => {
 			"map",
 			"reference",
 			"entity",
+			"value_object",
+			"nested_entity",
+			"aggregate_root",
+			"enumeration",
+			"event",
+			"state_machine",
+			"process",
+			"repository",
+			"domain",
 		];
 		const declaredScalars = [
 			"any",
@@ -1722,6 +1731,21 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	});
 
 	/**
+	 * Traces: TC-1772; FR-054-AC-17, FR-058-AC-14.
+	 *
+	 * Branches: construct:abstract, construct:operation-contract,
+	 * construct:populations, construct:redefines, construct:subsets,
+	 * construct:supertypes, kind:aggregate_root, kind:domain, kind:enumeration,
+	 * kind:event, kind:nested_entity, kind:process, kind:repository,
+	 * kind:state_machine, kind:value_object;
+	 */
+	it("TC-1772 every construct kind and model member selects the Rust form the mapping table states", async () => {
+		await runDetectorCase(
+			"TC-1772 every construct kind and model member selects the Rust form the mapping table states",
+		);
+	});
+
+	/**
 	 * Traces: TC-725; FR-062-AC-1, FR-062-AC-8.
 	 *
 	 * Branches: scalar:any, scalar:boolean, scalar:bytes, scalar:date, scalar:datetime,
@@ -1759,9 +1783,9 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	 * unknownPolicy:variants/preserve, unknownPolicy:variants/reject,
 	 * unknownPolicy:variants/surface;
 	 */
-	it("TC-725 the unknownPolicy rows dispose each of the nine kinds exactly once", async () => {
+	it("TC-725 the unknownPolicy rows dispose each kind exactly once", async () => {
 		await runDetectorCase(
-			"TC-725 the unknownPolicy rows dispose each of the nine kinds exactly once",
+			"TC-725 the unknownPolicy rows dispose each kind exactly once",
 		);
 	});
 
