@@ -19,10 +19,11 @@
  */
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { inheritedNameCollisions, renderingView } from "../../constructs.mjs";
 import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../../diagnostics.mjs";
 import { SCHEMA_FILES, admitIr } from "./admit.mjs";
 import { fingerprintIrForTarget } from "./canonical.mjs";
-import { refusesGeneration, representability } from "./loss.mjs";
+import { LOSS_CODES, refusesGeneration, representability } from "./loss.mjs";
 import {
 	auditRenderedNodes,
 	renderIdentity,
@@ -113,6 +114,19 @@ export const typescriptBackend = Object.freeze({
 		"scalar",
 		"record",
 		"entity",
+		"value_object",
+		"nested_entity",
+		"aggregate_root",
+		"enumeration",
+		"event",
+		"state_machine",
+		"process",
+		"repository",
+		"domain",
+		"supertypes",
+		"feature-redefinition",
+		"operation-contract",
+		"populations",
 		"enum",
 		"union",
 		"alias",
@@ -175,7 +189,30 @@ export const typescriptBackend = Object.freeze({
 			};
 		}
 
-		const model = buildModel(request.ir, {
+		// Two effective fields sharing a name, one inherited and neither
+		// redefining the other, would leave one dropped from the interface
+		// (FR-141). Each is refused by name.
+		const inherited = inheritedNameCollisions(request.ir);
+		if (inherited.length > 0) {
+			return {
+				state: "unsupported",
+				files: [],
+				diagnostics: inherited.map((collision) =>
+					lossDiagnostic({
+						code: LOSS_CODES.IDENTIFIER_COLLISION.code,
+						construct: "inherited-field-collision",
+						owner:
+							request.ir.types[Number(collision.pointer.split("/")[2])]
+								?.identity,
+						pointer: `/ir${collision.pointer}`,
+						detail: `two effective fields are named ${collision.name}; neither redefines the other`,
+					}),
+				),
+			};
+		}
+
+		// A subtype's interface carries its inherited fields (FR-141).
+		const model = buildModel(renderingView(request.ir), {
 			backendIdentity: identity,
 			backendVersion: typescriptBackend.version,
 		});

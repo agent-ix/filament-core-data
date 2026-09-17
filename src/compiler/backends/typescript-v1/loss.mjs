@@ -44,10 +44,7 @@
  * applicability table, or anything under `conformance/`.
  */
 
-import {
-	CONSTRUCT_KINDS as SHARED_CONSTRUCT_KINDS,
-	unrenderedNodes,
-} from "../../constructs.mjs";
+import { CONSTRUCT_KINDS as SHARED_CONSTRUCT_KINDS } from "../../constructs.mjs";
 
 /** The backend's own diagnostic namespace, distinct from the IR namespace. */
 const TARGET = (name) => `agent-ix.typescript-backend.${name}`;
@@ -66,11 +63,6 @@ export const LOSS_CODES = Object.freeze({
 	}),
 	DURATION_ORDER_NOT_REPRESENTABLE: Object.freeze({
 		code: TARGET("DURATION_ORDER_NOT_REPRESENTABLE"),
-		severity: "error",
-		blocking: true,
-	}),
-	CONSTRUCT_NOT_RENDERED: Object.freeze({
-		code: TARGET("CONSTRUCT_NOT_RENDERED"),
 		severity: "error",
 		blocking: true,
 	}),
@@ -98,19 +90,12 @@ export const TARGET_LOSSES = Object.freeze([
 		rationale:
 			"ISO-8601 designators admit no total order — P1M and P30D are not comparable without a calendar — so an ordering constraint on a duration subject is refused rather than answered by an invented comparison",
 	}),
-	Object.freeze({
-		construct: "object-type-construct",
-		code: LOSS_CODES.CONSTRUCT_NOT_RENDERED.code,
-		rationale:
-			"a contract 1.2.0 object-type construct or model member carries meaning this target renders no check for; filament-core-data#147 declares its rendering, and a record in its place, or the member dropped, would lose that meaning",
-	}),
 ]);
 
 /**
  * The contract 1.2.0 object-type construct kinds (FR-142), read from the one
- * list in `src/compiler/constructs.mjs`. The target renders the kinds
- * `RENDERED_CONSTRUCT_KINDS` names; each other kind is a declared loss rather
- * than a record.
+ * list in `src/compiler/constructs.mjs`. The target renders every kind, each
+ * by its own rendering; `RENDERED_NOT_LOST` names what each carries as data.
  */
 export const CONSTRUCT_KINDS = Object.freeze(new Set(SHARED_CONSTRUCT_KINDS));
 
@@ -140,6 +125,20 @@ export const RENDERED_NOT_LOST = Object.freeze([
 			"the record rendering, an exported interface with a record validator, plus its identity field names in declared order in TYPE_IDENTITY_FIELDS",
 		rationale:
 			"an entity's instances being told apart by the identity fields, and persisting across changes to its other fields, is its Quire meaning over instances rather than a property of one value; the generated type carries the identity field names, and a consumer compares instances by them",
+	}),
+	Object.freeze({
+		construct: "construct-kinds",
+		renderedAs:
+			"value_object, nested_entity, aggregate_root, event, process and state_machine as a record interface with its validator; enumeration as a string literal union with its validator; repository as an interface of method signatures; domain as no type; each with its members in the TYPE_ maps: TYPE_OWNER, TYPE_MEMBERS, TYPE_OCCURRENCE_FIELD, TYPE_EQUALITY, TYPE_IMMUTABLE, TYPE_STATES, TYPE_TRANSITIONS, TYPE_STEPS, TYPE_PERSISTS and TYPE_VOCABULARY",
+		rationale:
+			"a value object's value equality is <Name>Equals, an event's immutability is its readonly members, and a state machine's states are <Name>State; the Quire meaning of clauses, guards and instance identity is over instances, so the generated package carries it as data and a consumer applies it",
+	}),
+	Object.freeze({
+		construct: "model-members",
+		renderedAs:
+			"a subtype's interface carrying its effective fields, with TYPE_SUPERTYPES, TYPE_ABSTRACT, FIELD_SUBSETS, FIELD_REDEFINES, OPERATION_CONTRACTS and POPULATIONS in the identity module",
+		rationale:
+			"TypeScript has no abstract interface and no subset relation between properties, so both are carried as data; a redefined field is replaced in the subtype's interface, and an operation's frame and inline Quire clauses are text a consumer reads",
 	}),
 	Object.freeze({
 		construct: "default-kind",
@@ -226,25 +225,6 @@ export function representability(ir, options = {}) {
 	const record = (entry) => {
 		losses.push(Object.freeze(entry));
 	};
-
-	// Every contract 1.2.0 construct kind the target does not render, and every
-	// model member, is refused with one named loss at its pointer: rendering
-	// any of them as a record, or dropping the member, would lose the meaning
-	// it carries (FR-142-CON-2).
-	for (const node of unrenderedNodes(ir)) {
-		const index = Number(node.pointer.split("/")[2]);
-		record({
-			code: LOSS_CODES.CONSTRUCT_NOT_RENDERED.code,
-			construct: "object-type-construct",
-			owner: Number.isInteger(index)
-				? ir.types[index]?.identity
-				: ir.package?.identity,
-			pointer: `/ir${node.pointer}`,
-			detail: node.member.startsWith("kind ")
-				? node.member.slice(5)
-				: node.member,
-		});
-	}
 
 	for (const [index, type] of ir.types.entries()) {
 		if (type === null || typeof type !== "object") continue;

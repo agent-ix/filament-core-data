@@ -34,8 +34,16 @@
  * no network, and the argument is left byte-identical.
  */
 
-import { identityFieldNames, isRecordShaped } from "../../constructs.mjs";
+import {
+	constructOf,
+	identityFieldNames,
+	isEnumerationShaped,
+	isInstanceless,
+	isRecordShaped,
+	populationsOf,
+} from "../../constructs.mjs";
 import { MAX_DEPTH } from "./admit.mjs";
+import { LOSS_CODES } from "./loss.mjs";
 import { reserveNames } from "./names.mjs";
 
 /** Code-unit ordering. Never `localeCompare`, which reads the host's collator. */
@@ -239,12 +247,15 @@ export function buildModel(ir, options = {}) {
 		const scalar = resolveScalar(types, type.identity);
 		if (scalar !== undefined) entry.scalar = scalar;
 
-		if (isRecordShaped(type.kind)) {
-			entry.fields = Object.freeze(
-				byIdentity((type.fields ?? []).filter(isObject)).map((field) =>
-					fieldEntry(types, identifiers, field),
-				),
-			);
+		if (isRecordShaped(type.kind) || isInstanceless(type.kind)) {
+			// A repository and a domain carry no fields: they have no instance
+			// data. A repository's operations are its interface (FR-142).
+			if (isRecordShaped(type.kind))
+				entry.fields = Object.freeze(
+					byIdentity((type.fields ?? []).filter(isObject)).map((field) =>
+						fieldEntry(types, identifiers, field),
+					),
+				);
 			// Relationships and operations are carried for FR-067 and FR-068 and
 			// are rendered into no interface: a relationship has no name and is not
 			// part of a record's serialized shape, and an operation is behaviour
@@ -287,11 +298,15 @@ export function buildModel(ir, options = {}) {
 		}
 
 		// An entity also names the fields that tell its instances apart (FR-064).
-		const identityFields = identityFieldNames(type);
+		const identityFields = identityFieldNames(type, types);
 		if (identityFields !== undefined)
 			entry.identityFields = Object.freeze(identityFields);
 
-		if (type.kind === "enum" || type.kind === "union") {
+		// Every construct member, read once by the shared reader (FR-142, FR-141).
+		const construct = constructOf(type, types);
+		if (construct !== undefined) entry.construct = Object.freeze(construct);
+
+		if (isEnumerationShaped(type.kind) || type.kind === "union") {
 			if (type.kind === "union") {
 				const wireForm = wireFormOf(type.extensions);
 				if (wireForm !== undefined) entry.wireForm = wireForm;
@@ -331,6 +346,29 @@ export function buildModel(ir, options = {}) {
 		return Object.freeze(entry);
 	});
 
+	// A state machine's state type and a value object's equality function take
+	// names minted from the type's identifier; one that another definition
+	// already mints is refused as the collision it is, never renamed.
+	const minted = new Set(identifiers.values());
+	for (const entry of entries) {
+		const derived =
+			entry.kind === "state_machine"
+				? `${entry.identifier}State`
+				: entry.kind === "value_object"
+					? `${entry.identifier}Equals`
+					: undefined;
+		if (derived === undefined || !minted.has(derived)) continue;
+		collisions.push(
+			Object.freeze({
+				code: LOSS_CODES.IDENTIFIER_COLLISION.code,
+				construct: "identifier-collision",
+				owner: entry.identity,
+				pointer: "/ir/types",
+				detail: `${derived} is minted by ${entry.identity} and by a declared type`,
+			}),
+		);
+	}
+
 	return Object.freeze({
 		contractVersion: document.contractVersion,
 		source: document.source,
@@ -345,6 +383,7 @@ export function buildModel(ir, options = {}) {
 		// `fail` policy.
 		occurrences: Object.freeze([...(document.occurrences ?? [])]),
 		extensions: Object.freeze([...(document.extensions ?? [])]),
+		populations: Object.freeze(populationsOf(document)),
 		/** Identifier collisions, in the entry shape `representability` returns. */
 		losses: Object.freeze(collisions),
 		backend: Object.freeze({

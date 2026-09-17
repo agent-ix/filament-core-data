@@ -152,6 +152,28 @@ export const FIXED_API_SURFACE = Object.freeze([
 	"TYPE_VARIANTS",
 	"TYPE_CONSTRAINTS",
 	"FIELD_DEFAULT",
+	// The construct members and populations (FR-141, FR-142).
+	"TransitionDescriptor",
+	"StepDescriptor",
+	"TermDescriptor",
+	"OperationContractDescriptor",
+	"PopulationDescriptor",
+	"TYPE_SUPERTYPES",
+	"TYPE_ABSTRACT",
+	"TYPE_OWNER",
+	"TYPE_MEMBERS",
+	"TYPE_OCCURRENCE_FIELD",
+	"TYPE_EQUALITY",
+	"TYPE_IMMUTABLE",
+	"TYPE_STATES",
+	"TYPE_TRANSITIONS",
+	"TYPE_STEPS",
+	"TYPE_PERSISTS",
+	"TYPE_VOCABULARY",
+	"FIELD_SUBSETS",
+	"FIELD_REDEFINES",
+	"OPERATION_CONTRACTS",
+	"POPULATIONS",
 ]);
 
 /**
@@ -187,6 +209,9 @@ export const CROSS_MODULE_INTERNALS = Object.freeze({
 const PER_TYPE_SURFACE = Object.freeze([
 	(identifier) => `validate${identifier}`,
 	(identifier) => `${identifier}Of`,
+	// A state machine's state union and a value object's equality (FR-142).
+	(identifier) => `${identifier}State`,
+	(identifier) => `${identifier}Equals`,
 ]);
 
 /** `SPDX-License-Identifier`, on every generated file, source or not. */

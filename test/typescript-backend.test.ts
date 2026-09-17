@@ -753,6 +753,133 @@ describe("TC-1763 an entity construct rendered by the TypeScript backend (FR-064
 	}, 120000);
 });
 
+describe("TC-1773 every construct kind and model member rendered by the TypeScript backend (FR-064, FR-067)", () => {
+	/** Traces: TC-1773; FR-064-AC-25, FR-067-AC-20. */
+	it("renders each construct by its own rendering and carries every model member", async () => {
+		const scratch = mkdtempSync(
+			resolve(tmpdir(), "fcd-typescript-constructs-"),
+		);
+		try {
+			const module = await generatedValidators(
+				resolve(
+					root,
+					"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
+				),
+				resolve(scratch, "constructs"),
+			);
+			const types = readFileSync(
+				resolve(scratch, "constructs/generated/types.ts"),
+				"utf8",
+			);
+			for (const name of [
+				"OrderPlaced",
+				"Shipment",
+				"OrderAggregate",
+				"Fulfilment",
+				"OrderLifecycle",
+				"OrderLine",
+				"OrderStatus",
+			])
+				expect(typeof module[`validate${name}`], name).toBe("function");
+			expect(types).toContain(
+				'export type OrderLifecycleState = "placed" | "shipped";',
+			);
+			expect(types).toContain(
+				'export type OrderStatus = "cancelled" | "draft" | "placed" | "shipped";',
+			);
+			expect(types).toContain(
+				"export interface OrderRepository {\n\tfindById(id: UUID): Order | undefined;\n\tsave(order: Order): Order;\n}",
+			);
+			expect(types).not.toMatch(/\bOrdering\b/);
+			expect(module.validateOrdering).toBeUndefined();
+			expect(module.validateOrderRepository).toBeUndefined();
+			const order = /export interface Order \{([^}]*)\}/.exec(types)?.[1] ?? "";
+			for (const field of ["id", "labels", "badges", "lines", "status"])
+				expect(
+					order.split(`readonly ${field}`).length - 1,
+					`Order.${field}`,
+				).toBe(1);
+
+			const equals = module.OrderLineEquals as (
+				left: unknown,
+				right: unknown,
+			) => boolean;
+			const line = { sku: "A-1", quantity: 1, kind: "goods" };
+			expect(equals(line, { ...line })).toBe(true);
+			expect(equals(line, { ...line, quantity: 2 })).toBe(false);
+
+			expect(module.TYPE_IDENTITY_FIELDS).toMatchObject({
+				Order: ["id"],
+				Shipment: ["id"],
+				OrderAggregate: ["id"],
+				Fulfilment: ["id"],
+			});
+			expect(module.TYPE_SUPERTYPES).toStrictEqual({
+				Order: ["ix://agent-ix/orders/type/FR-000"],
+			});
+			expect(module.TYPE_ABSTRACT).toStrictEqual({ Party: true });
+			expect(module.TYPE_OWNER).toStrictEqual({
+				Shipment: "ix://agent-ix/orders/type/FR-001",
+			});
+			expect(module.TYPE_EQUALITY).toStrictEqual({ OrderLine: "value" });
+			expect(module.TYPE_IMMUTABLE).toStrictEqual({ OrderPlaced: true });
+			expect(module.TYPE_STATES).toStrictEqual({
+				OrderLifecycle: ["placed", "shipped"],
+			});
+			expect(module.TYPE_PERSISTS).toStrictEqual({
+				OrderRepository: ["ix://agent-ix/orders/type/FR-001"],
+			});
+			expect(
+				(
+					module.TYPE_STEPS as Record<string, { name: string }[]>
+				).Fulfilment.map((step) => step.name),
+			).toStrictEqual(["fulfil"]);
+			expect(
+				(
+					module.TYPE_VOCABULARY as Record<string, { term: string }[]>
+				).Ordering.map((term) => term.term),
+			).toStrictEqual(["Order"]);
+			expect(
+				(module.TYPE_TRANSITIONS as Record<string, { trigger: string }[]>)
+					.OrderLifecycle[0].trigger,
+			).toBe("advance");
+			expect(module.FIELD_SUBSETS).toStrictEqual({
+				"Order.badges": ["labels"],
+			});
+			expect(
+				(module.OPERATION_CONTRACTS as Record<string, unknown>)[
+					"OrderLifecycle.advance"
+				],
+			).toStrictEqual({
+				ensures: [{ language: "quire", text: "current = to" }],
+				frame: { creates: [], deletes: [], modifies: ["current"] },
+				requires: [{ language: "quire", text: "to <> current" }],
+			});
+			expect(
+				(module.POPULATIONS as { displayName: string }[]).map(
+					(one) => one.displayName,
+				),
+			).toStrictEqual(["OpenOrders"]);
+
+			const golden = await generatedValidators(
+				resolve(
+					root,
+					"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json",
+				),
+				resolve(scratch, "golden"),
+			);
+			for (const name of [
+				"TYPE_SUPERTYPES",
+				"OPERATION_CONTRACTS",
+				"POPULATIONS",
+			])
+				expect(golden[name], name).toBeUndefined();
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
+	}, 120000);
+});
+
 describe("TC-1767 generated TypeScript names come from display names (FR-064)", () => {
 	/** Traces: TC-1767; FR-064-AC-24. */
 	it("names each exported type by its display name while TYPE_IDENTITY keeps the artifact id", async () => {

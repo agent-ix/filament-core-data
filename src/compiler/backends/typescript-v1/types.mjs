@@ -59,6 +59,11 @@ const SCALAR_NOTES = Object.freeze({
 	uuid: "A UUID in its canonical hyphenated form.",
 });
 
+/** A JSON string literal, which is also a valid TypeScript string literal. */
+function literal(value) {
+	return JSON.stringify(value);
+}
+
 /** A property name TypeScript accepts bare, or the same name quoted. */
 function propertyName(name) {
 	const text = String(name);
@@ -273,14 +278,77 @@ function renderRecord(entry) {
 }
 
 /**
- * Exhaustive over the eight structural kinds and the rendered construct kind
- * `entity`, which renders as its record interface; an unhandled kind is a
- * contract failure.
+ * A `state_machine` renders as its record interface followed by
+ * `<Name>State`, the union of its state names (FR-142). Its transitions are
+ * data in `identity.ts`.
+ */
+function renderStateMachine(entry) {
+	const states = (entry.construct?.states ?? []).map((name) => literal(name));
+	return [
+		renderRecord(entry),
+		"\n\n",
+		`/** The states of \`${entry.identifier}\`. */\n`,
+		`export type ${entry.identifier}State = ${states.length > 0 ? states.join(" | ") : "never"};`,
+	].join("");
+}
+
+/** The return type of an operation, from its declared multiplicity and nullability. */
+function returnType(returns) {
+	if (returns === undefined) return "void";
+	const base = elementType(returns.element);
+	const upper = returns.multiplicity?.upper;
+	const collection = upper === undefined || upper === null || upper > 1;
+	let rendered = collection ? `readonly ${base}[]` : base;
+	if (!collection && returns.multiplicity?.lower === 0)
+		rendered = `${rendered} | undefined`;
+	return returns.nullable === true ? `${rendered} | null` : rendered;
+}
+
+/**
+ * A `repository` renders as an interface of its operations, each a method
+ * over the declared parameter and return types (FR-142). It holds no state,
+ * so no validator is generated for it; the types it persists are data in
+ * `identity.ts`.
+ */
+function renderRepository(entry) {
+	const methods = (entry.operations ?? []).map((operation) => {
+		const params = (operation.params ?? [])
+			.map(
+				(param) =>
+					`${propertyName(param.name)}${param.optional ? "?" : ""}: ${fieldType(param)}`,
+			)
+			.join(", ");
+		return `\t${propertyName(operation.name)}(${params}): ${returnType(operation.returns)};\n`;
+	});
+	const body = methods.join("");
+	return [
+		jsdoc([docTextOf(entry)], ""),
+		body.length === 0
+			? `export interface ${entry.identifier} {}`
+			: `export interface ${entry.identifier} {\n${body}}`,
+	].join("");
+}
+
+/**
+ * Exhaustive over the eight structural kinds and the ten construct kinds; an
+ * unhandled kind is a contract failure. Every construct whose instances carry
+ * fields renders as its record interface. A `domain` is a namespace, not a
+ * data type, and declares no type: its members and vocabulary are data in
+ * `identity.ts` (FR-142).
  */
 const RENDERERS = Object.freeze({
 	scalar: renderScalar,
 	record: renderRecord,
 	entity: renderRecord,
+	nested_entity: renderRecord,
+	aggregate_root: renderRecord,
+	event: renderRecord,
+	process: renderRecord,
+	value_object: renderRecord,
+	state_machine: renderStateMachine,
+	enumeration: renderEnum,
+	repository: renderRepository,
+	domain: () => undefined,
 	enum: renderEnum,
 	union: renderUnion,
 	alias: renderAlias,
@@ -322,7 +390,8 @@ export function renderTypes(model) {
 				`no rendering is declared for kind ${JSON.stringify(entry.kind)} on ${entry.identity}`,
 			);
 		}
-		blocks.push(render(entry));
+		const rendered = render(entry);
+		if (rendered !== undefined) blocks.push(rendered);
 	}
 	return `${blocks.join("\n\n")}\n`;
 }

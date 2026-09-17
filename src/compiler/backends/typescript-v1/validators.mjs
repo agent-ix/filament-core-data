@@ -51,6 +51,7 @@
  * owner rather than a suppression this work may register.
  */
 
+import { isInstanceless, isRecordShaped } from "../../constructs.mjs";
 import { UNION_DISCRIMINANT } from "./names.mjs";
 
 /**
@@ -593,8 +594,16 @@ const CHECK_BODIES = Object.freeze({
 	alias: (model, entry) => delegatingCheckBody(model, entry),
 	reference: (model, entry) => delegatingCheckBody(model, entry),
 	record: (model, entry) => recordCheckBody(model, entry),
-	// An entity is checked as its record shape (FR-066).
+	// Every construct whose instances carry fields is checked as its record
+	// shape, and an enumeration as an enum (FR-066, FR-142).
 	entity: (model, entry) => recordCheckBody(model, entry),
+	nested_entity: (model, entry) => recordCheckBody(model, entry),
+	aggregate_root: (model, entry) => recordCheckBody(model, entry),
+	event: (model, entry) => recordCheckBody(model, entry),
+	process: (model, entry) => recordCheckBody(model, entry),
+	value_object: (model, entry) => recordCheckBody(model, entry),
+	state_machine: (model, entry) => recordCheckBody(model, entry),
+	enumeration: (model, entry) => enumCheckBody(model, entry),
 });
 
 /**
@@ -607,8 +616,7 @@ const CHECK_BODIES = Object.freeze({
  * than being rejected by a pass whose errors nobody collected.
  */
 function prepareBody(model, entry) {
-	if (entry.kind === "record" || entry.kind === "entity")
-		return recordPrepareBody(entry);
+	if (isRecordShaped(entry.kind)) return recordPrepareBody(entry);
 	if (entry.kind === "sequence") {
 		return [
 			"\tif (!Array.isArray(value)) return value;",
@@ -1042,7 +1050,11 @@ export function sortErrors(
 
 /** The generated `validators.ts`: one `validate<Type>` per exported type. */
 export function renderValidators(model) {
-	const types = model.types ?? [];
+	// A repository and a domain have no instance data, so no value validates
+	// against either (FR-142).
+	const types = (model.types ?? []).filter(
+		(entry) => !isInstanceless(entry.kind),
+	);
 	const names = types.map((entry) => entry.identifier);
 	const blocks = [];
 	for (const entry of types) {
@@ -1075,15 +1087,20 @@ export function renderValidators(model) {
 		const surfacedName = checkBody.includes("surfaced")
 			? "surfaced"
 			: "_surfaced";
+		// The `any` kernel scalar admits every value, so its check never reads the
+		// candidate; the parameter takes the same exemption.
+		const candidateName = /\bcandidate\b/.test(checkBody)
+			? "candidate"
+			: "_candidate";
 		blocks.push(
 			[
 				`function check${entry.identifier}(`,
-				"\tcandidate: unknown,",
+				`\t${candidateName}: unknown,`,
 				"\tpointer: string,",
 				"\terrors: ValidationError[],",
 				`\t${surfacedName}: ValidationError[],`,
 				"\tdepth: number,",
-				`): candidate is ${entry.identifier} {`,
+				`): ${candidateName} is ${entry.identifier} {`,
 				checkBody,
 				"}",
 			].join("\n"),
@@ -1102,6 +1119,17 @@ export function renderValidators(model) {
 				"}",
 			].join("\n"),
 		);
+		// A value object has no identity: two values are one value exactly when
+		// they share a canonical form, the rule `unique` collections use (FR-142).
+		if (entry.kind === "value_object")
+			blocks.push(
+				[
+					`/** Whether two \`${entry.identifier}\` values are one value: every field equal. */`,
+					`export function ${entry.identifier}Equals(left: ${entry.identifier}, right: ${entry.identifier}): boolean {`,
+					"\treturn !isUniqueCollection([left, right]);",
+					"}",
+				].join("\n"),
+			);
 	}
 
 	const header = `/**
