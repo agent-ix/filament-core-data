@@ -1357,7 +1357,7 @@ fn tc_1334_distinct_names_with_one_slug_refuse_at_type_field_and_variant_levels(
     write_fixture(
         variants.path(),
         "spec/functional/EN-001.md",
-        "---\nid: EN-001\ntitle: Marks\nname: Marks\nobject: enumeration\ntype: FR\n---\n# Marks\n\n## Values\n\n| Value | Description |\n| --- | --- |\n| a b | first |\n| a_b | second |\n",
+        "---\nid: EN-001\ntitle: Marks\nname: Marks\nobject: enumeration\ntype: FR\n---\n# Marks\n\n## Values\n\n| Value | Description |\n| --- | --- |\n| a_b | first |\n| a__b | second |\n",
     );
     let variant_lift = lift_at(variants.path(), &[&business_module(), &edge_vocabulary()]);
     let variant_diagnostics = with_code(&variant_lift.lowered.diagnostics, Code::UnsluggableName);

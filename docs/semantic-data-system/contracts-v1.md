@@ -153,6 +153,9 @@ Every part of every slot is slugged, the `type` name included:
 | `relationship` | `relationship/<Name>-<verb>-<TargetName>` | owner record, verb, target type name |
 | `operation` | `operation/<Name>-<name>` | owner record, operation |
 | `clause` | `clause/<Name>-<clauseId>` | owner type, clause id |
+| `state` | `state/<Name>-<state>` | owner state machine, state |
+| `transition` | `transition/<Name>-<from>-<to>-<trigger>` | owner state machine, from state, to state, trigger operation (a transition row has no name) |
+| `step` | `step/<Name>-<step>` | owner process, step |
 | `constraint` | `constraint/<Name>-<field>-<keyword>` for a field constraint; `constraint/<Name>-<keyword>` for a type constraint | owner, (field,) keyword |
 
 `<Name>` is the declaring type's name part. The TypeSpec frontend takes it
@@ -174,7 +177,7 @@ the constraint's `appliesTo` names it.
 `Config-Version`, `Config_Version` → `Config-Version`, `created_at` →
 `created-at`, `versionNumber` → `versionNumber`). Each part is slugged and
 the parts are joined by `-`. A part is never dropped: if a part slugs to the
-empty string (`_`, `--`, `***`), the frontend raises `UNSLUGGABLE_NAME` at
+empty string (`_`, `--`), the frontend raises `UNSLUGGABLE_NAME` at
 that declaration and mints nothing for it. Because parts may themselves
 contain `-`, the parts are not recoverable from an identity, which is why the
 collision rule below runs over every minted identity of every slot rather
@@ -206,7 +209,7 @@ and they are checked in this order:
   declarations itself, so the TypeSpec frontend never reaches this case.)
 - (b) **Distinct names, one slug.** Two distinct declaration names whose
   slugs coincide (`created_at` beside `created__at`; two enumeration rows
-  `a b` and `a_b`) are refused as `UNSLUGGABLE_NAME` at the later
+  `a_b` and `a__b`) are refused as `UNSLUGGABLE_NAME` at the later
   declaration, FR-053's rule, which the spec-bundle frontend adopts.
 - (c) **Any other two nodes minting one identity** — a minted alias beside an
   author-named type (`NoteRevision` beside `Note.revision`), a field beside

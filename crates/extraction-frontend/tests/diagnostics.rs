@@ -56,6 +56,8 @@ fn engine(
         line,
         column: Some(3),
         reason: reason.map(str::to_string),
+        source_span: None,
+        section: None,
     }
 }
 

@@ -118,10 +118,10 @@ fn tc_1200_config_version_table_lifts_seven_fields_for_fr_006_and_one_extraction
     let module = bundle
         .semantic_module("spec-objects-business")
         .expect("the vendored module carries a semantic block");
-    assert_eq!(module.semantic_core, "0.1.0");
+    assert_eq!(module.semantic_core, "0.2.0");
     assert_eq!(
         bundle.module_version("spec-objects-business"),
-        Some("0.3.0")
+        Some("0.4.0")
     );
 
     let out = extract(&bundle);
@@ -154,7 +154,7 @@ fn tc_1200_config_version_table_lifts_seven_fields_for_fr_006_and_one_extraction
     );
     assert_eq!(
         fr006.schema_digest.as_deref(),
-        Some("sha256:e06e39445e314d31de3206dc6d715da7245da23f5fcc9745a6147c50ca439790"),
+        Some("sha256:f3f7fcd604abab7e09427066287df94fac3d7a470e146b289e2ded74ef2f7d43"),
         "the module's reference-form data_schema digest is passed through"
     );
     assert_eq!(
@@ -168,11 +168,16 @@ fn tc_1200_config_version_table_lifts_seven_fields_for_fr_006_and_one_extraction
         AvailabilityState::Available
     );
     assert_eq!(fr005.fields.as_deref().map(<[_]>::len), Some(2));
-    assert!(
-        out.diagnostics.is_empty(),
+    // The only diagnostic is the engine's non-blocking advisory that the `ocl`
+    // clause on FR-006 is carried unchecked (semantic_core 0.2.0).
+    let messages: Vec<&str> = out.diagnostics.iter().map(|d| d.message.as_str()).collect();
+    assert_eq!(
+        messages,
+        ["semantic.clause-language-unchecked: clause immutable: language ocl is carried unchecked"],
         "a typed bundle lifts clean: {:?}",
         out.diagnostics
     );
+    assert!(out.diagnostics.iter().all(|d| !d.blocking));
 }
 
 #[trace("TC-1201", "FR-091-AC-2")]
@@ -400,7 +405,7 @@ fn tc_1206_bundle_index_names_every_object_by_id_and_title_and_a_title_cell_reso
     );
     assert_eq!(
         index.imports["agent-ix/spec-objects-business"].len(),
-        10,
+        11,
         "the module's exports are the import table"
     );
     // The fixture's `parent | ConfigVersion` cell resolves through the index.
@@ -650,6 +655,8 @@ fn tc_1331_duplicate_id_refuses_at_the_second_path_and_a_line_zero_diagnostic_ha
         line: Some(0),
         column: None,
         reason: Some("unknown-token".to_string()),
+        source_span: None,
+        section: None,
     };
     let path = "spec/functional/FR-006-config-version-entity.md";
     let wrapped = Diagnostic::engine(&engine, "ix://agent-ix/config-service/spec", path);

@@ -32,7 +32,7 @@ context OrderRepository inv known_id: self.orders->forAll(o | o.id <> null)
 | id | UUID | 1 | |
 
 Returns: Order [0..1]
-Pre: known_id
+Requires: known_id
 
 ### save
 
@@ -41,4 +41,4 @@ Pre: known_id
 | order | Order | 1 | |
 
 Returns: Order [1]
-Post: known_id
+Ensures: known_id

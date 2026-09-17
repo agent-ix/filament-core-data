@@ -18,3 +18,10 @@ relationships:
 
 Everything from a basket becoming an order to its shipment. Entities live
 in their own artifacts; this domain declares a boundary, not data.
+
+## Ubiquitous Language
+
+| Term | Description |
+|------|-------------|
+| Order | A customer's request for goods |
+| Fulfilment | The pick, pack and ship work that completes a placed order |
