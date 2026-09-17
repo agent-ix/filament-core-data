@@ -219,12 +219,12 @@ function multiplicityFromPresence(presence) {
 }
 
 /**
- * Materialize the three members contract `1.1.0` makes derivable — a field's
+ * Materialize members that 1.1.0 makes derivable — a field's
  * `multiplicity`, its `presence`, and its `nullable` — so that two documents
  * that differ only in which of them was written down carry one canonical form.
  * A `1.0.0` document gains no member.
  */
-function materializeField(field) {
+function materializeField(field, version) {
 	if (field === null || typeof field !== "object" || Array.isArray(field)) {
 		return field;
 	}
@@ -243,13 +243,19 @@ function materializeField(field) {
 	return {
 		...field,
 		multiplicity,
-		presence: lower >= 1 ? "required" : "optional",
+		presence:
+			version === "1.2.0" &&
+			(field.presence === "required" || field.presence === "optional")
+				? field.presence
+				: lower >= 1
+					? "required"
+					: "optional",
 		nullable: field.nullable === true,
 	};
 }
 
 /**
- * The normalized document: a deep copy with the `1.1.0` members materialized.
+ * The normalized document: a deep copy with the 1.1/1.2 members materialized.
  * The argument is left byte-identical (FR-069).
  */
 export function normalizeIr(document) {
@@ -258,7 +264,7 @@ export function normalizeIr(document) {
 		copy === null ||
 		typeof copy !== "object" ||
 		Array.isArray(copy) ||
-		copy.contractVersion !== "1.1.0" ||
+		(copy.contractVersion !== "1.1.0" && copy.contractVersion !== "1.2.0") ||
 		!Array.isArray(copy.types)
 	) {
 		return copy;
@@ -266,13 +272,17 @@ export function normalizeIr(document) {
 	for (const type of copy.types) {
 		if (type === null || typeof type !== "object") continue;
 		if (Array.isArray(type.fields)) {
-			type.fields = type.fields.map(materializeField);
+			type.fields = type.fields.map((field) =>
+				materializeField(field, copy.contractVersion),
+			);
 		}
 		if (Array.isArray(type.operations)) {
 			for (const operation of type.operations) {
 				if (operation === null || typeof operation !== "object") continue;
 				if (Array.isArray(operation.params)) {
-					operation.params = operation.params.map(materializeField);
+					operation.params = operation.params.map((field) =>
+						materializeField(field, copy.contractVersion),
+					);
 				}
 			}
 		}

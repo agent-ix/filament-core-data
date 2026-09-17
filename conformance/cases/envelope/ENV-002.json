@@ -15,7 +15,7 @@
 		{
 			"op": "replace",
 			"path": "/ir/contractVersion",
-			"value": "1.2.0"
+			"value": "1.3.0"
 		},
 		{
 			"op": "test",
@@ -33,7 +33,7 @@
 	"derivedFrom": [
 		{
 			"artifact": "docs/semantic-data-system/contracts-v1.md",
-			"locator": "Contract 1.1.0 (issue #34)",
+			"locator": "Contract 1.2.0 (issue #93)",
 			"quote": "discriminated by `contractVersion`"
 		}
 	],
@@ -49,7 +49,7 @@
 				"diagnostic": {
 					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
 					"severity": "error",
-					"message": "contractVersion is a closed enumeration and 1.2.0 is not a member",
+					"message": "contractVersion is a closed enumeration and 1.3.0 is not a member",
 					"owner": "ix://agent-ix/filament-core-data/conformance/oracle",
 					"blocking": true,
 					"causes": [],

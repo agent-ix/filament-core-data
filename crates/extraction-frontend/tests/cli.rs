@@ -106,16 +106,14 @@ fn tc_1295_lift_writes_four_files_and_the_sidecar_options_rename_them() {
             "semantic-ir.json.provenance.json",
         ]
     );
-    // Every diagnostic reaches stderr, one per line, even on exit 0: the
-    // fixture's one `DECLARED_LOSS` is non-blocking.
+    // IR v1.2 represents this fixture without a representability loss.
     let lines: Vec<&str> = output
         .stderr
         .split(|b| *b == b'\n')
         .filter(|l| !l.is_empty())
         .map(|l| std::str::from_utf8(l).expect("utf-8"))
         .collect();
-    assert_eq!(lines.len(), 1, "{lines:?}");
-    assert!(lines[0].starts_with("agent-ix.extraction-frontend.DECLARED_LOSS: "));
+    assert!(lines.is_empty(), "{lines:?}");
 
     let renamed = tempfile::tempdir().expect("tempdir");
     let out2 = renamed.path().join(OUT);
@@ -287,14 +285,13 @@ fn tc_1268_a_blocking_lift_leaves_out_untouched_and_a_warning_only_lift_writes_i
         .iter()
         .any(|d| d["blocking"] == Value::Bool(true)));
 
-    // Warning-only: the fixture's `DECLARED_LOSS` is reported and exit is 0
-    // with all four files written.
+    // The v1.2 fixture succeeds with all four files and no diagnostics.
     let dir = tempfile::tempdir().expect("tempdir");
     let output = run(&lift_args(
         &fixture("config-version-table"),
         &dir.path().join(OUT),
     ));
     assert_eq!(code(&output), 0, "stderr:\n{}", stderr(&output));
-    assert!(stderr(&output).contains("agent-ix.extraction-frontend.DECLARED_LOSS: "));
+    assert!(stderr(&output).is_empty(), "{}", stderr(&output));
     assert_eq!(files(dir.path()).len(), 4);
 }

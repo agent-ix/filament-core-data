@@ -1,7 +1,7 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"$id": "https://schemas.agent-ix.org/filament-core-data/v1/semantic-ir.schema.json",
-	"title": "Filament semantic IR v1 (contract versions 1.0.0 and 1.1.0)",
+	"title": "Filament semantic IR v1 (contract versions 1.0.0, 1.1.0 and 1.2.0)",
 	"type": "object",
 	"required": [
 		"contractVersion",
@@ -13,7 +13,7 @@
 	],
 	"properties": {
 		"contractVersion": {
-			"enum": ["1.0.0", "1.1.0"]
+			"enum": ["1.0.0", "1.1.0", "1.2.0"]
 		},
 		"source": {
 			"type": "object",
@@ -96,6 +96,12 @@
 			"type": "array",
 			"items": {
 				"$ref": "common.schema.json#/$defs/extension"
+			}
+		},
+		"populations": {
+			"type": "array",
+			"items": {
+				"$ref": "#/$defs/population"
 			}
 		}
 	},
@@ -417,6 +423,12 @@
 					"type": "string",
 					"minLength": 1,
 					"pattern": "^[!-~]+$"
+				},
+				"subsets": {
+					"$ref": "#/$defs/identityList"
+				},
+				"redefines": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
 				}
 			},
 			"allOf": [
@@ -493,7 +505,17 @@
 						"alias",
 						"sequence",
 						"map",
-						"reference"
+						"reference",
+						"entity",
+						"value_object",
+						"nested_entity",
+						"aggregate_root",
+						"enumeration",
+						"event",
+						"state_machine",
+						"process",
+						"repository",
+						"domain"
 					]
 				},
 				"roles": {
@@ -532,7 +554,8 @@
 						"date",
 						"datetime",
 						"duration",
-						"uuid"
+						"uuid",
+						"any"
 					]
 				},
 				"fields": {
@@ -572,6 +595,56 @@
 					"type": "array",
 					"items": {
 						"$ref": "#/$defs/clause"
+					}
+				},
+				"supertypes": {
+					"$ref": "#/$defs/identityList"
+				},
+				"abstract": {
+					"type": "boolean"
+				},
+				"identityFields": {
+					"type": "array",
+					"items": {
+						"$ref": "common.schema.json#/$defs/semanticIdentity"
+					},
+					"uniqueItems": true,
+					"minItems": 1
+				},
+				"owner": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"members": {
+					"$ref": "#/$defs/identityList"
+				},
+				"occurrenceField": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"states": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/state"
+					}
+				},
+				"transitions": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/transition"
+					}
+				},
+				"steps": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/step"
+					}
+				},
+				"persists": {
+					"$ref": "#/$defs/identityList"
+				},
+				"vocabulary": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/term"
 					}
 				}
 			},
@@ -665,7 +738,18 @@
 						"type": "object",
 						"properties": {
 							"kind": {
-								"const": "record"
+								"enum": [
+									"record",
+									"entity",
+									"value_object",
+									"nested_entity",
+									"aggregate_root",
+									"event",
+									"state_machine",
+									"process",
+									"repository",
+									"domain"
+								]
 							}
 						}
 					},
@@ -675,6 +759,333 @@
 						"properties": {
 							"relationships": false,
 							"operations": false
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "entity"
+							}
+						}
+					},
+					"then": {
+						"type": "object",
+						"required": ["fields", "identityFields"]
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "value_object"
+							}
+						}
+					},
+					"then": {
+						"type": "object",
+						"required": ["fields"]
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "nested_entity"
+							}
+						}
+					},
+					"then": {
+						"type": "object",
+						"required": ["fields", "identityFields", "owner"]
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "aggregate_root"
+							}
+						}
+					},
+					"then": {
+						"type": "object",
+						"required": ["fields", "identityFields", "clauses", "members"],
+						"properties": {
+							"clauses": {
+								"type": "array",
+								"minItems": 1
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "enumeration"
+							}
+						}
+					},
+					"then": {
+						"type": "object",
+						"required": ["variants"],
+						"not": {
+							"required": ["fields"]
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "event"
+							}
+						}
+					},
+					"then": {
+						"type": "object",
+						"required": ["fields", "occurrenceField"]
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "state_machine"
+							}
+						}
+					},
+					"then": {
+						"type": "object",
+						"required": ["operations", "states", "transitions"],
+						"properties": {
+							"operations": {
+								"type": "array",
+								"minItems": 1
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "process"
+							}
+						}
+					},
+					"then": {
+						"type": "object",
+						"required": ["fields", "identityFields", "steps"]
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "repository"
+							}
+						}
+					},
+					"then": {
+						"type": "object",
+						"required": ["operations", "persists"],
+						"properties": {
+							"operations": {
+								"type": "array",
+								"minItems": 1
+							}
+						},
+						"not": {
+							"required": ["fields"]
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "domain"
+							}
+						}
+					},
+					"then": {
+						"type": "object",
+						"required": ["members", "vocabulary"],
+						"not": {
+							"anyOf": [
+								{
+									"required": ["fields"]
+								},
+								{
+									"required": ["operations"]
+								}
+							]
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"enum": ["entity", "nested_entity", "aggregate_root", "process"]
+							}
+						}
+					},
+					"then": {},
+					"else": {
+						"type": "object",
+						"properties": {
+							"identityFields": false
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "nested_entity"
+							}
+						}
+					},
+					"then": {},
+					"else": {
+						"type": "object",
+						"properties": {
+							"owner": false
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"enum": ["aggregate_root", "domain"]
+							}
+						}
+					},
+					"then": {},
+					"else": {
+						"type": "object",
+						"properties": {
+							"members": false
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "event"
+							}
+						}
+					},
+					"then": {},
+					"else": {
+						"type": "object",
+						"properties": {
+							"occurrenceField": false
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "state_machine"
+							}
+						}
+					},
+					"then": {},
+					"else": {
+						"type": "object",
+						"properties": {
+							"states": false
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "state_machine"
+							}
+						}
+					},
+					"then": {},
+					"else": {
+						"type": "object",
+						"properties": {
+							"transitions": false
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "process"
+							}
+						}
+					},
+					"then": {},
+					"else": {
+						"type": "object",
+						"properties": {
+							"steps": false
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "repository"
+							}
+						}
+					},
+					"then": {},
+					"else": {
+						"type": "object",
+						"properties": {
+							"persists": false
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "domain"
+							}
+						}
+					},
+					"then": {},
+					"else": {
+						"type": "object",
+						"properties": {
+							"vocabulary": false
 						}
 					}
 				}
@@ -816,6 +1227,21 @@
 				},
 				"origin": {
 					"$ref": "common.schema.json#/$defs/origin"
+				},
+				"frame": {
+					"$ref": "#/$defs/frame"
+				},
+				"requires": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/inlineClause"
+					}
+				},
+				"ensures": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/inlineClause"
+					}
 				}
 			},
 			"additionalProperties": false
@@ -846,6 +1272,194 @@
 				}
 			},
 			"additionalProperties": false
+		},
+		"identityList": {
+			"type": "array",
+			"items": {
+				"$ref": "common.schema.json#/$defs/semanticIdentity"
+			},
+			"uniqueItems": true
+		},
+		"featurePath": {
+			"type": "string",
+			"pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$"
+		},
+		"state": {
+			"type": "object",
+			"required": ["identity", "name", "origin"],
+			"properties": {
+				"identity": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"name": {
+					"type": "string",
+					"minLength": 1
+				},
+				"origin": {
+					"$ref": "common.schema.json#/$defs/origin"
+				}
+			},
+			"additionalProperties": false
+		},
+		"transition": {
+			"type": "object",
+			"required": ["identity", "from", "to", "trigger", "emits", "origin"],
+			"properties": {
+				"identity": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"from": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"to": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"trigger": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"guard": {
+					"type": "string",
+					"minLength": 1
+				},
+				"emits": {
+					"$ref": "#/$defs/identityList"
+				},
+				"origin": {
+					"$ref": "common.schema.json#/$defs/origin"
+				}
+			},
+			"additionalProperties": false
+		},
+		"step": {
+			"type": "object",
+			"required": [
+				"identity",
+				"name",
+				"stepKind",
+				"consumes",
+				"emits",
+				"origin"
+			],
+			"properties": {
+				"identity": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"name": {
+					"type": "string",
+					"minLength": 1
+				},
+				"stepKind": {
+					"enum": ["command", "event", "decision", "compensation", "wait"]
+				},
+				"consumes": {
+					"$ref": "#/$defs/identityList"
+				},
+				"emits": {
+					"$ref": "#/$defs/identityList"
+				},
+				"origin": {
+					"$ref": "common.schema.json#/$defs/origin"
+				}
+			},
+			"additionalProperties": false
+		},
+		"term": {
+			"type": "object",
+			"required": ["term", "doc", "origin"],
+			"properties": {
+				"term": {
+					"type": "string",
+					"minLength": 1
+				},
+				"doc": {
+					"type": "string"
+				},
+				"origin": {
+					"$ref": "common.schema.json#/$defs/origin"
+				}
+			},
+			"additionalProperties": false
+		},
+		"frame": {
+			"type": "object",
+			"required": ["modifies", "creates", "deletes"],
+			"properties": {
+				"modifies": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/featurePath"
+					},
+					"uniqueItems": true
+				},
+				"creates": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/featurePath"
+					},
+					"uniqueItems": true
+				},
+				"deletes": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/featurePath"
+					},
+					"uniqueItems": true
+				}
+			},
+			"additionalProperties": false
+		},
+		"inlineClause": {
+			"type": "object",
+			"required": ["language", "text", "origin"],
+			"properties": {
+				"language": {
+					"type": "string",
+					"pattern": "^(quire|ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$"
+				},
+				"text": {
+					"type": "string"
+				},
+				"sourceSpan": {
+					"$ref": "common.schema.json#/$defs/sourceLocus"
+				},
+				"origin": {
+					"$ref": "common.schema.json#/$defs/origin"
+				}
+			},
+			"additionalProperties": false
+		},
+		"population": {
+			"type": "object",
+			"required": ["identity", "displayName", "members", "origin"],
+			"properties": {
+				"identity": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"displayName": {
+					"type": "string",
+					"minLength": 1
+				},
+				"members": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"required": ["typeRef", "extent"],
+						"properties": {
+							"typeRef": {
+								"$ref": "common.schema.json#/$defs/semanticIdentity"
+							},
+							"extent": {
+								"$ref": "#/$defs/multiplicity"
+							}
+						},
+						"additionalProperties": false
+					}
+				},
+				"origin": {
+					"$ref": "common.schema.json#/$defs/origin"
+				}
+			},
+			"additionalProperties": false
 		}
 	},
 	"allOf": [
@@ -854,7 +1468,7 @@
 				"type": "object",
 				"properties": {
 					"contractVersion": {
-						"const": "1.1.0"
+						"enum": ["1.1.0", "1.2.0"]
 					}
 				}
 			},
@@ -890,7 +1504,7 @@
 				"type": "object",
 				"properties": {
 					"contractVersion": {
-						"const": "1.1.0"
+						"enum": ["1.1.0", "1.2.0"]
 					}
 				}
 			},
@@ -907,6 +1521,83 @@
 									"items": {
 										"type": "object",
 										"required": ["multiplicity"]
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"if": {
+				"type": "object",
+				"properties": {
+					"contractVersion": {
+						"enum": ["1.0.0", "1.1.0"]
+					}
+				}
+			},
+			"then": {
+				"type": "object",
+				"properties": {
+					"populations": false,
+					"types": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"kind": {
+									"not": {
+										"enum": [
+											"entity",
+											"value_object",
+											"nested_entity",
+											"aggregate_root",
+											"enumeration",
+											"event",
+											"state_machine",
+											"process",
+											"repository",
+											"domain"
+										]
+									}
+								},
+								"scalar": {
+									"not": {
+										"const": "any"
+									}
+								},
+								"supertypes": false,
+								"abstract": false,
+								"identityFields": false,
+								"owner": false,
+								"members": false,
+								"occurrenceField": false,
+								"states": false,
+								"transitions": false,
+								"steps": false,
+								"persists": false,
+								"vocabulary": false,
+								"fields": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"subsets": false,
+											"redefines": false
+										}
+									}
+								},
+								"operations": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"frame": false,
+											"requires": false,
+											"ensures": false
+										}
 									}
 								}
 							}

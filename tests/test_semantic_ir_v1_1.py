@@ -11,7 +11,9 @@ import json
 import pytest
 
 from tests.semantic_ir_reader import (
+    EDGE_KINDS,
     FIXTURE_ROOT,
+    SCHEMA_ROOT,
     _schema_validator,
     normalize,
     read_semantic_ir,
@@ -74,3 +76,166 @@ class TestSecondReader:
                 assert verdict["hit"] is True, verdict["id"]
                 seen += 1
         assert seen >= 30
+
+
+CONSTRUCTS = "positive/semantic-ir-v1-2-constructs.json"
+
+
+class TestContract12:
+    """Python reader over contract 1.2.0 model members and constructs.
+
+    Description: TC-1740, TC-1744, TC-1745 and TC-1746 Python-reader evidence;
+    the committed 1.2.0 positive reads clean, and each member or construct kind
+    inside a 1.1.0 document, and each construct missing a required member, is
+    refused by the schema.
+    Assumptions: the poetry dev group is installed; fixtures are the committed
+    ones under fixtures/semantic/v1.
+    Criteria: FR-141-AC-1, FR-141-AC-5, FR-141-CON-1, FR-142-AC-1, FR-142-AC-2,
+    FR-142-CON-1.
+    """
+
+    def test_constructs_document_validates_and_reads_clean(self, validator) -> None:
+        """Criteria: FR-141-AC-1, FR-142-AC-1 (TC-1740, TC-1745)."""
+        document = _fixture(CONSTRUCTS)
+        assert validator.is_valid(document)
+        assert read_semantic_ir(document) == []
+        first = normalize(document)
+        assert normalize(json.loads(first)) == first
+
+    def test_every_1_2_member_in_a_1_1_document_is_refused(self, validator) -> None:
+        """Criteria: FR-141-AC-5, FR-141-CON-1 (TC-1744)."""
+        document = _fixture(CONSTRUCTS)
+        assert validator.is_valid(document)
+        document["contractVersion"] = "1.1.0"
+        assert not validator.is_valid(document)
+
+        v11 = "positive/semantic-ir-v1-1.json"
+        clean = _fixture(v11)
+        assert validator.is_valid(clean)
+        assert read_semantic_ir(clean) == []
+        record = next(
+            i
+            for i, t in enumerate(clean["types"])
+            if t["identity"] == "ix://agent-ix/assurance/type/Artifact"
+        )
+        scalar = next(
+            i
+            for i, t in enumerate(clean["types"])
+            if t["identity"] == "ix://agent-ix/assurance/type/Text"
+        )
+        quire = [
+            {
+                "language": "quire",
+                "text": "true",
+                "origin": clean["types"][record]["origin"],
+            }
+        ]
+
+        def set_type(member, value):
+            return lambda d: d["types"][record].__setitem__(member, value)
+
+        def set_field(member, value):
+            return lambda d: d["types"][record]["fields"][0].__setitem__(
+                member, value(d) if callable(value) else value
+            )
+
+        def set_operation(member, value):
+            return lambda d: d["types"][record]["operations"][0].__setitem__(
+                member, value
+            )
+
+        mutations = (
+            (
+                "supertypes",
+                set_type("supertypes", ["ix://agent-ix/assurance/type/Project"]),
+            ),
+            ("abstract", set_type("abstract", True)),
+            ("subsets", set_field("subsets", [])),
+            (
+                "redefines",
+                set_field(
+                    "redefines",
+                    lambda d: d["types"][record]["fields"][1]["identity"],
+                ),
+            ),
+            (
+                "frame",
+                set_operation("frame", {"modifies": [], "creates": [], "deletes": []}),
+            ),
+            ("requires", set_operation("requires", quire)),
+            ("ensures", set_operation("ensures", quire)),
+            ("populations", lambda d: d.__setitem__("populations", [])),
+            ("scalar any", lambda d: d["types"][scalar].__setitem__("scalar", "any")),
+            ("construct kind", set_type("kind", "value_object")),
+        )
+        for label, mutate in mutations:
+            base = _fixture(v11)
+            mutate(base)
+            assert not validator.is_valid(base), label
+
+    def test_each_construct_without_a_required_member_is_refused(
+        self, validator
+    ) -> None:
+        """Criteria: FR-142-AC-2, FR-142-CON-1 (TC-1746)."""
+        for suffix, member, foreign in (
+            ("FR-001", "identityFields", "owner"),
+            ("VO-001", "fields", "identityFields"),
+            ("NE-001", "owner", "members"),
+            ("AR-001", "members", "owner"),
+            ("EN-001", "variants", "fields"),
+            ("EV-001", "occurrenceField", "identityFields"),
+            ("SM-001", "transitions", "steps"),
+            ("PR-001", "steps", "states"),
+            ("RP-001", "persists", "fields"),
+            ("DM-001", "vocabulary", "operations"),
+        ):
+            document = _fixture(CONSTRUCTS)
+            target = next(
+                t
+                for t in document["types"]
+                if t["identity"].endswith(f"/type/{suffix}")
+            )
+            del target[member]
+            assert not validator.is_valid(document), f"{suffix} without {member}"
+
+            document = _fixture(CONSTRUCTS)
+            target = next(
+                t
+                for t in document["types"]
+                if t["identity"].endswith(f"/type/{suffix}")
+            )
+            assert foreign not in target, f"{suffix} carries {foreign}"
+            target[foreign] = (
+                "ix://agent-ix/orders/type/FR-001" if foreign == "owner" else []
+            )
+            assert not validator.is_valid(document), f"{suffix} with {foreign}"
+
+    def test_the_edge_kinds_are_the_schema_edge_kinds(self) -> None:
+        """Criteria: FR-142-AC-7 (TC-1760)."""
+        schema = json.loads((SCHEMA_ROOT / "semantic-ir.schema.json").read_text())
+        branches = [
+            branch["if"]["properties"]["kind"].get("enum", [])
+            for branch in schema["$defs"]["typeDefinition"]["allOf"]
+        ]
+        edges = [kinds for kinds in branches if "record" in kinds and len(kinds) > 1]
+        assert len(edges) == 1
+        assert set(edges[0]) == EDGE_KINDS
+
+    def test_an_inline_clause_outside_quire_is_carried_with_an_advisory(
+        self, validator
+    ) -> None:
+        """Criteria: FR-141-AC-6, FR-141-CON-2 (TC-1759)."""
+        document = _fixture(CONSTRUCTS)
+        machine = next(
+            i
+            for i, t in enumerate(document["types"])
+            if t["identity"].endswith("/type/SM-001")
+        )
+        operation = document["types"][machine]["operations"][0]
+        assert operation["requires"][0]["language"] == "quire"
+        assert read_semantic_ir(document) == []
+        operation["ensures"][0]["language"] = "ocl"
+        assert validator.is_valid(document)
+        assert [d["code"] for d in read_semantic_ir(document)] == [
+            "agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED"
+        ]

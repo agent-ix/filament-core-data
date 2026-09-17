@@ -27,12 +27,15 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
 import {
-	identity as pythonIdentity,
 	pythonDataclassBackend,
+	identity as pythonIdentity,
 	pythonPydanticBackend,
 } from "../src/compiler/backends/python-v1/index.mjs";
 import { poetryProducer } from "../src/compiler/backends/python-v1/produce.mjs";
-import { generateTarget, selectBackend } from "../src/compiler/backends/seam.mjs";
+import {
+	generateTarget,
+	selectBackend,
+} from "../src/compiler/backends/seam.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -46,14 +49,15 @@ type Manifest = {
 	diagnostics: { code: string; message: string; blocking?: boolean }[];
 };
 
-/** A generation request over a real lifted document. */
-function pythonRequest(backend: { identity: string; version: string }) {
+/** A generation request over an accepted document, `1.2.0` unless one is named. */
+function pythonRequest(
+	backend: { identity: string; version: string },
+	document = "fixtures/semantic/v1/positive/config-version-v1-2.json",
+) {
 	return {
 		contractVersion: "1.0.0",
 		lockFingerprint: `sha256:${"a".repeat(64)}`,
-		ir: readJson(
-			"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json",
-		),
+		ir: readJson(document),
 		profile: readJson("fixtures/semantic/v1/positive/profile.json"),
 		mappings: [],
 		backend: {
@@ -111,6 +115,90 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 		console.log(
 			`TC-1531 measured: python-pydantic-v2 state=${manifest.state} files=${manifest.files.length} blocking=0`,
 		);
+	}, 300000);
+
+	it("generates a package from a 1.1.0 document", () => {
+		const manifest = generateTarget(
+			pythonRequest(
+				pythonPydanticBackend,
+				"fixtures/semantic/v1/positive/config-version-v1-1.json",
+			),
+			{ target: "python-pydantic-v2", host: host(), produce: poetryProducer() },
+		) as never as Manifest;
+
+		expect(manifest.state).toBe("success");
+		expect(manifest.files.map((f) => f.path)).toContain("__init__.py");
+	}, 300000);
+
+	/** Traces: TC-1765; FR-136-AC-8. */
+	it("generates an entity as the record's model class in both Python targets, carrying no identity-field marking", () => {
+		const request = pythonRequest(pythonPydanticBackend);
+		const entity = (
+			request.ir as {
+				types: {
+					kind: string;
+					displayName: string;
+					identityFields?: string[];
+					fields?: { name: string; identity: string }[];
+				}[];
+			}
+		).types.find((type) => type.displayName === "ConfigVersion");
+		const id = entity?.fields?.find((field) => field.name === "id");
+		if (!entity || !id) throw new Error("ConfigVersion declares no id field");
+		entity.kind = "entity";
+		entity.identityFields = [id.identity];
+
+		for (const backend of [pythonPydanticBackend, pythonDataclassBackend]) {
+			const result = backend.generate(request, {
+				produce: poetryProducer(),
+			}) as {
+				state: string;
+				files: { path: string; text: string }[];
+			};
+			expect(result.state, backend.target).toBe("success");
+			const module = result.files.find(
+				(file) => file.path === "ConfigVersion.py",
+			);
+			if (!module) throw new Error(`${backend.target}: no ConfigVersion.py`);
+			expect(module.text).toMatch(/\bid: /);
+			for (const file of result.files.filter((one) => one.path.endsWith(".py")))
+				expect(file.text, `${backend.target} ${file.path}`).not.toMatch(
+					/identity-fields|identityFields|IDENTITY_FIELDS/,
+				);
+		}
+	}, 300000);
+
+	/** Traces: TC-1769, TC-1770; FR-136-AC-9, FR-078-AC-12. */
+	it("generates both Python targets from the lifted golden, naming each module by its display name", () => {
+		const golden =
+			"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json";
+		const schemas = jsonSchemaBackend.generate({ ir: readJson(golden) }) as {
+			files: { path: string; text: string }[];
+		};
+		const versionSchema = schemas.files.find(
+			(file) => file.path === "ConfigVersion.json",
+		);
+		if (!versionSchema) throw new Error("no ConfigVersion.json");
+		expect(JSON.parse(versionSchema.text)["x-agent-ix-semantic-id"]).toBe(
+			"ix://agent-ix/config-service/type/FR-006",
+		);
+		for (const backend of [pythonPydanticBackend, pythonDataclassBackend]) {
+			const result = backend.generate(pythonRequest(backend, golden), {
+				produce: poetryProducer(),
+			}) as {
+				state: string;
+				diagnostics: { message: string }[];
+				files: { path: string; text: string }[];
+			};
+			expect(
+				result.state,
+				`${backend.target}: ${result.diagnostics.map((d) => d.message).join("; ")}`,
+			).toBe("success");
+			const paths = result.files.map((file) => file.path);
+			expect(paths).toContain("ConfigVersion.py");
+			expect(paths).toContain("JsonObject.py");
+			expect(paths.some((path) => /^FR[-_]?0/.test(path))).toBe(false);
+		}
 	}, 300000);
 
 	/** Traces: TC-1532; FR-136-AC-3. */
@@ -207,9 +295,10 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 		);
 		expect(Object.keys(seen[0])).not.toContain("index.json");
 		for (const file of expected)
-			expect(seen[0][file.path], `document differs at ${file.path}`).toStrictEqual(
-				JSON.parse(file.text),
-			);
+			expect(
+				seen[0][file.path],
+				`document differs at ${file.path}`,
+			).toStrictEqual(JSON.parse(file.text));
 		console.log(
 			`TC-1535 measured: ${expected.length} documents handed to the producer under the lowering's own names`,
 		);

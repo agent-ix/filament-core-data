@@ -98,7 +98,7 @@ export const identity = "ix://agent-ix/filament-core-data/backend/typescript";
 /**
  * The one implemented generated target.
  *
- * `supportedIrVersions` is exactly `["1.1.0"]`: the frozen FR-041 prototype
+ * `supportedIrVersions` admits the compatible 1.1.0 and 1.2.0 contracts: the frozen FR-041 prototype
  * document also calls itself `1.0.0` and is a different shape entirely, so
  * accepting `1.0.0` here would make a prototype-shaped document reachable
  * through the contract seam (FR-063-CON-5).
@@ -108,10 +108,11 @@ export const typescriptBackend = Object.freeze({
 	version: "0.1.0",
 	target: "typescript",
 	owningIssue: "agent-ix/filament-core-data#22",
-	supportedIrVersions: Object.freeze(["1.1.0"]),
+	supportedIrVersions: Object.freeze(["1.1.0", "1.2.0"]),
 	supportedFeatures: Object.freeze([
 		"scalar",
 		"record",
+		"entity",
 		"enum",
 		"union",
 		"alias",

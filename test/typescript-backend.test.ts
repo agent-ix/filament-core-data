@@ -369,7 +369,9 @@ describe("TypeScript backend fixture (FR-071)", () => {
 		for (const { path, text } of files.filter(({ path }) =>
 			path.endsWith(".ts"),
 		)) {
-			expect(text, path).toContain("SPDX-License-Identifier: AGPL-3.0-or-later");
+			expect(text, path).toContain(
+				"SPDX-License-Identifier: AGPL-3.0-or-later",
+			);
 			for (const match of text.matchAll(RELATIVE_IMPORT)) {
 				expect(match[1], `${path} imports ${match[1]}`).toMatch(/^\./);
 			}
@@ -460,10 +462,7 @@ describe("TypeScript backend fixture (FR-071)", () => {
 	 */
 	it("TC-787 preserves the fixture's identity and provenance surface without retaining validators", () => {
 		const identity = readFileSync(resolve(expected, "identity.ts"), "utf8");
-		const provenance = readFileSync(
-			resolve(expected, "provenance.ts"),
-			"utf8",
-		);
+		const provenance = readFileSync(resolve(expected, "provenance.ts"), "utf8");
 		const ir = JSON.parse(readFileSync(fixtureIr, "utf8")) as {
 			types: {
 				identity: string;
@@ -690,6 +689,96 @@ async function classifierUnder(setting: string): Promise<{
 	};
 }
 
+/**
+ * A `1.2.0` ConfigVersion document whose `ConfigVersion` and `ConfigOverlay`
+ * are `entity` constructs identified by their `id` field.
+ */
+function entityDocument(): string {
+	const document = JSON.parse(
+		readFileSync(
+			resolve(root, "fixtures/semantic/v1/positive/config-version-v1-2.json"),
+			"utf8",
+		),
+	) as {
+		types: {
+			kind: string;
+			displayName: string;
+			identityFields?: string[];
+			fields?: { name: string; identity: string }[];
+		}[];
+	};
+	for (const type of document.types) {
+		if (
+			type.displayName !== "ConfigVersion" &&
+			type.displayName !== "ConfigOverlay"
+		)
+			continue;
+		const id = type.fields?.find((field) => field.name === "id");
+		if (!id) throw new Error(`${type.displayName} declares no id field`);
+		type.kind = "entity";
+		type.identityFields = [id.identity];
+	}
+	return JSON.stringify(document);
+}
+
+describe("TC-1763 an entity construct rendered by the TypeScript backend (FR-064, FR-067)", () => {
+	/** Traces: TC-1763; FR-064-AC-23, FR-067-AC-19. */
+	it("renders an entity as a compiling interface and validator and names its identity fields", async () => {
+		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-typescript-entity-"));
+		try {
+			const ir = resolve(scratch, "entity.json");
+			writeFileSync(ir, entityDocument());
+			const module = await generatedValidators(ir, resolve(scratch, "entity"));
+			expect(module.TYPE_IDENTITY_FIELDS).toStrictEqual({
+				ConfigOverlay: ["id"],
+				ConfigVersion: ["id"],
+			});
+			const kinds = module.TYPE_KIND as Record<string, string>;
+			expect(kinds.ConfigVersion).toBe("entity");
+			expect(kinds.JsonObject).toBe("record");
+			const validate = module.validateConfigOverlay as (input: unknown) => {
+				ok: boolean;
+			};
+			expect(typeof validate).toBe("function");
+			expect(validate({}).ok).toBe(false);
+
+			const records = await generatedValidators(
+				resolve(root, "fixtures/semantic/v1/positive/config-version-v1-2.json"),
+				resolve(scratch, "records"),
+			);
+			expect(records.TYPE_IDENTITY_FIELDS).toStrictEqual({});
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
+	}, 120000);
+});
+
+describe("TC-1767 generated TypeScript names come from display names (FR-064)", () => {
+	/** Traces: TC-1767; FR-064-AC-24. */
+	it("names each exported type by its display name while TYPE_IDENTITY keeps the artifact id", async () => {
+		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-typescript-names-"));
+		try {
+			const module = await generatedValidators(
+				resolve(
+					root,
+					"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json",
+				),
+				resolve(scratch, "names"),
+			);
+			const identities = module.TYPE_IDENTITY as Record<string, string>;
+			expect(identities.ConfigVersion).toBe(
+				"ix://agent-ix/config-service/type/FR-006",
+			);
+			expect(
+				Object.keys(identities).some((name) => /^Fr?-?00/i.test(name)),
+			).toBe(false);
+			expect(typeof module.validateConfigVersion).toBe("function");
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
+	}, 120000);
+});
+
 describe("TC-811 IR-surface classification rules (FR-069)", () => {
 	/** Traces: TC-811; FR-069-AC-17. */
 	it("TC-811 classifies every removal and required addition breaking", () => {
@@ -847,7 +936,9 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 		for (const { path, text } of fixtureFiles(expected).filter((file) =>
 			file.path.endsWith(".ts"),
 		)) {
-			expect(text, path).toContain("SPDX-License-Identifier: AGPL-3.0-or-later");
+			expect(text, path).toContain(
+				"SPDX-License-Identifier: AGPL-3.0-or-later",
+			);
 			expect(text, path).not.toMatch(
 				/@ts-expect-error|:\s*any\b|<any>|\bas\s+any\b/,
 			);

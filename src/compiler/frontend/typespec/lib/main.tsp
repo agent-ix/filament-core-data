@@ -58,6 +58,12 @@ extern dec decimal(
   scale: valueof int32
 );
 
+/** Whether a property is required in its enclosing record, independently of its multiplicity. */
+extern dec presence(
+  target: TypeSpec.Reflection.ModelProperty,
+  presence: valueof string
+);
+
 /** One typed edge out of a record. Repeatable. */
 extern dec relationship(
   target: TypeSpec.Reflection.Model,

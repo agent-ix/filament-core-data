@@ -180,23 +180,19 @@ pub fn lower_relationships(
                 continue;
             }
         };
-        let identity =
-            match ctx
-                .package
-                .relationship_identity(ctx.display_name, &verb, &target.display_name)
-            {
-                Ok(identity) => identity,
-                Err(unsluggable) => {
-                    sink.push(unsluggable.diagnostic(head.clone()));
-                    continue;
-                }
-            };
+        let identity = match ctx.package.relationship_identity(ctx.id, &verb, &target.id) {
+            Ok(identity) => identity,
+            Err(unsluggable) => {
+                sink.push(unsluggable.diagnostic(head.clone()));
+                continue;
+            }
+        };
         out.push(Relationship {
             identity,
             verb,
             category: definition.category,
             composite: definition.inverse.as_deref() == Some(PART_OF),
-            target: match ctx.package.type_identity(&target.display_name) {
+            target: match ctx.package.type_identity(&target.id) {
                 Ok(identity) => identity,
                 Err(unsluggable) => {
                     sink.push(unsluggable.diagnostic(head.clone()));

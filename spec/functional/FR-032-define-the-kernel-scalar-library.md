@@ -25,7 +25,7 @@ with a representation and bounds policy recorded in a machine-readable table.
 
 ## Outputs
 
-- `packages/semantic-core/kernel-scalars.json`: one entry per member with `irScalar` (or `irLowering: open-record`), `bounds`, `serialization`, and `unitAllowed`
+- `packages/semantic-core/kernel-scalars.json`: one entry per member with `irScalar`, `bounds`, `serialization`, and `unitAllowed`
 
 ## Behavior
 
@@ -37,7 +37,7 @@ with a representation and bounds policy recorded in a machine-readable table.
 - The table SHALL record `Bytes` as IR `bytes` whose length a `maxLength` constraint bounds in bytes.
 - The table SHALL record `String` as IR `string` whose length `minLength`/`maxLength` bound in Unicode code points.
 - The table SHALL record `UUID` as IR `uuid` and `Boolean` as IR `boolean`.
-- The table SHALL record `JsonObject` as an open record (`kind: record`, zero fields, `unknownPolicy: preserve`) that is never typed further.
+- The table SHALL record `JsonObject` as IR `any`, an unconstrained JSON value that is never typed further (FR-139).
 - The table SHALL mark `unitAllowed: true` only for `Integer`, `Decimal`, `Timestamp`, `Duration`.
 - The bounds in the table are documentation for consumers; the semantic-core reader SHALL NOT evaluate values against them.
 
@@ -51,9 +51,9 @@ with a representation and bounds policy recorded in a machine-readable table.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-032-AC-1 | `kernel-scalars.json` has exactly one entry per `KernelScalar` member and no entry names `any`. | Analysis |
+| FR-032-AC-1 | `kernel-scalars.json` has exactly one entry per `KernelScalar` member, and only `JsonObject` maps to `any`. | Analysis |
 | FR-032-AC-2 | The semantic-core reader rejects a `TypeRef` targeting `Decimal` without `decimal`, and a `TypeRef` targeting `String` with `decimal`. | Test |
-| FR-032-AC-3 | Every entry's `irScalar` is a member of the IR v1 scalar enumeration, except `JsonObject`, whose entry records the open-record lowering. | Analysis |
+| FR-032-AC-3 | Every entry's `irScalar` is a member of the IR scalar enumeration, and `JsonObject`'s is `any`. | Analysis |
 | FR-032-AC-4 | A tenth enum member `Any` added to the source fails FR-031's inventory test. | Test |
 | FR-032-AC-5 | Every `type.target` in the committed FR-006 `FieldDecl[]` fixture is one of `UUID`, `Integer`, `String`, `Timestamp`, `JsonObject`, or a `SemanticId`. | Test |
 

@@ -86,6 +86,7 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.UNSUPPORTED_SCHEMA_SHAPE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSUPPORTED_VERSION_CONSTRAINT` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNTRUSTED_MODULE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED` | info | no | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.COMPOSITE_CYCLE` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.DANGLING_CLAUSE_REF` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |

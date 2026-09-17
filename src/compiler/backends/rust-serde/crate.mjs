@@ -1076,7 +1076,7 @@ function clauseMeta(clause) {
 
 function typeMeta(type) {
 	const fields =
-		type.kind === "record"
+		type.kind === "record" || type.kind === "entity"
 			? atom(`crate::types::${type.moduleName}::FIELDS`)
 			: slice([]);
 	const named = (list, suffix) =>
@@ -1313,6 +1313,7 @@ function tryNewCall(indent, arguments_) {
 function renderType(type, model, byIdentity, diagnostics) {
 	switch (type.kind) {
 		case "record":
+		case "entity":
 			return renderRecord(type, model, byIdentity, diagnostics);
 		case "enum":
 		case "union":
@@ -1964,6 +1965,18 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 		),
 		"",
 	);
+	if (type.kind === "entity") {
+		lines.push(
+			`/// The fields that tell instances of \`${type.typeName}\` apart, in the order the contract declares them.`,
+			...constItem(
+				"pub ",
+				"IDENTITY_FIELDS",
+				"&[&str]",
+				slice(type.identityFields.map((name) => atom(rustString(name)))),
+			),
+			"",
+		);
+	}
 
 	for (const field of type.fields) {
 		if (field.defaultKind !== "semantic") continue;

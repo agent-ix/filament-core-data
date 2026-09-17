@@ -15,6 +15,7 @@ from . import common_schema
 class ContractVersion(Enum):
     field_1_0_0 = '1.0.0'
     field_1_1_0 = '1.1.0'
+    field_1_2_0 = '1.2.0'
 
 
 @dataclass(config=ConfigDict(extra='forbid'))
@@ -95,6 +96,11 @@ class Operands4:
     ]
 
 
+type FeaturePath = Annotated[
+    str, Field(pattern='^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$')
+]
+
+
 class DefaultKind(Enum):
     none = 'none'
     semantic = 'semantic'
@@ -105,6 +111,16 @@ class DefaultKind(Enum):
 class Presence(Enum):
     required = 'required'
     optional = 'optional'
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class Frame:
+    creates: list[FeaturePath]
+    deletes: list[FeaturePath]
+    modifies: list[FeaturePath]
+
+
+type IdentityList = list[common_schema.SemanticIdentity]
 
 
 @dataclass(config=ConfigDict(extra='forbid'))
@@ -136,6 +152,12 @@ class Returns:
     typeRef: common_schema.SemanticIdentity
 
 
+@dataclass(config=ConfigDict(extra='forbid'))
+class Member:
+    extent: Multiplicity
+    typeRef: common_schema.SemanticIdentity
+
+
 class Category(Enum):
     structural = 'structural'
     behavioral = 'behavioral'
@@ -144,6 +166,14 @@ class Category(Enum):
     realization = 'realization'
     governance = 'governance'
     traceability = 'traceability'
+
+
+class StepKind(Enum):
+    command = 'command'
+    event = 'event'
+    decision = 'decision'
+    compensation = 'compensation'
+    wait = 'wait'
 
 
 class Kind(Enum):
@@ -155,6 +185,16 @@ class Kind(Enum):
     sequence = 'sequence'
     map = 'map'
     reference = 'reference'
+    entity = 'entity'
+    value_object = 'value_object'
+    nested_entity = 'nested_entity'
+    aggregate_root = 'aggregate_root'
+    enumeration = 'enumeration'
+    event = 'event'
+    state_machine = 'state_machine'
+    process = 'process'
+    repository = 'repository'
+    domain = 'domain'
 
 
 type Role = Annotated[
@@ -172,6 +212,7 @@ class Scalar(Enum):
     datetime = 'datetime'
     duration = 'duration'
     uuid = 'uuid'
+    any = 'any'
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
@@ -264,7 +305,22 @@ class FieldModel:
     defaultValue: Any | None = None
     extensions: list[common_schema.Extension] | None = None
     multiplicity: Multiplicity | None = None
+    redefines: common_schema.SemanticIdentity | None = None
+    subsets: IdentityList | None = None
     unit: Annotated[str | None, Field(min_length=1, pattern='^[!-~]+$')] = None
+
+
+@dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
+class InlineClause:
+    language: Annotated[
+        str,
+        Field(
+            pattern='^(quire|ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$'
+        ),
+    ]
+    origin: common_schema.Origin
+    text: str
+    sourceSpan: common_schema.SourceLocus | None = None
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
@@ -275,7 +331,18 @@ class Operation:
     params: list[FieldModel]
     post: list[PostItem]
     pre: list[PreItem]
+    ensures: list[InlineClause] | None = None
+    frame: Frame | None = None
+    requires: list[InlineClause] | None = None
     returns: Returns | None = None
+
+
+@dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
+class Population:
+    displayName: Annotated[str, Field(min_length=1)]
+    identity: common_schema.SemanticIdentity
+    members: list[Member]
+    origin: common_schema.Origin
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
@@ -287,6 +354,41 @@ class Relationship:
     origin: common_schema.Origin
     target: common_schema.SemanticIdentity
     verb: Annotated[str, Field(min_length=1)]
+
+
+@dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
+class State:
+    identity: common_schema.SemanticIdentity
+    name: Annotated[str, Field(min_length=1)]
+    origin: common_schema.Origin
+
+
+@dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
+class Step:
+    consumes: IdentityList
+    emits: IdentityList
+    identity: common_schema.SemanticIdentity
+    name: Annotated[str, Field(min_length=1)]
+    origin: common_schema.Origin
+    stepKind: StepKind
+
+
+@dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
+class Term:
+    doc: str
+    origin: common_schema.Origin
+    term: Annotated[str, Field(min_length=1)]
+
+
+@dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
+class Transition:
+    emits: IdentityList
+    from_: Annotated[common_schema.SemanticIdentity, Field(alias='from')]
+    identity: common_schema.SemanticIdentity
+    origin: common_schema.Origin
+    to: common_schema.SemanticIdentity
+    trigger: common_schema.SemanticIdentity
+    guard: Annotated[str | None, Field(min_length=1)] = None
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
@@ -307,22 +409,36 @@ class TypeDefinition:
     origin: common_schema.Origin
     roles: list[Role]
     unknownPolicy: common_schema.UnknownPolicy
+    abstract: bool | None = None
     clauses: list[Clause] | None = None
     fields: list[FieldModel] | None = None
+    identityFields: Annotated[
+        list[common_schema.SemanticIdentity] | None, Field(min_length=1)
+    ] = None
     items: common_schema.SemanticIdentity | None = None
+    members: IdentityList | None = None
+    occurrenceField: common_schema.SemanticIdentity | None = None
     operations: list[Operation] | None = None
+    owner: common_schema.SemanticIdentity | None = None
+    persists: IdentityList | None = None
     relationships: list[Relationship] | None = None
     scalar: Scalar | None = None
+    states: list[State] | None = None
+    steps: list[Step] | None = None
+    supertypes: IdentityList | None = None
     target: common_schema.SemanticIdentity | None = None
+    transitions: list[Transition] | None = None
     values: common_schema.SemanticIdentity | None = None
     variants: list[Variant] | None = None
+    vocabulary: list[Term] | None = None
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
-class FilamentSemanticIrV1ContractVersions100And110:
+class FilamentSemanticIrV1ContractVersions100110And120:
     contractVersion: ContractVersion
     extensions: list[common_schema.Extension]
     occurrences: list[Occurrence]
     package: Package
     source: Source
     types: Annotated[list[TypeDefinition], Field(min_length=1)]
+    populations: list[Population] | None = None

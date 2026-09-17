@@ -155,6 +155,12 @@ Every part of every slot is slugged, the `type` name included:
 | `clause` | `clause/<Name>-<clauseId>` | owner type, clause id |
 | `constraint` | `constraint/<Name>-<field>-<keyword>` for a field constraint; `constraint/<Name>-<keyword>` for a type constraint | owner, (field,) keyword |
 
+`<Name>` is the declaring type's name part. The TypeSpec frontend takes it
+from the declaration name. The spec-bundle frontend takes it from the
+declaring artifact's id (FR-143): artifact `FR-001` titled `Order` has
+identity `type/FR-001` and `displayName` `Order`, and its field `note` is
+`field/FR-001-note`. The type's name is its `displayName`.
+
 The alias a constrained field mints is a `type` identity whose tail is
 `slug(Name)` followed by `slug(field)` with its first character upper-cased:
 `Note`, `revision` → `type/NoteRevision`; `Note`, `created_at` →
@@ -223,6 +229,62 @@ of the TypeSpec frontend from this section — `identity.mjs` drops an empty
 part instead of raising `UNSLUGGABLE_NAME`, and `lower.mjs` leaves case (c)
 to the reader instead of refusing it before emission — are
 filament-core-data#94.
+
+### Contract 1.2.0 (issues #93 and #146)
+
+Contract `1.2.0` is additive to `1.1.0`. A `1.1.0` document carrying any node
+this section adds is refused with `SCHEMA_VIOLATION`.
+
+**Unconstrained value.** The scalar `any` is an unconstrained JSON value:
+number, string, boolean, null, array or object. It is never a zero-field
+record, whose meaning is *any JSON object*.
+
+**Presence.** `Field.presence` is authored and independent of
+`multiplicity`. `PRESENCE_MULTIPLICITY_MISMATCH` applies to `1.0.0` and
+`1.1.0` documents only. Normalization materializes absent multiplicity and
+nullable values and keeps the authored presence.
+
+**Model members.**
+
+| Member | Node | Meaning | Reader codes |
+|---|---|---|---|
+| `supertypes` | type | The types this type specializes, of the same kind; the graph is acyclic | `UNRESOLVED_CONSTRUCT_REF`, `CONSTRUCT_TARGET_KIND`, `SUPERTYPE_CYCLE` |
+| `abstract` | type | The type has no direct instances | — |
+| `subsets` | field | Supertype fields whose values include this field's values | `UNRESOLVED_FEATURE_REF` |
+| `redefines` | field | The supertype field this field narrows; its multiplicity lies within the redefined bounds | `UNRESOLVED_FEATURE_REF`, `INVALID_REDEFINITION` |
+| `frame` | operation | Feature paths the operation `modifies`, `creates` and `deletes`, each starting at a field or parameter | `UNRESOLVED_FRAME_PATH` |
+| `requires`, `ensures` | operation | Inline pre- and postconditions, each `{language, text}` | — |
+| `populations` | document | Named instance extents: type references with a multiplicity | `UNRESOLVED_TYPE_REF` |
+
+Clauses are Quire: a clause `language` is `ocl`, `sysml`, `fretish`, `quire`
+or a registered `namespace:name`. No reader translates a clause between
+languages, and an unsupported meaning is refused, never approximated.
+
+**Constructs.** One type-definition `kind` per business object type. Each
+construct carries its built-in rules; a member outside its kind's list is
+refused. Every construct except `enumeration` may carry `relationships` and
+`operations`.
+
+| `kind` | Required members | Built-in rules | Quire meaning |
+|---|---|---|---|
+| `entity` | `fields`, `identityFields` | `identityFields` non-empty, naming fields of the type or a supertype | A class whose instances are told apart by the identity fields |
+| `value_object` | `fields` | No `identityFields` | A datatype equal by all fields |
+| `nested_entity` | `fields`, `identityFields`, `owner` | `owner` is an `entity`, `nested_entity` or `aggregate_root` | A class composed by its owner; identity is local to the owner |
+| `aggregate_root` | `fields`, `identityFields`, `clauses`, `members` | At least one clause; members are `entity`, `value_object`, `nested_entity` or `enumeration` | A consistency boundary whose clauses are invariants over its members |
+| `enumeration` | `variants` | No `fields`; the variant set is closed | An enumeration of exactly its variants |
+| `event` | `fields`, `occurrenceField` | No `identityFields`; the occurrence field resolves to scalar `datetime` | An immutable record of one occurrence at that instant |
+| `state_machine` | `operations`, `states`, `transitions` | At least one operation; `from`/`to` name states, `trigger` names an operation, `guard` names a clause by `clauseId`, `emits` names events | A state machine firing a transition on its trigger when its guard holds |
+| `process` | `fields`, `identityFields`, `steps` | Step `consumes`/`emits` name events | A class whose instances run steps that consume and emit events |
+| `repository` | `operations`, `persists` | At least one operation; no `fields`; `persists` names `entity` or `aggregate_root` types | An interface of persistence operations holding no state |
+| `domain` | `members`, `vocabulary` | No `fields` or `operations`; no member is a domain; a type belongs to at most one domain | A namespace for its members and vocabulary, not a data type |
+
+A broken construct reference raises `UNRESOLVED_CONSTRUCT_REF` or
+`CONSTRUCT_TARGET_KIND`; a wrong occurrence field raises
+`INVALID_OCCURRENCE_FIELD`; a guard naming no clause raises
+`DANGLING_CLAUSE_REF`; a type in two domains raises
+`MULTIPLE_DOMAIN_MEMBERSHIP`. A backend without a rendering for a construct
+refuses the document and never renders the construct as a record; the
+per-construct renderings are filament-core-data#147 and #150.
 
 ## Packages, locks, and fingerprints
 

@@ -8,5 +8,5 @@
   ],
   "derived": [],
   "edits": [],
-  "note": "The constrained field Note.revision mints type/NoteRevision before the later authored NoteRevision definition. The frontend raises blocking DUPLICATE_IDENTITY with the alias locus in related."
+  "note": "The constrained field Note.revision of FR-001 mints type/FR-001Revision before the later authored artifact whose id is FR-001Revision. The frontend raises blocking DUPLICATE_IDENTITY with the alias locus in related. Both entities declare an identity field, so neither is refused as a construct."
 }

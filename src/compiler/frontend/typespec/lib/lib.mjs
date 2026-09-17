@@ -20,6 +20,7 @@ export const STATE = {
 	defaultKind: Symbol.for("agent-ix.semantic.defaultKind"),
 	identityField: Symbol.for("agent-ix.semantic.identityField"),
 	decimal: Symbol.for("agent-ix.semantic.decimal"),
+	presence: Symbol.for("agent-ix.semantic.presence"),
 	relationship: Symbol.for("agent-ix.semantic.relationship"),
 	operations: Symbol.for("agent-ix.semantic.operations"),
 	pre: Symbol.for("agent-ix.semantic.pre"),
@@ -48,6 +49,7 @@ export const PATTERNS = {
 
 export const UNKNOWN_POLICIES = ["preserve", "reject", "surface"];
 export const DEFAULT_KINDS = ["semantic", "representation", "migration"];
+export const PRESENCES = ["required", "optional"];
 export const EDGE_CATEGORIES = [
 	"structural",
 	"behavioral",
@@ -231,6 +233,12 @@ const decorators = {
 			return;
 		}
 		single(context, target, "@decimal", STATE.decimal, { precision, scale });
+	},
+
+	presence(context, target, presence) {
+		if (!check(context, target, "@presence", "presence", PRESENCES, presence))
+			return;
+		single(context, target, "@presence", STATE.presence, { presence });
 	},
 
 	relationship(

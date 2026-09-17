@@ -127,14 +127,14 @@ pub enum Resolution {
 
 impl Resolution {
     /// The IR `typeRef`: the identity of the definition the token names,
-    /// minted under FR-095 (`type/<displayName>` for an artifact,
+    /// minted under FR-095 (`type/<artifact id>` for an artifact,
     /// `type/<KernelScalar>` for a scalar). `None` for an unresolved token,
     /// which reaches no document.
     pub fn type_ref(&self, package: &PackageIdentity) -> Option<String> {
         match self {
             Resolution::KernelScalar(scalar) => package.type_identity(scalar.name()).ok(),
             Resolution::Object(artifact) | Resolution::Enumeration(artifact) => {
-                package.type_identity(&artifact.display_name).ok()
+                package.type_identity(&artifact.id).ok()
             }
             Resolution::Unresolved(_) => None,
         }

@@ -14,6 +14,7 @@ from . import common_schema
 class ContractVersion(Enum):
     field_1_0_0 = '1.0.0'
     field_1_1_0 = '1.1.0'
+    field_1_2_0 = '1.2.0'
 
 
 class Package(BaseModel):
@@ -109,6 +110,12 @@ class Operands4(BaseModel):
     ]
 
 
+class FeaturePath(RootModel[str]):
+    root: Annotated[
+        str, Field(pattern='^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$')
+    ]
+
+
 class DefaultKind(Enum):
     none = 'none'
     semantic = 'semantic'
@@ -119,6 +126,19 @@ class DefaultKind(Enum):
 class Presence(Enum):
     required = 'required'
     optional = 'optional'
+
+
+class Frame(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    creates: list[FeaturePath]
+    deletes: list[FeaturePath]
+    modifies: list[FeaturePath]
+
+
+class IdentityList(RootModel[list[common_schema.SemanticIdentity]]):
+    root: list[common_schema.SemanticIdentity]
 
 
 class Multiplicity(BaseModel):
@@ -158,6 +178,14 @@ class Returns(BaseModel):
     typeRef: common_schema.SemanticIdentity
 
 
+class Member(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    extent: Multiplicity
+    typeRef: common_schema.SemanticIdentity
+
+
 class Category(Enum):
     structural = 'structural'
     behavioral = 'behavioral'
@@ -166,6 +194,14 @@ class Category(Enum):
     realization = 'realization'
     governance = 'governance'
     traceability = 'traceability'
+
+
+class StepKind(Enum):
+    command = 'command'
+    event = 'event'
+    decision = 'decision'
+    compensation = 'compensation'
+    wait = 'wait'
 
 
 class Kind(Enum):
@@ -177,6 +213,16 @@ class Kind(Enum):
     sequence = 'sequence'
     map = 'map'
     reference = 'reference'
+    entity = 'entity'
+    value_object = 'value_object'
+    nested_entity = 'nested_entity'
+    aggregate_root = 'aggregate_root'
+    enumeration = 'enumeration'
+    event = 'event'
+    state_machine = 'state_machine'
+    process = 'process'
+    repository = 'repository'
+    domain = 'domain'
 
 
 class Role(RootModel[str]):
@@ -195,6 +241,7 @@ class Scalar(Enum):
     datetime = 'datetime'
     duration = 'duration'
     uuid = 'uuid'
+    any = 'any'
 
 
 class Clause(BaseModel):
@@ -312,21 +359,51 @@ class FieldModel(BaseModel):
     nullable: bool
     origin: common_schema.Origin
     presence: Presence
+    redefines: common_schema.SemanticIdentity | None = None
+    subsets: IdentityList | None = None
     typeRef: common_schema.SemanticIdentity
     unit: Annotated[str | None, Field(min_length=1, pattern='^[!-~]+$')] = None
+
+
+class InlineClause(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    language: Annotated[
+        str,
+        Field(
+            pattern='^(quire|ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$'
+        ),
+    ]
+    origin: common_schema.Origin
+    sourceSpan: common_schema.SourceLocus | None = None
+    text: str
 
 
 class Operation(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
+    ensures: list[InlineClause] | None = None
+    frame: Frame | None = None
     identity: common_schema.SemanticIdentity
     name: Annotated[str, Field(min_length=1)]
     origin: common_schema.Origin
     params: list[FieldModel]
     post: list[PostItem]
     pre: list[PreItem]
+    requires: list[InlineClause] | None = None
     returns: Returns | None = None
+
+
+class Population(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    displayName: Annotated[str, Field(min_length=1)]
+    identity: common_schema.SemanticIdentity
+    members: list[Member]
+    origin: common_schema.Origin
 
 
 class Relationship(BaseModel):
@@ -340,6 +417,49 @@ class Relationship(BaseModel):
     origin: common_schema.Origin
     target: common_schema.SemanticIdentity
     verb: Annotated[str, Field(min_length=1)]
+
+
+class State(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    identity: common_schema.SemanticIdentity
+    name: Annotated[str, Field(min_length=1)]
+    origin: common_schema.Origin
+
+
+class Step(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    consumes: IdentityList
+    emits: IdentityList
+    identity: common_schema.SemanticIdentity
+    name: Annotated[str, Field(min_length=1)]
+    origin: common_schema.Origin
+    stepKind: StepKind
+
+
+class Term(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    doc: str
+    origin: common_schema.Origin
+    term: Annotated[str, Field(min_length=1)]
+
+
+class Transition(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    emits: IdentityList
+    from_: Annotated[common_schema.SemanticIdentity, Field(alias='from')]
+    guard: Annotated[str | None, Field(min_length=1)] = None
+    identity: common_schema.SemanticIdentity
+    origin: common_schema.Origin
+    to: common_schema.SemanticIdentity
+    trigger: common_schema.SemanticIdentity
 
 
 class Variant(BaseModel):
@@ -356,26 +476,39 @@ class TypeDefinition(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
+    abstract: bool | None = None
     clauses: list[Clause] | None = None
     constraints: list[Constraint]
     displayName: Annotated[str, Field(min_length=1)]
     extensions: list[common_schema.Extension]
     fields: list[FieldModel] | None = None
     identity: common_schema.SemanticIdentity
+    identityFields: Annotated[
+        list[common_schema.SemanticIdentity] | None, Field(min_length=1)
+    ] = None
     items: common_schema.SemanticIdentity | None = None
     kind: Kind
+    members: IdentityList | None = None
+    occurrenceField: common_schema.SemanticIdentity | None = None
     operations: list[Operation] | None = None
     origin: common_schema.Origin
+    owner: common_schema.SemanticIdentity | None = None
+    persists: IdentityList | None = None
     relationships: list[Relationship] | None = None
     roles: list[Role]
     scalar: Scalar | None = None
+    states: list[State] | None = None
+    steps: list[Step] | None = None
+    supertypes: IdentityList | None = None
     target: common_schema.SemanticIdentity | None = None
+    transitions: list[Transition] | None = None
     unknownPolicy: common_schema.UnknownPolicy
     values: common_schema.SemanticIdentity | None = None
     variants: list[Variant] | None = None
+    vocabulary: list[Term] | None = None
 
 
-class FilamentSemanticIrV1ContractVersions100And110(BaseModel):
+class FilamentSemanticIrV1ContractVersions100110And120(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
@@ -383,5 +516,6 @@ class FilamentSemanticIrV1ContractVersions100And110(BaseModel):
     extensions: list[common_schema.Extension]
     occurrences: list[Occurrence]
     package: Package
+    populations: list[Population] | None = None
     source: Source
     types: Annotated[list[TypeDefinition], Field(min_length=1)]

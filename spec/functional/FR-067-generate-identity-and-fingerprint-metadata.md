@@ -60,6 +60,7 @@ decorator, and without reading a side-car file at run time.
 
 - A generated TypeScript type expresses structure and nothing else, so every other contract datum the IR document carries SHALL reach the consumer through this module. Nothing in the document is dropped, and the committed bases make that a live obligation rather than a precaution: `conformance/bases/core-1-1.json` and `conformance/bases/package-1-1.json` each carry an occurrence, a document-level extension, and a field declaring `unit: "ms"`, and the `typescript` target contract sets `unsupportedFeaturePolicy: "fail"`, so a silent drop is not available.
 - `renderIdentity` SHALL emit, for every type, a readonly array of that type's `roles[]`, ordered as the document orders them, because a role is contract data a consumer may dispatch on.
+- `renderIdentity` SHALL emit `TYPE_IDENTITY_FIELDS`, mapping every `entity` to the names of its identity fields in the order `identityFields` declares them; a type that is not an entity has no entry, and the map is emitted, empty, when the document declares no entity, so a consumer reads one surface.
 - `renderIdentity` SHALL emit, for every type, that type's declared `unknownPolicy`, including for the seven kinds on which FR-066 gives it no validation effect.
 - `renderIdentity` SHALL emit, for every `record`, one readonly relationship descriptor per declared relationship, carrying the relationship's `identity`, `verb`, `category`, `composite`, `target` identity, and `multiplicity` lower and upper bounds.
 - `renderMetadata` SHALL render every declared `operation` as a readonly descriptor carrying its identity, name, parameter descriptors, `returns` where present, and its `pre` and `post` clause ids, because an operation is contract data a consumer may dispatch on and no generated function is emitted for it.
@@ -126,6 +127,7 @@ decorator, and without reading a side-car file at run time.
 | FR-067-AC-15 | Every type-level and field-level `extensions[]` entry of a fixture document appears as a descriptor carrying `identity`, `version`, `required`, `capability` where declared, and `payload`, including the `doc` extension FR-064 also renders as JSDoc. | Test |
 | FR-067-AC-16 | An audit that walks every node of a fixture IR document finds each one either rendered by a generated module or named in a declared representability loss, and a seeded unrendered node makes the audit fail. | Test |
 | FR-067-AC-18 | An operation, a clause and a `migration` default each appear in the generated metadata as readonly descriptor data, and none of the three causes generation to refuse. | Unit |
+| FR-067-AC-19 | For a `1.2.0` document declaring two entities and no other identity-bearing type, `TYPE_IDENTITY_FIELDS` equals the two entities' identity field names, and a document of records emits the map empty. | Unit (TC-1763) |
 | FR-067-AC-17 | Each type's declared `unknownPolicy` appears in the metadata for all eight kinds, including the `union` declaring `surface` and the `map` declaring `preserve` in the committed bases. | Unit |
 
 ## Dependencies

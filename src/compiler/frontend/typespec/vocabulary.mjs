@@ -17,6 +17,7 @@ export const SINGLE_VALUED = Object.freeze([
 	"defaultKind",
 	"identityField",
 	"decimal",
+	"presence",
 	"operations",
 	"semanticReference",
 ]);

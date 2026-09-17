@@ -22,6 +22,7 @@
  * network, or working directory is read on any path through this module.
  */
 
+import { identityFieldNames } from "../../constructs.mjs";
 import { lowerConstraints } from "./constraints.mjs";
 import { diagnostic, fragment, RUST_BACKEND_CODES } from "./diagnostics.mjs";
 import { buildGraph, isCollection } from "./graph.mjs";
@@ -50,8 +51,9 @@ function wireFormOf(extensions) {
 	return undefined;
 }
 
-/** The nine kernel scalars and their Rust bases; `bytes` is the one refusal. */
+/** The v1.2 kernel scalars and their Rust bases; `bytes` is the one refusal. */
 export const KERNEL_SCALARS = Object.freeze({
+	any: "crate::support::SemanticValue",
 	boolean: "bool",
 	integer: "i64",
 	number: "f64",
@@ -178,7 +180,8 @@ const V1_1_NODES = Object.freeze([
  */
 export function unknownDisposition(kind, policy) {
 	const retains = policy === "preserve" || policy === "surface";
-	if (kind === "record") return retains ? "record-retain" : "record-reject";
+	if (kind === "record" || kind === "entity")
+		return retains ? "record-retain" : "record-reject";
 	if (kind === "enum" || kind === "union") {
 		return retains ? "variant-catchall" : "variant-closed";
 	}
@@ -384,7 +387,11 @@ function mapType(definition, context) {
 	for (const entry of lowered.diagnostics) {
 		if (entry.locus === undefined && locus !== undefined) entry.locus = locus;
 	}
-	const constant = constantName({ identity, name: identitySegment(identity) });
+	const constant = constantName({
+		identity,
+		name:
+			typeof definition.displayName === "string" ? definition.displayName : "",
+	});
 	if (constant.ok !== true) {
 		raise(
 			RUST_BACKEND_CODES.UNRENDERABLE_NAME,
@@ -425,7 +432,7 @@ function mapType(definition, context) {
 			if (!Object.hasOwn(KERNEL_SCALARS, scalar)) {
 				raise(
 					RUST_BACKEND_CODES.UNSUPPORTED_SCALAR,
-					`the type ${fragment(identity)} names the scalar ${fragment(scalar)}, which is outside the nine kernel scalars`,
+					`the type ${fragment(identity)} names the scalar ${fragment(scalar)}, which this backend does not support`,
 					locus,
 				);
 				return undefined;
@@ -443,8 +450,13 @@ function mapType(definition, context) {
 			model.row = `scalar:${scalar}`;
 			break;
 		}
-		case "record": {
-			model.row = "kind:record";
+		case "record":
+		case "entity": {
+			// An entity selects its own row: the record's rendering plus its
+			// identity field names (FR-054).
+			model.row = `kind:${kind}`;
+			if (kind === "entity")
+				model.identityFields = identityFieldNames(definition);
 			model.fields = [];
 			for (const field of definition.fields ?? []) {
 				const mapped = mapField(field, definition, context, version);

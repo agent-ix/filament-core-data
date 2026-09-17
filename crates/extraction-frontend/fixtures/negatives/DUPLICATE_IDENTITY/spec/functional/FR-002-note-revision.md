@@ -1,10 +1,10 @@
 ---
-id: FR-002
+id: FR-001Revision
 title: NoteRevision
 object: entity
 type: FR
 ---
-# FR-002: NoteRevision
+# FR-001Revision: NoteRevision
 
 ## Description
 

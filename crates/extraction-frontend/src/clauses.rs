@@ -139,10 +139,7 @@ pub fn lower_clauses(
             continue;
         };
         let origin = span.start();
-        let identity = match ctx
-            .package
-            .clause_identity(ctx.display_name, &clause.clause_id)
-        {
+        let identity = match ctx.package.clause_identity(ctx.id, &clause.clause_id) {
             Ok(identity) => identity,
             Err(unsluggable) => {
                 sink.push(unsluggable.diagnostic(origin));
@@ -188,7 +185,7 @@ pub fn lower_operations(
         let heading = located
             .map(|r| ctx.at(r.line, 1))
             .unwrap_or_else(|| ctx.head());
-        let identity = match ctx.package.operation_identity(ctx.display_name, &decl.name) {
+        let identity = match ctx.package.operation_identity(ctx.id, &decl.name) {
             Ok(identity) => identity,
             Err(unsluggable) => {
                 sink.push(unsluggable.diagnostic(heading));
@@ -263,10 +260,7 @@ fn lower_params(
                         }
             })
             .map(|r| &r.resolution);
-        let identity = match ctx
-            .package
-            .param_identity(ctx.display_name, &decl.name, &param.name)
-        {
+        let identity = match ctx.package.param_identity(ctx.id, &decl.name, &param.name) {
             Ok(identity) => identity,
             Err(unsluggable) => {
                 sink.push(unsluggable.diagnostic(locus));

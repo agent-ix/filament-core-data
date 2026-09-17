@@ -6,13 +6,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 141,
-			"validatingTypes": 89,
-			"nonValidatingDeclarations": 52,
-			"exercisedTypes": 55,
-			"unexercisedValidatingTypes": 34,
-			"constraintsExercised": 174,
-			"typesRejectingAnEmptyOrUndeclaredValue": 72,
+			"declaredTypes": 152,
+			"validatingTypes": 99,
+			"nonValidatingDeclarations": 53,
+			"exercisedTypes": 59,
+			"unexercisedValidatingTypes": 40,
+			"constraintsExercised": 182,
+			"typesRejectingAnEmptyOrUndeclaredValue": 82,
 			"typesAcceptingAnything": [
 				"common_schema.FilamentSemanticContractCommonTypesV1",
 				"compatibility_report_schema.AffectedConsumer",
@@ -533,6 +533,14 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "FeaturePath",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "FieldModel",
 					"exercised": false,
 					"acceptsAConformingValue": false,
@@ -541,11 +549,43 @@
 				},
 				{
 					"module": "semantic_ir_schema",
-					"type": "FilamentSemanticIrV1ContractVersions100And110",
+					"type": "FilamentSemanticIrV1ContractVersions100110And120",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Frame",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "IdentityList",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "InlineClause",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Member",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
@@ -621,6 +661,14 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "Population",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "PostItem",
 					"exercised": false,
 					"why": "no schema node carries this type's property set"
@@ -663,11 +711,43 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "State",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Step",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Term",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Transition",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "TypeDefinition",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 3
+					"constraintsOnThisType": 4
 				},
 				{
 					"module": "semantic_ir_schema",
@@ -720,13 +800,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 143,
-			"validatingTypes": 64,
-			"nonValidatingDeclarations": 79,
-			"exercisedTypes": 49,
-			"unexercisedValidatingTypes": 15,
-			"constraintsExercised": 169,
-			"typesRejectingAnEmptyOrUndeclaredValue": 64,
+			"declaredTypes": 154,
+			"validatingTypes": 72,
+			"nonValidatingDeclarations": 82,
+			"exercisedTypes": 51,
+			"unexercisedValidatingTypes": 21,
+			"constraintsExercised": 177,
+			"typesRejectingAnEmptyOrUndeclaredValue": 72,
 			"typesAcceptingAnything": [],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
 			"lost": ["constraints-array-unique"],
@@ -1101,11 +1181,35 @@
 				},
 				{
 					"module": "semantic_ir_schema",
-					"type": "FilamentSemanticIrV1ContractVersions100And110",
+					"type": "FilamentSemanticIrV1ContractVersions100110And120",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Frame",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "InlineClause",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Member",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
@@ -1181,6 +1285,14 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "Population",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "Relationship",
 					"exercised": false,
 					"acceptsAConformingValue": false,
@@ -1205,11 +1317,43 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "State",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Step",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Term",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Transition",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "TypeDefinition",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 3
+					"constraintsOnThisType": 4
 				},
 				{
 					"module": "semantic_ir_schema",
@@ -1288,13 +1432,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 143,
-			"validatingTypes": 64,
-			"nonValidatingDeclarations": 79,
-			"exercisedTypes": 44,
-			"unexercisedValidatingTypes": 20,
-			"constraintsExercised": 169,
-			"typesRejectingAnEmptyOrUndeclaredValue": 64,
+			"declaredTypes": 154,
+			"validatingTypes": 72,
+			"nonValidatingDeclarations": 82,
+			"exercisedTypes": 46,
+			"unexercisedValidatingTypes": 26,
+			"constraintsExercised": 177,
+			"typesRejectingAnEmptyOrUndeclaredValue": 72,
 			"typesAcceptingAnything": [],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
 			"lost": [
@@ -1676,11 +1820,35 @@
 				},
 				{
 					"module": "semantic_ir_schema",
-					"type": "FilamentSemanticIrV1ContractVersions100And110",
+					"type": "FilamentSemanticIrV1ContractVersions100110And120",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Frame",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "InlineClause",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Member",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
@@ -1756,6 +1924,14 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "Population",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "Relationship",
 					"exercised": false,
 					"acceptsAConformingValue": false,
@@ -1780,11 +1956,43 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "State",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Step",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Term",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Transition",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "TypeDefinition",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 3
+					"constraintsOnThisType": 4
 				},
 				{
 					"module": "semantic_ir_schema",

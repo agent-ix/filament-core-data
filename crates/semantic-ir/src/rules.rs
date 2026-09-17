@@ -61,8 +61,10 @@ pub struct Document<'a> {
     pub ir: &'a Json,
     /// The type definitions, in document order.
     pub types: &'a [Json],
-    /// Whether the document declares contract 1.1.0.
+    /// Whether the document declares contract 1.1.0 or later (1.1.0 or 1.2.0).
     pub is_v11: bool,
+    /// Whether the document declares contract 1.2.0, whose presence is authored.
+    pub is_v12: bool,
 }
 
 impl<'a> Document<'a> {
@@ -74,7 +76,11 @@ impl<'a> Document<'a> {
             bundle,
             ir,
             types,
-            is_v11: ir.get("contractVersion").and_then(Json::as_str) == Some("1.1.0"),
+            is_v11: matches!(
+                ir.get("contractVersion").and_then(Json::as_str),
+                Some("1.1.0" | "1.2.0")
+            ),
+            is_v12: ir.get("contractVersion").and_then(Json::as_str) == Some("1.2.0"),
         })
     }
 
@@ -160,11 +166,18 @@ impl<'a> Document<'a> {
                     }
                 }
             }
-            if let Some(clauses) = definition.get("clauses").and_then(Json::as_array) {
-                let clauses_at = child(&type_at, "clauses");
-                for (member, clause) in clauses.iter().enumerate() {
-                    push(index(&clauses_at, member), clause);
+            for group in ["clauses", "states", "transitions", "steps"] {
+                if let Some(items) = definition.get(group).and_then(Json::as_array) {
+                    let group_at = child(&type_at, group);
+                    for (member, item) in items.iter().enumerate() {
+                        push(index(&group_at, member), item);
+                    }
                 }
+            }
+        }
+        if let Some(populations) = self.ir.get("populations").and_then(Json::as_array) {
+            for (position, population) in populations.iter().enumerate() {
+                push(index("/ir/populations", position), population);
             }
         }
         if let Some(occurrences) = self.ir.get("occurrences").and_then(Json::as_array) {
@@ -176,13 +189,13 @@ impl<'a> Document<'a> {
     }
 }
 
-struct Sink<'a> {
+pub(crate) struct Sink<'a> {
     bundle: &'a Json,
     out: Vec<Located>,
 }
 
 impl<'a> Sink<'a> {
-    fn emit(&mut self, pointer: String, code: &'static str, message: impl Into<String>) {
+    pub(crate) fn emit(&mut self, pointer: String, code: &'static str, message: impl Into<String>) {
         self.out.push(Located {
             owner: owner_for(self.bundle, &pointer),
             locus: locus_for(self.bundle, &pointer),
@@ -190,6 +203,24 @@ impl<'a> Sink<'a> {
             severity: Severity::Error,
             message: message.into(),
             blocking: true,
+            pointer,
+        });
+    }
+
+    /// An `info`, non-blocking diagnostic: the document is accepted.
+    pub(crate) fn advise(
+        &mut self,
+        pointer: String,
+        code: &'static str,
+        message: impl Into<String>,
+    ) {
+        self.out.push(Located {
+            owner: owner_for(self.bundle, &pointer),
+            locus: locus_for(self.bundle, &pointer),
+            code,
+            severity: Severity::Info,
+            message: message.into(),
+            blocking: false,
             pointer,
         });
     }
@@ -209,6 +240,9 @@ pub fn decide(bundle: &Json) -> Vec<Located> {
     per_type(&document, &mut sink);
     occurrences(&document, &mut sink);
     composite_graph(&document, &mut sink);
+    if document.is_v12 {
+        crate::constructs::decide(&document, &mut sink);
+    }
     if !document.is_v11 {
         v1_0_purity(&document, &mut sink);
     }
@@ -531,15 +565,17 @@ fn field_rules(
                     }
                 }
             }
-            if let Some(lower) = lower {
-                let derived = if lower >= 1 { "required" } else { "optional" };
-                if let Some(stated) = field.get("presence").and_then(Json::as_str) {
-                    if stated != derived {
-                        sink.emit(
+            if !document.is_v12 {
+                if let Some(lower) = lower {
+                    let derived = if lower >= 1 { "required" } else { "optional" };
+                    if let Some(stated) = field.get("presence").and_then(Json::as_str) {
+                        if stated != derived {
+                            sink.emit(
                             child(&field_at, "presence"),
                             PRESENCE_MULTIPLICITY_MISMATCH,
                             "presence is derived from the multiplicity lower bound and contradicts it",
                         );
+                        }
                     }
                 }
             }
@@ -575,7 +611,7 @@ fn applies_to(keyword: &str, kind: &str, scalar: &str) -> bool {
         }
         "minLength" | "maxLength" => kind == "scalar" && matches!(scalar, "string" | "bytes"),
         "pattern" | "format" => kind == "scalar" && scalar == "string",
-        "enumValues" => kind == "scalar" || kind == "enum",
+        "enumValues" => matches!(kind, "scalar" | "enum" | "enumeration"),
         "nonEmpty" => {
             (kind == "scalar" && matches!(scalar, "string" | "bytes"))
                 || matches!(kind, "sequence" | "map")

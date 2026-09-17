@@ -470,13 +470,11 @@ extraction-frontend-test: extraction-frontend-toolchain
 # closes and is skipped here by name; run one deliberately with
 # `cargo +1.98.1 test -p agent-ix-extraction-frontend -- --ignored --exact <name>`.
 #
-# The list is empty, and empty is the point rather than an omission. Every test
-# that was ever named here is now live: TC-1290 and TC-1291 unblocked when #87
-# closed, TC-1292's two halves when #88 and #90 did. An entry left behind after
-# its issue closes skips nothing while still asserting the test is blocked, so
-# the list is emptied as each one lands rather than kept as a record of what
-# used to be.
-EXTRACTION_BLOCKED_TESTS :=
+# The list names the tests blocked on an open issue, and an entry is removed in
+# the change that unblocks its test:
+# - filament-core-data#154: TC-1755. The pinned quire-rs revision extracts no
+#   states, transitions, steps or vocabulary.
+EXTRACTION_BLOCKED_TESTS := tc_1755_state_machine_process_and_domain_lift_their_engine_members
 .PHONY: extraction-frontend-evidence
 extraction-frontend-evidence: extraction-frontend-toolchain
 	cargo +$(EXTRACTION_TOOLCHAIN) test -p $(EXTRACTION_CRATE) --locked --offline --no-fail-fast -- --ignored $(foreach test,$(EXTRACTION_BLOCKED_TESTS),--skip $(test))

@@ -16,3 +16,4 @@ alias.
 | Field | Type | Multiplicity | Constraints |
 |-------|------|--------------|-------------|
 | revision | Integer | 1 | min: 1 |
+| id | UUID | 1 | identity |

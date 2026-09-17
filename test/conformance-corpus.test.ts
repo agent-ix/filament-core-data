@@ -1842,6 +1842,17 @@ describe("TC-635..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		}
 	});
 
+	/** The committed corpusVersion moved one step, so each case holds at any version. */
+	const bumped = (step: "major" | "minor" | "patch" | "backward"): string => {
+		const [major, minor, patch] = String(manifest.corpusVersion)
+			.split(".")
+			.map(Number);
+		if (step === "major") return `${major + 1}.0.0`;
+		if (step === "minor") return `${major}.${minor + 1}.0`;
+		if (step === "patch") return `${major}.${minor}.${patch + 1}`;
+		return `${major - 1}.9.0`;
+	};
+
 	it("TC-639 changing an expected result without a major bump fails the versioning gate", () => {
 		const before = structuredClone(manifest) as Json;
 		const after = structuredClone(manifest) as {
@@ -1850,7 +1861,7 @@ describe("TC-635..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 			cases: { expectedDigest: string }[];
 		};
 		after.cases[0].expectedDigest = `sha256:${"0".repeat(64)}`;
-		after.corpusVersion = "1.1.0";
+		after.corpusVersion = bumped("minor");
 		after.predecessor = { ...predecessorRequired };
 		const classified = corpus.classifyVersionChange(before, after) as {
 			required: string;
@@ -1869,7 +1880,7 @@ describe("TC-635..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		expect(failures.length).toBe(1);
 		expect(failures[0].gate).toBe("versioning");
 		expect(failures[0].message).toContain("requires a major bump");
-		after.corpusVersion = "2.0.0";
+		after.corpusVersion = bumped("major");
 		expect(corpus.versioningFailures(before, after)).toEqual([]);
 	});
 
@@ -1881,7 +1892,7 @@ describe("TC-635..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 			cases: unknown[];
 		};
 		removed.cases.pop();
-		removed.corpusVersion = "1.1.0";
+		removed.corpusVersion = bumped("minor");
 		removed.predecessor = { ...predecessorRequired };
 		expect(
 			(corpus.versioningFailures(before, removed) as unknown[]).length,
@@ -1892,7 +1903,7 @@ describe("TC-635..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 			bases: { digest: string }[];
 		};
 		rebased.bases[0].digest = `sha256:${"1".repeat(64)}`;
-		rebased.corpusVersion = "1.0.1";
+		rebased.corpusVersion = bumped("patch");
 		rebased.predecessor = { ...predecessorRequired };
 		expect(
 			(corpus.versioningFailures(before, rebased) as unknown[]).length,
@@ -1907,14 +1918,14 @@ describe("TC-635..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 			cases: unknown[];
 		};
 		added.cases.push({ ...structuredClone(manifest.cases[0]), id: "ENV-999" });
-		added.corpusVersion = "1.1.0";
+		added.corpusVersion = bumped("minor");
 		added.predecessor = { ...predecessorRequired };
 		expect(corpus.versioningFailures(before, added)).toEqual([]);
-		added.corpusVersion = "1.0.0";
+		added.corpusVersion = String(manifest.corpusVersion);
 		expect((corpus.versioningFailures(before, added) as unknown[]).length).toBe(
 			1,
 		);
-		added.corpusVersion = "0.9.0";
+		added.corpusVersion = bumped("backward");
 		expect(
 			(corpus.versioningFailures(before, added) as { message: string }[])[0]
 				.message,

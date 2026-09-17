@@ -137,6 +137,7 @@ export const FIXED_API_SURFACE = Object.freeze([
 	"TYPE_KIND",
 	"TYPE_ROLES",
 	"TYPE_UNKNOWN_POLICY",
+	"TYPE_IDENTITY_FIELDS",
 	"TYPE_EXTENSIONS",
 	"TYPE_RELATIONSHIPS",
 	"FIELD_IDENTITY",
@@ -258,7 +259,8 @@ function renderManifest(model, fingerprint) {
  */
 const EXPORT_DECLARATION =
 	/^export\s+(?:type|interface|const|function|class)\s+([A-Za-z_$][\w$]*)/gm;
-const EXPORT_LIST = /^export\s+(?:type\s+)?\{([^}]*)\}(?:\s*from\s*"([^"]*)")?/gm;
+const EXPORT_LIST =
+	/^export\s+(?:type\s+)?\{([^}]*)\}(?:\s*from\s*"([^"]*)")?/gm;
 const EXPORT_STAR = /^export\s*\*/m;
 const IMPORT_FROM = /^import\s[^"]*"([^"]*)"/gm;
 

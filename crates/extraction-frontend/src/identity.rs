@@ -149,13 +149,15 @@ impl PackageIdentity {
         format!("ix://{}/{}/{}/{tail}", self.org, self.name, kind.segment())
     }
 
-    /// `ix://<org>/<name>/type/<slug(DisplayName)>`.
-    pub fn type_identity(&self, display_name: &str) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Type, &slug(display_name)?))
+    /// `ix://<org>/<name>/type/<slug(artifact id)>`: a definition's identity
+    /// comes from its artifact id, never from its `displayName`. A kernel
+    /// scalar definition passes its scalar name, which is its own slug.
+    pub fn type_identity(&self, artifact_id: &str) -> Result<String, Unsluggable> {
+        Ok(self.node(NodeKind::Type, &slug(artifact_id)?))
     }
 
-    /// `ix://<org>/<name>/type/<slug(DisplayName)><Slug(Field)>`: the alias a
-    /// constrained field's `typeRef` names.
+    /// `ix://<org>/<name>/type/<slug(artifact id)><Slug(Field)>`: the alias a
+    /// constrained field's `typeRef` names. `record` is the owner's artifact id.
     pub fn alias_identity(&self, record: &str, field: &str) -> Result<String, Unsluggable> {
         Ok(self.node(NodeKind::Type, &alias_identity_tail(record, field)?))
     }
@@ -217,7 +219,7 @@ impl From<&Package> for PackageIdentity {
     }
 }
 
-/// `<slug(DisplayName)><Slug(fieldName)>`: the tail of the constrained-field
+/// `<slug(artifact id)><Slug(fieldName)>`: the tail of the constrained-field
 /// alias identity. The field component is capitalized after slugging.
 fn alias_identity_tail(record: &str, field: &str) -> Result<String, Unsluggable> {
     let record = slug(record)?;

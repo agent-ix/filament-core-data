@@ -96,6 +96,9 @@ shared-identity implementation (CR-087-1). Two are `🚧`: TC-1316 is blocked on
 issue #89, and TC-1317 is blocked in the rehearsal's scratch-clone environment.
 TC-1337 passed when issue #85 delivered the JSON Schema backend. TC-1292 passed when issues
 #88 and #90 closed, and FR-130 gave its Rust half the generic command line.
+The lifted `config-version-table` document carries contract 1.2.0 `entity`
+constructs, which every backend renders (TC-1762..TC-1765), so both pass over
+it.
 Nine rows are `Static` evidence produced by `make extraction-frontend-evidence`,
 the crate's `--ignored` run; seven pass under it and TC-1316/TC-1317 remain
 blocked as stated above.
@@ -115,7 +118,7 @@ blocked as stated above.
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001..US-010, US-012, US-013, US-015, FR-001..FR-053, FR-063..FR-080, FR-091..FR-106 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944, TC-1200..1350, TC-1373..1378 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch; TC-1373..1378 planned on issue #93 |
+| StR-001 | US-001..US-010, US-012, US-013, US-015, FR-001..FR-053, FR-063..FR-080, FR-091..FR-106, FR-139, FR-141..FR-143 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944, TC-1200..1350, TC-1373..1378, TC-1552..1557, TC-1740..1761 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch; TC-1374, TC-1375, TC-1552, TC-1554..1557 planned on issue #93 |
 
 ### User Story Coverage
 
@@ -130,7 +133,7 @@ blocked as stated above.
 | US-004 | US-004-AC-1 | TC-127 | ✅ Complete |
 | US-004 | US-004-AC-2 | TC-128 | ✅ Complete |
 | US-005 | Informal story outcome implemented by FR-019..FR-026 | TC-130..176 | ✅ Complete |
-| US-006 | US-006-EX-1..4 (illustrative) implemented by FR-027..FR-030 and provisional FR-106 | TC-203, TC-210, TC-214, TC-220, TC-1373..TC-1378 | 🚧 planned on issue #93 |
+| US-006 | US-006-EX-1..4 (illustrative) implemented by FR-027..FR-030 and FR-106 | TC-203, TC-210, TC-214, TC-220, TC-1373..TC-1378 | 🚧 TC-1374, TC-1375 planned on issue #93 |
 | US-007 | US-007-EX-1..4 (illustrative) implemented by FR-031..FR-034 | TC-262, TC-271, TC-258, TC-277 | ✅ Complete |
 | US-008 | US-008-EX-1..5 (illustrative) implemented by FR-035..FR-039 | TC-282, TC-303, TC-305, TC-304, TC-318 | ✅ Complete |
 | US-009 | US-009-EX-1 (illustrative) implemented by FR-041 | TC-337, TC-343, TC-344 | ✅ Complete |
@@ -165,13 +168,15 @@ blocked as stated above.
 | US-019 | US-019-EX-2 (illustrative) implemented by FR-130 | TC-1390 | ✅ Complete |
 | US-019 | US-019-EX-3 (illustrative) implemented by FR-130 | TC-1391 | ✅ Complete |
 | US-019 | US-019-EX-4 (illustrative) implemented by FR-130 | TC-1392 | ✅ Complete |
-| US-019 | US-019-EX-1, US-019-EX-2 (illustrative) implemented by FR-136 | TC-1530..TC-1536 | ✅ Complete |
+| US-019 | US-019-EX-1, US-019-EX-2 (illustrative) implemented by FR-136 | TC-1530..TC-1536, TC-1765, TC-1769 | ✅ Complete |
 | US-021 | US-021-EX-1..US-021-EX-4 (illustrative) implemented by FR-137 | TC-1537..TC-1544 | ✅ Complete |
 | US-020 | US-020-EX-1, US-020-EX-2 (illustrative) implemented by FR-134 | TC-1431 | 🚧 planned on issue #6 |
 | US-020 | US-020-EX-3, US-020-EX-5 (illustrative) implemented by FR-134 | TC-1430, TC-1432 | 🚧 planned on issue #6 |
 | US-020 | US-020-EX-4 (illustrative) implemented by FR-135 | TC-1429 | 🚧 planned on issue #12 |
 | US-019 | The SysML v2 textual interchange target implemented by FR-138 | TC-1545..TC-1551 | 🚧 planned on issue #37 |
-| US-006 | An unconstrained value expressed without narrowing, implemented by FR-139 | TC-1552..TC-1557 | 🚧 planned on issue #93 |
+| US-006 | An unconstrained value expressed without narrowing, implemented by FR-139 | TC-1552..TC-1557 | 🚧 TC-1552, TC-1554..TC-1557 planned on issue #93 |
+| US-006 | The model members and one construct per object type, implemented by FR-141 and FR-142 | TC-1740..TC-1750 | ✅ Complete |
+| US-015 | Object-type artifacts lifted to their constructs, implemented by FR-143 | TC-1751..TC-1755 | 🚧 TC-1755 blocked on issue #154 |
 | US-008 | The compiler judged by the independent corpus, implemented by FR-140 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
 
 ### Functional Requirement Coverage
@@ -232,19 +237,19 @@ blocked as stated above.
 | FR-052 | FR-052-AC-1..16, FR-052-CON-1..4 | TC-547..TC-566 | ✅ Complete |
 | FR-053 | FR-053-AC-1..15, FR-053-CON-1..5 | TC-412..TC-431, TC-604 | ✅ Complete |
 | FR-063 | FR-063-AC-1..21, FR-063-CON-1..6 | TC-745..TC-754 | 🚧 In progress |
-| FR-064 | FR-064-AC-1..22, FR-064-CON-1..7 | TC-755..TC-765 | 🚧 In progress |
+| FR-064 | FR-064-AC-1..24, FR-064-CON-1..7 | TC-755..TC-765, TC-1763, TC-1767 | 🚧 In progress |
 | FR-065 | FR-065-AC-1..22, FR-065-CON-1..6 | TC-766..TC-775 | 🚧 In progress |
 | FR-066 | FR-066-AC-1..29, FR-066-CON-1..9 | TC-776..TC-786 | 🚧 In progress |
-| FR-067 | FR-067-AC-1..17, FR-067-CON-1..6 | TC-787..TC-794 | 🚧 In progress |
+| FR-067 | FR-067-AC-1..19, FR-067-CON-1..6 | TC-787..TC-794, TC-1763 | 🚧 In progress |
 | FR-068 | FR-068-AC-1..26, FR-068-CON-1..8 | TC-795..TC-805, TC-1355, TC-1356 | 🚧 In progress |
 | FR-069 | FR-069-AC-1..25, FR-069-CON-1..7 | TC-806..TC-814 | 🚧 In progress |
 | FR-070 | FR-070-AC-1..20, FR-070-CON-1..8 | TC-815..TC-824 | 🚧 In progress |
 | FR-071 | FR-071-AC-1..20, FR-071-CON-1..8 | TC-825..TC-833 | 🚧 In progress |
-| FR-054 | FR-054-AC-1..15, FR-054-CON-1..6 | TC-645..TC-657, TC-674, TC-694, TC-740 | ✅ Complete |
-| FR-055 | FR-055-AC-1..16, FR-055-CON-1..4 | TC-658..TC-665, TC-1357, TC-1358 | 🚧 In progress |
+| FR-054 | FR-054-AC-1..16, FR-054-CON-1..6 | TC-645..TC-657, TC-674, TC-694, TC-740, TC-1762 | ✅ Complete |
+| FR-055 | FR-055-AC-1..17, FR-055-CON-1..4 | TC-658..TC-665, TC-1357, TC-1358, TC-1766 | 🚧 In progress |
 | FR-056 | FR-056-AC-1..17, FR-056-CON-1..8 | TC-666..TC-676 | ✅ Complete |
 | FR-057 | FR-057-AC-1..14, FR-057-CON-1..6 | TC-677..TC-689 | ✅ Complete |
-| FR-058 | FR-058-AC-1..12, FR-058-CON-1..5 | TC-690..TC-697 | ✅ Complete |
+| FR-058 | FR-058-AC-1..13, FR-058-CON-1..5 | TC-690..TC-697, TC-1762 | ✅ Complete |
 | FR-059 | FR-059-AC-1..15, FR-059-CON-1..6 | TC-698..TC-710 | ✅ Complete |
 | FR-060 | FR-060-AC-1..15, FR-060-CON-1..7 | TC-711..TC-718 | ✅ Complete |
 | FR-061 | FR-061-AC-1..13, FR-061-CON-1..7 | TC-719..TC-724 | ✅ Complete |
@@ -255,7 +260,7 @@ blocked as stated above.
 | FR-075 | FR-075-AC-1..11, FR-075-CON-1..3 | TC-873..882 | ✅ Complete |
 | FR-076 | FR-076-AC-1..14, FR-076-CON-1..5 | TC-883..894 | ✅ Complete |
 | FR-077 | FR-077-AC-1..13, FR-077-CON-1..4 | TC-895..907, TC-944 | ✅ Complete |
-| FR-078 | FR-078-AC-1..11, FR-078-CON-1..3 | TC-908..917 | ✅ Complete |
+| FR-078 | FR-078-AC-1..12, FR-078-CON-1..3 | TC-908..917, TC-1770 | ✅ Complete |
 | FR-079 | FR-079-AC-1..11, FR-079-CON-1..4 | TC-918..926, TC-944 | ✅ Complete |
 | FR-080 | FR-080-AC-1..9, FR-080-CON-1..3 | TC-927..935, TC-944 | ✅ Complete |
 | FR-081 | FR-081-AC/CON x26 | TC-1000..TC-1008 | 🚧 In progress |
@@ -277,17 +282,20 @@ blocked as stated above.
 | FR-097 | FR-097-AC-1..16, FR-097-CON-1..3 | TC-1273..TC-1284, TC-1336, TC-1339..TC-1342 | ✅ Complete |
 | FR-098 | FR-098-AC-1..12, FR-098-CON-1..3 | TC-1285..TC-1294, TC-1338, TC-1343, TC-1344 | ✅ Complete |
 | FR-099 | FR-099-AC-1..6, FR-099-CON-1..3 | TC-1295..TC-1299, TC-1330, TC-1349 | ✅ Complete |
-| FR-106 | FR-106-AC-1..6, FR-106-CON-1..2 | TC-1373..TC-1378 | 🚧 planned on issue #93 |
-| FR-100 | FR-100-AC-1..6, FR-100-CON-1..3 | TC-1361..TC-1366 | ✅ Complete |
+| FR-106 | FR-106-AC-1..6, FR-106-CON-1..2 | TC-1373..TC-1378 | 🚧 TC-1374, TC-1375 planned on issue #93 |
+| FR-100 | FR-100-AC-1..9, FR-100-CON-1..3 | TC-1361..TC-1366, TC-1764, TC-1768, TC-1771 | ✅ Complete |
 | FR-130 | FR-130-AC-1..8, FR-130-CON-1..3 | TC-1388..TC-1395 | ✅ Complete |
-| FR-131 | FR-131-AC-1..9, FR-131-CON-1..3 | TC-1403..TC-1409, TC-1586 | ✅ Complete |
+| FR-131 | FR-131-AC-1..9, FR-131-CON-1..3 | TC-1403..TC-1409, TC-1586 | 🚧 TC-1586 blocked on issue #147 |
 | FR-132 | FR-132-AC-1..7, FR-132-CON-1..3 | TC-1414..TC-1417 | 🚧 planned on issue #65 |
 | FR-133 | FR-133-AC-1..7, FR-133-CON-1..3 | TC-1418..TC-1421 | ✅ Complete |
 | FR-134 | FR-134-AC-1..7, FR-134-CON-1..3 | TC-1430..TC-1433 | 🚧 planned on issue #6 |
 | FR-135 | FR-135-AC-1..7, FR-135-CON-1..3 | TC-1426..TC-1429 | 🚧 planned on issue #12 |
 | FR-138 | FR-138-AC-1..7, FR-138-CON-1..3 | TC-1545..TC-1551 | 🚧 planned on issue #37 |
-| FR-139 | FR-139-AC-1..6, FR-139-CON-1..3 | TC-1552..TC-1557 | 🚧 planned on issue #93 |
+| FR-139 | FR-139-AC-1..6, FR-139-CON-1..3 | TC-1552..TC-1557 | 🚧 TC-1552, TC-1554..TC-1557 planned on issue #93 |
 | FR-140 | FR-140-AC-1..7, FR-140-CON-1..3 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
+| FR-141 | FR-141-AC-1..7, FR-141-CON-1..2 | TC-1740..TC-1744, TC-1759, TC-1761 | ✅ Complete |
+| FR-142 | FR-142-AC-1..7, FR-142-CON-1..2 | TC-1745..TC-1750, TC-1760 | ✅ Complete |
+| FR-143 | FR-143-AC-1..5, FR-143-CON-1..2 | TC-1751..TC-1755 | 🚧 TC-1755 blocked on issue #154 |
 
 ### Non-Functional Requirement Coverage
 
@@ -333,6 +341,7 @@ blocked as stated above.
 | NFR-041 | NFR-041-AC-1..7 | TC-1565..TC-1571 | 🚧 planned on issue #63 |
 | NFR-042 | NFR-042-AC-1..6 | TC-1572..TC-1577 | 🚧 planned on issue #66 |
 | NFR-043 | NFR-043-AC-1..6 | TC-1578..TC-1583 | 🚧 planned on issue #92 |
+| NFR-044 | NFR-044-AC-1..2 | TC-1756, TC-1757 | ✅ Complete |
 
 ## Test Case Summary
 
@@ -583,7 +592,7 @@ blocked as stated above.
 | TC-243 | Added relationship/operation/clause classifies additive; removed or retargeted classifies breaking | Unit | P0 | FR-028-AC-13 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-244 | `minLength` applied to an `integer` scalar fails at the constraint locus | Unit | P0 | FR-029-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-245 | A `pattern` whose `regex` does not compile under `ecma-262` fails validation | Unit | P0 | FR-029-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-246 | `contractVersion: "1.2.0"` fails before emission; `1.1.0` with `source.dialect: avro` fails at `source.dialect` | Unit | P0 | FR-030-AC-5, FR-030-AC-6 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-246 | `contractVersion: "1.3.0"` fails before emission; `1.1.0` with `source.dialect: avro` fails at `source.dialect` | Unit | P0 | FR-030-AC-5, FR-030-AC-6 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-247 | Every new IR node kind has one golden and one negative fixture under `fixtures/semantic/v1/` | Static | P0 | NFR-013-AC-5 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-248 | `tsp compile packages/semantic-core` exits 0 with zero diagnostics under the pinned compiler | Compile | P0 | FR-031-AC-1 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-249 | The compiled program's declaration set equals `inventory.json`; adding `Entity` or `Any` to the source makes the scope test fail naming the declaration | Unit | P0 | FR-031-AC-2, NFR-014-AC-1 | ✅ passed — semantic-core grammar (PR #39) |
@@ -1466,7 +1475,7 @@ blocked as stated above.
 | TC-1270 | A pattern scan over every diagnostic emitted across the fixture corpus finds no absolute path, timestamp, hostname, or duration | Property | P1 | FR-096-AC-12 | ✅ passed |
 | TC-1271 | extraction-frontend-diagnostics.md lists every code (27, DUPLICATE_IDENTITY included) with severity, blocking, and owner, and regenerating it from the enum reproduces the committed file byte for byte | Snapshot | P1 | FR-096-AC-13 | ✅ passed |
 | TC-1272 | The set of fixtures/negatives/<CODE>/ directories FR-098 lists equals the set of Code variants, negatives/DUPLICATE_IDENTITY included, so every registry code has one fixture or one named constructing test | Static | P1 | FR-096-AC-14 | ✅ passed |
-| TC-1273 | Cargo.toml names agent-ix-semantic-ir under [dependencies] with path = "../semantic-ir" and no jsonschema; cargo tree lists no direct jsonschema edge and every jsonschema line sits under quire-rs; crates/semantic-ir is byte-unchanged | Static | P0 | FR-097-AC-1, FR-097-CON-1 | ✅ passed |
+| TC-1273 | Cargo.toml names agent-ix-semantic-ir under [dependencies] with path = "../semantic-ir" and no jsonschema; agent-ix-semantic-ir appears on that one manifest line only; cargo tree lists no direct jsonschema edge, lists agent-ix-semantic-ir as a direct edge, and every jsonschema line sits under quire-rs | Static | P0 | FR-097-AC-1, FR-097-CON-1 | ✅ passed |
 | TC-1274 | A fault-injected document missing unknownPolicy on one type yields exactly one blocking INVALID_IR naming that type's instance pointer, and no document, fingerprint, or provenance file is written | Unit | P1 | FR-097-AC-2 | ✅ passed |
 | TC-1275 | The bytes written for config-version-table equal decide({"ir": doc}).normalized and the committed expected/semantic-ir.json; parsing them and calling normalized again reproduces them | Snapshot | P1 | FR-097-AC-3 | ✅ passed |
 | TC-1276 | Every node list in the written document is sorted by identity under code-point order and equals the code-point sort computed in node under LC_ALL en_US.UTF-8 and de_DE.UTF-8; an Intl.Collator disagrees on at least one emitted list, which is why it is not the reference | Property | P1 | FR-097-AC-4 | ✅ passed |
@@ -1544,12 +1553,12 @@ blocked as stated above.
 | TC-1348 | The provenance record's entry for the vendored spec-objects-business module carries the manifest sha256 that fixtures/modules/spec-objects-business/PROVENANCE.json records for revision d1840b8 | Unit | P1 | FR-095-AC-15 | ✅ passed |
 | TC-1349 | extraction-frontend-deny exits non-zero when a crate with a licence outside the deny.toml allow list is planted in a scratch manifest, extraction-frontend-audit (--deny yanked) exits non-zero when a yanked version is planted, and each exits zero on the committed one | Static | P1 | FR-099-AC-6 | ✅ static evidence (make extraction-frontend-evidence) |
 | TC-1350 | cargo check -p agent-ix-extraction-frontend --locked --offline on the rust-toolchain.toml channel (1.94.1) exits zero, so a --workspace build on the workspace channel still compiles the crate and make rust-build and rust-test are not broken by it (CR-036-1) | Integration | P1 | NFR-033-AC-11 | ✅ passed |
-| TC-1373 | A required `0..*` field admits a present empty collection and refuses an absent member; a required `0..*` field and an optional `1..*` field are both valid `1.2.0` fields | Unit | P0 | FR-106-AC-1, FR-106-CON-1 | 🚧 planned on issue #93 |
+| TC-1373 | A required `0..*` field and an optional `1..*` field compile to a `1.2.0` document both readers accept; through the rendered JSON Schema a present empty collection is admitted and an absent required member refused, and the optional field admits absence and refuses a present empty list | Unit | P0 | FR-106-AC-1, FR-106-CON-1 | ✅ passed |
 | TC-1374 | An optional `1..*` field admits an absent member and refuses a present empty collection | Unit | P0 | FR-106-AC-2, FR-106-CON-1 | 🚧 planned on issue #93 |
 | TC-1375 | Two fields differing only in `presence` produce distinct IR `Field` declarations and distinct generated declarations | Integration | P0 | FR-106-AC-3 | 🚧 planned on issue #93 |
-| TC-1376 | A `1.2.0` field whose presence differs from `multiplicity.lower` validates without `PRESENCE_MULTIPLICITY_MISMATCH`, and the same field in a `1.1.0` document reports it | Unit | P0 | FR-106-AC-4 | 🚧 planned on issue #93 |
-| TC-1377 | A source field with no authored presence yields a named loss naming the field and its locus | Integration | P1 | FR-106-AC-5 | 🚧 planned on issue #93 |
-| TC-1378 | Changing only one of `presence`, `nullable`, or default kind changes only that member of the emitted `Field`, and none is derived from another | Unit | P1 | FR-106-AC-6, FR-106-CON-2 | 🚧 planned on issue #93 |
+| TC-1376 | A `1.2.0` field whose presence differs from `multiplicity.lower` validates without `PRESENCE_MULTIPLICITY_MISMATCH`, and the same field in a `1.1.0` document reports it | Unit | P0 | FR-106-AC-4 | ✅ passed |
+| TC-1377 | A source field with no authored presence yields a named loss naming the field and its locus | Integration | P1 | FR-106-AC-5 | ✅ passed |
+| TC-1378 | Changing only one of `presence`, `nullable`, or default kind changes only that member of the emitted `Field`, and none is derived from another | Unit | P1 | FR-106-AC-6, FR-106-CON-2 | ✅ passed |
 | TC-1351 | The negatives/DUPLICATE_IDENTITY bundle, an artifact NoteRevision beside a record Note with a constrained field revision (contract case (c): distinct names, distinct slugs, one identity), is refused at the later path with DUPLICATE_IDENTITY naming both type/NoteRevision identities and carrying the earlier locus in related, blocking, and no document is written | Snapshot | P1 | FR-095-AC-14 | ✅ passed |
 | TC-1352 | A Rust test in crates/extraction-frontend/tests/ asserts every row of crates/extraction-frontend/fixtures/identity-cases/identity-cases.json (identity, alias, diagnosticCode, and refusal rows, including Config Version, Config_Version, created_at, minLength, package core.data, and the part _ refusing as UNSLUGGABLE_NAME) against identity.rs, and a planted row the crate fails turns the test red naming identity.rs | Unit | P0 | FR-095-AC-16 | ✅ passed |
 | TC-1353 | The same Rust test runs node scripts/extraction-frontend-harness.mjs identity-cases --table <file> (which imports src/compiler/frontend/typespec/identity.mjs and prints what it mints or refuses per row) over the same table and compares row by row, failing naming node when it is absent, so the two implementations are checked by one table and not by two hand-written lists; a planted row identity.mjs fails turns the test red naming identity.mjs | Unit | P0 | FR-095-AC-16 | ✅ passed |
@@ -1581,7 +1590,7 @@ blocked as stated above.
 | TC-1407 | A dialect registered unimplemented is refused with FRONTEND_NOT_IMPLEMENTED naming its owner, over a synthetic registration rather than whichever dialect is unbuilt today | Unit | P1 | FR-131-AC-6 | ✅ passed |
 | TC-1408 | No module under src/compiler/frontend/ imports a process-starting built-in, and extraction.mjs is unreachable from the frontend seam | Unit | P0 | FR-131-AC-7, FR-131-CON-1, FR-131-CON-2 | ✅ passed |
 | TC-1409 | A request supplying no producer raises rather than returning a diagnostic | Unit | P1 | FR-131-AC-8 | ✅ passed |
-| TC-1586 | One markdown bundle lifted by the extraction producer generates files in every declared target, and all five targets report the same IR fingerprint from that single lift | Integration | P0 | FR-131-AC-9 | ✅ passed |
+| TC-1586 | One markdown bundle lifted by the extraction producer generates files in every declared target, and all five targets report the same IR fingerprint from that single lift | Integration | P0 | FR-131-AC-9 | 🚧 blocked on issue #147: the lifted `business` bundle carries every construct kind other than `entity`, and model members, which the backends refuse |
 | TC-1410 | No change-set gate resolves a range end against main, origin/main or HEAD, and every one reads both ends from the shared sentinel helper | Analysis | P0 | NFR-039-AC-1, NFR-039-AC-5 | 🚧 planned on issue #92 |
 | TC-1411 | A gate whose sentinels are absent from history fails naming what it could not locate, and a commit landing after a change's range does not enter that range even when it touches a prohibited path | Unit | P0 | NFR-039-AC-2, NFR-039-AC-3 | 🚧 planned on issue #92 |
 | TC-1412 | A gate comparing a historical hunk reads the other side at that hunk's own commit, so a later change editing those lines leaves it green | Analysis | P1 | NFR-039-AC-4 | 🚧 planned on issue #92 |
@@ -1639,7 +1648,7 @@ blocked as stated above.
 | TC-1550 | A node with no mapping produces a diagnostic and no silently truncated file is written | Unit | P0 | FR-138-AC-6 | 🚧 planned on issue #37 |
 | TC-1551 | The target declares a one-way round trip and no module of this repository reads a .sysml file | Static | P1 | FR-138-AC-7, FR-138-CON-2 | 🚧 planned on issue #37 |
 | TC-1552 | A default of a number, string, boolean, null and array each round-trips through the IR without narrowing to an object | Unit | P0 | FR-139-AC-1 | 🚧 planned on issue #93 |
-| TC-1553 | An unconstrained value and a zero-field record produce distinct IR documents and distinct generated declarations, and compare unequal at every layer | Unit | P0 | FR-139-AC-2, FR-139-CON-1 | 🚧 planned on issue #93 |
+| TC-1553 | An unconstrained value and a zero-field record produce distinct IR documents and distinct generated declarations, and compare unequal at every layer: the IR node, the normalized bytes, the fingerprint, the compatibility report, the JSON Schema declaration and the Rust declaration; the spec-bundle lift emits the `any` scalar | Unit | P0 | FR-139-AC-2, FR-139-CON-1 | ✅ passed |
 | TC-1554 | Every document valid under the prior contract version validates byte-unchanged under the revised one | Integration | P0 | FR-139-AC-3, FR-139-CON-2 | 🚧 planned on issue #93 |
 | TC-1555 | A prior-version reader refuses a document carrying the new declaration with the published later-revision diagnostic and never reads it as a record | Unit | P0 | FR-139-AC-4 | 🚧 planned on issue #93 |
 | TC-1556 | A backend unable to carry the declaration records a named loss naming the construct and its locus, and emits no narrowed substitute | Unit | P0 | FR-139-AC-5, FR-139-CON-3 | 🚧 planned on issue #93 |
@@ -1670,6 +1679,38 @@ blocked as stated above.
 | TC-1581 | No matrix row or review disposition cites a removed measurement as its evidence | Manual | P1 | NFR-043-AC-4 | 🚧 planned on issue #92 |
 | TC-1582 | No surviving permitted-path list gains an entry as part of the retirement | Static | P0 | NFR-043-AC-5 | 🚧 planned on issue #92 |
 | TC-1583 | The zero-publication and unchanged-surface properties are each still verified by at least one case | Integration | P0 | NFR-043-AC-6 | 🚧 planned on issue #92 |
+| TC-1740 | A `1.2.0` document carrying `supertypes`, `abstract`, `subsets`, `redefines`, `frame`, `requires`, `ensures`, `populations` and a `quire` clause is accepted by the Rust, Node and Python readers | Unit | P0 | FR-141-AC-1 | ✅ passed |
+| TC-1741 | An unresolved supertype, a supertype of another kind and a generalization cycle raise `UNRESOLVED_CONSTRUCT_REF`, `CONSTRUCT_TARGET_KIND` and `SUPERTYPE_CYCLE` | Unit | P0 | FR-141-AC-2 | ✅ passed |
+| TC-1742 | An unresolved `subsets` entry raises `UNRESOLVED_FEATURE_REF` and a widening `redefines` raises `INVALID_REDEFINITION` | Unit | P0 | FR-141-AC-3 | ✅ passed |
+| TC-1743 | An unresolved frame path raises `UNRESOLVED_FRAME_PATH` and an unresolved population member raises `UNRESOLVED_TYPE_REF` | Unit | P0 | FR-141-AC-4 | ✅ passed |
+| TC-1744 | Every `1.2.0` model member and construct kind in a `1.1.0` document is refused with `SCHEMA_VIOLATION` | Unit | P0 | FR-141-AC-5, FR-141-CON-1 | ✅ passed |
+| TC-1745 | A `1.2.0` document with one construct of each of the ten kinds is accepted by the Rust, Node and Python readers | Unit | P0 | FR-142-AC-1 | ✅ passed |
+| TC-1746 | Each kind missing a required member, or carrying a member of another kind, is refused with `SCHEMA_VIOLATION` | Unit | P0 | FR-142-AC-2, FR-142-CON-1 | ✅ passed |
+| TC-1747 | Owner, aggregate member, persisted type and domain member of an excluded kind, or naming no type, raise their reader code at the member pointer | Unit | P0 | FR-142-AC-3 | ✅ passed |
+| TC-1748 | A non-`datetime` occurrence field, an undeclared transition state or trigger, a dangling guard and a type in two domains raise their reader codes | Unit | P0 | FR-142-AC-4 | ✅ passed |
+| TC-1749 | The Rust, TypeScript and JSON Schema backends refuse each construct kind they do not render with a named diagnostic and emit no record in its place | Unit | P0 | FR-142-AC-5, FR-142-CON-2 | ✅ passed |
+| TC-1750 | `contracts-v1.md` states the members, built-in rules and Quire meaning of every construct | Manual | P1 | FR-142-AC-6 | ✅ passed |
+| TC-1751 | The `business` fixture lifts to one construct of each kind with the identity fields, members, owner, occurrence field and persisted types its fields and edges name, accepted by the reader | Integration | P0 | FR-143-AC-1, FR-143-CON-2 | ✅ passed |
+| TC-1752 | Every `business` type identity ends in its artifact id and every `displayName` is its declared name; a declared-name rename leaves relationships byte-identical | Property | P0 | FR-143-AC-2, FR-143-CON-1 | ✅ passed |
+| TC-1753 | Each broken built-in rule yields one blocking `ARTIFACT_NOT_LOWERED` naming it, and no type of that artifact is emitted | Unit | P0 | FR-143-AC-3 | ✅ passed |
+| TC-1754 | A `nested_entity` with no owner and one with two owners are each refused naming the owner rule; a nested entity owned only by a refused one is refused too at the fixed point, keeping its own declared loss, and no emitted owner or relationship names a refused artifact | Unit | P0 | FR-143-AC-4 | ✅ passed |
+| TC-1755 | `SM-001` lifts its four states and three transitions, `PR-001` its three ordered steps, and `DM-001` a non-empty vocabulary | Unit | P1 | FR-143-AC-5 | 🚧 blocked on issue #154 |
+| TC-1756 | Published `1.0.0` and `1.1.0` fixtures keep reader verdicts and canonical bytes, and a `1.1.0` document carrying a `1.2.0` node is refused | Integration | P0 | NFR-044-AC-1 | ✅ passed |
+| TC-1757 | The `1.1.0` to `1.2.0` uplift of a document declaring types classifies additive, and the reverse change conditional | Unit | P0 | NFR-044-AC-2 | ✅ passed |
+| TC-1758 | An artifact with id _ and one with a non-ASCII-only id each raise one blocking UNSLUGGABLE_NAME at the frontmatter and lower to no definition, with no panic; an artifact with id UUID in a bundle using UUID raises DUPLICATE_TYPE_NAME naming type/UUID | Unit | P1 | FR-095-AC-17 | ✅ passed |
+| TC-1759 | An inline requires clause in ocl and an ensures clause in acme:tla are each accepted by the Rust, Node and Python readers with exactly one non-blocking info CLAUSE_LANGUAGE_UNCHECKED at the clause language; a quire clause raises nothing | Unit | P0 | FR-141-AC-6, FR-141-CON-2 | ✅ passed |
+| TC-1760 | The construct kinds of the Rust reader, the extraction frontend and `src/compiler/constructs.mjs` equal the schema's `1.2.0` kinds in order, and the edge kinds of `constructs.mjs` and the Node and Python readers equal the schema's | Unit | P1 | FR-142-AC-7 | ✅ passed |
+| TC-1761 | A TypeSpec member of type `unknown` lowers to a field whose type is the kernel scalar `any`, identified `type/JsonObject` as the spec bundles identify it, with no blocking diagnostic and no zero-field record | Unit | P0 | FR-141-AC-7 | ✅ passed |
+| TC-1762 | A `1.2.0` entity selects the Rust `kind:entity` row: its struct renders as a record's and its module declares `IDENTITY_FIELDS` naming the identity fields in declared order, while a record declares none | Unit | P0 | FR-054-AC-16, FR-058-AC-13 | ✅ passed |
+| TC-1763 | A `1.2.0` entity renders as a TypeScript interface with a record validator that compiles under `tsc`, `TYPE_KIND` records `entity`, and `TYPE_IDENTITY_FIELDS` names its identity fields while a record has no entry | Unit | P0 | FR-064-AC-23, FR-067-AC-19 | ✅ passed |
+| TC-1764 | A `1.2.0` entity renders as an object schema filed under its declared name, carrying `x-agent-ix-kind: entity` and its identity field names in `x-agent-ix-identity-fields`, while a record carries neither | Unit | P0 | FR-100-AC-7 | ✅ passed |
+| TC-1765 | Both Python targets generate an entity as the record's model class, and the generated modules carry no identity-field marking, which is the gap FR-136 declares | Integration | P0 | FR-136-AC-8 | ✅ passed |
+| TC-1766 | The lifted config-version-table golden generates a Rust crate whose `ConfigVersion` struct and `config_version` module are named by display name, with no artifact-id-named module or type, while `SemanticType::ConfigVersion` maps to the `FR-006` identity | Unit | P0 | FR-055-AC-17 | ✅ passed |
+| TC-1767 | The lifted config-version-table golden generates a TypeScript package exporting `validateConfigVersion` whose `TYPE_IDENTITY` maps `ConfigVersion` to the `FR-006` identity, with no exported name derived from an artifact id | Integration | P0 | FR-064-AC-24 | ✅ passed |
+| TC-1768 | The lifted config-version-table golden renders `ConfigVersion.json` with a display-name `$id` and the `FR-006` semantic id | Unit | P0 | FR-100-AC-8 | ✅ passed |
+| TC-1769 | Both Python targets generate the lifted config-version-table golden with display-name modules, including `JsonObject.py`, and no artifact-id-named module | Integration | P0 | FR-136-AC-9 | ✅ passed |
+| TC-1770 | The inspection sanctions a `RootModel[Any]` over an `any` kernel scalar document carrying only descriptive annotations and the `kernel-scalar` extension, and refuses the same document carrying `x-agent-ix-constraints` or any other extension as degraded | Unit | P0 | FR-078-AC-12 | ✅ passed |
+| TC-1771 | Two display names deriving one JSON Schema file name, including names differing only in case, are refused with both identities named, and a definition named `index` is refused as colliding with the backend's `index.json`, each writing no file | Unit | P0 | FR-100-AC-9 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
 | TC-1585 | Every requirement the register names carries that issue's own link, and a row whose requirement omits it is reported | Unit | P0 | NFR-001-AC-6 | ✅ passed |
 
@@ -1821,8 +1862,8 @@ blocked as stated above.
 | FR-029 operands | Min | `minLength: 0` | TC-219 | Valid |
 | FR-029 operands | Below min | `minLength: -1` | TC-221 | Fail validation |
 | FR-029 applicability | Prohibited | `minLength` on `integer`, `min` on `record` | TC-244 | Fail validation at the constraint locus |
-| FR-030 contractVersion | Allowed | `"1.0.0"`, `"1.1.0"` | TC-227, TC-231 | Pass under the single schema file |
-| FR-030 contractVersion | Prohibited | `"1.2.0"`, `"0.9.0"` | TC-246 | Fail before emission |
+| FR-030 contractVersion | Allowed | `"1.0.0"`, `"1.1.0"`, `"1.2.0"` | TC-227, TC-231, TC-1376 | Pass under the single schema file |
+| FR-030 contractVersion | Prohibited | `"1.3.0"`, `"0.9.0"` | TC-246 | Fail before emission |
 | FR-031-CON-1 | Allowed | Grammar under `packages/semantic-core/` | TC-254 | Pass |
 | FR-031-CON-1 | Prohibited | `spikes/` importing the grammar | TC-254 | Fail |
 | FR-031-CON-2 | Prohibited | Property typed `unknown` or `Record<unknown>` | TC-252 | Fail static scan |
@@ -2112,7 +2153,7 @@ blocked as stated above.
 | ERR-041 | Composite relationship graph contains a cycle | Validation fails at the closing relationship | TC-240 |
 | ERR-042 | Duplicate `clauseId` within one type definition | Validation fails at the second clause | TC-241 |
 | ERR-043 | Constraint keyword applied outside its applicability, or regex fails to compile | Validation fails at the constraint locus | TC-244, TC-245 |
-| ERR-044 | `contractVersion` outside `1.0.0`/`1.1.0`, or `1.1.0` dialect outside `typespec`/`spec-bundle` | Fails before emission with a machine-readable diagnostic | TC-246 |
+| ERR-044 | `contractVersion` outside `1.0.0`/`1.1.0`/`1.2.0`, or a v1.1/v1.2 dialect outside `typespec`/`spec-bundle` | Fails before emission with a machine-readable diagnostic | TC-246 |
 | ERR-045 | Kernel declares a domain archetype or an `Any` scalar | Scope test fails naming the declaration | TC-249, TC-258, TC-273 |
 | ERR-046 | Emitted projection differs from committed bytes | `check` script exits non-zero naming the file | TC-264 |
 | ERR-047 | `Decimal` `TypeRef` without `decimal`, or `decimal` on a non-Decimal target | Semantic-core reader rejects at the declaration | TC-256, TC-277 |
@@ -2600,16 +2641,16 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
 | Static | 279 | 242 | 0 | 37 | 100% mapped (279/279) |
-| Manual | 61 | 45 | 0 | 16 | 100% mapped (61/61) |
+| Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
-| Property | 129 | 82 | 0 | 47 | 100% mapped (129/129) |
-| Unit | 555 | 446 | 0 | 109 | 100% mapped (555/555) |
-| Integration | 154 | 92 | 0 | 62 | 100% mapped (154/154) |
+| Property | 130 | 83 | 0 | 47 | 100% mapped (130/130) |
+| Unit | 580 | 474 | 0 | 106 | 100% mapped (580/580) |
+| Integration | 159 | 97 | 0 | 62 | 100% mapped (159/159) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 68 | 43 | 0 | 25 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1337** | **1004** | **0** | **333** | **100% mapped (1337/1337)** |
+| **Total** | **1369** | **1039** | **0** | **330** | **100% mapped (1369/1369)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

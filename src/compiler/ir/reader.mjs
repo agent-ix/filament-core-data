@@ -13,6 +13,7 @@
  * Every rule below carries the `agent-ix.semantic-ir.*` code the issue #34
  * readers already emit, which is what makes the comparison possible at all.
  */
+import { EDGE_KINDS as SHARED_EDGE_KINDS } from "../constructs.mjs";
 import {
 	DEFAULT_LIMITS,
 	DIAGNOSTIC_CODES,
@@ -20,11 +21,11 @@ import {
 	fragment,
 } from "../diagnostics.mjs";
 import {
+	applies,
 	CORE_CLAUSE_LANGUAGES,
 	EDGE_CATEGORIES,
-	NAMESPACED_LANGUAGE,
-	applies,
 	isKeyword,
+	NAMESPACED_LANGUAGE,
 } from "./applicability.mjs";
 
 /** Nesting depth, stopping as soon as `bound` is exceeded. */
@@ -48,6 +49,9 @@ function depthOf(value, bound, depth = 0) {
 	}
 	return depth;
 }
+
+/** The kinds that may carry relationships and operations. */
+const EDGE_KINDS = new Set(SHARED_EDGE_KINDS);
 
 function isObject(value) {
 	return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -189,7 +193,7 @@ export function readContractIr(document, options = {}) {
 		}
 		let multiplicity;
 		if (field.multiplicity === undefined) {
-			if (version === "1.1.0") {
+			if (version === "1.1.0" || version === "1.2.0") {
 				raise(
 					DIAGNOSTIC_CODES.MISSING_MULTIPLICITY,
 					"a 1.1.0 field declares its multiplicity",
@@ -200,7 +204,7 @@ export function readContractIr(document, options = {}) {
 		} else {
 			multiplicity = checkMultiplicity(field.multiplicity, field);
 		}
-		if (multiplicity) {
+		if (multiplicity && version !== "1.2.0") {
 			const derived = multiplicity.lower >= 1 ? "required" : "optional";
 			if (field.presence !== undefined && field.presence !== derived) {
 				raise(
@@ -286,7 +290,9 @@ export function readContractIr(document, options = {}) {
 	};
 
 	const checkDefinition = (definition) => {
-		const isRecord = definition.kind === "record";
+		// Relationships and operations belong to a record and to every
+		// contract 1.2.0 construct except `enumeration` (FR-142).
+		const isRecord = EDGE_KINDS.has(String(definition.kind));
 		const fields = asArray(definition.fields);
 		// Every list, not only the fields: a document with a hundred thousand
 		// clauses is as unbounded as one with a hundred thousand fields.
@@ -418,6 +424,18 @@ export function readContractIr(document, options = {}) {
 					);
 				}
 				checkMultiplicity(operation.returns.multiplicity, operation);
+			}
+			// FR-141: `quire` is the one checked clause language; an inline
+			// clause in any other admitted language is carried unchecked.
+			for (const side of ["requires", "ensures"]) {
+				for (const clause of asArray(operation[side])) {
+					if (!isObject(clause) || clause.language === "quire") continue;
+					raise(
+						DIAGNOSTIC_CODES.CLAUSE_LANGUAGE_UNCHECKED,
+						`${side} clause language ${fragment(clause.language)} is carried unchecked`,
+						locusOf(clause) ?? locusOf(operation),
+					);
+				}
 			}
 			for (const side of ["pre", "post"]) {
 				for (const clauseId of Array.isArray(operation[side])

@@ -33,7 +33,9 @@ frontend, a generated programming-language package, or an ambient registry.
 
 ## Outputs
 
-- One `<derived-type-name>.json` schema document for every IR definition.
+- One `<derived-type-name>.json` schema document for every IR definition, the
+  name derived from the definition's `displayName`, or from the last segment
+  of its identity where it declares none.
 - One `index.json` document listing each emitted schema path, `$id`, SHA-256
   digest, and semantic identity.
 - `src/compiler/backends/json-schema-v1/index.mjs`, which maps IR values to
@@ -53,12 +55,27 @@ frontend, a generated programming-language package, or an ambient registry.
   render a sibling relative `$ref` to that definition's emitted `.json` file.
 - The backend SHALL sort emitted definitions by semantic identity and object
   members by code-unit order.
+- If two definitions derive file names equal when compared case-insensitively,
+  then the backend SHALL return a blocking diagnostic naming each path and
+  every identity that derives it, and emit no file.
+- If a definition derives `index.json`, compared case-insensitively, then the
+  backend SHALL return a blocking diagnostic naming the path and the identity
+  and stating that it collides with the backend's `index.json`, and emit no
+  file.
 
 ### Structural kinds and scalars
 
 - A `record` definition SHALL render as an object schema whose `properties`
   members are its fields and whose `required` array contains exactly fields
   whose presence is `required`.
+- A contract `1.2.0` `entity` definition SHALL render as a `record` renders,
+  and SHALL carry `x-agent-ix-kind: "entity"` and its identity field names, in
+  the order `identityFields` declares them, as `x-agent-ix-identity-fields`.
+  An entity's instances being told apart by those fields is its Quire meaning
+  over instances, which no schema keyword states; the annotation carries the
+  names. Every other construct kind of
+  [FR-142](./FR-142-declare-one-construct-per-object-type.md), and every model
+  member, SHALL be refused by name with no schema file emitted.
 - An `enum` definition SHALL render an `enum` array of its variant wire names.
 - A `union` definition SHALL render a `oneOf` with one branch per variant; a
   payload-free variant SHALL constrain its tag alone and a payload-carrying
@@ -136,6 +153,9 @@ that decision requires.
 | FR-100-AC-4 | A record at `unknownPolicy: reject` rejects an extra property; `preserve` and `surface` accept it and retain distinct annotations. | Test (TC-1364) |
 | FR-100-AC-5 | Every emitted `$ref` resolves using only the generated sibling file set, and an external or parent-path reference fails the generator test. | Test (TC-1365) |
 | FR-100-AC-6 | A required unknown extension produces a blocking diagnostic and zero emitted files. | Test (TC-1366) |
+| FR-100-AC-7 | The lifted config-version-table golden renders `ConfigOverlay.json` and `ConfigVersion.json` as object schemas carrying `x-agent-ix-kind: entity` and `x-agent-ix-identity-fields: ["id"]`, no file is named from an artifact id, and a record schema carries neither annotation. | Test (TC-1764) |
+| FR-100-AC-8 | The lifted config-version-table golden renders `ConfigVersion.json` whose `$id` ends `/ConfigVersion.json` and whose `x-agent-ix-semantic-id` is `ix://agent-ix/config-service/type/FR-006`: the file and `$id` carry the declared name and the annotation carries the artifact id. | Test (TC-1768) |
+| FR-100-AC-9 | Two definitions whose display names `Config Overlay` and `Config-Overlay` derive `Config-Overlay.json`, or `Status` and `status`, produce one blocking diagnostic naming the paths and both identities; a definition named `index` produces one blocking diagnostic stating it collides with the backend's `index.json`; each emits zero files. | Test (TC-1771) |
 
 ## Dependencies
 

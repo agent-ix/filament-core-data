@@ -418,6 +418,12 @@ export function renderIdentity(model) {
 		entry.identifier,
 		literal(entry.kind),
 	]);
+	const typeIdentityFields = types
+		.filter((entry) => Array.isArray(entry.identityFields))
+		.map((entry) => [
+			entry.identifier,
+			`[${entry.identityFields.map((name) => literal(name)).join(", ")}]`,
+		]);
 	const typeExtensions = types.map((entry) => [
 		entry.identifier,
 		extensionList(entry.extensions, "\t"),
@@ -584,6 +590,12 @@ ${mapDeclaration("TYPE_ROLES", recordLiteral(typeRoles), "Record<ExportedTypeNam
  * package declares nothing dropped.
  */
 ${mapDeclaration("TYPE_UNKNOWN_POLICY", recordLiteral(typePolicy), "Record<ExportedTypeName, string>")}
+
+/**
+ * The names of the fields that tell an entity's instances apart, in declared
+ * order. A type that is not an entity has no entry.
+ */
+${mapDeclaration("TYPE_IDENTITY_FIELDS", recordLiteral(typeIdentityFields), "Partial<Record<ExportedTypeName, readonly string[]>>")}
 
 /** The extensions each exported type declares. */
 ${mapDeclaration("TYPE_EXTENSIONS", recordLiteral(typeExtensions), "Record<ExportedTypeName, readonly ExtensionDescriptor[]>")}

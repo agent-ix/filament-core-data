@@ -31,3 +31,11 @@ An authored fixture artifact.
 ## Members
 
 The `Order` entity and its `OrderLine` value objects.
+
+## Invariants
+
+### single_root
+
+```ocl
+context OrderAggregate inv single_root: self.root <> null
+```

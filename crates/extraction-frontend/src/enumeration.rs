@@ -24,6 +24,7 @@ use quire_rs::semantic::scan::{blocks_in, level2_sections, lines, Block};
 use quire_rs::{evaluate_assert, table_from_section};
 
 use crate::bundle::{Document, ObjectType};
+use crate::constructs::ConstructMembers;
 use crate::diagnostics::{Code, Diagnostic, Locus};
 use crate::lower::{
     ArtifactContext, Kind, LowerError, Lowering, Origin, TypeDefinition, UnknownPolicy, Variant,
@@ -182,6 +183,7 @@ fn row_lines(raw: &str, section: &str) -> Vec<usize> {
 /// at the row's line and column 3; `DUPLICATE_TYPE_NAME` at the second of
 /// two rows that slug alike.
 pub fn lower_enum(rows: &[ValueRow], ctx: &ArtifactContext<'_>) -> Result<Lowering, LowerError> {
+    let type_identity = ctx.type_identity()?;
     let source = ctx.package.source();
     let mut diagnostics: Vec<Diagnostic> = Vec::new();
     let mut blocked = false;
@@ -190,7 +192,7 @@ pub fn lower_enum(rows: &[ValueRow], ctx: &ArtifactContext<'_>) -> Result<Loweri
     let mut variants = Vec::with_capacity(rows.len());
     for row in rows {
         let locus = Locus::new(&source, ctx.path, row.line, row.column);
-        let identity = match ctx.package.variant_identity(ctx.display_name, &row.value) {
+        let identity = match ctx.package.variant_identity(ctx.id, &row.value) {
             Ok(identity) => identity,
             Err(unsluggable) => {
                 blocked = true;
@@ -236,12 +238,9 @@ pub fn lower_enum(rows: &[ValueRow], ctx: &ArtifactContext<'_>) -> Result<Loweri
     }
     Ok(Lowering {
         definition: TypeDefinition {
-            identity: ctx
-                .package
-                .type_identity(ctx.display_name)
-                .expect("enumeration names are validated before lowering"),
+            identity: type_identity,
             display_name: ctx.display_name.to_string(),
-            kind: Kind::Enum,
+            kind: Kind::Enumeration,
             roles: ctx.roles.clone(),
             origin: Origin::Source(Locus::head(&source, ctx.path)),
             constraints: Vec::new(),
@@ -254,6 +253,7 @@ pub fn lower_enum(rows: &[ValueRow], ctx: &ArtifactContext<'_>) -> Result<Loweri
             relationships: None,
             operations: None,
             clauses: None,
+            construct: ConstructMembers::default(),
         },
         aliases: Vec::new(),
         diagnostics,

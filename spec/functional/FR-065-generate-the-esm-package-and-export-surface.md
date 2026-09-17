@@ -77,7 +77,7 @@ type without acquiring the rest and no framework enters the dependency closure.
 - `renderPackage` SHALL record the package's own identity for `package.json` and for `LICENSE`, which render no type definition, following the convention [FR-063](./FR-063-declare-the-generation-backend-seam.md) declares.
 - The generated modules SHALL be free of import cycles among themselves.
 - The export surface SHALL be the union of two sets and nothing else: the identity-derived exports, one per type definition the model carries, and the fixed API surface.
-- The fixed API surface SHALL be exactly the discriminant constant, the branded-reference constructor, one `validate<Type>` per exported type, `ValidationError`, `ValidationResult`, the structural-code register, and the identity, metadata, roles, extension, occurrence, and relationship maps.
+- The fixed API surface SHALL be exactly the discriminant constant, the branded-reference constructor, one `validate<Type>` per exported type, `ValidationError`, `ValidationResult`, the structural-code register, and the identity, identity-fields, metadata, roles, extension, occurrence, and relationship maps.
 - An exported name outside those two sets SHALL fail the export-set test, so that the surface stays closed without forbidding the package its own API.
 
 ### Dependency closure

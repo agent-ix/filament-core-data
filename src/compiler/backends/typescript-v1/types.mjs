@@ -1,8 +1,8 @@
 /**
  * The TypeScript type projection (FR-064, Task-106).
  *
- * One declared rendering for each of the eight IR kinds and each of the nine
- * scalars, taken from the resolved model of `model.mjs` and never from the raw
+ * One declared rendering for each of the eight IR kinds and each kernel scalar,
+ * taken from the resolved model of `model.mjs` and never from the raw
  * document. The renderer is pure — same model in, same string out, no
  * filesystem, clock, environment or network — and it emits no file: text
  * placement belongs to FR-065.
@@ -35,8 +35,9 @@ import { UNION_DISCRIMINANT, UNKNOWN_POLICY_MARKER } from "./names.mjs";
 /** The `doc` extension whose text becomes a JSDoc comment. */
 const DOC_EXTENSION = "ix://agent-ix/semantic-core/ext/doc";
 
-/** The TypeScript primitive each of the nine kernel scalars renders to. */
+/** The TypeScript primitive each kernel scalar renders to. */
 const SCALAR_PRIMITIVES = Object.freeze({
+	any: "unknown",
 	boolean: "boolean",
 	integer: "number",
 	number: "number",
@@ -271,10 +272,15 @@ function renderRecord(entry) {
 	].join("");
 }
 
-/** Exhaustive over the eight kinds; an unhandled kind is a contract failure. */
+/**
+ * Exhaustive over the eight structural kinds and the rendered construct kind
+ * `entity`, which renders as its record interface; an unhandled kind is a
+ * contract failure.
+ */
 const RENDERERS = Object.freeze({
 	scalar: renderScalar,
 	record: renderRecord,
+	entity: renderRecord,
 	enum: renderEnum,
 	union: renderUnion,
 	alias: renderAlias,

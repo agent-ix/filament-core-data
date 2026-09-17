@@ -87,11 +87,12 @@ const BUILTIN_SCALARS = new Map([
  * The table is the shared vocabulary, so it is complete against FR-032 rather
  * than trimmed to what this frontend reaches. `uuid` is here and unreachable
  * from TypeSpec: no built-in maps to it, and a package that wants one declares a
- * scalar with a `format` constraint. `JsonObject` is deliberately absent — it is
- * a *record* in the IR, not a scalar, and FR-034 lowers it in the semantic-core
- * path where a declaration can name it.
+ * scalar with a `format` constraint. `any` is named `JsonObject`, the kernel
+ * scalar `packages/semantic-core/kernel-scalars.json` declares over it, so a
+ * TypeSpec `unknown` and a spec bundle's `JsonObject` cell mint one identity.
  */
 const KERNEL_NAMES = new Map([
+	["any", "JsonObject"],
 	["boolean", "Boolean"],
 	["integer", "Integer"],
 	["number", "Decimal"],
@@ -404,6 +405,8 @@ export function lowerProgram(options) {
 	/** Resolves a member type to an IR `typeRef`, minting a kernel definition if needed. */
 	const resolveMemberType = (type, at) => {
 		if (!type) return undefined;
+		if (type.kind === "Intrinsic" && type.name === "unknown")
+			return useKernel("any", at);
 		if (type.kind === "Scalar") {
 			if (inTargetNamespace(type) && byName.has(type.name)) {
 				return typeIdentity(type.name);
@@ -751,6 +754,7 @@ export function lowerProgram(options) {
 		}
 
 		const declared = context.state("multiplicity", property);
+		const authoredPresence = context.state("presence", property);
 		const collection = context.state("collection", property);
 		let multiplicity;
 		if (declared) {
@@ -763,7 +767,7 @@ export function lowerProgram(options) {
 				return undefined;
 			}
 			const impliedOptional = declared.lower === 0;
-			if (impliedOptional !== Boolean(property.optional)) {
+			if (!authoredPresence && impliedOptional !== Boolean(property.optional)) {
 				context.raise(
 					DIAGNOSTIC_CODES.MULTIPLICITY_CONTRADICTS_OPTIONALITY,
 					`@multiplicity declares lower ${declared.lower} on a property marked ${property.optional ? "optional" : "required"}; the two must agree`,
@@ -896,7 +900,9 @@ export function lowerProgram(options) {
 			name: property.name,
 			typeRef,
 			multiplicity,
-			presence: multiplicity.lower >= 1 ? "required" : "optional",
+			presence:
+				authoredPresence?.presence ??
+				(multiplicity.lower >= 1 ? "required" : "optional"),
 			nullable: nullable.nullable,
 			defaultKind: "none",
 			origin: context.originOf(property),
@@ -1171,7 +1177,7 @@ export function lowerProgram(options) {
 
 	const types = [...definitions.values()].sort(byIdentity);
 	const ir = {
-		contractVersion: "1.1.0",
+		contractVersion: "1.2.0",
 		source: {
 			identity: sourceIdentity,
 			version: options.packageVersion,

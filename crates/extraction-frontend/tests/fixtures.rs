@@ -665,7 +665,20 @@ fn tc_1287_the_business_golden_carries_every_declaration_kind_an_operation_a_cla
     let document = read_json(&fixture("business/expected").join(GOLDEN_DOCUMENT));
     let types = document["types"].as_array().expect("types");
     let kinds: BTreeSet<&str> = types.iter().filter_map(|t| t["kind"].as_str()).collect();
-    for kind in ["record", "enum", "scalar", "alias"] {
+    for kind in [
+        "entity",
+        "value_object",
+        "nested_entity",
+        "aggregate_root",
+        "enumeration",
+        "event",
+        "state_machine",
+        "process",
+        "repository",
+        "domain",
+        "scalar",
+        "alias",
+    ] {
         assert!(kinds.contains(kind), "no {kind}: {kinds:?}");
     }
     assert!(
@@ -677,7 +690,8 @@ fn tc_1287_the_business_golden_carries_every_declaration_kind_an_operation_a_cla
     );
     assert!(types
         .iter()
-        .any(|t| t["kind"] == "enum" && t["variants"].as_array().is_some_and(|v| v.len() >= 2)));
+        .any(|t| t["kind"] == "enumeration"
+            && t["variants"].as_array().is_some_and(|v| v.len() >= 2)));
     let operations: Vec<&Value> = types
         .iter()
         .flat_map(|t| t["operations"].as_array().into_iter().flatten())

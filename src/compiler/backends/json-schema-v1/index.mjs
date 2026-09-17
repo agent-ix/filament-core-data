@@ -2,6 +2,7 @@
 import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { identityFieldNames, unrenderedNodes } from "../../constructs.mjs";
 import { DIAGNOSTIC_CODES, diagnostic } from "../../diagnostics.mjs";
 import { admitIr, SCHEMA_FILES } from "../typescript-v1/admit.mjs";
 
@@ -43,11 +44,59 @@ const FORMAT_MAP = Object.freeze({
 	uri: "uri",
 });
 
+/**
+ * A schema's file name: the definition's declared `displayName`, else the last
+ * segment of its identity. The identity's last segment is an artifact id for a
+ * lifted document, so the declared name is what a consumer looks the file up by.
+ */
 function nameOf(type) {
-	return String(type.identity)
-		.split("/")
-		.at(-1)
-		.replace(/[^A-Za-z0-9._-]/g, "-");
+	const declared =
+		typeof type.displayName === "string" && type.displayName.length > 0
+			? type.displayName
+			: String(type.identity).split("/").at(-1);
+	return declared.replace(/[^A-Za-z0-9._-]/g, "-");
+}
+/**
+ * Every emitted file name two sources claim, compared case-insensitively
+ * because a case-insensitive file system holds `Status.json` and
+ * `status.json` as one file: two definitions deriving one name, or a
+ * definition deriving the `index.json` the backend writes itself.
+ */
+function fileNameCollisions(definitions) {
+	const claims = new Map();
+	for (const type of [...definitions].sort(byIdentity)) {
+		const path = `${nameOf(type)}.json`;
+		const key = path.toLowerCase();
+		const claim = claims.get(key) ?? { paths: [], identities: [] };
+		if (!claim.paths.includes(path)) claim.paths.push(path);
+		claim.identities.push(String(type.identity));
+		claims.set(key, claim);
+	}
+	return [...claims.entries()]
+		.filter(
+			([key, claim]) => key === "index.json" || claim.identities.length > 1,
+		)
+		.map(([key, claim]) => ({
+			key,
+			paths: claim.paths.sort(),
+			identities: claim.identities,
+			reserved: key === "index.json",
+		}))
+		.sort((left, right) =>
+			left.key < right.key ? -1 : left.key > right.key ? 1 : 0,
+		);
+}
+/** The refusal message for one file-name collision. */
+function collisionMessage({ paths, identities, reserved }) {
+	const named = paths.join(" and ");
+	return reserved
+		? `${named}: JSON Schema backend derives a file name for ${identities.join(" and ")} that collides with the backend's index.json`
+		: `${named}: JSON Schema backend derives one file name, compared case-insensitively, for ${identities.join(" and ")}`;
+}
+function byIdentity(left, right) {
+	const a = String(left.identity);
+	const b = String(right.identity);
+	return a < b ? -1 : a > b ? 1 : 0;
 }
 function byName(left, right) {
 	const a = String(left.name ?? left.identity);
@@ -136,7 +185,8 @@ function renderType(ir, type, types) {
 		case "scalar":
 			schema = { ...(scalarSchema[type.scalar] ?? {}) };
 			break;
-		case "record": {
+		case "record":
+		case "entity": {
 			const properties = Object.fromEntries(
 				[...(type.fields ?? [])]
 					.sort(byName)
@@ -149,6 +199,12 @@ function renderType(ir, type, types) {
 				.map((field) => field.name);
 			if (required.length) schema.required = required;
 			if (type.unknownPolicy === "reject") schema.additionalProperties = false;
+			// An entity is the record schema plus its construct kind and the
+			// names of the fields that tell its instances apart (FR-100).
+			if (type.kind === "entity") {
+				schema["x-agent-ix-kind"] = "entity";
+				schema["x-agent-ix-identity-fields"] = identityFieldNames(type);
+			}
 			break;
 		}
 		case "enum":
@@ -266,10 +322,11 @@ export const jsonSchemaBackend = Object.freeze({
 	version: "0.1.0",
 	target: "json-schema",
 	owningIssue: "agent-ix/filament-core-data#85",
-	supportedIrVersions: Object.freeze(["1.1.0"]),
+	supportedIrVersions: Object.freeze(["1.1.0", "1.2.0"]),
 	supportedFeatures: Object.freeze([
 		"scalar",
 		"record",
+		"entity",
 		"enum",
 		"union",
 		"alias",
@@ -305,6 +362,20 @@ export const jsonSchemaBackend = Object.freeze({
 				files: [],
 				diagnostics: admission.diagnostics.map(admissionDiagnostic),
 			};
+		// A contract 1.2.0 construct kind other than `entity`, or a model member,
+		// has no JSON Schema rendering (filament-core-data#147). Each is refused by name: an
+		// object schema in its place would drop its built-in rules (FR-142-CON-2).
+		const unrendered = unrenderedNodes(ir);
+		if (unrendered.length > 0)
+			return {
+				state: "unsupported",
+				files: [],
+				diagnostics: unrendered.map((node) =>
+					diagnostic(DIAGNOSTIC_CODES.UNDECLARED_LOSS, {
+						message: `/ir${node.pointer}: JSON Schema backend renders no contract 1.2.0 ${node.member}`,
+					}),
+				),
+			};
 		const required = requiredExtension(ir);
 		if (required)
 			return {
@@ -330,6 +401,20 @@ export const jsonSchemaBackend = Object.freeze({
 		const types = new Map(
 			(ir.types ?? []).map((type) => [type.identity, type]),
 		);
+		// Two definitions whose names derive one file name, or a definition whose
+		// name derives `index.json`, would overwrite one another. Each is refused
+		// with both identities named, and no file is written (FR-100-AC-9).
+		const collisions = fileNameCollisions([...types.values()]);
+		if (collisions.length > 0)
+			return {
+				state: "unsupported",
+				files: [],
+				diagnostics: collisions.map((collision) =>
+					diagnostic(DIAGNOSTIC_CODES.UNDECLARED_LOSS, {
+						message: collisionMessage(collision),
+					}),
+				),
+			};
 		const files = [...types.values()].sort(byName).map((type) => ({
 			path: `${nameOf(type)}.json`,
 			text: text(renderType(ir, type, types)),

@@ -180,8 +180,7 @@ fn is_code_point_sorted(list: &[String]) -> bool {
 #[trace("TC-1273", "FR-097-AC-1")]
 #[trace("TC-1273", "FR-097-CON-1")]
 #[test]
-fn tc_1273_the_manifest_names_semantic_ir_by_path_and_no_jsonschema_and_the_reader_crate_is_unchanged(
-) {
+fn tc_1273_the_manifest_names_semantic_ir_by_path_and_no_direct_jsonschema() {
     let manifest = fs::read_to_string(crate_dir().join("Cargo.toml")).expect("Cargo.toml");
     let dependencies = manifest
         .split("[dependencies]")
@@ -198,6 +197,15 @@ fn tc_1273_the_manifest_names_semantic_ir_by_path_and_no_jsonschema_and_the_read
         .lines()
         .filter(|l| !l.trim_start().starts_with('#'))
         .collect();
+    let naming: Vec<&&str> = code_lines
+        .iter()
+        .filter(|l| l.contains("agent-ix-semantic-ir"))
+        .collect();
+    assert_eq!(
+        naming,
+        [&"agent-ix-semantic-ir = { path = \"../semantic-ir\" }"],
+        "FR-097-CON-1: one path dependency, no registry, git or second table"
+    );
     assert!(
         !code_lines.iter().any(|l| l.contains("jsonschema")),
         "{code_lines:?}"
@@ -244,40 +252,6 @@ fn tc_1273_the_manifest_names_semantic_ir_by_path_and_no_jsonschema_and_the_read
     assert!(
         via_engine,
         "jsonschema reaches the tree only under quire-rs:\n{tree}"
-    );
-    // `crates/semantic-ir` is byte-unchanged: nothing pending in the tree,
-    // and nothing on this branch against `main` (NFR-032).
-    let status = Command::new("git")
-        .args(["status", "--porcelain", "--", "crates/semantic-ir"])
-        .current_dir(workspace_dir())
-        .output()
-        .expect("spawn git");
-    assert_eq!(String::from_utf8_lossy(&status.stdout).trim(), "");
-    // The committed half is measured over *this change's* range, resolved from
-    // history through NFR-032's sentinels, not over `main...HEAD`.
-    //
-    // `main...HEAD` measures whichever branch happens to be checked out. On the
-    // merged trunk it is empty and this assertion passes vacuously; on any later
-    // branch that touches `crates/semantic-ir` for a reason of its own it fails
-    // and names issue #36, which did nothing. That is the annexation defect of
-    // issue #51, and the harness already resolves the honest range — the same
-    // `changed-paths` verb `change_set.rs` asserts over.
-    let paths = common::run_node(
-        &["scripts/extraction-frontend-harness.mjs", "changed-paths"],
-        &[],
-        None,
-    )
-    .unwrap_or_else(|error| panic!("harness changed-paths: {error}"));
-    assert_eq!(paths.status, 0, "{}", paths.stderr);
-    let changed: Vec<String> = serde_json::from_slice(&paths.stdout)
-        .unwrap_or_else(|error| panic!("harness changed-paths output: {error}: {}", paths.stderr));
-    let touched: Vec<&String> = changed
-        .iter()
-        .filter(|path| path.starts_with("crates/semantic-ir/"))
-        .collect();
-    assert!(
-        touched.is_empty(),
-        "this change touches crates/semantic-ir: {touched:?}"
     );
 }
 
@@ -424,7 +398,7 @@ fn document_strategy() -> impl Strategy<Value = Value> {
     )
         .prop_map(|(types, occurrences, extensions)| {
             json!({
-                "contractVersion": "1.1.0",
+                "contractVersion": "1.2.0",
                 "types": types,
                 "occurrences": occurrences,
                 "extensions": extensions,

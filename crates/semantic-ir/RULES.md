@@ -92,7 +92,7 @@ with it.
 |---|---|---|
 | `SCHEMA_VIOLATION` | `contracts-v1.md` "All identifiers below are rooted at" | A value the published v1 schema for its bundle member rejects, at the deepest failing instance location. |
 | `INVALID_DOCUMENT` | `contracts-v1.md` "A consumer can" | A value that is not an object carrying `ir`, reported once at pointer `""`. |
-| `PRESENCE_MULTIPLICITY_MISMATCH` | `contracts-v1.md` "unbounded) from which `presence` is derived" | `presence` is `required` exactly when `multiplicity.lower >= 1`; a stated `presence` that differs fails at `.../presence`. |
+| `PRESENCE_MULTIPLICITY_MISMATCH` | `contracts-v1.md` "unbounded) from which `presence` is derived" | In a `1.0.0` or `1.1.0` document, `presence` is `required` exactly when `multiplicity.lower >= 1`; a stated `presence` that differs fails at `.../presence`. A `1.2.0` document authors presence and is not checked. |
 | `INVALID_MULTIPLICITY` | `contracts-v1.md` "`multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is" | A present `upper` below `lower` fails at `.../multiplicity/upper`. |
 | `FLAGS_ON_NON_COLLECTION` | same clause | `ordered` or `unique` with a present `upper` of 0 or 1 fails at `.../multiplicity`; an absent `upper` is unbounded, so it is a collection and the flags stand. |
 | `UNIT_ON_NON_SCALAR` | `contracts-v1.md` "may carry a UCUM `unit` when" | `unit` where `typeRef` does not resolve, through aliases, to a `scalar`, fails at `.../unit`. |
@@ -106,7 +106,7 @@ with it.
 | `DUPLICATE_FIELD_NAME` | `contracts-v1.md` "Package, type, field, variant, constraint, occurrence, mapping, and profile" | Two fields of one record sharing a `name`, at the second one's `/name`. |
 | `DUPLICATE_PARAM` | `contracts-v1.md` "bound by `clauseId`), and any type definition carries `clauses[]`" | Two parameters of one operation sharing a `name`, at the second one's `/name`. |
 | `DUPLICATE_CLAUSE_ID` | `contracts-v1.md` "`clauseId` unique per type" | A `clauseId` declared twice on one type, at the second one's `/clauseId`. |
-| `DANGLING_CLAUSE_REF` | `contracts-v1.md` "bound by `clauseId`), and any type definition carries `clauses[]`" | A `pre` or `post` entry naming a `clauseId` its own type does not declare. |
+| `DANGLING_CLAUSE_REF` | `contracts-v1.md` "bound by `clauseId`), and any type definition carries `clauses[]`" | A `pre` or `post` entry, or a `1.2.0` transition `guard`, naming a `clauseId` its own type does not declare. |
 | `MISSING_SOURCE_SPAN` | `contracts-v1.md` "`sourceSpan` when source-originated" | A clause whose `origin` carries `source` and which carries no `sourceSpan`, reported at the absent member. |
 | `CONSTRAINT_NOT_APPLICABLE` | `contracts-v1.md` "over the resolved kind." | The applicability table below, over the kind `appliesTo` resolves to through aliases; reported at the constraint object. |
 | `INVALID_OPERAND` | `contracts-v1.md` "with typed operands per keyword and an applicability table" | `min`, `max`, `exclusiveMin` or `exclusiveMax` on a resolved `integer` or `number` scalar takes a number operand; the published schema admits a string there because the same keywords carry a `date`, `datetime` or `duration` bound, which is exactly the part a schema cannot express. |
@@ -120,6 +120,14 @@ with it.
 | `UNKNOWN_MAPPING_TARGET` | `contracts-v1.md` "Exports refer to stable semantic identities; profiles select" | A mapping `sourceType`, `targetType` or correspondence `sourceIdentity` naming an identity no declaration in the document owns. |
 | `UNDECLARED_LOSS` | `contracts-v1.md` "every omitted identity; undeclared loss fails." | A type carrying a role whose local name is `entity` that the manifest does not export and the profile does not list in `allowedOmissions`, at that type's `/identity`. |
 | `UNKNOWN_REQUIRED_EXTENSION` | `contracts-v1.md` "unknown modules and extensions are preserved, rejected, or surfaced." | A `required: true` extension whose identity the consumer policy's `exports` do not list, while that policy's `unknownExtensions` is `reject`. |
+| `UNRESOLVED_CONSTRUCT_REF` | `contracts-v1.md` "A broken construct reference raises `UNRESOLVED_CONSTRUCT_REF`" | `1.2.0` only (`constructs.rs`): a `supertypes`, `owner`, `members`, `persists`, step or transition `emits`/`consumes` entry naming no declared type; an `identityFields` or `occurrenceField` entry naming no field of the type or a supertype; a transition `from`/`to` naming no state or `trigger` naming no operation of its state machine. |
+| `CONSTRUCT_TARGET_KIND` | `contracts-v1.md` "`CONSTRUCT_TARGET_KIND`; a wrong occurrence field raises" | `1.2.0` only: a supertype of another kind; an owner outside `entity`/`nested_entity`/`aggregate_root`; an aggregate member outside `entity`/`value_object`/`nested_entity`/`enumeration`; a persisted type outside `entity`/`aggregate_root`; an emitted or consumed type that is not an `event`; a domain member that is a `domain`. |
+| `INVALID_OCCURRENCE_FIELD` | `contracts-v1.md` "`INVALID_OCCURRENCE_FIELD`; a guard naming no clause raises" | `1.2.0` only: an event's `occurrenceField` whose `typeRef` does not resolve, through aliases, to scalar `datetime`. |
+| `SUPERTYPE_CYCLE` | `contracts-v1.md` "The types this type specializes, of the same kind; the graph is acyclic" | `1.2.0` only: a type whose `supertypes` walk reaches its own identity, at `.../supertypes`. |
+| `UNRESOLVED_FEATURE_REF` | `contracts-v1.md` "Supertype fields whose values include this field's values" | `1.2.0` only: a `subsets` or `redefines` entry naming no field of a transitive supertype. |
+| `INVALID_REDEFINITION` | `contracts-v1.md` "its multiplicity lies within the redefined bounds" | `1.2.0` only: a redefining field whose `lower` is below, or whose `upper` is above, the redefined field's bounds (absent bounds read as `1` and unbounded). |
+| `UNRESOLVED_FRAME_PATH` | `contracts-v1.md` "each starting at a field or parameter" | `1.2.0` only: a `frame` path whose first segment names neither a field of the owning type or a supertype nor a parameter of the operation. |
+| `MULTIPLE_DOMAIN_MEMBERSHIP` | `contracts-v1.md` "a type belongs to at most one domain" | `1.2.0` only: a type named by a second domain's `members`, at that entry. |
 
 ### The applicability table
 
