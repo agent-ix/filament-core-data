@@ -10,14 +10,13 @@
 //! `other`) at the artifact head: a construct is never emitted with a rule
 //! approximated.
 //!
-//! # What the pinned engine determines
+//! # Engine-extracted members
 //!
-//! quire-rs at the pinned revision extracts fields, clauses and operations;
-//! it extracts no states, transitions, workflow steps or vocabulary. A
-//! `state_machine` therefore carries empty `states` and `transitions`, a
-//! `process` empty `steps` and a `domain` an empty `vocabulary`. Each list
-//! is the construct's declared member, filled from the engine's structured
-//! extraction when it provides one; no diagram or prose is re-parsed here.
+//! `states`, `transitions`, `steps` and `vocabulary` are filled from the
+//! engine's structured extraction; no diagram or prose is re-parsed here.
+//! The pinned quire-rs revision extracts none of them, so each list is
+//! emitted empty until filament-core-data#154 bumps the engine and lifts
+//! them (TC-1755).
 
 use std::collections::BTreeMap;
 

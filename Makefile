@@ -470,11 +470,14 @@ extraction-frontend-test: extraction-frontend-toolchain
 # closes and is skipped here by name; run one deliberately with
 # `cargo +1.98.1 test -p agent-ix-extraction-frontend -- --ignored --exact <name>`.
 #
-# The list names the three TC-1292 backend acceptance tests, blocked on
-# filament-core-data#147: the config-version-table golden carries `entity`
-# constructs the backends refuse until they render them. An entry is removed in
-# the change that unblocks its test.
-EXTRACTION_BLOCKED_TESTS := tc_1292_rust_generate_over_the_config_version_table_golden_exits_zero_with_no_diagnostics tc_1292_generate_typescript_over_the_config_version_table_golden_exits_zero_with_no_diagnostics tc_1292_generic_cli_generates_the_rust_target tc_1337_json_schema_target_accepts_the_lifted_config_version_table_document
+# The list names the tests blocked on an open issue, and an entry is removed in
+# the change that unblocks its test:
+# - filament-core-data#147: the three TC-1292 backend acceptance tests and
+#   TC-1337. The config-version-table golden carries `entity` constructs, which
+#   the backends refuse by name until they render them.
+# - filament-core-data#154: TC-1755. The pinned quire-rs revision extracts no
+#   states, transitions, steps or vocabulary.
+EXTRACTION_BLOCKED_TESTS := tc_1292_rust_generate_over_the_config_version_table_golden_exits_zero_with_no_diagnostics tc_1292_generate_typescript_over_the_config_version_table_golden_exits_zero_with_no_diagnostics tc_1292_generic_cli_generates_the_rust_target tc_1337_json_schema_target_accepts_the_lifted_config_version_table_document tc_1755_state_machine_process_and_domain_lift_their_engine_members
 .PHONY: extraction-frontend-evidence
 extraction-frontend-evidence: extraction-frontend-toolchain
 	cargo +$(EXTRACTION_TOOLCHAIN) test -p $(EXTRACTION_CRATE) --locked --offline --no-fail-fast -- --ignored $(foreach test,$(EXTRACTION_BLOCKED_TESTS),--skip $(test))

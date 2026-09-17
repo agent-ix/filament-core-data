@@ -730,7 +730,6 @@ fn tc_1751_the_business_fixture_lifts_to_one_construct_of_each_kind_the_reader_a
         construct(&document, "DM-001")["members"],
         refs(&["AR-001", "EN-001", "FR-001"])
     );
-    assert_eq!(construct(&document, "DM-001")["vocabulary"], json!([]));
 }
 
 #[trace("TC-1752", "FR-143-AC-2")]
@@ -935,12 +934,52 @@ fn tc_1754_a_nested_entity_with_no_owner_or_two_owners_is_refused_naming_the_own
     assert_refused(&shared, "NE-001", "2 entities contain it");
 }
 
+/// The names of `member`'s entries, read by `key`.
+fn names(construct: &Value, member: &str, key: &str) -> Vec<String> {
+    construct[member]
+        .as_array()
+        .unwrap_or_else(|| panic!("{member} is not a list"))
+        .iter()
+        .map(|entry| entry[key].as_str().unwrap_or_default().to_owned())
+        .collect()
+}
+
 #[trace("TC-1755", "FR-143-AC-5")]
+#[ignore = "Blocked on filament-core-data#154: the pinned quire-rs revision extracts no states, transitions, steps or vocabulary; #154 bumps it to 6eec7e8 and lifts them"]
 #[test]
-fn tc_1755_state_machine_process_and_domain_lift_with_empty_engine_members() {
+fn tc_1755_state_machine_process_and_domain_lift_their_engine_members() {
     let document = business_document();
-    assert_eq!(construct(&document, "SM-001")["states"], json!([]));
-    assert_eq!(construct(&document, "SM-001")["transitions"], json!([]));
-    assert_eq!(construct(&document, "PR-001")["steps"], json!([]));
-    assert_eq!(construct(&document, "DM-001")["vocabulary"], json!([]));
+    let machine = construct(&document, "SM-001");
+    let mut states = names(machine, "states", "name");
+    states.sort();
+    assert_eq!(states, ["cancelled", "draft", "placed", "shipped"]);
+    let transitions: Vec<(String, String)> = machine["transitions"]
+        .as_array()
+        .expect("transitions is a list")
+        .iter()
+        .map(|one| {
+            let tail = |key: &str| {
+                one[key]
+                    .as_str()
+                    .and_then(|state| state.rsplit('-').next())
+                    .unwrap_or_default()
+                    .to_owned()
+            };
+            (tail("from"), tail("to"))
+        })
+        .collect();
+    for edge in [("draft", "placed"), ("placed", "shipped"), ("placed", "cancelled")] {
+        assert!(
+            transitions.contains(&(edge.0.to_owned(), edge.1.to_owned())),
+            "no transition {edge:?} in {transitions:?}"
+        );
+    }
+    assert_eq!(
+        names(construct(&document, "PR-001"), "steps", "name"),
+        ["placed", "picked", "shipped"]
+    );
+    assert!(
+        !names(construct(&document, "DM-001"), "vocabulary", "term").is_empty(),
+        "DM-001 lifts no vocabulary"
+    );
 }

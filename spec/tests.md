@@ -175,7 +175,7 @@ blocked as stated above.
 | US-019 | The SysML v2 textual interchange target implemented by FR-138 | TC-1545..TC-1551 | 🚧 planned on issue #37 |
 | US-006 | An unconstrained value expressed without narrowing, implemented by FR-139 | TC-1552..TC-1557 | 🚧 TC-1552, TC-1554..TC-1557 planned on issue #93 |
 | US-006 | The model members and one construct per object type, implemented by FR-141 and FR-142 | TC-1740..TC-1750 | ✅ Complete |
-| US-015 | Object-type artifacts lifted to their constructs, implemented by FR-143 | TC-1751..TC-1755 | ✅ Complete |
+| US-015 | Object-type artifacts lifted to their constructs, implemented by FR-143 | TC-1751..TC-1755 | 🚧 TC-1755 blocked on issue #154 |
 | US-008 | The compiler judged by the independent corpus, implemented by FR-140 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
 
 ### Functional Requirement Coverage
@@ -294,7 +294,7 @@ blocked as stated above.
 | FR-140 | FR-140-AC-1..7, FR-140-CON-1..3 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
 | FR-141 | FR-141-AC-1..5, FR-141-CON-1..2 | TC-1740..TC-1744 | ✅ Complete |
 | FR-142 | FR-142-AC-1..6, FR-142-CON-1..2 | TC-1745..TC-1750 | ✅ Complete |
-| FR-143 | FR-143-AC-1..5, FR-143-CON-1..2 | TC-1751..TC-1755 | ✅ Complete |
+| FR-143 | FR-143-AC-1..5, FR-143-CON-1..2 | TC-1751..TC-1755 | 🚧 TC-1755 blocked on issue #154 |
 
 ### Non-Functional Requirement Coverage
 
@@ -1689,11 +1689,11 @@ blocked as stated above.
 | TC-1748 | A non-`datetime` occurrence field, an undeclared transition state or trigger, a dangling guard and a type in two domains raise their reader codes | Unit | P0 | FR-142-AC-4 | ✅ passed |
 | TC-1749 | The Rust and TypeScript backends refuse a construct kind with a named diagnostic and emit no record in its place | Unit | P0 | FR-142-AC-5, FR-142-CON-2 | ✅ passed |
 | TC-1750 | `contracts-v1.md` states the members, built-in rules and Quire meaning of every construct | Manual | P1 | FR-142-AC-6 | ✅ passed |
-| TC-1751 | The `business` fixture lifts to one construct of each kind with the members its fields and edges determine, accepted by the reader | Integration | P0 | FR-143-AC-1, FR-143-CON-2 | ✅ passed |
+| TC-1751 | The `business` fixture lifts to one construct of each kind with the identity fields, members, owner, occurrence field and persisted types its fields and edges name, accepted by the reader | Integration | P0 | FR-143-AC-1, FR-143-CON-2 | ✅ passed |
 | TC-1752 | Every `business` type identity ends in its artifact id and every `displayName` is its declared name; a declared-name rename leaves relationships byte-identical | Property | P0 | FR-143-AC-2, FR-143-CON-1 | ✅ passed |
 | TC-1753 | Each broken built-in rule yields one blocking `ARTIFACT_NOT_LOWERED` naming it, and no type of that artifact is emitted | Unit | P0 | FR-143-AC-3 | ✅ passed |
 | TC-1754 | A `nested_entity` with no owner and one with two owners are each refused naming the owner rule | Unit | P0 | FR-143-AC-4 | ✅ passed |
-| TC-1755 | A `state_machine`, `process` and `domain` lift with empty `states`, `transitions`, `steps` and `vocabulary` | Unit | P1 | FR-143-AC-5 | ✅ passed |
+| TC-1755 | `SM-001` lifts its four states and three transitions, `PR-001` its three ordered steps, and `DM-001` a non-empty vocabulary | Unit | P1 | FR-143-AC-5 | 🚧 blocked on issue #154 |
 | TC-1756 | Published `1.0.0` and `1.1.0` fixtures keep reader verdicts and canonical bytes, and a `1.1.0` document carrying a `1.2.0` node is refused | Integration | P0 | NFR-044-AC-1 | ✅ passed |
 | TC-1757 | The `1.1.0` to `1.2.0` uplift of one document classifies additive | Unit | P0 | NFR-044-AC-2 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |

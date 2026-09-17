@@ -50,7 +50,7 @@ artifact id. An artifact of any other object type lifts to a `record`.
 - The frontend SHALL set a `nested_entity`'s `owner` to the one `entity`, `nested_entity` or `aggregate_root` of the bundle whose composite relationship targets it.
 - The frontend SHALL set an `event`'s `occurrenceField` to its one field resolving to the `Timestamp` kernel scalar.
 - The frontend SHALL set a `repository`'s `persists` to the targets of its `persists` edges and a `domain`'s `members` to the targets of its `contains` edges.
-- The frontend SHALL fill `states`, `transitions`, `steps` and `vocabulary` from the engine's structured extraction; at the pinned quire-rs revision the engine extracts none of them and each list is emitted empty.
+- The frontend SHALL fill a `state_machine`'s `states` and `transitions`, a `process`'s `steps` and a `domain`'s `vocabulary` from the engine's structured extraction of the artifact.
 - The frontend SHALL lower the `JsonObject` type token to the kernel scalar `any` with no declared loss.
 - The frontend SHALL raise the `required-collection-presence` declared loss for a `0..*` field, whose authored presence the source row does not carry.
 
@@ -79,13 +79,13 @@ artifact id. An artifact of any other object type lifts to a `record`.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-143-AC-1 | The `business` fixture lifts to a `1.2.0` document holding one construct of each of the ten kinds, with `identityFields`, `members`, `owner`, `occurrenceField`, `persists` and `vocabulary` as the fixture's fields and edges determine, and the reader accepts it. | Test (TC-1751) |
+| FR-143-AC-1 | The `business` fixture lifts to a `1.2.0` document holding one construct of each of the ten kinds, and the reader accepts it: `FR-001` and `PR-001` name their `id` field in `identityFields`, `AR-001`'s `members` are `FR-001` and `VO-001`, `NE-001`'s `owner` is `FR-001`, `EV-001`'s `occurrenceField` is its `placedAt` field, `RP-001` persists `FR-001`, and `DM-001`'s `members` are `AR-001`, `EN-001` and `FR-001`. | Test (TC-1751) |
 | FR-143-AC-2 | Every type identity of the `business` fixture ends in its artifact id and every `displayName` is its declared name; renaming a declared name leaves every relationship byte-identical. | Test (TC-1752) |
 | FR-143-AC-3 | Each rule of "Built-in rules at the artifact" broken on one artifact yields one blocking `ARTIFACT_NOT_LOWERED` naming that rule, and no type of that artifact is emitted. | Test (TC-1753) |
 | FR-143-AC-4 | A `nested_entity` no composite relationship targets, and one two owners target, are each refused naming the owner rule. | Test (TC-1754) |
-| FR-143-AC-5 | A `state_machine`, `process` and `domain` lift with empty `states`, `transitions`, `steps` and `vocabulary` at the pinned engine revision. | Test (TC-1755) |
+| FR-143-AC-5 | The `business` fixture's `SM-001` lifts the states `draft`, `placed`, `shipped` and `cancelled` with transitions `draft`→`placed`, `placed`→`shipped` and `placed`→`cancelled`; `PR-001` lifts the steps `placed`, `picked` and `shipped` in order; and `DM-001` lifts a non-empty `vocabulary`. | Test (TC-1755) |
 
 ## Dependencies
 
 - **Upstream**: [FR-142](./FR-142-declare-one-construct-per-object-type.md), [FR-093](./FR-093-lower-field-declarations-to-ir-fields.md), [FR-094](./FR-094-lower-relationships-operations-and-clauses.md), [FR-095](./FR-095-mint-package-identity-and-provenance.md)
-- **Upstream**: agent-ix/quire-rs#432, the engine extraction of states, transitions, steps and vocabulary
+- **Upstream**: agent-ix/quire-rs#432, the engine extraction of states, transitions, steps and vocabulary, which filament-core-data#154 pins and lifts
