@@ -27,8 +27,8 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
 import {
-	identity as pythonIdentity,
 	pythonDataclassBackend,
+	identity as pythonIdentity,
 	pythonPydanticBackend,
 } from "../src/compiler/backends/python-v1/index.mjs";
 import { poetryProducer } from "../src/compiler/backends/python-v1/produce.mjs";
@@ -49,12 +49,15 @@ type Manifest = {
 	diagnostics: { code: string; message: string; blocking?: boolean }[];
 };
 
-/** A generation request over an accepted `1.1.0` document. */
-function pythonRequest(backend: { identity: string; version: string }) {
+/** A generation request over an accepted document, `1.2.0` unless one is named. */
+function pythonRequest(
+	backend: { identity: string; version: string },
+	document = "fixtures/semantic/v1/positive/config-version-v1-2.json",
+) {
 	return {
 		contractVersion: "1.0.0",
 		lockFingerprint: `sha256:${"a".repeat(64)}`,
-		ir: readJson("fixtures/semantic/v1/positive/config-version-v1-1.json"),
+		ir: readJson(document),
 		profile: readJson("fixtures/semantic/v1/positive/profile.json"),
 		mappings: [],
 		backend: {
@@ -112,6 +115,19 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 		console.log(
 			`TC-1531 measured: python-pydantic-v2 state=${manifest.state} files=${manifest.files.length} blocking=0`,
 		);
+	}, 300000);
+
+	it("generates a package from a 1.1.0 document", () => {
+		const manifest = generateTarget(
+			pythonRequest(
+				pythonPydanticBackend,
+				"fixtures/semantic/v1/positive/config-version-v1-1.json",
+			),
+			{ target: "python-pydantic-v2", host: host(), produce: poetryProducer() },
+		) as never as Manifest;
+
+		expect(manifest.state).toBe("success");
+		expect(manifest.files.map((f) => f.path)).toContain("__init__.py");
 	}, 300000);
 
 	/** Traces: TC-1532; FR-136-AC-3. */

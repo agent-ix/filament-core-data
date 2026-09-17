@@ -44,6 +44,11 @@
  * applicability table, or anything under `conformance/`.
  */
 
+import {
+	CONSTRUCT_KINDS as SHARED_CONSTRUCT_KINDS,
+	unrenderedNodes,
+} from "../../constructs.mjs";
+
 /** The backend's own diagnostic namespace, distinct from the IR namespace. */
 const TARGET = (name) => `agent-ix.typescript-backend.${name}`;
 
@@ -97,28 +102,16 @@ export const TARGET_LOSSES = Object.freeze([
 		construct: "object-type-construct",
 		code: LOSS_CODES.CONSTRUCT_NOT_RENDERED.code,
 		rationale:
-			"a contract 1.2.0 object-type construct carries built-in rules this target renders no check for; filament-core-data#147 declares its rendering, and a record in its place would drop those rules",
+			"a contract 1.2.0 object-type construct or model member carries meaning this target renders no check for; filament-core-data#147 declares its rendering, and a record in its place, or the member dropped, would lose that meaning",
 	}),
 ]);
 
 /**
- * The contract 1.2.0 object-type construct kinds (FR-142). The target renders
- * none of them, so each is a declared loss rather than a record.
+ * The contract 1.2.0 object-type construct kinds (FR-142), read from the one
+ * list in `src/compiler/constructs.mjs`. The target renders none of them, so
+ * each is a declared loss rather than a record.
  */
-export const CONSTRUCT_KINDS = Object.freeze(
-	new Set([
-		"entity",
-		"value_object",
-		"nested_entity",
-		"aggregate_root",
-		"enumeration",
-		"event",
-		"state_machine",
-		"process",
-		"repository",
-		"domain",
-	]),
-);
+export const CONSTRUCT_KINDS = Object.freeze(new Set(SHARED_CONSTRUCT_KINDS));
 
 /**
  * The constructs an earlier draft declared lost and this one renders as data,
@@ -226,19 +219,27 @@ export function representability(ir, options = {}) {
 		losses.push(Object.freeze(entry));
 	};
 
+	// Every contract 1.2.0 construct kind and model member is refused with one
+	// named loss at its pointer: rendering any of them as a record, or dropping
+	// the member, would lose the meaning it carries (FR-142-CON-2).
+	for (const node of unrenderedNodes(ir)) {
+		const index = Number(node.pointer.split("/")[2]);
+		record({
+			code: LOSS_CODES.CONSTRUCT_NOT_RENDERED.code,
+			construct: "object-type-construct",
+			owner: Number.isInteger(index)
+				? ir.types[index]?.identity
+				: ir.package?.identity,
+			pointer: `/ir${node.pointer}`,
+			detail: node.member.startsWith("kind ")
+				? node.member.slice(5)
+				: node.member,
+		});
+	}
+
 	for (const [index, type] of ir.types.entries()) {
 		if (type === null || typeof type !== "object") continue;
 		const owner = type.identity;
-
-		if (CONSTRUCT_KINDS.has(type.kind)) {
-			record({
-				code: LOSS_CODES.CONSTRUCT_NOT_RENDERED.code,
-				construct: "object-type-construct",
-				owner,
-				pointer: `/ir/types/${index}/kind`,
-				detail: type.kind,
-			});
-		}
 
 		// An `operation` and a `clause` are rendered as readonly descriptor data
 		// by `metadata.mjs` and are deliberately not recorded here; see the

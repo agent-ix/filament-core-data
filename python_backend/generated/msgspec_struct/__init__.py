@@ -17,7 +17,7 @@ from .package_lock_schema import Canonicalization, ExcludedEnum, FilamentSemanti
 from .package_manifest_schema import Capability, CompatibilityPosture, Export, Export1, FilamentSemanticPackageManifestV1, Import, Profile, SourceRoot, Visibility
 from .profile_schema import EditDirection, FilamentRepresentationProfileV1, MaterializationLifetime
 from .representation_schema import Avro, BestFitItem, Columnar, Delimited, EnumNumbersAdditionalProperty, FieldNumbersAdditionalProperty, FilamentRepresentationContractV1, Json, Kind2, Locus, Markdown, NonUs, Postgresql, Protobuf, ReservedName, ReservedNumber
-from .semantic_ir_schema import Category, Clause, Constraint, Constraint1, Constraint2, Constraint3, Constraint4, Constraint5, Constraint6, ContractVersion, DefaultKind, FeaturePath, Field, FilamentSemanticIrV1ContractVersions100110And120, Frame, IdentityList, InlineClause, Keyword, Keyword1, Keyword2, Keyword3, Keyword4, Keyword5, Member, Multiplicity, Occurrence, Operands, Operands1, Operands2, Operands3, Operands4, Operation, Population, PostItem, PreItem, Presence, Relationship, Returns, Role, Scalar, Source, State, Step, StepKind, Term, Transition, TypeDefinition, Value, Variant
+from .semantic_ir_schema import Category, Clause, Constraint, Constraint1, Constraint2, Constraint3, Constraint4, Constraint5, Constraint6, ContractVersion, DefaultKind, FeaturePath, Field, FilamentSemanticIrV1ContractVersions100And110, Frame, IdentityList, InlineClause, Keyword, Keyword1, Keyword2, Keyword3, Keyword4, Keyword5, Member, Multiplicity, Occurrence, Operands, Operands1, Operands2, Operands3, Operands4, Operation, Population, PostItem, PreItem, Presence, Relationship, Returns, Role, Scalar, Source, State, Step, StepKind, Term, Transition, TypeDefinition, Value, Variant
 from .target_contract_schema import BackendQualification, ExecutableGeneratorDependency, FilamentGeneratedTargetContractV1, NativeApiItem, ProhibitedDependency, PythonAuthoring, SecurityFinding, UnsupportedFeaturePolicy
 
 __all__ = [
@@ -70,7 +70,7 @@ __all__ = [
     "FilamentSemanticCompatibilityReportV1",
     "FilamentSemanticConsumerPolicyV1",
     "FilamentSemanticContractCommonTypesV1",
-    "FilamentSemanticIrV1ContractVersions100110And120",
+    "FilamentSemanticIrV1ContractVersions100And110",
     "FilamentSemanticMappingV1",
     "FilamentSemanticPackageLockV1",
     "FilamentSemanticPackageManifestV1",

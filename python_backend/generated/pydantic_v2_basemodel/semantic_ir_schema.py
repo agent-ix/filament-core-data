@@ -508,7 +508,7 @@ class TypeDefinition(BaseModel):
     vocabulary: list[Term] | None = None
 
 
-class FilamentSemanticIrV1ContractVersions100110And120(BaseModel):
+class FilamentSemanticIrV1ContractVersions100And110(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )

@@ -21,8 +21,13 @@
  */
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { unrenderedNodes } from "../../constructs.mjs";
 import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../../diagnostics.mjs";
 import { emitCrate, mediaTypeOf } from "./crate.mjs";
+import {
+	RUST_BACKEND_CODES,
+	diagnostic as rustDiagnostic,
+} from "./diagnostics.mjs";
 
 /** This repository's root, from this module's own location. */
 const REPO_ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
@@ -48,8 +53,11 @@ export const identity = "ix://agent-ix/filament-core-data/rust-backend";
 /**
  * The Rust/Serde generated target.
  *
- * `supportedIrVersions` is exactly `["1.1.0"]` through the seam, while
- * `rust-serde/cli.mjs` keeps `["1.0.0", "1.1.0"]` for its own development path.
+ * `supportedIrVersions` is `["1.1.0", "1.2.0"]` through the seam, while
+ * `rust-serde/cli.mjs` keeps `["1.0.0", "1.1.0", "1.2.0"]` for its own
+ * development path. A contract 1.2.0 construct kind or model member is refused
+ * with `UNSUPPORTED_CONSTRUCT` at its pointer until filament-core-data#147
+ * renders it.
  * The narrowing is FR-063-CON-5 applied consistently rather than a capability
  * this backend lacks: the frozen FR-041 prototype document also calls itself
  * `1.0.0` and is a different shape entirely, so a seam that accepted `1.0.0`
@@ -67,7 +75,7 @@ export const rustBackend = Object.freeze({
 	version: "0.1.0",
 	target: "rust",
 	owningIssue: "agent-ix/filament-core-data#21",
-	supportedIrVersions: Object.freeze(["1.1.0"]),
+	supportedIrVersions: Object.freeze(["1.1.0", "1.2.0"]),
 	supportedFeatures: Object.freeze([
 		"kind:scalar",
 		"kind:record",
@@ -93,6 +101,18 @@ export const rustBackend = Object.freeze({
 				],
 			};
 		}
+
+		const unrendered = unrenderedNodes(request.ir);
+		if (unrendered.length > 0)
+			return {
+				state: "unsupported",
+				files: [],
+				diagnostics: unrendered.map((node) =>
+					rustDiagnostic(RUST_BACKEND_CODES.UNSUPPORTED_CONSTRUCT, {
+						message: `/ir${node.pointer}: the Rust backend renders no contract 1.2.0 ${node.member}`,
+					}),
+				),
+			};
 
 		const result = emitCrate(request, { licenseText });
 

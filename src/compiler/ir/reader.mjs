@@ -13,6 +13,7 @@
  * Every rule below carries the `agent-ix.semantic-ir.*` code the issue #34
  * readers already emit, which is what makes the comparison possible at all.
  */
+import { EDGE_KINDS as SHARED_EDGE_KINDS } from "../constructs.mjs";
 import {
 	DEFAULT_LIMITS,
 	DIAGNOSTIC_CODES,
@@ -20,11 +21,11 @@ import {
 	fragment,
 } from "../diagnostics.mjs";
 import {
+	applies,
 	CORE_CLAUSE_LANGUAGES,
 	EDGE_CATEGORIES,
-	NAMESPACED_LANGUAGE,
-	applies,
 	isKeyword,
+	NAMESPACED_LANGUAGE,
 } from "./applicability.mjs";
 
 /** Nesting depth, stopping as soon as `bound` is exceeded. */
@@ -50,18 +51,7 @@ function depthOf(value, bound, depth = 0) {
 }
 
 /** The kinds that may carry relationships and operations. */
-const EDGE_KINDS = new Set([
-	"record",
-	"entity",
-	"value_object",
-	"nested_entity",
-	"aggregate_root",
-	"event",
-	"state_machine",
-	"process",
-	"repository",
-	"domain",
-]);
+const EDGE_KINDS = new Set(SHARED_EDGE_KINDS);
 
 function isObject(value) {
 	return value !== null && typeof value === "object" && !Array.isArray(value);

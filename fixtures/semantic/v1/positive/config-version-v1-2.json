@@ -1,0 +1,400 @@
+{
+	"contractVersion": "1.2.0",
+	"source": {
+		"identity": "ix://agent-ix/config-service/spec",
+		"version": "1.0.0",
+		"dialect": "spec-bundle",
+		"digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+	},
+	"package": {
+		"identity": "agent-ix/config-service",
+		"version": "1.0.0",
+		"manifestDigest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+		"mappingVersions": ["1.0.0"],
+		"profileVersions": ["1.0.0"],
+		"lockDigest": "sha256:5555555555555555555555555555555555555555555555555555555555555555"
+	},
+	"types": [
+		{
+			"identity": "ix://agent-ix/config-service/type/UUID",
+			"displayName": "UUID",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/config-service/spec",
+					"path": "spec/functional/FR-006-config-version-entity.md",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "uuid"
+		},
+		{
+			"identity": "ix://agent-ix/config-service/type/String",
+			"displayName": "String",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/config-service/spec",
+					"path": "spec/functional/FR-006-config-version-entity.md",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "string"
+		},
+		{
+			"identity": "ix://agent-ix/config-service/type/Integer",
+			"displayName": "Integer",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/config-service/spec",
+					"path": "spec/functional/FR-006-config-version-entity.md",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "integer"
+		},
+		{
+			"identity": "ix://agent-ix/config-service/type/Timestamp",
+			"displayName": "Timestamp",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/config-service/spec",
+					"path": "spec/functional/FR-006-config-version-entity.md",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "datetime"
+		},
+		{
+			"identity": "ix://agent-ix/config-service/type/JsonObject",
+			"displayName": "JsonObject",
+			"kind": "record",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/config-service/spec",
+					"path": "spec/functional/FR-006-config-version-entity.md",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "preserve",
+			"fields": []
+		},
+		{
+			"identity": "ix://agent-ix/config-service/type/VersionNumber",
+			"displayName": "VersionNumber",
+			"kind": "alias",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/config-service/spec",
+					"path": "spec/functional/FR-006-config-version-entity.md",
+					"startLine": 14,
+					"startColumn": 1
+				}
+			},
+			"constraints": [
+				{
+					"identity": "ix://agent-ix/config-service/constraint/version-number-min",
+					"keyword": "min",
+					"operands": {
+						"value": 1
+					},
+					"appliesTo": "ix://agent-ix/config-service/type/VersionNumber",
+					"diagnosticCode": "agent-ix.config-service.VERSION_NUMBER_MIN",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/config-service/spec",
+							"path": "spec/functional/FR-006-config-version-entity.md",
+							"startLine": 14,
+							"startColumn": 3
+						}
+					}
+				}
+			],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"target": "ix://agent-ix/config-service/type/Integer"
+		},
+		{
+			"identity": "ix://agent-ix/config-service/type/ConfigOverlay",
+			"displayName": "ConfigOverlay",
+			"kind": "record",
+			"roles": ["business:entity"],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/config-service/spec",
+					"path": "spec/functional/FR-006-config-version-entity.md",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"fields": [
+				{
+					"identity": "ix://agent-ix/config-service/field/config-overlay-id",
+					"name": "id",
+					"typeRef": "ix://agent-ix/config-service/type/UUID",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/config-service/spec",
+							"path": "spec/functional/FR-006-config-version-entity.md",
+							"startLine": 10,
+							"startColumn": 3
+						}
+					},
+					"extensions": []
+				}
+			],
+			"relationships": [],
+			"operations": [],
+			"clauses": []
+		},
+		{
+			"identity": "ix://agent-ix/config-service/type/ConfigVersion",
+			"displayName": "ConfigVersion",
+			"kind": "record",
+			"roles": ["business:entity"],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/config-service/spec",
+					"path": "spec/functional/FR-006-config-version-entity.md",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"fields": [
+				{
+					"identity": "ix://agent-ix/config-service/field/config-version-id",
+					"name": "id",
+					"typeRef": "ix://agent-ix/config-service/type/UUID",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/config-service/spec",
+							"path": "spec/functional/FR-006-config-version-entity.md",
+							"startLine": 12,
+							"startColumn": 3
+						}
+					},
+					"extensions": []
+				},
+				{
+					"identity": "ix://agent-ix/config-service/field/config-version-versionNumber",
+					"name": "versionNumber",
+					"typeRef": "ix://agent-ix/config-service/type/VersionNumber",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/config-service/spec",
+							"path": "spec/functional/FR-006-config-version-entity.md",
+							"startLine": 14,
+							"startColumn": 3
+						}
+					},
+					"extensions": []
+				},
+				{
+					"identity": "ix://agent-ix/config-service/field/config-version-data",
+					"name": "data",
+					"typeRef": "ix://agent-ix/config-service/type/JsonObject",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/config-service/spec",
+							"path": "spec/functional/FR-006-config-version-entity.md",
+							"startLine": 15,
+							"startColumn": 3
+						}
+					},
+					"extensions": []
+				},
+				{
+					"identity": "ix://agent-ix/config-service/field/config-version-hash",
+					"name": "hash",
+					"typeRef": "ix://agent-ix/config-service/type/String",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/config-service/spec",
+							"path": "spec/functional/FR-006-config-version-entity.md",
+							"startLine": 16,
+							"startColumn": 3
+						}
+					},
+					"extensions": []
+				},
+				{
+					"identity": "ix://agent-ix/config-service/field/config-version-createdAt",
+					"name": "createdAt",
+					"typeRef": "ix://agent-ix/config-service/type/Timestamp",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/config-service/spec",
+							"path": "spec/functional/FR-006-config-version-entity.md",
+							"startLine": 18,
+							"startColumn": 3
+						}
+					},
+					"extensions": []
+				},
+				{
+					"identity": "ix://agent-ix/config-service/field/config-version-createdBy",
+					"name": "createdBy",
+					"typeRef": "ix://agent-ix/config-service/type/String",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"presence": "required",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/config-service/spec",
+							"path": "spec/functional/FR-006-config-version-entity.md",
+							"startLine": 19,
+							"startColumn": 3
+						}
+					},
+					"extensions": []
+				}
+			],
+			"relationships": [
+				{
+					"identity": "ix://agent-ix/config-service/relationship/config-version-overlay",
+					"verb": "belongs_to",
+					"category": "structural",
+					"composite": false,
+					"target": "ix://agent-ix/config-service/type/ConfigOverlay",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1
+					},
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/config-service/spec",
+							"path": "spec/functional/FR-006-config-version-entity.md",
+							"startLine": 13,
+							"startColumn": 3
+						}
+					}
+				},
+				{
+					"identity": "ix://agent-ix/config-service/relationship/config-version-parent",
+					"verb": "derives_from",
+					"category": "traceability",
+					"composite": false,
+					"target": "ix://agent-ix/config-service/type/ConfigVersion",
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1
+					},
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/config-service/spec",
+							"path": "spec/functional/FR-006-config-version-entity.md",
+							"startLine": 17,
+							"startColumn": 3
+						}
+					}
+				}
+			],
+			"operations": [],
+			"clauses": [
+				{
+					"identity": "ix://agent-ix/config-service/clause/config-version-immutable",
+					"language": "ocl",
+					"clauseId": "immutable",
+					"text": "context ConfigVersion inv immutable: self.versionNumber = self.versionNumber@pre and self.data = self.data@pre and self.hash = self.hash@pre",
+					"sourceSpan": {
+						"sourceIdentity": "ix://agent-ix/config-service/spec",
+						"path": "spec/functional/FR-006-config-version-entity.md",
+						"startLine": 34,
+						"startColumn": 1,
+						"endLine": 36,
+						"endColumn": 1
+					},
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/config-service/spec",
+							"path": "spec/functional/FR-006-config-version-entity.md",
+							"startLine": 34,
+							"startColumn": 1
+						}
+					}
+				}
+			]
+		}
+	],
+	"occurrences": [],
+	"extensions": []
+}

@@ -2,6 +2,7 @@
 import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { unrenderedNodes } from "../../constructs.mjs";
 import { DIAGNOSTIC_CODES, diagnostic } from "../../diagnostics.mjs";
 import { admitIr, SCHEMA_FILES } from "../typescript-v1/admit.mjs";
 
@@ -266,7 +267,7 @@ export const jsonSchemaBackend = Object.freeze({
 	version: "0.1.0",
 	target: "json-schema",
 	owningIssue: "agent-ix/filament-core-data#85",
-	supportedIrVersions: Object.freeze(["1.1.0"]),
+	supportedIrVersions: Object.freeze(["1.1.0", "1.2.0"]),
 	supportedFeatures: Object.freeze([
 		"scalar",
 		"record",
@@ -304,6 +305,20 @@ export const jsonSchemaBackend = Object.freeze({
 				state: "invalid",
 				files: [],
 				diagnostics: admission.diagnostics.map(admissionDiagnostic),
+			};
+		// A contract 1.2.0 construct kind or model member has no JSON Schema
+		// rendering yet (filament-core-data#147). Each is refused by name: an
+		// object schema in its place would drop its built-in rules (FR-142-CON-2).
+		const unrendered = unrenderedNodes(ir);
+		if (unrendered.length > 0)
+			return {
+				state: "unsupported",
+				files: [],
+				diagnostics: unrendered.map((node) =>
+					diagnostic(DIAGNOSTIC_CODES.UNDECLARED_LOSS, {
+						message: `/ir${node.pointer}: JSON Schema backend renders no contract 1.2.0 ${node.member}`,
+					}),
+				),
 			};
 		const required = requiredExtension(ir);
 		if (required)

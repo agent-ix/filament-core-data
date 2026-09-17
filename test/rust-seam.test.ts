@@ -27,6 +27,7 @@ import {
 	registryWith,
 	selectBackend,
 } from "../src/compiler/backends/seam.mjs";
+import { CONSTRUCT_KINDS } from "../src/compiler/constructs.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -40,12 +41,12 @@ type Manifest = {
 	diagnostics: { code: string; message: string; blocking?: boolean }[];
 };
 
-/** A generation request for the `rust` target over an accepted `1.1.0` document. */
+/** A generation request for the `rust` target over an accepted `1.2.0` document. */
 function rustRequest(overrides: Record<string, unknown> = {}) {
 	return {
 		contractVersion: "1.0.0",
 		lockFingerprint: `sha256:${"a".repeat(64)}`,
-		ir: readJson("fixtures/semantic/v1/positive/config-version-v1-1.json"),
+		ir: readJson("fixtures/semantic/v1/positive/config-version-v1-2.json"),
 		profile: readJson("fixtures/semantic/v1/positive/profile.json"),
 		mappings: [],
 		backend: {
@@ -223,7 +224,9 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 	 * backend narrows for the same reason.
 	 */
 	it("refuses a 1.0.0 document with the versions it declares", () => {
-		const request = rustRequest();
+		const request = rustRequest({
+			ir: readJson("fixtures/semantic/v1/positive/config-version-v1-1.json"),
+		});
 		const ir = request.ir as Record<string, unknown>;
 		ir.contractVersion = "1.0.0";
 		// A 1.0.0 document declares the JSON Schema dialect; without it the
@@ -243,11 +246,61 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 		const refusal = manifest.diagnostics.find((d) =>
 			d.code.endsWith("UNSUPPORTED_IR_VERSION"),
 		);
-		expect(refusal?.message).toContain("1.1.0");
-		expect(rustBackend.supportedIrVersions).toStrictEqual(["1.1.0"]);
+		expect(refusal?.message).toContain("1.1.0, 1.2.0");
+		expect(rustBackend.supportedIrVersions).toStrictEqual(["1.1.0", "1.2.0"]);
 		console.log(
 			`TC-1393 measured: 1.0.0 document state=${manifest.state} declared=${rustBackend.supportedIrVersions.join(",")}`,
 		);
+	});
+
+	it("generates a crate from a 1.1.0 document", () => {
+		const manifest = generateTarget(
+			rustRequest({
+				ir: readJson("fixtures/semantic/v1/positive/config-version-v1-1.json"),
+			}),
+			{ target: "rust", host: host() },
+		) as never as Manifest;
+
+		expect(manifest.state).toBe("success");
+		expect(manifest.files.map((f) => f.path)).toContain("src/lib.rs");
+	});
+
+	/** Traces: TC-1749; FR-142-AC-5, FR-142-CON-2. */
+	it("refuses every construct kind and model member at its pointer and writes no file", () => {
+		const constructs = readJson(
+			"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
+		) as { types: { kind: string }[] };
+		const manifest = generateTarget(rustRequest({ ir: constructs }), {
+			target: "rust",
+			host: host(),
+		}) as never as Manifest;
+
+		expect(manifest.state).toBe("unsupported");
+		expect(manifest.files).toStrictEqual([]);
+		const refused = manifest.diagnostics
+			.filter((d) => d.code === "agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT")
+			.map((d) => d.message);
+		for (const kind of CONSTRUCT_KINDS)
+			expect(
+				refused.some((message) =>
+					message.endsWith(`contract 1.2.0 kind ${kind}`),
+				),
+				`no refusal names kind ${kind}`,
+			).toBe(true);
+		for (const member of [
+			"supertypes",
+			"abstract",
+			"subsets",
+			"redefines",
+			"frame",
+			"requires",
+			"ensures",
+			"populations",
+		])
+			expect(
+				refused.some((message) => message.endsWith(` ${member}`)),
+				`no refusal names ${member}`,
+			).toBe(true);
 	});
 
 	/** Traces: TC-1394; FR-130-AC-7. */
