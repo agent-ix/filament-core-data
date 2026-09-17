@@ -635,6 +635,14 @@ impl<'a> ArtifactContext<'a> {
     pub(crate) fn at(&self, line: usize, column: usize) -> Locus {
         Locus::new(&self.package.source(), self.path, line, column)
     }
+
+    /// `type/<slug(id)>`: the definition's identity, minted from the artifact
+    /// id. An id with no ASCII alphanumeric is `UNSLUGGABLE_NAME` at the head.
+    pub(crate) fn type_identity(&self) -> Result<String, LowerError> {
+        self.package
+            .type_identity(self.id)
+            .map_err(|unsluggable| LowerError::Blocked(vec![unsluggable.diagnostic(self.head())]))
+    }
 }
 
 /// One lowered definition with the alias definitions its constrained
@@ -738,6 +746,7 @@ pub fn lower_record(
     ) {
         return Err(LowerError::NotLowered);
     }
+    let type_identity = ctx.type_identity()?;
     let mut sink = Sink::default();
     if fields_state.lossy {
         sink.push(
@@ -834,10 +843,7 @@ pub fn lower_record(
     }
     sink.finish(
         TypeDefinition {
-            identity: ctx
-                .package
-                .type_identity(ctx.id)
-                .expect("artifact ids are validated before lowering"),
+            identity: type_identity,
             display_name: ctx.display_name.to_string(),
             kind: Kind::Record,
             roles: ctx.roles.clone(),
@@ -1069,8 +1075,11 @@ pub fn lower_bundle(
     .map(TypeDefinition::from)
     .collect();
 
-    // Type names: every kernel scalar the bundle uses is a `type/`
-    // definition already, so an artifact of the same slug collides with it.
+    // Every kernel scalar the bundle uses is a `type/` definition already, so
+    // an artifact declaring its name, or whose id slugs to it, collides with
+    // it. `names` holds the declared names; `taken` the id slugs that mint
+    // `type/` identities.
+    let mut names: BTreeMap<String, Locus> = BTreeMap::new();
     let mut taken: BTreeMap<String, (String, Locus)> = BTreeMap::new();
     let kernel_slugs: BTreeMap<String, KernelScalar> = resolutions
         .scalars_used
@@ -1108,47 +1117,51 @@ pub fn lower_bundle(
             ));
             continue;
         }
-        let type_slug = match slug(&artifact.display_name) {
+        // The identity is `type/<slug(id)>`: an id with no ASCII alphanumeric
+        // mints no identity, whatever the declared name.
+        let id_slug = match slug(document.id()) {
             Ok(s) => s,
             Err(unsluggable) => {
                 own.push(unsluggable.diagnostic(head));
                 continue;
             }
         };
-        if let Some((first_name, first)) = taken.get(&type_slug) {
-            let code = if first_name == &artifact.display_name {
-                Code::DuplicateTypeName
-            } else {
-                Code::UnsluggableName
-            };
+        // Contract case (a): two declarations of one verbatim `displayName`.
+        if let Some(first) = names.get(&artifact.display_name) {
             own.push(
                 Diagnostic::frontend(
-                    code,
-                    if code == Code::DuplicateTypeName {
-                        format!(
-                            "artifact {} ({}) lowers to type name `{}`, whose slug `{type_slug}` is already taken by {}",
-                            document.id(), document.path(), artifact.display_name, first.path
-                        )
-                    } else {
-                        format!(
-                            "artifact {} ({}) name `{}` and earlier name `{first_name}` both slug to `{type_slug}`; no distinct identity segment can be minted",
-                            document.id(), document.path(), artifact.display_name
-                        )
-                    },
+                    Code::DuplicateTypeName,
+                    format!(
+                        "artifact {} ({}) lowers to type name `{}`, already declared by {}",
+                        document.id(),
+                        document.path(),
+                        artifact.display_name,
+                        first.path
+                    ),
                     Some(head),
                 )
                 .with_related(first.clone()),
             );
             continue;
         }
-        if let Some(scalar) = kernel_slugs.get(&type_slug) {
+        // Contract case (a): the declared name or the minted identity is a
+        // kernel scalar's this bundle uses.
+        let by_name = resolutions
+            .scalars_used
+            .iter()
+            .find(|k| k.name() == artifact.display_name);
+        if let Some(scalar) = by_name.or_else(|| kernel_slugs.get(&id_slug)) {
+            let collision = if by_name.is_some() {
+                format!("lowers to type name `{}`", artifact.display_name)
+            } else {
+                format!("mints type/{id_slug}")
+            };
             own.push(Diagnostic::frontend(
                 Code::DuplicateTypeName,
                 format!(
-                    "artifact {} ({}) lowers to type name `{}`, which collides with the kernel scalar {} this bundle uses (type/{})",
+                    "artifact {} ({}) {collision}, which collides with the kernel scalar {} this bundle uses (type/{})",
                     document.id(),
                     document.path(),
-                    artifact.display_name,
                     scalar.name(),
                     scalar.name()
                 ),
@@ -1157,7 +1170,25 @@ pub fn lower_bundle(
             superseded.insert(document.path().to_string());
             continue;
         }
-        taken.insert(type_slug, (artifact.display_name.clone(), head.clone()));
+        // Contract case (b): two distinct ids whose slugs coincide mint one
+        // `type/` identity.
+        if let Some((first_id, first)) = taken.get(&id_slug) {
+            own.push(
+                Diagnostic::frontend(
+                    Code::UnsluggableName,
+                    format!(
+                        "artifact {} ({}) id and earlier id `{first_id}` both slug to `{id_slug}`; no distinct identity segment can be minted",
+                        document.id(),
+                        document.path()
+                    ),
+                    Some(head),
+                )
+                .with_related(first.clone()),
+            );
+            continue;
+        }
+        names.insert(artifact.display_name.clone(), head.clone());
+        taken.insert(id_slug, (document.id().to_string(), head.clone()));
 
         let extraction_breaches = check_extraction(extracted, &source_identity, limits);
         if !extraction_breaches.is_empty() {

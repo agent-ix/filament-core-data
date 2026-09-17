@@ -584,7 +584,10 @@ fn tc_1749_the_rust_and_typescript_backends_refuse_every_construct_kind_and_writ
 
     for (target, code) in [
         ("rust", "agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT"),
-        ("typescript", "agent-ix.typescript-backend.CONSTRUCT_NOT_RENDERED"),
+        (
+            "typescript",
+            "agent-ix.typescript-backend.CONSTRUCT_NOT_RENDERED",
+        ),
     ] {
         let out = dir.path().join(target);
         let manifest_path = dir.path().join(format!("{target}.manifest.json"));
@@ -954,7 +957,11 @@ fn tc_1755_state_machine_process_and_domain_lift_their_engine_members() {
             (tail("from"), tail("to"))
         })
         .collect();
-    for edge in [("draft", "placed"), ("placed", "shipped"), ("placed", "cancelled")] {
+    for edge in [
+        ("draft", "placed"),
+        ("placed", "shipped"),
+        ("placed", "cancelled"),
+    ] {
         assert!(
             transitions.contains(&(edge.0.to_owned(), edge.1.to_owned())),
             "no transition {edge:?} in {transitions:?}"

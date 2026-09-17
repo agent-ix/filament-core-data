@@ -183,6 +183,7 @@ fn row_lines(raw: &str, section: &str) -> Vec<usize> {
 /// at the row's line and column 3; `DUPLICATE_TYPE_NAME` at the second of
 /// two rows that slug alike.
 pub fn lower_enum(rows: &[ValueRow], ctx: &ArtifactContext<'_>) -> Result<Lowering, LowerError> {
+    let type_identity = ctx.type_identity()?;
     let source = ctx.package.source();
     let mut diagnostics: Vec<Diagnostic> = Vec::new();
     let mut blocked = false;
@@ -237,10 +238,7 @@ pub fn lower_enum(rows: &[ValueRow], ctx: &ArtifactContext<'_>) -> Result<Loweri
     }
     Ok(Lowering {
         definition: TypeDefinition {
-            identity: ctx
-                .package
-                .type_identity(ctx.id)
-                .expect("artifact ids are validated before lowering"),
+            identity: type_identity,
             display_name: ctx.display_name.to_string(),
             kind: Kind::Enumeration,
             roles: ctx.roles.clone(),

@@ -1696,6 +1696,7 @@ blocked as stated above.
 | TC-1755 | `SM-001` lifts its four states and three transitions, `PR-001` its three ordered steps, and `DM-001` a non-empty vocabulary | Unit | P1 | FR-143-AC-5 | 🚧 blocked on issue #154 |
 | TC-1756 | Published `1.0.0` and `1.1.0` fixtures keep reader verdicts and canonical bytes, and a `1.1.0` document carrying a `1.2.0` node is refused | Integration | P0 | NFR-044-AC-1 | ✅ passed |
 | TC-1757 | The `1.1.0` to `1.2.0` uplift of one document classifies additive | Unit | P0 | NFR-044-AC-2 | ✅ passed |
+| TC-1758 | An artifact with id _ and one with a non-ASCII-only id each raise one blocking UNSLUGGABLE_NAME at the frontmatter and lower to no definition, with no panic; an artifact with id UUID in a bundle using UUID raises DUPLICATE_TYPE_NAME naming type/UUID | Unit | P1 | FR-095-AC-17 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
 | TC-1585 | Every requirement the register names carries that issue's own link, and a row whose requirement omits it is reported | Unit | P0 | NFR-001-AC-6 | ✅ passed |
 

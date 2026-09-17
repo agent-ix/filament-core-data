@@ -1302,16 +1302,12 @@ fn tc_1334_distinct_names_with_one_slug_refuse_at_type_field_and_variant_levels(
     write_fixture(
         types.path(),
         "spec/functional/FR-001.md",
-        &entity("FR-001", "Config_Version", "| id | UUID | 1 | identity |\n"),
+        &entity("FR_001", "ConfigVersion", "| id | UUID | 1 | identity |\n"),
     );
     write_fixture(
         types.path(),
         "spec/functional/FR-002.md",
-        &entity(
-            "FR-002",
-            "Config__Version",
-            "| id | UUID | 1 | identity |\n",
-        ),
+        &entity("FR__001", "ConfigOverlay", "| id | UUID | 1 | identity |\n"),
     );
     let type_lift = lift_at(types.path(), &[&business_module(), &edge_vocabulary()]);
     let type_diagnostics = with_code(&type_lift.lowered.diagnostics, Code::UnsluggableName);
@@ -1377,6 +1373,52 @@ fn tc_1334_distinct_names_with_one_slug_refuse_at_type_field_and_variant_levels(
             .as_ref()
             .map(|locus| locus.start_line),
         Some(15)
+    );
+}
+
+#[trace("TC-1758", "FR-095-AC-17")]
+#[test]
+fn tc_1758_an_artifact_id_that_slugs_to_nothing_raises_unsluggable_name_and_no_panic() {
+    for id in ["_", "\u{00e9}\u{00e8}"] {
+        let bundle = tempfile::tempdir().expect("id fixture");
+        scratch_spec(bundle.path());
+        write_fixture(
+            bundle.path(),
+            "spec/functional/FR-001.md",
+            &entity(id, "Note", "| id | UUID | 1 | identity |\n"),
+        );
+        let lift = lift_at(bundle.path(), &[&business_module(), &edge_vocabulary()]);
+        let refused = with_code(&lift.lowered.diagnostics, Code::UnsluggableName);
+        assert_eq!(refused.len(), 1, "{id}: {:?}", lift.lowered.diagnostics);
+        assert!(refused[0].blocking, "{id}");
+        assert_eq!(
+            refused[0].locus,
+            Some(locus(&lift, "spec/functional/FR-001.md", 1, 1)),
+            "{id}"
+        );
+        assert!(
+            lift.lowered.types.iter().all(|t| t.display_name != "Note"),
+            "{id}: {:?}",
+            lift.lowered.types
+        );
+    }
+
+    // An id slugging to a kernel scalar the bundle uses mints that scalar's
+    // identity: blocking `DUPLICATE_TYPE_NAME`, whatever the declared name.
+    let bundle = tempfile::tempdir().expect("kernel id fixture");
+    scratch_spec(bundle.path());
+    write_fixture(
+        bundle.path(),
+        "spec/functional/FR-001.md",
+        &entity("UUID", "Note", "| id | UUID | 1 | identity |\n"),
+    );
+    let lift = lift_at(bundle.path(), &[&business_module(), &edge_vocabulary()]);
+    let refused = with_code(&lift.lowered.diagnostics, Code::DuplicateTypeName);
+    assert_eq!(refused.len(), 1, "{:?}", lift.lowered.diagnostics);
+    assert!(
+        refused[0].message.contains("mints type/UUID"),
+        "{}",
+        refused[0].message
     );
 }
 
