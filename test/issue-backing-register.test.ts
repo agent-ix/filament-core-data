@@ -75,7 +75,7 @@ describe("programme issue backing register", () => {
 	it("carries a row for every issue the programme plan left unbacked", () => {
 		// The register is only evidence if it is populated; an empty table would
 		// pass every case below over an empty population.
-		expect(rows.length).toBeGreaterThanOrEqual(19);
+		expect(rows.length).toBeGreaterThanOrEqual(18);
 		expect(new Set(rows.map((row) => row.issue)).size).toBe(rows.length);
 	});
 

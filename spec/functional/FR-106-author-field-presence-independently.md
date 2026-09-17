@@ -5,76 +5,75 @@ type: FR
 relationships:
   - target: "ix://agent-ix/filament-core-data/US-006"
     type: "implements"
-  - target: "ix://agent-ix/filament-core-data/FR-093"
+  - target: "ix://agent-ix/filament-core-data/FR-027"
     type: "depends_on"
 ---
 # FR-106: Author field presence independently of multiplicity
 
 ## Description
 
-This requirement answers
-[filament-core-data#95](https://github.com/agent-ix/filament-core-data/issues/95),
-which asks which source contract independently authored field presence is read
-from, and the presence half of
-[#93](https://github.com/agent-ix/filament-core-data/issues/93). The trace is
-written here rather than left to be inferred from a matrix row: an issue whose
-requirement can only be found by recognising the subject matter is an issue that
-traces to nothing a reader can follow.
-
-It also answers the presence half of
-[#78](https://github.com/agent-ix/filament-core-data/issues/78), which reaches the same seam from the other side: the
-rule deriving presence from multiplicity makes a required-but-possibly-empty
-collection inexpressible. The unconstrained-value half of #78 is answered by
+This requirement answers the presence half of
+[filament-core-data#93](https://github.com/agent-ix/filament-core-data/issues/93)
+and of [#78](https://github.com/agent-ix/filament-core-data/issues/78). The
+unconstrained-value half of both is answered by
 [FR-139](./FR-139-express-an-unconstrained-value-in-the-semantic-ir.md).
 
-The baseline model contract SHALL require every baseline field declaration to
-carry an authored `presence` value independently of multiplicity, nullability,
-and default semantics.
+The semantic IR SHALL carry field presence as the authored `Field.presence`
+value, `required` or `optional`, independently of the field's `multiplicity`.
+
+Presence answers whether a member must appear. Multiplicity answers how many
+values a present member holds. A rule deriving one from the other makes a
+required-but-possibly-empty collection and an optional-but-non-empty-when-present
+collection inexpressible, and both occur in the source contracts this repository
+lowers. Issue #93 carries the rule as the additive contract revision `1.2.0`.
 
 ## Inputs
 
-- A versioned field declaration
-- Authored `presence`, `multiplicity`, `nullable`, and `default` values
-- The producer's source-capability declaration
+- A source field declaration carrying authored presence and multiplicity
+- The contract version the IR document declares
 
 ## Outputs
 
-- A baseline field contract with all four independent axes
-- A named refusal or loss record when an adapter cannot carry authored presence
+- An IR `Field` whose `presence` is the authored value and whose `multiplicity`
+  is the authored multiplicity
+- A named loss where a source carries no authored presence
 
 ## Behavior
 
-- The baseline model SHALL admit only `required` and `optional` as presence values.
-- The baseline model SHALL require `multiplicity` on every field.
-- The baseline model SHALL retain each declared `ordered` and `unique` value as
-  part of multiplicity rather than deriving either from cardinality.
-- The baseline model SHALL retain the declared default as either absent or one
-  admissible default value; an adapter SHALL report named loss when it cannot
-  preserve that distinction.
-- The baseline model SHALL retain explicit null separately from an absent member.
-- A baseline adapter SHALL mark a field presence as `authored` only when its source declaration carries that value.
-- A legacy adapter SHALL NOT derive a baseline presence value from multiplicity.
-- A v1.2-to-v1.1 projection SHALL refuse when authored presence differs from the v1.1 derived value.
+- `Field.presence` SHALL admit exactly `required` and `optional`.
+- A frontend SHALL set `Field.presence` from the source's authored presence and
+  SHALL NOT compute it from `multiplicity.lower`.
+- A frontend whose source declaration carries no authored presence SHALL record a
+  named loss naming the field and its locus.
+- A reader SHALL validate presence and multiplicity as separate checks: an absent
+  `required` member refuses, an absent `optional` member is admitted, and a
+  present member is checked against `multiplicity`.
+- `presence`, `nullable`, and the default kind SHALL remain three independent
+  members of `Field`.
+- The `PRESENCE_MULTIPLICITY_MISMATCH` rule SHALL apply to `1.1.0` documents and
+  SHALL NOT apply to `1.2.0` documents.
 
 ## Constraints
 
 | ID | Constraint | Type | Validation |
-| --- | --- | --- | --- |
-| FR-106-CON-1 | The baseline field contract SHALL distinguish a required empty collection from an optional nonempty collection. | Correctness | Test |
-| FR-106-CON-2 | A producer SHALL NOT collapse absent, null, invalid, unavailable, default, ordered, or unique states. | Integrity | Test |
+|----|------------|------|------------|
+| FR-106-CON-1 | A required field with `multiplicity.lower` of `0` and an optional field with `multiplicity.lower` of at least `1` SHALL both be valid `1.2.0` fields. | Correctness | Test |
+| FR-106-CON-2 | Presence, nullability, and default kind SHALL NOT be derived from one another at any layer. | Integrity | Test |
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
-| --- | --- | --- |
-| FR-106-AC-1 | A required `0..*` field is accepted as present with an empty collection. | Test |
-| FR-106-AC-2 | An optional `1..*` field is accepted when absent and rejected when present with zero values. | Test |
-| FR-106-AC-3 | A v1.1 source lacking authored presence refuses baseline 1.2 projection with a named loss. | Test |
-| FR-106-AC-4 | A v1.2 field whose presence equals the v1.1 derivation projects without a presence loss. | Test |
-| FR-106-AC-5 | Two otherwise equal fields differing only in default, ordered, or unique retain that distinction or refuse with named loss. | Test |
+|----|----------|--------------|
+| FR-106-AC-1 | A required `0..*` field admits a present empty collection and refuses an absent member. | Test |
+| FR-106-AC-2 | An optional `1..*` field admits an absent member and refuses a present empty collection. | Test |
+| FR-106-AC-3 | Two fields differing only in `presence` produce distinct IR `Field` declarations and distinct generated declarations. | Test |
+| FR-106-AC-4 | A `1.2.0` field whose presence differs from `multiplicity.lower` validates without `PRESENCE_MULTIPLICITY_MISMATCH`; the same field in a `1.1.0` document reports it. | Test |
+| FR-106-AC-5 | A source field with no authored presence yields a named loss naming the field and its locus. | Test |
+| FR-106-AC-6 | Changing only one of `presence`, `nullable`, or default kind changes only that member of the emitted `Field`. | Test |
 
 ## Dependencies
 
-- [US-006](../usecase/US-006-declare-typed-domain-structure.md) supplies the domain-author outcome.
-- [FR-093](./FR-093-lower-field-declarations-to-ir-fields.md) is the legacy extraction reading replaced for the new baseline.
-- [Baseline 1.2 contract](../../docs/semantic-data-system/baseline-1-2.md) is the authoritative contract text.
+- **Upstream**: [US-006](../usecase/US-006-declare-typed-domain-structure.md) supplies the domain-author outcome.
+- **Upstream**: [FR-027](./FR-027-declare-field-multiplicity-and-units.md) declares the field multiplicity presence is independent of.
+- **Downstream**: [FR-093](./FR-093-lower-field-declarations-to-ir-fields.md), whose `required-collection-presence` loss closes when the source carries authored presence.
+- **Related**: [FR-139](./FR-139-express-an-unconstrained-value-in-the-semantic-ir.md), the unconstrained-value half of the same revision.
