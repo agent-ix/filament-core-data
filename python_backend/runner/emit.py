@@ -238,7 +238,7 @@ def build_from(
         inspect=lambda files, documents: inspect_generated(files, documents, "enforce"),
     )
 
-    files = dict(result.files)
+    files = constructs.refine(prepared.documents, dict(result.files))
     construct_module = constructs.render(prepared.documents, index, files)
     if construct_module is not None:
         files[constructs.MODULE] = construct_module

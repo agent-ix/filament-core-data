@@ -169,7 +169,7 @@ blocked as stated above.
 | US-019 | US-019-EX-2 (illustrative) implemented by FR-130 | TC-1390 | ✅ Complete |
 | US-019 | US-019-EX-3 (illustrative) implemented by FR-130 | TC-1391 | ✅ Complete |
 | US-019 | US-019-EX-4 (illustrative) implemented by FR-130 | TC-1392 | ✅ Complete |
-| US-019 | US-019-EX-1, US-019-EX-2 (illustrative) implemented by FR-136 | TC-1530..TC-1536, TC-1765, TC-1769, TC-1775 | ✅ Complete |
+| US-019 | US-019-EX-1, US-019-EX-2 (illustrative) implemented by FR-136 | TC-1530..TC-1536, TC-1765, TC-1769, TC-1775, TC-1783, TC-1784 | ✅ Complete |
 | US-021 | US-021-EX-1..US-021-EX-4 (illustrative) implemented by FR-137 | TC-1537..TC-1544 | ✅ Complete |
 | US-020 | US-020-EX-1, US-020-EX-2 (illustrative) implemented by FR-134 | TC-1431 | 🚧 planned on issue #6 |
 | US-020 | US-020-EX-3, US-020-EX-5 (illustrative) implemented by FR-134 | TC-1430, TC-1432 | 🚧 planned on issue #6 |
@@ -1723,6 +1723,8 @@ blocked as stated above.
 | TC-1780 | A repository operation with an empty frame takes `&self` and one with no frame takes `&mut self` | Unit | P0 | FR-054-AC-20 | ✅ passed |
 | TC-1781 | The TypeScript backend refuses a type named for another's `State` or `Equals`, a field holding an abstract type, and an inherited field collision, writing no file, and keys an inherited field's subsets by its declaring type | Unit | P0 | FR-064-AC-26 | ✅ passed |
 | TC-1782 | JSON Schema reads a subtype's construct annotations from the authored document and refuses an inherited field collision, emitting no file | Unit | P0 | FR-100-AC-11 | ✅ passed |
+| TC-1783 | Both Python targets compare identified constructs by their identity fields, register a subtype with its abstract `abc` supertype, refuse to construct the abstract class, and freeze an event | Integration | P0 | FR-136-AC-11 | ✅ passed |
+| TC-1784 | `constructs.py` keys every table by the generated class name for spaced display names, and refuses a generated `constructs.py`, a held abstract type and an undeclared identity field | Unit | P0 | FR-136-AC-12 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
 | TC-1585 | Every requirement the register names carries that issue's own link, and a row whose requirement omits it is reported | Unit | P0 | NFR-001-AC-6 | ✅ passed |
 
@@ -2656,13 +2658,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 130 | 83 | 0 | 47 | 100% mapped (130/130) |
-| Unit | 590 | 484 | 0 | 106 | 100% mapped (590/590) |
-| Integration | 160 | 99 | 0 | 61 | 100% mapped (160/160) |
+| Unit | 591 | 485 | 0 | 106 | 100% mapped (591/591) |
+| Integration | 161 | 100 | 0 | 61 | 100% mapped (161/161) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 68 | 43 | 0 | 25 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1380** | **1051** | **0** | **329** | **100% mapped (1380/1380)** |
+| **Total** | **1382** | **1053** | **0** | **329** | **100% mapped (1382/1382)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

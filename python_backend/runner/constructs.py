@@ -15,6 +15,23 @@ What each construct becomes:
 - every other member: a module-level constant keyed by the generated class
   name, since Python states none of them in a class.
 
+`refine` also completes the generated classes themselves, before this module
+is rendered:
+
+- an `entity`, `nested_entity`, `aggregate_root` or `process` compares and
+  hashes by its identity fields: `__eq__` and `__hash__` over their canonical
+  JSON form;
+- an `event` is frozen: `ConfigDict(frozen=True)` on a pydantic model and
+  `@dataclass(frozen=True)` on a dataclass;
+- an abstract type is an `abc.ABC` whose abstract properties are its fields,
+  and every subtype registers with it, so `isinstance` holds and the abstract
+  class does not construct.
+
+A shape either step cannot state is refused with `ConstructError`, never
+approximated: a generated module named `constructs.py`, a type holding an
+abstract type, a name that is not a Python identifier, and a class or identity
+field the generated source does not declare.
+
 A `repository` and a `domain` have no instance, and their schema admits no
 value (`{"not": {}}`), so they never reach the generator: `instance_documents`
 leaves them out, and this module is the whole of their rendering.
@@ -35,6 +52,32 @@ MODULE = "constructs.py"
 SUBSETS = "x-agent-ix-subsets"
 
 INSTANCELESS_KINDS: frozenset[str] = frozenset({"repository", "domain"})
+
+IDENTIFIED_KINDS: frozenset[str] = frozenset(
+    {"entity", "nested_entity", "aggregate_root", "process"}
+)
+
+ABSTRACT = "x-agent-ix-abstract"
+
+SUPERTYPES = "x-agent-ix-supertypes"
+
+
+class ConstructError(ValueError):
+    """A construct the generated package cannot state as its model declares it."""
+
+
+def _class_name(title: str) -> str:
+    """The class name the generator derives from a title: its words, capitalised.
+
+    `Order Repository` and `order-repository` both become `OrderRepository`.
+    """
+
+    words = re.split(r"[^0-9A-Za-z]+", title)
+    name = "".join(word[:1].upper() + word[1:] for word in words if word)
+    if not name.isidentifier() or keyword.iskeyword(name):
+        msg = f"the type {title!r} derives no Python class name"
+        raise ConstructError(msg)
+    return name
 
 
 def _module_name(document: str) -> str:
@@ -110,9 +153,11 @@ def _snake(name: str) -> str:
 class _Classes:
     """The generated class and module of every document, by semantic identity.
 
-    A class is named by the document's `title`, except where the generator
-    renames it so it does not shadow a name its module imports — `UUID` becomes
-    `UUIDModel` — so the name is read from the generated module itself.
+    A class is named by the document's `title` in class case, except where the
+    generator renames it so it does not shadow a name its module imports —
+    `UUID` becomes `UUIDModel` — so the name is read from the generated module
+    itself. A repository and a domain have no module; each is named by its
+    title in class case.
     """
 
     def __init__(
@@ -120,6 +165,7 @@ class _Classes:
     ) -> None:
         self.by_identity: dict[str, tuple[str, str]] = {}
         self.title: dict[str, str] = {}
+        self.module: dict[str, str] = {}
         self.field_names: dict[str, str] = {}
         for name, document in sorted(documents.items()):
             identity = document.get("x-agent-ix-semantic-id")
@@ -130,19 +176,27 @@ class _Classes:
                     self.field_names[field_identity] = field
             if not (isinstance(identity, str) and isinstance(title, str)):
                 continue
-            self.title[identity] = title
             module = _module_name(name)
+            self.module[identity] = name
+            self.title[identity] = _class_name(title)
             source = files.get(f"{module}.py")
             if source is None:
                 continue
             declared = [_declared_name(node) for node in ast.parse(source).body]
-            chosen = title if title in declared else f"{title}Model"
-            if chosen in declared:
-                self.by_identity[identity] = (module, chosen)
+            for chosen in (self.title[identity], f"{self.title[identity]}Model"):
+                if chosen in declared:
+                    self.by_identity[identity] = (module, chosen)
+                    self.title[identity] = chosen
+                    break
         self.imported: set[tuple[str, str]] = set()
 
     def name(self, identity: str) -> str:
         return self.title.get(identity, identity)
+
+    def of(self, document: dict[str, Any]) -> str:
+        """The generated class name of a document's type: every table's key."""
+
+        return self.name(document["x-agent-ix-semantic-id"])
 
     def field(self, identity: str) -> str:
         return self.field_names.get(identity, identity)
@@ -204,6 +258,12 @@ def render(
     populations = (index or {}).get("x-agent-ix-populations") or []
     if not constructs and not populations:
         return None
+    if MODULE in files:
+        msg = (
+            f"a generated module is named {MODULE}, the module that carries the"
+            " construct metadata; rename the type it is generated from"
+        )
+        raise ConstructError(msg)
 
     classes = _Classes(documents, files)
 
@@ -212,7 +272,7 @@ def render(
         for document in constructs.values():
             value = document.get(member)
             if value is not None:
-                found.append((document["title"], render_value(value)))
+                found.append((classes.of(document), render_value(value)))
         return found
 
     def names(value: list[str]) -> str:
@@ -268,7 +328,7 @@ def render(
         "VALUE_EQUALITY",
         "dict[str, bool]",
         [
-            (document["title"], "True")
+            (classes.of(document), "True")
             for document in constructs.values()
             if document.get("x-agent-ix-equality") == "value"
         ],
@@ -278,7 +338,7 @@ def render(
         "IMMUTABLE",
         "dict[str, bool]",
         [
-            (document["title"], "True")
+            (classes.of(document), "True")
             for document in constructs.values()
             if document.get("readOnly") is True
         ],
@@ -353,7 +413,9 @@ def render(
             if node.get(SUBSETS)
         ]
         if declared_subsets:
-            subsets.append((document["title"], "{" + ", ".join(declared_subsets) + "}"))
+            subsets.append(
+                (classes.of(document), "{" + ", ".join(declared_subsets) + "}")
+            )
         declared_redefines = [
             f"{field!r}: {classes.field(node['x-agent-ix-redefines'])!r}"
             for field, node in properties
@@ -361,10 +423,10 @@ def render(
         ]
         if declared_redefines:
             redefines.append(
-                (document["title"], "{" + ", ".join(declared_redefines) + "}")
+                (classes.of(document), "{" + ", ".join(declared_redefines) + "}")
             )
         for operation in document.get("x-agent-ix-operations") or []:
-            key = f"{document['title']}.{operation['name']}"
+            key = f"{classes.of(document)}.{operation['name']}"
             frame = operation.get("frame")
             if isinstance(frame, dict):
                 frames.append(
@@ -435,7 +497,7 @@ def render(
         if _kind(document) != "repository":
             continue
         body.append("")
-        body.append(f"class {document['title']}(Protocol):")
+        body.append(f"class {classes.of(document)}(Protocol):")
         persisted = ", ".join(
             f"`{classes.name(one)}`"
             for one in document.get("x-agent-ix-persists") or []
@@ -480,3 +542,343 @@ def render(
     while body and body[-1] == "":
         body.pop()
     return "\n".join([*lines, *body, ""])
+
+
+def _refs(node: Any) -> list[str]:
+    """Every `$ref` under a schema node, in document order."""
+
+    if isinstance(node, dict):
+        found = [node["$ref"]] if isinstance(node.get("$ref"), str) else []
+        for value in node.values():
+            found += _refs(value)
+        return found
+    if isinstance(node, list):
+        return [ref for value in node for ref in _refs(value)]
+    return []
+
+
+def _class_of(source: str, name: str) -> ast.ClassDef:
+    for node in ast.parse(source).body:
+        if isinstance(node, ast.ClassDef) and node.name == name:
+            return node
+    msg = f"the generated source declares no class {name}"
+    raise ConstructError(msg)
+
+
+def _fields_of(node: ast.ClassDef) -> list[ast.AnnAssign]:
+    return [
+        one
+        for one in node.body
+        if isinstance(one, ast.AnnAssign) and isinstance(one.target, ast.Name)
+    ]
+
+
+def _replace_lines(source: str, start: int, end: int, text: list[str]) -> str:
+    """`source` with its 1-based lines `start..end` replaced by `text`."""
+
+    lines = source.split("\n")
+    return "\n".join([*lines[: start - 1], *text, *lines[end:]])
+
+
+def _import_after_pydantic(source: str, statement: str) -> str:
+    """`source` importing `statement` after its last absolute `pydantic` import."""
+
+    if statement in source.split("\n"):
+        return source
+    last = max(
+        (
+            node.end_lineno or node.lineno
+            for node in ast.parse(source).body
+            if isinstance(node, ast.ImportFrom)
+            and node.level == 0
+            and (node.module or "").split(".")[0] == "pydantic"
+        ),
+        default=None,
+    )
+    if last is None:
+        msg = "the generated source imports nothing from pydantic"
+        raise ConstructError(msg)
+    lines = source.split("\n")
+    return "\n".join([*lines[:last], statement, *lines[last:]])
+
+
+def _import_standard(source: str, statement: str) -> str:
+    """`source` importing the standard-library `statement` after `__future__`."""
+
+    future = next(
+        node.end_lineno or node.lineno
+        for node in ast.parse(source).body
+        if isinstance(node, ast.ImportFrom) and node.module == "__future__"
+    )
+    lines = source.split("\n")
+    return "\n".join([*lines[:future], "", statement, *lines[future:]])
+
+
+def _import_last(source: str, statement: str) -> str:
+    """`source` importing `statement` after its last import."""
+
+    if statement in source.split("\n"):
+        return source
+    last = max(
+        node.end_lineno or node.lineno
+        for node in ast.parse(source).body
+        if isinstance(node, ast.Import | ast.ImportFrom)
+    )
+    lines = source.split("\n")
+    return "\n".join([*lines[:last], statement, *lines[last:]])
+
+
+def _drop_unused_imports(source: str) -> str:
+    """`source` without the names its `from` imports bring in and nothing reads."""
+
+    tree = ast.parse(source)
+    used = {node.id for node in ast.walk(tree) if isinstance(node, ast.Name)}
+    lines = source.split("\n")
+    for node in reversed(tree.body):
+        if not isinstance(node, ast.ImportFrom) or node.module == "__future__":
+            continue
+        kept = [alias for alias in node.names if (alias.asname or alias.name) in used]
+        if len(kept) == len(node.names):
+            continue
+        replacement = (
+            [
+                "from "
+                + "." * node.level
+                + (node.module or "")
+                + " import "
+                + ", ".join(
+                    alias.name + (f" as {alias.asname}" if alias.asname else "")
+                    for alias in kept
+                )
+            ]
+            if kept
+            else []
+        )
+        lines[node.lineno - 1 : node.end_lineno or node.lineno] = replacement
+    return re.sub(r"\n{3,}(?=from |import )", "\n\n", "\n".join(lines))
+
+
+def _profile(node: ast.ClassDef) -> str:
+    """`dataclass` or `pydantic`, read from how the generator declared the class."""
+
+    for decorator in node.decorator_list:
+        target = decorator.func if isinstance(decorator, ast.Call) else decorator
+        if isinstance(target, ast.Name) and target.id == "dataclass":
+            return "dataclass"
+    if any(
+        isinstance(base, ast.Name) and base.id == "BaseModel" for base in node.bases
+    ):
+        return "pydantic"
+    msg = f"the generated class {node.name} is neither a pydantic model nor a dataclass"
+    raise ConstructError(msg)
+
+
+def _abstract(source: str, name: str, bases: list[str]) -> str:
+    """The generated class `name` as an `abc.ABC` of abstract field properties."""
+
+    node = _class_of(source, name)
+    start = min([node.lineno, *(one.lineno for one in node.decorator_list)])
+    properties: list[str] = []
+    for field in _fields_of(node):
+        annotation = field.annotation
+        if (
+            isinstance(annotation, ast.Subscript)
+            and isinstance(annotation.value, ast.Name)
+            and annotation.value.id == "Annotated"
+            and isinstance(annotation.slice, ast.Tuple)
+        ):
+            annotation = annotation.slice.elts[0]
+        target = field.target
+        if not isinstance(target, ast.Name):
+            continue
+        properties += [
+            "",
+            "    @property",
+            "    @abstractmethod",
+            f"    def {target.id}(self) -> {ast.unparse(annotation)}: ...",
+        ]
+    rendered = [
+        f"class {name}({', '.join([*bases, 'ABC'])}):",
+        f'    """No value is a `{name}` except as an instance of a subtype.',
+        "",
+        "    Each abstract property is a field every subtype carries.",
+        '    """',
+        *properties,
+    ]
+    source = _replace_lines(source, start, node.end_lineno or node.lineno, rendered)
+    source = _import_standard(source, "from abc import ABC, abstractmethod")
+    return _drop_unused_imports(source)
+
+
+def _identity_equality(source: str, name: str, fields: list[str]) -> str:
+    """The generated class `name` comparing and hashing by its identity fields."""
+
+    node = _class_of(source, name)
+    declared = {
+        field.target.id
+        for field in _fields_of(node)
+        if isinstance(field.target, ast.Name)
+    }
+    for field in fields:
+        if field not in declared:
+            msg = f"the identity field {field} of {name} is no attribute of its class"
+            raise ConstructError(msg)
+    own = (
+        "("
+        + ", ".join(f"self.{field}" for field in fields)
+        + ("," if len(fields) == 1 else "")
+        + ")"
+    )
+    other = own.replace("self.", "other.")
+    listed = ", ".join(f"`{field}`" for field in fields)
+    rendered = [
+        "",
+        "    def __eq__(self, other: object) -> bool:",
+        f'        """One instance when every identity field is equal: {listed}."""',
+        f"        if not isinstance(other, {name}):",
+        "            return NotImplemented",
+        f"        return to_json({own}) == to_json({other})",
+        "",
+        "    def __hash__(self) -> int:",
+        '        """The identity fields\' hash, so equal instances hash equal."""',
+        f"        return hash(to_json({own}))",
+    ]
+    end = node.end_lineno or node.lineno
+    source = _replace_lines(source, end + 1, end, rendered)
+    return _import_after_pydantic(source, "from pydantic_core import to_json")
+
+
+def _frozen(source: str, name: str) -> str:
+    """The generated class `name` frozen, in its own profile's form."""
+
+    node = _class_of(source, name)
+    if _profile(node) == "dataclass":
+        for decorator in node.decorator_list:
+            target = decorator.func if isinstance(decorator, ast.Call) else decorator
+            if isinstance(target, ast.Name) and target.id == "dataclass":
+                keywords = (
+                    [ast.unparse(one) for one in decorator.keywords]
+                    if isinstance(decorator, ast.Call)
+                    else []
+                )
+                return _replace_lines(
+                    source,
+                    decorator.lineno,
+                    decorator.end_lineno or decorator.lineno,
+                    [f"@dataclass({', '.join(['frozen=True', *keywords])})"],
+                )
+    for statement in node.body:
+        if (
+            isinstance(statement, ast.Assign)
+            and [ast.unparse(one) for one in statement.targets] == ["model_config"]
+            and isinstance(statement.value, ast.Call)
+        ):
+            keywords = [ast.unparse(one) for one in statement.value.keywords]
+            return _replace_lines(
+                source,
+                statement.lineno,
+                statement.end_lineno or statement.lineno,
+                [
+                    "    model_config = ConfigDict("
+                    + ", ".join([*keywords, "frozen=True"])
+                    + ")"
+                ],
+            )
+    first = node.body[0]
+    source = _replace_lines(
+        source,
+        first.lineno,
+        first.lineno - 1,
+        ["    model_config = ConfigDict(frozen=True)"],
+    )
+    return _import_after_pydantic(source, "from pydantic import ConfigDict")
+
+
+def refine(
+    documents: dict[str, dict[str, Any]], files: dict[str, str]
+) -> dict[str, str]:
+    """The generated package with each class completed to its construct.
+
+    Identity equality, frozen events and abstract types, as the module
+    docstring states; `files` is not modified.
+    """
+
+    refined = dict(files)
+    classes = _Classes(documents, files)
+    by_name = {f"./{name}": document for name, document in documents.items()}
+    abstract = {
+        document["x-agent-ix-semantic-id"]
+        for document in documents.values()
+        if document.get(ABSTRACT) is True
+    }
+
+    # A value of an abstract type is an instance of some subtype, which no
+    # generated field type states.
+    for name, document in sorted(documents.items()):
+        for ref in _refs(document.get("properties") or {}):
+            held = by_name.get(ref)
+            if held is not None and held.get(ABSTRACT) is True:
+                msg = (
+                    f"{classes.of(document)} holds the abstract type"
+                    f" {classes.of(held)}, which has no value of its own"
+                )
+                raise ConstructError(msg)
+
+    def ancestors(identity: str, seen: frozenset[str] = frozenset()) -> list[str]:
+        document = next(
+            (
+                one
+                for one in documents.values()
+                if one.get("x-agent-ix-semantic-id") == identity
+            ),
+            None,
+        )
+        found: list[str] = []
+        for parent in (document or {}).get(SUPERTYPES) or []:
+            if parent in seen:
+                continue
+            found += [parent, *ancestors(parent, seen | {parent})]
+        return found
+
+    for name, document in sorted(documents.items()):
+        identity = document.get("x-agent-ix-semantic-id")
+        if not isinstance(identity, str) or identity not in classes.by_identity:
+            continue
+        module, class_name = classes.by_identity[identity]
+        path = f"{module}.py"
+        source = refined[path]
+        abstract_parents = sorted(
+            {one for one in document.get(SUPERTYPES) or [] if one in abstract}
+        )
+        if document.get(ABSTRACT) is True:
+            source = _abstract(
+                source, class_name, [classes.name(one) for one in abstract_parents]
+            )
+            for parent in abstract_parents:
+                parent_module, parent_name = classes.by_identity[parent]
+                source = _import_last(
+                    source, f"from .{parent_module} import {parent_name}"
+                )
+            refined[path] = source
+            continue
+        if _kind(document) in IDENTIFIED_KINDS:
+            fields = document.get("x-agent-ix-identity-fields") or []
+            if fields:
+                source = _identity_equality(source, class_name, list(fields))
+        if document.get("readOnly") is True:
+            source = _frozen(source, class_name)
+        registered = sorted({one for one in ancestors(identity) if one in abstract})
+        for parent in registered:
+            parent_module, parent_name = classes.by_identity[parent]
+            source = _import_last(source, f"from .{parent_module} import {parent_name}")
+        if registered:
+            source = (
+                source.rstrip("\n")
+                + "\n\n\n"
+                + "".join(
+                    f"{classes.name(parent)}.register({class_name})\n"
+                    for parent in registered
+                )
+            )
+        refined[path] = source
+    return refined

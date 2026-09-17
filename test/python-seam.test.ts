@@ -21,7 +21,15 @@
  * registration rather than a description of it.
  */
 
-import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -258,6 +266,68 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 				"    def save(self, order: Order) -> Order: ...",
 			])
 				expect(constructs, `${backend.target}: ${line}`).toContain(line);
+		}
+	}, 300000);
+
+	/** Traces: TC-1783; FR-136-AC-11. */
+	it("compares identified constructs by identity, freezes events and makes abstract types abc classes in both Python targets", () => {
+		const document =
+			"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json";
+		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-python-constructs-"));
+		try {
+			const packages: string[] = [];
+			for (const backend of [pythonPydanticBackend, pythonDataclassBackend]) {
+				const result = backend.generate(pythonRequest(backend, document), {
+					produce: poetryProducer(),
+				}) as { state: string; files: { path: string; text: string }[] };
+				expect(result.state, backend.target).toBe("success");
+				const name = backend.target.replaceAll("-", "_");
+				packages.push(name);
+				for (const file of result.files) {
+					const path = resolve(scratch, name, file.path);
+					mkdirSync(dirname(path), { recursive: true });
+					writeFileSync(path, file.text);
+				}
+				const party = result.files.find((file) => file.path === "Party.py");
+				expect(party?.text, backend.target).toMatch(/^class Party\(ABC\):/m);
+			}
+			const check = [
+				"import importlib, json, sys",
+				`sys.path.insert(0, ${JSON.stringify(scratch)})`,
+				"out = {}",
+				`for pkg in ${JSON.stringify(packages)}:`,
+				"    m = lambda name: importlib.import_module(f'{pkg}.{name}')",
+				"    line = m('OrderLine').OrderLine(kind='goods', quantity=1, sku='A')",
+				"    order = lambda id, status: m('Order').Order(id=id, lines=[line], status=status, total='1')",
+				"    a = order('7c1e0f8a-0000-4000-8000-000000000001', 'draft')",
+				"    b = order('7c1e0f8a-0000-4000-8000-000000000001', 'placed')",
+				"    c = order('7c1e0f8a-0000-4000-8000-000000000002', 'draft')",
+				"    row = [a == b, hash(a) == hash(b), a == c, isinstance(a, m('Party').Party)]",
+				"    try:",
+				"        m('Party').Party()",
+				"        row.append('constructed')",
+				"    except TypeError:",
+				"        row.append('abstract')",
+				"    event = m('OrderPlaced').OrderPlaced(orderId='7c1e0f8a-0000-4000-8000-000000000001', placedAt='2026-01-01T00:00:00Z')",
+				"    try:",
+				"        event.orderId = '7c1e0f8a-0000-4000-8000-000000000002'",
+				"        row.append('mutable')",
+				"    except Exception:",
+				"        row.append('frozen')",
+				"    out[pkg] = row",
+				"print(json.dumps(out))",
+			].join("\n");
+			const stdout = execFileSync("poetry", ["run", "python", "-c", check], {
+				cwd: root,
+				encoding: "utf8",
+				stdio: ["ignore", "pipe", "pipe"],
+			});
+			const expected = [true, true, false, true, "abstract", "frozen"];
+			expect(JSON.parse(stdout.trim().split("\n").at(-1) ?? "")).toStrictEqual(
+				Object.fromEntries(packages.map((name) => [name, expected])),
+			);
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
 		}
 	}, 300000);
 

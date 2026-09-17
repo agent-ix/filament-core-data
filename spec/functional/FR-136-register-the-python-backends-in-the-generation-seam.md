@@ -103,32 +103,45 @@ A contract `1.2.0` type reaches this target as the `json-schema` target's
 schema for it (FR-100). `datamodel-code-generator` reads a document's instance
 shape and drops every `x-agent-ix-*` annotation, so the runner renders the
 construct annotations into one more module of the same package,
-`constructs.py`, read from the same documents. Every constant in it is keyed by
-the generated class name, which is the type's `displayName`.
+`constructs.py`, read from the same documents, and completes the generated
+classes before it renders that module. Every constant in it is keyed by the
+generated class name: the class the generator declared for the type, or, for a
+repository or a domain, which has no class, its `displayName` in class case, so
+`Order Repository` is keyed `OrderRepository`.
 
 | Construct or member | Rendering |
 |---|---|
-| `entity`, `nested_entity`, `aggregate_root`, `process` | the record's model class; `IDENTITY_FIELDS` names the fields that tell instances apart |
+| `entity`, `nested_entity`, `aggregate_root`, `process` | the record's model class, whose `__eq__` and `__hash__` compare the canonical JSON form of its identity fields, so two instances with equal identity fields are one instance; `IDENTITY_FIELDS` names those fields |
 | `value_object` | the record's model class, whose generated equality is field-by-field; `VALUE_EQUALITY` marks it |
 | `nested_entity` | `OWNER` names the owner class |
 | `aggregate_root`, `domain` | `MEMBERS` names the member classes |
 | `enumeration` | a `StrEnum` of its variants |
-| `event` | the record's model class; `OCCURRENCE_FIELD` names the occurrence field and `IMMUTABLE` marks it |
+| `event` | the record's model class, frozen: `ConfigDict(frozen=True)` on a pydantic model and `@dataclass(frozen=True)` on a dataclass; `OCCURRENCE_FIELD` names the occurrence field and `IMMUTABLE` marks it |
 | `state_machine` | the machine's model class plus a `<Name>State` `StrEnum` of its states; `TRANSITIONS` lists each transition as (from, to, trigger, guard, emitted events) |
 | `process` | `STEPS` lists its ordered steps as (name, step kind, consumed events, emitted events) |
 | `repository` | a `typing.Protocol` in `constructs.py` whose methods are its operations, snake-cased, typed by the generated classes; `PERSISTS` names the persisted classes. No module of its own, since its schema admits no value |
 | `domain` | no class, since its schema admits no value; `MEMBERS` and `VOCABULARY` in `constructs.py` |
-| `supertypes` | the subtype's class carries its supertypes' fields; `SUPERTYPES` names the supertypes |
-| `abstract` | `ABSTRACT` marks the type |
+| `supertypes` | the subtype's class carries its supertypes' fields and registers with each abstract ancestor, so `isinstance` holds; `SUPERTYPES` names the supertypes |
+| `abstract` | an `abc.ABC` with one abstract property per field, which does not construct; `ABSTRACT` marks the type |
 | `subsets`, `redefines` | `FIELD_SUBSETS` and `FIELD_REDEFINES`, by class and field name |
 | operation `frame`, `requires`, `ensures` | `OPERATION_FRAMES` and `OPERATION_CLAUSES`, keyed `<Class>.<operation>` |
 | document `populations` | `POPULATIONS`, each member as (class, lower, upper extent), read from `index.json` |
 | `TYPE_KIND` | the construct kind of each type |
 
-Carried, not enforced: Python states none of these in a class, so the module
-carries them as data. An abstract class still constructs, an event instance
-is not frozen, and no clause, guard, frame, subset or population is checked.
-Each is Quire meaning over instances.
+Carried, not enforced: clauses
+[#159](https://github.com/agent-ix/filament-core-data/issues/159), guards
+[#160](https://github.com/agent-ix/filament-core-data/issues/160), transitions
+[#161](https://github.com/agent-ix/filament-core-data/issues/161), subsets
+[#162](https://github.com/agent-ix/filament-core-data/issues/162), frames
+[#163](https://github.com/agent-ix/filament-core-data/issues/163) and populations
+[#164](https://github.com/agent-ix/filament-core-data/issues/164) are carried in
+`constructs.py` as data and checked by no generated code; the backend emits one
+non-blocking `CONSTRUCT_MEMBER_UNENFORCED` per member kind the document declares.
+
+The runner refuses, and the producer exits non-zero, when a generated module is
+named `constructs.py`, a type's field holds an abstract type, a type's name
+derives no Python class name, or an identity field is no attribute of its
+generated class.
 
 ## Constraints
 
@@ -152,6 +165,8 @@ Each is Quire meaning over instances.
 | FR-136-AC-8 | A `python-pydantic-v2` and a `python-dataclass` request over a `1.2.0` document whose `ConfigVersion` is an `entity` each return state `success` with a `ConfigVersion.py` module declaring class `ConfigVersion`, and a `constructs.py` whose `TYPE_KIND` maps it to `entity` and whose `IDENTITY_FIELDS` maps it to `id` | Test (TC-1765) |
 | FR-136-AC-9 | A `python-pydantic-v2` and a `python-dataclass` request over the lifted config-version-table golden each return state `success` with `ConfigVersion.py` and `JsonObject.py` modules and no module named from an artifact id, while the `json-schema` document the modules generate from carries `x-agent-ix-semantic-id` `ix://agent-ix/config-service/type/FR-006` | Test (TC-1769) |
 | FR-136-AC-10 | A `python-pydantic-v2` and a `python-dataclass` request over the constructs fixture each return state `success`; every class is named by its type's `displayName` and none is named `Model`; `OrderLifecycle.py` declares `OrderLifecycleState`; no module is named for the repository or the domain; and `constructs.py` carries each construct table row and the `OrderRepository` protocol | Test (TC-1775) |
+| FR-136-AC-11 | Over the constructs fixture, in both Python targets, two `Order` instances with one `id` and different other fields are equal and hash equal, instances with different `id`s are unequal, an `Order` is an instance of `Party`, `Party()` raises `TypeError`, and assigning a field of an `OrderPlaced` instance raises | Test (TC-1783) |
+| FR-136-AC-12 | `constructs.py` over an entity titled `Config Overlay` and a repository titled `Order Repository` keys every table `ConfigOverlay` and `OrderRepository` and compiles; rendering beside a generated `constructs.py`, refining a type whose field holds an abstract type, and refining an identity field its class does not declare each raise `ConstructError` | Test (TC-1784) |
 
 ## Dependencies
 
