@@ -23,6 +23,7 @@ import { createHash } from "node:crypto";
 import {
 	isEnumerationShaped,
 	isRecordShaped,
+	renderingOf,
 	renderingView,
 	typeIndex,
 } from "../../constructs.mjs";
@@ -1085,7 +1086,7 @@ function clauseMeta(clause) {
 }
 
 function typeMeta(type) {
-	const fields = isRecordShaped(type.kind)
+	const fields = isRecordShaped(type)
 		? atom(`crate::types::${type.moduleName}::FIELDS`)
 		: slice([]);
 	const named = (list, suffix) =>
@@ -1321,14 +1322,14 @@ function tryNewCall(indent, arguments_) {
 }
 
 function renderType(type, model, byIdentity, diagnostics) {
-	if (isRecordShaped(type.kind) && type.abstract === true)
+	if (isRecordShaped(type) && type.abstract === true)
 		return renderAbstract(type);
-	if (isRecordShaped(type.kind))
+	if (isRecordShaped(type))
 		return renderRecord(type, model, byIdentity, diagnostics);
-	if (isEnumerationShaped(type.kind) || type.kind === "union")
+	if (isEnumerationShaped(type) || type.kind === "union")
 		return renderEnum(type);
-	if (type.kind === "repository") return renderRepository(type);
-	if (type.kind === "domain") return renderDomain(type);
+	if (renderingOf(type) === "interface") return renderInterface(type);
+	if (renderingOf(type) === "namespace") return renderNamespace(type);
 	return renderNewtype(type, model, byIdentity, diagnostics);
 }
 
@@ -1964,7 +1965,7 @@ const SURFACED = RUST_BACKEND_CODES.UNKNOWN_MEMBER_SURFACED;
 function renderRecord(type, model, byIdentity, diagnostics) {
 	const lines = moduleHeader(type);
 	const retains = type.unknownPolicy !== "reject";
-	// An event is immutable: its members are private and read through accessors.
+	// An immutable construct: its members are private and read through accessors.
 	const immutable = type.construct?.immutable === true;
 	const visibility = immutable ? "" : "pub ";
 	lines.push("use serde::{Deserialize, Serialize};", "");
@@ -2415,8 +2416,8 @@ const strings = (list) => slice(list.map((one) => atom(rustString(one))));
 
 /**
  * The module constants a construct carries beside its type: each member the
- * construct declares, and none it does not, so a plain `record` or `entity`
- * module is unchanged.
+ * construct declares, and none it does not, so a plain `record` or an
+ * identified record module is unchanged.
  */
 function constructItems(type) {
 	const facts = type.construct ?? {};
@@ -2629,8 +2630,8 @@ function accessors(type, retains) {
 	return lines;
 }
 
-/** A repository: a trait with one method per operation, holding no state. */
-function renderRepository(type) {
+/** An interface construct: a trait with one method per operation, holding no state. */
+function renderInterface(type) {
 	const lines = moduleHeader(type);
 	lines.push(...constructItems(type));
 	lines.push(...docLines(type.doc), `pub trait ${type.typeName} {`);
@@ -2655,8 +2656,8 @@ function renderRepository(type) {
 	return `${lines.join("\n")}\n`;
 }
 
-/** A domain: a namespace, rendered as a unit struct beside its members. */
-function renderDomain(type) {
+/** A namespace construct, rendered as a unit struct beside its members. */
+function renderNamespace(type) {
 	const lines = moduleHeader(type);
 	lines.push(...constructItems(type));
 	lines.push(

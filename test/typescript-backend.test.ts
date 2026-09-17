@@ -692,23 +692,26 @@ async function classifierUnder(setting: string): Promise<{
 }
 
 /**
- * A `1.2.0` ConfigVersion document whose `ConfigVersion` and `ConfigOverlay`
- * are `entity` constructs identified by their `id` field.
+ * A `2.0.0` ConfigVersion document whose `ConfigVersion` and `ConfigOverlay`
+ * are identified record constructs identified by their `id` field.
  */
 function entityDocument(): string {
 	const document = JSON.parse(
 		readFileSync(
-			resolve(root, "fixtures/semantic/v1/positive/config-version-v1-2.json"),
+			resolve(root, "fixtures/semantic/v1/positive/config-version-v2.json"),
 			"utf8",
 		),
 	) as {
+		constructs: unknown[];
 		types: {
-			kind: string;
+			kind: unknown;
 			displayName: string;
 			identityFields?: string[];
 			fields?: { name: string; identity: string }[];
 		}[];
 	};
+	const declared = identifiedRecordConstruct();
+	document.constructs = [declared];
 	for (const type of document.types) {
 		if (
 			type.displayName !== "ConfigVersion" &&
@@ -717,10 +720,52 @@ function entityDocument(): string {
 			continue;
 		const id = type.fields?.find((field) => field.name === "id");
 		if (!id) throw new Error(`${type.displayName} declares no id field`);
-		type.kind = "entity";
+		type.kind = declared.kind;
 		type.identityFields = [id.identity];
 	}
 	return JSON.stringify(document);
+}
+
+/**
+ * The constructs fixture's declaration of an identified record carrying no
+ * member beyond its fields and identity fields, read from the fixture rather
+ * than restated.
+ */
+function identifiedRecordConstruct(): {
+	kind: { module: string; name: string };
+	construct: { members: Record<string, string> };
+} {
+	const fixture = JSON.parse(
+		readFileSync(
+			resolve(
+				root,
+				"fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json",
+			),
+			"utf8",
+		),
+	) as {
+		constructs: {
+			kind: { module: string; name: string };
+			construct: {
+				identity: string;
+				shape: string;
+				members: Record<string, string>;
+			};
+		}[];
+	};
+	const entry = fixture.constructs.find(
+		(one) =>
+			one.construct.identity === "identified" &&
+			one.construct.shape === "record" &&
+			Object.entries(one.construct.members)
+				.filter(([, presence]) => presence !== "forbidden")
+				.map(([member]) => member)
+				.sort()
+				.join() === "fields,identityFields",
+	);
+	if (!entry)
+		throw new Error("the constructs fixture declares no identified record");
+	return entry;
 }
 
 describe("TC-1763 an entity construct rendered by the TypeScript backend (FR-064, FR-067)", () => {
@@ -736,7 +781,7 @@ describe("TC-1763 an entity construct rendered by the TypeScript backend (FR-064
 				ConfigVersion: ["id"],
 			});
 			const kinds = module.TYPE_KIND as Record<string, string>;
-			expect(kinds.ConfigVersion).toBe("entity");
+			expect(kinds.ConfigVersion).toBe(identifiedRecordConstruct().kind.name);
 			expect(kinds.JsonObject).toBe("record");
 			const validate = module.validateConfigOverlay as (input: unknown) => {
 				ok: boolean;
@@ -745,7 +790,7 @@ describe("TC-1763 an entity construct rendered by the TypeScript backend (FR-064
 			expect(validate({}).ok).toBe(false);
 
 			const records = await generatedValidators(
-				resolve(root, "fixtures/semantic/v1/positive/config-version-v1-2.json"),
+				resolve(root, "fixtures/semantic/v1/positive/config-version-v2.json"),
 				resolve(scratch, "records"),
 			);
 			expect(records.TYPE_IDENTITY_FIELDS).toStrictEqual({});
@@ -765,7 +810,7 @@ describe("TC-1773 every construct kind and model member rendered by the TypeScri
 			const module = await generatedValidators(
 				resolve(
 					root,
-					"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
+					"fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json",
 				),
 				resolve(scratch, "constructs"),
 			);
@@ -909,7 +954,7 @@ function constructsDocument() {
 		readFileSync(
 			resolve(
 				root,
-				"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
+				"fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json",
 			),
 			"utf8",
 		),

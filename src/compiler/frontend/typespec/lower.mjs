@@ -1177,7 +1177,7 @@ export function lowerProgram(options) {
 
 	const types = [...definitions.values()].sort(byIdentity);
 	const ir = {
-		contractVersion: "1.2.0",
+		contractVersion: "2.0.0",
 		source: {
 			identity: sourceIdentity,
 			version: options.packageVersion,
@@ -1185,6 +1185,7 @@ export function lowerProgram(options) {
 			digest: options.sourceDigest,
 		},
 		package: options.packageBlock,
+		constructs: [],
 		types,
 		occurrences: [],
 		extensions: [],

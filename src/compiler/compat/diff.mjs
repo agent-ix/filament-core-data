@@ -11,6 +11,7 @@
  * `patch`: reporting "no change" for something you could not look at is how a
  * breaking release gets promoted.
  */
+import { kindLabel } from "../constructs.mjs";
 import { canonicalize } from "../packages/canonical.mjs";
 import { familyMap } from "../family-map.mjs";
 import { fingerprintIr, normalizeIr } from "../ir/normalize.mjs";
@@ -256,12 +257,12 @@ export function diffSemanticContract(request) {
 		const previous = oldTypes.get(identity);
 		if (!previous) continue;
 
-		if (previous.kind !== next.kind) {
+		if (kindLabel(previous.kind) !== kindLabel(next.kind)) {
 			record(
 				identity,
 				"type",
 				"breaking",
-				`the structural kind changed from ${previous.kind} to ${next.kind}`,
+				`the structural kind changed from ${kindLabel(previous.kind)} to ${kindLabel(next.kind)}`,
 			);
 		} else {
 			const scalar = scalarChange(previous.scalar, next.scalar);

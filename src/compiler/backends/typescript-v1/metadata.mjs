@@ -621,15 +621,17 @@ function stringList(values) {
 
 /**
  * Whether the document carries anything the construct maps hold: a construct
- * kind other than `entity`, a model member, or a population. An `entity` alone
- * is fully carried by `TYPE_KIND` and `TYPE_IDENTITY_FIELDS`.
+ * that is not identified, a model member, or a population. An identified
+ * construct with no other member is fully carried by `TYPE_KIND` and
+ * `TYPE_IDENTITY_FIELDS`.
  */
 function carriesConstructData(model) {
 	if ((model.populations ?? []).length > 0) return true;
 	return (model.types ?? []).some((entry) => {
 		const facts = entry.construct;
 		if (facts === undefined) return false;
-		if (facts.kind !== undefined && facts.kind !== "entity") return true;
+		if (facts.kind !== undefined && facts.identityFields === undefined)
+			return true;
 		return Object.keys(facts).some(
 			(key) => key !== "kind" && key !== "identityFields",
 		);

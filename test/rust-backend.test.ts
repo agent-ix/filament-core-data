@@ -382,16 +382,6 @@ describe("TC-655, TC-697 the published tables and the closed code sets", () => {
 			"sequence",
 			"map",
 			"reference",
-			"entity",
-			"value_object",
-			"nested_entity",
-			"aggregate_root",
-			"enumeration",
-			"event",
-			"state_machine",
-			"process",
-			"repository",
-			"domain",
 		];
 		const declaredScalars = [
 			"any",
@@ -409,6 +399,22 @@ describe("TC-655, TC-697 the published tables and the closed code sets", () => {
 			.filter((row) => row.axis === "kind")
 			.map((row) => row.selector);
 		expect(kindRows.sort()).toEqual([...declaredKinds].sort());
+		// A construct kind selects its shape's row and its identity's row, one
+		// per term of the core construct vocabulary.
+		const vocabulary = readJson(
+			resolve(root, "schema/semantic/v1/construct-vocabulary.json"),
+		) as { shapes: string[]; identities: string[] };
+		for (const [axis, terms] of [
+			["shape", vocabulary.shapes],
+			["identity", vocabulary.identities],
+		] as const)
+			expect(
+				table.rows
+					.filter((row) => row.axis === axis)
+					.map((row) => row.selector)
+					.sort(),
+				axis,
+			).toEqual([...terms].sort());
 		const scalarRows = table.rows
 			.filter((row) => row.axis === "scalar")
 			.map((row) => row.selector);
@@ -1720,9 +1726,9 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	/**
 	 * Traces: TC-725; FR-062-AC-1, FR-062-AC-8.
 	 *
-	 * Branches: kind:alias, kind:entity, kind:enum, kind:map, kind:record,
-	 * kind:reference,
-	 * kind:scalar, kind:sequence, kind:union;
+	 * Branches: identity:identified, kind:alias, kind:enum, kind:map,
+	 * kind:record, kind:reference, kind:scalar, kind:sequence, kind:union,
+	 * shape:record;
 	 */
 	it("TC-725 every kind row selects the Rust form the mapping table states", async () => {
 		await runDetectorCase(
@@ -1735,9 +1741,9 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	 *
 	 * Branches: construct:abstract, construct:operation-contract,
 	 * construct:populations, construct:redefines, construct:subsets,
-	 * construct:supertypes, kind:aggregate_root, kind:domain, kind:enumeration,
-	 * kind:event, kind:nested_entity, kind:process, kind:repository,
-	 * kind:state_machine, kind:value_object;
+	 * construct:supertypes, identity:identified, identity:none, identity:value,
+	 * shape:enumeration, shape:interface, shape:namespace, shape:record,
+	 * shape:sequence, shape:state_machine;
 	 */
 	it("TC-1772 every construct kind and model member selects the Rust form the mapping table states", async () => {
 		await runDetectorCase(

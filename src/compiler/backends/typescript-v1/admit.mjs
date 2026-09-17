@@ -1001,7 +1001,7 @@ export function admitIr(bundle, options = {}) {
 				);
 			}
 			const derived = lower >= 1 ? "required" : "optional";
-			if (version !== "1.2.0" && field.presence !== derived) {
+			if (version !== "2.0.0" && field.presence !== derived) {
 				emit(
 					ADMISSIBILITY_CODES.PRESENCE_MULTIPLICITY_MISMATCH,
 					`${fieldPointer}/presence`,

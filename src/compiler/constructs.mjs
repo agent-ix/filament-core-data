@@ -1,89 +1,414 @@
 /**
- * The contract 1.2.0 object-type constructs and model members (FR-141, FR-142).
+ * The contract 2.0.0 construct declarations and model members (FR-141, FR-142).
  *
- * The one Node list of construct kinds, and the one reading of a construct's
- * members every backend renders from. The reader and every backend read the
- * kinds from here; the schema's `kind` enum and the Rust and Python copies are
- * held to it by a parity test.
+ * A construct kind is module data: a type's `kind` is `{module, name}`, and the
+ * document's `constructs` table declares it by identity, shape and member
+ * presence. Nothing here names a construct kind. The closed core vocabulary a
+ * declaration is written in is read from
+ * `schema/semantic/v1/construct-vocabulary.json`, and the core kinds from the
+ * published schema, so neither is restated here. What a backend renders is
+ * decided by the declaration: its shape selects the rendering, its identity the
+ * equality, and the members it admits the construct members carried.
  *
- * It imports only the diagnostic registry, so a backend may read it without
- * reaching the reader, the schema layer or the filesystem.
+ * A backend reaches a type's declaration through `declarationOf`, which reads
+ * the binding `bindConstructs` records for each type object of a document;
+ * `typeIndex` and `renderingView` bind the document they are given.
  */
 
+import { createRequire } from "node:module";
 import { DIAGNOSTIC_CODES, diagnostic } from "./diagnostics.mjs";
 
-/** One construct kind per business object type, in schema order. */
-export const CONSTRUCT_KINDS = Object.freeze([
-	"entity",
-	"value_object",
-	"nested_entity",
-	"aggregate_root",
-	"enumeration",
-	"event",
-	"state_machine",
-	"process",
-	"repository",
-	"domain",
-]);
+const require = createRequire(import.meta.url);
+const VOCABULARY = require("../../schema/semantic/v1/construct-vocabulary.json");
+const IR_SCHEMA = require("../../schema/semantic/v1/semantic-ir.schema.json");
 
-/**
- * The kinds rendered as a record-shaped data type: a `record`, and every
- * construct whose instances are values carrying fields (FR-142). A
- * `state_machine` carries its fields, which may be none, beside its states.
- */
-export const RECORD_SHAPED_KINDS = Object.freeze([
-	"record",
-	"entity",
-	"value_object",
-	"nested_entity",
-	"aggregate_root",
-	"event",
-	"process",
-	"state_machine",
-]);
-
-/**
- * The construct kinds with no instance data: a `repository` is an interface
- * holding no state, and a `domain` is a namespace, not a data type (FR-142).
- * No backend renders a value type for either.
- */
-export const INSTANCELESS_KINDS = Object.freeze(["repository", "domain"]);
-
-/** The kinds that carry `identityFields` (FR-142). */
-export const IDENTIFIED_KINDS = Object.freeze([
-	"entity",
-	"nested_entity",
-	"aggregate_root",
-	"process",
-]);
-
-/** Whether `kind` is rendered as a record-shaped type. */
-export function isRecordShaped(kind) {
-	return RECORD_SHAPED_KINDS.includes(kind);
+function deepFreeze(value) {
+	if (value !== null && typeof value === "object") {
+		for (const item of Object.values(value)) deepFreeze(item);
+		Object.freeze(value);
+	}
+	return value;
 }
-
-/** Whether `kind` is rendered as a closed set of literals: `enum` or `enumeration`. */
-export function isEnumerationShaped(kind) {
-	return kind === "enum" || kind === "enumeration";
-}
-
-/** Whether `kind` has no instance data: `repository` or `domain`. */
-export function isInstanceless(kind) {
-	return INSTANCELESS_KINDS.includes(kind);
-}
-
-/** The constructs that carry relationships and operations as a record does. */
-export const EDGE_KINDS = Object.freeze([
-	"record",
-	...CONSTRUCT_KINDS.filter((kind) => kind !== "enumeration"),
-]);
 
 const list = (value) => (Array.isArray(value) ? value : []);
 const isObject = (value) =>
 	value !== null && typeof value === "object" && !Array.isArray(value);
 
+/** The closed core vocabulary construct declarations are written in. */
+export const CONSTRUCT_VOCABULARY = deepFreeze(
+	JSON.parse(JSON.stringify(VOCABULARY)),
+);
+
+/** The core kinds: every `typeDefinition.kind` that is a string, in schema order. */
+export const CORE_KINDS = Object.freeze([
+	...IR_SCHEMA.$defs.typeDefinition.properties.kind.anyOf.find((branch) =>
+		Array.isArray(branch.enum),
+	).enum,
+]);
+
+const MEMBERS = new Map(
+	CONSTRUCT_VOCABULARY.members.map((member) => [member.name, member]),
+);
+const RULES = new Map(
+	CONSTRUCT_VOCABULARY.rules.map((rule) => [rule.name, rule]),
+);
+
+/**
+ * The type members a core kind requires by the published schema, which a core
+ * type carries with its core meaning even where a construct declares a member
+ * of the same name.
+ */
+const CORE_REQUIRED_MEMBERS = new Set(
+	IR_SCHEMA.$defs.typeDefinition.allOf.flatMap((clause) =>
+		list(clause.then?.required),
+	),
+);
+
+/**
+ * The rendering each shape selects, keyed by every shape of the vocabulary
+ * (the parity test holds the keys to it): a record shape renders as a record,
+ * an enumeration as a closed set of literals, an interface as operations with
+ * no instance data, and a namespace as no data type at all. A state machine is
+ * a record carrying its states.
+ */
+export const SHAPE_RENDERINGS = Object.freeze({
+	record: "record",
+	enumeration: "enum",
+	interface: "interface",
+	state_machine: "state_machine",
+	sequence: "record",
+	namespace: "namespace",
+});
+
+/**
+ * The equality each identity selects, keyed by every identity of the
+ * vocabulary: identified instances compare by their identity fields, values by
+ * every field, and a construct declaring no identity declares no equality.
+ */
+export const IDENTITY_EQUALITIES = Object.freeze({
+	identified: "identity",
+	value: "value",
+	none: undefined,
+});
+
+/**
+ * The construct features a backend rendering every shape and identity of the
+ * vocabulary declares: one per shape and one per identity, each prefixed.
+ */
+export function constructFeatures(prefix = "") {
+	return [
+		...CONSTRUCT_VOCABULARY.shapes.map((shape) => `${prefix}shape:${shape}`),
+		...CONSTRUCT_VOCABULARY.identities.map((one) => `${prefix}identity:${one}`),
+	];
+}
+
+/** Whether `kind` is a construct kind, `{module, name}`. */
+export function isConstructKind(kind) {
+	return isObject(kind);
+}
+
+/** The kind's name: a core kind, or a construct kind's `name`. */
+export function kindName(kind) {
+	if (typeof kind === "string") return kind;
+	if (isObject(kind) && typeof kind.name === "string") return kind.name;
+	return String(kind);
+}
+
+/** The kind as prose: a core kind, or `<module>/<name>`. */
+export function kindLabel(kind) {
+	if (isObject(kind)) return `${kind.module}/${kind.name}`;
+	return String(kind);
+}
+
+/** The table key of a construct kind. */
+function kindKey(kind) {
+	return JSON.stringify([kind.module, kind.name]);
+}
+
+/** A JSON pointer token. */
+function pointerToken(name) {
+	return `/${String(name).replace(/~/g, "~0").replace(/\//g, "~1")}`;
+}
+
+/**
+ * Reads a construct declaration, refusing at the first defect as the Rust
+ * reader does: `{ declaration }`, or `{ pointer, message }` with the pointer
+ * below the declaration.
+ *
+ * `declaration.members` and `declaration.references` are `Map`s in declaration
+ * order; `presenceOf` and `rolesOf` read them with the vocabulary defaults.
+ */
+export function readDeclaration(value) {
+	const refuse = (pointer, message) => ({ pointer, message });
+	if (!isObject(value))
+		return refuse("", "a construct declaration is an object");
+	const allowed = [
+		"identity",
+		"shape",
+		"members",
+		"references",
+		"rules",
+		"meaning",
+	];
+	for (const name of Object.keys(value))
+		if (!allowed.includes(name))
+			return refuse("", `the member ${name} is not one a declaration admits`);
+	for (const name of ["identity", "shape", "members", "meaning"])
+		if (!Object.hasOwn(value, name))
+			return refuse("", `a required member ${name} is absent`);
+	const term = (text, pointer, names, what) =>
+		typeof text === "string" && names.includes(text)
+			? undefined
+			: refuse(pointer, `${what} is one of ${names.join(", ")}`);
+	const identityDefect = term(
+		value.identity,
+		"/identity",
+		CONSTRUCT_VOCABULARY.identities,
+		"identity",
+	);
+	if (identityDefect) return identityDefect;
+	const shapeDefect = term(
+		value.shape,
+		"/shape",
+		CONSTRUCT_VOCABULARY.shapes,
+		"shape",
+	);
+	if (shapeDefect) return shapeDefect;
+
+	if (!isObject(value.members))
+		return refuse("/members", "members is an object");
+	const members = new Map();
+	for (const [name, presence] of Object.entries(value.members)) {
+		const at = `/members${pointerToken(name)}`;
+		if (!MEMBERS.has(name))
+			return refuse(
+				at,
+				`members names the core members only and ${name} is not one`,
+			);
+		const defect = term(
+			presence,
+			at,
+			CONSTRUCT_VOCABULARY.presences,
+			"a member presence",
+		);
+		if (defect) return defect;
+		members.set(name, presence);
+	}
+
+	const references = new Map();
+	if (Object.hasOwn(value, "references")) {
+		if (!isObject(value.references))
+			return refuse("/references", "references is an object");
+		for (const [name, roles] of Object.entries(value.references)) {
+			const at = `/references${pointerToken(name)}`;
+			if (!Array.isArray(MEMBERS.get(name)?.referenceItems))
+				return refuse(
+					at,
+					`references names core reference members only and ${name} is not one`,
+				);
+			if (!Array.isArray(roles) || roles.length === 0)
+				return refuse(at, "a reference admits a non-empty list of roles");
+			const read = [];
+			for (const [position, role] of roles.entries()) {
+				const itemAt = `${at}/${position}`;
+				if (typeof role !== "string" || role.length === 0 || role === "*")
+					return refuse(itemAt, "a role is a non-empty role name and not *");
+				if (read.includes(role))
+					return refuse(itemAt, `${name} admits the role ${role} once`);
+				read.push(role);
+			}
+			references.set(name, Object.freeze(read));
+		}
+	}
+
+	const rules = [];
+	if (Object.hasOwn(value, "rules")) {
+		if (!Array.isArray(value.rules))
+			return refuse("/rules", "rules is an array");
+		for (const [position, rule] of value.rules.entries()) {
+			const at = `/rules/${position}`;
+			const defect = term(rule, at, [...RULES.keys()], "a rule");
+			if (defect) return defect;
+			if (rules.includes(rule)) return refuse(at, `rules selects ${rule} once`);
+			rules.push(rule);
+		}
+	}
+
+	if (typeof value.meaning !== "string" || value.meaning.length === 0)
+		return refuse("/meaning", "meaning is a non-empty Quire meaning id");
+
+	const declaration = Object.freeze({
+		identity: value.identity,
+		shape: value.shape,
+		members,
+		references,
+		rules: Object.freeze(rules),
+		meaning: value.meaning,
+	});
+	for (const [position, rule] of rules.entries()) {
+		const { member, presence } = RULES.get(rule);
+		if (presenceOf(declaration, member) !== presence)
+			return refuse(
+				`/rules/${position}`,
+				`the rule ${rule} requires ${member} to be ${presence}`,
+			);
+	}
+	for (const member of references.keys())
+		if (presenceOf(declaration, member) === "forbidden")
+			return refuse(
+				`/references${pointerToken(member)}`,
+				`the reference ${member} is to a member the declaration forbids`,
+			);
+	return { declaration };
+}
+
+/** The presence of `member` in `declaration`: as listed, or the vocabulary default. */
+export function presenceOf(declaration, member) {
+	return declaration.members.get(member) ?? MEMBERS.get(member)?.default;
+}
+
+/** The roles `member` admits, when the declaration constrains it. */
+export function rolesOf(declaration, member) {
+	return declaration.references.get(member);
+}
+
+/**
+ * The type members a core-kind type never carries: each member a declaration
+ * forbids by default and no core kind requires.
+ */
+export function constructOnlyMembers() {
+	return CONSTRUCT_VOCABULARY.members
+		.filter(
+			(member) =>
+				member.default === "forbidden" &&
+				!CORE_REQUIRED_MEMBERS.has(member.name),
+		)
+		.map((member) => member.name);
+}
+
+/**
+ * The entries of reference member `member` of `type`: `[pointer, identity]`
+ * for each named type. A member naming no type has none. The member names the
+ * types itself when its `referenceItems` is empty; otherwise each listed
+ * member of each item does, the item being each array entry, or the member
+ * object itself.
+ */
+export function referenceEntries(type, typeAt, member) {
+	const items = MEMBERS.get(member)?.referenceItems;
+	if (!Array.isArray(items)) return [];
+	const named = (value, at) => {
+		if (typeof value === "string") return [[at, value]];
+		return list(value).flatMap((entry, position) =>
+			typeof entry === "string" ? [[`${at}/${position}`, entry]] : [],
+		);
+	};
+	const memberAt = `${typeAt}/${member}`;
+	const value = type?.[member];
+	if (value === undefined) return [];
+	if (items.length === 0) return named(value, memberAt);
+	const entries = Array.isArray(value)
+		? value.map((item, position) => [item, `${memberAt}/${position}`])
+		: [[value, memberAt]];
+	return entries.flatMap(([item, itemAt]) =>
+		isObject(item)
+			? items.flatMap((name) => named(item[name], `${itemAt}/${name}`))
+			: [],
+	);
+}
+
+/**
+ * The document's construct table: each well-formed declaration by kind, the
+ * first entry of a kind declared twice.
+ */
+export function constructTable(ir) {
+	const table = new Map();
+	for (const entry of list(ir?.constructs)) {
+		if (!isObject(entry) || !isObject(entry.kind)) continue;
+		const key = kindKey(entry.kind);
+		if (table.has(key)) continue;
+		const read = readDeclaration(entry.construct);
+		if (read.declaration !== undefined) table.set(key, read.declaration);
+	}
+	return table;
+}
+
+/** The declaration each bound type object carries. */
+const DECLARATIONS = new WeakMap();
+
+/**
+ * Binds every type of `ir` whose kind the construct table declares to its
+ * declaration, and returns the table. A core-kind type is bound to nothing.
+ */
+export function bindConstructs(ir) {
+	const table = constructTable(ir);
+	for (const type of list(ir?.types)) {
+		if (!isObject(type) || !isObject(type.kind)) continue;
+		const declaration = table.get(kindKey(type.kind));
+		if (declaration !== undefined) DECLARATIONS.set(type, declaration);
+	}
+	return table;
+}
+
+/** The declaration `node` is bound to, or `undefined` for a core kind. */
+export function declarationOf(node) {
+	return isObject(node) ? DECLARATIONS.get(node) : undefined;
+}
+
+/** Binds `target`, a copy or model entry of `source`, to `source`'s declaration. */
+export function adoptDeclaration(target, source) {
+	const declaration = declarationOf(source);
+	if (declaration !== undefined && isObject(target))
+		DECLARATIONS.set(target, declaration);
+	return target;
+}
+
+/**
+ * What `node` renders as: its core kind, or the rendering its construct's shape
+ * selects (`SHAPE_RENDERINGS`). A construct kind no declaration binds renders
+ * as nothing, and a backend refuses it.
+ */
+export function renderingOf(node) {
+	const declaration = declarationOf(node);
+	if (declaration !== undefined) return SHAPE_RENDERINGS[declaration.shape];
+	return typeof node?.kind === "string" ? node.kind : undefined;
+}
+
+/** Whether `node` renders as a record-shaped type: a record, or a construct of a record shape. */
+export function isRecordShaped(node) {
+	const rendering = renderingOf(node);
+	return rendering === "record" || rendering === "state_machine";
+}
+
+/** Whether `node` renders as a closed set of literals. */
+export function isEnumerationShaped(node) {
+	return renderingOf(node) === "enum";
+}
+
+/** Whether `node` has no instance data: an interface or a namespace construct. */
+export function isInstanceless(node) {
+	const rendering = renderingOf(node);
+	return rendering === "interface" || rendering === "namespace";
+}
+
+/** The equality `node`'s construct declares: `identity`, `value`, or `undefined`. */
+export function equalityOf(node) {
+	const declaration = declarationOf(node);
+	return declaration === undefined
+		? undefined
+		: IDENTITY_EQUALITIES[declaration.identity];
+}
+
+/** Whether `node`'s construct admits `member`: declared required or optional. */
+export function admits(node, member) {
+	const declaration = declarationOf(node);
+	return (
+		declaration !== undefined && presenceOf(declaration, member) !== "forbidden"
+	);
+}
+
 /** A type index by identity, for a caller that holds only the document. */
 export function typeIndex(ir) {
+	bindConstructs(ir);
 	return new Map(
 		list(ir?.types)
 			.filter((type) => isObject(type) && typeof type.identity === "string")
@@ -159,12 +484,12 @@ function fieldIndex(type, byIdentity) {
 
 /**
  * The names of a construct's identity fields, in `identityFields` order, or
- * `undefined` for a kind that carries none. An identity field may name a
- * supertype's field. One naming no field is dropped here; the readers refuse
- * such a document before any backend runs (FR-142).
+ * `undefined` for a type whose construct declares no identified instances. An
+ * identity field may name a supertype's field. One naming no field is dropped
+ * here; the readers refuse such a document before any backend runs (FR-142).
  */
 export function identityFieldNames(type, byIdentity = new Map()) {
-	if (!IDENTIFIED_KINDS.includes(type?.kind)) return undefined;
+	if (equalityOf(type) !== "identity") return undefined;
 	const fields = fieldIndex(type, byIdentity);
 	return list(type.identityFields)
 		.map((identity) => fields.get(identity)?.name)
@@ -176,7 +501,7 @@ export function identityFieldNames(type, byIdentity = new Map()) {
  * effective field list. A backend renders from the view, so a subtype's value
  * type carries its inherited fields; the supertypes and every member stay on
  * the type for the metadata the backend carries beside it. The document is not
- * mutated.
+ * mutated, and each view type keeps its type's declaration.
  */
 export function renderingView(ir) {
 	if (!isObject(ir) || !Array.isArray(ir.types)) return ir;
@@ -184,10 +509,11 @@ export function renderingView(ir) {
 	return {
 		...ir,
 		types: ir.types.map((type) =>
-			isObject(type) &&
-			isRecordShaped(type.kind) &&
-			list(type.supertypes).length > 0
-				? { ...type, fields: effectiveFields(type, byIdentity) }
+			isObject(type) && isRecordShaped(type) && list(type.supertypes).length > 0
+				? adoptDeclaration(
+						{ ...type, fields: effectiveFields(type, byIdentity) },
+						type,
+					)
 				: type,
 		),
 	};
@@ -197,14 +523,14 @@ export function renderingView(ir) {
  * The construct members of one type, read into one plain shape every backend
  * renders (FR-142, FR-141): names where the member names a field, state,
  * operation or clause of the type, and type identities where it names a type.
- * A member the kind does not carry is absent. Returns `undefined` for a type
- * carrying no construct kind and no model member.
+ * A member the type's declaration forbids is absent. Returns `undefined` for a
+ * type carrying no construct kind and no model member.
  */
 export function constructOf(type, byIdentity = new Map()) {
 	if (!isObject(type)) return undefined;
 	const facts = {};
-	const construct = CONSTRUCT_KINDS.includes(type.kind);
-	if (construct) facts.kind = type.kind;
+	const construct = declarationOf(type) !== undefined;
+	if (construct) facts.kind = kindName(type.kind);
 	const fields = fieldIndex(type, byIdentity);
 	const fieldName = (identity) => fields.get(identity)?.name ?? identity;
 
@@ -213,22 +539,26 @@ export function constructOf(type, byIdentity = new Map()) {
 
 	const identityFields = identityFieldNames(type, byIdentity);
 	if (identityFields !== undefined) facts.identityFields = identityFields;
-	if (type.kind === "nested_entity" && typeof type.owner === "string")
+	if (admits(type, "owner") && typeof type.owner === "string")
 		facts.owner = type.owner;
-	if (type.kind === "aggregate_root" || type.kind === "domain")
-		facts.members = [...list(type.members)];
-	if (type.kind === "event" && typeof type.occurrenceField === "string")
+	if (admits(type, "members")) facts.members = [...list(type.members)];
+	if (
+		admits(type, "occurrenceField") &&
+		typeof type.occurrenceField === "string"
+	)
 		facts.occurrenceField = fieldName(type.occurrenceField);
-	if (type.kind === "value_object") facts.equality = "value";
-	if (type.kind === "event") facts.immutable = true;
-	if (type.kind === "state_machine") {
+	if (equalityOf(type) === "value") facts.equality = "value";
+	if (admits(type, "occurrenceField")) facts.immutable = true;
+	if (admits(type, "states")) {
+		facts.states = list(type.states).map((state) => state.name);
+	}
+	if (admits(type, "transitions")) {
 		const states = new Map(
 			list(type.states).map((state) => [state.identity, state.name]),
 		);
 		const operations = new Map(
 			list(type.operations).map((one) => [one.identity, one.name]),
 		);
-		facts.states = list(type.states).map((state) => state.name);
 		facts.transitions = list(type.transitions).map((transition) => {
 			const rendered = {
 				identity: transition.identity,
@@ -242,7 +572,7 @@ export function constructOf(type, byIdentity = new Map()) {
 			return rendered;
 		});
 	}
-	if (type.kind === "process")
+	if (admits(type, "steps"))
 		facts.steps = list(type.steps).map((step) => ({
 			identity: step.identity,
 			name: step.name,
@@ -250,8 +580,8 @@ export function constructOf(type, byIdentity = new Map()) {
 			consumes: [...list(step.consumes)],
 			emits: [...list(step.emits)],
 		}));
-	if (type.kind === "repository") facts.persists = [...list(type.persists)];
-	if (type.kind === "domain")
+	if (admits(type, "persists")) facts.persists = [...list(type.persists)];
+	if (admits(type, "vocabulary"))
 		facts.vocabulary = list(type.vocabulary).map((term) => ({
 			term: term.term,
 			doc: term.doc,
@@ -325,7 +655,7 @@ export function inheritedNameCollisions(ir) {
 	const byIdentity = typeIndex(ir);
 	const found = [];
 	list(ir?.types).forEach((type, index) => {
-		if (!isObject(type) || !isRecordShaped(type.kind)) return;
+		if (!isObject(type) || !isRecordShaped(type)) return;
 		if (list(type.supertypes).length === 0) return;
 		const seen = new Set();
 		for (const field of effectiveFields(type, byIdentity)) {
@@ -365,12 +695,12 @@ export const UNENFORCED_MEMBERS = Object.freeze([
 
 /**
  * The pointer of the first occurrence of each unenforced member kind in a
- * contract 1.2.0 document, keyed by member kind; a kind the document never
+ * contract 2.0.0 document, keyed by member kind; a kind the document never
  * declares is absent.
  */
 export function unenforcedMemberPointers(ir) {
 	const found = new Map();
-	if (ir?.contractVersion !== "1.2.0") return found;
+	if (ir?.contractVersion !== "2.0.0") return found;
 	const note = (member, pointer) => {
 		if (!found.has(member)) found.set(member, pointer);
 	};

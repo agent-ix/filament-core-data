@@ -110,7 +110,7 @@ A revision that breaks rule 3 or rule 4 is classified \`breaking\` by
 
 ## How the three versions live in one file
 
-\`schema/semantic/v1/semantic-ir.schema.json\` accepts \`1.0.0\`, \`1.1.0\`, and \`1.2.0\`
+\`schema/semantic/v1/semantic-ir.schema.json\` accepts \`1.0.0\`, \`1.1.0\`, and \`2.0.0\`
 and discriminates on \`contractVersion\`. That is issue #34's decision, recorded
 here rather than taken here: this policy cites the schema, and this repository's
 compiler ticket changes no byte of it.
@@ -119,12 +119,14 @@ Contract \`1.1.0\` adds exactly these nodes:
 
 ${V1_1_ADDED_NODES.map((node) => `- \`${node}\``).join("\n")}
 
-Contract \`1.2.0\` adds the scalar \`any\`, authored field presence, the model
+Contract \`2.0.0\` adds the scalar \`any\`, authored field presence, the model
 members (\`supertypes\`, \`abstract\`, \`subsets\`, \`redefines\`, operation \`frame\`,
-\`requires\`, \`ensures\`, document \`populations\`) and the ten object-type
-construct kinds. The \`1.1.0\` → \`1.2.0\` revision is additive: a \`1.2.0\`
+\`requires\`, \`ensures\`, document \`populations\`), module construct kinds
+\`{module, name}\` declared as module data, and the \`constructs\` table that
+carries each used kind's declaration
+([ADR-0011](adr/0011-domain-packages-construct-kinds-are-module-data.md)). The \`1.1.0\` → \`2.0.0\` revision is additive: a \`2.0.0\`
 document may carry every \`1.1.0\` node, and a \`1.1.0\` document carrying a
-\`1.2.0\` node is refused.
+\`2.0.0\` node is refused.
 
 A version uplift is classified \`additive\` when — and only when — projecting the
 new document back to the old version reproduces the old document byte for byte.
@@ -139,7 +141,7 @@ between the declared versions.
 - Projecting **down** to \`1.0.0\` drops every \`1.1.0\`-only member and returns
   every dropped identity in \`loss\`. A projection that dropped them silently
   would let a \`1.0.0\` consumer believe it had the whole contract.
-- Projecting **up** to \`1.1.0\` or \`1.2.0\` derives each field's multiplicity from its
+- Projecting **up** to \`1.1.0\` or \`2.0.0\` derives each field's multiplicity from its
   presence and requires the caller to declare the frontend dialect, because the
   schema forbids the \`1.0.0\` constant on a \`1.1.0\` document and no rule can
   recover which frontend produced it. Without one the projection is refused with

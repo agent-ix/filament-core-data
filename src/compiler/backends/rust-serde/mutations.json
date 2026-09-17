@@ -335,7 +335,7 @@
 			"description": "widen an applicability row so a subject it excludes is admitted",
 			"target": "mapping-table.json",
 			"branches": ["constraint:pattern/string", "unknownPolicy:inert"],
-			"site": "\"kind\": \"scalar|alias|sequence|map|reference|repository|domain\"",
+			"site": "\"kind\": \"scalar|alias|sequence|map|reference|shape:interface|shape:namespace\"",
 			"detectedBy": [
 				"TC-725 the unknownPolicy rows dispose each kind exactly once"
 			]

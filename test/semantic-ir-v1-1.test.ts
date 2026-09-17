@@ -321,7 +321,7 @@ describe("semantic IR v1.1 schema inventory (red until Tasks 035..038 land)", ()
 		expect(version.enum, "contractVersion enum").toEqual([
 			"1.0.0",
 			"1.1.0",
-			"1.2.0",
+			"2.0.0",
 		]);
 		for (const def of [
 			"multiplicity",
@@ -466,7 +466,7 @@ describe("FR-030 version discriminator, source dialect, and manifest targets", (
 		expect(object(version.contractVersion, "contractVersion").enum).toEqual([
 			"1.0.0",
 			"1.1.0",
-			"1.2.0",
+			"2.0.0",
 		]);
 	});
 });

@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+	constructFeatures,
 	constructOf,
 	inheritedNameCollisions,
 	isEnumerationShaped,
@@ -244,11 +245,11 @@ function renderType(ir, type, types, authored) {
 		case type.kind === "scalar":
 			schema = { ...(scalarSchema[type.scalar] ?? {}) };
 			break;
-		case isRecordShaped(type.kind): {
+		case isRecordShaped(type): {
 			// A record-shaped construct is the record schema over its effective
-			// fields. An event's instance is immutable, which JSON Schema states
-			// as `readOnly`; a state machine's states are a string enum under
-			// `$defs` (FR-100).
+			// fields. The instance of a construct admitting an occurrence field is
+			// immutable, which JSON Schema states as `readOnly`; declared states
+			// are a string enum under `$defs` (FR-100).
 			schema = recordSchema(type, types);
 			if (facts?.immutable) schema.readOnly = true;
 			if (facts?.states?.length)
@@ -260,16 +261,16 @@ function renderType(ir, type, types, authored) {
 				};
 			break;
 		}
-		case isEnumerationShaped(type.kind):
+		case isEnumerationShaped(type):
 			schema = {
 				type: "string",
 				enum: [...(type.variants ?? [])].sort(byName).map((one) => one.name),
 			};
 			break;
-		case isInstanceless(type.kind):
-			// A repository holds no state and a domain is a namespace: neither
-			// has an instance, so no JSON value validates against its schema,
-			// and the schema carries its members as annotations (FR-100).
+		case isInstanceless(type):
+			// An interface holds no state and a namespace is not a data type:
+			// neither has an instance, so no JSON value validates against its
+			// schema, and the schema carries its members as annotations (FR-100).
 			schema = { not: {} };
 			break;
 		case type.kind === "union":
@@ -382,20 +383,11 @@ export const jsonSchemaBackend = Object.freeze({
 	version: "0.1.0",
 	target: "json-schema",
 	owningIssue: "agent-ix/filament-core-data#85",
-	supportedIrVersions: Object.freeze(["1.1.0", "1.2.0"]),
+	supportedIrVersions: Object.freeze(["1.1.0", "2.0.0"]),
 	supportedFeatures: Object.freeze([
 		"scalar",
 		"record",
-		"entity",
-		"value_object",
-		"nested_entity",
-		"aggregate_root",
-		"enumeration",
-		"event",
-		"state_machine",
-		"process",
-		"repository",
-		"domain",
+		...constructFeatures(),
 		"supertypes",
 		"feature-redefinition",
 		"operation-contract",

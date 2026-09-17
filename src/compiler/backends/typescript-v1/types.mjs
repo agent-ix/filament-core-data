@@ -305,12 +305,12 @@ function returnType(returns) {
 }
 
 /**
- * A `repository` renders as an interface of its operations, each a method
+ * An interface construct renders as an interface of its operations, each a method
  * over the declared parameter and return types (FR-142). It holds no state,
  * so no validator is generated for it; the types it persists are data in
  * `identity.ts`.
  */
-function renderRepository(entry) {
+function renderInterface(entry) {
 	const methods = (entry.operations ?? []).map((operation) => {
 		const params = (operation.params ?? [])
 			.map(
@@ -330,25 +330,19 @@ function renderRepository(entry) {
 }
 
 /**
- * Exhaustive over the eight structural kinds and the ten construct kinds; an
- * unhandled kind is a contract failure. Every construct whose instances carry
- * fields renders as its record interface. A `domain` is a namespace, not a
- * data type, and declares no type: its members and vocabulary are data in
+ * Exhaustive over the eight structural kinds and the renderings a construct's
+ * shape selects (`SHAPE_RENDERINGS`); an unhandled rendering is a contract
+ * failure. A construct of a record shape renders as its record interface, and
+ * one of the enumeration shape as an enum. A namespace construct is not a data
+ * type and declares no type: its members and vocabulary are data in
  * `identity.ts` (FR-142).
  */
 const RENDERERS = Object.freeze({
 	scalar: renderScalar,
 	record: renderRecord,
-	entity: renderRecord,
-	nested_entity: renderRecord,
-	aggregate_root: renderRecord,
-	event: renderRecord,
-	process: renderRecord,
-	value_object: renderRecord,
 	state_machine: renderStateMachine,
-	enumeration: renderEnum,
-	repository: renderRepository,
-	domain: () => undefined,
+	interface: renderInterface,
+	namespace: () => undefined,
 	enum: renderEnum,
 	union: renderUnion,
 	alias: renderAlias,
@@ -357,7 +351,7 @@ const RENDERERS = Object.freeze({
 	reference: renderReference,
 });
 
-/** The kinds this renderer handles, as data, so a test counts them. */
+/** The renderings this renderer handles, as data, so a test counts them. */
 export const RENDERED_KINDS = Object.freeze(Object.keys(RENDERERS).sort());
 
 /**
@@ -384,7 +378,7 @@ export function renderTypes(model) {
 		].join(""),
 	];
 	for (const entry of model.types ?? []) {
-		const render = RENDERERS[entry.kind];
+		const render = RENDERERS[entry.rendering];
 		if (render === undefined) {
 			throw new TypeError(
 				`no rendering is declared for kind ${JSON.stringify(entry.kind)} on ${entry.identity}`,

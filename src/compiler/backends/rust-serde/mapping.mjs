@@ -24,12 +24,18 @@
 
 import {
 	abstractAncestors,
+	adoptDeclaration,
+	admits,
+	bindConstructs,
 	constructOf,
-	IDENTIFIED_KINDS,
+	declarationOf,
+	equalityOf,
 	identityFieldNames,
 	isEnumerationShaped,
 	isRecordShaped,
+	kindName,
 	populationsOf,
+	renderingOf,
 } from "../../constructs.mjs";
 import { lowerConstraints } from "./constraints.mjs";
 import { diagnostic, fragment, RUST_BACKEND_CODES } from "./diagnostics.mjs";
@@ -186,13 +192,21 @@ const V1_1_NODES = Object.freeze([
  * `conformance/bases/core-1-1.json`, which gives a `map` `preserve` and a
  * `union` `surface`, and which the independent oracle decides `success`.
  */
-export function unknownDisposition(kind, policy) {
+export function unknownDisposition(definition, policy) {
 	const retains = policy === "preserve" || policy === "surface";
-	if (isRecordShaped(kind)) return retains ? "record-retain" : "record-reject";
-	if (isEnumerationShaped(kind) || kind === "union") {
+	if (isRecordShaped(definition))
+		return retains ? "record-retain" : "record-reject";
+	if (isEnumerationShaped(definition) || definition?.kind === "union") {
 		return retains ? "variant-catchall" : "variant-closed";
 	}
 	return "inert";
+}
+
+/** The mapping row a type selects: its construct's shape, or its core kind. */
+function rowOf(declaration, kind) {
+	return declaration === undefined
+		? `kind:${kind}`
+		: `shape:${declaration.shape}`;
 }
 
 /** The `1.0.0` derivation FR-027 publishes: `presence` fixes the bounds. */
@@ -225,6 +239,7 @@ export function mapDocument(ir, options = {}) {
 		);
 
 	const version = String(ir.contractVersion);
+	bindConstructs(ir);
 	const definitions = ir.types ?? [];
 	const byIdentity = new Map();
 	for (const definition of definitions)
@@ -474,7 +489,8 @@ function mapType(definition, context) {
 	const { byIdentity, graph, version, raise, typeScope, authored } = context;
 	const locus = definition.origin?.source;
 	const identity = definition.identity;
-	const kind = String(definition.kind);
+	const kind = kindName(definition.kind);
+	const declaration = declarationOf(definition);
 
 	const name = typeName(definition);
 	if (name.ok !== true) {
@@ -526,13 +542,17 @@ function mapType(definition, context) {
 		);
 		return undefined;
 	}
-	const model = {
+	const model = adoptDeclaration({}, definition);
+	Object.assign(model, {
 		identity,
 		kind,
 		displayName: definition.displayName,
 		roles: definition.roles ?? [],
 		unknownPolicy: definition.unknownPolicy,
-		unknownDisposition: unknownDisposition(kind, definition.unknownPolicy),
+		unknownDisposition: unknownDisposition(
+			definition,
+			definition.unknownPolicy,
+		),
 		origin: definition.origin,
 		extensions: definition.extensions ?? [],
 		typeName: resolvedName.value,
@@ -544,7 +564,7 @@ function mapType(definition, context) {
 		relationships: definition.relationships ?? [],
 		operations: definition.operations ?? [],
 		clauses: definition.clauses ?? [],
-	};
+	});
 	const construct = constructOf(authored.get(identity) ?? definition, authored);
 	if (construct !== undefined) model.construct = construct;
 	// The constraint diagnostics belong to the run, not to the model; the model
@@ -554,7 +574,8 @@ function mapType(definition, context) {
 	const target = (ref, edgeKey, position) =>
 		referenceTo(ref, edgeKey, position, definition, context);
 
-	switch (kind) {
+	// A construct selects its row by its declared shape; a core kind by itself.
+	switch (renderingOf(definition)) {
 		case "scalar": {
 			const scalar = String(definition.scalar);
 			if (!Object.hasOwn(KERNEL_SCALARS, scalar)) {
@@ -579,17 +600,11 @@ function mapType(definition, context) {
 			break;
 		}
 		case "record":
-		case "entity":
-		case "value_object":
-		case "nested_entity":
-		case "aggregate_root":
-		case "event":
-		case "process":
 		case "state_machine": {
-			// Each record-shaped construct selects its own row: the record's
+			// A record-shaped construct selects its shape's row: the record's
 			// rendering plus the construct's members (FR-054, FR-142).
-			model.row = `kind:${kind}`;
-			if (IDENTIFIED_KINDS.includes(kind))
+			model.row = rowOf(declaration, kind);
+			if (equalityOf(definition) === "identity")
 				model.identityFields = identityFieldNames(definition, authored);
 			if (definition.abstract === true) model.abstract = true;
 			const abstracts = abstractAncestors(
@@ -606,9 +621,10 @@ function mapType(definition, context) {
 				identifier: field.ident,
 				identity: field.identity,
 			}));
-			// An event reads each member through an accessor method, which shares
-			// the inherent method namespace with `try_new` and `validate`.
-			if (kind === "event")
+			// An immutable construct reads each member through an accessor method,
+			// which shares the inherent method namespace with `try_new` and
+			// `validate`.
+			if (construct?.immutable === true)
 				for (const method of ["try_new", "validate"])
 					memberScope.push({
 						identifier: method,
@@ -617,7 +633,7 @@ function mapType(definition, context) {
 			model.diagnostics.push(
 				...collisionsIn(SCOPES.RECORD_MEMBERS, memberScope),
 			);
-			if (kind === "state_machine") {
+			if (admits(definition, "states")) {
 				// The states render as the variants of `<Name>State`.
 				model.states = [];
 				for (const state of definition.states ?? []) {
@@ -654,14 +670,15 @@ function mapType(definition, context) {
 			break;
 		}
 		case "enum":
-		case "enumeration":
 		case "union": {
-			model.row = `kind:${kind}`;
+			model.row = rowOf(declaration, kind);
 			model.wireForm =
-				kind === "union" ? wireFormOf(definition.extensions) : undefined;
+				definition.kind === "union"
+					? wireFormOf(definition.extensions)
+					: undefined;
 			model.variants = [];
 			for (const variant of definition.variants ?? []) {
-				if (kind !== "union" && variant.payloadType !== undefined) {
+				if (definition.kind !== "union" && variant.payloadType !== undefined) {
 					raise(
 						RUST_BACKEND_CODES.PAYLOAD_ON_ENUM_VARIANT,
 						`the enum variant ${fragment(variant.identity)} carries a payloadType, which only a union variant may`,
@@ -717,9 +734,9 @@ function mapType(definition, context) {
 			);
 			break;
 		}
-		case "repository": {
+		case "interface": {
 			// An interface holding no state: one trait method per operation.
-			model.row = "kind:repository";
+			model.row = rowOf(declaration, kind);
 			model.methods = [];
 			for (const operation of definition.operations ?? []) {
 				const method = mapMethod(operation, definition, context, version);
@@ -736,10 +753,10 @@ function mapType(definition, context) {
 			);
 			break;
 		}
-		case "domain": {
+		case "namespace": {
 			// A namespace, not a data type: a unit struct carrying its members and
 			// vocabulary as associated constants.
-			model.row = "kind:domain";
+			model.row = rowOf(declaration, kind);
 			break;
 		}
 		case "alias": {
@@ -889,7 +906,7 @@ function referenceTo(ref, edgeKey, position, owner, context) {
 }
 
 /**
- * One repository operation as a trait method: its parameters and return map
+ * One interface operation as a trait method: its parameters and return map
  * through the member rows, so a parameter's Rust type is the one a field of the
  * same shape carries.
  */
