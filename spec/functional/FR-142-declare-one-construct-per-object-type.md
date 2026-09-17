@@ -50,6 +50,7 @@ as a record does.
 
 - Reader diagnostics for every violated built-in rule, each at a JSON pointer
 - A backend refusal naming a construct kind the backend does not render
+- `src/compiler/constructs.mjs`: the one Node list of construct kinds and edge-carrying kinds, read by the Node reader and every backend
 
 ## Behavior
 
