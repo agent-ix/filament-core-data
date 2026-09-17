@@ -74,6 +74,7 @@ features; this crate declares no `jsonschema` dependency of its own
 | `jsonschema` | `0.18.3` | MIT | crates.io |
 | `lazy_static` | `1.5.0` | MIT OR Apache-2.0 | crates.io |
 | `libc` | `0.2.189` | MIT OR Apache-2.0 | crates.io |
+| `libyaml-rs` | `0.3.0` | MIT | crates.io |
 | `litemap` | `0.8.3` | Unicode-3.0 | crates.io |
 | `lock_api` | `0.4.14` | MIT OR Apache-2.0 | crates.io |
 | `log` | `0.4.34` | MIT OR Apache-2.0 | crates.io |
@@ -95,7 +96,7 @@ features; this crate declares no `jsonschema` dependency of its own
 | `potential_utf` | `0.1.6` | Unicode-3.0 | crates.io |
 | `powerfmt` | `0.2.0` | MIT OR Apache-2.0 | crates.io |
 | `proc-macro2` | `1.0.107` | MIT OR Apache-2.0 | crates.io |
-| `quire-rs` | `0.46.0` | AGPL-3.0-or-later | https://github.com/agent-ix/quire-rs?rev=8b8020e#8b8020e6 |
+| `quire-rs` | `0.46.0` | AGPL-3.0-or-later | https://github.com/agent-ix/quire-rs?rev=d86f7d6#d86f7d6e |
 | `quote` | `1.0.47` | MIT OR Apache-2.0 | crates.io |
 | `rayon` | `1.12.0` | MIT OR Apache-2.0 | crates.io |
 | `rayon-core` | `1.13.0` | MIT OR Apache-2.0 | crates.io |
@@ -109,7 +110,6 @@ features; this crate declares no `jsonschema` dependency of its own
 | `serde_core` | `1.0.228` | MIT OR Apache-2.0 | crates.io |
 | `serde_derive` | `1.0.228` | MIT OR Apache-2.0 | crates.io |
 | `serde_json` | `1.0.151` | MIT OR Apache-2.0 | crates.io |
-| `serde_yaml` | `0.9.34+deprecated` | MIT OR Apache-2.0 | crates.io |
 | `sha2` | `0.10.9` | MIT OR Apache-2.0 | crates.io |
 | `smallvec` | `1.16.0` | MIT OR Apache-2.0 | crates.io |
 | `stable_deref_trait` | `1.2.1` | MIT OR Apache-2.0 | crates.io |
@@ -128,7 +128,6 @@ features; this crate declares no `jsonschema` dependency of its own
 | `typenum` | `1.20.1` | MIT OR Apache-2.0 | crates.io |
 | `unicode-ident` | `1.0.24` | (MIT OR Apache-2.0) AND Unicode-3.0 | crates.io |
 | `unicode-normalization` | `0.1.25` | MIT OR Apache-2.0 | crates.io |
-| `unsafe-libyaml` | `0.2.11` | MIT | crates.io |
 | `url` | `2.5.8` | MIT OR Apache-2.0 | crates.io |
 | `utf8_iter` | `1.0.4` | Apache-2.0 OR MIT | crates.io |
 | `utf8parse` | `0.2.2` | Apache-2.0 OR MIT | crates.io |
@@ -136,6 +135,7 @@ features; this crate declares no `jsonschema` dependency of its own
 | `version_check` | `0.9.5` | MIT/Apache-2.0 | crates.io |
 | `walkdir` | `2.5.0` | Unlicense/MIT | crates.io |
 | `writeable` | `0.6.4` | Unicode-3.0 | crates.io |
+| `yaml_serde` | `0.10.7` | MIT OR Apache-2.0 | crates.io |
 | `yoke` | `0.8.3` | Unicode-3.0 | crates.io |
 | `yoke-derive` | `0.8.2` | Unicode-3.0 | crates.io |
 | `zerocopy` | `0.8.57` | BSD-2-Clause OR Apache-2.0 OR MIT | crates.io |

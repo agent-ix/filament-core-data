@@ -11,7 +11,7 @@ name: Basket
 ## Description
 
 The `operations` artifact FR-094 names: an entity whose operations carry
-parameters, returns, and pre/post clause references.
+parameters, returns, and requires/ensures clause references.
 
 ## Properties
 
@@ -44,12 +44,12 @@ context Basket inv capped: self.lines->size() <= 100
 | quantity | Integer | 1 | |
 
 Returns: Basket [1]
-Pre: non_empty
-Post: capped, non_empty
+Requires: non_empty
+Ensures: capped, non_empty
 
 ### clear
 
-Post: non_empty
+Ensures: non_empty
 
 ### total
 

@@ -33,11 +33,19 @@ An authored fixture artifact.
 
 Returns: OrderStatus [1]
 
-## States & Transitions
+## States
 
-```mermaid
-stateDiagram-v2
-    draft --> placed
-    placed --> shipped
-    placed --> cancelled
-```
+| State | Description |
+|-------|-------------|
+| draft | The order is being assembled |
+| placed | The customer committed to the order |
+| shipped | The carrier holds the order |
+| cancelled | The order ended before shipment |
+
+## Transitions
+
+| From | To | Trigger | Guard | Emits |
+|------|----|---------|-------|-------|
+| draft | placed | advance | | EV-001 |
+| placed | shipped | advance | | |
+| placed | cancelled | advance | | |

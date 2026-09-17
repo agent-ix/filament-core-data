@@ -1,9 +1,9 @@
 {
   "repository": "https://github.com/agent-ix/spec-objects-business",
-  "revision": "d1840b8",
-  "revision_full": "d1840b87aaf23612c435e9bec09016c7605cff6d",
+  "revision": "f7fdfda",
+  "revision_full": "f7fdfda39293654424969ced57590b7a1a17c652",
   "module": "spec-objects-business",
-  "module_version": "0.3.0",
+  "module_version": "0.4.0",
   "source_root": "spec_objects_business",
   "paths": [
     "manifest.yaml",
@@ -16,6 +16,8 @@
     "schemas/NestedEntity.json",
     "schemas/OccurrenceField.json",
     "schemas/OccurrenceTypeRef.json",
+    "schemas/Population.json",
+    "schemas/PopulationMember.json",
     "schemas/Process.json",
     "schemas/ProcessStep.json",
     "schemas/Repository.json",
@@ -26,7 +28,7 @@
     "schemas/ValueObject.json",
     "schemas/toolchain.json"
   ],
-  "manifest_sha256": "02d7c08bc286c9bc3c1dc85d0053109b0af868e0a25df3e1cd9f33fb1e39f4ac",
+  "manifest_sha256": "e09ce2c27096f5ea27f5329debc1565ae90fdbfb68173629ded0141441c5e43f",
   "edits": [],
-  "note": "Copied byte-for-byte with `git show d1840b8:<path>`; never loaded from ~/.ix (NFR-033-AC-3). skeletons/ are not vendored: the frontend consumes manifest.yaml and schemas/ only."
+  "note": "Copied byte-for-byte with `git show f7fdfda:<path>`; never loaded from ~/.ix (NFR-033-AC-3). skeletons/ are not vendored: the frontend consumes manifest.yaml and schemas/ only. Revision f7fdfda (0.4.0, filament-core-data#154) is the first revision whose object types declare the FR-075 model tables (States, Transitions, Workflow steps, Ubiquitous Language, Members) quire-rs 6eec7e8+ gates extraction on; 48b213a (0.5.0) adds the `relationships` token and `## Relationships` tables, which are FR-076 relation extraction and belong to filament-core-data#155/#156."
 }

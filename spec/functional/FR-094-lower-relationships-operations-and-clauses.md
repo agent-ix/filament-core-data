@@ -36,7 +36,7 @@ why only verbs the object type lists under `allowed_links` are lowered.
 
 - The `(target, verb)` pairs `quire_rs::corpus::harvest_edges` returns for each lowered document's frontmatter `relationships:` list
 - The `allowed_links` map (verb → target object types) of the document's object type in the loaded module, through `Registry::resolve_allowed_links` called for the object archetype only, never for the artifact axis, whose `allowed_links` would admit `traces_to` and `implements`
-- The merged `edge_types` registry of the loaded module set: verb → `EdgeTypeDef { category, inverse }` (`EdgeCategory` is one of `structural`, `behavioral`, `dataflow`, `dependency`, `realization`, `governance`, `traceability`). spec-objects-business `d1840b8` declares `allowed_links` but no `edge_types`; the FR-040 registry lives in spec-artifacts-iso (lines 872–975 of its manifest) and is vendored as `fixtures/modules/edge-vocabulary/` (FR-098), so every lift loads both module roots
+- The merged `edge_types` registry of the loaded module set: verb → `EdgeTypeDef { category, inverse }` (`EdgeCategory` is one of `structural`, `behavioral`, `dataflow`, `dependency`, `realization`, `governance`, `traceability`). spec-objects-business `f7fdfda` declares `allowed_links` and one `edge_types` entry (`specializes`); the FR-040 registry lives in spec-artifacts-iso (lines 872–975 of its manifest) and is vendored as `fixtures/modules/edge-vocabulary/` (FR-098), so every lift loads both module roots
 - `SemanticExtraction.clauses`, `clause_text`, and `operations` from FR-091
 - The resolutions of FR-092, the pass-one lowering outcomes of FR-092, and the record identities of FR-093
 

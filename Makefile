@@ -410,23 +410,21 @@ semantic-kernel-parity-check:
 # -----------------------------------------------------------------------------
 # Spec-bundle extraction frontend (issue #36)
 # -----------------------------------------------------------------------------
-# `crates/extraction-frontend` is qualified on exactly Rust 1.98.1 (NFR-033)
-# while the rest of the workspace stays on `rust-toolchain.toml`'s 1.94.1, so
-# every gate here invokes `cargo +$(EXTRACTION_TOOLCHAIN)` explicitly. A gate
+# `crates/extraction-frontend` is qualified on exactly Rust 1.98.1 (NFR-033).
+# `rust-toolchain.toml` pins the same channel since quire-rs 6eec7e8 required
+# it (issue #154), but every gate here still invokes
+# `cargo +$(EXTRACTION_TOOLCHAIN)` explicitly. A gate
 # that ran on whatever `cargo` resolves to would measure the host, not the
 # crate. An absent toolchain is a red gate naming the toolchain — never a skip
 # (FR-099-AC-4, NFR-033-AC-2).
 #
-# `--locked` on every cargo call: the workspace lock was resolved under 1.94.1
-# and this crate's additions under 1.98.1, so a resolver difference surfaces
-# as a red gate with a Cargo.lock diff rather than as a silent rewrite.
+# `--locked` on every cargo call, so a resolver difference surfaces as a red
+# gate with a Cargo.lock diff rather than as a silent rewrite.
 # CARGO_TARGET_DIR is the per-worktree directory exported above.
 #
-# `clippy --no-deps`: the crate's path dependency `agent-ix-semantic-ir` is a
-# workspace member qualified on 1.94.1's clippy, and cargo lints workspace
-# path dependencies along with the requested package. Linting it under 1.98.1's
-# newer lint set would measure another member's code against a toolchain it
-# does not claim; NFR-033's "qualified on 1.98.1" covers this crate alone.
+# `clippy --no-deps`: cargo lints workspace path dependencies along with the
+# requested package, and `agent-ix-semantic-ir` is linted by the workspace
+# gate `rust-clippy`; NFR-033's "qualified on 1.98.1" covers this crate alone.
 #
 # Task-127 landed the toolchain gate, build and test; Task-135 (FR-099) the
 # rest. `extraction-frontend-lift` takes BUNDLE, MODULES (space-separated,
@@ -471,10 +469,8 @@ extraction-frontend-test: extraction-frontend-toolchain
 # `cargo +1.98.1 test -p agent-ix-extraction-frontend -- --ignored --exact <name>`.
 #
 # The list names the tests blocked on an open issue, and an entry is removed in
-# the change that unblocks its test:
-# - filament-core-data#154: TC-1755. The pinned quire-rs revision extracts no
-#   states, transitions, steps or vocabulary.
-EXTRACTION_BLOCKED_TESTS := tc_1755_state_machine_process_and_domain_lift_their_engine_members
+# the change that unblocks its test. No test is blocked today.
+EXTRACTION_BLOCKED_TESTS :=
 .PHONY: extraction-frontend-evidence
 extraction-frontend-evidence: extraction-frontend-toolchain
 	cargo +$(EXTRACTION_TOOLCHAIN) test -p $(EXTRACTION_CRATE) --locked --offline --no-fail-fast -- --ignored $(foreach test,$(EXTRACTION_BLOCKED_TESTS),--skip $(test))

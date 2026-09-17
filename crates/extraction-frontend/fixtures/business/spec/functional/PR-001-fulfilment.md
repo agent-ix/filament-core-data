@@ -28,7 +28,8 @@ An authored fixture artifact.
 
 ## Workflow
 
-```mermaid
-flowchart LR
-    placed --> picked --> shipped
-```
+| Step | Kind | Consumes | Emits | Description |
+|------|------|----------|-------|-------------|
+| placed | event | EV-001 | | Start a run when the order is placed |
+| picked | command | | | Pick and pack every line |
+| shipped | wait | | | Wait for the carrier to confirm the hand-over |
