@@ -7,10 +7,9 @@
  * what makes it checkable.
  *
  * This is a second implementation beside `src/compiler/compat/diff.mjs`,
- * deliberately. It imports neither that module nor `compat/evolution.mjs` nor
- * anything under `conformance/`. The rules are read from two normative
- * documents — `docs/semantic-data-system/compatibility.md` (ARCH-008) and
- * `docs/semantic-data-system/ir-compatibility-policy.md` — and from the
+ * deliberately. It imports neither that module nor anything under
+ * `conformance/`. The rules are read from the normative document
+ * `docs/semantic-data-system/compatibility.md` (ARCH-008) and from the
  * Compatibility section of `docs/semantic-data-system/contracts-v1.md`. Each
  * rule below names the clause it comes from, because a rule with no clause
  * behind it is an invention and this classifier is judged against a yardstick
@@ -28,10 +27,10 @@
 import { canonicalize, normalizeIr } from "./canonical.mjs";
 
 /**
- * Least restrictive last. `docs/semantic-data-system/ir-compatibility-policy.md`
- * ranks the dispositions patch, additive, conditional, unknown, breaking,
- * invalid, least restrictive to most; this is that list reversed, so index 0 is
- * the most restrictive and `moreRestrictive` is a minimum over indices.
+ * Least restrictive last: patch, additive, conditional, unknown, breaking,
+ * invalid, the same ranking `diffSemanticContract`'s `DISPOSITION_RANK` uses.
+ * This is that list reversed, so index 0 is the most restrictive and
+ * `moreRestrictive` is a minimum over indices.
  */
 export const CLASSIFICATION_ORDER = Object.freeze([
 	"invalid",
@@ -53,7 +52,6 @@ export const CLASSIFICATION_ORDER = Object.freeze([
  * a case agree; a divergence is reported instead.
  */
 export const MODELLED_CHANGES = Object.freeze([
-	"contract-version-move",
 	"package-identity-changed",
 	"package-provenance-changed",
 	"source-identity-changed",
@@ -100,41 +98,6 @@ export const MODELLED_CHANGES = Object.freeze([
 ]);
 
 /**
- * How a move between contract versions classifies. The one place in this module
- * that decides it, so a search for the decision elsewhere finds nothing.
- *
- * The default is **conformance with the corpus's published reading, not a
- * ruling on the contract**, and the distinction matters because the published
- * record points the other way.
- * `docs/semantic-data-system/ir-compatibility-policy.md` is `status: normative`
- * and says, in as many words, that "a version uplift is classified `additive`
- * when — and only when — projecting the new document back to the old version
- * reproduces the old document byte for byte", giving the reason: "Counting each
- * materialised member as its own change would classify the very revision the
- * contract declares additive as breaking." The conformance corpus classifies
- * such a move flatly `conditional`.
- *
- * This is not a hypothetical disagreement. Measured on the corpus case
- * `VER-004`, the down-projection of its `1.1.0` document reproduces its
- * `1.0.0` predecessor byte for byte, so the normative rule genuinely applies
- * and genuinely gives `additive` where the corpus expects `conditional`. Under
- * `"normative"` this backend answers `additive` and that one case disagrees;
- * under `"corpus"` it answers `conditional` and every case agrees. No other
- * case's answer moves between the two settings.
- *
- * The disagreement is recorded as `agent-ix/filament-core-data#64`. As with
- * GAP-004 and GAP-011, the declared owner of the contract questions in this
- * area, `agent-ix/filament-core-data#9`, is closed;
- * `agent-ix/filament-core-data#59` carries the ownership question. When an
- * owner settles #64, changing this backend to the settled reading is one edit
- * here and nowhere else.
- */
-export const VERSION_UPLIFT_POLICY = "corpus";
-
-/** The two settings the policy admits, so a third is a visible change. */
-export const VERSION_UPLIFT_POLICIES = Object.freeze(["corpus", "normative"]);
-
-/**
  * How the addition of an enum or union variant classifies, and the one place in
  * this module that decides it.
  *
@@ -157,13 +120,12 @@ export const VERSION_UPLIFT_POLICIES = Object.freeze(["corpus", "normative"]);
  * The disagreement was measured rather than predicted. Under `"contract"` the
  * corpus cases `ENUM-004` and `UNION-004` — both on the base `core-1-1`, which
  * carries no consumer policy — answer `breaking` against an expected
- * `conditional`, and the compatibility family is 23 of 25. Under `"corpus"`
- * both answer `conditional` and the family is 25 of 25. No other case's answer
+ * `conditional`, and the compatibility family is 22 of 24. Under `"corpus"`
+ * both answer `conditional` and the family is 24 of 24. No other case's answer
  * moves between the two settings.
  *
  * The default is **conformance with the corpus's published reading, not a
- * ruling on the contract**, for the same reason `VERSION_UPLIFT_POLICY`
- * defaults that way, and for one more: FR-070 forbids this work from editing a
+ * ruling on the contract**, for one reason: FR-070 forbids this work from editing a
  * corpus case, a base, the oracle, the harness or the divergence register, and
  * NFR-025 makes every one of those a prohibited path. A backend that moved the
  * yardstick it is judged against would have arranged its own verdict, which
@@ -271,33 +233,6 @@ function resolveRepresentation(types, identity) {
 		};
 	}
 	return { kind: "cyclic", scalar: null };
-}
-
-/**
- * The `1.1.0`-only members, from the "Contract 1.1.0 adds exactly these nodes"
- * list of `docs/semantic-data-system/ir-compatibility-policy.md`.
- */
-function projectDownToV1(document) {
-	const copy = structuredClone(document);
-	copy.contractVersion = "1.0.0";
-	if (isObject(copy.source)) {
-		copy.source.dialect = "https://json-schema.org/draft/2020-12/schema";
-	}
-	for (const type of Array.isArray(copy.types) ? copy.types : []) {
-		if (!isObject(type)) continue;
-		type.relationships = undefined;
-		type.operations = undefined;
-		type.clauses = undefined;
-		delete type.relationships;
-		delete type.operations;
-		delete type.clauses;
-		for (const field of Array.isArray(type.fields) ? type.fields : []) {
-			if (!isObject(field)) continue;
-			delete field.multiplicity;
-			delete field.unit;
-		}
-	}
-	return copy;
 }
 
 /**
@@ -425,10 +360,8 @@ export function classifySurface(before, after, options = {}) {
 		};
 	}
 
-	const [left, right] = alignAcrossVersions(
-		normalizeIr(before),
-		normalizeIr(after),
-	);
+	const left = normalizeIr(before);
+	const right = normalizeIr(after);
 	const changes = [];
 	const record = (classification, pointer, message, kind) => {
 		changes.push(change(classification, pointer, message, kind));
@@ -466,59 +399,8 @@ export function classifySurface(before, after, options = {}) {
 	return { classification, changes };
 }
 
-/**
- * Put a cross-version pair on a common footing before the structural rules run.
- *
- * `docs/semantic-data-system/ir-compatibility-policy.md` states the reason
- * directly: "Counting each materialised member as its own change would classify
- * the very revision the contract declares additive as breaking." A `1.0.0`
- * document cannot carry `multiplicity` or `unit`, so comparing it with a
- * `1.1.0` document member for member reports a cardinality change on every
- * field that only ever had one.
- *
- * Only those two *materialised* field members are removed. `relationships`,
- * `operations` and `clauses` are new nodes rather than materialisations of
- * something the older version already implied, so they stay and are still
- * classified — a revision that uplifts the version *and* adds a relationship
- * has both changes recorded.
- *
- * The version move itself is classified once, by the round-trip rule.
- */
-function alignAcrossVersions(before, after) {
-	if (before.contractVersion === after.contractVersion) return [before, after];
-	const older = before.contractVersion === "1.0.0" ? before : after;
-	const newer = older === before ? after : before;
-	if (older.contractVersion !== "1.0.0" || newer.contractVersion !== "1.1.0") {
-		return [before, after];
-	}
-	const stripped = structuredClone(newer);
-	for (const type of Array.isArray(stripped.types) ? stripped.types : []) {
-		if (!isObject(type)) continue;
-		const lists = [Array.isArray(type.fields) ? type.fields : []];
-		for (const operation of Array.isArray(type.operations)
-			? type.operations
-			: []) {
-			if (isObject(operation) && Array.isArray(operation.params)) {
-				lists.push(operation.params);
-			}
-		}
-		for (const list of lists) {
-			for (const field of list) {
-				if (!isObject(field)) continue;
-				delete field.multiplicity;
-				delete field.unit;
-			}
-		}
-	}
-	return older === before ? [before, stripped] : [stripped, after];
-}
-
 /** The document envelope: contract version, source provenance, package identity. */
 function classifyEnvelope(before, after, record) {
-	if (before.contractVersion !== after.contractVersion) {
-		classifyContractVersionMove(before, after, record);
-	}
-
 	const beforeSource = isObject(before.source) ? before.source : {};
 	const afterSource = isObject(after.source) ? after.source : {};
 	if (beforeSource.identity !== afterSource.identity) {
@@ -571,68 +453,6 @@ function classifyEnvelope(before, after, record) {
 	}
 }
 
-/**
- * The contract-version move, by the round-trip rule.
- *
- * `docs/semantic-data-system/ir-compatibility-policy.md` is `status: normative`
- * and states it in as many words: "A version uplift is classified `additive`
- * when — and only when — projecting the new document back to the old version
- * reproduces the old document byte for byte", with the reason — "Counting each
- * materialised member as its own change would classify the very revision the
- * contract declares additive as breaking."
- *
- * Which of the two readings applies is `VERSION_UPLIFT_POLICY`, and this
- * function is the only place that consults it. The default, `"corpus"`, is
- * conformance with the published yardstick and not a ruling;
- * `agent-ix/filament-core-data#64` records the disagreement, and
- * [FR-070] reports it in the pull request whichever way the constant is set, so
- * that a green conformance run does not make the open question invisible.
- */
-function classifyContractVersionMove(before, after, record) {
-	const pair = `${before.contractVersion} -> ${after.contractVersion}`;
-	if (before.contractVersion === "1.0.0" && after.contractVersion === "1.1.0") {
-		if (VERSION_UPLIFT_POLICY === "corpus") {
-			record(
-				"conditional",
-				"/contractVersion",
-				`the contract version moved ${pair}`,
-				"contract-version-move",
-			);
-			return;
-		}
-		const projected = projectDownToV1(after);
-		const reproduces =
-			canonicalize(projected, { sets: false }) ===
-			canonicalize(before, { sets: false });
-		record(
-			reproduces ? "additive" : "conditional",
-			"/contractVersion",
-			reproduces
-				? `the contract version moved ${pair} and the down-projection reproduces the earlier document`
-				: `the contract version moved ${pair} and the down-projection does not reproduce the earlier document`,
-			"contract-version-move",
-		);
-		return;
-	}
-	if (before.contractVersion === "1.1.0" && after.contractVersion === "1.0.0") {
-		// A downgrade drops members the earlier document carried, and
-		// `ir-compatibility-policy.md` rule 3 forbids removing a member.
-		record(
-			"breaking",
-			"/contractVersion",
-			`the contract version moved ${pair}, dropping every 1.1.0 member`,
-			"contract-version-move",
-		);
-		return;
-	}
-	record(
-		"unknown",
-		"/contractVersion",
-		`the contract version moved ${pair}, which no published rule classifies`,
-		"contract-version-move",
-	);
-}
-
 function classifyTypes(
 	before,
 	after,
@@ -645,8 +465,7 @@ function classifyTypes(
 
 	for (const [identity, entry] of beforeTypes) {
 		if (afterTypes.has(identity)) continue;
-		// ARCH-008: a removal is breaking. ir-compatibility-policy.md rule 3: a
-		// revision "may not remove or retype a member".
+		// ARCH-008: a removal is breaking.
 		record(
 			"breaking",
 			`/types/${entry.position}`,
@@ -897,7 +716,7 @@ function classifyFieldList(
 	for (const [identity, entry] of beforeIndex) {
 		if (afterIndex.has(identity)) continue;
 		// ARCH-008: "A field **removal** … is breaking when old data or readers
-		// still rely on it." ir-compatibility-policy.md rule 3 forbids it outright.
+		// still rely on it."
 		record(
 			"breaking",
 			`${pointer}/${entry.position}`,
@@ -1132,8 +951,7 @@ function classifyRelationships(before, after, pointer, record) {
 	const afterIndex = byIdentity(after.relationships);
 	for (const [identity, entry] of beforeIndex) {
 		if (afterIndex.has(identity)) continue;
-		// ir-compatibility-policy.md rule 3: a revision "may not remove or retype a
-		// member"; ARCH-008 names a removal breaking.
+		// ARCH-008 names a removal breaking.
 		record(
 			"breaking",
 			`${pointer}/relationships/${entry.position}`,

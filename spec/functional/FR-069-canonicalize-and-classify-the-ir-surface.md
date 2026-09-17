@@ -58,17 +58,17 @@ Classification is the half that depends on admissibility, and only for the
 
 ## Inputs
 
-- A semantic IR document at `contractVersion` `1.0.0` or `1.1.0`
+- A semantic IR document at `contractVersion` `2.0.0`
 - For classification, an ordered pair of such documents — the `before` and the `after`
 - A consumer policy valid against `schema/semantic/v1/consumer-policy.schema.json`, where one is supplied
-- `docs/semantic-data-system/ir-compatibility-policy.md` and `docs/semantic-data-system/compatibility.md`, the published classification rules
+- `docs/semantic-data-system/compatibility.md`, the published classification rules
 - `docs/semantic-data-system/contracts-v1.md`, which names the canonicalization algorithm
 
 ## Outputs
 
 - `src/compiler/backends/typescript-v1/canonical.mjs`: `canonicalize(value, { sets })`, `normalizeIr(document)` returning the materialized document, `normalizeIrForTarget(document)` returning the corpus-comparable canonical string, `fingerprintIrForTarget(document)` returning the contract fingerprint, `digestOf(text)` returning `sha256:<64 hex>`, `IDENTITY_SET_PATHS`, `KEY_ORDER`, `MAX_CANONICAL_DEPTH`, and `CanonicalError`
 - `src/compiler/backends/typescript-v1/canonical.d.mts` declaring that surface
-- `src/compiler/backends/typescript-v1/classify.mjs`: `classifySurface(before, after, { consumerPolicy })` returning `{ classification, changes }`, `CLASSIFICATION_ORDER`, `MODELLED_CHANGES`, `VERSION_UPLIFT_POLICY`, and `VARIANT_ADDITION_POLICY`
+- `src/compiler/backends/typescript-v1/classify.mjs`: `classifySurface(before, after, { consumerPolicy })` returning `{ classification, changes }`, `CLASSIFICATION_ORDER`, `MODELLED_CHANGES`, and `VARIANT_ADDITION_POLICY`
 - `src/compiler/backends/typescript-v1/classify.d.mts` declaring that surface
 
 ## Behavior
@@ -127,7 +127,7 @@ Classification is the half that depends on admissibility, and only for the
 - `classifySurface` SHALL classify an added type as `additive`.
 - `classifySurface` SHALL classify a changed `kind` as `breaking`.
 - `classifySurface` SHALL classify a changed `scalar`, `target`, `items`, or `values` as `breaking`.
-- `classifySurface` SHALL classify a removed field as `breaking`, because `docs/semantic-data-system/ir-compatibility-policy.md` forbids removing a member and `docs/semantic-data-system/compatibility.md` names a field removal breaking.
+- `classifySurface` SHALL classify a removed field as `breaking`, because `docs/semantic-data-system/compatibility.md` names a field removal breaking.
 - `classifySurface` SHALL classify an added required field as `breaking`, because `docs/semantic-data-system/compatibility.md` admits a new required field only where every representation already carried an unambiguous compatible default.
 - `classifySurface` SHALL classify an added optional field as `conditional` where no consumer policy is supplied, because `docs/semantic-data-system/compatibility.md` says an optional addition is additive "only when every target and known consumer preserves, ignores, or surfaces them as declared", which an absent policy does not establish.
 - `classifySurface` SHALL classify a field that became required as `breaking`.
@@ -135,9 +135,9 @@ Classification is the half that depends on admissibility, and only for the
 - `classifySurface` SHALL classify a change to a field's `nullable` as `breaking`, in either direction, because each direction breaks one side of the contract.
 - `classifySurface` SHALL classify a change to a field's `defaultKind` or `defaultValue` as `conditional`.
 - `classifySurface` SHALL classify a removed enum or union variant as `breaking`.
-- `classifySurface` SHALL classify an added enum or union variant as `additive` where a consumer policy admits unknown members, and, where none does, as the single named `VARIANT_ADDITION_POLICY` constant decides, in the manner of the `VERSION_UPLIFT_POLICY` constant below.
+- `classifySurface` SHALL classify an added enum or union variant as `additive` where a consumer policy admits unknown members, and, where none does, as the single named `VARIANT_ADDITION_POLICY` constant decides.
 - `classifySurface` SHALL classify an added relationship as `conditional`.
-- `classifySurface` SHALL classify a removed relationship as `breaking`, because `docs/semantic-data-system/ir-compatibility-policy.md` rule 3 forbids removing a member and `docs/semantic-data-system/compatibility.md` names a removal breaking; an *added* relationship stays `conditional`.
+- `classifySurface` SHALL classify a removed relationship as `breaking`, because `docs/semantic-data-system/compatibility.md` names a removal breaking; an *added* relationship stays `conditional`.
 - `classifySurface` SHALL classify an added extension whose `required` is true as `breaking`.
 - `classifySurface` SHALL classify an added extension whose `required` is false as `additive`.
 - `classifySurface` SHALL classify a removed extension as `breaking`.
@@ -171,8 +171,8 @@ Classification is the half that depends on admissibility, and only for the
 - The disagreement was measured rather than predicted: under the contract's
   reading the corpus cases `ENUM-004` and `UNION-004` — both on the base
   `core-1-1`, which carries no consumer policy — answer `breaking` against an
-  expected `conditional`, and the compatibility family is 23 of 25. Under the
-  corpus's reading both answer `conditional` and the family is 25 of 25. No
+  expected `conditional`, and the compatibility family is 22 of 24. Under the
+  corpus's reading both answer `conditional` and the family is 24 of 24. No
   other case's answer moves between the two settings.
 - `classify.mjs` SHALL carry a single named `VARIANT_ADDITION_POLICY` constant
   with exactly two admissible settings, `corpus` and `contract`, in the manner
@@ -200,29 +200,16 @@ Classification is the half that depends on admissibility, and only for the
   disagreement in the pull request whichever way the constant is set, so that a
   green conformance run does not make the open question invisible.
 
-### The contract-version move
-
-- `classifySurface` SHALL classify a move between contract versions as `additive` where projecting the `after` document back to the `before` document's contract version reproduces the `before` document byte for byte under `normalizeIrForTarget`.
-- `classifySurface` SHALL classify a move between contract versions as `conditional` where that projection does not reproduce it.
-- The round-trip rule SHALL be read from `docs/semantic-data-system/ir-compatibility-policy.md`, which is `status: normative` and states it in as many words, rather than from any implementation.
-- The round-trip rule SHALL be recorded as a possible point of disagreement with the corpus's own reading, because the published policy and a flat `conditional` reading are both defensible against the contract as written and this requirement takes the normative document's side.
-- The disagreement was measured rather than predicted: the classifier written to the normative round-trip rule answers `additive` for the corpus case `VER-004`, which expects `conditional`, and the down-projection of that case's `1.1.0` document does reproduce its `1.0.0` predecessor byte for byte.
-- `classify.mjs` SHALL carry a single named `VERSION_UPLIFT_POLICY` constant with exactly two admissible settings, in the manner of the `REFERENCE_POLICY` of [FR-068](./FR-068-decide-and-report-ir-admissibility.md).
-- `VERSION_UPLIFT_POLICY` SHALL default to the corpus's published reading, a flat `conditional`, so that the backend conforms to the yardstick the acceptance criteria name.
-- The default SHALL be recorded as conformance with the published corpus rather than as a ruling on the contract, citing `agent-ix/filament-core-data#64`, which records the disagreement between the normative round-trip rule and the flat `conditional` reading.
-- Flipping the constant to the normative reading SHALL be one edit in one place, so that settling #64 does not become a rewrite.
-- [FR-070](./FR-070-run-the-typescript-conformance-adapter.md) SHALL report the disagreement in the pull request whichever way the constant is set, so that a green conformance run does not make the open question invisible.
-
 ### The modelled-change set
 
 - `MODELLED_CHANGES` SHALL be the declared list of change kinds the rules above name, exported as data.
 - `MODELLED_CHANGES` SHALL be part of what the corpus agreement tests, because the `unknown` fallback makes the boundary of the modelled set observable: a backend that models one change kind more than the oracle turns an `unknown` verdict into a specific one and diverges.
-- The corpus carries twenty-five `kind: "compatibility"` cases, one of which expects `unknown`, so the boundary is exercised rather than hypothetical.
+- The corpus carries twenty-four `kind: "compatibility"` cases, one of which expects `unknown`, so the boundary is exercised rather than hypothetical.
 - Where modelling a change kind the oracle does not model produces a divergence, [FR-070](./FR-070-run-the-typescript-conformance-adapter.md) SHALL report it rather than narrowing `MODELLED_CHANGES` to make the run green, because narrowing a rule set to match a yardstick is the tuning this bundle exists to prevent.
 
 ### Independence
 
-- `canonical.mjs` and `classify.mjs` SHALL NOT import `src/compiler/ir/normalize.mjs`, `src/compiler/packages/canonical.mjs`, `src/compiler/compat/diff.mjs`, or `src/compiler/compat/evolution.mjs`.
+- `canonical.mjs` and `classify.mjs` SHALL NOT import `src/compiler/ir/normalize.mjs`, `src/compiler/packages/canonical.mjs`, or `src/compiler/compat/diff.mjs`.
 - `canonical.mjs` and `classify.mjs` SHALL NOT import any module under `conformance/`.
 - Neither module SHALL add a runtime dependency to the repository.
 
@@ -230,7 +217,7 @@ Classification is the half that depends on admissibility, and only for the
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-069-CON-1 | The canonical form and the classifier are deliberately second implementations beside the compiler's; neither SHALL import the compiler's normalization, canonicalization, diff, or evolution module, so agreement between them is evidence rather than a tautology. | Correctness | Static analysis |
+| FR-069-CON-1 | The canonical form and the classifier are deliberately second implementations beside the compiler's; neither SHALL import the compiler's normalization, canonicalization, or diff module, so agreement between them is evidence rather than a tautology. | Correctness | Static analysis |
 | FR-069-CON-2 | `canonical.mjs` SHALL declare `IDENTITY_SET_PATHS` as data in one place, so a fourteenth container path is a data edit that a test can see rather than a scattered code change. | Maintainability | Test |
 | FR-069-CON-3 | The GAP-004 citation SHALL stay in `canonical.mjs` until a published definition of the named algorithm exists, so the local definition is never mistaken for the contract's; the citation names the gap row and `agent-ix/filament-core-data#59`, because the row's declared owner `agent-ix/filament-core-data#9` is closed. | Integrity | Static analysis |
 | FR-069-CON-4 | `classifySurface` SHALL NOT read the clock, so a report is a function of the two documents alone. | Determinism | Static analysis |
@@ -254,15 +241,13 @@ Classification is the half that depends on admissibility, and only for the
 | FR-069-AC-10 | A pair whose `before` is inadmissible aggregates to `invalid`, and so does a pair whose `after` is. | Unit |
 | FR-069-AC-11 | A change the rules do not model aggregates to `unknown` rather than to `patch`. | Unit |
 | FR-069-AC-12 | An added optional field classifies `conditional` with no consumer policy and `additive` with a policy admitting unknown members, which is the same edit judged twice and is what the two committed compatibility bases discriminate. | Unit |
-| FR-069-AC-13 | The twenty-five `kind: "compatibility"` cases of the conformance corpus receive the classification the oracle records for them, and a divergence is reported rather than absorbed. | Integration |
-| FR-069-AC-14 | `canonical.mjs` and `classify.mjs` contain no import of the compiler's normalization, canonicalization, diff, or evolution modules, and none of any module under `conformance/`. | Static |
+| FR-069-AC-13 | The twenty-four `kind: "compatibility"` cases of the conformance corpus receive the classification the oracle records for them, and a divergence is reported rather than absorbed. | Integration |
+| FR-069-AC-14 | `canonical.mjs` and `classify.mjs` contain no import of the compiler's normalization, canonicalization, or diff modules, and none of any module under `conformance/`. | Static |
 | FR-069-AC-15 | `pnpm-lock.yaml` gains no entry from this requirement, and neither module imports a package outside the Node standard library. | Analysis |
 | FR-069-AC-22 | `normalizeIrForTarget` reproduces the oracle's `normalized` string byte for byte for all 111 corpus cases, measured with no admissibility answer computed. | Snapshot |
 | FR-069-AC-23 | The unextended and the extended forms differ for a document whose set members are out of identity order, and agree for one already in order, so the two named algorithms are demonstrably two. | Unit |
 | FR-069-AC-16 | A document carrying two members with the same `identity` in an identity-sorted container canonicalizes to the same bytes whatever order those two members arrive in, and a document carrying two byte-identical such members canonicalizes without dropping either. | Property |
 | FR-069-AC-17 | A removed field, an added required field, a removed variant, and a removed relationship each classify `breaking`; an added optional field classifies `conditional` with no consumer policy; and an added variant classifies `additive` under a policy admitting unknown members, `breaking` with no policy under the `contract` setting of `VARIANT_ADDITION_POLICY`, and `conditional` with no policy under its default `corpus` setting. | Unit |
-| FR-069-AC-18 | Under the normative setting of `VERSION_UPLIFT_POLICY`, a contract-version move whose down-projection reproduces the `before` document byte for byte classifies `additive`, and one whose projection does not classifies `conditional`; under the default corpus setting both classify `conditional`. | Unit |
-| FR-069-AC-24 | `VERSION_UPLIFT_POLICY` is the only place in the backend that decides how a contract-version move classifies, and flipping it changes the answer for the corpus case `VER-004` and for no other case. | Static |
 | FR-069-AC-25 | `VARIANT_ADDITION_POLICY` is the only place in the backend that decides how a variant addition with no consumer policy classifies; under `contract` an added variant classifies `breaking` with no policy and `additive` under a policy admitting unknown members; and flipping it changes the answer for the corpus cases `ENUM-004` and `UNION-004` and for no other case. | Static |
 | FR-069-AC-19 | `MODELLED_CHANGES` is exported as data, and a rule stated in this requirement but absent from that list fails the module's own contract test. | Test |
 | FR-069-AC-20 | `canonicalize` and `normalizeIrForTarget` run over every corpus case with no admissibility answer computed, demonstrating that canonicalization depends on nothing from FR-068. | Unit |
@@ -273,4 +258,4 @@ Classification is the half that depends on admissibility, and only for the
 - **Upstream**: [FR-025](./FR-025-classify-semantic-and-target-compatibility.md), [FR-063](./FR-063-declare-the-generation-backend-seam.md), [FR-068](./FR-068-decide-and-report-ir-admissibility.md)
 - **Downstream**: [FR-067](./FR-067-generate-identity-and-fingerprint-metadata.md), [FR-070](./FR-070-run-the-typescript-conformance-adapter.md), [FR-071](./FR-071-provide-the-generate-command-and-surface-fixtures.md)
 - **Constrained by**: [NFR-024](../non-functional/NFR-024-portable-deterministic-generated-typescript.md), [NFR-025](../non-functional/NFR-025-non-disruptive-typescript-backend.md)
-- **Open contract questions**: GAP-004 is the highest-volatility open question this ticket carries, ranked above GAP-011. `docs/semantic-data-system/contracts-v1.md` names `RFC8785-JCS-with-identity-sorted-sets-v1` and defines it nowhere; `normalized` is compared byte for byte on all 111 corpus cases; and the fingerprint [FR-067](./FR-067-generate-identity-and-fingerprint-metadata.md) stamps into every generated file's banner derives from it. A later definition that changed the set-path list or the key-ordering rule would move every case, every fingerprint, and every committed generated fixture at once, which is why FR-069-CON-6 requires both to be declared as data in one place. The GAP-004 row names `agent-ix/filament-core-data#9` as its owner and that issue is closed, so the definition has no live decider; `agent-ix/filament-core-data#59` records that and asks for one. GAP-010 (the unknown-policy tightening direction is unordered) is owned by `agent-ix/filament-core-data#25` and moves one rule. The contract-version round-trip disagreement recorded above is `agent-ix/filament-core-data#64`.
+- **Open contract questions**: GAP-004 is the highest-volatility open question this ticket carries, ranked above GAP-011. `docs/semantic-data-system/contracts-v1.md` names `RFC8785-JCS-with-identity-sorted-sets-v1` and defines it nowhere; `normalized` is compared byte for byte on all 111 corpus cases; and the fingerprint [FR-067](./FR-067-generate-identity-and-fingerprint-metadata.md) stamps into every generated file's banner derives from it. A later definition that changed the set-path list or the key-ordering rule would move every case, every fingerprint, and every committed generated fixture at once, which is why FR-069-CON-6 requires both to be declared as data in one place. The GAP-004 row names `agent-ix/filament-core-data#9` as its owner and that issue is closed, so the definition has no live decider; `agent-ix/filament-core-data#59` records that and asks for one. GAP-010 (the unknown-policy tightening direction is unordered) is owned by `agent-ix/filament-core-data#25` and moves one rule.

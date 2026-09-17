@@ -212,13 +212,3 @@ export declare function inspectIr(
 export declare function diffSemanticContract(
 	request: Record<string, unknown>,
 ): Record<string, unknown>;
-
-export declare function readIrAsContract(
-	document: unknown,
-	targetVersion: string,
-	options?: { dialect?: string },
-): {
-	document: ContractIrDocument | null;
-	loss: string[];
-	diagnostics: CompilerDiagnostic[];
-};

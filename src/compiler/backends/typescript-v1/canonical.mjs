@@ -211,52 +211,25 @@ export function digestOf(text) {
 	return `sha256:${createHash("sha256").update(text, "utf8").digest("hex")}`;
 }
 
-/** Multiplicity derived from a field's `presence`, when it carries none. */
-function multiplicityFromPresence(presence) {
-	return presence === "optional"
-		? { lower: 0, upper: 1 }
-		: { lower: 1, upper: 1 };
-}
-
 /**
- * Materialize members that 1.1.0 makes derivable — a field's
- * `multiplicity`, its `presence`, and its `nullable` — so that two documents
+ * Materialize a field's `nullable` as a literal boolean, so that two documents
  * that differ only in which of them was written down carry one canonical form.
- * A `1.0.0` document gains no member.
+ * `multiplicity` and `presence` are schema-required and independently
+ * authored under contract 2.0.0, so neither is derived from the other here.
  */
-function materializeField(field, version) {
+function materializeField(field) {
 	if (field === null || typeof field !== "object" || Array.isArray(field)) {
 		return field;
 	}
-	const multiplicity =
-		field.multiplicity !== undefined && field.multiplicity !== null
-			? field.multiplicity
-			: multiplicityFromPresence(field.presence);
-	const lower =
-		typeof multiplicity === "object" &&
-		multiplicity !== null &&
-		typeof multiplicity.lower === "number"
-			? multiplicity.lower
-			: field.presence === "optional"
-				? 0
-				: 1;
 	return {
 		...field,
-		multiplicity,
-		presence:
-			version === "2.0.0" &&
-			(field.presence === "required" || field.presence === "optional")
-				? field.presence
-				: lower >= 1
-					? "required"
-					: "optional",
 		nullable: field.nullable === true,
 	};
 }
 
 /**
- * The normalized document: a deep copy with the 1.1/2.0 members materialized.
- * The argument is left byte-identical (FR-069).
+ * The normalized document: a deep copy with `nullable` materialized on every
+ * field and operation parameter. The argument is left byte-identical (FR-069).
  */
 export function normalizeIr(document) {
 	const copy = structuredClone(document);
@@ -264,7 +237,7 @@ export function normalizeIr(document) {
 		copy === null ||
 		typeof copy !== "object" ||
 		Array.isArray(copy) ||
-		(copy.contractVersion !== "1.1.0" && copy.contractVersion !== "2.0.0") ||
+		copy.contractVersion !== "2.0.0" ||
 		!Array.isArray(copy.types)
 	) {
 		return copy;
@@ -272,16 +245,14 @@ export function normalizeIr(document) {
 	for (const type of copy.types) {
 		if (type === null || typeof type !== "object") continue;
 		if (Array.isArray(type.fields)) {
-			type.fields = type.fields.map((field) =>
-				materializeField(field, copy.contractVersion),
-			);
+			type.fields = type.fields.map((field) => materializeField(field));
 		}
 		if (Array.isArray(type.operations)) {
 			for (const operation of type.operations) {
 				if (operation === null || typeof operation !== "object") continue;
 				if (Array.isArray(operation.params)) {
 					operation.params = operation.params.map((field) =>
-						materializeField(field, copy.contractVersion),
+						materializeField(field),
 					);
 				}
 			}

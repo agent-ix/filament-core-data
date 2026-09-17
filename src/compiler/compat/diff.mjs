@@ -14,8 +14,7 @@
 import { kindLabel } from "../constructs.mjs";
 import { canonicalize } from "../packages/canonical.mjs";
 import { familyMap } from "../family-map.mjs";
-import { fingerprintIr, normalizeIr } from "../ir/normalize.mjs";
-import { V1_1_ADDED_NODES, readIrAsContract } from "./evolution.mjs";
+import { fingerprintIr } from "../ir/normalize.mjs";
 
 /** Least restrictive to most; the ranking the issue #9 contract tests assert. */
 export const DISPOSITION_RANK = Object.freeze([
@@ -176,50 +175,8 @@ export function diffSemanticContract(request) {
 		return entry;
 	};
 
-	// ---- the envelope --------------------------------------------------------
-	//
-	// A contract-version uplift is *additive only when it adds nothing but the
-	// declared nodes*, and the way to establish that is to project the new
-	// document back to the old version and compare. Reporting each materialised
-	// `multiplicity` as its own field change would classify the very revision
-	// NFR-013 declares additive as breaking — the nodes did not change, the
-	// contract's ability to express them did.
-	//
-	// A version uplift is *additive only when it adds nothing but the declared
-	// nodes*, and the way to establish that is to project the new document back
-	// and compare. When the projection matches, the type graph is compared
-	// against the projection rather than skipped: an uplift that also renamed a
-	// field must still report the rename, and it must not report every
-	// materialised `multiplicity` as a change of its own.
-	if (before?.contractVersion !== after?.contractVersion) {
-		const projection = readIrAsContract(
-			after,
-			String(before?.contractVersion),
-			{ dialect: String(before?.source?.dialect) },
-		);
-		const uplift =
-			projection.document !== null &&
-			normalizeIr(projection.document) === normalizeIr(before);
-		record(
-			String(after?.source?.identity ?? "ix://agent-ix/unknown/source"),
-			"contract-version",
-			uplift ? "additive" : "breaking",
-			uplift
-				? `contract ${before?.contractVersion} to ${after?.contractVersion} adds only ${V1_1_ADDED_NODES.join(", ")}; the projection back to ${before?.contractVersion} is byte-identical to the old document`
-				: `contract version ${before?.contractVersion} to ${after?.contractVersion} carries changes beyond the declared additive nodes`,
-		);
-	}
-
 	// ---- the type graph ------------------------------------------------------
-	// When the versions differ the new document is compared against the *old
-	// version's projection of itself*, so the members the uplift added are not
-	// counted as changes while everything else still is.
-	const comparisonSubject =
-		before?.contractVersion !== after?.contractVersion
-			? (readIrAsContract(after, String(before?.contractVersion), {
-					dialect: String(before?.source?.dialect),
-				}).document ?? after)
-			: after;
+	const comparisonSubject = after;
 	const oldTypes = typesOf(before);
 	const newTypes = typesOf(comparisonSubject);
 	const oldByName = new Map(
