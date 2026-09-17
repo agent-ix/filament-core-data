@@ -43,6 +43,26 @@ ALLOWED_IMPORT_ROOTS: frozenset[str] = frozenset(
 )
 
 PERMISSIVE_NAMES: frozenset[str] = frozenset({"Any", "object"})
+
+#: The descriptive `x-agent-ix-*` annotations the JSON Schema backend writes on
+#: every node (FR-100). An unknown keyword is an annotation under JSON Schema
+#: 2020-12 and asserts nothing, and each of these describes the node rather
+#: than restricting its values, so a node carrying only these and metadata is
+#: typeless. The annotations that carry meaning JSON Schema cannot assert —
+#: `x-agent-ix-constraints`, `x-agent-ix-clauses`, `x-agent-ix-relationships`,
+#: `x-agent-ix-operations`, `x-agent-ix-reference-target` — stay constraining,
+#: so a permissive annotation over them is `degraded` (FR-078-CON-1).
+DESCRIPTIVE_ANNOTATIONS: frozenset[str] = frozenset(
+    {
+        "x-agent-ix-semantic-id",
+        "x-agent-ix-origin",
+        "x-agent-ix-extensions",
+        "x-agent-ix-roles",
+        "x-agent-ix-unit",
+        "x-agent-ix-occurrences",
+        "x-agent-ix-unknown-policy",
+    }
+)
 BARE_CONTAINERS: frozenset[str] = frozenset({"dict", "list", "Dict", "List", "Mapping"})
 
 _VARIANT = re.compile(r"^(?P<stem>.+?)(?P<suffix>\d+)$")
@@ -114,6 +134,7 @@ def _unconstrained(node: Any) -> bool:
             "$defs",
             "definitions",
         }
+        and key not in DESCRIPTIVE_ANNOTATIONS
     }
     if not meaningful:
         return True

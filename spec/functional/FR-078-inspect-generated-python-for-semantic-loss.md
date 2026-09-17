@@ -68,6 +68,7 @@ mapping at a position the input schema constrained.
 | FR-078-AC-9 | In `enforce` mode an unattributable annotation raises; in `report` mode the same input yields an `unattributed` census entry and no failure. | Test |
 | FR-078-AC-10 | With the `degraded` branch of the classifier disabled, the AC-1 probe passes; with it restored, the probe fails — run as a mutation over an injected classifier seam rather than by editing a committed file. | Test |
 | FR-078-AC-11 | A de-duplicated or numbered generated symbol is attributed to the declared name it varies, and the variant is recorded in the report. | Test |
+| FR-078-AC-12 | In `enforce` mode a `RootModel[Any]` generated from the `json-schema` document of an `any` kernel scalar carrying `x-agent-ix-semantic-id`, `x-agent-ix-origin`, `x-agent-ix-extensions`, and `x-agent-ix-unknown-policy` is `sanctioned` and raises nothing; the same document carrying `x-agent-ix-constraints` raises a `degraded` finding. | Test (TC-1770) |
 
 ## Dependencies
 
