@@ -38,9 +38,10 @@ prose. The members are:
 | scalar `any` | `typeDefinition` | An unconstrained JSON value (FR-139) |
 | `identity` | `typeDefinition` | The node identity; a spec-bundle lift mints it from the artifact id (FR-143) |
 
-Clauses are Quire. A clause language is one of `ocl`, `sysml`, `fretish`,
-`quire` or a registered `namespace:name`; a reader never re-reads a clause text
-in another language.
+Clauses are Quire. A clause language is one of `quire`, `ocl`, `sysml`,
+`fretish` or a registered `namespace:name`. `quire` is the one checked language;
+a clause in any other admitted language is carried as authored, unchecked, with
+an advisory, and a reader never re-reads its text in another language.
 
 ## Inputs
 
@@ -58,13 +59,14 @@ in another language.
 - A reader SHALL raise `UNRESOLVED_FRAME_PATH` for a frame path whose first segment names neither a field of the owning type or its supertypes nor a parameter of the operation.
 - A reader SHALL raise `UNRESOLVED_TYPE_REF` for a population member naming no declared type.
 - The Node, Python and Rust readers SHALL agree on the schema verdict of every document.
+- If an inline `requires` or `ensures` clause declares an admitted language other than `quire`, then each reader SHALL accept the document and raise the advisory `agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED` (severity `info`, non-blocking) at that clause's `language`: the IR reader form of the engine's `semantic.clause-language-unchecked`.
 
 ## Constraints
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-141-CON-1 | A member of the table SHALL NOT appear in a `1.0.0` or `1.1.0` document the readers accept. | Compatibility | Test |
-| FR-141-CON-2 | A reader SHALL NOT approximate an unsupported clause language; the schema refuses it. | Integrity | Test |
+| FR-141-CON-2 | A reader SHALL NOT approximate a clause language: a language outside the admitted set is refused by the schema, and an admitted language other than `quire` is carried unchecked with `CLAUSE_LANGUAGE_UNCHECKED`, never read as `quire`. | Integrity | Test |
 
 ## Acceptance Criteria
 
@@ -75,6 +77,7 @@ in another language.
 | FR-141-AC-3 | A `subsets` entry naming no supertype field raises `UNRESOLVED_FEATURE_REF`, and a `redefines` widening the redefined upper bound raises `INVALID_REDEFINITION`. | Test (TC-1742) |
 | FR-141-AC-4 | A frame path starting at no field or parameter raises `UNRESOLVED_FRAME_PATH`, and a population member naming no type raises `UNRESOLVED_TYPE_REF`. | Test (TC-1743) |
 | FR-141-AC-5 | Each member of the table inside a `1.1.0` document is refused with `SCHEMA_VIOLATION` by every reader. | Test (TC-1744) |
+| FR-141-AC-6 | A `1.2.0` document whose inline `requires` clause declares `ocl`, or whose `ensures` clause declares `acme:tla`, is accepted by the Rust, Node and Python readers with exactly one non-blocking `CLAUSE_LANGUAGE_UNCHECKED` at that clause's `language`; the same clause in `quire` raises nothing. | Test (TC-1759) |
 
 ## Dependencies
 

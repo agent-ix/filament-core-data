@@ -425,6 +425,18 @@ export function readContractIr(document, options = {}) {
 				}
 				checkMultiplicity(operation.returns.multiplicity, operation);
 			}
+			// FR-141: `quire` is the one checked clause language; an inline
+			// clause in any other admitted language is carried unchecked.
+			for (const side of ["requires", "ensures"]) {
+				for (const clause of asArray(operation[side])) {
+					if (!isObject(clause) || clause.language === "quire") continue;
+					raise(
+						DIAGNOSTIC_CODES.CLAUSE_LANGUAGE_UNCHECKED,
+						`${side} clause language ${fragment(clause.language)} is carried unchecked`,
+						locusOf(clause) ?? locusOf(operation),
+					);
+				}
+			}
 			for (const side of ["pre", "post"]) {
 				for (const clauseId of Array.isArray(operation[side])
 					? operation[side]

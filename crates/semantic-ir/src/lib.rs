@@ -79,7 +79,12 @@ pub fn decide(bundle: &Json) -> Verdict {
         diagnostics = rules::decide(bundle);
     }
     order(&mut diagnostics);
-    let result_state = if diagnostics.is_empty() {
+    // An `info` diagnostic is advisory: a document carrying only advisories is
+    // accepted as it stands.
+    let result_state = if diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.severity == Severity::Info)
+    {
         ResultState::Success
     } else if diagnostics
         .iter()

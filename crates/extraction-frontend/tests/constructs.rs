@@ -380,6 +380,45 @@ fn tc_1744_and_tc_1756_every_1_2_member_and_kind_inside_a_1_1_document_is_refuse
     }
 }
 
+#[trace("TC-1759", "FR-141-AC-6")]
+#[trace("TC-1759", "FR-141-CON-2")]
+#[test]
+fn tc_1759_an_inline_clause_outside_quire_is_carried_with_one_advisory_in_rust_and_node() {
+    let clean = positive();
+    let machine = position(&clean, &type_ref("SM-001"));
+    assert_eq!(
+        clean["types"][machine]["operations"][0]["requires"][0]["language"],
+        "quire"
+    );
+    assert!(rust_codes(&clean).is_empty(), "{:?}", rust_codes(&clean));
+
+    for (member, language) in [("requires", "ocl"), ("ensures", "acme:tla")] {
+        let mut document = positive();
+        document["types"][machine]["operations"][0][member][0]["language"] = json!(language);
+        let text = serde_json::to_string(&json!({ "ir": document })).expect("serialises");
+        let verdict = decide(&parse_json(&text).expect("parses"));
+        assert_eq!(verdict.result_state, ResultState::Success, "{member}");
+        let pointer = format!("/ir/types/{machine}/operations/0/{member}/0/language");
+        let found: Vec<_> = verdict
+            .diagnostics
+            .iter()
+            .map(|d| (d.code, d.pointer.as_str(), d.blocking, d.severity.as_str()))
+            .collect();
+        assert_eq!(
+            found,
+            [(
+                "agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED",
+                pointer.as_str(),
+                false,
+                "info"
+            )],
+            "{member}"
+        );
+        let node = node_codes(&document);
+        assert_eq!(node, ["CLAUSE_LANGUAGE_UNCHECKED"], "{member}: node reader");
+    }
+}
+
 /// For each kind, a required member and a member the kind does not carry.
 const MEMBER_RULES: &[(&str, &str, &str)] = &[
     ("FR-001", "identityFields", "owner"),

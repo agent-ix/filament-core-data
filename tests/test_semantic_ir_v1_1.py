@@ -201,3 +201,22 @@ class TestContract12:
                 "ix://agent-ix/orders/type/FR-001" if foreign == "owner" else []
             )
             assert not validator.is_valid(document), f"{suffix} with {foreign}"
+
+    def test_an_inline_clause_outside_quire_is_carried_with_an_advisory(
+        self, validator
+    ) -> None:
+        """Criteria: FR-141-AC-6, FR-141-CON-2 (TC-1759)."""
+        document = _fixture(CONSTRUCTS)
+        machine = next(
+            i
+            for i, t in enumerate(document["types"])
+            if t["identity"].endswith("/type/SM-001")
+        )
+        operation = document["types"][machine]["operations"][0]
+        assert operation["requires"][0]["language"] == "quire"
+        assert read_semantic_ir(document) == []
+        operation["ensures"][0]["language"] = "ocl"
+        assert validator.is_valid(document)
+        assert [d["code"] for d in read_semantic_ir(document)] == [
+            "agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED"
+        ]

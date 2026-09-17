@@ -400,6 +400,18 @@ def _check_type(
                 f"{path}.operations.{index}.returns.multiplicity",
                 out,
             )
+        # FR-141: `quire` is the one checked clause language; an inline clause
+        # in any other admitted language is carried unchecked (an advisory).
+        for side in ("requires", "ensures"):
+            for clause_index, clause in enumerate(_objects(operation.get(side))):
+                if clause.get("language") != "quire":
+                    out.append(
+                        _diag(
+                            "agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED",
+                            f"{path}.operations.{index}.{side}.{clause_index}.language",
+                            "carried unchecked",
+                        )
+                    )
         for side in ("pre", "post"):
             refs = operation.get(side) if isinstance(operation.get(side), list) else []
             for ref_index, ref in enumerate(refs):

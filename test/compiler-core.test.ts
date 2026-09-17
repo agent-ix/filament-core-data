@@ -1234,7 +1234,9 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			(path) => path.endsWith("package.json") && path.startsWith("src/"),
 		);
 		for (const path of added) {
-			expect(readJson(resolve(root, path)).license, path).toBe("AGPL-3.0-or-later");
+			expect(readJson(resolve(root, path)).license, path).toBe(
+				"AGPL-3.0-or-later",
+			);
 		}
 		expect(
 			readJson(resolve(compilerRoot, "frontend/typespec/lib/package.json"))
@@ -3210,6 +3212,27 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		expect((normalizedRecord.fields as Json[])[0].presence).toBe("optional");
 	});
 
+	/** Traces: TC-1759; FR-141-AC-6, FR-141-CON-2. */
+	it("carries an inline clause outside quire with one non-blocking advisory", () => {
+		const document = readJson(
+			resolve(
+				root,
+				"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
+			),
+		) as never as { types: Json[] };
+		const machine = document.types.find((type) =>
+			String(type.identity).endsWith("/type/SM-001"),
+		) as Json;
+		const operation = (machine.operations as Json[])[0];
+		expect([...note(readContractIr(document as never))]).toEqual([]);
+		((operation.requires as Json[])[0] as Json).language = "ocl";
+		expect(validateIrDocument(document as never)).toEqual([]);
+		const found = [...note(readContractIr(document as never))];
+		expect(found.map((one) => [one.code, one.severity, one.blocking])).toEqual([
+			[DIAGNOSTIC_CODES.CLAUSE_LANGUAGE_UNCHECKED.code, "info", false],
+		]);
+	});
+
 	/** Traces: TC-1553; FR-139-AC-2, FR-139-CON-1. */
 	it("keeps an any scalar and a zero-field record distinct at every layer", () => {
 		const record = readJson(
@@ -4604,7 +4627,9 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 			entry.endsWith("package.json"),
 		)) {
 			if (path === "package.json") continue;
-			expect(readJson(resolve(root, path)).license, path).toBe("AGPL-3.0-or-later");
+			expect(readJson(resolve(root, path)).license, path).toBe(
+				"AGPL-3.0-or-later",
+			);
 		}
 		// No publication step exists to trigger.
 		expect(readJson(resolve(root, "package.json"))).not.toHaveProperty(
@@ -5201,8 +5226,7 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 				"Choice.json",
 				{
 					$id: "https://schemas.example.test/Choice.json",
-					"x-agent-ix-semantic-id":
-						"ix://agent-ix/semantic-core/type/Choice",
+					"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/Choice",
 					anyOf: [
 						{ $ref: "https://schemas.example.test/Left.json" },
 						{ $ref: "https://schemas.example.test/Right.json" },

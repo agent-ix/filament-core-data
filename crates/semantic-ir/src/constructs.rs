@@ -28,7 +28,12 @@ codes! {
     INVALID_REDEFINITION => "agent-ix.semantic-ir.INVALID_REDEFINITION",
     UNRESOLVED_FRAME_PATH => "agent-ix.semantic-ir.UNRESOLVED_FRAME_PATH",
     MULTIPLE_DOMAIN_MEMBERSHIP => "agent-ix.semantic-ir.MULTIPLE_DOMAIN_MEMBERSHIP",
+    CLAUSE_LANGUAGE_UNCHECKED => "agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED",
 }
+
+/// The one clause language a reader checks; every other admitted language is
+/// carried unchecked (FR-141).
+const CHECKED_CLAUSE_LANGUAGE: &str = "quire";
 
 /// The kinds an aggregate root's members may have.
 const AGGREGATE_MEMBER_KINDS: &[&str] = &["entity", "value_object", "nested_entity", "enumeration"];
@@ -71,6 +76,7 @@ pub(crate) fn decide(document: &Document<'_>, sink: &mut Sink<'_>) {
         supertypes(document, definition, &type_at, sink);
         features(document, definition, &type_at, sink);
         frames(document, definition, &type_at, sink);
+        inline_clauses(definition, &type_at, sink);
         match kind_of(definition) {
             "nested_entity" => {
                 target(
@@ -457,6 +463,31 @@ fn frames(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut 
                         index(&member_at, slot),
                         UNRESOLVED_FRAME_PATH,
                         "a frame path starts at a field of the owning type or a parameter",
+                    );
+                }
+            }
+        }
+    }
+}
+
+/// The advisory `CLAUSE_LANGUAGE_UNCHECKED` at every inline `requires` or
+/// `ensures` clause whose language is not `quire`: the clause is carried, and
+/// no reader checks or re-reads its text.
+fn inline_clauses(definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
+    let operations_at = child(type_at, "operations");
+    for (position, operation) in items(definition, "operations").iter().enumerate() {
+        let operation_at = index(&operations_at, position);
+        for member in ["requires", "ensures"] {
+            let member_at = child(&operation_at, member);
+            for (slot, clause) in items(operation, member).iter().enumerate() {
+                let Some(language) = clause.get("language").and_then(Json::as_str) else {
+                    continue;
+                };
+                if language != CHECKED_CLAUSE_LANGUAGE {
+                    sink.advise(
+                        child(&index(&member_at, slot), "language"),
+                        CLAUSE_LANGUAGE_UNCHECKED,
+                        format!("clause language {language} is carried unchecked"),
                     );
                 }
             }

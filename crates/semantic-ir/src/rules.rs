@@ -206,6 +206,24 @@ impl<'a> Sink<'a> {
             pointer,
         });
     }
+
+    /// An `info`, non-blocking diagnostic: the document is accepted.
+    pub(crate) fn advise(
+        &mut self,
+        pointer: String,
+        code: &'static str,
+        message: impl Into<String>,
+    ) {
+        self.out.push(Located {
+            owner: owner_for(self.bundle, &pointer),
+            locus: locus_for(self.bundle, &pointer),
+            code,
+            severity: Severity::Info,
+            message: message.into(),
+            blocking: false,
+            pointer,
+        });
+    }
 }
 
 /// Decides every cross-field and package-context rule over one input bundle.
