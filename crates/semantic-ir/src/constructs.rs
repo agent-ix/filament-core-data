@@ -1,14 +1,18 @@
-//! The contract 1.2.0 cross-field rules: the object-type constructs and the
+//! The contract 2.0.0 cross-field rules: the construct declarations and the
 //! model members.
 //!
-//! `docs/semantic-data-system/contracts-v1.md`, "Contract 1.2.0", states each
-//! construct's built-in rules and the model members' meaning; the schema layer
-//! decides their shapes, and this module decides every rule that needs a second
-//! node of the document to decide.
+//! `docs/semantic-data-system/contracts-v1.md`, "Contract 2.0.0", states the
+//! meaning of each construct member and core rule. The schema layer decides
+//! shapes and each type's member presence against its declaration; this
+//! module decides every rule that needs a second node of the document: a
+//! reference member naming a type, the targets a declaration admits, and the
+//! rules that range over several types. It reads a kind only as the
+//! `{module, name}` key of its declaration and never matches a kind name.
 
 use crate::diag::{child, index};
 use crate::json::Json;
 use crate::rules::{Document, Sink, DANGLING_CLAUSE_REF, DEPTH_LIMIT, UNRESOLVED_TYPE_REF};
+use crate::vocabulary::{Declaration, Member, Rule, Shape};
 
 macro_rules! codes {
     ($($name:ident => $code:literal),* $(,)?) => {
@@ -29,20 +33,12 @@ codes! {
     UNRESOLVED_FRAME_PATH => "agent-ix.semantic-ir.UNRESOLVED_FRAME_PATH",
     MULTIPLE_DOMAIN_MEMBERSHIP => "agent-ix.semantic-ir.MULTIPLE_DOMAIN_MEMBERSHIP",
     CLAUSE_LANGUAGE_UNCHECKED => "agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED",
+    INCOMPLETE_FEATURE_ORDER => "agent-ix.semantic-ir.INCOMPLETE_FEATURE_ORDER",
 }
 
 /// The one clause language a reader checks; every other admitted language is
 /// carried unchecked (FR-141).
 const CHECKED_CLAUSE_LANGUAGE: &str = "quire";
-
-/// The kinds an aggregate root's members may have.
-const AGGREGATE_MEMBER_KINDS: &[&str] = &["entity", "value_object", "nested_entity", "enumeration"];
-/// The kinds a nested entity's owner may have.
-const OWNER_KINDS: &[&str] = &["entity", "nested_entity", "aggregate_root"];
-/// The kinds a repository may persist.
-const PERSISTED_KINDS: &[&str] = &["entity", "aggregate_root"];
-/// The kinds a transition or step names as an event.
-const EVENT_KINDS: &[&str] = &["event"];
 
 fn strings(value: Option<&Json>) -> Vec<(usize, &str)> {
     value
@@ -65,61 +61,141 @@ fn identity_of(node: &Json) -> Option<&str> {
     node.get("identity").and_then(Json::as_str)
 }
 
-fn kind_of(definition: &Json) -> &str {
-    definition.get("kind").and_then(Json::as_str).unwrap_or("")
+/// The document's construct declarations, keyed by kind.
+struct Declarations {
+    entries: Vec<(Json, Declaration)>,
 }
 
-/// Decides every contract 1.2.0 cross-field rule.
+impl Declarations {
+    fn read(document: &Document<'_>) -> Self {
+        let entries = document
+            .ir
+            .get("constructs")
+            .and_then(Json::as_array)
+            .unwrap_or(&[])
+            .iter()
+            .filter_map(|entry| {
+                let kind = entry.get("kind")?.clone();
+                let declaration = Declaration::read(entry.get("construct")?).ok()?;
+                Some((kind, declaration))
+            })
+            .collect();
+        Declarations { entries }
+    }
+
+    /// The declaration of `definition`'s construct kind; `None` for a core kind.
+    fn of(&self, definition: &Json) -> Option<&Declaration> {
+        let kind = definition.get("kind")?;
+        kind.as_object()?;
+        self.entries
+            .iter()
+            .find(|(declared, _)| same_kind(declared, kind))
+            .map(|(_, declaration)| declaration)
+    }
+}
+
+/// The declared shape of `definition`'s construct kind, read from the
+/// document's `constructs` table; `None` for a core kind or a kind the table
+/// does not declare.
+pub(crate) fn shape_of(document: &Document<'_>, definition: &Json) -> Option<Shape> {
+    let kind = definition.get("kind")?;
+    kind.as_object()?;
+    document
+        .ir
+        .get("constructs")
+        .and_then(Json::as_array)?
+        .iter()
+        .find(|entry| {
+            entry
+                .get("kind")
+                .is_some_and(|declared| same_kind(declared, kind))
+        })
+        .and_then(|entry| entry.get("construct")?.get("shape")?.as_str())
+        .and_then(Shape::parse)
+}
+
+/// Whether two kinds are one: equal core kind strings, or equal
+/// `{module, name}` pairs.
+fn same_kind(left: &Json, right: &Json) -> bool {
+    match (left.as_str(), right.as_str()) {
+        (Some(left), Some(right)) => left == right,
+        (None, None) => {
+            let pair = |kind: &Json| {
+                (
+                    kind.get("module")
+                        .and_then(Json::as_str)
+                        .map(str::to_string),
+                    kind.get("name").and_then(Json::as_str).map(str::to_string),
+                )
+            };
+            left.as_object().is_some() && right.as_object().is_some() && pair(left) == pair(right)
+        }
+        _ => false,
+    }
+}
+
+/// The kind as prose: a core kind, or `<module>/<name>`.
+fn kind_label(definition: &Json) -> String {
+    match definition.get("kind") {
+        Some(Json::Str(kind)) => kind.clone(),
+        Some(kind) => format!(
+            "{}/{}",
+            kind.get("module").and_then(Json::as_str).unwrap_or(""),
+            kind.get("name").and_then(Json::as_str).unwrap_or("")
+        ),
+        None => String::new(),
+    }
+}
+
+fn roles_of(definition: &Json) -> Vec<&str> {
+    definition
+        .get("roles")
+        .and_then(Json::as_array)
+        .unwrap_or(&[])
+        .iter()
+        .filter_map(Json::as_str)
+        .collect()
+}
+
+/// Decides every contract 2.0.0 cross-field rule.
 pub(crate) fn decide(document: &Document<'_>, sink: &mut Sink<'_>) {
+    let declarations = Declarations::read(document);
     for (position, definition) in document.types.iter().enumerate() {
         let type_at = index("/ir/types", position);
         supertypes(document, definition, &type_at, sink);
         features(document, definition, &type_at, sink);
         frames(document, definition, &type_at, sink);
         inline_clauses(definition, &type_at, sink);
-        match kind_of(definition) {
-            "nested_entity" => {
-                target(
-                    document,
-                    definition.get("owner").and_then(Json::as_str),
-                    &child(&type_at, "owner"),
-                    OWNER_KINDS,
-                    sink,
-                );
-            }
-            "aggregate_root" => {
-                targets(
-                    document,
-                    definition,
-                    "members",
-                    &type_at,
-                    AGGREGATE_MEMBER_KINDS,
-                    sink,
-                );
-            }
-            "event" => occurrence_field(document, definition, &type_at, sink),
-            "state_machine" => state_machine(document, definition, &type_at, sink),
-            "process" => steps(document, definition, &type_at, sink),
-            "repository" => {
-                targets(
-                    document,
-                    definition,
-                    "persists",
-                    &type_at,
-                    PERSISTED_KINDS,
-                    sink,
-                );
-            }
-            "domain" => {
-                targets(document, definition, "members", &type_at, &[], sink);
-            }
-            _ => {}
+        let Some(declaration) = declarations.of(definition) else {
+            continue;
+        };
+        for member in Member::ALL {
+            references(
+                document,
+                definition,
+                &type_at,
+                *member,
+                declaration.roles(*member),
+                sink,
+            );
+        }
+        if declaration.has_rule(Rule::MembersNotNamespace) {
+            members_not_namespace(document, &declarations, definition, &type_at, sink);
+        }
+        if definition.has("occurrenceField") {
+            occurrence_field(document, definition, &type_at, sink);
+        }
+        if definition.has("transitions") {
+            transitions(definition, &type_at, sink);
         }
         if definition.has("identityFields") {
             identity_fields(document, definition, &type_at, sink);
         }
+        if definition.has("featureOrder") {
+            feature_order(definition, &type_at, sink);
+        }
     }
-    domain_membership(document, sink);
+    exclusive_membership(document, &declarations, sink);
     populations(document, sink);
 }
 
@@ -152,57 +228,106 @@ fn ancestors<'a>(document: &Document<'a>, definition: &'a Json) -> Vec<&'a Json>
     out
 }
 
-fn target(
+/// Every entry of a reference member: `(pointer, named identity)`.
+fn reference_entries(definition: &Json, type_at: &str, member: Member) -> Vec<(String, String)> {
+    let name = member.name();
+    let member_at = child(type_at, name);
+    let mut out = Vec::new();
+    match member.reference_items() {
+        None => {}
+        Some([]) => match definition.get(name) {
+            Some(Json::Str(named)) => out.push((member_at, named.clone())),
+            Some(_) => {
+                for (position, named) in strings(definition.get(name)) {
+                    out.push((index(&member_at, position), named.to_string()));
+                }
+            }
+            None => {}
+        },
+        Some(item_members) => {
+            let listed = items(definition, name)
+                .iter()
+                .enumerate()
+                .map(|(position, item)| (index(&member_at, position), item));
+            let own = definition
+                .get(name)
+                .filter(|value| value.as_object().is_some())
+                .map(|value| (member_at.clone(), value));
+            for (item_at, item) in listed.chain(own) {
+                for item_member in item_members {
+                    let entries_at = child(&item_at, item_member);
+                    if let Some(named) = item.get(item_member).and_then(Json::as_str) {
+                        out.push((entries_at, named.to_string()));
+                        continue;
+                    }
+                    for (slot, named) in strings(item.get(item_member)) {
+                        out.push((index(&entries_at, slot), named.to_string()));
+                    }
+                }
+            }
+        }
+    }
+    out
+}
+
+/// Each entry of reference member `member` names a declared type, carrying
+/// one of the roles the declaration admits when it constrains the member.
+fn references(
     document: &Document<'_>,
-    name: Option<&str>,
-    at: &str,
-    kinds: &[&str],
+    definition: &Json,
+    type_at: &str,
+    member: Member,
+    admitted: Option<&[String]>,
     sink: &mut Sink<'_>,
 ) {
-    let Some(name) = name else {
-        return;
-    };
-    match document.type_of(name) {
-        None => sink.emit(
-            at.to_string(),
-            UNRESOLVED_CONSTRUCT_REF,
-            "a construct member names a type the document declares",
-        ),
-        Some(found) if !kinds.is_empty() && !kinds.contains(&kind_of(found)) => sink.emit(
-            at.to_string(),
-            CONSTRUCT_TARGET_KIND,
-            format!(
-                "the named type is a {} and this member names one of {}",
-                kind_of(found),
-                kinds.join(", ")
-            ),
-        ),
-        Some(found) if kinds.is_empty() && kind_of(found) == "domain" => sink.emit(
-            at.to_string(),
-            CONSTRUCT_TARGET_KIND,
-            "a domain is a namespace for its members and is not itself a member",
-        ),
-        Some(_) => {}
+    for (at, name) in reference_entries(definition, type_at, member) {
+        let Some(found) = document.type_of(&name) else {
+            sink.emit(
+                at,
+                UNRESOLVED_CONSTRUCT_REF,
+                "a construct member names a type the document declares",
+            );
+            continue;
+        };
+        let Some(admitted) = admitted else {
+            continue;
+        };
+        let roles = roles_of(found);
+        if !admitted.iter().any(|role| roles.contains(&role.as_str())) {
+            sink.emit(
+                at,
+                CONSTRUCT_TARGET_KIND,
+                format!(
+                    "the named type is a {} carrying none of the roles {} admits: {}",
+                    kind_label(found),
+                    member.name(),
+                    admitted.join(", ")
+                ),
+            );
+        }
     }
 }
 
-fn targets(
+/// `members_not_namespace`: no member is itself a namespace.
+fn members_not_namespace(
     document: &Document<'_>,
+    declarations: &Declarations,
     definition: &Json,
-    member: &str,
     type_at: &str,
-    kinds: &[&str],
     sink: &mut Sink<'_>,
 ) {
-    let member_at = child(type_at, member);
-    for (position, name) in strings(definition.get(member)) {
-        target(
-            document,
-            Some(name),
-            &index(&member_at, position),
-            kinds,
-            sink,
-        );
+    for (at, name) in reference_entries(definition, type_at, Member::Members) {
+        let namespace = document
+            .type_of(&name)
+            .and_then(|found| declarations.of(found))
+            .is_some_and(|found| found.shape == Shape::Namespace);
+        if namespace {
+            sink.emit(
+                at,
+                CONSTRUCT_TARGET_KIND,
+                "a namespace groups its members and is not itself a member",
+            );
+        }
     }
 }
 
@@ -215,6 +340,38 @@ fn identity_fields(document: &Document<'_>, definition: &Json, type_at: &str, si
                 index(&at, position),
                 UNRESOLVED_CONSTRUCT_REF,
                 "an identity field names a field of this type or of a supertype",
+            );
+        }
+    }
+}
+
+/// Every `featureOrder` entry names exactly one field or operation the type
+/// declares itself, and every such field and operation is named.
+fn feature_order(definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
+    let at = child(type_at, "featureOrder");
+    let own: Vec<&str> = items(definition, "fields")
+        .iter()
+        .chain(items(definition, "operations"))
+        .filter_map(identity_of)
+        .collect();
+    let entries = strings(definition.get("featureOrder"));
+    for (position, name) in &entries {
+        if own.iter().filter(|feature| *feature == name).count() != 1 {
+            sink.emit(
+                index(&at, *position),
+                UNRESOLVED_CONSTRUCT_REF,
+                "a featureOrder entry names exactly one field or operation this type declares",
+            );
+        }
+    }
+    for feature in own {
+        if !entries.iter().any(|(_, name)| *name == feature) {
+            sink.emit(
+                at.clone(),
+                INCOMPLETE_FEATURE_ORDER,
+                format!(
+                    "featureOrder names every field and operation of the type, and not {feature}"
+                ),
             );
         }
     }
@@ -235,7 +392,7 @@ fn occurrence_field(
         sink.emit(
             at,
             UNRESOLVED_CONSTRUCT_REF,
-            "an event's occurrence field names a field of the event",
+            "an occurrence field names a field of the type or a supertype",
         );
         return;
     };
@@ -244,19 +401,21 @@ fn occurrence_field(
         .and_then(Json::as_str)
         .and_then(|type_ref| document.resolve(type_ref))
         .is_some_and(|resolved| {
-            kind_of(resolved) == "scalar"
+            resolved.get("kind").and_then(Json::as_str) == Some("scalar")
                 && resolved.get("scalar").and_then(Json::as_str) == Some("datetime")
         });
     if !datetime {
         sink.emit(
             at,
             INVALID_OCCURRENCE_FIELD,
-            "an event's occurrence field resolves to scalar datetime",
+            "an occurrence field resolves to scalar datetime",
         );
     }
 }
 
-fn state_machine(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
+/// A transition's `from` and `to` name states of its type, `trigger` an
+/// operation and `guard` a clause.
+fn transitions(definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
     let states: Vec<&str> = items(definition, "states")
         .iter()
         .filter_map(identity_of)
@@ -278,7 +437,7 @@ fn state_machine(document: &Document<'_>, definition: &Json, type_at: &str, sink
                     sink.emit(
                         child(&transition_at, end),
                         UNRESOLVED_CONSTRUCT_REF,
-                        "a transition's from and to name states of its state machine",
+                        "a transition's from and to name states of its type",
                     );
                 }
             }
@@ -288,7 +447,7 @@ fn state_machine(document: &Document<'_>, definition: &Json, type_at: &str, sink
                 sink.emit(
                     child(&transition_at, "trigger"),
                     UNRESOLVED_CONSTRUCT_REF,
-                    "a transition's trigger names an operation of its state machine",
+                    "a transition's trigger names an operation of its type",
                 );
             }
         }
@@ -301,30 +460,12 @@ fn state_machine(document: &Document<'_>, definition: &Json, type_at: &str, sink
                 );
             }
         }
-        targets(
-            document,
-            transition,
-            "emits",
-            &transition_at,
-            EVENT_KINDS,
-            sink,
-        );
-    }
-}
-
-fn steps(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
-    let steps_at = child(type_at, "steps");
-    for (position, step) in items(definition, "steps").iter().enumerate() {
-        let step_at = index(&steps_at, position);
-        for member in ["consumes", "emits"] {
-            targets(document, step, member, &step_at, EVENT_KINDS, sink);
-        }
     }
 }
 
 fn supertypes(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
     let at = child(type_at, "supertypes");
-    let kind = kind_of(definition);
+    let kind = definition.get("kind");
     for (position, name) in strings(definition.get("supertypes")) {
         match document.type_of(name) {
             None => sink.emit(
@@ -332,11 +473,17 @@ fn supertypes(document: &Document<'_>, definition: &Json, type_at: &str, sink: &
                 UNRESOLVED_CONSTRUCT_REF,
                 "a supertype names a type the document declares",
             ),
-            Some(parent) if kind_of(parent) != kind => sink.emit(
-                index(&at, position),
-                CONSTRUCT_TARGET_KIND,
-                "a supertype has the kind of the type that specializes it",
-            ),
+            Some(parent)
+                if !kind
+                    .zip(parent.get("kind"))
+                    .is_some_and(|(own, theirs)| same_kind(own, theirs)) =>
+            {
+                sink.emit(
+                    index(&at, position),
+                    CONSTRUCT_TARGET_KIND,
+                    "a supertype has the kind of the type that specializes it",
+                )
+            }
             Some(_) => {}
         }
     }
@@ -495,10 +642,15 @@ fn inline_clauses(definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
     }
 }
 
-fn domain_membership(document: &Document<'_>, sink: &mut Sink<'_>) {
+/// `exclusive_membership`: a type is named by the members of at most one type
+/// whose construct selects the rule.
+fn exclusive_membership(document: &Document<'_>, declarations: &Declarations, sink: &mut Sink<'_>) {
     let mut seen: Vec<&str> = Vec::new();
     for (position, definition) in document.types.iter().enumerate() {
-        if kind_of(definition) != "domain" {
+        if !declarations
+            .of(definition)
+            .is_some_and(|declaration| declaration.has_rule(Rule::ExclusiveMembership))
+        {
             continue;
         }
         let members_at = child(&index("/ir/types", position), "members");
@@ -507,7 +659,7 @@ fn domain_membership(document: &Document<'_>, sink: &mut Sink<'_>) {
                 sink.emit(
                     index(&members_at, slot),
                     MULTIPLE_DOMAIN_MEMBERSHIP,
-                    "a type is a member of at most one domain",
+                    "a type is a member of at most one type of an exclusive-membership construct",
                 );
             } else {
                 seen.push(name);

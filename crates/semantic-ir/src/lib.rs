@@ -26,6 +26,7 @@ pub mod patch;
 pub mod regex262;
 pub mod rules;
 pub mod schema;
+pub mod vocabulary;
 
 use crate::diag::{Located, Severity};
 use crate::json::{to_canonical_string, Json};

@@ -80,14 +80,14 @@ pub fn classify(
     };
 
     if before_doc.ir.get("contractVersion") != after_doc.ir.get("contractVersion") {
-        let additive_v12_uplift = matches!(
+        let additive_v2_uplift = matches!(
             (
                 before_doc.ir.get("contractVersion").and_then(Json::as_str),
                 after_doc.ir.get("contractVersion").and_then(Json::as_str),
             ),
-            (Some("1.1.0"), Some("1.2.0"))
+            (Some("1.1.0"), Some("2.0.0"))
         );
-        report.note(if additive_v12_uplift {
+        report.note(if additive_v2_uplift {
             Classification::Additive
         } else {
             Classification::Conditional
@@ -594,13 +594,13 @@ mod tests {
     /// The uplift of a document declaring types, changing nothing but the
     /// contract version, is additive; any other version change is not.
     #[test]
-    fn tc_1757_classifies_the_1_1_to_1_2_contract_uplift_as_additive() {
+    fn tc_1757_classifies_the_1_1_to_2_0_contract_uplift_as_additive() {
         let v11 = include_str!("../../../fixtures/semantic/v1/positive/config-version-v1-1.json");
         let wrap = |text: &str| parse(&format!(r#"{{"ir":{text}}}"#)).expect("a document");
         let before = wrap(v11);
         let after = wrap(&v11.replacen(
             r#""contractVersion": "1.1.0""#,
-            r#""contractVersion": "1.2.0""#,
+            r#""contractVersion": "2.0.0", "constructs": []"#,
             1,
         ));
         let types = after
@@ -614,7 +614,7 @@ mod tests {
                 .get("ir")
                 .and_then(|ir| ir.get("contractVersion"))
                 .and_then(crate::json::Json::as_str),
-            Some("1.2.0")
+            Some("2.0.0")
         );
         assert_eq!(
             classify(&before, &after, true, true),
