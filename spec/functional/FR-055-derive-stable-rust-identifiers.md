@@ -100,7 +100,10 @@ that a rename in the generated crate can only follow a change in the contract.
 ### Scopes and collisions
 
 - The Rust scopes this requirement quantifies over SHALL be exactly: the crate's
-  re-export namespace for type names; one record's member set for member names;
+  re-export namespace for type names, which also holds each state machine's
+  `<Name>State` enum; one record's member set for member names, which for an
+  `event` also holds its `try_new` and `validate` methods, since its accessors
+  share their namespace;
   one enum's or union's variant set for variant names; and one operation's
   parameter set for parameter names.
 - If two nodes in one such scope derive the same identifier, then the backend
@@ -166,6 +169,7 @@ the derived identifier into the crate scope.
 | FR-055-AC-15 | A document declaring a `kind: scalar`, `scalar: uuid` definition whose `displayName` is `UUID`, and a record field whose `typeRef` names it, generates with zero diagnostics, emits no newtype for the definition, and renders the field's type as `crate::support::Uuid`; the same holds for `date`, `datetime`, and `duration` definitions deriving `Date`, `DateTime`, and `Duration`. | Test (TC-1357) |
 | FR-055-AC-16 | A `kind: scalar`, `scalar: string` definition whose `displayName` is `Uuid` raises one `NAME_COLLISION` naming both `ix://agent-ix/filament-core-data/rust-backend/reserved/Uuid` and the definition's identity, and writes no file; a `kind: record` definition deriving `Date` raises the same. | Test (TC-1358) |
 | FR-055-AC-17 | Generating the lifted `config-version-table` golden, whose types carry artifact-id identities and declared display names, emits `src/types/config_version.rs` declaring `pub struct ConfigVersion`, emits no module or type named from an artifact id, and maps `SemanticType::ConfigVersion` to the identity `ix://agent-ix/config-service/type/FR-006`. | Test (TC-1766) |
+| FR-055-AC-18 | An `event` member named `validate` or `try_new`, and a type whose display name derives a state machine's `<Name>State`, each raise one `NAME_COLLISION` naming the colliding identity and write no file. | Test (TC-1779) |
 
 ## Dependencies
 

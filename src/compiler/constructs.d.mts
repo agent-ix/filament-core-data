@@ -11,6 +11,10 @@ export declare function effectiveFields(
 	type: unknown,
 	byIdentity: Map<string, any>,
 ): any[];
+export declare function abstractAncestors(
+	type: unknown,
+	byIdentity: Map<string, any>,
+): any[];
 export declare function identityFieldNames(
 	type: unknown,
 	byIdentity?: Map<string, any>,

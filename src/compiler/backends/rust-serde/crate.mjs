@@ -1321,6 +1321,8 @@ function tryNewCall(indent, arguments_) {
 }
 
 function renderType(type, model, byIdentity, diagnostics) {
+	if (isRecordShaped(type.kind) && type.abstract === true)
+		return renderAbstract(type);
 	if (isRecordShaped(type.kind))
 		return renderRecord(type, model, byIdentity, diagnostics);
 	if (isEnumerationShaped(type.kind) || type.kind === "union")
@@ -1602,7 +1604,10 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 	lines.push(...checkConstants(type, checks, byIdentity));
 	lines.push(...docLines(type.doc));
 	lines.push(
-		"#[derive(Clone, Debug, PartialEq, Serialize)]",
+		// A newtype an identity field reaches has `Eq` and `Hash` (FR-054).
+		type.derivesHash === true
+			? "#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize)]"
+			: "#[derive(Clone, Debug, PartialEq, Serialize)]",
 		"#[serde(transparent)]",
 		`pub struct ${type.typeName}(${inner});`,
 		"",
@@ -1964,32 +1969,7 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 	const visibility = immutable ? "" : "pub ";
 	lines.push("use serde::{Deserialize, Serialize};", "");
 
-	// Field metadata lives beside the record it belongs to.
-	lines.push(
-		`/// The fields of \`${type.typeName}\`, in the order the contract declares them.`,
-		...constItem(
-			"pub ",
-			"FIELDS",
-			"&[crate::identity::FieldMeta]",
-			slice(type.fields.map(fieldMeta)),
-		),
-		"",
-	);
-	if (type.identityFields !== undefined) {
-		lines.push(
-			`/// The fields that tell instances of \`${type.typeName}\` apart, in the order the contract declares them.`,
-			...constItem(
-				"pub ",
-				"IDENTITY_FIELDS",
-				"&[&str]",
-				slice(type.identityFields.map((name) => atom(rustString(name)))),
-			),
-			"",
-		);
-	}
-
-	lines.push(...constructItems(type));
-	if (type.states !== undefined) lines.push(...renderStates(type));
+	lines.push(...recordItems(type));
 
 	for (const field of type.fields) {
 		if (field.defaultKind !== "semantic") continue;
@@ -2012,7 +1992,14 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 	}
 
 	lines.push(...docLines(type.doc));
-	lines.push("#[derive(Clone, Debug, PartialEq, Serialize)]");
+	// An identified construct compares and hashes by its identity fields, so
+	// its `PartialEq` is written out rather than derived (FR-054).
+	const byIdentityFields = (type.identityMembers ?? []).length > 0;
+	lines.push(
+		byIdentityFields
+			? "#[derive(Clone, Debug, Serialize)]"
+			: "#[derive(Clone, Debug, PartialEq, Serialize)]",
+	);
 	// A record with no members at all is written `{}` on one line, which is the
 	// form `rustfmt` produces and the form an empty brace pair collapses to.
 	const empty = type.fields.length === 0 && !retains;
@@ -2040,6 +2027,9 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 		);
 	}
 	lines.push(...(empty ? [""] : ["}", ""]));
+	if (byIdentityFields) lines.push(...identityEquality(type));
+	for (const supertype of type.implements ?? [])
+		lines.push(...supertypeImpl(type, supertype));
 
 	// The wire struct carries the deserialization half of the attribute set.
 	lines.push(
@@ -2151,6 +2141,125 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 	if (retains) arguments_.push("wire.unknown_members");
 	lines.push(...tryNewCall("        ", arguments_));
 	lines.push("    }", "}");
+	return `${lines.join("\n")}\n`;
+}
+
+/**
+ * The metadata constants of a record-shaped type: its fields, its identity
+ * fields where it carries them, its construct members and its states.
+ */
+function recordItems(type) {
+	// Field metadata lives beside the record it belongs to.
+	const lines = [
+		`/// The fields of \`${type.typeName}\`, in the order the contract declares them.`,
+		...constItem(
+			"pub ",
+			"FIELDS",
+			"&[crate::identity::FieldMeta]",
+			slice(type.fields.map(fieldMeta)),
+		),
+		"",
+	];
+	if (type.identityFields !== undefined) {
+		lines.push(
+			`/// The fields that tell instances of \`${type.typeName}\` apart, in the order the contract declares them.`,
+			...constItem(
+				"pub ",
+				"IDENTITY_FIELDS",
+				"&[&str]",
+				slice(type.identityFields.map((name) => atom(rustString(name)))),
+			),
+			"",
+		);
+	}
+	lines.push(...constructItems(type));
+	if (type.states !== undefined) lines.push(...renderStates(type));
+	return lines;
+}
+
+/**
+ * `PartialEq`, `Eq` and `Hash` over an identified construct's identity fields:
+ * two instances with equal identity fields are one instance (FR-054).
+ */
+function identityEquality(type) {
+	const members = type.identityMembers;
+	const comparisons = members.map((ident) => `self.${ident} == other.${ident}`);
+	const inline = `        ${comparisons.join(" && ")}`;
+	const body =
+		inline.length <= MAX_WIDTH
+			? [inline]
+			: comparisons.map((one, index) =>
+					index === 0 ? `        ${one}` : `            && ${one}`,
+				);
+	const hashes = members.flatMap((ident) => {
+		const call = `        ::std::hash::Hash::hash(&self.${ident}, state);`;
+		return call.length <= MAX_WIDTH
+			? [call]
+			: [
+					"        ::std::hash::Hash::hash(",
+					`            &self.${ident},`,
+					"            state,",
+					"        );",
+				];
+	});
+	return [
+		`/// Instances of \`${type.typeName}\` are equal when their identity fields are equal.`,
+		`impl PartialEq for ${type.typeName} {`,
+		"    fn eq(&self, other: &Self) -> bool {",
+		...body,
+		"    }",
+		"}",
+		"",
+		`impl Eq for ${type.typeName} {}`,
+		"",
+		`/// Instances of \`${type.typeName}\` hash by their identity fields.`,
+		`impl ::std::hash::Hash for ${type.typeName} {`,
+		"    fn hash<H: ::std::hash::Hasher>(&self, state: &mut H) {",
+		...hashes,
+		"    }",
+		"}",
+		"",
+	];
+}
+
+/** A concrete subtype's implementation of an abstract supertype's trait. */
+function supertypeImpl(type, supertype) {
+	if (supertype.members.length === 0)
+		return [`impl ${supertype.path} for ${type.typeName} {}`, ""];
+	const lines = [`impl ${supertype.path} for ${type.typeName} {`];
+	supertype.members.forEach((member, index) => {
+		if (index > 0) lines.push("");
+		lines.push(
+			`    fn ${member.ident}(&self) -> &${member.rustType} {`,
+			`        &self.${member.ident}`,
+			"    }",
+		);
+	});
+	lines.push("}", "");
+	return lines;
+}
+
+/**
+ * An abstract record-shaped type: a trait with one accessor per field, which
+ * each concrete subtype implements. No value of the type itself exists
+ * (FR-054).
+ */
+function renderAbstract(type) {
+	const lines = moduleHeader(type);
+	lines.push(...recordItems(type), ...docLines(type.doc));
+	if (type.fields.length === 0) {
+		lines.push(`pub trait ${type.typeName} {}`);
+		return `${lines.join("\n")}\n`;
+	}
+	lines.push(`pub trait ${type.typeName} {`);
+	type.fields.forEach((field, index) => {
+		if (index > 0) lines.push("");
+		lines.push(
+			...docLines(field.doc, "    "),
+			`    fn ${field.ident}(&self) -> &${field.rustType};`,
+		);
+	});
+	lines.push("}");
 	return `${lines.join("\n")}\n`;
 }
 

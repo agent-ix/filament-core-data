@@ -115,6 +115,15 @@ function ancestorsOf(type, byIdentity) {
 }
 
 /**
+ * The abstract transitive supertypes of `type`, in `ancestorsOf` order. A
+ * concrete subtype is an instance of each, so a backend states each as the
+ * native abstract form the subtype implements (FR-141).
+ */
+export function abstractAncestors(type, byIdentity) {
+	return ancestorsOf(type, byIdentity).filter((one) => one.abstract === true);
+}
+
+/**
  * The fields an instance of `type` carries (FR-141): every field its
  * supertypes declare, farthest supertype first, then its own, with each field
  * a later field `redefines` left out, since the redefining field narrows it

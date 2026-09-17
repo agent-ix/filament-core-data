@@ -246,8 +246,8 @@ blocked as stated above.
 | FR-069 | FR-069-AC-1..25, FR-069-CON-1..7 | TC-806..TC-814 | 🚧 In progress |
 | FR-070 | FR-070-AC-1..20, FR-070-CON-1..8 | TC-815..TC-824 | 🚧 In progress |
 | FR-071 | FR-071-AC-1..20, FR-071-CON-1..8 | TC-825..TC-833 | 🚧 In progress |
-| FR-054 | FR-054-AC-1..17, FR-054-CON-1..6 | TC-645..TC-657, TC-674, TC-694, TC-740, TC-1762, TC-1772 | ✅ Complete |
-| FR-055 | FR-055-AC-1..17, FR-055-CON-1..4 | TC-658..TC-665, TC-1357, TC-1358, TC-1766 | 🚧 In progress |
+| FR-054 | FR-054-AC-1..20, FR-054-CON-1..6 | TC-645..TC-657, TC-674, TC-694, TC-740, TC-1762, TC-1772, TC-1777, TC-1778, TC-1780 | ✅ Complete |
+| FR-055 | FR-055-AC-1..18, FR-055-CON-1..4 | TC-658..TC-665, TC-1357, TC-1358, TC-1766, TC-1779 | 🚧 In progress |
 | FR-056 | FR-056-AC-1..17, FR-056-CON-1..8 | TC-666..TC-676 | ✅ Complete |
 | FR-057 | FR-057-AC-1..14, FR-057-CON-1..6 | TC-677..TC-689 | ✅ Complete |
 | FR-058 | FR-058-AC-1..14, FR-058-CON-1..5 | TC-690..TC-697, TC-1762, TC-1772 | ✅ Complete |
@@ -1717,6 +1717,10 @@ blocked as stated above.
 | TC-1774 | Every construct kind and model member renders in JSON Schema by its own annotations, a state `$defs` for a state machine and `not: {}` for a repository and a domain | Unit | P0 | FR-100-AC-10 | ✅ passed |
 | TC-1775 | Both Python targets generate the constructs fixture with every class named by its display name, a state enum, no module for a repository or a domain, and `constructs.py` carrying each construct row and the repository protocol | Integration | P0 | FR-136-AC-10 | ✅ passed |
 | TC-1776 | The Rust, TypeScript, JSON Schema and Python backends each generate the constructs fixture with one non-blocking `CONSTRUCT_MEMBER_UNENFORCED` per clauses, guards, transitions, subsets, frames and populations, each naming its pointer and owning issue, and the v1.1 ConfigVersion fixture with none | Unit | P0 | FR-142-AC-8 | ✅ passed |
+| TC-1777 | Each identified construct of the constructs fixture renders `PartialEq`, `Eq` and `Hash` over its identity fields with no derived `PartialEq`, a value object derives `PartialEq`, a newtype an identity field reaches derives `Eq` and `Hash`, and a `number` identity field is refused | Unit | P0 | FR-054-AC-18 | ✅ passed |
+| TC-1778 | The abstract `Party` renders as a trait of accessors that `Order` implements, with no struct; a field naming `Party` and a redefinition changing the accessor's Rust type are refused | Unit | P0 | FR-054-AC-19 | ✅ passed |
+| TC-1779 | An event member named `validate` or `try_new`, and a type named `OrderLifecycleState`, each raise `NAME_COLLISION` and write no file | Unit | P0 | FR-055-AC-18 | ✅ passed |
+| TC-1780 | A repository operation with an empty frame takes `&self` and one with no frame takes `&mut self` | Unit | P0 | FR-054-AC-20 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
 | TC-1585 | Every requirement the register names carries that issue's own link, and a row whose requirement omits it is reported | Unit | P0 | NFR-001-AC-6 | ✅ passed |
 
@@ -2650,13 +2654,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 130 | 83 | 0 | 47 | 100% mapped (130/130) |
-| Unit | 584 | 478 | 0 | 106 | 100% mapped (584/584) |
+| Unit | 588 | 482 | 0 | 106 | 100% mapped (588/588) |
 | Integration | 160 | 99 | 0 | 61 | 100% mapped (160/160) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 68 | 43 | 0 | 25 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1374** | **1045** | **0** | **329** | **100% mapped (1374/1374)** |
+| **Total** | **1378** | **1049** | **0** | **329** | **100% mapped (1378/1378)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

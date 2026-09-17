@@ -25,9 +25,9 @@
 			"rowKey": "kind:entity",
 			"axis": "kind",
 			"selector": "entity",
-			"rustForm": "pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str]",
+			"rustForm": "pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str], and PartialEq, Eq and Hash over the identity fields",
 			"serdeAttributes": [],
-			"mechanism": "the record row, plus the names of the fields that tell the entity's instances apart in declared order, beside FIELDS in the type's module",
+			"mechanism": "the record row without the derived PartialEq, plus the names of the fields that tell the entity's instances apart in declared order beside FIELDS, and PartialEq, Eq and Hash written over those fields; every generated newtype an identity field reaches derives Eq and Hash, and an identity field whose Rust type has neither is refused with UNSUPPORTED_CONSTRUCT",
 			"diagnosticCode": null
 		},
 		{
@@ -178,9 +178,9 @@
 			"rowKey": "construct:abstract",
 			"axis": "construct",
 			"selector": "abstract",
-			"rustForm": "pub const ABSTRACT: bool = true",
+			"rustForm": "pub trait N { fn <field>(&self) -> &T; .. } with pub const ABSTRACT: bool = true",
 			"serdeAttributes": [],
-			"mechanism": "carried, not enforced: Rust has no abstract struct, so the struct is generated and the constant states that every instance belongs to a subtype",
+			"mechanism": "no value type: one accessor per effective field, implemented by each concrete subtype; a member naming the abstract type, and a subtype field of another Rust type, are refused with UNSUPPORTED_CONSTRUCT",
 			"diagnosticCode": null
 		},
 		{

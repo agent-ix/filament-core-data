@@ -339,6 +339,10 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 		expect(entitySource).toContain(
 			'pub const IDENTITY_FIELDS: &[&str] = &["id"];',
 		);
+		expect(entitySource).toContain("impl PartialEq for ConfigVersion {");
+		expect(entitySource).toContain(
+			"impl ::std::hash::Hash for ConfigVersion {",
+		);
 		const recordSource = written.get("src/types/config_overlay.rs") as string;
 		expect(recordSource).toContain("pub struct ConfigOverlay {");
 		expect(recordSource).not.toContain("IDENTITY_FIELDS");
@@ -408,6 +412,181 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 		expect(selectBackend("rust").backend).toBe(rustBackend);
 		console.log(
 			"TC-1395 measured: rust-serde/backend.mjs names no file-system module and is the registered rust backend",
+		);
+	});
+});
+
+type Json = Record<string, any>;
+
+/** The constructs fixture, a fresh copy per call so a test may edit it. */
+const constructsIr = () =>
+	readJson(
+		"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
+	) as { types: Json[] };
+
+const typeNamed = (ir: { types: Json[] }, displayName: string) => {
+	const found = ir.types.find((type) => type.displayName === displayName);
+	if (!found) throw new Error(`the fixture declares no ${displayName}`);
+	return found;
+};
+
+/** Generates `ir` through the seam and captures every module written. */
+function generateConstructs(ir: unknown) {
+	const manifest = generateTarget(rustRequest({ ir }), {
+		target: "rust",
+		host: host(),
+	}) as never as Manifest;
+	const written = new Map<string, string>();
+	generateRust(rustRequest({ ir }), {
+		clear() {},
+		write(_outputRoot: string, path: string, text: string) {
+			written.set(path, text);
+		},
+	});
+	const module = (name: string) => {
+		const text = written.get(`src/types/${name}.rs`);
+		if (text === undefined) throw new Error(`no src/types/${name}.rs`);
+		return text;
+	};
+	const blocking = manifest.diagnostics.filter((d) => d.blocking === true);
+	return { manifest, module, blocking };
+}
+
+describe("identity, abstract types and member scopes in the Rust backend (FR-054, FR-055)", () => {
+	/** Traces: TC-1777; FR-054-AC-18. */
+	it("compares and hashes an identified construct by its identity fields and a value object by every member", () => {
+		const { manifest, module } = generateConstructs(constructsIr());
+		expect(manifest.state).toBe("success");
+		for (const [name, typeName] of [
+			["order", "Order"],
+			["basket", "Basket"],
+			["shipment", "Shipment"],
+			["order_aggregate", "OrderAggregate"],
+			["fulfilment", "Fulfilment"],
+		]) {
+			const text = module(name);
+			expect(text, name).toContain(
+				`#[derive(Clone, Debug, Serialize)]\npub struct ${typeName} {`,
+			);
+			expect(text, name).toContain(
+				`impl PartialEq for ${typeName} {\n    fn eq(&self, other: &Self) -> bool {\n        self.id == other.id\n    }\n}`,
+			);
+			expect(text, name).toContain(`impl Eq for ${typeName} {}`);
+			expect(text, name).toContain(
+				`impl ::std::hash::Hash for ${typeName} {\n    fn hash<H: ::std::hash::Hasher>(&self, state: &mut H) {\n        ::std::hash::Hash::hash(&self.id, state);\n    }\n}`,
+			);
+		}
+		expect(module("order_line")).toContain(
+			"#[derive(Clone, Debug, PartialEq, Serialize)]\npub struct OrderLine {",
+		);
+		expect(module("order_line")).not.toContain("impl PartialEq");
+
+		// A newtype an identity field reaches derives Eq and Hash.
+		const reached = constructsIr();
+		const basket = typeNamed(reached, "Basket");
+		basket.fields[0].typeRef = typeNamed(reached, "ShipmentCarrier").identity;
+		const newtype = generateConstructs(reached);
+		expect(newtype.manifest.state).toBe("success");
+		expect(newtype.module("shipment_carrier")).toContain(
+			"#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize)]",
+		);
+		expect(newtype.module("order_note")).toContain(
+			"#[derive(Clone, Debug, PartialEq, Serialize)]",
+		);
+
+		// An identity field with no Eq and Hash is refused, not compared by value.
+		const unhashable = constructsIr();
+		typeNamed(unhashable, "Basket").fields[0].typeRef = typeNamed(
+			unhashable,
+			"Decimal",
+		).identity;
+		const refused = generateConstructs(unhashable);
+		expect(refused.manifest.state).not.toBe("success");
+		expect(refused.manifest.files).toStrictEqual([]);
+		expect(
+			refused.blocking.map((d) => [
+				d.code,
+				d.message.includes("no Eq and Hash"),
+			]),
+		).toStrictEqual([["agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT", true]]);
+	});
+
+	/** Traces: TC-1778; FR-054-AC-19. */
+	it("renders an abstract type as a trait each concrete subtype implements, and refuses a value of it", () => {
+		const { manifest, module } = generateConstructs(constructsIr());
+		expect(manifest.state).toBe("success");
+		const party = module("party");
+		expect(party).toContain("pub trait Party {");
+		expect(party).toContain("    fn id(&self) -> &crate::support::Uuid;");
+		expect(party).not.toContain("pub struct Party");
+		expect(party).not.toContain("fn try_new");
+		expect(module("order")).toContain(
+			"impl crate::types::party::Party for Order {\n    fn id(&self) -> &crate::support::Uuid {\n        &self.id\n    }",
+		);
+
+		const holder = constructsIr();
+		typeNamed(holder, "Basket").fields[0].typeRef = typeNamed(
+			holder,
+			"Party",
+		).identity;
+		const held = generateConstructs(holder);
+		expect(held.manifest.files).toStrictEqual([]);
+		expect(
+			held.blocking.map((d) => [d.code, d.message.includes("abstract type")]),
+		).toContainEqual(["agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT", true]);
+
+		const narrowed = constructsIr();
+		const order = typeNamed(narrowed, "Order");
+		const labels = order.fields.find((field: Json) => field.name === "labels");
+		labels.typeRef = typeNamed(narrowed, "Integer").identity;
+		const mismatch = generateConstructs(narrowed);
+		expect(mismatch.manifest.files).toStrictEqual([]);
+		expect(
+			mismatch.blocking.map((d) => [
+				d.code,
+				d.message.includes("the abstract supertype"),
+			]),
+		).toStrictEqual([["agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT", true]]);
+	});
+
+	/** Traces: TC-1779; FR-055-AC-18. */
+	it("refuses an event member named for a constructor or validator, and a type named for a state enum", () => {
+		for (const method of ["validate", "try_new"]) {
+			const ir = constructsIr();
+			const event = typeNamed(ir, "OrderPlaced");
+			event.fields[2].name = method;
+			const { manifest, blocking } = generateConstructs(ir);
+			expect(manifest.files, method).toStrictEqual([]);
+			expect(
+				blocking.map((d) => [
+					d.code,
+					d.message.includes(event.fields[2].identity),
+				]),
+				method,
+			).toStrictEqual([["agent-ix.rust-backend.NAME_COLLISION", true]]);
+		}
+
+		const ir = constructsIr();
+		const status = typeNamed(ir, "OrderStatus");
+		status.displayName = "OrderLifecycleState";
+		const { manifest, blocking } = generateConstructs(ir);
+		expect(manifest.files).toStrictEqual([]);
+		const collision = blocking.find((d) => d.code.endsWith("NAME_COLLISION"));
+		expect(collision?.message).toContain(status.identity);
+		expect(collision?.message).toContain("#states");
+	});
+
+	/** Traces: TC-1780; FR-054-AC-20. */
+	it("takes &self for a repository operation whose frame is empty and &mut self otherwise", () => {
+		const ir = constructsIr();
+		const repository = typeNamed(ir, "OrderRepository");
+		repository.operations[0].frame = { modifies: [], creates: [], deletes: [] };
+		const { manifest, module } = generateConstructs(ir);
+		expect(manifest.state).toBe("success");
+		const text = module("order_repository");
+		expect(text).toContain("fn find_by_id(&self, id: crate::support::Uuid)");
+		expect(text).toContain(
+			"fn save(&mut self, order: crate::Order) -> crate::Order;",
 		);
 	});
 });

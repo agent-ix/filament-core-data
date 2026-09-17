@@ -383,7 +383,7 @@
 			"branchId": "construct:abstract",
 			"axis": "construct",
 			"vocabulary": "mapping-table.json",
-			"construct": "pub const ABSTRACT: bool = true",
+			"construct": "pub trait N { fn <field>(&self) -> &T; .. } with pub const ABSTRACT: bool = true",
 			"cases": [
 				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
 			]
@@ -872,7 +872,7 @@
 			"branchId": "kind:entity",
 			"axis": "kind",
 			"vocabulary": "mapping-table.json",
-			"construct": "pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str]",
+			"construct": "pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str], and PartialEq, Eq and Hash over the identity fields",
 			"cases": [
 				"TC-725 every kind row selects the Rust form the mapping table states"
 			]

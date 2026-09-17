@@ -81,7 +81,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | `sequence` | `pub struct N(Vec<I>);` newtype over the `items` type, with `try_new` | `#[serde(transparent)]` |
 | `map` | `pub struct N(BTreeMap<String, V>);` newtype over the `values` type, with `try_new` | `#[serde(transparent)]` |
 | `reference` | `pub struct N(SemanticIdentity);` newtype over the validated identity, not over the target's Rust type | `#[serde(transparent)]` plus a validating `Deserialize` |
-| `entity` | `pub struct N { .. }` as for `record`, plus `pub const IDENTITY_FIELDS: &[&str]` in the type's module, naming the fields that tell its instances apart in the order `identityFields` declares them | as for `record` |
+| `entity` | `pub struct N { .. }` as for `record`, plus `pub const IDENTITY_FIELDS: &[&str]` in the type's module, naming the fields that tell its instances apart in the order `identityFields` declares them, and `PartialEq`, `Eq` and `Hash` implemented over those fields in that order | as for `record` |
 
 | `value_object` | `pub struct N { .. }` as for `record` | as for `record`; the derived `PartialEq` compares every member, which is the construct's value equality |
 | `nested_entity` | as for `entity`, plus `pub const OWNER: &str`, the owning type's semantic identity | as for `record` |
@@ -100,6 +100,12 @@ construct's disposition is written down rather than decided at the keyboard.
   - an `entity`, `nested_entity`, `aggregate_root` or `process` module declares
     `IDENTITY_FIELDS`, the names of its identity fields in the order
     `identityFields` declares them, including a field a supertype declares;
+  - an `entity`, `nested_entity`, `aggregate_root` or `process` compares and
+    hashes by its identity fields: its struct derives no `PartialEq`, and its
+    module implements `PartialEq`, `Eq` and `Hash` over the identity fields, so
+    two instances with equal identity fields are one instance; every generated
+    newtype an identity field reaches derives `Eq` and `Hash`;
+  - a `value_object` derives `PartialEq`, which compares every member;
   - an `event` is immutable: no member is public, so a value cannot change
     after `try_new` or `Deserialize` builds it;
   - a `state_machine` transition names its `from` and `to` states and its
@@ -107,10 +113,13 @@ construct's disposition is written down rather than decided at the keyboard.
     events by semantic identity;
   - a `repository` method takes `&self` where its operation declares an empty
     frame, and `&mut self` otherwise.
-- Instance identity, and an aggregate root's, state machine's or repository's
-  clauses, are Quire meaning over instances rather than over one value. The
-  generated `PartialEq` compares every member, and a consumer compares
-  instances by `IDENTITY_FIELDS`. That is the carried-not-enforced row
+- If an identity field's Rust type has no `Eq` and `Hash` (a `number` or `any`
+  scalar, a nullable member, a record, an enum or a union, or a newtype over
+  one), then the backend SHALL raise `UNSUPPORTED_CONSTRUCT` naming the field
+  and write no file, rather than compare the instances by every member.
+- An aggregate root's, state machine's or repository's clauses are Quire
+  meaning over instances rather than over one value. That is the
+  carried-not-enforced row
   [FR-058](./FR-058-refuse-unsupported-constructs-with-stable-diagnostics.md)
   declares.
 
@@ -124,7 +133,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | Member | Rust form |
 |---|---|
 | `supertypes` | the subtype's struct carries its effective members: the supertypes' fields, farthest first, then its own, each redefined field left out; `pub const SUPERTYPES: &[&str]` names the direct supertypes |
-| `abstract` | `pub const ABSTRACT: bool = true`; the struct is generated |
+| `abstract` | `pub trait N { .. }`, one `fn <member>(&self) -> &T;` accessor per effective field, in place of a struct, plus `pub const ABSTRACT: bool = true`; each concrete subtype implements the trait of every abstract supertype |
 | `subsets` | `pub const FIELD_SUBSETS: &[FieldLinkMeta]`, each member and the members its values are a subset of, by wire name |
 | `redefines` | the redefining member stands in the struct in place of the inherited one; `pub const FIELD_REDEFINES: &[FieldLinkMeta]` names the member it redefines |
 | operation `frame`, `requires`, `ensures` | `pub const OPERATION_CONTRACTS: &[OperationContractMeta]`, each operation's frame and inline Quire clauses as text |
@@ -135,9 +144,13 @@ construct's disposition is written down rather than decided at the keyboard.
   `PopulationMemberMeta` and `PopulationMeta` SHALL be declared in
   `identity.rs` exactly when the crate carries a construct member beyond
   identity fields or a population.
-- `abstract` and `subsets` are carried, not enforced: Rust has no abstract
-  struct, and the subset relation is Quire meaning over values. That is the
-  carried-not-enforced row
+- An abstract type has no value of its own: no struct, constructor or
+  `Deserialize` is generated for it. If a member, parameter, return or target
+  names an abstract type, or a concrete subtype's field maps to a Rust type
+  other than the one the abstract supertype's accessor returns, then the
+  backend SHALL raise `UNSUPPORTED_CONSTRUCT` and write no file.
+- `subsets` are carried, not enforced: the subset relation is Quire meaning
+  over values. That is the carried-not-enforced row
   [FR-058](./FR-058-refuse-unsupported-constructs-with-stable-diagnostics.md)
   declares.
 - If an inherited field and another effective field of a type derive one
@@ -367,6 +380,9 @@ construct's disposition is written down rather than decided at the keyboard.
 | FR-054-AC-15 | A `SemanticValue` retaining a repeated object member name and an unsorted member order re-serializes to the bytes it came from, and a number re-serializes through the declared ECMAScript formatter — so `1.0` becomes `1`, which is what `JSON.parse` then `JSON.stringify` produces and what the corpus's canonical form compares. Byte identity is claimed for the members the crate retains bytes for and for no others: serde's data model hands a visitor a parsed `f64` and never the source lexeme, and the alternative would need `serde_json`, which the published `rust` target contract's `serde`-only runtime forbids. | Test (TC-650) |
 | FR-054-AC-16 | A `1.2.0` `entity` selects the `kind:entity` row: it renders the record struct, its module declares `IDENTITY_FIELDS` naming its identity fields in declared order, and a `record` in the same document declares no `IDENTITY_FIELDS`. | Test (TC-1762) |
 | FR-054-AC-17 | Generating the contract `1.2.0` constructs fixture succeeds, each construct kind selects its own `kind:` row and each model member its `construct:` row, and the emitted crate carries the form each row states: `IDENTITY_FIELDS` and `OWNER` on a nested entity, `MEMBERS` on an aggregate root and a domain, private members and accessors on an event, `<Name>State` and `TRANSITIONS` on a state machine, `STEPS` on a process, a trait on a repository, a unit struct on a domain, the inherited members and `SUPERTYPES` on a subtype, `ABSTRACT`, `FIELD_SUBSETS`, `FIELD_REDEFINES`, `OPERATION_CONTRACTS` and `POPULATIONS`. | Test (TC-1772) |
+| FR-054-AC-18 | Generating the constructs fixture renders each `entity`, `nested_entity`, `aggregate_root` and `process` with no derived `PartialEq` and with `PartialEq`, `Eq` and `Hash` over its identity fields, and a `value_object` with the derived `PartialEq`; a newtype an identity field reaches derives `Eq` and `Hash`; and an identity field of a `number` scalar is refused with `UNSUPPORTED_CONSTRUCT` and no file. | Test (TC-1777) |
+| FR-054-AC-19 | Generating the constructs fixture renders the abstract `Party` as a trait of accessors with no struct or constructor and `Order` implementing it; a field naming `Party`, and an `Order` field redefining an inherited field with another Rust type, are each refused with `UNSUPPORTED_CONSTRUCT` and no file. | Test (TC-1778) |
+| FR-054-AC-20 | A repository operation whose frame is empty renders a method taking `&self`, and an operation with no frame renders a method taking `&mut self`. | Test (TC-1780) |
 
 ## Dependencies
 

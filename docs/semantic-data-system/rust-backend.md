@@ -22,7 +22,7 @@ construction, not by claim.
 |---|---|---|---|---|
 | `scalar` | `pub struct N(B);` | `transparent` | newtype over the kernel base with try_new and a validating Deserialize | — |
 | `record` | `pub struct N { .. }` | — | derived Serialize, member attributes per the field axes, Deserialize routed through try_new | — |
-| `entity` | `pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str]` | — | the record row, plus the names of the fields that tell the entity's instances apart in declared order, beside FIELDS in the type's module | — |
+| `entity` | `pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str], and PartialEq, Eq and Hash over the identity fields` | — | the record row without the derived PartialEq, plus the names of the fields that tell the entity's instances apart in declared order beside FIELDS, and PartialEq, Eq and Hash written over those fields; every generated newtype an identity field reaches derives Eq and Hash, and an identity field whose Rust type has neither is refused with UNSUPPORTED_CONSTRUCT | — |
 | `enum` | `pub enum N { .. } (fieldless)` | `rename = "<variant name>"` | derived Serialize and Deserialize; the rename is emitted only where the derived identifier differs from the variant name | — |
 | `union` | `pub enum N { .. } (unit variant without payloadType, one-field variant with)` | `rename = "<variant name>"` | externally tagged, serde's default; the same conditional rename | — |
 | `alias` | `pub struct N(T);` | `transparent` | newtype over the target's Rust type with try_new | — |
@@ -44,7 +44,7 @@ construction, not by claim.
 | Selector | Rust form | Serde | Mechanism | Refusal |
 |---|---|---|---|---|
 | `supertypes` | `pub const SUPERTYPES: &[&str]; the subtype's struct carries every inherited member` | — | the effective member list: the supertypes' fields, farthest first, then the type's own, with each redefined field left out; the direct supertypes' semantic identities beside FIELDS | — |
-| `abstract` | `pub const ABSTRACT: bool = true` | — | carried, not enforced: Rust has no abstract struct, so the struct is generated and the constant states that every instance belongs to a subtype | — |
+| `abstract` | `pub trait N { fn <field>(&self) -> &T; .. } with pub const ABSTRACT: bool = true` | — | no value type: one accessor per effective field, implemented by each concrete subtype; a member naming the abstract type, and a subtype field of another Rust type, are refused with UNSUPPORTED_CONSTRUCT | — |
 | `subsets` | `pub const FIELD_SUBSETS: &[FieldLinkMeta]` | — | carried, not enforced: each member and the members its values are a subset of, by wire name; the subset relation is Quire meaning over values | — |
 | `redefines` | `pub const FIELD_REDEFINES: &[FieldLinkMeta]` | — | the redefining member stands in the struct in place of the inherited one, and the constant names the member it redefines | — |
 | `operation-contract` | `pub const OPERATION_CONTRACTS: &[OperationContractMeta]` | — | each operation's frame and inline Quire requires and ensures clauses, carried as text; a repository method whose frame is empty takes &self | — |

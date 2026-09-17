@@ -23,6 +23,7 @@
  */
 
 import {
+	abstractAncestors,
 	constructOf,
 	IDENTIFIED_KINDS,
 	identityFieldNames,
@@ -271,6 +272,8 @@ export function mapDocument(ir, options = {}) {
 		if (model.supportType !== true) models.push(model);
 	}
 	diagnostics.push(...collisionsIn(SCOPES.CRATE_TYPES, typeScope));
+	bindIdentityEquality(models, byIdentity, raise);
+	bindAbstractSupertypes(models, raise);
 
 	const crate = crateName(ir.package.identity);
 	if (crate.ok !== true) diagnostics.push(crate.diagnostic);
@@ -293,6 +296,118 @@ export function mapDocument(ir, options = {}) {
 		},
 		diagnostics,
 	};
+}
+
+/** The kernel scalars whose Rust form has `Eq` and `Hash`. */
+const HASHABLE_SCALARS = Object.freeze([
+	"boolean",
+	"integer",
+	"string",
+	"date",
+	"datetime",
+	"duration",
+	"uuid",
+]);
+
+/**
+ * Whether the type `ref` names maps to a Rust type with `Eq` and `Hash`,
+ * adding each generated newtype the answer relies on to `newtypes`. A record,
+ * an enum, a union, a `number` or `any` scalar, and a cycle have no such form.
+ */
+function hashableType(ref, byIdentity, newtypes, seen = new Set()) {
+	const definition = byIdentity.get(ref);
+	if (definition === undefined || seen.has(ref)) return false;
+	const within = new Set(seen).add(ref);
+	let hashable;
+	switch (definition.kind) {
+		case "scalar":
+			hashable = HASHABLE_SCALARS.includes(definition.scalar);
+			break;
+		case "reference":
+			hashable = true;
+			break;
+		case "alias":
+			hashable = hashableType(definition.target, byIdentity, newtypes, within);
+			break;
+		case "sequence":
+			hashable = hashableType(definition.items, byIdentity, newtypes, within);
+			break;
+		case "map":
+			hashable = hashableType(definition.values, byIdentity, newtypes, within);
+			break;
+		default:
+			hashable = false;
+	}
+	if (hashable) newtypes.add(ref);
+	return hashable;
+}
+
+/**
+ * Instances of an identified construct are equal, and hash, by their identity
+ * fields (FR-054): each identity field's Rust type must have `Eq` and `Hash`,
+ * and every generated newtype it reaches derives them. An identity field
+ * without that form is refused rather than compared by every member.
+ */
+function bindIdentityEquality(models, byIdentity, raise) {
+	const newtypes = new Set();
+	for (const model of models) {
+		if (model.identityFields === undefined || model.abstract === true) continue;
+		const members = [];
+		for (const name of model.identityFields) {
+			const field = model.fields.find((one) => one.name === name);
+			if (field === undefined) continue;
+			if (
+				field.nullable ||
+				!hashableType(field.typeRef, byIdentity, newtypes)
+			) {
+				raise(
+					RUST_BACKEND_CODES.UNSUPPORTED_CONSTRUCT,
+					`the identity field ${fragment(field.identity)} of ${fragment(model.identity)} maps to \`${fragment(field.rustType)}\`, which has no Eq and Hash, so instances cannot compare by identity`,
+					field.origin?.source ?? model.origin?.source,
+				);
+				continue;
+			}
+			members.push(field.ident);
+		}
+		model.identityMembers = members;
+	}
+	for (const model of models)
+		if (newtypes.has(model.identity)) model.derivesHash = true;
+}
+
+/**
+ * A concrete subtype implements the trait of each abstract supertype, one
+ * accessor per field the supertype carries (FR-054). A subtype whose field of
+ * that name has another Rust type is refused rather than converted.
+ */
+function bindAbstractSupertypes(models, raise) {
+	const byIdentity = new Map(models.map((model) => [model.identity, model]));
+	for (const model of models) {
+		if (model.abstractSupertypes === undefined || model.abstract === true)
+			continue;
+		model.implements = [];
+		for (const identity of model.abstractSupertypes) {
+			const supertype = byIdentity.get(identity);
+			if (supertype === undefined) continue;
+			const members = [];
+			for (const inherited of supertype.fields) {
+				const own = model.fields.find((one) => one.name === inherited.name);
+				if (own === undefined || own.rustType !== inherited.rustType) {
+					raise(
+						RUST_BACKEND_CODES.UNSUPPORTED_CONSTRUCT,
+						`the field ${fragment(inherited.name)} of ${fragment(model.identity)} does not map to \`${fragment(inherited.rustType)}\`, the type the abstract supertype ${fragment(identity)} reads it as`,
+						own?.origin?.source ?? model.origin?.source,
+					);
+					continue;
+				}
+				members.push({ ident: own.ident, rustType: own.rustType });
+			}
+			model.implements.push({
+				path: `crate::types::${supertype.moduleName}::${supertype.typeName}`,
+				members,
+			});
+		}
+	}
 }
 
 function checkV11Nodes(definitions, raise) {
@@ -476,6 +591,12 @@ function mapType(definition, context) {
 			model.row = `kind:${kind}`;
 			if (IDENTIFIED_KINDS.includes(kind))
 				model.identityFields = identityFieldNames(definition, authored);
+			if (definition.abstract === true) model.abstract = true;
+			const abstracts = abstractAncestors(
+				authored.get(identity) ?? definition,
+				authored,
+			).map((one) => one.identity);
+			if (abstracts.length > 0) model.abstractSupertypes = abstracts;
 			model.fields = [];
 			for (const field of definition.fields ?? []) {
 				const mapped = mapField(field, definition, context, version);
@@ -485,6 +606,14 @@ function mapType(definition, context) {
 				identifier: field.ident,
 				identity: field.identity,
 			}));
+			// An event reads each member through an accessor method, which shares
+			// the inherent method namespace with `try_new` and `validate`.
+			if (kind === "event")
+				for (const method of ["try_new", "validate"])
+					memberScope.push({
+						identifier: method,
+						identity: `ix://agent-ix/filament-core-data/rust-backend/reserved/${method}`,
+					});
 			model.diagnostics.push(
 				...collisionsIn(SCOPES.RECORD_MEMBERS, memberScope),
 			);
@@ -719,6 +848,16 @@ function referenceTo(ref, edgeKey, position, owner, context) {
 		raise(
 			RUST_BACKEND_CODES.UNDECLARED_LOSS,
 			`the ${position} of ${fragment(owner.identity)} names ${fragment(ref)}, which the profile drops while ${fragment(owner.identity)} is retained; the profile does not list ${fragment(owner.identity)} in allowedOmissions`,
+			owner.origin?.source,
+		);
+		return undefined;
+	}
+	if (definition.abstract === true) {
+		// An abstract type renders as a trait, which is no value type a member
+		// can hold: every instance is an instance of a subtype.
+		raise(
+			RUST_BACKEND_CODES.UNSUPPORTED_CONSTRUCT,
+			`the ${position} of ${fragment(owner.identity)} names the abstract type ${fragment(ref)}, which has no Rust value type of its own`,
 			owner.origin?.source,
 		);
 		return undefined;
