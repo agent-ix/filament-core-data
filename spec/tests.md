@@ -238,7 +238,7 @@ blocked as stated above.
 | FR-052 | FR-052-AC-1..16, FR-052-CON-1..4 | TC-547..TC-566 | ✅ Complete |
 | FR-053 | FR-053-AC-1..15, FR-053-CON-1..5 | TC-412..TC-431, TC-604 | ✅ Complete |
 | FR-063 | FR-063-AC-1..21, FR-063-CON-1..6 | TC-745..TC-754 | 🚧 In progress |
-| FR-064 | FR-064-AC-1..25, FR-064-CON-1..7 | TC-755..TC-765, TC-1763, TC-1767, TC-1773 | 🚧 In progress |
+| FR-064 | FR-064-AC-1..26, FR-064-CON-1..7 | TC-755..TC-765, TC-1763, TC-1767, TC-1773, TC-1781 | 🚧 In progress |
 | FR-065 | FR-065-AC-1..22, FR-065-CON-1..6 | TC-766..TC-775 | 🚧 In progress |
 | FR-066 | FR-066-AC-1..29, FR-066-CON-1..9 | TC-776..TC-786 | 🚧 In progress |
 | FR-067 | FR-067-AC-1..20, FR-067-CON-1..6 | TC-787..TC-794, TC-1763, TC-1773 | 🚧 In progress |
@@ -1713,7 +1713,7 @@ blocked as stated above.
 | TC-1770 | The inspection sanctions a `RootModel[Any]` over an `any` kernel scalar document carrying only descriptive annotations and the `kernel-scalar` extension, and refuses the same document carrying `x-agent-ix-constraints` or any other extension as degraded | Unit | P0 | FR-078-AC-12 | ✅ passed |
 | TC-1771 | Two display names deriving one JSON Schema file name, including names differing only in case, are refused with both identities named, and a definition named `index` is refused as colliding with the backend's `index.json`, each writing no file | Unit | P0 | FR-100-AC-9 | ✅ passed |
 | TC-1772 | Every construct kind and model member of the constructs fixture selects the Rust form its mapping-table row states, with zero diagnostics, and `identity.rs` declares `POPULATIONS` | Unit | P0 | FR-054-AC-17, FR-058-AC-14 | ✅ passed |
-| TC-1773 | Every construct kind and model member of the constructs fixture renders in TypeScript by its own form: value equality, readonly event, state enum, repository interface, no type for a domain, and each construct map, compiling under `tsc` | Unit | P0 | FR-064-AC-25, FR-067-AC-20 | ✅ passed |
+| TC-1773 | Every construct kind and model member of the constructs fixture renders in TypeScript by its own form: value equality, identity equality, an abstract interface with no validator, readonly event, state enum, repository interface, no type for a domain, and each construct map, compiling under `tsc` | Unit | P0 | FR-064-AC-25, FR-067-AC-20 | ✅ passed |
 | TC-1774 | Every construct kind and model member renders in JSON Schema by its own annotations, a state `$defs` for a state machine and `not: {}` for a repository and a domain | Unit | P0 | FR-100-AC-10 | ✅ passed |
 | TC-1775 | Both Python targets generate the constructs fixture with every class named by its display name, a state enum, no module for a repository or a domain, and `constructs.py` carrying each construct row and the repository protocol | Integration | P0 | FR-136-AC-10 | ✅ passed |
 | TC-1776 | The Rust, TypeScript, JSON Schema and Python backends each generate the constructs fixture with one non-blocking `CONSTRUCT_MEMBER_UNENFORCED` per clauses, guards, transitions, subsets, frames and populations, each naming its pointer and owning issue, and the v1.1 ConfigVersion fixture with none | Unit | P0 | FR-142-AC-8 | ✅ passed |
@@ -1721,6 +1721,7 @@ blocked as stated above.
 | TC-1778 | The abstract `Party` renders as a trait of accessors that `Order` implements, with no struct; a field naming `Party` and a redefinition changing the accessor's Rust type are refused | Unit | P0 | FR-054-AC-19 | ✅ passed |
 | TC-1779 | An event member named `validate` or `try_new`, and a type named `OrderLifecycleState`, each raise `NAME_COLLISION` and write no file | Unit | P0 | FR-055-AC-18 | ✅ passed |
 | TC-1780 | A repository operation with an empty frame takes `&self` and one with no frame takes `&mut self` | Unit | P0 | FR-054-AC-20 | ✅ passed |
+| TC-1781 | The TypeScript backend refuses a type named for another's `State` or `Equals`, a field holding an abstract type, and an inherited field collision, writing no file | Unit | P0 | FR-064-AC-26 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
 | TC-1585 | Every requirement the register names carries that issue's own link, and a row whose requirement omits it is reported | Unit | P0 | NFR-001-AC-6 | ✅ passed |
 
@@ -2654,13 +2655,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 130 | 83 | 0 | 47 | 100% mapped (130/130) |
-| Unit | 588 | 482 | 0 | 106 | 100% mapped (588/588) |
+| Unit | 589 | 483 | 0 | 106 | 100% mapped (589/589) |
 | Integration | 160 | 99 | 0 | 61 | 100% mapped (160/160) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 68 | 43 | 0 | 25 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1378** | **1049** | **0** | **329** | **100% mapped (1378/1378)** |
+| **Total** | **1379** | **1050** | **0** | **329** | **100% mapped (1379/1379)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

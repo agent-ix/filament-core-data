@@ -71,6 +71,11 @@ export const LOSS_CODES = Object.freeze({
 		severity: "error",
 		blocking: true,
 	}),
+	ABSTRACT_TYPE_HELD: Object.freeze({
+		code: TARGET("ABSTRACT_TYPE_HELD"),
+		severity: "error",
+		blocking: true,
+	}),
 });
 
 /**
@@ -89,6 +94,12 @@ export const TARGET_LOSSES = Object.freeze([
 		code: LOSS_CODES.DURATION_ORDER_NOT_REPRESENTABLE.code,
 		rationale:
 			"ISO-8601 designators admit no total order — P1M and P30D are not comparable without a calendar — so an ordering constraint on a duration subject is refused rather than answered by an invented comparison",
+	}),
+	Object.freeze({
+		construct: "abstract-type-held",
+		code: LOSS_CODES.ABSTRACT_TYPE_HELD.code,
+		rationale:
+			"an abstract type has no validator, since no instance is its own; a field, item, value, target or payload naming one would need a check that accepts every subtype, which the generated validators do not state",
 	}),
 ]);
 
@@ -122,23 +133,23 @@ export const RENDERED_NOT_LOST = Object.freeze([
 	Object.freeze({
 		construct: "entity",
 		renderedAs:
-			"the record rendering, an exported interface with a record validator, plus its identity field names in declared order in TYPE_IDENTITY_FIELDS",
+			"the record rendering, an exported interface with a record validator, plus its identity field names in declared order in TYPE_IDENTITY_FIELDS and <Name>Equals comparing those fields",
 		rationale:
-			"an entity's instances being told apart by the identity fields, and persisting across changes to its other fields, is its Quire meaning over instances rather than a property of one value; the generated type carries the identity field names, and a consumer compares instances by them",
+			"an entity's instances are told apart by the identity fields: <Name>Equals holds exactly when every identity field is equal by canonical form, so two instances with equal identity fields are one instance",
 	}),
 	Object.freeze({
 		construct: "construct-kinds",
 		renderedAs:
 			"value_object, nested_entity, aggregate_root, event, process and state_machine as a record interface with its validator; enumeration as a string literal union with its validator; repository as an interface of method signatures; domain as no type; each with its members in the TYPE_ maps: TYPE_OWNER, TYPE_MEMBERS, TYPE_OCCURRENCE_FIELD, TYPE_EQUALITY, TYPE_IMMUTABLE, TYPE_STATES, TYPE_TRANSITIONS, TYPE_STEPS, TYPE_PERSISTS and TYPE_VOCABULARY",
 		rationale:
-			"a value object's value equality is <Name>Equals, an event's immutability is its readonly members, and a state machine's states are <Name>State; the Quire meaning of clauses, guards and instance identity is over instances, so the generated package carries it as data and a consumer applies it",
+			"a value object's value equality and an identified construct's identity equality are <Name>Equals, an event's immutability is its readonly members, and a state machine's states are <Name>State; the Quire meaning of clauses and guards is over instances, so the generated package carries it as data",
 	}),
 	Object.freeze({
 		construct: "model-members",
 		renderedAs:
-			"a subtype's interface carrying its effective fields, with TYPE_SUPERTYPES, TYPE_ABSTRACT, FIELD_SUBSETS, FIELD_REDEFINES, OPERATION_CONTRACTS and POPULATIONS in the identity module",
+			"a subtype's interface carrying its effective fields; an abstract type's interface with no validator; with TYPE_SUPERTYPES, TYPE_ABSTRACT, FIELD_SUBSETS, FIELD_REDEFINES, OPERATION_CONTRACTS and POPULATIONS in the identity module",
 		rationale:
-			"TypeScript has no abstract interface and no subset relation between properties, so both are carried as data; a redefined field is replaced in the subtype's interface, and an operation's frame and inline Quire clauses are text a consumer reads",
+			"an interface is TypeScript's abstract form: no value validates as an abstract type, only as a subtype; TypeScript has no subset relation between properties, so subsets are carried as data; a redefined field is replaced in the subtype's interface, and an operation's frame and inline Quire clauses are text a consumer reads",
 	}),
 	Object.freeze({
 		construct: "default-kind",
@@ -260,6 +271,32 @@ export function representability(ir, options = {}) {
 					detail: constraint.keyword,
 				});
 			}
+		}
+
+		// A value an abstract type names has no validator to check it (FR-141).
+		const held = [
+			...(type.fields ?? []).map((field, position) => [
+				field?.typeRef,
+				`/ir/types/${index}/fields/${position}/typeRef`,
+			]),
+			...(type.variants ?? []).map((variant, position) => [
+				variant?.payloadType,
+				`/ir/types/${index}/variants/${position}/payloadType`,
+			]),
+			...["target", "items", "values"].map((member) => [
+				type.kind === "reference" ? undefined : type[member],
+				`/ir/types/${index}/${member}`,
+			]),
+		];
+		for (const [ref, pointer] of held) {
+			if (byIdentity.get(ref)?.abstract !== true) continue;
+			record({
+				code: LOSS_CODES.ABSTRACT_TYPE_HELD.code,
+				construct: "abstract-type-held",
+				owner,
+				pointer,
+				detail: ref,
+			});
 		}
 
 		// A `representation` or `migration` default is carried on the field's

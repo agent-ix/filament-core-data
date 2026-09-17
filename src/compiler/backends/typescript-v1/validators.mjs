@@ -52,6 +52,7 @@
  */
 
 import { isInstanceless, isRecordShaped } from "../../constructs.mjs";
+import { hasEquality } from "./model.mjs";
 import { UNION_DISCRIMINANT } from "./names.mjs";
 
 /**
@@ -1048,12 +1049,55 @@ export function sortErrors(
 `;
 }
 
+/**
+ * `<Name>Equals` (FR-064, FR-142). A value object has no identity: two values
+ * are one value exactly when they share a canonical form, the rule `unique`
+ * collections use. An identified construct compares by its identity fields in
+ * declared order, each by canonical form: two instances with equal identity
+ * fields are one instance.
+ */
+function equalityFunction(entry) {
+	const name = entry.identifier;
+	const head = `export function ${name}Equals(left: ${name}, right: ${name}): boolean {`;
+	if (entry.kind === "value_object")
+		return [
+			`/** Whether two \`${name}\` values are one value: every field equal. */`,
+			head,
+			"\treturn !isUniqueCollection([left, right]);",
+			"}",
+		].join("\n");
+	const member = (side, field) =>
+		/^[A-Za-z_$][\w$]*$/.test(field)
+			? `${side}.${field}`
+			: `${side}[${literal(field)}]`;
+	const same = (entry.identityFields ?? []).map(
+		(field) =>
+			`isUniqueCollection([${member("left", field)}, ${member("right", field)}])`,
+	);
+	const lines = [
+		`/** Whether two \`${name}\` values are one instance: every identity field equal. */`,
+		head,
+	];
+	same.forEach((unique, index) => {
+		lines.push(
+			index === same.length - 1
+				? `\treturn !${unique};`
+				: `\tif (${unique}) return false;`,
+		);
+	});
+	if (same.length === 0) lines.push("\treturn false;");
+	lines.push("}");
+	return lines.join("\n");
+}
+
 /** The generated `validators.ts`: one `validate<Type>` per exported type. */
 export function renderValidators(model) {
-	// A repository and a domain have no instance data, so no value validates
-	// against either (FR-142).
+	// A repository and a domain have no instance data, and an abstract type has
+	// no instance of its own, so no value validates against any of them (FR-142,
+	// FR-141).
 	const types = (model.types ?? []).filter(
-		(entry) => !isInstanceless(entry.kind),
+		(entry) =>
+			!isInstanceless(entry.kind) && entry.construct?.abstract !== true,
 	);
 	const names = types.map((entry) => entry.identifier);
 	const blocks = [];
@@ -1119,17 +1163,7 @@ export function renderValidators(model) {
 				"}",
 			].join("\n"),
 		);
-		// A value object has no identity: two values are one value exactly when
-		// they share a canonical form, the rule `unique` collections use (FR-142).
-		if (entry.kind === "value_object")
-			blocks.push(
-				[
-					`/** Whether two \`${entry.identifier}\` values are one value: every field equal. */`,
-					`export function ${entry.identifier}Equals(left: ${entry.identifier}, right: ${entry.identifier}): boolean {`,
-					"\treturn !isUniqueCollection([left, right]);",
-					"}",
-				].join("\n"),
-			);
+		if (hasEquality(entry)) blocks.push(equalityFunction(entry));
 	}
 
 	const header = `/**

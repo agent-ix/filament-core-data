@@ -36,6 +36,7 @@
 
 import {
 	constructOf,
+	IDENTIFIED_KINDS,
 	identityFieldNames,
 	isEnumerationShaped,
 	isInstanceless,
@@ -45,6 +46,17 @@ import {
 import { MAX_DEPTH } from "./admit.mjs";
 import { LOSS_CODES } from "./loss.mjs";
 import { reserveNames } from "./names.mjs";
+
+/**
+ * Whether a model entry exports `<Name>Equals`: a value object, by every field,
+ * or a concrete identified construct, by its identity fields (FR-064).
+ */
+export function hasEquality(entry) {
+	if (entry.kind === "value_object") return true;
+	return (
+		IDENTIFIED_KINDS.includes(entry.kind) && entry.construct?.abstract !== true
+	);
+}
 
 /** Code-unit ordering. Never `localeCompare`, which reads the host's collator. */
 function compareCodeUnits(left, right) {
@@ -346,15 +358,16 @@ export function buildModel(ir, options = {}) {
 		return Object.freeze(entry);
 	});
 
-	// A state machine's state type and a value object's equality function take
-	// names minted from the type's identifier; one that another definition
-	// already mints is refused as the collision it is, never renamed.
+	// A state machine's state type, and the equality function of a value object
+	// or of a concrete identified construct, take names minted from the type's
+	// identifier; one that another definition already mints is refused as the
+	// collision it is, never renamed.
 	const minted = new Set(identifiers.values());
 	for (const entry of entries) {
 		const derived =
 			entry.kind === "state_machine"
 				? `${entry.identifier}State`
-				: entry.kind === "value_object"
+				: hasEquality(entry)
 					? `${entry.identifier}Equals`
 					: undefined;
 		if (derived === undefined || !minted.has(derived)) continue;

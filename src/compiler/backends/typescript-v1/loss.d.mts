@@ -10,6 +10,7 @@ export declare const LOSS_CODES: Readonly<{
 	FORMAT_NOT_IMPLEMENTED: LossCode;
 	DURATION_ORDER_NOT_REPRESENTABLE: LossCode;
 	IDENTIFIER_COLLISION: LossCode;
+	ABSTRACT_TYPE_HELD: LossCode;
 }>;
 
 export interface DeclaredLoss {

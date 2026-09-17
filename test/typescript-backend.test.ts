@@ -20,6 +20,8 @@ import { describe, expect, it } from "vitest";
 import { reachableSymbols } from "../src/compiler/backends/typescript-v1/package-layout.mjs";
 import { auditRenderedNodes } from "../src/compiler/backends/typescript-v1/metadata.mjs";
 import { buildModel } from "../src/compiler/backends/typescript-v1/model.mjs";
+import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
+import { createHost } from "../src/compiler/host.mjs";
 import {
 	SCHEMA_FILES,
 	admitIr,
@@ -808,6 +810,28 @@ describe("TC-1773 every construct kind and model member rendered by the TypeScri
 			expect(equals(line, { ...line })).toBe(true);
 			expect(equals(line, { ...line, quantity: 2 })).toBe(false);
 
+			// An identified construct is one instance when its identity fields
+			// are equal, whatever its other fields hold; an abstract type has no
+			// instance of its own, so no validator and no Equals.
+			const orderEquals = module.OrderEquals as (
+				left: unknown,
+				right: unknown,
+			) => boolean;
+			const placed = {
+				id: "7c1e0f8a-0000-4000-8000-000000000001",
+				status: "draft",
+			};
+			expect(orderEquals(placed, { ...placed, status: "placed" })).toBe(true);
+			expect(
+				orderEquals(placed, {
+					...placed,
+					id: "7c1e0f8a-0000-4000-8000-000000000002",
+				}),
+			).toBe(false);
+			expect(module.validateParty).toBeUndefined();
+			expect(module.PartyEquals).toBeUndefined();
+			expect(types).toContain("export interface Party {");
+
 			expect(module.TYPE_IDENTITY_FIELDS).toMatchObject({
 				Order: ["id"],
 				Shipment: ["id"],
@@ -878,6 +902,86 @@ describe("TC-1773 every construct kind and model member rendered by the TypeScri
 			rmSync(scratch, { recursive: true, force: true });
 		}
 	}, 120000);
+});
+
+function constructsDocument() {
+	return JSON.parse(
+		readFileSync(
+			resolve(
+				root,
+				"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
+			),
+			"utf8",
+		),
+	) as {
+		types: {
+			displayName: string;
+			identity: string;
+			fields?: { name: string; typeRef?: string; redefines?: string }[];
+		}[];
+	};
+}
+
+function generateDocument(ir: unknown) {
+	return typescriptBackend.generate(
+		{ ir } as never,
+		{
+			host: createHost({ readRoots: [root] }),
+		} as never,
+	) as {
+		state: string;
+		files: unknown[];
+		diagnostics: { code: string; message: string; blocking: boolean }[];
+	};
+}
+
+describe("TC-1781 identifiers and abstract types the TypeScript backend refuses (FR-064)", () => {
+	/** Traces: TC-1781; FR-064-AC-26. */
+	it("refuses a type named for another's State or Equals, a field holding an abstract type, and an inherited field collision", () => {
+		const blockingCodes = (ir: unknown) => {
+			const manifest = generateDocument(ir);
+			expect(manifest.files).toStrictEqual([]);
+			return manifest.diagnostics
+				.filter((one) => one.blocking)
+				.map((one) => one.code.split(".").pop());
+		};
+		const typeNamed = (
+			ir: ReturnType<typeof constructsDocument>,
+			name: string,
+		) => {
+			const found = ir.types.find((type) => type.displayName === name);
+			if (!found) throw new Error(`no type ${name}`);
+			return found;
+		};
+
+		expect(generateDocument(constructsDocument()).state).toBe("success");
+
+		for (const [renamed, clash] of [
+			["OrderStatus", "OrderLifecycleState"],
+			["OrderStatus", "OrderEquals"],
+			["OrderStatus", "OrderLineEquals"],
+		]) {
+			const ir = constructsDocument();
+			typeNamed(ir, renamed).displayName = clash;
+			expect(blockingCodes(ir), clash).toContain("IDENTIFIER_COLLISION");
+		}
+
+		const held = constructsDocument();
+		const party = typeNamed(held, "Party");
+		const order = typeNamed(held, "Order");
+		const status = order.fields?.find((field) => field.name === "status");
+		if (!status) throw new Error("Order declares no status field");
+		status.typeRef = party.identity;
+		expect(blockingCodes(held)).toStrictEqual(["ABSTRACT_TYPE_HELD"]);
+
+		const collided = constructsDocument();
+		const id = typeNamed(collided, "Order").fields?.find(
+			(field) => field.name === "id",
+		);
+		if (!id) throw new Error("Order declares no id field");
+		delete id.redefines;
+		expect(blockingCodes(collided)).toStrictEqual(["IDENTIFIER_COLLISION"]);
+	});
 });
 
 describe("TC-1767 generated TypeScript names come from display names (FR-064)", () => {
