@@ -126,7 +126,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | `supertypes` | the subtype's struct carries its effective members: the supertypes' fields, farthest first, then its own, each redefined field left out; `pub const SUPERTYPES: &[&str]` names the direct supertypes |
 | `abstract` | `pub const ABSTRACT: bool = true`; the struct is generated |
 | `subsets` | `pub const FIELD_SUBSETS: &[FieldLinkMeta]`, each member and the members its values are a subset of, by wire name |
-| `redefines` | the redefining member replaces the inherited one in the struct; `pub const FIELD_REDEFINES: &[FieldLinkMeta]` names the member it redefines |
+| `redefines` | the redefining member stands in the struct in place of the inherited one; `pub const FIELD_REDEFINES: &[FieldLinkMeta]` names the member it redefines |
 | operation `frame`, `requires`, `ensures` | `pub const OPERATION_CONTRACTS: &[OperationContractMeta]`, each operation's frame and inline Quire clauses as text |
 | `populations` | `pub const POPULATIONS: &[PopulationMeta]` in `identity.rs`, each population's identity, display name, member types and extents |
 

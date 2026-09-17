@@ -198,7 +198,7 @@
 			"selector": "redefines",
 			"rustForm": "pub const FIELD_REDEFINES: &[FieldLinkMeta]",
 			"serdeAttributes": [],
-			"mechanism": "the redefining member replaces the inherited one in the struct, and the constant names the member it redefines",
+			"mechanism": "the redefining member stands in the struct in place of the inherited one, and the constant names the member it redefines",
 			"diagnosticCode": null
 		},
 		{

@@ -46,7 +46,7 @@ construction, not by claim.
 | `supertypes` | `pub const SUPERTYPES: &[&str]; the subtype's struct carries every inherited member` | — | the effective member list: the supertypes' fields, farthest first, then the type's own, with each redefined field left out; the direct supertypes' semantic identities beside FIELDS | — |
 | `abstract` | `pub const ABSTRACT: bool = true` | — | carried, not enforced: Rust has no abstract struct, so the struct is generated and the constant states that every instance belongs to a subtype | — |
 | `subsets` | `pub const FIELD_SUBSETS: &[FieldLinkMeta]` | — | carried, not enforced: each member and the members its values are a subset of, by wire name; the subset relation is Quire meaning over values | — |
-| `redefines` | `pub const FIELD_REDEFINES: &[FieldLinkMeta]` | — | the redefining member replaces the inherited one in the struct, and the constant names the member it redefines | — |
+| `redefines` | `pub const FIELD_REDEFINES: &[FieldLinkMeta]` | — | the redefining member stands in the struct in place of the inherited one, and the constant names the member it redefines | — |
 | `operation-contract` | `pub const OPERATION_CONTRACTS: &[OperationContractMeta]` | — | each operation's frame and inline Quire requires and ensures clauses, carried as text; a repository method whose frame is empty takes &self | — |
 | `populations` | `pub const POPULATIONS: &[PopulationMeta] in identity.rs` | — | each population's identity, display name, member types and extents, in document order | — |
 
