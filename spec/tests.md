@@ -551,7 +551,7 @@ blocked as stated above.
 | TC-211 | An unknown relationship `category` fails at the relationship locus | Unit | P0 | FR-028-AC-2 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-212 | An operation with params, bounded return, and present pre/post clauses validates | Unit | P0 | FR-028-AC-3 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-213 | An operation whose `post[]` names an absent clause fails at the operation locus | Unit | P0 | FR-028-AC-4 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-214 | An `ocl` clause with `text` and `sourceSpan` validates and the schema declares no parsed-content property | Static | P0 | FR-028-AC-5, FR-028-CON-2, US-006-EX-3 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-214 | An `ocl` clause with `text` and `sourceSpan` validates, a `quire` clause validates and its `text` round-trips byte-identical with no parsed-content property, and the schema declares no parsed-content property | Static | P0 | FR-028-AC-5, FR-028-CON-2, US-006-EX-3 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-215 | A namespaced clause language validates and a bare unknown language fails | Unit | P0 | FR-028-AC-6 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-216 | `relationships[]` or `operations[]` on a non-record type definition fails | Unit | P0 | FR-028-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-217 | Absent `relationships[]`, `operations[]`, and `clauses[]` read as empty on a v1 document | Unit | P0 | FR-028-CON-1 | ✅ passed — semantic IR v1.1 (PR #38) |

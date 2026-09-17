@@ -77,7 +77,7 @@ identity and origin rather than prose.
 | FR-028-AC-2 | A relationship with an unknown `category` fails validation with the relationship's locus. | Test |
 | FR-028-AC-3 | An operation with two params, a bounded return, and one `pre` and one `post` clause validates when both clauses are present. | Test |
 | FR-028-AC-4 | An operation whose `post[]` names an absent clause identity fails validation with the operation's locus. | Test |
-| FR-028-AC-5 | A clause with `language: ocl`, `text`, and a `sourceSpan` validates, and a clause with `language: quire` validates; the IR schema declares no property for parsed clause content. | Test |
+| FR-028-AC-5 | A clause with `language: ocl`, `text`, and a `sourceSpan` validates, and a clause with `language: quire` validates; a `quire` clause's `text` round-trips byte-identical and the clause gains no parsed-content property, because FCD carries clauses and Quire intake checks them; the IR schema declares no property for parsed clause content. | Test |
 | FR-028-AC-6 | A clause with `language: acme:tla` validates; a bare unknown language such as `tla` fails. | Test |
 | FR-028-AC-7 | `relationships[]` or `operations[]` on a non-record type definition fails validation. | Test |
 | FR-028-AC-8 | The config-service FR-006 `overlay` relationship and an `## Invariants` `ocl` fence are expressed in `fixtures/semantic/v1/positive/config-version-v1-1.json` with zero declared loss. | Analysis |

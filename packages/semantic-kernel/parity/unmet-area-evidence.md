@@ -15,7 +15,7 @@ area is the corpus owner's act.
 
 ## What was measured
 
-One golden corpus of 111 kernel instance documents under
+One golden corpus of 112 kernel instance documents under
 `packages/semantic-kernel/parity/golden/`, covering all 30 kernel declarations
 (21 models, 1 union, 4 enums, 4 scalars) in the `positive` / `negative` /
 `boundary` classes the existing conformance cases use. Every one of the four
@@ -42,13 +42,13 @@ node --experimental-strip-types \
 ## The measured agreement
 
 ```
-88/111 documents agree; 47 divergence rows, 0 unadjudicated
+89/112 documents agree; 47 divergence rows, 0 unadjudicated
 ```
 
 | Property | Agreeing | Documents |
 | --- | --- | --- |
-| serialized-member-names | 74 | 93 |
-| round-trip | 63 | 68 |
+| serialized-member-names | 75 | 94 |
+| round-trip | 64 | 69 |
 | presence-versus-null | 8 | 11 |
 | unknown-member-states | 5 | 5 |
 | defaults | 3 | 8 |
@@ -56,10 +56,10 @@ node --experimental-strip-types \
 
 | Package | Agreeing with the contract | Documents |
 | --- | --- | --- |
-| json-schema | 111 | 111 |
-| typescript | 89 | 111 |
-| python | 109 | 111 |
-| rust | 88 | 111 |
+| json-schema | 112 | 112 |
+| typescript | 90 | 112 |
+| python | 110 | 112 |
+| rust | 89 | 112 |
 
 ## Every divergence, and who owns it
 
@@ -96,10 +96,10 @@ measurement the unmet area names; it does not claim the named defects are fixed.
 
 | Owning issue | Status against `UA-serialization-parity` |
 | --- | --- |
-| `#21` Rust/Serde backend | **Discharged as measured.** The crate decides all 111 documents and agrees on 88. Of its 23 divergence rows, 21 are rendered-from-IR (`#127`, `#78`) and 2 are its own (`#129`). |
-| `#22` TypeScript backend | **Discharged as measured.** The package decides all 111 documents and agrees on 89. All 22 of its divergence rows are rendered-from-IR (`#127`, `#78`); no divergence is owned by `#22` itself. |
-| `#23` Python backend | **Discharged as measured.** The package decides all 111 documents and agrees on 109, the highest of the three IR-independent paths. Both of its divergence rows are its own (`#129`). |
-| `#11` semantic-core packages | **Not discharged.** `#11` owns the JSON Schema package, which agrees on 111 of 111 — but that figure is not independent evidence: the golden expectations are derived from the same published schemas ajv validates against, so the JSON Schema package is the contract's own voice in this measurement, not a fourth witness to it. `#11` also owns the IR lowering, and 43 of the 47 divergence rows are lowering defects (`#127` 32 rows plus the `#78` expressiveness losses). |
+| `#21` Rust/Serde backend | **Discharged as measured.** The crate decides all 112 documents and agrees on 89. Of its 23 divergence rows, 21 are rendered-from-IR (`#127`, `#78`) and 2 are its own (`#129`). |
+| `#22` TypeScript backend | **Discharged as measured.** The package decides all 112 documents and agrees on 90. All 22 of its divergence rows are rendered-from-IR (`#127`, `#78`); no divergence is owned by `#22` itself. |
+| `#23` Python backend | **Discharged as measured.** The package decides all 112 documents and agrees on 110, the highest of the three IR-independent paths. Both of its divergence rows are its own (`#129`). |
+| `#11` semantic-core packages | **Not discharged.** `#11` owns the JSON Schema package, which agrees on 112 of 112 — but that figure is not independent evidence: the golden expectations are derived from the same published schemas ajv validates against, so the JSON Schema package is the contract's own voice in this measurement, not a fourth witness to it. `#11` also owns the IR lowering, and 43 of the 47 divergence rows are lowering defects (`#127` 32 rows plus the `#78` expressiveness losses). |
 
 What remains is therefore not an absence of measurement but three named, owned
 defects. That is what the issue register records; it is not what an unmet-area

@@ -149,6 +149,39 @@ def _bundle_bytes() -> dict[str, bytes]:
     }
 
 
+def _semantic_core_snapshot() -> dict[str, str]:
+    """Path and content hash of every file under `packages/semantic-core/`.
+
+    Tracked and untracked (not ignored) files both count, so a write that adds,
+    edits, or deletes any byte of the package shows up as a changed snapshot.
+    """
+    listed = subprocess.run(
+        [
+            "git",
+            "ls-files",
+            "-z",
+            "--cached",
+            "--others",
+            "--exclude-standard",
+            "--",
+            "packages/semantic-core",
+        ],
+        cwd=REPO,
+        capture_output=True,
+        check=True,
+    ).stdout.decode("utf-8")
+    snapshot: dict[str, str] = {}
+    for path in sorted({path for path in listed.split("\0") if path}):
+        file = REPO / path
+        snapshot[path] = (
+            hashlib.sha256(file.read_bytes()).hexdigest()
+            if file.is_file()
+            else "absent"
+        )
+    assert snapshot, "no file under packages/semantic-core"
+    return snapshot
+
+
 def _refs(node: Any, out: list[str]) -> None:
     if isinstance(node, dict):
         for key, value in node.items():
@@ -183,6 +216,7 @@ def test_the_guard_the_register_and_the_published_bundle_are_untouched() -> None
 
     # CON-2: the published bundle is exactly what the generator emits and
     # records, and the localization stays in memory.
+    package_before = _semantic_core_snapshot()
     before = _bundle_bytes()
     toolchain = json.loads(
         (REPO / "packages/semantic-core/generated/toolchain.json").read_text(
@@ -205,6 +239,7 @@ def test_the_guard_the_register_and_the_published_bundle_are_untouched() -> None
     emit.prepared()
     localize.localize_bundle(emit.documents(), emit.bundle_identity()["base"])
     assert _bundle_bytes() == before
+    assert _semantic_core_snapshot() == package_before
 
     # CON-3: the pass is schema-to-schema. Nothing it imports can reach
     # generated source, open a file, or run a regular expression over text.
@@ -591,10 +626,10 @@ def test_provenance_type_checking_and_reproducibility(tmp_path: Any) -> None:
 
 def test_the_bundle_the_distribution_and_the_examples() -> None:
     """TC-1065: FR-087-AC-14, FR-087-AC-15, FR-087-AC-16."""
-    # AC-14: a full generation moves no published byte.
-    before = _bundle_bytes()
+    # AC-14: a full generation moves no byte under packages/semantic-core/.
+    before = _semantic_core_snapshot()
     emit.write_all()
-    assert _bundle_bytes() == before
+    assert _semantic_core_snapshot() == before
 
     # AC-15: read from the packed list, not from the manifest text alone.
     packed = subprocess.run(

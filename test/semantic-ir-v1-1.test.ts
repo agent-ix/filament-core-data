@@ -889,12 +889,41 @@ describe("FR-028 relationships, operations, and clauses", () => {
 			"generated origin needs no span",
 		).toBeUndefined();
 		const quire = clone(goldenV11());
+		const quireText =
+			"Requires: self.status <> Status::Archived ∧ count(self.tags) ≥ 1\n";
 		setAt(quire, "types.3.clauses.0.language", "quire");
+		setAt(quire, "types.3.clauses.0.text", quireText);
 		expect(validates("semantic-ir.schema.json", quire)).toBe(true);
 		expect(
 			readSemanticIr(quire).filter(
 				(diagnostic) =>
 					diagnostic.code === "agent-ix.semantic-ir.UNKNOWN_CLAUSE_LANGUAGE",
+			),
+		).toEqual([]);
+		// FCD carries a quire clause; Quire intake checks it. The text survives a
+		// serialize/parse round trip byte-identical and gains no parsed content.
+		const roundTripped = object(
+			array(
+				typeNamed(JSON.parse(JSON.stringify(quire)), "Artifact").clauses,
+				"round-tripped clauses",
+			)[0],
+			"round-tripped quire clause",
+		);
+		expect(roundTripped.language).toBe("quire");
+		expect(Buffer.from(String(roundTripped.text), "utf8")).toEqual(
+			Buffer.from(quireText, "utf8"),
+		);
+		expect(
+			Object.keys(roundTripped).filter(
+				(key) =>
+					![
+						"clauseId",
+						"identity",
+						"language",
+						"origin",
+						"sourceSpan",
+						"text",
+					].includes(key),
 			),
 		).toEqual([]);
 	});
@@ -1211,7 +1240,7 @@ function seededDocument(seed: number): JsonObject {
 		{ lower: 0 },
 	]);
 	const clause = object(array(artifact.clauses, "clauses")[0], "clause");
-	clause.language = pick(["ocl", "sysml", "fretish", "acme:tla"]);
+	clause.language = pick(["quire", "ocl", "sysml", "fretish", "acme:tla"]);
 	clause.text = `context Artifact inv seed${seed}: self.summary <> '${seed}'`;
 	const operation = object(
 		array(artifact.operations, "operations")[0],
