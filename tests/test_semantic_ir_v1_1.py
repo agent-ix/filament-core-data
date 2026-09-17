@@ -145,7 +145,10 @@ class TestContract12:
             )
 
         mutations = (
-            ("supertypes", set_type("supertypes", ["ix://agent-ix/assurance/type/Project"])),
+            (
+                "supertypes",
+                set_type("supertypes", ["ix://agent-ix/assurance/type/Project"]),
+            ),
             ("abstract", set_type("abstract", True)),
             ("subsets", set_field("subsets", [])),
             (
@@ -155,7 +158,10 @@ class TestContract12:
                     lambda d: d["types"][record]["fields"][1]["identity"],
                 ),
             ),
-            ("frame", set_operation("frame", {"modifies": [], "creates": [], "deletes": []})),
+            (
+                "frame",
+                set_operation("frame", {"modifies": [], "creates": [], "deletes": []}),
+            ),
             ("requires", set_operation("requires", quire)),
             ("ensures", set_operation("ensures", quire)),
             ("populations", lambda d: d.__setitem__("populations", [])),
