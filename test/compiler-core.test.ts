@@ -18,19 +18,26 @@ import Ajv2020 from "ajv/dist/2020.js";
 import { beforeAll, describe, expect, it } from "vitest";
 import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
 import { rustBackend } from "../src/compiler/backends/rust-serde/backend.mjs";
-import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import {
 	assertBackendContract,
 	generateTarget,
 	registryWith,
 } from "../src/compiler/backends/seam.mjs";
+import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import { diffSemanticContract } from "../src/compiler/compat/diff.mjs";
-import { CONSTRUCT_KINDS, EDGE_KINDS } from "../src/compiler/constructs.mjs";
 import {
 	CONTRACT_VERSIONS,
 	readIrAsContract,
 	V1_1_ADDED_NODES,
 } from "../src/compiler/compat/evolution.mjs";
+import {
+	CONSTRUCT_VOCABULARY,
+	CORE_KINDS,
+	IDENTITY_EQUALITIES,
+	readDeclaration,
+	ruleOf,
+	SHAPE_RENDERINGS,
+} from "../src/compiler/constructs.mjs";
 import {
 	applyDiagnosticLimit,
 	DEFAULT_LIMITS,
@@ -81,7 +88,7 @@ import {
 import { compilePackage, PHASES } from "../src/compiler/pipeline.mjs";
 import { schemaValidators } from "../src/compiler/schema-validate.mjs";
 import { changedPathsOf, changeRange } from "./changed-paths.js";
-import { EDGE_KINDS as READER_EDGE_KINDS } from "./semantic-ir-v1-1-reader";
+import { isEdgeKind as readerEdgeKind } from "./semantic-ir-v1-1-reader";
 
 /** The `typeDefinition.kind` values of contract 1.0.0 and 1.1.0. */
 const CONTRACT_KINDS_BEFORE_CONSTRUCTS = [
@@ -796,7 +803,7 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 	}, 60000);
 
 	/** Traces: TC-1373; FR-106-AC-1, FR-106-CON-1. */
-	it("lowers @presence independently of multiplicity in contract 1.2.0", async () => {
+	it("lowers @presence independently of multiplicity in contract 2.0.0", async () => {
 		const result = await compileSource(
 			[
 				"using AgentIx.Semantic.Decorators;",
@@ -809,7 +816,7 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			].join("\n"),
 		);
 		expect(codesOf(result.diagnostics as never)).toEqual([]);
-		expect((result.ir as Json).contractVersion).toBe("1.2.0");
+		expect((result.ir as Json).contractVersion).toBe("2.0.0");
 		expect(validateIrDocument(result.ir as never)).toEqual([]);
 		expect([...readContractIr(result.ir as never)]).toEqual([]);
 		const thing = ((result.ir as Json).types as Json[]).find(
@@ -1284,9 +1291,9 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		) as Json;
 
 	/** Traces: TC-432, TC-450, TC-614; FR-046-AC-1, FR-046-AC-19. */
-	it("emits a valid 1.2.0 document with no reader diagnostics", () => {
+	it("emits a valid 2.0.0 document with no reader diagnostics", () => {
 		expect(compiled.ir).not.toBeNull();
-		expect((compiled.ir as Json).contractVersion).toBe("1.2.0");
+		expect((compiled.ir as Json).contractVersion).toBe("2.0.0");
 		expect(((compiled.ir as Json).source as Json).dialect).toBe("typespec");
 		expect(validateIrDocument(compiled.ir)).toEqual([]);
 		expect(codesOf(readContractIr(compiled.ir) as never)).toEqual([]);
@@ -3216,7 +3223,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			contractVersion: string;
 			types: Json[];
 		};
-		document.contractVersion = "1.2.0";
+		document.contractVersion = "2.0.0";
 		const scalar = document.types.find(
 			(type) => type.kind === "scalar",
 		) as Json;
@@ -3244,7 +3251,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		const document = readJson(
 			resolve(
 				root,
-				"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
+				"fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json",
 			),
 		) as never as { types: Json[] };
 		const machine = document.types.find((type) =>
@@ -3252,7 +3259,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		) as Json;
 		const operation = (machine.operations as Json[])[0];
 		expect([...note(readContractIr(document as never))]).toEqual([]);
-		((operation.requires as Json[])[0] as Json).language = "ocl";
+		((operation.pre as Json[])[1] as Json).language = "ocl";
 		expect(validateIrDocument(document as never)).toEqual([]);
 		const found = [...note(readContractIr(document as never))];
 		expect(found.map((one) => [one.code, one.severity, one.blocking])).toEqual([
@@ -3312,7 +3319,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			const manifest = generate(
 				backend as never,
 				target,
-				"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
+				"fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json",
 			);
 			expect(manifest.state, target).toBe("success");
 			expect(
@@ -3339,36 +3346,186 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		}
 	});
 
-	/** Traces: TC-1760; FR-142-AC-7. */
-	it("spells the construct kinds exactly as the schema does", () => {
+	/** Traces: TC-1786; FR-142-AC-11. */
+	it("spells the core kinds exactly as the schema does", () => {
 		const definition = (
 			readJson(
 				resolve(root, "schema/semantic/v1/semantic-ir.schema.json"),
 			) as never as {
 				$defs: {
 					typeDefinition: {
-						properties: { kind: { enum: string[] } };
+						properties: { kind: { anyOf: { enum?: string[] }[] } };
 						allOf: { if: { properties: { kind: { enum?: string[] } } } }[];
 					};
 				};
 			}
 		).$defs.typeDefinition;
-		const before = new Set(CONTRACT_KINDS_BEFORE_CONSTRUCTS);
-		expect([...CONSTRUCT_KINDS]).toEqual(
-			definition.properties.kind.enum.filter((kind) => !before.has(kind)),
-		);
-		const edges = definition.allOf
+		const core = definition.properties.kind.anyOf.find(
+			(branch) => branch.enum !== undefined,
+		)?.enum;
+		expect([...CORE_KINDS]).toEqual(core);
+		expect([...CORE_KINDS]).toEqual(CONTRACT_KINDS_BEFORE_CONSTRUCTS);
+		// The one branch forbidding relationships and operations names every core
+		// kind but `record`; a construct kind is governed by its declaration.
+		const edgeless = definition.allOf
 			.map((branch) => branch.if.properties.kind.enum)
-			.filter((kinds) => kinds?.includes("record") && kinds.length > 1);
-		expect(edges).toHaveLength(1);
-		expect([...EDGE_KINDS].sort()).toEqual([...(edges[0] ?? [])].sort());
-		expect([...READER_EDGE_KINDS].sort()).toEqual([...EDGE_KINDS].sort());
+			.filter((kinds) => kinds !== undefined && kinds.length > 2);
+		expect(edgeless).toHaveLength(1);
+		expect([...(edgeless[0] ?? [])].sort()).toEqual(
+			CORE_KINDS.filter((kind) => kind !== "record").sort(),
+		);
+		for (const kind of CORE_KINDS)
+			expect(readerEdgeKind(kind), kind).toBe(kind === "record");
+		expect(readerEdgeKind({ module: "agent-ix/test", name: "any" })).toBe(true);
+	});
+
+	/** Traces: TC-1786; FR-142-AC-11. */
+	it("reads the core construct vocabulary exactly as the vocabulary file and the schema declare it", () => {
+		const vocabulary = readJson(
+			resolve(root, "schema/semantic/v1/construct-vocabulary.json"),
+		) as never as {
+			identities: string[];
+			shapes: string[];
+			presences: string[];
+			members: { name: string; default: string; referenceItems?: string[] }[];
+			rules: {
+				name: string;
+				member: string;
+				presence: string;
+				nonEmpty?: boolean;
+			}[];
+			identityRequirements: {
+				identity: string;
+				member: string;
+				presence: string;
+			}[];
+			shapeRequirements: { shape: string; member: string; presence: string }[];
+			flags: { name: string; default: boolean }[];
+		};
+		expect(CONSTRUCT_VOCABULARY).toStrictEqual(vocabulary);
+		expect(Object.keys(SHAPE_RENDERINGS).sort()).toEqual(
+			[...vocabulary.shapes].sort(),
+		);
+		expect(Object.keys(IDENTITY_EQUALITIES).sort()).toEqual(
+			[...vocabulary.identities].sort(),
+		);
+
+		const declaration = (
+			readJson(
+				resolve(root, "schema/semantic/v1/semantic-ir.schema.json"),
+			) as never as {
+				$defs: {
+					constructDeclaration: {
+						properties: {
+							identity: { enum: string[] };
+							shape: { enum: string[] };
+							members: {
+								propertyNames: { enum: string[] };
+								additionalProperties: { enum: string[] };
+							};
+							references: { propertyNames: { enum: string[] } };
+							rules: { items: { enum: string[] } };
+						};
+					};
+				};
+			}
+		).$defs.constructDeclaration.properties;
+		expect(declaration.identity.enum).toEqual(vocabulary.identities);
+		expect(declaration.shape.enum).toEqual(vocabulary.shapes);
+		expect(declaration.members.propertyNames.enum).toEqual(
+			vocabulary.members.map((member) => member.name),
+		);
+		expect(declaration.members.additionalProperties.enum).toEqual(
+			vocabulary.presences,
+		);
+		expect(declaration.references.propertyNames.enum).toEqual(
+			vocabulary.members
+				.filter((member) => member.referenceItems !== undefined)
+				.map((member) => member.name),
+		);
+		expect(declaration.rules.items.enum).toEqual(
+			vocabulary.rules.map((rule) => rule.name),
+		);
+
+		// Each rule's requirement, and its `nonEmpty`, is read from the file:
+		// the Node reading names no rule of its own.
+		for (const rule of vocabulary.rules) {
+			expect(ruleOf(rule.name), rule.name).toStrictEqual(rule);
+			expect(vocabulary.members.map((member) => member.name)).toContain(
+				rule.member,
+			);
+			expect(vocabulary.presences).toContain(rule.presence);
+		}
+		for (const member of vocabulary.members) {
+			expect(vocabulary.presences, member.name).toContain(member.default);
+			for (const item of member.referenceItems ?? [])
+				expect(typeof item, `${member.name} reference item`).toBe("string");
+		}
+
+		// Each flag is an optional boolean of the schema's declaration, read at
+		// its stated default and refused when it is not a boolean.
+		const bare = {
+			identity: "none",
+			shape: "record",
+			members: {},
+			meaning: "ix://agent-ix/test/meaning/none",
+		};
+		for (const flag of vocabulary.flags) {
+			expect(
+				(declaration as never as Record<string, unknown>)[flag.name],
+			).toStrictEqual({ type: "boolean" });
+			const read = readDeclaration({ ...bare }) as {
+				declaration: Record<string, unknown>;
+			};
+			expect(read.declaration[flag.name], flag.name).toBe(flag.default);
+			expect(readDeclaration({ ...bare, [flag.name]: "yes" })).toStrictEqual({
+				pointer: `/${flag.name}`,
+				message: `${flag.name} is a boolean`,
+			});
+		}
+
+		// An identity or shape whose required member presence a declaration does
+		// not declare is refused where the Rust reader refuses it (FR-142-AC-14).
+		for (const requirement of vocabulary.identityRequirements)
+			expect(
+				readDeclaration({ ...bare, identity: requirement.identity }),
+			).toStrictEqual({
+				pointer: "/identity",
+				message: `a ${requirement.identity} declaration requires ${requirement.member} to be ${requirement.presence}`,
+			});
+		for (const requirement of vocabulary.shapeRequirements)
+			expect(
+				readDeclaration({ ...bare, shape: requirement.shape }),
+			).toStrictEqual({
+				pointer: "/shape",
+				message: `a ${requirement.shape} declaration requires ${requirement.member} to be ${requirement.presence}`,
+			});
+		for (const requirement of [
+			...vocabulary.identityRequirements.map((one) => ({
+				...one,
+				stated: { identity: one.identity },
+			})),
+			...vocabulary.shapeRequirements.map((one) => ({
+				...one,
+				stated: { shape: one.shape },
+			})),
+		]) {
+			const read = readDeclaration({
+				...bare,
+				...requirement.stated,
+				members: { [requirement.member]: requirement.presence },
+			}) as { declaration?: unknown };
+			expect(
+				read.declaration,
+				JSON.stringify(requirement.stated),
+			).toBeDefined();
+		}
 	});
 
 	/** Traces: TC-1553; FR-139-AC-2, FR-139-CON-1. */
 	it("keeps an any scalar and a zero-field record distinct at every layer", () => {
 		const record = readJson(
-			resolve(root, "fixtures/semantic/v1/positive/config-version-v1-2.json"),
+			resolve(root, "fixtures/semantic/v1/positive/config-version-v2.json"),
 		) as never as { contractVersion: string; types: Json[] };
 		const scalar = JSON.parse(JSON.stringify(record)) as typeof record;
 		const identity = "ix://agent-ix/config-service/type/JsonObject";
@@ -3605,7 +3762,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 	/** Traces: TC-519, TC-611; FR-050-AC-10. */
 	it("names the failing instance pointer", () => {
 		const document = JSON.parse(JSON.stringify(compiled.ir)) as Json;
-		(document as Json).contractVersion = "2.0.0";
+		(document as Json).contractVersion = "3.0.0";
 		const errors = validateIrDocument(document) as never as Diagnostic[];
 		note(errors);
 		expect(errors.length).toBeGreaterThan(0);
@@ -3990,7 +4147,7 @@ describe("compatibility and evolution (FR-051)", () => {
 			DIAGNOSTIC_CODES.MISSING_TARGET_DIALECT.code,
 		]);
 
-		const unknownVersion = readIrAsContract(compiled.ir, "2.0.0") as never as {
+		const unknownVersion = readIrAsContract(compiled.ir, "3.0.0") as never as {
 			document: Json | null;
 			diagnostics: Diagnostic[];
 		};
@@ -4000,13 +4157,13 @@ describe("compatibility and evolution (FR-051)", () => {
 			DIAGNOSTIC_CODES.UNKNOWN_CONTRACT_VERSION.code,
 		]);
 
-		const same = readIrAsContract(compiled.ir, "1.2.0") as never as {
+		const same = readIrAsContract(compiled.ir, "2.0.0") as never as {
 			document: Json;
 			loss: string[];
 		};
 		expect(same.document).toBe(compiled.ir);
 		expect(same.loss).toEqual([]);
-		expect([...CONTRACT_VERSIONS]).toEqual(["1.0.0", "1.1.0", "1.2.0"]);
+		expect([...CONTRACT_VERSIONS]).toEqual(["1.0.0", "1.1.0", "2.0.0"]);
 	});
 
 	/** Traces: TC-541; FR-051-AC-15. */
@@ -4113,7 +4270,7 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 			expect(read(firstDiagnostics)).toBe(read(secondDiagnostics));
 			expect(read(firstDiagnostics).trim()).toBe("[]");
 			const document = readJson(first);
-			expect(document.contractVersion).toBe("1.2.0");
+			expect(document.contractVersion).toBe("2.0.0");
 			expect(validateIrDocument(document)).toEqual([]);
 		} finally {
 			rmSync(directory, { recursive: true, force: true });
@@ -4281,7 +4438,7 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 			const first = runCli(["inspect", "--ir", out, "--package", assurance]);
 			const second = runCli(["inspect", "--ir", out, "--package", assurance]);
 			expect(first.stdout).toBe(second.stdout);
-			expect(first.stdout).toContain("contract        1.2.0");
+			expect(first.stdout).toContain("contract        2.0.0");
 			expect(first.stdout).toContain("agent-ix/assurance");
 			for (const type of (readJson(out) as never as { types: Json[] }).types) {
 				expect(first.stdout).toContain(String(type.identity));

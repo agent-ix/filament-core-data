@@ -1,4 +1,4 @@
-"""Independent Python reader for semantic IR contract 1.2.0 (issue #93, TC-232).
+"""Independent Python reader for semantic IR contract 2.0.0 (issue #93, TC-232).
 
 This is test-only evidence: it is the second reader that FR-020-AC-8 requires,
 implemented without reference to the TypeScript reader's code so that the two
@@ -64,20 +64,22 @@ APPLICABILITY: dict[str, set[str]] = {
 }
 
 
-# The kinds that may carry relationships and operations: a record and every
-# contract 1.2.0 construct except `enumeration` (FR-142).
-EDGE_KINDS = {
-    "record",
-    "entity",
-    "value_object",
-    "nested_entity",
-    "aggregate_root",
-    "event",
-    "state_machine",
-    "process",
-    "repository",
-    "domain",
-}
+# Contract 2.0.0 construct kinds are module data (FR-142): a kind is a core
+# string or a `{module, name}` object whose declaration the document's
+# `constructs` table carries. A record and any construct kind may carry
+# relationships and operations. What a declaration requires of a type of its
+# kind is data too, so the schema stage below reads it from the vocabulary.
+
+
+def _is_edge_kind(kind: Any) -> bool:
+    return kind == "record" or isinstance(kind, dict)
+
+
+def _kind_name(kind: Any) -> str:
+    """A core kind, or a construct kind's `name`."""
+    if isinstance(kind, dict):
+        return str(kind.get("name"))
+    return str(kind)
 
 
 def _diag(code: str, path: str, message: str) -> dict[str, str]:
@@ -103,7 +105,10 @@ def resolve_kind(
     if definition.get("kind") == "alias":
         return resolve_kind(types, definition.get("target"), seen)
     scalar = definition.get("scalar")
-    return (str(definition.get("kind")), scalar if isinstance(scalar, str) else None)
+    return (
+        _kind_name(definition.get("kind")),
+        scalar if isinstance(scalar, str) else None,
+    )
 
 
 def multiplicity_from_presence(presence: Any) -> dict[str, int]:
@@ -168,7 +173,7 @@ def _check_field(
             )
         )
     if "multiplicity" not in field:
-        if version in {"1.1.0", "1.2.0"}:
+        if version in {"1.1.0", "2.0.0"}:
             out.append(
                 _diag(
                     "agent-ix.semantic-ir.MISSING_MULTIPLICITY",
@@ -185,7 +190,7 @@ def _check_field(
         )
     if multiplicity is not None:
         derived = "required" if multiplicity["lower"] >= 1 else "optional"
-        if version != "1.2.0" and "presence" in field and field["presence"] != derived:
+        if version != "2.0.0" and "presence" in field and field["presence"] != derived:
             out.append(
                 _diag(
                     "agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH",
@@ -295,7 +300,7 @@ def _check_type(
     exports: set[str],
     out: list[dict[str, str]],
 ) -> None:
-    is_record = definition.get("kind") in EDGE_KINDS
+    is_record = _is_edge_kind(definition.get("kind"))
     for index, field in enumerate(_objects(definition.get("fields"))):
         _check_field(field, f"{path}.fields.{index}", version, types, out)
     for index, constraint in enumerate(_objects(definition.get("constraints"))):
@@ -402,9 +407,10 @@ def _check_type(
             )
         # FR-141: `quire` is the one checked clause language; an inline clause
         # in any other admitted language is carried unchecked (an advisory).
-        for side in ("requires", "ensures"):
-            for clause_index, clause in enumerate(_objects(operation.get(side))):
-                if clause.get("language") != "quire":
+        for side in ("pre", "post"):
+            bound = operation.get(side) if isinstance(operation.get(side), list) else []
+            for clause_index, clause in enumerate(bound):
+                if isinstance(clause, dict) and clause.get("language") != "quire":
                     out.append(
                         _diag(
                             "agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED",
@@ -415,7 +421,7 @@ def _check_type(
         for side in ("pre", "post"):
             refs = operation.get(side) if isinstance(operation.get(side), list) else []
             for ref_index, ref in enumerate(refs):
-                if str(ref) not in clause_ids:
+                if not isinstance(ref, dict) and str(ref) not in clause_ids:
                     out.append(
                         _diag(
                             "agent-ix.semantic-ir.DANGLING_CLAUSE_REF",
@@ -517,11 +523,11 @@ def canonical(value: Any) -> str:
 
 
 def normalize(document: Any) -> str:
-    """Normalized bytes materialize 1.1/1.2 field views; 1.2 keeps authored presence."""
+    """Normalized bytes materialize 1.1/2.0 field views; 2.0 keeps authored presence."""
     if not isinstance(document, dict):
         return canonical(document)
     copy_ = copy.deepcopy(document)
-    if copy_.get("contractVersion") in {"1.1.0", "1.2.0"}:
+    if copy_.get("contractVersion") in {"1.1.0", "2.0.0"}:
         version = copy_["contractVersion"]
 
         def materialize(field: dict[str, Any]) -> None:
@@ -531,7 +537,7 @@ def normalize(document: Any) -> str:
                 else multiplicity_from_presence(field.get("presence"))
             )
             field["multiplicity"] = multiplicity
-            if version != "1.2.0" or field.get("presence") not in {
+            if version != "2.0.0" or field.get("presence") not in {
                 "required",
                 "optional",
             }:
@@ -562,8 +568,74 @@ def _schema_validator() -> Any:
     return Draft202012Validator(ir, registry=registry)
 
 
+VOCABULARY = json.loads((SCHEMA_ROOT / "construct-vocabulary.json").read_text())
+MEMBER_DEFAULTS = {
+    member["name"]: member["default"] for member in VOCABULARY["members"]
+}
+# A rule that states a cardinality: the member it names holds at least one item.
+NON_EMPTY_RULES = {"min_clauses": "clauses", "min_operations": "operations"}
+
+
+def construct_findings(document: Any) -> list[str]:
+    """The schema-stage requirements a 2.0.0 construct declaration places on types.
+
+    A type of a construct kind must name a `constructs` entry, carry each member
+    the declaration requires, carry none it forbids, and hold at least one item
+    in a member a cardinality rule names; a type of a core kind carries no
+    construct member; every declaration is used by some type.
+    """
+    if not isinstance(document, dict) or document.get("contractVersion") != "2.0.0":
+        return []
+    out: list[str] = []
+    entries = [
+        (entry.get("kind"), entry.get("construct") or {})
+        for entry in _objects(document.get("constructs"))
+    ]
+    used: set[int] = set()
+    for index, definition in enumerate(_objects(document.get("types"))):
+        at = f"types.{index}"
+        kind = definition.get("kind")
+        if not isinstance(kind, dict):
+            for name, default in MEMBER_DEFAULTS.items():
+                if default == "forbidden" and name in definition:
+                    out.append(f"{at}.{name}: carried by a construct kind only")
+            continue
+        found = next(
+            (
+                position
+                for position, (declared, _) in enumerate(entries)
+                if isinstance(declared, dict)
+                and (declared.get("module"), declared.get("name"))
+                == (kind.get("module"), kind.get("name"))
+            ),
+            None,
+        )
+        if found is None:
+            out.append(f"{at}.kind: names no constructs entry")
+            continue
+        used.add(found)
+        declaration = entries[found][1]
+        presences = declaration.get("members") or {}
+        for name, default in MEMBER_DEFAULTS.items():
+            presence = presences.get(name, default)
+            if presence == "required" and name not in definition:
+                out.append(f"{at}: requires {name}")
+            elif presence == "forbidden" and name in definition:
+                out.append(f"{at}.{name}: forbidden")
+        for rule in declaration.get("rules") or []:
+            name = NON_EMPTY_RULES.get(rule)
+            if name is not None and definition.get(name) == []:
+                out.append(f"{at}.{name}: declares at least one")
+        if definition.get("identityFields") == []:
+            out.append(f"{at}.identityFields: names at least one field")
+    for position, (declared, _) in enumerate(entries):
+        if isinstance(declared, dict) and position not in used:
+            out.append(f"constructs.{position}.kind: no type is of that kind")
+    return out
+
+
 def schema_valid(validator: Any, document: Any) -> bool:
-    return validator.is_valid(document)
+    return validator.is_valid(document) and not construct_findings(document)
 
 
 def _set_at(value: Any, path: str, replacement: Any) -> None:

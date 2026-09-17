@@ -22,7 +22,10 @@
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../../diagnostics.mjs";
-import { unenforcedMemberAdvisories } from "../../constructs.mjs";
+import {
+	constructFeatures,
+	unenforcedMemberAdvisories,
+} from "../../constructs.mjs";
 import { emitCrate, mediaTypeOf } from "./crate.mjs";
 import {
 	RUST_BACKEND_CODES,
@@ -53,10 +56,11 @@ export const identity = "ix://agent-ix/filament-core-data/rust-backend";
 /**
  * The Rust/Serde generated target.
  *
- * `supportedIrVersions` is `["1.1.0", "1.2.0"]` through the seam, while
- * `rust-serde/cli.mjs` keeps `["1.0.0", "1.1.0", "1.2.0"]` for its own
- * development path. Every contract 1.2.0 construct kind renders by its own
- * `kind:` row, and every model member by its `construct:` row (FR-054).
+ * `supportedIrVersions` is `["1.1.0", "2.0.0"]` through the seam, while
+ * `rust-serde/cli.mjs` keeps `["1.0.0", "1.1.0", "2.0.0"]` for its own
+ * development path. Every contract 2.0.0 construct kind renders by the
+ * `shape:` and `identity:` rows its declaration selects, and every model
+ * member by its `construct:` row (FR-054).
  * The narrowing is FR-063-CON-5 applied consistently rather than a capability
  * this backend lacks: the frozen FR-041 prototype document also calls itself
  * `1.0.0` and is a different shape entirely, so a seam that accepted `1.0.0`
@@ -74,26 +78,17 @@ export const rustBackend = Object.freeze({
 	version: "0.1.0",
 	target: "rust",
 	owningIssue: "agent-ix/filament-core-data#21",
-	supportedIrVersions: Object.freeze(["1.1.0", "1.2.0"]),
+	supportedIrVersions: Object.freeze(["1.1.0", "2.0.0"]),
 	supportedFeatures: Object.freeze([
 		"kind:scalar",
 		"kind:record",
-		"kind:entity",
-		"kind:value_object",
-		"kind:nested_entity",
-		"kind:aggregate_root",
-		"kind:enumeration",
-		"kind:event",
-		"kind:state_machine",
-		"kind:process",
-		"kind:repository",
-		"kind:domain",
 		"kind:enum",
 		"kind:union",
 		"kind:alias",
 		"kind:sequence",
 		"kind:map",
 		"kind:reference",
+		...constructFeatures(),
 	]),
 	generate(request, options = {}) {
 		let licenseText;

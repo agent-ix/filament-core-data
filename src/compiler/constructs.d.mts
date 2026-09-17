@@ -1,11 +1,71 @@
-export declare const CONSTRUCT_KINDS: readonly string[];
-export declare const RECORD_SHAPED_KINDS: readonly string[];
-export declare const INSTANCELESS_KINDS: readonly string[];
-export declare const IDENTIFIED_KINDS: readonly string[];
-export declare const EDGE_KINDS: readonly string[];
-export declare function isRecordShaped(kind: unknown): boolean;
-export declare function isEnumerationShaped(kind: unknown): boolean;
-export declare function isInstanceless(kind: unknown): boolean;
+export type Presence = "required" | "optional" | "forbidden";
+export interface ConstructDeclaration {
+	identity: string;
+	shape: string;
+	members: Map<string, Presence>;
+	references: Map<string, readonly string[]>;
+	rules: readonly string[];
+	meaning: string;
+}
+export declare const CONSTRUCT_VOCABULARY: {
+	identities: readonly string[];
+	shapes: readonly string[];
+	presences: readonly string[];
+	members: readonly {
+		name: string;
+		default: Presence;
+		referenceItems?: readonly string[];
+	}[];
+	rules: readonly { name: string; member: string; presence: Presence }[];
+};
+export declare const CORE_KINDS: readonly string[];
+export declare const SHAPE_RENDERINGS: Readonly<Record<string, string>>;
+export declare const IDENTITY_EQUALITIES: Readonly<
+	Record<string, string | undefined>
+>;
+export declare function constructFeatures(prefix?: string): string[];
+export declare function isConstructKind(kind: unknown): boolean;
+export declare function kindName(kind: unknown): string;
+export declare function kindLabel(kind: unknown): string;
+export declare function readDeclaration(value: unknown):
+	| {
+			declaration: ConstructDeclaration;
+			pointer?: undefined;
+			message?: undefined;
+	  }
+	| { declaration?: undefined; pointer: string; message: string };
+export declare function presenceOf(
+	declaration: ConstructDeclaration,
+	member: string,
+): Presence | undefined;
+export declare function rolesOf(
+	declaration: ConstructDeclaration,
+	member: string,
+): readonly string[] | undefined;
+export declare function constructOnlyMembers(): string[];
+export declare function referenceEntries(
+	type: unknown,
+	typeAt: string,
+	member: string,
+): [string, string][];
+export declare function constructTable(
+	ir: unknown,
+): Map<string, ConstructDeclaration>;
+export declare function bindConstructs(
+	ir: unknown,
+): Map<string, ConstructDeclaration>;
+export declare function declarationOf(
+	node: unknown,
+): ConstructDeclaration | undefined;
+export declare function adoptDeclaration<T>(target: T, source: unknown): T;
+export declare function renderingOf(node: unknown): string | undefined;
+export declare function isRecordShaped(node: unknown): boolean;
+export declare function isEnumerationShaped(node: unknown): boolean;
+export declare function isInstanceless(node: unknown): boolean;
+export declare function equalityOf(
+	node: unknown,
+): "identity" | "value" | undefined;
+export declare function admits(node: unknown, member: string): boolean;
 export declare function typeIndex(ir: unknown): Map<string, any>;
 export declare function effectiveFields(
 	type: unknown,
@@ -37,8 +97,8 @@ export interface ConstructStep {
 }
 export interface OperationContract {
 	frame?: { modifies: string[]; creates: string[]; deletes: string[] };
-	requires?: { language: string; text: string }[];
-	ensures?: { language: string; text: string }[];
+	pre?: { language: string; text: string }[];
+	post?: { language: string; text: string }[];
 }
 export interface ConstructFacts {
 	kind?: string;

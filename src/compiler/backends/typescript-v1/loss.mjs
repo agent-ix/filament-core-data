@@ -44,8 +44,6 @@
  * applicability table, or anything under `conformance/`.
  */
 
-import { CONSTRUCT_KINDS as SHARED_CONSTRUCT_KINDS } from "../../constructs.mjs";
-
 /** The backend's own diagnostic namespace, distinct from the IR namespace. */
 const TARGET = (name) => `agent-ix.typescript-backend.${name}`;
 
@@ -104,13 +102,6 @@ export const TARGET_LOSSES = Object.freeze([
 ]);
 
 /**
- * The contract 1.2.0 object-type construct kinds (FR-142), read from the one
- * list in `src/compiler/constructs.mjs`. The target renders every kind, each
- * by its own rendering; `RENDERED_NOT_LOST` names what each carries as data.
- */
-export const CONSTRUCT_KINDS = Object.freeze(new Set(SHARED_CONSTRUCT_KINDS));
-
-/**
  * The constructs an earlier draft declared lost and this one renders as data,
  * kept as a record so the reasoning survives the diff. Each is emitted by
  * `metadata.mjs` as a readonly descriptor; none refuses generation.
@@ -131,18 +122,18 @@ export const RENDERED_NOT_LOST = Object.freeze([
 			"the IR itself never parses clause text and agent-ix/quire-contract-ir#52 owns clause semantics; carrying the text opaquely loses nothing",
 	}),
 	Object.freeze({
-		construct: "entity",
+		construct: "identified-construct",
 		renderedAs:
-			"the record rendering, an exported interface with a record validator, plus its identity field names in declared order in TYPE_IDENTITY_FIELDS and <Name>Equals comparing those fields",
+			"the rendering its shape selects, plus its identity field names in declared order in TYPE_IDENTITY_FIELDS and <Name>Equals comparing those fields",
 		rationale:
-			"an entity's instances are told apart by the identity fields: <Name>Equals holds exactly when every identity field is equal by canonical form, so two instances with equal identity fields are one instance",
+			"an identified construct's instances are told apart by the identity fields: <Name>Equals holds exactly when every identity field is equal by canonical form, so two instances with equal identity fields are one instance",
 	}),
 	Object.freeze({
 		construct: "construct-kinds",
 		renderedAs:
-			"value_object, nested_entity, aggregate_root, event, process and state_machine as a record interface with its validator; enumeration as a string literal union with its validator; repository as an interface of method signatures; domain as no type; each with its members in the TYPE_ maps: TYPE_OWNER, TYPE_MEMBERS, TYPE_OCCURRENCE_FIELD, TYPE_EQUALITY, TYPE_IMMUTABLE, TYPE_STATES, TYPE_TRANSITIONS, TYPE_STEPS, TYPE_PERSISTS and TYPE_VOCABULARY",
+			"a construct of the record, sequence or state_machine shape as a record interface with its validator; of the enumeration shape as a string literal union with its validator; of the interface shape as an interface of method signatures; of the namespace shape as no type; each with its members in the TYPE_ maps: TYPE_OWNER, TYPE_MEMBERS, TYPE_OCCURRENCE_FIELD, TYPE_EQUALITY, TYPE_IMMUTABLE, TYPE_STATES, TYPE_TRANSITIONS, TYPE_STEPS, TYPE_PERSISTS and TYPE_VOCABULARY",
 		rationale:
-			"a value object's value equality and an identified construct's identity equality are <Name>Equals, an event's immutability is its readonly members, and a state machine's states are <Name>State; the Quire meaning of clauses and guards is over instances, so the generated package carries it as data",
+			"a value construct's value equality and an identified construct's identity equality are <Name>Equals, an occurrence construct's immutability is its readonly members, and a state machine's states are <Name>State; the Quire meaning of clauses and guards is over instances, so the generated package carries it as data",
 	}),
 	Object.freeze({
 		construct: "model-members",

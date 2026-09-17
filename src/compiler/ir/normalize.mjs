@@ -53,7 +53,7 @@ export function canonicalIr(document, options = {}) {
 export function normalizeIr(document, options = {}) {
 	if (!isObject(document)) return canonicalIr(document, options);
 	const copy = structuredClone(document);
-	if (copy.contractVersion === "1.1.0" || copy.contractVersion === "1.2.0") {
+	if (copy.contractVersion === "1.1.0" || copy.contractVersion === "2.0.0") {
 		const materialize = (field) => {
 			const multiplicity = isObject(field.multiplicity)
 				? field.multiplicity

@@ -1,5 +1,5 @@
 {
-	"contractVersion": "1.2.0",
+	"contractVersion": "2.0.0",
 	"source": {
 		"identity": "ix://agent-ix/config-service/spec",
 		"version": "1.0.0",
@@ -396,5 +396,6 @@
 		}
 	],
 	"occurrences": [],
-	"extensions": []
+	"extensions": [],
+	"constructs": []
 }

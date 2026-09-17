@@ -33,7 +33,7 @@
 	"derivedFrom": [
 		{
 			"artifact": "docs/semantic-data-system/contracts-v1.md",
-			"locator": "Contract 1.2.0 (issue #93)",
+			"locator": "Contract 2.0.0 (issues #93, #146 and #172)",
 			"quote": "discriminated by `contractVersion`"
 		}
 	],

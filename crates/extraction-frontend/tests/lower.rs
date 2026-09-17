@@ -9,6 +9,7 @@ use std::path::{Path, PathBuf};
 mod common;
 
 use agent_ix_extraction_frontend::diagnostics::{Code, Diagnostic, Locus, Severity, WireCode};
+use agent_ix_extraction_frontend::document::{assemble, CONTRACT_VERSION};
 use agent_ix_extraction_frontend::enumeration::VALUE_COLUMN;
 use agent_ix_extraction_frontend::lower::{
     applies_to, diagnostic_code, loss_register, roles, screaming, Kind, Presence,
@@ -44,9 +45,8 @@ fn business_module() -> PathBuf {
     fixture("modules/spec-objects-business")
 }
 
-/// The `edge_types` registry FR-094 categorises frontmatter edges by; the
-/// vendored business module declares none, so a bundle with an allowed
-/// edge lifted under it alone raises `UNKNOWN_EDGE_VERB`.
+/// The `edge_types` registry FR-094 categorises frontmatter edges by,
+/// declaring the business module's verbs byte-identically.
 fn edge_vocabulary() -> PathBuf {
     fixture("modules/edge-vocabulary")
 }
@@ -159,8 +159,10 @@ fn field_named<'a>(record: &'a Value, name: &str) -> &'a Value {
 fn ir_document(lift: &Lift) -> Value {
     let envelope = Envelope::new(&lift.bundle, &[]);
     let mut doc = serde_json::to_value(&envelope).expect("envelope serialises");
-    doc["contractVersion"] = json!("1.2.0");
+    doc["contractVersion"] = json!(CONTRACT_VERSION);
     doc["types"] = Value::Array(types_json(lift));
+    doc["constructs"] =
+        assemble(&envelope, &[], &lift.lowered.constructs).expect("assemble")["constructs"].clone();
     json!({ "ir": doc })
 }
 
@@ -204,6 +206,7 @@ fn context<'a>(
         path: &artifact.path,
         display_name: &artifact.display_name,
         roles: roles(&object_type.module, object, object_type.archetype.roles()),
+        construct: object_type.construct.as_ref(),
     }
 }
 
@@ -286,7 +289,10 @@ fn tc_1221_config_version_carries_three_roles_reject_policy_and_seven_fields_in_
     let lift = lift("config-version-table");
     let types = types_json(&lift);
     let record = type_named(&types, "ConfigVersion");
-    assert_eq!(record["kind"], "entity");
+    assert_eq!(
+        record["kind"],
+        json!({"module": "agent-ix/spec-objects-business", "name": "entity"})
+    );
     assert_eq!(
         record["identity"],
         "ix://agent-ix/config-service/type/FR-006"
@@ -294,6 +300,8 @@ fn tc_1221_config_version_carries_three_roles_reject_policy_and_seven_fields_in_
     assert_eq!(
         record["roles"],
         json!([
+            "business:aggregate-member",
+            "business:composite-owner",
             "business:domain-object",
             "business:entity",
             "business:persistable"
@@ -656,7 +664,8 @@ fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
         }]
     });
     json!({"ir": {
-        "contractVersion": "1.2.0",
+        "contractVersion": "2.0.0",
+        "constructs": [],
         "source": {"identity": "ix://agent-ix/test/spec", "version": "0.0.0",
                    "dialect": "spec-bundle", "digest": format!("sha256:{}", "0".repeat(64))},
         "package": {"identity": "agent-ix/test", "version": "0.0.0",
@@ -1075,16 +1084,22 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     );
     let types = types_json(&lift);
     let status = type_named(&types, "OrderStatus");
-    assert_eq!(status["kind"], "enumeration");
-    assert_eq!(status["identity"], "ix://agent-ix/orders/type/EN-001");
-    assert_eq!(status["roles"], json!(["business:enumeration"]));
+    assert_eq!(
+        status["kind"],
+        json!({"module": "agent-ix/spec-objects-business", "name": "enumeration"})
+    );
+    assert_eq!(status["identity"], "ix://agent-ix/orders/type/EN_001");
+    assert_eq!(
+        status["roles"],
+        json!(["business:aggregate-member", "business:enumeration"])
+    );
     assert_eq!(status["unknownPolicy"], "reject");
     assert_eq!(status["constraints"], json!([]));
     assert_eq!(status["extensions"], json!([]));
     assert!(status.get("fields").is_none());
     assert_eq!(
         status["origin"]["source"]["path"],
-        "spec/functional/EN-001-order-status.md"
+        "spec/functional/EN_001-order-status.md"
     );
     let variants = status["variants"].as_array().expect("variants");
     let names: Vec<&str> = variants
@@ -1099,10 +1114,10 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     assert_eq!(
         identities,
         [
-            "ix://agent-ix/orders/variant/EN-001-draft",
-            "ix://agent-ix/orders/variant/EN-001-placed",
-            "ix://agent-ix/orders/variant/EN-001-shipped",
-            "ix://agent-ix/orders/variant/EN-001-cancelled",
+            "ix://agent-ix/orders/variant/EN_001-draft",
+            "ix://agent-ix/orders/variant/EN_001-placed",
+            "ix://agent-ix/orders/variant/EN_001-shipped",
+            "ix://agent-ix/orders/variant/EN_001-cancelled",
         ]
     );
     for (i, v) in variants.iter().enumerate() {
@@ -1110,7 +1125,7 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
             v["origin"]["source"],
             json!({
                 "sourceIdentity": "ix://agent-ix/orders/spec",
-                "path": "spec/functional/EN-001-order-status.md",
+                "path": "spec/functional/EN_001-order-status.md",
                 "startLine": 15 + i, "startColumn": 3
             })
         );
@@ -1120,7 +1135,7 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     let order = type_named(&types, "Order");
     assert_eq!(
         field_named(order, "status")["typeRef"],
-        "ix://agent-ix/orders/type/EN-001"
+        "ix://agent-ix/orders/type/EN_001"
     );
     assert_eq!(reader_codes(&ir_document(&lift)), Vec::<String>::new());
 
@@ -1130,12 +1145,12 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     let colour: Vec<&Diagnostic> =
         with_code(&missing.lowered.diagnostics, Code::ArtifactNotLowered)
             .into_iter()
-            .filter(|d| d.message.contains("EN-001"))
+            .filter(|d| d.message.contains("EN_001"))
             .collect();
     assert_eq!(colour.len(), 1, "{:?}", missing.lowered.diagnostics);
     assert!(colour[0].blocking);
     assert!(
-        colour[0].message.contains("values_table"),
+        colour[0].message.contains("`values`"),
         "{}",
         colour[0].message
     );
@@ -1146,7 +1161,7 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     );
     assert_eq!(
         colour[0].locus,
-        Some(locus(&missing, "spec/functional/EN-001-colour.md", 1, 1))
+        Some(locus(&missing, "spec/functional/EN_001-colour.md", 1, 1))
     );
     assert!(!missing
         .lowered
@@ -1174,19 +1189,7 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
             assert!(
                 matches!(
                     t.kind,
-                    Kind::Scalar
-                        | Kind::Record
-                        | Kind::Alias
-                        | Kind::Entity
-                        | Kind::ValueObject
-                        | Kind::NestedEntity
-                        | Kind::AggregateRoot
-                        | Kind::Enumeration
-                        | Kind::Event
-                        | Kind::StateMachine
-                        | Kind::Process
-                        | Kind::Repository
-                        | Kind::Domain
+                    Kind::Scalar | Kind::Record | Kind::Alias | Kind::Construct(_)
                 ),
                 "{name}: {:?}",
                 t.kind
@@ -1296,7 +1299,11 @@ fn tc_1334_status_and_status_collide_and_repeated_or_colliding_constraints_are_d
 
 #[trace("TC-1334", "FR-093-AC-13")]
 #[test]
-fn tc_1334_distinct_names_with_one_slug_refuse_at_type_field_and_variant_levels() {
+fn tc_1334_distinct_names_with_one_slug_refuse_at_field_and_variant_levels() {
+    // Contract case (b) does not reach the type level: an artifact id is its
+    // identity segment verbatim, so two distinct ids mint two distinct
+    // `type/` identities and neither is refused. Only a name — a field, a
+    // variant — is slugged, and only a slug can fold two names into one.
     let types = tempfile::tempdir().expect("type collision fixture");
     scratch_spec(types.path());
     write_fixture(
@@ -1310,19 +1317,21 @@ fn tc_1334_distinct_names_with_one_slug_refuse_at_type_field_and_variant_levels(
         &entity("FR__001", "ConfigOverlay", "| id | UUID | 1 | identity |\n"),
     );
     let type_lift = lift_at(types.path(), &[&business_module(), &edge_vocabulary()]);
-    let type_diagnostics = with_code(&type_lift.lowered.diagnostics, Code::UnsluggableName);
-    assert_eq!(
-        type_diagnostics.len(),
-        1,
+    assert!(
+        with_code(&type_lift.lowered.diagnostics, Code::UnsluggableName).is_empty(),
         "{:?}",
         type_lift.lowered.diagnostics
     );
-    assert_eq!(
-        type_diagnostics[0]
-            .locus
-            .as_ref()
-            .map(|locus| locus.path.as_str()),
-        Some("spec/functional/FR-002.md")
+    let minted: Vec<&str> = type_lift
+        .lowered
+        .types
+        .iter()
+        .map(|t| t.identity.as_str())
+        .collect();
+    assert!(
+        minted.contains(&"ix://agent-ix/identity-collision/type/FR_001")
+            && minted.contains(&"ix://agent-ix/identity-collision/type/FR__001"),
+        "{minted:?}"
     );
 
     let fields = tempfile::tempdir().expect("field collision fixture");
@@ -1356,8 +1365,8 @@ fn tc_1334_distinct_names_with_one_slug_refuse_at_type_field_and_variant_levels(
     scratch_spec(variants.path());
     write_fixture(
         variants.path(),
-        "spec/functional/EN-001.md",
-        "---\nid: EN-001\ntitle: Marks\nname: Marks\nobject: enumeration\ntype: FR\n---\n# Marks\n\n## Values\n\n| Value | Description |\n| --- | --- |\n| a_b | first |\n| a__b | second |\n",
+        "spec/functional/EN_001.md",
+        "---\nid: EN_001\ntitle: Marks\nname: Marks\nobject: enumeration\ntype: FR\n---\n# Marks\n\n## Values\n\n| Value | Description |\n| --- | --- |\n| a_b | first |\n| a__b | second |\n",
     );
     let variant_lift = lift_at(variants.path(), &[&business_module(), &edge_vocabulary()]);
     let variant_diagnostics = with_code(&variant_lift.lowered.diagnostics, Code::UnsluggableName);
@@ -1429,11 +1438,14 @@ fn tc_1335_a_domain_without_properties_lowers_to_an_empty_record_and_lossy_yield
     let lift = lift("business");
     let types = types_json(&lift);
     let domain = type_named(&types, "Ordering");
-    assert_eq!(domain["kind"], "domain");
+    assert_eq!(
+        domain["kind"],
+        json!({"module": "agent-ix/spec-objects-business", "name": "domain"})
+    );
     assert!(domain.get("fields").is_none(), "{domain}");
     assert_eq!(domain["roles"], json!(["business:domain"]));
     assert_eq!(
-        lift.extractions.artifacts["DM-001"]
+        lift.extractions.artifacts["DM_001"]
             .extraction
             .availability
             .fields
@@ -1445,7 +1457,7 @@ fn tc_1335_a_domain_without_properties_lowers_to_an_empty_record_and_lossy_yield
             .lowered
             .diagnostics
             .iter()
-            .any(|d| d.message.contains("DM-001")),
+            .any(|d| d.message.contains("DM_001")),
         "no diagnostic for the domain: {:?}",
         lift.lowered.diagnostics
     );
@@ -1459,9 +1471,9 @@ fn tc_1335_a_domain_without_properties_lowers_to_an_empty_record_and_lossy_yield
 
     // A lossy extraction: one DECLARED_LOSS naming lossy-extraction.
     let package = PackageIdentity::from(lift.bundle.package());
-    let artifact = artifact_ref(&lift, "DM-001");
-    let ctx = context(&lift, &package, "DM-001", &artifact);
-    let mut lossy = lift.extractions.artifacts["DM-001"].extraction.clone();
+    let artifact = artifact_ref(&lift, "DM_001");
+    let ctx = context(&lift, &package, "DM_001", &artifact);
+    let mut lossy = lift.extractions.artifacts["DM_001"].extraction.clone();
     lossy.availability.fields.lossy = true;
     let lowered = lower_record(&lossy, &lift.resolutions.resolutions, &[], &ctx).expect("lowers");
     assert_eq!(lowered.diagnostics.len(), 1, "{:?}", lowered.diagnostics);
@@ -1476,7 +1488,7 @@ fn tc_1335_a_domain_without_properties_lowers_to_an_empty_record_and_lossy_yield
     assert!(!loss.blocking);
     assert_eq!(
         loss.locus,
-        Some(locus(&lift, "spec/domain/DM-001-ordering.md", 1, 1))
+        Some(locus(&lift, "spec/domain/DM_001-ordering.md", 1, 1))
     );
     assert_eq!(lowered.definition.fields, Some(Vec::new()));
 }

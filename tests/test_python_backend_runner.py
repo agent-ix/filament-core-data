@@ -563,6 +563,7 @@ def test_construct_tables_are_keyed_by_the_generated_class_name() -> None:
             "title": "Order Repository",
             "x-agent-ix-semantic-id": "ix://agent-ix/config/type/RP-001",
             "x-agent-ix-kind": "repository",
+            "not": {},
             "x-agent-ix-persists": ["ix://agent-ix/config/type/FR-002"],
             "x-agent-ix-operations": [
                 {

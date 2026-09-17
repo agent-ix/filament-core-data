@@ -1,17 +1,17 @@
 ---
-id: NE-001
+id: NE_001
 title: Shipment
 object: nested_entity
 type: FR
 name: Shipment
 relationships:
-  - target: VO-001
+  - target: VO_001
     type: contains
-  - target: EN-001
+  - target: EN_001
     type: references
 ---
 
-# NE-001: Shipment
+# NE_001: Shipment
 
 ## Description
 

@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 mod common;
 
 use agent_ix_extraction_frontend::diagnostics::{Code, Diagnostic, Locus, WireCode};
+use agent_ix_extraction_frontend::document::{assemble, CONTRACT_VERSION};
 use agent_ix_extraction_frontend::{
     extract, is_blocked, lower_bundle, resolve, Bundle, Envelope, Extractions, Limits, Lowered,
     NodeKind, Resolutions,
@@ -130,8 +131,10 @@ fn locus(lift: &Lift, path: &str, line: usize, column: usize) -> Value {
 fn ir_document(lift: &Lift) -> Value {
     let envelope = Envelope::new(&lift.bundle, &[]);
     let mut doc = serde_json::to_value(&envelope).expect("envelope serialises");
-    doc["contractVersion"] = json!("1.2.0");
+    doc["contractVersion"] = json!(CONTRACT_VERSION);
     doc["types"] = Value::Array(types_json(lift));
+    doc["constructs"] =
+        assemble(&envelope, &[], &lift.lowered.constructs).expect("assemble")["constructs"].clone();
     json!({ "ir": doc })
 }
 
@@ -246,7 +249,7 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
         "ix://agent-ix/orders/field/OP-001-addLine-line"
     );
     assert_eq!(params[0]["name"], "line");
-    assert_eq!(params[0]["typeRef"], "ix://agent-ix/orders/type/VO-001");
+    assert_eq!(params[0]["typeRef"], "ix://agent-ix/orders/type/VO_001");
     assert_eq!(params[0]["presence"], "required");
     assert_eq!(params[0]["nullable"], false);
     assert_eq!(params[0]["defaultKind"], "none");
@@ -324,7 +327,7 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
     assert_eq!(find["returns"]["nullable"], false);
     assert_eq!(
         list(find, "params")[0]["identity"],
-        "ix://agent-ix/orders/field/RP-001-findById-id"
+        "ix://agent-ix/orders/field/RP_001-findById-id"
     );
 }
 
@@ -395,7 +398,11 @@ fn node_kind(identity: &str, package: &str) -> Option<NodeKind> {
                 && !tail.starts_with('-')
                 && !tail.ends_with('-')
                 && !tail.contains("--")
-                && tail.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
+                // The owner part is an artifact id, verbatim, so the tail
+                // carries `_` as well as the `-` the slugged parts join by.
+                && tail
+                    .chars()
+                    .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
         })
         .collect();
     match matches.as_slice() {

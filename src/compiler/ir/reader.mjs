@@ -13,7 +13,15 @@
  * Every rule below carries the `agent-ix.semantic-ir.*` code the issue #34
  * readers already emit, which is what makes the comparison possible at all.
  */
-import { EDGE_KINDS as SHARED_EDGE_KINDS } from "../constructs.mjs";
+import {
+	CONSTRUCT_VOCABULARY,
+	constructOnlyMembers,
+	isConstructKind,
+	kindLabel,
+	presenceOf,
+	readDeclaration,
+	ruleOf,
+} from "../constructs.mjs";
 import {
 	DEFAULT_LIMITS,
 	DIAGNOSTIC_CODES,
@@ -50,15 +58,113 @@ function depthOf(value, bound, depth = 0) {
 	return depth;
 }
 
-/** The kinds that may carry relationships and operations. */
-const EDGE_KINDS = new Set(SHARED_EDGE_KINDS);
-
 function isObject(value) {
 	return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 function asArray(value) {
 	return Array.isArray(value) ? value.filter(isObject) : [];
+}
+
+/**
+ * The contract 2.0.0 `constructs` table and each type's conformance to its
+ * construct declaration (FR-142): the checks the published JSON Schema cannot
+ * state because they read a second node of the document. Each defect is an
+ * `INVALID_IR` at the pointer the Rust reader's schema layer names, the same
+ * layer that refuses it there.
+ */
+function checkConstructs(document, definitions, raise, locusOf) {
+	const invalid = (pointer, message, node) =>
+		raise(DIAGNOSTIC_CODES.INVALID_IR, `${pointer}: ${message}`, locusOf(node));
+	const entries = [];
+	const constructs = Array.isArray(document.constructs)
+		? document.constructs
+		: [];
+	constructs.forEach((entry, position) => {
+		if (!isObject(entry)) return;
+		const entryAt = `/ir/constructs/${position}`;
+		let declaration;
+		if (entry.construct !== undefined) {
+			const read = readDeclaration(entry.construct);
+			if (read.declaration === undefined)
+				invalid(`${entryAt}/construct${read.pointer}`, read.message);
+			else declaration = read.declaration;
+		}
+		const kind = entry.kind;
+		if (
+			!isObject(kind) ||
+			typeof kind.module !== "string" ||
+			typeof kind.name !== "string"
+		)
+			return;
+		const label = kindLabel(kind);
+		if (entries.some((one) => one.label === label)) {
+			invalid(`${entryAt}/kind`, `constructs declares the kind ${label} once`);
+			return;
+		}
+		entries.push({ label, declaration, used: false, at: `${entryAt}/kind` });
+	});
+
+	const construct = constructOnlyMembers();
+	definitions.forEach((definition, position) => {
+		const at = `/ir/types/${position}`;
+		if (!isConstructKind(definition.kind)) {
+			for (const member of construct)
+				if (Object.hasOwn(definition, member))
+					invalid(
+						`${at}/${member}`,
+						`${member} is carried by a construct kind only`,
+						definition,
+					);
+			return;
+		}
+		const label = kindLabel(definition.kind);
+		const entry = entries.find((one) => one.label === label);
+		if (entry === undefined) {
+			invalid(
+				`${at}/kind`,
+				`the kind ${label} names no constructs entry`,
+				definition,
+			);
+			return;
+		}
+		entry.used = true;
+		const declaration = entry.declaration;
+		if (declaration === undefined) return;
+		const name = definition.kind.name;
+		for (const { name: member } of CONSTRUCT_VOCABULARY.members) {
+			const presence = presenceOf(declaration, member);
+			const present = Object.hasOwn(definition, member);
+			if (presence === "required" && !present)
+				invalid(at, `a ${name} construct requires ${member}`, definition);
+			if (presence === "forbidden" && present)
+				invalid(
+					`${at}/${member}`,
+					`a ${name} construct carries no ${member}`,
+					definition,
+				);
+		}
+		for (const rule of declaration.rules) {
+			// A rule the vocabulary marks `nonEmpty` asks its member for at
+			// least one entry; no rule name is written here.
+			const stated = ruleOf(rule);
+			if (stated?.nonEmpty !== true) continue;
+			const member = stated.member;
+			if (Array.isArray(definition[member]) && definition[member].length === 0)
+				invalid(
+					`${at}/${member}`,
+					`a ${name} construct declares at least one of ${member}`,
+					definition,
+				);
+		}
+	});
+	if (document.contractVersion === "2.0.0")
+		for (const entry of entries)
+			if (!entry.used)
+				invalid(
+					entry.at,
+					`constructs declares ${entry.label}, and no type definition is of that kind`,
+				);
 }
 
 /** Resolves a `typeRef` through alias definitions, terminating on a cycle. */
@@ -193,7 +299,7 @@ export function readContractIr(document, options = {}) {
 		}
 		let multiplicity;
 		if (field.multiplicity === undefined) {
-			if (version === "1.1.0" || version === "1.2.0") {
+			if (version === "1.1.0" || version === "2.0.0") {
 				raise(
 					DIAGNOSTIC_CODES.MISSING_MULTIPLICITY,
 					"a 1.1.0 field declares its multiplicity",
@@ -204,7 +310,7 @@ export function readContractIr(document, options = {}) {
 		} else {
 			multiplicity = checkMultiplicity(field.multiplicity, field);
 		}
-		if (multiplicity && version !== "1.2.0") {
+		if (multiplicity && version !== "2.0.0") {
 			const derived = multiplicity.lower >= 1 ? "required" : "optional";
 			if (field.presence !== undefined && field.presence !== derived) {
 				raise(
@@ -290,9 +396,10 @@ export function readContractIr(document, options = {}) {
 	};
 
 	const checkDefinition = (definition) => {
-		// Relationships and operations belong to a record and to every
-		// contract 1.2.0 construct except `enumeration` (FR-142).
-		const isRecord = EDGE_KINDS.has(String(definition.kind));
+		// Relationships and operations belong to a record among the core kinds;
+		// a construct kind's declaration decides their presence (FR-142).
+		const isRecord =
+			isConstructKind(definition.kind) || definition.kind === "record";
 		const fields = asArray(definition.fields);
 		// Every list, not only the fields: a document with a hundred thousand
 		// clauses is as unbounded as one with a hundred thousand fields.
@@ -427,7 +534,7 @@ export function readContractIr(document, options = {}) {
 			}
 			// FR-141: `quire` is the one checked clause language; an inline
 			// clause in any other admitted language is carried unchecked.
-			for (const side of ["requires", "ensures"]) {
+			for (const side of ["pre", "post"]) {
 				for (const clause of asArray(operation[side])) {
 					if (!isObject(clause) || clause.language === "quire") continue;
 					raise(
@@ -441,7 +548,8 @@ export function readContractIr(document, options = {}) {
 				for (const clauseId of Array.isArray(operation[side])
 					? operation[side]
 					: []) {
-					if (clauseIds.has(String(clauseId))) continue;
+					// An inline clause binds no clause id.
+					if (isObject(clauseId) || clauseIds.has(String(clauseId))) continue;
 					raise(
 						DIAGNOSTIC_CODES.DANGLING_CLAUSE_REF,
 						`${side} names the clause id ${fragment(clauseId)}, which this type does not declare`,
@@ -473,6 +581,8 @@ export function readContractIr(document, options = {}) {
 			}
 		}
 	};
+
+	checkConstructs(document, definitions, raise, locusOf);
 
 	const identities = new Set();
 	for (const definition of definitions) {

@@ -5,9 +5,9 @@ object: entity
 type: FR
 name: ConfigVersion
 relationships:
-  - target: EN-001
+  - target: EN_001
     type: references
-  - target: "ix://agent-ix/config-service/EN-001"
+  - target: "ix://agent-ix/config-service/EN_001"
     type: references
   - target: FR-005
     type: contains

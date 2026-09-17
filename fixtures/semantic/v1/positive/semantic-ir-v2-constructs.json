@@ -1,5 +1,5 @@
 {
-	"contractVersion": "1.2.0",
+	"contractVersion": "2.0.0",
 	"extensions": [],
 	"occurrences": [],
 	"package": {
@@ -98,7 +98,10 @@
 			],
 			"identity": "ix://agent-ix/orders/type/AR-001",
 			"identityFields": ["ix://agent-ix/orders/field/AR-001-id"],
-			"kind": "aggregate_root",
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "aggregate_root"
+			},
 			"members": [
 				"ix://agent-ix/orders/type/FR-001",
 				"ix://agent-ix/orders/type/VO-001"
@@ -192,6 +195,7 @@
 			],
 			"roles": [
 				"business:aggregate_root",
+				"business:composite-owner",
 				"business:domain-object",
 				"business:persistable"
 			],
@@ -203,7 +207,10 @@
 			"displayName": "Ordering",
 			"extensions": [],
 			"identity": "ix://agent-ix/orders/type/DM-001",
-			"kind": "domain",
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "domain"
+			},
 			"members": [
 				"ix://agent-ix/orders/type/AR-001",
 				"ix://agent-ix/orders/type/EN-001",
@@ -324,7 +331,10 @@
 			"displayName": "OrderStatus",
 			"extensions": [],
 			"identity": "ix://agent-ix/orders/type/EN-001",
-			"kind": "enumeration",
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "enumeration"
+			},
 			"origin": {
 				"source": {
 					"path": "spec/functional/EN-001-order-status.md",
@@ -333,7 +343,7 @@
 					"startLine": 1
 				}
 			},
-			"roles": ["business:enumeration"],
+			"roles": ["business:aggregate-member", "business:enumeration"],
 			"unknownPolicy": "reject",
 			"variants": [
 				{
@@ -457,7 +467,10 @@
 				}
 			],
 			"identity": "ix://agent-ix/orders/type/EV-001",
-			"kind": "event",
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "event"
+			},
 			"occurrenceField": "ix://agent-ix/orders/field/EV-001-placedAt",
 			"operations": [],
 			"origin": {
@@ -563,7 +576,10 @@
 			],
 			"identity": "ix://agent-ix/orders/type/FR-000",
 			"identityFields": ["ix://agent-ix/orders/field/FR-000-id"],
-			"kind": "entity",
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "entity"
+			},
 			"operations": [],
 			"origin": {
 				"source": {
@@ -574,7 +590,12 @@
 				}
 			},
 			"relationships": [],
-			"roles": [],
+			"roles": [
+				"business:aggregate-member",
+				"business:composite-owner",
+				"business:domain-object",
+				"business:persistable"
+			],
 			"unknownPolicy": "reject"
 		},
 		{
@@ -818,7 +839,10 @@
 			],
 			"identity": "ix://agent-ix/orders/type/FR-001",
 			"identityFields": ["ix://agent-ix/orders/field/FR-001-id"],
-			"kind": "entity",
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "entity"
+			},
 			"operations": [],
 			"origin": {
 				"source": {
@@ -888,6 +912,8 @@
 				}
 			],
 			"roles": [
+				"business:aggregate-member",
+				"business:composite-owner",
 				"business:domain-object",
 				"business:entity",
 				"business:persistable"
@@ -1069,7 +1095,10 @@
 			],
 			"identity": "ix://agent-ix/orders/type/NE-001",
 			"identityFields": ["ix://agent-ix/orders/field/NE-001-id"],
-			"kind": "nested_entity",
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "nested_entity"
+			},
 			"operations": [],
 			"origin": {
 				"source": {
@@ -1120,7 +1149,12 @@
 					"verb": "references"
 				}
 			],
-			"roles": ["business:domain-object", "business:nested_entity"],
+			"roles": [
+				"business:aggregate-member",
+				"business:composite-owner",
+				"business:domain-object",
+				"business:nested_entity"
+			],
 			"unknownPolicy": "reject"
 		},
 		{
@@ -1259,7 +1293,10 @@
 			],
 			"identity": "ix://agent-ix/orders/type/OP-001",
 			"identityFields": ["ix://agent-ix/orders/field/OP-001-id"],
-			"kind": "entity",
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "entity"
+			},
 			"operations": [
 				{
 					"identity": "ix://agent-ix/orders/operation/OP-001-addLine",
@@ -1376,6 +1413,8 @@
 			},
 			"relationships": [],
 			"roles": [
+				"business:aggregate-member",
+				"business:composite-owner",
 				"business:domain-object",
 				"business:entity",
 				"business:persistable"
@@ -1440,7 +1479,10 @@
 			],
 			"identity": "ix://agent-ix/orders/type/PR-001",
 			"identityFields": ["ix://agent-ix/orders/field/PR-001-id"],
-			"kind": "process",
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "process"
+			},
 			"operations": [],
 			"origin": {
 				"source": {
@@ -1558,7 +1600,10 @@
 			"displayName": "OrderRepository",
 			"extensions": [],
 			"identity": "ix://agent-ix/orders/type/RP-001",
-			"kind": "repository",
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "repository"
+			},
 			"operations": [
 				{
 					"identity": "ix://agent-ix/orders/operation/RP-001-findById",
@@ -1736,7 +1781,10 @@
 				}
 			],
 			"identity": "ix://agent-ix/orders/type/SM-001",
-			"kind": "state_machine",
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "state_machine"
+			},
 			"operations": [
 				{
 					"identity": "ix://agent-ix/orders/operation/SM-001-advance",
@@ -1772,22 +1820,22 @@
 							"typeRef": "ix://agent-ix/orders/type/EN-001"
 						}
 					],
-					"post": [],
-					"pre": [],
-					"returns": {
-						"multiplicity": {
-							"lower": 1,
-							"upper": 1
-						},
-						"nullable": false,
-						"typeRef": "ix://agent-ix/orders/type/EN-001"
-					},
-					"frame": {
-						"modifies": ["current"],
-						"creates": [],
-						"deletes": []
-					},
-					"requires": [
+					"post": [
+						{
+							"language": "quire",
+							"text": "current = to",
+							"origin": {
+								"source": {
+									"path": "spec/functional/SM-001-order-lifecycle.md",
+									"sourceIdentity": "ix://agent-ix/orders/spec",
+									"startColumn": 1,
+									"startLine": 30
+								}
+							}
+						}
+					],
+					"pre": [
+						"can_ship",
 						{
 							"language": "quire",
 							"text": "to <> current",
@@ -1801,20 +1849,19 @@
 							}
 						}
 					],
-					"ensures": [
-						{
-							"language": "quire",
-							"text": "current = to",
-							"origin": {
-								"source": {
-									"path": "spec/functional/SM-001-order-lifecycle.md",
-									"sourceIdentity": "ix://agent-ix/orders/spec",
-									"startColumn": 1,
-									"startLine": 30
-								}
-							}
-						}
-					]
+					"returns": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1
+						},
+						"nullable": false,
+						"typeRef": "ix://agent-ix/orders/type/EN-001"
+					},
+					"frame": {
+						"modifies": ["current"],
+						"creates": [],
+						"deletes": []
+					}
 				}
 			],
 			"origin": {
@@ -2061,7 +2108,10 @@
 				}
 			],
 			"identity": "ix://agent-ix/orders/type/VO-001",
-			"kind": "value_object",
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "value_object"
+			},
 			"operations": [],
 			"origin": {
 				"source": {
@@ -2092,7 +2142,11 @@
 					"verb": "composes"
 				}
 			],
-			"roles": ["business:domain-object", "business:value_object"],
+			"roles": [
+				"business:aggregate-member",
+				"business:domain-object",
+				"business:value_object"
+			],
 			"unknownPolicy": "reject"
 		},
 		{
@@ -2224,6 +2278,223 @@
 					"startColumn": 1,
 					"startLine": 60
 				}
+			}
+		}
+	],
+	"constructs": [
+		{
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "aggregate_root"
+			},
+			"moduleVersion": "0.4.0",
+			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
+			"construct": {
+				"identity": "identified",
+				"shape": "record",
+				"members": {
+					"fields": "required",
+					"identityFields": "required",
+					"clauses": "required",
+					"members": "required"
+				},
+				"references": {
+					"members": ["business:aggregate-member"]
+				},
+				"rules": ["identity_field_required", "min_clauses"],
+				"meaning": "quire.meaning.model.object-type/v1"
+			}
+		},
+		{
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "domain"
+			},
+			"moduleVersion": "0.4.0",
+			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
+			"construct": {
+				"identity": "none",
+				"shape": "namespace",
+				"members": {
+					"members": "required",
+					"vocabulary": "required",
+					"fields": "forbidden",
+					"operations": "forbidden"
+				},
+				"references": {},
+				"rules": [
+					"no_fields",
+					"no_operations",
+					"exclusive_membership",
+					"members_not_namespace"
+				],
+				"meaning": "quire.meaning.namespace"
+			}
+		},
+		{
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "entity"
+			},
+			"moduleVersion": "0.4.0",
+			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
+			"construct": {
+				"identity": "identified",
+				"shape": "record",
+				"members": {
+					"fields": "required",
+					"identityFields": "required"
+				},
+				"references": {},
+				"rules": ["identity_field_required"],
+				"meaning": "quire.meaning.model.object-type/v1"
+			}
+		},
+		{
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "enumeration"
+			},
+			"moduleVersion": "0.4.0",
+			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
+			"construct": {
+				"identity": "none",
+				"shape": "enumeration",
+				"members": {
+					"variants": "required",
+					"fields": "forbidden",
+					"relationships": "forbidden",
+					"operations": "forbidden"
+				},
+				"references": {},
+				"rules": [],
+				"meaning": "quire.meaning.model.variant-type/v1"
+			}
+		},
+		{
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "event"
+			},
+			"moduleVersion": "0.4.0",
+			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
+			"construct": {
+				"identity": "none",
+				"shape": "record",
+				"members": {
+					"fields": "required",
+					"occurrenceField": "required"
+				},
+				"references": {},
+				"rules": ["identity_field_forbidden", "occurrence_field_required"],
+				"meaning": "quire.meaning.model.value-type/v1",
+				"immutable": true
+			}
+		},
+		{
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "nested_entity"
+			},
+			"moduleVersion": "0.4.0",
+			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
+			"construct": {
+				"identity": "identified",
+				"shape": "record",
+				"members": {
+					"fields": "required",
+					"identityFields": "required",
+					"owner": "required"
+				},
+				"references": {
+					"owner": ["business:composite-owner"]
+				},
+				"rules": ["identity_field_required", "single_owner"],
+				"meaning": "quire.meaning.model.object-type/v1"
+			}
+		},
+		{
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "process"
+			},
+			"moduleVersion": "0.4.0",
+			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
+			"construct": {
+				"identity": "identified",
+				"shape": "sequence",
+				"members": {
+					"fields": "required",
+					"identityFields": "required",
+					"steps": "required"
+				},
+				"references": {
+					"steps": ["business:event-like"]
+				},
+				"rules": ["identity_field_required"],
+				"meaning": "quire.meaning.process"
+			}
+		},
+		{
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "repository"
+			},
+			"moduleVersion": "0.4.0",
+			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
+			"construct": {
+				"identity": "none",
+				"shape": "interface",
+				"members": {
+					"operations": "required",
+					"persists": "required",
+					"fields": "forbidden"
+				},
+				"references": {
+					"persists": ["business:persistable"]
+				},
+				"rules": ["no_fields", "min_operations"],
+				"meaning": "quire.meaning.persistence-interface"
+			}
+		},
+		{
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "state_machine"
+			},
+			"moduleVersion": "0.4.0",
+			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
+			"construct": {
+				"identity": "none",
+				"shape": "state_machine",
+				"members": {
+					"operations": "required",
+					"states": "required",
+					"transitions": "required"
+				},
+				"references": {
+					"transitions": ["business:event-like"]
+				},
+				"rules": ["min_operations"],
+				"meaning": "quire.meaning.state-machine"
+			}
+		},
+		{
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "value_object"
+			},
+			"moduleVersion": "0.4.0",
+			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
+			"construct": {
+				"identity": "value",
+				"shape": "record",
+				"members": {
+					"fields": "required"
+				},
+				"references": {},
+				"rules": ["identity_field_forbidden"],
+				"meaning": "quire.meaning.model.value-type/v1"
 			}
 		}
 	]

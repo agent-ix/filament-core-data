@@ -28,10 +28,10 @@ scalar". That grammar means *any JSON value*: a default of `3`, `"draft"`,
 with an open unknown policy means *any JSON object*, so the IR carries the
 unconstrained value as the kernel scalar `any` and never as that record.
 
-The revision is additive within one schema file. A 1.1 document remains a valid
-1.2 document, and a 1.2 document carrying the new declaration is refused by a
-1.1 reader with a named diagnostic rather than being silently read as the
-record it is not.
+The declaration lives within one schema file, discriminated by
+`contractVersion`: a 2.0 document carries it, and a 1.1 document carrying it is
+refused with a named diagnostic rather than being silently read as the record
+it is not.
 
 ## Inputs
 

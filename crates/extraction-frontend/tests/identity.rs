@@ -68,7 +68,19 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
     assert_eq!(
         package.type_identity("ConfigVersion").as_deref(),
         Ok("ix://agent-ix/config-service/type/ConfigVersion"),
-        "type/ carries slugged displayName"
+        "type/ carries the artifact id"
+    );
+    assert_eq!(
+        package.type_identity("AR_001").as_deref(),
+        Ok("ix://agent-ix/config-service/type/AR_001"),
+        "an artifact id passes through verbatim: `_` is not a separator"
+    );
+    assert_eq!(
+        package.type_identity("Config Version"),
+        Err(Unsluggable {
+            name: "Config Version".to_string()
+        }),
+        "an id carrying a character `semanticIdentity` bars from a segment mints nothing"
     );
     assert_eq!(
         package
@@ -108,10 +120,8 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
         Ok("ix://agent-ix/config-service/field/Repository-findById-id")
     );
     assert_eq!(
-        package
-            .variant_identity("Step Kind", "MANUAL_STEP")
-            .as_deref(),
-        Ok("ix://agent-ix/config-service/variant/Step-Kind-MANUAL-STEP")
+        package.variant_identity("EN_001", "MANUAL_STEP").as_deref(),
+        Ok("ix://agent-ix/config-service/variant/EN_001-MANUAL-STEP")
     );
     assert_eq!(
         package
@@ -120,18 +130,18 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
         Ok("ix://agent-ix/config-service/clause/ConfigVersion-immutable")
     );
     assert_eq!(
-        package.state_identity("SM-001", "placed").as_deref(),
-        Ok("ix://agent-ix/config-service/state/SM-001-placed")
+        package.state_identity("SM_001", "placed").as_deref(),
+        Ok("ix://agent-ix/config-service/state/SM_001-placed")
     );
     assert_eq!(
         package
-            .transition_identity("SM-001", "placed", "shipped", "advance")
+            .transition_identity("SM_001", "placed", "shipped", "advance")
             .as_deref(),
-        Ok("ix://agent-ix/config-service/transition/SM-001-placed-shipped-advance")
+        Ok("ix://agent-ix/config-service/transition/SM_001-placed-shipped-advance")
     );
     assert_eq!(
-        package.step_identity("PR-001", "picked").as_deref(),
-        Ok("ix://agent-ix/config-service/step/PR-001-picked")
+        package.step_identity("PR_001", "picked").as_deref(),
+        Ok("ix://agent-ix/config-service/step/PR_001-picked")
     );
     assert_eq!(
         package.field_identity("ConfigVersion", "--"),

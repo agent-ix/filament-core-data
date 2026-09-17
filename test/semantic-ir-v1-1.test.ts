@@ -321,7 +321,7 @@ describe("semantic IR v1.1 schema inventory (red until Tasks 035..038 land)", ()
 		expect(version.enum, "contractVersion enum").toEqual([
 			"1.0.0",
 			"1.1.0",
-			"1.2.0",
+			"2.0.0",
 		]);
 		for (const def of [
 			"multiplicity",
@@ -466,7 +466,7 @@ describe("FR-030 version discriminator, source dialect, and manifest targets", (
 		expect(object(version.contractVersion, "contractVersion").enum).toEqual([
 			"1.0.0",
 			"1.1.0",
-			"1.2.0",
+			"2.0.0",
 		]);
 	});
 });
@@ -895,7 +895,7 @@ describe("FR-028 relationships, operations, and clauses", () => {
 		).toBeUndefined();
 		const quire = clone(goldenV11());
 		const quireText =
-			"Requires: self.status <> Status::Archived ∧ count(self.tags) ≥ 1\n";
+			"Pre: self.status <> Status::Archived ∧ count(self.tags) ≥ 1\n";
 		setAt(quire, "types.3.clauses.0.language", "quire");
 		setAt(quire, "types.3.clauses.0.text", quireText);
 		expect(validates("semantic-ir.schema.json", quire)).toBe(true);

@@ -27,10 +27,51 @@ import {
 	registryWith,
 	selectBackend,
 } from "../src/compiler/backends/seam.mjs";
-import { CONSTRUCT_KINDS } from "../src/compiler/constructs.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+
+/**
+ * The constructs fixture's declaration of an identified record carrying no
+ * member beyond its fields and identity fields, read from the fixture rather
+ * than restated.
+ */
+function identifiedRecordConstruct(): {
+	kind: { module: string; name: string };
+	construct: { members: Record<string, string> };
+} {
+	const fixture = JSON.parse(
+		readFileSync(
+			resolve(
+				root,
+				"fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json",
+			),
+			"utf8",
+		),
+	) as {
+		constructs: {
+			kind: { module: string; name: string };
+			construct: {
+				identity: string;
+				shape: string;
+				members: Record<string, string>;
+			};
+		}[];
+	};
+	const entry = fixture.constructs.find(
+		(one) =>
+			one.construct.identity === "identified" &&
+			one.construct.shape === "record" &&
+			Object.entries(one.construct.members)
+				.filter(([, presence]) => presence !== "forbidden")
+				.map(([member]) => member)
+				.sort()
+				.join() === "fields,identityFields",
+	);
+	if (!entry)
+		throw new Error("the constructs fixture declares no identified record");
+	return entry;
+}
 const readJson = (path: string) =>
 	JSON.parse(readFileSync(resolve(root, path), "utf8"));
 
@@ -46,7 +87,7 @@ function rustRequest(overrides: Record<string, unknown> = {}) {
 	return {
 		contractVersion: "1.0.0",
 		lockFingerprint: `sha256:${"a".repeat(64)}`,
-		ir: readJson("fixtures/semantic/v1/positive/config-version-v1-2.json"),
+		ir: readJson("fixtures/semantic/v1/positive/config-version-v2.json"),
 		profile: readJson("fixtures/semantic/v1/positive/profile.json"),
 		mappings: [],
 		backend: {
@@ -246,8 +287,8 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 		const refusal = manifest.diagnostics.find((d) =>
 			d.code.endsWith("UNSUPPORTED_IR_VERSION"),
 		);
-		expect(refusal?.message).toContain("1.1.0, 1.2.0");
-		expect(rustBackend.supportedIrVersions).toStrictEqual(["1.1.0", "1.2.0"]);
+		expect(refusal?.message).toContain("1.1.0, 2.0.0");
+		expect(rustBackend.supportedIrVersions).toStrictEqual(["1.1.0", "2.0.0"]);
 		console.log(
 			`TC-1393 measured: 1.0.0 document state=${manifest.state} declared=${rustBackend.supportedIrVersions.join(",")}`,
 		);
@@ -266,10 +307,13 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 	});
 
 	/** Traces: TC-1749; FR-142-AC-5, FR-142-CON-2. */
-	it("renders every construct kind by its own kind row and refuses none", () => {
+	it("renders every construct kind by its shape and identity rows and refuses none", () => {
 		const constructs = readJson(
-			"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
-		) as { types: { kind: string }[] };
+			"fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json",
+		) as {
+			constructs: { kind: { module: string; name: string } }[];
+			types: { kind: unknown }[];
+		};
 		const manifest = generateTarget(rustRequest({ ir: constructs }), {
 			target: "rust",
 			host: host(),
@@ -288,8 +332,14 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 		});
 		const identity = written.get("src/identity.rs");
 		if (!identity) throw new Error("no src/identity.rs");
-		const declared = new Set(constructs.types.map((type) => type.kind));
-		for (const kind of CONSTRUCT_KINDS) {
+		const declared = new Set(
+			constructs.types
+				.map((type) => type.kind)
+				.filter((kind) => typeof kind === "object")
+				.map((kind) => (kind as { name: string }).name),
+		);
+		for (const entry of constructs.constructs) {
+			const kind = entry.kind.name;
 			expect(declared.has(kind), `the fixture declares no ${kind}`).toBe(true);
 			expect(identity, `no TYPES row of kind ${kind}`).toContain(
 				`kind: "${kind}",`,
@@ -299,12 +349,13 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 	});
 
 	/** Traces: TC-1762; FR-054-AC-16, FR-058-AC-13. */
-	it("renders an entity by the kind:entity row with IDENTITY_FIELDS beside the record struct", () => {
+	it("renders an identified record construct by the shape:record row with IDENTITY_FIELDS beside the record struct", () => {
 		const ir = readJson(
-			"fixtures/semantic/v1/positive/config-version-v1-2.json",
+			"fixtures/semantic/v1/positive/config-version-v2.json",
 		) as {
+			constructs: unknown[];
 			types: {
-				kind: string;
+				kind: unknown;
 				displayName: string;
 				identityFields?: string[];
 				fields?: { name: string; identity: string }[];
@@ -315,7 +366,9 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 		);
 		const id = entity?.fields?.find((field) => field.name === "id");
 		if (!entity || !id) throw new Error("ConfigVersion declares no id field");
-		entity.kind = "entity";
+		const declared = identifiedRecordConstruct();
+		ir.constructs = [declared];
+		entity.kind = declared.kind;
 		entity.identityFields = [id.identity];
 
 		const manifest = generateTarget(rustRequest({ ir }), {
@@ -420,9 +473,9 @@ type Json = Record<string, any>;
 
 /** The constructs fixture, a fresh copy per call so a test may edit it. */
 const constructsIr = () =>
-	readJson(
-		"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
-	) as { types: Json[] };
+	readJson("fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json") as {
+		types: Json[];
+	};
 
 const typeNamed = (ir: { types: Json[] }, displayName: string) => {
 	const found = ir.types.find((type) => type.displayName === displayName);
@@ -453,6 +506,22 @@ function generateConstructs(ir: unknown) {
 }
 
 describe("identity, abstract types and member scopes in the Rust backend (FR-054, FR-055)", () => {
+	/** Traces: TC-1796; FR-141-AC-9. */
+	it("renders a mixed pre list as its clause ids and its inline clauses", () => {
+		const written = new Map<string, string>();
+		generateRust(rustRequest({ ir: constructsIr() }), {
+			clear() {},
+			write(_outputRoot: string, path: string, text: string) {
+				written.set(path, text);
+			},
+		});
+		const flat = [...written.values()].join("\n").replace(/\s+/g, " ");
+		expect(flat).toContain('pre: &["can_ship"], post: &[], origin:');
+		expect(flat).toContain(
+			'operation: "advance", frame: Some(crate::identity::FrameMeta { modifies: &["current"], creates: &[], deletes: &[], }), pre: &[crate::identity::InlineClauseMeta { language: "quire", text: "to <> current", }], post: &[crate::identity::InlineClauseMeta { language: "quire", text: "current = to", }], }',
+		);
+	});
+
 	/** Traces: TC-1777; FR-054-AC-18. */
 	it("compares and hashes an identified construct by its identity fields and a value object by every member", () => {
 		const { manifest, module } = generateConstructs(constructsIr());

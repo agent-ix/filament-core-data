@@ -36,7 +36,7 @@ use serde_json::Value;
 /// pinned `rev`, so the copies were not re-taken when the pin moved.
 const QUIRE_RS_REVISION: &str = "8b8020e";
 /// The spec-objects-business revision the module was vendored at.
-const BUSINESS_REVISION: &str = "f7fdfda";
+const BUSINESS_REVISION: &str = "7b7b0bc";
 
 // ---------------------------------------------------------------------------
 // The inventory (FR-098 "Fixture inventory")
@@ -665,7 +665,11 @@ fn tc_1287_the_business_golden_carries_every_declaration_kind_an_operation_a_cla
 ) {
     let document = read_json(&fixture("business/expected").join(GOLDEN_DOCUMENT));
     let types = document["types"].as_array().expect("types");
-    let kinds: BTreeSet<&str> = types.iter().filter_map(|t| t["kind"].as_str()).collect();
+    // A core kind by its string, a construct kind by its name.
+    let kinds: BTreeSet<&str> = types
+        .iter()
+        .filter_map(|t| t["kind"].as_str().or_else(|| t["kind"]["name"].as_str()))
+        .collect();
     for kind in [
         "entity",
         "value_object",
@@ -689,10 +693,8 @@ fn tc_1287_the_business_golden_carries_every_declaration_kind_an_operation_a_cla
             .all(|t| !t["constraints"].as_array().expect("constraints").is_empty()),
         "every alias is a constrained field's"
     );
-    assert!(types
-        .iter()
-        .any(|t| t["kind"] == "enumeration"
-            && t["variants"].as_array().is_some_and(|v| v.len() >= 2)));
+    assert!(types.iter().any(|t| t["kind"]["name"] == "enumeration"
+        && t["variants"].as_array().is_some_and(|v| v.len() >= 2)));
     let operations: Vec<&Value> = types
         .iter()
         .flat_map(|t| t["operations"].as_array().into_iter().flatten())

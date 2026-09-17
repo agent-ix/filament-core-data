@@ -23,12 +23,12 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { CONSTRUCT_KINDS } from "../../../constructs.mjs";
+import { CONSTRUCT_VOCABULARY } from "../../../constructs.mjs";
 import { KEYWORD_APPLICABILITY } from "../../../ir/applicability.mjs";
 
-/** The contract 1.2.0 fixture carrying every construct kind and model member. */
+/** The contract 2.0.0 fixture carrying every construct shape and model member. */
 const CONSTRUCTS_FIXTURE = new URL(
-	"../../../../../fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json",
+	"../../../../../fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json",
 	import.meta.url,
 );
 
@@ -44,6 +44,34 @@ function kinds(table) {
 	return table.rows
 		.filter((row) => row.axis === "kind")
 		.map((row) => row.selector);
+}
+
+/**
+ * A type node for an unknownPolicy selector: a core kind as itself, and a
+ * `shape:<shape>` selector as a construct kind a one-entry table declares with
+ * that shape, bound so the mapper reads its declaration.
+ */
+function probeNode(backend, selector) {
+	if (!selector.startsWith("shape:")) return { kind: selector };
+	const shape = selector.slice("shape:".length);
+	const kind = { module: "agent-ix/detector", name: `probe-${shape}` };
+	const node = { kind };
+	// A shape whose declaration must declare a member presence declares it, or
+	// the declaration is refused and the probe binds nothing (FR-142-AC-14).
+	const members = {};
+	for (const requirement of CONSTRUCT_VOCABULARY.shapeRequirements ?? [])
+		if (requirement.shape === shape)
+			members[requirement.member] = requirement.presence;
+	backend.constructs.bindConstructs({
+		constructs: [
+			{
+				kind,
+				construct: { identity: "none", shape, members, meaning: "probe" },
+			},
+		],
+		types: [node],
+	});
+	return node;
 }
 
 function assert(condition, message) {
@@ -70,6 +98,7 @@ export async function loadBackend(directory, options = {}) {
 		degradation,
 		generator,
 		properties,
+		constructs,
 	] = await Promise.all([
 		load("mapping.mjs"),
 		load("crate.mjs"),
@@ -81,9 +110,13 @@ export async function loadBackend(directory, options = {}) {
 		load("degradation.mjs"),
 		load("generator.mjs"),
 		load("properties.mjs"),
+		// The construct module the copy's mapping imports, so a declaration
+		// bound here is the one that mapping reads.
+		load("../../constructs.mjs"),
 	]);
 	return {
 		directory,
+		constructs,
 		mapping,
 		crate,
 		diagnostics,
@@ -252,21 +285,16 @@ export const DETECTORS = Object.freeze([
 		run(backend) {
 			const declared = kinds(backend.table);
 			assert(
-				declared.length === 18,
-				`the table declares ${declared.length} kinds, not eighteen`,
+				declared.length === 8,
+				`the table declares ${declared.length} kinds, not eight`,
 			);
 			const ir = document(backend);
 			const model = mapped(backend, ir);
 			const observed = new Set(model.types.map((one) => one.kind));
 			for (const kind of declared) {
 				// The generated 1.1.0 document carries no construct kind; the
-				// constructs case measures those rows.
-				if (
-					kind === "reference" ||
-					CONSTRUCT_KINDS.includes(kind) ||
-					observed.has(kind)
-				)
-					continue;
+				// constructs case measures the shape and identity rows.
+				if (kind === "reference" || observed.has(kind)) continue;
 				assert(
 					false,
 					`no generated declaration selected the kind row \`${kind}\``,
@@ -278,6 +306,7 @@ export const DETECTORS = Object.freeze([
 					.filter((row) => row.axis === "kind")
 					.map((row) => [row.selector, row.rustForm]),
 			);
+			const rowKeys = new Set(backend.table.rows.map((row) => row.rowKey));
 			for (const type of model.types) {
 				const form = forms.get(type.kind);
 				assert(
@@ -317,9 +346,10 @@ export const DETECTORS = Object.freeze([
 						"a scalar carries no base type",
 					);
 			}
-			// The contract 1.2.0 `entity` construct, which the generated 1.1.0
-			// document cannot carry: its own row, the record's member list and its
-			// identity field names in declared order.
+			// A contract 2.0.0 identified record construct, which the generated
+			// 1.1.0 document cannot carry: its shape's row, the record's member list
+			// and its identity field names in declared order.
+			const keyed = { module: "agent-ix/detector", name: "keyed" };
 			const entity = backend.mapping.mapDocument(
 				{
 					...documentOf([
@@ -327,7 +357,7 @@ export const DETECTORS = Object.freeze([
 						{
 							identity: `${NS}/type/Account`,
 							displayName: "Account",
-							kind: "entity",
+							kind: keyed,
 							roles: [],
 							constraints: [],
 							extensions: [],
@@ -346,7 +376,22 @@ export const DETECTORS = Object.freeze([
 							],
 						},
 					]),
-					contractVersion: "1.2.0",
+					contractVersion: "2.0.0",
+					constructs: [
+						{
+							kind: keyed,
+							moduleVersion: "1.0.0",
+							manifestDigest: `sha256:${"3".repeat(64)}`,
+							construct: {
+								identity: "identified",
+								shape: "record",
+								members: { fields: "required", identityFields: "required" },
+								references: {},
+								rules: ["identity_field_required"],
+								meaning: "quire.meaning.model.object-type/v1",
+							},
+						},
+					],
 				},
 				{},
 			);
@@ -354,12 +399,13 @@ export const DETECTORS = Object.freeze([
 				(one) => one.identity === `${NS}/type/Account`,
 			);
 			assert(
-				account?.row === "kind:entity" &&
-					forms.has("entity") &&
+				account?.row === "shape:record" &&
+					rowKeys.has("shape:record") &&
+					rowKeys.has("identity:identified") &&
 					Array.isArray(account.fields) &&
 					account.fields.length === 1 &&
 					JSON.stringify(account.identityFields) === '["key"]',
-				`an entity selected ${account?.row} with identity fields ${JSON.stringify(account?.identityFields)}`,
+				`an identified record construct selected ${account?.row} with identity fields ${JSON.stringify(account?.identityFields)}`,
 			);
 			// The one kind the generated document cannot carry inside itself: a
 			// kind outside the eight is refused rather than mapped.
@@ -384,8 +430,13 @@ export const DETECTORS = Object.freeze([
 			"TC-1772 every construct kind and model member selects the Rust form the mapping table states",
 		run(backend) {
 			const rows = new Map(backend.table.rows.map((row) => [row.rowKey, row]));
-			for (const kind of CONSTRUCT_KINDS)
-				assert(rows.has(`kind:${kind}`), `no kind row for \`${kind}\``);
+			for (const shape of CONSTRUCT_VOCABULARY.shapes)
+				assert(rows.has(`shape:${shape}`), `no shape row for \`${shape}\``);
+			for (const identity of CONSTRUCT_VOCABULARY.identities)
+				assert(
+					rows.has(`identity:${identity}`),
+					`no identity row for \`${identity}\``,
+				);
 			const ir = JSON.parse(readFileSync(CONSTRUCTS_FIXTURE, "utf8"));
 			const result = emitted(backend, ir);
 			assert(
@@ -411,42 +462,38 @@ export const DETECTORS = Object.freeze([
 			has(
 				"order_line",
 				"#[derive(Clone, Debug, PartialEq, Serialize)]",
-				"kind:value_object",
+				"identity:value",
 			);
-			has("shipment", "pub const OWNER: &str", "kind:nested_entity");
+			has("shipment", "pub const OWNER: &str", "shape:record");
 			has(
 				"shipment",
 				"pub const IDENTITY_FIELDS: &[&str]",
-				"kind:nested_entity",
+				"identity:identified",
 			);
-			has(
-				"order_aggregate",
-				"pub const MEMBERS: &[&str]",
-				"kind:aggregate_root",
-			);
-			has("order_status", "pub enum OrderStatus {", "kind:enumeration");
-			has("order_placed", "pub const OCCURRENCE_FIELD: &str", "kind:event");
-			has("order_placed", "pub fn placed_at(&self)", "kind:event");
+			has("order_aggregate", "pub const MEMBERS: &[&str]", "shape:record");
+			has("order_status", "pub enum OrderStatus {", "shape:enumeration");
+			has("order_placed", "pub const OCCURRENCE_FIELD: &str", "shape:record");
+			has("order_placed", "pub fn placed_at(&self)", "shape:record");
 			assert(
 				!file("order_placed").includes("    pub placed_at:"),
-				"an event's member is public, so a value can change after construction",
+				"an occurrence construct's member is public, so a value can change after construction",
 			);
 			has(
 				"order_lifecycle",
 				"pub enum OrderLifecycleState {",
-				"kind:state_machine",
+				"shape:state_machine",
 			);
-			has("order_lifecycle", "pub const TRANSITIONS:", "kind:state_machine");
-			has("fulfilment", "pub const STEPS:", "kind:process");
-			has("order_repository", "pub trait OrderRepository {", "kind:repository");
+			has("order_lifecycle", "pub const TRANSITIONS:", "shape:state_machine");
+			has("fulfilment", "pub const STEPS:", "shape:sequence");
+			has("order_repository", "pub trait OrderRepository {", "shape:interface");
 			has(
 				"order_repository",
 				"fn find_by_id(&mut self, id:",
-				"kind:repository",
+				"shape:interface",
 			);
-			has("order_repository", "pub const PERSISTS: &[&str]", "kind:repository");
-			has("ordering", "pub struct Ordering;", "kind:domain");
-			has("ordering", "pub const VOCABULARY:", "kind:domain");
+			has("order_repository", "pub const PERSISTS: &[&str]", "shape:interface");
+			has("ordering", "pub struct Ordering;", "shape:namespace");
+			has("ordering", "pub const VOCABULARY:", "shape:namespace");
 			has("order", "pub const SUPERTYPES: &[&str]", "construct:supertypes");
 			has("order", "    pub labels:", "construct:supertypes");
 			has("party", "pub const ABSTRACT: bool = true;", "construct:abstract");
@@ -465,11 +512,23 @@ export const DETECTORS = Object.freeze([
 				"identity.rs carries no POPULATIONS, which the row `construct:populations` states",
 			);
 			const model = mapped(backend, ir);
-			for (const type of model.types) {
-				if (!CONSTRUCT_KINDS.includes(type.kind)) continue;
+			const shapes = new Map(
+				ir.constructs.map((entry) => [
+					`${entry.kind.module}\u0000${entry.kind.name}`,
+					entry.construct.shape,
+				]),
+			);
+			for (const definition of ir.types) {
+				if (typeof definition.kind !== "object") continue;
+				const shape = shapes.get(
+					`${definition.kind.module}\u0000${definition.kind.name}`,
+				);
+				const type = model.types.find(
+					(one) => one.identity === definition.identity,
+				);
 				assert(
-					type.row === `kind:${type.kind}`,
-					`the ${type.kind} ${type.identity} selected ${type.row}`,
+					type?.row === `shape:${shape}`,
+					`the ${definition.kind.name} ${definition.identity} selected ${type?.row}, not shape:${shape}`,
 				);
 			}
 		},
@@ -641,11 +700,16 @@ export const DETECTORS = Object.freeze([
 					}
 				}
 			}
-			for (const kind of kinds(backend.table)) {
+			// Every core kind, and every construct shape by its `shape:` selector.
+			const selectors = [
+				...kinds(backend.table),
+				...CONSTRUCT_VOCABULARY.shapes.map((shape) => `shape:${shape}`),
+			];
+			for (const selector of selectors) {
 				for (const policy of policies) {
 					assert(
-						covered.has(`${kind}/${policy}`),
-						`no unknownPolicy row disposes \`${kind}/${policy}\``,
+						covered.has(`${selector}/${policy}`),
+						`no unknownPolicy row disposes \`${selector}/${policy}\``,
 					);
 				}
 			}
@@ -661,41 +725,22 @@ export const DETECTORS = Object.freeze([
 				surface: "variant-catchall",
 			};
 			const expected = {
-				value_object: records,
-				nested_entity: records,
-				aggregate_root: records,
-				event: records,
-				state_machine: records,
-				process: records,
-				enumeration: variants,
-				record: {
-					reject: "record-reject",
-					preserve: "record-retain",
-					surface: "record-retain",
-				},
-				entity: {
-					reject: "record-reject",
-					preserve: "record-retain",
-					surface: "record-retain",
-				},
-				enum: {
-					reject: "variant-closed",
-					preserve: "variant-catchall",
-					surface: "variant-catchall",
-				},
-				union: {
-					reject: "variant-closed",
-					preserve: "variant-catchall",
-					surface: "variant-catchall",
-				},
+				record: records,
+				enum: variants,
+				union: variants,
+				"shape:record": records,
+				"shape:sequence": records,
+				"shape:state_machine": records,
+				"shape:enumeration": variants,
 			};
-			for (const kind of kinds(backend.table)) {
+			for (const selector of selectors) {
+				const node = probeNode(backend, selector);
 				for (const policy of policies) {
-					const observed = backend.mapping.unknownDisposition(kind, policy);
-					const wanted = expected[kind]?.[policy] ?? "inert";
+					const observed = backend.mapping.unknownDisposition(node, policy);
+					const wanted = expected[selector]?.[policy] ?? "inert";
 					assert(
 						observed === wanted,
-						`\`${kind}/${policy}\` is disposed ${observed}, and the table's row says ${wanted}`,
+						`\`${selector}/${policy}\` is disposed ${observed}, and the table's row says ${wanted}`,
 					);
 				}
 			}

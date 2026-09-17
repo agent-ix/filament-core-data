@@ -11,11 +11,11 @@
 	],
 	"contributions": {
 		"diagnostics.mjs": 22,
-		"mapping-table.json": 70,
+		"mapping-table.json": 69,
 		"names.mjs": 10,
 		"src/compiler/ir/applicability.mjs": 40
 	},
-	"rowCount": 142,
+	"rowCount": 141,
 	"unmetCount": 0,
 	"unreachableCount": 1,
 	"rows": [
@@ -770,6 +770,34 @@
 			]
 		},
 		{
+			"branchId": "identity:identified",
+			"axis": "identity",
+			"vocabulary": "mapping-table.json",
+			"construct": "pub const IDENTITY_FIELDS: &[&str], and PartialEq, Eq and Hash over the identity fields",
+			"cases": [
+				"TC-1772 every construct kind and model member selects the Rust form the mapping table states",
+				"TC-725 every kind row selects the Rust form the mapping table states"
+			]
+		},
+		{
+			"branchId": "identity:none",
+			"axis": "identity",
+			"vocabulary": "mapping-table.json",
+			"construct": "the shape's row unchanged",
+			"cases": [
+				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
+			]
+		},
+		{
+			"branchId": "identity:value",
+			"axis": "identity",
+			"vocabulary": "mapping-table.json",
+			"construct": "derived PartialEq",
+			"cases": [
+				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
+			]
+		},
+		{
 			"branchId": "indirection:alias-target",
 			"axis": "indirection",
 			"vocabulary": "mapping-table.json",
@@ -842,37 +870,10 @@
 			]
 		},
 		{
-			"branchId": "kind:aggregate_root",
-			"axis": "kind",
-			"vocabulary": "mapping-table.json",
-			"construct": "pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str] and pub const MEMBERS: &[&str]",
-			"cases": [
-				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
-			]
-		},
-		{
 			"branchId": "kind:alias",
 			"axis": "kind",
 			"vocabulary": "mapping-table.json",
 			"construct": "pub struct N(T);",
-			"cases": [
-				"TC-725 every kind row selects the Rust form the mapping table states"
-			]
-		},
-		{
-			"branchId": "kind:domain",
-			"axis": "kind",
-			"vocabulary": "mapping-table.json",
-			"construct": "pub struct N; with pub const MEMBERS: &[&str] and pub const VOCABULARY: &[TermMeta]",
-			"cases": [
-				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
-			]
-		},
-		{
-			"branchId": "kind:entity",
-			"axis": "kind",
-			"vocabulary": "mapping-table.json",
-			"construct": "pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str], and PartialEq, Eq and Hash over the identity fields",
 			"cases": [
 				"TC-725 every kind row selects the Rust form the mapping table states"
 			]
@@ -887,48 +888,12 @@
 			]
 		},
 		{
-			"branchId": "kind:enumeration",
-			"axis": "kind",
-			"vocabulary": "mapping-table.json",
-			"construct": "pub enum N { .. } (fieldless)",
-			"cases": [
-				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
-			]
-		},
-		{
-			"branchId": "kind:event",
-			"axis": "kind",
-			"vocabulary": "mapping-table.json",
-			"construct": "pub struct N { .. } with private members, one accessor per member, and pub const OCCURRENCE_FIELD: &str",
-			"cases": [
-				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
-			]
-		},
-		{
 			"branchId": "kind:map",
 			"axis": "kind",
 			"vocabulary": "mapping-table.json",
 			"construct": "pub struct N(BTreeMap<String, V>);",
 			"cases": [
 				"TC-725 every kind row selects the Rust form the mapping table states"
-			]
-		},
-		{
-			"branchId": "kind:nested_entity",
-			"axis": "kind",
-			"vocabulary": "mapping-table.json",
-			"construct": "pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str] and pub const OWNER: &str",
-			"cases": [
-				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
-			]
-		},
-		{
-			"branchId": "kind:process",
-			"axis": "kind",
-			"vocabulary": "mapping-table.json",
-			"construct": "pub struct N { .. } with pub const IDENTITY_FIELDS: &[&str] and pub const STEPS: &[StepMeta]",
-			"cases": [
-				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
 			]
 		},
 		{
@@ -950,15 +915,6 @@
 			]
 		},
 		{
-			"branchId": "kind:repository",
-			"axis": "kind",
-			"vocabulary": "mapping-table.json",
-			"construct": "pub trait N { fn op(&mut self, ..) -> R; .. } with pub const PERSISTS: &[&str]",
-			"cases": [
-				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
-			]
-		},
-		{
 			"branchId": "kind:scalar",
 			"axis": "kind",
 			"vocabulary": "mapping-table.json",
@@ -977,30 +933,12 @@
 			]
 		},
 		{
-			"branchId": "kind:state_machine",
-			"axis": "kind",
-			"vocabulary": "mapping-table.json",
-			"construct": "pub struct N { .. } with pub enum NState { .. } and pub const TRANSITIONS: &[TransitionMeta]",
-			"cases": [
-				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
-			]
-		},
-		{
 			"branchId": "kind:union",
 			"axis": "kind",
 			"vocabulary": "mapping-table.json",
 			"construct": "pub enum N { .. } (unit variant without payloadType, one-field variant with)",
 			"cases": [
 				"TC-725 every kind row selects the Rust form the mapping table states"
-			]
-		},
-		{
-			"branchId": "kind:value_object",
-			"axis": "kind",
-			"vocabulary": "mapping-table.json",
-			"construct": "pub struct N { .. }",
-			"cases": [
-				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
 			]
 		},
 		{
@@ -1199,6 +1137,61 @@
 			"construct": "identifier injectivity over one record's member set",
 			"cases": [
 				"TC-725 every identifier renderer derives from the source the requirement names and refuses a collision"
+			]
+		},
+		{
+			"branchId": "shape:enumeration",
+			"axis": "shape",
+			"vocabulary": "mapping-table.json",
+			"construct": "pub enum N { .. } (fieldless)",
+			"cases": [
+				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
+			]
+		},
+		{
+			"branchId": "shape:interface",
+			"axis": "shape",
+			"vocabulary": "mapping-table.json",
+			"construct": "pub trait N { fn op(&mut self, ..) -> R; .. } with pub const PERSISTS: &[&str]",
+			"cases": [
+				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
+			]
+		},
+		{
+			"branchId": "shape:namespace",
+			"axis": "shape",
+			"vocabulary": "mapping-table.json",
+			"construct": "pub struct N; with pub const MEMBERS: &[&str] and pub const VOCABULARY: &[TermMeta]",
+			"cases": [
+				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
+			]
+		},
+		{
+			"branchId": "shape:record",
+			"axis": "shape",
+			"vocabulary": "mapping-table.json",
+			"construct": "pub struct N { .. }",
+			"cases": [
+				"TC-1772 every construct kind and model member selects the Rust form the mapping table states",
+				"TC-725 every kind row selects the Rust form the mapping table states"
+			]
+		},
+		{
+			"branchId": "shape:sequence",
+			"axis": "shape",
+			"vocabulary": "mapping-table.json",
+			"construct": "pub struct N { .. }",
+			"cases": [
+				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
+			]
+		},
+		{
+			"branchId": "shape:state_machine",
+			"axis": "shape",
+			"vocabulary": "mapping-table.json",
+			"construct": "pub struct N { .. } with pub enum NState { .. } and pub const TRANSITIONS: &[TransitionMeta]",
+			"cases": [
+				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
 			]
 		},
 		{

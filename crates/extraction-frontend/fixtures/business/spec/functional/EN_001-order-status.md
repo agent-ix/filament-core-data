@@ -1,12 +1,12 @@
 ---
-id: EN-001
+id: EN_001
 title: Order Status
 object: enumeration
 type: FR
 name: OrderStatus
 ---
 
-# EN-001: Order Status
+# EN_001: Order Status
 
 ## Values
 

@@ -1,11 +1,11 @@
 ---
-id: EN-001
+id: EN_001
 title: Status
 object: enumeration
 type: FR
 ---
 
-# EN-001: Status
+# EN_001: Status
 
 ## Values
 

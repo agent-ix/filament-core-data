@@ -27,7 +27,7 @@ export const V1_1_ADDED_NODES = Object.freeze([
 	"source.dialect (frontend)",
 ]);
 
-export const CONTRACT_VERSIONS = Object.freeze(["1.0.0", "1.1.0", "1.2.0"]);
+export const CONTRACT_VERSIONS = Object.freeze(["1.0.0", "1.1.0", "2.0.0"]);
 
 function asArray(value) {
 	return Array.isArray(value) ? value : [];

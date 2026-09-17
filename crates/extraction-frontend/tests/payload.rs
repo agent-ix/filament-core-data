@@ -54,13 +54,17 @@ fn payload_schema(document: &Value, record: &str) -> Vec<FieldRule> {
                     c["operands"].clone(),
                 ));
             }
-            match node["kind"].as_str() {
+            // A construct kind renders by its declared shape.
+            let shape = document["constructs"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .find(|entry| entry["kind"] == node["kind"])
+                .and_then(|entry| entry["construct"]["shape"].as_str());
+            match node["kind"].as_str().or(shape) {
                 Some("alias") => target = node["target"].as_str().expect("target"),
                 Some("scalar") => break node["scalar"].as_str().expect("scalar").to_string(),
-                Some(
-                    "record" | "entity" | "value_object" | "nested_entity" | "aggregate_root"
-                    | "event" | "process",
-                ) => break "record".to_string(),
+                Some("record") => break "record".to_string(),
                 other => panic!("{target}: kind {other:?}"),
             }
         };
