@@ -76,7 +76,7 @@ DESCRIPTIVE_EXTENSIONS: frozenset[str] = frozenset(
 
 
 def _descriptive(key: str, value: Any) -> bool:
-    """Whether an `x-agent-ix-*` annotation describes a node rather than restricting it."""
+    """Whether an `x-agent-ix-*` annotation describes a node, restricting nothing."""
 
     if key in DESCRIPTIVE_ANNOTATIONS:
         return True
