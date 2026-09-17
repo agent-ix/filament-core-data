@@ -15,7 +15,8 @@ The protocol is one JSON document in on stdin and one JSON document out on
 stdout, because a file map is the seam's currency and neither side should have
 to agree on a directory layout to exchange one:
 
-    in   {"profileId": str, "documents": {name: <JSON Schema document>}}
+    in   {"profileId": str, "documents": {name: <JSON Schema document>},
+          "index"?: <the json-schema target's index.json>}
     out  {"files": {path: text}}
 
 Nothing here is published, and nothing here writes into the repository. The
@@ -42,7 +43,7 @@ class RequestError(RuntimeError):
     """The request document is not one this entry point can act on."""
 
 
-def _request(text: str) -> tuple[str, dict[str, Any]]:
+def _request(text: str) -> tuple[str, dict[str, Any], dict[str, Any] | None]:
     """Read the request, refusing rather than defaulting on every member."""
 
     try:
@@ -70,10 +71,16 @@ def _request(text: str) -> tuple[str, dict[str, Any]]:
         if not isinstance(document, dict):
             msg = f"document {name} is not a JSON object"
             raise RequestError(msg)
-    return profile_id, documents
+    index = loaded.get("index")
+    if index is not None and not isinstance(index, dict):
+        msg = "the request's index is not a JSON object"
+        raise RequestError(msg)
+    return profile_id, documents, index
 
 
-def files_for(profile_id: str, documents: dict[str, Any]) -> dict[str, str]:
+def files_for(
+    profile_id: str, documents: dict[str, Any], index: dict[str, Any] | None = None
+) -> dict[str, str]:
     """The generated package for one profile over one set of schema documents.
 
     The documents are written to a scratch directory and prepared by the same
@@ -93,7 +100,7 @@ def files_for(profile_id: str, documents: dict[str, Any]) -> dict[str, str]:
                 encoding="utf-8",
             )
             paths.append(path)
-        return build_from(prepare_input_set(paths), profile_id)
+        return build_from(prepare_input_set(paths), profile_id, index)
     finally:
         for path in sorted(scratch.rglob("*"), reverse=True):
             path.unlink() if path.is_file() else path.rmdir()
@@ -103,8 +110,8 @@ def files_for(profile_id: str, documents: dict[str, Any]) -> dict[str, str]:
 def main(argv: list[str] | None = None) -> int:
     del argv
     try:
-        profile_id, documents = _request(sys.stdin.read())
-        files = files_for(profile_id, documents)
+        profile_id, documents, index = _request(sys.stdin.read())
+        files = files_for(profile_id, documents, index)
     except Exception as error:  # noqa: BLE001 - the boundary reports, never raises
         print(f"{type(error).__name__}: {error}", file=sys.stderr)
         return 1

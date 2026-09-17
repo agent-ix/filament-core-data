@@ -65,6 +65,12 @@ drift from the one a `json-schema` consumer receives.
   profile's settings.
 - The Python backend SHALL hand the generator the `json-schema` target's own
   emitted documents, under the names that emission gave them.
+- The Python backend SHALL hand the generator the `json-schema` target's
+  `index.json` beside the documents, not among them, so the construct module
+  can read the document's populations.
+- The Python backend SHALL render every contract `1.2.0` construct kind and
+  model member by its own row in the construct table below, and SHALL NOT
+  render one as another kind.
 - The Python backend SHALL report a lowering refusal unchanged, rather than
   restating it in a second vocabulary.
 - The Python backend SHALL refuse when no producer is injected, and SHALL NOT
@@ -91,15 +97,38 @@ that decision requires.
 | Semantic identity | **not carried today.** `datamodel-code-generator` drops the `x-agent-ix-semantic-id` annotation the JSON Schema documents carry, so no emitted module declares it. Declared here as a gap owned by this requirement's backend rather than left unstated |
 | Provenance | `PROVENANCE.json` |
 
-A contract `1.2.0` `entity` reaches this target as the `json-schema` target's
-record schema, and renders as that record's model class under the selected
-profile. Its identity field names are **not carried**:
-`datamodel-code-generator` drops the `x-agent-ix-identity-fields` and
-`x-agent-ix-kind` annotations as it drops `x-agent-ix-semantic-id`, so no
-emitted module states which fields tell an entity's instances apart. Declared
-here as a gap owned by this requirement's backend rather than left unstated.
-Every other construct kind is refused by the `json-schema` target before the
-generator runs.
+## Constructs (FR-142)
+
+A contract `1.2.0` type reaches this target as the `json-schema` target's
+schema for it (FR-100). `datamodel-code-generator` reads a document's instance
+shape and drops every `x-agent-ix-*` annotation, so the runner renders the
+construct annotations into one more module of the same package,
+`constructs.py`, read from the same documents. Every constant in it is keyed by
+the generated class name, which is the type's `displayName`.
+
+| Construct or member | Rendering |
+|---|---|
+| `entity`, `nested_entity`, `aggregate_root`, `process` | the record's model class; `IDENTITY_FIELDS` names the fields that tell instances apart |
+| `value_object` | the record's model class, whose generated equality is field-by-field; `VALUE_EQUALITY` marks it |
+| `nested_entity` | `OWNER` names the owner class |
+| `aggregate_root`, `domain` | `MEMBERS` names the member classes |
+| `enumeration` | a `StrEnum` of its variants |
+| `event` | the record's model class; `OCCURRENCE_FIELD` names the occurrence field and `IMMUTABLE` marks it |
+| `state_machine` | the machine's model class plus a `<Name>State` `StrEnum` of its states; `TRANSITIONS` lists each transition as (from, to, trigger, guard, emitted events) |
+| `process` | `STEPS` lists its ordered steps as (name, step kind, consumed events, emitted events) |
+| `repository` | a `typing.Protocol` in `constructs.py` whose methods are its operations, snake-cased, typed by the generated classes; `PERSISTS` names the persisted classes. No module of its own, since its schema admits no value |
+| `domain` | no class, since its schema admits no value; `MEMBERS` and `VOCABULARY` in `constructs.py` |
+| `supertypes` | the subtype's class carries its supertypes' fields; `SUPERTYPES` names the supertypes |
+| `abstract` | `ABSTRACT` marks the type |
+| `subsets`, `redefines` | `FIELD_SUBSETS` and `FIELD_REDEFINES`, by class and field name |
+| operation `frame`, `requires`, `ensures` | `OPERATION_FRAMES` and `OPERATION_CLAUSES`, keyed `<Class>.<operation>` |
+| document `populations` | `POPULATIONS`, each member as (class, lower, upper extent), read from `index.json` |
+| `TYPE_KIND` | the construct kind of each type |
+
+Carried, not enforced: Python states none of these in a class, so the module
+carries them as data. An abstract class still constructs, an event instance
+is not frozen, and no clause, guard, frame, subset or population is checked.
+Each is Quire meaning over instances.
 
 ## Constraints
 
@@ -120,8 +149,9 @@ generator runs.
 | FR-136-AC-5 | A producer that exits non-zero returns state `invalid` carrying `BACKEND_CONTRACT_VIOLATION` naming the profile, and no files | Test (TC-1534) |
 | FR-136-AC-6 | The documents handed to the producer are the `json-schema` target's own documents under its own names, with its manifest excluded | Test (TC-1535) |
 | FR-136-AC-7 | The module the seam imports for the Python backend names no file-system and no child-process module | Test (TC-1536) |
-| FR-136-AC-8 | A `python-pydantic-v2` and a `python-dataclass` request over a `1.2.0` document whose `ConfigVersion` is an `entity` each return state `success` with a `ConfigVersion.py` module, and no generated module names the identity-field annotation, the gap this requirement declares | Test (TC-1765) |
+| FR-136-AC-8 | A `python-pydantic-v2` and a `python-dataclass` request over a `1.2.0` document whose `ConfigVersion` is an `entity` each return state `success` with a `ConfigVersion.py` module declaring class `ConfigVersion`, and a `constructs.py` whose `TYPE_KIND` maps it to `entity` and whose `IDENTITY_FIELDS` maps it to `id` | Test (TC-1765) |
 | FR-136-AC-9 | A `python-pydantic-v2` and a `python-dataclass` request over the lifted config-version-table golden each return state `success` with `ConfigVersion.py` and `JsonObject.py` modules and no module named from an artifact id, while the `json-schema` document the modules generate from carries `x-agent-ix-semantic-id` `ix://agent-ix/config-service/type/FR-006` | Test (TC-1769) |
+| FR-136-AC-10 | A `python-pydantic-v2` and a `python-dataclass` request over the constructs fixture each return state `success`; every class is named by its type's `displayName` and none is named `Model`; `OrderLifecycle.py` declares `OrderLifecycleState`; no module is named for the repository or the domain; and `constructs.py` carries each construct table row and the `OrderRepository` protocol | Test (TC-1775) |
 
 ## Dependencies
 

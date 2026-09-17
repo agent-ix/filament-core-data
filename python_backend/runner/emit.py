@@ -24,6 +24,7 @@ from python_backend.adapter.jcs import digest
 from python_backend.adapter.prepare import Prepared, prepare_input_set
 from python_backend.adapter.profiles import profile_by_id
 from python_backend.adapter.render import render
+from python_backend.runner import constructs
 from python_backend.runner.generate import generate
 from python_backend.runner.inspect_source import inspect_generated
 from python_backend.runner.qualify import NOT_QUALIFIED, REPORT
@@ -209,7 +210,9 @@ def build(profile_id: str) -> dict[str, str]:
     )
 
 
-def build_from(prepared: Prepared, profile_id: str) -> dict[str, str]:
+def build_from(
+    prepared: Prepared, profile_id: str, index: dict[str, Any] | None = None
+) -> dict[str, str]:
     """One package from an already-prepared input set.
 
     `build` reaches for the published schemas because that is the package this
@@ -223,13 +226,22 @@ def build_from(prepared: Prepared, profile_id: str) -> dict[str, str]:
     report = json.loads(REPORT.read_text(encoding="utf-8"))
     verdict = next(row for row in report["verdicts"] if row["profileId"] == profile_id)
 
+    # A repository or a domain has no instance, so the generator renders no
+    # class for it; the construct module is its rendering (FR-142).
+    instances = Prepared(
+        documents=constructs.instance_documents(prepared.documents),
+        rewrites=prepared.rewrites,
+    )
     result = generate(
-        prepared,
+        instances,
         profile_id,
         inspect=lambda files, documents: inspect_generated(files, documents, "enforce"),
     )
 
     files = dict(result.files)
+    construct_module = constructs.render(prepared.documents, index, files)
+    if construct_module is not None:
+        files[constructs.MODULE] = construct_module
     exports = _module_exports(files)
     shared = collisions(exports)
     files["__init__.py"] = _init_module(exports)

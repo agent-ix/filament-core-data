@@ -36,6 +36,7 @@ import {
 	generateTarget,
 	selectBackend,
 } from "../src/compiler/backends/seam.mjs";
+import { CONSTRUCT_KINDS } from "../src/compiler/constructs.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -131,7 +132,7 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 	}, 300000);
 
 	/** Traces: TC-1765; FR-136-AC-8. */
-	it("generates an entity as the record's model class in both Python targets, carrying no identity-field marking", () => {
+	it("generates an entity as the record's model class in both Python targets, with its identity fields in the construct module", () => {
 		const request = pythonRequest(pythonPydanticBackend);
 		const entity = (
 			request.ir as {
@@ -160,11 +161,95 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 				(file) => file.path === "ConfigVersion.py",
 			);
 			if (!module) throw new Error(`${backend.target}: no ConfigVersion.py`);
+			expect(module.text).toMatch(/^class ConfigVersion\b/m);
 			expect(module.text).toMatch(/\bid: /);
+			const constructs = result.files.find(
+				(file) => file.path === "constructs.py",
+			);
+			if (!constructs) throw new Error(`${backend.target}: no constructs.py`);
+			expect(constructs.text).toContain("'ConfigVersion': ('id',),");
+			expect(constructs.text).toContain("'ConfigVersion': 'entity',");
+		}
+	}, 300000);
+
+	/** Traces: TC-1775; FR-136-AC-10. */
+	it("renders every construct kind and model member in both Python targets, each class named by its display name", () => {
+		const document =
+			"fixtures/semantic/v1/positive/semantic-ir-v1-2-constructs.json";
+		const ir = readJson(document) as {
+			types: { kind: string; displayName: string }[];
+		};
+		for (const backend of [pythonPydanticBackend, pythonDataclassBackend]) {
+			const result = backend.generate(pythonRequest(backend, document), {
+				produce: poetryProducer(),
+			}) as {
+				state: string;
+				diagnostics: { message: string }[];
+				files: { path: string; text: string }[];
+			};
+			expect(
+				result.state,
+				`${backend.target}: ${result.diagnostics.map((d) => d.message).join("; ")}`,
+			).toBe("success");
+			const text = (path: string) => {
+				const file = result.files.find((one) => one.path === path);
+				if (!file) throw new Error(`${backend.target}: no ${path}`);
+				return file.text;
+			};
+
+			// Every class is named by its type's display name, never `Model`.
 			for (const file of result.files.filter((one) => one.path.endsWith(".py")))
 				expect(file.text, `${backend.target} ${file.path}`).not.toMatch(
-					/identity-fields|identityFields|IDENTITY_FIELDS/,
+					/^class Model\b/m,
 				);
+			for (const type of ir.types.filter(
+				(one) =>
+					CONSTRUCT_KINDS.includes(one.kind) &&
+					one.kind !== "repository" &&
+					one.kind !== "domain",
+			))
+				expect(text(`${type.displayName}.py`)).toMatch(
+					new RegExp(`^class ${type.displayName}\\b`, "m"),
+				);
+
+			// A repository and a domain have no instance: no module of their own.
+			const paths = result.files.map((file) => file.path);
+			expect(paths).not.toContain("OrderRepository.py");
+			expect(paths).not.toContain("Ordering.py");
+
+			// state_machine: the state enum beside the machine's class.
+			expect(text("OrderLifecycle.py")).toMatch(
+				/^class OrderLifecycleState\(StrEnum\):\n {4}placed = 'placed'\n {4}shipped = 'shipped'/m,
+			);
+			// enumeration: a native enum.
+			expect(text("OrderStatus.py")).toMatch(/^class OrderStatus\(StrEnum\):/m);
+
+			const constructs = text("constructs.py");
+			for (const type of ir.types.filter((one) =>
+				CONSTRUCT_KINDS.includes(one.kind),
+			))
+				expect(constructs).toContain(`'${type.displayName}': '${type.kind}',`);
+			for (const line of [
+				"'Order': ('Party',),",
+				"'Party': True,",
+				"'Shipment': 'Order',",
+				"'OrderAggregate': ('Order', 'OrderLine'),",
+				"'OrderPlaced': 'placedAt',",
+				"'OrderLine': True,",
+				"'OrderLifecycle': (('placed', 'shipped', 'advance', 'can_ship', ('OrderPlaced',)),),",
+				"'Fulfilment': (('fulfil', 'event', ('OrderPlaced',), ()),),",
+				"'OrderRepository': ('Order',),",
+				"'Ordering': (('Order', \"A customer's request for goods.\"),),",
+				"'Order': {'badges': ('labels',)},",
+				"'Order': {'id': 'id', 'labels': 'labels'},",
+				"'OrderLifecycle.advance': {'modifies': ('current',), 'creates': (), 'deletes': ()},",
+				"'OrderLifecycle.advance': {'requires': (('quire', 'to <> current'),), 'ensures': (('quire', 'current = to'),)},",
+				"'OpenOrders': (('Order', 0, None),),",
+				"class OrderRepository(Protocol):",
+				"    def find_by_id(self, id: UUIDModel) -> Order | None: ...",
+				"    def save(self, order: Order) -> Order: ...",
+			])
+				expect(constructs, `${backend.target}: ${line}`).toContain(line);
 		}
 	}, 300000);
 

@@ -76,6 +76,16 @@ function documentsFrom(files) {
 	return documents;
 }
 
+/**
+ * The `json-schema` target's own manifest, handed beside the documents rather
+ * than among them: it carries the document-level members no schema carries —
+ * the populations — which the generated construct module renders (FR-136).
+ */
+function indexFrom(files) {
+	const index = files.find((file) => file.path === "index.json");
+	return index === undefined ? undefined : JSON.parse(index.text);
+}
+
 /** Builds the backend for one target. */
 function pythonBackendFor(target) {
 	return Object.freeze({
@@ -108,7 +118,11 @@ function pythonBackendFor(target) {
 
 			let files;
 			try {
-				files = produce(documentsFrom(lowered.files), PROFILES[target]);
+				files = produce(
+					documentsFrom(lowered.files),
+					PROFILES[target],
+					indexFrom(lowered.files),
+				);
 			} catch (error) {
 				// By the error's own name rather than by its class: importing
 				// `ProducerError` would make the module that starts the child
