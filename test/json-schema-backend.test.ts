@@ -405,6 +405,56 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		expect(folded.diagnostics[0].message).toContain(lower.identity);
 	});
 
+	/** Traces: TC-1782; FR-100-AC-11. */
+	it("reads a subtype's construct members from the authored document and refuses an inherited field collision", () => {
+		const ir = JSON.parse(readFileSync(constructs, "utf8"));
+		const party = ir.types.find(
+			(type: { displayName: string }) => type.displayName === "Party",
+		);
+		const orderIndex = ir.types.findIndex(
+			(type: { displayName: string }) => type.displayName === "Order",
+		);
+		// An inherited, unredefined Party field that subsets another.
+		party.fields.push({
+			...party.fields[1],
+			name: "remark",
+			identity: "ix://agent-ix/orders/field/FR-000-remark",
+			subsets: [party.fields[1].identity],
+		});
+		const result = jsonSchemaBackend.generate({ ir });
+		expect(result.state).toBe("success");
+		const schema = (name: string) => {
+			const file = result.files.find((one) => one.path === `${name}.json`);
+			if (!file) throw new Error(`${name}.json was not emitted`);
+			return JSON.parse(file.text);
+		};
+		const order = schema("Order");
+		expect(order.properties.remark["x-agent-ix-subsets"]).toStrictEqual([
+			"ix://agent-ix/orders/field/FR-000-labels",
+		]);
+		expect(order["x-agent-ix-identity-fields"]).toStrictEqual(["id"]);
+		expect(order["x-agent-ix-supertypes"]).toStrictEqual([
+			"ix://agent-ix/orders/type/FR-000",
+		]);
+
+		const collided = JSON.parse(readFileSync(constructs, "utf8"));
+		const id = collided.types[orderIndex].fields.find(
+			(field: { name: string }) => field.name === "id",
+		);
+		delete id.redefines;
+		const refused = jsonSchemaBackend.generate({ ir: collided });
+		expect(refused.state).toBe("unsupported");
+		expect(refused.files).toStrictEqual([]);
+		expect(
+			refused.diagnostics.map((one) => [one.code, one.message]),
+		).toStrictEqual([
+			[
+				"agent-ix.compiler.UNDECLARED_LOSS",
+				`/ir/types/${orderIndex}/fields: two effective fields are named id; one would be dropped, since neither redefines the other`,
+			],
+		]);
+	});
+
 	/** Traces: TC-1768; FR-100-AC-8. */
 	it("files and identifies each schema by its display name while its semantic id stays the artifact id", () => {
 		const ir = JSON.parse(readFileSync(golden, "utf8"));

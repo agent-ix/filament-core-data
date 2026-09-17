@@ -10,6 +10,7 @@ import {
 	isRecordShaped,
 	populationsOf,
 	renderingView,
+	typeIndex,
 	unenforcedMemberAdvisories,
 } from "../../constructs.mjs";
 import { DIAGNOSTIC_CODES, diagnostic } from "../../diagnostics.mjs";
@@ -234,9 +235,11 @@ function recordSchema(type, types) {
 	return schema;
 }
 
-function renderType(ir, type, types) {
+function renderType(ir, type, types, authored) {
 	let schema;
-	const facts = constructOf(type, types);
+	// Construct members are read from the authored document: in the rendering
+	// view a subtype also holds its inherited fields (FR-141).
+	const facts = constructOf(authored.get(type.identity) ?? type, authored);
 	switch (true) {
 		case type.kind === "scalar":
 			schema = { ...(scalarSchema[type.scalar] ?? {}) };
@@ -436,7 +439,7 @@ export const jsonSchemaBackend = Object.freeze({
 			};
 		// Two effective fields of one name would render one property and drop
 		// the other; each is refused by name (FR-141).
-		const inherited = inheritedNameCollisions(ir);
+		const inherited = inheritedNameCollisions(request.ir);
 		if (inherited.length > 0)
 			return {
 				state: "unsupported",
@@ -472,6 +475,7 @@ export const jsonSchemaBackend = Object.freeze({
 		const types = new Map(
 			(ir.types ?? []).map((type) => [type.identity, type]),
 		);
+		const authored = typeIndex(request.ir);
 		// Two definitions whose names derive one file name, or a definition whose
 		// name derives `index.json`, would overwrite one another. Each is refused
 		// with both identities named, and no file is written (FR-100-AC-9).
@@ -488,7 +492,7 @@ export const jsonSchemaBackend = Object.freeze({
 			};
 		const files = [...types.values()].sort(byName).map((type) => ({
 			path: `${nameOf(type)}.json`,
-			text: text(renderType(ir, type, types)),
+			text: text(renderType(ir, type, types, authored)),
 			identities: [type.identity],
 			mediaType: "application/schema+json",
 		}));

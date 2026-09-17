@@ -22,6 +22,7 @@ import { fileURLToPath } from "node:url";
 import {
 	inheritedNameCollisions,
 	renderingView,
+	typeIndex,
 	unenforcedMemberAdvisories,
 } from "../../constructs.mjs";
 import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../../diagnostics.mjs";
@@ -217,6 +218,7 @@ export const typescriptBackend = Object.freeze({
 
 		// A subtype's interface carries its inherited fields (FR-141).
 		const model = buildModel(renderingView(request.ir), {
+			authored: typeIndex(request.ir),
 			backendIdentity: identity,
 			backendVersion: typescriptBackend.version,
 		});

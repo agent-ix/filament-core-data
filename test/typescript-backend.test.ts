@@ -981,6 +981,32 @@ describe("TC-1781 identifiers and abstract types the TypeScript backend refuses 
 		if (!id) throw new Error("Order declares no id field");
 		delete id.redefines;
 		expect(blockingCodes(collided)).toStrictEqual(["IDENTIFIER_COLLISION"]);
+
+		// A subtype's construct members are read from the authored document:
+		// an inherited field's `subsets` stays keyed by the type declaring it.
+		const inherited = constructsDocument();
+		const declaring = typeNamed(inherited, "Party");
+		const labels = declaring.fields?.[1] as Record<string, unknown>;
+		declaring.fields?.push({
+			...(labels as { name: string }),
+			name: "remark",
+			identity: "ix://agent-ix/orders/field/FR-000-remark",
+			subsets: [labels.identity as string],
+		} as never);
+		const manifest = generateDocument(inherited) as unknown as {
+			state: string;
+			files: { path: string; text: string }[];
+		};
+		expect(manifest.state).toBe("success");
+		const identity = manifest.files.find((file) =>
+			file.path.endsWith("identity.ts"),
+		);
+		if (!identity) throw new Error("identity.ts was not emitted");
+		const subsets =
+			/FIELD_SUBSETS[^=]*= \{([^}]*)\}/.exec(identity.text)?.[1] ?? "";
+		expect(subsets).toContain('"Party.remark": ["labels"]');
+		expect(subsets).toContain('"Order.badges"');
+		expect(subsets).not.toContain("Order.remark");
 	});
 });
 

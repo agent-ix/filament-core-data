@@ -211,6 +211,9 @@ export function buildModel(ir, options = {}) {
 			types.set(type.identity, type);
 		}
 	}
+	// `options.authored` indexes the document as authored when `ir` is its
+	// rendering view (FR-141); without it the document is its own authored form.
+	const authored = options.authored instanceof Map ? options.authored : types;
 
 	// Names are minted, and a collision refused, while the model is built —
 	// before any file map could exist, which is what FR-064-AC-14 asks for.
@@ -309,13 +312,18 @@ export function buildModel(ir, options = {}) {
 			);
 		}
 
+		// Construct members are read from the authored document, where a
+		// subtype's fields are its own: in the rendering view a subtype also
+		// holds its inherited fields, and would repeat their `subsets`.
+		const declared = authored.get(type.identity) ?? type;
+
 		// An entity also names the fields that tell its instances apart (FR-064).
-		const identityFields = identityFieldNames(type, types);
+		const identityFields = identityFieldNames(declared, authored);
 		if (identityFields !== undefined)
 			entry.identityFields = Object.freeze(identityFields);
 
 		// Every construct member, read once by the shared reader (FR-142, FR-141).
-		const construct = constructOf(type, types);
+		const construct = constructOf(declared, authored);
 		if (construct !== undefined) entry.construct = Object.freeze(construct);
 
 		if (isEnumerationShaped(type.kind) || type.kind === "union") {

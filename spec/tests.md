@@ -284,7 +284,7 @@ blocked as stated above.
 | FR-098 | FR-098-AC-1..12, FR-098-CON-1..3 | TC-1285..TC-1294, TC-1338, TC-1343, TC-1344 | ✅ Complete |
 | FR-099 | FR-099-AC-1..6, FR-099-CON-1..3 | TC-1295..TC-1299, TC-1330, TC-1349 | ✅ Complete |
 | FR-106 | FR-106-AC-1..6, FR-106-CON-1..2 | TC-1373..TC-1378 | 🚧 TC-1374, TC-1375 planned on issue #93 |
-| FR-100 | FR-100-AC-1..10, FR-100-CON-1..3 | TC-1361..TC-1366, TC-1764, TC-1768, TC-1771, TC-1774 | ✅ Complete |
+| FR-100 | FR-100-AC-1..11, FR-100-CON-1..3 | TC-1361..TC-1366, TC-1764, TC-1768, TC-1771, TC-1774, TC-1782 | ✅ Complete |
 | FR-130 | FR-130-AC-1..8, FR-130-CON-1..3 | TC-1388..TC-1395 | ✅ Complete |
 | FR-131 | FR-131-AC-1..9, FR-131-CON-1..3 | TC-1403..TC-1409, TC-1586 | ✅ Complete |
 | FR-132 | FR-132-AC-1..7, FR-132-CON-1..3 | TC-1414..TC-1417 | 🚧 planned on issue #65 |
@@ -1721,7 +1721,8 @@ blocked as stated above.
 | TC-1778 | The abstract `Party` renders as a trait of accessors that `Order` implements, with no struct; a field naming `Party` and a redefinition changing the accessor's Rust type are refused | Unit | P0 | FR-054-AC-19 | ✅ passed |
 | TC-1779 | An event member named `validate` or `try_new`, and a type named `OrderLifecycleState`, each raise `NAME_COLLISION` and write no file | Unit | P0 | FR-055-AC-18 | ✅ passed |
 | TC-1780 | A repository operation with an empty frame takes `&self` and one with no frame takes `&mut self` | Unit | P0 | FR-054-AC-20 | ✅ passed |
-| TC-1781 | The TypeScript backend refuses a type named for another's `State` or `Equals`, a field holding an abstract type, and an inherited field collision, writing no file | Unit | P0 | FR-064-AC-26 | ✅ passed |
+| TC-1781 | The TypeScript backend refuses a type named for another's `State` or `Equals`, a field holding an abstract type, and an inherited field collision, writing no file, and keys an inherited field's subsets by its declaring type | Unit | P0 | FR-064-AC-26 | ✅ passed |
+| TC-1782 | JSON Schema reads a subtype's construct annotations from the authored document and refuses an inherited field collision, emitting no file | Unit | P0 | FR-100-AC-11 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
 | TC-1585 | Every requirement the register names carries that issue's own link, and a row whose requirement omits it is reported | Unit | P0 | NFR-001-AC-6 | ✅ passed |
 
@@ -2655,13 +2656,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 130 | 83 | 0 | 47 | 100% mapped (130/130) |
-| Unit | 589 | 483 | 0 | 106 | 100% mapped (589/589) |
+| Unit | 590 | 484 | 0 | 106 | 100% mapped (590/590) |
 | Integration | 160 | 99 | 0 | 61 | 100% mapped (160/160) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 68 | 43 | 0 | 25 | 100% mapped (68/68) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1379** | **1050** | **0** | **329** | **100% mapped (1379/1379)** |
+| **Total** | **1380** | **1051** | **0** | **329** | **100% mapped (1380/1380)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.
