@@ -654,6 +654,7 @@
 						}
 					},
 					"presence": "required",
+					"redefines": "ix://agent-ix/orders/field/FR-000-id",
 					"typeRef": "ix://agent-ix/orders/type/UUID"
 				},
 				{
