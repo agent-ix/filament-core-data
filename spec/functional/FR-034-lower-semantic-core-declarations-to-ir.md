@@ -82,8 +82,8 @@ the two implementations of that statement.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-034-AC-1 | `lowering.json` has one row per grammar-model property, every row's `loss` is `none`, and a row recording `loss` fails the gate. | Test |
-| FR-034-AC-2 | The lowered FR-006 document validates against `semantic-ir.schema.json` as `1.1.0` and both IR readers return zero diagnostics. | Test |
-| FR-034-AC-3 | The lowered FR-006 document's fields (name, multiplicity, unit, nullable), relationships (verb, category, target, multiplicity), constraints (keyword, operands), and clauses (language, clauseId, text) equal those of `fixtures/semantic/v1/positive/config-version-v1-1.json` in a structural comparison that ignores minted identities and semantic-core extensions. | Test |
+| FR-034-AC-2 | The lowered FR-006 document validates against `semantic-ir.schema.json` as `2.0.0` and both IR readers return zero diagnostics. | Test |
+| FR-034-AC-3 | The lowered FR-006 document's fields (name, multiplicity, unit, nullable), relationships (verb, category, target, multiplicity), constraints (keyword, operands), and clauses (language, clauseId, text) equal those of `fixtures/semantic/v1/positive/config-version-v2.json` in a structural comparison that ignores minted identities and semantic-core extensions. | Test |
 | FR-034-AC-4 | `UnitSymbol` rejects the empty string, `k g`, and `kg²` and accepts `kg`, `m/s`, `ms`, `10*3.m`; UCUM membership beyond the charset is a consumer concern and is not claimed. | Test |
 | FR-034-AC-5 | A `Decimal` field lowers with the `decimal` extension carrying `precision` and `scale`, and the lowering table records no loss for `TypeRef.decimal`. | Test |
 

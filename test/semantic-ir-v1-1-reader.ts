@@ -1,5 +1,6 @@
 /**
- * Test-scoped reader for semantic IR contract 2.0.0 (issues #34, #93 and #172).
+ * Test-scoped reader for semantic IR contract 2.0.0 (issues #34, #93 and #172;
+ * fcd#179 deleted 1.0.0 and 1.1.0, the versions this module once also read).
  *
  * JSON Schema validates shape; this module implements the cross-field rules
  * of FR-027..FR-030 that a schema cannot express, and the normalized
@@ -165,14 +166,11 @@ function checkField(
 	}
 	let multiplicity: Multiplicity | undefined;
 	if (field.multiplicity === undefined) {
-		if (version === "1.1.0" || version === "2.0.0") {
-			diagnostics.push({
-				code: "agent-ix.semantic-ir.MISSING_MULTIPLICITY",
-				path: `${path}.multiplicity`,
-				message: `${version} fields must declare multiplicity`,
-			});
-		}
-		multiplicity = multiplicityFromPresence(field.presence);
+		diagnostics.push({
+			code: "agent-ix.semantic-ir.MISSING_MULTIPLICITY",
+			path: `${path}.multiplicity`,
+			message: "a field declares its multiplicity",
+		});
 	} else {
 		multiplicity = checkMultiplicity(
 			field.multiplicity,
@@ -538,24 +536,21 @@ export function canonical(value: unknown): string {
 }
 
 /**
- * Normalized serialization (FR-027): 1.1.0 and 2.0.0 documents materialize
- * multiplicity, presence, and nullable on every field, a 2.0.0 field keeping its
- * authored presence; 1.0.0 documents gain no bytes.
+ * Normalized serialization (FR-027): a 2.0.0 document materializes
+ * multiplicity and nullable on every field, keeping its authored presence
+ * (filling only a presence the document left absent or malformed).
  */
 export function normalize(document: unknown): string {
 	if (!isObject(document)) return canonical(document);
 	const copy = structuredClone(document) as JsonObject;
 	const version = copy.contractVersion;
-	if (version === "1.1.0" || version === "2.0.0") {
+	if (version === "2.0.0") {
 		const materialize = (field: JsonObject): void => {
 			const multiplicity = isObject(field.multiplicity)
 				? (field.multiplicity as Multiplicity)
 				: multiplicityFromPresence(field.presence);
 			field.multiplicity = multiplicity;
-			if (
-				version !== "2.0.0" ||
-				(field.presence !== "required" && field.presence !== "optional")
-			)
+			if (field.presence !== "required" && field.presence !== "optional")
 				field.presence = multiplicity.lower >= 1 ? "required" : "optional";
 			field.nullable = field.nullable === true;
 		};

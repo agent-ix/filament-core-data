@@ -56,8 +56,8 @@ an unknown keyword or an operand of the wrong shape.
 | FR-029-AC-2 | A constraint with keyword `mnimum` fails validation with the constraint's locus. | Test |
 | FR-029-AC-3 | A `min` constraint with `operands { value: "1" }` (string) fails validation. | Test |
 | FR-029-AC-4 | A `pattern` constraint without `dialect` fails validation. | Test |
-| FR-029-AC-5 | The v1.1 schema declares no `keyword: string` path and no untyped `operands` path, including `enumValues.values` items. | Analysis |
-| FR-029-AC-6 | The config-service FR-006 `versionNumber` bound (`min: 1`) is expressed as a typed constraint in `fixtures/semantic/v1/positive/config-version-v1-1.json`. | Analysis |
+| FR-029-AC-5 | The schema declares no `keyword: string` path and no untyped `operands` path, including `enumValues.values` items. | Analysis |
+| FR-029-AC-6 | The config-service FR-006 `versionNumber` bound (`min: 1`) is expressed as a typed constraint in `fixtures/semantic/v1/positive/config-version-v2.json`. | Analysis |
 | FR-029-AC-7 | A `minLength` constraint applied to an `integer` scalar fails validation with the constraint's locus. | Test |
 | FR-029-AC-8 | A `pattern` constraint whose `regex` does not compile under `ecma-262` fails validation. | Test |
 

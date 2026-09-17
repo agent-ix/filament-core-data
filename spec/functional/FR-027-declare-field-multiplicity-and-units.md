@@ -61,7 +61,7 @@ by the multiplicity.
 |---|---|---|
 | FR-027-AC-1 | A field declared `0..1` validates, derives `presence: optional`, and re-serializes byte-identically through the normalized form. | Test |
 | FR-027-AC-2 | A field declared `1..*` with `ordered: true` and `unique: true` validates and preserves both flags. | Test |
-| FR-027-AC-3 | A field whose stated `presence` contradicts its multiplicity fails validation with the field's locus. | Test |
+| FR-027-AC-3 | A field whose stated `presence` contradicts its multiplicity fails validation with the field's locus, outside `2.0.0`, which FR-106-AC-4 carves out as unenforced. | Test |
 | FR-027-AC-4 | A field with `upper < lower` fails validation with the field's locus. | Test |
 | FR-027-AC-5 | A scalar field with `unit: "s"` validates; the same unit on a record-typed field fails. | Test |
 | FR-027-AC-6 | Every published positive fixture validates under the schema. | Test |

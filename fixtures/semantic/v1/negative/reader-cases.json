@@ -6,6 +6,10 @@
 			"path": "types.3.fields.1.presence",
 			"value": "required"
 		},
+		"also": {
+			"path": "contractVersion",
+			"value": "1.1.0"
+		},
 		"code": "agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH",
 		"path": "types.3.fields.1.presence"
 	},

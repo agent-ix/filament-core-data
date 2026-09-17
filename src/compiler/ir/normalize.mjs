@@ -5,12 +5,12 @@
  * corpus cannot tell a compiler defect from a formatting difference. Two things
  * make that possible: the canonical form of FR-048, which fixes key order,
  * number form and string escaping, and the *materialisation* below, which writes
- * out the values a `1.1.0` document may leave derivable — multiplicity from
- * presence, presence from multiplicity, nullable from its absence — so two
- * documents that mean the same thing serialise the same way.
- *
- * A `1.0.0` document gains no bytes: it has no multiplicity to materialise, and
- * inventing one would change what the document says.
+ * out multiplicity where a document leaves it derivable from presence, and
+ * nullable from its absence, so two documents that mean the same thing
+ * serialise the same way. Presence itself is never derived here: a 2.0.0
+ * document's authored presence, including one that disagrees with its
+ * multiplicity, passes through unchanged (fcd#182 is the open question on
+ * whether that should be enforced instead).
  */
 import { canonicalize, digest } from "../packages/canonical.mjs";
 import { multiplicityFromPresence } from "./reader.mjs";

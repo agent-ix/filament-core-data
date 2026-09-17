@@ -211,10 +211,10 @@
 		"code": "agent-ix.package.UNKNOWN_TARGET"
 	},
 	{
-		"id": "ir-v1-1-field-without-multiplicity",
+		"id": "ir-v2-field-without-multiplicity",
 		"schema": "semantic-ir.schema.json",
-		"base": "positive/semantic-ir-v1-1.json",
-		"remove": "types.3.fields.0.multiplicity",
+		"base": "positive/semantic-ir-v2-constructs.json",
+		"remove": "types.0.fields.0.multiplicity",
 		"code": "agent-ix.semantic-ir.MISSING_MULTIPLICITY"
 	},
 	{

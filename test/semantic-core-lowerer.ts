@@ -57,7 +57,7 @@ function pascal(name: string): string {
 	return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
-/** Lower one archetype instance to a `contractVersion: "1.1.0"` IR document. */
+/** Lower one archetype instance to a `contractVersion: "2.0.0"` IR document. */
 export function lower(instance: Instance, sourceBytes: string): JsonObject {
 	const [org, repo] = instance.package.split("/");
 	const base = `ix://${org}/${repo}`;
@@ -297,7 +297,8 @@ export function lower(instance: Instance, sourceBytes: string): JsonObject {
 	types.push(definition);
 
 	return {
-		contractVersion: "1.1.0",
+		contractVersion: "2.0.0",
+		constructs: [],
 		source: {
 			identity: sourceIdentity,
 			version: "1.0.0",

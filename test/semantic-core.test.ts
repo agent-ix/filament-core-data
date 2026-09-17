@@ -1139,7 +1139,7 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 	});
 
 	/** Traces: TC-279; FR-034-AC-2. */
-	it("validates the lowered document as 1.1.0 with both IR readers", () => {
+	it("validates the lowered document as 2.0.0 with both IR readers", () => {
 		const document = committedLowered();
 		const validate = irAjv.getSchema(
 			"https://schemas.agent-ix.org/filament-core-data/v1/semantic-ir.schema.json",
