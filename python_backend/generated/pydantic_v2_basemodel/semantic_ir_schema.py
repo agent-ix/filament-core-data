@@ -162,6 +162,7 @@ class ConstructDeclaration(BaseModel):
         extra='forbid',
     )
     identity: Identity
+    immutable: bool | None = None
     meaning: Annotated[str, Field(min_length=1)]
     members: dict[Literal['fields', 'variants', 'relationships', 'operations', 'clauses', 'supertypes', 'abstract', 'identityFields', 'owner', 'members', 'occurrenceField', 'states', 'transitions', 'steps', 'persists', 'vocabulary', 'direction', 'interfaceType', 'multiplicity', 'declaredType', 'flowDirection', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement', 'featureOrder'], Members]
     references: dict[Literal['owner', 'members', 'transitions', 'steps', 'persists', 'interfaceType', 'declaredType', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement'], ReferencesAdditionalProperty] | None = (
