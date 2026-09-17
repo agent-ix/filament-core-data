@@ -1296,8 +1296,10 @@ function okSelf(indent, fields) {
  * indenting the chained call by four; it breaks the argument list only when the
  * arguments themselves exceed `fn_call_width`.
  *
- * Measured against rustfmt 1.8.0-stable under the pinned `rustfmt.toml` rather
- * than reasoned about. Emitting the fully-broken form for a call whose arguments
+ * Measured against rustfmt under the pinned `rustfmt.toml` rather than reasoned
+ * about: first on 1.8.0-stable, and `make rust-check` and
+ * `make rust-install-from-artifact` pass unchanged on the `rust-toolchain.toml`
+ * channel's rustfmt 1.9.0-stable (Rust 1.98.1). Emitting the fully-broken form for a call whose arguments
  * fit inside `fn_call_width` produced output the formatter rewrites — a real
  * `rustfmt --check` failure that no corpus base reaches, because their records
  * carry two or eight fields and both of those land in the other two branches.

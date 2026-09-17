@@ -275,10 +275,10 @@ fn tc_1320_manifest_pins_toolchain_and_lock_entries_of_other_members_hold() {
         Some(&*format!("\"{TOOLCHAIN}\""))
     );
 
-    // Every lock entry outside this crate's graph is byte-unchanged from the
-    // base: a workspace member's own entry, and every crate only another
-    // member reaches. This crate's graph (at the base or now) may move with
-    // its pins; the entries of the other members may not.
+    // Every base lock entry that is not reachable only from this crate is
+    // byte-unchanged: every workspace member's own entry, and every crate
+    // another member reaches, even when this crate reaches it too. Only the
+    // crates this crate alone reaches at the base may move with its pins.
     let base = std::env::var("EXTRACTION_LOCK_BASE").unwrap_or_else(|_| "main".to_string());
     let out = Command::new("git")
         .args([
@@ -298,21 +298,52 @@ fn tc_1320_manifest_pins_toolchain_and_lock_entries_of_other_members_hold() {
     let now = read(&workspace_dir().join("Cargo.lock"));
     let before = lock_entries(&before);
     let now = lock_entries(&now);
-    let mut ours = graph_of(&before, PACKAGE);
-    ours.extend(graph_of(&now, PACKAGE));
-    let moved: Vec<&str> = before
-        .iter()
-        .filter(|entry| {
-            entry.source.is_none() && entry.name != PACKAGE || !ours.contains(&entry.name)
-        })
-        .filter(|entry| !now.iter().any(|other| other.text == entry.text))
-        .map(|entry| entry.text.as_str())
-        .collect();
+    let moved = moved_outside_own_graph(&before, &now);
     assert!(
         moved.is_empty(),
-        "Cargo.lock entries outside {PACKAGE}'s graph moved relative to {base} (D11, FND-1457):\n{}",
+        "Cargo.lock entries not reachable only from {PACKAGE} moved relative to {base} (D11, FND-1457):\n{}",
         moved.join("\n")
     );
+
+    // The controls, on a synthetic lock: `other` is a second member sharing
+    // `shared` with this crate, and `own` is reachable from this crate alone.
+    let lock = |shared: &str, own: &str| {
+        format!(
+            "version = 4\n\n[[package]]\nname = \"{PACKAGE}\"\nversion = \"0.0.0\"\ndependencies = [\n \"own\",\n \"shared\",\n]\n\n\
+             [[package]]\nname = \"other\"\nversion = \"0.0.0\"\ndependencies = [\n \"shared\",\n]\n\n\
+             [[package]]\nname = \"own\"\nversion = \"{own}\"\nsource = \"registry+x\"\n\n\
+             [[package]]\nname = \"shared\"\nversion = \"{shared}\"\nsource = \"registry+x\"\n"
+        )
+    };
+    let base_lock = lock_entries(&lock("1.0.0", "1.0.0"));
+    assert!(
+        moved_outside_own_graph(&base_lock, &lock_entries(&lock("1.0.0", "2.0.0"))).is_empty(),
+        "a crate only this crate reaches may move"
+    );
+    assert_eq!(
+        moved_outside_own_graph(&base_lock, &lock_entries(&lock("2.0.0", "1.0.0"))).len(),
+        1,
+        "a crate another member also reaches must not move"
+    );
+}
+
+/// The base entries not reachable only from [`PACKAGE`] that are absent,
+/// byte for byte, from `now`. A crate is exempt only when [`PACKAGE`]
+/// reaches it at the base and no other workspace member does.
+fn moved_outside_own_graph(before: &[LockEntry], now: &[LockEntry]) -> Vec<String> {
+    let ours = graph_of(before, PACKAGE);
+    let others: BTreeSet<String> = before
+        .iter()
+        .filter(|entry| entry.source.is_none() && entry.name != PACKAGE)
+        .flat_map(|member| graph_of(before, &member.name))
+        .collect();
+    before
+        .iter()
+        .filter(|entry| entry.name != PACKAGE)
+        .filter(|entry| !ours.contains(&entry.name) || others.contains(&entry.name))
+        .filter(|entry| !now.iter().any(|other| other.text == entry.text))
+        .map(|entry| entry.text.clone())
+        .collect()
 }
 
 /// One `[[package]]` entry of a `Cargo.lock`: its bytes, name, source and
@@ -418,7 +449,7 @@ fn tc_1322_every_dependency_is_exact_reviewed_and_inside_the_workspace() {
     );
     assert_eq!(
         quire.rev.as_deref(),
-        Some("96df8b1"),
+        Some("d86f7d6"),
         "quire-rs rev is at or after a874fb6"
     );
     assert_eq!(

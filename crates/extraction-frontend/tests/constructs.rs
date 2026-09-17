@@ -12,7 +12,7 @@ mod common;
 use agent_ix_extraction_frontend::constructs::construct_kind;
 use agent_ix_extraction_frontend::diagnostics::{Code, Diagnostic, WireCode};
 use agent_ix_extraction_frontend::{
-    extract, lower_bundle, resolve, Bundle, LiftOutcome, Limits, Lowered,
+    extract, lower_bundle, resolve, Bundle, Extractions, LiftOutcome, Limits, Lowered,
 };
 use agent_ix_semantic_ir::json::parse as parse_json;
 use agent_ix_semantic_ir::{decide, ResultState};
@@ -21,6 +21,7 @@ use common::{
     workspace_dir,
 };
 use ix_trace_rs::trace;
+use quire_rs::semantic::TransitionDecl;
 use serde_json::{json, Value};
 
 const PREFIX: &str = "ix://agent-ix/orders/";
@@ -805,6 +806,32 @@ fn lower_edited(relative: &str, edit: impl Fn(&str) -> String) -> Lowered {
     lower(&root)
 }
 
+/// The business fixture lowered after `mutate` edits the engine's records:
+/// the seam for a record the frontend re-checks but no authored text reaches,
+/// because the engine refuses that text first.
+fn lower_mutated(mutate: impl Fn(&mut Extractions)) -> Lowered {
+    let (business, edges) = (business_module(), edge_vocabulary());
+    let root = fixture("business");
+    let bundle = Bundle::load(&root, &[business.as_path(), edges.as_path()])
+        .unwrap_or_else(|r| panic!("{} refused: {r}", root.display()));
+    let mut extractions = extract(&bundle);
+    mutate(&mut extractions);
+    let resolutions = resolve(&bundle, &extractions);
+    let limits = Limits::declared().expect("limits.json parses");
+    lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0")
+}
+
+/// Transition `index` of `SM-001`, as the engine recorded it.
+fn sm_001_transition(extractions: &mut Extractions, index: usize) -> &mut TransitionDecl {
+    extractions
+        .artifacts
+        .get_mut("SM-001")
+        .and_then(|a| a.extraction.model.as_mut())
+        .and_then(|m| m.transitions.as_mut())
+        .and_then(|t| t.get_mut(index))
+        .expect("SM-001 carries the transition")
+}
+
 /// The `ARTIFACT_NOT_LOWERED` construct refusals of `lowered`.
 fn refusals(lowered: &Lowered) -> Vec<&Diagnostic> {
     lowered
@@ -1152,10 +1179,150 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
             }),
             "the engine's model extraction is unavailable",
         ),
+        (
+            "SM-001",
+            "spec/functional/SM-001-order-lifecycle.md",
+            Box::new(|t| {
+                t.replace(
+                    "| draft | placed | advance | | EV-001 |",
+                    "| draft | placed | advance | | EV-001, EV-001 |",
+                )
+            }),
+            "names `EV-001` twice, and one cell names each event at most once",
+        ),
+        (
+            "VO-001",
+            "spec/functional/VO-001-order-line.md",
+            Box::new(|t| {
+                t.replace(
+                    "relationships:\n",
+                    "relationships:\n  - target: FR-001\n    type: specializes\n",
+                )
+            }),
+            "it declares a `specializes` supertype, which no member of the construct lowers",
+        ),
+        (
+            "VO-001",
+            "spec/functional/VO-001-order-line.md",
+            Box::new(|t| {
+                t.replace(
+                    "| Field | Type | Multiplicity | Constraints |\n|-------|------|--------------|-------------|",
+                    "| Field | Type | Multiplicity | Constraints | Presence |\n|---|---|---|---|---|",
+                )
+                .replace(
+                    "| sku | String | 1 | pattern: /^[A-Z0-9-]+$/ |",
+                    "| sku | String | 1 | pattern: /^[A-Z0-9-]+$/ | required |",
+                )
+            }),
+            "it declares Presence, Subsets or Redefines cells, which no member of the construct lowers",
+        ),
+        (
+            "SM-001",
+            "spec/functional/SM-001-order-lifecycle.md",
+            Box::new(|t| {
+                t.replace(
+                    "Returns: OrderStatus [1]\n",
+                    "Returns: OrderStatus [1]\n\nModifies: current\n",
+                )
+            }),
+            "it declares Modifies, Creates or Deletes lines, which no member of the construct lowers",
+        ),
+        (
+            "AR-001",
+            "spec/functional/AR-001-order-aggregate.md",
+            // Members derive from composite relationships (FR-143); the
+            // module's `Members` table is refused, never read.
+            Box::new(|t| {
+                t.replace(
+                    "The `Order` entity and its `OrderLine` value objects.",
+                    "| Member | Multiplicity |\n|--------|--------------|\n| Order | 1 |",
+                )
+            }),
+            "it declares a `Members` table, which no member of the construct lowers",
+        ),
+        (
+            "EN-001",
+            "spec/functional/EN-001-order-status.md",
+            Box::new(|t| t.replacen("type: FR\n", "type: FR\nabstract: true\n", 1)),
+            "lowers to no `enumeration` construct: it declares an `abstract` flag, which no member of the construct lowers",
+        ),
     ];
     for (id, relative, edit, rule) in cases {
         assert_refused(&lower_edited(relative, edit), id, rule);
     }
+
+    // A population artifact: its `Members` table has no construct member.
+    let dir = tempfile::tempdir().expect("tempdir");
+    let root = dir.path().join("business");
+    copy_tree(&fixture("business"), &root);
+    fs::write(
+        root.join("spec/functional/PO-001-open-orders.md"),
+        "---\nid: PO-001\ntitle: Open Orders\nobject: population\ntype: FR\nname: OpenOrders\n---\n\n# PO-001: Open Orders\n\n## Description\n\nThe open orders.\n\n## Members\n\n| Type | Extent |\n|------|--------|\n| Order | 0..* |\n",
+    )
+    .expect("write");
+    assert_refused(
+        &lower(&root),
+        "PO-001",
+        "it declares a population `Members` table, which no member of the construct lowers",
+    );
+
+    // The engine refuses an unknown trigger or a dangling guard itself
+    // (quire-rs FR-075), so the frontend's own checks are reached by a record
+    // the engine's text path cannot produce.
+    let trigger = lower_mutated(|e| sm_001_transition(e, 1).trigger = "halt".to_string());
+    assert_refused(
+        &trigger,
+        "SM-001",
+        "transition placed -> shipped on halt: its trigger names no operation of the state machine",
+    );
+    let guard = lower_mutated(|e| sm_001_transition(e, 1).guard = Some("nope".to_string()));
+    assert_refused(
+        &guard,
+        "SM-001",
+        "its guard `nope` names no clause of the state machine",
+    );
+
+    // An emitted event that lowers to nothing refuses the state machine. The
+    // `raises` edge is removed so the event rule, not the relationship rule,
+    // is the one SM-001 reaches.
+    let dir = tempfile::tempdir().expect("tempdir");
+    let root = dir.path().join("business");
+    copy_tree(&fixture("business"), &root);
+    for (relative, from, to) in [
+        (
+            "spec/functional/EV-001-order-placed.md",
+            "| placedAt | Timestamp | 1 | |",
+            "| placedAt | Timestamp | 1 | |\n| paidAt | Timestamp | 1 | |",
+        ),
+        (
+            "spec/functional/SM-001-order-lifecycle.md",
+            "  - target: EV-001\n    type: raises\n",
+            "",
+        ),
+    ] {
+        let path = root.join(relative);
+        let text = fs::read_to_string(&path).expect("read");
+        assert!(text.contains(from), "{relative}");
+        fs::write(&path, text.replace(from, to)).expect("write");
+    }
+    let lowered = lower(&root);
+    let messages: Vec<&str> = refusals(&lowered)
+        .iter()
+        .map(|d| d.message.as_str())
+        .collect();
+    let event_rule = format!(
+        "artifact SM-001 (spec/functional/SM-001-order-lifecycle.md) lowers to no `state_machine` construct: a transition or step names the event {}, which lowers to nothing",
+        type_ref("EV-001")
+    );
+    assert!(messages.contains(&event_rule.as_str()), "{messages:#?}");
+    assert!(
+        messages
+            .iter()
+            .any(|m| m.starts_with("artifact EV-001 ") && m.contains("2 Timestamp fields")),
+        "{messages:#?}"
+    );
+    assert!(refusals(&lowered).iter().all(|d| d.blocking));
+    assert_no_edge_to_refused(&lowered);
 
     // FR-076 relationship rows. Module 0.4.0 does not declare the
     // `relationships` mapping, so the engine itself refuses the table with a

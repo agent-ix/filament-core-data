@@ -85,7 +85,7 @@ use serde_json::Value;
 use crate::bundle::{Bundle, Document};
 use crate::clauses::{lower_clauses, lower_operations, Clause, Operation};
 use crate::constructs::{
-    assign_owners, construct_kind, shape, unlowered_declaration, ConstructMembers, Pending,
+    assign_owners, construct_kind, refusal, shape, unlowered_declaration, ConstructMembers, Pending,
 };
 use crate::diagnostics::{Code, Diagnostic, Disposition, Locus, NotLoweredReason};
 use crate::edges::{lower_relationships, Relationship};
@@ -1222,15 +1222,12 @@ pub fn lower_bundle(
         };
         let outcome = if object == ENUMERATION {
             if let Some(rule) = unlowered_declaration(Kind::Enumeration, &extracted.extraction) {
-                own.push(Diagnostic::with_disposition(
-                    Code::ArtifactNotLowered,
-                    Disposition::NotLowered(NotLoweredReason::Other),
-                    format!(
-                        "artifact {} ({}) lowers to no definition: {rule}",
-                        document.id(),
-                        document.path()
-                    ),
-                    Some(head),
+                own.push(refusal(
+                    document.id(),
+                    document.path(),
+                    ENUMERATION,
+                    &rule,
+                    head,
                 ));
                 lowered_to_nothing.extend(package.type_identity(document.id()).ok());
                 continue;

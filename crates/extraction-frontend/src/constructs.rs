@@ -169,7 +169,7 @@ fn refuse(ctx: &ArtifactContext<'_>, object: &str, rule: &str) -> LowerError {
     LowerError::Blocked(vec![refusal(ctx.id, ctx.path, object, rule, ctx.head())])
 }
 
-fn refusal(id: &str, path: &str, object: &str, rule: &str, head: Locus) -> Diagnostic {
+pub(crate) fn refusal(id: &str, path: &str, object: &str, rule: &str, head: Locus) -> Diagnostic {
     Diagnostic::with_disposition(
         Code::ArtifactNotLowered,
         Disposition::NotLowered(NotLoweredReason::Other),
@@ -510,7 +510,8 @@ fn lift_states(
 }
 
 /// The type identities of `names`, each the id of an event artifact of the
-/// bundle; the refusal rule naming the first that is not.
+/// bundle named once; the refusal rule naming the first that is not, or the
+/// first named twice (a duplicate is refused, never collapsed).
 fn event_refs(
     names: Option<&[String]>,
     events: &BTreeSet<String>,
@@ -525,9 +526,12 @@ fn event_refs(
             .ok_or_else(|| {
                 format!("{site} names `{name}`, which is the artifact id of no event of the bundle")
             })?;
-        if !out.contains(&identity) {
-            out.push(identity);
+        if out.contains(&identity) {
+            return Err(format!(
+                "{site} names `{name}` twice, and one cell names each event at most once"
+            ));
         }
+        out.push(identity);
     }
     Ok(out)
 }

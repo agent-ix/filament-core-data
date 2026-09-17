@@ -57,7 +57,7 @@ declare none at all and carry their own JSON layer.
 
 The extraction frontend, `crates/extraction-frontend` (issue #36, FR-091..099,
 NFR-031..033), is the third workspace member and the first to declare
-dependencies: `quire-rs` (git, rev `96df8b1`) for the spec-bundle engine,
+dependencies: `quire-rs` (git, rev `d86f7d6`) for the spec-bundle engine,
 `agent-ix-semantic-ir` by `path`, and `serde`, `serde_json`, `sha2` and `clap`
 directly, with `ix-trace-rs` and `tempfile` as development dependencies. Every
 crate in this section reaches the workspace `Cargo.lock` through those

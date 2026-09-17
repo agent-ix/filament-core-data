@@ -8,7 +8,7 @@
 # `make rust-build` on the workspace channel (CR-036-1). Every dependency is an exact pin:
 # `quire-rs` by git `rev` because no release tag contains `Registry::load_module_set`
 # (quire-rs#411 at a874fb6) or `SemanticContext::with_body_extraction`
-# (quire-rs#442); `serde`/`serde_json` through the workspace's own
+# (quire-rs#443 at d86f7d6); `serde`/`serde_json` through the workspace's own
 # exact pins; the rest with `=`. No `jsonschema` is declared: validation and
 # canonical bytes come from `agent-ix-semantic-ir` (FR-097).
 [package]
@@ -29,7 +29,7 @@ name = "extraction-frontend"
 path = "src/main.rs"
 
 [dependencies]
-quire-rs = { git = "https://github.com/agent-ix/quire-rs", rev = "96df8b1" }
+quire-rs = { git = "https://github.com/agent-ix/quire-rs", rev = "d86f7d6" }
 agent-ix-semantic-ir = { path = "../semantic-ir" }
 serde = { workspace = true }
 serde_json = { workspace = true }

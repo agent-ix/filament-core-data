@@ -60,10 +60,9 @@ pub fn extract(bundle: &Bundle) -> Extractions {
             continue;
         };
         let dsl = object_type.archetype.body_extraction();
-        let required = RequiredSections::from_dsl(
-            &dsl.and_then(|dsl| serde_json::to_value(dsl).ok())
-                .unwrap_or(serde_json::Value::Null),
-        );
+        let required = dsl
+            .map(RequiredSections::from_extraction)
+            .unwrap_or_default();
         let context = SemanticContext::new(
             object_type.semantic.clone(),
             document.path(),
