@@ -305,9 +305,7 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 				// A module-declared construct kind is an object; a contract 1.1
 				// kind is its name as a string, and states no construct.
 				if (typeof kind !== "object") continue;
-				expect(constructs).toContain(
-					`'${type.displayName}': '${kind.name}',`,
-				);
+				expect(constructs).toContain(`'${type.displayName}': '${kind.name}',`);
 			}
 			for (const line of [
 				"'Order': ('Party',),",

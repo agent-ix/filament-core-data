@@ -18,24 +18,26 @@ import Ajv2020 from "ajv/dist/2020.js";
 import { beforeAll, describe, expect, it } from "vitest";
 import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
 import { rustBackend } from "../src/compiler/backends/rust-serde/backend.mjs";
-import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import {
 	assertBackendContract,
 	generateTarget,
 	registryWith,
 } from "../src/compiler/backends/seam.mjs";
+import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import { diffSemanticContract } from "../src/compiler/compat/diff.mjs";
-import {
-	CONSTRUCT_VOCABULARY,
-	CORE_KINDS,
-	IDENTITY_EQUALITIES,
-	SHAPE_RENDERINGS,
-} from "../src/compiler/constructs.mjs";
 import {
 	CONTRACT_VERSIONS,
 	readIrAsContract,
 	V1_1_ADDED_NODES,
 } from "../src/compiler/compat/evolution.mjs";
+import {
+	CONSTRUCT_VOCABULARY,
+	CORE_KINDS,
+	IDENTITY_EQUALITIES,
+	readDeclaration,
+	ruleOf,
+	SHAPE_RENDERINGS,
+} from "../src/compiler/constructs.mjs";
 import {
 	applyDiagnosticLimit,
 	DEFAULT_LIMITS,
@@ -3386,7 +3388,19 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			shapes: string[];
 			presences: string[];
 			members: { name: string; default: string; referenceItems?: string[] }[];
-			rules: { name: string; member: string; presence: string }[];
+			rules: {
+				name: string;
+				member: string;
+				presence: string;
+				nonEmpty?: boolean;
+			}[];
+			identityRequirements: {
+				identity: string;
+				member: string;
+				presence: string;
+			}[];
+			shapeRequirements: { shape: string; member: string; presence: string }[];
+			flags: { name: string; default: boolean }[];
 		};
 		expect(CONSTRUCT_VOCABULARY).toStrictEqual(vocabulary);
 		expect(Object.keys(SHAPE_RENDERINGS).sort()).toEqual(
@@ -3432,6 +3446,80 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		expect(declaration.rules.items.enum).toEqual(
 			vocabulary.rules.map((rule) => rule.name),
 		);
+
+		// Each rule's requirement, and its `nonEmpty`, is read from the file:
+		// the Node reading names no rule of its own.
+		for (const rule of vocabulary.rules) {
+			expect(ruleOf(rule.name), rule.name).toStrictEqual(rule);
+			expect(vocabulary.members.map((member) => member.name)).toContain(
+				rule.member,
+			);
+			expect(vocabulary.presences).toContain(rule.presence);
+		}
+		for (const member of vocabulary.members) {
+			expect(vocabulary.presences, member.name).toContain(member.default);
+			for (const item of member.referenceItems ?? [])
+				expect(typeof item, `${member.name} reference item`).toBe("string");
+		}
+
+		// Each flag is an optional boolean of the schema's declaration, read at
+		// its stated default and refused when it is not a boolean.
+		const bare = {
+			identity: "none",
+			shape: "record",
+			members: {},
+			meaning: "ix://agent-ix/test/meaning/none",
+		};
+		for (const flag of vocabulary.flags) {
+			expect(
+				(declaration as never as Record<string, unknown>)[flag.name],
+			).toStrictEqual({ type: "boolean" });
+			const read = readDeclaration({ ...bare }) as {
+				declaration: Record<string, unknown>;
+			};
+			expect(read.declaration[flag.name], flag.name).toBe(flag.default);
+			expect(readDeclaration({ ...bare, [flag.name]: "yes" })).toStrictEqual({
+				pointer: `/${flag.name}`,
+				message: `${flag.name} is a boolean`,
+			});
+		}
+
+		// An identity or shape whose required member presence a declaration does
+		// not declare is refused where the Rust reader refuses it (FR-142-AC-14).
+		for (const requirement of vocabulary.identityRequirements)
+			expect(
+				readDeclaration({ ...bare, identity: requirement.identity }),
+			).toStrictEqual({
+				pointer: "/identity",
+				message: `a ${requirement.identity} declaration requires ${requirement.member} to be ${requirement.presence}`,
+			});
+		for (const requirement of vocabulary.shapeRequirements)
+			expect(
+				readDeclaration({ ...bare, shape: requirement.shape }),
+			).toStrictEqual({
+				pointer: "/shape",
+				message: `a ${requirement.shape} declaration requires ${requirement.member} to be ${requirement.presence}`,
+			});
+		for (const requirement of [
+			...vocabulary.identityRequirements.map((one) => ({
+				...one,
+				stated: { identity: one.identity },
+			})),
+			...vocabulary.shapeRequirements.map((one) => ({
+				...one,
+				stated: { shape: one.shape },
+			})),
+		]) {
+			const read = readDeclaration({
+				...bare,
+				...requirement.stated,
+				members: { [requirement.member]: requirement.presence },
+			}) as { declaration?: unknown };
+			expect(
+				read.declaration,
+				JSON.stringify(requirement.stated),
+			).toBeDefined();
+		}
 	});
 
 	/** Traces: TC-1553; FR-139-AC-2, FR-139-CON-1. */

@@ -52,6 +52,14 @@ const MEMBERS = new Map(
 const RULES = new Map(
 	CONSTRUCT_VOCABULARY.rules.map((rule) => [rule.name, rule]),
 );
+const FLAGS = new Map(
+	list(CONSTRUCT_VOCABULARY.flags).map((flag) => [flag.name, flag]),
+);
+
+/** The rule `name` states, or `undefined` for a name the vocabulary omits. */
+export function ruleOf(name) {
+	return RULES.get(name);
+}
 
 /**
  * The type members a core kind requires by the published schema, which a core
@@ -149,6 +157,7 @@ export function readDeclaration(value) {
 		"references",
 		"rules",
 		"meaning",
+		...FLAGS.keys(),
 	];
 	for (const name of Object.keys(value))
 		if (!allowed.includes(name))
@@ -237,6 +246,17 @@ export function readDeclaration(value) {
 	if (typeof value.meaning !== "string" || value.meaning.length === 0)
 		return refuse("/meaning", "meaning is a non-empty Quire meaning id");
 
+	const flags = {};
+	for (const [name, flag] of FLAGS) {
+		if (!Object.hasOwn(value, name)) {
+			flags[name] = flag.default;
+			continue;
+		}
+		if (typeof value[name] !== "boolean")
+			return refuse(`/${name}`, `${name} is a boolean`);
+		flags[name] = value[name];
+	}
+
 	const declaration = Object.freeze({
 		identity: value.identity,
 		shape: value.shape,
@@ -244,7 +264,26 @@ export function readDeclaration(value) {
 		references,
 		rules: Object.freeze(rules),
 		meaning: value.meaning,
+		...flags,
 	});
+	for (const [pointer, term, requirements, selected] of [
+		[
+			"/identity",
+			value.identity,
+			CONSTRUCT_VOCABULARY.identityRequirements,
+			"identity",
+		],
+		["/shape", value.shape, CONSTRUCT_VOCABULARY.shapeRequirements, "shape"],
+	]) {
+		for (const requirement of list(requirements)) {
+			if (requirement[selected] !== term) continue;
+			if (presenceOf(declaration, requirement.member) !== requirement.presence)
+				return refuse(
+					pointer,
+					`a ${term} declaration requires ${requirement.member} to be ${requirement.presence}`,
+				);
+		}
+	}
 	for (const [position, rule] of rules.entries()) {
 		const { member, presence } = RULES.get(rule);
 		if (presenceOf(declaration, member) !== presence)

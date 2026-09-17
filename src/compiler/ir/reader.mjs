@@ -20,6 +20,7 @@ import {
 	kindLabel,
 	presenceOf,
 	readDeclaration,
+	ruleOf,
 } from "../constructs.mjs";
 import {
 	DEFAULT_LIMITS,
@@ -56,15 +57,6 @@ function depthOf(value, bound, depth = 0) {
 	}
 	return depth;
 }
-
-/**
- * The rules that ask a required list member for at least one entry, each with
- * its member (FR-142).
- */
-const NON_EMPTY_RULES = Object.freeze({
-	min_clauses: "clauses",
-	min_operations: "operations",
-});
 
 function isObject(value) {
 	return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -153,8 +145,11 @@ function checkConstructs(document, definitions, raise, locusOf) {
 				);
 		}
 		for (const rule of declaration.rules) {
-			const member = NON_EMPTY_RULES[rule];
-			if (member === undefined) continue;
+			// A rule the vocabulary marks `nonEmpty` asks its member for at
+			// least one entry; no rule name is written here.
+			const stated = ruleOf(rule);
+			if (stated?.nonEmpty !== true) continue;
+			const member = stated.member;
 			if (Array.isArray(definition[member]) && definition[member].length === 0)
 				invalid(
 					`${at}/${member}`,
