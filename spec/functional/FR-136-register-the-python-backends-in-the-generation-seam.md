@@ -111,7 +111,7 @@ repository or a domain, which has no class, its `displayName` in class case, so
 
 | Construct or member | Rendering |
 |---|---|
-| `entity`, `nested_entity`, `aggregate_root`, `process` | the record's model class, whose `__eq__` and `__hash__` compare the canonical JSON form of its identity fields, so two instances with equal identity fields are one instance. Each identity field is read-only once constructed, because identity is the artifact id and does not change: assigning or deleting it raises `AttributeError`, while its other fields stay assignable. `IDENTITY_FIELDS` names those fields |
+| `entity`, `nested_entity`, `aggregate_root`, `process` | the record's model class, whose `__eq__` and `__hash__` compare the canonical JSON form of its identity fields, so two instances with equal identity fields are one instance. Each identity field is read-only once constructed, because an instance's identity does not change once constructed: assigning or deleting it raises `AttributeError`, while its other fields stay assignable. `IDENTITY_FIELDS` names those fields |
 | `value_object` | the record's model class, whose generated equality is field-by-field; `VALUE_EQUALITY` marks it |
 | `nested_entity` | `OWNER` names the owner class |
 | `aggregate_root`, `domain` | `MEMBERS` names the member classes |
