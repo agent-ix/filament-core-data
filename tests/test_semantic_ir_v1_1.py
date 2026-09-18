@@ -52,7 +52,7 @@ class TestSecondReader:
     NFR-044-AC-1), not here.
     Assumptions: the poetry dev group is installed; fixtures are the committed
     ones under fixtures/semantic/v1.
-    Criteria: FR-020-AC-7, FR-020-AC-8, FR-027-AC-1, FR-027-AC-6, NFR-013-AC-1.
+    Criteria: FR-020-AC-7, FR-020-AC-8, FR-027-AC-1, FR-027-AC-6.
     """
 
     def test_golden_documents_validate_and_read_clean(self, validator) -> None:
@@ -64,7 +64,7 @@ class TestSecondReader:
             assert read_semantic_ir(document) == [], name
 
     def test_v1_document_gains_no_derived_bytes(self) -> None:
-        """Criteria: FR-027 normalized-form rule, NFR-013-AC-1."""
+        """Criteria: FR-027 normalized-form rule (fcd#179 deleted NFR-013)."""
         assert '"multiplicity"' not in normalize(_fixture("positive/semantic-ir.json"))
 
     def test_normalized_form_round_trips(self) -> None:

@@ -210,10 +210,10 @@ blocked as stated above.
 | FR-024 | FR-024-AC-1..7 | TC-159..164, TC-200 | ✅ Complete |
 | FR-025 | FR-025-AC-1..6 | TC-165..170 | ✅ Complete |
 | FR-026 | FR-026-AC-1..6 | TC-171..176 | ✅ Complete |
-| FR-027 | FR-027-AC-1..9, FR-027-CON-1..2 | TC-203..209, TC-237..238 | ✅ Complete |
+| FR-027 | FR-027-AC-1..9, FR-027-CON-2 | TC-203..209, TC-237..238 | ✅ Complete |
 | FR-028 | FR-028-AC-1..13, FR-028-CON-1..2 | TC-210..218, TC-239..243 | ✅ Complete |
 | FR-029 | FR-029-AC-1..8, FR-029-CON-1..2 | TC-219..226, TC-244..245 | ✅ Complete |
-| FR-030 | FR-030-AC-1..6, FR-030-CON-1..2 | TC-227..231, TC-246 | ✅ Complete |
+| FR-030 | FR-030-AC-1..6, FR-030-CON-2 | TC-227..230, TC-246 | ✅ Complete |
 | FR-031 | FR-031-AC-1..7, FR-031-CON-1..2 | TC-248..254, TC-277 | ✅ Complete |
 | FR-032 | FR-032-AC-1..5, FR-032-CON-1 | TC-255..260 | ✅ Complete |
 | FR-033 | FR-033-AC-1..5, FR-033-CON-1..2 | TC-261..266 | ✅ Complete |
@@ -314,7 +314,6 @@ blocked as stated above.
 | NFR-010 | Sandboxed path, network, execution, dependency, security, and bounded-resource checks | TC-185..189, TC-202 | ✅ Complete |
 | NFR-011 | Public schema, independent reader, extension, capability, and preservation checks | TC-190..194 | ✅ Complete |
 | NFR-012 | Diff, unchanged-suite, registry, downstream-gate, and human-decision checks | TC-195..199 | ✅ Complete |
-| NFR-013 | Unchanged v1 fixture suite, spike byte comparison, compatibility-corpus entry, changed-path gate, and fixture inventory | TC-208, TC-234..236, TC-247 | ✅ Complete |
 | NFR-014 | Compiled-program inventory, amendment inspection, changed-path gate, emitter inspection, spike byte comparison | TC-249, TC-273..276, TC-278 | ✅ Complete |
 | NFR-015 | Provenance quote check, repeat/locale/directory byte comparison, oracle and harness import and effect analysis, divergence and contract-gap register inspection | TC-635..337 | ✅ Complete |
 | NFR-016 | Changed-path gate, manifest diff, offline test run, publication analysis | TC-640..643 | ✅ Complete |
@@ -552,11 +551,10 @@ blocked as stated above.
 | TC-202 | Oversized and cyclic hostile inputs terminate at declared resource limits | Fuzz | P0 | NFR-010 | ✅ passed — semantic contract v1 |
 | TC-203 | A `0..1` field validates, derives `presence: optional`, and re-serializes byte-identically | Property | P0 | FR-027-AC-1, FR-020-AC-7, US-006-EX-1 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-204 | A `1..*` field preserves `ordered` and `unique` flags | Unit | P0 | FR-027-AC-2 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-205 | Stated `presence` contradicting multiplicity fails at the field locus | Unit | P0 | FR-027-AC-3 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-206 | `upper < lower` and `lower < 0` fail at the field locus; `0..0` validates | Unit | P0 | FR-027-AC-4 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-207 | `unit` validates on a scalar field and fails on a record field | Unit | P0 | FR-027-AC-5, FR-027-CON-2 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-208 | Every v1 positive fixture validates unchanged under v1.1 with multiplicity derived from presence | Integration | P0 | FR-027-AC-6, FR-027-CON-1, NFR-013-AC-1 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-209 | FR-006 `ConfigVersion` fields express as v1.1 fields with zero declared loss | Analysis | P0 | FR-027-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-208 | Every v1 positive fixture's digest stays pinned; every fixture declaring `2.0.0` validates with multiplicity derived from presence | Integration | P0 | FR-027-AC-6 | ✅ passed — semantic IR v1.1 (PR #38); restated fcd#179 |
+| TC-209 | FR-006 `ConfigVersion` fields express as fields with zero declared loss | Analysis | P0 | FR-027-AC-7 | ✅ passed — semantic IR v1.1 (PR #38); retargeted fcd#179 |
 | TC-210 | A `belongs_to` structural relationship validates and round-trips byte-identically | Property | P0 | FR-028-AC-1, FR-020-AC-7, US-006-EX-2 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-211 | An unknown relationship `category` fails at the relationship locus | Unit | P0 | FR-028-AC-2 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-212 | An operation with params, bounded return, and present pre/post clauses validates | Unit | P0 | FR-028-AC-3 | ✅ passed — semantic IR v1.1 (PR #38) |
@@ -578,12 +576,8 @@ blocked as stated above.
 | TC-228 | The JSON Schema `$schema` URI as `source.dialect` fails with a diagnostic citing ADR-0005 | Unit | P0 | FR-030-AC-2 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-229 | Manifest targets `rust`/`markdown` validate; target `go` fails at its entry | Unit | P0 | FR-030-AC-3 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-230 | Manifest, target-contract, and representation schemas reference the shared common enumerations | Static | P0 | FR-030-AC-4, FR-030-CON-2 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-231 | The v1 `contractVersion: "1.0.0"` IR fixture remains valid under the v1 schema | Integration | P0 | FR-030-CON-1 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-232 | The TypeScript Ajv reader and the Python `jsonschema` reader (`tests/`) agree on every v1.1 golden and negative fixture | Integration | P0 | FR-020-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-233 | Generated v1.1 documents with all five new node kinds round-trip the normalized serialization byte-identically | Property | P0 | FR-020-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-234 | `spike:typespec:check` output is byte-identical before and after the revision | Snapshot | P0 | NFR-013-AC-2 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-235 | The compatibility corpus records v1 → v1.1 as `additive` with the added node list | Static | P0 | NFR-013-AC-3 | 🚧 fcd#179 deleted both contracts this recorded; the corpus entry is gone and no test binds this row — NFR-013's disposition needs its own decision |
-| TC-236 | Issue #34 changed-path gate excludes `spikes/`, backends, and corpus repositories | Static | P0 | NFR-013-AC-4 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-232 | The TypeScript Ajv reader and the Python `jsonschema` reader (`tests/`) agree on every golden and negative fixture | Integration | P0 | FR-020-AC-8 | ✅ passed — semantic IR v1.1 (PR #38); restated fcd#179 |
+| TC-233 | Generated `2.0.0` documents with all five new node kinds round-trip the normalized serialization byte-identically | Property | P0 | FR-020-AC-7 | ✅ passed — semantic IR v1.1 (PR #38); restated fcd#179 |
 | TC-237 | `ordered: true` or `unique: true` on a `1..1` field fails at the field locus | Unit | P0 | FR-027-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-238 | Multiplicity narrowing classifies breaking; widening classifies additive | Unit | P0 | FR-027-AC-9 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-239 | A relationship `target` resolving to no type definition or lock export fails at the relationship locus | Unit | P0 | FR-028-AC-9 | ✅ passed — semantic IR v1.1 (PR #38) |
@@ -593,8 +587,7 @@ blocked as stated above.
 | TC-243 | Added relationship/operation/clause classifies additive; removed or retargeted classifies breaking | Unit | P0 | FR-028-AC-13 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-244 | `minLength` applied to an `integer` scalar fails at the constraint locus | Unit | P0 | FR-029-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-245 | A `pattern` whose `regex` does not compile under `ecma-262` fails validation | Unit | P0 | FR-029-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-246 | `contractVersion: "1.3.0"` fails before emission; `1.1.0` with `source.dialect: avro` fails at `source.dialect` | Unit | P0 | FR-030-AC-5, FR-030-AC-6 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-247 | Every new IR node kind has one golden and one negative fixture under `fixtures/semantic/v1/` | Static | P0 | NFR-013-AC-5 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-246 | `contractVersion: "1.3.0"` fails before emission; `2.0.0` with `source.dialect: avro` fails at `source.dialect` | Unit | P0 | FR-030-AC-5, FR-030-AC-6 | ✅ passed — semantic IR v1.1 (PR #38); restated fcd#179 |
 | TC-248 | `tsp compile packages/semantic-core` exits 0 with zero diagnostics under the pinned compiler | Compile | P0 | FR-031-AC-1 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-249 | The compiled program's declaration set equals `inventory.json`; adding `Entity` or `Any` to the source makes the scope test fail naming the declaration | Unit | P0 | FR-031-AC-2, NFR-014-AC-1 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-250 | `ConstraintKeyword` and the eleven constraint models match the FR-029 keyword set and operand shapes; the emitted schema rejects a twelfth | Unit | P0 | FR-031-AC-3 | ✅ passed — semantic-core grammar (PR #39) |
@@ -1860,7 +1853,6 @@ blocked as stated above.
 | NFR-008 | Prohibited | Network, host path, or ordering changes output | TC-177..180 | Fail reproducibility gate |
 | NFR-010 | Allowed | Writes remain in a new regular-file output root | TC-185 | Pass sandbox check |
 | NFR-010 | Prohibited | Traversal, symlink, template, or option escapes sandbox | TC-185, TC-187 | Reject with source-located diagnostic |
-| FR-027-CON-1 | Allowed | v1 field with `presence` only | TC-208 | Multiplicity derived (`required` → `1..1`, `optional` → `0..1`) |
 | FR-027-CON-2 | Prohibited | `unit` on a record-typed field | TC-207 | Fail validation, never drop the unit |
 | FR-027 multiplicity | Min | `lower: 0`, `upper: 0` | TC-206 | Valid empty-only multiplicity (positive case in the same test) |
 | FR-027 flags | Prohibited | `ordered: true` on `1..1` | TC-237 | Fail validation at the field locus |
@@ -1888,7 +1880,6 @@ blocked as stated above.
 | FR-034 UnitSymbol | Prohibited | ``, `k g`, `kg²` | TC-270 | Fail pattern |
 | Multiplicity (grammar) | Inverted | `lower: 1, upper: 0` | TC-277 | Reader rejects at the declaration |
 | Multiplicity (grammar) | Min / Below min | `lower: 0` / `lower: -1` | TC-263 | Pass / fail `Multiplicity.json` |
-| FR-030-CON-1 | Allowed | `contractVersion: "1.0.0"` with the v1 dialect constant under the v1 schema | TC-231 | Pass |
 | FR-030-CON-2 | Prohibited | Manifest and target-contract enumerations diverge | TC-230 | Schema inspection fails |
 | FR-035-AC-6 minimization budget | Max / Above max | 64 `ops` nodes / 65 `ops` nodes | TC-285 | Pass / fail the corpus gate |
 | FR-036 single violation | Allowed / Prohibited | one seeded violation / two seeded violations | TC-290 | Exactly one oracle diagnostic / gate fails |
@@ -2055,8 +2046,6 @@ blocked as stated above.
 | unknown required capability | load or compile attempt | explicit unsupported diagnostic and no target output | TC-193 |
 | current legacy manifest | legacy profile validation | accepted unchanged and advisory | TC-173 |
 | legacy manifest | later human enforcement promotion | native v1 validation may become required in the later ticket | TC-173, TC-198 |
-| v1 IR document | read under the v1.1 schema | valid, with multiplicity derived and node arrays empty | TC-208, TC-217 |
-| v1.1 IR document | read under the v1 schema | rejected as an unknown contract version (FR-019-CON-2) | TC-133, TC-231 |
 | semantic-core `v1` | grammar addition under `Versions.v2` | `v1` projection byte-identical; `v2` additive | TC-253 |
 | raw official bundle | #31 normalization applied | absolute `$id` bundle that validates without alias | TC-262, TC-265 |
 | normalized bundle | issue #31 fixed upstream | normalization removed; raw bundle validates | TC-266 |
@@ -2150,7 +2139,7 @@ blocked as stated above.
 | ERR-029 | Legacy adapter, version, or identity is missing/contradictory | Explicit failure and zero-value success prohibited | TC-175 |
 | ERR-030 | Locked generation attempts network access or filesystem escape | Sandbox terminates generation and records the offending locus | TC-178, TC-185..187 |
 | ERR-031 | Required extension capability is unknown | Package load/compile fails before emission | TC-193 |
-| ERR-032 | Field `presence` contradicts its multiplicity, or `upper < lower` | Validation fails at the field locus | TC-205, TC-206 |
+| ERR-032 | Field `upper < lower` (fcd#179: the `presence` contradicts multiplicity clause is deleted with TC-205 — PRESENCE_MULTIPLICITY_MISMATCH was enforced only outside contract 2.0.0, which no longer exists) | Validation fails at the field locus | TC-206 |
 | ERR-033 | `unit` declared on a non-scalar field | Validation fails at the field locus | TC-207 |
 | ERR-034 | Relationship category outside the FR-040 closed set, or on a non-record type | Validation fails at the relationship locus | TC-211, TC-216 |
 | ERR-035 | Operation pre/post references an absent clause identity | Validation fails at the operation locus | TC-213 |
@@ -2353,7 +2342,7 @@ blocked as stated above.
 | EC-024 | Dynamic consumer receives a module absent from static generated exports | FR-021, FR-026 | TC-145, TC-171..172 | Open ecosystem is accidentally closed or data silently discarded |
 | EC-025 | Malicious schema name resolves outside output root through traversal or symlink | NFR-010 | TC-185, TC-187 | Generator overwrites user or repository data |
 | EC-026 | Extension is optional to one backend but required to another | NFR-009, NFR-011 | TC-181, TC-193..194 | Cross-language success masks capability disagreement |
-| EC-027 | Required field (`lower ≥ 1`) that is also `nullable: true` | FR-027 | TC-203, TC-205 | Multiplicity is mistaken for nullability and one state is lost |
+| EC-027 | Required field (`lower ≥ 1`) that is also `nullable: true` | FR-027 | TC-203 | Multiplicity is mistaken for nullability and one state is lost |
 | EC-028 | Self-referential relationship (`parent : ConfigVersion[0..1]`) | FR-028 | TC-210, TC-218, TC-240 | Recursive edge flattened or rejected as a cycle |
 | EC-029 | Two clauses with the same `clauseId` in different languages on one type | FR-028 | TC-241 | Operation pre/post binds to the wrong clause |
 | EC-030 | A v1 fixture already using a free-form keyword | FR-029 | TC-224 | Closing the vocabulary silently invalidates accepted evidence |

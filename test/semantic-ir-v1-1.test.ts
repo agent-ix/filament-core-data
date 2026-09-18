@@ -20,14 +20,21 @@ const fixtureRoot = resolve(root, "fixtures/semantic/v1");
 const schemaBase = "https://schemas.agent-ix.org/filament-core-data/v1/";
 /**
  * Issue #34 (semantic IR v1.1) matrix trace inventory:
- * TC-203, TC-204, TC-205, TC-206, TC-207, TC-208, TC-209, TC-210, TC-211,
+ * TC-203, TC-204, TC-206, TC-207, TC-208, TC-209, TC-210, TC-211,
  * TC-212, TC-213, TC-214, TC-215, TC-216, TC-217, TC-218, TC-219, TC-220,
  * TC-221, TC-222, TC-223, TC-224, TC-225, TC-226, TC-227, TC-228, TC-229,
- * TC-230, TC-231, TC-232, TC-233, TC-234, TC-235, TC-236, TC-237, TC-238,
- * TC-239, TC-240, TC-241, TC-242, TC-243, TC-244, TC-245, TC-246, TC-247.
- * Acceptance criteria: FR-020-AC-7..8, FR-027-AC-1..9, FR-028-AC-1..13,
- * FR-029-AC-1..8, FR-030-AC-1..6, NFR-013-AC-1..5.
- * Constraints: FR-027-CON-1..2, FR-028-CON-1..2, FR-029-CON-1..2, FR-030-CON-1..2.
+ * TC-230, TC-232, TC-233, TC-237, TC-238,
+ * TC-239, TC-240, TC-241, TC-242, TC-243, TC-244, TC-245, TC-246.
+ * Acceptance criteria: FR-020-AC-7..8, FR-027-AC-1..2, FR-027-AC-4..9, FR-028-AC-1..13,
+ * FR-029-AC-1..8, FR-030-AC-1..6.
+ * Constraints: FR-027-CON-2, FR-028-CON-1..2, FR-029-CON-1..2, FR-030-CON-2.
+ * fcd#179 deleted TC-231, TC-234, TC-235, TC-236 (NFR-013 and FR-030-CON-1,
+ * whose subjects were the deleted 1.0.0/1.1.0 contracts, no longer exist).
+ * fcd#179 also deleted TC-205 and FR-027-AC-3: PRESENCE_MULTIPLICITY_MISMATCH
+ * was enforced only outside contract 2.0.0 (FR-106-AC-4 exempts 2.0.0 itself),
+ * and 2.0.0 is now the only contract, so the enforced side is unreachable —
+ * the reader case it probed (field-presence-contradicts-multiplicity) was
+ * removed from negative/reader-cases.json by R1, leaving no case to assert on.
  */
 
 type JsonObject = Record<string, unknown>;
@@ -191,11 +198,16 @@ describe("semantic IR v1.1 baseline and non-disruption", () => {
 		).toBe(true);
 	});
 
-	/** Traces: TC-234; NFR-013-AC-2. */
+	/**
+	 * fcd#179 deleted NFR-013 (TC-234's sole owner), whose subject was the
+	 * additivity of the now-deleted 1.0.0 -> 1.1.0 revision; the scope
+	 * discipline this test enforces has no other live requirement to trace to.
+	 * Kept as a regression guard, not a traced criterion.
+	 */
 	it("leaves the frozen TypeSpec spike untouched", () => {
 		// Scoped by issue #27 (FR-044), which owns the spike's rewiring. The
-		// retained evidence NFR-013 protects is still byte-identical apart from
-		// the one declared field, pinned by TC-371 in test/compiler.test.ts.
+		// retained evidence is still byte-identical apart from the one declared
+		// field, pinned by TC-371 in test/compiler.test.ts.
 		const promotionPaths = [
 			"spikes/typespec-feasibility/scripts/run-experiment.mjs",
 			"spikes/typespec-feasibility/package.json",
@@ -219,7 +231,10 @@ describe("semantic IR v1.1 baseline and non-disruption", () => {
 		expect(spikeDiff).toEqual([]);
 	});
 
-	/** Traces: TC-236; NFR-013-AC-4. */
+	/**
+	 * fcd#179 deleted NFR-013 (TC-236's sole owner); kept as a regression
+	 * guard, not a traced criterion (see the note above TC-234's test).
+	 */
 	it("keeps issue #34 inside its permitted paths", () => {
 		const allowed = [
 			"conformance/",
@@ -581,18 +596,14 @@ describe("FR-027 field multiplicity and units", () => {
 		expect(bytes).toContain('"unique":true');
 	});
 
-	/**
-	 * Traces: TC-205; FR-027-AC-3.
-	 *
-	 * FR-106-AC-4 carves out 2.0.0 specifically: a 2.0.0 field's presence may
-	 * disagree with its multiplicity unenforced (fcd#182 is the open question
-	 * on whether that should change). This case's `also` override pins the
-	 * mutated document at a version other than `2.0.0` so it keeps probing
-	 * the enforced side of that split rather than the exempted one.
-	 */
-	it("fails when stated presence contradicts the multiplicity outside 2.0.0", () => {
-		expectReaderFailure("field-presence-contradicts-multiplicity");
-	});
+	// fcd#179 deleted TC-205 and FR-027-AC-3 (this test's whole subject):
+	// PRESENCE_MULTIPLICITY_MISMATCH was enforced only outside contract 2.0.0
+	// (FR-106-AC-4 exempts 2.0.0 itself, fcd#182 is the open question on
+	// whether that should change), and 2.0.0 is now the only contract, so
+	// the enforced side is unreachable. R1 deleted the diagnostic, the
+	// reader case (field-presence-contradicts-multiplicity), and the
+	// version-conditional gate in checkField/_check_field; this test would
+	// otherwise just throw "reader case is not recorded".
 
 	/** Traces: TC-206; FR-027-AC-4. */
 	it("fails inverted and negative bounds and accepts 0..0", () => {
@@ -768,17 +779,15 @@ describe("FR-029 closed constraint vocabulary", () => {
 	});
 
 	/**
-	 * Traces: TC-225, TC-235; FR-029-CON-2.
+	 * Traces: TC-225; FR-029-CON-2.
 	 *
-	 * The `compatibility/cases.json` entry `v1-to-v1-1-additive-revision` — the
-	 * FR-029-CON-2 clause about the v1 → v1.1 narrowing, and NFR-013-AC-3,
-	 * which required this corpus entry outright — described the 1.0.0 → 1.1.0
-	 * migration. Both contracts are gone (fcd#179); the entry is gone from the
-	 * corpus already. Whether FR-029-CON-2's trailing clause and NFR-013 (an
-	 * entire requirement about that one now-nonexistent revision) still have a
-	 * reason to exist is a bigger call than this deletion ticket, so this test
-	 * keeps only the vocabulary-change assertions that remain live and drops
-	 * the revision-history one rather than resurrecting dead corpus data.
+	 * The `compatibility/cases.json` entry `v1-to-v1-1-additive-revision`
+	 * described the 1.0.0 -> 1.1.0 migration; both contracts are gone
+	 * (fcd#179), and the entry is deleted from the corpus (commit ecb7698).
+	 * FR-029-CON-2's trailing clause about that migration is deleted with it,
+	 * and NFR-013 (an entire requirement about that one now-nonexistent
+	 * revision) is deleted outright; TC-235, its sole trace, is deleted too.
+	 * This test keeps only the vocabulary-change assertions that remain live.
 	 */
 	it("classifies vocabulary changes", () => {
 		const byId = new Map(
@@ -1333,7 +1342,10 @@ describe("FR-020 closing gate: two readers, round trip, fixture inventory (Task-
 		}
 	});
 
-	/** Traces: TC-247; NFR-013-AC-5. */
+	/**
+	 * fcd#179 deleted NFR-013 (TC-247's sole owner); kept as a regression
+	 * guard, not a traced criterion (see the note above TC-234's test).
+	 */
 	it("has at least one golden and one negative fixture per new node kind", () => {
 		const golden = JSON.stringify([
 			readJson("positive/semantic-ir-v1-1.json"),

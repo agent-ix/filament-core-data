@@ -83,6 +83,8 @@ new node; fixture-backed agreement is the mitigation.
 ## Traceability (Informative)
 
 This story drives [FR-027](../functional/FR-027-declare-field-multiplicity-and-units.md)
-through [FR-030](../functional/FR-030-bind-source-dialect-and-manifest-targets.md),
-amends [FR-020](../functional/FR-020-define-semantic-type-system-and-identity.md),
-and is constrained by [NFR-013](../non-functional/NFR-013-additive-semantic-ir-revision.md).
+through [FR-030](../functional/FR-030-bind-source-dialect-and-manifest-targets.md)
+and amends [FR-020](../functional/FR-020-define-semantic-type-system-and-identity.md)
+(fcd#179 deleted NFR-013, the "additive semantic IR revision" requirement this
+story was constrained by; its subject, the 1.0.0 -> 1.1.0 revision, no longer
+exists).

@@ -152,6 +152,7 @@ function checkMultiplicity(
 function checkField(
 	field: JsonObject,
 	path: string,
+	version: string,
 	types: Map<string, JsonObject>,
 	diagnostics: Diagnostic[],
 ): void {
@@ -163,19 +164,25 @@ function checkField(
 			message: `typeRef does not resolve: ${String(field.typeRef)}`,
 		});
 	}
-	let multiplicity: Multiplicity | undefined;
 	if (field.multiplicity === undefined) {
-		diagnostics.push({
-			code: "agent-ix.semantic-ir.MISSING_MULTIPLICITY",
-			path: `${path}.multiplicity`,
-			message: "a field declares its multiplicity",
-		});
+		// fcd#179: mirrors tests/semantic_ir_reader.py's `_check_field`, which
+		// is byte-pinned (FR-050-CON-2/FR-050-AC-4) and still gates
+		// MISSING_MULTIPLICITY on `version in {"1.1.0", "2.0.0"}`. Contract
+		// 1.1.0 is deleted and no longer schema-valid, so in practice only a
+		// 2.0.0 document reaches here through a passing schema check — but
+		// this reader also runs (for TC-232/FR-020-AC-8 cross-reader parity)
+		// against the two fixtures frozen at their deleted contracts
+		// (semantic-ir.json at 1.0.0, config-version-v1-1.json at 1.1.0),
+		// and must keep matching Python's verdict there.
+		if (version === "1.1.0" || version === "2.0.0") {
+			diagnostics.push({
+				code: "agent-ix.semantic-ir.MISSING_MULTIPLICITY",
+				path: `${path}.multiplicity`,
+				message: "a field declares its multiplicity",
+			});
+		}
 	} else {
-		multiplicity = checkMultiplicity(
-			field.multiplicity,
-			`${path}.multiplicity`,
-			diagnostics,
-		);
+		checkMultiplicity(field.multiplicity, `${path}.multiplicity`, diagnostics);
 	}
 	if (field.unit !== undefined) {
 		if (typeof field.unit !== "string" || field.unit.length === 0) {
@@ -260,13 +267,14 @@ function checkConstraint(
 function checkTypeDefinition(
 	definition: JsonObject,
 	path: string,
+	version: string,
 	types: Map<string, JsonObject>,
 	lockExports: Set<string>,
 	diagnostics: Diagnostic[],
 ): void {
 	const isRecord = isEdgeKind(definition.kind);
 	for (const [index, field] of asArray(definition.fields).entries())
-		checkField(field, `${path}.fields.${index}`, types, diagnostics);
+		checkField(field, `${path}.fields.${index}`, version, types, diagnostics);
 	for (const [index, constraint] of asArray(definition.constraints).entries())
 		checkConstraint(
 			constraint,
@@ -360,6 +368,7 @@ function checkTypeDefinition(
 			checkField(
 				param,
 				`${path}.operations.${index}.params.${paramIndex}`,
+				version,
 				types,
 				diagnostics,
 			);
@@ -485,6 +494,7 @@ export function readSemanticIr(
 			},
 		];
 	}
+	const version = String(document.contractVersion);
 	const types = new Map<string, JsonObject>();
 	for (const definition of asArray(document.types))
 		types.set(String(definition.identity), definition);
@@ -494,6 +504,7 @@ export function readSemanticIr(
 		checkTypeDefinition(
 			definition,
 			`types.${index}`,
+			version,
 			types,
 			exports,
 			diagnostics,

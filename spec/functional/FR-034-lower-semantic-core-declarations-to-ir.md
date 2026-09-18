@@ -1,6 +1,6 @@
 ---
 id: FR-034
-title: "Lower semantic-core declarations to IR v1.1 nodes"
+title: "Lower semantic-core declarations to IR 2.0.0 nodes"
 type: FR
 relationships:
   - target: "ix://agent-ix/filament-core-data/US-007"
@@ -16,12 +16,12 @@ relationships:
   - target: "ix://agent-ix/filament-core-data/FR-029"
     type: "depends_on"
 ---
-# [FR-034] Lower semantic-core declarations to IR v1.1 nodes
+# [FR-034] Lower semantic-core declarations to IR 2.0.0 nodes
 
 ## Description
 
 The semantic-core package SHALL define the lowering from one archetype
-instance's declarations to IR v1.1 nodes as a table plus a test-scoped
+instance's declarations to IR `2.0.0` nodes as a table plus a test-scoped
 reference lowerer, with zero declared loss, proven on the FR-006
 `ConfigVersion` declarations.
 
@@ -39,13 +39,13 @@ the two implementations of that statement.
 
 - One archetype instance: `{ name, kind: record | enum, fields: FieldDecl[], relations: RelationDecl[], operations: OperationDecl[], clauses: ClauseRef[], enumValues: EnumValue[] }` supplied by a module
 - A lowering context: the package identity `<org>/<repo>`, a `SourceLocus` per declaration, and a clause-text map `clauseId → text` (supplied by the extraction frontend in issue #36, and by the fixture author for this ticket)
-- The IR v1.1 schema and both IR readers (FR-027..030, issue #34)
+- The IR `2.0.0` schema and both IR readers (FR-027..030, issue #34)
 
 ## Outputs
 
 - `packages/semantic-core/lowering.json`: one row per grammar-model property (model, property, IR node, IR property, `loss`)
 - `test/semantic-core-lowerer.ts`: the reference lowerer used by the tests
-- `fixtures/semantic-core/positive/config-version-lowered.json`: the `contractVersion: "1.1.0"` document the lowerer produces from the FR-006 declaration set
+- `fixtures/semantic-core/positive/config-version-lowered.json`: the `contractVersion: "2.0.0"` document the lowerer produces from the FR-006 declaration set
 
 ## Behavior
 
