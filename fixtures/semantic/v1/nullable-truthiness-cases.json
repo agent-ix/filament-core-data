@@ -1,0 +1,10 @@
+{
+	"$comment": "fcd#187: nullable materializes to a literal boolean only where the authored member is the JSON literal `true`, matching JS (src/compiler/ir/normalize.mjs), TypeScript (src/compiler/backends/typescript-v1/canonical.mjs) `=== true`, and Python (tests/semantic_ir_reader.py) `is True`. Rust previously coerced with ECMAScript truthiness, so `1` and `\"true\"` also read as nullable; that divergence is what this fixture pins. Every case is consumed identically by the Rust, JS, TypeScript, and Python normalize/materialize steps: `raw` (or its absence, for the `absent` case) is spliced in as the field's authored `nullable` member, and `normalized` is the literal boolean every one of the four SHALL produce.",
+	"cases": [
+		{ "id": "boolean-true", "raw": true, "normalized": true },
+		{ "id": "boolean-false", "raw": false, "normalized": false },
+		{ "id": "number-one", "raw": 1, "normalized": false },
+		{ "id": "string-true", "raw": "true", "normalized": false },
+		{ "id": "absent", "normalized": false }
+	]
+}

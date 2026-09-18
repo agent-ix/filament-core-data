@@ -31,6 +31,7 @@ import {
 	VARIANT_ADDITION_POLICY,
 	classifySurface,
 } from "../src/compiler/backends/typescript-v1/classify.mjs";
+import { normalizeIrForTarget } from "../src/compiler/backends/typescript-v1/canonical.mjs";
 import { changeRange, changedPathsOf } from "./changed-paths";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -1236,6 +1237,55 @@ describe("TC-811 IR-surface classification rules (FR-069)", () => {
 		// Outside its own documentation the constant appears twice: the
 		// declaration, and the single read that decides the classification.
 		expect(readers).toEqual(["classify.mjs:2"]);
+	});
+});
+
+describe("FR-069 canonicalization: nullable materialization (fcd#187)", () => {
+	/**
+	 * `normalizeIrForTarget` SHALL force `nullable` to a literal boolean only
+	 * for the JSON literal `true` (`=== true`), never by truthiness coercion.
+	 * `fixtures/semantic/v1/nullable-truthiness-cases.json` is the shared
+	 * cross-language fixture the Rust (`normalize::tests`), the compiler
+	 * frontend (`test/compiler-core.test.ts`), and Python
+	 * (`tests/test_semantic_ir_reader.py`) tests consume identically, so a
+	 * divergence in any one language's coercion rule fails only that
+	 * language's own test.
+	 */
+	it("materializes nullable === true only, for every case the shared fixture names", () => {
+		const cases = (
+			JSON.parse(
+				readFileSync(
+					resolve(root, "fixtures/semantic/v1/nullable-truthiness-cases.json"),
+					"utf8",
+				),
+			) as { cases: { id: string; raw?: unknown; normalized: boolean }[] }
+		).cases;
+		expect(cases.length).toBe(5);
+		for (const testCase of cases) {
+			const field: Record<string, unknown> = {
+				name: "a",
+				presence: "required",
+				multiplicity: { lower: 1, upper: 1 },
+			};
+			if ("raw" in testCase) field.nullable = testCase.raw;
+			const document = {
+				contractVersion: "2.0.0",
+				types: [
+					{
+						identity: "ix://a/b/type/T",
+						kind: "record",
+						fields: [field],
+					},
+				],
+			};
+			const normalized = JSON.parse(normalizeIrForTarget(document)) as {
+				types: Record<string, unknown>[];
+			};
+			const normalizedField = (
+				normalized.types[0].fields as Record<string, unknown>[]
+			)[0];
+			expect(normalizedField.nullable, testCase.id).toBe(testCase.normalized);
+		}
 	});
 });
 
