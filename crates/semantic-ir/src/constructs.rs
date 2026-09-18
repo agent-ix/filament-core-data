@@ -297,6 +297,12 @@ fn reference_entries(definition: &Json, type_at: &str, member: Member) -> Vec<(S
 
 /// Each entry of reference member `member` names a declared type, carrying
 /// one of the roles the declaration admits when it constrains the member.
+///
+/// `Member::SourceElement` alone also admits naming an operation of a
+/// declared type (FR-152's `<id>/<operation>` allocation source form): that
+/// entry resolves to the type declaring the named operation, and the role
+/// check below runs against that owning type exactly as it would for a
+/// direct type reference.
 fn references(
     document: &Document<'_>,
     definition: &Json,
@@ -306,12 +312,18 @@ fn references(
     sink: &mut Sink<'_>,
 ) {
     for (at, name) in reference_entries(definition, type_at, member) {
-        let Some(found) = document.type_of(&name) else {
-            sink.emit(
-                at,
-                UNRESOLVED_CONSTRUCT_REF,
-                "a construct member names a type the document declares",
-            );
+        let found = document.type_of(&name).or_else(|| {
+            (member == Member::SourceElement)
+                .then(|| document.type_of_operation(&name))
+                .flatten()
+        });
+        let Some(found) = found else {
+            let message = if member == Member::SourceElement {
+                "a construct member names a type the document declares, or an operation of one"
+            } else {
+                "a construct member names a type the document declares"
+            };
+            sink.emit(at, UNRESOLVED_CONSTRUCT_REF, message);
             continue;
         };
         let Some(admitted) = admitted else {

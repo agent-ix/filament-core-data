@@ -17,14 +17,16 @@
 //! over the same `## Values` section, and the variant's `origin.source` is
 //! that line at column 3, the first cell's text after `| `.
 
+use std::collections::BTreeMap;
 use std::fmt;
 
 use quire_rs::extract::locator::{eval_locator, LocatorPrimitive};
 use quire_rs::semantic::scan::{blocks_in, level2_sections, lines, Block};
+use quire_rs::semantic::ModelDeclarations;
 use quire_rs::{evaluate_assert, table_from_section};
 
 use crate::bundle::{Document, ObjectType};
-use crate::constructs::ConstructMembers;
+use crate::constructs::{lower_generalization, ConstructMembers, References};
 use crate::diagnostics::{Code, Diagnostic, Locus};
 use crate::lower::{
     ArtifactContext, LowerError, Lowering, Origin, TypeDefinition, UnknownPolicy, Variant,
@@ -181,8 +183,17 @@ fn row_lines(raw: &str, section: &str) -> Vec<usize> {
 /// Lower the evaluator's rows to one `enum` definition: `name` the `Value`
 /// cell verbatim, `identity` `variant/<enum-slug>-<value-slug>`, origin
 /// at the row's line and column 3; `DUPLICATE_TYPE_NAME` at the second of
-/// two rows that slug alike.
-pub fn lower_enum(rows: &[ValueRow], ctx: &ArtifactContext<'_>) -> Result<Lowering, LowerError> {
+/// two rows that slug alike. `supertypes` and `abstract` lower from `model`
+/// the same way as [`crate::constructs::shape`]'s (FR-142: one construct
+/// per object type, and neither member is enumeration-specific), since an
+/// enumeration artifact never reaches `shape`.
+pub fn lower_enum(
+    rows: &[ValueRow],
+    model: Option<&ModelDeclarations>,
+    artifact_roles: &BTreeMap<String, Vec<String>>,
+    ctx: &ArtifactContext<'_>,
+    object: &str,
+) -> Result<Lowering, LowerError> {
     let type_identity = ctx.type_identity()?;
     let source = ctx.package.source();
     let mut diagnostics: Vec<Diagnostic> = Vec::new();
@@ -236,6 +247,21 @@ pub fn lower_enum(rows: &[ValueRow], ctx: &ArtifactContext<'_>) -> Result<Loweri
     if blocked {
         return Err(LowerError::Blocked(diagnostics));
     }
+    let mut construct = ConstructMembers::default();
+    if let Some(construct_decl) = ctx.construct {
+        let references = References {
+            declaration: &construct_decl.declaration,
+            artifact_roles,
+        };
+        let (supertypes, is_abstract) = lower_generalization(
+            model.unwrap_or(&ModelDeclarations::default()),
+            &references,
+            ctx,
+            object,
+        )?;
+        construct.supertypes = supertypes;
+        construct.is_abstract = is_abstract;
+    }
     Ok(Lowering {
         definition: TypeDefinition {
             identity: type_identity,
@@ -253,7 +279,7 @@ pub fn lower_enum(rows: &[ValueRow], ctx: &ArtifactContext<'_>) -> Result<Loweri
             relationships: None,
             operations: None,
             clauses: None,
-            construct: ConstructMembers::default(),
+            construct,
         },
         aliases: Vec::new(),
         diagnostics,

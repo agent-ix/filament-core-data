@@ -9,18 +9,20 @@ use std::path::{Path, PathBuf};
 
 mod common;
 
+use agent_ix_extraction_frontend::constructs::{Direction, FlowDirection};
 use agent_ix_extraction_frontend::diagnostics::{Code, Diagnostic, WireCode};
 use agent_ix_extraction_frontend::{
-    extract, lower_bundle, resolve, Bundle, Extractions, LiftOutcome, Limits, Lowered,
+    extract, lift, lower_bundle, resolve, Bundle, Extractions, LiftOutcome, LiftRequest, Limits,
+    Lowered,
 };
 use agent_ix_semantic_ir::json::parse as parse_json;
 use agent_ix_semantic_ir::{decide, ResultState};
 use common::{
     business_module, copy_tree, edge_vocabulary, fixture, lift_fixture, read_json, run_node,
-    workspace_dir,
+    soa_module, workspace_dir,
 };
 use ix_trace_rs::trace;
-use quire_rs::semantic::TransitionDecl;
+use quire_rs::semantic::{AvailabilityState, KindAvailability, TransitionDecl};
 use serde_json::{json, Value};
 
 const PREFIX: &str = "ix://agent-ix/orders/";
@@ -552,6 +554,70 @@ fn tc_1747_construct_members_of_an_excluded_kind_or_naming_no_type_raise_at_the_
     );
 }
 
+/// FR-152's allocation source form: a `sourceElement` whose value resolves to
+/// no declared type falls back to the identity of an operation a declared
+/// type declares, and the role check that follows runs against that owning
+/// type. `AR-001`'s declaration is widened here to admit `sourceElement` so
+/// the case reaches this check rather than the schema layer.
+#[trace("TC-1747", "FR-142-AC-3")]
+#[test]
+fn tc_1747_a_source_element_naming_an_operation_identity_of_a_declared_type_is_admitted() {
+    let mut admitted = positive();
+    entry_mut(&mut admitted, "aggregate_root")["construct"]["members"]["sourceElement"] =
+        json!("optional");
+    type_mut(&mut admitted, "AR-001")["sourceElement"] =
+        json!(format!("{PREFIX}operation/RP-001-findById"));
+    assert_rust(
+        "a sourceElement naming an operation identity of a declared type",
+        &admitted,
+        &[],
+    );
+}
+
+/// The same operation identity, named by `targetElement` instead, is
+/// refused: FR-152's operation fallback is `sourceElement`-only, so
+/// `targetElement` never resolves it and the plain (non-operation)
+/// `UNRESOLVED_CONSTRUCT_REF` wording is raised.
+#[trace("TC-1747", "FR-142-AC-3")]
+#[test]
+fn tc_1747_a_target_element_naming_the_same_operation_identity_is_refused() {
+    let document = positive();
+    let ar = position(&document, &type_ref("AR-001"));
+    let mut refused = positive();
+    entry_mut(&mut refused, "aggregate_root")["construct"]["members"]["targetElement"] =
+        json!("optional");
+    type_mut(&mut refused, "AR-001")["targetElement"] =
+        json!(format!("{PREFIX}operation/RP-001-findById"));
+    assert_rust(
+        "a targetElement naming an operation identity",
+        &refused,
+        &[format!(
+            "UNRESOLVED_CONSTRUCT_REF at /ir/types/{ar}/targetElement"
+        )],
+    );
+}
+
+/// A `sourceElement` naming an identity that is neither a declared type nor a
+/// declared operation is refused, with the operation-aware wording.
+#[trace("TC-1747", "FR-142-AC-3")]
+#[test]
+fn tc_1747_a_source_element_naming_no_such_operation_is_refused() {
+    let document = positive();
+    let ar = position(&document, &type_ref("AR-001"));
+    let mut refused = positive();
+    entry_mut(&mut refused, "aggregate_root")["construct"]["members"]["sourceElement"] =
+        json!("optional");
+    type_mut(&mut refused, "AR-001")["sourceElement"] =
+        json!(format!("{PREFIX}operation/RP-001-doesNotExist"));
+    assert_rust(
+        "a sourceElement naming no such operation",
+        &refused,
+        &[format!(
+            "UNRESOLVED_CONSTRUCT_REF at /ir/types/{ar}/sourceElement"
+        )],
+    );
+}
+
 #[trace("TC-1748", "FR-142-AC-4")]
 #[test]
 fn tc_1748_occurrence_transition_guard_and_domain_membership_rules_raise_their_codes() {
@@ -760,6 +826,44 @@ fn tc_1789_the_constructs_table_is_checked_and_references_are_admitted_by_role()
         .expect("a declaration")
         .remove("references");
     assert_rust("an unconstrained owner", &unconstrained, &[]);
+}
+
+/// FR-142:40 (the vocabulary's `references` term): a `sourceElement` entry
+/// resolved through FR-152's operation fallback is checked by the role of
+/// the operation's owning type exactly as a direct type reference is —
+/// admitted when that type carries the declared role, refused with
+/// `CONSTRUCT_TARGET_KIND` when it carries none of them.
+#[trace("TC-1789", "FR-142-AC-9")]
+#[test]
+fn tc_1789_a_source_element_resolved_through_an_operation_is_checked_by_its_owning_types_role() {
+    let document = positive();
+    let ar = position(&document, &type_ref("AR-001"));
+
+    let mut admitted = positive();
+    let entry = entry_mut(&mut admitted, "aggregate_root");
+    entry["construct"]["members"]["sourceElement"] = json!("optional");
+    entry["construct"]["references"]["sourceElement"] = json!(["business:repository"]);
+    type_mut(&mut admitted, "AR-001")["sourceElement"] =
+        json!(format!("{PREFIX}operation/RP-001-findById"));
+    assert_rust(
+        "an operation whose owning type carries the admitted role",
+        &admitted,
+        &[],
+    );
+
+    let mut refused = positive();
+    let entry = entry_mut(&mut refused, "aggregate_root");
+    entry["construct"]["members"]["sourceElement"] = json!("optional");
+    entry["construct"]["references"]["sourceElement"] = json!(["business:repository"]);
+    type_mut(&mut refused, "AR-001")["sourceElement"] =
+        json!(format!("{PREFIX}operation/SM-001-advance"));
+    assert_rust(
+        "an operation whose owning type carries none of the admitted roles",
+        &refused,
+        &[format!(
+            "CONSTRUCT_TARGET_KIND at /ir/types/{ar}/sourceElement"
+        )],
+    );
 }
 
 #[trace("TC-1791", "FR-142-AC-10")]
@@ -1191,6 +1295,75 @@ fn lower_mutated(mutate: impl Fn(&mut Extractions)) -> Lowered {
     lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0")
 }
 
+/// The module roots [`lower_systems`] and its callers' own [`LiftRequest`]s
+/// both load: the business fixture's own construct kinds, the shared edge
+/// vocabulary, and the vendored `spec-objects-architecture` (the
+/// systems-model kinds `part`, `port`, `connection`, `allocation` and
+/// `interface`).
+fn systems_module_roots() -> Vec<PathBuf> {
+    vec![business_module(), edge_vocabulary(), soa_module()]
+}
+
+/// The business fixture plus the vendored `spec-objects-architecture`
+/// module, with the files `write` adds under `spec/functional/`, loaded,
+/// extracted, resolved and lowered under all three modules (FCD-local: no
+/// bundle fixture depends on this module set). Returns the scratch
+/// directory and the bundle root alongside the lowered result, so a caller
+/// can also run the same bundle through [`lift`] (the full FR-097/FR-050
+/// pipeline, not only `lower_bundle`'s Rust structs) before it is dropped.
+fn lower_systems(write: impl FnOnce(&Path)) -> (tempfile::TempDir, PathBuf, Lowered) {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let root = dir.path().join("business");
+    copy_tree(&fixture("business"), &root);
+    write(&root.join("spec/functional"));
+    let module_roots = systems_module_roots();
+    let module_paths: Vec<&Path> = module_roots.iter().map(PathBuf::as_path).collect();
+    let bundle = Bundle::load(&root, &module_paths)
+        .unwrap_or_else(|r| panic!("{} refused: {r}", root.display()));
+    let extractions = extract(&bundle);
+    let resolutions = resolve(&bundle, &extractions);
+    let limits = Limits::declared().expect("limits.json parses");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    (dir, root, lowered)
+}
+
+/// [`lower_systems`], with `mutate` applied to the engine's records between
+/// extraction and resolution: the seam for a `sourceElement` value quire-rs's
+/// own resolution refuses first (an unknown operation or an unknown local
+/// artifact), so no authored text reaches it — mirrors [`lower_mutated`] for
+/// the systems module set.
+fn lower_systems_mutated(
+    write: impl FnOnce(&Path),
+    mutate: impl FnOnce(&mut Extractions),
+) -> Lowered {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let root = dir.path().join("business");
+    copy_tree(&fixture("business"), &root);
+    write(&root.join("spec/functional"));
+    let module_roots = systems_module_roots();
+    let module_paths: Vec<&Path> = module_roots.iter().map(PathBuf::as_path).collect();
+    let bundle = Bundle::load(&root, &module_paths)
+        .unwrap_or_else(|r| panic!("{} refused: {r}", root.display()));
+    let mut extractions = extract(&bundle);
+    mutate(&mut extractions);
+    let resolutions = resolve(&bundle, &extractions);
+    let limits = Limits::declared().expect("limits.json parses");
+    lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0")
+}
+
+/// The `sourceElement` of `id`'s allocation record, as the engine extracted
+/// it, mutable in place.
+fn allocation_source_mut<'a>(extractions: &'a mut Extractions, id: &str) -> &'a mut String {
+    &mut extractions
+        .artifacts
+        .get_mut(id)
+        .and_then(|a| a.extraction.model.as_mut())
+        .and_then(|m| m.allocation.as_mut())
+        .unwrap_or_else(|| panic!("{id} carries no allocation record"))
+        .record
+        .source_element
+}
+
 /// Transition `index` of `SM_001`, as the engine recorded it.
 fn sm_001_transition(extractions: &mut Extractions, index: usize) -> &mut TransitionDecl {
     extractions
@@ -1497,12 +1670,6 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
             "names `EV_999`, which is the artifact id of no type of the bundle the construct's steps admit",
         ),
         (
-            "VO_001",
-            "spec/functional/VO_001-order-line.md",
-            Box::new(|t| t.replacen("type: FR\n", "type: FR\nabstract: true\n", 1)),
-            "it declares an `abstract` flag, which no member of the construct lowers",
-        ),
-        (
             "SM_001",
             "spec/functional/SM_001-order-lifecycle.md",
             Box::new(|t| {
@@ -1523,17 +1690,6 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
                 )
             }),
             "names `EV_001` twice, and one cell names each type at most once",
-        ),
-        (
-            "VO_001",
-            "spec/functional/VO_001-order-line.md",
-            Box::new(|t| {
-                t.replace(
-                    "relationships:\n",
-                    "relationships:\n  - target: FR-001\n    type: specializes\n",
-                )
-            }),
-            "it declares a `specializes` supertype, which no member of the construct lowers",
         ),
         (
             "VO_001",
@@ -1573,12 +1729,6 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
                 )
             }),
             "it declares a `Members` table, which no member of the construct lowers",
-        ),
-        (
-            "EN_001",
-            "spec/functional/EN_001-order-status.md",
-            Box::new(|t| t.replacen("type: FR\n", "type: FR\nabstract: true\n", 1)),
-            "lowers to no `enumeration` construct: it declares an `abstract` flag, which no member of the construct lowers",
         ),
     ];
     for (id, relative, edit, rule) in cases {
@@ -1671,7 +1821,7 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
         .map(|d| d.message.as_str())
         .collect();
     let event_rule = format!(
-        "artifact SM_001 (spec/functional/SM_001-order-lifecycle.md) lowers to no `state_machine` construct: a transition or step names the type {}, which lowers to nothing",
+        "artifact SM_001 (spec/functional/SM_001-order-lifecycle.md) lowers to no `state_machine` construct: a transition, step or reference member names the type {}, which lowers to nothing",
         type_ref("EV_001")
     );
     assert!(messages.contains(&event_rule.as_str()), "{messages:#?}");
@@ -1734,6 +1884,822 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
         &lowered,
         "VO_001",
         "it declares relationship rows (quire-rs FR-076) the engine did not extract (no-relation-vocabulary)",
+    );
+}
+
+/// FR-143-AC-10: `supertypes` and `abstract` lower the same way for every
+/// construct shape, including `enumeration` (`EN_001` below), whose
+/// artifacts reach the frontend's `enumeration::lower_enum` rather than
+/// `constructs::shape`. Neither member is forbidden by any business
+/// construct kind (they default to `optional`, FR-142), so once this
+/// frontend lowers them, an artifact carrying either succeeds rather than
+/// joining [`tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact`]'s
+/// refusal cases. Both shapes carry both members at once, each `specializes`
+/// edge naming a target of the same object kind (`VO_001`'s new `VO_002`,
+/// `EN_001`'s new `EN_002`), so this also demonstrates `supertypes` and
+/// `abstract` are independent members, not one gating the other.
+#[trace("TC-1799", "FR-143-AC-10")]
+#[test]
+fn tc_1799_a_specializes_edge_and_an_abstract_flag_lower_to_supertypes_and_abstract() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let root = dir.path().join("business");
+    copy_tree(&fixture("business"), &root);
+    let functional = root.join("spec/functional");
+
+    fs::write(
+        functional.join("VO_002-order-line-variant.md"),
+        "---\nid: VO_002\ntitle: Order Line Variant\nobject: value_object\ntype: FR\n\
+         name: OrderLineVariant\n---\n\n# VO_002: Order Line Variant\n\n\
+         ## Description\n\nA same-kind `specializes` target for `VO_001`.\n\n\
+         ## Properties\n\n| Field | Type | Multiplicity | Constraints |\n\
+         |-------|------|--------------|-------------|\n\
+         | sku | String | 1 | pattern: /^[A-Z0-9-]+$/ |\n",
+    )
+    .expect("write VO_002");
+    fs::write(
+        functional.join("EN_002-order-status-variant.md"),
+        "---\nid: EN_002\ntitle: Order Status Variant\nobject: enumeration\ntype: FR\n\
+         name: OrderStatusVariant\n---\n\n# EN_002: Order Status Variant\n\n\
+         ## Values\n\n| Value | Description |\n|-------|-------------|\n\
+         | draft | Not yet placed |\n",
+    )
+    .expect("write EN_002");
+
+    let vo_path = functional.join("VO_001-order-line.md");
+    let vo_text = fs::read_to_string(&vo_path).expect("read VO_001");
+    let vo_edited = vo_text
+        .replacen("type: FR\n", "type: FR\nabstract: true\n", 1)
+        .replace(
+            "relationships:\n",
+            "relationships:\n  - target: VO_002\n    type: specializes\n",
+        );
+    assert_ne!(vo_edited, vo_text, "VO_001: the edit changes nothing");
+    fs::write(&vo_path, vo_edited).expect("write VO_001");
+
+    let en_path = functional.join("EN_001-order-status.md");
+    let en_text = fs::read_to_string(&en_path).expect("read EN_001");
+    let en_edited = en_text.replacen(
+        "type: FR\n",
+        "type: FR\nabstract: true\nrelationships:\n  - target: EN_002\n    type: specializes\n",
+        1,
+    );
+    assert_ne!(en_edited, en_text, "EN_001: the edit changes nothing");
+    fs::write(&en_path, en_edited).expect("write EN_001");
+
+    let lowered = lower(&root);
+    assert!(refusals(&lowered).is_empty(), "{:#?}", lowered.diagnostics);
+
+    let vo = lowered
+        .types
+        .iter()
+        .find(|t| t.identity == type_ref("VO_001"))
+        .expect("VO_001");
+    assert_eq!(vo.construct.supertypes, Some(vec![type_ref("VO_002")]));
+    assert_eq!(vo.construct.is_abstract, Some(true));
+
+    let en = lowered
+        .types
+        .iter()
+        .find(|t| t.identity == type_ref("EN_001"))
+        .expect("EN_001");
+    assert_eq!(en.construct.supertypes, Some(vec![type_ref("EN_002")]));
+    assert_eq!(en.construct.is_abstract, Some(true));
+}
+
+/// FR-143-AC-11: the five systems-model kinds (QSpec FR-152, SOA
+/// `spec-objects-architecture`) lower `owner`, `declaredType`, `direction`,
+/// `interfaceType`, `multiplicity`, `sourceEnd`, `targetEnd`,
+/// `flowDirection`, `sourceElement`, `targetElement` and `featureOrder`
+/// (quire-rs FR-075 `model.part`/`model.port`/`model.connection`/
+/// `model.allocation`/`model.featureOrder`, quire-rs#446/#448) from the
+/// engine's own structured extraction, never from a kind name. The engine
+/// resolves each reference member to its own `ix://` identity rather than
+/// handing back the bare id a table cell carries, so the frontend recovers
+/// the bare id before admitting it by role. `SP_001`'s owner is `VO_001`, a
+/// composite type, not another part (FR-152: a Part's owner is the owning
+/// composite, never kind-restricted to `part`); `SA_001` allocates a plain
+/// port reference, not the engine's member-qualified `<id>/<operation>`
+/// source form (quire-rs#462), which
+/// [`tc_1800_an_allocation_source_naming_an_operation_lowers_to_that_operations_identity`]
+/// covers on its own. The lowered bundle is also lifted end to end (FR-097) and its document
+/// read back by both the Rust and FR-050 node readers, so this exercises the
+/// full pipeline `lower_bundle`'s Rust structs alone do not.
+#[trace("TC-1800", "FR-143-AC-11")]
+#[test]
+fn tc_1800_the_five_systems_kinds_lower_their_members_from_the_engines_extraction() {
+    let files: &[(&str, &str)] = &[
+        (
+            "SP_001-sys-part.md",
+            "---\nid: SP_001\ntitle: SP_001\ntype: part\nobject: part\n---\n\n\
+             # SP_001: SP_001\n\n## Description\n\n\
+             A systems part, owned by the composite type `VO_001`, typed by\n\
+             `VO_001` (FR-152: a part's owner is any owning composite type,\n\
+             never kind-restricted to `part`).\n\n\
+             ## Part\n\n| Owner | Declared Type | Multiplicity |\n|---|---|---|\n\
+             | VO_001 | VO_001 | 1..1 |\n",
+        ),
+        (
+            "SI_001-flow-interface.md",
+            "---\nid: SI_001\ntitle: SI_001\ntype: interface\nobject: interface\n---\n\n\
+             # SI_001: SI_001\n\n## Description\n\nThe flow interface: one field, `rate`.\n\n\
+             ## Properties\n\n| Field | Type | Multiplicity | Constraints |\n\
+             |-------|------|--------------|-------------|\n| rate | String | 1 | |\n\n\
+             ## Contract\n\n```yaml\nname: SI_001\nfields:\n  - name: rate\n\
+             \x20\x20\x20 type: String\n    multiplicity: 1..1\noperations: []\n\
+             featureOrder: [rate]\n```\n\n## Features\n\n| Feature | Kind |\n|---|---|\n\
+             | rate | field |\n",
+        ),
+        (
+            "SP_002-port-out.md",
+            "---\nid: SP_002\ntitle: SP_002\ntype: port\nobject: port\n---\n\n\
+             # SP_002: SP_002\n\n## Description\n\n\
+             The outbound port, owned by `SP_001`, typed by `SI_001`.\n\n\
+             ## Port\n\n| Owner | Direction | Interface | Multiplicity |\n|---|---|---|---|\n\
+             | SP_001 | out | SI_001 | 1..1 |\n",
+        ),
+        (
+            "SP_003-port-in.md",
+            "---\nid: SP_003\ntitle: SP_003\ntype: port\nobject: port\n---\n\n\
+             # SP_003: SP_003\n\n## Description\n\n\
+             The inbound port, owned by `SP_001`, typed by `SI_001`.\n\n\
+             ## Port\n\n| Owner | Direction | Interface | Multiplicity |\n|---|---|---|---|\n\
+             | SP_001 | in | SI_001 | 1..1 |\n",
+        ),
+        (
+            "SC_001-pipe.md",
+            "---\nid: SC_001\ntitle: SC_001\ntype: connection\nobject: connection\n---\n\n\
+             # SC_001: SC_001\n\n## Description\n\nThe connection from `SP_002` to `SP_003`.\n\n\
+             ## Connection\n\n\
+             | Source | Source Multiplicity | Target | Target Multiplicity | Direction |\n\
+             |---|---|---|---|---|\n\
+             | SP_002 | 1..1 | SP_003 | 1..1 | source-to-target |\n",
+        ),
+        (
+            "SA_001-alloc.md",
+            "---\nid: SA_001\ntitle: SA_001\ntype: allocation\nobject: allocation\n---\n\n\
+             # SA_001: SA_001\n\n## Description\n\n\
+             The port `SP_002` allocated to the part `SP_001`: a plain reference,\n\
+             never the engine's member-qualified `<id>/<operation>` source form\n\
+             (quire-rs#461/#462), which this frontend does not resolve.\n\n\
+             ## Allocation\n\n| Source | Target |\n|---|---|\n| SP_002 | SP_001 |\n",
+        ),
+    ];
+    let (_scratch, root, lowered) = lower_systems(|dir| {
+        for (name, content) in files {
+            fs::write(dir.join(name), content).expect("write");
+        }
+    });
+    assert!(refusals(&lowered).is_empty(), "{:#?}", lowered.diagnostics);
+
+    let ty = |id: &str| {
+        lowered
+            .types
+            .iter()
+            .find(|t| t.identity == type_ref(id))
+            .unwrap_or_else(|| panic!("no type {id}"))
+    };
+
+    let part = ty("SP_001");
+    assert_eq!(part.construct.owner, Some(type_ref("VO_001")));
+    assert_eq!(part.construct.declared_type, Some(type_ref("VO_001")));
+    assert_eq!(
+        part.construct.multiplicity.as_ref().map(|m| m.lower),
+        Some(1)
+    );
+
+    let interface = ty("SI_001");
+    assert_eq!(
+        interface.construct.feature_order,
+        Some(vec![field_ref("SI_001", "rate")])
+    );
+
+    let port_out = ty("SP_002");
+    assert_eq!(port_out.construct.owner, Some(type_ref("SP_001")));
+    assert_eq!(port_out.construct.direction, Some(Direction::Out));
+    assert_eq!(port_out.construct.interface_type, Some(type_ref("SI_001")));
+    assert_eq!(
+        port_out.construct.multiplicity.as_ref().map(|m| m.lower),
+        Some(1)
+    );
+
+    let port_in = ty("SP_003");
+    assert_eq!(port_in.construct.direction, Some(Direction::In));
+    assert_eq!(
+        port_in.construct.multiplicity.as_ref().map(|m| m.lower),
+        Some(1)
+    );
+
+    let connection = ty("SC_001");
+    let source_end = connection.construct.source_end.as_ref().expect("sourceEnd");
+    assert_eq!(source_end.type_ref, type_ref("SP_002"));
+    assert_eq!(
+        source_end.multiplicity.as_ref().map(|m| m.lower),
+        Some(1),
+        "{source_end:?}"
+    );
+    let target_end = connection.construct.target_end.as_ref().expect("targetEnd");
+    assert_eq!(target_end.type_ref, type_ref("SP_003"));
+    assert_eq!(
+        target_end.multiplicity.as_ref().map(|m| m.lower),
+        Some(1),
+        "{target_end:?}"
+    );
+    assert_eq!(
+        connection.construct.flow_direction,
+        Some(FlowDirection::SourceToTarget)
+    );
+
+    let allocation = ty("SA_001");
+    assert_eq!(
+        allocation.construct.source_element,
+        Some(type_ref("SP_002"))
+    );
+    assert_eq!(
+        allocation.construct.target_element,
+        Some(type_ref("SP_001"))
+    );
+
+    // The same bundle, lifted end to end (FR-097) rather than only lowered
+    // to Rust structs, so the document both readers see is exercised too.
+    let out_dir = tempfile::tempdir().expect("tempdir");
+    let request = LiftRequest {
+        bundle_root: root,
+        module_roots: systems_module_roots(),
+        out: out_dir.path().join("semantic-ir.json"),
+        diagnostics: None,
+        provenance: None,
+    };
+    let outcome = lift(&request);
+    let LiftOutcome::Written { document, .. } = outcome else {
+        panic!("{outcome:?}");
+    };
+    let document: Value = serde_json::from_slice(&document).expect("document parses");
+    assert!(rust_codes(&document).is_empty(), "{document}");
+    assert!(node_codes(&document).is_empty(), "{document}");
+}
+
+/// A pair of `part` artifacts, each owned by the composite value_object
+/// `VO_001` (FR-152: a part's owner is a composite type, never another
+/// part): a legitimate owner for a scenario that needs one but is not
+/// itself testing ownership.
+fn systems_part_pair() -> [(&'static str, &'static str); 2] {
+    [
+        (
+            "SP_900-sys-helper-part-a.md",
+            "---\nid: SP_900\ntitle: SP_900\ntype: part\nobject: part\n---\n\n\
+             # SP_900: SP_900\n\n## Description\n\nA helper part, owned by `VO_001`.\n\n\
+             ## Part\n\n| Owner | Declared Type | Multiplicity |\n|---|---|---|\n\
+             | VO_001 | VO_001 | 1..1 |\n",
+        ),
+        (
+            "SP_901-sys-helper-part-b.md",
+            "---\nid: SP_901\ntitle: SP_901\ntype: part\nobject: part\n---\n\n\
+             # SP_901: SP_901\n\n## Description\n\nA helper part, owned by `VO_001`.\n\n\
+             ## Part\n\n| Owner | Declared Type | Multiplicity |\n|---|---|---|\n\
+             | VO_001 | VO_001 | 1..1 |\n",
+        ),
+    ]
+}
+
+/// FR-143-AC-11 continued: a systems reference member (here a part's
+/// `declaredType`) is re-checked in [`crate::constructs::refusal_rule`]'s
+/// fixed point the same as a transition's or step's `emits`/`consumes`, so
+/// naming an artifact the fixed point later refuses for an unrelated reason
+/// (`EV_001`, refused for its own occurrence-field rule, not for anything
+/// about the part naming it) cascades the refusal to the part, rather than
+/// the part's `owner_from_model` early return skipping the check. `SP_004`'s
+/// own `owner` is the composite value_object `VO_001` (FR-152: a part's
+/// owner is a composite type, never another part), so `declaredType` is the
+/// only thing under test.
+#[trace("TC-1800", "FR-143-AC-11")]
+#[test]
+fn tc_1800_a_systems_reference_member_naming_a_since_refused_type_cascades_the_refusal() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let root = dir.path().join("business");
+    copy_tree(&fixture("business"), &root);
+    let event_path = root.join("spec/functional/EV_001-order-placed.md");
+    let event_text = fs::read_to_string(&event_path).expect("read EV_001");
+    let edited = event_text.replace(
+        "| placedAt | Timestamp | 1 | |",
+        "| placedAt | Timestamp | 1 | |\n| paidAt | Timestamp | 1 | |",
+    );
+    assert_ne!(edited, event_text, "EV_001: the edit changes nothing");
+    fs::write(&event_path, edited).expect("write EV_001");
+    for (name, content) in systems_part_pair() {
+        fs::write(root.join("spec/functional").join(name), content).expect("write helper part");
+    }
+    fs::write(
+        root.join("spec/functional/SP_004-sys-part-typed-by-refused.md"),
+        "---\nid: SP_004\ntitle: SP_004\ntype: part\nobject: part\n---\n\n\
+         # SP_004: SP_004\n\n## Description\n\n\
+         A systems part, owned by `VO_001`, typed by `EV_001`: `EV_001` is\n\
+         refused by the time the fixed point settles, so this part's\n\
+         `declaredType` cascades the refusal rather than lowering.\n\n\
+         ## Part\n\n| Owner | Declared Type | Multiplicity |\n|---|---|---|\n\
+         | VO_001 | EV_001 | 1..1 |\n",
+    )
+    .expect("write SP_004");
+    let module_roots = systems_module_roots();
+    let module_paths: Vec<&Path> = module_roots.iter().map(PathBuf::as_path).collect();
+    let bundle = Bundle::load(&root, &module_paths)
+        .unwrap_or_else(|r| panic!("{} refused: {r}", root.display()));
+    let extractions = extract(&bundle);
+    let resolutions = resolve(&bundle, &extractions);
+    let limits = Limits::declared().expect("limits.json parses");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+
+    let messages: Vec<&str> = refusals(&lowered)
+        .iter()
+        .map(|d| d.message.as_str())
+        .collect();
+    assert!(
+        messages
+            .iter()
+            .any(|m| m.starts_with("artifact EV_001 ") && m.contains("2 Timestamp fields")),
+        "{messages:#?}"
+    );
+    let cascade_rule = format!(
+        "artifact SP_004 (spec/functional/SP_004-sys-part-typed-by-refused.md) lowers to no `part` construct: a transition, step or reference member names the type {}, which lowers to nothing",
+        type_ref("EV_001")
+    );
+    assert!(messages.contains(&cascade_rule.as_str()), "{messages:#?}");
+    assert!(refusals(&lowered).iter().all(|d| d.blocking));
+}
+
+/// FR-143-AC-11 continued: an `owner`/`source`/`target` reference cell
+/// resolves under quire-rs `semantic::target::resolve_target` (`TableRead::
+/// reference`), which admits an `ix://<org>/<repo>/<id>` cell naming a
+/// package the loading module declares as an import (`Target::Imported`,
+/// its own object type unknown to the engine). This frontend refuses that
+/// identity by its full text, never rebinding it to a local artifact of the
+/// same bare id: `ix://acme/other/SP_001` never resolves to this bundle's
+/// own local `SP_001`. The vendored SOA module declares no import on its
+/// own, so this uses an edited copy declaring one, the same way TC-1801
+/// edits a copy to relax a locator.
+#[trace("TC-1800", "FR-143-AC-11")]
+#[test]
+fn tc_1800_a_systems_reference_member_naming_an_imported_identity_is_refused() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let module = dir.path().join("spec-objects-architecture");
+    copy_tree(&soa_module(), &module);
+    let manifest = module.join("manifest.yaml");
+    let text = fs::read_to_string(&manifest).expect("manifest");
+    let edited = text.replacen(
+        "  imports: {}\n",
+        "  imports: { acme/other: \"1.0.0\" }\n",
+        1,
+    );
+    assert_ne!(edited, text, "the SOA module declares no import");
+    fs::write(&manifest, edited).expect("write manifest");
+
+    let root = dir.path().join("business");
+    copy_tree(&fixture("business"), &root);
+    fs::write(
+        root.join("spec/functional/SP_005-sys-part-imported-owner.md"),
+        "---\nid: SP_005\ntitle: SP_005\ntype: part\nobject: part\n---\n\n\
+         # SP_005: SP_005\n\n## Description\n\n\
+         A systems part whose owner cell names an identity in a package the\n\
+         module imports (`ix://acme/other/SP_001`), never the bundle's own\n\
+         local `SP_001` of the same bare id.\n\n\
+         ## Part\n\n| Owner | Declared Type | Multiplicity |\n|---|---|---|\n\
+         | ix://acme/other/SP_001 | VO_001 | 1..1 |\n",
+    )
+    .expect("write SP_005");
+    let bundle = Bundle::load(
+        &root,
+        &[
+            business_module().as_path(),
+            edge_vocabulary().as_path(),
+            module.as_path(),
+        ],
+    )
+    .unwrap_or_else(|r| panic!("{} refused: {r}", root.display()));
+    let extractions = extract(&bundle);
+    let resolutions = resolve(&bundle, &extractions);
+    let limits = Limits::declared().expect("limits.json parses");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+
+    assert_refused(
+        &lowered,
+        "SP_005",
+        "a systems `part` row names `ix://acme/other/SP_001`, which is the artifact id of no type of the bundle the construct's owner admit",
+    );
+}
+
+/// FR-143-AC-11 continued: the engine's own member-qualified
+/// `<id>/<operation>` allocation-source form (quire-rs `TableRead::
+/// reference`'s member append, admitted for a `Source` cell only, and only
+/// over a local `interface` artifact — quire-rs#462) lowers to the
+/// referenced artifact's operation identity, the same identity
+/// [`crate::clauses::lower_operations`] mints for that artifact's own
+/// `### run` heading under `## Operations`, never mis-extracted as the bare
+/// id `run` or `SI_002`. The target is [`systems_part_pair`]'s `SP_900`, so
+/// only the source's member-qualified form is under test.
+#[trace("TC-1800", "FR-143-AC-11")]
+#[test]
+fn tc_1800_an_allocation_source_naming_an_operation_lowers_to_that_operations_identity() {
+    let (scratch, root, lowered) = lower_systems(|dir| {
+        for (name, content) in systems_part_pair() {
+            fs::write(dir.join(name), content).expect("write helper part");
+        }
+        fs::write(
+            dir.join("SI_002-flow-interface-b.md"),
+            "---\nid: SI_002\ntitle: SI_002\ntype: interface\nobject: interface\n---\n\n\
+             # SI_002: SI_002\n\n## Description\n\n\
+             A second interface: one field, `rate`, and one operation, `run`.\n\n\
+             ## Properties\n\n| Field | Type | Multiplicity | Constraints |\n\
+             |-------|------|--------------|-------------|\n| rate | String | 1 | |\n\n\
+             ## Contract\n\n```yaml\nname: SI_002\nfields:\n  - name: rate\n\
+             \x20\x20\x20 type: String\n    multiplicity: 1..1\noperations:\n  - name: run\n\
+             featureOrder: [rate, run]\n```\n\n## Features\n\n| Feature | Kind |\n|---|---|\n\
+             | rate | field |\n| run | operation |\n\n## Operations\n\n### run\n\nRuns the interface.\n",
+        )
+        .expect("write SI_002");
+        fs::write(
+            dir.join("SA_002-alloc-operation-source.md"),
+            "---\nid: SA_002\ntitle: SA_002\ntype: allocation\nobject: allocation\n---\n\n\
+             # SA_002: SA_002\n\n## Description\n\n\
+             An allocation whose source names a real operation, `run`, that\n\
+             `SI_002` declares under `## Operations` (the engine's\n\
+             member-qualified `<id>/<operation>` form, quire-rs#462), which\n\
+             this frontend lowers to `SI_002`'s `run` operation identity.\n\n\
+             ## Allocation\n\n| Source | Target |\n|---|---|\n\
+             | SI_002/run | SP_900 |\n",
+        )
+        .expect("write SA_002");
+    });
+
+    assert!(refusals(&lowered).is_empty(), "{:#?}", lowered.diagnostics);
+    let sa_002 = lowered
+        .types
+        .iter()
+        .find(|t| t.identity == type_ref("SA_002"))
+        .expect("SA_002");
+    assert_eq!(
+        sa_002.construct.source_element,
+        Some(format!("{PREFIX}operation/SI_002-run")),
+        "the allocation source lowers to SI_002's run operation identity"
+    );
+
+    // The delta review that found this lowering refused end to end
+    // (`INVALID_IR: UNRESOLVED_CONSTRUCT_REF at /ir/types/.../sourceElement`)
+    // reached the FR-097 independent reader that `lower_bundle` alone never
+    // calls, so the assertions above passed while the real `lift` still
+    // failed. This runs the same bundle through the full pipeline — the
+    // Rust `agent_ix_semantic_ir` reader `validate` calls, and the FR-050
+    // node reader (`readContractIr`) over the document it writes — and
+    // requires both to report no code at all, not merely no *blocking* one.
+    let request = LiftRequest {
+        bundle_root: root,
+        module_roots: systems_module_roots(),
+        out: scratch.path().join("semantic-ir.json"),
+        diagnostics: None,
+        provenance: None,
+    };
+    let outcome = lift(&request);
+    let LiftOutcome::Written {
+        document: bytes, ..
+    } = outcome
+    else {
+        panic!("the real lift did not write a document: {outcome:?}");
+    };
+    let document: Value = serde_json::from_slice(&bytes).expect("the written document parses");
+    assert_eq!(
+        rust_codes(&document),
+        Vec::<String>::new(),
+        "the independent Rust reader over the real lift's document"
+    );
+    assert_eq!(
+        node_codes(&document),
+        Vec::<String>::new(),
+        "the FR-050 node reader over the real lift's document"
+    );
+}
+
+/// FR-143-AC-11 continued: a genuine two-round cascade through
+/// [`refusal_rule`]'s FR-152 `operations` branch, not merely a `sourceElement`
+/// naming an artifact already excluded before [`assign_owners`]'s fixed
+/// point ever starts (that artifact's own pre-loop exclusion would let a
+/// single, once-computed `operations` set pass this test too, proving
+/// nothing about the per-round recompute). Here `SI_003`'s own extraction is
+/// marked unavailable, refusing it before the fixed point ever starts (it
+/// never enters `pending`). `SI_002` specializes `SI_003` (a plain
+/// `relationships` edge, `type: specializes`), so `SI_002` is refused in
+/// round 0 of [`assign_owners`]'s own loop, by `refusal_rule`'s
+/// "relationship targets a refused artifact" re-check: `SI_002` itself is
+/// still pending at round 0's start, and is only removed at round 0's end.
+/// Only round 1's fresh `operations` set drops `SI_002`'s `run` operation
+/// (round 0's own `operations` set, computed before `SI_002` was refused
+/// that round, still admits it), so `SA_002`'s `sourceElement` re-check does
+/// not catch it until round 1: this genuinely exercises the per-round
+/// recompute, and the diagnostic below names `SA_002`'s source as an
+/// operation, not a type.
+#[trace("TC-1800", "FR-143-AC-11")]
+#[test]
+fn tc_1800_an_allocation_source_naming_an_operation_of_a_since_refused_artifact_cascades_the_refusal(
+) {
+    let write = |dir: &Path| {
+        for (name, content) in systems_part_pair() {
+            fs::write(dir.join(name), content).expect("write helper part");
+        }
+        fs::write(
+            dir.join("SI_003-flow-interface-c.md"),
+            "---\nid: SI_003\ntitle: SI_003\ntype: interface\nobject: interface\n---\n\n\
+             # SI_003: SI_003\n\n## Description\n\n\
+             A third interface, specialized by `SI_002`; this test's own\n\
+             mutation later marks its model extraction unavailable, so the\n\
+             `supertypes` cascade refuses `SI_002` inside the fixed point\n\
+             (round 0), one round before `SA_002`'s own `sourceElement`\n\
+             re-check catches it (round 1).\n\n\
+             ## Properties\n\n| Field | Type | Multiplicity | Constraints |\n\
+             |-------|------|--------------|-------------|\n| flag | String | 1 | |\n\n\
+             ## Contract\n\n```yaml\nname: SI_003\nfields:\n  - name: flag\n\
+             \x20\x20\x20 type: String\n    multiplicity: 1..1\noperations: []\n\
+             featureOrder: [flag]\n```\n\n## Features\n\n| Feature | Kind |\n|---|---|\n\
+             | flag | field |\n",
+        )
+        .expect("write SI_003");
+        fs::write(
+            dir.join("SI_002-flow-interface-b.md"),
+            "---\nid: SI_002\ntitle: SI_002\ntype: interface\nobject: interface\n\
+             relationships:\n  - target: SI_003\n    type: specializes\n---\n\n\
+             # SI_002: SI_002\n\n## Description\n\n\
+             A second interface: one field, `rate`, and one operation, `run`,\n\
+             specializing `SI_003`.\n\n\
+             ## Properties\n\n| Field | Type | Multiplicity | Constraints |\n\
+             |-------|------|--------------|-------------|\n| rate | String | 1 | |\n\n\
+             ## Contract\n\n```yaml\nname: SI_002\nfields:\n  - name: rate\n\
+             \x20\x20\x20 type: String\n    multiplicity: 1..1\noperations:\n  - name: run\n\
+             featureOrder: [rate, run]\n```\n\n## Features\n\n| Feature | Kind |\n|---|---|\n\
+             | rate | field |\n| run | operation |\n\n## Operations\n\n### run\n\nRuns the interface.\n",
+        )
+        .expect("write SI_002");
+        fs::write(
+            dir.join("SA_002-alloc-operation-source.md"),
+            "---\nid: SA_002\ntitle: SA_002\ntype: allocation\nobject: allocation\n---\n\n\
+             # SA_002: SA_002\n\n## Description\n\n\
+             An allocation whose source names an operation of `SI_002`,\n\
+             which this test's own mutation refuses one round after `SI_003`\n\
+             (the artifact `SI_002` specializes) is marked unavailable, so\n\
+             the cascade must refuse `SA_002` too.\n\n\
+             ## Allocation\n\n| Source | Target |\n|---|---|\n\
+             | SI_002/run | SP_900 |\n",
+        )
+        .expect("write SA_002");
+    };
+
+    let unavailable = |extractions: &mut Extractions| {
+        extractions
+            .artifacts
+            .get_mut("SI_003")
+            .expect("SI_003 extracted")
+            .extraction
+            .availability
+            .model = Some(KindAvailability {
+            state: AvailabilityState::Unavailable,
+            reason: Some("TC-1800: injected for the cascade test".to_string()),
+            lossy: false,
+        });
+    };
+
+    let broken = lower_systems_mutated(write, unavailable);
+    let messages: Vec<&str> = refusals(&broken)
+        .iter()
+        .map(|d| d.message.as_str())
+        .collect();
+    assert!(
+        messages.iter().any(|m| {
+            m.starts_with("artifact SI_003 ")
+                && m.contains(
+                    "the engine's model extraction is unavailable \
+                     (TC-1800: injected for the cascade test)",
+                )
+        }),
+        "{messages:#?}"
+    );
+    let si_002_cascade = format!(
+        "artifact SI_002 (spec/functional/SI_002-flow-interface-b.md) lowers to no \
+         `interface` construct: its `specializes` relationship targets {}, which lowers to nothing",
+        type_ref("SI_003")
+    );
+    assert!(messages.contains(&si_002_cascade.as_str()), "{messages:#?}");
+    let sa_002_cascade = format!(
+        "artifact SA_002 (spec/functional/SA_002-alloc-operation-source.md) lowers to no \
+         `allocation` construct: a transition, step or reference member names the operation \
+         {PREFIX}operation/SI_002-run, which lowers to nothing"
+    );
+    assert!(messages.contains(&sa_002_cascade.as_str()), "{messages:#?}");
+    assert!(refusals(&broken).iter().all(|d| d.blocking));
+
+    let (_scratch, _root, clean) = lower_systems(write);
+    assert!(refusals(&clean).is_empty(), "{:#?}", clean.diagnostics);
+}
+
+/// FR-143-AC-11 continued: the engine's own member-qualified allocation
+/// source resolves against the referenced artifact's real declared
+/// operations before this frontend ever sees it (quire-rs#462); this test
+/// bypasses that engine-level check by mutating the already-extracted
+/// `sourceElement` directly (the seam [`lower_systems_mutated`] documents),
+/// so the identity this frontend mints (`SI_002-bogus`) never joins the
+/// bundle's real `operations` set and [`refusal_rule`]'s FR-152 branch
+/// refuses SA_002 alone — SI_002 itself lowers untouched.
+#[trace("TC-1800", "FR-143-AC-11")]
+#[test]
+fn tc_1800_an_allocation_source_naming_an_operation_that_does_not_exist_is_refused() {
+    let write = |dir: &Path| {
+        for (name, content) in systems_part_pair() {
+            fs::write(dir.join(name), content).expect("write helper part");
+        }
+        fs::write(
+            dir.join("SI_002-flow-interface-b.md"),
+            "---\nid: SI_002\ntitle: SI_002\ntype: interface\nobject: interface\n---\n\n\
+             # SI_002: SI_002\n\n## Description\n\n\
+             A second interface: one field, `rate`, and one operation, `run`.\n\n\
+             ## Properties\n\n| Field | Type | Multiplicity | Constraints |\n\
+             |-------|------|--------------|-------------|\n| rate | String | 1 | |\n\n\
+             ## Contract\n\n```yaml\nname: SI_002\nfields:\n  - name: rate\n\
+             \x20\x20\x20 type: String\n    multiplicity: 1..1\noperations:\n  - name: run\n\
+             featureOrder: [rate, run]\n```\n\n## Features\n\n| Feature | Kind |\n|---|---|\n\
+             | rate | field |\n| run | operation |\n\n## Operations\n\n### run\n\nRuns the interface.\n",
+        )
+        .expect("write SI_002");
+        fs::write(
+            dir.join("SA_002-alloc-operation-source.md"),
+            "---\nid: SA_002\ntitle: SA_002\ntype: allocation\nobject: allocation\n---\n\n\
+             # SA_002: SA_002\n\n## Description\n\n\
+             An allocation whose source names SI_002's real `run` operation;\n\
+             this test's own mutation swaps it for an operation SI_002 never\n\
+             declares.\n\n\
+             ## Allocation\n\n| Source | Target |\n|---|---|\n\
+             | SI_002/run | SP_900 |\n",
+        )
+        .expect("write SA_002");
+    };
+
+    let bogus_operation = |extractions: &mut Extractions| {
+        *allocation_source_mut(extractions, "SA_002") = format!("{PREFIX}SI_002/bogus");
+    };
+
+    let lowered = lower_systems_mutated(write, bogus_operation);
+    assert_refused(
+        &lowered,
+        "SA_002",
+        &format!(
+            "a transition, step or reference member names the operation \
+             {PREFIX}operation/SI_002-bogus, which lowers to nothing"
+        ),
+    );
+}
+
+/// FR-143-AC-11 continued: an allocation source naming an operation of an
+/// artifact id the bundle declares nowhere at all (never mis-read as the
+/// referenced artifact's own id with a stray path segment) is refused
+/// immediately, at the artifact's own first lowering pass — never as a
+/// fixed-point cascade, since no round ever admits it in the first place.
+#[trace("TC-1800", "FR-143-AC-11")]
+#[test]
+fn tc_1800_an_allocation_source_naming_an_unknown_local_artifact_is_refused() {
+    let write = |dir: &Path| {
+        for (name, content) in systems_part_pair() {
+            fs::write(dir.join(name), content).expect("write helper part");
+        }
+        fs::write(
+            dir.join("SI_002-flow-interface-b.md"),
+            "---\nid: SI_002\ntitle: SI_002\ntype: interface\nobject: interface\n---\n\n\
+             # SI_002: SI_002\n\n## Description\n\n\
+             A second interface: one field, `rate`, and one operation, `run`.\n\n\
+             ## Properties\n\n| Field | Type | Multiplicity | Constraints |\n\
+             |-------|------|--------------|-------------|\n| rate | String | 1 | |\n\n\
+             ## Contract\n\n```yaml\nname: SI_002\nfields:\n  - name: rate\n\
+             \x20\x20\x20 type: String\n    multiplicity: 1..1\noperations:\n  - name: run\n\
+             featureOrder: [rate, run]\n```\n\n## Features\n\n| Feature | Kind |\n|---|---|\n\
+             | rate | field |\n| run | operation |\n\n## Operations\n\n### run\n\nRuns the interface.\n",
+        )
+        .expect("write SI_002");
+        fs::write(
+            dir.join("SA_002-alloc-operation-source.md"),
+            "---\nid: SA_002\ntitle: SA_002\ntype: allocation\nobject: allocation\n---\n\n\
+             # SA_002: SA_002\n\n## Description\n\n\
+             An allocation whose source names SI_002's real `run` operation;\n\
+             this test's own mutation swaps SI_002 for an artifact id the\n\
+             bundle declares nowhere.\n\n\
+             ## Allocation\n\n| Source | Target |\n|---|---|\n\
+             | SI_002/run | SP_900 |\n",
+        )
+        .expect("write SA_002");
+    };
+
+    let unknown_artifact = |extractions: &mut Extractions| {
+        *allocation_source_mut(extractions, "SA_002") = format!("{PREFIX}NOPE/run");
+    };
+
+    let lowered = lower_systems_mutated(write, unknown_artifact);
+    assert_refused(
+        &lowered,
+        "SA_002",
+        "is the artifact id of no type of the bundle the construct's sourceElement admit",
+    );
+}
+
+/// FR-143-AC-9 continued: a member with its own per-artifact source table
+/// (unlike the engine-gated `states`/`transitions`/`steps`) is required by
+/// the declaration but this artifact's own extraction carries no row for
+/// it — refused one artifact at a time, never emitted empty.
+#[trace("TC-1801", "FR-143-AC-9")]
+#[test]
+fn tc_1801_a_required_member_with_its_own_source_table_absent_from_the_artifact_refuses_it() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let module = dir.path().join("spec-objects-architecture");
+    copy_tree(&soa_module(), &module);
+    let manifest = module.join("manifest.yaml");
+    let text = fs::read_to_string(&manifest).expect("manifest");
+    // Relax the engine's own `## Features` locator to optional, so the
+    // engine admits an interface document with no such table (`model.
+    // feature_order: None`) while the construct's own `featureOrder:
+    // required` (unedited) still stands: the frontend's own required-source
+    // check, not the engine's locator, is what this case reaches.
+    let relaxed = text.replacen(
+        "        features:\n          from: table_row\n          under_section: Features\n          required: true\n",
+        "        features:\n          from: table_row\n          under_section: Features\n          required: false\n",
+        1,
+    );
+    assert_ne!(
+        relaxed, text,
+        "the interface's `Features` locator is required"
+    );
+    fs::write(&manifest, relaxed).expect("write manifest");
+    let root = dir.path().join("business");
+    copy_tree(&fixture("business"), &root);
+    fs::write(
+        root.join("spec/functional/SI_002-bare-interface.md"),
+        "---\nid: SI_002\ntitle: SI_002\ntype: interface\nobject: interface\n---\n\n\
+         # SI_002: SI_002\n\n## Description\n\n\
+         An interface with a `Contract` but no `Features` table: the\n\
+         declaration requires `featureOrder`, and this artifact declares no\n\
+         source for it.\n\n## Contract\n\n```yaml\nname: SI_002\nfields: []\n\
+         operations: []\n```\n",
+    )
+    .expect("write");
+    let bundle = Bundle::load(
+        &root,
+        &[
+            business_module().as_path(),
+            module.as_path(),
+            edge_vocabulary().as_path(),
+        ],
+    )
+    .unwrap_or_else(|r| panic!("refused: {r}"));
+    let extractions = extract(&bundle);
+    let resolutions = resolve(&bundle, &extractions);
+    let limits = Limits::declared().expect("limits.json parses");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    assert_refused(
+        &lowered,
+        "SI_002",
+        "the construct requires featureOrder, and this artifact declares none",
+    );
+}
+
+/// FR-143-AC-9 continued: `constructs::lower_generalization`'s own
+/// required-source check — the general rule (the "no `specializes`/
+/// `abstract` declaration" clause) `lower_generalization` runs directly,
+/// rather than through `shape`'s own blanket check — carried no test of its
+/// own before this one: every other required-member case in this file
+/// exercises a per-artifact source table (`Features`), never `supertypes` or
+/// `abstract`. The vendored business module declares its `enumeration`
+/// construct's `supertypes` at FR-142's default (`optional`); this edits a
+/// copy to `required`, and `EN_001` declares no `specializes` edge.
+#[trace("TC-1802", "FR-143-AC-9")]
+#[test]
+fn tc_1802_an_enumeration_construct_requiring_supertypes_with_none_declared_refuses_it() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let module = dir.path().join("spec-objects-business");
+    copy_tree(&business_module(), &module);
+    let manifest = module.join("manifest.yaml");
+    let text = fs::read_to_string(&manifest).expect("manifest");
+    let edited = text.replacen(
+        "members: {variants: required, fields: forbidden, relationships: forbidden, operations: forbidden}",
+        "members: {variants: required, fields: forbidden, relationships: forbidden, operations: forbidden, supertypes: required}",
+        1,
+    );
+    assert_ne!(
+        edited, text,
+        "the enumeration construct declares no supertypes presence"
+    );
+    fs::write(&manifest, edited).expect("write manifest");
+
+    let root = fixture("business");
+    let bundle = Bundle::load(&root, &[module.as_path(), edge_vocabulary().as_path()])
+        .unwrap_or_else(|r| panic!("{} refused: {r}", root.display()));
+    let extractions = extract(&bundle);
+    let resolutions = resolve(&bundle, &extractions);
+    let limits = Limits::declared().expect("limits.json parses");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+
+    assert_refused(
+        &lowered,
+        "EN_001",
+        "the construct requires supertypes, and this artifact declares none",
     );
 }
 
@@ -2066,8 +3032,13 @@ fn tc_1794_a_construct_requiring_feature_order_refuses_its_artifacts_for_want_of
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
     let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
-    // Every entity artifact, and only those, is refused naming the member.
-    let rule = "lowers to no `entity` construct: the construct requires featureOrder, which this frontend has no source for";
+    // Every entity artifact, and only those, is refused naming the member:
+    // `featureOrder` has a per-artifact source table (quire-rs FR-075's
+    // `## Features`/`Ubiquitous Language`-style locators), like `part`/
+    // `port`, so an entity with no such table for it is refused the same
+    // way TC-1801's bare interface is, not the "no source at all" way a
+    // member this frontend never lowers would be.
+    let rule = "lowers to no `entity` construct: the construct requires featureOrder, and this artifact declares none";
     let entity_refusals: Vec<&str> = refusals(&lowered)
         .iter()
         .map(|d| d.message.as_str())
