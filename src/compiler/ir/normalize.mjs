@@ -4,16 +4,13 @@
  * "The same IR" has to be a byte comparison, not a judgement, or the conformance
  * corpus cannot tell a compiler defect from a formatting difference. Two things
  * make that possible: the canonical form of FR-048, which fixes key order,
- * number form and string escaping, and the *materialisation* below, which writes
- * out multiplicity where a document leaves it derivable from presence, and
- * nullable from its absence, so two documents that mean the same thing
- * serialise the same way. Presence itself is never derived here: a 2.0.0
- * document's authored presence, including one that disagrees with its
- * multiplicity, passes through unchanged (fcd#182 is the open question on
- * whether that should be enforced instead).
+ * number form and string escaping, and the *materialisation* below, which
+ * writes out `nullable` as a literal boolean on every field and operation
+ * parameter. `multiplicity` and `presence` are schema-required and
+ * independently authored under contract 2.0.0 (FR-059, FR-069), so neither is
+ * ever materialized from the other, or from anything, here.
  */
 import { canonicalize, digest } from "../packages/canonical.mjs";
-import { multiplicityFromPresence } from "./reader.mjs";
 
 /** The IR arrays whose order carries no meaning and is sorted by identity. */
 export const IDENTITY_SETS = Object.freeze([
@@ -47,26 +44,21 @@ export function canonicalIr(document, options = {}) {
 
 /**
  * The normalized serialization. Every field and every operation parameter
- * carries an explicit `multiplicity`, `presence` and `nullable` before
- * canonicalisation.
+ * carries an explicit `nullable` before canonicalisation. Materialization is
+ * unconditional on `contractVersion`: this function runs on every document,
+ * including one no contractVersion check has looked at yet, and never gates
+ * its own behavior on the string.
  */
 export function normalizeIr(document, options = {}) {
 	if (!isObject(document)) return canonicalIr(document, options);
 	const copy = structuredClone(document);
-	if (copy.contractVersion === "2.0.0") {
-		const materialize = (field) => {
-			const multiplicity = isObject(field.multiplicity)
-				? field.multiplicity
-				: multiplicityFromPresence(field.presence);
-			field.multiplicity = multiplicity;
-			field.nullable = field.nullable === true;
-		};
-		for (const definition of asArray(copy.types)) {
-			for (const field of asArray(definition.fields)) materialize(field);
-			for (const operation of asArray(definition.operations)) {
-				for (const parameter of asArray(operation.params))
-					materialize(parameter);
-			}
+	const materialize = (field) => {
+		field.nullable = field.nullable === true;
+	};
+	for (const definition of asArray(copy.types)) {
+		for (const field of asArray(definition.fields)) materialize(field);
+		for (const operation of asArray(definition.operations)) {
+			for (const parameter of asArray(operation.params)) materialize(parameter);
 		}
 	}
 	return canonicalIr(copy, options);

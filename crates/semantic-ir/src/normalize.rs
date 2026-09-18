@@ -1,23 +1,23 @@
 //! The corpus comparison form of an IR document.
 //!
-//! `spec/functional/FR-036` fixes it (fcd#179 deleted contracts `1.0.0` and
-//! `1.1.0`; `2.0.0` is the only contract left): "a document materializes
-//! `multiplicity`, `presence`, and `nullable` on every field and operation
-//! parameter that lacks one, with `presence` kept exactly as authored rather
-//! than derived (FR-106), so a well-formed `2.0.0` document — whose schema
-//! already requires all three on every field — gains no member", serialized
-//! in `agent-ix-conformance-jcs-v1`.
-//!
-//! `spec/functional/FR-027` fixes the derivation multiplicity takes for a
-//! document that lacks one: "`required` → `1..1`, `optional` → `0..1`".
+//! `spec/functional/FR-036` fixes it: "a document materializes `nullable` as
+//! a literal boolean on every field and operation parameter, gating on no
+//! field of the document; `multiplicity` and `presence` are schema-required
+//! and independently authored, so neither is ever materialized from the
+//! other, and a well-formed `2.0.0` document — whose schema already requires
+//! both on every field — gains no member beyond `nullable`", serialized in
+//! `agent-ix-conformance-jcs-v1`.
 //!
 //! Materialization below is unconditional on `contractVersion`: `normalized`
 //! runs on every bundle, including one the schema layer already rejected
 //! (a version other than `2.0.0`, a missing `contractVersion`, or no
 //! `contractVersion` field at all), because the harness compares the string
 //! unconditionally too and must never panic on a schema-invalid document.
-//! Every helper below is defensive against a missing or wrongly shaped member
-//! instead of gating behavior on the version.
+//! A field missing `multiplicity` or `presence` is a reader-level refusal
+//! (`MISSING_MULTIPLICITY`), not something this module defaults; it stays
+//! absent in `normalized` rather than gaining an invented value. Every helper
+//! below is defensive against a missing or wrongly shaped member instead of
+//! gating behavior on the version.
 
 use crate::json::{to_canonical_string, Json};
 
@@ -108,44 +108,26 @@ fn materialize_field_array(fields: &Json) -> Json {
     Json::Array(items.iter().map(materialize_field).collect())
 }
 
+/// Materializes `nullable` as a literal boolean. `multiplicity` and
+/// `presence` are schema-required and independently authored, so neither is
+/// ever derived from the other, or from anything, here; whatever shape (or
+/// absence) a field carries for either passes through unchanged.
 fn materialize_field(field: &Json) -> Json {
     let members = match field.as_object() {
         Some(members) => members,
         None => return field.clone(),
     };
-    let multiplicity = match field.get("multiplicity") {
-        Some(multiplicity) if multiplicity.as_object().is_some() => multiplicity.clone(),
-        _ => derived_multiplicity(field),
-    };
-    let presence = field
-        .get("presence")
-        .and_then(Json::as_str)
-        .unwrap_or("optional");
     let nullable = truthy(field.get("nullable"));
 
-    let mut out: Vec<(String, Json)> = Vec::with_capacity(members.len() + 3);
+    let mut out: Vec<(String, Json)> = Vec::with_capacity(members.len() + 1);
     for (name, value) in members {
-        match name.as_str() {
-            "multiplicity" | "presence" | "nullable" => {}
-            _ => out.push((name.clone(), value.clone())),
+        if name == "nullable" {
+            continue;
         }
+        out.push((name.clone(), value.clone()));
     }
-    out.push(("multiplicity".to_string(), multiplicity));
-    out.push(("presence".to_string(), Json::Str(presence.to_string())));
     out.push(("nullable".to_string(), Json::Bool(nullable)));
     Json::Object(out)
-}
-
-fn derived_multiplicity(field: &Json) -> Json {
-    let lower = if field.get("presence").and_then(Json::as_str) == Some("required") {
-        "1"
-    } else {
-        "0"
-    };
-    Json::Object(vec![
-        ("lower".to_string(), Json::Number(lower.to_string())),
-        ("upper".to_string(), Json::Number("1".to_string())),
-    ])
 }
 
 /// ECMAScript truthiness, which is what "coerced to a boolean" names.
@@ -168,7 +150,7 @@ mod tests {
     use crate::json::parse;
 
     #[test]
-    fn tc_1378_preserves_authored_presence_in_a_1_2_0_field() {
+    fn tc_1378_preserves_authored_presence_disagreeing_with_multiplicity() {
         let bundle = parse(
             r#"{"ir":{"contractVersion":"2.0.0","types":[{"kind":"record","fields":[{"name":"a","presence":"optional","multiplicity":{"lower":1,"upper":1}}]}]}}"#,
         )
@@ -176,6 +158,22 @@ mod tests {
         assert_eq!(
             normalized(&bundle),
             r#"{"contractVersion":"2.0.0","types":[{"fields":[{"multiplicity":{"lower":1,"upper":1},"name":"a","nullable":false,"presence":"optional"}],"kind":"record"}]}"#
+        );
+    }
+
+    /// `multiplicity` and `presence` are schema-required and independently
+    /// authored; a field missing one is a reader-level refusal
+    /// (`MISSING_MULTIPLICITY`), not something `normalized` defaults, so it
+    /// stays absent rather than gaining an invented value.
+    #[test]
+    fn tc_1378_never_derives_multiplicity_from_presence() {
+        let bundle = parse(
+            r#"{"ir":{"contractVersion":"2.0.0","types":[{"kind":"record","fields":[{"name":"a","presence":"required"}]}]}}"#,
+        )
+        .expect("a well-formed document");
+        assert_eq!(
+            normalized(&bundle),
+            r#"{"contractVersion":"2.0.0","types":[{"fields":[{"name":"a","nullable":false,"presence":"required"}],"kind":"record"}]}"#
         );
     }
 

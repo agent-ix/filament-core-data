@@ -83,7 +83,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 ### Normalization
 
 - `canonicalIr` SHALL be the FR-048 canonical byte form of the document, with `types`, `fields`, `variants`, `constraints`, `relationships`, `operations`, `clauses`, and `extensions` declared as identity-keyed sets.
-- `normalizeIr` SHALL materialize `multiplicity`, `presence`, and `nullable` on every field and every operation parameter before canonicalising.
+- `normalizeIr` SHALL materialize `nullable` as a literal boolean on every field and every operation parameter before canonicalising. `multiplicity` and `presence` are schema-required and independently authored (FR-027, FR-106); `normalizeIr` SHALL NOT derive either from the other or from anything else, and SHALL run this materialization unconditionally, gating on no field of the document including `contractVersion`.
 - `fingerprintIr` SHALL be `digest` of `normalizeIr`'s output.
 - The compiler SHALL validate its own emitted document before writing it.
 - If that validation fails, then the compiler SHALL treat the failure as a blocking diagnostic rather than writing an invalid document.
@@ -93,7 +93,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-050-CON-1 | The compiler's reader is deliberately a third implementation beside the issue #34 TypeScript and Python readers; it SHALL NOT import either, so their agreement remains evidence rather than a tautology. Their agreement is a drift guard; the schema and FR-027..029 remain the authority. | Correctness | Static analysis and differential test |
-| FR-050-CON-2 | This requirement SHALL NOT edit `tests/semantic_ir_reader.py`. Invoking the Python reader from a test under `test/` is not an edit. `test/semantic-ir-v1-1-reader.ts` is exempted from this constraint (fcd#179 deleted contracts 1.0.0 and 1.1.0, which that reader also read, and ported it to 2.0.0 only); `tests/semantic_ir_reader.py` is exempted for the same reason, for the same one edit — dropping the deleted fixture `config-version-v1-1.json` from `verdicts()`'s file list, the only place that function names it. | Non-disruption | Branch diff |
+| FR-050-CON-2 | This requirement SHALL NOT edit `tests/semantic_ir_reader.py` or `test/semantic-ir-v1-1-reader.ts` to make either agree with the compiler's reader after the fact — that would collapse the third-implementation evidence FR-050-CON-1 protects into a tautology. Invoking the Python reader from a test under `test/` is not an edit. Both files MAY be edited to keep their `multiplicity`/`presence` handling from disagreeing with the schema-required, independently-authored design FR-106 states (neither is ever derived from the other), and to keep their fixture lists current with what is published under `fixtures/semantic/v1/` — the same standard this requirement is itself held to. | Non-disruption | Branch diff |
 | FR-050-CON-3 | Normalization SHALL be idempotent: normalizing a normalized document yields identical bytes. | Correctness | Property test |
 | FR-050-CON-4 | The reader SHALL terminate on every cyclic or oversized input rather than recursing without bound. | Safety | Fuzz |
 
@@ -101,11 +101,11 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-050-AC-1 | Every published positive fixture under `fixtures/semantic/v1/positive/` declaring contract `2.0.0` validates and yields zero reader diagnostics. `semantic-ir.json` and `config-version-v1-1.json`, once frozen at their deleted contracts as refused negative evidence, are deleted with those contracts (fcd#179); their refusal, while they existed, is now asserted over an inline document declaring the deleted `contractVersion` instead. | Test |
+| FR-050-AC-1 | Every published positive fixture under `fixtures/semantic/v1/positive/` declaring contract `2.0.0` validates and yields zero reader diagnostics. Refusal of a document declaring any other `contractVersion` is asserted over an inline document. | Test |
 | FR-050-AC-2 | Every case in `negative/reader-cases.json` yields the expected diagnostic code from the compiler's reader. | Test |
 | FR-050-AC-3 | For every case in `negative/reader-cases.json`, the compiler's reader, the issue #34 TypeScript reader, and the Python reader produce the same set of codes; a disagreement fails the suite. | Integration |
-| FR-050-AC-4 | `src/compiler/ir/reader.mjs` imports no module under `test/` or `tests/`, and `tests/semantic_ir_reader.py` is byte-unchanged from `origin/main` (fcd#179 ported `test/semantic-ir-v1-1-reader.ts` to contract 2.0.0, and made the one `verdicts()` edit FR-050-CON-2 exempts in `tests/semantic_ir_reader.py`, so both are exempted here). | Analysis |
-| FR-050-AC-5 | `normalizeIr` materializes `multiplicity`, `presence`, and `nullable` on every field and operation parameter. | Test |
+| FR-050-AC-4 | `src/compiler/ir/reader.mjs` imports no module under `test/` or `tests/`, matching FR-050-CON-1; any edit to `test/semantic-ir-v1-1-reader.ts` or `tests/semantic_ir_reader.py` stays within what FR-050-CON-2 permits. | Analysis |
+| FR-050-AC-5 | `normalizeIr` materializes `nullable` as a literal boolean on every field and operation parameter, unconditionally on `contractVersion`, and never derives `multiplicity` from `presence` or `presence` from `multiplicity`. | Test |
 | FR-050-AC-6 | `normalizeIr(normalizeIr(d))` equals `normalizeIr(d)` for every positive fixture and for generated documents. | Property |
 | FR-050-AC-7 | Two documents differing only in object key order and in identity-keyed array order have the same `fingerprintIr`; two differing in any semantic value do not. | Property |
 | FR-050-AC-8 | An emitted document that fails validation is not written, and the failure is a blocking diagnostic naming the failing pointer. | Test |

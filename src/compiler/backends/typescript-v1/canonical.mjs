@@ -230,6 +230,8 @@ function materializeField(field) {
 /**
  * The normalized document: a deep copy with `nullable` materialized on every
  * field and operation parameter. The argument is left byte-identical (FR-069).
+ * Materialization is unconditional on `contractVersion`, gating only on the
+ * document actually shaping the `types` array it walks.
  */
 export function normalizeIr(document) {
 	const copy = structuredClone(document);
@@ -237,7 +239,6 @@ export function normalizeIr(document) {
 		copy === null ||
 		typeof copy !== "object" ||
 		Array.isArray(copy) ||
-		copy.contractVersion !== "2.0.0" ||
 		!Array.isArray(copy.types)
 	) {
 		return copy;

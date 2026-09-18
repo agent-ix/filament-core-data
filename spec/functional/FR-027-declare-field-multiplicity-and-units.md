@@ -28,8 +28,8 @@ object and an optional `unit`.
 
 ## Behavior
 
-- A field SHALL carry `multiplicity` (fcd#179: the contract has one version, `2.0.0`, and every field on it carries `multiplicity`).
-- The normalized serialization SHALL materialize `multiplicity`, `presence`, and `nullable` on every field.
+- A field SHALL carry `multiplicity`, schema-required under contract `2.0.0`, the only version.
+- The normalized serialization SHALL materialize `nullable` as a literal boolean on every field; `multiplicity` and `presence` are independently authored and neither is ever derived from the other (FR-050, FR-069).
 - The `field` node SHALL carry `multiplicity.lower` as a non-negative integer.
 - The `field` node SHALL treat an absent `multiplicity.upper` as unbounded.
 - If `multiplicity.upper` is present and is less than `multiplicity.lower`, then IR validation SHALL fail at that field with its locus.
@@ -58,8 +58,8 @@ object and an optional `unit`.
 | FR-027-AC-2 | A field declared `1..*` with `ordered: true` and `unique: true` validates and preserves both flags. | Test |
 | FR-027-AC-4 | A field with `upper < lower` fails validation with the field's locus. | Test |
 | FR-027-AC-5 | A scalar field with `unit: "s"` validates; the same unit on a record-typed field fails. | Test |
-| FR-027-AC-6 | Every published positive fixture declaring contract `2.0.0` validates under the schema; `semantic-ir.json` and `config-version-v1-1.json`, once frozen at their deleted contracts, are deleted with those contracts (fcd#179), and their vocabulary and negative-refusal coverage is asserted over inline documents instead. | Test |
-| FR-027-AC-7 | The config-service FR-006 `ConfigVersion` fields (`parent 0..1`, `versionNumber 1..1`) are expressed in `fixtures/semantic/v1/positive/config-version-v2.json` with zero declared loss (fcd#179: retargeted from, and the deleted-contract `config-version-v1-1.json` was itself deleted with, the 1.1.0 contract). | Analysis |
+| FR-027-AC-6 | Every published positive fixture declaring contract `2.0.0` validates under the schema; their vocabulary and negative-refusal coverage is asserted over inline documents. | Test |
+| FR-027-AC-7 | The config-service FR-006 `ConfigVersion` fields (`parent 0..1`, `versionNumber 1..1`) are expressed in `fixtures/semantic/v1/positive/config-version-v2.json` with zero declared loss. | Analysis |
 | FR-027-AC-8 | `ordered: true` on a `1..1` field fails validation with the field's locus. | Test |
 | FR-027-AC-9 | A multiplicity narrowing (`0..*` → `1..1`) classifies as breaking and a widening (`1..1` → `0..*`) as additive in the compatibility corpus. | Test |
 

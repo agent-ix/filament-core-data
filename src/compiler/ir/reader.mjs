@@ -183,7 +183,7 @@ export function resolveKind(types, typeRef, seen = new Set()) {
 	};
 }
 
-/** The `1.0.0` derivation FR-027 published: presence fixes the bounds. */
+/** The presence-derived bound FR-027 documents; unused by the reader itself, which never derives `multiplicity` from `presence`. */
 export function multiplicityFromPresence(presence) {
 	return presence === "optional"
 		? { lower: 0, upper: 1 }

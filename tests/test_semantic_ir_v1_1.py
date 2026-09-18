@@ -26,15 +26,13 @@ GOLDEN = (
     "positive/semantic-ir-v1-1-spec-bundle.json",
 )
 
-# fcd#179 deleted contracts `1.0.0` and `1.1.0`, and the two fixtures that
-# used to carry them on disk (`semantic-ir.json`, `config-version-v1-1.json`)
-# with them. `normalize` (`tests/semantic_ir_reader.py`) materializes
-# unconditionally now — it no longer gates on `contractVersion` at all — so
-# this literal exercises the round-trip property (FR-020-AC-7) over a
-# document shaped like the deleted fixtures rather than restating a gate
-# that no longer exists.
-LEGACY_1_1_0 = {
-    "contractVersion": "1.1.0",
+# `normalize` (`tests/semantic_ir_reader.py`) materializes `nullable`
+# unconditionally — it does not gate on `contractVersion` and never derives
+# `multiplicity` from `presence` — so this exercises the round-trip property
+# (FR-020-AC-7) over a field carrying `presence` with no `multiplicity`,
+# which normalize leaves absent rather than defaulting.
+MULTIPLICITY_OMITTED = {
+    "contractVersion": "2.0.0",
     "types": [
         {
             "kind": "record",
@@ -59,12 +57,11 @@ class TestSecondReader:
     Description: TC-232 second-reader evidence for FR-020-AC-8; every golden
     document validates and reads clean, every recorded negative and reader
     case is rejected, and the normalized form matches FR-027 / FR-020-AC-7.
-    fcd#179 deleted contracts `1.0.0` and `1.1.0`; `2.0.0` is the only one,
-    and deleted the two fixtures that used to be frozen at them
-    (`semantic-ir.json`, `config-version-v1-1.json`) — their refusal is
-    asserted in `TestContract20` (TC-1756, NFR-044-AC-1), not here.
-    `normalize` no longer gates on `contractVersion`; `LEGACY_1_1_0` below is
-    a round-trip fixture, not a test of a version gate.
+    `2.0.0` is the only supported contract; a document declaring another is
+    refused, asserted in `TestContract20` (TC-1756, NFR-044-AC-1), not here.
+    `normalize` does not gate on `contractVersion` at all; `MULTIPLICITY_OMITTED`
+    below is a round-trip fixture over a field missing `multiplicity`, not a
+    test of a version gate.
     Assumptions: the poetry dev group is installed; fixtures are the committed
     ones under fixtures/semantic/v1.
     Criteria: FR-020-AC-7, FR-020-AC-8, FR-027-AC-1, FR-027-AC-6.
@@ -83,8 +80,19 @@ class TestSecondReader:
         for name in GOLDEN:
             first = normalize(_fixture(name))
             assert normalize(json.loads(first)) == first, name
-        first = normalize(LEGACY_1_1_0)
+        first = normalize(MULTIPLICITY_OMITTED)
         assert normalize(json.loads(first)) == first
+
+    def test_normalize_never_derives_multiplicity_from_presence(self) -> None:
+        """Criteria: FR-027-AC-1 — `multiplicity` and `presence` are
+        schema-required and independently authored; a field carrying
+        `presence` with no `multiplicity` stays that way through `normalize`
+        rather than gaining an invented value."""
+        first = normalize(MULTIPLICITY_OMITTED)
+        field = json.loads(first)["types"][0]["fields"][0]
+        assert "multiplicity" not in field
+        assert field["presence"] == "optional"
+        assert field["nullable"] is False
 
     def test_every_recorded_case_is_rejected(self) -> None:
         """Criteria: FR-020-AC-8 — schema and reader cases all fail as recorded."""
@@ -107,8 +115,8 @@ class TestContract20:
 
     Description: TC-1740, TC-1745, TC-1746, TC-1756 and TC-1789 Python-reader
     evidence; the committed 2.0.0 positive reads clean, each construct
-    missing a required member is refused by the schema, and a fixture still
-    declaring a contract fcd#179 deleted (`1.0.0`/`1.1.0`) is refused too.
+    missing a required member is refused by the schema, and a document
+    declaring any contract other than `2.0.0` is refused too.
     Assumptions: the poetry dev group is installed; fixtures are the committed
     ones under fixtures/semantic/v1.
     Criteria: FR-141-AC-1, FR-142-AC-1, FR-142-AC-2, FR-142-CON-1, FR-142-AC-8,

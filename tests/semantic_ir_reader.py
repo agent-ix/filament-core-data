@@ -176,6 +176,7 @@ def _check_field(
         # fcd#179: 2.0.0 is the only contract, and its schema requires
         # `multiplicity` on every field, so a document reaching this reader
         # without one is always in violation (no version branch left).
+        # Refused, not defaulted: no fallback value is computed for it.
         out.append(
             _diag(
                 "agent-ix.semantic-ir.MISSING_MULTIPLICITY",
@@ -183,13 +184,8 @@ def _check_field(
                 f"{version} requires multiplicity",
             )
         )
-        multiplicity: dict[str, Any] | None = multiplicity_from_presence(
-            field.get("presence")
-        )
     else:
-        multiplicity = _check_multiplicity(
-            field["multiplicity"], f"{path}.multiplicity", out
-        )
+        _check_multiplicity(field["multiplicity"], f"{path}.multiplicity", out)
     # fcd#179 deleted `PRESENCE_MULTIPLICITY_MISMATCH`, the contract `1.1.0`
     # rule that re-derived `presence` from `multiplicity` and reported a
     # disagreement; contract `2.0.0` authors `presence` independently
@@ -519,25 +515,15 @@ def canonical(value: Any) -> str:
 
 
 def normalize(document: Any) -> str:
-    """Normalized bytes materialize multiplicity, presence, and nullable on
-    every field and operation parameter that lacks one, keeping authored
-    presence exactly as authored (fcd#179: 2.0.0 is the only contract, so
-    materialization is unconditional)."""
+    """Normalized bytes materialize `nullable` as a literal boolean on every
+    field and operation parameter, unconditionally on contractVersion.
+    `multiplicity` and `presence` are schema-required and independently
+    authored; neither is ever derived from the other here."""
     if not isinstance(document, dict):
         return canonical(document)
     copy_ = copy.deepcopy(document)
 
     def materialize(field: dict[str, Any]) -> None:
-        multiplicity = (
-            field["multiplicity"]
-            if isinstance(field.get("multiplicity"), dict)
-            else multiplicity_from_presence(field.get("presence"))
-        )
-        field["multiplicity"] = multiplicity
-        if field.get("presence") not in {"required", "optional"}:
-            field["presence"] = (
-                "required" if multiplicity["lower"] >= 1 else "optional"
-            )
         field["nullable"] = field.get("nullable") is True
 
     for definition in _objects(copy_.get("types")):

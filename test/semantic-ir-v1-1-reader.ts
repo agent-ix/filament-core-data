@@ -521,29 +521,21 @@ export function canonical(value: unknown): string {
 }
 
 /**
- * Normalized serialization (FR-027): a 2.0.0 document materializes
- * multiplicity and nullable on every field, keeping its authored presence
- * (filling only a presence the document left absent or malformed).
+ * Normalized serialization (FR-027): materializes `nullable` as a literal
+ * boolean on every field, unconditionally on `contractVersion`. `multiplicity`
+ * and `presence` are schema-required and independently authored, so neither
+ * is ever derived from the other here.
  */
 export function normalize(document: unknown): string {
 	if (!isObject(document)) return canonical(document);
 	const copy = structuredClone(document) as JsonObject;
-	const version = copy.contractVersion;
-	if (version === "2.0.0") {
-		const materialize = (field: JsonObject): void => {
-			const multiplicity = isObject(field.multiplicity)
-				? (field.multiplicity as Multiplicity)
-				: multiplicityFromPresence(field.presence);
-			field.multiplicity = multiplicity;
-			if (field.presence !== "required" && field.presence !== "optional")
-				field.presence = multiplicity.lower >= 1 ? "required" : "optional";
-			field.nullable = field.nullable === true;
-		};
-		for (const definition of asArray(copy.types)) {
-			for (const field of asArray(definition.fields)) materialize(field);
-			for (const operation of asArray(definition.operations))
-				for (const param of asArray(operation.params)) materialize(param);
-		}
+	const materialize = (field: JsonObject): void => {
+		field.nullable = field.nullable === true;
+	};
+	for (const definition of asArray(copy.types)) {
+		for (const field of asArray(definition.fields)) materialize(field);
+		for (const operation of asArray(definition.operations))
+			for (const param of asArray(operation.params)) materialize(param);
 	}
 	return canonical(copy);
 }

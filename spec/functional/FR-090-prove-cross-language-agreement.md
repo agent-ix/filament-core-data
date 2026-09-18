@@ -161,8 +161,7 @@ following, and a disagreement on any one is a disagreement:
 - **Presence versus null.** An absent member and a member present with a null
   value SHALL be distinguished identically across the four, both on
   deserialization and on re-serialization. Contract `2.0.0` authors `presence`
-  independently of `multiplicity.lower` (FR-106-CON-1; fcd#179 deleted the
-  `1.1.0` derivation this property used to cite), so a package that maps
+  independently of `multiplicity.lower` (FR-106-CON-1), so a package that maps
   `presence: "optional"` onto a written null has changed a document's meaning
   rather than its formatting.
 - **Defaults.** Whether a default is materialized into the serialized document
@@ -345,4 +344,4 @@ following, and a disagreement on any one is a disagreement:
 - **Consumed read-only**: `conformance/oracle/index.mjs`, the one declared import surface of the issue #20 corpus, together with `conformance/corpus.json`, `conformance/contract-gaps.json`, `conformance/divergences.json`, `conformance/thresholds.json`, and `conformance/adapters/registry.json`, all owned by `agent-ix/filament-core-data#20` and all prohibited paths for issue #11 under NFR-030
 - **Downstream**: `agent-ix/quoin#290`, the publication sign-off every one of the four packages is blocked on; `agent-ix/filament-core-data#20`, which owns closing the `UA-serialization-parity` row on the evidence this requirement reports; `agent-ix/filament-core-data#7`
 - **Constrained by**: [NFR-028](../non-functional/NFR-028-deterministic-kernel-generation.md), [NFR-029](../non-functional/NFR-029-portable-semantic-kernel-packages.md), [NFR-030](../non-functional/NFR-030-non-disruptive-kernel-packaging.md)
-- **Open contract questions this requirement records rather than decides**: `conformance/contract-gaps.json` GAP-004, the named but undefined `RFC8785-JCS-with-identity-sorted-sets-v1` fingerprint form, which is why the comparison names `agent-ix-conformance-jcs-v1` instead; and GAP-002, the four-lookahead `sourceLocus` path pattern that cannot compile under RE2 and that the Rust package must hand-write. `fcd#179` deletes GAP-009 (presence and multiplicity unreconciled by the schema): contract `2.0.0` is the only contract, and `FR-106` makes presence and multiplicity independent, so no reconciliation gap remains to record
+- **Open contract questions this requirement records rather than decides**: `conformance/contract-gaps.json` GAP-004, the named but undefined `RFC8785-JCS-with-identity-sorted-sets-v1` fingerprint form, which is why the comparison names `agent-ix-conformance-jcs-v1` instead; and GAP-002, the four-lookahead `sourceLocus` path pattern that cannot compile under RE2 and that the Rust package must hand-write. `FR-106` makes presence and multiplicity independent under contract `2.0.0`, the only contract, so no reconciliation gap remains to record

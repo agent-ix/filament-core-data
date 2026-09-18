@@ -124,11 +124,11 @@ pub fn bundle_of(value: &Value) -> Json {
 
 /// The bytes of `value` in the reader's canonical form: exactly
 /// `agent_ix_semantic_ir::normalize::normalized(&{"ir": value})`
-/// (FR-097-CON-2). A document declaring contract `1.1.0` has
-/// `multiplicity`, `presence` and `nullable` materialized on every field and
-/// parameter by that call, which the frontend has already done, so the call
-/// adds no member; a sidecar declares no contract and is canonicalized as it
-/// is.
+/// (FR-097-CON-2). A document declaring contract `2.0.0` has `nullable`
+/// materialized as a literal boolean on every field and parameter by that
+/// call, which the frontend has already done, so the call adds no member;
+/// `multiplicity` and `presence` are never derived from one another, and a
+/// sidecar declares no contract and is canonicalized as it is.
 pub fn canonical_bytes(value: &Value) -> Vec<u8> {
     normalized(&bundle_of(value)).into_bytes()
 }

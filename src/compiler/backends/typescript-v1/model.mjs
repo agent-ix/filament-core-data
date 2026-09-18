@@ -143,18 +143,10 @@ function summaryOf(types, identifiers, identity) {
  * though its `typeRef` names a `sequence`.
  */
 function axesOf(field) {
-	// A `1.0.0` field carries no multiplicity at all — the schema requires one
-	// only at `1.1.0` — so an absent *member* is not an absent *bound*. Reading
-	// it as unbounded would render every `1.0.0` field as an array. Where the
-	// member is absent it is derived from `presence`, which is the same
-	// derivation the normalized serialization applies, and only an explicitly
-	// declared multiplicity with an absent `upper` means unbounded.
-	const declared = isObject(field.multiplicity);
-	const multiplicity = declared
-		? field.multiplicity
-		: field.presence === "optional"
-			? { lower: 0, upper: 1 }
-			: { lower: 1, upper: 1 };
+	// `multiplicity` is schema-required on every field under contract `2.0.0`
+	// (FR-027); it is read exactly as authored and never derived from
+	// `presence`, matching the normalizers (FR-059, FR-069, FR-106).
+	const multiplicity = isObject(field.multiplicity) ? field.multiplicity : {};
 	const upper = multiplicity.upper;
 	return {
 		optional: field.presence === "optional",

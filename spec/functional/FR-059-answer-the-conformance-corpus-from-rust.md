@@ -110,10 +110,11 @@ author.
 - `normalized` SHALL be: serialize the document with object members sorted by
   code point, array order preserved, no insignificant whitespace, and every
   JSON number rendered by the ECMAScript `Number::toString` algorithm.
-  `multiplicity`, `presence`, and `nullable` are schema-required and
-  independently authored under the sole remaining contract `2.0.0` (FR-106-CON-1,
-  FR-069), so normalization never materializes one from another (fcd#179
-  deleted the `1.1.0` derivation this bullet used to state).
+  `nullable` is materialized as a literal boolean on every field and operation
+  parameter, unconditionally on `contractVersion`. `multiplicity` and
+  `presence` are schema-required and independently authored under contract
+  `2.0.0` (FR-106-CON-1, FR-069), so normalization never materializes either
+  from the other.
 - The crate SHALL carry an ECMAScript-compatible number formatter as a named,
   separately tested unit, because Rust's own `f64` display differs from
   ECMAScript at the exponent thresholds, on trailing zeros, and on negative

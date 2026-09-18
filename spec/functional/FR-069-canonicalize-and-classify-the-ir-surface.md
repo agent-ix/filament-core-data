@@ -106,9 +106,8 @@ Classification is the half that depends on admissibility, and only for the
 - Because `docs/semantic-data-system/contracts-v1.md` names the algorithm `RFC8785-JCS-with-identity-sorted-sets-v1` and defines it nowhere, which `conformance/contract-gaps.json` records as GAP-004, `canonical.mjs` SHALL publish its own definition of both forms with the gap cited beside them.
 - `normalizeIrForTarget` SHALL use the unextended form, so that the string an adapter answer carries is the corpus's.
 - `fingerprintIrForTarget` SHALL use the extended form, so that the value stamped into a generated file's banner is the contract's.
-- `normalizeIrForTarget` SHALL, for a `2.0.0` document, force `nullable` to a literal boolean on every field and every operation parameter.
-- `normalizeIrForTarget` SHALL NOT derive `multiplicity` from `presence` or `presence` from `multiplicity`: `fcd#179` deletes contracts `1.0.0` and `1.1.0`, and under the sole remaining contract `2.0.0` both members are schema-required and independently authored (FR-106-CON-2), so neither is ever materialized from the other.
-- `normalizeIrForTarget` SHALL add no member beyond a literal `nullable` to a document not carrying `contractVersion` `2.0.0`, canonicalizing it as written.
+- `normalizeIrForTarget` SHALL force `nullable` to a literal boolean on every field and every operation parameter, unconditionally on `contractVersion`.
+- `normalizeIrForTarget` SHALL NOT derive `multiplicity` from `presence` or `presence` from `multiplicity`: both members are schema-required and independently authored under contract `2.0.0` (FR-106-CON-2), so neither is ever materialized from the other, and `normalizeIrForTarget` adds no member beyond the literal `nullable`.
 - `normalizeIrForTarget` SHALL be idempotent, so normalizing a normalized document yields identical bytes.
 - `normalizeIrForTarget` SHALL leave its argument byte-identical, so a caller's document is never mutated by being canonicalized.
 - `digestOf` SHALL return the SHA-256 of the canonical bytes, prefixed `sha256:`.
@@ -231,7 +230,7 @@ Classification is the half that depends on admissibility, and only for the
 | FR-069-AC-1 | Two documents differing only in object key order and in the order of the thirteen identity-keyed containers canonicalize to identical bytes. | Property |
 | FR-069-AC-2 | Two documents differing in any semantic value canonicalize to different bytes. | Property |
 | FR-069-AC-3 | `normalizeIrForTarget(normalizeIrForTarget(d))` equals `normalizeIrForTarget(d)` for every positive fixture and for every corpus case input. | Property |
-| FR-069-AC-4 | A `2.0.0` document's field gains a literal `nullable` and no other member; `normalizeIrForTarget` never derives `multiplicity` from `presence` or `presence` from `multiplicity`, and a document not carrying `contractVersion` `2.0.0` gains no member at all. | Unit |
+| FR-069-AC-4 | Any document's field gains a literal `nullable` and no other member, gated on no field of the document including `contractVersion`; `normalizeIrForTarget` never derives `multiplicity` from `presence` or `presence` from `multiplicity`. | Unit |
 | FR-069-AC-5 | Canonicalizing every conformance base and case input produces byte-identical output on a second run, from a different working directory, and under `LC_ALL=tr_TR.UTF-8`. | Integration |
 | FR-069-AC-6 | A non-finite number and a value past the depth bound are each refused with a named error rather than serialized. | Unit |
 | FR-069-AC-7 | Canonicalization leaves its argument byte-identical for every corpus case. | Property |
