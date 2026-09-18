@@ -1537,7 +1537,8 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 			const packageIdentity = packages[next(packages.length)];
 			const result = mapping.mapDocument(
 				{
-					contractVersion: "1.1.0",
+					contractVersion: "2.0.0",
+					constructs: [],
 					package: { identity: packageIdentity },
 					source: {},
 					occurrences: [],
@@ -1595,7 +1596,8 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	it("maps matching support scalars without newtypes and resolves reserved-name collisions", async () => {
 		const { mapping } = await loadOnce().then((loaded) => loaded.backend);
 		const base = {
-			contractVersion: "1.1.0",
+			contractVersion: "2.0.0",
+			constructs: [],
 			package: { identity: "agent-ix/test" },
 			source: {},
 			occurrences: [],
@@ -1635,6 +1637,7 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 									identity: "ix://agent-ix/test/field/Holder-value",
 									name: "value",
 									typeRef: definition.identity,
+									multiplicity: { lower: 1, upper: 1 },
 									presence: "required",
 									nullable: false,
 								},

@@ -12,6 +12,7 @@
  * breaking release gets promoted.
  */
 import { kindLabel } from "../constructs.mjs";
+import { DIAGNOSTIC_CODES, fragment } from "../diagnostics.mjs";
 import { canonicalize } from "../packages/canonical.mjs";
 import { familyMap } from "../family-map.mjs";
 import { fingerprintIr } from "../ir/normalize.mjs";
@@ -138,6 +139,42 @@ export function diffSemanticContract(request) {
 		observedLoss = {},
 		retainedBridges = [],
 	} = request;
+
+	// fcd#183: this function is a direct CLI entry point (`diff` in
+	// `src/compiler/cli.mjs` reads `--old`/`--new` from disk with no schema
+	// check first), unlike the conformance adapter's own call, which is
+	// guarded ahead of time by `readContractIr`'s blocking refusal. A document
+	// naming a contract fcd#179 deleted must not be silently classified as
+	// though it were 2.0.0, so both sides are refused here too, wholesale,
+	// before any comparison runs (mirrors `readContractIr` in `ir/reader.mjs`).
+	for (const [role, document] of [
+		["old", before],
+		["new", after],
+	]) {
+		if (document?.contractVersion === "2.0.0") continue;
+		return {
+			contractVersion: "1.0.0",
+			oldFingerprint: fingerprintIr(before) ?? "",
+			newFingerprint: fingerprintIr(after) ?? "",
+			consumerEvidenceStatus: consumerEvidenceStatus,
+			changes: [
+				{
+					identity: String(
+						document?.source?.identity ?? "ix://agent-ix/unknown/source",
+					),
+					family: "documentation",
+					surface: "semantic",
+					disposition: "invalid",
+					rationale: `${DIAGNOSTIC_CODES.UNKNOWN_CONTRACT_VERSION.code}: the ${role} document declares contract version ${fragment(String(document?.contractVersion))}; this compiler supports 2.0.0`,
+					affectedConsumers: [],
+					targetResults: [],
+				},
+			],
+			aggregateDisposition: "invalid",
+			requiredGates: [],
+			retainedBridges: [],
+		};
+	}
 	const map = familyMapping();
 	const familyOf = (observed) =>
 		Object.hasOwn(map, observed) ? map[observed] : undefined;

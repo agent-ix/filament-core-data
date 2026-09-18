@@ -524,6 +524,10 @@ const PROVENANCE_TABLE = [
 	["MANIFEST_DIGEST", (request) => request.ir.package.manifestDigest],
 	["LOCK_DIGEST", (request) => request.ir.package.lockDigest],
 	["LOCK_FINGERPRINT", (request) => request.lockFingerprint],
+	// fcd#183: copied from the input with no check of its own — `mapDocument`
+	// (called above, before this table is ever read) now throws for any
+	// `request.ir.contractVersion` but `2.0.0`, so this is never reached
+	// carrying a version `backends/seam.mjs` had not already validated.
 	["CONTRACT_VERSION", (request) => request.ir.contractVersion],
 	["GENERATOR_IDENTITY", (request) => request.backend?.identity],
 	["GENERATOR_VERSION", (request) => request.backend?.version],

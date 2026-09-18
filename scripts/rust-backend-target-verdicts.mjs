@@ -98,7 +98,8 @@ const field = (owner, name, ref, lower, nullable) => ({
  * would be writing to `conformance/`, which this work does not do.
  */
 export const VERDICT_IR = Object.freeze({
-	contractVersion: "1.1.0",
+	contractVersion: "2.0.0",
+	constructs: [],
 	source: {
 		identity: "ix://agent-ix/filament-core-data/source/typespec",
 		version: "1.0.0",

@@ -200,13 +200,6 @@ function rowOf(declaration, kind) {
 		: `shape:${declaration.shape}`;
 }
 
-/** The `1.0.0` derivation FR-027 publishes: `presence` fixes the bounds. */
-export function multiplicityFromPresence(presence) {
-	return presence === "optional"
-		? { lower: 0, upper: 1 }
-		: { lower: 1, upper: 1 };
-}
-
 /** Locale-independent code-point comparison. */
 export function byCodePoint(left, right) {
 	if (left < right) return -1;
@@ -223,6 +216,25 @@ export function byCodePoint(left, right) {
  * partial model would invite a caller to emit from it.
  */
 export function mapDocument(ir, options = {}) {
+	// fcd#183: `mapDocument` (and `emitCrate`/`generateRust`, which call it)
+	// is a direct entry point a script or test can reach without going
+	// through `backends/seam.mjs`, which is the layer that turns a document
+	// declaring any contract but 2.0.0 into `agent-ix.compiler.
+	// UNKNOWN_CONTRACT_VERSION` before a backend ever sees it. This module's
+	// own closed diagnostic registry (`./diagnostics.mjs`) deliberately
+	// mirrors only the five reader-owned codes `conformance/diagnostic-
+	// codes.json` fixes, so a sixth, unpublished code is not minted here to
+	// carry this refusal as a diagnostic; the seam bypass is the caller's
+	// defect, not new input this backend must classify, so it throws rather
+	// than silently mapping a document no seam ever validated (mirrors
+	// `diagnostic()` below, which throws for the same reason on an
+	// unregistered code).
+	if (ir?.contractVersion !== "2.0.0") {
+		throw new TypeError(
+			`mapDocument expects a document backends/seam.mjs already refused under agent-ix.compiler.UNKNOWN_CONTRACT_VERSION if it declared anything but 2.0.0; got ${fragment(String(ir?.contractVersion))}`,
+		);
+	}
+
 	const diagnostics = [];
 	const raise = (entry, message, locus) =>
 		diagnostics.push(
@@ -930,8 +942,11 @@ function mapMethod(operation, owner, context, version) {
 function mapField(field, owner, context, version) {
 	const { raise, graph } = context;
 	const locus = field.origin?.source ?? owner.origin?.source;
-	const multiplicity =
-		field.multiplicity ?? multiplicityFromPresence(field.presence);
+	// fcd#179: 2.0.0 is the only contract, and its schema requires
+	// `multiplicity` on every field, so a document reaching the backend
+	// (already schema-validated by the caller) always carries one; no
+	// presence-derived fallback is needed or admitted.
+	const multiplicity = field.multiplicity;
 
 	if (multiplicity.upper === 0) {
 		raise(
