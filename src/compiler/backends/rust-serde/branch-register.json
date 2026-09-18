@@ -10,12 +10,12 @@
 		"src/compiler/ir/applicability.mjs"
 	],
 	"contributions": {
-		"diagnostics.mjs": 22,
+		"diagnostics.mjs": 21,
 		"mapping-table.json": 69,
 		"names.mjs": 10,
 		"src/compiler/ir/applicability.mjs": 40
 	},
-	"rowCount": 141,
+	"rowCount": 140,
 	"unmetCount": 0,
 	"unreachableCount": 1,
 	"rows": [
