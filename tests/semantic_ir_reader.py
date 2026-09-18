@@ -668,7 +668,7 @@ def verdicts() -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
     for name in sorted(
         path.name for path in (FIXTURE_ROOT / "positive").glob("semantic-ir*.json")
-    ) + ["config-version-v1-1.json"]:
+    ):
         document = json.loads((FIXTURE_ROOT / "positive" / name).read_text())
         results.append(
             {

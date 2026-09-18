@@ -172,12 +172,14 @@ function schemaNamed(name: string): JsonObject {
 describe("semantic IR v1.1 baseline and non-disruption", () => {
 	/**
 	 * Traces: TC-208; FR-027-AC-6.
-	 * fcd#179 deleted contracts 1.0.0 and 1.1.0; 2.0.0 is the only one.
-	 * `positive/semantic-ir.json` stays frozen at 1.0.0 (kept on disk as
-	 * refused negative evidence, mirroring `config-version-v1-1.json`), so
-	 * the digest loop below still pins a fixture that no longer validates
-	 * under the schema; FR-027-AC-6 is scoped to fixtures declaring the live
-	 * contract, not to every published fixture.
+	 * fcd#179 deleted contracts 1.0.0 and 1.1.0; 2.0.0 is the only one, and
+	 * deleted the two fixtures that used to be frozen at them
+	 * (`semantic-ir.json`, `config-version-v1-1.json`) rather than keeping
+	 * them on disk as refused negative evidence — their refusal is asserted
+	 * over an inline document instead (`TestContract20`'s Rust and Python
+	 * mirrors, `crates/extraction-frontend/tests/constructs.rs`'s `tc_1756`).
+	 * The digest baseline below now pins only fixtures declaring the live
+	 * contract.
 	 */
 	it("keeps every v1 positive fixture byte-identical", () => {
 		const baseline = object(
@@ -394,8 +396,16 @@ describe("FR-030 version discriminator, source dialect, and manifest targets", (
 		expect(valid).toBe(false);
 		expect(entry.code).toBe("agent-ix.semantic-ir.RETIRED_SOURCE_DIALECT");
 		expect(entry.note ?? "").toContain("ADR-0005");
-		const mismatch = negativeValidates("ir-v1-0-frontend-dialect");
-		expect(mismatch.valid, "1.0.0 document keeps the v1 constant").toBe(false);
+		// fcd#179 deleted contract 1.0.0 and the fixture once frozen at it
+		// (`ir-v1-0-frontend-dialect`, dropped from negative/cases.json); a
+		// document still declaring 1.0.0 is refused outright (NFR-044-AC-1),
+		// regardless of its dialect, so the check moves to an inline document.
+		const stillDeclares1_0_0 = clone(readJson("positive/semantic-ir-v1-1.json"));
+		setAt(stillDeclares1_0_0, "contractVersion", "1.0.0");
+		expect(
+			validates("semantic-ir.schema.json", stillDeclares1_0_0),
+			"a document still declaring the deleted 1.0.0 contract",
+		).toBe(false);
 	});
 
 	/** Traces: TC-229; FR-030-AC-3. */
@@ -469,7 +479,16 @@ describe("FR-030 version discriminator, source dialect, and manifest targets", (
 	/** Traces: TC-246; FR-030-AC-5, FR-030-AC-6. */
 	it("rejects unknown contract versions and unknown dialects before emission", () => {
 		expect(negativeValidates("ir-v1-1-unsupported-version").valid).toBe(false);
-		expect(negativeValidates("ir-unknown-version").valid).toBe(false);
+		// fcd#179 deleted contract 1.0.0 and the fixture once frozen at it
+		// (`ir-unknown-version`, dropped from negative/cases.json); a document
+		// still declaring 1.0.0 is refused outright (NFR-044-AC-1), so the
+		// check moves to an inline document.
+		const stillDeclares1_0_0 = clone(readJson("positive/semantic-ir-v1-1.json"));
+		setAt(stillDeclares1_0_0, "contractVersion", "1.0.0");
+		expect(
+			validates("semantic-ir.schema.json", stillDeclares1_0_0),
+			"a document still declaring the deleted 1.0.0 contract",
+		).toBe(false);
 		const dialect = negativeValidates("ir-v1-1-unknown-dialect");
 		expect(dialect.valid).toBe(false);
 		expect(dialect.entry.set?.value).toBe("avro");
@@ -767,14 +786,13 @@ describe("FR-029 closed constraint vocabulary", () => {
 		);
 	});
 
-	/** Traces: TC-224; FR-029-CON-1. */
+	/**
+	 * Traces: TC-224; FR-029-CON-1.
+	 * fcd#179 deleted `positive/semantic-ir.json`; it carried no constraints,
+	 * so this now checks only the golden `2.0.0` fixture.
+	 */
 	it("finds every v1 fixture constraint inside the closed vocabulary", () => {
-		const v1 = object(readJson("positive/semantic-ir.json"), "v1");
-		const constraints = allConstraints(v1);
-		expect(constraints.length, "v1 fixtures carry no constraints today").toBe(
-			0,
-		);
-		for (const constraint of [...constraints, ...allConstraints(goldenV11())])
+		for (const constraint of allConstraints(goldenV11()))
 			expect(CLOSED_KEYWORDS).toContain(String(constraint.keyword));
 	});
 
@@ -1097,9 +1115,9 @@ describe("FR-028 relationships, operations, and clauses", () => {
 
 describe("FR-006 ConfigVersion worked example (Task-039)", () => {
 	function configVersion(): JsonObject {
-		// fcd#179: `config-version-v1-1.json` stays on disk, pinned by
-		// FR-094-CON-4, but is no longer a 2.0.0 document, so this worked
-		// example reads its structurally identical 2.0.0 sibling instead.
+		// fcd#179 deleted `config-version-v1-1.json` (it declared the deleted
+		// contract 1.1.0), so this worked example reads its structurally
+		// identical 2.0.0 sibling instead.
 		const document = object(
 			readJson("positive/config-version-v2.json"),
 			"ConfigVersion",
@@ -1198,7 +1216,7 @@ function typescriptVerdicts(): Verdict[] {
 	const positives = readdirSync(resolve(fixtureRoot, "positive"))
 		.filter((name) => name.startsWith("semantic-ir") && name.endsWith(".json"))
 		.sort();
-	for (const name of [...positives, "config-version-v1-1.json"]) {
+	for (const name of positives) {
 		const document = readJson(`positive/${name}`);
 		results.push({
 			id: `positive/${name}`,
@@ -1301,7 +1319,11 @@ describe("FR-020 closing gate: two readers, round trip, fixture inventory (Task-
 			(JSON.parse(python) as Verdict[]).map((v) => [v.id, v]),
 		);
 		const ours = typescriptVerdicts();
-		expect(ours.length).toBeGreaterThanOrEqual(40);
+		// fcd#179 deleted `semantic-ir.json` and two cases that mutated it
+		// (`ir-unknown-version`, `ir-v1-0-frontend-dialect`); their refusal
+		// coverage moved to inline-document assertions elsewhere in this
+		// file, outside this corpus sweep, so the floor drops by three.
+		expect(ours.length).toBeGreaterThanOrEqual(37);
 		expect(new Set(theirs.keys())).toEqual(new Set(ours.map((v) => v.id)));
 		for (const verdict of ours) {
 			const other = theirs.get(verdict.id);
@@ -1347,10 +1369,7 @@ describe("FR-020 closing gate: two readers, round trip, fixture inventory (Task-
 	 * guard, not a traced criterion (see the note above TC-234's test).
 	 */
 	it("has at least one golden and one negative fixture per new node kind", () => {
-		const golden = JSON.stringify([
-			readJson("positive/semantic-ir-v1-1.json"),
-			readJson("positive/config-version-v1-1.json"),
-		]);
+		const golden = JSON.stringify([readJson("positive/semantic-ir-v1-1.json")]);
 		const negatives = JSON.stringify([
 			readJson("negative/cases.json"),
 			readJson("negative/reader-cases.json"),

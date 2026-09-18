@@ -27,9 +27,9 @@
 //! resolved type, whose `constraints[]` carry the row's keywords with
 //! `appliesTo` the alias identity, and whose `origin` is the row; the
 //! field's `typeRef` then names the alias. This is the form FR-034 lowers
-//! the semantic-core kernel path to (`VersionNumber` in
-//! `fixtures/semantic/v1/positive/config-version-v1-1.json`), and the one
-//! both readers resolve: `appliesTo` is a type identity for FR-050's
+//! the semantic-core kernel path to (`VersionNumber` on config-service's
+//! `ConfigVersion`), and the one both readers resolve: `appliesTo` is a
+//! type identity for FR-050's
 //! `reader.mjs` as well as for `agent_ix_semantic_ir::decide` (CR-036-4).
 //! A field with no constraints is unchanged, and a record's own
 //! `constraints[]` is always empty. The aliases of a record are returned

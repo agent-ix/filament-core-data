@@ -325,9 +325,17 @@ fn tc_1743_unresolved_frame_path_and_population_member_raise_their_codes() {
 // which is the tautology this fix must not manufacture. FR-141-CON-1 and
 // FR-141-AC-5 (TC-1744) are deleted with it: neither has a surviving,
 // non-vacuous subject to test.
+//
+// fcd#179 also deleted the two fixtures that used to carry this case's
+// negative half on disk (`semantic-ir.json` at `1.0.0`,
+// `config-version-v1-1.json` at `1.1.0`): NFR-044-AC-1 is a rule about any
+// document declaring the deleted contract, not about those two files staying
+// frozen as evidence of it, so the negative half is now an inline document
+// declaring each deleted `contractVersion` rather than a read of a fixture
+// that no longer exists.
 #[trace("TC-1756", "NFR-044-AC-1")]
 #[test]
-fn tc_1756_a_ported_fixture_validates_and_a_deleted_contract_fixture_is_refused() {
+fn tc_1756_a_ported_fixture_validates_and_a_deleted_contract_document_is_refused() {
     let base = v1_1();
     assert!(rust_codes(&base).is_empty(), "{:?}", rust_codes(&base));
     // NFR-044-AC-1: a fixture already ported to `2.0.0` keeps a clean verdict.
@@ -340,27 +348,21 @@ fn tc_1756_a_ported_fixture_validates_and_a_deleted_contract_fixture_is_refused(
         assert!(rust_codes(&document).is_empty(), "{name}");
         assert!(node_codes(&document).is_empty(), "{name}");
     }
-    // NFR-044-AC-1: a fixture still declaring the deleted contract `1.0.0` or
-    // `1.1.0` is refused by every reader with SCHEMA_VIOLATION at
-    // contractVersion. `semantic-ir.json` stays `1.0.0` and
-    // `config-version-v1-1.json` stays `1.1.0` (FR-094-CON-4: never edited);
-    // neither is a still-accepted old document, so refusing them is exactly
-    // fcd#179's rule, not a regression of the fixtures themselves.
-    for name in ["semantic-ir.json", "config-version-v1-1.json"] {
-        let document = read_json(
-            &workspace_dir()
-                .join("fixtures/semantic/v1/positive")
-                .join(name),
-        );
-        assert_refused_by_schema(name, &document);
+    // NFR-044-AC-1: a document still declaring the deleted contract `1.0.0`
+    // or `1.1.0` is refused by every reader with SCHEMA_VIOLATION at
+    // contractVersion.
+    for deleted in ["1.0.0", "1.1.0"] {
+        let mut document = base.clone();
+        document["contractVersion"] = json!(deleted);
+        assert_refused_by_schema(deleted, &document);
         // fcd#179 (F1): `assert_refused_by_schema` only proves the document was
         // refused for *some* schema reason; that would still pass if this
-        // fixture accumulated an unrelated schema defect and its declared
+        // document accumulated an unrelated schema defect and its declared
         // `contractVersion` were quietly repaired. Pin the actual reason: the
         // refusal names the deleted contract at its own pointer.
         assert!(
             rust_codes(&document).contains(&"SCHEMA_VIOLATION at /ir/contractVersion".to_string()),
-            "{name}: expected SCHEMA_VIOLATION at /ir/contractVersion, got {:?}",
+            "{deleted}: expected SCHEMA_VIOLATION at /ir/contractVersion, got {:?}",
             rust_codes(&document)
         );
     }

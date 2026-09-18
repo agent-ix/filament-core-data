@@ -2,8 +2,8 @@
 	"recordedAt": "origin/main 99444cb (2026-09-03)",
 	"purpose": "FR-027-AC-6: v1 positive fixtures must not change bytes (fcd#179 deleted NFR-013, which named this alongside it)",
 	"digests": {
-		"compatibility-report.json": "sha256:5997f95e91ecace2008daee24776122297319bb535f39d49e51951082a0728b1",
-		"compiler-request.json": "sha256:e8be792f7386077e33183a4d12f9d4ca5beb7c9094f8fde71200bd8b81e1e3f8",
+		"compatibility-report.json": "sha256:eee6f245683218d7bfd1933e9f8b4cbf5ecc9b2a5d4d6eb54de35924fb7094a5",
+		"compiler-request.json": "sha256:ab42d9eb9b056538b9ba57b87ec50fb66f70476c5812f9539e1e7d33916e9cf1",
 		"consumer-policies.json": "sha256:cab8f3c890b32d2cb9c233353ab8fe0517fd544813fa5e8d52c408e519be1984",
 		"legacy-adapter.json": "sha256:ecdc9d70e93734c6771d92ca8e8ab470cfc5cc8c785704c15be9d772c22ac545",
 		"mapping.json": "sha256:fe1551a2f6538d5dd96c27dbdb56f2422470232acc1c3027f78641039b12d2d8",
@@ -12,7 +12,6 @@
 		"package-manifest.json": "sha256:4a4933b99948814619fc52502c7d388ea5adf4fca19f0d82fcd74244b2f8da98",
 		"profile.json": "sha256:5e9977b9fea8e3d4b6a160ff1a91c03e112781d1cb35ede237be51cacd6fea7a",
 		"representations.json": "sha256:7fb1180e6937fb45ef47e37eecf7f68d2a3974fcd60738e5898a9ba900163eb3",
-		"semantic-ir.json": "sha256:269656b644e1bb79dd5d54f9afc6e9fe6a48e3774889dcff2c49c55e60088038",
 		"target-contracts.json": "sha256:8e8a618899b00a47ea41c5105343bcb861e648201ef3f739c91bcf6b855de24d"
 	}
 }

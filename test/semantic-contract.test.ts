@@ -51,6 +51,305 @@ function clone<T>(value: T): T {
 	return structuredClone(value);
 }
 
+/**
+ * fcd#179 deleted `fixtures/semantic/v1/positive/semantic-ir.json` (a
+ * `1.0.0` document) along with the `1.0.0` and `1.1.0` contracts. That
+ * fixture was the corpus's only example carrying all eight structural
+ * kinds (`scalar`, `record`, `enum`, `union`, `alias`, `sequence`, `map`,
+ * `reference`) and the only example of a governed optional extension; no
+ * `2.0.0` fixture replaces either role. This literal is its exact content
+ * with `contractVersion` moved to `2.0.0`, so the vocabulary, identity,
+ * origin, extension, and occurrence coverage below keeps exercising the
+ * same hand-verified shape without the file on disk.
+ */
+const VOCABULARY_IR: JsonObject = {
+	contractVersion: "2.0.0",
+	source: {
+		identity: "ix://agent-ix/filament-core-data/source/core",
+		version: "1.0.0",
+		dialect: "https://json-schema.org/draft/2020-12/schema",
+		digest:
+			"sha256:0000000000000000000000000000000000000000000000000000000000000000",
+	},
+	package: {
+		identity: "agent-ix/assurance",
+		version: "1.0.0",
+		manifestDigest:
+			"sha256:1111111111111111111111111111111111111111111111111111111111111111",
+		mappingVersions: ["1.0.0"],
+		profileVersions: ["1.0.0"],
+		lockDigest:
+			"sha256:2222222222222222222222222222222222222222222222222222222222222222",
+	},
+	types: [
+		{
+			identity: "ix://agent-ix/assurance/type/Text",
+			displayName: "Text",
+			kind: "scalar",
+			roles: [],
+			origin: {
+				source: {
+					sourceIdentity: "ix://agent-ix/filament-core-data/source/core",
+					path: "types/text.schema.json",
+					startLine: 1,
+					startColumn: 1,
+				},
+			},
+			constraints: [],
+			extensions: [],
+			unknownPolicy: "reject",
+			scalar: "string",
+		},
+		{
+			identity: "ix://agent-ix/assurance/type/Artifact",
+			displayName: "Artifact",
+			kind: "record",
+			roles: ["agent-ix:entity", "agent-ix:evidence", "agent-ix:report"],
+			origin: {
+				source: {
+					sourceIdentity: "ix://agent-ix/filament-core-data/source/core",
+					path: "types/artifact.schema.json",
+					startLine: 1,
+					startColumn: 1,
+				},
+			},
+			constraints: [],
+			extensions: [
+				{
+					identity: "ix://example.org/assurance/ext/review",
+					version: "1.0.0",
+					required: false,
+					capability: "review-metadata",
+					payload: { owner: "qa" },
+				},
+			],
+			unknownPolicy: "preserve",
+			fields: [
+				{
+					identity: "ix://agent-ix/assurance/field/artifact-id",
+					name: "id",
+					typeRef: "ix://agent-ix/assurance/type/ArtifactId",
+					presence: "required",
+					nullable: false,
+					defaultKind: "none",
+					origin: {
+						source: {
+							sourceIdentity: "ix://agent-ix/filament-core-data/source/core",
+							path: "types/artifact.schema.json",
+							startLine: 8,
+							startColumn: 5,
+						},
+					},
+					extensions: [],
+				},
+				{
+					identity: "ix://agent-ix/assurance/field/summary",
+					name: "summary",
+					typeRef: "ix://agent-ix/assurance/type/Text",
+					presence: "optional",
+					nullable: false,
+					defaultKind: "none",
+					origin: {
+						source: {
+							sourceIdentity: "ix://agent-ix/filament-core-data/source/core",
+							path: "types/artifact.schema.json",
+							startLine: 15,
+							startColumn: 5,
+						},
+					},
+					extensions: [],
+				},
+				{
+					identity: "ix://agent-ix/assurance/field/note",
+					name: "note",
+					typeRef: "ix://agent-ix/assurance/type/Text",
+					presence: "required",
+					nullable: true,
+					defaultKind: "semantic",
+					defaultValue: null,
+					origin: {
+						source: {
+							sourceIdentity: "ix://agent-ix/filament-core-data/source/core",
+							path: "types/artifact.schema.json",
+							startLine: 22,
+							startColumn: 5,
+						},
+					},
+					extensions: [],
+				},
+			],
+		},
+		{
+			identity: "ix://agent-ix/assurance/type/Status",
+			displayName: "Status",
+			kind: "enum",
+			roles: ["agent-ix:observation"],
+			origin: {
+				source: {
+					sourceIdentity: "ix://agent-ix/filament-core-data/source/core",
+					path: "types/status.schema.json",
+					startLine: 1,
+					startColumn: 1,
+				},
+			},
+			constraints: [],
+			extensions: [],
+			unknownPolicy: "surface",
+			variants: [
+				{
+					identity: "ix://agent-ix/assurance/variant/pass",
+					name: "pass",
+					origin: {
+						source: {
+							sourceIdentity: "ix://agent-ix/filament-core-data/source/core",
+							path: "types/status.schema.json",
+							startLine: 5,
+							startColumn: 3,
+						},
+					},
+				},
+				{
+					identity: "ix://agent-ix/assurance/variant/fail",
+					name: "fail",
+					origin: {
+						source: {
+							sourceIdentity: "ix://agent-ix/filament-core-data/source/core",
+							path: "types/status.schema.json",
+							startLine: 6,
+							startColumn: 3,
+						},
+					},
+				},
+			],
+		},
+		{
+			identity: "ix://agent-ix/assurance/type/Result",
+			displayName: "Result",
+			kind: "union",
+			roles: ["agent-ix:event"],
+			origin: {
+				source: {
+					sourceIdentity: "ix://agent-ix/filament-core-data/source/core",
+					path: "types/result.schema.json",
+					startLine: 1,
+					startColumn: 1,
+				},
+			},
+			constraints: [],
+			extensions: [],
+			unknownPolicy: "reject",
+			variants: [
+				{
+					identity: "ix://agent-ix/assurance/variant/result-pass",
+					name: "passed",
+					payloadType: "ix://agent-ix/assurance/type/Artifact",
+					origin: {
+						source: {
+							sourceIdentity: "ix://agent-ix/filament-core-data/source/core",
+							path: "types/result.schema.json",
+							startLine: 5,
+							startColumn: 3,
+						},
+					},
+				},
+				{
+					identity: "ix://agent-ix/assurance/variant/result-fail",
+					name: "failed",
+					payloadType: "ix://agent-ix/assurance/type/Artifact",
+					origin: {
+						source: {
+							sourceIdentity: "ix://agent-ix/filament-core-data/source/core",
+							path: "types/result.schema.json",
+							startLine: 6,
+							startColumn: 3,
+						},
+					},
+				},
+			],
+		},
+		{
+			identity: "ix://agent-ix/assurance/type/ArtifactId",
+			displayName: "ArtifactId",
+			kind: "alias",
+			roles: [],
+			origin: {
+				source: {
+					sourceIdentity: "ix://agent-ix/filament-core-data/source/core",
+					path: "types/artifact-id.schema.json",
+					startLine: 1,
+					startColumn: 1,
+				},
+			},
+			constraints: [],
+			extensions: [],
+			unknownPolicy: "reject",
+			target: "ix://agent-ix/assurance/type/Text",
+		},
+		{
+			identity: "ix://agent-ix/assurance/type/Artifacts",
+			displayName: "Artifacts",
+			kind: "sequence",
+			roles: [],
+			origin: {
+				source: {
+					sourceIdentity: "ix://agent-ix/filament-core-data/source/core",
+					path: "types/artifacts.schema.json",
+					startLine: 1,
+					startColumn: 1,
+				},
+			},
+			constraints: [],
+			extensions: [],
+			unknownPolicy: "reject",
+			items: "ix://agent-ix/assurance/type/Artifact",
+		},
+		{
+			identity: "ix://agent-ix/assurance/type/ArtifactMap",
+			displayName: "ArtifactMap",
+			kind: "map",
+			roles: [],
+			origin: {
+				generated: {
+					generatorIdentity: "ix://agent-ix/filament-core-data/generator/example",
+					generatorVersion: "1.0.0",
+					inputIdentities: ["ix://agent-ix/assurance/type/Artifact"],
+				},
+			},
+			constraints: [],
+			extensions: [],
+			unknownPolicy: "reject",
+			values: "ix://agent-ix/assurance/type/Artifact",
+		},
+		{
+			identity: "ix://agent-ix/assurance/type/RelatedArtifact",
+			displayName: "RelatedArtifact",
+			kind: "reference",
+			roles: ["agent-ix:relationship"],
+			origin: {
+				source: {
+					sourceIdentity: "ix://agent-ix/filament-core-data/source/core",
+					path: "types/relation.schema.json",
+					startLine: 1,
+					startColumn: 1,
+				},
+			},
+			constraints: [],
+			extensions: [],
+			unknownPolicy: "reject",
+			target: "ix://agent-ix/assurance/type/Artifact",
+		},
+	],
+	occurrences: [
+		{
+			identity: "ix://agent-ix/assurance/occurrence/example-artifact",
+			definition: "ix://agent-ix/assurance/type/Artifact",
+			observedAt: "2026-08-30T00:00:00Z",
+			value: { id: "artifact-1", summary: "example", note: null },
+		},
+	],
+	extensions: [],
+} as unknown as JsonObject;
+
 function resolveFixtureReferences(value: unknown): unknown {
 	if (Array.isArray(value)) return value.map(resolveFixtureReferences);
 	if (value !== null && typeof value === "object") {
@@ -283,15 +582,15 @@ describe("semantic package contract v1", () => {
 
 	/**
 	 * Traces: TC-132, TC-133, TC-135, TC-136, TC-137, TC-138, TC-139, TC-140.
-	 * fcd#179 deleted contracts `1.0.0` and `1.1.0`; `2.0.0` is the only one.
-	 * `positive/semantic-ir.json` (a `1.0.0` document) is the fixture with all
-	 * eight structural kinds, kept on disk byte-unchanged (still pinned by
-	 * `v1-fixture-digests.json`) for the vocabulary shape it carries; this
-	 * test no longer asserts that it validates against the current schema,
-	 * since that is exactly the acceptance of a deleted contract.
+	 * fcd#179 deleted contracts `1.0.0` and `1.1.0`, and with them the
+	 * `semantic-ir.json` fixture that used to carry all eight structural
+	 * kinds; `VOCABULARY_IR` is that fixture's exact content, inline, with
+	 * `contractVersion` moved to `2.0.0`. This test does not assert that it
+	 * validates against the current schema; it asserts the vocabulary
+	 * shape, which is orthogonal to that.
 	 */
 	it("validates the IR type vocabulary, stable identities, origins, and explicit value states", () => {
-		const ir = object(readJson("positive/semantic-ir.json"), "semantic IR");
+		const ir = object(clone(VOCABULARY_IR), "semantic IR");
 		const types = array(ir.types, "IR types").map((value) =>
 			object(value, "type"),
 		);
@@ -402,10 +701,10 @@ describe("semantic package contract v1", () => {
 		object(object(changed.manifest, "manifest").package, "package").version =
 			"1.0.1";
 		expect(fingerprint(changed)).not.toBe(fingerprint({ manifest, lock }));
-		const irBefore = canonical(readJson("positive/semantic-ir.json"));
+		const irBefore = canonical(clone(VOCABULARY_IR));
 		const alternateProfile = clone(array(manifest.profiles, "profiles")[0]);
 		object(alternateProfile, "profile").targets = ["typescript"];
-		expect(canonical(readJson("positive/semantic-ir.json"))).toBe(irBefore);
+		expect(canonical(clone(VOCABULARY_IR))).toBe(irBefore);
 		for (const concern of [
 			"exports",
 			"targets",
@@ -588,15 +887,17 @@ describe("semantic package contract v1", () => {
 
 	/**
 	 * Traces: TC-159, TC-160, TC-161, TC-162, TC-163, TC-164, TC-179, TC-180, TC-184, TC-200.
-	 * fcd#179 deleted contracts `1.0.0` and `1.1.0`; `2.0.0` is the only one.
-	 * `positive/compiler-request.json` is kept on disk byte-unchanged (still
-	 * pinned by `v1-fixture-digests.json`), but its embedded `ir` fixture
-	 * reference names `semantic-ir.json`, a `1.0.0` document, so it no longer
-	 * resolves to a document the schema admits. This test's own subject is
-	 * the request envelope shape, not that specific `ir` reference, so it
-	 * validates an in-memory copy with the embedded reference repointed at a
-	 * fixture already ported to `2.0.0`, rather than either lying about the
-	 * frozen fixture's own validity or losing envelope coverage entirely.
+	 * fcd#179 deleted contracts `1.0.0` and `1.1.0`, and with them
+	 * `semantic-ir.json`; `positive/compiler-request.json`'s own embedded
+	 * `ir` fixture reference still names that deleted file on disk (a dead,
+	 * never-resolved string left over from before fcd#179 — this test and
+	 * "supports an independent reader..." below are the only two places
+	 * that resolve this envelope's `ir` field, and both override it before
+	 * resolving). This test's own subject is the request envelope shape,
+	 * not that specific `ir` reference, so it validates an in-memory copy
+	 * with the embedded reference repointed at a fixture already ported to
+	 * `2.0.0`, rather than either losing envelope coverage or resolving a
+	 * deleted file.
 	 */
 	it("defines one compiler and diagnostic envelope without implementing a backend", () => {
 		const request = {
@@ -798,7 +1099,7 @@ describe("semantic package contract v1", () => {
 		).toBe("surface");
 		const sharedValue = object(
 			array(
-				object(readJson("positive/semantic-ir.json"), "IR").occurrences,
+				object(clone(VOCABULARY_IR), "IR").occurrences,
 				"occurrences",
 			)[0],
 			"occurrence",
@@ -829,7 +1130,7 @@ describe("semantic package contract v1", () => {
 	it("is reproducible, path-independent, and resolvable offline", () => {
 		const allInputs = {
 			schemas: schemas.map(({ name, value }) => ({ name, value })),
-			ir: readJson("positive/semantic-ir.json"),
+			ir: clone(VOCABULARY_IR),
 			manifest: readJson("positive/package-manifest.json"),
 			lock: readJson("positive/package-lock.json"),
 		};
@@ -910,7 +1211,10 @@ describe("semantic package contract v1", () => {
 		}
 
 		const resolvedRequest = object(
-			resolveFixtureReferences(readJson("positive/compiler-request.json")),
+			resolveFixtureReferences({
+				...(readJson("positive/compiler-request.json") as JsonObject),
+				ir: { $fixture: "semantic-ir-v1-1.json" },
+			}),
 			"request",
 		);
 		const requestLimits = object(resolvedRequest.limits, "limits");
@@ -974,13 +1278,12 @@ describe("semantic package contract v1", () => {
 	 * Traces: TC-190, TC-191, TC-192, TC-193, TC-194.
 	 * fcd#179 deleted contracts `1.0.0` and `1.1.0`; `2.0.0` is the only one.
 	 * The `semantic-ir.schema.json` positive example is `semantic-ir-v1-1.json`
-	 * (already ported to `2.0.0`), not `semantic-ir.json` (kept on disk
-	 * byte-unchanged, still pinned by `v1-fixture-digests.json`, no longer a
-	 * document the schema admits — its own vocabulary content is exercised
-	 * directly in "validates the IR type vocabulary..." above). Likewise the
-	 * `compiler-request.schema.json` example repoints its embedded `ir`
-	 * fixture reference at a `2.0.0` document for the same reason the
-	 * envelope test above does.
+	 * (already ported to `2.0.0`), not the deleted `semantic-ir.json` (its own
+	 * vocabulary and governed-extension content is exercised directly via
+	 * `VOCABULARY_IR` in "validates the IR type vocabulary..." above).
+	 * Likewise the `compiler-request.schema.json` example repoints its
+	 * embedded `ir` fixture reference at a `2.0.0` document for the same
+	 * reason the envelope test above does.
 	 */
 	it("supports an independent reader and preserves governed optional extensions", () => {
 		const examples: Array<[string, unknown]> = [
@@ -1039,7 +1342,7 @@ describe("semantic package contract v1", () => {
 			expect(negativeSchemas, `${name} negative example`).toContain(name);
 		}
 
-		const ir = object(readJson("positive/semantic-ir.json"), "IR");
+		const ir = object(clone(VOCABULARY_IR), "IR");
 		const artifact = object(array(ir.types, "types")[1], "artifact");
 		const extension = object(
 			array(artifact.extensions, "extensions")[0],

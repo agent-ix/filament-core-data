@@ -22,11 +22,34 @@ from tests.semantic_ir_reader import (
 )
 
 GOLDEN = (
-    "positive/semantic-ir.json",
     "positive/semantic-ir-v1-1.json",
     "positive/semantic-ir-v1-1-spec-bundle.json",
-    "positive/config-version-v1-1.json",
 )
+
+# fcd#179 deleted contracts `1.0.0` and `1.1.0`, and the two fixtures that
+# used to carry them on disk (`semantic-ir.json`, `config-version-v1-1.json`)
+# with them. `normalize`'s version-gated branch (`tests/semantic_ir_reader.py`)
+# still has a live, non-vacuous subject on each side of that gate, so these
+# are hand-written literals standing in for the deleted fixtures rather than
+# a restatement of the gate itself.
+LEGACY_1_0_0 = {
+    "contractVersion": "1.0.0",
+    "types": [
+        {
+            "kind": "record",
+            "fields": [{"name": "a", "presence": "required"}],
+        }
+    ],
+}
+LEGACY_1_1_0 = {
+    "contractVersion": "1.1.0",
+    "types": [
+        {
+            "kind": "record",
+            "fields": [{"name": "a", "presence": "optional"}],
+        }
+    ],
+}
 
 
 @pytest.fixture(scope="module")
@@ -42,36 +65,40 @@ class TestSecondReader:
     """Independent Python reader for semantic IR.
 
     Description: TC-232 second-reader evidence for FR-020-AC-8; every golden
-    document still declaring a live contract validates and reads clean, every
-    recorded negative and reader case is rejected, and the normalized form
-    matches FR-027 / FR-020-AC-7. fcd#179 deleted contracts `1.0.0` and
-    `1.1.0`; `2.0.0` is the only one, so `GOLDEN[0]` (`semantic-ir.json`,
-    frozen at `1.0.0`, issue #34) and `GOLDEN[3]` (`config-version-v1-1.json`,
-    frozen at `1.1.0`, FR-094-CON-4: never edited) are no longer accepted
-    documents; their refusal is asserted in `TestContract20` (TC-1756,
-    NFR-044-AC-1), not here.
+    document validates and reads clean, every recorded negative and reader
+    case is rejected, and the normalized form matches FR-027 / FR-020-AC-7.
+    fcd#179 deleted contracts `1.0.0` and `1.1.0`; `2.0.0` is the only one,
+    and deleted the two fixtures that used to be frozen at them
+    (`semantic-ir.json`, `config-version-v1-1.json`) — their refusal is
+    asserted in `TestContract20` (TC-1756, NFR-044-AC-1), not here, and
+    `normalize`'s version-gated branch is exercised over `LEGACY_1_0_0` /
+    `LEGACY_1_1_0` below rather than over those deleted fixtures.
     Assumptions: the poetry dev group is installed; fixtures are the committed
     ones under fixtures/semantic/v1.
     Criteria: FR-020-AC-7, FR-020-AC-8, FR-027-AC-1, FR-027-AC-6.
     """
 
     def test_golden_documents_validate_and_read_clean(self, validator) -> None:
-        """Criteria: FR-020-AC-8, FR-027-AC-6 — the two golden documents ported
-        to contract `2.0.0` pass; see the class docstring for the other two."""
-        for name in GOLDEN[1:3]:
+        """Criteria: FR-020-AC-8, FR-027-AC-6 — every golden document ported
+        to contract `2.0.0` passes."""
+        for name in GOLDEN:
             document = _fixture(name)
             assert schema_valid(validator, document), name
             assert read_semantic_ir(document) == [], name
 
     def test_v1_document_gains_no_derived_bytes(self) -> None:
-        """Criteria: FR-027 normalized-form rule (fcd#179 deleted NFR-013)."""
-        assert '"multiplicity"' not in normalize(_fixture("positive/semantic-ir.json"))
+        """Criteria: FR-027 normalized-form rule — a document declaring
+        neither `1.1.0` nor `2.0.0` is outside `normalize`'s materializing
+        branch, so it gains no derived `multiplicity`."""
+        assert '"multiplicity"' not in normalize(LEGACY_1_0_0)
 
     def test_normalized_form_round_trips(self) -> None:
         """Criteria: FR-020-AC-7, FR-027-AC-1 — normalize is idempotent."""
-        for name in GOLDEN[1:]:
+        for name in GOLDEN:
             first = normalize(_fixture(name))
             assert normalize(json.loads(first)) == first, name
+        first = normalize(LEGACY_1_1_0)
+        assert normalize(json.loads(first)) == first
 
     def test_every_recorded_case_is_rejected(self) -> None:
         """Criteria: FR-020-AC-8 — schema and reader cases all fail as recorded."""
@@ -138,20 +165,21 @@ class TestContract20:
         clean = _fixture(v11)
         assert validator.is_valid(clean)
         assert read_semantic_ir(clean) == []
-        # NFR-044-AC-1: a fixture still declaring the deleted contract `1.0.0`
-        # or `1.1.0` is refused. `semantic-ir.json` stays `1.0.0` (issue #34)
-        # and `config-version-v1-1.json` stays `1.1.0` (FR-094-CON-4: never
-        # edited); neither is a still-accepted old document, so refusing them
-        # is fcd#179's rule, not a regression of the fixtures themselves.
-        for name in ("positive/semantic-ir.json", "positive/config-version-v1-1.json"):
-            document = _fixture(name)
-            assert not validator.is_valid(document), name
+        # NFR-044-AC-1: a document still declaring the deleted contract
+        # `1.0.0` or `1.1.0` is refused. fcd#179 deleted the two fixtures
+        # that used to be frozen at those contracts (`semantic-ir.json`,
+        # `config-version-v1-1.json`), so this mutates the clean `2.0.0`
+        # document's own `contractVersion` instead of reading them.
+        for deleted in ("1.0.0", "1.1.0"):
+            document = json.loads(json.dumps(clean))
+            document["contractVersion"] = deleted
+            assert not validator.is_valid(document), deleted
             # fcd#179 (F1): `is_valid` alone only proves *some* schema defect;
-            # that would still pass if this fixture picked up an unrelated
+            # that would still pass if this document picked up an unrelated
             # one and its declared `contractVersion` were quietly repaired.
             # Pin the actual reason: an error at `contractVersion` itself.
             paths = [list(error.absolute_path) for error in validator.iter_errors(document)]
-            assert ["contractVersion"] in paths, (name, paths)
+            assert ["contractVersion"] in paths, (deleted, paths)
 
     def test_each_construct_without_a_required_member_is_refused(
         self, validator

@@ -58,8 +58,8 @@ object and an optional `unit`.
 | FR-027-AC-2 | A field declared `1..*` with `ordered: true` and `unique: true` validates and preserves both flags. | Test |
 | FR-027-AC-4 | A field with `upper < lower` fails validation with the field's locus. | Test |
 | FR-027-AC-5 | A scalar field with `unit: "s"` validates; the same unit on a record-typed field fails. | Test |
-| FR-027-AC-6 | Every published positive fixture declaring contract `2.0.0` validates under the schema; `semantic-ir.json` and `config-version-v1-1.json` stay frozen at their deleted contracts as refused negative evidence (fcd#179) and are excluded. | Test |
-| FR-027-AC-7 | The config-service FR-006 `ConfigVersion` fields (`parent 0..1`, `versionNumber 1..1`) are expressed in `fixtures/semantic/v1/positive/config-version-v2.json` with zero declared loss (fcd#179: retargeted from the deleted-contract `config-version-v1-1.json`, which stays on disk unedited per FR-094-CON-4). | Analysis |
+| FR-027-AC-6 | Every published positive fixture declaring contract `2.0.0` validates under the schema; `semantic-ir.json` and `config-version-v1-1.json`, once frozen at their deleted contracts, are deleted with those contracts (fcd#179), and their vocabulary and negative-refusal coverage is asserted over inline documents instead. | Test |
+| FR-027-AC-7 | The config-service FR-006 `ConfigVersion` fields (`parent 0..1`, `versionNumber 1..1`) are expressed in `fixtures/semantic/v1/positive/config-version-v2.json` with zero declared loss (fcd#179: retargeted from, and the deleted-contract `config-version-v1-1.json` was itself deleted with, the 1.1.0 contract). | Analysis |
 | FR-027-AC-8 | `ordered: true` on a `1..1` field fails validation with the field's locus. | Test |
 | FR-027-AC-9 | A multiplicity narrowing (`0..*` → `1..1`) classifies as breaking and a widening (`1..1` → `0..*`) as additive in the compatibility corpus. | Test |
 

@@ -171,8 +171,7 @@ function checkField(
 		// 1.1.0 is deleted and no longer schema-valid, so in practice only a
 		// 2.0.0 document reaches here through a passing schema check — but
 		// this reader also runs (for TC-232/FR-020-AC-8 cross-reader parity)
-		// against the two fixtures frozen at their deleted contracts
-		// (semantic-ir.json at 1.0.0, config-version-v1-1.json at 1.1.0),
+		// against inline documents still declaring a deleted contract,
 		// and must keep matching Python's verdict there.
 		if (version === "1.1.0" || version === "2.0.0") {
 			diagnostics.push({

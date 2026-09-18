@@ -84,15 +84,17 @@ Rationale: quire-rs exposes no located per-document edge API, and
 declares `relations: RelationDecl[]`; the `## Relationships` bullet grammar
 exists in no contract (SR-166 FND-1463, SR-165 FND-1451). Parsing it here
 would be the second Markdown reading FR-091-CON-3 forbids. The hand-authored
-issue #34 fixture `fixtures/semantic/v1/positive/config-version-v1-1.json`
-lifts the `parent` row as a `derives_from` relationship; this frontend emits
-`parent` as a field because it is a `## Properties` row. That fixture differs
-from this frontend's output in more than the `parent` node: its `belongs_to`
+issue #34 fixture (fcd#179 deleted it from disk;
+`fixtures/semantic/v1/positive/config-version-v1-1.json`) lifted the `parent`
+row as a `derives_from` relationship; this frontend emits `parent` as a field
+because it is a `## Properties` row. That fixture differed from this
+frontend's output in more than the `parent` node: its `belongs_to`
 relationship came from the removed `## Relationships` bullet grammar and its
-identity patterns predate FR-095, so it is compared node by node on the
-remaining relationship's `target` and `multiplicity`, never byte for byte; the
-golden for this frontend is regenerated under FR-098 while the #34 fixture is
-not edited (its sha256 is pinned) and is not the comparison target.
+identity patterns predate FR-095, so its hand-verified values for the one
+relationship both documents share — `target` and `multiplicity` on the edge
+to `ConfigOverlay` — are pinned as literals in FR-094-AC-8's test rather than
+compared against the fixture node by node; the golden for this frontend is
+regenerated under FR-098.
 
 ## Constraints
 
@@ -101,7 +103,6 @@ not edited (its sha256 is pinned) and is not the comparison target.
 | FR-094-CON-1 | The frontend SHALL lower relationships only from the frontmatter `relationships:` pairs `harvest_edges` returns until agent-ix/quire-rs#418 ships `RelationDecl` extraction, at which point `RelationDecl` lowering is added to this requirement and the relationship goldens are re-cut in one commit. | Compatibility | Static analysis |
 | FR-094-CON-2 | The frontend SHALL read `category` and `composite` from the registry `EdgeTypeDef` (`category`, `inverse`), never from the verb's spelling, the target's name, or the record's roles. | Correctness | Property |
 | FR-094-CON-3 | The frontend SHALL emit clause `text` byte-identical to the engine's `clause_text` value. | Integrity | Test |
-| FR-094-CON-4 | The frontend SHALL NOT edit `fixtures/semantic/v1/positive/config-version-v1-1.json`, asserted by NFR-032-AC-1's change-set diff. | Compatibility | Static analysis |
 
 ## Acceptance Criteria
 
@@ -114,7 +115,7 @@ not edited (its sha256 is pinned) and is not the comparison target.
 | FR-094-AC-5 | A `references` frontmatter edge targeting `Nonesuch` raises `UNRESOLVED_RELATIONSHIP_TARGET` at line 1, column 1 naming `Nonesuch`, blocking; one targeting a legacy-form artifact raises the same code naming that artifact. | Test (TC-1235) |
 | FR-094-AC-6 | An `entity` whose frontmatter carries `traces_to`, `implements`, and `depends_on` edges lowers with zero relationships from them and zero diagnostics about them; the same document with one `references` edge added lowers to exactly one relationship. | Test (TC-1236) |
 | FR-094-AC-7 | Two frontmatter entries with the same `(verb, target)` yield one relationship; two entries with the same target and different allowed verbs yield two relationships with distinct identities. | Test (TC-1237) |
-| FR-094-AC-8 | The `parent | ConfigVersion | 0..1` row appears as a field and not as a relationship: the emitted `relationships[]` carries no `parent` relationship, the remaining relationship node agrees with the #34 hand fixture on `target` and `multiplicity`, and the #34 fixture's sha256 is pinned and unchanged (it differs elsewhere by construction: its `belongs_to` came from the removed `## Relationships` bullet grammar and its identity patterns differ). | Test (TC-1238) |
+| FR-094-AC-8 | The `parent | ConfigVersion | 0..1` row appears as a field and not as a relationship: the emitted `relationships[]` carries no `parent` relationship, and the remaining relationship — the edge to `ConfigOverlay` — carries the `target` and `multiplicity` the #34 hand fixture independently verified. | Test (TC-1238) |
 | FR-094-AC-9 | The `immutable` `ocl` fence lowers to one clause with `language: ocl`, `clauseId: immutable`, `text` byte-identical to `clause_text`, `sourceSpan` `{startLine, startColumn: 1, endLine, endColumn}` as the engine reports, and `origin.source` at the span start. | Test (TC-1239) |
 | FR-094-AC-10 | A clause whose text carries leading whitespace, trailing newlines, and a `\t` reaches the IR byte-identical. | Test (TC-1240) |
 | FR-094-AC-11 | The `operations` fixture (FR-098) lowers each `OperationDecl` to an operation with its params as fields under `field/<Name>-<operation>-<param>` (no `param/` identity is emitted), `returns` from the resolved type with `nullable: false`, and `pre`/`post` as `clauseId` lists; no second clause node is emitted for a `pre`/`post` reference. | Test (TC-1241) |

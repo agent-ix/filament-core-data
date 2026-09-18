@@ -1,34 +1,24 @@
 [
 	{
-		"id": "ir-unknown-version",
-		"schema": "semantic-ir.schema.json",
-		"base": "positive/semantic-ir.json",
-		"set": {
-			"path": "contractVersion",
-			"value": "2.0.0"
-		},
-		"code": "agent-ix.semantic-ir.UNSUPPORTED_VERSION"
-	},
-	{
 		"id": "ir-missing-origin",
 		"schema": "semantic-ir.schema.json",
-		"base": "positive/semantic-ir.json",
+		"base": "positive/semantic-ir-v1-1.json",
 		"remove": "types.0.origin",
 		"code": "agent-ix.semantic-ir.MISSING_ORIGIN"
 	},
 	{
 		"id": "ir-record-without-fields",
 		"schema": "semantic-ir.schema.json",
-		"base": "positive/semantic-ir.json",
-		"remove": "types.1.fields",
+		"base": "positive/semantic-ir-v1-1.json",
+		"remove": "types.3.fields",
 		"code": "agent-ix.semantic-ir.INVALID_TYPE_SHAPE"
 	},
 	{
 		"id": "ir-unnamespaced-role",
 		"schema": "semantic-ir.schema.json",
-		"base": "positive/semantic-ir.json",
+		"base": "positive/semantic-ir-v1-1.json",
 		"set": {
-			"path": "types.1.roles.0",
+			"path": "types.3.roles.0",
 			"value": "entity"
 		},
 		"code": "agent-ix.semantic-ir.INVALID_ROLE"
@@ -188,17 +178,6 @@
 			"value": "1.3.0"
 		},
 		"code": "agent-ix.semantic-ir.UNSUPPORTED_VERSION"
-	},
-	{
-		"id": "ir-v1-0-frontend-dialect",
-		"schema": "semantic-ir.schema.json",
-		"base": "positive/semantic-ir.json",
-		"set": {
-			"path": "source.dialect",
-			"value": "typespec"
-		},
-		"code": "agent-ix.semantic-ir.DIALECT_VERSION_MISMATCH",
-		"note": "A 1.0.0 document keeps the v1 dialect constant"
 	},
 	{
 		"id": "manifest-unknown-target",

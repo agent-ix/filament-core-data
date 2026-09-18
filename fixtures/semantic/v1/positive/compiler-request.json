@@ -1,7 +1,7 @@
 {
 	"contractVersion": "1.0.0",
 	"lockFingerprint": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
-	"ir": { "$fixture": "semantic-ir.json" },
+	"ir": { "$fixture": "semantic-ir-v1-1.json" },
 	"profile": { "$fixture": "profile.json" },
 	"mappings": [{ "$fixture": "mapping.json" }],
 	"backend": {

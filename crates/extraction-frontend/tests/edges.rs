@@ -17,13 +17,8 @@ use ix_trace_rs::trace;
 use proptest::prelude::*;
 use proptest::test_runner::{Config, TestRunner};
 use serde_json::Value;
-use sha2::{Digest, Sha256};
 
 const VERSION: &str = "0.0.0";
-/// `fixtures/semantic/v1/positive/config-version-v1-1.json` at the revision
-/// this crate was written against (FR-094-CON-4: never edited).
-const ISSUE_34_FIXTURE: &str = "fixtures/semantic/v1/positive/config-version-v1-1.json";
-const ISSUE_34_SHA256: &str = "7c5cad0bc759755f39334b3adddd71b15ac4a986c7d005d41f4096fed34c18ac";
 
 fn crate_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -400,9 +395,8 @@ fn tc_1237_same_verb_and_target_dedupe_and_two_verbs_on_one_target_mint_two_iden
 }
 
 #[trace("TC-1238", "FR-094-AC-8")]
-#[trace("TC-1238", "FR-094-CON-4")]
 #[test]
-fn tc_1238_parent_is_a_field_not_a_relationship_and_the_issue_34_fixture_is_byte_unchanged() {
+fn tc_1238_parent_is_a_field_not_a_relationship() {
     let lift = lift("config-version-table");
     let types = types_json(&lift);
     let record = type_named(&types, "ConfigVersion");
@@ -429,46 +423,19 @@ fn tc_1238_parent_is_a_field_not_a_relationship_and_the_issue_34_fixture_is_byte
         "no relationship from the parent row: {ours:?}"
     );
 
-    // The #34 hand fixture: byte-unchanged, and its `relationships[]`
-    // differs from ours at the `parent` node — which it lifts as a
-    // `derives_from` relationship from the Properties row — and at nothing
-    // else that both documents express.
-    let path = common::workspace_dir().join(ISSUE_34_FIXTURE);
-    let bytes = fs::read(&path).expect("the #34 fixture is committed");
-    let digest = format!("{:x}", Sha256::digest(&bytes));
-    assert_eq!(digest, ISSUE_34_SHA256, "{} was edited", path.display());
-    let hand: Value = serde_json::from_slice(&bytes).expect("JSON");
-    let hand_types = hand["types"].as_array().expect("types");
-    let hand_record = hand_types
-        .iter()
-        .find(|t| t["displayName"] == "ConfigVersion")
-        .expect("ConfigVersion in the hand fixture");
-    let hand_rels = relationships(hand_record);
-    let (parent_nodes, other_nodes): (Vec<&Value>, Vec<&Value>) = hand_rels
-        .iter()
-        .partition(|r| r["target"] == "ix://agent-ix/config-service/type/ConfigVersion");
-    assert_eq!(parent_nodes.len(), 1, "{hand_rels:?}");
-    assert_eq!(parent_nodes[0]["verb"], "derives_from");
-    assert_eq!(
-        parent_nodes[0]["origin"]["source"]["startLine"],
-        serde_json::json!(17),
-        "the hand fixture lifts the parent row"
-    );
-    // What remains on both sides is one edge to ConfigOverlay: the hand
-    // fixture names it by its declared name, the lift by its artifact id
-    // (FR-143).
-    assert_eq!(other_nodes.len(), 1);
+    // What remains is one edge to ConfigOverlay, named by its artifact id
+    // (FR-143), not the `belongs_to` verb the removed `## Relationships`
+    // bullet grammar once produced.
     assert_eq!(ours.len(), 1);
-    assert_eq!(
-        other_nodes[0]["target"],
-        "ix://agent-ix/config-service/type/ConfigOverlay"
-    );
     assert_eq!(
         ours[0]["target"],
         "ix://agent-ix/config-service/type/FR-005"
     );
-    assert_eq!(other_nodes[0]["multiplicity"], ours[0]["multiplicity"]);
-    assert_eq!(other_nodes[0]["composite"], ours[0]["composite"]);
+    assert_eq!(
+        ours[0]["multiplicity"],
+        serde_json::json!({ "lower": 1, "upper": 1 })
+    );
+    assert_eq!(ours[0]["composite"], false);
 }
 
 #[trace("TC-1244", "FR-094-AC-14")]

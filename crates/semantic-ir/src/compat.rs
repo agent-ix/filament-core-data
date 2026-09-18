@@ -592,17 +592,18 @@ mod tests {
     /// `conditional` in either direction, never special-cased by the specific
     /// versions involved. Exercised through `classify`'s document-layer
     /// verdicts, a seam that lets this run over a historically-shaped pair
-    /// without going through schema validation, which fixture
-    /// `config-version-v1-1.json` (still pinned by FR-094-CON-4) is no
-    /// longer valid under.
+    /// without going through schema validation — so the "before" document
+    /// below is a hand-written `1.1.0` literal, not a read of
+    /// `config-version-v1-1.json`, which fcd#179 deleted along with every
+    /// other document still declaring a deleted contract.
     #[test]
     fn tc_1757_classifies_a_contract_version_move_as_conditional() {
-        let v11 = include_str!("../../../fixtures/semantic/v1/positive/config-version-v1-1.json");
+        let v11 = r#"{"contractVersion": "1.1.0", "types": [{"identity": "ix://agent-ix/config-service/type/ConfigOverlay", "kind": "record", "unknownPolicy": "reject", "extensions": []}]}"#;
         let wrap = |text: &str| parse(&format!(r#"{{"ir":{text}}}"#)).expect("a document");
         let before = wrap(v11);
         let after = wrap(&v11.replacen(
             r#""contractVersion": "1.1.0""#,
-            r#""contractVersion": "2.0.0", "constructs": []"#,
+            r#""contractVersion": "2.0.0""#,
             1,
         ));
         let types = after

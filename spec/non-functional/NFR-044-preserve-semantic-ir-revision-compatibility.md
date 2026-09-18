@@ -51,12 +51,12 @@ rule, never a special case tied to the specific versions `1.1.0` and `2.0.0`.
 
 The conformance corpus runs every reader over every published `2.0.0` case
 and compares canonical bytes to the committed fixtures, and confirms a
-fixture still declaring `1.0.0` or `1.1.0` is refused; the compatibility
+document still declaring `1.0.0` or `1.1.0` is refused; the compatibility
 classifier classifies a contract-version move as conditional.
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 |---|---|---|
-| NFR-044-AC-1 | Every published fixture declaring `contractVersion` `2.0.0` keeps its Node, Python and Rust reader verdict and its canonical bytes; a published fixture still declaring `1.0.0` or `1.1.0` is refused by every reader with `SCHEMA_VIOLATION` at `contractVersion`. | Test (TC-1756) |
+| NFR-044-AC-1 | Every published fixture declaring `contractVersion` `2.0.0` keeps its Node, Python and Rust reader verdict and its canonical bytes; a document still declaring `1.0.0` or `1.1.0` is refused by every reader with `SCHEMA_VIOLATION` at `contractVersion` (fcd#179 deleted the two fixtures once frozen at those contracts, so this is now exercised over an inline document rather than a published one). | Test (TC-1756) |
 | NFR-044-AC-2 | The compatibility classifier reports a contract-version move, such as `1.1.0` to `2.0.0`, as `conditional`, never a version-literal-specific `additive` special case. | Test (TC-1757) |

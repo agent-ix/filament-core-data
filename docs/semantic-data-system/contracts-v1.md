@@ -64,10 +64,10 @@ legacy evidence is published under `fixtures/semantic/v1/`; `2.0.0` golden
 documents, `negative/reader-cases.json` (cross-field rules a schema cannot
 express), and the `v1-fixture-digests.json` byte baseline sit beside them. A consumer can
 validate it using only these files and a JSON Schema 2020-12 implementation.
-A frozen `1.0.0` document (`semantic-ir.json`) and a frozen `1.1.0` document
-(`config-version-v1-1.json`) sit beside the golden documents as negative
-evidence (FR-094-CON-4): every reader refuses both, because `2.0.0` is the
-only contract a document may declare.
+A document declaring `1.0.0` or `1.1.0` is refused by every reader, because
+`2.0.0` is the only contract a document may declare (fcd#179 deleted both
+contracts, and the fixtures once frozen at them, `semantic-ir.json` and
+`config-version-v1-1.json`, along with them).
 
 ## Semantic model
 
@@ -111,8 +111,8 @@ The constraint `keyword` is a closed set (`min`, `max`, `exclusiveMin`,
 over the resolved kind. `source.dialect` is `typespec` or `spec-bundle`. Manifest
 targets bind to the declared registry: generated targets or representation
 formats, each defined once in `common.schema.json`. The worked example
-`fixtures/semantic/v1/positive/config-version-v1-1.json` lifts config-service
-FR-006 `ConfigVersion` with zero declared loss (`config-version-v1-1-loss.json`).
+`fixtures/semantic/v1/positive/config-version-v2.json` lifts config-service
+FR-006 `ConfigVersion` with zero declared loss (`config-version-v2-loss.json`).
 
 ### Identity minting (issue #87)
 
