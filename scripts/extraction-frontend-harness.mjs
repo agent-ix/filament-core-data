@@ -185,6 +185,7 @@ const PERMITTED = Object.freeze([
 	{ name: "Cargo.toml (members line)", test: (p) => p === "Cargo.toml" },
 	{ name: "Cargo.lock", test: (p) => p === "Cargo.lock" },
 	{ name: "Makefile (one extraction-frontend block)", test: (p) => p === "Makefile" },
+	{ name: "biome.json (the fixtures/modules/spec-objects-architecture exclusion; those bytes are upstream-pinned and not reformatted)", test: (p) => p === "biome.json" },
 	{ name: "THIRD-PARTY-NOTICES.md (additive rows for the crates Cargo.lock adds; CR-036-8)", test: (p) => p === "THIRD-PARTY-NOTICES.md" },
 	{ name: "scripts/extraction-frontend-harness.mjs (the NFR-032 rehearsal harness, CR-036-8; the FR-098 rust-generate runner, CR-036-9)", test: (p) => p === "scripts/extraction-frontend-harness.mjs" },
 	{ name: "test/fixtures/compiler/shared/cases.json", test: (p) => p === "test/fixtures/compiler/shared/cases.json" },
