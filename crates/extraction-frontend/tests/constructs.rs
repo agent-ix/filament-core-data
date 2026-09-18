@@ -554,6 +554,70 @@ fn tc_1747_construct_members_of_an_excluded_kind_or_naming_no_type_raise_at_the_
     );
 }
 
+/// FR-152's allocation source form: a `sourceElement` whose value resolves to
+/// no declared type falls back to the identity of an operation a declared
+/// type declares, and the role check that follows runs against that owning
+/// type. `AR-001`'s declaration is widened here to admit `sourceElement` so
+/// the case reaches this check rather than the schema layer.
+#[trace("TC-1747", "FR-142-AC-3")]
+#[test]
+fn tc_1747_a_source_element_naming_an_operation_identity_of_a_declared_type_is_admitted() {
+    let mut admitted = positive();
+    entry_mut(&mut admitted, "aggregate_root")["construct"]["members"]["sourceElement"] =
+        json!("optional");
+    type_mut(&mut admitted, "AR-001")["sourceElement"] =
+        json!(format!("{PREFIX}operation/RP-001-findById"));
+    assert_rust(
+        "a sourceElement naming an operation identity of a declared type",
+        &admitted,
+        &[],
+    );
+}
+
+/// The same operation identity, named by `targetElement` instead, is
+/// refused: FR-152's operation fallback is `sourceElement`-only, so
+/// `targetElement` never resolves it and the plain (non-operation)
+/// `UNRESOLVED_CONSTRUCT_REF` wording is raised.
+#[trace("TC-1747", "FR-142-AC-3")]
+#[test]
+fn tc_1747_a_target_element_naming_the_same_operation_identity_is_refused() {
+    let document = positive();
+    let ar = position(&document, &type_ref("AR-001"));
+    let mut refused = positive();
+    entry_mut(&mut refused, "aggregate_root")["construct"]["members"]["targetElement"] =
+        json!("optional");
+    type_mut(&mut refused, "AR-001")["targetElement"] =
+        json!(format!("{PREFIX}operation/RP-001-findById"));
+    assert_rust(
+        "a targetElement naming an operation identity",
+        &refused,
+        &[format!(
+            "UNRESOLVED_CONSTRUCT_REF at /ir/types/{ar}/targetElement"
+        )],
+    );
+}
+
+/// A `sourceElement` naming an identity that is neither a declared type nor a
+/// declared operation is refused, with the operation-aware wording.
+#[trace("TC-1747", "FR-142-AC-3")]
+#[test]
+fn tc_1747_a_source_element_naming_no_such_operation_is_refused() {
+    let document = positive();
+    let ar = position(&document, &type_ref("AR-001"));
+    let mut refused = positive();
+    entry_mut(&mut refused, "aggregate_root")["construct"]["members"]["sourceElement"] =
+        json!("optional");
+    type_mut(&mut refused, "AR-001")["sourceElement"] =
+        json!(format!("{PREFIX}operation/RP-001-doesNotExist"));
+    assert_rust(
+        "a sourceElement naming no such operation",
+        &refused,
+        &[format!(
+            "UNRESOLVED_CONSTRUCT_REF at /ir/types/{ar}/sourceElement"
+        )],
+    );
+}
+
 #[trace("TC-1748", "FR-142-AC-4")]
 #[test]
 fn tc_1748_occurrence_transition_guard_and_domain_membership_rules_raise_their_codes() {
@@ -762,6 +826,44 @@ fn tc_1789_the_constructs_table_is_checked_and_references_are_admitted_by_role()
         .expect("a declaration")
         .remove("references");
     assert_rust("an unconstrained owner", &unconstrained, &[]);
+}
+
+/// FR-142:40 (the vocabulary's `references` term): a `sourceElement` entry
+/// resolved through FR-152's operation fallback is checked by the role of
+/// the operation's owning type exactly as a direct type reference is —
+/// admitted when that type carries the declared role, refused with
+/// `CONSTRUCT_TARGET_KIND` when it carries none of them.
+#[trace("TC-1789", "FR-142-AC-9")]
+#[test]
+fn tc_1789_a_source_element_resolved_through_an_operation_is_checked_by_its_owning_types_role() {
+    let document = positive();
+    let ar = position(&document, &type_ref("AR-001"));
+
+    let mut admitted = positive();
+    let entry = entry_mut(&mut admitted, "aggregate_root");
+    entry["construct"]["members"]["sourceElement"] = json!("optional");
+    entry["construct"]["references"]["sourceElement"] = json!(["business:repository"]);
+    type_mut(&mut admitted, "AR-001")["sourceElement"] =
+        json!(format!("{PREFIX}operation/RP-001-findById"));
+    assert_rust(
+        "an operation whose owning type carries the admitted role",
+        &admitted,
+        &[],
+    );
+
+    let mut refused = positive();
+    let entry = entry_mut(&mut refused, "aggregate_root");
+    entry["construct"]["members"]["sourceElement"] = json!("optional");
+    entry["construct"]["references"]["sourceElement"] = json!(["business:repository"]);
+    type_mut(&mut refused, "AR-001")["sourceElement"] =
+        json!(format!("{PREFIX}operation/SM-001-advance"));
+    assert_rust(
+        "an operation whose owning type carries none of the admitted roles",
+        &refused,
+        &[format!(
+            "CONSTRUCT_TARGET_KIND at /ir/types/{ar}/sourceElement"
+        )],
+    );
 }
 
 #[trace("TC-1791", "FR-142-AC-10")]
@@ -2289,13 +2391,9 @@ fn tc_1800_an_allocation_source_naming_an_operation_lowers_to_that_operations_id
 /// Only round 1's fresh `operations` set drops `SI_002`'s `run` operation
 /// (round 0's own `operations` set, computed before `SI_002` was refused
 /// that round, still admits it), so `SA_002`'s `sourceElement` re-check does
-/// not catch it until round 1: genuinely exercising the recompute, with
-/// [`Finding 3`]'s corrected wording ("operation", not "type") for
-/// `SA_002`. A probe (recorded in this PR's report, not run by this test)
-/// confirmed that hoisting `operations`/`lowered` to compute once before the
-/// loop makes the `SA_002` assertion below fail. A revert probe (the same
-/// fixture, unmutated) proves the cascade comes from the injected
-/// unavailability, not the fixture text.
+/// not catch it until round 1: this genuinely exercises the per-round
+/// recompute, and the diagnostic below names `SA_002`'s source as an
+/// operation, not a type.
 #[trace("TC-1800", "FR-143-AC-11")]
 #[test]
 fn tc_1800_an_allocation_source_naming_an_operation_of_a_since_refused_artifact_cascades_the_refusal(

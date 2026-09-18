@@ -1671,7 +1671,7 @@ blocked as stated above.
 | TC-1743 | An unresolved frame path raises `UNRESOLVED_FRAME_PATH` and an unresolved population member raises `UNRESOLVED_TYPE_REF` | Unit | P0 | FR-141-AC-4 | ✅ passed |
 | TC-1745 | A `2.0.0` document with one construct of each of the ten kinds is accepted by the Rust, Node and Python readers | Unit | P0 | FR-142-AC-1 | ✅ passed |
 | TC-1746 | Each kind missing a required member, or carrying a member of another kind, is refused with `SCHEMA_VIOLATION` | Unit | P0 | FR-142-AC-2, FR-142-CON-1 | ✅ passed |
-| TC-1747 | Owner, aggregate member, persisted type and domain member of an excluded kind, or naming no type, raise their reader code at the member pointer | Unit | P0 | FR-142-AC-3 | ✅ passed |
+| TC-1747 | Owner, aggregate member, persisted type and domain member of an excluded kind, or naming no type, raise their reader code at the member pointer; a `sourceElement` naming an operation of a declared type is admitted, the same identity named by `targetElement` is refused, and a `sourceElement` naming no such operation is refused | Unit | P0 | FR-142-AC-3 | ✅ passed |
 | TC-1748 | A non-`datetime` occurrence field, an undeclared transition state or trigger, a dangling guard and a type in two domains raise their reader codes | Unit | P0 | FR-142-AC-4 | ✅ passed |
 | TC-1749 | The Rust, TypeScript and JSON Schema backends generate one construct of every kind with state `success` and no blocking diagnostic, rendering none as another kind | Unit | P0 | FR-142-AC-5, FR-142-CON-2 | ✅ passed |
 | TC-1750 | `contracts-v1.md` states the construct vocabulary, its rules, and the declaration and Quire meaning of every business construct kind | Manual | P1 | FR-142-AC-6 | ✅ passed |
@@ -1712,7 +1712,7 @@ blocked as stated above.
 | TC-1786 | The Rust, Node and Python readings of the core construct vocabulary each equal `construct-vocabulary.json` and the schema's `constructDeclaration`: identities, shapes, presences, member defaults, reference items, rule requirements and flag defaults, and the Rust and Node readings refuse an identity or shape whose required member presence is undeclared, and a flag that is not a boolean, at the same pointer | Unit | P0 | FR-142-AC-11, FR-142-AC-14 | ✅ passed |
 | TC-1787 | No business construct kind name appears as a string literal in `src/`, `crates/*/src` or `python_backend/` outside fixtures, goldens, generated code and tests, a name that is also a core shape term counting as that shape; a planted `kind.name === "entity"` fails the gate | Unit | P0 | FR-142-AC-7 | ✅ passed |
 | TC-1788 | Reading a construct declaration refuses an unknown identity, an unknown member, a rule whose member presence is undeclared, a reference to a forbidden member, a wildcard or repeated role, a reference on a non-reference member, a repeated rule, an unknown declaration member and a missing required member at their pointers, and reads a declaration without `references` and `rules` and with each flag at its default | Unit | P0 | FR-142-AC-12, FR-142-AC-14 | ✅ passed |
-| TC-1789 | A kind with no `constructs` entry, an unused entry, a duplicate entry, a `2.0.0` document without `constructs`, a wildcard role and an undeclared rule presence each refuse with `SCHEMA_VIOLATION`; widening admitted roles admits a reference its former roles refused, and removing the role from the target type refuses it | Unit | P0 | FR-142-AC-9 | ✅ passed |
+| TC-1789 | A kind with no `constructs` entry, an unused entry, a duplicate entry, a `2.0.0` document without `constructs`, a wildcard role and an undeclared rule presence each refuse with `SCHEMA_VIOLATION`; widening admitted roles admits a reference its former roles refused, and removing the role from the target type refuses it; a `sourceElement` resolved through FR-152's operation fallback is checked by the same role admission, against the role of the operation's owning type | Unit | P0 | FR-142-AC-9 | ✅ passed |
 | TC-1790 | The `business` fixture lifts with one `constructs` entry per used kind carrying module version `0.7.0`, the `sha256:` manifest digest and the manifest declaration with roles qualified `business:<role>`, read through the one manifest seam | Integration | P0 | FR-143-AC-7 | ✅ passed |
 | TC-1791 | A systems `port` kind carrying `owner`, `direction`, `interfaceType` and `multiplicity`, and a `connection` carrying `flowDirection` and two ends, read clean in the Rust and Node readers and render by shape and identity; a `direction` outside `in`/`out`/`inout`, a missing required member and an owner without the admitted role refuse | Unit | P0 | FR-142-AC-10 | ✅ passed |
 | TC-1792 | A manifest declaration missing `meaning`, naming a member or rule outside the vocabulary, selecting a rule whose member presence it does not declare, admitting `*`, or referencing an undeclared role yields one blocking diagnostic naming the module and object type, and no artifact of that type lowers | Unit | P0 | FR-143-AC-8 | ✅ passed |
@@ -2646,13 +2646,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 128 | 81 | 0 | 47 | 100% mapped (128/128) |
-| Unit | 598 | 494 | 0 | 104 | 100% mapped (598/598) |
+| Unit | 599 | 495 | 0 | 104 | 100% mapped (599/599) |
 | Integration | 161 | 100 | 0 | 61 | 100% mapped (161/161) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 65 | 40 | 0 | 25 | 100% mapped (65/65) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1381** | **1054** | **0** | **327** | **100% mapped (1381/1381)** |
+| **Total** | **1382** | **1055** | **0** | **327** | **100% mapped (1382/1382)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.
