@@ -214,6 +214,7 @@ pub fn bundle_fixtures() -> Vec<String> {
     let root = crate_dir().join("fixtures");
     let mut out = Vec::new();
     for name in [
+        "architecture",
         "business",
         "clauses",
         "config-version-fence",

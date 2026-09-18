@@ -47,8 +47,11 @@ const BUSINESS_REVISION: &str = "7b7b0bc";
 /// `modules`, `negatives` and a `both-forms` that lives under
 /// `negatives/ARTIFACT_NOT_LOWERED`; the rest are the bundles FR-091..FR-097
 /// name in their criteria and FR-098 does not repeat (reported with
-/// Task-136).
-const TOP_LEVEL: [&str; 12] = [
+/// Task-136). `architecture` is the filament-core-data#173 bundle: the
+/// spec-objects-architecture systems kinds (part, port, connection,
+/// allocation, interface).
+const TOP_LEVEL: [&str; 13] = [
+    "architecture",
     "business",
     "clauses",
     "config-version-fence",
@@ -64,12 +67,13 @@ const TOP_LEVEL: [&str; 12] = [
 ];
 
 /// The module roots under `fixtures/modules/`.
-const MODULES: [&str; 6] = [
+const MODULES: [&str; 7] = [
     "acme-other",
     "conflicting",
     "edge-vocabulary",
     "frobnicates",
     "objects-extra",
+    "spec-objects-architecture",
     "spec-objects-business",
 ];
 

@@ -13,8 +13,10 @@ relationships:
 ## Description
 
 The flow interface `Flow2` of TC-197 fixture Y: `Flow2.supertypes = [Flow]`.
-It declares no feature of its own; its one feature is the field `Flow/rate`
-typed `Count` `{1,1}`, inherited from `Flow`, so `Flow2` conforms to `Flow`.
+It conforms to `Flow` (the inherited field `Flow/rate`, typed `Count`
+`{1,1}`) and declares one feature of its own, the operation `reset`, which
+the manifest's required `## Features` table (quire-rs#448) needs at least
+one row of its own declaration.
 
 ## Contract
 
@@ -22,14 +24,26 @@ typed `Count` `{1,1}`, inherited from `Flow`, so `Flow2` conforms to `Flow`.
 name: Flow2
 supertypes: [Flow]
 fields: []
-operations: []
+operations:
+  - name: reset
+    inputs: []
+    output: null
+featureOrder: [reset]
 ```
-
-## Properties
-
-| Field | Type | Multiplicity | Constraints |
-|-------|------|--------------|-------------|
 
 ## Operations
 
-The interface declares no operations of its own.
+### reset
+
+Reset the flow to its zero rate. The operation takes no parameters, returns
+nothing and has an empty frame.
+
+## Features
+
+The interface's own features in declaration order: no fields, one
+operation. `Flow2` inherits `Flow/rate` through `specializes`; inherited
+features are not repeated here.
+
+| Feature | Kind |
+|---|---|
+| reset | operation |

@@ -1,8 +1,8 @@
 {
   "repository": "https://github.com/agent-ix/spec-objects-architecture",
-  "revision": "4215aad",
-  "revision_full": "4215aad4ce8d04a900942eaa397c88d83f86b8d4",
-  "revision_status": "unmerged: head of agent-ix/spec-objects-architecture#11 (branch soa-10-systems-kinds, issue #10); not a released revision",
+  "revision": "376612e",
+  "revision_full": "376612e4f45dc1b61ac958eb98b2c294f069d5ea",
+  "revision_status": "pinned to SOA 376612e (merged, unreleased; latest tag v0.6.0 is behind); passes when an SOA release containing 376612e is pinned — release decision: Peter. 376612e is agent-ix/spec-objects-architecture#13, merged to main on top of #11 (issue #10): it drops the interface construct's `references: {supertypes: [...]}` entry (FCD's vocabulary does not admit `supertypes` as a reference member; same-kind generalization checking already covers it). No SOA tag carries #10 or #13 yet.",
   "module": "spec-objects-architecture",
   "module_version": "0.4.0",
   "source_root": "spec_objects_architecture",
@@ -31,6 +31,8 @@
     "schemas/LayoutField.json",
     "schemas/LayoutType.json",
     "schemas/LimitScope.json",
+    "schemas/ObjectFrontmatter.json",
+    "schemas/ObjectId.json",
     "schemas/OrderingScope.json",
     "schemas/Part.json",
     "schemas/Port.json",
@@ -48,7 +50,7 @@
     "schemas/VersioningScheme.json",
     "schemas/toolchain.json"
   ],
-  "manifest_sha256": "430b4e6597443506d96dad2dcea052388a22e8387cd4da90f3671f63adf7e42f",
+  "manifest_sha256": "99a42e8d4b5fd4e87f301b45d1e57747e324ca8116f9282b065ab4e7a75e4c04",
   "edits": [],
-  "note": "Copied byte-for-byte with `git show 4215aad:<path>`; never loaded from ~/.ix (NFR-033-AC-3). skeletons/ are not vendored: the frontend consumes manifest.yaml and schemas/ only. 4215aad is the unmerged head of spec-objects-architecture#11, the first revision declaring the systems-model kinds part, port, connection and allocation and the interface construct (meanings quire.meaning.systems.*/v1, QSpec FR-152/FR-208). filament-core-data#173 replaces this pin with the released revision once #11 merges and a release is tagged; the interface feature-table shape is still pending agent-ix/quire-rs#448."
+  "note": "Copied byte-for-byte with `git show 376612e:<path>`; never loaded from ~/.ix (NFR-033-AC-3). skeletons/ are not vendored: the frontend consumes manifest.yaml and schemas/ only. Only manifest.yaml differs from the prior 97024ad pin (schemas/ and toolchain.json are byte-identical between 97024ad and 376612e, verified by `git diff --stat`); the change is agent-ix/spec-objects-architecture#13 dropping the interface construct's `references: {supertypes: [...]}` entry. 376612e is #13 merged to main on top of #11 (issue #10): the systems-model kinds part, port, connection and allocation, the interface construct with its required `## Features` table (quire-rs FR-075, #448), and the `specializes` edge on interface (meanings quire.meaning.systems.*/v1, QSpec FR-152/FR-208). PENDING: this pins a merged-but-unreleased commit because no SOA tag carries #10 or #13 yet (v0.6.0/0093e9c is behind both); filament-core-data#173's 'pin the released manifest' acceptance criterion is NOT satisfied until an SOA release containing 376612e exists, and this pin is replaced with that release's tag once cut. That release decision belongs to Peter, not this PR."
 }

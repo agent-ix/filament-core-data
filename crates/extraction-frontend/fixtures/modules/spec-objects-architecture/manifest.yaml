@@ -24,7 +24,7 @@ semantic:
   imports: {}
   targets: [json-schema, markdown]
   mappings: [typed-table, sysml-fence, ocl-clause]
-  compatibility_posture: additive
+  compatibility_posture: strict
   legacy_forms: warning
 nav:
   category:
@@ -33,11 +33,12 @@ nav:
     icon: Network
     order: 52
 # FR-007: the edge verbs and roles the systems-model kinds (QSpec FR-152)
-# introduce. No verb or role here exists in spec-artifacts-iso or
-# spec-objects-business, so a registry that loads those modules merges these
-# without a duplicate entry. The other verbs and roles this manifest uses are
-# declared by spec-artifacts-iso.
+# introduce. `specializes` is declared exactly as spec-objects-business
+# declares it, so a registry that loads both merges one definition; no other
+# verb or role here exists in spec-artifacts-iso or spec-objects-business. The
+# other verbs and roles this manifest uses are declared by spec-artifacts-iso.
 edge_types:
+  specializes: { description: "Generalization: the source type specializes the target type and inherits its declarations.", category: structural, inverse: generalizes }
   owned_by: { description: "Systems element is owned by its owning type or part.", category: structural }
   typed_by: { description: "Systems element is typed by a type or interface.", category: structural }
   connects: { description: "Connection joins the ports at its source and target ends.", category: structural }
@@ -70,10 +71,15 @@ object_types:
   body_extraction:
     yield_pattern:
       match:
+        # FR-003: an object id uses underscores, never hyphens. The pattern
+        # equals `ObjectId` in typespec/main.tsp; a hyphenated id yields no
+        # value, so the required locator refuses it. Every object type shares
+        # this locator.
         id: &id001
           from: frontmatter_field
           path:
           - id
+          regex: ^([A-Za-z][A-Za-z0-9_]*)$
           required: true
         title: &id002
           from: frontmatter_field
@@ -207,9 +213,11 @@ object_types:
   allowed_links:
     contains: [api_endpoint]
     references: [data_schema]
+    specializes: [interface]
   # FR-007: the QSpec FR-152 Interface kind — its features are fields and
-  # operations, ordered as one sequence by `featureOrder`. Meaning id from
-  # agent-ix/quire-specification#86 (FR-208).
+  # operations, ordered as one sequence by `featureOrder`, which the
+  # `## Features` table carries in row order (quire-rs FR-075, #448). Meaning
+  # id from agent-ix/quire-specification#86 (FR-208).
   construct:
     identity: none
     shape: interface
@@ -217,6 +225,7 @@ object_types:
       featureOrder: required
       fields: optional
       operations: optional
+      supertypes: optional
       clauses: optional
       relationships: optional
     meaning: quire.meaning.systems.interface/v1
@@ -243,6 +252,13 @@ object_types:
           from: section_body
           after_heading: Operations
           required: false
+        features:
+          from: table_row
+          under_section: Features
+          required: true
+          assert:
+            columns: [Feature, Kind]
+            min_rows: 1
 - name: external_contract
   roles: [externally-exposed]
   allowed_links:

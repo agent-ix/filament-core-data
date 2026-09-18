@@ -9,7 +9,16 @@ object: interface
 
 ## Description
 
-The flow interface of TC-197 fixture Y: one feature, the field `Flow/rate` typed `Count` `{1,1}`.
+The flow interface of TC-197 fixture Y: one feature, the field `Flow/rate`
+typed `Count` `{1,1}`. FR-070's generic `## Properties` extraction, not a
+manifest locator, is what supplies the field name the `## Features` table
+below checks against.
+
+## Properties
+
+| Field | Type | Multiplicity | Constraints |
+|-------|------|--------------|-------------|
+| rate | Count | 1 | |
 
 ## Contract
 
@@ -20,14 +29,13 @@ fields:
     type: Count
     multiplicity: 1..1
 operations: []
+featureOrder: [rate]
 ```
 
-## Properties
+## Features
 
-| Field | Type | Multiplicity | Constraints |
-|-------|------|--------------|-------------|
-| rate | Count | 1..1 | |
+The interface's features in declaration order: one field, no operations.
 
-## Operations
-
-The interface declares no operations; its one feature is the field `rate`.
+| Feature | Kind |
+|---|---|
+| rate | field |
