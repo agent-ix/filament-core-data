@@ -2258,7 +2258,7 @@ describe("package graph resolution (FR-047)", () => {
 		expect(() => canonicalize(deep, { maxDepth: 10 })).toThrow(/maxDepth/);
 		// And the bound is a *diagnostic* where a document can reach it, not an
 		// exception a caller has to know about.
-		const nested: Json = { contractVersion: "1.1.0", types: [] };
+		const nested: Json = { contractVersion: "2.0.0", types: [] };
 		let cursor2: Json = nested;
 		for (let level = 0; level < 60; level += 1) {
 			cursor2.child = {};
@@ -2270,7 +2270,7 @@ describe("package graph resolution (FR-047)", () => {
 		note(bounded);
 		expect(codesOf(bounded)).toEqual([DIAGNOSTIC_CODES.LIMIT_MAX_DEPTH.code]);
 		const wide = {
-			contractVersion: "1.1.0",
+			contractVersion: "2.0.0",
 			types: [
 				{
 					identity: "ix://a/b/type/W",
@@ -3655,7 +3655,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 	/** Traces: TC-518, TC-526, TC-585; FR-050-AC-9, FR-050-CON-4, NFR-020-AC-7. */
 	it("terminates on every cyclic and oversized input", () => {
 		const cyclicAlias = {
-			contractVersion: "1.1.0",
+			contractVersion: "2.0.0",
 			types: [
 				{
 					identity: "ix://a/b/type/X",
@@ -3672,7 +3672,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		expect(() => readContractIr(cyclicAlias)).not.toThrow();
 
 		const cyclicComposite = {
-			contractVersion: "1.1.0",
+			contractVersion: "2.0.0",
 			types: [
 				{
 					identity: "ix://a/b/type/A",
@@ -3709,7 +3709,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		expect(codesOf(cycle)).toContain(DIAGNOSTIC_CODES.COMPOSITE_CYCLE.code);
 
 		const many = {
-			contractVersion: "1.1.0",
+			contractVersion: "2.0.0",
 			types: Array.from({ length: 20 }, (_, index) => ({
 				identity: `ix://a/b/type/T${index}`,
 				kind: "record",
@@ -3723,7 +3723,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		expect(codesOf(overNodes)).toEqual([DIAGNOSTIC_CODES.LIMIT_MAX_NODES.code]);
 
 		const wide = {
-			contractVersion: "1.1.0",
+			contractVersion: "2.0.0",
 			types: [
 				{
 					identity: "ix://a/b/type/W",
