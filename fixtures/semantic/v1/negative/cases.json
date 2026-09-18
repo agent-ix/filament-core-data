@@ -197,6 +197,13 @@
 		"code": "agent-ix.semantic-ir.MISSING_MULTIPLICITY"
 	},
 	{
+		"id": "ir-v2-field-without-presence",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v2-constructs.json",
+		"remove": "types.0.fields.0.presence",
+		"code": "agent-ix.semantic-ir.MISSING_PRESENCE"
+	},
+	{
 		"id": "ir-v1-1-negative-lower",
 		"schema": "semantic-ir.schema.json",
 		"base": "positive/semantic-ir-v1-1.json",

@@ -569,11 +569,15 @@ function seededRandom(seed: number): () => number {
 
 describe("FR-027 field multiplicity and units", () => {
 	/** Traces: TC-203; FR-027-AC-1, FR-020-AC-7, US-006-EX-1. */
-	it("derives presence from a 0..1 multiplicity and round-trips the normalized form", () => {
+	it("validates a 0..1 field with presence authored explicitly and rejects one with presence omitted", () => {
 		const document = goldenV11();
 		const summary = fieldNamed(document, "Artifact", "summary");
 		expect(summary.multiplicity).toEqual({ lower: 0, upper: 1 });
 		expect(summary.presence).toBe("optional");
+		expect(
+			negativeValidates("ir-v2-field-without-presence").valid,
+			"presence is schema-required and never derived from multiplicity",
+		).toBe(false);
 		const first = normalize(document);
 		const second = normalize(JSON.parse(first));
 		expect(second).toBe(first);

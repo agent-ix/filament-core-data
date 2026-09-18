@@ -766,11 +766,30 @@ def _by_identity(items: Any) -> dict[str, dict[str, Any]]:
 
 
 def _lower_bound(field: dict[str, Any]) -> int:
+    """The field's multiplicity floor, read from `multiplicity.lower` alone.
+
+    `classify` only reaches a field after both bundles have already passed
+    schema validation, and contract 2.0.0 requires `multiplicity` on every
+    field independently of `presence` (FR-059, FR-069) — so a field arriving
+    here without one is this adapter's own invariant broken, not a document
+    to judge leniently. It refuses rather than deriving a bound from
+    `presence`, which is the same forbidden derivation under a different name.
+    """
     multiplicity = field.get("multiplicity")
-    if isinstance(multiplicity, dict):
-        lower = multiplicity.get("lower")
-        return lower if isinstance(lower, int) else 1
-    return 0 if field.get("presence") == "optional" else 1
+    if not isinstance(multiplicity, dict):
+        raise ValueError(
+            f"field {field.get('identity')!r} reached compatibility "
+            "classification without a multiplicity object; contract 2.0.0 "
+            "requires one and this adapter never derives it from presence"
+        )
+    lower = multiplicity.get("lower")
+    if not isinstance(lower, int):
+        raise ValueError(
+            f"field {field.get('identity')!r} has a multiplicity without an "
+            "integer lower bound; contract 2.0.0 requires one and this "
+            "adapter never derives it from presence"
+        )
+    return lower
 
 
 def _preserves_unknown(policy: Any) -> bool:
