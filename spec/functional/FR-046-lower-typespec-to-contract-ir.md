@@ -1,6 +1,6 @@
 ---
 id: FR-046
-title: "Lower a TypeSpec program to contract semantic IR 1.1.0"
+title: "Lower a TypeSpec program to contract semantic IR 2.0.0"
 type: FR
 relationships:
   - target: "ix://agent-ix/filament-core-data/US-010"
@@ -22,13 +22,14 @@ relationships:
   - target: "ix://agent-ix/filament-core-data/NFR-020"
     type: "constrained_by"
 ---
-# [FR-046] Lower a TypeSpec program to contract semantic IR 1.1.0
+# [FR-046] Lower a TypeSpec program to contract semantic IR 2.0.0
 
 ## Description
 
 The `typespec` frontend SHALL lower a compiled TypeSpec program and its resolved
 package into one semantic IR document valid against
-`schema/semantic/v1/semantic-ir.schema.json` at `contractVersion` `1.1.0`, so
+`schema/semantic/v1/semantic-ir.schema.json` at `contractVersion` `2.0.0`
+(fcd#179: 2.0.0 is the only contract), so
 that every structural value in the document is carried by a declaration in the
 source or by the manifest and none is inferred from a type's spelling.
 
@@ -45,7 +46,7 @@ source or by the manifest and none is inferred from a type's spelling.
 - `src/compiler/host.mjs`: `createHost` and `repositoryHost`, the injected host every module below the CLI reads through
 - `src/compiler/frontend/typespec/lower.mjs`: the pure lowering from a compiled `Program` plus a resolved package to an IR document
 - `test/fixtures/compiler/packages/**`: the TypeSpec package corpus every criterion below is exercised on, including the `assurance` package that covers every row of the structural-kind table
-- An IR document whose `contractVersion` is `1.1.0` and whose `source.dialect` is `typespec`
+- An IR document whose `contractVersion` is `2.0.0` and whose `source.dialect` is `typespec`
 
 ## Behavior
 
@@ -126,7 +127,7 @@ source or by the manifest and none is inferred from a type's spelling.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-046-AC-1 | The IR produced for `test/fixtures/compiler/packages/assurance` validates against `semantic-ir.schema.json` with `contractVersion` `1.1.0` and `source.dialect` `typespec`, and produces zero diagnostics from the FR-050 reader. | Test |
+| FR-046-AC-1 | The IR produced for `test/fixtures/compiler/packages/assurance` validates against `semantic-ir.schema.json` with `contractVersion` `2.0.0` and `source.dialect` `typespec`, and produces zero diagnostics from the FR-050 reader. | Test |
 | FR-046-AC-2 | Every row of the structural-kind table is exercised by a declaration in the fixture package and yields the stated `kind` and additional members; a model matching two rows takes the earlier one. | Test |
 | FR-046-AC-3 | Every row of the built-in scalar mapping yields the stated IR `scalar`, and a declaration extending an unmapped built-in raises `UNSUPPORTED_SCALAR_BASE` at its locus. | Test |
 | FR-046-AC-4 | A record named `AuditEvent` with no `@role` has `roles: []`, and a record named `Thing` with `@role("agent-ix:event")` has `roles: ["agent-ix:event"]`; neither value depends on the name. | Test |

@@ -292,7 +292,7 @@ construct's disposition is written down rather than decided at the keyboard.
   backend SHALL carry the declared value verbatim into the type's metadata
   constant and SHALL state in the generated documentation that it is inert for
   the kind. Recording it is what stops it being dropped; refusing it would
-  refuse documents the contract calls valid — `conformance/bases/core-1-1.json`
+  refuse documents the contract calls valid — `conformance/bases/core-2-0.json`
   gives a `map` `preserve` and a `union` `surface`, and the independent oracle
   decides that base `success`.
 - Where `unknownPolicy` is `surface`, the type's `validate` SHALL return one
