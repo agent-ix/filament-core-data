@@ -218,6 +218,12 @@ const PROHIBITED = Object.freeze([
 	{ name: "scripts/** (other than the harness)", test: (p) => p.startsWith("scripts/") && p !== "scripts/extraction-frontend-harness.mjs" },
 ]);
 
+/**
+ * Where a ticket declares its change set repo-wide (`declaredScope` below).
+ * Inside the crate so the file itself is always a permitted path.
+ */
+const SCOPE_DECLARATION_PATH = "crates/extraction-frontend/CHANGE-SET-SCOPE.json";
+
 /** The seven paths FR-099-AC-5 names byte-unchanged, as `git diff` pathspecs. */
 export const FR099_FROZEN = Object.freeze([
 	"package.json",
@@ -228,9 +234,51 @@ export const FR099_FROZEN = Object.freeze([
 	"rust-toolchain.toml",
 ]);
 
-function classify(path) {
+/**
+ * A change set's own declared scope (NFR-032's crate-scope default is a
+ * hidden assumption: it offers no way for a ticket to say its change is
+ * legitimately repo-wide, so it fails a ticket like fcd#179 that deletes a
+ * contract from every reader of it, not because the gate malfunctions but
+ * because the gate cannot hear the ticket say so).
+ *
+ * Absent, or present but malformed, the default holds: strict crate scope,
+ * exactly today's behaviour. Present and well-formed — `{"ticket":
+ * "fcd#179", "scope": "repo-wide"}` — it names the ticket taking
+ * responsibility for reaching outside the crate. The file lives inside
+ * `crates/extraction-frontend/`, so it is itself always a permitted path,
+ * and it is part of the change set the gate classifies (`gate` folds
+ * uncommitted paths in the same way `workingPathsUnion` always has), so a
+ * repo-wide declaration is visible in review, not a silent exemption: it
+ * is a line in the diff naming who is claiming it and a rule tag on every
+ * path the declaration reaches, not the removal of a check.
+ */
+export function declaredScope(root) {
+	const absolute = resolve(root, SCOPE_DECLARATION_PATH);
+	if (!existsSync(absolute)) return null;
+	let parsed;
+	try {
+		parsed = JSON.parse(readFileSync(absolute, "utf8"));
+	} catch {
+		return null;
+	}
+	if (
+		parsed &&
+		typeof parsed === "object" &&
+		parsed.scope === "repo-wide" &&
+		typeof parsed.ticket === "string" &&
+		/^[a-z][a-z0-9-]*#\d+$/.test(parsed.ticket)
+	) {
+		return { ticket: parsed.ticket, scope: parsed.scope };
+	}
+	return null;
+}
+
+function classify(path, scope) {
 	const prohibited = PROHIBITED.find((rule) => rule.test(path));
-	if (prohibited) return { path, verdict: "prohibited", rule: prohibited.name };
+	if (prohibited) {
+		if (scope) return { path, verdict: "permitted", rule: `declared:${scope.ticket}` };
+		return { path, verdict: "prohibited", rule: prohibited.name };
+	}
 	const permitted = PERMITTED.find((rule) => rule.test(path));
 	if (permitted) return { path, verdict: "permitted", rule: permitted.name };
 	return { path, verdict: "unclassified", rule: null };
@@ -240,14 +288,17 @@ function classify(path) {
 export function gate(root) {
 	const range = workingRange(root);
 	const paths = workingPathsUnion(root);
-	const classified = paths.map(classify);
+	const scope = declaredScope(root);
+	const classified = paths.map((path) => classify(path, scope));
 	return {
 		root,
 		base: range.base,
 		tip: range.tip,
 		pinnedTip: range.pinnedTip,
 		squashed: range.squashed,
+		declaredScope: scope,
 		paths,
+		classified,
 		permitted: classified.filter((c) => c.verdict === "permitted").length,
 		prohibited: classified.filter((c) => c.verdict === "prohibited"),
 		unclassified: classified.filter((c) => c.verdict === "unclassified"),
