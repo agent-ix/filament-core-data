@@ -1746,7 +1746,7 @@ blocked as stated above.
 | TC-155, TC-158 | concrete service boundary absent | Protobuf unselected | no descriptor mapping | Wire format remains absent without speculative generation |
 | TC-167 | enum/record evolution | open/closed | preserve/ignore/reject unknown | Compatibility follows declared capability, not language default |
 | TC-171, TC-172 | module known/unknown | dynamic/static consumer | preserve/reject/surface policy | Same identity graph, policy-specific handling |
-| TC-203..205 | field multiplicity | `0..1` / `1..1` / `0..*` / `1..*` | nullable true/false, default none/semantic | Derived presence is fixed by lower bound; nullable and default stay independent |
+| TC-203..205 | field multiplicity | `0..1` / `1..1` / `0..*` / `1..*` | nullable true/false, default none/semantic | Presence and multiplicity are each authored, never derived from one another; nullable and default stay independent |
 | TC-204, TC-216 | collection flags | `ordered` / `unique` | upper absent or > 1 vs upper ≤ 1 | Flags allowed only on collections |
 | TC-214, TC-215 | clause language | `quire` / `ocl` / `sysml` / `fretish` / `ns:name` | bare unknown token | Closed core set plus namespaced extension; bare unknown fails |
 | TC-227, TC-228 | IR source dialect | `typespec` / `spec-bundle` | v1 JSON Schema URI constant | Frontend identity accepted; stale constant rejected with ADR-0005 citation |
