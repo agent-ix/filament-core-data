@@ -1,8 +1,8 @@
 {
   "repository": "https://github.com/agent-ix/spec-objects-architecture",
-  "revision": "376612e",
-  "revision_full": "376612e4f45dc1b61ac958eb98b2c294f069d5ea",
-  "revision_status": "pinned to SOA 376612e (merged, unreleased; latest tag v0.6.0 is behind); passes when an SOA release containing 376612e is pinned — release decision: Peter. 376612e is agent-ix/spec-objects-architecture#13, merged to main on top of #11 (issue #10): it drops the interface construct's `references: {supertypes: [...]}` entry (FCD's vocabulary does not admit `supertypes` as a reference member; same-kind generalization checking already covers it). No SOA tag carries #10 or #13 yet.",
+  "revision": "a54d2c0",
+  "revision_full": "a54d2c0d45dff70e3e750264bb63ec5994251480",
+  "revision_status": "pinned to SOA a54d2c0 (merged, unreleased; latest tag v0.6.0 is behind); passes when an SOA release containing a54d2c0 is pinned — release decision: Peter. a54d2c0 is agent-ix/spec-objects-architecture#15 (closes #14), merged to main on top of #13: it adds `generalization` to `semantic.mappings`, which quire-rs FR-075 `ModelFeature::Generalization` requires before it extracts an interface's `specializes` relationship at all (without the token the engine refuses it with `semantic.feature-not-extractable`). No SOA tag carries #14 or #15 yet.",
   "module": "spec-objects-architecture",
   "module_version": "0.4.0",
   "source_root": "spec_objects_architecture",
@@ -50,7 +50,7 @@
     "schemas/VersioningScheme.json",
     "schemas/toolchain.json"
   ],
-  "manifest_sha256": "99a42e8d4b5fd4e87f301b45d1e57747e324ca8116f9282b065ab4e7a75e4c04",
+  "manifest_sha256": "af7141628be8b2c7cb60b24499d5210c73304f50edfac7e75124454bb19e4757",
   "edits": [],
-  "note": "Copied byte-for-byte with `git show 376612e:<path>`; never loaded from ~/.ix (NFR-033-AC-3). skeletons/ are not vendored: the frontend consumes manifest.yaml and schemas/ only. Only manifest.yaml differs from the prior 97024ad pin (schemas/ and toolchain.json are byte-identical between 97024ad and 376612e, verified by `git diff --stat`); the change is agent-ix/spec-objects-architecture#13 dropping the interface construct's `references: {supertypes: [...]}` entry. 376612e is #13 merged to main on top of #11 (issue #10): the systems-model kinds part, port, connection and allocation, the interface construct with its required `## Features` table (quire-rs FR-075, #448), and the `specializes` edge on interface (meanings quire.meaning.systems.*/v1, QSpec FR-152/FR-208). PENDING: this pins a merged-but-unreleased commit because no SOA tag carries #10 or #13 yet (v0.6.0/0093e9c is behind both); filament-core-data#173's 'pin the released manifest' acceptance criterion is NOT satisfied until an SOA release containing 376612e exists, and this pin is replaced with that release's tag once cut. That release decision belongs to Peter, not this PR."
+  "note": "Copied byte-for-byte with `git show a54d2c0:<path>`; never loaded from ~/.ix (NFR-033-AC-3). skeletons/ are not vendored: the frontend consumes manifest.yaml and schemas/ only. Only manifest.yaml differs from the prior 376612e pin (schemas/ and toolchain.json are byte-identical between 376612e and a54d2c0, verified by `git diff --stat`); the change is agent-ix/spec-objects-architecture#15 (closes #14) adding `generalization` to `semantic.mappings`. a54d2c0 is #15 merged to main on top of #13 (which merged on top of #11/#10): the systems-model kinds part, port, connection and allocation, the interface construct with its required `## Features` table (quire-rs FR-075, #448), the `specializes` edge on interface (meanings quire.meaning.systems.*/v1, QSpec FR-152/FR-208), and now the `generalization` mapping token that edge's extraction requires. PENDING: this pins a merged-but-unreleased commit because no SOA tag carries #14 or #15 yet (v0.6.0 is behind both); filament-core-data#173's 'pin the released manifest' acceptance criterion is NOT satisfied until an SOA release containing a54d2c0 exists, and this pin is replaced with that release's tag once cut. That release decision belongs to Peter, not this PR."
 }

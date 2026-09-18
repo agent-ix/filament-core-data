@@ -362,9 +362,15 @@ pub(crate) fn shape(
     // and the rest of the FR-075 model, which the engine's own extraction
     // gates) is required by the declaration but this artifact's own model
     // extraction carries no row for it: refused here, one artifact at a
-    // time, rather than emitted empty.
+    // time, rather than emitted empty. `Supertypes` and `Abstract` are not
+    // checked here: [`lower_generalization`] makes that same check itself,
+    // since it (unlike this function) also runs for an `enumeration`-shaped
+    // artifact (FR-142's [`crate::enumeration::lower_enum`], which never
+    // reaches `shape`), and a required-but-absent generalization member must
+    // refuse an enumeration artifact too.
     if let Some(member) = Member::ALL.iter().copied().find(|&member| {
-        declaration.presence(member) == Presence::Required
+        !matches!(member, Member::Supertypes | Member::Abstract)
+            && declaration.presence(member) == Presence::Required
             && has_source_table(member, &model) == Some(false)
     }) {
         return refused(&format!(
@@ -845,16 +851,42 @@ pub(crate) struct References<'a> {
     pub(crate) artifact_roles: &'a BTreeMap<String, Vec<String>>,
 }
 
-/// The bundle-local artifact id `name` denotes: itself, or, when the engine
-/// has already resolved it (quire-rs `semantic::target::resolve_target`,
-/// systems-model reference cells only) to its own `ix://<org>/<repo>/<id>`
-/// `SemanticId`, the trailing `<id>` segment. A bare id (every other
-/// caller's raw table-cell text) has no `ix://` prefix and passes through
-/// unchanged.
-fn bare_artifact_id(name: &str) -> &str {
+/// The bundle-local artifact id `name` denotes: itself (`Ok`), when it
+/// carries no `ix://` prefix at all — every reference member's raw
+/// table-cell text, from every caller but the systems-model ones. Or, when
+/// the engine has already resolved it to this bundle's own identity, the one
+/// id segment of that identity (`Ok`): quire-rs mints two different own-
+/// package shapes, depending which resolver a systems-model reference cell
+/// went through — `semantic::properties::map_type` (a `declaredType` or
+/// `interfaceType` cell, FR-070) mints `ix://<org>/<repo>/type/<id>`, the
+/// same `type/<id>` shape this frontend's own [`crate::identity::
+/// PackageIdentity::type_identity`] mints; `semantic::target::resolve_target`
+/// (an `owner`, `sourceElement`/`targetElement`, or connection-end cell)
+/// mints `ix://<org>/<repo>/<id>` with no such segment. Anything else —
+/// an identity in another package (an imported reference, quire-rs
+/// `Target::Imported`) or the engine's own member-qualified `<id>/<member>`
+/// operation form (an allocation source naming an operation, quire-rs#461/
+/// #462) — is refused (`Err`) by its full identity, never mis-read as a
+/// bare id of this bundle: stripping only the trailing path segment, as an
+/// earlier version of this function did, would silently rebind
+/// `ix://other/pkg/SP_001` to a local artifact also named `SP_001`, and
+/// would read a `Pump/run` allocation source's `<org>/<repo>/Pump/run`
+/// identity as the id `run`.
+fn bare_artifact_id<'a>(name: &'a str, own_package: &str) -> Result<&'a str, &'a str> {
+    let not_own_id = |id: &str| id.is_empty() || id.contains('/');
     match name.strip_prefix("ix://") {
-        Some(_) => name.rsplit('/').next().unwrap_or(name),
-        None => name,
+        None => Ok(name),
+        Some(rest) => match rest
+            .strip_prefix(own_package)
+            .and_then(|tail| tail.strip_prefix('/'))
+        {
+            Some(id) if !not_own_id(id) => Ok(id),
+            Some(tail) => match tail.strip_prefix("type/") {
+                Some(id) if !not_own_id(id) => Ok(id),
+                _ => Err(name),
+            },
+            None => Err(name),
+        },
     }
 }
 
@@ -872,9 +904,16 @@ impl References<'_> {
         site: &str,
     ) -> Result<Vec<String>, String> {
         let admitted = self.declaration.roles(member);
+        let own_package = ctx.package.package();
         let mut out = Vec::new();
         for name in names.unwrap_or(&[]) {
-            let name = bare_artifact_id(name);
+            let not_admitted = |full: &str| -> String {
+                format!(
+                    "{site} names `{full}`, which is the artifact id of no type of the bundle the construct's {} admit",
+                    member.name()
+                )
+            };
+            let name = bare_artifact_id(name, &own_package).map_err(not_admitted)?;
             let identity = self
                 .artifact_roles
                 .get(name)
@@ -882,12 +921,7 @@ impl References<'_> {
                     admitted.is_none_or(|admitted| roles.iter().any(|role| admitted.contains(role)))
                 })
                 .and_then(|_| ctx.package.type_identity(name).ok())
-                .ok_or_else(|| {
-                    format!(
-                        "{site} names `{name}`, which is the artifact id of no type of the bundle the construct's {} admit",
-                        member.name()
-                    )
-                })?;
+                .ok_or_else(|| not_admitted(name))?;
             if out.contains(&identity) {
                 return Err(format!(
                     "{site} names `{name}` twice, and one cell names each type at most once"
@@ -1044,24 +1078,45 @@ fn lift_supertypes(
 /// [`crate::enumeration::lower_enum`], whose `Shape::Enumeration` artifacts
 /// never reach `shape` (FR-142 declares one construct per object type, and
 /// neither member is enumeration-specific).
+///
+/// The required-but-absent check for these two members lives here, not in
+/// `shape`'s own blanket check: `shape` never runs for an enumeration
+/// artifact, and a construct declaring `supertypes: required` or
+/// `abstract: required` must refuse one the same way regardless of shape.
 pub(crate) fn lower_generalization(
     model: &ModelDeclarations,
     references: &References<'_>,
     ctx: &ArtifactContext<'_>,
     object: &str,
 ) -> Result<(Option<Vec<String>>, Option<bool>), LowerError> {
-    let supertypes =
-        if !forbids(references.declaration, Member::Supertypes) && model.supertypes.is_some() {
-            Some(lift_supertypes(
-                model.supertypes.as_deref().unwrap_or(&[]),
-                references,
-                ctx,
-                object,
-            )?)
-        } else {
-            None
-        };
-    let is_abstract = if forbids(references.declaration, Member::Abstract) {
+    let declaration = references.declaration;
+    if let Some(member) = [Member::Supertypes, Member::Abstract]
+        .into_iter()
+        .find(|&member| {
+            declaration.presence(member) == Presence::Required
+                && has_source_table(member, model) == Some(false)
+        })
+    {
+        return Err(refuse(
+            ctx,
+            object,
+            &format!(
+                "the construct requires {}, and this artifact declares none",
+                member.name()
+            ),
+        ));
+    }
+    let supertypes = if !forbids(declaration, Member::Supertypes) && model.supertypes.is_some() {
+        Some(lift_supertypes(
+            model.supertypes.as_deref().unwrap_or(&[]),
+            references,
+            ctx,
+            object,
+        )?)
+    } else {
+        None
+    };
+    let is_abstract = if forbids(declaration, Member::Abstract) {
         None
     } else {
         model.abstract_type.as_ref().map(|decl| decl.value)
@@ -1245,6 +1300,28 @@ fn refusal_rule(
         ));
     }
     let construct = &definition.construct;
+    // Every reference member this frontend fills with another artifact's
+    // type identity: a transition's or step's `emits`/`consumes`, a
+    // generalization `supertypes` edge, a systems `part`/`port` row's
+    // model-derived `owner`, a `part`'s `declaredType`, a `port`'s
+    // `interfaceType`, a connection's `sourceEnd`/`targetEnd`, and an
+    // allocation's `sourceElement`/`targetElement`. Each was admitted by
+    // role when this artifact lowered, in its own earlier round; a later
+    // round can still refuse the artifact it names, so every one of them is
+    // re-checked here, every round, before `owner_from_model`'s early
+    // return skips the rest of this function for a systems `part`/`port`.
+    // `owner` only joins this chain when it is model-derived: a composite
+    // owner (nested_entity, aggregate-root member, ...) is assigned and
+    // re-checked by the `owners` map below instead, which recomputes from
+    // `pending` every round and so already drops a since-refused owner's
+    // composite edge on its own; folding it into this chain too would
+    // short-circuit that recomputation and misreport the rule as "names a
+    // type that lowers to nothing" instead of "0/2 types contain it".
+    let model_owner = item
+        .owner_from_model
+        .then(|| construct.owner.iter())
+        .into_iter()
+        .flatten();
     let type_refs = construct
         .transitions
         .iter()
@@ -1256,10 +1333,18 @@ fn refusal_rule(
                 .iter()
                 .flatten()
                 .flat_map(|s| s.consumes.iter().chain(s.emits.iter())),
-        );
+        )
+        .chain(construct.supertypes.iter().flatten())
+        .chain(model_owner)
+        .chain(construct.declared_type.iter())
+        .chain(construct.interface_type.iter())
+        .chain(construct.source_end.iter().map(|end| &end.type_ref))
+        .chain(construct.target_end.iter().map(|end| &end.type_ref))
+        .chain(construct.source_element.iter())
+        .chain(construct.target_element.iter());
     if let Some(target) = type_refs.into_iter().find(|t| !lowered.contains(*t)) {
         return Some(format!(
-            "a transition or step names the type {target}, which lowers to nothing"
+            "a transition, step or reference member names the type {target}, which lowers to nothing"
         ));
     }
     if item.owner_from_model {

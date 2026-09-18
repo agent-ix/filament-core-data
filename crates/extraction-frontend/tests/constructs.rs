@@ -12,7 +12,8 @@ mod common;
 use agent_ix_extraction_frontend::constructs::{Direction, FlowDirection};
 use agent_ix_extraction_frontend::diagnostics::{Code, Diagnostic, WireCode};
 use agent_ix_extraction_frontend::{
-    extract, lower_bundle, resolve, Bundle, Extractions, LiftOutcome, Limits, Lowered,
+    extract, lift, lower_bundle, resolve, Bundle, Extractions, LiftOutcome, LiftRequest, Limits,
+    Lowered,
 };
 use agent_ix_semantic_ir::json::parse as parse_json;
 use agent_ix_semantic_ir::{decide, ResultState};
@@ -1192,29 +1193,36 @@ fn lower_mutated(mutate: impl Fn(&mut Extractions)) -> Lowered {
     lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0")
 }
 
+/// The module roots [`lower_systems`] and its callers' own [`LiftRequest`]s
+/// both load: the business fixture's own construct kinds, the shared edge
+/// vocabulary, and the vendored `spec-objects-architecture` (the
+/// systems-model kinds `part`, `port`, `connection`, `allocation` and
+/// `interface`).
+fn systems_module_roots() -> Vec<PathBuf> {
+    vec![business_module(), edge_vocabulary(), soa_module()]
+}
+
 /// The business fixture plus the vendored `spec-objects-architecture`
-/// module (the systems-model kinds `part`, `port`, `connection`,
-/// `allocation` and `interface`), with the files `write` adds under
-/// `spec/functional/`, loaded, extracted, resolved and lowered under all
-/// three modules. FCD-local: no bundle fixture depends on this module set.
-fn lower_systems(write: impl FnOnce(&Path)) -> Lowered {
+/// module, with the files `write` adds under `spec/functional/`, loaded,
+/// extracted, resolved and lowered under all three modules (FCD-local: no
+/// bundle fixture depends on this module set). Returns the scratch
+/// directory and the bundle root alongside the lowered result, so a caller
+/// can also run the same bundle through [`lift`] (the full FR-097/FR-050
+/// pipeline, not only `lower_bundle`'s Rust structs) before it is dropped.
+fn lower_systems(write: impl FnOnce(&Path)) -> (tempfile::TempDir, PathBuf, Lowered) {
     let dir = tempfile::tempdir().expect("tempdir");
     let root = dir.path().join("business");
     copy_tree(&fixture("business"), &root);
     write(&root.join("spec/functional"));
-    let bundle = Bundle::load(
-        &root,
-        &[
-            business_module().as_path(),
-            edge_vocabulary().as_path(),
-            soa_module().as_path(),
-        ],
-    )
-    .unwrap_or_else(|r| panic!("{} refused: {r}", root.display()));
+    let module_roots = systems_module_roots();
+    let module_paths: Vec<&Path> = module_roots.iter().map(PathBuf::as_path).collect();
+    let bundle = Bundle::load(&root, &module_paths)
+        .unwrap_or_else(|r| panic!("{} refused: {r}", root.display()));
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0")
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    (dir, root, lowered)
 }
 
 /// Transition `index` of `SM_001`, as the engine recorded it.
@@ -1674,7 +1682,7 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
         .map(|d| d.message.as_str())
         .collect();
     let event_rule = format!(
-        "artifact SM_001 (spec/functional/SM_001-order-lifecycle.md) lowers to no `state_machine` construct: a transition or step names the type {}, which lowers to nothing",
+        "artifact SM_001 (spec/functional/SM_001-order-lifecycle.md) lowers to no `state_machine` construct: a transition, step or reference member names the type {}, which lowers to nothing",
         type_ref("EV_001")
     );
     assert!(messages.contains(&event_rule.as_str()), "{messages:#?}");
@@ -1747,41 +1755,75 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
 /// construct kind (they default to `optional`, FR-142), so once this
 /// frontend lowers them, an artifact carrying either succeeds rather than
 /// joining [`tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact`]'s
-/// refusal cases.
+/// refusal cases. Both shapes carry both members at once, each `specializes`
+/// edge naming a target of the same object kind (`VO_001`'s new `VO_002`,
+/// `EN_001`'s new `EN_002`), so this also demonstrates `supertypes` and
+/// `abstract` are independent members, not one gating the other.
 #[trace("TC-1799", "FR-143-AC-10")]
 #[test]
 fn tc_1799_a_specializes_edge_and_an_abstract_flag_lower_to_supertypes_and_abstract() {
-    let generalized = lower_edited("spec/functional/VO_001-order-line.md", |t| {
-        t.replace(
+    let dir = tempfile::tempdir().expect("tempdir");
+    let root = dir.path().join("business");
+    copy_tree(&fixture("business"), &root);
+    let functional = root.join("spec/functional");
+
+    fs::write(
+        functional.join("VO_002-order-line-variant.md"),
+        "---\nid: VO_002\ntitle: Order Line Variant\nobject: value_object\ntype: FR\n\
+         name: OrderLineVariant\n---\n\n# VO_002: Order Line Variant\n\n\
+         ## Description\n\nA same-kind `specializes` target for `VO_001`.\n\n\
+         ## Properties\n\n| Field | Type | Multiplicity | Constraints |\n\
+         |-------|------|--------------|-------------|\n\
+         | sku | String | 1 | pattern: /^[A-Z0-9-]+$/ |\n",
+    )
+    .expect("write VO_002");
+    fs::write(
+        functional.join("EN_002-order-status-variant.md"),
+        "---\nid: EN_002\ntitle: Order Status Variant\nobject: enumeration\ntype: FR\n\
+         name: OrderStatusVariant\n---\n\n# EN_002: Order Status Variant\n\n\
+         ## Values\n\n| Value | Description |\n|-------|-------------|\n\
+         | draft | Not yet placed |\n",
+    )
+    .expect("write EN_002");
+
+    let vo_path = functional.join("VO_001-order-line.md");
+    let vo_text = fs::read_to_string(&vo_path).expect("read VO_001");
+    let vo_edited = vo_text
+        .replacen("type: FR\n", "type: FR\nabstract: true\n", 1)
+        .replace(
             "relationships:\n",
-            "relationships:\n  - target: EN_001\n    type: specializes\n",
-        )
-    });
-    assert!(
-        refusals(&generalized).is_empty(),
-        "{:#?}",
-        generalized.diagnostics
+            "relationships:\n  - target: VO_002\n    type: specializes\n",
+        );
+    assert_ne!(vo_edited, vo_text, "VO_001: the edit changes nothing");
+    fs::write(&vo_path, vo_edited).expect("write VO_001");
+
+    let en_path = functional.join("EN_001-order-status.md");
+    let en_text = fs::read_to_string(&en_path).expect("read EN_001");
+    let en_edited = en_text.replacen(
+        "type: FR\n",
+        "type: FR\nabstract: true\nrelationships:\n  - target: EN_002\n    type: specializes\n",
+        1,
     );
-    let vo = generalized
+    assert_ne!(en_edited, en_text, "EN_001: the edit changes nothing");
+    fs::write(&en_path, en_edited).expect("write EN_001");
+
+    let lowered = lower(&root);
+    assert!(refusals(&lowered).is_empty(), "{:#?}", lowered.diagnostics);
+
+    let vo = lowered
         .types
         .iter()
         .find(|t| t.identity == type_ref("VO_001"))
         .expect("VO_001");
-    assert_eq!(vo.construct.supertypes, Some(vec![type_ref("EN_001")]));
+    assert_eq!(vo.construct.supertypes, Some(vec![type_ref("VO_002")]));
+    assert_eq!(vo.construct.is_abstract, Some(true));
 
-    let abstract_type = lower_edited("spec/functional/EN_001-order-status.md", |t| {
-        t.replacen("type: FR\n", "type: FR\nabstract: true\n", 1)
-    });
-    assert!(
-        refusals(&abstract_type).is_empty(),
-        "{:#?}",
-        abstract_type.diagnostics
-    );
-    let en = abstract_type
+    let en = lowered
         .types
         .iter()
         .find(|t| t.identity == type_ref("EN_001"))
         .expect("EN_001");
+    assert_eq!(en.construct.supertypes, Some(vec![type_ref("EN_002")]));
     assert_eq!(en.construct.is_abstract, Some(true));
 }
 
@@ -1794,34 +1836,27 @@ fn tc_1799_a_specializes_edge_and_an_abstract_flag_lower_to_supertypes_and_abstr
 /// engine's own structured extraction, never from a kind name. The engine
 /// resolves each reference member to its own `ix://` identity rather than
 /// handing back the bare id a table cell carries, so the frontend recovers
-/// the bare id before admitting it by role; `SP_000` and `SP_001` own each
-/// other (never a part naming itself, which the engine itself refuses) and
-/// `SA_001` allocates a plain port reference, so quire-rs#461's now-fixed
-/// too-narrow `CellRole::kinds` shapes are not exercised here.
+/// the bare id before admitting it by role. `SP_001`'s owner is `VO_001`, a
+/// composite type, not another part (FR-152: a Part's owner is the owning
+/// composite, never kind-restricted to `part`); `SA_001` allocates a plain
+/// port reference, never the engine's member-qualified `<id>/<operation>`
+/// source form (quire-rs#461/#462, which this frontend does not resolve).
+/// The lowered bundle is also lifted end to end (FR-097) and its document
+/// read back by both the Rust and FR-050 node readers, so this exercises the
+/// full pipeline `lower_bundle`'s Rust structs alone do not.
 #[trace("TC-1800", "FR-143-AC-11")]
 #[test]
 fn tc_1800_the_five_systems_kinds_lower_their_members_from_the_engines_extraction() {
     let files: &[(&str, &str)] = &[
         (
-            "SP_000-sys-outer-part.md",
-            "---\nid: SP_000\ntitle: SP_000\ntype: part\nobject: part\n---\n\n\
-             # SP_000: SP_000\n\n## Description\n\n\
-             A systems part, owned by `SP_001`, typed by `VO_001`. `SP_000`\n\
-             and `SP_001` own each other rather than either owning itself,\n\
-             since the engine refuses a part naming itself as owner; each\n\
-             owner is still kind `part`, satisfying the engine's own\n\
-             `CellRole::PartOwner` kind check (quire-rs#461) without\n\
-             depending on the fix.\n\n\
-             ## Part\n\n| Owner | Declared Type | Multiplicity |\n|---|---|---|\n\
-             | SP_001 | VO_001 | 1..1 |\n",
-        ),
-        (
             "SP_001-sys-part.md",
             "---\nid: SP_001\ntitle: SP_001\ntype: part\nobject: part\n---\n\n\
              # SP_001: SP_001\n\n## Description\n\n\
-             A systems part, owned by `SP_000`, typed by `VO_001`.\n\n\
+             A systems part, owned by the composite type `VO_001`, typed by\n\
+             `VO_001` (FR-152: a part's owner is any owning composite type,\n\
+             never kind-restricted to `part`).\n\n\
              ## Part\n\n| Owner | Declared Type | Multiplicity |\n|---|---|---|\n\
-             | SP_000 | VO_001 | 1..1 |\n",
+             | VO_001 | VO_001 | 1..1 |\n",
         ),
         (
             "SI_001-flow-interface.md",
@@ -1869,7 +1904,7 @@ fn tc_1800_the_five_systems_kinds_lower_their_members_from_the_engines_extractio
              ## Allocation\n\n| Source | Target |\n|---|---|\n| SP_002 | SP_001 |\n",
         ),
     ];
-    let lowered = lower_systems(|dir| {
+    let (_scratch, root, lowered) = lower_systems(|dir| {
         for (name, content) in files {
             fs::write(dir.join(name), content).expect("write");
         }
@@ -1883,11 +1918,9 @@ fn tc_1800_the_five_systems_kinds_lower_their_members_from_the_engines_extractio
             .find(|t| t.identity == type_ref(id))
             .unwrap_or_else(|| panic!("no type {id}"))
     };
-    let outer_part = ty("SP_000");
-    assert_eq!(outer_part.construct.owner, Some(type_ref("SP_001")));
 
     let part = ty("SP_001");
-    assert_eq!(part.construct.owner, Some(type_ref("SP_000")));
+    assert_eq!(part.construct.owner, Some(type_ref("VO_001")));
     assert_eq!(part.construct.declared_type, Some(type_ref("VO_001")));
     assert_eq!(
         part.construct.multiplicity.as_ref().map(|m| m.lower),
@@ -1904,15 +1937,33 @@ fn tc_1800_the_five_systems_kinds_lower_their_members_from_the_engines_extractio
     assert_eq!(port_out.construct.owner, Some(type_ref("SP_001")));
     assert_eq!(port_out.construct.direction, Some(Direction::Out));
     assert_eq!(port_out.construct.interface_type, Some(type_ref("SI_001")));
+    assert_eq!(
+        port_out.construct.multiplicity.as_ref().map(|m| m.lower),
+        Some(1)
+    );
 
     let port_in = ty("SP_003");
     assert_eq!(port_in.construct.direction, Some(Direction::In));
+    assert_eq!(
+        port_in.construct.multiplicity.as_ref().map(|m| m.lower),
+        Some(1)
+    );
 
     let connection = ty("SC_001");
     let source_end = connection.construct.source_end.as_ref().expect("sourceEnd");
     assert_eq!(source_end.type_ref, type_ref("SP_002"));
+    assert_eq!(
+        source_end.multiplicity.as_ref().map(|m| m.lower),
+        Some(1),
+        "{source_end:?}"
+    );
     let target_end = connection.construct.target_end.as_ref().expect("targetEnd");
     assert_eq!(target_end.type_ref, type_ref("SP_003"));
+    assert_eq!(
+        target_end.multiplicity.as_ref().map(|m| m.lower),
+        Some(1),
+        "{target_end:?}"
+    );
     assert_eq!(
         connection.construct.flow_direction,
         Some(FlowDirection::SourceToTarget)
@@ -1926,6 +1977,225 @@ fn tc_1800_the_five_systems_kinds_lower_their_members_from_the_engines_extractio
     assert_eq!(
         allocation.construct.target_element,
         Some(type_ref("SP_001"))
+    );
+
+    // The same bundle, lifted end to end (FR-097) rather than only lowered
+    // to Rust structs, so the document both readers see is exercised too.
+    let out_dir = tempfile::tempdir().expect("tempdir");
+    let request = LiftRequest {
+        bundle_root: root,
+        module_roots: systems_module_roots(),
+        out: out_dir.path().join("semantic-ir.json"),
+        diagnostics: None,
+        provenance: None,
+    };
+    let outcome = lift(&request);
+    let LiftOutcome::Written { document, .. } = outcome else {
+        panic!("{outcome:?}");
+    };
+    let document: Value = serde_json::from_slice(&document).expect("document parses");
+    assert!(rust_codes(&document).is_empty(), "{document}");
+    assert!(node_codes(&document).is_empty(), "{document}");
+}
+
+/// A pair of `part` artifacts owning each other (both kind `part`, so
+/// neither trips quire-rs#461's still-open `CellRole::PartOwner` kind
+/// restriction, and neither names itself, which the engine refuses in its
+/// own right): a legitimate owner for a scenario that needs one but is not
+/// itself testing ownership.
+fn systems_part_pair() -> [(&'static str, &'static str); 2] {
+    [
+        (
+            "SP_900-sys-helper-part-a.md",
+            "---\nid: SP_900\ntitle: SP_900\ntype: part\nobject: part\n---\n\n\
+             # SP_900: SP_900\n\n## Description\n\nA helper part, owned by `SP_901`.\n\n\
+             ## Part\n\n| Owner | Declared Type | Multiplicity |\n|---|---|---|\n\
+             | SP_901 | VO_001 | 1..1 |\n",
+        ),
+        (
+            "SP_901-sys-helper-part-b.md",
+            "---\nid: SP_901\ntitle: SP_901\ntype: part\nobject: part\n---\n\n\
+             # SP_901: SP_901\n\n## Description\n\nA helper part, owned by `SP_900`.\n\n\
+             ## Part\n\n| Owner | Declared Type | Multiplicity |\n|---|---|---|\n\
+             | SP_900 | VO_001 | 1..1 |\n",
+        ),
+    ]
+}
+
+/// FR-143-AC-11 continued: a systems reference member (here a part's
+/// `declaredType`) is re-checked in [`crate::constructs::refusal_rule`]'s
+/// fixed point the same as a transition's or step's `emits`/`consumes`, so
+/// naming an artifact the fixed point later refuses for an unrelated reason
+/// (`EV_001`, refused for its own occurrence-field rule, not for anything
+/// about the part naming it) cascades the refusal to the part, rather than
+/// the part's `owner_from_model` early return skipping the check. `SP_004`'s
+/// own `owner` is [`systems_part_pair`]'s `SP_900`, kept clear of
+/// quire-rs#461, so `declaredType` is the only thing under test.
+#[trace("TC-1800", "FR-143-AC-11")]
+#[test]
+fn tc_1800_a_systems_reference_member_naming_a_since_refused_type_cascades_the_refusal() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let root = dir.path().join("business");
+    copy_tree(&fixture("business"), &root);
+    let event_path = root.join("spec/functional/EV_001-order-placed.md");
+    let event_text = fs::read_to_string(&event_path).expect("read EV_001");
+    let edited = event_text.replace(
+        "| placedAt | Timestamp | 1 | |",
+        "| placedAt | Timestamp | 1 | |\n| paidAt | Timestamp | 1 | |",
+    );
+    assert_ne!(edited, event_text, "EV_001: the edit changes nothing");
+    fs::write(&event_path, edited).expect("write EV_001");
+    for (name, content) in systems_part_pair() {
+        fs::write(root.join("spec/functional").join(name), content).expect("write helper part");
+    }
+    fs::write(
+        root.join("spec/functional/SP_004-sys-part-typed-by-refused.md"),
+        "---\nid: SP_004\ntitle: SP_004\ntype: part\nobject: part\n---\n\n\
+         # SP_004: SP_004\n\n## Description\n\n\
+         A systems part, owned by `SP_900`, typed by `EV_001`: `EV_001` is\n\
+         refused by the time the fixed point settles, so this part's\n\
+         `declaredType` cascades the refusal rather than lowering.\n\n\
+         ## Part\n\n| Owner | Declared Type | Multiplicity |\n|---|---|---|\n\
+         | SP_900 | EV_001 | 1..1 |\n",
+    )
+    .expect("write SP_004");
+    let module_roots = systems_module_roots();
+    let module_paths: Vec<&Path> = module_roots.iter().map(PathBuf::as_path).collect();
+    let bundle = Bundle::load(&root, &module_paths)
+        .unwrap_or_else(|r| panic!("{} refused: {r}", root.display()));
+    let extractions = extract(&bundle);
+    let resolutions = resolve(&bundle, &extractions);
+    let limits = Limits::declared().expect("limits.json parses");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+
+    let messages: Vec<&str> = refusals(&lowered)
+        .iter()
+        .map(|d| d.message.as_str())
+        .collect();
+    assert!(
+        messages
+            .iter()
+            .any(|m| m.starts_with("artifact EV_001 ") && m.contains("2 Timestamp fields")),
+        "{messages:#?}"
+    );
+    let cascade_rule = format!(
+        "artifact SP_004 (spec/functional/SP_004-sys-part-typed-by-refused.md) lowers to no `part` construct: a transition, step or reference member names the type {}, which lowers to nothing",
+        type_ref("EV_001")
+    );
+    assert!(messages.contains(&cascade_rule.as_str()), "{messages:#?}");
+    assert!(refusals(&lowered).iter().all(|d| d.blocking));
+}
+
+/// FR-143-AC-11 continued: an `owner`/`source`/`target` reference cell
+/// resolves under quire-rs `semantic::target::resolve_target` (`TableRead::
+/// reference`), which admits an `ix://<org>/<repo>/<id>` cell naming a
+/// package the loading module declares as an import (`Target::Imported`,
+/// its own object type unknown to the engine). This frontend refuses that
+/// identity by its full text, never rebinding it to a local artifact of the
+/// same bare id: `ix://acme/other/SP_001` never resolves to this bundle's
+/// own local `SP_001`. The vendored SOA module declares no import on its
+/// own, so this uses an edited copy declaring one, the same way TC-1801
+/// edits a copy to relax a locator.
+#[trace("TC-1800", "FR-143-AC-11")]
+#[test]
+fn tc_1800_a_systems_reference_member_naming_an_imported_identity_is_refused() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let module = dir.path().join("spec-objects-architecture");
+    copy_tree(&soa_module(), &module);
+    let manifest = module.join("manifest.yaml");
+    let text = fs::read_to_string(&manifest).expect("manifest");
+    let edited = text.replacen(
+        "  imports: {}\n",
+        "  imports: { acme/other: \"1.0.0\" }\n",
+        1,
+    );
+    assert_ne!(edited, text, "the SOA module declares no import");
+    fs::write(&manifest, edited).expect("write manifest");
+
+    let root = dir.path().join("business");
+    copy_tree(&fixture("business"), &root);
+    fs::write(
+        root.join("spec/functional/SP_005-sys-part-imported-owner.md"),
+        "---\nid: SP_005\ntitle: SP_005\ntype: part\nobject: part\n---\n\n\
+         # SP_005: SP_005\n\n## Description\n\n\
+         A systems part whose owner cell names an identity in a package the\n\
+         module imports (`ix://acme/other/SP_001`), never the bundle's own\n\
+         local `SP_001` of the same bare id.\n\n\
+         ## Part\n\n| Owner | Declared Type | Multiplicity |\n|---|---|---|\n\
+         | ix://acme/other/SP_001 | VO_001 | 1..1 |\n",
+    )
+    .expect("write SP_005");
+    let bundle = Bundle::load(
+        &root,
+        &[
+            business_module().as_path(),
+            edge_vocabulary().as_path(),
+            module.as_path(),
+        ],
+    )
+    .unwrap_or_else(|r| panic!("{} refused: {r}", root.display()));
+    let extractions = extract(&bundle);
+    let resolutions = resolve(&bundle, &extractions);
+    let limits = Limits::declared().expect("limits.json parses");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+
+    assert_refused(
+        &lowered,
+        "SP_005",
+        "a systems `part` row names `ix://acme/other/SP_001`, which is the artifact id of no type of the bundle the construct's owner admit",
+    );
+}
+
+/// FR-143-AC-11 continued: the engine's own member-qualified
+/// `<id>/<operation>` allocation-source form (quire-rs `TableRead::
+/// reference`'s member append, admitted for a `Source` cell only, and only
+/// over a local `interface` artifact — quire-rs#461/#462) is refused by its
+/// full identity, never mis-extracted as the bare id `run` or `SI_001`:
+/// this frontend does not resolve an allocation source naming an operation.
+/// The target is [`systems_part_pair`]'s `SP_900`, so only the source's
+/// member-qualified form is under test.
+#[trace("TC-1800", "FR-143-AC-11")]
+#[test]
+fn tc_1800_an_allocation_source_naming_an_operation_is_refused_by_its_full_identity() {
+    let (_scratch, _root, lowered) = lower_systems(|dir| {
+        for (name, content) in systems_part_pair() {
+            fs::write(dir.join(name), content).expect("write helper part");
+        }
+        fs::write(
+            dir.join("SI_002-flow-interface-b.md"),
+            "---\nid: SI_002\ntitle: SI_002\ntype: interface\nobject: interface\n---\n\n\
+             # SI_002: SI_002\n\n## Description\n\nA second interface: one field, `rate`.\n\n\
+             ## Properties\n\n| Field | Type | Multiplicity | Constraints |\n\
+             |-------|------|--------------|-------------|\n| rate | String | 1 | |\n\n\
+             ## Contract\n\n```yaml\nname: SI_002\nfields:\n  - name: rate\n\
+             \x20\x20\x20 type: String\n    multiplicity: 1..1\noperations: []\n\
+             featureOrder: [rate]\n```\n\n## Features\n\n| Feature | Kind |\n|---|---|\n\
+             | rate | field |\n",
+        )
+        .expect("write SI_002");
+        fs::write(
+            dir.join("SA_002-alloc-operation-source.md"),
+            "---\nid: SA_002\ntitle: SA_002\ntype: allocation\nobject: allocation\n---\n\n\
+             # SA_002: SA_002\n\n## Description\n\n\
+             An allocation whose source names an operation on the interface\n\
+             `SI_002` (the engine's member-qualified `<id>/<operation>` form,\n\
+             quire-rs#461/#462), which this frontend refuses rather than\n\
+             resolving.\n\n\
+             ## Allocation\n\n| Source | Target |\n|---|---|\n\
+             | SI_002/run | SP_900 |\n",
+        )
+        .expect("write SA_002");
+    });
+
+    let sa_002 = lowered
+        .diagnostics
+        .iter()
+        .find(|d| d.message.starts_with("artifact SA_002 "))
+        .unwrap_or_else(|| panic!("no SA_002 diagnostic: {:#?}", lowered.diagnostics));
+    assert!(
+        sa_002.message.contains("SI_002/run"),
+        "the refusal names the allocation source's full identity: {}",
+        sa_002.message
     );
 }
 
