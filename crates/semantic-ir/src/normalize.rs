@@ -1,14 +1,23 @@
 //! The corpus comparison form of an IR document.
 //!
-//! `spec/functional/FR-036` fixes it: "a `1.1.0` document materializes
-//! `multiplicity`, `presence`, and `nullable` on every field and operation
-//! parameter, and a `1.0.0` document gains no member", serialized in
-//! `agent-ix-conformance-jcs-v1`.
+//! `spec/functional/FR-036` fixes it (fcd#179: restated for contract `2.0.0`,
+//! the only contract left, in place of the deleted `1.0.0`/`1.1.0` split):
+//! "a `2.0.0` document materializes `multiplicity`, `presence`, and
+//! `nullable` on every field and operation parameter that lacks one, with
+//! `presence` kept exactly as authored rather than derived (FR-106), so a
+//! well-formed `2.0.0` document — whose schema already requires all three on
+//! every field — gains no member", serialized in `agent-ix-conformance-jcs-v1`.
 //!
-//! `spec/functional/FR-027` fixes the derivation each materialized member takes:
-//! "`required` → `1..1`, `optional` → `0..1`" for an absent multiplicity, and
-//! "`presence` as `required` when `multiplicity.lower` is at least 1 and
-//! `optional` when it is 0" the other way.
+//! `spec/functional/FR-027` fixes the derivation each materialized member takes
+//! for a document that lacks one: "`required` → `1..1`, `optional` → `0..1`"
+//! for an absent multiplicity, and "`presence` as `required` when
+//! `multiplicity.lower` is at least 1 and `optional` when it is 0" the other
+//! way.
+//!
+//! `matches!(version, Some("1.1.0" | "2.0.0"))` below still matches a
+//! schema-bypassing `1.1.0`-tagged document defensively: `normalized` runs on
+//! every case, including one the schema layer already rejected, and must
+//! never panic on a legacy-shaped document a corpus case might still supply.
 
 use crate::json::{to_canonical_string, Json};
 
@@ -191,6 +200,13 @@ mod tests {
     use super::normalized;
     use crate::json::parse;
 
+    /// fcd#179 deleted contracts `1.0.0` and `1.1.0`; no valid corpus case is
+    /// tagged either again. This test and the next one keep exercising
+    /// `normalized`'s two non-`2.0.0` branches directly, bypassing schema
+    /// validation the way `normalized` itself must tolerate (it runs even on
+    /// a bundle the schema layer already rejected, per its own doc comment),
+    /// rather than leaving `matches!(version, Some("1.1.0" | "2.0.0"))`'s
+    /// `"1.1.0"` arm with no test reaching it.
     #[test]
     fn tc_700_materializes_a_1_1_0_field() {
         let bundle = parse(
@@ -203,6 +219,9 @@ mod tests {
         );
     }
 
+    /// A `contractVersion` outside the `matches!` arm entirely (neither
+    /// `1.1.0` nor `2.0.0`) takes `normalized`'s other defensive branch: the
+    /// raw canonical form, unmaterialized.
     #[test]
     fn tc_700_adds_no_member_to_a_1_0_0_document() {
         let bundle = parse(

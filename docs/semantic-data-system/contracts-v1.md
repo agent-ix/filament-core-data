@@ -60,10 +60,14 @@ All identifiers below are rooted at
 | `consumer-policy.schema.json` | Dynamic/generated mode and preserve/reject/surface policy over one identity graph |
 
 Positive, negative, compatibility, representation, Markdown, package-graph, and
-legacy evidence is published under `fixtures/semantic/v1/`; `1.1.0` golden
+legacy evidence is published under `fixtures/semantic/v1/`; `2.0.0` golden
 documents, `negative/reader-cases.json` (cross-field rules a schema cannot
 express), and the `v1-fixture-digests.json` byte baseline sit beside them. A consumer can
 validate it using only these files and a JSON Schema 2020-12 implementation.
+A frozen `1.0.0` document (`semantic-ir.json`) and a frozen `1.1.0` document
+(`config-version-v1-1.json`) sit beside the golden documents as negative
+evidence (FR-094-CON-4): every reader refuses both, because `2.0.0` is the
+only contract a document may declare.
 
 ## Semantic model
 
@@ -85,21 +89,9 @@ Recursive references retain graph identity. Open and closed definitions declare
 whether unknowns are preserved, rejected, or surfaced; unknowns never become a
 known zero value.
 
-### Contract 1.1.0 (issue #34)
+### Structural model detail (issue #34)
 
-Contract `1.1.0` is additive to `1.0.0` and lives in the same schema file,
-discriminated by `contractVersion`. A `1.1.0` field carries an explicit
-`multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is
-unbounded) from which `presence` is derived, and may carry a UCUM `unit` when
-its `typeRef` resolves, through aliases, to a scalar. The normalized
-serialization materializes `multiplicity`, `presence`, and `nullable` on every
-`1.1.0` field and adds no bytes to a `1.0.0` document.
-
-Field presence is authored rather than derived in contract `2.0.0`
-([issue #93](https://github.com/agent-ix/filament-core-data/issues/93)):
-[FR-106](../../spec/functional/FR-106-author-field-presence-independently.md)
-states the rule that carries `Field.presence` as `required` or `optional`
-independently of `multiplicity`, `nullable`, and the default kind.
+The IR declares exactly one `contractVersion`, `2.0.0`; the schema admits no other value and refuses a document declaring one with `SCHEMA_VIOLATION` at `contractVersion` before any other member is read (FR-050). A field carries an explicit `multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is unbounded); its `presence` is authored independently ([FR-106](../../spec/functional/FR-106-author-field-presence-independently.md), [issue #93](https://github.com/agent-ix/filament-core-data/issues/93)), never derived from `multiplicity`, `nullable`, or the default kind, and `2.0.0` enforces no agreement between `presence` and `multiplicity.lower`: a required field with `lower: 0` and an optional field with `lower` at least `1` are both valid (FR-106-CON-1). `PRESENCE_MULTIPLICITY_MISMATCH` is frozen from contract `1.1.0`, where presence was authored but still checked against the derived value; no `2.0.0` document can trigger it. A field may carry a UCUM `unit` when its `typeRef` resolves, through aliases, to a scalar. Because the schema already requires `multiplicity`, `presence`, and `nullable` on every field, the normalized serialization carries them as authored rather than deriving or filling in a default.
 
 A record type definition carries first-class `relationships[]` (verb, FR-040
 category, `composite` flag, target identity, multiplicity, origin),
@@ -116,8 +108,7 @@ none of the three is refused (ADR-0009).
 The constraint `keyword` is a closed set (`min`, `max`, `exclusiveMin`,
 `exclusiveMax`, `pattern`, `minLength`, `maxLength`, `enumValues`, `nonEmpty`,
 `unique`, `format`) with typed operands per keyword and an applicability table
-over the resolved kind. In a `1.1.0` document `source.dialect` is `typespec` or
-`spec-bundle`; the JSON Schema draft URI is the `1.0.0` constant only. Manifest
+over the resolved kind. `source.dialect` is `typespec` or `spec-bundle`. Manifest
 targets bind to the declared registry: generated targets or representation
 formats, each defined once in `common.schema.json`. The worked example
 `fixtures/semantic/v1/positive/config-version-v1-1.json` lifts config-service
@@ -244,19 +235,22 @@ filament-core-data#94.
 
 ### Contract 2.0.0 (issues #93, #146 and #172)
 
-Contract `2.0.0` extends `1.1.0` with model members and construct kinds
-declared as module data ([ADR-0011](adr/0011-domain-packages-construct-kinds-are-module-data.md)).
-A `1.1.0` document carrying any node this section adds is refused with
-`SCHEMA_VIOLATION`.
+Contract `2.0.0` carries model members and construct kinds declared as module
+data ([ADR-0011](adr/0011-domain-packages-construct-kinds-are-module-data.md)),
+beside the structural model [Structural model detail (issue #34)](#structural-model-detail-issue-34)
+states.
 
 **Unconstrained value.** The scalar `any` is an unconstrained JSON value:
 number, string, boolean, null, array or object. It is never a zero-field
 record, whose meaning is *any JSON object*.
 
 **Presence.** `Field.presence` is authored and independent of
-`multiplicity`. `PRESENCE_MULTIPLICITY_MISMATCH` applies to `1.0.0` and
-`1.1.0` documents only. Normalization materializes absent multiplicity and
-nullable values and keeps the authored presence.
+`multiplicity`; neither is derived from the other, and `2.0.0` enforces no
+cross-field agreement between them (FR-106). `PRESENCE_MULTIPLICITY_MISMATCH`
+is frozen from contract `1.1.0` and never fires for a `2.0.0` document.
+Because the schema requires `multiplicity`, `presence`, and `nullable` on
+every field, normalization carries them as authored rather than deriving or
+filling in a default.
 
 **Model members.**
 
