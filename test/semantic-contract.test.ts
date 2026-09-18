@@ -64,10 +64,11 @@ function clone<T>(value: T): T {
  */
 const VOCABULARY_IR: JsonObject = {
 	contractVersion: "2.0.0",
+	constructs: [],
 	source: {
 		identity: "ix://agent-ix/filament-core-data/source/core",
 		version: "1.0.0",
-		dialect: "https://json-schema.org/draft/2020-12/schema",
+		dialect: "typespec",
 		digest:
 			"sha256:0000000000000000000000000000000000000000000000000000000000000000",
 	},
@@ -129,6 +130,7 @@ const VOCABULARY_IR: JsonObject = {
 					identity: "ix://agent-ix/assurance/field/artifact-id",
 					name: "id",
 					typeRef: "ix://agent-ix/assurance/type/ArtifactId",
+					multiplicity: { lower: 1, upper: 1 },
 					presence: "required",
 					nullable: false,
 					defaultKind: "none",
@@ -146,6 +148,7 @@ const VOCABULARY_IR: JsonObject = {
 					identity: "ix://agent-ix/assurance/field/summary",
 					name: "summary",
 					typeRef: "ix://agent-ix/assurance/type/Text",
+					multiplicity: { lower: 0, upper: 1 },
 					presence: "optional",
 					nullable: false,
 					defaultKind: "none",
@@ -163,6 +166,7 @@ const VOCABULARY_IR: JsonObject = {
 					identity: "ix://agent-ix/assurance/field/note",
 					name: "note",
 					typeRef: "ix://agent-ix/assurance/type/Text",
+					multiplicity: { lower: 1, upper: 1 },
 					presence: "required",
 					nullable: true,
 					defaultKind: "semantic",
@@ -310,7 +314,8 @@ const VOCABULARY_IR: JsonObject = {
 			roles: [],
 			origin: {
 				generated: {
-					generatorIdentity: "ix://agent-ix/filament-core-data/generator/example",
+					generatorIdentity:
+						"ix://agent-ix/filament-core-data/generator/example",
 					generatorVersion: "1.0.0",
 					inputIdentities: ["ix://agent-ix/assurance/type/Artifact"],
 				},
@@ -584,13 +589,17 @@ describe("semantic package contract v1", () => {
 	 * Traces: TC-132, TC-133, TC-135, TC-136, TC-137, TC-138, TC-139, TC-140.
 	 * fcd#179 deleted contracts `1.0.0` and `1.1.0`, and with them the
 	 * `semantic-ir.json` fixture that used to carry all eight structural
-	 * kinds; `VOCABULARY_IR` is that fixture's exact content, inline, with
-	 * `contractVersion` moved to `2.0.0`. This test does not assert that it
-	 * validates against the current schema; it asserts the vocabulary
-	 * shape, which is orthogonal to that.
+	 * kinds; `VOCABULARY_IR` is that fixture's shape, carried inline, ported
+	 * to `2.0.0`: `constructs` and every field's `multiplicity` added, and
+	 * `source.dialect` moved from the deleted `1.0.0` JSON Schema draft URI
+	 * to the published `typespec` dialect. It validates against the current
+	 * schema (asserted below), so dropping a structural kind such as `alias`
+	 * or `map` from the schema fails this test, not only the vocabulary
+	 * assertions that follow.
 	 */
 	it("validates the IR type vocabulary, stable identities, origins, and explicit value states", () => {
 		const ir = object(clone(VOCABULARY_IR), "semantic IR");
+		expect(validates("semantic-ir.schema.json", ir)).toBe(true);
 		const types = array(ir.types, "IR types").map((value) =>
 			object(value, "type"),
 		);
@@ -1098,10 +1107,7 @@ describe("semantic package contract v1", () => {
 			policies.find((policy) => policy.mode === "generated")?.unknownModules,
 		).toBe("surface");
 		const sharedValue = object(
-			array(
-				object(clone(VOCABULARY_IR), "IR").occurrences,
-				"occurrences",
-			)[0],
+			array(object(clone(VOCABULARY_IR), "IR").occurrences, "occurrences")[0],
 			"occurrence",
 		).value;
 		expect(fingerprint(sharedValue)).toBe(
