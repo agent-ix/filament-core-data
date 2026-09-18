@@ -54,7 +54,7 @@ object and an optional `unit`.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-027-AC-1 | A field declared `0..1` validates, derives `presence: optional`, and re-serializes byte-identically through the normalized form. | Test |
+| FR-027-AC-1 | A field declared `multiplicity: {lower: 0, upper: 1}` with `presence: optional` authored explicitly validates and re-serializes byte-identically through the normalized form; the same field with `presence` omitted fails validation, since `presence` is schema-required and never derived from `multiplicity`. | Test |
 | FR-027-AC-2 | A field declared `1..*` with `ordered: true` and `unique: true` validates and preserves both flags. | Test |
 | FR-027-AC-4 | A field with `upper < lower` fails validation with the field's locus. | Test |
 | FR-027-AC-5 | A scalar field with `unit: "s"` validates; the same unit on a record-typed field fails. | Test |

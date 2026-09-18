@@ -767,10 +767,10 @@ def _by_identity(items: Any) -> dict[str, dict[str, Any]]:
 
 def _lower_bound(field: dict[str, Any]) -> int:
     multiplicity = field.get("multiplicity")
-    if not isinstance(multiplicity, dict):
-        multiplicity = reader.multiplicity_from_presence(field.get("presence"))
-    lower = multiplicity.get("lower")
-    return lower if isinstance(lower, int) else 1
+    if isinstance(multiplicity, dict):
+        lower = multiplicity.get("lower")
+        return lower if isinstance(lower, int) else 1
+    return 0 if field.get("presence") == "optional" else 1
 
 
 def _preserves_unknown(policy: Any) -> bool:

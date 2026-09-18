@@ -99,12 +99,6 @@ export function resolveKind(
 	};
 }
 
-export function multiplicityFromPresence(presence: unknown): Multiplicity {
-	return presence === "optional"
-		? { lower: 0, upper: 1 }
-		: { lower: 1, upper: 1 };
-}
-
 function checkMultiplicity(
 	value: unknown,
 	path: string,

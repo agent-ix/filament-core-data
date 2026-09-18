@@ -183,13 +183,6 @@ export function resolveKind(types, typeRef, seen = new Set()) {
 	};
 }
 
-/** The presence-derived bound FR-027 documents; unused by the reader itself, which never derives `multiplicity` from `presence`. */
-export function multiplicityFromPresence(presence) {
-	return presence === "optional"
-		? { lower: 0, upper: 1 }
-		: { lower: 1, upper: 1 };
-}
-
 /**
  * Reads an IR document and returns its cross-field diagnostics.
  *

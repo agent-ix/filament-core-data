@@ -84,17 +84,15 @@ Rationale: quire-rs exposes no located per-document edge API, and
 declares `relations: RelationDecl[]`; the `## Relationships` bullet grammar
 exists in no contract (SR-166 FND-1463, SR-165 FND-1451). Parsing it here
 would be the second Markdown reading FR-091-CON-3 forbids. The hand-authored
-issue #34 fixture that once lived at
-`fixtures/semantic/v1/positive/config-version-v1-1.json`, no longer on disk,
-lifted the `parent` row as a `derives_from` relationship; this frontend emits `parent` as a field
-because it is a `## Properties` row. That fixture differed from this
-frontend's output in more than the `parent` node: its `belongs_to`
-relationship came from the removed `## Relationships` bullet grammar and its
-identity patterns predate FR-095, so its hand-verified values for the one
-relationship both documents share — `target` and `multiplicity` on the edge
-to `ConfigOverlay` — are pinned as literals in FR-094-AC-8's test rather than
-compared against the fixture node by node; the golden for this frontend is
-regenerated under FR-098.
+issue #34 fixture lifted the `parent` row as a `derives_from`
+relationship; this frontend emits `parent` as a field because it is a
+`## Properties` row. That fixture's `belongs_to` relationship came from the
+removed `## Relationships` bullet grammar and its identity patterns predate
+FR-095, so its hand-verified values for the one relationship both documents
+share — `target` and `multiplicity` on the edge to `ConfigOverlay` — are
+preserved only as FR-094-AC-8's pinned literals rather than as a fixture
+file compared node by node; the golden for this frontend is regenerated
+under FR-098.
 
 ## Constraints
 

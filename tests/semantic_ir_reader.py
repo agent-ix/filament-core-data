@@ -111,12 +111,6 @@ def resolve_kind(
     )
 
 
-def multiplicity_from_presence(presence: Any) -> dict[str, int]:
-    return (
-        {"lower": 0, "upper": 1} if presence == "optional" else {"lower": 1, "upper": 1}
-    )
-
-
 def _check_multiplicity(
     value: Any, path: str, out: list[dict[str, str]]
 ) -> dict[str, Any] | None:

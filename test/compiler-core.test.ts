@@ -88,7 +88,7 @@ import { schemaValidators } from "../src/compiler/schema-validate.mjs";
 import { changedPathsOf, changeRange } from "./changed-paths.js";
 import { isEdgeKind as readerEdgeKind } from "./semantic-ir-v1-1-reader";
 
-/** The `typeDefinition.kind` values of contract 1.0.0 and 1.1.0. */
+/** The core `typeDefinition.kind` values under contract `2.0.0`, distinct from construct kinds. */
 const CONTRACT_KINDS_BEFORE_CONSTRUCTS = [
 	"scalar",
 	"record",
@@ -3178,7 +3178,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		// `contractVersion`: a document with no multiplicity on a field still
 		// gains no derived one, and still gains a literal `nullable`.
 		const untagged = {
-			contractVersion: "1.0.0",
+			contractVersion: "2.0.0",
 			types: [
 				{
 					identity: "ix://a/b/type/T",

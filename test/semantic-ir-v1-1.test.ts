@@ -8,11 +8,7 @@ import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
 import { changedPathsOf } from "./changed-paths.js";
-import {
-	multiplicityFromPresence,
-	normalize,
-	readSemanticIr,
-} from "./semantic-ir-v1-1-reader";
+import { normalize, readSemanticIr } from "./semantic-ir-v1-1-reader";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const schemaRoot = resolve(root, "schema/semantic/v1");
@@ -655,22 +651,10 @@ describe("FR-027 field multiplicity and units", () => {
 	/**
 	 * Traces: TC-208; FR-027-AC-6.
 	 *
-	 * fcd#179 deleted contract 1.0.0, which let a field omit `multiplicity`
-	 * and have it silently derived from `presence`. `multiplicityFromPresence`
-	 * stays as `normalize`'s own defensive fallback for a document that
-	 * reaches it without having passed schema validation first, but the
-	 * schema itself now requires `multiplicity`, so an omission is a named
-	 * refusal rather than an accepted, derived value.
+	 * `multiplicity` is schema-required under contract `2.0.0`; a field that
+	 * omits it is a named refusal, never a value derived from `presence`.
 	 */
 	it("refuses a field without multiplicity rather than deriving it from presence", () => {
-		expect(multiplicityFromPresence("required")).toEqual({
-			lower: 1,
-			upper: 1,
-		});
-		expect(multiplicityFromPresence("optional")).toEqual({
-			lower: 0,
-			upper: 1,
-		});
 		expect(
 			negativeValidates("ir-v2-field-without-multiplicity").valid,
 			"2.0.0 requires it",
