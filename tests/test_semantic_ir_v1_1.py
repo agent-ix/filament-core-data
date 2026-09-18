@@ -95,10 +95,11 @@ class TestSecondReader:
         assert field["nullable"] is False
 
     def test_materializes_nullable_is_true_only_fcd_187(self) -> None:
-        """Criteria: FR-020-AC-7 (TC-1803) — fcd#187: `normalize`
-        materializes `nullable` to a literal boolean only where the
-        authored member `is True`, never by truthiness coercion.
-        `fixtures/semantic/v1/nullable-truthiness-cases.json` is
+        """TC-1803: FR-020-AC-7.
+
+        fcd#187: `normalize` materializes `nullable` to a literal boolean
+        only where the authored member `is True`, never by truthiness
+        coercion. `fixtures/semantic/v1/nullable-truthiness-cases.json` is
         the shared cross-language fixture the Rust (`normalize::tests`), the
         compiler frontend (`test/compiler-core.test.ts`), and the TypeScript
         backend (`test/typescript-backend.test.ts`) tests consume

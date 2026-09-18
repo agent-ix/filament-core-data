@@ -860,10 +860,10 @@ function identitySet(ir) {
  * `nullable` is `true` only where the authored member is the JSON literal
  * `true` (fcd#187): absent, `null`, `false`, a non-zero number, a non-empty
  * string, an array, or an object all materialize `false`. This is the same
- * `=== true` rule the Rust (`crates/semantic-ir/src/normalize.rs`), JS
- * (`src/compiler/ir/normalize.mjs`), TypeScript
- * (`src/compiler/backends/typescript-v1/canonical.mjs`), and Python
- * (`tests/semantic_ir_reader.py`) readers apply. A schema-valid `2.0.0`
+ * `=== true` rule the Rust reader (`crates/semantic-ir/src/normalize.rs`),
+ * the compiler frontend's `normalizeIr`, the TypeScript backend's
+ * `normalizeIrForTarget`, and the Python reader
+ * (`tests/semantic_ir_reader.py`) apply. A schema-valid `2.0.0`
  * document already requires `nullable` to be a JSON boolean, so this only has
  * visible effect on a document the schema layer has already rejected; `verdict`
  * still calls `normalize` on such a document because the harness compares

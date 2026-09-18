@@ -553,16 +553,29 @@ describe("TC-290..301 the oracle (FR-036)", () => {
 	});
 
 	it("TC-295 a well-formed 2.0.0 document's normalized form adds no member (fcd#179: contract 1.0.0 deleted, its case class ported to 2.0.0)", () => {
+		// fcd#187: PRES-011..015 author `nullable` as a non-boolean value (`1`,
+		// `"true"`, `null`, `{}`) or omit it, which the oracle's own
+		// materializeNullable forces to a literal boolean — the fix this issue
+		// makes, not a regression — so normalize() and canonical() genuinely
+		// diverge for exactly those cases. Every other negative or invalid
+		// 2.0.0 case authors `nullable` as an already-boolean literal (or omits
+		// the whole field/type the diagnostic targets, never `nullable`
+		// itself), so materializing it changes nothing and the equality this
+		// test asserts still holds for them.
+		const nullableIllFormed = (entry: Json): boolean =>
+			(
+				(entry.ops as { op: string; path: string; value?: unknown }[]) ?? []
+			).some(
+				(op) =>
+					op.path.endsWith("/nullable") &&
+					(op.op === "remove" ||
+						((op.op === "add" || op.op === "replace") &&
+							typeof op.value !== "boolean")),
+			);
 		let exercised = 0;
 		for (const entry of cases) {
 			if (entry.contractVersion !== "2.0.0") continue;
-			// fcd#187: "well-formed" means schema-valid. A case whose expected
-			// resultState is not `success` (e.g. PRES-011..015, a non-boolean or
-			// absent `nullable`) is deliberately ill-formed, and the oracle now
-			// materializes `nullable` on such a document, so normalize() and
-			// canonical() genuinely diverge for it; that is the fix, not a
-			// regression, and this test only asserts the well-formed case.
-			if ((entry.expected as Json).resultState !== "success") continue;
+			if (nullableIllFormed(entry)) continue;
 			const bundle = corpus.buildInput(entry) as { ir: Json };
 			expect(oracle.normalize(bundle.ir), String(entry.id)).toBe(
 				canonical(bundle.ir),
