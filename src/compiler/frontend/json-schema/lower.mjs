@@ -133,9 +133,11 @@ function diag(entry, message, locus_) {
  * `multiplicity` and the `presence` derived from it.
  *
  * `presence` is never stated independently: it is `required` exactly when
- * `lower >= 1`. The FR-050 reader re-derives the same relation and reports
- * `PRESENCE_MULTIPLICITY_MISMATCH`, so computing the two separately would be
- * asserting a fact the reader is about to check.
+ * `lower >= 1`. fcd#179 deleted `PRESENCE_MULTIPLICITY_MISMATCH`, the FR-050
+ * reader rule that used to re-derive the same relation and report a
+ * disagreement; contract `2.0.0` authors `presence` independently (FR-106)
+ * and this lowerer, having no authored presence to read from its JSON Schema
+ * source, still derives one so the emitted document carries a value.
  */
 export function multiplicityOf(schema, isRequired) {
 	if (schema && schema.type === "array") {
@@ -556,7 +558,7 @@ export function lowerBundle(documents, options = {}) {
 	if (out.length > 0) return { diagnostics: Object.freeze(out) };
 	return {
 		document: {
-			contractVersion: "1.1.0",
+			contractVersion: "2.0.0",
 			source: options.source ?? {
 				identity: "ix://agent-ix/semantic-core",
 				version: "0.2.0",
@@ -573,6 +575,7 @@ export function lowerBundle(documents, options = {}) {
 			},
 			occurrences: [],
 			extensions: [],
+			constructs: [],
 			types: types.sort((a, b) =>
 				String(a.name) < String(b.name)
 					? -1

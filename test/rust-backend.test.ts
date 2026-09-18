@@ -1876,8 +1876,7 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	 * diagnostic:agent-ix.semantic-ir.INVALID_OPERAND,
 	 * diagnostic:agent-ix.semantic-ir.UNDECLARED_LOSS,
 	 * diagnostic:agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION,
-	 * diagnostic:agent-ix.semantic-ir.UNRESOLVED_TYPE_REF,
-	 * diagnostic:agent-ix.semantic-ir.V1_1_NODE_IN_V1_0;
+	 * diagnostic:agent-ix.semantic-ir.UNRESOLVED_TYPE_REF;
 	 */
 	it("TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path", async () => {
 		await runDetectorCase(

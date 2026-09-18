@@ -158,13 +158,14 @@ function checkConstructs(document, definitions, raise, locusOf) {
 				);
 		}
 	});
-	if (document.contractVersion === "2.0.0")
-		for (const entry of entries)
-			if (!entry.used)
-				invalid(
-					entry.at,
-					`constructs declares ${entry.label}, and no type definition is of that kind`,
-				);
+	// `readContractIr` refuses any other contractVersion before this function
+	// runs, so every document reaching here already declares 2.0.0 (fcd#179).
+	for (const entry of entries)
+		if (!entry.used)
+			invalid(
+				entry.at,
+				`constructs declares ${entry.label}, and no type definition is of that kind`,
+			);
 }
 
 /** Resolves a `typeRef` through alias definitions, terminating on a cycle. */
@@ -220,7 +221,24 @@ export function readContractIr(document, options = {}) {
 		return Object.assign(diagnostics, { suppressions });
 	}
 
-	const version = String(document.contractVersion);
+	// FR-050's own Inputs section assumes this function's input is already "a
+	// semantic IR document at contractVersion 2.0.0", schema-validated by the
+	// caller first (the same two-layer composition `crates/semantic-ir` uses:
+	// schema, then cross-field rules, only when the schema layer is silent).
+	// A caller that skips that layer — `conformance/adapters/compiler-frontend/
+	// adapter.mjs:109` calls this function with no preceding schema check —
+	// would otherwise silently run every rule below against a document
+	// declaring a contract fcd#179 deleted. This is that precondition enforced
+	// defensively, so a document naming any other contractVersion is refused
+	// here too, wholesale, before any other member is read.
+	if (document.contractVersion !== "2.0.0") {
+		raise(
+			DIAGNOSTIC_CODES.UNKNOWN_CONTRACT_VERSION,
+			`the IR document declares contract version ${fragment(String(document.contractVersion))}; this compiler supports 2.0.0`,
+		);
+		return Object.assign(diagnostics, { suppressions });
+	}
+
 	const documentPackage =
 		typeof document.package?.identity === "string"
 			? document.package.identity
@@ -306,16 +324,6 @@ export function readContractIr(document, options = {}) {
 			);
 		} else {
 			multiplicity = checkMultiplicity(field.multiplicity, field);
-		}
-		if (multiplicity && version !== "2.0.0") {
-			const derived = multiplicity.lower >= 1 ? "required" : "optional";
-			if (field.presence !== undefined && field.presence !== derived) {
-				raise(
-					DIAGNOSTIC_CODES.PRESENCE_MULTIPLICITY_MISMATCH,
-					`presence ${fragment(field.presence)} contradicts a lower bound of ${multiplicity.lower}`,
-					locusOf(field),
-				);
-			}
 		}
 		if (field.unit !== undefined) {
 			if (typeof field.unit !== "string" || field.unit.length === 0) {

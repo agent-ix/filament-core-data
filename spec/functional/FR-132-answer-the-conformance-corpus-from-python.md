@@ -23,7 +23,7 @@ unavailable.
 The slot has been unavailable since issue #23, and the cause is a shape mismatch
 rather than a scheduling one. A package of generated types decides whether a
 value satisfies its own shape. The oracle's readings — `UNRESOLVED_TYPE_REF` and
-`PRESENCE_MULTIPLICITY_MISMATCH` — are cross-field
+`COMPOSITE_CYCLE` — are cross-field
 judgements over a resolved document, which no generated type can make. The
 artifact the slot needs is a *reader*, and a reader is a different thing from the
 types issue #23 qualified.
@@ -71,7 +71,7 @@ report something while measuring nothing.
 |----|----------|--------------|
 | FR-132-AC-1 | The reader answers every case the corpus declares, and the slot's unmet count reaches zero | Test |
 | FR-132-AC-2 | The set of codes the reader emits equals the published registry's, asserted in both directions | Test |
-| FR-132-AC-3 | Each of `UNRESOLVED_TYPE_REF` and `PRESENCE_MULTIPLICITY_MISMATCH` is emitted by at least one case | Test |
+| FR-132-AC-3 | Each of `UNRESOLVED_TYPE_REF` and `COMPOSITE_CYCLE` is emitted by at least one case | Test |
 | FR-132-AC-4 | The reader's normalized form for a case equals the Rust and TypeScript adapters' for that case, or the disagreement is recorded as a corpus finding with a named owner | Test |
 | FR-132-AC-5 | A document the reader cannot decide yields an undecided verdict, and the corpus counts it as neither a pass nor a failure | Test |
 | FR-132-AC-6 | The reader imports no module of the generated Python package | Inspection |

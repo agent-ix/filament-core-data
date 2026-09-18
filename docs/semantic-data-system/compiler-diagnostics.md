@@ -102,7 +102,6 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.semantic-ir.MISSING_MULTIPLICITY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.MISSING_SOURCE_SPAN` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.NODES_ON_NON_RECORD` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
-| `agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.UNIT_ON_NON_SCALAR` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.UNKNOWN_CLAUSE_LANGUAGE` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.UNKNOWN_CONSTRAINT_KEYWORD` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |

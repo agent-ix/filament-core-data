@@ -50,8 +50,6 @@ lowers. Issue #93 carries the rule as the additive contract revision `2.0.0`.
   present member is checked against `multiplicity`.
 - `presence`, `nullable`, and the default kind SHALL remain three independent
   members of `Field`.
-- The `PRESENCE_MULTIPLICITY_MISMATCH` rule SHALL apply to `1.1.0` documents and
-  SHALL NOT apply to `2.0.0` documents.
 
 ## Constraints
 
@@ -67,7 +65,6 @@ lowers. Issue #93 carries the rule as the additive contract revision `2.0.0`.
 | FR-106-AC-1 | A required `0..*` field admits a present empty collection and refuses an absent member. | Test |
 | FR-106-AC-2 | An optional `1..*` field admits an absent member and refuses a present empty collection. | Test |
 | FR-106-AC-3 | Two fields differing only in `presence` produce distinct IR `Field` declarations and distinct generated declarations. | Test |
-| FR-106-AC-4 | A `2.0.0` field whose presence differs from `multiplicity.lower` validates without `PRESENCE_MULTIPLICITY_MISMATCH`; the same field in a `1.1.0` document reports it. | Test |
 | FR-106-AC-5 | A source field with no authored presence yields a named loss naming the field and its locus. | Test |
 | FR-106-AC-6 | Changing only one of `presence`, `nullable`, or default kind changes only that member of the emitted `Field`. | Test |
 

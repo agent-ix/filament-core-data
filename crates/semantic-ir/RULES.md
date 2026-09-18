@@ -92,7 +92,6 @@ with it.
 |---|---|---|
 | `SCHEMA_VIOLATION` | `contracts-v1.md` "All identifiers below are rooted at" | A value the published v1 schema for its bundle member rejects, at the deepest failing instance location. |
 | `INVALID_DOCUMENT` | `contracts-v1.md` "A consumer can" | A value that is not an object carrying `ir`, reported once at pointer `""`. |
-| `PRESENCE_MULTIPLICITY_MISMATCH` | `contracts-v1.md` "unbounded) from which `presence` is derived" | In a `1.0.0` or `1.1.0` document, `presence` is `required` exactly when `multiplicity.lower >= 1`; a stated `presence` that differs fails at `.../presence`. A `2.0.0` document authors presence and is not checked. |
 | `INVALID_MULTIPLICITY` | `contracts-v1.md` "`multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is" | A present `upper` below `lower` fails at `.../multiplicity/upper`. |
 | `FLAGS_ON_NON_COLLECTION` | same clause | `ordered` or `unique` with a present `upper` of 0 or 1 fails at `.../multiplicity`; an absent `upper` is unbounded, so it is a collection and the flags stand. |
 | `UNIT_ON_NON_SCALAR` | `contracts-v1.md` "may carry a UCUM `unit` when" | `unit` where `typeRef` does not resolve, through aliases, to a `scalar`, fails at `.../unit`. |

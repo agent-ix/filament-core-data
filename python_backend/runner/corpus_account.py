@@ -5,7 +5,7 @@ This is **not** an adapter result and must not be mistaken for one. The corpus's
 `resultState`, a `diagnostics` array of contract diagnostics carrying registry
 codes, and a `normalized` form. A package of generated types can produce none of
 those: the oracle's readings — `UNRESOLVED_TYPE_REF` and
-`PRESENCE_MULTIPLICITY_MISMATCH` — are cross-field
+`COMPOSITE_CYCLE` — are cross-field
 judgements over a resolved document, and a JSON Schema-derived model decides
 only whether a value satisfies its own shape.
 

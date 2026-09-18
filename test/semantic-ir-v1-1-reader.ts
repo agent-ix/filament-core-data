@@ -152,7 +152,6 @@ function checkMultiplicity(
 function checkField(
 	field: JsonObject,
 	path: string,
-	version: string,
 	types: Map<string, JsonObject>,
 	diagnostics: Diagnostic[],
 ): void {
@@ -177,20 +176,6 @@ function checkField(
 			`${path}.multiplicity`,
 			diagnostics,
 		);
-	}
-	if (multiplicity) {
-		const derived = multiplicity.lower >= 1 ? "required" : "optional";
-		if (
-			version !== "2.0.0" &&
-			field.presence !== undefined &&
-			field.presence !== derived
-		) {
-			diagnostics.push({
-				code: "agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH",
-				path: `${path}.presence`,
-				message: `presence ${String(field.presence)} contradicts multiplicity lower ${multiplicity.lower}`,
-			});
-		}
 	}
 	if (field.unit !== undefined) {
 		if (typeof field.unit !== "string" || field.unit.length === 0) {
@@ -275,14 +260,13 @@ function checkConstraint(
 function checkTypeDefinition(
 	definition: JsonObject,
 	path: string,
-	version: string,
 	types: Map<string, JsonObject>,
 	lockExports: Set<string>,
 	diagnostics: Diagnostic[],
 ): void {
 	const isRecord = isEdgeKind(definition.kind);
 	for (const [index, field] of asArray(definition.fields).entries())
-		checkField(field, `${path}.fields.${index}`, version, types, diagnostics);
+		checkField(field, `${path}.fields.${index}`, types, diagnostics);
 	for (const [index, constraint] of asArray(definition.constraints).entries())
 		checkConstraint(
 			constraint,
@@ -376,7 +360,6 @@ function checkTypeDefinition(
 			checkField(
 				param,
 				`${path}.operations.${index}.params.${paramIndex}`,
-				version,
 				types,
 				diagnostics,
 			);
@@ -502,7 +485,6 @@ export function readSemanticIr(
 			},
 		];
 	}
-	const version = String(document.contractVersion);
 	const types = new Map<string, JsonObject>();
 	for (const definition of asArray(document.types))
 		types.set(String(definition.identity), definition);
@@ -512,7 +494,6 @@ export function readSemanticIr(
 		checkTypeDefinition(
 			definition,
 			`types.${index}`,
-			version,
 			types,
 			exports,
 			diagnostics,

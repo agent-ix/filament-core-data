@@ -164,14 +164,13 @@ function schemaNamed(name: string): JsonObject {
 
 describe("semantic IR v1.1 baseline and non-disruption", () => {
 	/**
-	 * Traces: TC-208, TC-231; FR-027-AC-6, FR-030-CON-1.
-	 * fcd#179 deleted contracts 1.0.0 and 1.1.0; 2.0.0 is the only one. The
-	 * digest loop below still pins these fixtures' bytes (a general
-	 * fixture-integrity guarantee, unrelated to contract-version acceptance),
-	 * but this test no longer asserts that `positive/semantic-ir.json` (a
-	 * 1.0.0 document) validates under the current schema, since that is
-	 * exactly the acceptance of an old contract that #179 removes. The file
-	 * stays on disk, still pinned by digest, no longer schema-valid.
+	 * Traces: TC-208; FR-027-AC-6.
+	 * fcd#179 deleted contracts 1.0.0 and 1.1.0; 2.0.0 is the only one.
+	 * `positive/semantic-ir.json` stays frozen at 1.0.0 (kept on disk as
+	 * refused negative evidence, mirroring `config-version-v1-1.json`), so
+	 * the digest loop below still pins a fixture that no longer validates
+	 * under the schema; FR-027-AC-6 is scoped to fixtures declaring the live
+	 * contract, not to every published fixture.
 	 */
 	it("keeps every v1 positive fixture byte-identical", () => {
 		const baseline = object(
@@ -566,11 +565,6 @@ describe("FR-027 field multiplicity and units", () => {
 			const bytes = normalize(mutated);
 			expect(normalize(JSON.parse(bytes))).toBe(bytes);
 		}
-		const v1 = readJson("positive/semantic-ir.json");
-		expect(
-			normalize(v1),
-			"1.0.0 documents gain no derived bytes",
-		).not.toContain('"multiplicity"');
 	});
 
 	/** Traces: TC-204; FR-027-AC-2. */

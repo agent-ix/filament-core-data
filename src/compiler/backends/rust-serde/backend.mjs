@@ -56,12 +56,13 @@ export const identity = "ix://agent-ix/filament-core-data/rust-backend";
 /**
  * The Rust/Serde generated target.
  *
- * `supportedIrVersions` is `["2.0.0"]` through the seam (fcd#179: the 1.1.0
- * contract no longer exists to accept). `rust-serde/cli.mjs` keeps its own,
- * separate `BACKEND.supportedIrVersions` for its conformance-corpus
+ * `supportedIrVersions` is `["2.0.0"]` through the seam (fcd#179: the 1.0.0
+ * and 1.1.0 contracts no longer exist to accept). `rust-serde/cli.mjs` keeps
+ * its own, separate `BACKEND.supportedIrVersions` for its conformance-corpus
  * development path, which generates directly against `conformance/bases/`
  * without going through this seam-facing declaration or the seam's check;
- * that corpus is fcd#180's to re-base, not this one's.
+ * fcd#179 narrowed it to `["2.0.0"]` too, since every base under
+ * `conformance/bases/` is already a `2.0.0` document.
  * Every contract 2.0.0 construct kind renders by the
  * `shape:` and `identity:` rows its declaration selects, and every model
  * member by its `construct:` row (FR-054).

@@ -58,7 +58,6 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | `multiplicity.lower` is a non-negative integer and `upper`, where present, is an integer not less than `lower` | `agent-ix.semantic-ir.INVALID_MULTIPLICITY` |
 | `ordered` and `unique` appear only where `upper` is absent or greater than 1 | `agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION` |
 | every field declares `multiplicity` | `agent-ix.semantic-ir.MISSING_MULTIPLICITY` |
-| `presence` agrees with `multiplicity.lower` | `agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH` |
 | a `typeRef` resolves, through aliases, to a definition | `agent-ix.semantic-ir.UNRESOLVED_TYPE_REF` |
 | `unit` is a non-empty symbol | `agent-ix.semantic-ir.INVALID_UNIT` |
 | `unit` appears only on a field resolving to a `scalar` | `agent-ix.semantic-ir.UNIT_ON_NON_SCALAR` |
@@ -102,7 +101,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-050-AC-1 | Every published positive fixture under `fixtures/semantic/v1/positive/` validates and yields zero reader diagnostics. | Test |
+| FR-050-AC-1 | Every published positive fixture under `fixtures/semantic/v1/positive/` declaring contract `2.0.0` validates and yields zero reader diagnostics; `semantic-ir.json` and `config-version-v1-1.json` stay frozen at their deleted contracts as refused negative evidence (fcd#179) and are excluded. | Test |
 | FR-050-AC-2 | Every case in `negative/reader-cases.json` yields the expected diagnostic code from the compiler's reader. | Test |
 | FR-050-AC-3 | For every case in `negative/reader-cases.json`, the compiler's reader, the issue #34 TypeScript reader, and the Python reader produce the same set of codes; a disagreement fails the suite. | Integration |
 | FR-050-AC-4 | `src/compiler/ir/reader.mjs` imports no module under `test/` or `tests/`, and `tests/semantic_ir_reader.py` is byte-unchanged from `origin/main` (fcd#179 ported `test/semantic-ir-v1-1-reader.ts` to contract 2.0.0, so it is exempted here). | Analysis |

@@ -39,7 +39,7 @@ pub const LOCK_FINGERPRINT: &str =
     "sha256:ec363330f20163e40b1ca2cc70745c3138a312736c7dc23b0e4b9af67daad61b";
 
 /// The IR contract version the document declared.
-pub const CONTRACT_VERSION: &str = "1.1.0";
+pub const CONTRACT_VERSION: &str = "2.0.0";
 
 /// The semantic identity of the backend that generated this crate.
 pub const GENERATOR_IDENTITY: &str = "ix://agent-ix/filament-core-data/rust-backend";

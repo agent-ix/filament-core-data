@@ -91,7 +91,7 @@ known zero value.
 
 ### Structural model detail (issue #34)
 
-The IR declares exactly one `contractVersion`, `2.0.0`; the schema admits no other value and refuses a document declaring one with `SCHEMA_VIOLATION` at `contractVersion` before any other member is read (FR-050). A field carries an explicit `multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is unbounded); its `presence` is authored independently ([FR-106](../../spec/functional/FR-106-author-field-presence-independently.md), [issue #93](https://github.com/agent-ix/filament-core-data/issues/93)), never derived from `multiplicity`, `nullable`, or the default kind, and `2.0.0` enforces no agreement between `presence` and `multiplicity.lower`: a required field with `lower: 0` and an optional field with `lower` at least `1` are both valid (FR-106-CON-1). `PRESENCE_MULTIPLICITY_MISMATCH` is frozen from contract `1.1.0`, where presence was authored but still checked against the derived value; no `2.0.0` document can trigger it. A field may carry a UCUM `unit` when its `typeRef` resolves, through aliases, to a scalar. Because the schema already requires `multiplicity`, `presence`, and `nullable` on every field, the normalized serialization carries them as authored rather than deriving or filling in a default.
+The IR declares exactly one `contractVersion`, `2.0.0`; the schema admits no other value and refuses a document declaring one with `SCHEMA_VIOLATION` at `contractVersion` before any other member is read (FR-050). A field carries an explicit `multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is unbounded); its `presence` is authored independently ([FR-106](../../spec/functional/FR-106-author-field-presence-independently.md), [issue #93](https://github.com/agent-ix/filament-core-data/issues/93)), never derived from `multiplicity`, `nullable`, or the default kind, and `2.0.0` enforces no agreement between `presence` and `multiplicity.lower`: a required field with `lower: 0` and an optional field with `lower` at least `1` are both valid (FR-106-CON-1); fcd#179 deleted `PRESENCE_MULTIPLICITY_MISMATCH` along with the `1.0.0`/`1.1.0` contracts it checked. A field may carry a UCUM `unit` when its `typeRef` resolves, through aliases, to a scalar. Because the schema already requires `multiplicity`, `presence`, and `nullable` on every field, the normalized serialization carries them as authored rather than deriving or filling in a default.
 
 A record type definition carries first-class `relationships[]` (verb, FR-040
 category, `composite` flag, target identity, multiplicity, origin),
@@ -246,9 +246,9 @@ record, whose meaning is *any JSON object*.
 
 **Presence.** `Field.presence` is authored and independent of
 `multiplicity`; neither is derived from the other, and `2.0.0` enforces no
-cross-field agreement between them (FR-106). `PRESENCE_MULTIPLICITY_MISMATCH`
-is frozen from contract `1.1.0` and never fires for a `2.0.0` document.
-Because the schema requires `multiplicity`, `presence`, and `nullable` on
+cross-field agreement between them (FR-106); fcd#179 deleted
+`PRESENCE_MULTIPLICITY_MISMATCH` along with the `1.0.0`/`1.1.0` contracts it
+checked. Because the schema requires `multiplicity`, `presence`, and `nullable` on
 every field, normalization carries them as authored rather than deriving or
 filling in a default.
 

@@ -7,7 +7,7 @@
 	"backend": {
 		"identity": "ix://agent-ix/semantic-compiler/backend/rust",
 		"version": "1.0.0",
-		"supportedIrVersions": ["1.0.0"],
+		"supportedIrVersions": ["2.0.0"],
 		"supportedFeatures": [
 			"record",
 			"enum",

@@ -1547,7 +1547,6 @@ blocked as stated above.
 | TC-1373 | A required `0..*` field and an optional `1..*` field compile to a `2.0.0` document both readers accept; through the rendered JSON Schema a present empty collection is admitted and an absent required member refused, and the optional field admits absence and refuses a present empty list | Unit | P0 | FR-106-AC-1, FR-106-CON-1 | ✅ passed |
 | TC-1374 | An optional `1..*` field admits an absent member and refuses a present empty collection | Unit | P0 | FR-106-AC-2, FR-106-CON-1 | 🚧 planned on issue #93 |
 | TC-1375 | Two fields differing only in `presence` produce distinct IR `Field` declarations and distinct generated declarations | Integration | P0 | FR-106-AC-3 | 🚧 planned on issue #93 |
-| TC-1376 | A `2.0.0` field whose presence differs from `multiplicity.lower` validates without `PRESENCE_MULTIPLICITY_MISMATCH`, and the same field in a `1.1.0` document reports it | Unit | P0 | FR-106-AC-4 | ✅ passed |
 | TC-1377 | A source field with no authored presence yields a named loss naming the field and its locus | Integration | P1 | FR-106-AC-5 | ✅ passed |
 | TC-1378 | Changing only one of `presence`, `nullable`, or default kind changes only that member of the emitted `Field`, and none is derived from another | Unit | P1 | FR-106-AC-6, FR-106-CON-2 | ✅ passed |
 | TC-1351 | The negatives/DUPLICATE_IDENTITY bundle, an artifact NoteRevision beside a record Note with a constrained field revision (contract case (c): distinct names, distinct slugs, one identity), is refused at the later path with DUPLICATE_IDENTITY naming both type/NoteRevision identities and carrying the earlier locus in related, blocking, and no document is written | Snapshot | P1 | FR-095-AC-14 | ✅ passed |
@@ -1587,7 +1586,7 @@ blocked as stated above.
 | TC-1412 | A gate comparing a historical hunk reads the other side at that hunk's own commit, so a later change editing those lines leaves it green | Analysis | P1 | NFR-039-AC-4 | 🚧 planned on issue #92 |
 | TC-1413 | Every change-set gate passes on a clean checkout carrying no state beyond the commit under test | Integration | P0 | NFR-039-AC-6 | 🚧 planned on issue #92 |
 | TC-1414 | The Python reader answers every corpus case, the slot's unmet count reaches zero, and its code set equals the published registry in both directions | Integration | P0 | FR-132-AC-1, FR-132-AC-2 | 🚧 planned on issue #65 |
-| TC-1415 | UNRESOLVED_TYPE_REF and PRESENCE_MULTIPLICITY_MISMATCH are each emitted by at least one case, and the reader's normalized form agrees with the Rust and TypeScript adapters or the disagreement is a recorded finding | Integration | P0 | FR-132-AC-3, FR-132-AC-4 | 🚧 planned on issue #65 |
+| TC-1415 | UNRESOLVED_TYPE_REF and COMPOSITE_CYCLE are each emitted by at least one case, and the reader's normalized form agrees with the Rust and TypeScript adapters or the disagreement is a recorded finding | Integration | P0 | FR-132-AC-3, FR-132-AC-4 | 🚧 planned on issue #65 |
 | TC-1416 | An undecidable document yields an undecided verdict counted as neither pass nor failure; with the reader absent the slot reports unavailable naming its issue and no case passes | Unit | P1 | FR-132-AC-5, FR-132-AC-7, FR-132-CON-3 | 🚧 planned on issue #65 |
 | TC-1417 | The Python reader imports no module of the generated Python package and shares no code with the TypeScript or Rust readers | Unit | P1 | FR-132-AC-6, FR-132-CON-1 | 🚧 planned on issue #65 |
 | TC-1418 | The Rust kernel crate generates from the kernel IR with zero blocking diagnostics, and both the reserved identifier and the minted construct are present naming different types | Integration | P0 | FR-133-AC-1, FR-133-AC-2 | ✅ Complete |
@@ -1876,7 +1875,7 @@ blocked as stated above.
 | FR-029 operands | Min | `minLength: 0` | TC-219 | Valid |
 | FR-029 operands | Below min | `minLength: -1` | TC-221 | Fail validation |
 | FR-029 applicability | Prohibited | `minLength` on `integer`, `min` on `record` | TC-244 | Fail validation at the constraint locus |
-| FR-030 contractVersion | Allowed | `"1.0.0"`, `"1.1.0"`, `"2.0.0"` | TC-227, TC-231, TC-1376 | Pass under the single schema file |
+| FR-030 contractVersion | Allowed | `"2.0.0"` | TC-227 | Pass under the single schema file |
 | FR-030 contractVersion | Prohibited | `"1.3.0"`, `"0.9.0"` | TC-246 | Fail before emission |
 | FR-031-CON-1 | Allowed | Grammar under `packages/semantic-core/` | TC-254 | Pass |
 | FR-031-CON-1 | Prohibited | `spikes/` importing the grammar | TC-254 | Fail |

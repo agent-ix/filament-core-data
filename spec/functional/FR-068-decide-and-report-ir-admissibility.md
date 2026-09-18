@@ -102,7 +102,6 @@ not.
 | A `pattern` regex compiles under ECMA-262 | `INVALID_PATTERN` |
 | A relationship target resolves to a document type or a lock export | `UNRESOLVED_RELATIONSHIP_TARGET` |
 | The graph of `composite: true` relationships is acyclic | `COMPOSITE_CYCLE` |
-| `presence` agrees with `multiplicity.lower` | `PRESENCE_MULTIPLICITY_MISMATCH` |
 | `multiplicity.upper`, where present, is not less than `lower` | `INVALID_MULTIPLICITY` |
 | `ordered` and `unique` appear only where `upper` is absent or greater than one | `FLAGS_ON_NON_COLLECTION` |
 | `unit` appears only on a field resolving to a `scalar` | `UNIT_ON_NON_SCALAR` |

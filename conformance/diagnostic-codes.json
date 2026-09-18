@@ -24,18 +24,6 @@
 			"exercisedBy": "test:TC-301"
 		},
 		{
-			"code": "agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH",
-			"provenance": "frozen",
-			"decidedBy": "cross-field",
-			"sources": [
-				"docs/semantic-data-system/contracts-v1.md",
-				"fixtures/semantic/v1/negative/reader-cases.json"
-			],
-			"rule": "A field of a 1.1.0 document whose authored presence contradicts its multiplicity lower bound; frozen from contract 1.1.0 and never fires for a 2.0.0 document (fcd#179, FR-106).",
-			"citation": "`PRESENCE_MULTIPLICITY_MISMATCH` is frozen from contract `1.1.0`, where presence was authored but still checked against the derived value; no `2.0.0` document can trigger it.",
-			"exercisedBy": "test:TC-498"
-		},
-		{
 			"code": "agent-ix.semantic-ir.INVALID_MULTIPLICITY",
 			"provenance": "frozen",
 			"decidedBy": "cross-field",

@@ -2862,17 +2862,16 @@ describe("the diagnostic registry (FR-049)", () => {
 			contractVersion: string;
 			types: Json[];
 		};
-		document.contractVersion = "1.1.0";
+		document.contractVersion = "2.0.0";
 		const artifact = document.types.find(
 			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
 		) as Json;
 		const field = (artifact.fields as Json[])[0];
-		field.presence = "optional";
+		field.multiplicity = { lower: 1, upper: 1, ordered: true };
 		const diagnostics = readContractIr(document) as never as Diagnostic[];
 		note(diagnostics);
 		const mismatch = diagnostics.find(
-			(entry) =>
-				entry.code === DIAGNOSTIC_CODES.PRESENCE_MULTIPLICITY_MISMATCH.code,
+			(entry) => entry.code === DIAGNOSTIC_CODES.FLAGS_ON_NON_COLLECTION.code,
 		);
 		expect(mismatch?.locus).toEqual((field.origin as Json).source as never);
 	});
@@ -3203,7 +3202,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		}
 	});
 
-	/** Traces: TC-1376; FR-106-AC-4. */
+	/** Traces: FR-106-CON-2. */
 	it("accepts the v1.2 Any scalar and preserves authored presence", () => {
 		const document = JSON.parse(JSON.stringify(compiled.ir)) as never as {
 			contractVersion: string;
@@ -3220,9 +3219,6 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		const field = (record.fields as Json[])[0];
 		field.presence = "optional";
 		expect(validateIrDocument(document)).toEqual([]);
-		expect(
-			codesOf(readContractIr(document) as never as Diagnostic[]),
-		).not.toContain(DIAGNOSTIC_CODES.PRESENCE_MULTIPLICITY_MISMATCH.code);
 		const normalized = JSON.parse(normalizeIr(document)) as never as {
 			types: Json[];
 		};
@@ -3597,13 +3593,13 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		expect(rust(record)).not.toBe(rust(scalar));
 	});
 
-	/** Traces: TC-1376; FR-106-AC-4. */
-	it("rejects authored presence that contradicts multiplicity in v1.1", () => {
+	/** Traces: TC-1373; FR-106-CON-1. */
+	it("accepts authored presence that disagrees with multiplicity in 2.0.0", () => {
 		const document = JSON.parse(JSON.stringify(compiled.ir)) as never as {
 			contractVersion: string;
 			types: Json[];
 		};
-		document.contractVersion = "1.1.0";
+		document.contractVersion = "2.0.0";
 		const record = document.types.find(
 			(type) => Array.isArray(type.fields) && type.fields.length > 1,
 		) as Json;
@@ -3612,10 +3608,9 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		required.multiplicity = { lower: 0, upper: 2 };
 		optional.presence = "optional";
 		optional.multiplicity = { lower: 1, upper: 2 };
+		expect(validateIrDocument(document)).toEqual([]);
 		expect(codesOf(readContractIr(document) as never as Diagnostic[])).toEqual(
-			expect.arrayContaining([
-				DIAGNOSTIC_CODES.PRESENCE_MULTIPLICITY_MISMATCH.code,
-			]),
+			[],
 		);
 	});
 

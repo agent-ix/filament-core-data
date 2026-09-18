@@ -24,7 +24,6 @@ macro_rules! codes {
 }
 
 codes! {
-    PRESENCE_MULTIPLICITY_MISMATCH => "agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH",
     INVALID_MULTIPLICITY => "agent-ix.semantic-ir.INVALID_MULTIPLICITY",
     FLAGS_ON_NON_COLLECTION => "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
     UNIT_ON_NON_SCALAR => "agent-ix.semantic-ir.UNIT_ON_NON_SCALAR",
@@ -61,21 +60,20 @@ pub struct Document<'a> {
     pub ir: &'a Json,
     /// The type definitions, in document order.
     pub types: &'a [Json],
-    /// Whether the document declares contract 2.0.0, whose presence is authored and whose kinds are declared.
-    pub is_v2: bool,
 }
 
 impl<'a> Document<'a> {
     /// Reads a bundle, when it carries an IR document with a type array.
+    ///
+    /// `rules::decide` (this module's only caller of `Document::read`, per
+    /// `lib.rs::decide`) runs only when the schema layer emitted no
+    /// diagnostic, and the schema closes `contractVersion` to `["2.0.0"]`
+    /// (fcd#179), so every document reaching this reading already declares
+    /// contract 2.0.0 — there is no other live version left to distinguish.
     pub fn read(bundle: &'a Json) -> Option<Document<'a>> {
         let ir = bundle.get("ir")?;
         let types = ir.get("types").and_then(Json::as_array).unwrap_or(&[]);
-        Some(Document {
-            bundle,
-            ir,
-            types,
-            is_v2: ir.get("contractVersion").and_then(Json::as_str) == Some("2.0.0"),
-        })
+        Some(Document { bundle, ir, types })
     }
 
     /// The type definition an identity names.
@@ -234,9 +232,7 @@ pub fn decide(bundle: &Json) -> Vec<Located> {
     per_type(&document, &mut sink);
     occurrences(&document, &mut sink);
     composite_graph(&document, &mut sink);
-    if document.is_v2 {
-        crate::constructs::decide(&document, &mut sink);
-    }
+    crate::constructs::decide(&document, &mut sink);
     package_context(&document, &mut sink);
     sink.out
 }
@@ -553,20 +549,6 @@ fn field_rules(
                             FLAGS_ON_NON_COLLECTION,
                             "ordered and unique describe a collection and this field is single-valued",
                         );
-                    }
-                }
-            }
-            if !document.is_v2 {
-                if let Some(lower) = lower {
-                    let derived = if lower >= 1 { "required" } else { "optional" };
-                    if let Some(stated) = field.get("presence").and_then(Json::as_str) {
-                        if stated != derived {
-                            sink.emit(
-                            child(&field_at, "presence"),
-                            PRESENCE_MULTIPLICITY_MISMATCH,
-                            "presence is derived from the multiplicity lower bound and contradicts it",
-                        );
-                        }
                     }
                 }
             }
