@@ -12,7 +12,7 @@ relationships:
 
 ## Description
 
-The semantic IR v1.1 `typeDefinition` node SHALL carry first-class
+The semantic IR `typeDefinition` node SHALL carry first-class
 `relationships[]`, `operations[]`, and `clauses[]` arrays so that a domain
 declaration's edges, behavior signatures, and formal clauses are IR nodes with
 identity and origin rather than prose.
@@ -66,7 +66,7 @@ identity and origin rather than prose.
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-028-CON-1 | A `relationships[]`, `operations[]`, or `clauses[]` array absent from a v1 document SHALL be read as empty; v1 documents remain valid. | Compatibility | Existing-fixture suite |
+| FR-028-CON-1 | A `relationships[]`, `operations[]`, or `clauses[]` array absent from a type definition SHALL be read as empty. | Correctness | Existing-fixture suite |
 | FR-028-CON-2 | The IR schema SHALL NOT declare a parsed clause AST property; clause semantics belong to the formal-clause frontends. | Integrity | Static schema check |
 
 ## Acceptance Criteria
@@ -80,7 +80,7 @@ identity and origin rather than prose.
 | FR-028-AC-5 | A clause with `language: ocl`, `text`, and a `sourceSpan` validates, and a clause with `language: quire` validates; a `quire` clause's `text` round-trips byte-identical and the clause gains no parsed-content property, because FCD carries clauses and Quire intake checks them; the IR schema declares no property for parsed clause content. | Test |
 | FR-028-AC-6 | A clause with `language: acme:tla` validates; a bare unknown language such as `tla` fails. | Test |
 | FR-028-AC-7 | `relationships[]` or `operations[]` on a non-record type definition fails validation. | Test |
-| FR-028-AC-8 | The config-service FR-006 `overlay` relationship and an `## Invariants` `ocl` fence are expressed in `fixtures/semantic/v1/positive/config-version-v1-1.json` with zero declared loss. | Analysis |
+| FR-028-AC-8 | The config-service FR-006 `overlay` relationship and an `## Invariants` `ocl` fence are expressed in `fixtures/semantic/v1/positive/config-version-v2.json` with zero declared loss. | Analysis |
 | FR-028-AC-9 | A relationship whose `target` resolves to no type definition or lock export fails validation with the relationship's locus. | Test |
 | FR-028-AC-10 | A composite cycle (including a composite self-reference) fails validation at the closing relationship; a non-composite self-reference validates. | Test |
 | FR-028-AC-11 | Two clauses with the same `clauseId` in one type definition fail validation. | Test |

@@ -26,7 +26,7 @@ Behavior.
 
 - A resolved package graph from FR-047, carrying each package's selected source files
 - An optional existing `package-lock.json`, valid against `schema/semantic/v1/package-lock.schema.json`
-- The compiler contract version string, `1.1.0`
+- The compiler contract version string, `2.0.0`
 - The published schema bytes named below
 
 ## Outputs

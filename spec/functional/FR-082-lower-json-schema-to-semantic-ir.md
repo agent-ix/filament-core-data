@@ -1,6 +1,6 @@
 ---
 id: FR-082
-title: "Lower the kernel JSON Schema bundle to semantic IR v1.1"
+title: "Lower the kernel JSON Schema bundle to semantic IR 2.0.0"
 type: FR
 relationships:
   - target: "ix://agent-ix/filament-core-data/US-014"
@@ -18,12 +18,12 @@ relationships:
   - target: "ix://agent-ix/filament-core-data/NFR-030"
     type: "constrained_by"
 ---
-# [FR-082] Lower the kernel JSON Schema bundle to semantic IR v1.1
+# [FR-082] Lower the kernel JSON Schema bundle to semantic IR 2.0.0
 
 ## Description
 
 The compiler SHALL lower the thirty JSON Schema 2020-12 documents [FR-081](./FR-081-declare-the-semantic-kernel-bundle.md)
-enumerates into one semantic IR document at `contractVersion` `1.1.0`, through a
+enumerates into one semantic IR document at `contractVersion` `2.0.0`, through a
 new frontend registered on the seam of `src/compiler/frontend/seam.mjs`, so that
 the four kernel targets are generated from a single validated IR document rather
 than each reading the schema bundle in its own way and disagreeing about what it
@@ -86,23 +86,23 @@ the contract.
 
 - A `type: "object"` document carrying `unevaluatedProperties: {"not": {}}` SHALL lower to `unknownPolicy: "reject"`, because a sealed object schema admits no member the schema did not evaluate, and `preserve` or `surface` would each let a generated package accept a document the schema refuses.
 - A `type: "object"` document carrying no `unevaluatedProperties` SHALL raise `UNSUPPORTED_SCHEMA_SHAPE` rather than defaulting a policy, because the committed bundle seals every object schema and an unsealed one would mean the emitter configuration changed.
-- The unconstrained-property row SHALL produce exactly the shape `packages/semantic-core/kernel-scalars.json` prescribes for `JsonObject`: `kind: "record"`, `fields: []`, `unknownPolicy: "preserve"`. This narrows "any JSON value" to "any JSON object": `DefaultDecl.value` is `unknown` in `main.tsp` and `{}` in `DefaultDecl.json`, and IR v1.1 has no any-type. That narrowing is a declared representability loss with a diagnostic and a register row against `agent-ix/filament-core-data#11`; it is not repaired by editing a published schema.
+- The unconstrained-property row SHALL produce exactly the shape `packages/semantic-core/kernel-scalars.json` prescribes for `JsonObject`: `kind: "record"`, `fields: []`, `unknownPolicy: "preserve"`. This narrows "any JSON value" to "any JSON object": `DefaultDecl.value` is `unknown` in `main.tsp` and `{}` in `DefaultDecl.json`, and IR 2.0.0 has no any-type. That narrowing is a declared representability loss with a diagnostic and a register row against `agent-ix/filament-core-data#11`; it is not repaired by editing a published schema.
 - An `anyOf` whose branches are not all `$ref`s and are not all in the recognised property-position forms SHALL raise `UNSUPPORTED_SCHEMA_SHAPE`.
 
 ### Fields, multiplicity and presence
 
 - `field.typeRef` is a single `semanticIdentity` under `semantic-ir.schema.json#/$defs/field`. An anonymous construct in a property position therefore SHALL be minted as its own named type and referenced by identity; no field may carry an inline shape.
-- Every `fields[]` member and every operation parameter of the emitted document SHALL carry `multiplicity`, which `semantic-ir.schema.json` requires of every field at `contractVersion` `1.1.0` and `readContractIr` enforces as `agent-ix.semantic-ir.MISSING_MULTIPLICITY`.
-- `presence` SHALL be derived from `multiplicity.lower` by the single rule `required` exactly when `multiplicity.lower >= 1`, and SHALL never be stated independently of it. The FR-050 reader checks the same relation as `agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH`, so a lowering that computed the two separately would be asserting a fact the reader is about to re-derive.
+- Every `fields[]` member and every operation parameter of the emitted document SHALL carry `multiplicity`, which `semantic-ir.schema.json` requires of every field at `contractVersion` `2.0.0` and `readContractIr` enforces as `agent-ix.semantic-ir.MISSING_MULTIPLICITY`.
+- `presence` SHALL be derived from `multiplicity.lower` by the single rule `required` exactly when `multiplicity.lower >= 1`, and SHALL never be stated independently of it. FR-082-CON-4 keeps that derivation to the one call site this requirement owns, so no second, possibly-disagreeing derivation can enter the emitted document.
 - A property named in the document's `required` array and not an array-typed property SHALL take `multiplicity` `{ lower: 1, upper: 1 }`; a property absent from `required` and not array-typed SHALL take `{ lower: 0, upper: 1 }`.
 - An array-typed property SHALL take `multiplicity` `{ lower: minItems ?? 0 }` with no `upper`, whether or not it is named in `required`.
-- The consequence SHALL be recorded rather than papered over: `OperationDecl.params` is listed in `OperationDecl.json`'s `required` and carries no `minItems`, so it lowers to `lower: 0` and its derived `presence` is `optional`. IR v1.1 cannot express "the member must be present and may be empty". This is the second declared representability loss, adjacent to FND-956 in `spec/reviews/21-rust-serde-backend/failure-domain.md`, and it carries a diagnostic, a register row, and an issue filed against the contract owner.
+- The consequence SHALL be recorded rather than papered over: `OperationDecl.params` is listed in `OperationDecl.json`'s `required` and carries no `minItems`, so it lowers to `lower: 0` and its derived `presence` is `optional`. IR 2.0.0 cannot express "the member must be present and may be empty". This is the second declared representability loss, adjacent to FND-956 in `spec/reviews/21-rust-serde-backend/failure-domain.md`, and it carries a diagnostic, a register row, and an issue filed against the contract owner.
 - The lowering SHALL NOT resolve the loss by writing `lower: 1` for a required array, because that would make the generated packages refuse an empty `params` array that every kernel document permits.
 
 ### The declared dialect
 
 - The emitted document SHALL declare `source.dialect` of `typespec`.
-- `semantic-ir.schema.json` admits exactly two dialect values at `contractVersion` `1.1.0`, `typespec` and `spec-bundle`, read from `common.schema.json#/$defs/frontendDialect`. There is no `json-schema` dialect value at `1.1.0`; the bare `https://json-schema.org/draft/2020-12/schema` constant the schema also names is bound by the same `allOf` to `contractVersion` `1.0.0`, the frozen prototype shape, which is not a contract IR document.
+- `semantic-ir.schema.json` admits exactly two dialect values, unconditionally on `contractVersion`: `typespec` and `spec-bundle`, read from `common.schema.json#/$defs/frontendDialect`. There is no `json-schema` dialect value; a document naming one is not a valid contract IR document.
 - `typespec` is correct rather than merely permitted: the authored source is `packages/semantic-core/main.tsp`, and the thirty documents are the pinned official `@typespec/json-schema` `1.15.0` emitter's deterministic projection of it, recorded in `packages/semantic-core/generated/toolchain.json` and gated byte-for-byte by `make semantic-core-check`. The bundle is the transport, not the source. This requirement states that reasoning in the emitted document's provenance rather than leaving a later reader to infer it from a dialect value that looks wrong.
 - `source.identity` SHALL be the source identity of `packages/semantic-core/main.tsp`, `source.version` SHALL be `0.2.0`, and `source.digest` SHALL be `kernelDigest()`, so the document names the authored source and digests the exact bytes it was actually lowered from.
 - This requirement SHALL file an issue against the contract owner asking whether a deterministic projection of an authored source deserves its own `frontendDialect` value, and SHALL record that issue by number in the emitted document's provenance and in this repository's contract-gap register.
@@ -139,7 +139,7 @@ the contract.
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-082-CON-1 | This requirement SHALL leave byte-unchanged every file under `schema/**`, `packages/semantic-core/**`, `fixtures/**`, and `conformance/**`, together with `src/compiler/cli.mjs`, `src/compiler/backends/**`, `src/compiler/frontend/typespec/**`, `src/compiler/frontend/spec-bundle/**`, the root `package.json`, `tsconfig.json`, `pyproject.toml`, and every lockfile but `Cargo.lock`. The absence of a `json-schema` dialect value at `1.1.0` is recorded as an open question for the contract owner and is not resolved by widening a published enum. | Non-disruption | Branch diff |
+| FR-082-CON-1 | This requirement SHALL leave byte-unchanged every file under `schema/**`, `packages/semantic-core/**`, `fixtures/**`, and `conformance/**`, together with `src/compiler/cli.mjs`, `src/compiler/backends/**`, `src/compiler/frontend/typespec/**`, `src/compiler/frontend/spec-bundle/**`, the root `package.json`, `tsconfig.json`, `pyproject.toml`, and every lockfile but `Cargo.lock`. The absence of a `json-schema` dialect value is recorded as an open question for the contract owner and is not resolved by widening a published enum. | Non-disruption | Branch diff |
 | FR-082-CON-2 | An unrecognised JSON Schema keyword SHALL be a blocking diagnostic under every configuration, with no flag, option, environment variable, or `limits` member turning `UNSUPPORTED_SCHEMA_KEYWORD` into a warning or suppressing it, because a lowering that can be told to ignore what it does not understand is a lowering whose output no one can bound. | Safety | Static analysis and test |
 | FR-082-CON-3 | The lowering SHALL NOT import any module under `src/compiler/frontend/typespec/` or reuse its lowering. The two read different inputs — a TypeSpec program and an emitted schema bundle — and sharing the code would make their agreement a tautology instead of evidence that the projection is faithful. | Integrity | Static analysis |
 | FR-082-CON-4 | The lowering SHALL compute `presence` from `multiplicity.lower` at exactly one call site and at no other, assigning `presence` from no other module. Two independent derivations of a value the FR-050 reader cross-checks is two places for them to disagree. | Correctness | Static analysis |
@@ -151,7 +151,7 @@ the contract.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-082-AC-1 | Lowering the thirty enumerated documents produces one `contractVersion` `1.1.0` document with fifty-three type definitions, which validates against `semantic-ir.schema.json` and yields zero blocking diagnostics from `readContractIr`. | Integration |
+| FR-082-AC-1 | Lowering the thirty enumerated documents produces one `contractVersion` `2.0.0` document with fifty-three type definitions, which validates against `semantic-ir.schema.json` and yields zero blocking diagnostics from `readContractIr`. | Integration |
 | FR-082-AC-2 | The recognised keyword set of `keywords.mjs` equals the set of member names actually occurring in the thirty committed documents; a test that computes both fails when either changes alone. | Test |
 | FR-082-AC-3 | A document carrying `additionalProperties`, `oneOf`, `allOf`, `$defs`, `format`, or `maxLength` produces one blocking `UNSUPPORTED_SCHEMA_KEYWORD` diagnostic naming the keyword and the JSON Pointer, and no IR document, asserted once per keyword. | Unit |
 | FR-082-AC-4 | No configuration reachable from the frontend's public surface downgrades or suppresses `UNSUPPORTED_SCHEMA_KEYWORD`, asserted over every `limits` member and every documented option. | Test |
@@ -160,7 +160,7 @@ the contract.
 | FR-082-AC-7 | A `type: "object"` document with `properties` and no `unevaluatedProperties`, and one whose `unevaluatedProperties` is `false` or a non-empty schema, each produce a blocking `UNSUPPORTED_SCHEMA_SHAPE` diagnostic naming the pointer. | Unit |
 | FR-082-AC-8 | The `DefaultDecl.value` lowering yields `kind: "record"`, `fields: []`, `unknownPolicy: "preserve"`, exactly the shape `packages/semantic-core/kernel-scalars.json` prescribes for `JsonObject`, and emits the declared-loss diagnostic naming the narrowing from any JSON value to any JSON object. | Test |
 | FR-082-AC-9 | Every `fields[]` member and every operation parameter of the emitted document carries `multiplicity`; removing it from any one produces `agent-ix.semantic-ir.MISSING_MULTIPLICITY` from the FR-050 reader. | Test |
-| FR-082-AC-10 | For every field of the emitted document, `presence` is `required` exactly when `multiplicity.lower >= 1`; a mutant that assigns `presence` from the schema's `required` array independently is caught by `agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH`. | Property |
+| FR-082-AC-10 | For every field of the emitted document, `presence` is `required` exactly when `multiplicity.lower >= 1`, asserted directly over the emitted document; a mutant that assigns `presence` from the schema's `required` array independently, bypassing the FR-082-CON-4 call site, is caught by that direct assertion. | Property |
 | FR-082-AC-11 | `OperationDecl.params` lowers to `multiplicity` `{ lower: 0 }` with derived `presence: "optional"`, and the run records the declared representability loss naming the construct, rather than emitting `lower: 1`. | Test |
 | FR-082-AC-12 | The emitted document declares `source.dialect` of `typespec`, `source.digest` equal to `kernelDigest()`, and `source.version` of `0.2.0`; the provenance names `packages/semantic-core/main.tsp` as the authored source, the pinned `@typespec/json-schema` `1.15.0` emitter as the projector, and the issue number of the dialect question filed with the contract owner. | Test |
 | FR-082-AC-13 | The branch changes no file under `schema/`, `packages/semantic-core/`, `fixtures/`, `conformance/`, `src/compiler/backends/`, `src/compiler/frontend/typespec/`, or `src/compiler/frontend/spec-bundle/`, and leaves `src/compiler/cli.mjs`, the root `package.json`, `tsconfig.json`, `pyproject.toml`, `pnpm-lock.yaml`, and `poetry.lock` byte-unchanged. | Analysis |
@@ -182,4 +182,4 @@ the contract.
 - **Upstream**: [FR-081](./FR-081-declare-the-semantic-kernel-bundle.md), [FR-045](./FR-045-define-the-frontend-seam.md), [FR-046](./FR-046-lower-typespec-to-contract-ir.md), [FR-049](./FR-049-emit-stable-source-located-diagnostics.md), [FR-050](./FR-050-validate-and-normalize-the-emitted-ir.md)
 - **Downstream**: every kernel target generator of this issue, and issues #21, #22, #23 as the owners of the backends that consume the emitted document
 - **Constrained by**: [NFR-028](../non-functional/NFR-028-deterministic-kernel-generation.md), [NFR-029](../non-functional/NFR-029-portable-semantic-kernel-packages.md), [NFR-030](../non-functional/NFR-030-non-disruptive-kernel-packaging.md)
-- **Open contract questions this requirement records rather than decides**: whether a deterministic projection of an authored source deserves its own `frontendDialect` value, filed against the contract owner; the narrowing of `DefaultDecl.value` from any JSON value to any JSON object; and the inability of IR v1.1 to state "present and possibly empty" for `OperationDecl.params`. None is resolved by editing a published schema.
+- **Open contract questions this requirement records rather than decides**: whether a deterministic projection of an authored source deserves its own `frontendDialect` value, filed against the contract owner; the narrowing of `DefaultDecl.value` from any JSON value to any JSON object; and the inability of IR 2.0.0 to state "present and possibly empty" for `OperationDecl.params`. None is resolved by editing a published schema.

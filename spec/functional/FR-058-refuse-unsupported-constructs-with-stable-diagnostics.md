@@ -102,7 +102,6 @@ visible in the run rather than invisible in the generated source.
 | `UNKNOWN_FORMAT` | error | yes | a `format` operand names an unregistered format |
 | `UNRENDERABLE_NAME` | error | yes | a name derives no legal Rust identifier |
 | `NAME_COLLISION` | error | yes | two identities derive one identifier in one declared scope |
-| `agent-ix.semantic-ir.V1_1_NODE_IN_V1_0` | error | yes | a `1.0.0` document carries a `1.1.0` node |
 | `agent-ix.semantic-ir.UNRESOLVED_TYPE_REF` | error | yes | a `typeRef`, `appliesTo`, `items`, `values`, `payloadType`, or `target` resolves to nothing |
 | `UNSAFE_OUTPUT_ROOT` | error | yes | the request's `outputRoot` is not traversal-free under the FR-057 intended-language predicate |
 | `agent-ix.semantic-ir.UNDECLARED_LOSS` | error | yes | the backend would drop a construct the profile does not list in `allowedOmissions` |

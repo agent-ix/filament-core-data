@@ -79,19 +79,12 @@ pub fn classify(
         worst: Classification::Patch,
     };
 
+    // fcd#179: contract 2.0.0 is the only one, so no contract-version move
+    // between two valid documents can occur any more; kept as a general,
+    // conditional default rather than special-cased, since a future contract
+    // revision is not this ticket's to predict.
     if before_doc.ir.get("contractVersion") != after_doc.ir.get("contractVersion") {
-        let additive_v2_uplift = matches!(
-            (
-                before_doc.ir.get("contractVersion").and_then(Json::as_str),
-                after_doc.ir.get("contractVersion").and_then(Json::as_str),
-            ),
-            (Some("1.1.0"), Some("2.0.0"))
-        );
-        report.note(if additive_v2_uplift {
-            Classification::Additive
-        } else {
-            Classification::Conditional
-        });
+        report.note(Classification::Conditional);
     }
 
     compare_extensions(&before_doc, &after_doc, &mut report);
@@ -591,16 +584,26 @@ mod tests {
     use super::{classify, Classification};
     use crate::json::parse;
 
-    /// The uplift of a document declaring types, changing nothing but the
-    /// contract version, is additive; any other version change is not.
+    /// fcd#179 deleted contract 1.1.0 (and 1.0.0); the special-cased "the
+    /// 1.1.0-to-2.0.0 uplift is additive" rule this test once asserted went
+    /// with it, since no valid document is ever tagged 1.1.0 again. What
+    /// remains is the general rule (`spec/functional/FR-051`): a document
+    /// declaring types, changed only by a contract-version move, classifies
+    /// `conditional` in either direction, never special-cased by the specific
+    /// versions involved. Exercised through `classify`'s document-layer
+    /// verdicts, a seam that lets this run over a historically-shaped pair
+    /// without going through schema validation — so the "before" document
+    /// below is a hand-written `1.1.0` literal, not a read of
+    /// `config-version-v1-1.json`, which fcd#179 deleted along with every
+    /// other document still declaring a deleted contract.
     #[test]
-    fn tc_1757_classifies_the_1_1_to_2_0_contract_uplift_as_additive() {
-        let v11 = include_str!("../../../fixtures/semantic/v1/positive/config-version-v1-1.json");
+    fn tc_1757_classifies_a_contract_version_move_as_conditional() {
+        let v11 = r#"{"contractVersion": "1.1.0", "types": [{"identity": "ix://agent-ix/config-service/type/ConfigOverlay", "kind": "record", "unknownPolicy": "reject", "extensions": []}]}"#;
         let wrap = |text: &str| parse(&format!(r#"{{"ir":{text}}}"#)).expect("a document");
         let before = wrap(v11);
         let after = wrap(&v11.replacen(
             r#""contractVersion": "1.1.0""#,
-            r#""contractVersion": "2.0.0", "constructs": []"#,
+            r#""contractVersion": "2.0.0""#,
             1,
         ));
         let types = after
@@ -618,7 +621,7 @@ mod tests {
         );
         assert_eq!(
             classify(&before, &after, true, true),
-            Classification::Additive
+            Classification::Conditional
         );
         assert_eq!(
             classify(&after, &before, true, true),

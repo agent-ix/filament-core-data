@@ -29,7 +29,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 
 ## Inputs
 
-- A semantic IR document at `contractVersion` `1.0.0` or `1.1.0`
+- A semantic IR document at `contractVersion` `2.0.0`
 - `schema/semantic/v1/semantic-ir.schema.json` and `common.schema.json`
 - `importedExports`: the type identities the FR-047 resolution exports from imported packages, or the marker `unknown` when no resolution is available
 - `fixtures/semantic/v1/negative/reader-cases.json`, the issue #34 cross-field negative cases
@@ -57,8 +57,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 |---|---|
 | `multiplicity.lower` is a non-negative integer and `upper`, where present, is an integer not less than `lower` | `agent-ix.semantic-ir.INVALID_MULTIPLICITY` |
 | `ordered` and `unique` appear only where `upper` is absent or greater than 1 | `agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION` |
-| every field of a `1.1.0` document declares `multiplicity` | `agent-ix.semantic-ir.MISSING_MULTIPLICITY` |
-| `presence` agrees with `multiplicity.lower` | `agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH` |
+| every field declares `multiplicity` | `agent-ix.semantic-ir.MISSING_MULTIPLICITY` |
 | a `typeRef` resolves, through aliases, to a definition | `agent-ix.semantic-ir.UNRESOLVED_TYPE_REF` |
 | `unit` is a non-empty symbol | `agent-ix.semantic-ir.INVALID_UNIT` |
 | `unit` appears only on a field resolving to a `scalar` | `agent-ix.semantic-ir.UNIT_ON_NON_SCALAR` |
@@ -78,15 +77,13 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | node identities are unique within each list; an extension `identity` is unique per node (within one node's `extensions[]` and within the document-level `extensions[]`) and is never entered into the declaration-identity set, so two definitions each carrying `ix://agent-ix/semantic-core/ext/kernel-scalar` are admissible | `agent-ix.semantic-ir.DUPLICATE_IDENTITY` |
 | the document is an object | `agent-ix.semantic-ir.INVALID_DOCUMENT` |
 
-- For a `1.0.0` document, `readContractIr` SHALL derive each field's multiplicity from its `presence` by the rule `optional → { lower: 0, upper: 1 }`, `required → { lower: 1, upper: 1 }`, which is the derivation FR-027 published.
 - Where `importedExports` is the marker `unknown`, `readContractIr` SHALL suppress `UNRESOLVED_RELATIONSHIP_TARGET` for a target absent from the document and SHALL report the suppression to its caller, rather than reporting a defect it cannot see or passing a target it cannot check.
 - `readContractIr` SHALL terminate on a cyclic alias chain, a cyclic composite relationship graph, and a document whose node count exceeds `maxNodes`, whose nesting exceeds `maxDepth`, or any of whose arrays exceeds `maxCollectionItems`, raising the corresponding limit diagnostic rather than recursing without bound.
 
 ### Normalization
 
 - `canonicalIr` SHALL be the FR-048 canonical byte form of the document, with `types`, `fields`, `variants`, `constraints`, `relationships`, `operations`, `clauses`, and `extensions` declared as identity-keyed sets.
-- For a `1.1.0` document, `normalizeIr` SHALL materialize `multiplicity`, `presence`, and `nullable` on every field and every operation parameter before canonicalising.
-- For a `1.0.0` document, `normalizeIr` SHALL add no bytes beyond canonicalisation.
+- `normalizeIr` SHALL materialize `nullable` as a literal boolean on every field and every operation parameter before canonicalising. `multiplicity` and `presence` are schema-required and independently authored (FR-027, FR-106); `normalizeIr` SHALL NOT derive either from the other or from anything else, and SHALL run this materialization unconditionally, gating on no field of the document including `contractVersion`.
 - `fingerprintIr` SHALL be `digest` of `normalizeIr`'s output.
 - The compiler SHALL validate its own emitted document before writing it.
 - If that validation fails, then the compiler SHALL treat the failure as a blocking diagnostic rather than writing an invalid document.
@@ -96,7 +93,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-050-CON-1 | The compiler's reader is deliberately a third implementation beside the issue #34 TypeScript and Python readers; it SHALL NOT import either, so their agreement remains evidence rather than a tautology. Their agreement is a drift guard; the schema and FR-027..029 remain the authority. | Correctness | Static analysis and differential test |
-| FR-050-CON-2 | This requirement SHALL NOT edit `test/semantic-ir-v1-1-reader.ts` or `tests/semantic_ir_reader.py`. Invoking the Python reader from a test under `test/` is not an edit. | Non-disruption | Branch diff |
+| FR-050-CON-2 | This requirement SHALL NOT edit `tests/semantic_ir_reader.py` or `test/semantic-ir-v1-1-reader.ts` to make either agree with the compiler's reader after the fact — that would collapse the third-implementation evidence FR-050-CON-1 protects into a tautology. Invoking the Python reader from a test under `test/` is not an edit. Both files MAY be edited to keep their `multiplicity`/`presence` handling from disagreeing with the schema-required, independently-authored design FR-106 states (neither is ever derived from the other), and to keep their fixture lists current with what is published under `fixtures/semantic/v1/` — the same standard this requirement is itself held to. | Non-disruption | Branch diff |
 | FR-050-CON-3 | Normalization SHALL be idempotent: normalizing a normalized document yields identical bytes. | Correctness | Property test |
 | FR-050-CON-4 | The reader SHALL terminate on every cyclic or oversized input rather than recursing without bound. | Safety | Fuzz |
 
@@ -104,11 +101,11 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-050-AC-1 | Every positive `1.1.0` fixture under `fixtures/semantic/v1/positive/` validates and yields zero reader diagnostics. | Test |
+| FR-050-AC-1 | Every published positive fixture under `fixtures/semantic/v1/positive/` declaring contract `2.0.0` validates and yields zero reader diagnostics. Refusal of a document declaring any other `contractVersion` is asserted over an inline document. | Test |
 | FR-050-AC-2 | Every case in `negative/reader-cases.json` yields the expected diagnostic code from the compiler's reader. | Test |
 | FR-050-AC-3 | For every case in `negative/reader-cases.json`, the compiler's reader, the issue #34 TypeScript reader, and the Python reader produce the same set of codes; a disagreement fails the suite. | Integration |
-| FR-050-AC-4 | `src/compiler/ir/reader.mjs` imports no module under `test/` or `tests/`, and `test/semantic-ir-v1-1-reader.ts` and `tests/semantic_ir_reader.py` are byte-unchanged from `origin/main`. | Analysis |
-| FR-050-AC-5 | `normalizeIr` materializes `multiplicity`, `presence`, and `nullable` on every `1.1.0` field and operation parameter, and leaves a `1.0.0` document's field set unchanged. | Test |
+| FR-050-AC-4 | `src/compiler/ir/reader.mjs` imports no module under `test/` or `tests/`, matching FR-050-CON-1; any edit to `test/semantic-ir-v1-1-reader.ts` or `tests/semantic_ir_reader.py` stays within what FR-050-CON-2 permits. | Analysis |
+| FR-050-AC-5 | `normalizeIr` materializes `nullable` as a literal boolean on every field and operation parameter, unconditionally on `contractVersion`, and never derives `multiplicity` from `presence` or `presence` from `multiplicity`. | Test |
 | FR-050-AC-6 | `normalizeIr(normalizeIr(d))` equals `normalizeIr(d)` for every positive fixture and for generated documents. | Property |
 | FR-050-AC-7 | Two documents differing only in object key order and in identity-keyed array order have the same `fingerprintIr`; two differing in any semantic value do not. | Property |
 | FR-050-AC-8 | An emitted document that fails validation is not written, and the failure is a blocking diagnostic naming the failing pointer. | Test |

@@ -73,7 +73,7 @@ to the line without searching.
 | FR-049-CON-1 | The registry is a compatibility surface: a code's spelling and its `blocking` disposition SHALL NOT change without a compatibility-report entry in the `generated-api` family. | Compatibility | Analysis |
 | FR-049-CON-2 | The `diagnostic` constructor SHALL truncate every input-derived string to 120 characters before it enters a message; input data beyond identities, versions, digests, keywords, and positions never reaches it. | Security | Test |
 | FR-049-CON-3 | The set of codes the registry declares and the set the compiler emits SHALL be equal, with every declared code reached by at least one test. | Completeness | Test |
-| FR-049-CON-4 | The `agent-ix.semantic-ir.*` spellings SHALL be exactly those the issue #34 readers already emit, extracted from the byte-unchanged `fixtures/semantic/v1/negative/reader-cases.json` and `test/semantic-ir-v1-1-reader.ts`. | Consistency | Test |
+| FR-049-CON-4 | The `agent-ix.semantic-ir.*` spellings SHALL be exactly those the issue #34 readers already emit, extracted from `fixtures/semantic/v1/negative/reader-cases.json` and `test/semantic-ir-v1-1-reader.ts` against their current bytes, not a byte-unchanged snapshot. | Consistency | Test |
 
 ## Acceptance Criteria
 

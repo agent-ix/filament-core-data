@@ -12,8 +12,6 @@ from . import common_schema
 
 
 class ContractVersion(Enum):
-    field_1_0_0 = '1.0.0'
-    field_1_1_0 = '1.1.0'
     field_2_0_0 = '2.0.0'
 
 
@@ -27,7 +25,7 @@ class Package(Struct):
 
 
 class Source(Struct):
-    dialect: Literal['https://json-schema.org/draft/2020-12/schema'] | common_schema.FrontendDialect
+    dialect: common_schema.FrontendDialect
     digest: common_schema.Sha256
     identity: common_schema.SemanticIdentity
     version: common_schema.Semver
@@ -348,6 +346,7 @@ class Construct(Struct):
 class Field(Struct):
     defaultKind: DefaultKind
     identity: common_schema.SemanticIdentity
+    multiplicity: Multiplicity
     name: Annotated[str, Meta(min_length=1)]
     nullable: bool
     origin: common_schema.Origin
@@ -355,7 +354,6 @@ class Field(Struct):
     typeRef: common_schema.SemanticIdentity
     defaultValue: Any | UnsetType = UNSET
     extensions: list[common_schema.Extension] | UnsetType = UNSET
-    multiplicity: Multiplicity | UnsetType = UNSET
     redefines: common_schema.SemanticIdentity | UnsetType = UNSET
     subsets: IdentityList | UnsetType = UNSET
     unit: Annotated[str, Meta(min_length=1, pattern='^[!-~]+$')] | UnsetType = UNSET
@@ -487,12 +485,12 @@ class TypeDefinition(Struct):
     vocabulary: list[Term] | UnsetType = UNSET
 
 
-class FilamentSemanticIrV1ContractVersions100110And200(Struct):
+class FilamentSemanticIrV1ContractVersion200(Struct):
+    constructs: list[Construct]
     contractVersion: ContractVersion
     extensions: list[common_schema.Extension]
     occurrences: list[Occurrence]
     package: Package
     source: Source
     types: Annotated[list[TypeDefinition], Meta(min_length=1)]
-    constructs: list[Construct] | UnsetType = UNSET
     populations: list[Population] | UnsetType = UNSET

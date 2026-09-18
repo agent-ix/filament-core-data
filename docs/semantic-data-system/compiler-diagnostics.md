@@ -64,7 +64,6 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.LIMIT_MAX_INPUT_BYTES` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.LIMIT_MAX_NODES` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.LOCK_GRAPH_MISMATCH` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
-| `agent-ix.compiler.MISSING_TARGET_DIALECT` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.MULTIPLICITY_CONTRADICTS_OPTIONALITY` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.PACKAGE_CYCLE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.PATH_ESCAPE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
@@ -103,7 +102,6 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.semantic-ir.MISSING_MULTIPLICITY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.MISSING_SOURCE_SPAN` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.NODES_ON_NON_RECORD` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
-| `agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.UNIT_ON_NON_SCALAR` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.UNKNOWN_CLAUSE_LANGUAGE` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.UNKNOWN_CONSTRAINT_KEYWORD` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |

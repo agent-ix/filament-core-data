@@ -1,11 +1,11 @@
 {
-	"id": "VER-003",
-	"title": "The second frontend dialect a 1.1.0 document admits is accepted",
-	"family": "version",
+	"id": "ENV-005",
+	"title": "A second frontend dialect a document admits is accepted",
+	"family": "envelope",
 	"class": "boundary",
 	"kind": "document",
-	"contractVersion": "1.1.0",
-	"base": "minimal-1-1",
+	"contractVersion": "2.0.0",
+	"base": "minimal-2-0",
 	"ops": [
 		{
 			"op": "test",
@@ -18,13 +18,13 @@
 			"value": "spec-bundle"
 		}
 	],
-	"covers": ["CR-version"],
+	"covers": ["CR-envelope"],
 	"decidedBy": "schema",
 	"derivedFrom": [
 		{
 			"artifact": "docs/semantic-data-system/contracts-v1.md",
-			"locator": "Contract 1.1.0 (issue #34)",
-			"quote": "over the resolved kind. In a `1.1.0` document `source.dialect` is `typespec` or"
+			"locator": "Structural model detail (issue #34)",
+			"quote": "`source.dialect` is `typespec` or `spec-bundle`"
 		}
 	],
 	"provenance": {

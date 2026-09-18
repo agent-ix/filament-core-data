@@ -11,7 +11,7 @@ determinism gate that compares two generations byte for byte.
 - Source identity: `ix://agent-ix/filament-core-data/source/typespec`
 - Source version: `1.0.0`
 - Source digest: `sha256:0000000000000000000000000000000000000000000000000000000000000000`
-- Contract version: `1.1.0`
+- Contract version: `2.0.0`
 
 The same values are exported as `&'static str` constants from
 `src/provenance.rs`, so a consumer can assert against them at run time.

@@ -15,13 +15,13 @@ import {
 	buildBefore as buildBeforeInput,
 	buildInput as buildCaseInput,
 	compare as compareResult,
-	corpusVersion as readCorpusVersion,
+	oracleVerdict as decide,
 	listCases as listCorpusCases,
 	loadBase as readBase,
 	loadCase as readCase,
 	loadCorpus as readCorpus,
+	corpusVersion as readCorpusVersion,
 	loadManifest as readManifest,
-	oracleVerdict as decide,
 	substantive as substantiveOf,
 } from "../corpus.mjs";
 

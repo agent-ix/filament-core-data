@@ -13,8 +13,6 @@ from . import common_schema
 
 
 class ContractVersion(Enum):
-    field_1_0_0 = '1.0.0'
-    field_1_1_0 = '1.1.0'
     field_2_0_0 = '2.0.0'
 
 
@@ -34,7 +32,7 @@ class Source(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
-    dialect: Literal['https://json-schema.org/draft/2020-12/schema'] | common_schema.FrontendDialect
+    dialect: common_schema.FrontendDialect
     digest: common_schema.Sha256
     identity: common_schema.SemanticIdentity
     version: common_schema.Semver
@@ -440,7 +438,7 @@ class FieldModel(BaseModel):
     defaultValue: Any | None = None
     extensions: list[common_schema.Extension] | None = None
     identity: common_schema.SemanticIdentity
-    multiplicity: Multiplicity | None = None
+    multiplicity: Multiplicity
     name: Annotated[str, Field(min_length=1)]
     nullable: bool
     origin: common_schema.Origin
@@ -608,11 +606,11 @@ class TypeDefinition(BaseModel):
     vocabulary: list[Term] | None = None
 
 
-class FilamentSemanticIrV1ContractVersions100110And200(BaseModel):
+class FilamentSemanticIrV1ContractVersion200(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
-    constructs: list[Construct] | None = None
+    constructs: list[Construct]
     contractVersion: ContractVersion
     extensions: list[common_schema.Extension]
     occurrences: list[Occurrence]

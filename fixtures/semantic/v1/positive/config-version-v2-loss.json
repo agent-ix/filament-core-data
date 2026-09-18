@@ -1,6 +1,6 @@
 {
 	"source": "agent-ix/config-service spec/functional/FR-006-config-version-entity.md (read-only corpus fixture, revision as inspected 2026-09-03)",
-	"fixture": "positive/config-version-v1-1.json",
+	"fixture": "positive/config-version-v2.json",
 	"rows": [
 		{
 			"row": "id | UUID | PK, default uuid4",

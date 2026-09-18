@@ -60,7 +60,7 @@ names the backend that will answer it.
 |----|------------|------|------------|
 | FR-130-CON-1 | The files generated through the seam SHALL be byte-identical to the files the Rust backend's own command generates from the same document | Integrity | Test |
 | FR-130-CON-2 | The module the seam imports SHALL import no file-system module, so registering a backend leaves the seam pure for every target | Design | Inspection |
-| FR-130-CON-3 | The Rust backend SHALL accept contract version 1.1.0 only through the seam, so the frozen prototype document that also calls itself 1.0.0 stays unreachable by the contract path | Interface | Test |
+| FR-130-CON-3 | The Rust backend SHALL accept contract version 2.0.0 only through the seam, so the frozen prototype document that also calls itself 1.0.0 stays unreachable by the contract path | Interface | Test |
 
 ## Acceptance Criteria
 
@@ -71,7 +71,7 @@ names the backend that will answer it.
 | FR-130-AC-3 | Generating one document through the seam and through the backend's own command yields byte-identical files at every path | Test (TC-1390) |
 | FR-130-AC-4 | The generated crate's rendered generator identity names the Rust backend when the caller selected the `rust` target | Test (TC-1391) |
 | FR-130-AC-5 | A target with no implementation still returns state `unavailable` carrying `BACKEND_NOT_IMPLEMENTED` and the owning ticket | Test (TC-1392) |
-| FR-130-AC-6 | A `rust` request whose IR declares contract version 1.0.0 returns state `unsupported` naming the versions the backend declares | Test (TC-1393) |
+| FR-130-AC-6 | A `rust` request whose IR declares contract version 1.0.0 returns state `invalid` with an `UNKNOWN_CONTRACT_VERSION` diagnostic naming `1.0.0`, and the backend's own `supportedIrVersions` is `["2.0.0"]` | Test (TC-1393) |
 | FR-130-AC-7 | A `rust` request generated with no injected host returns a diagnostic rather than reading the repository, and writes no file | Test (TC-1394) |
 | FR-130-AC-8 | The module the seam imports for the Rust backend names no file-system module | Test (TC-1395) |
 

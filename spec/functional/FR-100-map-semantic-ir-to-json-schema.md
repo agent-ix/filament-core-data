@@ -1,6 +1,6 @@
 ---
 id: FR-100
-title: "Map semantic IR v1.1 definitions to JSON Schema 2020-12"
+title: "Map semantic IR 2.0.0 definitions to JSON Schema 2020-12"
 type: FR
 relationships:
   - target: "ix://agent-ix/filament-core-data/US-015"
@@ -12,18 +12,18 @@ relationships:
   - target: "ix://agent-ix/filament-core-data/NFR-034"
     type: "constrained_by"
 ---
-# FR-100: Map semantic IR v1.1 definitions to JSON Schema 2020-12
+# FR-100: Map semantic IR 2.0.0 definitions to JSON Schema 2020-12
 
 ## Description
 
-The JSON Schema backend SHALL map every admissible semantic IR v1.1 type
+The JSON Schema backend SHALL map every admissible semantic IR `2.0.0` type
 definition to a deterministic JSON Schema 2020-12 document, so that a domain
 package's API boundary can validate a value without relying on a source
 frontend, a generated programming-language package, or an ambient registry.
 
 ## Inputs
 
-- One semantic IR `1.1.0` document admitted by the backend's independent
+- One semantic IR `2.0.0` document admitted by the backend's independent
   admissibility reader.
 - The `json-schema` target-contract row in
   `fixtures/semantic/v1/positive/target-contracts.json`.

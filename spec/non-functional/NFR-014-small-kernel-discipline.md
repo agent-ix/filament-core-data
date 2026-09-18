@@ -8,8 +8,6 @@ relationships:
     type: "constrains"
   - target: "ix://agent-ix/filament-core-data/FR-031"
     type: "constrains"
-  - target: "ix://agent-ix/filament-core-data/NFR-013"
-    type: "depends_on"
 ---
 # [NFR-014] Small kernel discipline and non-disruption for semantic-core
 
@@ -63,5 +61,5 @@ branch against its base for prohibited paths, run the spike check, inspect
 
 ## Dependencies
 
-- **Upstream**: [NFR-013](./NFR-013-additive-semantic-ir-revision.md), ARCH-005, ADR-0002
+- **Upstream**: ARCH-005, ADR-0002
 - **Downstream**: every Wave 4 module ticket, issue #11 publication

@@ -26,7 +26,7 @@ import {
 } from "./backends/seam.mjs";
 import { fingerprintIrForTarget } from "./backends/typescript-v1/canonical.mjs";
 import { emitTypeScriptPackage } from "./backends/typescript-v1/emit.mjs";
-import { diffSemanticContract } from "./compat/diff.mjs";
+import { ContractRefusalError, diffSemanticContract } from "./compat/diff.mjs";
 import { compileSemanticIr } from "./compile.mjs";
 import {
 	DEFAULT_LIMITS,
@@ -457,6 +457,11 @@ main(process.argv.slice(2))
 		if (error instanceof UsageError) {
 			process.stderr.write(`${error.message}\n${USAGE}\n`);
 			process.exitCode = 2;
+			return;
+		}
+		if (error instanceof ContractRefusalError) {
+			process.stderr.write(`${error.code} ${error.message}\n`);
+			process.exitCode = 1;
 			return;
 		}
 		process.stderr.write(`${error.message}\n`);

@@ -53,7 +53,7 @@ an advisory, and a reader never re-reads its text in another language.
 
 ## Behavior
 
-- The schema SHALL admit each member of the table only in a `2.0.0` document and SHALL refuse it in a `1.0.0` or `1.1.0` document with `SCHEMA_VIOLATION`.
+- The schema SHALL admit each member of the table only in a `2.0.0` document; FR-050's `contractVersion` rule refuses every other document with `SCHEMA_VIOLATION` before a reader evaluates any member, so no member of the table is ever evaluated against a document declaring another `contractVersion`.
 - A reader SHALL raise `UNRESOLVED_CONSTRUCT_REF` for a supertype naming no declared type, `CONSTRUCT_TARGET_KIND` for a supertype of another kind, and `SUPERTYPE_CYCLE` for a type that reaches itself through `supertypes`.
 - A reader SHALL raise `UNRESOLVED_FEATURE_REF` for a `subsets` or `redefines` entry naming no field of a transitive supertype, and `INVALID_REDEFINITION` for a redefinition whose multiplicity lies outside the redefined field's bounds.
 - A reader SHALL raise `UNRESOLVED_FRAME_PATH` for a frame path whose first segment names neither a field of the owning type or its supertypes nor a parameter of the operation.
@@ -67,7 +67,6 @@ an advisory, and a reader never re-reads its text in another language.
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-141-CON-1 | A member of the table SHALL NOT appear in a `1.0.0` or `1.1.0` document the readers accept. | Compatibility | Test |
 | FR-141-CON-2 | A reader SHALL NOT approximate a clause language: a language outside the admitted set is refused by the schema, and an admitted language other than `quire` is carried unchecked with `CLAUSE_LANGUAGE_UNCHECKED`, never read as `quire`. `agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED` is the IR reader's spelling of the Quire engine's `semantic.clause-language-unchecked`: the two name one condition, a clause whose language the reader carries without checking it as Quire. | Integrity | Test |
 
 ## Acceptance Criteria
@@ -78,7 +77,6 @@ an advisory, and a reader never re-reads its text in another language.
 | FR-141-AC-2 | A supertype naming no type, a supertype of another kind and a two-type generalization cycle raise `UNRESOLVED_CONSTRUCT_REF`, `CONSTRUCT_TARGET_KIND` and `SUPERTYPE_CYCLE` at the `supertypes` pointer. | Test (TC-1741) |
 | FR-141-AC-3 | A `subsets` entry naming no supertype field raises `UNRESOLVED_FEATURE_REF`, and a `redefines` widening the redefined upper bound raises `INVALID_REDEFINITION`. | Test (TC-1742) |
 | FR-141-AC-4 | A frame path starting at no field or parameter raises `UNRESOLVED_FRAME_PATH`, and a population member naming no type raises `UNRESOLVED_TYPE_REF`. | Test (TC-1743) |
-| FR-141-AC-5 | Each member of the table inside a `1.1.0` document is refused with `SCHEMA_VIOLATION` by every reader. | Test (TC-1744) |
 | FR-141-AC-6 | A `2.0.0` document whose inline `pre` clause declares `ocl`, or whose inline `post` clause declares `acme:tla`, is accepted by the Rust, Node and Python readers with exactly one non-blocking `CLAUSE_LANGUAGE_UNCHECKED` at that clause's `language`; the same clause in `quire` raises nothing. | Test (TC-1759) |
 | FR-141-AC-7 | A TypeSpec model member of type `unknown` compiles without a blocking diagnostic to a field whose `typeRef` resolves to a `scalar` definition of scalar `any` whose identity ends `/type/JsonObject`, the identity a spec bundle mints for the same scalar, and no zero-field record is emitted for it. | Test (TC-1761) |
 | FR-141-AC-8 | A `2.0.0` operation whose `pre` lists a clause id and an inline clause is accepted by the Rust, Node and Python readers; a dangling id item raises `DANGLING_CLAUSE_REF` at that item and no inline item is resolved as an id. | Test (TC-1795) |

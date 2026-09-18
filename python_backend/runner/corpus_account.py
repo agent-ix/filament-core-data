@@ -4,8 +4,8 @@ This is **not** an adapter result and must not be mistaken for one. The corpus's
 `conformance/schema/adapter-result.schema.json` requires, per case, a
 `resultState`, a `diagnostics` array of contract diagnostics carrying registry
 codes, and a `normalized` form. A package of generated types can produce none of
-those: the oracle's readings — `UNRESOLVED_TYPE_REF`,
-`PRESENCE_MULTIPLICITY_MISMATCH`, `V1_1_NODE_IN_V1_0` — are cross-field
+those: the oracle's readings — `UNRESOLVED_TYPE_REF` and
+`COMPOSITE_CYCLE` — are cross-field
 judgements over a resolved document, and a JSON Schema-derived model decides
 only whether a value satisfies its own shape.
 
@@ -129,7 +129,7 @@ def build() -> dict[str, Any]:
             )
             continue
         try:
-            semantic_ir_schema.FilamentSemanticIrV1ContractVersions100110And200.model_validate(
+            semantic_ir_schema.FilamentSemanticIrV1ContractVersion200.model_validate(
                 ir
             )
             decided = "success"

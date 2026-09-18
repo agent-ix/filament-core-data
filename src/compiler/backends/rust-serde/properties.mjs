@@ -70,7 +70,7 @@ export function requestForIr(ir, outputRoot = "generated", profile = PROFILE) {
 		backend: {
 			identity: "ix://agent-ix/filament-core-data/rust-backend",
 			version: "0.1.0",
-			supportedIrVersions: ["1.0.0", "1.1.0", "2.0.0"],
+			supportedIrVersions: ["2.0.0"],
 			supportedFeatures: [],
 			options: {},
 		},
@@ -787,10 +787,6 @@ const DAMAGE = Object.freeze({
 			for (const variant of type.variants)
 				variant.payloadType = ir.types[0].identity;
 		}
-		return ir;
-	},
-	"a-1-1-node-in-a-1-0-document": (ir) => {
-		ir.contractVersion = "1.0.0";
 		return ir;
 	},
 	"an-inexpressible-pattern": (ir) => {

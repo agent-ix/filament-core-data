@@ -161,22 +161,6 @@
 		"expected": "breaking"
 	},
 	{
-		"id": "v1-to-v1-1-additive-revision",
-		"family": "contract-version",
-		"from": "1.0.0",
-		"to": "1.1.0",
-		"addedNodes": [
-			"field.multiplicity",
-			"field.unit",
-			"typeDefinition.relationships",
-			"typeDefinition.operations",
-			"typeDefinition.clauses",
-			"constraint.keyword (closed)",
-			"source.dialect (frontend)"
-		],
-		"expected": "additive"
-	},
-	{
 		"id": "relationship-added",
 		"family": "relationship",
 		"expected": "additive"

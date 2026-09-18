@@ -1,15 +1,5 @@
 [
 	{
-		"id": "field-presence-contradicts-multiplicity",
-		"base": "positive/semantic-ir-v1-1.json",
-		"set": {
-			"path": "types.3.fields.1.presence",
-			"value": "required"
-		},
-		"code": "agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH",
-		"path": "types.3.fields.1.presence"
-	},
-	{
 		"id": "field-upper-below-lower",
 		"base": "positive/semantic-ir-v1-1.json",
 		"set": {

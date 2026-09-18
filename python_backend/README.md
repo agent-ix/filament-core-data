@@ -81,8 +81,8 @@ measurement. Nothing here opens a network connection.
 - It does not wire the conformance corpus's `python-backend` adapter slot. That
   slot needs a reader that emits contract diagnostics with registry codes, which
   a package of generated types cannot be. The account here says what the
-  generated surface *can* decide — 70 of 111 cases, agreeing with the oracle on
-  all 70 — and the reader is filed as issue #65.
+  generated surface *can* decide — 68 of 106 cases, agreeing with the oracle on
+  all 68 — and the reader is filed as issue #65.
 - It does not decide GAP-011. Its disposition is recorded in `gaps.json`.
 - It owns no hand-written Python generator, and FR-077-CON-1 forbids introducing
   one absent a reviewed P0 gap.

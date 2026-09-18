@@ -2,20 +2,6 @@
 	"$comment": "Disagreements between the corpus and the published contract, or with a merged artifact that is not a registered adapter. These are recorded, not repaired: this issue may not change a published schema or another ticket's implementation. Every row names the issue that owns the decision.",
 	"gaps": [
 		{
-			"id": "GAP-001",
-			"title": "The IR schema does not version-gate the contract 1.1.0 nodes",
-			"artifacts": [
-				"schema/semantic/v1/semantic-ir.schema.json",
-				"docs/semantic-data-system/contracts-v1.md"
-			],
-			"finding": "`semantic-ir.schema.json` gates only `multiplicity`, requiring it on a 1.1.0 field. A document declaring `contractVersion: \"1.0.0\"` may carry `relationships`, `operations`, `clauses`, and a field `unit`, and the schema accepts it.",
-			"consequence": "A reader written to contract 1.0.0 drops relationships, operations, clauses, and units in silence, which is exactly the additive-revision failure NFR-013 exists to prevent.",
-			"corpusDisposition": "The oracle decides it as `agent-ix.semantic-ir.V1_1_NODE_IN_V1_0` from the additive rule in `contracts-v1.md`; case VER-002 pins it. The corpus decides a rule the schema does not, and records that rather than treating its own rule as the contract.",
-			"owningIssue": "agent-ix/filament-core-data#34",
-			"discoveredBy": "agent-ix/filament-core-data#20",
-			"status": "open"
-		},
-		{
 			"id": "GAP-002",
 			"title": "The `sourceLocus` path pattern cannot compile under RE2",
 			"artifacts": ["schema/semantic/v1/common.schema.json"],
@@ -102,20 +88,6 @@
 			"consequence": "Every implementation reconstructs it, and this corpus reconstructed it too. A disagreement between two backends about whether `nonEmpty` applies to a map is a disagreement about an unpublished rule.",
 			"corpusDisposition": "The oracle's table is written down in `conformance/oracle/oracle.mjs` and exercised by the constraint family, so at least one reading is testable; it is not authority.",
 			"owningIssue": "agent-ix/filament-core-data#29",
-			"discoveredBy": "agent-ix/filament-core-data#20",
-			"status": "open"
-		},
-		{
-			"id": "GAP-009",
-			"title": "Presence is derivable from multiplicity but both are required and unreconciled by the schema",
-			"artifacts": [
-				"schema/semantic/v1/semantic-ir.schema.json",
-				"docs/semantic-data-system/contracts-v1.md"
-			],
-			"finding": "A 1.1.0 field must carry `presence` and `multiplicity`, and `contracts-v1.md` says `presence` is derived from the multiplicity lower bound; the schema enforces no agreement between them.",
-			"consequence": "A schema-valid document can state both `presence: \"optional\"` and `multiplicity.lower: 1`. Only a cross-field reader catches it, so a backend that validates by schema alone accepts a contradiction.",
-			"corpusDisposition": "The oracle decides it as `PRESENCE_MULTIPLICITY_MISMATCH`, reusing the code `reader-cases.json` already froze; case PRES-002 pins it.",
-			"owningIssue": "agent-ix/filament-core-data#34",
 			"discoveredBy": "agent-ix/filament-core-data#20",
 			"status": "open"
 		},

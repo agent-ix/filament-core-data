@@ -33,7 +33,7 @@ contract itself rather than against an erased TypeScript type.
 
 ## Inputs
 
-- A semantic IR document at `contractVersion` `1.1.0` that [FR-068](./FR-068-decide-and-report-ir-admissibility.md) has admitted
+- A semantic IR document at `contractVersion` `2.0.0` that [FR-068](./FR-068-decide-and-report-ir-admissibility.md) has admitted
 - The resolved type model [FR-064](./FR-064-lower-ir-type-definitions-to-typescript.md) builds: per type, its `kind`, its resolved scalar, its fields with `presence`, `nullable`, `multiplicity`, `defaultKind`, and `defaultValue`, and its `unknownPolicy`
 - Each type's `constraints[]`, every entry carrying `keyword`, `operands`, `appliesTo`, and its own `diagnosticCode`
 - The constraint applicability table of `src/compiler/ir/applicability.mjs`
@@ -140,7 +140,7 @@ contract itself rather than against an erased TypeScript type.
 
 ### Unknown members
 
-- `unknownPolicy` is meaningful only on a `record`, because no other kind carries a declared member set. The backend SHALL therefore give `unknownPolicy` no validation effect on a `scalar`, `enum`, `union`, `alias`, `sequence`, `map`, or `reference` type, and [FR-067](./FR-067-generate-identity-and-fingerprint-metadata.md) SHALL carry the declared value into the metadata so nothing is dropped. The committed bases make this a real case rather than a hypothetical one: `conformance/bases/core-1-1.json` carries a `union` declaring `surface` and `package-1-1.json` carries a `map` declaring `preserve`.
+- `unknownPolicy` is meaningful only on a `record`, because no other kind carries a declared member set. The backend SHALL therefore give `unknownPolicy` no validation effect on a `scalar`, `enum`, `union`, `alias`, `sequence`, `map`, or `reference` type, and [FR-067](./FR-067-generate-identity-and-fingerprint-metadata.md) SHALL carry the declared value into the metadata so nothing is dropped. The committed bases make this a real case rather than a hypothetical one: `conformance/bases/core-2-0.json` carries a `union` declaring `surface` and `package-2-0.json` carries a `map` declaring `preserve`.
 - Where a `record` declares `unknownPolicy: "reject"`, the generated validator SHALL reject a value carrying a member the type does not declare, reporting a pointer at that member.
 - Where a `record` declares `unknownPolicy: "surface"`, the generated validator SHALL report each undeclared member as a surfaced finding that leaves `ok` true and is distinguishable from a rejection by its code.
 - Where a `record` declares `unknownPolicy: "preserve"`, the generated validator SHALL carry every undeclared member through to the result value unchanged.

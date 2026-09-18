@@ -21,7 +21,7 @@
  * - **The model is acyclic.** The IR's type graph is not: `typeRef`,
  *   `alias.target`, `sequence.items`, `map.values` and `variant.payloadType` are
  *   flat identities into one flat array and may form cycles, and
- *   `conformance/bases/core-1-1.json` carries a real one — `Node` has a field
+ *   `conformance/bases/core-2-0.json` carries a real one — `Node` has a field
  *   typed `NodeRef`, which is a `reference` whose target is `Node`. So a
  *   resolution carries a *summary* of the entry it resolves to — its identity,
  *   its minted identifier, its kind and its resolved scalar — rather than a
@@ -137,24 +137,16 @@ function summaryOf(types, identifiers, identity) {
  * no renderer re-derives one and no two renderers derive it differently.
  *
  * `upper` absent means unbounded, so absent or greater than one is a
- * collection. `conformance/bases/core-1-1.json` carries both readings on one
+ * collection. `conformance/bases/core-2-0.json` carries both readings on one
  * record: `node-children` has `{ lower: 0, ordered: true, unique: true }` and is
  * a collection, while `node-tags` has `{ lower: 0, upper: 1 }` and is not, even
  * though its `typeRef` names a `sequence`.
  */
 function axesOf(field) {
-	// A `1.0.0` field carries no multiplicity at all — the schema requires one
-	// only at `1.1.0` — so an absent *member* is not an absent *bound*. Reading
-	// it as unbounded would render every `1.0.0` field as an array. Where the
-	// member is absent it is derived from `presence`, which is the same
-	// derivation the normalized serialization applies, and only an explicitly
-	// declared multiplicity with an absent `upper` means unbounded.
-	const declared = isObject(field.multiplicity);
-	const multiplicity = declared
-		? field.multiplicity
-		: field.presence === "optional"
-			? { lower: 0, upper: 1 }
-			: { lower: 1, upper: 1 };
+	// `multiplicity` is schema-required on every field under contract `2.0.0`
+	// (FR-027); it is read exactly as authored and never derived from
+	// `presence`, matching the normalizers (FR-059, FR-069, FR-106).
+	const multiplicity = isObject(field.multiplicity) ? field.multiplicity : {};
 	const upper = multiplicity.upper;
 	return {
 		optional: field.presence === "optional",
@@ -413,7 +405,7 @@ export function buildModel(ir, options = {}) {
 			Object.fromEntries(entries.map((entry) => [entry.identity, entry])),
 		),
 		// Both are document-level and are rendered by FR-067 and by nothing else.
-		// `conformance/bases/core-1-1.json` and `package-1-1.json` each carry one
+		// `conformance/bases/core-2-0.json` and `package-2-0.json` each carry one
 		// of each, so a model that dropped them would drop real data under a
 		// `fail` policy.
 		occurrences: Object.freeze([...(document.occurrences ?? [])]),

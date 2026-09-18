@@ -12,11 +12,8 @@ relationships:
 
 ## Description
 
-The semantic IR v1.1 `field` node SHALL carry an explicit `multiplicity`
+The semantic IR `field` node SHALL carry an explicit `multiplicity`
 object and an optional `unit`.
-
-The IR validator SHALL treat `presence` as a derived view whose value is fixed
-by the multiplicity.
 
 ## Inputs
 
@@ -31,16 +28,12 @@ by the multiplicity.
 
 ## Behavior
 
-- A field in a `contractVersion: "1.1.0"` document SHALL carry `multiplicity`.
-- The IR validator SHALL accept a field in a `contractVersion: "1.0.0"` document that omits `multiplicity`.
-- The normalized serialization of a `1.1.0` document SHALL materialize `multiplicity`, `presence`, and `nullable` on every field.
-- The normalized serialization of a `1.0.0` document SHALL NOT add a derived `multiplicity`, so v1 fingerprints and lock digests are unchanged.
+- A field SHALL carry `multiplicity`, schema-required under contract `2.0.0`, the only version.
+- The normalized serialization SHALL materialize `nullable` as a literal boolean on every field; `multiplicity` and `presence` are independently authored and neither is ever derived from the other (FR-050, FR-069).
 - The `field` node SHALL carry `multiplicity.lower` as a non-negative integer.
 - The `field` node SHALL treat an absent `multiplicity.upper` as unbounded.
 - If `multiplicity.upper` is present and is less than `multiplicity.lower`, then IR validation SHALL fail at that field with its locus.
-- The `field` node SHALL derive `presence` as `required` when `multiplicity.lower` is at least 1 and `optional` when it is 0.
-- If a document states a `presence` that differs from the value derived from its multiplicity, then IR validation SHALL fail at that field.
-- The `field` node SHALL keep `nullable` independent of multiplicity, so that a required field still admits an explicit null value when declared.
+- The `field` node SHALL keep `presence` and `nullable` independent of multiplicity (FR-106), so that a required field still admits an explicit null value when declared and a field's presence is never derived from its multiplicity.
 - If `ordered` or `unique` is present and `multiplicity.upper` is 1 or 0, then IR validation SHALL fail at that field with its locus.
 - The IR validator SHALL resolve `typeRef` through `alias` definitions to its structural kind before applying the `unit`, `ordered`, and `unique` rules.
 - If a `typeRef` does not resolve, then IR validation SHALL fail at the field with its locus.
@@ -55,20 +48,18 @@ by the multiplicity.
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-027-CON-1 | The IR validator SHALL accept a `1.0.0` field without `multiplicity` and derive it from `presence` (`required` → `1..1`, `optional` → `0..1`) without writing it back. | Compatibility | Existing-fixture suite |
 | FR-027-CON-2 | A `unit` on a non-scalar field SHALL fail validation rather than being dropped. | Integrity | Negative fixture |
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-027-AC-1 | A field declared `0..1` validates, derives `presence: optional`, and re-serializes byte-identically through the normalized form. | Test |
+| FR-027-AC-1 | A field declared `multiplicity: {lower: 0, upper: 1}` with `presence: optional` authored explicitly validates and re-serializes byte-identically through the normalized form; the same field with `presence` omitted fails validation, since `presence` is schema-required and never derived from `multiplicity`. | Test |
 | FR-027-AC-2 | A field declared `1..*` with `ordered: true` and `unique: true` validates and preserves both flags. | Test |
-| FR-027-AC-3 | A field whose stated `presence` contradicts its multiplicity fails validation with the field's locus. | Test |
 | FR-027-AC-4 | A field with `upper < lower` fails validation with the field's locus. | Test |
 | FR-027-AC-5 | A scalar field with `unit: "s"` validates; the same unit on a record-typed field fails. | Test |
-| FR-027-AC-6 | Every v1 positive fixture validates unchanged under the v1.1 schema. | Test |
-| FR-027-AC-7 | The config-service FR-006 `ConfigVersion` fields (`parent 0..1`, `versionNumber 1..1`) are expressed in `fixtures/semantic/v1/positive/config-version-v1-1.json` with zero declared loss. | Analysis |
+| FR-027-AC-6 | Every published positive fixture declaring contract `2.0.0` validates under the schema; their vocabulary and negative-refusal coverage is asserted over inline documents. | Test |
+| FR-027-AC-7 | The config-service FR-006 `ConfigVersion` fields (`parent 0..1`, `versionNumber 1..1`) are expressed in `fixtures/semantic/v1/positive/config-version-v2.json` with zero declared loss. | Analysis |
 | FR-027-AC-8 | `ordered: true` on a `1..1` field fails validation with the field's locus. | Test |
 | FR-027-AC-9 | A multiplicity narrowing (`0..*` → `1..1`) classifies as breaking and a widening (`1..1` → `0..*`) as additive in the compatibility corpus. | Test |
 

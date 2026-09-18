@@ -9,6 +9,12 @@
 //!
 //! ```
 //! use agent_ix_semantic_ir::{decide, json::parse};
+//! // fcd#179: contract 1.0.0 is deleted; `schema::semantic_ir` closes
+//! // `contractVersion` to `["2.0.0"]` (`expect_enum` in `schema.rs`), so this
+//! // document's single diagnostic is SCHEMA_VIOLATION at `/ir/contractVersion`,
+//! // "contractVersion is a closed enumeration and 1.0.0 is not a member" —
+//! // real version enforcement, not an artifact of the fragment's other
+//! // absent members.
 //! let bundle = parse(r#"{"ir":{"contractVersion":"1.0.0"}}"#).expect("a document");
 //! let verdict = decide(&bundle);
 //! assert!(!verdict.diagnostics.is_empty());

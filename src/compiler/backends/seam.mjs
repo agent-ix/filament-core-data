@@ -344,14 +344,22 @@ export function generateTarget(request, options = {}) {
 	const validators = schemaValidators(options.host);
 	const errors = validators.errors("compiler-request.schema.json", request);
 	if (errors.length > 0) {
+		// A wrong `ir.contractVersion` is a named refusal, not a generic schema
+		// defect: this compiler accepts exactly one contract version, and the
+		// caller should be told which one it saw rather than reading a bare
+		// enum-mismatch message (FR-063).
 		return manifest({
 			request,
 			backendIdentity: entry.backend?.identity ?? unimplementedIdentity(entry),
 			state: "invalid",
 			diagnostics: errors.map((error) =>
-				diagnostic(DIAGNOSTIC_CODES.INVALID_REQUEST, {
-					message: `${errorPointer(error) || "(document root)"}: ${fragment(errorMessage(error))}`,
-				}),
+				errorPointer(error) === "/ir/contractVersion"
+					? diagnostic(DIAGNOSTIC_CODES.UNKNOWN_CONTRACT_VERSION, {
+							message: `the IR document declares contract version ${fragment(String(request?.ir?.contractVersion))}; this compiler supports 2.0.0`,
+						})
+					: diagnostic(DIAGNOSTIC_CODES.INVALID_REQUEST, {
+							message: `${errorPointer(error) || "(document root)"}: ${fragment(errorMessage(error))}`,
+						}),
 			),
 		});
 	}

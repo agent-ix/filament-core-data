@@ -23,7 +23,7 @@ relationships:
 ## Context
 
 Issue #19 delivered the compiler's first frontend, which lowers a TypeSpec
-program to semantic IR `1.1.0`. That frontend reads the *metamodel*: the
+program to semantic IR at contract `2.0.0`. That frontend reads the *metamodel*: the
 archetype packages the modules declare. It leaves `spec-bundle`, the second
 value of the published `frontendDialect` vocabulary, registered and refused
 with `agent-ix.compiler.FRONTEND_NOT_IMPLEMENTED` naming this ticket

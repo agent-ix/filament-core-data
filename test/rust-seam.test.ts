@@ -258,52 +258,35 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 	/**
 	 * Traces: TC-1393; FR-130-AC-6, FR-130-CON-3.
 	 *
-	 * The backend's own command accepts `1.0.0`; the seam does not. The frozen
-	 * FR-041 prototype document also calls itself `1.0.0` and is a different
-	 * shape entirely, so a seam that accepted the version would make a
-	 * prototype-shaped document reachable by the contract path. The TypeScript
-	 * backend narrows for the same reason.
+	 * fcd#179: the contract has one version, `2.0.0`. A document naming any
+	 * other version is refused at the request schema before it ever reaches a
+	 * backend's `supportedIrVersions`, and the seam maps that schema error to
+	 * the named `UNKNOWN_CONTRACT_VERSION` refusal (FR-063-AC-10) rather than a
+	 * generic one. The frozen FR-041 prototype document also calls itself
+	 * `1.0.0` and is a different shape entirely, so this refusal control keeps
+	 * that prototype-shaped document unreachable by the contract path.
 	 */
-	it("refuses a 1.0.0 document with the versions it declares", () => {
+	it("refuses a 1.0.0 document naming the version it declares", () => {
 		const request = rustRequest({
-			ir: readJson("fixtures/semantic/v1/positive/config-version-v1-1.json"),
+			ir: readJson("fixtures/semantic/v1/positive/config-version-v2.json"),
 		});
 		const ir = request.ir as Record<string, unknown>;
 		ir.contractVersion = "1.0.0";
-		// A 1.0.0 document declares the JSON Schema dialect; without it the
-		// request is refused as `invalid` before the seam reaches its version
-		// check, and the case would assert the wrong refusal.
-		ir.source = {
-			...(ir.source as Record<string, unknown>),
-			dialect: "https://json-schema.org/draft/2020-12/schema",
-		};
 		const manifest = generateTarget(request, {
 			target: "rust",
 			host: host(),
 		}) as never as Manifest;
 
-		expect(manifest.state).toBe("unsupported");
+		expect(manifest.state).toBe("invalid");
 		expect(manifest.files).toStrictEqual([]);
 		const refusal = manifest.diagnostics.find((d) =>
-			d.code.endsWith("UNSUPPORTED_IR_VERSION"),
+			d.code.endsWith("UNKNOWN_CONTRACT_VERSION"),
 		);
-		expect(refusal?.message).toContain("1.1.0, 2.0.0");
-		expect(rustBackend.supportedIrVersions).toStrictEqual(["1.1.0", "2.0.0"]);
+		expect(refusal?.message).toContain("1.0.0");
+		expect(rustBackend.supportedIrVersions).toStrictEqual(["2.0.0"]);
 		console.log(
 			`TC-1393 measured: 1.0.0 document state=${manifest.state} declared=${rustBackend.supportedIrVersions.join(",")}`,
 		);
-	});
-
-	it("generates a crate from a 1.1.0 document", () => {
-		const manifest = generateTarget(
-			rustRequest({
-				ir: readJson("fixtures/semantic/v1/positive/config-version-v1-1.json"),
-			}),
-			{ target: "rust", host: host() },
-		) as never as Manifest;
-
-		expect(manifest.state).toBe("success");
-		expect(manifest.files.map((f) => f.path)).toContain("src/lib.rs");
 	});
 
 	/** Traces: TC-1749; FR-142-AC-5, FR-142-CON-2. */

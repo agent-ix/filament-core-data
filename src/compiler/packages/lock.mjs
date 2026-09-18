@@ -19,8 +19,12 @@ const here = dirname(fileURLToPath(import.meta.url));
 /** The repository root, derived from this module's own location, never from `cwd`. */
 export const REPO_ROOT = resolve(here, "..", "..", "..");
 
-/** The contract version the compiler emits and stamps into the fingerprint. */
-export const CONTRACT_IR_VERSION = "1.1.0";
+/**
+ * The contract version the compiler emits and stamps into the fingerprint
+ * (fcd#179: the Semantic IR contract 1.0.0 and 1.1.0 no longer exist; 2.0.0
+ * is the only contract FR-046's lowering produces).
+ */
+export const CONTRACT_IR_VERSION = "2.0.0";
 
 export const CANONICALIZATION = Object.freeze({
 	algorithm: "RFC8785-JCS-with-identity-sorted-sets-v1",

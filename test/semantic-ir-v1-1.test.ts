@@ -8,11 +8,7 @@ import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
 import { changedPathsOf } from "./changed-paths.js";
-import {
-	multiplicityFromPresence,
-	normalize,
-	readSemanticIr,
-} from "./semantic-ir-v1-1-reader";
+import { normalize, readSemanticIr } from "./semantic-ir-v1-1-reader";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const schemaRoot = resolve(root, "schema/semantic/v1");
@@ -20,14 +16,21 @@ const fixtureRoot = resolve(root, "fixtures/semantic/v1");
 const schemaBase = "https://schemas.agent-ix.org/filament-core-data/v1/";
 /**
  * Issue #34 (semantic IR v1.1) matrix trace inventory:
- * TC-203, TC-204, TC-205, TC-206, TC-207, TC-208, TC-209, TC-210, TC-211,
+ * TC-203, TC-204, TC-206, TC-207, TC-208, TC-209, TC-210, TC-211,
  * TC-212, TC-213, TC-214, TC-215, TC-216, TC-217, TC-218, TC-219, TC-220,
  * TC-221, TC-222, TC-223, TC-224, TC-225, TC-226, TC-227, TC-228, TC-229,
- * TC-230, TC-231, TC-232, TC-233, TC-234, TC-235, TC-236, TC-237, TC-238,
- * TC-239, TC-240, TC-241, TC-242, TC-243, TC-244, TC-245, TC-246, TC-247.
- * Acceptance criteria: FR-020-AC-7..8, FR-027-AC-1..9, FR-028-AC-1..13,
- * FR-029-AC-1..8, FR-030-AC-1..6, NFR-013-AC-1..5.
- * Constraints: FR-027-CON-1..2, FR-028-CON-1..2, FR-029-CON-1..2, FR-030-CON-1..2.
+ * TC-230, TC-232, TC-233, TC-237, TC-238,
+ * TC-239, TC-240, TC-241, TC-242, TC-243, TC-244, TC-245, TC-246.
+ * Acceptance criteria: FR-020-AC-7..8, FR-027-AC-1..2, FR-027-AC-4..9, FR-028-AC-1..13,
+ * FR-029-AC-1..8, FR-030-AC-1..6.
+ * Constraints: FR-027-CON-2, FR-028-CON-1..2, FR-029-CON-1..2, FR-030-CON-2.
+ * fcd#179 deleted TC-231, TC-234, TC-235, TC-236 (NFR-013 and FR-030-CON-1,
+ * whose subjects were the deleted 1.0.0/1.1.0 contracts, no longer exist).
+ * fcd#179 also deleted TC-205 and FR-027-AC-3: PRESENCE_MULTIPLICITY_MISMATCH
+ * was enforced only outside contract 2.0.0 (FR-106-AC-4 exempts 2.0.0 itself),
+ * and 2.0.0 is now the only contract, so the enforced side is unreachable —
+ * the reader case it probed (field-presence-contradicts-multiplicity) was
+ * removed from negative/reader-cases.json by R1, leaving no case to assert on.
  */
 
 type JsonObject = Record<string, unknown>;
@@ -163,8 +166,18 @@ function schemaNamed(name: string): JsonObject {
 }
 
 describe("semantic IR v1.1 baseline and non-disruption", () => {
-	/** Traces: TC-208, TC-231; FR-027-AC-6, FR-027-CON-1, FR-030-CON-1, NFR-013-AC-1. */
-	it("keeps every v1 positive fixture byte-identical and valid", () => {
+	/**
+	 * Traces: TC-208; FR-027-AC-6.
+	 * fcd#179 deleted contracts 1.0.0 and 1.1.0; 2.0.0 is the only one, and
+	 * deleted the two fixtures that used to be frozen at them
+	 * (`semantic-ir.json`, `config-version-v1-1.json`) rather than keeping
+	 * them on disk as refused negative evidence — their refusal is asserted
+	 * over an inline document instead (`TestContract20`'s Rust and Python
+	 * mirrors, `crates/extraction-frontend/tests/constructs.rs`'s `tc_1756`).
+	 * The digest baseline below now pins only fixtures declaring the live
+	 * contract.
+	 */
+	it("keeps every v1 positive fixture byte-identical", () => {
 		const baseline = object(
 			readJson("v1-fixture-digests.json"),
 			"v1 fixture digest baseline",
@@ -173,12 +186,6 @@ describe("semantic IR v1.1 baseline and non-disruption", () => {
 		for (const [name, digest] of Object.entries(digests)) {
 			expect(sha256(resolve(fixtureRoot, "positive", name)), name).toBe(digest);
 		}
-		const ir = object(readJson("positive/semantic-ir.json"), "v1 IR");
-		expect(ir.contractVersion).toBe("1.0.0");
-		expect(
-			validates("semantic-ir.schema.json", ir),
-			JSON.stringify(ajv.errors),
-		).toBe(true);
 		const manifest = object(
 			readJson("positive/package-manifest.json"),
 			"v1 manifest",
@@ -189,11 +196,16 @@ describe("semantic IR v1.1 baseline and non-disruption", () => {
 		).toBe(true);
 	});
 
-	/** Traces: TC-234; NFR-013-AC-2. */
+	/**
+	 * fcd#179 deleted NFR-013 (TC-234's sole owner), whose subject was the
+	 * additivity of the now-deleted 1.0.0 -> 1.1.0 revision; the scope
+	 * discipline this test enforces has no other live requirement to trace to.
+	 * Kept as a regression guard, not a traced criterion.
+	 */
 	it("leaves the frozen TypeSpec spike untouched", () => {
 		// Scoped by issue #27 (FR-044), which owns the spike's rewiring. The
-		// retained evidence NFR-013 protects is still byte-identical apart from
-		// the one declared field, pinned by TC-371 in test/compiler.test.ts.
+		// retained evidence is still byte-identical apart from the one declared
+		// field, pinned by TC-371 in test/compiler.test.ts.
 		const promotionPaths = [
 			"spikes/typespec-feasibility/scripts/run-experiment.mjs",
 			"spikes/typespec-feasibility/package.json",
@@ -217,7 +229,10 @@ describe("semantic IR v1.1 baseline and non-disruption", () => {
 		expect(spikeDiff).toEqual([]);
 	});
 
-	/** Traces: TC-236; NFR-013-AC-4. */
+	/**
+	 * fcd#179 deleted NFR-013 (TC-236's sole owner); kept as a regression
+	 * guard, not a traced criterion (see the note above TC-234's test).
+	 */
 	it("keeps issue #34 inside its permitted paths", () => {
 		const allowed = [
 			"conformance/",
@@ -318,11 +333,8 @@ describe("semantic IR v1.1 schema inventory (red until Tasks 035..038 land)", ()
 		const defs = object(ir.$defs, "$defs");
 		const properties = object(ir.properties, "properties");
 		const version = object(properties.contractVersion, "contractVersion");
-		expect(version.enum, "contractVersion enum").toEqual([
-			"1.0.0",
-			"1.1.0",
-			"2.0.0",
-		]);
+		// fcd#179: 2.0.0 is the only contract version this schema admits.
+		expect(version.enum, "contractVersion enum").toEqual(["2.0.0"]);
 		for (const def of [
 			"multiplicity",
 			"relationship",
@@ -348,13 +360,13 @@ describe("semantic IR v1.1 schema inventory (red until Tasks 035..038 land)", ()
 
 describe("FR-030 version discriminator, source dialect, and manifest targets", () => {
 	/** Traces: TC-227; FR-030-AC-1. */
-	it("accepts 1.1.0 documents whose dialect names a frontend", () => {
+	it("accepts documents whose dialect names a frontend", () => {
 		for (const fixture of [
 			"positive/semantic-ir-v1-1.json",
 			"positive/semantic-ir-v1-1-spec-bundle.json",
 		]) {
 			const ir = object(readJson(fixture), fixture);
-			expect(ir.contractVersion, fixture).toBe("1.1.0");
+			expect(ir.contractVersion, fixture).toBe("2.0.0");
 			expect(
 				validates("semantic-ir.schema.json", ir),
 				`${fixture}: ${JSON.stringify(ajv.errors)}`,
@@ -380,8 +392,18 @@ describe("FR-030 version discriminator, source dialect, and manifest targets", (
 		expect(valid).toBe(false);
 		expect(entry.code).toBe("agent-ix.semantic-ir.RETIRED_SOURCE_DIALECT");
 		expect(entry.note ?? "").toContain("ADR-0005");
-		const mismatch = negativeValidates("ir-v1-0-frontend-dialect");
-		expect(mismatch.valid, "1.0.0 document keeps the v1 constant").toBe(false);
+		// fcd#179 deleted contract 1.0.0 and the fixture once frozen at it
+		// (`ir-v1-0-frontend-dialect`, dropped from negative/cases.json); a
+		// document still declaring 1.0.0 is refused outright (NFR-044-AC-1),
+		// regardless of its dialect, so the check moves to an inline document.
+		const stillDeclares1_0_0 = clone(
+			readJson("positive/semantic-ir-v1-1.json"),
+		);
+		setAt(stillDeclares1_0_0, "contractVersion", "1.0.0");
+		expect(
+			validates("semantic-ir.schema.json", stillDeclares1_0_0),
+			"a document still declaring the deleted 1.0.0 contract",
+		).toBe(false);
 	});
 
 	/** Traces: TC-229; FR-030-AC-3. */
@@ -453,9 +475,20 @@ describe("FR-030 version discriminator, source dialect, and manifest targets", (
 	});
 
 	/** Traces: TC-246; FR-030-AC-5, FR-030-AC-6. */
-	it("rejects unknown contract versions and unknown 1.1.0 dialects before emission", () => {
+	it("rejects unknown contract versions and unknown dialects before emission", () => {
 		expect(negativeValidates("ir-v1-1-unsupported-version").valid).toBe(false);
-		expect(negativeValidates("ir-unknown-version").valid).toBe(false);
+		// fcd#179 deleted contract 1.0.0 and the fixture once frozen at it
+		// (`ir-unknown-version`, dropped from negative/cases.json); a document
+		// still declaring 1.0.0 is refused outright (NFR-044-AC-1), so the
+		// check moves to an inline document.
+		const stillDeclares1_0_0 = clone(
+			readJson("positive/semantic-ir-v1-1.json"),
+		);
+		setAt(stillDeclares1_0_0, "contractVersion", "1.0.0");
+		expect(
+			validates("semantic-ir.schema.json", stillDeclares1_0_0),
+			"a document still declaring the deleted 1.0.0 contract",
+		).toBe(false);
 		const dialect = negativeValidates("ir-v1-1-unknown-dialect");
 		expect(dialect.valid).toBe(false);
 		expect(dialect.entry.set?.value).toBe("avro");
@@ -463,9 +496,8 @@ describe("FR-030 version discriminator, source dialect, and manifest targets", (
 			schemaNamed("semantic-ir.schema.json").properties,
 			"properties",
 		);
+		// fcd#179: 2.0.0 is the only contract version this schema admits.
 		expect(object(version.contractVersion, "contractVersion").enum).toEqual([
-			"1.0.0",
-			"1.1.0",
 			"2.0.0",
 		]);
 	});
@@ -537,11 +569,15 @@ function seededRandom(seed: number): () => number {
 
 describe("FR-027 field multiplicity and units", () => {
 	/** Traces: TC-203; FR-027-AC-1, FR-020-AC-7, US-006-EX-1. */
-	it("derives presence from a 0..1 multiplicity and round-trips the normalized form", () => {
+	it("validates a 0..1 field with presence authored explicitly and rejects one with presence omitted", () => {
 		const document = goldenV11();
 		const summary = fieldNamed(document, "Artifact", "summary");
 		expect(summary.multiplicity).toEqual({ lower: 0, upper: 1 });
 		expect(summary.presence).toBe("optional");
+		expect(
+			negativeValidates("ir-v2-field-without-presence").valid,
+			"presence is schema-required and never derived from multiplicity",
+		).toBe(false);
 		const first = normalize(document);
 		const second = normalize(JSON.parse(first));
 		expect(second).toBe(first);
@@ -567,11 +603,6 @@ describe("FR-027 field multiplicity and units", () => {
 			const bytes = normalize(mutated);
 			expect(normalize(JSON.parse(bytes))).toBe(bytes);
 		}
-		const v1 = readJson("positive/semantic-ir.json");
-		expect(
-			normalize(v1),
-			"1.0.0 documents gain no derived bytes",
-		).not.toContain('"multiplicity"');
 	});
 
 	/** Traces: TC-204; FR-027-AC-2. */
@@ -588,10 +619,14 @@ describe("FR-027 field multiplicity and units", () => {
 		expect(bytes).toContain('"unique":true');
 	});
 
-	/** Traces: TC-205; FR-027-AC-3. */
-	it("fails when stated presence contradicts the multiplicity", () => {
-		expectReaderFailure("field-presence-contradicts-multiplicity");
-	});
+	// fcd#179 deleted TC-205 and FR-027-AC-3 (this test's whole subject):
+	// PRESENCE_MULTIPLICITY_MISMATCH was enforced only outside contract 2.0.0
+	// (FR-106-AC-4 exempts 2.0.0 itself, fcd#182 is the open question on
+	// whether that should change), and 2.0.0 is now the only contract, so
+	// the enforced side is unreachable. R1 deleted the diagnostic, the
+	// reader case (field-presence-contradicts-multiplicity), and the
+	// version-conditional gate in checkField/_check_field; this test would
+	// otherwise just throw "reader case is not recorded".
 
 	/** Traces: TC-206; FR-027-AC-4. */
 	it("fails inverted and negative bounds and accepts 0..0", () => {
@@ -617,21 +652,16 @@ describe("FR-027 field multiplicity and units", () => {
 		expectReaderFailure("field-unresolved-type-ref");
 	});
 
-	/** Traces: TC-208; FR-027-AC-6, FR-027-CON-1. */
-	it("reads a 1.0.0 field without multiplicity by deriving it from presence", () => {
-		const v1 = object(readJson("positive/semantic-ir.json"), "v1");
-		expect(readSemanticIr(v1)).toEqual([]);
-		expect(multiplicityFromPresence("required")).toEqual({
-			lower: 1,
-			upper: 1,
-		});
-		expect(multiplicityFromPresence("optional")).toEqual({
-			lower: 0,
-			upper: 1,
-		});
+	/**
+	 * Traces: TC-208; FR-027-AC-6.
+	 *
+	 * `multiplicity` is schema-required under contract `2.0.0`; a field that
+	 * omits it is a named refusal, never a value derived from `presence`.
+	 */
+	it("refuses a field without multiplicity rather than deriving it from presence", () => {
 		expect(
-			negativeValidates("ir-v1-1-field-without-multiplicity").valid,
-			"1.1.0 requires it",
+			negativeValidates("ir-v2-field-without-multiplicity").valid,
+			"2.0.0 requires it",
 		).toBe(false);
 	});
 
@@ -748,19 +778,28 @@ describe("FR-029 closed constraint vocabulary", () => {
 		);
 	});
 
-	/** Traces: TC-224; FR-029-CON-1. */
+	/**
+	 * Traces: TC-224; FR-029-CON-1.
+	 * fcd#179 deleted `positive/semantic-ir.json`; it carried no constraints,
+	 * so this now checks only the golden `2.0.0` fixture.
+	 */
 	it("finds every v1 fixture constraint inside the closed vocabulary", () => {
-		const v1 = object(readJson("positive/semantic-ir.json"), "v1");
-		const constraints = allConstraints(v1);
-		expect(constraints.length, "v1 fixtures carry no constraints today").toBe(
-			0,
-		);
-		for (const constraint of [...constraints, ...allConstraints(goldenV11())])
+		for (const constraint of allConstraints(goldenV11()))
 			expect(CLOSED_KEYWORDS).toContain(String(constraint.keyword));
 	});
 
-	/** Traces: TC-225, TC-235; FR-029-CON-2, NFR-013-AC-3. */
-	it("classifies vocabulary changes and records v1 → v1.1 as additive", () => {
+	/**
+	 * Traces: TC-225; FR-029-CON-2.
+	 *
+	 * The `compatibility/cases.json` entry `v1-to-v1-1-additive-revision`
+	 * described the 1.0.0 -> 1.1.0 migration; both contracts are gone
+	 * (fcd#179), and the entry is deleted from the corpus (commit ecb7698).
+	 * FR-029-CON-2's trailing clause about that migration is deleted with it,
+	 * and NFR-013 (an entire requirement about that one now-nonexistent
+	 * revision) is deleted outright; TC-235, its sole trace, is deleted too.
+	 * This test keeps only the vocabulary-change assertions that remain live.
+	 */
+	it("classifies vocabulary changes", () => {
 		const byId = new Map(
 			array(readJson("compatibility/cases.json"), "cases")
 				.map((value) => object(value, "case"))
@@ -775,16 +814,6 @@ describe("FR-029 closed constraint vocabulary", () => {
 		expect(byId.get("constraint-keyword-operands-retyped")?.expected).toBe(
 			"breaking",
 		);
-		const revision = object(
-			byId.get("v1-to-v1-1-additive-revision"),
-			"revision case",
-		);
-		expect(revision.expected).toBe("additive");
-		expect(revision.from).toBe("1.0.0");
-		expect(revision.to).toBe("1.1.0");
-		expect(
-			array(revision.addedNodes, "added nodes").length,
-		).toBeGreaterThanOrEqual(5);
 	});
 
 	/** Traces: TC-244; FR-029-AC-7. */
@@ -968,18 +997,24 @@ describe("FR-028 relationships, operations, and clauses", () => {
 		).toBe(1);
 	});
 
-	/** Traces: TC-217; FR-028-CON-1. */
-	it("reads absent node arrays as empty on a 1.0.0 document", () => {
-		const v1 = object(readJson("positive/semantic-ir.json"), "v1");
-		for (const definition of array(v1.types, "types").map((value) =>
-			object(value, "type"),
-		)) {
-			expect(definition.relationships).toBeUndefined();
-			expect(definition.operations).toBeUndefined();
-			expect(definition.clauses).toBeUndefined();
+	/**
+	 * Traces: TC-217; FR-028-CON-1.
+	 *
+	 * `relationships[]`/`operations[]`/`clauses[]` stay optional on a type
+	 * definition in the 2.0.0 schema (they are absent from `Text`, `Seconds`,
+	 * `ArtifactId`, and `Artifacts` in the golden fixture itself), so reading
+	 * an absent array as empty is still live, current behaviour, not a
+	 * fcd#179 acceptance shim for the deleted 1.0.0 contract.
+	 */
+	it("reads absent node arrays as empty", () => {
+		const document = goldenV11();
+		for (const name of ["Text", "ArtifactId", "Artifacts"]) {
+			const definition = typeNamed(document, name);
+			expect(definition.relationships, name).toBeUndefined();
+			expect(definition.operations, name).toBeUndefined();
+			expect(definition.clauses, name).toBeUndefined();
 		}
-		expect(validates("semantic-ir.schema.json", v1)).toBe(true);
-		expect(readSemanticIr(v1)).toEqual([]);
+		expect(readSemanticIr(document)).toEqual([]);
 	});
 
 	/** Traces: TC-239; FR-028-AC-9. */
@@ -1072,8 +1107,11 @@ describe("FR-028 relationships, operations, and clauses", () => {
 
 describe("FR-006 ConfigVersion worked example (Task-039)", () => {
 	function configVersion(): JsonObject {
+		// fcd#179 deleted `config-version-v1-1.json` (it declared the deleted
+		// contract 1.1.0), so this worked example reads its structurally
+		// identical 2.0.0 sibling instead.
 		const document = object(
-			readJson("positive/config-version-v1-1.json"),
+			readJson("positive/config-version-v2.json"),
 			"ConfigVersion",
 		);
 		expect(
@@ -1102,10 +1140,10 @@ describe("FR-006 ConfigVersion worked example (Task-039)", () => {
 		for (const field of fields)
 			expect(field.multiplicity).toEqual({ lower: 1, upper: 1 });
 		const loss = object(
-			readJson("positive/config-version-v1-1-loss.json"),
+			readJson("positive/config-version-v2-loss.json"),
 			"loss table",
 		);
-		expect(loss.fixture).toBe("positive/config-version-v1-1.json");
+		expect(loss.fixture).toBe("positive/config-version-v2.json");
 		expect(loss.declaredLoss).toEqual([]);
 		const rows = array(loss.rows, "rows").map((value) => object(value, "row"));
 		expect(rows.length).toBeGreaterThanOrEqual(8);
@@ -1170,7 +1208,7 @@ function typescriptVerdicts(): Verdict[] {
 	const positives = readdirSync(resolve(fixtureRoot, "positive"))
 		.filter((name) => name.startsWith("semantic-ir") && name.endsWith(".json"))
 		.sort();
-	for (const name of [...positives, "config-version-v1-1.json"]) {
+	for (const name of positives) {
 		const document = readJson(`positive/${name}`);
 		results.push({
 			id: `positive/${name}`,
@@ -1273,7 +1311,11 @@ describe("FR-020 closing gate: two readers, round trip, fixture inventory (Task-
 			(JSON.parse(python) as Verdict[]).map((v) => [v.id, v]),
 		);
 		const ours = typescriptVerdicts();
-		expect(ours.length).toBeGreaterThanOrEqual(40);
+		// fcd#179 deleted `semantic-ir.json` and two cases that mutated it
+		// (`ir-unknown-version`, `ir-v1-0-frontend-dialect`); their refusal
+		// coverage moved to inline-document assertions elsewhere in this
+		// file, outside this corpus sweep, so the floor drops by three.
+		expect(ours.length).toBeGreaterThanOrEqual(37);
 		expect(new Set(theirs.keys())).toEqual(new Set(ours.map((v) => v.id)));
 		for (const verdict of ours) {
 			const other = theirs.get(verdict.id);
@@ -1314,12 +1356,12 @@ describe("FR-020 closing gate: two readers, round trip, fixture inventory (Task-
 		}
 	});
 
-	/** Traces: TC-247; NFR-013-AC-5. */
+	/**
+	 * fcd#179 deleted NFR-013 (TC-247's sole owner); kept as a regression
+	 * guard, not a traced criterion (see the note above TC-234's test).
+	 */
 	it("has at least one golden and one negative fixture per new node kind", () => {
-		const golden = JSON.stringify([
-			readJson("positive/semantic-ir-v1-1.json"),
-			readJson("positive/config-version-v1-1.json"),
-		]);
+		const golden = JSON.stringify([readJson("positive/semantic-ir-v1-1.json")]);
 		const negatives = JSON.stringify([
 			readJson("negative/cases.json"),
 			readJson("negative/reader-cases.json"),
