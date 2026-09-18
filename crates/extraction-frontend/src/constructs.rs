@@ -546,14 +546,15 @@ pub(crate) fn shape(
     }
     if let Some(allocation) = &model.allocation {
         if !forbids(declaration, Member::SourceElement) {
-            // The engine's member-qualified `<id>/<operation>` source form
-            // (quire-rs#461, tracked for a fix in quire-rs#462) is not
-            // special-cased here: it fails this plain artifact-id lookup
-            // today and refuses cleanly rather than being silently dropped.
-            // Supporting it is a follow-on once quire-rs#462's
-            // `BundleArtifact.operations` field lands and the bundle
-            // construction this frontend feeds the engine fills it from
-            // each artifact's own extracted operations.
+            // FR-152: an allocation source may also name an operation of the
+            // referenced artifact (the engine's member-qualified
+            // `<id>/<operation>` form, quire-rs#462, resolved against that
+            // artifact's own declared operations before this frontend ever
+            // sees it). `References::identity` lowers that form to the
+            // referenced artifact's operation identity
+            // (`PackageIdentity::operation_identity`) rather than its type
+            // identity; a source naming no operation lowers to the type
+            // identity as before.
             members.source_element = Some(
                 references
                     .identity(
@@ -851,38 +852,57 @@ pub(crate) struct References<'a> {
     pub(crate) artifact_roles: &'a BTreeMap<String, Vec<String>>,
 }
 
-/// The bundle-local artifact id `name` denotes: itself (`Ok`), when it
-/// carries no `ix://` prefix at all — every reference member's raw
-/// table-cell text, from every caller but the systems-model ones. Or, when
-/// the engine has already resolved it to this bundle's own identity, the one
-/// id segment of that identity (`Ok`): quire-rs mints two different own-
-/// package shapes, depending which resolver a systems-model reference cell
-/// went through — `semantic::properties::map_type` (a `declaredType` or
-/// `interfaceType` cell, FR-070) mints `ix://<org>/<repo>/type/<id>`, the
-/// same `type/<id>` shape this frontend's own [`crate::identity::
-/// PackageIdentity::type_identity`] mints; `semantic::target::resolve_target`
-/// (an `owner`, `sourceElement`/`targetElement`, or connection-end cell)
-/// mints `ix://<org>/<repo>/<id>` with no such segment. Anything else —
-/// an identity in another package (an imported reference, quire-rs
-/// `Target::Imported`) or the engine's own member-qualified `<id>/<member>`
-/// operation form (an allocation source naming an operation, quire-rs#461/
-/// #462) — is refused (`Err`) by its full identity, never mis-read as a
-/// bare id of this bundle: stripping only the trailing path segment, as an
-/// earlier version of this function did, would silently rebind
-/// `ix://other/pkg/SP_001` to a local artifact also named `SP_001`, and
-/// would read a `Pump/run` allocation source's `<org>/<repo>/Pump/run`
-/// identity as the id `run`.
-fn bare_artifact_id<'a>(name: &'a str, own_package: &str) -> Result<&'a str, &'a str> {
+/// The bundle-local artifact id `name` denotes, and the operation it also
+/// names when `member` is [`Member::SourceElement`] and the engine resolved a
+/// member-qualified allocation source (FR-152's `<id>/<operation>` form,
+/// quire-rs#462): the id alone (`Ok((id, None))`), when `name` carries no
+/// `ix://` prefix at all — every reference member's raw table-cell text, from
+/// every caller but the systems-model ones. Or, when the engine has already
+/// resolved it to this bundle's own identity, the one id segment of that
+/// identity, with the operation segment after it when the engine minted one
+/// (`Ok((id, Some(op)))`): quire-rs mints three own-package shapes, depending
+/// which resolver a systems-model reference cell went through —
+/// `semantic::properties::map_type` (a `declaredType` or `interfaceType`
+/// cell, FR-070) mints `ix://<org>/<repo>/type/<id>`, the same `type/<id>`
+/// shape this frontend's own [`crate::identity::PackageIdentity::
+/// type_identity`] mints; `semantic::target::resolve_target` (an `owner`,
+/// `sourceElement`/`targetElement`, or connection-end cell) mints
+/// `ix://<org>/<repo>/<id>` with no such segment; and a `sourceElement` cell
+/// naming an operation mints that same shape with the operation appended
+/// after one more `/` (`ix://<org>/<repo>/<id>/<operation>`), the engine
+/// having already confirmed the referenced artifact declares it. Anything
+/// else — an identity in another package (an imported reference, quire-rs
+/// `Target::Imported`), or a member-qualified form on a member other than
+/// `sourceElement` — is refused (`Err`) by its full identity, never mis-read
+/// as a bare id of this bundle: stripping only the trailing path segment
+/// would silently rebind `ix://other/pkg/SP_001` to a local artifact also
+/// named `SP_001`.
+fn bare_artifact_id<'a>(
+    name: &'a str,
+    own_package: &str,
+    member: Member,
+) -> Result<(&'a str, Option<&'a str>), &'a str> {
     let not_own_id = |id: &str| id.is_empty() || id.contains('/');
     match name.strip_prefix("ix://") {
-        None => Ok(name),
+        None => Ok((name, None)),
         Some(rest) => match rest
             .strip_prefix(own_package)
             .and_then(|tail| tail.strip_prefix('/'))
         {
-            Some(id) if !not_own_id(id) => Ok(id),
+            Some(id) if !not_own_id(id) => Ok((id, None)),
             Some(tail) => match tail.strip_prefix("type/") {
-                Some(id) if !not_own_id(id) => Ok(id),
+                Some(id) if !not_own_id(id) => Ok((id, None)),
+                _ if member == Member::SourceElement => match tail.split_once('/') {
+                    Some((id, op))
+                        if !id.is_empty()
+                            && !id.contains('/')
+                            && !op.is_empty()
+                            && !op.contains('/') =>
+                    {
+                        Ok((id, Some(op)))
+                    }
+                    _ => Err(name),
+                },
                 _ => Err(name),
             },
             None => Err(name),
@@ -893,7 +913,9 @@ fn bare_artifact_id<'a>(name: &'a str, own_package: &str) -> Result<&'a str, &'a
 impl References<'_> {
     /// The type identities of `names`, each the id of an artifact of the
     /// bundle carrying a role the declaration admits for `member` (any
-    /// object-typed artifact when it constrains none) and named once; the
+    /// object-typed artifact when it constrains none) and named once — or,
+    /// for a `sourceElement` naming an operation (FR-152), that referenced
+    /// artifact's operation identity in place of its type identity; the
     /// refusal rule naming the first that is not, or the first named twice
     /// (a duplicate is refused, never collapsed).
     fn identities(
@@ -913,15 +935,19 @@ impl References<'_> {
                     member.name()
                 )
             };
-            let name = bare_artifact_id(name, &own_package).map_err(not_admitted)?;
+            let (bare_id, operation) =
+                bare_artifact_id(name, &own_package, member).map_err(not_admitted)?;
             let identity = self
                 .artifact_roles
-                .get(name)
+                .get(bare_id)
                 .filter(|roles| {
                     admitted.is_none_or(|admitted| roles.iter().any(|role| admitted.contains(role)))
                 })
-                .and_then(|_| ctx.package.type_identity(name).ok())
-                .ok_or_else(|| not_admitted(name))?;
+                .and_then(|_| match operation {
+                    None => ctx.package.type_identity(bare_id).ok(),
+                    Some(op) => ctx.package.operation_identity(bare_id, op).ok(),
+                })
+                .ok_or_else(|| not_admitted(bare_id))?;
             if out.contains(&identity) {
                 return Err(format!(
                     "{site} names `{name}` twice, and one cell names each type at most once"
@@ -1228,10 +1254,24 @@ pub(crate) fn assign_owners(
             .iter()
             .map(|item| item.lowering.definition.identity.clone())
             .collect();
+        // FR-152: an allocation's `sourceElement` may name a referenced
+        // artifact's operation identity rather than its type identity
+        // (`References::identity`'s operation-identity mint); that
+        // artifact's operations disappear with it exactly as its type
+        // identity would leave `lowered`, so this is re-collected every
+        // round the same way, for `refusal_rule`'s own membership check.
+        let operations: BTreeSet<String> = pending
+            .iter()
+            .flat_map(|item| {
+                operations(&item.lowering.definition)
+                    .iter()
+                    .map(|o| o.identity.clone())
+            })
+            .collect();
         let mut round: Vec<(Pending, String)> = Vec::new();
         let mut kept = Vec::with_capacity(pending.len());
         for mut item in pending.drain(..) {
-            match refusal_rule(&mut item, &owners, &refused, &lowered) {
+            match refusal_rule(&mut item, &owners, &refused, &lowered, &operations) {
                 Some(rule) => round.push((item, rule)),
                 None => kept.push(item),
             }
@@ -1288,6 +1328,7 @@ fn refusal_rule(
     owners: &BTreeMap<String, Vec<Owner>>,
     refused: &BTreeSet<String>,
     lowered: &BTreeSet<String>,
+    operations: &BTreeSet<String>,
 ) -> Option<String> {
     let definition = &mut item.lowering.definition;
     if let Some(edge) = relationships(definition)
@@ -1305,11 +1346,13 @@ fn refusal_rule(
     // generalization `supertypes` edge, a systems `part`/`port` row's
     // model-derived `owner`, a `part`'s `declaredType`, a `port`'s
     // `interfaceType`, a connection's `sourceEnd`/`targetEnd`, and an
-    // allocation's `sourceElement`/`targetElement`. Each was admitted by
-    // role when this artifact lowered, in its own earlier round; a later
-    // round can still refuse the artifact it names, so every one of them is
-    // re-checked here, every round, before `owner_from_model`'s early
-    // return skips the rest of this function for a systems `part`/`port`.
+    // allocation's `targetElement`. Each was admitted by role when this
+    // artifact lowered, in its own earlier round; a later round can still
+    // refuse the artifact it names, so every one of them is re-checked
+    // here, every round, before `owner_from_model`'s early return skips the
+    // rest of this function for a systems `part`/`port`. An allocation's
+    // `sourceElement` joins this same re-check below, against `lowered` or
+    // `operations` depending on which it named.
     // `owner` only joins this chain when it is model-derived: a composite
     // owner (nested_entity, aggregate-root member, ...) is assigned and
     // re-checked by the `owners` map below instead, which recomputes from
@@ -1340,9 +1383,23 @@ fn refusal_rule(
         .chain(construct.interface_type.iter())
         .chain(construct.source_end.iter().map(|end| &end.type_ref))
         .chain(construct.target_end.iter().map(|end| &end.type_ref))
-        .chain(construct.source_element.iter())
         .chain(construct.target_element.iter());
     if let Some(target) = type_refs.into_iter().find(|t| !lowered.contains(*t)) {
+        return Some(format!(
+            "a transition, step or reference member names the type {target}, which lowers to nothing"
+        ));
+    }
+    // FR-152: an allocation's `sourceElement` may instead be a referenced
+    // artifact's operation identity (`References::identity`'s
+    // operation-identity mint); that identity never joins `lowered` (a set
+    // of type identities), and the artifact's own operations disappear with
+    // it, so this checks `operations` (every pending artifact's own
+    // operation identities, recomputed the same way as `lowered`) instead.
+    if let Some(target) = construct
+        .source_element
+        .as_deref()
+        .filter(|t| !lowered.contains(*t) && !operations.contains(*t))
+    {
         return Some(format!(
             "a transition, step or reference member names the type {target}, which lowers to nothing"
         ));

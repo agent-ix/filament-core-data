@@ -1839,9 +1839,10 @@ fn tc_1799_a_specializes_edge_and_an_abstract_flag_lower_to_supertypes_and_abstr
 /// the bare id before admitting it by role. `SP_001`'s owner is `VO_001`, a
 /// composite type, not another part (FR-152: a Part's owner is the owning
 /// composite, never kind-restricted to `part`); `SA_001` allocates a plain
-/// port reference, never the engine's member-qualified `<id>/<operation>`
-/// source form (quire-rs#461/#462, which this frontend does not resolve).
-/// The lowered bundle is also lifted end to end (FR-097) and its document
+/// port reference, not the engine's member-qualified `<id>/<operation>`
+/// source form (quire-rs#462), which
+/// [`tc_1800_an_allocation_source_naming_an_operation_lowers_to_that_operations_identity`]
+/// covers on its own. The lowered bundle is also lifted end to end (FR-097) and its document
 /// read back by both the Rust and FR-050 node readers, so this exercises the
 /// full pipeline `lower_bundle`'s Rust structs alone do not.
 #[trace("TC-1800", "FR-143-AC-11")]
@@ -2000,12 +2001,8 @@ fn tc_1800_the_five_systems_kinds_lower_their_members_from_the_engines_extractio
 
 /// A pair of `part` artifacts, each owned by the composite value_object
 /// `VO_001` (FR-152: a part's owner is a composite type, never another
-/// part — quire-rs#461 used to admit a part owning a part instead, which
-/// is why an earlier version of this fixture had them own each other;
-/// quire-rs#462 fixed the engine to enforce FR-152, so that shape is now
-/// correctly refused and this fixture never authors it): a legitimate
-/// owner for a scenario that needs one but is not itself testing
-/// ownership.
+/// part): a legitimate owner for a scenario that needs one but is not
+/// itself testing ownership.
 fn systems_part_pair() -> [(&'static str, &'static str); 2] {
     [
         (
@@ -2153,21 +2150,15 @@ fn tc_1800_a_systems_reference_member_naming_an_imported_identity_is_refused() {
 /// FR-143-AC-11 continued: the engine's own member-qualified
 /// `<id>/<operation>` allocation-source form (quire-rs `TableRead::
 /// reference`'s member append, admitted for a `Source` cell only, and only
-/// over a local `interface` artifact — quire-rs#461/#462) is refused by its
-/// full identity, never mis-extracted as the bare id `run` or `SI_001`:
-/// this frontend does not resolve an allocation source naming an operation.
-/// `SI_002` declares a real `### run` heading under `## Operations`
-/// (quire-rs#462 added an operation-existence check to the engine's own
-/// member resolution, so a member naming an operation the target does not
-/// declare now refuses at the engine's own model-extraction step, before
-/// this frontend's own full-identity refusal is ever reached; declaring the
-/// operation for real lets the engine resolve the reference so this
-/// frontend's own refusal is what is under test). The target is
-/// [`systems_part_pair`]'s `SP_900`, so only the source's member-qualified
-/// form is under test.
+/// over a local `interface` artifact — quire-rs#462) lowers to the
+/// referenced artifact's operation identity, the same identity
+/// [`crate::clauses::lower_operations`] mints for that artifact's own
+/// `### run` heading under `## Operations`, never mis-extracted as the bare
+/// id `run` or `SI_002`. The target is [`systems_part_pair`]'s `SP_900`, so
+/// only the source's member-qualified form is under test.
 #[trace("TC-1800", "FR-143-AC-11")]
 #[test]
-fn tc_1800_an_allocation_source_naming_an_operation_is_refused_by_its_full_identity() {
+fn tc_1800_an_allocation_source_naming_an_operation_lowers_to_that_operations_identity() {
     let (_scratch, _root, lowered) = lower_systems(|dir| {
         for (name, content) in systems_part_pair() {
             fs::write(dir.join(name), content).expect("write helper part");
@@ -2175,13 +2166,14 @@ fn tc_1800_an_allocation_source_naming_an_operation_is_refused_by_its_full_ident
         fs::write(
             dir.join("SI_002-flow-interface-b.md"),
             "---\nid: SI_002\ntitle: SI_002\ntype: interface\nobject: interface\n---\n\n\
-             # SI_002: SI_002\n\n## Description\n\nA second interface: one field, `rate`.\n\n\
+             # SI_002: SI_002\n\n## Description\n\n\
+             A second interface: one field, `rate`, and one operation, `run`.\n\n\
              ## Properties\n\n| Field | Type | Multiplicity | Constraints |\n\
              |-------|------|--------------|-------------|\n| rate | String | 1 | |\n\n\
              ## Contract\n\n```yaml\nname: SI_002\nfields:\n  - name: rate\n\
-             \x20\x20\x20 type: String\n    multiplicity: 1..1\noperations: []\n\
-             featureOrder: [rate]\n```\n\n## Features\n\n| Feature | Kind |\n|---|---|\n\
-             | rate | field |\n\n## Operations\n\n### run\n\nRuns the interface.\n",
+             \x20\x20\x20 type: String\n    multiplicity: 1..1\noperations:\n  - name: run\n\
+             featureOrder: [rate, run]\n```\n\n## Features\n\n| Feature | Kind |\n|---|---|\n\
+             | rate | field |\n| run | operation |\n\n## Operations\n\n### run\n\nRuns the interface.\n",
         )
         .expect("write SI_002");
         fs::write(
@@ -2190,23 +2182,24 @@ fn tc_1800_an_allocation_source_naming_an_operation_is_refused_by_its_full_ident
              # SA_002: SA_002\n\n## Description\n\n\
              An allocation whose source names a real operation, `run`, that\n\
              `SI_002` declares under `## Operations` (the engine's\n\
-             member-qualified `<id>/<operation>` form, quire-rs#461/#462),\n\
-             which this frontend refuses rather than resolving.\n\n\
+             member-qualified `<id>/<operation>` form, quire-rs#462), which\n\
+             this frontend lowers to `SI_002`'s `run` operation identity.\n\n\
              ## Allocation\n\n| Source | Target |\n|---|---|\n\
              | SI_002/run | SP_900 |\n",
         )
         .expect("write SA_002");
     });
 
+    assert!(refusals(&lowered).is_empty(), "{:#?}", lowered.diagnostics);
     let sa_002 = lowered
-        .diagnostics
+        .types
         .iter()
-        .find(|d| d.message.starts_with("artifact SA_002 "))
-        .unwrap_or_else(|| panic!("no SA_002 diagnostic: {:#?}", lowered.diagnostics));
-    assert!(
-        sa_002.message.contains("SI_002/run"),
-        "the refusal names the allocation source's full identity: {}",
-        sa_002.message
+        .find(|t| t.identity == type_ref("SA_002"))
+        .expect("SA_002");
+    assert_eq!(
+        sa_002.construct.source_element,
+        Some(format!("{PREFIX}operation/SI_002-run")),
+        "the allocation source lowers to SI_002's run operation identity"
     );
 }
 
@@ -2266,6 +2259,49 @@ fn tc_1801_a_required_member_with_its_own_source_table_absent_from_the_artifact_
         &lowered,
         "SI_002",
         "the construct requires featureOrder, and this artifact declares none",
+    );
+}
+
+/// FR-143-AC-9 continued: `constructs::lower_generalization`'s own
+/// required-source check — the general rule (the "no `specializes`/
+/// `abstract` declaration" clause) `lower_generalization` runs directly,
+/// rather than through `shape`'s own blanket check — carried no test of its
+/// own before this one: every other required-member case in this file
+/// exercises a per-artifact source table (`Features`), never `supertypes` or
+/// `abstract`. The vendored business module declares its `enumeration`
+/// construct's `supertypes` at FR-142's default (`optional`); this edits a
+/// copy to `required`, and `EN_001` declares no `specializes` edge.
+#[trace("TC-1802", "FR-143-AC-9")]
+#[test]
+fn tc_1802_an_enumeration_construct_requiring_supertypes_with_none_declared_refuses_it() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let module = dir.path().join("spec-objects-business");
+    copy_tree(&business_module(), &module);
+    let manifest = module.join("manifest.yaml");
+    let text = fs::read_to_string(&manifest).expect("manifest");
+    let edited = text.replacen(
+        "members: {variants: required, fields: forbidden, relationships: forbidden, operations: forbidden}",
+        "members: {variants: required, fields: forbidden, relationships: forbidden, operations: forbidden, supertypes: required}",
+        1,
+    );
+    assert_ne!(
+        edited, text,
+        "the enumeration construct declares no supertypes presence"
+    );
+    fs::write(&manifest, edited).expect("write manifest");
+
+    let root = fixture("business");
+    let bundle = Bundle::load(&root, &[module.as_path(), edge_vocabulary().as_path()])
+        .unwrap_or_else(|r| panic!("{} refused: {r}", root.display()));
+    let extractions = extract(&bundle);
+    let resolutions = resolve(&bundle, &extractions);
+    let limits = Limits::declared().expect("limits.json parses");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+
+    assert_refused(
+        &lowered,
+        "EN_001",
+        "the construct requires supertypes, and this artifact declares none",
     );
 }
 
