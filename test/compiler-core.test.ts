@@ -4385,7 +4385,9 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 			const broken = runCliAllowingFailure(["inspect", "--ir", invalid]);
 			expect(broken.status).toBe(1);
 			expect(broken.stdout).toContain("diagnostics:");
-			expect(broken.stdout).toContain("agent-ix.semantic-ir.INVALID_MULTIPLICITY");
+			expect(broken.stdout).toContain(
+				"agent-ix.semantic-ir.INVALID_MULTIPLICITY",
+			);
 		} finally {
 			rmSync(directory, { recursive: true, force: true });
 		}
