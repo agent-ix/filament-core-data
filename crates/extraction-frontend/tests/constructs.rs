@@ -1998,26 +1998,29 @@ fn tc_1800_the_five_systems_kinds_lower_their_members_from_the_engines_extractio
     assert!(node_codes(&document).is_empty(), "{document}");
 }
 
-/// A pair of `part` artifacts owning each other (both kind `part`, so
-/// neither trips quire-rs#461's still-open `CellRole::PartOwner` kind
-/// restriction, and neither names itself, which the engine refuses in its
-/// own right): a legitimate owner for a scenario that needs one but is not
-/// itself testing ownership.
+/// A pair of `part` artifacts, each owned by the composite value_object
+/// `VO_001` (FR-152: a part's owner is a composite type, never another
+/// part — quire-rs#461 used to admit a part owning a part instead, which
+/// is why an earlier version of this fixture had them own each other;
+/// quire-rs#462 fixed the engine to enforce FR-152, so that shape is now
+/// correctly refused and this fixture never authors it): a legitimate
+/// owner for a scenario that needs one but is not itself testing
+/// ownership.
 fn systems_part_pair() -> [(&'static str, &'static str); 2] {
     [
         (
             "SP_900-sys-helper-part-a.md",
             "---\nid: SP_900\ntitle: SP_900\ntype: part\nobject: part\n---\n\n\
-             # SP_900: SP_900\n\n## Description\n\nA helper part, owned by `SP_901`.\n\n\
+             # SP_900: SP_900\n\n## Description\n\nA helper part, owned by `VO_001`.\n\n\
              ## Part\n\n| Owner | Declared Type | Multiplicity |\n|---|---|---|\n\
-             | SP_901 | VO_001 | 1..1 |\n",
+             | VO_001 | VO_001 | 1..1 |\n",
         ),
         (
             "SP_901-sys-helper-part-b.md",
             "---\nid: SP_901\ntitle: SP_901\ntype: part\nobject: part\n---\n\n\
-             # SP_901: SP_901\n\n## Description\n\nA helper part, owned by `SP_900`.\n\n\
+             # SP_901: SP_901\n\n## Description\n\nA helper part, owned by `VO_001`.\n\n\
              ## Part\n\n| Owner | Declared Type | Multiplicity |\n|---|---|---|\n\
-             | SP_900 | VO_001 | 1..1 |\n",
+             | VO_001 | VO_001 | 1..1 |\n",
         ),
     ]
 }
@@ -2029,8 +2032,9 @@ fn systems_part_pair() -> [(&'static str, &'static str); 2] {
 /// (`EV_001`, refused for its own occurrence-field rule, not for anything
 /// about the part naming it) cascades the refusal to the part, rather than
 /// the part's `owner_from_model` early return skipping the check. `SP_004`'s
-/// own `owner` is [`systems_part_pair`]'s `SP_900`, kept clear of
-/// quire-rs#461, so `declaredType` is the only thing under test.
+/// own `owner` is the composite value_object `VO_001` (FR-152: a part's
+/// owner is a composite type, never another part), so `declaredType` is the
+/// only thing under test.
 #[trace("TC-1800", "FR-143-AC-11")]
 #[test]
 fn tc_1800_a_systems_reference_member_naming_a_since_refused_type_cascades_the_refusal() {
@@ -2052,11 +2056,11 @@ fn tc_1800_a_systems_reference_member_naming_a_since_refused_type_cascades_the_r
         root.join("spec/functional/SP_004-sys-part-typed-by-refused.md"),
         "---\nid: SP_004\ntitle: SP_004\ntype: part\nobject: part\n---\n\n\
          # SP_004: SP_004\n\n## Description\n\n\
-         A systems part, owned by `SP_900`, typed by `EV_001`: `EV_001` is\n\
+         A systems part, owned by `VO_001`, typed by `EV_001`: `EV_001` is\n\
          refused by the time the fixed point settles, so this part's\n\
          `declaredType` cascades the refusal rather than lowering.\n\n\
          ## Part\n\n| Owner | Declared Type | Multiplicity |\n|---|---|---|\n\
-         | SP_900 | EV_001 | 1..1 |\n",
+         | VO_001 | EV_001 | 1..1 |\n",
     )
     .expect("write SP_004");
     let module_roots = systems_module_roots();
@@ -2152,8 +2156,15 @@ fn tc_1800_a_systems_reference_member_naming_an_imported_identity_is_refused() {
 /// over a local `interface` artifact — quire-rs#461/#462) is refused by its
 /// full identity, never mis-extracted as the bare id `run` or `SI_001`:
 /// this frontend does not resolve an allocation source naming an operation.
-/// The target is [`systems_part_pair`]'s `SP_900`, so only the source's
-/// member-qualified form is under test.
+/// `SI_002` declares a real `### run` heading under `## Operations`
+/// (quire-rs#462 added an operation-existence check to the engine's own
+/// member resolution, so a member naming an operation the target does not
+/// declare now refuses at the engine's own model-extraction step, before
+/// this frontend's own full-identity refusal is ever reached; declaring the
+/// operation for real lets the engine resolve the reference so this
+/// frontend's own refusal is what is under test). The target is
+/// [`systems_part_pair`]'s `SP_900`, so only the source's member-qualified
+/// form is under test.
 #[trace("TC-1800", "FR-143-AC-11")]
 #[test]
 fn tc_1800_an_allocation_source_naming_an_operation_is_refused_by_its_full_identity() {
@@ -2170,17 +2181,17 @@ fn tc_1800_an_allocation_source_naming_an_operation_is_refused_by_its_full_ident
              ## Contract\n\n```yaml\nname: SI_002\nfields:\n  - name: rate\n\
              \x20\x20\x20 type: String\n    multiplicity: 1..1\noperations: []\n\
              featureOrder: [rate]\n```\n\n## Features\n\n| Feature | Kind |\n|---|---|\n\
-             | rate | field |\n",
+             | rate | field |\n\n## Operations\n\n### run\n\nRuns the interface.\n",
         )
         .expect("write SI_002");
         fs::write(
             dir.join("SA_002-alloc-operation-source.md"),
             "---\nid: SA_002\ntitle: SA_002\ntype: allocation\nobject: allocation\n---\n\n\
              # SA_002: SA_002\n\n## Description\n\n\
-             An allocation whose source names an operation on the interface\n\
-             `SI_002` (the engine's member-qualified `<id>/<operation>` form,\n\
-             quire-rs#461/#462), which this frontend refuses rather than\n\
-             resolving.\n\n\
+             An allocation whose source names a real operation, `run`, that\n\
+             `SI_002` declares under `## Operations` (the engine's\n\
+             member-qualified `<id>/<operation>` form, quire-rs#461/#462),\n\
+             which this frontend refuses rather than resolving.\n\n\
              ## Allocation\n\n| Source | Target |\n|---|---|\n\
              | SI_002/run | SP_900 |\n",
         )
