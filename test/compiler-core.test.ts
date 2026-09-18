@@ -24,7 +24,10 @@ import {
 	registryWith,
 } from "../src/compiler/backends/seam.mjs";
 import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
-import { diffSemanticContract } from "../src/compiler/compat/diff.mjs";
+import {
+	ContractRefusalError,
+	diffSemanticContract,
+} from "../src/compiler/compat/diff.mjs";
 import {
 	CONSTRUCT_VOCABULARY,
 	CORE_KINDS,
@@ -414,7 +417,7 @@ describe("frontend seam and dialect registry (FR-045)", () => {
 	it("routes the spec-bundle dialect to its frontend and returns the producer's document", async () => {
 		expect(isImplemented("spec-bundle")).toBe(true);
 		const document = {
-			contractVersion: "1.1.0",
+			contractVersion: "2.0.0",
 			package: { identity: "agent-ix/probe", version: "0.0.0" },
 			types: [],
 		};
@@ -615,7 +618,7 @@ describe("frontend seam and dialect registry (FR-045)", () => {
 		// A frontend that returns both must fail the seam, not the caller.
 		expect(() =>
 			assertFrontendContract("spec-bundle", {
-				ir: { contractVersion: "1.1.0" },
+				ir: { contractVersion: "2.0.0" },
 				diagnostics: [blocking],
 			}),
 		).toThrow(/partial document/);
@@ -3144,7 +3147,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 	});
 
 	/** Traces: TC-514, TC-515, TC-525; FR-050-AC-5, FR-050-AC-6, FR-050-CON-3. */
-	it("materializes the members on a 2.0.0 document, leaves any other version alone, and is idempotent", () => {
+	it("materializes nullable unconditionally, never derives multiplicity or presence, and is idempotent", () => {
 		const document = JSON.parse(JSON.stringify(compiled.ir)) as never as {
 			contractVersion: string;
 			types: Json[];
@@ -3164,17 +3167,17 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 				(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
 			) as Json
 		).fields as Json[];
-		// normalizeIr never derived presence for a 2.0.0 document (unlike the
-		// deleted 1.1.0 contract, which forced it from multiplicity); a deleted
-		// presence stays deleted here. Whether that is the right rule for 2.0.0
-		// is fcd#182's open question, not restated by fcd#179's deletion.
+		// multiplicity and presence are schema-required and independently
+		// authored (FR-027, FR-106); normalizeIr never derives either from the
+		// other, so a deleted presence stays deleted here.
 		expect(restored[0].presence).toBeUndefined();
 		expect(restored[0].nullable).toBe(false);
 		expect(restored[0].multiplicity).toBeDefined();
 
-		// Any non-2.0.0 tag takes this path unchanged; "1.0.0" is illustrative,
-		// not a version normalizeIr treats specially (fcd#179: none does).
-		const legacy = {
+		// Materialization gates on no field of the document, including
+		// `contractVersion`: a document with no multiplicity on a field still
+		// gains no derived one, and still gains a literal `nullable`.
+		const untagged = {
 			contractVersion: "1.0.0",
 			types: [
 				{
@@ -3183,12 +3186,12 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 				},
 			],
 		};
-		const legacyNormalized = JSON.parse(normalizeIr(legacy)) as never as {
+		const untaggedNormalized = JSON.parse(normalizeIr(untagged)) as never as {
 			types: Json[];
 		};
-		expect(
-			(legacyNormalized.types[0].fields as Json[])[0].multiplicity,
-		).toBeUndefined();
+		const untaggedField = (untaggedNormalized.types[0].fields as Json[])[0];
+		expect(untaggedField.multiplicity).toBeUndefined();
+		expect(untaggedField.nullable).toBe(false);
 
 		expect(normalizeIr(JSON.parse(normalizeIr(compiled.ir)))).toBe(
 			normalizeIr(compiled.ir),
@@ -3933,6 +3936,40 @@ describe("compatibility (FR-051)", () => {
 				),
 			),
 		).toBe(true);
+	});
+
+	/**
+	 * `diffSemanticContract` is a direct CLI entry point with no schema check
+	 * ahead of it (`diff` in `src/compiler/cli.mjs` reads `--old`/`--new` from
+	 * disk directly), so a document naming a contract this compiler does not
+	 * support must not be silently classified as though it were 2.0.0. The
+	 * report schema's closed `family` enum has no honest home for a refusal,
+	 * so it throws rather than fabricating a change.
+	 */
+	it("refuses a document whose contractVersion this compiler does not support", () => {
+		const valid = constructed("documentation-only").old;
+		const stale = { ...(valid as object), contractVersion: "1.1.0" };
+		for (const request of [
+			{ old: stale, new: valid },
+			{ old: valid, new: stale },
+		]) {
+			expect(() => diffSemanticContract(request as never)).toThrow(
+				ContractRefusalError,
+			);
+			let caught: unknown;
+			try {
+				diffSemanticContract(request as never);
+			} catch (error) {
+				caught = error;
+			}
+			expect(caught).toBeInstanceOf(ContractRefusalError);
+			expect((caught as ContractRefusalError).code).toBe(
+				DIAGNOSTIC_CODES.UNKNOWN_CONTRACT_VERSION.code,
+			);
+			expect((caught as Error).message).not.toContain(
+				DIAGNOSTIC_CODES.UNKNOWN_CONTRACT_VERSION.code,
+			);
+		}
 	});
 
 	/** Traces: TC-529; FR-051-AC-3. */
