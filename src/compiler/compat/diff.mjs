@@ -12,10 +12,29 @@
  * breaking release gets promoted.
  */
 import { kindLabel } from "../constructs.mjs";
-import { DIAGNOSTIC_CODES, fragment } from "../diagnostics.mjs";
-import { canonicalize } from "../packages/canonical.mjs";
+import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../diagnostics.mjs";
 import { familyMap } from "../family-map.mjs";
 import { fingerprintIr } from "../ir/normalize.mjs";
+import { canonicalize } from "../packages/canonical.mjs";
+
+/**
+ * Raised when `old` or `new` declares a contract version this compiler does
+ * not support, carrying the same `agent-ix.compiler.UNKNOWN_CONTRACT_VERSION`
+ * diagnostic `readContractIr` (`ir/reader.mjs`) raises for the same input.
+ *
+ * `compatibility-report.schema.json` closes its own `family` enumeration and
+ * requires a non-empty `changes` array, so a refusal cannot be expressed as
+ * one more change without inventing a family the input never produced. This
+ * throws instead.
+ */
+export class ContractRefusalError extends Error {
+	constructor(diagnosticEntry) {
+		super(diagnosticEntry.message);
+		this.name = "ContractRefusalError";
+		this.code = diagnosticEntry.code;
+		this.diagnostic = diagnosticEntry;
+	}
+}
 
 /** Least restrictive to most; the ranking the issue #9 contract tests assert. */
 export const DISPOSITION_RANK = Object.freeze([
@@ -140,40 +159,23 @@ export function diffSemanticContract(request) {
 		retainedBridges = [],
 	} = request;
 
-	// fcd#183: this function is a direct CLI entry point (`diff` in
-	// `src/compiler/cli.mjs` reads `--old`/`--new` from disk with no schema
-	// check first), unlike the conformance adapter's own call, which is
-	// guarded ahead of time by `readContractIr`'s blocking refusal. A document
-	// naming a contract fcd#179 deleted must not be silently classified as
-	// though it were 2.0.0, so both sides are refused here too, wholesale,
-	// before any comparison runs (mirrors `readContractIr` in `ir/reader.mjs`).
+	// This function is a direct CLI entry point (`diff` in `src/compiler/
+	// cli.mjs` reads `--old`/`--new` from disk with no schema check first),
+	// unlike the conformance adapter's own call, which is guarded ahead of
+	// time by `readContractIr`'s blocking refusal. A document naming an
+	// unsupported contract must not be silently classified as though it were
+	// 2.0.0, so both sides are refused here too, before any comparison runs
+	// (mirrors `readContractIr` in `ir/reader.mjs`).
 	for (const [role, document] of [
 		["old", before],
 		["new", after],
 	]) {
 		if (document?.contractVersion === "2.0.0") continue;
-		return {
-			contractVersion: "1.0.0",
-			oldFingerprint: fingerprintIr(before) ?? "",
-			newFingerprint: fingerprintIr(after) ?? "",
-			consumerEvidenceStatus: consumerEvidenceStatus,
-			changes: [
-				{
-					identity: String(
-						document?.source?.identity ?? "ix://agent-ix/unknown/source",
-					),
-					family: "documentation",
-					surface: "semantic",
-					disposition: "invalid",
-					rationale: `${DIAGNOSTIC_CODES.UNKNOWN_CONTRACT_VERSION.code}: the ${role} document declares contract version ${fragment(String(document?.contractVersion))}; this compiler supports 2.0.0`,
-					affectedConsumers: [],
-					targetResults: [],
-				},
-			],
-			aggregateDisposition: "invalid",
-			requiredGates: [],
-			retainedBridges: [],
-		};
+		throw new ContractRefusalError(
+			diagnostic(DIAGNOSTIC_CODES.UNKNOWN_CONTRACT_VERSION, {
+				message: `the ${role} document declares contract version ${fragment(String(document?.contractVersion))}; this compiler supports 2.0.0`,
+			}),
+		);
 	}
 	const map = familyMapping();
 	const familyOf = (observed) =>
