@@ -72,8 +72,10 @@ PINNED_DIGESTS = {
     "python_backend/runner": (
         # fcd#179: corpus_account.py's validated type name follows the schema's
         # contract 2.0.0-only union; its module docstring's cross-field code
-        # list drops V1_1_NODE_IN_V1_0, which no 2.0.0-only oracle can emit.
-        "sha256:0b7ee901dc20e2998787cfd61e8a0d615cdd775e1fd8b67ee0f255ed4405482d"
+        # list drops PRESENCE_MULTIPLICITY_MISMATCH and V1_1_NODE_IN_V1_0,
+        # neither of which any 2.0.0-only oracle can emit, and adds
+        # COMPOSITE_CYCLE, which the 1.1.0-era list omitted.
+        "sha256:3986f8a39adba602c6b5eb47df6013657a4a0f7c18744e5878c1c250a4d45288"
     ),
     "python_backend/qualification": (
         # fcd#179: report.json, corpus-account.json and validation.json
@@ -83,7 +85,9 @@ PINNED_DIGESTS = {
         # cases), which also moves the account's decided/agreed/undecidable
         # split since python_backend/generated's stricter 2.0.0-only shape
         # now raises ValidationError, not disagreement, on more cases.
-        "sha256:0e137b34364a90e9dbc277c4ca47ee040ac3401903c05a62d291d4bc83dd9ecc"
+        # corpus-account.json's corpusDigest remeasured a third time after
+        # `biome check --write conformance/` reformatted every case/base file.
+        "sha256:43c1ef1dc8a019338ebea99f8d3319841014e2402cadc74cfa1551e99ce65ed4"
     ),
     "python_backend/generated": (
         # fcd#179: regenerated from schema/semantic/v1/semantic-ir.schema.json
