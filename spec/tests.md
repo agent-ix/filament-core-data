@@ -578,6 +578,7 @@ blocked as stated above.
 | TC-230 | Manifest, target-contract, and representation schemas reference the shared common enumerations | Static | P0 | FR-030-AC-4, FR-030-CON-2 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-232 | The TypeScript Ajv reader and the Python `jsonschema` reader (`tests/`) agree on every golden and negative fixture | Integration | P0 | FR-020-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-233 | Generated `2.0.0` documents with all five new node kinds round-trip the normalized serialization byte-identically | Property | P0 | FR-020-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-1803 | The Python reader materializes `nullable: true` only for the input `true`, and `nullable: false` for each of `1`, `"true"`, `null`, `{}`, and an absent `nullable` member (fcd#187) | Unit | P0 | FR-020-AC-7 | ✅ passed — id-bound in `tests/test_semantic_ir_v1_1.py` |
 | TC-237 | `ordered: true` or `unique: true` on a `1..1` field fails at the field locus | Unit | P0 | FR-027-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-238 | Multiplicity narrowing classifies breaking; widening classifies additive | Unit | P0 | FR-027-AC-9 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-239 | A relationship `target` resolving to no type definition or lock export fails at the relationship locus | Unit | P0 | FR-028-AC-9 | ✅ passed — semantic IR v1.1 (PR #38) |
@@ -635,7 +636,7 @@ blocked as stated above.
 | TC-292 | A self-referential alias and a mutual alias pair each yield one `ALIAS_CYCLE`; a 257-link acyclic chain yields `DEPTH_LIMIT_EXCEEDED` | Unit | P0 | FR-036-AC-3 | ✅ passed — conformance corpus (PR pending) |
 | TC-293 | Duplicate identity, alias cycle, unresolved occurrence definition, unresolved union payload, and unresolved sequence or map element are five distinct codes | Unit | P0 | FR-036-AC-4 | ✅ passed — conformance corpus (PR pending) |
 | TC-294 | The oracle and harness import no judged implementation, read no clock, network, or environment, and add no dependency | Static | P0 | FR-036-AC-5, FR-036-CON-1 | ✅ passed — conformance corpus (PR pending) |
-| TC-295 | For every `2.0.0` document, `normalized` is byte-identical to the corpus canonical form of the input and adds no member | Property | P0 | FR-036-AC-6 | ✅ passed — conformance corpus (PR pending) |
+| TC-295 | For every `2.0.0` document whose `nullable` members are all already booleans, `normalized` is byte-identical to the corpus canonical form of the input and adds no member; for any other `2.0.0` document, `normalized` differs only in materializing each such `nullable` as `=== true` | Property | P0 | FR-036-AC-6 | ✅ passed — conformance corpus (PR pending) |
 | TC-296 | An optional plus required addition classifies `breaking` naming both; the optional addition alone is `additive` under a preserving policy and `conditional` with none | Unit | P0 | FR-036-AC-7 | ✅ passed — conformance corpus (PR pending) |
 | TC-297 | Every diagnostic the oracle emits validates against the published diagnostic schema and carries `owner`, `blocking`, `causes`, and `related` | Unit | P0 | FR-036-AC-8 | ✅ passed — conformance corpus (PR pending) |
 | TC-298 | Each of the six package-context rules fires on a bundle supplying its member and stays silent on one that omits it | Unit | P0 | FR-036-AC-9 | ✅ passed — conformance corpus (PR pending) |
@@ -1038,7 +1039,7 @@ blocked as stated above.
 | TC-805 | Each of the four declared limits returns a bounded answer without throwing, the depth bound is the declared 256 rather than the compiler's `DEFAULT_LIMITS`, and 512 mutated documents leave the input byte-unchanged and never throw | Fuzz | P0 | FR-068-AC-14, FR-068-AC-15, FR-068-AC-22, FR-068-CON-5, FR-068-CON-6 | 🚧 no discrete test; no test binds this row |
 | TC-806 | Two documents differing only in object key order and in the thirteen identity-keyed containers canonicalize alike, two differing in any semantic value do not, and two members sharing one `identity` canonicalize to one form whatever order they arrive in | Property | P0 | FR-069-AC-1, FR-069-AC-2, FR-069-AC-16 | 🚧 no discrete test; no test binds this row |
 | TC-807 | `normalizeIrForTarget` is idempotent over every positive fixture and every generated document | Property | P0 | FR-069-AC-3 | 🚧 no discrete test; no test binds this row |
-| TC-808 | A `2.0.0` field gains a literal `nullable` and no other member; `multiplicity` and `presence` are never derived from one another, and a document not carrying `contractVersion` `2.0.0` gains no member at all | Unit | P0 | FR-069-AC-4 | 🚧 no discrete test; no test binds this row |
+| TC-808 | A `2.0.0` field gains a literal `nullable` and no other member; `multiplicity` and `presence` are never derived from one another, and a document not carrying `contractVersion` `2.0.0` gains no member at all; `nullable` materializes `true` only for the input `true`, and `false` for each of `1`, `"true"`, `null`, `{}`, and an absent `nullable` member (fcd#187) | Unit | P0 | FR-069-AC-4 | ✅ passed — id-bound in `test/typescript-backend.test.ts` |
 | TC-809 | Canonicalizing every conformance base and case input is byte-identical on a second run, from another working directory, and under `LC_ALL=tr_TR.UTF-8` | Integration | P0 | FR-069-AC-5 | 🚧 no discrete test; no test binds this row |
 | TC-810 | A non-finite number and a value past the depth bound are each refused with a named error, negative zero canonicalizes as positive zero, and canonicalization leaves its argument byte-identical | Unit | P0 | FR-069-AC-6, FR-069-AC-7, FR-069-AC-21, FR-069-CON-5 | 🚧 no discrete test; no test binds this row |
 | TC-811 | Each declared classification rule fires on a constructed pair at a hand-computed pointer — a removed field, an added required field, a removed variant and a removed relationship `breaking`; an added optional field `conditional` with no consumer policy and `additive` under one admitting unknown members; an added variant `additive` under such a policy and, with none, `breaking` under the `contract` setting of `VARIANT_ADDITION_POLICY` and `conditional` under its default `corpus` setting, with the constant read in exactly one place — and a rule absent from the exported `MODELLED_CHANGES` data fails the module's contract test | Unit | P0 | FR-069-AC-8, FR-069-AC-17, FR-069-AC-19, FR-069-AC-25, FR-069-CON-7 | ✅ passed — id-bound in `test/typescript-backend.test.ts` |
@@ -1141,6 +1142,7 @@ blocked as stated above.
 | TC-708 | The reader returns diagnostics and never panics over mutated documents | Fuzz | P0 | FR-059-AC-11, FR-059-CON-5 | 🚧 planned |
 | TC-709 | The only conformance path this change touches is the rust-backend registry entry | Analysis | P0 | FR-059-AC-12, FR-059-CON-2 | 🚧 planned |
 | TC-710 | Removing the adapter command returns the slot to unmet, and the GAP-011 dependency is recorded | Integration | P0 | FR-059-AC-13, FR-059-AC-14, FR-059-CON-4 | 🚧 planned |
+| TC-1802 | The Rust reader's `normalized` materializes `nullable: true` only for the input `true`, and `nullable: false` for each of `1`, `"true"`, `null`, `{}`, and an absent `nullable` member (fcd#187) | Unit | P0 | FR-059-AC-16 | ✅ passed — id-bound in `crates/semantic-ir/src/normalize.rs` |
 | TC-711 | Two generations of one request are byte-identical over an actual second run | Snapshot | P0 | FR-060-AC-1, FR-060-CON-2 | 🚧 planned |
 | TC-712 | Generation is byte-unchanged across the declared environment perturbations | Unit | P0 | FR-060-AC-2 | 🚧 planned |
 | TC-713 | The formatter reports no change over every generated crate | Integration | P0 | FR-060-AC-3 | 🚧 planned |
@@ -2636,17 +2638,17 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 279 | 242 | 0 | 37 | 100% mapped (279/279) |
+| Static | 276 | 239 | 0 | 37 | 100% mapped (276/276) |
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
-| Property | 130 | 83 | 0 | 47 | 100% mapped (130/130) |
-| Unit | 591 | 485 | 0 | 106 | 100% mapped (591/591) |
+| Property | 128 | 81 | 0 | 47 | 100% mapped (128/128) |
+| Unit | 595 | 491 | 0 | 104 | 100% mapped (595/595) |
 | Integration | 161 | 100 | 0 | 61 | 100% mapped (161/161) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
-| Snapshot | 68 | 43 | 0 | 25 | 100% mapped (68/68) |
+| Snapshot | 65 | 40 | 0 | 25 | 100% mapped (65/65) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1382** | **1053** | **0** | **329** | **100% mapped (1382/1382)** |
+| **Total** | **1378** | **1051** | **0** | **327** | **100% mapped (1378/1378)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

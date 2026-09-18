@@ -87,7 +87,13 @@ PINNED_DIGESTS = {
         # now raises ValidationError, not disagreement, on more cases.
         # corpus-account.json's corpusDigest remeasured a third time after
         # `biome check --write conformance/` reformatted every case/base file.
-        "sha256:43c1ef1dc8a019338ebea99f8d3319841014e2402cadc74cfa1551e99ce65ed4"
+        # fcd#187: corpus-account.json regenerated again (via
+        # `poetry run python -m python_backend.runner.corpus_account`) after
+        # the corpus grew back to 111 cases with the addition of
+        # PRES-011..015, moving undecidable from 38 to 43 (nullable's
+        # non-boolean/absent cases are cross-field-undecidable by this
+        # surface, like every other undecidable case already was).
+        "sha256:737480c30005aaafa3d6275ca369c1f2ede63a677eb412772660c8f724363285"
     ),
     "python_backend/generated": (
         # fcd#179: regenerated from schema/semantic/v1/semantic-ir.schema.json

@@ -1,0 +1,57 @@
+{
+	"id": "PRES-014",
+	"title": "An object nullable value is a schema violation, not truthy coercion",
+	"family": "field-presence",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "2.0.0",
+	"base": "core-2-0",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/1/nullable",
+			"value": true
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/1/nullable",
+			"value": {}
+		}
+	],
+	"covers": ["CR-field-presence"],
+	"decidedBy": "schema",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Semantic model",
+			"quote": "Fields independently encode required/optional presence, nullable/non-nullable"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#187",
+		"blessedFromRun": false
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/8/fields/1/nullable",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"severity": "error",
+					"message": "type: must be boolean (type=\"boolean\")",
+					"owner": "ix://agent-ix/conformance/field/node-label",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/node.tsp",
+						"startLine": 6,
+						"startColumn": 1
+					}
+				}
+			}
+		]
+	}
+}

@@ -83,7 +83,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 ### Normalization
 
 - `canonicalIr` SHALL be the FR-048 canonical byte form of the document, with `types`, `fields`, `variants`, `constraints`, `relationships`, `operations`, `clauses`, and `extensions` declared as identity-keyed sets.
-- `normalizeIr` SHALL materialize `nullable` as a literal boolean on every field and every operation parameter before canonicalising. `multiplicity` and `presence` are schema-required and independently authored (FR-027, FR-106); `normalizeIr` SHALL NOT derive either from the other or from anything else, and SHALL run this materialization unconditionally, gating on no field of the document including `contractVersion`.
+- `normalizeIr` SHALL materialize `nullable` as a literal boolean on every field and every operation parameter before canonicalising. `nullable` materializes `true` only where the authored member is the JSON literal `true`; every other value or its absence — `null`, `false`, a number, a string, an array, or an object, or no member at all — materializes `false` (fcd#187). `multiplicity` and `presence` are schema-required and independently authored (FR-027, FR-106); `normalizeIr` SHALL NOT derive either from the other or from anything else, and SHALL run this materialization unconditionally, gating on no field of the document including `contractVersion`.
 - `fingerprintIr` SHALL be `digest` of `normalizeIr`'s output.
 - The compiler SHALL validate its own emitted document before writing it.
 - If that validation fails, then the compiler SHALL treat the failure as a blocking diagnostic rather than writing an invalid document.
@@ -105,7 +105,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | FR-050-AC-2 | Every case in `negative/reader-cases.json` yields the expected diagnostic code from the compiler's reader. | Test |
 | FR-050-AC-3 | For every case in `negative/reader-cases.json`, the compiler's reader, the issue #34 TypeScript reader, and the Python reader produce the same set of codes; a disagreement fails the suite. | Integration |
 | FR-050-AC-4 | `src/compiler/ir/reader.mjs` imports no module under `test/` or `tests/`, matching FR-050-CON-1; any edit to `test/semantic-ir-v1-1-reader.ts` or `tests/semantic_ir_reader.py` stays within what FR-050-CON-2 permits. | Analysis |
-| FR-050-AC-5 | `normalizeIr` materializes `nullable` as a literal boolean on every field and operation parameter, unconditionally on `contractVersion`, and never derives `multiplicity` from `presence` or `presence` from `multiplicity`. | Test |
+| FR-050-AC-5 | `normalizeIr` materializes `nullable` as a literal boolean on every field and operation parameter, unconditionally on `contractVersion`, and never derives `multiplicity` from `presence` or `presence` from `multiplicity`; `nullable` materializes `true` for the input `true`, and `false` for each of `1`, `"true"`, `null`, `{}`, and an absent `nullable` member. | Test |
 | FR-050-AC-6 | `normalizeIr(normalizeIr(d))` equals `normalizeIr(d)` for every positive fixture and for generated documents. | Property |
 | FR-050-AC-7 | Two documents differing only in object key order and in identity-keyed array order have the same `fingerprintIr`; two differing in any semantic value do not. | Property |
 | FR-050-AC-8 | An emitted document that fails validation is not written, and the failure is a blocking diagnostic naming the failing pointer. | Test |

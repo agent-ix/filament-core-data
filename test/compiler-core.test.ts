@@ -3205,6 +3205,50 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		}
 	});
 
+	/**
+	 * Traces: TC-514; FR-050-AC-5.
+	 *
+	 * fcd#187: `nullable` materializes `true` only for the JSON literal `true`
+	 * (`=== true`), never by truthiness coercion. `fixtures/semantic/v1/
+	 * nullable-truthiness-cases.json` is the shared cross-language fixture the
+	 * Rust (`normalize::tests`), TypeScript backend
+	 * (`test/typescript-backend.test.ts`), and Python
+	 * (`tests/test_semantic_ir_reader.py`) tests consume identically, so a
+	 * divergence in any one language's coercion rule fails only that
+	 * language's own test.
+	 */
+	it("TC-514: materializes nullable === true only, for every case the shared fixture names (fcd#187)", () => {
+		const fixture = readJson(
+			resolve(root, "fixtures/semantic/v1/nullable-truthiness-cases.json"),
+		) as unknown as {
+			cases: { id: string; raw?: unknown; normalized: boolean }[];
+		};
+		expect(fixture.cases.length).toBeGreaterThan(0);
+		for (const testCase of fixture.cases) {
+			const field: Json = {
+				name: "a",
+				presence: "required",
+				multiplicity: { lower: 1, upper: 1 },
+			};
+			if ("raw" in testCase) field.nullable = testCase.raw;
+			const document: Json = {
+				contractVersion: "2.0.0",
+				types: [
+					{
+						identity: "ix://a/b/type/T",
+						kind: "record",
+						fields: [field],
+					},
+				],
+			};
+			const normalized = JSON.parse(normalizeIr(document)) as never as {
+				types: Json[];
+			};
+			const normalizedField = (normalized.types[0].fields as Json[])[0];
+			expect(normalizedField.nullable, testCase.id).toBe(testCase.normalized);
+		}
+	});
+
 	/** Traces: FR-106-CON-2. */
 	it("accepts the v1.2 Any scalar and preserves authored presence", () => {
 		const document = JSON.parse(JSON.stringify(compiled.ir)) as never as {
