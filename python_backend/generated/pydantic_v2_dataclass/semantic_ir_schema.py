@@ -13,8 +13,6 @@ from . import common_schema
 
 
 class ContractVersion(Enum):
-    field_1_0_0 = '1.0.0'
-    field_1_1_0 = '1.1.0'
     field_2_0_0 = '2.0.0'
 
 
@@ -30,7 +28,7 @@ class Package:
 
 @dataclass(config=ConfigDict(extra='forbid'))
 class Source:
-    dialect: Literal['https://json-schema.org/draft/2020-12/schema'] | common_schema.FrontendDialect
+    dialect: common_schema.FrontendDialect
     digest: common_schema.Sha256
     identity: common_schema.SemanticIdentity
     version: common_schema.Semver
@@ -373,6 +371,7 @@ class Construct:
 class FieldModel:
     defaultKind: DefaultKind
     identity: common_schema.SemanticIdentity
+    multiplicity: Multiplicity
     name: Annotated[str, Field(min_length=1)]
     nullable: bool
     origin: common_schema.Origin
@@ -380,7 +379,6 @@ class FieldModel:
     typeRef: common_schema.SemanticIdentity
     defaultValue: Any | None = None
     extensions: list[common_schema.Extension] | None = None
-    multiplicity: Multiplicity | None = None
     redefines: common_schema.SemanticIdentity | None = None
     subsets: IdentityList | None = None
     unit: Annotated[str | None, Field(min_length=1, pattern='^[!-~]+$')] = None
@@ -523,12 +521,12 @@ class TypeDefinition:
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
-class FilamentSemanticIrV1ContractVersions100110And200:
+class FilamentSemanticIrV1ContractVersion200:
+    constructs: list[Construct]
     contractVersion: ContractVersion
     extensions: list[common_schema.Extension]
     occurrences: list[Occurrence]
     package: Package
     source: Source
     types: Annotated[list[TypeDefinition], Field(min_length=1)]
-    constructs: list[Construct] | None = None
     populations: list[Population] | None = None

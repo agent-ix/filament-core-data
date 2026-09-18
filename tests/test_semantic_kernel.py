@@ -70,13 +70,19 @@ PINNED_DIGESTS = {
         "sha256:13889607403535b12c52e9115a08ea5baac6c67c81ecb08108c2ce73b0b6e5a1"
     ),
     "python_backend/runner": (
-        "sha256:d19f88059898d515a1b384d00c2c972422d99e47ccecb47f048726cf1c9dd090"
+        # fcd#179: corpus_account.py's validated type name follows the schema's
+        # contract 2.0.0-only union.
+        "sha256:3cca57c5ea2e59a004cbe0c72ec009bea4f5db214bd90e67f2c3fbd7ea1e1be2"
     ),
     "python_backend/qualification": (
-        "sha256:a33f3c11c506ccb7610f15f0455694cfc7a6b8e529fc99e22b6ebdc7fe45b147"
+        # fcd#179: report.json, corpus-account.json and validation.json
+        # remeasured against the 2.0.0-only schema and corpus_account fix.
+        "sha256:972bf78a0ce8e04abb40697ef521f44de84c3b016e8eb006ec1cf117959d574d"
     ),
     "python_backend/generated": (
-        "sha256:eea0a3a875cef005d9475aaa8dd126a92a62bdcefaef7d8a634a824c82708058"
+        # fcd#179: regenerated from schema/semantic/v1/semantic-ir.schema.json
+        # after contracts 1.0.0 and 1.1.0 were deleted from it.
+        "sha256:e13cbe3c88d8f4cda229e5ad9a93682e7c477602a00062048a413b297c940aa7"
     ),
     "python_backend/profiles.json": (
         "sha256:3c6fc254a7c346c88b6ea91fdaeb7d3a3b55f8065b8a6ebc6ddab3a447547345"

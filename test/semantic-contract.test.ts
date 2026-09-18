@@ -281,13 +281,17 @@ describe("semantic package contract v1", () => {
 		);
 	});
 
-	/** Traces: TC-132, TC-133, TC-135, TC-136, TC-137, TC-138, TC-139, TC-140. */
+	/**
+	 * Traces: TC-132, TC-133, TC-135, TC-136, TC-137, TC-138, TC-139, TC-140.
+	 * fcd#179 deleted contracts `1.0.0` and `1.1.0`; `2.0.0` is the only one.
+	 * `positive/semantic-ir.json` (a `1.0.0` document) is the fixture with all
+	 * eight structural kinds, kept on disk byte-unchanged (still pinned by
+	 * `v1-fixture-digests.json`) for the vocabulary shape it carries; this
+	 * test no longer asserts that it validates against the current schema,
+	 * since that is exactly the acceptance of a deleted contract.
+	 */
 	it("validates the IR type vocabulary, stable identities, origins, and explicit value states", () => {
 		const ir = object(readJson("positive/semantic-ir.json"), "semantic IR");
-		expect(
-			validates("semantic-ir.schema.json", ir),
-			JSON.stringify(ajv.errors),
-		).toBe(true);
 		const types = array(ir.types, "IR types").map((value) =>
 			object(value, "type"),
 		);
@@ -582,9 +586,23 @@ describe("semantic package contract v1", () => {
 		}
 	});
 
-	/** Traces: TC-159, TC-160, TC-161, TC-162, TC-163, TC-164, TC-179, TC-180, TC-184, TC-200. */
+	/**
+	 * Traces: TC-159, TC-160, TC-161, TC-162, TC-163, TC-164, TC-179, TC-180, TC-184, TC-200.
+	 * fcd#179 deleted contracts `1.0.0` and `1.1.0`; `2.0.0` is the only one.
+	 * `positive/compiler-request.json` is kept on disk byte-unchanged (still
+	 * pinned by `v1-fixture-digests.json`), but its embedded `ir` fixture
+	 * reference names `semantic-ir.json`, a `1.0.0` document, so it no longer
+	 * resolves to a document the schema admits. This test's own subject is
+	 * the request envelope shape, not that specific `ir` reference, so it
+	 * validates an in-memory copy with the embedded reference repointed at a
+	 * fixture already ported to `2.0.0`, rather than either lying about the
+	 * frozen fixture's own validity or losing envelope coverage entirely.
+	 */
 	it("defines one compiler and diagnostic envelope without implementing a backend", () => {
-		const request = readJson("positive/compiler-request.json");
+		const request = {
+			...(readJson("positive/compiler-request.json") as JsonObject),
+			ir: { $fixture: "semantic-ir-v1-1.json" },
+		};
 		const output = object(readJson("positive/output-manifest.json"), "output");
 		expect(
 			validates("compiler-request.schema.json", request),
@@ -952,10 +970,21 @@ describe("semantic package contract v1", () => {
 		expect(JSON.parse(JSON.stringify(hostilePayload))).toEqual(hostilePayload);
 	});
 
-	/** Traces: TC-190, TC-191, TC-192, TC-193, TC-194. */
+	/**
+	 * Traces: TC-190, TC-191, TC-192, TC-193, TC-194.
+	 * fcd#179 deleted contracts `1.0.0` and `1.1.0`; `2.0.0` is the only one.
+	 * The `semantic-ir.schema.json` positive example is `semantic-ir-v1-1.json`
+	 * (already ported to `2.0.0`), not `semantic-ir.json` (kept on disk
+	 * byte-unchanged, still pinned by `v1-fixture-digests.json`, no longer a
+	 * document the schema admits — its own vocabulary content is exercised
+	 * directly in "validates the IR type vocabulary..." above). Likewise the
+	 * `compiler-request.schema.json` example repoints its embedded `ir`
+	 * fixture reference at a `2.0.0` document for the same reason the
+	 * envelope test above does.
+	 */
 	it("supports an independent reader and preserves governed optional extensions", () => {
 		const examples: Array<[string, unknown]> = [
-			["semantic-ir.schema.json", readJson("positive/semantic-ir.json")],
+			["semantic-ir.schema.json", readJson("positive/semantic-ir-v1-1.json")],
 			[
 				"package-manifest.schema.json",
 				readJson("positive/package-manifest.json"),
@@ -965,7 +994,10 @@ describe("semantic package contract v1", () => {
 			["profile.schema.json", readJson("positive/profile.json")],
 			[
 				"compiler-request.schema.json",
-				readJson("positive/compiler-request.json"),
+				{
+					...(readJson("positive/compiler-request.json") as JsonObject),
+					ir: { $fixture: "semantic-ir-v1-1.json" },
+				},
 			],
 			[
 				"output-manifest.schema.json",

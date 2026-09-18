@@ -596,7 +596,7 @@
 				},
 				{
 					"module": "semantic_ir_schema",
-					"type": "FilamentSemanticIrV1ContractVersions100110And200",
+					"type": "FilamentSemanticIrV1ContractVersion200",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
@@ -1254,7 +1254,7 @@
 				},
 				{
 					"module": "semantic_ir_schema",
-					"type": "FilamentSemanticIrV1ContractVersions100110And200",
+					"type": "FilamentSemanticIrV1ContractVersion200",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
@@ -1508,8 +1508,8 @@
 			"declaredTypes": 166,
 			"validatingTypes": 76,
 			"nonValidatingDeclarations": 90,
-			"exercisedTypes": 50,
-			"unexercisedValidatingTypes": 26,
+			"exercisedTypes": 51,
+			"unexercisedValidatingTypes": 25,
 			"constraintsExercised": 183,
 			"typesRejectingAnEmptyOrUndeclaredValue": 76,
 			"typesAcceptingAnything": [],
@@ -1925,7 +1925,7 @@
 				},
 				{
 					"module": "semantic_ir_schema",
-					"type": "FilamentSemanticIrV1ContractVersions100110And200",
+					"type": "FilamentSemanticIrV1ContractVersion200",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
@@ -2054,8 +2054,8 @@
 				{
 					"module": "semantic_ir_schema",
 					"type": "Source",
-					"exercised": false,
-					"acceptsAConformingValue": false,
+					"exercised": true,
+					"acceptsAConformingValue": true,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 0
 				},

@@ -11,791 +11,791 @@
 	"surface": "python_backend/generated/pydantic_v2_basemodel",
 	"counts": {
 		"cases": 111,
-		"decided": 70,
-		"agreed": 70,
-		"surfaceOverStrict": 0,
-		"undecidable": 41,
+		"decided": 111,
+		"agreed": 41,
+		"surfaceOverStrict": 70,
+		"undecidable": 0,
 		"unmetCorpusRows": 0
 	},
-	"agreementOverDecidedCases": "70/70",
+	"agreementOverDecidedCases": "41/111",
 	"notCoverage": "The agreement figure is over the cases this generated surface decided. It is not corpus coverage and must not be reported as such. The slot's coverage is the adapter's, reported by `conformance/coverage.json`, and is a separate measurement of a separate artefact.",
 	"cases": [
 		{
 			"caseId": "ALIAS-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "ALIAS-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "ALIAS-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "ALIAS-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "CLAUSE-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "CLAUSE-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "CLAUSE-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "CLAUSE-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "CLAUSE-005",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "CLAUSE-006",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "COMP-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "COMP-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "COMP-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "COMP-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "COMP-005",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "CONS-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "CONS-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "CONS-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "CONS-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "CONS-005",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "CONS-006",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "CONS-007",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "DEF-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "DEF-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "DEF-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "DEF-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "ENUM-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "ENUM-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "ENUM-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "ENUM-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "ENV-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "ENV-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "ENV-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "ENV-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "EXT-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "EXT-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "EXT-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "EXT-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "IDENT-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "IDENT-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "IDENT-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "IDENT-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "IDENT-005",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "OP-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "OP-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "OP-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "OP-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "OP-005",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "PKG-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "PKG-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "PKG-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "PKG-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "PKG-005",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "PKG-006",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "PKG-007",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "PKG-008",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "PRES-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "PRES-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "PRES-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "PRES-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "PRES-005",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "PRES-006",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "PRES-007",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "PRES-008",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "PRES-009",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "PRES-010",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "PROV-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "PROV-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "PROV-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "PROV-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "REC-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "REC-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "REC-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "REC-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "REC-005",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "REC-006",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "REF-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "REF-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "REF-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "REF-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "REL-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "REL-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "REL-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "REL-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "REL-005",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "REL-006",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "SCAL-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "SCAL-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "SCAL-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "SCAL-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "SEQMAP-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "SEQMAP-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "SEQMAP-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "SEQMAP-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "UNION-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "UNION-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "UNION-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "UNION-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "UNIT-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "UNIT-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "UNIT-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "UNIT-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "UNK-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "UNK-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "UNK-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "UNK-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "UNK-005",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "VER-001",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "VER-002",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "invalid",
-			"classification": "undecidable-by-this-surface",
-			"why": "the oracle decides this case by a cross-field rule over a resolved document"
+			"classification": "agreed",
+			"why": null
 		},
 		{
 			"caseId": "VER-003",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		},
 		{
 			"caseId": "VER-004",
-			"decision": "success",
+			"decision": "invalid",
 			"oracleResultState": "success",
-			"classification": "agreed",
-			"why": null
+			"classification": "surface-over-strict",
+			"why": "the generated model rejected a document the oracle accepts"
 		}
 	]
 }

@@ -294,7 +294,7 @@ blocked as stated above.
 | FR-138 | FR-138-AC-1..7, FR-138-CON-1..3 | TC-1545..TC-1551 | 🚧 planned on issue #37 |
 | FR-139 | FR-139-AC-1..6, FR-139-CON-1..3 | TC-1552..TC-1557 | 🚧 TC-1552, TC-1554..TC-1557 planned on issue #93 |
 | FR-140 | FR-140-AC-1..7, FR-140-CON-1..3 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
-| FR-141 | FR-141-AC-1..9, FR-141-CON-1..2 | TC-1740..TC-1744, TC-1759, TC-1761, TC-1795, TC-1796 | ✅ Complete |
+| FR-141 | FR-141-AC-1..4, FR-141-AC-6..9, FR-141-CON-2 | TC-1740..TC-1743, TC-1759, TC-1761, TC-1795, TC-1796 | ✅ Complete |
 | FR-142 | FR-142-AC-1..14, FR-142-CON-1..2 | TC-1745..TC-1750, TC-1776, TC-1786..TC-1789, TC-1791, TC-1793 | 🚧 In progress |
 | FR-143 | FR-143-AC-1..9, FR-143-CON-1..2 | TC-1751..TC-1755, TC-1785, TC-1790, TC-1792, TC-1794 | 🚧 In progress |
 
@@ -1675,7 +1675,6 @@ blocked as stated above.
 | TC-1741 | An unresolved supertype, a supertype of another kind and a generalization cycle raise `UNRESOLVED_CONSTRUCT_REF`, `CONSTRUCT_TARGET_KIND` and `SUPERTYPE_CYCLE` | Unit | P0 | FR-141-AC-2 | ✅ passed |
 | TC-1742 | An unresolved `subsets` entry raises `UNRESOLVED_FEATURE_REF` and a widening `redefines` raises `INVALID_REDEFINITION` | Unit | P0 | FR-141-AC-3 | ✅ passed |
 | TC-1743 | An unresolved frame path raises `UNRESOLVED_FRAME_PATH` and an unresolved population member raises `UNRESOLVED_TYPE_REF` | Unit | P0 | FR-141-AC-4 | ✅ passed |
-| TC-1744 | Every `2.0.0` model member and construct kind in a `1.1.0` document is refused with `SCHEMA_VIOLATION` | Unit | P0 | FR-141-AC-5, FR-141-CON-1 | ✅ passed |
 | TC-1745 | A `2.0.0` document with one construct of each of the ten kinds is accepted by the Rust, Node and Python readers | Unit | P0 | FR-142-AC-1 | ✅ passed |
 | TC-1746 | Each kind missing a required member, or carrying a member of another kind, is refused with `SCHEMA_VIOLATION` | Unit | P0 | FR-142-AC-2, FR-142-CON-1 | ✅ passed |
 | TC-1747 | Owner, aggregate member, persisted type and domain member of an excluded kind, or naming no type, raise their reader code at the member pointer | Unit | P0 | FR-142-AC-3 | ✅ passed |
@@ -1687,8 +1686,8 @@ blocked as stated above.
 | TC-1753 | Each broken declared rule yields one blocking `ARTIFACT_NOT_LOWERED` naming it, and no type of that artifact is emitted | Unit | P0 | FR-143-AC-3 | ✅ passed |
 | TC-1754 | A `nested_entity` with no owner and one with two owners are each refused naming the owner rule; a nested entity owned only by a refused one is refused too at the fixed point, keeping its own declared loss, and no emitted owner or relationship names a refused artifact | Unit | P0 | FR-143-AC-4 | ✅ passed |
 | TC-1755 | `SM_001` lifts its four states and three transitions, `PR_001` its three ordered steps, and `DM_001` a non-empty vocabulary | Unit | P1 | FR-143-AC-5 | ✅ passed |
-| TC-1756 | Published `1.0.0` and `1.1.0` fixtures keep reader verdicts and canonical bytes, and a `1.1.0` document carrying a `2.0.0` node is refused | Integration | P0 | NFR-044-AC-1 | ✅ passed |
-| TC-1757 | The `1.1.0` to `2.0.0` uplift of a document declaring types classifies additive, and the reverse change conditional | Unit | P0 | NFR-044-AC-2 | ✅ passed |
+| TC-1756 | A fixture already ported to `2.0.0` keeps reader verdicts and canonical bytes, and a fixture still declaring the deleted contract `1.0.0` or `1.1.0` is refused with `SCHEMA_VIOLATION` at `contractVersion` | Integration | P0 | NFR-044-AC-1 | ✅ passed |
+| TC-1757 | A `1.1.0` to `2.0.0` contract-version move over a document declaring types classifies conditional, and so does the reverse move | Unit | P0 | NFR-044-AC-2 | ✅ passed |
 | TC-1758 | An artifact with id _ and one with a non-ASCII-only id each raise one blocking UNSLUGGABLE_NAME at the frontmatter and lower to no definition, with no panic; an artifact with id UUID in a bundle using UUID raises DUPLICATE_TYPE_NAME naming type/UUID | Unit | P1 | FR-095-AC-17 | ✅ passed |
 | TC-1759 | An inline pre clause in ocl and an inline post clause in acme:tla are each accepted by the Rust, Node and Python readers with exactly one non-blocking info CLAUSE_LANGUAGE_UNCHECKED at the clause language; a quire clause raises nothing | Unit | P0 | FR-141-AC-6, FR-141-CON-2 | ✅ passed |
 | TC-1761 | A TypeSpec member of type `unknown` lowers to a field whose type is the kernel scalar `any`, identified `type/JsonObject` as the spec bundles identify it, with no blocking diagnostic and no zero-field record | Unit | P0 | FR-141-AC-7 | ✅ passed |

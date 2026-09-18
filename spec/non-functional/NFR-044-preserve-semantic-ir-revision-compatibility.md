@@ -17,9 +17,11 @@ relationships:
 
 ## Statement
 
-The semantic IR schema and its readers SHALL keep the reader verdict and
-canonical bytes of every published `1.0.0` and `1.1.0` semantic IR document
-while they admit contract revision `2.0.0`.
+The semantic IR schema and its readers SHALL refuse every document declaring
+`contractVersion` `1.0.0` or `1.1.0` with `SCHEMA_VIOLATION`, and SHALL keep
+the reader verdict and canonical bytes of every published fixture declaring
+`contractVersion` `2.0.0` (fcd#179: `1.0.0` and `1.1.0` are deleted contracts,
+not additively subsumed ones).
 
 ## Scope
 
@@ -30,28 +32,31 @@ while they admit contract revision `2.0.0`.
 
 ## Rationale
 
-Contract `2.0.0` is additive (issue #93, issue #146, issue #172). A consumer that reads
-`1.1.0` documents receives the same valid document and the same fingerprint,
-and a `2.0.0` node inside a `1.1.0` document is refused, never read as a
-`1.1.0` node.
+Contract `2.0.0` is the only contract the schema admits (fcd#179). A document
+declaring `1.0.0` or `1.1.0` is refused outright, before a reader evaluates
+any field, so no reader ever derives a verdict from a deleted contract's
+rules. A fixture already ported to `2.0.0` keeps its reader verdict and
+canonical bytes; a contract-version move classifies under FR-051's general
+rule, never a special case tied to the specific versions `1.1.0` and `2.0.0`.
 
 ## Measurement and Evaluation
 
 | Metric | Target | Threshold | Method |
 |---|---|---|---|
-| Published `1.1.0` reader verdicts | Identical | Identical | Differential test |
-| Published `1.1.0` canonical bytes | Identical | Identical | Snapshot test |
-| `1.1.0` to `2.0.0` classification | Additive | Additive | Compatibility test |
+| A document declaring `contractVersion` `1.0.0` or `1.1.0` | Refused with `SCHEMA_VIOLATION` | Refused with `SCHEMA_VIOLATION` | Schema test |
+| Published `2.0.0` fixture reader verdicts and canonical bytes | Identical | Identical | Differential and snapshot test |
+| A contract-version move | Conditional | Conditional | Compatibility test |
 
 ## Verification
 
-The conformance corpus runs every reader over every published `1.0.0` and
-`1.1.0` case and compares canonical bytes to the committed fixtures; the
-compatibility classifier classifies the `1.1.0` to `2.0.0` uplift.
+The conformance corpus runs every reader over every published `2.0.0` case
+and compares canonical bytes to the committed fixtures, and confirms a
+fixture still declaring `1.0.0` or `1.1.0` is refused; the compatibility
+classifier classifies a contract-version move as conditional.
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 |---|---|---|
-| NFR-044-AC-1 | Every published `1.0.0` and `1.1.0` fixture keeps its Node, Python and Rust reader verdict and its canonical bytes under the `2.0.0` schema, and a `1.1.0` document carrying any `2.0.0` node is refused with `SCHEMA_VIOLATION`. | Test (TC-1756) |
-| NFR-044-AC-2 | The compatibility classifier reports the `1.1.0` to `2.0.0` uplift of one document as additive. | Test (TC-1757) |
+| NFR-044-AC-1 | Every published fixture declaring `contractVersion` `2.0.0` keeps its Node, Python and Rust reader verdict and its canonical bytes; a published fixture still declaring `1.0.0` or `1.1.0` is refused by every reader with `SCHEMA_VIOLATION` at `contractVersion`. | Test (TC-1756) |
+| NFR-044-AC-2 | The compatibility classifier reports a contract-version move, such as `1.1.0` to `2.0.0`, as `conditional`, never a version-literal-specific `additive` special case. | Test (TC-1757) |
