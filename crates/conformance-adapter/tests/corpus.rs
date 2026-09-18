@@ -97,11 +97,13 @@ fn corpus() -> Vec<Case> {
 #[test]
 fn tc_701_every_case_matches_its_authored_expectation() {
     let cases = corpus();
-    // fcd#179: 111 cases minus ENV-004, VER-001, VER-002 and VER-004 (sole
-    // subject the 1.0.0/1.1.0 distinction the ticket deletes), minus PRES-002
-    // (its premise — presence contradicting multiplicity's lower bound is
-    // invalid — contradicts FR-106-CON-1 for contract 2.0.0).
-    assert_eq!(cases.len(), 106, "the corpus declares 106 cases");
+    // fcd#179 landed 106 cases: 111 cases minus ENV-004, VER-001, VER-002 and
+    // VER-004 (sole subject the 1.0.0/1.1.0 distinction the ticket deletes),
+    // minus PRES-002 (its premise — presence contradicting multiplicity's
+    // lower bound is invalid — contradicts FR-106-CON-1 for contract 2.0.0).
+    // fcd#187 adds 5 back: PRES-011..015, covering a `nullable` authored as
+    // `1`, `"true"`, `null`, `{}`, and absent, landing on 111 again.
+    assert_eq!(cases.len(), 111, "the corpus declares 111 cases");
     let mut failures: Vec<String> = Vec::new();
     for case in &cases {
         let verdict = decide(&case.bundle);
