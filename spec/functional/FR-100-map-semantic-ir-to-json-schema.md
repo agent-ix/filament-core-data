@@ -23,7 +23,7 @@ frontend, a generated programming-language package, or an ambient registry.
 
 ## Inputs
 
-- One semantic IR `1.1.0` document admitted by the backend's independent
+- One semantic IR `2.0.0` document admitted by the backend's independent
   admissibility reader.
 - The `json-schema` target-contract row in
   `fixtures/semantic/v1/positive/target-contracts.json`.

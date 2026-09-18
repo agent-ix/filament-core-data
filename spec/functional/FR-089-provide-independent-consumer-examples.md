@@ -130,7 +130,7 @@ run that omits any one of them SHALL fail:
 - **Construct a valid value.** The example SHALL construct a `FieldDecl` in the
   language's own idiom — a literal satisfying the emitted type in TypeScript, a
   struct expression in Rust, a model constructor in Python — carrying a
-  `multiplicity`, because contract version `1.1.0` requires `multiplicity` on
+  `multiplicity`, because contract version `2.0.0` requires `multiplicity` on
   every field and a constructed value that omits it is not a kernel value.
 - **Deserialize a golden document.** The example SHALL deserialize at least one
   positive kernel instance document from

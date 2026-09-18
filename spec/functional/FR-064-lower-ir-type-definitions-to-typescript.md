@@ -24,7 +24,7 @@ relationships:
 
 ## Description
 
-The TypeScript backend SHALL resolve a contract IR `1.1.0` document into one
+The TypeScript backend SHALL resolve a contract IR `2.0.0` document into one
 declared model and render every `typeDefinition` in it as an ordinary TypeScript
 declaration whose form is decided by values the IR carries, so that no kind, no
 presence, and no nullability is approximated, inferred from a name, or dropped,
@@ -33,7 +33,7 @@ rather than the raw document.
 
 ## Inputs
 
-- A contract IR `1.1.0` document that [FR-068](./FR-068-decide-and-report-ir-admissibility.md) has admitted
+- A contract IR `2.0.0` document that [FR-068](./FR-068-decide-and-report-ir-admissibility.md) has admitted
 - The eight `kind` values of `schema/semantic/v1/semantic-ir.schema.json#/$defs/typeDefinition`: `scalar`, `record`, `enum`, `union`, `alias`, `sequence`, `map`, `reference`
 - At contract `2.0.0`, the module construct kinds of [FR-142](./FR-142-declare-one-construct-per-object-type.md), their declarations in the document's `constructs` table, and their `identityFields`
 - The nine `scalar` values: `boolean`, `integer`, `number`, `string`, `bytes`, `date`, `datetime`, `duration`, `uuid`

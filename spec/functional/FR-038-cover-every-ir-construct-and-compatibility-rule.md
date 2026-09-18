@@ -48,7 +48,7 @@ that register, or a written justification for a class that row cannot carry.
 - The corpus SHALL carry a `positive` case in which two union variants share one payload type.
 - The corpus SHALL carry cases for direct recursion, mutual recursion through two records, an alias cycle, and a composite relationship cycle.
 - The corpus SHALL distinguish a preserved recursive type graph from a rejected package cycle by diagnostic code.
-- The corpus SHALL carry `evolution` cases for a `1.0.0` document read under `1.1.0` rules, a `1.1.0` node carried by a `1.0.0` document, and a package version transition that adds one export and removes another.
+- The corpus SHALL carry an `evolution` case for a package version transition that adds one export and removes another (fcd#179 deleted the two `1.0.0`/`1.1.0` evolution cases this row used to also require, along with the contracts they exercised).
 - The corpus SHALL record, in `conformance/defects.json`, each defect discovered in an implementation with its owning issue, its `documentExpressible` flag, and either the case that reproduces it or the static check that detects it.
 - The corpus SHALL carry the reproducing case that every `documentExpressible` defect row names.
 - A defect row whose `documentExpressible` is `false` SHALL name the process property it concerns and the static check that detects it, so that a locale-dependent sort or a working-directory-dependent path is recorded rather than silently uncovered.
@@ -75,7 +75,7 @@ that register, or a written justification for a class that row cannot carry.
 | FR-038-AC-5 | Every `documentExpressible` defect row has a reproducing case that fails on a bundle carrying the defect, and every other defect row names the static check that detects it. | Test |
 | FR-038-AC-6 | Every register row declares its deciding layer, and the layer that produced the oracle's diagnostics for that row's cases is the declared one. | Test |
 | FR-038-AC-7 | A union variant whose `payloadType` no type declares is rejected at that variant's locus, and a union whose two variants share one payload type is accepted. | Test |
-| FR-038-AC-8 | A `1.0.0` document read under `1.1.0` rules, a `1.1.0` node carried by a `1.0.0` document, and an export added and removed across a package version each produce the result the register row states. | Test |
+| FR-038-AC-8 | An export added and removed across a package version produces the result the register row states. | Test |
 | FR-038-AC-9 | Every register row's `sources` resolve to existing paths, and every listed issue #19 criterion is quoted in its row and covered by a case. | Test |
 
 ## Dependencies

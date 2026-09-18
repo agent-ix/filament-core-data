@@ -33,7 +33,7 @@ contract itself rather than against an erased TypeScript type.
 
 ## Inputs
 
-- A semantic IR document at `contractVersion` `1.1.0` that [FR-068](./FR-068-decide-and-report-ir-admissibility.md) has admitted
+- A semantic IR document at `contractVersion` `2.0.0` that [FR-068](./FR-068-decide-and-report-ir-admissibility.md) has admitted
 - The resolved type model [FR-064](./FR-064-lower-ir-type-definitions-to-typescript.md) builds: per type, its `kind`, its resolved scalar, its fields with `presence`, `nullable`, `multiplicity`, `defaultKind`, and `defaultValue`, and its `unknownPolicy`
 - Each type's `constraints[]`, every entry carrying `keyword`, `operands`, `appliesTo`, and its own `diagnosticCode`
 - The constraint applicability table of `src/compiler/ir/applicability.mjs`

@@ -42,7 +42,7 @@ That is enough to author cases and expected results without running anything.
 
 ### [US-008-EX-1] A case is authored from the contract, not from a run
 
-- **Given** a corpus case that asserts a `1.1.0` field whose `multiplicity.lower` is `1` may not declare `presence: "optional"`
+- **Given** a corpus case that asserts a field whose `multiplicity.upper` is `0` raises `UNSUPPORTED_MULTIPLICITY`
 - **When** the reviewer asks where the expected result came from
 - **Then** the case cites the contract clause and schema pointer it was derived from, and records that no implementation run produced it
 

@@ -29,7 +29,7 @@ decorator, and without reading a side-car file at run time.
 
 ## Inputs
 
-- A semantic IR document at `contractVersion` `1.1.0`, admitted by [FR-068](./FR-068-decide-and-report-ir-admissibility.md)
+- A semantic IR document at `contractVersion` `2.0.0`, admitted by [FR-068](./FR-068-decide-and-report-ir-admissibility.md)
 - The document's `source` block: `identity`, `version`, `dialect`, and `digest`
 - The document's `package` block: `identity`, `version`, `manifestDigest`, `mappingVersions`, `profileVersions`, and `lockDigest`
 - The document's `contractVersion`

@@ -107,11 +107,13 @@ author.
 - The reader SHALL produce the corpus comparison form `normalized` for **every**
   case, including one the schema layer has already decided invalid, because the
   harness compares the string unconditionally.
-- `normalized` SHALL be: for a `1.1.0` document, materialize `multiplicity`,
-  `presence`, and `nullable` on every field and operation parameter; then
-  serialize with object members sorted by code point, array order preserved, no
-  insignificant whitespace, and every JSON number rendered by the
-  ECMAScript `Number::toString` algorithm.
+- `normalized` SHALL be: serialize the document with object members sorted by
+  code point, array order preserved, no insignificant whitespace, and every
+  JSON number rendered by the ECMAScript `Number::toString` algorithm.
+  `multiplicity`, `presence`, and `nullable` are schema-required and
+  independently authored under the sole remaining contract `2.0.0` (FR-106-CON-1,
+  FR-069), so normalization never materializes one from another (fcd#179
+  deleted the `1.1.0` derivation this bullet used to state).
 - The crate SHALL carry an ECMAScript-compatible number formatter as a named,
   separately tested unit, because Rust's own `f64` display differs from
   ECMAScript at the exponent thresholds, on trailing zeros, and on negative

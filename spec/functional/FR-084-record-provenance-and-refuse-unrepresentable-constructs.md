@@ -87,7 +87,7 @@ against the contract owner, in that order.
 - `package.version` SHALL equal `source.version`, because the kernel package and the kernel source are versioned as one artifact and a divergence between them would be unresolvable by a consumer holding only the IR.
 - `package.manifestDigest` and `package.lockDigest` SHALL be the digests of the kernel manifest and lock FR-081 declares, computed under the FR-048 canonicalization and never restated as constants.
 - `package.mappingVersions` and `package.profileVersions` SHALL be the empty array where the kernel declares no mapping and no profile, which `semantic-ir.schema.json` permits because neither array carries a `minItems`; the empty array SHALL be emitted rather than the member omitted, since both members are `required`.
-- The emitted document SHALL declare `contractVersion` `1.1.0` and SHALL carry `occurrences` and `extensions` as empty arrays, because the root requires both and the kernel declares neither.
+- The emitted document SHALL declare `contractVersion` `2.0.0` and SHALL carry `occurrences` and `extensions` as empty arrays, because the root requires both and the kernel declares neither.
 
 ### The fingerprint the generated packages carry
 
@@ -153,7 +153,7 @@ against the contract owner, in that order.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-084-AC-1 | The emitted kernel IR validates against `schema/semantic/v1/semantic-ir.schema.json` at `contractVersion` `1.1.0`, carrying every required member of `source` and `package` and no member `additionalProperties: false` forbids. | Test |
+| FR-084-AC-1 | The emitted kernel IR validates against `schema/semantic/v1/semantic-ir.schema.json` at `contractVersion` `2.0.0`, carrying every required member of `source` and `package` and no member `additionalProperties: false` forbids. | Test |
 | FR-084-AC-2 | `source.dialect` is `typespec`, a member of `common.schema.json#/$defs/frontendDialect`; a test asserts that enum still carries no `json-schema` value, so adding one upstream fails here rather than silently changing the meaning of this document. | Test |
 | FR-084-AC-3 | `source.digest` recomputed independently in the test from the 30 files of `packages/semantic-core/generated/json-schema/` equals the value the document carries, and mutating one byte of one document changes it. | Test |
 | FR-084-AC-4 | `source.version`, `package.version`, and the `0.2.0` segment of every `$id` in the bundle are the same string; changing one alone fails. | Unit |

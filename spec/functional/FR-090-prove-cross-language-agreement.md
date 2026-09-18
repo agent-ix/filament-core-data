@@ -160,10 +160,11 @@ following, and a disagreement on any one is a disagreement:
   own default.
 - **Presence versus null.** An absent member and a member present with a null
   value SHALL be distinguished identically across the four, both on
-  deserialization and on re-serialization. Contract version `1.1.0` derives
-  presence from `multiplicity.lower`, so a package that maps `presence:
-  "optional"` onto a written null has changed a document's meaning rather than
-  its formatting.
+  deserialization and on re-serialization. Contract `2.0.0` authors `presence`
+  independently of `multiplicity.lower` (FR-106-CON-1; fcd#179 deleted the
+  `1.1.0` derivation this property used to cite), so a package that maps
+  `presence: "optional"` onto a written null has changed a document's meaning
+  rather than its formatting.
 - **Defaults.** Whether a default is materialized into the serialized document
   or left absent SHALL be identical across the four, per default kind, over the
   `DefaultKind` enum the kernel declares.

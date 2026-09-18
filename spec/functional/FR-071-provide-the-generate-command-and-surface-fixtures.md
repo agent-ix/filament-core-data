@@ -37,7 +37,7 @@ surface did not grow" is a checked fact rather than a review opinion.
 
 ## Inputs
 
-- A semantic IR document at `contractVersion` `1.1.0`, read from `--ir`
+- A semantic IR document at `contractVersion` `2.0.0`, read from `--ir`
 - A target name from `common.schema.json#/$defs/target`, read from `--target`
 - An output root directory, read from `--out-root`
 - An optional profile document valid against `schema/semantic/v1/profile.schema.json`, read from `--profile`
