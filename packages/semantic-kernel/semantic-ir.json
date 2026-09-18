@@ -1,5 +1,5 @@
 {
-	"contractVersion": "1.1.0",
+	"contractVersion": "2.0.0",
 	"source": {
 		"identity": "ix://agent-ix/semantic-core",
 		"version": "0.2.0",
@@ -16,6 +16,7 @@
 	},
 	"occurrences": [],
 	"extensions": [],
+	"constructs": [],
 	"types": [
 		{
 			"identity": "ix://agent-ix/semantic-core/type/ClauseLanguage",

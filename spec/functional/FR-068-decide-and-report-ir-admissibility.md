@@ -55,7 +55,7 @@ not.
 
 ## Inputs
 
-- A semantic IR document at `contractVersion` `1.0.0` or `1.1.0`
+- A semantic IR document at `contractVersion` `2.0.0`
 - The input bundle members that carry package context: `manifest`, `manifestDigest`, `lock`, `profile`, `mappings`, and `consumerPolicy`, each of which `conformance/schema/input-bundle.schema.json` makes optional, so only `ir` is guaranteed present
 - `schema/semantic/v1/semantic-ir.schema.json` and `schema/semantic/v1/common.schema.json`
 - `conformance/diagnostic-codes.json`, the corpus's closed register of the thirty codes an admissibility answer may carry, read by a test rather than by the backend
@@ -102,8 +102,6 @@ not.
 | A `pattern` regex compiles under ECMA-262 | `INVALID_PATTERN` |
 | A relationship target resolves to a document type or a lock export | `UNRESOLVED_RELATIONSHIP_TARGET` |
 | The graph of `composite: true` relationships is acyclic | `COMPOSITE_CYCLE` |
-| A `1.1.0`-only node does not appear in a `1.0.0` document | `V1_1_NODE_IN_V1_0` |
-| `presence` agrees with `multiplicity.lower` | `PRESENCE_MULTIPLICITY_MISMATCH` |
 | `multiplicity.upper`, where present, is not less than `lower` | `INVALID_MULTIPLICITY` |
 | `ordered` and `unique` appear only where `upper` is absent or greater than one | `FLAGS_ON_NON_COLLECTION` |
 | `unit` appears only on a field resolving to a `scalar` | `UNIT_ON_NON_SCALAR` |

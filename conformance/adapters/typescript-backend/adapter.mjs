@@ -33,15 +33,13 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-
-import { buildBefore, buildInput, loadCorpus } from "../../oracle/index.mjs";
-
 import {
-	SCHEMA_FILES,
 	admitIr,
+	SCHEMA_FILES,
 } from "../../../src/compiler/backends/typescript-v1/admit.mjs";
 import { normalizeIrForTarget } from "../../../src/compiler/backends/typescript-v1/canonical.mjs";
 import { classifySurface } from "../../../src/compiler/backends/typescript-v1/classify.mjs";
+import { buildBefore, buildInput, loadCorpus } from "../../oracle/index.mjs";
 
 /**
  * The repository root, resolved from this module rather than from

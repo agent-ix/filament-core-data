@@ -91,7 +91,7 @@ code by the same three verbs.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-052-AC-1 | `emit-ir` over the spike entrypoint reproduces the committed golden `spikes/typespec-feasibility/generated/custom/semantic-ir.json` byte for byte. | Snapshot |
-| FR-052-AC-2 | `compile` over the fixture package writes a valid `1.1.0` document and exits `0`; running it twice produces identical IR and diagnostic bytes. | Integration |
+| FR-052-AC-2 | `compile` over the fixture package writes a valid `2.0.0` document and exits `0`; running it twice produces identical IR and diagnostic bytes. | Integration |
 | FR-052-AC-3 | `compile` over a fixture with a blocking defect exits `1`, leaves a fresh `--out` absent, leaves a pre-existing `--out` byte-unchanged, and writes the sorted diagnostics to `--diagnostics`. | Integration |
 | FR-052-AC-4 | `compile` with `--lock` pointing at a stale lock exits `1` and leaves the lock file byte-unchanged. | Integration |
 | FR-052-AC-5 | `compile --write-lock` produces a lock validating against its schema; omitting the flag writes no lock. | Integration |

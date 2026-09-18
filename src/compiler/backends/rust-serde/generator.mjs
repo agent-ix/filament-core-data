@@ -440,7 +440,9 @@ export function generateDocument(seed, index) {
 	});
 
 	return {
-		contractVersion: "1.1.0",
+		// fcd#179: 2.0.0 is the only Semantic IR contract; the fields below are
+		// already 2.0.0-shaped (`presence`, `nullable`, `multiplicity`).
+		contractVersion: "2.0.0",
 		source: {
 			identity: "ix://agent-ix/filament-core-data/source/typespec",
 			version: "1.0.0",

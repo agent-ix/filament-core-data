@@ -614,10 +614,10 @@ describe("TypeScript backend fixture (FR-071)", () => {
 
 type IrDocument = Record<string, unknown>;
 
-/** A `1.1.0` document carrying one enum, one record, and one relationship. */
+/** A `2.0.0` document carrying one enum, one record, and one relationship. */
 function classifierBase(): IrDocument {
 	return {
-		contractVersion: "1.1.0",
+		contractVersion: "2.0.0",
 		package: {
 			identity: "ix://agent-ix/tc811/package/p",
 			version: "1.0.0",
@@ -1420,11 +1420,11 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 	});
 
 	/** Part of TC-842 (NFR-025-AC-5); the frozen-golden half of that row has no test, so the row is not bound. */
-	it("keeps the narrow compiler surface at fifteen exports", () => {
+	it("keeps the narrow compiler surface at fourteen exports", () => {
 		const names = exportedCompilerSymbols(
 			readFileSync(resolve(root, "src/compiler/index.mjs"), "utf8"),
 		);
-		expect(names).toHaveLength(15);
+		expect(names).toHaveLength(14);
 		expect(
 			exportedCompilerSymbols('export { one, two } from "./x.mjs";'),
 		).toHaveLength(2);

@@ -699,11 +699,28 @@ fn tc_1319_no_merge_commit_in_the_range_and_package_json_and_pnpm_lock_are_uncha
 #[test]
 fn tc_1299_outside_the_crate_and_fr098_the_change_set_is_members_lock_makefile_block_and_docs() {
     let (_, report) = gate();
+    // A path the harness classified `permitted` under a declared repo-wide
+    // scope (`declaredScope`, fcd#179's `CHANGE-SET-SCOPE.json`) is named by
+    // its own ticket, the same way `fr098_path` and `ticket_artifact` name
+    // theirs; it belongs outside this closed list for the same reason they
+    // do, not because the check that would otherwise prohibit it was lifted.
+    let declared: std::collections::BTreeSet<String> = report["classified"]
+        .as_array()
+        .expect("classified array")
+        .iter()
+        .filter(|c| {
+            c["rule"]
+                .as_str()
+                .is_some_and(|rule| rule.starts_with("declared:"))
+        })
+        .map(|c| c["path"].as_str().expect("path").to_string())
+        .collect();
     let outside: Vec<String> = strings(&report["paths"])
         .into_iter()
         .filter(|p| !p.starts_with("crates/extraction-frontend/"))
         .filter(|p| !fr098_path(p))
         .filter(|p| !ticket_artifact(p))
+        .filter(|p| !declared.contains(p))
         .collect();
     assert_eq!(
         outside,

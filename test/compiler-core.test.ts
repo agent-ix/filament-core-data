@@ -24,12 +24,10 @@ import {
 	registryWith,
 } from "../src/compiler/backends/seam.mjs";
 import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
-import { diffSemanticContract } from "../src/compiler/compat/diff.mjs";
 import {
-	CONTRACT_VERSIONS,
-	readIrAsContract,
-	V1_1_ADDED_NODES,
-} from "../src/compiler/compat/evolution.mjs";
+	ContractRefusalError,
+	diffSemanticContract,
+} from "../src/compiler/compat/diff.mjs";
 import {
 	CONSTRUCT_VOCABULARY,
 	CORE_KINDS,
@@ -90,7 +88,7 @@ import { schemaValidators } from "../src/compiler/schema-validate.mjs";
 import { changedPathsOf, changeRange } from "./changed-paths.js";
 import { isEdgeKind as readerEdgeKind } from "./semantic-ir-v1-1-reader";
 
-/** The `typeDefinition.kind` values of contract 1.0.0 and 1.1.0. */
+/** The core `typeDefinition.kind` values under contract `2.0.0`, distinct from construct kinds. */
 const CONTRACT_KINDS_BEFORE_CONSTRUCTS = [
 	"scalar",
 	"record",
@@ -419,7 +417,7 @@ describe("frontend seam and dialect registry (FR-045)", () => {
 	it("routes the spec-bundle dialect to its frontend and returns the producer's document", async () => {
 		expect(isImplemented("spec-bundle")).toBe(true);
 		const document = {
-			contractVersion: "1.1.0",
+			contractVersion: "2.0.0",
 			package: { identity: "agent-ix/probe", version: "0.0.0" },
 			types: [],
 		};
@@ -620,7 +618,7 @@ describe("frontend seam and dialect registry (FR-045)", () => {
 		// A frontend that returns both must fail the seam, not the caller.
 		expect(() =>
 			assertFrontendContract("spec-bundle", {
-				ir: { contractVersion: "1.1.0" },
+				ir: { contractVersion: "2.0.0" },
 				diagnostics: [blocking],
 			}),
 		).toThrow(/partial document/);
@@ -2263,7 +2261,7 @@ describe("package graph resolution (FR-047)", () => {
 		expect(() => canonicalize(deep, { maxDepth: 10 })).toThrow(/maxDepth/);
 		// And the bound is a *diagnostic* where a document can reach it, not an
 		// exception a caller has to know about.
-		const nested: Json = { contractVersion: "1.1.0", types: [] };
+		const nested: Json = { contractVersion: "2.0.0", types: [] };
 		let cursor2: Json = nested;
 		for (let level = 0; level < 60; level += 1) {
 			cursor2.child = {};
@@ -2275,7 +2273,7 @@ describe("package graph resolution (FR-047)", () => {
 		note(bounded);
 		expect(codesOf(bounded)).toEqual([DIAGNOSTIC_CODES.LIMIT_MAX_DEPTH.code]);
 		const wide = {
-			contractVersion: "1.1.0",
+			contractVersion: "2.0.0",
 			types: [
 				{
 					identity: "ix://a/b/type/W",
@@ -2867,17 +2865,16 @@ describe("the diagnostic registry (FR-049)", () => {
 			contractVersion: string;
 			types: Json[];
 		};
-		document.contractVersion = "1.1.0";
+		document.contractVersion = "2.0.0";
 		const artifact = document.types.find(
 			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
 		) as Json;
 		const field = (artifact.fields as Json[])[0];
-		field.presence = "optional";
+		field.multiplicity = { lower: 1, upper: 1, ordered: true };
 		const diagnostics = readContractIr(document) as never as Diagnostic[];
 		note(diagnostics);
 		const mismatch = diagnostics.find(
-			(entry) =>
-				entry.code === DIAGNOSTIC_CODES.PRESENCE_MULTIPLICITY_MISMATCH.code,
+			(entry) => entry.code === DIAGNOSTIC_CODES.FLAGS_ON_NON_COLLECTION.code,
 		);
 		expect(mismatch?.locus).toEqual((field.origin as Json).source as never);
 	});
@@ -3071,21 +3068,6 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		return document;
 	}
 
-	/** Traces: TC-510; FR-050-AC-1. */
-	it("accepts every published positive 1.1.0 fixture", () => {
-		for (const name of readdirSync(positives)) {
-			if (!name.endsWith(".json")) continue;
-			const document = readJson(resolve(positives, name));
-			if (document.contractVersion !== "1.1.0") continue;
-			expect(validateIrDocument(document), name).toEqual([]);
-			const diagnostics = readContractIr(document, {
-				importedExports: "unknown",
-			}) as never as Diagnostic[];
-			note(diagnostics);
-			expect(codesOf(diagnostics), name).toEqual([]);
-		}
-	});
-
 	/** Traces: TC-511, TC-520; FR-050-AC-2, FR-050-AC-11. */
 	it("produces the expected code for every published reader case", () => {
 		expect(readerCases.length).toBeGreaterThan(0);
@@ -3165,12 +3147,12 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 	});
 
 	/** Traces: TC-514, TC-515, TC-525; FR-050-AC-5, FR-050-AC-6, FR-050-CON-3. */
-	it("materializes the 1.1.0 members, leaves 1.0.0 alone, and is idempotent", () => {
+	it("materializes nullable unconditionally, never derives multiplicity or presence, and is idempotent", () => {
 		const document = JSON.parse(JSON.stringify(compiled.ir)) as never as {
 			contractVersion: string;
 			types: Json[];
 		};
-		document.contractVersion = "1.1.0";
+		document.contractVersion = "2.0.0";
 		const artifact = document.types.find(
 			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
 		) as Json;
@@ -3185,12 +3167,18 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 				(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
 			) as Json
 		).fields as Json[];
-		expect(restored[0].presence).toBeDefined();
+		// multiplicity and presence are schema-required and independently
+		// authored (FR-027, FR-106); normalizeIr never derives either from the
+		// other, so a deleted presence stays deleted here.
+		expect(restored[0].presence).toBeUndefined();
 		expect(restored[0].nullable).toBe(false);
 		expect(restored[0].multiplicity).toBeDefined();
 
-		const legacy = {
-			contractVersion: "1.0.0",
+		// Materialization gates on no field of the document, including
+		// `contractVersion`: a document with no multiplicity on a field still
+		// gains no derived one, and still gains a literal `nullable`.
+		const untagged = {
+			contractVersion: "2.0.0",
 			types: [
 				{
 					identity: "ix://a/b/type/T",
@@ -3198,12 +3186,12 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 				},
 			],
 		};
-		const legacyNormalized = JSON.parse(normalizeIr(legacy)) as never as {
+		const untaggedNormalized = JSON.parse(normalizeIr(untagged)) as never as {
 			types: Json[];
 		};
-		expect(
-			(legacyNormalized.types[0].fields as Json[])[0].multiplicity,
-		).toBeUndefined();
+		const untaggedField = (untaggedNormalized.types[0].fields as Json[])[0];
+		expect(untaggedField.multiplicity).toBeUndefined();
+		expect(untaggedField.nullable).toBe(false);
 
 		expect(normalizeIr(JSON.parse(normalizeIr(compiled.ir)))).toBe(
 			normalizeIr(compiled.ir),
@@ -3217,7 +3205,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		}
 	});
 
-	/** Traces: TC-1376; FR-106-AC-4. */
+	/** Traces: FR-106-CON-2. */
 	it("accepts the v1.2 Any scalar and preserves authored presence", () => {
 		const document = JSON.parse(JSON.stringify(compiled.ir)) as never as {
 			contractVersion: string;
@@ -3234,9 +3222,6 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		const field = (record.fields as Json[])[0];
 		field.presence = "optional";
 		expect(validateIrDocument(document)).toEqual([]);
-		expect(
-			codesOf(readContractIr(document) as never as Diagnostic[]),
-		).not.toContain(DIAGNOSTIC_CODES.PRESENCE_MULTIPLICITY_MISMATCH.code);
 		const normalized = JSON.parse(normalizeIr(document)) as never as {
 			types: Json[];
 		};
@@ -3272,13 +3257,16 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		const generate = (
 			backend: typeof rustBackend | typeof jsonSchemaBackend,
 			target: string,
-			document: string,
+			document: string | Json,
 		) =>
 			generateTarget(
 				{
 					contractVersion: "1.0.0",
 					lockFingerprint: `sha256:${"a".repeat(64)}`,
-					ir: readJson(resolve(root, document)),
+					ir:
+						typeof document === "string"
+							? readJson(resolve(root, document))
+							: document,
 					profile: readJson(
 						resolve(root, "fixtures/semantic/v1/positive/profile.json"),
 					),
@@ -3330,11 +3318,15 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 				]),
 				target,
 			).toEqual(expected(label));
-			const plain = generate(
-				backend as never,
-				target,
-				"fixtures/semantic/v1/positive/config-version-v1-1.json",
-			);
+			// config-version-v2.json carries one clause on ConfigVersion (FR-006's
+			// immutability invariant), which is itself an unenforced construct
+			// member; strip it so "plain" tests a document with none of them,
+			// proving the diagnostic does not fire where nothing warrants it.
+			const plainDocument = readJson(
+				resolve(root, "fixtures/semantic/v1/positive/config-version-v2.json"),
+			) as { types: { clauses?: unknown }[] };
+			for (const type of plainDocument.types) delete type.clauses;
+			const plain = generate(backend as never, target, plainDocument as Json);
 			expect(plain.state, target).toBe("success");
 			expect(
 				plain.diagnostics.filter(
@@ -3604,13 +3596,13 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		expect(rust(record)).not.toBe(rust(scalar));
 	});
 
-	/** Traces: TC-1376; FR-106-AC-4. */
-	it("rejects authored presence that contradicts multiplicity in v1.1", () => {
+	/** Traces: TC-1373; FR-106-CON-1. */
+	it("accepts authored presence that disagrees with multiplicity in 2.0.0", () => {
 		const document = JSON.parse(JSON.stringify(compiled.ir)) as never as {
 			contractVersion: string;
 			types: Json[];
 		};
-		document.contractVersion = "1.1.0";
+		document.contractVersion = "2.0.0";
 		const record = document.types.find(
 			(type) => Array.isArray(type.fields) && type.fields.length > 1,
 		) as Json;
@@ -3619,10 +3611,9 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		required.multiplicity = { lower: 0, upper: 2 };
 		optional.presence = "optional";
 		optional.multiplicity = { lower: 1, upper: 2 };
+		expect(validateIrDocument(document)).toEqual([]);
 		expect(codesOf(readContractIr(document) as never as Diagnostic[])).toEqual(
-			expect.arrayContaining([
-				DIAGNOSTIC_CODES.PRESENCE_MULTIPLICITY_MISMATCH.code,
-			]),
+			[],
 		);
 	});
 
@@ -3667,7 +3658,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 	/** Traces: TC-518, TC-526, TC-585; FR-050-AC-9, FR-050-CON-4, NFR-020-AC-7. */
 	it("terminates on every cyclic and oversized input", () => {
 		const cyclicAlias = {
-			contractVersion: "1.1.0",
+			contractVersion: "2.0.0",
 			types: [
 				{
 					identity: "ix://a/b/type/X",
@@ -3684,7 +3675,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		expect(() => readContractIr(cyclicAlias)).not.toThrow();
 
 		const cyclicComposite = {
-			contractVersion: "1.1.0",
+			contractVersion: "2.0.0",
 			types: [
 				{
 					identity: "ix://a/b/type/A",
@@ -3721,7 +3712,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		expect(codesOf(cycle)).toContain(DIAGNOSTIC_CODES.COMPOSITE_CYCLE.code);
 
 		const many = {
-			contractVersion: "1.1.0",
+			contractVersion: "2.0.0",
 			types: Array.from({ length: 20 }, (_, index) => ({
 				identity: `ix://a/b/type/T${index}`,
 				kind: "record",
@@ -3735,7 +3726,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		expect(codesOf(overNodes)).toEqual([DIAGNOSTIC_CODES.LIMIT_MAX_NODES.code]);
 
 		const wide = {
-			contractVersion: "1.1.0",
+			contractVersion: "2.0.0",
 			types: [
 				{
 					identity: "ix://a/b/type/W",
@@ -3829,10 +3820,10 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// FR-051 — the compatibility classifier and the contract-version projections
+// FR-051 — the compatibility classifier
 // ---------------------------------------------------------------------------
 
-describe("compatibility and evolution (FR-051)", () => {
+describe("compatibility (FR-051)", () => {
 	const published = JSON.parse(
 		read(resolve(root, "fixtures/semantic/v1/compatibility/cases.json")),
 	) as { id: string; family: string; expected: string }[];
@@ -3860,7 +3851,7 @@ describe("compatibility and evolution (FR-051)", () => {
 
 	/** Traces: TC-527, TC-602; FR-051-AC-1. */
 	it("reproduces every published compatibility case", () => {
-		expect(published).toHaveLength(40);
+		expect(published).toHaveLength(39);
 		for (const entry of published) {
 			expect(reportOf(entry.id).aggregateDisposition, entry.id).toBe(
 				entry.expected,
@@ -3877,6 +3868,29 @@ describe("compatibility and evolution (FR-051)", () => {
 		expect(reportOf("optional-field-stale-consumer").aggregateDisposition).toBe(
 			"conditional",
 		);
+	});
+
+	/**
+	 * fcd#183: every constructed pair `scripts/build-compatibility-cases.mjs`
+	 * writes is a schema-valid 2.0.0 document, not merely a shape the
+	 * classifier happens to accept — a case built from a document the schema
+	 * itself would reject is not evidence about the classifier.
+	 */
+	it("constructs every compatibility case pair as a schema-valid 2.0.0 document", () => {
+		expect(published).toHaveLength(39);
+		for (const entry of published) {
+			const built = constructed(entry.id);
+			expect(validateIrDocument(built.old as never), entry.id).toEqual([]);
+			expect(validateIrDocument(built.new as never), entry.id).toEqual([]);
+			expect(
+				(built.old as never as { contractVersion: string }).contractVersion,
+				entry.id,
+			).toBe("2.0.0");
+			expect(
+				(built.new as never as { contractVersion: string }).contractVersion,
+				entry.id,
+			).toBe("2.0.0");
+		}
 	});
 
 	/** Traces: TC-528; FR-051-AC-2. */
@@ -3922,6 +3936,40 @@ describe("compatibility and evolution (FR-051)", () => {
 				),
 			),
 		).toBe(true);
+	});
+
+	/**
+	 * `diffSemanticContract` is a direct CLI entry point with no schema check
+	 * ahead of it (`diff` in `src/compiler/cli.mjs` reads `--old`/`--new` from
+	 * disk directly), so a document naming a contract this compiler does not
+	 * support must not be silently classified as though it were 2.0.0. The
+	 * report schema's closed `family` enum has no honest home for a refusal,
+	 * so it throws rather than fabricating a change.
+	 */
+	it("refuses a document whose contractVersion this compiler does not support", () => {
+		const valid = constructed("documentation-only").old;
+		const stale = { ...(valid as object), contractVersion: "1.1.0" };
+		for (const request of [
+			{ old: stale, new: valid },
+			{ old: valid, new: stale },
+		]) {
+			expect(() => diffSemanticContract(request as never)).toThrow(
+				ContractRefusalError,
+			);
+			let caught: unknown;
+			try {
+				diffSemanticContract(request as never);
+			} catch (error) {
+				caught = error;
+			}
+			expect(caught).toBeInstanceOf(ContractRefusalError);
+			expect((caught as ContractRefusalError).code).toBe(
+				DIAGNOSTIC_CODES.UNKNOWN_CONTRACT_VERSION.code,
+			);
+			expect((caught as Error).message).not.toContain(
+				DIAGNOSTIC_CODES.UNKNOWN_CONTRACT_VERSION.code,
+			);
+		}
 	});
 
 	/** Traces: TC-529; FR-051-AC-3. */
@@ -4001,88 +4049,6 @@ describe("compatibility and evolution (FR-051)", () => {
 		expect(report.oldFingerprint).toBe(report.newFingerprint);
 	});
 
-	/** Traces: TC-533, TC-534, TC-536, TC-540, TC-544; FR-051-AC-7, AC-8, AC-10, AC-14, CON-3. */
-	it("matches both projection goldens and carries the envelope verbatim", () => {
-		const forward = readJson(
-			resolve(fixtures, "evolution/forward-1-0-0.json"),
-		) as never as { loss: string[]; document: Json };
-		const source = readJson(
-			resolve(root, "fixtures/semantic/v1/positive/semantic-ir-v1-1.json"),
-		);
-		const computed = readIrAsContract(source, "1.0.0") as never as {
-			loss: string[];
-			document: Json;
-		};
-		expect(JSON.stringify(computed.document, null, "\t")).toBe(
-			JSON.stringify(forward.document, null, "\t"),
-		);
-		expect(computed.loss).toEqual(forward.loss);
-		expect(computed.loss.length).toBeGreaterThan(0);
-		// The golden is generated by the code under test, so it is also checked
-		// against something the code did not write: the loss list must be exactly
-		// the `1.1.0`-only members present in the source, computed here from the
-		// document rather than from the projection.
-		const expectedLoss: string[] = [];
-		for (const type of (source as never as { types: Json[] }).types) {
-			for (const key of ["relationships", "operations", "clauses"]) {
-				for (const node of (type[key] as Json[]) ?? []) {
-					expectedLoss.push(String(node.identity));
-				}
-			}
-			for (const field of (type.fields as Json[]) ?? []) {
-				if (field.multiplicity !== undefined) {
-					expectedLoss.push(`${field.identity}#multiplicity`);
-				}
-				if (field.unit !== undefined) {
-					expectedLoss.push(`${field.identity}#unit`);
-				}
-			}
-		}
-		expect([...computed.loss].sort()).toEqual(expectedLoss.sort());
-		// And no `1.1.0`-only member survives the projection.
-		for (const type of (computed.document as never as { types: Json[] })
-			.types) {
-			expect(type.relationships, String(type.identity)).toBeUndefined();
-			expect(type.operations, String(type.identity)).toBeUndefined();
-			expect(type.clauses, String(type.identity)).toBeUndefined();
-			for (const field of (type.fields as Json[]) ?? []) {
-				expect(field.multiplicity, String(field.identity)).toBeUndefined();
-				expect(field.unit, String(field.identity)).toBeUndefined();
-			}
-		}
-		expect(validateIrDocument(computed.document)).toEqual([]);
-		expect((computed.document.source as Json).digest).toBe(
-			(source.source as Json).digest,
-		);
-		expect(computed.document.package).toEqual(source.package);
-
-		const backward = readJson(
-			resolve(fixtures, "evolution/backward-1-1-0.json"),
-		) as never as { loss: string[]; document: Json };
-		const back = readIrAsContract(forward.document, "1.1.0", {
-			dialect: "typespec",
-		}) as never as { loss: string[]; document: Json };
-		expect(JSON.stringify(back.document, null, "\t")).toBe(
-			JSON.stringify(backward.document, null, "\t"),
-		);
-		expect(back.loss).toEqual([]);
-		expect(validateIrDocument(back.document)).toEqual([]);
-	});
-
-	/** Traces: TC-535, TC-612; FR-051-AC-9. */
-	it("round-trips a 1.0.0 document through 1.1.0 byte-identically", () => {
-		const forward = readJson(
-			resolve(fixtures, "evolution/forward-1-0-0.json"),
-		) as never as { document: Json };
-		const up = readIrAsContract(forward.document, "1.1.0", {
-			dialect: "typespec",
-		}) as never as { document: Json };
-		const down = readIrAsContract(up.document, "1.0.0") as never as {
-			document: Json;
-		};
-		expect(normalizeIr(down.document)).toBe(normalizeIr(forward.document));
-	});
-
 	/** Traces: TC-537, TC-568; FR-051-AC-11, NFR-019-AC-2. */
 	it("produces byte-identical reports across two runs", () => {
 		for (const entry of published.slice(0, 6)) {
@@ -4106,15 +4072,8 @@ describe("compatibility and evolution (FR-051)", () => {
 		expect(summary.fingerprint).toBe(fingerprintIr(compiled.ir));
 	});
 
-	/** Traces: TC-538, TC-543; FR-051-AC-12, FR-051-CON-2. */
-	it("publishes the policy and keeps the rank the issue #9 tests assert", async () => {
-		const document = read(
-			resolve(root, "docs/semantic-data-system/ir-compatibility-policy.md"),
-		);
-		expect(document).toContain("may add an optional member");
-		expect(document).toContain("may widen a closed vocabulary");
-		expect(document).toContain("may not remove or retype a member");
-		expect(document).toContain("may not narrow a vocabulary");
+	/** Traces: TC-543; FR-051-CON-2. */
+	it("keeps the rank the issue #9 tests assert", async () => {
 		const { DISPOSITION_RANK } = await import(
 			"../src/compiler/compat/diff.mjs"
 		);
@@ -4126,44 +4085,6 @@ describe("compatibility and evolution (FR-051)", () => {
 			"breaking",
 			"invalid",
 		]);
-		for (const [index, value] of DISPOSITION_RANK.entries()) {
-			expect(document).toContain(`${index + 1}. \`${value}\``);
-		}
-		for (const node of V1_1_ADDED_NODES) expect(document).toContain(node);
-	});
-
-	/** Traces: TC-539, TC-619; FR-051-AC-13. */
-	it("refuses a projection it cannot make and returns one it need not", () => {
-		const forward = readJson(
-			resolve(fixtures, "evolution/forward-1-0-0.json"),
-		) as never as { document: Json };
-		const noDialect = readIrAsContract(forward.document, "1.1.0") as never as {
-			document: Json | null;
-			diagnostics: Diagnostic[];
-		};
-		note(noDialect.diagnostics);
-		expect(noDialect.document).toBeNull();
-		expect(codesOf(noDialect.diagnostics)).toEqual([
-			DIAGNOSTIC_CODES.MISSING_TARGET_DIALECT.code,
-		]);
-
-		const unknownVersion = readIrAsContract(compiled.ir, "3.0.0") as never as {
-			document: Json | null;
-			diagnostics: Diagnostic[];
-		};
-		note(unknownVersion.diagnostics);
-		expect(unknownVersion.document).toBeNull();
-		expect(codesOf(unknownVersion.diagnostics)).toEqual([
-			DIAGNOSTIC_CODES.UNKNOWN_CONTRACT_VERSION.code,
-		]);
-
-		const same = readIrAsContract(compiled.ir, "2.0.0") as never as {
-			document: Json;
-			loss: string[];
-		};
-		expect(same.document).toBe(compiled.ir);
-		expect(same.loss).toEqual([]);
-		expect([...CONTRACT_VERSIONS]).toEqual(["1.0.0", "1.1.0", "2.0.0"]);
 	});
 
 	/** Traces: TC-541; FR-051-AC-15. */
@@ -4191,7 +4112,7 @@ describe("compatibility and evolution (FR-051)", () => {
 
 	/** Traces: TC-545; FR-051-CON-4. */
 	it("imports no target backend", () => {
-		for (const name of ["diff.mjs", "evolution.mjs"]) {
+		for (const name of ["diff.mjs"]) {
 			const source = read(resolve(compilerRoot, "compat", name));
 			expect(source).not.toContain("backends/");
 		}
@@ -4476,20 +4397,34 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 			expect(suppressed.stdout).toContain("suppressed");
 			expect(suppressed.status).toBe(0);
 
+			// fcd#183: this used to also downgrade `contractVersion` to "1.1.0",
+			// which is what actually failed the run — `readContractIr` refuses any
+			// version but 2.0.0 before reading a single field (FR-050), so the
+			// mutation below was never exercised. It used to mutate `presence`
+			// instead of `multiplicity`, but FR-106-CON-1 states 2.0.0 authors
+			// `presence` independently of `multiplicity.lower` and enforces no
+			// agreement between them at all (fcd#179 deleted
+			// `PRESENCE_MULTIPLICITY_MISMATCH`, the 1.0.0/1.1.0-only rule that used
+			// to catch that); a `presence` mutation alone is valid 2.0.0 input and
+			// draws no diagnostic. The document stays declared as 2.0.0 here, and a
+			// field's own multiplicity bounds — checked at every contract version —
+			// is what this test now breaks instead.
 			const invalid = resolve(directory, "invalid.json");
 			const broken2 = JSON.parse(read(out)) as never as {
 				contractVersion: string;
 				types: Json[];
 			};
-			broken2.contractVersion = "1.1.0";
 			const target = broken2.types.find(
 				(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
 			) as Json;
-			(target.fields as Json[])[0].presence = "optional";
+			(target.fields as Json[])[0].multiplicity = { lower: 1, upper: 0 };
 			writeFileSync(invalid, `${JSON.stringify(broken2, null, "\t")}\n`);
 			const broken = runCliAllowingFailure(["inspect", "--ir", invalid]);
 			expect(broken.status).toBe(1);
 			expect(broken.stdout).toContain("diagnostics:");
+			expect(broken.stdout).toContain(
+				"agent-ix.semantic-ir.INVALID_MULTIPLICITY",
+			);
 		} finally {
 			rmSync(directory, { recursive: true, force: true });
 		}
@@ -4624,13 +4559,13 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 	}, 60000);
 
 	/** Traces: TC-558, TC-563; FR-052-AC-12, FR-052-CON-1. */
-	it("declares exactly fifteen symbols that the typecheck sees", async () => {
+	it("declares exactly fourteen symbols that the typecheck sees", async () => {
 		const index = (await import("../src/compiler/index.mjs")) as Record<
 			string,
 			unknown
 		>;
 		const exported = Object.keys(index).sort();
-		expect(exported).toHaveLength(15);
+		expect(exported).toHaveLength(14);
 		expect(exported).toEqual([
 			"CONTRACT_IR_VERSION",
 			"SEMANTIC_IR_SCHEMA_VERSION",
@@ -4645,7 +4580,6 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 			"normalizeIr",
 			"normalizeJsonSchemaForPython",
 			"readContractIr",
-			"readIrAsContract",
 			"runFrontend",
 		]);
 		// A substring check would pass on a name mentioned in a comment. The
@@ -5392,7 +5326,10 @@ describe("generation backend seam registry codes (FR-063)", () => {
 		contractVersion: "1.0.0",
 		lockFingerprint: `sha256:${"a".repeat(64)}`,
 		ir: readJson(
-			resolve(root, "fixtures/semantic/v1/positive/semantic-ir-v1-1.json"),
+			resolve(
+				root,
+				"fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json",
+			),
 		) as Json,
 		profile: readJson(
 			resolve(root, "fixtures/semantic/v1/positive/profile.json"),
@@ -5401,7 +5338,7 @@ describe("generation backend seam registry codes (FR-063)", () => {
 		backend: {
 			identity: "ix://agent-ix/filament-core-data/backend/typescript",
 			version: "1.0.0",
-			supportedIrVersions: ["1.1.0"],
+			supportedIrVersions: ["2.0.0"],
 			supportedFeatures: [],
 			options: {},
 		},
@@ -5445,8 +5382,18 @@ describe("generation backend seam registry codes (FR-063)", () => {
 		);
 	});
 
-	/** Traces: TC-748; FR-063-AC-10. */
-	it("fires the unsupported-version code for a 1.0.0 document", () => {
+	/**
+	 * Traces: TC-748; FR-063-AC-10.
+	 *
+	 * A `1.0.0` document is refused before the seam ever reaches its
+	 * `supportedIrVersions` check: `compiler-request.schema.json` admits only a
+	 * `2.0.0` `ir.contractVersion`, so the refusal is `UNKNOWN_CONTRACT_VERSION`,
+	 * not `UNSUPPORTED_IR_VERSION` — the version this compiler does not know at
+	 * all, not one a particular backend declines. The `1.0.0` input still
+	 * exists in the world even though the contract does not, so the refusal
+	 * stays a named, typed one rather than a generic schema error.
+	 */
+	it("fires the unknown-contract-version code for a 1.0.0 document", () => {
 		const request = generationRequest();
 		(request.ir as Json).contractVersion = "1.0.0";
 		(request.ir as Json).source = {
@@ -5457,10 +5404,56 @@ describe("generation backend seam registry codes (FR-063)", () => {
 			target: "typescript",
 		}) as never as { state: string; diagnostics: Diagnostic[] };
 		note(result.diagnostics);
+		expect(result.state).toBe("invalid");
+		expect(codesOf(result.diagnostics)).toContain(
+			DIAGNOSTIC_CODES.UNKNOWN_CONTRACT_VERSION.code,
+		);
+	});
+
+	/**
+	 * Traces: TC-1797; FR-063-AC-23.
+	 *
+	 * `supportedIrVersions` is a backend's own declared versioning capability,
+	 * not a compatibility layer (fcd#179): a backend may support less than the
+	 * contract admits, and the seam still has to refuse that honestly. No
+	 * committed backend declares narrower support than `2.0.0` today, so this
+	 * is exercised over a synthetic registration the same way FR-063-AC-3/AC-4
+	 * exercise an unimplemented target above — the alternative would be
+	 * deleting `UNSUPPORTED_IR_VERSION` as unreachable, which would delete a
+	 * live mechanism rather than dead code.
+	 */
+	it("fires the unsupported-ir-version code for a backend that declares narrower support than the contract", () => {
+		const result = generateTarget(generationRequest(), {
+			target: "probe",
+			registry: registryWith({
+				probe: {
+					owner: "agent-ix/filament-core-data#0",
+					implemented: true,
+					backend: {
+						identity: "ix://agent-ix/filament-core-data/backend/probe",
+						version: "1.0.0",
+						supportedIrVersions: [],
+						supportedFeatures: [],
+						generate: () => ({ state: "success", files: [], diagnostics: [] }),
+					},
+				},
+			}),
+		}) as never as { state: string; diagnostics: Diagnostic[]; files: Json[] };
+		note(result.diagnostics);
 		expect(result.state).toBe("unsupported");
 		expect(codesOf(result.diagnostics)).toContain(
 			DIAGNOSTIC_CODES.UNSUPPORTED_IR_VERSION.code,
 		);
+		// FR-063-AC-23: the diagnostic names both the version seen and the
+		// versions the backend declares, and `generate` is never called, so no
+		// file reaches the manifest.
+		const unsupported = result.diagnostics.find(
+			(entry) => entry.code === DIAGNOSTIC_CODES.UNSUPPORTED_IR_VERSION.code,
+		);
+		expect(unsupported?.message).toContain("2.0.0");
+		expect(unsupported?.message).toContain("does not support contract version");
+		expect(unsupported?.message).toContain("it declares");
+		expect(result.files).toEqual([]);
 	});
 
 	/** Traces: TC-751, TC-752; FR-063-AC-8, FR-063-AC-9. */
@@ -5468,7 +5461,7 @@ describe("generation backend seam registry codes (FR-063)", () => {
 		const escaping = {
 			identity: "ix://agent-ix/filament-core-data/backend/probe",
 			version: "1.0.0",
-			supportedIrVersions: ["1.1.0"],
+			supportedIrVersions: ["2.0.0"],
 			supportedFeatures: [],
 			generate: () => ({
 				state: "success",

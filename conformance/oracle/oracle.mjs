@@ -54,10 +54,6 @@ const KEYWORD_APPLICABILITY = {
 	format: ["string"],
 };
 
-/** IR nodes that contract 1.1.0 introduced and contract 1.0.0 cannot read. */
-const V1_1_TYPE_NODES = ["clauses", "operations", "relationships"];
-const V1_1_FIELD_NODES = ["multiplicity", "unit"];
-
 const ORACLE_OWNER = "ix://agent-ix/filament-core-data/conformance/oracle";
 
 function diagnostic(code, pointerText, message, severity = "error") {
@@ -296,7 +292,7 @@ function checkMultiplicity(multiplicity, at, out) {
 	return multiplicity;
 }
 
-function checkField(field, at, version, types, out) {
+function checkField(field, at, types, out) {
 	const resolved = resolve(types, field.typeRef);
 	if (resolved.status === "cycle") {
 		out.push(
@@ -324,23 +320,13 @@ function checkField(field, at, version, types, out) {
 		);
 	}
 
-	const multiplicity = checkMultiplicity(
-		field.multiplicity,
-		`${at}/multiplicity`,
-		out,
-	);
-	if (isObject(multiplicity) && Number.isInteger(multiplicity.lower)) {
-		const derived = multiplicity.lower >= 1 ? "required" : "optional";
-		if (field.presence !== undefined && field.presence !== derived) {
-			out.push(
-				diagnostic(
-					"PRESENCE_MULTIPLICITY_MISMATCH",
-					`${at}/presence`,
-					`presence ${String(field.presence)} contradicts multiplicity lower ${multiplicity.lower}`,
-				),
-			);
-		}
-	}
+	// fcd#179: contract 2.0.0 is the only contract, and FR-106 makes `presence`
+	// and `multiplicity` independent members for 2.0.0 — "SHALL NOT be derived
+	// from one another at any layer" (FR-106-CON-2). `PRESENCE_MULTIPLICITY_MISMATCH`
+	// applied only to `1.1.0` documents (FR-106-AC-4); with `1.1.0` deleted, no
+	// document this oracle ever sees can trigger it, so the check is removed
+	// rather than left calling out a condition no corpus case can reach.
+	checkMultiplicity(field.multiplicity, `${at}/multiplicity`, out);
 
 	if (
 		field.unit !== undefined &&
@@ -354,19 +340,6 @@ function checkField(field, at, version, types, out) {
 				`unit is only allowed where typeRef resolves to a scalar (resolved ${resolved.kind})`,
 			),
 		);
-	}
-	if (version === "1.0.0") {
-		for (const node of V1_1_FIELD_NODES) {
-			if (field[node] !== undefined) {
-				out.push(
-					diagnostic(
-						"V1_1_NODE_IN_V1_0",
-						`${at}/${node}`,
-						`${node} is a contract 1.1.0 node and a 1.0.0 reader drops it`,
-					),
-				);
-			}
-		}
 	}
 }
 
@@ -444,7 +417,7 @@ function checkConstraint(constraint, at, types, out) {
 	}
 }
 
-function checkTypeDefinition(definition, at, version, types, lockExports, out) {
+function checkTypeDefinition(definition, at, types, lockExports, out) {
 	const fields = Array.isArray(definition.fields) ? definition.fields : [];
 	const seenFieldNames = new Set();
 	for (const [i, field] of fields.entries()) {
@@ -459,7 +432,7 @@ function checkTypeDefinition(definition, at, version, types, lockExports, out) {
 			);
 		}
 		seenFieldNames.add(field.name);
-		checkField(field, `${at}/fields/${i}`, version, types, out);
+		checkField(field, `${at}/fields/${i}`, types, out);
 	}
 
 	for (const [i, constraint] of (Array.isArray(definition.constraints)
@@ -611,13 +584,7 @@ function checkTypeDefinition(definition, at, version, types, lockExports, out) {
 				);
 			}
 			names.add(param.name);
-			checkField(
-				param,
-				`${at}/operations/${o}/params/${p}`,
-				version,
-				types,
-				out,
-			);
+			checkField(param, `${at}/operations/${o}/params/${p}`, types, out);
 		}
 		if (isObject(operation.returns)) {
 			if (resolve(types, operation.returns.typeRef).status !== "resolved") {
@@ -647,20 +614,6 @@ function checkTypeDefinition(definition, at, version, types, lockExports, out) {
 						),
 					);
 				}
-			}
-		}
-	}
-
-	if (version === "1.0.0") {
-		for (const node of V1_1_TYPE_NODES) {
-			if (definition[node] !== undefined) {
-				out.push(
-					diagnostic(
-						"V1_1_NODE_IN_V1_0",
-						`${at}/${node}`,
-						`${node} is a contract 1.1.0 node and a 1.0.0 reader drops it`,
-					),
-				);
 			}
 		}
 	}
@@ -900,42 +853,18 @@ function identitySet(ir) {
 
 /* ---------------------------------------------------------- normalize ----- */
 
-function materialize(field) {
-	const multiplicity = isObject(field.multiplicity)
-		? field.multiplicity
-		: field.presence === "optional"
-			? { lower: 0, upper: 1 }
-			: { lower: 1, upper: 1 };
-	field.multiplicity = multiplicity;
-	field.presence = multiplicity.lower >= 1 ? "required" : "optional";
-	field.nullable = field.nullable === true;
-}
-
-/** The FR-027 normalized serialization of one IR document. */
+/**
+ * The FR-027 normalized serialization of one IR document.
+ *
+ * fcd#179: contract 2.0.0 requires `multiplicity`, `presence`, and `nullable`
+ * on every field, so every document that reaches here already carries them
+ * explicitly — there is nothing left to materialize, and deriving `presence`
+ * from `multiplicity` would contradict FR-106 (presence is authored and
+ * independent). Canonicalization is the whole of normalization now.
+ */
 export function normalize(ir) {
 	if (!isObject(ir)) return canonical(ir);
-	const copy = structuredClone(ir);
-	if (copy.contractVersion === "1.1.0") {
-		for (const definition of Array.isArray(copy.types) ? copy.types : []) {
-			if (!isObject(definition)) continue;
-			for (const field of Array.isArray(definition.fields)
-				? definition.fields
-				: []) {
-				if (isObject(field)) materialize(field);
-			}
-			for (const operation of Array.isArray(definition.operations)
-				? definition.operations
-				: []) {
-				if (!isObject(operation)) continue;
-				for (const param of Array.isArray(operation.params)
-					? operation.params
-					: []) {
-					if (isObject(param)) materialize(param);
-				}
-			}
-		}
-	}
-	return canonical(copy);
+	return canonical(structuredClone(ir));
 }
 
 /* ------------------------------------------------------------- verdict ---- */
@@ -977,7 +906,6 @@ export function verdict(bundle, schemaRows = []) {
 	}
 
 	const out = [];
-	const version = String(ir.contractVersion);
 	const { byIdentity } = indexTypes(ir);
 	const lockExports = new Set(
 		isObject(bundle.manifest) && Array.isArray(bundle.manifest.exports)
@@ -1011,7 +939,6 @@ export function verdict(bundle, schemaRows = []) {
 			checkTypeDefinition(
 				definition,
 				pointer("ir", "types", t),
-				version,
 				byIdentity,
 				lockExports,
 				out,

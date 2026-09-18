@@ -35,8 +35,8 @@ construct's disposition is written down rather than decided at the keyboard.
 
 ## Inputs
 
-- One semantic IR document at `contractVersion` `1.0.0` or `1.1.0`, already
-  validated by [FR-050](./FR-050-validate-and-normalize-the-emitted-ir.md)
+- One semantic IR document at `contractVersion` `2.0.0`, already validated by
+  [FR-050](./FR-050-validate-and-normalize-the-emitted-ir.md)
 - `schema/semantic/v1/semantic-ir.schema.json` and `common.schema.json`, which
   fix the construct vocabulary
 - The published `rust` row of
@@ -292,7 +292,7 @@ construct's disposition is written down rather than decided at the keyboard.
   backend SHALL carry the declared value verbatim into the type's metadata
   constant and SHALL state in the generated documentation that it is inert for
   the kind. Recording it is what stops it being dropped; refusing it would
-  refuse documents the contract calls valid — `conformance/bases/core-1-1.json`
+  refuse documents the contract calls valid — `conformance/bases/core-2-0.json`
   gives a `map` `preserve` and a `union` `surface`, and the independent oracle
   decides that base `success`.
 - Where `unknownPolicy` is `surface`, the type's `validate` SHALL return one
@@ -344,15 +344,6 @@ construct's disposition is written down rather than decided at the keyboard.
 - Introducing indirection SHALL depend on the graph alone, so that two runs over
   the same document box the same edges.
 
-### Version handling
-
-- For a `1.0.0` document the backend SHALL derive each field's multiplicity from
-  its `presence` by the FR-027 rule before mapping, and SHALL NOT require
-  `multiplicity` to be present.
-- If a `1.0.0` document carries a `1.1.0` node, then the backend SHALL refuse it
-  under [FR-058](./FR-058-refuse-unsupported-constructs-with-stable-diagnostics.md)
-  rather than mapping the node.
-
 ## Constraints
 
 | ID | Constraint | Type | Validation |
@@ -377,7 +368,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | FR-054-AC-7 | A direct self-reference, a two-record cycle, a cycle closing through an `alias` target, a cycle closing through a `union` variant `payloadType`, and a cycle through a `sequence` each generate a crate that compiles, and the boxed edge set is identical across two runs. | Test (TC-651) |
 | FR-054-AC-8 | `relationships`, `operations`, `clauses`, `roles`, `origin`, and `occurrences` survive generation into metadata with every member the IR carried, checked by reading the metadata back and comparing to the input document. | Test (TC-652) |
 | FR-054-AC-9 | `defaultKind: "semantic"` emits a serde default that applies on an absent member; `representation` and `migration` emit no serde default and appear only in metadata; a `defaultValue` the mapped type does not admit raises `INVALID_DEFAULT_VALUE`. | Test (TC-653) |
-| FR-054-AC-10 | A `1.0.0` document generates with multiplicity derived from presence; a `1.0.0` document carrying a `relationships` array is refused; a field whose `multiplicity.upper` is `0` raises `UNSUPPORTED_MULTIPLICITY`. | Test (TC-654) |
+| FR-054-AC-10 | A field whose `multiplicity.upper` is `0` raises `UNSUPPORTED_MULTIPLICITY`. | Test (TC-654) |
 | FR-054-AC-11 | `mapping-table.json`, the rows this requirement states, and the rendered `docs/semantic-data-system/rust-backend.md` agree exactly in all three directions, checked by a script that parses the requirement's tables rather than by eye, and run by `make lint` in `--check` mode. | Analysis (TC-655) |
 | FR-054-AC-12 | A construct with no mapping row and no named refusal raises a blocking diagnostic and writes no file, demonstrated by removing a row and re-running. | Test (TC-656) |
 | FR-054-AC-13 | `mapping.mjs` returns an identical model for a document and for the same document with every object's key order permuted and every identity-keyed array reordered, and its module graph reads no ambient input. | Analysis (TC-657) |

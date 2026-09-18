@@ -1,34 +1,24 @@
 [
 	{
-		"id": "ir-unknown-version",
-		"schema": "semantic-ir.schema.json",
-		"base": "positive/semantic-ir.json",
-		"set": {
-			"path": "contractVersion",
-			"value": "2.0.0"
-		},
-		"code": "agent-ix.semantic-ir.UNSUPPORTED_VERSION"
-	},
-	{
 		"id": "ir-missing-origin",
 		"schema": "semantic-ir.schema.json",
-		"base": "positive/semantic-ir.json",
+		"base": "positive/semantic-ir-v1-1.json",
 		"remove": "types.0.origin",
 		"code": "agent-ix.semantic-ir.MISSING_ORIGIN"
 	},
 	{
 		"id": "ir-record-without-fields",
 		"schema": "semantic-ir.schema.json",
-		"base": "positive/semantic-ir.json",
-		"remove": "types.1.fields",
+		"base": "positive/semantic-ir-v1-1.json",
+		"remove": "types.3.fields",
 		"code": "agent-ix.semantic-ir.INVALID_TYPE_SHAPE"
 	},
 	{
 		"id": "ir-unnamespaced-role",
 		"schema": "semantic-ir.schema.json",
-		"base": "positive/semantic-ir.json",
+		"base": "positive/semantic-ir-v1-1.json",
 		"set": {
-			"path": "types.1.roles.0",
+			"path": "types.3.roles.0",
 			"value": "entity"
 		},
 		"code": "agent-ix.semantic-ir.INVALID_ROLE"
@@ -190,17 +180,6 @@
 		"code": "agent-ix.semantic-ir.UNSUPPORTED_VERSION"
 	},
 	{
-		"id": "ir-v1-0-frontend-dialect",
-		"schema": "semantic-ir.schema.json",
-		"base": "positive/semantic-ir.json",
-		"set": {
-			"path": "source.dialect",
-			"value": "typespec"
-		},
-		"code": "agent-ix.semantic-ir.DIALECT_VERSION_MISMATCH",
-		"note": "A 1.0.0 document keeps the v1 dialect constant"
-	},
-	{
 		"id": "manifest-unknown-target",
 		"schema": "package-manifest.schema.json",
 		"base": "positive/package-manifest.json",
@@ -211,11 +190,18 @@
 		"code": "agent-ix.package.UNKNOWN_TARGET"
 	},
 	{
-		"id": "ir-v1-1-field-without-multiplicity",
+		"id": "ir-v2-field-without-multiplicity",
 		"schema": "semantic-ir.schema.json",
-		"base": "positive/semantic-ir-v1-1.json",
-		"remove": "types.3.fields.0.multiplicity",
+		"base": "positive/semantic-ir-v2-constructs.json",
+		"remove": "types.0.fields.0.multiplicity",
 		"code": "agent-ix.semantic-ir.MISSING_MULTIPLICITY"
+	},
+	{
+		"id": "ir-v2-field-without-presence",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v2-constructs.json",
+		"remove": "types.0.fields.0.presence",
+		"code": "agent-ix.semantic-ir.MISSING_PRESENCE"
 	},
 	{
 		"id": "ir-v1-1-negative-lower",

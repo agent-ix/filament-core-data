@@ -210,10 +210,10 @@ blocked as stated above.
 | FR-024 | FR-024-AC-1..7 | TC-159..164, TC-200 | ✅ Complete |
 | FR-025 | FR-025-AC-1..6 | TC-165..170 | ✅ Complete |
 | FR-026 | FR-026-AC-1..6 | TC-171..176 | ✅ Complete |
-| FR-027 | FR-027-AC-1..9, FR-027-CON-1..2 | TC-203..209, TC-237..238 | ✅ Complete |
+| FR-027 | FR-027-AC-1..9, FR-027-CON-2 | TC-203..209, TC-237..238 | ✅ Complete |
 | FR-028 | FR-028-AC-1..13, FR-028-CON-1..2 | TC-210..218, TC-239..243 | ✅ Complete |
 | FR-029 | FR-029-AC-1..8, FR-029-CON-1..2 | TC-219..226, TC-244..245 | ✅ Complete |
-| FR-030 | FR-030-AC-1..6, FR-030-CON-1..2 | TC-227..231, TC-246 | ✅ Complete |
+| FR-030 | FR-030-AC-1..6, FR-030-CON-2 | TC-227..230, TC-246 | ✅ Complete |
 | FR-031 | FR-031-AC-1..7, FR-031-CON-1..2 | TC-248..254, TC-277 | ✅ Complete |
 | FR-032 | FR-032-AC-1..5, FR-032-CON-1 | TC-255..260 | ✅ Complete |
 | FR-033 | FR-033-AC-1..5, FR-033-CON-1..2 | TC-261..266 | ✅ Complete |
@@ -234,7 +234,7 @@ blocked as stated above.
 | FR-048 | FR-048-AC-1..11, FR-048-CON-1..4 | TC-477..TC-491, TC-613 | ✅ Complete |
 | FR-049 | FR-049-AC-1..14, FR-049-CON-1..4 | TC-492..TC-509, TC-605, TC-608, TC-609 | ✅ Complete |
 | FR-050 | FR-050-AC-1..13, FR-050-CON-1..4 | TC-510..TC-526, TC-600, TC-611, TC-617 | ✅ Complete |
-| FR-051 | FR-051-AC-1..15, FR-051-CON-1..5 | TC-527..TC-546, TC-602, TC-612, TC-619 | ✅ Complete |
+| FR-051 | FR-051-AC-1..6, FR-051-AC-11, FR-051-AC-15, FR-051-CON-1, FR-051-CON-2, FR-051-CON-4, FR-051-CON-5 | TC-527..TC-532, TC-537, TC-541..TC-546, TC-602 | ✅ Complete |
 | FR-052 | FR-052-AC-1..16, FR-052-CON-1..4 | TC-547..TC-566 | ✅ Complete |
 | FR-053 | FR-053-AC-1..15, FR-053-CON-1..5 | TC-412..TC-431, TC-604 | ✅ Complete |
 | FR-063 | FR-063-AC-1..21, FR-063-CON-1..6 | TC-745..TC-754 | 🚧 In progress |
@@ -294,7 +294,7 @@ blocked as stated above.
 | FR-138 | FR-138-AC-1..7, FR-138-CON-1..3 | TC-1545..TC-1551 | 🚧 planned on issue #37 |
 | FR-139 | FR-139-AC-1..6, FR-139-CON-1..3 | TC-1552..TC-1557 | 🚧 TC-1552, TC-1554..TC-1557 planned on issue #93 |
 | FR-140 | FR-140-AC-1..7, FR-140-CON-1..3 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
-| FR-141 | FR-141-AC-1..9, FR-141-CON-1..2 | TC-1740..TC-1744, TC-1759, TC-1761, TC-1795, TC-1796 | ✅ Complete |
+| FR-141 | FR-141-AC-1..4, FR-141-AC-6..9, FR-141-CON-2 | TC-1740..TC-1743, TC-1759, TC-1761, TC-1795, TC-1796 | ✅ Complete |
 | FR-142 | FR-142-AC-1..14, FR-142-CON-1..2 | TC-1745..TC-1750, TC-1776, TC-1786..TC-1789, TC-1791, TC-1793 | 🚧 In progress |
 | FR-143 | FR-143-AC-1..9, FR-143-CON-1..2 | TC-1751..TC-1755, TC-1785, TC-1790, TC-1792, TC-1794 | 🚧 In progress |
 
@@ -314,7 +314,6 @@ blocked as stated above.
 | NFR-010 | Sandboxed path, network, execution, dependency, security, and bounded-resource checks | TC-185..189, TC-202 | ✅ Complete |
 | NFR-011 | Public schema, independent reader, extension, capability, and preservation checks | TC-190..194 | ✅ Complete |
 | NFR-012 | Diff, unchanged-suite, registry, downstream-gate, and human-decision checks | TC-195..199 | ✅ Complete |
-| NFR-013 | Unchanged v1 fixture suite, spike byte comparison, compatibility-corpus entry, changed-path gate, and fixture inventory | TC-208, TC-234..236, TC-247 | ✅ Complete |
 | NFR-014 | Compiled-program inventory, amendment inspection, changed-path gate, emitter inspection, spike byte comparison | TC-249, TC-273..276, TC-278 | ✅ Complete |
 | NFR-015 | Provenance quote check, repeat/locale/directory byte comparison, oracle and harness import and effect analysis, divergence and contract-gap register inspection | TC-635..337 | ✅ Complete |
 | NFR-016 | Changed-path gate, manifest diff, offline test run, publication analysis | TC-640..643 | ✅ Complete |
@@ -550,13 +549,12 @@ blocked as stated above.
 | TC-200 | Independent adapters and backends share stable diagnostic codes and causal envelopes | Unit | P0 | FR-024-AC-7 | ✅ passed — semantic contract v1 |
 | TC-201 | Fingerprints ignore excluded ordering but change for every included semantic-byte change | Property | P0 | FR-021-AC-7 | ✅ passed — semantic contract v1 |
 | TC-202 | Oversized and cyclic hostile inputs terminate at declared resource limits | Fuzz | P0 | NFR-010 | ✅ passed — semantic contract v1 |
-| TC-203 | A `0..1` field validates, derives `presence: optional`, and re-serializes byte-identically | Property | P0 | FR-027-AC-1, FR-020-AC-7, US-006-EX-1 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-203 | A `0..1` field with `presence: optional` authored explicitly validates and re-serializes byte-identically; the same field with `presence` omitted fails validation | Property | P0 | FR-027-AC-1, FR-020-AC-7, US-006-EX-1 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-204 | A `1..*` field preserves `ordered` and `unique` flags | Unit | P0 | FR-027-AC-2 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-205 | Stated `presence` contradicting multiplicity fails at the field locus | Unit | P0 | FR-027-AC-3 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-206 | `upper < lower` and `lower < 0` fail at the field locus; `0..0` validates | Unit | P0 | FR-027-AC-4 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-207 | `unit` validates on a scalar field and fails on a record field | Unit | P0 | FR-027-AC-5, FR-027-CON-2 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-208 | Every v1 positive fixture validates unchanged under v1.1 with multiplicity derived from presence | Integration | P0 | FR-027-AC-6, FR-027-CON-1, NFR-013-AC-1 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-209 | FR-006 `ConfigVersion` fields express as v1.1 fields with zero declared loss | Analysis | P0 | FR-027-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-208 | Every v1 positive fixture's digest stays pinned; every fixture declaring `2.0.0` validates, with `multiplicity` authored directly and never derived from `presence` | Integration | P0 | FR-027-AC-6 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-209 | FR-006 `ConfigVersion` fields express as fields with zero declared loss | Analysis | P0 | FR-027-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-210 | A `belongs_to` structural relationship validates and round-trips byte-identically | Property | P0 | FR-028-AC-1, FR-020-AC-7, US-006-EX-2 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-211 | An unknown relationship `category` fails at the relationship locus | Unit | P0 | FR-028-AC-2 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-212 | An operation with params, bounded return, and present pre/post clauses validates | Unit | P0 | FR-028-AC-3 | ✅ passed — semantic IR v1.1 (PR #38) |
@@ -564,7 +562,7 @@ blocked as stated above.
 | TC-214 | An `ocl` clause with `text` and `sourceSpan` validates, a `quire` clause validates and its `text` round-trips byte-identical with no parsed-content property, and the schema declares no parsed-content property | Static | P0 | FR-028-AC-5, FR-028-CON-2, US-006-EX-3 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-215 | A namespaced clause language validates and a bare unknown language fails | Unit | P0 | FR-028-AC-6 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-216 | `relationships[]` or `operations[]` on a non-record type definition fails | Unit | P0 | FR-028-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-217 | Absent `relationships[]`, `operations[]`, and `clauses[]` read as empty on a v1 document | Unit | P0 | FR-028-CON-1 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-217 | Absent `relationships[]`, `operations[]`, and `clauses[]` read as empty on a type definition | Unit | P0 | FR-028-CON-1 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-218 | FR-006 `overlay` relationship and an `ocl` invariant express with zero declared loss | Analysis | P0 | FR-028-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-219 | Every closed constraint keyword has a positive fixture whose operands validate | Unit | P0 | FR-029-AC-1 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-220 | Keyword `mnimum` fails at the constraint locus | Unit | P0 | FR-029-AC-2, US-006-EX-4 | ✅ passed — semantic IR v1.1 (PR #38) |
@@ -574,16 +572,12 @@ blocked as stated above.
 | TC-224 | Every v1 fixture constraint uses a closed keyword, or its correction is recorded | Static | P0 | FR-029-CON-1 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-225 | Keyword addition classifies additive; removal or retyping classifies breaking | Unit | P0 | FR-029-CON-2 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-226 | FR-006 `versionNumber` `min: 1` expresses as a typed constraint | Analysis | P1 | FR-029-AC-6 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-227 | A `1.1.0` document with `source.dialect: typespec` validates, and one with `spec-bundle` validates | Unit | P0 | FR-030-AC-1 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-227 | A `2.0.0` document with `source.dialect: typespec` validates, and one with `spec-bundle` validates | Unit | P0 | FR-030-AC-1 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-228 | The JSON Schema `$schema` URI as `source.dialect` fails with a diagnostic citing ADR-0005 | Unit | P0 | FR-030-AC-2 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-229 | Manifest targets `rust`/`markdown` validate; target `go` fails at its entry | Unit | P0 | FR-030-AC-3 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-230 | Manifest, target-contract, and representation schemas reference the shared common enumerations | Static | P0 | FR-030-AC-4, FR-030-CON-2 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-231 | The v1 `contractVersion: "1.0.0"` IR fixture remains valid under the v1 schema | Integration | P0 | FR-030-CON-1 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-232 | The TypeScript Ajv reader and the Python `jsonschema` reader (`tests/`) agree on every v1.1 golden and negative fixture | Integration | P0 | FR-020-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-233 | Generated v1.1 documents with all five new node kinds round-trip the normalized serialization byte-identically | Property | P0 | FR-020-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-234 | `spike:typespec:check` output is byte-identical before and after the revision | Snapshot | P0 | NFR-013-AC-2 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-235 | The compatibility corpus records v1 → v1.1 as `additive` with the added node list | Static | P0 | NFR-013-AC-3 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-236 | Issue #34 changed-path gate excludes `spikes/`, backends, and corpus repositories | Static | P0 | NFR-013-AC-4 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-232 | The TypeScript Ajv reader and the Python `jsonschema` reader (`tests/`) agree on every golden and negative fixture | Integration | P0 | FR-020-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-233 | Generated `2.0.0` documents with all five new node kinds round-trip the normalized serialization byte-identically | Property | P0 | FR-020-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-237 | `ordered: true` or `unique: true` on a `1..1` field fails at the field locus | Unit | P0 | FR-027-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-238 | Multiplicity narrowing classifies breaking; widening classifies additive | Unit | P0 | FR-027-AC-9 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-239 | A relationship `target` resolving to no type definition or lock export fails at the relationship locus | Unit | P0 | FR-028-AC-9 | ✅ passed — semantic IR v1.1 (PR #38) |
@@ -593,8 +587,7 @@ blocked as stated above.
 | TC-243 | Added relationship/operation/clause classifies additive; removed or retargeted classifies breaking | Unit | P0 | FR-028-AC-13 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-244 | `minLength` applied to an `integer` scalar fails at the constraint locus | Unit | P0 | FR-029-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-245 | A `pattern` whose `regex` does not compile under `ecma-262` fails validation | Unit | P0 | FR-029-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-246 | `contractVersion: "1.3.0"` fails before emission; `1.1.0` with `source.dialect: avro` fails at `source.dialect` | Unit | P0 | FR-030-AC-5, FR-030-AC-6 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-247 | Every new IR node kind has one golden and one negative fixture under `fixtures/semantic/v1/` | Static | P0 | NFR-013-AC-5 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-246 | `contractVersion: "1.3.0"` fails before emission; `2.0.0` with `source.dialect: avro` fails at `source.dialect` | Unit | P0 | FR-030-AC-5, FR-030-AC-6 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-248 | `tsp compile packages/semantic-core` exits 0 with zero diagnostics under the pinned compiler | Compile | P0 | FR-031-AC-1 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-249 | The compiled program's declaration set equals `inventory.json`; adding `Entity` or `Any` to the source makes the scope test fail naming the declaration | Unit | P0 | FR-031-AC-2, NFR-014-AC-1 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-250 | `ConstraintKeyword` and the eleven constraint models match the FR-029 keyword set and operand shapes; the emitted schema rejects a twelfth | Unit | P0 | FR-031-AC-3 | ✅ passed — semantic-core grammar (PR #39) |
@@ -616,7 +609,7 @@ blocked as stated above.
 | TC-266 | The normalization step is isolated (one function, one call site) and records a no-op when no relative `$id` is emitted | Analysis | P1 | FR-033-CON-2 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-267 | `lowering.json` has one row per grammar-model property, every `loss` is `none`, and a `loss` row fails the gate | Unit | P0 | FR-034-AC-1, FR-034-CON-1 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-268 | Reference lowerer mints identities, origins, kernel definitions, alias-per-constrained-field, and clause text per the FR-034 rules on the FR-006 set | Unit | P0 | FR-034-AC-2 | ✅ passed — semantic-core grammar (PR #39) |
-| TC-269 | The lowered FR-006 document equals `config-version-v1-1.json` in the structural comparison ignoring minted identities and semantic-core extensions | Unit | P0 | FR-034-AC-3 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-269 | The lowered FR-006 document equals `config-version-v2.json` in the structural comparison ignoring minted identities and semantic-core extensions | Unit | P0 | FR-034-AC-3 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-270 | `UnitSymbol` rejects ``, `k g`, `kg²` and accepts `kg`, `m/s`, `ms`, `10*3.m` | Unit | P0 | FR-034-AC-4 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-271 | A `Decimal` field lowers with the `decimal` extension carrying `precision` and `scale`; the table records no loss for `TypeRef.decimal` | Unit | P0 | FR-034-AC-5, US-007-EX-2 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-272 | A lowering row recording `loss` fails the fixture gate | Unit | P0 | FR-034-AC-1 | ✅ passed — semantic-core grammar (PR #39) |
@@ -626,7 +619,7 @@ blocked as stated above.
 | TC-276 | `tspconfig.yaml` lists only official `@typespec/*` emitters and no custom emitter dependency exists | Static | P0 | NFR-014-AC-4 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-277 | Each reader-enforced grammar rule (bounds, flags, decimal presence, unit applicability, returns.unit, uniqueness keys, identity flag) has a negative fixture rejected at its locus; the FR-006 set reads clean | Unit | P0 | FR-031-AC-7, US-007-EX-4 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-278 | `spike:typespec:check` output is byte-identical before and after the semantic-core change | Snapshot | P0 | NFR-014-AC-5 | ✅ passed — semantic-core grammar (PR #39) |
-| TC-279 | The lowered FR-006 document validates as `1.1.0` and both IR readers return zero diagnostics when the lowerer runs from the committed `FieldDecl[]` fixture | Integration | P0 | FR-034-AC-2 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-279 | The lowered FR-006 document validates as `2.0.0` and both IR readers return zero diagnostics when the lowerer runs from the committed `FieldDecl[]` fixture | Integration | P0 | FR-034-AC-2 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-280 | Every case file, base bundle, and the corpus manifest validate against their conformance schemas | Unit | P0 | FR-035-AC-1 | ✅ passed — conformance corpus (PR pending) |
 | TC-281 | Every base bundle validates against the published schemas it composes and yields zero oracle diagnostics | Unit | P0 | FR-035-AC-2, FR-035-CON-1 | ✅ passed — conformance corpus (PR pending) |
 | TC-282 | Every case's `derivedFrom` names an existing artifact and its `quote` occurs verbatim; a quote that no longer occurs fails the gate | Unit | P0 | FR-035-AC-3, US-008-EX-1 | ✅ passed — conformance corpus (PR pending) |
@@ -642,7 +635,7 @@ blocked as stated above.
 | TC-292 | A self-referential alias and a mutual alias pair each yield one `ALIAS_CYCLE`; a 257-link acyclic chain yields `DEPTH_LIMIT_EXCEEDED` | Unit | P0 | FR-036-AC-3 | ✅ passed — conformance corpus (PR pending) |
 | TC-293 | Duplicate identity, alias cycle, unresolved occurrence definition, unresolved union payload, and unresolved sequence or map element are five distinct codes | Unit | P0 | FR-036-AC-4 | ✅ passed — conformance corpus (PR pending) |
 | TC-294 | The oracle and harness import no judged implementation, read no clock, network, or environment, and add no dependency | Static | P0 | FR-036-AC-5, FR-036-CON-1 | ✅ passed — conformance corpus (PR pending) |
-| TC-295 | For every `1.0.0` document, `normalized` is byte-identical to the corpus canonical form of the input and adds no member | Property | P0 | FR-036-AC-6 | ✅ passed — conformance corpus (PR pending) |
+| TC-295 | For every `2.0.0` document, `normalized` is byte-identical to the corpus canonical form of the input and adds no member | Property | P0 | FR-036-AC-6 | ✅ passed — conformance corpus (PR pending) |
 | TC-296 | An optional plus required addition classifies `breaking` naming both; the optional addition alone is `additive` under a preserving policy and `conditional` with none | Unit | P0 | FR-036-AC-7 | ✅ passed — conformance corpus (PR pending) |
 | TC-297 | Every diagnostic the oracle emits validates against the published diagnostic schema and carries `owner`, `blocking`, `causes`, and `related` | Unit | P0 | FR-036-AC-8 | ✅ passed — conformance corpus (PR pending) |
 | TC-298 | Each of the six package-context rules fires on a bundle supplying its member and stays silent on one that omits it | Unit | P0 | FR-036-AC-9 | ✅ passed — conformance corpus (PR pending) |
@@ -779,7 +772,7 @@ blocked as stated above.
 | TC-429 | The frontend SHALL reach the library by the absolute path it supplies to `additionalImports` | Static | P1 | FR-053-CON-3 | ✅ passed |
 | TC-430 | The library SHALL declare no decorator that overrides a minted identity or that lets an IR value be derived from a declaration's name, namespace | Property | P1 | FR-053-CON-4 | ✅ passed |
 | TC-431 | Every manifest this requirement adds SHALL declare `"license": "AGPL-3.0-or-later"` | Static | P1 | FR-053-CON-5 | ✅ passed |
-| TC-432 | The IR produced for `test/fixtures/compiler/packages/assurance` validates against `semantic-ir.schema.json` with `contractVersion` `1.1.0` | Unit | P0 | FR-046-AC-1 | ✅ passed |
+| TC-432 | The IR produced for `test/fixtures/compiler/packages/assurance` validates against `semantic-ir.schema.json` with `contractVersion` `2.0.0` | Unit | P0 | FR-046-AC-1 | ✅ passed |
 | TC-433 | Every row of the structural-kind table is exercised by a declaration in the fixture package and yields the stated `kind` and additional members | Unit | P0 | FR-046-AC-2 | ✅ passed |
 | TC-434 | Every row of the built-in scalar mapping yields the stated IR `scalar` | Unit | P0 | FR-046-AC-3 | ✅ passed |
 | TC-435 | A record named `AuditEvent` with no `@role` has `roles: []`, and a record named `Thing` with `@role("agent-ix:event")` has `roles: | Unit | P0 | FR-046-AC-4 | ✅ passed |
@@ -857,11 +850,11 @@ blocked as stated above.
 | TC-507 | The `diagnostic` constructor SHALL truncate every input-derived string to 120 characters before it enters a message; input data beyond identities | Unit | P1 | FR-049-CON-2 | ✅ passed |
 | TC-508 | The set of codes the registry declares and the set the compiler emits SHALL be equal, with every declared code reached by at least one test | Unit | P1 | FR-049-CON-3 | ✅ passed |
 | TC-509 | The `agent-ix.semantic-ir.*` spellings SHALL be exactly those the issue #34 readers already emit, extracted from the byte-unchanged `fixtures/semantic/v1/negative/reader-cases.json` and `test/semantic-ir-v1-1-reader.ts` | Unit | P1 | FR-049-CON-4 | ✅ passed |
-| TC-510 | Every positive `1.1.0` fixture under `fixtures/semantic/v1/positive/` validates and yields zero reader diagnostics | Unit | P0 | FR-050-AC-1 | ✅ passed |
+| TC-510 | Every positive `2.0.0` fixture under `fixtures/semantic/v1/positive/` validates and yields zero reader diagnostics | Unit | P0 | FR-050-AC-1 | ✅ passed |
 | TC-511 | Every case in `negative/reader-cases.json` yields the expected diagnostic code from the compiler's reader | Unit | P0 | FR-050-AC-2 | ✅ passed |
 | TC-512 | For every case in `negative/reader-cases.json`, the compiler's reader, the issue #34 TypeScript reader | Integration | P0 | FR-050-AC-3 | ✅ passed |
 | TC-513 | `src/compiler/ir/reader.mjs` imports no module under `test/` or `tests/` | Static | P0 | FR-050-AC-4 | ✅ passed |
-| TC-514 | `normalizeIr` materializes `multiplicity`, `presence`, and `nullable` on every `1.1.0` field and operation parameter | Unit | P0 | FR-050-AC-5 | ✅ passed |
+| TC-514 | `normalizeIr` materializes `multiplicity`, `presence`, and `nullable` on every `2.0.0` field and operation parameter | Unit | P0 | FR-050-AC-5 | ✅ passed |
 | TC-515 | `normalizeIr(normalizeIr(d))` equals `normalizeIr(d)` for every positive fixture and for generated documents | Property | P0 | FR-050-AC-6 | ✅ passed |
 | TC-516 | Two documents differing only in object key order and in identity-keyed array order have the same `fingerprintIr` | Property | P0 | FR-050-AC-7 | ✅ passed |
 | TC-517 | An emitted document that fails validation is not written, and the failure is a blocking diagnostic naming the failing pointer | Unit | P0 | FR-050-AC-8 | ✅ passed |
@@ -880,22 +873,14 @@ blocked as stated above.
 | TC-530 | A diff run with no profile, mapping, reservation, or target-result inputs omits the `profile`, `authority`, `mapping`, `protobuf-reservation` | Unit | P0 | FR-051-AC-4 | ✅ passed |
 | TC-531 | Every produced report validates against `compatibility-report.schema.json` | Unit | P0 | FR-051-AC-5 | ✅ passed |
 | TC-532 | Diffing a document against itself yields one `patch` change identified by `source.identity` and an aggregate of `patch` | Unit | P0 | FR-051-AC-6 | ✅ passed |
-| TC-533 | The forward projection of `fixtures/semantic/v1/positive/semantic-ir-v1-1.json` equals the committed golden byte for byte | Snapshot | P0 | FR-051-AC-7 | ✅ passed |
-| TC-534 | The backward projection of a `1.0.0` document with a declared dialect equals the committed golden byte for byte and reports empty loss | Snapshot | P0 | FR-051-AC-8 | ✅ passed |
-| TC-535 | A `1.0.0` document projected to `1.1.0` and back is byte-identical to the original | Property | P0 | FR-051-AC-9 | ✅ passed |
-| TC-536 | Both projections validate against the published schema at their target `contractVersion` | Unit | P0 | FR-051-AC-10 | ✅ passed |
 | TC-537 | Two runs of the diff over the same inputs produce byte-identical reports | Snapshot | P0 | FR-051-AC-11 | ✅ passed |
-| TC-538 | The published policy document states the four evolution rules, and a test fails when the document and the implemented ranking disagree | Unit | P0 | FR-051-AC-12 | ✅ passed |
-| TC-539 | Projecting to `1.1.0` with no dialect yields `MISSING_TARGET_DIALECT` and no document; projecting to `2.0.0` yields `UNKNOWN_CONTRACT_VERSION` | Unit | P0 | FR-051-AC-13 | ✅ passed |
-| TC-540 | A projection carries `source.digest` and the `package` block verbatim from the input | Unit | P0 | FR-051-AC-14 | ✅ passed |
 | TC-541 | A revision that removes a member, retypes a member, or narrows a closed vocabulary is classified `breaking` | Unit | P0 | FR-051-AC-15 | ✅ passed |
 | TC-542 | The diff SHALL NOT classify a family from an input it was not given; an absent input is a named gap, never a `patch` | Unit | P1 | FR-051-CON-1 | ✅ passed |
 | TC-543 | The disposition rank SHALL be exactly `patch < additive < conditional < unknown < breaking < invalid` | Unit | P1 | FR-051-CON-2 | ✅ passed |
-| TC-544 | A forward projection SHALL report every dropped identity; silently dropping a `1.1.0` member is a defect, not a projection | Unit | P1 | FR-051-CON-3 | ✅ passed |
 | TC-545 | The diff SHALL NOT import a target backend; per-target dispositions are an input | Static | P1 | FR-051-CON-4 | ✅ passed |
 | TC-546 | `fixtures/semantic/v1/compatibility/cases.json` SHALL remain byte-unchanged; it is the read-only case index | Static | P1 | FR-051-CON-5 | ✅ passed |
 | TC-547 | `emit-ir` over the spike entrypoint reproduces the committed golden `spikes/typespec-feasibility/generated/custom/semantic-ir.json` byte for byte | Snapshot | P0 | FR-052-AC-1 | ✅ passed |
-| TC-548 | `compile` over the fixture package writes a valid `1.1.0` document and exits `0`; running it twice produces identical IR and diagnostic bytes | Integration | P0 | FR-052-AC-2 | ✅ passed |
+| TC-548 | `compile` over the fixture package writes a valid `2.0.0` document and exits `0`; running it twice produces identical IR and diagnostic bytes | Integration | P0 | FR-052-AC-2 | ✅ passed |
 | TC-549 | `compile` over a fixture with a blocking defect exits `1`, leaves a fresh `--out` absent, leaves a pre-existing `--out` byte-unchanged | Integration | P0 | FR-052-AC-3 | ✅ passed |
 | TC-550 | `compile` with `--lock` pointing at a stale lock exits `1` and leaves the lock file byte-unchanged | Integration | P0 | FR-052-AC-4 | ✅ passed |
 | TC-551 | `compile --write-lock` produces a lock validating against its schema; omitting the flag writes no lock | Integration | P0 | FR-052-AC-5 | ✅ passed |
@@ -959,18 +944,16 @@ blocked as stated above.
 | TC-609 | Every registry code fires at least once across the fixture corpus | Unit | P0 | FR-049-AC-3 | ✅ passed |
 | TC-610 | A manifest that is not JSON at all yields `INVALID_MANIFEST` at line 1 | Unit | P1 | FR-047-AC-6 | ✅ passed |
 | TC-611 | An IR document at an unknown `contractVersion` is refused with a pointer | Unit | P1 | FR-050-AC-10 | ✅ passed |
-| TC-612 | A `1.0.0` document survives the `1.1.0` reader and the return projection | Property | P0 | FR-051-AC-9 | ✅ passed |
 | TC-613 | A lock moves from fresh to stale by a source byte and by a manifest byte | Unit | P1 | FR-048-AC-5 | ✅ passed |
 | TC-614 | A package with one type and no imports compiles | Unit | P2 | FR-046-AC-1 | ✅ passed |
 | TC-615 | A diamond import graph resolves each package once | Unit | P1 | FR-047-AC-1, FR-047-AC-16 | ✅ passed |
 | TC-616 | Two cycles sharing an edge yield two diagnostics and no duplicate | Unit | P1 | FR-047-AC-4 | ✅ passed |
 | TC-617 | A relationship target resolving to an imported export validates | Unit | P1 | FR-050-AC-1, FR-050-AC-12 | ✅ passed |
 | TC-618 | A caret constraint selects the highest satisfying version across two search directories | Unit | P1 | FR-047-AC-11 | ✅ passed |
-| TC-619 | A projection to the document's own version returns it unchanged | Unit | P1 | FR-051-AC-13 | ✅ passed |
 | TC-620 | Every NFR-021 gate resolves both ends of its range from history — neither a moving base nor a moving head — and still fails on the same input in a simulated post-merge tree where the branch diff and `git status` are both empty | Integration | P0 | NFR-021-AC-9 | ✅ passed |
 | TC-621 | An unaccounted-for file under `src/compiler/` fails the promotion-inventory gate in that same post-merge tree | Static | P0 | NFR-021-AC-9 | ✅ passed |
 | TC-622 | A union variant whose `payloadType` no type declares is rejected at that variant's locus; two variants sharing one payload type are accepted | Unit | P0 | FR-038-AC-7 | ✅ passed — conformance corpus (PR pending) |
-| TC-623 | A `1.0.0` document under `1.1.0` rules, a `1.1.0` node in a `1.0.0` document, and an export added and removed each produce the stated result | Unit | P0 | FR-038-AC-8 | ✅ passed — conformance corpus (PR pending) |
+| TC-623 | An export added and removed produces the stated result | Unit | P0 | FR-038-AC-8 | ✅ passed — conformance corpus (PR pending) |
 | TC-624 | Every register row's `sources` resolve, and every listed issue #19 criterion is quoted in its row and covered by a case | Unit | P0 | FR-038-AC-9, FR-038-CON-1, FR-038-CON-2 | ✅ passed — conformance corpus (PR pending) |
 | TC-625 | Cross-language generated-package serialization parity is recorded as an unmet area with issues #21, #22, #23, and #11 as owners | Static | P0 | FR-038-CON-3 | ✅ passed — conformance corpus (PR pending) |
 | TC-626 | Regenerating `coverage.json` reproduces the committed file byte-for-byte; adding a case without regenerating fails the gate | Unit | P0 | FR-039-AC-1, FR-039-CON-1 | ✅ passed — conformance corpus (PR pending) |
@@ -998,7 +981,7 @@ blocked as stated above.
 | TC-748 | A request failing `compiler-request.schema.json` returns `state: "invalid"` with one diagnostic per schema error at the failing instance pointer and no file | Unit | P0 | FR-063-AC-4 | 🚧 partially exercised by an existing test; no test binds this row |
 | TC-749 | Every manifest the seam returns validates against `output-manifest.schema.json`, and the five states are each reached: `success` for an admitted representable document, `lossy` for an admissible one, `unsupported` for a representability loss, `invalid` for a schema-failing request, and `unavailable` for an unimplemented target | Property | P0 | FR-063-AC-5, FR-063-AC-17, FR-063-AC-18 | 🚧 no discrete test; no test binds this row |
 | TC-750 | `requestFingerprint` and `normalizedFingerprint` are recomputed independently, each `files[]` entry carries a path under `outputRoot`, its media type, and a non-empty identity set, and its digest is taken over the text the injected formatter returned | Integration | P0 | FR-063-AC-6, FR-063-AC-7, FR-063-AC-20 | 🚧 no discrete test; no test binds this row |
-| TC-751 | `assertBackendContract` rejects a backend missing any contract member and one naming a path outside `outputRoot`, and a `1.0.0` request against the TypeScript backend returns `state: "unsupported"` | Unit | P0 | FR-063-AC-8, FR-063-AC-9, FR-063-AC-10 | 🚧 partially exercised by an existing test; no test binds this row |
+| TC-751 | `assertBackendContract` rejects a backend missing any contract member and one naming a path outside `outputRoot`, and a `1.0.0` request against the TypeScript backend returns `state: "invalid"` with `UNKNOWN_CONTRACT_VERSION` (TC-748 exercises this clause directly) | Unit | P0 | FR-063-AC-8, FR-063-AC-9, FR-063-AC-10 | 🚧 partially exercised by an existing test; no test binds this row |
 | TC-752 | `target-contract.json` validates against its schema and carries the member values of the committed `typescript` target row, whose declared runtime validator is satisfied in-package | Unit | P0 | FR-063-AC-11, FR-063-CON-2 | 🚧 no discrete test; no test binds this row |
 | TC-753 | The seam imports no frontend and neither prototype backend, the narrow interface keeps exactly fifteen symbols, and `package.json` metadata is unchanged | Analysis | P0 | FR-063-AC-12, FR-063-CON-4, FR-063-CON-5, FR-063-CON-6 | ✅ passed — Analysis; the evidence is the recorded analysis, which mints no source symbol |
 | TC-754 | Every read goes through the injected host, no backend module reads a clock, environment, cwd, filesystem or socket, no module below the injected formatter starts a child process, 256 mutated requests never throw, and every code is a declared register member | Fuzz | P0 | FR-063-AC-13, FR-063-AC-14, FR-063-AC-15, FR-063-AC-16, FR-063-AC-21, FR-063-CON-3 | 🚧 partially exercised by an existing test; no test binds this row |
@@ -1055,7 +1038,7 @@ blocked as stated above.
 | TC-805 | Each of the four declared limits returns a bounded answer without throwing, the depth bound is the declared 256 rather than the compiler's `DEFAULT_LIMITS`, and 512 mutated documents leave the input byte-unchanged and never throw | Fuzz | P0 | FR-068-AC-14, FR-068-AC-15, FR-068-AC-22, FR-068-CON-5, FR-068-CON-6 | 🚧 no discrete test; no test binds this row |
 | TC-806 | Two documents differing only in object key order and in the thirteen identity-keyed containers canonicalize alike, two differing in any semantic value do not, and two members sharing one `identity` canonicalize to one form whatever order they arrive in | Property | P0 | FR-069-AC-1, FR-069-AC-2, FR-069-AC-16 | 🚧 no discrete test; no test binds this row |
 | TC-807 | `normalizeIrForTarget` is idempotent over every positive fixture and every generated document | Property | P0 | FR-069-AC-3 | 🚧 no discrete test; no test binds this row |
-| TC-808 | A `1.1.0` field gains the derived multiplicity, the re-derived presence, and a literal `nullable`, while the same field in a `1.0.0` document gains no member | Unit | P0 | FR-069-AC-4 | 🚧 no discrete test; no test binds this row |
+| TC-808 | A `2.0.0` field gains a literal `nullable` and no other member; `multiplicity` and `presence` are never derived from one another, and a document not carrying `contractVersion` `2.0.0` gains no member at all | Unit | P0 | FR-069-AC-4 | 🚧 no discrete test; no test binds this row |
 | TC-809 | Canonicalizing every conformance base and case input is byte-identical on a second run, from another working directory, and under `LC_ALL=tr_TR.UTF-8` | Integration | P0 | FR-069-AC-5 | 🚧 no discrete test; no test binds this row |
 | TC-810 | A non-finite number and a value past the depth bound are each refused with a named error, negative zero canonicalizes as positive zero, and canonicalization leaves its argument byte-identical | Unit | P0 | FR-069-AC-6, FR-069-AC-7, FR-069-AC-21, FR-069-CON-5 | 🚧 no discrete test; no test binds this row |
 | TC-811 | Each declared classification rule fires on a constructed pair at a hand-computed pointer — a removed field, an added required field, a removed variant and a removed relationship `breaking`; an added optional field `conditional` with no consumer policy and `additive` under one admitting unknown members; an added variant `additive` under such a policy and, with none, `breaking` under the `contract` setting of `VARIANT_ADDITION_POLICY` and `conditional` under its default `corpus` setting, with the constant read in exactly one place — and a rule absent from the exported `MODELLED_CHANGES` data fails the module's contract test | Unit | P0 | FR-069-AC-8, FR-069-AC-17, FR-069-AC-19, FR-069-AC-25, FR-069-CON-7 | ✅ passed — id-bound in `test/typescript-backend.test.ts` |
@@ -1101,7 +1084,7 @@ blocked as stated above.
 | TC-651 | Recursive type graphs compile and box a stable field set across two runs | Integration | P0 | FR-054-AC-7 | 🚧 planned |
 | TC-652 | Relationships, operations, clauses, roles, origins and occurrences survive into metadata | Unit | P0 | FR-054-AC-8 | 🚧 planned |
 | TC-653 | A semantic default applies and a representation or migration default does not | Unit | P1 | FR-054-AC-9 | 🚧 planned |
-| TC-654 | A 1.0.0 document derives multiplicity, and a 1.1.0 node inside one is refused | Unit | P0 | FR-054-AC-10 | 🚧 planned |
+| TC-654 | A field whose multiplicity.upper is 0 raises UNSUPPORTED_MULTIPLICITY | Unit | P0 | FR-054-AC-10 | 🚧 planned |
 | TC-655 | The published mapping table, the requirement's rows and the serde-only dependency set agree | Analysis | P0 | FR-054-AC-11, FR-054-AC-14, FR-054-CON-4 | 🚧 planned |
 | TC-656 | A construct with no mapping row is refused and writes no file | Unit | P0 | FR-054-AC-12 | 🚧 planned |
 | TC-657 | The mapping model is invariant under key and identity-set reordering and reads no ambient input | Property | P0 | FR-054-AC-13, FR-054-CON-3 | 🚧 planned |
@@ -1325,7 +1308,7 @@ blocked as stated above.
 | TC-1028 | Close KERNEL_LOSSES at exactly the two declared rows and put it in bijection with the loss codes it adds to DIAGNOSTIC_CODES, asserted in both directi | Static | P0 | FR-084-CON-1, FR-084-CON-2, FR-084-CON-3 | 🚧 planned |
 | TC-1029 | Provenance.mjs compute source.digest as a pure function of the supplied file bytes and paths, reading no file system, clock, environment variable, or | Static | P0 | FR-084-CON-4, FR-084-CON-5, FR-084-CON-6 | 🚧 planned |
 | TC-1030 | NOT relax, reorder, or reword any existing member of DIAGNOSTIC_CODES | Static | P0 | FR-084-CON-7, FR-084-CON-8, FR-084-CON-9 | 🚧 planned |
-| TC-1031 | The emitted kernel IR validates against schema/semantic/v1/semantic-ir.schema.json at contractVersion 1.1.0, carrying every required member of source | Property | P0 | FR-084-AC-1, FR-084-AC-2, FR-084-AC-3 | 🚧 planned |
+| TC-1031 | The emitted kernel IR validates against schema/semantic/v1/semantic-ir.schema.json at contractVersion 2.0.0, carrying every required member of source | Property | P0 | FR-084-AC-1, FR-084-AC-2, FR-084-AC-3 | 🚧 planned |
 | TC-1032 | Source.version, package.version | Property | P0 | FR-084-AC-4, FR-084-AC-5, FR-084-AC-6 | 🚧 planned |
 | TC-1033 | The TypeScript, Rust, Python | Snapshot | P0 | FR-084-AC-7, FR-084-AC-8, FR-084-AC-9 | 🚧 planned |
 | TC-1034 | Lowering the committed bundle emits exactly one agent-ix.compiler.KERNEL_UNCONSTRAINED_VALUE located at DefaultDecl.json's value, naming the minted De | Unit | P0 | FR-084-AC-10, FR-084-AC-11, FR-084-AC-12 | 🚧 planned |
@@ -1441,7 +1424,7 @@ blocked as stated above.
 | TC-1235 | A references edge targeting Nonesuch raises UNRESOLVED_RELATIONSHIP_TARGET at line 1 column 1 naming Nonesuch, blocking; one targeting a legacy-form artifact raises the same code naming it | Unit | P1 | FR-094-AC-5 | ✅ passed |
 | TC-1236 | An entity carrying traces_to, implements, and depends_on edges lowers with zero relationships and zero diagnostics from them; adding one references edge yields exactly one relationship; no body list is read | Unit | P1 | FR-094-AC-6, FR-094-CON-1 | ✅ passed |
 | TC-1237 | Two frontmatter entries with the same (verb, target) yield one relationship; two entries with the same target and different allowed verbs yield two relationships with distinct identities | Unit | P1 | FR-094-AC-7 | ✅ passed |
-| TC-1238 | The parent ConfigVersion 0..1 row appears as a field, not a relationship; relationships[] carries no parent relationship, the remaining node agrees with the #34 hand fixture on target and multiplicity, and the #34 fixture's sha256 is pinned and unchanged | Snapshot | P1 | FR-094-AC-8, FR-094-CON-4 | ✅ passed |
+| TC-1238 | The parent ConfigVersion 0..1 row appears as a field, not a relationship; relationships[] carries no parent relationship, and the remaining node carries the target and multiplicity the #34 hand fixture independently verified | Snapshot | P1 | FR-094-AC-8 | ✅ passed |
 | TC-1239 | The immutable ocl fence lowers to one clause with language ocl, clauseId immutable, text byte-identical to clause_text, the engine's sourceSpan, and origin at the span start | Unit | P1 | FR-094-AC-9 | ✅ passed |
 | TC-1240 | A clause whose text carries leading whitespace, trailing newlines, and a tab reaches the IR byte-identical to the engine's clause_text | Unit | P1 | FR-094-AC-10, FR-094-CON-3 | ✅ passed |
 | TC-1241 | The operations fixture lowers each OperationDecl with params as fields under field/<Name>-<operation>-<param> and no param/ identity, returns nullable false, pre and post as clauseId lists, and no second clause node | Unit | P1 | FR-094-AC-11 | ✅ passed |
@@ -1500,7 +1483,7 @@ blocked as stated above.
 | TC-1294 | The FR-098 change set outside the crate is exactly cases.json, shared/typespec/records-and-scalars/, and files under shared/spec-bundle/; src/compiler/frontend/** and test/compiler-core.test.ts are byte-unchanged | Static | P1 | FR-098-AC-10, FR-098-CON-1 | ✅ passed |
 | TC-1295 | lift over config-version-table exits 0 and writes the document, .fingerprint, .diagnostics.json, and .provenance.json; with --diagnostics d.json --provenance p.json it writes those in their place with the same document bytes | E2E | P0 | FR-099-AC-1 | ✅ passed |
 | TC-1296 | lift over negatives/UNRESOLVED_TYPE_TOKEN exits 1 writing only the diagnostics sidecar; lift without --module, under negatives/MODULE_WITHOUT_SEMANTIC_BLOCK, and with --out under the bundle root each exit 2 writing nothing | E2E | P1 | FR-099-AC-2 | ✅ passed |
-| TC-1297 | inspect --ir over a lifted document prints one line per type in types order and exits 0; over a document missing contractVersion (defaulted to 1.0.0 by the reader and rejected at /ir/source/dialect) it prints INVALID_IR and exits 1 | E2E | P1 | FR-099-AC-3 | ✅ passed |
+| TC-1297 | inspect --ir over a lifted document prints one line per type in types order and exits 0; over a document missing contractVersion it prints INVALID_IR naming the reader's SCHEMA_VIOLATION at /ir ("a required member contractVersion is absent") and exits 1 | E2E | P1 | FR-099-AC-3 | ✅ passed |
 | TC-1298 | make extraction-frontend-build, -test, -check, -deny, and -audit succeed on 1.98.1; with EXTRACTION_TOOLCHAIN=0.0.0 each fails naming 0.0.0 and none skips | Static | P1 | FR-099-AC-4 | ✅ static evidence (make extraction-frontend-evidence) |
 | TC-1299 | The change set outside the crate, the FR-098 set and the ticket's spec, plan and review artifacts is exactly the members line, Cargo.lock, the Makefile block, the additive THIRD-PARTY-NOTICES.md rows, extraction-frontend-diagnostics.md and scripts/extraction-frontend-harness.mjs, measured over the working range (opening-sentinel parent to HEAD until squashed); the seven prohibited paths are byte-unchanged | Static | P1 | FR-099-AC-5, FR-099-CON-1, FR-099-CON-2 | ✅ passed |
 | TC-1300 | Two lifts of config-version-table, within one run and across two runs, produce IR and diagnostic bytes identical to each other, to the committed expected/ goldens, and to decide normalized | Snapshot | P0 | NFR-031-AC-1 | ✅ passed |
@@ -1557,7 +1540,6 @@ blocked as stated above.
 | TC-1373 | A required `0..*` field and an optional `1..*` field compile to a `2.0.0` document both readers accept; through the rendered JSON Schema a present empty collection is admitted and an absent required member refused, and the optional field admits absence and refuses a present empty list | Unit | P0 | FR-106-AC-1, FR-106-CON-1 | ✅ passed |
 | TC-1374 | An optional `1..*` field admits an absent member and refuses a present empty collection | Unit | P0 | FR-106-AC-2, FR-106-CON-1 | 🚧 planned on issue #93 |
 | TC-1375 | Two fields differing only in `presence` produce distinct IR `Field` declarations and distinct generated declarations | Integration | P0 | FR-106-AC-3 | 🚧 planned on issue #93 |
-| TC-1376 | A `2.0.0` field whose presence differs from `multiplicity.lower` validates without `PRESENCE_MULTIPLICITY_MISMATCH`, and the same field in a `1.1.0` document reports it | Unit | P0 | FR-106-AC-4 | ✅ passed |
 | TC-1377 | A source field with no authored presence yields a named loss naming the field and its locus | Integration | P1 | FR-106-AC-5 | ✅ passed |
 | TC-1378 | Changing only one of `presence`, `nullable`, or default kind changes only that member of the emitted `Field`, and none is derived from another | Unit | P1 | FR-106-AC-6, FR-106-CON-2 | ✅ passed |
 | TC-1351 | The negatives/DUPLICATE_IDENTITY bundle, an artifact NoteRevision beside a record Note with a constrained field revision (contract case (c): distinct names, distinct slugs, one identity), is refused at the later path with DUPLICATE_IDENTITY naming both type/NoteRevision identities and carrying the earlier locus in related, blocking, and no document is written | Snapshot | P1 | FR-095-AC-14 | ✅ passed |
@@ -1574,7 +1556,7 @@ blocked as stated above.
 | TC-1390 | Generating one document through the seam and through generateRust yields the same path set and a byte-identical digest at every path | Integration | P0 | FR-130-AC-3, FR-130-CON-1 | ✅ passed |
 | TC-1391 | The generated crate's src/identity.rs renders GENERATOR_IDENTITY as the Rust backend and never as the TypeScript backend | Unit | P0 | FR-130-AC-4 | ✅ passed |
 | TC-1392 | A target with no implementation returns state unavailable, zero files, and BACKEND_NOT_IMPLEMENTED naming the owning issue | Unit | P1 | FR-130-AC-5 | ✅ passed |
-| TC-1393 | A rust request whose IR declares contract version 1.0.0 returns state unsupported naming 1.1.0, and the backend declares 1.1.0 alone | Unit | P1 | FR-130-AC-6, FR-130-CON-3 | ✅ passed |
+| TC-1393 | A rust request whose IR declares contract version 1.0.0 returns state invalid with an UNKNOWN_CONTRACT_VERSION diagnostic naming 1.0.0, and the backend declares 2.0.0 alone | Unit | P1 | FR-130-AC-6, FR-130-CON-3 | ✅ passed |
 | TC-1394 | A rust request with no injected host returns state invalid with at least one diagnostic and zero files | Unit | P1 | FR-130-AC-7 | ✅ passed |
 | TC-1395 | The registered rust backend module imports no file-system module, and the seam's rust entry resolves to it as implemented | Unit | P1 | FR-130-AC-8, FR-130-CON-2 | ✅ passed |
 | TC-1396 | make test-rust names rust and extraction-frontend-test; make rust names check, build, clippy, test and conformance; make test-node names neither rust nor cargo | Unit | P0 | NFR-038-AC-1, NFR-038-AC-5 | ✅ passed |
@@ -1597,7 +1579,7 @@ blocked as stated above.
 | TC-1412 | A gate comparing a historical hunk reads the other side at that hunk's own commit, so a later change editing those lines leaves it green | Analysis | P1 | NFR-039-AC-4 | 🚧 planned on issue #92 |
 | TC-1413 | Every change-set gate passes on a clean checkout carrying no state beyond the commit under test | Integration | P0 | NFR-039-AC-6 | 🚧 planned on issue #92 |
 | TC-1414 | The Python reader answers every corpus case, the slot's unmet count reaches zero, and its code set equals the published registry in both directions | Integration | P0 | FR-132-AC-1, FR-132-AC-2 | 🚧 planned on issue #65 |
-| TC-1415 | UNRESOLVED_TYPE_REF, PRESENCE_MULTIPLICITY_MISMATCH and V1_1_NODE_IN_V1_0 are each emitted by at least one case, and the reader's normalized form agrees with the Rust and TypeScript adapters or the disagreement is a recorded finding | Integration | P0 | FR-132-AC-3, FR-132-AC-4 | 🚧 planned on issue #65 |
+| TC-1415 | UNRESOLVED_TYPE_REF and COMPOSITE_CYCLE are each emitted by at least one case, and the reader's normalized form agrees with the Rust and TypeScript adapters or the disagreement is a recorded finding | Integration | P0 | FR-132-AC-3, FR-132-AC-4 | 🚧 planned on issue #65 |
 | TC-1416 | An undecidable document yields an undecided verdict counted as neither pass nor failure; with the reader absent the slot reports unavailable naming its issue and no case passes | Unit | P1 | FR-132-AC-5, FR-132-AC-7, FR-132-CON-3 | 🚧 planned on issue #65 |
 | TC-1417 | The Python reader imports no module of the generated Python package and shares no code with the TypeScript or Rust readers | Unit | P1 | FR-132-AC-6, FR-132-CON-1 | 🚧 planned on issue #65 |
 | TC-1418 | The Rust kernel crate generates from the kernel IR with zero blocking diagnostics, and both the reserved identifier and the minted construct are present naming different types | Integration | P0 | FR-133-AC-1, FR-133-AC-2 | ✅ Complete |
@@ -1633,6 +1615,7 @@ blocked as stated above.
 | TC-1544 | The fixed TypeScript API surface carries PROVENANCE and not SEMANTIC_METADATA, and the barrel re-exports provenance.js and names no metadata module | Unit | P0 | FR-137-AC-8, FR-137-CON-2 | ✅ passed |
 
 | TC-1360 | The `json-schema` registry entry generates the lifted ConfigVersion golden through the seam, returning a success manifest with a SHA-256 digest for every emitted file. | Integration | P0 | FR-063-AC-22 | ✅ passed — issue #85 |
+| TC-1797 | A request naming a registered, implemented backend whose declared `supportedIrVersions` excludes the request's `ir.contractVersion`, exercised over a synthetic registration, returns `state: "unsupported"` with a blocking `UNSUPPORTED_IR_VERSION` diagnostic and no file. | Unit | P0 | FR-063-AC-23 | ✅ passed — fcd#179 |
 | TC-1361 | A synthetic IR containing all eight structural kinds and every kernel scalar emits one Ajv-compilable JSON Schema 2020-12 document per definition. | Unit | P0 | FR-100-AC-1 | ✅ passed — issue #85 |
 | TC-1362 | The lifted config-version-table golden emits `ConfigVersion.json` with its seven properties, six required fields, and declared minimum constraint. | Unit | P0 | FR-100-AC-2 | ✅ passed — issue #85 |
 | TC-1363 | Generated sibling schemas accept a valid ConfigVersion payload and reject a zero `versionNumber`. | Unit | P0 | FR-100-AC-3 | ✅ passed — issue #85 |
@@ -1684,7 +1667,6 @@ blocked as stated above.
 | TC-1741 | An unresolved supertype, a supertype of another kind and a generalization cycle raise `UNRESOLVED_CONSTRUCT_REF`, `CONSTRUCT_TARGET_KIND` and `SUPERTYPE_CYCLE` | Unit | P0 | FR-141-AC-2 | ✅ passed |
 | TC-1742 | An unresolved `subsets` entry raises `UNRESOLVED_FEATURE_REF` and a widening `redefines` raises `INVALID_REDEFINITION` | Unit | P0 | FR-141-AC-3 | ✅ passed |
 | TC-1743 | An unresolved frame path raises `UNRESOLVED_FRAME_PATH` and an unresolved population member raises `UNRESOLVED_TYPE_REF` | Unit | P0 | FR-141-AC-4 | ✅ passed |
-| TC-1744 | Every `2.0.0` model member and construct kind in a `1.1.0` document is refused with `SCHEMA_VIOLATION` | Unit | P0 | FR-141-AC-5, FR-141-CON-1 | ✅ passed |
 | TC-1745 | A `2.0.0` document with one construct of each of the ten kinds is accepted by the Rust, Node and Python readers | Unit | P0 | FR-142-AC-1 | ✅ passed |
 | TC-1746 | Each kind missing a required member, or carrying a member of another kind, is refused with `SCHEMA_VIOLATION` | Unit | P0 | FR-142-AC-2, FR-142-CON-1 | ✅ passed |
 | TC-1747 | Owner, aggregate member, persisted type and domain member of an excluded kind, or naming no type, raise their reader code at the member pointer | Unit | P0 | FR-142-AC-3 | ✅ passed |
@@ -1696,8 +1678,8 @@ blocked as stated above.
 | TC-1753 | Each broken declared rule yields one blocking `ARTIFACT_NOT_LOWERED` naming it, and no type of that artifact is emitted | Unit | P0 | FR-143-AC-3 | ✅ passed |
 | TC-1754 | A `nested_entity` with no owner and one with two owners are each refused naming the owner rule; a nested entity owned only by a refused one is refused too at the fixed point, keeping its own declared loss, and no emitted owner or relationship names a refused artifact | Unit | P0 | FR-143-AC-4 | ✅ passed |
 | TC-1755 | `SM_001` lifts its four states and three transitions, `PR_001` its three ordered steps, and `DM_001` a non-empty vocabulary | Unit | P1 | FR-143-AC-5 | ✅ passed |
-| TC-1756 | Published `1.0.0` and `1.1.0` fixtures keep reader verdicts and canonical bytes, and a `1.1.0` document carrying a `2.0.0` node is refused | Integration | P0 | NFR-044-AC-1 | ✅ passed |
-| TC-1757 | The `1.1.0` to `2.0.0` uplift of a document declaring types classifies additive, and the reverse change conditional | Unit | P0 | NFR-044-AC-2 | ✅ passed |
+| TC-1756 | A fixture already ported to `2.0.0` keeps reader verdicts and canonical bytes, and a fixture still declaring the deleted contract `1.0.0` or `1.1.0` is refused with `SCHEMA_VIOLATION` at `contractVersion` | Integration | P0 | NFR-044-AC-1 | ✅ passed |
+| TC-1757 | A `1.1.0` to `2.0.0` contract-version move over a document declaring types classifies conditional, and so does the reverse move | Unit | P0 | NFR-044-AC-2 | ✅ passed |
 | TC-1758 | An artifact with id _ and one with a non-ASCII-only id each raise one blocking UNSLUGGABLE_NAME at the frontmatter and lower to no definition, with no panic; an artifact with id UUID in a bundle using UUID raises DUPLICATE_TYPE_NAME naming type/UUID | Unit | P1 | FR-095-AC-17 | ✅ passed |
 | TC-1759 | An inline pre clause in ocl and an inline post clause in acme:tla are each accepted by the Rust, Node and Python readers with exactly one non-blocking info CLAUSE_LANGUAGE_UNCHECKED at the clause language; a quire clause raises nothing | Unit | P0 | FR-141-AC-6, FR-141-CON-2 | ✅ passed |
 | TC-1761 | A TypeSpec member of type `unknown` lowers to a field whose type is the kernel scalar `any`, identified `type/JsonObject` as the spec bundles identify it, with no blocking diagnostic and no zero-field record | Unit | P0 | FR-141-AC-7 | ✅ passed |
@@ -1764,7 +1746,7 @@ blocked as stated above.
 | TC-155, TC-158 | concrete service boundary absent | Protobuf unselected | no descriptor mapping | Wire format remains absent without speculative generation |
 | TC-167 | enum/record evolution | open/closed | preserve/ignore/reject unknown | Compatibility follows declared capability, not language default |
 | TC-171, TC-172 | module known/unknown | dynamic/static consumer | preserve/reject/surface policy | Same identity graph, policy-specific handling |
-| TC-203..205 | field multiplicity | `0..1` / `1..1` / `0..*` / `1..*` | nullable true/false, default none/semantic | Derived presence is fixed by lower bound; nullable and default stay independent |
+| TC-203..205 | field multiplicity | `0..1` / `1..1` / `0..*` / `1..*` | nullable true/false, default none/semantic | Presence and multiplicity are each authored, never derived from one another; nullable and default stay independent |
 | TC-204, TC-216 | collection flags | `ordered` / `unique` | upper absent or > 1 vs upper ≤ 1 | Flags allowed only on collections |
 | TC-214, TC-215 | clause language | `quire` / `ocl` / `sysml` / `fretish` / `ns:name` | bare unknown token | Closed core set plus namespaced extension; bare unknown fails |
 | TC-227, TC-228 | IR source dialect | `typespec` / `spec-bundle` | v1 JSON Schema URI constant | Frontend identity accepted; stale constant rejected with ADR-0005 citation |
@@ -1774,7 +1756,6 @@ blocked as stated above.
 | TC-253, TC-264 | package version | `v1` / `v1` + addition | regenerate | Prior version bytes unchanged; new version additive |
 | TC-316 | field presence and nullability | `required` / `optional` | `nullable: true` / `nullable: false` | All four combinations are distinct normalized forms; neither is inferable from the other |
 | TC-305, TC-309 | adapter answer | `supported` / `unsupported` / `unavailable` | declared in the case or the registry, or undeclared | Declared `unsupported` and registry-declared `unavailable` are recorded; every undeclared answer fails |
-| TC-321 | contract version | `1.0.0` / `1.1.0` | node present or absent | A `1.1.0` node in a `1.0.0` document, and a `1.0.0` document read under `1.1.0` rules, each classify as the register row states |
 | TC-296 | compatibility change | optional addition / required addition / removal | consumer policy preserving, rejecting, or absent | Most restrictive classification wins, an optional addition is additive only under a preserving policy, and every contributing change is named |
 | TC-312 | adapter pointer scheme | `pointerCompatible: true` / `false` | matching or mismatched locus | The pointer is compared only for a compatible adapter; a wrong locus always fails |
 | TC-322, TC-324 | prototype component | `retain` / `rewrite` / `replace-with-official` / `discard` | targets present or empty | Promoted dispositions name a file; non-promoted dispositions name none |
@@ -1789,7 +1770,6 @@ blocked as stated above.
 | TC-433, TC-600 | structural kind | scalar / alias / record / sequence / map / enum / union / reference | constraint keyword applicability | Every kind lowers once by first-match precedence; an inapplicable keyword is refused, not coerced |
 | TC-400, TC-601 | frontend dialect | `typespec` implemented / `spec-bundle` unimplemented | shared fixture harness | Implemented dialects are compared; the unimplemented one is named, not guessed |
 | TC-527, TC-602 | enum member addition | consumer policy `reject` / `surface` / `preserve` | consumer evidence current / stale / unknown | Disposition follows declared policy and evidence, never a language default |
-| TC-533, TC-534 | IR contract version | `1.0.0` / `1.1.0` | forward or backward projection | Forward projection declares its loss; backward projection derives multiplicity |
 | TC-466, TC-618 | version constraint | exact / caret | one or two search directories offering candidates | Highest satisfying version wins; the earlier declared directory breaks a tie |
 | TC-760, TC-778 | field state | `presence` required / optional | `nullable` true / false | All four combinations are four distinct rendered forms and four distinct runtime decisions |
 | TC-762, TC-782 | `unknownPolicy` | `preserve` / `reject` / `surface` | one undeclared member in the payload | Carried through unchanged, rejected at its own pointer, or surfaced without failing the value |
@@ -1872,7 +1852,6 @@ blocked as stated above.
 | NFR-008 | Prohibited | Network, host path, or ordering changes output | TC-177..180 | Fail reproducibility gate |
 | NFR-010 | Allowed | Writes remain in a new regular-file output root | TC-185 | Pass sandbox check |
 | NFR-010 | Prohibited | Traversal, symlink, template, or option escapes sandbox | TC-185, TC-187 | Reject with source-located diagnostic |
-| FR-027-CON-1 | Allowed | v1 field with `presence` only | TC-208 | Multiplicity derived (`required` → `1..1`, `optional` → `0..1`) |
 | FR-027-CON-2 | Prohibited | `unit` on a record-typed field | TC-207 | Fail validation, never drop the unit |
 | FR-027 multiplicity | Min | `lower: 0`, `upper: 0` | TC-206 | Valid empty-only multiplicity (positive case in the same test) |
 | FR-027 flags | Prohibited | `ordered: true` on `1..1` | TC-237 | Fail validation at the field locus |
@@ -1887,7 +1866,7 @@ blocked as stated above.
 | FR-029 operands | Min | `minLength: 0` | TC-219 | Valid |
 | FR-029 operands | Below min | `minLength: -1` | TC-221 | Fail validation |
 | FR-029 applicability | Prohibited | `minLength` on `integer`, `min` on `record` | TC-244 | Fail validation at the constraint locus |
-| FR-030 contractVersion | Allowed | `"1.0.0"`, `"1.1.0"`, `"2.0.0"` | TC-227, TC-231, TC-1376 | Pass under the single schema file |
+| FR-030 contractVersion | Allowed | `"2.0.0"` | TC-227 | Pass under the single schema file |
 | FR-030 contractVersion | Prohibited | `"1.3.0"`, `"0.9.0"` | TC-246 | Fail before emission |
 | FR-031-CON-1 | Allowed | Grammar under `packages/semantic-core/` | TC-254 | Pass |
 | FR-031-CON-1 | Prohibited | `spikes/` importing the grammar | TC-254 | Fail |
@@ -1900,7 +1879,6 @@ blocked as stated above.
 | FR-034 UnitSymbol | Prohibited | ``, `k g`, `kg²` | TC-270 | Fail pattern |
 | Multiplicity (grammar) | Inverted | `lower: 1, upper: 0` | TC-277 | Reader rejects at the declaration |
 | Multiplicity (grammar) | Min / Below min | `lower: 0` / `lower: -1` | TC-263 | Pass / fail `Multiplicity.json` |
-| FR-030-CON-1 | Allowed | `contractVersion: "1.0.0"` with the v1 dialect constant under the v1 schema | TC-231 | Pass |
 | FR-030-CON-2 | Prohibited | Manifest and target-contract enumerations diverge | TC-230 | Schema inspection fails |
 | FR-035-AC-6 minimization budget | Max / Above max | 64 `ops` nodes / 65 `ops` nodes | TC-285 | Pass / fail the corpus gate |
 | FR-036 single violation | Allowed / Prohibited | one seeded violation / two seeded violations | TC-290 | Exactly one oracle diagnostic / gate fails |
@@ -2050,10 +2028,6 @@ blocked as stated above.
 | normative | successor ADR is accepted | historical with one current successor | TC-004 |
 | historical chain | a successor points to its predecessor | validation failure | TC-053 |
 | blocked migration | all named gates pass and a human promotes it | eligible for later implementation | TC-028, TC-037 |
-| contract `1.1.0` document | read by a `1.0.0` reader | `1.0.0` projection with every dropped identity declared as loss | TC-533, TC-544 |
-| contract `1.0.0` document | read by a `1.1.0` reader with a declared dialect | `1.1.0` projection with multiplicity derived from presence and empty loss | TC-534 |
-| contract `1.0.0` document | read by a `1.1.0` reader with no declared dialect | blocking `MISSING_TARGET_DIALECT`, no document | TC-539 |
-| contract `1.0.0` document | projected to `1.1.0` and back | byte-identical `1.0.0` document | TC-535, TC-612 |
 | fresh lock | a source byte changes | `STALE_LOCK_PACKAGE` at the package entry locus | TC-481, TC-613 |
 | fresh lock | a manifest byte changes | `STALE_LOCK` at the fingerprint locus | TC-481 |
 | resolved graph | a package is added or removed | `LOCK_GRAPH_MISMATCH` naming the identity | TC-481 |
@@ -2071,8 +2045,6 @@ blocked as stated above.
 | unknown required capability | load or compile attempt | explicit unsupported diagnostic and no target output | TC-193 |
 | current legacy manifest | legacy profile validation | accepted unchanged and advisory | TC-173 |
 | legacy manifest | later human enforcement promotion | native v1 validation may become required in the later ticket | TC-173, TC-198 |
-| v1 IR document | read under the v1.1 schema | valid, with multiplicity derived and node arrays empty | TC-208, TC-217 |
-| v1.1 IR document | read under the v1 schema | rejected as an unknown contract version (FR-019-CON-2) | TC-133, TC-231 |
 | semantic-core `v1` | grammar addition under `Versions.v2` | `v1` projection byte-identical; `v2` additive | TC-253 |
 | raw official bundle | #31 normalization applied | absolute `$id` bundle that validates without alias | TC-262, TC-265 |
 | normalized bundle | issue #31 fixed upstream | normalization removed; raw bundle validates | TC-266 |
@@ -2127,7 +2099,7 @@ blocked as stated above.
 | bundle assembled, at least one blocking diagnostic | write | diagnostics sidecar written; no temporary file left; pre-existing document, fingerprint, and provenance byte-unchanged; exit 1 | TC-1268, TC-1281 |
 | bundle assembled, output directory absent or unwritable | write | `OUTPUT_UNWRITABLE` naming the path; nothing written; exit 2 | TC-1282 |
 | written document | `inspect --ir` | one line per type in `types` order; exit 0 | TC-1297 |
-| document missing `contractVersion` | `inspect --ir` | `INVALID_IR` printed (reader rejects at `/ir/source/dialect`); exit 1 | TC-1297 |
+| document missing `contractVersion` | `inspect --ir` | `INVALID_IR` printed (reader's schema layer rejects at `/ir`, naming the absent `contractVersion` member); exit 1 | TC-1297 |
 | `EXTRACTION_TOOLCHAIN` resolvable | any `extraction-frontend-*` Make target | gate runs on `cargo +1.98.1` | TC-1298, TC-1321 |
 | `EXTRACTION_TOOLCHAIN=0.0.0` | any `extraction-frontend-*` Make target | gate fails naming `0.0.0`; never skips | TC-1298, TC-1321 |
 
@@ -2166,7 +2138,7 @@ blocked as stated above.
 | ERR-029 | Legacy adapter, version, or identity is missing/contradictory | Explicit failure and zero-value success prohibited | TC-175 |
 | ERR-030 | Locked generation attempts network access or filesystem escape | Sandbox terminates generation and records the offending locus | TC-178, TC-185..187 |
 | ERR-031 | Required extension capability is unknown | Package load/compile fails before emission | TC-193 |
-| ERR-032 | Field `presence` contradicts its multiplicity, or `upper < lower` | Validation fails at the field locus | TC-205, TC-206 |
+| ERR-032 | Field `upper < lower` | Validation fails at the field locus | TC-206 |
 | ERR-033 | `unit` declared on a non-scalar field | Validation fails at the field locus | TC-207 |
 | ERR-034 | Relationship category outside the FR-040 closed set, or on a non-record type | Validation fails at the relationship locus | TC-211, TC-216 |
 | ERR-035 | Operation pre/post references an absent clause identity | Validation fails at the operation locus | TC-213 |
@@ -2178,7 +2150,7 @@ blocked as stated above.
 | ERR-041 | Composite relationship graph contains a cycle | Validation fails at the closing relationship | TC-240 |
 | ERR-042 | Duplicate `clauseId` within one type definition | Validation fails at the second clause | TC-241 |
 | ERR-043 | Constraint keyword applied outside its applicability, or regex fails to compile | Validation fails at the constraint locus | TC-244, TC-245 |
-| ERR-044 | `contractVersion` outside `1.0.0`/`1.1.0`/`2.0.0`, or a v1.1/v2.0 dialect outside `typespec`/`spec-bundle` | Fails before emission with a machine-readable diagnostic | TC-246 |
+| ERR-044 | `contractVersion` outside `2.0.0`, or a dialect outside `typespec`/`spec-bundle` | Fails before emission with a machine-readable diagnostic | TC-246 |
 | ERR-045 | Kernel declares a domain archetype or an `Any` scalar | Scope test fails naming the declaration | TC-249, TC-258, TC-273 |
 | ERR-046 | Emitted projection differs from committed bytes | `check` script exits non-zero naming the file | TC-264 |
 | ERR-047 | `Decimal` `TypeRef` without `decimal`, or `decimal` on a non-Decimal target | Semantic-core reader rejects at the declaration | TC-256, TC-277 |
@@ -2245,7 +2217,7 @@ blocked as stated above.
 | ERR-093 | The diagnostic count exceeds `maxDiagnostics` after sorting | Truncation plus the non-blocking `DIAGNOSTIC_LIMIT_REACHED` | TC-499, TC-505, TC-605 |
 | ERR-094 | An emitted or read IR document fails its published schema | Blocking `INVALID_IR` naming the pointer, no file written | TC-517, TC-519, TC-611 |
 | ERR-095 | An IR document breaks a cross-field rule of the code table | The rule's own `agent-ix.semantic-ir.*` code | TC-520 |
-| ERR-096 | A projection to `1.1.0` declares no dialect, or names an unknown version | `MISSING_TARGET_DIALECT` or `UNKNOWN_CONTRACT_VERSION`, no document | TC-539 |
+| ERR-096 | A generation request's `ir.contractVersion` is outside the published contract, `2.0.0` | Blocking `UNKNOWN_CONTRACT_VERSION`, no document | TC-748 |
 | ERR-097 | A manifest declares two profiles and the caller names none | `AMBIGUOUS_PROFILE` and exit `1` | TC-552 |
 | ERR-098 | An unknown command, unknown flag, missing flag, or unreadable `--limits` | Usage text and exit `2` | TC-557 |
 | ERR-099 | An input exceeds one of the four size limits | A distinct blocking limit diagnostic naming the limit | TC-579, TC-587, TC-606 |
@@ -2285,7 +2257,7 @@ blocked as stated above.
 | ERR-117 | A `format` operand names an unregistered format | `UNKNOWN_FORMAT`, zero files | TC-686 |
 | ERR-118 | A name renders to the empty string, to a keyword with no raw form, or carries a character the renderer cannot carry | `UNRENDERABLE_NAME`, zero files | TC-659, TC-660 |
 | ERR-119 | Two identities in one declared scope derive the same Rust identifier | `NAME_COLLISION` naming both, zero files | TC-662 |
-| ERR-120 | A `1.0.0` document carries a relationships, operations, clauses or unit node; or a field's `multiplicity.upper` is `0` | `V1_1_NODE_IN_V1_0` or `UNSUPPORTED_MULTIPLICITY`, zero files | TC-654 |
+| ERR-120 | A field's `multiplicity.upper` is `0` | `UNSUPPORTED_MULTIPLICITY`, zero files | TC-654 |
 | ERR-121 | A `typeRef`, `appliesTo`, `items`, `values`, `payloadType` or `target` resolves to nothing | `UNRESOLVED_TYPE_REF`, zero files | TC-690, TC-706 |
 | ERR-122 | A construct would be dropped that the profile does not list as an allowed omission; or a `defaultValue` is not a value the mapped Rust type admits | `UNDECLARED_LOSS` or `INVALID_DEFAULT_VALUE`, zero files | TC-653, TC-695 |
 | ERR-123 | A constraint keyword is not applicable to its resolved subject; a bound names a subject the contract does not order; an operand's JSON type the subject does not admit | `CONSTRAINT_NOT_APPLICABLE`, `UNORDERED_SUBJECT` or `INVALID_OPERAND`, zero files | TC-677, TC-678 |
@@ -2369,7 +2341,7 @@ blocked as stated above.
 | EC-024 | Dynamic consumer receives a module absent from static generated exports | FR-021, FR-026 | TC-145, TC-171..172 | Open ecosystem is accidentally closed or data silently discarded |
 | EC-025 | Malicious schema name resolves outside output root through traversal or symlink | NFR-010 | TC-185, TC-187 | Generator overwrites user or repository data |
 | EC-026 | Extension is optional to one backend but required to another | NFR-009, NFR-011 | TC-181, TC-193..194 | Cross-language success masks capability disagreement |
-| EC-027 | Required field (`lower ≥ 1`) that is also `nullable: true` | FR-027 | TC-203, TC-205 | Multiplicity is mistaken for nullability and one state is lost |
+| EC-027 | Required field (`lower ≥ 1`) that is also `nullable: true` | FR-027 | TC-203 | Multiplicity is mistaken for nullability and one state is lost |
 | EC-028 | Self-referential relationship (`parent : ConfigVersion[0..1]`) | FR-028 | TC-210, TC-218, TC-240 | Recursive edge flattened or rejected as a cycle |
 | EC-029 | Two clauses with the same `clauseId` in different languages on one type | FR-028 | TC-241 | Operation pre/post binds to the wrong clause |
 | EC-030 | A v1 fixture already using a free-form keyword | FR-029 | TC-224 | Closing the vocabulary silently invalidates accepted evidence |
@@ -2413,7 +2385,6 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-073 | A `pattern` regex that is valid ECMA-262 and backtracks catastrophically | FR-066, NFR-020 | TC-781, TC-785 | A generated validator hangs on an input the contract admits |
 | EC-074 | A `reference` whose target no type, import, or lock export supplies (GAP-011) | FR-068 | TC-803 | The backend rules on an open contract question instead of citing it and moving with the answer |
 | EC-075 | A document that is admissible and unrepresentable | FR-065, FR-068 | TC-802, TC-774 | An unrepresentable construct is emitted as `unknown` and the refusal never reaches the caller |
-| EC-076 | A `1.0.0` document carrying a 1.1.0-only node | FR-068, FR-069 | TC-796, TC-808 | The node is read under rules its declared contract version does not carry |
 | EC-077 | A package declaring one type, and a package declaring a thousand | FR-064, FR-065 | TC-755, TC-766 | The single-type path is never exercised and the large path exhausts a bound unnoticed |
 | EC-078 | A generated identifier collides with the generated discriminant constant | FR-064 | TC-758, TC-764 | The discriminated union stops narrowing and `tsc` accepts an unhandled variant |
 | EC-079 | A consumer bundles the generated package importing only `provenance.ts` | FR-067 | TC-794 | Provenance-only consumers retain the whole validator surface in their bundle |

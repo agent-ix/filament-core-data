@@ -15,7 +15,7 @@ okf_version: "0.1"
 * [US-003: Assess Filament contract fit](./usecase/US-003-assess-contract-fit.md) - Migration reviewer outcome for the read-only contract census.
 * [US-004: Evaluate the structural schema source](./usecase/US-004-evaluate-structural-schema-source.md) - Compiler owner outcome for the isolated TypeSpec spike (resolved: TypeSpec, ADR-0005).
 * [US-005: Author portable semantic packages](./usecase/US-005-author-portable-semantic-packages.md) - Schema-owner outcome for the semantic IR, packages, mappings, and generated targets.
-* [US-006: Declare typed domain structure](./usecase/US-006-declare-typed-domain-structure.md) - Module-author outcome for lossless IR v1.1 declarations.
+* [US-006: Declare typed domain structure](./usecase/US-006-declare-typed-domain-structure.md) - Module-author outcome for lossless IR declarations.
 * [US-007: Declare archetypes against a shared grammar](./usecase/US-007-declare-archetypes-against-a-shared-grammar.md) - Module-maintainer outcome for the semantic-core declaration grammar.
 * [US-008: Judge a compiler against an independent corpus](./usecase/US-008-judge-a-compiler-against-an-independent-corpus.md) - Reviewer outcome for the conformance corpus and differential oracle.
 * [US-009: Build generated packages from a supported compiler](./usecase/US-009-build-from-a-supported-compiler.md) - Compiler-maintainer outcome for promoting the issue #4 prototype emitters into `src/`.

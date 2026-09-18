@@ -97,7 +97,11 @@ fn corpus() -> Vec<Case> {
 #[test]
 fn tc_701_every_case_matches_its_authored_expectation() {
     let cases = corpus();
-    assert_eq!(cases.len(), 111, "the corpus declares 111 cases");
+    // fcd#179: 111 cases minus ENV-004, VER-001, VER-002 and VER-004 (sole
+    // subject the 1.0.0/1.1.0 distinction the ticket deletes), minus PRES-002
+    // (its premise — presence contradicting multiplicity's lower bound is
+    // invalid — contradicts FR-106-CON-1 for contract 2.0.0).
+    assert_eq!(cases.len(), 106, "the corpus declares 106 cases");
     let mut failures: Vec<String> = Vec::new();
     for case in &cases {
         let verdict = decide(&case.bundle);
@@ -189,12 +193,21 @@ fn tc_702_every_compatibility_case_classifies_as_authored() {
             ));
         }
     }
-    assert_eq!(seen, 25, "the corpus declares 25 compatibility cases");
+    // fcd#179: VER-004 ("moving a document from 1.0.0 to 1.1.0 is
+    // conditional") is removed with the contract it tested.
+    assert_eq!(seen, 24, "the corpus declares 24 compatibility cases");
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
 
-/// TC-700: every case carries a `normalized` string, a `1.0.0` document gains
-/// no member, and the form is stable across two runs.
+/// TC-700: every case carries a `normalized` string and the form is stable
+/// across two runs.
+///
+/// fcd#179: this test previously also asserted that a `1.0.0` document's
+/// `normalized` form gained no member over its raw canonical JSON. `2.0.0`
+/// is now the only contract, and every `2.0.0` document materializes members
+/// (e.g. independently authored `presence`) that a bare canonicalization of
+/// the input does not carry, so that assertion's premise no longer holds for
+/// any case the corpus can produce. Deleted rather than ported.
 #[test]
 fn tc_700_normalized_is_produced_for_every_case_and_is_stable() {
     for case in corpus() {
@@ -206,15 +219,6 @@ fn tc_700_normalized_is_produced_for_every_case_and_is_stable() {
             case.id
         );
         assert!(!first.is_empty(), "{}: normalized is produced", case.id);
-        let ir = case.bundle.get("ir").cloned().unwrap_or(Json::Null);
-        if ir.get("contractVersion").and_then(Json::as_str) == Some("1.0.0") {
-            assert_eq!(
-                first,
-                agent_ix_semantic_ir::json::to_canonical_string(&ir),
-                "{}: a 1.0.0 document gains no member",
-                case.id
-            );
-        }
     }
 }
 
@@ -222,7 +226,9 @@ fn tc_700_normalized_is_produced_for_every_case_and_is_stable() {
 /// mutation budget, run under a panic hook that fails the test.
 #[test]
 fn tc_708_no_mutation_panics_the_reader() {
-    let seeds: Vec<String> = ["core-1-1", "minimal-1-0", "minimal-1-1", "package-1-1"]
+    // fcd#179: minimal-1-0 is retired with contract 1.0.0/1.1.0; the other
+    // three bases are replaced by their 2.0.0-valid successors.
+    let seeds: Vec<String> = ["core-2-0", "minimal-2-0", "package-2-0"]
         .iter()
         .map(|id| {
             fs::read_to_string(repo(&format!("conformance/bases/{id}.json")))

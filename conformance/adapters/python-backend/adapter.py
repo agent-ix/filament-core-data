@@ -448,7 +448,6 @@ def supplementary(bundle: Any, ir: Any) -> list[dict[str, str]]:
     if not isinstance(ir, dict):
         return out
     types = _types_by_identity(ir)
-    version = str(ir.get("contractVersion"))
     definitions = reader._objects(ir.get("types"))
 
     seen: dict[str, str] = {}
@@ -536,14 +535,11 @@ def supplementary(bundle: Any, ir: Any) -> list[dict[str, str]]:
                     )
                 else:
                     names[name] = position
-            if version == "1.0.0" and "multiplicity" in field:
-                out.append(
-                    _row(
-                        "V1_1_NODE_IN_V1_0",
-                        f"{at}/fields/{position}/multiplicity",
-                        "a 1.1.0 node is carried by a 1.0.0 document",
-                    )
-                )
+            # fcd#179: this branch used to raise V1_1_NODE_IN_V1_0 when a
+            # 1.1.0-only member reached a 1.0.0 document. Contract 1.0.0 is
+            # deleted and 2.0.0 is the only contract this adapter is ever
+            # handed, so `version == "1.0.0"` can never be true. Deleted
+            # rather than left unreachable.
 
     for index, occurrence in enumerate(reader._objects(ir.get("occurrences"))):
         definition = occurrence.get("definition")
@@ -770,11 +766,30 @@ def _by_identity(items: Any) -> dict[str, dict[str, Any]]:
 
 
 def _lower_bound(field: dict[str, Any]) -> int:
+    """The field's multiplicity floor, read from `multiplicity.lower` alone.
+
+    `classify` only reaches a field after both bundles have already passed
+    schema validation, and contract 2.0.0 requires `multiplicity` on every
+    field independently of `presence` (FR-059, FR-069) — so a field arriving
+    here without one is this adapter's own invariant broken, not a document
+    to judge leniently. It refuses rather than deriving a bound from
+    `presence`, which is the same forbidden derivation under a different name.
+    """
     multiplicity = field.get("multiplicity")
     if not isinstance(multiplicity, dict):
-        multiplicity = reader.multiplicity_from_presence(field.get("presence"))
+        raise ValueError(
+            f"field {field.get('identity')!r} reached compatibility "
+            "classification without a multiplicity object; contract 2.0.0 "
+            "requires one and this adapter never derives it from presence"
+        )
     lower = multiplicity.get("lower")
-    return lower if isinstance(lower, int) else 1
+    if not isinstance(lower, int):
+        raise ValueError(
+            f"field {field.get('identity')!r} has a multiplicity without an "
+            "integer lower bound; contract 2.0.0 requires one and this "
+            "adapter never derives it from presence"
+        )
+    return lower
 
 
 def _preserves_unknown(policy: Any) -> bool:

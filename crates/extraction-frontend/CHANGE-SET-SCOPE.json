@@ -1,0 +1,5 @@
+{
+	"ticket": "fcd#179",
+	"scope": "repo-wide",
+	"reason": "Deleting semantic IR contracts 1.0.0 and 1.1.0 (leaving 2.0.0 the only contract) touches every reader of them: schema/, fixtures/, crates/semantic-ir, crates/conformance-adapter, src/compiler, packages/semantic-kernel, and their tests. NFR-032's crate-scoped default cannot express a ticket that is legitimately repo-wide; this file is that declaration, and it is itself part of the change set it describes."
+}

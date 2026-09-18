@@ -187,7 +187,11 @@ function mapped(backend, ir) {
 /** A minimal well-formed document carrying `types`. */
 function documentOf(types) {
 	return {
-		contractVersion: "1.1.0",
+		// fcd#179: 2.0.0 is the only Semantic IR contract. `mapDocument` never
+		// branches on this string — it only echoes it into the returned
+		// model — so the value is cosmetic to every detector here, but a test
+		// fixture should not claim a contract that no longer exists.
+		contractVersion: "2.0.0",
 		source: {
 			identity: "ix://agent-ix/filament-core-data/source/typespec",
 			version: "1.0.0",
@@ -292,7 +296,7 @@ export const DETECTORS = Object.freeze([
 			const model = mapped(backend, ir);
 			const observed = new Set(model.types.map((one) => one.kind));
 			for (const kind of declared) {
-				// The generated 1.1.0 document carries no construct kind; the
+				// The generated 2.0.0 document carries no construct kind; the
 				// constructs case measures the shape and identity rows.
 				if (kind === "reference" || observed.has(kind)) continue;
 				assert(
@@ -347,7 +351,7 @@ export const DETECTORS = Object.freeze([
 					);
 			}
 			// A contract 2.0.0 identified record construct, which the generated
-			// 1.1.0 document cannot carry: its shape's row, the record's member list
+			// document above cannot carry: its shape's row, the record's member list
 			// and its identity field names in declared order.
 			const keyed = { module: "agent-ix/detector", name: "keyed" };
 			const entity = backend.mapping.mapDocument(

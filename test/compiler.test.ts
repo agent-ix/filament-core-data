@@ -478,11 +478,11 @@ describe("issue #27 promotion inventory (FR-040)", () => {
 describe("promoted semantic-IR emitter (FR-041)", () => {
 	/** Traces: TC-331; FR-041-AC-1. */
 	it("exports exactly the six interface symbols", async () => {
-		// Scoped by issue #19, which extends the narrow interface to fifteen
+		// Scoped by issue #19, which extends the narrow interface to fourteen
 		// symbols under FR-052-CON-1. What FR-041-AC-1 protects is that the six
 		// promoted symbols are all still there under their own names; the size of
 		// the set is asserted by TC-558 in compiler-core.test.ts, which fails when
-		// a sixteenth appears.
+		// a fifteenth appears.
 		const module = await import("../src/compiler/index.mjs");
 		for (const name of [
 			"SEMANTIC_IR_SCHEMA_VERSION",

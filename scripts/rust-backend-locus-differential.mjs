@@ -251,7 +251,7 @@ export function buildRunner(perturbation) {
 	const sink = directorySink(SCRATCH);
 	const bundle = JSON.parse(
 		readFileSync(
-			join(ROOT, "conformance", "bases", "minimal-1-1.json"),
+			join(ROOT, "conformance", "bases", "minimal-2-0.json"),
 			"utf8",
 		),
 	);

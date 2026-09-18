@@ -4,8 +4,8 @@
 	"family": "clause",
 	"class": "evolution",
 	"kind": "compatibility",
-	"contractVersion": "1.1.0",
-	"base": "core-1-1",
+	"contractVersion": "2.0.0",
+	"base": "core-2-0",
 	"ops": [
 		{
 			"op": "test",
@@ -18,7 +18,7 @@
 			"value": "size > -1"
 		}
 	],
-	"beforeBase": "core-1-1",
+	"beforeBase": "core-2-0",
 	"beforeOps": [],
 	"covers": ["CR-clause"],
 	"decidedBy": "compatibility",
@@ -30,7 +30,7 @@
 		},
 		{
 			"artifact": "docs/semantic-data-system/contracts-v1.md",
-			"locator": "Contract 1.1.0 (issue #34)",
+			"locator": "Structural model detail (issue #34)",
 			"quote": "per type; opaque `text`; `sourceSpan` when source-originated). The IR never"
 		}
 	],

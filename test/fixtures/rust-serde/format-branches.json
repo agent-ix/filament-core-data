@@ -1,6 +1,7 @@
 {
 	"ir": {
-		"contractVersion": "1.1.0",
+		"contractVersion": "2.0.0",
+		"constructs": [],
 		"source": {
 			"identity": "ix://agent-ix/filament-core-data/source/typespec",
 			"version": "1.0.0",

@@ -113,7 +113,6 @@ const IR_SHAPE = {
 	INVALID_OPERAND: blocking(
 		"an operand's JSON type is not one the subject's Rust type admits",
 	),
-	V1_1_NODE_IN_V1_0: blocking("a 1.0.0 document carries a 1.1.0 node"),
 	UNRESOLVED_TYPE_REF: blocking(
 		"a typeRef, appliesTo, items, values, payloadType or target resolves to nothing",
 	),

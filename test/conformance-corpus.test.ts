@@ -552,14 +552,17 @@ describe("TC-290..301 the oracle (FR-036)", () => {
 		}
 	});
 
-	it("TC-295 a 1.0.0 document's normalized form adds no member", () => {
+	it("TC-295 a well-formed 2.0.0 document's normalized form adds no member (fcd#179: contract 1.0.0 deleted, its case class ported to 2.0.0)", () => {
+		let exercised = 0;
 		for (const entry of cases) {
-			if (entry.contractVersion !== "1.0.0") continue;
+			if (entry.contractVersion !== "2.0.0") continue;
 			const bundle = corpus.buildInput(entry) as { ir: Json };
 			expect(oracle.normalize(bundle.ir), String(entry.id)).toBe(
 				canonical(bundle.ir),
 			);
+			exercised += 1;
 		}
+		expect(exercised).toBeGreaterThan(0);
 	});
 
 	it("TC-296 an optional plus a required addition classifies breaking and names both", () => {
@@ -640,7 +643,7 @@ describe("TC-290..301 the oracle (FR-036)", () => {
 			).toEqual([code]);
 		}
 		// The same rules stay silent on a document-only bundle.
-		const documentOnly = corpus.loadBase("core-1-1");
+		const documentOnly = corpus.loadBase("core-2-0");
 		expect(
 			(oracle.verdict(documentOnly, []) as { diagnostics: unknown[] })
 				.diagnostics,
@@ -1498,28 +1501,14 @@ describe("TC-314..319 and TC-622..401 the construct register and the defect regi
 		expect(bad.diagnostics[0].pointer).toContain("/variants/");
 	});
 
-	it("TC-623 the three version-transition cases produce the result their rows state", () => {
-		expect(
-			(
-				corpus.oracleVerdict(corpus.loadCase("VER-001")) as {
-					resultState: string;
-				}
-			).resultState,
-		).toBe("success");
-		const carried = corpus.oracleVerdict(corpus.loadCase("VER-002")) as {
-			diagnostics: { diagnostic: { code: string } }[];
-		};
-		expect(carried.diagnostics[0].diagnostic.code).toBe(
-			"agent-ix.semantic-ir.V1_1_NODE_IN_V1_0",
-		);
-		expect(
-			(
-				corpus.oracleVerdict(corpus.loadCase("PKG-004")) as {
-					classification: string;
-				}
-			).classification,
-		).toBe("breaking");
-	});
+	// TC-623 ("the three version-transition cases produce the result their rows
+	// state") is deleted, not ported: fcd#179 deletes contracts 1.0.0 and 1.1.0,
+	// so VER-001 and VER-002 (its subjects) and the V1_1_NODE_IN_V1_0 diagnostic
+	// they pinned no longer exist. Its one surviving assertion — PKG-004
+	// classifies as "breaking" — was never unique to this test: line 426's
+	// "the whole FR-035 gate set passes on the committed corpus" already checks
+	// every committed case's classification, PKG-004 included, through
+	// `corpusGates()`'s oracle-agreement check.
 
 	it("TC-624 every register source resolves and every criterion is quoted and covered", () => {
 		const covered = new Set(cases.flatMap((entry) => entry.covers as string[]));

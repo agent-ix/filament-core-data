@@ -12,9 +12,10 @@ relationships:
 
 ## Description
 
-The semantic IR (v1, revised additively by v1.1) SHALL define a closed structural-kind vocabulary, orthogonal
+The semantic IR SHALL define a closed structural-kind vocabulary, orthogonal
 semantic roles, stable package/type/field identities, and explicit presence,
-nullability, default, constraint, recursion, and extension semantics.
+nullability, default, constraint, recursion, and extension semantics, over
+contract `2.0.0`, the only version.
 
 ## Behavior
 
@@ -27,10 +28,10 @@ nullability, default, constraint, recursion, and extension semantics.
 - Recursive references SHALL preserve identity without flattening the graph into duplicated anonymous structures.
 - Open and closed enums, unions, records, and extension points SHALL declare their unknown-value behavior.
 - Definitions and occurrences SHALL remain distinct.
-- In IR v1.1, a field SHALL carry an explicit multiplicity and an optional unit, with presence and nullability as derived views ([FR-027](./FR-027-declare-field-multiplicity-and-units.md)).
-- In IR v1.1, a type definition of any kind SHALL carry opaque clause nodes ([FR-028](./FR-028-represent-relationships-operations-and-clauses.md)).
-- In IR v1.1, a record type definition SHALL additionally carry first-class relationship and operation nodes ([FR-028](./FR-028-represent-relationships-operations-and-clauses.md)).
-- In IR v1.1, the IR schema SHALL close the constraint keyword vocabulary and type each keyword's operands ([FR-029](./FR-029-close-the-constraint-keyword-vocabulary.md)).
+- A field SHALL carry an explicit multiplicity and an optional unit, with presence and nullability as derived views ([FR-027](./FR-027-declare-field-multiplicity-and-units.md)).
+- A type definition of any kind SHALL carry opaque clause nodes ([FR-028](./FR-028-represent-relationships-operations-and-clauses.md)).
+- A record type definition SHALL additionally carry first-class relationship and operation nodes ([FR-028](./FR-028-represent-relationships-operations-and-clauses.md)).
+- The IR schema SHALL close the constraint keyword vocabulary and type each keyword's operands ([FR-029](./FR-029-close-the-constraint-keyword-vocabulary.md)).
 - The contract SHALL NOT infer a definition version from an occurrence timestamp or database revision.
 
 ## Constraints

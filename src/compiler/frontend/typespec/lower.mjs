@@ -1,5 +1,5 @@
 /**
- * The lowering from a compiled TypeSpec program to contract semantic IR 1.1.0
+ * The lowering from a compiled TypeSpec program to contract semantic IR 2.0.0
  * (FR-046, FR-053).
  *
  * The rule this module is written to obey is negative: **no IR value is derived
@@ -306,7 +306,7 @@ export {
 };
 
 /**
- * Lowers one compiled program into a contract IR `1.1.0` document.
+ * Lowers one compiled program into a contract IR `2.0.0` document.
  *
  * Returns `{ ir, diagnostics }`. `ir` is `null` whenever any diagnostic blocks,
  * because a caller must never be able to mistake a partial document for a

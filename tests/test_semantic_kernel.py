@@ -70,13 +70,29 @@ PINNED_DIGESTS = {
         "sha256:13889607403535b12c52e9115a08ea5baac6c67c81ecb08108c2ce73b0b6e5a1"
     ),
     "python_backend/runner": (
-        "sha256:d19f88059898d515a1b384d00c2c972422d99e47ccecb47f048726cf1c9dd090"
+        # fcd#179: corpus_account.py's validated type name follows the schema's
+        # contract 2.0.0-only union; its module docstring's cross-field code
+        # list drops PRESENCE_MULTIPLICITY_MISMATCH and V1_1_NODE_IN_V1_0,
+        # neither of which any 2.0.0-only oracle can emit, and adds
+        # COMPOSITE_CYCLE, which the 1.1.0-era list omitted.
+        "sha256:3986f8a39adba602c6b5eb47df6013657a4a0f7c18744e5878c1c250a4d45288"
     ),
     "python_backend/qualification": (
-        "sha256:a33f3c11c506ccb7610f15f0455694cfc7a6b8e529fc99e22b6ebdc7fe45b147"
+        # fcd#179: report.json, corpus-account.json and validation.json
+        # remeasured against the 2.0.0-only schema and corpus_account fix;
+        # corpus-account.json remeasured again after the corpus itself
+        # dropped ENV-004, VER-001, VER-002, VER-004 and PRES-002 (111 -> 106
+        # cases), which also moves the account's decided/agreed/undecidable
+        # split since python_backend/generated's stricter 2.0.0-only shape
+        # now raises ValidationError, not disagreement, on more cases.
+        # corpus-account.json's corpusDigest remeasured a third time after
+        # `biome check --write conformance/` reformatted every case/base file.
+        "sha256:43c1ef1dc8a019338ebea99f8d3319841014e2402cadc74cfa1551e99ce65ed4"
     ),
     "python_backend/generated": (
-        "sha256:eea0a3a875cef005d9475aaa8dd126a92a62bdcefaef7d8a634a824c82708058"
+        # fcd#179: regenerated from schema/semantic/v1/semantic-ir.schema.json
+        # after contracts 1.0.0 and 1.1.0 were deleted from it.
+        "sha256:e13cbe3c88d8f4cda229e5ad9a93682e7c477602a00062048a413b297c940aa7"
     ),
     "python_backend/profiles.json": (
         "sha256:3c6fc254a7c346c88b6ea91fdaeb7d3a3b55f8065b8a6ebc6ddab3a447547345"

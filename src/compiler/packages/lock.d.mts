@@ -3,7 +3,7 @@ import type { CompilerDiagnostic } from "../index.d.mts";
 import type { CompilerFileHost } from "../host.d.mts";
 
 export declare const REPO_ROOT: string;
-export declare const CONTRACT_IR_VERSION: "1.1.0";
+export declare const CONTRACT_IR_VERSION: "2.0.0";
 
 export declare const CANONICALIZATION: Readonly<{
 	algorithm: string;

@@ -45,7 +45,8 @@ function field(name, overrides = {}) {
 
 function base() {
 	return {
-		contractVersion: "1.1.0",
+		contractVersion: "2.0.0",
+		constructs: [],
 		source: {
 			identity: SOURCE,
 			version: "1.0.0",
@@ -593,21 +594,6 @@ const BUILDERS = {
 			},
 		},
 	}),
-	"v1-to-v1-1-additive-revision": () => {
-		const previous = clone(base());
-		previous.contractVersion = "1.0.0";
-		previous.source.dialect = "https://json-schema.org/draft/2020-12/schema";
-		for (const type of previous.types) {
-			for (const item of type.fields ?? []) {
-				delete item.multiplicity;
-				delete item.unit;
-			}
-			delete type.relationships;
-			delete type.operations;
-			delete type.clauses;
-		}
-		return { old: previous, new: base() };
-	},
 	"relationship-added": () => {
 		const next = clone(base());
 		typeOf(next, "Artifact").relationships.push({

@@ -1,7 +1,7 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"$id": "https://schemas.agent-ix.org/filament-core-data/v1/semantic-ir.schema.json",
-	"title": "Filament semantic IR v1 (contract versions 1.0.0, 1.1.0 and 2.0.0)",
+	"title": "Filament semantic IR v1 (contract version 2.0.0)",
 	"type": "object",
 	"required": [
 		"contractVersion",
@@ -9,11 +9,12 @@
 		"package",
 		"types",
 		"occurrences",
-		"extensions"
+		"extensions",
+		"constructs"
 	],
 	"properties": {
 		"contractVersion": {
-			"enum": ["1.0.0", "1.1.0", "2.0.0"]
+			"enum": ["2.0.0"]
 		},
 		"source": {
 			"type": "object",
@@ -26,14 +27,7 @@
 					"$ref": "common.schema.json#/$defs/semver"
 				},
 				"dialect": {
-					"oneOf": [
-						{
-							"const": "https://json-schema.org/draft/2020-12/schema"
-						},
-						{
-							"$ref": "common.schema.json#/$defs/frontendDialect"
-						}
-					]
+					"$ref": "common.schema.json#/$defs/frontendDialect"
 				},
 				"digest": {
 					"$ref": "common.schema.json#/$defs/sha256"
@@ -390,6 +384,7 @@
 				"presence",
 				"nullable",
 				"defaultKind",
+				"multiplicity",
 				"origin"
 			],
 			"properties": {
@@ -1352,163 +1347,5 @@
 			},
 			"additionalProperties": false
 		}
-	},
-	"allOf": [
-		{
-			"if": {
-				"type": "object",
-				"properties": {
-					"contractVersion": {
-						"enum": ["1.1.0", "2.0.0"]
-					}
-				}
-			},
-			"then": {
-				"type": "object",
-				"properties": {
-					"source": {
-						"type": "object",
-						"properties": {
-							"dialect": {
-								"$ref": "common.schema.json#/$defs/frontendDialect"
-							}
-						}
-					}
-				}
-			},
-			"else": {
-				"type": "object",
-				"properties": {
-					"source": {
-						"type": "object",
-						"properties": {
-							"dialect": {
-								"const": "https://json-schema.org/draft/2020-12/schema"
-							}
-						}
-					}
-				}
-			}
-		},
-		{
-			"if": {
-				"type": "object",
-				"properties": {
-					"contractVersion": {
-						"enum": ["1.1.0", "2.0.0"]
-					}
-				}
-			},
-			"then": {
-				"type": "object",
-				"properties": {
-					"types": {
-						"type": "array",
-						"items": {
-							"type": "object",
-							"properties": {
-								"fields": {
-									"type": "array",
-									"items": {
-										"type": "object",
-										"required": ["multiplicity"]
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		{
-			"if": {
-				"type": "object",
-				"properties": {
-					"contractVersion": {
-						"enum": ["1.0.0", "1.1.0"]
-					}
-				}
-			},
-			"then": {
-				"type": "object",
-				"properties": {
-					"populations": false,
-					"types": {
-						"type": "array",
-						"items": {
-							"type": "object",
-							"properties": {
-								"kind": {
-									"type": "string"
-								},
-								"scalar": {
-									"not": {
-										"const": "any"
-									}
-								},
-								"supertypes": false,
-								"abstract": false,
-								"identityFields": false,
-								"owner": false,
-								"members": false,
-								"occurrenceField": false,
-								"states": false,
-								"transitions": false,
-								"steps": false,
-								"persists": false,
-								"vocabulary": false,
-								"fields": {
-									"type": "array",
-									"items": {
-										"type": "object",
-										"properties": {
-											"subsets": false,
-											"redefines": false
-										}
-									}
-								},
-								"operations": {
-									"type": "array",
-									"items": {
-										"type": "object",
-										"properties": {
-											"frame": false,
-											"pre": {
-												"type": "array",
-												"items": {
-													"type": "string"
-												}
-											},
-											"post": {
-												"type": "array",
-												"items": {
-													"type": "string"
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					},
-					"constructs": false
-				}
-			}
-		},
-		{
-			"if": {
-				"type": "object",
-				"properties": {
-					"contractVersion": {
-						"const": "2.0.0"
-					}
-				},
-				"required": ["contractVersion"]
-			},
-			"then": {
-				"type": "object",
-				"required": ["constructs"]
-			}
-		}
-	]
+	}
 }

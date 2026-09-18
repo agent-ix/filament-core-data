@@ -31,7 +31,7 @@ export declare function canonicalize(
 /** `sha256:<64 lowercase hex>` over the UTF-8 bytes of `text`. */
 export declare function digestOf(text: string): string;
 
-/** A deep copy with the contract `1.1.0` derivable members materialized. */
+/** A deep copy with `nullable` materialized as a literal boolean on every field and operation parameter. */
 export declare function normalizeIr(document: unknown): unknown;
 
 /** The canonical string an adapter answer carries as `normalized`. */

@@ -29,7 +29,7 @@ decorator, and without reading a side-car file at run time.
 
 ## Inputs
 
-- A semantic IR document at `contractVersion` `1.1.0`, admitted by [FR-068](./FR-068-decide-and-report-ir-admissibility.md)
+- A semantic IR document at `contractVersion` `2.0.0`, admitted by [FR-068](./FR-068-decide-and-report-ir-admissibility.md)
 - The document's `source` block: `identity`, `version`, `dialect`, and `digest`
 - The document's `package` block: `identity`, `version`, `manifestDigest`, `mappingVersions`, `profileVersions`, and `lockDigest`
 - The document's `contractVersion`
@@ -58,7 +58,7 @@ decorator, and without reading a side-car file at run time.
 
 ### The contract data the type surface does not carry
 
-- A generated TypeScript type expresses structure and nothing else, so every other contract datum the IR document carries SHALL reach the consumer through this module. Nothing in the document is dropped, and the committed bases make that a live obligation rather than a precaution: `conformance/bases/core-1-1.json` and `conformance/bases/package-1-1.json` each carry an occurrence, a document-level extension, and a field declaring `unit: "ms"`, and the `typescript` target contract sets `unsupportedFeaturePolicy: "fail"`, so a silent drop is not available.
+- A generated TypeScript type expresses structure and nothing else, so every other contract datum the IR document carries SHALL reach the consumer through this module. Nothing in the document is dropped, and the committed bases make that a live obligation rather than a precaution: `conformance/bases/core-2-0.json` and `conformance/bases/package-2-0.json` each carry an occurrence, a document-level extension, and a field declaring `unit: "ms"`, and the `typescript` target contract sets `unsupportedFeaturePolicy: "fail"`, so a silent drop is not available.
 - `renderIdentity` SHALL emit, for every type, a readonly array of that type's `roles[]`, ordered as the document orders them, because a role is contract data a consumer may dispatch on.
 - `renderIdentity` SHALL emit `TYPE_IDENTITY_FIELDS`, mapping every `identified` construct to the names of its identity fields in the order `identityFields` declares them; any other type has no entry, and the map is emitted, empty, when the document declares no `identified` construct, so a consumer reads one surface.
 - Where the document carries a construct member beyond identity fields, or a population, `renderIdentity` SHALL also emit the descriptor interfaces `TransitionDescriptor`, `StepDescriptor`, `TermDescriptor`, `OperationContractDescriptor` and `PopulationDescriptor`, and these maps keyed by generated identifier, each with an entry only for a type carrying the member: `TYPE_SUPERTYPES`, `TYPE_ABSTRACT`, `TYPE_OWNER`, `TYPE_MEMBERS`, `TYPE_OCCURRENCE_FIELD`, `TYPE_EQUALITY`, `TYPE_IMMUTABLE`, `TYPE_STATES`, `TYPE_TRANSITIONS`, `TYPE_STEPS`, `TYPE_PERSISTS`, and `TYPE_VOCABULARY`; `FIELD_SUBSETS` and `FIELD_REDEFINES`, keyed `<Type>.<field>`; `OPERATION_CONTRACTS`, keyed `<Type>.<operation>`; and `POPULATIONS`, the document's populations in order. A document of records and entities emits none of them, so its identity module is unchanged.
@@ -125,7 +125,7 @@ decorator, and without reading a side-car file at run time.
 | FR-067-AC-11 | A single-type import of `provenance.ts` reaches no validator symbol, measured by the FR-071 reachable-symbol walk rather than by a bundler. | Analysis |
 | FR-067-AC-12 | Renaming a type's `displayName` while leaving its `identity` unchanged leaves every identity-map value unchanged. | Unit |
 | FR-067-AC-13 | The metadata module typechecks under `tsc --noEmit` with no `any` and no type assertion other than `as const`, and its declared type matches `metadata.d.mts`. | Compile |
-| FR-067-AC-14 | Generating from `conformance/bases/core-1-1.json` and `conformance/bases/package-1-1.json` exposes each document's occurrence, its document-level extension, and the `unit: "ms"` of its declaring field, each byte-equal to the document's value. | Test |
+| FR-067-AC-14 | Generating from `conformance/bases/core-2-0.json` and `conformance/bases/package-2-0.json` exposes each document's occurrence, its document-level extension, and the `unit: "ms"` of its declaring field, each byte-equal to the document's value. | Test |
 | FR-067-AC-15 | Every type-level and field-level `extensions[]` entry of a fixture document appears as a descriptor carrying `identity`, `version`, `required`, `capability` where declared, and `payload`, including the `doc` extension FR-064 also renders as JSDoc. | Test |
 | FR-067-AC-16 | An audit that walks every node of a fixture IR document finds each one either rendered by a generated module or named in a declared representability loss, and a seeded unrendered node makes the audit fail. | Test |
 | FR-067-AC-18 | An operation, a clause and a `migration` default each appear in the generated metadata as readonly descriptor data, and none of the three causes generation to refuse. | Unit |

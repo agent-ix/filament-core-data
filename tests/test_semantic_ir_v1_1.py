@@ -22,11 +22,24 @@ from tests.semantic_ir_reader import (
 )
 
 GOLDEN = (
-    "positive/semantic-ir.json",
     "positive/semantic-ir-v1-1.json",
     "positive/semantic-ir-v1-1-spec-bundle.json",
-    "positive/config-version-v1-1.json",
 )
+
+# `normalize` (`tests/semantic_ir_reader.py`) materializes `nullable`
+# unconditionally — it does not gate on `contractVersion` and never derives
+# `multiplicity` from `presence` — so this exercises the round-trip property
+# (FR-020-AC-7) over a field carrying `presence` with no `multiplicity`,
+# which normalize leaves absent rather than defaulting.
+MULTIPLICITY_OMITTED = {
+    "contractVersion": "2.0.0",
+    "types": [
+        {
+            "kind": "record",
+            "fields": [{"name": "a", "presence": "optional"}],
+        }
+    ],
+}
 
 
 @pytest.fixture(scope="module")
@@ -39,32 +52,47 @@ def _fixture(name: str):
 
 
 class TestSecondReader:
-    """Independent Python reader for semantic IR 1.1.0.
+    """Independent Python reader for semantic IR.
 
     Description: TC-232 second-reader evidence for FR-020-AC-8; every golden
-    document validates and reads clean, every recorded negative and reader case
-    is rejected, and the normalized form matches FR-027 / FR-020-AC-7.
+    document validates and reads clean, every recorded negative and reader
+    case is rejected, and the normalized form matches FR-027 / FR-020-AC-7.
+    `2.0.0` is the only supported contract; a document declaring another is
+    refused, asserted in `TestContract20` (TC-1756, NFR-044-AC-1), not here.
+    `normalize` does not gate on `contractVersion` at all; `MULTIPLICITY_OMITTED`
+    below is a round-trip fixture over a field missing `multiplicity`, not a
+    test of a version gate.
     Assumptions: the poetry dev group is installed; fixtures are the committed
     ones under fixtures/semantic/v1.
-    Criteria: FR-020-AC-7, FR-020-AC-8, FR-027-AC-1, FR-027-AC-6, NFR-013-AC-1.
+    Criteria: FR-020-AC-7, FR-020-AC-8, FR-027-AC-1, FR-027-AC-6.
     """
 
     def test_golden_documents_validate_and_read_clean(self, validator) -> None:
-        """Criteria: FR-020-AC-8, FR-027-AC-6 — four golden documents pass."""
+        """Criteria: FR-020-AC-8, FR-027-AC-6 — every golden document ported
+        to contract `2.0.0` passes."""
         for name in GOLDEN:
             document = _fixture(name)
             assert schema_valid(validator, document), name
             assert read_semantic_ir(document) == [], name
 
-    def test_v1_document_gains_no_derived_bytes(self) -> None:
-        """Criteria: FR-027 normalized-form rule, NFR-013-AC-1."""
-        assert '"multiplicity"' not in normalize(_fixture("positive/semantic-ir.json"))
-
     def test_normalized_form_round_trips(self) -> None:
         """Criteria: FR-020-AC-7, FR-027-AC-1 — normalize is idempotent."""
-        for name in GOLDEN[1:]:
+        for name in GOLDEN:
             first = normalize(_fixture(name))
             assert normalize(json.loads(first)) == first, name
+        first = normalize(MULTIPLICITY_OMITTED)
+        assert normalize(json.loads(first)) == first
+
+    def test_normalize_never_derives_multiplicity_from_presence(self) -> None:
+        """Criteria: FR-027-AC-1 — `multiplicity` and `presence` are
+        schema-required and independently authored; a field carrying
+        `presence` with no `multiplicity` stays that way through `normalize`
+        rather than gaining an invented value."""
+        first = normalize(MULTIPLICITY_OMITTED)
+        field = json.loads(first)["types"][0]["fields"][0]
+        assert "multiplicity" not in field
+        assert field["presence"] == "optional"
+        assert field["nullable"] is False
 
     def test_every_recorded_case_is_rejected(self) -> None:
         """Criteria: FR-020-AC-8 — schema and reader cases all fail as recorded."""
@@ -85,15 +113,14 @@ CONSTRUCTS = "positive/semantic-ir-v2-constructs.json"
 class TestContract20:
     """Python reader over contract 2.0.0 model members and construct kinds.
 
-    Description: TC-1740, TC-1744, TC-1745, TC-1746 and TC-1789 Python-reader
-    evidence; the committed 2.0.0 positive reads clean, and each member or
-    construct kind
-    inside a 1.1.0 document, and each construct missing a required member, is
-    refused by the schema.
+    Description: TC-1740, TC-1745, TC-1746, TC-1756 and TC-1789 Python-reader
+    evidence; the committed 2.0.0 positive reads clean, each construct
+    missing a required member is refused by the schema, and a document
+    declaring any contract other than `2.0.0` is refused too.
     Assumptions: the poetry dev group is installed; fixtures are the committed
     ones under fixtures/semantic/v1.
-    Criteria: FR-141-AC-1, FR-141-AC-5, FR-141-CON-1, FR-142-AC-1, FR-142-AC-2,
-    FR-142-CON-1, FR-142-AC-8.
+    Criteria: FR-141-AC-1, FR-142-AC-1, FR-142-AC-2, FR-142-CON-1, FR-142-AC-8,
+    NFR-044-AC-1.
     """
 
     def test_constructs_document_validates_and_reads_clean(self, validator) -> None:
@@ -104,86 +131,49 @@ class TestContract20:
         first = normalize(document)
         assert normalize(json.loads(first)) == first
 
-    def test_every_2_0_member_in_a_1_1_document_is_refused(self, validator) -> None:
-        """Criteria: FR-141-AC-5, FR-141-CON-1 (TC-1744)."""
-        document = _fixture(CONSTRUCTS)
-        assert validator.is_valid(document)
-        document["contractVersion"] = "1.1.0"
-        assert not validator.is_valid(document)
+    def test_a_ported_fixture_validates_and_a_deleted_contract_fixture_is_refused(
+        self, validator
+    ) -> None:
+        """fcd#179 deleted contracts `1.0.0` and `1.1.0`; `2.0.0` is the only
+        one. This test once mutated a `1.1.0`-declared document by adding one
+        FR-141 model member or construct kind at a time and asserted the
+        schema refused it. `semantic-ir-v1-1.json` is now itself a `2.0.0`
+        document (fcd#179 ported it, mirroring the Rust `tc_1756` fix in
+        `crates/extraction-frontend/tests/constructs.rs`), so every one of
+        those members is a legitimate `2.0.0` addition and the mutated
+        documents would validate: there is no `1.1.0` document left to refuse
+        a member inside. A document declaring any other `contractVersion` is
+        refused wholesale, before a reader ever evaluates a member, by
+        FR-050's `contractVersion` rule — so "does member X trigger refusal
+        in an old document" is no longer distinguishable from "is this
+        document's contractVersion wrong at all", which is already covered
+        elsewhere (FR-050's own tests). A restated version of the old
+        assertion would pass regardless of which member was mutated in,
+        which is the tautology this fix must not manufacture. FR-141-CON-1
+        and FR-141-AC-5 (TC-1744) are deleted with it: neither has a
+        surviving, non-vacuous subject to test.
 
+        Criteria: NFR-044-AC-1 (TC-1756).
+        """
         v11 = "positive/semantic-ir-v1-1.json"
         clean = _fixture(v11)
         assert validator.is_valid(clean)
         assert read_semantic_ir(clean) == []
-        record = next(
-            i
-            for i, t in enumerate(clean["types"])
-            if t["identity"] == "ix://agent-ix/assurance/type/Artifact"
-        )
-        scalar = next(
-            i
-            for i, t in enumerate(clean["types"])
-            if t["identity"] == "ix://agent-ix/assurance/type/Text"
-        )
-        quire = [
-            {
-                "language": "quire",
-                "text": "true",
-                "origin": clean["types"][record]["origin"],
-            }
-        ]
-
-        def set_type(member, value):
-            return lambda d: d["types"][record].__setitem__(member, value)
-
-        def set_field(member, value):
-            return lambda d: d["types"][record]["fields"][0].__setitem__(
-                member, value(d) if callable(value) else value
-            )
-
-        def set_operation(member, value):
-            return lambda d: d["types"][record]["operations"][0].__setitem__(
-                member, value
-            )
-
-        mutations = (
-            (
-                "supertypes",
-                set_type("supertypes", ["ix://agent-ix/assurance/type/Project"]),
-            ),
-            ("abstract", set_type("abstract", True)),
-            ("subsets", set_field("subsets", [])),
-            (
-                "redefines",
-                set_field(
-                    "redefines",
-                    lambda d: d["types"][record]["fields"][1]["identity"],
-                ),
-            ),
-            (
-                "frame",
-                set_operation("frame", {"modifies": [], "creates": [], "deletes": []}),
-            ),
-            ("inline pre clause", set_operation("pre", quire)),
-            ("inline post clause", set_operation("post", quire)),
-            ("populations", lambda d: d.__setitem__("populations", [])),
-            ("scalar any", lambda d: d["types"][scalar].__setitem__("scalar", "any")),
-            (
-                "construct kind",
-                set_type(
-                    "kind",
-                    {
-                        "module": "agent-ix/spec-objects-business",
-                        "name": "value_object",
-                    },
-                ),
-            ),
-            ("constructs", lambda d: d.__setitem__("constructs", [])),
-        )
-        for label, mutate in mutations:
-            base = _fixture(v11)
-            mutate(base)
-            assert not validator.is_valid(base), label
+        # NFR-044-AC-1: a document still declaring the deleted contract
+        # `1.0.0` or `1.1.0` is refused. fcd#179 deleted the two fixtures
+        # that used to be frozen at those contracts (`semantic-ir.json`,
+        # `config-version-v1-1.json`), so this mutates the clean `2.0.0`
+        # document's own `contractVersion` instead of reading them.
+        for deleted in ("1.0.0", "1.1.0"):
+            document = json.loads(json.dumps(clean))
+            document["contractVersion"] = deleted
+            assert not validator.is_valid(document), deleted
+            # fcd#179 (F1): `is_valid` alone only proves *some* schema defect;
+            # that would still pass if this document picked up an unrelated
+            # one and its declared `contractVersion` were quietly repaired.
+            # Pin the actual reason: an error at `contractVersion` itself.
+            paths = [list(error.absolute_path) for error in validator.iter_errors(document)]
+            assert ["contractVersion"] in paths, (deleted, paths)
 
     def test_each_construct_without_a_required_member_is_refused(
         self, validator

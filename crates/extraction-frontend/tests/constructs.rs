@@ -28,9 +28,6 @@ const PREFIX: &str = "ix://agent-ix/orders/";
 /// The package of the module declaring the business construct kinds.
 const BUSINESS: &str = "agent-ix/spec-objects-business";
 
-/// One in-place change to an IR document.
-type Mutation = Box<dyn Fn(&mut Value)>;
-
 /// One change to an artifact's text.
 type Edit = Box<dyn Fn(&str) -> String>;
 
@@ -44,7 +41,9 @@ fn positive() -> Value {
     read_json(&positive_path())
 }
 
-/// The published `1.1.0` positive with an operation on its record.
+/// The published `2.0.0` positive (named `v1_1` for its file, `semantic-ir-v1-1.json`
+/// — fcd#179 ported its content to `2.0.0` but kept the no-churn-rename file
+/// name) with an operation on its record.
 fn v1_1() -> Value {
     read_json(&workspace_dir().join("fixtures/semantic/v1/positive/semantic-ir-v1-1.json"))
 }
@@ -311,81 +310,36 @@ fn tc_1743_unresolved_frame_path_and_population_member_raise_their_codes() {
     );
 }
 
-#[trace("TC-1744", "FR-141-AC-5")]
-#[trace("TC-1744", "FR-141-CON-1")]
+// fcd#179 deleted contracts `1.0.0` and `1.1.0`; `2.0.0` is the only one. This
+// test once mutated a `1.1.0`-declared document by adding one FR-141 model
+// member or construct kind at a time and asserted the schema refused it.
+// `v1_1()` is now itself a `2.0.0` document (fcd#179 ported it), so every one
+// of those members is a legitimate `2.0.0` addition and the mutated documents
+// validate: there is no `1.1.0` document left to refuse a member inside. A
+// document declaring any other `contractVersion` is refused wholesale, before
+// a reader ever evaluates a member, by FR-050's `contractVersion` rule — so
+// "does member X trigger refusal in an old document" is no longer
+// distinguishable from "is this document's contractVersion wrong at all",
+// which is already covered elsewhere (FR-050's own tests). A restated version
+// of this assertion would pass regardless of which member was mutated in,
+// which is the tautology this fix must not manufacture. FR-141-CON-1 and
+// FR-141-AC-5 (TC-1744) are deleted with it: neither has a surviving,
+// non-vacuous subject to test.
+//
+// fcd#179 also deleted the two fixtures that used to carry this case's
+// negative half on disk (`semantic-ir.json` at `1.0.0`,
+// `config-version-v1-1.json` at `1.1.0`): NFR-044-AC-1 is a rule about any
+// document declaring the deleted contract, not about those two files staying
+// frozen as evidence of it, so the negative half is now an inline document
+// declaring each deleted `contractVersion` rather than a read of a fixture
+// that no longer exists.
 #[trace("TC-1756", "NFR-044-AC-1")]
 #[test]
-fn tc_1744_and_tc_1756_every_1_2_member_and_kind_inside_a_1_1_document_is_refused() {
+fn tc_1756_a_ported_fixture_validates_and_a_deleted_contract_document_is_refused() {
     let base = v1_1();
     assert!(rust_codes(&base).is_empty(), "{:?}", rust_codes(&base));
-    let record = position(&base, "ix://agent-ix/assurance/type/Artifact");
-    let scalar = position(&base, "ix://agent-ix/assurance/type/Text");
-    let quire =
-        json!([{ "language": "quire", "text": "true", "origin": base["types"][record]["origin"] }]);
-    let mutations: Vec<(&str, Mutation)> = vec![
-        (
-            "supertypes",
-            Box::new(move |d| {
-                d["types"][record]["supertypes"] = json!(["ix://agent-ix/assurance/type/Project"])
-            }),
-        ),
-        (
-            "abstract",
-            Box::new(move |d| d["types"][record]["abstract"] = json!(true)),
-        ),
-        (
-            "subsets",
-            Box::new(move |d| d["types"][record]["fields"][0]["subsets"] = json!([])),
-        ),
-        (
-            "redefines",
-            Box::new(move |d| {
-                d["types"][record]["fields"][0]["redefines"] =
-                    d["types"][record]["fields"][1]["identity"].clone()
-            }),
-        ),
-        (
-            "frame",
-            Box::new(move |d| {
-                d["types"][record]["operations"][0]["frame"] =
-                    json!({ "modifies": [], "creates": [], "deletes": [] })
-            }),
-        ),
-        (
-            "inline pre clause",
-            Box::new({
-                let quire = quire.clone();
-                move |d| d["types"][record]["operations"][0]["pre"] = quire.clone()
-            }),
-        ),
-        (
-            "inline post clause",
-            Box::new(move |d| d["types"][record]["operations"][0]["post"] = quire.clone()),
-        ),
-        ("populations", Box::new(|d| d["populations"] = json!([]))),
-        (
-            "scalar any",
-            Box::new(move |d| d["types"][scalar]["scalar"] = json!("any")),
-        ),
-        (
-            "construct kind",
-            Box::new(move |d| {
-                d["types"][record]["kind"] = json!({ "module": BUSINESS, "name": "value_object" });
-            }),
-        ),
-    ];
-    for (label, mutate) in &mutations {
-        let mut document = v1_1();
-        mutate(&mut document);
-        assert_refused_by_schema(label, &document);
-    }
-    // NFR-044-AC-1: every published 1.0.0 and 1.1.0 positive keeps a clean verdict.
-    for name in [
-        "semantic-ir.json",
-        "semantic-ir-v1-1.json",
-        "semantic-ir-v1-1-spec-bundle.json",
-        "config-version-v1-1.json",
-    ] {
+    // NFR-044-AC-1: a fixture already ported to `2.0.0` keeps a clean verdict.
+    for name in ["semantic-ir-v1-1.json", "semantic-ir-v1-1-spec-bundle.json"] {
         let document = read_json(
             &workspace_dir()
                 .join("fixtures/semantic/v1/positive")
@@ -393,6 +347,24 @@ fn tc_1744_and_tc_1756_every_1_2_member_and_kind_inside_a_1_1_document_is_refuse
         );
         assert!(rust_codes(&document).is_empty(), "{name}");
         assert!(node_codes(&document).is_empty(), "{name}");
+    }
+    // NFR-044-AC-1: a document still declaring the deleted contract `1.0.0`
+    // or `1.1.0` is refused by every reader with SCHEMA_VIOLATION at
+    // contractVersion.
+    for deleted in ["1.0.0", "1.1.0"] {
+        let mut document = base.clone();
+        document["contractVersion"] = json!(deleted);
+        assert_refused_by_schema(deleted, &document);
+        // fcd#179 (F1): `assert_refused_by_schema` only proves the document was
+        // refused for *some* schema reason; that would still pass if this
+        // document accumulated an unrelated schema defect and its declared
+        // `contractVersion` were quietly repaired. Pin the actual reason: the
+        // refusal names the deleted contract at its own pointer.
+        assert!(
+            rust_codes(&document).contains(&"SCHEMA_VIOLATION at /ir/contractVersion".to_string()),
+            "{deleted}: expected SCHEMA_VIOLATION at /ir/contractVersion, got {:?}",
+            rust_codes(&document)
+        );
     }
 }
 

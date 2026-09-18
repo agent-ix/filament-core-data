@@ -234,7 +234,7 @@ function renderMap(entry) {
  * index signature admitting unknown members plus a generated marker naming
  * which policy asked for it, so the two forms are distinguishable; `reject`
  * renders closed with no index signature. On the other seven kinds the policy
- * has no rendering effect at all — `conformance/bases/core-1-1.json` carries a
+ * has no rendering effect at all — `conformance/bases/core-2-0.json` carries a
  * `union` declaring `surface` and a `map` declaring `preserve`, so that is a
  * live case rather than a precaution — and FR-067 carries every policy into the
  * generated metadata so that one with no rendering effect is still declared.

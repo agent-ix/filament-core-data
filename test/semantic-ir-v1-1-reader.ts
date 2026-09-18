@@ -1,5 +1,6 @@
 /**
- * Test-scoped reader for semantic IR contract 2.0.0 (issues #34, #93 and #172).
+ * Test-scoped reader for semantic IR contract 2.0.0 (issues #34, #93 and #172;
+ * fcd#179 deleted 1.0.0 and 1.1.0, the versions this module once also read).
  *
  * JSON Schema validates shape; this module implements the cross-field rules
  * of FR-027..FR-030 that a schema cannot express, and the normalized
@@ -98,12 +99,6 @@ export function resolveKind(
 	};
 }
 
-export function multiplicityFromPresence(presence: unknown): Multiplicity {
-	return presence === "optional"
-		? { lower: 0, upper: 1 }
-		: { lower: 1, upper: 1 };
-}
-
 function checkMultiplicity(
 	value: unknown,
 	path: string,
@@ -163,36 +158,18 @@ function checkField(
 			message: `typeRef does not resolve: ${String(field.typeRef)}`,
 		});
 	}
-	let multiplicity: Multiplicity | undefined;
 	if (field.multiplicity === undefined) {
-		if (version === "1.1.0" || version === "2.0.0") {
-			diagnostics.push({
-				code: "agent-ix.semantic-ir.MISSING_MULTIPLICITY",
-				path: `${path}.multiplicity`,
-				message: `${version} fields must declare multiplicity`,
-			});
-		}
-		multiplicity = multiplicityFromPresence(field.presence);
+		// fcd#179: 2.0.0 is the only contract, and its schema requires
+		// `multiplicity` on every field, so a document reaching this reader
+		// without one is always in violation (no version branch left; mirrors
+		// tests/semantic_ir_reader.py's `_check_field`, FR-050-CON-2/AC-4).
+		diagnostics.push({
+			code: "agent-ix.semantic-ir.MISSING_MULTIPLICITY",
+			path: `${path}.multiplicity`,
+			message: "a field declares its multiplicity",
+		});
 	} else {
-		multiplicity = checkMultiplicity(
-			field.multiplicity,
-			`${path}.multiplicity`,
-			diagnostics,
-		);
-	}
-	if (multiplicity) {
-		const derived = multiplicity.lower >= 1 ? "required" : "optional";
-		if (
-			version !== "2.0.0" &&
-			field.presence !== undefined &&
-			field.presence !== derived
-		) {
-			diagnostics.push({
-				code: "agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH",
-				path: `${path}.presence`,
-				message: `presence ${String(field.presence)} contradicts multiplicity lower ${multiplicity.lower}`,
-			});
-		}
+		checkMultiplicity(field.multiplicity, `${path}.multiplicity`, diagnostics);
 	}
 	if (field.unit !== undefined) {
 		if (typeof field.unit !== "string" || field.unit.length === 0) {
@@ -538,32 +515,21 @@ export function canonical(value: unknown): string {
 }
 
 /**
- * Normalized serialization (FR-027): 1.1.0 and 2.0.0 documents materialize
- * multiplicity, presence, and nullable on every field, a 2.0.0 field keeping its
- * authored presence; 1.0.0 documents gain no bytes.
+ * Normalized serialization (FR-027): materializes `nullable` as a literal
+ * boolean on every field, unconditionally on `contractVersion`. `multiplicity`
+ * and `presence` are schema-required and independently authored, so neither
+ * is ever derived from the other here.
  */
 export function normalize(document: unknown): string {
 	if (!isObject(document)) return canonical(document);
 	const copy = structuredClone(document) as JsonObject;
-	const version = copy.contractVersion;
-	if (version === "1.1.0" || version === "2.0.0") {
-		const materialize = (field: JsonObject): void => {
-			const multiplicity = isObject(field.multiplicity)
-				? (field.multiplicity as Multiplicity)
-				: multiplicityFromPresence(field.presence);
-			field.multiplicity = multiplicity;
-			if (
-				version !== "2.0.0" ||
-				(field.presence !== "required" && field.presence !== "optional")
-			)
-				field.presence = multiplicity.lower >= 1 ? "required" : "optional";
-			field.nullable = field.nullable === true;
-		};
-		for (const definition of asArray(copy.types)) {
-			for (const field of asArray(definition.fields)) materialize(field);
-			for (const operation of asArray(definition.operations))
-				for (const param of asArray(operation.params)) materialize(param);
-		}
+	const materialize = (field: JsonObject): void => {
+		field.nullable = field.nullable === true;
+	};
+	for (const definition of asArray(copy.types)) {
+		for (const field of asArray(definition.fields)) materialize(field);
+		for (const operation of asArray(definition.operations))
+			for (const param of asArray(operation.params)) materialize(param);
 	}
 	return canonical(copy);
 }

@@ -24,18 +24,6 @@
 			"exercisedBy": "test:TC-301"
 		},
 		{
-			"code": "agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH",
-			"provenance": "frozen",
-			"decidedBy": "cross-field",
-			"sources": [
-				"docs/semantic-data-system/contracts-v1.md",
-				"fixtures/semantic/v1/negative/reader-cases.json"
-			],
-			"rule": "A field whose presence contradicts the multiplicity lower bound it is derived from.",
-			"citation": "unbounded) from which `presence` is derived, and may carry a UCUM `unit` when",
-			"exercisedBy": "case"
-		},
-		{
 			"code": "agent-ix.semantic-ir.INVALID_MULTIPLICITY",
 			"provenance": "frozen",
 			"decidedBy": "cross-field",
@@ -68,7 +56,7 @@
 				"fixtures/semantic/v1/negative/reader-cases.json"
 			],
 			"rule": "A unit on a field whose type reference does not resolve, through aliases, to a scalar.",
-			"citation": "unbounded) from which `presence` is derived, and may carry a UCUM `unit` when",
+			"citation": "A field may carry a UCUM `unit` when its `typeRef` resolves, through aliases, to a scalar.",
 			"exercisedBy": "case"
 		},
 		{
@@ -215,7 +203,7 @@
 				"fixtures/semantic/v1/negative/reader-cases.json"
 			],
 			"rule": "A constraint keyword applied to a resolved kind the applicability table does not admit.",
-			"citation": "over the resolved kind. In a `1.1.0` document `source.dialect` is `typespec` or",
+			"citation": "over the resolved kind. `source.dialect` is `typespec` or `spec-bundle`.",
 			"exercisedBy": "case"
 		},
 		{
@@ -264,15 +252,6 @@
 			],
 			"rule": "A composite relationship graph that closes a cycle.",
 			"citation": "export; composite relationship graphs are acyclic.",
-			"exercisedBy": "case"
-		},
-		{
-			"code": "agent-ix.semantic-ir.V1_1_NODE_IN_V1_0",
-			"provenance": "minted",
-			"decidedBy": "cross-field",
-			"sources": ["docs/semantic-data-system/contracts-v1.md"],
-			"rule": "A contract 1.1.0 node carried by a contract 1.0.0 document, which a 1.0.0 reader drops.",
-			"citation": "Contract `1.1.0` is additive to `1.0.0` and lives in the same schema file,",
 			"exercisedBy": "case"
 		},
 		{

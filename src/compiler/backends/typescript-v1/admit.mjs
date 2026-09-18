@@ -51,14 +51,13 @@ function code(name) {
 }
 
 /**
- * The closed admissibility register. Thirty codes, spelled here and nowhere
+ * The closed admissibility register. Twenty-eight codes, spelled here and nowhere
  * else, standing in exact bijection with the `agent-ix.semantic-ir.` half of
  * `conformance/diagnostic-codes.json` — asserted in both directions by a test.
  */
 export const ADMISSIBILITY_CODES = Object.freeze({
 	SCHEMA_VIOLATION: code("SCHEMA_VIOLATION"),
 	INVALID_DOCUMENT: code("INVALID_DOCUMENT"),
-	PRESENCE_MULTIPLICITY_MISMATCH: code("PRESENCE_MULTIPLICITY_MISMATCH"),
 	INVALID_MULTIPLICITY: code("INVALID_MULTIPLICITY"),
 	FLAGS_ON_NON_COLLECTION: code("FLAGS_ON_NON_COLLECTION"),
 	UNIT_ON_NON_SCALAR: code("UNIT_ON_NON_SCALAR"),
@@ -79,7 +78,6 @@ export const ADMISSIBILITY_CODES = Object.freeze({
 	INVALID_PATTERN: code("INVALID_PATTERN"),
 	UNRESOLVED_RELATIONSHIP_TARGET: code("UNRESOLVED_RELATIONSHIP_TARGET"),
 	COMPOSITE_CYCLE: code("COMPOSITE_CYCLE"),
-	V1_1_NODE_IN_V1_0: code("V1_1_NODE_IN_V1_0"),
 	UNRESOLVED_IMPORT: code("UNRESOLVED_IMPORT"),
 	PACKAGE_CYCLE: code("PACKAGE_CYCLE"),
 	STALE_LOCK: code("STALE_LOCK"),
@@ -133,10 +131,6 @@ export const DERIVATIONS = Object.freeze({
 	),
 	INVALID_DOCUMENT: fromCorpus(
 		"the corpus mints this code for a value that is not an input bundle at all; the input-bundle shape is the corpus's own schema, not a published contract",
-	),
-	PRESENCE_MULTIPLICITY_MISMATCH: fromClause(
-		CONTRACTS,
-		"`multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is\nunbounded) from which `presence` is derived",
 	),
 	INVALID_MULTIPLICITY: fromCorpus(
 		"the contract names the two bounds and never says an upper below a lower is a defect; the incoherence is obvious and the rule is still the corpus's, not a clause's",
@@ -207,9 +201,6 @@ export const DERIVATIONS = Object.freeze({
 	COMPOSITE_CYCLE: fromClause(
 		CONTRACTS,
 		"composite relationship graphs are acyclic",
-	),
-	V1_1_NODE_IN_V1_0: fromCorpus(
-		"the schema does not version-gate the 1.1.0 nodes, which the corpus records as GAP-001; the rule that a 1.0.0 document may not carry them is the corpus's reading",
 	),
 	UNRESOLVED_IMPORT: fromCorpus(
 		"the contract says locks resolve the complete dependency graph; it states no diagnostic for an import the lock omits, so the rule is the corpus's",
@@ -489,10 +480,6 @@ const APPLICABILITY = Object.freeze({
 const NUMERIC_SCALARS = new Set(["integer", "number"]);
 const TEMPORAL_SCALARS = new Set(["date", "datetime", "duration"]);
 
-/* ---------------------------------------------------------------- 1.1.0 nodes */
-
-const V1_1_TYPE_NODES = ["relationships", "operations", "clauses"];
-
 /* ----------------------------------------------------------------- the reader */
 
 /**
@@ -563,7 +550,6 @@ export function admitIr(bundle, options = {}) {
 		}
 	}
 	const maxDepth = limits.maxDepth;
-	const version = ir.contractVersion;
 
 	/*
 	 * The imported-export set, or `undefined` when the bundle cannot supply it.
@@ -652,20 +638,6 @@ export function admitIr(bundle, options = {}) {
 		const typeLocus = locusOf(type);
 		claimIdentity(type, typePointer, type.identity, typeLocus);
 		claimExtensions(type, typePointer, type.identity, typeLocus);
-
-		/* 1.1.0-only nodes in a 1.0.0 document */
-		if (version === "1.0.0") {
-			for (const node of V1_1_TYPE_NODES) {
-				if (type[node] !== undefined) {
-					emit(
-						ADMISSIBILITY_CODES.V1_1_NODE_IN_V1_0,
-						`${typePointer}/${node}`,
-						"a contract 1.0.0 document carries no 1.1.0 node",
-						{ owner: type.identity, locus: typeLocus },
-					);
-				}
-			}
-		}
 
 		/* element and payload resolution */
 		if (type.kind === "sequence" && !types.has(type.items)) {
@@ -964,19 +936,6 @@ export function admitIr(bundle, options = {}) {
 		const owner = field.identity;
 		const multiplicity = field.multiplicity;
 
-		if (version === "1.0.0") {
-			for (const node of ["multiplicity", "unit"]) {
-				if (field[node] !== undefined) {
-					emit(
-						ADMISSIBILITY_CODES.V1_1_NODE_IN_V1_0,
-						`${fieldPointer}/${node}`,
-						"a contract 1.0.0 document carries no 1.1.0 node",
-						{ owner, locus: fieldLocus },
-					);
-				}
-			}
-		}
-
 		if (isObject(multiplicity)) {
 			const lower = multiplicity.lower;
 			const upper = multiplicity.upper;
@@ -998,15 +957,6 @@ export function admitIr(bundle, options = {}) {
 					ADMISSIBILITY_CODES.FLAGS_ON_NON_COLLECTION,
 					`${fieldPointer}/multiplicity`,
 					"ordered and unique appear only on a collection",
-					{ owner, locus: fieldLocus },
-				);
-			}
-			const derived = lower >= 1 ? "required" : "optional";
-			if (version !== "2.0.0" && field.presence !== derived) {
-				emit(
-					ADMISSIBILITY_CODES.PRESENCE_MULTIPLICITY_MISMATCH,
-					`${fieldPointer}/presence`,
-					"presence agrees with the multiplicity lower bound",
 					{ owner, locus: fieldLocus },
 				);
 			}

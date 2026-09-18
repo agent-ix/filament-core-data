@@ -3,7 +3,8 @@
 	"id": "unknown-policy-tightening",
 	"observedFamily": "unknown-policy",
 	"old": {
-		"contractVersion": "1.1.0",
+		"contractVersion": "2.0.0",
+		"constructs": [],
 		"source": {
 			"identity": "ix://agent-ix/assurance/source/typespec",
 			"version": "1.0.0",
@@ -314,7 +315,8 @@
 		"extensions": []
 	},
 	"new": {
-		"contractVersion": "1.1.0",
+		"contractVersion": "2.0.0",
+		"constructs": [],
 		"source": {
 			"identity": "ix://agent-ix/assurance/source/typespec",
 			"version": "1.0.0",

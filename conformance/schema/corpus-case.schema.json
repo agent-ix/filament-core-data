@@ -24,7 +24,7 @@
 		"family": { "$ref": "#/$defs/family" },
 		"class": { "enum": ["positive", "negative", "boundary", "evolution"] },
 		"kind": { "enum": ["document", "compatibility"] },
-		"contractVersion": { "enum": ["1.0.0", "1.1.0", "2.0.0"] },
+		"contractVersion": { "enum": ["2.0.0"] },
 		"base": { "type": "string", "minLength": 1 },
 		"ops": { "type": "array", "items": { "$ref": "#/$defs/op" } },
 		"beforeBase": { "type": "string", "minLength": 1 },

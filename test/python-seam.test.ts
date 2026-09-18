@@ -167,19 +167,6 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 		);
 	}, 300000);
 
-	it("generates a package from a 1.1.0 document", () => {
-		const manifest = generateTarget(
-			pythonRequest(
-				pythonPydanticBackend,
-				"fixtures/semantic/v1/positive/config-version-v1-1.json",
-			),
-			{ target: "python-pydantic-v2", host: host(), produce: poetryProducer() },
-		) as never as Manifest;
-
-		expect(manifest.state).toBe("success");
-		expect(manifest.files.map((f) => f.path)).toContain("__init__.py");
-	}, 300000);
-
 	/** Traces: TC-1765; FR-136-AC-8. */
 	it("generates an entity as the record's model class in both Python targets, with its identity fields in the construct module", () => {
 		const request = pythonRequest(pythonPydanticBackend);

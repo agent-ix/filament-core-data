@@ -818,7 +818,7 @@ describe("TC-1588..1592 cross-language agreement through the corpus (FR-090)", (
 	// TC-1592
 	it("runs clean", () => {
 		expect(report.exitCode).toBe(0);
-		expect(report.coverage.totalCases).toBe(111);
+		expect(report.coverage.totalCases).toBe(106);
 	});
 });
 

@@ -7,11 +7,6 @@ export declare function resolveKind(
 	seen?: Set<string>,
 ): { kind: string; scalar?: string } | undefined;
 
-export declare function multiplicityFromPresence(presence: unknown): {
-	lower: number;
-	upper: number;
-};
-
 export declare function readContractIr(
 	document: unknown,
 	options?: {

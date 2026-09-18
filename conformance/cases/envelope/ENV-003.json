@@ -4,8 +4,8 @@
 	"family": "envelope",
 	"class": "boundary",
 	"kind": "document",
-	"contractVersion": "1.1.0",
-	"base": "minimal-1-1",
+	"contractVersion": "2.0.0",
+	"base": "minimal-2-0",
 	"ops": [
 		{
 			"op": "test",
@@ -22,8 +22,8 @@
 	"derivedFrom": [
 		{
 			"artifact": "docs/semantic-data-system/contracts-v1.md",
-			"locator": "Contract 1.1.0 (issue #34)",
-			"quote": "discriminated by `contractVersion`"
+			"locator": "Structural model detail (issue #34)",
+			"quote": "The IR declares exactly one `contractVersion`, `2.0.0`; the schema admits no other value"
 		}
 	],
 	"provenance": {

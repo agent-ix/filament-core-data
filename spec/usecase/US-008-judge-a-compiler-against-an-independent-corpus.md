@@ -42,7 +42,7 @@ That is enough to author cases and expected results without running anything.
 
 ### [US-008-EX-1] A case is authored from the contract, not from a run
 
-- **Given** a corpus case that asserts a `1.1.0` field whose `multiplicity.lower` is `1` may not declare `presence: "optional"`
+- **Given** a corpus case that asserts a field whose `multiplicity.upper` is `0` raises `UNSUPPORTED_MULTIPLICITY`
 - **When** the reviewer asks where the expected result came from
 - **Then** the case cites the contract clause and schema pointer it was derived from, and records that no implementation run produced it
 
@@ -90,7 +90,7 @@ owning issue rather than repairing either side.
 
 ## Dependencies (Contextual)
 
-Depends on the semantic IR v1.1 contract ([US-006](./US-006-declare-typed-domain-structure.md),
+Depends on the semantic IR contract ([US-006](./US-006-declare-typed-domain-structure.md),
 FR-027..FR-030) and the semantic-core declaration grammar
 ([US-007](./US-007-declare-archetypes-against-a-shared-grammar.md), FR-031..FR-034).
 Judges issue #19 (compiler core) and issues #21, #22, and #23 (Rust,

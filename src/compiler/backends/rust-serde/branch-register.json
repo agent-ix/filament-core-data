@@ -10,12 +10,12 @@
 		"src/compiler/ir/applicability.mjs"
 	],
 	"contributions": {
-		"diagnostics.mjs": 22,
+		"diagnostics.mjs": 21,
 		"mapping-table.json": 69,
 		"names.mjs": 10,
 		"src/compiler/ir/applicability.mjs": 40
 	},
-	"rowCount": 141,
+	"rowCount": 140,
 	"unmetCount": 0,
 	"unreachableCount": 1,
 	"rows": [
@@ -654,15 +654,6 @@
 			"axis": "diagnostic",
 			"vocabulary": "diagnostics.mjs",
 			"construct": "error, blocking: a typeRef, appliesTo, items, values, payloadType or target resolves to nothing",
-			"cases": [
-				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
-			]
-		},
-		{
-			"branchId": "diagnostic:agent-ix.semantic-ir.V1_1_NODE_IN_V1_0",
-			"axis": "diagnostic",
-			"vocabulary": "diagnostics.mjs",
-			"construct": "error, blocking: a 1.0.0 document carries a 1.1.0 node",
 			"cases": [
 				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
 			]
