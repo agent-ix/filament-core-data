@@ -187,7 +187,11 @@ function mapped(backend, ir) {
 /** A minimal well-formed document carrying `types`. */
 function documentOf(types) {
 	return {
-		contractVersion: "1.1.0",
+		// fcd#179: 2.0.0 is the only Semantic IR contract. `mapDocument` never
+		// branches on this string — it only echoes it into the returned
+		// model — so the value is cosmetic to every detector here, but a test
+		// fixture should not claim a contract that no longer exists.
+		contractVersion: "2.0.0",
 		source: {
 			identity: "ix://agent-ix/filament-core-data/source/typespec",
 			version: "1.0.0",

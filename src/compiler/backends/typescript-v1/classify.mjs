@@ -118,7 +118,7 @@ export const MODELLED_CHANGES = Object.freeze([
  * answer is when nobody has.
  *
  * The disagreement was measured rather than predicted. Under `"contract"` the
- * corpus cases `ENUM-004` and `UNION-004` — both on the base `core-1-1`, which
+ * corpus cases `ENUM-004` and `UNION-004` — both on the base `core-2-0`, which
  * carries no consumer policy — answer `breaking` against an expected
  * `conditional`, and the compatibility family is 22 of 24. Under `"corpus"`
  * both answer `conditional` and the family is 24 of 24. No other case's answer

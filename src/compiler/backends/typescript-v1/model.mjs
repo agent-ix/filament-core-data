@@ -21,7 +21,7 @@
  * - **The model is acyclic.** The IR's type graph is not: `typeRef`,
  *   `alias.target`, `sequence.items`, `map.values` and `variant.payloadType` are
  *   flat identities into one flat array and may form cycles, and
- *   `conformance/bases/core-1-1.json` carries a real one — `Node` has a field
+ *   `conformance/bases/core-2-0.json` carries a real one — `Node` has a field
  *   typed `NodeRef`, which is a `reference` whose target is `Node`. So a
  *   resolution carries a *summary* of the entry it resolves to — its identity,
  *   its minted identifier, its kind and its resolved scalar — rather than a
@@ -137,7 +137,7 @@ function summaryOf(types, identifiers, identity) {
  * no renderer re-derives one and no two renderers derive it differently.
  *
  * `upper` absent means unbounded, so absent or greater than one is a
- * collection. `conformance/bases/core-1-1.json` carries both readings on one
+ * collection. `conformance/bases/core-2-0.json` carries both readings on one
  * record: `node-children` has `{ lower: 0, ordered: true, unique: true }` and is
  * a collection, while `node-tags` has `{ lower: 0, upper: 1 }` and is not, even
  * though its `typeRef` names a `sequence`.
@@ -413,7 +413,7 @@ export function buildModel(ir, options = {}) {
 			Object.fromEntries(entries.map((entry) => [entry.identity, entry])),
 		),
 		// Both are document-level and are rendered by FR-067 and by nothing else.
-		// `conformance/bases/core-1-1.json` and `package-1-1.json` each carry one
+		// `conformance/bases/core-2-0.json` and `package-2-0.json` each carry one
 		// of each, so a model that dropped them would drop real data under a
 		// `fail` policy.
 		occurrences: Object.freeze([...(document.occurrences ?? [])]),

@@ -95,8 +95,8 @@ export declare function normalizeJsonSchemaForPython(
 	schema: unknown,
 ): Record<string, unknown>;
 
-/** The contract version the compiler emits (FR-046). */
-export declare const CONTRACT_IR_VERSION: "1.1.0";
+/** The contract version the compiler emits (FR-046; fcd#179: 2.0.0 is the only contract). */
+export declare const CONTRACT_IR_VERSION: "2.0.0";
 
 /** One position in a package's own source tree; never absolute, never `..`-bearing. */
 export interface SourceLocus {

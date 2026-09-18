@@ -158,15 +158,6 @@ export function resolveReserved(rendered, identity) {
 	};
 }
 
-/** The IR members a `1.1.0` document may carry and a `1.0.0` document may not. */
-const V1_1_NODES = Object.freeze([
-	{ owner: "type", member: "relationships" },
-	{ owner: "type", member: "operations" },
-	{ owner: "type", member: "clauses" },
-	{ owner: "field", member: "multiplicity" },
-	{ owner: "field", member: "unit" },
-]);
-
 /**
  * How a type's declared `unknownPolicy` is disposed, keyed on its kind.
  *
@@ -189,7 +180,7 @@ const V1_1_NODES = Object.freeze([
  *   generated documentation. Recording it is what stops it being dropped.
  *
  * Refusing the inert kinds was the earlier reading and it was wrong: it refused
- * `conformance/bases/core-1-1.json`, which gives a `map` `preserve` and a
+ * `conformance/bases/core-2-0.json`, which gives a `map` `preserve` and a
  * `union` `surface`, and which the independent oracle decides `success`.
  */
 export function unknownDisposition(definition, policy) {
@@ -247,8 +238,6 @@ export function mapDocument(ir, options = {}) {
 	// The construct facts read the authored document, not the rendering view:
 	// a subtype's own fields are the ones that redefine or subset (FR-141).
 	const authored = options.authored ?? byIdentity;
-
-	if (version === "1.0.0") checkV11Nodes(definitions, raise);
 
 	const omitted = new Set(options.allowedOmissions ?? []);
 	for (const identity of omitted) {
@@ -421,36 +410,6 @@ function bindAbstractSupertypes(models, raise) {
 				path: `crate::types::${supertype.moduleName}::${supertype.typeName}`,
 				members,
 			});
-		}
-	}
-}
-
-function checkV11Nodes(definitions, raise) {
-	for (const definition of definitions) {
-		for (const node of V1_1_NODES) {
-			if (node.owner === "type") {
-				if (definition[node.member] === undefined) continue;
-				raise(
-					RUST_BACKEND_CODES.V1_1_NODE_IN_V1_0,
-					`the type ${fragment(definition.identity)} carries the 1.1.0 node \`${node.member}\` in a 1.0.0 document`,
-					definition.origin?.source,
-				);
-				continue;
-			}
-			const owners = [
-				...(definition.fields ?? []),
-				...(definition.operations ?? []).flatMap(
-					(operation) => operation.params ?? [],
-				),
-			];
-			for (const field of owners) {
-				if (field[node.member] === undefined) continue;
-				raise(
-					RUST_BACKEND_CODES.V1_1_NODE_IN_V1_0,
-					`the field ${fragment(field.identity)} carries the 1.1.0 node \`${node.member}\` in a 1.0.0 document`,
-					field.origin?.source,
-				);
-			}
 		}
 	}
 }

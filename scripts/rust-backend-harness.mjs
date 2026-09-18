@@ -112,7 +112,7 @@ function scratchRoot() {
 /**
  * The consumer contract the consumers are built against.
  *
- * It is `conformance/bases/core-1-1.json` plus three constructs the four
+ * It is `conformance/bases/core-2-0.json` plus three constructs the three
  * corpus bases do not carry and FR-061 requires evidence for: a record whose
  * unknown policy is `preserve`, a collection member with a `multiplicity.lower`
  * above zero, and a `required` package extension. Without them three of the

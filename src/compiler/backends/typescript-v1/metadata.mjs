@@ -13,7 +13,7 @@
  * identities, roles, unknown policies, units, relationship descriptors,
  * extensions at all three levels, occurrences, and the provenance of the
  * document itself. Nothing in the document is dropped. That is not a
- * precaution — `conformance/bases/core-1-1.json` and `package-1-1.json` each
+ * precaution — `conformance/bases/core-2-0.json` and `package-2-0.json` each
  * carry an occurrence, a document-level extension and a field declaring
  * `unit: "ms"`, and the committed `typescript` target contract sets
  * `unsupportedFeaturePolicy: "fail"`, so a silent drop is not available.

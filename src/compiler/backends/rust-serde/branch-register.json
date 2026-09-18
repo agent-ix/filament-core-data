@@ -659,15 +659,6 @@
 			]
 		},
 		{
-			"branchId": "diagnostic:agent-ix.semantic-ir.V1_1_NODE_IN_V1_0",
-			"axis": "diagnostic",
-			"vocabulary": "diagnostics.mjs",
-			"construct": "error, blocking: a 1.0.0 document carries a 1.1.0 node",
-			"cases": [
-				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
-			]
-		},
-		{
 			"branchId": "extension:node",
 			"axis": "extension",
 			"vocabulary": "mapping-table.json",
