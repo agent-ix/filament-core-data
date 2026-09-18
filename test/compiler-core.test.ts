@@ -3867,6 +3867,29 @@ describe("compatibility (FR-051)", () => {
 		);
 	});
 
+	/**
+	 * fcd#183: every constructed pair `scripts/build-compatibility-cases.mjs`
+	 * writes is a schema-valid 2.0.0 document, not merely a shape the
+	 * classifier happens to accept — a case built from a document the schema
+	 * itself would reject is not evidence about the classifier.
+	 */
+	it("constructs every compatibility case pair as a schema-valid 2.0.0 document", () => {
+		expect(published).toHaveLength(39);
+		for (const entry of published) {
+			const built = constructed(entry.id);
+			expect(validateIrDocument(built.old as never), entry.id).toEqual([]);
+			expect(validateIrDocument(built.new as never), entry.id).toEqual([]);
+			expect(
+				(built.old as never as { contractVersion: string }).contractVersion,
+				entry.id,
+			).toBe("2.0.0");
+			expect(
+				(built.new as never as { contractVersion: string }).contractVersion,
+				entry.id,
+			).toBe("2.0.0");
+		}
+	});
+
 	/** Traces: TC-528; FR-051-AC-2. */
 	it("maps every case family through the published data, and produces every report family", () => {
 		const map = readJson(
@@ -4337,20 +4360,32 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 			expect(suppressed.stdout).toContain("suppressed");
 			expect(suppressed.status).toBe(0);
 
+			// fcd#183: this used to also downgrade `contractVersion` to "1.1.0",
+			// which is what actually failed the run — `readContractIr` refuses any
+			// version but 2.0.0 before reading a single field (FR-050), so the
+			// mutation below was never exercised. It used to mutate `presence`
+			// instead of `multiplicity`, but FR-106-CON-1 states 2.0.0 authors
+			// `presence` independently of `multiplicity.lower` and enforces no
+			// agreement between them at all (fcd#179 deleted
+			// `PRESENCE_MULTIPLICITY_MISMATCH`, the 1.0.0/1.1.0-only rule that used
+			// to catch that); a `presence` mutation alone is valid 2.0.0 input and
+			// draws no diagnostic. The document stays declared as 2.0.0 here, and a
+			// field's own multiplicity bounds — checked at every contract version —
+			// is what this test now breaks instead.
 			const invalid = resolve(directory, "invalid.json");
 			const broken2 = JSON.parse(read(out)) as never as {
 				contractVersion: string;
 				types: Json[];
 			};
-			broken2.contractVersion = "1.1.0";
 			const target = broken2.types.find(
 				(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
 			) as Json;
-			(target.fields as Json[])[0].presence = "optional";
+			(target.fields as Json[])[0].multiplicity = { lower: 1, upper: 0 };
 			writeFileSync(invalid, `${JSON.stringify(broken2, null, "\t")}\n`);
 			const broken = runCliAllowingFailure(["inspect", "--ir", invalid]);
 			expect(broken.status).toBe(1);
 			expect(broken.stdout).toContain("diagnostics:");
+			expect(broken.stdout).toContain("agent-ix.semantic-ir.INVALID_MULTIPLICITY");
 		} finally {
 			rmSync(directory, { recursive: true, force: true });
 		}
@@ -5252,7 +5287,10 @@ describe("generation backend seam registry codes (FR-063)", () => {
 		contractVersion: "1.0.0",
 		lockFingerprint: `sha256:${"a".repeat(64)}`,
 		ir: readJson(
-			resolve(root, "fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json"),
+			resolve(
+				root,
+				"fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json",
+			),
 		) as Json,
 		profile: readJson(
 			resolve(root, "fixtures/semantic/v1/positive/profile.json"),
@@ -5361,12 +5399,22 @@ describe("generation backend seam registry codes (FR-063)", () => {
 					},
 				},
 			}),
-		}) as never as { state: string; diagnostics: Diagnostic[] };
+		}) as never as { state: string; diagnostics: Diagnostic[]; files: Json[] };
 		note(result.diagnostics);
 		expect(result.state).toBe("unsupported");
 		expect(codesOf(result.diagnostics)).toContain(
 			DIAGNOSTIC_CODES.UNSUPPORTED_IR_VERSION.code,
 		);
+		// FR-063-AC-23: the diagnostic names both the version seen and the
+		// versions the backend declares, and `generate` is never called, so no
+		// file reaches the manifest.
+		const unsupported = result.diagnostics.find(
+			(entry) => entry.code === DIAGNOSTIC_CODES.UNSUPPORTED_IR_VERSION.code,
+		);
+		expect(unsupported?.message).toContain("2.0.0");
+		expect(unsupported?.message).toContain("does not support contract version");
+		expect(unsupported?.message).toContain("it declares");
+		expect(result.files).toEqual([]);
 	});
 
 	/** Traces: TC-751, TC-752; FR-063-AC-8, FR-063-AC-9. */
@@ -5374,7 +5422,7 @@ describe("generation backend seam registry codes (FR-063)", () => {
 		const escaping = {
 			identity: "ix://agent-ix/filament-core-data/backend/probe",
 			version: "1.0.0",
-			supportedIrVersions: ["1.1.0"],
+			supportedIrVersions: ["2.0.0"],
 			supportedFeatures: [],
 			generate: () => ({
 				state: "success",

@@ -82,15 +82,34 @@ export interface BackendSelection {
 	implemented: boolean;
 }
 
-export declare function selectBackend(target: unknown): BackendSelection;
+export declare function selectBackend(
+	target: unknown,
+	registry?: Map<string, BackendSelection>,
+): BackendSelection;
 
-export declare function isBackendImplemented(target: unknown): boolean;
+export declare function isBackendImplemented(
+	target: unknown,
+	registry?: Map<string, BackendSelection>,
+): boolean;
 
-export declare function backendRegistrations(): {
+export declare function backendRegistrations(
+	registry?: Map<string, BackendSelection>,
+): {
 	target: string;
 	owner: string;
 	implemented: boolean;
 }[];
+
+/**
+ * Builds a registry for a test: the committed one, with the named entries
+ * replaced (FR-063-AC-3, FR-063-AC-7). A test seam, not a production API.
+ */
+export declare function registryWith(
+	overrides: Record<
+		string,
+		{ owner: string; backend: GenerationBackend | null; implemented: boolean }
+	>,
+): Map<string, BackendSelection>;
 
 export declare function assertBackendContract(
 	backend: unknown,
@@ -104,5 +123,6 @@ export declare function generateTarget(
 		target?: unknown;
 		host?: CompilerFileHost;
 		format?: FormatFunction;
+		registry?: Map<string, BackendSelection>;
 	},
 ): OutputManifest;

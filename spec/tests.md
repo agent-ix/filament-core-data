@@ -772,7 +772,7 @@ blocked as stated above.
 | TC-429 | The frontend SHALL reach the library by the absolute path it supplies to `additionalImports` | Static | P1 | FR-053-CON-3 | ✅ passed |
 | TC-430 | The library SHALL declare no decorator that overrides a minted identity or that lets an IR value be derived from a declaration's name, namespace | Property | P1 | FR-053-CON-4 | ✅ passed |
 | TC-431 | Every manifest this requirement adds SHALL declare `"license": "AGPL-3.0-or-later"` | Static | P1 | FR-053-CON-5 | ✅ passed |
-| TC-432 | The IR produced for `test/fixtures/compiler/packages/assurance` validates against `semantic-ir.schema.json` with `contractVersion` `1.1.0` | Unit | P0 | FR-046-AC-1 | ✅ passed |
+| TC-432 | The IR produced for `test/fixtures/compiler/packages/assurance` validates against `semantic-ir.schema.json` with `contractVersion` `2.0.0` | Unit | P0 | FR-046-AC-1 | ✅ passed |
 | TC-433 | Every row of the structural-kind table is exercised by a declaration in the fixture package and yields the stated `kind` and additional members | Unit | P0 | FR-046-AC-2 | ✅ passed |
 | TC-434 | Every row of the built-in scalar mapping yields the stated IR `scalar` | Unit | P0 | FR-046-AC-3 | ✅ passed |
 | TC-435 | A record named `AuditEvent` with no `@role` has `roles: []`, and a record named `Thing` with `@role("agent-ix:event")` has `roles: | Unit | P0 | FR-046-AC-4 | ✅ passed |
@@ -850,11 +850,11 @@ blocked as stated above.
 | TC-507 | The `diagnostic` constructor SHALL truncate every input-derived string to 120 characters before it enters a message; input data beyond identities | Unit | P1 | FR-049-CON-2 | ✅ passed |
 | TC-508 | The set of codes the registry declares and the set the compiler emits SHALL be equal, with every declared code reached by at least one test | Unit | P1 | FR-049-CON-3 | ✅ passed |
 | TC-509 | The `agent-ix.semantic-ir.*` spellings SHALL be exactly those the issue #34 readers already emit, extracted from the byte-unchanged `fixtures/semantic/v1/negative/reader-cases.json` and `test/semantic-ir-v1-1-reader.ts` | Unit | P1 | FR-049-CON-4 | ✅ passed |
-| TC-510 | Every positive `1.1.0` fixture under `fixtures/semantic/v1/positive/` validates and yields zero reader diagnostics | Unit | P0 | FR-050-AC-1 | ✅ passed |
+| TC-510 | Every positive `2.0.0` fixture under `fixtures/semantic/v1/positive/` validates and yields zero reader diagnostics | Unit | P0 | FR-050-AC-1 | ✅ passed |
 | TC-511 | Every case in `negative/reader-cases.json` yields the expected diagnostic code from the compiler's reader | Unit | P0 | FR-050-AC-2 | ✅ passed |
 | TC-512 | For every case in `negative/reader-cases.json`, the compiler's reader, the issue #34 TypeScript reader | Integration | P0 | FR-050-AC-3 | ✅ passed |
 | TC-513 | `src/compiler/ir/reader.mjs` imports no module under `test/` or `tests/` | Static | P0 | FR-050-AC-4 | ✅ passed |
-| TC-514 | `normalizeIr` materializes `multiplicity`, `presence`, and `nullable` on every `1.1.0` field and operation parameter | Unit | P0 | FR-050-AC-5 | ✅ passed |
+| TC-514 | `normalizeIr` materializes `multiplicity`, `presence`, and `nullable` on every `2.0.0` field and operation parameter | Unit | P0 | FR-050-AC-5 | ✅ passed |
 | TC-515 | `normalizeIr(normalizeIr(d))` equals `normalizeIr(d)` for every positive fixture and for generated documents | Property | P0 | FR-050-AC-6 | ✅ passed |
 | TC-516 | Two documents differing only in object key order and in identity-keyed array order have the same `fingerprintIr` | Property | P0 | FR-050-AC-7 | ✅ passed |
 | TC-517 | An emitted document that fails validation is not written, and the failure is a blocking diagnostic naming the failing pointer | Unit | P0 | FR-050-AC-8 | ✅ passed |
@@ -880,7 +880,7 @@ blocked as stated above.
 | TC-545 | The diff SHALL NOT import a target backend; per-target dispositions are an input | Static | P1 | FR-051-CON-4 | ✅ passed |
 | TC-546 | `fixtures/semantic/v1/compatibility/cases.json` SHALL remain byte-unchanged; it is the read-only case index | Static | P1 | FR-051-CON-5 | ✅ passed |
 | TC-547 | `emit-ir` over the spike entrypoint reproduces the committed golden `spikes/typespec-feasibility/generated/custom/semantic-ir.json` byte for byte | Snapshot | P0 | FR-052-AC-1 | ✅ passed |
-| TC-548 | `compile` over the fixture package writes a valid `1.1.0` document and exits `0`; running it twice produces identical IR and diagnostic bytes | Integration | P0 | FR-052-AC-2 | ✅ passed |
+| TC-548 | `compile` over the fixture package writes a valid `2.0.0` document and exits `0`; running it twice produces identical IR and diagnostic bytes | Integration | P0 | FR-052-AC-2 | ✅ passed |
 | TC-549 | `compile` over a fixture with a blocking defect exits `1`, leaves a fresh `--out` absent, leaves a pre-existing `--out` byte-unchanged | Integration | P0 | FR-052-AC-3 | ✅ passed |
 | TC-550 | `compile` with `--lock` pointing at a stale lock exits `1` and leaves the lock file byte-unchanged | Integration | P0 | FR-052-AC-4 | ✅ passed |
 | TC-551 | `compile --write-lock` produces a lock validating against its schema; omitting the flag writes no lock | Integration | P0 | FR-052-AC-5 | ✅ passed |
@@ -953,7 +953,7 @@ blocked as stated above.
 | TC-620 | Every NFR-021 gate resolves both ends of its range from history — neither a moving base nor a moving head — and still fails on the same input in a simulated post-merge tree where the branch diff and `git status` are both empty | Integration | P0 | NFR-021-AC-9 | ✅ passed |
 | TC-621 | An unaccounted-for file under `src/compiler/` fails the promotion-inventory gate in that same post-merge tree | Static | P0 | NFR-021-AC-9 | ✅ passed |
 | TC-622 | A union variant whose `payloadType` no type declares is rejected at that variant's locus; two variants sharing one payload type are accepted | Unit | P0 | FR-038-AC-7 | ✅ passed — conformance corpus (PR pending) |
-| TC-623 | A `1.0.0` document under `1.1.0` rules, a `1.1.0` node in a `1.0.0` document, and an export added and removed each produce the stated result | Unit | P0 | FR-038-AC-8 | ✅ passed — conformance corpus (PR pending) |
+| TC-623 | An export added and removed produces the stated result | Unit | P0 | FR-038-AC-8 | ✅ passed — conformance corpus (PR pending) |
 | TC-624 | Every register row's `sources` resolve, and every listed issue #19 criterion is quoted in its row and covered by a case | Unit | P0 | FR-038-AC-9, FR-038-CON-1, FR-038-CON-2 | ✅ passed — conformance corpus (PR pending) |
 | TC-625 | Cross-language generated-package serialization parity is recorded as an unmet area with issues #21, #22, #23, and #11 as owners | Static | P0 | FR-038-CON-3 | ✅ passed — conformance corpus (PR pending) |
 | TC-626 | Regenerating `coverage.json` reproduces the committed file byte-for-byte; adding a case without regenerating fails the gate | Unit | P0 | FR-039-AC-1, FR-039-CON-1 | ✅ passed — conformance corpus (PR pending) |
@@ -981,7 +981,7 @@ blocked as stated above.
 | TC-748 | A request failing `compiler-request.schema.json` returns `state: "invalid"` with one diagnostic per schema error at the failing instance pointer and no file | Unit | P0 | FR-063-AC-4 | 🚧 partially exercised by an existing test; no test binds this row |
 | TC-749 | Every manifest the seam returns validates against `output-manifest.schema.json`, and the five states are each reached: `success` for an admitted representable document, `lossy` for an admissible one, `unsupported` for a representability loss, `invalid` for a schema-failing request, and `unavailable` for an unimplemented target | Property | P0 | FR-063-AC-5, FR-063-AC-17, FR-063-AC-18 | 🚧 no discrete test; no test binds this row |
 | TC-750 | `requestFingerprint` and `normalizedFingerprint` are recomputed independently, each `files[]` entry carries a path under `outputRoot`, its media type, and a non-empty identity set, and its digest is taken over the text the injected formatter returned | Integration | P0 | FR-063-AC-6, FR-063-AC-7, FR-063-AC-20 | 🚧 no discrete test; no test binds this row |
-| TC-751 | `assertBackendContract` rejects a backend missing any contract member and one naming a path outside `outputRoot`, and a `1.0.0` request against the TypeScript backend returns `state: "unsupported"` | Unit | P0 | FR-063-AC-8, FR-063-AC-9, FR-063-AC-10 | 🚧 partially exercised by an existing test; no test binds this row |
+| TC-751 | `assertBackendContract` rejects a backend missing any contract member and one naming a path outside `outputRoot`, and a `1.0.0` request against the TypeScript backend returns `state: "invalid"` with `UNKNOWN_CONTRACT_VERSION` (TC-748 exercises this clause directly) | Unit | P0 | FR-063-AC-8, FR-063-AC-9, FR-063-AC-10 | 🚧 partially exercised by an existing test; no test binds this row |
 | TC-752 | `target-contract.json` validates against its schema and carries the member values of the committed `typescript` target row, whose declared runtime validator is satisfied in-package | Unit | P0 | FR-063-AC-11, FR-063-CON-2 | 🚧 no discrete test; no test binds this row |
 | TC-753 | The seam imports no frontend and neither prototype backend, the narrow interface keeps exactly fifteen symbols, and `package.json` metadata is unchanged | Analysis | P0 | FR-063-AC-12, FR-063-CON-4, FR-063-CON-5, FR-063-CON-6 | ✅ passed — Analysis; the evidence is the recorded analysis, which mints no source symbol |
 | TC-754 | Every read goes through the injected host, no backend module reads a clock, environment, cwd, filesystem or socket, no module below the injected formatter starts a child process, 256 mutated requests never throw, and every code is a declared register member | Fuzz | P0 | FR-063-AC-13, FR-063-AC-14, FR-063-AC-15, FR-063-AC-16, FR-063-AC-21, FR-063-CON-3 | 🚧 partially exercised by an existing test; no test binds this row |
@@ -1084,7 +1084,7 @@ blocked as stated above.
 | TC-651 | Recursive type graphs compile and box a stable field set across two runs | Integration | P0 | FR-054-AC-7 | 🚧 planned |
 | TC-652 | Relationships, operations, clauses, roles, origins and occurrences survive into metadata | Unit | P0 | FR-054-AC-8 | 🚧 planned |
 | TC-653 | A semantic default applies and a representation or migration default does not | Unit | P1 | FR-054-AC-9 | 🚧 planned |
-| TC-654 | A 1.0.0 document derives multiplicity, and a 1.1.0 node inside one is refused | Unit | P0 | FR-054-AC-10 | 🚧 planned |
+| TC-654 | A field whose multiplicity.upper is 0 raises UNSUPPORTED_MULTIPLICITY | Unit | P0 | FR-054-AC-10 | 🚧 planned |
 | TC-655 | The published mapping table, the requirement's rows and the serde-only dependency set agree | Analysis | P0 | FR-054-AC-11, FR-054-AC-14, FR-054-CON-4 | 🚧 planned |
 | TC-656 | A construct with no mapping row is refused and writes no file | Unit | P0 | FR-054-AC-12 | 🚧 planned |
 | TC-657 | The mapping model is invariant under key and identity-set reordering and reads no ambient input | Property | P0 | FR-054-AC-13, FR-054-CON-3 | 🚧 planned |
@@ -1308,7 +1308,7 @@ blocked as stated above.
 | TC-1028 | Close KERNEL_LOSSES at exactly the two declared rows and put it in bijection with the loss codes it adds to DIAGNOSTIC_CODES, asserted in both directi | Static | P0 | FR-084-CON-1, FR-084-CON-2, FR-084-CON-3 | 🚧 planned |
 | TC-1029 | Provenance.mjs compute source.digest as a pure function of the supplied file bytes and paths, reading no file system, clock, environment variable, or | Static | P0 | FR-084-CON-4, FR-084-CON-5, FR-084-CON-6 | 🚧 planned |
 | TC-1030 | NOT relax, reorder, or reword any existing member of DIAGNOSTIC_CODES | Static | P0 | FR-084-CON-7, FR-084-CON-8, FR-084-CON-9 | 🚧 planned |
-| TC-1031 | The emitted kernel IR validates against schema/semantic/v1/semantic-ir.schema.json at contractVersion 1.1.0, carrying every required member of source | Property | P0 | FR-084-AC-1, FR-084-AC-2, FR-084-AC-3 | 🚧 planned |
+| TC-1031 | The emitted kernel IR validates against schema/semantic/v1/semantic-ir.schema.json at contractVersion 2.0.0, carrying every required member of source | Property | P0 | FR-084-AC-1, FR-084-AC-2, FR-084-AC-3 | 🚧 planned |
 | TC-1032 | Source.version, package.version | Property | P0 | FR-084-AC-4, FR-084-AC-5, FR-084-AC-6 | 🚧 planned |
 | TC-1033 | The TypeScript, Rust, Python | Snapshot | P0 | FR-084-AC-7, FR-084-AC-8, FR-084-AC-9 | 🚧 planned |
 | TC-1034 | Lowering the committed bundle emits exactly one agent-ix.compiler.KERNEL_UNCONSTRAINED_VALUE located at DefaultDecl.json's value, naming the minted De | Unit | P0 | FR-084-AC-10, FR-084-AC-11, FR-084-AC-12 | 🚧 planned |
@@ -1483,7 +1483,7 @@ blocked as stated above.
 | TC-1294 | The FR-098 change set outside the crate is exactly cases.json, shared/typespec/records-and-scalars/, and files under shared/spec-bundle/; src/compiler/frontend/** and test/compiler-core.test.ts are byte-unchanged | Static | P1 | FR-098-AC-10, FR-098-CON-1 | ✅ passed |
 | TC-1295 | lift over config-version-table exits 0 and writes the document, .fingerprint, .diagnostics.json, and .provenance.json; with --diagnostics d.json --provenance p.json it writes those in their place with the same document bytes | E2E | P0 | FR-099-AC-1 | ✅ passed |
 | TC-1296 | lift over negatives/UNRESOLVED_TYPE_TOKEN exits 1 writing only the diagnostics sidecar; lift without --module, under negatives/MODULE_WITHOUT_SEMANTIC_BLOCK, and with --out under the bundle root each exit 2 writing nothing | E2E | P1 | FR-099-AC-2 | ✅ passed |
-| TC-1297 | inspect --ir over a lifted document prints one line per type in types order and exits 0; over a document missing contractVersion (defaulted to 1.0.0 by the reader and rejected at /ir/source/dialect) it prints INVALID_IR and exits 1 | E2E | P1 | FR-099-AC-3 | ✅ passed |
+| TC-1297 | inspect --ir over a lifted document prints one line per type in types order and exits 0; over a document missing contractVersion it prints INVALID_IR naming the reader's SCHEMA_VIOLATION at /ir ("a required member contractVersion is absent") and exits 1 | E2E | P1 | FR-099-AC-3 | ✅ passed |
 | TC-1298 | make extraction-frontend-build, -test, -check, -deny, and -audit succeed on 1.98.1; with EXTRACTION_TOOLCHAIN=0.0.0 each fails naming 0.0.0 and none skips | Static | P1 | FR-099-AC-4 | ✅ static evidence (make extraction-frontend-evidence) |
 | TC-1299 | The change set outside the crate, the FR-098 set and the ticket's spec, plan and review artifacts is exactly the members line, Cargo.lock, the Makefile block, the additive THIRD-PARTY-NOTICES.md rows, extraction-frontend-diagnostics.md and scripts/extraction-frontend-harness.mjs, measured over the working range (opening-sentinel parent to HEAD until squashed); the seven prohibited paths are byte-unchanged | Static | P1 | FR-099-AC-5, FR-099-CON-1, FR-099-CON-2 | ✅ passed |
 | TC-1300 | Two lifts of config-version-table, within one run and across two runs, produce IR and diagnostic bytes identical to each other, to the committed expected/ goldens, and to decide normalized | Snapshot | P0 | NFR-031-AC-1 | ✅ passed |
@@ -1556,7 +1556,7 @@ blocked as stated above.
 | TC-1390 | Generating one document through the seam and through generateRust yields the same path set and a byte-identical digest at every path | Integration | P0 | FR-130-AC-3, FR-130-CON-1 | ✅ passed |
 | TC-1391 | The generated crate's src/identity.rs renders GENERATOR_IDENTITY as the Rust backend and never as the TypeScript backend | Unit | P0 | FR-130-AC-4 | ✅ passed |
 | TC-1392 | A target with no implementation returns state unavailable, zero files, and BACKEND_NOT_IMPLEMENTED naming the owning issue | Unit | P1 | FR-130-AC-5 | ✅ passed |
-| TC-1393 | A rust request whose IR declares contract version 1.0.0 returns state unsupported naming 1.1.0, and the backend declares 1.1.0 alone | Unit | P1 | FR-130-AC-6, FR-130-CON-3 | ✅ passed |
+| TC-1393 | A rust request whose IR declares contract version 1.0.0 returns state invalid with an UNKNOWN_CONTRACT_VERSION diagnostic naming 1.0.0, and the backend declares 2.0.0 alone | Unit | P1 | FR-130-AC-6, FR-130-CON-3 | ✅ passed |
 | TC-1394 | A rust request with no injected host returns state invalid with at least one diagnostic and zero files | Unit | P1 | FR-130-AC-7 | ✅ passed |
 | TC-1395 | The registered rust backend module imports no file-system module, and the seam's rust entry resolves to it as implemented | Unit | P1 | FR-130-AC-8, FR-130-CON-2 | ✅ passed |
 | TC-1396 | make test-rust names rust and extraction-frontend-test; make rust names check, build, clippy, test and conformance; make test-node names neither rust nor cargo | Unit | P0 | NFR-038-AC-1, NFR-038-AC-5 | ✅ passed |
@@ -1756,7 +1756,6 @@ blocked as stated above.
 | TC-253, TC-264 | package version | `v1` / `v1` + addition | regenerate | Prior version bytes unchanged; new version additive |
 | TC-316 | field presence and nullability | `required` / `optional` | `nullable: true` / `nullable: false` | All four combinations are distinct normalized forms; neither is inferable from the other |
 | TC-305, TC-309 | adapter answer | `supported` / `unsupported` / `unavailable` | declared in the case or the registry, or undeclared | Declared `unsupported` and registry-declared `unavailable` are recorded; every undeclared answer fails |
-| TC-321 | contract version | `1.0.0` / `1.1.0` | node present or absent | A `1.1.0` node in a `1.0.0` document, and a `1.0.0` document read under `1.1.0` rules, each classify as the register row states |
 | TC-296 | compatibility change | optional addition / required addition / removal | consumer policy preserving, rejecting, or absent | Most restrictive classification wins, an optional addition is additive only under a preserving policy, and every contributing change is named |
 | TC-312 | adapter pointer scheme | `pointerCompatible: true` / `false` | matching or mismatched locus | The pointer is compared only for a compatible adapter; a wrong locus always fails |
 | TC-322, TC-324 | prototype component | `retain` / `rewrite` / `replace-with-official` / `discard` | targets present or empty | Promoted dispositions name a file; non-promoted dispositions name none |
@@ -2100,7 +2099,7 @@ blocked as stated above.
 | bundle assembled, at least one blocking diagnostic | write | diagnostics sidecar written; no temporary file left; pre-existing document, fingerprint, and provenance byte-unchanged; exit 1 | TC-1268, TC-1281 |
 | bundle assembled, output directory absent or unwritable | write | `OUTPUT_UNWRITABLE` naming the path; nothing written; exit 2 | TC-1282 |
 | written document | `inspect --ir` | one line per type in `types` order; exit 0 | TC-1297 |
-| document missing `contractVersion` | `inspect --ir` | `INVALID_IR` printed (reader rejects at `/ir/source/dialect`); exit 1 | TC-1297 |
+| document missing `contractVersion` | `inspect --ir` | `INVALID_IR` printed (reader's schema layer rejects at `/ir`, naming the absent `contractVersion` member); exit 1 | TC-1297 |
 | `EXTRACTION_TOOLCHAIN` resolvable | any `extraction-frontend-*` Make target | gate runs on `cargo +1.98.1` | TC-1298, TC-1321 |
 | `EXTRACTION_TOOLCHAIN=0.0.0` | any `extraction-frontend-*` Make target | gate fails naming `0.0.0`; never skips | TC-1298, TC-1321 |
 
@@ -2151,7 +2150,7 @@ blocked as stated above.
 | ERR-041 | Composite relationship graph contains a cycle | Validation fails at the closing relationship | TC-240 |
 | ERR-042 | Duplicate `clauseId` within one type definition | Validation fails at the second clause | TC-241 |
 | ERR-043 | Constraint keyword applied outside its applicability, or regex fails to compile | Validation fails at the constraint locus | TC-244, TC-245 |
-| ERR-044 | `contractVersion` outside `1.0.0`/`1.1.0`/`2.0.0`, or a v1.1/v2.0 dialect outside `typespec`/`spec-bundle` | Fails before emission with a machine-readable diagnostic | TC-246 |
+| ERR-044 | `contractVersion` outside `2.0.0`, or a dialect outside `typespec`/`spec-bundle` | Fails before emission with a machine-readable diagnostic | TC-246 |
 | ERR-045 | Kernel declares a domain archetype or an `Any` scalar | Scope test fails naming the declaration | TC-249, TC-258, TC-273 |
 | ERR-046 | Emitted projection differs from committed bytes | `check` script exits non-zero naming the file | TC-264 |
 | ERR-047 | `Decimal` `TypeRef` without `decimal`, or `decimal` on a non-Decimal target | Semantic-core reader rejects at the declaration | TC-256, TC-277 |
