@@ -4,8 +4,8 @@
 	"family": "field-default",
 	"class": "negative",
 	"kind": "document",
-	"contractVersion": "1.1.0",
-	"base": "core-1-1",
+	"contractVersion": "2.0.0",
+	"base": "core-2-0",
 	"ops": [
 		{
 			"op": "test",
@@ -18,7 +18,9 @@
 			"value": "none"
 		}
 	],
-	"covers": ["CR-field-default"],
+	"covers": [
+		"CR-field-default"
+	],
 	"decidedBy": "schema",
 	"derivedFrom": [
 		{

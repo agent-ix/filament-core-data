@@ -448,7 +448,6 @@ def supplementary(bundle: Any, ir: Any) -> list[dict[str, str]]:
     if not isinstance(ir, dict):
         return out
     types = _types_by_identity(ir)
-    version = str(ir.get("contractVersion"))
     definitions = reader._objects(ir.get("types"))
 
     seen: dict[str, str] = {}
@@ -536,14 +535,11 @@ def supplementary(bundle: Any, ir: Any) -> list[dict[str, str]]:
                     )
                 else:
                     names[name] = position
-            if version == "1.0.0" and "multiplicity" in field:
-                out.append(
-                    _row(
-                        "V1_1_NODE_IN_V1_0",
-                        f"{at}/fields/{position}/multiplicity",
-                        "a 1.1.0 node is carried by a 1.0.0 document",
-                    )
-                )
+            # fcd#179: this branch used to raise V1_1_NODE_IN_V1_0 when a
+            # 1.1.0-only member reached a 1.0.0 document. Contract 1.0.0 is
+            # deleted and 2.0.0 is the only contract this adapter is ever
+            # handed, so `version == "1.0.0"` can never be true. Deleted
+            # rather than left unreachable.
 
     for index, occurrence in enumerate(reader._objects(ir.get("occurrences"))):
         definition = occurrence.get("definition")

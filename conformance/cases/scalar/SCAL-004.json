@@ -4,8 +4,8 @@
 	"family": "scalar",
 	"class": "evolution",
 	"kind": "compatibility",
-	"contractVersion": "1.1.0",
-	"base": "core-1-1",
+	"contractVersion": "2.0.0",
+	"base": "core-2-0",
 	"ops": [
 		{
 			"op": "test",
@@ -27,7 +27,7 @@
 			"path": "/ir/types/1/constraints/0"
 		}
 	],
-	"beforeBase": "core-1-1",
+	"beforeBase": "core-2-0",
 	"beforeOps": [
 		{
 			"op": "test",
@@ -39,7 +39,9 @@
 			"path": "/ir/types/1/constraints/0"
 		}
 	],
-	"covers": ["CR-scalar"],
+	"covers": [
+		"CR-scalar"
+	],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

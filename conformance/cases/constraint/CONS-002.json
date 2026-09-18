@@ -4,8 +4,8 @@
 	"family": "constraint",
 	"class": "negative",
 	"kind": "document",
-	"contractVersion": "1.1.0",
-	"base": "core-1-1",
+	"contractVersion": "2.0.0",
+	"base": "core-2-0",
 	"ops": [
 		{
 			"op": "test",
@@ -18,12 +18,14 @@
 			"value": "ix://agent-ix/conformance/type/Count"
 		}
 	],
-	"covers": ["CR-constraint"],
+	"covers": [
+		"CR-constraint"
+	],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{
 			"artifact": "docs/semantic-data-system/contracts-v1.md",
-			"locator": "Contract 1.1.0 (issue #34)",
+			"locator": "Structural model detail (issue #34)",
 			"quote": "The constraint `keyword` is a closed set (`min`, `max`, `exclusiveMin`,"
 		}
 	],

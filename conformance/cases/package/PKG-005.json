@@ -4,8 +4,8 @@
 	"family": "package",
 	"class": "negative",
 	"kind": "document",
-	"contractVersion": "1.1.0",
-	"base": "package-1-1",
+	"contractVersion": "2.0.0",
+	"base": "package-2-0",
 	"ops": [
 		{
 			"op": "test",
@@ -15,10 +15,14 @@
 		{
 			"op": "replace",
 			"path": "/lock/packages/1/dependencies",
-			"value": ["agent-ix/conformance"]
+			"value": [
+				"agent-ix/conformance"
+			]
 		}
 	],
-	"covers": ["CR-package"],
+	"covers": [
+		"CR-package"
+	],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

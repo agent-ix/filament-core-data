@@ -194,30 +194,6 @@
 			"reviewBy": "2026-12-31"
 		},
 		{
-			"id": "DIV-017",
-			"case": "ENV-004",
-			"adapter": "compiler-frontend",
-			"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
-			"owner": "the issue #19 compiler frontend",
-			"owningIssue": "agent-ix/filament-core-data#19",
-			"severity": "high",
-			"verdict": "implementation-defect",
-			"rationale": "The corpus expects `agent-ix.semantic-ir.SCHEMA_VIOLATION`, a value the published v1 schema rejects. `readContractIr` (`src/compiler/ir/reader.mjs`) raises nothing for this document: it applies cross-field rules only and never validates against `schema/semantic/v1/semantic-ir.schema.json`. The compiler does carry such a validator — `validateIrDocument` in `src/compiler/ir/schema.mjs`, raising `agent-ix.compiler.INVALID_IR` — but no reader path calls it: `inspectIr` (`src/compiler/inspect.mjs:30`) calls `readContractIr` alone, so the shipped `inspect` command accepts a schema-invalid document. The defect is the missing wiring, not a missing rule, and `src/compiler/schema-validate.mjs` states the opposite of what the reader does: \"The compiler validates every document it reads *and every document it emits* against the schema the repository publishes\". The adapter measures the path `inspect` exposes and does not add a validation step the shipped command does not take.",
-			"reviewBy": "2026-12-31"
-		},
-		{
-			"id": "DIV-018",
-			"case": "ENV-004",
-			"adapter": "compiler-frontend",
-			"code": "result-state",
-			"owner": "the issue #19 compiler frontend",
-			"owningIssue": "agent-ix/filament-core-data#19",
-			"severity": "high",
-			"verdict": "implementation-defect",
-			"rationale": "The case is a consequence of the diagnostic divergence registered for the same case: with no blocking diagnostic raised, `hasBlocking` decides `success` where the corpus expects `invalid`. The document is schema-invalid and the reader accepts it.",
-			"reviewBy": "2026-12-31"
-		},
-		{
 			"id": "DIV-019",
 			"case": "EXT-002",
 			"adapter": "compiler-frontend",
@@ -695,42 +671,6 @@
 			"severity": "high",
 			"verdict": "implementation-defect",
 			"rationale": "The case is a consequence of the diagnostic divergence registered for the same case: with no blocking diagnostic raised, `hasBlocking` decides `success` where the corpus expects `invalid`. The document is schema-invalid and the reader accepts it.",
-			"reviewBy": "2026-12-31"
-		},
-		{
-			"id": "DIV-059",
-			"case": "VER-002",
-			"adapter": "compiler-frontend",
-			"code": "agent-ix.semantic-ir.V1_1_NODE_IN_V1_0",
-			"owner": "the issue #19 compiler frontend",
-			"owningIssue": "agent-ix/filament-core-data#19",
-			"severity": "high",
-			"verdict": "implementation-defect",
-			"rationale": "The reader gates only `multiplicity` on the contract version. A document declaring `contractVersion: \"1.0.0\"` may carry `relationships`, `operations`, `clauses` and a field `unit` and is accepted — the same finding GAP-001 records against the schema, reproduced in the reader. The corpus expects `agent-ix.semantic-ir.V1_1_NODE_IN_V1_0` and `readContractIr` raises nothing.",
-			"reviewBy": "2026-12-31"
-		},
-		{
-			"id": "DIV-060",
-			"case": "VER-002",
-			"adapter": "compiler-frontend",
-			"code": "result-state",
-			"owner": "the issue #19 compiler frontend",
-			"owningIssue": "agent-ix/filament-core-data#19",
-			"severity": "high",
-			"verdict": "implementation-defect",
-			"rationale": "The case is a consequence of the diagnostic divergence registered for the same case: with no blocking diagnostic raised, `hasBlocking` decides `success` where the corpus expects `invalid`. Nothing refuses the document.",
-			"reviewBy": "2026-12-31"
-		},
-		{
-			"id": "DIV-061",
-			"case": "VER-004",
-			"adapter": "compiler-frontend",
-			"code": "classification",
-			"owner": "the issue #19 compiler frontend",
-			"owningIssue": "agent-ix/filament-core-data#19",
-			"severity": "medium",
-			"verdict": "implementation-defect",
-			"rationale": "The corpus expects `conditional`; `diffSemanticContract` returns `additive` for a document moving from contract 1.0.0 to 1.1.0 with no other change. The compiler's uplift rule (`src/compiler/compat/diff.mjs:193`) projects the new document back to 1.0.0, finds the projection byte-identical to the old document, and reports `additive`. The projection argument establishes that the uplift added no node — it does not establish that a known consumer tolerates the new contract version, and the contract requires exactly that for an additive promotion (\"Unknown or stale consumers remain visible and prevent a compatible promotion\"). This case declares no consumer policy, so `conditional` is the floor. Same root as COMP-005 at a third call site: consumer evidence is treated as optional.",
 			"reviewBy": "2026-12-31"
 		}
 	]

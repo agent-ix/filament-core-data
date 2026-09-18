@@ -6,27 +6,17 @@
 			"family": "envelope",
 			"title": "A contract version outside the declared set is rejected",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
 					{
 						"op": "test",
 						"path": "/ir/contractVersion",
-						"value": "1.1.0"
+						"value": "2.0.0"
 					},
 					{
 						"op": "replace",
 						"path": "/ir/contractVersion",
-						"value": "1.2.0"
-					},
-					{
-						"op": "test",
-						"path": "/ir/source/dialect",
-						"value": "typespec"
-					},
-					{
-						"op": "replace",
-						"path": "/ir/source/dialect",
-						"value": "https://json-schema.org/draft/2020-12/schema"
+						"value": "1.3.0"
 					}
 				]
 			},
@@ -39,7 +29,7 @@
 			"family": "identity",
 			"title": "One identity declared by two fields of one record is rejected",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
 					{
 						"op": "test",
@@ -62,7 +52,7 @@
 			"family": "scalar",
 			"title": "A scalar name outside the closed set is rejected",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
 					{
 						"op": "test",
@@ -85,7 +75,7 @@
 			"family": "alias",
 			"title": "An alias whose target no type declares is rejected",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
 					{
 						"op": "add",
@@ -120,7 +110,7 @@
 			"family": "enum",
 			"title": "An enum with no variants member is rejected",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
 					{
 						"op": "test",
@@ -167,7 +157,7 @@
 			"family": "sequence-map",
 			"title": "A sequence whose element type no type declares is rejected",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
 					{
 						"op": "test",
@@ -190,7 +180,7 @@
 			"family": "union",
 			"title": "A union variant whose payload type no type declares is rejected",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
 					{
 						"op": "test",
@@ -213,7 +203,7 @@
 			"family": "reference",
 			"title": "A reference whose target no type declares is rejected",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
 					{
 						"op": "test",
@@ -234,32 +224,39 @@
 		{
 			"id": "MUT-009",
 			"family": "field-presence",
-			"title": "Presence that contradicts the multiplicity lower bound is rejected",
+			"title": "Ordered and unique on a single-valued field are rejected",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
 					{
 						"op": "test",
-						"path": "/ir/types/8/fields/0/presence",
-						"value": "required"
+						"path": "/ir/types/8/fields/0/multiplicity",
+						"value": {
+							"lower": 1,
+							"upper": 1
+						}
 					},
 					{
 						"op": "replace",
-						"path": "/ir/types/8/fields/0/presence",
-						"value": "optional"
+						"path": "/ir/types/8/fields/0/multiplicity",
+						"value": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": true
+						}
 					}
 				]
 			},
-			"code": "agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH",
-			"pointer": "/ir/types/8/fields/0/presence",
-			"detectedBy": "PRES-002"
+			"code": "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
+			"pointer": "/ir/types/8/fields/0/multiplicity",
+			"detectedBy": "PRES-007"
 		},
 		{
 			"id": "MUT-010",
 			"family": "field-default",
 			"title": "A default value with no default kind is rejected",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
 					{
 						"op": "test",
@@ -282,8 +279,13 @@
 			"family": "unit",
 			"title": "A unit on a field resolving to a sequence is rejected",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/types/8/fields/5/identity",
+						"value": "ix://agent-ix/conformance/field/node-tags"
+					},
 					{
 						"op": "add",
 						"path": "/ir/types/8/fields/5/unit",
@@ -300,7 +302,7 @@
 			"family": "constraint",
 			"title": "A length constraint applied to an integer is rejected",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
 					{
 						"op": "test",
@@ -323,7 +325,7 @@
 			"family": "recursion",
 			"title": "An alias that targets itself is rejected as a cycle",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
 					{
 						"op": "add",
@@ -358,8 +360,13 @@
 			"family": "relationship",
 			"title": "A composite relationship that closes a cycle is rejected",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/types/8/identity",
+						"value": "ix://agent-ix/conformance/type/Node"
+					},
 					{
 						"op": "add",
 						"path": "/ir/types/8/relationships/-",
@@ -394,7 +401,7 @@
 			"family": "operation",
 			"title": "A precondition naming a clause the type does not declare is rejected",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
 					{
 						"op": "test",
@@ -417,8 +424,13 @@
 			"family": "clause",
 			"title": "A second clause reusing a clauseId on one type is rejected",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/types/9/identity",
+						"value": "ix://agent-ix/conformance/type/Root"
+					},
 					{
 						"op": "add",
 						"path": "/ir/types/9/clauses/-",
@@ -454,7 +466,7 @@
 			"family": "provenance",
 			"title": "A source locus that escapes the source root is rejected",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
 					{
 						"op": "test",
@@ -491,7 +503,7 @@
 			"family": "unknown",
 			"title": "An unknown policy outside the declared set is rejected",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
 					{
 						"op": "test",
@@ -514,7 +526,7 @@
 			"family": "extension",
 			"title": "A required extension a rejecting consumer policy does not list is rejected",
 			"mutation": {
-				"base": "package-1-1",
+				"base": "package-2-0",
 				"ops": [
 					{
 						"op": "test",
@@ -549,7 +561,7 @@
 			"family": "package",
 			"title": "An import the lock does not resolve is rejected",
 			"mutation": {
-				"base": "package-1-1",
+				"base": "package-2-0",
 				"ops": [
 					{
 						"op": "test",
@@ -568,32 +580,11 @@
 			"detectedBy": "PKG-002"
 		},
 		{
-			"id": "MUT-021",
-			"family": "version",
-			"title": "A contract 1.1.0 node carried by a 1.0.0 document is rejected",
-			"mutation": {
-				"base": "minimal-1-0",
-				"ops": [
-					{
-						"op": "add",
-						"path": "/ir/types/1/fields/0/multiplicity",
-						"value": {
-							"lower": 1,
-							"upper": 1
-						}
-					}
-				]
-			},
-			"code": "agent-ix.semantic-ir.V1_1_NODE_IN_V1_0",
-			"pointer": "/ir/types/1/fields/0/multiplicity",
-			"detectedBy": "VER-002"
-		},
-		{
 			"id": "MUT-022",
 			"family": "compatibility",
 			"title": "A pair whose later document is invalid classifies invalid",
 			"mutation": {
-				"base": "core-1-1",
+				"base": "core-2-0",
 				"ops": [
 					{
 						"op": "test",

@@ -4,37 +4,29 @@
 	"family": "envelope",
 	"class": "negative",
 	"kind": "document",
-	"contractVersion": "1.1.0",
-	"base": "core-1-1",
+	"contractVersion": "2.0.0",
+	"base": "core-2-0",
 	"ops": [
 		{
 			"op": "test",
 			"path": "/ir/contractVersion",
-			"value": "1.1.0"
+			"value": "2.0.0"
 		},
 		{
 			"op": "replace",
 			"path": "/ir/contractVersion",
 			"value": "1.3.0"
-		},
-		{
-			"op": "test",
-			"path": "/ir/source/dialect",
-			"value": "typespec"
-		},
-		{
-			"op": "replace",
-			"path": "/ir/source/dialect",
-			"value": "https://json-schema.org/draft/2020-12/schema"
 		}
 	],
-	"covers": ["CR-envelope"],
+	"covers": [
+		"CR-envelope"
+	],
 	"decidedBy": "schema",
 	"derivedFrom": [
 		{
 			"artifact": "docs/semantic-data-system/contracts-v1.md",
-			"locator": "Contract 2.0.0 (issues #93, #146 and #172)",
-			"quote": "discriminated by `contractVersion`"
+			"locator": "Structural model detail (issue #34)",
+			"quote": "The IR declares exactly one `contractVersion`, `2.0.0`; the schema admits no other value"
 		}
 	],
 	"provenance": {

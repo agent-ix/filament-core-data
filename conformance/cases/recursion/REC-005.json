@@ -4,8 +4,8 @@
 	"family": "recursion",
 	"class": "boundary",
 	"kind": "document",
-	"contractVersion": "1.1.0",
-	"base": "core-1-1",
+	"contractVersion": "2.0.0",
+	"base": "core-2-0",
 	"ops": [
 		{
 			"op": "x-repeat",
@@ -54,7 +54,9 @@
 			}
 		}
 	],
-	"covers": ["CR-recursion"],
+	"covers": [
+		"CR-recursion"
+	],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

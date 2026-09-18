@@ -4,8 +4,8 @@
 	"family": "alias",
 	"class": "evolution",
 	"kind": "compatibility",
-	"contractVersion": "1.1.0",
-	"base": "core-1-1",
+	"contractVersion": "2.0.0",
+	"base": "core-2-0",
 	"ops": [
 		{
 			"op": "add",
@@ -40,7 +40,7 @@
 			"value": "ix://agent-ix/conformance/type/Words"
 		}
 	],
-	"beforeBase": "core-1-1",
+	"beforeBase": "core-2-0",
 	"beforeOps": [
 		{
 			"op": "add",
@@ -65,7 +65,9 @@
 			}
 		}
 	],
-	"covers": ["CR-alias"],
+	"covers": [
+		"CR-alias"
+	],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

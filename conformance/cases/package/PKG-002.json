@@ -4,8 +4,8 @@
 	"family": "package",
 	"class": "negative",
 	"kind": "document",
-	"contractVersion": "1.1.0",
-	"base": "package-1-1",
+	"contractVersion": "2.0.0",
+	"base": "package-2-0",
 	"ops": [
 		{
 			"op": "test",
@@ -18,7 +18,9 @@
 			"value": "agent-ix/absent"
 		}
 	],
-	"covers": ["CR-package"],
+	"covers": [
+		"CR-package"
+	],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

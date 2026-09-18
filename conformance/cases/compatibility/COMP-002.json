@@ -4,8 +4,8 @@
 	"family": "compatibility",
 	"class": "negative",
 	"kind": "compatibility",
-	"contractVersion": "1.1.0",
-	"base": "core-1-1",
+	"contractVersion": "2.0.0",
+	"base": "core-2-0",
 	"ops": [
 		{
 			"op": "test",
@@ -18,9 +18,11 @@
 			"value": "ix://agent-ix/conformance/field/node-id"
 		}
 	],
-	"beforeBase": "core-1-1",
+	"beforeBase": "core-2-0",
 	"beforeOps": [],
-	"covers": ["CR-compatibility"],
+	"covers": [
+		"CR-compatibility"
+	],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

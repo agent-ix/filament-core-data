@@ -4,8 +4,8 @@
 	"family": "sequence-map",
 	"class": "evolution",
 	"kind": "compatibility",
-	"contractVersion": "1.1.0",
-	"base": "core-1-1",
+	"contractVersion": "2.0.0",
+	"base": "core-2-0",
 	"ops": [
 		{
 			"op": "test",
@@ -18,9 +18,11 @@
 			"value": "ix://agent-ix/conformance/type/Count"
 		}
 	],
-	"beforeBase": "core-1-1",
+	"beforeBase": "core-2-0",
 	"beforeOps": [],
-	"covers": ["CR-sequence-map"],
+	"covers": [
+		"CR-sequence-map"
+	],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

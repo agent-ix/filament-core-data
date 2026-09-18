@@ -1,6 +1,7 @@
 {
 	"ir": {
-		"contractVersion": "1.1.0",
+		"contractVersion": "2.0.0",
+		"constructs": [],
 		"source": {
 			"identity": "ix://agent-ix/filament-core-data/source/typespec",
 			"version": "1.0.0",
@@ -11,8 +12,12 @@
 			"identity": "agent-ix/conformance",
 			"version": "1.0.0",
 			"manifestDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
-			"mappingVersions": ["1.0.0"],
-			"profileVersions": ["1.0.0"],
+			"mappingVersions": [
+				"1.0.0"
+			],
+			"profileVersions": [
+				"1.0.0"
+			],
 			"lockDigest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
 		},
 		"types": [
@@ -20,7 +25,9 @@
 				"identity": "ix://agent-ix/conformance/type/Text",
 				"displayName": "Text",
 				"kind": "scalar",
-				"roles": ["agent-ix:value"],
+				"roles": [
+					"agent-ix:value"
+				],
 				"origin": {
 					"source": {
 						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
@@ -110,7 +117,9 @@
 				"identity": "ix://agent-ix/conformance/type/Status",
 				"displayName": "Status",
 				"kind": "enum",
-				"roles": ["agent-ix:state"],
+				"roles": [
+					"agent-ix:state"
+				],
 				"origin": {
 					"source": {
 						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
@@ -252,7 +261,9 @@
 				"identity": "ix://agent-ix/conformance/type/Node",
 				"displayName": "Node",
 				"kind": "record",
-				"roles": ["agent-ix:entity"],
+				"roles": [
+					"agent-ix:entity"
+				],
 				"origin": {
 					"source": {
 						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
@@ -458,7 +469,10 @@
 				"identity": "ix://agent-ix/conformance/type/Root",
 				"displayName": "Root",
 				"kind": "record",
-				"roles": ["agent-ix:entity", "agent-ix:aggregate"],
+				"roles": [
+					"agent-ix:entity",
+					"agent-ix:aggregate"
+				],
 				"origin": {
 					"source": {
 						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
@@ -568,8 +582,12 @@
 							},
 							"nullable": false
 						},
-						"pre": ["size-non-negative"],
-						"post": ["node-returned"],
+						"pre": [
+							"size-non-negative"
+						],
+						"post": [
+							"node-returned"
+						],
 						"origin": {
 							"source": {
 								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",

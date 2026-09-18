@@ -4,8 +4,8 @@
 	"family": "relationship",
 	"class": "evolution",
 	"kind": "compatibility",
-	"contractVersion": "1.1.0",
-	"base": "core-1-1",
+	"contractVersion": "2.0.0",
+	"base": "core-2-0",
 	"ops": [
 		{
 			"op": "test",
@@ -17,9 +17,11 @@
 			"path": "/ir/types/8/relationships/0"
 		}
 	],
-	"beforeBase": "core-1-1",
+	"beforeBase": "core-2-0",
 	"beforeOps": [],
-	"covers": ["CR-relationship"],
+	"covers": [
+		"CR-relationship"
+	],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

@@ -4,8 +4,8 @@
 	"family": "field-default",
 	"class": "boundary",
 	"kind": "document",
-	"contractVersion": "1.1.0",
-	"base": "core-1-1",
+	"contractVersion": "2.0.0",
+	"base": "core-2-0",
 	"ops": [
 		{
 			"op": "test",
@@ -28,7 +28,9 @@
 			"value": null
 		}
 	],
-	"covers": ["CR-field-default"],
+	"covers": [
+		"CR-field-default"
+	],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

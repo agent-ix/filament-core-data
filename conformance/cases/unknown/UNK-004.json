@@ -4,8 +4,8 @@
 	"family": "unknown",
 	"class": "evolution",
 	"kind": "compatibility",
-	"contractVersion": "1.1.0",
-	"base": "core-1-1",
+	"contractVersion": "2.0.0",
+	"base": "core-2-0",
 	"ops": [
 		{
 			"op": "test",
@@ -18,9 +18,11 @@
 			"value": "reject"
 		}
 	],
-	"beforeBase": "core-1-1",
+	"beforeBase": "core-2-0",
 	"beforeOps": [],
-	"covers": ["CR-unknown"],
+	"covers": [
+		"CR-unknown"
+	],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

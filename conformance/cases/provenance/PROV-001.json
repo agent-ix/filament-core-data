@@ -4,8 +4,8 @@
 	"family": "provenance",
 	"class": "positive",
 	"kind": "document",
-	"contractVersion": "1.1.0",
-	"base": "core-1-1",
+	"contractVersion": "2.0.0",
+	"base": "core-2-0",
 	"ops": [
 		{
 			"op": "test",
@@ -33,7 +33,9 @@
 			}
 		}
 	],
-	"covers": ["CR-provenance"],
+	"covers": [
+		"CR-provenance"
+	],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

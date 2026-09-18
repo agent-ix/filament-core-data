@@ -1,7 +1,7 @@
 {
-	"corpusVersion": "2.0.1",
-	"corpusDigest": "sha256:df39d9a1337d9eeb684c5ff8291a41da55bc23f6291d660b198fc689a996f1fc",
-	"totalCases": 111,
+	"corpusVersion": "3.0.0",
+	"corpusDigest": "sha256:d8697362b40c18a6aeb58294f5bae21e79f8bd156b74478f80509400ef343bce",
+	"totalCases": 106,
 	"registerRows": [
 		{
 			"id": "CR-envelope",
@@ -10,10 +10,10 @@
 			"cases": {
 				"positive": ["ENV-001"],
 				"negative": ["ENV-002"],
-				"boundary": ["ENV-003"],
-				"evolution": ["ENV-004"]
+				"boundary": ["ENV-003", "ENV-005"],
+				"evolution": []
 			},
-			"notApplicable": [],
+			"notApplicable": ["evolution"],
 			"missing": [],
 			"met": true
 		},
@@ -121,7 +121,7 @@
 			"decidedBy": "cross-field",
 			"cases": {
 				"positive": ["PRES-001", "PRES-005", "PRES-006", "PRES-010"],
-				"negative": ["PRES-002", "PRES-007", "PRES-008", "PRES-009"],
+				"negative": ["PRES-007", "PRES-008", "PRES-009"],
 				"boundary": ["PRES-003"],
 				"evolution": ["PRES-004"]
 			},
@@ -284,20 +284,6 @@
 			"met": true
 		},
 		{
-			"id": "CR-version",
-			"family": "version",
-			"decidedBy": "cross-field",
-			"cases": {
-				"positive": ["VER-001"],
-				"negative": ["VER-002"],
-				"boundary": ["VER-003"],
-				"evolution": ["VER-004"]
-			},
-			"notApplicable": [],
-			"missing": [],
-			"met": true
-		},
-		{
 			"id": "CR-compatibility",
 			"family": "compatibility",
 			"decidedBy": "compatibility",
@@ -317,28 +303,28 @@
 		{
 			"adapter": "compiler-frontend",
 			"status": "available",
-			"matched": 111,
+			"matched": 106,
 			"unmet": 0,
 			"failed": 0
 		},
 		{
 			"adapter": "python-backend",
 			"status": "available",
-			"matched": 111,
+			"matched": 106,
 			"unmet": 0,
 			"failed": 0
 		},
 		{
 			"adapter": "rust-backend",
 			"status": "available",
-			"matched": 111,
+			"matched": 106,
 			"unmet": 0,
 			"failed": 0
 		},
 		{
 			"adapter": "typescript-backend",
 			"status": "available",
-			"matched": 111,
+			"matched": 106,
 			"unmet": 0,
 			"failed": 0
 		}
