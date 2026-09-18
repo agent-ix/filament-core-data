@@ -22,7 +22,7 @@ use common::{
     soa_module, workspace_dir,
 };
 use ix_trace_rs::trace;
-use quire_rs::semantic::TransitionDecl;
+use quire_rs::semantic::{AvailabilityState, KindAvailability, TransitionDecl};
 use serde_json::{json, Value};
 
 const PREFIX: &str = "ix://agent-ix/orders/";
@@ -1225,6 +1225,43 @@ fn lower_systems(write: impl FnOnce(&Path)) -> (tempfile::TempDir, PathBuf, Lowe
     (dir, root, lowered)
 }
 
+/// [`lower_systems`], with `mutate` applied to the engine's records between
+/// extraction and resolution: the seam for a `sourceElement` value quire-rs's
+/// own resolution refuses first (an unknown operation or an unknown local
+/// artifact), so no authored text reaches it — mirrors [`lower_mutated`] for
+/// the systems module set.
+fn lower_systems_mutated(
+    write: impl FnOnce(&Path),
+    mutate: impl FnOnce(&mut Extractions),
+) -> Lowered {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let root = dir.path().join("business");
+    copy_tree(&fixture("business"), &root);
+    write(&root.join("spec/functional"));
+    let module_roots = systems_module_roots();
+    let module_paths: Vec<&Path> = module_roots.iter().map(PathBuf::as_path).collect();
+    let bundle = Bundle::load(&root, &module_paths)
+        .unwrap_or_else(|r| panic!("{} refused: {r}", root.display()));
+    let mut extractions = extract(&bundle);
+    mutate(&mut extractions);
+    let resolutions = resolve(&bundle, &extractions);
+    let limits = Limits::declared().expect("limits.json parses");
+    lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0")
+}
+
+/// The `sourceElement` of `id`'s allocation record, as the engine extracted
+/// it, mutable in place.
+fn allocation_source_mut<'a>(extractions: &'a mut Extractions, id: &str) -> &'a mut String {
+    &mut extractions
+        .artifacts
+        .get_mut(id)
+        .and_then(|a| a.extraction.model.as_mut())
+        .and_then(|m| m.allocation.as_mut())
+        .unwrap_or_else(|| panic!("{id} carries no allocation record"))
+        .record
+        .source_element
+}
+
 /// Transition `index` of `SM_001`, as the engine recorded it.
 fn sm_001_transition(extractions: &mut Extractions, index: usize) -> &mut TransitionDecl {
     extractions
@@ -2159,7 +2196,7 @@ fn tc_1800_a_systems_reference_member_naming_an_imported_identity_is_refused() {
 #[trace("TC-1800", "FR-143-AC-11")]
 #[test]
 fn tc_1800_an_allocation_source_naming_an_operation_lowers_to_that_operations_identity() {
-    let (_scratch, _root, lowered) = lower_systems(|dir| {
+    let (scratch, root, lowered) = lower_systems(|dir| {
         for (name, content) in systems_part_pair() {
             fs::write(dir.join(name), content).expect("write helper part");
         }
@@ -2200,6 +2237,231 @@ fn tc_1800_an_allocation_source_naming_an_operation_lowers_to_that_operations_id
         sa_002.construct.source_element,
         Some(format!("{PREFIX}operation/SI_002-run")),
         "the allocation source lowers to SI_002's run operation identity"
+    );
+
+    // The delta review that found this lowering refused end to end
+    // (`INVALID_IR: UNRESOLVED_CONSTRUCT_REF at /ir/types/.../sourceElement`)
+    // reached the FR-097 independent reader that `lower_bundle` alone never
+    // calls, so the assertions above passed while the real `lift` still
+    // failed. This runs the same bundle through the full pipeline — the
+    // Rust `agent_ix_semantic_ir` reader `validate` calls, and the FR-050
+    // node reader (`readContractIr`) over the document it writes — and
+    // requires both to report no code at all, not merely no *blocking* one.
+    let request = LiftRequest {
+        bundle_root: root,
+        module_roots: systems_module_roots(),
+        out: scratch.path().join("semantic-ir.json"),
+        diagnostics: None,
+        provenance: None,
+    };
+    let outcome = lift(&request);
+    let LiftOutcome::Written {
+        document: bytes, ..
+    } = outcome
+    else {
+        panic!("the real lift did not write a document: {outcome:?}");
+    };
+    let document: Value = serde_json::from_slice(&bytes).expect("the written document parses");
+    assert_eq!(
+        rust_codes(&document),
+        Vec::<String>::new(),
+        "the independent Rust reader over the real lift's document"
+    );
+    assert_eq!(
+        node_codes(&document),
+        Vec::<String>::new(),
+        "the FR-050 node reader over the real lift's document"
+    );
+}
+
+/// FR-143-AC-11 continued: SI_002's own extraction can be refused for a
+/// reason unrelated to the allocation (here, its FR-075 model extraction
+/// marked unavailable) after quire-rs already resolved SA_002's source to
+/// SI_002's `run` operation identity. The fixed point re-checks that
+/// identity every round against the recomputed `operations` set
+/// ([`refusal_rule`]'s FR-152 branch), so SI_002's refusal cascades to
+/// SA_002 too, one round later, with [`Finding 3`]'s corrected wording
+/// ("operation", not "type"). A revert probe (the same fixture, unmutated)
+/// proves the cascade comes from the injected unavailability, not the
+/// fixture text.
+#[trace("TC-1800", "FR-143-AC-11")]
+#[test]
+fn tc_1800_an_allocation_source_naming_an_operation_of_a_since_refused_artifact_cascades_the_refusal(
+) {
+    let write = |dir: &Path| {
+        for (name, content) in systems_part_pair() {
+            fs::write(dir.join(name), content).expect("write helper part");
+        }
+        fs::write(
+            dir.join("SI_002-flow-interface-b.md"),
+            "---\nid: SI_002\ntitle: SI_002\ntype: interface\nobject: interface\n---\n\n\
+             # SI_002: SI_002\n\n## Description\n\n\
+             A second interface: one field, `rate`, and one operation, `run`.\n\n\
+             ## Properties\n\n| Field | Type | Multiplicity | Constraints |\n\
+             |-------|------|--------------|-------------|\n| rate | String | 1 | |\n\n\
+             ## Contract\n\n```yaml\nname: SI_002\nfields:\n  - name: rate\n\
+             \x20\x20\x20 type: String\n    multiplicity: 1..1\noperations:\n  - name: run\n\
+             featureOrder: [rate, run]\n```\n\n## Features\n\n| Feature | Kind |\n|---|---|\n\
+             | rate | field |\n| run | operation |\n\n## Operations\n\n### run\n\nRuns the interface.\n",
+        )
+        .expect("write SI_002");
+        fs::write(
+            dir.join("SA_002-alloc-operation-source.md"),
+            "---\nid: SA_002\ntitle: SA_002\ntype: allocation\nobject: allocation\n---\n\n\
+             # SA_002: SA_002\n\n## Description\n\n\
+             An allocation whose source names an operation of an artifact\n\
+             this test's own mutation later marks unavailable, so the\n\
+             cascade must refuse SA_002 too.\n\n\
+             ## Allocation\n\n| Source | Target |\n|---|---|\n\
+             | SI_002/run | SP_900 |\n",
+        )
+        .expect("write SA_002");
+    };
+
+    let unavailable = |extractions: &mut Extractions| {
+        extractions
+            .artifacts
+            .get_mut("SI_002")
+            .expect("SI_002 extracted")
+            .extraction
+            .availability
+            .model = Some(KindAvailability {
+            state: AvailabilityState::Unavailable,
+            reason: Some("TC-1800: injected for the cascade test".to_string()),
+            lossy: false,
+        });
+    };
+
+    let broken = lower_systems_mutated(write, unavailable);
+    let messages: Vec<&str> = refusals(&broken)
+        .iter()
+        .map(|d| d.message.as_str())
+        .collect();
+    assert!(
+        messages.iter().any(|m| {
+            m.starts_with("artifact SI_002 ")
+                && m.contains(
+                    "the engine's model extraction is unavailable \
+                     (TC-1800: injected for the cascade test)",
+                )
+        }),
+        "{messages:#?}"
+    );
+    let cascade_rule = format!(
+        "artifact SA_002 (spec/functional/SA_002-alloc-operation-source.md) lowers to no \
+         `allocation` construct: a transition, step or reference member names the operation \
+         {PREFIX}operation/SI_002-run, which lowers to nothing"
+    );
+    assert!(messages.contains(&cascade_rule.as_str()), "{messages:#?}");
+    assert!(refusals(&broken).iter().all(|d| d.blocking));
+
+    let (_scratch, _root, clean) = lower_systems(write);
+    assert!(refusals(&clean).is_empty(), "{:#?}", clean.diagnostics);
+}
+
+/// FR-143-AC-11 continued: the engine's own member-qualified allocation
+/// source resolves against the referenced artifact's real declared
+/// operations before this frontend ever sees it (quire-rs#462); this test
+/// bypasses that engine-level check by mutating the already-extracted
+/// `sourceElement` directly (the seam [`lower_systems_mutated`] documents),
+/// so the identity this frontend mints (`SI_002-bogus`) never joins the
+/// bundle's real `operations` set and [`refusal_rule`]'s FR-152 branch
+/// refuses SA_002 alone — SI_002 itself lowers untouched.
+#[trace("TC-1800", "FR-143-AC-11")]
+#[test]
+fn tc_1800_an_allocation_source_naming_an_operation_that_does_not_exist_is_refused() {
+    let write = |dir: &Path| {
+        for (name, content) in systems_part_pair() {
+            fs::write(dir.join(name), content).expect("write helper part");
+        }
+        fs::write(
+            dir.join("SI_002-flow-interface-b.md"),
+            "---\nid: SI_002\ntitle: SI_002\ntype: interface\nobject: interface\n---\n\n\
+             # SI_002: SI_002\n\n## Description\n\n\
+             A second interface: one field, `rate`, and one operation, `run`.\n\n\
+             ## Properties\n\n| Field | Type | Multiplicity | Constraints |\n\
+             |-------|------|--------------|-------------|\n| rate | String | 1 | |\n\n\
+             ## Contract\n\n```yaml\nname: SI_002\nfields:\n  - name: rate\n\
+             \x20\x20\x20 type: String\n    multiplicity: 1..1\noperations:\n  - name: run\n\
+             featureOrder: [rate, run]\n```\n\n## Features\n\n| Feature | Kind |\n|---|---|\n\
+             | rate | field |\n| run | operation |\n\n## Operations\n\n### run\n\nRuns the interface.\n",
+        )
+        .expect("write SI_002");
+        fs::write(
+            dir.join("SA_002-alloc-operation-source.md"),
+            "---\nid: SA_002\ntitle: SA_002\ntype: allocation\nobject: allocation\n---\n\n\
+             # SA_002: SA_002\n\n## Description\n\n\
+             An allocation whose source names SI_002's real `run` operation;\n\
+             this test's own mutation swaps it for an operation SI_002 never\n\
+             declares.\n\n\
+             ## Allocation\n\n| Source | Target |\n|---|---|\n\
+             | SI_002/run | SP_900 |\n",
+        )
+        .expect("write SA_002");
+    };
+
+    let bogus_operation = |extractions: &mut Extractions| {
+        *allocation_source_mut(extractions, "SA_002") = format!("{PREFIX}SI_002/bogus");
+    };
+
+    let lowered = lower_systems_mutated(write, bogus_operation);
+    assert_refused(
+        &lowered,
+        "SA_002",
+        &format!(
+            "a transition, step or reference member names the operation \
+             {PREFIX}operation/SI_002-bogus, which lowers to nothing"
+        ),
+    );
+}
+
+/// FR-143-AC-11 continued: an allocation source naming an operation of an
+/// artifact id the bundle declares nowhere at all (never mis-read as the
+/// referenced artifact's own id with a stray path segment) is refused
+/// immediately, at the artifact's own first lowering pass — never as a
+/// fixed-point cascade, since no round ever admits it in the first place.
+#[trace("TC-1800", "FR-143-AC-11")]
+#[test]
+fn tc_1800_an_allocation_source_naming_an_unknown_local_artifact_is_refused() {
+    let write = |dir: &Path| {
+        for (name, content) in systems_part_pair() {
+            fs::write(dir.join(name), content).expect("write helper part");
+        }
+        fs::write(
+            dir.join("SI_002-flow-interface-b.md"),
+            "---\nid: SI_002\ntitle: SI_002\ntype: interface\nobject: interface\n---\n\n\
+             # SI_002: SI_002\n\n## Description\n\n\
+             A second interface: one field, `rate`, and one operation, `run`.\n\n\
+             ## Properties\n\n| Field | Type | Multiplicity | Constraints |\n\
+             |-------|------|--------------|-------------|\n| rate | String | 1 | |\n\n\
+             ## Contract\n\n```yaml\nname: SI_002\nfields:\n  - name: rate\n\
+             \x20\x20\x20 type: String\n    multiplicity: 1..1\noperations:\n  - name: run\n\
+             featureOrder: [rate, run]\n```\n\n## Features\n\n| Feature | Kind |\n|---|---|\n\
+             | rate | field |\n| run | operation |\n\n## Operations\n\n### run\n\nRuns the interface.\n",
+        )
+        .expect("write SI_002");
+        fs::write(
+            dir.join("SA_002-alloc-operation-source.md"),
+            "---\nid: SA_002\ntitle: SA_002\ntype: allocation\nobject: allocation\n---\n\n\
+             # SA_002: SA_002\n\n## Description\n\n\
+             An allocation whose source names SI_002's real `run` operation;\n\
+             this test's own mutation swaps SI_002 for an artifact id the\n\
+             bundle declares nowhere.\n\n\
+             ## Allocation\n\n| Source | Target |\n|---|---|\n\
+             | SI_002/run | SP_900 |\n",
+        )
+        .expect("write SA_002");
+    };
+
+    let unknown_artifact = |extractions: &mut Extractions| {
+        *allocation_source_mut(extractions, "SA_002") = format!("{PREFIX}NOPE/run");
+    };
+
+    let lowered = lower_systems_mutated(write, unknown_artifact);
+    assert_refused(
+        &lowered,
+        "SA_002",
+        "is the artifact id of no type of the bundle the construct's sourceElement admit",
     );
 }
 

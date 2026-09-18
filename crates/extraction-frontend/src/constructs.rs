@@ -1400,8 +1400,17 @@ fn refusal_rule(
         .as_deref()
         .filter(|t| !lowered.contains(*t) && !operations.contains(*t))
     {
+        // The identity a failed `sourceElement` names is either a type or an
+        // operation identity (`NodeKind::Operation`'s `/operation/` segment,
+        // `identity.rs`); the message names whichever it is rather than
+        // always claiming "type".
+        let noun = if target.contains("/operation/") {
+            "operation"
+        } else {
+            "type"
+        };
         return Some(format!(
-            "a transition, step or reference member names the type {target}, which lowers to nothing"
+            "a transition, step or reference member names the {noun} {target}, which lowers to nothing"
         ));
     }
     if item.owner_from_model {

@@ -83,6 +83,20 @@ impl<'a> Document<'a> {
             .find(|definition| definition.get("identity").and_then(Json::as_str) == Some(identity))
     }
 
+    /// The type declaring the operation an identity names, when the document
+    /// declares one (FR-152: an allocation's `sourceElement` may name an
+    /// operation of a declared type, in place of the type itself).
+    pub fn type_of_operation(&self, identity: &str) -> Option<&'a Json> {
+        self.types.iter().find(|definition| {
+            definition
+                .get("operations")
+                .and_then(Json::as_array)
+                .unwrap_or(&[])
+                .iter()
+                .any(|operation| operation.get("identity").and_then(Json::as_str) == Some(identity))
+        })
+    }
+
     /// The type an identity names, resolved through the alias chain.
     ///
     /// Returns `None` for a chain that does not resolve, closes on itself, or
