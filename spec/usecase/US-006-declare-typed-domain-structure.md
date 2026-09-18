@@ -64,12 +64,10 @@ extensions. The functional requirements settle each of these.
 
 ## Constraints (Contextual)
 
-The frozen TypeSpec spike and every corpus repository stay unchanged (fcd#179:
-the "v1.1 is additive to v1" framing, and the claim that every v1 fixture and
-current backend stays unchanged, no longer hold — 1.0.0 and 1.1.0 are deleted,
-2.0.0 is the only contract, and the two v1 fixtures that used to declare a
-deleted contract (`semantic-ir.json`, `config-version-v1-1.json`) are deleted
-with it, not kept as refused negative evidence).
+The frozen TypeSpec spike stays unchanged. Contract `2.0.0` is the only
+semantic IR contract; a document declaring any other version is refused
+outright, and their refusal is asserted over inline documents rather than
+published fixtures.
 
 ## Dependencies (Contextual)
 
@@ -88,7 +86,4 @@ new node; fixture-backed agreement is the mitigation.
 
 This story drives [FR-027](../functional/FR-027-declare-field-multiplicity-and-units.md)
 through [FR-030](../functional/FR-030-bind-source-dialect-and-manifest-targets.md)
-and amends [FR-020](../functional/FR-020-define-semantic-type-system-and-identity.md)
-(fcd#179 deleted NFR-013, the "additive semantic IR revision" requirement this
-story was constrained by; its subject, the 1.0.0 -> 1.1.0 revision, no longer
-exists).
+and amends [FR-020](../functional/FR-020-define-semantic-type-system-and-identity.md).

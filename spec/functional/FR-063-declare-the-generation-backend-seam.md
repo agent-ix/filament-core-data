@@ -107,7 +107,7 @@ a guess in either direction.
 - `assertBackendContract` SHALL reject a registered backend that does not expose `identity`, `version`, `supportedIrVersions`, `supportedFeatures`, and `generate`.
 - `assertBackendContract` SHALL reject a backend whose returned manifest names a file path the request's `outputRoot` does not contain.
 - If a request names a `contractVersion` the selected backend does not list in `supportedIrVersions`, then `generateTarget` SHALL return `state: "unsupported"` naming the version rather than attempting the generation.
-- The `typescript` backend SHALL declare `supportedIrVersions` of exactly `["2.0.0"]`, because the prototype `1.0.0` document is the frozen FR-041 shape and is not a contract IR document, and the `1.1.0` contract no longer exists (fcd#179).
+- The `typescript` backend SHALL declare `supportedIrVersions` of exactly `["2.0.0"]`, the only contract; the prototype `1.0.0` document is the frozen FR-041 shape and is not a contract IR document.
 - The `json-schema` backend SHALL declare `supportedIrVersions` of exactly `["2.0.0"]`.
 - The seam SHALL write no file, so that file placement belongs to the caller and a package layout can change without editing a backend.
 - The seam SHALL import no module under `src/compiler/frontend/`, so no frontend can influence what a backend emits.
@@ -170,7 +170,7 @@ a guess in either direction.
 | FR-063-AC-20 | Every emitted file's `files[]` digest equals the SHA-256 of the text after `options.format` ran, and a generation given a formatter that uppercases its input produces digests that differ from the same generation given the identity formatter. | Unit |
 | FR-063-AC-21 | `seam.mjs` and every module it imports below the injected formatter start no child process, asserted by an instrumented `node:child_process` during a fixture generation. | Test |
 | FR-063-AC-22 | The `json-schema` registry entry is implemented, owned by `agent-ix/filament-core-data#85`, and a CLI request for it carries the registered backend declaration rather than the TypeScript declaration. | Test (TC-1360) |
-| FR-063-AC-23 | A request naming a registered, implemented backend whose declared `supportedIrVersions` excludes the request's `ir.contractVersion` returns `state: "unsupported"` with a blocking `agent-ix.compiler.UNSUPPORTED_IR_VERSION` diagnostic naming the version seen and the versions the backend declares, and emits no file, exercised over a synthetic registration since no committed backend declares support narrower than `2.0.0` (fcd#179). | Unit (TC-1797) |
+| FR-063-AC-23 | A request naming a registered, implemented backend whose declared `supportedIrVersions` excludes the request's `ir.contractVersion` returns `state: "unsupported"` with a blocking `agent-ix.compiler.UNSUPPORTED_IR_VERSION` diagnostic naming the version seen and the versions the backend declares, and emits no file, exercised over a synthetic registration since no committed backend declares support narrower than `2.0.0`. | Unit (TC-1797) |
 
 ## Dependencies
 

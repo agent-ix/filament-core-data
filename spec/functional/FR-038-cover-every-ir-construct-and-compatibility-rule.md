@@ -48,7 +48,7 @@ that register, or a written justification for a class that row cannot carry.
 - The corpus SHALL carry a `positive` case in which two union variants share one payload type.
 - The corpus SHALL carry cases for direct recursion, mutual recursion through two records, an alias cycle, and a composite relationship cycle.
 - The corpus SHALL distinguish a preserved recursive type graph from a rejected package cycle by diagnostic code.
-- The corpus SHALL carry an `evolution` case for a package version transition that adds one export and removes another (fcd#179 deleted the two `1.0.0`/`1.1.0` evolution cases this row used to also require, along with the contracts they exercised).
+- The corpus SHALL carry an `evolution` case for a package version transition that adds one export and removes another.
 - The corpus SHALL record, in `conformance/defects.json`, each defect discovered in an implementation with its owning issue, its `documentExpressible` flag, and either the case that reproduces it or the static check that detects it.
 - The corpus SHALL carry the reproducing case that every `documentExpressible` defect row names.
 - A defect row whose `documentExpressible` is `false` SHALL name the process property it concerns and the static check that detects it, so that a locale-dependent sort or a working-directory-dependent path is recorded rather than silently uncovered.

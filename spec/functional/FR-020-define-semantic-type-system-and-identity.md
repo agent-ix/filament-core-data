@@ -14,9 +14,8 @@ relationships:
 
 The semantic IR SHALL define a closed structural-kind vocabulary, orthogonal
 semantic roles, stable package/type/field identities, and explicit presence,
-nullability, default, constraint, recursion, and extension semantics
-(fcd#179: contract `2.0.0` is the only version; the historical `1.0.0` →
-`1.1.0` → `2.0.0` revision sequence no longer needs stating).
+nullability, default, constraint, recursion, and extension semantics, over
+contract `2.0.0`, the only version.
 
 ## Behavior
 

@@ -28,10 +28,10 @@ relationships:
 
 The `typespec` frontend SHALL lower a compiled TypeSpec program and its resolved
 package into one semantic IR document valid against
-`schema/semantic/v1/semantic-ir.schema.json` at `contractVersion` `2.0.0`
-(fcd#179: 2.0.0 is the only contract), so
-that every structural value in the document is carried by a declaration in the
-source or by the manifest and none is inferred from a type's spelling.
+`schema/semantic/v1/semantic-ir.schema.json` at `contractVersion` `2.0.0`, the
+only contract, so that every structural value in the document is carried by a
+declaration in the source or by the manifest and none is inferred from a
+type's spelling.
 
 ## Inputs
 

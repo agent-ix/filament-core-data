@@ -38,7 +38,7 @@ requirement restates none of them.
 
 ## Inputs
 
-- `packages/semantic-kernel/semantic-ir.json`, the kernel IR document FR-082 produces at `contractVersion` `2.0.0` (fcd#179 deleted `1.1.0`), and the provenance and representability register FR-084 records on it — the same document FR-085 consumes, read and not re-lowered
+- `packages/semantic-kernel/semantic-ir.json`, the kernel IR document FR-082 produces at `contractVersion` `2.0.0`, and the provenance and representability register FR-084 records on it — the same document FR-085 consumes, read and not re-lowered
 - `src/compiler/backends/rust-serde/crate.mjs`, whose `emitCrate(request)` is a pure function from a request to bytes, and `src/compiler/backends/rust-serde/index.mjs`, whose `generateRust(request, sink)` is the one module in that backend that writes
 - `src/compiler/backends/rust-serde/cli.mjs`, the pure half of the command line the `make rust-*` targets call, whose `generate --out <dir>` route this requirement reuses with the kernel document in place of the corpus bases. All three modules are read and invoked; `src/compiler/backends/**` is a prohibited path for this issue and no byte of any of them changes here
 - `rust-toolchain.toml`, pinning channel `1.98.1` with the `rustfmt` and `clippy` components — the version every fixed-point and build claim below is measured against

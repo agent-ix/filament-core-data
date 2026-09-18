@@ -553,8 +553,8 @@ blocked as stated above.
 | TC-204 | A `1..*` field preserves `ordered` and `unique` flags | Unit | P0 | FR-027-AC-2 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-206 | `upper < lower` and `lower < 0` fail at the field locus; `0..0` validates | Unit | P0 | FR-027-AC-4 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-207 | `unit` validates on a scalar field and fails on a record field | Unit | P0 | FR-027-AC-5, FR-027-CON-2 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-208 | Every v1 positive fixture's digest stays pinned; every fixture declaring `2.0.0` validates with multiplicity derived from presence | Integration | P0 | FR-027-AC-6 | ✅ passed — semantic IR v1.1 (PR #38); restated fcd#179 |
-| TC-209 | FR-006 `ConfigVersion` fields express as fields with zero declared loss | Analysis | P0 | FR-027-AC-7 | ✅ passed — semantic IR v1.1 (PR #38); retargeted fcd#179 |
+| TC-208 | Every v1 positive fixture's digest stays pinned; every fixture declaring `2.0.0` validates, with `multiplicity` authored directly and never derived from `presence` | Integration | P0 | FR-027-AC-6 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-209 | FR-006 `ConfigVersion` fields express as fields with zero declared loss | Analysis | P0 | FR-027-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-210 | A `belongs_to` structural relationship validates and round-trips byte-identically | Property | P0 | FR-028-AC-1, FR-020-AC-7, US-006-EX-2 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-211 | An unknown relationship `category` fails at the relationship locus | Unit | P0 | FR-028-AC-2 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-212 | An operation with params, bounded return, and present pre/post clauses validates | Unit | P0 | FR-028-AC-3 | ✅ passed — semantic IR v1.1 (PR #38) |
@@ -572,12 +572,12 @@ blocked as stated above.
 | TC-224 | Every v1 fixture constraint uses a closed keyword, or its correction is recorded | Static | P0 | FR-029-CON-1 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-225 | Keyword addition classifies additive; removal or retyping classifies breaking | Unit | P0 | FR-029-CON-2 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-226 | FR-006 `versionNumber` `min: 1` expresses as a typed constraint | Analysis | P1 | FR-029-AC-6 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-227 | A `2.0.0` document with `source.dialect: typespec` validates, and one with `spec-bundle` validates (fcd#179: retargeted from `1.1.0`) | Unit | P0 | FR-030-AC-1 | ✅ passed — semantic IR v1.1 (PR #38); restated fcd#179 |
+| TC-227 | A `2.0.0` document with `source.dialect: typespec` validates, and one with `spec-bundle` validates | Unit | P0 | FR-030-AC-1 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-228 | The JSON Schema `$schema` URI as `source.dialect` fails with a diagnostic citing ADR-0005 | Unit | P0 | FR-030-AC-2 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-229 | Manifest targets `rust`/`markdown` validate; target `go` fails at its entry | Unit | P0 | FR-030-AC-3 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-230 | Manifest, target-contract, and representation schemas reference the shared common enumerations | Static | P0 | FR-030-AC-4, FR-030-CON-2 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-232 | The TypeScript Ajv reader and the Python `jsonschema` reader (`tests/`) agree on every golden and negative fixture | Integration | P0 | FR-020-AC-8 | ✅ passed — semantic IR v1.1 (PR #38); restated fcd#179 |
-| TC-233 | Generated `2.0.0` documents with all five new node kinds round-trip the normalized serialization byte-identically | Property | P0 | FR-020-AC-7 | ✅ passed — semantic IR v1.1 (PR #38); restated fcd#179 |
+| TC-232 | The TypeScript Ajv reader and the Python `jsonschema` reader (`tests/`) agree on every golden and negative fixture | Integration | P0 | FR-020-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-233 | Generated `2.0.0` documents with all five new node kinds round-trip the normalized serialization byte-identically | Property | P0 | FR-020-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-237 | `ordered: true` or `unique: true` on a `1..1` field fails at the field locus | Unit | P0 | FR-027-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-238 | Multiplicity narrowing classifies breaking; widening classifies additive | Unit | P0 | FR-027-AC-9 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-239 | A relationship `target` resolving to no type definition or lock export fails at the relationship locus | Unit | P0 | FR-028-AC-9 | ✅ passed — semantic IR v1.1 (PR #38) |
@@ -587,7 +587,7 @@ blocked as stated above.
 | TC-243 | Added relationship/operation/clause classifies additive; removed or retargeted classifies breaking | Unit | P0 | FR-028-AC-13 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-244 | `minLength` applied to an `integer` scalar fails at the constraint locus | Unit | P0 | FR-029-AC-7 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-245 | A `pattern` whose `regex` does not compile under `ecma-262` fails validation | Unit | P0 | FR-029-AC-8 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-246 | `contractVersion: "1.3.0"` fails before emission; `2.0.0` with `source.dialect: avro` fails at `source.dialect` | Unit | P0 | FR-030-AC-5, FR-030-AC-6 | ✅ passed — semantic IR v1.1 (PR #38); restated fcd#179 |
+| TC-246 | `contractVersion: "1.3.0"` fails before emission; `2.0.0` with `source.dialect: avro` fails at `source.dialect` | Unit | P0 | FR-030-AC-5, FR-030-AC-6 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-248 | `tsp compile packages/semantic-core` exits 0 with zero diagnostics under the pinned compiler | Compile | P0 | FR-031-AC-1 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-249 | The compiled program's declaration set equals `inventory.json`; adding `Entity` or `Any` to the source makes the scope test fail naming the declaration | Unit | P0 | FR-031-AC-2, NFR-014-AC-1 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-250 | `ConstraintKeyword` and the eleven constraint models match the FR-029 keyword set and operand shapes; the emitted schema rejects a twelfth | Unit | P0 | FR-031-AC-3 | ✅ passed — semantic-core grammar (PR #39) |
@@ -2138,7 +2138,7 @@ blocked as stated above.
 | ERR-029 | Legacy adapter, version, or identity is missing/contradictory | Explicit failure and zero-value success prohibited | TC-175 |
 | ERR-030 | Locked generation attempts network access or filesystem escape | Sandbox terminates generation and records the offending locus | TC-178, TC-185..187 |
 | ERR-031 | Required extension capability is unknown | Package load/compile fails before emission | TC-193 |
-| ERR-032 | Field `upper < lower` (fcd#179: the `presence` contradicts multiplicity clause is deleted with TC-205 — PRESENCE_MULTIPLICITY_MISMATCH was enforced only outside contract 2.0.0, which no longer exists) | Validation fails at the field locus | TC-206 |
+| ERR-032 | Field `upper < lower` | Validation fails at the field locus | TC-206 |
 | ERR-033 | `unit` declared on a non-scalar field | Validation fails at the field locus | TC-207 |
 | ERR-034 | Relationship category outside the FR-040 closed set, or on a non-record type | Validation fails at the relationship locus | TC-211, TC-216 |
 | ERR-035 | Operation pre/post references an absent clause identity | Validation fails at the operation locus | TC-213 |
@@ -2217,7 +2217,7 @@ blocked as stated above.
 | ERR-093 | The diagnostic count exceeds `maxDiagnostics` after sorting | Truncation plus the non-blocking `DIAGNOSTIC_LIMIT_REACHED` | TC-499, TC-505, TC-605 |
 | ERR-094 | An emitted or read IR document fails its published schema | Blocking `INVALID_IR` naming the pointer, no file written | TC-517, TC-519, TC-611 |
 | ERR-095 | An IR document breaks a cross-field rule of the code table | The rule's own `agent-ix.semantic-ir.*` code | TC-520 |
-| ERR-096 | A generation request's `ir.contractVersion` is outside the published contract (fcd#179: `2.0.0` is the only one; `MISSING_TARGET_DIALECT` was deleted with the 1.0.0/1.1.0 projection it served) | Blocking `UNKNOWN_CONTRACT_VERSION`, no document | TC-748 |
+| ERR-096 | A generation request's `ir.contractVersion` is outside the published contract, `2.0.0` | Blocking `UNKNOWN_CONTRACT_VERSION`, no document | TC-748 |
 | ERR-097 | A manifest declares two profiles and the caller names none | `AMBIGUOUS_PROFILE` and exit `1` | TC-552 |
 | ERR-098 | An unknown command, unknown flag, missing flag, or unreadable `--limits` | Usage text and exit `2` | TC-557 |
 | ERR-099 | An input exceeds one of the four size limits | A distinct blocking limit diagnostic naming the limit | TC-579, TC-587, TC-606 |

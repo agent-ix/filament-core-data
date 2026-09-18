@@ -84,9 +84,9 @@ Rationale: quire-rs exposes no located per-document edge API, and
 declares `relations: RelationDecl[]`; the `## Relationships` bullet grammar
 exists in no contract (SR-166 FND-1463, SR-165 FND-1451). Parsing it here
 would be the second Markdown reading FR-091-CON-3 forbids. The hand-authored
-issue #34 fixture (fcd#179 deleted it from disk;
-`fixtures/semantic/v1/positive/config-version-v1-1.json`) lifted the `parent`
-row as a `derives_from` relationship; this frontend emits `parent` as a field
+issue #34 fixture that once lived at
+`fixtures/semantic/v1/positive/config-version-v1-1.json`, no longer on disk,
+lifted the `parent` row as a `derives_from` relationship; this frontend emits `parent` as a field
 because it is a `## Properties` row. That fixture differed from this
 frontend's output in more than the `parent` node: its `belongs_to`
 relationship came from the removed `## Relationships` bullet grammar and its

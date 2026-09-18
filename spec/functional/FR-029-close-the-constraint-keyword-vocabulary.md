@@ -46,7 +46,7 @@ an unknown keyword or an operand of the wrong shape.
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-029-CON-1 | Every constraint in every v1 positive fixture SHALL use a keyword in the closed enumeration (the v1 positive fixtures carry zero constraints today, so this holds vacuously; FR-029-AC-1 requires one v1.1 fixture per keyword). | Compatibility | Existing-fixture suite |
-| FR-029-CON-2 | The compatibility classifier SHALL classify a keyword added to the enumeration as additive and a keyword removed or retyped as breaking (fcd#179: the trailing clause about the v1 → v1.1 narrowing of `keyword: string` is deleted with the corpus entry it described). | Compatibility | Compatibility corpus |
+| FR-029-CON-2 | The compatibility classifier SHALL classify a keyword added to the enumeration as additive and a keyword removed or retyped as breaking. | Compatibility | Compatibility corpus |
 
 ## Acceptance Criteria
 

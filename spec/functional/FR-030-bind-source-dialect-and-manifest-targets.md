@@ -35,7 +35,7 @@ representation.
 
 ## Behavior
 
-- An IR document SHALL carry `contractVersion: "2.0.0"` (fcd#179: the contract has one version).
+- An IR document SHALL carry `contractVersion: "2.0.0"`, the only version.
 - A request naming any other `contractVersion` SHALL be refused before target emission (FR-019-CON-2), named by `agent-ix.compiler.UNKNOWN_CONTRACT_VERSION` ([FR-063](./FR-063-declare-the-generation-backend-seam.md)-AC-10).
 - The `source.dialect` value SHALL be one of `typespec` or `spec-bundle`.
 - The `source.dialect` value SHALL be `typespec` for documents produced by the TypeSpec frontend.

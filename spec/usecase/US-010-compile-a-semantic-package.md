@@ -26,10 +26,9 @@ relationships:
 
 Issue #9 published thirteen v1 contract schemas and issue #34 extended the
 semantic IR with multiplicity, units, relationships, operations, clauses, and a
-closed constraint vocabulary; fcd#179 later deleted that revision's contract
-version, `1.1.0`, along with `1.0.0`, leaving `2.0.0` as the only contract.
-Issue #35 published the semantic-core declaration grammar. Issue #27 promoted
-the issue #4 prototype emitters into `src/compiler/`.
+closed constraint vocabulary, at contract `2.0.0`, the only contract. Issue #35
+published the semantic-core declaration grammar. Issue #27 promoted the issue
+#4 prototype emitters into `src/compiler/`.
 
 What exists after #27 is a working *prototype* emitter: it walks a compiled
 TypeSpec program and writes a `{schemaVersion, generator, types}` document whose
