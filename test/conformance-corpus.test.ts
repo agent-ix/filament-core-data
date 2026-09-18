@@ -556,6 +556,13 @@ describe("TC-290..301 the oracle (FR-036)", () => {
 		let exercised = 0;
 		for (const entry of cases) {
 			if (entry.contractVersion !== "2.0.0") continue;
+			// fcd#187: "well-formed" means schema-valid. A case whose expected
+			// resultState is not `success` (e.g. PRES-011..015, a non-boolean or
+			// absent `nullable`) is deliberately ill-formed, and the oracle now
+			// materializes `nullable` on such a document, so normalize() and
+			// canonical() genuinely diverge for it; that is the fix, not a
+			// regression, and this test only asserts the well-formed case.
+			if ((entry.expected as Json).resultState !== "success") continue;
 			const bundle = corpus.buildInput(entry) as { ir: Json };
 			expect(oracle.normalize(bundle.ir), String(entry.id)).toBe(
 				canonical(bundle.ir),

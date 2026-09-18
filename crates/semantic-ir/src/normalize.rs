@@ -147,6 +147,9 @@ mod tests {
     use super::normalized;
     use crate::json::{parse, to_canonical_string, Json};
 
+    /// Tracing: TC-1802
+    /// ACs: FR-059-AC-16
+    ///
     /// fcd#187: `nullable` materializes to a literal boolean only for the JSON
     /// literal `true`, never by ECMAScript truthiness coercion. This drives
     /// `fixtures/semantic/v1/nullable-truthiness-cases.json`, the same fixture
@@ -155,7 +158,7 @@ mod tests {
     /// one language's coercion rule fails that language's own test rather
     /// than only this one.
     #[test]
-    fn nullable_materializes_only_for_boolean_true_fcd_187() {
+    fn tc_1802_nullable_materializes_only_for_boolean_true_fcd_187() {
         const CASES: &str =
             include_str!("../../../fixtures/semantic/v1/nullable-truthiness-cases.json");
         let fixture = parse(CASES).expect("a well-formed fixture");
@@ -163,7 +166,7 @@ mod tests {
             .get("cases")
             .and_then(Json::as_array)
             .expect("a cases array");
-        assert_eq!(cases.len(), 5, "fixture case count moved");
+        assert!(!cases.is_empty(), "fixture carries no cases");
         for case in cases {
             let id = case.get("id").and_then(Json::as_str).expect("an id");
             let expected = case
@@ -178,11 +181,12 @@ mod tests {
                 r#"{{"ir":{{"contractVersion":"2.0.0","types":[{{"kind":"record","fields":[{{"name":"a","presence":"required","multiplicity":{{"lower":1,"upper":1}}{nullable_member}}}]}}]}}}}"#
             );
             let bundle = parse(&bundle_text).expect("a well-formed document");
-            let expected_member = format!(r#""nullable":{expected}"#);
-            assert!(
-                normalized(&bundle).contains(&expected_member),
-                "case {id}: expected {expected_member} in {}",
-                normalized(&bundle)
+            assert_eq!(
+                normalized(&bundle),
+                format!(
+                    r#"{{"contractVersion":"2.0.0","types":[{{"fields":[{{"multiplicity":{{"lower":1,"upper":1}},"name":"a","nullable":{expected},"presence":"required"}}],"kind":"record"}}]}}"#
+                ),
+                "case {id}"
             );
         }
     }

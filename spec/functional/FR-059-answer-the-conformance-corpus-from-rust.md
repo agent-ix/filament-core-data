@@ -111,10 +111,13 @@ author.
   code point, array order preserved, no insignificant whitespace, and every
   JSON number rendered by the ECMAScript `Number::toString` algorithm.
   `nullable` is materialized as a literal boolean on every field and operation
-  parameter, unconditionally on `contractVersion`. `multiplicity` and
-  `presence` are schema-required and independently authored under contract
-  `2.0.0` (FR-106-CON-1, FR-069), so normalization never materializes either
-  from the other.
+  parameter, unconditionally on `contractVersion`. `nullable` materializes
+  `true` only where the authored member is the JSON literal `true`; every
+  other value or its absence — `null`, `false`, a number, a string, an array,
+  or an object, or no member at all — materializes `false` (fcd#187).
+  `multiplicity` and `presence` are schema-required and independently
+  authored under contract `2.0.0` (FR-106-CON-1, FR-069), so normalization
+  never materializes either from the other.
 - The crate SHALL carry an ECMAScript-compatible number formatter as a named,
   separately tested unit, because Rust's own `f64` display differs from
   ECMAScript at the exponent thresholds, on trailing zeros, and on negative
@@ -195,6 +198,7 @@ author.
 | FR-059-AC-13 | Removing the adapter command from the registry returns the slot to 111 unmet rows and zero passes, so a missing adapter can never read as agreement. | Test (TC-710) |
 | FR-059-AC-14 | `docs/semantic-data-system/rust-backend.md` records the GAP-011 dependency with the closed owner named and the adopted reading stated, records GAP-002 as answered by FR-057 with its register closure filed as issue #59, and records the unspent divergence budget; and `conformance/divergences.json` is byte-unchanged. | Inspection (TC-710) |
 | FR-059-AC-15 | The ECMAScript number formatter agrees with Node's `JSON.stringify` on a declared set of at least 512 values covering the exponent thresholds, negative zero, trailing zeros, integral floats, and the extremes of `f64`. | Test (TC-700) |
+| FR-059-AC-16 | The reader's `normalized` materializes `nullable: true` for the input `true`, and `nullable: false` for each of `1`, `"true"`, `null`, `{}`, and an absent `nullable` member. | Test (TC-1802) |
 
 ## Dependencies
 

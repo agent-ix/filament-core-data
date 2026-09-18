@@ -5,6 +5,8 @@
 		{ "id": "boolean-false", "raw": false, "normalized": false },
 		{ "id": "number-one", "raw": 1, "normalized": false },
 		{ "id": "string-true", "raw": "true", "normalized": false },
+		{ "id": "null-value", "raw": null, "normalized": false },
+		{ "id": "empty-object", "raw": {}, "normalized": false },
 		{ "id": "absent", "normalized": false }
 	]
 }

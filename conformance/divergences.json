@@ -660,6 +660,126 @@
 			"verdict": "implementation-defect",
 			"rationale": "The case is a consequence of the diagnostic divergence registered for the same case: with no blocking diagnostic raised, `hasBlocking` decides `success` where the corpus expects `invalid`. The document is schema-invalid and the reader accepts it.",
 			"reviewBy": "2026-12-31"
+		},
+		{
+			"id": "DIV-059",
+			"case": "PRES-011",
+			"adapter": "compiler-frontend",
+			"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+			"owner": "the issue #19 compiler frontend",
+			"owningIssue": "agent-ix/filament-core-data#19",
+			"severity": "high",
+			"verdict": "implementation-defect",
+			"rationale": "The corpus expects `agent-ix.semantic-ir.SCHEMA_VIOLATION` for a `nullable` authored as the number `1`. `readContractIr` (`src/compiler/ir/reader.mjs`) never reads a field's `nullable` member at all — the same missing-wiring defect registered for DEF-002 (DIV-010/DIV-011): the reader applies cross-field rules only and never validates against `schema/semantic/v1/semantic-ir.schema.json`, so a non-boolean `nullable` passes unremarked. fcd#187 fixed how the compiler's own `normalizeIr` materializes `nullable`, which is a distinct step from `readContractIr` deciding whether the authored value is well-formed; this divergence is carried with DEF-002's rather than adjudicated separately.",
+			"reviewBy": "2026-12-31"
+		},
+		{
+			"id": "DIV-060",
+			"case": "PRES-011",
+			"adapter": "compiler-frontend",
+			"code": "result-state",
+			"owner": "the issue #19 compiler frontend",
+			"owningIssue": "agent-ix/filament-core-data#19",
+			"severity": "high",
+			"verdict": "implementation-defect",
+			"rationale": "The case is a consequence of the diagnostic divergence registered for the same case (DIV-059): with no blocking diagnostic raised, `hasBlocking` decides `success` where the corpus expects `invalid`. The document's `nullable` is schema-invalid and the reader accepts it.",
+			"reviewBy": "2026-12-31"
+		},
+		{
+			"id": "DIV-061",
+			"case": "PRES-012",
+			"adapter": "compiler-frontend",
+			"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+			"owner": "the issue #19 compiler frontend",
+			"owningIssue": "agent-ix/filament-core-data#19",
+			"severity": "high",
+			"verdict": "implementation-defect",
+			"rationale": "The corpus expects `agent-ix.semantic-ir.SCHEMA_VIOLATION` for a `nullable` authored as the string `\"true\"`. Same cause as DIV-059: `readContractIr` never reads a field's `nullable` member, the DEF-002 (DIV-010/DIV-011) missing-validation defect, so a non-boolean `nullable` passes unremarked. Carried with DEF-002's rather than adjudicated separately.",
+			"reviewBy": "2026-12-31"
+		},
+		{
+			"id": "DIV-062",
+			"case": "PRES-012",
+			"adapter": "compiler-frontend",
+			"code": "result-state",
+			"owner": "the issue #19 compiler frontend",
+			"owningIssue": "agent-ix/filament-core-data#19",
+			"severity": "high",
+			"verdict": "implementation-defect",
+			"rationale": "The case is a consequence of the diagnostic divergence registered for the same case (DIV-061): with no blocking diagnostic raised, `hasBlocking` decides `success` where the corpus expects `invalid`. The document's `nullable` is schema-invalid and the reader accepts it.",
+			"reviewBy": "2026-12-31"
+		},
+		{
+			"id": "DIV-063",
+			"case": "PRES-013",
+			"adapter": "compiler-frontend",
+			"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+			"owner": "the issue #19 compiler frontend",
+			"owningIssue": "agent-ix/filament-core-data#19",
+			"severity": "high",
+			"verdict": "implementation-defect",
+			"rationale": "The corpus expects `agent-ix.semantic-ir.SCHEMA_VIOLATION` for a `nullable` authored as `null`. Same cause as DIV-059: `readContractIr` never reads a field's `nullable` member, the DEF-002 (DIV-010/DIV-011) missing-validation defect, so a non-boolean `nullable` passes unremarked. Carried with DEF-002's rather than adjudicated separately.",
+			"reviewBy": "2026-12-31"
+		},
+		{
+			"id": "DIV-064",
+			"case": "PRES-013",
+			"adapter": "compiler-frontend",
+			"code": "result-state",
+			"owner": "the issue #19 compiler frontend",
+			"owningIssue": "agent-ix/filament-core-data#19",
+			"severity": "high",
+			"verdict": "implementation-defect",
+			"rationale": "The case is a consequence of the diagnostic divergence registered for the same case (DIV-063): with no blocking diagnostic raised, `hasBlocking` decides `success` where the corpus expects `invalid`. The document's `nullable` is schema-invalid and the reader accepts it.",
+			"reviewBy": "2026-12-31"
+		},
+		{
+			"id": "DIV-065",
+			"case": "PRES-014",
+			"adapter": "compiler-frontend",
+			"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+			"owner": "the issue #19 compiler frontend",
+			"owningIssue": "agent-ix/filament-core-data#19",
+			"severity": "high",
+			"verdict": "implementation-defect",
+			"rationale": "The corpus expects `agent-ix.semantic-ir.SCHEMA_VIOLATION` for a `nullable` authored as an empty object. Same cause as DIV-059: `readContractIr` never reads a field's `nullable` member, the DEF-002 (DIV-010/DIV-011) missing-validation defect, so a non-boolean `nullable` passes unremarked. Carried with DEF-002's rather than adjudicated separately.",
+			"reviewBy": "2026-12-31"
+		},
+		{
+			"id": "DIV-066",
+			"case": "PRES-014",
+			"adapter": "compiler-frontend",
+			"code": "result-state",
+			"owner": "the issue #19 compiler frontend",
+			"owningIssue": "agent-ix/filament-core-data#19",
+			"severity": "high",
+			"verdict": "implementation-defect",
+			"rationale": "The case is a consequence of the diagnostic divergence registered for the same case (DIV-065): with no blocking diagnostic raised, `hasBlocking` decides `success` where the corpus expects `invalid`. The document's `nullable` is schema-invalid and the reader accepts it.",
+			"reviewBy": "2026-12-31"
+		},
+		{
+			"id": "DIV-067",
+			"case": "PRES-015",
+			"adapter": "compiler-frontend",
+			"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+			"owner": "the issue #19 compiler frontend",
+			"owningIssue": "agent-ix/filament-core-data#19",
+			"severity": "high",
+			"verdict": "implementation-defect",
+			"rationale": "The corpus expects `agent-ix.semantic-ir.SCHEMA_VIOLATION` for a field with no `nullable` member at all. `readContractIr` (`src/compiler/ir/reader.mjs`) requires no field to carry `nullable` — the DEF-002 (DIV-010/DIV-011) missing-validation defect: the reader applies cross-field rules only and never validates against `schema/semantic/v1/semantic-ir.schema.json`, so an absent `nullable` passes unremarked. Carried with DEF-002's rather than adjudicated separately.",
+			"reviewBy": "2026-12-31"
+		},
+		{
+			"id": "DIV-068",
+			"case": "PRES-015",
+			"adapter": "compiler-frontend",
+			"code": "result-state",
+			"owner": "the issue #19 compiler frontend",
+			"owningIssue": "agent-ix/filament-core-data#19",
+			"severity": "high",
+			"verdict": "implementation-defect",
+			"rationale": "The case is a consequence of the diagnostic divergence registered for the same case (DIV-067): with no blocking diagnostic raised, `hasBlocking` decides `success` where the corpus expects `invalid`. The document's `nullable` member is absent and the reader accepts it as schema-valid.",
+			"reviewBy": "2026-12-31"
 		}
 	]
 }

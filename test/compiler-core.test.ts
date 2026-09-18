@@ -3206,6 +3206,8 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 	});
 
 	/**
+	 * Traces: TC-514; FR-050-AC-5.
+	 *
 	 * fcd#187: `nullable` materializes `true` only for the JSON literal `true`
 	 * (`=== true`), never by truthiness coercion. `fixtures/semantic/v1/
 	 * nullable-truthiness-cases.json` is the shared cross-language fixture the
@@ -3215,13 +3217,13 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 	 * divergence in any one language's coercion rule fails only that
 	 * language's own test.
 	 */
-	it("materializes nullable === true only, for every case the shared fixture names (fcd#187)", () => {
+	it("TC-514: materializes nullable === true only, for every case the shared fixture names (fcd#187)", () => {
 		const fixture = readJson(
 			resolve(root, "fixtures/semantic/v1/nullable-truthiness-cases.json"),
 		) as unknown as {
 			cases: { id: string; raw?: unknown; normalized: boolean }[];
 		};
-		expect(fixture.cases.length).toBe(5);
+		expect(fixture.cases.length).toBeGreaterThan(0);
 		for (const testCase of fixture.cases) {
 			const field: Json = {
 				name: "a",

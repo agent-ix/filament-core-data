@@ -854,17 +854,61 @@ function identitySet(ir) {
 /* ---------------------------------------------------------- normalize ----- */
 
 /**
+ * Materializes `nullable` as a literal boolean on every field and operation
+ * parameter of one type definition, mutating it in place.
+ *
+ * `nullable` is `true` only where the authored member is the JSON literal
+ * `true` (fcd#187): absent, `null`, `false`, a non-zero number, a non-empty
+ * string, an array, or an object all materialize `false`. This is the same
+ * `=== true` rule the Rust (`crates/semantic-ir/src/normalize.rs`), JS
+ * (`src/compiler/ir/normalize.mjs`), TypeScript
+ * (`src/compiler/backends/typescript-v1/canonical.mjs`), and Python
+ * (`tests/semantic_ir_reader.py`) readers apply. A schema-valid `2.0.0`
+ * document already requires `nullable` to be a JSON boolean, so this only has
+ * visible effect on a document the schema layer has already rejected; `verdict`
+ * still calls `normalize` on such a document because the harness compares
+ * `normalized` unconditionally. `multiplicity` and `presence` are untouched
+ * here: both are schema-required and independently authored (FR-106), and a
+ * field missing either is a reader-level refusal in every adapter, not
+ * something this function defaults.
+ */
+function materializeNullable(definition) {
+	for (const field of Array.isArray(definition.fields)
+		? definition.fields
+		: []) {
+		if (isObject(field)) field.nullable = field.nullable === true;
+	}
+	for (const operation of Array.isArray(definition.operations)
+		? definition.operations
+		: []) {
+		if (!isObject(operation)) continue;
+		for (const param of Array.isArray(operation.params)
+			? operation.params
+			: []) {
+			if (isObject(param)) param.nullable = param.nullable === true;
+		}
+	}
+}
+
+/**
  * The FR-027 normalized serialization of one IR document.
  *
  * fcd#179: contract 2.0.0 requires `multiplicity`, `presence`, and `nullable`
- * on every field, so every document that reaches here already carries them
- * explicitly — there is nothing left to materialize, and deriving `presence`
- * from `multiplicity` would contradict FR-106 (presence is authored and
- * independent). Canonicalization is the whole of normalization now.
+ * on every field, so a schema-valid document that reaches here already
+ * carries all three explicitly, and canonicalization alone reproduces it
+ * unchanged. `normalize` still calls `materializeNullable` (fcd#187) because
+ * `verdict` computes `normalized` for a schema-invalid document too, where
+ * `nullable` may be present but not a boolean, or absent outright; deriving
+ * `presence` from `multiplicity` would contradict FR-106 (presence is
+ * authored and independent), so neither is touched here.
  */
 export function normalize(ir) {
 	if (!isObject(ir)) return canonical(ir);
-	return canonical(structuredClone(ir));
+	const cloned = structuredClone(ir);
+	for (const definition of Array.isArray(cloned.types) ? cloned.types : []) {
+		if (isObject(definition)) materializeNullable(definition);
+	}
+	return canonical(cloned);
 }
 
 /* ------------------------------------------------------------- verdict ---- */

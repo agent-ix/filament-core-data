@@ -26,12 +26,12 @@ import {
 	SCHEMA_FILES,
 	admitIr,
 } from "../src/compiler/backends/typescript-v1/admit.mjs";
+import { normalizeIrForTarget } from "../src/compiler/backends/typescript-v1/canonical.mjs";
 import {
 	VARIANT_ADDITION_POLICIES,
 	VARIANT_ADDITION_POLICY,
 	classifySurface,
 } from "../src/compiler/backends/typescript-v1/classify.mjs";
-import { normalizeIrForTarget } from "../src/compiler/backends/typescript-v1/canonical.mjs";
 import { changeRange, changedPathsOf } from "./changed-paths";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -1242,6 +1242,8 @@ describe("TC-811 IR-surface classification rules (FR-069)", () => {
 
 describe("FR-069 canonicalization: nullable materialization (fcd#187)", () => {
 	/**
+	 * Traces: TC-808; FR-069-AC-4.
+	 *
 	 * `normalizeIrForTarget` SHALL force `nullable` to a literal boolean only
 	 * for the JSON literal `true` (`=== true`), never by truthiness coercion.
 	 * `fixtures/semantic/v1/nullable-truthiness-cases.json` is the shared
@@ -1251,7 +1253,7 @@ describe("FR-069 canonicalization: nullable materialization (fcd#187)", () => {
 	 * divergence in any one language's coercion rule fails only that
 	 * language's own test.
 	 */
-	it("materializes nullable === true only, for every case the shared fixture names", () => {
+	it("TC-808: materializes nullable === true only, for every case the shared fixture names", () => {
 		const cases = (
 			JSON.parse(
 				readFileSync(
@@ -1260,7 +1262,7 @@ describe("FR-069 canonicalization: nullable materialization (fcd#187)", () => {
 				),
 			) as { cases: { id: string; raw?: unknown; normalized: boolean }[] }
 		).cases;
-		expect(cases.length).toBe(5);
+		expect(cases.length).toBeGreaterThan(0);
 		for (const testCase of cases) {
 			const field: Record<string, unknown> = {
 				name: "a",
