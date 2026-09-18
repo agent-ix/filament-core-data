@@ -1,23 +1,23 @@
 //! The corpus comparison form of an IR document.
 //!
-//! `spec/functional/FR-036` fixes it (fcd#179: restated for contract `2.0.0`,
-//! the only contract left, in place of the deleted `1.0.0`/`1.1.0` split):
-//! "a `2.0.0` document materializes `multiplicity`, `presence`, and
-//! `nullable` on every field and operation parameter that lacks one, with
-//! `presence` kept exactly as authored rather than derived (FR-106), so a
-//! well-formed `2.0.0` document — whose schema already requires all three on
-//! every field — gains no member", serialized in `agent-ix-conformance-jcs-v1`.
+//! `spec/functional/FR-036` fixes it (fcd#179 deleted contracts `1.0.0` and
+//! `1.1.0`; `2.0.0` is the only contract left): "a document materializes
+//! `multiplicity`, `presence`, and `nullable` on every field and operation
+//! parameter that lacks one, with `presence` kept exactly as authored rather
+//! than derived (FR-106), so a well-formed `2.0.0` document — whose schema
+//! already requires all three on every field — gains no member", serialized
+//! in `agent-ix-conformance-jcs-v1`.
 //!
-//! `spec/functional/FR-027` fixes the derivation each materialized member takes
-//! for a document that lacks one: "`required` → `1..1`, `optional` → `0..1`"
-//! for an absent multiplicity, and "`presence` as `required` when
-//! `multiplicity.lower` is at least 1 and `optional` when it is 0" the other
-//! way.
+//! `spec/functional/FR-027` fixes the derivation multiplicity takes for a
+//! document that lacks one: "`required` → `1..1`, `optional` → `0..1`".
 //!
-//! `matches!(version, Some("1.1.0" | "2.0.0"))` below still matches a
-//! schema-bypassing `1.1.0`-tagged document defensively: `normalized` runs on
-//! every case, including one the schema layer already rejected, and must
-//! never panic on a legacy-shaped document a corpus case might still supply.
+//! Materialization below is unconditional on `contractVersion`: `normalized`
+//! runs on every bundle, including one the schema layer already rejected
+//! (a version other than `2.0.0`, a missing `contractVersion`, or no
+//! `contractVersion` field at all), because the harness compares the string
+//! unconditionally too and must never panic on a schema-invalid document.
+//! Every helper below is defensive against a missing or wrongly shaped member
+//! instead of gating behavior on the version.
 
 use crate::json::{to_canonical_string, Json};
 
@@ -30,14 +30,10 @@ pub fn normalized(bundle: &Json) -> String {
         Some(ir) => ir,
         None => return to_canonical_string(&Json::Null),
     };
-    let version = ir.get("contractVersion").and_then(Json::as_str);
-    if !matches!(version, Some("1.1.0" | "2.0.0")) {
-        return to_canonical_string(ir);
-    }
-    to_canonical_string(&materialize_ir(ir, version == Some("2.0.0")))
+    to_canonical_string(&materialize_ir(ir))
 }
 
-fn materialize_ir(ir: &Json, authored_presence: bool) -> Json {
+fn materialize_ir(ir: &Json) -> Json {
     let members = match ir.as_object() {
         Some(members) => members,
         None => return ir.clone(),
@@ -45,7 +41,7 @@ fn materialize_ir(ir: &Json, authored_presence: bool) -> Json {
     let mut out: Vec<(String, Json)> = Vec::with_capacity(members.len());
     for (name, value) in members {
         if name == "types" {
-            out.push((name.clone(), materialize_types(value, authored_presence)));
+            out.push((name.clone(), materialize_types(value)));
         } else {
             out.push((name.clone(), value.clone()));
         }
@@ -53,20 +49,15 @@ fn materialize_ir(ir: &Json, authored_presence: bool) -> Json {
     Json::Object(out)
 }
 
-fn materialize_types(types: &Json, authored_presence: bool) -> Json {
+fn materialize_types(types: &Json) -> Json {
     let items = match types.as_array() {
         Some(items) => items,
         None => return types.clone(),
     };
-    Json::Array(
-        items
-            .iter()
-            .map(|item| materialize_type(item, authored_presence))
-            .collect(),
-    )
+    Json::Array(items.iter().map(materialize_type).collect())
 }
 
-fn materialize_type(definition: &Json, authored_presence: bool) -> Json {
+fn materialize_type(definition: &Json) -> Json {
     let members = match definition.as_object() {
         Some(members) => members,
         None => return definition.clone(),
@@ -74,21 +65,15 @@ fn materialize_type(definition: &Json, authored_presence: bool) -> Json {
     let mut out: Vec<(String, Json)> = Vec::with_capacity(members.len());
     for (name, value) in members {
         match name.as_str() {
-            "fields" => out.push((
-                name.clone(),
-                materialize_field_array(value, authored_presence),
-            )),
-            "operations" => out.push((
-                name.clone(),
-                materialize_operations(value, authored_presence),
-            )),
+            "fields" => out.push((name.clone(), materialize_field_array(value))),
+            "operations" => out.push((name.clone(), materialize_operations(value))),
             _ => out.push((name.clone(), value.clone())),
         }
     }
     Json::Object(out)
 }
 
-fn materialize_operations(operations: &Json, authored_presence: bool) -> Json {
+fn materialize_operations(operations: &Json) -> Json {
     let items = match operations.as_array() {
         Some(items) => items,
         None => return operations.clone(),
@@ -104,10 +89,7 @@ fn materialize_operations(operations: &Json, authored_presence: bool) -> Json {
                 let mut out: Vec<(String, Json)> = Vec::with_capacity(members.len());
                 for (name, value) in members {
                     if name == "params" {
-                        out.push((
-                            name.clone(),
-                            materialize_field_array(value, authored_presence),
-                        ));
+                        out.push((name.clone(), materialize_field_array(value)));
                     } else {
                         out.push((name.clone(), value.clone()));
                     }
@@ -118,20 +100,15 @@ fn materialize_operations(operations: &Json, authored_presence: bool) -> Json {
     )
 }
 
-fn materialize_field_array(fields: &Json, authored_presence: bool) -> Json {
+fn materialize_field_array(fields: &Json) -> Json {
     let items = match fields.as_array() {
         Some(items) => items,
         None => return fields.clone(),
     };
-    Json::Array(
-        items
-            .iter()
-            .map(|field| materialize_field(field, authored_presence))
-            .collect(),
-    )
+    Json::Array(items.iter().map(materialize_field).collect())
 }
 
-fn materialize_field(field: &Json, authored_presence: bool) -> Json {
+fn materialize_field(field: &Json) -> Json {
     let members = match field.as_object() {
         Some(members) => members,
         None => return field.clone(),
@@ -140,20 +117,10 @@ fn materialize_field(field: &Json, authored_presence: bool) -> Json {
         Some(multiplicity) if multiplicity.as_object().is_some() => multiplicity.clone(),
         _ => derived_multiplicity(field),
     };
-    let lower = multiplicity
-        .get("lower")
-        .and_then(Json::as_i64)
-        .unwrap_or(0);
-    let presence = if authored_presence {
-        field
-            .get("presence")
-            .and_then(Json::as_str)
-            .unwrap_or("optional")
-    } else if lower >= 1 {
-        "required"
-    } else {
-        "optional"
-    };
+    let presence = field
+        .get("presence")
+        .and_then(Json::as_str)
+        .unwrap_or("optional");
     let nullable = truthy(field.get("nullable"));
 
     let mut out: Vec<(String, Json)> = Vec::with_capacity(members.len() + 3);
@@ -199,40 +166,6 @@ fn truthy(value: Option<&Json>) -> bool {
 mod tests {
     use super::normalized;
     use crate::json::parse;
-
-    /// fcd#179 deleted contracts `1.0.0` and `1.1.0`; no valid corpus case is
-    /// tagged either again. This test and the next one keep exercising
-    /// `normalized`'s two non-`2.0.0` branches directly, bypassing schema
-    /// validation the way `normalized` itself must tolerate (it runs even on
-    /// a bundle the schema layer already rejected, per its own doc comment),
-    /// rather than leaving `matches!(version, Some("1.1.0" | "2.0.0"))`'s
-    /// `"1.1.0"` arm with no test reaching it.
-    #[test]
-    fn tc_700_materializes_a_1_1_0_field() {
-        let bundle = parse(
-            r#"{"ir":{"contractVersion":"1.1.0","types":[{"kind":"record","fields":[{"name":"a","presence":"optional"}]}]}}"#,
-        )
-        .expect("a well-formed document");
-        assert_eq!(
-            normalized(&bundle),
-            r#"{"contractVersion":"1.1.0","types":[{"fields":[{"multiplicity":{"lower":0,"upper":1},"name":"a","nullable":false,"presence":"optional"}],"kind":"record"}]}"#
-        );
-    }
-
-    /// A `contractVersion` outside the `matches!` arm entirely (neither
-    /// `1.1.0` nor `2.0.0`) takes `normalized`'s other defensive branch: the
-    /// raw canonical form, unmaterialized.
-    #[test]
-    fn tc_700_adds_no_member_to_a_1_0_0_document() {
-        let bundle = parse(
-            r#"{"ir":{"contractVersion":"1.0.0","types":[{"kind":"record","fields":[{"name":"a","presence":"required"}]}]}}"#,
-        )
-        .expect("a well-formed document");
-        assert_eq!(
-            normalized(&bundle),
-            r#"{"contractVersion":"1.0.0","types":[{"fields":[{"name":"a","presence":"required"}],"kind":"record"}]}"#
-        );
-    }
 
     #[test]
     fn tc_1378_preserves_authored_presence_in_a_1_2_0_field() {

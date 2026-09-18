@@ -173,14 +173,16 @@ def _check_field(
             )
         )
     if "multiplicity" not in field:
-        if version in {"1.1.0", "2.0.0"}:
-            out.append(
-                _diag(
-                    "agent-ix.semantic-ir.MISSING_MULTIPLICITY",
-                    f"{path}.multiplicity",
-                    f"{version} requires multiplicity",
-                )
+        # fcd#179: 2.0.0 is the only contract, and its schema requires
+        # `multiplicity` on every field, so a document reaching this reader
+        # without one is always in violation (no version branch left).
+        out.append(
+            _diag(
+                "agent-ix.semantic-ir.MISSING_MULTIPLICITY",
+                f"{path}.multiplicity",
+                f"{version} requires multiplicity",
             )
+        )
         multiplicity: dict[str, Any] | None = multiplicity_from_presence(
             field.get("presence")
         )
@@ -188,16 +190,10 @@ def _check_field(
         multiplicity = _check_multiplicity(
             field["multiplicity"], f"{path}.multiplicity", out
         )
-    if multiplicity is not None:
-        derived = "required" if multiplicity["lower"] >= 1 else "optional"
-        if version != "2.0.0" and "presence" in field and field["presence"] != derived:
-            out.append(
-                _diag(
-                    "agent-ix.semantic-ir.PRESENCE_MULTIPLICITY_MISMATCH",
-                    f"{path}.presence",
-                    "presence contradicts multiplicity",
-                )
-            )
+    # fcd#179 deleted `PRESENCE_MULTIPLICITY_MISMATCH`, the contract `1.1.0`
+    # rule that re-derived `presence` from `multiplicity` and reported a
+    # disagreement; contract `2.0.0` authors `presence` independently
+    # (FR-106) and enforces no agreement between the two.
     if "unit" in field:
         unit = field["unit"]
         if not isinstance(unit, str) or not unit:
@@ -523,35 +519,33 @@ def canonical(value: Any) -> str:
 
 
 def normalize(document: Any) -> str:
-    """Normalized bytes materialize 1.1/2.0 field views; 2.0 keeps authored presence."""
+    """Normalized bytes materialize multiplicity, presence, and nullable on
+    every field and operation parameter that lacks one, keeping authored
+    presence exactly as authored (fcd#179: 2.0.0 is the only contract, so
+    materialization is unconditional)."""
     if not isinstance(document, dict):
         return canonical(document)
     copy_ = copy.deepcopy(document)
-    if copy_.get("contractVersion") in {"1.1.0", "2.0.0"}:
-        version = copy_["contractVersion"]
 
-        def materialize(field: dict[str, Any]) -> None:
-            multiplicity = (
-                field["multiplicity"]
-                if isinstance(field.get("multiplicity"), dict)
-                else multiplicity_from_presence(field.get("presence"))
+    def materialize(field: dict[str, Any]) -> None:
+        multiplicity = (
+            field["multiplicity"]
+            if isinstance(field.get("multiplicity"), dict)
+            else multiplicity_from_presence(field.get("presence"))
+        )
+        field["multiplicity"] = multiplicity
+        if field.get("presence") not in {"required", "optional"}:
+            field["presence"] = (
+                "required" if multiplicity["lower"] >= 1 else "optional"
             )
-            field["multiplicity"] = multiplicity
-            if version != "2.0.0" or field.get("presence") not in {
-                "required",
-                "optional",
-            }:
-                field["presence"] = (
-                    "required" if multiplicity["lower"] >= 1 else "optional"
-                )
-            field["nullable"] = field.get("nullable") is True
+        field["nullable"] = field.get("nullable") is True
 
-        for definition in _objects(copy_.get("types")):
-            for field in _objects(definition.get("fields")):
-                materialize(field)
-            for operation in _objects(definition.get("operations")):
-                for param in _objects(operation.get("params")):
-                    materialize(param)
+    for definition in _objects(copy_.get("types")):
+        for field in _objects(definition.get("fields")):
+            materialize(field)
+        for operation in _objects(definition.get("operations")):
+            for param in _objects(operation.get("params")):
+                materialize(param)
     return canonical(copy_)
 
 

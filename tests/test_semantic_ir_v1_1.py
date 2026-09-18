@@ -28,19 +28,11 @@ GOLDEN = (
 
 # fcd#179 deleted contracts `1.0.0` and `1.1.0`, and the two fixtures that
 # used to carry them on disk (`semantic-ir.json`, `config-version-v1-1.json`)
-# with them. `normalize`'s version-gated branch (`tests/semantic_ir_reader.py`)
-# still has a live, non-vacuous subject on each side of that gate, so these
-# are hand-written literals standing in for the deleted fixtures rather than
-# a restatement of the gate itself.
-LEGACY_1_0_0 = {
-    "contractVersion": "1.0.0",
-    "types": [
-        {
-            "kind": "record",
-            "fields": [{"name": "a", "presence": "required"}],
-        }
-    ],
-}
+# with them. `normalize` (`tests/semantic_ir_reader.py`) materializes
+# unconditionally now — it no longer gates on `contractVersion` at all — so
+# this literal exercises the round-trip property (FR-020-AC-7) over a
+# document shaped like the deleted fixtures rather than restating a gate
+# that no longer exists.
 LEGACY_1_1_0 = {
     "contractVersion": "1.1.0",
     "types": [
@@ -70,9 +62,9 @@ class TestSecondReader:
     fcd#179 deleted contracts `1.0.0` and `1.1.0`; `2.0.0` is the only one,
     and deleted the two fixtures that used to be frozen at them
     (`semantic-ir.json`, `config-version-v1-1.json`) — their refusal is
-    asserted in `TestContract20` (TC-1756, NFR-044-AC-1), not here, and
-    `normalize`'s version-gated branch is exercised over `LEGACY_1_0_0` /
-    `LEGACY_1_1_0` below rather than over those deleted fixtures.
+    asserted in `TestContract20` (TC-1756, NFR-044-AC-1), not here.
+    `normalize` no longer gates on `contractVersion`; `LEGACY_1_1_0` below is
+    a round-trip fixture, not a test of a version gate.
     Assumptions: the poetry dev group is installed; fixtures are the committed
     ones under fixtures/semantic/v1.
     Criteria: FR-020-AC-7, FR-020-AC-8, FR-027-AC-1, FR-027-AC-6.
@@ -85,12 +77,6 @@ class TestSecondReader:
             document = _fixture(name)
             assert schema_valid(validator, document), name
             assert read_semantic_ir(document) == [], name
-
-    def test_v1_document_gains_no_derived_bytes(self) -> None:
-        """Criteria: FR-027 normalized-form rule — a document declaring
-        neither `1.1.0` nor `2.0.0` is outside `normalize`'s materializing
-        branch, so it gains no derived `multiplicity`."""
-        assert '"multiplicity"' not in normalize(LEGACY_1_0_0)
 
     def test_normalized_form_round_trips(self) -> None:
         """Criteria: FR-020-AC-7, FR-027-AC-1 — normalize is idempotent."""

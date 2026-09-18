@@ -165,21 +165,15 @@ function checkField(
 		});
 	}
 	if (field.multiplicity === undefined) {
-		// fcd#179: mirrors tests/semantic_ir_reader.py's `_check_field`, which
-		// is byte-pinned (FR-050-CON-2/FR-050-AC-4) and still gates
-		// MISSING_MULTIPLICITY on `version in {"1.1.0", "2.0.0"}`. Contract
-		// 1.1.0 is deleted and no longer schema-valid, so in practice only a
-		// 2.0.0 document reaches here through a passing schema check — but
-		// this reader also runs (for TC-232/FR-020-AC-8 cross-reader parity)
-		// against inline documents still declaring a deleted contract,
-		// and must keep matching Python's verdict there.
-		if (version === "1.1.0" || version === "2.0.0") {
-			diagnostics.push({
-				code: "agent-ix.semantic-ir.MISSING_MULTIPLICITY",
-				path: `${path}.multiplicity`,
-				message: "a field declares its multiplicity",
-			});
-		}
+		// fcd#179: 2.0.0 is the only contract, and its schema requires
+		// `multiplicity` on every field, so a document reaching this reader
+		// without one is always in violation (no version branch left; mirrors
+		// tests/semantic_ir_reader.py's `_check_field`, FR-050-CON-2/AC-4).
+		diagnostics.push({
+			code: "agent-ix.semantic-ir.MISSING_MULTIPLICITY",
+			path: `${path}.multiplicity`,
+			message: "a field declares its multiplicity",
+		});
 	} else {
 		checkMultiplicity(field.multiplicity, `${path}.multiplicity`, diagnostics);
 	}
