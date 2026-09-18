@@ -730,3 +730,115 @@ fn populations(document: &Document<'_>, sink: &mut Sink<'_>) {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::UNRESOLVED_CONSTRUCT_REF;
+    use crate::json::parse;
+    use crate::rules::decide;
+
+    // FR-142-AC-3 (TC-1747, extended by FR-152's `sourceElement`-names-an-
+    // operation allocation source form): `references`' `Member::SourceElement`
+    // branch above resolves an entry through `Document::type_of_operation`
+    // when it names no declared type, and the role check that follows runs
+    // against the type that declares the named operation. These three cases
+    // read the construct declaration directly, bypassing the schema layer
+    // (this crate's own `rules::decide`, not `crate::decide`), since the
+    // point under test is the reference resolution itself, not shape
+    // validation.
+
+    const PROVIDER_AND_CONSTRUCTS: &str = r#"{
+        "ir": {
+            "constructs": [
+                {
+                    "kind": {"module": "acme", "name": "Interface"},
+                    "construct": {
+                        "identity": "none",
+                        "shape": "interface",
+                        "members": {},
+                        "meaning": "acme:construct/interface"
+                    }
+                }
+            ],
+            "types": [
+                {
+                    "kind": {"module": "acme", "name": "Interface"},
+                    "identity": "ix://acme/type/Provider",
+                    "operations": [
+                        {"identity": "ix://acme/type/Provider/operation/Run"}
+                    ]
+                }"#;
+
+    fn bundle_with_allocator(member: &str, target: &str) -> String {
+        format!(
+            r#"{PROVIDER_AND_CONSTRUCTS},
+                {{
+                    "kind": {{"module": "acme", "name": "Interface"}},
+                    "identity": "ix://acme/type/Allocator",
+                    "{member}": "{target}"
+                }}
+            ]
+        }}
+    }}"#
+        )
+    }
+
+    /// A `sourceElement` naming an operation identity of a declared type is
+    /// admitted: `type_of` fails on the operation identity, `type_of_operation`
+    /// resolves it, and `references` raises nothing.
+    #[test]
+    fn tc_1800_source_element_naming_an_operation_identity_is_admitted() {
+        let bundle = parse(&bundle_with_allocator(
+            "sourceElement",
+            "ix://acme/type/Provider/operation/Run",
+        ))
+        .expect("a document");
+        let diagnostics = decide(&bundle);
+        assert!(
+            diagnostics.is_empty(),
+            "expected no diagnostic, got {diagnostics:?}"
+        );
+    }
+
+    /// The same operation identity, named by `targetElement` instead, is
+    /// refused: FR-152's operation fallback is `sourceElement`-only, so
+    /// `references` never calls `type_of_operation` for this member and the
+    /// plain (non-operation) `UNRESOLVED_CONSTRUCT_REF` wording is raised.
+    #[test]
+    fn tc_1800_target_element_naming_an_operation_identity_is_refused() {
+        let bundle = parse(&bundle_with_allocator(
+            "targetElement",
+            "ix://acme/type/Provider/operation/Run",
+        ))
+        .expect("a document");
+        let diagnostics = decide(&bundle);
+        assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
+        let diagnostic = &diagnostics[0];
+        assert_eq!(diagnostic.pointer, "/ir/types/1/targetElement");
+        assert_eq!(diagnostic.code, UNRESOLVED_CONSTRUCT_REF);
+        assert_eq!(
+            diagnostic.message,
+            "a construct member names a type the document declares"
+        );
+    }
+
+    /// A `sourceElement` naming an identity that is neither a declared type
+    /// nor a declared operation is refused, with the operation-aware wording.
+    #[test]
+    fn tc_1800_source_element_naming_no_such_operation_is_refused() {
+        let bundle = parse(&bundle_with_allocator(
+            "sourceElement",
+            "ix://acme/type/Provider/operation/DoesNotExist",
+        ))
+        .expect("a document");
+        let diagnostics = decide(&bundle);
+        assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
+        let diagnostic = &diagnostics[0];
+        assert_eq!(diagnostic.pointer, "/ir/types/1/sourceElement");
+        assert_eq!(diagnostic.code, UNRESOLVED_CONSTRUCT_REF);
+        assert_eq!(
+            diagnostic.message,
+            "a construct member names a type the document declares, or an operation of one"
+        );
+    }
+}

@@ -2274,16 +2274,28 @@ fn tc_1800_an_allocation_source_naming_an_operation_lowers_to_that_operations_id
     );
 }
 
-/// FR-143-AC-11 continued: SI_002's own extraction can be refused for a
-/// reason unrelated to the allocation (here, its FR-075 model extraction
-/// marked unavailable) after quire-rs already resolved SA_002's source to
-/// SI_002's `run` operation identity. The fixed point re-checks that
-/// identity every round against the recomputed `operations` set
-/// ([`refusal_rule`]'s FR-152 branch), so SI_002's refusal cascades to
-/// SA_002 too, one round later, with [`Finding 3`]'s corrected wording
-/// ("operation", not "type"). A revert probe (the same fixture, unmutated)
-/// proves the cascade comes from the injected unavailability, not the
-/// fixture text.
+/// FR-143-AC-11 continued: a genuine two-round cascade through
+/// [`refusal_rule`]'s FR-152 `operations` branch, not merely a `sourceElement`
+/// naming an artifact already excluded before [`assign_owners`]'s fixed
+/// point ever starts (that artifact's own pre-loop exclusion would let a
+/// single, once-computed `operations` set pass this test too, proving
+/// nothing about the per-round recompute). Here `SI_003`'s own extraction is
+/// marked unavailable, refusing it before the fixed point ever starts (it
+/// never enters `pending`). `SI_002` specializes `SI_003` (a plain
+/// `relationships` edge, `type: specializes`), so `SI_002` is refused in
+/// round 0 of [`assign_owners`]'s own loop, by `refusal_rule`'s
+/// "relationship targets a refused artifact" re-check: `SI_002` itself is
+/// still pending at round 0's start, and is only removed at round 0's end.
+/// Only round 1's fresh `operations` set drops `SI_002`'s `run` operation
+/// (round 0's own `operations` set, computed before `SI_002` was refused
+/// that round, still admits it), so `SA_002`'s `sourceElement` re-check does
+/// not catch it until round 1: genuinely exercising the recompute, with
+/// [`Finding 3`]'s corrected wording ("operation", not "type") for
+/// `SA_002`. A probe (recorded in this PR's report, not run by this test)
+/// confirmed that hoisting `operations`/`lowered` to compute once before the
+/// loop makes the `SA_002` assertion below fail. A revert probe (the same
+/// fixture, unmutated) proves the cascade comes from the injected
+/// unavailability, not the fixture text.
 #[trace("TC-1800", "FR-143-AC-11")]
 #[test]
 fn tc_1800_an_allocation_source_naming_an_operation_of_a_since_refused_artifact_cascades_the_refusal(
@@ -2293,10 +2305,29 @@ fn tc_1800_an_allocation_source_naming_an_operation_of_a_since_refused_artifact_
             fs::write(dir.join(name), content).expect("write helper part");
         }
         fs::write(
+            dir.join("SI_003-flow-interface-c.md"),
+            "---\nid: SI_003\ntitle: SI_003\ntype: interface\nobject: interface\n---\n\n\
+             # SI_003: SI_003\n\n## Description\n\n\
+             A third interface, specialized by `SI_002`; this test's own\n\
+             mutation later marks its model extraction unavailable, so the\n\
+             `supertypes` cascade refuses `SI_002` inside the fixed point\n\
+             (round 0), one round before `SA_002`'s own `sourceElement`\n\
+             re-check catches it (round 1).\n\n\
+             ## Properties\n\n| Field | Type | Multiplicity | Constraints |\n\
+             |-------|------|--------------|-------------|\n| flag | String | 1 | |\n\n\
+             ## Contract\n\n```yaml\nname: SI_003\nfields:\n  - name: flag\n\
+             \x20\x20\x20 type: String\n    multiplicity: 1..1\noperations: []\n\
+             featureOrder: [flag]\n```\n\n## Features\n\n| Feature | Kind |\n|---|---|\n\
+             | flag | field |\n",
+        )
+        .expect("write SI_003");
+        fs::write(
             dir.join("SI_002-flow-interface-b.md"),
-            "---\nid: SI_002\ntitle: SI_002\ntype: interface\nobject: interface\n---\n\n\
+            "---\nid: SI_002\ntitle: SI_002\ntype: interface\nobject: interface\n\
+             relationships:\n  - target: SI_003\n    type: specializes\n---\n\n\
              # SI_002: SI_002\n\n## Description\n\n\
-             A second interface: one field, `rate`, and one operation, `run`.\n\n\
+             A second interface: one field, `rate`, and one operation, `run`,\n\
+             specializing `SI_003`.\n\n\
              ## Properties\n\n| Field | Type | Multiplicity | Constraints |\n\
              |-------|------|--------------|-------------|\n| rate | String | 1 | |\n\n\
              ## Contract\n\n```yaml\nname: SI_002\nfields:\n  - name: rate\n\
@@ -2309,9 +2340,10 @@ fn tc_1800_an_allocation_source_naming_an_operation_of_a_since_refused_artifact_
             dir.join("SA_002-alloc-operation-source.md"),
             "---\nid: SA_002\ntitle: SA_002\ntype: allocation\nobject: allocation\n---\n\n\
              # SA_002: SA_002\n\n## Description\n\n\
-             An allocation whose source names an operation of an artifact\n\
-             this test's own mutation later marks unavailable, so the\n\
-             cascade must refuse SA_002 too.\n\n\
+             An allocation whose source names an operation of `SI_002`,\n\
+             which this test's own mutation refuses one round after `SI_003`\n\
+             (the artifact `SI_002` specializes) is marked unavailable, so\n\
+             the cascade must refuse `SA_002` too.\n\n\
              ## Allocation\n\n| Source | Target |\n|---|---|\n\
              | SI_002/run | SP_900 |\n",
         )
@@ -2321,8 +2353,8 @@ fn tc_1800_an_allocation_source_naming_an_operation_of_a_since_refused_artifact_
     let unavailable = |extractions: &mut Extractions| {
         extractions
             .artifacts
-            .get_mut("SI_002")
-            .expect("SI_002 extracted")
+            .get_mut("SI_003")
+            .expect("SI_003 extracted")
             .extraction
             .availability
             .model = Some(KindAvailability {
@@ -2339,7 +2371,7 @@ fn tc_1800_an_allocation_source_naming_an_operation_of_a_since_refused_artifact_
         .collect();
     assert!(
         messages.iter().any(|m| {
-            m.starts_with("artifact SI_002 ")
+            m.starts_with("artifact SI_003 ")
                 && m.contains(
                     "the engine's model extraction is unavailable \
                      (TC-1800: injected for the cascade test)",
@@ -2347,12 +2379,18 @@ fn tc_1800_an_allocation_source_naming_an_operation_of_a_since_refused_artifact_
         }),
         "{messages:#?}"
     );
-    let cascade_rule = format!(
+    let si_002_cascade = format!(
+        "artifact SI_002 (spec/functional/SI_002-flow-interface-b.md) lowers to no \
+         `interface` construct: its `specializes` relationship targets {}, which lowers to nothing",
+        type_ref("SI_003")
+    );
+    assert!(messages.contains(&si_002_cascade.as_str()), "{messages:#?}");
+    let sa_002_cascade = format!(
         "artifact SA_002 (spec/functional/SA_002-alloc-operation-source.md) lowers to no \
          `allocation` construct: a transition, step or reference member names the operation \
          {PREFIX}operation/SI_002-run, which lowers to nothing"
     );
-    assert!(messages.contains(&cascade_rule.as_str()), "{messages:#?}");
+    assert!(messages.contains(&sa_002_cascade.as_str()), "{messages:#?}");
     assert!(refusals(&broken).iter().all(|d| d.blocking));
 
     let (_scratch, _root, clean) = lower_systems(write);
