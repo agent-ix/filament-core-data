@@ -21,9 +21,9 @@ relationships:
 Today every object archetype is `data_schema: {type: object}` and field types in
 specs are prose (`UUID (optional)`, `Dict[str, Any]`, `decimal, scale 2`). The
 spike's `SemanticObject` carries `extensions?: Record<string>`; nothing types a
-field. IR v1.1 (issue #34) now has nodes for multiplicity, units,
-relationships, operations, clauses, and closed constraints, but no authoring
-grammar produces them. The semantic-core package is the type environment shared
+field. Issue #34 gave the IR nodes for multiplicity, units, relationships,
+operations, clauses, and closed constraints, but no authoring grammar
+produces them. The semantic-core package is the type environment shared
 by Wave 4 module tickets (`agent-ix/quoin#286`), the extraction frontend
 (`agent-ix/filament-core-data#36`), and `agent-ix/quire-contract-ir#52`.
 

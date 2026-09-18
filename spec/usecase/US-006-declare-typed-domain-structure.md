@@ -64,8 +64,12 @@ extensions. The functional requirements settle each of these.
 
 ## Constraints (Contextual)
 
-IR v1.1 is additive to v1. The frozen TypeSpec spike, every v1 fixture, current
-backends, and every corpus repository stay unchanged.
+The frozen TypeSpec spike and every corpus repository stay unchanged (fcd#179:
+the "v1.1 is additive to v1" framing, and the claim that every v1 fixture and
+current backend stays unchanged, no longer hold — 1.0.0 and 1.1.0 are deleted,
+2.0.0 is the only contract, and the two v1 fixtures that still declare a
+deleted contract are kept only as refused negative evidence, not as
+unchanged live documents).
 
 ## Dependencies (Contextual)
 

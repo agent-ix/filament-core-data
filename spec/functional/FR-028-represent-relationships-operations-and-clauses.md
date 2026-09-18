@@ -12,7 +12,7 @@ relationships:
 
 ## Description
 
-The semantic IR v1.1 `typeDefinition` node SHALL carry first-class
+The semantic IR `typeDefinition` node SHALL carry first-class
 `relationships[]`, `operations[]`, and `clauses[]` arrays so that a domain
 declaration's edges, behavior signatures, and formal clauses are IR nodes with
 identity and origin rather than prose.

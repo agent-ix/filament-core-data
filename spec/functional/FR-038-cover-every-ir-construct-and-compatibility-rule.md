@@ -21,7 +21,7 @@ that register, or a written justification for a class that row cannot carry.
 
 ## Inputs
 
-- The IR v1.1 node set of `semantic-ir.schema.json` and `common.schema.json`
+- The IR node set of `semantic-ir.schema.json` and `common.schema.json`
 - The package, lock, mapping, profile, and consumer-policy contracts of `schema/semantic/v1/`
 - The compatibility dispositions of FR-025 and `compatibility-report.schema.json`
 - The issue #19 acceptance criteria as they stand in the issue at the time the register row is authored: invalid imports, cycles, unknown mappings, duplicate identities, stale locks, unsupported loss, recursion, discriminators, nullability versus optionality, version transitions, provenance, and source loci

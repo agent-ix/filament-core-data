@@ -90,7 +90,7 @@ owning issue rather than repairing either side.
 
 ## Dependencies (Contextual)
 
-Depends on the semantic IR v1.1 contract ([US-006](./US-006-declare-typed-domain-structure.md),
+Depends on the semantic IR contract ([US-006](./US-006-declare-typed-domain-structure.md),
 FR-027..FR-030) and the semantic-core declaration grammar
 ([US-007](./US-007-declare-archetypes-against-a-shared-grammar.md), FR-031..FR-034).
 Judges issue #19 (compiler core) and issues #21, #22, and #23 (Rust,

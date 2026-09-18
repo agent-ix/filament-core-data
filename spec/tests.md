@@ -572,7 +572,7 @@ blocked as stated above.
 | TC-224 | Every v1 fixture constraint uses a closed keyword, or its correction is recorded | Static | P0 | FR-029-CON-1 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-225 | Keyword addition classifies additive; removal or retyping classifies breaking | Unit | P0 | FR-029-CON-2 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-226 | FR-006 `versionNumber` `min: 1` expresses as a typed constraint | Analysis | P1 | FR-029-AC-6 | ✅ passed — semantic IR v1.1 (PR #38) |
-| TC-227 | A `1.1.0` document with `source.dialect: typespec` validates, and one with `spec-bundle` validates | Unit | P0 | FR-030-AC-1 | ✅ passed — semantic IR v1.1 (PR #38) |
+| TC-227 | A `2.0.0` document with `source.dialect: typespec` validates, and one with `spec-bundle` validates (fcd#179: retargeted from `1.1.0`) | Unit | P0 | FR-030-AC-1 | ✅ passed — semantic IR v1.1 (PR #38); restated fcd#179 |
 | TC-228 | The JSON Schema `$schema` URI as `source.dialect` fails with a diagnostic citing ADR-0005 | Unit | P0 | FR-030-AC-2 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-229 | Manifest targets `rust`/`markdown` validate; target `go` fails at its entry | Unit | P0 | FR-030-AC-3 | ✅ passed — semantic IR v1.1 (PR #38) |
 | TC-230 | Manifest, target-contract, and representation schemas reference the shared common enumerations | Static | P0 | FR-030-AC-4, FR-030-CON-2 | ✅ passed — semantic IR v1.1 (PR #38) |
