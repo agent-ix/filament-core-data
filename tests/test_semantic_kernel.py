@@ -71,13 +71,19 @@ PINNED_DIGESTS = {
     ),
     "python_backend/runner": (
         # fcd#179: corpus_account.py's validated type name follows the schema's
-        # contract 2.0.0-only union.
-        "sha256:3cca57c5ea2e59a004cbe0c72ec009bea4f5db214bd90e67f2c3fbd7ea1e1be2"
+        # contract 2.0.0-only union; its module docstring's cross-field code
+        # list drops V1_1_NODE_IN_V1_0, which no 2.0.0-only oracle can emit.
+        "sha256:0b7ee901dc20e2998787cfd61e8a0d615cdd775e1fd8b67ee0f255ed4405482d"
     ),
     "python_backend/qualification": (
         # fcd#179: report.json, corpus-account.json and validation.json
-        # remeasured against the 2.0.0-only schema and corpus_account fix.
-        "sha256:972bf78a0ce8e04abb40697ef521f44de84c3b016e8eb006ec1cf117959d574d"
+        # remeasured against the 2.0.0-only schema and corpus_account fix;
+        # corpus-account.json remeasured again after the corpus itself
+        # dropped ENV-004, VER-001, VER-002, VER-004 and PRES-002 (111 -> 106
+        # cases), which also moves the account's decided/agreed/undecidable
+        # split since python_backend/generated's stricter 2.0.0-only shape
+        # now raises ValidationError, not disagreement, on more cases.
+        "sha256:0e137b34364a90e9dbc277c4ca47ee040ac3401903c05a62d291d4bc83dd9ecc"
     ),
     "python_backend/generated": (
         # fcd#179: regenerated from schema/semantic/v1/semantic-ir.schema.json
