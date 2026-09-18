@@ -44,9 +44,7 @@
 			}
 		}
 	],
-	"covers": [
-		"CR-union"
-	],
+	"covers": ["CR-union"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

@@ -18,9 +18,7 @@
 			"value": "ix://agent-ix/conformance/type/Absent"
 		}
 	],
-	"covers": [
-		"CR-package"
-	],
+	"covers": ["CR-package"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

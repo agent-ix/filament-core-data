@@ -32,9 +32,7 @@
 	],
 	"beforeBase": "core-2-0",
 	"beforeOps": [],
-	"covers": [
-		"CR-union"
-	],
+	"covers": ["CR-union"],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

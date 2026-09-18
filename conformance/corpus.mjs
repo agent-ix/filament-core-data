@@ -8,7 +8,7 @@
 
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, posix, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -770,4 +770,4 @@ export function computeDigests() {
 	return { bases, cases, corpusDigest };
 }
 
-export { validatePublished, isObject };
+export { isObject, validatePublished };

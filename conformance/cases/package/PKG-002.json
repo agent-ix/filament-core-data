@@ -18,9 +18,7 @@
 			"value": "agent-ix/absent"
 		}
 	],
-	"covers": [
-		"CR-package"
-	],
+	"covers": ["CR-package"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

@@ -35,9 +35,7 @@
 	],
 	"beforeBase": "core-2-0",
 	"beforeOps": [],
-	"covers": [
-		"CR-provenance"
-	],
+	"covers": ["CR-provenance"],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

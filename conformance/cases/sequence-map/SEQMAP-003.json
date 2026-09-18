@@ -30,9 +30,7 @@
 			}
 		}
 	],
-	"covers": [
-		"CR-sequence-map"
-	],
+	"covers": ["CR-sequence-map"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

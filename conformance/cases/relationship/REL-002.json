@@ -36,9 +36,7 @@
 			}
 		}
 	],
-	"covers": [
-		"CR-relationship"
-	],
+	"covers": ["CR-relationship"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

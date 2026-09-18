@@ -24,9 +24,7 @@
 			"path": "/ir/types/9/clauses/0/sourceSpan"
 		}
 	],
-	"covers": [
-		"CR-clause"
-	],
+	"covers": ["CR-clause"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

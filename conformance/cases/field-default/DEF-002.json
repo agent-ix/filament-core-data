@@ -18,9 +18,7 @@
 			"value": "none"
 		}
 	],
-	"covers": [
-		"CR-field-default"
-	],
+	"covers": ["CR-field-default"],
 	"decidedBy": "schema",
 	"derivedFrom": [
 		{

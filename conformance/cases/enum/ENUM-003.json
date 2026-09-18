@@ -43,9 +43,7 @@
 			}
 		}
 	],
-	"covers": [
-		"CR-enum"
-	],
+	"covers": ["CR-enum"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

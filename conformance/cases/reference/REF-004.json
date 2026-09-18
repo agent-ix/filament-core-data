@@ -20,9 +20,7 @@
 	],
 	"beforeBase": "core-2-0",
 	"beforeOps": [],
-	"covers": [
-		"CR-reference"
-	],
+	"covers": ["CR-reference"],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

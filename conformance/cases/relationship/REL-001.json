@@ -7,9 +7,7 @@
 	"contractVersion": "2.0.0",
 	"base": "core-2-0",
 	"ops": [],
-	"covers": [
-		"CR-relationship"
-	],
+	"covers": ["CR-relationship"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

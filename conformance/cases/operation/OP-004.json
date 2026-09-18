@@ -39,9 +39,7 @@
 	],
 	"beforeBase": "core-2-0",
 	"beforeOps": [],
-	"covers": [
-		"CR-operation"
-	],
+	"covers": ["CR-operation"],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

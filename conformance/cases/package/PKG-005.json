@@ -15,14 +15,10 @@
 		{
 			"op": "replace",
 			"path": "/lock/packages/1/dependencies",
-			"value": [
-				"agent-ix/conformance"
-			]
+			"value": ["agent-ix/conformance"]
 		}
 	],
-	"covers": [
-		"CR-package"
-	],
+	"covers": ["CR-package"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

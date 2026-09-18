@@ -18,9 +18,7 @@
 			"value": "ix://agent-ix/conformance/type/Absent"
 		}
 	],
-	"covers": [
-		"CR-union"
-	],
+	"covers": ["CR-union"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

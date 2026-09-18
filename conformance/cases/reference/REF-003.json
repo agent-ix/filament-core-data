@@ -30,9 +30,7 @@
 			}
 		}
 	],
-	"covers": [
-		"CR-reference"
-	],
+	"covers": ["CR-reference"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

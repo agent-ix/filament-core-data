@@ -21,9 +21,7 @@
 			"path": "/manifest/exports/1"
 		}
 	],
-	"covers": [
-		"CR-package"
-	],
+	"covers": ["CR-package"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

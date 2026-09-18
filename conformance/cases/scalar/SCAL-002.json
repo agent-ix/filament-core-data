@@ -18,9 +18,7 @@
 			"value": "text"
 		}
 	],
-	"covers": [
-		"CR-scalar"
-	],
+	"covers": ["CR-scalar"],
 	"decidedBy": "schema",
 	"derivedFrom": [
 		{

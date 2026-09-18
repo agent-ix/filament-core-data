@@ -42,9 +42,7 @@
 			"path": "/ir/types/3/variants"
 		}
 	],
-	"covers": [
-		"CR-enum"
-	],
+	"covers": ["CR-enum"],
 	"decidedBy": "schema",
 	"derivedFrom": [
 		{

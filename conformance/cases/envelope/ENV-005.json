@@ -18,9 +18,7 @@
 			"value": "spec-bundle"
 		}
 	],
-	"covers": [
-		"CR-envelope"
-	],
+	"covers": ["CR-envelope"],
 	"decidedBy": "schema",
 	"derivedFrom": [
 		{

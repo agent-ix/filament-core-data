@@ -73,9 +73,7 @@
 			}
 		}
 	],
-	"covers": [
-		"CR-package"
-	],
+	"covers": ["CR-package"],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

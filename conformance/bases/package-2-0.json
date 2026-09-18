@@ -12,12 +12,8 @@
 			"identity": "agent-ix/conformance",
 			"version": "1.0.0",
 			"manifestDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
-			"mappingVersions": [
-				"1.0.0"
-			],
-			"profileVersions": [
-				"1.0.0"
-			],
+			"mappingVersions": ["1.0.0"],
+			"profileVersions": ["1.0.0"],
 			"lockDigest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
 		},
 		"types": [
@@ -25,9 +21,7 @@
 				"identity": "ix://agent-ix/conformance/type/Text",
 				"displayName": "Text",
 				"kind": "scalar",
-				"roles": [
-					"agent-ix:value"
-				],
+				"roles": ["agent-ix:value"],
 				"origin": {
 					"source": {
 						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
@@ -117,9 +111,7 @@
 				"identity": "ix://agent-ix/conformance/type/Status",
 				"displayName": "Status",
 				"kind": "enum",
-				"roles": [
-					"agent-ix:state"
-				],
+				"roles": ["agent-ix:state"],
 				"origin": {
 					"source": {
 						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
@@ -261,9 +253,7 @@
 				"identity": "ix://agent-ix/conformance/type/Node",
 				"displayName": "Node",
 				"kind": "record",
-				"roles": [
-					"agent-ix:entity"
-				],
+				"roles": ["agent-ix:entity"],
 				"origin": {
 					"source": {
 						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
@@ -469,10 +459,7 @@
 				"identity": "ix://agent-ix/conformance/type/Root",
 				"displayName": "Root",
 				"kind": "record",
-				"roles": [
-					"agent-ix:entity",
-					"agent-ix:aggregate"
-				],
+				"roles": ["agent-ix:entity", "agent-ix:aggregate"],
 				"origin": {
 					"source": {
 						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
@@ -582,12 +569,8 @@
 							},
 							"nullable": false
 						},
-						"pre": [
-							"size-non-negative"
-						],
-						"post": [
-							"node-returned"
-						],
+						"pre": ["size-non-negative"],
+						"post": ["node-returned"],
 						"origin": {
 							"source": {
 								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
@@ -676,9 +659,7 @@
 			"version": "1.0.0"
 		},
 		"schemaDialect": "https://json-schema.org/draft/2020-12/schema",
-		"sourceRoots": [
-			"model"
-		],
+		"sourceRoots": ["model"],
 		"exports": [
 			{
 				"name": "Root",
@@ -695,38 +676,23 @@
 			{
 				"packageIdentity": "agent-ix/kernel",
 				"versionConstraint": "1.0.0",
-				"exports": [
-					"Text"
-				],
-				"capabilities": [
-					"documentation"
-				]
+				"exports": ["Text"],
+				"capabilities": ["documentation"]
 			}
 		],
 		"profiles": [
 			{
 				"name": "default",
 				"version": "1.0.0",
-				"exports": [
-					"Root",
-					"Node"
-				],
-				"targets": [
-					"json-schema"
-				],
-				"mappings": [
-					"ix://agent-ix/conformance/mapping/root-json"
-				],
+				"exports": ["Root", "Node"],
+				"targets": ["json-schema"],
+				"mappings": ["ix://agent-ix/conformance/mapping/root-json"],
 				"options": {},
 				"compatibilityPosture": "strict"
 			}
 		],
-		"targets": [
-			"json-schema"
-		],
-		"mappings": [
-			"ix://agent-ix/conformance/mapping/root-json"
-		],
+		"targets": ["json-schema"],
+		"mappings": ["ix://agent-ix/conformance/mapping/root-json"],
 		"extensions": []
 	},
 	"manifestDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
@@ -761,9 +727,7 @@
 				"version": "1.0.0",
 				"contentDigest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
 				"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
-				"dependencies": [
-					"agent-ix/kernel"
-				]
+				"dependencies": ["agent-ix/kernel"]
 			},
 			{
 				"identity": "agent-ix/kernel",
@@ -810,9 +774,7 @@
 				"deterministic": true,
 				"externalReads": [],
 				"externalWrites": [],
-				"failureStates": [
-					"invalid"
-				],
+				"failureStates": ["invalid"],
 				"retryIdempotent": true,
 				"encoding": "utf-8",
 				"decodePolicy": "strict"

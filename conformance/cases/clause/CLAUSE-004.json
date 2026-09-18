@@ -20,9 +20,7 @@
 	],
 	"beforeBase": "core-2-0",
 	"beforeOps": [],
-	"covers": [
-		"CR-clause"
-	],
+	"covers": ["CR-clause"],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

@@ -18,9 +18,7 @@
 			}
 		}
 	],
-	"covers": [
-		"CR-extension"
-	],
+	"covers": ["CR-extension"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

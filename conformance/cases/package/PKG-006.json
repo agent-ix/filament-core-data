@@ -18,9 +18,7 @@
 			"value": "sha256:9999999999999999999999999999999999999999999999999999999999999999"
 		}
 	],
-	"covers": [
-		"CR-package"
-	],
+	"covers": ["CR-package"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

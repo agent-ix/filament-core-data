@@ -18,9 +18,7 @@
 			"value": "ix://agent-ix/conformance/type/Absent"
 		}
 	],
-	"covers": [
-		"CR-relationship"
-	],
+	"covers": ["CR-relationship"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

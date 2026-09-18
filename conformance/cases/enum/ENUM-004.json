@@ -31,9 +31,7 @@
 	],
 	"beforeBase": "core-2-0",
 	"beforeOps": [],
-	"covers": [
-		"CR-enum"
-	],
+	"covers": ["CR-enum"],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

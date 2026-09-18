@@ -39,9 +39,7 @@
 			"path": "/ir/types/1/constraints/0"
 		}
 	],
-	"covers": [
-		"CR-scalar"
-	],
+	"covers": ["CR-scalar"],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

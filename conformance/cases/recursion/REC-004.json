@@ -38,9 +38,7 @@
 	],
 	"beforeBase": "core-2-0",
 	"beforeOps": [],
-	"covers": [
-		"CR-recursion"
-	],
+	"covers": ["CR-recursion"],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

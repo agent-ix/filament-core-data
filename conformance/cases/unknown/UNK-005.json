@@ -18,9 +18,7 @@
 			"value": "surface"
 		}
 	],
-	"covers": [
-		"CR-unknown"
-	],
+	"covers": ["CR-unknown"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

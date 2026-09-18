@@ -54,9 +54,7 @@
 			}
 		}
 	],
-	"covers": [
-		"CR-recursion"
-	],
+	"covers": ["CR-recursion"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

@@ -34,9 +34,7 @@
 			}
 		}
 	],
-	"covers": [
-		"CR-provenance"
-	],
+	"covers": ["CR-provenance"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

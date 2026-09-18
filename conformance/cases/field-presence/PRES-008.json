@@ -24,9 +24,7 @@
 			}
 		}
 	],
-	"covers": [
-		"CR-field-presence"
-	],
+	"covers": ["CR-field-presence"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

@@ -68,9 +68,7 @@
 	],
 	"beforeBase": "core-2-0",
 	"beforeOps": [],
-	"covers": [
-		"CR-compatibility"
-	],
+	"covers": ["CR-compatibility"],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

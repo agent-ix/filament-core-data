@@ -30,9 +30,7 @@
 			}
 		}
 	],
-	"covers": [
-		"CR-scalar"
-	],
+	"covers": ["CR-scalar"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

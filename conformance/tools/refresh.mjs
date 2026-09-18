@@ -9,7 +9,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { ROOT, computeDigests } from "../corpus.mjs";
+import { computeDigests, ROOT } from "../corpus.mjs";
 import { formatJson } from "./format-json.mjs";
 
 const path = join(ROOT, "corpus.json");

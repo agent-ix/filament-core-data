@@ -28,9 +28,7 @@
 			"value": null
 		}
 	],
-	"covers": [
-		"CR-field-default"
-	],
+	"covers": ["CR-field-default"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

@@ -20,9 +20,7 @@
 	],
 	"beforeBase": "core-2-0",
 	"beforeOps": [],
-	"covers": [
-		"CR-unit"
-	],
+	"covers": ["CR-unit"],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

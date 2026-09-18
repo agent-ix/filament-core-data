@@ -17,9 +17,7 @@
 			"path": "/ir/types/1"
 		}
 	],
-	"covers": [
-		"CR-envelope"
-	],
+	"covers": ["CR-envelope"],
 	"decidedBy": "schema",
 	"derivedFrom": [
 		{

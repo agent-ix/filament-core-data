@@ -18,9 +18,7 @@
 			"value": "startsWith"
 		}
 	],
-	"covers": [
-		"CR-constraint"
-	],
+	"covers": ["CR-constraint"],
 	"decidedBy": "schema",
 	"derivedFrom": [
 		{

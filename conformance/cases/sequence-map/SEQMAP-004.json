@@ -20,9 +20,7 @@
 	],
 	"beforeBase": "core-2-0",
 	"beforeOps": [],
-	"covers": [
-		"CR-sequence-map"
-	],
+	"covers": ["CR-sequence-map"],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

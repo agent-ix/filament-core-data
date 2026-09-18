@@ -22,9 +22,7 @@
 	],
 	"beforeBase": "core-2-0",
 	"beforeOps": [],
-	"covers": [
-		"CR-extension"
-	],
+	"covers": ["CR-extension"],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

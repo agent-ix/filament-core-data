@@ -37,9 +37,7 @@
 			}
 		}
 	],
-	"covers": [
-		"CR-operation"
-	],
+	"covers": ["CR-operation"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

@@ -18,9 +18,7 @@
 			"value": "kg"
 		}
 	],
-	"covers": [
-		"CR-unit"
-	],
+	"covers": ["CR-unit"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

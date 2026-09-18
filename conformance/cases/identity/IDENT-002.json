@@ -18,9 +18,7 @@
 			"value": "ix://agent-ix/conformance/field/node-id"
 		}
 	],
-	"covers": [
-		"CR-identity"
-	],
+	"covers": ["CR-identity"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

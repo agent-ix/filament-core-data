@@ -65,9 +65,7 @@
 			}
 		}
 	],
-	"covers": [
-		"CR-alias"
-	],
+	"covers": ["CR-alias"],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

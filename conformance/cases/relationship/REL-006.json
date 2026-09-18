@@ -18,9 +18,7 @@
 			"value": "temporal"
 		}
 	],
-	"covers": [
-		"CR-relationship"
-	],
+	"covers": ["CR-relationship"],
 	"decidedBy": "schema",
 	"derivedFrom": [
 		{

@@ -18,9 +18,7 @@
 			"value": "ix://agent-ix/conformance/type/Count"
 		}
 	],
-	"covers": [
-		"CR-constraint"
-	],
+	"covers": ["CR-constraint"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

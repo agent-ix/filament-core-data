@@ -18,9 +18,7 @@
 			"value": "0"
 		}
 	],
-	"covers": [
-		"CR-constraint"
-	],
+	"covers": ["CR-constraint"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

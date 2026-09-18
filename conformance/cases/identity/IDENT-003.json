@@ -30,9 +30,7 @@
 			}
 		}
 	],
-	"covers": [
-		"CR-identity"
-	],
+	"covers": ["CR-identity"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

@@ -12,12 +12,8 @@
 			"identity": "agent-ix/conformance",
 			"version": "1.0.0",
 			"manifestDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
-			"mappingVersions": [
-				"1.0.0"
-			],
-			"profileVersions": [
-				"1.0.0"
-			],
+			"mappingVersions": ["1.0.0"],
+			"profileVersions": ["1.0.0"],
 			"lockDigest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
 		},
 		"types": [

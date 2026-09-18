@@ -40,9 +40,7 @@
 			"value": "ix://agent-ix/conformance/type/NodeName"
 		}
 	],
-	"covers": [
-		"CR-recursion"
-	],
+	"covers": ["CR-recursion"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

@@ -36,9 +36,7 @@
 	],
 	"beforeBase": "core-2-0",
 	"beforeOps": [],
-	"covers": [
-		"CR-field-presence"
-	],
+	"covers": ["CR-field-presence"],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

@@ -351,17 +351,17 @@
 		{
 			"id": "core-2-0",
 			"path": "conformance/bases/core-2-0.json",
-			"digest": "sha256:556ea3e578bb423edb5c0af7507a9451750ecad6f571bb70405da565f89dd828"
+			"digest": "sha256:b325f32af87f73ad5e10d4ac647989a88ee959ca523f948e90d0ddf4d7cb1439"
 		},
 		{
 			"id": "minimal-2-0",
 			"path": "conformance/bases/minimal-2-0.json",
-			"digest": "sha256:f08d17ee0170e6674d7cf26f970a54a5b24eef67c4a55d7de0b7dc12f0ef97df"
+			"digest": "sha256:21b9d6c2b39d0b233fbd532e949a8b62e3a1139b70e4e2a14b30a8c1b4d65e01"
 		},
 		{
 			"id": "package-2-0",
 			"path": "conformance/bases/package-2-0.json",
-			"digest": "sha256:4cba610bb1563172438c90cf62f590aa69fd4afa45c166a1b0c127069f200f13"
+			"digest": "sha256:1135dc0f6b322976bcd99501eebc22f8dbfad43cc3d991a8b00a8c812cfe7a12"
 		}
 	],
 	"cases": [
@@ -370,7 +370,7 @@
 			"path": "conformance/cases/alias/ALIAS-001.json",
 			"family": "alias",
 			"class": "positive",
-			"digest": "sha256:b344e4013eee3f8139a2ba6977fe6b5f739d19bc321d35d9a519ef08aaf597a9",
+			"digest": "sha256:5fb13db5f2a67f52b7bd2e9a3dd3d4af37c5e909911f854935b7134e4e8741c7",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -378,7 +378,7 @@
 			"path": "conformance/cases/alias/ALIAS-002.json",
 			"family": "alias",
 			"class": "negative",
-			"digest": "sha256:5dd18253fe6e015615a0f068838d6c3951b79416cb89610a310674620499d533",
+			"digest": "sha256:3bdf68306eafe4aadd02c51766a80f68e5cc6a2741c55931b3fc2e34d3d0c643",
 			"expectedDigest": "sha256:508a666e886fbb17c5f096c28bde34e9f59310f65a0f0bb0b41daf6eaf1380c6"
 		},
 		{
@@ -386,7 +386,7 @@
 			"path": "conformance/cases/alias/ALIAS-003.json",
 			"family": "alias",
 			"class": "boundary",
-			"digest": "sha256:4ec62ed5340c1084e4076c62dad8bad2a76df883220e40f79052be6bed36537c",
+			"digest": "sha256:229e77d02a68646fc03ca10b7886f8b84882f83b4688070fa1069eb48c2e3ea0",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -394,7 +394,7 @@
 			"path": "conformance/cases/alias/ALIAS-004.json",
 			"family": "alias",
 			"class": "evolution",
-			"digest": "sha256:a01ff2e0c7a1eb012bcc79c04b3205e8a720c0b7945b9bc5ae03ec0595e01499",
+			"digest": "sha256:990888d619fc26fe7ed0c4d1fe2225c3cd7775836b568936e7d32ae5cabe6f6e",
 			"expectedDigest": "sha256:2cb5bd25a30b94ce1a9f705c85f03bb281392be96c67b588698977dd4f1c8d2f"
 		},
 		{
@@ -402,7 +402,7 @@
 			"path": "conformance/cases/clause/CLAUSE-001.json",
 			"family": "clause",
 			"class": "positive",
-			"digest": "sha256:bc96321463825d7f554829b3235a405f10d010af51ec3bce4676a679f232b8a8",
+			"digest": "sha256:c6f2ff87fcb4d4c5a9e4f49369a2d318ec698e6d682397db7026226e1b3cce2b",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -410,7 +410,7 @@
 			"path": "conformance/cases/clause/CLAUSE-002.json",
 			"family": "clause",
 			"class": "negative",
-			"digest": "sha256:379f40b44ec7d22528cb1b9a2cc1683d9e9ede6b64c02150a2f152411543c1af",
+			"digest": "sha256:1095545a3bdeb0622a9e2a0e8b70a230708bab8baea0f9773444e78be1fb0b5c",
 			"expectedDigest": "sha256:65291eaa8b82ceddd8ff4877a0604c3d863956a4901b8425352a36f879a023ba"
 		},
 		{
@@ -418,7 +418,7 @@
 			"path": "conformance/cases/clause/CLAUSE-003.json",
 			"family": "clause",
 			"class": "boundary",
-			"digest": "sha256:c1687a5e462615a03d7065e49c7ead1b67acbc61e21f02d83d5799aac18eaad8",
+			"digest": "sha256:62148af275cb9e9a00cf4460e784ef207f8b867a8e00b7a12b4d549107869fde",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -426,7 +426,7 @@
 			"path": "conformance/cases/clause/CLAUSE-004.json",
 			"family": "clause",
 			"class": "evolution",
-			"digest": "sha256:d07c4a7f80ad6730b532339f27c6024a13c693fb09d044b44f0c89742c5c8bcc",
+			"digest": "sha256:fa728de8ecf9be79e56401e8677fb3338544db8d85c213292f274debcc038434",
 			"expectedDigest": "sha256:95cebf4832f1aed109c7a4542a3b6548d671b812c108e51a59e89fecda8a2dfc"
 		},
 		{
@@ -434,7 +434,7 @@
 			"path": "conformance/cases/clause/CLAUSE-005.json",
 			"family": "clause",
 			"class": "negative",
-			"digest": "sha256:4baef0865c8ca12abedfaea9a57f2b722817d1f1e88f487494ecb2dd18ad57e8",
+			"digest": "sha256:48bd883c4d1733bb5ced97ed9feb012e382e3e8a5cf8ad7a226abe4f58499864",
 			"expectedDigest": "sha256:57affb91347130d6bcd186d1da4b8da92b232df2afa4e373008f1706f7a0e3c5"
 		},
 		{
@@ -442,7 +442,7 @@
 			"path": "conformance/cases/clause/CLAUSE-006.json",
 			"family": "clause",
 			"class": "negative",
-			"digest": "sha256:222fce8a1d242b48bbae433706550c50456267189819f24afea86781356d227b",
+			"digest": "sha256:fcb352a95971248039f10282a73b75bdc3228f4821e05cae9425650ec93c8021",
 			"expectedDigest": "sha256:d13a05f12cdf73ead5dcdf2ffc7ae516cab6516586e4e139c6a1861847501f9c"
 		},
 		{
@@ -450,7 +450,7 @@
 			"path": "conformance/cases/compatibility/COMP-001.json",
 			"family": "compatibility",
 			"class": "positive",
-			"digest": "sha256:250317882c7c6489c739cbdcc07bd840e500e606151e98ada2412c6fc05154cd",
+			"digest": "sha256:58ff7c1780cd255ee6a4a612a3e8006127af8234eac26df80934cfc5516485de",
 			"expectedDigest": "sha256:2cb5bd25a30b94ce1a9f705c85f03bb281392be96c67b588698977dd4f1c8d2f"
 		},
 		{
@@ -458,7 +458,7 @@
 			"path": "conformance/cases/compatibility/COMP-002.json",
 			"family": "compatibility",
 			"class": "negative",
-			"digest": "sha256:3d49802a3bbaf6795acffe21d7872b665f7f58a836657b77671f301f5800aea0",
+			"digest": "sha256:4f8391a3c25e1d540ebe4bdc5dfb911d813b78e9af8aec58d05353e0311cf8e3",
 			"expectedDigest": "sha256:a302e10c784b06af54c124aa6fee290d2fae0855b1a36265f2c918d18656d4c5"
 		},
 		{
@@ -466,7 +466,7 @@
 			"path": "conformance/cases/compatibility/COMP-003.json",
 			"family": "compatibility",
 			"class": "boundary",
-			"digest": "sha256:f501e995ba76fb6c3a3671c4be7af9f3586a6dbfad13c002a81f1dd7c71ce8d6",
+			"digest": "sha256:4b37e7c8991fac30dfc6889191cc8822b395536513e5a884664ba38594148b20",
 			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
 		},
 		{
@@ -474,7 +474,7 @@
 			"path": "conformance/cases/compatibility/COMP-004.json",
 			"family": "compatibility",
 			"class": "evolution",
-			"digest": "sha256:49be5b517926521ab7a934b3b598231ac3a51bcc2ffe08d0ff9211345904fade",
+			"digest": "sha256:7555b5f9c47fe66af6a8f74440dffff53970f64eb7543634217fea0fb392502b",
 			"expectedDigest": "sha256:6e371cdd54d9a4b6b298a1c0afa59978b88f0f8dbbc119f2a3e69afdf94458d2"
 		},
 		{
@@ -482,7 +482,7 @@
 			"path": "conformance/cases/compatibility/COMP-005.json",
 			"family": "compatibility",
 			"class": "evolution",
-			"digest": "sha256:7c12f6cbe58af7d366a581b9d0aa83ef18384685f806dbeec641f49b7604d5dc",
+			"digest": "sha256:52fdaf1fb88aab80e37844d6ee200a81983d22b6f80f4a7aecf82c5e0f51aadb",
 			"expectedDigest": "sha256:4d8c58cacba5665d772325195e70d588e515d8f3f4cd32b2fe325effe985650c"
 		},
 		{
@@ -490,7 +490,7 @@
 			"path": "conformance/cases/constraint/CONS-001.json",
 			"family": "constraint",
 			"class": "positive",
-			"digest": "sha256:fd3612139674ce3a1688605b045d77b301add14b50a095699c30f3fe754f356e",
+			"digest": "sha256:dc3513e26115a1691186aa4ca8a388d09633aa9f028d998e5e092638170128dc",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -498,7 +498,7 @@
 			"path": "conformance/cases/constraint/CONS-002.json",
 			"family": "constraint",
 			"class": "negative",
-			"digest": "sha256:5a5d64dcaa45004857316981cda677aabd3db2d18124c88b237c620f7c02d468",
+			"digest": "sha256:4340600038fa4b7b312682d21fb1f7446de4d8b9af6d8e58dc5091c67a5b7eef",
 			"expectedDigest": "sha256:587f34887b09e0d629173bceee6a310d5b86bd7fd1ca78159d04629bf6516bc5"
 		},
 		{
@@ -506,7 +506,7 @@
 			"path": "conformance/cases/constraint/CONS-003.json",
 			"family": "constraint",
 			"class": "boundary",
-			"digest": "sha256:6d73ecb98d6022d9eb344383c8763679c9bce2f565870322924efc7f193a6bb7",
+			"digest": "sha256:ee780d3030fb71fba42c4e79489e70e3a0146fd0ffd299033a3f5f964f2a0180",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -514,7 +514,7 @@
 			"path": "conformance/cases/constraint/CONS-004.json",
 			"family": "constraint",
 			"class": "evolution",
-			"digest": "sha256:9d58ec6f69035c089b937131515c52e18676ccb2695f328d6eac47e406afb35a",
+			"digest": "sha256:f846510bb2c97f4de75e0da4f32de0e91e72e29bd518f98fb6339dded9b2b116",
 			"expectedDigest": "sha256:4d8c58cacba5665d772325195e70d588e515d8f3f4cd32b2fe325effe985650c"
 		},
 		{
@@ -522,7 +522,7 @@
 			"path": "conformance/cases/constraint/CONS-005.json",
 			"family": "constraint",
 			"class": "negative",
-			"digest": "sha256:1c24ed28878be205a48c9780dfd4b1f10ea70579d9e135672feb49526f25613b",
+			"digest": "sha256:f7bb4b398b21e7b6e6a3c90180c6172f0cebd1286b84a3269be7ebd5a8384ed2",
 			"expectedDigest": "sha256:def85feb3b2d79589a100ea3eac19f93cb143ff32360f63a7813d423c3a2277b"
 		},
 		{
@@ -530,7 +530,7 @@
 			"path": "conformance/cases/constraint/CONS-006.json",
 			"family": "constraint",
 			"class": "negative",
-			"digest": "sha256:9923d600a8d9de070cd53fa8bd3dc627b8afc8d59c6016c0807c7aee85bebe76",
+			"digest": "sha256:02d3b59a4191b3a0b7321341ca91d30ef9453864ff0ec59d9c70c3b8e6e5d50f",
 			"expectedDigest": "sha256:a9938766daf4694865b84f7040ec7d02880fbfb18c2e57c9a14e0b56fea4a508"
 		},
 		{
@@ -538,7 +538,7 @@
 			"path": "conformance/cases/constraint/CONS-007.json",
 			"family": "constraint",
 			"class": "negative",
-			"digest": "sha256:b494fd53a68468164dd15c2f85fe811f1e098fd747134f04ecebe3573035b21a",
+			"digest": "sha256:eccb01adcd410569c4585296270c5e1c3761c2ab8c8e1e18a56cc8abdb608546",
 			"expectedDigest": "sha256:ac38aa99bbf1792b2491413901e109ebc2b1f0b828ada739aae9dd4a0d92a796"
 		},
 		{
@@ -546,7 +546,7 @@
 			"path": "conformance/cases/field-default/DEF-001.json",
 			"family": "field-default",
 			"class": "positive",
-			"digest": "sha256:0146e6a02b34decba701a10448a4a57c6c2ae0bdc2b13595de0e05373de7701b",
+			"digest": "sha256:60fe12afd34bb1206a0446fe6fcc5c28f17f3410f0a82f6be60f989c3fa91ca0",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -554,7 +554,7 @@
 			"path": "conformance/cases/field-default/DEF-002.json",
 			"family": "field-default",
 			"class": "negative",
-			"digest": "sha256:59cefba2c59b87f998204b5dbf57864966b6a1d858d095a3c46a8a380724437e",
+			"digest": "sha256:b35a18c3a2beea13d59a9fd97ee32e54617489eeb88bf1bd640b8b267742209f",
 			"expectedDigest": "sha256:d681da3420d0cef0c21f697860358445dc85dca6100b7dc7544113437f4a30d6"
 		},
 		{
@@ -562,7 +562,7 @@
 			"path": "conformance/cases/field-default/DEF-003.json",
 			"family": "field-default",
 			"class": "boundary",
-			"digest": "sha256:0feb447589af983e1e21e879bbc2a14385b4372aecc8286374c7ba03f5f35225",
+			"digest": "sha256:7c52660fe2b4ddaf685ead23c5780a4e2f7cbd5bf512c48985207d876463cbd9",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -570,7 +570,7 @@
 			"path": "conformance/cases/field-default/DEF-004.json",
 			"family": "field-default",
 			"class": "evolution",
-			"digest": "sha256:15d74eea7f82446b7088ba7acbd726720b33dbf162028cc8f279903fda5e75a3",
+			"digest": "sha256:4a5a1b11d4e69886da056b1ffd1250feef991fdb808c5d83763f52bb4fd69fbf",
 			"expectedDigest": "sha256:4d8c58cacba5665d772325195e70d588e515d8f3f4cd32b2fe325effe985650c"
 		},
 		{
@@ -578,7 +578,7 @@
 			"path": "conformance/cases/enum/ENUM-001.json",
 			"family": "enum",
 			"class": "positive",
-			"digest": "sha256:838138a9247677cd4a6b0ca88c3e2142f74092103c422791dd05e350421cdeea",
+			"digest": "sha256:01b7375cff6a13c458628a448cf3fe0b72f042148e903d3f34c5ed29d1c1e800",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -586,7 +586,7 @@
 			"path": "conformance/cases/enum/ENUM-002.json",
 			"family": "enum",
 			"class": "negative",
-			"digest": "sha256:91e0d876de558ca5803f8513bad6c0ecabb44807742344c91f3454e970c6c3b9",
+			"digest": "sha256:1c68ded38ffc2f0793919b657ee3c66b682afe8c2ece61cbff9df2f3dd6169a8",
 			"expectedDigest": "sha256:fb5d5bac4801fcc06618779ff1123b5d9da3d4cad2adad5c150fd1de98abb3aa"
 		},
 		{
@@ -594,7 +594,7 @@
 			"path": "conformance/cases/enum/ENUM-003.json",
 			"family": "enum",
 			"class": "boundary",
-			"digest": "sha256:5974de2c94d26068e65e656b9dff0d6166eb92b0f87e1949f4bc9dd0d6442c8e",
+			"digest": "sha256:182fd77a4b06fc103df1dfdececb90031fd268c210de1746f3393d56d151c981",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -602,7 +602,7 @@
 			"path": "conformance/cases/enum/ENUM-004.json",
 			"family": "enum",
 			"class": "evolution",
-			"digest": "sha256:241ce959c8db4aeb28fbb07bfb55313eff96d95dd8ba10218b522c4f2664519c",
+			"digest": "sha256:a00b5bd9cd34fe674949c5065bcb3fe82cb97b5cfc84263ff0e54a013dc04782",
 			"expectedDigest": "sha256:4d8c58cacba5665d772325195e70d588e515d8f3f4cd32b2fe325effe985650c"
 		},
 		{
@@ -610,7 +610,7 @@
 			"path": "conformance/cases/envelope/ENV-001.json",
 			"family": "envelope",
 			"class": "positive",
-			"digest": "sha256:8ad4e2584eb9977d55be5502561074ed95c445d2d2b31af55b2419cc6df2146a",
+			"digest": "sha256:6d41160e8aa619b30749e72df8f7f42d29f798b5b49376b8feb3fdaffe65807a",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -618,7 +618,7 @@
 			"path": "conformance/cases/envelope/ENV-002.json",
 			"family": "envelope",
 			"class": "negative",
-			"digest": "sha256:d4899d6ede01d4cce00d95f516a68c1d4450843025472862a765f7b03a4a9c7e",
+			"digest": "sha256:859828803af68a82bec556112c6251c0996eea0a4f9bc1a5dcdfc379b1d609e5",
 			"expectedDigest": "sha256:4c4f45e379d1d2ac909438cfccb24cfc3f651f7c254b7cf425fbddfe69a1f665"
 		},
 		{
@@ -626,7 +626,7 @@
 			"path": "conformance/cases/envelope/ENV-003.json",
 			"family": "envelope",
 			"class": "boundary",
-			"digest": "sha256:d9f28911f96ddd4164719dea2efe0b7ef89f90314fa09da646f8031465436721",
+			"digest": "sha256:93b4d741500b9c0af4955b57904043b3bc0290b544e61c1ed5317dddfedcf9e8",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -634,7 +634,7 @@
 			"path": "conformance/cases/envelope/ENV-005.json",
 			"family": "envelope",
 			"class": "boundary",
-			"digest": "sha256:6ec3480ec95b2ed2fd27e7e9067103ac770938797a1a1e987fedea1c0cdc2e67",
+			"digest": "sha256:044098f34c46bcc2bf68e2938c787087f1f26b69cf8716530605ef3280d28807",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -642,7 +642,7 @@
 			"path": "conformance/cases/extension/EXT-001.json",
 			"family": "extension",
 			"class": "positive",
-			"digest": "sha256:2d11cbc71cb2db189d078601facf16ad40a0a9fe24d55b2cdde1e7e6352a67a2",
+			"digest": "sha256:2dbd136063c9cb18ccc85209e2d217358bdeca3bdd65c175099b82707b48fcd9",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -650,7 +650,7 @@
 			"path": "conformance/cases/extension/EXT-002.json",
 			"family": "extension",
 			"class": "negative",
-			"digest": "sha256:16d92b5096f31e4155370a38799bcafe0056aa10c4e256560484a88ffd0d36f6",
+			"digest": "sha256:dad3d0175d5bb9638e614a34fc80130d868a0328b96df8b833736235e4331a8c",
 			"expectedDigest": "sha256:1c942c8fe635e0d80175937f1ff223e8a36ce2ff581e5bb4f4d1c586561b4077"
 		},
 		{
@@ -658,7 +658,7 @@
 			"path": "conformance/cases/extension/EXT-003.json",
 			"family": "extension",
 			"class": "boundary",
-			"digest": "sha256:318d2ed7828e8f8c2c7d6d60a362b08da0a519c309270802a218f660d0127f92",
+			"digest": "sha256:92f5654aac2e4b5ce6c83be35f1cb6c5af15b99e4fdcb8e1f52791bf30b93a96",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -666,7 +666,7 @@
 			"path": "conformance/cases/extension/EXT-004.json",
 			"family": "extension",
 			"class": "evolution",
-			"digest": "sha256:3ce3c778b6ef257b8a2216c31f4a3f86482ef854fcc1eecb0c491dd98b32df18",
+			"digest": "sha256:5d16883015030c0f3bb2506b18ae85e6dc2c40f3008d134d1d0a798d935a39f6",
 			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
 		},
 		{
@@ -674,7 +674,7 @@
 			"path": "conformance/cases/identity/IDENT-001.json",
 			"family": "identity",
 			"class": "positive",
-			"digest": "sha256:91abbff0aa45f5829dbb02d8fb54545e51c0b0416c41668499c3a70dad74c0ce",
+			"digest": "sha256:ab08547d8524e8074c8f40e2270acb9a2bb19febe14fb1bc3f1af70c4f82f819",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -682,7 +682,7 @@
 			"path": "conformance/cases/identity/IDENT-002.json",
 			"family": "identity",
 			"class": "negative",
-			"digest": "sha256:2122880ad641a9e05db0a273fd65d938a085419c58a4cbc2d3b33c4e34dfa67c",
+			"digest": "sha256:01d708e197d8728b983c2db57ab9ccb8b744af531c2bc8916704814089a95175",
 			"expectedDigest": "sha256:dc96e8f9aa65079844060fb65d0c0fdbeee2a4748a665646f72001869f9b03e2"
 		},
 		{
@@ -690,7 +690,7 @@
 			"path": "conformance/cases/identity/IDENT-003.json",
 			"family": "identity",
 			"class": "boundary",
-			"digest": "sha256:d18a39491b856167ca52eba6363419c0a284f2d05407791f31981dee92d71ba3",
+			"digest": "sha256:c0eda2697dc015db54fbd2f395dbf36042db6ab010aa7e9049a87be60925188f",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -698,7 +698,7 @@
 			"path": "conformance/cases/identity/IDENT-004.json",
 			"family": "identity",
 			"class": "evolution",
-			"digest": "sha256:b0a48d056f636fa87a9ece2390fcfe4d59cea7f92900969a04ca32d7a697d631",
+			"digest": "sha256:15a4882b7a3c4264b4cff639ea55a114fee2586119cb8c3bad3474d513b3c774",
 			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
 		},
 		{
@@ -706,7 +706,7 @@
 			"path": "conformance/cases/identity/IDENT-005.json",
 			"family": "identity",
 			"class": "negative",
-			"digest": "sha256:e48259dba031200627e6da647ddbd3eb57c51f02e1dbf846f4d5286b42c87013",
+			"digest": "sha256:369a3edbcfa16c2011f1c9294bb52e86c417d96928d089ea8a188a1e0cafc57a",
 			"expectedDigest": "sha256:85056bf7f202e481716c1f079f62f9b684999194a6e7cdb04254b59e6a348e86"
 		},
 		{
@@ -714,7 +714,7 @@
 			"path": "conformance/cases/operation/OP-001.json",
 			"family": "operation",
 			"class": "positive",
-			"digest": "sha256:3fa797a30183c1ae3d000d8cded1aa6072116cbf7e2a9d7c0f5a755ceca3d89b",
+			"digest": "sha256:2ff6882d5b622abdec977513557f35a37eeddcb83427736eb1bbaf9ce2116dc0",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -722,7 +722,7 @@
 			"path": "conformance/cases/operation/OP-002.json",
 			"family": "operation",
 			"class": "negative",
-			"digest": "sha256:d524d96a835b0d7814578efd261e7b18eb227a1d1a6781ee2129d90449469210",
+			"digest": "sha256:330db129900d4762c4510356984e46ce91135a1b4e3528a46fe17ff1701816ef",
 			"expectedDigest": "sha256:2d9fdb371afb093f231e8a302e37ee8147c775b0dcfe64bf1d64fcbbaf36cd03"
 		},
 		{
@@ -730,7 +730,7 @@
 			"path": "conformance/cases/operation/OP-003.json",
 			"family": "operation",
 			"class": "boundary",
-			"digest": "sha256:b4a5ca1520b792f97795fdb14a2f214b89933424aa9541177d5182c21fd6c1d6",
+			"digest": "sha256:d5d3c58f4f04a54a85fc2986778dda164b3dc7922cb10756cdf55882879a4b23",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -738,7 +738,7 @@
 			"path": "conformance/cases/operation/OP-004.json",
 			"family": "operation",
 			"class": "evolution",
-			"digest": "sha256:fbb38e7f073b9e55c650df67348bdbd7d25c78e8751668d4ad4eb191b7be67d5",
+			"digest": "sha256:7bc4333e81a350f872c0b772de6308663d060ab658013fcf096ecefcaaa4ba2c",
 			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
 		},
 		{
@@ -746,7 +746,7 @@
 			"path": "conformance/cases/operation/OP-005.json",
 			"family": "operation",
 			"class": "negative",
-			"digest": "sha256:b8c436a4b83c71e746754c6870e52873e08eede01b04ef447ce3bac4b5c5294d",
+			"digest": "sha256:1f31eb67e8a0fd3365dcc6bc0d270a34b49eced90630c15f65e03c10188fd722",
 			"expectedDigest": "sha256:4cbf24873abaa0d9a94998973cb8e176b8f9d60ad030eb7b4ca75fec5b337f72"
 		},
 		{
@@ -754,7 +754,7 @@
 			"path": "conformance/cases/package/PKG-001.json",
 			"family": "package",
 			"class": "positive",
-			"digest": "sha256:e869fece393b2d340181b482b6eb676d0b2e5ec17b0ca807a75d208c26a7042c",
+			"digest": "sha256:10a668b85f35799b168d7307741895829bea1fc3ead64ba1b842698320f82a00",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -762,7 +762,7 @@
 			"path": "conformance/cases/package/PKG-002.json",
 			"family": "package",
 			"class": "negative",
-			"digest": "sha256:390db10ef87bca7fa1145000c6b6314e3f68ee63a6b381ce63c9becdbe470208",
+			"digest": "sha256:9b0784ce9d409908a359641af7ad3bb66f9fdba02817ee388b5753f88c50bff9",
 			"expectedDigest": "sha256:41c17fe9c51b0b367b834bf2309719f9776a257e77df24a105de35e3b3908ef8"
 		},
 		{
@@ -770,7 +770,7 @@
 			"path": "conformance/cases/package/PKG-003.json",
 			"family": "package",
 			"class": "boundary",
-			"digest": "sha256:1ee73865d22706be8383d22cc991b8842e2d9b5ea4d01c1afd9ca817395813d3",
+			"digest": "sha256:d3e19bafe608158c124905cb52cb618d6e1cdb64ea8a01023890edad4aa81540",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -778,7 +778,7 @@
 			"path": "conformance/cases/package/PKG-004.json",
 			"family": "package",
 			"class": "evolution",
-			"digest": "sha256:39eeec41bea2efc2ab610f1f02ed583d9734c1487a41736f07310cba4d3a3978",
+			"digest": "sha256:f6a3f31f3e45e451bdbd1b6647ad8d92185c8c57b50ef2f1b16077614a2953b7",
 			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
 		},
 		{
@@ -786,7 +786,7 @@
 			"path": "conformance/cases/package/PKG-005.json",
 			"family": "package",
 			"class": "negative",
-			"digest": "sha256:88a668b3b71501c8226deea9dc1ec644e1d4ae2743ce606a8bc6a05a396e09b8",
+			"digest": "sha256:b0a62f2ea5f2ac1d275059c306b286af6f7ce4479888a4288e8427b7b541655f",
 			"expectedDigest": "sha256:8b5823d7a1bacd2fdf65c5dcbc6445eff0cf067774073e908e01ca6b52e66f6e"
 		},
 		{
@@ -794,7 +794,7 @@
 			"path": "conformance/cases/package/PKG-006.json",
 			"family": "package",
 			"class": "negative",
-			"digest": "sha256:1e7d3481519b4f9de1f61245082b927e1759872760cbf20fa45a97885dfcc016",
+			"digest": "sha256:9b1796d8665f1b7267d5a3904bbf20e6967d77c614f493be56cf3c1ebe02aa6d",
 			"expectedDigest": "sha256:daf3df3ced39a706f394efed077be900b26e8fc6ec909aedb16ddd929fe78923"
 		},
 		{
@@ -802,7 +802,7 @@
 			"path": "conformance/cases/package/PKG-007.json",
 			"family": "package",
 			"class": "negative",
-			"digest": "sha256:edf8ff5c08fd15fb1ff494ffeb238bc09db2c75a940f1fdccf37d287c6b03f49",
+			"digest": "sha256:5cb2b2bb0da74823b7bd1f052d8ff3412d0d4c8792616a00bc44c9d9c10e36c0",
 			"expectedDigest": "sha256:794a0f2325cd4e6a95e11bf687796f64b69beb892dc327b3f66bba776b34fcd2"
 		},
 		{
@@ -810,7 +810,7 @@
 			"path": "conformance/cases/package/PKG-008.json",
 			"family": "package",
 			"class": "negative",
-			"digest": "sha256:51a3017291cee2c0b9bca18faf331ac6c5c05ebd72a11fb53159835a4dc90d11",
+			"digest": "sha256:5bd6d1b55eb17502aa95c1598525b356f8a03c5fe11baaa46c2ff8fd7fde6f3e",
 			"expectedDigest": "sha256:7e2dee75877f34e3e12f21977c8fc59134f6a0de8beccb6333a0004869d07cf5"
 		},
 		{
@@ -818,7 +818,7 @@
 			"path": "conformance/cases/field-presence/PRES-001.json",
 			"family": "field-presence",
 			"class": "positive",
-			"digest": "sha256:ca18cb9002ed84b62c8379b5edf9e57fb09bda3a0fba3a006b96f2b245b8de90",
+			"digest": "sha256:721d67921e23f47ba47226892a613b9ca49fb095b96ced0304dc6c271d9a32dd",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -826,7 +826,7 @@
 			"path": "conformance/cases/field-presence/PRES-003.json",
 			"family": "field-presence",
 			"class": "boundary",
-			"digest": "sha256:a30569c9a4e2e6c869f093eef4f9f7a9d367991f5b59060aa3419bf8718a1fe6",
+			"digest": "sha256:901623cb343d17ef4f477988833e757a1258c41f9ccc04ff8095f9ac4880d6ad",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -834,7 +834,7 @@
 			"path": "conformance/cases/field-presence/PRES-004.json",
 			"family": "field-presence",
 			"class": "evolution",
-			"digest": "sha256:5f6e5623b517f84dc50997deb83688c923f4a27325b129cd1c715b479705dcf1",
+			"digest": "sha256:fdb335ad57047053d178487a2858686cd432a0d3c8476cf4313c3bdacbdfeb8d",
 			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
 		},
 		{
@@ -842,7 +842,7 @@
 			"path": "conformance/cases/field-presence/PRES-005.json",
 			"family": "field-presence",
 			"class": "positive",
-			"digest": "sha256:e8d0d64f7c0f7caa189cd1f11b7a44284fa7286c586bf8c10722dfdb14d399a6",
+			"digest": "sha256:9cab048d02558e029392bb57f52d3efdd7d8083019f989150d85197a7d5deec8",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -850,7 +850,7 @@
 			"path": "conformance/cases/field-presence/PRES-006.json",
 			"family": "field-presence",
 			"class": "positive",
-			"digest": "sha256:d919e982b3efe7cad8cfbba0b86853ca38cd93f5be8101f4a495e64934c23f89",
+			"digest": "sha256:f62b8a4130e74b76741e556da8591481b75a7f2a3557f06814acf7cf17706853",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -858,7 +858,7 @@
 			"path": "conformance/cases/field-presence/PRES-007.json",
 			"family": "field-presence",
 			"class": "negative",
-			"digest": "sha256:5ba81aa8b2520cf71b3d086dbe27b8ae1af2fd3aa3ec3279b4a03c450d7c1ed5",
+			"digest": "sha256:ea55a7a3d3010376b80144a65e52eb44c2d5b3226248bafadd5afac29a67d463",
 			"expectedDigest": "sha256:2f67d5f45abf827d3a9f46500d197e018a4fa7e30f236f7aa80ce86ace21e692"
 		},
 		{
@@ -866,7 +866,7 @@
 			"path": "conformance/cases/field-presence/PRES-008.json",
 			"family": "field-presence",
 			"class": "negative",
-			"digest": "sha256:4e3442f9a52385fb7d799de6aefcf92bfd03fbb4f98889f6c9ed2fe801784fc8",
+			"digest": "sha256:5065705a72bf6ad32b9ad400c935771ad2e11d95a473968d09eb3688f37ef0d4",
 			"expectedDigest": "sha256:84b01901df6e86d3bf95f4782bd3a81455ccc914373919bc19a423309822d29d"
 		},
 		{
@@ -874,7 +874,7 @@
 			"path": "conformance/cases/field-presence/PRES-009.json",
 			"family": "field-presence",
 			"class": "negative",
-			"digest": "sha256:7aa835add928e104d0c2d4c59354b18c224a902db1028d6aa6bb1cbb253c8df1",
+			"digest": "sha256:f02c476dae8df16312578feaf6b8a9bdd585549c26aac564dbb165fb32b648d0",
 			"expectedDigest": "sha256:c0977c4ba19a5ed280c6f8199fdfa8d0138225dcc6cdd369904fdcfd0f88e25e"
 		},
 		{
@@ -882,7 +882,7 @@
 			"path": "conformance/cases/field-presence/PRES-010.json",
 			"family": "field-presence",
 			"class": "positive",
-			"digest": "sha256:aafac711b4ec3476c23473ecd119cd2a4fcc75c233827bdef2ad84ab36fc21f0",
+			"digest": "sha256:32a16a034f8d1e412bcc56e490f17db40c009118beb04ceb50a5eb754a32a418",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -890,7 +890,7 @@
 			"path": "conformance/cases/provenance/PROV-001.json",
 			"family": "provenance",
 			"class": "positive",
-			"digest": "sha256:cb84fb54bc2cfb63ec130120fcb2c34abd22f7a5df7735c03768c7027e7ed84c",
+			"digest": "sha256:7eae602d04f166e5abce740030c750e28946451fba2be556e211abdca5b8f14d",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -898,7 +898,7 @@
 			"path": "conformance/cases/provenance/PROV-002.json",
 			"family": "provenance",
 			"class": "negative",
-			"digest": "sha256:b0c6277845ecd7a0bca05a6aabb3012d85e728b0c304c32a5361723a5e06ac0d",
+			"digest": "sha256:5b8ab763a100dfa9dc3f8b26ba403012a8e9f0d68cf94b617daf744ba77a3410",
 			"expectedDigest": "sha256:0edd813c37957e5cfbb554d529f20a2771837429c38fb24c8ac082169f2a223b"
 		},
 		{
@@ -906,7 +906,7 @@
 			"path": "conformance/cases/provenance/PROV-003.json",
 			"family": "provenance",
 			"class": "boundary",
-			"digest": "sha256:c3be297d02939097310d0d12a14db8729ef5829ced34abbb19a4625de7e10ee7",
+			"digest": "sha256:8a5199761d3599983303a5c961e07e30e91ab6198b0023b1ba5da189eab8bfb8",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -914,7 +914,7 @@
 			"path": "conformance/cases/provenance/PROV-004.json",
 			"family": "provenance",
 			"class": "evolution",
-			"digest": "sha256:9d61e10f3302320871c253e686300b990f783c8868261094fde65f2eb47b5d2b",
+			"digest": "sha256:dbc45f299a006566e35a9824f6f70dc0b3ca797ab26577fcab1dcfea9d2e18ad",
 			"expectedDigest": "sha256:2cb5bd25a30b94ce1a9f705c85f03bb281392be96c67b588698977dd4f1c8d2f"
 		},
 		{
@@ -922,7 +922,7 @@
 			"path": "conformance/cases/recursion/REC-001.json",
 			"family": "recursion",
 			"class": "positive",
-			"digest": "sha256:79c9132d97ba95de87551b3ae9c876738d91f56d8921724731acf9146aca7aae",
+			"digest": "sha256:03b7499ad3f46de18b209d04441f97eee650c55377a62ac8cddb7051c4002987",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -930,7 +930,7 @@
 			"path": "conformance/cases/recursion/REC-002.json",
 			"family": "recursion",
 			"class": "negative",
-			"digest": "sha256:61adb2919907bf5511526001b8fc5b54597dc944c636fb80f518b1541db3345a",
+			"digest": "sha256:11bf4724d1b4247505b0d7a98caefd5bfe1a4807db333b5652efae45e19e0efb",
 			"expectedDigest": "sha256:1d12f767df4672a2413fc616236e5603ebc0524ac3e10a8a57a7c642670f83de"
 		},
 		{
@@ -938,7 +938,7 @@
 			"path": "conformance/cases/recursion/REC-003.json",
 			"family": "recursion",
 			"class": "boundary",
-			"digest": "sha256:758dac75df210e202a093e8f10c6884ca44f83d6fccdc16022900086042db65c",
+			"digest": "sha256:0f7631b3373d3fffea28237bc21d34ddda94507c478285e239a544c244410343",
 			"expectedDigest": "sha256:6000301d89a9480977cb39305e711d25e85aac1fabcbee1072dc857eb3a652a2"
 		},
 		{
@@ -946,7 +946,7 @@
 			"path": "conformance/cases/recursion/REC-004.json",
 			"family": "recursion",
 			"class": "evolution",
-			"digest": "sha256:c575ac64e62c816e9fd9beb1f2579857951258bf2e8a5ef6c3b34aee5f96f5cd",
+			"digest": "sha256:4d779811378a75f6b6d950a56f81c4e306a90046bf2b8bad04c5a6fbaef2696f",
 			"expectedDigest": "sha256:4d8c58cacba5665d772325195e70d588e515d8f3f4cd32b2fe325effe985650c"
 		},
 		{
@@ -954,7 +954,7 @@
 			"path": "conformance/cases/recursion/REC-005.json",
 			"family": "recursion",
 			"class": "boundary",
-			"digest": "sha256:368bd48210709208de2ec74a60e9fd128d62e1562d8b81c55597ab4ba89b7805",
+			"digest": "sha256:c17e1139187e52d091078cb9386d51d6dac814ce7e14c542af5633d293f0bf64",
 			"expectedDigest": "sha256:4d568c16d58afb4f4d4396daa57994421b17bd21a38ccc49f7190fbf7c1e510b"
 		},
 		{
@@ -962,7 +962,7 @@
 			"path": "conformance/cases/recursion/REC-006.json",
 			"family": "recursion",
 			"class": "positive",
-			"digest": "sha256:32ff7cddb612cd44f520a5e040c1729c485d36452e02fc26f3e310e02cc6c6ad",
+			"digest": "sha256:c909ddcc5ec63d0e829d1163f368970716ef5fdd77f7265e95f234626b9423a1",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -970,7 +970,7 @@
 			"path": "conformance/cases/reference/REF-001.json",
 			"family": "reference",
 			"class": "positive",
-			"digest": "sha256:4f26d386d0078724caa2db0d758c13a8d0cb0b04ef2be5ef181c79a9a09b1d89",
+			"digest": "sha256:2c38d8c35bd8dd09fa9b0d24d5859716d358646a29d6df337f8cf7dae2f133f6",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -978,7 +978,7 @@
 			"path": "conformance/cases/reference/REF-002.json",
 			"family": "reference",
 			"class": "negative",
-			"digest": "sha256:39e9d3d595384384320c13941d11f1adf79043d37dec5efb2085d62d9fda6213",
+			"digest": "sha256:c19a178953dfcc31b7b3555e62ace68a17f18fbeff452aed45e14d8e2dff22ce",
 			"expectedDigest": "sha256:8a5fd43f38f3e18c549564e9fcf9742ce41df32b5af4711308222139f693110e"
 		},
 		{
@@ -986,7 +986,7 @@
 			"path": "conformance/cases/reference/REF-003.json",
 			"family": "reference",
 			"class": "boundary",
-			"digest": "sha256:1cc5eb66c7f131e1a412724603174f2db441861ffdc5382b63f383386480ddb5",
+			"digest": "sha256:0d57cb52fd51b9f1809b87cd1db77a32ce4386c9c4bc50b82a66432e7fbcbf73",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -994,7 +994,7 @@
 			"path": "conformance/cases/reference/REF-004.json",
 			"family": "reference",
 			"class": "evolution",
-			"digest": "sha256:1869a8e8205b220521e7487dcf4b245239398b3ed08c659f7c763a14430b9532",
+			"digest": "sha256:c4efaf439def324e0bec0a0edb6d7b4c1b908e2a495725c52107b98df4b432ee",
 			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
 		},
 		{
@@ -1002,7 +1002,7 @@
 			"path": "conformance/cases/relationship/REL-001.json",
 			"family": "relationship",
 			"class": "positive",
-			"digest": "sha256:dbbd7aa22edea58fffceeaab2a85b63da343f904924e0ed3dd5e53cd8dd2365f",
+			"digest": "sha256:4aca514244b57e4072066d45ef462344b1f97183656eb984c157ac582690766c",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -1010,7 +1010,7 @@
 			"path": "conformance/cases/relationship/REL-002.json",
 			"family": "relationship",
 			"class": "negative",
-			"digest": "sha256:065855568bdce7b696664cfc6e9ef3efc5937bb570aa2845d75175656b24b82d",
+			"digest": "sha256:59860f97ea6357fd84762cbbd0d66629b3e388de457a38d658a14bb5ea4d38ec",
 			"expectedDigest": "sha256:293eb035999aadf2135fbbf0d7bcd64bf4053a089f16c5e152033a7ce5bef9f7"
 		},
 		{
@@ -1018,7 +1018,7 @@
 			"path": "conformance/cases/relationship/REL-003.json",
 			"family": "relationship",
 			"class": "boundary",
-			"digest": "sha256:75c327dcd6c23c838fa82d608140f16e95bbdc198984dfb51ee1a9aff62c3b89",
+			"digest": "sha256:54fc6881eadf37934661e78e3b27b8184502d1fd23cb813e5e59268699ad976a",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -1026,7 +1026,7 @@
 			"path": "conformance/cases/relationship/REL-004.json",
 			"family": "relationship",
 			"class": "evolution",
-			"digest": "sha256:5a1265d1b8c38c63f52e6fd059d8de7c861da272d58f5d7375b66b201e1c40a5",
+			"digest": "sha256:fc153c083cf32a83448a226aedd2b647257f7e1394c04294d5e50db8ced4e65b",
 			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
 		},
 		{
@@ -1034,7 +1034,7 @@
 			"path": "conformance/cases/relationship/REL-005.json",
 			"family": "relationship",
 			"class": "negative",
-			"digest": "sha256:070f2d9dbf24d73d0aae43f0416a90d38327770d9dddf99bb52f4bb8829208f3",
+			"digest": "sha256:d9f297b5762ae0bf8a1513eb6b0c51110e00861ab82b2d53f265fdc2ec1c6bb4",
 			"expectedDigest": "sha256:2c4ebcf1840ac5ea170a78f76a997198a5aa556e81713d26e1ec77c43d5ff0d7"
 		},
 		{
@@ -1042,7 +1042,7 @@
 			"path": "conformance/cases/relationship/REL-006.json",
 			"family": "relationship",
 			"class": "negative",
-			"digest": "sha256:0fc9e85f820918fa9850e0ae488acfdc023b5a2d12963f01215899a5709bd15c",
+			"digest": "sha256:69d72b9788dfbe382abc5c404836bc4f2fde6fd0dce8af653fbd5527ace8e5b3",
 			"expectedDigest": "sha256:66a617342299f42ec59d06e8fa710b87e0c7756eb4263dc68967c3fa15e89a38"
 		},
 		{
@@ -1050,7 +1050,7 @@
 			"path": "conformance/cases/scalar/SCAL-001.json",
 			"family": "scalar",
 			"class": "positive",
-			"digest": "sha256:9b89e4cbdfb42ffbafb19847c6ea6ebb0273d23b5dc39b7a39b802ccff4058f6",
+			"digest": "sha256:561cfee90a885d72d87c47f98bae0dcec3444b9612fa5a011b3fa1d02bc30a51",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -1058,7 +1058,7 @@
 			"path": "conformance/cases/scalar/SCAL-002.json",
 			"family": "scalar",
 			"class": "negative",
-			"digest": "sha256:8e00e5c2a76648e018bbe3a5260e51f608f513d2315236210e586c38251d9665",
+			"digest": "sha256:20308b0cb7be51cc57b56776841235ae7934cd02a4be8046d62659480cd126c8",
 			"expectedDigest": "sha256:c09ea24d3323410324fc1d7d3e1b61c72297e5e3368dfa6e1350525cdc26c926"
 		},
 		{
@@ -1066,7 +1066,7 @@
 			"path": "conformance/cases/scalar/SCAL-003.json",
 			"family": "scalar",
 			"class": "boundary",
-			"digest": "sha256:f8fcbabfdada0c88a0a06d5e06b9bcc765204c4142f08d2c54d2eb0f526ac9f5",
+			"digest": "sha256:0496266d17523e10b83e560a2c2804c5126de011162c519bb447b598da153123",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -1074,7 +1074,7 @@
 			"path": "conformance/cases/scalar/SCAL-004.json",
 			"family": "scalar",
 			"class": "evolution",
-			"digest": "sha256:4b780c6b15121cf676277eb2c3ac2b0ef427043543982a3262d401092844ea5f",
+			"digest": "sha256:fb038771a472f3e3cfeb6a9e67a401b7497a0f6ac48d9b4561408c78de4dea77",
 			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
 		},
 		{
@@ -1082,7 +1082,7 @@
 			"path": "conformance/cases/sequence-map/SEQMAP-001.json",
 			"family": "sequence-map",
 			"class": "positive",
-			"digest": "sha256:2d1b98e0de4483a1ed2264ad3b810e93a8c56319f966eade7d163b470a0a102c",
+			"digest": "sha256:13c408887707157c018f5746c49b5192605294cee90dabe5adfbaed918ba7e2d",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -1090,7 +1090,7 @@
 			"path": "conformance/cases/sequence-map/SEQMAP-002.json",
 			"family": "sequence-map",
 			"class": "negative",
-			"digest": "sha256:68c2994809fa5a1d92a35301f798260e14bfa86abe32761ab872006173f7da47",
+			"digest": "sha256:e7235110e0f747116ce23e8a77c0f2f23655c19b5076a9decf018ed631e462b5",
 			"expectedDigest": "sha256:ffe00f53f6bc05d53a4c40bb7d8a8a85661c9c36935ee6cd66e138b17611e7fb"
 		},
 		{
@@ -1098,7 +1098,7 @@
 			"path": "conformance/cases/sequence-map/SEQMAP-003.json",
 			"family": "sequence-map",
 			"class": "boundary",
-			"digest": "sha256:a539288445ad47a1dbc4e327e8675d82d8cbb0e4ffaa9e0bd9809931159675ad",
+			"digest": "sha256:35c3f7981bd271db2391fabdca8b1aceecb1d5acf8252937c9739719c89d7c02",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -1106,7 +1106,7 @@
 			"path": "conformance/cases/sequence-map/SEQMAP-004.json",
 			"family": "sequence-map",
 			"class": "evolution",
-			"digest": "sha256:6f0f098284c941f4504f0f0ed06fd5bae33073d35745c441d1bd5a5b80559912",
+			"digest": "sha256:8229ac6fb9ec89bc773ba98bed23fb8402bc683b931663338da7bed42008a87f",
 			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
 		},
 		{
@@ -1114,7 +1114,7 @@
 			"path": "conformance/cases/union/UNION-001.json",
 			"family": "union",
 			"class": "positive",
-			"digest": "sha256:f36b2d2937d7e0edfbe0c2ba81818525fd4da4ec40a6607f22db7c66756928a4",
+			"digest": "sha256:5b413c602b8023a5ccded90810fdaa6c09164ed723336edcdff82508fa416960",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -1122,7 +1122,7 @@
 			"path": "conformance/cases/union/UNION-002.json",
 			"family": "union",
 			"class": "negative",
-			"digest": "sha256:3286babf4a81a1efc5117059e61a8e8ee94eb9329bfa9f76363b5bb9f43d0449",
+			"digest": "sha256:09108493f71758ab07212e14461051a1409f4b17a49d9ca6efb9c6f53fb3ea20",
 			"expectedDigest": "sha256:b28f3add692a08bac0e7d0a37c08d14f83794777b625dc8aa4f0c17642b57120"
 		},
 		{
@@ -1130,7 +1130,7 @@
 			"path": "conformance/cases/union/UNION-003.json",
 			"family": "union",
 			"class": "boundary",
-			"digest": "sha256:d8d0b5723440eec721dbfffa4bf4b865dc16c547e7a08a9e3a65e8a0abf89950",
+			"digest": "sha256:5ee5954916e5c0790c6570fdd5ad91d8007e68a5648967b4f67b29df19003963",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -1138,7 +1138,7 @@
 			"path": "conformance/cases/union/UNION-004.json",
 			"family": "union",
 			"class": "evolution",
-			"digest": "sha256:b0c7d9c2645b8098a94b9c5a879c00d2a676d449eb2dd44e13216e2d15f874b7",
+			"digest": "sha256:a9cdebe88cd52c51217ffecd3eece4a0f7c0cc2767665815f7b0942656d7dc42",
 			"expectedDigest": "sha256:4d8c58cacba5665d772325195e70d588e515d8f3f4cd32b2fe325effe985650c"
 		},
 		{
@@ -1146,7 +1146,7 @@
 			"path": "conformance/cases/unit/UNIT-001.json",
 			"family": "unit",
 			"class": "positive",
-			"digest": "sha256:87449685c1e332889f54b1c674e6934900a9b5e7732d3cb25c1955d5d0fbbeac",
+			"digest": "sha256:1906f1070a47b6cc96a75974df8f4c1a494ec6ade9fd8d82eabbe1a1e7da7c3f",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -1154,7 +1154,7 @@
 			"path": "conformance/cases/unit/UNIT-002.json",
 			"family": "unit",
 			"class": "negative",
-			"digest": "sha256:011a06da773eca82cf8948f6d74a384394487a2a06a5d93b4e9eed6b07aa8f2a",
+			"digest": "sha256:fdd30391015092050405aada6273d75512c567bb7c7f3c44721888adf0a3f55e",
 			"expectedDigest": "sha256:c80691433edbb198b225b794a2f3b78cd964cda4c6a4d99a0a109bae26b8cd76"
 		},
 		{
@@ -1162,7 +1162,7 @@
 			"path": "conformance/cases/unit/UNIT-003.json",
 			"family": "unit",
 			"class": "boundary",
-			"digest": "sha256:d65f50a69868c916f403cb3f5ecb8640ef9e8f8ffdbeddf781bdb44e30122ed7",
+			"digest": "sha256:f4c6eef506c25c4f89c8a88f6be9b54a29584e0dd49ac33217effd38c09f3b32",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -1170,7 +1170,7 @@
 			"path": "conformance/cases/unit/UNIT-004.json",
 			"family": "unit",
 			"class": "evolution",
-			"digest": "sha256:cddfefe4541cc99516e8d04bed56f4bff3288158756c368952783f59819ea57f",
+			"digest": "sha256:ae48722fe0e9e504e51989435b41908cedf597f7f8cca7f0d80d1919da83bfa5",
 			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
 		},
 		{
@@ -1178,7 +1178,7 @@
 			"path": "conformance/cases/unknown/UNK-001.json",
 			"family": "unknown",
 			"class": "positive",
-			"digest": "sha256:7af865313ab9b9082bcd8d133e406ef54770fb5941630a19d5315ff1234c59a4",
+			"digest": "sha256:241b7f7deb71cc6964ea29e105271d77f490ae1b94138523c30bb4226bc9fbf5",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -1186,7 +1186,7 @@
 			"path": "conformance/cases/unknown/UNK-002.json",
 			"family": "unknown",
 			"class": "negative",
-			"digest": "sha256:32ec10e58609c6b63c43956feebe531b0ed27aed775bfefef5dca3f58fbabc26",
+			"digest": "sha256:03894ef1a58d841e103bfe56c4e280d41b0e1107564b1266467d77b946a3f237",
 			"expectedDigest": "sha256:4ee9588d951ca72b04448ce56ba58527d509de5d4cd9de3cac6e3dd8da90223c"
 		},
 		{
@@ -1194,7 +1194,7 @@
 			"path": "conformance/cases/unknown/UNK-003.json",
 			"family": "unknown",
 			"class": "boundary",
-			"digest": "sha256:977c9539cf3bfa21e4307b5fb7e5d016ed02ffc3d8d069a24132e4ba404df8f2",
+			"digest": "sha256:689fdc0cb2b3faac8d0e56b8ffe0d73b38a6c74dd56c810b2c41404fa0083821",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -1202,7 +1202,7 @@
 			"path": "conformance/cases/unknown/UNK-004.json",
 			"family": "unknown",
 			"class": "evolution",
-			"digest": "sha256:bd600109200e5bad6ee8223cdcb4c2f085f760f5a01a3e2eaa83ba79642b856c",
+			"digest": "sha256:04b2c8ef40372c8cf9ba8a3e1a74802b773601b55c1862eb98a418ff3dd3f2b4",
 			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
 		},
 		{
@@ -1210,9 +1210,9 @@
 			"path": "conformance/cases/unknown/UNK-005.json",
 			"family": "unknown",
 			"class": "positive",
-			"digest": "sha256:626c1cab1961a48144f6437ef1b19cd8848bd9e74cbe4e5e9bfba227b39c5487",
+			"digest": "sha256:fc8159c3d3fa305c931b896b9d875b8ee68229cbb03cb7e66882b700744d9725",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		}
 	],
-	"corpusDigest": "sha256:d8697362b40c18a6aeb58294f5bae21e79f8bd156b74478f80509400ef343bce"
+	"corpusDigest": "sha256:9eef2bfc279225369aa96117505889b7a17bbb6c9ab301bfdd0b98985f5a6c8a"
 }

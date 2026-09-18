@@ -22,12 +22,8 @@
 			"value": {
 				"packageIdentity": "agent-ix/kernel",
 				"versionConstraint": "1.0.0",
-				"exports": [
-					"Text"
-				],
-				"capabilities": [
-					"documentation"
-				]
+				"exports": ["Text"],
+				"capabilities": ["documentation"]
 			}
 		},
 		{
@@ -37,9 +33,7 @@
 		{
 			"op": "test",
 			"path": "/lock/packages/0/dependencies",
-			"value": [
-				"agent-ix/kernel"
-			]
+			"value": ["agent-ix/kernel"]
 		},
 		{
 			"op": "replace",
@@ -47,9 +41,7 @@
 			"value": []
 		}
 	],
-	"covers": [
-		"CR-package"
-	],
+	"covers": ["CR-package"],
 	"decidedBy": "cross-field",
 	"derivedFrom": [
 		{

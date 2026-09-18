@@ -19,9 +19,7 @@
 	],
 	"beforeBase": "core-2-0",
 	"beforeOps": [],
-	"covers": [
-		"CR-relationship"
-	],
+	"covers": ["CR-relationship"],
 	"decidedBy": "compatibility",
 	"derivedFrom": [
 		{

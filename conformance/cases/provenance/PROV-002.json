@@ -32,9 +32,7 @@
 			}
 		}
 	],
-	"covers": [
-		"CR-provenance"
-	],
+	"covers": ["CR-provenance"],
 	"decidedBy": "schema",
 	"derivedFrom": [
 		{
