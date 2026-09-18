@@ -1170,10 +1170,7 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 		const reference = object(
 			JSON.parse(
 				readFileSync(
-					resolve(
-						root,
-						"fixtures/semantic/v1/positive/config-version-v2.json",
-					),
+					resolve(root, "fixtures/semantic/v1/positive/config-version-v2.json"),
 					"utf8",
 				),
 			),

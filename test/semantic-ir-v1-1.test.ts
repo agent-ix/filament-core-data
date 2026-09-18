@@ -400,7 +400,9 @@ describe("FR-030 version discriminator, source dialect, and manifest targets", (
 		// (`ir-v1-0-frontend-dialect`, dropped from negative/cases.json); a
 		// document still declaring 1.0.0 is refused outright (NFR-044-AC-1),
 		// regardless of its dialect, so the check moves to an inline document.
-		const stillDeclares1_0_0 = clone(readJson("positive/semantic-ir-v1-1.json"));
+		const stillDeclares1_0_0 = clone(
+			readJson("positive/semantic-ir-v1-1.json"),
+		);
 		setAt(stillDeclares1_0_0, "contractVersion", "1.0.0");
 		expect(
 			validates("semantic-ir.schema.json", stillDeclares1_0_0),
@@ -483,7 +485,9 @@ describe("FR-030 version discriminator, source dialect, and manifest targets", (
 		// (`ir-unknown-version`, dropped from negative/cases.json); a document
 		// still declaring 1.0.0 is refused outright (NFR-044-AC-1), so the
 		// check moves to an inline document.
-		const stillDeclares1_0_0 = clone(readJson("positive/semantic-ir-v1-1.json"));
+		const stillDeclares1_0_0 = clone(
+			readJson("positive/semantic-ir-v1-1.json"),
+		);
 		setAt(stillDeclares1_0_0, "contractVersion", "1.0.0");
 		expect(
 			validates("semantic-ir.schema.json", stillDeclares1_0_0),
