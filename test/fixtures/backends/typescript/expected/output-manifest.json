@@ -1,6 +1,6 @@
 {
 	"contractVersion": "1.0.0",
-	"requestFingerprint": "sha256:aba43dd2fbe9f396477ad23eab9eddfa2ca10f3779c26ed6ff7a172973af2bf4",
+	"requestFingerprint": "sha256:edee2dfcdb04780b5c5ad9ab6e9caf0b691a9a9ea5aee94ce0890739c63be6cf",
 	"backend": "ix://agent-ix/filament-core-data/backend/typescript",
 	"state": "success",
 	"files": [
@@ -14,7 +14,7 @@
 		},
 		{
 			"path": "errors.ts",
-			"digest": "sha256:ab6a5b5f439a8757e45e8729af6bfa37bd05c9e27a7404f6c6f5ed2dec4842f9",
+			"digest": "sha256:1af4878350ed6000160ee21f5d2522af0de0b7e2c5e9019a8d1203528b603011",
 			"mediaType": "text/typescript",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance"
@@ -22,7 +22,7 @@
 		},
 		{
 			"path": "identity.ts",
-			"digest": "sha256:ded5ab4cf93448bea2b0f701ea44ae206f4b1872f581bb5236792973f81f68b3",
+			"digest": "sha256:d4ae828465359bac8d5d5877dfb6984c6be7b83bfb50eeff0ba927eed40e8d00",
 			"mediaType": "text/typescript",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance"
@@ -30,7 +30,7 @@
 		},
 		{
 			"path": "index.ts",
-			"digest": "sha256:6d0a0eaaa2376650b431717e219f9b89d7030a78b55f80f4f2d6261977d0e32a",
+			"digest": "sha256:e3e2d49de29ad982be62ffeadaea042f2afe524ac4814a48bd7b406e8ecb4549",
 			"mediaType": "text/typescript",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance"
@@ -38,7 +38,7 @@
 		},
 		{
 			"path": "package.json",
-			"digest": "sha256:dac0bd5e9fdf17939541204086876255412fa1c71063911fd2adfec7f76f1cf7",
+			"digest": "sha256:17090c9e377653603011ecc1617c533889aedb1241d35511d49fb4e7e1592f85",
 			"mediaType": "application/json",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance"
@@ -46,7 +46,7 @@
 		},
 		{
 			"path": "provenance.ts",
-			"digest": "sha256:9c9b955a4dc0bb60a53546ccb8f9fbabac003092175d53cbff0f2a75d19c2e84",
+			"digest": "sha256:c54b05d2f3713f9608038fa6be1b696a6aa348306ee7ff0fe605f2323e194054",
 			"mediaType": "text/typescript",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance"
@@ -54,7 +54,7 @@
 		},
 		{
 			"path": "types.ts",
-			"digest": "sha256:c9ef4aef6b4e5409e7d9b75bbe5ea4c891944f28c311fc4a918e74ab639002ab",
+			"digest": "sha256:5f71795dd4c93e99658f758185a8554fc0667c9f45fb775cf72eb8f28d152194",
 			"mediaType": "text/typescript",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance/type/Count",
@@ -71,13 +71,23 @@
 		},
 		{
 			"path": "validators.ts",
-			"digest": "sha256:ce5f21c35603d5042394894314ccfcded3268e5d36e359b65b82dc97ed03f07f",
+			"digest": "sha256:3ce5c944c69ff45e50e3167b735b323bb2163552a0b8833c2315f86c51c47ac0",
 			"mediaType": "text/typescript",
 			"semanticIdentities": [
 				"ix://agent-ix/conformance"
 			]
 		}
 	],
-	"diagnostics": [],
-	"normalizedFingerprint": "sha256:e2f0f9228011b4d10fac90ac6835f823bc07ba556c2ad532ba5e1a0327d7380a"
+	"diagnostics": [
+		{
+			"code": "agent-ix.compiler.CONSTRUCT_MEMBER_UNENFORCED",
+			"severity": "info",
+			"message": "/ir/types/9/clauses: the TypeScript backend carries clauses as data and enforces none (declared loss, agent-ix/filament-core-data#159)",
+			"owner": "ix://agent-ix/filament-core-data/compiler",
+			"blocking": false,
+			"causes": [],
+			"related": []
+		}
+	],
+	"normalizedFingerprint": "sha256:cf2742a429baf7170b0a9deec5d7d2825def47e9b117c3b7ca42c39338f6b888"
 }

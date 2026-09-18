@@ -36,10 +36,10 @@ pub const LOCK_DIGEST: &str =
 
 /// The lock fingerprint the compiler request carried.
 pub const LOCK_FINGERPRINT: &str =
-    "sha256:0ce351069713bfe91ad9d6ca9822983cb7f6dc69561c4afcd2d6365b2162524e";
+    "sha256:d59e4b458343d77c0da032f70374ee7ae1ea7ece9c7e0b66bb1e93f26cd5430c";
 
 /// The IR contract version the document declared.
-pub const CONTRACT_VERSION: &str = "1.1.0";
+pub const CONTRACT_VERSION: &str = "2.0.0";
 
 /// The semantic identity of the backend that generated this crate.
 pub const GENERATOR_IDENTITY: &str = "ix://agent-ix/filament-core-data/rust-backend";
