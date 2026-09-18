@@ -178,19 +178,7 @@
 			"owningIssue": "agent-ix/filament-core-data#19",
 			"severity": "high",
 			"verdict": "implementation-defect",
-			"rationale": "The corpus expects `agent-ix.semantic-ir.SCHEMA_VIOLATION`, a value the published v1 schema rejects. `readContractIr` (`src/compiler/ir/reader.mjs`) raises nothing for this document: it applies cross-field rules only and never validates against `schema/semantic/v1/semantic-ir.schema.json`. The compiler does carry such a validator — `validateIrDocument` in `src/compiler/ir/schema.mjs`, raising `agent-ix.compiler.INVALID_IR` — but no reader path calls it: `inspectIr` (`src/compiler/inspect.mjs:30`) calls `readContractIr` alone, so the shipped `inspect` command accepts a schema-invalid document. The defect is the missing wiring, not a missing rule, and `src/compiler/schema-validate.mjs` states the opposite of what the reader does: \"The compiler validates every document it reads *and every document it emits* against the schema the repository publishes\". The adapter measures the path `inspect` exposes and does not add a validation step the shipped command does not take.",
-			"reviewBy": "2026-12-31"
-		},
-		{
-			"id": "DIV-016",
-			"case": "ENV-002",
-			"adapter": "compiler-frontend",
-			"code": "result-state",
-			"owner": "the issue #19 compiler frontend",
-			"owningIssue": "agent-ix/filament-core-data#19",
-			"severity": "high",
-			"verdict": "implementation-defect",
-			"rationale": "The case is a consequence of the diagnostic divergence registered for the same case: with no blocking diagnostic raised, `hasBlocking` decides `success` where the corpus expects `invalid`. The document is schema-invalid and the reader accepts it.",
+			"rationale": "fcd#179 (F2): `readContractIr` (`src/compiler/ir/reader.mjs`) now refuses a non-2.0.0 `contractVersion` directly, raising `agent-ix.compiler.UNKNOWN_CONTRACT_VERSION` before any cross-field rule runs. That closed the missing-wiring defect this entry originally tracked (the reader raising nothing and the shipped `inspect` command accepting a schema-invalid document), so the case now correctly refuses. The residual divergence is narrower: the corpus expects `agent-ix.semantic-ir.SCHEMA_VIOLATION` at `/ir/contractVersion`, a code the published v1 schema itself would raise, and the reader instead raises the more specific `agent-ix.compiler.UNKNOWN_CONTRACT_VERSION`. Both correctly block; only the diagnostic code differs.",
 			"reviewBy": "2026-12-31"
 		},
 		{
