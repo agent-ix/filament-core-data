@@ -89,7 +89,7 @@ artefacts rather than asserted in a pull-request description.
 | FR-051-CON-1 | The diff SHALL NOT classify a family from an input it was not given; an absent input is a named gap, never a `patch`. | Honesty | Test |
 | FR-051-CON-2 | The disposition rank SHALL be exactly `patch < additive < conditional < unknown < breaking < invalid`, matching the ranking already asserted by the issue #9 contract tests. | Consistency | Test |
 | FR-051-CON-4 | The diff SHALL NOT import a target backend; per-target dispositions are an input. | Portability | Static analysis |
-| FR-051-CON-5 | `fixtures/semantic/v1/compatibility/cases.json` SHALL remain byte-unchanged; it is the read-only case index, and the constructed pairs live under `test/fixtures/compiler/compatibility/cases/**`. | Non-disruption | Branch diff |
+| FR-051-CON-5 | `fixtures/semantic/v1/compatibility/cases.json` SHALL remain byte-unchanged, apart from fcd#179's deletion of the `v1-to-v1-1-additive-revision` case (its `from`/`to` pair named the now-deleted contract `1.1.0`); it is the read-only case index, and the constructed pairs live under `test/fixtures/compiler/compatibility/cases/**`. | Non-disruption | Branch diff |
 
 ## Acceptance Criteria
 

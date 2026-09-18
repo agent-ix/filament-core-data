@@ -353,6 +353,16 @@ fn tc_1756_a_ported_fixture_validates_and_a_deleted_contract_fixture_is_refused(
                 .join(name),
         );
         assert_refused_by_schema(name, &document);
+        // fcd#179 (F1): `assert_refused_by_schema` only proves the document was
+        // refused for *some* schema reason; that would still pass if this
+        // fixture accumulated an unrelated schema defect and its declared
+        // `contractVersion` were quietly repaired. Pin the actual reason: the
+        // refusal names the deleted contract at its own pointer.
+        assert!(
+            rust_codes(&document).contains(&"SCHEMA_VIOLATION at /ir/contractVersion".to_string()),
+            "{name}: expected SCHEMA_VIOLATION at /ir/contractVersion, got {:?}",
+            rust_codes(&document)
+        );
     }
 }
 

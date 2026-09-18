@@ -146,6 +146,12 @@ class TestContract20:
         for name in ("positive/semantic-ir.json", "positive/config-version-v1-1.json"):
             document = _fixture(name)
             assert not validator.is_valid(document), name
+            # fcd#179 (F1): `is_valid` alone only proves *some* schema defect;
+            # that would still pass if this fixture picked up an unrelated
+            # one and its declared `contractVersion` were quietly repaired.
+            # Pin the actual reason: an error at `contractVersion` itself.
+            paths = [list(error.absolute_path) for error in validator.iter_errors(document)]
+            assert ["contractVersion"] in paths, (name, paths)
 
     def test_each_construct_without_a_required_member_is_refused(
         self, validator
