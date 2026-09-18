@@ -1256,7 +1256,13 @@ pub fn lower_bundle(
                 continue;
             }
             match values_rows(document, object_type) {
-                Ok(rows) => lower_enum(&rows, &ctx),
+                Ok(rows) => lower_enum(
+                    &rows,
+                    extracted.extraction.model.as_ref(),
+                    &artifact_roles,
+                    &ctx,
+                    object,
+                ),
                 Err(unsatisfied) => {
                     own.push(Diagnostic::with_disposition(
                         Code::ArtifactNotLowered,
@@ -1316,14 +1322,18 @@ pub fn lower_bundle(
             }
         }
         match outcome {
-            Ok(lowering) => pending.push(Pending {
-                id: document.id().to_string(),
-                path: document.path().to_string(),
-                object: object.to_string(),
-                head,
-                lowering,
-                construct: object_type.construct.clone(),
-            }),
+            Ok(lowering) => {
+                let owner_from_model = lowering.definition.construct.owner.is_some();
+                pending.push(Pending {
+                    id: document.id().to_string(),
+                    path: document.path().to_string(),
+                    object: object.to_string(),
+                    head,
+                    lowering,
+                    construct: object_type.construct.clone(),
+                    owner_from_model,
+                });
+            }
             Err(LowerError::Blocked(diagnostics)) => own.extend(diagnostics),
             Err(LowerError::NotLowered) | Err(LowerError::Unresolved { .. }) => {}
         }

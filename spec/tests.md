@@ -177,7 +177,7 @@ blocked as stated above.
 | US-019 | The SysML v2 textual interchange target implemented by FR-138 | TC-1545..TC-1551 | 🚧 planned on issue #37 |
 | US-006 | An unconstrained value expressed without narrowing, implemented by FR-139 | TC-1552..TC-1557 | 🚧 TC-1552, TC-1554..TC-1557 planned on issue #93 |
 | US-006 | The model members and construct kinds declared as module data, implemented by FR-141 and FR-142 | TC-1740..TC-1750, TC-1786..TC-1789, TC-1791, TC-1793, TC-1795, TC-1796 | 🚧 In progress |
-| US-015 | Object-type artifacts lifted to their constructs, implemented by FR-143 | TC-1751..TC-1755, TC-1785, TC-1790, TC-1792, TC-1794 | 🚧 In progress |
+| US-015 | Object-type artifacts lifted to their constructs, implemented by FR-143 | TC-1751..TC-1755, TC-1785, TC-1790, TC-1792, TC-1794, TC-1799..TC-1801 | 🚧 In progress |
 | US-008 | The compiler judged by the independent corpus, implemented by FR-140 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
 
 ### Functional Requirement Coverage
@@ -296,7 +296,7 @@ blocked as stated above.
 | FR-140 | FR-140-AC-1..7, FR-140-CON-1..3 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
 | FR-141 | FR-141-AC-1..4, FR-141-AC-6..9, FR-141-CON-2 | TC-1740..TC-1743, TC-1759, TC-1761, TC-1795, TC-1796 | ✅ Complete |
 | FR-142 | FR-142-AC-1..14, FR-142-CON-1..2 | TC-1745..TC-1750, TC-1776, TC-1786..TC-1789, TC-1791, TC-1793 | 🚧 In progress |
-| FR-143 | FR-143-AC-1..9, FR-143-CON-1..2 | TC-1751..TC-1755, TC-1785, TC-1790, TC-1792, TC-1794 | 🚧 In progress |
+| FR-143 | FR-143-AC-1..11, FR-143-CON-1..2 | TC-1751..TC-1755, TC-1785, TC-1790, TC-1792, TC-1794, TC-1799..TC-1801 | 🚧 In progress |
 
 ### Non-Functional Requirement Coverage
 
@@ -1717,7 +1717,10 @@ blocked as stated above.
 | TC-1791 | A systems `port` kind carrying `owner`, `direction`, `interfaceType` and `multiplicity`, and a `connection` carrying `flowDirection` and two ends, read clean in the Rust and Node readers and render by shape and identity; a `direction` outside `in`/`out`/`inout`, a missing required member and an owner without the admitted role refuse | Unit | P0 | FR-142-AC-10 | ✅ passed |
 | TC-1792 | A manifest declaration missing `meaning`, naming a member or rule outside the vocabulary, selecting a rule whose member presence it does not declare, admitting `*`, or referencing an undeclared role yields one blocking diagnostic naming the module and object type, and no artifact of that type lowers | Unit | P0 | FR-143-AC-8 | ✅ passed |
 | TC-1793 | A `featureOrder` naming its type's own fields and operations each once reads clean; an omitted operation raises `INCOMPLETE_FEATURE_ORDER`, another type's operation `UNRESOLVED_CONSTRUCT_REF`, and a repeated entry, an empty order, an order the declaration forbids and a missing required order `SCHEMA_VIOLATION` | Unit | P0 | FR-142-AC-13 | ✅ passed |
-| TC-1794 | Under a module whose `entity` declaration requires `featureOrder`, every `entity` artifact of the `business` fixture is refused with one blocking `ARTIFACT_NOT_LOWERED` naming the member and emits no type | Unit | P0 | FR-143-AC-9 | ✅ passed |
+| TC-1794 | Under a module whose `entity` declaration requires `featureOrder`, every `entity` artifact of the `business` fixture (declaring no `Features` table) is refused with one blocking `ARTIFACT_NOT_LOWERED` naming `featureOrder` as a member the artifact declares none of, and emits no type | Unit | P0 | FR-143-AC-9 | ✅ passed |
+| TC-1799 | A `specializes` edge on a `record`-shaped artifact and an authored `abstract: true` on an `enumeration`-shaped one each lower `supertypes`/`abstract` from the engine's FR-075 generalization declarations, the enumeration artifact reaching `enumeration::lower_enum` rather than `constructs::shape` | Unit | P0 | FR-143-AC-10 | ✅ passed |
+| TC-1800 | The five `spec-objects-architecture` systems kinds lower `owner`, `declaredType`, `direction`, `interfaceType`, `multiplicity`, `sourceEnd`, `targetEnd`, `flowDirection`, `sourceElement`, `targetElement` and `featureOrder` from the engine's FR-075 `part`/`port`/`connection`/`allocation`/`featureOrder` extraction, resolving each engine-returned reference to its bundle-local artifact id before admitting it by role | Unit | P0 | FR-143-AC-11 | ✅ passed |
+| TC-1801 | An `interface` artifact with a `Contract` but no `Features` table, under a declaration requiring `featureOrder`, is refused `ARTIFACT_NOT_LOWERED` naming `featureOrder` as a member it declares none of, one artifact at a time, never emitted empty | Unit | P0 | FR-143-AC-9 | ✅ passed |
 | TC-1795 | A `pre` list mixing a clause id and an inline clause is accepted by the Rust, Node and Python readers; a dangling id item raises `DANGLING_CLAUSE_REF` at its own slot, and a repeated inline clause or a non-clause item is refused by the schema | Unit | P0 | FR-141-AC-8 | ✅ passed |
 | TC-1796 | For an operation whose `pre` mixes a clause id and an inline clause, the Rust, TypeScript and JSON Schema outputs carry the id and every inline language and text, and the Python output carries every inline language and text | Unit | P0 | FR-141-AC-9 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
@@ -2642,13 +2645,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 128 | 81 | 0 | 47 | 100% mapped (128/128) |
-| Unit | 595 | 491 | 0 | 104 | 100% mapped (595/595) |
+| Unit | 598 | 494 | 0 | 104 | 100% mapped (598/598) |
 | Integration | 161 | 100 | 0 | 61 | 100% mapped (161/161) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 65 | 40 | 0 | 25 | 100% mapped (65/65) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1378** | **1051** | **0** | **327** | **100% mapped (1378/1378)** |
+| **Total** | **1381** | **1054** | **0** | **327** | **100% mapped (1381/1381)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.
