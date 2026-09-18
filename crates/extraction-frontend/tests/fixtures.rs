@@ -64,12 +64,13 @@ const TOP_LEVEL: [&str; 12] = [
 ];
 
 /// The module roots under `fixtures/modules/`.
-const MODULES: [&str; 6] = [
+const MODULES: [&str; 7] = [
     "acme-other",
     "conflicting",
     "edge-vocabulary",
     "frobnicates",
     "objects-extra",
+    "spec-objects-architecture",
     "spec-objects-business",
 ];
 

@@ -222,7 +222,9 @@ impl Bundle {
 
         let index = BundleIndex::from_documents(
             &package.identity(),
-            documents.iter().filter_map(Document::frontmatter),
+            documents
+                .iter()
+                .filter_map(|document| Some((document.frontmatter()?, document.raw()))),
             modules.values(),
         );
         let manifests = module_manifests(module_roots)?;

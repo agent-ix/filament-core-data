@@ -449,8 +449,8 @@ fn tc_1322_every_dependency_is_exact_reviewed_and_inside_the_workspace() {
     );
     assert_eq!(
         quire.rev.as_deref(),
-        Some("08d39ea"),
-        "quire-rs rev is at or after a874fb6"
+        Some("2823a93bd3797c970c1d389afae9b893dea6f232"),
+        "quire-rs rev is at or after a874fb6 (quire-rs#462, fixing #461's FR-152 owner-kind bug)"
     );
     assert_eq!(
         normal["agent-ix-semantic-ir"].path.as_deref(),
