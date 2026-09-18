@@ -51,7 +51,7 @@ contract `2.0.0`, the only version.
 | FR-020-AC-4 | Stable type and field identities survive generated-name and source-file renames classified as non-semantic. | Test |
 | FR-020-AC-5 | Recursive references and namespaced extensions do not collapse into anonymous JSON values. | Test |
 | FR-020-AC-6 | Unknown values follow the declared open/closed policy and never become a known zero/default variant. | Test |
-| FR-020-AC-7 | Multiplicity, unit, relationships, operations, and clauses round-trip through the normalized serialization byte-identically. | Test |
+| FR-020-AC-7 | Multiplicity, unit, relationships, operations, and clauses round-trip through the normalized serialization byte-identically; `nullable` materializes `true` for the input `true`, and `false` for each of `1`, `"true"`, `null`, `{}`, and an absent `nullable` member. | Test |
 | FR-020-AC-8 | Two independent readers of the v1.1 IR schema — the TypeScript Ajv reader in `test/` and a Python `jsonschema` reader under `tests/` (pytest, test-only), each implementing the cross-field rules of FR-027..030 — agree on every golden and negative fixture. | Test |
 
 ## Dependencies

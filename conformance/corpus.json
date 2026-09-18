@@ -1,5 +1,5 @@
 {
-	"corpusVersion": "3.0.0",
+	"corpusVersion": "3.1.0",
 	"contractVersions": ["2.0.0"],
 	"canonicalForm": "agent-ix-conformance-jcs-v1",
 	"caseIdPattern": "^[A-Z][A-Z0-9]*(-[A-Z0-9]+)*-[0-9]{3}$",
@@ -886,6 +886,46 @@
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
+			"id": "PRES-011",
+			"path": "conformance/cases/field-presence/PRES-011.json",
+			"family": "field-presence",
+			"class": "negative",
+			"digest": "sha256:7f22cf7bdca37a855e4ab295f4744a95df9bb510aeee67ce2c1680cd5692ba6c",
+			"expectedDigest": "sha256:88aedfd9d945e73ebbd0d0a846d62230f0221ecc5023be0486cf65f458de0043"
+		},
+		{
+			"id": "PRES-012",
+			"path": "conformance/cases/field-presence/PRES-012.json",
+			"family": "field-presence",
+			"class": "negative",
+			"digest": "sha256:71efbd07fa55b0e0b28efb1d285dd41a48e89427615fb53522b8ca3da29e602a",
+			"expectedDigest": "sha256:88aedfd9d945e73ebbd0d0a846d62230f0221ecc5023be0486cf65f458de0043"
+		},
+		{
+			"id": "PRES-013",
+			"path": "conformance/cases/field-presence/PRES-013.json",
+			"family": "field-presence",
+			"class": "negative",
+			"digest": "sha256:7e4d47caedb038c3ca4ab3f47f280616124c837bf08d79747d28dff271ce63a1",
+			"expectedDigest": "sha256:88aedfd9d945e73ebbd0d0a846d62230f0221ecc5023be0486cf65f458de0043"
+		},
+		{
+			"id": "PRES-014",
+			"path": "conformance/cases/field-presence/PRES-014.json",
+			"family": "field-presence",
+			"class": "negative",
+			"digest": "sha256:1792fa1d0e1caa5afe3f6f8f097ec766ca33ae8b36c4a9793483d01997ad160c",
+			"expectedDigest": "sha256:88aedfd9d945e73ebbd0d0a846d62230f0221ecc5023be0486cf65f458de0043"
+		},
+		{
+			"id": "PRES-015",
+			"path": "conformance/cases/field-presence/PRES-015.json",
+			"family": "field-presence",
+			"class": "negative",
+			"digest": "sha256:b60ef2a74e3b73a514000d26db656621025fccb8c058ed33914a72d1cb41d8cb",
+			"expectedDigest": "sha256:957a8cfeac08a9de17e451305af71661bb4c007c6e44bb29a9f1bc99728d8f2e"
+		},
+		{
 			"id": "PROV-001",
 			"path": "conformance/cases/provenance/PROV-001.json",
 			"family": "provenance",
@@ -1214,5 +1254,5 @@
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		}
 	],
-	"corpusDigest": "sha256:9eef2bfc279225369aa96117505889b7a17bbb6c9ab301bfdd0b98985f5a6c8a"
+	"corpusDigest": "sha256:90685f79654b376a950b137240b0a1703c4bb4a1e4f9996ec74b6a90b6bb9a6b"
 }

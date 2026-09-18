@@ -1,7 +1,7 @@
 {
-	"corpusVersion": "3.0.0",
-	"corpusDigest": "sha256:9eef2bfc279225369aa96117505889b7a17bbb6c9ab301bfdd0b98985f5a6c8a",
-	"totalCases": 106,
+	"corpusVersion": "3.1.0",
+	"corpusDigest": "sha256:90685f79654b376a950b137240b0a1703c4bb4a1e4f9996ec74b6a90b6bb9a6b",
+	"totalCases": 111,
 	"registerRows": [
 		{
 			"id": "CR-envelope",
@@ -121,7 +121,16 @@
 			"decidedBy": "cross-field",
 			"cases": {
 				"positive": ["PRES-001", "PRES-005", "PRES-006", "PRES-010"],
-				"negative": ["PRES-007", "PRES-008", "PRES-009"],
+				"negative": [
+					"PRES-007",
+					"PRES-008",
+					"PRES-009",
+					"PRES-011",
+					"PRES-012",
+					"PRES-013",
+					"PRES-014",
+					"PRES-015"
+				],
 				"boundary": ["PRES-003"],
 				"evolution": ["PRES-004"]
 			},
@@ -303,28 +312,28 @@
 		{
 			"adapter": "compiler-frontend",
 			"status": "available",
-			"matched": 106,
+			"matched": 111,
 			"unmet": 0,
 			"failed": 0
 		},
 		{
 			"adapter": "python-backend",
 			"status": "available",
-			"matched": 106,
+			"matched": 111,
 			"unmet": 0,
 			"failed": 0
 		},
 		{
 			"adapter": "rust-backend",
 			"status": "available",
-			"matched": 106,
+			"matched": 111,
 			"unmet": 0,
 			"failed": 0
 		},
 		{
 			"adapter": "typescript-backend",
 			"status": "available",
-			"matched": 106,
+			"matched": 111,
 			"unmet": 0,
 			"failed": 0
 		}

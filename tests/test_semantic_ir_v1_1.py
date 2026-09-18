@@ -94,6 +94,45 @@ class TestSecondReader:
         assert field["presence"] == "optional"
         assert field["nullable"] is False
 
+    def test_materializes_nullable_is_true_only_fcd_187(self) -> None:
+        """TC-1803: FR-020-AC-7.
+
+        fcd#187: `normalize` materializes `nullable` to a literal boolean
+        only where the authored member `is True`, never by truthiness
+        coercion. `fixtures/semantic/v1/nullable-truthiness-cases.json` is
+        the shared cross-language fixture the Rust (`normalize::tests`), the
+        compiler frontend (`test/compiler-core.test.ts`), and the TypeScript
+        backend (`test/typescript-backend.test.ts`) tests consume
+        identically, so a divergence in any one language's coercion rule
+        fails only that language's own test."""
+        fixture = json.loads(
+            (FIXTURE_ROOT / "nullable-truthiness-cases.json").read_text()
+        )
+        cases = fixture["cases"]
+        assert len(cases) > 0
+        for case in cases:
+            field = {
+                "name": "a",
+                "presence": "required",
+                "multiplicity": {"lower": 1, "upper": 1},
+            }
+            if "raw" in case:
+                field["nullable"] = case["raw"]
+            document = {
+                "contractVersion": "2.0.0",
+                "types": [
+                    {
+                        "identity": "ix://a/b/type/T",
+                        "kind": "record",
+                        "fields": [field],
+                    }
+                ],
+            }
+            normalized_field = json.loads(normalize(document))["types"][0][
+                "fields"
+            ][0]
+            assert normalized_field["nullable"] is case["normalized"], case["id"]
+
     def test_every_recorded_case_is_rejected(self) -> None:
         """Criteria: FR-020-AC-8 — schema and reader cases all fail as recorded."""
         seen = 0

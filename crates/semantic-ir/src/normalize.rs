@@ -112,12 +112,24 @@ fn materialize_field_array(fields: &Json) -> Json {
 /// `presence` are schema-required and independently authored, so neither is
 /// ever derived from the other, or from anything, here; whatever shape (or
 /// absence) a field carries for either passes through unchanged.
+///
+/// `nullable` is `true` only where the authored member is the JSON literal
+/// `true` (fcd#187): any other value — absent, `null`, `false`, a non-zero
+/// number, a non-empty string, an array or an object — materializes `false`.
+/// This is the same rule JS (`src/compiler/ir/normalize.mjs`), TypeScript
+/// (`src/compiler/backends/typescript-v1/canonical.mjs`), and Python
+/// (`tests/semantic_ir_reader.py`) apply as `=== true` / `is True`; ECMAScript
+/// truthiness coercion (where `1` or `"yes"` also read as nullable) was a
+/// defect unique to this reader; a schema-valid `2.0.0` document already
+/// requires `nullable` to be a JSON boolean, so this rule only has visible
+/// effect on a document the schema layer has already rejected, which
+/// `normalized` still runs on because the harness compares it unconditionally.
 fn materialize_field(field: &Json) -> Json {
     let members = match field.as_object() {
         Some(members) => members,
         None => return field.clone(),
     };
-    let nullable = truthy(field.get("nullable"));
+    let nullable = matches!(field.get("nullable"), Some(Json::Bool(true)));
 
     let mut out: Vec<(String, Json)> = Vec::with_capacity(members.len() + 1);
     for (name, value) in members {
@@ -130,24 +142,54 @@ fn materialize_field(field: &Json) -> Json {
     Json::Object(out)
 }
 
-/// ECMAScript truthiness, which is what "coerced to a boolean" names.
-fn truthy(value: Option<&Json>) -> bool {
-    match value {
-        None | Some(Json::Null) => false,
-        Some(Json::Bool(value)) => *value,
-        Some(Json::Number(lexeme)) => match lexeme.parse::<f64>() {
-            Ok(number) => number != 0.0 && !number.is_nan(),
-            Err(_) => false,
-        },
-        Some(Json::Str(text)) => !text.is_empty(),
-        Some(_) => true,
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::normalized;
-    use crate::json::parse;
+    use crate::json::{parse, to_canonical_string, Json};
+
+    /// Tracing: TC-1802
+    /// ACs: FR-059-AC-16
+    ///
+    /// fcd#187: `nullable` materializes to a literal boolean only for the JSON
+    /// literal `true`, never by ECMAScript truthiness coercion. This drives
+    /// `fixtures/semantic/v1/nullable-truthiness-cases.json`, the same fixture
+    /// the JS (`normalizeIr`), TypeScript (`normalizeIrForTarget`), and Python
+    /// (`semantic_ir_reader.normalize`) tests consume, so a divergence in any
+    /// one language's coercion rule fails that language's own test rather
+    /// than only this one.
+    #[test]
+    fn tc_1802_nullable_materializes_only_for_boolean_true_fcd_187() {
+        const CASES: &str =
+            include_str!("../../../fixtures/semantic/v1/nullable-truthiness-cases.json");
+        let fixture = parse(CASES).expect("a well-formed fixture");
+        let cases = fixture
+            .get("cases")
+            .and_then(Json::as_array)
+            .expect("a cases array");
+        assert!(!cases.is_empty(), "fixture carries no cases");
+        for case in cases {
+            let id = case.get("id").and_then(Json::as_str).expect("an id");
+            let expected = case
+                .get("normalized")
+                .and_then(Json::as_bool)
+                .expect("a normalized boolean");
+            let nullable_member = match case.get("raw") {
+                Some(raw) => format!(r#","nullable":{}"#, to_canonical_string(raw)),
+                None => String::new(),
+            };
+            let bundle_text = format!(
+                r#"{{"ir":{{"contractVersion":"2.0.0","types":[{{"kind":"record","fields":[{{"name":"a","presence":"required","multiplicity":{{"lower":1,"upper":1}}{nullable_member}}}]}}]}}}}"#
+            );
+            let bundle = parse(&bundle_text).expect("a well-formed document");
+            assert_eq!(
+                normalized(&bundle),
+                format!(
+                    r#"{{"contractVersion":"2.0.0","types":[{{"fields":[{{"multiplicity":{{"lower":1,"upper":1}},"name":"a","nullable":{expected},"presence":"required"}}],"kind":"record"}}]}}"#
+                ),
+                "case {id}"
+            );
+        }
+    }
 
     #[test]
     fn tc_1378_preserves_authored_presence_disagreeing_with_multiplicity() {
