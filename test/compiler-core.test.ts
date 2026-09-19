@@ -4319,8 +4319,7 @@ describe("compatibility (FR-051)", () => {
 				disposition: "breaking",
 			},
 		]);
-		// kind: rebound to a different constructs entry, on its own (fcd#193
-		// review round 2, Low-A) — `members` and `extent` both unchanged, so a
+		// kind: rebound to a different constructs entry, on its own — `members` and `extent` both unchanged, so a
 		// mutation that dropped the `kind` comparison from `diffPopulations`
 		// would report no change at all here.
 		const populationKindChanged = structuredClone(withPopulation);
@@ -4390,7 +4389,7 @@ describe("compatibility (FR-051)", () => {
 				disposition: "breaking",
 			},
 		]);
-		// FR-051-AC-17 (fcd#193 review round 2, Medium-A): `identity`, `members`,
+		// FR-051-AC-17: `identity`, `members`,
 		// `rules`, `references` and `immutable` each classify `breaking` on
 		// their own too — `diffConstructs` names every FR-142 member of a
 		// construct table entry, not only `meaning` and `shape`. Each mutation

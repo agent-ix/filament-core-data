@@ -185,7 +185,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 			seen.add(type.kind.name);
 		}
 		// A construct table entry a population alone uses (QSpec FR-154 row
-		// 2/AC-7, FR-208; fcd#193 review round 2, High-A) has no per-type schema
+		// 2/AC-7, FR-208) has no per-type schema
 		// of its own — the JSON Schema backend emits one file per type, never
 		// per population — so it is counted here without expecting a schema
 		// file, not folded into `seen`.
