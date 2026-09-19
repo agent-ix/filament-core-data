@@ -296,6 +296,7 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 		) as {
 			constructs: { kind: { module: string; name: string } }[];
 			types: { kind: unknown }[];
+			populations: { kind?: { name?: string } }[];
 		};
 		const manifest = generateTarget(rustRequest({ ir: constructs }), {
 			target: "rust",
@@ -315,18 +316,38 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 		});
 		const identity = written.get("src/identity.rs");
 		if (!identity) throw new Error("no src/identity.rs");
-		const declared = new Set(
+		const declaredByType = new Set(
 			constructs.types
 				.map((type) => type.kind)
 				.filter((kind) => typeof kind === "object")
 				.map((kind) => (kind as { name: string }).name),
 		);
+		// A construct table entry a population alone uses (QSpec FR-154 row
+		// 2/AC-7, FR-208; fcd#193 review round 2, High-A) has no TYPES row of
+		// its own — it is rendered instead inside POPULATIONS' own
+		// `PopulationKindMeta.name`, so it is checked there, not against the
+		// TYPES row format.
+		const declaredByPopulation = new Set(
+			constructs.populations
+				.map((population) => population.kind?.name)
+				.filter((name): name is string => typeof name === "string"),
+		);
 		for (const entry of constructs.constructs) {
 			const kind = entry.kind.name;
-			expect(declared.has(kind), `the fixture declares no ${kind}`).toBe(true);
-			expect(identity, `no TYPES row of kind ${kind}`).toContain(
-				`kind: "${kind}",`,
-			);
+			expect(
+				declaredByType.has(kind) || declaredByPopulation.has(kind),
+				`the fixture declares no type or population of kind ${kind}`,
+			).toBe(true);
+			if (declaredByType.has(kind)) {
+				expect(identity, `no TYPES row of kind ${kind}`).toContain(
+					`kind: "${kind}",`,
+				);
+			} else {
+				expect(
+					identity,
+					`no POPULATIONS row bound to kind ${kind}`,
+				).toContain(`name: "${kind}",`);
+			}
 		}
 		expect(identity).toContain("pub const POPULATIONS: &[PopulationMeta]");
 	});

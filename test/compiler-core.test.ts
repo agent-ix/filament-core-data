@@ -4202,6 +4202,9 @@ describe("compatibility (FR-051)", () => {
 					identity: string;
 					shape: string;
 					members: Record<string, never>;
+					rules?: unknown[];
+					references?: Record<string, never>;
+					immutable?: boolean;
 					meaning: string;
 				};
 			}[];
@@ -4316,6 +4319,24 @@ describe("compatibility (FR-051)", () => {
 				disposition: "breaking",
 			},
 		]);
+		// kind: rebound to a different constructs entry, on its own (fcd#193
+		// review round 2, Low-A) — `members` and `extent` both unchanged, so a
+		// mutation that dropped the `kind` comparison from `diffPopulations`
+		// would report no change at all here.
+		const populationKindChanged = structuredClone(withPopulation);
+		populationKindChanged.populations[0].kind = {
+			module: "agent-ix/assurance",
+			name: "other_kind",
+		};
+		expect(
+			projectChanges(reportOfPair(withPopulation, populationKindChanged)),
+		).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/population/all-artifacts",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
 
 		// constructs: the FR-142 meaning table, keyed by kind, added then its
 		// meaning changed, minted under the document's own package
@@ -4362,6 +4383,71 @@ describe("compatibility (FR-051)", () => {
 		constructShapeChanged.constructs[0].construct.shape = "namespace";
 		expect(
 			projectChanges(reportOfPair(withConstruct, constructShapeChanged)),
+		).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/construct/entity",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
+		// FR-051-AC-17 (fcd#193 review round 2, Medium-A): `identity`, `members`,
+		// `rules`, `references` and `immutable` each classify `breaking` on
+		// their own too — `diffConstructs` names every FR-142 member of a
+		// construct table entry, not only `meaning` and `shape`. Each mutation
+		// below changes exactly one member so removing that member's own diff
+		// arm, and only that arm, fails this expectation.
+		const constructIdentityChanged = structuredClone(withConstruct);
+		constructIdentityChanged.constructs[0].construct.identity = "value";
+		expect(
+			projectChanges(reportOfPair(withConstruct, constructIdentityChanged)),
+		).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/construct/entity",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
+		const constructMembersChanged = structuredClone(withConstruct);
+		constructMembersChanged.constructs[0].construct.members = {
+			label: "required",
+		} as never;
+		expect(
+			projectChanges(reportOfPair(withConstruct, constructMembersChanged)),
+		).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/construct/entity",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
+		const constructRulesChanged = structuredClone(withConstruct);
+		constructRulesChanged.constructs[0].construct.rules = ["no_fields"];
+		expect(
+			projectChanges(reportOfPair(withConstruct, constructRulesChanged)),
+		).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/construct/entity",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
+		const constructReferencesChanged = structuredClone(withConstruct);
+		constructReferencesChanged.constructs[0].construct.references = {
+			owner: "required",
+		} as never;
+		expect(
+			projectChanges(reportOfPair(withConstruct, constructReferencesChanged)),
+		).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/construct/entity",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
+		const constructImmutableChanged = structuredClone(withConstruct);
+		constructImmutableChanged.constructs[0].construct.immutable = true;
+		expect(
+			projectChanges(reportOfPair(withConstruct, constructImmutableChanged)),
 		).toStrictEqual([
 			{
 				identity: "ix://agent-ix/assurance/construct/entity",

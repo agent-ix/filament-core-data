@@ -15,6 +15,7 @@ from tests.semantic_ir_reader import (
     SCHEMA_ROOT,
     _is_edge_kind,
     _schema_validator,
+    construct_findings,
     normalize,
     read_semantic_ir,
     schema_valid,
@@ -296,6 +297,28 @@ class TestContract20:
         document["constructs"].append(
             {"kind": {"module": "acme/parts", "name": "part"}, "construct": {}}
         )
+        assert not schema_valid(validator, document)
+
+    def test_a_population_kind_resolves_against_constructs_like_a_types_kind(
+        self, validator
+    ) -> None:
+        """A population's `kind` resolves against the document's own
+        `constructs` table exactly like a type definition's kind (QSpec
+        FR-154 row 2/AC-7, FR-208): a dangling kind is refused, and the entry
+        it names counts as used, not only a type's.
+
+        Criteria: FR-142-AC-9 (TC-1789).
+        """
+        document = _fixture(CONSTRUCTS)
+        entry = next(
+            i
+            for i, one in enumerate(document["constructs"])
+            if one["kind"]["name"] == "population"
+        )
+        del document["constructs"][entry]
+        assert validator.is_valid(document)  # the JSON Schema layer is silent
+        findings = construct_findings(document)
+        assert "populations.0.kind: names no constructs entry" in findings, findings
         assert not schema_valid(validator, document)
 
     def test_a_pre_list_mixes_clause_ids_and_inline_clauses_and_binds_only_the_ids(

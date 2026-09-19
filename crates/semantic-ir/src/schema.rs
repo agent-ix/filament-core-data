@@ -653,6 +653,14 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
             }
         }
     }
+    if let Some(populations) = ir.get("populations") {
+        let populations_at = child(at, "populations");
+        if expect_array(populations, &populations_at, "populations", f) {
+            for (position, population) in populations.as_array().unwrap_or(&[]).iter().enumerate() {
+                population_schema(population, &index(&populations_at, position), &mut table, f);
+            }
+        }
+    }
     {
         let entries = ir.get("constructs").and_then(Json::as_array).unwrap_or(&[]);
         for (position, entry) in entries.iter().enumerate() {
@@ -670,7 +678,7 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
             {
                 f.push(
                     &child(&index(&constructs_at, position), "kind"),
-                    format!("constructs declares {module}/{name}, and no type definition is of that kind"),
+                    format!("constructs declares {module}/{name}, and no type definition or population is of that kind"),
                 );
             }
         }
@@ -686,14 +694,6 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
     if let Some(extensions) = ir.get("extensions") {
         extension_array(extensions, &child(at, "extensions"), f);
     }
-    if let Some(populations) = ir.get("populations") {
-        let populations_at = child(at, "populations");
-        if expect_array(populations, &populations_at, "populations", f) {
-            for (position, population) in populations.as_array().unwrap_or(&[]).iter().enumerate() {
-                population_schema(population, &index(&populations_at, position), f);
-            }
-        }
-    }
 }
 
 const POPULATION_MEMBERS: &[&str] = &[
@@ -708,7 +708,7 @@ const POPULATION_MEMBERS: &[&str] = &[
 /// FR-153/AD-006), never a per-member multiplicity.
 const POPULATION_EXTENTS: &[&str] = &["closed", "open"];
 
-fn population_schema(population: &Json, at: &str, f: &mut Findings) {
+fn population_schema(population: &Json, at: &str, table: &mut ConstructTable<'_>, f: &mut Findings) {
     if !expect_object(population, at, "a population", f) {
         return;
     }
@@ -728,8 +728,23 @@ fn population_schema(population: &Json, at: &str, f: &mut Findings) {
         "a display name",
         f,
     );
-    if let Some(kind) = population.get("kind") {
-        construct_kind(kind, &child(at, "kind"), f);
+    let kind_at = child(at, "kind");
+    // A population's kind resolves against the document's own constructs
+    // table exactly like a type definition's kind (QSpec FR-154 row 2/AC-7,
+    // FR-208): a dangling kind refuses, and a resolved kind counts as used so
+    // the "no type definition or population is of that kind" check below
+    // does not misfire on a constructs entry a population alone uses.
+    if let Some((module, name)) = population
+        .get("kind")
+        .and_then(|kind| construct_kind(kind, &kind_at, f))
+    {
+        match table.position(module, name) {
+            Some(found) => table.entries[found].used = true,
+            None => f.push(
+                &kind_at,
+                format!("the kind {module}/{name} names no constructs entry"),
+            ),
+        }
     }
     identity_list(
         population.get("members"),

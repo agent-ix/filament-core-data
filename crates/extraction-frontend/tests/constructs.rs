@@ -802,6 +802,28 @@ fn tc_1789_the_constructs_table_is_checked_and_references_are_admitted_by_role()
         &missing,
         &format!("/ir/types/{}/kind", at("EV-001")),
     );
+    // A population's kind resolves against the same table (QSpec FR-154 row
+    // 2/AC-7, FR-208): removing the entry it names refuses at the
+    // population's own `kind` pointer, and the entry it does name counts as
+    // used, not only a type's.
+    let mut population_missing = positive();
+    let population_kind = constructs("population");
+    population_missing["constructs"]
+        .as_array_mut()
+        .expect("constructs")
+        .remove(population_kind);
+    assert_rust_schema_at(
+        "a population kind naming no entry",
+        &population_missing,
+        "/ir/populations/0/kind",
+    );
+    assert!(
+        node_codes(&population_missing)
+            .iter()
+            .any(|c| c == "INVALID_IR"),
+        "a population kind naming no entry: node reader"
+    );
+
     let mut unused = positive();
     let mut extra = unused["constructs"][event].clone();
     extra["kind"]["name"] = json!("ledger");

@@ -768,11 +768,11 @@ function diffPopulations(previous, next, record) {
  * document's own namespace for the construct it declares, never
  * `filament-core-data`'s: FCD is the reader, not the owner of what it reads.
  * `meaning` is opaque to FCD (FR-208) and is compared only for equality, but
- * `identity`, `shape`, `members` and `rules` are shapes FCD itself decides
- * (FR-142): a change to any of them, like a change to `meaning`, is a
- * `breaking` change to the construct table entry — none of the five is
- * compared only via a fingerprint, and none is silently dropped as a `patch`
- * because the others happened to match.
+ * `identity`, `shape`, `members`, `rules`, `references` and `immutable` are
+ * shapes FCD itself decides (FR-142): a change to any of these six, like a
+ * change to `meaning`, is a `breaking` change to the construct table entry —
+ * none of the seven members is compared only via a fingerprint, and none is
+ * silently dropped as a `patch` because the others happened to match.
  */
 function constructKey(entry) {
 	return `${entry?.kind?.module}/${entry?.kind?.name}`;
@@ -818,6 +818,12 @@ function diffConstructs(previous, next, record) {
 			) && "members",
 			!same(original.construct?.rules ?? [], entry.construct?.rules ?? []) &&
 				"rules",
+			!same(
+				original.construct?.references ?? {},
+				entry.construct?.references ?? {},
+			) && "references",
+			(original.construct?.immutable ?? false) !==
+				(entry.construct?.immutable ?? false) && "immutable",
 			original.construct?.meaning !== entry.construct?.meaning && "meaning",
 		].filter(Boolean);
 		if (changed.length === 0) continue;
