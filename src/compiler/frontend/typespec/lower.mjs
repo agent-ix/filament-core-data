@@ -975,25 +975,37 @@ export function lowerProgram(options) {
 					const targetName = item.targetIdentity.slice(
 						item.targetIdentity.lastIndexOf("/") + 1,
 					);
-					const multiplicity = { lower: item.lower ?? 0 };
-					if (item.upper !== undefined) multiplicity.upper = item.upper;
-					else if (item.lower === undefined) multiplicity.upper = 1;
-					// Every emitted multiplicity carries `ordered` and `unique`
-					// (QSpec model-complete.md); a relationship end never declares
-					// either, so both are always `false`.
-					multiplicity.ordered = false;
-					multiplicity.unique = false;
+					// FR-094 "Relationships" (gap 3 of FCD #199/#200): `@relationship`
+					// authors only the target end's cardinality ("this record has
+					// `lower..upper` of the target"), so it lowers to `targetEnd`,
+					// with the same FR-034 defaulting the flat shape used. The source
+					// end's multiplicity is not yet authorable by either frontend
+					// (source-multiplicity authoring is future FCD #201) and is
+					// always `0..unbounded`, mirroring the extraction-frontend's
+					// identical default for the same gap (edges.rs).
+					const targetMultiplicity = { lower: item.lower ?? 0 };
+					if (item.upper !== undefined) targetMultiplicity.upper = item.upper;
+					else if (item.lower === undefined) targetMultiplicity.upper = 1;
+					targetMultiplicity.ordered = false;
+					targetMultiplicity.unique = false;
 					return {
 						identity: mintIdentity(packageIdentity, "relationship", [
 							declaration.name,
 							item.verb,
 							targetName,
 						]),
-						verb: item.verb,
 						category: item.category,
 						composite: item.composite ?? false,
-						target: item.targetIdentity,
-						multiplicity,
+						direction: "source-to-target",
+						sourceEnd: {
+							role: item.verb,
+							multiplicity: { lower: 0, ordered: false, unique: false },
+							type: identity,
+						},
+						targetEnd: {
+							multiplicity: targetMultiplicity,
+							type: item.targetIdentity,
+						},
 						origin: context.originOf(declaration, item.node),
 					};
 				})
