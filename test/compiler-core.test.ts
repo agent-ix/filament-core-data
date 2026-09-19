@@ -54,7 +54,6 @@ import {
 } from "../src/compiler/frontend/seam.mjs";
 import { DECORATOR_LIBRARY } from "../src/compiler/frontend/typespec/frontend.mjs";
 import {
-	constraintAliasIdentity,
 	constraintDiagnosticCode,
 	mintIdentity,
 	slug,
@@ -824,9 +823,17 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			(thing.fields as Json[]).find((one) => one.name === name) as Json;
 		const values = named("values");
 		const tags = named("tags");
-		expect(values.multiplicity).toEqual({ lower: 0 });
+		expect(values.multiplicity).toEqual({
+			lower: 0,
+			ordered: false,
+			unique: false,
+		});
 		expect(values.presence).toBe("required");
-		expect(tags.multiplicity).toEqual({ lower: 1 });
+		expect(tags.multiplicity).toEqual({
+			lower: 1,
+			ordered: false,
+			unique: false,
+		});
 		expect(tags.presence).toBe("optional");
 
 		// The payload level: a present empty collection is admitted and an
@@ -953,9 +960,9 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 		expect(mintIdentity(pkg, "constraint", ["Text", "minLength"])).toBe(
 			"ix://agent-ix/assurance/constraint/Text-minLength",
 		);
-		expect(constraintAliasIdentity(pkg, "Artifact", "code")).toBe(
-			"ix://agent-ix/assurance/ArtifactCode",
-		);
+		// A constrained property mints no alias identity (gap 1 of FCD
+		// #199/#200): its constraint attaches directly to the field's own
+		// `field` identity, already covered above.
 		// A type definition mints no slot segment of its own: its identity is
 		// the package identity plus one flat name, nothing nested under it.
 		const identities = (compiled.ir as never as { types: Json[] }).types.map(
@@ -1000,23 +1007,28 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 	}, 120000);
 
 	/** Traces: TC-419; FR-053-AC-8. */
-	it("mints an alias for a constrained property and retargets the field to it", () => {
+	it("attaches a constrained property's constraint to the field itself, with no synthetic alias", () => {
+		// Gap 1 of FCD #199/#200: a constrained property keeps its
+		// constraint on the field, `appliesTo` the field's own identity,
+		// and `typeRef` stays the field's resolved type — no alias
+		// `typeDefinition` is minted, and no `ArtifactCode` identity
+		// exists at all.
 		const types = (compiled.ir as never as { types: Json[] }).types;
-		const alias = types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/ArtifactCode",
-		);
-		expect(alias?.kind).toBe("alias");
-		expect(alias?.target).toBe("ix://agent-ix/assurance/Text");
-		const constraint = (alias?.constraints as Json[])[0];
-		expect(constraint.keyword).toBe("minLength");
-		expect(constraint.appliesTo).toBe(alias?.identity);
+		expect(
+			types.find(
+				(type) => type.identity === "ix://agent-ix/assurance/ArtifactCode",
+			),
+		).toBeUndefined();
 		const artifact = types.find(
 			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		);
 		const field = (artifact?.fields as Json[]).find(
 			(entry) => entry.name === "code",
 		);
-		expect(field?.typeRef).toBe(alias?.identity);
+		expect(field?.typeRef).toBe("ix://agent-ix/assurance/Text");
+		const constraint = (field?.constraints as Json[])[0];
+		expect(constraint.keyword).toBe("minLength");
+		expect(constraint.appliesTo).toBe(field?.identity);
 	});
 
 	/** Traces: TC-420; FR-053-AC-9. */
@@ -1138,7 +1150,22 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 		expect(relationships).toHaveLength(2);
 		for (const relationship of relationships) {
 			expect(relationship.composite).toBe(false);
-			expect(relationship.multiplicity).toEqual({ lower: 0, upper: 1 });
+			// The two-end shape (gap 3 of FCD #199/#200): `@relationship`
+			// authors only the target end's cardinality, defaulted by
+			// FR-034; the source end is always `0..unbounded`
+			// (source-multiplicity authoring is future FCD #201).
+			expect(relationship.direction).toBe("source-to-target");
+			expect(relationship.sourceEnd?.multiplicity).toEqual({
+				lower: 0,
+				ordered: false,
+				unique: false,
+			});
+			expect(relationship.targetEnd?.multiplicity).toEqual({
+				lower: 0,
+				upper: 1,
+				ordered: false,
+				unique: false,
+			});
 		}
 		const operations = artifact?.operations as Json[];
 		expect(operations).toHaveLength(1);
@@ -1170,15 +1197,18 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			"ix://agent-ix/semantic-core/ext/decimal",
 		);
 		expect(extensionsOf("id")).toContain("ix://agent-ix/semantic-core/ext/doc");
-		const kernel = (compiled.ir as never as { types: Json[] }).types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/Integer",
-		);
-		expect((kernel?.extensions as Json[])[0].identity).toBe(
-			"ix://agent-ix/semantic-core/ext/kernel-scalar",
-		);
-		expect(((kernel?.extensions as Json[])[0].payload as Json).name).toBe(
-			"Integer",
-		);
+		// A field typed by a built-in directly names its native kernel scalar
+		// (gap 1 of FCD #199/#200): no package-local `Integer` node is minted,
+		// so no `ext/kernel-scalar` extension exists to carry its name.
+		expect(
+			(compiled.ir as never as { types: Json[] }).types.find(
+				(type) => type.identity === "ix://agent-ix/assurance/Integer",
+			),
+		).toBeUndefined();
+		expect(
+			(artifact?.fields as Json[]).find((field) => field.name === "revision")
+				?.typeRef,
+		).toBe("ix://quire/native/Integer");
 
 		const arbitrary = await compileSource(
 			[
@@ -1393,10 +1423,14 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(fieldOf("Artifact", "id").multiplicity).toEqual({
 			lower: 1,
 			upper: 1,
+			ordered: false,
+			unique: false,
 		});
 		expect(fieldOf("Artifact", "summary").multiplicity).toEqual({
 			lower: 0,
 			upper: 1,
+			ordered: false,
+			unique: false,
 		});
 		expect(fieldOf("Artifact", "tags").multiplicity).toEqual({
 			lower: 1,
@@ -1416,7 +1450,11 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		const thing = (
 			optionalCollection.ir as never as { types: Json[] }
 		).types.find((type) => type.displayName === "Thing");
-		expect((thing?.fields as Json[])[0].multiplicity).toEqual({ lower: 0 });
+		expect((thing?.fields as Json[])[0].multiplicity).toEqual({
+			lower: 0,
+			ordered: false,
+			unique: false,
+		});
 
 		const overridden = await compileSource(
 			[
@@ -1432,11 +1470,15 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect((overriddenType?.fields as Json[])[0].multiplicity).toEqual({
 			lower: 1,
 			upper: 7,
+			ordered: false,
+			unique: false,
 		});
 		// Multiplicity, nullability and default kind move independently.
 		expect(fieldOf("Artifact", "note").multiplicity).toEqual({
 			lower: 1,
 			upper: 1,
+			ordered: false,
+			unique: false,
 		});
 		expect(fieldOf("Artifact", "note").defaultKind).toBe("none");
 		expect(fieldOf("Artifact", "status").defaultKind).toBe("migration");
@@ -1504,6 +1546,8 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect((boundaryType?.fields as Json[])[0].multiplicity).toEqual({
 			lower: 0,
 			upper: 0,
+			ordered: false,
+			unique: false,
 		});
 	}, 240000);
 
@@ -1557,15 +1601,18 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 	}, 120000);
 
 	/** Traces: TC-441; FR-046-AC-10. */
-	it("mints a package-local kernel scalar for a built-in used directly", async () => {
-		const integer = typeOf("Integer");
-		expect(integer.kind).toBe("scalar");
-		expect(integer.scalar).toBe("integer");
-		expect((integer.extensions as Json[])[0].identity).toBe(
-			"ix://agent-ix/semantic-core/ext/kernel-scalar",
+	it("names a built-in used directly by its native kernel scalar reference", async () => {
+		// Gap 1 of FCD #199/#200: a field typed by a built-in scalar
+		// directly mints no package-local definition; its `typeRef` names
+		// the kernel scalar's native reference over the closed FR-032 set.
+		expect(typeOf("Integer")).toBeUndefined();
+		expect(fieldOf("Artifact", "revision").typeRef).toBe(
+			"ix://quire/native/Integer",
 		);
-		expect(fieldOf("Artifact", "revision").typeRef).toBe(integer.identity);
-		expect(typeOf("Timestamp").scalar).toBe("datetime");
+		expect(typeOf("Timestamp")).toBeUndefined();
+		expect(fieldOf("AuditEvent", "at").typeRef).toBe(
+			"ix://quire/native/Timestamp",
+		);
 	});
 
 	/** Traces: TC-442, TC-617; FR-046-AC-11. */
@@ -1578,7 +1625,8 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		const artifact = document.types.find(
 			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
-		(artifact.relationships as Json[])[0].target = "ix://agent-ix/core/Actor";
+		((artifact.relationships as Json[])[0].targetEnd as Json).type =
+			"ix://agent-ix/core/Actor";
 		expect(
 			codesOf(
 				readContractIr(document, {
@@ -1601,12 +1649,12 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(hasBlocking(unconstrained.diagnostics as never)).toBe(false);
 		const types = (unconstrained.ir as Json).types as Json[];
 		const thing = types.find((type) => type.displayName === "Thing") as Json;
-		const target = types.find(
-			(type) => type.identity === ((thing.fields as Json[])[0] as Json).typeRef,
-		) as Json;
-		expect([target.kind, target.scalar]).toEqual(["scalar", "any"]);
-		// One identity with the spec bundles, which name the same scalar JsonObject.
-		expect(String(target.identity).endsWith("/JsonObject")).toBe(true);
+		const typeRef = String((thing.fields as Json[])[0].typeRef);
+		// Gap 1 of FCD #199/#200: the kernel scalar `any` mints no package
+		// node; the field's `typeRef` names it directly as the native
+		// reference JsonObject resolves to over the closed FR-032 set.
+		expect(typeRef).toBe("ix://quire/native/JsonObject");
+		expect(types.find((type) => type.identity === typeRef)).toBeUndefined();
 		expect(
 			types.filter(
 				(type) =>
@@ -3657,9 +3705,19 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		) as Json;
 		const [required, optional] = record.fields as Json[];
 		required.presence = "required";
-		required.multiplicity = { lower: 0, upper: 2 };
+		required.multiplicity = {
+			lower: 0,
+			upper: 2,
+			ordered: false,
+			unique: false,
+		};
 		optional.presence = "optional";
-		optional.multiplicity = { lower: 1, upper: 2 };
+		optional.multiplicity = {
+			lower: 1,
+			upper: 2,
+			ordered: false,
+			unique: false,
+		};
 		expect(validateIrDocument(document)).toEqual([]);
 		expect(codesOf(readContractIr(document) as never as Diagnostic[])).toEqual(
 			[],
@@ -3723,6 +3781,18 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		};
 		expect(() => readContractIr(cyclicAlias)).not.toThrow();
 
+		// The two-end shape (gap 3 of FCD #199/#200): the cycle reads
+		// `targetEnd.type`, not a flat `target`.
+		const endsTo = (target: string) => ({
+			direction: "source-to-target",
+			sourceEnd: {
+				multiplicity: { lower: 0, ordered: false, unique: false },
+			},
+			targetEnd: {
+				multiplicity: { lower: 0, upper: 1, ordered: false, unique: false },
+				type: target,
+			},
+		});
 		const cyclicComposite = {
 			contractVersion: "2.0.0",
 			types: [
@@ -3733,10 +3803,9 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 					relationships: [
 						{
 							identity: "ix://a/b/relationship/A-has-B",
-							target: "ix://a/b/B",
 							composite: true,
 							category: "structural",
-							multiplicity: { lower: 0, upper: 1 },
+							...endsTo("ix://a/b/B"),
 						},
 					],
 				},
@@ -3747,10 +3816,9 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 					relationships: [
 						{
 							identity: "ix://a/b/relationship/B-has-A",
-							target: "ix://a/b/A",
 							composite: true,
 							category: "structural",
-							multiplicity: { lower: 0, upper: 1 },
+							...endsTo("ix://a/b/A"),
 						},
 					],
 				},
@@ -3819,7 +3887,8 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		const artifact = document.types.find(
 			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
-		(artifact.relationships as Json[])[0].target = "ix://agent-ix/core/Actor";
+		((artifact.relationships as Json[])[0].targetEnd as Json).type =
+			"ix://agent-ix/core/Actor";
 		const unknown = readContractIr(document, {
 			importedExports: "unknown",
 		}) as never as Diagnostic[] & {
@@ -4781,7 +4850,8 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 			const artifact = document.types.find(
 				(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 			) as Json;
-			(artifact.relationships as Json[])[0].target = "ix://agent-ix/core/Actor";
+			((artifact.relationships as Json[])[0].targetEnd as Json).type =
+				"ix://agent-ix/core/Actor";
 			const cross = resolve(directory, "cross.json");
 			writeFileSync(cross, `${JSON.stringify(document, null, "\t")}\n`);
 			const suppressed = runCli(["inspect", "--ir", cross]);
@@ -5566,10 +5636,12 @@ describe("the remaining reader and resolver rules (FR-049 coverage)", () => {
 			(artifactOf(document).clauses as Json[])[0].language = "SHOUTING";
 		});
 		run("unknown constraint keyword", (document) => {
-			const alias = document.types.find(
-				(type) => type.identity === "ix://agent-ix/assurance/ArtifactCode",
+			// Gap 1 of FCD #199/#200: a constrained property's constraint
+			// lives on the field itself, not on a synthetic alias.
+			const code = (artifactOf(document).fields as Json[]).find(
+				(field) => field.name === "code",
 			) as Json;
-			(alias.constraints as Json[])[0].keyword = "invented";
+			(code.constraints as Json[])[0].keyword = "invented";
 		});
 		run("unknown edge category", (document) => {
 			(artifactOf(document).relationships as Json[])[0].category = "invented";

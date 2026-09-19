@@ -731,7 +731,7 @@ export function lowerProgram(options) {
 		const nullable = unwrapNullable(property.type);
 		const item = collectionItem(nullable.type);
 		const memberType = item ?? nullable.type;
-		let typeRef = resolveMemberType(memberType, at);
+		const typeRef = resolveMemberType(memberType, at);
 		if (!typeRef) {
 			context.raise(
 				DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF,

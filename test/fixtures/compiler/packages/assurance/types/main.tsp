@@ -81,7 +81,7 @@ model Artifact {
   @minLength(3)
   code: Text;
 
-  /** A field typed by a built-in directly mints a package-local kernel scalar. */
+  /** A field typed by a built-in directly names its native kernel scalar. */
   revision: int32;
 
   /** A named sequence used as a field type is single-valued at the field. */
