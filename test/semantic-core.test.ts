@@ -1197,11 +1197,13 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 				}),
 				relationships: array(entity.relationships, "rels").map((r) => {
 					const rel = object(r, "rel");
+					const sourceEnd = object(rel.sourceEnd, "sourceEnd");
+					const targetEnd = object(rel.targetEnd, "targetEnd");
 					return {
-						verb: rel.verb,
+						verb: sourceEnd.role,
 						category: rel.category,
-						target: nameOf(rel.target),
-						multiplicity: rel.multiplicity,
+						target: nameOf(targetEnd.type),
+						multiplicity: targetEnd.multiplicity,
 					};
 				}),
 				constraints: types

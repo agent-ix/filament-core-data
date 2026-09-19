@@ -209,6 +209,8 @@
 					"name": "id",
 					"typeRef": "ix://agent-ix/config-service/type/UUID",
 					"multiplicity": {
+						"ordered": false,
+						"unique": false,
 						"lower": 1,
 						"upper": 1
 					},
@@ -249,6 +251,8 @@
 					"name": "versionNumber",
 					"typeRef": "ix://agent-ix/config-service/type/ConfigVersionVersionNumber",
 					"multiplicity": {
+						"ordered": false,
+						"unique": false,
 						"lower": 1,
 						"upper": 1
 					},
@@ -270,6 +274,8 @@
 					"name": "data",
 					"typeRef": "ix://agent-ix/config-service/type/JsonObject",
 					"multiplicity": {
+						"ordered": false,
+						"unique": false,
 						"lower": 1,
 						"upper": 1
 					},
@@ -301,6 +307,8 @@
 					"name": "hash",
 					"typeRef": "ix://agent-ix/config-service/type/String",
 					"multiplicity": {
+						"ordered": false,
+						"unique": false,
 						"lower": 1,
 						"upper": 1
 					},
@@ -332,6 +340,8 @@
 					"name": "createdAt",
 					"typeRef": "ix://agent-ix/config-service/type/Timestamp",
 					"multiplicity": {
+						"ordered": false,
+						"unique": false,
 						"lower": 1,
 						"upper": 1
 					},
@@ -353,6 +363,8 @@
 					"name": "createdBy",
 					"typeRef": "ix://agent-ix/config-service/type/String",
 					"multiplicity": {
+						"ordered": false,
+						"unique": false,
 						"lower": 1,
 						"upper": 1
 					},
@@ -383,13 +395,26 @@
 			"relationships": [
 				{
 					"identity": "ix://agent-ix/config-service/relationship/ConfigVersion-belongs_to-ConfigOverlay",
-					"verb": "belongs_to",
 					"category": "structural",
 					"composite": false,
-					"target": "ix://agent-ix/config-service/type/ConfigOverlay",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
+					"direction": "source-to-target",
+					"sourceEnd": {
+						"role": "belongs_to",
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"type": "ix://agent-ix/config-service/type/ConfigVersion"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"ordered": false,
+							"unique": false,
+							"lower": 1,
+							"upper": 1
+						},
+						"type": "ix://agent-ix/config-service/type/ConfigOverlay"
 					},
 					"origin": {
 						"source": {
@@ -402,13 +427,26 @@
 				},
 				{
 					"identity": "ix://agent-ix/config-service/relationship/ConfigVersion-derives_from-ConfigVersion",
-					"verb": "derives_from",
 					"category": "traceability",
 					"composite": false,
-					"target": "ix://agent-ix/config-service/type/ConfigVersion",
-					"multiplicity": {
-						"lower": 0,
-						"upper": 1
+					"direction": "source-to-target",
+					"sourceEnd": {
+						"role": "derives_from",
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"type": "ix://agent-ix/config-service/type/ConfigVersion"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"ordered": false,
+							"unique": false,
+							"lower": 0,
+							"upper": 1
+						},
+						"type": "ix://agent-ix/config-service/type/ConfigVersion"
 					},
 					"origin": {
 						"source": {

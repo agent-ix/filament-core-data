@@ -99,8 +99,8 @@ export function lower(instance: Instance, sourceBytes: string): JsonObject {
 		const target = String(ref.target);
 		const typeRef = target in KERNEL ? kernelIdentity(target) : target;
 		const multiplicity = isObject(ref.multiplicity)
-			? { ...ref.multiplicity }
-			: { lower: 1, upper: 1 };
+			? { ordered: false, unique: false, ...ref.multiplicity }
+			: { lower: 1, upper: 1, ordered: false, unique: false };
 		return {
 			typeRef,
 			multiplicity,
@@ -215,15 +215,26 @@ export function lower(instance: Instance, sourceBytes: string): JsonObject {
 			const verb = String(relation.verb);
 			const target = String(relation.target);
 			const targetName = target.split("/").pop() ?? target;
+			const targetMultiplicity = isObject(relation.multiplicity)
+				? { ordered: false, unique: false, ...relation.multiplicity }
+				: { lower: 0, upper: 1, ordered: false, unique: false };
 			return {
 				identity: `${base}/relationship/${owner}-${verb}-${targetName}`,
-				verb,
 				category: String(relation.category),
 				composite: relation.composite === true,
-				target,
-				multiplicity: isObject(relation.multiplicity)
-					? relation.multiplicity
-					: { lower: 0, upper: 1 },
+				// Gap 3 of FCD #199/#200: the two-end shape. `sourceEnd` is
+				// always 0..unbounded (source-multiplicity authoring is future
+				// FCD #201); `targetEnd` carries the relation's cardinality.
+				direction: "source-to-target",
+				sourceEnd: {
+					role: verb,
+					multiplicity: { lower: 0, ordered: false, unique: false },
+					type: `${base}/type/${owner}`,
+				},
+				targetEnd: {
+					multiplicity: targetMultiplicity,
+					type: target,
+				},
 				origin: origin(instance.relationLoci?.[verb]),
 			};
 		});
