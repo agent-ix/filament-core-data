@@ -281,7 +281,7 @@ blocked as stated above.
 | FR-095 | FR-095-AC-1..16, FR-095-CON-1..3 | TC-1246..TC-1258, TC-1347, TC-1348, TC-1351..TC-1354 | ✅ Complete |
 | FR-096 | FR-096-AC-1..16, FR-096-CON-1..3 | TC-1259..TC-1272, TC-1345, TC-1346 | ✅ Complete |
 | FR-097 | FR-097-AC-1..16, FR-097-CON-1..3 | TC-1273..TC-1284, TC-1336, TC-1339..TC-1342 | ✅ Complete |
-| FR-098 | FR-098-AC-1..12, FR-098-CON-1..3 | TC-1285..TC-1294, TC-1338, TC-1343, TC-1344 | ✅ Complete |
+| FR-098 | FR-098-AC-1..13, FR-098-CON-1..3 | TC-1285..TC-1294, TC-1338, TC-1343, TC-1344, TC-1798 | 🚧 In progress — TC-1798 planned (filament-core-data#173, pending SOA release) |
 | FR-099 | FR-099-AC-1..6, FR-099-CON-1..3 | TC-1295..TC-1299, TC-1330, TC-1349 | ✅ Complete |
 | FR-106 | FR-106-AC-1..6, FR-106-CON-1..2 | TC-1373..TC-1378 | 🚧 TC-1374, TC-1375 planned on issue #93 |
 | FR-100 | FR-100-AC-1..11, FR-100-CON-1..3 | TC-1361..TC-1366, TC-1764, TC-1768, TC-1771, TC-1774, TC-1782 | ✅ Complete |
@@ -1720,13 +1720,14 @@ blocked as stated above.
 | TC-1793 | A `featureOrder` naming its type's own fields and operations each once reads clean; an omitted operation raises `INCOMPLETE_FEATURE_ORDER`, another type's operation `UNRESOLVED_CONSTRUCT_REF`, and a repeated entry, an empty order, an order the declaration forbids and a missing required order `SCHEMA_VIOLATION` | Unit | P0 | FR-142-AC-13 | ✅ passed |
 | TC-1794 | Under a module whose `entity` declaration requires `featureOrder`, every `entity` artifact of the `business` fixture (declaring no `Features` table) is refused with one blocking `ARTIFACT_NOT_LOWERED` naming `featureOrder` as a member the artifact declares none of, and emits no type | Unit | P0 | FR-143-AC-9 | ✅ passed |
 | TC-1799 | A `specializes` edge to a same-kind target and an authored `abstract: true` each lower `supertypes` and `abstract` from the engine's FR-075 generalization declarations, on a `record`-shaped artifact and on an `enumeration`-shaped one, the enumeration artifact reaching `enumeration::lower_enum` rather than `constructs::shape` | Unit | P0 | FR-143-AC-10 | ✅ passed |
-| TC-1800 | The five `spec-objects-architecture` systems kinds lower `owner`, `declaredType`, `direction`, `interfaceType`, `multiplicity`, `sourceEnd`, `targetEnd`, `flowDirection`, `sourceElement`, `targetElement` and `featureOrder` from the engine's FR-075 `part`/`port`/`connection`/`allocation`/`featureOrder` extraction, each reference member naming a bundle-local artifact id admitted by role, an allocation source naming an operation lowering to that operation's identity, and the lowered bundle also lifted and read back by both readers; a member naming an artifact of another package, and a reference member naming a since-refused type, are each refused | Unit | P0 | FR-143-AC-11 | ✅ passed |
+| TC-1800 | The five `spec-objects-architecture` systems kinds lower `owner`, `declaredType`, `direction`, `interfaceType`, `multiplicity`, `sourceEnd`, `targetEnd`, `flowDirection`, `sourceElement`, `targetElement` and `featureOrder` from the engine's FR-075 `part`/`port`/`connection`/`allocation`/`featureOrder` extraction, each reference member naming a bundle-local artifact id admitted by role, an allocation source naming an operation lowering to that operation's identity, and the lowered bundle also lifted and read back by both readers; a member naming an artifact of another package, and a reference member naming a since-refused type, are each refused. Over the committed `architecture` fixture (filament-core-data#173): the lift produces contract `2.0.0`, at least one artifact of each of the five systems kinds (ports and a connection between components included), every one module-qualified `agent-ix/spec-objects-architecture`, an embedded `constructs` table naming each kind used, and `agent_ix_semantic_ir::decide` raises nothing over it | Unit | P0 | FR-143-AC-11 | ✅ passed |
 | TC-1801 | An `interface` artifact with a `Contract` but no `Features` table, under a declaration requiring `featureOrder`, is refused `ARTIFACT_NOT_LOWERED` naming `featureOrder` as a member it declares none of, one artifact at a time, never emitted empty | Unit | P0 | FR-143-AC-9 | ✅ passed |
 | TC-1802 | An `enumeration` construct edited to require `supertypes`, with `EN_001` declaring no `specializes` edge, is refused `ARTIFACT_NOT_LOWERED` naming `supertypes` as a member it declares none of — the `lower_generalization` required-source check no other test exercised directly | Unit | P0 | FR-143-AC-9 | ✅ passed |
 | TC-1795 | A `pre` list mixing a clause id and an inline clause is accepted by the Rust, Node and Python readers; a dangling id item raises `DANGLING_CLAUSE_REF` at its own slot, and a repeated inline clause or a non-clause item is refused by the schema | Unit | P0 | FR-141-AC-8 | ✅ passed |
 | TC-1796 | For an operation whose `pre` mixes a clause id and an inline clause, the Rust, TypeScript and JSON Schema outputs carry the id and every inline language and text, and the Python output carries every inline language and text | Unit | P0 | FR-141-AC-9 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
 | TC-1585 | Every requirement the register names carries that issue's own link, and a row whose requirement omits it is reported | Unit | P0 | NFR-001-AC-6 | ✅ passed |
+| TC-1798 | `fixtures/modules/spec-objects-architecture/PROVENANCE.json` names a released manifest | Unit | P0 | FR-098-AC-13 | 🚧 planned — pinned to SOA a54d2c0 (merged, unreleased; latest tag v0.6.0 is behind), the same commit filament-core-data#189 vendored; passes when an SOA release containing a54d2c0 is pinned — release decision: Peter (filament-core-data#173) |
 
 ## Option Permutation Matrix
 
@@ -2647,13 +2648,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 128 | 81 | 0 | 47 | 100% mapped (128/128) |
-| Unit | 600 | 496 | 0 | 104 | 100% mapped (600/600) |
+| Unit | 601 | 496 | 0 | 105 | 100% mapped (601/601) |
 | Integration | 161 | 100 | 0 | 61 | 100% mapped (161/161) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 65 | 40 | 0 | 25 | 100% mapped (65/65) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1383** | **1056** | **0** | **327** | **100% mapped (1383/1383)** |
+| **Total** | **1384** | **1056** | **0** | **328** | **100% mapped (1384/1384)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.
