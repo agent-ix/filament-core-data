@@ -76,19 +76,23 @@ PINNED_DIGESTS = {
         "sha256:3a9eca5cbae99303e68f52c88d78ea3f1dc9425c723a5ed8494fcd6472ccfc6e"
     ),
     "python_backend/qualification": (
-        # fcd#193/#196: report.json's and validation.json's per-profile
-        # toolchainFingerprint and measured counts remeasured (`poetry run
-        # python -m python_backend.runner.qualify` and `... .runner.validate`)
-        # after python_backend/generated was regenerated for population's new
-        # kind/members/extent shape; corpus-account.json unchanged.
-        "sha256:19a8eaf98f183e60a9f088234ef86bbb4bfaf16b199455f1aa41fda23a0addc8"
+        # fcd#199/#200: report.json and validation.json's per-profile
+        # toolchainFingerprint remeasured (`poetry run python -m
+        # python_backend.runner.qualify` and `... .runner.validate`) after
+        # python_backend/generated was regenerated for the two-end
+        # relationship shape and multiplicity's ordered/unique fields.
+        # corpus-account.json also remeasured (`poetry run python -m
+        # python_backend.runner.corpus_account`) after conformance/corpus.json
+        # was bumped to corpusVersion 4.0.0; gaps.json unchanged.
+        "sha256:688275462a06076d933fc4586b110b6d3489468dd6be1d931796bf81b5d00e32"
     ),
     "python_backend/generated": (
-        # fcd#193/#196: regenerated (`poetry run python -m
-        # python_backend.runner.emit`) after `population` in
-        # schema/semantic/v1/semantic-ir.schema.json gained `kind`/`extent`
-        # and its `members` became a flat identity list.
-        "sha256:dc9bbb248d5ec1bed9fac8aa78103d3ad465ed99eb82aaaf01786d5673132bc7"
+        # fcd#199/#200: regenerated (`poetry run python -m
+        # python_backend.runner.emit`) after Relationship in
+        # schema/semantic/v1/semantic-ir.schema.json gained the two-end
+        # sourceEnd/targetEnd/direction shape and Multiplicity gained the
+        # required ordered/unique fields.
+        "sha256:af03ec9230c576f14c64bc9e22e3e7ef636ff41d9006fc14852c1d54a1d8ff7c"
     ),
     "python_backend/profiles.json": (
         "sha256:3c6fc254a7c346c88b6ea91fdaeb7d3a3b55f8065b8a6ebc6ddab3a447547345"
