@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 mod common;
 
 use agent_ix_extraction_frontend::diagnostics::{Code, Diagnostic, Locus, Severity, WireCode};
-use agent_ix_extraction_frontend::document::{assemble, CONTRACT_VERSION};
+use agent_ix_extraction_frontend::document::assemble;
 use agent_ix_extraction_frontend::enumeration::VALUE_COLUMN;
 use agent_ix_extraction_frontend::lower::{
     applies_to, diagnostic_code, loss_register, roles, screaming, Kind, Presence,
@@ -156,13 +156,16 @@ fn field_named<'a>(record: &'a Value, name: &str) -> &'a Value {
 }
 
 /// A full IR document over the lift's types, with the lift's envelope.
+///
+/// Routed entirely through [`assemble`], the same path the frontend's own
+/// `lift.rs` uses, so every `multiplicity` here gets the same
+/// `normalize_multiplicities` fill-in (`ordered`/`unique` default `false`)
+/// that a real emitted document gets. Hand-assembling this document from
+/// `types_json(lift)` bypassed that normalization and produced
+/// SCHEMA_VIOLATION at every `multiplicity` the reader saw.
 fn ir_document(lift: &Lift) -> Value {
     let envelope = Envelope::new(&lift.bundle, &[]);
-    let mut doc = serde_json::to_value(&envelope).expect("envelope serialises");
-    doc["contractVersion"] = json!(CONTRACT_VERSION);
-    doc["types"] = Value::Array(types_json(lift));
-    doc["constructs"] =
-        assemble(&envelope, &[], &lift.lowered.constructs).expect("assemble")["constructs"].clone();
+    let doc = assemble(&envelope, &lift.lowered.types, &lift.lowered.constructs).expect("assemble");
     json!({ "ir": doc })
 }
 
@@ -244,9 +247,14 @@ fn tc_1220_table_root_and_fence_root_lower_to_byte_identical_types_and_fields_fo
     assert_eq!(table_diag, fence_diag);
 
     // The same envelope over both type lists: `normalized` agrees too, and
-    // the reader accepts the document (the sanity half of TC-1230).
+    // the reader accepts the document (the sanity half of TC-1230). The
+    // fence-form types are substituted in through `assemble` too, so they
+    // pick up the same `normalize_multiplicities` fill-in as the table-form
+    // document rather than comparing a normalized document against a raw one.
     let mut fence_doc = ir_document(&table);
-    fence_doc["ir"]["types"] = Value::Array(types_json(&fence));
+    let fence_envelope = Envelope::new(&fence.bundle, &[]);
+    fence_doc["ir"]["types"] =
+        assemble(&fence_envelope, &fence.lowered.types, &[]).expect("assemble")["types"].clone();
     let table_doc = ir_document(&table);
     let n =
         |doc: &Value| normalized(&parse_json(&serde_json::to_string(doc).expect("s")).expect("p"));
@@ -365,7 +373,7 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     assert_eq!(id["presence"], "required");
     assert_eq!(id["nullable"], false);
     assert_eq!(id["defaultKind"], "none");
-    assert_eq!(id["typeRef"], "ix://agent-ix/config-service/UUID");
+    assert_eq!(id["typeRef"], "ix://quire/native/UUID");
     assert_eq!(id["identity"], "ix://agent-ix/config-service/FR-006/id");
     assert_eq!(
         id["extensions"],
@@ -465,8 +473,15 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_with_the
         .map(|f| f["name"].as_str().expect("name"))
         .collect();
     assert_eq!(constrained_names, ["versionNumber", "hash", "createdBy"]);
+    // `constraints` is `skip_serializing_if = "Vec::is_empty"`: an
+    // unconstrained field carries no `constraints` member at all.
+    let empty = Vec::new();
     for field in record["fields"].as_array().expect("fields") {
-        for c in field["constraints"].as_array().expect("constraints") {
+        let constraints = field
+            .get("constraints")
+            .and_then(Value::as_array)
+            .unwrap_or(&empty);
+        for c in constraints {
             assert_eq!(c["appliesTo"], field["identity"]);
         }
     }
@@ -608,7 +623,7 @@ fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
             "identity": "ix://agent-ix/test/R/f", "name": "f",
             "typeRef": "ix://agent-ix/test/T", "presence": "required",
             "nullable": false, "defaultKind": "none", "origin": origin,
-            "multiplicity": {"lower": 1, "upper": 1}
+            "multiplicity": {"lower": 1, "upper": 1, "ordered": false, "unique": false}
         }]
     });
     json!({"ir": {
@@ -983,8 +998,18 @@ fn tc_1229_renaming_every_field_changes_only_its_own_name_identity_and_its_const
                 // untouched.
                 let moved: &[&str] = &["name", "identity", "constraints"];
                 prop_assert_eq!(without(g, moved), without(b, moved));
-                let base_constraints = b["constraints"].as_array().expect("constraints");
-                let got_constraints = g["constraints"].as_array().expect("constraints");
+                // `constraints` is `skip_serializing_if = "Vec::is_empty"`
+                // (schema: not required on `field`), so a field with none
+                // carries no `constraints` member at all rather than `[]`.
+                let empty = Vec::new();
+                let base_constraints = b
+                    .get("constraints")
+                    .and_then(Value::as_array)
+                    .unwrap_or(&empty);
+                let got_constraints = g
+                    .get("constraints")
+                    .and_then(Value::as_array)
+                    .unwrap_or(&empty);
                 prop_assert_eq!(got_constraints.len(), base_constraints.len());
                 for (bc, gc) in base_constraints.iter().zip(got_constraints) {
                     prop_assert_eq!(
@@ -1120,13 +1145,18 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
                 t.kind
             );
         }
+        let empty = Vec::new();
         for record in &types {
             for field in record["fields"]
                 .as_array()
                 .into_iter()
                 .flatten()
             {
-                for c in field["constraints"].as_array().expect("constraints") {
+                let constraints = field
+                    .get("constraints")
+                    .and_then(Value::as_array)
+                    .unwrap_or(&empty);
+                for c in constraints {
                     assert_eq!(c["appliesTo"], field["identity"], "{name}: {field}");
                 }
             }
@@ -1474,12 +1504,16 @@ fn tc_1347_equal_status_names_refuse_at_the_second_document_and_mint_no_field_tw
         "no identity collision remains: {:?}",
         shadowed.lowered.diagnostics
     );
+    // A real `TypeDefinition`, not a synthetic alias (gap 1 of FCD
+    // #199/#200): its `kind` reflects the artifact's own construct, `entity`
+    // here, same as every other definition this fixture's package lowers —
+    // `Kind::Record` is only the artifact-declares-no-construct case.
     assert!(
         shadowed
             .lowered
             .types
             .iter()
-            .any(|t| t.kind == Kind::Record && t.display_name == "String"),
+            .any(|t| t.display_name == "String"),
         "FR-007 lowers to its own type/String: {:?}",
         shadowed.lowered.types
     );
