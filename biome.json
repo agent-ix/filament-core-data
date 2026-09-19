@@ -12,6 +12,7 @@
 			"!**/*.map",
 			"!**/.venv/**",
 			"!conformance/.cases/**",
+			"!crates/extraction-frontend/fixtures/architecture/expected/**",
 			"!crates/extraction-frontend/fixtures/modules/spec-objects-architecture/**",
 			"!spikes/typespec-feasibility/generated/**",
 			"!spikes/typespec-feasibility/evidence/**",
