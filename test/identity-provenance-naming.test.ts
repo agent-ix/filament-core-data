@@ -234,7 +234,7 @@ describe("FR-137 identity and provenance are spelled alike in every package", ()
 			const typeName = name.replace(/\.json$/, "");
 			const schema = JSON.parse(read(join(schemas, name))) as Record<string, unknown>;
 			expect(schema["x-agent-ix-semantic-id"], name).toBe(
-				`ix://agent-ix/semantic-core/type/${typeName}`,
+				`ix://agent-ix/semantic-core/${typeName}`,
 			);
 		}
 		const index = JSON.parse(

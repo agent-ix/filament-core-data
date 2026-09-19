@@ -1486,7 +1486,7 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 			"pub struct SourceLocusPath(String)",
 		);
 		// FR-133-AC-7: the semantic identity is what the resolution may not move.
-		expect(locus).toContain("ix://agent-ix/semantic-core/type/SourceLocusPath");
+		expect(locus).toContain("ix://agent-ix/semantic-core/SourceLocusPath");
 		// FR-133-AC-3: no reference reaches the minted construct by the reserved
 		// name, which is the way the resolution could silently change a target.
 		for (const [path, text] of files) {
