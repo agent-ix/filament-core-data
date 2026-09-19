@@ -109,11 +109,11 @@ fn tc_1210_every_kernel_name_is_kernel_scalar_and_config_version_mints_five_scal
     assert_eq!(
         identities,
         [
-            "ix://agent-ix/config-service/type/Integer",
-            "ix://agent-ix/config-service/type/JsonObject",
-            "ix://agent-ix/config-service/type/String",
-            "ix://agent-ix/config-service/type/Timestamp",
-            "ix://agent-ix/config-service/type/UUID",
+            "ix://agent-ix/config-service/Integer",
+            "ix://agent-ix/config-service/JsonObject",
+            "ix://agent-ix/config-service/String",
+            "ix://agent-ix/config-service/Timestamp",
+            "ix://agent-ix/config-service/UUID",
         ],
         "five scalar definitions, each once, in identity order"
     );
@@ -196,7 +196,7 @@ fn tc_1211_config_overlay_by_title_and_fr_005_by_id_resolve_to_the_same_object()
     let package = PackageIdentity::from(bundle.package());
     assert_eq!(
         overlay.resolution.type_ref(&package).as_deref(),
-        Some("ix://agent-ix/config-service/type/FR-005"),
+        Some("ix://agent-ix/config-service/FR-005"),
         "the typeRef is the definition's identity, not the token's spelling"
     );
 
@@ -215,7 +215,7 @@ fn tc_1211_config_overlay_by_title_and_fr_005_by_id_resolve_to_the_same_object()
     );
     assert_eq!(
         by_id.type_ref(&package).as_deref(),
-        Some("ix://agent-ix/config-service/type/FR-005")
+        Some("ix://agent-ix/config-service/FR-005")
     );
 
     // Recorded, not asserted as behaviour of this crate: a Type cell reading
@@ -472,7 +472,7 @@ fn tc_1216_an_enumeration_artifact_resolves_to_enumeration_and_an_entity_of_the_
     let package = PackageIdentity::from(bundle.package());
     assert_eq!(
         status.resolution.type_ref(&package).as_deref(),
-        Some("ix://agent-ix/config-service/type/EN_001")
+        Some("ix://agent-ix/config-service/EN_001")
     );
 
     let (bundle, extractions) = load_business("resolve/entity-titled-status");
@@ -482,7 +482,7 @@ fn tc_1216_an_enumeration_artifact_resolves_to_enumeration_and_an_entity_of_the_
     assert_eq!(object_ref(&status.resolution).id, "FR-001");
     assert_eq!(
         status.resolution.type_ref(&package).as_deref(),
-        Some("ix://agent-ix/config-service/type/FR-001")
+        Some("ix://agent-ix/config-service/FR-001")
     );
 }
 

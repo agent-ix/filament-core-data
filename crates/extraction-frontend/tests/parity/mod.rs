@@ -92,7 +92,7 @@ pub fn project(document: &Value) -> Value {
         .cloned()
         .unwrap_or_else(|| Value::Array(Vec::new()));
     let records = record_shaped(document);
-    let renames = artifact_names(&types, &records);
+    let renames = artifact_names(&types, package.as_deref(), &records);
     let projected = strip(&types, package.as_deref(), &renames, &records);
     let mut out = Map::new();
     out.insert("types".to_string(), projected);
@@ -158,15 +158,21 @@ fn strip(
 }
 
 /// `(artifact id, slug of displayName)` for every record-shaped construct
-/// whose identity tail is not its declared name.
-fn artifact_names(types: &Value, records: &[(String, String)]) -> Vec<(String, String)> {
+/// whose identity tail is not its declared name. A type identity mints no
+/// `NodeKind` segment (FR-095): the tail is everything after
+/// `ix://<package>/`.
+fn artifact_names(
+    types: &Value,
+    package: Option<&str>,
+    records: &[(String, String)],
+) -> Vec<(String, String)> {
     let mut out: Vec<(String, String)> = types
         .as_array()
         .into_iter()
         .flatten()
         .filter(|t| is_record(&t["kind"], records))
         .filter_map(|t| {
-            let tail = t["identity"].as_str()?.rsplit_once("/type/")?.1;
+            let tail = t["identity"].as_str()?.strip_prefix(package?)?;
             let name =
                 agent_ix_extraction_frontend::identity::slug(t["displayName"].as_str()?).ok()?;
             (tail != name).then(|| (tail.to_string(), name))
@@ -177,24 +183,53 @@ fn artifact_names(types: &Value, records: &[(String, String)]) -> Vec<(String, S
     out
 }
 
-/// `<segment>/<tail>` with a leading artifact id of the tail rewritten to
-/// the declared name: the id is the whole tail, or is followed by `-` (a
-/// node of the type) or an upper-case letter (a constrained-field alias).
+/// The `NodeKind` segments that still mint their own path segment
+/// (`identity.rs`); a type, alias, field, operation or param identity mints
+/// none (FR-095).
+const SEGMENTED: [&str; 7] = [
+    "constraint",
+    "relationship",
+    "variant",
+    "clause",
+    "state",
+    "transition",
+    "step",
+];
+
+/// `renames` applied wherever `path` (the identity with its
+/// `ix://<package>/` prefix already stripped) can carry a leading artifact
+/// id: the whole path for a type or alias identity (mints no `NodeKind`
+/// segment), the owner segment of a member's `<owner>/<name>` path (`field`,
+/// `operation`, `param`), or — unchanged — the dash-joined tail after a
+/// `NodeKind` segment for every other kind.
 fn renamed(path: &str, renames: &[(String, String)]) -> String {
-    let Some((segment, tail)) = path.split_once('/') else {
-        return path.to_string();
-    };
+    match path.split_once('/') {
+        Some((segment, tail)) if SEGMENTED.contains(&segment) => {
+            format!("{segment}/{}", rename_tail(tail, renames))
+        }
+        Some((owner, rest)) => match renames.iter().find(|(id, _)| id == owner) {
+            Some((_, name)) => format!("{name}/{rest}"),
+            None => path.to_string(),
+        },
+        None => rename_tail(path, renames),
+    }
+}
+
+/// `tail` with a leading artifact id from `renames` rewritten to its
+/// declared name: the id is the whole tail, or is followed by `-` (a node
+/// of the type) or an upper-case letter (a constrained-field alias).
+fn rename_tail(tail: &str, renames: &[(String, String)]) -> String {
     for (id, name) in renames {
         if let Some(rest) = tail.strip_prefix(id.as_str()) {
             if rest.is_empty()
                 || rest.starts_with('-')
                 || rest.starts_with(|c: char| c.is_ascii_uppercase())
             {
-                return format!("{segment}/{name}{rest}");
+                return format!("{name}{rest}");
             }
         }
     }
-    path.to_string()
+    tail.to_string()
 }
 
 /// Sort every node list under `value` by `identity`, code point order,

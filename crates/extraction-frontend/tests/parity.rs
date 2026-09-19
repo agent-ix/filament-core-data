@@ -273,10 +273,10 @@ fn tc_1291_both_halves_of_the_shared_case_project_and_an_absent_node_is_named() 
         assert_eq!(
             scalars,
             [
-                "ix://shared/type/Boolean",
-                "ix://shared/type/Integer",
-                "ix://shared/type/String",
-                "ix://shared/type/Timestamp"
+                "ix://shared/Boolean",
+                "ix://shared/Integer",
+                "ix://shared/String",
+                "ix://shared/Timestamp"
             ],
             "{label}"
         );

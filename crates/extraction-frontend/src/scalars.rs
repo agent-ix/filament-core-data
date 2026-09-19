@@ -191,7 +191,7 @@ pub struct ScalarDefinition {
 
 /// One package-local scalar definition per kernel scalar in `used`, each
 /// once, in identity order (FR-092 "Kernel scalars"): identity
-/// `ix://<org>/<name>/type/<KernelScalar>` (FR-095), the FR-032 `scalar`
+/// `ix://<org>/<name>/<KernelScalar>` (FR-095), the FR-032 `scalar`
 /// value, and the `ext/kernel-scalar` extension. A member with no
 /// Every declared scalar yields one definition here.
 ///

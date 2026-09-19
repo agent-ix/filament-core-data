@@ -67,12 +67,12 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
     assert_eq!(package.source(), "ix://agent-ix/config-service/spec");
     assert_eq!(
         package.type_identity("ConfigVersion").as_deref(),
-        Ok("ix://agent-ix/config-service/type/ConfigVersion"),
-        "type/ carries the artifact id"
+        Ok("ix://agent-ix/config-service/ConfigVersion"),
+        "a type definition carries no slot segment, only the artifact id"
     );
     assert_eq!(
         package.type_identity("AR_001").as_deref(),
-        Ok("ix://agent-ix/config-service/type/AR_001"),
+        Ok("ix://agent-ix/config-service/AR_001"),
         "an artifact id passes through verbatim: `_` is not a separator"
     );
     assert_eq!(
@@ -86,14 +86,15 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
         package
             .alias_identity("ConfigVersion", "versionNumber")
             .as_deref(),
-        Ok("ix://agent-ix/config-service/type/ConfigVersionVersionNumber"),
-        "the alias of a constrained field uses the shared type slot"
+        Ok("ix://agent-ix/config-service/ConfigVersionVersionNumber"),
+        "the alias of a constrained field carries no slot segment either"
     );
     assert_eq!(
         package
             .field_identity("ConfigVersion", "versionNumber")
             .as_deref(),
-        Ok("ix://agent-ix/config-service/field/ConfigVersion-versionNumber")
+        Ok("ix://agent-ix/config-service/ConfigVersion/versionNumber"),
+        "a member's identity is its owner's identity, `/`, and its own name"
     );
     assert_eq!(
         package
@@ -111,13 +112,14 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
         package
             .operation_identity("Repository", "find By Id")
             .as_deref(),
-        Ok("ix://agent-ix/config-service/operation/Repository-find-By-Id")
+        Ok("ix://agent-ix/config-service/Repository/find-By-Id")
     );
     assert_eq!(
         package
             .param_identity("Repository", "findById", "id")
             .as_deref(),
-        Ok("ix://agent-ix/config-service/field/Repository-findById-id")
+        Ok("ix://agent-ix/config-service/Repository/findById/id"),
+        "a parameter nests one level deeper than its operation, never under a param/ slot"
     );
     assert_eq!(
         package.variant_identity("EN_001", "MANUAL_STEP").as_deref(),
@@ -154,17 +156,15 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
     assert_eq!(
         segments,
         [
-            "type",
-            "field",
             "constraint",
             "relationship",
-            "operation",
             "variant",
             "clause",
             "state",
             "transition",
             "step"
-        ]
+        ],
+        "a type definition and a member (field, operation, operation parameter) mint no NodeKind segment of their own"
     );
 
     // An artifact titled `---` raises UNSLUGGABLE_NAME at its frontmatter,

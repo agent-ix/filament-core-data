@@ -6,10 +6,20 @@
 //! (the shared #87 contract); an identity part taken from an artifact *id* is
 //! the id verbatim, through [`id_segment`], because an object id carries
 //! underscores and `semanticIdentity` admits them, so `AR_001` mints
-//! `type/AR_001`. A name that slugs to the empty string, and an id carrying a
+//! `AR_001`. A name that slugs to the empty string, and an id carrying a
 //! character `semanticIdentity` does not admit, are both [`Unsluggable`],
 //! which the caller raises as `UNSLUGGABLE_NAME` at the declaration's locus,
 //! blocking.
+//!
+//! A type definition (including a kernel scalar definition and a
+//! constrained-field alias) mints no slot segment: its identity is
+//! `ix://<org>/<name>/<artifact id>`. A member — a field, an operation
+//! parameter, or an operation — mints its owner's identity, `/`, and its own
+//! slugged part, nested as deep as it sits: an operation is
+//! `<owner type identity>/<operation>`, and its parameter is `<operation
+//! identity>/<param>`. Every other kind (constraint, relationship, variant,
+//! clause, state, transition, step) still mints under its own [`NodeKind`]
+//! segment.
 
 use std::fmt;
 
@@ -81,7 +91,7 @@ const SEGMENT_CHARACTERS: &[char] = &['.', '_', '~', '-'];
 ///
 /// An object id carries underscores and no hyphens, and `semanticIdentity`
 /// admits `_` (`[A-Za-z0-9._~:/-]`), so an id is never slugged: `AR_001` mints
-/// `type/AR_001`, not `type/AR-001`. An id carrying a character the pattern
+/// `AR_001`, not `AR-001`. An id carrying a character the pattern
 /// does not admit inside a segment, or carrying no ASCII alphanumeric at all,
 /// is [`Unsluggable`].
 pub fn id_segment(id: &str) -> Result<String, Unsluggable> {
@@ -96,16 +106,17 @@ pub fn id_segment(id: &str) -> Result<String, Unsluggable> {
     Ok(id.to_string())
 }
 
-/// The closed list of node kinds the frontend mints identities for (FR-095
-/// "Node identities"). The segment after `ix://<org>/<name>/` is
-/// [`NodeKind::segment`]; no identity is minted under any other segment.
+/// The closed list of node kinds that mint an identity under their own
+/// segment (FR-095 "Node identities"). A type definition and a member
+/// (field, operation, operation parameter) mint no segment of their own —
+/// see [`PackageIdentity::type_identity`] and [`PackageIdentity::
+/// field_identity`] — so they carry no `NodeKind`. The segment after
+/// `ix://<org>/<name>/` is [`NodeKind::segment`]; no identity of this list's
+/// kinds is minted under any other segment.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum NodeKind {
-    Type,
-    Field,
     Constraint,
     Relationship,
-    Operation,
     Variant,
     Clause,
     State,
@@ -115,12 +126,9 @@ pub enum NodeKind {
 
 impl NodeKind {
     /// Every kind, in FR-095's order.
-    pub const ALL: [NodeKind; 10] = [
-        NodeKind::Type,
-        NodeKind::Field,
+    pub const ALL: [NodeKind; 7] = [
         NodeKind::Constraint,
         NodeKind::Relationship,
-        NodeKind::Operation,
         NodeKind::Variant,
         NodeKind::Clause,
         NodeKind::State,
@@ -131,11 +139,8 @@ impl NodeKind {
     /// The path segment naming the kind.
     pub fn segment(self) -> &'static str {
         match self {
-            NodeKind::Type => "type",
-            NodeKind::Field => "field",
             NodeKind::Constraint => "constraint",
             NodeKind::Relationship => "relationship",
-            NodeKind::Operation => "operation",
             NodeKind::Variant => "variant",
             NodeKind::Clause => "clause",
             NodeKind::State => "state",
@@ -180,28 +185,41 @@ impl PackageIdentity {
         format!("ix://{}/{}/spec", self.org, self.name)
     }
 
-    /// `ix://<org>/<name>/<kind>/<tail>`: the one shape every node identity
-    /// takes.
+    /// `ix://<org>/<name>/<kind>/<tail>`: the one shape every non-member node
+    /// identity takes (FR-095's closed [`NodeKind`] list).
     fn node(&self, kind: NodeKind, tail: &str) -> String {
         format!("ix://{}/{}/{}/{tail}", self.org, self.name, kind.segment())
     }
 
-    /// `ix://<org>/<name>/type/<artifact id>`: a definition's identity comes
-    /// from its artifact id, verbatim, never from its `displayName`. A kernel
-    /// scalar definition passes its scalar name, which is its own segment.
+    /// `ix://<org>/<name>/<artifact id>`: a definition's identity comes from
+    /// its artifact id, verbatim, never from its `displayName`, and carries
+    /// no slot segment. A kernel scalar definition passes its scalar name,
+    /// which is its own segment.
     pub fn type_identity(&self, artifact_id: &str) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Type, &id_segment(artifact_id)?))
+        Ok(format!(
+            "ix://{}/{}/{}",
+            self.org,
+            self.name,
+            id_segment(artifact_id)?
+        ))
     }
 
-    /// `ix://<org>/<name>/type/<artifact id><Slug(Field)>`: the alias a
-    /// constrained field's `typeRef` names. `record` is the owner's artifact id.
+    /// `ix://<org>/<name>/<artifact id><Slug(Field)>`: the alias a
+    /// constrained field's `typeRef` names. `record` is the owner's artifact
+    /// id. Carries no slot segment, the same as [`Self::type_identity`].
     pub fn alias_identity(&self, record: &str, field: &str) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Type, &alias_identity_tail(record, field)?))
+        Ok(format!(
+            "ix://{}/{}/{}",
+            self.org,
+            self.name,
+            alias_identity_tail(record, field)?
+        ))
     }
 
-    /// `ix://<org>/<name>/field/<record id>-<field-slug>`.
+    /// `<owner type identity>/<field-slug>`: a member's identity is its
+    /// owner's identity, `/`, and its own slugged name.
     pub fn field_identity(&self, record: &str, field: &str) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Field, &join(record, &[field])?))
+        Ok(format!("{}/{}", self.type_identity(record)?, slug(field)?))
     }
 
     /// `ix://<org>/<name>/constraint/<record id>-<field-slug>-<keyword>`.
@@ -228,19 +246,26 @@ impl PackageIdentity {
         ))
     }
 
-    /// `ix://<org>/<name>/operation/<record id>-<op-slug>`.
+    /// `<owner type identity>/<op-slug>`: an operation is a member of its
+    /// receiver type, the same nesting rule as [`Self::field_identity`].
     pub fn operation_identity(&self, record: &str, op: &str) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Operation, &join(record, &[op])?))
+        Ok(format!("{}/{}", self.type_identity(record)?, slug(op)?))
     }
 
-    /// `ix://<org>/<name>/field/<record id>-<op-slug>-<param-slug>`.
+    /// `<owner operation identity>/<param-slug>`: an operation parameter
+    /// nests one level deeper than its operation, never under a `param/`
+    /// slot.
     pub fn param_identity(
         &self,
         record: &str,
         op: &str,
         param: &str,
     ) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Field, &join(record, &[op, param])?))
+        Ok(format!(
+            "{}/{}",
+            self.operation_identity(record, op)?,
+            slug(param)?
+        ))
     }
 
     /// `ix://<org>/<name>/variant/<enumeration id>-<value-slug>`.

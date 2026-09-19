@@ -136,7 +136,7 @@ fn tc_1231_fr_006_references_fr_005_lowers_to_one_traceability_relationship_at_t
     assert_eq!(rel["verb"], "references");
     assert_eq!(rel["category"], "traceability");
     assert_eq!(rel["composite"], false);
-    assert_eq!(rel["target"], "ix://agent-ix/config-service/type/FR-005");
+    assert_eq!(rel["target"], "ix://agent-ix/config-service/FR-005");
     assert_eq!(
         rel["multiplicity"],
         serde_json::json!({ "lower": 1, "upper": 1 })
@@ -197,7 +197,7 @@ fn tc_1232_contains_and_aggregates_are_composite_structural_and_composes_is_not(
     assert_eq!(aggregates.len(), 1, "{aggregate:?}");
     assert_eq!(aggregates[0]["category"], "structural");
     assert_eq!(aggregates[0]["composite"], true);
-    assert_eq!(aggregates[0]["target"], "ix://agent-ix/orders/type/FR-001");
+    assert_eq!(aggregates[0]["target"], "ix://agent-ix/orders/FR-001");
     let value_object = relationships(type_named(&types, "OrderLine"));
     let composes = with_verb(&value_object, "composes");
     assert_eq!(composes.len(), 1, "{value_object:?}");
@@ -229,12 +229,12 @@ fn tc_1233_references_is_traceability_and_owns_is_dependency_neither_composite()
     assert_eq!(references.len(), 1, "{order:?}");
     assert_eq!(references[0]["category"], "traceability");
     assert_eq!(references[0]["composite"], false);
-    assert_eq!(references[0]["target"], "ix://agent-ix/orders/type/EN_001");
+    assert_eq!(references[0]["target"], "ix://agent-ix/orders/EN_001");
     let owns = with_verb(&order, "owns");
     assert_eq!(owns.len(), 1, "{order:?}");
     assert_eq!(owns[0]["category"], "dependency");
     assert_eq!(owns[0]["composite"], false);
-    assert_eq!(owns[0]["target"], "ix://agent-ix/orders/type/SM_001");
+    assert_eq!(owns[0]["target"], "ix://agent-ix/orders/SM_001");
     assert_eq!(
         owns[0]["identity"],
         "ix://agent-ix/orders/relationship/FR-001-owns-SM_001"
@@ -351,10 +351,7 @@ fn tc_1236_artifact_axis_verbs_lower_to_nothing_silently_and_one_references_edge
     let rels = relationships(type_named(&types, "ConfigVersion"));
     assert_eq!(rels.len(), 1, "{rels:?}");
     assert_eq!(rels[0]["verb"], "references");
-    assert_eq!(
-        rels[0]["target"],
-        "ix://agent-ix/config-service/type/FR-005"
-    );
+    assert_eq!(rels[0]["target"], "ix://agent-ix/config-service/FR-005");
 }
 
 #[trace("TC-1237", "FR-094-AC-7")]
@@ -371,13 +368,13 @@ fn tc_1237_same_verb_and_target_dedupe_and_two_verbs_on_one_target_mint_two_iden
     assert_eq!(rels.len(), 3, "{rels:?}");
     let to_colour: Vec<&Value> = rels
         .iter()
-        .filter(|r| r["target"] == "ix://agent-ix/config-service/type/EN_001")
+        .filter(|r| r["target"] == "ix://agent-ix/config-service/EN_001")
         .collect();
     assert_eq!(to_colour.len(), 1, "two entries, one relationship");
     assert_eq!(to_colour[0]["verb"], "references");
     let to_overlay: Vec<&Value> = rels
         .iter()
-        .filter(|r| r["target"] == "ix://agent-ix/config-service/type/FR-005")
+        .filter(|r| r["target"] == "ix://agent-ix/config-service/FR-005")
         .collect();
     assert_eq!(to_overlay.len(), 2, "two verbs, two relationships");
     let mut verbs: Vec<&str> = to_overlay
@@ -406,20 +403,16 @@ fn tc_1238_parent_is_a_field_not_a_relationship() {
         .iter()
         .find(|f| f["name"] == "parent")
         .expect("parent is a field");
-    assert_eq!(
-        parent["typeRef"],
-        "ix://agent-ix/config-service/type/FR-006"
-    );
+    assert_eq!(parent["typeRef"], "ix://agent-ix/config-service/FR-006");
     assert_eq!(
         parent["multiplicity"],
         serde_json::json!({ "lower": 0, "upper": 1 })
     );
     let ours = relationships(record);
     assert!(
-        ours.iter().all(
-            |r| r["target"] != "ix://agent-ix/config-service/type/FR-006"
-                && !r["identity"].as_str().expect("identity").contains("parent")
-        ),
+        ours.iter()
+            .all(|r| r["target"] != "ix://agent-ix/config-service/FR-006"
+                && !r["identity"].as_str().expect("identity").contains("parent")),
         "no relationship from the parent row: {ours:?}"
     );
 
@@ -427,10 +420,7 @@ fn tc_1238_parent_is_a_field_not_a_relationship() {
     // (FR-143), not the `belongs_to` verb the removed `## Relationships`
     // bullet grammar once produced.
     assert_eq!(ours.len(), 1);
-    assert_eq!(
-        ours[0]["target"],
-        "ix://agent-ix/config-service/type/FR-005"
-    );
+    assert_eq!(ours[0]["target"], "ix://agent-ix/config-service/FR-005");
     assert_eq!(
         ours[0]["multiplicity"],
         serde_json::json!({ "lower": 1, "upper": 1 })
@@ -452,7 +442,7 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
     let base_types = types_json(&base);
     let base_order = relationships(type_named(&base_types, "Order"));
     let base_owns = with_verb(&base_order, "owns")[0].clone();
-    assert_eq!(base_owns["target"], "ix://agent-ix/orders/type/SM_001");
+    assert_eq!(base_owns["target"], "ix://agent-ix/orders/SM_001");
 
     // Part one: rename the `owns` target (SM_001, referenced by no Type
     // cell) and lift again. The target's identity is its artifact id, so
@@ -484,7 +474,7 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
             prop_assert_eq!(owns, &base_owns);
             let renamed_target = types
                 .iter()
-                .find(|t| t["identity"] == "ix://agent-ix/orders/type/SM_001")
+                .find(|t| t["identity"] == "ix://agent-ix/orders/SM_001")
                 .expect("SM_001 keeps its identity");
             prop_assert_eq!(&renamed_target["displayName"], &Value::String(name));
             // Every other relationship of the record is byte-identical.
@@ -554,7 +544,7 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
                     .and_then(|rest| rest.split(' ').next())
                     .expect("a refusal names its artifact");
                 // The identity segment is the id verbatim (FR-095).
-                refused.push(format!("ix://agent-ix/orders/type/{id}"));
+                refused.push(format!("ix://agent-ix/orders/{id}"));
             }
             prop_assert!(refused.iter().any(|r| r.ends_with("/NE_001")));
             prop_assert!(

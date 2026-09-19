@@ -293,10 +293,7 @@ fn tc_1221_config_version_carries_three_roles_reject_policy_and_seven_fields_in_
         record["kind"],
         json!({"module": "agent-ix/spec-objects-business", "name": "entity"})
     );
-    assert_eq!(
-        record["identity"],
-        "ix://agent-ix/config-service/type/FR-006"
-    );
+    assert_eq!(record["identity"], "ix://agent-ix/config-service/FR-006");
     assert_eq!(
         record["roles"],
         json!([
@@ -368,11 +365,8 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     assert_eq!(id["presence"], "required");
     assert_eq!(id["nullable"], false);
     assert_eq!(id["defaultKind"], "none");
-    assert_eq!(id["typeRef"], "ix://agent-ix/config-service/type/UUID");
-    assert_eq!(
-        id["identity"],
-        "ix://agent-ix/config-service/field/FR-006-id"
-    );
+    assert_eq!(id["typeRef"], "ix://agent-ix/config-service/UUID");
+    assert_eq!(id["identity"], "ix://agent-ix/config-service/FR-006/id");
     assert_eq!(
         id["extensions"],
         json!([{
@@ -396,7 +390,7 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     assert_eq!(parent["presence"], "optional");
     assert_eq!(parent["nullable"], false);
     assert_eq!(
-        parent["typeRef"], "ix://agent-ix/config-service/type/FR-006",
+        parent["typeRef"], "ix://agent-ix/config-service/FR-006",
         "the self-reference resolves to the record itself (EC-143)"
     );
     assert_eq!(parent["extensions"], json!([]));
@@ -409,10 +403,10 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     assert_eq!(total["unit"], "USD");
     // `min: 0` on the row: the typeRef names the field's alias, whose
     // target is the resolved scalar.
-    assert_eq!(total["typeRef"], "ix://agent-ix/orders/type/FR-001Total");
+    assert_eq!(total["typeRef"], "ix://agent-ix/orders/FR-001Total");
     assert_eq!(
         type_named(&types, "OrderTotal")["target"],
-        "ix://agent-ix/orders/type/Decimal"
+        "ix://agent-ix/orders/Decimal"
     );
     assert_eq!(
         total["extensions"],
@@ -438,10 +432,10 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_alias_wi
     let alias = type_named(&types, "ConfigVersionVersionNumber");
     assert_eq!(
         alias["identity"],
-        "ix://agent-ix/config-service/type/FR-006VersionNumber"
+        "ix://agent-ix/config-service/FR-006VersionNumber"
     );
     assert_eq!(alias["kind"], "alias");
-    assert_eq!(alias["target"], "ix://agent-ix/config-service/type/Integer");
+    assert_eq!(alias["target"], "ix://agent-ix/config-service/Integer");
     assert_eq!(alias["roles"], json!([]));
     assert_eq!(alias["unknownPolicy"], "reject");
     assert_eq!(alias["extensions"], json!([]));
@@ -502,7 +496,7 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_alias_wi
             .any(|alias| alias["identity"] == type_ref);
         if aliased {
             assert!(
-                type_ref.starts_with("ix://agent-ix/config-service/type/FR-006"),
+                type_ref.starts_with("ix://agent-ix/config-service/FR-006"),
                 "{type_ref}"
             );
         }
@@ -534,15 +528,15 @@ fn tc_1224_max_length_pattern_and_enum_values_carry_their_operand_shapes() {
     assert_eq!(max_length["operands"], json!({"value": 64}));
     assert_eq!(
         max_length["appliesTo"],
-        "ix://agent-ix/config-service/type/FR-006CreatedBy"
+        "ix://agent-ix/config-service/FR-006CreatedBy"
     );
     assert_eq!(
         field_named(record, "createdBy")["typeRef"],
-        "ix://agent-ix/config-service/type/FR-006CreatedBy"
+        "ix://agent-ix/config-service/FR-006CreatedBy"
     );
     assert_eq!(
         type_named(&types, "ConfigVersionCreatedBy")["target"],
-        "ix://agent-ix/config-service/type/String"
+        "ix://agent-ix/config-service/String"
     );
 
     let audit = self::lift("lower/constraints");
@@ -610,12 +604,12 @@ fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
         "inputIdentities": ["ix://agent-ix/test/spec"]
     }});
     let string = json!({
-        "identity": "ix://agent-ix/test/type/String", "displayName": "String", "kind": "scalar",
+        "identity": "ix://agent-ix/test/String", "displayName": "String", "kind": "scalar",
         "roles": [], "origin": origin, "constraints": [], "extensions": [],
         "unknownPolicy": "reject", "scalar": "string"
     });
     let mut target = json!({
-        "identity": "ix://agent-ix/test/type/T", "displayName": "T", "kind": kind,
+        "identity": "ix://agent-ix/test/T", "displayName": "T", "kind": kind,
         "roles": [], "origin": origin, "constraints": [], "extensions": [],
         "unknownPolicy": "reject"
     });
@@ -630,12 +624,12 @@ fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
         "union" => {
             target["variants"] = json!([{
                 "identity": "ix://agent-ix/test/variant/t-a", "name": "a", "origin": origin,
-                "payloadType": "ix://agent-ix/test/type/String"
+                "payloadType": "ix://agent-ix/test/String"
             }])
         }
-        "sequence" => target["items"] = json!("ix://agent-ix/test/type/String"),
-        "map" => target["values"] = json!("ix://agent-ix/test/type/String"),
-        "alias" | "reference" => target["target"] = json!("ix://agent-ix/test/type/String"),
+        "sequence" => target["items"] = json!("ix://agent-ix/test/String"),
+        "map" => target["values"] = json!("ix://agent-ix/test/String"),
+        "alias" | "reference" => target["target"] = json!("ix://agent-ix/test/String"),
         other => panic!("unknown kind {other}"),
     }
     let operands = match keyword {
@@ -648,17 +642,17 @@ fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
         other => panic!("unknown keyword {other}"),
     };
     let record = json!({
-        "identity": "ix://agent-ix/test/type/R", "displayName": "R", "kind": "record",
+        "identity": "ix://agent-ix/test/R", "displayName": "R", "kind": "record",
         "roles": [], "origin": origin, "extensions": [], "unknownPolicy": "reject",
         "constraints": [{
             "identity": "ix://agent-ix/test/constraint/r-f-k",
             "keyword": keyword, "operands": operands,
-            "appliesTo": "ix://agent-ix/test/type/T",
+            "appliesTo": "ix://agent-ix/test/T",
             "diagnosticCode": "agent-ix.test.F_K", "origin": origin
         }],
         "fields": [{
-            "identity": "ix://agent-ix/test/field/r-f", "name": "f",
-            "typeRef": "ix://agent-ix/test/type/T", "presence": "required",
+            "identity": "ix://agent-ix/test/R/f", "name": "f",
+            "typeRef": "ix://agent-ix/test/T", "presence": "required",
             "nullable": false, "defaultKind": "none", "origin": origin,
             "multiplicity": {"lower": 1, "upper": 1}
         }]
@@ -778,7 +772,7 @@ fn tc_1226_and_tc_1553_json_object_emits_an_any_scalar_without_a_declared_loss()
     let types = types_json(&lift);
     let any: Vec<&Value> = types
         .iter()
-        .filter(|t| t["identity"] == "ix://agent-ix/blob-service/type/JsonObject")
+        .filter(|t| t["identity"] == "ix://agent-ix/blob-service/JsonObject")
         .collect();
     assert_eq!(any.len(), 1, "once per package: {types:?}");
     let any = any[0];
@@ -789,7 +783,7 @@ fn tc_1226_and_tc_1553_json_object_emits_an_any_scalar_without_a_declared_loss()
     let blob = type_named(&types, "Blob");
     assert_eq!(
         field_named(blob, "data")["typeRef"],
-        "ix://agent-ix/blob-service/type/JsonObject"
+        "ix://agent-ix/blob-service/JsonObject"
     );
     assert!(types.iter().any(|t| t["scalar"] == "any"));
 
@@ -1039,7 +1033,7 @@ fn tc_1229_renaming_every_field_changes_only_name_identity_alias_identity_applie
                 // field's typeRef is untouched.
                 let aliased = b["typeRef"]
                     .as_str()
-                    .is_some_and(|t| t.contains("/type/FR-001"));
+                    .is_some_and(|t| t.contains("/FR-001"));
                 let moved: &[&str] = if aliased {
                     &["name", "identity", "typeRef"]
                 } else {
@@ -1088,7 +1082,7 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
         status["kind"],
         json!({"module": "agent-ix/spec-objects-business", "name": "enumeration"})
     );
-    assert_eq!(status["identity"], "ix://agent-ix/orders/type/EN_001");
+    assert_eq!(status["identity"], "ix://agent-ix/orders/EN_001");
     assert_eq!(
         status["roles"],
         json!(["business:aggregate-member", "business:enumeration"])
@@ -1135,7 +1129,7 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     let order = type_named(&types, "Order");
     assert_eq!(
         field_named(order, "status")["typeRef"],
-        "ix://agent-ix/orders/type/EN_001"
+        "ix://agent-ix/orders/EN_001"
     );
     assert_eq!(reader_codes(&ir_document(&lift)), Vec::<String>::new());
 
@@ -1329,8 +1323,8 @@ fn tc_1334_distinct_names_with_one_slug_refuse_at_field_and_variant_levels() {
         .map(|t| t.identity.as_str())
         .collect();
     assert!(
-        minted.contains(&"ix://agent-ix/identity-collision/type/FR_001")
-            && minted.contains(&"ix://agent-ix/identity-collision/type/FR__001"),
+        minted.contains(&"ix://agent-ix/identity-collision/FR_001")
+            && minted.contains(&"ix://agent-ix/identity-collision/FR__001"),
         "{minted:?}"
     );
 
@@ -1525,7 +1519,7 @@ fn tc_1347_equal_status_names_refuse_at_the_second_document_and_mint_no_field_tw
     );
     let status_fields: Vec<&String> = identities
         .iter()
-        .filter(|i| i.contains("/field/FR-001-"))
+        .filter(|i| i.contains("/FR-001/"))
         .collect();
     assert_eq!(
         status_fields.len(),

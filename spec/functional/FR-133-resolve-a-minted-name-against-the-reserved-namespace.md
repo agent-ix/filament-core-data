@@ -59,7 +59,7 @@ case of it.
   `UpperCamelCase` rendering of the package segment of the construct's own
   semantic identity, so `ix://agent-ix/semantic-core/type/SourceLocusPath`
   renders `SemanticCoreSourceLocusPath` and a package-local `UUID` in
-  `ix://agent-ix/config-service/type/UUID` renders `ConfigServiceUuid`.
+  `ix://agent-ix/config-service/UUID` renders `ConfigServiceUuid`.
 - The prefix SHALL be derived from the identity the document already carries and
   from nothing else — not from a counter, a digest, a suffix, or the order the
   document was walked — so the resolved identifier is a total function of the

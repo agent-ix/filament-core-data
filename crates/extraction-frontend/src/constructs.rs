@@ -863,14 +863,17 @@ pub(crate) struct References<'a> {
 /// (`Ok((id, Some(op)))`): quire-rs mints three own-package shapes, depending
 /// which resolver a systems-model reference cell went through —
 /// `semantic::properties::map_type` (a `declaredType` or `interfaceType`
-/// cell, FR-070) mints `ix://<org>/<repo>/type/<id>`, the same `type/<id>`
-/// shape this frontend's own [`crate::identity::PackageIdentity::
-/// type_identity`] mints; `semantic::target::resolve_target` (an `owner`,
-/// `sourceElement`/`targetElement`, or connection-end cell) mints
-/// `ix://<org>/<repo>/<id>` with no such segment; and a `sourceElement` cell
-/// naming an operation mints that same shape with the operation appended
-/// after one more `/` (`ix://<org>/<repo>/<id>/<operation>`), the engine
-/// having already confirmed the referenced artifact declares it. Anything
+/// cell, FR-070) mints `ix://<org>/<repo>/type/<id>`, quire-rs's own fixed
+/// shape and no longer the one this frontend's own [`crate::identity::
+/// PackageIdentity::type_identity`] mints (FR-095 drops the `type/` segment);
+/// `semantic::target::resolve_target` (an `owner`, `sourceElement`/
+/// `targetElement`, or connection-end cell) mints `ix://<org>/<repo>/<id>`
+/// with no such segment — the same shape this frontend's own `type_identity`
+/// mints today, coincidentally, since the two are minted by unrelated rules —
+/// and a `sourceElement` cell naming an operation mints that same shape with
+/// the operation appended after one more `/` (`ix://<org>/<repo>/<id>/
+/// <operation>`), the engine having already confirmed the referenced
+/// artifact declares it. Anything
 /// else — an identity in another package (an imported reference, quire-rs
 /// `Target::Imported`), or a member-qualified form on a member other than
 /// `sourceElement` — is refused (`Err`) by its full identity, never mis-read
@@ -1401,10 +1404,15 @@ fn refusal_rule(
         .filter(|t| !lowered.contains(*t) && !operations.contains(*t))
     {
         // The identity a failed `sourceElement` names is either a type or an
-        // operation identity (`NodeKind::Operation`'s `/operation/` segment,
-        // `identity.rs`); the message names whichever it is rather than
-        // always claiming "type".
-        let noun = if target.contains("/operation/") {
+        // operation identity; the message names whichever it is rather than
+        // always claiming "type". A type identity is `ix://<org>/<name>/<tail>`
+        // (3 segments); an operation identity nests one level deeper under its
+        // owning type, `ix://<org>/<name>/<type>/<op>` (4 segments) — neither
+        // mints a `NodeKind` segment of its own (`identity.rs`).
+        let noun = if target
+            .strip_prefix("ix://")
+            .is_some_and(|rest| rest.split('/').count() > 3)
+        {
             "operation"
         } else {
             "type"

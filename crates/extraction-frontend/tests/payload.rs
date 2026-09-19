@@ -21,7 +21,7 @@ use ix_trace_rs::trace;
 use serde_json::Value;
 
 /// The record this test validates payloads of.
-const RECORD: &str = "ix://agent-ix/config-service/type/FR-006";
+const RECORD: &str = "ix://agent-ix/config-service/FR-006";
 
 /// One derived field rule: the scalar it resolves to (or `record`), its
 /// presence, and its constraints as (keyword, operands).

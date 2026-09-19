@@ -234,10 +234,7 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
     let raw = document(&lift, OPERATIONS).raw();
 
     let add_line = named(operations, "name", "addLine");
-    assert_eq!(
-        add_line["identity"],
-        "ix://agent-ix/orders/operation/OP-001-addLine"
-    );
+    assert_eq!(add_line["identity"], "ix://agent-ix/orders/OP-001/addLine");
     assert_eq!(
         add_line["origin"],
         json!({ "source": locus(&lift, OPERATIONS, line_starting_with(raw, "### addLine"), 1) })
@@ -246,10 +243,10 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
     assert_eq!(params.len(), 2);
     assert_eq!(
         params[0]["identity"],
-        "ix://agent-ix/orders/field/OP-001-addLine-line"
+        "ix://agent-ix/orders/OP-001/addLine/line"
     );
     assert_eq!(params[0]["name"], "line");
-    assert_eq!(params[0]["typeRef"], "ix://agent-ix/orders/type/VO_001");
+    assert_eq!(params[0]["typeRef"], "ix://agent-ix/orders/VO_001");
     assert_eq!(params[0]["presence"], "required");
     assert_eq!(params[0]["nullable"], false);
     assert_eq!(params[0]["defaultKind"], "none");
@@ -259,13 +256,13 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
     );
     assert_eq!(
         params[1]["identity"],
-        "ix://agent-ix/orders/field/OP-001-addLine-quantity"
+        "ix://agent-ix/orders/OP-001/addLine/quantity"
     );
-    assert_eq!(params[1]["typeRef"], "ix://agent-ix/orders/type/Integer");
+    assert_eq!(params[1]["typeRef"], "ix://agent-ix/orders/Integer");
     assert_eq!(
         add_line["returns"],
         json!({
-            "typeRef": "ix://agent-ix/orders/type/OP-001",
+            "typeRef": "ix://agent-ix/orders/OP-001",
             "multiplicity": { "lower": 1, "upper": 1 },
             "nullable": false,
         })
@@ -283,7 +280,7 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
     assert_eq!(
         total["returns"],
         json!({
-            "typeRef": "ix://agent-ix/orders/type/Decimal",
+            "typeRef": "ix://agent-ix/orders/Decimal",
             "multiplicity": { "lower": 1, "upper": 1 },
             "nullable": false,
         })
@@ -327,7 +324,7 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
     assert_eq!(find["returns"]["nullable"], false);
     assert_eq!(
         list(find, "params")[0]["identity"],
-        "ix://agent-ix/orders/field/RP_001-findById-id"
+        "ix://agent-ix/orders/RP_001/findById/id"
     );
 }
 
@@ -382,33 +379,40 @@ fn is_semantic_identity(s: &str) -> bool {
     org_ok && tail_ok
 }
 
-/// The one FR-095 node kind `identity` matches, if exactly one does: the
-/// segment after `ix://<org>/<name>/` and a tail that is a slug
-/// (`[A-Za-z0-9]+(-[A-Za-z0-9]+)*`). A `type/` tail is an artifact id, a
-/// kernel scalar name, or the alias of a constrained field
-/// (`<artifact id><Field>`), all of which are slugs (FR-143).
-fn node_kind(identity: &str, package: &str) -> Option<NodeKind> {
-    let rest = identity.strip_prefix(&format!("ix://{package}/"))?;
-    let (segment, tail) = rest.split_once('/')?;
-    let matches: Vec<NodeKind> = NodeKind::ALL
-        .into_iter()
-        .filter(|kind| kind.segment() == segment)
-        .filter(|_| {
-            !tail.is_empty()
-                && !tail.starts_with('-')
-                && !tail.ends_with('-')
-                && !tail.contains("--")
-                // The owner part is an artifact id, verbatim, so the tail
-                // carries `_` as well as the `-` the slugged parts join by.
-                && tail
-                    .chars()
-                    .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+/// A path segment is a non-empty slug (`[A-Za-z0-9]+(-[A-Za-z0-9]+)*`), or
+/// the verbatim owner-most segment of an id-bearing chain, which also admits
+/// `_` (FR-095's `id_segment`).
+fn is_segment(part: &str) -> bool {
+    !part.is_empty()
+        && !part.starts_with('-')
+        && !part.ends_with('-')
+        && !part.contains("--")
+        && part
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+}
+
+/// A type definition or member (field, operation, operation parameter) mints
+/// no `NodeKind` segment of its own: its identity is its owner's identity,
+/// `/`, and its own name — `count` path segments after `ix://<package>/`,
+/// one per nesting level (FR-095 "Node identities").
+fn nested_ok(identity: &str, package: &str, count: usize) -> bool {
+    identity
+        .strip_prefix(&format!("ix://{package}/"))
+        .map(|rest| {
+            let parts: Vec<&str> = rest.split('/').collect();
+            parts.len() == count && parts.iter().all(|part| is_segment(part))
         })
-        .collect();
-    match matches.as_slice() {
-        [kind] => Some(*kind),
-        _ => None,
-    }
+        .unwrap_or(false)
+}
+
+/// Every other node kind still mints under its own `NodeKind` segment,
+/// `ix://<package>/<segment>/<tail>` (FR-095).
+fn segment_ok(identity: &str, package: &str, kind: NodeKind) -> bool {
+    identity
+        .strip_prefix(&format!("ix://{package}/"))
+        .and_then(|rest| rest.split_once('/'))
+        .is_some_and(|(segment, tail)| segment == kind.segment() && is_segment(tail))
 }
 
 /// Every node `identity` in `value`, with the JSON pointer it sits at. An
@@ -446,37 +450,54 @@ fn tc_1243_and_tc_1251_every_identity_of_the_business_document_matches_one_fr_09
     let doc = ir_document(&lift);
     let mut found = Vec::new();
     identities(&doc["ir"]["types"], "/ir/types", &mut found);
-    let mut kinds: BTreeSet<NodeKind> = BTreeSet::new();
+    let mut kinds: BTreeSet<&str> = BTreeSet::new();
     let mut seen: BTreeSet<&str> = BTreeSet::new();
     for (pointer, identity) in &found {
         assert!(
             is_semantic_identity(identity),
             "{pointer}: {identity} is no semanticIdentity"
         );
-        let kind = node_kind(identity, &package)
-            .unwrap_or_else(|| panic!("{pointer}: {identity} matches no single FR-095 pattern"));
-        // The segment agrees with the node's position.
-        let expected = match pointer.rsplit('/').nth(2) {
-            Some("types") => NodeKind::Type,
-            Some("fields") => NodeKind::Field,
-            Some("constraints") => NodeKind::Constraint,
-            Some("relationships") => NodeKind::Relationship,
-            Some("operations") => NodeKind::Operation,
-            Some("params") => NodeKind::Field,
-            Some("variants") => NodeKind::Variant,
-            Some("clauses") => NodeKind::Clause,
-            Some("states") => NodeKind::State,
-            Some("transitions") => NodeKind::Transition,
-            Some("steps") => NodeKind::Step,
+        // The identity's shape agrees with the node's position.
+        let label = match pointer.rsplit('/').nth(2) {
+            Some("types") => nested_ok(identity, &package, 1).then_some("type"),
+            Some("fields") => nested_ok(identity, &package, 2).then_some("field"),
+            Some("operations") => nested_ok(identity, &package, 2).then_some("operation"),
+            Some("params") => nested_ok(identity, &package, 3).then_some("field"),
+            Some("constraints") => {
+                segment_ok(identity, &package, NodeKind::Constraint).then_some("constraint")
+            }
+            Some("relationships") => {
+                segment_ok(identity, &package, NodeKind::Relationship).then_some("relationship")
+            }
+            Some("variants") => {
+                segment_ok(identity, &package, NodeKind::Variant).then_some("variant")
+            }
+            Some("clauses") => segment_ok(identity, &package, NodeKind::Clause).then_some("clause"),
+            Some("states") => segment_ok(identity, &package, NodeKind::State).then_some("state"),
+            Some("transitions") => {
+                segment_ok(identity, &package, NodeKind::Transition).then_some("transition")
+            }
+            Some("steps") => segment_ok(identity, &package, NodeKind::Step).then_some("step"),
             other => panic!("{pointer}: unexpected node list {other:?}"),
-        };
-        assert_eq!(kind, expected, "{pointer}: {identity}");
+        }
+        .unwrap_or_else(|| panic!("{pointer}: {identity} matches no FR-095 pattern"));
         assert!(seen.insert(identity), "{pointer}: {identity} minted twice");
-        kinds.insert(kind);
+        kinds.insert(label);
     }
     assert_eq!(
         kinds.into_iter().collect::<Vec<_>>(),
-        NodeKind::ALL,
+        [
+            "clause",
+            "constraint",
+            "field",
+            "operation",
+            "relationship",
+            "state",
+            "step",
+            "transition",
+            "type",
+            "variant",
+        ],
         "the business fixture exercises every node kind, including parameter fields and variants"
     );
     assert!(found.len() > 60, "{} identities", found.len());
