@@ -820,7 +820,9 @@ describe("TC-1588..1592 cross-language agreement through the corpus (FR-090)", (
 		expect(report.exitCode).toBe(0);
 		// fcd#187 adds PRES-011..015 (a `nullable` authored as `1`, `"true"`,
 		// `null`, `{}`, and absent) to the committed corpus, landing on 111.
-		expect(report.coverage.totalCases).toBe(111);
+		// fcd#199/#200's review adds IDENT-006, REL-007 and PRES-016 (findings
+		// 12, 9 and 5/R2), landing on 114.
+		expect(report.coverage.totalCases).toBe(114);
 	});
 });
 

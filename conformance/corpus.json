@@ -710,6 +710,14 @@
 			"expectedDigest": "sha256:85056bf7f202e481716c1f079f62f9b684999194a6e7cdb04254b59e6a348e86"
 		},
 		{
+			"id": "IDENT-006",
+			"path": "conformance/cases/identity/IDENT-006.json",
+			"family": "identity",
+			"class": "negative",
+			"digest": "sha256:dd539918d29fdf7751d990d8ec85e0350989ecbbd4ed17962cedfbe5da557bbd",
+			"expectedDigest": "sha256:5e04838ea30cec52609eaea43ad9df6f382a1d904bde458e75455256be900c40"
+		},
+		{
 			"id": "OP-001",
 			"path": "conformance/cases/operation/OP-001.json",
 			"family": "operation",
@@ -926,6 +934,14 @@
 			"expectedDigest": "sha256:957a8cfeac08a9de17e451305af71661bb4c007c6e44bb29a9f1bc99728d8f2e"
 		},
 		{
+			"id": "PRES-016",
+			"path": "conformance/cases/field-presence/PRES-016.json",
+			"family": "field-presence",
+			"class": "negative",
+			"digest": "sha256:dd6186b4654267970a7b40846304ad07395551e6e5c60b465a0b2c14b52b4bf7",
+			"expectedDigest": "sha256:639d3236bf680f4162dff316fddb0dcecaec18f50ef1950b515c926caa7ccfc3"
+		},
+		{
 			"id": "PROV-001",
 			"path": "conformance/cases/provenance/PROV-001.json",
 			"family": "provenance",
@@ -1084,6 +1100,14 @@
 			"class": "negative",
 			"digest": "sha256:69d72b9788dfbe382abc5c404836bc4f2fde6fd0dce8af653fbd5527ace8e5b3",
 			"expectedDigest": "sha256:66a617342299f42ec59d06e8fa710b87e0c7756eb4263dc68967c3fa15e89a38"
+		},
+		{
+			"id": "REL-007",
+			"path": "conformance/cases/relationship/REL-007.json",
+			"family": "relationship",
+			"class": "negative",
+			"digest": "sha256:35ef7614b3fcb0dcbd3466d4f798262dbc01da8e47213bc352aad052cb1845d0",
+			"expectedDigest": "sha256:cb5b90ff19196f91c845c5ba8454b818569a2e95a3148cb4696f1abc1c6f39c1"
 		},
 		{
 			"id": "SCAL-001",
@@ -1254,5 +1278,5 @@
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		}
 	],
-	"corpusDigest": "sha256:da4b21ebd00b197718c7449af564c53fdb1f1c8423a73e6eb7e313ac8441604c"
+	"corpusDigest": "sha256:77043b26a09c0bec9a64ba7aca4929af71c4de0f7e351ab0cf13854b1d8b828f"
 }

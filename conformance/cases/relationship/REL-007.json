@@ -1,0 +1,58 @@
+{
+	"id": "REL-007",
+	"title": "A relationship sourceEnd naming a type other than its own declarer is rejected",
+	"family": "relationship",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "2.0.0",
+	"base": "core-2-0",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/9/relationships/0/sourceEnd/type",
+			"value": "ix://agent-ix/conformance/type/Root"
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/9/relationships/0/sourceEnd/type",
+			"value": "ix://agent-ix/conformance/type/Node"
+		}
+	],
+	"covers": ["CR-relationship"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Structural model detail (issue #34)",
+			"quote": "`sourceEnd` and `targetEnd` name one in `type`"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#199",
+		"blessedFromRun": false,
+		"reproduces": "FCD-200-review-finding-9"
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/9/relationships/0/sourceEnd/type",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.INVALID_RELATIONSHIP_SOURCE",
+					"severity": "error",
+					"message": "a relationship's source end names the type declaring it",
+					"owner": "ix://agent-ix/conformance/relationship/root-contains-node",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/root.tsp",
+						"startLine": 5,
+						"startColumn": 3
+					}
+				}
+			}
+		]
+	}
+}
