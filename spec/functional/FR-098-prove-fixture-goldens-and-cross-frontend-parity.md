@@ -152,6 +152,7 @@ unlisted or listed and absent.
 - The frontend SHALL neither regenerate nor diff a constructed negative's `expected/diagnostics.json` through `--write-goldens` or `extraction-frontend-check`; that file is authored and asserted by TC-1288 alone.
 - The frontend SHALL NOT rewrite a committed golden from any test.
 - The frontend SHALL record in each `negatives/<CODE>/expected/diagnostics.json` the single expected code with its line and column, or no locus where FR-096 assigns none.
+- A fixture bundle whose `modules.json` names a module root pinned at a revision merged but not yet contained in a tagged release SHALL record that revision, the release it is pending, and the owning issue in the module's own `PROVENANCE.json`; the pin is a known, named gap until a release containing the revision exists, never asserted released.
 
 ### Read-only lifting (issue #36 AC-4)
 
@@ -198,6 +199,7 @@ unlisted or listed and absent.
 | FR-098-AC-10 | The change set of this requirement outside the crate is exactly `cases.json`, `test/fixtures/compiler/shared/typespec/records-and-scalars/`, and files under `test/fixtures/compiler/shared/spec-bundle/`; `src/compiler/frontend/**` and `test/compiler-core.test.ts` are byte-unchanged. | Static (TC-1294) |
 | FR-098-AC-11 | The set of directories under `fixtures/`, `fixtures/negatives/`, and `fixtures/modules/` equals the inventory above, and every `constructed.json` names a test function that exists in `crates/extraction-frontend/tests/`. | Static (TC-1343) |
 | FR-098-AC-12 | `parity::project` applied to the `config-version-table` golden yields a value with `types` as its only member, no `origin` or `extensions` at any depth, and every identity beginning `ix://shared/`; applied twice it yields the same value. | Property (TC-1344) |
+| FR-098-AC-13 | A fixture bundle's module root pinned at a revision merged but not yet in a tagged release names, in that module's own `PROVENANCE.json`, the pinned revision, the release it is pending, and the owning issue; the criterion passes once a release containing the revision is pinned. | Test (TC-1798) |
 
 ## Dependencies
 

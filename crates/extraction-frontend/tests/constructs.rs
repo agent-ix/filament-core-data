@@ -2636,15 +2636,61 @@ fn tc_1800_the_architecture_fixture_lifts_to_ir_2_0_0_with_module_qualified_syst
         rust_codes(&document)
     );
 
-    let mut kinds: Vec<String> = document["types"]
+    // Every type of the bundle, not only the ones whose `kind` happens to be
+    // an object: a type dropped by a `filter_map` never shows up in a failed
+    // assertion, so a systems-kind artifact silently emitted without its
+    // module qualifier would pass unnoticed. `kind` is a plain string
+    // (`"scalar"`, `"alias"`) for a kernel-derived type that carries no
+    // construct, and the object form `{module, name}` for one that does;
+    // both are asserted here, on the whole collected set.
+    let mut type_kinds: Vec<(String, String)> = document["types"]
         .as_array()
         .expect("types")
         .iter()
-        .filter_map(|t| {
-            let module = t["kind"]["module"].as_str()?;
-            let name = t["kind"]["name"].as_str()?;
-            Some(format!("{module}/{name}"))
+        .map(|t| {
+            let name = t["displayName"].as_str().expect("displayName").to_string();
+            let kind = match &t["kind"] {
+                Value::String(scalar) => scalar.clone(),
+                Value::Object(_) => format!(
+                    "{}/{}",
+                    t["kind"]["module"].as_str().expect("kind.module"),
+                    t["kind"]["name"].as_str().expect("kind.name"),
+                ),
+                other => panic!("{name}: kind is neither a string nor an object: {other}"),
+            };
+            (name, kind)
         })
+        .collect();
+    type_kinds.sort();
+    assert_eq!(
+        type_kinds,
+        [
+            ("Count", "agent-ix/spec-objects-business/value_object"),
+            ("CountValue", "alias"),
+            ("Flow", "agent-ix/spec-objects-architecture/interface"),
+            ("Flow2", "agent-ix/spec-objects-architecture/interface"),
+            ("Integer", "scalar"),
+            ("Pump", "agent-ix/spec-objects-business/entity"),
+            ("Sys", "agent-ix/spec-objects-business/entity"),
+            ("Tank", "agent-ix/spec-objects-business/entity"),
+            ("UUID", "scalar"),
+            ("pipe", "agent-ix/spec-objects-architecture/connection"),
+            (
+                "pump_alloc",
+                "agent-ix/spec-objects-architecture/allocation"
+            ),
+            ("pump_out", "agent-ix/spec-objects-architecture/port"),
+            ("sys_pump", "agent-ix/spec-objects-architecture/part"),
+            ("sys_tank", "agent-ix/spec-objects-architecture/part"),
+            ("tank_in", "agent-ix/spec-objects-architecture/port"),
+        ]
+        .map(|(name, kind)| (name.to_string(), kind.to_string()))
+    );
+
+    let mut kinds: Vec<String> = type_kinds
+        .iter()
+        .map(|(_, kind)| kind.clone())
+        .filter(|kind| kind.contains('/'))
         .collect();
     kinds.sort();
     kinds.dedup();
@@ -2665,10 +2711,12 @@ fn tc_1800_the_architecture_fixture_lifts_to_ir_2_0_0_with_module_qualified_syst
         .as_array()
         .expect("constructs")
         .iter()
-        .filter_map(|c| {
-            let module = c["kind"]["module"].as_str()?;
-            let name = c["kind"]["name"].as_str()?;
-            Some(format!("{module}/{name}"))
+        .map(|c| {
+            format!(
+                "{}/{}",
+                c["kind"]["module"].as_str().expect("kind.module"),
+                c["kind"]["name"].as_str().expect("kind.name"),
+            )
         })
         .collect();
     construct_kinds.sort();

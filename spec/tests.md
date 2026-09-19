@@ -281,7 +281,7 @@ blocked as stated above.
 | FR-095 | FR-095-AC-1..16, FR-095-CON-1..3 | TC-1246..TC-1258, TC-1347, TC-1348, TC-1351..TC-1354 | ✅ Complete |
 | FR-096 | FR-096-AC-1..16, FR-096-CON-1..3 | TC-1259..TC-1272, TC-1345, TC-1346 | ✅ Complete |
 | FR-097 | FR-097-AC-1..16, FR-097-CON-1..3 | TC-1273..TC-1284, TC-1336, TC-1339..TC-1342 | ✅ Complete |
-| FR-098 | FR-098-AC-1..12, FR-098-CON-1..3 | TC-1285..TC-1294, TC-1338, TC-1343, TC-1344, TC-1798 | 🚧 In progress — TC-1798 planned (filament-core-data#173, pending SOA release) |
+| FR-098 | FR-098-AC-1..13, FR-098-CON-1..3 | TC-1285..TC-1294, TC-1338, TC-1343, TC-1344, TC-1798 | 🚧 In progress — TC-1798 planned (filament-core-data#173, pending SOA release) |
 | FR-099 | FR-099-AC-1..6, FR-099-CON-1..3 | TC-1295..TC-1299, TC-1330, TC-1349 | ✅ Complete |
 | FR-106 | FR-106-AC-1..6, FR-106-CON-1..2 | TC-1373..TC-1378 | 🚧 TC-1374, TC-1375 planned on issue #93 |
 | FR-100 | FR-100-AC-1..11, FR-100-CON-1..3 | TC-1361..TC-1366, TC-1764, TC-1768, TC-1771, TC-1774, TC-1782 | ✅ Complete |
@@ -1726,7 +1726,7 @@ blocked as stated above.
 | TC-1796 | For an operation whose `pre` mixes a clause id and an inline clause, the Rust, TypeScript and JSON Schema outputs carry the id and every inline language and text, and the Python output carries every inline language and text | Unit | P0 | FR-141-AC-9 | ✅ passed |
 | TC-1584 | Every issue the programme issue backing register names resolves to a requirement artifact that exists, over a register proven non-empty | Unit | P0 | NFR-001-AC-5 | ✅ passed |
 | TC-1585 | Every requirement the register names carries that issue's own link, and a row whose requirement omits it is reported | Unit | P0 | NFR-001-AC-6 | ✅ passed |
-| TC-1798 | The `architecture` fixture's `modules/spec-objects-architecture/PROVENANCE.json` names a released manifest | Unit | P0 | FR-098-AC-1 | 🚧 planned — pinned to SOA a54d2c0 (merged, unreleased; latest tag v0.6.0 is behind), the same commit filament-core-data#189 vendored; passes when an SOA release containing a54d2c0 is pinned — release decision: Peter (filament-core-data#173) |
+| TC-1798 | `fixtures/modules/spec-objects-architecture/PROVENANCE.json` names a released manifest | Unit | P0 | FR-098-AC-13 | 🚧 planned — pinned to SOA a54d2c0 (merged, unreleased; latest tag v0.6.0 is behind), the same commit filament-core-data#189 vendored; passes when an SOA release containing a54d2c0 is pinned — release decision: Peter (filament-core-data#173) |
 
 ## Option Permutation Matrix
 

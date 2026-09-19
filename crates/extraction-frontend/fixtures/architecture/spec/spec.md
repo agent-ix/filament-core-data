@@ -1,6 +1,6 @@
 ---
 type: master-requirements
-name: orders
+name: architecture
 org: agent-ix
 title: "Pump System Architecture Specification"
 ---

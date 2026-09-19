@@ -521,11 +521,17 @@ extraction-frontend-check: extraction-frontend-toolchain
 # The gate also always runs the `architecture` bundle (filament-core-data#173):
 # it needs the extra `spec-objects-architecture` module root business does not,
 # so it is not folded into the overridable `SPEC_PIPELINE_BUNDLE` var and is
-# staged into its own subdirectory.
+# staged into its own subdirectory. Its module roots are read out of the
+# bundle's own `modules.json` rather than repeated here, so the two cannot
+# drift apart. `--compile` is passed for `architecture` alone: it proves the
+# generated output actually builds (cargo, tsc, a Python import, an Ajv
+# compile), which `business`'s own run of this gate has never required and
+# does not gain here (that gap is filament-core-data#173's own follow-up, not
+# fixed by this bundle).
 
 SPEC_PIPELINE_BUNDLE ?= $(EXTRACTION_FIXTURES)/business
 SPEC_PIPELINE_STAGING := $(CARGO_TARGET_DIR)/spec-to-targets
-ARCHITECTURE_MODULES := $(MODULES) $(EXTRACTION_FIXTURES)/modules/spec-objects-architecture
+ARCHITECTURE_MODULES := $(addprefix $(EXTRACTION_FIXTURES)/,$(shell node -e "console.log(JSON.parse(require('fs').readFileSync('$(EXTRACTION_FIXTURES)/architecture/modules.json','utf8')).roots.join(' '))"))
 
 .PHONY: spec-to-targets
 spec-to-targets: extraction-frontend-toolchain
@@ -534,7 +540,7 @@ spec-to-targets: extraction-frontend-toolchain
 	$(EXTRACTION_RUN) lift --bundle $(SPEC_PIPELINE_BUNDLE) $(foreach module,$(MODULES),--module $(module)) --out $(SPEC_PIPELINE_STAGING)/business/semantic-ir.json
 	node scripts/spec-to-targets.mjs $(SPEC_PIPELINE_STAGING)/business/semantic-ir.json $(SPEC_PIPELINE_STAGING)/business
 	$(EXTRACTION_RUN) lift --bundle $(EXTRACTION_FIXTURES)/architecture $(foreach module,$(ARCHITECTURE_MODULES),--module $(module)) --out $(SPEC_PIPELINE_STAGING)/architecture/semantic-ir.json
-	node scripts/spec-to-targets.mjs $(SPEC_PIPELINE_STAGING)/architecture/semantic-ir.json $(SPEC_PIPELINE_STAGING)/architecture
+	node scripts/spec-to-targets.mjs $(SPEC_PIPELINE_STAGING)/architecture/semantic-ir.json $(SPEC_PIPELINE_STAGING)/architecture --compile
 
 .PHONY: extraction-frontend-deny
 extraction-frontend-deny: extraction-frontend-toolchain
