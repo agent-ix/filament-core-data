@@ -124,13 +124,15 @@ pub enum Resolution {
 }
 
 impl Resolution {
-    /// The IR `typeRef`: the identity of the definition the token names,
-    /// minted under FR-095 (the artifact id verbatim, or the `KernelScalar`
-    /// name, neither under a `NodeKind` segment of their own). `None` for an
-    /// unresolved token, which reaches no document.
+    /// The IR `typeRef`: a kernel scalar's native reference
+    /// (`ix://quire/native/<Name>`, gap 1 of FCD #199/#200, no package node
+    /// minted), or the identity of the definition the token names, minted
+    /// under FR-095 (the artifact id verbatim, under no `NodeKind` segment
+    /// of its own). `None` for an unresolved token, which reaches no
+    /// document.
     pub fn type_ref(&self, package: &PackageIdentity) -> Option<String> {
         match self {
-            Resolution::KernelScalar(scalar) => package.type_identity(scalar.name()).ok(),
+            Resolution::KernelScalar(scalar) => Some(scalar.native_type_ref()),
             Resolution::Object(artifact) | Resolution::Enumeration(artifact) => {
                 package.type_identity(&artifact.id).ok()
             }

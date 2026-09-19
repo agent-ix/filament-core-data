@@ -1443,7 +1443,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 	}, 120000);
 
 	/** Traces: TC-438, TC-599, TC-603; FR-046-AC-6, FR-046-AC-7. */
-	it("refuses flags on a non-collection, an inverted bound, and a contradicted optionality", async () => {
+	it("carries collection flags on a non-collection, refuses an inverted bound, and a contradicted optionality", async () => {
 		const flags = await compileSource(
 			[
 				"using AgentIx.Semantic.Decorators;",
@@ -1452,11 +1452,16 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				"model Thing { @collection(true, false) id: Text; }",
 			].join("\n"),
 		);
-		const flagDiagnostic = (flags.diagnostics as unknown as Diagnostic[]).find(
-			(entry) => entry.code === DIAGNOSTIC_CODES.FLAGS_ON_NON_COLLECTION.code,
+		expect(codesOf(flags.diagnostics as never)).toEqual([]);
+		const flagsType = (flags.ir as never as { types: Json[] }).types.find(
+			(type) => type.displayName === "Thing",
 		);
-		expect(flagDiagnostic).toBeDefined();
-		expect(flagDiagnostic?.locus?.startLine).toBe(4);
+		expect((flagsType?.fields as Json[])[0].multiplicity).toEqual({
+			lower: 1,
+			upper: 1,
+			ordered: true,
+			unique: false,
+		});
 
 		const inverted = await compileSource(
 			[
@@ -2865,11 +2870,16 @@ describe("the diagnostic registry (FR-049)", () => {
 			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
 		const field = (artifact.fields as Json[])[0];
-		field.multiplicity = { lower: 1, upper: 1, ordered: true };
+		field.multiplicity = {
+			lower: 2,
+			upper: 1,
+			ordered: false,
+			unique: false,
+		};
 		const diagnostics = readContractIr(document) as never as Diagnostic[];
 		note(diagnostics);
 		const mismatch = diagnostics.find(
-			(entry) => entry.code === DIAGNOSTIC_CODES.FLAGS_ON_NON_COLLECTION.code,
+			(entry) => entry.code === DIAGNOSTIC_CODES.INVALID_MULTIPLICITY.code,
 		);
 		expect(mismatch?.locus).toEqual((field.origin as Json).source as never);
 	});

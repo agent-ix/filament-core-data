@@ -204,18 +204,6 @@ impl PackageIdentity {
         ))
     }
 
-    /// `ix://<org>/<name>/<artifact id><Slug(Field)>`: the alias a
-    /// constrained field's `typeRef` names. `record` is the owner's artifact
-    /// id. Carries no slot segment, the same as [`Self::type_identity`].
-    pub fn alias_identity(&self, record: &str, field: &str) -> Result<String, Unsluggable> {
-        Ok(format!(
-            "ix://{}/{}/{}",
-            self.org,
-            self.name,
-            alias_identity_tail(record, field)?
-        ))
-    }
-
     /// `<owner type identity>/<field-slug>`: a member's identity is its
     /// owner's identity, `/`, and its own slugged name.
     pub fn field_identity(&self, record: &str, field: &str) -> Result<String, Unsluggable> {
@@ -306,28 +294,6 @@ impl From<&Package> for PackageIdentity {
     fn from(package: &Package) -> Self {
         Self::new(&package.org, &package.name)
     }
-}
-
-/// `<artifact id><Slug(fieldName)>`: the tail of the constrained-field alias
-/// identity. The record component is its id verbatim; the field component is
-/// capitalized after slugging.
-fn alias_identity_tail(record: &str, field: &str) -> Result<String, Unsluggable> {
-    let record = id_segment(record)?;
-    let mut field = slug(field)?;
-    if let Some(first) = field.get_mut(0..1) {
-        first.make_ascii_uppercase();
-    }
-    Ok(format!("{record}{field}"))
-}
-
-/// `<DisplayName><fieldName>`: the display name of the constrained-field
-/// alias. The field component is verbatim except for its first character.
-pub fn alias_display_name(record: &str, field: &str) -> String {
-    let mut field = field.to_string();
-    if let Some(first) = field.get_mut(0..1) {
-        first.make_ascii_uppercase();
-    }
-    format!("{record}{field}")
 }
 
 /// The identity segment of `id`, then the slugs of `names`, joined by `-`.

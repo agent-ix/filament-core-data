@@ -105,9 +105,16 @@ function extensionList(extensions, indent) {
 	return ["[", ...members, `${indent}]`].join("\n");
 }
 
-/** One relationship, as the descriptor shape this module alone declares. */
+/**
+ * One relationship, as the descriptor shape this module alone declares.
+ *
+ * `verb` and `target` read the source end's `role` and the target end's
+ * `type` (gap 3 of FCD #199/#200): the descriptor's own public shape is
+ * unchanged, since it always exposed the source role and the target end's
+ * type and multiplicity under those names.
+ */
 function relationshipDescriptor(relationship, indent) {
-	const multiplicity = relationship.multiplicity ?? {};
+	const multiplicity = relationship.targetEnd?.multiplicity ?? {};
 	const upper =
 		typeof multiplicity.upper === "number"
 			? String(multiplicity.upper)
@@ -115,10 +122,10 @@ function relationshipDescriptor(relationship, indent) {
 	return [
 		"{",
 		`${indent}\tidentity: ${literal(relationship.identity ?? "")},`,
-		`${indent}\tverb: ${literal(relationship.verb ?? "")},`,
+		`${indent}\tverb: ${literal(relationship.sourceEnd?.role ?? "")},`,
 		`${indent}\tcategory: ${literal(relationship.category ?? "")},`,
 		`${indent}\tcomposite: ${relationship.composite === true},`,
-		`${indent}\ttarget: ${literal(relationship.target ?? "")},`,
+		`${indent}\ttarget: ${literal(relationship.targetEnd?.type ?? "")},`,
 		`${indent}\tlower: ${typeof multiplicity.lower === "number" ? multiplicity.lower : 0},`,
 		`${indent}\tupper: ${upper},`,
 		`${indent}}`,

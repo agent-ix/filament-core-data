@@ -281,7 +281,6 @@ pub fn lower_enum(
             clauses: None,
             construct,
         },
-        aliases: Vec::new(),
         diagnostics,
     })
 }

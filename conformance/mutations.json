@@ -222,36 +222,6 @@
 			"detectedBy": "REF-002"
 		},
 		{
-			"id": "MUT-009",
-			"family": "field-presence",
-			"title": "Ordered and unique on a single-valued field are rejected",
-			"mutation": {
-				"base": "core-2-0",
-				"ops": [
-					{
-						"op": "test",
-						"path": "/ir/types/8/fields/0/multiplicity",
-						"value": {
-							"lower": 1,
-							"upper": 1
-						}
-					},
-					{
-						"op": "replace",
-						"path": "/ir/types/8/fields/0/multiplicity",
-						"value": {
-							"lower": 1,
-							"upper": 1,
-							"ordered": true
-						}
-					}
-				]
-			},
-			"code": "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
-			"pointer": "/ir/types/8/fields/0/multiplicity",
-			"detectedBy": "PRES-007"
-		},
-		{
 			"id": "MUT-010",
 			"family": "field-default",
 			"title": "A default value with no default kind is rejected",
@@ -372,13 +342,26 @@
 						"path": "/ir/types/8/relationships/-",
 						"value": {
 							"identity": "ix://agent-ix/conformance/relationship/node-owns-root",
-							"verb": "owns",
 							"category": "structural",
 							"composite": true,
-							"target": "ix://agent-ix/conformance/type/Root",
-							"multiplicity": {
-								"lower": 0,
-								"upper": 1
+							"direction": "source-to-target",
+							"sourceEnd": {
+								"multiplicity": {
+									"lower": 0,
+									"ordered": false,
+									"unique": false
+								},
+								"role": "owns",
+								"type": "ix://agent-ix/conformance/type/Node"
+							},
+							"targetEnd": {
+								"multiplicity": {
+									"lower": 0,
+									"upper": 1,
+									"ordered": false,
+									"unique": false
+								},
+								"type": "ix://agent-ix/conformance/type/Root"
 							},
 							"origin": {
 								"source": {
@@ -393,7 +376,7 @@
 				]
 			},
 			"code": "agent-ix.semantic-ir.COMPOSITE_CYCLE",
-			"pointer": "/ir/types/9/relationships/0/target",
+			"pointer": "/ir/types/9/relationships/0/targetEnd/type",
 			"detectedBy": "REL-002"
 		},
 		{

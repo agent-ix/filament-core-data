@@ -93,7 +93,6 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.semantic-ir.DUPLICATE_CLAUSE_ID` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.DUPLICATE_IDENTITY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.DUPLICATE_PARAM` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
-| `agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_DOCUMENT` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_MULTIPLICITY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_OPERAND` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |

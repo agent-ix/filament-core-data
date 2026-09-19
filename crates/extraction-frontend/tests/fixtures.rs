@@ -111,11 +111,12 @@ const COMPANIONS: [(Code, &[Code]); 5] = [
     (Code::ImportUnsupported, &[]),
 ];
 
-/// `KERNEL_NAME_SHADOWED` is superseded at lift level by
-/// `DUPLICATE_TYPE_NAME` because the bundle uses the scalar it shadows
-/// (FR-092-AC-8, FR-095-AC-14); the warning itself is asserted at the
-/// resolve layer by `tests/resolve.rs::tc_1217_`.
-const SUPERSEDED: [(Code, Code); 1] = [(Code::KernelNameShadowed, Code::DuplicateTypeName)];
+/// No code is superseded at lift level: a kernel scalar mints no node
+/// (gap 1 of FCD #199/#200), so `KERNEL_NAME_SHADOWED` never collides with
+/// an identity `DUPLICATE_TYPE_NAME` would name. The warning itself is
+/// asserted at the resolve layer by `tests/resolve.rs::tc_1217_` and here
+/// as `negatives/KERNEL_NAME_SHADOWED`'s own non-blocking golden.
+const SUPERSEDED: [(Code, Code); 0] = [];
 
 fn negatives_dir() -> PathBuf {
     fixtures_root().join("negatives")
@@ -473,13 +474,18 @@ fn tc_1288_every_negative_emits_its_code_at_the_golden_locus_and_only_its_pinned
             code.name()
         );
         // FR-098-AC-4: the code is the *first blocking* diagnostic in FR-096
-        // order, and the non-blocking negatives are exactly `DECLARED_LOSS`
-        // and `ENGINE_DIAGNOSTIC` (CR-036-9, SR-170 FND-1501).
+        // order, and the non-blocking negatives are exactly `DECLARED_LOSS`,
+        // `ENGINE_DIAGNOSTIC` and `KERNEL_NAME_SHADOWED` (CR-036-9, SR-170
+        // FND-1501; `KERNEL_NAME_SHADOWED` itself is always non-blocking,
+        // gap 1 of FCD #199/#200 removed its only blocking companion).
         let first_blocking = diagnostics
             .iter()
             .find(|d| d.blocking)
             .and_then(Diagnostic::registry_code);
-        let non_blocking = matches!(code, Code::DeclaredLoss | Code::EngineDiagnostic);
+        let non_blocking = matches!(
+            code,
+            Code::DeclaredLoss | Code::EngineDiagnostic | Code::KernelNameShadowed
+        );
         if non_blocking {
             assert_eq!(
                 first_blocking,
@@ -685,18 +691,14 @@ fn tc_1287_the_business_golden_carries_every_declaration_kind_an_operation_a_cla
         "process",
         "repository",
         "domain",
-        "scalar",
-        "alias",
     ] {
         assert!(kinds.contains(kind), "no {kind}: {kinds:?}");
     }
-    assert!(
-        types
-            .iter()
-            .filter(|t| t["kind"] == "alias")
-            .all(|t| !t["constraints"].as_array().expect("constraints").is_empty()),
-        "every alias is a constrained field's"
-    );
+    // A kernel scalar mints no node and a constrained field keeps its
+    // constraints inline (gap 1 of FCD #199/#200): no definition is a
+    // `scalar` or an `alias`.
+    assert!(!kinds.contains("scalar"), "{kinds:?}");
+    assert!(!kinds.contains("alias"), "{kinds:?}");
     assert!(types.iter().any(|t| t["kind"]["name"] == "enumeration"
         && t["variants"].as_array().is_some_and(|v| v.len() >= 2)));
     let operations: Vec<&Value> = types

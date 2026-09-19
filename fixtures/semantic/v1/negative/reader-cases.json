@@ -13,20 +13,6 @@
 		"path": "types.3.fields.0.multiplicity.upper"
 	},
 	{
-		"id": "field-flags-on-single",
-		"base": "positive/semantic-ir-v1-1.json",
-		"set": {
-			"path": "types.3.fields.0.multiplicity",
-			"value": {
-				"lower": 1,
-				"upper": 1,
-				"ordered": true
-			}
-		},
-		"code": "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
-		"path": "types.3.fields.0.multiplicity"
-	},
-	{
 		"id": "field-unit-on-record",
 		"base": "positive/semantic-ir-v1-1.json",
 		"set": {
@@ -84,11 +70,11 @@
 		"id": "relationship-unresolved-target",
 		"base": "positive/semantic-ir-v1-1.json",
 		"set": {
-			"path": "types.3.relationships.0.target",
+			"path": "types.3.relationships.0.targetEnd.type",
 			"value": "ix://agent-ix/assurance/type/Missing"
 		},
 		"code": "agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET",
-		"path": "types.3.relationships.0.target"
+		"path": "types.3.relationships.0.targetEnd.type"
 	},
 	{
 		"id": "relationship-composite-self-reference",

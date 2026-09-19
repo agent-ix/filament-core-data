@@ -90,8 +90,7 @@ with it.
 |---|---|---|
 | `SCHEMA_VIOLATION` | `contracts-v1.md` "All identifiers below are rooted at" | A value the published v1 schema for its bundle member rejects, at the deepest failing instance location. |
 | `INVALID_DOCUMENT` | `contracts-v1.md` "A consumer can" | A value that is not an object carrying `ir`, reported once at pointer `""`. |
-| `INVALID_MULTIPLICITY` | `contracts-v1.md` "`multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is" | A present `upper` below `lower` fails at `.../multiplicity/upper`. |
-| `FLAGS_ON_NON_COLLECTION` | same clause | `ordered` or `unique` with a present `upper` of 0 or 1 fails at `.../multiplicity`; an absent `upper` is unbounded, so it is a collection and the flags stand. |
+| `INVALID_MULTIPLICITY` | `contracts-v1.md` "`multiplicity { lower, upper?, ordered, unique }` (absent `upper` is" | A present `upper` below `lower` fails at `.../multiplicity/upper`. `ordered` and `unique` are required booleans on every multiplicity (QSpec model-complete.md), `false` where `upper` is 0 or 1; the schema layer refuses their absence, so no cross-field rule polices them. |
 | `UNIT_ON_NON_SCALAR` | `contracts-v1.md` "may carry a UCUM `unit` when" | `unit` where `typeRef` does not resolve, through aliases, to a `scalar`, fails at `.../unit`. |
 | `UNRESOLVED_TYPE_REF` | `contracts-v1.md` "Recursive references retain graph identity." | An alias target, a reference target, a field `typeRef` or an operation return type naming no declared type. Reported for the node whose own reference does not resolve, never cascaded up a chain. |
 | `UNRESOLVED_ELEMENT_TYPE` | `contracts-v1.md` "The closed structural vocabulary is scalar, record, enum, discriminated union," | `sequence.items` or `map.values` naming no declared type. |

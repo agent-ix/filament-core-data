@@ -278,7 +278,11 @@ export function buildModel(ir, options = {}) {
 					(relationship) =>
 						Object.freeze({
 							...relationship,
-							targetEntry: summaryOf(types, identifiers, relationship.target),
+							targetEntry: summaryOf(
+								types,
+								identifiers,
+								relationship.targetEnd?.type,
+							),
 						}),
 				),
 			);

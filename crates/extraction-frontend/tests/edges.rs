@@ -18,8 +18,6 @@ use proptest::prelude::*;
 use proptest::test_runner::{Config, TestRunner};
 use serde_json::Value;
 
-const VERSION: &str = "0.0.0";
-
 fn crate_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
 }
@@ -53,7 +51,7 @@ fn lift_at(root: &Path, modules: &[&Path]) -> Lift {
         Bundle::load(root, modules).unwrap_or_else(|r| panic!("{} refused: {r}", root.display()));
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
-    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits(), VERSION);
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits());
     Lift {
         bundle,
         extractions,
@@ -90,7 +88,10 @@ fn relationships(record: &Value) -> Vec<Value> {
 }
 
 fn with_verb<'a>(relationships: &'a [Value], verb: &str) -> Vec<&'a Value> {
-    relationships.iter().filter(|r| r["verb"] == verb).collect()
+    relationships
+        .iter()
+        .filter(|r| r["sourceEnd"]["role"] == verb)
+        .collect()
 }
 
 fn with_code(diagnostics: &[Diagnostic], code: Code) -> Vec<&Diagnostic> {
@@ -133,12 +134,24 @@ fn tc_1231_fr_006_references_fr_005_lowers_to_one_traceability_relationship_at_t
     let rels = relationships(record);
     assert_eq!(rels.len(), 1, "{rels:?}");
     let rel = &rels[0];
-    assert_eq!(rel["verb"], "references");
+    assert_eq!(rel["sourceEnd"]["role"], "references");
     assert_eq!(rel["category"], "traceability");
     assert_eq!(rel["composite"], false);
-    assert_eq!(rel["target"], "ix://agent-ix/config-service/FR-005");
+    assert_eq!(rel["direction"], "source-to-target");
     assert_eq!(
-        rel["multiplicity"],
+        rel["sourceEnd"]["type"],
+        "ix://agent-ix/config-service/FR-006"
+    );
+    assert_eq!(
+        rel["sourceEnd"]["multiplicity"],
+        serde_json::json!({ "lower": 0 })
+    );
+    // `references` declares no `inverse` in the registry, so the target end
+    // carries no role at all (gap 3 of FCD #199/#200).
+    assert_eq!(rel["targetEnd"].get("role"), None, "{rel}");
+    assert_eq!(rel["targetEnd"]["type"], "ix://agent-ix/config-service/FR-005");
+    assert_eq!(
+        rel["targetEnd"]["multiplicity"],
         serde_json::json!({ "lower": 1, "upper": 1 })
     );
     assert_eq!(
@@ -197,7 +210,10 @@ fn tc_1232_contains_and_aggregates_are_composite_structural_and_composes_is_not(
     assert_eq!(aggregates.len(), 1, "{aggregate:?}");
     assert_eq!(aggregates[0]["category"], "structural");
     assert_eq!(aggregates[0]["composite"], true);
-    assert_eq!(aggregates[0]["target"], "ix://agent-ix/orders/FR-001");
+    assert_eq!(
+        aggregates[0]["targetEnd"]["type"],
+        "ix://agent-ix/orders/FR-001"
+    );
     let value_object = relationships(type_named(&types, "OrderLine"));
     let composes = with_verb(&value_object, "composes");
     assert_eq!(composes.len(), 1, "{value_object:?}");
@@ -229,12 +245,15 @@ fn tc_1233_references_is_traceability_and_owns_is_dependency_neither_composite()
     assert_eq!(references.len(), 1, "{order:?}");
     assert_eq!(references[0]["category"], "traceability");
     assert_eq!(references[0]["composite"], false);
-    assert_eq!(references[0]["target"], "ix://agent-ix/orders/EN_001");
+    assert_eq!(
+        references[0]["targetEnd"]["type"],
+        "ix://agent-ix/orders/EN_001"
+    );
     let owns = with_verb(&order, "owns");
     assert_eq!(owns.len(), 1, "{order:?}");
     assert_eq!(owns[0]["category"], "dependency");
     assert_eq!(owns[0]["composite"], false);
-    assert_eq!(owns[0]["target"], "ix://agent-ix/orders/SM_001");
+    assert_eq!(owns[0]["targetEnd"]["type"], "ix://agent-ix/orders/SM_001");
     assert_eq!(
         owns[0]["identity"],
         "ix://agent-ix/orders/relationship/FR-001-owns-SM_001"
@@ -350,8 +369,11 @@ fn tc_1236_artifact_axis_verbs_lower_to_nothing_silently_and_one_references_edge
     let types = types_json(&lift);
     let rels = relationships(type_named(&types, "ConfigVersion"));
     assert_eq!(rels.len(), 1, "{rels:?}");
-    assert_eq!(rels[0]["verb"], "references");
-    assert_eq!(rels[0]["target"], "ix://agent-ix/config-service/FR-005");
+    assert_eq!(rels[0]["sourceEnd"]["role"], "references");
+    assert_eq!(
+        rels[0]["targetEnd"]["type"],
+        "ix://agent-ix/config-service/FR-005"
+    );
 }
 
 #[trace("TC-1237", "FR-094-AC-7")]
@@ -368,18 +390,18 @@ fn tc_1237_same_verb_and_target_dedupe_and_two_verbs_on_one_target_mint_two_iden
     assert_eq!(rels.len(), 3, "{rels:?}");
     let to_colour: Vec<&Value> = rels
         .iter()
-        .filter(|r| r["target"] == "ix://agent-ix/config-service/EN_001")
+        .filter(|r| r["targetEnd"]["type"] == "ix://agent-ix/config-service/EN_001")
         .collect();
     assert_eq!(to_colour.len(), 1, "two entries, one relationship");
-    assert_eq!(to_colour[0]["verb"], "references");
+    assert_eq!(to_colour[0]["sourceEnd"]["role"], "references");
     let to_overlay: Vec<&Value> = rels
         .iter()
-        .filter(|r| r["target"] == "ix://agent-ix/config-service/FR-005")
+        .filter(|r| r["targetEnd"]["type"] == "ix://agent-ix/config-service/FR-005")
         .collect();
     assert_eq!(to_overlay.len(), 2, "two verbs, two relationships");
     let mut verbs: Vec<&str> = to_overlay
         .iter()
-        .map(|r| r["verb"].as_str().expect("verb"))
+        .map(|r| r["sourceEnd"]["role"].as_str().expect("role"))
         .collect();
     verbs.sort_unstable();
     assert_eq!(verbs, ["contains", "references"]);
@@ -411,7 +433,7 @@ fn tc_1238_parent_is_a_field_not_a_relationship() {
     let ours = relationships(record);
     assert!(
         ours.iter()
-            .all(|r| r["target"] != "ix://agent-ix/config-service/FR-006"
+            .all(|r| r["targetEnd"]["type"] != "ix://agent-ix/config-service/FR-006"
                 && !r["identity"].as_str().expect("identity").contains("parent")),
         "no relationship from the parent row: {ours:?}"
     );
@@ -420,9 +442,12 @@ fn tc_1238_parent_is_a_field_not_a_relationship() {
     // (FR-143), not the `belongs_to` verb the removed `## Relationships`
     // bullet grammar once produced.
     assert_eq!(ours.len(), 1);
-    assert_eq!(ours[0]["target"], "ix://agent-ix/config-service/FR-005");
     assert_eq!(
-        ours[0]["multiplicity"],
+        ours[0]["targetEnd"]["type"],
+        "ix://agent-ix/config-service/FR-005"
+    );
+    assert_eq!(
+        ours[0]["targetEnd"]["multiplicity"],
         serde_json::json!({ "lower": 1, "upper": 1 })
     );
     assert_eq!(ours[0]["composite"], false);
@@ -442,7 +467,7 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
     let base_types = types_json(&base);
     let base_order = relationships(type_named(&base_types, "Order"));
     let base_owns = with_verb(&base_order, "owns")[0].clone();
-    assert_eq!(base_owns["target"], "ix://agent-ix/orders/SM_001");
+    assert_eq!(base_owns["targetEnd"]["type"], "ix://agent-ix/orders/SM_001");
 
     // Part one: rename the `owns` target (SM_001, referenced by no Type
     // cell) and lift again. The target's identity is its artifact id, so
@@ -480,8 +505,8 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
             // Every other relationship of the record is byte-identical.
             for (b, g) in base_order
                 .iter()
-                .filter(|r| r["verb"] != "owns")
-                .zip(order.iter().filter(|r| r["verb"] != "owns"))
+                .filter(|r| r["sourceEnd"]["role"] != "owns")
+                .zip(order.iter().filter(|r| r["sourceEnd"]["role"] != "owns"))
             {
                 prop_assert_eq!(b, g);
             }
@@ -576,8 +601,21 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
                 let rels = flipped_type["relationships"].as_array().expect("rels");
                 prop_assert_eq!(base_rels.len(), rels.len());
                 for (b, g) in base_rels.iter().zip(rels) {
-                    prop_assert_eq!(without(b, &["composite"]), without(g, &["composite"]));
-                    let expected = match b["verb"].as_str().expect("verb") {
+                    // `composite` is derived from the registry `inverse`,
+                    // and the target end's `role` *is* that `inverse` label
+                    // (gap 3 of FCD #199/#200), so both move under the
+                    // flip; everything else — including the target end's
+                    // `type` and `multiplicity` — stays byte-identical.
+                    let strip_flipped = |value: &Value| {
+                        let mut v = without(value, &["composite"]);
+                        if let Some(target_end) = v.get_mut("targetEnd").and_then(Value::as_object_mut)
+                        {
+                            target_end.remove("role");
+                        }
+                        v
+                    };
+                    prop_assert_eq!(strip_flipped(b), strip_flipped(g));
+                    let expected = match b["sourceEnd"]["role"].as_str().expect("role") {
                         "contains" | "aggregates" => false,
                         "composes" => true,
                         _ => b["composite"].as_bool().expect("composite"),
@@ -589,7 +627,7 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
                     let composite: Vec<&Value> = rels
                         .iter()
                         .filter(|r| r["composite"] == true)
-                        .map(|r| &r["target"])
+                        .map(|r| &r["targetEnd"]["type"])
                         .collect();
                     let members: Vec<&Value> = flipped_type["members"]
                         .as_array()

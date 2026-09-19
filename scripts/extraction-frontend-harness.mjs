@@ -217,7 +217,7 @@ const PROHIBITED = Object.freeze([
 	{ name: ".github/**", test: (p) => p.startsWith(".github/") },
 	{ name: "agent_ix_core_data/**", test: (p) => p.startsWith("agent_ix_core_data/") },
 	{ name: "tests/**", test: (p) => p.startsWith("tests/") },
-	{ name: "test/*.test.ts", test: (p) => /^test\/[^/]+\.test\.ts$/.test(p) },
+	{ name: "test/*.ts", test: (p) => /^test\/[^/]+\.ts$/.test(p) },
 	{ name: "scripts/** (other than the harness)", test: (p) => p.startsWith("scripts/") && p !== "scripts/extraction-frontend-harness.mjs" },
 ]);
 
@@ -453,15 +453,6 @@ async function identityCases(argv) {
 		}
 		if (row.kind === "identity") {
 			return { kind: row.kind, identity: refuse(row.parts) ? null : identity.mintIdentity(row.package, row.slot, row.parts) };
-		}
-		if (row.kind === "alias") {
-			const parts = [row.record, row.field];
-			const tail = `${identity.slug(row.record)}${identity.capitalize(identity.slug(row.field))}`;
-			return {
-				kind: row.kind,
-				identity: refuse(parts) ? null : identity.mintIdentity(row.package, "type", [tail]),
-				displayName: `${row.record}${identity.capitalize(row.field)}`,
-			};
 		}
 		if (row.kind === "diagnosticCode") {
 			return { kind: row.kind, code: identity.constraintDiagnosticCode(row.package, row.parts, row.keyword) };

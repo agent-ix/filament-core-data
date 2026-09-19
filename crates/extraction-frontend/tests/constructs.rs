@@ -280,7 +280,7 @@ fn tc_1742_unresolved_subsets_and_widening_redefines_raise_their_codes() {
 
     let mut widening = positive();
     type_mut(&mut widening, "FR-001")["fields"][labels]["multiplicity"] =
-        json!({ "lower": 0, "upper": 9 });
+        json!({ "lower": 0, "upper": 9, "ordered": false, "unique": false });
     assert_rust(
         "widening redefines",
         &widening,
@@ -981,7 +981,7 @@ fn tc_1791_a_kind_no_reader_code_names_reads_by_its_declaration_alone() {
         "owner": format!("{PREFIX}PT-001"),
         "direction": "in",
         "interfaceType": text,
-        "multiplicity": { "lower": 1, "upper": 2 }
+        "multiplicity": { "lower": 1, "upper": 2, "ordered": false, "unique": false }
     });
     let declaration = |name: &str, construct: Value| {
         json!({
@@ -1001,7 +1001,7 @@ fn tc_1791_a_kind_no_reader_code_names_reads_by_its_declaration_alone() {
         "extensions": [],
         "unknownPolicy": "reject",
         "flowDirection": "source-to-target",
-        "sourceEnd": { "type": format!("{PREFIX}PO-001"), "multiplicity": { "lower": 1, "upper": 1 } },
+        "sourceEnd": { "type": format!("{PREFIX}PO-001"), "multiplicity": { "lower": 1, "upper": 1, "ordered": false, "unique": false } },
         "targetEnd": { "type": format!("{PREFIX}PO-001") }
     });
     let types = document["types"].as_array_mut().expect("types");
@@ -1350,7 +1350,7 @@ fn lower(root: &Path) -> Lowered {
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0")
+    lower_bundle(&bundle, &extractions, &resolutions, &limits)
 }
 
 /// The business bundle with `edit` applied to the file `relative`, lowered.
@@ -1378,7 +1378,7 @@ fn lower_mutated(mutate: impl Fn(&mut Extractions)) -> Lowered {
     mutate(&mut extractions);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0")
+    lower_bundle(&bundle, &extractions, &resolutions, &limits)
 }
 
 /// The module roots [`lower_systems`] and its callers' own [`LiftRequest`]s
@@ -1409,7 +1409,7 @@ fn lower_systems(write: impl FnOnce(&Path)) -> (tempfile::TempDir, PathBuf, Lowe
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits);
     (dir, root, lowered)
 }
 
@@ -1434,7 +1434,7 @@ fn lower_systems_mutated(
     mutate(&mut extractions);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0")
+    lower_bundle(&bundle, &extractions, &resolutions, &limits)
 }
 
 /// The `sourceElement` of `id`'s allocation record, as the engine extracted
@@ -1522,7 +1522,7 @@ fn assert_no_edge_to_refused(lowered: &Lowered) {
             let value = serde_json::to_value(t).expect("serialises");
             assert_ne!(value["owner"], json!(identity), "{}", t.identity);
             for edge in value["relationships"].as_array().into_iter().flatten() {
-                assert_ne!(edge["target"], json!(identity), "{}", t.identity);
+                assert_ne!(edge["targetEnd"]["type"], json!(identity), "{}", t.identity);
             }
         }
     }
@@ -1854,7 +1854,6 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
         &extractions,
         &resolutions,
         &Limits::declared().expect("limits.json parses"),
-        "0.0.0",
     );
     assert_refused(
         &population,
@@ -1963,7 +1962,7 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits);
     // This frontend supplies the engine no relation vocabulary, so the rows
     // are read but not extracted: refused, never dropped behind an advisory.
     assert_refused(
@@ -2292,7 +2291,7 @@ fn tc_1800_a_systems_reference_member_naming_a_since_refused_type_cascades_the_r
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits);
 
     let messages: Vec<&str> = refusals(&lowered)
         .iter()
@@ -2363,7 +2362,7 @@ fn tc_1800_a_systems_reference_member_naming_an_imported_identity_is_refused() {
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits);
 
     assert_refused(
         &lowered,
@@ -2726,9 +2725,11 @@ fn tc_1800_the_architecture_fixture_lifts_to_ir_2_0_0_with_module_qualified_syst
     // an object: a type dropped by a `filter_map` never shows up in a failed
     // assertion, so a systems-kind artifact silently emitted without its
     // module qualifier would pass unnoticed. `kind` is a plain string
-    // (`"scalar"`, `"alias"`) for a kernel-derived type that carries no
+    // (e.g. `"scalar"`, `"alias"`) for a core kind that carries no
     // construct, and the object form `{module, name}` for one that does;
-    // both are asserted here, on the whole collected set.
+    // both are asserted here, on the whole collected set. (A kernel scalar
+    // mints no type node at all — gap 1 of FCD #199/#200 — so none appear
+    // here.)
     let mut type_kinds: Vec<(String, String)> = document["types"]
         .as_array()
         .expect("types")
@@ -2752,14 +2753,11 @@ fn tc_1800_the_architecture_fixture_lifts_to_ir_2_0_0_with_module_qualified_syst
         type_kinds,
         [
             ("Count", "agent-ix/spec-objects-business/value_object"),
-            ("CountValue", "alias"),
             ("Flow", "agent-ix/spec-objects-architecture/interface"),
             ("Flow2", "agent-ix/spec-objects-architecture/interface"),
-            ("Integer", "scalar"),
             ("Pump", "agent-ix/spec-objects-business/entity"),
             ("Sys", "agent-ix/spec-objects-business/entity"),
             ("Tank", "agent-ix/spec-objects-business/entity"),
-            ("UUID", "scalar"),
             ("pipe", "agent-ix/spec-objects-architecture/connection"),
             (
                 "pump_alloc",
@@ -2863,7 +2861,7 @@ fn tc_1801_a_required_member_with_its_own_source_table_absent_from_the_artifact_
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits);
     assert_refused(
         &lowered,
         "SI_002",
@@ -2905,7 +2903,7 @@ fn tc_1802_an_enumeration_construct_requiring_supertypes_with_none_declared_refu
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits);
 
     assert_refused(
         &lowered,
@@ -3242,7 +3240,7 @@ fn tc_1794_a_construct_requiring_feature_order_refuses_its_artifacts_for_want_of
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits);
     // Every entity artifact, and only those, is refused naming the member:
     // `featureOrder` has a per-artifact source table (quire-rs FR-075's
     // `## Features`/`Ubiquitous Language`-style locators), like `part`/

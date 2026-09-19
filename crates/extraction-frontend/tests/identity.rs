@@ -84,13 +84,6 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
     );
     assert_eq!(
         package
-            .alias_identity("ConfigVersion", "versionNumber")
-            .as_deref(),
-        Ok("ix://agent-ix/config-service/ConfigVersionVersionNumber"),
-        "the alias of a constrained field carries no slot segment either"
-    );
-    assert_eq!(
-        package
             .field_identity("ConfigVersion", "versionNumber")
             .as_deref(),
         Ok("ix://agent-ix/config-service/ConfigVersion/versionNumber"),
@@ -260,7 +253,7 @@ fn assert_shared_identity_cases_agree_with_typespec_identity_minter() {
     assert_eq!(rust, typespec, "identity.rs and identity.mjs diverge");
     for (row, actual) in rows.iter().zip(&rust) {
         match row["kind"].as_str().expect("kind") {
-            "identity" | "alias" => {
+            "identity" => {
                 assert_eq!(actual["identity"], row["identity"], "identity.rs: {row}")
             }
             "diagnosticCode" => assert_eq!(actual["code"], row["code"], "identity.rs: {row}"),
@@ -296,11 +289,6 @@ fn rust_identity_case(row: &serde_json::Value) -> serde_json::Value {
             .expect("identity");
             serde_json::json!({"kind": "identity", "identity": identity})
         }
-        "alias" => serde_json::json!({
-            "kind": "alias",
-            "identity": package.alias_identity(row["record"].as_str().unwrap(), row["field"].as_str().unwrap()).expect("alias identity"),
-            "displayName": agent_ix_extraction_frontend::identity::alias_display_name(row["record"].as_str().unwrap(), row["field"].as_str().unwrap()),
-        }),
         "diagnosticCode" => {
             let parts: Vec<&str> = row["parts"]
                 .as_array()

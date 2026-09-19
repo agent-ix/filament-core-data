@@ -31,8 +31,6 @@ use proptest::test_runner::{Config, TestRunner};
 use quire_rs::semantic::{FieldsForm, SemanticExtraction};
 use serde_json::{json, Value};
 
-const VERSION: &str = "0.0.0";
-
 fn crate_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
 }
@@ -68,7 +66,7 @@ fn lift_at(root: &Path, modules: &[&Path]) -> Lift {
         Bundle::load(root, modules).unwrap_or_else(|r| panic!("{} refused: {r}", root.display()));
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
-    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits(), VERSION);
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits());
     Lift {
         bundle,
         extractions,
@@ -123,26 +121,28 @@ fn type_named<'a>(types: &'a [Value], display_name: &str) -> &'a Value {
         .unwrap_or_else(|| panic!("no definition named {display_name}"))
 }
 
-/// The alias definitions minted for `record`'s constrained fields (FR-093
-/// "The fields": `type/<slug(DisplayName)><Field>`), in `types` order.
-fn aliases_of<'a>(types: &'a [Value], record: &str) -> Vec<&'a Value> {
-    let prefix = record.to_string();
-    types
+/// The fields of `record` carrying at least one constraint (FR-093 "The
+/// fields"): constraints live inline on the field (gap 1 of FCD #199/#200),
+/// so no alias node is minted for them, in `fields` order.
+fn constrained_fields_of<'a>(types: &'a [Value], record: &str) -> Vec<&'a Value> {
+    type_named(types, record)["fields"]
+        .as_array()
+        .expect("fields")
         .iter()
-        .filter(|t| t["kind"] == "alias")
-        .filter(|t| {
-            t["displayName"]
-                .as_str()
-                .is_some_and(|n| n.starts_with(&prefix))
+        .filter(|f| {
+            f["constraints"]
+                .as_array()
+                .is_some_and(|c| !c.is_empty())
         })
         .collect()
 }
 
-/// Every constraint of `record`, gathered from its field aliases.
+/// Every constraint of `record`, gathered from its fields' inline
+/// `constraints`, in field order.
 fn constraints_of<'a>(types: &'a [Value], record: &str) -> Vec<&'a Value> {
-    aliases_of(types, record)
+    constrained_fields_of(types, record)
         .into_iter()
-        .flat_map(|a| a["constraints"].as_array().expect("constraints"))
+        .flat_map(|f| f["constraints"].as_array().expect("constraints"))
         .collect()
 }
 
@@ -401,13 +401,15 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     let order = type_named(&types, "Order");
     let total = field_named(order, "total");
     assert_eq!(total["unit"], "USD");
-    // `min: 0` on the row: the typeRef names the field's alias, whose
-    // target is the resolved scalar.
-    assert_eq!(total["typeRef"], "ix://agent-ix/orders/FR-001Total");
-    assert_eq!(
-        type_named(&types, "OrderTotal")["target"],
-        "ix://agent-ix/orders/Decimal"
-    );
+    // `min: 0` on the row lives inline on the field (gap 1 of FCD
+    // #199/#200): the typeRef names the resolved native scalar directly, no
+    // alias is minted.
+    assert_eq!(total["typeRef"], "ix://quire/native/Decimal");
+    let total_constraints = total["constraints"].as_array().expect("constraints");
+    assert_eq!(total_constraints.len(), 1, "{total_constraints:?}");
+    assert_eq!(total_constraints[0]["keyword"], "min");
+    assert_eq!(total_constraints[0]["operands"], json!({"value": 0}));
+    assert_eq!(total_constraints[0]["appliesTo"], total["identity"]);
     assert_eq!(
         total["extensions"],
         json!([{
@@ -421,45 +423,26 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
 
 #[trace("TC-1223", "FR-093-AC-4")]
 #[test]
-fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_alias_with_the_screaming_diagnostic_code(
+fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_with_the_screaming_diagnostic_code(
 ) {
     let lift = lift("config-version-table");
     let types = types_json(&lift);
     let record = type_named(&types, "ConfigVersion");
-    // The record carries no constraint of its own: each lives on the alias
-    // minted for its field (FR-034's form), which the field's typeRef names.
+    // The record carries no constraint of its own: each lives inline on its
+    // field (gap 1 of FCD #199/#200), no alias is minted for it.
     assert_eq!(record["constraints"], json!([]));
-    let alias = type_named(&types, "ConfigVersionVersionNumber");
+    let field = field_named(record, "versionNumber");
     assert_eq!(
-        alias["identity"],
-        "ix://agent-ix/config-service/FR-006VersionNumber"
+        field["identity"],
+        "ix://agent-ix/config-service/FR-006/versionNumber"
     );
-    assert_eq!(alias["kind"], "alias");
-    assert_eq!(alias["target"], "ix://agent-ix/config-service/Integer");
-    assert_eq!(alias["roles"], json!([]));
-    assert_eq!(alias["unknownPolicy"], "reject");
-    assert_eq!(alias["extensions"], json!([]));
-    assert!(alias.get("fields").is_none());
-    assert!(alias.get("scalar").is_none());
-    assert_eq!(
-        alias["origin"]["source"],
-        json!({
-            "sourceIdentity": "ix://agent-ix/config-service/spec",
-            "path": "spec/functional/FR-006-config-version-entity.md",
-            "startLine": 23, "startColumn": 3
-        }),
-        "the alias originates at the row"
-    );
-    assert_eq!(
-        field_named(record, "versionNumber")["typeRef"],
-        alias["identity"]
-    );
-    let constraints = alias["constraints"].as_array().expect("constraints");
+    assert_eq!(field["typeRef"], "ix://quire/native/Integer");
+    let constraints = field["constraints"].as_array().expect("constraints");
     assert_eq!(constraints.len(), 1, "{constraints:?}");
     let min = &constraints[0];
     assert_eq!(min["keyword"], "min");
     assert_eq!(min["operands"], json!({"value": 1}));
-    assert_eq!(min["appliesTo"], alias["identity"]);
+    assert_eq!(min["appliesTo"], field["identity"]);
     assert_eq!(
         min["diagnosticCode"],
         "agent-ix.config-service.CONFIGVERSION_VERSIONNUMBER_MIN"
@@ -470,35 +453,21 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_alias_wi
     );
     assert_eq!(min["origin"]["source"]["startLine"], 23, "the row's origin");
     assert_eq!(min["origin"]["source"]["startColumn"], 3);
-    // Every constraint of the record: min, nonEmpty, maxLength, one alias
-    // each, in field order; no unconstrained field mints one.
+    // Every constraint of the record: min, nonEmpty, maxLength, one per
+    // constrained field, in field order; no unconstrained field mints one.
     let keywords: Vec<&str> = constraints_of(&types, "ConfigVersion")
         .iter()
         .map(|c| c["keyword"].as_str().expect("keyword"))
         .collect();
     assert_eq!(keywords, ["min", "nonEmpty", "maxLength"]);
-    let alias_names: Vec<&str> = aliases_of(&types, "ConfigVersion")
+    let constrained_names: Vec<&str> = constrained_fields_of(&types, "ConfigVersion")
         .iter()
-        .map(|a| a["displayName"].as_str().expect("displayName"))
+        .map(|f| f["name"].as_str().expect("name"))
         .collect();
-    assert_eq!(
-        alias_names,
-        [
-            "ConfigVersionVersionNumber",
-            "ConfigVersionHash",
-            "ConfigVersionCreatedBy"
-        ]
-    );
+    assert_eq!(constrained_names, ["versionNumber", "hash", "createdBy"]);
     for field in record["fields"].as_array().expect("fields") {
-        let type_ref = field["typeRef"].as_str().expect("typeRef");
-        let aliased = aliases_of(&types, "ConfigVersion")
-            .iter()
-            .any(|alias| alias["identity"] == type_ref);
-        if aliased {
-            assert!(
-                type_ref.starts_with("ix://agent-ix/config-service/FR-006"),
-                "{type_ref}"
-            );
+        for c in field["constraints"].as_array().expect("constraints") {
+            assert_eq!(c["appliesTo"], field["identity"]);
         }
     }
     // The contract does not split camel case.
@@ -526,18 +495,9 @@ fn tc_1224_max_length_pattern_and_enum_values_carry_their_operand_shapes() {
         .find(|c| c["keyword"] == "maxLength")
         .expect("maxLength");
     assert_eq!(max_length["operands"], json!({"value": 64}));
-    assert_eq!(
-        max_length["appliesTo"],
-        "ix://agent-ix/config-service/FR-006CreatedBy"
-    );
-    assert_eq!(
-        field_named(record, "createdBy")["typeRef"],
-        "ix://agent-ix/config-service/FR-006CreatedBy"
-    );
-    assert_eq!(
-        type_named(&types, "ConfigVersionCreatedBy")["target"],
-        "ix://agent-ix/config-service/String"
-    );
+    let created_by = field_named(record, "createdBy");
+    assert_eq!(max_length["appliesTo"], created_by["identity"]);
+    assert_eq!(created_by["typeRef"], "ix://quire/native/String");
 
     let audit = self::lift("lower/constraints");
     assert!(
@@ -570,23 +530,17 @@ fn tc_1224_max_length_pattern_and_enum_values_carry_their_operand_shapes() {
     assert_eq!(by_keyword["minLength"]["operands"], json!({"value": 1}));
     assert_eq!(by_keyword["maxLength"]["operands"], json!({"value": 64}));
     assert_eq!(by_keyword.len(), 8);
-    // One alias per constrained field: `count` and `payload` each carry
-    // two keywords on one alias.
-    let aliases = aliases_of(&types, "Audit");
-    assert_eq!(aliases.len(), 6, "{aliases:?}");
-    for alias in &aliases {
-        let field = alias["displayName"]
-            .as_str()
-            .and_then(|n| n.strip_prefix("Audit"))
-            .map(|tail| format!("{}{}", tail[0..1].to_ascii_lowercase(), &tail[1..]))
-            .expect("Audit<Field>");
-        assert_eq!(field_named(record, &field)["typeRef"], alias["identity"]);
-        for c in alias["constraints"].as_array().expect("constraints") {
-            assert_eq!(c["appliesTo"], alias["identity"]);
+    // Constraints live inline on the field (gap 1 of FCD #199/#200): six
+    // fields carry at least one, `count` and `payload` each carry two.
+    let constrained = constrained_fields_of(&types, "Audit");
+    assert_eq!(constrained.len(), 6, "{constrained:?}");
+    for field in &constrained {
+        for c in field["constraints"].as_array().expect("constraints") {
+            assert_eq!(c["appliesTo"], field["identity"]);
         }
     }
     assert_eq!(
-        type_named(&types, "AuditCount")["constraints"]
+        field_named(record, "count")["constraints"]
             .as_array()
             .map(Vec::len),
         Some(2)
@@ -767,25 +721,21 @@ fn tc_1225_min_on_string_is_blocking_constraint_not_applicable_and_the_reader_ag
 #[trace("TC-1226", "FR-093-CON-3")]
 #[trace("TC-1553", "FR-139-AC-2")]
 #[test]
-fn tc_1226_and_tc_1553_json_object_emits_an_any_scalar_without_a_declared_loss() {
+fn tc_1226_and_tc_1553_json_object_resolves_to_the_native_any_scalar_without_a_declared_loss() {
     let lift = lift("negatives/DECLARED_LOSS");
     let types = types_json(&lift);
-    let any: Vec<&Value> = types
-        .iter()
-        .filter(|t| t["identity"] == "ix://agent-ix/blob-service/JsonObject")
-        .collect();
-    assert_eq!(any.len(), 1, "once per package: {types:?}");
-    let any = any[0];
-    assert_eq!(any["kind"], "scalar");
-    assert_eq!(any["displayName"], "JsonObject");
-    assert_eq!(any["scalar"], "any");
-    assert!(any["origin"]["generated"].is_object(), "{any}");
+    // A kernel scalar mints no node (gap 1 of FCD #199/#200): the field's
+    // typeRef names the native reference directly.
+    assert!(
+        !types.iter().any(|t| t["displayName"] == "JsonObject"),
+        "{types:?}"
+    );
     let blob = type_named(&types, "Blob");
     assert_eq!(
         field_named(blob, "data")["typeRef"],
-        "ix://agent-ix/blob-service/JsonObject"
+        "ix://quire/native/JsonObject"
     );
-    assert!(types.iter().any(|t| t["scalar"] == "any"));
+    assert!(!types.iter().any(|t| t.get("scalar").is_some()));
 
     let losses = with_code(&lift.lowered.diagnostics, Code::DeclaredLoss);
     assert!(
@@ -975,7 +925,7 @@ fn renames(count: usize) -> impl Strategy<Value = Vec<String>> {
 #[trace("TC-1229", "FR-093-AC-10")]
 #[trace("TC-1229", "FR-093-CON-2")]
 #[test]
-fn tc_1229_renaming_every_field_changes_only_name_identity_alias_identity_applies_to_and_diagnostic_code(
+fn tc_1229_renaming_every_field_changes_only_its_own_name_identity_and_its_constraints_applies_to_and_diagnostic_code(
 ) {
     let lift = lift("lower/constraints");
     let package = PackageIdentity::from(lift.bundle.package());
@@ -992,7 +942,6 @@ fn tc_1229_renaming_every_field_changes_only_name_identity_alias_identity_applie
     let baseline =
         lower_record(extraction, &lift.resolutions.resolutions, &rows, &ctx).expect("lowers");
     let base = serde_json::to_value(&baseline.definition).expect("serialises");
-    let base_aliases = serde_json::to_value(&baseline.aliases).expect("serialises");
     let decls = extraction.fields.as_deref().expect("fields");
 
     let mut runner = TestRunner::new(Config::with_cases(64));
@@ -1020,7 +969,6 @@ fn tc_1229_renaming_every_field_changes_only_name_identity_alias_identity_applie
             let lowered = lower_record(&renamed, &resolutions, &rows, &ctx)
                 .map_err(|e| TestCaseError::fail(format!("{e:?}")))?;
             let got = serde_json::to_value(&lowered.definition).expect("serialises");
-            let got_aliases = serde_json::to_value(&lowered.aliases).expect("serialises");
             // The record itself is untouched by field names.
             prop_assert_eq!(without(&got, &["fields"]), without(&base, &["fields"]));
             let base_fields = base["fields"].as_array().expect("fields");
@@ -1028,47 +976,34 @@ fn tc_1229_renaming_every_field_changes_only_name_identity_alias_identity_applie
             prop_assert_eq!(got_fields.len(), base_fields.len());
             for (b, g) in base_fields.iter().zip(got_fields) {
                 prop_assert_ne!(&g["name"], &b["name"]);
-                // A constrained field's typeRef names its alias, whose
-                // identity carries the field name; an unconstrained
-                // field's typeRef is untouched.
-                let aliased = b["typeRef"]
-                    .as_str()
-                    .is_some_and(|t| t.contains("/FR-001"));
-                let moved: &[&str] = if aliased {
-                    &["name", "identity", "typeRef"]
-                } else {
-                    &["name", "identity"]
-                };
+                // Constraints live inline on the field (gap 1 of FCD
+                // #199/#200): renaming moves only the field's own name and
+                // identity, and each constraint's appliesTo and
+                // diagnosticCode with it; typeRef, keyword and operands are
+                // untouched.
+                let moved: &[&str] = &["name", "identity", "constraints"];
                 prop_assert_eq!(without(g, moved), without(b, moved));
-            }
-            // Every alias keeps its target, origin and operands; only the
-            // alias identity, displayName, appliesTo and diagnosticCode move.
-            let base_aliases = base_aliases.as_array().expect("aliases");
-            let got_aliases = got_aliases.as_array().expect("aliases");
-            prop_assert_eq!(got_aliases.len(), base_aliases.len());
-            for (b, g) in base_aliases.iter().zip(got_aliases) {
-                prop_assert_eq!(
-                    without(g, &["identity", "displayName", "constraints"]),
-                    without(b, &["identity", "displayName", "constraints"])
-                );
                 let base_constraints = b["constraints"].as_array().expect("constraints");
                 let got_constraints = g["constraints"].as_array().expect("constraints");
                 prop_assert_eq!(got_constraints.len(), base_constraints.len());
-                for (b, g) in base_constraints.iter().zip(got_constraints) {
+                for (bc, gc) in base_constraints.iter().zip(got_constraints) {
                     prop_assert_eq!(
-                        without(g, &["identity", "appliesTo", "diagnosticCode"]),
-                        without(b, &["identity", "appliesTo", "diagnosticCode"])
+                        without(gc, &["identity", "appliesTo", "diagnosticCode"]),
+                        without(bc, &["identity", "appliesTo", "diagnosticCode"])
                     );
+                    prop_assert_eq!(&gc["appliesTo"], &g["identity"]);
                 }
             }
             Ok(())
         })
-        .expect("64 renamings move only name, identity, the alias identity, appliesTo and diagnosticCode");
+        .expect(
+            "64 renamings move only a field's own name, identity, and its constraints' appliesTo and diagnosticCode",
+        );
 }
 
 #[trace("TC-1333", "FR-093-AC-12")]
 #[test]
-fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values_row_and_every_alias_is_a_constrained_field(
+fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values_row_and_no_field_constraint_mints_a_node(
 ) {
     let lift = lift("business");
     assert!(
@@ -1163,11 +1098,10 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
         .iter()
         .any(|t| t.display_name == "Colour"));
 
-    // Every `kind: alias` definition in a fixture document is the one
-    // minted for a constrained field: named `<DisplayName>.<fieldName>`,
-    // targeting a non-alias definition, referenced by exactly that field's
-    // typeRef, and carrying at least one constraint; no other kind is
-    // emitted.
+    // A constrained field keeps its constraints inline; no alias node is
+    // minted for it (gap 1 of FCD #199/#200), so every definition in a
+    // fixture document is a record or a construct, and every field
+    // constraint applies to its own field.
     for name in [
         "config-version-table",
         "config-version-fence",
@@ -1181,49 +1115,21 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
         let types = types_json(&lift);
         for t in &lift.lowered.types {
             assert!(
-                matches!(
-                    t.kind,
-                    Kind::Scalar | Kind::Record | Kind::Alias | Kind::Construct(_)
-                ),
+                matches!(t.kind, Kind::Record | Kind::Construct(_)),
                 "{name}: {:?}",
                 t.kind
             );
         }
-        for alias in types.iter().filter(|t| t["kind"] == "alias") {
-            let display_name = alias["displayName"].as_str().expect("displayName");
-            let record = types
-                .iter()
-                .filter_map(|candidate| candidate["displayName"].as_str())
-                .filter(|candidate| {
-                    display_name.starts_with(candidate) && *candidate != display_name
-                })
-                .max_by_key(|candidate| candidate.len())
-                .unwrap_or_else(|| panic!("{name}: {alias} has no owning record prefix"));
-            let tail = &display_name[record.len()..];
-            let field = format!("{}{}", tail[0..1].to_ascii_lowercase(), &tail[1..]);
-            let target = type_named(&types, record);
-            let referencing: Vec<&Value> = target["fields"]
+        for record in &types {
+            for field in record["fields"]
                 .as_array()
-                .expect("fields")
-                .iter()
-                .filter(|f| f["typeRef"] == alias["identity"])
-                .collect();
-            assert_eq!(referencing.len(), 1, "{name}: {alias}");
-            assert_eq!(referencing[0]["name"], field);
-            let resolved = types
-                .iter()
-                .find(|t| t["identity"] == alias["target"])
-                .unwrap_or_else(|| panic!("{name}: {} targets nothing", alias["identity"]));
-            assert_ne!(
-                resolved["kind"], "alias",
-                "{name}: an alias never targets an alias"
-            );
-            assert!(
-                alias["constraints"]
-                    .as_array()
-                    .is_some_and(|c| !c.is_empty()),
-                "{name}: {alias} carries no constraint"
-            );
+                .into_iter()
+                .flatten()
+            {
+                for c in field["constraints"].as_array().expect("constraints") {
+                    assert_eq!(c["appliesTo"], field["identity"], "{name}: {field}");
+                }
+            }
         }
     }
 }
@@ -1288,7 +1194,10 @@ fn tc_1334_status_and_status_collide_and_repeated_or_colliding_constraints_are_d
         "{}",
         unnameable[0].message
     );
-    assert!(lift.lowered.types.iter().all(|t| t.kind == Kind::Scalar));
+    // The artifact is refused, so it mints no record; a kernel scalar
+    // mints no node either (gap 1 of FCD #199/#200): the bundle mints
+    // nothing at all.
+    assert!(lift.lowered.types.is_empty(), "{:?}", lift.lowered.types);
 }
 
 #[trace("TC-1334", "FR-093-AC-13")]
@@ -1406,8 +1315,10 @@ fn tc_1758_an_artifact_id_that_slugs_to_nothing_raises_unsluggable_name_and_no_p
         );
     }
 
-    // An id slugging to a kernel scalar the bundle uses mints that scalar's
-    // identity: blocking `DUPLICATE_TYPE_NAME`, whatever the declared name.
+    // An artifact id that reads like a kernel scalar mints its own record
+    // normally: a kernel scalar mints no node (gap 1 of FCD #199/#200), so
+    // there is nothing left for the artifact's own `type/UUID` to collide
+    // with.
     let bundle = tempfile::tempdir().expect("kernel id fixture");
     scratch_spec(bundle.path());
     write_fixture(
@@ -1416,12 +1327,21 @@ fn tc_1758_an_artifact_id_that_slugs_to_nothing_raises_unsluggable_name_and_no_p
         &entity("UUID", "Note", "| id | UUID | 1 | identity |\n"),
     );
     let lift = lift_at(bundle.path(), &[&business_module(), &edge_vocabulary()]);
-    let refused = with_code(&lift.lowered.diagnostics, Code::DuplicateTypeName);
-    assert_eq!(refused.len(), 1, "{:?}", lift.lowered.diagnostics);
     assert!(
-        refused[0].message.contains("mints type/UUID"),
-        "{}",
-        refused[0].message
+        !lift.lowered.diagnostics.iter().any(|d| d.blocking),
+        "{:?}",
+        lift.lowered.diagnostics
+    );
+    let package = PackageIdentity::from(lift.bundle.package());
+    let note = lift
+        .lowered
+        .types
+        .iter()
+        .find(|t| t.display_name == "Note")
+        .expect("Note lowers");
+    assert_eq!(
+        note.identity,
+        package.type_identity("UUID").expect("type identity")
     );
 }
 
@@ -1526,33 +1446,41 @@ fn tc_1347_equal_status_names_refuse_at_the_second_document_and_mint_no_field_tw
         2,
         "the first Status keeps its two fields, the second mints none: {identities:?}"
     );
-    // The kernel-scalar collision: an artifact named like a scalar the
-    // bundle uses is a DUPLICATE_TYPE_NAME at the artifact, superseding
-    // pass one's warning (orchestrator ruling on FR-092-AC-8).
+    // An artifact titled like a kernel scalar is unreferenceable by that
+    // name (pass one's non-blocking `KERNEL_NAME_SHADOWED`, FR-092-AC-8): a
+    // `Type` cell reading `String` resolves to the kernel scalar first. The
+    // artifact still lowers to its own `type/String` record — a kernel
+    // scalar mints no node to collide with (gap 1 of FCD #199/#200).
     let shadowed = self::lift("negatives/KERNEL_NAME_SHADOWED");
-    let dup = with_code(&shadowed.lowered.diagnostics, Code::DuplicateTypeName);
-    assert_eq!(dup.len(), 1, "{:?}", shadowed.lowered.diagnostics);
-    assert!(dup[0].blocking);
     assert!(
-        dup[0].message.contains("kernel scalar String"),
+        !shadowed.lowered.diagnostics.iter().any(|d| d.blocking),
+        "{:?}",
+        shadowed.lowered.diagnostics
+    );
+    let warned = with_code(&shadowed.lowered.diagnostics, Code::KernelNameShadowed);
+    assert_eq!(warned.len(), 1, "{:?}", shadowed.lowered.diagnostics);
+    assert!(!warned[0].blocking);
+    assert!(
+        warned[0].message.contains("kernel scalar name String"),
         "{}",
-        dup[0].message
+        warned[0].message
     );
     assert_eq!(
-        dup[0].locus,
+        warned[0].locus,
         Some(locus(&shadowed, "spec/functional/FR-007-string.md", 1, 1))
     );
     assert!(
-        with_code(&shadowed.lowered.diagnostics, Code::KernelNameShadowed).is_empty(),
-        "the warning is superseded: {:?}",
+        with_code(&shadowed.lowered.diagnostics, Code::DuplicateTypeName).is_empty(),
+        "no identity collision remains: {:?}",
         shadowed.lowered.diagnostics
     );
     assert!(
-        !shadowed
+        shadowed
             .lowered
             .types
             .iter()
             .any(|t| t.kind == Kind::Record && t.display_name == "String"),
-        "the scalar keeps type/String"
+        "FR-007 lowers to its own type/String: {:?}",
+        shadowed.lowered.types
     );
 }

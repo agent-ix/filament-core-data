@@ -430,6 +430,12 @@
 				},
 				"redefines": {
 					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"constraints": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/constraint"
+					}
 				}
 			},
 			"allOf": [
@@ -847,7 +853,7 @@
 		},
 		"multiplicity": {
 			"type": "object",
-			"required": ["lower"],
+			"required": ["lower", "ordered", "unique"],
 			"properties": {
 				"lower": {
 					"type": "integer",
@@ -883,20 +889,16 @@
 			"type": "object",
 			"required": [
 				"identity",
-				"verb",
 				"category",
 				"composite",
-				"target",
-				"multiplicity",
+				"direction",
+				"sourceEnd",
+				"targetEnd",
 				"origin"
 			],
 			"properties": {
 				"identity": {
 					"$ref": "common.schema.json#/$defs/semanticIdentity"
-				},
-				"verb": {
-					"type": "string",
-					"minLength": 1
 				},
 				"category": {
 					"enum": [
@@ -912,14 +914,39 @@
 				"composite": {
 					"type": "boolean"
 				},
-				"target": {
-					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				"direction": {
+					"enum": [
+						"source-to-target",
+						"target-to-source",
+						"bidirectional",
+						"undirected"
+					]
+				},
+				"sourceEnd": {
+					"$ref": "#/$defs/relationshipEnd"
+				},
+				"targetEnd": {
+					"$ref": "#/$defs/relationshipEnd"
+				},
+				"origin": {
+					"$ref": "common.schema.json#/$defs/origin"
+				}
+			},
+			"additionalProperties": false
+		},
+		"relationshipEnd": {
+			"type": "object",
+			"required": ["multiplicity", "type"],
+			"properties": {
+				"role": {
+					"type": "string",
+					"minLength": 1
 				},
 				"multiplicity": {
 					"$ref": "#/$defs/multiplicity"
 				},
-				"origin": {
-					"$ref": "common.schema.json#/$defs/origin"
+				"type": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
 				}
 			},
 			"additionalProperties": false

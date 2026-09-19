@@ -63,7 +63,6 @@ fn assembled(name: &str) -> (Value, agent_ix_extraction_frontend::Provenance) {
         &extractions,
         &resolutions,
         &Limits::declared().expect("limits"),
-        &provenance.frontend.version,
     );
     assert!(
         !extractions.diagnostics.iter().any(|d| d.blocking)
@@ -560,7 +559,7 @@ fn tc_1342_a_contains_b_and_b_contains_a_refuses_at_lift_time_with_composite_cyc
                 .map(Vec::as_slice)
                 .unwrap_or(&[])
         })
-        .filter(|r| r["composite"] == true && r["verb"] == "contains")
+        .filter(|r| r["composite"] == true && r["sourceEnd"]["role"] == "contains")
         .collect();
     assert_eq!(composite.len(), 2, "{document}");
 }

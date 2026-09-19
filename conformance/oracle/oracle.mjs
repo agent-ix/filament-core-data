@@ -276,19 +276,6 @@ function checkMultiplicity(multiplicity, at, out) {
 		);
 		return multiplicity;
 	}
-	const collection = multiplicity.upper === undefined || multiplicity.upper > 1;
-	if (
-		!collection &&
-		(multiplicity.ordered !== undefined || multiplicity.unique !== undefined)
-	) {
-		out.push(
-			diagnostic(
-				"FLAGS_ON_NON_COLLECTION",
-				at,
-				"ordered and unique apply only when upper is absent or greater than 1",
-			),
-		);
-	}
 	return multiplicity;
 }
 
@@ -546,19 +533,30 @@ function checkTypeDefinition(definition, at, types, lockExports, out) {
 		: []
 	).entries()) {
 		if (!isObject(relationship)) continue;
-		const target = String(relationship.target);
+		const sourceEnd = isObject(relationship.sourceEnd)
+			? relationship.sourceEnd
+			: {};
+		const targetEnd = isObject(relationship.targetEnd)
+			? relationship.targetEnd
+			: {};
+		const target = String(targetEnd.type);
 		if (!types.has(target) && !lockExports.has(target)) {
 			out.push(
 				diagnostic(
 					"UNRESOLVED_RELATIONSHIP_TARGET",
-					`${at}/relationships/${i}/target`,
+					`${at}/relationships/${i}/targetEnd/type`,
 					`relationship target resolves to neither a document type nor a lock export: ${target}`,
 				),
 			);
 		}
 		checkMultiplicity(
-			relationship.multiplicity,
-			`${at}/relationships/${i}/multiplicity`,
+			sourceEnd.multiplicity,
+			`${at}/relationships/${i}/sourceEnd/multiplicity`,
+			out,
+		);
+		checkMultiplicity(
+			targetEnd.multiplicity,
+			`${at}/relationships/${i}/targetEnd/multiplicity`,
 			out,
 		);
 	}
@@ -631,7 +629,11 @@ function checkCompositeCycles(ir, out) {
 		).entries()) {
 			if (isObject(relationship) && relationship.composite === true) {
 				list.push({
-					target: String(relationship.target),
+					target: String(
+						isObject(relationship.targetEnd)
+							? relationship.targetEnd.type
+							: undefined,
+					),
 					pointer: pointer("ir", "types", t, "relationships", i),
 				});
 			}
@@ -657,7 +659,7 @@ function checkCompositeCycles(ir, out) {
 				out.push(
 					diagnostic(
 						"COMPOSITE_CYCLE",
-						`${edge.pointer}/target`,
+						`${edge.pointer}/targetEnd/type`,
 						`composite relationship closes a cycle at ${edge.target}`,
 					),
 				);

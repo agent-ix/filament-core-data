@@ -59,7 +59,9 @@
 					"identity": "ix://agent-ix/orders/AR-001/id",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "id",
 					"nullable": false,
@@ -80,7 +82,9 @@
 					"identity": "ix://agent-ix/orders/AR-001/root",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "root",
 					"nullable": false,
@@ -116,11 +120,8 @@
 				{
 					"category": "structural",
 					"composite": true,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/AR-001-aggregates-FR-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/AR-001-order-aggregate.md",
@@ -129,17 +130,31 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/FR-001",
-					"verb": "aggregates"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "aggregates",
+						"type": "ix://agent-ix/orders/AR-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "part_of",
+						"type": "ix://agent-ix/orders/FR-001"
+					}
 				},
 				{
 					"category": "structural",
 					"composite": true,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/AR-001-contains-VO-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/AR-001-order-aggregate.md",
@@ -148,17 +163,31 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/VO-001",
-					"verb": "contains"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "contains",
+						"type": "ix://agent-ix/orders/AR-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "part_of",
+						"type": "ix://agent-ix/orders/VO-001"
+					}
 				},
 				{
 					"category": "dataflow",
 					"composite": false,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/AR-001-emits-EV-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/AR-001-order-aggregate.md",
@@ -167,17 +196,31 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/EV-001",
-					"verb": "emits"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "emits",
+						"type": "ix://agent-ix/orders/AR-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "emitted_by",
+						"type": "ix://agent-ix/orders/EV-001"
+					}
 				},
 				{
 					"category": "traceability",
 					"composite": false,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/AR-001-references-EN-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/AR-001-order-aggregate.md",
@@ -186,8 +229,24 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/EN-001",
-					"verb": "references"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "references",
+						"type": "ix://agent-ix/orders/AR-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"type": "ix://agent-ix/orders/EN-001"
+					}
 				}
 			],
 			"roles": [
@@ -225,11 +284,8 @@
 				{
 					"category": "structural",
 					"composite": true,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/DM-001-contains-AR-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/domain/DM-001-ordering.md",
@@ -238,17 +294,31 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/AR-001",
-					"verb": "contains"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "contains",
+						"type": "ix://agent-ix/orders/DM-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "part_of",
+						"type": "ix://agent-ix/orders/AR-001"
+					}
 				},
 				{
 					"category": "structural",
 					"composite": true,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/DM-001-contains-EN-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/domain/DM-001-ordering.md",
@@ -257,17 +327,31 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/EN-001",
-					"verb": "contains"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "contains",
+						"type": "ix://agent-ix/orders/DM-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "part_of",
+						"type": "ix://agent-ix/orders/EN-001"
+					}
 				},
 				{
 					"category": "structural",
 					"composite": true,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/DM-001-contains-FR-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/domain/DM-001-ordering.md",
@@ -276,8 +360,25 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/FR-001",
-					"verb": "contains"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "contains",
+						"type": "ix://agent-ix/orders/DM-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "part_of",
+						"type": "ix://agent-ix/orders/FR-001"
+					}
 				}
 			],
 			"roles": ["business:domain"],
@@ -405,7 +506,9 @@
 					"identity": "ix://agent-ix/orders/EV-001/orderId",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "orderId",
 					"nullable": false,
@@ -426,7 +529,9 @@
 					"identity": "ix://agent-ix/orders/EV-001/placedAt",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "placedAt",
 					"nullable": false,
@@ -447,7 +552,9 @@
 					"identity": "ix://agent-ix/orders/EV-001/payload",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "payload",
 					"nullable": false,
@@ -482,11 +589,8 @@
 				{
 					"category": "dataflow",
 					"composite": false,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/EV-001-carries-VO-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/EV-001-order-placed.md",
@@ -495,17 +599,30 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/VO-001",
-					"verb": "carries"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "carries",
+						"type": "ix://agent-ix/orders/EV-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"type": "ix://agent-ix/orders/VO-001"
+					}
 				},
 				{
 					"category": "traceability",
 					"composite": false,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/EV-001-references-AR-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/EV-001-order-placed.md",
@@ -514,8 +631,24 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/AR-001",
-					"verb": "references"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "references",
+						"type": "ix://agent-ix/orders/EV-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"type": "ix://agent-ix/orders/AR-001"
+					}
 				}
 			],
 			"roles": ["business:event", "business:event-like"],
@@ -534,7 +667,9 @@
 					"identity": "ix://agent-ix/orders/FR-000/id",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "id",
 					"nullable": false,
@@ -555,7 +690,9 @@
 					"identity": "ix://agent-ix/orders/FR-000/labels",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 5
+						"upper": 5,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "labels",
 					"nullable": false,
@@ -659,7 +796,9 @@
 					"identity": "ix://agent-ix/orders/FR-001/id",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "id",
 					"nullable": false,
@@ -680,7 +819,9 @@
 					"extensions": [],
 					"identity": "ix://agent-ix/orders/FR-001/lines",
 					"multiplicity": {
-						"lower": 1
+						"lower": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "lines",
 					"nullable": false,
@@ -701,7 +842,9 @@
 					"identity": "ix://agent-ix/orders/FR-001/note",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "note",
 					"nullable": false,
@@ -722,7 +865,9 @@
 					"identity": "ix://agent-ix/orders/FR-001/status",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "status",
 					"nullable": false,
@@ -742,7 +887,9 @@
 					"extensions": [],
 					"identity": "ix://agent-ix/orders/FR-001/tags",
 					"multiplicity": {
-						"lower": 0
+						"lower": 0,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "tags",
 					"nullable": false,
@@ -773,7 +920,9 @@
 					"identity": "ix://agent-ix/orders/FR-001/total",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "total",
 					"nullable": false,
@@ -795,7 +944,9 @@
 					"identity": "ix://agent-ix/orders/FR-001/labels",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 3
+						"upper": 3,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "labels",
 					"nullable": false,
@@ -817,7 +968,9 @@
 					"identity": "ix://agent-ix/orders/FR-001/badges",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 2
+						"upper": 2,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "badges",
 					"nullable": false,
@@ -853,11 +1006,8 @@
 				{
 					"category": "structural",
 					"composite": true,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/FR-001-contains-NE-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/FR-001-order.md",
@@ -866,17 +1016,31 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/NE-001",
-					"verb": "contains"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "contains",
+						"type": "ix://agent-ix/orders/FR-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "part_of",
+						"type": "ix://agent-ix/orders/NE-001"
+					}
 				},
 				{
 					"category": "dependency",
 					"composite": false,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/FR-001-owns-SM-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/FR-001-order.md",
@@ -885,17 +1049,30 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/SM-001",
-					"verb": "owns"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "owns",
+						"type": "ix://agent-ix/orders/FR-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"type": "ix://agent-ix/orders/SM-001"
+					}
 				},
 				{
 					"category": "traceability",
 					"composite": false,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/FR-001-references-EN-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/FR-001-order.md",
@@ -904,8 +1081,24 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/EN-001",
-					"verb": "references"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "references",
+						"type": "ix://agent-ix/orders/FR-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"type": "ix://agent-ix/orders/EN-001"
+					}
 				}
 			],
 			"roles": [
@@ -1046,7 +1239,9 @@
 					"identity": "ix://agent-ix/orders/NE-001/carrier",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "carrier",
 					"nullable": false,
@@ -1074,7 +1269,9 @@
 					"identity": "ix://agent-ix/orders/NE-001/id",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "id",
 					"nullable": false,
@@ -1110,11 +1307,8 @@
 				{
 					"category": "structural",
 					"composite": true,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/NE-001-contains-VO-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/NE-001-shipment.md",
@@ -1123,17 +1317,31 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/VO-001",
-					"verb": "contains"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "contains",
+						"type": "ix://agent-ix/orders/NE-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "part_of",
+						"type": "ix://agent-ix/orders/VO-001"
+					}
 				},
 				{
 					"category": "traceability",
 					"composite": false,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/NE-001-references-EN-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/NE-001-shipment.md",
@@ -1142,8 +1350,24 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/EN-001",
-					"verb": "references"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "references",
+						"type": "ix://agent-ix/orders/NE-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"type": "ix://agent-ix/orders/EN-001"
+					}
 				}
 			],
 			"roles": [
@@ -1252,7 +1476,9 @@
 					"identity": "ix://agent-ix/orders/OP-001/id",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "id",
 					"nullable": false,
@@ -1272,7 +1498,9 @@
 					"extensions": [],
 					"identity": "ix://agent-ix/orders/OP-001/lines",
 					"multiplicity": {
-						"lower": 0
+						"lower": 0,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "lines",
 					"nullable": false,
@@ -1313,7 +1541,9 @@
 							"identity": "ix://agent-ix/orders/OP-001/addLine/line",
 							"multiplicity": {
 								"lower": 1,
-								"upper": 1
+								"upper": 1,
+								"ordered": false,
+								"unique": false
 							},
 							"name": "line",
 							"nullable": false,
@@ -1334,7 +1564,9 @@
 							"identity": "ix://agent-ix/orders/OP-001/addLine/quantity",
 							"multiplicity": {
 								"lower": 1,
-								"upper": 1
+								"upper": 1,
+								"ordered": false,
+								"unique": false
 							},
 							"name": "quantity",
 							"nullable": false,
@@ -1355,7 +1587,9 @@
 					"returns": {
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						},
 						"nullable": false,
 						"typeRef": "ix://agent-ix/orders/OP-001"
@@ -1393,7 +1627,9 @@
 					"returns": {
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						},
 						"nullable": false,
 						"typeRef": "ix://agent-ix/orders/Decimal"
@@ -1437,7 +1673,9 @@
 					"identity": "ix://agent-ix/orders/PR-001/id",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "id",
 					"nullable": false,
@@ -1458,7 +1696,9 @@
 					"identity": "ix://agent-ix/orders/PR-001/order",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "order",
 					"nullable": false,
@@ -1493,11 +1733,8 @@
 				{
 					"category": "dataflow",
 					"composite": false,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/PR-001-consumes-EV-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/PR-001-fulfilment.md",
@@ -1506,17 +1743,30 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/EV-001",
-					"verb": "consumes"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "consumes",
+						"type": "ix://agent-ix/orders/PR-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"type": "ix://agent-ix/orders/EV-001"
+					}
 				},
 				{
 					"category": "realization",
 					"composite": false,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/PR-001-operates-on-FR-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/PR-001-fulfilment.md",
@@ -1525,17 +1775,30 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/FR-001",
-					"verb": "operates_on"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "operates_on",
+						"type": "ix://agent-ix/orders/PR-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"type": "ix://agent-ix/orders/FR-001"
+					}
 				},
 				{
 					"category": "dataflow",
 					"composite": false,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/PR-001-reads-FR-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/PR-001-fulfilment.md",
@@ -1544,8 +1807,24 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/FR-001",
-					"verb": "reads"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "reads",
+						"type": "ix://agent-ix/orders/PR-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"type": "ix://agent-ix/orders/FR-001"
+					}
 				}
 			],
 			"roles": ["business:measurable", "business:process"],
@@ -1620,7 +1899,9 @@
 							"identity": "ix://agent-ix/orders/RP-001/findById/id",
 							"multiplicity": {
 								"lower": 1,
-								"upper": 1
+								"upper": 1,
+								"ordered": false,
+								"unique": false
 							},
 							"name": "id",
 							"nullable": false,
@@ -1641,7 +1922,9 @@
 					"returns": {
 						"multiplicity": {
 							"lower": 0,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						},
 						"nullable": false,
 						"typeRef": "ix://agent-ix/orders/FR-001"
@@ -1665,7 +1948,9 @@
 							"identity": "ix://agent-ix/orders/RP-001/save/order",
 							"multiplicity": {
 								"lower": 1,
-								"upper": 1
+								"upper": 1,
+								"ordered": false,
+								"unique": false
 							},
 							"name": "order",
 							"nullable": false,
@@ -1686,7 +1971,9 @@
 					"returns": {
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						},
 						"nullable": false,
 						"typeRef": "ix://agent-ix/orders/FR-001"
@@ -1706,11 +1993,8 @@
 				{
 					"category": "dependency",
 					"composite": false,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/RP-001-persists-FR-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/RP-001-order-repository.md",
@@ -1719,8 +2003,24 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/FR-001",
-					"verb": "persists"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "persists",
+						"type": "ix://agent-ix/orders/RP-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"type": "ix://agent-ix/orders/FR-001"
+					}
 				}
 			],
 			"roles": ["business:repository"],
@@ -1761,7 +2061,9 @@
 					"identity": "ix://agent-ix/orders/SM-001/current",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "current",
 					"nullable": false,
@@ -1801,7 +2103,9 @@
 							"identity": "ix://agent-ix/orders/SM-001/advance/to",
 							"multiplicity": {
 								"lower": 1,
-								"upper": 1
+								"upper": 1,
+								"ordered": false,
+								"unique": false
 							},
 							"name": "to",
 							"nullable": false,
@@ -1849,7 +2153,9 @@
 					"returns": {
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						},
 						"nullable": false,
 						"typeRef": "ix://agent-ix/orders/EN-001"
@@ -1873,11 +2179,8 @@
 				{
 					"category": "behavioral",
 					"composite": false,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/SM-001-raises-EV-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/SM-001-order-lifecycle.md",
@@ -1886,17 +2189,30 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/EV-001",
-					"verb": "raises"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "raises",
+						"type": "ix://agent-ix/orders/SM-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"type": "ix://agent-ix/orders/EV-001"
+					}
 				},
 				{
 					"category": "traceability",
 					"composite": false,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/SM-001-references-EN-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/SM-001-order-lifecycle.md",
@@ -1905,8 +2221,24 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/EN-001",
-					"verb": "references"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "references",
+						"type": "ix://agent-ix/orders/SM-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"type": "ix://agent-ix/orders/EN-001"
+					}
 				}
 			],
 			"roles": ["business:state_machine"],
@@ -2046,7 +2378,9 @@
 					"identity": "ix://agent-ix/orders/VO-001/kind",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "kind",
 					"nullable": false,
@@ -2067,7 +2401,9 @@
 					"identity": "ix://agent-ix/orders/VO-001/quantity",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "quantity",
 					"nullable": false,
@@ -2088,7 +2424,9 @@
 					"identity": "ix://agent-ix/orders/VO-001/sku",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"name": "sku",
 					"nullable": false,
@@ -2122,11 +2460,8 @@
 				{
 					"category": "structural",
 					"composite": false,
+					"direction": "source-to-target",
 					"identity": "ix://agent-ix/orders/relationship/VO-001-composes-EN-001",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
 					"origin": {
 						"source": {
 							"path": "spec/functional/VO-001-order-line.md",
@@ -2135,8 +2470,25 @@
 							"startLine": 1
 						}
 					},
-					"target": "ix://agent-ix/orders/EN-001",
-					"verb": "composes"
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "composes",
+						"type": "ix://agent-ix/orders/VO-001"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "composed_by",
+						"type": "ix://agent-ix/orders/EN-001"
+					}
 				}
 			],
 			"roles": [

@@ -437,10 +437,7 @@ fn occurrence_field(
         .get("typeRef")
         .and_then(Json::as_str)
         .and_then(|type_ref| document.resolve(type_ref))
-        .is_some_and(|resolved| {
-            resolved.get("kind").and_then(Json::as_str) == Some("scalar")
-                && resolved.get("scalar").and_then(Json::as_str) == Some("datetime")
-        });
+        .is_some_and(|resolved| resolved.kind() == "scalar" && resolved.scalar() == "datetime");
     if !datetime {
         sink.emit(
             at,

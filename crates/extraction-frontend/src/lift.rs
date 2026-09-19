@@ -154,13 +154,7 @@ pub fn lift(request: &LiftRequest) -> LiftOutcome {
     }
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
-    let lowered = lower_bundle(
-        &bundle,
-        &extractions,
-        &resolutions,
-        &limits,
-        &provenance.frontend.version,
-    );
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits);
     let mut diagnostics = extractions.diagnostics;
     diagnostics.extend(lowered.diagnostics);
     let envelope = Envelope::new(&bundle, &modules);

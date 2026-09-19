@@ -37,11 +37,9 @@ import {
 	fragment,
 } from "../../diagnostics.mjs";
 import {
-	capitalize,
-	constraintAliasIdentity,
 	constraintDiagnosticCode,
-	kernelIdentity,
 	mintIdentity,
+	nativeTypeRef,
 	slug,
 } from "./identity.mjs";
 import { applies } from "../../ir/applicability.mjs";
@@ -102,6 +100,15 @@ const KERNEL_NAMES = new Map([
 	["duration", "Duration"],
 	["uuid", "UUID"],
 ]);
+
+/** The `ix://quire/native/<Name>` prefix a kernel scalar reference takes. */
+const NATIVE_PREFIX = "ix://quire/native/";
+
+/** `KERNEL_NAMES` inverted: the kernel name to the IR scalar it resolves
+ * to, for reading a native reference back (gap 1 of FCD #199/#200). */
+const NATIVE_IR_SCALARS = new Map(
+	Array.from(KERNEL_NAMES, ([irScalar, name]) => [name, irScalar]),
+);
 
 const EXTENSION_BASE = "ix://agent-ix/semantic-core/ext";
 
@@ -381,10 +388,9 @@ export function lowerProgram(options) {
 		);
 	}
 
-	// A kernel definition is emitted the moment a member type needs it, not at
-	// the end. `resolvedKindOf` looks definitions up by identity, so a definition
-	// that arrives later leaves every constraint and every `@unit` on a
-	// built-in-typed field resolving to nothing — and then refused, wrongly.
+	// A kernel scalar mints no package node (gap 1 of FCD #199/#200): the
+	// `typeRef` is its native reference, resolved by `resolvedKindOf` below
+	// without a `definitions` lookup.
 	const useKernel = (irScalar, at) => {
 		const name = KERNEL_NAMES.get(irScalar);
 		if (!name) {
@@ -395,9 +401,7 @@ export function lowerProgram(options) {
 			);
 			return undefined;
 		}
-		const identity = kernelIdentity(packageIdentity, name);
-		if (!definitions.has(identity)) emitKernel(identity, name, irScalar);
-		return identity;
+		return nativeTypeRef(name);
 	};
 
 	const typeIdentity = (name) => mintIdentity(packageIdentity, "type", [name]);
@@ -509,36 +513,16 @@ export function lowerProgram(options) {
 		return definition;
 	};
 
-	/** The package-local definition FR-034 mints for a kernel scalar. */
-	const emitKernel = (identity, name, irScalar) =>
-		emit({
-			identity,
-			displayName: name,
-			kind: "scalar",
-			roles: [],
-			origin: {
-				generated: {
-					generatorIdentity:
-						"ix://agent-ix/filament-core-data/compiler/typespec",
-					generatorVersion: "1.1.0",
-					inputIdentities: [sourceIdentity],
-				},
-			},
-			constraints: [],
-			extensions: [
-				{
-					identity: `${EXTENSION_BASE}/kernel-scalar`,
-					version: "1.0.0",
-					required: false,
-					payload: { name },
-				},
-			],
-			unknownPolicy: "reject",
-			scalar: irScalar,
-		});
-
-	/** Resolves a definition's kind and scalar, following aliases. */
+	/** Resolves a `typeRef`'s kind and scalar: a native reference resolves
+	 * directly over the closed kernel scalar set (gap 1 of FCD #199/#200), an
+	 * authored alias (`scalar X extends Y`) follows its `target`, and every
+	 * other authored type resolves through `definitions`. */
 	const resolvedKindOf = (identity, seen = new Set()) => {
+		if (identity?.startsWith(NATIVE_PREFIX)) {
+			const name = identity.slice(NATIVE_PREFIX.length);
+			const irScalar = NATIVE_IR_SCALARS.get(name);
+			return irScalar ? { kind: "scalar", scalar: irScalar } : undefined;
+		}
 		if (seen.has(identity)) return undefined;
 		seen.add(identity);
 		const definition = definitions.get(identity);
@@ -740,6 +724,10 @@ export function lowerProgram(options) {
 	/** Lowers one model property (or operation parameter) to an IR field node. */
 	const lowerField = (declaration, property, identityParts, ownerParts) => {
 		const at = context.locusOf(property);
+		const fieldIdentity = mintIdentity(packageIdentity, "field", [
+			...ownerParts,
+			property.name,
+		]);
 		const nullable = unwrapNullable(property.type);
 		const item = collectionItem(nullable.type);
 		const memberType = item ?? nullable.type;
@@ -783,31 +771,23 @@ export function lowerProgram(options) {
 			multiplicity = { lower: property.optional ? 0 : 1, upper: 1 };
 		}
 
-		const isCollection =
-			multiplicity.upper === undefined || multiplicity.upper > 1;
+		// Every emitted multiplicity carries `ordered` and `unique` (QSpec
+		// model-complete.md); a property with no `@collection` decorator emits
+		// both as `false`.
 		if (collection) {
-			if (!isCollection) {
-				context.raise(
-					DIAGNOSTIC_CODES.FLAGS_ON_NON_COLLECTION,
-					"@collection applies only where the upper bound is absent or greater than one",
-					decoratorLocus(collection, property),
-				);
-				return undefined;
-			}
 			multiplicity.ordered = collection.ordered;
 			multiplicity.unique = collection.unique;
+		} else {
+			multiplicity.ordered = false;
+			multiplicity.unique = false;
 		}
 
 		const constraints = constraintsOf(property);
+		let fieldConstraints;
 		if (constraints.length > 0) {
-			// FR-034: a constrained property retargets to a minted alias, because a
-			// field node carries no constraints of its own.
-			const aliasIdentity = constraintAliasIdentity(
-				packageIdentity,
-				ownerParts[0],
-				property.name,
-			);
-			const aliasName = `${ownerParts[0]}${capitalize(property.name)}`;
+			// Gap 1 of FCD #199/#200: a constrained property keeps its constraints
+			// on the field itself, `appliesTo` the field's own identity; `typeRef`
+			// stays the field's resolved type, no synthetic alias.
 			const resolved = resolvedKindOf(typeRef) ?? { kind: "record" };
 			const attached = [];
 			for (const item of constraints) {
@@ -827,7 +807,7 @@ export function lowerProgram(options) {
 					]),
 					keyword: item.keyword,
 					operands: item.operands,
-					appliesTo: aliasIdentity,
+					appliesTo: fieldIdentity,
 					diagnosticCode: constraintDiagnosticCode(
 						packageIdentity,
 						[...ownerParts, property.name],
@@ -836,20 +816,7 @@ export function lowerProgram(options) {
 					origin: context.originOf(property),
 				});
 			}
-			if (attached.length > 0) {
-				emit({
-					identity: aliasIdentity,
-					displayName: aliasName,
-					kind: "alias",
-					roles: [],
-					origin: context.originOf(property),
-					constraints: attached.sort(byIdentity),
-					extensions: [],
-					unknownPolicy: "reject",
-					target: typeRef,
-				});
-				typeRef = aliasIdentity;
-			}
+			if (attached.length > 0) fieldConstraints = attached.sort(byIdentity);
 		}
 
 		const extensions = [];
@@ -893,10 +860,7 @@ export function lowerProgram(options) {
 		}
 
 		const field = {
-			identity: mintIdentity(packageIdentity, "field", [
-				...ownerParts,
-				property.name,
-			]),
+			identity: fieldIdentity,
 			name: property.name,
 			typeRef,
 			multiplicity,
@@ -907,6 +871,7 @@ export function lowerProgram(options) {
 			defaultKind: "none",
 			origin: context.originOf(property),
 			extensions: extensions.sort(byIdentity),
+			...(fieldConstraints ? { constraints: fieldConstraints } : {}),
 		};
 
 		const kindDecorator = context.state("defaultKind", property);
@@ -928,7 +893,7 @@ export function lowerProgram(options) {
 			if (!resolved || resolved.kind !== "scalar") {
 				context.raise(
 					DIAGNOSTIC_CODES.UNIT_ON_NON_SCALAR,
-					`@unit applies only where the field's type resolves, through aliases, to a scalar (resolved ${fragment(resolved?.kind ?? "nothing")})`,
+					`@unit applies only where the field's type resolves to a scalar (resolved ${fragment(resolved?.kind ?? "nothing")})`,
 					decoratorLocus(unit, property),
 				);
 				return undefined;
@@ -1013,6 +978,11 @@ export function lowerProgram(options) {
 					const multiplicity = { lower: item.lower ?? 0 };
 					if (item.upper !== undefined) multiplicity.upper = item.upper;
 					else if (item.lower === undefined) multiplicity.upper = 1;
+					// Every emitted multiplicity carries `ordered` and `unique`
+					// (QSpec model-complete.md); a relationship end never declares
+					// either, so both are always `false`.
+					multiplicity.ordered = false;
+					multiplicity.unique = false;
 					return {
 						identity: mintIdentity(packageIdentity, "relationship", [
 							declaration.name,
@@ -1093,7 +1063,12 @@ export function lowerProgram(options) {
 					if (typeRef) {
 						node.returns = {
 							typeRef,
-							multiplicity: returnItem ? { lower: 1 } : { lower: 1, upper: 1 },
+							// Every emitted multiplicity carries `ordered` and `unique`
+							// (QSpec model-complete.md); a return type never declares
+							// either, so both are always `false`.
+							multiplicity: returnItem
+								? { lower: 1, ordered: false, unique: false }
+								: { lower: 1, upper: 1, ordered: false, unique: false },
 							nullable: false,
 						};
 					}

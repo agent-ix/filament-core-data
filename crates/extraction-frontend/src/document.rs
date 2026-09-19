@@ -62,8 +62,40 @@ pub fn assemble(
         ),
     );
     let mut document = Value::Object(members);
+    normalize_multiplicities(&mut document);
     sort_node_lists(&mut document);
     Ok(document)
+}
+
+/// Every `multiplicity` member, wherever it sits (a field, a parameter, an
+/// operation's `returns`, a relationship end, a construct's own
+/// `multiplicity`, a connection end): `ordered` and `unique` are booleans on
+/// every one, `false` when the row that produced it named neither
+/// (QSpec model-complete.md, FCD #199/#200's multiplicity ruling). This
+/// frontend's own `Multiplicity` value skips an absent `ordered`/`unique`
+/// (`quire_rs::semantic::Multiplicity`, vendored, not this crate's to
+/// change), so the fill-in happens once here, over the assembled document,
+/// rather than at every site that carries a multiplicity.
+fn normalize_multiplicities(value: &mut Value) {
+    match value {
+        Value::Object(map) => {
+            if let Some(Value::Object(multiplicity)) = map.get_mut("multiplicity") {
+                multiplicity
+                    .entry("ordered")
+                    .or_insert(Value::Bool(false));
+                multiplicity.entry("unique").or_insert(Value::Bool(false));
+            }
+            for child in map.values_mut() {
+                normalize_multiplicities(child);
+            }
+        }
+        Value::Array(items) => {
+            for item in items {
+                normalize_multiplicities(item);
+            }
+        }
+        _ => {}
+    }
 }
 
 /// `serde_json::to_value` over a node this crate defines. Every emitted

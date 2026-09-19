@@ -129,17 +129,6 @@ function checkMultiplicity(
 			return undefined;
 		}
 	}
-	const collection = upper === undefined || upper > 1;
-	if (
-		!collection &&
-		(value.ordered !== undefined || value.unique !== undefined)
-	) {
-		diagnostics.push({
-			code: "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
-			path,
-			message: "ordered/unique apply only when upper is absent or > 1",
-		});
-	}
 	return value as Multiplicity;
 }
 
@@ -319,11 +308,17 @@ function checkTypeDefinition(
 		}
 	}
 	for (const [index, relationship] of relationships.entries()) {
-		const target = String(relationship.target);
+		const sourceEnd = isObject(relationship.sourceEnd)
+			? relationship.sourceEnd
+			: {};
+		const targetEnd = isObject(relationship.targetEnd)
+			? relationship.targetEnd
+			: {};
+		const target = String(targetEnd.type);
 		if (!types.has(target) && !lockExports.has(target)) {
 			diagnostics.push({
 				code: "agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET",
-				path: `${path}.relationships.${index}.target`,
+				path: `${path}.relationships.${index}.targetEnd.type`,
 				message: `target does not resolve: ${target}`,
 			});
 		}
@@ -335,8 +330,13 @@ function checkTypeDefinition(
 			});
 		}
 		checkMultiplicity(
-			relationship.multiplicity,
-			`${path}.relationships.${index}.multiplicity`,
+			sourceEnd.multiplicity,
+			`${path}.relationships.${index}.sourceEnd.multiplicity`,
+			diagnostics,
+		);
+		checkMultiplicity(
+			targetEnd.multiplicity,
+			`${path}.relationships.${index}.targetEnd.multiplicity`,
 			diagnostics,
 		);
 	}
@@ -441,7 +441,11 @@ function checkCompositeCycles(
 		).entries())
 			if (relationship.composite === true)
 				list.push({
-					target: String(relationship.target),
+					target: String(
+						isObject(relationship.targetEnd)
+							? relationship.targetEnd.type
+							: undefined,
+					),
 					path: `${paths.get(identity)}.relationships.${relIndex}`,
 				});
 		edges.set(identity, list);

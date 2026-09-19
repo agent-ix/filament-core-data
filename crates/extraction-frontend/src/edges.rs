@@ -55,15 +55,48 @@ const TYPE: &str = "type";
 /// body `ix://` autolink is harvested under.
 const DEFAULT_VERB: &str = "references";
 
-/// `semantic-ir.schema.json#/$defs/relationship`.
+/// `semantic-ir.schema.json#/$defs/relationshipEnd`: one end of a
+/// relationship, its role, its multiplicity, and the type it names (FR-094
+/// "Relationships", gap 3 of FCD #199/#200).
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct RelationshipEnd {
+    /// The edge vocabulary's verb (source end) or `inverse` (target end).
+    /// Omitted on the target end when the verb declares no `inverse`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub role: Option<String>,
+    pub multiplicity: Multiplicity,
+    #[serde(rename = "type")]
+    pub type_ref: String,
+}
+
+/// `source-to-target` | `target-to-source` | `bidirectional` | `undirected`
+/// (FR-094 "Relationships", gap 3 of FCD #199/#200). Lowering always emits
+/// `SourceToTarget`: source-multiplicity authoring is future FCD #201, and a
+/// symmetric/undirected flag is future quire-rs#466.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Direction {
+    SourceToTarget,
+    TargetToSource,
+    Bidirectional,
+    Undirected,
+}
+
+/// `semantic-ir.schema.json#/$defs/relationship`: two ends, source and
+/// target (FR-094 "Relationships", gap 3 of FCD #199/#200). The source end's
+/// role is the edge verb and its type is the owning artifact; the target
+/// end's role is the edge vocabulary's `inverse` (absent when none is
+/// declared) and its type is the resolved target.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Relationship {
     pub identity: String,
-    pub verb: String,
     pub category: EdgeCategory,
     pub composite: bool,
-    pub target: String,
-    pub multiplicity: Multiplicity,
+    pub direction: Direction,
+    #[serde(rename = "sourceEnd")]
+    pub source_end: RelationshipEnd,
+    #[serde(rename = "targetEnd")]
+    pub target_end: RelationshipEnd,
     pub origin: Origin,
 }
 
@@ -143,6 +176,13 @@ pub fn lower_relationships(
     let head = ctx.head();
     let mut sink = Sink::default();
     let mut out = Vec::new();
+    // The source end's type on every relationship this artifact declares
+    // (gap 3 of FCD #199/#200): the artifact's own type identity, computed
+    // once rather than per relationship.
+    let source_type = match ctx.package.type_identity(ctx.id) {
+        Ok(identity) => identity,
+        Err(unsluggable) => return Err(vec![unsluggable.diagnostic(head.clone())]),
+    };
     for (token, verb) in frontmatter_edges(document) {
         if !allowed.contains_key(&verb) {
             continue;
@@ -187,19 +227,31 @@ pub fn lower_relationships(
                 continue;
             }
         };
+        let target_type = match ctx.package.type_identity(&target.id) {
+            Ok(identity) => identity,
+            Err(unsluggable) => {
+                sink.push(unsluggable.diagnostic(head.clone()));
+                continue;
+            }
+        };
         out.push(Relationship {
             identity,
-            verb,
             category: definition.category,
             composite: definition.inverse.as_deref() == Some(PART_OF),
-            target: match ctx.package.type_identity(&target.id) {
-                Ok(identity) => identity,
-                Err(unsluggable) => {
-                    sink.push(unsluggable.diagnostic(head.clone()));
-                    continue;
-                }
+            direction: Direction::SourceToTarget,
+            source_end: RelationshipEnd {
+                role: Some(verb),
+                multiplicity: Multiplicity {
+                    lower: 0,
+                    ..Multiplicity::default()
+                },
+                type_ref: source_type.clone(),
             },
-            multiplicity: Multiplicity::one(),
+            target_end: RelationshipEnd {
+                role: definition.inverse.clone(),
+                multiplicity: Multiplicity::one(),
+                type_ref: target_type,
+            },
             origin: Origin::Source(head.clone()),
         });
     }

@@ -91,7 +91,7 @@ known zero value.
 
 ### Structural model detail (issue #34)
 
-The IR declares exactly one `contractVersion`, `2.0.0`; the schema admits no other value and refuses a document declaring one with `SCHEMA_VIOLATION` at `contractVersion` before any other member is read (FR-050). A field carries an explicit `multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is unbounded); its `presence` is authored independently ([FR-106](../../spec/functional/FR-106-author-field-presence-independently.md), [issue #93](https://github.com/agent-ix/filament-core-data/issues/93)), never derived from `multiplicity`, `nullable`, or the default kind, and `2.0.0` enforces no agreement between `presence` and `multiplicity.lower`: a required field with `lower: 0` and an optional field with `lower` at least `1` are both valid (FR-106-CON-1); fcd#179 deleted `PRESENCE_MULTIPLICITY_MISMATCH` along with the `1.0.0`/`1.1.0` contracts it checked. A field may carry a UCUM `unit` when its `typeRef` resolves, through aliases, to a scalar. Because the schema already requires `multiplicity`, `presence`, and `nullable` on every field, the normalized serialization carries them as authored rather than deriving or filling in a default.
+The IR declares exactly one `contractVersion`, `2.0.0`; the schema admits no other value and refuses a document declaring one with `SCHEMA_VIOLATION` at `contractVersion` before any other member is read (FR-050). A field carries an explicit `multiplicity { lower, upper?, ordered, unique }` (absent `upper` is unbounded; `ordered` and `unique` are required booleans on every multiplicity — fields, parameters, returns, relationship ends, and connection ends alike — `false` where `upper` is 0 or 1); its `presence` is authored independently ([FR-106](../../spec/functional/FR-106-author-field-presence-independently.md), [issue #93](https://github.com/agent-ix/filament-core-data/issues/93)), never derived from `multiplicity`, `nullable`, or the default kind, and `2.0.0` enforces no agreement between `presence` and `multiplicity.lower`: a required field with `lower: 0` and an optional field with `lower` at least `1` are both valid (FR-106-CON-1); fcd#179 deleted `PRESENCE_MULTIPLICITY_MISMATCH` along with the `1.0.0`/`1.1.0` contracts it checked. A field may carry a UCUM `unit` when its `typeRef` resolves, through aliases, to a scalar. Because the schema already requires `multiplicity`, `presence`, and `nullable` on every field, the normalized serialization carries them as authored rather than deriving or filling in a default.
 
 A record type definition carries first-class `relationships[]` (verb, FR-040
 category, `composite` flag, target identity, multiplicity, origin),
@@ -258,6 +258,18 @@ cross-field agreement between them (FR-106); fcd#179 deleted
 checked. Because the schema requires `multiplicity`, `presence`, and `nullable` on
 every field, normalization carries them as authored rather than deriving or
 filling in a default.
+
+**Relationships.** A `relationship` names `category` (one of `structural`,
+`behavioral`, `dataflow`, `dependency`, `realization`, `governance`,
+`traceability`), `composite`, `direction` (one of `source-to-target`,
+`target-to-source`, `bidirectional`, `undirected`; lowering always emits
+`source-to-target`), a `sourceEnd` and a `targetEnd`, and `origin` — never a
+flat `verb`, `target` or `multiplicity` (fcd#199/#200). Each end carries
+`multiplicity` and the `type` it names, and an optional `role`: the source
+end's `role` is the edge vocabulary verb as authored, the target end's is the
+registry's declared `inverse` for that verb, absent when the registry
+declares none. `composite` is `true` exactly when the verb's registry
+`inverse` is `part_of`.
 
 **Model members.**
 

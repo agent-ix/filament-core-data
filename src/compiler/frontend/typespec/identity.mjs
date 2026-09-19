@@ -52,26 +52,12 @@ export function mintIdentity(packageIdentity, slot, parts) {
 	return `ix://${packageIdentity}/${slot}/${slugged.join("-")}`;
 }
 
-/** The package-local kernel scalar definition FR-034 mints for a built-in scalar. */
-export function kernelIdentity(packageIdentity, kernelName) {
-	return mintIdentity(packageIdentity, "type", [kernelName]);
-}
-
 /**
- * The alias a constrained field's type is retargeted to (FR-034). Constraints
- * live on type definitions — `semantic-ir.schema.json` gives a field no
- * `constraints` member — so a constrained property mints one.
+ * The `typeRef` a built-in scalar resolves to: `ix://quire/native/<Name>`,
+ * naming no package node (gap 1 of FCD #199/#200).
  */
-export function constraintAliasIdentity(packageIdentity, owner, field) {
-	return mintIdentity(packageIdentity, "type", [
-		`${slug(owner)}${capitalize(slug(field))}`,
-	]);
-}
-
-/** `code` becomes `Code`; FR-034 writes the minted alias as `<Name><Field>`. */
-export function capitalize(value) {
-	const text = String(value);
-	return text.length === 0 ? text : text[0].toUpperCase() + text.slice(1);
+export function nativeTypeRef(kernelName) {
+	return `ix://quire/native/${kernelName}`;
 }
 
 /**

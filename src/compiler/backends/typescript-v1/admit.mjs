@@ -51,7 +51,7 @@ function code(name) {
 }
 
 /**
- * The closed admissibility register. Twenty-eight codes, spelled here and nowhere
+ * The closed admissibility register. Twenty-seven codes, spelled here and nowhere
  * else, standing in exact bijection with the `agent-ix.semantic-ir.` half of
  * `conformance/diagnostic-codes.json` — asserted in both directions by a test.
  */
@@ -59,7 +59,6 @@ export const ADMISSIBILITY_CODES = Object.freeze({
 	SCHEMA_VIOLATION: code("SCHEMA_VIOLATION"),
 	INVALID_DOCUMENT: code("INVALID_DOCUMENT"),
 	INVALID_MULTIPLICITY: code("INVALID_MULTIPLICITY"),
-	FLAGS_ON_NON_COLLECTION: code("FLAGS_ON_NON_COLLECTION"),
 	UNIT_ON_NON_SCALAR: code("UNIT_ON_NON_SCALAR"),
 	UNRESOLVED_TYPE_REF: code("UNRESOLVED_TYPE_REF"),
 	UNRESOLVED_ELEMENT_TYPE: code("UNRESOLVED_ELEMENT_TYPE"),
@@ -120,7 +119,7 @@ function fromCorpus(note) {
  * An import ban is checkable; transcription is not. This is the disclosure that
  * makes the independence claim falsifiable at all, and it is deliberately
  * unflattering where the honest answer is unflattering:
- * `conformance/diagnostic-codes.json` marks fifteen of its thirty codes
+ * `conformance/diagnostic-codes.json` marks fourteen of its twenty-seven codes
  * `provenance: "minted"`, and a rule read from the yardstick is not a rule read
  * from the contract. A row claiming a published clause carries the quote, and a
  * test asserts that quote occurs verbatim in the named artifact.
@@ -134,9 +133,6 @@ export const DERIVATIONS = Object.freeze({
 	),
 	INVALID_MULTIPLICITY: fromCorpus(
 		"the contract names the two bounds and never says an upper below a lower is a defect; the incoherence is obvious and the rule is still the corpus's, not a clause's",
-	),
-	FLAGS_ON_NON_COLLECTION: fromCorpus(
-		"the contract lists ordered and unique as multiplicity members and never restricts them to a collection; the restriction is the corpus's reading",
 	),
 	UNIT_ON_NON_SCALAR: fromClause(
 		CONTRACTS,
@@ -406,9 +402,41 @@ const SCALAR_KINDS = new Set(["scalar"]);
 const ALIAS_KINDS = new Set(["alias", "reference"]);
 
 /**
+ * A native value type reference (gap 1 of FCD #199/#200): `ix://quire/native/<Name>`
+ * declares no node, over the closed set of kernel scalars below. This is a
+ * second implementation beside `src/compiler/ir/reader.mjs`'s `nativeScalar`,
+ * deliberately, and it imports neither — see this file's header comment.
+ */
+const NATIVE_PREFIX = "ix://quire/native/";
+const NATIVE_SCALARS = new Map([
+	["UUID", "uuid"],
+	["Boolean", "boolean"],
+	["Integer", "integer"],
+	["Decimal", "number"],
+	["String", "string"],
+	["Timestamp", "datetime"],
+	["Duration", "duration"],
+	["Bytes", "bytes"],
+	["JsonObject", "any"],
+]);
+
+function nativeScalar(identity) {
+	if (typeof identity !== "string" || !identity.startsWith(NATIVE_PREFIX)) {
+		return undefined;
+	}
+	return NATIVE_SCALARS.get(identity.slice(NATIVE_PREFIX.length));
+}
+
+/** Whether `identity` resolves: a document declares it, or it is a native type reference. */
+function resolvable(types, identity) {
+	return types.has(identity) || nativeScalar(identity) !== undefined;
+}
+
+/**
  * Follow a chain of aliases and references. Returns one of
  * `{ state: "resolved", type }`, `{ state: "absent" }`, `{ state: "cycle" }`,
- * or `{ state: "depth" }`.
+ * or `{ state: "depth" }`. A native type reference resolves immediately, to
+ * a synthetic scalar type node (gap 1 of FCD #199/#200).
  *
  * A cycle is reported before a depth bound, because a cycle is the more
  * specific fact and a depth report would hide it. The bound is `hops > maxDepth`
@@ -420,6 +448,10 @@ function resolveChain(types, identity, maxDepth) {
 	let hops = 0;
 	for (;;) {
 		if (typeof current !== "string") return { state: "absent" };
+		const scalar = nativeScalar(current);
+		if (scalar !== undefined) {
+			return { state: "resolved", type: { kind: "scalar", scalar } };
+		}
 		if (seen.has(current)) return { state: "cycle" };
 		seen.add(current);
 		const type = types.get(current);
@@ -640,7 +672,7 @@ export function admitIr(bundle, options = {}) {
 		claimExtensions(type, typePointer, type.identity, typeLocus);
 
 		/* element and payload resolution */
-		if (type.kind === "sequence" && !types.has(type.items)) {
+		if (type.kind === "sequence" && !resolvable(types, type.items)) {
 			emit(
 				ADMISSIBILITY_CODES.UNRESOLVED_ELEMENT_TYPE,
 				`${typePointer}/items`,
@@ -648,7 +680,7 @@ export function admitIr(bundle, options = {}) {
 				{ owner: type.identity, locus: typeLocus },
 			);
 		}
-		if (type.kind === "map" && !types.has(type.values)) {
+		if (type.kind === "map" && !resolvable(types, type.values)) {
 			emit(
 				ADMISSIBILITY_CODES.UNRESOLVED_ELEMENT_TYPE,
 				`${typePointer}/values`,
@@ -666,7 +698,7 @@ export function admitIr(bundle, options = {}) {
 		 * *is* declared; REF-002 expects one diagnostic, at `NodeRef`'s own
 		 * target. Every other resolution code in the register points the same
 		 * way — at `/items`, `/values`, `/payloadType`, `/definition`, or
-		 * `/relationships/N/target` — so the chain walk below exists for cycles
+		 * `/relationships/N/targetEnd/type` — so the chain walk below exists for cycles
 		 * and for the depth bound, and declaredness is what decides resolution.
 		 */
 		if (ALIAS_KINDS.has(type.kind)) {
@@ -687,7 +719,7 @@ export function admitIr(bundle, options = {}) {
 					"alias expansion is bounded at the declared finite depth",
 					{ owner: type.identity, locus: typeLocus },
 				);
-			} else if (!types.has(type.target) && strictReference) {
+			} else if (!resolvable(types, type.target) && strictReference) {
 				emit(
 					ADMISSIBILITY_CODES.UNRESOLVED_TYPE_REF,
 					`${typePointer}/target`,
@@ -707,7 +739,7 @@ export function admitIr(bundle, options = {}) {
 			variantNames.add(variant?.name);
 			if (
 				variant?.payloadType !== undefined &&
-				!types.has(variant.payloadType)
+				!resolvable(types, variant.payloadType)
 			) {
 				emit(
 					ADMISSIBILITY_CODES.UNRESOLVED_VARIANT_PAYLOAD,
@@ -823,15 +855,17 @@ export function admitIr(bundle, options = {}) {
 			 * is the clause read literally, not an assumed value for a missing
 			 * input. FR-068 names exactly six input-dependent rules and this is
 			 * not one of them.
+			 *
+			 * The target end's `type` is the resolved target (gap 3 of FCD
+			 * #199/#200); the source end always names this artifact's own
+			 * type, so it needs no cross-reference check here.
 			 */
 			const exported = importedExports ?? EMPTY;
-			if (
-				!types.has(relationship.target) &&
-				!exported.has(relationship.target)
-			) {
+			const targetType = relationship.targetEnd?.type;
+			if (!types.has(targetType) && !exported.has(targetType)) {
 				emit(
 					ADMISSIBILITY_CODES.UNRESOLVED_RELATIONSHIP_TARGET,
-					`${relationshipPointer}/target`,
+					`${relationshipPointer}/targetEnd/type`,
 					"a relationship target resolves to a document type or a lock export",
 					{ owner: relationship.identity, locus: relationshipLocus },
 				);
@@ -891,7 +925,7 @@ export function admitIr(bundle, options = {}) {
 			}
 			if (
 				isObject(operation.returns) &&
-				!types.has(operation.returns.typeRef)
+				!resolvable(types, operation.returns.typeRef)
 			) {
 				emit(
 					ADMISSIBILITY_CODES.UNRESOLVED_TYPE_REF,
@@ -947,19 +981,6 @@ export function admitIr(bundle, options = {}) {
 					{ owner, locus: fieldLocus },
 				);
 			}
-			const collection = upper === undefined || upper > 1;
-			if (
-				!collection &&
-				(multiplicity.ordered !== undefined ||
-					multiplicity.unique !== undefined)
-			) {
-				emit(
-					ADMISSIBILITY_CODES.FLAGS_ON_NON_COLLECTION,
-					`${fieldPointer}/multiplicity`,
-					"ordered and unique appear only on a collection",
-					{ owner, locus: fieldLocus },
-				);
-			}
 		}
 
 		if (field.unit !== undefined) {
@@ -973,7 +994,7 @@ export function admitIr(bundle, options = {}) {
 			}
 		}
 
-		if (!types.has(field.typeRef)) {
+		if (!resolvable(types, field.typeRef)) {
 			emit(
 				ADMISSIBILITY_CODES.UNRESOLVED_TYPE_REF,
 				`${fieldPointer}/typeRef`,
@@ -1179,15 +1200,17 @@ function compositeCycles(ir, types, emit) {
 			type.relationships ?? []
 		).entries()) {
 			if (!isObject(relationship) || relationship.composite !== true) continue;
-			outgoing.push(relationship.target);
-			locate.set(`${type.identity} ${relationship.target}`, {
+			const target = relationship.targetEnd?.type;
+			outgoing.push(target);
+			locate.set(`${type.identity} ${target}`, {
 				pointer: pointerOf(
 					"ir",
 					"types",
 					index,
 					"relationships",
 					position,
-					"target",
+					"targetEnd",
+					"type",
 				),
 				owner: relationship.identity,
 				locus: nearestLocus(relationship, type),

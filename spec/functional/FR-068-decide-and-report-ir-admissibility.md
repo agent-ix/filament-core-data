@@ -103,7 +103,6 @@ not.
 | A relationship target resolves to a document type or a lock export | `UNRESOLVED_RELATIONSHIP_TARGET` |
 | The graph of `composite: true` relationships is acyclic | `COMPOSITE_CYCLE` |
 | `multiplicity.upper`, where present, is not less than `lower` | `INVALID_MULTIPLICITY` |
-| `ordered` and `unique` appear only where `upper` is absent or greater than one | `FLAGS_ON_NON_COLLECTION` |
 | `unit` appears only on a field resolving to a `scalar` | `UNIT_ON_NON_SCALAR` |
 | Every manifest import resolves to a package the lock carries | `UNRESOLVED_IMPORT` |
 | The package import graph is acyclic | `PACKAGE_CYCLE` |

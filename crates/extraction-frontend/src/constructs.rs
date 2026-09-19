@@ -260,8 +260,8 @@ fn operations(definition: &TypeDefinition) -> &[Operation] {
 fn targets<'a>(edges: impl Iterator<Item = &'a Relationship>) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
     for edge in edges {
-        if !out.contains(&edge.target) {
-            out.push(edge.target.clone());
+        if !out.contains(&edge.target_end.type_ref) {
+            out.push(edge.target_end.type_ref.clone());
         }
     }
     out
@@ -404,7 +404,7 @@ pub(crate) fn shape(
     if !forbids(declaration, Member::Members) {
         let edges = relationships(definition).iter();
         members.members = Some(if declaration.shape == Shape::Namespace {
-            targets(edges.filter(|r| r.verb == NAMESPACE_MEMBERSHIP))
+            targets(edges.filter(|r| r.source_end.role.as_deref() == Some(NAMESPACE_MEMBERSHIP)))
         } else {
             targets(edges.filter(|r| r.composite))
         });
@@ -413,7 +413,7 @@ pub(crate) fn shape(
         members.persists = Some(targets(
             relationships(definition)
                 .iter()
-                .filter(|r| r.verb == PERSISTENCE),
+                .filter(|r| r.source_end.role.as_deref() == Some(PERSISTENCE)),
         ));
     }
     let lifted = |member: Member, authored: bool| {
@@ -1310,7 +1310,7 @@ fn composite_owners(pending: &[Pending]) -> BTreeMap<String, Vec<Owner>> {
     for item in pending {
         let definition = &item.lowering.definition;
         for edge in relationships(definition).iter().filter(|r| r.composite) {
-            let list = owners.entry(edge.target.clone()).or_default();
+            let list = owners.entry(edge.target_end.type_ref.clone()).or_default();
             if !list
                 .iter()
                 .any(|owner| owner.identity == definition.identity)
@@ -1336,11 +1336,12 @@ fn refusal_rule(
     let definition = &mut item.lowering.definition;
     if let Some(edge) = relationships(definition)
         .iter()
-        .find(|r| refused.contains(&r.target))
+        .find(|r| refused.contains(&r.target_end.type_ref))
     {
         return Some(format!(
             "its `{}` relationship targets {}, which lowers to nothing",
-            edge.verb, edge.target
+            edge.source_end.role.as_deref().unwrap_or(""),
+            edge.target_end.type_ref
         ));
     }
     let construct = &definition.construct;

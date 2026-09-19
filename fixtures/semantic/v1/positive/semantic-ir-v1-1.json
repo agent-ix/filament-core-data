@@ -288,7 +288,9 @@
 					"typeRef": "ix://agent-ix/assurance/type/ArtifactId",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"presence": "required",
 					"nullable": false,
@@ -309,7 +311,9 @@
 					"typeRef": "ix://agent-ix/assurance/type/Text",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"presence": "optional",
 					"nullable": false,
@@ -330,7 +334,9 @@
 					"typeRef": "ix://agent-ix/assurance/type/Text",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"presence": "required",
 					"nullable": true,
@@ -351,7 +357,9 @@
 					"typeRef": "ix://agent-ix/assurance/type/Seconds",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"presence": "optional",
 					"nullable": false,
@@ -392,15 +400,10 @@
 			],
 			"relationships": [
 				{
-					"identity": "ix://agent-ix/assurance/relationship/artifact-project",
-					"verb": "belongs_to",
 					"category": "structural",
 					"composite": false,
-					"target": "ix://agent-ix/assurance/type/Project",
-					"multiplicity": {
-						"lower": 0,
-						"upper": 1
-					},
+					"direction": "source-to-target",
+					"identity": "ix://agent-ix/assurance/relationship/artifact-project",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
@@ -408,18 +411,31 @@
 							"startLine": 20,
 							"startColumn": 3
 						}
+					},
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "belongs_to",
+						"type": "ix://agent-ix/assurance/type/Artifact"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"type": "ix://agent-ix/assurance/type/Project"
 					}
 				},
 				{
-					"identity": "ix://agent-ix/assurance/relationship/artifact-parent",
-					"verb": "derives_from",
 					"category": "traceability",
 					"composite": false,
-					"target": "ix://agent-ix/assurance/type/Artifact",
-					"multiplicity": {
-						"lower": 0,
-						"upper": 1
-					},
+					"direction": "source-to-target",
+					"identity": "ix://agent-ix/assurance/relationship/artifact-parent",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
@@ -427,6 +443,25 @@
 							"startLine": 21,
 							"startColumn": 3
 						}
+					},
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "derives_from",
+						"type": "ix://agent-ix/assurance/type/Artifact"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "derives_into",
+						"type": "ix://agent-ix/assurance/type/Artifact"
 					}
 				}
 			],
@@ -500,7 +535,9 @@
 							"typeRef": "ix://agent-ix/assurance/type/Text",
 							"multiplicity": {
 								"lower": 1,
-								"upper": 1
+								"upper": 1,
+								"ordered": false,
+								"unique": false
 							},
 							"presence": "required",
 							"nullable": false,
@@ -521,7 +558,9 @@
 							"typeRef": "ix://agent-ix/assurance/type/Seconds",
 							"multiplicity": {
 								"lower": 0,
-								"upper": 1
+								"upper": 1,
+								"ordered": false,
+								"unique": false
 							},
 							"presence": "optional",
 							"nullable": false,
@@ -542,7 +581,9 @@
 						"typeRef": "ix://agent-ix/assurance/type/Artifact",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						},
 						"nullable": false
 					},
@@ -631,7 +672,9 @@
 					"typeRef": "ix://agent-ix/assurance/type/Text",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"presence": "required",
 					"nullable": false,
@@ -649,16 +692,10 @@
 			],
 			"relationships": [
 				{
-					"identity": "ix://agent-ix/assurance/relationship/project-artifacts",
-					"verb": "contains",
 					"category": "structural",
 					"composite": true,
-					"target": "ix://agent-ix/assurance/type/Artifact",
-					"multiplicity": {
-						"lower": 0,
-						"ordered": true,
-						"unique": true
-					},
+					"direction": "source-to-target",
+					"identity": "ix://agent-ix/assurance/relationship/project-artifacts",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
@@ -666,6 +703,24 @@
 							"startLine": 6,
 							"startColumn": 3
 						}
+					},
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "contains",
+						"type": "ix://agent-ix/assurance/type/Project"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": true,
+							"unique": true
+						},
+						"role": "part_of",
+						"type": "ix://agent-ix/assurance/type/Artifact"
 					}
 				}
 			],

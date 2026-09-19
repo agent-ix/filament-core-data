@@ -87,6 +87,28 @@ export const GENERATED_SCALARS = Object.freeze([
 	"Uuid",
 ]);
 
+/**
+ * A native value type reference (gap 1 of FCD #199/#200): `ix://quire/native/<Name>`
+ * names a kernel scalar and declares no node, over the closed set below.
+ */
+const NATIVE_PREFIX = "ix://quire/native/";
+const NATIVE_SCALARS = new Map([
+	["UUID", "uuid"],
+	["Boolean", "boolean"],
+	["Integer", "integer"],
+	["Decimal", "number"],
+	["String", "string"],
+	["Timestamp", "datetime"],
+	["Duration", "duration"],
+	["Bytes", "bytes"],
+	["JsonObject", "any"],
+]);
+
+function nativeScalar(ref) {
+	if (typeof ref !== "string" || !ref.startsWith(NATIVE_PREFIX)) return undefined;
+	return NATIVE_SCALARS.get(ref.slice(NATIVE_PREFIX.length));
+}
+
 /** The existing support type that renders a matching kernel scalar definition. */
 function supportTypeFor(definition, renderedName) {
 	if (definition?.kind !== "scalar") return undefined;
@@ -331,8 +353,15 @@ const HASHABLE_SCALARS = Object.freeze([
  * an enum, a union, a `number` or `any` scalar, and a cycle have no such form.
  */
 function hashableType(ref, byIdentity, newtypes, seen = new Set()) {
+	if (seen.has(ref)) return false;
+	const nativeScalarName = nativeScalar(ref);
+	if (nativeScalarName !== undefined) {
+		const hashable = HASHABLE_SCALARS.includes(nativeScalarName);
+		if (hashable) newtypes.add(ref);
+		return hashable;
+	}
 	const definition = byIdentity.get(ref);
-	if (definition === undefined || seen.has(ref)) return false;
+	if (definition === undefined) return false;
 	const within = new Set(seen).add(ref);
 	let hashable;
 	switch (definition.kind) {
@@ -823,6 +852,18 @@ function mapType(definition, context) {
  */
 function referenceTo(ref, edgeKey, position, owner, context) {
 	const { byIdentity, omitted, graph, raise } = context;
+	const scalar = nativeScalar(ref);
+	if (scalar !== undefined) {
+		if (scalar === "bytes") {
+			raise(
+				RUST_BACKEND_CODES.UNDECLARED_WIRE_FORM,
+				`the ${position} of ${fragment(owner.identity)} names the kernel scalar \`bytes\`, whose JSON wire form no published artifact states`,
+				owner.origin?.source,
+			);
+			return undefined;
+		}
+		return KERNEL_SCALARS[scalar];
+	}
 	const definition = byIdentity.get(ref);
 	if (definition === undefined) {
 		raise(
