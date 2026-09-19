@@ -1,6 +1,6 @@
 //! ExclusiveMaxConstraintValueNumber
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueNumber.
+//! Semantic identity: ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueNumber.
 //!
 //! Unknown policy: `reject`, which is inert for a
 //! `scalar` — the kind has no unknown member for a policy to govern. The
@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 /// ExclusiveMaxConstraintValueNumber
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueNumber.
+/// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueNumber.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(transparent)]
 pub struct ExclusiveMaxConstraintValueNumber(f64);

@@ -102,323 +102,323 @@ pub use crate::types::unit_symbol::UnitSymbol;
 pub enum SemanticType {
     /// ClauseLanguage
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ClauseLanguage.
+    /// Semantic identity: ix://agent-ix/semantic-core/ClauseLanguage.
     ClauseLanguage,
     /// ClauseRef
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ClauseRef.
+    /// Semantic identity: ix://agent-ix/semantic-core/ClauseRef.
     ClauseRef,
     /// ConstraintDecl
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ConstraintDecl.
+    /// Semantic identity: ix://agent-ix/semantic-core/ConstraintDecl.
     ConstraintDecl,
     /// ConstraintKeyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ConstraintKeyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/ConstraintKeyword.
     ConstraintKeyword,
     /// DecimalPolicy
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/DecimalPolicy.
+    /// Semantic identity: ix://agent-ix/semantic-core/DecimalPolicy.
     DecimalPolicy,
     /// DecimalPolicyPrecision
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/DecimalPolicyPrecision.
+    /// Semantic identity: ix://agent-ix/semantic-core/DecimalPolicyPrecision.
     DecimalPolicyPrecision,
     /// DecimalPolicyScale
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/DecimalPolicyScale.
+    /// Semantic identity: ix://agent-ix/semantic-core/DecimalPolicyScale.
     DecimalPolicyScale,
     /// DefaultDecl
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/DefaultDecl.
+    /// Semantic identity: ix://agent-ix/semantic-core/DefaultDecl.
     DefaultDecl,
     /// DefaultDeclValue
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/DefaultDeclValue.
+    /// Semantic identity: ix://agent-ix/semantic-core/DefaultDeclValue.
     DefaultDeclValue,
     /// DefaultKind
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/DefaultKind.
+    /// Semantic identity: ix://agent-ix/semantic-core/DefaultKind.
     DefaultKind,
     /// EdgeCategory
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EdgeCategory.
+    /// Semantic identity: ix://agent-ix/semantic-core/EdgeCategory.
     EdgeCategory,
     /// EnumValue
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValue.
+    /// Semantic identity: ix://agent-ix/semantic-core/EnumValue.
     EnumValue,
     /// EnumValueDoc
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValueDoc.
+    /// Semantic identity: ix://agent-ix/semantic-core/EnumValueDoc.
     EnumValueDoc,
     /// EnumValuesConstraint
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraint.
+    /// Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraint.
     EnumValuesConstraint,
     /// EnumValuesConstraintKeyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraintKeyword.
     EnumValuesConstraintKeyword,
     /// EnumValuesConstraintValuesString
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesString.
+    /// Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraintValuesString.
     EnumValuesConstraintValuesString,
     /// EnumValuesConstraintValuesNumber
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesNumber.
+    /// Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraintValuesNumber.
     EnumValuesConstraintValuesNumber,
     /// EnumValuesConstraintValuesBoolean
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesBoolean.
+    /// Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraintValuesBoolean.
     EnumValuesConstraintValuesBoolean,
     /// EnumValuesConstraintValues
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintValues.
+    /// Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraintValues.
     EnumValuesConstraintValues,
     /// ExclusiveMaxConstraint
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint.
+    /// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMaxConstraint.
     ExclusiveMaxConstraint,
     /// ExclusiveMaxConstraintKeyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintKeyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMaxConstraintKeyword.
     ExclusiveMaxConstraintKeyword,
     /// ExclusiveMaxConstraintValueNumber
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueNumber.
+    /// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueNumber.
     ExclusiveMaxConstraintValueNumber,
     /// ExclusiveMaxConstraintValueString
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueString.
+    /// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueString.
     ExclusiveMaxConstraintValueString,
     /// ExclusiveMaxConstraintValue
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue.
+    /// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMaxConstraintValue.
     ExclusiveMaxConstraintValue,
     /// ExclusiveMinConstraint
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraint.
+    /// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMinConstraint.
     ExclusiveMinConstraint,
     /// ExclusiveMinConstraintKeyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraintKeyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMinConstraintKeyword.
     ExclusiveMinConstraintKeyword,
     /// ExclusiveMinConstraintValueNumber
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueNumber.
+    /// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMinConstraintValueNumber.
     ExclusiveMinConstraintValueNumber,
     /// ExclusiveMinConstraintValueString
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueString.
+    /// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMinConstraintValueString.
     ExclusiveMinConstraintValueString,
     /// ExclusiveMinConstraintValue
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue.
+    /// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMinConstraintValue.
     ExclusiveMinConstraintValue,
     /// FieldDecl
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/FieldDecl.
+    /// Semantic identity: ix://agent-ix/semantic-core/FieldDecl.
     FieldDecl,
     /// FieldDeclIdentity
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/FieldDeclIdentity.
+    /// Semantic identity: ix://agent-ix/semantic-core/FieldDeclIdentity.
     FieldDeclIdentity,
     /// FieldDeclNullable
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/FieldDeclNullable.
+    /// Semantic identity: ix://agent-ix/semantic-core/FieldDeclNullable.
     FieldDeclNullable,
     /// FieldDeclDoc
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/FieldDeclDoc.
+    /// Semantic identity: ix://agent-ix/semantic-core/FieldDeclDoc.
     FieldDeclDoc,
     /// FormatConstraint
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/FormatConstraint.
+    /// Semantic identity: ix://agent-ix/semantic-core/FormatConstraint.
     FormatConstraint,
     /// FormatConstraintKeyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/FormatConstraintKeyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/FormatConstraintKeyword.
     FormatConstraintKeyword,
     /// FormatConstraintName
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/FormatConstraintName.
+    /// Semantic identity: ix://agent-ix/semantic-core/FormatConstraintName.
     FormatConstraintName,
     /// Identifier
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/Identifier.
+    /// Semantic identity: ix://agent-ix/semantic-core/Identifier.
     Identifier,
     /// KernelScalar
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/KernelScalar.
+    /// Semantic identity: ix://agent-ix/semantic-core/KernelScalar.
     KernelScalar,
     /// MaxConstraint
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraint.
+    /// Semantic identity: ix://agent-ix/semantic-core/MaxConstraint.
     MaxConstraint,
     /// MaxConstraintKeyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraintKeyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/MaxConstraintKeyword.
     MaxConstraintKeyword,
     /// MaxConstraintValueNumber
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraintValueNumber.
+    /// Semantic identity: ix://agent-ix/semantic-core/MaxConstraintValueNumber.
     MaxConstraintValueNumber,
     /// MaxConstraintValueString
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraintValueString.
+    /// Semantic identity: ix://agent-ix/semantic-core/MaxConstraintValueString.
     MaxConstraintValueString,
     /// MaxConstraintValue
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraintValue.
+    /// Semantic identity: ix://agent-ix/semantic-core/MaxConstraintValue.
     MaxConstraintValue,
     /// MaxLengthConstraint
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MaxLengthConstraint.
+    /// Semantic identity: ix://agent-ix/semantic-core/MaxLengthConstraint.
     MaxLengthConstraint,
     /// MaxLengthConstraintKeyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MaxLengthConstraintKeyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/MaxLengthConstraintKeyword.
     MaxLengthConstraintKeyword,
     /// MaxLengthConstraintValue
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MaxLengthConstraintValue.
+    /// Semantic identity: ix://agent-ix/semantic-core/MaxLengthConstraintValue.
     MaxLengthConstraintValue,
     /// MinConstraint
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MinConstraint.
+    /// Semantic identity: ix://agent-ix/semantic-core/MinConstraint.
     MinConstraint,
     /// MinConstraintKeyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MinConstraintKeyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/MinConstraintKeyword.
     MinConstraintKeyword,
     /// MinConstraintValueNumber
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MinConstraintValueNumber.
+    /// Semantic identity: ix://agent-ix/semantic-core/MinConstraintValueNumber.
     MinConstraintValueNumber,
     /// MinConstraintValueString
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MinConstraintValueString.
+    /// Semantic identity: ix://agent-ix/semantic-core/MinConstraintValueString.
     MinConstraintValueString,
     /// MinConstraintValue
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MinConstraintValue.
+    /// Semantic identity: ix://agent-ix/semantic-core/MinConstraintValue.
     MinConstraintValue,
     /// MinLengthConstraint
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MinLengthConstraint.
+    /// Semantic identity: ix://agent-ix/semantic-core/MinLengthConstraint.
     MinLengthConstraint,
     /// MinLengthConstraintKeyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MinLengthConstraintKeyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/MinLengthConstraintKeyword.
     MinLengthConstraintKeyword,
     /// MinLengthConstraintValue
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MinLengthConstraintValue.
+    /// Semantic identity: ix://agent-ix/semantic-core/MinLengthConstraintValue.
     MinLengthConstraintValue,
     /// Multiplicity
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/Multiplicity.
+    /// Semantic identity: ix://agent-ix/semantic-core/Multiplicity.
     Multiplicity,
     /// MultiplicityLower
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MultiplicityLower.
+    /// Semantic identity: ix://agent-ix/semantic-core/MultiplicityLower.
     MultiplicityLower,
     /// MultiplicityUpper
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MultiplicityUpper.
+    /// Semantic identity: ix://agent-ix/semantic-core/MultiplicityUpper.
     MultiplicityUpper,
     /// MultiplicityOrdered
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MultiplicityOrdered.
+    /// Semantic identity: ix://agent-ix/semantic-core/MultiplicityOrdered.
     MultiplicityOrdered,
     /// MultiplicityUnique
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MultiplicityUnique.
+    /// Semantic identity: ix://agent-ix/semantic-core/MultiplicityUnique.
     MultiplicityUnique,
     /// NonEmptyConstraint
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/NonEmptyConstraint.
+    /// Semantic identity: ix://agent-ix/semantic-core/NonEmptyConstraint.
     NonEmptyConstraint,
     /// NonEmptyConstraintKeyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/NonEmptyConstraintKeyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/NonEmptyConstraintKeyword.
     NonEmptyConstraintKeyword,
     /// OperationDecl
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/OperationDecl.
+    /// Semantic identity: ix://agent-ix/semantic-core/OperationDecl.
     OperationDecl,
     /// PatternConstraint
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/PatternConstraint.
+    /// Semantic identity: ix://agent-ix/semantic-core/PatternConstraint.
     PatternConstraint,
     /// PatternConstraintKeyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/PatternConstraintKeyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/PatternConstraintKeyword.
     PatternConstraintKeyword,
     /// PatternConstraintRegex
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/PatternConstraintRegex.
+    /// Semantic identity: ix://agent-ix/semantic-core/PatternConstraintRegex.
     PatternConstraintRegex,
     /// PatternConstraintDialect
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/PatternConstraintDialect.
+    /// Semantic identity: ix://agent-ix/semantic-core/PatternConstraintDialect.
     PatternConstraintDialect,
     /// RelationDecl
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/RelationDecl.
+    /// Semantic identity: ix://agent-ix/semantic-core/RelationDecl.
     RelationDecl,
     /// RelationDeclComposite
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/RelationDeclComposite.
+    /// Semantic identity: ix://agent-ix/semantic-core/RelationDeclComposite.
     RelationDeclComposite,
     /// SemanticId
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/SemanticId.
+    /// Semantic identity: ix://agent-ix/semantic-core/SemanticId.
     SemanticId,
     /// SourceLocus
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/SourceLocus.
+    /// Semantic identity: ix://agent-ix/semantic-core/SourceLocus.
     SourceLocus,
     /// SourceLocusPath
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/SourceLocusPath.
+    /// Semantic identity: ix://agent-ix/semantic-core/SourceLocusPath.
     SemanticCoreSourceLocusPath,
     /// SourceLocusStartLine
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/SourceLocusStartLine.
+    /// Semantic identity: ix://agent-ix/semantic-core/SourceLocusStartLine.
     SourceLocusStartLine,
     /// SourceLocusStartColumn
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/SourceLocusStartColumn.
+    /// Semantic identity: ix://agent-ix/semantic-core/SourceLocusStartColumn.
     SourceLocusStartColumn,
     /// SourceLocusEndLine
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/SourceLocusEndLine.
+    /// Semantic identity: ix://agent-ix/semantic-core/SourceLocusEndLine.
     SourceLocusEndLine,
     /// SourceLocusEndColumn
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/SourceLocusEndColumn.
+    /// Semantic identity: ix://agent-ix/semantic-core/SourceLocusEndColumn.
     SourceLocusEndColumn,
     /// TypeRef
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/TypeRef.
+    /// Semantic identity: ix://agent-ix/semantic-core/TypeRef.
     TypeRef,
     /// TypeRefTarget
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/TypeRefTarget.
+    /// Semantic identity: ix://agent-ix/semantic-core/TypeRefTarget.
     TypeRefTarget,
     /// UniqueConstraint
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/UniqueConstraint.
+    /// Semantic identity: ix://agent-ix/semantic-core/UniqueConstraint.
     UniqueConstraint,
     /// UniqueConstraintKeyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/UniqueConstraintKeyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/UniqueConstraintKeyword.
     UniqueConstraintKeyword,
     /// UnitSymbol
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/UnitSymbol.
+    /// Semantic identity: ix://agent-ix/semantic-core/UnitSymbol.
     UnitSymbol,
 }
 
@@ -426,182 +426,164 @@ impl SemanticType {
     /// The semantic identity of the type the variant names.
     pub fn identity(&self) -> &'static str {
         match self {
-            SemanticType::ClauseLanguage => "ix://agent-ix/semantic-core/type/ClauseLanguage",
-            SemanticType::ClauseRef => "ix://agent-ix/semantic-core/type/ClauseRef",
-            SemanticType::ConstraintDecl => "ix://agent-ix/semantic-core/type/ConstraintDecl",
-            SemanticType::ConstraintKeyword => "ix://agent-ix/semantic-core/type/ConstraintKeyword",
-            SemanticType::DecimalPolicy => "ix://agent-ix/semantic-core/type/DecimalPolicy",
+            SemanticType::ClauseLanguage => "ix://agent-ix/semantic-core/ClauseLanguage",
+            SemanticType::ClauseRef => "ix://agent-ix/semantic-core/ClauseRef",
+            SemanticType::ConstraintDecl => "ix://agent-ix/semantic-core/ConstraintDecl",
+            SemanticType::ConstraintKeyword => "ix://agent-ix/semantic-core/ConstraintKeyword",
+            SemanticType::DecimalPolicy => "ix://agent-ix/semantic-core/DecimalPolicy",
             SemanticType::DecimalPolicyPrecision => {
-                "ix://agent-ix/semantic-core/type/DecimalPolicyPrecision"
+                "ix://agent-ix/semantic-core/DecimalPolicyPrecision"
             }
-            SemanticType::DecimalPolicyScale => {
-                "ix://agent-ix/semantic-core/type/DecimalPolicyScale"
-            }
-            SemanticType::DefaultDecl => "ix://agent-ix/semantic-core/type/DefaultDecl",
-            SemanticType::DefaultDeclValue => "ix://agent-ix/semantic-core/type/DefaultDeclValue",
-            SemanticType::DefaultKind => "ix://agent-ix/semantic-core/type/DefaultKind",
-            SemanticType::EdgeCategory => "ix://agent-ix/semantic-core/type/EdgeCategory",
-            SemanticType::EnumValue => "ix://agent-ix/semantic-core/type/EnumValue",
-            SemanticType::EnumValueDoc => "ix://agent-ix/semantic-core/type/EnumValueDoc",
+            SemanticType::DecimalPolicyScale => "ix://agent-ix/semantic-core/DecimalPolicyScale",
+            SemanticType::DefaultDecl => "ix://agent-ix/semantic-core/DefaultDecl",
+            SemanticType::DefaultDeclValue => "ix://agent-ix/semantic-core/DefaultDeclValue",
+            SemanticType::DefaultKind => "ix://agent-ix/semantic-core/DefaultKind",
+            SemanticType::EdgeCategory => "ix://agent-ix/semantic-core/EdgeCategory",
+            SemanticType::EnumValue => "ix://agent-ix/semantic-core/EnumValue",
+            SemanticType::EnumValueDoc => "ix://agent-ix/semantic-core/EnumValueDoc",
             SemanticType::EnumValuesConstraint => {
-                "ix://agent-ix/semantic-core/type/EnumValuesConstraint"
+                "ix://agent-ix/semantic-core/EnumValuesConstraint"
             }
             SemanticType::EnumValuesConstraintKeyword => {
-                "ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword"
+                "ix://agent-ix/semantic-core/EnumValuesConstraintKeyword"
             }
             SemanticType::EnumValuesConstraintValuesString => {
-                "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesString"
+                "ix://agent-ix/semantic-core/EnumValuesConstraintValuesString"
             }
             SemanticType::EnumValuesConstraintValuesNumber => {
-                "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesNumber"
+                "ix://agent-ix/semantic-core/EnumValuesConstraintValuesNumber"
             }
             SemanticType::EnumValuesConstraintValuesBoolean => {
-                "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesBoolean"
+                "ix://agent-ix/semantic-core/EnumValuesConstraintValuesBoolean"
             }
             SemanticType::EnumValuesConstraintValues => {
-                "ix://agent-ix/semantic-core/type/EnumValuesConstraintValues"
+                "ix://agent-ix/semantic-core/EnumValuesConstraintValues"
             }
             SemanticType::ExclusiveMaxConstraint => {
-                "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint"
+                "ix://agent-ix/semantic-core/ExclusiveMaxConstraint"
             }
             SemanticType::ExclusiveMaxConstraintKeyword => {
-                "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintKeyword"
+                "ix://agent-ix/semantic-core/ExclusiveMaxConstraintKeyword"
             }
             SemanticType::ExclusiveMaxConstraintValueNumber => {
-                "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueNumber"
+                "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueNumber"
             }
             SemanticType::ExclusiveMaxConstraintValueString => {
-                "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueString"
+                "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueString"
             }
             SemanticType::ExclusiveMaxConstraintValue => {
-                "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue"
+                "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValue"
             }
             SemanticType::ExclusiveMinConstraint => {
-                "ix://agent-ix/semantic-core/type/ExclusiveMinConstraint"
+                "ix://agent-ix/semantic-core/ExclusiveMinConstraint"
             }
             SemanticType::ExclusiveMinConstraintKeyword => {
-                "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintKeyword"
+                "ix://agent-ix/semantic-core/ExclusiveMinConstraintKeyword"
             }
             SemanticType::ExclusiveMinConstraintValueNumber => {
-                "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueNumber"
+                "ix://agent-ix/semantic-core/ExclusiveMinConstraintValueNumber"
             }
             SemanticType::ExclusiveMinConstraintValueString => {
-                "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueString"
+                "ix://agent-ix/semantic-core/ExclusiveMinConstraintValueString"
             }
             SemanticType::ExclusiveMinConstraintValue => {
-                "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue"
+                "ix://agent-ix/semantic-core/ExclusiveMinConstraintValue"
             }
-            SemanticType::FieldDecl => "ix://agent-ix/semantic-core/type/FieldDecl",
-            SemanticType::FieldDeclIdentity => "ix://agent-ix/semantic-core/type/FieldDeclIdentity",
-            SemanticType::FieldDeclNullable => "ix://agent-ix/semantic-core/type/FieldDeclNullable",
-            SemanticType::FieldDeclDoc => "ix://agent-ix/semantic-core/type/FieldDeclDoc",
-            SemanticType::FormatConstraint => "ix://agent-ix/semantic-core/type/FormatConstraint",
+            SemanticType::FieldDecl => "ix://agent-ix/semantic-core/FieldDecl",
+            SemanticType::FieldDeclIdentity => "ix://agent-ix/semantic-core/FieldDeclIdentity",
+            SemanticType::FieldDeclNullable => "ix://agent-ix/semantic-core/FieldDeclNullable",
+            SemanticType::FieldDeclDoc => "ix://agent-ix/semantic-core/FieldDeclDoc",
+            SemanticType::FormatConstraint => "ix://agent-ix/semantic-core/FormatConstraint",
             SemanticType::FormatConstraintKeyword => {
-                "ix://agent-ix/semantic-core/type/FormatConstraintKeyword"
+                "ix://agent-ix/semantic-core/FormatConstraintKeyword"
             }
             SemanticType::FormatConstraintName => {
-                "ix://agent-ix/semantic-core/type/FormatConstraintName"
+                "ix://agent-ix/semantic-core/FormatConstraintName"
             }
-            SemanticType::Identifier => "ix://agent-ix/semantic-core/type/Identifier",
-            SemanticType::KernelScalar => "ix://agent-ix/semantic-core/type/KernelScalar",
-            SemanticType::MaxConstraint => "ix://agent-ix/semantic-core/type/MaxConstraint",
+            SemanticType::Identifier => "ix://agent-ix/semantic-core/Identifier",
+            SemanticType::KernelScalar => "ix://agent-ix/semantic-core/KernelScalar",
+            SemanticType::MaxConstraint => "ix://agent-ix/semantic-core/MaxConstraint",
             SemanticType::MaxConstraintKeyword => {
-                "ix://agent-ix/semantic-core/type/MaxConstraintKeyword"
+                "ix://agent-ix/semantic-core/MaxConstraintKeyword"
             }
             SemanticType::MaxConstraintValueNumber => {
-                "ix://agent-ix/semantic-core/type/MaxConstraintValueNumber"
+                "ix://agent-ix/semantic-core/MaxConstraintValueNumber"
             }
             SemanticType::MaxConstraintValueString => {
-                "ix://agent-ix/semantic-core/type/MaxConstraintValueString"
+                "ix://agent-ix/semantic-core/MaxConstraintValueString"
             }
-            SemanticType::MaxConstraintValue => {
-                "ix://agent-ix/semantic-core/type/MaxConstraintValue"
-            }
-            SemanticType::MaxLengthConstraint => {
-                "ix://agent-ix/semantic-core/type/MaxLengthConstraint"
-            }
+            SemanticType::MaxConstraintValue => "ix://agent-ix/semantic-core/MaxConstraintValue",
+            SemanticType::MaxLengthConstraint => "ix://agent-ix/semantic-core/MaxLengthConstraint",
             SemanticType::MaxLengthConstraintKeyword => {
-                "ix://agent-ix/semantic-core/type/MaxLengthConstraintKeyword"
+                "ix://agent-ix/semantic-core/MaxLengthConstraintKeyword"
             }
             SemanticType::MaxLengthConstraintValue => {
-                "ix://agent-ix/semantic-core/type/MaxLengthConstraintValue"
+                "ix://agent-ix/semantic-core/MaxLengthConstraintValue"
             }
-            SemanticType::MinConstraint => "ix://agent-ix/semantic-core/type/MinConstraint",
+            SemanticType::MinConstraint => "ix://agent-ix/semantic-core/MinConstraint",
             SemanticType::MinConstraintKeyword => {
-                "ix://agent-ix/semantic-core/type/MinConstraintKeyword"
+                "ix://agent-ix/semantic-core/MinConstraintKeyword"
             }
             SemanticType::MinConstraintValueNumber => {
-                "ix://agent-ix/semantic-core/type/MinConstraintValueNumber"
+                "ix://agent-ix/semantic-core/MinConstraintValueNumber"
             }
             SemanticType::MinConstraintValueString => {
-                "ix://agent-ix/semantic-core/type/MinConstraintValueString"
+                "ix://agent-ix/semantic-core/MinConstraintValueString"
             }
-            SemanticType::MinConstraintValue => {
-                "ix://agent-ix/semantic-core/type/MinConstraintValue"
-            }
-            SemanticType::MinLengthConstraint => {
-                "ix://agent-ix/semantic-core/type/MinLengthConstraint"
-            }
+            SemanticType::MinConstraintValue => "ix://agent-ix/semantic-core/MinConstraintValue",
+            SemanticType::MinLengthConstraint => "ix://agent-ix/semantic-core/MinLengthConstraint",
             SemanticType::MinLengthConstraintKeyword => {
-                "ix://agent-ix/semantic-core/type/MinLengthConstraintKeyword"
+                "ix://agent-ix/semantic-core/MinLengthConstraintKeyword"
             }
             SemanticType::MinLengthConstraintValue => {
-                "ix://agent-ix/semantic-core/type/MinLengthConstraintValue"
+                "ix://agent-ix/semantic-core/MinLengthConstraintValue"
             }
-            SemanticType::Multiplicity => "ix://agent-ix/semantic-core/type/Multiplicity",
-            SemanticType::MultiplicityLower => "ix://agent-ix/semantic-core/type/MultiplicityLower",
-            SemanticType::MultiplicityUpper => "ix://agent-ix/semantic-core/type/MultiplicityUpper",
-            SemanticType::MultiplicityOrdered => {
-                "ix://agent-ix/semantic-core/type/MultiplicityOrdered"
-            }
-            SemanticType::MultiplicityUnique => {
-                "ix://agent-ix/semantic-core/type/MultiplicityUnique"
-            }
-            SemanticType::NonEmptyConstraint => {
-                "ix://agent-ix/semantic-core/type/NonEmptyConstraint"
-            }
+            SemanticType::Multiplicity => "ix://agent-ix/semantic-core/Multiplicity",
+            SemanticType::MultiplicityLower => "ix://agent-ix/semantic-core/MultiplicityLower",
+            SemanticType::MultiplicityUpper => "ix://agent-ix/semantic-core/MultiplicityUpper",
+            SemanticType::MultiplicityOrdered => "ix://agent-ix/semantic-core/MultiplicityOrdered",
+            SemanticType::MultiplicityUnique => "ix://agent-ix/semantic-core/MultiplicityUnique",
+            SemanticType::NonEmptyConstraint => "ix://agent-ix/semantic-core/NonEmptyConstraint",
             SemanticType::NonEmptyConstraintKeyword => {
-                "ix://agent-ix/semantic-core/type/NonEmptyConstraintKeyword"
+                "ix://agent-ix/semantic-core/NonEmptyConstraintKeyword"
             }
-            SemanticType::OperationDecl => "ix://agent-ix/semantic-core/type/OperationDecl",
-            SemanticType::PatternConstraint => "ix://agent-ix/semantic-core/type/PatternConstraint",
+            SemanticType::OperationDecl => "ix://agent-ix/semantic-core/OperationDecl",
+            SemanticType::PatternConstraint => "ix://agent-ix/semantic-core/PatternConstraint",
             SemanticType::PatternConstraintKeyword => {
-                "ix://agent-ix/semantic-core/type/PatternConstraintKeyword"
+                "ix://agent-ix/semantic-core/PatternConstraintKeyword"
             }
             SemanticType::PatternConstraintRegex => {
-                "ix://agent-ix/semantic-core/type/PatternConstraintRegex"
+                "ix://agent-ix/semantic-core/PatternConstraintRegex"
             }
             SemanticType::PatternConstraintDialect => {
-                "ix://agent-ix/semantic-core/type/PatternConstraintDialect"
+                "ix://agent-ix/semantic-core/PatternConstraintDialect"
             }
-            SemanticType::RelationDecl => "ix://agent-ix/semantic-core/type/RelationDecl",
+            SemanticType::RelationDecl => "ix://agent-ix/semantic-core/RelationDecl",
             SemanticType::RelationDeclComposite => {
-                "ix://agent-ix/semantic-core/type/RelationDeclComposite"
+                "ix://agent-ix/semantic-core/RelationDeclComposite"
             }
-            SemanticType::SemanticId => "ix://agent-ix/semantic-core/type/SemanticId",
-            SemanticType::SourceLocus => "ix://agent-ix/semantic-core/type/SourceLocus",
+            SemanticType::SemanticId => "ix://agent-ix/semantic-core/SemanticId",
+            SemanticType::SourceLocus => "ix://agent-ix/semantic-core/SourceLocus",
             SemanticType::SemanticCoreSourceLocusPath => {
-                "ix://agent-ix/semantic-core/type/SourceLocusPath"
+                "ix://agent-ix/semantic-core/SourceLocusPath"
             }
             SemanticType::SourceLocusStartLine => {
-                "ix://agent-ix/semantic-core/type/SourceLocusStartLine"
+                "ix://agent-ix/semantic-core/SourceLocusStartLine"
             }
             SemanticType::SourceLocusStartColumn => {
-                "ix://agent-ix/semantic-core/type/SourceLocusStartColumn"
+                "ix://agent-ix/semantic-core/SourceLocusStartColumn"
             }
-            SemanticType::SourceLocusEndLine => {
-                "ix://agent-ix/semantic-core/type/SourceLocusEndLine"
-            }
+            SemanticType::SourceLocusEndLine => "ix://agent-ix/semantic-core/SourceLocusEndLine",
             SemanticType::SourceLocusEndColumn => {
-                "ix://agent-ix/semantic-core/type/SourceLocusEndColumn"
+                "ix://agent-ix/semantic-core/SourceLocusEndColumn"
             }
-            SemanticType::TypeRef => "ix://agent-ix/semantic-core/type/TypeRef",
-            SemanticType::TypeRefTarget => "ix://agent-ix/semantic-core/type/TypeRefTarget",
-            SemanticType::UniqueConstraint => "ix://agent-ix/semantic-core/type/UniqueConstraint",
+            SemanticType::TypeRef => "ix://agent-ix/semantic-core/TypeRef",
+            SemanticType::TypeRefTarget => "ix://agent-ix/semantic-core/TypeRefTarget",
+            SemanticType::UniqueConstraint => "ix://agent-ix/semantic-core/UniqueConstraint",
             SemanticType::UniqueConstraintKeyword => {
-                "ix://agent-ix/semantic-core/type/UniqueConstraintKeyword"
+                "ix://agent-ix/semantic-core/UniqueConstraintKeyword"
             }
-            SemanticType::UnitSymbol => "ix://agent-ix/semantic-core/type/UnitSymbol",
+            SemanticType::UnitSymbol => "ix://agent-ix/semantic-core/UnitSymbol",
         }
     }
 }

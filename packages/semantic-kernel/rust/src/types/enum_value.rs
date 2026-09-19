@@ -1,16 +1,16 @@
 //! EnumValue
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/EnumValue.
+//! Semantic identity: ix://agent-ix/semantic-core/EnumValue.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `EnumValue`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/EnumValue/field/value",
+        identity: "ix://agent-ix/semantic-core/EnumValue/value",
         name: "value",
         rust_name: "value",
-        type_ref: "ix://agent-ix/semantic-core/type/Identifier",
+        type_ref: "ix://agent-ix/semantic-core/Identifier",
         rust_type: "crate::Identifier",
         row: "field:single/non-null/required",
         presence: "required",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/EnumValue/field/doc",
+        identity: "ix://agent-ix/semantic-core/EnumValue/doc",
         name: "doc",
         rust_name: "doc",
-        type_ref: "ix://agent-ix/semantic-core/type/EnumValueDoc",
+        type_ref: "ix://agent-ix/semantic-core/EnumValueDoc",
         rust_type: "Option<crate::EnumValueDoc>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -70,16 +70,16 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// EnumValue
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/EnumValue.
+/// Semantic identity: ix://agent-ix/semantic-core/EnumValue.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct EnumValue {
     /// value
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValue/field/value.
+    /// Semantic identity: ix://agent-ix/semantic-core/EnumValue/value.
     pub value: crate::Identifier,
     /// doc
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValue/field/doc.
+    /// Semantic identity: ix://agent-ix/semantic-core/EnumValue/doc.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub doc: Option<crate::EnumValueDoc>,
 }

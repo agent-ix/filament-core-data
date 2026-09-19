@@ -19,7 +19,7 @@
 	"constructs": [],
 	"types": [
 		{
-			"identity": "ix://agent-ix/semantic-core/type/ClauseLanguage",
+			"identity": "ix://agent-ix/semantic-core/ClauseLanguage",
 			"displayName": "ClauseLanguage",
 			"kind": "scalar",
 			"roles": [],
@@ -37,7 +37,7 @@
 			"scalar": "string"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/ClauseRef",
+			"identity": "ix://agent-ix/semantic-core/ClauseRef",
 			"displayName": "ClauseRef",
 			"kind": "record",
 			"roles": [],
@@ -54,9 +54,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ClauseRef/field/language",
+					"identity": "ix://agent-ix/semantic-core/ClauseRef/language",
 					"name": "language",
-					"typeRef": "ix://agent-ix/semantic-core/type/ClauseLanguage",
+					"typeRef": "ix://agent-ix/semantic-core/ClauseLanguage",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -76,9 +76,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ClauseRef/field/clauseId",
+					"identity": "ix://agent-ix/semantic-core/ClauseRef/clauseId",
 					"name": "clauseId",
-					"typeRef": "ix://agent-ix/semantic-core/type/Identifier",
+					"typeRef": "ix://agent-ix/semantic-core/Identifier",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -98,9 +98,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ClauseRef/field/sourceSpan",
+					"identity": "ix://agent-ix/semantic-core/ClauseRef/sourceSpan",
 					"name": "sourceSpan",
-					"typeRef": "ix://agent-ix/semantic-core/type/SourceLocus",
+					"typeRef": "ix://agent-ix/semantic-core/SourceLocus",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -122,7 +122,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/ConstraintDecl",
+			"identity": "ix://agent-ix/semantic-core/ConstraintDecl",
 			"displayName": "ConstraintDecl",
 			"kind": "union",
 			"roles": [],
@@ -148,9 +148,9 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/MinConstraint",
+					"identity": "ix://agent-ix/semantic-core/ConstraintDecl/variant/MinConstraint",
 					"name": "MinConstraint",
-					"payloadType": "ix://agent-ix/semantic-core/type/MinConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/MinConstraint",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -161,9 +161,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/MaxConstraint",
+					"identity": "ix://agent-ix/semantic-core/ConstraintDecl/variant/MaxConstraint",
 					"name": "MaxConstraint",
-					"payloadType": "ix://agent-ix/semantic-core/type/MaxConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/MaxConstraint",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -174,9 +174,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/ExclusiveMinConstraint",
+					"identity": "ix://agent-ix/semantic-core/ConstraintDecl/variant/ExclusiveMinConstraint",
 					"name": "ExclusiveMinConstraint",
-					"payloadType": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/ExclusiveMinConstraint",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -187,9 +187,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/ExclusiveMaxConstraint",
+					"identity": "ix://agent-ix/semantic-core/ConstraintDecl/variant/ExclusiveMaxConstraint",
 					"name": "ExclusiveMaxConstraint",
-					"payloadType": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/ExclusiveMaxConstraint",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -200,9 +200,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/PatternConstraint",
+					"identity": "ix://agent-ix/semantic-core/ConstraintDecl/variant/PatternConstraint",
 					"name": "PatternConstraint",
-					"payloadType": "ix://agent-ix/semantic-core/type/PatternConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/PatternConstraint",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -213,9 +213,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/MinLengthConstraint",
+					"identity": "ix://agent-ix/semantic-core/ConstraintDecl/variant/MinLengthConstraint",
 					"name": "MinLengthConstraint",
-					"payloadType": "ix://agent-ix/semantic-core/type/MinLengthConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/MinLengthConstraint",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -226,9 +226,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/MaxLengthConstraint",
+					"identity": "ix://agent-ix/semantic-core/ConstraintDecl/variant/MaxLengthConstraint",
 					"name": "MaxLengthConstraint",
-					"payloadType": "ix://agent-ix/semantic-core/type/MaxLengthConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/MaxLengthConstraint",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -239,9 +239,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/EnumValuesConstraint",
+					"identity": "ix://agent-ix/semantic-core/ConstraintDecl/variant/EnumValuesConstraint",
 					"name": "EnumValuesConstraint",
-					"payloadType": "ix://agent-ix/semantic-core/type/EnumValuesConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/EnumValuesConstraint",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -252,9 +252,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/NonEmptyConstraint",
+					"identity": "ix://agent-ix/semantic-core/ConstraintDecl/variant/NonEmptyConstraint",
 					"name": "NonEmptyConstraint",
-					"payloadType": "ix://agent-ix/semantic-core/type/NonEmptyConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/NonEmptyConstraint",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -265,9 +265,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/UniqueConstraint",
+					"identity": "ix://agent-ix/semantic-core/ConstraintDecl/variant/UniqueConstraint",
 					"name": "UniqueConstraint",
-					"payloadType": "ix://agent-ix/semantic-core/type/UniqueConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/UniqueConstraint",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -278,9 +278,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/FormatConstraint",
+					"identity": "ix://agent-ix/semantic-core/ConstraintDecl/variant/FormatConstraint",
 					"name": "FormatConstraint",
-					"payloadType": "ix://agent-ix/semantic-core/type/FormatConstraint",
+					"payloadType": "ix://agent-ix/semantic-core/FormatConstraint",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -293,7 +293,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/ConstraintKeyword",
+			"identity": "ix://agent-ix/semantic-core/ConstraintKeyword",
 			"displayName": "ConstraintKeyword",
 			"kind": "enum",
 			"roles": [],
@@ -310,7 +310,7 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/min",
+					"identity": "ix://agent-ix/semantic-core/ConstraintKeyword/variant/min",
 					"name": "min",
 					"origin": {
 						"source": {
@@ -322,7 +322,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/max",
+					"identity": "ix://agent-ix/semantic-core/ConstraintKeyword/variant/max",
 					"name": "max",
 					"origin": {
 						"source": {
@@ -334,7 +334,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/exclusiveMin",
+					"identity": "ix://agent-ix/semantic-core/ConstraintKeyword/variant/exclusiveMin",
 					"name": "exclusiveMin",
 					"origin": {
 						"source": {
@@ -346,7 +346,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/exclusiveMax",
+					"identity": "ix://agent-ix/semantic-core/ConstraintKeyword/variant/exclusiveMax",
 					"name": "exclusiveMax",
 					"origin": {
 						"source": {
@@ -358,7 +358,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/pattern",
+					"identity": "ix://agent-ix/semantic-core/ConstraintKeyword/variant/pattern",
 					"name": "pattern",
 					"origin": {
 						"source": {
@@ -370,7 +370,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/minLength",
+					"identity": "ix://agent-ix/semantic-core/ConstraintKeyword/variant/minLength",
 					"name": "minLength",
 					"origin": {
 						"source": {
@@ -382,7 +382,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/maxLength",
+					"identity": "ix://agent-ix/semantic-core/ConstraintKeyword/variant/maxLength",
 					"name": "maxLength",
 					"origin": {
 						"source": {
@@ -394,7 +394,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/enumValues",
+					"identity": "ix://agent-ix/semantic-core/ConstraintKeyword/variant/enumValues",
 					"name": "enumValues",
 					"origin": {
 						"source": {
@@ -406,7 +406,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/nonEmpty",
+					"identity": "ix://agent-ix/semantic-core/ConstraintKeyword/variant/nonEmpty",
 					"name": "nonEmpty",
 					"origin": {
 						"source": {
@@ -418,7 +418,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/unique",
+					"identity": "ix://agent-ix/semantic-core/ConstraintKeyword/variant/unique",
 					"name": "unique",
 					"origin": {
 						"source": {
@@ -430,7 +430,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/format",
+					"identity": "ix://agent-ix/semantic-core/ConstraintKeyword/variant/format",
 					"name": "format",
 					"origin": {
 						"source": {
@@ -444,7 +444,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/DecimalPolicy",
+			"identity": "ix://agent-ix/semantic-core/DecimalPolicy",
 			"displayName": "DecimalPolicy",
 			"kind": "record",
 			"roles": [],
@@ -461,9 +461,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/DecimalPolicy/field/precision",
+					"identity": "ix://agent-ix/semantic-core/DecimalPolicy/precision",
 					"name": "precision",
-					"typeRef": "ix://agent-ix/semantic-core/type/DecimalPolicyPrecision",
+					"typeRef": "ix://agent-ix/semantic-core/DecimalPolicyPrecision",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -483,9 +483,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/DecimalPolicy/field/scale",
+					"identity": "ix://agent-ix/semantic-core/DecimalPolicy/scale",
 					"name": "scale",
-					"typeRef": "ix://agent-ix/semantic-core/type/DecimalPolicyScale",
+					"typeRef": "ix://agent-ix/semantic-core/DecimalPolicyScale",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -507,7 +507,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/DecimalPolicyPrecision",
+			"identity": "ix://agent-ix/semantic-core/DecimalPolicyPrecision",
 			"displayName": "DecimalPolicyPrecision",
 			"kind": "scalar",
 			"roles": [],
@@ -521,8 +521,8 @@
 			},
 			"constraints": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/DecimalPolicyPrecision/constraint/min",
-					"appliesTo": "ix://agent-ix/semantic-core/type/DecimalPolicyPrecision",
+					"identity": "ix://agent-ix/semantic-core/DecimalPolicyPrecision/constraint/min",
+					"appliesTo": "ix://agent-ix/semantic-core/DecimalPolicyPrecision",
 					"keyword": "min",
 					"operands": {
 						"value": 1
@@ -538,8 +538,8 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/DecimalPolicyPrecision/constraint/max",
-					"appliesTo": "ix://agent-ix/semantic-core/type/DecimalPolicyPrecision",
+					"identity": "ix://agent-ix/semantic-core/DecimalPolicyPrecision/constraint/max",
+					"appliesTo": "ix://agent-ix/semantic-core/DecimalPolicyPrecision",
 					"keyword": "max",
 					"operands": {
 						"value": 2147483647
@@ -560,7 +560,7 @@
 			"scalar": "integer"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/DecimalPolicyScale",
+			"identity": "ix://agent-ix/semantic-core/DecimalPolicyScale",
 			"displayName": "DecimalPolicyScale",
 			"kind": "scalar",
 			"roles": [],
@@ -574,8 +574,8 @@
 			},
 			"constraints": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/DecimalPolicyScale/constraint/min",
-					"appliesTo": "ix://agent-ix/semantic-core/type/DecimalPolicyScale",
+					"identity": "ix://agent-ix/semantic-core/DecimalPolicyScale/constraint/min",
+					"appliesTo": "ix://agent-ix/semantic-core/DecimalPolicyScale",
 					"keyword": "min",
 					"operands": {
 						"value": 0
@@ -591,8 +591,8 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/DecimalPolicyScale/constraint/max",
-					"appliesTo": "ix://agent-ix/semantic-core/type/DecimalPolicyScale",
+					"identity": "ix://agent-ix/semantic-core/DecimalPolicyScale/constraint/max",
+					"appliesTo": "ix://agent-ix/semantic-core/DecimalPolicyScale",
 					"keyword": "max",
 					"operands": {
 						"value": 2147483647
@@ -613,7 +613,7 @@
 			"scalar": "integer"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/DefaultDecl",
+			"identity": "ix://agent-ix/semantic-core/DefaultDecl",
 			"displayName": "DefaultDecl",
 			"kind": "record",
 			"roles": [],
@@ -630,9 +630,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/DefaultDecl/field/kind",
+					"identity": "ix://agent-ix/semantic-core/DefaultDecl/kind",
 					"name": "kind",
-					"typeRef": "ix://agent-ix/semantic-core/type/DefaultKind",
+					"typeRef": "ix://agent-ix/semantic-core/DefaultKind",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -652,9 +652,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/DefaultDecl/field/value",
+					"identity": "ix://agent-ix/semantic-core/DefaultDecl/value",
 					"name": "value",
-					"typeRef": "ix://agent-ix/semantic-core/type/DefaultDeclValue",
+					"typeRef": "ix://agent-ix/semantic-core/DefaultDeclValue",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -676,7 +676,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/DefaultDeclValue",
+			"identity": "ix://agent-ix/semantic-core/DefaultDeclValue",
 			"displayName": "DefaultDeclValue",
 			"kind": "record",
 			"roles": [],
@@ -694,7 +694,7 @@
 			"fields": []
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/DefaultKind",
+			"identity": "ix://agent-ix/semantic-core/DefaultKind",
 			"displayName": "DefaultKind",
 			"kind": "enum",
 			"roles": [],
@@ -711,7 +711,7 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/DefaultKind/variant/semantic",
+					"identity": "ix://agent-ix/semantic-core/DefaultKind/variant/semantic",
 					"name": "semantic",
 					"origin": {
 						"source": {
@@ -723,7 +723,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/DefaultKind/variant/representation",
+					"identity": "ix://agent-ix/semantic-core/DefaultKind/variant/representation",
 					"name": "representation",
 					"origin": {
 						"source": {
@@ -735,7 +735,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/DefaultKind/variant/migration",
+					"identity": "ix://agent-ix/semantic-core/DefaultKind/variant/migration",
 					"name": "migration",
 					"origin": {
 						"source": {
@@ -749,7 +749,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/EdgeCategory",
+			"identity": "ix://agent-ix/semantic-core/EdgeCategory",
 			"displayName": "EdgeCategory",
 			"kind": "enum",
 			"roles": [],
@@ -766,7 +766,7 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/EdgeCategory/variant/structural",
+					"identity": "ix://agent-ix/semantic-core/EdgeCategory/variant/structural",
 					"name": "structural",
 					"origin": {
 						"source": {
@@ -778,7 +778,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/EdgeCategory/variant/behavioral",
+					"identity": "ix://agent-ix/semantic-core/EdgeCategory/variant/behavioral",
 					"name": "behavioral",
 					"origin": {
 						"source": {
@@ -790,7 +790,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/EdgeCategory/variant/dataflow",
+					"identity": "ix://agent-ix/semantic-core/EdgeCategory/variant/dataflow",
 					"name": "dataflow",
 					"origin": {
 						"source": {
@@ -802,7 +802,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/EdgeCategory/variant/dependency",
+					"identity": "ix://agent-ix/semantic-core/EdgeCategory/variant/dependency",
 					"name": "dependency",
 					"origin": {
 						"source": {
@@ -814,7 +814,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/EdgeCategory/variant/realization",
+					"identity": "ix://agent-ix/semantic-core/EdgeCategory/variant/realization",
 					"name": "realization",
 					"origin": {
 						"source": {
@@ -826,7 +826,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/EdgeCategory/variant/governance",
+					"identity": "ix://agent-ix/semantic-core/EdgeCategory/variant/governance",
 					"name": "governance",
 					"origin": {
 						"source": {
@@ -838,7 +838,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/EdgeCategory/variant/traceability",
+					"identity": "ix://agent-ix/semantic-core/EdgeCategory/variant/traceability",
 					"name": "traceability",
 					"origin": {
 						"source": {
@@ -852,7 +852,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/EnumValue",
+			"identity": "ix://agent-ix/semantic-core/EnumValue",
 			"displayName": "EnumValue",
 			"kind": "record",
 			"roles": [],
@@ -869,9 +869,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/EnumValue/field/value",
+					"identity": "ix://agent-ix/semantic-core/EnumValue/value",
 					"name": "value",
-					"typeRef": "ix://agent-ix/semantic-core/type/Identifier",
+					"typeRef": "ix://agent-ix/semantic-core/Identifier",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -891,9 +891,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/EnumValue/field/doc",
+					"identity": "ix://agent-ix/semantic-core/EnumValue/doc",
 					"name": "doc",
-					"typeRef": "ix://agent-ix/semantic-core/type/EnumValueDoc",
+					"typeRef": "ix://agent-ix/semantic-core/EnumValueDoc",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -915,7 +915,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/EnumValueDoc",
+			"identity": "ix://agent-ix/semantic-core/EnumValueDoc",
 			"displayName": "EnumValueDoc",
 			"kind": "scalar",
 			"roles": [],
@@ -933,7 +933,7 @@
 			"scalar": "string"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/EnumValuesConstraint",
+			"identity": "ix://agent-ix/semantic-core/EnumValuesConstraint",
 			"displayName": "EnumValuesConstraint",
 			"kind": "record",
 			"roles": [],
@@ -950,9 +950,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/EnumValuesConstraint/field/keyword",
+					"identity": "ix://agent-ix/semantic-core/EnumValuesConstraint/keyword",
 					"name": "keyword",
-					"typeRef": "ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword",
+					"typeRef": "ix://agent-ix/semantic-core/EnumValuesConstraintKeyword",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -972,9 +972,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/EnumValuesConstraint/field/values",
+					"identity": "ix://agent-ix/semantic-core/EnumValuesConstraint/values",
 					"name": "values",
-					"typeRef": "ix://agent-ix/semantic-core/type/EnumValuesConstraintValues",
+					"typeRef": "ix://agent-ix/semantic-core/EnumValuesConstraintValues",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -995,7 +995,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword",
+			"identity": "ix://agent-ix/semantic-core/EnumValuesConstraintKeyword",
 			"displayName": "EnumValuesConstraintKeyword",
 			"kind": "enum",
 			"roles": [],
@@ -1012,7 +1012,7 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword/variant/enumValues",
+					"identity": "ix://agent-ix/semantic-core/EnumValuesConstraintKeyword/variant/enumValues",
 					"name": "enumValues",
 					"origin": {
 						"source": {
@@ -1026,7 +1026,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesString",
+			"identity": "ix://agent-ix/semantic-core/EnumValuesConstraintValuesString",
 			"displayName": "EnumValuesConstraintValuesString",
 			"kind": "scalar",
 			"roles": [],
@@ -1044,7 +1044,7 @@
 			"scalar": "string"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesNumber",
+			"identity": "ix://agent-ix/semantic-core/EnumValuesConstraintValuesNumber",
 			"displayName": "EnumValuesConstraintValuesNumber",
 			"kind": "scalar",
 			"roles": [],
@@ -1062,7 +1062,7 @@
 			"scalar": "number"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesBoolean",
+			"identity": "ix://agent-ix/semantic-core/EnumValuesConstraintValuesBoolean",
 			"displayName": "EnumValuesConstraintValuesBoolean",
 			"kind": "scalar",
 			"roles": [],
@@ -1080,7 +1080,7 @@
 			"scalar": "boolean"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/EnumValuesConstraintValues",
+			"identity": "ix://agent-ix/semantic-core/EnumValuesConstraintValues",
 			"displayName": "EnumValuesConstraintValues",
 			"kind": "union",
 			"roles": [],
@@ -1106,9 +1106,9 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/EnumValuesConstraintValues/variant/string",
+					"identity": "ix://agent-ix/semantic-core/EnumValuesConstraintValues/variant/string",
 					"name": "string",
-					"payloadType": "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesString",
+					"payloadType": "ix://agent-ix/semantic-core/EnumValuesConstraintValuesString",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -1119,9 +1119,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/EnumValuesConstraintValues/variant/number",
+					"identity": "ix://agent-ix/semantic-core/EnumValuesConstraintValues/variant/number",
 					"name": "number",
-					"payloadType": "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesNumber",
+					"payloadType": "ix://agent-ix/semantic-core/EnumValuesConstraintValuesNumber",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -1132,9 +1132,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/EnumValuesConstraintValues/variant/boolean",
+					"identity": "ix://agent-ix/semantic-core/EnumValuesConstraintValues/variant/boolean",
 					"name": "boolean",
-					"payloadType": "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesBoolean",
+					"payloadType": "ix://agent-ix/semantic-core/EnumValuesConstraintValuesBoolean",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -1147,7 +1147,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint",
+			"identity": "ix://agent-ix/semantic-core/ExclusiveMaxConstraint",
 			"displayName": "ExclusiveMaxConstraint",
 			"kind": "record",
 			"roles": [],
@@ -1164,9 +1164,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint/field/keyword",
+					"identity": "ix://agent-ix/semantic-core/ExclusiveMaxConstraint/keyword",
 					"name": "keyword",
-					"typeRef": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintKeyword",
+					"typeRef": "ix://agent-ix/semantic-core/ExclusiveMaxConstraintKeyword",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -1186,9 +1186,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint/field/value",
+					"identity": "ix://agent-ix/semantic-core/ExclusiveMaxConstraint/value",
 					"name": "value",
-					"typeRef": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue",
+					"typeRef": "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValue",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -1210,7 +1210,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintKeyword",
+			"identity": "ix://agent-ix/semantic-core/ExclusiveMaxConstraintKeyword",
 			"displayName": "ExclusiveMaxConstraintKeyword",
 			"kind": "enum",
 			"roles": [],
@@ -1227,7 +1227,7 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintKeyword/variant/exclusiveMax",
+					"identity": "ix://agent-ix/semantic-core/ExclusiveMaxConstraintKeyword/variant/exclusiveMax",
 					"name": "exclusiveMax",
 					"origin": {
 						"source": {
@@ -1241,7 +1241,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueNumber",
+			"identity": "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueNumber",
 			"displayName": "ExclusiveMaxConstraintValueNumber",
 			"kind": "scalar",
 			"roles": [],
@@ -1259,7 +1259,7 @@
 			"scalar": "number"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueString",
+			"identity": "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueString",
 			"displayName": "ExclusiveMaxConstraintValueString",
 			"kind": "scalar",
 			"roles": [],
@@ -1277,7 +1277,7 @@
 			"scalar": "string"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue",
+			"identity": "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValue",
 			"displayName": "ExclusiveMaxConstraintValue",
 			"kind": "union",
 			"roles": [],
@@ -1303,9 +1303,9 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue/variant/number",
+					"identity": "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValue/variant/number",
 					"name": "number",
-					"payloadType": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueNumber",
+					"payloadType": "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueNumber",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -1316,9 +1316,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue/variant/string",
+					"identity": "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValue/variant/string",
 					"name": "string",
-					"payloadType": "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueString",
+					"payloadType": "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueString",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -1331,7 +1331,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraint",
+			"identity": "ix://agent-ix/semantic-core/ExclusiveMinConstraint",
 			"displayName": "ExclusiveMinConstraint",
 			"kind": "record",
 			"roles": [],
@@ -1348,9 +1348,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraint/field/keyword",
+					"identity": "ix://agent-ix/semantic-core/ExclusiveMinConstraint/keyword",
 					"name": "keyword",
-					"typeRef": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintKeyword",
+					"typeRef": "ix://agent-ix/semantic-core/ExclusiveMinConstraintKeyword",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -1370,9 +1370,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraint/field/value",
+					"identity": "ix://agent-ix/semantic-core/ExclusiveMinConstraint/value",
 					"name": "value",
-					"typeRef": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue",
+					"typeRef": "ix://agent-ix/semantic-core/ExclusiveMinConstraintValue",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -1394,7 +1394,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintKeyword",
+			"identity": "ix://agent-ix/semantic-core/ExclusiveMinConstraintKeyword",
 			"displayName": "ExclusiveMinConstraintKeyword",
 			"kind": "enum",
 			"roles": [],
@@ -1411,7 +1411,7 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintKeyword/variant/exclusiveMin",
+					"identity": "ix://agent-ix/semantic-core/ExclusiveMinConstraintKeyword/variant/exclusiveMin",
 					"name": "exclusiveMin",
 					"origin": {
 						"source": {
@@ -1425,7 +1425,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueNumber",
+			"identity": "ix://agent-ix/semantic-core/ExclusiveMinConstraintValueNumber",
 			"displayName": "ExclusiveMinConstraintValueNumber",
 			"kind": "scalar",
 			"roles": [],
@@ -1443,7 +1443,7 @@
 			"scalar": "number"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueString",
+			"identity": "ix://agent-ix/semantic-core/ExclusiveMinConstraintValueString",
 			"displayName": "ExclusiveMinConstraintValueString",
 			"kind": "scalar",
 			"roles": [],
@@ -1461,7 +1461,7 @@
 			"scalar": "string"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue",
+			"identity": "ix://agent-ix/semantic-core/ExclusiveMinConstraintValue",
 			"displayName": "ExclusiveMinConstraintValue",
 			"kind": "union",
 			"roles": [],
@@ -1487,9 +1487,9 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue/variant/number",
+					"identity": "ix://agent-ix/semantic-core/ExclusiveMinConstraintValue/variant/number",
 					"name": "number",
-					"payloadType": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueNumber",
+					"payloadType": "ix://agent-ix/semantic-core/ExclusiveMinConstraintValueNumber",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -1500,9 +1500,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue/variant/string",
+					"identity": "ix://agent-ix/semantic-core/ExclusiveMinConstraintValue/variant/string",
 					"name": "string",
-					"payloadType": "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueString",
+					"payloadType": "ix://agent-ix/semantic-core/ExclusiveMinConstraintValueString",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -1515,7 +1515,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/FieldDecl",
+			"identity": "ix://agent-ix/semantic-core/FieldDecl",
 			"displayName": "FieldDecl",
 			"kind": "record",
 			"roles": [],
@@ -1532,9 +1532,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/FieldDecl/field/name",
+					"identity": "ix://agent-ix/semantic-core/FieldDecl/name",
 					"name": "name",
-					"typeRef": "ix://agent-ix/semantic-core/type/Identifier",
+					"typeRef": "ix://agent-ix/semantic-core/Identifier",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -1554,9 +1554,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/FieldDecl/field/type",
+					"identity": "ix://agent-ix/semantic-core/FieldDecl/type",
 					"name": "type",
-					"typeRef": "ix://agent-ix/semantic-core/type/TypeRef",
+					"typeRef": "ix://agent-ix/semantic-core/TypeRef",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -1576,9 +1576,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/FieldDecl/field/identity",
+					"identity": "ix://agent-ix/semantic-core/FieldDecl/identity",
 					"name": "identity",
-					"typeRef": "ix://agent-ix/semantic-core/type/FieldDeclIdentity",
+					"typeRef": "ix://agent-ix/semantic-core/FieldDeclIdentity",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -1598,9 +1598,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/FieldDecl/field/nullable",
+					"identity": "ix://agent-ix/semantic-core/FieldDecl/nullable",
 					"name": "nullable",
-					"typeRef": "ix://agent-ix/semantic-core/type/FieldDeclNullable",
+					"typeRef": "ix://agent-ix/semantic-core/FieldDeclNullable",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -1620,9 +1620,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/FieldDecl/field/default",
+					"identity": "ix://agent-ix/semantic-core/FieldDecl/default",
 					"name": "default",
-					"typeRef": "ix://agent-ix/semantic-core/type/DefaultDecl",
+					"typeRef": "ix://agent-ix/semantic-core/DefaultDecl",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -1642,9 +1642,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/FieldDecl/field/doc",
+					"identity": "ix://agent-ix/semantic-core/FieldDecl/doc",
 					"name": "doc",
-					"typeRef": "ix://agent-ix/semantic-core/type/FieldDeclDoc",
+					"typeRef": "ix://agent-ix/semantic-core/FieldDeclDoc",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -1664,9 +1664,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/FieldDecl/field/constraints",
+					"identity": "ix://agent-ix/semantic-core/FieldDecl/constraints",
 					"name": "constraints",
-					"typeRef": "ix://agent-ix/semantic-core/type/ConstraintDecl",
+					"typeRef": "ix://agent-ix/semantic-core/ConstraintDecl",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -1687,7 +1687,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/FieldDeclIdentity",
+			"identity": "ix://agent-ix/semantic-core/FieldDeclIdentity",
 			"displayName": "FieldDeclIdentity",
 			"kind": "scalar",
 			"roles": [],
@@ -1705,7 +1705,7 @@
 			"scalar": "boolean"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/FieldDeclNullable",
+			"identity": "ix://agent-ix/semantic-core/FieldDeclNullable",
 			"displayName": "FieldDeclNullable",
 			"kind": "scalar",
 			"roles": [],
@@ -1723,7 +1723,7 @@
 			"scalar": "boolean"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/FieldDeclDoc",
+			"identity": "ix://agent-ix/semantic-core/FieldDeclDoc",
 			"displayName": "FieldDeclDoc",
 			"kind": "scalar",
 			"roles": [],
@@ -1741,7 +1741,7 @@
 			"scalar": "string"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/FormatConstraint",
+			"identity": "ix://agent-ix/semantic-core/FormatConstraint",
 			"displayName": "FormatConstraint",
 			"kind": "record",
 			"roles": [],
@@ -1758,9 +1758,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/FormatConstraint/field/keyword",
+					"identity": "ix://agent-ix/semantic-core/FormatConstraint/keyword",
 					"name": "keyword",
-					"typeRef": "ix://agent-ix/semantic-core/type/FormatConstraintKeyword",
+					"typeRef": "ix://agent-ix/semantic-core/FormatConstraintKeyword",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -1780,9 +1780,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/FormatConstraint/field/name",
+					"identity": "ix://agent-ix/semantic-core/FormatConstraint/name",
 					"name": "name",
-					"typeRef": "ix://agent-ix/semantic-core/type/FormatConstraintName",
+					"typeRef": "ix://agent-ix/semantic-core/FormatConstraintName",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -1804,7 +1804,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/FormatConstraintKeyword",
+			"identity": "ix://agent-ix/semantic-core/FormatConstraintKeyword",
 			"displayName": "FormatConstraintKeyword",
 			"kind": "enum",
 			"roles": [],
@@ -1821,7 +1821,7 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/FormatConstraintKeyword/variant/format",
+					"identity": "ix://agent-ix/semantic-core/FormatConstraintKeyword/variant/format",
 					"name": "format",
 					"origin": {
 						"source": {
@@ -1835,7 +1835,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/FormatConstraintName",
+			"identity": "ix://agent-ix/semantic-core/FormatConstraintName",
 			"displayName": "FormatConstraintName",
 			"kind": "scalar",
 			"roles": [],
@@ -1853,7 +1853,7 @@
 			"scalar": "string"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/Identifier",
+			"identity": "ix://agent-ix/semantic-core/Identifier",
 			"displayName": "Identifier",
 			"kind": "scalar",
 			"roles": [],
@@ -1871,7 +1871,7 @@
 			"scalar": "string"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/KernelScalar",
+			"identity": "ix://agent-ix/semantic-core/KernelScalar",
 			"displayName": "KernelScalar",
 			"kind": "enum",
 			"roles": [],
@@ -1888,7 +1888,7 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/KernelScalar/variant/UUID",
+					"identity": "ix://agent-ix/semantic-core/KernelScalar/variant/UUID",
 					"name": "UUID",
 					"origin": {
 						"source": {
@@ -1900,7 +1900,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/KernelScalar/variant/Boolean",
+					"identity": "ix://agent-ix/semantic-core/KernelScalar/variant/Boolean",
 					"name": "Boolean",
 					"origin": {
 						"source": {
@@ -1912,7 +1912,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/KernelScalar/variant/Integer",
+					"identity": "ix://agent-ix/semantic-core/KernelScalar/variant/Integer",
 					"name": "Integer",
 					"origin": {
 						"source": {
@@ -1924,7 +1924,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/KernelScalar/variant/Decimal",
+					"identity": "ix://agent-ix/semantic-core/KernelScalar/variant/Decimal",
 					"name": "Decimal",
 					"origin": {
 						"source": {
@@ -1936,7 +1936,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/KernelScalar/variant/String",
+					"identity": "ix://agent-ix/semantic-core/KernelScalar/variant/String",
 					"name": "String",
 					"origin": {
 						"source": {
@@ -1948,7 +1948,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/KernelScalar/variant/Timestamp",
+					"identity": "ix://agent-ix/semantic-core/KernelScalar/variant/Timestamp",
 					"name": "Timestamp",
 					"origin": {
 						"source": {
@@ -1960,7 +1960,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/KernelScalar/variant/Duration",
+					"identity": "ix://agent-ix/semantic-core/KernelScalar/variant/Duration",
 					"name": "Duration",
 					"origin": {
 						"source": {
@@ -1972,7 +1972,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/KernelScalar/variant/Bytes",
+					"identity": "ix://agent-ix/semantic-core/KernelScalar/variant/Bytes",
 					"name": "Bytes",
 					"origin": {
 						"source": {
@@ -1984,7 +1984,7 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/KernelScalar/variant/JsonObject",
+					"identity": "ix://agent-ix/semantic-core/KernelScalar/variant/JsonObject",
 					"name": "JsonObject",
 					"origin": {
 						"source": {
@@ -1998,7 +1998,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MaxConstraint",
+			"identity": "ix://agent-ix/semantic-core/MaxConstraint",
 			"displayName": "MaxConstraint",
 			"kind": "record",
 			"roles": [],
@@ -2015,9 +2015,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MaxConstraint/field/keyword",
+					"identity": "ix://agent-ix/semantic-core/MaxConstraint/keyword",
 					"name": "keyword",
-					"typeRef": "ix://agent-ix/semantic-core/type/MaxConstraintKeyword",
+					"typeRef": "ix://agent-ix/semantic-core/MaxConstraintKeyword",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -2037,9 +2037,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MaxConstraint/field/value",
+					"identity": "ix://agent-ix/semantic-core/MaxConstraint/value",
 					"name": "value",
-					"typeRef": "ix://agent-ix/semantic-core/type/MaxConstraintValue",
+					"typeRef": "ix://agent-ix/semantic-core/MaxConstraintValue",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -2061,7 +2061,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MaxConstraintKeyword",
+			"identity": "ix://agent-ix/semantic-core/MaxConstraintKeyword",
 			"displayName": "MaxConstraintKeyword",
 			"kind": "enum",
 			"roles": [],
@@ -2078,7 +2078,7 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MaxConstraintKeyword/variant/max",
+					"identity": "ix://agent-ix/semantic-core/MaxConstraintKeyword/variant/max",
 					"name": "max",
 					"origin": {
 						"source": {
@@ -2092,7 +2092,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MaxConstraintValueNumber",
+			"identity": "ix://agent-ix/semantic-core/MaxConstraintValueNumber",
 			"displayName": "MaxConstraintValueNumber",
 			"kind": "scalar",
 			"roles": [],
@@ -2110,7 +2110,7 @@
 			"scalar": "number"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MaxConstraintValueString",
+			"identity": "ix://agent-ix/semantic-core/MaxConstraintValueString",
 			"displayName": "MaxConstraintValueString",
 			"kind": "scalar",
 			"roles": [],
@@ -2128,7 +2128,7 @@
 			"scalar": "string"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MaxConstraintValue",
+			"identity": "ix://agent-ix/semantic-core/MaxConstraintValue",
 			"displayName": "MaxConstraintValue",
 			"kind": "union",
 			"roles": [],
@@ -2154,9 +2154,9 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MaxConstraintValue/variant/number",
+					"identity": "ix://agent-ix/semantic-core/MaxConstraintValue/variant/number",
 					"name": "number",
-					"payloadType": "ix://agent-ix/semantic-core/type/MaxConstraintValueNumber",
+					"payloadType": "ix://agent-ix/semantic-core/MaxConstraintValueNumber",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -2167,9 +2167,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MaxConstraintValue/variant/string",
+					"identity": "ix://agent-ix/semantic-core/MaxConstraintValue/variant/string",
 					"name": "string",
-					"payloadType": "ix://agent-ix/semantic-core/type/MaxConstraintValueString",
+					"payloadType": "ix://agent-ix/semantic-core/MaxConstraintValueString",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -2182,7 +2182,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MaxLengthConstraint",
+			"identity": "ix://agent-ix/semantic-core/MaxLengthConstraint",
 			"displayName": "MaxLengthConstraint",
 			"kind": "record",
 			"roles": [],
@@ -2199,9 +2199,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MaxLengthConstraint/field/keyword",
+					"identity": "ix://agent-ix/semantic-core/MaxLengthConstraint/keyword",
 					"name": "keyword",
-					"typeRef": "ix://agent-ix/semantic-core/type/MaxLengthConstraintKeyword",
+					"typeRef": "ix://agent-ix/semantic-core/MaxLengthConstraintKeyword",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -2221,9 +2221,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MaxLengthConstraint/field/value",
+					"identity": "ix://agent-ix/semantic-core/MaxLengthConstraint/value",
 					"name": "value",
-					"typeRef": "ix://agent-ix/semantic-core/type/MaxLengthConstraintValue",
+					"typeRef": "ix://agent-ix/semantic-core/MaxLengthConstraintValue",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -2245,7 +2245,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MaxLengthConstraintKeyword",
+			"identity": "ix://agent-ix/semantic-core/MaxLengthConstraintKeyword",
 			"displayName": "MaxLengthConstraintKeyword",
 			"kind": "enum",
 			"roles": [],
@@ -2262,7 +2262,7 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MaxLengthConstraintKeyword/variant/maxLength",
+					"identity": "ix://agent-ix/semantic-core/MaxLengthConstraintKeyword/variant/maxLength",
 					"name": "maxLength",
 					"origin": {
 						"source": {
@@ -2276,7 +2276,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MaxLengthConstraintValue",
+			"identity": "ix://agent-ix/semantic-core/MaxLengthConstraintValue",
 			"displayName": "MaxLengthConstraintValue",
 			"kind": "scalar",
 			"roles": [],
@@ -2290,8 +2290,8 @@
 			},
 			"constraints": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MaxLengthConstraintValue/constraint/min",
-					"appliesTo": "ix://agent-ix/semantic-core/type/MaxLengthConstraintValue",
+					"identity": "ix://agent-ix/semantic-core/MaxLengthConstraintValue/constraint/min",
+					"appliesTo": "ix://agent-ix/semantic-core/MaxLengthConstraintValue",
 					"keyword": "min",
 					"operands": {
 						"value": 0
@@ -2307,8 +2307,8 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MaxLengthConstraintValue/constraint/max",
-					"appliesTo": "ix://agent-ix/semantic-core/type/MaxLengthConstraintValue",
+					"identity": "ix://agent-ix/semantic-core/MaxLengthConstraintValue/constraint/max",
+					"appliesTo": "ix://agent-ix/semantic-core/MaxLengthConstraintValue",
 					"keyword": "max",
 					"operands": {
 						"value": 2147483647
@@ -2329,7 +2329,7 @@
 			"scalar": "integer"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MinConstraint",
+			"identity": "ix://agent-ix/semantic-core/MinConstraint",
 			"displayName": "MinConstraint",
 			"kind": "record",
 			"roles": [],
@@ -2346,9 +2346,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MinConstraint/field/keyword",
+					"identity": "ix://agent-ix/semantic-core/MinConstraint/keyword",
 					"name": "keyword",
-					"typeRef": "ix://agent-ix/semantic-core/type/MinConstraintKeyword",
+					"typeRef": "ix://agent-ix/semantic-core/MinConstraintKeyword",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -2368,9 +2368,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MinConstraint/field/value",
+					"identity": "ix://agent-ix/semantic-core/MinConstraint/value",
 					"name": "value",
-					"typeRef": "ix://agent-ix/semantic-core/type/MinConstraintValue",
+					"typeRef": "ix://agent-ix/semantic-core/MinConstraintValue",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -2392,7 +2392,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MinConstraintKeyword",
+			"identity": "ix://agent-ix/semantic-core/MinConstraintKeyword",
 			"displayName": "MinConstraintKeyword",
 			"kind": "enum",
 			"roles": [],
@@ -2409,7 +2409,7 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MinConstraintKeyword/variant/min",
+					"identity": "ix://agent-ix/semantic-core/MinConstraintKeyword/variant/min",
 					"name": "min",
 					"origin": {
 						"source": {
@@ -2423,7 +2423,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MinConstraintValueNumber",
+			"identity": "ix://agent-ix/semantic-core/MinConstraintValueNumber",
 			"displayName": "MinConstraintValueNumber",
 			"kind": "scalar",
 			"roles": [],
@@ -2441,7 +2441,7 @@
 			"scalar": "number"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MinConstraintValueString",
+			"identity": "ix://agent-ix/semantic-core/MinConstraintValueString",
 			"displayName": "MinConstraintValueString",
 			"kind": "scalar",
 			"roles": [],
@@ -2459,7 +2459,7 @@
 			"scalar": "string"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MinConstraintValue",
+			"identity": "ix://agent-ix/semantic-core/MinConstraintValue",
 			"displayName": "MinConstraintValue",
 			"kind": "union",
 			"roles": [],
@@ -2485,9 +2485,9 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MinConstraintValue/variant/number",
+					"identity": "ix://agent-ix/semantic-core/MinConstraintValue/variant/number",
 					"name": "number",
-					"payloadType": "ix://agent-ix/semantic-core/type/MinConstraintValueNumber",
+					"payloadType": "ix://agent-ix/semantic-core/MinConstraintValueNumber",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -2498,9 +2498,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MinConstraintValue/variant/string",
+					"identity": "ix://agent-ix/semantic-core/MinConstraintValue/variant/string",
 					"name": "string",
-					"payloadType": "ix://agent-ix/semantic-core/type/MinConstraintValueString",
+					"payloadType": "ix://agent-ix/semantic-core/MinConstraintValueString",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -2513,7 +2513,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MinLengthConstraint",
+			"identity": "ix://agent-ix/semantic-core/MinLengthConstraint",
 			"displayName": "MinLengthConstraint",
 			"kind": "record",
 			"roles": [],
@@ -2530,9 +2530,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MinLengthConstraint/field/keyword",
+					"identity": "ix://agent-ix/semantic-core/MinLengthConstraint/keyword",
 					"name": "keyword",
-					"typeRef": "ix://agent-ix/semantic-core/type/MinLengthConstraintKeyword",
+					"typeRef": "ix://agent-ix/semantic-core/MinLengthConstraintKeyword",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -2552,9 +2552,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MinLengthConstraint/field/value",
+					"identity": "ix://agent-ix/semantic-core/MinLengthConstraint/value",
 					"name": "value",
-					"typeRef": "ix://agent-ix/semantic-core/type/MinLengthConstraintValue",
+					"typeRef": "ix://agent-ix/semantic-core/MinLengthConstraintValue",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -2576,7 +2576,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MinLengthConstraintKeyword",
+			"identity": "ix://agent-ix/semantic-core/MinLengthConstraintKeyword",
 			"displayName": "MinLengthConstraintKeyword",
 			"kind": "enum",
 			"roles": [],
@@ -2593,7 +2593,7 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MinLengthConstraintKeyword/variant/minLength",
+					"identity": "ix://agent-ix/semantic-core/MinLengthConstraintKeyword/variant/minLength",
 					"name": "minLength",
 					"origin": {
 						"source": {
@@ -2607,7 +2607,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MinLengthConstraintValue",
+			"identity": "ix://agent-ix/semantic-core/MinLengthConstraintValue",
 			"displayName": "MinLengthConstraintValue",
 			"kind": "scalar",
 			"roles": [],
@@ -2621,8 +2621,8 @@
 			},
 			"constraints": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MinLengthConstraintValue/constraint/min",
-					"appliesTo": "ix://agent-ix/semantic-core/type/MinLengthConstraintValue",
+					"identity": "ix://agent-ix/semantic-core/MinLengthConstraintValue/constraint/min",
+					"appliesTo": "ix://agent-ix/semantic-core/MinLengthConstraintValue",
 					"keyword": "min",
 					"operands": {
 						"value": 0
@@ -2638,8 +2638,8 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MinLengthConstraintValue/constraint/max",
-					"appliesTo": "ix://agent-ix/semantic-core/type/MinLengthConstraintValue",
+					"identity": "ix://agent-ix/semantic-core/MinLengthConstraintValue/constraint/max",
+					"appliesTo": "ix://agent-ix/semantic-core/MinLengthConstraintValue",
 					"keyword": "max",
 					"operands": {
 						"value": 2147483647
@@ -2660,7 +2660,7 @@
 			"scalar": "integer"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/Multiplicity",
+			"identity": "ix://agent-ix/semantic-core/Multiplicity",
 			"displayName": "Multiplicity",
 			"kind": "record",
 			"roles": [],
@@ -2677,9 +2677,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/Multiplicity/field/lower",
+					"identity": "ix://agent-ix/semantic-core/Multiplicity/lower",
 					"name": "lower",
-					"typeRef": "ix://agent-ix/semantic-core/type/MultiplicityLower",
+					"typeRef": "ix://agent-ix/semantic-core/MultiplicityLower",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -2699,9 +2699,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/Multiplicity/field/upper",
+					"identity": "ix://agent-ix/semantic-core/Multiplicity/upper",
 					"name": "upper",
-					"typeRef": "ix://agent-ix/semantic-core/type/MultiplicityUpper",
+					"typeRef": "ix://agent-ix/semantic-core/MultiplicityUpper",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -2721,9 +2721,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/Multiplicity/field/ordered",
+					"identity": "ix://agent-ix/semantic-core/Multiplicity/ordered",
 					"name": "ordered",
-					"typeRef": "ix://agent-ix/semantic-core/type/MultiplicityOrdered",
+					"typeRef": "ix://agent-ix/semantic-core/MultiplicityOrdered",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -2743,9 +2743,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/Multiplicity/field/unique",
+					"identity": "ix://agent-ix/semantic-core/Multiplicity/unique",
 					"name": "unique",
-					"typeRef": "ix://agent-ix/semantic-core/type/MultiplicityUnique",
+					"typeRef": "ix://agent-ix/semantic-core/MultiplicityUnique",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -2767,7 +2767,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MultiplicityLower",
+			"identity": "ix://agent-ix/semantic-core/MultiplicityLower",
 			"displayName": "MultiplicityLower",
 			"kind": "scalar",
 			"roles": [],
@@ -2781,8 +2781,8 @@
 			},
 			"constraints": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MultiplicityLower/constraint/min",
-					"appliesTo": "ix://agent-ix/semantic-core/type/MultiplicityLower",
+					"identity": "ix://agent-ix/semantic-core/MultiplicityLower/constraint/min",
+					"appliesTo": "ix://agent-ix/semantic-core/MultiplicityLower",
 					"keyword": "min",
 					"operands": {
 						"value": 0
@@ -2798,8 +2798,8 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MultiplicityLower/constraint/max",
-					"appliesTo": "ix://agent-ix/semantic-core/type/MultiplicityLower",
+					"identity": "ix://agent-ix/semantic-core/MultiplicityLower/constraint/max",
+					"appliesTo": "ix://agent-ix/semantic-core/MultiplicityLower",
 					"keyword": "max",
 					"operands": {
 						"value": 2147483647
@@ -2820,7 +2820,7 @@
 			"scalar": "integer"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MultiplicityUpper",
+			"identity": "ix://agent-ix/semantic-core/MultiplicityUpper",
 			"displayName": "MultiplicityUpper",
 			"kind": "scalar",
 			"roles": [],
@@ -2834,8 +2834,8 @@
 			},
 			"constraints": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MultiplicityUpper/constraint/min",
-					"appliesTo": "ix://agent-ix/semantic-core/type/MultiplicityUpper",
+					"identity": "ix://agent-ix/semantic-core/MultiplicityUpper/constraint/min",
+					"appliesTo": "ix://agent-ix/semantic-core/MultiplicityUpper",
 					"keyword": "min",
 					"operands": {
 						"value": 0
@@ -2851,8 +2851,8 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/MultiplicityUpper/constraint/max",
-					"appliesTo": "ix://agent-ix/semantic-core/type/MultiplicityUpper",
+					"identity": "ix://agent-ix/semantic-core/MultiplicityUpper/constraint/max",
+					"appliesTo": "ix://agent-ix/semantic-core/MultiplicityUpper",
 					"keyword": "max",
 					"operands": {
 						"value": 2147483647
@@ -2873,7 +2873,7 @@
 			"scalar": "integer"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MultiplicityOrdered",
+			"identity": "ix://agent-ix/semantic-core/MultiplicityOrdered",
 			"displayName": "MultiplicityOrdered",
 			"kind": "scalar",
 			"roles": [],
@@ -2891,7 +2891,7 @@
 			"scalar": "boolean"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/MultiplicityUnique",
+			"identity": "ix://agent-ix/semantic-core/MultiplicityUnique",
 			"displayName": "MultiplicityUnique",
 			"kind": "scalar",
 			"roles": [],
@@ -2909,7 +2909,7 @@
 			"scalar": "boolean"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/NonEmptyConstraint",
+			"identity": "ix://agent-ix/semantic-core/NonEmptyConstraint",
 			"displayName": "NonEmptyConstraint",
 			"kind": "record",
 			"roles": [],
@@ -2926,9 +2926,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/NonEmptyConstraint/field/keyword",
+					"identity": "ix://agent-ix/semantic-core/NonEmptyConstraint/keyword",
 					"name": "keyword",
-					"typeRef": "ix://agent-ix/semantic-core/type/NonEmptyConstraintKeyword",
+					"typeRef": "ix://agent-ix/semantic-core/NonEmptyConstraintKeyword",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -2950,7 +2950,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/NonEmptyConstraintKeyword",
+			"identity": "ix://agent-ix/semantic-core/NonEmptyConstraintKeyword",
 			"displayName": "NonEmptyConstraintKeyword",
 			"kind": "enum",
 			"roles": [],
@@ -2967,7 +2967,7 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/NonEmptyConstraintKeyword/variant/nonEmpty",
+					"identity": "ix://agent-ix/semantic-core/NonEmptyConstraintKeyword/variant/nonEmpty",
 					"name": "nonEmpty",
 					"origin": {
 						"source": {
@@ -2981,7 +2981,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/OperationDecl",
+			"identity": "ix://agent-ix/semantic-core/OperationDecl",
 			"displayName": "OperationDecl",
 			"kind": "record",
 			"roles": [],
@@ -2998,9 +2998,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/OperationDecl/field/name",
+					"identity": "ix://agent-ix/semantic-core/OperationDecl/name",
 					"name": "name",
-					"typeRef": "ix://agent-ix/semantic-core/type/Identifier",
+					"typeRef": "ix://agent-ix/semantic-core/Identifier",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3020,9 +3020,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/OperationDecl/field/params",
+					"identity": "ix://agent-ix/semantic-core/OperationDecl/params",
 					"name": "params",
-					"typeRef": "ix://agent-ix/semantic-core/type/FieldDecl",
+					"typeRef": "ix://agent-ix/semantic-core/FieldDecl",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3041,9 +3041,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/OperationDecl/field/returns",
+					"identity": "ix://agent-ix/semantic-core/OperationDecl/returns",
 					"name": "returns",
-					"typeRef": "ix://agent-ix/semantic-core/type/TypeRef",
+					"typeRef": "ix://agent-ix/semantic-core/TypeRef",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3063,9 +3063,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/OperationDecl/field/pre",
+					"identity": "ix://agent-ix/semantic-core/OperationDecl/pre",
 					"name": "pre",
-					"typeRef": "ix://agent-ix/semantic-core/type/ClauseRef",
+					"typeRef": "ix://agent-ix/semantic-core/ClauseRef",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3084,9 +3084,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/OperationDecl/field/post",
+					"identity": "ix://agent-ix/semantic-core/OperationDecl/post",
 					"name": "post",
-					"typeRef": "ix://agent-ix/semantic-core/type/ClauseRef",
+					"typeRef": "ix://agent-ix/semantic-core/ClauseRef",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3107,7 +3107,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/PatternConstraint",
+			"identity": "ix://agent-ix/semantic-core/PatternConstraint",
 			"displayName": "PatternConstraint",
 			"kind": "record",
 			"roles": [],
@@ -3124,9 +3124,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/PatternConstraint/field/keyword",
+					"identity": "ix://agent-ix/semantic-core/PatternConstraint/keyword",
 					"name": "keyword",
-					"typeRef": "ix://agent-ix/semantic-core/type/PatternConstraintKeyword",
+					"typeRef": "ix://agent-ix/semantic-core/PatternConstraintKeyword",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3146,9 +3146,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/PatternConstraint/field/regex",
+					"identity": "ix://agent-ix/semantic-core/PatternConstraint/regex",
 					"name": "regex",
-					"typeRef": "ix://agent-ix/semantic-core/type/PatternConstraintRegex",
+					"typeRef": "ix://agent-ix/semantic-core/PatternConstraintRegex",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3168,9 +3168,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/PatternConstraint/field/dialect",
+					"identity": "ix://agent-ix/semantic-core/PatternConstraint/dialect",
 					"name": "dialect",
-					"typeRef": "ix://agent-ix/semantic-core/type/PatternConstraintDialect",
+					"typeRef": "ix://agent-ix/semantic-core/PatternConstraintDialect",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3192,7 +3192,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/PatternConstraintKeyword",
+			"identity": "ix://agent-ix/semantic-core/PatternConstraintKeyword",
 			"displayName": "PatternConstraintKeyword",
 			"kind": "enum",
 			"roles": [],
@@ -3209,7 +3209,7 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/PatternConstraintKeyword/variant/pattern",
+					"identity": "ix://agent-ix/semantic-core/PatternConstraintKeyword/variant/pattern",
 					"name": "pattern",
 					"origin": {
 						"source": {
@@ -3223,7 +3223,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/PatternConstraintRegex",
+			"identity": "ix://agent-ix/semantic-core/PatternConstraintRegex",
 			"displayName": "PatternConstraintRegex",
 			"kind": "scalar",
 			"roles": [],
@@ -3241,7 +3241,7 @@
 			"scalar": "string"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/PatternConstraintDialect",
+			"identity": "ix://agent-ix/semantic-core/PatternConstraintDialect",
 			"displayName": "PatternConstraintDialect",
 			"kind": "enum",
 			"roles": [],
@@ -3258,7 +3258,7 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/PatternConstraintDialect/variant/ecma-262",
+					"identity": "ix://agent-ix/semantic-core/PatternConstraintDialect/variant/ecma-262",
 					"name": "ecma-262",
 					"origin": {
 						"source": {
@@ -3272,7 +3272,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/RelationDecl",
+			"identity": "ix://agent-ix/semantic-core/RelationDecl",
 			"displayName": "RelationDecl",
 			"kind": "record",
 			"roles": [],
@@ -3289,9 +3289,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/RelationDecl/field/verb",
+					"identity": "ix://agent-ix/semantic-core/RelationDecl/verb",
 					"name": "verb",
-					"typeRef": "ix://agent-ix/semantic-core/type/Identifier",
+					"typeRef": "ix://agent-ix/semantic-core/Identifier",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3311,9 +3311,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/RelationDecl/field/category",
+					"identity": "ix://agent-ix/semantic-core/RelationDecl/category",
 					"name": "category",
-					"typeRef": "ix://agent-ix/semantic-core/type/EdgeCategory",
+					"typeRef": "ix://agent-ix/semantic-core/EdgeCategory",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3333,9 +3333,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/RelationDecl/field/composite",
+					"identity": "ix://agent-ix/semantic-core/RelationDecl/composite",
 					"name": "composite",
-					"typeRef": "ix://agent-ix/semantic-core/type/RelationDeclComposite",
+					"typeRef": "ix://agent-ix/semantic-core/RelationDeclComposite",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3355,9 +3355,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/RelationDecl/field/target",
+					"identity": "ix://agent-ix/semantic-core/RelationDecl/target",
 					"name": "target",
-					"typeRef": "ix://agent-ix/semantic-core/type/SemanticId",
+					"typeRef": "ix://agent-ix/semantic-core/SemanticId",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3377,9 +3377,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/RelationDecl/field/multiplicity",
+					"identity": "ix://agent-ix/semantic-core/RelationDecl/multiplicity",
 					"name": "multiplicity",
-					"typeRef": "ix://agent-ix/semantic-core/type/Multiplicity",
+					"typeRef": "ix://agent-ix/semantic-core/Multiplicity",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3401,7 +3401,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/RelationDeclComposite",
+			"identity": "ix://agent-ix/semantic-core/RelationDeclComposite",
 			"displayName": "RelationDeclComposite",
 			"kind": "scalar",
 			"roles": [],
@@ -3419,7 +3419,7 @@
 			"scalar": "boolean"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/SemanticId",
+			"identity": "ix://agent-ix/semantic-core/SemanticId",
 			"displayName": "SemanticId",
 			"kind": "scalar",
 			"roles": [],
@@ -3437,7 +3437,7 @@
 			"scalar": "string"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/SourceLocus",
+			"identity": "ix://agent-ix/semantic-core/SourceLocus",
 			"displayName": "SourceLocus",
 			"kind": "record",
 			"roles": [],
@@ -3454,9 +3454,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/SourceLocus/field/sourceIdentity",
+					"identity": "ix://agent-ix/semantic-core/SourceLocus/sourceIdentity",
 					"name": "sourceIdentity",
-					"typeRef": "ix://agent-ix/semantic-core/type/SemanticId",
+					"typeRef": "ix://agent-ix/semantic-core/SemanticId",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3476,9 +3476,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/SourceLocus/field/path",
+					"identity": "ix://agent-ix/semantic-core/SourceLocus/path",
 					"name": "path",
-					"typeRef": "ix://agent-ix/semantic-core/type/SourceLocusPath",
+					"typeRef": "ix://agent-ix/semantic-core/SourceLocusPath",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3498,9 +3498,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/SourceLocus/field/startLine",
+					"identity": "ix://agent-ix/semantic-core/SourceLocus/startLine",
 					"name": "startLine",
-					"typeRef": "ix://agent-ix/semantic-core/type/SourceLocusStartLine",
+					"typeRef": "ix://agent-ix/semantic-core/SourceLocusStartLine",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3520,9 +3520,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/SourceLocus/field/startColumn",
+					"identity": "ix://agent-ix/semantic-core/SourceLocus/startColumn",
 					"name": "startColumn",
-					"typeRef": "ix://agent-ix/semantic-core/type/SourceLocusStartColumn",
+					"typeRef": "ix://agent-ix/semantic-core/SourceLocusStartColumn",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3542,9 +3542,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/SourceLocus/field/endLine",
+					"identity": "ix://agent-ix/semantic-core/SourceLocus/endLine",
 					"name": "endLine",
-					"typeRef": "ix://agent-ix/semantic-core/type/SourceLocusEndLine",
+					"typeRef": "ix://agent-ix/semantic-core/SourceLocusEndLine",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3564,9 +3564,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/SourceLocus/field/endColumn",
+					"identity": "ix://agent-ix/semantic-core/SourceLocus/endColumn",
 					"name": "endColumn",
-					"typeRef": "ix://agent-ix/semantic-core/type/SourceLocusEndColumn",
+					"typeRef": "ix://agent-ix/semantic-core/SourceLocusEndColumn",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3588,7 +3588,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/SourceLocusPath",
+			"identity": "ix://agent-ix/semantic-core/SourceLocusPath",
 			"displayName": "SourceLocusPath",
 			"kind": "scalar",
 			"roles": [],
@@ -3606,7 +3606,7 @@
 			"scalar": "string"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/SourceLocusStartLine",
+			"identity": "ix://agent-ix/semantic-core/SourceLocusStartLine",
 			"displayName": "SourceLocusStartLine",
 			"kind": "scalar",
 			"roles": [],
@@ -3620,8 +3620,8 @@
 			},
 			"constraints": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/SourceLocusStartLine/constraint/min",
-					"appliesTo": "ix://agent-ix/semantic-core/type/SourceLocusStartLine",
+					"identity": "ix://agent-ix/semantic-core/SourceLocusStartLine/constraint/min",
+					"appliesTo": "ix://agent-ix/semantic-core/SourceLocusStartLine",
 					"keyword": "min",
 					"operands": {
 						"value": 1
@@ -3637,8 +3637,8 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/SourceLocusStartLine/constraint/max",
-					"appliesTo": "ix://agent-ix/semantic-core/type/SourceLocusStartLine",
+					"identity": "ix://agent-ix/semantic-core/SourceLocusStartLine/constraint/max",
+					"appliesTo": "ix://agent-ix/semantic-core/SourceLocusStartLine",
 					"keyword": "max",
 					"operands": {
 						"value": 2147483647
@@ -3659,7 +3659,7 @@
 			"scalar": "integer"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/SourceLocusStartColumn",
+			"identity": "ix://agent-ix/semantic-core/SourceLocusStartColumn",
 			"displayName": "SourceLocusStartColumn",
 			"kind": "scalar",
 			"roles": [],
@@ -3673,8 +3673,8 @@
 			},
 			"constraints": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/SourceLocusStartColumn/constraint/min",
-					"appliesTo": "ix://agent-ix/semantic-core/type/SourceLocusStartColumn",
+					"identity": "ix://agent-ix/semantic-core/SourceLocusStartColumn/constraint/min",
+					"appliesTo": "ix://agent-ix/semantic-core/SourceLocusStartColumn",
 					"keyword": "min",
 					"operands": {
 						"value": 1
@@ -3690,8 +3690,8 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/SourceLocusStartColumn/constraint/max",
-					"appliesTo": "ix://agent-ix/semantic-core/type/SourceLocusStartColumn",
+					"identity": "ix://agent-ix/semantic-core/SourceLocusStartColumn/constraint/max",
+					"appliesTo": "ix://agent-ix/semantic-core/SourceLocusStartColumn",
 					"keyword": "max",
 					"operands": {
 						"value": 2147483647
@@ -3712,7 +3712,7 @@
 			"scalar": "integer"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/SourceLocusEndLine",
+			"identity": "ix://agent-ix/semantic-core/SourceLocusEndLine",
 			"displayName": "SourceLocusEndLine",
 			"kind": "scalar",
 			"roles": [],
@@ -3726,8 +3726,8 @@
 			},
 			"constraints": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/SourceLocusEndLine/constraint/min",
-					"appliesTo": "ix://agent-ix/semantic-core/type/SourceLocusEndLine",
+					"identity": "ix://agent-ix/semantic-core/SourceLocusEndLine/constraint/min",
+					"appliesTo": "ix://agent-ix/semantic-core/SourceLocusEndLine",
 					"keyword": "min",
 					"operands": {
 						"value": 1
@@ -3743,8 +3743,8 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/SourceLocusEndLine/constraint/max",
-					"appliesTo": "ix://agent-ix/semantic-core/type/SourceLocusEndLine",
+					"identity": "ix://agent-ix/semantic-core/SourceLocusEndLine/constraint/max",
+					"appliesTo": "ix://agent-ix/semantic-core/SourceLocusEndLine",
 					"keyword": "max",
 					"operands": {
 						"value": 2147483647
@@ -3765,7 +3765,7 @@
 			"scalar": "integer"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/SourceLocusEndColumn",
+			"identity": "ix://agent-ix/semantic-core/SourceLocusEndColumn",
 			"displayName": "SourceLocusEndColumn",
 			"kind": "scalar",
 			"roles": [],
@@ -3779,8 +3779,8 @@
 			},
 			"constraints": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/SourceLocusEndColumn/constraint/min",
-					"appliesTo": "ix://agent-ix/semantic-core/type/SourceLocusEndColumn",
+					"identity": "ix://agent-ix/semantic-core/SourceLocusEndColumn/constraint/min",
+					"appliesTo": "ix://agent-ix/semantic-core/SourceLocusEndColumn",
 					"keyword": "min",
 					"operands": {
 						"value": 1
@@ -3796,8 +3796,8 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/SourceLocusEndColumn/constraint/max",
-					"appliesTo": "ix://agent-ix/semantic-core/type/SourceLocusEndColumn",
+					"identity": "ix://agent-ix/semantic-core/SourceLocusEndColumn/constraint/max",
+					"appliesTo": "ix://agent-ix/semantic-core/SourceLocusEndColumn",
 					"keyword": "max",
 					"operands": {
 						"value": 2147483647
@@ -3818,7 +3818,7 @@
 			"scalar": "integer"
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/TypeRef",
+			"identity": "ix://agent-ix/semantic-core/TypeRef",
 			"displayName": "TypeRef",
 			"kind": "record",
 			"roles": [],
@@ -3835,9 +3835,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/TypeRef/field/target",
+					"identity": "ix://agent-ix/semantic-core/TypeRef/target",
 					"name": "target",
-					"typeRef": "ix://agent-ix/semantic-core/type/TypeRefTarget",
+					"typeRef": "ix://agent-ix/semantic-core/TypeRefTarget",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3857,9 +3857,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/TypeRef/field/multiplicity",
+					"identity": "ix://agent-ix/semantic-core/TypeRef/multiplicity",
 					"name": "multiplicity",
-					"typeRef": "ix://agent-ix/semantic-core/type/Multiplicity",
+					"typeRef": "ix://agent-ix/semantic-core/Multiplicity",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3879,9 +3879,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/TypeRef/field/unit",
+					"identity": "ix://agent-ix/semantic-core/TypeRef/unit",
 					"name": "unit",
-					"typeRef": "ix://agent-ix/semantic-core/type/UnitSymbol",
+					"typeRef": "ix://agent-ix/semantic-core/UnitSymbol",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3901,9 +3901,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/TypeRef/field/decimal",
+					"identity": "ix://agent-ix/semantic-core/TypeRef/decimal",
 					"name": "decimal",
-					"typeRef": "ix://agent-ix/semantic-core/type/DecimalPolicy",
+					"typeRef": "ix://agent-ix/semantic-core/DecimalPolicy",
 					"presence": "optional",
 					"nullable": false,
 					"defaultKind": "none",
@@ -3925,7 +3925,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/TypeRefTarget",
+			"identity": "ix://agent-ix/semantic-core/TypeRefTarget",
 			"displayName": "TypeRefTarget",
 			"kind": "union",
 			"roles": [],
@@ -3951,9 +3951,9 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/TypeRefTarget/variant/SemanticId",
+					"identity": "ix://agent-ix/semantic-core/TypeRefTarget/variant/SemanticId",
 					"name": "SemanticId",
-					"payloadType": "ix://agent-ix/semantic-core/type/SemanticId",
+					"payloadType": "ix://agent-ix/semantic-core/SemanticId",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -3964,9 +3964,9 @@
 					}
 				},
 				{
-					"identity": "ix://agent-ix/semantic-core/type/TypeRefTarget/variant/KernelScalar",
+					"identity": "ix://agent-ix/semantic-core/TypeRefTarget/variant/KernelScalar",
 					"name": "KernelScalar",
-					"payloadType": "ix://agent-ix/semantic-core/type/KernelScalar",
+					"payloadType": "ix://agent-ix/semantic-core/KernelScalar",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/semantic-core",
@@ -3979,7 +3979,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/UniqueConstraint",
+			"identity": "ix://agent-ix/semantic-core/UniqueConstraint",
 			"displayName": "UniqueConstraint",
 			"kind": "record",
 			"roles": [],
@@ -3996,9 +3996,9 @@
 			"unknownPolicy": "reject",
 			"fields": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/UniqueConstraint/field/keyword",
+					"identity": "ix://agent-ix/semantic-core/UniqueConstraint/keyword",
 					"name": "keyword",
-					"typeRef": "ix://agent-ix/semantic-core/type/UniqueConstraintKeyword",
+					"typeRef": "ix://agent-ix/semantic-core/UniqueConstraintKeyword",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -4020,7 +4020,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/UniqueConstraintKeyword",
+			"identity": "ix://agent-ix/semantic-core/UniqueConstraintKeyword",
 			"displayName": "UniqueConstraintKeyword",
 			"kind": "enum",
 			"roles": [],
@@ -4037,7 +4037,7 @@
 			"unknownPolicy": "reject",
 			"variants": [
 				{
-					"identity": "ix://agent-ix/semantic-core/type/UniqueConstraintKeyword/variant/unique",
+					"identity": "ix://agent-ix/semantic-core/UniqueConstraintKeyword/variant/unique",
 					"name": "unique",
 					"origin": {
 						"source": {
@@ -4051,7 +4051,7 @@
 			]
 		},
 		{
-			"identity": "ix://agent-ix/semantic-core/type/UnitSymbol",
+			"identity": "ix://agent-ix/semantic-core/UnitSymbol",
 			"displayName": "UnitSymbol",
 			"kind": "scalar",
 			"roles": [],

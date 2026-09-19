@@ -15,5 +15,5 @@
 		"not": {}
 	},
 	"description": "An enum member declaration; lowers to an IR variant.",
-	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/EnumValue"
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/EnumValue"
 }

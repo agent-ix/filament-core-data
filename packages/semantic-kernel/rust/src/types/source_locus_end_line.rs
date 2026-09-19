@@ -1,6 +1,6 @@
 //! SourceLocusEndLine
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/SourceLocusEndLine.
+//! Semantic identity: ix://agent-ix/semantic-core/SourceLocusEndLine.
 //!
 //! Unknown policy: `reject`, which is inert for a
 //! `scalar` — the kind has no unknown member for a policy to govern. The
@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 /// SourceLocusEndLine
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/SourceLocusEndLine.
+/// Semantic identity: ix://agent-ix/semantic-core/SourceLocusEndLine.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(transparent)]
 pub struct SourceLocusEndLine(i64);
@@ -23,7 +23,7 @@ impl SourceLocusEndLine {
         {
             if value < 1i64 {
                 return Err(crate::support::ValidationError::new(
-                    "ix://agent-ix/semantic-core/type/SourceLocusEndLine/constraint/min",
+                    "ix://agent-ix/semantic-core/SourceLocusEndLine/constraint/min",
                     "min",
                     "",
                     "1",
@@ -31,7 +31,7 @@ impl SourceLocusEndLine {
             }
             if value > 2147483647i64 {
                 return Err(crate::support::ValidationError::new(
-                    "ix://agent-ix/semantic-core/type/SourceLocusEndLine/constraint/max",
+                    "ix://agent-ix/semantic-core/SourceLocusEndLine/constraint/max",
                     "max",
                     "",
                     "2147483647",

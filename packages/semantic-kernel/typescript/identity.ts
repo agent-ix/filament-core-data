@@ -5,7 +5,7 @@
  * backend: ix://agent-ix/filament-core-data/backend/typescript@0.1.0
  * contract: 2.0.0
  * package: agent-ix/semantic-kernel@0.2.0
- * fingerprint: sha256:8939ef5559a1ff9d7265a65fd3e958a0ca52f47b91555f9865e819627e040c91
+ * fingerprint: sha256:c825c2e71d83f2a68682ef6c9d7b7b3b7bab504aee4d57c38eac71384a5da93b
  */
 
 /**
@@ -280,118 +280,112 @@ export type ExportedFieldKey =
 
 /** The semantic identity of each exported type. */
 export const TYPE_IDENTITY = {
-	ClauseLanguage: "ix://agent-ix/semantic-core/type/ClauseLanguage",
-	ClauseRef: "ix://agent-ix/semantic-core/type/ClauseRef",
-	ConstraintDecl: "ix://agent-ix/semantic-core/type/ConstraintDecl",
-	ConstraintKeyword: "ix://agent-ix/semantic-core/type/ConstraintKeyword",
-	DecimalPolicy: "ix://agent-ix/semantic-core/type/DecimalPolicy",
-	DecimalPolicyPrecision:
-		"ix://agent-ix/semantic-core/type/DecimalPolicyPrecision",
-	DecimalPolicyScale: "ix://agent-ix/semantic-core/type/DecimalPolicyScale",
-	DefaultDecl: "ix://agent-ix/semantic-core/type/DefaultDecl",
-	DefaultDeclValue: "ix://agent-ix/semantic-core/type/DefaultDeclValue",
-	DefaultKind: "ix://agent-ix/semantic-core/type/DefaultKind",
-	EdgeCategory: "ix://agent-ix/semantic-core/type/EdgeCategory",
-	EnumValue: "ix://agent-ix/semantic-core/type/EnumValue",
-	EnumValueDoc: "ix://agent-ix/semantic-core/type/EnumValueDoc",
-	EnumValuesConstraint: "ix://agent-ix/semantic-core/type/EnumValuesConstraint",
+	ClauseLanguage: "ix://agent-ix/semantic-core/ClauseLanguage",
+	ClauseRef: "ix://agent-ix/semantic-core/ClauseRef",
+	ConstraintDecl: "ix://agent-ix/semantic-core/ConstraintDecl",
+	ConstraintKeyword: "ix://agent-ix/semantic-core/ConstraintKeyword",
+	DecimalPolicy: "ix://agent-ix/semantic-core/DecimalPolicy",
+	DecimalPolicyPrecision: "ix://agent-ix/semantic-core/DecimalPolicyPrecision",
+	DecimalPolicyScale: "ix://agent-ix/semantic-core/DecimalPolicyScale",
+	DefaultDecl: "ix://agent-ix/semantic-core/DefaultDecl",
+	DefaultDeclValue: "ix://agent-ix/semantic-core/DefaultDeclValue",
+	DefaultKind: "ix://agent-ix/semantic-core/DefaultKind",
+	EdgeCategory: "ix://agent-ix/semantic-core/EdgeCategory",
+	EnumValue: "ix://agent-ix/semantic-core/EnumValue",
+	EnumValueDoc: "ix://agent-ix/semantic-core/EnumValueDoc",
+	EnumValuesConstraint: "ix://agent-ix/semantic-core/EnumValuesConstraint",
 	EnumValuesConstraintKeyword:
-		"ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword",
+		"ix://agent-ix/semantic-core/EnumValuesConstraintKeyword",
 	EnumValuesConstraintValues:
-		"ix://agent-ix/semantic-core/type/EnumValuesConstraintValues",
+		"ix://agent-ix/semantic-core/EnumValuesConstraintValues",
 	EnumValuesConstraintValuesBoolean:
-		"ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesBoolean",
+		"ix://agent-ix/semantic-core/EnumValuesConstraintValuesBoolean",
 	EnumValuesConstraintValuesNumber:
-		"ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesNumber",
+		"ix://agent-ix/semantic-core/EnumValuesConstraintValuesNumber",
 	EnumValuesConstraintValuesString:
-		"ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesString",
-	ExclusiveMaxConstraint:
-		"ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint",
+		"ix://agent-ix/semantic-core/EnumValuesConstraintValuesString",
+	ExclusiveMaxConstraint: "ix://agent-ix/semantic-core/ExclusiveMaxConstraint",
 	ExclusiveMaxConstraintKeyword:
-		"ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintKeyword",
+		"ix://agent-ix/semantic-core/ExclusiveMaxConstraintKeyword",
 	ExclusiveMaxConstraintValue:
-		"ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue",
+		"ix://agent-ix/semantic-core/ExclusiveMaxConstraintValue",
 	ExclusiveMaxConstraintValueNumber:
-		"ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueNumber",
+		"ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueNumber",
 	ExclusiveMaxConstraintValueString:
-		"ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueString",
-	ExclusiveMinConstraint:
-		"ix://agent-ix/semantic-core/type/ExclusiveMinConstraint",
+		"ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueString",
+	ExclusiveMinConstraint: "ix://agent-ix/semantic-core/ExclusiveMinConstraint",
 	ExclusiveMinConstraintKeyword:
-		"ix://agent-ix/semantic-core/type/ExclusiveMinConstraintKeyword",
+		"ix://agent-ix/semantic-core/ExclusiveMinConstraintKeyword",
 	ExclusiveMinConstraintValue:
-		"ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue",
+		"ix://agent-ix/semantic-core/ExclusiveMinConstraintValue",
 	ExclusiveMinConstraintValueNumber:
-		"ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueNumber",
+		"ix://agent-ix/semantic-core/ExclusiveMinConstraintValueNumber",
 	ExclusiveMinConstraintValueString:
-		"ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueString",
-	FieldDecl: "ix://agent-ix/semantic-core/type/FieldDecl",
-	FieldDeclDoc: "ix://agent-ix/semantic-core/type/FieldDeclDoc",
-	FieldDeclIdentity: "ix://agent-ix/semantic-core/type/FieldDeclIdentity",
-	FieldDeclNullable: "ix://agent-ix/semantic-core/type/FieldDeclNullable",
-	FormatConstraint: "ix://agent-ix/semantic-core/type/FormatConstraint",
+		"ix://agent-ix/semantic-core/ExclusiveMinConstraintValueString",
+	FieldDecl: "ix://agent-ix/semantic-core/FieldDecl",
+	FieldDeclDoc: "ix://agent-ix/semantic-core/FieldDeclDoc",
+	FieldDeclIdentity: "ix://agent-ix/semantic-core/FieldDeclIdentity",
+	FieldDeclNullable: "ix://agent-ix/semantic-core/FieldDeclNullable",
+	FormatConstraint: "ix://agent-ix/semantic-core/FormatConstraint",
 	FormatConstraintKeyword:
-		"ix://agent-ix/semantic-core/type/FormatConstraintKeyword",
-	FormatConstraintName: "ix://agent-ix/semantic-core/type/FormatConstraintName",
-	Identifier: "ix://agent-ix/semantic-core/type/Identifier",
-	KernelScalar: "ix://agent-ix/semantic-core/type/KernelScalar",
-	MaxConstraint: "ix://agent-ix/semantic-core/type/MaxConstraint",
-	MaxConstraintKeyword: "ix://agent-ix/semantic-core/type/MaxConstraintKeyword",
-	MaxConstraintValue: "ix://agent-ix/semantic-core/type/MaxConstraintValue",
+		"ix://agent-ix/semantic-core/FormatConstraintKeyword",
+	FormatConstraintName: "ix://agent-ix/semantic-core/FormatConstraintName",
+	Identifier: "ix://agent-ix/semantic-core/Identifier",
+	KernelScalar: "ix://agent-ix/semantic-core/KernelScalar",
+	MaxConstraint: "ix://agent-ix/semantic-core/MaxConstraint",
+	MaxConstraintKeyword: "ix://agent-ix/semantic-core/MaxConstraintKeyword",
+	MaxConstraintValue: "ix://agent-ix/semantic-core/MaxConstraintValue",
 	MaxConstraintValueNumber:
-		"ix://agent-ix/semantic-core/type/MaxConstraintValueNumber",
+		"ix://agent-ix/semantic-core/MaxConstraintValueNumber",
 	MaxConstraintValueString:
-		"ix://agent-ix/semantic-core/type/MaxConstraintValueString",
-	MaxLengthConstraint: "ix://agent-ix/semantic-core/type/MaxLengthConstraint",
+		"ix://agent-ix/semantic-core/MaxConstraintValueString",
+	MaxLengthConstraint: "ix://agent-ix/semantic-core/MaxLengthConstraint",
 	MaxLengthConstraintKeyword:
-		"ix://agent-ix/semantic-core/type/MaxLengthConstraintKeyword",
+		"ix://agent-ix/semantic-core/MaxLengthConstraintKeyword",
 	MaxLengthConstraintValue:
-		"ix://agent-ix/semantic-core/type/MaxLengthConstraintValue",
-	MinConstraint: "ix://agent-ix/semantic-core/type/MinConstraint",
-	MinConstraintKeyword: "ix://agent-ix/semantic-core/type/MinConstraintKeyword",
-	MinConstraintValue: "ix://agent-ix/semantic-core/type/MinConstraintValue",
+		"ix://agent-ix/semantic-core/MaxLengthConstraintValue",
+	MinConstraint: "ix://agent-ix/semantic-core/MinConstraint",
+	MinConstraintKeyword: "ix://agent-ix/semantic-core/MinConstraintKeyword",
+	MinConstraintValue: "ix://agent-ix/semantic-core/MinConstraintValue",
 	MinConstraintValueNumber:
-		"ix://agent-ix/semantic-core/type/MinConstraintValueNumber",
+		"ix://agent-ix/semantic-core/MinConstraintValueNumber",
 	MinConstraintValueString:
-		"ix://agent-ix/semantic-core/type/MinConstraintValueString",
-	MinLengthConstraint: "ix://agent-ix/semantic-core/type/MinLengthConstraint",
+		"ix://agent-ix/semantic-core/MinConstraintValueString",
+	MinLengthConstraint: "ix://agent-ix/semantic-core/MinLengthConstraint",
 	MinLengthConstraintKeyword:
-		"ix://agent-ix/semantic-core/type/MinLengthConstraintKeyword",
+		"ix://agent-ix/semantic-core/MinLengthConstraintKeyword",
 	MinLengthConstraintValue:
-		"ix://agent-ix/semantic-core/type/MinLengthConstraintValue",
-	Multiplicity: "ix://agent-ix/semantic-core/type/Multiplicity",
-	MultiplicityLower: "ix://agent-ix/semantic-core/type/MultiplicityLower",
-	MultiplicityOrdered: "ix://agent-ix/semantic-core/type/MultiplicityOrdered",
-	MultiplicityUnique: "ix://agent-ix/semantic-core/type/MultiplicityUnique",
-	MultiplicityUpper: "ix://agent-ix/semantic-core/type/MultiplicityUpper",
-	NonEmptyConstraint: "ix://agent-ix/semantic-core/type/NonEmptyConstraint",
+		"ix://agent-ix/semantic-core/MinLengthConstraintValue",
+	Multiplicity: "ix://agent-ix/semantic-core/Multiplicity",
+	MultiplicityLower: "ix://agent-ix/semantic-core/MultiplicityLower",
+	MultiplicityOrdered: "ix://agent-ix/semantic-core/MultiplicityOrdered",
+	MultiplicityUnique: "ix://agent-ix/semantic-core/MultiplicityUnique",
+	MultiplicityUpper: "ix://agent-ix/semantic-core/MultiplicityUpper",
+	NonEmptyConstraint: "ix://agent-ix/semantic-core/NonEmptyConstraint",
 	NonEmptyConstraintKeyword:
-		"ix://agent-ix/semantic-core/type/NonEmptyConstraintKeyword",
-	OperationDecl: "ix://agent-ix/semantic-core/type/OperationDecl",
-	PatternConstraint: "ix://agent-ix/semantic-core/type/PatternConstraint",
+		"ix://agent-ix/semantic-core/NonEmptyConstraintKeyword",
+	OperationDecl: "ix://agent-ix/semantic-core/OperationDecl",
+	PatternConstraint: "ix://agent-ix/semantic-core/PatternConstraint",
 	PatternConstraintDialect:
-		"ix://agent-ix/semantic-core/type/PatternConstraintDialect",
+		"ix://agent-ix/semantic-core/PatternConstraintDialect",
 	PatternConstraintKeyword:
-		"ix://agent-ix/semantic-core/type/PatternConstraintKeyword",
-	PatternConstraintRegex:
-		"ix://agent-ix/semantic-core/type/PatternConstraintRegex",
-	RelationDecl: "ix://agent-ix/semantic-core/type/RelationDecl",
-	RelationDeclComposite:
-		"ix://agent-ix/semantic-core/type/RelationDeclComposite",
-	SemanticId: "ix://agent-ix/semantic-core/type/SemanticId",
-	SourceLocus: "ix://agent-ix/semantic-core/type/SourceLocus",
-	SourceLocusEndColumn: "ix://agent-ix/semantic-core/type/SourceLocusEndColumn",
-	SourceLocusEndLine: "ix://agent-ix/semantic-core/type/SourceLocusEndLine",
-	SourceLocusPath: "ix://agent-ix/semantic-core/type/SourceLocusPath",
-	SourceLocusStartColumn:
-		"ix://agent-ix/semantic-core/type/SourceLocusStartColumn",
-	SourceLocusStartLine: "ix://agent-ix/semantic-core/type/SourceLocusStartLine",
-	TypeRef: "ix://agent-ix/semantic-core/type/TypeRef",
-	TypeRefTarget: "ix://agent-ix/semantic-core/type/TypeRefTarget",
-	UniqueConstraint: "ix://agent-ix/semantic-core/type/UniqueConstraint",
+		"ix://agent-ix/semantic-core/PatternConstraintKeyword",
+	PatternConstraintRegex: "ix://agent-ix/semantic-core/PatternConstraintRegex",
+	RelationDecl: "ix://agent-ix/semantic-core/RelationDecl",
+	RelationDeclComposite: "ix://agent-ix/semantic-core/RelationDeclComposite",
+	SemanticId: "ix://agent-ix/semantic-core/SemanticId",
+	SourceLocus: "ix://agent-ix/semantic-core/SourceLocus",
+	SourceLocusEndColumn: "ix://agent-ix/semantic-core/SourceLocusEndColumn",
+	SourceLocusEndLine: "ix://agent-ix/semantic-core/SourceLocusEndLine",
+	SourceLocusPath: "ix://agent-ix/semantic-core/SourceLocusPath",
+	SourceLocusStartColumn: "ix://agent-ix/semantic-core/SourceLocusStartColumn",
+	SourceLocusStartLine: "ix://agent-ix/semantic-core/SourceLocusStartLine",
+	TypeRef: "ix://agent-ix/semantic-core/TypeRef",
+	TypeRefTarget: "ix://agent-ix/semantic-core/TypeRefTarget",
+	UniqueConstraint: "ix://agent-ix/semantic-core/UniqueConstraint",
 	UniqueConstraintKeyword:
-		"ix://agent-ix/semantic-core/type/UniqueConstraintKeyword",
-	UnitSymbol: "ix://agent-ix/semantic-core/type/UnitSymbol",
+		"ix://agent-ix/semantic-core/UniqueConstraintKeyword",
+	UnitSymbol: "ix://agent-ix/semantic-core/UnitSymbol",
 } as const satisfies Record<ExportedTypeName, string>;
 
 /** The structural kind each exported type was lowered from. */
@@ -896,118 +890,88 @@ export const TYPE_RELATIONSHIPS = {
 
 /** The semantic identity of each exported field. */
 export const FIELD_IDENTITY = {
-	"ClauseRef.clauseId":
-		"ix://agent-ix/semantic-core/type/ClauseRef/field/clauseId",
-	"ClauseRef.language":
-		"ix://agent-ix/semantic-core/type/ClauseRef/field/language",
-	"ClauseRef.sourceSpan":
-		"ix://agent-ix/semantic-core/type/ClauseRef/field/sourceSpan",
+	"ClauseRef.clauseId": "ix://agent-ix/semantic-core/ClauseRef/clauseId",
+	"ClauseRef.language": "ix://agent-ix/semantic-core/ClauseRef/language",
+	"ClauseRef.sourceSpan": "ix://agent-ix/semantic-core/ClauseRef/sourceSpan",
 	"DecimalPolicy.precision":
-		"ix://agent-ix/semantic-core/type/DecimalPolicy/field/precision",
-	"DecimalPolicy.scale":
-		"ix://agent-ix/semantic-core/type/DecimalPolicy/field/scale",
-	"DefaultDecl.kind": "ix://agent-ix/semantic-core/type/DefaultDecl/field/kind",
-	"DefaultDecl.value":
-		"ix://agent-ix/semantic-core/type/DefaultDecl/field/value",
-	"EnumValue.doc": "ix://agent-ix/semantic-core/type/EnumValue/field/doc",
-	"EnumValue.value": "ix://agent-ix/semantic-core/type/EnumValue/field/value",
+		"ix://agent-ix/semantic-core/DecimalPolicy/precision",
+	"DecimalPolicy.scale": "ix://agent-ix/semantic-core/DecimalPolicy/scale",
+	"DefaultDecl.kind": "ix://agent-ix/semantic-core/DefaultDecl/kind",
+	"DefaultDecl.value": "ix://agent-ix/semantic-core/DefaultDecl/value",
+	"EnumValue.doc": "ix://agent-ix/semantic-core/EnumValue/doc",
+	"EnumValue.value": "ix://agent-ix/semantic-core/EnumValue/value",
 	"EnumValuesConstraint.keyword":
-		"ix://agent-ix/semantic-core/type/EnumValuesConstraint/field/keyword",
+		"ix://agent-ix/semantic-core/EnumValuesConstraint/keyword",
 	"EnumValuesConstraint.values":
-		"ix://agent-ix/semantic-core/type/EnumValuesConstraint/field/values",
+		"ix://agent-ix/semantic-core/EnumValuesConstraint/values",
 	"ExclusiveMaxConstraint.keyword":
-		"ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint/field/keyword",
+		"ix://agent-ix/semantic-core/ExclusiveMaxConstraint/keyword",
 	"ExclusiveMaxConstraint.value":
-		"ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint/field/value",
+		"ix://agent-ix/semantic-core/ExclusiveMaxConstraint/value",
 	"ExclusiveMinConstraint.keyword":
-		"ix://agent-ix/semantic-core/type/ExclusiveMinConstraint/field/keyword",
+		"ix://agent-ix/semantic-core/ExclusiveMinConstraint/keyword",
 	"ExclusiveMinConstraint.value":
-		"ix://agent-ix/semantic-core/type/ExclusiveMinConstraint/field/value",
-	"FieldDecl.constraints":
-		"ix://agent-ix/semantic-core/type/FieldDecl/field/constraints",
-	"FieldDecl.default":
-		"ix://agent-ix/semantic-core/type/FieldDecl/field/default",
-	"FieldDecl.doc": "ix://agent-ix/semantic-core/type/FieldDecl/field/doc",
-	"FieldDecl.identity":
-		"ix://agent-ix/semantic-core/type/FieldDecl/field/identity",
-	"FieldDecl.name": "ix://agent-ix/semantic-core/type/FieldDecl/field/name",
-	"FieldDecl.nullable":
-		"ix://agent-ix/semantic-core/type/FieldDecl/field/nullable",
-	"FieldDecl.type": "ix://agent-ix/semantic-core/type/FieldDecl/field/type",
+		"ix://agent-ix/semantic-core/ExclusiveMinConstraint/value",
+	"FieldDecl.constraints": "ix://agent-ix/semantic-core/FieldDecl/constraints",
+	"FieldDecl.default": "ix://agent-ix/semantic-core/FieldDecl/default",
+	"FieldDecl.doc": "ix://agent-ix/semantic-core/FieldDecl/doc",
+	"FieldDecl.identity": "ix://agent-ix/semantic-core/FieldDecl/identity",
+	"FieldDecl.name": "ix://agent-ix/semantic-core/FieldDecl/name",
+	"FieldDecl.nullable": "ix://agent-ix/semantic-core/FieldDecl/nullable",
+	"FieldDecl.type": "ix://agent-ix/semantic-core/FieldDecl/type",
 	"FormatConstraint.keyword":
-		"ix://agent-ix/semantic-core/type/FormatConstraint/field/keyword",
-	"FormatConstraint.name":
-		"ix://agent-ix/semantic-core/type/FormatConstraint/field/name",
-	"MaxConstraint.keyword":
-		"ix://agent-ix/semantic-core/type/MaxConstraint/field/keyword",
-	"MaxConstraint.value":
-		"ix://agent-ix/semantic-core/type/MaxConstraint/field/value",
+		"ix://agent-ix/semantic-core/FormatConstraint/keyword",
+	"FormatConstraint.name": "ix://agent-ix/semantic-core/FormatConstraint/name",
+	"MaxConstraint.keyword": "ix://agent-ix/semantic-core/MaxConstraint/keyword",
+	"MaxConstraint.value": "ix://agent-ix/semantic-core/MaxConstraint/value",
 	"MaxLengthConstraint.keyword":
-		"ix://agent-ix/semantic-core/type/MaxLengthConstraint/field/keyword",
+		"ix://agent-ix/semantic-core/MaxLengthConstraint/keyword",
 	"MaxLengthConstraint.value":
-		"ix://agent-ix/semantic-core/type/MaxLengthConstraint/field/value",
-	"MinConstraint.keyword":
-		"ix://agent-ix/semantic-core/type/MinConstraint/field/keyword",
-	"MinConstraint.value":
-		"ix://agent-ix/semantic-core/type/MinConstraint/field/value",
+		"ix://agent-ix/semantic-core/MaxLengthConstraint/value",
+	"MinConstraint.keyword": "ix://agent-ix/semantic-core/MinConstraint/keyword",
+	"MinConstraint.value": "ix://agent-ix/semantic-core/MinConstraint/value",
 	"MinLengthConstraint.keyword":
-		"ix://agent-ix/semantic-core/type/MinLengthConstraint/field/keyword",
+		"ix://agent-ix/semantic-core/MinLengthConstraint/keyword",
 	"MinLengthConstraint.value":
-		"ix://agent-ix/semantic-core/type/MinLengthConstraint/field/value",
-	"Multiplicity.lower":
-		"ix://agent-ix/semantic-core/type/Multiplicity/field/lower",
-	"Multiplicity.ordered":
-		"ix://agent-ix/semantic-core/type/Multiplicity/field/ordered",
-	"Multiplicity.unique":
-		"ix://agent-ix/semantic-core/type/Multiplicity/field/unique",
-	"Multiplicity.upper":
-		"ix://agent-ix/semantic-core/type/Multiplicity/field/upper",
+		"ix://agent-ix/semantic-core/MinLengthConstraint/value",
+	"Multiplicity.lower": "ix://agent-ix/semantic-core/Multiplicity/lower",
+	"Multiplicity.ordered": "ix://agent-ix/semantic-core/Multiplicity/ordered",
+	"Multiplicity.unique": "ix://agent-ix/semantic-core/Multiplicity/unique",
+	"Multiplicity.upper": "ix://agent-ix/semantic-core/Multiplicity/upper",
 	"NonEmptyConstraint.keyword":
-		"ix://agent-ix/semantic-core/type/NonEmptyConstraint/field/keyword",
-	"OperationDecl.name":
-		"ix://agent-ix/semantic-core/type/OperationDecl/field/name",
-	"OperationDecl.params":
-		"ix://agent-ix/semantic-core/type/OperationDecl/field/params",
-	"OperationDecl.post":
-		"ix://agent-ix/semantic-core/type/OperationDecl/field/post",
-	"OperationDecl.pre":
-		"ix://agent-ix/semantic-core/type/OperationDecl/field/pre",
-	"OperationDecl.returns":
-		"ix://agent-ix/semantic-core/type/OperationDecl/field/returns",
+		"ix://agent-ix/semantic-core/NonEmptyConstraint/keyword",
+	"OperationDecl.name": "ix://agent-ix/semantic-core/OperationDecl/name",
+	"OperationDecl.params": "ix://agent-ix/semantic-core/OperationDecl/params",
+	"OperationDecl.post": "ix://agent-ix/semantic-core/OperationDecl/post",
+	"OperationDecl.pre": "ix://agent-ix/semantic-core/OperationDecl/pre",
+	"OperationDecl.returns": "ix://agent-ix/semantic-core/OperationDecl/returns",
 	"PatternConstraint.dialect":
-		"ix://agent-ix/semantic-core/type/PatternConstraint/field/dialect",
+		"ix://agent-ix/semantic-core/PatternConstraint/dialect",
 	"PatternConstraint.keyword":
-		"ix://agent-ix/semantic-core/type/PatternConstraint/field/keyword",
+		"ix://agent-ix/semantic-core/PatternConstraint/keyword",
 	"PatternConstraint.regex":
-		"ix://agent-ix/semantic-core/type/PatternConstraint/field/regex",
-	"RelationDecl.category":
-		"ix://agent-ix/semantic-core/type/RelationDecl/field/category",
+		"ix://agent-ix/semantic-core/PatternConstraint/regex",
+	"RelationDecl.category": "ix://agent-ix/semantic-core/RelationDecl/category",
 	"RelationDecl.composite":
-		"ix://agent-ix/semantic-core/type/RelationDecl/field/composite",
+		"ix://agent-ix/semantic-core/RelationDecl/composite",
 	"RelationDecl.multiplicity":
-		"ix://agent-ix/semantic-core/type/RelationDecl/field/multiplicity",
-	"RelationDecl.target":
-		"ix://agent-ix/semantic-core/type/RelationDecl/field/target",
-	"RelationDecl.verb":
-		"ix://agent-ix/semantic-core/type/RelationDecl/field/verb",
-	"SourceLocus.endColumn":
-		"ix://agent-ix/semantic-core/type/SourceLocus/field/endColumn",
-	"SourceLocus.endLine":
-		"ix://agent-ix/semantic-core/type/SourceLocus/field/endLine",
-	"SourceLocus.path": "ix://agent-ix/semantic-core/type/SourceLocus/field/path",
+		"ix://agent-ix/semantic-core/RelationDecl/multiplicity",
+	"RelationDecl.target": "ix://agent-ix/semantic-core/RelationDecl/target",
+	"RelationDecl.verb": "ix://agent-ix/semantic-core/RelationDecl/verb",
+	"SourceLocus.endColumn": "ix://agent-ix/semantic-core/SourceLocus/endColumn",
+	"SourceLocus.endLine": "ix://agent-ix/semantic-core/SourceLocus/endLine",
+	"SourceLocus.path": "ix://agent-ix/semantic-core/SourceLocus/path",
 	"SourceLocus.sourceIdentity":
-		"ix://agent-ix/semantic-core/type/SourceLocus/field/sourceIdentity",
+		"ix://agent-ix/semantic-core/SourceLocus/sourceIdentity",
 	"SourceLocus.startColumn":
-		"ix://agent-ix/semantic-core/type/SourceLocus/field/startColumn",
-	"SourceLocus.startLine":
-		"ix://agent-ix/semantic-core/type/SourceLocus/field/startLine",
-	"TypeRef.decimal": "ix://agent-ix/semantic-core/type/TypeRef/field/decimal",
-	"TypeRef.multiplicity":
-		"ix://agent-ix/semantic-core/type/TypeRef/field/multiplicity",
-	"TypeRef.target": "ix://agent-ix/semantic-core/type/TypeRef/field/target",
-	"TypeRef.unit": "ix://agent-ix/semantic-core/type/TypeRef/field/unit",
+		"ix://agent-ix/semantic-core/SourceLocus/startColumn",
+	"SourceLocus.startLine": "ix://agent-ix/semantic-core/SourceLocus/startLine",
+	"TypeRef.decimal": "ix://agent-ix/semantic-core/TypeRef/decimal",
+	"TypeRef.multiplicity": "ix://agent-ix/semantic-core/TypeRef/multiplicity",
+	"TypeRef.target": "ix://agent-ix/semantic-core/TypeRef/target",
+	"TypeRef.unit": "ix://agent-ix/semantic-core/TypeRef/unit",
 	"UniqueConstraint.keyword":
-		"ix://agent-ix/semantic-core/type/UniqueConstraint/field/keyword",
+		"ix://agent-ix/semantic-core/UniqueConstraint/keyword",
 } as const satisfies Record<ExportedFieldKey, string>;
 
 /** The extensions each exported field declares. */
@@ -1274,114 +1238,114 @@ export const TYPE_VARIANTS = {
 	ClauseRef: [],
 	ConstraintDecl: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/EnumValuesConstraint",
+			identity: "ix://agent-ix/semantic-core/ConstraintDecl/variant/EnumValuesConstraint",
 			name: "EnumValuesConstraint",
-			payloadType: "ix://agent-ix/semantic-core/type/EnumValuesConstraint",
+			payloadType: "ix://agent-ix/semantic-core/EnumValuesConstraint",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/ExclusiveMaxConstraint",
+			identity: "ix://agent-ix/semantic-core/ConstraintDecl/variant/ExclusiveMaxConstraint",
 			name: "ExclusiveMaxConstraint",
-			payloadType: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint",
+			payloadType: "ix://agent-ix/semantic-core/ExclusiveMaxConstraint",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/ExclusiveMinConstraint",
+			identity: "ix://agent-ix/semantic-core/ConstraintDecl/variant/ExclusiveMinConstraint",
 			name: "ExclusiveMinConstraint",
-			payloadType: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraint",
+			payloadType: "ix://agent-ix/semantic-core/ExclusiveMinConstraint",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/FormatConstraint",
+			identity: "ix://agent-ix/semantic-core/ConstraintDecl/variant/FormatConstraint",
 			name: "FormatConstraint",
-			payloadType: "ix://agent-ix/semantic-core/type/FormatConstraint",
+			payloadType: "ix://agent-ix/semantic-core/FormatConstraint",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/MaxConstraint",
+			identity: "ix://agent-ix/semantic-core/ConstraintDecl/variant/MaxConstraint",
 			name: "MaxConstraint",
-			payloadType: "ix://agent-ix/semantic-core/type/MaxConstraint",
+			payloadType: "ix://agent-ix/semantic-core/MaxConstraint",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/MaxLengthConstraint",
+			identity: "ix://agent-ix/semantic-core/ConstraintDecl/variant/MaxLengthConstraint",
 			name: "MaxLengthConstraint",
-			payloadType: "ix://agent-ix/semantic-core/type/MaxLengthConstraint",
+			payloadType: "ix://agent-ix/semantic-core/MaxLengthConstraint",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/MinConstraint",
+			identity: "ix://agent-ix/semantic-core/ConstraintDecl/variant/MinConstraint",
 			name: "MinConstraint",
-			payloadType: "ix://agent-ix/semantic-core/type/MinConstraint",
+			payloadType: "ix://agent-ix/semantic-core/MinConstraint",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/MinLengthConstraint",
+			identity: "ix://agent-ix/semantic-core/ConstraintDecl/variant/MinLengthConstraint",
 			name: "MinLengthConstraint",
-			payloadType: "ix://agent-ix/semantic-core/type/MinLengthConstraint",
+			payloadType: "ix://agent-ix/semantic-core/MinLengthConstraint",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/NonEmptyConstraint",
+			identity: "ix://agent-ix/semantic-core/ConstraintDecl/variant/NonEmptyConstraint",
 			name: "NonEmptyConstraint",
-			payloadType: "ix://agent-ix/semantic-core/type/NonEmptyConstraint",
+			payloadType: "ix://agent-ix/semantic-core/NonEmptyConstraint",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/PatternConstraint",
+			identity: "ix://agent-ix/semantic-core/ConstraintDecl/variant/PatternConstraint",
 			name: "PatternConstraint",
-			payloadType: "ix://agent-ix/semantic-core/type/PatternConstraint",
+			payloadType: "ix://agent-ix/semantic-core/PatternConstraint",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintDecl/variant/UniqueConstraint",
+			identity: "ix://agent-ix/semantic-core/ConstraintDecl/variant/UniqueConstraint",
 			name: "UniqueConstraint",
-			payloadType: "ix://agent-ix/semantic-core/type/UniqueConstraint",
+			payloadType: "ix://agent-ix/semantic-core/UniqueConstraint",
 		},
 	],
 	ConstraintKeyword: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/enumValues",
+			identity: "ix://agent-ix/semantic-core/ConstraintKeyword/variant/enumValues",
 			name: "enumValues",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/exclusiveMax",
+			identity: "ix://agent-ix/semantic-core/ConstraintKeyword/variant/exclusiveMax",
 			name: "exclusiveMax",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/exclusiveMin",
+			identity: "ix://agent-ix/semantic-core/ConstraintKeyword/variant/exclusiveMin",
 			name: "exclusiveMin",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/format",
+			identity: "ix://agent-ix/semantic-core/ConstraintKeyword/variant/format",
 			name: "format",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/max",
+			identity: "ix://agent-ix/semantic-core/ConstraintKeyword/variant/max",
 			name: "max",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/maxLength",
+			identity: "ix://agent-ix/semantic-core/ConstraintKeyword/variant/maxLength",
 			name: "maxLength",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/min",
+			identity: "ix://agent-ix/semantic-core/ConstraintKeyword/variant/min",
 			name: "min",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/minLength",
+			identity: "ix://agent-ix/semantic-core/ConstraintKeyword/variant/minLength",
 			name: "minLength",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/nonEmpty",
+			identity: "ix://agent-ix/semantic-core/ConstraintKeyword/variant/nonEmpty",
 			name: "nonEmpty",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/pattern",
+			identity: "ix://agent-ix/semantic-core/ConstraintKeyword/variant/pattern",
 			name: "pattern",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ConstraintKeyword/variant/unique",
+			identity: "ix://agent-ix/semantic-core/ConstraintKeyword/variant/unique",
 			name: "unique",
 			payloadType: "",
 		},
@@ -1393,54 +1357,54 @@ export const TYPE_VARIANTS = {
 	DefaultDeclValue: [],
 	DefaultKind: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/DefaultKind/variant/migration",
+			identity: "ix://agent-ix/semantic-core/DefaultKind/variant/migration",
 			name: "migration",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/DefaultKind/variant/representation",
+			identity: "ix://agent-ix/semantic-core/DefaultKind/variant/representation",
 			name: "representation",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/DefaultKind/variant/semantic",
+			identity: "ix://agent-ix/semantic-core/DefaultKind/variant/semantic",
 			name: "semantic",
 			payloadType: "",
 		},
 	],
 	EdgeCategory: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/EdgeCategory/variant/behavioral",
+			identity: "ix://agent-ix/semantic-core/EdgeCategory/variant/behavioral",
 			name: "behavioral",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/EdgeCategory/variant/dataflow",
+			identity: "ix://agent-ix/semantic-core/EdgeCategory/variant/dataflow",
 			name: "dataflow",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/EdgeCategory/variant/dependency",
+			identity: "ix://agent-ix/semantic-core/EdgeCategory/variant/dependency",
 			name: "dependency",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/EdgeCategory/variant/governance",
+			identity: "ix://agent-ix/semantic-core/EdgeCategory/variant/governance",
 			name: "governance",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/EdgeCategory/variant/realization",
+			identity: "ix://agent-ix/semantic-core/EdgeCategory/variant/realization",
 			name: "realization",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/EdgeCategory/variant/structural",
+			identity: "ix://agent-ix/semantic-core/EdgeCategory/variant/structural",
 			name: "structural",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/EdgeCategory/variant/traceability",
+			identity: "ix://agent-ix/semantic-core/EdgeCategory/variant/traceability",
 			name: "traceability",
 			payloadType: "",
 		},
@@ -1450,26 +1414,26 @@ export const TYPE_VARIANTS = {
 	EnumValuesConstraint: [],
 	EnumValuesConstraintKeyword: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword/variant/enumValues",
+			identity: "ix://agent-ix/semantic-core/EnumValuesConstraintKeyword/variant/enumValues",
 			name: "enumValues",
 			payloadType: "",
 		},
 	],
 	EnumValuesConstraintValues: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/EnumValuesConstraintValues/variant/boolean",
+			identity: "ix://agent-ix/semantic-core/EnumValuesConstraintValues/variant/boolean",
 			name: "boolean",
-			payloadType: "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesBoolean",
+			payloadType: "ix://agent-ix/semantic-core/EnumValuesConstraintValuesBoolean",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/EnumValuesConstraintValues/variant/number",
+			identity: "ix://agent-ix/semantic-core/EnumValuesConstraintValues/variant/number",
 			name: "number",
-			payloadType: "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesNumber",
+			payloadType: "ix://agent-ix/semantic-core/EnumValuesConstraintValuesNumber",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/EnumValuesConstraintValues/variant/string",
+			identity: "ix://agent-ix/semantic-core/EnumValuesConstraintValues/variant/string",
 			name: "string",
-			payloadType: "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesString",
+			payloadType: "ix://agent-ix/semantic-core/EnumValuesConstraintValuesString",
 		},
 	],
 	EnumValuesConstraintValuesBoolean: [],
@@ -1478,21 +1442,21 @@ export const TYPE_VARIANTS = {
 	ExclusiveMaxConstraint: [],
 	ExclusiveMaxConstraintKeyword: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintKeyword/variant/exclusiveMax",
+			identity: "ix://agent-ix/semantic-core/ExclusiveMaxConstraintKeyword/variant/exclusiveMax",
 			name: "exclusiveMax",
 			payloadType: "",
 		},
 	],
 	ExclusiveMaxConstraintValue: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue/variant/number",
+			identity: "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValue/variant/number",
 			name: "number",
-			payloadType: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueNumber",
+			payloadType: "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueNumber",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue/variant/string",
+			identity: "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValue/variant/string",
 			name: "string",
-			payloadType: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueString",
+			payloadType: "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueString",
 		},
 	],
 	ExclusiveMaxConstraintValueNumber: [],
@@ -1500,21 +1464,21 @@ export const TYPE_VARIANTS = {
 	ExclusiveMinConstraint: [],
 	ExclusiveMinConstraintKeyword: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintKeyword/variant/exclusiveMin",
+			identity: "ix://agent-ix/semantic-core/ExclusiveMinConstraintKeyword/variant/exclusiveMin",
 			name: "exclusiveMin",
 			payloadType: "",
 		},
 	],
 	ExclusiveMinConstraintValue: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue/variant/number",
+			identity: "ix://agent-ix/semantic-core/ExclusiveMinConstraintValue/variant/number",
 			name: "number",
-			payloadType: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueNumber",
+			payloadType: "ix://agent-ix/semantic-core/ExclusiveMinConstraintValueNumber",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue/variant/string",
+			identity: "ix://agent-ix/semantic-core/ExclusiveMinConstraintValue/variant/string",
 			name: "string",
-			payloadType: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueString",
+			payloadType: "ix://agent-ix/semantic-core/ExclusiveMinConstraintValueString",
 		},
 	],
 	ExclusiveMinConstraintValueNumber: [],
@@ -1526,7 +1490,7 @@ export const TYPE_VARIANTS = {
 	FormatConstraint: [],
 	FormatConstraintKeyword: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/FormatConstraintKeyword/variant/format",
+			identity: "ix://agent-ix/semantic-core/FormatConstraintKeyword/variant/format",
 			name: "format",
 			payloadType: "",
 		},
@@ -1535,47 +1499,47 @@ export const TYPE_VARIANTS = {
 	Identifier: [],
 	KernelScalar: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/KernelScalar/variant/Boolean",
+			identity: "ix://agent-ix/semantic-core/KernelScalar/variant/Boolean",
 			name: "Boolean",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/KernelScalar/variant/Bytes",
+			identity: "ix://agent-ix/semantic-core/KernelScalar/variant/Bytes",
 			name: "Bytes",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/KernelScalar/variant/Decimal",
+			identity: "ix://agent-ix/semantic-core/KernelScalar/variant/Decimal",
 			name: "Decimal",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/KernelScalar/variant/Duration",
+			identity: "ix://agent-ix/semantic-core/KernelScalar/variant/Duration",
 			name: "Duration",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/KernelScalar/variant/Integer",
+			identity: "ix://agent-ix/semantic-core/KernelScalar/variant/Integer",
 			name: "Integer",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/KernelScalar/variant/JsonObject",
+			identity: "ix://agent-ix/semantic-core/KernelScalar/variant/JsonObject",
 			name: "JsonObject",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/KernelScalar/variant/String",
+			identity: "ix://agent-ix/semantic-core/KernelScalar/variant/String",
 			name: "String",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/KernelScalar/variant/Timestamp",
+			identity: "ix://agent-ix/semantic-core/KernelScalar/variant/Timestamp",
 			name: "Timestamp",
 			payloadType: "",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/KernelScalar/variant/UUID",
+			identity: "ix://agent-ix/semantic-core/KernelScalar/variant/UUID",
 			name: "UUID",
 			payloadType: "",
 		},
@@ -1583,21 +1547,21 @@ export const TYPE_VARIANTS = {
 	MaxConstraint: [],
 	MaxConstraintKeyword: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/MaxConstraintKeyword/variant/max",
+			identity: "ix://agent-ix/semantic-core/MaxConstraintKeyword/variant/max",
 			name: "max",
 			payloadType: "",
 		},
 	],
 	MaxConstraintValue: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/MaxConstraintValue/variant/number",
+			identity: "ix://agent-ix/semantic-core/MaxConstraintValue/variant/number",
 			name: "number",
-			payloadType: "ix://agent-ix/semantic-core/type/MaxConstraintValueNumber",
+			payloadType: "ix://agent-ix/semantic-core/MaxConstraintValueNumber",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/MaxConstraintValue/variant/string",
+			identity: "ix://agent-ix/semantic-core/MaxConstraintValue/variant/string",
 			name: "string",
-			payloadType: "ix://agent-ix/semantic-core/type/MaxConstraintValueString",
+			payloadType: "ix://agent-ix/semantic-core/MaxConstraintValueString",
 		},
 	],
 	MaxConstraintValueNumber: [],
@@ -1605,7 +1569,7 @@ export const TYPE_VARIANTS = {
 	MaxLengthConstraint: [],
 	MaxLengthConstraintKeyword: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/MaxLengthConstraintKeyword/variant/maxLength",
+			identity: "ix://agent-ix/semantic-core/MaxLengthConstraintKeyword/variant/maxLength",
 			name: "maxLength",
 			payloadType: "",
 		},
@@ -1614,21 +1578,21 @@ export const TYPE_VARIANTS = {
 	MinConstraint: [],
 	MinConstraintKeyword: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/MinConstraintKeyword/variant/min",
+			identity: "ix://agent-ix/semantic-core/MinConstraintKeyword/variant/min",
 			name: "min",
 			payloadType: "",
 		},
 	],
 	MinConstraintValue: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/MinConstraintValue/variant/number",
+			identity: "ix://agent-ix/semantic-core/MinConstraintValue/variant/number",
 			name: "number",
-			payloadType: "ix://agent-ix/semantic-core/type/MinConstraintValueNumber",
+			payloadType: "ix://agent-ix/semantic-core/MinConstraintValueNumber",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/MinConstraintValue/variant/string",
+			identity: "ix://agent-ix/semantic-core/MinConstraintValue/variant/string",
 			name: "string",
-			payloadType: "ix://agent-ix/semantic-core/type/MinConstraintValueString",
+			payloadType: "ix://agent-ix/semantic-core/MinConstraintValueString",
 		},
 	],
 	MinConstraintValueNumber: [],
@@ -1636,7 +1600,7 @@ export const TYPE_VARIANTS = {
 	MinLengthConstraint: [],
 	MinLengthConstraintKeyword: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/MinLengthConstraintKeyword/variant/minLength",
+			identity: "ix://agent-ix/semantic-core/MinLengthConstraintKeyword/variant/minLength",
 			name: "minLength",
 			payloadType: "",
 		},
@@ -1650,7 +1614,7 @@ export const TYPE_VARIANTS = {
 	NonEmptyConstraint: [],
 	NonEmptyConstraintKeyword: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/NonEmptyConstraintKeyword/variant/nonEmpty",
+			identity: "ix://agent-ix/semantic-core/NonEmptyConstraintKeyword/variant/nonEmpty",
 			name: "nonEmpty",
 			payloadType: "",
 		},
@@ -1659,14 +1623,14 @@ export const TYPE_VARIANTS = {
 	PatternConstraint: [],
 	PatternConstraintDialect: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/PatternConstraintDialect/variant/ecma-262",
+			identity: "ix://agent-ix/semantic-core/PatternConstraintDialect/variant/ecma-262",
 			name: "ecma-262",
 			payloadType: "",
 		},
 	],
 	PatternConstraintKeyword: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/PatternConstraintKeyword/variant/pattern",
+			identity: "ix://agent-ix/semantic-core/PatternConstraintKeyword/variant/pattern",
 			name: "pattern",
 			payloadType: "",
 		},
@@ -1684,20 +1648,20 @@ export const TYPE_VARIANTS = {
 	TypeRef: [],
 	TypeRefTarget: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/TypeRefTarget/variant/KernelScalar",
+			identity: "ix://agent-ix/semantic-core/TypeRefTarget/variant/KernelScalar",
 			name: "KernelScalar",
-			payloadType: "ix://agent-ix/semantic-core/type/KernelScalar",
+			payloadType: "ix://agent-ix/semantic-core/KernelScalar",
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/TypeRefTarget/variant/SemanticId",
+			identity: "ix://agent-ix/semantic-core/TypeRefTarget/variant/SemanticId",
 			name: "SemanticId",
-			payloadType: "ix://agent-ix/semantic-core/type/SemanticId",
+			payloadType: "ix://agent-ix/semantic-core/SemanticId",
 		},
 	],
 	UniqueConstraint: [],
 	UniqueConstraintKeyword: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/UniqueConstraintKeyword/variant/unique",
+			identity: "ix://agent-ix/semantic-core/UniqueConstraintKeyword/variant/unique",
 			name: "unique",
 			payloadType: "",
 		},
@@ -1714,18 +1678,18 @@ export const TYPE_CONSTRAINTS = {
 	DecimalPolicy: [],
 	DecimalPolicyPrecision: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/DecimalPolicyPrecision/constraint/max",
+			identity: "ix://agent-ix/semantic-core/DecimalPolicyPrecision/constraint/max",
 			keyword: "max",
-			appliesTo: "ix://agent-ix/semantic-core/type/DecimalPolicyPrecision",
+			appliesTo: "ix://agent-ix/semantic-core/DecimalPolicyPrecision",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
 				value: 2147483647,
 			},
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/DecimalPolicyPrecision/constraint/min",
+			identity: "ix://agent-ix/semantic-core/DecimalPolicyPrecision/constraint/min",
 			keyword: "min",
-			appliesTo: "ix://agent-ix/semantic-core/type/DecimalPolicyPrecision",
+			appliesTo: "ix://agent-ix/semantic-core/DecimalPolicyPrecision",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
 				value: 1,
@@ -1734,18 +1698,18 @@ export const TYPE_CONSTRAINTS = {
 	],
 	DecimalPolicyScale: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/DecimalPolicyScale/constraint/max",
+			identity: "ix://agent-ix/semantic-core/DecimalPolicyScale/constraint/max",
 			keyword: "max",
-			appliesTo: "ix://agent-ix/semantic-core/type/DecimalPolicyScale",
+			appliesTo: "ix://agent-ix/semantic-core/DecimalPolicyScale",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
 				value: 2147483647,
 			},
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/DecimalPolicyScale/constraint/min",
+			identity: "ix://agent-ix/semantic-core/DecimalPolicyScale/constraint/min",
 			keyword: "min",
-			appliesTo: "ix://agent-ix/semantic-core/type/DecimalPolicyScale",
+			appliesTo: "ix://agent-ix/semantic-core/DecimalPolicyScale",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
 				value: 0,
@@ -1792,18 +1756,18 @@ export const TYPE_CONSTRAINTS = {
 	MaxLengthConstraintKeyword: [],
 	MaxLengthConstraintValue: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/MaxLengthConstraintValue/constraint/max",
+			identity: "ix://agent-ix/semantic-core/MaxLengthConstraintValue/constraint/max",
 			keyword: "max",
-			appliesTo: "ix://agent-ix/semantic-core/type/MaxLengthConstraintValue",
+			appliesTo: "ix://agent-ix/semantic-core/MaxLengthConstraintValue",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
 				value: 2147483647,
 			},
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/MaxLengthConstraintValue/constraint/min",
+			identity: "ix://agent-ix/semantic-core/MaxLengthConstraintValue/constraint/min",
 			keyword: "min",
-			appliesTo: "ix://agent-ix/semantic-core/type/MaxLengthConstraintValue",
+			appliesTo: "ix://agent-ix/semantic-core/MaxLengthConstraintValue",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
 				value: 0,
@@ -1819,18 +1783,18 @@ export const TYPE_CONSTRAINTS = {
 	MinLengthConstraintKeyword: [],
 	MinLengthConstraintValue: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/MinLengthConstraintValue/constraint/max",
+			identity: "ix://agent-ix/semantic-core/MinLengthConstraintValue/constraint/max",
 			keyword: "max",
-			appliesTo: "ix://agent-ix/semantic-core/type/MinLengthConstraintValue",
+			appliesTo: "ix://agent-ix/semantic-core/MinLengthConstraintValue",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
 				value: 2147483647,
 			},
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/MinLengthConstraintValue/constraint/min",
+			identity: "ix://agent-ix/semantic-core/MinLengthConstraintValue/constraint/min",
 			keyword: "min",
-			appliesTo: "ix://agent-ix/semantic-core/type/MinLengthConstraintValue",
+			appliesTo: "ix://agent-ix/semantic-core/MinLengthConstraintValue",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
 				value: 0,
@@ -1840,18 +1804,18 @@ export const TYPE_CONSTRAINTS = {
 	Multiplicity: [],
 	MultiplicityLower: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/MultiplicityLower/constraint/max",
+			identity: "ix://agent-ix/semantic-core/MultiplicityLower/constraint/max",
 			keyword: "max",
-			appliesTo: "ix://agent-ix/semantic-core/type/MultiplicityLower",
+			appliesTo: "ix://agent-ix/semantic-core/MultiplicityLower",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
 				value: 2147483647,
 			},
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/MultiplicityLower/constraint/min",
+			identity: "ix://agent-ix/semantic-core/MultiplicityLower/constraint/min",
 			keyword: "min",
-			appliesTo: "ix://agent-ix/semantic-core/type/MultiplicityLower",
+			appliesTo: "ix://agent-ix/semantic-core/MultiplicityLower",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
 				value: 0,
@@ -1862,18 +1826,18 @@ export const TYPE_CONSTRAINTS = {
 	MultiplicityUnique: [],
 	MultiplicityUpper: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/MultiplicityUpper/constraint/max",
+			identity: "ix://agent-ix/semantic-core/MultiplicityUpper/constraint/max",
 			keyword: "max",
-			appliesTo: "ix://agent-ix/semantic-core/type/MultiplicityUpper",
+			appliesTo: "ix://agent-ix/semantic-core/MultiplicityUpper",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
 				value: 2147483647,
 			},
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/MultiplicityUpper/constraint/min",
+			identity: "ix://agent-ix/semantic-core/MultiplicityUpper/constraint/min",
 			keyword: "min",
-			appliesTo: "ix://agent-ix/semantic-core/type/MultiplicityUpper",
+			appliesTo: "ix://agent-ix/semantic-core/MultiplicityUpper",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
 				value: 0,
@@ -1893,18 +1857,18 @@ export const TYPE_CONSTRAINTS = {
 	SourceLocus: [],
 	SourceLocusEndColumn: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/SourceLocusEndColumn/constraint/max",
+			identity: "ix://agent-ix/semantic-core/SourceLocusEndColumn/constraint/max",
 			keyword: "max",
-			appliesTo: "ix://agent-ix/semantic-core/type/SourceLocusEndColumn",
+			appliesTo: "ix://agent-ix/semantic-core/SourceLocusEndColumn",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
 				value: 2147483647,
 			},
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/SourceLocusEndColumn/constraint/min",
+			identity: "ix://agent-ix/semantic-core/SourceLocusEndColumn/constraint/min",
 			keyword: "min",
-			appliesTo: "ix://agent-ix/semantic-core/type/SourceLocusEndColumn",
+			appliesTo: "ix://agent-ix/semantic-core/SourceLocusEndColumn",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
 				value: 1,
@@ -1913,18 +1877,18 @@ export const TYPE_CONSTRAINTS = {
 	],
 	SourceLocusEndLine: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/SourceLocusEndLine/constraint/max",
+			identity: "ix://agent-ix/semantic-core/SourceLocusEndLine/constraint/max",
 			keyword: "max",
-			appliesTo: "ix://agent-ix/semantic-core/type/SourceLocusEndLine",
+			appliesTo: "ix://agent-ix/semantic-core/SourceLocusEndLine",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
 				value: 2147483647,
 			},
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/SourceLocusEndLine/constraint/min",
+			identity: "ix://agent-ix/semantic-core/SourceLocusEndLine/constraint/min",
 			keyword: "min",
-			appliesTo: "ix://agent-ix/semantic-core/type/SourceLocusEndLine",
+			appliesTo: "ix://agent-ix/semantic-core/SourceLocusEndLine",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
 				value: 1,
@@ -1934,18 +1898,18 @@ export const TYPE_CONSTRAINTS = {
 	SourceLocusPath: [],
 	SourceLocusStartColumn: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/SourceLocusStartColumn/constraint/max",
+			identity: "ix://agent-ix/semantic-core/SourceLocusStartColumn/constraint/max",
 			keyword: "max",
-			appliesTo: "ix://agent-ix/semantic-core/type/SourceLocusStartColumn",
+			appliesTo: "ix://agent-ix/semantic-core/SourceLocusStartColumn",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
 				value: 2147483647,
 			},
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/SourceLocusStartColumn/constraint/min",
+			identity: "ix://agent-ix/semantic-core/SourceLocusStartColumn/constraint/min",
 			keyword: "min",
-			appliesTo: "ix://agent-ix/semantic-core/type/SourceLocusStartColumn",
+			appliesTo: "ix://agent-ix/semantic-core/SourceLocusStartColumn",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
 				value: 1,
@@ -1954,18 +1918,18 @@ export const TYPE_CONSTRAINTS = {
 	],
 	SourceLocusStartLine: [
 		{
-			identity: "ix://agent-ix/semantic-core/type/SourceLocusStartLine/constraint/max",
+			identity: "ix://agent-ix/semantic-core/SourceLocusStartLine/constraint/max",
 			keyword: "max",
-			appliesTo: "ix://agent-ix/semantic-core/type/SourceLocusStartLine",
+			appliesTo: "ix://agent-ix/semantic-core/SourceLocusStartLine",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
 				value: 2147483647,
 			},
 		},
 		{
-			identity: "ix://agent-ix/semantic-core/type/SourceLocusStartLine/constraint/min",
+			identity: "ix://agent-ix/semantic-core/SourceLocusStartLine/constraint/min",
 			keyword: "min",
-			appliesTo: "ix://agent-ix/semantic-core/type/SourceLocusStartLine",
+			appliesTo: "ix://agent-ix/semantic-core/SourceLocusStartLine",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
 				value: 1,

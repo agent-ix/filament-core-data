@@ -1,17 +1,17 @@
 //! EnumValuesConstraintKeyword
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword.
+//! Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraintKeyword.
 
 use serde::{Deserialize, Serialize};
 
 /// EnumValuesConstraintKeyword
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword.
+/// Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraintKeyword.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum EnumValuesConstraintKeyword {
     /// enumValues
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword/variant/enumValues.
+    /// Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraintKeyword/variant/enumValues.
     #[serde(rename = "enumValues")]
     EnumValues,
 }

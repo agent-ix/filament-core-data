@@ -5,7 +5,7 @@
 		"backend: ix://agent-ix/filament-core-data/backend/typescript@0.1.0",
 		"contract: 2.0.0",
 		"package: agent-ix/semantic-kernel@0.2.0",
-		"fingerprint: sha256:8939ef5559a1ff9d7265a65fd3e958a0ca52f47b91555f9865e819627e040c91"
+		"fingerprint: sha256:c825c2e71d83f2a68682ef6c9d7b7b3b7bab504aee4d57c38eac71384a5da93b"
 	],
 	"name": "@agent-ix/semantic-agent-ix__semantic-kernel",
 	"version": "0.2.0",

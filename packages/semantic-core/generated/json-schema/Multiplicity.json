@@ -25,5 +25,5 @@
 		"not": {}
 	},
 	"description": "FR-027 multiplicity; absent `upper` is unbounded. Reader: upper >= lower; flags only on collections.",
-	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/Multiplicity"
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/Multiplicity"
 }

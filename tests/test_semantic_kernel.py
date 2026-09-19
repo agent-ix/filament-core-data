@@ -83,8 +83,10 @@ PINNED_DIGESTS = {
         # relationship shape and multiplicity's ordered/unique fields.
         # corpus-account.json also remeasured (`poetry run python -m
         # python_backend.runner.corpus_account`) after conformance/corpus.json
-        # was bumped to corpusVersion 4.0.0; gaps.json unchanged.
-        "sha256:688275462a06076d933fc4586b110b6d3489468dd6be1d931796bf81b5d00e32"
+        # was bumped to corpusVersion 4.0.0; gaps.json unchanged. Remeasured
+        # again after this PR's review added corpus case PRES-016 (finding 5,
+        # R2), taking the corpus from 113 to 114 cases.
+        "sha256:fa6c76ed6f37253ad02be759fd01212e84c2c2b97b96f73aba3e525c0d57e3d1"
     ),
     "python_backend/generated": (
         # fcd#199/#200: regenerated (`poetry run python -m

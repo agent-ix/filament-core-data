@@ -5,7 +5,7 @@
  * backend: ix://agent-ix/filament-core-data/backend/typescript@0.1.0
  * contract: 2.0.0
  * package: agent-ix/semantic-kernel@0.2.0
- * fingerprint: sha256:8939ef5559a1ff9d7265a65fd3e958a0ca52f47b91555f9865e819627e040c91
+ * fingerprint: sha256:c825c2e71d83f2a68682ef6c9d7b7b3b7bab504aee4d57c38eac71384a5da93b
  */
 
 /**
@@ -147,7 +147,7 @@ function checkClauseLanguage(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ClauseLanguage`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/ClauseLanguage`. */
 export function validateClauseLanguage(input: unknown): ValidationResult<ClauseLanguage> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -333,7 +333,7 @@ function checkClauseRef(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ClauseRef`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/ClauseRef`. */
 export function validateClauseRef(input: unknown): ValidationResult<ClauseRef> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -409,7 +409,7 @@ function checkConstraintDecl(
 	return false;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ConstraintDecl`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/ConstraintDecl`. */
 export function validateConstraintDecl(input: unknown): ValidationResult<ConstraintDecl> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -471,7 +471,7 @@ function checkConstraintKeyword(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ConstraintKeyword`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/ConstraintKeyword`. */
 export function validateConstraintKeyword(input: unknown): ValidationResult<ConstraintKeyword> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -615,7 +615,7 @@ function checkDecimalPolicy(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/DecimalPolicy`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/DecimalPolicy`. */
 export function validateDecimalPolicy(input: unknown): ValidationResult<DecimalPolicy> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -678,7 +678,7 @@ function checkDecimalPolicyPrecision(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MAX",
-			"the max constraint ix://agent-ix/semantic-core/type/DecimalPolicyPrecision/constraint/max is not satisfied",
+			"the max constraint ix://agent-ix/semantic-core/DecimalPolicyPrecision/constraint/max is not satisfied",
 		);
 	}
 	if (!(candidate >= 1)) {
@@ -686,13 +686,13 @@ function checkDecimalPolicyPrecision(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MIN",
-			"the min constraint ix://agent-ix/semantic-core/type/DecimalPolicyPrecision/constraint/min is not satisfied",
+			"the min constraint ix://agent-ix/semantic-core/DecimalPolicyPrecision/constraint/min is not satisfied",
 		);
 	}
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/DecimalPolicyPrecision`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/DecimalPolicyPrecision`. */
 export function validateDecimalPolicyPrecision(input: unknown): ValidationResult<DecimalPolicyPrecision> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -755,7 +755,7 @@ function checkDecimalPolicyScale(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MAX",
-			"the max constraint ix://agent-ix/semantic-core/type/DecimalPolicyScale/constraint/max is not satisfied",
+			"the max constraint ix://agent-ix/semantic-core/DecimalPolicyScale/constraint/max is not satisfied",
 		);
 	}
 	if (!(candidate >= 0)) {
@@ -763,13 +763,13 @@ function checkDecimalPolicyScale(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MIN",
-			"the min constraint ix://agent-ix/semantic-core/type/DecimalPolicyScale/constraint/min is not satisfied",
+			"the min constraint ix://agent-ix/semantic-core/DecimalPolicyScale/constraint/min is not satisfied",
 		);
 	}
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/DecimalPolicyScale`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/DecimalPolicyScale`. */
 export function validateDecimalPolicyScale(input: unknown): ValidationResult<DecimalPolicyScale> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -913,7 +913,7 @@ function checkDefaultDecl(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/DefaultDecl`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/DefaultDecl`. */
 export function validateDefaultDecl(input: unknown): ValidationResult<DefaultDecl> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -969,7 +969,7 @@ function checkDefaultDeclValue(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/DefaultDeclValue`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/DefaultDeclValue`. */
 export function validateDefaultDeclValue(input: unknown): ValidationResult<DefaultDeclValue> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -1023,7 +1023,7 @@ function checkDefaultKind(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/DefaultKind`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/DefaultKind`. */
 export function validateDefaultKind(input: unknown): ValidationResult<DefaultKind> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -1081,7 +1081,7 @@ function checkEdgeCategory(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/EdgeCategory`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/EdgeCategory`. */
 export function validateEdgeCategory(input: unknown): ValidationResult<EdgeCategory> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -1225,7 +1225,7 @@ function checkEnumValue(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/EnumValue`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/EnumValue`. */
 export function validateEnumValue(input: unknown): ValidationResult<EnumValue> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -1265,7 +1265,7 @@ function checkEnumValueDoc(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/EnumValueDoc`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/EnumValueDoc`. */
 export function validateEnumValueDoc(input: unknown): ValidationResult<EnumValueDoc> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -1434,7 +1434,7 @@ function checkEnumValuesConstraint(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/EnumValuesConstraint`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/EnumValuesConstraint`. */
 export function validateEnumValuesConstraint(input: unknown): ValidationResult<EnumValuesConstraint> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -1484,7 +1484,7 @@ function checkEnumValuesConstraintKeyword(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/EnumValuesConstraintKeyword`. */
 export function validateEnumValuesConstraintKeyword(input: unknown): ValidationResult<EnumValuesConstraintKeyword> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -1536,7 +1536,7 @@ function checkEnumValuesConstraintValues(
 	return false;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/EnumValuesConstraintValues`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/EnumValuesConstraintValues`. */
 export function validateEnumValuesConstraintValues(input: unknown): ValidationResult<EnumValuesConstraintValues> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -1576,7 +1576,7 @@ function checkEnumValuesConstraintValuesBoolean(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesBoolean`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/EnumValuesConstraintValuesBoolean`. */
 export function validateEnumValuesConstraintValuesBoolean(input: unknown): ValidationResult<EnumValuesConstraintValuesBoolean> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -1624,7 +1624,7 @@ function checkEnumValuesConstraintValuesNumber(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesNumber`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/EnumValuesConstraintValuesNumber`. */
 export function validateEnumValuesConstraintValuesNumber(input: unknown): ValidationResult<EnumValuesConstraintValuesNumber> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -1664,7 +1664,7 @@ function checkEnumValuesConstraintValuesString(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesString`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/EnumValuesConstraintValuesString`. */
 export function validateEnumValuesConstraintValuesString(input: unknown): ValidationResult<EnumValuesConstraintValuesString> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -1820,7 +1820,7 @@ function checkExclusiveMaxConstraint(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/ExclusiveMaxConstraint`. */
 export function validateExclusiveMaxConstraint(input: unknown): ValidationResult<ExclusiveMaxConstraint> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -1870,7 +1870,7 @@ function checkExclusiveMaxConstraintKeyword(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintKeyword`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/ExclusiveMaxConstraintKeyword`. */
 export function validateExclusiveMaxConstraintKeyword(input: unknown): ValidationResult<ExclusiveMaxConstraintKeyword> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -1919,7 +1919,7 @@ function checkExclusiveMaxConstraintValue(
 	return false;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/ExclusiveMaxConstraintValue`. */
 export function validateExclusiveMaxConstraintValue(input: unknown): ValidationResult<ExclusiveMaxConstraintValue> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -1967,7 +1967,7 @@ function checkExclusiveMaxConstraintValueNumber(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueNumber`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueNumber`. */
 export function validateExclusiveMaxConstraintValueNumber(input: unknown): ValidationResult<ExclusiveMaxConstraintValueNumber> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -2007,7 +2007,7 @@ function checkExclusiveMaxConstraintValueString(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueString`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueString`. */
 export function validateExclusiveMaxConstraintValueString(input: unknown): ValidationResult<ExclusiveMaxConstraintValueString> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -2163,7 +2163,7 @@ function checkExclusiveMinConstraint(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ExclusiveMinConstraint`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/ExclusiveMinConstraint`. */
 export function validateExclusiveMinConstraint(input: unknown): ValidationResult<ExclusiveMinConstraint> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -2213,7 +2213,7 @@ function checkExclusiveMinConstraintKeyword(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ExclusiveMinConstraintKeyword`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/ExclusiveMinConstraintKeyword`. */
 export function validateExclusiveMinConstraintKeyword(input: unknown): ValidationResult<ExclusiveMinConstraintKeyword> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -2262,7 +2262,7 @@ function checkExclusiveMinConstraintValue(
 	return false;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/ExclusiveMinConstraintValue`. */
 export function validateExclusiveMinConstraintValue(input: unknown): ValidationResult<ExclusiveMinConstraintValue> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -2310,7 +2310,7 @@ function checkExclusiveMinConstraintValueNumber(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueNumber`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/ExclusiveMinConstraintValueNumber`. */
 export function validateExclusiveMinConstraintValueNumber(input: unknown): ValidationResult<ExclusiveMinConstraintValueNumber> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -2350,7 +2350,7 @@ function checkExclusiveMinConstraintValueString(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueString`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/ExclusiveMinConstraintValueString`. */
 export function validateExclusiveMinConstraintValueString(input: unknown): ValidationResult<ExclusiveMinConstraintValueString> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -2731,7 +2731,7 @@ function checkFieldDecl(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/FieldDecl`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/FieldDecl`. */
 export function validateFieldDecl(input: unknown): ValidationResult<FieldDecl> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -2771,7 +2771,7 @@ function checkFieldDeclDoc(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/FieldDeclDoc`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/FieldDeclDoc`. */
 export function validateFieldDeclDoc(input: unknown): ValidationResult<FieldDeclDoc> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -2811,7 +2811,7 @@ function checkFieldDeclIdentity(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/FieldDeclIdentity`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/FieldDeclIdentity`. */
 export function validateFieldDeclIdentity(input: unknown): ValidationResult<FieldDeclIdentity> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -2851,7 +2851,7 @@ function checkFieldDeclNullable(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/FieldDeclNullable`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/FieldDeclNullable`. */
 export function validateFieldDeclNullable(input: unknown): ValidationResult<FieldDeclNullable> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -2995,7 +2995,7 @@ function checkFormatConstraint(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/FormatConstraint`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/FormatConstraint`. */
 export function validateFormatConstraint(input: unknown): ValidationResult<FormatConstraint> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -3045,7 +3045,7 @@ function checkFormatConstraintKeyword(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/FormatConstraintKeyword`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/FormatConstraintKeyword`. */
 export function validateFormatConstraintKeyword(input: unknown): ValidationResult<FormatConstraintKeyword> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -3085,7 +3085,7 @@ function checkFormatConstraintName(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/FormatConstraintName`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/FormatConstraintName`. */
 export function validateFormatConstraintName(input: unknown): ValidationResult<FormatConstraintName> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -3125,7 +3125,7 @@ function checkIdentifier(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/Identifier`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/Identifier`. */
 export function validateIdentifier(input: unknown): ValidationResult<Identifier> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -3185,7 +3185,7 @@ function checkKernelScalar(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/KernelScalar`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/KernelScalar`. */
 export function validateKernelScalar(input: unknown): ValidationResult<KernelScalar> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -3329,7 +3329,7 @@ function checkMaxConstraint(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MaxConstraint`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MaxConstraint`. */
 export function validateMaxConstraint(input: unknown): ValidationResult<MaxConstraint> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -3379,7 +3379,7 @@ function checkMaxConstraintKeyword(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MaxConstraintKeyword`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MaxConstraintKeyword`. */
 export function validateMaxConstraintKeyword(input: unknown): ValidationResult<MaxConstraintKeyword> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -3428,7 +3428,7 @@ function checkMaxConstraintValue(
 	return false;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MaxConstraintValue`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MaxConstraintValue`. */
 export function validateMaxConstraintValue(input: unknown): ValidationResult<MaxConstraintValue> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -3476,7 +3476,7 @@ function checkMaxConstraintValueNumber(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MaxConstraintValueNumber`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MaxConstraintValueNumber`. */
 export function validateMaxConstraintValueNumber(input: unknown): ValidationResult<MaxConstraintValueNumber> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -3516,7 +3516,7 @@ function checkMaxConstraintValueString(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MaxConstraintValueString`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MaxConstraintValueString`. */
 export function validateMaxConstraintValueString(input: unknown): ValidationResult<MaxConstraintValueString> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -3672,7 +3672,7 @@ function checkMaxLengthConstraint(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MaxLengthConstraint`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MaxLengthConstraint`. */
 export function validateMaxLengthConstraint(input: unknown): ValidationResult<MaxLengthConstraint> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -3722,7 +3722,7 @@ function checkMaxLengthConstraintKeyword(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MaxLengthConstraintKeyword`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MaxLengthConstraintKeyword`. */
 export function validateMaxLengthConstraintKeyword(input: unknown): ValidationResult<MaxLengthConstraintKeyword> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -3785,7 +3785,7 @@ function checkMaxLengthConstraintValue(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MAX",
-			"the max constraint ix://agent-ix/semantic-core/type/MaxLengthConstraintValue/constraint/max is not satisfied",
+			"the max constraint ix://agent-ix/semantic-core/MaxLengthConstraintValue/constraint/max is not satisfied",
 		);
 	}
 	if (!(candidate >= 0)) {
@@ -3793,13 +3793,13 @@ function checkMaxLengthConstraintValue(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MIN",
-			"the min constraint ix://agent-ix/semantic-core/type/MaxLengthConstraintValue/constraint/min is not satisfied",
+			"the min constraint ix://agent-ix/semantic-core/MaxLengthConstraintValue/constraint/min is not satisfied",
 		);
 	}
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MaxLengthConstraintValue`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MaxLengthConstraintValue`. */
 export function validateMaxLengthConstraintValue(input: unknown): ValidationResult<MaxLengthConstraintValue> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -3943,7 +3943,7 @@ function checkMinConstraint(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MinConstraint`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MinConstraint`. */
 export function validateMinConstraint(input: unknown): ValidationResult<MinConstraint> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -3993,7 +3993,7 @@ function checkMinConstraintKeyword(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MinConstraintKeyword`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MinConstraintKeyword`. */
 export function validateMinConstraintKeyword(input: unknown): ValidationResult<MinConstraintKeyword> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -4042,7 +4042,7 @@ function checkMinConstraintValue(
 	return false;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MinConstraintValue`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MinConstraintValue`. */
 export function validateMinConstraintValue(input: unknown): ValidationResult<MinConstraintValue> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -4090,7 +4090,7 @@ function checkMinConstraintValueNumber(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MinConstraintValueNumber`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MinConstraintValueNumber`. */
 export function validateMinConstraintValueNumber(input: unknown): ValidationResult<MinConstraintValueNumber> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -4130,7 +4130,7 @@ function checkMinConstraintValueString(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MinConstraintValueString`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MinConstraintValueString`. */
 export function validateMinConstraintValueString(input: unknown): ValidationResult<MinConstraintValueString> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -4286,7 +4286,7 @@ function checkMinLengthConstraint(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MinLengthConstraint`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MinLengthConstraint`. */
 export function validateMinLengthConstraint(input: unknown): ValidationResult<MinLengthConstraint> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -4336,7 +4336,7 @@ function checkMinLengthConstraintKeyword(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MinLengthConstraintKeyword`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MinLengthConstraintKeyword`. */
 export function validateMinLengthConstraintKeyword(input: unknown): ValidationResult<MinLengthConstraintKeyword> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -4399,7 +4399,7 @@ function checkMinLengthConstraintValue(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MAX",
-			"the max constraint ix://agent-ix/semantic-core/type/MinLengthConstraintValue/constraint/max is not satisfied",
+			"the max constraint ix://agent-ix/semantic-core/MinLengthConstraintValue/constraint/max is not satisfied",
 		);
 	}
 	if (!(candidate >= 0)) {
@@ -4407,13 +4407,13 @@ function checkMinLengthConstraintValue(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MIN",
-			"the min constraint ix://agent-ix/semantic-core/type/MinLengthConstraintValue/constraint/min is not satisfied",
+			"the min constraint ix://agent-ix/semantic-core/MinLengthConstraintValue/constraint/min is not satisfied",
 		);
 	}
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MinLengthConstraintValue`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MinLengthConstraintValue`. */
 export function validateMinLengthConstraintValue(input: unknown): ValidationResult<MinLengthConstraintValue> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -4641,7 +4641,7 @@ function checkMultiplicity(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/Multiplicity`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/Multiplicity`. */
 export function validateMultiplicity(input: unknown): ValidationResult<Multiplicity> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -4704,7 +4704,7 @@ function checkMultiplicityLower(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MAX",
-			"the max constraint ix://agent-ix/semantic-core/type/MultiplicityLower/constraint/max is not satisfied",
+			"the max constraint ix://agent-ix/semantic-core/MultiplicityLower/constraint/max is not satisfied",
 		);
 	}
 	if (!(candidate >= 0)) {
@@ -4712,13 +4712,13 @@ function checkMultiplicityLower(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MIN",
-			"the min constraint ix://agent-ix/semantic-core/type/MultiplicityLower/constraint/min is not satisfied",
+			"the min constraint ix://agent-ix/semantic-core/MultiplicityLower/constraint/min is not satisfied",
 		);
 	}
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MultiplicityLower`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MultiplicityLower`. */
 export function validateMultiplicityLower(input: unknown): ValidationResult<MultiplicityLower> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -4758,7 +4758,7 @@ function checkMultiplicityOrdered(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MultiplicityOrdered`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MultiplicityOrdered`. */
 export function validateMultiplicityOrdered(input: unknown): ValidationResult<MultiplicityOrdered> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -4798,7 +4798,7 @@ function checkMultiplicityUnique(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MultiplicityUnique`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MultiplicityUnique`. */
 export function validateMultiplicityUnique(input: unknown): ValidationResult<MultiplicityUnique> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -4861,7 +4861,7 @@ function checkMultiplicityUpper(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MAX",
-			"the max constraint ix://agent-ix/semantic-core/type/MultiplicityUpper/constraint/max is not satisfied",
+			"the max constraint ix://agent-ix/semantic-core/MultiplicityUpper/constraint/max is not satisfied",
 		);
 	}
 	if (!(candidate >= 0)) {
@@ -4869,13 +4869,13 @@ function checkMultiplicityUpper(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MIN",
-			"the min constraint ix://agent-ix/semantic-core/type/MultiplicityUpper/constraint/min is not satisfied",
+			"the min constraint ix://agent-ix/semantic-core/MultiplicityUpper/constraint/min is not satisfied",
 		);
 	}
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/MultiplicityUpper`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/MultiplicityUpper`. */
 export function validateMultiplicityUpper(input: unknown): ValidationResult<MultiplicityUpper> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -4983,7 +4983,7 @@ function checkNonEmptyConstraint(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/NonEmptyConstraint`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/NonEmptyConstraint`. */
 export function validateNonEmptyConstraint(input: unknown): ValidationResult<NonEmptyConstraint> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -5033,7 +5033,7 @@ function checkNonEmptyConstraintKeyword(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/NonEmptyConstraintKeyword`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/NonEmptyConstraintKeyword`. */
 export function validateNonEmptyConstraintKeyword(input: unknown): ValidationResult<NonEmptyConstraintKeyword> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -5348,7 +5348,7 @@ function checkOperationDecl(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/OperationDecl`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/OperationDecl`. */
 export function validateOperationDecl(input: unknown): ValidationResult<OperationDecl> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -5546,7 +5546,7 @@ function checkPatternConstraint(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/PatternConstraint`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/PatternConstraint`. */
 export function validatePatternConstraint(input: unknown): ValidationResult<PatternConstraint> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -5596,7 +5596,7 @@ function checkPatternConstraintDialect(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/PatternConstraintDialect`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/PatternConstraintDialect`. */
 export function validatePatternConstraintDialect(input: unknown): ValidationResult<PatternConstraintDialect> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -5646,7 +5646,7 @@ function checkPatternConstraintKeyword(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/PatternConstraintKeyword`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/PatternConstraintKeyword`. */
 export function validatePatternConstraintKeyword(input: unknown): ValidationResult<PatternConstraintKeyword> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -5686,7 +5686,7 @@ function checkPatternConstraintRegex(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/PatternConstraintRegex`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/PatternConstraintRegex`. */
 export function validatePatternConstraintRegex(input: unknown): ValidationResult<PatternConstraintRegex> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -5968,7 +5968,7 @@ function checkRelationDecl(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/RelationDecl`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/RelationDecl`. */
 export function validateRelationDecl(input: unknown): ValidationResult<RelationDecl> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -6008,7 +6008,7 @@ function checkRelationDeclComposite(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/RelationDeclComposite`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/RelationDeclComposite`. */
 export function validateRelationDeclComposite(input: unknown): ValidationResult<RelationDeclComposite> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -6048,7 +6048,7 @@ function checkSemanticId(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/SemanticId`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/SemanticId`. */
 export function validateSemanticId(input: unknown): ValidationResult<SemanticId> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -6374,7 +6374,7 @@ function checkSourceLocus(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/SourceLocus`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/SourceLocus`. */
 export function validateSourceLocus(input: unknown): ValidationResult<SourceLocus> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -6437,7 +6437,7 @@ function checkSourceLocusEndColumn(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MAX",
-			"the max constraint ix://agent-ix/semantic-core/type/SourceLocusEndColumn/constraint/max is not satisfied",
+			"the max constraint ix://agent-ix/semantic-core/SourceLocusEndColumn/constraint/max is not satisfied",
 		);
 	}
 	if (!(candidate >= 1)) {
@@ -6445,13 +6445,13 @@ function checkSourceLocusEndColumn(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MIN",
-			"the min constraint ix://agent-ix/semantic-core/type/SourceLocusEndColumn/constraint/min is not satisfied",
+			"the min constraint ix://agent-ix/semantic-core/SourceLocusEndColumn/constraint/min is not satisfied",
 		);
 	}
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/SourceLocusEndColumn`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/SourceLocusEndColumn`. */
 export function validateSourceLocusEndColumn(input: unknown): ValidationResult<SourceLocusEndColumn> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -6514,7 +6514,7 @@ function checkSourceLocusEndLine(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MAX",
-			"the max constraint ix://agent-ix/semantic-core/type/SourceLocusEndLine/constraint/max is not satisfied",
+			"the max constraint ix://agent-ix/semantic-core/SourceLocusEndLine/constraint/max is not satisfied",
 		);
 	}
 	if (!(candidate >= 1)) {
@@ -6522,13 +6522,13 @@ function checkSourceLocusEndLine(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MIN",
-			"the min constraint ix://agent-ix/semantic-core/type/SourceLocusEndLine/constraint/min is not satisfied",
+			"the min constraint ix://agent-ix/semantic-core/SourceLocusEndLine/constraint/min is not satisfied",
 		);
 	}
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/SourceLocusEndLine`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/SourceLocusEndLine`. */
 export function validateSourceLocusEndLine(input: unknown): ValidationResult<SourceLocusEndLine> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -6568,7 +6568,7 @@ function checkSourceLocusPath(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/SourceLocusPath`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/SourceLocusPath`. */
 export function validateSourceLocusPath(input: unknown): ValidationResult<SourceLocusPath> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -6631,7 +6631,7 @@ function checkSourceLocusStartColumn(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MAX",
-			"the max constraint ix://agent-ix/semantic-core/type/SourceLocusStartColumn/constraint/max is not satisfied",
+			"the max constraint ix://agent-ix/semantic-core/SourceLocusStartColumn/constraint/max is not satisfied",
 		);
 	}
 	if (!(candidate >= 1)) {
@@ -6639,13 +6639,13 @@ function checkSourceLocusStartColumn(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MIN",
-			"the min constraint ix://agent-ix/semantic-core/type/SourceLocusStartColumn/constraint/min is not satisfied",
+			"the min constraint ix://agent-ix/semantic-core/SourceLocusStartColumn/constraint/min is not satisfied",
 		);
 	}
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/SourceLocusStartColumn`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/SourceLocusStartColumn`. */
 export function validateSourceLocusStartColumn(input: unknown): ValidationResult<SourceLocusStartColumn> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -6708,7 +6708,7 @@ function checkSourceLocusStartLine(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MAX",
-			"the max constraint ix://agent-ix/semantic-core/type/SourceLocusStartLine/constraint/max is not satisfied",
+			"the max constraint ix://agent-ix/semantic-core/SourceLocusStartLine/constraint/max is not satisfied",
 		);
 	}
 	if (!(candidate >= 1)) {
@@ -6716,13 +6716,13 @@ function checkSourceLocusStartLine(
 			errors,
 			pointer,
 			"agent-ix.semantic-core.MIN",
-			"the min constraint ix://agent-ix/semantic-core/type/SourceLocusStartLine/constraint/min is not satisfied",
+			"the min constraint ix://agent-ix/semantic-core/SourceLocusStartLine/constraint/min is not satisfied",
 		);
 	}
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/SourceLocusStartLine`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/SourceLocusStartLine`. */
 export function validateSourceLocusStartLine(input: unknown): ValidationResult<SourceLocusStartLine> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -6960,7 +6960,7 @@ function checkTypeRef(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/TypeRef`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/TypeRef`. */
 export function validateTypeRef(input: unknown): ValidationResult<TypeRef> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -7009,7 +7009,7 @@ function checkTypeRefTarget(
 	return false;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/TypeRefTarget`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/TypeRefTarget`. */
 export function validateTypeRefTarget(input: unknown): ValidationResult<TypeRefTarget> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -7111,7 +7111,7 @@ function checkUniqueConstraint(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/UniqueConstraint`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/UniqueConstraint`. */
 export function validateUniqueConstraint(input: unknown): ValidationResult<UniqueConstraint> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -7161,7 +7161,7 @@ function checkUniqueConstraintKeyword(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/UniqueConstraintKeyword`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/UniqueConstraintKeyword`. */
 export function validateUniqueConstraintKeyword(input: unknown): ValidationResult<UniqueConstraintKeyword> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];
@@ -7201,7 +7201,7 @@ function checkUnitSymbol(
 	return errors.length === before;
 }
 
-/** Decide an untrusted value against `ix://agent-ix/semantic-core/type/UnitSymbol`. */
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/UnitSymbol`. */
 export function validateUnitSymbol(input: unknown): ValidationResult<UnitSymbol> {
 	const errors: ValidationError[] = [];
 	const surfaced: ValidationError[] = [];

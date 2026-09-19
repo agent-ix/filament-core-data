@@ -1,6 +1,6 @@
 //! FormatConstraintName
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/FormatConstraintName.
+//! Semantic identity: ix://agent-ix/semantic-core/FormatConstraintName.
 //!
 //! Unknown policy: `reject`, which is inert for a
 //! `scalar` — the kind has no unknown member for a policy to govern. The
@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 /// FormatConstraintName
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/FormatConstraintName.
+/// Semantic identity: ix://agent-ix/semantic-core/FormatConstraintName.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(transparent)]
 pub struct FormatConstraintName(String);

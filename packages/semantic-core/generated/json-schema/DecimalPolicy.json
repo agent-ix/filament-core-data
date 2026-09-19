@@ -19,5 +19,5 @@
 		"not": {}
 	},
 	"description": "Precision and scale for a `Decimal` target (FR-032).",
-	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/DecimalPolicy"
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/DecimalPolicy"
 }

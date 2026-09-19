@@ -1,17 +1,17 @@
 //! NonEmptyConstraintKeyword
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/NonEmptyConstraintKeyword.
+//! Semantic identity: ix://agent-ix/semantic-core/NonEmptyConstraintKeyword.
 
 use serde::{Deserialize, Serialize};
 
 /// NonEmptyConstraintKeyword
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/NonEmptyConstraintKeyword.
+/// Semantic identity: ix://agent-ix/semantic-core/NonEmptyConstraintKeyword.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum NonEmptyConstraintKeyword {
     /// nonEmpty
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/NonEmptyConstraintKeyword/variant/nonEmpty.
+    /// Semantic identity: ix://agent-ix/semantic-core/NonEmptyConstraintKeyword/variant/nonEmpty.
     #[serde(rename = "nonEmpty")]
     NonEmpty,
 }

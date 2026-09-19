@@ -33,5 +33,5 @@
 		"not": {}
 	},
 	"description": "An operation declaration (FR-028). Reader: params unique by name; returns carries no unit.",
-	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/OperationDecl"
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/OperationDecl"
 }

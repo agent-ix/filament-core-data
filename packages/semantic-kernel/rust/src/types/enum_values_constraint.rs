@@ -1,16 +1,16 @@
 //! EnumValuesConstraint
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraint.
+//! Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraint.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `EnumValuesConstraint`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/EnumValuesConstraint/field/keyword",
+        identity: "ix://agent-ix/semantic-core/EnumValuesConstraint/keyword",
         name: "keyword",
         rust_name: "keyword",
-        type_ref: "ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword",
+        type_ref: "ix://agent-ix/semantic-core/EnumValuesConstraintKeyword",
         rust_type: "crate::EnumValuesConstraintKeyword",
         row: "field:single/non-null/required",
         presence: "required",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/EnumValuesConstraint/field/values",
+        identity: "ix://agent-ix/semantic-core/EnumValuesConstraint/values",
         name: "values",
         rust_name: "values",
-        type_ref: "ix://agent-ix/semantic-core/type/EnumValuesConstraintValues",
+        type_ref: "ix://agent-ix/semantic-core/EnumValuesConstraintValues",
         rust_type: "Vec<crate::EnumValuesConstraintValues>",
         row: "field:collection/non-null/required",
         presence: "required",
@@ -70,16 +70,16 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// EnumValuesConstraint
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraint.
+/// Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraint.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct EnumValuesConstraint {
     /// keyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraint/field/keyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraint/keyword.
     pub keyword: crate::EnumValuesConstraintKeyword,
     /// values
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraint/field/values.
+    /// Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraint/values.
     pub values: Vec<crate::EnumValuesConstraintValues>,
 }
 
@@ -107,7 +107,7 @@ impl EnumValuesConstraint {
             let items = &values;
             if items.len() < 1usize {
                 return Err(crate::support::ValidationError::new(
-                    "ix://agent-ix/semantic-core/type/EnumValuesConstraint/field/values",
+                    "ix://agent-ix/semantic-core/EnumValuesConstraint/values",
                     "multiplicity.lower",
                     "values",
                     "1",

@@ -1,17 +1,17 @@
 //! PatternConstraintKeyword
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/PatternConstraintKeyword.
+//! Semantic identity: ix://agent-ix/semantic-core/PatternConstraintKeyword.
 
 use serde::{Deserialize, Serialize};
 
 /// PatternConstraintKeyword
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/PatternConstraintKeyword.
+/// Semantic identity: ix://agent-ix/semantic-core/PatternConstraintKeyword.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum PatternConstraintKeyword {
     /// pattern
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/PatternConstraintKeyword/variant/pattern.
+    /// Semantic identity: ix://agent-ix/semantic-core/PatternConstraintKeyword/variant/pattern.
     #[serde(rename = "pattern")]
     Pattern,
 }

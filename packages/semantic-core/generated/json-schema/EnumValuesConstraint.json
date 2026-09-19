@@ -29,5 +29,5 @@
 	"unevaluatedProperties": {
 		"not": {}
 	},
-	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/EnumValuesConstraint"
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/EnumValuesConstraint"
 }

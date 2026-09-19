@@ -1,16 +1,16 @@
 //! ExclusiveMinConstraint
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraint.
+//! Semantic identity: ix://agent-ix/semantic-core/ExclusiveMinConstraint.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `ExclusiveMinConstraint`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraint/field/keyword",
+        identity: "ix://agent-ix/semantic-core/ExclusiveMinConstraint/keyword",
         name: "keyword",
         rust_name: "keyword",
-        type_ref: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintKeyword",
+        type_ref: "ix://agent-ix/semantic-core/ExclusiveMinConstraintKeyword",
         rust_type: "crate::ExclusiveMinConstraintKeyword",
         row: "field:single/non-null/required",
         presence: "required",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraint/field/value",
+        identity: "ix://agent-ix/semantic-core/ExclusiveMinConstraint/value",
         name: "value",
         rust_name: "value",
-        type_ref: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue",
+        type_ref: "ix://agent-ix/semantic-core/ExclusiveMinConstraintValue",
         rust_type: "crate::ExclusiveMinConstraintValue",
         row: "field:single/non-null/required",
         presence: "required",
@@ -70,16 +70,16 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// ExclusiveMinConstraint
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraint.
+/// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMinConstraint.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct ExclusiveMinConstraint {
     /// keyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraint/field/keyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMinConstraint/keyword.
     pub keyword: crate::ExclusiveMinConstraintKeyword,
     /// value
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraint/field/value.
+    /// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMinConstraint/value.
     pub value: crate::ExclusiveMinConstraintValue,
 }
 

@@ -1,6 +1,6 @@
 //! FieldDeclIdentity
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/FieldDeclIdentity.
+//! Semantic identity: ix://agent-ix/semantic-core/FieldDeclIdentity.
 //!
 //! Unknown policy: `reject`, which is inert for a
 //! `scalar` — the kind has no unknown member for a policy to govern. The
@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 /// FieldDeclIdentity
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/FieldDeclIdentity.
+/// Semantic identity: ix://agent-ix/semantic-core/FieldDeclIdentity.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(transparent)]
 pub struct FieldDeclIdentity(bool);

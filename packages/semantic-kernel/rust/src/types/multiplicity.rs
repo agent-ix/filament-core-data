@@ -1,16 +1,16 @@
 //! Multiplicity
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/Multiplicity.
+//! Semantic identity: ix://agent-ix/semantic-core/Multiplicity.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `Multiplicity`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/Multiplicity/field/lower",
+        identity: "ix://agent-ix/semantic-core/Multiplicity/lower",
         name: "lower",
         rust_name: "lower",
-        type_ref: "ix://agent-ix/semantic-core/type/MultiplicityLower",
+        type_ref: "ix://agent-ix/semantic-core/MultiplicityLower",
         rust_type: "crate::MultiplicityLower",
         row: "field:single/non-null/required",
         presence: "required",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/Multiplicity/field/upper",
+        identity: "ix://agent-ix/semantic-core/Multiplicity/upper",
         name: "upper",
         rust_name: "upper",
-        type_ref: "ix://agent-ix/semantic-core/type/MultiplicityUpper",
+        type_ref: "ix://agent-ix/semantic-core/MultiplicityUpper",
         rust_type: "Option<crate::MultiplicityUpper>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -67,10 +67,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/Multiplicity/field/ordered",
+        identity: "ix://agent-ix/semantic-core/Multiplicity/ordered",
         name: "ordered",
         rust_name: "ordered",
-        type_ref: "ix://agent-ix/semantic-core/type/MultiplicityOrdered",
+        type_ref: "ix://agent-ix/semantic-core/MultiplicityOrdered",
         rust_type: "Option<crate::MultiplicityOrdered>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -97,10 +97,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/Multiplicity/field/unique",
+        identity: "ix://agent-ix/semantic-core/Multiplicity/unique",
         name: "unique",
         rust_name: "unique",
-        type_ref: "ix://agent-ix/semantic-core/type/MultiplicityUnique",
+        type_ref: "ix://agent-ix/semantic-core/MultiplicityUnique",
         rust_type: "Option<crate::MultiplicityUnique>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -130,26 +130,26 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// Multiplicity
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/Multiplicity.
+/// Semantic identity: ix://agent-ix/semantic-core/Multiplicity.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Multiplicity {
     /// lower
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/Multiplicity/field/lower.
+    /// Semantic identity: ix://agent-ix/semantic-core/Multiplicity/lower.
     pub lower: crate::MultiplicityLower,
     /// upper
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/Multiplicity/field/upper.
+    /// Semantic identity: ix://agent-ix/semantic-core/Multiplicity/upper.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub upper: Option<crate::MultiplicityUpper>,
     /// ordered
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/Multiplicity/field/ordered.
+    /// Semantic identity: ix://agent-ix/semantic-core/Multiplicity/ordered.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ordered: Option<crate::MultiplicityOrdered>,
     /// unique
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/Multiplicity/field/unique.
+    /// Semantic identity: ix://agent-ix/semantic-core/Multiplicity/unique.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unique: Option<crate::MultiplicityUnique>,
 }

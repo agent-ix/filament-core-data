@@ -1,16 +1,16 @@
 //! FieldDecl
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/FieldDecl.
+//! Semantic identity: ix://agent-ix/semantic-core/FieldDecl.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `FieldDecl`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/FieldDecl/field/name",
+        identity: "ix://agent-ix/semantic-core/FieldDecl/name",
         name: "name",
         rust_name: "name",
-        type_ref: "ix://agent-ix/semantic-core/type/Identifier",
+        type_ref: "ix://agent-ix/semantic-core/Identifier",
         rust_type: "crate::Identifier",
         row: "field:single/non-null/required",
         presence: "required",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/FieldDecl/field/type",
+        identity: "ix://agent-ix/semantic-core/FieldDecl/type",
         name: "type",
         rust_name: "r#type",
-        type_ref: "ix://agent-ix/semantic-core/type/TypeRef",
+        type_ref: "ix://agent-ix/semantic-core/TypeRef",
         rust_type: "crate::TypeRef",
         row: "field:single/non-null/required",
         presence: "required",
@@ -67,10 +67,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/FieldDecl/field/identity",
+        identity: "ix://agent-ix/semantic-core/FieldDecl/identity",
         name: "identity",
         rust_name: "identity",
-        type_ref: "ix://agent-ix/semantic-core/type/FieldDeclIdentity",
+        type_ref: "ix://agent-ix/semantic-core/FieldDeclIdentity",
         rust_type: "Option<crate::FieldDeclIdentity>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -97,10 +97,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/FieldDecl/field/nullable",
+        identity: "ix://agent-ix/semantic-core/FieldDecl/nullable",
         name: "nullable",
         rust_name: "nullable",
-        type_ref: "ix://agent-ix/semantic-core/type/FieldDeclNullable",
+        type_ref: "ix://agent-ix/semantic-core/FieldDeclNullable",
         rust_type: "Option<crate::FieldDeclNullable>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -127,10 +127,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/FieldDecl/field/default",
+        identity: "ix://agent-ix/semantic-core/FieldDecl/default",
         name: "default",
         rust_name: "default",
-        type_ref: "ix://agent-ix/semantic-core/type/DefaultDecl",
+        type_ref: "ix://agent-ix/semantic-core/DefaultDecl",
         rust_type: "Option<crate::DefaultDecl>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -157,10 +157,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/FieldDecl/field/doc",
+        identity: "ix://agent-ix/semantic-core/FieldDecl/doc",
         name: "doc",
         rust_name: "doc",
-        type_ref: "ix://agent-ix/semantic-core/type/FieldDeclDoc",
+        type_ref: "ix://agent-ix/semantic-core/FieldDeclDoc",
         rust_type: "Option<crate::FieldDeclDoc>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -187,10 +187,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/FieldDecl/field/constraints",
+        identity: "ix://agent-ix/semantic-core/FieldDecl/constraints",
         name: "constraints",
         rust_name: "constraints",
-        type_ref: "ix://agent-ix/semantic-core/type/ConstraintDecl",
+        type_ref: "ix://agent-ix/semantic-core/ConstraintDecl",
         rust_type: "Option<Vec<crate::ConstraintDecl>>",
         row: "field:collection/non-null/optional",
         presence: "optional",
@@ -220,40 +220,40 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// FieldDecl
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/FieldDecl.
+/// Semantic identity: ix://agent-ix/semantic-core/FieldDecl.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct FieldDecl {
     /// name
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/FieldDecl/field/name.
+    /// Semantic identity: ix://agent-ix/semantic-core/FieldDecl/name.
     pub name: crate::Identifier,
     /// type
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/FieldDecl/field/type.
+    /// Semantic identity: ix://agent-ix/semantic-core/FieldDecl/type.
     pub r#type: crate::TypeRef,
     /// identity
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/FieldDecl/field/identity.
+    /// Semantic identity: ix://agent-ix/semantic-core/FieldDecl/identity.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub identity: Option<crate::FieldDeclIdentity>,
     /// nullable
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/FieldDecl/field/nullable.
+    /// Semantic identity: ix://agent-ix/semantic-core/FieldDecl/nullable.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub nullable: Option<crate::FieldDeclNullable>,
     /// default
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/FieldDecl/field/default.
+    /// Semantic identity: ix://agent-ix/semantic-core/FieldDecl/default.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub default: Option<crate::DefaultDecl>,
     /// doc
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/FieldDecl/field/doc.
+    /// Semantic identity: ix://agent-ix/semantic-core/FieldDecl/doc.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub doc: Option<crate::FieldDeclDoc>,
     /// constraints
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/FieldDecl/field/constraints.
+    /// Semantic identity: ix://agent-ix/semantic-core/FieldDecl/constraints.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub constraints: Option<Vec<crate::ConstraintDecl>>,
 }

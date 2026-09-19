@@ -1,17 +1,17 @@
 //! MaxConstraintKeyword
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraintKeyword.
+//! Semantic identity: ix://agent-ix/semantic-core/MaxConstraintKeyword.
 
 use serde::{Deserialize, Serialize};
 
 /// MaxConstraintKeyword
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraintKeyword.
+/// Semantic identity: ix://agent-ix/semantic-core/MaxConstraintKeyword.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum MaxConstraintKeyword {
     /// max
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraintKeyword/variant/max.
+    /// Semantic identity: ix://agent-ix/semantic-core/MaxConstraintKeyword/variant/max.
     #[serde(rename = "max")]
     Max,
 }

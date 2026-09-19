@@ -1,6 +1,6 @@
 //! MaxLengthConstraintValue
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/MaxLengthConstraintValue.
+//! Semantic identity: ix://agent-ix/semantic-core/MaxLengthConstraintValue.
 //!
 //! Unknown policy: `reject`, which is inert for a
 //! `scalar` — the kind has no unknown member for a policy to govern. The
@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 /// MaxLengthConstraintValue
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/MaxLengthConstraintValue.
+/// Semantic identity: ix://agent-ix/semantic-core/MaxLengthConstraintValue.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(transparent)]
 pub struct MaxLengthConstraintValue(i64);
@@ -23,7 +23,7 @@ impl MaxLengthConstraintValue {
         {
             if value < 0i64 {
                 return Err(crate::support::ValidationError::new(
-                    "ix://agent-ix/semantic-core/type/MaxLengthConstraintValue/constraint/min",
+                    "ix://agent-ix/semantic-core/MaxLengthConstraintValue/constraint/min",
                     "min",
                     "",
                     "0",
@@ -31,7 +31,7 @@ impl MaxLengthConstraintValue {
             }
             if value > 2147483647i64 {
                 return Err(crate::support::ValidationError::new(
-                    "ix://agent-ix/semantic-core/type/MaxLengthConstraintValue/constraint/max",
+                    "ix://agent-ix/semantic-core/MaxLengthConstraintValue/constraint/max",
                     "max",
                     "",
                     "2147483647",

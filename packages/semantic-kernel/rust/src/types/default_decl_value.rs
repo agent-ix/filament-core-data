@@ -1,6 +1,6 @@
 //! DefaultDeclValue
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/DefaultDeclValue.
+//! Semantic identity: ix://agent-ix/semantic-core/DefaultDeclValue.
 
 use serde::{Deserialize, Serialize};
 
@@ -9,7 +9,7 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[];
 
 /// DefaultDeclValue
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/DefaultDeclValue.
+/// Semantic identity: ix://agent-ix/semantic-core/DefaultDeclValue.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct DefaultDeclValue {
     /// The members the contract did not declare, retained under this
