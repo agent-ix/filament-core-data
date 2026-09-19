@@ -398,6 +398,12 @@ export function readContractIr(document, options = {}) {
 				);
 			}
 		}
+		// Gap 1 of FCD #199/#200: a constrained field keeps its constraints
+		// inline rather than on a synthetic alias, so the field's own
+		// `constraints[]` needs the same check a type's does.
+		for (const constraint of asArray(field.constraints)) {
+			checkConstraint(constraint, field);
+		}
 	};
 
 	const checkConstraint = (constraint, owner) => {

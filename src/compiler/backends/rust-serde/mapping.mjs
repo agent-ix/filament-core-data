@@ -105,7 +105,8 @@ const NATIVE_SCALARS = new Map([
 ]);
 
 function nativeScalar(ref) {
-	if (typeof ref !== "string" || !ref.startsWith(NATIVE_PREFIX)) return undefined;
+	if (typeof ref !== "string" || !ref.startsWith(NATIVE_PREFIX))
+		return undefined;
 	return NATIVE_SCALARS.get(ref.slice(NATIVE_PREFIX.length));
 }
 
