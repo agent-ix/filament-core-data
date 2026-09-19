@@ -645,7 +645,7 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 				`https://schemas.agent-ix.org/semantic-core/0.2.0/${name}.json`,
 			);
 			expect(schema["x-agent-ix-semantic-id"], name).toBe(
-				`ix://agent-ix/semantic-core/type/${name}`,
+				`ix://agent-ix/semantic-core/${name}`,
 			);
 			if (schema.type === "object") {
 				const sealed =
