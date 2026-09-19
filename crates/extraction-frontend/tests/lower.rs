@@ -129,11 +129,7 @@ fn constrained_fields_of<'a>(types: &'a [Value], record: &str) -> Vec<&'a Value>
         .as_array()
         .expect("fields")
         .iter()
-        .filter(|f| {
-            f["constraints"]
-                .as_array()
-                .is_some_and(|c| !c.is_empty())
-        })
+        .filter(|f| f["constraints"].as_array().is_some_and(|c| !c.is_empty()))
         .collect()
 }
 
@@ -1147,11 +1143,7 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
         }
         let empty = Vec::new();
         for record in &types {
-            for field in record["fields"]
-                .as_array()
-                .into_iter()
-                .flatten()
-            {
+            for field in record["fields"].as_array().into_iter().flatten() {
                 let constraints = field
                     .get("constraints")
                     .and_then(Value::as_array)

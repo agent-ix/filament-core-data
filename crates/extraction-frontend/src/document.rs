@@ -80,9 +80,7 @@ fn normalize_multiplicities(value: &mut Value) {
     match value {
         Value::Object(map) => {
             if let Some(Value::Object(multiplicity)) = map.get_mut("multiplicity") {
-                multiplicity
-                    .entry("ordered")
-                    .or_insert(Value::Bool(false));
+                multiplicity.entry("ordered").or_insert(Value::Bool(false));
                 multiplicity.entry("unique").or_insert(Value::Bool(false));
             }
             for child in map.values_mut() {

@@ -149,7 +149,10 @@ fn tc_1231_fr_006_references_fr_005_lowers_to_one_traceability_relationship_at_t
     // `references` declares no `inverse` in the registry, so the target end
     // carries no role at all (gap 3 of FCD #199/#200).
     assert_eq!(rel["targetEnd"].get("role"), None, "{rel}");
-    assert_eq!(rel["targetEnd"]["type"], "ix://agent-ix/config-service/FR-005");
+    assert_eq!(
+        rel["targetEnd"]["type"],
+        "ix://agent-ix/config-service/FR-005"
+    );
     assert_eq!(
         rel["targetEnd"]["multiplicity"],
         serde_json::json!({ "lower": 1, "upper": 1 })
@@ -432,9 +435,10 @@ fn tc_1238_parent_is_a_field_not_a_relationship() {
     );
     let ours = relationships(record);
     assert!(
-        ours.iter()
-            .all(|r| r["targetEnd"]["type"] != "ix://agent-ix/config-service/FR-006"
-                && !r["identity"].as_str().expect("identity").contains("parent")),
+        ours.iter().all(
+            |r| r["targetEnd"]["type"] != "ix://agent-ix/config-service/FR-006"
+                && !r["identity"].as_str().expect("identity").contains("parent")
+        ),
         "no relationship from the parent row: {ours:?}"
     );
 
@@ -467,7 +471,10 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
     let base_types = types_json(&base);
     let base_order = relationships(type_named(&base_types, "Order"));
     let base_owns = with_verb(&base_order, "owns")[0].clone();
-    assert_eq!(base_owns["targetEnd"]["type"], "ix://agent-ix/orders/SM_001");
+    assert_eq!(
+        base_owns["targetEnd"]["type"],
+        "ix://agent-ix/orders/SM_001"
+    );
 
     // Part one: rename the `owns` target (SM_001, referenced by no Type
     // cell) and lift again. The target's identity is its artifact id, so
@@ -608,7 +615,8 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
                     // `type` and `multiplicity` — stays byte-identical.
                     let strip_flipped = |value: &Value| {
                         let mut v = without(value, &["composite"]);
-                        if let Some(target_end) = v.get_mut("targetEnd").and_then(Value::as_object_mut)
+                        if let Some(target_end) =
+                            v.get_mut("targetEnd").and_then(Value::as_object_mut)
                         {
                             target_end.remove("role");
                         }

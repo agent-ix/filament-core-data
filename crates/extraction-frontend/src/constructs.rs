@@ -410,11 +410,10 @@ pub(crate) fn shape(
         });
     }
     if !forbids(declaration, Member::Persists) {
-        members.persists = Some(targets(
-            relationships(definition)
-                .iter()
-                .filter(|r| r.source_end.role.as_deref() == Some(PERSISTENCE)),
-        ));
+        members.persists =
+            Some(targets(relationships(definition).iter().filter(|r| {
+                r.source_end.role.as_deref() == Some(PERSISTENCE)
+            })));
     }
     let lifted = |member: Member, authored: bool| {
         !forbids(declaration, member)

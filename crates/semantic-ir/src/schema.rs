@@ -708,7 +708,12 @@ const POPULATION_MEMBERS: &[&str] = &[
 /// FR-153/AD-006), never a per-member multiplicity.
 const POPULATION_EXTENTS: &[&str] = &["closed", "open"];
 
-fn population_schema(population: &Json, at: &str, table: &mut ConstructTable<'_>, f: &mut Findings) {
+fn population_schema(
+    population: &Json,
+    at: &str,
+    table: &mut ConstructTable<'_>,
+    f: &mut Findings,
+) {
     if !expect_object(population, at, "a population", f) {
         return;
     }
