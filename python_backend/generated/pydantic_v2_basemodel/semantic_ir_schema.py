@@ -182,12 +182,6 @@ class ContractItem1(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
 
-class FeaturePath(RootModel[str]):
-    root: Annotated[
-        str, Field(pattern='^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$')
-    ]
-
-
 class DefaultKind(Enum):
     none = 'none'
     semantic = 'semantic'
@@ -198,15 +192,6 @@ class DefaultKind(Enum):
 class Presence(Enum):
     required = 'required'
     optional = 'optional'
-
-
-class Frame(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-    )
-    creates: list[FeaturePath]
-    deletes: list[FeaturePath]
-    modifies: list[FeaturePath]
 
 
 class IdentityList(RootModel[list[common_schema.SemanticIdentity]]):
@@ -242,12 +227,9 @@ class Returns(BaseModel):
     typeRef: common_schema.SemanticIdentity
 
 
-class Member(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-    )
-    extent: Multiplicity
-    typeRef: common_schema.SemanticIdentity
+class Extent(Enum):
+    closed = 'closed'
+    open = 'open'
 
 
 class Category(Enum):
@@ -449,6 +431,15 @@ class FieldModel(BaseModel):
     unit: Annotated[str | None, Field(min_length=1, pattern='^[!-~]+$')] = None
 
 
+class Frame(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    creates: IdentityList
+    deletes: IdentityList
+    modifies: IdentityList
+
+
 class InlineClause(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -469,8 +460,10 @@ class Population(BaseModel):
         extra='forbid',
     )
     displayName: Annotated[str, Field(min_length=1)]
+    extent: Extent
     identity: common_schema.SemanticIdentity
-    members: list[Member]
+    kind: ConstructKind
+    members: list[common_schema.SemanticIdentity]
     origin: common_schema.Origin
 
 

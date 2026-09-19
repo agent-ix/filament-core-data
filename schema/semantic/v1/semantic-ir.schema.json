@@ -1159,7 +1159,14 @@
 		},
 		"population": {
 			"type": "object",
-			"required": ["identity", "displayName", "kind", "members", "extent", "origin"],
+			"required": [
+				"identity",
+				"displayName",
+				"kind",
+				"members",
+				"extent",
+				"origin"
+			],
 			"properties": {
 				"identity": {
 					"$ref": "common.schema.json#/$defs/semanticIdentity"

@@ -3906,7 +3906,9 @@ describe("compatibility (FR-051)", () => {
 	 * carry no assertion here and pinning them would make every case brittle
 	 * against wording it isn't this test's job to lock down.
 	 */
-	const projectChanges = (report: { changes: { identity: string; family: string; disposition: string }[] }) =>
+	const projectChanges = (report: {
+		changes: { identity: string; family: string; disposition: string }[];
+	}) =>
 		report.changes.map((change) => ({
 			identity: change.identity,
 			family: change.family,
@@ -4233,9 +4235,7 @@ describe("compatibility (FR-051)", () => {
 		expect(projectChanges(reportOfPair(base, abstractSet))).toStrictEqual([
 			{ identity: artifact.identity, family: "type", disposition: "breaking" },
 		]);
-		expect(
-			projectChanges(reportOfPair(abstractSet, base)),
-		).toStrictEqual([
+		expect(projectChanges(reportOfPair(abstractSet, base))).toStrictEqual([
 			{ identity: artifact.identity, family: "type", disposition: "additive" },
 		]);
 
@@ -4243,18 +4243,16 @@ describe("compatibility (FR-051)", () => {
 		// mutation disabling only the subsets check cannot hide behind
 		// redefines still firing (fcd#193 review, Medium-2).
 		const subsetted = structuredClone(base);
-		subsetted.types.find(
-			(type) => type.identity === artifact.identity,
-		)!.fields![0].subsets = ["ix://agent-ix/assurance/field/Artifact-tags"];
+		subsetted.types.find((type) => type.identity === artifact.identity)!
+			.fields![0].subsets = ["ix://agent-ix/assurance/field/Artifact-tags"];
 		expect(projectChanges(reportOfPair(base, subsetted))).toStrictEqual([
 			{ identity: field.identity, family: "field", disposition: "breaking" },
 		]);
 
 		// redefines: added to a field, on its own.
 		const redefined = structuredClone(base);
-		redefined.types.find(
-			(type) => type.identity === artifact.identity,
-		)!.fields![0].redefines = "ix://agent-ix/assurance/field/Artifact-tags";
+		redefined.types.find((type) => type.identity === artifact.identity)!
+			.fields![0].redefines = "ix://agent-ix/assurance/field/Artifact-tags";
 		expect(projectChanges(reportOfPair(base, redefined))).toStrictEqual([
 			{ identity: field.identity, family: "field", disposition: "breaking" },
 		]);
@@ -4282,9 +4280,7 @@ describe("compatibility (FR-051)", () => {
 				},
 			},
 		];
-		expect(
-			projectChanges(reportOfPair(base, withPopulation)),
-		).toStrictEqual([
+		expect(projectChanges(reportOfPair(base, withPopulation))).toStrictEqual([
 			{
 				identity: "ix://agent-ix/assurance/population/all-artifacts",
 				family: "type",
@@ -4313,9 +4309,7 @@ describe("compatibility (FR-051)", () => {
 				disposition: "breaking",
 			},
 		]);
-		expect(
-			projectChanges(reportOfPair(withPopulation, base)),
-		).toStrictEqual([
+		expect(projectChanges(reportOfPair(withPopulation, base))).toStrictEqual([
 			{
 				identity: "ix://agent-ix/assurance/population/all-artifacts",
 				family: "type",
@@ -4341,9 +4335,7 @@ describe("compatibility (FR-051)", () => {
 				},
 			},
 		];
-		expect(
-			projectChanges(reportOfPair(base, withConstruct)),
-		).toStrictEqual([
+		expect(projectChanges(reportOfPair(base, withConstruct))).toStrictEqual([
 			{
 				identity: "ix://agent-ix/assurance/construct/entity",
 				family: "type",

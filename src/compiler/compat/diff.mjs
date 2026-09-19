@@ -812,8 +812,10 @@ function diffConstructs(previous, next, record) {
 		const changed = [
 			original.construct?.identity !== entry.construct?.identity && "identity",
 			original.construct?.shape !== entry.construct?.shape && "shape",
-			!same(original.construct?.members ?? {}, entry.construct?.members ?? {}) &&
-				"members",
+			!same(
+				original.construct?.members ?? {},
+				entry.construct?.members ?? {},
+			) && "members",
 			!same(original.construct?.rules ?? [], entry.construct?.rules ?? []) &&
 				"rules",
 			original.construct?.meaning !== entry.construct?.meaning && "meaning",

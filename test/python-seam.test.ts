@@ -310,7 +310,7 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 				"'OrderLifecycle.advance': {'modifies': ('ix://agent-ix/orders/field/SM-001-current',), 'creates': (), 'deletes': ()},",
 				// Traces: TC-1796; FR-141-AC-9. Only the inline items of a mixed list.
 				"'OrderLifecycle.advance': {'pre': (('quire', 'to <> current'),), 'post': (('quire', 'current = to'),)},",
-				"'OpenOrders': (('Order', 0, None),),",
+				"'OpenOrders': ('open', ('Order',)),",
 				"class OrderRepository(Protocol):",
 				"    def find_by_id(self, id: UUIDModel) -> Order | None: ...",
 				"    def save(self, order: Order) -> Order: ...",

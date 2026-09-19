@@ -150,11 +150,6 @@ class ConstructKind(Struct):
 type ContractItem1 = Annotated[str, Meta(min_length=1)]
 
 
-type FeaturePath = Annotated[
-    str, Meta(pattern='^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$')
-]
-
-
 class DefaultKind(Enum):
     none = 'none'
     semantic = 'semantic'
@@ -165,12 +160,6 @@ class DefaultKind(Enum):
 class Presence(Enum):
     required = 'required'
     optional = 'optional'
-
-
-class Frame(Struct):
-    creates: list[FeaturePath]
-    deletes: list[FeaturePath]
-    modifies: list[FeaturePath]
 
 
 type IdentityList = list[common_schema.SemanticIdentity]
@@ -196,9 +185,9 @@ class Returns(Struct):
     typeRef: common_schema.SemanticIdentity
 
 
-class Member(Struct):
-    extent: Multiplicity
-    typeRef: common_schema.SemanticIdentity
+class Extent(Enum):
+    closed = 'closed'
+    open = 'open'
 
 
 class Category(Enum):
@@ -359,6 +348,12 @@ class Field(Struct):
     unit: Annotated[str, Meta(min_length=1, pattern='^[!-~]+$')] | UnsetType = UNSET
 
 
+class Frame(Struct):
+    creates: IdentityList
+    deletes: IdentityList
+    modifies: IdentityList
+
+
 class InlineClause(Struct):
     language: Annotated[
         str,
@@ -373,8 +368,10 @@ class InlineClause(Struct):
 
 class Population(Struct):
     displayName: Annotated[str, Meta(min_length=1)]
+    extent: Extent
     identity: common_schema.SemanticIdentity
-    members: list[Member]
+    kind: ConstructKind
+    members: list[common_schema.SemanticIdentity]
     origin: common_schema.Origin
 
 
