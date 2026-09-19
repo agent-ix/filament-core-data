@@ -16,14 +16,14 @@
 			"semantic-ir.schema.json",
 			"target-contract.schema.json"
 		],
-		"inputDigest": "sha256:8fab4c1b586c29810e399b3fcd339e84de6526064248f0a983e37e8bda53fbe3",
+		"inputDigest": "sha256:dc1a413a032e5aa9a864af3044a97a9469188a54eb313705fc3936280e09cd9b",
 		"preparation": []
 	},
 	"profile": {
 		"id": "pydantic_v2_dataclass",
 		"digest": "sha256:70c15540cb34650f73491fefbc4f7518823a5a7f56733747e4b120d0aba1d7f7"
 	},
-	"toolchainFingerprint": "sha256:a70e009f65c4df19ee1f4556e4fb2bfc60223af49c60e186fba9a115a8a63841",
+	"toolchainFingerprint": "sha256:f53f217d4857bd80624e8e6010a7c704f34feea3a6c0bb8e8c807c5c32e37efb",
 	"generator": {
 		"distribution": "datamodel-code-generator",
 		"version": "0.76.0",
@@ -45,5 +45,5 @@
 		"RoundTrip": ["profile_schema", "representation_schema"]
 	},
 	"published": false,
-	"contentFingerprint": "sha256:a67c31cb4db104052d25d1d94813a2fe906153229b7e2292024285469952406a"
+	"contentFingerprint": "sha256:8b95b8c94c0b5f50eec6540d2e22cf466066588a57dc2c3a2125254bae9bdc9c"
 }

@@ -1858,7 +1858,7 @@
 						"typeRef": "ix://agent-ix/orders/type/EN-001"
 					},
 					"frame": {
-						"modifies": ["current"],
+						"modifies": ["ix://agent-ix/orders/field/SM-001-current"],
 						"creates": [],
 						"deletes": []
 					}
@@ -2263,14 +2263,12 @@
 		{
 			"identity": "ix://agent-ix/orders/population/open-orders",
 			"displayName": "OpenOrders",
-			"members": [
-				{
-					"typeRef": "ix://agent-ix/orders/type/FR-001",
-					"extent": {
-						"lower": 0
-					}
-				}
-			],
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "population"
+			},
+			"members": ["ix://agent-ix/orders/type/FR-001"],
+			"extent": "open",
 			"origin": {
 				"source": {
 					"path": "spec/functional/FR-001-order.md",
@@ -2411,6 +2409,22 @@
 				},
 				"rules": ["identity_field_required", "single_owner"],
 				"meaning": "quire.meaning.model.object-type/v1"
+			}
+		},
+		{
+			"kind": {
+				"module": "agent-ix/spec-objects-business",
+				"name": "population"
+			},
+			"moduleVersion": "0.4.0",
+			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
+			"construct": {
+				"identity": "none",
+				"shape": "namespace",
+				"members": {},
+				"references": {},
+				"rules": [],
+				"meaning": "quire.meaning.model.population/v1"
 			}
 		},
 		{

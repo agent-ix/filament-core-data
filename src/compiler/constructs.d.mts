@@ -129,7 +129,9 @@ export declare function operationContract(
 export declare function populationsOf(ir: unknown): {
 	identity: string;
 	displayName: string;
-	members: { typeRef: string; extent: Record<string, unknown> }[];
+	kind: { module: string; name: string };
+	members: string[];
+	extent: "closed" | "open";
 }[];
 export declare function inheritedNameCollisions(
 	ir: unknown,

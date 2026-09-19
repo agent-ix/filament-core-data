@@ -119,7 +119,7 @@ blocked as stated above.
 
 | Stakeholder Req | Trace to US/FR | Test/Validation | Coverage Status |
 |---|---|---|---|
-| StR-001 | US-001..US-010, US-012, US-013, US-015, FR-001..FR-053, FR-063..FR-080, FR-091..FR-106, FR-139, FR-141..FR-143 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944, TC-1200..1350, TC-1373..1378, TC-1552..1557, TC-1740..1761, TC-1786..1796 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch; TC-1374, TC-1375, TC-1552, TC-1554..1557 planned on issue #93 |
+| StR-001 | US-001..US-010, US-012, US-013, US-015, FR-001..FR-053, FR-063..FR-080, FR-091..FR-106, FR-139, FR-141..FR-143 | TC-033, TC-086, TC-129, TC-130..644, TC-745..944, TC-1200..1350, TC-1373..1378, TC-1552..1557, TC-1740..1761, TC-1786..1796, TC-1804 | ⚠️ TC-370, TC-382 blocked on issue #42; TC-745..844 in progress on the issue #22 branch; TC-1374, TC-1375, TC-1552, TC-1554..1557 planned on issue #93 |
 
 ### User Story Coverage
 
@@ -234,7 +234,7 @@ blocked as stated above.
 | FR-048 | FR-048-AC-1..11, FR-048-CON-1..4 | TC-477..TC-491, TC-613 | ✅ Complete |
 | FR-049 | FR-049-AC-1..14, FR-049-CON-1..4 | TC-492..TC-509, TC-605, TC-608, TC-609 | ✅ Complete |
 | FR-050 | FR-050-AC-1..13, FR-050-CON-1..4 | TC-510..TC-526, TC-600, TC-611, TC-617 | ✅ Complete |
-| FR-051 | FR-051-AC-1..6, FR-051-AC-11, FR-051-AC-15, FR-051-CON-1, FR-051-CON-2, FR-051-CON-4, FR-051-CON-5 | TC-527..TC-532, TC-537, TC-541..TC-546, TC-602 | ✅ Complete |
+| FR-051 | FR-051-AC-1..6, FR-051-AC-11, FR-051-AC-15..17, FR-051-CON-1, FR-051-CON-2, FR-051-CON-4, FR-051-CON-5 | TC-527..TC-532, TC-537, TC-541..TC-546, TC-602, TC-1804 | ✅ Complete |
 | FR-052 | FR-052-AC-1..16, FR-052-CON-1..4 | TC-547..TC-566 | ✅ Complete |
 | FR-053 | FR-053-AC-1..15, FR-053-CON-1..5 | TC-412..TC-431, TC-604 | ✅ Complete |
 | FR-063 | FR-063-AC-1..21, FR-063-CON-1..6 | TC-745..TC-754 | 🚧 In progress |
@@ -1668,7 +1668,8 @@ blocked as stated above.
 | TC-1740 | A `2.0.0` document carrying `supertypes`, `abstract`, `subsets`, `redefines`, `frame`, inline `pre` and `post` clauses, `populations` and a `quire` clause is accepted by the Rust, Node and Python readers | Unit | P0 | FR-141-AC-1 | ✅ passed |
 | TC-1741 | An unresolved supertype, a supertype of another kind and a generalization cycle raise `UNRESOLVED_CONSTRUCT_REF`, `CONSTRUCT_TARGET_KIND` and `SUPERTYPE_CYCLE` | Unit | P0 | FR-141-AC-2 | ✅ passed |
 | TC-1742 | An unresolved `subsets` entry raises `UNRESOLVED_FEATURE_REF` and a widening `redefines` raises `INVALID_REDEFINITION` | Unit | P0 | FR-141-AC-3 | ✅ passed |
-| TC-1743 | An unresolved frame path raises `UNRESOLVED_FRAME_PATH` and an unresolved population member raises `UNRESOLVED_TYPE_REF` | Unit | P0 | FR-141-AC-4 | ✅ passed |
+| TC-1743 | An unresolved `modifies`, `creates` or `deletes` entry each raise `UNRESOLVED_FRAME_PATH`, an unresolved population member raises `UNRESOLVED_TYPE_REF`, a `modifies` entry naming a relationship together with a `creates` entry naming a declared type both resolve, and a `modifies` entry naming a field of a type other than the operation's own or its supertypes also resolves, because resolution ranges over the whole document | Unit | P0 | FR-141-AC-4 | ✅ passed |
+| TC-1804 | A revision changing a type's `supertypes` (added or removed), `abstract`, a field's `subsets` or `redefines`, an operation's `frame`, a population's `kind`, `members` or `extent`, or a construct table entry's `identity`, `shape`, `members`, `rules`, `references`, `immutable` or `meaning` is classified through `diffSemanticContract`, each disposition matching the FR-051 table and each pinned by an exact `changes` projection | Unit | P0 | FR-051-AC-16, FR-051-AC-17 | ✅ passed |
 | TC-1745 | A `2.0.0` document with one construct of each of the ten kinds is accepted by the Rust, Node and Python readers | Unit | P0 | FR-142-AC-1 | ✅ passed |
 | TC-1746 | Each kind missing a required member, or carrying a member of another kind, is refused with `SCHEMA_VIOLATION` | Unit | P0 | FR-142-AC-2, FR-142-CON-1 | ✅ passed |
 | TC-1747 | Owner, aggregate member, persisted type and domain member of an excluded kind, or naming no type, raise their reader code at the member pointer; a `sourceElement` naming an operation of a declared type is admitted, the same identity named by `targetElement` is refused, and a `sourceElement` naming no such operation is refused | Unit | P0 | FR-142-AC-3 | ✅ passed |
@@ -1712,7 +1713,7 @@ blocked as stated above.
 | TC-1786 | The Rust, Node and Python readings of the core construct vocabulary each equal `construct-vocabulary.json` and the schema's `constructDeclaration`: identities, shapes, presences, member defaults, reference items, rule requirements and flag defaults, and the Rust and Node readings refuse an identity or shape whose required member presence is undeclared, and a flag that is not a boolean, at the same pointer | Unit | P0 | FR-142-AC-11, FR-142-AC-14 | ✅ passed |
 | TC-1787 | No business construct kind name appears as a string literal in `src/`, `crates/*/src` or `python_backend/` outside fixtures, goldens, generated code and tests, a name that is also a core shape term counting as that shape; a planted `kind.name === "entity"` fails the gate | Unit | P0 | FR-142-AC-7 | ✅ passed |
 | TC-1788 | Reading a construct declaration refuses an unknown identity, an unknown member, a rule whose member presence is undeclared, a reference to a forbidden member, a wildcard or repeated role, a reference on a non-reference member, a repeated rule, an unknown declaration member and a missing required member at their pointers, and reads a declaration without `references` and `rules` and with each flag at its default | Unit | P0 | FR-142-AC-12, FR-142-AC-14 | ✅ passed |
-| TC-1789 | A kind with no `constructs` entry, an unused entry, a duplicate entry, a `2.0.0` document without `constructs`, a wildcard role and an undeclared rule presence each refuse with `SCHEMA_VIOLATION`; widening admitted roles admits a reference its former roles refused, and removing the role from the target type refuses it; a `sourceElement` resolved through FR-152's operation fallback is checked by the same role admission, against the role of the operation's owning type | Unit | P0 | FR-142-AC-9 | ✅ passed |
+| TC-1789 | A type's or a population's kind with no `constructs` entry, an unused entry, a duplicate entry, a `2.0.0` document without `constructs`, a wildcard role and an undeclared rule presence each refuse with `SCHEMA_VIOLATION`; widening admitted roles admits a reference its former roles refused, and removing the role from the target type refuses it; a `sourceElement` resolved through FR-152's operation fallback is checked by the same role admission, against the role of the operation's owning type | Unit | P0 | FR-142-AC-9 | ✅ passed |
 | TC-1790 | The `business` fixture lifts with one `constructs` entry per used kind carrying module version `0.7.0`, the `sha256:` manifest digest and the manifest declaration with roles qualified `business:<role>`, read through the one manifest seam | Integration | P0 | FR-143-AC-7 | ✅ passed |
 | TC-1791 | A systems `port` kind carrying `owner`, `direction`, `interfaceType` and `multiplicity`, and a `connection` carrying `flowDirection` and two ends, read clean in the Rust and Node readers and render by shape and identity; a `direction` outside `in`/`out`/`inout`, a missing required member and an owner without the admitted role refuse | Unit | P0 | FR-142-AC-10 | ✅ passed |
 | TC-1792 | A manifest declaration missing `meaning`, naming a member or rule outside the vocabulary, selecting a rule whose member presence it does not declare, admitting `*`, or referencing an undeclared role yields one blocking diagnostic naming the module and object type, and no artifact of that type lowers | Unit | P0 | FR-143-AC-8 | ✅ passed |
@@ -2647,13 +2648,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 128 | 81 | 0 | 47 | 100% mapped (128/128) |
-| Unit | 600 | 495 | 0 | 105 | 100% mapped (600/600) |
+| Unit | 601 | 496 | 0 | 105 | 100% mapped (601/601) |
 | Integration | 161 | 100 | 0 | 61 | 100% mapped (161/161) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 65 | 40 | 0 | 25 | 100% mapped (65/65) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1383** | **1055** | **0** | **328** | **100% mapped (1383/1383)** |
+| **Total** | **1384** | **1056** | **0** | **328** | **100% mapped (1384/1384)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

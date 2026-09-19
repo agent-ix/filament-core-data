@@ -290,26 +290,90 @@ fn tc_1742_unresolved_subsets_and_widening_redefines_raise_their_codes() {
 
 #[trace("TC-1743", "FR-141-AC-4")]
 #[test]
-fn tc_1743_unresolved_frame_path_and_population_member_raise_their_codes() {
+fn tc_1743_unresolved_frame_reference_and_population_member_raise_their_codes() {
     let sm = position(&positive(), &type_ref("SM-001"));
     let mut frame = positive();
-    type_mut(&mut frame, "SM-001")["operations"][0]["frame"]["modifies"] =
-        json!(["current", "nowhere.deep"]);
+    type_mut(&mut frame, "SM-001")["operations"][0]["frame"]["modifies"] = json!([
+        "ix://agent-ix/orders/field/SM-001-current",
+        "ix://agent-ix/orders/field/nowhere"
+    ]);
     assert_rust(
-        "unresolved frame path",
+        "unresolved frame reference in modifies",
         &frame,
         &[format!(
             "UNRESOLVED_FRAME_PATH at /ir/types/{sm}/operations/0/frame/modifies/1"
         )],
     );
 
+    let mut frame_creates = positive();
+    type_mut(&mut frame_creates, "SM-001")["operations"][0]["frame"]["creates"] =
+        json!(["ix://agent-ix/orders/type/nowhere"]);
+    assert_rust(
+        "unresolved frame reference in creates",
+        &frame_creates,
+        &[format!(
+            "UNRESOLVED_FRAME_PATH at /ir/types/{sm}/operations/0/frame/creates/0"
+        )],
+    );
+
+    let mut frame_deletes = positive();
+    type_mut(&mut frame_deletes, "SM-001")["operations"][0]["frame"]["deletes"] =
+        json!(["ix://agent-ix/orders/type/nowhere"]);
+    assert_rust(
+        "unresolved frame reference in deletes",
+        &frame_deletes,
+        &[format!(
+            "UNRESOLVED_FRAME_PATH at /ir/types/{sm}/operations/0/frame/deletes/0"
+        )],
+    );
+
     let mut population = positive();
-    population["populations"][0]["members"][0]["typeRef"] = json!(type_ref("FR-999"));
+    population["populations"][0]["members"][0] = json!(type_ref("FR-999"));
     assert_rust(
         "unresolved population member",
         &population,
-        &["UNRESOLVED_TYPE_REF at /ir/populations/0/members/0/typeRef".to_string()],
+        &["UNRESOLVED_TYPE_REF at /ir/populations/0/members/0".to_string()],
     );
+}
+
+/// A frame `modifies` entry naming a declared relationship, and a `creates`
+/// entry naming a declared type, are accepted: an operation frame is a set of
+/// declaration references, never a dotted access path (ADR-002).
+#[trace("TC-1743", "FR-141-AC-4")]
+#[test]
+fn tc_1743_frame_admits_a_relationship_modifies_entry_and_a_declared_creates_entry() {
+    let mut valid = positive();
+    type_mut(&mut valid, "SM-001")["operations"][0]["frame"] = json!({
+        "modifies": ["ix://agent-ix/orders/relationship/SM-001-references-EN-001"],
+        "creates": ["ix://agent-ix/orders/type/EN-001"],
+        "deletes": [],
+    });
+    assert_rust(
+        "frame relationship and type references resolve",
+        &valid,
+        &[],
+    );
+}
+
+/// A `modifies` entry naming a field of a type other than the operation's own,
+/// and not one of its supertypes, resolves: QSpec FR-340 admits any declared
+/// field or relationship node in the package as a `modifies` target, and
+/// FR-013 has no reachability limit, so resolution ranges over the whole
+/// document, never only the owning type or its supertypes (fcd#193 review).
+/// `SM-001` and `FR-001` (the order entity) share no supertype relation, so
+/// `SM-001`'s operation naming `FR-001`'s `status` field pins the cross-type
+/// case, in the shape of the review's own example (an order operation naming
+/// a customer's field).
+#[trace("TC-1743", "FR-141-AC-4")]
+#[test]
+fn tc_1743_frame_modifies_admits_a_field_of_an_unrelated_type() {
+    let mut cross = positive();
+    type_mut(&mut cross, "SM-001")["operations"][0]["frame"] = json!({
+        "modifies": [field_ref("FR-001", "status")],
+        "creates": [],
+        "deletes": [],
+    });
+    assert_rust("frame modifies admits another type's field", &cross, &[]);
 }
 
 // fcd#179 deleted contracts `1.0.0` and `1.1.0`; `2.0.0` is the only one. This
@@ -738,6 +802,28 @@ fn tc_1789_the_constructs_table_is_checked_and_references_are_admitted_by_role()
         &missing,
         &format!("/ir/types/{}/kind", at("EV-001")),
     );
+    // A population's kind resolves against the same table (QSpec FR-154 row
+    // 2/AC-7, FR-208): removing the entry it names refuses at the
+    // population's own `kind` pointer, and the entry it does name counts as
+    // used, not only a type's.
+    let mut population_missing = positive();
+    let population_kind = constructs("population");
+    population_missing["constructs"]
+        .as_array_mut()
+        .expect("constructs")
+        .remove(population_kind);
+    assert_rust_schema_at(
+        "a population kind naming no entry",
+        &population_missing,
+        "/ir/populations/0/kind",
+    );
+    assert!(
+        node_codes(&population_missing)
+            .iter()
+            .any(|c| c == "INVALID_IR"),
+        "a population kind naming no entry: node reader"
+    );
+
     let mut unused = positive();
     let mut extra = unused["constructs"][event].clone();
     extra["kind"]["name"] = json!("ledger");

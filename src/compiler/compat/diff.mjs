@@ -272,6 +272,20 @@ export function diffSemanticContract(request) {
 			}
 		}
 
+		if (!same(previous.supertypes ?? [], next.supertypes ?? [])) {
+			record(identity, "generalization", "breaking", "the supertypes changed");
+		}
+		if ((previous.abstract ?? false) !== (next.abstract ?? false)) {
+			record(
+				identity,
+				"abstract",
+				next.abstract === true ? "breaking" : "additive",
+				next.abstract === true
+					? "the type became abstract, disallowing the direct instances it previously allowed"
+					: "the type became concrete, allowing direct instances it previously disallowed",
+			);
+		}
+
 		if (previous.unknownPolicy !== next.unknownPolicy) {
 			const tightened =
 				previous.unknownPolicy === "preserve" &&
@@ -304,6 +318,9 @@ export function diffSemanticContract(request) {
 			);
 		}
 	}
+
+	diffPopulations(before, after, record);
+	diffConstructs(before, after, record);
 
 	// ---- families that come from declared inputs -----------------------------
 	const requiredGates = [];
@@ -574,6 +591,22 @@ function diffFields(previous, next, record, consumerPolicies, evidence) {
 				`presence changed from ${original.presence} to ${field.presence}`,
 			);
 		}
+		if (!same(original.subsets ?? [], field.subsets ?? [])) {
+			record(
+				identity,
+				"subsets",
+				"breaking",
+				"the subsetted supertype fields changed",
+			);
+		}
+		if ((original.redefines ?? null) !== (field.redefines ?? null)) {
+			record(
+				identity,
+				"redefines",
+				"breaking",
+				`the redefined field changed from ${original.redefines ?? "none"} to ${field.redefines ?? "none"}`,
+			);
+		}
 	}
 }
 
@@ -686,6 +719,120 @@ function diffNodes(previous, next, record) {
 			if (same(original, node)) continue;
 			record(identity, observed, "breaking", `a ${observed} changed`);
 		}
+	}
+}
+
+/**
+ * `populations` is a document-level member (FR-141), not a per-type one: each
+ * entry is a named instance extent, keyed by its own `identity`, bound by its
+ * own `kind` ({module, name}, QSpec FR-154 row 2/AC-7, FR-208). `members` is
+ * a set of type-ref identities and `extent` (`closed`/`open`) is one value
+ * for the whole population, never a per-member multiplicity (QSpec
+ * FR-153/AD-006) — a change to any of `kind`, `members` or `extent` is
+ * `breaking`, the same as a change to `meaning` is for a construct table
+ * entry (fcd#193/#196 review): none of the three is silently dropped as a
+ * `patch` because the others happened to match.
+ */
+function diffPopulations(previous, next, record) {
+	const before = byIdentity(previous?.populations);
+	const after = byIdentity(next?.populations);
+	for (const [identity] of before) {
+		if (after.has(identity)) continue;
+		record(identity, "populations", "breaking", "a population was removed");
+	}
+	for (const [identity, population] of after) {
+		const original = before.get(identity);
+		if (!original) {
+			record(identity, "populations", "additive", "a population was added");
+			continue;
+		}
+		const changed = [
+			!same(original.kind ?? null, population.kind ?? null) && "kind",
+			!same(original.members ?? [], population.members ?? []) && "members",
+			original.extent !== population.extent && "extent",
+		].filter(Boolean);
+		if (changed.length === 0) continue;
+		record(
+			identity,
+			"populations",
+			"breaking",
+			`a population's ${changed.join(", ")} changed`,
+		);
+	}
+}
+
+/**
+ * A construct table entry (FR-142) carries no `identity` of its own — its
+ * key is `kind` ({module, name}) — so the change identity is synthesised
+ * from it, minted under the module's own package (`kind.module`), the
+ * document's own namespace for the construct it declares, never
+ * `filament-core-data`'s: FCD is the reader, not the owner of what it reads.
+ * `meaning` is opaque to FCD (FR-208) and is compared only for equality, but
+ * `identity`, `shape`, `members`, `rules`, `references` and `immutable` are
+ * shapes FCD itself decides (FR-142): a change to any of these six, like a
+ * change to `meaning`, is a `breaking` change to the construct table entry —
+ * none of the seven members is compared only via a fingerprint, and none is
+ * silently dropped as a `patch` because the others happened to match.
+ */
+function constructKey(entry) {
+	return `${entry?.kind?.module}/${entry?.kind?.name}`;
+}
+
+function constructIdentity(entry) {
+	return `ix://${entry?.kind?.module}/construct/${entry?.kind?.name}`;
+}
+
+function diffConstructs(previous, next, record) {
+	const before = new Map(
+		(previous?.constructs ?? []).map((entry) => [constructKey(entry), entry]),
+	);
+	const after = new Map(
+		(next?.constructs ?? []).map((entry) => [constructKey(entry), entry]),
+	);
+	for (const [key, entry] of before) {
+		if (after.has(key)) continue;
+		record(
+			constructIdentity(entry),
+			"construct",
+			"breaking",
+			`the construct ${key} was removed`,
+		);
+	}
+	for (const [key, entry] of after) {
+		const original = before.get(key);
+		if (!original) {
+			record(
+				constructIdentity(entry),
+				"construct",
+				"additive",
+				`the construct ${key} was added`,
+			);
+			continue;
+		}
+		const changed = [
+			original.construct?.identity !== entry.construct?.identity && "identity",
+			original.construct?.shape !== entry.construct?.shape && "shape",
+			!same(
+				original.construct?.members ?? {},
+				entry.construct?.members ?? {},
+			) && "members",
+			!same(original.construct?.rules ?? [], entry.construct?.rules ?? []) &&
+				"rules",
+			!same(
+				original.construct?.references ?? {},
+				entry.construct?.references ?? {},
+			) && "references",
+			(original.construct?.immutable ?? false) !==
+				(entry.construct?.immutable ?? false) && "immutable",
+			original.construct?.meaning !== entry.construct?.meaning && "meaning",
+		].filter(Boolean);
+		if (changed.length === 0) continue;
+		record(
+			constructIdentity(entry),
+			"construct",
+			"breaking",
+			`the construct ${key}'s ${changed.join(", ")} changed`,
+		);
 	}
 }
 

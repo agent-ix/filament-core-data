@@ -6,13 +6,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 163,
-			"validatingTypes": 104,
-			"nonValidatingDeclarations": 59,
-			"exercisedTypes": 65,
+			"declaredTypes": 162,
+			"validatingTypes": 102,
+			"nonValidatingDeclarations": 60,
+			"exercisedTypes": 63,
 			"unexercisedValidatingTypes": 39,
-			"constraintsExercised": 188,
-			"typesRejectingAnEmptyOrUndeclaredValue": 88,
+			"constraintsExercised": 189,
+			"typesRejectingAnEmptyOrUndeclaredValue": 86,
 			"typesAcceptingAnything": [
 				"common_schema.FilamentSemanticContractCommonTypesV1",
 				"compatibility_report_schema.AffectedConsumer",
@@ -580,14 +580,6 @@
 				},
 				{
 					"module": "semantic_ir_schema",
-					"type": "FeaturePath",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
-				},
-				{
-					"module": "semantic_ir_schema",
 					"type": "FieldModel",
 					"exercised": false,
 					"acceptsAConformingValue": false,
@@ -625,14 +617,6 @@
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 1
-				},
-				{
-					"module": "semantic_ir_schema",
-					"type": "Member",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
 				},
 				{
 					"module": "semantic_ir_schema",
@@ -712,7 +696,7 @@
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 1
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
@@ -841,13 +825,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 166,
-			"validatingTypes": 76,
+			"declaredTypes": 165,
+			"validatingTypes": 75,
 			"nonValidatingDeclarations": 90,
-			"exercisedTypes": 55,
+			"exercisedTypes": 54,
 			"unexercisedValidatingTypes": 21,
-			"constraintsExercised": 183,
-			"typesRejectingAnEmptyOrUndeclaredValue": 76,
+			"constraintsExercised": 184,
+			"typesRejectingAnEmptyOrUndeclaredValue": 75,
 			"typesAcceptingAnything": [],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
 			"lost": ["constraints-array-unique"],
@@ -1278,14 +1262,6 @@
 				},
 				{
 					"module": "semantic_ir_schema",
-					"type": "Member",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
-				},
-				{
-					"module": "semantic_ir_schema",
 					"type": "Multiplicity",
 					"exercised": true,
 					"acceptsAConformingValue": true,
@@ -1362,7 +1338,7 @@
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 1
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",
@@ -1505,13 +1481,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 166,
-			"validatingTypes": 76,
+			"declaredTypes": 165,
+			"validatingTypes": 75,
 			"nonValidatingDeclarations": 90,
-			"exercisedTypes": 51,
+			"exercisedTypes": 50,
 			"unexercisedValidatingTypes": 25,
-			"constraintsExercised": 183,
-			"typesRejectingAnEmptyOrUndeclaredValue": 76,
+			"constraintsExercised": 184,
+			"typesRejectingAnEmptyOrUndeclaredValue": 75,
 			"typesAcceptingAnything": [],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
 			"lost": [
@@ -1949,14 +1925,6 @@
 				},
 				{
 					"module": "semantic_ir_schema",
-					"type": "Member",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
-				},
-				{
-					"module": "semantic_ir_schema",
 					"type": "Multiplicity",
 					"exercised": true,
 					"acceptsAConformingValue": true,
@@ -2033,7 +2001,7 @@
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 1
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "semantic_ir_schema",

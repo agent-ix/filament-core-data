@@ -497,24 +497,22 @@ def render(
     )
     body += _mapping(
         "POPULATIONS",
-        "dict[str, tuple[tuple[str, int, int | None], ...]]",
+        "dict[str, tuple[str, tuple[str, ...]]]",
         [
             (
                 population["displayName"],
                 _literal(
-                    tuple(
-                        (
-                            classes.name(member["typeRef"]),
-                            int(member["extent"].get("lower", 0)),
-                            member["extent"].get("upper"),
-                        )
-                        for member in population["members"]
+                    (
+                        population["extent"],
+                        tuple(
+                            classes.name(member) for member in population["members"]
+                        ),
                     )
                 ),
             )
             for population in populations
         ],
-        "Each named population's member types as (type, lower, upper extent).",
+        "Each named population's extent (closed or open) and its member types.",
     )
 
     for document in constructs.values():

@@ -376,8 +376,8 @@
 			"provenance": "minted",
 			"decidedBy": "cross-field",
 			"sources": ["docs/semantic-data-system/contracts-v1.md"],
-			"rule": "An operation frame path starting at neither a field of the owning type nor a parameter.",
-			"citation": "each starting at a field or parameter",
+			"rule": "A frame `modifies` entry naming no field or relationship the document declares, or a `creates`/`deletes` entry naming no type the document declares. Resolution ranges over the whole document, never only the owning type or its supertypes.",
+			"citation": "Declaration references the operation `modifies` (a field or relationship), `creates` or `deletes` (an object type or process); never an access path",
 			"exercisedBy": "test:TC-1743"
 		},
 		{

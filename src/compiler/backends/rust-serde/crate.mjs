@@ -2773,13 +2773,14 @@ pub struct OperationContractMeta {
     pub post: &'static [InlineClauseMeta],
 }
 
-/// One member type of a population and its extent.
+/// A population's binding kind ({module, name}; QSpec FR-154 row 2/AC-7,
+/// FR-208), the key QSpec intake binds a population by.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct PopulationMemberMeta {
-    /// The member type's semantic identity.
-    pub type_ref: &'static str,
-    /// The extent, as canonical JSON text.
-    pub extent: &'static str,
+pub struct PopulationKindMeta {
+    /// The owning module's package identity.
+    pub module: &'static str,
+    /// The kind name within the module.
+    pub name: &'static str,
 }
 
 /// A population the contract declared.
@@ -2789,8 +2790,13 @@ pub struct PopulationMeta {
     pub identity: &'static str,
     /// The population's display name.
     pub display_name: &'static str,
-    /// The member types and their extents.
-    pub members: &'static [PopulationMemberMeta],
+    /// The population's binding kind.
+    pub kind: PopulationKindMeta,
+    /// The member types' semantic identities.
+    pub members: &'static [&'static str],
+    /// The extent, \`closed\` or \`open\`: one value for the whole population
+    /// (QSpec FR-153/AD-006), never a per-member multiplicity.
+    pub extent: &'static str,
 }`;
 
 function constructPrelude(model) {
@@ -2812,22 +2818,17 @@ function constructPrelude(model) {
 							value: atom(rustString(population.displayName)),
 						},
 						{
-							name: "members",
-							value: slice(
-								population.members.map((member) =>
-									struct(`${META}::PopulationMemberMeta`, [
-										{
-											name: "type_ref",
-											value: atom(rustString(member.typeRef)),
-										},
-										{
-											name: "extent",
-											value: atom(rustString(canonicalJson(member.extent))),
-										},
-									]),
-								),
-							),
+							name: "kind",
+							value: struct(`${META}::PopulationKindMeta`, [
+								{
+									name: "module",
+									value: atom(rustString(population.kind.module)),
+								},
+								{ name: "name", value: atom(rustString(population.kind.name)) },
+							]),
 						},
+						{ name: "members", value: strings(population.members) },
+						{ name: "extent", value: atom(rustString(population.extent)) },
 					]),
 				),
 			),

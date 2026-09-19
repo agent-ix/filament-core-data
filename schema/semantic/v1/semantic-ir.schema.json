@@ -1014,10 +1014,6 @@
 			},
 			"uniqueItems": true
 		},
-		"featurePath": {
-			"type": "string",
-			"pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$"
-		},
 		"state": {
 			"type": "object",
 			"required": ["identity", "name", "origin"],
@@ -1119,25 +1115,13 @@
 			"required": ["modifies", "creates", "deletes"],
 			"properties": {
 				"modifies": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/featurePath"
-					},
-					"uniqueItems": true
+					"$ref": "#/$defs/identityList"
 				},
 				"creates": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/featurePath"
-					},
-					"uniqueItems": true
+					"$ref": "#/$defs/identityList"
 				},
 				"deletes": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/featurePath"
-					},
-					"uniqueItems": true
+					"$ref": "#/$defs/identityList"
 				}
 			},
 			"additionalProperties": false
@@ -1175,7 +1159,14 @@
 		},
 		"population": {
 			"type": "object",
-			"required": ["identity", "displayName", "members", "origin"],
+			"required": [
+				"identity",
+				"displayName",
+				"kind",
+				"members",
+				"extent",
+				"origin"
+			],
 			"properties": {
 				"identity": {
 					"$ref": "common.schema.json#/$defs/semanticIdentity"
@@ -1184,21 +1175,18 @@
 					"type": "string",
 					"minLength": 1
 				},
+				"kind": {
+					"$ref": "#/$defs/constructKind"
+				},
 				"members": {
 					"type": "array",
 					"items": {
-						"type": "object",
-						"required": ["typeRef", "extent"],
-						"properties": {
-							"typeRef": {
-								"$ref": "common.schema.json#/$defs/semanticIdentity"
-							},
-							"extent": {
-								"$ref": "#/$defs/multiplicity"
-							}
-						},
-						"additionalProperties": false
-					}
+						"$ref": "common.schema.json#/$defs/semanticIdentity"
+					},
+					"uniqueItems": true
+				},
+				"extent": {
+					"enum": ["closed", "open"]
 				},
 				"origin": {
 					"$ref": "common.schema.json#/$defs/origin"
