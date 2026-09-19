@@ -854,7 +854,7 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			['@unit("a b")', "unit"],
 			['@defaultKind("guess")', "defaultKind"],
 			[
-				'@relationship("has", "invented", "ix://agent-ix/x/type/Y")',
+				'@relationship("has", "invented", "ix://agent-ix/x/Y")',
 				"relationship",
 			],
 			['@clause("shouting", "id", "text")', "clause"],
@@ -930,25 +930,25 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 	}, 120000);
 
 	/** Traces: TC-417, TC-427; FR-053-AC-6, FR-053-CON-1. */
-	it("mints the identities FR-034 mints, from one shared table", () => {
-		// FR-034's rules, rooted at the package identity. The expectations are
+	it("mints the identities FR-095 mints, from one shared table", () => {
+		// FR-095's rules, rooted at the package identity. The expectations are
 		// written from the requirement text, and the implementation is asked to
 		// agree with them rather than the other way round.
 		const pkg = "agent-ix/assurance";
 		expect(mintIdentity(pkg, "type", ["Artifact"])).toBe(
-			"ix://agent-ix/assurance/type/Artifact",
+			"ix://agent-ix/assurance/Artifact",
 		);
 		expect(mintIdentity(pkg, "field", ["Artifact", "id"])).toBe(
-			"ix://agent-ix/assurance/field/Artifact-id",
+			"ix://agent-ix/assurance/Artifact/id",
 		);
 		expect(mintIdentity(pkg, "field", ["Artifact", "archive", "reason"])).toBe(
-			"ix://agent-ix/assurance/field/Artifact-archive-reason",
+			"ix://agent-ix/assurance/Artifact/archive/reason",
 		);
 		expect(
 			mintIdentity(pkg, "relationship", ["Artifact", "belongs_to", "Project"]),
 		).toBe("ix://agent-ix/assurance/relationship/Artifact-belongs-to-Project");
 		expect(mintIdentity(pkg, "operation", ["Artifact", "archive"])).toBe(
-			"ix://agent-ix/assurance/operation/Artifact-archive",
+			"ix://agent-ix/assurance/Artifact/archive",
 		);
 		expect(mintIdentity(pkg, "clause", ["Artifact", "not_archived"])).toBe(
 			"ix://agent-ix/assurance/clause/Artifact-not-archived",
@@ -957,14 +957,19 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			"ix://agent-ix/assurance/constraint/Text-minLength",
 		);
 		expect(constraintAliasIdentity(pkg, "Artifact", "code")).toBe(
-			"ix://agent-ix/assurance/type/ArtifactCode",
+			"ix://agent-ix/assurance/ArtifactCode",
 		);
-		// Every identity the fixture emits matches one of those forms.
+		// A type definition mints no slot segment of its own: its identity is
+		// the package identity plus one flat name, nothing nested under it.
 		const identities = (compiled.ir as never as { types: Json[] }).types.map(
 			(type) => String(type.identity),
 		);
 		for (const identity of identities) {
-			expect(identity.startsWith(`ix://${pkg}/type/`), identity).toBe(true);
+			const prefix = `ix://${pkg}/`;
+			expect(identity.startsWith(prefix), identity).toBe(true);
+			expect(identity.slice(prefix.length).includes("/"), identity).toBe(
+				false,
+			);
 		}
 	});
 
@@ -1003,15 +1008,15 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 	it("mints an alias for a constrained property and retargets the field to it", () => {
 		const types = (compiled.ir as never as { types: Json[] }).types;
 		const alias = types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/ArtifactCode",
+			(type) => type.identity === "ix://agent-ix/assurance/ArtifactCode",
 		);
 		expect(alias?.kind).toBe("alias");
-		expect(alias?.target).toBe("ix://agent-ix/assurance/type/Text");
+		expect(alias?.target).toBe("ix://agent-ix/assurance/Text");
 		const constraint = (alias?.constraints as Json[])[0];
 		expect(constraint.keyword).toBe("minLength");
 		expect(constraint.appliesTo).toBe(alias?.identity);
 		const artifact = types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		);
 		const field = (artifact?.fields as Json[]).find(
 			(entry) => entry.name === "code",
@@ -1090,7 +1095,7 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 				"using AgentIx.Semantic.Decorators;",
 				"namespace AgentIx.Semantic;",
 				"scalar Text extends string;",
-				'@relationship("has", "structural", "ix://agent-ix/probe/type/Text")',
+				'@relationship("has", "structural", "ix://agent-ix/probe/Text")',
 				"model TagList is Array<Text>;",
 			].join("\n"),
 		);
@@ -1132,7 +1137,7 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 	/** Traces: TC-423; FR-053-AC-12. */
 	it("lowers relationships, operations, and clauses with the FR-034 defaults", () => {
 		const artifact = (compiled.ir as never as { types: Json[] }).types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		);
 		const relationships = artifact?.relationships as Json[];
 		expect(relationships).toHaveLength(2);
@@ -1156,7 +1161,7 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 	/** Traces: TC-424; FR-053-AC-13. */
 	it("lowers each of the four semantic-core extensions", async () => {
 		const artifact = (compiled.ir as never as { types: Json[] }).types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		);
 		const extensionsOf = (name: string) =>
 			(
@@ -1171,7 +1176,7 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 		);
 		expect(extensionsOf("id")).toContain("ix://agent-ix/semantic-core/ext/doc");
 		const kernel = (compiled.ir as never as { types: Json[] }).types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Integer",
+			(type) => type.identity === "ix://agent-ix/assurance/Integer",
 		);
 		expect((kernel?.extensions as Json[])[0].identity).toBe(
 			"ix://agent-ix/semantic-core/ext/kernel-scalar",
@@ -1280,7 +1285,7 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 describe("TypeSpec structural lowering (FR-046)", () => {
 	const typeOf = (identity: string): Json =>
 		(compiled.ir as never as { types: Json[] }).types.find(
-			(type) => type.identity === `ix://agent-ix/assurance/type/${identity}`,
+			(type) => type.identity === `ix://agent-ix/assurance/${identity}`,
 		) as Json;
 
 	const fieldOf = (typeName: string, fieldName: string): Json =>
@@ -1300,17 +1305,17 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 	/** Traces: TC-433; FR-046-AC-2. */
 	it("classifies every row of the structural-kind table, first match wins", () => {
 		expect(typeOf("ActorRef").kind).toBe("reference");
-		expect(typeOf("ActorRef").target).toBe("ix://agent-ix/core/type/Actor");
+		expect(typeOf("ActorRef").target).toBe("ix://agent-ix/core/Actor");
 		expect(typeOf("ArtifactId").kind).toBe("alias");
 		expect(typeOf("ArtifactId").target).toBe(
-			"ix://agent-ix/assurance/type/Text",
+			"ix://agent-ix/assurance/Text",
 		);
 		expect(typeOf("Text").kind).toBe("scalar");
 		expect(typeOf("TagList").kind).toBe("sequence");
-		expect(typeOf("TagList").items).toBe("ix://agent-ix/assurance/type/Text");
+		expect(typeOf("TagList").items).toBe("ix://agent-ix/assurance/Text");
 		expect(typeOf("Attributes").kind).toBe("map");
 		expect(typeOf("Attributes").values).toBe(
-			"ix://agent-ix/assurance/type/Text",
+			"ix://agent-ix/assurance/Text",
 		);
 		expect(typeOf("Artifact").kind).toBe("record");
 		expect(typeOf("Status").kind).toBe("enum");
@@ -1388,7 +1393,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(fieldOf("Artifact", "note").nullable).toBe(true);
 		expect(fieldOf("Envelope", "note").nullable).toBe(false);
 		expect(fieldOf("Envelope", "note").typeRef).toBe(
-			"ix://agent-ix/assurance/type/NullableText",
+			"ix://agent-ix/assurance/NullableText",
 		);
 	});
 
@@ -1575,14 +1580,14 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 			types: Json[];
 		};
 		const artifact = document.types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
 		(artifact.relationships as Json[])[0].target =
-			"ix://agent-ix/core/type/Actor";
+			"ix://agent-ix/core/Actor";
 		expect(
 			codesOf(
 				readContractIr(document, {
-					importedExports: ["ix://agent-ix/core/type/Actor"],
+					importedExports: ["ix://agent-ix/core/Actor"],
 				}) as never,
 			),
 		).toEqual([]);
@@ -1606,7 +1611,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		) as Json;
 		expect([target.kind, target.scalar]).toEqual(["scalar", "any"]);
 		// One identity with the spec bundles, which name the same scalar JsonObject.
-		expect(String(target.identity).endsWith("/type/JsonObject")).toBe(true);
+		expect(String(target.identity).endsWith("/JsonObject")).toBe(true);
 		expect(
 			types.filter(
 				(type) =>
@@ -2276,7 +2281,7 @@ describe("package graph resolution (FR-047)", () => {
 			contractVersion: "2.0.0",
 			types: [
 				{
-					identity: "ix://a/b/type/W",
+					identity: "ix://a/b/W",
 					kind: "record",
 					fields: [],
 					clauses: Array.from({ length: 12 }, (_, index) => ({
@@ -2867,7 +2872,7 @@ describe("the diagnostic registry (FR-049)", () => {
 		};
 		document.contractVersion = "2.0.0";
 		const artifact = document.types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
 		const field = (artifact.fields as Json[])[0];
 		field.multiplicity = { lower: 1, upper: 1, ordered: true };
@@ -3154,7 +3159,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		};
 		document.contractVersion = "2.0.0";
 		const artifact = document.types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
 		const field = (artifact.fields as Json[])[0];
 		delete field.presence;
@@ -3164,7 +3169,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		};
 		const restored = (
 			normalized.types.find(
-				(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+				(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 			) as Json
 		).fields as Json[];
 		// multiplicity and presence are schema-required and independently
@@ -3181,8 +3186,8 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			contractVersion: "2.0.0",
 			types: [
 				{
-					identity: "ix://a/b/type/T",
-					fields: [{ identity: "ix://a/b/field/T-f", presence: "optional" }],
+					identity: "ix://a/b/T",
+					fields: [{ identity: "ix://a/b/T/f", presence: "optional" }],
 				},
 			],
 		};
@@ -3235,7 +3240,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 				contractVersion: "2.0.0",
 				types: [
 					{
-						identity: "ix://a/b/type/T",
+						identity: "ix://a/b/T",
 						kind: "record",
 						fields: [field],
 					},
@@ -3284,7 +3289,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			),
 		) as never as { types: Json[] };
 		const machine = document.types.find((type) =>
-			String(type.identity).endsWith("/type/SM-001"),
+			String(type.identity).endsWith("/SM-001"),
 		) as Json;
 		const operation = (machine.operations as Json[])[0];
 		expect([...note(readContractIr(document as never))]).toEqual([]);
@@ -3680,7 +3685,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			types: Json[];
 		};
 		const artifact = semantic.types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
 		(artifact.fields as Json[])[0].nullable = true;
 		expect(fingerprintIr(semantic)).not.toBe(base);
@@ -3705,14 +3710,14 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			contractVersion: "2.0.0",
 			types: [
 				{
-					identity: "ix://a/b/type/X",
+					identity: "ix://a/b/X",
 					kind: "alias",
-					target: "ix://a/b/type/Y",
+					target: "ix://a/b/Y",
 				},
 				{
-					identity: "ix://a/b/type/Y",
+					identity: "ix://a/b/Y",
 					kind: "alias",
-					target: "ix://a/b/type/X",
+					target: "ix://a/b/X",
 				},
 			],
 		};
@@ -3722,13 +3727,13 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			contractVersion: "2.0.0",
 			types: [
 				{
-					identity: "ix://a/b/type/A",
+					identity: "ix://a/b/A",
 					kind: "record",
 					fields: [],
 					relationships: [
 						{
 							identity: "ix://a/b/relationship/A-has-B",
-							target: "ix://a/b/type/B",
+							target: "ix://a/b/B",
 							composite: true,
 							category: "structural",
 							multiplicity: { lower: 0, upper: 1 },
@@ -3736,13 +3741,13 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 					],
 				},
 				{
-					identity: "ix://a/b/type/B",
+					identity: "ix://a/b/B",
 					kind: "record",
 					fields: [],
 					relationships: [
 						{
 							identity: "ix://a/b/relationship/B-has-A",
-							target: "ix://a/b/type/A",
+							target: "ix://a/b/A",
 							composite: true,
 							category: "structural",
 							multiplicity: { lower: 0, upper: 1 },
@@ -3758,7 +3763,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		const many = {
 			contractVersion: "2.0.0",
 			types: Array.from({ length: 20 }, (_, index) => ({
-				identity: `ix://a/b/type/T${index}`,
+				identity: `ix://a/b/T${index}`,
 				kind: "record",
 				fields: [],
 			})),
@@ -3773,12 +3778,12 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			contractVersion: "2.0.0",
 			types: [
 				{
-					identity: "ix://a/b/type/W",
+					identity: "ix://a/b/W",
 					kind: "record",
 					fields: Array.from({ length: 20 }, (_, index) => ({
-						identity: `ix://a/b/field/W-f${index}`,
+						identity: `ix://a/b/W/f${index}`,
 						name: `f${index}`,
-						typeRef: "ix://a/b/type/W",
+						typeRef: "ix://a/b/W",
 						multiplicity: { lower: 1, upper: 1 },
 						presence: "required",
 					})),
@@ -3812,10 +3817,10 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			types: Json[];
 		};
 		const artifact = document.types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
 		(artifact.relationships as Json[])[0].target =
-			"ix://agent-ix/core/type/Actor";
+			"ix://agent-ix/core/Actor";
 		const unknown = readContractIr(document, {
 			importedExports: "unknown",
 		}) as never as Diagnostic[] & {
@@ -4775,10 +4780,10 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 			// says so rather than inventing a verdict.
 			const document = readJson(out) as never as { types: Json[] };
 			const artifact = document.types.find(
-				(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+				(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 			) as Json;
 			(artifact.relationships as Json[])[0].target =
-				"ix://agent-ix/core/type/Actor";
+				"ix://agent-ix/core/Actor";
 			const cross = resolve(directory, "cross.json");
 			writeFileSync(cross, `${JSON.stringify(document, null, "\t")}\n`);
 			const suppressed = runCli(["inspect", "--ir", cross]);
@@ -4803,7 +4808,7 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 				types: Json[];
 			};
 			const target = broken2.types.find(
-				(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+				(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 			) as Json;
 			(target.fields as Json[])[0].multiplicity = { lower: 1, upper: 0 };
 			writeFileSync(invalid, `${JSON.stringify(broken2, null, "\t")}\n`);
@@ -5527,7 +5532,7 @@ describe("the remaining reader and resolver rules (FR-049 coverage)", () => {
 		JSON.parse(JSON.stringify(compiled.ir)) as never as { types: Json[] };
 	const artifactOf = (document: { types: Json[] }) =>
 		document.types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
 
 	/** Traces: TC-520; FR-050-AC-11 (the rules the published cases do not reach). */
@@ -5564,7 +5569,7 @@ describe("the remaining reader and resolver rules (FR-049 coverage)", () => {
 		});
 		run("unknown constraint keyword", (document) => {
 			const alias = document.types.find(
-				(type) => type.identity === "ix://agent-ix/assurance/type/ArtifactCode",
+				(type) => type.identity === "ix://agent-ix/assurance/ArtifactCode",
 			) as Json;
 			(alias.constraints as Json[])[0].keyword = "invented";
 		});
@@ -5573,7 +5578,7 @@ describe("the remaining reader and resolver rules (FR-049 coverage)", () => {
 		});
 		run("relationships on a non-record", (document) => {
 			const status = document.types.find(
-				(type) => type.identity === "ix://agent-ix/assurance/type/Status",
+				(type) => type.identity === "ix://agent-ix/assurance/Status",
 			) as Json;
 			status.relationships = artifactOf(document).relationships;
 		});
@@ -5640,7 +5645,7 @@ describe("the remaining reader and resolver rules (FR-049 coverage)", () => {
 				"using AgentIx.Semantic.Decorators;",
 				"namespace AgentIx.Semantic;",
 				"scalar Text extends string;",
-				'@semanticReference("ix://agent-ix/core/type/Actor")',
+				'@semanticReference("ix://agent-ix/core/Actor")',
 				"model NotEmpty { id: Text; }",
 			].join("\n"),
 		);

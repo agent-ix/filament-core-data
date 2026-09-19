@@ -35,14 +35,21 @@ export function slug(value) {
 		.replace(/^-+|-+$/g, "");
 }
 
-/** `ix://<package identity>/<slot>/<parts joined by ->`. */
+/**
+ * `ix://<package identity>/<parts joined by />` for a `type`, `field` or
+ * `operation` slot — a type definition and a member mint no slot segment of
+ * their own, only their owner's identity nested by `/` — and
+ * `ix://<package identity>/<slot>/<parts joined by ->` for every other slot
+ * (`variant`, `relationship`, `clause`, `constraint`), which still mints
+ * under its own segment (FR-095 "Node identities").
+ */
 export function mintIdentity(packageIdentity, slot, parts) {
 	if (!(slot in SLOTS)) throw new TypeError(`unknown identity slot: ${slot}`);
-	const tail = parts
-		.map(slug)
-		.filter((part) => part.length > 0)
-		.join("-");
-	return `ix://${packageIdentity}/${slot}/${tail}`;
+	const slugged = parts.map(slug).filter((part) => part.length > 0);
+	if (slot === "type" || slot === "field" || slot === "operation") {
+		return `ix://${packageIdentity}/${slugged.join("/")}`;
+	}
+	return `ix://${packageIdentity}/${slot}/${slugged.join("-")}`;
 }
 
 /** The package-local kernel scalar definition FR-034 mints for a built-in scalar. */

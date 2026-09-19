@@ -307,7 +307,7 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 				"'Ordering': (('Order', \"A customer's request for goods.\"),),",
 				"'Order': {'badges': ('labels',)},",
 				"'Order': {'id': 'id', 'labels': 'labels'},",
-				"'OrderLifecycle.advance': {'modifies': ('ix://agent-ix/orders/field/SM-001-current',), 'creates': (), 'deletes': ()},",
+				"'OrderLifecycle.advance': {'modifies': ('ix://agent-ix/orders/SM-001/current',), 'creates': (), 'deletes': ()},",
 				// Traces: TC-1796; FR-141-AC-9. Only the inline items of a mixed list.
 				"'OrderLifecycle.advance': {'pre': (('quire', 'to <> current'),), 'post': (('quire', 'current = to'),)},",
 				"'OpenOrders': ('open', ('Order',)),",
@@ -413,7 +413,7 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 		);
 		if (!versionSchema) throw new Error("no ConfigVersion.json");
 		expect(JSON.parse(versionSchema.text)["x-agent-ix-semantic-id"]).toBe(
-			"ix://agent-ix/config-service/type/FR-006",
+			"ix://agent-ix/config-service/FR-006",
 		);
 		for (const backend of [pythonPydanticBackend, pythonDataclassBackend]) {
 			const result = backend.generate(pythonRequest(backend, golden), {

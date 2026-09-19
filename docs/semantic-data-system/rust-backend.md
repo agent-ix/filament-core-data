@@ -197,7 +197,7 @@ separately as [#56](https://github.com/agent-ix/filament-core-data/issues/56).
 
 ## GAP-011 — a reference target nothing declares
 
-The issue #19 compiler, compiled read-only over its own `test/fixtures/compiler/packages/assurance` fixture, emits `ix://agent-ix/assurance/type/ActorRef` as a `reference` whose target is `ix://agent-ix/core/type/Actor`. No type in the document declares that identity, the manifest declares no imports, and no lock export names it. Issue #19's own reader accepts the document (`inspect` exits 0 and reports 18 types); this oracle rejects it with one `UNRESOLVED_TYPE_REF` at `/ir/types/0/target`. Both readings are defensible against the contract as written, so two conforming implementations disagree about whether the document is valid — and a generated-package backend must decide whether to emit a type for a reference it cannot resolve.
+The issue #19 compiler, compiled read-only over its own `test/fixtures/compiler/packages/assurance` fixture, emits `ix://agent-ix/assurance/ActorRef` as a `reference` whose target is `ix://agent-ix/core/Actor`. No type in the document declares that identity, the manifest declares no imports, and no lock export names it. Issue #19's own reader accepts the document (`inspect` exits 0 and reports 18 types); this oracle rejects it with one `UNRESOLVED_TYPE_REF` at `/ir/types/0/target`. Both readings are defensible against the contract as written, so two conforming implementations disagree about whether the document is valid — and a generated-package backend must decide whether to emit a type for a reference it cannot resolve.
 
 **Recorded, not decided.** The Rust reader adopts the corpus oracle's reading,
 so the disagreement stays visible rather than drifting, and `REF-001..004`

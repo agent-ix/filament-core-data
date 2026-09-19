@@ -132,18 +132,25 @@ shared table `crates/extraction-frontend/fixtures/identity-cases/identity-cases.
 (FR-095-AC-16) is authored from this section and is the evidence that both
 implementations agree.
 
-Every identity is rooted at the package identity, `ix://<package identity>/`,
-and occupies exactly one of these slots, whose parts are listed in order.
-Every name part of every slot is slugged; an artifact id part (`<Name>` in
-the spec-bundle frontend) is verbatim, as the paragraph below the table states:
+Every identity is rooted at the package identity, `ix://<package identity>/`.
+A type definition (including a kernel scalar definition and a constrained-field
+alias) and a member (field, operation parameter, relationship, operation,
+clause) mint no slot segment: a type's identity is `ix://<package
+identity>/<Name>`, and a member's identity is its owner's identity, `/`, and
+the member's own part, nested as deep as the member sits (an operation
+parameter is nested under its operation, which is nested under its type).
+Every other slot — `variant`, `state`, `transition`, `step`, `constraint` —
+still occupies `ix://<package identity>/<slot>/<tail>`. Every name part of
+every slot is slugged; an artifact id part (`<Name>` in the spec-bundle
+frontend) is verbatim, as the paragraph below the table states:
 
 | Slot | Identity | Parts |
 |---|---|---|
-| `type` | `type/<Name>` | the type's name; a kernel scalar definition is `type/<KernelScalar>` (a kernel scalar name is alphanumeric, so its slug is itself) |
-| `field` | `field/<Name>-<field>` | owner type, field; an operation parameter is `field/<Name>-<operation>-<param>` (there is no `param/` slot) |
+| `type` | `<Name>` | the type's name; a kernel scalar definition is `<KernelScalar>` (a kernel scalar name is alphanumeric, so its slug is itself) |
+| `field` | `<Name>/<field>` | owner type identity, `/`, field slug; an operation parameter is `<Name>/<operation>/<param>`, nested under its operation's identity (there is no `param/` slot) |
 | `variant` | `variant/<Name>-<member>` | owner enum or union, member |
 | `relationship` | `relationship/<Name>-<verb>-<TargetName>` | owner record, verb, target type name |
-| `operation` | `operation/<Name>-<name>` | owner record, operation |
+| `operation` | `<Name>/<name>` | owner type identity, `/`, operation slug |
 | `clause` | `clause/<Name>-<clauseId>` | owner type, clause id |
 | `state` | `state/<Name>-<state>` | owner state machine, state |
 | `transition` | `transition/<Name>-<from>-<to>-<trigger>` | owner state machine, from state, to state, trigger operation (a transition row has no name) |
@@ -153,9 +160,9 @@ the spec-bundle frontend) is verbatim, as the paragraph below the table states:
 `<Name>` is the declaring type's name part. The TypeSpec frontend takes it
 from the declaration name, and slugs it. The spec-bundle frontend takes it
 from the declaring artifact's id (FR-143) and passes that id through
-verbatim: artifact `FR-001` titled `Order` has identity `type/FR-001` and
-`displayName` `Order`, and its field `note` is `field/FR-001-note`; artifact
-`AR_001` has identity `type/AR_001`, not `type/AR-001`. An id is not slugged
+verbatim: artifact `FR-001` titled `Order` has identity `FR-001` and
+`displayName` `Order`, and its field `note` is `FR-001/note`; artifact
+`AR_001` has identity `AR_001`, not `AR-001`. An id is not slugged
 because an object id carries `_` and no `-` and `semanticIdentity` admits `_`
 inside a segment (`[A-Za-z0-9._~:/-]`), so slugging an id would rewrite a
 datum the pattern already accepts. An id carrying a character that pattern
@@ -164,10 +171,10 @@ no segment and is refused as `UNSLUGGABLE_NAME`. Every other part — a field,
 member, verb, keyword, state, step, or clause name — is slugged on both
 sides. The type's name is its `displayName`.
 
-The alias a constrained field mints is a `type` identity whose tail is
-`<Name>` followed by `slug(field)` with its first character upper-cased:
-`Note`, `revision` → `type/NoteRevision`; `Note`, `created_at` →
-`type/NoteCreated-at`. The alias node's `displayName` is `<Name>` followed by
+The alias a constrained field mints is a `type` identity (no slot segment)
+whose tail is `<Name>` followed by `slug(field)` with its first character
+upper-cased: `Note`, `revision` → `NoteRevision`; `Note`, `created_at` →
+`NoteCreated-at`. The alias node's `displayName` is `<Name>` followed by
 the field name verbatim with its first character upper-cased: `NoteRevision`,
 `NoteCreated_at`. The field's `typeRef` is retargeted to the alias identity and
 the constraint's `appliesTo` names it.

@@ -68,8 +68,8 @@ why only verbs the object type lists under `allowed_links` are lowered.
 ### Operations
 
 - The frontend SHALL lower each `OperationDecl` to one `operation` with `name`, `params` lowered as FR-093 fields, `returns` as `{typeRef, multiplicity, nullable: false}` from the FR-092 resolution of `OperationDecl.returns`, `pre` and `post` as the `clause_id` values of the engine's `ClauseRef` lists, and `origin.source` at the `### <name>` heading line; a parameter row's constraint cells are not lowered, because an IR `operation.params[]` item is a `field`, to which `schema/semantic/v1/semantic-ir.schema.json` gives no `constraints` member.
-- The frontend SHALL mint the operation's `identity` through FR-095's `operation_identity` as `ix://<org>/<name>/operation/<Name>-<operation>`.
-- The frontend SHALL mint each parameter's `identity` through FR-095's `field_identity` with the operation as the middle part, as `ix://<org>/<name>/field/<Name>-<operation>-<param>`. Note: a parameter is a field of its operation under `contracts-v1.md` §Identity minting (issue #87), and there is no `param/` slot.
+- The frontend SHALL mint the operation's `identity` through FR-095's `operation_identity` as `<owner type identity>/<operation>`, i.e. `ix://<org>/<name>/<Name>/<operation>`: an operation is a member of its receiver type and mints no slot segment of its own.
+- The frontend SHALL mint each parameter's `identity` through FR-095's `param_identity` as `<owner operation identity>/<param>`, i.e. `ix://<org>/<name>/<Name>/<operation>/<param>`. Note: a parameter nests one level deeper than its operation under `contracts-v1.md` §Identity minting (issue #87), and there is no `param/` slot.
 - If `returns` resolves to an `Unresolved` state, then the frontend SHALL emit the FR-092 diagnostic for that state at the `Returns:` line.
 
 ### Clauses

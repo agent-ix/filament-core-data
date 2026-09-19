@@ -423,7 +423,7 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 		expect([...written.keys()].some((path) => /fr_00/.test(path))).toBe(false);
 		const lib = written.get("src/lib.rs") as string;
 		expect(lib).toContain(
-			'SemanticType::ConfigVersion => "ix://agent-ix/config-service/type/FR-006"',
+			'SemanticType::ConfigVersion => "ix://agent-ix/config-service/FR-006"',
 		);
 		expect(lib).not.toMatch(/\bFr00\d/);
 	});
@@ -522,7 +522,7 @@ describe("identity, abstract types and member scopes in the Rust backend (FR-054
 		const flat = [...written.values()].join("\n").replace(/\s+/g, " ");
 		expect(flat).toContain('pre: &["can_ship"], post: &[], origin:');
 		expect(flat).toContain(
-			'operation: "advance", frame: Some(crate::identity::FrameMeta { modifies: &["ix://agent-ix/orders/field/SM-001-current"], creates: &[], deletes: &[], }), pre: &[crate::identity::InlineClauseMeta { language: "quire", text: "to <> current", }], post: &[crate::identity::InlineClauseMeta { language: "quire", text: "current = to", }], }',
+			'operation: "advance", frame: Some(crate::identity::FrameMeta { modifies: &["ix://agent-ix/orders/SM-001/current"], creates: &[], deletes: &[], }), pre: &[crate::identity::InlineClauseMeta { language: "quire", text: "to <> current", }], post: &[crate::identity::InlineClauseMeta { language: "quire", text: "current = to", }], }',
 		);
 	});
 
@@ -621,7 +621,7 @@ describe("identity, abstract types and member scopes in the Rust backend (FR-054
 		])
 			delete reference[member];
 		Object.assign(reference, {
-			identity: "ix://agent-ix/orders/type/PartyRef",
+			identity: "ix://agent-ix/orders/PartyRef",
 			displayName: "PartyRef",
 			kind: "reference",
 			target: typeNamed(referring, "Party").identity,

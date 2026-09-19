@@ -237,14 +237,14 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 			"placedAt",
 		);
 		expect(schema("Shipment")["x-agent-ix-owner"]).toBe(
-			"ix://agent-ix/orders/type/FR-001",
+			"ix://agent-ix/orders/FR-001",
 		);
 		expect(schema("Shipment")["x-agent-ix-identity-fields"]).toStrictEqual([
 			"id",
 		]);
 		expect(schema("OrderAggregate")["x-agent-ix-members"]).toStrictEqual([
-			"ix://agent-ix/orders/type/FR-001",
-			"ix://agent-ix/orders/type/VO-001",
+			"ix://agent-ix/orders/FR-001",
+			"ix://agent-ix/orders/VO-001",
 		]);
 		expect(schema("OrderStatus").enum).toStrictEqual([
 			"cancelled",
@@ -265,7 +265,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		});
 		const advance = lifecycle["x-agent-ix-operations"][0];
 		expect(advance.frame).toStrictEqual({
-			modifies: ["ix://agent-ix/orders/field/SM-001-current"],
+			modifies: ["ix://agent-ix/orders/SM-001/current"],
 			creates: [],
 			deletes: [],
 		});
@@ -288,7 +288,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 			);
 		}
 		expect(schema("OrderRepository")["x-agent-ix-persists"]).toStrictEqual([
-			"ix://agent-ix/orders/type/FR-001",
+			"ix://agent-ix/orders/FR-001",
 		]);
 		expect(schema("Ordering")["x-agent-ix-vocabulary"]).toStrictEqual([
 			{ term: "Order", doc: "A customer's request for goods." },
@@ -296,14 +296,14 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 
 		const order = schema("Order");
 		expect(order["x-agent-ix-supertypes"]).toStrictEqual([
-			"ix://agent-ix/orders/type/FR-000",
+			"ix://agent-ix/orders/FR-000",
 		]);
 		expect(Object.keys(order.properties)).toContain("labels");
 		expect(order.properties.labels["x-agent-ix-redefines"]).toBe(
-			"ix://agent-ix/orders/field/FR-000-labels",
+			"ix://agent-ix/orders/FR-000/labels",
 		);
 		expect(order.properties.badges["x-agent-ix-subsets"]).toStrictEqual([
-			"ix://agent-ix/orders/field/FR-000-labels",
+			"ix://agent-ix/orders/FR-000/labels",
 		]);
 		expect(schema("Party")["x-agent-ix-abstract"]).toBe(true);
 		expect(schema("index")["x-agent-ix-populations"][0].displayName).toBe(
@@ -444,7 +444,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		party.fields.push({
 			...party.fields[1],
 			name: "remark",
-			identity: "ix://agent-ix/orders/field/FR-000-remark",
+			identity: "ix://agent-ix/orders/FR-000/remark",
 			subsets: [party.fields[1].identity],
 		});
 		const result = jsonSchemaBackend.generate({ ir });
@@ -456,11 +456,11 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		};
 		const order = schema("Order");
 		expect(order.properties.remark["x-agent-ix-subsets"]).toStrictEqual([
-			"ix://agent-ix/orders/field/FR-000-labels",
+			"ix://agent-ix/orders/FR-000/labels",
 		]);
 		expect(order["x-agent-ix-identity-fields"]).toStrictEqual(["id"]);
 		expect(order["x-agent-ix-supertypes"]).toStrictEqual([
-			"ix://agent-ix/orders/type/FR-000",
+			"ix://agent-ix/orders/FR-000",
 		]);
 
 		const collided = JSON.parse(readFileSync(constructs, "utf8"));
@@ -491,7 +491,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		const schema = JSON.parse(file.text);
 		expect(schema.$id.endsWith("/ConfigVersion.json")).toBe(true);
 		expect(schema["x-agent-ix-semantic-id"]).toBe(
-			"ix://agent-ix/config-service/type/FR-006",
+			"ix://agent-ix/config-service/FR-006",
 		);
 	});
 
