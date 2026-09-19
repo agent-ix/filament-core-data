@@ -379,7 +379,13 @@ export function readContractIr(document, options = {}) {
 	};
 
 	const checkField = (field) => {
-		const resolved = resolveKind(types, fields, field.typeRef, undefined, false);
+		const resolved = resolveKind(
+			types,
+			fields,
+			field.typeRef,
+			undefined,
+			false,
+		);
 		if (!resolved && !known.has(String(field.typeRef))) {
 			// Suppression is only for a reference that could plausibly belong to an
 			// imported package — one whose identity names a *different* package. A
