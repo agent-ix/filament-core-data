@@ -76,22 +76,12 @@ PINNED_DIGESTS = {
         "sha256:3a9eca5cbae99303e68f52c88d78ea3f1dc9425c723a5ed8494fcd6472ccfc6e"
     ),
     "python_backend/qualification": (
-        # fcd#179: report.json, corpus-account.json and validation.json
-        # remeasured against the 2.0.0-only schema and corpus_account fix;
-        # corpus-account.json remeasured again after the corpus itself
-        # dropped ENV-004, VER-001, VER-002, VER-004 and PRES-002 (111 -> 106
-        # cases), which also moves the account's decided/agreed/undecidable
-        # split since python_backend/generated's stricter 2.0.0-only shape
-        # now raises ValidationError, not disagreement, on more cases.
-        # corpus-account.json's corpusDigest remeasured a third time after
-        # `biome check --write conformance/` reformatted every case/base file.
-        # fcd#187: corpus-account.json regenerated again (via
-        # `poetry run python -m python_backend.runner.corpus_account`) after
-        # the corpus grew back to 111 cases with the addition of
-        # PRES-011..015, moving undecidable from 38 to 43 (nullable's
-        # non-boolean/absent cases are cross-field-undecidable by this
-        # surface, like every other undecidable case already was).
-        "sha256:737480c30005aaafa3d6275ca369c1f2ede63a677eb412772660c8f724363285"
+        # fcd#193/#196: report.json's and validation.json's per-profile
+        # toolchainFingerprint and measured counts remeasured (`poetry run
+        # python -m python_backend.runner.qualify` and `... .runner.validate`)
+        # after python_backend/generated was regenerated for population's new
+        # kind/members/extent shape; corpus-account.json unchanged.
+        "sha256:19a8eaf98f183e60a9f088234ef86bbb4bfaf16b199455f1aa41fda23a0addc8"
     ),
     "python_backend/generated": (
         # fcd#193/#196: regenerated (`poetry run python -m
