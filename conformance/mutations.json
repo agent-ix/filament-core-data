@@ -584,6 +584,39 @@
 			"code": "agent-ix.semantic-ir.DUPLICATE_IDENTITY",
 			"pointer": "/ir/types/8/fields/1/identity",
 			"detectedBy": "COMP-002"
+		},
+		{
+			"id": "MUT-023",
+			"family": "field-presence",
+			"title": "An upper bound below the lower bound is rejected",
+			"mutation": {
+				"base": "core-2-0",
+				"ops": [
+					{
+						"op": "test",
+						"path": "/ir/types/8/fields/0/multiplicity",
+						"value": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						}
+					},
+					{
+						"op": "replace",
+						"path": "/ir/types/8/fields/0/multiplicity",
+						"value": {
+							"lower": 2,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						}
+					}
+				]
+			},
+			"code": "agent-ix.semantic-ir.INVALID_MULTIPLICITY",
+			"pointer": "/ir/types/8/fields/0/multiplicity/upper",
+			"detectedBy": "PRES-008"
 		}
 	]
 }
