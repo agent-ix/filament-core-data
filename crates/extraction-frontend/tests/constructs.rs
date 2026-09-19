@@ -2601,6 +2601,83 @@ fn tc_1800_an_allocation_source_naming_an_unknown_local_artifact_is_refused() {
     );
 }
 
+/// The written `architecture` fixture document (filament-core-data#173).
+fn architecture_document() -> Value {
+    let (_dir, _request, outcome) = lift_fixture("architecture");
+    let LiftOutcome::Written {
+        document,
+        result_state,
+        ..
+    } = outcome
+    else {
+        panic!("architecture does not lift");
+    };
+    assert_eq!(result_state, ResultState::Success);
+    serde_json::from_slice(&document).expect("json")
+}
+
+/// FR-143-AC-11 over the real, committed `architecture` fixture
+/// (filament-core-data#173, the bundle QSL intake tests read) rather than a
+/// synthetic document: the lift produces contract `2.0.0`, at least one
+/// artifact of each of the five systems kinds (`interface`, `part`, `port`,
+/// `connection`, `allocation`; ports and connections between components
+/// included), every one of them module-qualified
+/// `agent-ix/spec-objects-architecture`, an embedded `constructs` table
+/// naming each kind actually used, and `agent_ix_semantic_ir::decide` raises
+/// nothing over it.
+#[trace("TC-1800", "FR-143-AC-11")]
+#[test]
+fn tc_1800_the_architecture_fixture_lifts_to_ir_2_0_0_with_module_qualified_systems_kinds() {
+    let document = architecture_document();
+    assert_eq!(document["contractVersion"], "2.0.0");
+    assert!(
+        rust_codes(&document).is_empty(),
+        "{:?}",
+        rust_codes(&document)
+    );
+
+    let mut kinds: Vec<String> = document["types"]
+        .as_array()
+        .expect("types")
+        .iter()
+        .filter_map(|t| {
+            let module = t["kind"]["module"].as_str()?;
+            let name = t["kind"]["name"].as_str()?;
+            Some(format!("{module}/{name}"))
+        })
+        .collect();
+    kinds.sort();
+    kinds.dedup();
+    assert_eq!(
+        kinds,
+        [
+            "agent-ix/spec-objects-architecture/allocation",
+            "agent-ix/spec-objects-architecture/connection",
+            "agent-ix/spec-objects-architecture/interface",
+            "agent-ix/spec-objects-architecture/part",
+            "agent-ix/spec-objects-architecture/port",
+            "agent-ix/spec-objects-business/entity",
+            "agent-ix/spec-objects-business/value_object",
+        ]
+    );
+
+    let mut construct_kinds: Vec<String> = document["constructs"]
+        .as_array()
+        .expect("constructs")
+        .iter()
+        .filter_map(|c| {
+            let module = c["kind"]["module"].as_str()?;
+            let name = c["kind"]["name"].as_str()?;
+            Some(format!("{module}/{name}"))
+        })
+        .collect();
+    construct_kinds.sort();
+    assert_eq!(
+        construct_kinds, kinds,
+        "the constructs table names every kind used"
+    );
+}
+
 /// FR-143-AC-9 continued: a member with its own per-artifact source table
 /// (unlike the engine-gated `states`/`transitions`/`steps`) is required by
 /// the declaration but this artifact's own extraction carries no row for

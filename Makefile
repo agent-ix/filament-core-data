@@ -517,16 +517,24 @@ extraction-frontend-check: extraction-frontend-toolchain
 # bundle root on the dev host without editing this file. The default is the
 # business bundle, which is the repository's only bundle authored wholly in the
 # typed-table form the lift requires.
+#
+# The gate also always runs the `architecture` bundle (filament-core-data#173):
+# it needs the extra `spec-objects-architecture` module root business does not,
+# so it is not folded into the overridable `SPEC_PIPELINE_BUNDLE` var and is
+# staged into its own subdirectory.
 
 SPEC_PIPELINE_BUNDLE ?= $(EXTRACTION_FIXTURES)/business
 SPEC_PIPELINE_STAGING := $(CARGO_TARGET_DIR)/spec-to-targets
+ARCHITECTURE_MODULES := $(MODULES) $(EXTRACTION_FIXTURES)/modules/spec-objects-architecture
 
 .PHONY: spec-to-targets
 spec-to-targets: extraction-frontend-toolchain
 	rm -rf $(SPEC_PIPELINE_STAGING)
-	mkdir -p $(SPEC_PIPELINE_STAGING)
-	$(EXTRACTION_RUN) lift --bundle $(SPEC_PIPELINE_BUNDLE) $(foreach module,$(MODULES),--module $(module)) --out $(SPEC_PIPELINE_STAGING)/semantic-ir.json
-	node scripts/spec-to-targets.mjs $(SPEC_PIPELINE_STAGING)/semantic-ir.json $(SPEC_PIPELINE_STAGING)
+	mkdir -p $(SPEC_PIPELINE_STAGING)/business $(SPEC_PIPELINE_STAGING)/architecture
+	$(EXTRACTION_RUN) lift --bundle $(SPEC_PIPELINE_BUNDLE) $(foreach module,$(MODULES),--module $(module)) --out $(SPEC_PIPELINE_STAGING)/business/semantic-ir.json
+	node scripts/spec-to-targets.mjs $(SPEC_PIPELINE_STAGING)/business/semantic-ir.json $(SPEC_PIPELINE_STAGING)/business
+	$(EXTRACTION_RUN) lift --bundle $(EXTRACTION_FIXTURES)/architecture $(foreach module,$(ARCHITECTURE_MODULES),--module $(module)) --out $(SPEC_PIPELINE_STAGING)/architecture/semantic-ir.json
+	node scripts/spec-to-targets.mjs $(SPEC_PIPELINE_STAGING)/architecture/semantic-ir.json $(SPEC_PIPELINE_STAGING)/architecture
 
 .PHONY: extraction-frontend-deny
 extraction-frontend-deny: extraction-frontend-toolchain
