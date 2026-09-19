@@ -235,7 +235,7 @@ class TestContract20:
             target = next(
                 t
                 for t in document["types"]
-                if t["identity"].endswith(f"/type/{suffix}")
+                if t["identity"].endswith(f"/{suffix}")
             )
             del target[member]
             assert not schema_valid(validator, document), f"{suffix} without {member}"
@@ -244,11 +244,11 @@ class TestContract20:
             target = next(
                 t
                 for t in document["types"]
-                if t["identity"].endswith(f"/type/{suffix}")
+                if t["identity"].endswith(f"/{suffix}")
             )
             assert foreign not in target, f"{suffix} carries {foreign}"
             target[foreign] = (
-                "ix://agent-ix/orders/type/FR-001" if foreign == "owner" else []
+                "ix://agent-ix/orders/FR-001" if foreign == "owner" else []
             )
             assert not schema_valid(validator, document), f"{suffix} with {foreign}"
 
@@ -329,7 +329,7 @@ class TestContract20:
         machine = next(
             i
             for i, t in enumerate(document["types"])
-            if t["identity"].endswith("/type/SM-001")
+            if t["identity"].endswith("/SM-001")
         )
         operation = document["types"][machine]["operations"][0]
         assert isinstance(operation["pre"][0], str)
@@ -356,7 +356,7 @@ class TestContract20:
         machine = next(
             i
             for i, t in enumerate(document["types"])
-            if t["identity"].endswith("/type/SM-001")
+            if t["identity"].endswith("/SM-001")
         )
         operation = document["types"][machine]["operations"][0]
         assert operation["pre"][1]["language"] == "quire"
