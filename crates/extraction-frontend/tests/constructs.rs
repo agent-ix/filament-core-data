@@ -316,12 +316,23 @@ fn tc_1743_unresolved_frame_reference_and_population_member_raise_their_codes() 
         )],
     );
 
+    let mut frame_deletes = positive();
+    type_mut(&mut frame_deletes, "SM-001")["operations"][0]["frame"]["deletes"] =
+        json!(["ix://agent-ix/orders/type/nowhere"]);
+    assert_rust(
+        "unresolved frame reference in deletes",
+        &frame_deletes,
+        &[format!(
+            "UNRESOLVED_FRAME_PATH at /ir/types/{sm}/operations/0/frame/deletes/0"
+        )],
+    );
+
     let mut population = positive();
-    population["populations"][0]["members"][0]["typeRef"] = json!(type_ref("FR-999"));
+    population["populations"][0]["members"][0] = json!(type_ref("FR-999"));
     assert_rust(
         "unresolved population member",
         &population,
-        &["UNRESOLVED_TYPE_REF at /ir/populations/0/members/0/typeRef".to_string()],
+        &["UNRESOLVED_TYPE_REF at /ir/populations/0/members/0".to_string()],
     );
 }
 
@@ -342,6 +353,27 @@ fn tc_1743_frame_admits_a_relationship_modifies_entry_and_a_declared_creates_ent
         &valid,
         &[],
     );
+}
+
+/// A `modifies` entry naming a field of a type other than the operation's own,
+/// and not one of its supertypes, resolves: QSpec FR-340 admits any declared
+/// field or relationship node in the package as a `modifies` target, and
+/// FR-013 has no reachability limit, so resolution ranges over the whole
+/// document, never only the owning type or its supertypes (fcd#193 review).
+/// `SM-001` and `FR-001` (the order entity) share no supertype relation, so
+/// `SM-001`'s operation naming `FR-001`'s `status` field pins the cross-type
+/// case, in the shape of the review's own example (an order operation naming
+/// a customer's field).
+#[trace("TC-1743", "FR-141-AC-4")]
+#[test]
+fn tc_1743_frame_modifies_admits_a_field_of_an_unrelated_type() {
+    let mut cross = positive();
+    type_mut(&mut cross, "SM-001")["operations"][0]["frame"] = json!({
+        "modifies": [field_ref("FR-001", "status")],
+        "creates": [],
+        "deletes": [],
+    });
+    assert_rust("frame modifies admits another type's field", &cross, &[]);
 }
 
 // fcd#179 deleted contracts `1.0.0` and `1.1.0`; `2.0.0` is the only one. This

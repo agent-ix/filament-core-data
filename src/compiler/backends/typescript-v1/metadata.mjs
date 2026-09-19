@@ -746,14 +746,13 @@ export interface OperationContractDescriptor {
 	readonly post?: readonly { readonly language: string; readonly text: string }[];
 }
 
-/** One population: the type extents it gathers. */
+/** One population: a named instance extent, bound by its own \`kind\`. */
 export interface PopulationDescriptor {
 	readonly identity: string;
 	readonly displayName: string;
-	readonly members: readonly {
-		readonly typeRef: string;
-		readonly extent: unknown;
-	}[];
+	readonly kind: { readonly module: string; readonly name: string };
+	readonly members: readonly string[];
+	readonly extent: "closed" | "open";
 }
 
 /** The supertype identities each type specializes, in declared order. */

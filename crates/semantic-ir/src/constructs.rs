@@ -629,14 +629,24 @@ fn narrows(field: &Json, redefined: &Json) -> bool {
 }
 
 /// A frame's `modifies`, `creates` and `deletes` name declarations, never a
-/// dotted access path (ADR-002; QSpec #101 and #106 leave the frame's body
-/// encoding and grant-range semantics open, so FCD checks only that each
-/// entry resolves, and does not check what kind of declaration it names —
-/// that a `creates`/`deletes` entry is an object type or process is bound at
-/// QSL intake, FR-208, never interpreted here).
+/// dotted access path (ADR-002). QSpec FR-340 admits any declared field or
+/// relationship node in the package as a `modifies` target, and FR-013 has
+/// no reachability limit, so `modifies` resolves against every field or
+/// relationship node the whole document declares, never only the operation's
+/// own type or its supertypes; `creates` and `deletes` resolve the same way
+/// against every type node the document declares. FCD checks that each
+/// entry is a declaration NodeRef of the right kind — a field or
+/// relationship for `modifies`, a declared type for `creates`/`deletes` —
+/// and nothing beyond that: it does not check reachability from the
+/// operation's own type, and it does not check that a `creates`/`deletes`
+/// target is specifically an object type or a process, which is bound at
+/// QSL intake (FR-208) and never interpreted here. The frame's body
+/// encoding and grant-range semantics (what a `modifies` entry ranges over,
+/// what `creates`/`deletes` differ over, and relationship-end scope) are
+/// still open in QSpec #101 (Q3 open with Peter) and #106; FCD carries no
+/// shape for either question.
 fn frames(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
-    let fields = visible_fields(document, definition);
-    let relationships = items(definition, "relationships");
+    let features = document_features(document);
     let operations_at = child(type_at, "operations");
     for (position, operation) in items(definition, "operations").iter().enumerate() {
         let Some(frame) = operation.get("frame") else {
@@ -645,12 +655,11 @@ fn frames(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut 
         let frame_at = child(&index(&operations_at, position), "frame");
         let modifies_at = child(&frame_at, "modifies");
         for (slot, name) in strings(frame.get("modifies")) {
-            let named = |node: &&Json| identity_of(node) == Some(name);
-            if !fields.iter().any(named) && !relationships.iter().any(|node| named(&node)) {
+            if !features.iter().any(|node| identity_of(node) == Some(name)) {
                 sink.emit(
                     index(&modifies_at, slot),
                     UNRESOLVED_FRAME_PATH,
-                    "a modifies entry names a field or relationship of the owning type or a supertype",
+                    "a modifies entry names a field or relationship the document declares",
                 );
             }
         }
@@ -667,6 +676,22 @@ fn frames(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut 
             }
         }
     }
+}
+
+/// Every field or relationship node the whole document declares, across
+/// every type (FR-340; FR-013 has no reachability limit — a `modifies`
+/// entry resolves against any of these, not only the operation's own type
+/// or its supertypes).
+fn document_features<'a>(document: &Document<'a>) -> Vec<&'a Json> {
+    document
+        .types
+        .iter()
+        .flat_map(|definition| {
+            items(definition, "fields")
+                .iter()
+                .chain(items(definition, "relationships").iter())
+        })
+        .collect()
 }
 
 /// The advisory `CLAUSE_LANGUAGE_UNCHECKED` at every inline `pre` or `post`
@@ -731,13 +756,10 @@ fn populations(document: &Document<'_>, sink: &mut Sink<'_>) {
         .unwrap_or(&[]);
     for (position, population) in populations.iter().enumerate() {
         let members_at = child(&index("/ir/populations", position), "members");
-        for (slot, member) in items(population, "members").iter().enumerate() {
-            let Some(type_ref) = member.get("typeRef").and_then(Json::as_str) else {
-                continue;
-            };
+        for (slot, type_ref) in strings(population.get("members")) {
             if document.type_of(type_ref).is_none() {
                 sink.emit(
-                    child(&index(&members_at, slot), "typeRef"),
+                    index(&members_at, slot),
                     UNRESOLVED_TYPE_REF,
                     "a population member names a type the document declares",
                 );

@@ -2263,14 +2263,12 @@
 		{
 			"identity": "ix://agent-ix/orders/population/open-orders",
 			"displayName": "OpenOrders",
-			"members": [
-				{
-					"typeRef": "ix://agent-ix/orders/type/FR-001",
-					"extent": {
-						"lower": 0
-					}
-				}
-			],
+			"kind": {
+				"module": "agent-ix/orders",
+				"name": "open_orders"
+			},
+			"members": ["ix://agent-ix/orders/type/FR-001"],
+			"extent": "open",
 			"origin": {
 				"source": {
 					"path": "spec/functional/FR-001-order.md",

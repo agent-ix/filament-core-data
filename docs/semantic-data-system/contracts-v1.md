@@ -260,9 +260,9 @@ filling in a default.
 | `abstract` | type | The type has no direct instances | — |
 | `subsets` | field | Supertype fields whose values include this field's values | `UNRESOLVED_FEATURE_REF` |
 | `redefines` | field | The supertype field this field narrows; its multiplicity lies within the redefined bounds | `UNRESOLVED_FEATURE_REF`, `INVALID_REDEFINITION` |
-| `frame` | operation | Declaration references the operation `modifies` (a field or relationship), `creates` or `deletes` (an object type or process); never an access path. QSpec #101 and #106 leave the frame's body encoding and grant-range semantics open | `UNRESOLVED_FRAME_PATH` |
+| `frame` | operation | Declaration references the operation `modifies` (a field or relationship), `creates` or `deletes` (an object type or process); never an access path. Resolution ranges over every such declaration the whole document carries, never only the operation's own type or its supertypes (QSpec FR-340, FR-013). QSpec #101 and #106 leave the frame's body encoding and grant-range semantics open | `UNRESOLVED_FRAME_PATH` |
 | `pre`, `post` items | operation | A `pre` or `post` item is a clause id or an inline clause `{language, text}` | `DANGLING_CLAUSE_REF` for an id item |
-| `populations` | document | Named instance extents: type references with a multiplicity | `UNRESOLVED_TYPE_REF` |
+| `populations` | document | Named instance extents, bound by `kind` (`{module, name}`); a flat set of unique member type references; one `extent` (`closed` or `open`) for the whole population | `UNRESOLVED_TYPE_REF` |
 
 Clauses are Quire: a clause `language` is `ocl`, `sysml`, `fretish`, `quire`
 or a registered `namespace:name`. No reader translates a clause between

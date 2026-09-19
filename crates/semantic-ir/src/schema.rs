@@ -696,7 +696,17 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
     }
 }
 
-const POPULATION_MEMBERS: &[&str] = &["identity", "displayName", "members", "origin"];
+const POPULATION_MEMBERS: &[&str] = &[
+    "identity",
+    "displayName",
+    "kind",
+    "members",
+    "extent",
+    "origin",
+];
+/// A population's `extent`: one value for the whole population (QSpec
+/// FR-153/AD-006), never a per-member multiplicity.
+const POPULATION_EXTENTS: &[&str] = &["closed", "open"];
 
 fn population_schema(population: &Json, at: &str, f: &mut Findings) {
     if !expect_object(population, at, "a population", f) {
@@ -718,33 +728,24 @@ fn population_schema(population: &Json, at: &str, f: &mut Findings) {
         "a display name",
         f,
     );
+    if let Some(kind) = population.get("kind") {
+        construct_kind(kind, &child(at, "kind"), f);
+    }
+    identity_list(
+        population.get("members"),
+        &child(at, "members"),
+        "members",
+        f,
+    );
+    expect_enum(
+        population.get("extent"),
+        &child(at, "extent"),
+        POPULATION_EXTENTS,
+        "extent",
+        f,
+    );
     if let Some(origin) = population.get("origin") {
         origin_schema(origin, &child(at, "origin"), f);
-    }
-    let Some(members) = population.get("members") else {
-        return;
-    };
-    let members_at = child(at, "members");
-    if !expect_array(members, &members_at, "members", f) {
-        return;
-    }
-    for (position, member) in members.as_array().unwrap_or(&[]).iter().enumerate() {
-        let member_at = index(&members_at, position);
-        if !expect_object(member, &member_at, "a population member", f) {
-            continue;
-        }
-        require_members(member, &member_at, &["typeRef", "extent"], f);
-        forbid_extra(member, &member_at, &["typeRef", "extent"], f);
-        expect_shape(
-            member.get("typeRef"),
-            &child(&member_at, "typeRef"),
-            is_semantic_identity,
-            "an identity is ix://<owner>/<name>",
-            f,
-        );
-        if let Some(extent) = member.get("extent") {
-            multiplicity_schema(extent, &child(&member_at, "extent"), f);
-        }
     }
 }
 

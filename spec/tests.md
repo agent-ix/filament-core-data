@@ -234,7 +234,7 @@ blocked as stated above.
 | FR-048 | FR-048-AC-1..11, FR-048-CON-1..4 | TC-477..TC-491, TC-613 | ✅ Complete |
 | FR-049 | FR-049-AC-1..14, FR-049-CON-1..4 | TC-492..TC-509, TC-605, TC-608, TC-609 | ✅ Complete |
 | FR-050 | FR-050-AC-1..13, FR-050-CON-1..4 | TC-510..TC-526, TC-600, TC-611, TC-617 | ✅ Complete |
-| FR-051 | FR-051-AC-1..6, FR-051-AC-11, FR-051-AC-15, FR-051-AC-16, FR-051-CON-1, FR-051-CON-2, FR-051-CON-4, FR-051-CON-5 | TC-527..TC-532, TC-537, TC-541..TC-546, TC-602, TC-1804 | ✅ Complete |
+| FR-051 | FR-051-AC-1..6, FR-051-AC-11, FR-051-AC-15..17, FR-051-CON-1, FR-051-CON-2, FR-051-CON-4, FR-051-CON-5 | TC-527..TC-532, TC-537, TC-541..TC-546, TC-602, TC-1804 | ✅ Complete |
 | FR-052 | FR-052-AC-1..16, FR-052-CON-1..4 | TC-547..TC-566 | ✅ Complete |
 | FR-053 | FR-053-AC-1..15, FR-053-CON-1..5 | TC-412..TC-431, TC-604 | ✅ Complete |
 | FR-063 | FR-063-AC-1..21, FR-063-CON-1..6 | TC-745..TC-754 | 🚧 In progress |
@@ -1668,8 +1668,8 @@ blocked as stated above.
 | TC-1740 | A `2.0.0` document carrying `supertypes`, `abstract`, `subsets`, `redefines`, `frame`, inline `pre` and `post` clauses, `populations` and a `quire` clause is accepted by the Rust, Node and Python readers | Unit | P0 | FR-141-AC-1 | ✅ passed |
 | TC-1741 | An unresolved supertype, a supertype of another kind and a generalization cycle raise `UNRESOLVED_CONSTRUCT_REF`, `CONSTRUCT_TARGET_KIND` and `SUPERTYPE_CYCLE` | Unit | P0 | FR-141-AC-2 | ✅ passed |
 | TC-1742 | An unresolved `subsets` entry raises `UNRESOLVED_FEATURE_REF` and a widening `redefines` raises `INVALID_REDEFINITION` | Unit | P0 | FR-141-AC-3 | ✅ passed |
-| TC-1743 | An unresolved `modifies` entry and an unresolved `creates` entry each raise `UNRESOLVED_FRAME_PATH`, an unresolved population member raises `UNRESOLVED_TYPE_REF`, and a `modifies` entry naming a relationship together with a `creates` entry naming a declared type both resolve | Unit | P0 | FR-141-AC-4 | ✅ passed |
-| TC-1804 | A revision changing a type's `supertypes`, `abstract`, a field's `subsets` or `redefines`, an operation's `frame`, a population, or a construct table entry's `meaning` is classified through `diffSemanticContract`, each disposition matching the FR-051 table | Unit | P0 | FR-051-AC-16 | ✅ passed |
+| TC-1743 | An unresolved `modifies`, `creates` or `deletes` entry each raise `UNRESOLVED_FRAME_PATH`, an unresolved population member raises `UNRESOLVED_TYPE_REF`, a `modifies` entry naming a relationship together with a `creates` entry naming a declared type both resolve, and a `modifies` entry naming a field of a type other than the operation's own or its supertypes also resolves, because resolution ranges over the whole document | Unit | P0 | FR-141-AC-4 | ✅ passed |
+| TC-1804 | A revision changing a type's `supertypes` (added or removed), `abstract`, a field's `subsets` or `redefines`, an operation's `frame`, a population, or a construct table entry's `identity`, `shape`, `members`, `rules` or `meaning` is classified through `diffSemanticContract`, each disposition matching the FR-051 table and each pinned by an exact `changes` projection | Unit | P0 | FR-051-AC-16, FR-051-AC-17 | ✅ passed |
 | TC-1745 | A `2.0.0` document with one construct of each of the ten kinds is accepted by the Rust, Node and Python readers | Unit | P0 | FR-142-AC-1 | ✅ passed |
 | TC-1746 | Each kind missing a required member, or carrying a member of another kind, is refused with `SCHEMA_VIOLATION` | Unit | P0 | FR-142-AC-2, FR-142-CON-1 | ✅ passed |
 | TC-1747 | Owner, aggregate member, persisted type and domain member of an excluded kind, or naming no type, raise their reader code at the member pointer; a `sourceElement` naming an operation of a declared type is admitted, the same identity named by `targetElement` is refused, and a `sourceElement` naming no such operation is refused | Unit | P0 | FR-142-AC-3 | ✅ passed |

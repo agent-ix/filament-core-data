@@ -674,17 +674,19 @@ export function operationContract(operation) {
 }
 
 /**
- * The document's populations (FR-141), each a display name, identity and its
- * member type extents.
+ * The document's populations (FR-141), each a display name, identity, the
+ * `kind` ({module, name}; QSpec FR-154 row 2/AC-7, FR-208) QSpec intake binds
+ * it by, its member type-ref identities and its `extent` (`closed` or
+ * `open`, QSpec FR-153/AD-006: one value for the whole population, never a
+ * per-member multiplicity).
  */
 export function populationsOf(ir) {
 	return list(ir?.populations).map((population) => ({
 		identity: population.identity,
 		displayName: population.displayName,
-		members: list(population.members).map((member) => ({
-			typeRef: member.typeRef,
-			extent: { ...member.extent },
-		})),
+		kind: { ...population.kind },
+		members: [...list(population.members)],
+		extent: population.extent,
 	}));
 }
 
