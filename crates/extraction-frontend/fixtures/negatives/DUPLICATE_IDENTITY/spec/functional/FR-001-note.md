@@ -8,12 +8,18 @@ type: FR
 
 ## Description
 
-An authored fixture record whose constrained field mints the `NoteRevision`
-alias.
+An authored fixture record whose field and whose own operation mint the
+same member identity.
 
 ## Properties
 
 | Field | Type | Multiplicity | Constraints |
 |-------|------|--------------|-------------|
-| revision | Integer | 1 | min: 1 |
+| revision | Integer | 1 | |
 | id | UUID | 1 | identity |
+
+## Operations
+
+### revision
+
+Returns: Integer [1]
