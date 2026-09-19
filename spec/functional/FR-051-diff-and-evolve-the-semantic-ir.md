@@ -68,6 +68,13 @@ artefacts rather than asserted in a pull-request description.
 | Clause added; removed; `language` changed | `type` | `semantic` | `additive`; `breaking`; `breaking` |
 | Constraint keyword added to the vocabulary; removed; operands retyped | `constraint` | `semantic` | `additive`; `breaking`; `breaking` |
 | Kernel scalar member added; removed; re-represented | `type` | `semantic` | `additive`; `breaking`; `breaking` |
+| A type's `supertypes` changed | `type` | `semantic` | `breaking` |
+| A type's `abstract` flag set; cleared | `type` | `semantic` | `breaking`; `additive` |
+| A field's `subsets` changed | `field` | `semantic` | `breaking` |
+| A field's `redefines` target changed | `field` | `semantic` | `breaking` |
+| An operation's `frame` changed | `type` | `semantic` | `breaking` (classified with the owning operation; FR-013/FR-051 leave the frame's own body encoding and grant-range semantics to QSpec #101/#106) |
+| A population added; removed; its `kind`, `members` or `extent` changed | `type` | `semantic` | `additive`; `breaking`; `breaking` |
+| A construct table entry added; removed; its `identity`, `shape`, `members`, `rules`, `references`, `immutable` or `meaning` changed | `type` | `semantic` | `additive`; `breaking`; `breaking` |
 | Generated name changed with no semantic identity change | `generated-api` | `target` | `patch` |
 | Profile `allowedOmissions` gained an identity | `profile` | `profile` | `breaking` |
 | Profile `authority` changed with an unchanged structural shape | `authority` | `profile` | `breaking` |
@@ -103,6 +110,8 @@ artefacts rather than asserted in a pull-request description.
 | FR-051-AC-6 | Diffing a document against itself yields one `patch` change identified by `source.identity` and an aggregate of `patch`. | Test |
 | FR-051-AC-11 | Two runs of the diff over the same inputs produce byte-identical reports. | Snapshot |
 | FR-051-AC-15 | A revision that removes a member, retypes a member, or narrows a closed vocabulary is classified `breaking`; one that adds an optional member or widens a vocabulary is not. | Test |
+| FR-051-AC-16 | A revision changing a type's `supertypes` (added or removed), a field's `subsets`, or a field's `redefines` target is classified `breaking`; one setting `abstract` is `breaking` and one clearing it is `additive`; a population or construct table entry added is `additive`, and one removed or changed is `breaking`; an operation's `frame` changed is classified `breaking`, with the owning operation (`type`), not as a family of its own. | Test (TC-1804) |
+| FR-051-AC-17 | A construct table entry whose `identity`, `shape`, `members`, `rules`, `references`, or `immutable` changed, with `meaning` unchanged, is classified `breaking`; it is never absorbed into the document's own "equal fingerprints" `patch`. | Test (TC-1804) |
 
 ## Dependencies
 

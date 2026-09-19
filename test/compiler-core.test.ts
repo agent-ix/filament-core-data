@@ -3892,6 +3892,28 @@ describe("compatibility (FR-051)", () => {
 			newFingerprint: string;
 		};
 	};
+	const reportOfPair = (oldDocument: unknown, newDocument: unknown) =>
+		diffSemanticContract({
+			old: oldDocument,
+			new: newDocument,
+		} as never) as never as {
+			changes: { family: string; disposition: string; identity: string }[];
+			aggregateDisposition: string;
+		};
+	/**
+	 * The `changes` array projected to `{identity, family, disposition}`,
+	 * dropping `rationale`, `affectedConsumers` and `targetResults`: those
+	 * carry no assertion here and pinning them would make every case brittle
+	 * against wording it isn't this test's job to lock down.
+	 */
+	const projectChanges = (report: {
+		changes: { identity: string; family: string; disposition: string }[];
+	}) =>
+		report.changes.map((change) => ({
+			identity: change.identity,
+			family: change.family,
+			disposition: change.disposition,
+		}));
 
 	/** Traces: TC-527, TC-602; FR-051-AC-1. */
 	it("reproduces every published compatibility case", () => {
@@ -4152,6 +4174,328 @@ describe("compatibility (FR-051)", () => {
 		expect(reportOf("multiplicity-widening").aggregateDisposition).toBe(
 			"additive",
 		);
+	});
+
+	/** Traces: TC-1804; FR-051-AC-16, FR-051-AC-17. */
+	it("classifies a change to each of the seven FR-141 model members", () => {
+		const base = constructed("documentation-only").old as never as {
+			types: {
+				identity: string;
+				kind: string;
+				supertypes?: string[];
+				abstract?: boolean;
+				fields?: { identity: string; subsets?: string[]; redefines?: string }[];
+			}[];
+			populations: {
+				identity: string;
+				displayName: string;
+				kind: { module: string; name: string };
+				members: string[];
+				extent: string;
+				origin: unknown;
+			}[];
+			constructs: {
+				kind: { module: string; name: string };
+				moduleVersion: string;
+				manifestDigest: string;
+				construct: {
+					identity: string;
+					shape: string;
+					members: Record<string, never>;
+					rules?: unknown[];
+					references?: Record<string, never>;
+					immutable?: boolean;
+					meaning: string;
+				};
+			}[];
+		};
+		const artifact = base.types.find(
+			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+		)!;
+		const field = artifact.fields![0];
+
+		// supertypes: added, then removed, an existing type reference reused
+		// so no other family fires alongside it. Each pins the exact change
+		// set, not merely that some "type" family entry appears — a mutation
+		// that reclassified an added or removed supertype from `breaking` to
+		// `additive` must fail here (fcd#193 review, Medium-2).
+		const supertyped = structuredClone(base);
+		supertyped.types.find(
+			(type) => type.identity === artifact.identity,
+		)!.supertypes = ["ix://agent-ix/assurance/type/Text"];
+		expect(projectChanges(reportOfPair(base, supertyped))).toStrictEqual([
+			{ identity: artifact.identity, family: "type", disposition: "breaking" },
+		]);
+		expect(projectChanges(reportOfPair(supertyped, base))).toStrictEqual([
+			{ identity: artifact.identity, family: "type", disposition: "breaking" },
+		]);
+
+		// abstract: cleared and set.
+		const abstractSet = structuredClone(base);
+		abstractSet.types.find(
+			(type) => type.identity === artifact.identity,
+		)!.abstract = true;
+		expect(projectChanges(reportOfPair(base, abstractSet))).toStrictEqual([
+			{ identity: artifact.identity, family: "type", disposition: "breaking" },
+		]);
+		expect(projectChanges(reportOfPair(abstractSet, base))).toStrictEqual([
+			{ identity: artifact.identity, family: "type", disposition: "additive" },
+		]);
+
+		// subsets: added to a field, on its own — split from redefines so a
+		// mutation disabling only the subsets check cannot hide behind
+		// redefines still firing (fcd#193 review, Medium-2).
+		const subsetted = structuredClone(base);
+		subsetted.types.find((type) => type.identity === artifact.identity)!
+			.fields![0].subsets = ["ix://agent-ix/assurance/field/Artifact-tags"];
+		expect(projectChanges(reportOfPair(base, subsetted))).toStrictEqual([
+			{ identity: field.identity, family: "field", disposition: "breaking" },
+		]);
+
+		// redefines: added to a field, on its own.
+		const redefined = structuredClone(base);
+		redefined.types.find((type) => type.identity === artifact.identity)!
+			.fields![0].redefines = "ix://agent-ix/assurance/field/Artifact-tags";
+		expect(projectChanges(reportOfPair(base, redefined))).toStrictEqual([
+			{ identity: field.identity, family: "field", disposition: "breaking" },
+		]);
+
+		// populations: document-level, added then its members and extent each
+		// changed on their own, keyed by `identity` and bound by their own
+		// `kind` (QSpec FR-154 row 2/AC-7, FR-208; `members` a set of type-ref
+		// identities and `extent` one `closed`/`open` value for the whole
+		// population, QSpec FR-153/AD-006; fcd#196).
+		const withPopulation = structuredClone(base);
+		withPopulation.populations = [
+			{
+				identity: "ix://agent-ix/assurance/population/all-artifacts",
+				displayName: "All artifacts",
+				kind: { module: "agent-ix/assurance", name: "all_artifacts" },
+				members: [artifact.identity],
+				extent: "open",
+				origin: {
+					source: {
+						sourceIdentity: "ix://agent-ix/assurance/source/typespec",
+						path: "types/main.tsp",
+						startLine: 1,
+						startColumn: 1,
+					},
+				},
+			},
+		];
+		expect(projectChanges(reportOfPair(base, withPopulation))).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/population/all-artifacts",
+				family: "type",
+				disposition: "additive",
+			},
+		]);
+		const populationMembersChanged = structuredClone(withPopulation);
+		populationMembersChanged.populations[0].members = [];
+		expect(
+			projectChanges(reportOfPair(withPopulation, populationMembersChanged)),
+		).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/population/all-artifacts",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
+		const populationExtentChanged = structuredClone(withPopulation);
+		populationExtentChanged.populations[0].extent = "closed";
+		expect(
+			projectChanges(reportOfPair(withPopulation, populationExtentChanged)),
+		).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/population/all-artifacts",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
+		expect(projectChanges(reportOfPair(withPopulation, base))).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/population/all-artifacts",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
+		// kind: rebound to a different constructs entry, on its own — `members` and `extent` both unchanged, so a
+		// mutation that dropped the `kind` comparison from `diffPopulations`
+		// would report no change at all here.
+		const populationKindChanged = structuredClone(withPopulation);
+		populationKindChanged.populations[0].kind = {
+			module: "agent-ix/assurance",
+			name: "other_kind",
+		};
+		expect(
+			projectChanges(reportOfPair(withPopulation, populationKindChanged)),
+		).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/population/all-artifacts",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
+
+		// constructs: the FR-142 meaning table, keyed by kind, added then its
+		// meaning changed, minted under the document's own package
+		// (`kind.module`), not `filament-core-data`'s (fcd#193 review, Lows).
+		const withConstruct = structuredClone(base);
+		withConstruct.constructs = [
+			{
+				kind: { module: "agent-ix/assurance", name: "entity" },
+				moduleVersion: "1.0.0",
+				manifestDigest:
+					"sha256:0000000000000000000000000000000000000000000000000000000000000000",
+				construct: {
+					identity: "identified",
+					shape: "record",
+					members: {},
+					meaning: "ix://agent-ix/quire-specification/meaning/entity",
+				},
+			},
+		];
+		expect(projectChanges(reportOfPair(base, withConstruct))).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/construct/entity",
+				family: "type",
+				disposition: "additive",
+			},
+		]);
+		const constructChanged = structuredClone(withConstruct);
+		constructChanged.constructs[0].construct.meaning =
+			"ix://agent-ix/quire-specification/meaning/entity-v2";
+		expect(
+			projectChanges(reportOfPair(withConstruct, constructChanged)),
+		).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/construct/entity",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
+		// FR-051-AC-17 (fcd#193 review, Medium-3): a change to `shape` alone —
+		// `meaning` unchanged — still classifies `breaking`, never falling
+		// through to the document's own "equal fingerprints" `patch` because
+		// `diffConstructs` compared only `meaning`.
+		const constructShapeChanged = structuredClone(withConstruct);
+		constructShapeChanged.constructs[0].construct.shape = "namespace";
+		expect(
+			projectChanges(reportOfPair(withConstruct, constructShapeChanged)),
+		).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/construct/entity",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
+		// FR-051-AC-17: `identity`, `members`,
+		// `rules`, `references` and `immutable` each classify `breaking` on
+		// their own too — `diffConstructs` names every FR-142 member of a
+		// construct table entry, not only `meaning` and `shape`. Each mutation
+		// below changes exactly one member so removing that member's own diff
+		// arm, and only that arm, fails this expectation.
+		const constructIdentityChanged = structuredClone(withConstruct);
+		constructIdentityChanged.constructs[0].construct.identity = "value";
+		expect(
+			projectChanges(reportOfPair(withConstruct, constructIdentityChanged)),
+		).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/construct/entity",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
+		const constructMembersChanged = structuredClone(withConstruct);
+		constructMembersChanged.constructs[0].construct.members = {
+			label: "required",
+		} as never;
+		expect(
+			projectChanges(reportOfPair(withConstruct, constructMembersChanged)),
+		).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/construct/entity",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
+		const constructRulesChanged = structuredClone(withConstruct);
+		constructRulesChanged.constructs[0].construct.rules = ["no_fields"];
+		expect(
+			projectChanges(reportOfPair(withConstruct, constructRulesChanged)),
+		).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/construct/entity",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
+		const constructReferencesChanged = structuredClone(withConstruct);
+		constructReferencesChanged.constructs[0].construct.references = {
+			owner: "required",
+		} as never;
+		expect(
+			projectChanges(reportOfPair(withConstruct, constructReferencesChanged)),
+		).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/construct/entity",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
+		const constructImmutableChanged = structuredClone(withConstruct);
+		constructImmutableChanged.constructs[0].construct.immutable = true;
+		expect(
+			projectChanges(reportOfPair(withConstruct, constructImmutableChanged)),
+		).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/construct/entity",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
+
+		// frame: caught by the existing whole-operation comparison, classified
+		// with the owning operation (`type`, `breaking`) rather than its own
+		// family, because QSpec #101/#106 have not settled what the frame
+		// itself means to diff (FR-051-AC-16).
+		const framed = structuredClone(base);
+		framed.types.find(
+			(type) => type.identity === artifact.identity,
+		)!.operations = [
+			{
+				identity: "ix://agent-ix/assurance/operation/Artifact-archive",
+				name: "archive",
+				params: [],
+				pre: ["not_archived"],
+				post: [],
+				returns: {
+					typeRef: "ix://agent-ix/assurance/type/Status",
+					multiplicity: { lower: 1, upper: 1 },
+					nullable: false,
+				},
+				frame: {
+					modifies: ["ix://agent-ix/assurance/field/Artifact-tags"],
+					creates: [],
+					deletes: [],
+				},
+				origin: {
+					source: {
+						sourceIdentity: "ix://agent-ix/assurance/source/typespec",
+						path: "types/main.tsp",
+						startLine: 20,
+						startColumn: 1,
+					},
+				},
+			},
+		];
+		expect(projectChanges(reportOfPair(base, framed))).toStrictEqual([
+			{
+				identity: "ix://agent-ix/assurance/operation/Artifact-archive",
+				family: "type",
+				disposition: "breaking",
+			},
+		]);
 	});
 
 	/** Traces: TC-545; FR-051-CON-4. */

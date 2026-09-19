@@ -160,11 +160,6 @@ class ConstructKind:
 type ContractItem1 = Annotated[str, Field(min_length=1)]
 
 
-type FeaturePath = Annotated[
-    str, Field(pattern='^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$')
-]
-
-
 class DefaultKind(Enum):
     none = 'none'
     semantic = 'semantic'
@@ -175,13 +170,6 @@ class DefaultKind(Enum):
 class Presence(Enum):
     required = 'required'
     optional = 'optional'
-
-
-@dataclass(config=ConfigDict(extra='forbid'))
-class Frame:
-    creates: list[FeaturePath]
-    deletes: list[FeaturePath]
-    modifies: list[FeaturePath]
 
 
 type IdentityList = list[common_schema.SemanticIdentity]
@@ -210,10 +198,9 @@ class Returns:
     typeRef: common_schema.SemanticIdentity
 
 
-@dataclass(config=ConfigDict(extra='forbid'))
-class Member:
-    extent: Multiplicity
-    typeRef: common_schema.SemanticIdentity
+class Extent(Enum):
+    closed = 'closed'
+    open = 'open'
 
 
 class Category(Enum):
@@ -384,6 +371,13 @@ class FieldModel:
     unit: Annotated[str | None, Field(min_length=1, pattern='^[!-~]+$')] = None
 
 
+@dataclass(config=ConfigDict(extra='forbid'))
+class Frame:
+    creates: IdentityList
+    deletes: IdentityList
+    modifies: IdentityList
+
+
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
 class InlineClause:
     language: Annotated[
@@ -400,8 +394,10 @@ class InlineClause:
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
 class Population:
     displayName: Annotated[str, Field(min_length=1)]
+    extent: Extent
     identity: common_schema.SemanticIdentity
-    members: list[Member]
+    kind: ConstructKind
+    members: list[common_schema.SemanticIdentity]
     origin: common_schema.Origin
 
 

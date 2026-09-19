@@ -602,9 +602,35 @@ def construct_findings(document: Any) -> list[str]:
                 out.append(f"{at}.{name}: declares at least one")
         if definition.get("identityFields") == []:
             out.append(f"{at}.identityFields: names at least one field")
+    # A population's kind resolves against the same constructs table exactly
+    # like a type definition's kind (QSpec FR-154 row 2/AC-7, FR-208): a
+    # dangling kind is a finding, and a resolved kind counts as used so the
+    # "no type is of that kind" check below does not misfire on a constructs
+    # entry a population alone uses.
+    for index, population in enumerate(_objects(document.get("populations"))):
+        at = f"populations.{index}"
+        kind = population.get("kind")
+        if not isinstance(kind, dict):
+            continue
+        found = next(
+            (
+                position
+                for position, (declared, _) in enumerate(entries)
+                if isinstance(declared, dict)
+                and (declared.get("module"), declared.get("name"))
+                == (kind.get("module"), kind.get("name"))
+            ),
+            None,
+        )
+        if found is None:
+            out.append(f"{at}.kind: names no constructs entry")
+            continue
+        used.add(found)
     for position, (declared, _) in enumerate(entries):
         if isinstance(declared, dict) and position not in used:
-            out.append(f"constructs.{position}.kind: no type is of that kind")
+            out.append(
+                f"constructs.{position}.kind: no type or population is of that kind"
+            )
     return out
 
 

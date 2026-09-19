@@ -653,6 +653,14 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
             }
         }
     }
+    if let Some(populations) = ir.get("populations") {
+        let populations_at = child(at, "populations");
+        if expect_array(populations, &populations_at, "populations", f) {
+            for (position, population) in populations.as_array().unwrap_or(&[]).iter().enumerate() {
+                population_schema(population, &index(&populations_at, position), &mut table, f);
+            }
+        }
+    }
     {
         let entries = ir.get("constructs").and_then(Json::as_array).unwrap_or(&[]);
         for (position, entry) in entries.iter().enumerate() {
@@ -670,7 +678,7 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
             {
                 f.push(
                     &child(&index(&constructs_at, position), "kind"),
-                    format!("constructs declares {module}/{name}, and no type definition is of that kind"),
+                    format!("constructs declares {module}/{name}, and no type definition or population is of that kind"),
                 );
             }
         }
@@ -686,19 +694,21 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
     if let Some(extensions) = ir.get("extensions") {
         extension_array(extensions, &child(at, "extensions"), f);
     }
-    if let Some(populations) = ir.get("populations") {
-        let populations_at = child(at, "populations");
-        if expect_array(populations, &populations_at, "populations", f) {
-            for (position, population) in populations.as_array().unwrap_or(&[]).iter().enumerate() {
-                population_schema(population, &index(&populations_at, position), f);
-            }
-        }
-    }
 }
 
-const POPULATION_MEMBERS: &[&str] = &["identity", "displayName", "members", "origin"];
+const POPULATION_MEMBERS: &[&str] = &[
+    "identity",
+    "displayName",
+    "kind",
+    "members",
+    "extent",
+    "origin",
+];
+/// A population's `extent`: one value for the whole population (QSpec
+/// FR-153/AD-006), never a per-member multiplicity.
+const POPULATION_EXTENTS: &[&str] = &["closed", "open"];
 
-fn population_schema(population: &Json, at: &str, f: &mut Findings) {
+fn population_schema(population: &Json, at: &str, table: &mut ConstructTable<'_>, f: &mut Findings) {
     if !expect_object(population, at, "a population", f) {
         return;
     }
@@ -718,33 +728,39 @@ fn population_schema(population: &Json, at: &str, f: &mut Findings) {
         "a display name",
         f,
     );
+    let kind_at = child(at, "kind");
+    // A population's kind resolves against the document's own constructs
+    // table exactly like a type definition's kind (QSpec FR-154 row 2/AC-7,
+    // FR-208): a dangling kind refuses, and a resolved kind counts as used so
+    // the "no type definition or population is of that kind" check below
+    // does not misfire on a constructs entry a population alone uses.
+    if let Some((module, name)) = population
+        .get("kind")
+        .and_then(|kind| construct_kind(kind, &kind_at, f))
+    {
+        match table.position(module, name) {
+            Some(found) => table.entries[found].used = true,
+            None => f.push(
+                &kind_at,
+                format!("the kind {module}/{name} names no constructs entry"),
+            ),
+        }
+    }
+    identity_list(
+        population.get("members"),
+        &child(at, "members"),
+        "members",
+        f,
+    );
+    expect_enum(
+        population.get("extent"),
+        &child(at, "extent"),
+        POPULATION_EXTENTS,
+        "extent",
+        f,
+    );
     if let Some(origin) = population.get("origin") {
         origin_schema(origin, &child(at, "origin"), f);
-    }
-    let Some(members) = population.get("members") else {
-        return;
-    };
-    let members_at = child(at, "members");
-    if !expect_array(members, &members_at, "members", f) {
-        return;
-    }
-    for (position, member) in members.as_array().unwrap_or(&[]).iter().enumerate() {
-        let member_at = index(&members_at, position);
-        if !expect_object(member, &member_at, "a population member", f) {
-            continue;
-        }
-        require_members(member, &member_at, &["typeRef", "extent"], f);
-        forbid_extra(member, &member_at, &["typeRef", "extent"], f);
-        expect_shape(
-            member.get("typeRef"),
-            &child(&member_at, "typeRef"),
-            is_semantic_identity,
-            "an identity is ix://<owner>/<name>",
-            f,
-        );
-        if let Some(extent) = member.get("extent") {
-            multiplicity_schema(extent, &child(&member_at, "extent"), f);
-        }
     }
 }
 
@@ -1574,18 +1590,11 @@ const OPERATION_MEMBERS: &[&str] = &[
 const FRAME_MEMBERS: &[&str] = &["modifies", "creates", "deletes"];
 const INLINE_CLAUSE_MEMBERS: &[&str] = &["language", "text", "sourceSpan", "origin"];
 
-/// A dotted feature path: `name(.name)*`.
-fn is_feature_path(text: &str) -> bool {
-    !text.is_empty()
-        && text.split('.').all(|segment| {
-            let mut chars = segment.chars();
-            chars
-                .next()
-                .is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
-                && chars.all(|c| c.is_ascii_alphanumeric() || c == '_')
-        })
-}
-
+/// A frame declares `modifies`, `creates` and `deletes` as declaration
+/// references: each entry is a `semanticIdentity`, never a dotted access
+/// path. `modifies` names a field or relationship; `creates` and `deletes`
+/// name a type. Which identity kind an entry must resolve to is a semantic
+/// rule (`constructs.rs`), not a schema-layer shape check.
 fn frame_schema(frame: &Json, at: &str, f: &mut Findings) {
     if !expect_object(frame, at, "a frame", f) {
         return;
@@ -1593,26 +1602,7 @@ fn frame_schema(frame: &Json, at: &str, f: &mut Findings) {
     require_members(frame, at, FRAME_MEMBERS, f);
     forbid_extra(frame, at, FRAME_MEMBERS, f);
     for name in FRAME_MEMBERS {
-        let Some(paths) = frame.get(name) else {
-            continue;
-        };
-        let paths_at = child(at, name);
-        if !expect_array(paths, &paths_at, name, f) {
-            continue;
-        }
-        let items = paths.as_array().unwrap_or(&[]);
-        for (position, path) in items.iter().enumerate() {
-            expect_shape(
-                Some(path),
-                &index(&paths_at, position),
-                is_feature_path,
-                "a frame path is a dotted feature path",
-                f,
-            );
-        }
-        if has_duplicate_strings(items) {
-            f.push(&paths_at, format!("{name} entries are unique"));
-        }
+        identity_list(frame.get(name), &child(at, name), name, f);
     }
 }
 

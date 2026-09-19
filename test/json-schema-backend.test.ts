@@ -184,7 +184,19 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 			);
 			seen.add(type.kind.name);
 		}
-		expect([...seen].sort()).toStrictEqual([...declared].sort());
+		// A construct table entry a population alone uses (QSpec FR-154 row
+		// 2/AC-7, FR-208) has no per-type schema
+		// of its own — the JSON Schema backend emits one file per type, never
+		// per population — so it is counted here without expecting a schema
+		// file, not folded into `seen`.
+		const declaredByPopulation = new Set(
+			(
+				ir.populations as { kind?: { name?: string } }[] | undefined
+			)?.map((population) => population.kind?.name) ?? [],
+		);
+		expect(
+			[...new Set([...seen, ...declaredByPopulation])].sort(),
+		).toStrictEqual([...declared].sort());
 	});
 
 	/** Traces: TC-1774; FR-100-AC-10. */
@@ -253,7 +265,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		});
 		const advance = lifecycle["x-agent-ix-operations"][0];
 		expect(advance.frame).toStrictEqual({
-			modifies: ["current"],
+			modifies: ["ix://agent-ix/orders/field/SM-001-current"],
 			creates: [],
 			deletes: [],
 		});
