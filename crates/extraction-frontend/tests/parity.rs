@@ -262,21 +262,35 @@ fn tc_1291_both_halves_of_the_shared_case_project_and_an_absent_node_is_named() 
             ids.iter().all(|i| i.starts_with(SHARED_PREFIX)),
             "{label}: {ids:?}"
         );
-        // The same kernel scalars, minted by both.
-        let scalars: Vec<&str> = projected["types"]
-            .as_array()
-            .expect("types")
-            .iter()
-            .filter(|t| t["kind"] == "scalar")
-            .filter_map(|t| t["identity"].as_str())
-            .collect();
+        // No scalar alias is minted for a kernel scalar reference (gap 1 of
+        // FCD #199/#200): every field's `typeRef` names the kernel scalar
+        // directly, so `types` mints no `scalar`-kind node at all, and both
+        // dialects reference the same kernel native identities.
+        assert!(
+            !projected["types"]
+                .as_array()
+                .expect("types")
+                .iter()
+                .any(|t| t["kind"] == "scalar"),
+            "{label}: no scalar alias node is minted"
+        );
+        let mut type_refs: Vec<&str> = Vec::new();
+        for record in projected["types"].as_array().expect("types") {
+            for field in record["fields"].as_array().into_iter().flatten() {
+                if let Some(t) = field["typeRef"].as_str() {
+                    type_refs.push(t);
+                }
+            }
+        }
+        type_refs.sort_unstable();
+        type_refs.dedup();
         assert_eq!(
-            scalars,
+            type_refs,
             [
-                "ix://shared/Boolean",
-                "ix://shared/Integer",
-                "ix://shared/String",
-                "ix://shared/Timestamp"
+                "ix://quire/native/Boolean",
+                "ix://quire/native/Integer",
+                "ix://quire/native/String",
+                "ix://quire/native/Timestamp"
             ],
             "{label}"
         );
@@ -357,7 +371,12 @@ fn tc_1344_project_yields_types_only_no_origin_or_extensions_shared_identities_a
     assert!(!has_member(&projected, "extensions"));
     let mut ids = Vec::new();
     identities(&projected, &mut ids);
-    assert!(ids.len() >= 20, "{}", ids.len());
+    // Gap 1 of FCD #199/#200 stopped minting an alias node per scalar-typed
+    // field reference (a field's `typeRef` now names the kernel scalar
+    // directly), so this real fixture mints fewer identities than before
+    // that landed; the floor is a sanity check that the fixture is still
+    // substantial, not a pinned count.
+    assert!(ids.len() >= 15, "{}", ids.len());
     assert!(ids.iter().all(|i| i.starts_with(SHARED_PREFIX)), "{ids:?}");
     assert_eq!(project(&projected), projected, "idempotent");
     assert_eq!(projected_bytes(&projected), projected_bytes(&golden));
