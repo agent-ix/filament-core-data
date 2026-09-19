@@ -17,8 +17,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[crate::identity::FieldMeta {
     multiplicity: crate::identity::MultiplicityMeta {
         lower: 1,
         upper: Some(1),
-        ordered: None,
-        unique: None,
+        ordered: Some(false),
+        unique: Some(false),
     },
     unit: None,
     default_kind: "none",

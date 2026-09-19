@@ -78,21 +78,32 @@ pub struct ExtensionMeta {
     pub payload: &'static str,
 }
 
+/// One end of a relationship (gap 3 of FCD #199/#200: the two-end shape).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct RelationshipEndMeta {
+    /// The end's role, where the IR declared one.
+    pub role: Option<&'static str>,
+    /// The end's multiplicity.
+    pub multiplicity: MultiplicityMeta,
+    /// The end's type reference.
+    pub type_ref: &'static str,
+}
+
 /// A relationship the IR carried.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct RelationshipMeta {
     /// The relationship's semantic identity.
     pub identity: &'static str,
-    /// The verb.
-    pub verb: &'static str,
     /// The edge category.
     pub category: &'static str,
     /// Whether the relationship is composite.
     pub composite: bool,
-    /// The target type's semantic identity.
-    pub target: &'static str,
-    /// The relationship's multiplicity.
-    pub multiplicity: MultiplicityMeta,
+    /// The relationship's direction.
+    pub direction: &'static str,
+    /// The source end.
+    pub source_end: RelationshipEndMeta,
+    /// The target end.
+    pub target_end: RelationshipEndMeta,
     /// The relationship's origin.
     pub origin: OriginMeta,
 }

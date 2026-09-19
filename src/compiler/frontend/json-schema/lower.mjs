@@ -146,13 +146,13 @@ export function multiplicityOf(schema, isRequired) {
 		// "must be present and may be empty".
 		const lower = typeof schema.minItems === "number" ? schema.minItems : 0;
 		return {
-			multiplicity: { lower },
+			multiplicity: { lower, ordered: false, unique: false },
 			presence: lower >= 1 ? "required" : "optional",
 		};
 	}
 	const lower = isRequired ? 1 : 0;
 	return {
-		multiplicity: { lower, upper: 1 },
+		multiplicity: { lower, upper: 1, ordered: false, unique: false },
 		presence: lower >= 1 ? "required" : "optional",
 	};
 }
