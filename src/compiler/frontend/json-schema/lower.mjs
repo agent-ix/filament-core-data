@@ -17,11 +17,18 @@ import { DIAGNOSTIC_CODES } from "../../diagnostics.mjs";
 import { unrecognisedKeywords } from "./keywords.mjs";
 import { mintName, segment } from "./mint.mjs";
 
-const IDENTITY_PREFIX = "ix://agent-ix/semantic-core/type";
+const IDENTITY_PREFIX = "ix://agent-ix/semantic-core";
 const UNTAGGED_UNION_EXTENSION =
 	"ix://agent-ix/semantic-core/extension/untagged-union-wire-form";
 
-/** @param {string} name */
+/**
+ * A type definition mints no slot segment of its own (FR-095 "Node
+ * identities"; FCD #199/#200 review finding 6) — only `<package>/<name>`,
+ * nested by `/`, the same rule `src/compiler/frontend/typespec/identity.mjs`
+ * applies for the `type` slot.
+ *
+ * @param {string} name
+ */
 export function identityOf(name) {
 	return `${IDENTITY_PREFIX}/${name}`;
 }
@@ -326,7 +333,9 @@ function lowerProperty(owner, property, schema, isRequired, out, minted, file) {
 	}
 
 	return {
-		identity: `${identityOf(owner)}/field/${property}`,
+		// A field mints no slot segment of its own either (same finding 6
+		// fix as `identityOf` above): it nests directly under its owner.
+		identity: `${identityOf(owner)}/${property}`,
 		name: property,
 		typeRef,
 		presence,

@@ -13,6 +13,21 @@
 		"path": "types.3.fields.0.multiplicity.upper"
 	},
 	{
+		"id": "field-flags-on-single",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.fields.0.multiplicity",
+			"value": {
+				"lower": 1,
+				"upper": 1,
+				"ordered": true,
+				"unique": false
+			}
+		},
+		"code": "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
+		"path": "types.3.fields.0.multiplicity"
+	},
+	{
 		"id": "field-unit-on-record",
 		"base": "positive/semantic-ir-v1-1.json",
 		"set": {
@@ -35,6 +50,16 @@
 		},
 		"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
 		"path": "types.3.fields.0.typeRef"
+	},
+	{
+		"id": "field-typeref-names-a-field",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.fields.1.typeRef",
+			"value": "ix://agent-ix/assurance/field/id"
+		},
+		"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+		"path": "types.3.fields.1.typeRef"
 	},
 	{
 		"id": "constraint-string-operand-on-number",
@@ -75,6 +100,16 @@
 		},
 		"code": "agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET",
 		"path": "types.3.relationships.0.targetEnd.type"
+	},
+	{
+		"id": "relationship-source-names-another-type",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "types.3.relationships.0.sourceEnd.type",
+			"value": "ix://agent-ix/assurance/type/Project"
+		},
+		"code": "agent-ix.semantic-ir.INVALID_RELATIONSHIP_SOURCE",
+		"path": "types.3.relationships.0.sourceEnd.type"
 	},
 	{
 		"id": "relationship-composite-self-reference",

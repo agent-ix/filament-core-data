@@ -37,6 +37,32 @@ const CATEGORIES = new Set([
 
 const CORE_LANGUAGES = new Set(["quire", "ocl", "sysml", "fretish"]);
 
+/**
+ * A native value type reference (gap 1 of FCD #199/#200):
+ * `ix://quire/native/<Name>` declares no document node, over this closed set
+ * of kernel scalars, mirrored independently from
+ * `crates/semantic-ir/src/rules.rs`'s `NATIVE_SCALARS` and
+ * `tests/semantic_ir_reader.py`'s `NATIVE_SCALARS`.
+ */
+const NATIVE_PREFIX = "ix://quire/native/";
+const NATIVE_SCALARS: Record<string, string> = {
+	UUID: "uuid",
+	Boolean: "boolean",
+	Integer: "integer",
+	Decimal: "number",
+	String: "string",
+	Timestamp: "datetime",
+	Duration: "duration",
+	Bytes: "bytes",
+	JsonObject: "any",
+};
+
+function nativeScalar(identity: unknown): string | undefined {
+	if (typeof identity !== "string" || !identity.startsWith(NATIVE_PREFIX))
+		return undefined;
+	return NATIVE_SCALARS[identity.slice(NATIVE_PREFIX.length)];
+}
+
 /** Keyword → the resolved structural kinds (or scalar names) it may apply to. */
 const KEYWORD_APPLICABILITY: Record<string, Set<string>> = {
 	min: new Set(["integer", "number", "date", "datetime", "duration"]),
@@ -80,18 +106,29 @@ export function isEdgeKind(kind: unknown): boolean {
 	return kind === "record" || isObject(kind);
 }
 
-/** Resolves a typeRef through alias definitions to its structural kind. */
+/**
+ * Resolves an identity to its structural kind: a native type reference; a
+ * field or param, through its own `typeRef` (gap 1 of FCD #199/#200: a
+ * constrained field keeps its constraints inline, with no alias node
+ * between them, so `appliesTo` may name a field directly); or a document
+ * type, through the alias chain.
+ */
 export function resolveKind(
 	types: Map<string, JsonObject>,
 	typeRef: unknown,
+	fields: Map<string, JsonObject> = new Map(),
 	seen = new Set<string>(),
 ): Resolved {
 	if (typeof typeRef !== "string" || seen.has(typeRef)) return undefined;
+	const native = nativeScalar(typeRef);
+	if (native !== undefined) return { kind: "scalar", scalar: native };
+	seen.add(typeRef);
+	const field = fields.get(typeRef);
+	if (field) return resolveKind(types, field.typeRef, fields, seen);
 	const definition = types.get(typeRef);
 	if (!definition) return undefined;
-	seen.add(typeRef);
 	if (definition.kind === "alias")
-		return resolveKind(types, definition.target, seen);
+		return resolveKind(types, definition.target, fields, seen);
 	return {
 		kind: String(definition.kind),
 		scalar:
@@ -129,6 +166,24 @@ function checkMultiplicity(
 			return undefined;
 		}
 	}
+	// R2 (FCD #199/#200 review): `ordered`/`unique` are `@collection` and mean
+	// nothing on a property whose upper bound is at most one. FR-027-AC-8
+	// requires both keys on every multiplicity (defaulting `false`), so this
+	// keys on the *value* (`true`), not the key's presence — a mandatory
+	// `false` pair on a single-valued field is the required shape, not a
+	// violation.
+	if (
+		(value.ordered === true || value.unique === true) &&
+		upper !== undefined &&
+		upper <= 1
+	) {
+		diagnostics.push({
+			code: "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
+			path,
+			message:
+				"ordered and unique describe a collection and this field is single-valued",
+		});
+	}
 	return value as Multiplicity;
 }
 
@@ -137,6 +192,7 @@ function checkField(
 	path: string,
 	version: string,
 	types: Map<string, JsonObject>,
+	fields: Map<string, JsonObject>,
 	diagnostics: Diagnostic[],
 ): void {
 	const resolved = resolveKind(types, field.typeRef);
@@ -175,12 +231,25 @@ function checkField(
 			});
 		}
 	}
+	// A constrained field keeps its constraints inline, with no alias node
+	// between them (gap 1 of FCD #199/#200); each one's `appliesTo` already
+	// names this field's own identity, so `resolveKind` resolves it through
+	// the `fields` map above, the same as a type-level constraint.
+	for (const [index, constraint] of asArray(field.constraints).entries())
+		checkConstraint(
+			constraint,
+			`${path}.constraints.${index}`,
+			types,
+			fields,
+			diagnostics,
+		);
 }
 
 function checkConstraint(
 	constraint: JsonObject,
 	path: string,
 	types: Map<string, JsonObject>,
+	fields: Map<string, JsonObject>,
 	diagnostics: Diagnostic[],
 ): void {
 	const keyword = String(constraint.keyword);
@@ -193,7 +262,7 @@ function checkConstraint(
 		});
 		return;
 	}
-	const resolved = resolveKind(types, constraint.appliesTo);
+	const resolved = resolveKind(types, constraint.appliesTo, fields);
 	if (!resolved) {
 		diagnostics.push({
 			code: "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
@@ -245,17 +314,26 @@ function checkTypeDefinition(
 	path: string,
 	version: string,
 	types: Map<string, JsonObject>,
+	fields: Map<string, JsonObject>,
 	lockExports: Set<string>,
 	diagnostics: Diagnostic[],
 ): void {
 	const isRecord = isEdgeKind(definition.kind);
 	for (const [index, field] of asArray(definition.fields).entries())
-		checkField(field, `${path}.fields.${index}`, version, types, diagnostics);
+		checkField(
+			field,
+			`${path}.fields.${index}`,
+			version,
+			types,
+			fields,
+			diagnostics,
+		);
 	for (const [index, constraint] of asArray(definition.constraints).entries())
 		checkConstraint(
 			constraint,
 			`${path}.constraints.${index}`,
 			types,
+			fields,
 			diagnostics,
 		);
 
@@ -322,6 +400,16 @@ function checkTypeDefinition(
 				message: `target does not resolve: ${target}`,
 			});
 		}
+		// A relationship's source end always names the type declaring it
+		// (FCD #199/#200 review finding 9); the target end's `type` is the
+		// resolved target and needs the cross-reference check above instead.
+		if (sourceEnd.type !== undefined && sourceEnd.type !== definition.identity) {
+			diagnostics.push({
+				code: "agent-ix.semantic-ir.INVALID_RELATIONSHIP_SOURCE",
+				path: `${path}.relationships.${index}.sourceEnd.type`,
+				message: `sourceEnd.type must be the owning type's own identity (${String(definition.identity)}), got ${String(sourceEnd.type)}`,
+			});
+		}
 		if (!CATEGORIES.has(String(relationship.category))) {
 			diagnostics.push({
 				code: "agent-ix.semantic-ir.UNKNOWN_EDGE_CATEGORY",
@@ -357,6 +445,7 @@ function checkTypeDefinition(
 				`${path}.operations.${index}.params.${paramIndex}`,
 				version,
 				types,
+				fields,
 				diagnostics,
 			);
 		}
@@ -489,6 +578,21 @@ export function readSemanticIr(
 	const types = new Map<string, JsonObject>();
 	for (const definition of asArray(document.types))
 		types.set(String(definition.identity), definition);
+	// Every field or operation param in the document, by its own identity
+	// (mirrors tests/semantic_ir_reader.py's `_field_index`).
+	const fields = new Map<string, JsonObject>();
+	for (const definition of types.values()) {
+		for (const field of asArray(definition.fields)) {
+			const identity = field.identity;
+			if (typeof identity === "string") fields.set(identity, field);
+		}
+		for (const operation of asArray(definition.operations)) {
+			for (const param of asArray(operation.params)) {
+				const identity = param.identity;
+				if (typeof identity === "string") fields.set(identity, param);
+			}
+		}
+	}
 	const exports = new Set(lockExports);
 	let index = 0;
 	for (const definition of asArray(document.types)) {
@@ -497,6 +601,7 @@ export function readSemanticIr(
 			`types.${index}`,
 			version,
 			types,
+			fields,
 			exports,
 			diagnostics,
 		);

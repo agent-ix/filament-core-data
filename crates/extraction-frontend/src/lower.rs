@@ -1251,21 +1251,22 @@ pub fn lower_bundle(
 /// Check every node the frontend admitted after the name-level pass. Name
 /// collisions are intentionally handled earlier as `DUPLICATE_TYPE_NAME`;
 /// this pass catches cross-kind collisions such as an authored `NoteRevision`
-/// type and the alias minted for `Note.revision`.
+/// type whose no-slot identity a field or operation elsewhere in the bundle
+/// also mints (FCD #199/#200 gap 2: none of these kinds mints its own
+/// `NodeKind` segment, so two different kinds can land on the same
+/// identity).
 fn identity_collisions(types: &[TypeDefinition]) -> Vec<Diagnostic> {
-    let mut seen: BTreeMap<String, Option<Locus>> = BTreeMap::new();
+    let mut seen: BTreeMap<String, Locus> = BTreeMap::new();
     let mut diagnostics = Vec::new();
     for definition in types {
         for (identity, locus) in identities_of(definition) {
             if let Some(first) = seen.get(&identity) {
-                let mut diagnostic = Diagnostic::frontend(
+                let diagnostic = Diagnostic::frontend(
                     Code::DuplicateIdentity,
                     format!("identity `{identity}` is already minted by an earlier node"),
-                    locus.clone(),
-                );
-                if let Some(first) = first {
-                    diagnostic = diagnostic.with_related(first.clone());
-                }
+                    Some(locus.clone()),
+                )
+                .with_related(first.clone());
                 diagnostics.push(diagnostic);
             } else {
                 seen.insert(identity, locus);
@@ -1275,12 +1276,12 @@ fn identity_collisions(types: &[TypeDefinition]) -> Vec<Diagnostic> {
     diagnostics
 }
 
-fn source_locus(origin: &Origin) -> Option<Locus> {
+fn source_locus(origin: &Origin) -> Locus {
     let Origin::Source(locus) = origin;
-    Some(locus.clone())
+    locus.clone()
 }
 
-fn identities_of(definition: &TypeDefinition) -> Vec<(String, Option<Locus>)> {
+fn identities_of(definition: &TypeDefinition) -> Vec<(String, Locus)> {
     let mut out = vec![(
         definition.identity.clone(),
         source_locus(&definition.origin),

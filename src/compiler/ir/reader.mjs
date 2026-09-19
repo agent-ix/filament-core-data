@@ -217,24 +217,37 @@ function nativeScalar(identity) {
 }
 
 /**
- * Resolves a `typeRef`: a native type reference; a field or param, through
- * its own `typeRef`; or a document type, through alias definitions,
- * terminating on a cycle. `fields` indexes every field and operation param
- * by its own identity (gap 1: a constrained field keeps its constraints
- * inline, with no alias node between them, so `appliesTo` may name a field
- * directly).
+ * Resolves a `typeRef`: a native type reference; a document type, through
+ * alias definitions, terminating on a cycle; or, only when `allowField` is
+ * set, a field or param through its own `typeRef`. `fields` indexes every
+ * field and operation param by its own identity (gap 1: a constrained field
+ * keeps its constraints inline, with no alias node between them, so
+ * `appliesTo` may name a field directly). A field or param's own `typeRef`
+ * must resolve against type nodes or native names only — a field identity
+ * used as a value's typeRef is not a definition and is refused (finding 8 of
+ * FCD #199/#200), so `checkField` and the operation-return check call this
+ * with `allowField: false`.
  */
-export function resolveKind(types, fields, typeRef, seen = new Set()) {
+export function resolveKind(
+	types,
+	fields,
+	typeRef,
+	seen = new Set(),
+	allowField = true,
+) {
 	if (typeof typeRef !== "string" || seen.has(typeRef)) return undefined;
 	const scalar = nativeScalar(typeRef);
 	if (scalar !== undefined) return { kind: "scalar", scalar };
 	seen.add(typeRef);
-	const field = fields?.get(typeRef);
-	if (field) return resolveKind(types, fields, field.typeRef, seen);
+	if (allowField) {
+		const field = fields?.get(typeRef);
+		if (field)
+			return resolveKind(types, fields, field.typeRef, seen, allowField);
+	}
 	const definition = types.get(typeRef);
 	if (!definition) return undefined;
 	if (definition.kind === "alias")
-		return resolveKind(types, fields, definition.target, seen);
+		return resolveKind(types, fields, definition.target, seen, allowField);
 	return {
 		kind: String(definition.kind),
 		scalar:
@@ -345,21 +358,42 @@ export function readContractIr(document, options = {}) {
 			);
 			return undefined;
 		}
+		// R2 (FCD #199/#200 review): `ordered`/`unique` describe a collection and
+		// mean nothing on a property whose upper bound is at most one. Contract
+		// 2.0.0 requires both keys on every multiplicity, defaulting `false`, so
+		// this keys on the *value* (`=== true`), not the key's presence — a
+		// mandatory `false` pair on a single-valued field is the required shape,
+		// not a violation.
+		if (
+			(value.ordered === true || value.unique === true) &&
+			upper !== undefined &&
+			upper <= 1
+		) {
+			raise(
+				DIAGNOSTIC_CODES.FLAGS_ON_NON_COLLECTION,
+				"ordered and unique describe a collection and this field is single-valued",
+				locusOf(owner),
+			);
+		}
 		return value;
 	};
 
 	const checkField = (field) => {
-		const resolved = resolveKind(types, fields, field.typeRef);
+		const resolved = resolveKind(types, fields, field.typeRef, undefined, false);
 		if (!resolved && !known.has(String(field.typeRef))) {
 			// Suppression is only for a reference that could plausibly belong to an
 			// imported package — one whose identity names a *different* package. A
 			// reference into this document's own package cannot be resolved by any
-			// resolution, so it is a defect whether or not one was supplied.
+			// resolution, so it is a defect whether or not one was supplied, and the
+			// reserved native namespace is never a foreign package either: a
+			// misspelled native reference (`ix://quire/native/Strng`) is a defect
+			// in this document, not an absent import.
 			const foreign =
 				exportsUnknown &&
 				typeof field.typeRef === "string" &&
 				documentPackage !== undefined &&
-				!field.typeRef.startsWith(`ix://${documentPackage}/`);
+				!field.typeRef.startsWith(`ix://${documentPackage}/`) &&
+				!field.typeRef.startsWith(NATIVE_PREFIX);
 			if (foreign) {
 				suppressions.push({
 					rule: DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF.code,
@@ -549,14 +583,16 @@ export function readContractIr(document, options = {}) {
 
 		for (const relationship of relationships) {
 			// The target end's `type` is the resolved target (gap 3 of FCD
-			// #199/#200); the source end always names this artifact's own
-			// type, so it needs no cross-reference check.
+			// #199/#200); the source end always names this artifact's own type
+			// (FCD #199/#200 review finding 9), which is checked directly below
+			// rather than assumed.
 			const target = String(relationship.targetEnd?.type);
 			if (!types.has(target) && !known.has(target)) {
 				const foreign =
 					exportsUnknown &&
 					documentPackage !== undefined &&
-					!target.startsWith(`ix://${documentPackage}/`);
+					!target.startsWith(`ix://${documentPackage}/`) &&
+					!target.startsWith(NATIVE_PREFIX);
 				if (foreign) {
 					suppressions.push({
 						rule: DIAGNOSTIC_CODES.UNRESOLVED_RELATIONSHIP_TARGET.code,
@@ -569,6 +605,17 @@ export function readContractIr(document, options = {}) {
 						locusOf(relationship) ?? locusOf(definition),
 					);
 				}
+			}
+			const source = relationship.sourceEnd?.type;
+			if (
+				typeof source === "string" &&
+				source !== String(definition.identity)
+			) {
+				raise(
+					DIAGNOSTIC_CODES.INVALID_RELATIONSHIP_SOURCE,
+					"a relationship's source end names the type declaring it",
+					locusOf(relationship) ?? locusOf(definition),
+				);
 			}
 			if (!EDGE_CATEGORIES.includes(String(relationship.category))) {
 				raise(
@@ -596,7 +643,15 @@ export function readContractIr(document, options = {}) {
 				checkField(parameter);
 			}
 			if (isObject(operation.returns)) {
-				if (!resolveKind(types, fields, operation.returns.typeRef)) {
+				if (
+					!resolveKind(
+						types,
+						fields,
+						operation.returns.typeRef,
+						undefined,
+						false,
+					)
+				) {
 					raise(
 						DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF,
 						"the return type reference resolves to no definition",
@@ -632,6 +687,11 @@ export function readContractIr(document, options = {}) {
 			}
 		}
 
+		// One identity space across every member category (FCD #199/#200 review
+		// finding 12): a field and an operation sharing an identity are as much
+		// a collision as two fields sharing one, so the set is not reset per
+		// label.
+		const memberIdentities = new Set();
 		for (const [label, entries] of [
 			["fields", ownFields],
 			["variants", asArray(definition.variants)],
@@ -640,17 +700,16 @@ export function readContractIr(document, options = {}) {
 			["operations", operations],
 			["clauses", clauses],
 		]) {
-			const identities = new Set();
 			for (const entry of entries) {
 				const identity = String(entry.identity);
-				if (identities.has(identity)) {
+				if (memberIdentities.has(identity)) {
 					raise(
 						DIAGNOSTIC_CODES.DUPLICATE_IDENTITY,
 						`the ${label} identity ${fragment(identity)} is declared twice`,
 						locusOf(entry) ?? locusOf(definition),
 					);
 				}
-				identities.add(identity);
+				memberIdentities.add(identity);
 			}
 		}
 	};

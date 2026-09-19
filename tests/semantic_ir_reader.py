@@ -120,12 +120,17 @@ def resolve_kind(
     fields: dict[str, dict[str, Any]],
     type_ref: Any,
     seen: set[str] | None = None,
+    allow_field: bool = True,
 ) -> tuple[str, str | None] | None:
-    """What `type_ref` resolves to: a native type reference; a field or
-    param, through its own `typeRef`; or a document type, through the alias
-    chain (gap 1 of FCD #199/#200: a constrained field keeps its constraints
-    inline, with no alias node between them, so `appliesTo` may name a field
-    directly)."""
+    """What `type_ref` resolves to: a native type reference; a document type,
+    through the alias chain; or, only when `allow_field` is set, a field or
+    param through its own `typeRef` (gap 1 of FCD #199/#200: a constrained
+    field keeps its constraints inline, with no alias node between them, so
+    `appliesTo` may name a field directly). A field or param's own `typeRef`
+    must resolve against type nodes or native names only — a field identity
+    used as a value's typeRef is not a definition and is refused (finding 8
+    of the FCD #199/#200 review), so `_check_field` and the operation-return
+    check call this with `allow_field=False`."""
     seen = seen or set()
     if not isinstance(type_ref, str) or type_ref in seen:
         return None
@@ -133,13 +138,15 @@ def resolve_kind(
     if native is not None:
         return ("scalar", native)
     seen.add(type_ref)
-    if type_ref in fields:
-        return resolve_kind(types, fields, fields[type_ref].get("typeRef"), seen)
+    if allow_field and type_ref in fields:
+        return resolve_kind(
+            types, fields, fields[type_ref].get("typeRef"), seen, allow_field
+        )
     if type_ref not in types:
         return None
     definition = types[type_ref]
     if definition.get("kind") == "alias":
-        return resolve_kind(types, fields, definition.get("target"), seen)
+        return resolve_kind(types, fields, definition.get("target"), seen, allow_field)
     scalar = definition.get("scalar")
     return (
         _kind_name(definition.get("kind")),
@@ -190,6 +197,24 @@ def _check_multiplicity(
             )
         )
         return None
+    # R2 (FCD #199/#200 review): `ordered`/`unique` are `@collection` and mean
+    # nothing on a property whose upper bound is at most one. FR-027-AC-8
+    # requires both keys on every multiplicity (defaulting `false`), so this
+    # keys on the *value* (`True`), not the key's presence — a mandatory
+    # `False` pair on a single-valued field is the required shape, not a
+    # violation.
+    if (
+        (value.get("ordered") is True or value.get("unique") is True)
+        and upper is not None
+        and upper <= 1
+    ):
+        out.append(
+            _diag(
+                "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
+                path,
+                "ordered and unique describe a collection and this field is single-valued",
+            )
+        )
     return value
 
 
@@ -201,7 +226,7 @@ def _check_field(
     fields: dict[str, dict[str, Any]],
     out: list[dict[str, str]],
 ) -> None:
-    resolved = resolve_kind(types, fields, field.get("typeRef"))
+    resolved = resolve_kind(types, fields, field.get("typeRef"), allow_field=False)
     if resolved is None:
         out.append(
             _diag(
@@ -246,6 +271,12 @@ def _check_field(
                     "unit needs a scalar",
                 )
             )
+    # A constrained field keeps its constraints inline, with no alias node
+    # between them (gap 1 of FCD #199/#200); each one's `appliesTo` already
+    # names this field's own identity, so `resolve_kind` resolves it through
+    # the `fields` branch above, the same as a type-level constraint.
+    for index, constraint in enumerate(_objects(field.get("constraints"))):
+        _check_constraint(constraint, f"{path}.constraints.{index}", types, fields, out)
 
 
 def _check_constraint(
@@ -393,6 +424,15 @@ def _check_type(
                     "target does not resolve",
                 )
             )
+        source_type = source_end.get("type")
+        if source_type is not None and source_type != definition.get("identity"):
+            out.append(
+                _diag(
+                    "agent-ix.semantic-ir.INVALID_RELATIONSHIP_SOURCE",
+                    f"{path}.relationships.{index}.sourceEnd.type",
+                    "sourceEnd must name the owning type's own identity",
+                )
+            )
         if str(relationship.get("category")) not in CATEGORIES:
             out.append(
                 _diag(
@@ -434,7 +474,12 @@ def _check_type(
             )
         returns = operation.get("returns")
         if isinstance(returns, dict):
-            if resolve_kind(types, fields, returns.get("typeRef")) is None:
+            if (
+                resolve_kind(
+                    types, fields, returns.get("typeRef"), allow_field=False
+                )
+                is None
+            ):
                 out.append(
                     _diag(
                         "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",

@@ -12,8 +12,12 @@ import pytest
 
 from tests.semantic_ir_reader import (
     FIXTURE_ROOT,
+    NATIVE_PREFIX,
+    NATIVE_SCALARS,
+    ROOT,
     SCHEMA_ROOT,
     _is_edge_kind,
+    _native_scalar,
     _schema_validator,
     construct_findings,
     normalize,
@@ -366,3 +370,24 @@ class TestContract20:
         assert [d["code"] for d in read_semantic_ir(document)] == [
             "agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED"
         ]
+
+
+class TestNativeScalarParity:
+    """R3 of the FCD #199/#200 review: this reader's ``NATIVE_SCALARS`` is one
+    of five independent copies of the FR-032 kernel scalar library (the
+    others are the Rust reader, the Node IR reader, the JSON-Schema backend,
+    and the rust-serde backend); each is checked against the canonical
+    ``packages/semantic-core/kernel-scalars.json`` rather than against each
+    other, and none is refactored into a shared module.
+
+    Description: TC-1811. Criteria: FR-032-AC-3.
+    """
+
+    def test_native_scalars_agrees_with_kernel_scalars_json(self) -> None:
+        canonical = json.loads(
+            (ROOT / "packages" / "semantic-core" / "kernel-scalars.json").read_text()
+        )
+        scalars = canonical["scalars"]
+        assert len(scalars) == len(NATIVE_SCALARS)
+        for name, definition in scalars.items():
+            assert _native_scalar(f"{NATIVE_PREFIX}{name}") == definition["irScalar"]

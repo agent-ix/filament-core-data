@@ -1485,7 +1485,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 	}, 120000);
 
 	/** Traces: TC-438, TC-599, TC-603; FR-046-AC-6, FR-046-AC-7. */
-	it("carries collection flags on a non-collection, refuses an inverted bound, and a contradicted optionality", async () => {
+	it("refuses flags on a non-collection, an inverted bound, and a contradicted optionality", async () => {
 		const flags = await compileSource(
 			[
 				"using AgentIx.Semantic.Decorators;",
@@ -1494,16 +1494,11 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				"model Thing { @collection(true, false) id: Text; }",
 			].join("\n"),
 		);
-		expect(codesOf(flags.diagnostics as never)).toEqual([]);
-		const flagsType = (flags.ir as never as { types: Json[] }).types.find(
-			(type) => type.displayName === "Thing",
+		const flagDiagnostic = (flags.diagnostics as unknown as Diagnostic[]).find(
+			(entry) => entry.code === DIAGNOSTIC_CODES.FLAGS_ON_NON_COLLECTION.code,
 		);
-		expect((flagsType?.fields as Json[])[0].multiplicity).toEqual({
-			lower: 1,
-			upper: 1,
-			ordered: true,
-			unique: false,
-		});
+		expect(flagDiagnostic).toBeDefined();
+		expect(flagDiagnostic?.locus?.startLine).toBe(4);
 
 		const inverted = await compileSource(
 			[
@@ -3934,6 +3929,40 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		}
 		expect(checked).toBeGreaterThan(0);
 	});
+
+	it("TC-1808: the reader's NATIVE_SCALARS agrees with kernel-scalars.json (R3, FR-032-AC-3)", () => {
+		// R3 of the FCD #199/#200 review: this reader's `NATIVE_SCALARS` is one
+		// of six independent copies of the FR-032 kernel scalar library (the
+		// others are the Rust reader, the Python reader, the JSON-Schema
+		// backend, the rust-serde backend, and the semantic-core reader); each
+		// is checked against the canonical `packages/semantic-core/kernel-scalars.json`
+		// rather than against each other, and none is refactored into a shared
+		// module.
+		const canonical = JSON.parse(
+			readFileSync(
+				resolve(root, "packages/semantic-core/kernel-scalars.json"),
+				"utf8",
+			),
+		) as { scalars: Record<string, { irScalar: string }> };
+		const source = readFileSync(
+			resolve(root, "src/compiler/ir/reader.mjs"),
+			"utf8",
+		);
+		const match = source.match(/const NATIVE_SCALARS = new Map\(\[([\s\S]*?)\]\);/);
+		expect(match).not.toBeNull();
+		const pairs = Object.fromEntries(
+			Array.from(
+				(match as RegExpMatchArray)[1].matchAll(
+					/\["([^"]+)",\s*"([^"]+)"\]/g,
+				),
+			).map((entry) => [entry[1], entry[2]]),
+		);
+		const names = Object.keys(canonical.scalars);
+		expect(Object.keys(pairs).sort()).toEqual(names.sort());
+		for (const name of names) {
+			expect(pairs[name]).toBe(canonical.scalars[name].irScalar);
+		}
+	});
 });
 
 // ---------------------------------------------------------------------------
@@ -5963,7 +5992,7 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 		);
 		const schema = (name: string) => ({
 			$id: `https://schemas.example.test/${name}.json`,
-			"x-agent-ix-semantic-id": `ix://agent-ix/semantic-core/type/${name}`,
+			"x-agent-ix-semantic-id": `ix://agent-ix/semantic-core/${name}`,
 			type: "string",
 		});
 		const result = lower.lowerBundle([
@@ -5971,7 +6000,7 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 				"Choice.json",
 				{
 					$id: "https://schemas.example.test/Choice.json",
-					"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/Choice",
+					"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/Choice",
 					anyOf: [
 						{ $ref: "https://schemas.example.test/Left.json" },
 						{ $ref: "https://schemas.example.test/Right.json" },
@@ -6013,7 +6042,7 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 				{
 					$id: "https://schemas.example.test/Constraint.json",
 					"x-agent-ix-semantic-id":
-						"ix://agent-ix/semantic-core/type/Constraint",
+						"ix://agent-ix/semantic-core/Constraint",
 					type: "object",
 					unevaluatedProperties: { not: {} },
 					properties: {

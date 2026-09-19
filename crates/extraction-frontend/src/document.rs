@@ -40,10 +40,9 @@ pub fn assemble(
     );
     members.insert("source".to_string(), to_value(&envelope.source));
     members.insert("package".to_string(), to_value(&envelope.package));
-    members.insert(
-        "types".to_string(),
-        Value::Array(types.iter().map(to_value).collect()),
-    );
+    let mut types_value = Value::Array(types.iter().map(to_value).collect());
+    normalize_multiplicities(&mut types_value);
+    members.insert("types".to_string(), types_value);
     members.insert(
         "occurrences".to_string(),
         Value::Array(envelope.occurrences.clone()),
@@ -62,20 +61,26 @@ pub fn assemble(
         ),
     );
     let mut document = Value::Object(members);
-    normalize_multiplicities(&mut document);
     sort_node_lists(&mut document);
     Ok(document)
 }
 
-/// Every `multiplicity` member, wherever it sits (a field, a parameter, an
-/// operation's `returns`, a relationship end, a construct's own
-/// `multiplicity`, a connection end): `ordered` and `unique` are booleans on
-/// every one, `false` when the row that produced it named neither
-/// (QSpec model-complete.md, FCD #199/#200's multiplicity ruling). This
-/// frontend's own `Multiplicity` value skips an absent `ordered`/`unique`
-/// (`quire_rs::semantic::Multiplicity`, vendored, not this crate's to
-/// change), so the fill-in happens once here, over the assembled document,
-/// rather than at every site that carries a multiplicity.
+/// Every `multiplicity` member under a `types` entry, wherever it sits (a
+/// field, a parameter, an operation's `returns`, a relationship end, a
+/// construct's own `multiplicity`, a connection end): `ordered` and `unique`
+/// are booleans on every one, `false` when the row that produced it named
+/// neither (QSpec model-complete.md, FCD #199/#200's multiplicity ruling).
+/// This frontend's own `Multiplicity` value skips an absent `ordered`/
+/// `unique` (`quire_rs::semantic::Multiplicity`, vendored, not this crate's
+/// to change), so the fill-in happens once here, over the assembled `types`
+/// array, rather than at every site that carries a multiplicity.
+///
+/// Scoped to `types` alone, not the whole document: `extensions` carries
+/// opaque vendor payloads, and the top-level `constructs` array carries a
+/// module's own vocabulary declaration (FR-143, one entry per construct
+/// *kind*, deduplicated) rather than an artifact's lowered data — neither is
+/// an IR member path this frontend defines, so a coincidental `multiplicity`
+/// key inside either is left exactly as its producer wrote it.
 fn normalize_multiplicities(value: &mut Value) {
     match value {
         Value::Object(map) => {

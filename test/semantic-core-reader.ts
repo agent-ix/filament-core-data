@@ -75,10 +75,7 @@ function checkMultiplicity(
 		return;
 	}
 	const collection = upper === undefined || upper > 1;
-	if (
-		!collection &&
-		(value.ordered !== undefined || value.unique !== undefined)
-	)
+	if (!collection && (value.ordered === true || value.unique === true))
 		push(
 			out,
 			"agent-ix.semantic-core.FLAGS_ON_NON_COLLECTION",

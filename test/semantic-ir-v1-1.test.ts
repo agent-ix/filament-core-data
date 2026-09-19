@@ -679,21 +679,12 @@ describe("FR-027 field multiplicity and units", () => {
 	 * Traces: TC-237; FR-027-AC-8.
 	 *
 	 * QSpec model-complete.md: every multiplicity carries `ordered` and
-	 * `unique`, defaulting to `false`; the wire is explicit, not implicit.
-	 * fcd#199/#200's multiplicity ruling deleted FLAGS_ON_NON_COLLECTION, so an
-	 * explicit `ordered`/`unique` on a single-valued field is no longer a
-	 * refusal.
+	 * `unique`, defaulting to `false`; `ordered` or `unique` set `true`
+	 * describes a collection, so it is refused on a single-valued field
+	 * (FCD #199/#200 review R2).
 	 */
-	it("carries ordered and unique flags on a single-valued field", () => {
-		const document = clone(goldenV11());
-		setAt(document, "types.3.fields.1.multiplicity", {
-			lower: 1,
-			upper: 1,
-			ordered: true,
-			unique: false,
-		});
-		expect(validates("semantic-ir.schema.json", document)).toBe(true);
-		expect(readSemanticIr(document)).toEqual([]);
+	it("fails ordered or unique flags on a single-valued field", () => {
+		expectReaderFailure("field-flags-on-single");
 	});
 
 	/** Traces: TC-238; FR-027-AC-9. */
@@ -1302,9 +1293,14 @@ function seededDocument(seed: number): JsonObject {
 		const multiplicity: JsonObject = { lower };
 		if (upper !== undefined) multiplicity.upper = upper;
 		// fcd#199/#200's multiplicity ruling: every multiplicity carries
-		// `ordered` and `unique`, on every field regardless of its bound.
-		multiplicity.ordered = random() < 0.5;
-		multiplicity.unique = random() < 0.5;
+		// `ordered` and `unique`, on every field regardless of its bound — but
+		// R2 refuses either as `true` where the upper bound is at most one, so
+		// this generator only randomizes them where the field is actually a
+		// collection (an absent or >1 upper bound); a single-valued field
+		// always gets the mandatory `false`/`false` pair.
+		const isCollection = upper === undefined || upper > 1;
+		multiplicity.ordered = isCollection && random() < 0.5;
+		multiplicity.unique = isCollection && random() < 0.5;
 		field.multiplicity = multiplicity;
 		field.presence = lower >= 1 ? "required" : "optional";
 		field.nullable = random() < 0.3;

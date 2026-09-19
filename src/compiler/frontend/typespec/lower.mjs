@@ -773,8 +773,20 @@ export function lowerProgram(options) {
 
 		// Every emitted multiplicity carries `ordered` and `unique` (QSpec
 		// model-complete.md); a property with no `@collection` decorator emits
-		// both as `false`.
+		// both as `false`. `@collection` on a property whose upper bound is
+		// absent or greater than one describes a collection; on a single-valued
+		// property (upper 0 or 1) it is refused (FCD #199/#200 review R2).
+		const isCollection =
+			multiplicity.upper === undefined || multiplicity.upper > 1;
 		if (collection) {
+			if (!isCollection) {
+				context.raise(
+					DIAGNOSTIC_CODES.FLAGS_ON_NON_COLLECTION,
+					"@collection applies only where the upper bound is absent or greater than one",
+					decoratorLocus(collection, property),
+				);
+				return undefined;
+			}
 			multiplicity.ordered = collection.ordered;
 			multiplicity.unique = collection.unique;
 		} else {
