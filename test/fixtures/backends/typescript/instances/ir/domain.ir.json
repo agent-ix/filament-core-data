@@ -212,7 +212,9 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -232,7 +234,9 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -252,7 +256,9 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -272,7 +278,9 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -292,7 +300,9 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -312,7 +322,9 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -332,7 +344,9 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -352,7 +366,9 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				}
 			]
@@ -391,7 +407,9 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"defaultValue": "fallback"
 				},
@@ -412,7 +430,9 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"defaultValue": "not-applied"
 				},
@@ -433,7 +453,9 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"defaultValue": "not-applied"
 				},
@@ -454,7 +476,9 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				}
 			]
@@ -493,7 +517,8 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"ordered": false
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -535,7 +560,8 @@
 					"multiplicity": {
 						"lower": 2,
 						"upper": 3,
-						"ordered": true
+						"ordered": true,
+						"unique": false
 					}
 				}
 			]
@@ -574,7 +600,9 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -594,7 +622,9 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -614,7 +644,9 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				}
 			]

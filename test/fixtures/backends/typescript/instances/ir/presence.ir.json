@@ -68,7 +68,9 @@
 					},
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -88,7 +90,9 @@
 					},
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -108,7 +112,9 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -128,7 +134,9 @@
 					},
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				}
 			]
