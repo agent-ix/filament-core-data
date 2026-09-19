@@ -36,6 +36,18 @@
 			"exercisedBy": "case"
 		},
 		{
+			"code": "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
+			"provenance": "frozen",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"rule": "Ordered or unique declared on a field that is not a collection (upper bound at most 1).",
+			"citation": "`multiplicity { lower, upper?, ordered, unique }` (absent `upper` is",
+			"exercisedBy": "case"
+		},
+		{
 			"code": "agent-ix.semantic-ir.UNIT_ON_NON_SCALAR",
 			"provenance": "frozen",
 			"decidedBy": "cross-field",
@@ -228,6 +240,18 @@
 			],
 			"rule": "A relationship target that is neither a document type nor a manifest export.",
 			"citation": "parses clause text. Relationship targets resolve to a document type or a lock",
+			"exercisedBy": "case"
+		},
+		{
+			"code": "agent-ix.semantic-ir.INVALID_RELATIONSHIP_SOURCE",
+			"provenance": "frozen",
+			"decidedBy": "cross-field",
+			"sources": [
+				"docs/semantic-data-system/contracts-v1.md",
+				"fixtures/semantic/v1/negative/reader-cases.json"
+			],
+			"rule": "A relationship sourceEnd.type that names a type other than the one declaring the relationship.",
+			"citation": "`sourceEnd` and `targetEnd` name one in `type`",
 			"exercisedBy": "case"
 		},
 		{

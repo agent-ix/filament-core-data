@@ -276,6 +276,19 @@ function checkMultiplicity(multiplicity, at, out) {
 		);
 		return multiplicity;
 	}
+	const collection = upper === undefined || upper > 1;
+	if (
+		!collection &&
+		(multiplicity.ordered === true || multiplicity.unique === true)
+	) {
+		out.push(
+			diagnostic(
+				"FLAGS_ON_NON_COLLECTION",
+				at,
+				"ordered and unique apply only when upper is absent or greater than 1",
+			),
+		);
+	}
 	return multiplicity;
 }
 
@@ -546,6 +559,18 @@ function checkTypeDefinition(definition, at, types, lockExports, out) {
 					"UNRESOLVED_RELATIONSHIP_TARGET",
 					`${at}/relationships/${i}/targetEnd/type`,
 					`relationship target resolves to neither a document type nor a lock export: ${target}`,
+				),
+			);
+		}
+		if (
+			sourceEnd.type !== undefined &&
+			String(sourceEnd.type) !== String(definition.identity)
+		) {
+			out.push(
+				diagnostic(
+					"INVALID_RELATIONSHIP_SOURCE",
+					`${at}/relationships/${i}/sourceEnd/type`,
+					`a relationship's source end names the type declaring it, not ${String(sourceEnd.type)}`,
 				),
 			);
 		}

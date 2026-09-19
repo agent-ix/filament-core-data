@@ -51,7 +51,7 @@ function code(name) {
 }
 
 /**
- * The closed admissibility register. Twenty-seven codes, spelled here and nowhere
+ * The closed admissibility register. Twenty-eight codes, spelled here and nowhere
  * else, standing in exact bijection with the `agent-ix.semantic-ir.` half of
  * `conformance/diagnostic-codes.json` — asserted in both directions by a test.
  */
@@ -59,6 +59,7 @@ export const ADMISSIBILITY_CODES = Object.freeze({
 	SCHEMA_VIOLATION: code("SCHEMA_VIOLATION"),
 	INVALID_DOCUMENT: code("INVALID_DOCUMENT"),
 	INVALID_MULTIPLICITY: code("INVALID_MULTIPLICITY"),
+	FLAGS_ON_NON_COLLECTION: code("FLAGS_ON_NON_COLLECTION"),
 	UNIT_ON_NON_SCALAR: code("UNIT_ON_NON_SCALAR"),
 	UNRESOLVED_TYPE_REF: code("UNRESOLVED_TYPE_REF"),
 	UNRESOLVED_ELEMENT_TYPE: code("UNRESOLVED_ELEMENT_TYPE"),
@@ -76,6 +77,7 @@ export const ADMISSIBILITY_CODES = Object.freeze({
 	INVALID_OPERAND: code("INVALID_OPERAND"),
 	INVALID_PATTERN: code("INVALID_PATTERN"),
 	UNRESOLVED_RELATIONSHIP_TARGET: code("UNRESOLVED_RELATIONSHIP_TARGET"),
+	INVALID_RELATIONSHIP_SOURCE: code("INVALID_RELATIONSHIP_SOURCE"),
 	COMPOSITE_CYCLE: code("COMPOSITE_CYCLE"),
 	UNRESOLVED_IMPORT: code("UNRESOLVED_IMPORT"),
 	PACKAGE_CYCLE: code("PACKAGE_CYCLE"),
@@ -133,6 +135,9 @@ export const DERIVATIONS = Object.freeze({
 	),
 	INVALID_MULTIPLICITY: fromCorpus(
 		"the contract names the two bounds and never says an upper below a lower is a defect; the incoherence is obvious and the rule is still the corpus's, not a clause's",
+	),
+	FLAGS_ON_NON_COLLECTION: fromCorpus(
+		"the contract lists ordered and unique as multiplicity members and never restricts them to a collection; the restriction is the corpus's reading",
 	),
 	UNIT_ON_NON_SCALAR: fromClause(
 		CONTRACTS,
@@ -193,6 +198,11 @@ export const DERIVATIONS = Object.freeze({
 	UNRESOLVED_RELATIONSHIP_TARGET: fromClause(
 		CONTRACTS,
 		"Relationship targets resolve to a document type or a lock",
+	),
+	INVALID_RELATIONSHIP_SOURCE: fromClause(
+		CONTRACTS,
+		"`sourceEnd` and `targetEnd` name one in `type`",
+		"the clause states that sourceEnd names a type; it does not itself say which one, so this backend's reading — the type declaring the relationship (FCD #199/#200 review finding 9) — is recorded rather than assumed",
 	),
 	COMPOSITE_CYCLE: fromClause(
 		CONTRACTS,
@@ -856,9 +866,11 @@ export function admitIr(bundle, options = {}) {
 			 * input. FR-068 names exactly six input-dependent rules and this is
 			 * not one of them.
 			 *
-			 * The target end's `type` is the resolved target (gap 3 of FCD
-			 * #199/#200); the source end always names this artifact's own
-			 * type, so it needs no cross-reference check here.
+			 * The target end's `type` is the resolved target. The source end
+			 * names the type declaring the relationship (finding 9 of FCD
+			 * #199/#200's review): the corrected reading of gap 3, superseding
+			 * the earlier assumption on this line that no cross-reference check
+			 * was needed here.
 			 */
 			const exported = importedExports ?? EMPTY;
 			const targetType = relationship.targetEnd?.type;
@@ -867,6 +879,15 @@ export function admitIr(bundle, options = {}) {
 					ADMISSIBILITY_CODES.UNRESOLVED_RELATIONSHIP_TARGET,
 					`${relationshipPointer}/targetEnd/type`,
 					"a relationship target resolves to a document type or a lock export",
+					{ owner: relationship.identity, locus: relationshipLocus },
+				);
+			}
+			const sourceType = relationship.sourceEnd?.type;
+			if (sourceType !== undefined && sourceType !== type.identity) {
+				emit(
+					ADMISSIBILITY_CODES.INVALID_RELATIONSHIP_SOURCE,
+					`${relationshipPointer}/sourceEnd/type`,
+					"a relationship's source end names the type declaring it",
 					{ owner: relationship.identity, locus: relationshipLocus },
 				);
 			}
@@ -978,6 +999,18 @@ export function admitIr(bundle, options = {}) {
 					ADMISSIBILITY_CODES.INVALID_MULTIPLICITY,
 					`${fieldPointer}/multiplicity/upper`,
 					"a multiplicity upper bound is not below its lower bound",
+					{ owner, locus: fieldLocus },
+				);
+			}
+			const collection = upper === undefined || upper > 1;
+			if (
+				!collection &&
+				(multiplicity.ordered === true || multiplicity.unique === true)
+			) {
+				emit(
+					ADMISSIBILITY_CODES.FLAGS_ON_NON_COLLECTION,
+					`${fieldPointer}/multiplicity`,
+					"ordered and unique appear only on a collection",
 					{ owner, locus: fieldLocus },
 				);
 			}
