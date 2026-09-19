@@ -178,8 +178,8 @@ type IdentityList = list[common_schema.SemanticIdentity]
 @dataclass(config=ConfigDict(extra='forbid'))
 class Multiplicity:
     lower: Annotated[int, Field(ge=0)]
-    ordered: bool | None = None
-    unique: bool | None = None
+    ordered: bool
+    unique: bool
     upper: Annotated[int | None, Field(ge=0)] = None
 
 
@@ -213,6 +213,20 @@ class Category(Enum):
     traceability = 'traceability'
 
 
+class Direction(Enum):
+    source_to_target = 'source-to-target'
+    target_to_source = 'target-to-source'
+    bidirectional = 'bidirectional'
+    undirected = 'undirected'
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class RelationshipEnd:
+    multiplicity: Multiplicity
+    type: common_schema.SemanticIdentity
+    role: Annotated[str | None, Field(min_length=1)] = None
+
+
 class StepKind(Enum):
     command = 'command'
     event = 'event'
@@ -221,7 +235,7 @@ class StepKind(Enum):
     wait = 'wait'
 
 
-class Direction(Enum):
+class Direction1(Enum):
     in_ = 'in'
     out = 'out'
     inout = 'inout'
@@ -364,6 +378,7 @@ class FieldModel:
     origin: common_schema.Origin
     presence: Presence
     typeRef: common_schema.SemanticIdentity
+    constraints: list[Constraint] | None = None
     defaultValue: Any | None = None
     extensions: list[common_schema.Extension] | None = None
     redefines: common_schema.SemanticIdentity | None = None
@@ -405,11 +420,11 @@ class Population:
 class Relationship:
     category: Category
     composite: bool
+    direction: Direction
     identity: common_schema.SemanticIdentity
-    multiplicity: Multiplicity
     origin: common_schema.Origin
-    target: common_schema.SemanticIdentity
-    verb: Annotated[str, Field(min_length=1)]
+    sourceEnd: RelationshipEnd
+    targetEnd: RelationshipEnd
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
@@ -483,7 +498,7 @@ class TypeDefinition:
     abstract: bool | None = None
     clauses: list[Clause] | None = None
     declaredType: common_schema.SemanticIdentity | None = None
-    direction: Direction | None = None
+    direction: Direction1 | None = None
     featureOrder: Annotated[
         list[common_schema.SemanticIdentity] | None, Field(min_length=1)
     ] = None

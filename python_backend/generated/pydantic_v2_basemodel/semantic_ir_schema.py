@@ -203,8 +203,8 @@ class Multiplicity(BaseModel):
         extra='forbid',
     )
     lower: Annotated[int, Field(ge=0)]
-    ordered: bool | None = None
-    unique: bool | None = None
+    ordered: bool
+    unique: bool
     upper: Annotated[int | None, Field(ge=0)] = None
 
 
@@ -242,6 +242,22 @@ class Category(Enum):
     traceability = 'traceability'
 
 
+class Direction(Enum):
+    source_to_target = 'source-to-target'
+    target_to_source = 'target-to-source'
+    bidirectional = 'bidirectional'
+    undirected = 'undirected'
+
+
+class RelationshipEnd(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    multiplicity: Multiplicity
+    role: Annotated[str | None, Field(min_length=1)] = None
+    type: common_schema.SemanticIdentity
+
+
 class StepKind(Enum):
     command = 'command'
     event = 'event'
@@ -250,7 +266,7 @@ class StepKind(Enum):
     wait = 'wait'
 
 
-class Direction(Enum):
+class Direction1(Enum):
     in_ = 'in'
     out = 'out'
     inout = 'inout'
@@ -416,6 +432,7 @@ class FieldModel(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
+    constraints: list[Constraint] | None = None
     defaultKind: DefaultKind
     defaultValue: Any | None = None
     extensions: list[common_schema.Extension] | None = None
@@ -473,11 +490,11 @@ class Relationship(BaseModel):
     )
     category: Category
     composite: bool
+    direction: Direction
     identity: common_schema.SemanticIdentity
-    multiplicity: Multiplicity
     origin: common_schema.Origin
-    target: common_schema.SemanticIdentity
-    verb: Annotated[str, Field(min_length=1)]
+    sourceEnd: RelationshipEnd
+    targetEnd: RelationshipEnd
 
 
 class State(BaseModel):
@@ -559,7 +576,7 @@ class TypeDefinition(BaseModel):
     clauses: list[Clause] | None = None
     constraints: list[Constraint]
     declaredType: common_schema.SemanticIdentity | None = None
-    direction: Direction | None = None
+    direction: Direction1 | None = None
     displayName: Annotated[str, Field(min_length=1)]
     extensions: list[common_schema.Extension]
     featureOrder: Annotated[
