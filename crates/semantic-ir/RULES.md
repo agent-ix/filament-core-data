@@ -122,7 +122,7 @@ with it.
 | `SUPERTYPE_CYCLE` | `contracts-v1.md` "The types this type specializes, of the same kind; the graph is acyclic" | `2.0.0` only: a type whose `supertypes` walk reaches its own identity, at `.../supertypes`. |
 | `UNRESOLVED_FEATURE_REF` | `contracts-v1.md` "Supertype fields whose values include this field's values" | `2.0.0` only: a `subsets` or `redefines` entry naming no field of a transitive supertype. |
 | `INVALID_REDEFINITION` | `contracts-v1.md` "its multiplicity lies within the redefined bounds" | `2.0.0` only: a redefining field whose `lower` is below, or whose `upper` is above, the redefined field's bounds (absent bounds read as `1` and unbounded). |
-| `UNRESOLVED_FRAME_PATH` | `contracts-v1.md` "each starting at a field or parameter" | `2.0.0` only: a `frame` path whose first segment names neither a field of the owning type or a supertype nor a parameter of the operation. |
+| `UNRESOLVED_FRAME_PATH` | `contracts-v1.md` "Declaration references the operation `modifies` (a field or relationship), `creates` or `deletes` (an object type or process); never an access path" | `2.0.0` only: a `frame` `modifies` entry naming no field or relationship of the owning type or a supertype, or a `creates`/`deletes` entry naming no type the document declares. |
 | `MULTIPLE_DOMAIN_MEMBERSHIP` | `contracts-v1.md` "a type named by two exclusive memberships raises" | `2.0.0` only: a type named by the `members` of a second type whose construct declaration selects `exclusive_membership`, at that entry. |
 | `INCOMPLETE_FEATURE_ORDER` | `contracts-v1.md` "a field or operation it omits raises" | `2.0.0` only (`constructs.rs`): a `featureOrder` that does not name a field or operation the type declares itself, once per omitted feature. |
 

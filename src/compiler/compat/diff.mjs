@@ -272,6 +272,20 @@ export function diffSemanticContract(request) {
 			}
 		}
 
+		if (!same(previous.supertypes ?? [], next.supertypes ?? [])) {
+			record(identity, "generalization", "breaking", "the supertypes changed");
+		}
+		if ((previous.abstract ?? false) !== (next.abstract ?? false)) {
+			record(
+				identity,
+				"abstract",
+				next.abstract === true ? "breaking" : "additive",
+				next.abstract === true
+					? "the type became abstract, disallowing the direct instances it previously allowed"
+					: "the type became concrete, allowing direct instances it previously disallowed",
+			);
+		}
+
 		if (previous.unknownPolicy !== next.unknownPolicy) {
 			const tightened =
 				previous.unknownPolicy === "preserve" &&
@@ -304,6 +318,9 @@ export function diffSemanticContract(request) {
 			);
 		}
 	}
+
+	diffPopulations(before, after, record);
+	diffConstructs(before, after, record);
 
 	// ---- families that come from declared inputs -----------------------------
 	const requiredGates = [];
@@ -574,6 +591,22 @@ function diffFields(previous, next, record, consumerPolicies, evidence) {
 				`presence changed from ${original.presence} to ${field.presence}`,
 			);
 		}
+		if (!same(original.subsets ?? [], field.subsets ?? [])) {
+			record(
+				identity,
+				"subsets",
+				"breaking",
+				"the subsetted supertype fields changed",
+			);
+		}
+		if ((original.redefines ?? null) !== (field.redefines ?? null)) {
+			record(
+				identity,
+				"redefines",
+				"breaking",
+				`the redefined field changed from ${original.redefines ?? "none"} to ${field.redefines ?? "none"}`,
+			);
+		}
 	}
 }
 
@@ -686,6 +719,83 @@ function diffNodes(previous, next, record) {
 			if (same(original, node)) continue;
 			record(identity, observed, "breaking", `a ${observed} changed`);
 		}
+	}
+}
+
+/**
+ * `populations` is a document-level member (FR-141), not a per-type one: each
+ * entry is a named instance extent, keyed by its own `identity`.
+ */
+function diffPopulations(previous, next, record) {
+	const before = byIdentity(previous?.populations);
+	const after = byIdentity(next?.populations);
+	for (const [identity] of before) {
+		if (after.has(identity)) continue;
+		record(identity, "populations", "breaking", "a population was removed");
+	}
+	for (const [identity, population] of after) {
+		const original = before.get(identity);
+		if (!original) {
+			record(identity, "populations", "additive", "a population was added");
+			continue;
+		}
+		if (same(original.members, population.members)) continue;
+		record(
+			identity,
+			"populations",
+			"breaking",
+			"a population's members changed",
+		);
+	}
+}
+
+/**
+ * A construct table entry (FR-142) carries no `identity` of its own — its
+ * key is `kind` ({module, name}) — so the change identity is synthesised
+ * from it. `meaning` is the one member a diff can compare: FCD carries it
+ * opaquely (FR-208) and does not interpret it, so a changed `meaning` is
+ * reported without judging what the change means.
+ */
+function constructKey(entry) {
+	return `${entry?.kind?.module}/${entry?.kind?.name}`;
+}
+
+function diffConstructs(previous, next, record) {
+	const before = new Map(
+		(previous?.constructs ?? []).map((entry) => [constructKey(entry), entry]),
+	);
+	const after = new Map(
+		(next?.constructs ?? []).map((entry) => [constructKey(entry), entry]),
+	);
+	const identityOf = (key) =>
+		`ix://agent-ix/filament-core-data/construct/${key}`;
+	for (const [key] of before) {
+		if (after.has(key)) continue;
+		record(
+			identityOf(key),
+			"construct",
+			"breaking",
+			`the construct ${key} was removed`,
+		);
+	}
+	for (const [key, entry] of after) {
+		const original = before.get(key);
+		if (!original) {
+			record(
+				identityOf(key),
+				"construct",
+				"additive",
+				`the construct ${key} was added`,
+			);
+			continue;
+		}
+		if (original.construct?.meaning === entry.construct?.meaning) continue;
+		record(
+			identityOf(key),
+			"construct",
+			"breaking",
+			`the construct ${key}'s meaning changed from ${original.construct?.meaning} to ${entry.construct?.meaning}`,
+		);
 	}
 }
 

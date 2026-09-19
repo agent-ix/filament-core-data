@@ -921,7 +921,11 @@ describe("TC-1773 every construct kind and model member rendered by the TypeScri
 					"OrderLifecycle.advance"
 				],
 			).toStrictEqual({
-				frame: { creates: [], deletes: [], modifies: ["current"] },
+				frame: {
+					creates: [],
+					deletes: [],
+					modifies: ["ix://agent-ix/orders/field/SM-001-current"],
+				},
 				post: [{ language: "quire", text: "current = to" }],
 				pre: [{ language: "quire", text: "to <> current" }],
 			});

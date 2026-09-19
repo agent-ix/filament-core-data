@@ -290,16 +290,29 @@ fn tc_1742_unresolved_subsets_and_widening_redefines_raise_their_codes() {
 
 #[trace("TC-1743", "FR-141-AC-4")]
 #[test]
-fn tc_1743_unresolved_frame_path_and_population_member_raise_their_codes() {
+fn tc_1743_unresolved_frame_reference_and_population_member_raise_their_codes() {
     let sm = position(&positive(), &type_ref("SM-001"));
     let mut frame = positive();
-    type_mut(&mut frame, "SM-001")["operations"][0]["frame"]["modifies"] =
-        json!(["current", "nowhere.deep"]);
+    type_mut(&mut frame, "SM-001")["operations"][0]["frame"]["modifies"] = json!([
+        "ix://agent-ix/orders/field/SM-001-current",
+        "ix://agent-ix/orders/field/nowhere"
+    ]);
     assert_rust(
-        "unresolved frame path",
+        "unresolved frame reference in modifies",
         &frame,
         &[format!(
             "UNRESOLVED_FRAME_PATH at /ir/types/{sm}/operations/0/frame/modifies/1"
+        )],
+    );
+
+    let mut frame_creates = positive();
+    type_mut(&mut frame_creates, "SM-001")["operations"][0]["frame"]["creates"] =
+        json!(["ix://agent-ix/orders/type/nowhere"]);
+    assert_rust(
+        "unresolved frame reference in creates",
+        &frame_creates,
+        &[format!(
+            "UNRESOLVED_FRAME_PATH at /ir/types/{sm}/operations/0/frame/creates/0"
         )],
     );
 
@@ -309,6 +322,25 @@ fn tc_1743_unresolved_frame_path_and_population_member_raise_their_codes() {
         "unresolved population member",
         &population,
         &["UNRESOLVED_TYPE_REF at /ir/populations/0/members/0/typeRef".to_string()],
+    );
+}
+
+/// A frame `modifies` entry naming a declared relationship, and a `creates`
+/// entry naming a declared type, are accepted: an operation frame is a set of
+/// declaration references, never a dotted access path (ADR-002).
+#[trace("TC-1743", "FR-141-AC-4")]
+#[test]
+fn tc_1743_frame_admits_a_relationship_modifies_entry_and_a_declared_creates_entry() {
+    let mut valid = positive();
+    type_mut(&mut valid, "SM-001")["operations"][0]["frame"] = json!({
+        "modifies": ["ix://agent-ix/orders/relationship/SM-001-references-EN-001"],
+        "creates": ["ix://agent-ix/orders/type/EN-001"],
+        "deletes": [],
+    });
+    assert_rust(
+        "frame relationship and type references resolve",
+        &valid,
+        &[],
     );
 }
 

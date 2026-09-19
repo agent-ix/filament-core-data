@@ -1574,18 +1574,11 @@ const OPERATION_MEMBERS: &[&str] = &[
 const FRAME_MEMBERS: &[&str] = &["modifies", "creates", "deletes"];
 const INLINE_CLAUSE_MEMBERS: &[&str] = &["language", "text", "sourceSpan", "origin"];
 
-/// A dotted feature path: `name(.name)*`.
-fn is_feature_path(text: &str) -> bool {
-    !text.is_empty()
-        && text.split('.').all(|segment| {
-            let mut chars = segment.chars();
-            chars
-                .next()
-                .is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
-                && chars.all(|c| c.is_ascii_alphanumeric() || c == '_')
-        })
-}
-
+/// A frame declares `modifies`, `creates` and `deletes` as declaration
+/// references: each entry is a `semanticIdentity`, never a dotted access
+/// path. `modifies` names a field or relationship; `creates` and `deletes`
+/// name a type. Which identity kind an entry must resolve to is a semantic
+/// rule (`constructs.rs`), not a schema-layer shape check.
 fn frame_schema(frame: &Json, at: &str, f: &mut Findings) {
     if !expect_object(frame, at, "a frame", f) {
         return;
@@ -1593,26 +1586,7 @@ fn frame_schema(frame: &Json, at: &str, f: &mut Findings) {
     require_members(frame, at, FRAME_MEMBERS, f);
     forbid_extra(frame, at, FRAME_MEMBERS, f);
     for name in FRAME_MEMBERS {
-        let Some(paths) = frame.get(name) else {
-            continue;
-        };
-        let paths_at = child(at, name);
-        if !expect_array(paths, &paths_at, name, f) {
-            continue;
-        }
-        let items = paths.as_array().unwrap_or(&[]);
-        for (position, path) in items.iter().enumerate() {
-            expect_shape(
-                Some(path),
-                &index(&paths_at, position),
-                is_feature_path,
-                "a frame path is a dotted feature path",
-                f,
-            );
-        }
-        if has_duplicate_strings(items) {
-            f.push(&paths_at, format!("{name} entries are unique"));
-        }
+        identity_list(frame.get(name), &child(at, name), name, f);
     }
 }
 

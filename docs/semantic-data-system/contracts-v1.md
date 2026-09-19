@@ -260,7 +260,7 @@ filling in a default.
 | `abstract` | type | The type has no direct instances | — |
 | `subsets` | field | Supertype fields whose values include this field's values | `UNRESOLVED_FEATURE_REF` |
 | `redefines` | field | The supertype field this field narrows; its multiplicity lies within the redefined bounds | `UNRESOLVED_FEATURE_REF`, `INVALID_REDEFINITION` |
-| `frame` | operation | Feature paths the operation `modifies`, `creates` and `deletes`, each starting at a field or parameter | `UNRESOLVED_FRAME_PATH` |
+| `frame` | operation | Declaration references the operation `modifies` (a field or relationship), `creates` or `deletes` (an object type or process); never an access path. QSpec #101 and #106 leave the frame's body encoding and grant-range semantics open | `UNRESOLVED_FRAME_PATH` |
 | `pre`, `post` items | operation | A `pre` or `post` item is a clause id or an inline clause `{language, text}` | `DANGLING_CLAUSE_REF` for an id item |
 | `populations` | document | Named instance extents: type references with a multiplicity | `UNRESOLVED_TYPE_REF` |
 

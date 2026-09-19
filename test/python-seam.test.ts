@@ -307,7 +307,7 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 				"'Ordering': (('Order', \"A customer's request for goods.\"),),",
 				"'Order': {'badges': ('labels',)},",
 				"'Order': {'id': 'id', 'labels': 'labels'},",
-				"'OrderLifecycle.advance': {'modifies': ('current',), 'creates': (), 'deletes': ()},",
+				"'OrderLifecycle.advance': {'modifies': ('ix://agent-ix/orders/field/SM-001-current',), 'creates': (), 'deletes': ()},",
 				// Traces: TC-1796; FR-141-AC-9. Only the inline items of a mixed list.
 				"'OrderLifecycle.advance': {'pre': (('quire', 'to <> current'),), 'post': (('quire', 'current = to'),)},",
 				"'OpenOrders': (('Order', 0, None),),",

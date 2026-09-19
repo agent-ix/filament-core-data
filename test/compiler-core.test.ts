@@ -3892,6 +3892,14 @@ describe("compatibility (FR-051)", () => {
 			newFingerprint: string;
 		};
 	};
+	const reportOfPair = (oldDocument: unknown, newDocument: unknown) =>
+		diffSemanticContract({
+			old: oldDocument,
+			new: newDocument,
+		} as never) as never as {
+			changes: { family: string; disposition: string; identity: string }[];
+			aggregateDisposition: string;
+		};
 
 	/** Traces: TC-527, TC-602; FR-051-AC-1. */
 	it("reproduces every published compatibility case", () => {
@@ -4152,6 +4160,199 @@ describe("compatibility (FR-051)", () => {
 		expect(reportOf("multiplicity-widening").aggregateDisposition).toBe(
 			"additive",
 		);
+	});
+
+	/** Traces: TC-1804; FR-051-AC-16. */
+	it("classifies a change to each of the seven FR-141 model members", () => {
+		const base = constructed("documentation-only").old as never as {
+			types: {
+				identity: string;
+				kind: string;
+				supertypes?: string[];
+				abstract?: boolean;
+				fields?: { identity: string; subsets?: string[]; redefines?: string }[];
+			}[];
+			populations: {
+				identity: string;
+				displayName: string;
+				members: { typeRef: string; extent: { lower: number } }[];
+				origin: unknown;
+			}[];
+			constructs: {
+				kind: { module: string; name: string };
+				moduleVersion: string;
+				manifestDigest: string;
+				construct: {
+					identity: string;
+					shape: string;
+					members: Record<string, never>;
+					meaning: string;
+				};
+			}[];
+		};
+		const artifact = base.types.find(
+			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+		)!;
+		const field = artifact.fields![0];
+
+		// supertypes: added, an existing type reference reused so no other
+		// family fires alongside it.
+		const supertyped = structuredClone(base);
+		supertyped.types.find(
+			(type) => type.identity === artifact.identity,
+		)!.supertypes = ["ix://agent-ix/assurance/type/Text"];
+		expect(
+			reportOfPair(base, supertyped).changes.map((change) => change.family),
+		).toContain("type");
+
+		// abstract: cleared and set.
+		const abstractSet = structuredClone(base);
+		abstractSet.types.find(
+			(type) => type.identity === artifact.identity,
+		)!.abstract = true;
+		const abstractReport = reportOfPair(base, abstractSet);
+		expect(abstractReport.aggregateDisposition).toBe("breaking");
+		const abstractCleared = reportOfPair(abstractSet, base);
+		expect(abstractCleared.aggregateDisposition).toBe("additive");
+
+		// subsets and redefines: both added to the same field.
+		const featured = structuredClone(base);
+		const featuredField = featured.types.find(
+			(type) => type.identity === artifact.identity,
+		)!.fields![0];
+		featuredField.subsets = ["ix://agent-ix/assurance/field/Artifact-tags"];
+		featuredField.redefines = "ix://agent-ix/assurance/field/Artifact-tags";
+		const featureReport = reportOfPair(base, featured);
+		expect(featureReport.aggregateDisposition).toBe("breaking");
+		expect(
+			featureReport.changes.some(
+				(change) => change.identity === field.identity,
+			),
+		).toBe(true);
+
+		// populations: document-level, added then its members changed.
+		const withPopulation = structuredClone(base);
+		withPopulation.populations = [
+			{
+				identity: "ix://agent-ix/assurance/population/all-artifacts",
+				displayName: "All artifacts",
+				members: [
+					{
+						typeRef: artifact.identity,
+						extent: { lower: 0 },
+					},
+				],
+				origin: {
+					source: {
+						sourceIdentity: "ix://agent-ix/assurance/source/typespec",
+						path: "types/main.tsp",
+						startLine: 1,
+						startColumn: 1,
+					},
+				},
+			},
+		];
+		const populationAdded = reportOfPair(base, withPopulation);
+		expect(
+			populationAdded.changes.some(
+				(change) =>
+					change.identity ===
+						"ix://agent-ix/assurance/population/all-artifacts" &&
+					change.disposition === "additive",
+			),
+		).toBe(true);
+		const populationChanged = structuredClone(withPopulation);
+		populationChanged.populations[0].members[0].extent = { lower: 1 };
+		expect(
+			reportOfPair(withPopulation, populationChanged).changes.some(
+				(change) =>
+					change.identity ===
+						"ix://agent-ix/assurance/population/all-artifacts" &&
+					change.disposition === "breaking",
+			),
+		).toBe(true);
+		const populationRemoved = reportOfPair(withPopulation, base);
+		expect(
+			populationRemoved.changes.some(
+				(change) =>
+					change.identity ===
+						"ix://agent-ix/assurance/population/all-artifacts" &&
+					change.disposition === "breaking",
+			),
+		).toBe(true);
+
+		// constructs: the FR-142 meaning table, keyed by kind, added then its
+		// meaning changed.
+		const withConstruct = structuredClone(base);
+		withConstruct.constructs = [
+			{
+				kind: { module: "agent-ix/assurance", name: "entity" },
+				moduleVersion: "1.0.0",
+				manifestDigest:
+					"sha256:0000000000000000000000000000000000000000000000000000000000000000",
+				construct: {
+					identity: "identified",
+					shape: "record",
+					members: {},
+					meaning: "ix://agent-ix/quire-specification/meaning/entity",
+				},
+			},
+		];
+		const constructAdded = reportOfPair(base, withConstruct);
+		expect(
+			constructAdded.changes.some(
+				(change) =>
+					change.family === "type" && change.disposition === "additive",
+			),
+		).toBe(true);
+		const constructChanged = structuredClone(withConstruct);
+		constructChanged.constructs[0].construct.meaning =
+			"ix://agent-ix/quire-specification/meaning/entity-v2";
+		expect(
+			reportOfPair(withConstruct, constructChanged).aggregateDisposition,
+		).toBe("breaking");
+
+		// frame: caught by the existing whole-operation comparison, classified
+		// with the owning operation (`type`, `breaking`) rather than its own
+		// family, because QSpec #101/#106 have not settled what the frame
+		// itself means to diff.
+		const framed = structuredClone(base);
+		framed.types.find(
+			(type) => type.identity === artifact.identity,
+		)!.operations = [
+			{
+				identity: "ix://agent-ix/assurance/operation/Artifact-archive",
+				name: "archive",
+				params: [],
+				pre: ["not_archived"],
+				post: [],
+				returns: {
+					typeRef: "ix://agent-ix/assurance/type/Status",
+					multiplicity: { lower: 1, upper: 1 },
+					nullable: false,
+				},
+				frame: {
+					modifies: ["ix://agent-ix/assurance/field/Artifact-tags"],
+					creates: [],
+					deletes: [],
+				},
+				origin: {
+					source: {
+						sourceIdentity: "ix://agent-ix/assurance/source/typespec",
+						path: "types/main.tsp",
+						startLine: 20,
+						startColumn: 1,
+					},
+				},
+			},
+		];
+		const framedReport = reportOfPair(base, framed);
+		expect(
+			framedReport.changes.some(
+				(change) =>
+					change.family === "type" && change.disposition === "breaking",
+			),
+		).toBe(true);
 	});
 
 	/** Traces: TC-545; FR-051-CON-4. */

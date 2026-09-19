@@ -253,7 +253,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		});
 		const advance = lifecycle["x-agent-ix-operations"][0];
 		expect(advance.frame).toStrictEqual({
-			modifies: ["current"],
+			modifies: ["ix://agent-ix/orders/field/SM-001-current"],
 			creates: [],
 			deletes: [],
 		});

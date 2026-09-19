@@ -501,7 +501,7 @@ describe("identity, abstract types and member scopes in the Rust backend (FR-054
 		const flat = [...written.values()].join("\n").replace(/\s+/g, " ");
 		expect(flat).toContain('pre: &["can_ship"], post: &[], origin:');
 		expect(flat).toContain(
-			'operation: "advance", frame: Some(crate::identity::FrameMeta { modifies: &["current"], creates: &[], deletes: &[], }), pre: &[crate::identity::InlineClauseMeta { language: "quire", text: "to <> current", }], post: &[crate::identity::InlineClauseMeta { language: "quire", text: "current = to", }], }',
+			'operation: "advance", frame: Some(crate::identity::FrameMeta { modifies: &["ix://agent-ix/orders/field/SM-001-current"], creates: &[], deletes: &[], }), pre: &[crate::identity::InlineClauseMeta { language: "quire", text: "to <> current", }], post: &[crate::identity::InlineClauseMeta { language: "quire", text: "current = to", }], }',
 		);
 	});
 

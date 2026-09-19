@@ -1858,7 +1858,7 @@
 						"typeRef": "ix://agent-ix/orders/type/EN-001"
 					},
 					"frame": {
-						"modifies": ["current"],
+						"modifies": ["ix://agent-ix/orders/field/SM-001-current"],
 						"creates": [],
 						"deletes": []
 					}

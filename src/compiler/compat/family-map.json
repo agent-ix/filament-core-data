@@ -1,6 +1,10 @@
 {
 	"$comment": "Observed-change family to compatibility-report family and surface (FR-051). The left column is the vocabulary `fixtures/semantic/v1/compatibility/cases.json` uses to name a kind of change; the right is the closed `family` and `surface` enumeration `compatibility-report.schema.json` declares. The map is data because FR-051-AC-2 asserts the correspondence, and an assertion against a table restated in a test would only prove the test agrees with itself.",
 	"families": {
+		"abstract": {
+			"family": "type",
+			"surface": "semantic"
+		},
 		"authority": {
 			"family": "authority",
 			"surface": "profile"
@@ -17,6 +21,10 @@
 			"family": "constraint",
 			"surface": "semantic"
 		},
+		"construct": {
+			"family": "type",
+			"surface": "semantic"
+		},
 		"contract-version": {
 			"family": "generated-api",
 			"surface": "target"
@@ -31,6 +39,10 @@
 		},
 		"field": {
 			"family": "field",
+			"surface": "semantic"
+		},
+		"generalization": {
+			"family": "type",
 			"surface": "semantic"
 		},
 		"generated-api": {
@@ -61,6 +73,10 @@
 			"family": "type",
 			"surface": "semantic"
 		},
+		"populations": {
+			"family": "type",
+			"surface": "semantic"
+		},
 		"profile": {
 			"family": "profile",
 			"surface": "profile"
@@ -69,8 +85,16 @@
 			"family": "protobuf-reservation",
 			"surface": "target"
 		},
+		"redefines": {
+			"family": "field",
+			"surface": "semantic"
+		},
 		"relationship": {
 			"family": "type",
+			"surface": "semantic"
+		},
+		"subsets": {
+			"family": "field",
 			"surface": "semantic"
 		},
 		"type": {

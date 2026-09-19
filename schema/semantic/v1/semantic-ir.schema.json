@@ -1014,10 +1014,6 @@
 			},
 			"uniqueItems": true
 		},
-		"featurePath": {
-			"type": "string",
-			"pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$"
-		},
 		"state": {
 			"type": "object",
 			"required": ["identity", "name", "origin"],
@@ -1119,25 +1115,13 @@
 			"required": ["modifies", "creates", "deletes"],
 			"properties": {
 				"modifies": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/featurePath"
-					},
-					"uniqueItems": true
+					"$ref": "#/$defs/identityList"
 				},
 				"creates": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/featurePath"
-					},
-					"uniqueItems": true
+					"$ref": "#/$defs/identityList"
 				},
 				"deletes": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/featurePath"
-					},
-					"uniqueItems": true
+					"$ref": "#/$defs/identityList"
 				}
 			},
 			"additionalProperties": false

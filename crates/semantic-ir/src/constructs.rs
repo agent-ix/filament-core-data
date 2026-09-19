@@ -628,25 +628,40 @@ fn narrows(field: &Json, redefined: &Json) -> bool {
     lower >= outer_lower && upper_within
 }
 
+/// A frame's `modifies`, `creates` and `deletes` name declarations, never a
+/// dotted access path (ADR-002; QSpec #101 and #106 leave the frame's body
+/// encoding and grant-range semantics open, so FCD checks only that each
+/// entry resolves, and does not check what kind of declaration it names —
+/// that a `creates`/`deletes` entry is an object type or process is bound at
+/// QSL intake, FR-208, never interpreted here).
 fn frames(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
     let fields = visible_fields(document, definition);
+    let relationships = items(definition, "relationships");
     let operations_at = child(type_at, "operations");
     for (position, operation) in items(definition, "operations").iter().enumerate() {
         let Some(frame) = operation.get("frame") else {
             continue;
         };
         let frame_at = child(&index(&operations_at, position), "frame");
-        let params = items(operation, "params");
-        for member in ["modifies", "creates", "deletes"] {
+        let modifies_at = child(&frame_at, "modifies");
+        for (slot, name) in strings(frame.get("modifies")) {
+            let named = |node: &&Json| identity_of(node) == Some(name);
+            if !fields.iter().any(named) && !relationships.iter().any(|node| named(&node)) {
+                sink.emit(
+                    index(&modifies_at, slot),
+                    UNRESOLVED_FRAME_PATH,
+                    "a modifies entry names a field or relationship of the owning type or a supertype",
+                );
+            }
+        }
+        for member in ["creates", "deletes"] {
             let member_at = child(&frame_at, member);
-            for (slot, path) in strings(frame.get(member)) {
-                let head = path.split('.').next().unwrap_or(path);
-                let named = |node: &&Json| node.get("name").and_then(Json::as_str) == Some(head);
-                if !fields.iter().any(named) && !params.iter().any(|param| named(&param)) {
+            for (slot, name) in strings(frame.get(member)) {
+                if document.type_of(name).is_none() {
                     sink.emit(
                         index(&member_at, slot),
                         UNRESOLVED_FRAME_PATH,
-                        "a frame path starts at a field of the owning type or a parameter",
+                        "a creates or deletes entry names a type the document declares",
                     );
                 }
             }
