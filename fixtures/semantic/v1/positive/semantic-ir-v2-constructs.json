@@ -102,10 +102,7 @@
 				"module": "agent-ix/spec-objects-business",
 				"name": "aggregate_root"
 			},
-			"members": [
-				"ix://agent-ix/orders/FR-001",
-				"ix://agent-ix/orders/VO-001"
-			],
+			"members": ["ix://agent-ix/orders/FR-001", "ix://agent-ix/orders/VO-001"],
 			"operations": [],
 			"origin": {
 				"source": {

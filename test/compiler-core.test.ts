@@ -853,10 +853,7 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			['@unknownPolicy("maybe")', "unknownPolicy"],
 			['@unit("a b")', "unit"],
 			['@defaultKind("guess")', "defaultKind"],
-			[
-				'@relationship("has", "invented", "ix://agent-ix/x/Y")',
-				"relationship",
-			],
+			['@relationship("has", "invented", "ix://agent-ix/x/Y")', "relationship"],
 			['@clause("shouting", "id", "text")', "clause"],
 			['@semanticReference("not-an-identity")', "semanticReference"],
 			[
@@ -967,9 +964,7 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 		for (const identity of identities) {
 			const prefix = `ix://${pkg}/`;
 			expect(identity.startsWith(prefix), identity).toBe(true);
-			expect(identity.slice(prefix.length).includes("/"), identity).toBe(
-				false,
-			);
+			expect(identity.slice(prefix.length).includes("/"), identity).toBe(false);
 		}
 	});
 
@@ -1307,16 +1302,12 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(typeOf("ActorRef").kind).toBe("reference");
 		expect(typeOf("ActorRef").target).toBe("ix://agent-ix/core/Actor");
 		expect(typeOf("ArtifactId").kind).toBe("alias");
-		expect(typeOf("ArtifactId").target).toBe(
-			"ix://agent-ix/assurance/Text",
-		);
+		expect(typeOf("ArtifactId").target).toBe("ix://agent-ix/assurance/Text");
 		expect(typeOf("Text").kind).toBe("scalar");
 		expect(typeOf("TagList").kind).toBe("sequence");
 		expect(typeOf("TagList").items).toBe("ix://agent-ix/assurance/Text");
 		expect(typeOf("Attributes").kind).toBe("map");
-		expect(typeOf("Attributes").values).toBe(
-			"ix://agent-ix/assurance/Text",
-		);
+		expect(typeOf("Attributes").values).toBe("ix://agent-ix/assurance/Text");
 		expect(typeOf("Artifact").kind).toBe("record");
 		expect(typeOf("Status").kind).toBe("enum");
 		expect(typeOf("Payload").kind).toBe("union");
@@ -1582,8 +1573,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		const artifact = document.types.find(
 			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
-		(artifact.relationships as Json[])[0].target =
-			"ix://agent-ix/core/Actor";
+		(artifact.relationships as Json[])[0].target = "ix://agent-ix/core/Actor";
 		expect(
 			codesOf(
 				readContractIr(document, {
@@ -3819,8 +3809,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		const artifact = document.types.find(
 			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
-		(artifact.relationships as Json[])[0].target =
-			"ix://agent-ix/core/Actor";
+		(artifact.relationships as Json[])[0].target = "ix://agent-ix/core/Actor";
 		const unknown = readContractIr(document, {
 			importedExports: "unknown",
 		}) as never as Diagnostic[] & {
@@ -4782,8 +4771,7 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 			const artifact = document.types.find(
 				(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 			) as Json;
-			(artifact.relationships as Json[])[0].target =
-				"ix://agent-ix/core/Actor";
+			(artifact.relationships as Json[])[0].target = "ix://agent-ix/core/Actor";
 			const cross = resolve(directory, "cross.json");
 			writeFileSync(cross, `${JSON.stringify(document, null, "\t")}\n`);
 			const suppressed = runCli(["inspect", "--ir", cross]);
