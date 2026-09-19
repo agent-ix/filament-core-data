@@ -191,8 +191,6 @@ const PERMITTED = Object.freeze([
 	{ name: "test/fixtures/compiler/shared/spec-bundle/**", test: (p) => p.startsWith("test/fixtures/compiler/shared/spec-bundle/") },
 	{ name: "test/fixtures/compiler/shared/typespec/records-and-scalars/**", test: (p) => p.startsWith("test/fixtures/compiler/shared/typespec/records-and-scalars/") },
 	{ name: "docs/semantic-data-system/extraction-frontend-diagnostics.md", test: (p) => p === "docs/semantic-data-system/extraction-frontend-diagnostics.md" },
-	{ name: "scripts/spec-to-targets.mjs (the EPIC #100 criterion 2 spec-to-targets gate; fcd#173)", test: (p) => p === "scripts/spec-to-targets.mjs" },
-	{ name: "biome.json (fixture-path exclusions; fcd#173)", test: (p) => p === "biome.json" },
 	{ name: "spec/**", test: (p) => p.startsWith("spec/") },
 	{ name: "plan/**", test: (p) => p.startsWith("plan/") },
 	{ name: "reviews/**", test: (p) => p.startsWith("reviews/") },
@@ -220,7 +218,7 @@ const PROHIBITED = Object.freeze([
 	{ name: "agent_ix_core_data/**", test: (p) => p.startsWith("agent_ix_core_data/") },
 	{ name: "tests/**", test: (p) => p.startsWith("tests/") },
 	{ name: "test/*.test.ts", test: (p) => /^test\/[^/]+\.test\.ts$/.test(p) },
-	{ name: "scripts/** (other than the harness and scripts/spec-to-targets.mjs)", test: (p) => p.startsWith("scripts/") && p !== "scripts/extraction-frontend-harness.mjs" && p !== "scripts/spec-to-targets.mjs" },
+	{ name: "scripts/** (other than the harness)", test: (p) => p.startsWith("scripts/") && p !== "scripts/extraction-frontend-harness.mjs" },
 ]);
 
 /**

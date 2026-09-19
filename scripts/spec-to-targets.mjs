@@ -215,8 +215,14 @@ function compileJsonSchema(outRoot) {
 		}
 	}
 	for (const schema of schemas) {
-		if (!ajv.getSchema(schema.$id)) {
-			problems.push(`json-schema: ${schema.$id} did not compile`);
+		try {
+			if (!ajv.getSchema(schema.$id)) {
+				problems.push(`json-schema: ${schema.$id} did not compile`);
+			}
+		} catch (error) {
+			problems.push(
+				`json-schema: ${schema.$id} did not compile: ${error.message}`,
+			);
 		}
 	}
 	return problems;

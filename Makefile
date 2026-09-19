@@ -526,12 +526,14 @@ extraction-frontend-check: extraction-frontend-toolchain
 # drift apart. `--compile` is passed for `architecture` alone: it proves the
 # generated output actually builds (cargo, tsc, a Python import, an Ajv
 # compile), which `business`'s own run of this gate has never required and
-# does not gain here (that gap is filament-core-data#173's own follow-up, not
-# fixed by this bundle).
+# does not gain here (that gap is filament-core-data#198).
 
 SPEC_PIPELINE_BUNDLE ?= $(EXTRACTION_FIXTURES)/business
 SPEC_PIPELINE_STAGING := $(CARGO_TARGET_DIR)/spec-to-targets
 ARCHITECTURE_MODULES := $(addprefix $(EXTRACTION_FIXTURES)/,$(shell node -e "console.log(JSON.parse(require('fs').readFileSync('$(EXTRACTION_FIXTURES)/architecture/modules.json','utf8')).roots.join(' '))"))
+ifeq ($(strip $(ARCHITECTURE_MODULES)),)
+$(error ARCHITECTURE_MODULES is empty; $(EXTRACTION_FIXTURES)/architecture/modules.json named no roots)
+endif
 
 .PHONY: spec-to-targets
 spec-to-targets: extraction-frontend-toolchain
