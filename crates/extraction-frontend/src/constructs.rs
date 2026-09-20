@@ -2,7 +2,7 @@
 //! declares (FR-142), with the rules the declaration selects decided at the
 //! artifact.
 //!
-//! Nothing here names a construct kind. [`shape`] reads the artifact's
+//! Nothing here names a construct kind. `shape` reads the artifact's
 //! [`Construct`] declaration: it refuses what a forbidden member or a
 //! selected rule does not admit, and fills each member the declaration does
 //! not forbid from the extraction and the artifact's frontmatter edges. A
@@ -23,7 +23,7 @@
 //! the declaration admits for the member. A reference that names none of
 //! those refuses the artifact rather than being dropped or guessed.
 //!
-//! [`unlowered_declaration`] refuses an artifact whose extraction carries a
+//! `unlowered_declaration` refuses an artifact whose extraction carries a
 //! declaration no construct member lowers — FR-075 generalization, abstract
 //! types, field features, effect frames, populations and `Members` tables,
 //! a model table for a member the declaration forbids, and FR-076
@@ -106,7 +106,7 @@ pub struct ConstructMembers {
     pub feature_order: Option<Vec<String>>,
     /// Whether `source_element` names a referenced artifact's operation
     /// (FR-152's `<id>/<operation>` form) rather than its type — known
-    /// unambiguously at the point [`References::identity`] mints it, from
+    /// unambiguously at the point `References::identity` mints it, from
     /// the raw reference cell, and carried here so `refusal_rule` never has
     /// to re-derive it by counting the minted identity's own path segments.
     /// Not part of the wire shape: internal working state, never read back.

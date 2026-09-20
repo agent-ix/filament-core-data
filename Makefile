@@ -303,6 +303,17 @@ rust-conformance: rust-toolchain-check
 rust-install-from-artifact: rust-toolchain-check
 	node scripts/rust-backend-harness.mjs install-from-artifact
 
+# rustdoc-only lints (issue PLAT-856): `missing_docs` fires under plain
+# `cargo check`/clippy and is already covered by `rust-clippy`, but
+# `rustdoc::broken_intra_doc_links` only fires when rustdoc itself runs, which
+# no other target does. Not to be confused with `rust-docs`/`rust-docs-check`
+# above: those run `scripts/build-rust-backend-docs.mjs` against the
+# *generated* Rust backend under `src/compiler/backends/rust-serde/`, not
+# rustdoc, and not this workspace's own crates.
+.PHONY: rust-doc-lint
+rust-doc-lint: rust-toolchain-check
+	RUSTDOCFLAGS="-D warnings" cargo doc --offline --workspace --locked --no-deps
+
 .PHONY: rust-mutate
 rust-mutate: rust-toolchain-check
 	node scripts/rust-backend-harness.mjs mutate
@@ -319,7 +330,7 @@ rust-fuzz: rust-toolchain-check
 # with no Rust toolchain fails here naming what it could not run. That is the
 # intended reading: an absent toolchain is a red suite, never a green one.
 .PHONY: rust
-rust: rust-check rust-build rust-clippy rust-test rust-conformance rust-install-from-artifact
+rust: rust-check rust-build rust-clippy rust-test rust-conformance rust-install-from-artifact rust-doc-lint
 
 # The Rust half of the suite, named where a reader looks for it (issue #60).
 #
