@@ -53,14 +53,19 @@ why only verbs the object type lists under `allowed_links` are lowered.
 - The frontend SHALL take one relationship per `(target, verb)` pair `harvest_edges` returns for the record's document, de-duplicated on `(verb, target)`.
 - The frontend SHALL lower a pair only when the record's object type lists its verb under `allowed_links` in the loaded module, resolved for the object archetype only and never for the artifact axis.
 - The frontend SHALL skip, without a diagnostic, every pair whose verb the object type does not list under `allowed_links`.
-- The frontend SHALL set `verb` to the pair's verb as authored.
+- The frontend SHALL set `sourceEnd.role` to the pair's verb as authored, and SHALL set `sourceEnd.type` to the record's own type identity, computed once per document.
+- The frontend SHALL set `sourceEnd.multiplicity` to `{lower: 0, ordered: false, unique: false}` (unbounded `upper`); frontmatter authors no source-side bound, and source-multiplicity authoring is future FCD #201.
 - The frontend SHALL set `category` to the `category` of the `EdgeTypeDef` the merged registry declares for that verb.
 - If a verb the object type lists under `allowed_links` is declared by no loaded module's `edge_types`, then the frontend SHALL raise `agent-ix.extraction-frontend.UNKNOWN_EDGE_VERB` at the document's line 1, column 1, blocking.
 - The frontend SHALL set `composite` to `true` if and only if the verb's `EdgeTypeDef.inverse` is `part_of`.
-- The frontend SHALL resolve `target` through the `BundleIndex` by `id`, `title`, or `name` and classify the resolved artifact by FR-092's pass-one outcome (`Object`, `Enumeration`, or `Stale`).
+- The frontend SHALL set `direction` to `source-to-target`; no other direction is produced by this lowering (a symmetric/undirected flag is future quire-rs#466).
+- The frontend SHALL resolve `target` through the `BundleIndex` by `id`, `title`, or `name` and classify the resolved artifact by FR-092's pass-one outcome (`Object`, `Enumeration`, or `Stale`), setting `targetEnd.type` to the resolved artifact's type identity.
 - If `target` resolves to no indexed artifact, or the artifact's pass-one outcome is not a definition, then the frontend SHALL raise `agent-ix.extraction-frontend.UNRESOLVED_RELATIONSHIP_TARGET` at the document's line 1, column 1, blocking, naming the target token.
-- The frontend SHALL set `multiplicity` to `{lower: 1, upper: 1}`; frontmatter authors no bound.
+- The frontend SHALL set `targetEnd.role` to the verb's `EdgeTypeDef.inverse`, omitted when the verb declares none.
+- The frontend SHALL be the party that enforces the biconditional "an `inverse` is declared for the verb if and only if the target end carries a `role`" (R4-READER, review round 2 of fcd#199/#200): the frontend holds the `edge_types` registry that names the verb's `inverse` or its absence, and is the only party positioned to check the other half. A reader has no registry and enforces only that `role` is present on the source end and, where present, is a non-empty string on either end; it enforces nothing about whether a *particular* target `role` agrees with any verb's registered `inverse`, and that reader-side silence is not a relaxation for the frontend to skip its own half of the check.
+- The frontend SHALL set `targetEnd.multiplicity` to `{lower: 1, upper: 1, ordered: false, unique: false}`; frontmatter authors no bound.
 - The frontend SHALL mint `identity` through FR-095's `relationship_identity` as `ix://<org>/<name>/relationship/<Name>-<verb>-<TargetName>`, where `<Name>` is the owning artifact's id and `<TargetName>` the resolved target artifact's id (FR-143), every part slugged.
+- The IR carries no flat `verb`, `target`, or `multiplicity` relationship property; every one of the above is `sourceEnd`, `targetEnd`, `category`, `composite`, or `direction` (`crates/extraction-frontend/src/edges.rs`).
 - The frontend SHALL set `origin.source` to the document's path at line 1, column 1, the frontmatter block.
 - The frontend SHALL NOT emit a relationship from a `## Properties` row.
 - The frontend SHALL NOT read a `## Relationships` section.
