@@ -10,19 +10,23 @@
 	],
 	"unknownPolicy": "reject",
 	"instance": {
-		"lower": 0
+		"lower": 0,
+		"ordered": false,
+		"unique": false
 	},
 	"expected": {
 		"resultState": "success",
 		"wire": {
-			"lower": 0
+			"lower": 0,
+			"ordered": false,
+			"unique": false
 		}
 	},
 	"derivedFrom": [
 		{
 			"artifact": "packages/semantic-core/generated/json-schema/Multiplicity.json",
 			"locator": "#/description",
-			"quote": "\"description\": \"FR-027 multiplicity; absent `upper` is unbounded. Reader: upper >= lower; flags only on collections.\""
+			"quote": "\"description\": \"FR-027 multiplicity; absent `upper` is unbounded. Reader: upper >= lower. Every emitted multiplicity carries both `ordered` and `unique`; a producer clamps both to `false` when `upper` is at most one (owner ruling 2026-09-19T15:39:32Z on FCD #199; FLAGS_ON_NON_COLLECTION is deleted, not enforced).\""
 		}
 	],
 	"provenance": {
