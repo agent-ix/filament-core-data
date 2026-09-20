@@ -56,7 +56,8 @@ function parseEdgeVocabulary(source) {
 		if (!row) break; // a line at column 0, or with no braces, ends the block
 		const [, verb, body] = row;
 		const fields = {};
-		for (const field of body.matchAll(fieldPattern)) fields[field[1]] = field[2];
+		for (const field of body.matchAll(fieldPattern))
+			fields[field[1]] = field[2];
 		if (!fields.category) {
 			throw new Error(
 				`${EDGE_VOCABULARY_MANIFEST_PATH}: edge_types.${verb} declares no category`,

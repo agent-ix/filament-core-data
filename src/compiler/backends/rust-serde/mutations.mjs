@@ -390,6 +390,32 @@ export function scratchCopy(root, label) {
 	const gaps = join(base, "conformance", "contract-gaps.json");
 	mkdirSync(dirname(gaps), { recursive: true });
 	cpSync(join(root, "conformance", "contract-gaps.json"), gaps);
+	// The edge vocabulary manifest: applicability.mjs's EDGE_VOCABULARY reads
+	// it directly (H4 of the FCD #199/#200 review, one source rather than a
+	// hand-typed duplicate), so a copy without it fails to load, not just to
+	// resolve a role.
+	const manifest = join(
+		base,
+		"crates",
+		"extraction-frontend",
+		"fixtures",
+		"modules",
+		"edge-vocabulary",
+		"manifest.yaml",
+	);
+	mkdirSync(dirname(manifest), { recursive: true });
+	cpSync(
+		join(
+			root,
+			"crates",
+			"extraction-frontend",
+			"fixtures",
+			"modules",
+			"edge-vocabulary",
+			"manifest.yaml",
+		),
+		manifest,
+	);
 	return { base, backend };
 }
 

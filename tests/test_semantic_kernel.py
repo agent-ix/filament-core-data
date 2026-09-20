@@ -98,8 +98,10 @@ PINNED_DIGESTS = {
         # python_backend.runner.emit`) after Relationship in
         # schema/semantic/v1/semantic-ir.schema.json gained the two-end
         # sourceEnd/targetEnd/direction shape and Multiplicity gained the
-        # required ordered/unique fields.
-        "sha256:af03ec9230c576f14c64bc9e22e3e7ef636ff41d9006fc14852c1d54a1d8ff7c"
+        # required ordered/unique fields. Remeasured once more (confirmed
+        # reproducible across 3 successive `emit` runs) after H4's
+        # RelationshipSourceEnd/RelationshipTargetEnd split landed.
+        "sha256:cbb4530adcc77351244901f78c6051d3adc8138f1c8621895b84cebda14dc633"
     ),
     "python_backend/profiles.json": (
         "sha256:3c6fc254a7c346c88b6ea91fdaeb7d3a3b55f8065b8a6ebc6ddab3a447547345"

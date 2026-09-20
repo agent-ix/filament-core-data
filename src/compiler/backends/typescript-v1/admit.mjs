@@ -982,8 +982,18 @@ export function admitIr(bundle, options = {}) {
 				constraintLocus,
 			);
 			if (!isObject(constraint)) continue;
-			const subject = resolvedScalar(types, fields, constraint.appliesTo, maxDepth);
-			const subjectKind = resolvedKind(types, fields, constraint.appliesTo, maxDepth);
+			const subject = resolvedScalar(
+				types,
+				fields,
+				constraint.appliesTo,
+				maxDepth,
+			);
+			const subjectKind = resolvedKind(
+				types,
+				fields,
+				constraint.appliesTo,
+				maxDepth,
+			);
 			const admitted = APPLICABILITY[constraint.keyword] ?? [];
 			const applies =
 				(subject !== undefined && admitted.includes(subject)) ||
@@ -1052,7 +1062,9 @@ export function admitIr(bundle, options = {}) {
 		}
 
 		if (field.unit !== undefined) {
-			if (resolvedScalar(types, fields, field.typeRef, maxDepth) === undefined) {
+			if (
+				resolvedScalar(types, fields, field.typeRef, maxDepth) === undefined
+			) {
 				emit(
 					ADMISSIBILITY_CODES.UNIT_ON_NON_SCALAR,
 					`${fieldPointer}/unit`,
