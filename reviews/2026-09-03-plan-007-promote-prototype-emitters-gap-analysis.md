@@ -36,7 +36,7 @@ failures, TC-254 and TC-395** (FND-450). Second, **all eight tasks are
 entry recording 060–066 done (FND-451).
 
 The three "known and accepted" claims check out. TC-254 does fail at
-`origin/main` — verified in `/home/peter/dev/fcd-baseline` (detached at
+`origin/main` — verified in `../fcd-baseline` (detached at
 `8425a14`): `packages/semantic-core/package.json` has no `private` field, so
 `expect(manifest.private).toBe(true)` receives `undefined` there exactly as it
 does here. TC-370 and TC-382 carry `🚧 blocked on issue #42` in the matrix, are
@@ -134,12 +134,12 @@ be cleared in the same change.
   - `make lint` (`biome format .` over 159 files + `tsc --noEmit -p tsconfig.json`)
     → clean. `make build` (`tsc -p tsconfig.build.json`) → clean.
     `make typecheck` → clean.
-  - `quire validate --scope /home/peter/dev/filament-core-data-27 "spec/**/*.md"
+  - `quire validate --scope ../filament-core-data-27 "spec/**/*.md"
     "plan/**/*.md"` (quire 0.31.0, engine 0.46.0@ca7362d4) → no document
     diagnostics; the only output is the repository's standing
     `DuplicateArchetype` / `DuplicateInverseEdge` module-set warnings.
 - **TC-254 baseline check** (accepted claim, verified): at
-  `/home/peter/dev/fcd-baseline`, detached at `origin/main` `8425a14`,
+  `../fcd-baseline`, detached at `origin/main` `8425a14`,
   `pnpm exec vitest run test/semantic-core.test.ts` → 26/28, failing on
   `expect(manifest.private).toBe(true)` receiving `undefined` — the same
   assertion, the same value, without this branch. Not a regression; issue #43
