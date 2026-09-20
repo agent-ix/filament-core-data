@@ -95,7 +95,7 @@ several rows are backed by assertions that hold for any input.
   matrix: `spec/tests.md` (`TM-001`); identity prefix:
   `ix://agent-ix/filament-core-data`.
 - Reconciliation: **engine**, not a grep fallback. `quire coverage --scope
-  /home/peter/dev/filament-core-data --json` (cli 0.31.0, engine 0.46.0 @
+  . --json` (cli 0.31.0, engine 0.46.0 @
   ca7362d4) returns `totals.backed = 62 / 619` and
   `groups[spec/tests.md] = 62 / 341`, and **zero** of TC-280..319 and TC-622..419 appear in
   `unbacked_rows`. The typescript binding census reads 207 candidates, 100
