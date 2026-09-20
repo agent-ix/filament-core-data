@@ -32,7 +32,7 @@ pub const MAX_DEPTH: usize = 200;
 pub const MAX_INPUT_BYTES: usize = 64 * 1024 * 1024;
 
 /// A JSON value that retains number lexemes, member order, and duplicates.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Json {
     /// `null`.
     Null,

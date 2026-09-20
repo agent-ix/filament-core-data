@@ -645,7 +645,7 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 				`https://schemas.agent-ix.org/semantic-core/0.2.0/${name}.json`,
 			);
 			expect(schema["x-agent-ix-semantic-id"], name).toBe(
-				`ix://agent-ix/semantic-core/type/${name}`,
+				`ix://agent-ix/semantic-core/${name}`,
 			);
 			if (schema.type === "object") {
 				const sealed =
@@ -946,7 +946,10 @@ describe("FR-032 kernel scalar table and FR-031 grammar reader (Task-044)", () =
 			readFixture("negative/rules/cases.json"),
 			"rule cases",
 		).map((v) => object(v, "case"));
-		expect(cases.length).toBeGreaterThanOrEqual(14);
+		// 13, not 14: "flags-on-single" was deleted along with
+		// FLAGS_ON_NON_COLLECTION (owner ruling 2026-09-19T15:39:32Z on
+		// FCD #199, superseding R2 of the #199/#200 review round).
+		expect(cases.length).toBeGreaterThanOrEqual(13);
 		for (const entry of cases) expectRuleFailure(String(entry.id));
 	});
 });
@@ -1197,11 +1200,13 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 				}),
 				relationships: array(entity.relationships, "rels").map((r) => {
 					const rel = object(r, "rel");
+					const sourceEnd = object(rel.sourceEnd, "sourceEnd");
+					const targetEnd = object(rel.targetEnd, "targetEnd");
 					return {
-						verb: rel.verb,
+						verb: sourceEnd.role,
 						category: rel.category,
-						target: nameOf(rel.target),
-						multiplicity: rel.multiplicity,
+						target: nameOf(targetEnd.type),
+						multiplicity: targetEnd.multiplicity,
 					};
 				}),
 				constraints: types
@@ -1252,7 +1257,7 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 			name: "price",
 			type: {
 				target: "Decimal",
-				multiplicity: { lower: 1, upper: 1 },
+				multiplicity: { lower: 1, upper: 1, ordered: false, unique: false },
 				decimal: { precision: 10, scale: 2 },
 				unit: "USD",
 			},

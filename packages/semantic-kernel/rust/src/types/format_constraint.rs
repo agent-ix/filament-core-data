@@ -1,16 +1,16 @@
 //! FormatConstraint
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/FormatConstraint.
+//! Semantic identity: ix://agent-ix/semantic-core/FormatConstraint.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `FormatConstraint`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/FormatConstraint/field/keyword",
+        identity: "ix://agent-ix/semantic-core/FormatConstraint/keyword",
         name: "keyword",
         rust_name: "keyword",
-        type_ref: "ix://agent-ix/semantic-core/type/FormatConstraintKeyword",
+        type_ref: "ix://agent-ix/semantic-core/FormatConstraintKeyword",
         rust_type: "crate::FormatConstraintKeyword",
         row: "field:single/non-null/required",
         presence: "required",
@@ -18,8 +18,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/FormatConstraint/field/name",
+        identity: "ix://agent-ix/semantic-core/FormatConstraint/name",
         name: "name",
         rust_name: "name",
-        type_ref: "ix://agent-ix/semantic-core/type/FormatConstraintName",
+        type_ref: "ix://agent-ix/semantic-core/FormatConstraintName",
         rust_type: "crate::FormatConstraintName",
         row: "field:single/non-null/required",
         presence: "required",
@@ -48,8 +48,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -70,16 +70,16 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// FormatConstraint
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/FormatConstraint.
+/// Semantic identity: ix://agent-ix/semantic-core/FormatConstraint.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct FormatConstraint {
     /// keyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/FormatConstraint/field/keyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/FormatConstraint/keyword.
     pub keyword: crate::FormatConstraintKeyword,
     /// name
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/FormatConstraint/field/name.
+    /// Semantic identity: ix://agent-ix/semantic-core/FormatConstraint/name.
     pub name: crate::FormatConstraintName,
 }
 

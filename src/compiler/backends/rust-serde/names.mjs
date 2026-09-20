@@ -246,7 +246,7 @@ export function typeName(definition) {
 /**
  * The `UpperCamelCase` qualifier for the package a semantic identity names.
  *
- * `ix://agent-ix/semantic-core/type/SourceLocusPath` qualifies as
+ * `ix://agent-ix/semantic-core/SourceLocusPath` qualifies as
  * `SemanticCore`. FR-133 uses it to move a document-derived identifier out of
  * the way of a reserved one: the qualifier names the namespace the construct
  * came from, so the resolved identifier still says what it is rather than

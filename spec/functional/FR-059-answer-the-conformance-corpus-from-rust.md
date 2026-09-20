@@ -61,7 +61,7 @@ author.
   `rustfmt.toml`, and `.cargo/config.toml` at the repository root
 - A `command` and `status` on the registry's `rust-backend` slot
 - The regenerated `conformance/coverage.json`, whose `rust-backend` row and
-  `unmetCases` total move from 111 unmet to 111 matched. That file is not a
+  `unmetCases` total move from 115 unmet to 115 matched. That file is not a
   yardstick: `conformance/README.md` declares it generated on every run and
   never hand-edited, and FR-039 makes it a report *about* the adapters. Filling
   the slot the corpus declares is what moves it, so leaving it stale would
@@ -83,7 +83,7 @@ author.
   `rust-backend`, whose rationale is that a Rust reader cannot compile the locus
   pattern; [FR-057](./FR-057-enforce-constraints-in-generated-rust.md) answers
   that pattern exactly, so the licence is not exercised and the adapter's
-  matched count is 111 of 111.
+  matched count is 115 of 115.
 - The adapter SHALL exit 0 and SHALL write nothing but the JSON array to
   stdout. It SHALL write every diagnostic of its own to stderr.
 - If the adapter cannot decide a case, then it SHALL emit
@@ -183,7 +183,7 @@ author.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-059-AC-1 | `make rust-conformance` runs the `rust-backend` adapter as a process against the committed registry and reports 111 matched, 0 unmet, 0 failed, with the harness exit code 0. | Test (TC-698) |
+| FR-059-AC-1 | `make rust-conformance` runs the `rust-backend` adapter as a process against the committed registry and reports 115 matched, 0 unmet, 0 failed, with the harness exit code 0. | Test (TC-698) |
 | FR-059-AC-2 | The adapter emits exactly one schema-valid adapter-result per manifest case, with the manifest's `caseDigest` echoed verbatim; omitting one case is reported as `missing-answer`, and answering one twice as `duplicate-answer`. | Test (TC-699) |
 | FR-059-AC-3 | The adapter's `normalized` string is byte-identical to the oracle's for every case, including the ones the schema layer decides invalid. | Test (TC-700) |
 | FR-059-AC-4 | The adapter's diagnostic codes and severities equal the oracle's, in order, for every negative and boundary case. | Test (TC-701) |
@@ -195,7 +195,7 @@ author.
 | FR-059-AC-10 | Each of the five `target-verdicts.json` cases is decided by the generated crate exactly as its `rust` verdict states, including `unknown-preservable-extension` accepted and `unknown-required-capability` rejected, and each for the defect the case names rather than for an incidental one. The comparison is on the verdict alone: the fixture's `diagnosticCode` values are in an `agent-ix.conformance` namespace no registry closes, and the backend reports that rather than minting a code to match it (issue #69). | Test (TC-707) |
 | FR-059-AC-11 | The reader returns a diagnostic and does not panic over at least 4096 mutated documents, run under a panic hook that fails the test; a truncated stdout, a non-UTF-8 byte, and an induced panic each surface as an adapter failure and never as a short corpus. | Test (TC-708) |
 | FR-059-AC-12 | The changed-path set under `conformance/` for this branch is exactly `adapters/registry.json` and `coverage.json`; the coverage diff touches only the `rust-backend` adapter row and the `unmetCases` total, leaving `unmetAreas` and every other adapter's row byte-identical; and every other file under `conformance/` is byte-identical to the pre-change baseline. | Analysis (TC-709) |
-| FR-059-AC-13 | Removing the adapter command from the registry returns the slot to 111 unmet rows and zero passes, so a missing adapter can never read as agreement. | Test (TC-710) |
+| FR-059-AC-13 | Removing the adapter command from the registry returns the slot to 115 unmet rows and zero passes, so a missing adapter can never read as agreement. | Test (TC-710) |
 | FR-059-AC-14 | `docs/semantic-data-system/rust-backend.md` records the GAP-011 dependency with the closed owner named and the adopted reading stated, records GAP-002 as answered by FR-057 with its register closure filed as issue #59, and records the unspent divergence budget; and `conformance/divergences.json` is byte-unchanged. | Inspection (TC-710) |
 | FR-059-AC-15 | The ECMAScript number formatter agrees with Node's `JSON.stringify` on a declared set of at least 512 values covering the exponent thresholds, negative zero, trailing zeros, integral floats, and the extremes of `f64`. | Test (TC-700) |
 | FR-059-AC-16 | The reader's `normalized` materializes `nullable: true` for the input `true`, and `nullable: false` for each of `1`, `"true"`, `null`, `{}`, and an absent `nullable` member. | Test (TC-1802) |

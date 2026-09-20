@@ -1,7 +1,7 @@
 {
-	"corpusVersion": "3.1.0",
-	"corpusDigest": "sha256:90685f79654b376a950b137240b0a1703c4bb4a1e4f9996ec74b6a90b6bb9a6b",
-	"totalCases": 111,
+	"corpusVersion": "4.0.0",
+	"corpusDigest": "sha256:c7c6a720452ea99c6a69ded76abdecced3933863c98ba4cf77825c583c233d19",
+	"totalCases": 115,
 	"registerRows": [
 		{
 			"id": "CR-envelope",
@@ -23,7 +23,7 @@
 			"decidedBy": "cross-field",
 			"cases": {
 				"positive": ["IDENT-001"],
-				"negative": ["IDENT-002", "IDENT-005"],
+				"negative": ["IDENT-002", "IDENT-005", "IDENT-006"],
 				"boundary": ["IDENT-003"],
 				"evolution": ["IDENT-004"]
 			},
@@ -122,7 +122,6 @@
 			"cases": {
 				"positive": ["PRES-001", "PRES-005", "PRES-006", "PRES-010"],
 				"negative": [
-					"PRES-007",
 					"PRES-008",
 					"PRES-009",
 					"PRES-011",
@@ -131,7 +130,7 @@
 					"PRES-014",
 					"PRES-015"
 				],
-				"boundary": ["PRES-003"],
+				"boundary": ["PRES-003", "PRES-007", "PRES-016"],
 				"evolution": ["PRES-004"]
 			},
 			"notApplicable": [],
@@ -172,7 +171,13 @@
 			"decidedBy": "cross-field",
 			"cases": {
 				"positive": ["CONS-001"],
-				"negative": ["CONS-002", "CONS-005", "CONS-006", "CONS-007"],
+				"negative": [
+					"CONS-002",
+					"CONS-005",
+					"CONS-006",
+					"CONS-007",
+					"CONS-008"
+				],
 				"boundary": ["CONS-003"],
 				"evolution": ["CONS-004"]
 			},
@@ -200,7 +205,7 @@
 			"decidedBy": "cross-field",
 			"cases": {
 				"positive": ["REL-001"],
-				"negative": ["REL-002", "REL-005", "REL-006"],
+				"negative": ["REL-002", "REL-005", "REL-006", "REL-007"],
 				"boundary": ["REL-003"],
 				"evolution": ["REL-004"]
 			},
@@ -312,28 +317,28 @@
 		{
 			"adapter": "compiler-frontend",
 			"status": "available",
-			"matched": 111,
+			"matched": 115,
 			"unmet": 0,
 			"failed": 0
 		},
 		{
 			"adapter": "python-backend",
 			"status": "available",
-			"matched": 111,
+			"matched": 115,
 			"unmet": 0,
 			"failed": 0
 		},
 		{
 			"adapter": "rust-backend",
 			"status": "available",
-			"matched": 111,
+			"matched": 115,
 			"unmet": 0,
 			"failed": 0
 		},
 		{
 			"adapter": "typescript-backend",
 			"status": "available",
-			"matched": 111,
+			"matched": 115,
 			"unmet": 0,
 			"failed": 0
 		}

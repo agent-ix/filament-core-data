@@ -708,7 +708,12 @@ const POPULATION_MEMBERS: &[&str] = &[
 /// FR-153/AD-006), never a per-member multiplicity.
 const POPULATION_EXTENTS: &[&str] = &["closed", "open"];
 
-fn population_schema(population: &Json, at: &str, table: &mut ConstructTable<'_>, f: &mut Findings) {
+fn population_schema(
+    population: &Json,
+    at: &str,
+    table: &mut ConstructTable<'_>,
+    f: &mut Findings,
+) {
     if !expect_object(population, at, "a population", f) {
         return;
     }
@@ -1352,6 +1357,7 @@ const FIELD_MEMBERS: &[&str] = &[
     "unit",
     "subsets",
     "redefines",
+    "constraints",
 ];
 const FIELD_REQUIRED: &[&str] = &[
     "identity",
@@ -1441,6 +1447,14 @@ fn field_schema(field: &Json, at: &str, f: &mut Findings) {
         "a unit is a non-empty run of printable ASCII",
         f,
     );
+    if let Some(constraints) = field.get("constraints") {
+        let constraints_at = child(at, "constraints");
+        if expect_array(constraints, &constraints_at, "constraints", f) {
+            for (position, constraint) in constraints.as_array().unwrap_or(&[]).iter().enumerate() {
+                constraint_schema(constraint, &index(&constraints_at, position), f);
+            }
+        }
+    }
 }
 
 const MULTIPLICITY_MEMBERS: &[&str] = &["lower", "upper", "ordered", "unique"];
@@ -1468,7 +1482,7 @@ fn multiplicity_schema(multiplicity: &Json, at: &str, f: &mut Findings) {
     if !expect_object(multiplicity, at, "a multiplicity", f) {
         return;
     }
-    require_members(multiplicity, at, &["lower"], f);
+    require_members(multiplicity, at, &["lower", "ordered", "unique"], f);
     forbid_extra(multiplicity, at, MULTIPLICITY_MEMBERS, f);
     expect_integer(
         multiplicity.get("lower"),
@@ -1532,13 +1546,26 @@ fn variant_schema(variant: &Json, at: &str, f: &mut Findings) {
     }
 }
 
+/// The `direction` vocabulary of a relationship (gap 3 of FCD #199/#200).
+/// Lowering always emits `source-to-target`; the other three are read-only
+/// values a hand-authored or future-sourced relationship may carry.
+const RELATIONSHIP_DIRECTIONS: &[&str] = &[
+    "source-to-target",
+    "target-to-source",
+    "bidirectional",
+    "undirected",
+];
+/// The members of one relationship end. `role` is absent when the end
+/// declares none (the target end of a verb with no registry `inverse`).
+const RELATIONSHIP_END_MEMBERS: &[&str] = &["role", "multiplicity", "type"];
+
 const RELATIONSHIP_MEMBERS: &[&str] = &[
     "identity",
-    "verb",
     "category",
     "composite",
-    "target",
-    "multiplicity",
+    "direction",
+    "sourceEnd",
+    "targetEnd",
     "origin",
 ];
 
@@ -1555,7 +1582,6 @@ fn relationship_schema(relationship: &Json, at: &str, f: &mut Findings) {
         "an identity is ix://<owner>/<name>",
         f,
     );
-    expect_string(relationship.get("verb"), &child(at, "verb"), 1, "a verb", f);
     expect_enum(
         relationship.get("category"),
         &child(at, "category"),
@@ -1569,18 +1595,60 @@ fn relationship_schema(relationship: &Json, at: &str, f: &mut Findings) {
         "composite",
         f,
     );
+    expect_enum(
+        relationship.get("direction"),
+        &child(at, "direction"),
+        RELATIONSHIP_DIRECTIONS,
+        "the relationship direction vocabulary",
+        f,
+    );
+    relationship_source_end_schema(relationship.get("sourceEnd"), &child(at, "sourceEnd"), f);
+    relationship_target_end_schema(relationship.get("targetEnd"), &child(at, "targetEnd"), f);
+    if let Some(origin) = relationship.get("origin") {
+        origin_schema(origin, &child(at, "origin"), f);
+    }
+}
+
+/// The source end of a relationship: `role` (the edge vocabulary's verb) is
+/// required (H4 of the FCD #199/#200 review, FR-094-AC-14) — a relationship
+/// always has a verb, whatever the target end's role turns out to be.
+fn relationship_source_end_schema(end: Option<&Json>, at: &str, f: &mut Findings) {
+    relationship_end_schema(end, at, &["role", "multiplicity", "type"], f);
+}
+
+/// The target end of a relationship: `role` (the edge vocabulary's
+/// `inverse`) is optional, absent exactly when the verb's registry entry
+/// declares no `inverse` (H4 of the FCD #199/#200 review). Whether a
+/// declared `inverse` <=> a present target role is a frontend obligation,
+/// checked where the registry is in hand (R4-READER); this reader has no
+/// registry, so it enforces nothing more here.
+fn relationship_target_end_schema(end: Option<&Json>, at: &str, f: &mut Findings) {
+    relationship_end_schema(end, at, &["multiplicity", "type"], f);
+}
+
+/// One `sourceEnd` or `targetEnd` of a relationship: `required` differs by
+/// end (see the two callers above); both share the same member set, shape
+/// checks, and `role` format check.
+fn relationship_end_schema(end: Option<&Json>, at: &str, required: &[&str], f: &mut Findings) {
+    let Some(end) = end else {
+        f.push(at, "a relationship end is required");
+        return;
+    };
+    if !expect_object(end, at, "a relationship end", f) {
+        return;
+    }
+    require_members(end, at, required, f);
+    forbid_extra(end, at, RELATIONSHIP_END_MEMBERS, f);
+    expect_string(end.get("role"), &child(at, "role"), 1, "a role", f);
     expect_shape(
-        relationship.get("target"),
-        &child(at, "target"),
+        end.get("type"),
+        &child(at, "type"),
         is_semantic_identity,
         "an identity is ix://<owner>/<name>",
         f,
     );
-    if let Some(multiplicity) = relationship.get("multiplicity") {
+    if let Some(multiplicity) = end.get("multiplicity") {
         multiplicity_schema(multiplicity, &child(at, "multiplicity"), f);
-    }
-    if let Some(origin) = relationship.get("origin") {
-        origin_schema(origin, &child(at, "origin"), f);
     }
 }
 

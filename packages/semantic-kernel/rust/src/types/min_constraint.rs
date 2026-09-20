@@ -1,16 +1,16 @@
 //! MinConstraint
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/MinConstraint.
+//! Semantic identity: ix://agent-ix/semantic-core/MinConstraint.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `MinConstraint`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/MinConstraint/field/keyword",
+        identity: "ix://agent-ix/semantic-core/MinConstraint/keyword",
         name: "keyword",
         rust_name: "keyword",
-        type_ref: "ix://agent-ix/semantic-core/type/MinConstraintKeyword",
+        type_ref: "ix://agent-ix/semantic-core/MinConstraintKeyword",
         rust_type: "crate::MinConstraintKeyword",
         row: "field:single/non-null/required",
         presence: "required",
@@ -18,8 +18,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/MinConstraint/field/value",
+        identity: "ix://agent-ix/semantic-core/MinConstraint/value",
         name: "value",
         rust_name: "value",
-        type_ref: "ix://agent-ix/semantic-core/type/MinConstraintValue",
+        type_ref: "ix://agent-ix/semantic-core/MinConstraintValue",
         rust_type: "crate::MinConstraintValue",
         row: "field:single/non-null/required",
         presence: "required",
@@ -48,8 +48,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -70,16 +70,16 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// MinConstraint
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/MinConstraint.
+/// Semantic identity: ix://agent-ix/semantic-core/MinConstraint.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct MinConstraint {
     /// keyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MinConstraint/field/keyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/MinConstraint/keyword.
     pub keyword: crate::MinConstraintKeyword,
     /// value
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MinConstraint/field/value.
+    /// Semantic identity: ix://agent-ix/semantic-core/MinConstraint/value.
     pub value: crate::MinConstraintValue,
 }
 

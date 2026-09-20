@@ -21,7 +21,7 @@ use ix_trace_rs::trace;
 use serde_json::Value;
 
 /// The record this test validates payloads of.
-const RECORD: &str = "ix://agent-ix/config-service/type/FR-006";
+const RECORD: &str = "ix://agent-ix/config-service/FR-006";
 
 /// One derived field rule: the scalar it resolves to (or `record`), its
 /// presence, and its constraints as (keyword, operands).
@@ -31,6 +31,25 @@ struct FieldRule {
     nullable: bool,
     scalar: String,
     constraints: Vec<(String, Value)>,
+}
+
+/// The FR-032 `irScalar` of kernel scalar `name`
+/// (`packages/semantic-core/kernel-scalars.json`'s `irScalar` column, read
+/// directly here: this helper is test-only derivation evidence, not a reuse
+/// of `src/`'s own table).
+fn native_ir_scalar(name: &str) -> &'static str {
+    match name {
+        "UUID" => "uuid",
+        "Boolean" => "boolean",
+        "Integer" => "integer",
+        "Decimal" => "number",
+        "String" => "string",
+        "Timestamp" => "datetime",
+        "Duration" => "duration",
+        "Bytes" => "bytes",
+        "JsonObject" => "any",
+        other => panic!("unknown kernel scalar {other}"),
+    }
 }
 
 /// The payload schema of `record` derived from `document`.
@@ -44,16 +63,28 @@ fn payload_schema(document: &Value, record: &str) -> Vec<FieldRule> {
     let definition = types[record];
     let mut rules = Vec::new();
     for field in definition["fields"].as_array().expect("fields") {
-        let mut constraints = Vec::new();
-        let mut target = field["typeRef"].as_str().expect("typeRef");
-        let scalar = loop {
-            let node = types[target];
-            for c in node["constraints"].as_array().into_iter().flatten() {
-                constraints.push((
+        // Constraints live inline on the field (gap 1 of FCD #199/#200): no
+        // alias or scalar node carries them any more.
+        let constraints: Vec<(String, Value)> = field["constraints"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .map(|c| {
+                (
                     c["keyword"].as_str().expect("keyword").to_string(),
                     c["operands"].clone(),
-                ));
+                )
+            })
+            .collect();
+        let mut target = field["typeRef"].as_str().expect("typeRef");
+        let scalar = loop {
+            // A kernel scalar mints no package node (gap 1 of FCD
+            // #199/#200): its `typeRef` names `ix://quire/native/<Name>`
+            // directly, over the closed FR-032 set.
+            if let Some(name) = target.strip_prefix("ix://quire/native/") {
+                break native_ir_scalar(name).to_string();
             }
+            let node = types[target];
             // A construct kind renders by its declared shape.
             let shape = document["constructs"]
                 .as_array()

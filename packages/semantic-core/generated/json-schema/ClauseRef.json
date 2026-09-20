@@ -18,5 +18,5 @@
 		"not": {}
 	},
 	"description": "A clause reference: language, id, and where the clause text lives. Text itself is never parsed here.",
-	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/ClauseRef"
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/ClauseRef"
 }

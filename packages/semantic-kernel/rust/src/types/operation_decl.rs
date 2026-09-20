@@ -1,16 +1,16 @@
 //! OperationDecl
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/OperationDecl.
+//! Semantic identity: ix://agent-ix/semantic-core/OperationDecl.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `OperationDecl`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/OperationDecl/field/name",
+        identity: "ix://agent-ix/semantic-core/OperationDecl/name",
         name: "name",
         rust_name: "name",
-        type_ref: "ix://agent-ix/semantic-core/type/Identifier",
+        type_ref: "ix://agent-ix/semantic-core/Identifier",
         rust_type: "crate::Identifier",
         row: "field:single/non-null/required",
         presence: "required",
@@ -18,8 +18,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/OperationDecl/field/params",
+        identity: "ix://agent-ix/semantic-core/OperationDecl/params",
         name: "params",
         rust_name: "params",
-        type_ref: "ix://agent-ix/semantic-core/type/FieldDecl",
+        type_ref: "ix://agent-ix/semantic-core/FieldDecl",
         rust_type: "Option<Vec<crate::FieldDecl>>",
         row: "field:collection/non-null/optional",
         presence: "optional",
@@ -48,8 +48,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: None,
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -67,10 +67,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/OperationDecl/field/returns",
+        identity: "ix://agent-ix/semantic-core/OperationDecl/returns",
         name: "returns",
         rust_name: "returns",
-        type_ref: "ix://agent-ix/semantic-core/type/TypeRef",
+        type_ref: "ix://agent-ix/semantic-core/TypeRef",
         rust_type: "Option<crate::TypeRef>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -78,8 +78,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -97,10 +97,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/OperationDecl/field/pre",
+        identity: "ix://agent-ix/semantic-core/OperationDecl/pre",
         name: "pre",
         rust_name: "pre",
-        type_ref: "ix://agent-ix/semantic-core/type/ClauseRef",
+        type_ref: "ix://agent-ix/semantic-core/ClauseRef",
         rust_type: "Option<Vec<crate::ClauseRef>>",
         row: "field:collection/non-null/optional",
         presence: "optional",
@@ -108,8 +108,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: None,
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -127,10 +127,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/OperationDecl/field/post",
+        identity: "ix://agent-ix/semantic-core/OperationDecl/post",
         name: "post",
         rust_name: "post",
-        type_ref: "ix://agent-ix/semantic-core/type/ClauseRef",
+        type_ref: "ix://agent-ix/semantic-core/ClauseRef",
         rust_type: "Option<Vec<crate::ClauseRef>>",
         row: "field:collection/non-null/optional",
         presence: "optional",
@@ -138,8 +138,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: None,
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -160,31 +160,31 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// OperationDecl
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/OperationDecl.
+/// Semantic identity: ix://agent-ix/semantic-core/OperationDecl.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct OperationDecl {
     /// name
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/OperationDecl/field/name.
+    /// Semantic identity: ix://agent-ix/semantic-core/OperationDecl/name.
     pub name: crate::Identifier,
     /// params
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/OperationDecl/field/params.
+    /// Semantic identity: ix://agent-ix/semantic-core/OperationDecl/params.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub params: Option<Vec<crate::FieldDecl>>,
     /// returns
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/OperationDecl/field/returns.
+    /// Semantic identity: ix://agent-ix/semantic-core/OperationDecl/returns.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub returns: Option<crate::TypeRef>,
     /// pre
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/OperationDecl/field/pre.
+    /// Semantic identity: ix://agent-ix/semantic-core/OperationDecl/pre.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pre: Option<Vec<crate::ClauseRef>>,
     /// post
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/OperationDecl/field/post.
+    /// Semantic identity: ix://agent-ix/semantic-core/OperationDecl/post.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub post: Option<Vec<crate::ClauseRef>>,
 }

@@ -1,16 +1,16 @@
 //! RelationDecl
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/RelationDecl.
+//! Semantic identity: ix://agent-ix/semantic-core/RelationDecl.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `RelationDecl`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/RelationDecl/field/verb",
+        identity: "ix://agent-ix/semantic-core/RelationDecl/verb",
         name: "verb",
         rust_name: "verb",
-        type_ref: "ix://agent-ix/semantic-core/type/Identifier",
+        type_ref: "ix://agent-ix/semantic-core/Identifier",
         rust_type: "crate::Identifier",
         row: "field:single/non-null/required",
         presence: "required",
@@ -18,8 +18,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/RelationDecl/field/category",
+        identity: "ix://agent-ix/semantic-core/RelationDecl/category",
         name: "category",
         rust_name: "category",
-        type_ref: "ix://agent-ix/semantic-core/type/EdgeCategory",
+        type_ref: "ix://agent-ix/semantic-core/EdgeCategory",
         rust_type: "crate::EdgeCategory",
         row: "field:single/non-null/required",
         presence: "required",
@@ -48,8 +48,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -67,10 +67,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/RelationDecl/field/composite",
+        identity: "ix://agent-ix/semantic-core/RelationDecl/composite",
         name: "composite",
         rust_name: "composite",
-        type_ref: "ix://agent-ix/semantic-core/type/RelationDeclComposite",
+        type_ref: "ix://agent-ix/semantic-core/RelationDeclComposite",
         rust_type: "Option<crate::RelationDeclComposite>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -78,8 +78,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -97,10 +97,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/RelationDecl/field/target",
+        identity: "ix://agent-ix/semantic-core/RelationDecl/target",
         name: "target",
         rust_name: "target",
-        type_ref: "ix://agent-ix/semantic-core/type/SemanticId",
+        type_ref: "ix://agent-ix/semantic-core/SemanticId",
         rust_type: "crate::SemanticId",
         row: "field:single/non-null/required",
         presence: "required",
@@ -108,8 +108,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -127,10 +127,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/RelationDecl/field/multiplicity",
+        identity: "ix://agent-ix/semantic-core/RelationDecl/multiplicity",
         name: "multiplicity",
         rust_name: "multiplicity",
-        type_ref: "ix://agent-ix/semantic-core/type/Multiplicity",
+        type_ref: "ix://agent-ix/semantic-core/Multiplicity",
         rust_type: "Option<crate::Multiplicity>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -138,8 +138,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -160,29 +160,29 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// RelationDecl
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/RelationDecl.
+/// Semantic identity: ix://agent-ix/semantic-core/RelationDecl.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct RelationDecl {
     /// verb
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/RelationDecl/field/verb.
+    /// Semantic identity: ix://agent-ix/semantic-core/RelationDecl/verb.
     pub verb: crate::Identifier,
     /// category
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/RelationDecl/field/category.
+    /// Semantic identity: ix://agent-ix/semantic-core/RelationDecl/category.
     pub category: crate::EdgeCategory,
     /// composite
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/RelationDecl/field/composite.
+    /// Semantic identity: ix://agent-ix/semantic-core/RelationDecl/composite.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub composite: Option<crate::RelationDeclComposite>,
     /// target
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/RelationDecl/field/target.
+    /// Semantic identity: ix://agent-ix/semantic-core/RelationDecl/target.
     pub target: crate::SemanticId,
     /// multiplicity
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/RelationDecl/field/multiplicity.
+    /// Semantic identity: ix://agent-ix/semantic-core/RelationDecl/multiplicity.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub multiplicity: Option<crate::Multiplicity>,
 }

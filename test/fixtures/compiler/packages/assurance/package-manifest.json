@@ -6,17 +6,17 @@
 	"exports": [
 		{
 			"name": "Artifact",
-			"typeIdentity": "ix://agent-ix/assurance/type/Artifact",
+			"typeIdentity": "ix://agent-ix/assurance/Artifact",
 			"visibility": "public"
 		},
 		{
 			"name": "Text",
-			"typeIdentity": "ix://agent-ix/assurance/type/Text",
+			"typeIdentity": "ix://agent-ix/assurance/Text",
 			"visibility": "public"
 		},
 		{
 			"name": "Internal",
-			"typeIdentity": "ix://agent-ix/assurance/type/InternalNote",
+			"typeIdentity": "ix://agent-ix/assurance/InternalNote",
 			"visibility": "private"
 		}
 	],

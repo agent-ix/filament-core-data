@@ -1,22 +1,22 @@
 //! TypeRefTarget
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/TypeRefTarget.
+//! Semantic identity: ix://agent-ix/semantic-core/TypeRefTarget.
 
 use serde::{Deserialize, Serialize};
 
 /// TypeRefTarget
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/TypeRefTarget.
+/// Semantic identity: ix://agent-ix/semantic-core/TypeRefTarget.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum TypeRefTarget {
     /// SemanticId
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/TypeRefTarget/variant/SemanticId.
+    /// Semantic identity: ix://agent-ix/semantic-core/TypeRefTarget/variant/SemanticId.
     SemanticId(crate::SemanticId),
     /// KernelScalar
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/TypeRefTarget/variant/KernelScalar.
+    /// Semantic identity: ix://agent-ix/semantic-core/TypeRefTarget/variant/KernelScalar.
     KernelScalar(crate::KernelScalar),
 }
 

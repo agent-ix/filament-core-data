@@ -67,7 +67,7 @@ work alone.
 ## Rationale
 
 Two frozen records are at risk here and both are the yardstick this work is
-measured by. The first is the issue #20 corpus: its 111 cases, four bases,
+measured by. The first is the issue #20 corpus: its 115 cases, four bases,
 oracle, harness, thresholds, and registers. A backend that edits the corpus it
 is judged against has arranged its own verdict, and `conformance/README.md`
 states the principle directly — an oracle written by the implementer of the

@@ -39,6 +39,29 @@ CORE_LANGUAGES = {"quire", "ocl", "sysml", "fretish"}
 NAMESPACED = re.compile(r"^[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*$")
 BOUNDS = {"min", "max", "exclusiveMin", "exclusiveMax"}
 TEMPORAL = {"date", "datetime", "duration"}
+
+# A native value type reference (gap 1 of FCD #199/#200): `ix://quire/native/<Name>`
+# declares no node, over the closed set of kernel scalars below.
+NATIVE_PREFIX = "ix://quire/native/"
+NATIVE_SCALARS = {
+    "UUID": "uuid",
+    "Boolean": "boolean",
+    "Integer": "integer",
+    "Decimal": "number",
+    "String": "string",
+    "Timestamp": "datetime",
+    "Duration": "duration",
+    "Bytes": "bytes",
+    "JsonObject": "any",
+}
+
+
+def _native_scalar(identity: Any) -> str | None:
+    if not isinstance(identity, str) or not identity.startswith(NATIVE_PREFIX):
+        return None
+    return NATIVE_SCALARS.get(identity[len(NATIVE_PREFIX) :])
+
+
 APPLICABILITY: dict[str, set[str]] = {
     "min": {"integer", "number", *TEMPORAL},
     "max": {"integer", "number", *TEMPORAL},
@@ -95,20 +118,58 @@ def _objects(value: Any) -> list[dict[str, Any]]:
 
 
 def resolve_kind(
-    types: dict[str, dict[str, Any]], type_ref: Any, seen: set[str] | None = None
+    types: dict[str, dict[str, Any]],
+    fields: dict[str, dict[str, Any]],
+    type_ref: Any,
+    seen: set[str] | None = None,
+    allow_field: bool = True,
 ) -> tuple[str, str | None] | None:
+    """What `type_ref` resolves to: a native type reference; a document type,
+    through the alias chain; or, only when `allow_field` is set, a field or
+    param through its own `typeRef` (gap 1 of FCD #199/#200: a constrained
+    field keeps its constraints inline, with no alias node between them, so
+    `appliesTo` may name a field directly). A field or param's own `typeRef`
+    must resolve against type nodes or native names only — a field identity
+    used as a value's typeRef is not a definition and is refused (finding 8
+    of the FCD #199/#200 review), so `_check_field` and the operation-return
+    check call this with `allow_field=False`."""
     seen = seen or set()
-    if not isinstance(type_ref, str) or type_ref in seen or type_ref not in types:
+    if not isinstance(type_ref, str) or type_ref in seen:
         return None
+    native = _native_scalar(type_ref)
+    if native is not None:
+        return ("scalar", native)
     seen.add(type_ref)
+    if allow_field and type_ref in fields:
+        return resolve_kind(
+            types, fields, fields[type_ref].get("typeRef"), seen, allow_field
+        )
+    if type_ref not in types:
+        return None
     definition = types[type_ref]
     if definition.get("kind") == "alias":
-        return resolve_kind(types, definition.get("target"), seen)
+        return resolve_kind(types, fields, definition.get("target"), seen, allow_field)
     scalar = definition.get("scalar")
     return (
         _kind_name(definition.get("kind")),
         scalar if isinstance(scalar, str) else None,
     )
+
+
+def _field_index(types: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Every field or operation param in the document, by its own identity."""
+    index: dict[str, dict[str, Any]] = {}
+    for definition in types.values():
+        for field in _objects(definition.get("fields")):
+            identity = field.get("identity")
+            if isinstance(identity, str):
+                index[identity] = field
+        for operation in _objects(definition.get("operations")):
+            for param in _objects(operation.get("params")):
+                identity = param.get("identity")
+                if isinstance(identity, str):
+                    index[identity] = param
+    return index
 
 
 def _check_multiplicity(
@@ -138,15 +199,20 @@ def _check_multiplicity(
             )
         )
         return None
-    collection = upper is None or upper > 1
-    if not collection and ("ordered" in value or "unique" in value):
+    # Owner ruling (2026-09-19T15:39:32Z) on FCD #199: every multiplicity
+    # carries both `ordered` and `unique` as required booleans, checked here
+    # rather than left to a schema pass that may not have run.
+    if not isinstance(value.get("ordered"), bool) or not isinstance(
+        value.get("unique"), bool
+    ):
         out.append(
             _diag(
-                "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
+                "agent-ix.semantic-ir.INVALID_MULTIPLICITY",
                 path,
-                "flags need a collection",
+                "ordered and unique are required booleans on every multiplicity",
             )
         )
+        return None
     return value
 
 
@@ -155,9 +221,10 @@ def _check_field(
     path: str,
     version: str,
     types: dict[str, dict[str, Any]],
+    fields: dict[str, dict[str, Any]],
     out: list[dict[str, str]],
 ) -> None:
-    resolved = resolve_kind(types, field.get("typeRef"))
+    resolved = resolve_kind(types, fields, field.get("typeRef"), allow_field=False)
     if resolved is None:
         out.append(
             _diag(
@@ -202,12 +269,19 @@ def _check_field(
                     "unit needs a scalar",
                 )
             )
+    # A constrained field keeps its constraints inline, with no alias node
+    # between them (gap 1 of FCD #199/#200); each one's `appliesTo` already
+    # names this field's own identity, so `resolve_kind` resolves it through
+    # the `fields` branch above, the same as a type-level constraint.
+    for index, constraint in enumerate(_objects(field.get("constraints"))):
+        _check_constraint(constraint, f"{path}.constraints.{index}", types, fields, out)
 
 
 def _check_constraint(
     constraint: dict[str, Any],
     path: str,
     types: dict[str, dict[str, Any]],
+    fields: dict[str, dict[str, Any]],
     out: list[dict[str, str]],
 ) -> None:
     keyword = str(constraint.get("keyword"))
@@ -221,7 +295,7 @@ def _check_constraint(
             )
         )
         return
-    resolved = resolve_kind(types, constraint.get("appliesTo"))
+    resolved = resolve_kind(types, fields, constraint.get("appliesTo"))
     if resolved is None:
         out.append(
             _diag(
@@ -283,14 +357,15 @@ def _check_type(
     path: str,
     version: str,
     types: dict[str, dict[str, Any]],
+    fields: dict[str, dict[str, Any]],
     exports: set[str],
     out: list[dict[str, str]],
 ) -> None:
     is_record = _is_edge_kind(definition.get("kind"))
     for index, field in enumerate(_objects(definition.get("fields"))):
-        _check_field(field, f"{path}.fields.{index}", version, types, out)
+        _check_field(field, f"{path}.fields.{index}", version, types, fields, out)
     for index, constraint in enumerate(_objects(definition.get("constraints"))):
-        _check_constraint(constraint, f"{path}.constraints.{index}", types, out)
+        _check_constraint(constraint, f"{path}.constraints.{index}", types, fields, out)
     if not is_record and ("relationships" in definition or "operations" in definition):
         out.append(
             _diag(
@@ -334,13 +409,26 @@ def _check_type(
                 )
             )
     for index, relationship in enumerate(_objects(definition.get("relationships"))):
-        target = str(relationship.get("target"))
+        source_end = relationship.get("sourceEnd")
+        source_end = source_end if isinstance(source_end, dict) else {}
+        target_end = relationship.get("targetEnd")
+        target_end = target_end if isinstance(target_end, dict) else {}
+        target = str(target_end.get("type"))
         if target not in types and target not in exports:
             out.append(
                 _diag(
                     "agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET",
-                    f"{path}.relationships.{index}.target",
+                    f"{path}.relationships.{index}.targetEnd.type",
                     "target does not resolve",
+                )
+            )
+        source_type = source_end.get("type")
+        if source_type is not None and source_type != definition.get("identity"):
+            out.append(
+                _diag(
+                    "agent-ix.semantic-ir.INVALID_RELATIONSHIP_SOURCE",
+                    f"{path}.relationships.{index}.sourceEnd.type",
+                    "sourceEnd must name the owning type's own identity",
                 )
             )
         if str(relationship.get("category")) not in CATEGORIES:
@@ -352,8 +440,13 @@ def _check_type(
                 )
             )
         _check_multiplicity(
-            relationship.get("multiplicity"),
-            f"{path}.relationships.{index}.multiplicity",
+            source_end.get("multiplicity"),
+            f"{path}.relationships.{index}.sourceEnd.multiplicity",
+            out,
+        )
+        _check_multiplicity(
+            target_end.get("multiplicity"),
+            f"{path}.relationships.{index}.targetEnd.multiplicity",
             out,
         )
     for index, operation in enumerate(_objects(definition.get("operations"))):
@@ -374,11 +467,15 @@ def _check_type(
                 f"{path}.operations.{index}.params.{param_index}",
                 version,
                 types,
+                fields,
                 out,
             )
         returns = operation.get("returns")
         if isinstance(returns, dict):
-            if resolve_kind(types, returns.get("typeRef")) is None:
+            if (
+                resolve_kind(types, fields, returns.get("typeRef"), allow_field=False)
+                is None
+            ):
                 out.append(
                     _diag(
                         "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
@@ -438,7 +535,11 @@ def _check_composite_cycles(
     for index, identity in enumerate(order):
         edges[identity] = [
             (
-                str(relationship.get("target")),
+                str(
+                    relationship["targetEnd"].get("type")
+                    if isinstance(relationship.get("targetEnd"), dict)
+                    else None
+                ),
                 f"types.{index}.relationships.{rel_index}",
             )
             for rel_index, relationship in enumerate(
@@ -481,9 +582,10 @@ def read_semantic_ir(
         str(definition.get("identity")): definition
         for definition in _objects(document.get("types"))
     }
+    fields = _field_index(types)
     exports = set(lock_exports or ())
     for index, definition in enumerate(_objects(document.get("types"))):
-        _check_type(definition, f"types.{index}", version, types, exports, out)
+        _check_type(definition, f"types.{index}", version, types, fields, exports, out)
     _check_composite_cycles(types, out)
     return out
 

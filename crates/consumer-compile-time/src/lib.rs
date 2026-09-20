@@ -148,10 +148,13 @@ mod tests {
         assert_eq!(value_role(), "agent-ix:value");
 
         let relationship = contains_relationship();
-        assert_eq!(relationship.verb, "contains");
+        assert_eq!(relationship.source_end.role, Some("contains"));
         assert_eq!(relationship.category, "structural");
         assert!(relationship.composite);
-        assert_eq!(relationship.target, "ix://agent-ix/conformance/type/Node");
+        assert_eq!(
+            relationship.target_end.type_ref,
+            "ix://agent-ix/conformance/type/Node"
+        );
 
         let operation = resize_operation();
         assert_eq!(operation.name, "resize");

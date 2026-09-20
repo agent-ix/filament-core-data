@@ -1,23 +1,23 @@
 //! MaxConstraintValue
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraintValue.
+//! Semantic identity: ix://agent-ix/semantic-core/MaxConstraintValue.
 
 use serde::{Deserialize, Serialize};
 
 /// MaxConstraintValue
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraintValue.
+/// Semantic identity: ix://agent-ix/semantic-core/MaxConstraintValue.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum MaxConstraintValue {
     /// number
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraintValue/variant/number.
+    /// Semantic identity: ix://agent-ix/semantic-core/MaxConstraintValue/variant/number.
     #[serde(rename = "number")]
     Number(crate::MaxConstraintValueNumber),
     /// string
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraintValue/variant/string.
+    /// Semantic identity: ix://agent-ix/semantic-core/MaxConstraintValue/variant/string.
     #[serde(rename = "string")]
     String(crate::MaxConstraintValueString),
 }

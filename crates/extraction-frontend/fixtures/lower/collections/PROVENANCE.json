@@ -1,11 +1,8 @@
 {
-  "source": "authored",
-  "case": "collections",
-  "files": [
-    "spec/spec.md",
-    "spec/functional/FR-001-basket.md"
-  ],
-  "derived": [],
-  "edits": [],
-  "note": "Collections of every bound the FR-027 grammar admits: `1..*` (presence required, no loss), `*` and `0..*` (presence optional, one DECLARED_LOSS `required-collection-presence` each; issue #78); TC-1227."
+	"source": "authored",
+	"case": "collections",
+	"files": ["spec/spec.md", "spec/functional/FR-001-basket.md"],
+	"derived": [],
+	"edits": [],
+	"note": "Collections of every bound the FR-027 grammar admits: `1..*` (presence required, no loss), `*` and `0..*` (presence optional, one DECLARED_LOSS `required-collection-presence` each; issue #78); TC-1227."
 }

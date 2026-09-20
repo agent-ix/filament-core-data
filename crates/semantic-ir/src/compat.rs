@@ -13,7 +13,7 @@
 //! surfaces.
 
 use crate::json::{to_canonical_string, Json};
-use crate::rules::Document;
+use crate::rules::{Document, Resolved};
 
 /// One of the six dispositions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -213,12 +213,12 @@ fn resolved_key(document: &Document<'_>, identity: Option<&str>) -> String {
         None => return String::new(),
     };
     match document.resolve(identity) {
-        Some(resolved) => resolved
+        Some(Resolved::Node(resolved)) => resolved
             .get("identity")
             .and_then(Json::as_str)
             .unwrap_or(identity)
             .to_string(),
-        None => identity.to_string(),
+        Some(Resolved::Native(_)) | None => identity.to_string(),
     }
 }
 

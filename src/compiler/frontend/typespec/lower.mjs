@@ -37,14 +37,12 @@ import {
 	fragment,
 } from "../../diagnostics.mjs";
 import {
-	capitalize,
-	constraintAliasIdentity,
 	constraintDiagnosticCode,
-	kernelIdentity,
 	mintIdentity,
+	nativeTypeRef,
 	slug,
 } from "./identity.mjs";
-import { applies } from "../../ir/applicability.mjs";
+import { applies, EDGE_VOCABULARY, PART_OF } from "../../ir/applicability.mjs";
 import {
 	defects as decoratorDefects,
 	read as readState,
@@ -102,6 +100,15 @@ const KERNEL_NAMES = new Map([
 	["duration", "Duration"],
 	["uuid", "UUID"],
 ]);
+
+/** The `ix://quire/native/<Name>` prefix a kernel scalar reference takes. */
+const NATIVE_PREFIX = "ix://quire/native/";
+
+/** `KERNEL_NAMES` inverted: the kernel name to the IR scalar it resolves
+ * to, for reading a native reference back (gap 1 of FCD #199/#200). */
+const NATIVE_IR_SCALARS = new Map(
+	Array.from(KERNEL_NAMES, ([irScalar, name]) => [name, irScalar]),
+);
 
 const EXTENSION_BASE = "ix://agent-ix/semantic-core/ext";
 
@@ -374,6 +381,27 @@ export function lowerProgram(options) {
 			);
 			continue;
 		}
+		if (defect.kind === "edge-verb") {
+			// H4 of the FCD #199/#200 review: a verb the loaded edge vocabulary
+			// does not declare, matching the extraction-frontend's
+			// `UNKNOWN_EDGE_VERB` (`crates/extraction-frontend/src/edges.rs`).
+			context.raise(
+				DIAGNOSTIC_CODES.UNKNOWN_EDGE_VERB,
+				`${fragment(defect.decorator)} verb ${fragment(defect.verb)} is not declared by the loaded edge vocabulary`,
+				context.locusOf(defect.target, defect.node),
+			);
+			continue;
+		}
+		if (defect.kind === "edge-category-mismatch") {
+			// M5 of the FCD #199/#200 round-3 review: the registry is the
+			// source of the registry's data, and that includes `category`.
+			context.raise(
+				DIAGNOSTIC_CODES.EDGE_CATEGORY_MISMATCH,
+				`${fragment(defect.decorator)} verb ${fragment(defect.verb)} declares category ${fragment(defect.category)}, but the loaded edge vocabulary declares ${fragment(defect.registryCategory)} for that verb`,
+				context.locusOf(defect.target, defect.node),
+			);
+			continue;
+		}
 		context.raise(
 			DIAGNOSTIC_CODES.INVALID_DECORATOR_ARGUMENT,
 			`${fragment(defect.decorator)} parameter ${fragment(defect.parameter)} expects ${fragment(defect.expected)}, got ${fragment(defect.value)}`,
@@ -381,10 +409,9 @@ export function lowerProgram(options) {
 		);
 	}
 
-	// A kernel definition is emitted the moment a member type needs it, not at
-	// the end. `resolvedKindOf` looks definitions up by identity, so a definition
-	// that arrives later leaves every constraint and every `@unit` on a
-	// built-in-typed field resolving to nothing — and then refused, wrongly.
+	// A kernel scalar mints no package node (gap 1 of FCD #199/#200): the
+	// `typeRef` is its native reference, resolved by `resolvedKindOf` below
+	// without a `definitions` lookup.
 	const useKernel = (irScalar, at) => {
 		const name = KERNEL_NAMES.get(irScalar);
 		if (!name) {
@@ -395,9 +422,7 @@ export function lowerProgram(options) {
 			);
 			return undefined;
 		}
-		const identity = kernelIdentity(packageIdentity, name);
-		if (!definitions.has(identity)) emitKernel(identity, name, irScalar);
-		return identity;
+		return nativeTypeRef(name);
 	};
 
 	const typeIdentity = (name) => mintIdentity(packageIdentity, "type", [name]);
@@ -509,36 +534,16 @@ export function lowerProgram(options) {
 		return definition;
 	};
 
-	/** The package-local definition FR-034 mints for a kernel scalar. */
-	const emitKernel = (identity, name, irScalar) =>
-		emit({
-			identity,
-			displayName: name,
-			kind: "scalar",
-			roles: [],
-			origin: {
-				generated: {
-					generatorIdentity:
-						"ix://agent-ix/filament-core-data/compiler/typespec",
-					generatorVersion: "1.1.0",
-					inputIdentities: [sourceIdentity],
-				},
-			},
-			constraints: [],
-			extensions: [
-				{
-					identity: `${EXTENSION_BASE}/kernel-scalar`,
-					version: "1.0.0",
-					required: false,
-					payload: { name },
-				},
-			],
-			unknownPolicy: "reject",
-			scalar: irScalar,
-		});
-
-	/** Resolves a definition's kind and scalar, following aliases. */
+	/** Resolves a `typeRef`'s kind and scalar: a native reference resolves
+	 * directly over the closed kernel scalar set (gap 1 of FCD #199/#200), an
+	 * authored alias (`scalar X extends Y`) follows its `target`, and every
+	 * other authored type resolves through `definitions`. */
 	const resolvedKindOf = (identity, seen = new Set()) => {
+		if (identity?.startsWith(NATIVE_PREFIX)) {
+			const name = identity.slice(NATIVE_PREFIX.length);
+			const irScalar = NATIVE_IR_SCALARS.get(name);
+			return irScalar ? { kind: "scalar", scalar: irScalar } : undefined;
+		}
 		if (seen.has(identity)) return undefined;
 		seen.add(identity);
 		const definition = definitions.get(identity);
@@ -740,10 +745,14 @@ export function lowerProgram(options) {
 	/** Lowers one model property (or operation parameter) to an IR field node. */
 	const lowerField = (declaration, property, identityParts, ownerParts) => {
 		const at = context.locusOf(property);
+		const fieldIdentity = mintIdentity(packageIdentity, "field", [
+			...ownerParts,
+			property.name,
+		]);
 		const nullable = unwrapNullable(property.type);
 		const item = collectionItem(nullable.type);
 		const memberType = item ?? nullable.type;
-		let typeRef = resolveMemberType(memberType, at);
+		const typeRef = resolveMemberType(memberType, at);
 		if (!typeRef) {
 			context.raise(
 				DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF,
@@ -783,31 +792,29 @@ export function lowerProgram(options) {
 			multiplicity = { lower: property.optional ? 0 : 1, upper: 1 };
 		}
 
+		// Every emitted multiplicity carries `ordered` and `unique` (QSpec
+		// model-complete.md, owner ruling 2026-09-19T15:39:32Z on FCD #199):
+		// when `upper` is absent or greater than one, `@collection`'s own
+		// `ordered`/`unique` are emitted; when `upper` is present and at most
+		// one, both are `false` regardless of what `@collection` declared —
+		// clamped, not refused. `FLAGS_ON_NON_COLLECTION` is deleted; there is
+		// no diagnostic here to raise.
 		const isCollection =
 			multiplicity.upper === undefined || multiplicity.upper > 1;
-		if (collection) {
-			if (!isCollection) {
-				context.raise(
-					DIAGNOSTIC_CODES.FLAGS_ON_NON_COLLECTION,
-					"@collection applies only where the upper bound is absent or greater than one",
-					decoratorLocus(collection, property),
-				);
-				return undefined;
-			}
+		if (collection && isCollection) {
 			multiplicity.ordered = collection.ordered;
 			multiplicity.unique = collection.unique;
+		} else {
+			multiplicity.ordered = false;
+			multiplicity.unique = false;
 		}
 
 		const constraints = constraintsOf(property);
+		let fieldConstraints;
 		if (constraints.length > 0) {
-			// FR-034: a constrained property retargets to a minted alias, because a
-			// field node carries no constraints of its own.
-			const aliasIdentity = constraintAliasIdentity(
-				packageIdentity,
-				ownerParts[0],
-				property.name,
-			);
-			const aliasName = `${ownerParts[0]}${capitalize(property.name)}`;
+			// Gap 1 of FCD #199/#200: a constrained property keeps its constraints
+			// on the field itself, `appliesTo` the field's own identity; `typeRef`
+			// stays the field's resolved type, no synthetic alias.
 			const resolved = resolvedKindOf(typeRef) ?? { kind: "record" };
 			const attached = [];
 			for (const item of constraints) {
@@ -827,7 +834,7 @@ export function lowerProgram(options) {
 					]),
 					keyword: item.keyword,
 					operands: item.operands,
-					appliesTo: aliasIdentity,
+					appliesTo: fieldIdentity,
 					diagnosticCode: constraintDiagnosticCode(
 						packageIdentity,
 						[...ownerParts, property.name],
@@ -836,20 +843,7 @@ export function lowerProgram(options) {
 					origin: context.originOf(property),
 				});
 			}
-			if (attached.length > 0) {
-				emit({
-					identity: aliasIdentity,
-					displayName: aliasName,
-					kind: "alias",
-					roles: [],
-					origin: context.originOf(property),
-					constraints: attached.sort(byIdentity),
-					extensions: [],
-					unknownPolicy: "reject",
-					target: typeRef,
-				});
-				typeRef = aliasIdentity;
-			}
+			if (attached.length > 0) fieldConstraints = attached.sort(byIdentity);
 		}
 
 		const extensions = [];
@@ -893,10 +887,7 @@ export function lowerProgram(options) {
 		}
 
 		const field = {
-			identity: mintIdentity(packageIdentity, "field", [
-				...ownerParts,
-				property.name,
-			]),
+			identity: fieldIdentity,
 			name: property.name,
 			typeRef,
 			multiplicity,
@@ -907,6 +898,7 @@ export function lowerProgram(options) {
 			defaultKind: "none",
 			origin: context.originOf(property),
 			extensions: extensions.sort(byIdentity),
+			...(fieldConstraints ? { constraints: fieldConstraints } : {}),
 		};
 
 		const kindDecorator = context.state("defaultKind", property);
@@ -928,7 +920,7 @@ export function lowerProgram(options) {
 			if (!resolved || resolved.kind !== "scalar") {
 				context.raise(
 					DIAGNOSTIC_CODES.UNIT_ON_NON_SCALAR,
-					`@unit applies only where the field's type resolves, through aliases, to a scalar (resolved ${fragment(resolved?.kind ?? "nothing")})`,
+					`@unit applies only where the field's type resolves to a scalar (resolved ${fragment(resolved?.kind ?? "nothing")})`,
 					decoratorLocus(unit, property),
 				);
 				return undefined;
@@ -1010,20 +1002,52 @@ export function lowerProgram(options) {
 					const targetName = item.targetIdentity.slice(
 						item.targetIdentity.lastIndexOf("/") + 1,
 					);
-					const multiplicity = { lower: item.lower ?? 0 };
-					if (item.upper !== undefined) multiplicity.upper = item.upper;
-					else if (item.lower === undefined) multiplicity.upper = 1;
+					// FR-094 "Relationships" (gap 3 of FCD #199/#200): `@relationship`
+					// authors only the target end's cardinality ("this record has
+					// `lower..upper` of the target"), so it lowers to `targetEnd`,
+					// with the same FR-034 defaulting the flat shape used. The source
+					// end's multiplicity is not yet authorable by either frontend
+					// (source-multiplicity authoring is future FCD #201) and is
+					// always `0..unbounded`, mirroring the extraction-frontend's
+					// identical default for the same gap (edges.rs).
+					const targetMultiplicity = { lower: item.lower ?? 0 };
+					if (item.upper !== undefined) targetMultiplicity.upper = item.upper;
+					else if (item.lower === undefined) targetMultiplicity.upper = 1;
+					targetMultiplicity.ordered = false;
+					targetMultiplicity.unique = false;
+					// H4 of the FCD #199/#200 review: the target end's `role` is
+					// the registry's declared `inverse` for this verb (absent when
+					// it declares none), and `composite` is exactly whether that
+					// `inverse` is `part_of` — never the decorator's own say, and
+					// never a second, hand-typed copy of the vocabulary. `verb`
+					// passed the registry-membership check in `lib/lib.mjs`, so
+					// `EDGE_VOCABULARY[item.verb]` is always defined here.
+					const registryEntry = EDGE_VOCABULARY[item.verb];
+					const inverse = registryEntry.inverse;
 					return {
 						identity: mintIdentity(packageIdentity, "relationship", [
 							declaration.name,
 							item.verb,
 							targetName,
 						]),
-						verb: item.verb,
-						category: item.category,
-						composite: item.composite ?? false,
-						target: item.targetIdentity,
-						multiplicity,
+						// M5 of the FCD #199/#200 round-3 review: `category` is
+						// taken from the registry, not from the decorator's own
+						// argument, which `lib/lib.mjs` has already checked agrees
+						// with the registry (or refused `EDGE_CATEGORY_MISMATCH`) —
+						// this is the registry's data, read from the registry.
+						category: registryEntry.category,
+						composite: inverse === PART_OF,
+						direction: "source-to-target",
+						sourceEnd: {
+							role: item.verb,
+							multiplicity: { lower: 0, ordered: false, unique: false },
+							type: identity,
+						},
+						targetEnd: {
+							...(inverse !== undefined ? { role: inverse } : {}),
+							multiplicity: targetMultiplicity,
+							type: item.targetIdentity,
+						},
 						origin: context.originOf(declaration, item.node),
 					};
 				})
@@ -1093,7 +1117,12 @@ export function lowerProgram(options) {
 					if (typeRef) {
 						node.returns = {
 							typeRef,
-							multiplicity: returnItem ? { lower: 1 } : { lower: 1, upper: 1 },
+							// Every emitted multiplicity carries `ordered` and `unique`
+							// (QSpec model-complete.md); a return type never declares
+							// either, so both are always `false`.
+							multiplicity: returnItem
+								? { lower: 1, ordered: false, unique: false }
+								: { lower: 1, upper: 1, ordered: false, unique: false },
 							nullable: false,
 						};
 					}

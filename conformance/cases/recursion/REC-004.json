@@ -17,13 +17,22 @@
 			"path": "/ir/types/8/relationships/-",
 			"value": {
 				"identity": "ix://agent-ix/conformance/relationship/node-precedes-node",
-				"verb": "precedes",
 				"category": "dependency",
 				"composite": false,
-				"target": "ix://agent-ix/conformance/type/Node",
-				"multiplicity": {
-					"lower": 0,
-					"upper": 1
+				"direction": "source-to-target",
+				"sourceEnd": {
+					"multiplicity": { "lower": 0, "ordered": false, "unique": false },
+					"role": "precedes",
+					"type": "ix://agent-ix/conformance/type/Node"
+				},
+				"targetEnd": {
+					"multiplicity": {
+						"lower": 0,
+						"upper": 1,
+						"ordered": false,
+						"unique": false
+					},
+					"type": "ix://agent-ix/conformance/type/Node"
 				},
 				"origin": {
 					"source": {

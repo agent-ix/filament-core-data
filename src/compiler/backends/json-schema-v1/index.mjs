@@ -117,7 +117,29 @@ function byName(left, right) {
 function schemaId(ir, type) {
 	return `https://agent-ix.dev/schema/${ir.package.identity}/${nameOf(type)}.json`;
 }
+/**
+ * A native value type reference (gap 1 of FCD #199/#200): `ix://quire/native/<Name>`
+ * names a kernel scalar and declares no node, over the closed set below.
+ */
+const NATIVE_PREFIX = "ix://quire/native/";
+const NATIVE_SCALARS = Object.freeze({
+	UUID: "uuid",
+	Boolean: "boolean",
+	Integer: "integer",
+	Decimal: "number",
+	String: "string",
+	Timestamp: "datetime",
+	Duration: "duration",
+	Bytes: "bytes",
+	JsonObject: "any",
+});
+function nativeScalar(id) {
+	if (typeof id !== "string" || !id.startsWith(NATIVE_PREFIX)) return undefined;
+	return NATIVE_SCALARS[id.slice(NATIVE_PREFIX.length)];
+}
 function ref(types, id) {
+	const native = nativeScalar(id);
+	if (native !== undefined) return { ...(scalarSchema[native] ?? {}) };
 	const target = types.get(id);
 	return target ? { $ref: `./${nameOf(target)}.json` } : {};
 }
@@ -168,8 +190,11 @@ function annotated(schema, node) {
 }
 function fieldSchema(field, types) {
 	let schema = ref(types, field.typeRef);
-	// A constrained field is represented in IR as an alias. Keep the alias's
-	// constraints beside the reference: a bare sibling reference would erase the
+	// An authored alias a field references may itself declare constraints
+	// (gap 1 of FCD #199/#200: a field's own constraints are now inline on the
+	// field, below, with no synthetic alias minted for them, but an authored
+	// alias is still its own node and may carry constraints of its own). Keep
+	// those beside the reference: a bare sibling reference would erase the
 	// constraint at the API boundary this backend exists to enforce.
 	let target = types.get(field.typeRef);
 	const seen = new Set();

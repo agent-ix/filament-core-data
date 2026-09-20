@@ -12,5 +12,5 @@
 		"traceability"
 	],
 	"description": "FR-040 edge categories; equal to the IR `relationship.category` set.",
-	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/EdgeCategory"
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/EdgeCategory"
 }

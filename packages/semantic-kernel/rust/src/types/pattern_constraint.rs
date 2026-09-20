@@ -1,16 +1,16 @@
 //! PatternConstraint
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/PatternConstraint.
+//! Semantic identity: ix://agent-ix/semantic-core/PatternConstraint.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `PatternConstraint`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/PatternConstraint/field/keyword",
+        identity: "ix://agent-ix/semantic-core/PatternConstraint/keyword",
         name: "keyword",
         rust_name: "keyword",
-        type_ref: "ix://agent-ix/semantic-core/type/PatternConstraintKeyword",
+        type_ref: "ix://agent-ix/semantic-core/PatternConstraintKeyword",
         rust_type: "crate::PatternConstraintKeyword",
         row: "field:single/non-null/required",
         presence: "required",
@@ -18,8 +18,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/PatternConstraint/field/regex",
+        identity: "ix://agent-ix/semantic-core/PatternConstraint/regex",
         name: "regex",
         rust_name: "regex",
-        type_ref: "ix://agent-ix/semantic-core/type/PatternConstraintRegex",
+        type_ref: "ix://agent-ix/semantic-core/PatternConstraintRegex",
         rust_type: "crate::PatternConstraintRegex",
         row: "field:single/non-null/required",
         presence: "required",
@@ -48,8 +48,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -67,10 +67,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/PatternConstraint/field/dialect",
+        identity: "ix://agent-ix/semantic-core/PatternConstraint/dialect",
         name: "dialect",
         rust_name: "dialect",
-        type_ref: "ix://agent-ix/semantic-core/type/PatternConstraintDialect",
+        type_ref: "ix://agent-ix/semantic-core/PatternConstraintDialect",
         rust_type: "crate::PatternConstraintDialect",
         row: "field:single/non-null/required",
         presence: "required",
@@ -78,8 +78,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -100,20 +100,20 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// PatternConstraint
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/PatternConstraint.
+/// Semantic identity: ix://agent-ix/semantic-core/PatternConstraint.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct PatternConstraint {
     /// keyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/PatternConstraint/field/keyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/PatternConstraint/keyword.
     pub keyword: crate::PatternConstraintKeyword,
     /// regex
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/PatternConstraint/field/regex.
+    /// Semantic identity: ix://agent-ix/semantic-core/PatternConstraint/regex.
     pub regex: crate::PatternConstraintRegex,
     /// dialect
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/PatternConstraint/field/dialect.
+    /// Semantic identity: ix://agent-ix/semantic-core/PatternConstraint/dialect.
     pub dialect: crate::PatternConstraintDialect,
 }
 

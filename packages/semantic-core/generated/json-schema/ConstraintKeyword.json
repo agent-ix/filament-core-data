@@ -16,5 +16,5 @@
 		"format"
 	],
 	"description": "FR-029 closed keyword set; equal to the IR `constraint.keyword` set.",
-	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/ConstraintKeyword"
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/ConstraintKeyword"
 }

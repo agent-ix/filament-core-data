@@ -1,16 +1,16 @@
 //! ClauseRef
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/ClauseRef.
+//! Semantic identity: ix://agent-ix/semantic-core/ClauseRef.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `ClauseRef`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/ClauseRef/field/language",
+        identity: "ix://agent-ix/semantic-core/ClauseRef/language",
         name: "language",
         rust_name: "language",
-        type_ref: "ix://agent-ix/semantic-core/type/ClauseLanguage",
+        type_ref: "ix://agent-ix/semantic-core/ClauseLanguage",
         rust_type: "crate::ClauseLanguage",
         row: "field:single/non-null/required",
         presence: "required",
@@ -18,8 +18,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/ClauseRef/field/clauseId",
+        identity: "ix://agent-ix/semantic-core/ClauseRef/clauseId",
         name: "clauseId",
         rust_name: "clause_id",
-        type_ref: "ix://agent-ix/semantic-core/type/Identifier",
+        type_ref: "ix://agent-ix/semantic-core/Identifier",
         rust_type: "crate::Identifier",
         row: "field:single/non-null/required",
         presence: "required",
@@ -48,8 +48,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -67,10 +67,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/ClauseRef/field/sourceSpan",
+        identity: "ix://agent-ix/semantic-core/ClauseRef/sourceSpan",
         name: "sourceSpan",
         rust_name: "source_span",
-        type_ref: "ix://agent-ix/semantic-core/type/SourceLocus",
+        type_ref: "ix://agent-ix/semantic-core/SourceLocus",
         rust_type: "Option<crate::SourceLocus>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -78,8 +78,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -100,21 +100,21 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// ClauseRef
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/ClauseRef.
+/// Semantic identity: ix://agent-ix/semantic-core/ClauseRef.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct ClauseRef {
     /// language
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ClauseRef/field/language.
+    /// Semantic identity: ix://agent-ix/semantic-core/ClauseRef/language.
     pub language: crate::ClauseLanguage,
     /// clauseId
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ClauseRef/field/clauseId.
+    /// Semantic identity: ix://agent-ix/semantic-core/ClauseRef/clauseId.
     #[serde(rename = "clauseId")]
     pub clause_id: crate::Identifier,
     /// sourceSpan
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ClauseRef/field/sourceSpan.
+    /// Semantic identity: ix://agent-ix/semantic-core/ClauseRef/sourceSpan.
     #[serde(rename = "sourceSpan", skip_serializing_if = "Option::is_none")]
     pub source_span: Option<crate::SourceLocus>,
 }

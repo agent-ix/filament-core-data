@@ -41,6 +41,7 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.DIGEST_CONFLICT` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.DUPLICATE_DECORATOR` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.DUPLICATE_EXPORT` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.compiler.EDGE_CATEGORY_MISMATCH` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.FRONTEND_CONTRACT_VIOLATION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.FRONTEND_NOT_IMPLEMENTED` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.IMPORT_CAPABILITY_MISSING` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
@@ -73,6 +74,7 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.TYPESPEC_COMPILE_ERROR` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNDECLARED_LOSS` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNKNOWN_CONTRACT_VERSION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.compiler.UNKNOWN_EDGE_VERB` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNKNOWN_MAPPING` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNKNOWN_PROFILE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNKNOWN_TARGET` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
@@ -93,11 +95,11 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.semantic-ir.DUPLICATE_CLAUSE_ID` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.DUPLICATE_IDENTITY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.DUPLICATE_PARAM` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
-| `agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_DOCUMENT` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_MULTIPLICITY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_OPERAND` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_PATTERN` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
+| `agent-ix.semantic-ir.INVALID_RELATIONSHIP_SOURCE` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_UNIT` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.MISSING_MULTIPLICITY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.MISSING_SOURCE_SPAN` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |

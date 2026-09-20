@@ -9,12 +9,12 @@
 	"ops": [
 		{
 			"op": "test",
-			"path": "/ir/types/9/relationships/0/target",
+			"path": "/ir/types/9/relationships/0/targetEnd/type",
 			"value": "ix://agent-ix/conformance/type/Node"
 		},
 		{
 			"op": "replace",
-			"path": "/ir/types/9/relationships/0/target",
+			"path": "/ir/types/9/relationships/0/targetEnd/type",
 			"value": "ix://agent-ix/conformance/type/Absent"
 		}
 	],
@@ -35,7 +35,7 @@
 		"resultState": "invalid",
 		"diagnostics": [
 			{
-				"pointer": "/ir/types/9/relationships/0/target",
+				"pointer": "/ir/types/9/relationships/0/targetEnd/type",
 				"diagnostic": {
 					"code": "agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET",
 					"severity": "error",

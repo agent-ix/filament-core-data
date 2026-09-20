@@ -1,16 +1,16 @@
 //! DefaultDecl
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/DefaultDecl.
+//! Semantic identity: ix://agent-ix/semantic-core/DefaultDecl.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `DefaultDecl`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/DefaultDecl/field/kind",
+        identity: "ix://agent-ix/semantic-core/DefaultDecl/kind",
         name: "kind",
         rust_name: "kind",
-        type_ref: "ix://agent-ix/semantic-core/type/DefaultKind",
+        type_ref: "ix://agent-ix/semantic-core/DefaultKind",
         rust_type: "crate::DefaultKind",
         row: "field:single/non-null/required",
         presence: "required",
@@ -18,8 +18,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/DefaultDecl/field/value",
+        identity: "ix://agent-ix/semantic-core/DefaultDecl/value",
         name: "value",
         rust_name: "value",
-        type_ref: "ix://agent-ix/semantic-core/type/DefaultDeclValue",
+        type_ref: "ix://agent-ix/semantic-core/DefaultDeclValue",
         rust_type: "Option<crate::DefaultDeclValue>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -48,8 +48,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -70,16 +70,16 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// DefaultDecl
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/DefaultDecl.
+/// Semantic identity: ix://agent-ix/semantic-core/DefaultDecl.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct DefaultDecl {
     /// kind
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/DefaultDecl/field/kind.
+    /// Semantic identity: ix://agent-ix/semantic-core/DefaultDecl/kind.
     pub kind: crate::DefaultKind,
     /// value
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/DefaultDecl/field/value.
+    /// Semantic identity: ix://agent-ix/semantic-core/DefaultDecl/value.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub value: Option<crate::DefaultDeclValue>,
 }

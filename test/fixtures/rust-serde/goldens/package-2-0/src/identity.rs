@@ -78,21 +78,32 @@ pub struct ExtensionMeta {
     pub payload: &'static str,
 }
 
+/// One end of a relationship (gap 3 of FCD #199/#200: the two-end shape).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct RelationshipEndMeta {
+    /// The end's role, where the IR declared one.
+    pub role: Option<&'static str>,
+    /// The end's multiplicity.
+    pub multiplicity: MultiplicityMeta,
+    /// The end's type reference.
+    pub type_ref: &'static str,
+}
+
 /// A relationship the IR carried.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct RelationshipMeta {
     /// The relationship's semantic identity.
     pub identity: &'static str,
-    /// The verb.
-    pub verb: &'static str,
     /// The edge category.
     pub category: &'static str,
     /// Whether the relationship is composite.
     pub composite: bool,
-    /// The target type's semantic identity.
-    pub target: &'static str,
-    /// The relationship's multiplicity.
-    pub multiplicity: MultiplicityMeta,
+    /// The relationship's direction.
+    pub direction: &'static str,
+    /// The source end.
+    pub source_end: RelationshipEndMeta,
+    /// The target end.
+    pub target_end: RelationshipEndMeta,
     /// The relationship's origin.
     pub origin: OriginMeta,
 }
@@ -242,15 +253,28 @@ pub struct OccurrenceMeta {
 
 const NODE_RELATIONSHIPS: &[RelationshipMeta] = &[crate::identity::RelationshipMeta {
     identity: "ix://agent-ix/conformance/relationship/node-references-node",
-    verb: "references",
     category: "dependency",
     composite: false,
-    target: "ix://agent-ix/conformance/type/Node",
-    multiplicity: crate::identity::MultiplicityMeta {
-        lower: 0,
-        upper: None,
-        ordered: Some(true),
-        unique: Some(true),
+    direction: "source-to-target",
+    source_end: crate::identity::RelationshipEndMeta {
+        role: Some("references"),
+        multiplicity: crate::identity::MultiplicityMeta {
+            lower: 0,
+            upper: None,
+            ordered: Some(false),
+            unique: Some(false),
+        },
+        type_ref: "ix://agent-ix/conformance/type/Node",
+    },
+    target_end: crate::identity::RelationshipEndMeta {
+        role: None,
+        multiplicity: crate::identity::MultiplicityMeta {
+            lower: 0,
+            upper: None,
+            ordered: Some(true),
+            unique: Some(true),
+        },
+        type_ref: "ix://agent-ix/conformance/type/Node",
     },
     origin: crate::identity::OriginMeta {
         source: Some(crate::identity::SourceLocusMeta {
@@ -267,15 +291,28 @@ const NODE_RELATIONSHIPS: &[RelationshipMeta] = &[crate::identity::RelationshipM
 
 const ROOT_RELATIONSHIPS: &[RelationshipMeta] = &[crate::identity::RelationshipMeta {
     identity: "ix://agent-ix/conformance/relationship/root-contains-node",
-    verb: "contains",
     category: "structural",
     composite: true,
-    target: "ix://agent-ix/conformance/type/Node",
-    multiplicity: crate::identity::MultiplicityMeta {
-        lower: 1,
-        upper: None,
-        ordered: Some(true),
-        unique: Some(true),
+    direction: "source-to-target",
+    source_end: crate::identity::RelationshipEndMeta {
+        role: Some("contains"),
+        multiplicity: crate::identity::MultiplicityMeta {
+            lower: 0,
+            upper: None,
+            ordered: Some(false),
+            unique: Some(false),
+        },
+        type_ref: "ix://agent-ix/conformance/type/Root",
+    },
+    target_end: crate::identity::RelationshipEndMeta {
+        role: Some("part_of"),
+        multiplicity: crate::identity::MultiplicityMeta {
+            lower: 1,
+            upper: None,
+            ordered: Some(true),
+            unique: Some(true),
+        },
+        type_ref: "ix://agent-ix/conformance/type/Node",
     },
     origin: crate::identity::OriginMeta {
         source: Some(crate::identity::SourceLocusMeta {
@@ -300,8 +337,8 @@ const ROOT_OP_RESIZE_PARAMS: &[ParamMeta] = &[crate::identity::ParamMeta {
     multiplicity: crate::identity::MultiplicityMeta {
         lower: 1,
         upper: Some(1),
-        ordered: None,
-        unique: None,
+        ordered: Some(false),
+        unique: Some(false),
     },
 }];
 
@@ -316,8 +353,8 @@ const ROOT_OPERATIONS: &[OperationMeta] = &[crate::identity::OperationMeta {
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
     }),
     pre: &["size-non-negative"],

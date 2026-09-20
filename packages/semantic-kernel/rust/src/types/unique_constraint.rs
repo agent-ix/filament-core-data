@@ -1,15 +1,15 @@
 //! UniqueConstraint
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/UniqueConstraint.
+//! Semantic identity: ix://agent-ix/semantic-core/UniqueConstraint.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `UniqueConstraint`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[crate::identity::FieldMeta {
-    identity: "ix://agent-ix/semantic-core/type/UniqueConstraint/field/keyword",
+    identity: "ix://agent-ix/semantic-core/UniqueConstraint/keyword",
     name: "keyword",
     rust_name: "keyword",
-    type_ref: "ix://agent-ix/semantic-core/type/UniqueConstraintKeyword",
+    type_ref: "ix://agent-ix/semantic-core/UniqueConstraintKeyword",
     rust_type: "crate::UniqueConstraintKeyword",
     row: "field:single/non-null/required",
     presence: "required",
@@ -17,8 +17,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[crate::identity::FieldMeta {
     multiplicity: crate::identity::MultiplicityMeta {
         lower: 1,
         upper: Some(1),
-        ordered: None,
-        unique: None,
+        ordered: Some(false),
+        unique: Some(false),
     },
     unit: None,
     default_kind: "none",
@@ -38,12 +38,12 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[crate::identity::FieldMeta {
 
 /// UniqueConstraint
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/UniqueConstraint.
+/// Semantic identity: ix://agent-ix/semantic-core/UniqueConstraint.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct UniqueConstraint {
     /// keyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/UniqueConstraint/field/keyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/UniqueConstraint/keyword.
     pub keyword: crate::UniqueConstraintKeyword,
 }
 

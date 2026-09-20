@@ -104,6 +104,14 @@ pub struct ConstructMembers {
     pub target_element: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub feature_order: Option<Vec<String>>,
+    /// Whether `source_element` names a referenced artifact's operation
+    /// (FR-152's `<id>/<operation>` form) rather than its type — known
+    /// unambiguously at the point [`References::identity`] mints it, from
+    /// the raw reference cell, and carried here so `refusal_rule` never has
+    /// to re-derive it by counting the minted identity's own path segments.
+    /// Not part of the wire shape: internal working state, never read back.
+    #[serde(skip)]
+    pub source_element_is_operation: bool,
 }
 
 /// `semantic-ir.schema.json#/$defs/state`.
@@ -260,8 +268,8 @@ fn operations(definition: &TypeDefinition) -> &[Operation] {
 fn targets<'a>(edges: impl Iterator<Item = &'a Relationship>) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
     for edge in edges {
-        if !out.contains(&edge.target) {
-            out.push(edge.target.clone());
+        if !out.contains(&edge.target_end.type_ref) {
+            out.push(edge.target_end.type_ref.clone());
         }
     }
     out
@@ -404,17 +412,16 @@ pub(crate) fn shape(
     if !forbids(declaration, Member::Members) {
         let edges = relationships(definition).iter();
         members.members = Some(if declaration.shape == Shape::Namespace {
-            targets(edges.filter(|r| r.verb == NAMESPACE_MEMBERSHIP))
+            targets(edges.filter(|r| r.source_end.role.as_deref() == Some(NAMESPACE_MEMBERSHIP)))
         } else {
             targets(edges.filter(|r| r.composite))
         });
     }
     if !forbids(declaration, Member::Persists) {
-        members.persists = Some(targets(
-            relationships(definition)
-                .iter()
-                .filter(|r| r.verb == PERSISTENCE),
-        ));
+        members.persists =
+            Some(targets(relationships(definition).iter().filter(|r| {
+                r.source_end.role.as_deref() == Some(PERSISTENCE)
+            })));
     }
     let lifted = |member: Member, authored: bool| {
         !forbids(declaration, member)
@@ -484,7 +491,9 @@ pub(crate) fn shape(
             );
         }
         if !forbids(declaration, Member::Multiplicity) {
-            members.multiplicity = Some(part.record.multiplicity.clone());
+            members.multiplicity = Some(crate::document::normalized_multiplicity(
+                part.record.multiplicity.clone(),
+            ));
         }
     }
     if let Some(port) = &model.port {
@@ -516,7 +525,9 @@ pub(crate) fn shape(
             );
         }
         if !forbids(declaration, Member::Multiplicity) {
-            members.multiplicity = Some(port.record.multiplicity.clone());
+            members.multiplicity = Some(crate::document::normalized_multiplicity(
+                port.record.multiplicity.clone(),
+            ));
         }
     }
     if let Some(connection) = &model.connection {
@@ -565,6 +576,12 @@ pub(crate) fn shape(
                     )
                     .map_err(|rule| refuse(ctx, object, &rule))?,
             );
+            members.source_element_is_operation = bare_artifact_id(
+                &allocation.record.source_element,
+                &ctx.package.package(),
+                Member::SourceElement,
+            )
+            .is_ok_and(|(_, operation)| operation.is_some());
         }
         if !forbids(declaration, Member::TargetElement) {
             members.target_element = Some(
@@ -863,14 +880,17 @@ pub(crate) struct References<'a> {
 /// (`Ok((id, Some(op)))`): quire-rs mints three own-package shapes, depending
 /// which resolver a systems-model reference cell went through —
 /// `semantic::properties::map_type` (a `declaredType` or `interfaceType`
-/// cell, FR-070) mints `ix://<org>/<repo>/type/<id>`, the same `type/<id>`
-/// shape this frontend's own [`crate::identity::PackageIdentity::
-/// type_identity`] mints; `semantic::target::resolve_target` (an `owner`,
-/// `sourceElement`/`targetElement`, or connection-end cell) mints
-/// `ix://<org>/<repo>/<id>` with no such segment; and a `sourceElement` cell
-/// naming an operation mints that same shape with the operation appended
-/// after one more `/` (`ix://<org>/<repo>/<id>/<operation>`), the engine
-/// having already confirmed the referenced artifact declares it. Anything
+/// cell, FR-070) mints `ix://<org>/<repo>/type/<id>`, quire-rs's own fixed
+/// shape and no longer the one this frontend's own [`crate::identity::
+/// PackageIdentity::type_identity`] mints (FR-095 drops the `type/` segment);
+/// `semantic::target::resolve_target` (an `owner`, `sourceElement`/
+/// `targetElement`, or connection-end cell) mints `ix://<org>/<repo>/<id>`
+/// with no such segment — the same shape this frontend's own `type_identity`
+/// mints today, coincidentally, since the two are minted by unrelated rules —
+/// and a `sourceElement` cell naming an operation mints that same shape with
+/// the operation appended after one more `/` (`ix://<org>/<repo>/<id>/
+/// <operation>`), the engine having already confirmed the referenced
+/// artifact declares it. Anything
 /// else — an identity in another package (an imported reference, quire-rs
 /// `Target::Imported`), or a member-qualified form on a member other than
 /// `sourceElement` — is refused (`Err`) by its full identity, never mis-read
@@ -1207,7 +1227,10 @@ fn lower_connection_end(
         .map_err(|rule| refuse(ctx, object, &rule))?;
     Ok(ConnectionEnd {
         type_ref,
-        multiplicity: end.multiplicity.clone(),
+        multiplicity: end
+            .multiplicity
+            .clone()
+            .map(crate::document::normalized_multiplicity),
     })
 }
 
@@ -1307,7 +1330,7 @@ fn composite_owners(pending: &[Pending]) -> BTreeMap<String, Vec<Owner>> {
     for item in pending {
         let definition = &item.lowering.definition;
         for edge in relationships(definition).iter().filter(|r| r.composite) {
-            let list = owners.entry(edge.target.clone()).or_default();
+            let list = owners.entry(edge.target_end.type_ref.clone()).or_default();
             if !list
                 .iter()
                 .any(|owner| owner.identity == definition.identity)
@@ -1333,11 +1356,12 @@ fn refusal_rule(
     let definition = &mut item.lowering.definition;
     if let Some(edge) = relationships(definition)
         .iter()
-        .find(|r| refused.contains(&r.target))
+        .find(|r| refused.contains(&r.target_end.type_ref))
     {
         return Some(format!(
             "its `{}` relationship targets {}, which lowers to nothing",
-            edge.verb, edge.target
+            edge.source_end.role.as_deref().unwrap_or(""),
+            edge.target_end.type_ref
         ));
     }
     let construct = &definition.construct;
@@ -1401,10 +1425,13 @@ fn refusal_rule(
         .filter(|t| !lowered.contains(*t) && !operations.contains(*t))
     {
         // The identity a failed `sourceElement` names is either a type or an
-        // operation identity (`NodeKind::Operation`'s `/operation/` segment,
-        // `identity.rs`); the message names whichever it is rather than
-        // always claiming "type".
-        let noun = if target.contains("/operation/") {
+        // operation identity; the message names whichever it is rather than
+        // always claiming "type". `source_element_is_operation` was set at
+        // the point this artifact's `sourceElement` was minted, from the raw
+        // reference cell (FR-152's `<id>/<operation>` form) — the node kind
+        // is known there directly, not re-derived here by counting the
+        // minted identity's own path segments.
+        let noun = if construct.source_element_is_operation {
             "operation"
         } else {
             "type"

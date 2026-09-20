@@ -90,12 +90,12 @@ enum DefaultKind {
 // Grammar models
 // ---------------------------------------------------------------------------
 
-/** FR-027 multiplicity; absent `upper` is unbounded. Reader: upper >= lower; flags only on collections. */
+/** FR-027 multiplicity; absent `upper` is unbounded. Reader: upper >= lower. Every emitted multiplicity carries both `ordered` and `unique`; a producer clamps both to `false` when `upper` is at most one (owner ruling 2026-09-19T15:39:32Z on FCD #199; FLAGS_ON_NON_COLLECTION is deleted, not enforced). */
 model Multiplicity {
   @minValue(0) lower: int32;
   @minValue(0) upper?: int32;
-  ordered?: boolean;
-  unique?: boolean;
+  ordered: boolean;
+  unique: boolean;
 }
 
 /** Precision and scale for a `Decimal` target (FR-032). */

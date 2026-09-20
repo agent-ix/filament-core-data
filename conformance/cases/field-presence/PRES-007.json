@@ -1,8 +1,8 @@
 {
 	"id": "PRES-007",
-	"title": "Ordered and unique on a single-valued field are rejected",
+	"title": "A single-valued field emits ordered and unique as explicit false",
 	"family": "field-presence",
-	"class": "negative",
+	"class": "boundary",
 	"kind": "document",
 	"contractVersion": "2.0.0",
 	"base": "core-2-0",
@@ -12,7 +12,9 @@
 			"path": "/ir/types/8/fields/0/multiplicity",
 			"value": {
 				"lower": 1,
-				"upper": 1
+				"upper": 1,
+				"ordered": false,
+				"unique": false
 			}
 		},
 		{
@@ -21,7 +23,8 @@
 			"value": {
 				"lower": 1,
 				"upper": 1,
-				"ordered": true
+				"ordered": false,
+				"unique": false
 			}
 		}
 	],
@@ -31,7 +34,7 @@
 		{
 			"artifact": "docs/semantic-data-system/contracts-v1.md",
 			"locator": "Structural model detail (issue #34)",
-			"quote": "`multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is"
+			"quote": "`multiplicity { lower, upper?, ordered, unique }` (absent `upper` is"
 		}
 	],
 	"provenance": {
@@ -39,26 +42,7 @@
 		"blessedFromRun": false
 	},
 	"expected": {
-		"resultState": "invalid",
-		"diagnostics": [
-			{
-				"pointer": "/ir/types/8/fields/0/multiplicity",
-				"diagnostic": {
-					"code": "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
-					"severity": "error",
-					"message": "ordered and unique describe a collection and this field is single-valued",
-					"owner": "ix://agent-ix/conformance/field/node-id",
-					"blocking": true,
-					"causes": [],
-					"related": [],
-					"locus": {
-						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
-						"path": "model/node.tsp",
-						"startLine": 5,
-						"startColumn": 1
-					}
-				}
-			}
-		]
+		"resultState": "success",
+		"diagnostics": []
 	}
 }

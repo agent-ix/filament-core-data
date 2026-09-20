@@ -8,7 +8,7 @@
 	"instance": {
 		"verb": "owns",
 		"category": "aggregation",
-		"target": "ix://agent-ix/semantic-core/type/FieldDecl"
+		"target": "ix://agent-ix/semantic-core/FieldDecl"
 	},
 	"expected": {
 		"resultState": "invalid"

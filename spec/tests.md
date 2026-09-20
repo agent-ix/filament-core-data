@@ -277,7 +277,7 @@ blocked as stated above.
 | FR-091 | FR-091-AC-1..11, FR-091-CON-1..3 | TC-1200..TC-1209, TC-1330, TC-1331 | ✅ Complete |
 | FR-092 | FR-092-AC-1..11, FR-092-CON-1..2 | TC-1210..TC-1219, TC-1330, TC-1332 | ✅ Complete |
 | FR-093 | FR-093-AC-1..14, FR-093-CON-1..4 | TC-1220..TC-1230, TC-1333..TC-1335, TC-1347 | ✅ Complete |
-| FR-094 | FR-094-AC-1..15, FR-094-CON-1..4 | TC-1231..TC-1245 | ✅ Complete |
+| FR-094 | FR-094-AC-1..16, FR-094-CON-1..4 | TC-1231..TC-1245, TC-1816..TC-1820 | ✅ Complete |
 | FR-095 | FR-095-AC-1..16, FR-095-CON-1..3 | TC-1246..TC-1258, TC-1347, TC-1348, TC-1351..TC-1354 | ✅ Complete |
 | FR-096 | FR-096-AC-1..16, FR-096-CON-1..3 | TC-1259..TC-1272, TC-1345, TC-1346 | ✅ Complete |
 | FR-097 | FR-097-AC-1..16, FR-097-CON-1..3 | TC-1273..TC-1284, TC-1336, TC-1339..TC-1342 | ✅ Complete |
@@ -779,10 +779,10 @@ blocked as stated above.
 | TC-435 | A record named `AuditEvent` with no `@role` has `roles: []`, and a record named `Thing` with `@role("agent-ix:event")` has `roles: | Unit | P0 | FR-046-AC-4 | ✅ passed |
 | TC-436 | A property typed `Text \| null` is `nullable: true` and a property typed `NullableText` (a declared alias of `Text`) is `nullable: false` | Unit | P0 | FR-046-AC-5 | ✅ passed |
 | TC-437 | The four multiplicity derivations (collection/single × optional/required) and the `@multiplicity` override each produce the stated bounds | Unit | P0 | FR-046-AC-6 | ✅ passed |
-| TC-438 | `@collection` on a single-valued property raises `FLAGS_ON_NON_COLLECTION`, `@multiplicity(2, 1)` raises `INVALID_MULTIPLICITY` | Unit | P0 | FR-046-AC-7 | ✅ passed |
+| TC-438 | `@collection` on a single-valued property clamps `ordered`/`unique` to `false` rather than refusing; `@multiplicity(2, 1)` raises `INVALID_MULTIPLICITY` | Unit | P0 | FR-046-AC-7 | ✅ passed |
 | TC-439 | `@unit("s")` on a field resolving through an alias to a scalar is emitted | Unit | P0 | FR-046-AC-8 | ✅ passed |
 | TC-440 | A property with a TypeSpec default emits `defaultKind: "semantic"` and that `defaultValue`; `@defaultKind("migration")` overrides the kind | Unit | P0 | FR-046-AC-9 | ✅ passed |
-| TC-441 | A field typed by a built-in scalar directly emits the package-local kernel scalar definition with its `ext/kernel-scalar` extension | Unit | P0 | FR-046-AC-10 | ✅ passed |
+| TC-441 | A field typed by a built-in scalar directly mints no package-local definition; its `typeRef` names the kernel scalar's native reference over the closed FR-032 set (gap 1 of FCD #199/#200) | Unit | P0 | FR-046-AC-10 | ✅ passed |
 | TC-442 | A property typed by an export of a resolved imported package resolves, and one typed by an unexported type of that package raises | Unit | P0 | FR-046-AC-11 | ✅ passed |
 | TC-443 | `source.digest` equals the root package's `contentDigest`, and the `package` block equals the values FR-047 and FR-048 supply, asserted field by field | Unit | P0 | FR-046-AC-12 | ✅ passed |
 | TC-444 | `occurrences` is the empty array for every fixture package | Unit | P0 | FR-046-AC-13 | ✅ passed |
@@ -932,7 +932,7 @@ blocked as stated above.
 | TC-596 | Every added package manifest declares `"license": "AGPL-3.0-or-later"` | Static | P0 | NFR-021-AC-7 | ✅ passed |
 | TC-597 | No package was published and no downstream repository was changed | Static | P0 | NFR-021-AC-8 | ✅ passed |
 | TC-598 | Multiplicity, nullability, and default kind are independent across their permutations | Property | P0 | FR-046-AC-6, FR-046-AC-9 | ✅ passed |
-| TC-599 | Collection flags are accepted on collections and refused on single-valued properties | Unit | P1 | FR-046-AC-7 | ✅ passed |
+| TC-599 | A property with no `@collection` decorator emits `multiplicity.ordered: false` and `multiplicity.unique: false`, whether single-valued or a collection | Unit | P1 | FR-046-AC-7 | ✅ passed |
 | TC-600 | Constraint applicability is exercised across every structural kind | Unit | P1 | FR-050-AC-11 | ✅ passed |
 | TC-601 | Implemented and unimplemented dialects behave as declared in the shared harness | Unit | P1 | FR-045-AC-3, FR-045-AC-5 | ✅ passed |
 | TC-602 | Enum addition is classified against every consumer policy and evidence status | Unit | P1 | FR-051-AC-1 | ✅ passed |
@@ -1046,13 +1046,13 @@ blocked as stated above.
 | TC-812 | A mixed pair aggregates to the most restrictive classification, an inadmissible side on either end aggregates `invalid`, and an unmodelled change aggregates `unknown` rather than `patch` | Unit | P0 | FR-069-AC-9, FR-069-AC-10, FR-069-AC-11 | 🚧 no discrete test; no test binds this row |
 | TC-813 | An added optional field classifies `conditional` with no policy and `additive` under a policy admitting unknown members, a contract-version move classifies `additive` only when its down-projection round-trips, and the twenty-five corpus compatibility cases agree with the oracle or report a divergence | Integration | P0 | FR-069-AC-12, FR-069-AC-13, FR-069-AC-18 | 🚧 measured by `make conformance`, which `make test` does not run; no test binds this row |
 | TC-814 | Neither module imports the compiler's normalization, canonicalization, diff or evolution module nor anything under `conformance/`, declares `IDENTITY_SET_PATHS` and the key-ordering rule once as data, retains the GAP-004 citation, canonicalizes every case with no admissibility answer computed, reads no clock, and adds no lockfile entry | Static | P0 | FR-069-AC-14, FR-069-AC-15, FR-069-AC-20, FR-069-CON-1, FR-069-CON-2, FR-069-CON-3, FR-069-CON-4, FR-069-CON-6 | 🚧 no discrete test; no test binds this row |
-| TC-815 | `make conformance` runs the `typescript-backend` command over all 111 cases with no adapter, unknown-case, duplicate-answer, case-digest or missing-answer problem, and the harness reports 111 matched cases and zero unsuppressed divergences for the slot | Integration | P0 | FR-070-AC-1, FR-070-AC-11 | 🚧 measured by `make conformance`, which `make test` does not run; no test binds this row |
+| TC-815 | `make conformance` runs the `typescript-backend` command over all 115 cases with no adapter, unknown-case, duplicate-answer, case-digest or missing-answer problem, and the harness reports 115 matched cases and zero unsuppressed divergences for the slot | Integration | P0 | FR-070-AC-1, FR-070-AC-11 | 🚧 measured by `make conformance`, which `make test` does not run; no test binds this row |
 | TC-816 | Every document the adapter emits validates against `conformance/schema/adapter-result.schema.json`, and its `adapterVersion` moves when a decision module changes a verdict | Integration | P0 | FR-070-AC-2, FR-070-AC-19 | 🚧 measured by `make conformance`, which `make test` does not run; no test binds this row |
-| TC-817 | The adapter answers `support: "supported"` for all 111 cases and `unavailable` for none | Integration | P0 | FR-070-AC-3 | 🚧 measured by `make conformance`, which `make test` does not run; no test binds this row |
+| TC-817 | The adapter answers `support: "supported"` for all 115 cases and `unavailable` for none | Integration | P0 | FR-070-AC-3 | 🚧 measured by `make conformance`, which `make test` does not run; no test binds this row |
 | TC-818 | The measured match, failure and divergence counts are recorded with the command that produced them and read from the regenerated coverage account rather than restated, and the first-run divergence count is measured before the first fix and never remeasured | Analysis | P0 | FR-070-AC-4, FR-070-AC-17, FR-070-CON-6, FR-070-CON-8 | ✅ passed — Analysis; the evidence is the recorded analysis, which mints no source symbol |
 | TC-819 | Neither the adapter nor any module it reaches references `oracleVerdict`, `compare`, or the oracle's own modules, and the harness starts it as a process rather than importing it | Static | P0 | FR-070-AC-5, FR-070-CON-1, FR-070-CON-5 | 🚧 measured by `make conformance`, which `make test` does not run; no test binds this row |
 | TC-820 | Substituting the oracle's answer for the backend's makes a deliberately seeded backend defect invisible, showing the independence constraint is load-bearing | Integration | P0 | FR-070-AC-6 | 🚧 measured by `make conformance`, which `make test` does not run; no test binds this row |
-| TC-821 | Two adapter runs from different working directories and under `LC_ALL=tr_TR.UTF-8` are byte-identical; the regenerated coverage account reproduces, records `matched` 111 and `unmet` 0 for this slot, and a total exactly 111 lower than at this change's base commit; and no criterion of the requirement names a whole-corpus absolute | Snapshot | P0 | FR-070-AC-7, FR-070-AC-8, FR-070-AC-20, FR-070-CON-7 | 🚧 measured by `make conformance`, which `make test` does not run; no test binds this row |
+| TC-821 | Two adapter runs from different working directories and under `LC_ALL=tr_TR.UTF-8` are byte-identical; the regenerated coverage account reproduces, records `matched` 115 and `unmet` 0 for this slot, and a total exactly 115 lower than at this change's base commit; and no criterion of the requirement names a whole-corpus absolute | Snapshot | P0 | FR-070-AC-7, FR-070-AC-8, FR-070-AC-20, FR-070-CON-7 | 🚧 measured by `make conformance`, which `make test` does not run; no test binds this row |
 | TC-822 | The ten named corpus paths, `conformance/divergences.json`, the three sibling registry rows and the Rust inventory component are byte-unchanged, and no corpus file is edited to make the backend agree | Analysis | P0 | FR-070-AC-9, FR-070-AC-14, FR-070-AC-18, FR-070-CON-2 | ✅ passed — Analysis; the evidence is the recorded analysis, which mints no source symbol |
 | TC-823 | Every admitted case generates a package and all of them typecheck as one compiler program, and a case refused on representability emits no file and names the construct; instance-level acceptance and rejection are FR-066's authored corpus, because the conformance corpus supplies no payloads | Compile | P0 | FR-070-AC-10, FR-070-AC-12 | 🚧 measured by `make conformance`, which `make test` does not run; no test binds this row |
 | TC-824 | A seeded disagreement is registered as a divergence with an owner and a verdict and fails once unreproduced, the inventory discharges only the conformance clause, and nothing is published | Integration | P0 | FR-070-AC-13, FR-070-AC-15, FR-070-AC-16, FR-070-CON-3, FR-070-CON-4 | 🚧 measured by `make conformance`, which `make test` does not run; no test binds this row |
@@ -1774,7 +1774,7 @@ blocked as stated above.
 | TC-357 | field state | required / optional / nullable | Rust and TypeScript backends | Optional and nullable reach `Option<…>`; TypeScript uses `?` |
 | TC-372, TC-374 | committed Rust lockfile | present / absent | `--check` mode or generate mode | Present lockfile is seeded; absent lockfile fails `--check` and generates once otherwise |
 | TC-437, TC-598 | field state | collection / single-valued × optional / required | nullable true/false, default none/semantic/migration | Multiplicity fixes presence; nullability and default kind stay independent |
-| TC-438, TC-599 | collection flags | `ordered` / `unique` | collection vs single-valued property | Flags accepted only on collections; otherwise `FLAGS_ON_NON_COLLECTION` |
+| TC-438, TC-599 | collection flags | `ordered` / `unique` | collection vs single-valued property | Both flags are required on every multiplicity; a producer clamps them to `false` on a single-valued property, and passes through a declared value on an actual collection |
 | TC-433, TC-600 | structural kind | scalar / alias / record / sequence / map / enum / union / reference | constraint keyword applicability | Every kind lowers once by first-match precedence; an inapplicable keyword is refused, not coerced |
 | TC-400, TC-601 | frontend dialect | `typespec` implemented / `spec-bundle` unimplemented | shared fixture harness | Implemented dialects are compared; the unimplemented one is named, not guessed |
 | TC-527, TC-602 | enum member addition | consumer policy `reject` / `surface` / `preserve` | consumer evidence current / stale / unknown | Disposition follows declared policy and evidence, never a language default |
@@ -1824,7 +1824,23 @@ blocked as stated above.
 | TC-1589 | An adapter declared unavailable records zero matched and every case unmet, never agreement | Integration | P0 | FR-090-CON-1 | ✅ passed |
 | TC-1590 | The corpus unmet total is the sum of the unavailable slots times the case total | Unit | P0 | FR-090-CON-1 | ✅ passed |
 | TC-1591 | The corpus reports how much of the agreement claim four of four declared slots actually cover | Unit | P0 | FR-090-CON-1 | ✅ passed |
-| TC-1592 | The corpus run exits clean over all 111 cases | Integration | P0 | FR-090-CON-1 | ✅ passed |
+| TC-1592 | The corpus run exits clean over all 115 cases | Integration | P0 | FR-090-CON-1 | ✅ passed |
+| TC-1805 | Two fields whose `typeRef`s name each other, with `unit` on one, do not overflow the stack; `decide` returns, the cycle resolves to no scalar and each field's `typeRef` is reported unresolved | Unit | P0 | FR-059-AC-11 | ✅ passed |
+| TC-1806 | `ordered`/`unique` are required on every multiplicity and are never refused by the reader: `true`/`true` on a field whose upper bound is at most one, the mandatory `false`/`false` pair on that same shape, and `ordered`/`unique` on an actual collection all decide with no diagnostic | Unit | P0 | FR-027-AC-8 | ✅ passed |
+| TC-1807 | The Rust reader's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 | ✅ passed |
+| TC-1808 | The Node IR reader's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 | ✅ passed |
+| TC-1809 | The JSON-Schema backend's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 | ✅ passed |
+| TC-1810 | The rust-serde backend's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 | ✅ passed |
+| TC-1811 | The Python reader's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 | ✅ passed |
+| TC-1812 | The v1-1 TS reader's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 | ✅ passed |
+| TC-1813 | A `min` constraint inline on a field's own `constraints` array, naming a `String`-valued field as `appliesTo`, is refused `CONSTRAINT_NOT_APPLICABLE` by the Rust reader, the same as a type-level constraint | Unit | P1 | FR-093-AC-6, FR-093-CON-4 | ✅ passed |
+| TC-1814 | The same inline field constraint is refused `CONSTRAINT_NOT_APPLICABLE` by the Python reader | Unit | P1 | FR-093-AC-6, FR-093-CON-4 | ✅ passed |
+| TC-1815 | The same inline field constraint is refused `CONSTRAINT_NOT_APPLICABLE` by the v1-1 TS reader | Unit | P1 | FR-093-AC-6, FR-093-CON-4 | ✅ passed |
+| TC-1816 | The TypeSpec frontend's loaded edge vocabulary parses every declared `edge_types` row of `crates/extraction-frontend/fixtures/modules/edge-vocabulary/manifest.yaml`, including a verb with no declared `inverse` and the absence of an undeclared verb | Unit | P1 | FR-094-AC-14 | ✅ passed |
+| TC-1817 | A relationship's `targetEnd.role` and `composite` derive from the loaded edge vocabulary's `inverse` for the verb, not from a decorator argument | Unit | P1 | FR-094-AC-14, FR-094-CON-2 | ✅ passed |
+| TC-1818 | A `@relationship` verb the loaded edge vocabulary does not declare is refused `UNKNOWN_EDGE_VERB` | Unit | P1 | FR-094-AC-4 | ✅ passed |
+| TC-1819 | A `@relationship` whose decorator `category` disagrees with the loaded edge vocabulary's declared `category` for that verb is refused `EDGE_CATEGORY_MISMATCH` | Unit | P1 | FR-094-AC-16 | ✅ passed |
+| TC-1820 | `parseEdgeVocabulary` throws, naming the line number, on an `edge_types` row it does not recognise, rather than silently truncating the block and dropping every verb after it | Unit | P1 | FR-094-CON-2 | ✅ passed |
 
 ## Constraint Boundary Tests
 
@@ -2194,7 +2210,6 @@ blocked as stated above.
 | ERR-062 | A caller names the registered but unimplemented `spec-bundle` dialect | One blocking `FRONTEND_NOT_IMPLEMENTED` naming issue #36 | TC-400 |
 | ERR-063 | A TypeSpec declaration extends a built-in scalar outside the mapping | `UNSUPPORTED_SCALAR_BASE` at the declaration locus | TC-434 |
 | ERR-064 | A declaration matches no row of the structural-kind table | `UNSUPPORTED_DECLARATION` at the declaration locus | TC-433 |
-| ERR-065 | `@collection` is applied to a single-valued property | `FLAGS_ON_NON_COLLECTION` at the decorator locus | TC-438, TC-599 |
 | ERR-066 | `@multiplicity` declares an upper bound below its lower bound | `INVALID_MULTIPLICITY` at the decorator locus | TC-438 |
 | ERR-067 | `@multiplicity` contradicts the property's own optionality | `MULTIPLICITY_CONTRADICTS_OPTIONALITY` at the decorator locus | TC-438 |
 | ERR-068 | `@unit` is applied to a field that does not resolve to a scalar | `UNIT_ON_NON_SCALAR` at the decorator locus | TC-439 |
@@ -2648,13 +2663,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 128 | 81 | 0 | 47 | 100% mapped (128/128) |
-| Unit | 601 | 496 | 0 | 105 | 100% mapped (601/601) |
+| Unit | 617 | 512 | 0 | 105 | 100% mapped (617/617) |
 | Integration | 161 | 100 | 0 | 61 | 100% mapped (161/161) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 65 | 40 | 0 | 25 | 100% mapped (65/65) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1384** | **1056** | **0** | **328** | **100% mapped (1384/1384)** |
+| **Total** | **1400** | **1072** | **0** | **328** | **100% mapped (1400/1400)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

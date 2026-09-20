@@ -1,23 +1,23 @@
 //! MinConstraintValue
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/MinConstraintValue.
+//! Semantic identity: ix://agent-ix/semantic-core/MinConstraintValue.
 
 use serde::{Deserialize, Serialize};
 
 /// MinConstraintValue
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/MinConstraintValue.
+/// Semantic identity: ix://agent-ix/semantic-core/MinConstraintValue.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum MinConstraintValue {
     /// number
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MinConstraintValue/variant/number.
+    /// Semantic identity: ix://agent-ix/semantic-core/MinConstraintValue/variant/number.
     #[serde(rename = "number")]
     Number(crate::MinConstraintValueNumber),
     /// string
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MinConstraintValue/variant/string.
+    /// Semantic identity: ix://agent-ix/semantic-core/MinConstraintValue/variant/string.
     #[serde(rename = "string")]
     String(crate::MinConstraintValueString),
 }

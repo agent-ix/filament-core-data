@@ -32,7 +32,7 @@ prose. The members are:
 | `presence` | `field` | Whether the member must appear, authored (FR-106) |
 | `subsets` | `field` | The supertype fields whose values include this field's values |
 | `redefines` | `field` | The supertype field this field narrows |
-| `frame` | `operation` | The declarations the operation `modifies`, `creates` and `deletes`: each entry is a reference to a declared field or relationship (`modifies`) or a declared object type or process (`creates`, `deletes`), never an access path |
+| `frame` | `operation` | The declarations the operation `modifies`, `creates` and `deletes`: each entry is the node identity of a declared field or relationship (`modifies`) or of a declared object type or process (`creates`, `deletes`), never an access path |
 | inline `pre`, `post` items | `operation` | A `pre` or `post` item that is an inline clause with a language and text, beside the clause-id items |
 | `populations` | document | Named instance extents, each bound by its own `kind` (`{module, name}`, QSpec FR-154 row 2/AC-7, FR-208) for QSpec intake to key on, a flat set of unique member type references, and a single `extent` (`closed` or `open`, QSpec FR-153/AD-006) for the population as a whole |
 | scalar `any` | `typeDefinition` | An unconstrained JSON value (FR-139) |
@@ -43,8 +43,8 @@ Clauses are Quire. A clause language is one of `quire`, `ocl`, `sysml`,
 a clause in any other admitted language is carried as authored, unchecked, with
 an advisory, and a reader never re-reads its text in another language.
 
-`frame` names only what QSpec has settled: each entry is a declaration
-reference, never a dotted access path, resolved against every field,
+`frame` names only what QSpec has settled: each entry is a declaration's
+node identity, never a dotted access path, resolved against every field,
 relationship or type the document declares — QSpec FR-340 admits any
 declared field or relationship node in the package as a `modifies` target,
 and FR-013 has no reachability limit, so resolution is never narrowed to
@@ -90,7 +90,7 @@ either question until QSpec decides it.
 | FR-141-AC-3 | A `subsets` entry naming no supertype field raises `UNRESOLVED_FEATURE_REF`, and a `redefines` widening the redefined upper bound raises `INVALID_REDEFINITION`. | Test (TC-1742) |
 | FR-141-AC-4 | A `modifies` entry naming no field or relationship the document declares, or a `creates`/`deletes` entry naming no declared type, raises `UNRESOLVED_FRAME_PATH`; a `modifies` entry naming a field or relationship of a type other than the operation's own, or one of its supertypes, resolves; and a population member naming no type raises `UNRESOLVED_TYPE_REF`. | Test (TC-1743) |
 | FR-141-AC-6 | A `2.0.0` document whose inline `pre` clause declares `ocl`, or whose inline `post` clause declares `acme:tla`, is accepted by the Rust, Node and Python readers with exactly one non-blocking `CLAUSE_LANGUAGE_UNCHECKED` at that clause's `language`; the same clause in `quire` raises nothing. | Test (TC-1759) |
-| FR-141-AC-7 | A TypeSpec model member of type `unknown` compiles without a blocking diagnostic to a field whose `typeRef` resolves to a `scalar` definition of scalar `any` whose identity ends `/type/JsonObject`, the identity a spec bundle mints for the same scalar, and no zero-field record is emitted for it. | Test (TC-1761) |
+| FR-141-AC-7 | A TypeSpec model member of type `unknown` compiles without a blocking diagnostic to a field whose `typeRef` resolves to a `scalar` definition of scalar `any` whose identity ends `/JsonObject`, the identity a spec bundle mints for the same scalar, and no zero-field record is emitted for it. | Test (TC-1761) |
 | FR-141-AC-8 | A `2.0.0` operation whose `pre` lists a clause id and an inline clause is accepted by the Rust, Node and Python readers; a dangling id item raises `DANGLING_CLAUSE_REF` at that item and no inline item is resolved as an id. | Test (TC-1795) |
 | FR-141-AC-9 | For the same operation, the Rust, TypeScript and JSON Schema backends each carry the id item as a clause reference, and those three and the Python backend each carry every inline item's language and text in their output. | Test (TC-1796) |
 

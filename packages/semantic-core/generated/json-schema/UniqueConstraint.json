@@ -12,5 +12,5 @@
 	"unevaluatedProperties": {
 		"not": {}
 	},
-	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/UniqueConstraint"
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/UniqueConstraint"
 }

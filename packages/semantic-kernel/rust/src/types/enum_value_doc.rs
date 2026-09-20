@@ -1,6 +1,6 @@
 //! EnumValueDoc
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/EnumValueDoc.
+//! Semantic identity: ix://agent-ix/semantic-core/EnumValueDoc.
 //!
 //! Unknown policy: `reject`, which is inert for a
 //! `scalar` — the kind has no unknown member for a policy to govern. The
@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 /// EnumValueDoc
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/EnumValueDoc.
+/// Semantic identity: ix://agent-ix/semantic-core/EnumValueDoc.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(transparent)]
 pub struct EnumValueDoc(String);

@@ -13,8 +13,8 @@ fn constructed_field() -> FieldDecl {
 	let multiplicity = Multiplicity::try_new(
 		MultiplicityLower::try_new(1).expect("lower is valid"),
 		Some(MultiplicityUpper::try_new(1).expect("upper is valid")),
-		Some(MultiplicityOrdered::try_new(false).expect("ordered is valid")),
-		Some(MultiplicityUnique::try_new(false).expect("unique is valid")),
+		MultiplicityOrdered::try_new(false).expect("ordered is valid"),
+		MultiplicityUnique::try_new(false).expect("unique is valid"),
 	)
 	.expect("multiplicity constructs");
 	let target = TypeRef::try_new(
@@ -100,7 +100,10 @@ fn tc_1546_rejects_each_closed_grammar_class() {
 	let constraint = rejects!(ConstraintDecl, r#"{"keyword":"notAKeyword"}"#);
 	assert!(constraint.contains("data did not match any variant"), "{constraint}");
 
-	let minimum = rejects!(Multiplicity, r#"{"lower":-1}"#);
+	let minimum = rejects!(
+		Multiplicity,
+		r#"{"lower":-1,"ordered":false,"unique":false}"#,
+	);
 	assert!(minimum.contains("keyword min"), "{minimum}");
 }
 

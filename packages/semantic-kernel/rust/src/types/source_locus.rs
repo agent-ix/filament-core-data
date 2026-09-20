@@ -1,16 +1,16 @@
 //! SourceLocus
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/SourceLocus.
+//! Semantic identity: ix://agent-ix/semantic-core/SourceLocus.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `SourceLocus`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/SourceLocus/field/sourceIdentity",
+        identity: "ix://agent-ix/semantic-core/SourceLocus/sourceIdentity",
         name: "sourceIdentity",
         rust_name: "source_identity",
-        type_ref: "ix://agent-ix/semantic-core/type/SemanticId",
+        type_ref: "ix://agent-ix/semantic-core/SemanticId",
         rust_type: "crate::SemanticId",
         row: "field:single/non-null/required",
         presence: "required",
@@ -18,8 +18,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/SourceLocus/field/path",
+        identity: "ix://agent-ix/semantic-core/SourceLocus/path",
         name: "path",
         rust_name: "path",
-        type_ref: "ix://agent-ix/semantic-core/type/SourceLocusPath",
+        type_ref: "ix://agent-ix/semantic-core/SourceLocusPath",
         rust_type: "crate::SemanticCoreSourceLocusPath",
         row: "field:single/non-null/required",
         presence: "required",
@@ -48,8 +48,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -67,10 +67,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/SourceLocus/field/startLine",
+        identity: "ix://agent-ix/semantic-core/SourceLocus/startLine",
         name: "startLine",
         rust_name: "start_line",
-        type_ref: "ix://agent-ix/semantic-core/type/SourceLocusStartLine",
+        type_ref: "ix://agent-ix/semantic-core/SourceLocusStartLine",
         rust_type: "crate::SourceLocusStartLine",
         row: "field:single/non-null/required",
         presence: "required",
@@ -78,8 +78,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -97,10 +97,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/SourceLocus/field/startColumn",
+        identity: "ix://agent-ix/semantic-core/SourceLocus/startColumn",
         name: "startColumn",
         rust_name: "start_column",
-        type_ref: "ix://agent-ix/semantic-core/type/SourceLocusStartColumn",
+        type_ref: "ix://agent-ix/semantic-core/SourceLocusStartColumn",
         rust_type: "crate::SourceLocusStartColumn",
         row: "field:single/non-null/required",
         presence: "required",
@@ -108,8 +108,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -127,10 +127,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/SourceLocus/field/endLine",
+        identity: "ix://agent-ix/semantic-core/SourceLocus/endLine",
         name: "endLine",
         rust_name: "end_line",
-        type_ref: "ix://agent-ix/semantic-core/type/SourceLocusEndLine",
+        type_ref: "ix://agent-ix/semantic-core/SourceLocusEndLine",
         rust_type: "Option<crate::SourceLocusEndLine>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -138,8 +138,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -157,10 +157,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/SourceLocus/field/endColumn",
+        identity: "ix://agent-ix/semantic-core/SourceLocus/endColumn",
         name: "endColumn",
         rust_name: "end_column",
-        type_ref: "ix://agent-ix/semantic-core/type/SourceLocusEndColumn",
+        type_ref: "ix://agent-ix/semantic-core/SourceLocusEndColumn",
         rust_type: "Option<crate::SourceLocusEndColumn>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -168,8 +168,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -190,36 +190,36 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// SourceLocus
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/SourceLocus.
+/// Semantic identity: ix://agent-ix/semantic-core/SourceLocus.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct SourceLocus {
     /// sourceIdentity
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/SourceLocus/field/sourceIdentity.
+    /// Semantic identity: ix://agent-ix/semantic-core/SourceLocus/sourceIdentity.
     #[serde(rename = "sourceIdentity")]
     pub source_identity: crate::SemanticId,
     /// path
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/SourceLocus/field/path.
+    /// Semantic identity: ix://agent-ix/semantic-core/SourceLocus/path.
     pub path: crate::SemanticCoreSourceLocusPath,
     /// startLine
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/SourceLocus/field/startLine.
+    /// Semantic identity: ix://agent-ix/semantic-core/SourceLocus/startLine.
     #[serde(rename = "startLine")]
     pub start_line: crate::SourceLocusStartLine,
     /// startColumn
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/SourceLocus/field/startColumn.
+    /// Semantic identity: ix://agent-ix/semantic-core/SourceLocus/startColumn.
     #[serde(rename = "startColumn")]
     pub start_column: crate::SourceLocusStartColumn,
     /// endLine
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/SourceLocus/field/endLine.
+    /// Semantic identity: ix://agent-ix/semantic-core/SourceLocus/endLine.
     #[serde(rename = "endLine", skip_serializing_if = "Option::is_none")]
     pub end_line: Option<crate::SourceLocusEndLine>,
     /// endColumn
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/SourceLocus/field/endColumn.
+    /// Semantic identity: ix://agent-ix/semantic-core/SourceLocus/endColumn.
     #[serde(rename = "endColumn", skip_serializing_if = "Option::is_none")]
     pub end_column: Option<crate::SourceLocusEndColumn>,
 }

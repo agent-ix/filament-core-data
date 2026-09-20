@@ -23,5 +23,5 @@
 		"not": {}
 	},
 	"description": "`min`: number for numeric scalars, ISO 8601 string for temporal scalars.",
-	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/MinConstraint"
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/MinConstraint"
 }

@@ -27,7 +27,7 @@ therefore refuses outright:
 ```
 NAME_COLLISION: `SourceLocusPath` is derived by both
   ix://agent-ix/filament-core-data/rust-backend/reserved/SourceLocusPath
-  and ix://agent-ix/semantic-core/type/SourceLocusPath
+  and ix://agent-ix/semantic-core/SourceLocusPath
 in the crate's re-export namespace
 ```
 
@@ -76,7 +76,7 @@ having changed — the one silent-retarget outcome FR-133 forbids.
 Where a document-derived identifier lands on a reserved one, the reserved
 identifier keeps it and the derived identifier takes the `UpperCamelCase`
 package segment of its own semantic identity as a prefix:
-`ix://agent-ix/semantic-core/type/SourceLocusPath` renders
+`ix://agent-ix/semantic-core/SourceLocusPath` renders
 `SemanticCoreSourceLocusPath`.
 
 The prefix is read from the identity the document already carries. It is not a
@@ -103,7 +103,7 @@ which side yields.
 
 **Neither published rule changes.** FR-083 mints exactly what it minted;
 `SourceLocusPath` is still the minted name and
-`ix://agent-ix/semantic-core/type/SourceLocusPath` is still the identity, byte
+`ix://agent-ix/semantic-core/SourceLocusPath` is still the identity, byte
 for byte. FR-055's reserved set and its refusal are untouched. What the
 resolution moves is a generated Rust identifier, which is neither rule's subject.
 

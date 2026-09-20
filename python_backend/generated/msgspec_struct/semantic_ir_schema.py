@@ -167,8 +167,8 @@ type IdentityList = list[common_schema.SemanticIdentity]
 
 class Multiplicity(Struct):
     lower: Annotated[int, Meta(ge=0)]
-    ordered: bool | UnsetType = UNSET
-    unique: bool | UnsetType = UNSET
+    ordered: bool
+    unique: bool
     upper: Annotated[int, Meta(ge=0)] | UnsetType = UNSET
 
 
@@ -200,6 +200,25 @@ class Category(Enum):
     traceability = 'traceability'
 
 
+class Direction(Enum):
+    source_to_target = 'source-to-target'
+    target_to_source = 'target-to-source'
+    bidirectional = 'bidirectional'
+    undirected = 'undirected'
+
+
+class RelationshipSourceEnd(Struct):
+    multiplicity: Multiplicity
+    role: Annotated[str, Meta(min_length=1)]
+    type: common_schema.SemanticIdentity
+
+
+class RelationshipTargetEnd(Struct):
+    multiplicity: Multiplicity
+    type: common_schema.SemanticIdentity
+    role: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
+
+
 class StepKind(Enum):
     command = 'command'
     event = 'event'
@@ -208,7 +227,7 @@ class StepKind(Enum):
     wait = 'wait'
 
 
-class Direction(Enum):
+class Direction1(Enum):
     in_ = 'in'
     out = 'out'
     inout = 'inout'
@@ -341,6 +360,7 @@ class Field(Struct):
     origin: common_schema.Origin
     presence: Presence
     typeRef: common_schema.SemanticIdentity
+    constraints: list[Constraint] | UnsetType = UNSET
     defaultValue: Any | UnsetType = UNSET
     extensions: list[common_schema.Extension] | UnsetType = UNSET
     redefines: common_schema.SemanticIdentity | UnsetType = UNSET
@@ -378,11 +398,11 @@ class Population(Struct):
 class Relationship(Struct):
     category: Category
     composite: bool
+    direction: Direction
     identity: common_schema.SemanticIdentity
-    multiplicity: Multiplicity
     origin: common_schema.Origin
-    target: common_schema.SemanticIdentity
-    verb: Annotated[str, Meta(min_length=1)]
+    sourceEnd: RelationshipSourceEnd
+    targetEnd: RelationshipTargetEnd
 
 
 class State(Struct):
@@ -449,7 +469,7 @@ class TypeDefinition(Struct):
     abstract: bool | UnsetType = UNSET
     clauses: list[Clause] | UnsetType = UNSET
     declaredType: common_schema.SemanticIdentity | UnsetType = UNSET
-    direction: Direction | UnsetType = UNSET
+    direction: Direction1 | UnsetType = UNSET
     featureOrder: (
         Annotated[list[common_schema.SemanticIdentity], Meta(min_length=1)] | UnsetType
     ) = UNSET

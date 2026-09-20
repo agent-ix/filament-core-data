@@ -33,13 +33,34 @@ function field(name, overrides = {}) {
 		identity: `ix://${PKG}/field/Artifact-${name}`,
 		name,
 		typeRef: `ix://${PKG}/type/Text`,
-		multiplicity: { lower: 1, upper: 1 },
+		multiplicity: { lower: 1, upper: 1, ordered: false, unique: false },
 		presence: "required",
 		nullable: false,
 		defaultKind: "none",
 		origin: origin(),
 		extensions: [],
 		...overrides,
+	};
+}
+
+/**
+ * A relationship's `direction`, `sourceEnd` and `targetEnd` (gap 3 of FCD
+ * #199/#200): the two-end shape. `sourceEnd` is always `0..unbounded`
+ * (source-multiplicity authoring is future FCD #201); `targetEnd` carries
+ * the relationship's authored cardinality.
+ */
+function relationshipEnds(verb, sourceType, targetType, targetMultiplicity) {
+	return {
+		direction: "source-to-target",
+		sourceEnd: {
+			role: verb,
+			multiplicity: { lower: 0, ordered: false, unique: false },
+			type: sourceType,
+		},
+		targetEnd: {
+			multiplicity: { ordered: false, unique: false, ...targetMultiplicity },
+			type: targetType,
+		},
 	};
 }
 
@@ -156,11 +177,14 @@ function base() {
 				relationships: [
 					{
 						identity: `ix://${PKG}/relationship/Artifact-belongs_to-Project`,
-						verb: "belongs_to",
 						category: "structural",
 						composite: false,
-						target: `ix://${PKG}/type/Text`,
-						multiplicity: { lower: 0, upper: 1 },
+						...relationshipEnds(
+							"belongs_to",
+							`ix://${PKG}/type/Artifact`,
+							`ix://${PKG}/type/Text`,
+							{ lower: 0, upper: 1 },
+						),
 						origin: origin("types/main.tsp", 5),
 					},
 				],
@@ -173,7 +197,12 @@ function base() {
 						post: [],
 						returns: {
 							typeRef: `ix://${PKG}/type/Status`,
-							multiplicity: { lower: 1, upper: 1 },
+							multiplicity: {
+								lower: 1,
+								upper: 1,
+								ordered: false,
+								unique: false,
+							},
 							nullable: false,
 						},
 						origin: origin("types/main.tsp", 20),
@@ -322,7 +351,7 @@ const BUILDERS = {
 		const next = clone(base());
 		typeOf(next, "Artifact").fields.push(
 			field("summary", {
-				multiplicity: { lower: 0, upper: 1 },
+				multiplicity: { lower: 0, upper: 1, ordered: false, unique: false },
 				presence: "optional",
 			}),
 		);
@@ -336,7 +365,7 @@ const BUILDERS = {
 		const next = clone(base());
 		typeOf(next, "Artifact").fields.push(
 			field("summary", {
-				multiplicity: { lower: 0, upper: 1 },
+				multiplicity: { lower: 0, upper: 1, ordered: false, unique: false },
 				presence: "optional",
 			}),
 		);
@@ -491,7 +520,7 @@ const BUILDERS = {
 		const next = clone(base());
 		typeOf(next, "Artifact").fields.push(
 			field("summary", {
-				multiplicity: { lower: 0, upper: 1 },
+				multiplicity: { lower: 0, upper: 1, ordered: false, unique: false },
 				presence: "optional",
 			}),
 		);
@@ -505,7 +534,7 @@ const BUILDERS = {
 		const next = clone(base());
 		typeOf(next, "Artifact").fields.push(
 			field("summary", {
-				multiplicity: { lower: 0, upper: 1 },
+				multiplicity: { lower: 0, upper: 1, ordered: false, unique: false },
 				presence: "optional",
 			}),
 		);
@@ -525,13 +554,21 @@ const BUILDERS = {
 	},
 	"multiplicity-widening": () => {
 		const next = clone(base());
-		typeOf(next, "Artifact").fields[0].multiplicity = { lower: 0 };
+		typeOf(next, "Artifact").fields[0].multiplicity = {
+			lower: 0,
+			ordered: false,
+			unique: false,
+		};
 		typeOf(next, "Artifact").fields[0].presence = "optional";
 		return { old: base(), new: next };
 	},
 	"multiplicity-narrowing": () => {
 		const previous = clone(base());
-		typeOf(previous, "Artifact").fields[0].multiplicity = { lower: 0 };
+		typeOf(previous, "Artifact").fields[0].multiplicity = {
+			lower: 0,
+			ordered: false,
+			unique: false,
+		};
 		typeOf(previous, "Artifact").fields[0].presence = "optional";
 		return { old: previous, new: base() };
 	},
@@ -598,11 +635,14 @@ const BUILDERS = {
 		const next = clone(base());
 		typeOf(next, "Artifact").relationships.push({
 			identity: `ix://${PKG}/relationship/Artifact-derives_from-Artifact`,
-			verb: "derives_from",
 			category: "traceability",
 			composite: false,
-			target: `ix://${PKG}/type/Artifact`,
-			multiplicity: { lower: 0, upper: 1 },
+			...relationshipEnds(
+				"derives_from",
+				`ix://${PKG}/type/Artifact`,
+				`ix://${PKG}/type/Artifact`,
+				{ lower: 0, upper: 1 },
+			),
 			origin: origin("types/main.tsp", 6),
 		});
 		return { old: base(), new: next };
@@ -614,7 +654,7 @@ const BUILDERS = {
 	},
 	"relationship-retargeted": () => {
 		const next = clone(base());
-		typeOf(next, "Artifact").relationships[0].target =
+		typeOf(next, "Artifact").relationships[0].targetEnd.type =
 			`ix://${PKG}/type/Status`;
 		return { old: base(), new: next };
 	},

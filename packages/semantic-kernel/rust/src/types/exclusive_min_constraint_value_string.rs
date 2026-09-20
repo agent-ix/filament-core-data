@@ -1,6 +1,6 @@
 //! ExclusiveMinConstraintValueString
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueString.
+//! Semantic identity: ix://agent-ix/semantic-core/ExclusiveMinConstraintValueString.
 //!
 //! Unknown policy: `reject`, which is inert for a
 //! `scalar` — the kind has no unknown member for a policy to govern. The
@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 /// ExclusiveMinConstraintValueString
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueString.
+/// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMinConstraintValueString.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(transparent)]
 pub struct ExclusiveMinConstraintValueString(String);

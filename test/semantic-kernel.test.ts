@@ -679,7 +679,12 @@ describe("TC-1100..1108 determinism and non-disruption (NFR-028, NFR-030)", () =
 describe("TC-1090..1099 an independent consumer of the kernel package", () => {
 	// TC-1090
 	it("accepts a value the contract admits", () => {
-		const result = validateMultiplicity({ lower: 1, upper: 1 });
+		const result = validateMultiplicity({
+			lower: 1,
+			upper: 1,
+			ordered: false,
+			unique: false,
+		});
 		expect(result.ok).toBe(true);
 	});
 
@@ -820,7 +825,10 @@ describe("TC-1588..1592 cross-language agreement through the corpus (FR-090)", (
 		expect(report.exitCode).toBe(0);
 		// fcd#187 adds PRES-011..015 (a `nullable` authored as `1`, `"true"`,
 		// `null`, `{}`, and absent) to the committed corpus, landing on 111.
-		expect(report.coverage.totalCases).toBe(111);
+		// fcd#199/#200's review adds IDENT-006, REL-007 and PRES-016 (findings
+		// 12, 9 and 5/R2), landing on 114. That review's H5 adds CONS-008 (an
+		// inline field constraint checked for applicability), landing on 115.
+		expect(report.coverage.totalCases).toBe(115);
 	});
 });
 

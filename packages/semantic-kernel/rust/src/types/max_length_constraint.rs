@@ -1,16 +1,16 @@
 //! MaxLengthConstraint
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/MaxLengthConstraint.
+//! Semantic identity: ix://agent-ix/semantic-core/MaxLengthConstraint.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `MaxLengthConstraint`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/MaxLengthConstraint/field/keyword",
+        identity: "ix://agent-ix/semantic-core/MaxLengthConstraint/keyword",
         name: "keyword",
         rust_name: "keyword",
-        type_ref: "ix://agent-ix/semantic-core/type/MaxLengthConstraintKeyword",
+        type_ref: "ix://agent-ix/semantic-core/MaxLengthConstraintKeyword",
         rust_type: "crate::MaxLengthConstraintKeyword",
         row: "field:single/non-null/required",
         presence: "required",
@@ -18,8 +18,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/MaxLengthConstraint/field/value",
+        identity: "ix://agent-ix/semantic-core/MaxLengthConstraint/value",
         name: "value",
         rust_name: "value",
-        type_ref: "ix://agent-ix/semantic-core/type/MaxLengthConstraintValue",
+        type_ref: "ix://agent-ix/semantic-core/MaxLengthConstraintValue",
         rust_type: "crate::MaxLengthConstraintValue",
         row: "field:single/non-null/required",
         presence: "required",
@@ -48,8 +48,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -70,16 +70,16 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// MaxLengthConstraint
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/MaxLengthConstraint.
+/// Semantic identity: ix://agent-ix/semantic-core/MaxLengthConstraint.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct MaxLengthConstraint {
     /// keyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MaxLengthConstraint/field/keyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/MaxLengthConstraint/keyword.
     pub keyword: crate::MaxLengthConstraintKeyword,
     /// value
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MaxLengthConstraint/field/value.
+    /// Semantic identity: ix://agent-ix/semantic-core/MaxLengthConstraint/value.
     pub value: crate::MaxLengthConstraintValue,
 }
 

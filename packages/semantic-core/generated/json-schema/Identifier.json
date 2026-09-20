@@ -4,5 +4,5 @@
 	"type": "string",
 	"pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
 	"description": "A declaration name: letters, digits, underscore; no leading digit.",
-	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/Identifier"
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/Identifier"
 }

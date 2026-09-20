@@ -9,7 +9,7 @@
 	"ops": [
 		{
 			"op": "test",
-			"path": "/ir/types/9/relationships/0/multiplicity",
+			"path": "/ir/types/9/relationships/0/targetEnd/multiplicity",
 			"value": {
 				"lower": 1,
 				"ordered": true,
@@ -18,7 +18,7 @@
 		},
 		{
 			"op": "replace",
-			"path": "/ir/types/9/relationships/0/multiplicity",
+			"path": "/ir/types/9/relationships/0/targetEnd/multiplicity",
 			"value": {
 				"lower": 0,
 				"ordered": true,
@@ -37,7 +37,7 @@
 		{
 			"artifact": "docs/semantic-data-system/contracts-v1.md",
 			"locator": "Structural model detail (issue #34)",
-			"quote": "`multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is"
+			"quote": "`multiplicity { lower, upper?, ordered, unique }` (absent `upper` is"
 		}
 	],
 	"provenance": {

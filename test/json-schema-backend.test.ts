@@ -237,14 +237,14 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 			"placedAt",
 		);
 		expect(schema("Shipment")["x-agent-ix-owner"]).toBe(
-			"ix://agent-ix/orders/type/FR-001",
+			"ix://agent-ix/orders/FR-001",
 		);
 		expect(schema("Shipment")["x-agent-ix-identity-fields"]).toStrictEqual([
 			"id",
 		]);
 		expect(schema("OrderAggregate")["x-agent-ix-members"]).toStrictEqual([
-			"ix://agent-ix/orders/type/FR-001",
-			"ix://agent-ix/orders/type/VO-001",
+			"ix://agent-ix/orders/FR-001",
+			"ix://agent-ix/orders/VO-001",
 		]);
 		expect(schema("OrderStatus").enum).toStrictEqual([
 			"cancelled",
@@ -265,7 +265,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		});
 		const advance = lifecycle["x-agent-ix-operations"][0];
 		expect(advance.frame).toStrictEqual({
-			modifies: ["ix://agent-ix/orders/field/SM-001-current"],
+			modifies: ["ix://agent-ix/orders/SM-001/current"],
 			creates: [],
 			deletes: [],
 		});
@@ -288,7 +288,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 			);
 		}
 		expect(schema("OrderRepository")["x-agent-ix-persists"]).toStrictEqual([
-			"ix://agent-ix/orders/type/FR-001",
+			"ix://agent-ix/orders/FR-001",
 		]);
 		expect(schema("Ordering")["x-agent-ix-vocabulary"]).toStrictEqual([
 			{ term: "Order", doc: "A customer's request for goods." },
@@ -296,14 +296,14 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 
 		const order = schema("Order");
 		expect(order["x-agent-ix-supertypes"]).toStrictEqual([
-			"ix://agent-ix/orders/type/FR-000",
+			"ix://agent-ix/orders/FR-000",
 		]);
 		expect(Object.keys(order.properties)).toContain("labels");
 		expect(order.properties.labels["x-agent-ix-redefines"]).toBe(
-			"ix://agent-ix/orders/field/FR-000-labels",
+			"ix://agent-ix/orders/FR-000/labels",
 		);
 		expect(order.properties.badges["x-agent-ix-subsets"]).toStrictEqual([
-			"ix://agent-ix/orders/field/FR-000-labels",
+			"ix://agent-ix/orders/FR-000/labels",
 		]);
 		expect(schema("Party")["x-agent-ix-abstract"]).toBe(true);
 		expect(schema("index")["x-agent-ix-populations"][0].displayName).toBe(
@@ -444,7 +444,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		party.fields.push({
 			...party.fields[1],
 			name: "remark",
-			identity: "ix://agent-ix/orders/field/FR-000-remark",
+			identity: "ix://agent-ix/orders/FR-000/remark",
 			subsets: [party.fields[1].identity],
 		});
 		const result = jsonSchemaBackend.generate({ ir });
@@ -456,11 +456,11 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		};
 		const order = schema("Order");
 		expect(order.properties.remark["x-agent-ix-subsets"]).toStrictEqual([
-			"ix://agent-ix/orders/field/FR-000-labels",
+			"ix://agent-ix/orders/FR-000/labels",
 		]);
 		expect(order["x-agent-ix-identity-fields"]).toStrictEqual(["id"]);
 		expect(order["x-agent-ix-supertypes"]).toStrictEqual([
-			"ix://agent-ix/orders/type/FR-000",
+			"ix://agent-ix/orders/FR-000",
 		]);
 
 		const collided = JSON.parse(readFileSync(constructs, "utf8"));
@@ -491,7 +491,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		const schema = JSON.parse(file.text);
 		expect(schema.$id.endsWith("/ConfigVersion.json")).toBe(true);
 		expect(schema["x-agent-ix-semantic-id"]).toBe(
-			"ix://agent-ix/config-service/type/FR-006",
+			"ix://agent-ix/config-service/FR-006",
 		);
 	});
 
@@ -1002,5 +1002,41 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		const indexSchema = JSON.parse(index.text);
 		expect(indexSchema["x-agent-ix-extensions"]).toEqual(ir.extensions);
 		expect(indexSchema["x-agent-ix-occurrences"]).toEqual(ir.occurrences);
+	});
+});
+
+describe("TC-1809 NATIVE_SCALARS agrees with kernel-scalars.json (R3, FR-032-AC-3)", () => {
+	it("carries the same names and irScalar mapping as the canonical kernel scalar library", () => {
+		// R3 of the FCD #199/#200 review: this backend's `NATIVE_SCALARS` is one
+		// of six independent copies of the FR-032 kernel scalar library (the
+		// others are the Rust reader, the Node IR reader, the Python reader,
+		// the rust-serde backend, and the v1-1 TS reader); each is
+		// checked against the canonical
+		// `packages/semantic-core/kernel-scalars.json` rather than against
+		// each other, and none is refactored into a shared module.
+		const canonical = JSON.parse(
+			readFileSync(
+				resolve(root, "packages/semantic-core/kernel-scalars.json"),
+				"utf8",
+			),
+		) as { scalars: Record<string, { irScalar: string }> };
+		const source = readFileSync(
+			resolve(root, "src/compiler/backends/json-schema-v1/index.mjs"),
+			"utf8",
+		);
+		const match = source.match(
+			/const NATIVE_SCALARS = Object\.freeze\(\{([\s\S]*?)\}\);/,
+		);
+		expect(match).not.toBeNull();
+		const pairs = Object.fromEntries(
+			Array.from(
+				(match as RegExpMatchArray)[1].matchAll(/(\w+):\s*"([^"]+)"/g),
+			).map((entry) => [entry[1], entry[2]]),
+		);
+		const names = Object.keys(canonical.scalars);
+		expect(Object.keys(pairs).sort()).toEqual(names.sort());
+		for (const name of names) {
+			expect(pairs[name]).toBe(canonical.scalars[name].irScalar);
+		}
 	});
 });

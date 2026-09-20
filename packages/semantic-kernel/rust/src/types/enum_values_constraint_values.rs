@@ -1,28 +1,28 @@
 //! EnumValuesConstraintValues
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintValues.
+//! Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraintValues.
 
 use serde::{Deserialize, Serialize};
 
 /// EnumValuesConstraintValues
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintValues.
+/// Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraintValues.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EnumValuesConstraintValues {
     /// string
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintValues/variant/string.
+    /// Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraintValues/variant/string.
     #[serde(rename = "string")]
     String(crate::EnumValuesConstraintValuesString),
     /// number
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintValues/variant/number.
+    /// Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraintValues/variant/number.
     #[serde(rename = "number")]
     Number(crate::EnumValuesConstraintValuesNumber),
     /// boolean
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EnumValuesConstraintValues/variant/boolean.
+    /// Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraintValues/variant/boolean.
     #[serde(rename = "boolean")]
     Boolean(crate::EnumValuesConstraintValuesBoolean),
 }

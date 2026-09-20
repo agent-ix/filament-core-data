@@ -76,19 +76,40 @@ PINNED_DIGESTS = {
         "sha256:3a9eca5cbae99303e68f52c88d78ea3f1dc9425c723a5ed8494fcd6472ccfc6e"
     ),
     "python_backend/qualification": (
-        # fcd#193/#196: report.json's and validation.json's per-profile
-        # toolchainFingerprint and measured counts remeasured (`poetry run
-        # python -m python_backend.runner.qualify` and `... .runner.validate`)
-        # after python_backend/generated was regenerated for population's new
-        # kind/members/extent shape; corpus-account.json unchanged.
-        "sha256:19a8eaf98f183e60a9f088234ef86bbb4bfaf16b199455f1aa41fda23a0addc8"
+        # fcd#199/#200: report.json and validation.json's per-profile
+        # toolchainFingerprint remeasured (`poetry run python -m
+        # python_backend.runner.qualify` and `... .runner.validate`) after
+        # python_backend/generated was regenerated for the two-end
+        # relationship shape and multiplicity's ordered/unique fields.
+        # corpus-account.json also remeasured (`poetry run python -m
+        # python_backend.runner.corpus_account`) after conformance/corpus.json
+        # was bumped to corpusVersion 4.0.0; gaps.json unchanged. Remeasured
+        # again after this PR's review added corpus case PRES-016 (finding 5,
+        # R2), taking the corpus from 113 to 114 cases. Remeasured again after
+        # that review's H5 added corpus case CONS-008 (an inline field
+        # constraint checked for applicability), taking the corpus to 115.
+        # Remeasured a final time after `python_backend/generated` itself was
+        # regenerated for H4's sourceEnd/targetEnd schema split (report.json's
+        # and validation.json's toolchainFingerprint move again).
+        #
+        # Remeasured again for the owner ruling on FCD #199 (2026-09-19T15:39:32Z):
+        # `ordered`/`unique` are required on every multiplicity and
+        # FLAGS_ON_NON_COLLECTION is deleted. corpus-account.json regenerated
+        # (`... .runner.corpus_account`) after PRES-016 was replaced with a
+        # positive case exercising the new required-flags shape (case count
+        # unchanged at 115; PRES-016 was replaced in place, not added
+        # alongside a new case).
+        "sha256:5110ef30342a4ec678139ae59b4075c7ac8be68ad0cea4e7216035d2839963c4"
     ),
     "python_backend/generated": (
-        # fcd#193/#196: regenerated (`poetry run python -m
-        # python_backend.runner.emit`) after `population` in
-        # schema/semantic/v1/semantic-ir.schema.json gained `kind`/`extent`
-        # and its `members` became a flat identity list.
-        "sha256:dc9bbb248d5ec1bed9fac8aa78103d3ad465ed99eb82aaaf01786d5673132bc7"
+        # fcd#199/#200: regenerated (`poetry run python -m
+        # python_backend.runner.emit`) after Relationship in
+        # schema/semantic/v1/semantic-ir.schema.json gained the two-end
+        # sourceEnd/targetEnd/direction shape and Multiplicity gained the
+        # required ordered/unique fields. Remeasured once more (confirmed
+        # reproducible across 3 successive `emit` runs) after H4's
+        # RelationshipSourceEnd/RelationshipTargetEnd split landed.
+        "sha256:cbb4530adcc77351244901f78c6051d3adc8138f1c8621895b84cebda14dc633"
     ),
     "python_backend/profiles.json": (
         "sha256:3c6fc254a7c346c88b6ea91fdaeb7d3a3b55f8065b8a6ebc6ddab3a447547345"

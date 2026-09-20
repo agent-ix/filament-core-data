@@ -87,7 +87,7 @@ function annotateSemanticIdentity(files) {
 	for (const [name, schema] of files) {
 		const typeName = name.replace(/\.json$/, "");
 		schema["x-agent-ix-semantic-id"] =
-			`ix://agent-ix/semantic-core/type/${typeName}`;
+			`ix://agent-ix/semantic-core/${typeName}`;
 	}
 }
 

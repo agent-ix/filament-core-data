@@ -56,7 +56,6 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | Rule | Code |
 |---|---|
 | `multiplicity.lower` is a non-negative integer and `upper`, where present, is an integer not less than `lower` | `agent-ix.semantic-ir.INVALID_MULTIPLICITY` |
-| `ordered` and `unique` appear only where `upper` is absent or greater than 1 | `agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION` |
 | every field declares `multiplicity` | `agent-ix.semantic-ir.MISSING_MULTIPLICITY` |
 | a `typeRef` resolves, through aliases, to a definition | `agent-ix.semantic-ir.UNRESOLVED_TYPE_REF` |
 | `unit` is a non-empty symbol | `agent-ix.semantic-ir.INVALID_UNIT` |
@@ -67,6 +66,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | a bound operand is typed for its scalar | `agent-ix.semantic-ir.INVALID_OPERAND` |
 | `relationships` and `operations` appear only on a `record` | `agent-ix.semantic-ir.NODES_ON_NON_RECORD` |
 | a relationship target resolves to a document type or an imported export | `agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET` |
+| a relationship's `sourceEnd.type`, where present, names the type declaring the relationship | `agent-ix.semantic-ir.INVALID_RELATIONSHIP_SOURCE` |
 | a relationship category is one of the closed seven | `agent-ix.semantic-ir.UNKNOWN_EDGE_CATEGORY` |
 | the composite relationship graph is acyclic | `agent-ix.semantic-ir.COMPOSITE_CYCLE` |
 | `clauseId` is unique within a type | `agent-ix.semantic-ir.DUPLICATE_CLAUSE_ID` |

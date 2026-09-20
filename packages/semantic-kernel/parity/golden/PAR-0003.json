@@ -7,13 +7,17 @@
 	"unknownPolicy": "reject",
 	"instance": {
 		"lower": 0,
-		"upper": 2147483647
+		"upper": 2147483647,
+		"ordered": false,
+		"unique": false
 	},
 	"expected": {
 		"resultState": "success",
 		"wire": {
 			"lower": 0,
-			"upper": 2147483647
+			"upper": 2147483647,
+			"ordered": false,
+			"unique": false
 		}
 	},
 	"derivedFrom": [

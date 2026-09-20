@@ -1,17 +1,17 @@
 //! UniqueConstraintKeyword
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/UniqueConstraintKeyword.
+//! Semantic identity: ix://agent-ix/semantic-core/UniqueConstraintKeyword.
 
 use serde::{Deserialize, Serialize};
 
 /// UniqueConstraintKeyword
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/UniqueConstraintKeyword.
+/// Semantic identity: ix://agent-ix/semantic-core/UniqueConstraintKeyword.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum UniqueConstraintKeyword {
     /// unique
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/UniqueConstraintKeyword/variant/unique.
+    /// Semantic identity: ix://agent-ix/semantic-core/UniqueConstraintKeyword/variant/unique.
     #[serde(rename = "unique")]
     Unique,
 }

@@ -1,6 +1,6 @@
 //! MultiplicityUpper
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/MultiplicityUpper.
+//! Semantic identity: ix://agent-ix/semantic-core/MultiplicityUpper.
 //!
 //! Unknown policy: `reject`, which is inert for a
 //! `scalar` — the kind has no unknown member for a policy to govern. The
@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 /// MultiplicityUpper
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/MultiplicityUpper.
+/// Semantic identity: ix://agent-ix/semantic-core/MultiplicityUpper.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(transparent)]
 pub struct MultiplicityUpper(i64);
@@ -23,7 +23,7 @@ impl MultiplicityUpper {
         {
             if value < 0i64 {
                 return Err(crate::support::ValidationError::new(
-                    "ix://agent-ix/semantic-core/type/MultiplicityUpper/constraint/min",
+                    "ix://agent-ix/semantic-core/MultiplicityUpper/constraint/min",
                     "min",
                     "",
                     "0",
@@ -31,7 +31,7 @@ impl MultiplicityUpper {
             }
             if value > 2147483647i64 {
                 return Err(crate::support::ValidationError::new(
-                    "ix://agent-ix/semantic-core/type/MultiplicityUpper/constraint/max",
+                    "ix://agent-ix/semantic-core/MultiplicityUpper/constraint/max",
                     "max",
                     "",
                     "2147483647",

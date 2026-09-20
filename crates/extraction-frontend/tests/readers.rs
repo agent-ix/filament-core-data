@@ -56,7 +56,10 @@ fn tc_1219_neither_reader_raises_unresolved_type_ref_over_any_emitted_document()
         let (rust, node) = reader_codes(&request.out);
         assert_none_of(&name, &rust, &["UNRESOLVED_TYPE_REF"]);
         assert_none_of(&name, &node, &["UNRESOLVED_TYPE_REF"]);
-        // Every typeRef names a declared identity.
+        // Every typeRef names either a declared identity or a kernel scalar
+        // (gap 1 of FCD #199/#200: a kernel scalar mints no package node,
+        // its `typeRef` is `ix://quire/native/<Name>` over the closed
+        // FR-032 set instead).
         let document: Value =
             serde_json::from_slice(&fs::read(&request.out).expect("read")).expect("json");
         let declared: Vec<&str> = document["types"]
@@ -65,6 +68,13 @@ fn tc_1219_neither_reader_raises_unresolved_type_ref_over_any_emitted_document()
             .iter()
             .filter_map(|t| t["identity"].as_str())
             .collect();
+        let is_native = |type_ref: &str| {
+            type_ref
+                .strip_prefix("ix://quire/native/")
+                .is_some_and(|name| {
+                    agent_ix_extraction_frontend::KernelScalar::from_name(name).is_some()
+                })
+        };
         for definition in document["types"].as_array().expect("types") {
             let fields = definition["fields"]
                 .as_array()
@@ -79,8 +89,8 @@ fn tc_1219_neither_reader_raises_unresolved_type_ref_over_any_emitted_document()
             for field in fields.iter().chain(params) {
                 let type_ref = field["typeRef"].as_str().expect("typeRef");
                 assert!(
-                    declared.contains(&type_ref),
-                    "{name}: {type_ref} is undeclared"
+                    is_native(type_ref) || declared.contains(&type_ref),
+                    "{name}: {type_ref} is neither declared nor a kernel scalar"
                 );
             }
         }

@@ -1,16 +1,16 @@
 //! ExclusiveMaxConstraint
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint.
+//! Semantic identity: ix://agent-ix/semantic-core/ExclusiveMaxConstraint.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `ExclusiveMaxConstraint`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint/field/keyword",
+        identity: "ix://agent-ix/semantic-core/ExclusiveMaxConstraint/keyword",
         name: "keyword",
         rust_name: "keyword",
-        type_ref: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintKeyword",
+        type_ref: "ix://agent-ix/semantic-core/ExclusiveMaxConstraintKeyword",
         rust_type: "crate::ExclusiveMaxConstraintKeyword",
         row: "field:single/non-null/required",
         presence: "required",
@@ -18,8 +18,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint/field/value",
+        identity: "ix://agent-ix/semantic-core/ExclusiveMaxConstraint/value",
         name: "value",
         rust_name: "value",
-        type_ref: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue",
+        type_ref: "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValue",
         rust_type: "crate::ExclusiveMaxConstraintValue",
         row: "field:single/non-null/required",
         presence: "required",
@@ -48,8 +48,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -70,16 +70,16 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// ExclusiveMaxConstraint
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint.
+/// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMaxConstraint.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct ExclusiveMaxConstraint {
     /// keyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint/field/keyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMaxConstraint/keyword.
     pub keyword: crate::ExclusiveMaxConstraintKeyword,
     /// value
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint/field/value.
+    /// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMaxConstraint/value.
     pub value: crate::ExclusiveMaxConstraintValue,
 }
 

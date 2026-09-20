@@ -1,6 +1,6 @@
 //! DecimalPolicyScale
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/DecimalPolicyScale.
+//! Semantic identity: ix://agent-ix/semantic-core/DecimalPolicyScale.
 //!
 //! Unknown policy: `reject`, which is inert for a
 //! `scalar` — the kind has no unknown member for a policy to govern. The
@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 /// DecimalPolicyScale
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/DecimalPolicyScale.
+/// Semantic identity: ix://agent-ix/semantic-core/DecimalPolicyScale.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(transparent)]
 pub struct DecimalPolicyScale(i64);
@@ -23,7 +23,7 @@ impl DecimalPolicyScale {
         {
             if value < 0i64 {
                 return Err(crate::support::ValidationError::new(
-                    "ix://agent-ix/semantic-core/type/DecimalPolicyScale/constraint/min",
+                    "ix://agent-ix/semantic-core/DecimalPolicyScale/constraint/min",
                     "min",
                     "",
                     "0",
@@ -31,7 +31,7 @@ impl DecimalPolicyScale {
             }
             if value > 2147483647i64 {
                 return Err(crate::support::ValidationError::new(
-                    "ix://agent-ix/semantic-core/type/DecimalPolicyScale/constraint/max",
+                    "ix://agent-ix/semantic-core/DecimalPolicyScale/constraint/max",
                     "max",
                     "",
                     "2147483647",

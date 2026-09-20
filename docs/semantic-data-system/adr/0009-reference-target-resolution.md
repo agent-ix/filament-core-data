@@ -22,8 +22,8 @@ all.
 
 The ambiguity is not theoretical. Compiled read-only over its own
 `test/fixtures/compiler/packages/assurance` fixture, the issue #19 compiler emits
-`ix://agent-ix/assurance/type/ActorRef` as a `reference` whose target is
-`ix://agent-ix/core/type/Actor`. No type in the document declares that identity,
+`ix://agent-ix/assurance/ActorRef` as a `reference` whose target is
+`ix://agent-ix/core/Actor`. No type in the document declares that identity,
 the manifest declares no imports, and no lock export names it.
 
 Issue #19's own reader accepts the document — `inspect` exits 0 and reports 18
@@ -67,7 +67,7 @@ Preserve the kind's purpose and make the #19 reader correct.
 
 The cost lands on every backend and every reader. "Unresolvable" becomes
 indistinguishable from "misspelled": a reference to
-`ix://agent-ix/core/type/Actor` and one to `ix://agent-ix/core/type/Atcor` are
+`ix://agent-ix/core/Actor` and one to `ix://agent-ix/core/Atcor` are
 equally valid documents, and no gate can tell them apart. A generated package
 must then emit something for a target it knows nothing about, and what it emits
 is a decision each backend makes alone — which is how three backends come to
@@ -133,9 +133,9 @@ declare. `imports[]` is what makes both true at once: the target resolves,
 through a declared dependency, to a named export of another package.
 
 **A typo stays distinguishable from an intention.** That is the property Option
-C was chosen for, and Option D keeps it. `ix://agent-ix/core/type/Actor` is
+C was chosen for, and Option D keeps it. `ix://agent-ix/core/Actor` is
 valid when `agent-ix/core` is imported and names `Actor` among its exports;
-`ix://agent-ix/core/type/Atcor` is refused under the same import, because
+`ix://agent-ix/core/Atcor` is refused under the same import, because
 `Atcor` is not in that export list. Under B neither is detectable; under A
 neither is expressible.
 

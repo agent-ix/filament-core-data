@@ -47,6 +47,16 @@ const COMPILER_CODES = [
 	"TYPESPEC_COMPILE_ERROR",
 	"DUPLICATE_DECORATOR",
 	"INVALID_DECORATOR_ARGUMENT",
+	// H4 of the FCD #199/#200 review: a `@relationship` verb the loaded edge
+	// vocabulary does not declare, matching the extraction-frontend's
+	// `UnknownEdgeVerb` (`crates/extraction-frontend/src/diagnostics.rs`).
+	"UNKNOWN_EDGE_VERB",
+	// M5 of the FCD #199/#200 round-3 review: the registry is the source of
+	// the registry's data, and that includes `category`. A `@relationship`
+	// whose decorator-supplied `category` disagrees with the loaded edge
+	// vocabulary's declared `category` for that verb is refused rather than
+	// silently resolved by preferring one source over the other.
+	"EDGE_CATEGORY_MISMATCH",
 	"UNSLUGGABLE_NAME",
 	"UNSUPPORTED_SCALAR_BASE",
 	"UNSUPPORTED_DECLARATION",
@@ -119,7 +129,6 @@ const COMPILER_CODES = [
 const READER_CODES = [
 	"INVALID_DOCUMENT",
 	"INVALID_MULTIPLICITY",
-	"FLAGS_ON_NON_COLLECTION",
 	"MISSING_MULTIPLICITY",
 	"UNRESOLVED_TYPE_REF",
 	"INVALID_UNIT",
@@ -130,6 +139,7 @@ const READER_CODES = [
 	"INVALID_OPERAND",
 	"NODES_ON_NON_RECORD",
 	"UNRESOLVED_RELATIONSHIP_TARGET",
+	"INVALID_RELATIONSHIP_SOURCE",
 	"UNKNOWN_EDGE_CATEGORY",
 	"COMPOSITE_CYCLE",
 	"DUPLICATE_CLAUSE_ID",

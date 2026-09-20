@@ -103,7 +103,15 @@ fn tc_701_every_case_matches_its_authored_expectation() {
     // lower bound is invalid — contradicts FR-106-CON-1 for contract 2.0.0).
     // fcd#187 adds 5 back: PRES-011..015, covering a `nullable` authored as
     // `1`, `"true"`, `null`, `{}`, and absent, landing on 111 again.
-    assert_eq!(cases.len(), 111, "the corpus declares 111 cases");
+    // fcd#199/#200's review adds 2 more: IDENT-006 (a field/operation
+    // identity collision, finding 12) and REL-007 (a relationship whose
+    // `sourceEnd.type` names a type other than the one declaring it,
+    // finding 9), landing on 113. That review adds 1 more still: PRES-016
+    // (a single-valued field declaring `ordered`, finding 5/R2), landing on
+    // 114. That review's H5 (finding 2's inline field.constraints check had no
+    // test in any reader) adds CONS-008 (an inline field constraint checked
+    // for applicability the same as a type-level one), landing on 115.
+    assert_eq!(cases.len(), 115, "the corpus declares 115 cases");
     let mut failures: Vec<String> = Vec::new();
     for case in &cases {
         let verdict = decide(&case.bundle);

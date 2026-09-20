@@ -3,6 +3,7 @@ import type { ContractIrDiagnostics } from "../index.d.mts";
 
 export declare function resolveKind(
 	types: Map<string, Record<string, unknown>>,
+	fields: Map<string, Record<string, unknown>>,
 	typeRef: unknown,
 	seen?: Set<string>,
 ): { kind: string; scalar?: string } | undefined;

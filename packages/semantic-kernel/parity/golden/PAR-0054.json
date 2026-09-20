@@ -8,14 +8,14 @@
 	"instance": {
 		"verb": "owns",
 		"category": "structural",
-		"target": "ix://agent-ix/semantic-core/type/FieldDecl"
+		"target": "ix://agent-ix/semantic-core/FieldDecl"
 	},
 	"expected": {
 		"resultState": "success",
 		"wire": {
 			"verb": "owns",
 			"category": "structural",
-			"target": "ix://agent-ix/semantic-core/type/FieldDecl"
+			"target": "ix://agent-ix/semantic-core/FieldDecl"
 		}
 	},
 	"derivedFrom": [
