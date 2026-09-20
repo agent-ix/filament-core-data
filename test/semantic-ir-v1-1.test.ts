@@ -1431,6 +1431,58 @@ describe("FR-020 closing gate: two readers, round trip, fixture inventory (Task-
 		}
 	});
 
+	/** Traces: TC-1815; FR-093-AC-6, FR-093-CON-4. */
+	it("TC-1815: an inline field constraint is checked for applicability (finding 2)", () => {
+		// Finding 2 of the FCD #199/#200 review: this reader's field loop
+		// runs each of a field's inline `constraints` through the same
+		// `checkConstraint` a type-level constraint goes through, with the
+		// field itself as the resolved subject (gap 1's field-as-subject
+		// shape). A `min` constraint inline on a `String` field is the same
+		// (kind, keyword) pair FR-093-AC-6 already covers for a type-scoped
+		// subject; deleting the loop at this reader's
+		// `field.constraints` branch must fail this test.
+		const document = {
+			contractVersion: "2.0.0",
+			types: [
+				{
+					identity: "ix://acme/pkg/T",
+					kind: "record",
+					fields: [
+						{
+							identity: "ix://acme/pkg/T/f",
+							name: "f",
+							typeRef: "ix://quire/native/String",
+							presence: "required",
+							nullable: false,
+							multiplicity: {
+								lower: 1,
+								upper: 1,
+								ordered: false,
+								unique: false,
+							},
+							constraints: [
+								{
+									identity: "ix://acme/pkg/constraint/T-f-min",
+									keyword: "min",
+									appliesTo: "ix://acme/pkg/T/f",
+									operands: { value: 0 },
+									diagnosticCode: "agent-ix.acme.T_F_MIN",
+								},
+							],
+						},
+					],
+				},
+			],
+		};
+		const diagnostics = readSemanticIr(document);
+		expect(
+			diagnostics.some(
+				(d) => d.code === "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE",
+			),
+			JSON.stringify(diagnostics),
+		).toBe(true);
+	});
+
 	/**
 	 * fcd#179 deleted NFR-013 (TC-247's sole owner); kept as a regression
 	 * guard, not a traced criterion (see the note above TC-234's test).

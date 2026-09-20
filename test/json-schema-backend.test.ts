@@ -1010,7 +1010,7 @@ describe("TC-1809 NATIVE_SCALARS agrees with kernel-scalars.json (R3, FR-032-AC-
 		// R3 of the FCD #199/#200 review: this backend's `NATIVE_SCALARS` is one
 		// of six independent copies of the FR-032 kernel scalar library (the
 		// others are the Rust reader, the Node IR reader, the Python reader,
-		// the rust-serde backend, and the semantic-core reader); each is
+		// the rust-serde backend, and the v1-1 TS reader); each is
 		// checked against the canonical
 		// `packages/semantic-core/kernel-scalars.json` rather than against
 		// each other, and none is refactored into a shared module.

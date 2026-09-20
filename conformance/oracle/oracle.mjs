@@ -341,6 +341,21 @@ function checkField(field, at, types, out) {
 			),
 		);
 	}
+
+	// A constrained field keeps its constraints inline, with no alias node
+	// between them (gap 1 of FCD #199/#200, finding 2 of the FCD #199/#200
+	// review): each one runs through `checkConstraint`, the same as a
+	// type-level constraint. This oracle's own `resolve` has no field-as-
+	// subject branch (unlike the three readers' `Document::resolve` /
+	// `resolve_kind` / `resolveKind`), so a corpus case exercising this loop
+	// must point `appliesTo` at a type, not the field's own identity.
+	for (const [i, constraint] of (Array.isArray(field.constraints)
+		? field.constraints
+		: []
+	).entries()) {
+		if (isObject(constraint))
+			checkConstraint(constraint, `${at}/constraints/${i}`, types, out);
+	}
 }
 
 /* ------------------------------------------------------------ document ---- */

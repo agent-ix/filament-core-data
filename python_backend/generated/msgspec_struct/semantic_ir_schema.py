@@ -207,7 +207,13 @@ class Direction(Enum):
     undirected = 'undirected'
 
 
-class RelationshipEnd(Struct):
+class RelationshipSourceEnd(Struct):
+    multiplicity: Multiplicity
+    role: Annotated[str, Meta(min_length=1)]
+    type: common_schema.SemanticIdentity
+
+
+class RelationshipTargetEnd(Struct):
     multiplicity: Multiplicity
     type: common_schema.SemanticIdentity
     role: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
@@ -395,8 +401,8 @@ class Relationship(Struct):
     direction: Direction
     identity: common_schema.SemanticIdentity
     origin: common_schema.Origin
-    sourceEnd: RelationshipEnd
-    targetEnd: RelationshipEnd
+    sourceEnd: RelationshipSourceEnd
+    targetEnd: RelationshipTargetEnd
 
 
 class State(Struct):

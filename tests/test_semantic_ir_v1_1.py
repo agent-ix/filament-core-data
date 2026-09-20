@@ -374,11 +374,11 @@ class TestContract20:
 
 class TestNativeScalarParity:
     """R3 of the FCD #199/#200 review: this reader's ``NATIVE_SCALARS`` is one
-    of five independent copies of the FR-032 kernel scalar library (the
+    of six independent copies of the FR-032 kernel scalar library (the
     others are the Rust reader, the Node IR reader, the JSON-Schema backend,
-    and the rust-serde backend); each is checked against the canonical
-    ``packages/semantic-core/kernel-scalars.json`` rather than against each
-    other, and none is refactored into a shared module.
+    the rust-serde backend, and the v1-1 TS reader); each is checked against
+    the canonical ``packages/semantic-core/kernel-scalars.json`` rather than
+    against each other, and none is refactored into a shared module.
 
     Description: TC-1811. Criteria: FR-032-AC-3.
     """
@@ -391,3 +391,55 @@ class TestNativeScalarParity:
         assert len(scalars) == len(NATIVE_SCALARS)
         for name, definition in scalars.items():
             assert _native_scalar(f"{NATIVE_PREFIX}{name}") == definition["irScalar"]
+
+
+class TestInlineFieldConstraints:
+    """Finding 2 of the FCD #199/#200 review: ``_check_type``'s field loop
+    runs each of a field's inline ``constraints`` through ``_check_constraint``,
+    the same function a type-level constraint goes through, with the field
+    itself as the resolved subject (gap 1's field-as-subject shape). A ``min``
+    constraint inline on a ``String`` field is inapplicable under
+    ``APPLICABILITY``, so deleting the loop at
+    ``tests/semantic_ir_reader.py``'s ``field.get("constraints")`` branch
+    would let it through unchecked; this test fails if that loop is removed.
+
+    Description: TC-1814. Criteria: FR-093-AC-6, FR-093-CON-4.
+    """
+
+    def test_an_inline_field_constraint_is_checked_for_applicability(self) -> None:
+        document = {
+            "contractVersion": "2.0.0",
+            "types": [
+                {
+                    "identity": "ix://acme/pkg/T",
+                    "kind": "record",
+                    "fields": [
+                        {
+                            "identity": "ix://acme/pkg/T/f",
+                            "name": "f",
+                            "typeRef": "ix://quire/native/String",
+                            "presence": "required",
+                            "nullable": False,
+                            "multiplicity": {
+                                "lower": 1,
+                                "upper": 1,
+                                "ordered": False,
+                                "unique": False,
+                            },
+                            "constraints": [
+                                {
+                                    "identity": "ix://acme/pkg/constraint/T-f-min",
+                                    "keyword": "min",
+                                    "appliesTo": "ix://acme/pkg/T/f",
+                                    "operands": {"value": 0},
+                                    "diagnosticCode": "agent-ix.acme.T_F_MIN",
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+        diagnostics = read_semantic_ir(document)
+        codes = {diagnostic["code"] for diagnostic in diagnostics}
+        assert "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE" in codes, diagnostics

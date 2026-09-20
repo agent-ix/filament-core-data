@@ -1193,8 +1193,8 @@ fn package_visit(
 #[cfg(test)]
 mod tests {
     use super::{
-        decide, native_scalar, FLAGS_ON_NON_COLLECTION, NATIVE_PREFIX, NATIVE_SCALARS,
-        UNIT_ON_NON_SCALAR, UNRESOLVED_TYPE_REF,
+        decide, native_scalar, CONSTRAINT_NOT_APPLICABLE, FLAGS_ON_NON_COLLECTION, NATIVE_PREFIX,
+        NATIVE_SCALARS, UNIT_ON_NON_SCALAR, UNRESOLVED_TYPE_REF,
     };
     use crate::json::Json;
     use crate::json::parse;
@@ -1244,6 +1244,63 @@ mod tests {
         assert!(
             !accepted.iter().any(|d| d.code == FLAGS_ON_NON_COLLECTION),
             "ordered/unique on an actual collection is not a refusal: {accepted:?}"
+        );
+    }
+
+    /// Finding 2 of the FCD #199/#200 review: `field_rules` runs each of a
+    /// field's inline `constraints` through the same `constraint_rules` a
+    /// type-level constraint goes through, with the field itself as the
+    /// resolved subject (gap 1's field-as-subject shape). Before that fix
+    /// this loop did not exist, so an inline constraint's keyword was never
+    /// checked against the applicability table; a `min` constraint inline on
+    /// a `String` field is the same (kind, keyword) pair FR-093-AC-6 already
+    /// covers for a type-scoped subject, so this is the field-inline call
+    /// site nothing previously exercised. Deleting the loop at
+    /// `field_rules`'s `field.get("constraints")` branch must fail this
+    /// test.
+    ///
+    /// Tracing: TC-1813
+    /// ACs: FR-093-AC-6, FR-093-CON-4
+    #[test]
+    fn tc_1813_an_inline_field_constraint_is_checked_for_applicability() {
+        let bundle = parse(
+            r#"{
+                "ir": {
+                    "contractVersion": "2.0.0",
+                    "types": [
+                        {
+                            "identity": "ix://acme/pkg/T",
+                            "kind": "record",
+                            "fields": [
+                                {
+                                    "identity": "ix://acme/pkg/T/f",
+                                    "name": "f",
+                                    "typeRef": "ix://quire/native/String",
+                                    "constraints": [
+                                        {
+                                            "identity": "ix://acme/pkg/constraint/T-f-min",
+                                            "keyword": "min",
+                                            "appliesTo": "ix://acme/pkg/T/f",
+                                            "operands": {"value": 0},
+                                            "diagnosticCode": "agent-ix.acme.T_F_MIN"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }"#,
+        )
+        .expect("a document");
+        let diagnostics = decide(&bundle);
+        assert!(
+            diagnostics
+                .iter()
+                .any(|located| located.code == CONSTRAINT_NOT_APPLICABLE),
+            "min is inapplicable to a string-valued field, and an inline field \
+             constraint's applicability must be checked the same as a type-level \
+             constraint's: {diagnostics:?}"
         );
     }
 

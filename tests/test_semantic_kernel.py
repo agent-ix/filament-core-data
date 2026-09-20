@@ -85,8 +85,13 @@ PINNED_DIGESTS = {
         # python_backend.runner.corpus_account`) after conformance/corpus.json
         # was bumped to corpusVersion 4.0.0; gaps.json unchanged. Remeasured
         # again after this PR's review added corpus case PRES-016 (finding 5,
-        # R2), taking the corpus from 113 to 114 cases.
-        "sha256:fa6c76ed6f37253ad02be759fd01212e84c2c2b97b96f73aba3e525c0d57e3d1"
+        # R2), taking the corpus from 113 to 114 cases. Remeasured again after
+        # that review's H5 added corpus case CONS-008 (an inline field
+        # constraint checked for applicability), taking the corpus to 115.
+        # Remeasured a final time after `python_backend/generated` itself was
+        # regenerated for H4's sourceEnd/targetEnd schema split (report.json's
+        # and validation.json's toolchainFingerprint move again).
+        "sha256:c4f8978b67be02841378aa0d3dbfb42bcb024f1548453a6a84a997025b5b12ce"
     ),
     "python_backend/generated": (
         # fcd#199/#200: regenerated (`poetry run python -m

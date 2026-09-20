@@ -221,7 +221,14 @@ class Direction(Enum):
 
 
 @dataclass(config=ConfigDict(extra='forbid'))
-class RelationshipEnd:
+class RelationshipSourceEnd:
+    multiplicity: Multiplicity
+    role: Annotated[str, Field(min_length=1)]
+    type: common_schema.SemanticIdentity
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class RelationshipTargetEnd:
     multiplicity: Multiplicity
     type: common_schema.SemanticIdentity
     role: Annotated[str | None, Field(min_length=1)] = None
@@ -423,8 +430,8 @@ class Relationship:
     direction: Direction
     identity: common_schema.SemanticIdentity
     origin: common_schema.Origin
-    sourceEnd: RelationshipEnd
-    targetEnd: RelationshipEnd
+    sourceEnd: RelationshipSourceEnd
+    targetEnd: RelationshipTargetEnd
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))

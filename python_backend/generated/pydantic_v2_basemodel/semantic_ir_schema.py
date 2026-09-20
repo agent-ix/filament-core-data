@@ -249,7 +249,16 @@ class Direction(Enum):
     undirected = 'undirected'
 
 
-class RelationshipEnd(BaseModel):
+class RelationshipSourceEnd(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    multiplicity: Multiplicity
+    role: Annotated[str, Field(min_length=1)]
+    type: common_schema.SemanticIdentity
+
+
+class RelationshipTargetEnd(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
@@ -493,8 +502,8 @@ class Relationship(BaseModel):
     direction: Direction
     identity: common_schema.SemanticIdentity
     origin: common_schema.Origin
-    sourceEnd: RelationshipEnd
-    targetEnd: RelationshipEnd
+    sourceEnd: RelationshipSourceEnd
+    targetEnd: RelationshipTargetEnd
 
 
 class State(BaseModel):
