@@ -779,7 +779,7 @@ blocked as stated above.
 | TC-435 | A record named `AuditEvent` with no `@role` has `roles: []`, and a record named `Thing` with `@role("agent-ix:event")` has `roles: | Unit | P0 | FR-046-AC-4 | ✅ passed |
 | TC-436 | A property typed `Text \| null` is `nullable: true` and a property typed `NullableText` (a declared alias of `Text`) is `nullable: false` | Unit | P0 | FR-046-AC-5 | ✅ passed |
 | TC-437 | The four multiplicity derivations (collection/single × optional/required) and the `@multiplicity` override each produce the stated bounds | Unit | P0 | FR-046-AC-6 | ✅ passed |
-| TC-438 | `@collection` on a single-valued property raises `FLAGS_ON_NON_COLLECTION`, `@multiplicity(2, 1)` raises `INVALID_MULTIPLICITY` | Unit | P0 | FR-046-AC-7 | ✅ passed |
+| TC-438 | `@collection` on a single-valued property clamps `ordered`/`unique` to `false` rather than refusing; `@multiplicity(2, 1)` raises `INVALID_MULTIPLICITY` | Unit | P0 | FR-046-AC-7 | ✅ passed |
 | TC-439 | `@unit("s")` on a field resolving through an alias to a scalar is emitted | Unit | P0 | FR-046-AC-8 | ✅ passed |
 | TC-440 | A property with a TypeSpec default emits `defaultKind: "semantic"` and that `defaultValue`; `@defaultKind("migration")` overrides the kind | Unit | P0 | FR-046-AC-9 | ✅ passed |
 | TC-441 | A field typed by a built-in scalar directly mints no package-local definition; its `typeRef` names the kernel scalar's native reference over the closed FR-032 set (gap 1 of FCD #199/#200) | Unit | P0 | FR-046-AC-10 | ✅ passed |
@@ -1774,7 +1774,7 @@ blocked as stated above.
 | TC-357 | field state | required / optional / nullable | Rust and TypeScript backends | Optional and nullable reach `Option<…>`; TypeScript uses `?` |
 | TC-372, TC-374 | committed Rust lockfile | present / absent | `--check` mode or generate mode | Present lockfile is seeded; absent lockfile fails `--check` and generates once otherwise |
 | TC-437, TC-598 | field state | collection / single-valued × optional / required | nullable true/false, default none/semantic/migration | Multiplicity fixes presence; nullability and default kind stay independent |
-| TC-438, TC-599 | collection flags | `ordered` / `unique` | collection vs single-valued property | Flags accepted only on collections; otherwise `FLAGS_ON_NON_COLLECTION` |
+| TC-438, TC-599 | collection flags | `ordered` / `unique` | collection vs single-valued property | Both flags are required on every multiplicity; a producer clamps them to `false` on a single-valued property, and passes through a declared value on an actual collection |
 | TC-433, TC-600 | structural kind | scalar / alias / record / sequence / map / enum / union / reference | constraint keyword applicability | Every kind lowers once by first-match precedence; an inapplicable keyword is refused, not coerced |
 | TC-400, TC-601 | frontend dialect | `typespec` implemented / `spec-bundle` unimplemented | shared fixture harness | Implemented dialects are compared; the unimplemented one is named, not guessed |
 | TC-527, TC-602 | enum member addition | consumer policy `reject` / `surface` / `preserve` | consumer evidence current / stale / unknown | Disposition follows declared policy and evidence, never a language default |
@@ -1826,7 +1826,7 @@ blocked as stated above.
 | TC-1591 | The corpus reports how much of the agreement claim four of four declared slots actually cover | Unit | P0 | FR-090-CON-1 | ✅ passed |
 | TC-1592 | The corpus run exits clean over all 115 cases | Integration | P0 | FR-090-CON-1 | ✅ passed |
 | TC-1805 | Two fields whose `typeRef`s name each other, with `unit` on one, do not overflow the stack; `decide` returns, the cycle resolves to no scalar and each field's `typeRef` is reported unresolved | Unit | P0 | FR-059-AC-11 | ✅ passed |
-| TC-1806 | `ordered`/`unique` `true` on a field whose multiplicity upper bound is at most one is refused with `FLAGS_ON_NON_COLLECTION`; the mandatory `false`/`false` pair on a single-valued field, and `ordered`/`unique` on an actual collection, are not refused | Unit | P0 | FR-027-AC-8 | ✅ passed |
+| TC-1806 | `ordered`/`unique` are required on every multiplicity and are never refused by the reader: `true`/`true` on a field whose upper bound is at most one, the mandatory `false`/`false` pair on that same shape, and `ordered`/`unique` on an actual collection all decide with no diagnostic | Unit | P0 | FR-027-AC-8 | ✅ passed |
 | TC-1807 | The Rust reader's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 | ✅ passed |
 | TC-1808 | The Node IR reader's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 | ✅ passed |
 | TC-1809 | The JSON-Schema backend's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 | ✅ passed |
@@ -2210,7 +2210,6 @@ blocked as stated above.
 | ERR-062 | A caller names the registered but unimplemented `spec-bundle` dialect | One blocking `FRONTEND_NOT_IMPLEMENTED` naming issue #36 | TC-400 |
 | ERR-063 | A TypeSpec declaration extends a built-in scalar outside the mapping | `UNSUPPORTED_SCALAR_BASE` at the declaration locus | TC-434 |
 | ERR-064 | A declaration matches no row of the structural-kind table | `UNSUPPORTED_DECLARATION` at the declaration locus | TC-433 |
-| ERR-065 | `@collection` is applied to a single-valued property | `FLAGS_ON_NON_COLLECTION` at the decorator locus | TC-438, TC-599 |
 | ERR-066 | `@multiplicity` declares an upper bound below its lower bound | `INVALID_MULTIPLICITY` at the decorator locus | TC-438 |
 | ERR-067 | `@multiplicity` contradicts the property's own optionality | `MULTIPLICITY_CONTRADICTS_OPTIONALITY` at the decorator locus | TC-438 |
 | ERR-068 | `@unit` is applied to a field that does not resolve to a scalar | `UNIT_ON_NON_SCALAR` at the decorator locus | TC-439 |
