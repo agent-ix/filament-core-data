@@ -277,7 +277,7 @@ blocked as stated above.
 | FR-091 | FR-091-AC-1..11, FR-091-CON-1..3 | TC-1200..TC-1209, TC-1330, TC-1331 | ✅ Complete |
 | FR-092 | FR-092-AC-1..11, FR-092-CON-1..2 | TC-1210..TC-1219, TC-1330, TC-1332 | ✅ Complete |
 | FR-093 | FR-093-AC-1..14, FR-093-CON-1..4 | TC-1220..TC-1230, TC-1333..TC-1335, TC-1347 | ✅ Complete |
-| FR-094 | FR-094-AC-1..15, FR-094-CON-1..4 | TC-1231..TC-1245 | ✅ Complete |
+| FR-094 | FR-094-AC-1..15, FR-094-CON-1..4 | TC-1231..TC-1245, TC-1816..TC-1818 | ✅ Complete |
 | FR-095 | FR-095-AC-1..16, FR-095-CON-1..3 | TC-1246..TC-1258, TC-1347, TC-1348, TC-1351..TC-1354 | ✅ Complete |
 | FR-096 | FR-096-AC-1..16, FR-096-CON-1..3 | TC-1259..TC-1272, TC-1345, TC-1346 | ✅ Complete |
 | FR-097 | FR-097-AC-1..16, FR-097-CON-1..3 | TC-1273..TC-1284, TC-1336, TC-1339..TC-1342 | ✅ Complete |
@@ -1833,6 +1833,12 @@ blocked as stated above.
 | TC-1810 | The rust-serde backend's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 | ✅ passed |
 | TC-1811 | The Python reader's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 | ✅ passed |
 | TC-1812 | The v1-1 TS reader's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 | ✅ passed |
+| TC-1813 | A `min` constraint inline on a field's own `constraints` array, naming a `String`-valued field as `appliesTo`, is refused `CONSTRAINT_NOT_APPLICABLE` by the Rust reader, the same as a type-level constraint | Unit | P1 | FR-093-AC-6, FR-093-CON-4 | ✅ passed |
+| TC-1814 | The same inline field constraint is refused `CONSTRAINT_NOT_APPLICABLE` by the Python reader | Unit | P1 | FR-093-AC-6, FR-093-CON-4 | ✅ passed |
+| TC-1815 | The same inline field constraint is refused `CONSTRAINT_NOT_APPLICABLE` by the v1-1 TS reader | Unit | P1 | FR-093-AC-6, FR-093-CON-4 | ✅ passed |
+| TC-1816 | The TypeSpec frontend's loaded edge vocabulary parses every declared `edge_types` row of `crates/extraction-frontend/fixtures/modules/edge-vocabulary/manifest.yaml`, including a verb with no declared `inverse` and the absence of an undeclared verb | Unit | P1 | FR-094-AC-14 | ✅ passed |
+| TC-1817 | A relationship's `targetEnd.role` and `composite` derive from the loaded edge vocabulary's `inverse` for the verb, not from a decorator argument | Unit | P1 | FR-094-AC-14, FR-094-CON-2 | ✅ passed |
+| TC-1818 | A `@relationship` verb the loaded edge vocabulary does not declare is refused `UNKNOWN_EDGE_VERB` | Unit | P1 | FR-094-AC-4 | ✅ passed |
 
 ## Constraint Boundary Tests
 

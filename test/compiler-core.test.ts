@@ -53,6 +53,7 @@ import {
 	selectFrontend,
 } from "../src/compiler/frontend/seam.mjs";
 import { DECORATOR_LIBRARY } from "../src/compiler/frontend/typespec/frontend.mjs";
+import { EDGE_VOCABULARY, PART_OF } from "../src/compiler/ir/applicability.mjs";
 import {
 	constraintDiagnosticCode,
 	mintIdentity,
@@ -1102,7 +1103,7 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 				"using AgentIx.Semantic.Decorators;",
 				"namespace AgentIx.Semantic;",
 				"scalar Text extends string;",
-				'@relationship("has", "structural", "ix://agent-ix/probe/Text")',
+				'@relationship("contains", "structural", "ix://agent-ix/probe/Text")',
 				"model TagList is Array<Text>;",
 			].join("\n"),
 		);
@@ -1179,6 +1180,89 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 		]);
 		for (const clause of clauses) expect(clause.sourceSpan).toBeDefined();
 	});
+
+	/** Traces: TC-1816; FR-094-AC-14. */
+	it("parses the committed edge vocabulary manifest into every declared verb", () => {
+		// H4 of the FCD #199/#200 review: `EDGE_VOCABULARY`'s hand-rolled
+		// extractor reads `manifest.yaml`'s `edge_types` block directly (no npm
+		// dependency could be added without moving `pnpm-lock.yaml`, which
+		// NFR-019/NFR-021's own gate closes); this pins its output against a
+		// sample spanning every shape the manifest's rows take, so a change to
+		// the file's format, not just its content, is caught here rather than
+		// by a silent under-parse.
+		expect(Object.keys(EDGE_VOCABULARY).length).toBe(76);
+		expect(EDGE_VOCABULARY.contains).toEqual({
+			category: "structural",
+			inverse: "part_of",
+		});
+		expect(EDGE_VOCABULARY.contained_by).toEqual({
+			category: "structural",
+			inverse: "contains",
+		});
+		// A verb with no declared inverse still parses, with `inverse`
+		// `undefined` rather than absent-and-throwing or a stray key.
+		expect(EDGE_VOCABULARY.breaches).toEqual({
+			category: "governance",
+			inverse: undefined,
+		});
+		// The last row of the file: the extractor's end-of-block detection (a
+		// line at column 0 ends it) does not drop it.
+		expect(EDGE_VOCABULARY.covers).toEqual({
+			category: "traceability",
+			inverse: "covered_by",
+		});
+		// `belongs_to` is the FCD #199/#200 review's own example of a verb the
+		// manifest does not declare (H4's assurance-fixture finding).
+		expect(Object.hasOwn(EDGE_VOCABULARY, "belongs_to")).toBe(false);
+	});
+
+	/** Traces: TC-1817; FR-094-AC-14, FR-094-CON-2. */
+	it("derives a relationship's targetEnd.role and composite from the registry, not the decorator", () => {
+		// H4 of the FCD #199/#200 review: `@relationship` no longer takes a
+		// `composite` argument at all (the assurance fixture's two
+		// applications never passed one); both fields come from
+		// `EDGE_VOCABULARY[verb]` at lowering time.
+		const artifact = (compiled.ir as never as { types: Json[] }).types.find(
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
+		);
+		const relationships = artifact?.relationships as Json[];
+		const byRole = (role: string) =>
+			relationships.find((r) => (r.sourceEnd as Json)?.role === role);
+		const containedBy = byRole("contained_by") as Json;
+		expect((containedBy.targetEnd as Json).role).toBe(
+			EDGE_VOCABULARY.contained_by.inverse,
+		);
+		expect(containedBy.composite).toBe(
+			EDGE_VOCABULARY.contained_by.inverse === PART_OF,
+		);
+		const derivesFrom = byRole("derives_from") as Json;
+		expect((derivesFrom.targetEnd as Json).role).toBe(
+			EDGE_VOCABULARY.derives_from.inverse,
+		);
+		expect(derivesFrom.composite).toBe(
+			EDGE_VOCABULARY.derives_from.inverse === PART_OF,
+		);
+		// The source end's role is always present: it is the verb itself,
+		// which every application declares.
+		for (const relationship of relationships) {
+			expect((relationship.sourceEnd as Json).role).toBeTruthy();
+		}
+	});
+
+	/** Traces: TC-1818; FR-094-AC-14. */
+	it("refuses a relationship verb the loaded edge vocabulary does not declare", async () => {
+		const refused = await compileSource(
+			[
+				"using AgentIx.Semantic.Decorators;",
+				"namespace AgentIx.Semantic;",
+				'@relationship("belongs_to", "structural", "ix://agent-ix/probe/Project", 0, 1)',
+				"model Thing { id: string; }",
+			].join("\n"),
+		);
+		expect(codesOf(refused.diagnostics as never)).toContain(
+			DIAGNOSTIC_CODES.UNKNOWN_EDGE_VERB.code,
+		);
+	}, 60000);
 
 	/** Traces: TC-424; FR-053-AC-13. */
 	it("lowers each of the four semantic-core extensions", async () => {

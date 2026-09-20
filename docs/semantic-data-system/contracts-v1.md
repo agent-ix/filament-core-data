@@ -258,11 +258,21 @@ filling in a default.
 `target-to-source`, `bidirectional`, `undirected`; lowering always emits
 `source-to-target`), a `sourceEnd` and a `targetEnd`, and `origin` — never a
 flat `verb`, `target` or `multiplicity` (fcd#199/#200). Each end carries
-`multiplicity` and the `type` it names, and an optional `role`: the source
-end's `role` is the edge vocabulary verb as authored, the target end's is the
-registry's declared `inverse` for that verb, absent when the registry
-declares none. `composite` is `true` exactly when the verb's registry
-`inverse` is `part_of`.
+`multiplicity` and the `type` it names, and a `role`: the source end's `role`
+is the edge vocabulary verb as authored and is always present; the target
+end's is the registry's declared `inverse` for that verb, present exactly
+when the registry declares one, absent when it declares none. `composite` is
+`true` exactly when the verb's registry `inverse` is `part_of`.
+
+The "an `inverse` is declared for the verb if and only if the target end
+carries a `role`" biconditional is a frontend obligation: a frontend holds
+the registry that names the verb's `inverse` (or its absence) and is the only
+party positioned to check the other half. A reader has no registry, so it
+enforces only that `role` is present on the source end and, where present, is
+a non-empty string on either end (FR-094 of fcd#199/#200's review, R4-READER);
+it enforces nothing about whether a *particular* target `role` agrees with
+any verb's registered `inverse`, and that silence is not a relaxation for a
+frontend to skip its own half of the check.
 
 **Model members.**
 

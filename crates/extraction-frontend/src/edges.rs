@@ -55,9 +55,12 @@ const TYPE: &str = "type";
 /// body `ix://` autolink is harvested under.
 const DEFAULT_VERB: &str = "references";
 
-/// `semantic-ir.schema.json#/$defs/relationshipEnd`: one end of a
-/// relationship, its role, its multiplicity, and the type it names (FR-094
-/// "Relationships", gap 3 of FCD #199/#200).
+/// `semantic-ir.schema.json#/$defs/relationshipSourceEnd` or
+/// `relationshipTargetEnd` (H4 of the FCD #199/#200 review split the one
+/// `relationshipEnd` def in two so `role` could be required on the source
+/// end and left optional on the target end): one end of a relationship, its
+/// role, its multiplicity, and the type it names (FR-094 "Relationships",
+/// gap 3 of FCD #199/#200).
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct RelationshipEnd {
     /// The edge vocabulary's verb (source end) or `inverse` (target end).

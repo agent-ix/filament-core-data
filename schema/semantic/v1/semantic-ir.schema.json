@@ -923,10 +923,10 @@
 					]
 				},
 				"sourceEnd": {
-					"$ref": "#/$defs/relationshipEnd"
+					"$ref": "#/$defs/relationshipSourceEnd"
 				},
 				"targetEnd": {
-					"$ref": "#/$defs/relationshipEnd"
+					"$ref": "#/$defs/relationshipTargetEnd"
 				},
 				"origin": {
 					"$ref": "common.schema.json#/$defs/origin"
@@ -934,7 +934,24 @@
 			},
 			"additionalProperties": false
 		},
-		"relationshipEnd": {
+		"relationshipSourceEnd": {
+			"type": "object",
+			"required": ["role", "multiplicity", "type"],
+			"properties": {
+				"role": {
+					"type": "string",
+					"minLength": 1
+				},
+				"multiplicity": {
+					"$ref": "#/$defs/multiplicity"
+				},
+				"type": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				}
+			},
+			"additionalProperties": false
+		},
+		"relationshipTargetEnd": {
 			"type": "object",
 			"required": ["multiplicity", "type"],
 			"properties": {

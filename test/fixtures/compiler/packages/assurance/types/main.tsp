@@ -50,7 +50,7 @@ model ActorRef {}
 @role("agent-ix:entity")
 @role("agent-ix:report")
 @unknownPolicy("preserve")
-@relationship("belongs_to", "structural", "ix://agent-ix/assurance/Project", 0, 1)
+@relationship("contained_by", "structural", "ix://agent-ix/assurance/Project", 0, 1)
 @relationship("derives_from", "traceability", "ix://agent-ix/assurance/Artifact", 0, 1)
 @clause("ocl", "not_archived", "context Artifact inv: self.summary <> 'archived'")
 @clause("sysml", "bounded", "constraint { self.duration >= 0 }")

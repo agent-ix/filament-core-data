@@ -73,6 +73,7 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.TYPESPEC_COMPILE_ERROR` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNDECLARED_LOSS` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNKNOWN_CONTRACT_VERSION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.compiler.UNKNOWN_EDGE_VERB` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNKNOWN_MAPPING` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNKNOWN_PROFILE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNKNOWN_TARGET` | error | yes | `ix://agent-ix/filament-core-data/compiler` |

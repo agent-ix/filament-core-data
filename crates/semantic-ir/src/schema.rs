@@ -1602,18 +1602,34 @@ fn relationship_schema(relationship: &Json, at: &str, f: &mut Findings) {
         "the relationship direction vocabulary",
         f,
     );
-    relationship_end_schema(relationship.get("sourceEnd"), &child(at, "sourceEnd"), f);
-    relationship_end_schema(relationship.get("targetEnd"), &child(at, "targetEnd"), f);
+    relationship_source_end_schema(relationship.get("sourceEnd"), &child(at, "sourceEnd"), f);
+    relationship_target_end_schema(relationship.get("targetEnd"), &child(at, "targetEnd"), f);
     if let Some(origin) = relationship.get("origin") {
         origin_schema(origin, &child(at, "origin"), f);
     }
 }
 
-/// One `sourceEnd` or `targetEnd` of a relationship: its `role` (the edge
-/// vocabulary's verb on the source end, its `inverse` on the target end,
-/// absent when the target end declares none), its `multiplicity`, and the
-/// `type` it names (gap 3 of FCD #199/#200).
-fn relationship_end_schema(end: Option<&Json>, at: &str, f: &mut Findings) {
+/// The source end of a relationship: `role` (the edge vocabulary's verb) is
+/// required (H4 of the FCD #199/#200 review, FR-094-AC-14) — a relationship
+/// always has a verb, whatever the target end's role turns out to be.
+fn relationship_source_end_schema(end: Option<&Json>, at: &str, f: &mut Findings) {
+    relationship_end_schema(end, at, &["role", "multiplicity", "type"], f);
+}
+
+/// The target end of a relationship: `role` (the edge vocabulary's
+/// `inverse`) is optional, absent exactly when the verb's registry entry
+/// declares no `inverse` (H4 of the FCD #199/#200 review). Whether a
+/// declared `inverse` <=> a present target role is a frontend obligation,
+/// checked where the registry is in hand (R4-READER); this reader has no
+/// registry, so it enforces nothing more here.
+fn relationship_target_end_schema(end: Option<&Json>, at: &str, f: &mut Findings) {
+    relationship_end_schema(end, at, &["multiplicity", "type"], f);
+}
+
+/// One `sourceEnd` or `targetEnd` of a relationship: `required` differs by
+/// end (see the two callers above); both share the same member set, shape
+/// checks, and `role` format check.
+fn relationship_end_schema(end: Option<&Json>, at: &str, required: &[&str], f: &mut Findings) {
     let Some(end) = end else {
         f.push(at, "a relationship end is required");
         return;
@@ -1621,7 +1637,7 @@ fn relationship_end_schema(end: Option<&Json>, at: &str, f: &mut Findings) {
     if !expect_object(end, at, "a relationship end", f) {
         return;
     }
-    require_members(end, at, &["multiplicity", "type"], f);
+    require_members(end, at, required, f);
     forbid_extra(end, at, RELATIONSHIP_END_MEMBERS, f);
     expect_string(end.get("role"), &child(at, "role"), 1, "a role", f);
     expect_shape(

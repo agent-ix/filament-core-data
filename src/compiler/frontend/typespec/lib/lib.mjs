@@ -11,6 +11,8 @@
  * compiled input is a diagnostic and never an exception (FR-045).
  */
 
+import { EDGE_VOCABULARY } from "../../../ir/applicability.mjs";
+
 export const STATE = {
 	role: Symbol.for("agent-ix.semantic.role"),
 	unknownPolicy: Symbol.for("agent-ix.semantic.unknownPolicy"),
@@ -241,24 +243,26 @@ const decorators = {
 		single(context, target, "@presence", STATE.presence, { presence });
 	},
 
-	relationship(
-		context,
-		target,
-		verb,
-		category,
-		targetIdentity,
-		lower,
-		upper,
-		composite,
-	) {
-		let ok = check(
-			context,
-			target,
-			"@relationship",
-			"verb",
-			PATTERNS.identifier,
-			verb,
-		);
+	relationship(context, target, verb, category, targetIdentity, lower, upper) {
+		// FR-094 "Relationships" (H4 of the FCD #199/#200 review): `verb` is
+		// checked for membership in the loaded edge vocabulary, not merely for
+		// being an identifier — a well-formed verb the registry does not
+		// declare is refused the same as a malformed one, matching the
+		// extraction-frontend's `UNKNOWN_EDGE_VERB` (`crates/extraction-frontend/
+		// src/edges.rs`). `composite` is no longer a decorator argument: it is
+		// derived from the registry's `inverse` at lowering time, so there is
+		// nothing left here for a caller to contradict.
+		let ok = true;
+		if (!Object.hasOwn(EDGE_VOCABULARY, String(verb))) {
+			defects(context.program).push({
+				kind: "edge-verb",
+				decorator: "@relationship",
+				verb,
+				target,
+				node: context.decoratorTarget,
+			});
+			ok = false;
+		}
 		ok =
 			check(
 				context,
@@ -284,7 +288,6 @@ const decorators = {
 			targetIdentity,
 			lower,
 			upper,
-			composite,
 		});
 	},
 

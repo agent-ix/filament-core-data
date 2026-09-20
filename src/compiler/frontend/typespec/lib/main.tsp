@@ -64,15 +64,18 @@ extern dec presence(
   presence: valueof string
 );
 
-/** One typed edge out of a record. Repeatable. */
+/**
+ * One typed edge out of a record. Repeatable. `verb` must be declared by the
+ * loaded edge vocabulary (H4 of the FCD #199/#200 review); `composite` is
+ * derived from that verb's registry `inverse` and is not an argument here.
+ */
 extern dec relationship(
   target: TypeSpec.Reflection.Model,
   verb: valueof string,
   category: valueof string,
   targetIdentity: valueof string,
   lower?: valueof int32,
-  upper?: valueof int32,
-  composite?: valueof boolean
+  upper?: valueof int32
 );
 
 /** Binds an interface's operations to the record they belong to. */

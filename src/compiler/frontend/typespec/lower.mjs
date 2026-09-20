@@ -42,7 +42,7 @@ import {
 	nativeTypeRef,
 	slug,
 } from "./identity.mjs";
-import { applies } from "../../ir/applicability.mjs";
+import { applies, EDGE_VOCABULARY, PART_OF } from "../../ir/applicability.mjs";
 import {
 	defects as decoratorDefects,
 	read as readState,
@@ -378,6 +378,17 @@ export function lowerProgram(options) {
 				first && first !== second
 					? [context.locusOf(defect.target, first)].filter(Boolean)
 					: [],
+			);
+			continue;
+		}
+		if (defect.kind === "edge-verb") {
+			// H4 of the FCD #199/#200 review: a verb the loaded edge vocabulary
+			// does not declare, matching the extraction-frontend's
+			// `UNKNOWN_EDGE_VERB` (`crates/extraction-frontend/src/edges.rs`).
+			context.raise(
+				DIAGNOSTIC_CODES.UNKNOWN_EDGE_VERB,
+				`${fragment(defect.decorator)} verb ${fragment(defect.verb)} is not declared by the loaded edge vocabulary`,
+				context.locusOf(defect.target, defect.node),
 			);
 			continue;
 		}
@@ -1000,6 +1011,14 @@ export function lowerProgram(options) {
 					else if (item.lower === undefined) targetMultiplicity.upper = 1;
 					targetMultiplicity.ordered = false;
 					targetMultiplicity.unique = false;
+					// H4 of the FCD #199/#200 review: the target end's `role` is
+					// the registry's declared `inverse` for this verb (absent when
+					// it declares none), and `composite` is exactly whether that
+					// `inverse` is `part_of` — never the decorator's own say, and
+					// never a second, hand-typed copy of the vocabulary. `verb`
+					// passed the registry-membership check in `lib/lib.mjs`, so
+					// `EDGE_VOCABULARY[item.verb]` is always defined here.
+					const inverse = EDGE_VOCABULARY[item.verb].inverse;
 					return {
 						identity: mintIdentity(packageIdentity, "relationship", [
 							declaration.name,
@@ -1007,7 +1026,7 @@ export function lowerProgram(options) {
 							targetName,
 						]),
 						category: item.category,
-						composite: item.composite ?? false,
+						composite: inverse === PART_OF,
 						direction: "source-to-target",
 						sourceEnd: {
 							role: item.verb,
@@ -1015,6 +1034,7 @@ export function lowerProgram(options) {
 							type: identity,
 						},
 						targetEnd: {
+							...(inverse !== undefined ? { role: inverse } : {}),
 							multiplicity: targetMultiplicity,
 							type: item.targetIdentity,
 						},

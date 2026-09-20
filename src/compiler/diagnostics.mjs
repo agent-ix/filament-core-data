@@ -47,6 +47,10 @@ const COMPILER_CODES = [
 	"TYPESPEC_COMPILE_ERROR",
 	"DUPLICATE_DECORATOR",
 	"INVALID_DECORATOR_ARGUMENT",
+	// H4 of the FCD #199/#200 review: a `@relationship` verb the loaded edge
+	// vocabulary does not declare, matching the extraction-frontend's
+	// `UnknownEdgeVerb` (`crates/extraction-frontend/src/diagnostics.rs`).
+	"UNKNOWN_EDGE_VERB",
 	"UNSLUGGABLE_NAME",
 	"UNSUPPORTED_SCALAR_BASE",
 	"UNSUPPORTED_DECLARATION",
