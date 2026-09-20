@@ -1,21 +1,31 @@
 {
 	"id": "PRES-016",
-	"title": "A single-valued field declaring ordered is rejected",
+	"title": "A single-valued field declaring ordered and unique true is accepted, not refused",
 	"family": "field-presence",
-	"class": "negative",
+	"class": "boundary",
 	"kind": "document",
 	"contractVersion": "2.0.0",
 	"base": "core-2-0",
 	"ops": [
 		{
 			"op": "test",
-			"path": "/ir/types/8/fields/1/multiplicity/ordered",
-			"value": false
+			"path": "/ir/types/8/fields/1/multiplicity",
+			"value": {
+				"lower": 0,
+				"upper": 1,
+				"ordered": false,
+				"unique": false
+			}
 		},
 		{
 			"op": "replace",
-			"path": "/ir/types/8/fields/1/multiplicity/ordered",
-			"value": true
+			"path": "/ir/types/8/fields/1/multiplicity",
+			"value": {
+				"lower": 0,
+				"upper": 1,
+				"ordered": true,
+				"unique": true
+			}
 		}
 	],
 	"covers": ["CR-field-presence"],
@@ -30,29 +40,10 @@
 	"provenance": {
 		"authoredFor": "agent-ix/filament-core-data#199",
 		"blessedFromRun": false,
-		"reproduces": "FCD-200-review-finding-5"
+		"reproduces": "owner ruling 2026-09-19T15:39:32Z on FCD #199: FLAGS_ON_NON_COLLECTION is deleted; ordered and unique are accepted booleans on every multiplicity, single-valued or not"
 	},
 	"expected": {
-		"resultState": "invalid",
-		"diagnostics": [
-			{
-				"pointer": "/ir/types/8/fields/1/multiplicity",
-				"diagnostic": {
-					"code": "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
-					"severity": "error",
-					"message": "ordered and unique apply only when upper is absent or greater than 1",
-					"owner": "ix://agent-ix/conformance/field/node-label",
-					"blocking": true,
-					"causes": [],
-					"related": [],
-					"locus": {
-						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
-						"path": "model/node.tsp",
-						"startLine": 6,
-						"startColumn": 1
-					}
-				}
-			}
-		]
+		"resultState": "success",
+		"diagnostics": []
 	}
 }

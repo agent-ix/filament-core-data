@@ -945,9 +945,9 @@
 			"id": "PRES-016",
 			"path": "conformance/cases/field-presence/PRES-016.json",
 			"family": "field-presence",
-			"class": "negative",
-			"digest": "sha256:dd6186b4654267970a7b40846304ad07395551e6e5c60b465a0b2c14b52b4bf7",
-			"expectedDigest": "sha256:639d3236bf680f4162dff316fddb0dcecaec18f50ef1950b515c926caa7ccfc3"
+			"class": "boundary",
+			"digest": "sha256:2eb55084cddd747414475c405c06b05dc8d2d9bb9f85f66d8f9eea737c8f586f",
+			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
 			"id": "PROV-001",
@@ -1286,5 +1286,5 @@
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		}
 	],
-	"corpusDigest": "sha256:6bbd13b6799acab36a7aeceee67628169155235bdc58c528bc08ec92146d5507"
+	"corpusDigest": "sha256:c7c6a720452ea99c6a69ded76abdecced3933863c98ba4cf77825c583c233d19"
 }
