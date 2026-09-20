@@ -1,6 +1,6 @@
 ---
 id: FR-007
-title: "Compatibility, feasibility, review, and program gates"
+title: "Compatibility, feasibility, and review"
 type: FR
 verification_method: inspection
 evidence:
@@ -12,13 +12,13 @@ relationships:
   - target: "ix://agent-ix/filament-core-data/spec/usecase/US-002"
     type: "implements"
 ---
-# [FR-007] Compatibility, feasibility, review, and program gates
+# [FR-007] Compatibility, feasibility, and review
 
 ## Description
 
 The architecture record SHALL define compatibility rules, the TypeSpec
-feasibility decision, corpus-review method, migration waves, and human promotion
-gates that later tickets must satisfy before disruptive changes merge.
+feasibility decision, and the corpus-review method that later tickets must
+satisfy before disruptive changes merge.
 
 ## Behavior
 
@@ -28,10 +28,6 @@ gates that later tickets must satisfy before disruptive changes merge.
   provisional.
 - The corpus-review method SHALL require machine-readable inventories,
   evidence-backed findings, type-fit dispositions, and repo impact bands.
-- The roadmap SHALL order readers before writers and additive migrations before
-  destructive cleanup.
-- The program roadmap SHALL name an explicit human go-or-hold gate for every
-  enforcement, database, package-publication, and legacy-retirement step.
 
 ## Constraints
 
@@ -47,7 +43,6 @@ gates that later tickets must satisfy before disruptive changes merge.
 | FR-007-AC-1 | Compatibility rules cover required fields, removals, renames, enums, unknown fields, and Protobuf reservations. | Inspection (TC-025) |
 | FR-007-AC-2 | The TypeSpec pass/fail criteria are explicit and the recorded decision (ADR-0005) cites them. | Inspection (TC-026) |
 | FR-007-AC-3 | The review method accounts for every canonical repo, declared type, and repeated contract family in scope. | Analysis (TC-027) |
-| FR-007-AC-4 | The roadmap contains compatibility, advisory, database rollback, publication, and final cutover gates. | Inspection (TC-028) |
 
 ## Dependencies
 
