@@ -33,7 +33,7 @@ document. Issue #20 landed the conformance corpus and the independent oracle
 that judges implementations against a contract-derived yardstick rather than
 against their own output. `conformance/adapters/registry.json` declares four
 slots and the `typescript-backend` slot names this issue as its owner. Today
-that slot is `unavailable`, so the corpus records 111 unmet rows for it and no
+that slot is `unavailable`, so the corpus records 115 unmet rows for it and no
 passes.
 
 What exists in the way of TypeScript generation is `emitTypeScript` under
@@ -65,7 +65,7 @@ and unrelated; it is not the thing being generated here and does not move.
 
 ### [US-012-EX-1] The corpus judges the backend rather than the backend judging itself
 
-- **Given** the 111-case conformance corpus and its independent oracle
+- **Given** the 115-case conformance corpus and its independent oracle
 - **When** the consumer runs the differential harness
 - **Then** the `typescript-backend` slot answers every case from its own
   computation, its answers are compared only with the oracle's verdict, and a

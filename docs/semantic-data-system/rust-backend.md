@@ -57,7 +57,7 @@ construction, not by claim.
 | `subsets` | `pub const FIELD_SUBSETS: &[FieldLinkMeta]` | — | carried, not enforced: each member and the members its values are a subset of, by wire name; the subset relation is Quire meaning over values | — |
 | `redefines` | `pub const FIELD_REDEFINES: &[FieldLinkMeta]` | — | the redefining member stands in the struct in place of the inherited one, and the constant names the member it redefines | — |
 | `operation-contract` | `pub const OPERATION_CONTRACTS: &[OperationContractMeta]` | — | each operation's frame and inline Quire pre and post clauses, carried as text; an interface method whose frame is empty takes &self | — |
-| `populations` | `pub const POPULATIONS: &[PopulationMeta] in identity.rs` | — | each population's identity, display name, member types and extents, in document order | — |
+| `populations` | `pub const POPULATIONS: &[PopulationMeta] in identity.rs` | — | each population's identity, display name, binding kind, member type identities and its own extent, in document order | — |
 
 ### scalar
 
@@ -197,7 +197,7 @@ separately as [#56](https://github.com/agent-ix/filament-core-data/issues/56).
 
 ## GAP-011 — a reference target nothing declares
 
-The issue #19 compiler, compiled read-only over its own `test/fixtures/compiler/packages/assurance` fixture, emits `ix://agent-ix/assurance/ActorRef` as a `reference` whose target is `ix://agent-ix/core/Actor`. No type in the document declares that identity, the manifest declares no imports, and no lock export names it. Issue #19's own reader accepts the document (`inspect` exits 0 and reports 18 types); this oracle rejects it with one `UNRESOLVED_TYPE_REF` at `/ir/types/0/target`. Both readings are defensible against the contract as written, so two conforming implementations disagree about whether the document is valid — and a generated-package backend must decide whether to emit a type for a reference it cannot resolve.
+The issue #19 compiler, compiled read-only over its own `test/fixtures/compiler/packages/assurance` fixture, emits `ix://agent-ix/assurance/type/ActorRef` as a `reference` whose target is `ix://agent-ix/core/type/Actor`. No type in the document declares that identity, the manifest declares no imports, and no lock export names it. Issue #19's own reader accepts the document (`inspect` exits 0 and reports 18 types); this oracle rejects it with one `UNRESOLVED_TYPE_REF` at `/ir/types/0/target`. Both readings are defensible against the contract as written, so two conforming implementations disagree about whether the document is valid — and a generated-package backend must decide whether to emit a type for a reference it cannot resolve.
 
 **Recorded, not decided.** The Rust reader adopts the corpus oracle's reading,
 so the disagreement stays visible rather than drifting, and `REF-001..004`
