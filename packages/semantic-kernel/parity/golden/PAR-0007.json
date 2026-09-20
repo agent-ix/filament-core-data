@@ -6,7 +6,7 @@
 	"properties": ["serialized-member-names", "round-trip"],
 	"unknownPolicy": "reject",
 	"instance": {
-		"target": "ix://agent-ix/semantic-core/type/DecimalPolicy",
+		"target": "ix://agent-ix/semantic-core/DecimalPolicy",
 		"decimal": {
 			"precision": 18,
 			"scale": 6
@@ -19,7 +19,7 @@
 	"expected": {
 		"resultState": "success",
 		"wire": {
-			"target": "ix://agent-ix/semantic-core/type/DecimalPolicy",
+			"target": "ix://agent-ix/semantic-core/DecimalPolicy",
 			"decimal": {
 				"precision": 18,
 				"scale": 6

@@ -9,7 +9,7 @@
 		"verb": "contains",
 		"category": "structural",
 		"composite": true,
-		"target": "ix://agent-ix/semantic-core/type/EnumValue",
+		"target": "ix://agent-ix/semantic-core/EnumValue",
 		"multiplicity": {
 			"lower": 0,
 			"ordered": true,
@@ -22,7 +22,7 @@
 			"verb": "contains",
 			"category": "structural",
 			"composite": true,
-			"target": "ix://agent-ix/semantic-core/type/EnumValue",
+			"target": "ix://agent-ix/semantic-core/EnumValue",
 			"multiplicity": {
 				"lower": 0,
 				"ordered": true,
