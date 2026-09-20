@@ -190,7 +190,7 @@ blocked as stated above.
 | FR-004 | FR-004-AC-1..6 | TC-013..016, TC-049..050 | ✅ Complete |
 | FR-005 | FR-005-AC-1..4 | TC-017..020 | ✅ Complete |
 | FR-006 | FR-006-AC-1..6 | TC-021..024, TC-051..052 | ✅ Complete |
-| FR-007 | FR-007-AC-1..4, FR-007-CON-1..2 | TC-025..028 | ✅ Complete |
+| FR-007 | FR-007-AC-1..3, FR-007-CON-1..2 | TC-025..028 | ✅ Complete |
 | FR-008 | FR-008-AC-1..4 | TC-029..032 | ✅ Complete |
 | FR-009 | FR-009-AC-1..6 | TC-054..058, TC-088 | ✅ Complete |
 | FR-010 | FR-010-AC-1..5 | TC-059..063 | ✅ Complete |
@@ -374,7 +374,7 @@ blocked as stated above.
 | TC-025 | Compatibility policy covers schema evolution and Avro preservation | Manual | P0 | FR-007-AC-1, FR-007-CON-1 | ✅ architecture review passed |
 | TC-026 | TypeSpec gate includes explicit pass criteria cited by ADR-0005 | Static | P0 | FR-007-AC-2 | ✅ automated contract passed |
 | TC-027 | Corpus-review method accounts for the complete declared scope | Manual | P0 | FR-007-AC-3 | ✅ architecture review passed |
-| TC-028 | Roadmap defines cutover gates and pauses on high failure | Manual | P0 | FR-007-AC-4, FR-007-CON-2 | ✅ architecture review passed |
+| TC-028 | A high corpus failure rate pauses promotion rather than weakening the contract | Manual | P0 | FR-007-CON-2 | ✅ architecture review passed |
 | TC-029 | Required ADR inventory and statuses are complete | Static | P0 | FR-008-AC-1 | ✅ automated contract passed |
 | TC-030 | Every known Quire conflict has a disposition | Manual | P0 | FR-008-AC-2 | ✅ architecture review passed |
 | TC-031 | ADRs keep rendering and generation outside Quire core | Static | P0 | FR-008-AC-3 | ✅ automated contract passed |
@@ -1739,7 +1739,7 @@ blocked as stated above.
 | TC-002 | current accepted decision | normative | no unresolved gate | Exactly one current normative status |
 | TC-003, TC-036 | candidate mechanism | provisional | named resolution ticket | Candidate cannot be presented as final |
 | TC-004 | superseded decision | historical | one current successor | History remains linked but non-normative |
-| TC-028, TC-037 | disruptive migration | blocked | unmet human gate | Cutover cannot be promoted |
+| TC-037 | disruptive migration | blocked | unmet human gate | Cutover cannot be promoted |
 | TC-061, TC-087 | suspected consumer | unknown | incomplete source evidence | Unknown remains explicit and lowers confidence |
 | TC-061 | contract property | none or not-applicable | source proves absence or irrelevance | Explicit state is retained without inventing a value |
 | TC-064, TC-067 | repeated definition | conflict or unknown | equivalence not proven | Fit is prohibited |
@@ -2051,7 +2051,7 @@ blocked as stated above.
 | provisional | evidence gate has not passed | provisional | TC-003, TC-036 |
 | normative | successor ADR is accepted | historical with one current successor | TC-004 |
 | historical chain | a successor points to its predecessor | validation failure | TC-053 |
-| blocked migration | all named gates pass and a human promotes it | eligible for later implementation | TC-028, TC-037 |
+| blocked migration | all named gates pass and a human promotes it | eligible for later implementation | TC-037 |
 | fresh lock | a source byte changes | `STALE_LOCK_PACKAGE` at the package entry locus | TC-481, TC-613 |
 | fresh lock | a manifest byte changes | `STALE_LOCK` at the fingerprint locus | TC-481 |
 | resolved graph | a package is added or removed | `LOCK_GRAPH_MISMATCH` naming the identity | TC-481 |
@@ -2135,7 +2135,7 @@ blocked as stated above.
 | ERR-002 | Provisional artifact has no resolution gate | Validation fails | TC-003 |
 | ERR-003 | Lossy transform omits declaration or provenance | Validation fails | TC-024 |
 | ERR-004 | Known conflict omits a disposition | Review fails | TC-030, TC-041 |
-| ERR-005 | Disruptive step omits a human promotion gate | Review fails | TC-028 |
+| ERR-005 | Disruptive step omits a human promotion gate | Review fails | TC-037 |
 | ERR-006 | A spike report adds a pass condition the ADR does not state | Review fails | TC-026, TC-036 |
 | ERR-007 | Transformation cannot satisfy its declared preservation level | Explicit non-authoritative outcome | TC-024, TC-051 |
 | ERR-008 | Decision supersession graph contains a cycle | Validation fails | TC-053 |
