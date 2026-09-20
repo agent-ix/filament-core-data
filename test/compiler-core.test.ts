@@ -53,7 +53,11 @@ import {
 	selectFrontend,
 } from "../src/compiler/frontend/seam.mjs";
 import { DECORATOR_LIBRARY } from "../src/compiler/frontend/typespec/frontend.mjs";
-import { EDGE_VOCABULARY, PART_OF } from "../src/compiler/ir/applicability.mjs";
+import {
+	EDGE_VOCABULARY,
+	PART_OF,
+	parseEdgeVocabulary,
+} from "../src/compiler/ir/applicability.mjs";
 import {
 	constraintDiagnosticCode,
 	mintIdentity,
@@ -1214,6 +1218,25 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 		// `belongs_to` is the FCD #199/#200 review's own example of a verb the
 		// manifest does not declare (H4's assurance-fixture finding).
 		expect(Object.hasOwn(EDGE_VOCABULARY, "belongs_to")).toBe(false);
+	});
+
+	/** Traces: TC-1820; FR-094 (L2 of the FCD #199/#200 round-3 review). */
+	it("throws, naming the line, on an edge_types row it does not recognise, rather than truncating the block", () => {
+		// A legal but unrecognised row shape (a multi-line block mapping
+		// instead of the one-line flow mapping this hand-rolled parser
+		// reads) sits between two rows the parser does recognise. The
+		// pre-fix behavior silently `break`-ed at the unrecognised row,
+		// dropping `zeta` even though a real YAML parser accepts the file.
+		const source = [
+			"edge_types:",
+			'  alpha: { description: "a", category: structural }',
+			"  beta:",
+			"    description: b",
+			"    category: structural",
+			'  zeta: { description: "z", category: structural }',
+			"",
+		].join("\n");
+		expect(() => parseEdgeVocabulary(source)).toThrowError(/:3: /);
 	});
 
 	/** Traces: TC-1817; FR-094-AC-14, FR-094-CON-2. */

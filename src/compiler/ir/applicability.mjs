@@ -39,7 +39,7 @@ const EDGE_VOCABULARY_MANIFEST_PATH = resolve(
  * this reads exactly that shape — nothing here can add a new npm dependency
  * without moving `pnpm-lock.yaml`, a path NFR-019/NFR-021's own gate closes.
  */
-function parseEdgeVocabulary(source) {
+export function parseEdgeVocabulary(source) {
 	const lines = source.split("\n");
 	const start = lines.findIndex((line) => line.trim() === "edge_types:");
 	if (start === -1) {
@@ -50,10 +50,28 @@ function parseEdgeVocabulary(source) {
 	const rowPattern = /^\s\s([a-z][a-z0-9_]*):\s*\{(.*)\}\s*$/;
 	const fieldPattern = /(category|inverse):\s*([a-z][a-z0-9_]*)/g;
 	const vocabulary = {};
-	for (const line of lines.slice(start + 1)) {
+	const rest = lines.slice(start + 1);
+	for (let offset = 0; offset < rest.length; offset++) {
+		const line = rest[offset];
 		if (line.trim() === "" || line.trim().startsWith("#")) continue;
+		// A line at column 0 (no leading whitespace) is a new top-level key,
+		// which legitimately ends the `edge_types:` block.
+		if (/^\S/.test(line)) break;
 		const row = rowPattern.exec(line);
-		if (!row) break; // a line at column 0, or with no braces, ends the block
+		if (!row) {
+			// L2 of the FCD #199/#200 round-3 review: a line still indented
+			// inside the block that does not match the one-line
+			// flow-mapping row shape is legal YAML this hand-rolled parser
+			// does not recognise, not the end of the block. Silently
+			// `break`-ing here dropped every verb after it, admitting a
+			// document the Rust side's real YAML parser still accepts and
+			// mismatching `UNKNOWN_EDGE_VERB` between the two frontends
+			// with no diagnostic. Never hide an error by design: throw,
+			// naming the offending line.
+			throw new Error(
+				`${EDGE_VOCABULARY_MANIFEST_PATH}:${start + offset + 2}: unrecognised edge_types row: ${line}`,
+			);
+		}
 		const [, verb, body] = row;
 		const fields = {};
 		for (const field of body.matchAll(fieldPattern))
