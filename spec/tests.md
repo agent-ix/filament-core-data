@@ -2664,13 +2664,13 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
 | Property | 128 | 81 | 0 | 47 | 100% mapped (128/128) |
-| Unit | 601 | 496 | 0 | 105 | 100% mapped (601/601) |
+| Unit | 617 | 512 | 0 | 105 | 100% mapped (617/617) |
 | Integration | 161 | 100 | 0 | 61 | 100% mapped (161/161) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 65 | 40 | 0 | 25 | 100% mapped (65/65) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1384** | **1056** | **0** | **328** | **100% mapped (1384/1384)** |
+| **Total** | **1400** | **1072** | **0** | **328** | **100% mapped (1400/1400)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.
