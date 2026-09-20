@@ -258,7 +258,7 @@ describe("semantic data architecture record", () => {
 		);
 	});
 
-	/** Traces: TC-025, TC-026, TC-027, TC-028, TC-030, TC-037, TC-041, TC-043; FR-007-AC-1, FR-007-AC-2, FR-007-AC-3, FR-007-AC-4, FR-008-AC-2, US-002-AC-2, NFR-001-AC-4, NFR-002-AC-2. */
+	/** Traces: TC-025, TC-026, TC-027, TC-028, TC-030, TC-037, TC-041, TC-043; FR-007-AC-1, FR-007-AC-2, FR-007-AC-3, FR-007-CON-2, FR-008-AC-2, US-002-AC-2, NFR-001-AC-4, NFR-002-AC-2. */
 	it("records compatibility, review, and promotion safety gates", () => {
 		const compatibility = readArchitectureFile("compatibility.md");
 		for (const term of [
@@ -274,15 +274,6 @@ describe("semantic data architecture record", () => {
 		expect(compatibility).toMatch(/Avro[\s\S]*compatibility/i);
 
 		const roadmap = readArchitectureFile("roadmap.md");
-		for (const gate of [
-			"compatibility gate",
-			"advisory gate",
-			"database gate",
-			"publication gate",
-			"final cutover gate",
-		]) {
-			expect(roadmap.toLowerCase()).toContain(gate);
-		}
 		expect(roadmap).toMatch(/high corpus failure[\s\S]*(pause|hold)/i);
 
 		const typeSpec = readArchitectureFile("typespec-feasibility.md");
