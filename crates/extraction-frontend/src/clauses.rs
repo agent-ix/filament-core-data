@@ -16,7 +16,7 @@
 //! # Operations
 //!
 //! [`lower_operations`] lowers each `OperationDecl` with its params as
-//! FR-093 fields through [`crate::lower::lower_field`], under
+//! FR-093 fields through `crate::lower::lower_field`, under
 //! `param/<record-slug>-<op-slug>-<param-slug>`; `returns` from the FR-092
 //! resolution of the `Returns:` token with `nullable: false`; and `pre` /
 //! `post` as the engine's `clause_id` lists. The origin is the `### <name>`

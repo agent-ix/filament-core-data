@@ -8,7 +8,7 @@
 //! NFR-031 limits; Task-133 lowers relationships, operations and clauses
 //! (FR-094); Task-134 assembles the document, decides it through the
 //! independent reader, canonicalizes, fingerprints and writes it atomically
-//! (FR-097) behind the [`lift`] entry the command line calls.
+//! (FR-097) behind the [`lift()`] entry the command line calls.
 //!
 //! # No first-party `unsafe`
 //!

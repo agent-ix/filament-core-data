@@ -15,3 +15,4 @@ agent-ix-semantic-ir = { path = "../semantic-ir" }
 
 [lints.rust]
 unsafe_code = "forbid"
+missing_docs = "warn"

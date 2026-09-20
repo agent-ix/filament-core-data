@@ -3,8 +3,8 @@
 //!
 //! The limits are data in the crate, read at run time from the embedded
 //! file, so that the number a diagnostic names and the number the code
-//! enforces cannot drift (NFR-031-AC-6): [`Limit::value`] reads the parsed
-//! file and [`breach`] prints that value; no module restates one.
+//! enforces cannot drift (NFR-031-AC-6): [`Limits::value`] reads the parsed
+//! file and `breach` prints that value; no module restates one.
 //!
 //! `maxDocuments`, `maxDocumentBytes` and `maxDepth` are checked over what
 //! the engine's corpus loader returned ([`check_bundle`]), because
