@@ -5,9 +5,9 @@ status: normative
 ---
 # Staged semantic data program roadmap
 
-This document records the gate behavior, database rollback contract, and stop
-conditions that govern disruptive changes to the semantic data program. It does
-not activate blocked tickets.
+This document records the gate definitions, gate behavior, database rollback
+contract, and stop conditions that govern disruptive changes to the semantic
+data program. It does not activate blocked tickets.
 
 ## Gate behavior
 
@@ -16,12 +16,27 @@ go-or-hold result. “No response,” “tests unavailable,” and “consumer u
 hold conditions, not implied passes. A high corpus failure rate causes the
 advisory gate to pause or hold; the contract is not weakened automatically.
 
+## Compatibility gate
+
+Cross-language golden fixtures and every selected active target reader agree,
+and any retired boundary carries a zero-reader census.
+
 ## Database gate: rollback contract
 
 Any database wave records pre/post row counts, backup and restore verification,
 schema and data migration versions, idempotent backfill evidence, dual-read/write
 comparison, performance impact, and a rehearsed rollback. Destructive DDL is
 forbidden before final cutover.
+
+## Publication gate
+
+Builds are deterministic, signatures and provenance are attached, the registry
+holds the release, and install tests pass.
+
+## Final cutover gate
+
+Every known reader has migrated, rollback is retained, and owners explicitly
+approve.
 
 ## Stop conditions
 
