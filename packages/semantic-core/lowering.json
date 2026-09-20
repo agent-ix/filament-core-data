@@ -299,8 +299,9 @@
 			"model": "RelationDecl",
 			"property": "verb",
 			"irNode": "relationship",
-			"irProperty": "verb",
-			"loss": "none"
+			"irProperty": "sourceEnd.role",
+			"loss": "none",
+			"note": "also feeds relationship identity minting; contract 2.0.0 carries no flat `verb` IR property"
 		},
 		{
 			"model": "RelationDecl",
@@ -315,22 +316,23 @@
 			"irNode": "relationship",
 			"irProperty": "composite",
 			"loss": "none",
-			"note": "absent → false"
+			"note": "derived from the edge-vocabulary registry's `inverse` for `verb` (composite iff inverse === part_of); always present, never absent → false"
 		},
 		{
 			"model": "RelationDecl",
 			"property": "target",
 			"irNode": "relationship",
-			"irProperty": "target",
-			"loss": "none"
+			"irProperty": "targetEnd.type",
+			"loss": "none",
+			"note": "contract 2.0.0 carries no flat `target` IR property"
 		},
 		{
 			"model": "RelationDecl",
 			"property": "multiplicity",
 			"irNode": "relationship",
-			"irProperty": "multiplicity",
+			"irProperty": "targetEnd.multiplicity",
 			"loss": "none",
-			"note": "absent → 0..1"
+			"note": "absent → 0..1; contract 2.0.0 carries no flat `multiplicity` IR property, and the source end's multiplicity is not yet authorable by either frontend (always 0..unbounded)"
 		},
 		{
 			"model": "OperationDecl",
