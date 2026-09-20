@@ -2,7 +2,7 @@
 //! the FR-093/FR-094 definitions, with every node list in FR-097's order.
 //!
 //! [`assemble`] is a pure function of the envelope and the lowered
-//! definitions; the reader ([`crate::validate`]) decides the result and
+//! definitions; the reader ([`crate::validate()`]) decides the result and
 //! [`crate::canonical`] gives it its bytes. `multiplicity`, `presence` and
 //! `nullable` are already present on every field and parameter
 //! ([`crate::lower::Field`] carries all three), so the reader's

@@ -56,7 +56,7 @@
 //! [`crate::clauses::lower_clauses`] and
 //! [`crate::clauses::lower_operations`]; a scalar or enumeration
 //! definition carries none. The parameter fields of an operation share
-//! [`lower_field`] with the record's rows.
+//! `lower_field` with the record's rows.
 //!
 //! # Module short name
 //!
@@ -503,7 +503,7 @@ impl IrKind {
 /// The RULES.md applicability table, keyword by resolved `(kind, scalar)`;
 /// the reader (`agent_ix_semantic_ir::decide`) decides the same table, and
 /// FR-093-CON-4 asserts the two agree over the full cross product. The
-/// match is exhaustive over [`Keyword`] and [`IrKind`] with no catch-all
+/// match is exhaustive over [`Keyword`] and `IrKind` with no catch-all
 /// (SR-169 FND-1499): a keyword or kind outside either closed set is not
 /// applicable, so it is refused at the row as `CONSTRAINT_NOT_APPLICABLE`
 /// rather than reaching the reader.

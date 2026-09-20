@@ -184,7 +184,7 @@ fn row_lines(raw: &str, section: &str) -> Vec<usize> {
 /// cell verbatim, `identity` `variant/<enum-slug>-<value-slug>`, origin
 /// at the row's line and column 3; `DUPLICATE_TYPE_NAME` at the second of
 /// two rows that slug alike. `supertypes` and `abstract` lower from `model`
-/// the same way as [`crate::constructs::shape`]'s (FR-142: one construct
+/// the same way as `crate::constructs::shape`'s (FR-142: one construct
 /// per object type, and neither member is enumeration-specific), since an
 /// enumeration artifact never reaches `shape`.
 pub fn lower_enum(
