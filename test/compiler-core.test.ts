@@ -1264,6 +1264,23 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 		);
 	}, 60000);
 
+	/** Traces: TC-1819; FR-094 (M5 of the FCD #199/#200 round-3 review). */
+	it("refuses a relationship whose decorator category disagrees with the registry's", async () => {
+		const refused = await compileSource(
+			[
+				"using AgentIx.Semantic.Decorators;",
+				"namespace AgentIx.Semantic;",
+				// The edge-vocabulary registry declares `contains` as
+				// `category: structural`; `governance` disagrees with it.
+				'@relationship("contains", "governance", "ix://agent-ix/probe/Project", 0, 1)',
+				"model Thing { id: string; }",
+			].join("\n"),
+		);
+		expect(codesOf(refused.diagnostics as never)).toContain(
+			DIAGNOSTIC_CODES.EDGE_CATEGORY_MISMATCH.code,
+		);
+	}, 60000);
+
 	/** Traces: TC-424; FR-053-AC-13. */
 	it("lowers each of the four semantic-core extensions", async () => {
 		const artifact = (compiled.ir as never as { types: Json[] }).types.find(

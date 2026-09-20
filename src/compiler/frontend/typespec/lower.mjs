@@ -392,6 +392,16 @@ export function lowerProgram(options) {
 			);
 			continue;
 		}
+		if (defect.kind === "edge-category-mismatch") {
+			// M5 of the FCD #199/#200 round-3 review: the registry is the
+			// source of the registry's data, and that includes `category`.
+			context.raise(
+				DIAGNOSTIC_CODES.EDGE_CATEGORY_MISMATCH,
+				`${fragment(defect.decorator)} verb ${fragment(defect.verb)} declares category ${fragment(defect.category)}, but the loaded edge vocabulary declares ${fragment(defect.registryCategory)} for that verb`,
+				context.locusOf(defect.target, defect.node),
+			);
+			continue;
+		}
 		context.raise(
 			DIAGNOSTIC_CODES.INVALID_DECORATOR_ARGUMENT,
 			`${fragment(defect.decorator)} parameter ${fragment(defect.parameter)} expects ${fragment(defect.expected)}, got ${fragment(defect.value)}`,
@@ -1018,14 +1028,20 @@ export function lowerProgram(options) {
 					// never a second, hand-typed copy of the vocabulary. `verb`
 					// passed the registry-membership check in `lib/lib.mjs`, so
 					// `EDGE_VOCABULARY[item.verb]` is always defined here.
-					const inverse = EDGE_VOCABULARY[item.verb].inverse;
+					const registryEntry = EDGE_VOCABULARY[item.verb];
+					const inverse = registryEntry.inverse;
 					return {
 						identity: mintIdentity(packageIdentity, "relationship", [
 							declaration.name,
 							item.verb,
 							targetName,
 						]),
-						category: item.category,
+						// M5 of the FCD #199/#200 round-3 review: `category` is
+						// taken from the registry, not from the decorator's own
+						// argument, which `lib/lib.mjs` has already checked agrees
+						// with the registry (or refused `EDGE_CATEGORY_MISMATCH`) —
+						// this is the registry's data, read from the registry.
+						category: registryEntry.category,
 						composite: inverse === PART_OF,
 						direction: "source-to-target",
 						sourceEnd: {

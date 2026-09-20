@@ -41,6 +41,7 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.DIGEST_CONFLICT` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.DUPLICATE_DECORATOR` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.DUPLICATE_EXPORT` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.compiler.EDGE_CATEGORY_MISMATCH` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.FRONTEND_CONTRACT_VIOLATION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.FRONTEND_NOT_IMPLEMENTED` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.IMPORT_CAPABILITY_MISSING` | error | yes | `ix://agent-ix/filament-core-data/compiler` |

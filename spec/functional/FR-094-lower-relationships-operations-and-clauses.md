@@ -126,6 +126,7 @@ under FR-098.
 | FR-094-AC-13 | Relationship, operation, parameter, and clause identities on the fixture match the minting patterns of FR-095 exactly, asserted by regex over every emitted node. | Test (TC-1243) |
 | FR-094-AC-14 | Renaming a verb's target artifact title leaves the relationship byte-identical, since `target` and the relationship `identity` carry the target's artifact id, and never changes `category` or `composite`; renaming the verb's registry `inverse` from `part_of` to another value flips `composite` with no code change. | Property (TC-1244) |
 | FR-094-AC-15 | Every emitted fixture document passes the FR-050 reader and `agent_ix_semantic_ir::decide` (run at lift time under FR-097) with zero `UNRESOLVED_RELATIONSHIP_TARGET`, `UNKNOWN_EDGE_CATEGORY`, `COMPOSITE_CYCLE`, `DANGLING_CLAUSE_REF`, or `MISSING_SOURCE_SPAN` diagnostics. | Test (TC-1245) |
+| FR-094-AC-16 | The TypeSpec compiler frontend's `@relationship` decorator (FR-053) is refused `agent-ix.compiler.EDGE_CATEGORY_MISMATCH` when its `category` argument disagrees with the loaded edge vocabulary's declared `category` for that verb — FR-094-CON-2's "never from the verb's spelling" rule applies to this frontend too, so a caller's own say is never silently preferred over, or silently overridden by, the registry. | Test (TC-1819) |
 
 ## Dependencies
 

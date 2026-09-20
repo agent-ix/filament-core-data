@@ -253,7 +253,8 @@ const decorators = {
 		// derived from the registry's `inverse` at lowering time, so there is
 		// nothing left here for a caller to contradict.
 		let ok = true;
-		if (!Object.hasOwn(EDGE_VOCABULARY, String(verb))) {
+		const knownVerb = Object.hasOwn(EDGE_VOCABULARY, String(verb));
+		if (!knownVerb) {
 			defects(context.program).push({
 				kind: "edge-verb",
 				decorator: "@relationship",
@@ -282,6 +283,26 @@ const decorators = {
 				targetIdentity,
 			) && ok;
 		if (!ok) return;
+		// M5 of the FCD #199/#200 round-3 review: the registry is the source
+		// of the registry's data, and that includes `category`. The Rust
+		// frontend takes `category` from the registry alone
+		// (`crates/extraction-frontend/src/edges.rs`, per FR-094); if this
+		// decorator's own `category` disagreed with the registry's declared
+		// category for `verb`, the two frontends would lower one document to
+		// two different `category` values with no diagnostic. Refuse rather
+		// than silently prefer either source.
+		if (knownVerb && EDGE_VOCABULARY[String(verb)].category !== category) {
+			defects(context.program).push({
+				kind: "edge-category-mismatch",
+				decorator: "@relationship",
+				verb,
+				category,
+				registryCategory: EDGE_VOCABULARY[String(verb)].category,
+				target,
+				node: context.decoratorTarget,
+			});
+			return;
+		}
 		repeat(context, target, STATE.relationship, {
 			verb,
 			category,

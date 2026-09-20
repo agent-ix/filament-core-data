@@ -51,6 +51,12 @@ const COMPILER_CODES = [
 	// vocabulary does not declare, matching the extraction-frontend's
 	// `UnknownEdgeVerb` (`crates/extraction-frontend/src/diagnostics.rs`).
 	"UNKNOWN_EDGE_VERB",
+	// M5 of the FCD #199/#200 round-3 review: the registry is the source of
+	// the registry's data, and that includes `category`. A `@relationship`
+	// whose decorator-supplied `category` disagrees with the loaded edge
+	// vocabulary's declared `category` for that verb is refused rather than
+	// silently resolved by preferring one source over the other.
+	"EDGE_CATEGORY_MISMATCH",
 	"UNSLUGGABLE_NAME",
 	"UNSUPPORTED_SCALAR_BASE",
 	"UNSUPPORTED_DECLARATION",
