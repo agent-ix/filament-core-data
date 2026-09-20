@@ -572,7 +572,12 @@ describe("FR-027 field multiplicity and units", () => {
 	it("validates a 0..1 field with presence authored explicitly and rejects one with presence omitted", () => {
 		const document = goldenV11();
 		const summary = fieldNamed(document, "Artifact", "summary");
-		expect(summary.multiplicity).toEqual({ lower: 0, upper: 1 });
+		expect(summary.multiplicity).toEqual({
+			lower: 0,
+			upper: 1,
+			ordered: false,
+			unique: false,
+		});
 		expect(summary.presence).toBe("optional");
 		expect(
 			negativeValidates("ir-v2-field-without-presence").valid,
@@ -589,10 +594,11 @@ describe("FR-027 field multiplicity and units", () => {
 				random() < 0.3 ? undefined : lower + Math.floor(random() * 3);
 			const multiplicity: Record<string, unknown> = { lower };
 			if (upper !== undefined) multiplicity.upper = upper;
-			if (upper === undefined || upper > 1) {
-				if (random() < 0.5) multiplicity.ordered = random() < 0.5;
-				if (random() < 0.5) multiplicity.unique = random() < 0.5;
-			}
+			// Owner ruling 2026-09-19T15:39:32Z on FCD #199: every emitted
+			// multiplicity carries both flags as required booleans, on a
+			// single-valued field exactly as on a collection.
+			multiplicity.ordered = random() < 0.5;
+			multiplicity.unique = random() < 0.5;
 			setAt(mutated, "types.3.fields.1.multiplicity", multiplicity);
 			setAt(
 				mutated,
@@ -633,7 +639,12 @@ describe("FR-027 field multiplicity and units", () => {
 		expectReaderFailure("field-upper-below-lower");
 		expect(negativeValidates("ir-v1-1-negative-lower").valid).toBe(false);
 		const document = clone(goldenV11());
-		setAt(document, "types.3.fields.1.multiplicity", { lower: 0, upper: 0 });
+		setAt(document, "types.3.fields.1.multiplicity", {
+			lower: 0,
+			upper: 0,
+			ordered: false,
+			unique: false,
+		});
 		expect(validates("semantic-ir.schema.json", document)).toBe(true);
 		expect(readSemanticIr(document)).toEqual([]);
 	});
@@ -665,9 +676,25 @@ describe("FR-027 field multiplicity and units", () => {
 		).toBe(false);
 	});
 
-	/** Traces: TC-237; FR-027-AC-8. */
-	it("fails ordered or unique flags on a single-valued field", () => {
-		expectReaderFailure("field-flags-on-single");
+	/**
+	 * Traces: TC-237; FR-027-AC-8.
+	 *
+	 * QSpec model-complete.md: every multiplicity carries `ordered` and
+	 * `unique`. Owner ruling (2026-09-19T15:39:32Z) on FCD #199, superseding
+	 * R2 of the #199/#200 review round: `FLAGS_ON_NON_COLLECTION` is
+	 * deleted, not corrected — every producer clamps both flags to `false`
+	 * when `upper` is at most one, and the reader no longer checks the
+	 * combination at all.
+	 */
+	it("does not refuse ordered or unique flags on a single-valued field", () => {
+		const document = clone(goldenV11());
+		setAt(document, "types.3.fields.0.multiplicity", {
+			lower: 1,
+			upper: 1,
+			ordered: true,
+			unique: false,
+		});
+		expect(readSemanticIr(document)).toEqual([]);
 	});
 
 	/** Traces: TC-238; FR-027-AC-9. */
@@ -836,7 +863,7 @@ function typeNamed(document: JsonObject, name: string): JsonObject {
 
 describe("FR-028 relationships, operations, and clauses", () => {
 	/** Traces: TC-210; FR-028-AC-1, FR-020-AC-7, US-006-EX-2. */
-	it("carries a belongs_to structural relationship as a node and round-trips it", () => {
+	it("carries a belongs_to structural relationship as a two-end node and round-trips it", () => {
 		const document = goldenV11();
 		const artifact = typeNamed(document, "Artifact");
 		const relationship = object(
@@ -844,16 +871,25 @@ describe("FR-028 relationships, operations, and clauses", () => {
 			"relationship",
 		);
 		expect(relationship).toMatchObject({
-			verb: "belongs_to",
 			category: "structural",
 			composite: false,
-			target: "ix://agent-ix/assurance/type/Project",
-			multiplicity: { lower: 0, upper: 1 },
+			direction: "source-to-target",
+			sourceEnd: {
+				multiplicity: { lower: 0, ordered: false, unique: false },
+				role: "belongs_to",
+				type: "ix://agent-ix/assurance/type/Artifact",
+			},
+			targetEnd: {
+				multiplicity: { lower: 0, upper: 1, ordered: false, unique: false },
+				type: "ix://agent-ix/assurance/type/Project",
+			},
 		});
 		expect(relationship.origin).toBeDefined();
 		const bytes = normalize(document);
 		expect(normalize(JSON.parse(bytes))).toBe(bytes);
-		expect(bytes).toContain('"verb":"belongs_to"');
+		expect(bytes).toContain(
+			'"identity":"ix://agent-ix/assurance/relationship/artifact-project"',
+		);
 	});
 
 	/** Traces: TC-211; FR-028-AC-2. */
@@ -879,7 +915,7 @@ describe("FR-028 relationships, operations, and clauses", () => {
 		expect(array(operation.params, "params").length).toBe(2);
 		expect(operation.returns).toEqual({
 			typeRef: "ix://agent-ix/assurance/type/Artifact",
-			multiplicity: { lower: 1, upper: 1 },
+			multiplicity: { lower: 1, upper: 1, ordered: false, unique: false },
 			nullable: false,
 		});
 		expect(operation.pre).toEqual(["not-archived"]);
@@ -1041,7 +1077,9 @@ describe("FR-028 relationships, operations, and clauses", () => {
 			)[1],
 			"parent",
 		);
-		expect(parent.target).toBe("ix://agent-ix/assurance/type/Artifact");
+		expect(object(parent.targetEnd, "targetEnd").type).toBe(
+			"ix://agent-ix/assurance/type/Artifact",
+		);
 		expect(parent.composite).toBe(false);
 	});
 
@@ -1138,7 +1176,12 @@ describe("FR-006 ConfigVersion worked example (Task-039)", () => {
 			"createdBy",
 		]);
 		for (const field of fields)
-			expect(field.multiplicity).toEqual({ lower: 1, upper: 1 });
+			expect(field.multiplicity).toEqual({
+				lower: 1,
+				upper: 1,
+				ordered: false,
+				unique: false,
+			});
 		const loss = object(
 			readJson("positive/config-version-v2-loss.json"),
 			"loss table",
@@ -1158,14 +1201,16 @@ describe("FR-006 ConfigVersion worked example (Task-039)", () => {
 		);
 		expect(
 			relationships.map((relationship) => [
-				relationship.verb,
-				relationship.target,
+				relationship.category,
+				object(relationship.targetEnd, "targetEnd").type,
 			]),
 		).toEqual([
-			["belongs_to", "ix://agent-ix/config-service/type/ConfigOverlay"],
-			["derives_from", "ix://agent-ix/config-service/type/ConfigVersion"],
+			["structural", "ix://agent-ix/config-service/type/ConfigOverlay"],
+			["traceability", "ix://agent-ix/config-service/type/ConfigVersion"],
 		]);
-		expect(relationships[1]?.multiplicity).toEqual({ lower: 0, upper: 1 });
+		expect(
+			object(relationships[1]?.targetEnd, "targetEnd").multiplicity,
+		).toEqual({ lower: 0, upper: 1, ordered: false, unique: false });
 		const clauses = array(entity.clauses, "clauses").map((value) =>
 			object(value, "clause"),
 		);
@@ -1257,10 +1302,15 @@ function seededDocument(seed: number): JsonObject {
 		const upper = pick([undefined, lower, lower + 1, lower + 5]);
 		const multiplicity: JsonObject = { lower };
 		if (upper !== undefined) multiplicity.upper = upper;
-		if (upper === undefined || upper > 1) {
-			if (random() < 0.5) multiplicity.ordered = random() < 0.5;
-			if (random() < 0.5) multiplicity.unique = random() < 0.5;
-		}
+		// fcd#199/#200's multiplicity ruling: every multiplicity carries
+		// `ordered` and `unique`, on every field regardless of its bound — but
+		// R2 refuses either as `true` where the upper bound is at most one, so
+		// this generator only randomizes them where the field is actually a
+		// collection (an absent or >1 upper bound); a single-valued field
+		// always gets the mandatory `false`/`false` pair.
+		const isCollection = upper === undefined || upper > 1;
+		multiplicity.ordered = isCollection && random() < 0.5;
+		multiplicity.unique = isCollection && random() < 0.5;
 		field.multiplicity = multiplicity;
 		field.presence = lower >= 1 ? "required" : "optional";
 		field.nullable = random() < 0.3;
@@ -1276,11 +1326,11 @@ function seededDocument(seed: number): JsonObject {
 		"traceability",
 		"governance",
 	]);
-	relationship.verb = pick(["belongs_to", "uses", "depends_on"]);
-	relationship.multiplicity = pick([
-		{ lower: 0, upper: 1 },
-		{ lower: 1, upper: 1 },
-		{ lower: 0 },
+	const targetEnd = object(relationship.targetEnd, "targetEnd");
+	targetEnd.multiplicity = pick([
+		{ lower: 0, upper: 1, ordered: false, unique: false },
+		{ lower: 1, upper: 1, ordered: false, unique: false },
+		{ lower: 0, ordered: false, unique: false },
 	]);
 	const clause = object(array(artifact.clauses, "clauses")[0], "clause");
 	clause.language = pick(["quire", "ocl", "sysml", "fretish", "acme:tla"]);
@@ -1354,6 +1404,93 @@ describe("FR-020 closing gate: two readers, round trip, fixture inventory (Task-
 				JSON.parse(normalize(JSON.parse(bytes))),
 			);
 		}
+	});
+
+	/** Traces: TC-1812; FR-032-AC-3. */
+	it("TC-1812: this reader's NATIVE_SCALARS agrees with kernel-scalars.json (R3, FR-032-AC-3)", () => {
+		// R3 of the FCD #199/#200 review: this reader's `NATIVE_SCALARS` is one
+		// of six independent copies of the FR-032 kernel scalar library (the
+		// others are the Rust reader, the Node IR reader, the Python reader,
+		// the JSON-Schema backend, and the rust-serde backend); each is
+		// checked against the canonical `packages/semantic-core/kernel-scalars.json`
+		// rather than against each other, and none is refactored into a shared
+		// module.
+		const canonical = JSON.parse(
+			readFileSync(
+				resolve(root, "packages/semantic-core/kernel-scalars.json"),
+				"utf8",
+			),
+		) as { scalars: Record<string, { irScalar: string }> };
+		const source = readFileSync(
+			resolve(root, "test/semantic-ir-v1-1-reader.ts"),
+			"utf8",
+		);
+		const match = source.match(
+			/const NATIVE_SCALARS: Record<string, string> = \{([\s\S]*?)\};/,
+		);
+		expect(match).not.toBeNull();
+		const pairs = Object.fromEntries(
+			Array.from(
+				(match as RegExpMatchArray)[1].matchAll(/(\w+):\s*"([^"]+)"/g),
+			).map((entry) => [entry[1], entry[2]]),
+		);
+		const names = Object.keys(canonical.scalars);
+		expect(Object.keys(pairs).sort()).toEqual(names.sort());
+		for (const name of names) {
+			expect(pairs[name]).toBe(canonical.scalars[name].irScalar);
+		}
+	});
+
+	/** Traces: TC-1815; FR-093-AC-6, FR-093-CON-4. */
+	it("TC-1815: an inline field constraint is checked for applicability (finding 2)", () => {
+		// Finding 2 of the FCD #199/#200 review: this reader's field loop
+		// runs each of a field's inline `constraints` through the same
+		// `checkConstraint` a type-level constraint goes through, with the
+		// field itself as the resolved subject (gap 1's field-as-subject
+		// shape). A `min` constraint inline on a `String` field is the same
+		// (kind, keyword) pair FR-093-AC-6 already covers for a type-scoped
+		// subject; deleting the loop at this reader's
+		// `field.constraints` branch must fail this test.
+		const document = {
+			contractVersion: "2.0.0",
+			types: [
+				{
+					identity: "ix://acme/pkg/T",
+					kind: "record",
+					fields: [
+						{
+							identity: "ix://acme/pkg/T/f",
+							name: "f",
+							typeRef: "ix://quire/native/String",
+							presence: "required",
+							nullable: false,
+							multiplicity: {
+								lower: 1,
+								upper: 1,
+								ordered: false,
+								unique: false,
+							},
+							constraints: [
+								{
+									identity: "ix://acme/pkg/constraint/T-f-min",
+									keyword: "min",
+									appliesTo: "ix://acme/pkg/T/f",
+									operands: { value: 0 },
+									diagnosticCode: "agent-ix.acme.T_F_MIN",
+								},
+							],
+						},
+					],
+				},
+			],
+		};
+		const diagnostics = readSemanticIr(document);
+		expect(
+			diagnostics.some(
+				(d) => d.code === "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE",
+			),
+			JSON.stringify(diagnostics),
+		).toBe(true);
 	});
 
 	/**

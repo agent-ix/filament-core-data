@@ -28,5 +28,5 @@
 		"not": {}
 	},
 	"description": "A reference to a kernel scalar or a semantic type. Reader: `decimal` iff target is Decimal; `unit` only on unit-allowed scalars.",
-	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/TypeRef"
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/TypeRef"
 }

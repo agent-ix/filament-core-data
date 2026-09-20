@@ -74,17 +74,17 @@ function checkMultiplicity(
 		);
 		return;
 	}
-	const collection = upper === undefined || upper > 1;
-	if (
-		!collection &&
-		(value.ordered !== undefined || value.unique !== undefined)
-	)
+	// Owner ruling (2026-09-19T15:39:32Z) on FCD #199: every multiplicity
+	// carries both `ordered` and `unique` as required booleans, checked here
+	// rather than left to a schema pass that may not have run.
+	if (typeof value.ordered !== "boolean" || typeof value.unique !== "boolean") {
 		push(
 			out,
-			"agent-ix.semantic-core.FLAGS_ON_NON_COLLECTION",
+			"agent-ix.semantic-core.INVALID_MULTIPLICITY",
 			path,
-			"ordered/unique need a collection",
+			"ordered and unique are required booleans on every multiplicity",
 		);
+	}
 }
 
 function checkTypeRef(

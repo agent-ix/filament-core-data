@@ -423,7 +423,7 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 		expect([...written.keys()].some((path) => /fr_00/.test(path))).toBe(false);
 		const lib = written.get("src/lib.rs") as string;
 		expect(lib).toContain(
-			'SemanticType::ConfigVersion => "ix://agent-ix/config-service/type/FR-006"',
+			'SemanticType::ConfigVersion => "ix://agent-ix/config-service/FR-006"',
 		);
 		expect(lib).not.toMatch(/\bFr00\d/);
 	});
@@ -522,7 +522,7 @@ describe("identity, abstract types and member scopes in the Rust backend (FR-054
 		const flat = [...written.values()].join("\n").replace(/\s+/g, " ");
 		expect(flat).toContain('pre: &["can_ship"], post: &[], origin:');
 		expect(flat).toContain(
-			'operation: "advance", frame: Some(crate::identity::FrameMeta { modifies: &["ix://agent-ix/orders/field/SM-001-current"], creates: &[], deletes: &[], }), pre: &[crate::identity::InlineClauseMeta { language: "quire", text: "to <> current", }], post: &[crate::identity::InlineClauseMeta { language: "quire", text: "current = to", }], }',
+			'operation: "advance", frame: Some(crate::identity::FrameMeta { modifies: &["ix://agent-ix/orders/SM-001/current"], creates: &[], deletes: &[], }), pre: &[crate::identity::InlineClauseMeta { language: "quire", text: "to <> current", }], post: &[crate::identity::InlineClauseMeta { language: "quire", text: "current = to", }], }',
 		);
 	});
 
@@ -621,7 +621,7 @@ describe("identity, abstract types and member scopes in the Rust backend (FR-054
 		])
 			delete reference[member];
 		Object.assign(reference, {
-			identity: "ix://agent-ix/orders/type/PartyRef",
+			identity: "ix://agent-ix/orders/PartyRef",
 			displayName: "PartyRef",
 			kind: "reference",
 			target: typeNamed(referring, "Party").identity,
@@ -687,5 +687,41 @@ describe("identity, abstract types and member scopes in the Rust backend (FR-054
 		expect(text).toContain(
 			"fn save(&mut self, order: crate::Order) -> crate::Order;",
 		);
+	});
+});
+
+describe("TC-1810 NATIVE_SCALARS agrees with kernel-scalars.json (R3, FR-032-AC-3)", () => {
+	it("carries the same names and irScalar mapping as the canonical kernel scalar library", () => {
+		// R3 of the FCD #199/#200 review: this backend's `NATIVE_SCALARS` is one
+		// of six independent copies of the FR-032 kernel scalar library (the
+		// others are the Rust reader, the Node IR reader, the Python reader,
+		// the JSON-Schema backend, and the v1-1 TS reader); each is
+		// checked against the canonical
+		// `packages/semantic-core/kernel-scalars.json` rather than against
+		// each other, and none is refactored into a shared module.
+		const canonical = JSON.parse(
+			readFileSync(
+				resolve(root, "packages/semantic-core/kernel-scalars.json"),
+				"utf8",
+			),
+		) as { scalars: Record<string, { irScalar: string }> };
+		const source = readFileSync(
+			resolve(root, "src/compiler/backends/rust-serde/mapping.mjs"),
+			"utf8",
+		);
+		const match = source.match(/const NATIVE_SCALARS = new Map\(\[([\s\S]*?)\]\);/);
+		expect(match).not.toBeNull();
+		const pairs = Object.fromEntries(
+			Array.from(
+				(match as RegExpMatchArray)[1].matchAll(
+					/\["([^"]+)",\s*"([^"]+)"\]/g,
+				),
+			).map((entry) => [entry[1], entry[2]]),
+		);
+		const names = Object.keys(canonical.scalars);
+		expect(Object.keys(pairs).sort()).toEqual(names.sort());
+		for (const name of names) {
+			expect(pairs[name]).toBe(canonical.scalars[name].irScalar);
+		}
 	});
 });

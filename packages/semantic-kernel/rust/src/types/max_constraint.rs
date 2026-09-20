@@ -1,16 +1,16 @@
 //! MaxConstraint
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraint.
+//! Semantic identity: ix://agent-ix/semantic-core/MaxConstraint.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `MaxConstraint`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/MaxConstraint/field/keyword",
+        identity: "ix://agent-ix/semantic-core/MaxConstraint/keyword",
         name: "keyword",
         rust_name: "keyword",
-        type_ref: "ix://agent-ix/semantic-core/type/MaxConstraintKeyword",
+        type_ref: "ix://agent-ix/semantic-core/MaxConstraintKeyword",
         rust_type: "crate::MaxConstraintKeyword",
         row: "field:single/non-null/required",
         presence: "required",
@@ -18,8 +18,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/MaxConstraint/field/value",
+        identity: "ix://agent-ix/semantic-core/MaxConstraint/value",
         name: "value",
         rust_name: "value",
-        type_ref: "ix://agent-ix/semantic-core/type/MaxConstraintValue",
+        type_ref: "ix://agent-ix/semantic-core/MaxConstraintValue",
         rust_type: "crate::MaxConstraintValue",
         row: "field:single/non-null/required",
         presence: "required",
@@ -48,8 +48,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -70,16 +70,16 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// MaxConstraint
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraint.
+/// Semantic identity: ix://agent-ix/semantic-core/MaxConstraint.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct MaxConstraint {
     /// keyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraint/field/keyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/MaxConstraint/keyword.
     pub keyword: crate::MaxConstraintKeyword,
     /// value
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MaxConstraint/field/value.
+    /// Semantic identity: ix://agent-ix/semantic-core/MaxConstraint/value.
     pub value: crate::MaxConstraintValue,
 }
 

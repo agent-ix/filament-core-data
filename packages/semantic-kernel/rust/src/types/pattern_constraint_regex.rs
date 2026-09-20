@@ -1,6 +1,6 @@
 //! PatternConstraintRegex
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/PatternConstraintRegex.
+//! Semantic identity: ix://agent-ix/semantic-core/PatternConstraintRegex.
 //!
 //! Unknown policy: `reject`, which is inert for a
 //! `scalar` — the kind has no unknown member for a policy to govern. The
@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 /// PatternConstraintRegex
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/PatternConstraintRegex.
+/// Semantic identity: ix://agent-ix/semantic-core/PatternConstraintRegex.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(transparent)]
 pub struct PatternConstraintRegex(String);

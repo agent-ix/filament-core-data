@@ -276,18 +276,20 @@ function checkMultiplicity(multiplicity, at, out) {
 		);
 		return multiplicity;
 	}
-	const collection = multiplicity.upper === undefined || multiplicity.upper > 1;
+	// Owner ruling (2026-09-19T15:39:32Z) on FCD #199: every multiplicity
+	// carries both `ordered` and `unique` as required booleans.
 	if (
-		!collection &&
-		(multiplicity.ordered !== undefined || multiplicity.unique !== undefined)
+		typeof multiplicity.ordered !== "boolean" ||
+		typeof multiplicity.unique !== "boolean"
 	) {
 		out.push(
 			diagnostic(
-				"FLAGS_ON_NON_COLLECTION",
+				"INVALID_MULTIPLICITY",
 				at,
-				"ordered and unique apply only when upper is absent or greater than 1",
+				"ordered and unique are required booleans on every multiplicity",
 			),
 		);
+		return multiplicity;
 	}
 	return multiplicity;
 }
@@ -340,6 +342,21 @@ function checkField(field, at, types, out) {
 				`unit is only allowed where typeRef resolves to a scalar (resolved ${resolved.kind})`,
 			),
 		);
+	}
+
+	// A constrained field keeps its constraints inline, with no alias node
+	// between them (gap 1 of FCD #199/#200, finding 2 of the FCD #199/#200
+	// review): each one runs through `checkConstraint`, the same as a
+	// type-level constraint. This oracle's own `resolve` has no field-as-
+	// subject branch (unlike the three readers' `Document::resolve` /
+	// `resolve_kind` / `resolveKind`), so a corpus case exercising this loop
+	// must point `appliesTo` at a type, not the field's own identity.
+	for (const [i, constraint] of (Array.isArray(field.constraints)
+		? field.constraints
+		: []
+	).entries()) {
+		if (isObject(constraint))
+			checkConstraint(constraint, `${at}/constraints/${i}`, types, out);
 	}
 }
 
@@ -546,19 +563,42 @@ function checkTypeDefinition(definition, at, types, lockExports, out) {
 		: []
 	).entries()) {
 		if (!isObject(relationship)) continue;
-		const target = String(relationship.target);
+		const sourceEnd = isObject(relationship.sourceEnd)
+			? relationship.sourceEnd
+			: {};
+		const targetEnd = isObject(relationship.targetEnd)
+			? relationship.targetEnd
+			: {};
+		const target = String(targetEnd.type);
 		if (!types.has(target) && !lockExports.has(target)) {
 			out.push(
 				diagnostic(
 					"UNRESOLVED_RELATIONSHIP_TARGET",
-					`${at}/relationships/${i}/target`,
+					`${at}/relationships/${i}/targetEnd/type`,
 					`relationship target resolves to neither a document type nor a lock export: ${target}`,
 				),
 			);
 		}
+		if (
+			sourceEnd.type !== undefined &&
+			String(sourceEnd.type) !== String(definition.identity)
+		) {
+			out.push(
+				diagnostic(
+					"INVALID_RELATIONSHIP_SOURCE",
+					`${at}/relationships/${i}/sourceEnd/type`,
+					`a relationship's source end names the type declaring it, not ${String(sourceEnd.type)}`,
+				),
+			);
+		}
 		checkMultiplicity(
-			relationship.multiplicity,
-			`${at}/relationships/${i}/multiplicity`,
+			sourceEnd.multiplicity,
+			`${at}/relationships/${i}/sourceEnd/multiplicity`,
+			out,
+		);
+		checkMultiplicity(
+			targetEnd.multiplicity,
+			`${at}/relationships/${i}/targetEnd/multiplicity`,
 			out,
 		);
 	}
@@ -631,7 +671,11 @@ function checkCompositeCycles(ir, out) {
 		).entries()) {
 			if (isObject(relationship) && relationship.composite === true) {
 				list.push({
-					target: String(relationship.target),
+					target: String(
+						isObject(relationship.targetEnd)
+							? relationship.targetEnd.type
+							: undefined,
+					),
 					pointer: pointer("ir", "types", t, "relationships", i),
 				});
 			}
@@ -657,7 +701,7 @@ function checkCompositeCycles(ir, out) {
 				out.push(
 					diagnostic(
 						"COMPOSITE_CYCLE",
-						`${edge.pointer}/target`,
+						`${edge.pointer}/targetEnd/type`,
 						`composite relationship closes a cycle at ${edge.target}`,
 					),
 				);

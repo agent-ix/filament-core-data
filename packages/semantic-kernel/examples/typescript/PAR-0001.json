@@ -24,7 +24,7 @@
 		{
 			"artifact": "packages/semantic-core/generated/json-schema/Multiplicity.json",
 			"locator": "#/required",
-			"quote": "\"required\": [\"lower\"],"
+			"quote": "\"required\": [\"lower\", \"ordered\", \"unique\"],"
 		}
 	],
 	"provenance": {

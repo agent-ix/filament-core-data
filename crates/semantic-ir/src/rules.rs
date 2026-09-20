@@ -3,6 +3,8 @@
 //! Every code emitted here has a `conformance/diagnostic-codes.json` row, and
 //! `crates/semantic-ir/RULES.md` cites the clause each rule was derived from.
 
+use std::collections::BTreeSet;
+
 use crate::diag::{child, index, locus_for, owner_for, Located, Severity};
 use crate::json::Json;
 use crate::regex262;
@@ -13,6 +15,78 @@ use crate::vocabulary::Shape;
 /// `contracts-v1.md` obliges "declared finite limits"; the corpus manifest
 /// declares this one as `depthLimit: 256`.
 pub const DEPTH_LIMIT: usize = 256;
+
+/// The prefix a native type reference carries (gap 1 of FCD #199/#200): a
+/// kernel scalar mints no document node, so a `typeRef`, `target`, sequence
+/// `items`, map `values`, variant `payloadType` or constraint `appliesTo`
+/// naming one resolves against this closed set instead of `document.types`.
+pub const NATIVE_PREFIX: &str = "ix://quire/native/";
+
+/// The FR-032 kernel scalar library's names, each with the `irScalar` value
+/// `KernelScalar::ir_scalar` (`crates/extraction-frontend/src/scalars.rs`)
+/// gives it; this reader carries the same closed set independently, since it
+/// decides IR documents no producer crate is assumed.
+const NATIVE_SCALARS: &[(&str, &str)] = &[
+    ("UUID", "uuid"),
+    ("Boolean", "boolean"),
+    ("Integer", "integer"),
+    ("Decimal", "number"),
+    ("String", "string"),
+    ("Timestamp", "datetime"),
+    ("Duration", "duration"),
+    ("Bytes", "bytes"),
+    ("JsonObject", "any"),
+];
+
+/// The `irScalar` value a native type reference names, when `identity` is
+/// one and the library declares its name.
+fn native_scalar(identity: &str) -> Option<&'static str> {
+    let name = identity.strip_prefix(NATIVE_PREFIX)?;
+    NATIVE_SCALARS
+        .iter()
+        .find(|(declared, _)| *declared == name)
+        .map(|(_, scalar)| *scalar)
+}
+
+/// Whether `identity` resolves: a document declares it, or it is a native
+/// type reference.
+fn resolves(declared: &[String], identity: &str) -> bool {
+    native_scalar(identity).is_some() || declared.iter().any(|d| d == identity)
+}
+
+/// What an identity resolves to, for the applicability table and the unit
+/// rule: a document type definition, reached directly or through an alias
+/// chain or a field's own `typeRef`; or a native type reference, which
+/// resolves to no document node (gap 1 of FCD #199/#200).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Resolved<'a> {
+    /// A document type definition, reached directly or through an alias
+    /// chain or a field's own `typeRef`.
+    Node(&'a Json),
+    /// A native type reference, resolved to the kernel scalar it names
+    /// (gap 1 of FCD #199/#200).
+    Native(&'static str),
+}
+
+impl<'a> Resolved<'a> {
+    /// The core kind of the resolved type: the document node's `kind`, or
+    /// `"scalar"` for a native type reference.
+    pub fn kind(&self) -> &str {
+        match self {
+            Resolved::Node(node) => node.get("kind").and_then(Json::as_str).unwrap_or(""),
+            Resolved::Native(_) => "scalar",
+        }
+    }
+
+    /// The kernel scalar name: the document node's `scalar` member, or the
+    /// native type reference's scalar for a native reference.
+    pub fn scalar(&self) -> &str {
+        match self {
+            Resolved::Node(node) => node.get("scalar").and_then(Json::as_str).unwrap_or(""),
+            Resolved::Native(scalar) => scalar,
+        }
+    }
+}
 
 macro_rules! codes {
     ($($name:ident => $code:literal),* $(,)?) => {
@@ -25,7 +99,6 @@ macro_rules! codes {
 
 codes! {
     INVALID_MULTIPLICITY => "agent-ix.semantic-ir.INVALID_MULTIPLICITY",
-    FLAGS_ON_NON_COLLECTION => "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
     UNIT_ON_NON_SCALAR => "agent-ix.semantic-ir.UNIT_ON_NON_SCALAR",
     UNRESOLVED_TYPE_REF => "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
     UNRESOLVED_ELEMENT_TYPE => "agent-ix.semantic-ir.UNRESOLVED_ELEMENT_TYPE",
@@ -43,6 +116,7 @@ codes! {
     INVALID_OPERAND => "agent-ix.semantic-ir.INVALID_OPERAND",
     INVALID_PATTERN => "agent-ix.semantic-ir.INVALID_PATTERN",
     UNRESOLVED_RELATIONSHIP_TARGET => "agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET",
+    INVALID_RELATIONSHIP_SOURCE => "agent-ix.semantic-ir.INVALID_RELATIONSHIP_SOURCE",
     COMPOSITE_CYCLE => "agent-ix.semantic-ir.COMPOSITE_CYCLE",
     UNRESOLVED_IMPORT => "agent-ix.semantic-ir.UNRESOLVED_IMPORT",
     PACKAGE_CYCLE => "agent-ix.semantic-ir.PACKAGE_CYCLE",
@@ -97,23 +171,88 @@ impl<'a> Document<'a> {
         })
     }
 
-    /// The type an identity names, resolved through the alias chain.
+    /// The field or param of a record or an operation that declares
+    /// `identity`, searched in document order (constraint `appliesTo` may
+    /// name one directly, gap 1 of FCD #199/#200: a constrained field keeps
+    /// its constraints inline, with no alias node between them).
+    fn field_of(&self, identity: &str) -> Option<&'a Json> {
+        for definition in self.types {
+            if let Some(fields) = definition.get("fields").and_then(Json::as_array) {
+                if let Some(field) = fields
+                    .iter()
+                    .find(|field| field.get("identity").and_then(Json::as_str) == Some(identity))
+                {
+                    return Some(field);
+                }
+            }
+            if let Some(operations) = definition.get("operations").and_then(Json::as_array) {
+                for operation in operations {
+                    if let Some(params) = operation.get("params").and_then(Json::as_array) {
+                        if let Some(param) = params.iter().find(|param| {
+                            param.get("identity").and_then(Json::as_str) == Some(identity)
+                        }) {
+                            return Some(param);
+                        }
+                    }
+                }
+            }
+        }
+        None
+    }
+
+    /// What an identity resolves to: a native type reference; a field or
+    /// param, through its own `typeRef`; or a document type, through the
+    /// alias chain.
     ///
     /// Returns `None` for a chain that does not resolve, closes on itself, or
     /// runs past the declared depth bound; each of those is reported under its
     /// own code by the rule that owns it, not by this resolver.
-    pub fn resolve(&self, identity: &str) -> Option<&'a Json> {
-        let mut current = self.type_of(identity)?;
-        let mut seen: Vec<&str> = vec![identity];
-        for _ in 0..=DEPTH_LIMIT {
-            if current.get("kind").and_then(Json::as_str) != Some("alias") {
-                return Some(current);
-            }
-            let target = current.get("target").and_then(Json::as_str)?;
-            if seen.contains(&target) {
+    pub fn resolve(&self, identity: &str) -> Option<Resolved<'a>> {
+        let mut seen = BTreeSet::new();
+        seen.insert(identity);
+        self.resolve_bounded(identity, &mut seen)
+    }
+
+    /// `resolve`'s recursive step, bounded by `seen`: the identities already
+    /// visited on this chain. A field's `typeRef` can name another field
+    /// (gap 1 of FCD #199/#200, via a constraint's `appliesTo`), so two
+    /// fields whose `typeRef`s name each other would otherwise recurse
+    /// through `field_of` with no depth check and overflow the stack; a
+    /// revisit here resolves to nothing, the same as a closed alias chain.
+    ///
+    /// `seen` is a `BTreeSet`, not a `Vec`: membership is the only operation
+    /// this method needs, a `Vec` would linear-scan it on every hop, and a
+    /// set states that invariant instead of relying on call discipline.
+    fn resolve_bounded<'s>(
+        &self,
+        identity: &'s str,
+        seen: &mut BTreeSet<&'s str>,
+    ) -> Option<Resolved<'a>>
+    where
+        'a: 's,
+    {
+        if let Some(scalar) = native_scalar(identity) {
+            return Some(Resolved::Native(scalar));
+        }
+        if let Some(field) = self.field_of(identity) {
+            let type_ref = field.get("typeRef").and_then(Json::as_str)?;
+            if !seen.insert(type_ref) {
                 return None;
             }
-            seen.push(target);
+            return self.resolve_bounded(type_ref, seen);
+        }
+        let mut current = self.type_of(identity)?;
+        for _ in 0..=DEPTH_LIMIT {
+            if current.get("kind").and_then(Json::as_str) != Some("alias") {
+                return Some(Resolved::Node(current));
+            }
+            let target = current.get("target").and_then(Json::as_str)?;
+            if let Some(scalar) = native_scalar(target) {
+                return Some(Resolved::Native(scalar));
+            }
+            if !seen.insert(target) {
+                return None;
+            }
             current = self.type_of(target)?;
         }
         None
@@ -290,7 +429,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
 
         if matches!(kind, "alias" | "reference") {
             if let Some(target) = definition.get("target").and_then(Json::as_str) {
-                if !declared.iter().any(|identity| identity == target) {
+                if !resolves(&declared, target) {
                     sink.emit(
                         child(&type_at, "target"),
                         UNRESOLVED_TYPE_REF,
@@ -323,7 +462,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
             let variants_at = child(&type_at, "variants");
             for (member, variant) in variants.iter().enumerate() {
                 if let Some(payload) = variant.get("payloadType").and_then(Json::as_str) {
-                    if !declared.iter().any(|identity| identity == payload) {
+                    if !resolves(&declared, payload) {
                         sink.emit(
                             child(&index(&variants_at, member), "payloadType"),
                             UNRESOLVED_VARIANT_PAYLOAD,
@@ -347,14 +486,42 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
         if let Some(relationships) = definition.get("relationships").and_then(Json::as_array) {
             let relationships_at = child(&type_at, "relationships");
             for (member, relationship) in relationships.iter().enumerate() {
-                if let Some(target) = relationship.get("target").and_then(Json::as_str) {
+                // The target end's `type` is the resolved target (gap 3 of
+                // FCD #199/#200); the source end always names this
+                // artifact's own type (FCD #199/#200 review finding 9), which
+                // this checks directly rather than assuming a producer holds
+                // it.
+                if let Some(target) = relationship
+                    .get("targetEnd")
+                    .and_then(|end| end.get("type"))
+                    .and_then(Json::as_str)
+                {
                     let resolves = declared.iter().any(|identity| identity == target)
                         || manifest_exports.iter().any(|identity| identity == target);
                     if !resolves {
                         sink.emit(
-                            child(&index(&relationships_at, member), "target"),
+                            child(
+                                &child(&index(&relationships_at, member), "targetEnd"),
+                                "type",
+                            ),
                             UNRESOLVED_RELATIONSHIP_TARGET,
                             "a relationship target resolves to a document type or a manifest export",
+                        );
+                    }
+                }
+                if let Some(source) = relationship
+                    .get("sourceEnd")
+                    .and_then(|end| end.get("type"))
+                    .and_then(Json::as_str)
+                {
+                    if Some(source) != definition.get("identity").and_then(Json::as_str) {
+                        sink.emit(
+                            child(
+                                &child(&index(&relationships_at, member), "sourceEnd"),
+                                "type",
+                            ),
+                            INVALID_RELATIONSHIP_SOURCE,
+                            "a relationship's source end names the type declaring it",
                         );
                     }
                 }
@@ -407,7 +574,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                 }
                 if let Some(returns) = operation.get("returns") {
                     if let Some(type_ref) = returns.get("typeRef").and_then(Json::as_str) {
-                        if !declared.iter().any(|identity| identity == type_ref) {
+                        if !resolves(&declared, type_ref) {
                             sink.emit(
                                 child(&child(&operation_at, "returns"), "typeRef"),
                                 UNRESOLVED_TYPE_REF,
@@ -447,7 +614,7 @@ fn check_element(
     sink: &mut Sink<'_>,
 ) {
     if let Some(element) = definition.get(member).and_then(Json::as_str) {
-        if !declared.iter().any(|identity| identity == element) {
+        if !resolves(declared, element) {
             let what = if member == "items" {
                 "sequence element"
             } else {
@@ -533,7 +700,7 @@ fn field_rules(
         let field_at = index(fields_at, member);
         let type_ref = field.get("typeRef").and_then(Json::as_str);
         if let Some(type_ref) = type_ref {
-            if !declared.iter().any(|identity| identity == type_ref) {
+            if !resolves(declared, type_ref) {
                 sink.emit(
                     child(&field_at, "typeRef"),
                     UNRESOLVED_TYPE_REF,
@@ -554,23 +721,11 @@ fn field_rules(
                     );
                 }
             }
-            let flagged = multiplicity.has("ordered") || multiplicity.has("unique");
-            if flagged {
-                if let Some(upper) = upper {
-                    if upper <= 1 {
-                        sink.emit(
-                            multiplicity_at.clone(),
-                            FLAGS_ON_NON_COLLECTION,
-                            "ordered and unique describe a collection and this field is single-valued",
-                        );
-                    }
-                }
-            }
         }
         if field.has("unit") {
             let scalar = type_ref
                 .and_then(|identity| document.resolve(identity))
-                .map(|resolved| resolved.get("kind").and_then(Json::as_str) == Some("scalar"))
+                .map(|resolved| resolved.kind() == "scalar")
                 .unwrap_or(false);
             if !scalar {
                 sink.emit(
@@ -578,6 +733,17 @@ fn field_rules(
                     UNIT_ON_NON_SCALAR,
                     "a unit is carried only where the type reference resolves to a scalar",
                 );
+            }
+        }
+        // A constrained field keeps its constraints inline, with no alias
+        // node between them (gap 1 of FCD #199/#200); `Document::resolve`
+        // already resolves a field identity directly through `field_of`, so
+        // this runs the same applicability/operand/regex checks as a
+        // type-level constraint, with the field itself as the subject.
+        if let Some(constraints) = field.get("constraints").and_then(Json::as_array) {
+            let constraints_at = child(&field_at, "constraints");
+            for (member, constraint) in constraints.iter().enumerate() {
+                constraint_rules(document, constraint, &index(&constraints_at, member), sink);
             }
         }
     }
@@ -622,13 +788,21 @@ fn constraint_rules(
     let resolved = applies.and_then(|identity| document.resolve(identity));
     if let Some(resolved) = resolved {
         // A construct kind decides as `enumeration` when its declared shape
-        // is one, and as no core kind otherwise.
-        let kind = match crate::constructs::shape_of(document, resolved) {
-            Some(Shape::Enumeration) => "enumeration",
-            Some(_) => "construct",
-            None => resolved.get("kind").and_then(Json::as_str).unwrap_or(""),
+        // is one, and as no core kind otherwise; a native type reference
+        // resolves to no document node, so it is always `scalar` (gap 1 of
+        // FCD #199/#200).
+        let (kind, scalar): (&str, &str) = match resolved {
+            Resolved::Node(node) => {
+                let kind = match crate::constructs::shape_of(document, node) {
+                    Some(Shape::Enumeration) => "enumeration",
+                    Some(_) => "construct",
+                    None => node.get("kind").and_then(Json::as_str).unwrap_or(""),
+                };
+                let scalar = node.get("scalar").and_then(Json::as_str).unwrap_or("");
+                (kind, scalar)
+            }
+            Resolved::Native(scalar) => ("scalar", scalar),
         };
-        let scalar = resolved.get("scalar").and_then(Json::as_str).unwrap_or("");
         if !applies_to(keyword, kind, scalar) {
             sink.emit(
                 constraint_at.to_string(),
@@ -735,7 +909,11 @@ fn composite_visit(
             if relationship.get("composite").and_then(Json::as_bool) != Some(true) {
                 continue;
             }
-            let target = match relationship.get("target").and_then(Json::as_str) {
+            let target = match relationship
+                .get("targetEnd")
+                .and_then(|end| end.get("type"))
+                .and_then(Json::as_str)
+            {
                 Some(target) => target,
                 None => continue,
             };
@@ -749,7 +927,10 @@ fn composite_visit(
             };
             if stack.contains(&next) {
                 stack.pop();
-                return Some(child(&index(&relationships_at, member), "target"));
+                return Some(child(
+                    &child(&index(&relationships_at, member), "targetEnd"),
+                    "type",
+                ));
             }
             if !visited.contains(&next) {
                 if let Some(found) = composite_visit(document, next, visited, stack, depth + 1) {
@@ -987,4 +1168,195 @@ fn package_visit(
     }
     stack.pop();
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        decide, native_scalar, CONSTRAINT_NOT_APPLICABLE, NATIVE_PREFIX, NATIVE_SCALARS,
+        UNIT_ON_NON_SCALAR, UNRESOLVED_TYPE_REF,
+    };
+    use crate::json::Json;
+    use crate::json::parse;
+
+    /// Owner ruling (2026-09-19T15:39:32Z) on FCD #199, superseding R2 of the
+    /// #199/#200 review round: `FLAGS_ON_NON_COLLECTION` is deleted outright,
+    /// not corrected. Every emitted multiplicity carries `ordered`/`unique`,
+    /// clamped to `false` at emission when `upper` is at most one — the
+    /// reader no longer checks the combination at all, so a document
+    /// carrying `ordered`/`unique` `true` alongside a single-valued `upper`
+    /// (a shape a producer should never emit, but the reader no longer
+    /// polices) is not refused.
+    ///
+    /// Tracing: TC-1806
+    /// ACs: FR-027-AC-8
+    #[test]
+    fn tc_1806_ordered_and_unique_are_never_refused_by_the_reader() {
+        let field = |ordered: bool, unique: bool, upper: i64| {
+            format!(
+                r#"{{"identity": "ix://acme/pkg/T/f", "name": "f", "typeRef": "ix://quire/native/String", "multiplicity": {{"lower": 0, "upper": {upper}, "ordered": {ordered}, "unique": {unique}}}}}"#
+            )
+        };
+        let wrap = |field: String| {
+            parse(&format!(
+                r#"{{"ir": {{"contractVersion": "2.0.0", "types": [{{"identity": "ix://acme/pkg/T", "kind": "record", "fields": [{field}]}}]}}}}"#
+            ))
+            .expect("a document")
+        };
+
+        for (ordered, unique, upper) in
+            [(true, false, 1), (false, true, 1), (false, false, 1), (true, true, 5)]
+        {
+            let decided = decide(&wrap(field(ordered, unique, upper)));
+            assert!(
+                decided.is_empty(),
+                "ordered={ordered}, unique={unique}, upper={upper} is not refused: {decided:?}"
+            );
+        }
+    }
+
+    /// Finding 2 of the FCD #199/#200 review: `field_rules` runs each of a
+    /// field's inline `constraints` through the same `constraint_rules` a
+    /// type-level constraint goes through, with the field itself as the
+    /// resolved subject (gap 1's field-as-subject shape). Before that fix
+    /// this loop did not exist, so an inline constraint's keyword was never
+    /// checked against the applicability table; a `min` constraint inline on
+    /// a `String` field is the same (kind, keyword) pair FR-093-AC-6 already
+    /// covers for a type-scoped subject, so this is the field-inline call
+    /// site nothing previously exercised. Deleting the loop at
+    /// `field_rules`'s `field.get("constraints")` branch must fail this
+    /// test.
+    ///
+    /// Tracing: TC-1813
+    /// ACs: FR-093-AC-6, FR-093-CON-4
+    #[test]
+    fn tc_1813_an_inline_field_constraint_is_checked_for_applicability() {
+        let bundle = parse(
+            r#"{
+                "ir": {
+                    "contractVersion": "2.0.0",
+                    "types": [
+                        {
+                            "identity": "ix://acme/pkg/T",
+                            "kind": "record",
+                            "fields": [
+                                {
+                                    "identity": "ix://acme/pkg/T/f",
+                                    "name": "f",
+                                    "typeRef": "ix://quire/native/String",
+                                    "constraints": [
+                                        {
+                                            "identity": "ix://acme/pkg/constraint/T-f-min",
+                                            "keyword": "min",
+                                            "appliesTo": "ix://acme/pkg/T/f",
+                                            "operands": {"value": 0},
+                                            "diagnosticCode": "agent-ix.acme.T_F_MIN"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }"#,
+        )
+        .expect("a document");
+        let diagnostics = decide(&bundle);
+        assert!(
+            diagnostics
+                .iter()
+                .any(|located| located.code == CONSTRAINT_NOT_APPLICABLE),
+            "min is inapplicable to a string-valued field, and an inline field \
+             constraint's applicability must be checked the same as a type-level \
+             constraint's: {diagnostics:?}"
+        );
+    }
+
+    /// Two fields whose `typeRef`s name each other, with `unit` on one of
+    /// them so `field_rules` calls `Document::resolve` on the cycle (FCD
+    /// #199/#200 review finding 1): before the fix this recursed through
+    /// `field_of` with no bound and overflowed the stack. `decide` must
+    /// return, not abort the process, and the cycle must not resolve to a
+    /// scalar.
+    ///
+    /// Tracing: TC-1805
+    /// ACs: FR-059-AC-11
+    #[test]
+    fn tc_1805_a_mutual_field_typeref_cycle_does_not_overflow_the_stack() {
+        let bundle = parse(
+            r#"{
+                "ir": {
+                    "contractVersion": "2.0.0",
+                    "types": [
+                        {
+                            "identity": "ix://acme/pkg/T",
+                            "kind": "record",
+                            "fields": [
+                                {
+                                    "identity": "ix://acme/pkg/T/a",
+                                    "name": "a",
+                                    "typeRef": "ix://acme/pkg/T/b",
+                                    "unit": "m"
+                                },
+                                {
+                                    "identity": "ix://acme/pkg/T/b",
+                                    "name": "b",
+                                    "typeRef": "ix://acme/pkg/T/a"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }"#,
+        )
+        .expect("a document");
+        let diagnostics = decide(&bundle);
+        assert!(
+            diagnostics.iter().any(|located| located.code == UNIT_ON_NON_SCALAR),
+            "a unit on a field whose typeRef closes a cycle resolves to no scalar: {diagnostics:?}"
+        );
+        assert!(
+            diagnostics.iter().filter(|located| located.code == UNRESOLVED_TYPE_REF).count() == 2,
+            "each field's typeRef names another field, not a declared type: {diagnostics:?}"
+        );
+    }
+
+    /// R3 of the FCD #199/#200 review: this crate's `NATIVE_SCALARS` is one
+    /// of six independent copies of the FR-032 kernel scalar library (the
+    /// others are the Node IR reader, the Python reader, the JSON-Schema
+    /// backend, the rust-serde backend, and the v1-1 TS reader); each is
+    /// checked against the canonical `packages/semantic-core/kernel-scalars.json`
+    /// rather than against each other, and none is refactored into a shared
+    /// module.
+    ///
+    /// Tracing: TC-1807
+    /// ACs: FR-032-AC-3
+    #[test]
+    fn tc_1807_native_scalars_agrees_with_kernel_scalars_json() {
+        let canonical = parse(include_str!(
+            "../../../packages/semantic-core/kernel-scalars.json"
+        ))
+        .expect("kernel-scalars.json parses");
+        let scalars = canonical
+            .get("scalars")
+            .and_then(Json::as_object)
+            .expect("kernel-scalars.json carries a scalars object");
+        assert_eq!(
+            scalars.len(),
+            NATIVE_SCALARS.len(),
+            "the canonical library and this crate's copy declare the same count"
+        );
+        for (name, definition) in scalars {
+            let canonical_scalar = definition
+                .get("irScalar")
+                .and_then(Json::as_str)
+                .unwrap_or_else(|| panic!("{name} carries no irScalar"));
+            let declared = native_scalar(&format!("{NATIVE_PREFIX}{name}"));
+            assert_eq!(
+                declared,
+                Some(canonical_scalar),
+                "{name} maps to {canonical_scalar} in kernel-scalars.json"
+            );
+        }
+    }
 }

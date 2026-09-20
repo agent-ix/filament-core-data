@@ -885,11 +885,11 @@ describe("TC-1773 every construct kind and model member rendered by the TypeScri
 				Fulfilment: ["id"],
 			});
 			expect(module.TYPE_SUPERTYPES).toStrictEqual({
-				Order: ["ix://agent-ix/orders/type/FR-000"],
+				Order: ["ix://agent-ix/orders/FR-000"],
 			});
 			expect(module.TYPE_ABSTRACT).toStrictEqual({ Party: true });
 			expect(module.TYPE_OWNER).toStrictEqual({
-				Shipment: "ix://agent-ix/orders/type/FR-001",
+				Shipment: "ix://agent-ix/orders/FR-001",
 			});
 			expect(module.TYPE_EQUALITY).toStrictEqual({ OrderLine: "value" });
 			expect(module.TYPE_IMMUTABLE).toStrictEqual({ OrderPlaced: true });
@@ -897,7 +897,7 @@ describe("TC-1773 every construct kind and model member rendered by the TypeScri
 				OrderLifecycle: ["placed", "shipped"],
 			});
 			expect(module.TYPE_PERSISTS).toStrictEqual({
-				OrderRepository: ["ix://agent-ix/orders/type/FR-001"],
+				OrderRepository: ["ix://agent-ix/orders/FR-001"],
 			});
 			expect(
 				(
@@ -924,7 +924,7 @@ describe("TC-1773 every construct kind and model member rendered by the TypeScri
 				frame: {
 					creates: [],
 					deletes: [],
-					modifies: ["ix://agent-ix/orders/field/SM-001-current"],
+					modifies: ["ix://agent-ix/orders/SM-001/current"],
 				},
 				post: [{ language: "quire", text: "current = to" }],
 				pre: [{ language: "quire", text: "to <> current" }],
@@ -1050,7 +1050,7 @@ describe("TC-1781 identifiers and abstract types the TypeScript backend refuses 
 		])
 			delete reference[member];
 		Object.assign(reference, {
-			identity: "ix://agent-ix/orders/type/PartyRef",
+			identity: "ix://agent-ix/orders/PartyRef",
 			displayName: "PartyRef",
 			kind: "reference",
 			target: declared.identity,
@@ -1074,7 +1074,7 @@ describe("TC-1781 identifiers and abstract types the TypeScript backend refuses 
 		declaring.fields?.push({
 			...(labels as { name: string }),
 			name: "remark",
-			identity: "ix://agent-ix/orders/field/FR-000-remark",
+			identity: "ix://agent-ix/orders/FR-000/remark",
 			subsets: [labels.identity as string],
 		} as never);
 		const manifest = generateDocument(inherited) as unknown as {
@@ -1108,7 +1108,7 @@ describe("TC-1767 generated TypeScript names come from display names (FR-064)", 
 			);
 			const identities = module.TYPE_IDENTITY as Record<string, string>;
 			expect(identities.ConfigVersion).toBe(
-				"ix://agent-ix/config-service/type/FR-006",
+				"ix://agent-ix/config-service/FR-006",
 			);
 			expect(
 				Object.keys(identities).some((name) => /^Fr?-?00/i.test(name)),

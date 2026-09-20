@@ -73,6 +73,6 @@ pub use resolve::{
     classify, pass_one, pass_two, resolve, ArtifactRef, Outcome, Outcomes, Resolution, Resolutions,
     Resolved, Site, Unresolved,
 };
-pub use scalars::{definitions, KernelScalar, ScalarDefinition, KERNEL_SCALAR_EXTENSION};
+pub use scalars::KernelScalar;
 pub use validate::{validate, validate_document, ValidDocument};
 pub use write::{check_output, write_lift, Emission, Fingerprint, OutputPaths};

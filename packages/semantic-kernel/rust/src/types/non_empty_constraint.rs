@@ -1,15 +1,15 @@
 //! NonEmptyConstraint
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/NonEmptyConstraint.
+//! Semantic identity: ix://agent-ix/semantic-core/NonEmptyConstraint.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `NonEmptyConstraint`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[crate::identity::FieldMeta {
-    identity: "ix://agent-ix/semantic-core/type/NonEmptyConstraint/field/keyword",
+    identity: "ix://agent-ix/semantic-core/NonEmptyConstraint/keyword",
     name: "keyword",
     rust_name: "keyword",
-    type_ref: "ix://agent-ix/semantic-core/type/NonEmptyConstraintKeyword",
+    type_ref: "ix://agent-ix/semantic-core/NonEmptyConstraintKeyword",
     rust_type: "crate::NonEmptyConstraintKeyword",
     row: "field:single/non-null/required",
     presence: "required",
@@ -17,8 +17,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[crate::identity::FieldMeta {
     multiplicity: crate::identity::MultiplicityMeta {
         lower: 1,
         upper: Some(1),
-        ordered: None,
-        unique: None,
+        ordered: Some(false),
+        unique: Some(false),
     },
     unit: None,
     default_kind: "none",
@@ -38,12 +38,12 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[crate::identity::FieldMeta {
 
 /// NonEmptyConstraint
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/NonEmptyConstraint.
+/// Semantic identity: ix://agent-ix/semantic-core/NonEmptyConstraint.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct NonEmptyConstraint {
     /// keyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/NonEmptyConstraint/field/keyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/NonEmptyConstraint/keyword.
     pub keyword: crate::NonEmptyConstraintKeyword,
 }
 

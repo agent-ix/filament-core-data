@@ -78,21 +78,32 @@ pub struct ExtensionMeta {
     pub payload: &'static str,
 }
 
+/// One end of a relationship (gap 3 of FCD #199/#200: the two-end shape).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct RelationshipEndMeta {
+    /// The end's role, where the IR declared one.
+    pub role: Option<&'static str>,
+    /// The end's multiplicity.
+    pub multiplicity: MultiplicityMeta,
+    /// The end's type reference.
+    pub type_ref: &'static str,
+}
+
 /// A relationship the IR carried.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct RelationshipMeta {
     /// The relationship's semantic identity.
     pub identity: &'static str,
-    /// The verb.
-    pub verb: &'static str,
     /// The edge category.
     pub category: &'static str,
     /// Whether the relationship is composite.
     pub composite: bool,
-    /// The target type's semantic identity.
-    pub target: &'static str,
-    /// The relationship's multiplicity.
-    pub multiplicity: MultiplicityMeta,
+    /// The relationship's direction.
+    pub direction: &'static str,
+    /// The source end.
+    pub source_end: RelationshipEndMeta,
+    /// The target end.
+    pub target_end: RelationshipEndMeta,
     /// The relationship's origin.
     pub origin: OriginMeta,
 }
@@ -302,7 +313,7 @@ const TYPE_REF_TARGET_EXTENSIONS: &[ExtensionMeta] = &[crate::identity::Extensio
 /// Every generated type, in the order the contract declares them.
 pub const TYPES: &[TypeMeta] = &[
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/ClauseLanguage",
+        identity: "ix://agent-ix/semantic-core/ClauseLanguage",
         display_name: "ClauseLanguage",
         kind: "scalar",
         rust_name: "ClauseLanguage",
@@ -326,7 +337,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/ClauseRef",
+        identity: "ix://agent-ix/semantic-core/ClauseRef",
         display_name: "ClauseRef",
         kind: "record",
         rust_name: "ClauseRef",
@@ -350,7 +361,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/ConstraintDecl",
+        identity: "ix://agent-ix/semantic-core/ConstraintDecl",
         display_name: "ConstraintDecl",
         kind: "union",
         rust_name: "ConstraintDecl",
@@ -374,7 +385,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: CONSTRAINT_DECL_EXTENSIONS,
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/ConstraintKeyword",
+        identity: "ix://agent-ix/semantic-core/ConstraintKeyword",
         display_name: "ConstraintKeyword",
         kind: "enum",
         rust_name: "ConstraintKeyword",
@@ -398,7 +409,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/DecimalPolicy",
+        identity: "ix://agent-ix/semantic-core/DecimalPolicy",
         display_name: "DecimalPolicy",
         kind: "record",
         rust_name: "DecimalPolicy",
@@ -422,7 +433,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/DecimalPolicyPrecision",
+        identity: "ix://agent-ix/semantic-core/DecimalPolicyPrecision",
         display_name: "DecimalPolicyPrecision",
         kind: "scalar",
         rust_name: "DecimalPolicyPrecision",
@@ -446,7 +457,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/DecimalPolicyScale",
+        identity: "ix://agent-ix/semantic-core/DecimalPolicyScale",
         display_name: "DecimalPolicyScale",
         kind: "scalar",
         rust_name: "DecimalPolicyScale",
@@ -470,7 +481,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/DefaultDecl",
+        identity: "ix://agent-ix/semantic-core/DefaultDecl",
         display_name: "DefaultDecl",
         kind: "record",
         rust_name: "DefaultDecl",
@@ -494,7 +505,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/DefaultDeclValue",
+        identity: "ix://agent-ix/semantic-core/DefaultDeclValue",
         display_name: "DefaultDeclValue",
         kind: "record",
         rust_name: "DefaultDeclValue",
@@ -518,7 +529,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/DefaultKind",
+        identity: "ix://agent-ix/semantic-core/DefaultKind",
         display_name: "DefaultKind",
         kind: "enum",
         rust_name: "DefaultKind",
@@ -542,7 +553,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/EdgeCategory",
+        identity: "ix://agent-ix/semantic-core/EdgeCategory",
         display_name: "EdgeCategory",
         kind: "enum",
         rust_name: "EdgeCategory",
@@ -566,7 +577,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/EnumValue",
+        identity: "ix://agent-ix/semantic-core/EnumValue",
         display_name: "EnumValue",
         kind: "record",
         rust_name: "EnumValue",
@@ -590,7 +601,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/EnumValueDoc",
+        identity: "ix://agent-ix/semantic-core/EnumValueDoc",
         display_name: "EnumValueDoc",
         kind: "scalar",
         rust_name: "EnumValueDoc",
@@ -614,7 +625,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/EnumValuesConstraint",
+        identity: "ix://agent-ix/semantic-core/EnumValuesConstraint",
         display_name: "EnumValuesConstraint",
         kind: "record",
         rust_name: "EnumValuesConstraint",
@@ -638,7 +649,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/EnumValuesConstraintKeyword",
+        identity: "ix://agent-ix/semantic-core/EnumValuesConstraintKeyword",
         display_name: "EnumValuesConstraintKeyword",
         kind: "enum",
         rust_name: "EnumValuesConstraintKeyword",
@@ -662,7 +673,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesString",
+        identity: "ix://agent-ix/semantic-core/EnumValuesConstraintValuesString",
         display_name: "EnumValuesConstraintValuesString",
         kind: "scalar",
         rust_name: "EnumValuesConstraintValuesString",
@@ -686,7 +697,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesNumber",
+        identity: "ix://agent-ix/semantic-core/EnumValuesConstraintValuesNumber",
         display_name: "EnumValuesConstraintValuesNumber",
         kind: "scalar",
         rust_name: "EnumValuesConstraintValuesNumber",
@@ -710,7 +721,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/EnumValuesConstraintValuesBoolean",
+        identity: "ix://agent-ix/semantic-core/EnumValuesConstraintValuesBoolean",
         display_name: "EnumValuesConstraintValuesBoolean",
         kind: "scalar",
         rust_name: "EnumValuesConstraintValuesBoolean",
@@ -734,7 +745,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/EnumValuesConstraintValues",
+        identity: "ix://agent-ix/semantic-core/EnumValuesConstraintValues",
         display_name: "EnumValuesConstraintValues",
         kind: "union",
         rust_name: "EnumValuesConstraintValues",
@@ -758,7 +769,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: ENUM_VALUES_CONSTRAINT_VALUES_EXTENSIONS,
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraint",
+        identity: "ix://agent-ix/semantic-core/ExclusiveMaxConstraint",
         display_name: "ExclusiveMaxConstraint",
         kind: "record",
         rust_name: "ExclusiveMaxConstraint",
@@ -782,7 +793,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintKeyword",
+        identity: "ix://agent-ix/semantic-core/ExclusiveMaxConstraintKeyword",
         display_name: "ExclusiveMaxConstraintKeyword",
         kind: "enum",
         rust_name: "ExclusiveMaxConstraintKeyword",
@@ -806,7 +817,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueNumber",
+        identity: "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueNumber",
         display_name: "ExclusiveMaxConstraintValueNumber",
         kind: "scalar",
         rust_name: "ExclusiveMaxConstraintValueNumber",
@@ -830,7 +841,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValueString",
+        identity: "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueString",
         display_name: "ExclusiveMaxConstraintValueString",
         kind: "scalar",
         rust_name: "ExclusiveMaxConstraintValueString",
@@ -854,7 +865,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/ExclusiveMaxConstraintValue",
+        identity: "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValue",
         display_name: "ExclusiveMaxConstraintValue",
         kind: "union",
         rust_name: "ExclusiveMaxConstraintValue",
@@ -878,7 +889,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: EXCLUSIVE_MAX_CONSTRAINT_VALUE_EXTENSIONS,
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraint",
+        identity: "ix://agent-ix/semantic-core/ExclusiveMinConstraint",
         display_name: "ExclusiveMinConstraint",
         kind: "record",
         rust_name: "ExclusiveMinConstraint",
@@ -902,7 +913,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintKeyword",
+        identity: "ix://agent-ix/semantic-core/ExclusiveMinConstraintKeyword",
         display_name: "ExclusiveMinConstraintKeyword",
         kind: "enum",
         rust_name: "ExclusiveMinConstraintKeyword",
@@ -926,7 +937,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueNumber",
+        identity: "ix://agent-ix/semantic-core/ExclusiveMinConstraintValueNumber",
         display_name: "ExclusiveMinConstraintValueNumber",
         kind: "scalar",
         rust_name: "ExclusiveMinConstraintValueNumber",
@@ -950,7 +961,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValueString",
+        identity: "ix://agent-ix/semantic-core/ExclusiveMinConstraintValueString",
         display_name: "ExclusiveMinConstraintValueString",
         kind: "scalar",
         rust_name: "ExclusiveMinConstraintValueString",
@@ -974,7 +985,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/ExclusiveMinConstraintValue",
+        identity: "ix://agent-ix/semantic-core/ExclusiveMinConstraintValue",
         display_name: "ExclusiveMinConstraintValue",
         kind: "union",
         rust_name: "ExclusiveMinConstraintValue",
@@ -998,7 +1009,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: EXCLUSIVE_MIN_CONSTRAINT_VALUE_EXTENSIONS,
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/FieldDecl",
+        identity: "ix://agent-ix/semantic-core/FieldDecl",
         display_name: "FieldDecl",
         kind: "record",
         rust_name: "FieldDecl",
@@ -1022,7 +1033,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/FieldDeclIdentity",
+        identity: "ix://agent-ix/semantic-core/FieldDeclIdentity",
         display_name: "FieldDeclIdentity",
         kind: "scalar",
         rust_name: "FieldDeclIdentity",
@@ -1046,7 +1057,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/FieldDeclNullable",
+        identity: "ix://agent-ix/semantic-core/FieldDeclNullable",
         display_name: "FieldDeclNullable",
         kind: "scalar",
         rust_name: "FieldDeclNullable",
@@ -1070,7 +1081,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/FieldDeclDoc",
+        identity: "ix://agent-ix/semantic-core/FieldDeclDoc",
         display_name: "FieldDeclDoc",
         kind: "scalar",
         rust_name: "FieldDeclDoc",
@@ -1094,7 +1105,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/FormatConstraint",
+        identity: "ix://agent-ix/semantic-core/FormatConstraint",
         display_name: "FormatConstraint",
         kind: "record",
         rust_name: "FormatConstraint",
@@ -1118,7 +1129,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/FormatConstraintKeyword",
+        identity: "ix://agent-ix/semantic-core/FormatConstraintKeyword",
         display_name: "FormatConstraintKeyword",
         kind: "enum",
         rust_name: "FormatConstraintKeyword",
@@ -1142,7 +1153,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/FormatConstraintName",
+        identity: "ix://agent-ix/semantic-core/FormatConstraintName",
         display_name: "FormatConstraintName",
         kind: "scalar",
         rust_name: "FormatConstraintName",
@@ -1166,7 +1177,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/Identifier",
+        identity: "ix://agent-ix/semantic-core/Identifier",
         display_name: "Identifier",
         kind: "scalar",
         rust_name: "Identifier",
@@ -1190,7 +1201,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/KernelScalar",
+        identity: "ix://agent-ix/semantic-core/KernelScalar",
         display_name: "KernelScalar",
         kind: "enum",
         rust_name: "KernelScalar",
@@ -1214,7 +1225,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MaxConstraint",
+        identity: "ix://agent-ix/semantic-core/MaxConstraint",
         display_name: "MaxConstraint",
         kind: "record",
         rust_name: "MaxConstraint",
@@ -1238,7 +1249,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MaxConstraintKeyword",
+        identity: "ix://agent-ix/semantic-core/MaxConstraintKeyword",
         display_name: "MaxConstraintKeyword",
         kind: "enum",
         rust_name: "MaxConstraintKeyword",
@@ -1262,7 +1273,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MaxConstraintValueNumber",
+        identity: "ix://agent-ix/semantic-core/MaxConstraintValueNumber",
         display_name: "MaxConstraintValueNumber",
         kind: "scalar",
         rust_name: "MaxConstraintValueNumber",
@@ -1286,7 +1297,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MaxConstraintValueString",
+        identity: "ix://agent-ix/semantic-core/MaxConstraintValueString",
         display_name: "MaxConstraintValueString",
         kind: "scalar",
         rust_name: "MaxConstraintValueString",
@@ -1310,7 +1321,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MaxConstraintValue",
+        identity: "ix://agent-ix/semantic-core/MaxConstraintValue",
         display_name: "MaxConstraintValue",
         kind: "union",
         rust_name: "MaxConstraintValue",
@@ -1334,7 +1345,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: MAX_CONSTRAINT_VALUE_EXTENSIONS,
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MaxLengthConstraint",
+        identity: "ix://agent-ix/semantic-core/MaxLengthConstraint",
         display_name: "MaxLengthConstraint",
         kind: "record",
         rust_name: "MaxLengthConstraint",
@@ -1358,7 +1369,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MaxLengthConstraintKeyword",
+        identity: "ix://agent-ix/semantic-core/MaxLengthConstraintKeyword",
         display_name: "MaxLengthConstraintKeyword",
         kind: "enum",
         rust_name: "MaxLengthConstraintKeyword",
@@ -1382,7 +1393,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MaxLengthConstraintValue",
+        identity: "ix://agent-ix/semantic-core/MaxLengthConstraintValue",
         display_name: "MaxLengthConstraintValue",
         kind: "scalar",
         rust_name: "MaxLengthConstraintValue",
@@ -1406,7 +1417,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MinConstraint",
+        identity: "ix://agent-ix/semantic-core/MinConstraint",
         display_name: "MinConstraint",
         kind: "record",
         rust_name: "MinConstraint",
@@ -1430,7 +1441,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MinConstraintKeyword",
+        identity: "ix://agent-ix/semantic-core/MinConstraintKeyword",
         display_name: "MinConstraintKeyword",
         kind: "enum",
         rust_name: "MinConstraintKeyword",
@@ -1454,7 +1465,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MinConstraintValueNumber",
+        identity: "ix://agent-ix/semantic-core/MinConstraintValueNumber",
         display_name: "MinConstraintValueNumber",
         kind: "scalar",
         rust_name: "MinConstraintValueNumber",
@@ -1478,7 +1489,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MinConstraintValueString",
+        identity: "ix://agent-ix/semantic-core/MinConstraintValueString",
         display_name: "MinConstraintValueString",
         kind: "scalar",
         rust_name: "MinConstraintValueString",
@@ -1502,7 +1513,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MinConstraintValue",
+        identity: "ix://agent-ix/semantic-core/MinConstraintValue",
         display_name: "MinConstraintValue",
         kind: "union",
         rust_name: "MinConstraintValue",
@@ -1526,7 +1537,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: MIN_CONSTRAINT_VALUE_EXTENSIONS,
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MinLengthConstraint",
+        identity: "ix://agent-ix/semantic-core/MinLengthConstraint",
         display_name: "MinLengthConstraint",
         kind: "record",
         rust_name: "MinLengthConstraint",
@@ -1550,7 +1561,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MinLengthConstraintKeyword",
+        identity: "ix://agent-ix/semantic-core/MinLengthConstraintKeyword",
         display_name: "MinLengthConstraintKeyword",
         kind: "enum",
         rust_name: "MinLengthConstraintKeyword",
@@ -1574,7 +1585,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MinLengthConstraintValue",
+        identity: "ix://agent-ix/semantic-core/MinLengthConstraintValue",
         display_name: "MinLengthConstraintValue",
         kind: "scalar",
         rust_name: "MinLengthConstraintValue",
@@ -1598,7 +1609,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/Multiplicity",
+        identity: "ix://agent-ix/semantic-core/Multiplicity",
         display_name: "Multiplicity",
         kind: "record",
         rust_name: "Multiplicity",
@@ -1622,7 +1633,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MultiplicityLower",
+        identity: "ix://agent-ix/semantic-core/MultiplicityLower",
         display_name: "MultiplicityLower",
         kind: "scalar",
         rust_name: "MultiplicityLower",
@@ -1646,7 +1657,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MultiplicityUpper",
+        identity: "ix://agent-ix/semantic-core/MultiplicityUpper",
         display_name: "MultiplicityUpper",
         kind: "scalar",
         rust_name: "MultiplicityUpper",
@@ -1670,7 +1681,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MultiplicityOrdered",
+        identity: "ix://agent-ix/semantic-core/MultiplicityOrdered",
         display_name: "MultiplicityOrdered",
         kind: "scalar",
         rust_name: "MultiplicityOrdered",
@@ -1694,7 +1705,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/MultiplicityUnique",
+        identity: "ix://agent-ix/semantic-core/MultiplicityUnique",
         display_name: "MultiplicityUnique",
         kind: "scalar",
         rust_name: "MultiplicityUnique",
@@ -1718,7 +1729,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/NonEmptyConstraint",
+        identity: "ix://agent-ix/semantic-core/NonEmptyConstraint",
         display_name: "NonEmptyConstraint",
         kind: "record",
         rust_name: "NonEmptyConstraint",
@@ -1742,7 +1753,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/NonEmptyConstraintKeyword",
+        identity: "ix://agent-ix/semantic-core/NonEmptyConstraintKeyword",
         display_name: "NonEmptyConstraintKeyword",
         kind: "enum",
         rust_name: "NonEmptyConstraintKeyword",
@@ -1766,7 +1777,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/OperationDecl",
+        identity: "ix://agent-ix/semantic-core/OperationDecl",
         display_name: "OperationDecl",
         kind: "record",
         rust_name: "OperationDecl",
@@ -1790,7 +1801,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/PatternConstraint",
+        identity: "ix://agent-ix/semantic-core/PatternConstraint",
         display_name: "PatternConstraint",
         kind: "record",
         rust_name: "PatternConstraint",
@@ -1814,7 +1825,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/PatternConstraintKeyword",
+        identity: "ix://agent-ix/semantic-core/PatternConstraintKeyword",
         display_name: "PatternConstraintKeyword",
         kind: "enum",
         rust_name: "PatternConstraintKeyword",
@@ -1838,7 +1849,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/PatternConstraintRegex",
+        identity: "ix://agent-ix/semantic-core/PatternConstraintRegex",
         display_name: "PatternConstraintRegex",
         kind: "scalar",
         rust_name: "PatternConstraintRegex",
@@ -1862,7 +1873,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/PatternConstraintDialect",
+        identity: "ix://agent-ix/semantic-core/PatternConstraintDialect",
         display_name: "PatternConstraintDialect",
         kind: "enum",
         rust_name: "PatternConstraintDialect",
@@ -1886,7 +1897,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/RelationDecl",
+        identity: "ix://agent-ix/semantic-core/RelationDecl",
         display_name: "RelationDecl",
         kind: "record",
         rust_name: "RelationDecl",
@@ -1910,7 +1921,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/RelationDeclComposite",
+        identity: "ix://agent-ix/semantic-core/RelationDeclComposite",
         display_name: "RelationDeclComposite",
         kind: "scalar",
         rust_name: "RelationDeclComposite",
@@ -1934,7 +1945,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/SemanticId",
+        identity: "ix://agent-ix/semantic-core/SemanticId",
         display_name: "SemanticId",
         kind: "scalar",
         rust_name: "SemanticId",
@@ -1958,7 +1969,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/SourceLocus",
+        identity: "ix://agent-ix/semantic-core/SourceLocus",
         display_name: "SourceLocus",
         kind: "record",
         rust_name: "SourceLocus",
@@ -1982,7 +1993,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/SourceLocusPath",
+        identity: "ix://agent-ix/semantic-core/SourceLocusPath",
         display_name: "SourceLocusPath",
         kind: "scalar",
         rust_name: "SemanticCoreSourceLocusPath",
@@ -2006,7 +2017,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/SourceLocusStartLine",
+        identity: "ix://agent-ix/semantic-core/SourceLocusStartLine",
         display_name: "SourceLocusStartLine",
         kind: "scalar",
         rust_name: "SourceLocusStartLine",
@@ -2030,7 +2041,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/SourceLocusStartColumn",
+        identity: "ix://agent-ix/semantic-core/SourceLocusStartColumn",
         display_name: "SourceLocusStartColumn",
         kind: "scalar",
         rust_name: "SourceLocusStartColumn",
@@ -2054,7 +2065,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/SourceLocusEndLine",
+        identity: "ix://agent-ix/semantic-core/SourceLocusEndLine",
         display_name: "SourceLocusEndLine",
         kind: "scalar",
         rust_name: "SourceLocusEndLine",
@@ -2078,7 +2089,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/SourceLocusEndColumn",
+        identity: "ix://agent-ix/semantic-core/SourceLocusEndColumn",
         display_name: "SourceLocusEndColumn",
         kind: "scalar",
         rust_name: "SourceLocusEndColumn",
@@ -2102,7 +2113,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/TypeRef",
+        identity: "ix://agent-ix/semantic-core/TypeRef",
         display_name: "TypeRef",
         kind: "record",
         rust_name: "TypeRef",
@@ -2126,7 +2137,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/TypeRefTarget",
+        identity: "ix://agent-ix/semantic-core/TypeRefTarget",
         display_name: "TypeRefTarget",
         kind: "union",
         rust_name: "TypeRefTarget",
@@ -2150,7 +2161,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: TYPE_REF_TARGET_EXTENSIONS,
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/UniqueConstraint",
+        identity: "ix://agent-ix/semantic-core/UniqueConstraint",
         display_name: "UniqueConstraint",
         kind: "record",
         rust_name: "UniqueConstraint",
@@ -2174,7 +2185,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/UniqueConstraintKeyword",
+        identity: "ix://agent-ix/semantic-core/UniqueConstraintKeyword",
         display_name: "UniqueConstraintKeyword",
         kind: "enum",
         rust_name: "UniqueConstraintKeyword",
@@ -2198,7 +2209,7 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/type/UnitSymbol",
+        identity: "ix://agent-ix/semantic-core/UnitSymbol",
         display_name: "UnitSymbol",
         kind: "scalar",
         rust_name: "UnitSymbol",

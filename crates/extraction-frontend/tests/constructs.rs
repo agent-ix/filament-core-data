@@ -50,14 +50,16 @@ fn v1_1() -> Value {
     read_json(&workspace_dir().join("fixtures/semantic/v1/positive/semantic-ir-v1-1.json"))
 }
 
-/// The identity segment of artifact `id`: the id verbatim (FR-095), so
-/// `AR_001` mints `AR_001`.
+/// A type definition mints no `NodeKind` segment (FR-095): the identity is
+/// the artifact id verbatim, so `AR_001` mints `AR_001`.
 fn type_ref(id: &str) -> String {
-    format!("{PREFIX}type/{id}")
+    format!("{PREFIX}{id}")
 }
 
+/// A field mints no `NodeKind` segment either: its identity is its owner's
+/// identity, `/`, and its own name (FR-095).
 fn field_ref(owner: &str, name: &str) -> String {
-    format!("{PREFIX}field/{owner}-{name}")
+    format!("{}/{name}", type_ref(owner))
 }
 
 /// The index of the type whose identity is `identity` in `document`.
@@ -278,7 +280,7 @@ fn tc_1742_unresolved_subsets_and_widening_redefines_raise_their_codes() {
 
     let mut widening = positive();
     type_mut(&mut widening, "FR-001")["fields"][labels]["multiplicity"] =
-        json!({ "lower": 0, "upper": 9 });
+        json!({ "lower": 0, "upper": 9, "ordered": false, "unique": false });
     assert_rust(
         "widening redefines",
         &widening,
@@ -294,8 +296,8 @@ fn tc_1743_unresolved_frame_reference_and_population_member_raise_their_codes() 
     let sm = position(&positive(), &type_ref("SM-001"));
     let mut frame = positive();
     type_mut(&mut frame, "SM-001")["operations"][0]["frame"]["modifies"] = json!([
-        "ix://agent-ix/orders/field/SM-001-current",
-        "ix://agent-ix/orders/field/nowhere"
+        "ix://agent-ix/orders/SM-001/current",
+        "ix://agent-ix/orders/nowhere"
     ]);
     assert_rust(
         "unresolved frame reference in modifies",
@@ -307,7 +309,7 @@ fn tc_1743_unresolved_frame_reference_and_population_member_raise_their_codes() 
 
     let mut frame_creates = positive();
     type_mut(&mut frame_creates, "SM-001")["operations"][0]["frame"]["creates"] =
-        json!(["ix://agent-ix/orders/type/nowhere"]);
+        json!(["ix://agent-ix/orders/nowhere"]);
     assert_rust(
         "unresolved frame reference in creates",
         &frame_creates,
@@ -318,7 +320,7 @@ fn tc_1743_unresolved_frame_reference_and_population_member_raise_their_codes() 
 
     let mut frame_deletes = positive();
     type_mut(&mut frame_deletes, "SM-001")["operations"][0]["frame"]["deletes"] =
-        json!(["ix://agent-ix/orders/type/nowhere"]);
+        json!(["ix://agent-ix/orders/nowhere"]);
     assert_rust(
         "unresolved frame reference in deletes",
         &frame_deletes,
@@ -345,7 +347,7 @@ fn tc_1743_frame_admits_a_relationship_modifies_entry_and_a_declared_creates_ent
     let mut valid = positive();
     type_mut(&mut valid, "SM-001")["operations"][0]["frame"] = json!({
         "modifies": ["ix://agent-ix/orders/relationship/SM-001-references-EN-001"],
-        "creates": ["ix://agent-ix/orders/type/EN-001"],
+        "creates": ["ix://agent-ix/orders/EN-001"],
         "deletes": [],
     });
     assert_rust(
@@ -629,8 +631,7 @@ fn tc_1747_a_source_element_naming_an_operation_identity_of_a_declared_type_is_a
     let mut admitted = positive();
     entry_mut(&mut admitted, "aggregate_root")["construct"]["members"]["sourceElement"] =
         json!("optional");
-    type_mut(&mut admitted, "AR-001")["sourceElement"] =
-        json!(format!("{PREFIX}operation/RP-001-findById"));
+    type_mut(&mut admitted, "AR-001")["sourceElement"] = json!(format!("{PREFIX}RP-001/findById"));
     assert_rust(
         "a sourceElement naming an operation identity of a declared type",
         &admitted,
@@ -650,8 +651,7 @@ fn tc_1747_a_target_element_naming_the_same_operation_identity_is_refused() {
     let mut refused = positive();
     entry_mut(&mut refused, "aggregate_root")["construct"]["members"]["targetElement"] =
         json!("optional");
-    type_mut(&mut refused, "AR-001")["targetElement"] =
-        json!(format!("{PREFIX}operation/RP-001-findById"));
+    type_mut(&mut refused, "AR-001")["targetElement"] = json!(format!("{PREFIX}RP-001/findById"));
     assert_rust(
         "a targetElement naming an operation identity",
         &refused,
@@ -672,7 +672,7 @@ fn tc_1747_a_source_element_naming_no_such_operation_is_refused() {
     entry_mut(&mut refused, "aggregate_root")["construct"]["members"]["sourceElement"] =
         json!("optional");
     type_mut(&mut refused, "AR-001")["sourceElement"] =
-        json!(format!("{PREFIX}operation/RP-001-doesNotExist"));
+        json!(format!("{PREFIX}RP-001/doesNotExist"));
     assert_rust(
         "a sourceElement naming no such operation",
         &refused,
@@ -713,7 +713,7 @@ fn tc_1748_occurrence_transition_guard_and_domain_membership_rules_raise_their_c
 
     let mut trigger = positive();
     type_mut(&mut trigger, "SM-001")["transitions"][0]["trigger"] =
-        json!(format!("{PREFIX}operation/SM-001-halt"));
+        json!(format!("{PREFIX}SM-001/halt"));
     assert_rust(
         "undeclared trigger",
         &trigger,
@@ -929,8 +929,7 @@ fn tc_1789_a_source_element_resolved_through_an_operation_is_checked_by_its_owni
     let entry = entry_mut(&mut admitted, "aggregate_root");
     entry["construct"]["members"]["sourceElement"] = json!("optional");
     entry["construct"]["references"]["sourceElement"] = json!(["business:repository"]);
-    type_mut(&mut admitted, "AR-001")["sourceElement"] =
-        json!(format!("{PREFIX}operation/RP-001-findById"));
+    type_mut(&mut admitted, "AR-001")["sourceElement"] = json!(format!("{PREFIX}RP-001/findById"));
     assert_rust(
         "an operation whose owning type carries the admitted role",
         &admitted,
@@ -941,8 +940,7 @@ fn tc_1789_a_source_element_resolved_through_an_operation_is_checked_by_its_owni
     let entry = entry_mut(&mut refused, "aggregate_root");
     entry["construct"]["members"]["sourceElement"] = json!("optional");
     entry["construct"]["references"]["sourceElement"] = json!(["business:repository"]);
-    type_mut(&mut refused, "AR-001")["sourceElement"] =
-        json!(format!("{PREFIX}operation/SM-001-advance"));
+    type_mut(&mut refused, "AR-001")["sourceElement"] = json!(format!("{PREFIX}SM-001/advance"));
     assert_rust(
         "an operation whose owning type carries none of the admitted roles",
         &refused,
@@ -961,7 +959,7 @@ fn tc_1791_a_kind_no_reader_code_names_reads_by_its_declaration_alone() {
     let origin = document["types"][position(&document, &type_ref("VO-001"))]["origin"].clone();
     let text = type_ref("VO-001");
     let part = json!({
-        "identity": format!("{PREFIX}type/PT-001"),
+        "identity": format!("{PREFIX}PT-001"),
         "displayName": "Engine",
         "kind": { "module": "acme/spec-objects-systems", "name": "part" },
         "roles": ["systems:part"],
@@ -972,7 +970,7 @@ fn tc_1791_a_kind_no_reader_code_names_reads_by_its_declaration_alone() {
         "fields": []
     });
     let port = json!({
-        "identity": format!("{PREFIX}type/PO-001"),
+        "identity": format!("{PREFIX}PO-001"),
         "displayName": "FuelIn",
         "kind": { "module": "acme/spec-objects-systems", "name": "port" },
         "roles": ["systems:port"],
@@ -980,10 +978,10 @@ fn tc_1791_a_kind_no_reader_code_names_reads_by_its_declaration_alone() {
         "constraints": [],
         "extensions": [],
         "unknownPolicy": "reject",
-        "owner": format!("{PREFIX}type/PT-001"),
+        "owner": format!("{PREFIX}PT-001"),
         "direction": "in",
         "interfaceType": text,
-        "multiplicity": { "lower": 1, "upper": 2 }
+        "multiplicity": { "lower": 1, "upper": 2, "ordered": false, "unique": false }
     });
     let declaration = |name: &str, construct: Value| {
         json!({
@@ -994,7 +992,7 @@ fn tc_1791_a_kind_no_reader_code_names_reads_by_its_declaration_alone() {
         })
     };
     let connection = json!({
-        "identity": format!("{PREFIX}type/CN-001"),
+        "identity": format!("{PREFIX}CN-001"),
         "displayName": "FuelLine",
         "kind": { "module": "acme/spec-objects-systems", "name": "connection" },
         "roles": ["systems:connection"],
@@ -1003,8 +1001,8 @@ fn tc_1791_a_kind_no_reader_code_names_reads_by_its_declaration_alone() {
         "extensions": [],
         "unknownPolicy": "reject",
         "flowDirection": "source-to-target",
-        "sourceEnd": { "type": format!("{PREFIX}type/PO-001"), "multiplicity": { "lower": 1, "upper": 1 } },
-        "targetEnd": { "type": format!("{PREFIX}type/PO-001") }
+        "sourceEnd": { "type": format!("{PREFIX}PO-001"), "multiplicity": { "lower": 1, "upper": 1, "ordered": false, "unique": false } },
+        "targetEnd": { "type": format!("{PREFIX}PO-001") }
     });
     let types = document["types"].as_array_mut().expect("types");
     types.push(part);
@@ -1068,8 +1066,7 @@ fn tc_1791_a_kind_no_reader_code_names_reads_by_its_declaration_alone() {
         .remove("targetEnd");
     assert_refused_by_schema("a connection without its required target end", &endless);
     let mut foreign_end = document.clone();
-    foreign_end["types"][connection_at]["sourceEnd"]["type"] =
-        json!(format!("{PREFIX}type/PT-001"));
+    foreign_end["types"][connection_at]["sourceEnd"]["type"] = json!(format!("{PREFIX}PT-001"));
     assert_rust(
         "a connection end naming a type without the port role",
         &foreign_end,
@@ -1092,7 +1089,11 @@ fn tc_1791_a_kind_no_reader_code_names_reads_by_its_declaration_alone() {
 #[test]
 fn tc_1793_feature_order_names_each_own_field_and_operation_exactly_once() {
     let at = |document: &Value| position(document, &type_ref("OP-001"));
-    let feature = |kind: &str, name: &str| json!(format!("{PREFIX}{kind}/OP-001-{name}"));
+    // A field and an operation both mint under their owner, with no
+    // `NodeKind` segment of their own (FR-095), so `kind` no longer
+    // distinguishes the two identity shapes; it stays a parameter so every
+    // call site still reads like the member it names.
+    let feature = |_kind: &str, name: &str| json!(format!("{PREFIX}OP-001/{name}"));
     let order = json!([
         feature("operation", "clear"),
         feature("field", "id"),
@@ -1123,8 +1124,7 @@ fn tc_1793_feature_order_names_each_own_field_and_operation_exactly_once() {
     );
 
     let mut foreign = ordered.clone();
-    type_mut(&mut foreign, "OP-001")["featureOrder"][4] =
-        json!(format!("{PREFIX}operation/SM-001-advance"));
+    type_mut(&mut foreign, "OP-001")["featureOrder"][4] = json!(format!("{PREFIX}SM-001/advance"));
     let mut codes = rust_codes(&foreign);
     codes.sort();
     assert_eq!(
@@ -1350,7 +1350,7 @@ fn lower(root: &Path) -> Lowered {
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0")
+    lower_bundle(&bundle, &extractions, &resolutions, &limits)
 }
 
 /// The business bundle with `edit` applied to the file `relative`, lowered.
@@ -1378,7 +1378,7 @@ fn lower_mutated(mutate: impl Fn(&mut Extractions)) -> Lowered {
     mutate(&mut extractions);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0")
+    lower_bundle(&bundle, &extractions, &resolutions, &limits)
 }
 
 /// The module roots [`lower_systems`] and its callers' own [`LiftRequest`]s
@@ -1409,7 +1409,7 @@ fn lower_systems(write: impl FnOnce(&Path)) -> (tempfile::TempDir, PathBuf, Lowe
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits);
     (dir, root, lowered)
 }
 
@@ -1434,7 +1434,7 @@ fn lower_systems_mutated(
     mutate(&mut extractions);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0")
+    lower_bundle(&bundle, &extractions, &resolutions, &limits)
 }
 
 /// The `sourceElement` of `id`'s allocation record, as the engine extracted
@@ -1522,7 +1522,7 @@ fn assert_no_edge_to_refused(lowered: &Lowered) {
             let value = serde_json::to_value(t).expect("serialises");
             assert_ne!(value["owner"], json!(identity), "{}", t.identity);
             for edge in value["relationships"].as_array().into_iter().flatten() {
-                assert_ne!(edge["target"], json!(identity), "{}", t.identity);
+                assert_ne!(edge["targetEnd"]["type"], json!(identity), "{}", t.identity);
             }
         }
     }
@@ -1854,7 +1854,6 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
         &extractions,
         &resolutions,
         &Limits::declared().expect("limits.json parses"),
-        "0.0.0",
     );
     assert_refused(
         &population,
@@ -1963,7 +1962,7 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits);
     // This frontend supplies the engine no relation vocabulary, so the rows
     // are read but not extracted: refused, never dropped behind an advisory.
     assert_refused(
@@ -2292,7 +2291,7 @@ fn tc_1800_a_systems_reference_member_naming_a_since_refused_type_cascades_the_r
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits);
 
     let messages: Vec<&str> = refusals(&lowered)
         .iter()
@@ -2363,7 +2362,7 @@ fn tc_1800_a_systems_reference_member_naming_an_imported_identity_is_refused() {
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits);
 
     assert_refused(
         &lowered,
@@ -2423,7 +2422,7 @@ fn tc_1800_an_allocation_source_naming_an_operation_lowers_to_that_operations_id
         .expect("SA_002");
     assert_eq!(
         sa_002.construct.source_element,
-        Some(format!("{PREFIX}operation/SI_002-run")),
+        Some(format!("{PREFIX}SI_002/run")),
         "the allocation source lowers to SI_002's run operation identity"
     );
 
@@ -2572,7 +2571,7 @@ fn tc_1800_an_allocation_source_naming_an_operation_of_a_since_refused_artifact_
     let sa_002_cascade = format!(
         "artifact SA_002 (spec/functional/SA_002-alloc-operation-source.md) lowers to no \
          `allocation` construct: a transition, step or reference member names the operation \
-         {PREFIX}operation/SI_002-run, which lowers to nothing"
+         {PREFIX}SI_002/run, which lowers to nothing"
     );
     assert!(messages.contains(&sa_002_cascade.as_str()), "{messages:#?}");
     assert!(refusals(&broken).iter().all(|d| d.blocking));
@@ -2632,7 +2631,7 @@ fn tc_1800_an_allocation_source_naming_an_operation_that_does_not_exist_is_refus
         "SA_002",
         &format!(
             "a transition, step or reference member names the operation \
-             {PREFIX}operation/SI_002-bogus, which lowers to nothing"
+             {PREFIX}SI_002/bogus, which lowers to nothing"
         ),
     );
 }
@@ -2726,9 +2725,11 @@ fn tc_1800_the_architecture_fixture_lifts_to_ir_2_0_0_with_module_qualified_syst
     // an object: a type dropped by a `filter_map` never shows up in a failed
     // assertion, so a systems-kind artifact silently emitted without its
     // module qualifier would pass unnoticed. `kind` is a plain string
-    // (`"scalar"`, `"alias"`) for a kernel-derived type that carries no
+    // (e.g. `"scalar"`, `"alias"`) for a core kind that carries no
     // construct, and the object form `{module, name}` for one that does;
-    // both are asserted here, on the whole collected set.
+    // both are asserted here, on the whole collected set. (A kernel scalar
+    // mints no type node at all — gap 1 of FCD #199/#200 — so none appear
+    // here.)
     let mut type_kinds: Vec<(String, String)> = document["types"]
         .as_array()
         .expect("types")
@@ -2752,14 +2753,11 @@ fn tc_1800_the_architecture_fixture_lifts_to_ir_2_0_0_with_module_qualified_syst
         type_kinds,
         [
             ("Count", "agent-ix/spec-objects-business/value_object"),
-            ("CountValue", "alias"),
             ("Flow", "agent-ix/spec-objects-architecture/interface"),
             ("Flow2", "agent-ix/spec-objects-architecture/interface"),
-            ("Integer", "scalar"),
             ("Pump", "agent-ix/spec-objects-business/entity"),
             ("Sys", "agent-ix/spec-objects-business/entity"),
             ("Tank", "agent-ix/spec-objects-business/entity"),
-            ("UUID", "scalar"),
             ("pipe", "agent-ix/spec-objects-architecture/connection"),
             (
                 "pump_alloc",
@@ -2863,7 +2861,7 @@ fn tc_1801_a_required_member_with_its_own_source_table_absent_from_the_artifact_
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits);
     assert_refused(
         &lowered,
         "SI_002",
@@ -2905,7 +2903,7 @@ fn tc_1802_an_enumeration_construct_requiring_supertypes_with_none_declared_refu
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits);
 
     assert_refused(
         &lowered,
@@ -3242,7 +3240,7 @@ fn tc_1794_a_construct_requiring_feature_order_refuses_its_artifacts_for_want_of
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let limits = Limits::declared().expect("limits.json parses");
-    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits, "0.0.0");
+    let lowered = lower_bundle(&bundle, &extractions, &resolutions, &limits);
     // Every entity artifact, and only those, is refused naming the member:
     // `featureOrder` has a per-artifact source table (quire-rs FR-075's
     // `## Features`/`Ubiquitous Language`-style locators), like `part`/

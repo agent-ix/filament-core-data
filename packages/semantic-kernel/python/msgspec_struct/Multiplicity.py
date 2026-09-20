@@ -10,6 +10,6 @@ from msgspec import UNSET, Meta, Struct, UnsetType
 
 class Multiplicity(Struct):
     lower: Annotated[int, Meta(ge=0, le=2147483647)]
-    ordered: bool | UnsetType = UNSET
-    unique: bool | UnsetType = UNSET
+    ordered: bool
+    unique: bool
     upper: Annotated[int, Meta(ge=0, le=2147483647)] | UnsetType = UNSET

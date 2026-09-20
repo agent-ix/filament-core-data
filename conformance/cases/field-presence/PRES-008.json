@@ -12,7 +12,9 @@
 			"path": "/ir/types/8/fields/0/multiplicity",
 			"value": {
 				"lower": 1,
-				"upper": 1
+				"upper": 1,
+				"ordered": false,
+				"unique": false
 			}
 		},
 		{
@@ -20,7 +22,9 @@
 			"path": "/ir/types/8/fields/0/multiplicity",
 			"value": {
 				"lower": 2,
-				"upper": 1
+				"upper": 1,
+				"ordered": false,
+				"unique": false
 			}
 		}
 	],
@@ -30,7 +34,7 @@
 		{
 			"artifact": "docs/semantic-data-system/contracts-v1.md",
 			"locator": "Structural model detail (issue #34)",
-			"quote": "`multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is"
+			"quote": "`multiplicity { lower, upper?, ordered, unique }` (absent `upper` is"
 		}
 	],
 	"provenance": {

@@ -54,7 +54,11 @@ import {
 } from "../src/compiler/frontend/seam.mjs";
 import { DECORATOR_LIBRARY } from "../src/compiler/frontend/typespec/frontend.mjs";
 import {
-	constraintAliasIdentity,
+	EDGE_VOCABULARY,
+	PART_OF,
+	parseEdgeVocabulary,
+} from "../src/compiler/ir/applicability.mjs";
+import {
 	constraintDiagnosticCode,
 	mintIdentity,
 	slug,
@@ -824,9 +828,17 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			(thing.fields as Json[]).find((one) => one.name === name) as Json;
 		const values = named("values");
 		const tags = named("tags");
-		expect(values.multiplicity).toEqual({ lower: 0 });
+		expect(values.multiplicity).toEqual({
+			lower: 0,
+			ordered: false,
+			unique: false,
+		});
 		expect(values.presence).toBe("required");
-		expect(tags.multiplicity).toEqual({ lower: 1 });
+		expect(tags.multiplicity).toEqual({
+			lower: 1,
+			ordered: false,
+			unique: false,
+		});
 		expect(tags.presence).toBe("optional");
 
 		// The payload level: a present empty collection is admitted and an
@@ -853,10 +865,7 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			['@unknownPolicy("maybe")', "unknownPolicy"],
 			['@unit("a b")', "unit"],
 			['@defaultKind("guess")', "defaultKind"],
-			[
-				'@relationship("has", "invented", "ix://agent-ix/x/type/Y")',
-				"relationship",
-			],
+			['@relationship("has", "invented", "ix://agent-ix/x/Y")', "relationship"],
 			['@clause("shouting", "id", "text")', "clause"],
 			['@semanticReference("not-an-identity")', "semanticReference"],
 			[
@@ -930,25 +939,25 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 	}, 120000);
 
 	/** Traces: TC-417, TC-427; FR-053-AC-6, FR-053-CON-1. */
-	it("mints the identities FR-034 mints, from one shared table", () => {
-		// FR-034's rules, rooted at the package identity. The expectations are
+	it("mints the identities FR-095 mints, from one shared table", () => {
+		// FR-095's rules, rooted at the package identity. The expectations are
 		// written from the requirement text, and the implementation is asked to
 		// agree with them rather than the other way round.
 		const pkg = "agent-ix/assurance";
 		expect(mintIdentity(pkg, "type", ["Artifact"])).toBe(
-			"ix://agent-ix/assurance/type/Artifact",
+			"ix://agent-ix/assurance/Artifact",
 		);
 		expect(mintIdentity(pkg, "field", ["Artifact", "id"])).toBe(
-			"ix://agent-ix/assurance/field/Artifact-id",
+			"ix://agent-ix/assurance/Artifact/id",
 		);
 		expect(mintIdentity(pkg, "field", ["Artifact", "archive", "reason"])).toBe(
-			"ix://agent-ix/assurance/field/Artifact-archive-reason",
+			"ix://agent-ix/assurance/Artifact/archive/reason",
 		);
 		expect(
 			mintIdentity(pkg, "relationship", ["Artifact", "belongs_to", "Project"]),
 		).toBe("ix://agent-ix/assurance/relationship/Artifact-belongs-to-Project");
 		expect(mintIdentity(pkg, "operation", ["Artifact", "archive"])).toBe(
-			"ix://agent-ix/assurance/operation/Artifact-archive",
+			"ix://agent-ix/assurance/Artifact/archive",
 		);
 		expect(mintIdentity(pkg, "clause", ["Artifact", "not_archived"])).toBe(
 			"ix://agent-ix/assurance/clause/Artifact-not-archived",
@@ -956,15 +965,18 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 		expect(mintIdentity(pkg, "constraint", ["Text", "minLength"])).toBe(
 			"ix://agent-ix/assurance/constraint/Text-minLength",
 		);
-		expect(constraintAliasIdentity(pkg, "Artifact", "code")).toBe(
-			"ix://agent-ix/assurance/type/ArtifactCode",
-		);
-		// Every identity the fixture emits matches one of those forms.
+		// A constrained property mints no alias identity (gap 1 of FCD
+		// #199/#200): its constraint attaches directly to the field's own
+		// `field` identity, already covered above.
+		// A type definition mints no slot segment of its own: its identity is
+		// the package identity plus one flat name, nothing nested under it.
 		const identities = (compiled.ir as never as { types: Json[] }).types.map(
 			(type) => String(type.identity),
 		);
 		for (const identity of identities) {
-			expect(identity.startsWith(`ix://${pkg}/type/`), identity).toBe(true);
+			const prefix = `ix://${pkg}/`;
+			expect(identity.startsWith(prefix), identity).toBe(true);
+			expect(identity.slice(prefix.length).includes("/"), identity).toBe(false);
 		}
 	});
 
@@ -1000,23 +1012,28 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 	}, 120000);
 
 	/** Traces: TC-419; FR-053-AC-8. */
-	it("mints an alias for a constrained property and retargets the field to it", () => {
+	it("attaches a constrained property's constraint to the field itself, with no synthetic alias", () => {
+		// Gap 1 of FCD #199/#200: a constrained property keeps its
+		// constraint on the field, `appliesTo` the field's own identity,
+		// and `typeRef` stays the field's resolved type — no alias
+		// `typeDefinition` is minted, and no `ArtifactCode` identity
+		// exists at all.
 		const types = (compiled.ir as never as { types: Json[] }).types;
-		const alias = types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/ArtifactCode",
-		);
-		expect(alias?.kind).toBe("alias");
-		expect(alias?.target).toBe("ix://agent-ix/assurance/type/Text");
-		const constraint = (alias?.constraints as Json[])[0];
-		expect(constraint.keyword).toBe("minLength");
-		expect(constraint.appliesTo).toBe(alias?.identity);
+		expect(
+			types.find(
+				(type) => type.identity === "ix://agent-ix/assurance/ArtifactCode",
+			),
+		).toBeUndefined();
 		const artifact = types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		);
 		const field = (artifact?.fields as Json[]).find(
 			(entry) => entry.name === "code",
 		);
-		expect(field?.typeRef).toBe(alias?.identity);
+		expect(field?.typeRef).toBe("ix://agent-ix/assurance/Text");
+		const constraint = (field?.constraints as Json[])[0];
+		expect(constraint.keyword).toBe("minLength");
+		expect(constraint.appliesTo).toBe(field?.identity);
 	});
 
 	/** Traces: TC-420; FR-053-AC-9. */
@@ -1090,7 +1107,7 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 				"using AgentIx.Semantic.Decorators;",
 				"namespace AgentIx.Semantic;",
 				"scalar Text extends string;",
-				'@relationship("has", "structural", "ix://agent-ix/probe/type/Text")',
+				'@relationship("contains", "structural", "ix://agent-ix/probe/Text")',
 				"model TagList is Array<Text>;",
 			].join("\n"),
 		);
@@ -1132,13 +1149,32 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 	/** Traces: TC-423; FR-053-AC-12. */
 	it("lowers relationships, operations, and clauses with the FR-034 defaults", () => {
 		const artifact = (compiled.ir as never as { types: Json[] }).types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		);
 		const relationships = artifact?.relationships as Json[];
 		expect(relationships).toHaveLength(2);
 		for (const relationship of relationships) {
 			expect(relationship.composite).toBe(false);
-			expect(relationship.multiplicity).toEqual({ lower: 0, upper: 1 });
+			// The two-end shape (gap 3 of FCD #199/#200): `@relationship`
+			// authors only the target end's cardinality, defaulted by
+			// FR-034; the source end is always `0..unbounded`
+			// (source-multiplicity authoring is future FCD #201).
+			expect(relationship.direction).toBe("source-to-target");
+			expect(
+				(relationship.sourceEnd as Json | undefined)?.multiplicity,
+			).toEqual({
+				lower: 0,
+				ordered: false,
+				unique: false,
+			});
+			expect(
+				(relationship.targetEnd as Json | undefined)?.multiplicity,
+			).toEqual({
+				lower: 0,
+				upper: 1,
+				ordered: false,
+				unique: false,
+			});
 		}
 		const operations = artifact?.operations as Json[];
 		expect(operations).toHaveLength(1);
@@ -1153,10 +1189,129 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 		for (const clause of clauses) expect(clause.sourceSpan).toBeDefined();
 	});
 
+	/** Traces: TC-1816; FR-094-AC-14. */
+	it("parses the committed edge vocabulary manifest into every declared verb", () => {
+		// H4 of the FCD #199/#200 review: `EDGE_VOCABULARY`'s hand-rolled
+		// extractor reads `manifest.yaml`'s `edge_types` block directly (no npm
+		// dependency could be added without moving `pnpm-lock.yaml`, which
+		// NFR-019/NFR-021's own gate closes); this pins its output against a
+		// sample spanning every shape the manifest's rows take, so a change to
+		// the file's format, not just its content, is caught here rather than
+		// by a silent under-parse.
+		expect(Object.keys(EDGE_VOCABULARY).length).toBe(76);
+		expect(EDGE_VOCABULARY.contains).toEqual({
+			category: "structural",
+			inverse: "part_of",
+		});
+		expect(EDGE_VOCABULARY.contained_by).toEqual({
+			category: "structural",
+			inverse: "contains",
+		});
+		// A verb with no declared inverse still parses, with `inverse`
+		// `undefined` rather than absent-and-throwing or a stray key.
+		expect(EDGE_VOCABULARY.breaches).toEqual({
+			category: "governance",
+			inverse: undefined,
+		});
+		// The last row of the file: the extractor's end-of-block detection (a
+		// line at column 0 ends it) does not drop it.
+		expect(EDGE_VOCABULARY.covers).toEqual({
+			category: "traceability",
+			inverse: "covered_by",
+		});
+		// `belongs_to` is the FCD #199/#200 review's own example of a verb the
+		// manifest does not declare (H4's assurance-fixture finding).
+		expect(Object.hasOwn(EDGE_VOCABULARY, "belongs_to")).toBe(false);
+	});
+
+	/** Traces: TC-1820; FR-094 (L2 of the FCD #199/#200 round-3 review). */
+	it("throws, naming the line, on an edge_types row it does not recognise, rather than truncating the block", () => {
+		// A legal but unrecognised row shape (a multi-line block mapping
+		// instead of the one-line flow mapping this hand-rolled parser
+		// reads) sits between two rows the parser does recognise. The
+		// pre-fix behavior silently `break`-ed at the unrecognised row,
+		// dropping `zeta` even though a real YAML parser accepts the file.
+		const source = [
+			"edge_types:",
+			'  alpha: { description: "a", category: structural }',
+			"  beta:",
+			"    description: b",
+			"    category: structural",
+			'  zeta: { description: "z", category: structural }',
+			"",
+		].join("\n");
+		expect(() => parseEdgeVocabulary(source)).toThrowError(/:3: /);
+	});
+
+	/** Traces: TC-1817; FR-094-AC-14, FR-094-CON-2. */
+	it("derives a relationship's targetEnd.role and composite from the registry, not the decorator", () => {
+		// H4 of the FCD #199/#200 review: `@relationship` no longer takes a
+		// `composite` argument at all (the assurance fixture's two
+		// applications never passed one); both fields come from
+		// `EDGE_VOCABULARY[verb]` at lowering time.
+		const artifact = (compiled.ir as never as { types: Json[] }).types.find(
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
+		);
+		const relationships = artifact?.relationships as Json[];
+		const byRole = (role: string) =>
+			relationships.find((r) => (r.sourceEnd as Json)?.role === role);
+		const containedBy = byRole("contained_by") as Json;
+		expect((containedBy.targetEnd as Json).role).toBe(
+			EDGE_VOCABULARY.contained_by.inverse,
+		);
+		expect(containedBy.composite).toBe(
+			EDGE_VOCABULARY.contained_by.inverse === PART_OF,
+		);
+		const derivesFrom = byRole("derives_from") as Json;
+		expect((derivesFrom.targetEnd as Json).role).toBe(
+			EDGE_VOCABULARY.derives_from.inverse,
+		);
+		expect(derivesFrom.composite).toBe(
+			EDGE_VOCABULARY.derives_from.inverse === PART_OF,
+		);
+		// The source end's role is always present: it is the verb itself,
+		// which every application declares.
+		for (const relationship of relationships) {
+			expect((relationship.sourceEnd as Json).role).toBeTruthy();
+		}
+	});
+
+	/** Traces: TC-1818; FR-094-AC-14. */
+	it("refuses a relationship verb the loaded edge vocabulary does not declare", async () => {
+		const refused = await compileSource(
+			[
+				"using AgentIx.Semantic.Decorators;",
+				"namespace AgentIx.Semantic;",
+				'@relationship("belongs_to", "structural", "ix://agent-ix/probe/Project", 0, 1)',
+				"model Thing { id: string; }",
+			].join("\n"),
+		);
+		expect(codesOf(refused.diagnostics as never)).toContain(
+			DIAGNOSTIC_CODES.UNKNOWN_EDGE_VERB.code,
+		);
+	}, 60000);
+
+	/** Traces: TC-1819; FR-094 (M5 of the FCD #199/#200 round-3 review). */
+	it("refuses a relationship whose decorator category disagrees with the registry's", async () => {
+		const refused = await compileSource(
+			[
+				"using AgentIx.Semantic.Decorators;",
+				"namespace AgentIx.Semantic;",
+				// The edge-vocabulary registry declares `contains` as
+				// `category: structural`; `governance` disagrees with it.
+				'@relationship("contains", "governance", "ix://agent-ix/probe/Project", 0, 1)',
+				"model Thing { id: string; }",
+			].join("\n"),
+		);
+		expect(codesOf(refused.diagnostics as never)).toContain(
+			DIAGNOSTIC_CODES.EDGE_CATEGORY_MISMATCH.code,
+		);
+	}, 60000);
+
 	/** Traces: TC-424; FR-053-AC-13. */
 	it("lowers each of the four semantic-core extensions", async () => {
 		const artifact = (compiled.ir as never as { types: Json[] }).types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		);
 		const extensionsOf = (name: string) =>
 			(
@@ -1170,15 +1325,18 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			"ix://agent-ix/semantic-core/ext/decimal",
 		);
 		expect(extensionsOf("id")).toContain("ix://agent-ix/semantic-core/ext/doc");
-		const kernel = (compiled.ir as never as { types: Json[] }).types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Integer",
-		);
-		expect((kernel?.extensions as Json[])[0].identity).toBe(
-			"ix://agent-ix/semantic-core/ext/kernel-scalar",
-		);
-		expect(((kernel?.extensions as Json[])[0].payload as Json).name).toBe(
-			"Integer",
-		);
+		// A field typed by a built-in directly names its native kernel scalar
+		// (gap 1 of FCD #199/#200): no package-local `Integer` node is minted,
+		// so no `ext/kernel-scalar` extension exists to carry its name.
+		expect(
+			(compiled.ir as never as { types: Json[] }).types.find(
+				(type) => type.identity === "ix://agent-ix/assurance/Integer",
+			),
+		).toBeUndefined();
+		expect(
+			(artifact?.fields as Json[]).find((field) => field.name === "revision")
+				?.typeRef,
+		).toBe("ix://quire/native/Integer");
 
 		const arbitrary = await compileSource(
 			[
@@ -1280,7 +1438,7 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 describe("TypeSpec structural lowering (FR-046)", () => {
 	const typeOf = (identity: string): Json =>
 		(compiled.ir as never as { types: Json[] }).types.find(
-			(type) => type.identity === `ix://agent-ix/assurance/type/${identity}`,
+			(type) => type.identity === `ix://agent-ix/assurance/${identity}`,
 		) as Json;
 
 	const fieldOf = (typeName: string, fieldName: string): Json =>
@@ -1300,18 +1458,14 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 	/** Traces: TC-433; FR-046-AC-2. */
 	it("classifies every row of the structural-kind table, first match wins", () => {
 		expect(typeOf("ActorRef").kind).toBe("reference");
-		expect(typeOf("ActorRef").target).toBe("ix://agent-ix/core/type/Actor");
+		expect(typeOf("ActorRef").target).toBe("ix://agent-ix/core/Actor");
 		expect(typeOf("ArtifactId").kind).toBe("alias");
-		expect(typeOf("ArtifactId").target).toBe(
-			"ix://agent-ix/assurance/type/Text",
-		);
+		expect(typeOf("ArtifactId").target).toBe("ix://agent-ix/assurance/Text");
 		expect(typeOf("Text").kind).toBe("scalar");
 		expect(typeOf("TagList").kind).toBe("sequence");
-		expect(typeOf("TagList").items).toBe("ix://agent-ix/assurance/type/Text");
+		expect(typeOf("TagList").items).toBe("ix://agent-ix/assurance/Text");
 		expect(typeOf("Attributes").kind).toBe("map");
-		expect(typeOf("Attributes").values).toBe(
-			"ix://agent-ix/assurance/type/Text",
-		);
+		expect(typeOf("Attributes").values).toBe("ix://agent-ix/assurance/Text");
 		expect(typeOf("Artifact").kind).toBe("record");
 		expect(typeOf("Status").kind).toBe("enum");
 		expect(typeOf("Payload").kind).toBe("union");
@@ -1388,7 +1542,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(fieldOf("Artifact", "note").nullable).toBe(true);
 		expect(fieldOf("Envelope", "note").nullable).toBe(false);
 		expect(fieldOf("Envelope", "note").typeRef).toBe(
-			"ix://agent-ix/assurance/type/NullableText",
+			"ix://agent-ix/assurance/NullableText",
 		);
 	});
 
@@ -1397,10 +1551,14 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(fieldOf("Artifact", "id").multiplicity).toEqual({
 			lower: 1,
 			upper: 1,
+			ordered: false,
+			unique: false,
 		});
 		expect(fieldOf("Artifact", "summary").multiplicity).toEqual({
 			lower: 0,
 			upper: 1,
+			ordered: false,
+			unique: false,
 		});
 		expect(fieldOf("Artifact", "tags").multiplicity).toEqual({
 			lower: 1,
@@ -1420,7 +1578,11 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		const thing = (
 			optionalCollection.ir as never as { types: Json[] }
 		).types.find((type) => type.displayName === "Thing");
-		expect((thing?.fields as Json[])[0].multiplicity).toEqual({ lower: 0 });
+		expect((thing?.fields as Json[])[0].multiplicity).toEqual({
+			lower: 0,
+			ordered: false,
+			unique: false,
+		});
 
 		const overridden = await compileSource(
 			[
@@ -1436,18 +1598,27 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect((overriddenType?.fields as Json[])[0].multiplicity).toEqual({
 			lower: 1,
 			upper: 7,
+			ordered: false,
+			unique: false,
 		});
 		// Multiplicity, nullability and default kind move independently.
 		expect(fieldOf("Artifact", "note").multiplicity).toEqual({
 			lower: 1,
 			upper: 1,
+			ordered: false,
+			unique: false,
 		});
 		expect(fieldOf("Artifact", "note").defaultKind).toBe("none");
 		expect(fieldOf("Artifact", "status").defaultKind).toBe("migration");
 	}, 120000);
 
-	/** Traces: TC-438, TC-599, TC-603; FR-046-AC-6, FR-046-AC-7. */
-	it("refuses flags on a non-collection, an inverted bound, and a contradicted optionality", async () => {
+	/** Traces: TC-438, TC-599, TC-603; FR-046-AC-6, FR-046-AC-7, FR-027-AC-8. */
+	it("clamps collection flags on a non-collection, refuses an inverted bound, and a contradicted optionality", async () => {
+		// Multiplicity ruling (owner, 2026-09-19T15:39:32Z, on FCD #199):
+		// `FLAGS_ON_NON_COLLECTION` is deleted. `@collection(true, false)` on a
+		// single-valued field (upper 1) no longer refuses; the emitted
+		// `ordered`/`unique` are clamped to `false` regardless of what
+		// `@collection` declared.
 		const flags = await compileSource(
 			[
 				"using AgentIx.Semantic.Decorators;",
@@ -1456,11 +1627,19 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				"model Thing { @collection(true, false) id: Text; }",
 			].join("\n"),
 		);
-		const flagDiagnostic = (flags.diagnostics as unknown as Diagnostic[]).find(
-			(entry) => entry.code === DIAGNOSTIC_CODES.FLAGS_ON_NON_COLLECTION.code,
-		);
-		expect(flagDiagnostic).toBeDefined();
-		expect(flagDiagnostic?.locus?.startLine).toBe(4);
+		expect(flags.diagnostics).toEqual([]);
+		const thing = (flags.ir as never as { types: Json[] }).types.find(
+			(type) => (type as Json).kind === "record",
+		) as Json;
+		const field = ((thing.fields as Json[]) ?? []).find(
+			(candidate) => candidate.name === "id",
+		) as Json;
+		expect(field.multiplicity).toEqual({
+			lower: 1,
+			upper: 1,
+			ordered: false,
+			unique: false,
+		});
 
 		const inverted = await compileSource(
 			[
@@ -1503,6 +1682,8 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect((boundaryType?.fields as Json[])[0].multiplicity).toEqual({
 			lower: 0,
 			upper: 0,
+			ordered: false,
+			unique: false,
 		});
 	}, 240000);
 
@@ -1556,15 +1737,18 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 	}, 120000);
 
 	/** Traces: TC-441; FR-046-AC-10. */
-	it("mints a package-local kernel scalar for a built-in used directly", async () => {
-		const integer = typeOf("Integer");
-		expect(integer.kind).toBe("scalar");
-		expect(integer.scalar).toBe("integer");
-		expect((integer.extensions as Json[])[0].identity).toBe(
-			"ix://agent-ix/semantic-core/ext/kernel-scalar",
+	it("names a built-in used directly by its native kernel scalar reference", async () => {
+		// Gap 1 of FCD #199/#200: a field typed by a built-in scalar
+		// directly mints no package-local definition; its `typeRef` names
+		// the kernel scalar's native reference over the closed FR-032 set.
+		expect(typeOf("Integer")).toBeUndefined();
+		expect(fieldOf("Artifact", "revision").typeRef).toBe(
+			"ix://quire/native/Integer",
 		);
-		expect(fieldOf("Artifact", "revision").typeRef).toBe(integer.identity);
-		expect(typeOf("Timestamp").scalar).toBe("datetime");
+		expect(typeOf("Timestamp")).toBeUndefined();
+		expect(fieldOf("AuditEvent", "at").typeRef).toBe(
+			"ix://quire/native/Timestamp",
+		);
 	});
 
 	/** Traces: TC-442, TC-617; FR-046-AC-11. */
@@ -1575,14 +1759,14 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 			types: Json[];
 		};
 		const artifact = document.types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
-		(artifact.relationships as Json[])[0].target =
-			"ix://agent-ix/core/type/Actor";
+		((artifact.relationships as Json[])[0].targetEnd as Json).type =
+			"ix://agent-ix/core/Actor";
 		expect(
 			codesOf(
 				readContractIr(document, {
-					importedExports: ["ix://agent-ix/core/type/Actor"],
+					importedExports: ["ix://agent-ix/core/Actor"],
 				}) as never,
 			),
 		).toEqual([]);
@@ -1601,12 +1785,12 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(hasBlocking(unconstrained.diagnostics as never)).toBe(false);
 		const types = (unconstrained.ir as Json).types as Json[];
 		const thing = types.find((type) => type.displayName === "Thing") as Json;
-		const target = types.find(
-			(type) => type.identity === ((thing.fields as Json[])[0] as Json).typeRef,
-		) as Json;
-		expect([target.kind, target.scalar]).toEqual(["scalar", "any"]);
-		// One identity with the spec bundles, which name the same scalar JsonObject.
-		expect(String(target.identity).endsWith("/type/JsonObject")).toBe(true);
+		const typeRef = String((thing.fields as Json[])[0].typeRef);
+		// Gap 1 of FCD #199/#200: the kernel scalar `any` mints no package
+		// node; the field's `typeRef` names it directly as the native
+		// reference JsonObject resolves to over the closed FR-032 set.
+		expect(typeRef).toBe("ix://quire/native/JsonObject");
+		expect(types.find((type) => type.identity === typeRef)).toBeUndefined();
 		expect(
 			types.filter(
 				(type) =>
@@ -2276,7 +2460,7 @@ describe("package graph resolution (FR-047)", () => {
 			contractVersion: "2.0.0",
 			types: [
 				{
-					identity: "ix://a/b/type/W",
+					identity: "ix://a/b/W",
 					kind: "record",
 					fields: [],
 					clauses: Array.from({ length: 12 }, (_, index) => ({
@@ -2867,14 +3051,19 @@ describe("the diagnostic registry (FR-049)", () => {
 		};
 		document.contractVersion = "2.0.0";
 		const artifact = document.types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
 		const field = (artifact.fields as Json[])[0];
-		field.multiplicity = { lower: 1, upper: 1, ordered: true };
+		field.multiplicity = {
+			lower: 2,
+			upper: 1,
+			ordered: false,
+			unique: false,
+		};
 		const diagnostics = readContractIr(document) as never as Diagnostic[];
 		note(diagnostics);
 		const mismatch = diagnostics.find(
-			(entry) => entry.code === DIAGNOSTIC_CODES.FLAGS_ON_NON_COLLECTION.code,
+			(entry) => entry.code === DIAGNOSTIC_CODES.INVALID_MULTIPLICITY.code,
 		);
 		expect(mismatch?.locus).toEqual((field.origin as Json).source as never);
 	});
@@ -3154,7 +3343,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		};
 		document.contractVersion = "2.0.0";
 		const artifact = document.types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
 		const field = (artifact.fields as Json[])[0];
 		delete field.presence;
@@ -3164,7 +3353,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		};
 		const restored = (
 			normalized.types.find(
-				(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+				(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 			) as Json
 		).fields as Json[];
 		// multiplicity and presence are schema-required and independently
@@ -3181,8 +3370,8 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			contractVersion: "2.0.0",
 			types: [
 				{
-					identity: "ix://a/b/type/T",
-					fields: [{ identity: "ix://a/b/field/T-f", presence: "optional" }],
+					identity: "ix://a/b/T",
+					fields: [{ identity: "ix://a/b/T/f", presence: "optional" }],
 				},
 			],
 		};
@@ -3235,7 +3424,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 				contractVersion: "2.0.0",
 				types: [
 					{
-						identity: "ix://a/b/type/T",
+						identity: "ix://a/b/T",
 						kind: "record",
 						fields: [field],
 					},
@@ -3284,7 +3473,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			),
 		) as never as { types: Json[] };
 		const machine = document.types.find((type) =>
-			String(type.identity).endsWith("/type/SM-001"),
+			String(type.identity).endsWith("/SM-001"),
 		) as Json;
 		const operation = (machine.operations as Json[])[0];
 		expect([...note(readContractIr(document as never))]).toEqual([]);
@@ -3652,9 +3841,19 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		) as Json;
 		const [required, optional] = record.fields as Json[];
 		required.presence = "required";
-		required.multiplicity = { lower: 0, upper: 2 };
+		required.multiplicity = {
+			lower: 0,
+			upper: 2,
+			ordered: false,
+			unique: false,
+		};
 		optional.presence = "optional";
-		optional.multiplicity = { lower: 1, upper: 2 };
+		optional.multiplicity = {
+			lower: 1,
+			upper: 2,
+			ordered: false,
+			unique: false,
+		};
 		expect(validateIrDocument(document)).toEqual([]);
 		expect(codesOf(readContractIr(document) as never as Diagnostic[])).toEqual(
 			[],
@@ -3680,7 +3879,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			types: Json[];
 		};
 		const artifact = semantic.types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
 		(artifact.fields as Json[])[0].nullable = true;
 		expect(fingerprintIr(semantic)).not.toBe(base);
@@ -3705,47 +3904,57 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			contractVersion: "2.0.0",
 			types: [
 				{
-					identity: "ix://a/b/type/X",
+					identity: "ix://a/b/X",
 					kind: "alias",
-					target: "ix://a/b/type/Y",
+					target: "ix://a/b/Y",
 				},
 				{
-					identity: "ix://a/b/type/Y",
+					identity: "ix://a/b/Y",
 					kind: "alias",
-					target: "ix://a/b/type/X",
+					target: "ix://a/b/X",
 				},
 			],
 		};
 		expect(() => readContractIr(cyclicAlias)).not.toThrow();
 
+		// The two-end shape (gap 3 of FCD #199/#200): the cycle reads
+		// `targetEnd.type`, not a flat `target`.
+		const endsTo = (target: string) => ({
+			direction: "source-to-target",
+			sourceEnd: {
+				multiplicity: { lower: 0, ordered: false, unique: false },
+			},
+			targetEnd: {
+				multiplicity: { lower: 0, upper: 1, ordered: false, unique: false },
+				type: target,
+			},
+		});
 		const cyclicComposite = {
 			contractVersion: "2.0.0",
 			types: [
 				{
-					identity: "ix://a/b/type/A",
+					identity: "ix://a/b/A",
 					kind: "record",
 					fields: [],
 					relationships: [
 						{
 							identity: "ix://a/b/relationship/A-has-B",
-							target: "ix://a/b/type/B",
 							composite: true,
 							category: "structural",
-							multiplicity: { lower: 0, upper: 1 },
+							...endsTo("ix://a/b/B"),
 						},
 					],
 				},
 				{
-					identity: "ix://a/b/type/B",
+					identity: "ix://a/b/B",
 					kind: "record",
 					fields: [],
 					relationships: [
 						{
 							identity: "ix://a/b/relationship/B-has-A",
-							target: "ix://a/b/type/A",
 							composite: true,
 							category: "structural",
-							multiplicity: { lower: 0, upper: 1 },
+							...endsTo("ix://a/b/A"),
 						},
 					],
 				},
@@ -3758,7 +3967,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		const many = {
 			contractVersion: "2.0.0",
 			types: Array.from({ length: 20 }, (_, index) => ({
-				identity: `ix://a/b/type/T${index}`,
+				identity: `ix://a/b/T${index}`,
 				kind: "record",
 				fields: [],
 			})),
@@ -3773,12 +3982,12 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			contractVersion: "2.0.0",
 			types: [
 				{
-					identity: "ix://a/b/type/W",
+					identity: "ix://a/b/W",
 					kind: "record",
 					fields: Array.from({ length: 20 }, (_, index) => ({
-						identity: `ix://a/b/field/W-f${index}`,
+						identity: `ix://a/b/W/f${index}`,
 						name: `f${index}`,
-						typeRef: "ix://a/b/type/W",
+						typeRef: "ix://a/b/W",
 						multiplicity: { lower: 1, upper: 1 },
 						presence: "required",
 					})),
@@ -3812,10 +4021,10 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			types: Json[];
 		};
 		const artifact = document.types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
-		(artifact.relationships as Json[])[0].target =
-			"ix://agent-ix/core/type/Actor";
+		((artifact.relationships as Json[])[0].targetEnd as Json).type =
+			"ix://agent-ix/core/Actor";
 		const unknown = readContractIr(document, {
 			importedExports: "unknown",
 		}) as never as Diagnostic[] & {
@@ -3860,6 +4069,40 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			}
 		}
 		expect(checked).toBeGreaterThan(0);
+	});
+
+	it("TC-1808: the reader's NATIVE_SCALARS agrees with kernel-scalars.json (R3, FR-032-AC-3)", () => {
+		// R3 of the FCD #199/#200 review: this reader's `NATIVE_SCALARS` is one
+		// of six independent copies of the FR-032 kernel scalar library (the
+		// others are the Rust reader, the Python reader, the JSON-Schema
+		// backend, the rust-serde backend, and the v1-1 TS reader); each
+		// is checked against the canonical `packages/semantic-core/kernel-scalars.json`
+		// rather than against each other, and none is refactored into a shared
+		// module.
+		const canonical = JSON.parse(
+			readFileSync(
+				resolve(root, "packages/semantic-core/kernel-scalars.json"),
+				"utf8",
+			),
+		) as { scalars: Record<string, { irScalar: string }> };
+		const source = readFileSync(
+			resolve(root, "src/compiler/ir/reader.mjs"),
+			"utf8",
+		);
+		const match = source.match(
+			/const NATIVE_SCALARS = new Map\(\[([\s\S]*?)\]\);/,
+		);
+		expect(match).not.toBeNull();
+		const pairs = Object.fromEntries(
+			Array.from(
+				(match as RegExpMatchArray)[1].matchAll(/\["([^"]+)",\s*"([^"]+)"\]/g),
+			).map((entry) => [entry[1], entry[2]]),
+		);
+		const names = Object.keys(canonical.scalars);
+		expect(Object.keys(pairs).sort()).toEqual(names.sort());
+		for (const name of names) {
+			expect(pairs[name]).toBe(canonical.scalars[name].irScalar);
+		}
 	});
 });
 
@@ -4775,10 +5018,10 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 			// says so rather than inventing a verdict.
 			const document = readJson(out) as never as { types: Json[] };
 			const artifact = document.types.find(
-				(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+				(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 			) as Json;
-			(artifact.relationships as Json[])[0].target =
-				"ix://agent-ix/core/type/Actor";
+			((artifact.relationships as Json[])[0].targetEnd as Json).type =
+				"ix://agent-ix/core/Actor";
 			const cross = resolve(directory, "cross.json");
 			writeFileSync(cross, `${JSON.stringify(document, null, "\t")}\n`);
 			const suppressed = runCli(["inspect", "--ir", cross]);
@@ -4803,7 +5046,7 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 				types: Json[];
 			};
 			const target = broken2.types.find(
-				(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+				(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 			) as Json;
 			(target.fields as Json[])[0].multiplicity = { lower: 1, upper: 0 };
 			writeFileSync(invalid, `${JSON.stringify(broken2, null, "\t")}\n`);
@@ -5194,27 +5437,34 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 			"Makefile",
 			"package.json",
 			"biome.json",
+			// FCD #199/#200, owner ruling 2026-09-19T15:39:32Z: every emitted
+			// multiplicity carries both `ordered` and `unique` as required
+			// booleans. That reaches every reader and every generated kernel
+			// package, which is legitimately repo-wide (the same shape of
+			// declaration fcd#179 made on the Rust side's own change-set gate).
+			"src/compiler/backends/typescript-v1/admit.mjs",
+			"conformance/diagnostic-codes.json",
+			"conformance/oracle/oracle.mjs",
+			"fixtures/semantic/v1/negative/reader-cases.json",
+			"fixtures/semantic-core/negative/rules/cases.json",
+			"packages/semantic-core/",
+			"packages/semantic-kernel/",
+			"test/semantic-ir-v1-1-reader.ts",
+			"test/semantic-core-reader.ts",
+			"tests/semantic_ir_reader.py",
 		];
 		const prohibited = [
 			"src/compiler/ir.mjs",
 			"src/compiler/compile.mjs",
 			"src/compiler/identity.mjs",
 			"src/compiler/emitters/",
-			"src/compiler/backends/",
 			"src/compiler/inventory.json",
 			"schema/",
-			"fixtures/semantic/",
-			"fixtures/semantic-core/",
 			"fixtures/representative-core-payloads.json",
-			"packages/",
 			"spikes/",
-			"conformance/",
 			"agent_ix_core_data/",
 			"src/generated.ts",
 			"audit/",
-			"tests/",
-			"test/semantic-ir-v1-1-reader.ts",
-			"test/semantic-core-reader.ts",
 			"test/semantic-core-lowerer.ts",
 			".github/",
 			"pyproject.toml",
@@ -5527,7 +5777,7 @@ describe("the remaining reader and resolver rules (FR-049 coverage)", () => {
 		JSON.parse(JSON.stringify(compiled.ir)) as never as { types: Json[] };
 	const artifactOf = (document: { types: Json[] }) =>
 		document.types.find(
-			(type) => type.identity === "ix://agent-ix/assurance/type/Artifact",
+			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
 
 	/** Traces: TC-520; FR-050-AC-11 (the rules the published cases do not reach). */
@@ -5563,17 +5813,19 @@ describe("the remaining reader and resolver rules (FR-049 coverage)", () => {
 			(artifactOf(document).clauses as Json[])[0].language = "SHOUTING";
 		});
 		run("unknown constraint keyword", (document) => {
-			const alias = document.types.find(
-				(type) => type.identity === "ix://agent-ix/assurance/type/ArtifactCode",
+			// Gap 1 of FCD #199/#200: a constrained property's constraint
+			// lives on the field itself, not on a synthetic alias.
+			const code = (artifactOf(document).fields as Json[]).find(
+				(field) => field.name === "code",
 			) as Json;
-			(alias.constraints as Json[])[0].keyword = "invented";
+			(code.constraints as Json[])[0].keyword = "invented";
 		});
 		run("unknown edge category", (document) => {
 			(artifactOf(document).relationships as Json[])[0].category = "invented";
 		});
 		run("relationships on a non-record", (document) => {
 			const status = document.types.find(
-				(type) => type.identity === "ix://agent-ix/assurance/type/Status",
+				(type) => type.identity === "ix://agent-ix/assurance/Status",
 			) as Json;
 			status.relationships = artifactOf(document).relationships;
 		});
@@ -5640,7 +5892,7 @@ describe("the remaining reader and resolver rules (FR-049 coverage)", () => {
 				"using AgentIx.Semantic.Decorators;",
 				"namespace AgentIx.Semantic;",
 				"scalar Text extends string;",
-				'@semanticReference("ix://agent-ix/core/type/Actor")',
+				'@semanticReference("ix://agent-ix/core/Actor")',
 				"model NotEmpty { id: Text; }",
 			].join("\n"),
 		);
@@ -5888,7 +6140,7 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 		);
 		const schema = (name: string) => ({
 			$id: `https://schemas.example.test/${name}.json`,
-			"x-agent-ix-semantic-id": `ix://agent-ix/semantic-core/type/${name}`,
+			"x-agent-ix-semantic-id": `ix://agent-ix/semantic-core/${name}`,
 			type: "string",
 		});
 		const result = lower.lowerBundle([
@@ -5896,7 +6148,7 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 				"Choice.json",
 				{
 					$id: "https://schemas.example.test/Choice.json",
-					"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/Choice",
+					"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/Choice",
 					anyOf: [
 						{ $ref: "https://schemas.example.test/Left.json" },
 						{ $ref: "https://schemas.example.test/Right.json" },
@@ -5937,8 +6189,7 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 				"Constraint.json",
 				{
 					$id: "https://schemas.example.test/Constraint.json",
-					"x-agent-ix-semantic-id":
-						"ix://agent-ix/semantic-core/type/Constraint",
+					"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/Constraint",
 					type: "object",
 					unevaluatedProperties: { not: {} },
 					properties: {

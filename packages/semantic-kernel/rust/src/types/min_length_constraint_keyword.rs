@@ -1,17 +1,17 @@
 //! MinLengthConstraintKeyword
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/MinLengthConstraintKeyword.
+//! Semantic identity: ix://agent-ix/semantic-core/MinLengthConstraintKeyword.
 
 use serde::{Deserialize, Serialize};
 
 /// MinLengthConstraintKeyword
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/MinLengthConstraintKeyword.
+/// Semantic identity: ix://agent-ix/semantic-core/MinLengthConstraintKeyword.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum MinLengthConstraintKeyword {
     /// minLength
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MinLengthConstraintKeyword/variant/minLength.
+    /// Semantic identity: ix://agent-ix/semantic-core/MinLengthConstraintKeyword/variant/minLength.
     #[serde(rename = "minLength")]
     MinLength,
 }

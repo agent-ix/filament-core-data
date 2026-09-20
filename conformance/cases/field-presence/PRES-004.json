@@ -12,7 +12,9 @@
 			"path": "/ir/types/8/fields/1/multiplicity",
 			"value": {
 				"lower": 0,
-				"upper": 1
+				"upper": 1,
+				"ordered": false,
+				"unique": false
 			}
 		},
 		{
@@ -20,7 +22,9 @@
 			"path": "/ir/types/8/fields/1/multiplicity",
 			"value": {
 				"lower": 1,
-				"upper": 1
+				"upper": 1,
+				"ordered": false,
+				"unique": false
 			}
 		},
 		{

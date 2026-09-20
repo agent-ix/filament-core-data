@@ -1,6 +1,6 @@
 //! SourceLocusEndColumn
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/SourceLocusEndColumn.
+//! Semantic identity: ix://agent-ix/semantic-core/SourceLocusEndColumn.
 //!
 //! Unknown policy: `reject`, which is inert for a
 //! `scalar` — the kind has no unknown member for a policy to govern. The
@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 /// SourceLocusEndColumn
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/SourceLocusEndColumn.
+/// Semantic identity: ix://agent-ix/semantic-core/SourceLocusEndColumn.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(transparent)]
 pub struct SourceLocusEndColumn(i64);
@@ -23,7 +23,7 @@ impl SourceLocusEndColumn {
         {
             if value < 1i64 {
                 return Err(crate::support::ValidationError::new(
-                    "ix://agent-ix/semantic-core/type/SourceLocusEndColumn/constraint/min",
+                    "ix://agent-ix/semantic-core/SourceLocusEndColumn/constraint/min",
                     "min",
                     "",
                     "1",
@@ -31,7 +31,7 @@ impl SourceLocusEndColumn {
             }
             if value > 2147483647i64 {
                 return Err(crate::support::ValidationError::new(
-                    "ix://agent-ix/semantic-core/type/SourceLocusEndColumn/constraint/max",
+                    "ix://agent-ix/semantic-core/SourceLocusEndColumn/constraint/max",
                     "max",
                     "",
                     "2147483647",

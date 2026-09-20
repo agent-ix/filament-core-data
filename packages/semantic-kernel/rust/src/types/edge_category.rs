@@ -1,47 +1,47 @@
 //! EdgeCategory
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/EdgeCategory.
+//! Semantic identity: ix://agent-ix/semantic-core/EdgeCategory.
 
 use serde::{Deserialize, Serialize};
 
 /// EdgeCategory
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/EdgeCategory.
+/// Semantic identity: ix://agent-ix/semantic-core/EdgeCategory.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum EdgeCategory {
     /// structural
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EdgeCategory/variant/structural.
+    /// Semantic identity: ix://agent-ix/semantic-core/EdgeCategory/variant/structural.
     #[serde(rename = "structural")]
     Structural,
     /// behavioral
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EdgeCategory/variant/behavioral.
+    /// Semantic identity: ix://agent-ix/semantic-core/EdgeCategory/variant/behavioral.
     #[serde(rename = "behavioral")]
     Behavioral,
     /// dataflow
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EdgeCategory/variant/dataflow.
+    /// Semantic identity: ix://agent-ix/semantic-core/EdgeCategory/variant/dataflow.
     #[serde(rename = "dataflow")]
     Dataflow,
     /// dependency
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EdgeCategory/variant/dependency.
+    /// Semantic identity: ix://agent-ix/semantic-core/EdgeCategory/variant/dependency.
     #[serde(rename = "dependency")]
     Dependency,
     /// realization
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EdgeCategory/variant/realization.
+    /// Semantic identity: ix://agent-ix/semantic-core/EdgeCategory/variant/realization.
     #[serde(rename = "realization")]
     Realization,
     /// governance
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EdgeCategory/variant/governance.
+    /// Semantic identity: ix://agent-ix/semantic-core/EdgeCategory/variant/governance.
     #[serde(rename = "governance")]
     Governance,
     /// traceability
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/EdgeCategory/variant/traceability.
+    /// Semantic identity: ix://agent-ix/semantic-core/EdgeCategory/variant/traceability.
     #[serde(rename = "traceability")]
     Traceability,
 }

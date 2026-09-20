@@ -1,14 +1,14 @@
 {
 	"id": "PAR-0099",
-	"title": "`SemanticId` admits `ix://agent-ix/semantic-core/type/TypeRef`",
+	"title": "`SemanticId` admits `ix://agent-ix/semantic-core/TypeRef`",
 	"declaration": "SemanticId",
 	"class": "positive",
 	"properties": ["serialized-member-names", "round-trip"],
 	"unknownPolicy": "not-applicable",
-	"instance": "ix://agent-ix/semantic-core/type/TypeRef",
+	"instance": "ix://agent-ix/semantic-core/TypeRef",
 	"expected": {
 		"resultState": "success",
-		"wire": "ix://agent-ix/semantic-core/type/TypeRef"
+		"wire": "ix://agent-ix/semantic-core/TypeRef"
 	},
 	"derivedFrom": [
 		{

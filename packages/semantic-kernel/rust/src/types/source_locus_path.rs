@@ -1,6 +1,6 @@
 //! SourceLocusPath
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/SourceLocusPath.
+//! Semantic identity: ix://agent-ix/semantic-core/SourceLocusPath.
 //!
 //! Unknown policy: `reject`, which is inert for a
 //! `scalar` — the kind has no unknown member for a policy to govern. The
@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 /// SourceLocusPath
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/SourceLocusPath.
+/// Semantic identity: ix://agent-ix/semantic-core/SourceLocusPath.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(transparent)]
 pub struct SemanticCoreSourceLocusPath(String);

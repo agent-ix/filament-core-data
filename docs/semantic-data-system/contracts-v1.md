@@ -91,10 +91,11 @@ known zero value.
 
 ### Structural model detail (issue #34)
 
-The IR declares exactly one `contractVersion`, `2.0.0`; the schema admits no other value and refuses a document declaring one with `SCHEMA_VIOLATION` at `contractVersion` before any other member is read (FR-050). A field carries an explicit `multiplicity { lower, upper?, ordered?, unique? }` (absent `upper` is unbounded); its `presence` is authored independently ([FR-106](../../spec/functional/FR-106-author-field-presence-independently.md), [issue #93](https://github.com/agent-ix/filament-core-data/issues/93)), never derived from `multiplicity`, `nullable`, or the default kind, and `2.0.0` enforces no agreement between `presence` and `multiplicity.lower`: a required field with `lower: 0` and an optional field with `lower` at least `1` are both valid (FR-106-CON-1); fcd#179 deleted `PRESENCE_MULTIPLICITY_MISMATCH` along with the `1.0.0`/`1.1.0` contracts it checked. A field may carry a UCUM `unit` when its `typeRef` resolves, through aliases, to a scalar. Because the schema already requires `multiplicity`, `presence`, and `nullable` on every field, the normalized serialization carries them as authored rather than deriving or filling in a default.
+The IR declares exactly one `contractVersion`, `2.0.0`; the schema admits no other value and refuses a document declaring one with `SCHEMA_VIOLATION` at `contractVersion` before any other member is read (FR-050). A field carries an explicit `multiplicity { lower, upper?, ordered, unique }` (absent `upper` is unbounded; `ordered` and `unique` are required booleans on every multiplicity — fields, parameters, returns, relationship ends, and connection ends alike — clamped to `false` at emission where `upper` is 0 or 1, since ordering and uniqueness describe a collection; no reader polices the value, and `FLAGS_ON_NON_COLLECTION` is deleted rather than corrected — owner ruling 2026-09-19T15:39:32Z on FCD #199); its `presence` is authored independently ([FR-106](../../spec/functional/FR-106-author-field-presence-independently.md), [issue #93](https://github.com/agent-ix/filament-core-data/issues/93)), never derived from `multiplicity`, `nullable`, or the default kind, and `2.0.0` enforces no agreement between `presence` and `multiplicity.lower`: a required field with `lower: 0` and an optional field with `lower` at least `1` are both valid (FR-106-CON-1); fcd#179 deleted `PRESENCE_MULTIPLICITY_MISMATCH` along with the `1.0.0`/`1.1.0` contracts it checked. A field may carry a UCUM `unit` when its `typeRef` resolves, through aliases, to a scalar. Because the schema already requires `multiplicity`, `presence`, and `nullable` on every field, the normalized serialization carries them as authored rather than deriving or filling in a default.
 
-A record type definition carries first-class `relationships[]` (verb, FR-040
-category, `composite` flag, target identity, multiplicity, origin),
+A record type definition carries first-class `relationships[]` (category,
+`composite` flag, `sourceEnd`/`targetEnd`, origin — see
+[Relationships](#contract-200-issues-93-146-and-172) below),
 `operations[]` (params as field nodes, bounded `returns`, `pre[]`/`post[]`
 bound by `clauseId`), and any type definition carries `clauses[]`
 (`language` of `quire`, `ocl`, `sysml`, `fretish`, or `<ns>:<name>`; `clauseId` unique
@@ -132,18 +133,25 @@ shared table `crates/extraction-frontend/fixtures/identity-cases/identity-cases.
 (FR-095-AC-16) is authored from this section and is the evidence that both
 implementations agree.
 
-Every identity is rooted at the package identity, `ix://<package identity>/`,
-and occupies exactly one of these slots, whose parts are listed in order.
-Every name part of every slot is slugged; an artifact id part (`<Name>` in
-the spec-bundle frontend) is verbatim, as the paragraph below the table states:
+Every identity is rooted at the package identity, `ix://<package identity>/`.
+A type definition (including a kernel scalar definition) and a member (field,
+operation parameter, relationship, operation, clause) mint no slot segment: a
+type's identity is `ix://<package
+identity>/<Name>`, and a member's identity is its owner's identity, `/`, and
+the member's own part, nested as deep as the member sits (an operation
+parameter is nested under its operation, which is nested under its type).
+Every other slot — `variant`, `state`, `transition`, `step`, `constraint` —
+still occupies `ix://<package identity>/<slot>/<tail>`. Every name part of
+every slot is slugged; an artifact id part (`<Name>` in the spec-bundle
+frontend) is verbatim, as the paragraph below the table states:
 
 | Slot | Identity | Parts |
 |---|---|---|
-| `type` | `type/<Name>` | the type's name; a kernel scalar definition is `type/<KernelScalar>` (a kernel scalar name is alphanumeric, so its slug is itself) |
-| `field` | `field/<Name>-<field>` | owner type, field; an operation parameter is `field/<Name>-<operation>-<param>` (there is no `param/` slot) |
+| `type` | `<Name>` | the type's name; a kernel scalar definition is `<KernelScalar>` (a kernel scalar name is alphanumeric, so its slug is itself) |
+| `field` | `<Name>/<field>` | owner type identity, `/`, field slug; an operation parameter is `<Name>/<operation>/<param>`, nested under its operation's identity (there is no `param/` slot) |
 | `variant` | `variant/<Name>-<member>` | owner enum or union, member |
 | `relationship` | `relationship/<Name>-<verb>-<TargetName>` | owner record, verb, target type name |
-| `operation` | `operation/<Name>-<name>` | owner record, operation |
+| `operation` | `<Name>/<name>` | owner type identity, `/`, operation slug |
 | `clause` | `clause/<Name>-<clauseId>` | owner type, clause id |
 | `state` | `state/<Name>-<state>` | owner state machine, state |
 | `transition` | `transition/<Name>-<from>-<to>-<trigger>` | owner state machine, from state, to state, trigger operation (a transition row has no name) |
@@ -153,9 +161,9 @@ the spec-bundle frontend) is verbatim, as the paragraph below the table states:
 `<Name>` is the declaring type's name part. The TypeSpec frontend takes it
 from the declaration name, and slugs it. The spec-bundle frontend takes it
 from the declaring artifact's id (FR-143) and passes that id through
-verbatim: artifact `FR-001` titled `Order` has identity `type/FR-001` and
-`displayName` `Order`, and its field `note` is `field/FR-001-note`; artifact
-`AR_001` has identity `type/AR_001`, not `type/AR-001`. An id is not slugged
+verbatim: artifact `FR-001` titled `Order` has identity `FR-001` and
+`displayName` `Order`, and its field `note` is `FR-001/note`; artifact
+`AR_001` has identity `AR_001`, not `AR-001`. An id is not slugged
 because an object id carries `_` and no `-` and `semanticIdentity` admits `_`
 inside a segment (`[A-Za-z0-9._~:/-]`), so slugging an id would rewrite a
 datum the pattern already accepts. An id carrying a character that pattern
@@ -163,14 +171,6 @@ does not admit inside a segment, or no ASCII alphanumeric at all (`_`), mints
 no segment and is refused as `UNSLUGGABLE_NAME`. Every other part — a field,
 member, verb, keyword, state, step, or clause name — is slugged on both
 sides. The type's name is its `displayName`.
-
-The alias a constrained field mints is a `type` identity whose tail is
-`<Name>` followed by `slug(field)` with its first character upper-cased:
-`Note`, `revision` → `type/NoteRevision`; `Note`, `created_at` →
-`type/NoteCreated-at`. The alias node's `displayName` is `<Name>` followed by
-the field name verbatim with its first character upper-cased: `NoteRevision`,
-`NoteCreated_at`. The field's `typeRef` is retargeted to the alias identity and
-the constraint's `appliesTo` names it.
 
 `slug(value)` replaces every run of characters outside `[A-Za-z0-9]` with one
 `-` and trims leading and trailing `-`; case is preserved (`Config Version` →
@@ -251,6 +251,28 @@ cross-field agreement between them (FR-106); fcd#179 deleted
 checked. Because the schema requires `multiplicity`, `presence`, and `nullable` on
 every field, normalization carries them as authored rather than deriving or
 filling in a default.
+
+**Relationships.** A `relationship` names `category` (one of `structural`,
+`behavioral`, `dataflow`, `dependency`, `realization`, `governance`,
+`traceability`), `composite`, `direction` (one of `source-to-target`,
+`target-to-source`, `bidirectional`, `undirected`; lowering always emits
+`source-to-target`), a `sourceEnd` and a `targetEnd`, and `origin` — never a
+flat `verb`, `target` or `multiplicity` (fcd#199/#200). Each end carries
+`multiplicity` and the `type` it names, and a `role`: the source end's `role`
+is the edge vocabulary verb as authored and is always present; the target
+end's is the registry's declared `inverse` for that verb, present exactly
+when the registry declares one, absent when it declares none. `composite` is
+`true` exactly when the verb's registry `inverse` is `part_of`.
+
+The "an `inverse` is declared for the verb if and only if the target end
+carries a `role`" biconditional is a frontend obligation: a frontend holds
+the registry that names the verb's `inverse` (or its absence) and is the only
+party positioned to check the other half. A reader has no registry, so it
+enforces only that `role` is present on the source end and, where present, is
+a non-empty string on either end (FR-094 of fcd#199/#200's review, R4-READER);
+it enforces nothing about whether a *particular* target `role` agrees with
+any verb's registered `inverse`, and that silence is not a relaxation for a
+frontend to skip its own half of the check.
 
 **Model members.**
 

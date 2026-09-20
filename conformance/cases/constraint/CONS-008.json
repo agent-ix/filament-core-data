@@ -1,0 +1,74 @@
+{
+	"id": "CONS-008",
+	"title": "An inline field constraint is checked for applicability, the same as a type-level constraint",
+	"family": "constraint",
+	"class": "negative",
+	"kind": "document",
+	"contractVersion": "2.0.0",
+	"base": "core-2-0",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/1/identity",
+			"value": "ix://agent-ix/conformance/field/node-label"
+		},
+		{
+			"op": "add",
+			"path": "/ir/types/8/fields/1/constraints",
+			"value": [
+				{
+					"identity": "ix://agent-ix/conformance/constraint/node-label-min",
+					"keyword": "min",
+					"appliesTo": "ix://agent-ix/conformance/type/Text",
+					"operands": { "value": "0" },
+					"diagnosticCode": "agent-ix.conformance.NODE_LABEL_MIN",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+							"path": "model/node.tsp",
+							"startLine": 7,
+							"startColumn": 3
+						}
+					}
+				}
+			]
+		}
+	],
+	"covers": ["CR-constraint"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Structural model detail (issue #34)",
+			"quote": "The constraint `keyword` is a closed set (`min`, `max`, `exclusiveMin`,"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#199",
+		"blessedFromRun": false,
+		"reproduces": "FCD-200-review-finding-2"
+	},
+	"expected": {
+		"resultState": "invalid",
+		"diagnostics": [
+			{
+				"pointer": "/ir/types/8/fields/1/constraints/0",
+				"diagnostic": {
+					"code": "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE",
+					"severity": "error",
+					"message": "min does not apply to string",
+					"owner": "ix://agent-ix/conformance/constraint/node-label-min",
+					"blocking": true,
+					"causes": [],
+					"related": [],
+					"locus": {
+						"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
+						"path": "model/node.tsp",
+						"startLine": 7,
+						"startColumn": 3
+					}
+				}
+			}
+		]
+	}
+}

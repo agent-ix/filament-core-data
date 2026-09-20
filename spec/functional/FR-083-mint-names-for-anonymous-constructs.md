@@ -111,7 +111,7 @@ rather than sequential.
 
 ### Minted identities
 
-- A minted type SHALL carry the identity `ix://agent-ix/semantic-core/type/<Name>`.
+- A minted type SHALL carry the identity `ix://agent-ix/semantic-core/<Name>`.
 - A field SHALL carry the identity `ix://agent-ix/semantic-core/field/<Owner>.<name>`, where `<Owner>` is the owning type's name — declared or minted — and `<name>` is the JSON Schema property name verbatim, because `field.name` is the wire member name and an identity that transformed it would no longer locate the member.
 - A variant SHALL carry the identity `ix://agent-ix/semantic-core/variant/<Owner>.<name>`, where `<name>` is the variant name assigned above.
 - A constraint SHALL carry the identity `ix://agent-ix/semantic-core/constraint/<Owner>.<keyword>`, where `<keyword>` is the FR-029 keyword the constraint declares, so `DecimalPolicyPrecision` carries exactly `ix://agent-ix/semantic-core/constraint/DecimalPolicyPrecision.min` and `ix://agent-ix/semantic-core/constraint/DecimalPolicyPrecision.max`.
@@ -147,7 +147,7 @@ rather than sequential.
 | FR-083-AC-3 | `MinConstraintKeyword` is an `enum` with exactly one variant whose `name` is the string `min`, equal to the `const` in `MinConstraint.json`. | Unit |
 | FR-083-AC-4 | `EnumValuesConstraintValuesItem` is a `union` over `String`, `Number`, and `Boolean`, and the owning `values` field carries `multiplicity.lower: 1` taken from `minItems`, with no `upper`. | Unit |
 | FR-083-AC-5 | `DecimalPolicyPrecision` is a `scalar` of `integer` carrying exactly the constraints `ix://agent-ix/semantic-core/constraint/DecimalPolicyPrecision.min` with operand `1` and `.max` with operand `2147483647`. | Unit |
-| FR-083-AC-6 | `Multiplicity.lower`, `Multiplicity.upper`, and `DecimalPolicy.scale` all carry the single `typeRef` `ix://agent-ix/semantic-core/type/DecimalPolicyScale`, and the mint table records all three positions against that one mint. | Test |
+| FR-083-AC-6 | `Multiplicity.lower`, `Multiplicity.upper`, and `DecimalPolicy.scale` all carry the single `typeRef` `ix://agent-ix/semantic-core/DecimalPolicyScale`, and the mint table records all three positions against that one mint. | Test |
 | FR-083-AC-7 | `DecimalPolicyPrecision` and `DecimalPolicyScale` are two distinct types, and a test that equalises their `minimum` values collapses them to one, proving the deduplication key reads the operand. | Unit |
 | FR-083-AC-8 | A synthetic bundle whose property position would mint the declared name `TypeRef` mints `TypeRef2`; a third colliding shape mints `TypeRef3`; the declared `TypeRef` is unchanged. | Unit |
 | FR-083-AC-9 | Minting the bundle with its documents supplied in reversed order, and again with every `anyOf` branch list reversed where reversal preserves the canonical form, yields a byte-identical mint table and a byte-identical `types` array. | Property |

@@ -12,8 +12,12 @@ import pytest
 
 from tests.semantic_ir_reader import (
     FIXTURE_ROOT,
+    NATIVE_PREFIX,
+    NATIVE_SCALARS,
+    ROOT,
     SCHEMA_ROOT,
     _is_edge_kind,
+    _native_scalar,
     _schema_validator,
     construct_findings,
     normalize,
@@ -129,9 +133,7 @@ class TestSecondReader:
                     }
                 ],
             }
-            normalized_field = json.loads(normalize(document))["types"][0][
-                "fields"
-            ][0]
+            normalized_field = json.loads(normalize(document))["types"][0]["fields"][0]
             assert normalized_field["nullable"] is case["normalized"], case["id"]
 
     def test_every_recorded_case_is_rejected(self) -> None:
@@ -212,7 +214,9 @@ class TestContract20:
             # that would still pass if this document picked up an unrelated
             # one and its declared `contractVersion` were quietly repaired.
             # Pin the actual reason: an error at `contractVersion` itself.
-            paths = [list(error.absolute_path) for error in validator.iter_errors(document)]
+            paths = [
+                list(error.absolute_path) for error in validator.iter_errors(document)
+            ]
             assert ["contractVersion"] in paths, (deleted, paths)
 
     def test_each_construct_without_a_required_member_is_refused(
@@ -233,22 +237,18 @@ class TestContract20:
         ):
             document = _fixture(CONSTRUCTS)
             target = next(
-                t
-                for t in document["types"]
-                if t["identity"].endswith(f"/type/{suffix}")
+                t for t in document["types"] if t["identity"].endswith(f"/{suffix}")
             )
             del target[member]
             assert not schema_valid(validator, document), f"{suffix} without {member}"
 
             document = _fixture(CONSTRUCTS)
             target = next(
-                t
-                for t in document["types"]
-                if t["identity"].endswith(f"/type/{suffix}")
+                t for t in document["types"] if t["identity"].endswith(f"/{suffix}")
             )
             assert foreign not in target, f"{suffix} carries {foreign}"
             target[foreign] = (
-                "ix://agent-ix/orders/type/FR-001" if foreign == "owner" else []
+                "ix://agent-ix/orders/FR-001" if foreign == "owner" else []
             )
             assert not schema_valid(validator, document), f"{suffix} with {foreign}"
 
@@ -329,7 +329,7 @@ class TestContract20:
         machine = next(
             i
             for i, t in enumerate(document["types"])
-            if t["identity"].endswith("/type/SM-001")
+            if t["identity"].endswith("/SM-001")
         )
         operation = document["types"][machine]["operations"][0]
         assert isinstance(operation["pre"][0], str)
@@ -356,7 +356,7 @@ class TestContract20:
         machine = next(
             i
             for i, t in enumerate(document["types"])
-            if t["identity"].endswith("/type/SM-001")
+            if t["identity"].endswith("/SM-001")
         )
         operation = document["types"][machine]["operations"][0]
         assert operation["pre"][1]["language"] == "quire"
@@ -366,3 +366,76 @@ class TestContract20:
         assert [d["code"] for d in read_semantic_ir(document)] == [
             "agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED"
         ]
+
+
+class TestNativeScalarParity:
+    """R3 of the FCD #199/#200 review: this reader's ``NATIVE_SCALARS`` is one
+    of six independent copies of the FR-032 kernel scalar library (the
+    others are the Rust reader, the Node IR reader, the JSON-Schema backend,
+    the rust-serde backend, and the v1-1 TS reader); each is checked against
+    the canonical ``packages/semantic-core/kernel-scalars.json`` rather than
+    against each other, and none is refactored into a shared module.
+
+    Description: TC-1811. Criteria: FR-032-AC-3.
+    """
+
+    def test_native_scalars_agrees_with_kernel_scalars_json(self) -> None:
+        canonical = json.loads(
+            (ROOT / "packages" / "semantic-core" / "kernel-scalars.json").read_text()
+        )
+        scalars = canonical["scalars"]
+        assert len(scalars) == len(NATIVE_SCALARS)
+        for name, definition in scalars.items():
+            assert _native_scalar(f"{NATIVE_PREFIX}{name}") == definition["irScalar"]
+
+
+class TestInlineFieldConstraints:
+    """Finding 2 of the FCD #199/#200 review: ``_check_type``'s field loop
+    runs each of a field's inline ``constraints`` through ``_check_constraint``,
+    the same function a type-level constraint goes through, with the field
+    itself as the resolved subject (gap 1's field-as-subject shape). A ``min``
+    constraint inline on a ``String`` field is inapplicable under
+    ``APPLICABILITY``, so deleting the loop at
+    ``tests/semantic_ir_reader.py``'s ``field.get("constraints")`` branch
+    would let it through unchecked; this test fails if that loop is removed.
+
+    Description: TC-1814. Criteria: FR-093-AC-6, FR-093-CON-4.
+    """
+
+    def test_an_inline_field_constraint_is_checked_for_applicability(self) -> None:
+        document = {
+            "contractVersion": "2.0.0",
+            "types": [
+                {
+                    "identity": "ix://acme/pkg/T",
+                    "kind": "record",
+                    "fields": [
+                        {
+                            "identity": "ix://acme/pkg/T/f",
+                            "name": "f",
+                            "typeRef": "ix://quire/native/String",
+                            "presence": "required",
+                            "nullable": False,
+                            "multiplicity": {
+                                "lower": 1,
+                                "upper": 1,
+                                "ordered": False,
+                                "unique": False,
+                            },
+                            "constraints": [
+                                {
+                                    "identity": "ix://acme/pkg/constraint/T-f-min",
+                                    "keyword": "min",
+                                    "appliesTo": "ix://acme/pkg/T/f",
+                                    "operands": {"value": 0},
+                                    "diagnosticCode": "agent-ix.acme.T_F_MIN",
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+        diagnostics = read_semantic_ir(document)
+        codes = {diagnostic["code"] for diagnostic in diagnostics}
+        assert "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE" in codes, diagnostics

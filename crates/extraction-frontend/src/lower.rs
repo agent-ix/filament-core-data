@@ -16,31 +16,24 @@
 //! where the declaration text begins (column 3 of a table row; the first
 //! non-blank column of a fence line), which is the one locus both forms
 //! share when a fixture aligns them. The field name reaches only `name`,
-//! `identity`, `diagnosticCode`, and the alias identity a constrained
-//! field's `typeRef` and its constraints' `appliesTo` name (FR-093-CON-2).
+//! `identity` and `diagnosticCode` (FR-093-CON-2).
 //!
-//! # Constraints: one alias per constrained field (FR-034's form)
+//! # Constraints: inline on the field (gap 1 of FCD #199/#200)
 //!
-//! A field row carrying one or more constraints lowers to one extra
-//! definition of `kind: alias` at `type/<artifact id><FieldName>`
-//! ([`PackageIdentity::alias_identity`]) whose `target` is the field's
-//! resolved type, whose `constraints[]` carry the row's keywords with
-//! `appliesTo` the alias identity, and whose `origin` is the row; the
-//! field's `typeRef` then names the alias. This is the form FR-034 lowers
-//! the semantic-core kernel path to (`VersionNumber` on config-service's
-//! `ConfigVersion`), and the one both readers resolve: `appliesTo` is a
-//! type identity for FR-050's
-//! `reader.mjs` as well as for `agent_ix_semantic_ir::decide` (CR-036-4).
-//! A field with no constraints is unchanged, and a record's own
-//! `constraints[]` is always empty. The aliases of a record are returned
-//! beside it in [`Lowering::aliases`]; [`lower_bundle`] emits them into
-//! `types[]`, which FR-097 sorts by identity.
+//! A field row carrying one or more constraints keeps them on the field
+//! itself: `field.constraints[]` carries the row's keywords with
+//! `appliesTo` the field's own identity, and `field.typeRef` stays the
+//! field's resolved type — a kernel scalar's native reference or an
+//! authored type's identity, never a synthetic alias. No extra
+//! `typeDefinition` is minted for a constrained field. A field with no
+//! constraints omits `constraints`, and a record's own `constraints[]` is
+//! always empty.
 //!
 //! # Declared losses
 //!
-//! A `JsonObject` cell lowers to the package-local scalar `any` with no
-//! loss (FR-139). A `0..*` collection lowers to `presence: optional` and
-//! one `DECLARED_LOSS` naming `required-collection-presence`, because the
+//! A `JsonObject` cell lowers to the native scalar `any` with no loss
+//! (FR-139). A `0..*` collection lowers to `presence: optional` and one
+//! `DECLARED_LOSS` naming `required-collection-presence`, because the
 //! source row authors no presence (FR-106-AC-5); an extraction with
 //! `availability.fields.lossy` names `lossy-extraction`. Each row is
 //! registered in `losses.json` ([`Loss`]).
@@ -51,11 +44,10 @@
 //! `name` when it is an `Identifier`, else the `title`), raises
 //! `UNNAMEABLE_ARTIFACT` when neither is an `Identifier`, and raises
 //! `DUPLICATE_TYPE_NAME` at the second document in path order whose slug
-//! equals an earlier one's (decision D8) — including the slug of a kernel
-//! scalar the bundle uses, whose `type/` definition FR-092 mints: there the
-//! blocking `DUPLICATE_TYPE_NAME` supersedes pass one's
-//! `KERNEL_NAME_SHADOWED` warning, which stays only when the bundle does not
-//! use the scalar (orchestrator ruling on FR-092-AC-8 / FR-093-AC-13).
+//! equals an earlier one's (decision D8). A kernel scalar mints no package
+//! node to collide with (gap 1): an artifact named after one only raises
+//! pass one's `KERNEL_NAME_SHADOWED` warning, because a `Type` cell reading
+//! that name still resolves to the kernel scalar first.
 //!
 //! # Relationships, operations and clauses (FR-094)
 //!
@@ -92,12 +84,10 @@ use crate::diagnostics::{Code, Diagnostic, Disposition, Locus, NotLoweredReason}
 use crate::edges::{lower_relationships, Relationship};
 use crate::enumeration::{lower_enum, values_rows};
 use crate::extract::Extractions;
-use crate::identity::{alias_display_name, id_segment, slug, PackageIdentity};
+use crate::identity::{id_segment, slug, PackageIdentity};
 use crate::limits::{check_bundle, check_extraction, Limits};
 use crate::resolve::{ArtifactRef, Outcome, Resolution, Resolutions, Resolved, Site};
 use crate::rows::{field_rows, locate, operation_rows, RowLocus};
-use crate::scalars::{definitions, GeneratedOrigin, KernelScalar, ScalarDefinition};
-
 /// `losses.json`, byte for byte.
 const LOSSES: &str = include_str!("../losses.json");
 /// The manifest-name prefix [`module_short_name`] strips.
@@ -113,15 +103,14 @@ pub const FIELD_EXTENSION_VERSION: &str = "1.0.0";
 // IR node shapes (`schema/semantic/v1/semantic-ir.schema.json`)
 // ---------------------------------------------------------------------------
 
-/// `typeDefinition.kind` as this frontend emits it: `alias` only for the
-/// definition minted per constrained field; never `enum`, `union`,
-/// `sequence`, `map` or `reference`; a module-declared construct kind for an
-/// artifact whose object type declares one (FR-143).
+/// `typeDefinition.kind` as this frontend emits it: never `scalar`, `alias`,
+/// `enum`, `union`, `sequence`, `map` or `reference` — a kernel scalar mints
+/// no node (gap 1 of FCD #199/#200) and this frontend authors no standalone
+/// alias — a module-declared construct kind for an artifact whose object
+/// type declares one (FR-143).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Kind {
-    Scalar,
     Record,
-    Alias,
     /// `{module, name}`: the construct kind the artifact's object type
     /// declares.
     Construct(ConstructKind),
@@ -130,9 +119,7 @@ pub enum Kind {
 impl Serialize for Kind {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match self {
-            Kind::Scalar => serializer.serialize_str("scalar"),
             Kind::Record => serializer.serialize_str("record"),
-            Kind::Alias => serializer.serialize_str("alias"),
             Kind::Construct(kind) => kind.serialize(serializer),
         }
     }
@@ -175,13 +162,14 @@ pub enum DefaultKind {
     None,
 }
 
-/// `common.schema.json#/$defs/origin`.
+/// `common.schema.json#/$defs/origin`, the `source` arm: this frontend
+/// mints every node from a row it read, and generates none (gap 1 of FCD
+/// #199/#200 removed the last generated node, the package-local kernel
+/// scalar definition).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub enum Origin {
     #[serde(rename = "source")]
     Source(Locus),
-    #[serde(rename = "generated")]
-    Generated(GeneratedOrigin),
 }
 
 /// `common.schema.json#/$defs/extension` with an open payload.
@@ -220,6 +208,11 @@ pub struct Field {
     pub multiplicity: Multiplicity,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit: Option<String>,
+    /// The row's own constraints, `appliesTo` this field's identity (gap 1
+    /// of FCD #199/#200: inline on the field, no synthetic alias). Absent
+    /// for a field with none.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub constraints: Vec<ConstraintNode>,
 }
 
 /// `semantic-ir.schema.json#/$defs/variant`.
@@ -245,8 +238,8 @@ pub struct TypeDefinition {
     pub unknown_policy: UnknownPolicy,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scalar: Option<String>,
-    /// The resolved type behind a constrained field's alias; absent on
-    /// every other kind.
+    /// Unused by this frontend, which mints no `alias`, `sequence` or
+    /// `map` kind.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub target: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -266,38 +259,6 @@ pub struct TypeDefinition {
     /// scalar, record or alias.
     #[serde(flatten)]
     pub construct: ConstructMembers,
-}
-
-impl From<ScalarDefinition> for TypeDefinition {
-    fn from(scalar: ScalarDefinition) -> Self {
-        TypeDefinition {
-            identity: scalar.identity,
-            display_name: scalar.display_name,
-            kind: Kind::Scalar,
-            roles: scalar.roles,
-            origin: Origin::Generated(scalar.origin.generated),
-            constraints: Vec::new(),
-            extensions: scalar
-                .extensions
-                .into_iter()
-                .map(|e| Extension {
-                    identity: e.identity,
-                    version: e.version,
-                    required: e.required,
-                    payload: serde_json::json!({ "name": e.payload.name }),
-                })
-                .collect(),
-            unknown_policy: UnknownPolicy::Reject,
-            scalar: Some(scalar.scalar),
-            target: None,
-            fields: None,
-            variants: None,
-            relationships: None,
-            operations: None,
-            clauses: None,
-            construct: ConstructMembers::default(),
-        }
-    }
 }
 
 // ---------------------------------------------------------------------------
@@ -661,13 +622,11 @@ impl<'a> ArtifactContext<'a> {
     }
 }
 
-/// One lowered definition with the alias definitions its constrained
-/// fields minted (in field order) and the non-blocking diagnostics it
-/// raised (`DECLARED_LOSS`).
+/// One lowered definition and the non-blocking diagnostics it raised
+/// (`DECLARED_LOSS`).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Lowering {
     pub definition: TypeDefinition,
-    pub aliases: Vec<TypeDefinition>,
     pub diagnostics: Vec<Diagnostic>,
 }
 
@@ -712,17 +671,12 @@ impl Sink {
         self.diagnostics.push(diagnostic);
     }
 
-    fn finish(
-        self,
-        definition: TypeDefinition,
-        aliases: Vec<TypeDefinition>,
-    ) -> Result<Lowering, LowerError> {
+    fn finish(self, definition: TypeDefinition) -> Result<Lowering, LowerError> {
         if self.blocked {
             Err(LowerError::Blocked(self.diagnostics))
         } else {
             Ok(Lowering {
                 definition,
-                aliases,
                 diagnostics: self.diagnostics,
             })
         }
@@ -772,7 +726,6 @@ pub fn lower_record(
     }
     let decls = extraction.fields.as_deref().unwrap_or(&[]);
     let mut fields = Vec::with_capacity(decls.len());
-    let mut aliases = Vec::new();
     let mut codes: BTreeMap<String, Locus> = BTreeMap::new();
     let mut field_slugs: BTreeMap<String, (String, Locus)> = BTreeMap::new();
     for (index, decl) in decls.iter().enumerate() {
@@ -815,20 +768,14 @@ pub fn lower_record(
                 continue;
             }
         };
+        let identity_for_constraints = identity.clone();
         let mut field = lower_field(decl, resolved, identity, locus.clone(), ctx, &mut sink)?;
         if decl.constraints.as_deref().is_some_and(|c| !c.is_empty()) {
             let kind = resolved.and_then(ResolvedKind::of);
-            let alias_identity = match ctx.package.alias_identity(ctx.id, &decl.name) {
-                Ok(identity) => identity,
-                Err(unsluggable) => {
-                    sink.push(unsluggable.diagnostic(locus.clone()));
-                    continue;
-                }
-            };
             let mut constraints = Vec::new();
             lower_constraints(
                 decl,
-                &alias_identity,
+                &identity_for_constraints,
                 kind,
                 &locus,
                 ctx,
@@ -836,52 +783,32 @@ pub fn lower_record(
                 &mut constraints,
                 &mut sink,
             );
-            aliases.push(TypeDefinition {
-                identity: alias_identity.clone(),
-                display_name: alias_display_name(ctx.display_name, &decl.name),
-                kind: Kind::Alias,
-                roles: Vec::new(),
-                origin: Origin::Source(locus),
-                constraints,
-                extensions: Vec::new(),
-                unknown_policy: UnknownPolicy::Reject,
-                scalar: None,
-                target: Some(std::mem::replace(&mut field.type_ref, alias_identity)),
-                fields: None,
-                variants: None,
-                relationships: None,
-                operations: None,
-                clauses: None,
-                construct: ConstructMembers::default(),
-            });
+            field.constraints = constraints;
         }
         fields.push(field);
     }
-    sink.finish(
-        TypeDefinition {
-            identity: type_identity,
-            display_name: ctx.display_name.to_string(),
-            kind: Kind::Record,
-            roles: ctx.roles.clone(),
-            origin: head_origin(ctx),
-            // Every constraint lives on its field's alias.
-            constraints: Vec::new(),
-            extensions: Vec::new(),
-            unknown_policy: UnknownPolicy::Reject,
-            scalar: None,
-            target: None,
-            fields: Some(fields),
-            variants: None,
-            // Filled by `lower_bundle`, which holds the document, the registry
-            // and the index the three need; a record always carries the three
-            // lists, an enumeration or scalar never does.
-            relationships: Some(Vec::new()),
-            operations: Some(Vec::new()),
-            clauses: Some(Vec::new()),
-            construct: ConstructMembers::default(),
-        },
-        aliases,
-    )
+    sink.finish(TypeDefinition {
+        identity: type_identity,
+        display_name: ctx.display_name.to_string(),
+        kind: Kind::Record,
+        roles: ctx.roles.clone(),
+        origin: head_origin(ctx),
+        // Every constraint lives on its field.
+        constraints: Vec::new(),
+        extensions: Vec::new(),
+        unknown_policy: UnknownPolicy::Reject,
+        scalar: None,
+        target: None,
+        fields: Some(fields),
+        variants: None,
+        // Filled by `lower_bundle`, which holds the document, the registry
+        // and the index the three need; a record always carries the three
+        // lists, an enumeration or scalar never does.
+        relationships: Some(Vec::new()),
+        operations: Some(Vec::new()),
+        clauses: Some(Vec::new()),
+        construct: ConstructMembers::default(),
+    })
 }
 
 /// Lower one `FieldDecl` at `locus` to an IR `field` (FR-093 "The fields",
@@ -905,11 +832,12 @@ pub(crate) fn lower_field(
             field: decl.name.clone(),
         });
     };
-    let multiplicity = decl
-        .type_ref
-        .multiplicity
-        .clone()
-        .unwrap_or_else(Multiplicity::one);
+    let multiplicity = crate::document::normalized_multiplicity(
+        decl.type_ref
+            .multiplicity
+            .clone()
+            .unwrap_or_else(Multiplicity::one),
+    );
     if multiplicity.lower == 0 && multiplicity.upper.is_none() {
         sink.push(Loss::RequiredCollectionPresence.diagnostic(
             &format!(
@@ -950,18 +878,20 @@ pub(crate) fn lower_field(
         extensions,
         multiplicity,
         unit: decl.type_ref.unit.clone(),
+        constraints: Vec::new(),
     })
 }
 
 /// The constraints of one field row under FR-029, each with `appliesTo`
-/// the row's alias (`alias_identity`), with `DUPLICATE_CONSTRAINT` on a
-/// repeated keyword or a colliding `diagnosticCode` and
-/// `CONSTRAINT_NOT_APPLICABLE` from the RULES.md table — the frontend's own
-/// gate, raised at the row before the reader could see the alias.
+/// the row's own field identity (gap 1 of FCD #199/#200: inline on the
+/// field, no synthetic alias), with `DUPLICATE_CONSTRAINT` on a repeated
+/// keyword or a colliding `diagnosticCode` and `CONSTRAINT_NOT_APPLICABLE`
+/// from the RULES.md table — the frontend's own gate, raised at the row
+/// before the reader could see the field.
 #[allow(clippy::too_many_arguments)]
 fn lower_constraints(
     decl: &quire_rs::semantic::FieldDecl,
-    alias_identity: &str,
+    field_identity: &str,
     kind: Option<ResolvedKind<'_>>,
     locus: &Locus,
     ctx: &ArtifactContext<'_>,
@@ -1032,7 +962,7 @@ fn lower_constraints(
             identity,
             keyword,
             operands,
-            applies_to: alias_identity.to_string(),
+            applies_to: field_identity.to_string(),
             diagnostic_code: code,
             origin: Origin::Source(locus.clone()),
         });
@@ -1045,13 +975,11 @@ fn lower_constraints(
 
 /// Every definition of one lift and the diagnostics of this stage.
 ///
-/// `types` holds the kernel scalar definitions in identity order, the
-/// lowered artifact in document path order, each record followed by the
-/// aliases of its constrained fields in field order; FR-097 sorts by
+/// `types` holds the lowered artifact in document path order — a kernel
+/// scalar mints no entry here (gap 1 of FCD #199/#200); FR-097 sorts by
 /// identity.
-/// `diagnostics` holds FR-092's diagnostics — minus every
-/// `KERNEL_NAME_SHADOWED` a `DUPLICATE_TYPE_NAME` superseded — followed by
-/// this stage's own; the engine's stay in [`Extractions::diagnostics`].
+/// `diagnostics` holds FR-092's diagnostics followed by this stage's own;
+/// the engine's stay in [`Extractions::diagnostics`].
 #[derive(Debug, Clone, Default)]
 pub struct Lowered {
     pub types: Vec<TypeDefinition>,
@@ -1065,14 +993,14 @@ pub struct Lowered {
 /// A breach of `maxDocuments`, `maxDocumentBytes` or `maxDepth` terminates
 /// the lowering with those diagnostics alone; a breach of
 /// `maxFieldsPerRecord` or `maxClauseBytes` skips the offending artifact.
-/// `generator_version` is the frontend version the provenance record
-/// names, carried by every generated origin.
+/// Every node this frontend mints carries a `source` origin (gap 1 of FCD
+/// #199/#200 removed the last generated one), so no generator version is
+/// taken.
 pub fn lower_bundle(
     bundle: &Bundle,
     extractions: &Extractions,
     resolutions: &Resolutions,
     limits: &Limits,
-    generator_version: &str,
 ) -> Lowered {
     let bundle_breaches = check_bundle(bundle, limits);
     if !bundle_breaches.is_empty() {
@@ -1085,27 +1013,13 @@ pub fn lower_bundle(
     let package = PackageIdentity::from(bundle.package());
     let source_identity = package.source();
     let mut own: Vec<Diagnostic> = Vec::new();
-    let mut types: Vec<TypeDefinition> = definitions(
-        &package,
-        resolutions.scalars_used.iter().copied(),
-        generator_version,
-    )
-    .into_iter()
-    .map(TypeDefinition::from)
-    .collect();
+    let mut types: Vec<TypeDefinition> = Vec::new();
 
-    // Every kernel scalar the bundle uses is a `type/` definition already, so
-    // an artifact declaring its name, or whose id slugs to it, collides with
-    // it. `names` holds the declared names; `taken` the id slugs that mint
-    // `type/` identities.
+    // `names` holds the declared display names; `taken` the id slugs that
+    // mint `type/` identities — both against a second artifact colliding
+    // with the first.
     let mut names: BTreeMap<String, Locus> = BTreeMap::new();
     let mut taken: BTreeMap<String, (String, Locus)> = BTreeMap::new();
-    let kernel_slugs: BTreeMap<String, KernelScalar> = resolutions
-        .scalars_used
-        .iter()
-        .filter_map(|k| slug(k.name()).ok().map(|s| (s, *k)))
-        .collect();
-    let mut superseded: BTreeSet<String> = BTreeSet::new();
     let mut pending: Vec<Pending> = Vec::new();
     // The `type/` identities of artifacts whose lowering failed: an edge
     // naming one is refused with its source (`assign_owners`).
@@ -1179,32 +1093,6 @@ pub fn lower_bundle(
                 )
                 .with_related(first.clone()),
             );
-            continue;
-        }
-        // Contract case (a): the declared name or the minted identity is a
-        // kernel scalar's this bundle uses.
-        let by_name = resolutions
-            .scalars_used
-            .iter()
-            .find(|k| k.name() == artifact.display_name);
-        if let Some(scalar) = by_name.or_else(|| kernel_slugs.get(&id_slug)) {
-            let collision = if by_name.is_some() {
-                format!("lowers to type name `{}`", artifact.display_name)
-            } else {
-                format!("mints type/{id_slug}")
-            };
-            own.push(Diagnostic::frontend(
-                Code::DuplicateTypeName,
-                format!(
-                    "artifact {} ({}) {collision}, which collides with the kernel scalar {} this bundle uses (type/{})",
-                    document.id(),
-                    document.path(),
-                    scalar.name(),
-                    scalar.name()
-                ),
-                Some(head),
-            ));
-            superseded.insert(document.path().to_string());
             continue;
         }
         // Contract case (b): two distinct ids whose slugs coincide mint one
@@ -1348,22 +1236,11 @@ pub fn lower_bundle(
     for item in pending {
         own.extend(item.lowering.diagnostics);
         types.push(item.lowering.definition);
-        types.extend(item.lowering.aliases);
     }
     own.extend(refusals);
 
     own.extend(identity_collisions(&types));
-    let mut diagnostics: Vec<Diagnostic> = resolutions
-        .diagnostics
-        .iter()
-        .filter(|d| {
-            !(d.code == crate::diagnostics::WireCode::Registry(Code::KernelNameShadowed)
-                && d.locus
-                    .as_ref()
-                    .is_some_and(|l| superseded.contains(&l.path)))
-        })
-        .cloned()
-        .collect();
+    let mut diagnostics: Vec<Diagnostic> = resolutions.diagnostics.clone();
     diagnostics.extend(own);
     Lowered {
         types,
@@ -1375,21 +1252,22 @@ pub fn lower_bundle(
 /// Check every node the frontend admitted after the name-level pass. Name
 /// collisions are intentionally handled earlier as `DUPLICATE_TYPE_NAME`;
 /// this pass catches cross-kind collisions such as an authored `NoteRevision`
-/// type and the alias minted for `Note.revision`.
+/// type whose no-slot identity a field or operation elsewhere in the bundle
+/// also mints (FCD #199/#200 gap 2: none of these kinds mints its own
+/// `NodeKind` segment, so two different kinds can land on the same
+/// identity).
 fn identity_collisions(types: &[TypeDefinition]) -> Vec<Diagnostic> {
-    let mut seen: BTreeMap<String, Option<Locus>> = BTreeMap::new();
+    let mut seen: BTreeMap<String, Locus> = BTreeMap::new();
     let mut diagnostics = Vec::new();
     for definition in types {
         for (identity, locus) in identities_of(definition) {
             if let Some(first) = seen.get(&identity) {
-                let mut diagnostic = Diagnostic::frontend(
+                let diagnostic = Diagnostic::frontend(
                     Code::DuplicateIdentity,
                     format!("identity `{identity}` is already minted by an earlier node"),
-                    locus.clone(),
-                );
-                if let Some(first) = first {
-                    diagnostic = diagnostic.with_related(first.clone());
-                }
+                    Some(locus.clone()),
+                )
+                .with_related(first.clone());
                 diagnostics.push(diagnostic);
             } else {
                 seen.insert(identity, locus);
@@ -1399,14 +1277,12 @@ fn identity_collisions(types: &[TypeDefinition]) -> Vec<Diagnostic> {
     diagnostics
 }
 
-fn source_locus(origin: &Origin) -> Option<Locus> {
-    match origin {
-        Origin::Source(locus) => Some(locus.clone()),
-        Origin::Generated(_) => None,
-    }
+fn source_locus(origin: &Origin) -> Locus {
+    let Origin::Source(locus) = origin;
+    locus.clone()
 }
 
-fn identities_of(definition: &TypeDefinition) -> Vec<(String, Option<Locus>)> {
+fn identities_of(definition: &TypeDefinition) -> Vec<(String, Locus)> {
     let mut out = vec![(
         definition.identity.clone(),
         source_locus(&definition.origin),
@@ -1417,13 +1293,15 @@ fn identities_of(definition: &TypeDefinition) -> Vec<(String, Option<Locus>)> {
             .iter()
             .map(|node| (node.identity.clone(), source_locus(&node.origin))),
     );
-    out.extend(
-        definition
-            .fields
-            .iter()
-            .flatten()
-            .map(|field| (field.identity.clone(), source_locus(&field.origin))),
-    );
+    for field in definition.fields.iter().flatten() {
+        out.push((field.identity.clone(), source_locus(&field.origin)));
+        out.extend(
+            field
+                .constraints
+                .iter()
+                .map(|node| (node.identity.clone(), source_locus(&node.origin))),
+        );
+    }
     out.extend(
         definition
             .variants

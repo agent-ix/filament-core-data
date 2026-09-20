@@ -1,50 +1,50 @@
 //! KernelScalar
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/KernelScalar.
+//! Semantic identity: ix://agent-ix/semantic-core/KernelScalar.
 
 use serde::{Deserialize, Serialize};
 
 /// KernelScalar
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/KernelScalar.
+/// Semantic identity: ix://agent-ix/semantic-core/KernelScalar.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum KernelScalar {
     /// UUID
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/KernelScalar/variant/UUID.
+    /// Semantic identity: ix://agent-ix/semantic-core/KernelScalar/variant/UUID.
     #[serde(rename = "UUID")]
     Uuid,
     /// Boolean
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/KernelScalar/variant/Boolean.
+    /// Semantic identity: ix://agent-ix/semantic-core/KernelScalar/variant/Boolean.
     Boolean,
     /// Integer
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/KernelScalar/variant/Integer.
+    /// Semantic identity: ix://agent-ix/semantic-core/KernelScalar/variant/Integer.
     Integer,
     /// Decimal
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/KernelScalar/variant/Decimal.
+    /// Semantic identity: ix://agent-ix/semantic-core/KernelScalar/variant/Decimal.
     Decimal,
     /// String
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/KernelScalar/variant/String.
+    /// Semantic identity: ix://agent-ix/semantic-core/KernelScalar/variant/String.
     String,
     /// Timestamp
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/KernelScalar/variant/Timestamp.
+    /// Semantic identity: ix://agent-ix/semantic-core/KernelScalar/variant/Timestamp.
     Timestamp,
     /// Duration
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/KernelScalar/variant/Duration.
+    /// Semantic identity: ix://agent-ix/semantic-core/KernelScalar/variant/Duration.
     Duration,
     /// Bytes
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/KernelScalar/variant/Bytes.
+    /// Semantic identity: ix://agent-ix/semantic-core/KernelScalar/variant/Bytes.
     Bytes,
     /// JsonObject
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/KernelScalar/variant/JsonObject.
+    /// Semantic identity: ix://agent-ix/semantic-core/KernelScalar/variant/JsonObject.
     JsonObject,
 }
 

@@ -212,10 +212,12 @@ pub fn lower_operations(
                 };
                 Some(Returns {
                     type_ref: type_ref_identity,
-                    multiplicity: type_ref
-                        .multiplicity
-                        .clone()
-                        .unwrap_or_else(Multiplicity::one),
+                    multiplicity: crate::document::normalized_multiplicity(
+                        type_ref
+                            .multiplicity
+                            .clone()
+                            .unwrap_or_else(Multiplicity::one),
+                    ),
                     nullable: false,
                 })
             }

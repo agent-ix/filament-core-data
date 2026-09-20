@@ -35,36 +35,29 @@ export function slug(value) {
 		.replace(/^-+|-+$/g, "");
 }
 
-/** `ix://<package identity>/<slot>/<parts joined by ->`. */
+/**
+ * `ix://<package identity>/<parts joined by />` for a `type`, `field` or
+ * `operation` slot — a type definition and a member mint no slot segment of
+ * their own, only their owner's identity nested by `/` — and
+ * `ix://<package identity>/<slot>/<parts joined by ->` for every other slot
+ * (`variant`, `relationship`, `clause`, `constraint`), which still mints
+ * under its own segment (FR-095 "Node identities").
+ */
 export function mintIdentity(packageIdentity, slot, parts) {
 	if (!(slot in SLOTS)) throw new TypeError(`unknown identity slot: ${slot}`);
-	const tail = parts
-		.map(slug)
-		.filter((part) => part.length > 0)
-		.join("-");
-	return `ix://${packageIdentity}/${slot}/${tail}`;
-}
-
-/** The package-local kernel scalar definition FR-034 mints for a built-in scalar. */
-export function kernelIdentity(packageIdentity, kernelName) {
-	return mintIdentity(packageIdentity, "type", [kernelName]);
+	const slugged = parts.map(slug).filter((part) => part.length > 0);
+	if (slot === "type" || slot === "field" || slot === "operation") {
+		return `ix://${packageIdentity}/${slugged.join("/")}`;
+	}
+	return `ix://${packageIdentity}/${slot}/${slugged.join("-")}`;
 }
 
 /**
- * The alias a constrained field's type is retargeted to (FR-034). Constraints
- * live on type definitions — `semantic-ir.schema.json` gives a field no
- * `constraints` member — so a constrained property mints one.
+ * The `typeRef` a built-in scalar resolves to: `ix://quire/native/<Name>`,
+ * naming no package node (gap 1 of FCD #199/#200).
  */
-export function constraintAliasIdentity(packageIdentity, owner, field) {
-	return mintIdentity(packageIdentity, "type", [
-		`${slug(owner)}${capitalize(slug(field))}`,
-	]);
-}
-
-/** `code` becomes `Code`; FR-034 writes the minted alias as `<Name><Field>`. */
-export function capitalize(value) {
-	const text = String(value);
-	return text.length === 0 ? text : text[0].toUpperCase() + text.slice(1);
+export function nativeTypeRef(kernelName) {
+	return `ix://quire/native/${kernelName}`;
 }
 
 /**

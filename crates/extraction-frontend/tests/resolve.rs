@@ -16,9 +16,7 @@ use agent_ix_extraction_frontend::resolve::{
     classify, pass_one, pass_two, resolve, ArtifactRef, Outcome, Outcomes, Resolution, Resolved,
     Unresolved,
 };
-use agent_ix_extraction_frontend::scalars::{
-    definitions, KernelScalar, ScalarDefinition, KERNEL_SCALAR_EXTENSION,
-};
+use agent_ix_extraction_frontend::scalars::KernelScalar;
 use agent_ix_extraction_frontend::{extract, is_blocked, Bundle, Extractions, PackageIdentity};
 use ix_trace_rs::trace;
 use proptest::prelude::*;
@@ -76,7 +74,7 @@ fn object_ref(resolution: &Resolution) -> &ArtifactRef {
 
 #[trace("TC-1210", "FR-092-AC-1")]
 #[test]
-fn tc_1210_every_kernel_name_is_kernel_scalar_and_config_version_mints_five_scalars_once() {
+fn tc_1210_every_kernel_name_is_kernel_scalar_and_config_version_uses_five_native_refs() {
     let (bundle, extractions) = load_business("config-version-table");
     let outcomes = pass_one(&bundle, &extractions).outcomes;
 
@@ -102,48 +100,34 @@ fn tc_1210_every_kernel_name_is_kernel_scalar_and_config_version_mints_five_scal
         used,
         BTreeSet::from(["UUID", "Integer", "String", "Timestamp", "JsonObject"])
     );
+    // Gap 1 of FCD #199/#200: a kernel scalar mints no package node. Every
+    // scalar the bundle uses resolves to its native reference alone, over
+    // the closed nine-member set, none minted twice.
     let package = PackageIdentity::from(bundle.package());
-    let defs: Vec<ScalarDefinition> =
-        definitions(&package, lift.scalars_used.iter().copied(), "0.0.0");
-    let identities: Vec<&str> = defs.iter().map(|d| d.identity.as_str()).collect();
-    assert_eq!(
-        identities,
-        [
-            "ix://agent-ix/config-service/type/Integer",
-            "ix://agent-ix/config-service/type/JsonObject",
-            "ix://agent-ix/config-service/type/String",
-            "ix://agent-ix/config-service/type/Timestamp",
-            "ix://agent-ix/config-service/type/UUID",
-        ],
-        "five scalar definitions, each once, in identity order"
-    );
-    for def in &defs {
-        let json = serde_json::to_value(def).expect("serialises");
-        assert_eq!(json["kind"], "scalar");
-        assert_eq!(
-            json["displayName"],
-            def.identity.rsplit('/').next().expect("name")
-        );
-        let ext = &json["extensions"][0];
-        assert_eq!(ext["identity"], KERNEL_SCALAR_EXTENSION);
-        assert_eq!(ext["version"], "1.0.0");
-        assert_eq!(ext["required"], false);
-        assert_eq!(ext["payload"]["name"], json["displayName"]);
-        assert_eq!(json["extensions"].as_array().map(Vec::len), Some(1));
-        assert!(json["scalar"].is_string(), "the FR-032 value: {json}");
-        assert_eq!(
-            json["origin"]["generated"]["inputIdentities"][0],
-            "ix://agent-ix/config-service/spec"
-        );
-    }
-    let scalars: BTreeMap<&str, &str> = defs
+    let native_refs: BTreeSet<String> = lift
+        .scalars_used
         .iter()
-        .map(|d| {
-            (
-                d.identity.rsplit('/').next().expect("name"),
-                d.scalar.as_str(),
-            )
+        .map(|scalar| {
+            Resolution::KernelScalar(*scalar)
+                .type_ref(&package)
+                .expect("a kernel scalar always resolves")
         })
+        .collect();
+    assert_eq!(
+        native_refs,
+        BTreeSet::from([
+            "ix://quire/native/Integer".to_string(),
+            "ix://quire/native/JsonObject".to_string(),
+            "ix://quire/native/String".to_string(),
+            "ix://quire/native/Timestamp".to_string(),
+            "ix://quire/native/UUID".to_string(),
+        ]),
+        "five native references, each once, no package node"
+    );
+    let scalars: BTreeMap<&str, &str> = lift
+        .scalars_used
+        .iter()
+        .map(|k| (k.name(), k.ir_scalar().expect("FR-032 value")))
         .collect();
     assert_eq!(
         scalars,
@@ -196,7 +180,7 @@ fn tc_1211_config_overlay_by_title_and_fr_005_by_id_resolve_to_the_same_object()
     let package = PackageIdentity::from(bundle.package());
     assert_eq!(
         overlay.resolution.type_ref(&package).as_deref(),
-        Some("ix://agent-ix/config-service/type/FR-005"),
+        Some("ix://agent-ix/config-service/FR-005"),
         "the typeRef is the definition's identity, not the token's spelling"
     );
 
@@ -215,7 +199,7 @@ fn tc_1211_config_overlay_by_title_and_fr_005_by_id_resolve_to_the_same_object()
     );
     assert_eq!(
         by_id.type_ref(&package).as_deref(),
-        Some("ix://agent-ix/config-service/type/FR-005")
+        Some("ix://agent-ix/config-service/FR-005")
     );
 
     // Recorded, not asserted as behaviour of this crate: a Type cell reading
@@ -472,7 +456,7 @@ fn tc_1216_an_enumeration_artifact_resolves_to_enumeration_and_an_entity_of_the_
     let package = PackageIdentity::from(bundle.package());
     assert_eq!(
         status.resolution.type_ref(&package).as_deref(),
-        Some("ix://agent-ix/config-service/type/EN_001")
+        Some("ix://agent-ix/config-service/EN_001")
     );
 
     let (bundle, extractions) = load_business("resolve/entity-titled-status");
@@ -482,7 +466,7 @@ fn tc_1216_an_enumeration_artifact_resolves_to_enumeration_and_an_entity_of_the_
     assert_eq!(object_ref(&status.resolution).id, "FR-001");
     assert_eq!(
         status.resolution.type_ref(&package).as_deref(),
-        Some("ix://agent-ix/config-service/type/FR-001")
+        Some("ix://agent-ix/config-service/FR-001")
     );
 }
 

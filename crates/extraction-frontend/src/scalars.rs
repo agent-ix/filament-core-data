@@ -1,6 +1,8 @@
 //! FR-092 "Kernel scalars": the FR-032 library as this crate reads it, and
-//! the package-local `scalar` definition minted once per kernel scalar a
-//! bundle uses.
+//! the native `ix://quire/native/<Name>` reference a kernel scalar token
+//! resolves to. A kernel scalar mints no package-local node (gap 1 of
+//! FCD #199/#200): [`KernelScalar::native_type_ref`] is the closed set of
+//! `typeRef` values a token can take instead.
 //!
 //! The library is the embedded `packages/semantic-core/kernel-scalars.json`
 //! (FR-032's one source), read at compile time; [`KernelScalar`] is the
@@ -11,18 +13,13 @@
 use std::collections::BTreeMap;
 use std::sync::OnceLock;
 
-use serde::{Deserialize, Serialize};
-
-use crate::diagnostics::OWNER;
-use crate::identity::PackageIdentity;
+use serde::Deserialize;
 
 /// The FR-032 table, byte for byte.
 const LIBRARY: &str = include_str!("../../../packages/semantic-core/kernel-scalars.json");
 
-/// The extension every kernel scalar definition carries (FR-034, FR-046).
-pub const KERNEL_SCALAR_EXTENSION: &str = "ix://agent-ix/semantic-core/ext/kernel-scalar";
-/// The version of that extension.
-pub const KERNEL_SCALAR_EXTENSION_VERSION: &str = "1.0.0";
+/// The package a native type reference names (`ix://quire/native/<Name>`).
+pub const NATIVE_PACKAGE: &str = "quire";
 
 /// The nine members of the FR-032 kernel scalar library, in library order.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -141,100 +138,12 @@ impl KernelScalar {
             .get(self.name())
             .and_then(|entry| entry.ir_scalar.as_deref())
     }
-}
 
-/// `common.schema.json#/$defs/generatedOrigin`: a node with no source locus
-/// names the lowerer that generated it (FR-034).
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct GeneratedOrigin {
-    pub generator_identity: std::string::String,
-    pub generator_version: std::string::String,
-    pub input_identities: Vec<std::string::String>,
-}
-
-/// `common.schema.json#/$defs/origin`, the `generated` arm.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct Origin {
-    pub generated: GeneratedOrigin,
-}
-
-/// `common.schema.json#/$defs/extension` with the kernel-scalar payload.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct Extension {
-    pub identity: std::string::String,
-    pub version: std::string::String,
-    pub required: bool,
-    pub payload: ExtensionPayload,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct ExtensionPayload {
-    pub name: std::string::String,
-}
-
-/// One `typeDefinition` of `kind: scalar`
-/// (`semantic-ir.schema.json#/$defs/typeDefinition`).
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ScalarDefinition {
-    pub identity: std::string::String,
-    pub display_name: std::string::String,
-    pub kind: &'static str,
-    pub roles: Vec<std::string::String>,
-    pub origin: Origin,
-    pub constraints: Vec<serde_json::Value>,
-    pub extensions: Vec<Extension>,
-    pub unknown_policy: &'static str,
-    pub scalar: std::string::String,
-}
-
-/// One package-local scalar definition per kernel scalar in `used`, each
-/// once, in identity order (FR-092 "Kernel scalars"): identity
-/// `ix://<org>/<name>/type/<KernelScalar>` (FR-095), the FR-032 `scalar`
-/// value, and the `ext/kernel-scalar` extension. A member with no
-/// Every declared scalar yields one definition here.
-///
-/// `generator_version` is the frontend's own version as the provenance
-/// record names it (FR-095), never read from the build environment.
-pub fn definitions(
-    package: &PackageIdentity,
-    used: impl IntoIterator<Item = KernelScalar>,
-    generator_version: &str,
-) -> Vec<ScalarDefinition> {
-    let mut out: BTreeMap<std::string::String, ScalarDefinition> = BTreeMap::new();
-    for member in used {
-        let Some(scalar) = member.ir_scalar() else {
-            continue;
-        };
-        let identity = package
-            .type_identity(member.name())
-            .expect("kernel scalar names are slug-safe");
-        out.entry(identity.clone())
-            .or_insert_with(|| ScalarDefinition {
-                identity,
-                display_name: member.name().to_string(),
-                kind: "scalar",
-                roles: Vec::new(),
-                origin: Origin {
-                    generated: GeneratedOrigin {
-                        generator_identity: OWNER.to_string(),
-                        generator_version: generator_version.to_string(),
-                        input_identities: vec![package.source()],
-                    },
-                },
-                constraints: Vec::new(),
-                extensions: vec![Extension {
-                    identity: KERNEL_SCALAR_EXTENSION.to_string(),
-                    version: KERNEL_SCALAR_EXTENSION_VERSION.to_string(),
-                    required: false,
-                    payload: ExtensionPayload {
-                        name: member.name().to_string(),
-                    },
-                }],
-                unknown_policy: "reject",
-                scalar: scalar.to_string(),
-            });
+    /// The `typeRef` value a token resolving to this member takes: `
+    /// ix://quire/native/<Name>`, naming no package node (gap 1 of FCD
+    /// #199/#200). Every reader resolves this prefix as a native type over
+    /// the closed [`KernelScalar::ALL`] set.
+    pub fn native_type_ref(self) -> std::string::String {
+        format!("ix://{NATIVE_PACKAGE}/native/{}", self.name())
     }
-    out.into_values().collect()
 }

@@ -30,8 +30,8 @@ The slot exists already. Issue #20 declared four of them, wrote the result
 contract and the comparison, and deliberately implemented no adapter: its
 registry says in as many words that supplying the command and the result emitter
 is the owning issue's obligation. That obligation is this one. Until it is
-discharged the harness synthesises `support: "unavailable"` for all 111 cases
-and records 111 unmet rows and zero passes against issue #22 — the correct
+discharged the harness synthesises `support: "unavailable"` for all 115 cases
+and records 114 unmet rows and zero passes against issue #22 — the correct
 reading of a backend that does not exist, and an unmet row rather than a gap in
 the corpus.
 
@@ -42,14 +42,14 @@ independent-corpus design exists to prevent.
 
 Agreement is stated here as an obligation and not only as a threshold row. A
 requirement that says only "record a disagreement" is satisfied by an adapter
-that disagrees with every case and records 111 disagreements, and a promotion
+that disagrees with every case and records 115 disagreements, and a promotion
 threshold left `proposed` cannot close that hole because a proposed threshold
 gates nothing. So this requirement obliges the agreement itself, and separately
 obliges honesty about how the agreement was reached.
 
 ## Inputs
 
-- The committed corpus: `conformance/corpus.json`, `conformance/bases/`, and the 111 cases under `conformance/cases/`
+- The committed corpus: `conformance/corpus.json`, `conformance/bases/`, and the 115 cases under `conformance/cases/`
 - The declared import API of `conformance/oracle/index.mjs`: `loadCorpus`, `loadCase`, `listCases`, `loadManifest`, `buildInput`, and `buildBefore`
 - `conformance/schema/adapter-result.schema.json`, the result contract
 - The backend's own decision modules: `admitIr` and `representability` ([FR-068](./FR-068-decide-and-report-ir-admissibility.md)), `normalizeIrForTarget` and `classifySurface` ([FR-069](./FR-069-canonicalize-and-classify-the-ir-surface.md)), and the generated validators ([FR-066](./FR-066-generate-runtime-validators.md))
@@ -91,7 +91,7 @@ obliges honesty about how the agreement was reached.
 
 ### Agreement
 
-- The adapter's answer SHALL match the oracle's verdict for every one of the 111 corpus cases, on `resultState`, on the ordered diagnostic list, on `normalized`, and on `classification` where the case is a compatibility case.
+- The adapter's answer SHALL match the oracle's verdict for every one of the 115 corpus cases, on `resultState`, on the ordered diagnostic list, on `normalized`, and on `classification` where the case is a compatibility case.
 - The harness SHALL report zero unsuppressed divergences for the `typescript-backend` slot.
 - An adapter that answers every case and disagrees with the oracle SHALL NOT satisfy this requirement, whatever it records about the disagreement.
 - Agreement SHALL be obliged here rather than left to `conformance/thresholds.json`, because the `typescript-backend` threshold row stays `proposed` and a proposed threshold gates nothing.
@@ -131,8 +131,8 @@ obliges honesty about how the agreement was reached.
 ### Accounting
 
 - `conformance/coverage.json` SHALL be regenerated and committed with the run that makes the slot available.
-- The regenerated `coverage.json` SHALL record the `typescript-backend` row's `unmet` falling from 111 to 0 and its `matched` rising to 111.
-- The regenerated `coverage.json` SHALL record a corpus-wide `unmetCases` total 111 lower than the total the committed account carried immediately before this change.
+- The regenerated `coverage.json` SHALL record the `typescript-backend` row's `unmet` falling from 115 to 0 and its `matched` rising to 115.
+- The regenerated `coverage.json` SHALL record a corpus-wide `unmetCases` total 115 lower than the total the committed account carried immediately before this change.
 - No acceptance criterion of this requirement SHALL name a whole-corpus absolute, because `conformance/coverage.json` carries one row per adapter and issues #21 and #23 each flip their own row in the same window, so an absolute encodes a merge order that nobody controls and fails the branch that merges second for work it did not do.
 - `conformance/coverage.json`, `docs/semantic-data-system/compiler-diagnostics.md`, `src/compiler/inventory.json`, and the `spec/tests.md` execution summary are machine-generated or shared with issues #21 and #23, and on rebase they SHALL be regenerated from the rebased tree rather than merged hunk by hunk.
 - `agent-ix/filament-core-data#63` records that three concurrent backend tickets each regenerate those four artifacts and asks for a reconciliation owner, and this requirement SHALL cite it rather than assume a merge order.
@@ -162,17 +162,17 @@ obliges honesty about how the agreement was reached.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-070-AC-1 | `make conformance` runs the `typescript-backend` command over all 111 cases and the harness reports no `adapter`, `unknown-case`, `duplicate-answer`, `case-digest`, or `missing-answer` problem. | Integration |
+| FR-070-AC-1 | `make conformance` runs the `typescript-backend` command over all 115 cases and the harness reports no `adapter`, `unknown-case`, `duplicate-answer`, `case-digest`, or `missing-answer` problem. | Integration |
 | FR-070-AC-2 | Every document the adapter emits validates against `conformance/schema/adapter-result.schema.json`. | Test |
-| FR-070-AC-3 | The adapter answers `support: "supported"` for all 111 cases and `unavailable` for none. | Test |
+| FR-070-AC-3 | The adapter answers `support: "supported"` for all 115 cases and `unavailable` for none. | Test |
 | FR-070-AC-4 | The measured match count, failure count, and divergence count are recorded in `spec/tests.md` with the command that produced them, and a claimed figure that the regenerated coverage account contradicts fails the suite. | Analysis |
 | FR-070-AC-5 | The adapter source, and the transitive module set it imports, contain no reference to `oracleVerdict`, `compare`, `conformance/oracle/oracle.mjs`, `conformance/oracle/schema-layer.mjs`, or `conformance/corpus.mjs`. | Static |
 | FR-070-AC-6 | Replacing the backend's admissibility answer with the oracle's makes at least one deliberately seeded backend defect invisible, demonstrating that the independence constraint is load-bearing. | Test |
 | FR-070-AC-7 | Two consecutive adapter runs, one from a different working directory and one under `LC_ALL=tr_TR.UTF-8`, produce byte-identical output. | Integration |
-| FR-070-AC-8 | The regenerated `conformance/coverage.json` reproduces from a fresh run byte for byte; its `typescript-backend` row records `matched` 111 and `unmet` 0; and its corpus-wide `unmetCases` total is exactly 111 lower than the total the account carried at this change's base commit. | Snapshot |
+| FR-070-AC-8 | The regenerated `conformance/coverage.json` reproduces from a fresh run byte for byte; its `typescript-backend` row records `matched` 115 and `unmet` 0; and its corpus-wide `unmetCases` total is exactly 115 lower than the total the account carried at this change's base commit. | Snapshot |
 | FR-070-AC-9 | `conformance/cases/**`, `conformance/bases/**`, `conformance/oracle/**`, `conformance/runner/**`, `conformance/corpus.json`, `conformance/thresholds.json`, `conformance/defects.json`, `conformance/contract-gaps.json`, `conformance/diagnostic-codes.json`, `conformance/mutations.json`, and `conformance/divergences.json` are byte-unchanged in this change's own path set. | Analysis |
 | FR-070-AC-10 | Every case the backend admits generates a package, and all of those packages typecheck as one program under the generated-package configuration with no error. | Compile |
-| FR-070-AC-11 | The harness reports 111 matched cases and zero unsuppressed divergences for the `typescript-backend` slot, and a single seeded backend defect reduces the matched count. | Integration |
+| FR-070-AC-11 | The harness reports 115 matched cases and zero unsuppressed divergences for the `typescript-backend` slot, and a single seeded backend defect reduces the matched count. | Integration |
 | FR-070-AC-12 | A case the backend refuses on representability produces no generated file and a diagnostic naming the construct. | Test |
 | FR-070-AC-13 | A seeded disagreement, run against an injected divergence register rather than the committed one, appears in the harness report as a divergence with an owner and a verdict; and removing the seeded defect while leaving that injected divergence registered fails the run. | Test |
 | FR-070-AC-14 | The `compiler-frontend`, `rust-backend`, and `python-backend` registry rows and the `rust-serde-backend` inventory component are byte-unchanged. | Analysis |

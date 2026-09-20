@@ -79,7 +79,7 @@ export function run(): number {
 	rejected(validateMultiplicity({ lower: -1 }), "a minimum-bound violation");
 
 	assert(
-		TYPE_IDENTITY.FieldDecl === "ix://agent-ix/semantic-core/type/FieldDecl",
+		TYPE_IDENTITY.FieldDecl === "ix://agent-ix/semantic-core/FieldDecl",
 		"the package identity metadata is wrong",
 	);
 	assert(PROVENANCE.sourceVersion === "0.2.0", "the source version is wrong");

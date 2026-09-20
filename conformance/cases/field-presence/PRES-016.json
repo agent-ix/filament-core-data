@@ -1,0 +1,49 @@
+{
+	"id": "PRES-016",
+	"title": "A single-valued field declaring ordered and unique true is accepted, not refused",
+	"family": "field-presence",
+	"class": "boundary",
+	"kind": "document",
+	"contractVersion": "2.0.0",
+	"base": "core-2-0",
+	"ops": [
+		{
+			"op": "test",
+			"path": "/ir/types/8/fields/1/multiplicity",
+			"value": {
+				"lower": 0,
+				"upper": 1,
+				"ordered": false,
+				"unique": false
+			}
+		},
+		{
+			"op": "replace",
+			"path": "/ir/types/8/fields/1/multiplicity",
+			"value": {
+				"lower": 0,
+				"upper": 1,
+				"ordered": true,
+				"unique": true
+			}
+		}
+	],
+	"covers": ["CR-field-presence"],
+	"decidedBy": "cross-field",
+	"derivedFrom": [
+		{
+			"artifact": "docs/semantic-data-system/contracts-v1.md",
+			"locator": "Structural model detail (issue #34)",
+			"quote": "`multiplicity { lower, upper?, ordered, unique }`"
+		}
+	],
+	"provenance": {
+		"authoredFor": "agent-ix/filament-core-data#199",
+		"blessedFromRun": false,
+		"reproduces": "owner ruling 2026-09-19T15:39:32Z on FCD #199: FLAGS_ON_NON_COLLECTION is deleted; ordered and unique are accepted booleans on every multiplicity, single-valued or not"
+	},
+	"expected": {
+		"resultState": "success",
+		"diagnostics": []
+	}
+}

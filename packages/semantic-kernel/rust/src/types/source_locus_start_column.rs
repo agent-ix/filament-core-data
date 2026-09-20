@@ -1,6 +1,6 @@
 //! SourceLocusStartColumn
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/SourceLocusStartColumn.
+//! Semantic identity: ix://agent-ix/semantic-core/SourceLocusStartColumn.
 //!
 //! Unknown policy: `reject`, which is inert for a
 //! `scalar` — the kind has no unknown member for a policy to govern. The
@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 /// SourceLocusStartColumn
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/SourceLocusStartColumn.
+/// Semantic identity: ix://agent-ix/semantic-core/SourceLocusStartColumn.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(transparent)]
 pub struct SourceLocusStartColumn(i64);
@@ -23,7 +23,7 @@ impl SourceLocusStartColumn {
         {
             if value < 1i64 {
                 return Err(crate::support::ValidationError::new(
-                    "ix://agent-ix/semantic-core/type/SourceLocusStartColumn/constraint/min",
+                    "ix://agent-ix/semantic-core/SourceLocusStartColumn/constraint/min",
                     "min",
                     "",
                     "1",
@@ -31,7 +31,7 @@ impl SourceLocusStartColumn {
             }
             if value > 2147483647i64 {
                 return Err(crate::support::ValidationError::new(
-                    "ix://agent-ix/semantic-core/type/SourceLocusStartColumn/constraint/max",
+                    "ix://agent-ix/semantic-core/SourceLocusStartColumn/constraint/max",
                     "max",
                     "",
                     "2147483647",

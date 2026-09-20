@@ -14,5 +14,5 @@
 		"JsonObject"
 	],
 	"description": "Kernel scalar library (FR-032); representations in kernel-scalars.json.",
-	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/KernelScalar"
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/KernelScalar"
 }

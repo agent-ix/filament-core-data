@@ -59,7 +59,6 @@ export const ADMISSIBILITY_CODES = Object.freeze({
 	SCHEMA_VIOLATION: code("SCHEMA_VIOLATION"),
 	INVALID_DOCUMENT: code("INVALID_DOCUMENT"),
 	INVALID_MULTIPLICITY: code("INVALID_MULTIPLICITY"),
-	FLAGS_ON_NON_COLLECTION: code("FLAGS_ON_NON_COLLECTION"),
 	UNIT_ON_NON_SCALAR: code("UNIT_ON_NON_SCALAR"),
 	UNRESOLVED_TYPE_REF: code("UNRESOLVED_TYPE_REF"),
 	UNRESOLVED_ELEMENT_TYPE: code("UNRESOLVED_ELEMENT_TYPE"),
@@ -77,6 +76,7 @@ export const ADMISSIBILITY_CODES = Object.freeze({
 	INVALID_OPERAND: code("INVALID_OPERAND"),
 	INVALID_PATTERN: code("INVALID_PATTERN"),
 	UNRESOLVED_RELATIONSHIP_TARGET: code("UNRESOLVED_RELATIONSHIP_TARGET"),
+	INVALID_RELATIONSHIP_SOURCE: code("INVALID_RELATIONSHIP_SOURCE"),
 	COMPOSITE_CYCLE: code("COMPOSITE_CYCLE"),
 	UNRESOLVED_IMPORT: code("UNRESOLVED_IMPORT"),
 	PACKAGE_CYCLE: code("PACKAGE_CYCLE"),
@@ -120,7 +120,7 @@ function fromCorpus(note) {
  * An import ban is checkable; transcription is not. This is the disclosure that
  * makes the independence claim falsifiable at all, and it is deliberately
  * unflattering where the honest answer is unflattering:
- * `conformance/diagnostic-codes.json` marks fifteen of its thirty codes
+ * `conformance/diagnostic-codes.json` marks fourteen of its twenty-seven codes
  * `provenance: "minted"`, and a rule read from the yardstick is not a rule read
  * from the contract. A row claiming a published clause carries the quote, and a
  * test asserts that quote occurs verbatim in the named artifact.
@@ -134,9 +134,6 @@ export const DERIVATIONS = Object.freeze({
 	),
 	INVALID_MULTIPLICITY: fromCorpus(
 		"the contract names the two bounds and never says an upper below a lower is a defect; the incoherence is obvious and the rule is still the corpus's, not a clause's",
-	),
-	FLAGS_ON_NON_COLLECTION: fromCorpus(
-		"the contract lists ordered and unique as multiplicity members and never restricts them to a collection; the restriction is the corpus's reading",
 	),
 	UNIT_ON_NON_SCALAR: fromClause(
 		CONTRACTS,
@@ -197,6 +194,11 @@ export const DERIVATIONS = Object.freeze({
 	UNRESOLVED_RELATIONSHIP_TARGET: fromClause(
 		CONTRACTS,
 		"Relationship targets resolve to a document type or a lock",
+	),
+	INVALID_RELATIONSHIP_SOURCE: fromClause(
+		CONTRACTS,
+		"`sourceEnd` and `targetEnd` name one in `type`",
+		"the clause states that sourceEnd names a type; it does not itself say which one, so this backend's reading — the type declaring the relationship (FCD #199/#200 review finding 9) — is recorded rather than assumed",
 	),
 	COMPOSITE_CYCLE: fromClause(
 		CONTRACTS,
@@ -406,22 +408,69 @@ const SCALAR_KINDS = new Set(["scalar"]);
 const ALIAS_KINDS = new Set(["alias", "reference"]);
 
 /**
+ * A native value type reference (gap 1 of FCD #199/#200): `ix://quire/native/<Name>`
+ * declares no node, over the closed set of kernel scalars below. This is a
+ * second implementation beside `src/compiler/ir/reader.mjs`'s `nativeScalar`,
+ * deliberately, and it imports neither — see this file's header comment.
+ */
+const NATIVE_PREFIX = "ix://quire/native/";
+const NATIVE_SCALARS = new Map([
+	["UUID", "uuid"],
+	["Boolean", "boolean"],
+	["Integer", "integer"],
+	["Decimal", "number"],
+	["String", "string"],
+	["Timestamp", "datetime"],
+	["Duration", "duration"],
+	["Bytes", "bytes"],
+	["JsonObject", "any"],
+]);
+
+function nativeScalar(identity) {
+	if (typeof identity !== "string" || !identity.startsWith(NATIVE_PREFIX)) {
+		return undefined;
+	}
+	return NATIVE_SCALARS.get(identity.slice(NATIVE_PREFIX.length));
+}
+
+/** Whether `identity` resolves: a document declares it, or it is a native type reference. */
+function resolvable(types, fields, identity) {
+	return (
+		types.has(identity) ||
+		fields.has(identity) ||
+		nativeScalar(identity) !== undefined
+	);
+}
+
+/**
  * Follow a chain of aliases and references. Returns one of
  * `{ state: "resolved", type }`, `{ state: "absent" }`, `{ state: "cycle" }`,
- * or `{ state: "depth" }`.
+ * or `{ state: "depth" }`. A native type reference resolves immediately, to
+ * a synthetic scalar type node (gap 1 of FCD #199/#200).
  *
  * A cycle is reported before a depth bound, because a cycle is the more
  * specific fact and a depth report would hide it. The bound is `hops > maxDepth`
  * — a chain of exactly `maxDepth` hops resolves.
  */
-function resolveChain(types, identity, maxDepth) {
+function resolveChain(types, fields, identity, maxDepth) {
 	const seen = new Set();
 	let current = identity;
 	let hops = 0;
 	for (;;) {
 		if (typeof current !== "string") return { state: "absent" };
+		const scalar = nativeScalar(current);
+		if (scalar !== undefined) {
+			return { state: "resolved", type: { kind: "scalar", scalar } };
+		}
 		if (seen.has(current)) return { state: "cycle" };
 		seen.add(current);
+		const field = fields.get(current);
+		if (field !== undefined) {
+			hops += 1;
+			if (hops > maxDepth) return { state: "depth" };
+			current = field.typeRef;
+			continue;
+		}
 		const type = types.get(current);
 		if (type === undefined) return { state: "absent" };
 		if (!ALIAS_KINDS.has(type.kind)) return { state: "resolved", type };
@@ -432,15 +481,15 @@ function resolveChain(types, identity, maxDepth) {
 }
 
 /** The scalar a reference resolves to through aliases, or undefined. */
-function resolvedScalar(types, identity, maxDepth) {
-	const chain = resolveChain(types, identity, maxDepth);
+function resolvedScalar(types, fields, identity, maxDepth) {
+	const chain = resolveChain(types, fields, identity, maxDepth);
 	if (chain.state !== "resolved") return undefined;
 	return SCALAR_KINDS.has(chain.type.kind) ? chain.type.scalar : undefined;
 }
 
 /** The kind a reference resolves to through aliases, or undefined. */
-function resolvedKind(types, identity, maxDepth) {
-	const chain = resolveChain(types, identity, maxDepth);
+function resolvedKind(types, fields, identity, maxDepth) {
+	const chain = resolveChain(types, fields, identity, maxDepth);
 	return chain.state === "resolved" ? chain.type.kind : undefined;
 }
 
@@ -544,9 +593,21 @@ export function admitIr(bundle, options = {}) {
 
 	const ir = bundle.ir;
 	const types = new Map();
+	// A field, keyed by its own identity: a constraint's `appliesTo` (or
+	// another field's `typeRef`) can name a field directly rather than a type
+	// (gap 1 of FCD #199/#200, mirrored from `field_of` in
+	// `crates/semantic-ir/src/rules.rs`) — `resolveChain` follows a field
+	// found here through its `typeRef` the same way it follows a type
+	// through an alias's `target`.
+	const fields = new Map();
 	for (const type of ir.types) {
 		if (isObject(type) && !types.has(type.identity)) {
 			types.set(type.identity, type);
+		}
+		for (const field of type?.fields ?? []) {
+			if (isObject(field) && !fields.has(field.identity)) {
+				fields.set(field.identity, field);
+			}
 		}
 	}
 	const maxDepth = limits.maxDepth;
@@ -640,7 +701,7 @@ export function admitIr(bundle, options = {}) {
 		claimExtensions(type, typePointer, type.identity, typeLocus);
 
 		/* element and payload resolution */
-		if (type.kind === "sequence" && !types.has(type.items)) {
+		if (type.kind === "sequence" && !resolvable(types, fields, type.items)) {
 			emit(
 				ADMISSIBILITY_CODES.UNRESOLVED_ELEMENT_TYPE,
 				`${typePointer}/items`,
@@ -648,7 +709,7 @@ export function admitIr(bundle, options = {}) {
 				{ owner: type.identity, locus: typeLocus },
 			);
 		}
-		if (type.kind === "map" && !types.has(type.values)) {
+		if (type.kind === "map" && !resolvable(types, fields, type.values)) {
 			emit(
 				ADMISSIBILITY_CODES.UNRESOLVED_ELEMENT_TYPE,
 				`${typePointer}/values`,
@@ -666,13 +727,13 @@ export function admitIr(bundle, options = {}) {
 		 * *is* declared; REF-002 expects one diagnostic, at `NodeRef`'s own
 		 * target. Every other resolution code in the register points the same
 		 * way — at `/items`, `/values`, `/payloadType`, `/definition`, or
-		 * `/relationships/N/target` — so the chain walk below exists for cycles
+		 * `/relationships/N/targetEnd/type` — so the chain walk below exists for cycles
 		 * and for the depth bound, and declaredness is what decides resolution.
 		 */
 		if (ALIAS_KINDS.has(type.kind)) {
 			const strictReference =
 				type.kind !== "reference" || referencePolicy === "strict";
-			const chain = resolveChain(types, type.identity, maxDepth);
+			const chain = resolveChain(types, fields, type.identity, maxDepth);
 			if (chain.state === "cycle") {
 				emit(
 					ADMISSIBILITY_CODES.ALIAS_CYCLE,
@@ -687,7 +748,7 @@ export function admitIr(bundle, options = {}) {
 					"alias expansion is bounded at the declared finite depth",
 					{ owner: type.identity, locus: typeLocus },
 				);
-			} else if (!types.has(type.target) && strictReference) {
+			} else if (!resolvable(types, fields, type.target) && strictReference) {
 				emit(
 					ADMISSIBILITY_CODES.UNRESOLVED_TYPE_REF,
 					`${typePointer}/target`,
@@ -707,7 +768,7 @@ export function admitIr(bundle, options = {}) {
 			variantNames.add(variant?.name);
 			if (
 				variant?.payloadType !== undefined &&
-				!types.has(variant.payloadType)
+				!resolvable(types, fields, variant.payloadType)
 			) {
 				emit(
 					ADMISSIBILITY_CODES.UNRESOLVED_VARIANT_PAYLOAD,
@@ -719,60 +780,7 @@ export function admitIr(bundle, options = {}) {
 		}
 
 		/* constraints */
-		for (const [position, constraint] of (type.constraints ?? []).entries()) {
-			const constraintPointer = `${typePointer}/constraints/${position}`;
-			const constraintLocus = nearestLocus(constraint, type);
-			claimIdentity(
-				constraint,
-				constraintPointer,
-				constraint?.identity,
-				constraintLocus,
-			);
-			claimExtensions(
-				constraint,
-				constraintPointer,
-				constraint?.identity,
-				constraintLocus,
-			);
-			if (!isObject(constraint)) continue;
-			const subject = resolvedScalar(types, constraint.appliesTo, maxDepth);
-			const subjectKind = resolvedKind(types, constraint.appliesTo, maxDepth);
-			const admitted = APPLICABILITY[constraint.keyword] ?? [];
-			const applies =
-				(subject !== undefined && admitted.includes(subject)) ||
-				(subjectKind !== undefined && admitted.includes(subjectKind));
-			if (!applies) {
-				emit(
-					ADMISSIBILITY_CODES.CONSTRAINT_NOT_APPLICABLE,
-					constraintPointer,
-					"a constraint keyword applies to the kind its subject resolves to",
-					{ owner: constraint.identity, locus: constraintLocus },
-				);
-				continue;
-			}
-			const operandRow = operandDefect(constraint, subject);
-			if (operandRow !== undefined) {
-				emit(
-					ADMISSIBILITY_CODES.INVALID_OPERAND,
-					`${constraintPointer}/operands/${operandRow}`,
-					"a bound operand is typed for the scalar its subject resolves to",
-					{ owner: constraint.identity, locus: constraintLocus },
-				);
-			}
-			if (constraint.keyword === "pattern") {
-				try {
-					// biome-ignore lint/complexity/useRegexLiterals: the pattern is data
-					new RegExp(constraint.operands?.regex ?? "");
-				} catch {
-					emit(
-						ADMISSIBILITY_CODES.INVALID_PATTERN,
-						`${constraintPointer}/operands/regex`,
-						"a pattern operand compiles under the declared dialect",
-						{ owner: constraint.identity, locus: constraintLocus },
-					);
-				}
-			}
-		}
+		constraintChecks(type.constraints, typePointer, type);
 
 		/* fields */
 		const fieldNames = new Set();
@@ -793,7 +801,7 @@ export function admitIr(bundle, options = {}) {
 			}
 			fieldNames.add(field.name);
 
-			fieldChecks(field, fieldPointer, fieldLocus);
+			fieldChecks(field, fieldPointer, fieldLocus, type);
 		}
 
 		/* relationships */
@@ -823,16 +831,29 @@ export function admitIr(bundle, options = {}) {
 			 * is the clause read literally, not an assumed value for a missing
 			 * input. FR-068 names exactly six input-dependent rules and this is
 			 * not one of them.
+			 *
+			 * The target end's `type` is the resolved target. The source end
+			 * names the type declaring the relationship (finding 9 of FCD
+			 * #199/#200's review): the corrected reading of gap 3, superseding
+			 * the earlier assumption on this line that no cross-reference check
+			 * was needed here.
 			 */
 			const exported = importedExports ?? EMPTY;
-			if (
-				!types.has(relationship.target) &&
-				!exported.has(relationship.target)
-			) {
+			const targetType = relationship.targetEnd?.type;
+			if (!types.has(targetType) && !exported.has(targetType)) {
 				emit(
 					ADMISSIBILITY_CODES.UNRESOLVED_RELATIONSHIP_TARGET,
-					`${relationshipPointer}/target`,
+					`${relationshipPointer}/targetEnd/type`,
 					"a relationship target resolves to a document type or a lock export",
+					{ owner: relationship.identity, locus: relationshipLocus },
+				);
+			}
+			const sourceType = relationship.sourceEnd?.type;
+			if (sourceType !== undefined && sourceType !== type.identity) {
+				emit(
+					ADMISSIBILITY_CODES.INVALID_RELATIONSHIP_SOURCE,
+					`${relationshipPointer}/sourceEnd/type`,
+					"a relationship's source end names the type declaring it",
 					{ owner: relationship.identity, locus: relationshipLocus },
 				);
 			}
@@ -891,7 +912,7 @@ export function admitIr(bundle, options = {}) {
 			}
 			if (
 				isObject(operation.returns) &&
-				!types.has(operation.returns.typeRef)
+				!resolvable(types, fields, operation.returns.typeRef)
 			) {
 				emit(
 					ADMISSIBILITY_CODES.UNRESOLVED_TYPE_REF,
@@ -932,7 +953,82 @@ export function admitIr(bundle, options = {}) {
 		}
 	}
 
-	function fieldChecks(field, fieldPointer, fieldLocus) {
+	/**
+	 * A constrained field keeps its constraints inline, with no alias node
+	 * between them (gap 1 of FCD #199/#200, finding 2 of the FCD #199/#200
+	 * review): each one runs through the same checks a type-level constraint
+	 * runs through, with `ancestors` supplying the outward chain `nearestLocus`
+	 * walks from the constraint (a field-scoped constraint passes the field
+	 * then its type; a type-scoped constraint passes just its type).
+	 */
+	function constraintChecks(constraints, ownerPointer, ...ancestors) {
+		for (const [position, constraint] of (constraints ?? []).entries()) {
+			const constraintPointer = `${ownerPointer}/constraints/${position}`;
+			const constraintLocus = nearestLocus(constraint, ...ancestors);
+			claimIdentity(
+				constraint,
+				constraintPointer,
+				constraint?.identity,
+				constraintLocus,
+			);
+			claimExtensions(
+				constraint,
+				constraintPointer,
+				constraint?.identity,
+				constraintLocus,
+			);
+			if (!isObject(constraint)) continue;
+			const subject = resolvedScalar(
+				types,
+				fields,
+				constraint.appliesTo,
+				maxDepth,
+			);
+			const subjectKind = resolvedKind(
+				types,
+				fields,
+				constraint.appliesTo,
+				maxDepth,
+			);
+			const admitted = APPLICABILITY[constraint.keyword] ?? [];
+			const applies =
+				(subject !== undefined && admitted.includes(subject)) ||
+				(subjectKind !== undefined && admitted.includes(subjectKind));
+			if (!applies) {
+				emit(
+					ADMISSIBILITY_CODES.CONSTRAINT_NOT_APPLICABLE,
+					constraintPointer,
+					"a constraint keyword applies to the kind its subject resolves to",
+					{ owner: constraint.identity, locus: constraintLocus },
+				);
+				continue;
+			}
+			const operandRow = operandDefect(constraint, subject);
+			if (operandRow !== undefined) {
+				emit(
+					ADMISSIBILITY_CODES.INVALID_OPERAND,
+					`${constraintPointer}/operands/${operandRow}`,
+					"a bound operand is typed for the scalar its subject resolves to",
+					{ owner: constraint.identity, locus: constraintLocus },
+				);
+			}
+			if (constraint.keyword === "pattern") {
+				try {
+					// biome-ignore lint/complexity/useRegexLiterals: the pattern is data
+					new RegExp(constraint.operands?.regex ?? "");
+				} catch {
+					emit(
+						ADMISSIBILITY_CODES.INVALID_PATTERN,
+						`${constraintPointer}/operands/regex`,
+						"a pattern operand compiles under the declared dialect",
+						{ owner: constraint.identity, locus: constraintLocus },
+					);
+				}
+			}
+		}
+	}
+
+	function fieldChecks(field, fieldPointer, fieldLocus, type) {
 		const owner = field.identity;
 		const multiplicity = field.multiplicity;
 
@@ -947,23 +1043,12 @@ export function admitIr(bundle, options = {}) {
 					{ owner, locus: fieldLocus },
 				);
 			}
-			const collection = upper === undefined || upper > 1;
-			if (
-				!collection &&
-				(multiplicity.ordered !== undefined ||
-					multiplicity.unique !== undefined)
-			) {
-				emit(
-					ADMISSIBILITY_CODES.FLAGS_ON_NON_COLLECTION,
-					`${fieldPointer}/multiplicity`,
-					"ordered and unique appear only on a collection",
-					{ owner, locus: fieldLocus },
-				);
-			}
 		}
 
 		if (field.unit !== undefined) {
-			if (resolvedScalar(types, field.typeRef, maxDepth) === undefined) {
+			if (
+				resolvedScalar(types, fields, field.typeRef, maxDepth) === undefined
+			) {
 				emit(
 					ADMISSIBILITY_CODES.UNIT_ON_NON_SCALAR,
 					`${fieldPointer}/unit`,
@@ -973,7 +1058,7 @@ export function admitIr(bundle, options = {}) {
 			}
 		}
 
-		if (!types.has(field.typeRef)) {
+		if (!resolvable(types, fields, field.typeRef)) {
 			emit(
 				ADMISSIBILITY_CODES.UNRESOLVED_TYPE_REF,
 				`${fieldPointer}/typeRef`,
@@ -981,6 +1066,9 @@ export function admitIr(bundle, options = {}) {
 				{ owner, locus: fieldLocus },
 			);
 		}
+
+		/* constraints */
+		constraintChecks(field.constraints, fieldPointer, field, type);
 	}
 
 	/* occurrences */
@@ -1179,15 +1267,17 @@ function compositeCycles(ir, types, emit) {
 			type.relationships ?? []
 		).entries()) {
 			if (!isObject(relationship) || relationship.composite !== true) continue;
-			outgoing.push(relationship.target);
-			locate.set(`${type.identity} ${relationship.target}`, {
+			const target = relationship.targetEnd?.type;
+			outgoing.push(target);
+			locate.set(`${type.identity} ${target}`, {
 				pointer: pointerOf(
 					"ir",
 					"types",
 					index,
 					"relationships",
 					position,
-					"target",
+					"targetEnd",
+					"type",
 				),
 				owner: relationship.identity,
 				locus: nearestLocus(relationship, type),

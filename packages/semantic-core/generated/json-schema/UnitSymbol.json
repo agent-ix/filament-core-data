@@ -4,5 +4,5 @@
 	"type": "string",
 	"pattern": "^[!-~]+$",
 	"description": "UCUM case-sensitive symbol charset: printable ASCII, no whitespace. Membership is a consumer concern (FR-034-AC-4).",
-	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/type/UnitSymbol"
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/UnitSymbol"
 }

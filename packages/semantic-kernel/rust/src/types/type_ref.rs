@@ -1,16 +1,16 @@
 //! TypeRef
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/TypeRef.
+//! Semantic identity: ix://agent-ix/semantic-core/TypeRef.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `TypeRef`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/TypeRef/field/target",
+        identity: "ix://agent-ix/semantic-core/TypeRef/target",
         name: "target",
         rust_name: "target",
-        type_ref: "ix://agent-ix/semantic-core/type/TypeRefTarget",
+        type_ref: "ix://agent-ix/semantic-core/TypeRefTarget",
         rust_type: "crate::TypeRefTarget",
         row: "field:single/non-null/required",
         presence: "required",
@@ -18,8 +18,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/TypeRef/field/multiplicity",
+        identity: "ix://agent-ix/semantic-core/TypeRef/multiplicity",
         name: "multiplicity",
         rust_name: "multiplicity",
-        type_ref: "ix://agent-ix/semantic-core/type/Multiplicity",
+        type_ref: "ix://agent-ix/semantic-core/Multiplicity",
         rust_type: "Option<crate::Multiplicity>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -48,8 +48,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -67,10 +67,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/TypeRef/field/unit",
+        identity: "ix://agent-ix/semantic-core/TypeRef/unit",
         name: "unit",
         rust_name: "unit",
-        type_ref: "ix://agent-ix/semantic-core/type/UnitSymbol",
+        type_ref: "ix://agent-ix/semantic-core/UnitSymbol",
         rust_type: "Option<crate::UnitSymbol>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -78,8 +78,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -97,10 +97,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/TypeRef/field/decimal",
+        identity: "ix://agent-ix/semantic-core/TypeRef/decimal",
         name: "decimal",
         rust_name: "decimal",
-        type_ref: "ix://agent-ix/semantic-core/type/DecimalPolicy",
+        type_ref: "ix://agent-ix/semantic-core/DecimalPolicy",
         rust_type: "Option<crate::DecimalPolicy>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -108,8 +108,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -130,26 +130,26 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// TypeRef
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/TypeRef.
+/// Semantic identity: ix://agent-ix/semantic-core/TypeRef.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct TypeRef {
     /// target
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/TypeRef/field/target.
+    /// Semantic identity: ix://agent-ix/semantic-core/TypeRef/target.
     pub target: crate::TypeRefTarget,
     /// multiplicity
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/TypeRef/field/multiplicity.
+    /// Semantic identity: ix://agent-ix/semantic-core/TypeRef/multiplicity.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub multiplicity: Option<crate::Multiplicity>,
     /// unit
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/TypeRef/field/unit.
+    /// Semantic identity: ix://agent-ix/semantic-core/TypeRef/unit.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit: Option<crate::UnitSymbol>,
     /// decimal
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/TypeRef/field/decimal.
+    /// Semantic identity: ix://agent-ix/semantic-core/TypeRef/decimal.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub decimal: Option<crate::DecimalPolicy>,
 }

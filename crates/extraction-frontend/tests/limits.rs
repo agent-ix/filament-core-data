@@ -15,7 +15,6 @@ use agent_ix_extraction_frontend::{extract, lower_bundle, resolve, Bundle, Limit
 use ix_trace_rs::trace;
 use serde_json::Value;
 
-const VERSION: &str = "0.0.0";
 const SOURCE: &str = "ix://agent-ix/limits/spec";
 
 fn crate_dir() -> PathBuf {
@@ -54,7 +53,7 @@ fn lift(root: &Path, limits: &Limits) -> Vec<Diagnostic> {
     let bundle = Bundle::load(root, &[&business_module()]).unwrap_or_else(|r| panic!("{r}"));
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
-    lower_bundle(&bundle, &extractions, &resolutions, limits, VERSION).diagnostics
+    lower_bundle(&bundle, &extractions, &resolutions, limits).diagnostics
 }
 
 fn limit_codes(diagnostics: &[Diagnostic]) -> Vec<Code> {

@@ -283,7 +283,9 @@
 						},
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					{
@@ -303,7 +305,9 @@
 						},
 						"multiplicity": {
 							"lower": 0,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					{
@@ -323,7 +327,9 @@
 						},
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						},
 						"unit": "ms"
 					},
@@ -344,7 +350,9 @@
 						},
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						},
 						"defaultValue": "draft"
 					},
@@ -386,7 +394,9 @@
 						},
 						"multiplicity": {
 							"lower": 0,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					{
@@ -406,7 +416,9 @@
 						},
 						"multiplicity": {
 							"lower": 0,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					{
@@ -426,22 +438,18 @@
 						},
 						"multiplicity": {
 							"lower": 0,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					}
 				],
 				"relationships": [
 					{
-						"identity": "ix://agent-ix/conformance/relationship/node-references-node",
-						"verb": "references",
 						"category": "dependency",
 						"composite": false,
-						"target": "ix://agent-ix/conformance/type/Node",
-						"multiplicity": {
-							"lower": 0,
-							"ordered": true,
-							"unique": true
-						},
+						"direction": "source-to-target",
+						"identity": "ix://agent-ix/conformance/relationship/node-references-node",
 						"origin": {
 							"source": {
 								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
@@ -449,6 +457,23 @@
 								"startLine": 14,
 								"startColumn": 3
 							}
+						},
+						"sourceEnd": {
+							"multiplicity": {
+								"lower": 0,
+								"ordered": false,
+								"unique": false
+							},
+							"role": "references",
+							"type": "ix://agent-ix/conformance/type/Node"
+						},
+						"targetEnd": {
+							"multiplicity": {
+								"lower": 0,
+								"ordered": true,
+								"unique": true
+							},
+							"type": "ix://agent-ix/conformance/type/Node"
 						}
 					}
 				],
@@ -489,7 +514,9 @@
 						},
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					{
@@ -509,22 +536,18 @@
 						},
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					}
 				],
 				"relationships": [
 					{
-						"identity": "ix://agent-ix/conformance/relationship/root-contains-node",
-						"verb": "contains",
 						"category": "structural",
 						"composite": true,
-						"target": "ix://agent-ix/conformance/type/Node",
-						"multiplicity": {
-							"lower": 1,
-							"ordered": true,
-							"unique": true
-						},
+						"direction": "source-to-target",
+						"identity": "ix://agent-ix/conformance/relationship/root-contains-node",
 						"origin": {
 							"source": {
 								"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
@@ -532,6 +555,24 @@
 								"startLine": 5,
 								"startColumn": 3
 							}
+						},
+						"sourceEnd": {
+							"multiplicity": {
+								"lower": 0,
+								"ordered": false,
+								"unique": false
+							},
+							"role": "contains",
+							"type": "ix://agent-ix/conformance/type/Root"
+						},
+						"targetEnd": {
+							"multiplicity": {
+								"lower": 1,
+								"ordered": true,
+								"unique": true
+							},
+							"role": "part_of",
+							"type": "ix://agent-ix/conformance/type/Node"
 						}
 					}
 				],
@@ -557,7 +598,9 @@
 								},
 								"multiplicity": {
 									"lower": 1,
-									"upper": 1
+									"upper": 1,
+									"ordered": false,
+									"unique": false
 								}
 							}
 						],
@@ -565,7 +608,9 @@
 							"typeRef": "ix://agent-ix/conformance/type/Node",
 							"multiplicity": {
 								"lower": 1,
-								"upper": 1
+								"upper": 1,
+								"ordered": false,
+								"unique": false
 							},
 							"nullable": false
 						},

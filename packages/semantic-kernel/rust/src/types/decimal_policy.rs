@@ -1,16 +1,16 @@
 //! DecimalPolicy
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/DecimalPolicy.
+//! Semantic identity: ix://agent-ix/semantic-core/DecimalPolicy.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `DecimalPolicy`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/DecimalPolicy/field/precision",
+        identity: "ix://agent-ix/semantic-core/DecimalPolicy/precision",
         name: "precision",
         rust_name: "precision",
-        type_ref: "ix://agent-ix/semantic-core/type/DecimalPolicyPrecision",
+        type_ref: "ix://agent-ix/semantic-core/DecimalPolicyPrecision",
         rust_type: "crate::DecimalPolicyPrecision",
         row: "field:single/non-null/required",
         presence: "required",
@@ -18,8 +18,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/DecimalPolicy/field/scale",
+        identity: "ix://agent-ix/semantic-core/DecimalPolicy/scale",
         name: "scale",
         rust_name: "scale",
-        type_ref: "ix://agent-ix/semantic-core/type/DecimalPolicyScale",
+        type_ref: "ix://agent-ix/semantic-core/DecimalPolicyScale",
         rust_type: "crate::DecimalPolicyScale",
         row: "field:single/non-null/required",
         presence: "required",
@@ -48,8 +48,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -70,16 +70,16 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// DecimalPolicy
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/DecimalPolicy.
+/// Semantic identity: ix://agent-ix/semantic-core/DecimalPolicy.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct DecimalPolicy {
     /// precision
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/DecimalPolicy/field/precision.
+    /// Semantic identity: ix://agent-ix/semantic-core/DecimalPolicy/precision.
     pub precision: crate::DecimalPolicyPrecision,
     /// scale
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/DecimalPolicy/field/scale.
+    /// Semantic identity: ix://agent-ix/semantic-core/DecimalPolicy/scale.
     pub scale: crate::DecimalPolicyScale,
 }
 

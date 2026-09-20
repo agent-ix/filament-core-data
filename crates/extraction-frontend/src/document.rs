@@ -8,6 +8,7 @@
 //! ([`crate::lower::Field`] carries all three), so the reader's
 //! materialization adds no member.
 
+use quire_rs::semantic::Multiplicity;
 use serde_json::{Map, Value};
 
 use agent_ix_semantic_ir::json::to_canonical_string;
@@ -16,6 +17,19 @@ use crate::bundle::Construct;
 use crate::canonical::sort_node_lists;
 use crate::envelope::Envelope;
 use crate::lower::TypeDefinition;
+
+/// `ordered` and `unique` as concrete booleans, `false` when the row that
+/// produced `multiplicity` named neither (QSpec model-complete.md, owner
+/// ruling 2026-09-19T15:39:32Z on FCD #199). `quire_rs::semantic::Multiplicity`
+/// — vendored, not this crate's to change — leaves both `Option<bool>`; every
+/// site in this crate that turns a `Multiplicity` the engine handed it into
+/// part of this frontend's own emitted document calls this once, at
+/// construction, rather than relying on a later document-wide repair.
+pub(crate) fn normalized_multiplicity(mut multiplicity: Multiplicity) -> Multiplicity {
+    multiplicity.ordered = Some(multiplicity.ordered.unwrap_or(false));
+    multiplicity.unique = Some(multiplicity.unique.unwrap_or(false));
+    multiplicity
+}
 
 /// The one `contractVersion` this frontend emits.
 pub const CONTRACT_VERSION: &str = "2.0.0";
@@ -40,10 +54,8 @@ pub fn assemble(
     );
     members.insert("source".to_string(), to_value(&envelope.source));
     members.insert("package".to_string(), to_value(&envelope.package));
-    members.insert(
-        "types".to_string(),
-        Value::Array(types.iter().map(to_value).collect()),
-    );
+    let types_value = Value::Array(types.iter().map(to_value).collect());
+    members.insert("types".to_string(), types_value);
     members.insert(
         "occurrences".to_string(),
         Value::Array(envelope.occurrences.clone()),

@@ -43,15 +43,15 @@ union Payload {
 }
 
 /** Row 1: an empty model carrying @semanticReference. */
-@semanticReference("ix://agent-ix/core/type/Actor")
+@semanticReference("ix://agent-ix/core/Actor")
 model ActorRef {}
 
 /** A record whose name says nothing about its role; @role does. */
 @role("agent-ix:entity")
 @role("agent-ix:report")
 @unknownPolicy("preserve")
-@relationship("belongs_to", "structural", "ix://agent-ix/assurance/type/Project", 0, 1)
-@relationship("derives_from", "traceability", "ix://agent-ix/assurance/type/Artifact", 0, 1)
+@relationship("contained_by", "structural", "ix://agent-ix/assurance/Project", 0, 1)
+@relationship("derives_from", "traceability", "ix://agent-ix/assurance/Artifact", 0, 1)
 @clause("ocl", "not_archived", "context Artifact inv: self.summary <> 'archived'")
 @clause("sysml", "bounded", "constraint { self.duration >= 0 }")
 model Artifact {
@@ -81,7 +81,7 @@ model Artifact {
   @minLength(3)
   code: Text;
 
-  /** A field typed by a built-in directly mints a package-local kernel scalar. */
+  /** A field typed by a built-in directly names its native kernel scalar. */
   revision: int32;
 
   /** A named sequence used as a field type is single-valued at the field. */

@@ -1,16 +1,16 @@
 //! Multiplicity
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/Multiplicity.
+//! Semantic identity: ix://agent-ix/semantic-core/Multiplicity.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `Multiplicity`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/Multiplicity/field/lower",
+        identity: "ix://agent-ix/semantic-core/Multiplicity/lower",
         name: "lower",
         rust_name: "lower",
-        type_ref: "ix://agent-ix/semantic-core/type/MultiplicityLower",
+        type_ref: "ix://agent-ix/semantic-core/MultiplicityLower",
         rust_type: "crate::MultiplicityLower",
         row: "field:single/non-null/required",
         presence: "required",
@@ -18,8 +18,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/Multiplicity/field/upper",
+        identity: "ix://agent-ix/semantic-core/Multiplicity/upper",
         name: "upper",
         rust_name: "upper",
-        type_ref: "ix://agent-ix/semantic-core/type/MultiplicityUpper",
+        type_ref: "ix://agent-ix/semantic-core/MultiplicityUpper",
         rust_type: "Option<crate::MultiplicityUpper>",
         row: "field:single/non-null/optional",
         presence: "optional",
@@ -48,8 +48,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 0,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -67,19 +67,19 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/Multiplicity/field/ordered",
+        identity: "ix://agent-ix/semantic-core/Multiplicity/ordered",
         name: "ordered",
         rust_name: "ordered",
-        type_ref: "ix://agent-ix/semantic-core/type/MultiplicityOrdered",
-        rust_type: "Option<crate::MultiplicityOrdered>",
-        row: "field:single/non-null/optional",
-        presence: "optional",
+        type_ref: "ix://agent-ix/semantic-core/MultiplicityOrdered",
+        rust_type: "crate::MultiplicityOrdered",
+        row: "field:single/non-null/required",
+        presence: "required",
         nullable: false,
         multiplicity: crate::identity::MultiplicityMeta {
-            lower: 0,
+            lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -97,19 +97,19 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/Multiplicity/field/unique",
+        identity: "ix://agent-ix/semantic-core/Multiplicity/unique",
         name: "unique",
         rust_name: "unique",
-        type_ref: "ix://agent-ix/semantic-core/type/MultiplicityUnique",
-        rust_type: "Option<crate::MultiplicityUnique>",
-        row: "field:single/non-null/optional",
-        presence: "optional",
+        type_ref: "ix://agent-ix/semantic-core/MultiplicityUnique",
+        rust_type: "crate::MultiplicityUnique",
+        row: "field:single/non-null/required",
+        presence: "required",
         nullable: false,
         multiplicity: crate::identity::MultiplicityMeta {
-            lower: 0,
+            lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -130,28 +130,26 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// Multiplicity
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/Multiplicity.
+/// Semantic identity: ix://agent-ix/semantic-core/Multiplicity.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Multiplicity {
     /// lower
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/Multiplicity/field/lower.
+    /// Semantic identity: ix://agent-ix/semantic-core/Multiplicity/lower.
     pub lower: crate::MultiplicityLower,
     /// upper
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/Multiplicity/field/upper.
+    /// Semantic identity: ix://agent-ix/semantic-core/Multiplicity/upper.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub upper: Option<crate::MultiplicityUpper>,
     /// ordered
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/Multiplicity/field/ordered.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub ordered: Option<crate::MultiplicityOrdered>,
+    /// Semantic identity: ix://agent-ix/semantic-core/Multiplicity/ordered.
+    pub ordered: crate::MultiplicityOrdered,
     /// unique
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/Multiplicity/field/unique.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub unique: Option<crate::MultiplicityUnique>,
+    /// Semantic identity: ix://agent-ix/semantic-core/Multiplicity/unique.
+    pub unique: crate::MultiplicityUnique,
 }
 
 /// The deserialization shape of `Multiplicity`.
@@ -165,10 +163,8 @@ struct MultiplicityWire {
     lower: crate::MultiplicityLower,
     #[serde(default)]
     upper: Option<crate::MultiplicityUpper>,
-    #[serde(default)]
-    ordered: Option<crate::MultiplicityOrdered>,
-    #[serde(default)]
-    unique: Option<crate::MultiplicityUnique>,
+    ordered: crate::MultiplicityOrdered,
+    unique: crate::MultiplicityUnique,
 }
 
 impl Multiplicity {
@@ -178,8 +174,8 @@ impl Multiplicity {
     pub fn try_new(
         lower: crate::MultiplicityLower,
         upper: Option<crate::MultiplicityUpper>,
-        ordered: Option<crate::MultiplicityOrdered>,
-        unique: Option<crate::MultiplicityUnique>,
+        ordered: crate::MultiplicityOrdered,
+        unique: crate::MultiplicityUnique,
     ) -> Result<Self, crate::support::ValidationError> {
         Ok(Self {
             lower,

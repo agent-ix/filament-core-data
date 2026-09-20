@@ -11,6 +11,8 @@
  * compiled input is a diagnostic and never an exception (FR-045).
  */
 
+import { EDGE_VOCABULARY } from "../../../ir/applicability.mjs";
+
 export const STATE = {
 	role: Symbol.for("agent-ix.semantic.role"),
 	unknownPolicy: Symbol.for("agent-ix.semantic.unknownPolicy"),
@@ -241,24 +243,27 @@ const decorators = {
 		single(context, target, "@presence", STATE.presence, { presence });
 	},
 
-	relationship(
-		context,
-		target,
-		verb,
-		category,
-		targetIdentity,
-		lower,
-		upper,
-		composite,
-	) {
-		let ok = check(
-			context,
-			target,
-			"@relationship",
-			"verb",
-			PATTERNS.identifier,
-			verb,
-		);
+	relationship(context, target, verb, category, targetIdentity, lower, upper) {
+		// FR-094 "Relationships" (H4 of the FCD #199/#200 review): `verb` is
+		// checked for membership in the loaded edge vocabulary, not merely for
+		// being an identifier — a well-formed verb the registry does not
+		// declare is refused the same as a malformed one, matching the
+		// extraction-frontend's `UNKNOWN_EDGE_VERB` (`crates/extraction-frontend/
+		// src/edges.rs`). `composite` is no longer a decorator argument: it is
+		// derived from the registry's `inverse` at lowering time, so there is
+		// nothing left here for a caller to contradict.
+		let ok = true;
+		const knownVerb = Object.hasOwn(EDGE_VOCABULARY, String(verb));
+		if (!knownVerb) {
+			defects(context.program).push({
+				kind: "edge-verb",
+				decorator: "@relationship",
+				verb,
+				target,
+				node: context.decoratorTarget,
+			});
+			ok = false;
+		}
 		ok =
 			check(
 				context,
@@ -278,13 +283,32 @@ const decorators = {
 				targetIdentity,
 			) && ok;
 		if (!ok) return;
+		// M5 of the FCD #199/#200 round-3 review: the registry is the source
+		// of the registry's data, and that includes `category`. The Rust
+		// frontend takes `category` from the registry alone
+		// (`crates/extraction-frontend/src/edges.rs`, per FR-094); if this
+		// decorator's own `category` disagreed with the registry's declared
+		// category for `verb`, the two frontends would lower one document to
+		// two different `category` values with no diagnostic. Refuse rather
+		// than silently prefer either source.
+		if (knownVerb && EDGE_VOCABULARY[String(verb)].category !== category) {
+			defects(context.program).push({
+				kind: "edge-category-mismatch",
+				decorator: "@relationship",
+				verb,
+				category,
+				registryCategory: EDGE_VOCABULARY[String(verb)].category,
+				target,
+				node: context.decoratorTarget,
+			});
+			return;
+		}
 		repeat(context, target, STATE.relationship, {
 			verb,
 			category,
 			targetIdentity,
 			lower,
 			upper,
-			composite,
 		});
 	},
 

@@ -729,6 +729,7 @@ fn tc_1299_outside_the_crate_and_fr098_the_change_set_is_members_lock_makefile_b
             "Cargo.toml",
             "Makefile",
             "THIRD-PARTY-NOTICES.md",
+            "biome.json",
             "docs/semantic-data-system/extraction-frontend-diagnostics.md",
             "scripts/extraction-frontend-harness.mjs",
         ]

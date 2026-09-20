@@ -705,9 +705,9 @@ def _deepen(row: dict[str, str]) -> dict[str, str]:
     reader would have to change than at the object containing it.
     """
     if row["code"].endswith("COMPOSITE_CYCLE") and not row["pointer"].endswith(
-        "/target"
+        "/targetEnd/type"
     ):
-        return {**row, "pointer": row["pointer"] + "/target"}
+        return {**row, "pointer": row["pointer"] + "/targetEnd/type"}
     return row
 
 

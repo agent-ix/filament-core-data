@@ -1,16 +1,16 @@
 //! MinLengthConstraint
 //!
-//! Semantic identity: ix://agent-ix/semantic-core/type/MinLengthConstraint.
+//! Semantic identity: ix://agent-ix/semantic-core/MinLengthConstraint.
 
 use serde::{Deserialize, Serialize};
 
 /// The fields of `MinLengthConstraint`, in the order the contract declares them.
 pub const FIELDS: &[crate::identity::FieldMeta] = &[
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/MinLengthConstraint/field/keyword",
+        identity: "ix://agent-ix/semantic-core/MinLengthConstraint/keyword",
         name: "keyword",
         rust_name: "keyword",
-        type_ref: "ix://agent-ix/semantic-core/type/MinLengthConstraintKeyword",
+        type_ref: "ix://agent-ix/semantic-core/MinLengthConstraintKeyword",
         rust_type: "crate::MinLengthConstraintKeyword",
         row: "field:single/non-null/required",
         presence: "required",
@@ -18,8 +18,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -37,10 +37,10 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         },
     },
     crate::identity::FieldMeta {
-        identity: "ix://agent-ix/semantic-core/type/MinLengthConstraint/field/value",
+        identity: "ix://agent-ix/semantic-core/MinLengthConstraint/value",
         name: "value",
         rust_name: "value",
-        type_ref: "ix://agent-ix/semantic-core/type/MinLengthConstraintValue",
+        type_ref: "ix://agent-ix/semantic-core/MinLengthConstraintValue",
         rust_type: "crate::MinLengthConstraintValue",
         row: "field:single/non-null/required",
         presence: "required",
@@ -48,8 +48,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         multiplicity: crate::identity::MultiplicityMeta {
             lower: 1,
             upper: Some(1),
-            ordered: None,
-            unique: None,
+            ordered: Some(false),
+            unique: Some(false),
         },
         unit: None,
         default_kind: "none",
@@ -70,16 +70,16 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
 
 /// MinLengthConstraint
 ///
-/// Semantic identity: ix://agent-ix/semantic-core/type/MinLengthConstraint.
+/// Semantic identity: ix://agent-ix/semantic-core/MinLengthConstraint.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct MinLengthConstraint {
     /// keyword
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MinLengthConstraint/field/keyword.
+    /// Semantic identity: ix://agent-ix/semantic-core/MinLengthConstraint/keyword.
     pub keyword: crate::MinLengthConstraintKeyword,
     /// value
     ///
-    /// Semantic identity: ix://agent-ix/semantic-core/type/MinLengthConstraint/field/value.
+    /// Semantic identity: ix://agent-ix/semantic-core/MinLengthConstraint/value.
     pub value: crate::MinLengthConstraintValue,
 }
 

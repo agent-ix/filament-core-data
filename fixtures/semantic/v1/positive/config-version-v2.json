@@ -164,7 +164,9 @@
 					"typeRef": "ix://agent-ix/config-service/type/UUID",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"presence": "required",
 					"nullable": false,
@@ -207,7 +209,9 @@
 					"typeRef": "ix://agent-ix/config-service/type/UUID",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"presence": "required",
 					"nullable": false,
@@ -228,7 +232,9 @@
 					"typeRef": "ix://agent-ix/config-service/type/VersionNumber",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"presence": "required",
 					"nullable": false,
@@ -249,7 +255,9 @@
 					"typeRef": "ix://agent-ix/config-service/type/JsonObject",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"presence": "required",
 					"nullable": false,
@@ -270,7 +278,9 @@
 					"typeRef": "ix://agent-ix/config-service/type/String",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"presence": "required",
 					"nullable": false,
@@ -291,7 +301,9 @@
 					"typeRef": "ix://agent-ix/config-service/type/Timestamp",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"presence": "required",
 					"nullable": false,
@@ -312,7 +324,9 @@
 					"typeRef": "ix://agent-ix/config-service/type/String",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					},
 					"presence": "required",
 					"nullable": false,
@@ -330,15 +344,10 @@
 			],
 			"relationships": [
 				{
-					"identity": "ix://agent-ix/config-service/relationship/config-version-overlay",
-					"verb": "belongs_to",
 					"category": "structural",
 					"composite": false,
-					"target": "ix://agent-ix/config-service/type/ConfigOverlay",
-					"multiplicity": {
-						"lower": 1,
-						"upper": 1
-					},
+					"direction": "source-to-target",
+					"identity": "ix://agent-ix/config-service/relationship/config-version-overlay",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/config-service/spec",
@@ -346,18 +355,31 @@
 							"startLine": 13,
 							"startColumn": 3
 						}
+					},
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "belongs_to",
+						"type": "ix://agent-ix/config-service/type/ConfigVersion"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"type": "ix://agent-ix/config-service/type/ConfigOverlay"
 					}
 				},
 				{
-					"identity": "ix://agent-ix/config-service/relationship/config-version-parent",
-					"verb": "derives_from",
 					"category": "traceability",
 					"composite": false,
-					"target": "ix://agent-ix/config-service/type/ConfigVersion",
-					"multiplicity": {
-						"lower": 0,
-						"upper": 1
-					},
+					"direction": "source-to-target",
+					"identity": "ix://agent-ix/config-service/relationship/config-version-parent",
 					"origin": {
 						"source": {
 							"sourceIdentity": "ix://agent-ix/config-service/spec",
@@ -365,6 +387,25 @@
 							"startLine": 17,
 							"startColumn": 3
 						}
+					},
+					"sourceEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "derives_from",
+						"type": "ix://agent-ix/config-service/type/ConfigVersion"
+					},
+					"targetEnd": {
+						"multiplicity": {
+							"lower": 0,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"role": "derives_into",
+						"type": "ix://agent-ix/config-service/type/ConfigVersion"
 					}
 				}
 			],
