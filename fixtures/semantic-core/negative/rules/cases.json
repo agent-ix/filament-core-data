@@ -23,7 +23,9 @@
 						"target": "UUID",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"identity": true,
@@ -35,7 +37,9 @@
 						"target": "Integer",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 0
+							"upper": 0,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"constraints": [
@@ -51,7 +55,9 @@
 						"target": "JsonObject",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "JSONB column; opaque object."
@@ -62,7 +68,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Content hash."
@@ -73,7 +81,9 @@
 						"target": "Timestamp",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					}
 				},
@@ -83,7 +93,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Actor identifier."
@@ -97,7 +109,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigOverlay",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -107,7 +121,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigVersion",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				}
 			],
@@ -224,7 +240,9 @@
 						"target": "UUID",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"identity": true,
@@ -236,7 +254,9 @@
 						"target": "Decimal",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"constraints": [
@@ -252,7 +272,9 @@
 						"target": "JsonObject",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "JSONB column; opaque object."
@@ -263,7 +285,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Content hash."
@@ -274,7 +298,9 @@
 						"target": "Timestamp",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					}
 				},
@@ -284,7 +310,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Actor identifier."
@@ -298,7 +326,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigOverlay",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -308,7 +338,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigVersion",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				}
 			],
@@ -425,7 +457,9 @@
 						"target": "UUID",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"identity": true,
@@ -437,7 +471,9 @@
 						"target": "Integer",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"constraints": [
@@ -453,7 +489,9 @@
 						"target": "JsonObject",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "JSONB column; opaque object."
@@ -464,7 +502,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						},
 						"decimal": {
 							"precision": 10,
@@ -479,7 +519,9 @@
 						"target": "Timestamp",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					}
 				},
@@ -489,7 +531,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Actor identifier."
@@ -503,7 +547,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigOverlay",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -513,7 +559,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigVersion",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				}
 			],
@@ -630,7 +678,9 @@
 						"target": "UUID",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"identity": true,
@@ -642,7 +692,9 @@
 						"target": "Integer",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"constraints": [
@@ -658,7 +710,9 @@
 						"target": "JsonObject",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "JSONB column; opaque object."
@@ -669,7 +723,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						},
 						"unit": "s"
 					},
@@ -681,7 +737,9 @@
 						"target": "Timestamp",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					}
 				},
@@ -691,7 +749,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Actor identifier."
@@ -705,7 +765,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigOverlay",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -715,7 +777,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigVersion",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				}
 			],
@@ -832,7 +896,9 @@
 						"target": "UUID",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"identity": true,
@@ -844,7 +910,9 @@
 						"target": "Integer",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"constraints": [
@@ -860,7 +928,9 @@
 						"target": "JsonObject",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "JSONB column; opaque object."
@@ -871,7 +941,9 @@
 						"target": "ix://agent-ix/config-service/type/Other",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						},
 						"unit": "s"
 					},
@@ -883,7 +955,9 @@
 						"target": "Timestamp",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					}
 				},
@@ -893,7 +967,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Actor identifier."
@@ -907,7 +983,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigOverlay",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -917,7 +995,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigVersion",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				}
 			],
@@ -1034,7 +1114,9 @@
 						"target": "UUID",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"identity": true,
@@ -1046,7 +1128,9 @@
 						"target": "Integer",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"constraints": [
@@ -1062,7 +1146,9 @@
 						"target": "JsonObject",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "JSONB column; opaque object."
@@ -1073,7 +1159,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Content hash."
@@ -1084,7 +1172,9 @@
 						"target": "Timestamp",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					}
 				},
@@ -1094,7 +1184,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Actor identifier."
@@ -1108,7 +1200,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigOverlay",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -1118,7 +1212,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigVersion",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				}
 			],
@@ -1244,7 +1340,9 @@
 						"target": "UUID",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"identity": true,
@@ -1256,7 +1354,9 @@
 						"target": "Integer",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"constraints": [
@@ -1272,7 +1372,9 @@
 						"target": "JsonObject",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "JSONB column; opaque object."
@@ -1283,7 +1385,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Content hash."
@@ -1294,7 +1398,9 @@
 						"target": "Timestamp",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					}
 				},
@@ -1304,7 +1410,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Actor identifier."
@@ -1318,7 +1426,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigOverlay",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -1328,7 +1438,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigVersion",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				}
 			],
@@ -1445,7 +1557,9 @@
 						"target": "UUID",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"identity": true,
@@ -1457,7 +1571,9 @@
 						"target": "Integer",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"constraints": [
@@ -1473,7 +1589,9 @@
 						"target": "JsonObject",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "JSONB column; opaque object."
@@ -1484,7 +1602,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Content hash."
@@ -1495,7 +1615,9 @@
 						"target": "Timestamp",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					}
 				},
@@ -1505,7 +1627,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Actor identifier."
@@ -1519,7 +1643,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigOverlay",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -1529,7 +1655,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigVersion",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -1539,7 +1667,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigOverlay",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				}
 			],
@@ -1656,7 +1786,9 @@
 						"target": "UUID",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"identity": true,
@@ -1668,7 +1800,9 @@
 						"target": "Integer",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"constraints": [
@@ -1684,7 +1818,9 @@
 						"target": "JsonObject",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "JSONB column; opaque object."
@@ -1695,7 +1831,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Content hash."
@@ -1706,7 +1844,9 @@
 						"target": "Timestamp",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					}
 				},
@@ -1716,7 +1856,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Actor identifier."
@@ -1730,7 +1872,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigOverlay",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -1740,7 +1884,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigVersion",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				}
 			],
@@ -1861,7 +2007,9 @@
 						"target": "UUID",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"identity": true,
@@ -1873,7 +2021,9 @@
 						"target": "Integer",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"constraints": [
@@ -1889,7 +2039,9 @@
 						"target": "JsonObject",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "JSONB column; opaque object."
@@ -1900,7 +2052,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Content hash."
@@ -1911,7 +2065,9 @@
 						"target": "Timestamp",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					}
 				},
@@ -1921,7 +2077,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Actor identifier."
@@ -1935,7 +2093,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigOverlay",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -1945,7 +2105,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigVersion",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				}
 			],
@@ -2080,7 +2242,9 @@
 						"target": "UUID",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"identity": true,
@@ -2092,7 +2256,9 @@
 						"target": "Integer",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"constraints": [
@@ -2108,7 +2274,9 @@
 						"target": "JsonObject",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "JSONB column; opaque object."
@@ -2119,7 +2287,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Content hash."
@@ -2130,7 +2300,9 @@
 						"target": "Timestamp",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					}
 				},
@@ -2140,7 +2312,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Actor identifier."
@@ -2154,7 +2328,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigOverlay",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -2164,7 +2340,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigVersion",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				}
 			],
@@ -2288,7 +2466,9 @@
 						"target": "UUID",
 						"multiplicity": {
 							"lower": 0,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"identity": true,
@@ -2300,7 +2480,9 @@
 						"target": "Integer",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"constraints": [
@@ -2316,7 +2498,9 @@
 						"target": "JsonObject",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "JSONB column; opaque object."
@@ -2327,7 +2511,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Content hash."
@@ -2338,7 +2524,9 @@
 						"target": "Timestamp",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					}
 				},
@@ -2348,7 +2536,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Actor identifier."
@@ -2362,7 +2552,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigOverlay",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -2372,7 +2564,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigVersion",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				}
 			],
@@ -2489,7 +2683,9 @@
 						"target": "UUID",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"identity": true,
@@ -2501,7 +2697,9 @@
 						"target": "Integer",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"constraints": [
@@ -2517,7 +2715,9 @@
 						"target": "JsonObject",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "JSONB column; opaque object.",
@@ -2529,7 +2729,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Content hash."
@@ -2540,7 +2742,9 @@
 						"target": "Timestamp",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					}
 				},
@@ -2550,7 +2754,9 @@
 						"target": "String",
 						"multiplicity": {
 							"lower": 1,
-							"upper": 1
+							"upper": 1,
+							"ordered": false,
+							"unique": false
 						}
 					},
 					"doc": "Actor identifier."
@@ -2564,7 +2770,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigOverlay",
 					"multiplicity": {
 						"lower": 1,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				},
 				{
@@ -2574,7 +2782,9 @@
 					"target": "ix://agent-ix/config-service/type/ConfigVersion",
 					"multiplicity": {
 						"lower": 0,
-						"upper": 1
+						"upper": 1,
+						"ordered": false,
+						"unique": false
 					}
 				}
 			],

@@ -679,7 +679,12 @@ describe("TC-1100..1108 determinism and non-disruption (NFR-028, NFR-030)", () =
 describe("TC-1090..1099 an independent consumer of the kernel package", () => {
 	// TC-1090
 	it("accepts a value the contract admits", () => {
-		const result = validateMultiplicity({ lower: 1, upper: 1 });
+		const result = validateMultiplicity({
+			lower: 1,
+			upper: 1,
+			ordered: false,
+			unique: false,
+		});
 		expect(result.ok).toBe(true);
 	});
 

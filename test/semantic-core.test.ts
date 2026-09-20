@@ -1257,7 +1257,7 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 			name: "price",
 			type: {
 				target: "Decimal",
-				multiplicity: { lower: 1, upper: 1 },
+				multiplicity: { lower: 1, upper: 1, ordered: false, unique: false },
 				decimal: { precision: 10, scale: 2 },
 				unit: "USD",
 			},

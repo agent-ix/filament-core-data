@@ -5,7 +5,7 @@
 		"identity": "ix://agent-ix/config-service/spec",
 		"version": "1.0.0",
 		"dialect": "spec-bundle",
-		"digest": "sha256:4ed115f133b15fad34501b0da0601b707c3bac761eb6c9dd0dfca655944cdd63"
+		"digest": "sha256:1cc6258ed111ea37ad9f0a74705746646a7d186b3655e865aa9d7eb777bfd1d8"
 	},
 	"package": {
 		"identity": "agent-ix/config-service",
@@ -25,7 +25,9 @@
 				"generated": {
 					"generatorIdentity": "ix://agent-ix/filament-core-data/generator/semantic-core-lowerer",
 					"generatorVersion": "1.0.0",
-					"inputIdentities": ["ix://agent-ix/config-service/type/ConfigVersion"]
+					"inputIdentities": [
+						"ix://agent-ix/config-service/type/ConfigVersion"
+					]
 				}
 			},
 			"constraints": [],
@@ -52,7 +54,9 @@
 				"generated": {
 					"generatorIdentity": "ix://agent-ix/filament-core-data/generator/semantic-core-lowerer",
 					"generatorVersion": "1.0.0",
-					"inputIdentities": ["ix://agent-ix/config-service/type/ConfigVersion"]
+					"inputIdentities": [
+						"ix://agent-ix/config-service/type/ConfigVersion"
+					]
 				}
 			},
 			"constraints": [],
@@ -79,7 +83,9 @@
 				"generated": {
 					"generatorIdentity": "ix://agent-ix/filament-core-data/generator/semantic-core-lowerer",
 					"generatorVersion": "1.0.0",
-					"inputIdentities": ["ix://agent-ix/config-service/type/ConfigVersion"]
+					"inputIdentities": [
+						"ix://agent-ix/config-service/type/ConfigVersion"
+					]
 				}
 			},
 			"constraints": [],
@@ -106,7 +112,9 @@
 				"generated": {
 					"generatorIdentity": "ix://agent-ix/filament-core-data/generator/semantic-core-lowerer",
 					"generatorVersion": "1.0.0",
-					"inputIdentities": ["ix://agent-ix/config-service/type/ConfigVersion"]
+					"inputIdentities": [
+						"ix://agent-ix/config-service/type/ConfigVersion"
+					]
 				}
 			},
 			"constraints": [],
@@ -133,7 +141,9 @@
 				"generated": {
 					"generatorIdentity": "ix://agent-ix/filament-core-data/generator/semantic-core-lowerer",
 					"generatorVersion": "1.0.0",
-					"inputIdentities": ["ix://agent-ix/config-service/type/ConfigVersion"]
+					"inputIdentities": [
+						"ix://agent-ix/config-service/type/ConfigVersion"
+					]
 				}
 			},
 			"constraints": [],
