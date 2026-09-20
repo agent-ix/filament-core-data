@@ -144,7 +144,7 @@ fn tc_1231_fr_006_references_fr_005_lowers_to_one_traceability_relationship_at_t
     );
     assert_eq!(
         rel["sourceEnd"]["multiplicity"],
-        serde_json::json!({ "lower": 0 })
+        serde_json::json!({ "lower": 0, "ordered": false, "unique": false })
     );
     // `references` declares no `inverse` in the registry, so the target end
     // carries no role at all (gap 3 of FCD #199/#200).
@@ -155,7 +155,7 @@ fn tc_1231_fr_006_references_fr_005_lowers_to_one_traceability_relationship_at_t
     );
     assert_eq!(
         rel["targetEnd"]["multiplicity"],
-        serde_json::json!({ "lower": 1, "upper": 1 })
+        serde_json::json!({ "lower": 1, "upper": 1, "ordered": false, "unique": false })
     );
     assert_eq!(
         rel["origin"],
@@ -431,7 +431,7 @@ fn tc_1238_parent_is_a_field_not_a_relationship() {
     assert_eq!(parent["typeRef"], "ix://agent-ix/config-service/FR-006");
     assert_eq!(
         parent["multiplicity"],
-        serde_json::json!({ "lower": 0, "upper": 1 })
+        serde_json::json!({ "lower": 0, "upper": 1, "ordered": false, "unique": false })
     );
     let ours = relationships(record);
     assert!(
@@ -452,7 +452,7 @@ fn tc_1238_parent_is_a_field_not_a_relationship() {
     );
     assert_eq!(
         ours[0]["targetEnd"]["multiplicity"],
-        serde_json::json!({ "lower": 1, "upper": 1 })
+        serde_json::json!({ "lower": 1, "upper": 1, "ordered": false, "unique": false })
     );
     assert_eq!(ours[0]["composite"], false);
 }

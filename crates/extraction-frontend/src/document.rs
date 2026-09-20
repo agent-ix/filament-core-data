@@ -8,6 +8,7 @@
 //! ([`crate::lower::Field`] carries all three), so the reader's
 //! materialization adds no member.
 
+use quire_rs::semantic::Multiplicity;
 use serde_json::{Map, Value};
 
 use agent_ix_semantic_ir::json::to_canonical_string;
@@ -16,6 +17,19 @@ use crate::bundle::Construct;
 use crate::canonical::sort_node_lists;
 use crate::envelope::Envelope;
 use crate::lower::TypeDefinition;
+
+/// `ordered` and `unique` as concrete booleans, `false` when the row that
+/// produced `multiplicity` named neither (QSpec model-complete.md, owner
+/// ruling 2026-09-19T15:39:32Z on FCD #199). `quire_rs::semantic::Multiplicity`
+/// — vendored, not this crate's to change — leaves both `Option<bool>`; every
+/// site in this crate that turns a `Multiplicity` the engine handed it into
+/// part of this frontend's own emitted document calls this once, at
+/// construction, rather than relying on a later document-wide repair.
+pub(crate) fn normalized_multiplicity(mut multiplicity: Multiplicity) -> Multiplicity {
+    multiplicity.ordered = Some(multiplicity.ordered.unwrap_or(false));
+    multiplicity.unique = Some(multiplicity.unique.unwrap_or(false));
+    multiplicity
+}
 
 /// The one `contractVersion` this frontend emits.
 pub const CONTRACT_VERSION: &str = "2.0.0";
@@ -40,8 +54,7 @@ pub fn assemble(
     );
     members.insert("source".to_string(), to_value(&envelope.source));
     members.insert("package".to_string(), to_value(&envelope.package));
-    let mut types_value = Value::Array(types.iter().map(to_value).collect());
-    normalize_multiplicities(&mut types_value);
+    let types_value = Value::Array(types.iter().map(to_value).collect());
     members.insert("types".to_string(), types_value);
     members.insert(
         "occurrences".to_string(),
@@ -63,42 +76,6 @@ pub fn assemble(
     let mut document = Value::Object(members);
     sort_node_lists(&mut document);
     Ok(document)
-}
-
-/// Every `multiplicity` member under a `types` entry, wherever it sits (a
-/// field, a parameter, an operation's `returns`, a relationship end, a
-/// construct's own `multiplicity`, a connection end): `ordered` and `unique`
-/// are booleans on every one, `false` when the row that produced it named
-/// neither (QSpec model-complete.md, FCD #199/#200's multiplicity ruling).
-/// This frontend's own `Multiplicity` value skips an absent `ordered`/
-/// `unique` (`quire_rs::semantic::Multiplicity`, vendored, not this crate's
-/// to change), so the fill-in happens once here, over the assembled `types`
-/// array, rather than at every site that carries a multiplicity.
-///
-/// Scoped to `types` alone, not the whole document: `extensions` carries
-/// opaque vendor payloads, and the top-level `constructs` array carries a
-/// module's own vocabulary declaration (FR-143, one entry per construct
-/// *kind*, deduplicated) rather than an artifact's lowered data — neither is
-/// an IR member path this frontend defines, so a coincidental `multiplicity`
-/// key inside either is left exactly as its producer wrote it.
-fn normalize_multiplicities(value: &mut Value) {
-    match value {
-        Value::Object(map) => {
-            if let Some(Value::Object(multiplicity)) = map.get_mut("multiplicity") {
-                multiplicity.entry("ordered").or_insert(Value::Bool(false));
-                multiplicity.entry("unique").or_insert(Value::Bool(false));
-            }
-            for child in map.values_mut() {
-                normalize_multiplicities(child);
-            }
-        }
-        Value::Array(items) => {
-            for item in items {
-                normalize_multiplicities(item);
-            }
-        }
-        _ => {}
-    }
 }
 
 /// `serde_json::to_value` over a node this crate defines. Every emitted

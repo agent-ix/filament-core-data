@@ -62,7 +62,9 @@ import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const SELF = fileURLToPath(import.meta.url);
-if (!process.execArgv.some((arg) => arg.startsWith("--experimental-strip-types"))) {
+if (
+	!process.execArgv.some((arg) => arg.startsWith("--experimental-strip-types"))
+) {
 	const child = spawnSync(
 		process.execPath,
 		[
@@ -110,7 +112,12 @@ export function workingRange(root) {
 			`HEAD ${head} does not descend from the closing sentinel's commit ${pinned.tip}: this checkout is not the change's branch, so the range cannot be located`,
 		);
 	}
-	return { base: pinned.base, tip: head, squashed: false, pinnedTip: pinned.tip };
+	return {
+		base: pinned.base,
+		tip: head,
+		squashed: false,
+		pinnedTip: pinned.tip,
+	};
 }
 
 /**
@@ -181,51 +188,112 @@ export const SENTINELS = Object.freeze([
 
 /** NFR-032 permitted paths, each traced to the Output or step that names it. */
 const PERMITTED = Object.freeze([
-	{ name: "crates/extraction-frontend/**", test: (p) => p.startsWith("crates/extraction-frontend/") },
+	{
+		name: "crates/extraction-frontend/**",
+		test: (p) => p.startsWith("crates/extraction-frontend/"),
+	},
 	{ name: "Cargo.toml (members line)", test: (p) => p === "Cargo.toml" },
 	{ name: "Cargo.lock", test: (p) => p === "Cargo.lock" },
-	{ name: "Makefile (one extraction-frontend block)", test: (p) => p === "Makefile" },
-	{ name: "THIRD-PARTY-NOTICES.md (additive rows for the crates Cargo.lock adds; CR-036-8)", test: (p) => p === "THIRD-PARTY-NOTICES.md" },
-	{ name: "scripts/extraction-frontend-harness.mjs (the NFR-032 rehearsal harness, CR-036-8; the FR-098 rust-generate runner, CR-036-9)", test: (p) => p === "scripts/extraction-frontend-harness.mjs" },
-	{ name: "test/fixtures/compiler/shared/cases.json", test: (p) => p === "test/fixtures/compiler/shared/cases.json" },
-	{ name: "test/fixtures/compiler/shared/spec-bundle/**", test: (p) => p.startsWith("test/fixtures/compiler/shared/spec-bundle/") },
-	{ name: "test/fixtures/compiler/shared/typespec/records-and-scalars/**", test: (p) => p.startsWith("test/fixtures/compiler/shared/typespec/records-and-scalars/") },
-	{ name: "docs/semantic-data-system/extraction-frontend-diagnostics.md", test: (p) => p === "docs/semantic-data-system/extraction-frontend-diagnostics.md" },
+	{
+		name: "Makefile (one extraction-frontend block)",
+		test: (p) => p === "Makefile",
+	},
+	{
+		name: "THIRD-PARTY-NOTICES.md (additive rows for the crates Cargo.lock adds; CR-036-8)",
+		test: (p) => p === "THIRD-PARTY-NOTICES.md",
+	},
+	{
+		name: "scripts/extraction-frontend-harness.mjs (the NFR-032 rehearsal harness, CR-036-8; the FR-098 rust-generate runner, CR-036-9)",
+		test: (p) => p === "scripts/extraction-frontend-harness.mjs",
+	},
+	{
+		name: "test/fixtures/compiler/shared/cases.json",
+		test: (p) => p === "test/fixtures/compiler/shared/cases.json",
+	},
+	{
+		name: "test/fixtures/compiler/shared/spec-bundle/**",
+		test: (p) => p.startsWith("test/fixtures/compiler/shared/spec-bundle/"),
+	},
+	{
+		name: "test/fixtures/compiler/shared/typespec/records-and-scalars/**",
+		test: (p) =>
+			p.startsWith(
+				"test/fixtures/compiler/shared/typespec/records-and-scalars/",
+			),
+	},
+	{
+		name: "docs/semantic-data-system/extraction-frontend-diagnostics.md",
+		test: (p) =>
+			p === "docs/semantic-data-system/extraction-frontend-diagnostics.md",
+	},
 	{ name: "spec/**", test: (p) => p.startsWith("spec/") },
 	{ name: "plan/**", test: (p) => p.startsWith("plan/") },
 	{ name: "reviews/**", test: (p) => p.startsWith("reviews/") },
+	{
+		name: "biome.json (excludes the crate's byte-compared goldens from formatting; FCD #199/#200 H1)",
+		test: (p) => p === "biome.json",
+	},
 ]);
 
 /** NFR-032 prohibited paths: this change changes no byte of them. */
 const PROHIBITED = Object.freeze([
 	{ name: "src/compiler/**", test: (p) => p.startsWith("src/compiler/") },
 	{ name: "packages/**", test: (p) => p.startsWith("packages/") },
-	{ name: "crates/semantic-ir/**", test: (p) => p.startsWith("crates/semantic-ir/") },
-	{ name: "crates/conformance-adapter/**", test: (p) => p.startsWith("crates/conformance-adapter/") },
-	{ name: "crates/consumer-compile-time/**", test: (p) => p.startsWith("crates/consumer-compile-time/") },
-	{ name: "crates/consumer-runtime/**", test: (p) => p.startsWith("crates/consumer-runtime/") },
+	{
+		name: "crates/semantic-ir/**",
+		test: (p) => p.startsWith("crates/semantic-ir/"),
+	},
+	{
+		name: "crates/conformance-adapter/**",
+		test: (p) => p.startsWith("crates/conformance-adapter/"),
+	},
+	{
+		name: "crates/consumer-compile-time/**",
+		test: (p) => p.startsWith("crates/consumer-compile-time/"),
+	},
+	{
+		name: "crates/consumer-runtime/**",
+		test: (p) => p.startsWith("crates/consumer-runtime/"),
+	},
 	{ name: "schema/**", test: (p) => p.startsWith("schema/") },
 	{ name: "fixtures/**", test: (p) => p.startsWith("fixtures/") },
 	{ name: "conformance/**", test: (p) => p.startsWith("conformance/") },
 	{ name: "spikes/**", test: (p) => p.startsWith("spikes/") },
-	{ name: "docs/** (other than docs/semantic-data-system/extraction-frontend-diagnostics.md)", test: (p) => p.startsWith("docs/") && p !== "docs/semantic-data-system/extraction-frontend-diagnostics.md" },
+	{
+		name: "docs/** (other than docs/semantic-data-system/extraction-frontend-diagnostics.md)",
+		test: (p) =>
+			p.startsWith("docs/") &&
+			p !== "docs/semantic-data-system/extraction-frontend-diagnostics.md",
+	},
 	{ name: "python_backend/**", test: (p) => p.startsWith("python_backend/") },
-	{ name: "test/fixtures/rust-serde/**", test: (p) => p.startsWith("test/fixtures/rust-serde/") },
+	{
+		name: "test/fixtures/rust-serde/**",
+		test: (p) => p.startsWith("test/fixtures/rust-serde/"),
+	},
 	{ name: "package.json", test: (p) => p === "package.json" },
 	{ name: "pnpm-lock.yaml", test: (p) => p === "pnpm-lock.yaml" },
 	{ name: "rust-toolchain.toml", test: (p) => p === "rust-toolchain.toml" },
 	{ name: ".github/**", test: (p) => p.startsWith(".github/") },
-	{ name: "agent_ix_core_data/**", test: (p) => p.startsWith("agent_ix_core_data/") },
+	{
+		name: "agent_ix_core_data/**",
+		test: (p) => p.startsWith("agent_ix_core_data/"),
+	},
 	{ name: "tests/**", test: (p) => p.startsWith("tests/") },
 	{ name: "test/*.ts", test: (p) => /^test\/[^/]+\.ts$/.test(p) },
-	{ name: "scripts/** (other than the harness)", test: (p) => p.startsWith("scripts/") && p !== "scripts/extraction-frontend-harness.mjs" },
+	{
+		name: "scripts/** (other than the harness)",
+		test: (p) =>
+			p.startsWith("scripts/") &&
+			p !== "scripts/extraction-frontend-harness.mjs",
+	},
 ]);
 
 /**
  * Where a ticket declares its change set repo-wide (`declaredScope` below).
  * Inside the crate so the file itself is always a permitted path.
  */
-const SCOPE_DECLARATION_PATH = "crates/extraction-frontend/CHANGE-SET-SCOPE.json";
+const SCOPE_DECLARATION_PATH =
+	"crates/extraction-frontend/CHANGE-SET-SCOPE.json";
 
 /** The seven paths FR-099-AC-5 names byte-unchanged, as `git diff` pathspecs. */
 export const FR099_FROZEN = Object.freeze([
@@ -279,7 +347,8 @@ export function declaredScope(root) {
 function classify(path, scope) {
 	const prohibited = PROHIBITED.find((rule) => rule.test(path));
 	if (prohibited) {
-		if (scope) return { path, verdict: "permitted", rule: `declared:${scope.ticket}` };
+		if (scope)
+			return { path, verdict: "permitted", rule: `declared:${scope.ticket}` };
 		return { path, verdict: "prohibited", rule: prohibited.name };
 	}
 	const permitted = PERMITTED.find((rule) => rule.test(path));
@@ -334,10 +403,14 @@ async function rustGenerate(argv) {
 	const outputRoot = flag(argv, "--output-root") ?? "lifted";
 	const { createHash } = await import("node:crypto");
 	const backend = await import(
-		pathToFileURL(join(HOME_ROOT, "src", "compiler", "backends", "rust-serde", "index.mjs")).href
+		pathToFileURL(
+			join(HOME_ROOT, "src", "compiler", "backends", "rust-serde", "index.mjs"),
+		).href
 	);
 	const cli = await import(
-		pathToFileURL(join(HOME_ROOT, "src", "compiler", "backends", "rust-serde", "cli.mjs")).href
+		pathToFileURL(
+			join(HOME_ROOT, "src", "compiler", "backends", "rust-serde", "cli.mjs"),
+		).href
 	);
 	const document = JSON.parse(readFileSync(resolve(ir), "utf8"));
 	const request = {
@@ -351,9 +424,13 @@ async function rustGenerate(argv) {
 		limits: cli.DEFAULT_LIMITS,
 	};
 	mkdirSync(resolve(out), { recursive: true });
-	const manifest = backend.generateRust(request, backend.directorySink(resolve(out)), {
-		licenseText: backend.readLicense(HOME_ROOT),
-	});
+	const manifest = backend.generateRust(
+		request,
+		backend.directorySink(resolve(out)),
+		{
+			licenseText: backend.readLicense(HOME_ROOT),
+		},
+	);
 	writeFileSync(
 		join(resolve(out), `${outputRoot}.output-manifest.json`),
 		`${JSON.stringify(manifest, null, "\t")}\n`,
@@ -363,7 +440,9 @@ async function rustGenerate(argv) {
 		`${outputRoot}: state=${manifest.state} files=${manifest.files.length} diagnostics=${manifest.diagnostics.length}\n`,
 	);
 	for (const entry of manifest.diagnostics) {
-		process.stdout.write(`  ${entry.severity} ${entry.code}: ${entry.message}\n`);
+		process.stdout.write(
+			`  ${entry.severity} ${entry.code}: ${entry.message}\n`,
+		);
 	}
 	return manifest.diagnostics.some((entry) => entry.blocking) ? 1 : 0;
 }
@@ -442,20 +521,46 @@ async function identityCases(argv) {
 	const table = flag(argv, "--table");
 	if (!table) throw new Error("identity-cases requires --table <file>");
 	const rows = JSON.parse(readFileSync(resolve(table), "utf8")).rows;
-	if (!Array.isArray(rows)) throw new Error("identity-cases table has no rows array");
+	if (!Array.isArray(rows))
+		throw new Error("identity-cases table has no rows array");
 	const identity = await import(
-		pathToFileURL(join(HOME_ROOT, "src", "compiler", "frontend", "typespec", "identity.mjs")).href,
+		pathToFileURL(
+			join(
+				HOME_ROOT,
+				"src",
+				"compiler",
+				"frontend",
+				"typespec",
+				"identity.mjs",
+			),
+		).href
 	);
 	const output = rows.map((row) => {
-		const refuse = (parts) => parts.some((part) => identity.slug(part).length === 0);
+		const refuse = (parts) =>
+			parts.some((part) => identity.slug(part).length === 0);
 		if (row.kind === "refusal") {
-			return { kind: row.kind, refuses: refuse(row.parts) ? "UNSLUGGABLE_NAME" : null };
+			return {
+				kind: row.kind,
+				refuses: refuse(row.parts) ? "UNSLUGGABLE_NAME" : null,
+			};
 		}
 		if (row.kind === "identity") {
-			return { kind: row.kind, identity: refuse(row.parts) ? null : identity.mintIdentity(row.package, row.slot, row.parts) };
+			return {
+				kind: row.kind,
+				identity: refuse(row.parts)
+					? null
+					: identity.mintIdentity(row.package, row.slot, row.parts),
+			};
 		}
 		if (row.kind === "diagnosticCode") {
-			return { kind: row.kind, code: identity.constraintDiagnosticCode(row.package, row.parts, row.keyword) };
+			return {
+				kind: row.kind,
+				code: identity.constraintDiagnosticCode(
+					row.package,
+					row.parts,
+					row.keyword,
+				),
+			};
 		}
 		throw new Error(`identity-cases row has unknown kind ${row.kind}`);
 	});
@@ -522,7 +627,9 @@ export function suiteRun(root) {
 			env,
 		);
 		if (!installed.ok) {
-			throw new Error(`pnpm install --offline failed in ${root}:\n${installed.out}`);
+			throw new Error(
+				`pnpm install --offline failed in ${root}:\n${installed.out}`,
+			);
 		}
 	}
 
@@ -537,7 +644,9 @@ export function suiteRun(root) {
 	);
 	log.push(`vitest exit ${vitest.ok ? 0 : "non-zero"}`);
 	if (!existsSync(vitestOut)) {
-		throw new Error(`vitest wrote no report in ${root}:\n${vitest.out.slice(-4000)}`);
+		throw new Error(
+			`vitest wrote no report in ${root}:\n${vitest.out.slice(-4000)}`,
+		);
 	}
 	const report = JSON.parse(readFileSync(vitestOut, "utf8"));
 	for (const file of report.testResults) {
@@ -638,8 +747,18 @@ function squashRehearsal(argv) {
 		verb: "squash-rehearsal",
 		clone: dir,
 		squash,
-		before: { paths: before.paths.length, base: before.base, tip: before.tip, squashed: before.squashed },
-		after: { paths: after.paths.length, base: after.base, tip: after.tip, squashed: after.squashed },
+		before: {
+			paths: before.paths.length,
+			base: before.base,
+			tip: before.tip,
+			squashed: before.squashed,
+		},
+		after: {
+			paths: after.paths.length,
+			base: after.base,
+			tip: after.tip,
+			squashed: after.squashed,
+		},
 		grew,
 		lost,
 		prohibited: after.prohibited,
@@ -675,7 +794,11 @@ function accretionRehearsal(argv) {
 	// An unrelated sibling on top: a new module, a schema, a docs edit.
 	write(dir, "src/sibling/marker.mjs", "export {};\n");
 	write(dir, "schema/semantic/v1/later.json", "{}\n");
-	write(dir, "docs/semantic-data-system/index.md", `${readFileSync(join(dir, "docs/semantic-data-system/index.md"), "utf8")}\n<!-- sibling -->\n`);
+	write(
+		dir,
+		"docs/semantic-data-system/index.md",
+		`${readFileSync(join(dir, "docs/semantic-data-system/index.md"), "utf8")}\n<!-- sibling -->\n`,
+	);
 	git(dir, "add", "-A");
 	git(dir, "commit", "-q", "-m", "unrelated sibling on top");
 	const withSibling = gate(dir);
@@ -693,8 +816,16 @@ function accretionRehearsal(argv) {
 		verb: "accretion-rehearsal",
 		clone: dir,
 		planted: plant,
-		squashed: { paths: squashed.paths.length, prohibited: squashed.prohibited, unclassified: squashed.unclassified },
-		withSibling: { paths: withSibling.paths.length, tip: withSibling.tip, head: git(dir, "rev-parse", "HEAD") },
+		squashed: {
+			paths: squashed.paths.length,
+			prohibited: squashed.prohibited,
+			unclassified: squashed.unclassified,
+		},
+		withSibling: {
+			paths: withSibling.paths.length,
+			tip: withSibling.tip,
+			head: git(dir, "rev-parse", "HEAD"),
+		},
 		grew,
 		strayProhibitedCaught: strayCaught,
 		strayProhibited: withStray.prohibited,
@@ -717,7 +848,14 @@ function revertRehearsal(argv) {
 	git(dir, "checkout", "-q", "-B", "reverted", before.tip);
 	git(dir, "revert", "--no-commit", `${before.base}..${before.tip}`);
 	git(dir, "commit", "-q", "-m", "revert of the extraction frontend range");
-	const diff = git(dir, "diff", "--no-renames", "--name-only", before.base, "HEAD");
+	const diff = git(
+		dir,
+		"diff",
+		"--no-renames",
+		"--name-only",
+		before.base,
+		"HEAD",
+	);
 	const treeMatchesBase = diff.length === 0;
 	const sentinelsGone = SENTINELS.every((s) => !existsSync(join(dir, s)));
 	let suite = null;
@@ -771,8 +909,18 @@ function suiteCompare(argv) {
 	const added = [...head.rows.keys()].filter((row) => !base.rows.has(row));
 	const report = {
 		verb: "suite-compare",
-		base: { commit: range.base, clone: baseDir, ...summarize(base.rows), log: base.log },
-		head: { commit: range.tip, clone: headDir, ...summarize(head.rows), log: head.log },
+		base: {
+			commit: range.base,
+			clone: baseDir,
+			...summarize(base.rows),
+			log: base.log,
+		},
+		head: {
+			commit: range.tip,
+			clone: headDir,
+			...summarize(head.rows),
+			log: head.log,
+		},
 		compared: base.rows.size - missing.length,
 		differing,
 		missing,
@@ -821,7 +969,7 @@ async function main(argv) {
 		default:
 			process.stderr.write(
 				"usage: extraction-frontend-harness.mjs <change-range | changed-paths | merge-commits | gate | suite-run> [--root DIR]\n" +
-				"       extraction-frontend-harness.mjs identity-cases --table FILE\n" +
+					"       extraction-frontend-harness.mjs identity-cases --table FILE\n" +
 					"       extraction-frontend-harness.mjs rust-generate --ir FILE --out DIR [--output-root NAME]\n" +
 					"       extraction-frontend-harness.mjs <squash-rehearsal | accretion-rehearsal [--plant-prohibited] | revert-rehearsal | suite-compare> --scratch DIR [--root DIR]\n",
 			);

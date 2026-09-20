@@ -832,11 +832,12 @@ pub(crate) fn lower_field(
             field: decl.name.clone(),
         });
     };
-    let multiplicity = decl
-        .type_ref
-        .multiplicity
-        .clone()
-        .unwrap_or_else(Multiplicity::one);
+    let multiplicity = crate::document::normalized_multiplicity(
+        decl.type_ref
+            .multiplicity
+            .clone()
+            .unwrap_or_else(Multiplicity::one),
+    );
     if multiplicity.lower == 0 && multiplicity.upper.is_none() {
         sink.push(Loss::RequiredCollectionPresence.diagnostic(
             &format!(

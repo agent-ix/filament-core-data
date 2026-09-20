@@ -491,7 +491,9 @@ pub(crate) fn shape(
             );
         }
         if !forbids(declaration, Member::Multiplicity) {
-            members.multiplicity = Some(part.record.multiplicity.clone());
+            members.multiplicity = Some(crate::document::normalized_multiplicity(
+                part.record.multiplicity.clone(),
+            ));
         }
     }
     if let Some(port) = &model.port {
@@ -523,7 +525,9 @@ pub(crate) fn shape(
             );
         }
         if !forbids(declaration, Member::Multiplicity) {
-            members.multiplicity = Some(port.record.multiplicity.clone());
+            members.multiplicity = Some(crate::document::normalized_multiplicity(
+                port.record.multiplicity.clone(),
+            ));
         }
     }
     if let Some(connection) = &model.connection {
@@ -1223,7 +1227,10 @@ fn lower_connection_end(
         .map_err(|rule| refuse(ctx, object, &rule))?;
     Ok(ConnectionEnd {
         type_ref,
-        multiplicity: end.multiplicity.clone(),
+        multiplicity: end
+            .multiplicity
+            .clone()
+            .map(crate::document::normalized_multiplicity),
     })
 }
 

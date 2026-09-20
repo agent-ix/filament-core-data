@@ -244,15 +244,15 @@ pub fn lower_relationships(
             direction: Direction::SourceToTarget,
             source_end: RelationshipEnd {
                 role: Some(verb),
-                multiplicity: Multiplicity {
+                multiplicity: crate::document::normalized_multiplicity(Multiplicity {
                     lower: 0,
                     ..Multiplicity::default()
-                },
+                }),
                 type_ref: source_type.clone(),
             },
             target_end: RelationshipEnd {
                 role: definition.inverse.clone(),
-                multiplicity: Multiplicity::one(),
+                multiplicity: crate::document::normalized_multiplicity(Multiplicity::one()),
                 type_ref: target_type,
             },
             origin: Origin::Source(head.clone()),

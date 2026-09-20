@@ -365,7 +365,10 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     let types = types_json(&lift);
     let record = type_named(&types, "ConfigVersion");
     let id = field_named(record, "id");
-    assert_eq!(id["multiplicity"], json!({"lower": 1, "upper": 1}));
+    assert_eq!(
+        id["multiplicity"],
+        json!({"lower": 1, "upper": 1, "ordered": false, "unique": false})
+    );
     assert_eq!(id["presence"], "required");
     assert_eq!(id["nullable"], false);
     assert_eq!(id["defaultKind"], "none");
@@ -390,7 +393,10 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
         "the row's line, column 3"
     );
     let parent = field_named(record, "parent");
-    assert_eq!(parent["multiplicity"], json!({"lower": 0, "upper": 1}));
+    assert_eq!(
+        parent["multiplicity"],
+        json!({"lower": 0, "upper": 1, "ordered": false, "unique": false})
+    );
     assert_eq!(parent["presence"], "optional");
     assert_eq!(parent["nullable"], false);
     assert_eq!(
@@ -805,13 +811,22 @@ fn tc_1227_one_to_many_is_required_and_star_is_optional_with_one_declared_loss_e
     let types = types_json(&lift);
     let basket = type_named(&types, "Basket");
     let items = field_named(basket, "items");
-    assert_eq!(items["multiplicity"], json!({"lower": 1}));
+    assert_eq!(
+        items["multiplicity"],
+        json!({"lower": 1, "ordered": false, "unique": false})
+    );
     assert_eq!(items["presence"], "required");
     let tags = field_named(basket, "tags");
-    assert_eq!(tags["multiplicity"], json!({"lower": 0}));
+    assert_eq!(
+        tags["multiplicity"],
+        json!({"lower": 0, "ordered": false, "unique": false})
+    );
     assert_eq!(tags["presence"], "optional");
     let labels = field_named(basket, "labels");
-    assert_eq!(labels["multiplicity"], json!({"lower": 0}));
+    assert_eq!(
+        labels["multiplicity"],
+        json!({"lower": 0, "ordered": false, "unique": false})
+    );
     assert_eq!(labels["presence"], "optional");
 
     let losses: Vec<&Diagnostic> = with_code(&lift.lowered.diagnostics, Code::DeclaredLoss)

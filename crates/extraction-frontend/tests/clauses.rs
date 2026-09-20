@@ -257,7 +257,7 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
         add_line["returns"],
         json!({
             "typeRef": "ix://agent-ix/orders/OP-001",
-            "multiplicity": { "lower": 1, "upper": 1 },
+            "multiplicity": { "lower": 1, "upper": 1, "ordered": false, "unique": false },
             "nullable": false,
         })
     );
@@ -275,7 +275,7 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
         total["returns"],
         json!({
             "typeRef": "ix://quire/native/Decimal",
-            "multiplicity": { "lower": 1, "upper": 1 },
+            "multiplicity": { "lower": 1, "upper": 1, "ordered": false, "unique": false },
             "nullable": false,
         })
     );
@@ -313,7 +313,7 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
     let find = named(list(repository, "operations"), "name", "findById");
     assert_eq!(
         find["returns"]["multiplicity"],
-        json!({ "lower": 0, "upper": 1 })
+        json!({ "lower": 0, "upper": 1, "ordered": false, "unique": false })
     );
     assert_eq!(find["returns"]["nullable"], false);
     assert_eq!(
