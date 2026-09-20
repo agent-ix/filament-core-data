@@ -5,3 +5,6 @@ __pycache__/
 .ruff_cache/
 target/
 .cases
+
+*-target/
+.worktrees/
