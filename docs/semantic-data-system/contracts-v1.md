@@ -93,8 +93,9 @@ known zero value.
 
 The IR declares exactly one `contractVersion`, `2.0.0`; the schema admits no other value and refuses a document declaring one with `SCHEMA_VIOLATION` at `contractVersion` before any other member is read (FR-050). A field carries an explicit `multiplicity { lower, upper?, ordered, unique }` (absent `upper` is unbounded; `ordered` and `unique` are required booleans on every multiplicity — fields, parameters, returns, relationship ends, and connection ends alike — `false` where `upper` is 0 or 1, and `true` there is refused with `FLAGS_ON_NON_COLLECTION`, since ordering and uniqueness describe a collection); its `presence` is authored independently ([FR-106](../../spec/functional/FR-106-author-field-presence-independently.md), [issue #93](https://github.com/agent-ix/filament-core-data/issues/93)), never derived from `multiplicity`, `nullable`, or the default kind, and `2.0.0` enforces no agreement between `presence` and `multiplicity.lower`: a required field with `lower: 0` and an optional field with `lower` at least `1` are both valid (FR-106-CON-1); fcd#179 deleted `PRESENCE_MULTIPLICITY_MISMATCH` along with the `1.0.0`/`1.1.0` contracts it checked. A field may carry a UCUM `unit` when its `typeRef` resolves, through aliases, to a scalar. Because the schema already requires `multiplicity`, `presence`, and `nullable` on every field, the normalized serialization carries them as authored rather than deriving or filling in a default.
 
-A record type definition carries first-class `relationships[]` (verb, FR-040
-category, `composite` flag, target identity, multiplicity, origin),
+A record type definition carries first-class `relationships[]` (category,
+`composite` flag, `sourceEnd`/`targetEnd`, origin — see
+[Relationships](#contract-200-issues-93-146-and-172) below),
 `operations[]` (params as field nodes, bounded `returns`, `pre[]`/`post[]`
 bound by `clauseId`), and any type definition carries `clauses[]`
 (`language` of `quire`, `ocl`, `sysml`, `fretish`, or `<ns>:<name>`; `clauseId` unique
@@ -133,9 +134,9 @@ shared table `crates/extraction-frontend/fixtures/identity-cases/identity-cases.
 implementations agree.
 
 Every identity is rooted at the package identity, `ix://<package identity>/`.
-A type definition (including a kernel scalar definition and a constrained-field
-alias) and a member (field, operation parameter, relationship, operation,
-clause) mint no slot segment: a type's identity is `ix://<package
+A type definition (including a kernel scalar definition) and a member (field,
+operation parameter, relationship, operation, clause) mint no slot segment: a
+type's identity is `ix://<package
 identity>/<Name>`, and a member's identity is its owner's identity, `/`, and
 the member's own part, nested as deep as the member sits (an operation
 parameter is nested under its operation, which is nested under its type).
@@ -170,14 +171,6 @@ does not admit inside a segment, or no ASCII alphanumeric at all (`_`), mints
 no segment and is refused as `UNSLUGGABLE_NAME`. Every other part — a field,
 member, verb, keyword, state, step, or clause name — is slugged on both
 sides. The type's name is its `displayName`.
-
-The alias a constrained field mints is a `type` identity (no slot segment)
-whose tail is `<Name>` followed by `slug(field)` with its first character
-upper-cased: `Note`, `revision` → `NoteRevision`; `Note`, `created_at` →
-`NoteCreated-at`. The alias node's `displayName` is `<Name>` followed by
-the field name verbatim with its first character upper-cased: `NoteRevision`,
-`NoteCreated_at`. The field's `typeRef` is retargeted to the alias identity and
-the constraint's `appliesTo` names it.
 
 `slug(value)` replaces every run of characters outside `[A-Za-z0-9]` with one
 `-` and trims leading and trailing `-`; case is preserved (`Config Version` →

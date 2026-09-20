@@ -30,8 +30,8 @@ The slot exists already. Issue #20 declared four of them, wrote the result
 contract and the comparison, and deliberately implemented no adapter: its
 registry says in as many words that supplying the command and the result emitter
 is the owning issue's obligation. That obligation is this one. Until it is
-discharged the harness synthesises `support: "unavailable"` for all 111 cases
-and records 111 unmet rows and zero passes against issue #22 — the correct
+discharged the harness synthesises `support: "unavailable"` for all 114 cases
+and records 114 unmet rows and zero passes against issue #22 — the correct
 reading of a backend that does not exist, and an unmet row rather than a gap in
 the corpus.
 
@@ -49,7 +49,7 @@ obliges honesty about how the agreement was reached.
 
 ## Inputs
 
-- The committed corpus: `conformance/corpus.json`, `conformance/bases/`, and the 111 cases under `conformance/cases/`
+- The committed corpus: `conformance/corpus.json`, `conformance/bases/`, and the 114 cases under `conformance/cases/`
 - The declared import API of `conformance/oracle/index.mjs`: `loadCorpus`, `loadCase`, `listCases`, `loadManifest`, `buildInput`, and `buildBefore`
 - `conformance/schema/adapter-result.schema.json`, the result contract
 - The backend's own decision modules: `admitIr` and `representability` ([FR-068](./FR-068-decide-and-report-ir-admissibility.md)), `normalizeIrForTarget` and `classifySurface` ([FR-069](./FR-069-canonicalize-and-classify-the-ir-surface.md)), and the generated validators ([FR-066](./FR-066-generate-runtime-validators.md))
@@ -162,9 +162,9 @@ obliges honesty about how the agreement was reached.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-070-AC-1 | `make conformance` runs the `typescript-backend` command over all 111 cases and the harness reports no `adapter`, `unknown-case`, `duplicate-answer`, `case-digest`, or `missing-answer` problem. | Integration |
+| FR-070-AC-1 | `make conformance` runs the `typescript-backend` command over all 114 cases and the harness reports no `adapter`, `unknown-case`, `duplicate-answer`, `case-digest`, or `missing-answer` problem. | Integration |
 | FR-070-AC-2 | Every document the adapter emits validates against `conformance/schema/adapter-result.schema.json`. | Test |
-| FR-070-AC-3 | The adapter answers `support: "supported"` for all 111 cases and `unavailable` for none. | Test |
+| FR-070-AC-3 | The adapter answers `support: "supported"` for all 114 cases and `unavailable` for none. | Test |
 | FR-070-AC-4 | The measured match count, failure count, and divergence count are recorded in `spec/tests.md` with the command that produced them, and a claimed figure that the regenerated coverage account contradicts fails the suite. | Analysis |
 | FR-070-AC-5 | The adapter source, and the transitive module set it imports, contain no reference to `oracleVerdict`, `compare`, `conformance/oracle/oracle.mjs`, `conformance/oracle/schema-layer.mjs`, or `conformance/corpus.mjs`. | Static |
 | FR-070-AC-6 | Replacing the backend's admissibility answer with the oracle's makes at least one deliberately seeded backend defect invisible, demonstrating that the independence constraint is load-bearing. | Test |

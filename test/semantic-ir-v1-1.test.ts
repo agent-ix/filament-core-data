@@ -1396,6 +1396,41 @@ describe("FR-020 closing gate: two readers, round trip, fixture inventory (Task-
 		}
 	});
 
+	/** Traces: TC-1812; FR-032-AC-3. */
+	it("TC-1812: this reader's NATIVE_SCALARS agrees with kernel-scalars.json (R3, FR-032-AC-3)", () => {
+		// R3 of the FCD #199/#200 review: this reader's `NATIVE_SCALARS` is one
+		// of six independent copies of the FR-032 kernel scalar library (the
+		// others are the Rust reader, the Node IR reader, the Python reader,
+		// the JSON-Schema backend, and the rust-serde backend); each is
+		// checked against the canonical `packages/semantic-core/kernel-scalars.json`
+		// rather than against each other, and none is refactored into a shared
+		// module.
+		const canonical = JSON.parse(
+			readFileSync(
+				resolve(root, "packages/semantic-core/kernel-scalars.json"),
+				"utf8",
+			),
+		) as { scalars: Record<string, { irScalar: string }> };
+		const source = readFileSync(
+			resolve(root, "test/semantic-ir-v1-1-reader.ts"),
+			"utf8",
+		);
+		const match = source.match(
+			/const NATIVE_SCALARS: Record<string, string> = \{([\s\S]*?)\};/,
+		);
+		expect(match).not.toBeNull();
+		const pairs = Object.fromEntries(
+			Array.from(
+				(match as RegExpMatchArray)[1].matchAll(/(\w+):\s*"([^"]+)"/g),
+			).map((entry) => [entry[1], entry[2]]),
+		);
+		const names = Object.keys(canonical.scalars);
+		expect(Object.keys(pairs).sort()).toEqual(names.sort());
+		for (const name of names) {
+			expect(pairs[name]).toBe(canonical.scalars[name].irScalar);
+		}
+	});
+
 	/**
 	 * fcd#179 deleted NFR-013 (TC-247's sole owner); kept as a regression
 	 * guard, not a traced criterion (see the note above TC-234's test).

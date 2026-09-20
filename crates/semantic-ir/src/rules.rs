@@ -3,6 +3,8 @@
 //! Every code emitted here has a `conformance/diagnostic-codes.json` row, and
 //! `crates/semantic-ir/RULES.md` cites the clause each rule was derived from.
 
+use std::collections::BTreeSet;
+
 use crate::diag::{child, index, locus_for, owner_for, Located, Severity};
 use crate::json::Json;
 use crate::regex262;
@@ -207,7 +209,9 @@ impl<'a> Document<'a> {
     /// runs past the declared depth bound; each of those is reported under its
     /// own code by the rule that owns it, not by this resolver.
     pub fn resolve(&self, identity: &str) -> Option<Resolved<'a>> {
-        self.resolve_bounded(identity, &mut vec![identity.to_string()])
+        let mut seen = BTreeSet::new();
+        seen.insert(identity);
+        self.resolve_bounded(identity, &mut seen)
     }
 
     /// `resolve`'s recursive step, bounded by `seen`: the identities already
@@ -216,16 +220,26 @@ impl<'a> Document<'a> {
     /// fields whose `typeRef`s name each other would otherwise recurse
     /// through `field_of` with no depth check and overflow the stack; a
     /// revisit here resolves to nothing, the same as a closed alias chain.
-    fn resolve_bounded(&self, identity: &str, seen: &mut Vec<String>) -> Option<Resolved<'a>> {
+    ///
+    /// `seen` is a `BTreeSet`, not a `Vec`: membership is the only operation
+    /// this method needs, a `Vec` would linear-scan it on every hop, and a
+    /// set states that invariant instead of relying on call discipline.
+    fn resolve_bounded<'s>(
+        &self,
+        identity: &'s str,
+        seen: &mut BTreeSet<&'s str>,
+    ) -> Option<Resolved<'a>>
+    where
+        'a: 's,
+    {
         if let Some(scalar) = native_scalar(identity) {
             return Some(Resolved::Native(scalar));
         }
         if let Some(field) = self.field_of(identity) {
             let type_ref = field.get("typeRef").and_then(Json::as_str)?;
-            if seen.iter().any(|visited| visited == type_ref) {
+            if !seen.insert(type_ref) {
                 return None;
             }
-            seen.push(type_ref.to_string());
             return self.resolve_bounded(type_ref, seen);
         }
         let mut current = self.type_of(identity)?;
@@ -237,10 +251,9 @@ impl<'a> Document<'a> {
             if let Some(scalar) = native_scalar(target) {
                 return Some(Resolved::Native(scalar));
             }
-            if seen.iter().any(|visited| visited == target) {
+            if !seen.insert(target) {
                 return None;
             }
-            seen.push(target.to_string());
             current = self.type_of(target)?;
         }
         None
@@ -1284,11 +1297,12 @@ mod tests {
     }
 
     /// R3 of the FCD #199/#200 review: this crate's `NATIVE_SCALARS` is one
-    /// of five independent copies of the FR-032 kernel scalar library (the
+    /// of six independent copies of the FR-032 kernel scalar library (the
     /// others are the Node IR reader, the Python reader, the JSON-Schema
-    /// backend, and the rust-serde backend); each is checked against the
-    /// canonical `packages/semantic-core/kernel-scalars.json` rather than
-    /// against each other, and none is refactored into a shared module.
+    /// backend, the rust-serde backend, and the v1-1 TS reader); each is
+    /// checked against the canonical `packages/semantic-core/kernel-scalars.json`
+    /// rather than against each other, and none is refactored into a shared
+    /// module.
     ///
     /// Tracing: TC-1807
     /// ACs: FR-032-AC-3

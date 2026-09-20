@@ -3934,7 +3934,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		// R3 of the FCD #199/#200 review: this reader's `NATIVE_SCALARS` is one
 		// of six independent copies of the FR-032 kernel scalar library (the
 		// others are the Rust reader, the Python reader, the JSON-Schema
-		// backend, the rust-serde backend, and the semantic-core reader); each
+		// backend, the rust-serde backend, and the v1-1 TS reader); each
 		// is checked against the canonical `packages/semantic-core/kernel-scalars.json`
 		// rather than against each other, and none is refactored into a shared
 		// module.
