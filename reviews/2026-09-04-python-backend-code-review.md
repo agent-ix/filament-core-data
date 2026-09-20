@@ -32,7 +32,7 @@ than the property it names holding.
 
 ## Gate results actually observed
 
-Run from `/home/peter/dev/filament-core-data/.worktrees/23-python-pydantic-backend`
+Run from `.worktrees/23-python-pydantic-backend`
 at HEAD `8991204`:
 
 | Gate | Result |
