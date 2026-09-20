@@ -6,7 +6,6 @@
 			"compatibility-report.schema.json",
 			"compiler-request.schema.json",
 			"consumer-policy.schema.json",
-			"legacy-adapter.schema.json",
 			"mapping.schema.json",
 			"output-manifest.schema.json",
 			"package-lock.schema.json",
@@ -16,14 +15,14 @@
 			"semantic-ir.schema.json",
 			"target-contract.schema.json"
 		],
-		"inputDigest": "sha256:264b01433cb86b3fb1d69d5f2aeda7bc0ef38c4f39cebe1a9ff7de29faa9a0ba",
+		"inputDigest": "sha256:397e4f2f5ca0be43eb7b3560c1acc3a94dc766c6c653710e3f007608bc2a097a",
 		"preparation": []
 	},
 	"profile": {
 		"id": "pydantic_v2_basemodel",
 		"digest": "sha256:de77a678b1815ffce78633025a657d40deea86bcec59ba28c35adf93a9112dd0"
 	},
-	"toolchainFingerprint": "sha256:5f9d1ef4026ea6243487b8b1040966ed154fbf5839293946036c77396e2dfd1b",
+	"toolchainFingerprint": "sha256:0c92f9fb8f60f49327a4cc028ba53d236caa63045b59d05bd6c73bd86343a190",
 	"generator": {
 		"distribution": "datamodel-code-generator",
 		"version": "0.76.0",
@@ -34,7 +33,6 @@
 	"nameCollisions": {
 		"Severity": ["common_schema", "target_contract_schema"],
 		"SourceLocus": ["common_schema", "mapping_schema"],
-		"Preservation": ["legacy_adapter_schema", "mapping_schema"],
 		"Kind": ["mapping_schema", "representation_schema", "semantic_ir_schema"],
 		"Package": [
 			"package_lock_schema",
@@ -45,5 +43,5 @@
 		"RoundTrip": ["profile_schema", "representation_schema"]
 	},
 	"published": false,
-	"contentFingerprint": "sha256:2f49afd192e55e955dbe8d5e15621641a22e8c36d99bed6b5f2e4681540d07de"
+	"contentFingerprint": "sha256:3eff9e63ad93a8a1845594aa83f54360e03b4b941dcb99df1ade89c81a57d04c"
 }
