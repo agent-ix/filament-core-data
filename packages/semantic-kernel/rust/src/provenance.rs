@@ -36,7 +36,7 @@ pub const LOCK_DIGEST: &str =
 
 /// The lock fingerprint the compiler request carried.
 pub const LOCK_FINGERPRINT: &str =
-    "sha256:8a8221448dc502c5c1a4a849434bfe8ae6a38cb11c13da0e71b6d8c9850dae80";
+    "sha256:5f0c855fb2caa920c2fe034def76853a760c721174e64128c40112aab0a15d39";
 
 /// The IR contract version the document declared.
 pub const CONTRACT_VERSION: &str = "2.0.0";

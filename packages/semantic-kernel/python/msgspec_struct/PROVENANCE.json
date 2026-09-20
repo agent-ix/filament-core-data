@@ -33,10 +33,10 @@
 			"UniqueConstraint.json",
 			"UnitSymbol.json"
 		],
-		"inputDigest": "sha256:46719f19a290691e0ed2b07cf5f2a63a94b7049683e5c6bd6273ac50006f684a",
+		"inputDigest": "sha256:afe8ce4e9ac1be3d1b12cbf28dd4350f984f1f8c9e5c708a9e7344fbe834cdc3",
 		"bundle": {
 			"base": "https://schemas.agent-ix.org/semantic-core/0.2.0/",
-			"digest": "sha256:abaa435b7c88544f402795d6602c4d6ce216c0f649415c26dae11cb70ff55563",
+			"digest": "sha256:355ca2a693eb9345d296be8a1a4bea2f0951a76b4c5dde28c3d99364ffcfe5fa",
 			"semanticCoreVersion": "0.2.0"
 		},
 		"localization": [
@@ -624,7 +624,7 @@
 		"id": "msgspec_struct",
 		"digest": "sha256:c22081156b8894c95079b63d0e883ab929a208c3082f3ba779213d057e4f3278"
 	},
-	"toolchainFingerprint": "sha256:1f649ea969251e9c333668df38b521477f1df57ccedad6b8b9404a6794012c18",
+	"toolchainFingerprint": "sha256:502d1dfaa120b15c6b2e0b96569ff2e38fcf7745afbf64596b1f787fe925d5ca",
 	"generator": {
 		"distribution": "datamodel-code-generator",
 		"version": "0.76.0",
@@ -649,5 +649,5 @@
 			"types": ["ConstraintDecl", "FieldDecl", "OperationDecl", "TypeRef"]
 		}
 	],
-	"contentFingerprint": "sha256:85c471534617feaf9f6e6e891a971ee39a99e8cf2b94dfcfa7bec793ac95f28c"
+	"contentFingerprint": "sha256:c2cbacde37f460382b99d9aa726bf970dafa1f0a3bb6bba22e4746033e5b4916"
 }

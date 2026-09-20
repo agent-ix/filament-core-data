@@ -21,8 +21,8 @@ export type Diagnostic = {
 export type Multiplicity = {
 	lower: number;
 	upper?: number;
-	ordered?: boolean;
-	unique?: boolean;
+	ordered: boolean;
+	unique: boolean;
 };
 
 const CATEGORIES = new Set([
@@ -166,23 +166,17 @@ function checkMultiplicity(
 			return undefined;
 		}
 	}
-	// R2 (FCD #199/#200 review): `ordered`/`unique` are `@collection` and mean
-	// nothing on a property whose upper bound is at most one. FR-027-AC-8
-	// requires both keys on every multiplicity (defaulting `false`), so this
-	// keys on the *value* (`true`), not the key's presence — a mandatory
-	// `false` pair on a single-valued field is the required shape, not a
-	// violation.
-	if (
-		(value.ordered === true || value.unique === true) &&
-		upper !== undefined &&
-		upper <= 1
-	) {
+	// Owner ruling (2026-09-19T15:39:32Z) on FCD #199: every multiplicity
+	// carries both `ordered` and `unique` as required booleans, checked here
+	// rather than left to a schema pass that may not have run — this reader
+	// is imported directly by tests with no guaranteed preceding Ajv check.
+	if (typeof value.ordered !== "boolean" || typeof value.unique !== "boolean") {
 		diagnostics.push({
-			code: "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
+			code: "agent-ix.semantic-ir.INVALID_MULTIPLICITY",
 			path,
-			message:
-				"ordered and unique describe a collection and this field is single-valued",
+			message: "ordered and unique are required booleans on every multiplicity",
 		});
+		return undefined;
 	}
 	return value as Multiplicity;
 }
@@ -403,7 +397,10 @@ function checkTypeDefinition(
 		// A relationship's source end always names the type declaring it
 		// (FCD #199/#200 review finding 9); the target end's `type` is the
 		// resolved target and needs the cross-reference check above instead.
-		if (sourceEnd.type !== undefined && sourceEnd.type !== definition.identity) {
+		if (
+			sourceEnd.type !== undefined &&
+			sourceEnd.type !== definition.identity
+		) {
 			diagnostics.push({
 				code: "agent-ix.semantic-ir.INVALID_RELATIONSHIP_SOURCE",
 				path: `${path}.relationships.${index}.sourceEnd.type`,

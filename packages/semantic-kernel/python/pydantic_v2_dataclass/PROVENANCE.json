@@ -33,10 +33,10 @@
 			"UniqueConstraint.json",
 			"UnitSymbol.json"
 		],
-		"inputDigest": "sha256:46719f19a290691e0ed2b07cf5f2a63a94b7049683e5c6bd6273ac50006f684a",
+		"inputDigest": "sha256:afe8ce4e9ac1be3d1b12cbf28dd4350f984f1f8c9e5c708a9e7344fbe834cdc3",
 		"bundle": {
 			"base": "https://schemas.agent-ix.org/semantic-core/0.2.0/",
-			"digest": "sha256:abaa435b7c88544f402795d6602c4d6ce216c0f649415c26dae11cb70ff55563",
+			"digest": "sha256:355ca2a693eb9345d296be8a1a4bea2f0951a76b4c5dde28c3d99364ffcfe5fa",
 			"semanticCoreVersion": "0.2.0"
 		},
 		"localization": [
@@ -624,7 +624,7 @@
 		"id": "pydantic_v2_dataclass",
 		"digest": "sha256:70c15540cb34650f73491fefbc4f7518823a5a7f56733747e4b120d0aba1d7f7"
 	},
-	"toolchainFingerprint": "sha256:16898e03480123506cccce909c339314e5aa05476ebe1737bc0f24b6d9748b97",
+	"toolchainFingerprint": "sha256:f9fe6edc18430f67c2664146cfc3410b487a560c1706d5764892db4705fc08cd",
 	"generator": {
 		"distribution": "datamodel-code-generator",
 		"version": "0.76.0",
@@ -643,5 +643,5 @@
 			"types": ["ConstraintKeyword"]
 		}
 	],
-	"contentFingerprint": "sha256:94837954611e8960e8abec1e237ec0189ca9838767f7697b1821dc4ff1ebb323"
+	"contentFingerprint": "sha256:0ca38b288a7ce977192df3143892ab455d3688ce23fb12354e9665a6bac33b7c"
 }

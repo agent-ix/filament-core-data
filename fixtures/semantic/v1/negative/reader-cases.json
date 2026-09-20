@@ -13,18 +13,16 @@
 		"path": "types.3.fields.0.multiplicity.upper"
 	},
 	{
-		"id": "field-flags-on-single",
+		"id": "field-multiplicity-omits-ordered-and-unique",
 		"base": "positive/semantic-ir-v1-1.json",
 		"set": {
 			"path": "types.3.fields.0.multiplicity",
 			"value": {
 				"lower": 1,
-				"upper": 1,
-				"ordered": true,
-				"unique": false
+				"upper": 1
 			}
 		},
-		"code": "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
+		"code": "agent-ix.semantic-ir.INVALID_MULTIPLICITY",
 		"path": "types.3.fields.0.multiplicity"
 	},
 	{

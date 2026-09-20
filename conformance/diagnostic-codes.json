@@ -36,18 +36,6 @@
 			"exercisedBy": "case"
 		},
 		{
-			"code": "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
-			"provenance": "frozen",
-			"decidedBy": "cross-field",
-			"sources": [
-				"docs/semantic-data-system/contracts-v1.md",
-				"fixtures/semantic/v1/negative/reader-cases.json"
-			],
-			"rule": "Ordered or unique declared on a field that is not a collection (upper bound at most 1).",
-			"citation": "`multiplicity { lower, upper?, ordered, unique }` (absent `upper` is",
-			"exercisedBy": "case"
-		},
-		{
 			"code": "agent-ix.semantic-ir.UNIT_ON_NON_SCALAR",
 			"provenance": "frozen",
 			"decidedBy": "cross-field",

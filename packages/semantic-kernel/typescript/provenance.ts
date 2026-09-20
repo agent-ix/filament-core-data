@@ -5,7 +5,7 @@
  * backend: ix://agent-ix/filament-core-data/backend/typescript@0.1.0
  * contract: 2.0.0
  * package: agent-ix/semantic-kernel@0.2.0
- * fingerprint: sha256:c825c2e71d83f2a68682ef6c9d7b7b3b7bab504aee4d57c38eac71384a5da93b
+ * fingerprint: sha256:ea098937ebdf8be61fc8ec27a8bf904a575163d4d53a199e49ab61eb9979a492
  */
 
 /**
@@ -40,7 +40,7 @@ export const PROVENANCE = {
 	packageLockDigest:
 		"sha256:0000000000000000000000000000000000000000000000000000000000000000",
 	fingerprint:
-		"sha256:c825c2e71d83f2a68682ef6c9d7b7b3b7bab504aee4d57c38eac71384a5da93b",
+		"sha256:ea098937ebdf8be61fc8ec27a8bf904a575163d4d53a199e49ab61eb9979a492",
 	backendIdentity: "ix://agent-ix/filament-core-data/backend/typescript",
 	backendVersion: "0.1.0",
 } as const;

@@ -358,22 +358,21 @@ export function readContractIr(document, options = {}) {
 			);
 			return undefined;
 		}
-		// R2 (FCD #199/#200 review): `ordered`/`unique` describe a collection and
-		// mean nothing on a property whose upper bound is at most one. Contract
-		// 2.0.0 requires both keys on every multiplicity, defaulting `false`, so
-		// this keys on the *value* (`=== true`), not the key's presence — a
-		// mandatory `false` pair on a single-valued field is the required shape,
-		// not a violation.
+		// Owner ruling (2026-09-19T15:39:32Z) on FCD #199: every multiplicity
+		// carries both `ordered` and `unique` as required booleans. This check
+		// runs whether or not a schema pass preceded it — `readContractIr` is
+		// called directly, with no schema layer, by
+		// `conformance/adapters/compiler-frontend/adapter.mjs`.
 		if (
-			(value.ordered === true || value.unique === true) &&
-			upper !== undefined &&
-			upper <= 1
+			typeof value.ordered !== "boolean" ||
+			typeof value.unique !== "boolean"
 		) {
 			raise(
-				DIAGNOSTIC_CODES.FLAGS_ON_NON_COLLECTION,
-				"ordered and unique describe a collection and this field is single-valued",
+				DIAGNOSTIC_CODES.INVALID_MULTIPLICITY,
+				"ordered and unique are required booleans on every multiplicity",
 				locusOf(owner),
 			);
+			return undefined;
 		}
 		return value;
 	};

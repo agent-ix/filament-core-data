@@ -594,10 +594,11 @@ describe("FR-027 field multiplicity and units", () => {
 				random() < 0.3 ? undefined : lower + Math.floor(random() * 3);
 			const multiplicity: Record<string, unknown> = { lower };
 			if (upper !== undefined) multiplicity.upper = upper;
-			if (upper === undefined || upper > 1) {
-				if (random() < 0.5) multiplicity.ordered = random() < 0.5;
-				if (random() < 0.5) multiplicity.unique = random() < 0.5;
-			}
+			// Owner ruling 2026-09-19T15:39:32Z on FCD #199: every emitted
+			// multiplicity carries both flags as required booleans, on a
+			// single-valued field exactly as on a collection.
+			multiplicity.ordered = random() < 0.5;
+			multiplicity.unique = random() < 0.5;
 			setAt(mutated, "types.3.fields.1.multiplicity", multiplicity);
 			setAt(
 				mutated,
@@ -679,12 +680,21 @@ describe("FR-027 field multiplicity and units", () => {
 	 * Traces: TC-237; FR-027-AC-8.
 	 *
 	 * QSpec model-complete.md: every multiplicity carries `ordered` and
-	 * `unique`, defaulting to `false`; `ordered` or `unique` set `true`
-	 * describes a collection, so it is refused on a single-valued field
-	 * (FCD #199/#200 review R2).
+	 * `unique`. Owner ruling (2026-09-19T15:39:32Z) on FCD #199, superseding
+	 * R2 of the #199/#200 review round: `FLAGS_ON_NON_COLLECTION` is
+	 * deleted, not corrected — every producer clamps both flags to `false`
+	 * when `upper` is at most one, and the reader no longer checks the
+	 * combination at all.
 	 */
-	it("fails ordered or unique flags on a single-valued field", () => {
-		expectReaderFailure("field-flags-on-single");
+	it("does not refuse ordered or unique flags on a single-valued field", () => {
+		const document = clone(goldenV11());
+		setAt(document, "types.3.fields.0.multiplicity", {
+			lower: 1,
+			upper: 1,
+			ordered: true,
+			unique: false,
+		});
+		expect(readSemanticIr(document)).toEqual([]);
 	});
 
 	/** Traces: TC-238; FR-027-AC-9. */

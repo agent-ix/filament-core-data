@@ -13,6 +13,6 @@ class Multiplicity(BaseModel):
         extra='forbid',
     )
     lower: Annotated[int, Field(ge=0, le=2147483647)]
-    ordered: bool | None = None
-    unique: bool | None = None
+    ordered: bool
+    unique: bool
     upper: Annotated[int | None, Field(ge=0, le=2147483647)] = None

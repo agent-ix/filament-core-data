@@ -109,7 +109,6 @@ codes! {
     DUPLICATE_IDENTITY => "agent-ix.semantic-ir.DUPLICATE_IDENTITY",
     DUPLICATE_FIELD_NAME => "agent-ix.semantic-ir.DUPLICATE_FIELD_NAME",
     DUPLICATE_PARAM => "agent-ix.semantic-ir.DUPLICATE_PARAM",
-    FLAGS_ON_NON_COLLECTION => "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
     DUPLICATE_CLAUSE_ID => "agent-ix.semantic-ir.DUPLICATE_CLAUSE_ID",
     DANGLING_CLAUSE_REF => "agent-ix.semantic-ir.DANGLING_CLAUSE_REF",
     MISSING_SOURCE_SPAN => "agent-ix.semantic-ir.MISSING_SOURCE_SPAN",
@@ -722,25 +721,6 @@ fn field_rules(
                     );
                 }
             }
-            // R2 (FCD #199/#200 review): `ordered`/`unique` are `@collection`
-            // and mean nothing on a property whose upper bound is at most
-            // one. FR-027-AC-8 now requires both keys on every multiplicity
-            // (defaulting `false`), so the refusal keys on the *value*, not
-            // the key's presence — a bare `false` on a single-valued field
-            // is the required shape, not a violation.
-            let flagged = matches!(multiplicity.get("ordered"), Some(Json::Bool(true)))
-                || matches!(multiplicity.get("unique"), Some(Json::Bool(true)));
-            if flagged {
-                if let Some(upper) = upper {
-                    if upper <= 1 {
-                        sink.emit(
-                            multiplicity_at.clone(),
-                            FLAGS_ON_NON_COLLECTION,
-                            "ordered and unique describe a collection and this field is single-valued",
-                        );
-                    }
-                }
-            }
         }
         if field.has("unit") {
             let scalar = type_ref
@@ -1193,23 +1173,25 @@ fn package_visit(
 #[cfg(test)]
 mod tests {
     use super::{
-        decide, native_scalar, CONSTRAINT_NOT_APPLICABLE, FLAGS_ON_NON_COLLECTION, NATIVE_PREFIX,
-        NATIVE_SCALARS, UNIT_ON_NON_SCALAR, UNRESOLVED_TYPE_REF,
+        decide, native_scalar, CONSTRAINT_NOT_APPLICABLE, NATIVE_PREFIX, NATIVE_SCALARS,
+        UNIT_ON_NON_SCALAR, UNRESOLVED_TYPE_REF,
     };
     use crate::json::Json;
     use crate::json::parse;
 
-    /// R2 of the FCD #199/#200 review: `ordered`/`unique` describe
-    /// `@collection` and mean nothing on a property whose upper bound is at
-    /// most one. FR-027-AC-8 makes both keys mandatory on every
-    /// multiplicity, defaulting `false`, so this keys on the *value*
-    /// (`true`), not the key's presence — an explicit `false` pair on a
-    /// single-valued field, required by the schema, must not itself refuse.
+    /// Owner ruling (2026-09-19T15:39:32Z) on FCD #199, superseding R2 of the
+    /// #199/#200 review round: `FLAGS_ON_NON_COLLECTION` is deleted outright,
+    /// not corrected. Every emitted multiplicity carries `ordered`/`unique`,
+    /// clamped to `false` at emission when `upper` is at most one — the
+    /// reader no longer checks the combination at all, so a document
+    /// carrying `ordered`/`unique` `true` alongside a single-valued `upper`
+    /// (a shape a producer should never emit, but the reader no longer
+    /// polices) is not refused.
     ///
     /// Tracing: TC-1806
     /// ACs: FR-027-AC-8
     #[test]
-    fn tc_1806_ordered_or_unique_true_refuses_on_a_single_valued_field() {
+    fn tc_1806_ordered_and_unique_are_never_refused_by_the_reader() {
         let field = |ordered: bool, unique: bool, upper: i64| {
             format!(
                 r#"{{"identity": "ix://acme/pkg/T/f", "name": "f", "typeRef": "ix://quire/native/String", "multiplicity": {{"lower": 0, "upper": {upper}, "ordered": {ordered}, "unique": {unique}}}}}"#
@@ -1222,29 +1204,15 @@ mod tests {
             .expect("a document")
         };
 
-        let refused = decide(&wrap(field(true, false, 1)));
-        assert!(
-            refused.iter().any(|d| d.code == FLAGS_ON_NON_COLLECTION),
-            "ordered=true on an upper-1 field is refused: {refused:?}"
-        );
-
-        let refused = decide(&wrap(field(false, true, 1)));
-        assert!(
-            refused.iter().any(|d| d.code == FLAGS_ON_NON_COLLECTION),
-            "unique=true on an upper-1 field is refused: {refused:?}"
-        );
-
-        let accepted = decide(&wrap(field(false, false, 1)));
-        assert!(
-            !accepted.iter().any(|d| d.code == FLAGS_ON_NON_COLLECTION),
-            "the mandatory false/false pair on a single-valued field is not a refusal: {accepted:?}"
-        );
-
-        let accepted = decide(&wrap(field(true, true, 5)));
-        assert!(
-            !accepted.iter().any(|d| d.code == FLAGS_ON_NON_COLLECTION),
-            "ordered/unique on an actual collection is not a refusal: {accepted:?}"
-        );
+        for (ordered, unique, upper) in
+            [(true, false, 1), (false, true, 1), (false, false, 1), (true, true, 5)]
+        {
+            let decided = decide(&wrap(field(ordered, unique, upper)));
+            assert!(
+                decided.is_empty(),
+                "ordered={ordered}, unique={unique}, upper={upper} is not refused: {decided:?}"
+            );
+        }
     }
 
     /// Finding 2 of the FCD #199/#200 review: `field_rules` runs each of a

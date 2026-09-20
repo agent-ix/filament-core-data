@@ -34,8 +34,7 @@ object and an optional `unit`.
 - The `field` node SHALL treat an absent `multiplicity.upper` as unbounded.
 - If `multiplicity.upper` is present and is less than `multiplicity.lower`, then IR validation SHALL fail at that field with its locus.
 - The `field` node SHALL keep `presence` and `nullable` independent of multiplicity (FR-106), so that a required field still admits an explicit null value when declared and a field's presence is never derived from its multiplicity.
-- The `field` node SHALL carry `multiplicity.ordered` and `multiplicity.unique` as required booleans, `false` where `multiplicity.upper` is 1 or 0.
-- If `multiplicity.ordered` or `multiplicity.unique` is `true` and `multiplicity.upper` is present and is 1 or 0, then IR validation SHALL fail at that field with its locus (`FLAGS_ON_NON_COLLECTION`).
+- The `field` node SHALL carry `multiplicity.ordered` and `multiplicity.unique` as required booleans, `false` where `multiplicity.upper` is 1 or 0 (Multiplicity ruling, 2026-09-19: every emitted multiplicity carries both flags, clamped to `false` rather than refused when `upper` is at most 1 — `FLAGS_ON_NON_COLLECTION` is deleted).
 - The IR validator SHALL resolve `typeRef` through `alias` definitions to its structural kind before applying the `unit` rule.
 - If a `typeRef` does not resolve, then IR validation SHALL fail at the field with its locus.
 - The `field` node SHALL carry `unit` only when the resolved structural kind is `scalar`.
@@ -61,7 +60,7 @@ object and an optional `unit`.
 | FR-027-AC-5 | A scalar field with `unit: "s"` validates; the same unit on a record-typed field fails. | Test |
 | FR-027-AC-6 | Every published positive fixture declaring contract `2.0.0` validates under the schema; their vocabulary and negative-refusal coverage is asserted over inline documents. | Test |
 | FR-027-AC-7 | The config-service FR-006 `ConfigVersion` fields (`parent 0..1`, `versionNumber 1..1`) are expressed in `fixtures/semantic/v1/positive/config-version-v2.json` with zero declared loss. | Analysis |
-| FR-027-AC-8 | A field declared `multiplicity: {lower: 1, upper: 1}` emits `{lower: 1, upper: 1, ordered: false, unique: false}` and validates; the same field with `ordered: true` or with `unique: true` fails validation with the field's locus. | Test |
+| FR-027-AC-8 | A field declared `multiplicity: {lower: 1, upper: 1}` emits `{lower: 1, upper: 1, ordered: false, unique: false}` and validates; a field whose `upper` is at most 1 but whose `@collection` declares `ordered: true` or `unique: true` emits `ordered: false, unique: false` regardless — clamped at emission, not refused. | Test |
 | FR-027-AC-9 | A multiplicity narrowing (`0..*` → `1..1`) classifies as breaking and a widening (`1..1` → `0..*`) as additive in the compatibility corpus. | Test |
 
 ## Dependencies

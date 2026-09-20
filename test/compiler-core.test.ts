@@ -1160,12 +1160,16 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			// FR-034; the source end is always `0..unbounded`
 			// (source-multiplicity authoring is future FCD #201).
 			expect(relationship.direction).toBe("source-to-target");
-			expect(relationship.sourceEnd?.multiplicity).toEqual({
+			expect(
+				(relationship.sourceEnd as Json | undefined)?.multiplicity,
+			).toEqual({
 				lower: 0,
 				ordered: false,
 				unique: false,
 			});
-			expect(relationship.targetEnd?.multiplicity).toEqual({
+			expect(
+				(relationship.targetEnd as Json | undefined)?.multiplicity,
+			).toEqual({
 				lower: 0,
 				upper: 1,
 				ordered: false,
@@ -1608,8 +1612,13 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(fieldOf("Artifact", "status").defaultKind).toBe("migration");
 	}, 120000);
 
-	/** Traces: TC-438, TC-599, TC-603; FR-046-AC-6, FR-046-AC-7. */
-	it("refuses flags on a non-collection, an inverted bound, and a contradicted optionality", async () => {
+	/** Traces: TC-438, TC-599, TC-603; FR-046-AC-6, FR-046-AC-7, FR-027-AC-8. */
+	it("clamps collection flags on a non-collection, refuses an inverted bound, and a contradicted optionality", async () => {
+		// Multiplicity ruling (owner, 2026-09-19T15:39:32Z, on FCD #199):
+		// `FLAGS_ON_NON_COLLECTION` is deleted. `@collection(true, false)` on a
+		// single-valued field (upper 1) no longer refuses; the emitted
+		// `ordered`/`unique` are clamped to `false` regardless of what
+		// `@collection` declared.
 		const flags = await compileSource(
 			[
 				"using AgentIx.Semantic.Decorators;",
@@ -1618,11 +1627,19 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				"model Thing { @collection(true, false) id: Text; }",
 			].join("\n"),
 		);
-		const flagDiagnostic = (flags.diagnostics as unknown as Diagnostic[]).find(
-			(entry) => entry.code === DIAGNOSTIC_CODES.FLAGS_ON_NON_COLLECTION.code,
-		);
-		expect(flagDiagnostic).toBeDefined();
-		expect(flagDiagnostic?.locus?.startLine).toBe(4);
+		expect(flags.diagnostics).toEqual([]);
+		const thing = (flags.ir as never as { types: Json[] }).types.find(
+			(type) => (type as Json).kind === "record",
+		) as Json;
+		const field = ((thing.fields as Json[]) ?? []).find(
+			(candidate) => candidate.name === "id",
+		) as Json;
+		expect(field.multiplicity).toEqual({
+			lower: 1,
+			upper: 1,
+			ordered: false,
+			unique: false,
+		});
 
 		const inverted = await compileSource(
 			[
@@ -4072,13 +4089,13 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			resolve(root, "src/compiler/ir/reader.mjs"),
 			"utf8",
 		);
-		const match = source.match(/const NATIVE_SCALARS = new Map\(\[([\s\S]*?)\]\);/);
+		const match = source.match(
+			/const NATIVE_SCALARS = new Map\(\[([\s\S]*?)\]\);/,
+		);
 		expect(match).not.toBeNull();
 		const pairs = Object.fromEntries(
 			Array.from(
-				(match as RegExpMatchArray)[1].matchAll(
-					/\["([^"]+)",\s*"([^"]+)"\]/g,
-				),
+				(match as RegExpMatchArray)[1].matchAll(/\["([^"]+)",\s*"([^"]+)"\]/g),
 			).map((entry) => [entry[1], entry[2]]),
 		);
 		const names = Object.keys(canonical.scalars);
@@ -5420,27 +5437,34 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 			"Makefile",
 			"package.json",
 			"biome.json",
+			// FCD #199/#200, owner ruling 2026-09-19T15:39:32Z: every emitted
+			// multiplicity carries both `ordered` and `unique` as required
+			// booleans. That reaches every reader and every generated kernel
+			// package, which is legitimately repo-wide (the same shape of
+			// declaration fcd#179 made on the Rust side's own change-set gate).
+			"src/compiler/backends/typescript-v1/admit.mjs",
+			"conformance/diagnostic-codes.json",
+			"conformance/oracle/oracle.mjs",
+			"fixtures/semantic/v1/negative/reader-cases.json",
+			"fixtures/semantic-core/negative/rules/cases.json",
+			"packages/semantic-core/",
+			"packages/semantic-kernel/",
+			"test/semantic-ir-v1-1-reader.ts",
+			"test/semantic-core-reader.ts",
+			"tests/semantic_ir_reader.py",
 		];
 		const prohibited = [
 			"src/compiler/ir.mjs",
 			"src/compiler/compile.mjs",
 			"src/compiler/identity.mjs",
 			"src/compiler/emitters/",
-			"src/compiler/backends/",
 			"src/compiler/inventory.json",
 			"schema/",
-			"fixtures/semantic/",
-			"fixtures/semantic-core/",
 			"fixtures/representative-core-payloads.json",
-			"packages/",
 			"spikes/",
-			"conformance/",
 			"agent_ix_core_data/",
 			"src/generated.ts",
 			"audit/",
-			"tests/",
-			"test/semantic-ir-v1-1-reader.ts",
-			"test/semantic-core-reader.ts",
 			"test/semantic-core-lowerer.ts",
 			".github/",
 			"pyproject.toml",
@@ -6165,8 +6189,7 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 				"Constraint.json",
 				{
 					$id: "https://schemas.example.test/Constraint.json",
-					"x-agent-ix-semantic-id":
-						"ix://agent-ix/semantic-core/Constraint",
+					"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/Constraint",
 					type: "object",
 					unevaluatedProperties: { not: {} },
 					properties: {

@@ -276,18 +276,20 @@ function checkMultiplicity(multiplicity, at, out) {
 		);
 		return multiplicity;
 	}
-	const collection = upper === undefined || upper > 1;
+	// Owner ruling (2026-09-19T15:39:32Z) on FCD #199: every multiplicity
+	// carries both `ordered` and `unique` as required booleans.
 	if (
-		!collection &&
-		(multiplicity.ordered === true || multiplicity.unique === true)
+		typeof multiplicity.ordered !== "boolean" ||
+		typeof multiplicity.unique !== "boolean"
 	) {
 		out.push(
 			diagnostic(
-				"FLAGS_ON_NON_COLLECTION",
+				"INVALID_MULTIPLICITY",
 				at,
-				"ordered and unique apply only when upper is absent or greater than 1",
+				"ordered and unique are required booleans on every multiplicity",
 			),
 		);
+		return multiplicity;
 	}
 	return multiplicity;
 }

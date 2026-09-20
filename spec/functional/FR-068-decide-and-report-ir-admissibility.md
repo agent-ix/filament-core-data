@@ -104,7 +104,6 @@ not.
 | A relationship's `sourceEnd.type`, where present, names the type declaring the relationship | `INVALID_RELATIONSHIP_SOURCE` |
 | The graph of `composite: true` relationships is acyclic | `COMPOSITE_CYCLE` |
 | `multiplicity.upper`, where present, is not less than `lower` | `INVALID_MULTIPLICITY` |
-| `ordered` or `unique` is `true` only where `upper` is absent or greater than one (R2, FCD #199/#200 review: refused on the flag's *value*, not its presence) | `FLAGS_ON_NON_COLLECTION` |
 | `unit` appears only on a field resolving to a `scalar` | `UNIT_ON_NON_SCALAR` |
 | Every manifest import resolves to a package the lock carries | `UNRESOLVED_IMPORT` |
 | The package import graph is acyclic | `PACKAGE_CYCLE` |

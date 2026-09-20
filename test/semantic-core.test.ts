@@ -946,7 +946,10 @@ describe("FR-032 kernel scalar table and FR-031 grammar reader (Task-044)", () =
 			readFixture("negative/rules/cases.json"),
 			"rule cases",
 		).map((v) => object(v, "case"));
-		expect(cases.length).toBeGreaterThanOrEqual(14);
+		// 13, not 14: "flags-on-single" was deleted along with
+		// FLAGS_ON_NON_COLLECTION (owner ruling 2026-09-19T15:39:32Z on
+		// FCD #199, superseding R2 of the #199/#200 review round).
+		expect(cases.length).toBeGreaterThanOrEqual(13);
 		for (const entry of cases) expectRuleFailure(String(entry.id));
 	});
 });

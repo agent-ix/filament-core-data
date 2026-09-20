@@ -133,9 +133,7 @@ class TestSecondReader:
                     }
                 ],
             }
-            normalized_field = json.loads(normalize(document))["types"][0][
-                "fields"
-            ][0]
+            normalized_field = json.loads(normalize(document))["types"][0]["fields"][0]
             assert normalized_field["nullable"] is case["normalized"], case["id"]
 
     def test_every_recorded_case_is_rejected(self) -> None:
@@ -216,7 +214,9 @@ class TestContract20:
             # that would still pass if this document picked up an unrelated
             # one and its declared `contractVersion` were quietly repaired.
             # Pin the actual reason: an error at `contractVersion` itself.
-            paths = [list(error.absolute_path) for error in validator.iter_errors(document)]
+            paths = [
+                list(error.absolute_path) for error in validator.iter_errors(document)
+            ]
             assert ["contractVersion"] in paths, (deleted, paths)
 
     def test_each_construct_without_a_required_member_is_refused(
@@ -237,18 +237,14 @@ class TestContract20:
         ):
             document = _fixture(CONSTRUCTS)
             target = next(
-                t
-                for t in document["types"]
-                if t["identity"].endswith(f"/{suffix}")
+                t for t in document["types"] if t["identity"].endswith(f"/{suffix}")
             )
             del target[member]
             assert not schema_valid(validator, document), f"{suffix} without {member}"
 
             document = _fixture(CONSTRUCTS)
             target = next(
-                t
-                for t in document["types"]
-                if t["identity"].endswith(f"/{suffix}")
+                t for t in document["types"] if t["identity"].endswith(f"/{suffix}")
             )
             assert foreign not in target, f"{suffix} carries {foreign}"
             target[foreign] = (

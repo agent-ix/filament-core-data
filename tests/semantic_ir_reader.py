@@ -60,6 +60,8 @@ def _native_scalar(identity: Any) -> str | None:
     if not isinstance(identity, str) or not identity.startswith(NATIVE_PREFIX):
         return None
     return NATIVE_SCALARS.get(identity[len(NATIVE_PREFIX) :])
+
+
 APPLICABILITY: dict[str, set[str]] = {
     "min": {"integer", "number", *TEMPORAL},
     "max": {"integer", "number", *TEMPORAL},
@@ -197,24 +199,20 @@ def _check_multiplicity(
             )
         )
         return None
-    # R2 (FCD #199/#200 review): `ordered`/`unique` are `@collection` and mean
-    # nothing on a property whose upper bound is at most one. FR-027-AC-8
-    # requires both keys on every multiplicity (defaulting `false`), so this
-    # keys on the *value* (`True`), not the key's presence — a mandatory
-    # `False` pair on a single-valued field is the required shape, not a
-    # violation.
-    if (
-        (value.get("ordered") is True or value.get("unique") is True)
-        and upper is not None
-        and upper <= 1
+    # Owner ruling (2026-09-19T15:39:32Z) on FCD #199: every multiplicity
+    # carries both `ordered` and `unique` as required booleans, checked here
+    # rather than left to a schema pass that may not have run.
+    if not isinstance(value.get("ordered"), bool) or not isinstance(
+        value.get("unique"), bool
     ):
         out.append(
             _diag(
-                "agent-ix.semantic-ir.FLAGS_ON_NON_COLLECTION",
+                "agent-ix.semantic-ir.INVALID_MULTIPLICITY",
                 path,
-                "ordered and unique describe a collection and this field is single-valued",
+                "ordered and unique are required booleans on every multiplicity",
             )
         )
+        return None
     return value
 
 
@@ -475,9 +473,7 @@ def _check_type(
         returns = operation.get("returns")
         if isinstance(returns, dict):
             if (
-                resolve_kind(
-                    types, fields, returns.get("typeRef"), allow_field=False
-                )
+                resolve_kind(types, fields, returns.get("typeRef"), allow_field=False)
                 is None
             ):
                 out.append(

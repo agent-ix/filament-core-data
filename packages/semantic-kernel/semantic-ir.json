@@ -2724,7 +2724,7 @@
 					"identity": "ix://agent-ix/semantic-core/Multiplicity/ordered",
 					"name": "ordered",
 					"typeRef": "ix://agent-ix/semantic-core/MultiplicityOrdered",
-					"presence": "optional",
+					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
 					"origin": {
@@ -2736,7 +2736,7 @@
 						}
 					},
 					"multiplicity": {
-						"lower": 0,
+						"lower": 1,
 						"upper": 1,
 						"ordered": false,
 						"unique": false
@@ -2746,7 +2746,7 @@
 					"identity": "ix://agent-ix/semantic-core/Multiplicity/unique",
 					"name": "unique",
 					"typeRef": "ix://agent-ix/semantic-core/MultiplicityUnique",
-					"presence": "optional",
+					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
 					"origin": {
@@ -2758,7 +2758,7 @@
 						}
 					},
 					"multiplicity": {
-						"lower": 0,
+						"lower": 1,
 						"upper": 1,
 						"ordered": false,
 						"unique": false

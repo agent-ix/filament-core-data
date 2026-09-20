@@ -59,7 +59,6 @@ export const ADMISSIBILITY_CODES = Object.freeze({
 	SCHEMA_VIOLATION: code("SCHEMA_VIOLATION"),
 	INVALID_DOCUMENT: code("INVALID_DOCUMENT"),
 	INVALID_MULTIPLICITY: code("INVALID_MULTIPLICITY"),
-	FLAGS_ON_NON_COLLECTION: code("FLAGS_ON_NON_COLLECTION"),
 	UNIT_ON_NON_SCALAR: code("UNIT_ON_NON_SCALAR"),
 	UNRESOLVED_TYPE_REF: code("UNRESOLVED_TYPE_REF"),
 	UNRESOLVED_ELEMENT_TYPE: code("UNRESOLVED_ELEMENT_TYPE"),
@@ -135,9 +134,6 @@ export const DERIVATIONS = Object.freeze({
 	),
 	INVALID_MULTIPLICITY: fromCorpus(
 		"the contract names the two bounds and never says an upper below a lower is a defect; the incoherence is obvious and the rule is still the corpus's, not a clause's",
-	),
-	FLAGS_ON_NON_COLLECTION: fromCorpus(
-		"the contract lists ordered and unique as multiplicity members and never restricts them to a collection; the restriction is the corpus's reading",
 	),
 	UNIT_ON_NON_SCALAR: fromClause(
 		CONTRACTS,
@@ -1044,18 +1040,6 @@ export function admitIr(bundle, options = {}) {
 					ADMISSIBILITY_CODES.INVALID_MULTIPLICITY,
 					`${fieldPointer}/multiplicity/upper`,
 					"a multiplicity upper bound is not below its lower bound",
-					{ owner, locus: fieldLocus },
-				);
-			}
-			const collection = upper === undefined || upper > 1;
-			if (
-				!collection &&
-				(multiplicity.ordered === true || multiplicity.unique === true)
-			) {
-				emit(
-					ADMISSIBILITY_CODES.FLAGS_ON_NON_COLLECTION,
-					`${fieldPointer}/multiplicity`,
-					"ordered and unique appear only on a collection",
 					{ owner, locus: fieldLocus },
 				);
 			}
