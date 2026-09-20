@@ -44,6 +44,7 @@ their own ticket before they can become implementation input.
 | [Legacy Avro boundary retirement](legacy-avro-retirement.md) | normative | — | Final census, approval, and retirement scope |
 | [TypeSpec feasibility](typespec-feasibility.md) | historical | — | Capability matrix used by the issue #4 spike; resolved by ADR-0005 |
 | [Corpus review method](corpus-review-method.md) | normative | — | Evidence format for current-type and contract reviews |
+| [Program roadmap](roadmap.md) | normative | — | Gate behavior, database rollback contract, and stop conditions |
 | [Conflict register](conflicts.md) | normative | — | Dispositions against existing Quire/module architecture |
 | [ADR index](adr/index.md) | normative | — | Current decisions and supersession rules |
 | [ADR-0001: Concern-specific authority](adr/0001-concern-specific-authority.md) | normative | — | Reject one universal authoritative format |
