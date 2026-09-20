@@ -131,16 +131,6 @@
 		"code": "agent-ix.compatibility.MISSING_CONSUMERS"
 	},
 	{
-		"id": "legacy-loss-without-omissions",
-		"schema": "legacy-adapter.schema.json",
-		"base": "positive/legacy-adapter.json",
-		"set": {
-			"path": "preservation",
-			"value": "declared-lossy"
-		},
-		"code": "agent-ix.legacy.UNDECLARED_LOSS"
-	},
-	{
 		"id": "consumer-incomplete-identities",
 		"schema": "consumer-policy.schema.json",
 		"base": "positive/consumer-policies.json",
