@@ -11,3 +11,7 @@ export declare function applies(
 	kind: string,
 	scalar?: string,
 ): boolean;
+
+export declare function parseEdgeVocabulary(
+	source: string,
+): Readonly<Record<string, { category: string; inverse: string | undefined }>>;
