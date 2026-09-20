@@ -25,7 +25,6 @@ types. They are reachable as `<module>.<Name>` and are excluded from
 - `Authority` — profile_schema, representation_schema
 - `Kind` — mapping_schema, representation_schema, semantic_ir_schema
 - `Package` — package_lock_schema, package_manifest_schema, semantic_ir_schema
-- `Preservation` — legacy_adapter_schema, mapping_schema
 - `RoundTrip` — profile_schema, representation_schema
 - `Severity` — common_schema, target_contract_schema
 - `SourceLocus` — common_schema, mapping_schema

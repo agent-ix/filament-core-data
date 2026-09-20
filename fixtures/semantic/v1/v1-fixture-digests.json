@@ -5,7 +5,6 @@
 		"compatibility-report.json": "sha256:eee6f245683218d7bfd1933e9f8b4cbf5ecc9b2a5d4d6eb54de35924fb7094a5",
 		"compiler-request.json": "sha256:ab42d9eb9b056538b9ba57b87ec50fb66f70476c5812f9539e1e7d33916e9cf1",
 		"consumer-policies.json": "sha256:cab8f3c890b32d2cb9c233353ab8fe0517fd544813fa5e8d52c408e519be1984",
-		"legacy-adapter.json": "sha256:ecdc9d70e93734c6771d92ca8e8ab470cfc5cc8c785704c15be9d772c22ac545",
 		"mapping.json": "sha256:fe1551a2f6538d5dd96c27dbdb56f2422470232acc1c3027f78641039b12d2d8",
 		"output-manifest.json": "sha256:272a135c2745cb3adae80db9d9b0af8cebcaacf658d8b305eaac59341b2c3d02",
 		"package-lock.json": "sha256:ee7747e07b0f48370ce2573715770239fb70eb7713a8aadd7c0be2dce1faa047",
