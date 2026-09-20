@@ -10,8 +10,7 @@ from .common_schema import Diagnostic, Extension, FilamentSemanticContractCommon
 from .compatibility_report_schema import AffectedConsumer, Change, ConsumerEvidenceStatus, Disposition, Family, FilamentSemanticCompatibilityReportV1, RequiredGate, RetainedBridge, Surface, TargetResult
 from .compiler_request_schema import Backend, FilamentCompilerRequestV1, Limits, SupportedFeature
 from .consumer_policy_schema import FilamentSemanticConsumerPolicyV1, IdentityPlane, Mode
-from .legacy_adapter_schema import FilamentLegacyAdapterContractV1, RetirementPrerequisite, VersionedContract
-from .mapping_schema import Base, ConflictPolicy, Correspondence, DecodePolicy, FilamentSemanticMappingV1, GetPutLaw, LateDataPolicy, Lifetime, Purity, Transformation
+from .mapping_schema import Base, ConflictPolicy, Correspondence, DecodePolicy, FilamentSemanticMappingV1, GetPutLaw, LateDataPolicy, Lifetime, Preservation, Purity, Transformation
 from .output_manifest_schema import FilamentCompilerOutputManifestV1, File
 from .package_lock_schema import Canonicalization, ExcludedEnum, FilamentSemanticPackageLockV1, IncludedEnum
 from .package_manifest_schema import Capability, CompatibilityPosture, Export, Export1, FilamentSemanticPackageManifestV1, Import, Profile, SourceRoot, Visibility
@@ -70,7 +69,6 @@ __all__ = [
     "FilamentCompilerOutputManifestV1",
     "FilamentCompilerRequestV1",
     "FilamentGeneratedTargetContractV1",
-    "FilamentLegacyAdapterContractV1",
     "FilamentRepresentationContractV1",
     "FilamentRepresentationProfileV1",
     "FilamentSemanticCompatibilityReportV1",
@@ -126,6 +124,7 @@ __all__ = [
     "Population",
     "Postgresql",
     "Presence",
+    "Preservation",
     "Profile",
     "ProhibitedDependency",
     "Protobuf",
@@ -141,7 +140,6 @@ __all__ = [
     "ReservedNumber",
     "ResultState",
     "RetainedBridge",
-    "RetirementPrerequisite",
     "Returns",
     "Role",
     "Rule",
@@ -168,6 +166,5 @@ __all__ = [
     "UnsupportedFeaturePolicy",
     "Value",
     "Variant",
-    "VersionedContract",
     "Visibility",
 ]

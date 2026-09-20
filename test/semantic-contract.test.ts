@@ -547,7 +547,6 @@ describe("semantic package contract v1", () => {
 			"compatibility-report.schema.json",
 			"compiler-request.schema.json",
 			"consumer-policy.schema.json",
-			"legacy-adapter.schema.json",
 			"mapping.schema.json",
 			"output-manifest.schema.json",
 			"package-lock.schema.json",
@@ -1316,7 +1315,6 @@ describe("semantic package contract v1", () => {
 				"compatibility-report.schema.json",
 				readJson("positive/compatibility-report.json"),
 			],
-			["legacy-adapter.schema.json", readJson("positive/legacy-adapter.json")],
 		];
 		for (const representation of array(
 			readJson("positive/representations.json"),

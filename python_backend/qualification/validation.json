@@ -6,19 +6,18 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 165,
-			"validatingTypes": 104,
-			"nonValidatingDeclarations": 61,
-			"exercisedTypes": 65,
-			"unexercisedValidatingTypes": 39,
-			"constraintsExercised": 191,
-			"typesRejectingAnEmptyOrUndeclaredValue": 88,
+			"declaredTypes": 161,
+			"validatingTypes": 101,
+			"nonValidatingDeclarations": 60,
+			"exercisedTypes": 64,
+			"unexercisedValidatingTypes": 37,
+			"constraintsExercised": 188,
+			"typesRejectingAnEmptyOrUndeclaredValue": 86,
 			"typesAcceptingAnything": [
 				"common_schema.FilamentSemanticContractCommonTypesV1",
 				"compatibility_report_schema.AffectedConsumer",
 				"compatibility_report_schema.RequiredGate",
 				"compiler_request_schema.SupportedFeature",
-				"legacy_adapter_schema.RetirementPrerequisite",
 				"package_manifest_schema.Capability",
 				"package_manifest_schema.Export1",
 				"package_manifest_schema.SourceRoot",
@@ -211,28 +210,6 @@
 					"constraintsOnThisType": 3
 				},
 				{
-					"module": "legacy_adapter_schema",
-					"type": "FilamentLegacyAdapterContractV1",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 3
-				},
-				{
-					"module": "legacy_adapter_schema",
-					"type": "RetirementPrerequisite",
-					"exercised": false,
-					"why": "no schema node carries this type's property set"
-				},
-				{
-					"module": "legacy_adapter_schema",
-					"type": "VersionedContract",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
-				},
-				{
 					"module": "mapping_schema",
 					"type": "Base",
 					"exercised": true,
@@ -351,8 +328,8 @@
 				{
 					"module": "package_manifest_schema",
 					"type": "Package",
-					"exercised": false,
-					"acceptsAConformingValue": false,
+					"exercised": true,
+					"acceptsAConformingValue": true,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 0
 				},
@@ -841,13 +818,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 168,
-			"validatingTypes": 77,
-			"nonValidatingDeclarations": 91,
-			"exercisedTypes": 56,
-			"unexercisedValidatingTypes": 21,
-			"constraintsExercised": 186,
-			"typesRejectingAnEmptyOrUndeclaredValue": 77,
+			"declaredTypes": 164,
+			"validatingTypes": 75,
+			"nonValidatingDeclarations": 89,
+			"exercisedTypes": 55,
+			"unexercisedValidatingTypes": 20,
+			"constraintsExercised": 183,
+			"typesRejectingAnEmptyOrUndeclaredValue": 75,
 			"typesAcceptingAnything": [],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
 			"lost": ["constraints-array-unique"],
@@ -957,22 +934,6 @@
 					"constraintsOnThisType": 3
 				},
 				{
-					"module": "legacy_adapter_schema",
-					"type": "FilamentLegacyAdapterContractV1",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 3
-				},
-				{
-					"module": "legacy_adapter_schema",
-					"type": "VersionedContract",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
-				},
-				{
 					"module": "mapping_schema",
 					"type": "Base",
 					"exercised": true,
@@ -1071,8 +1032,8 @@
 				{
 					"module": "package_manifest_schema",
 					"type": "Package",
-					"exercised": false,
-					"acceptsAConformingValue": false,
+					"exercised": true,
+					"acceptsAConformingValue": true,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 0
 				},
@@ -1513,13 +1474,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 168,
-			"validatingTypes": 77,
-			"nonValidatingDeclarations": 91,
-			"exercisedTypes": 52,
-			"unexercisedValidatingTypes": 25,
-			"constraintsExercised": 186,
-			"typesRejectingAnEmptyOrUndeclaredValue": 77,
+			"declaredTypes": 164,
+			"validatingTypes": 75,
+			"nonValidatingDeclarations": 89,
+			"exercisedTypes": 51,
+			"unexercisedValidatingTypes": 24,
+			"constraintsExercised": 183,
+			"typesRejectingAnEmptyOrUndeclaredValue": 75,
 			"typesAcceptingAnything": [],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
 			"lost": [
@@ -1636,22 +1597,6 @@
 					"constraintsOnThisType": 3
 				},
 				{
-					"module": "legacy_adapter_schema",
-					"type": "FilamentLegacyAdapterContractV1",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 3
-				},
-				{
-					"module": "legacy_adapter_schema",
-					"type": "VersionedContract",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
-				},
-				{
 					"module": "mapping_schema",
 					"type": "Base",
 					"exercised": true,
@@ -1750,8 +1695,8 @@
 				{
 					"module": "package_manifest_schema",
 					"type": "Package",
-					"exercised": false,
-					"acceptsAConformingValue": false,
+					"exercised": true,
+					"acceptsAConformingValue": true,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 0
 				},

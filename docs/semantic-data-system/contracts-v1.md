@@ -56,7 +56,6 @@ All identifiers below are rooted at
 | `output-manifest.schema.json` | Complete emitted-file inventory, result state, diagnostics, and normalized fingerprint |
 | `target-contract.schema.json` | Rust, TypeScript, Python, and JSON Schema API/runtime expectations and backend qualification |
 | `compatibility-report.schema.json` | Per-change and aggregate compatibility dispositions, consumers, evidence, and gates |
-| `legacy-adapter.schema.json` | Explicit source/target versions, preservation, omissions, diagnostics, and retirement prerequisites |
 | `consumer-policy.schema.json` | Dynamic/generated mode and preserve/reject/surface policy over one identity graph |
 
 Positive, negative, compatibility, representation, Markdown, package-graph, and
@@ -474,9 +473,7 @@ reserved Protobuf name or number is breaking and invalid.
 
 Dynamic validation and finite generated exports share package, type, field,
 profile, mapping, and fingerprint identities. Static consumers declare whether
-unknown modules and extensions are preserved, rejected, or surfaced. Legacy
-adapters name exact source and target versions, preservation, omissions,
-diagnostics, and retirement prerequisites.
+unknown modules and extensions are preserved, rejected, or surfaced.
 
 The retained Quoin manifest inventory and Avro bridge are compatibility
 controls. Missing versions, imports, adapters, contradictory identities, and
