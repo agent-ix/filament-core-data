@@ -60,7 +60,7 @@ owned by this issue. Whatever a Rust consumer is handed for that field, it must
 not be a bare `String` that quietly validates nothing.
 
 The corpus and oracle from issue #20 already exist and already declare a
-`rust-backend` slot, currently answering all 114 cases `unavailable`. This story
+`rust-backend` slot, currently answering all 115 cases `unavailable`. This story
 is about filling it with something whose agreement is worth reading.
 
 ## Acceptance Examples (Illustrative)
