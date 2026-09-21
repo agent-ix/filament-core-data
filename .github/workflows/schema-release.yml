@@ -136,6 +136,7 @@ jobs:
       # and it exits 101. Their registry dependencies are the workspace's own
       # and are already in the cache from the root fetch.
       - name: Warm the cargo cache (the one online step; every gate stays offline)
+        shell: bash
         run: |
           set -e
           for manifest in \
@@ -143,7 +144,18 @@ jobs:
             packages/semantic-kernel/rust/Cargo.toml \
             packages/semantic-kernel/parity/emitters/rust/Cargo.toml
           do
-            CARGO_NET_OFFLINE=false cargo fetch --locked --manifest-path "$manifest"
+            # `--locked` only where there is a lock to hold to.
+            # `packages/semantic-kernel/rust` tracks no `Cargo.lock`, so the
+            # flag there guards nothing and simply refuses to let cargo write
+            # the file it must write — `cannot create the lock file ... because
+            # --locked was passed`. Where a lockfile IS tracked, the flag is
+            # load-bearing and stays: it is what makes this step populate the
+            # cache without resolving anything.
+            locked=""
+            if [[ -f "$(dirname "$manifest")/Cargo.lock" ]]; then
+              locked="--locked"
+            fi
+            CARGO_NET_OFFLINE=false cargo fetch $locked --manifest-path "$manifest"
           done
 
       # FR-040 compares the `relationship.category` enum against the categories
