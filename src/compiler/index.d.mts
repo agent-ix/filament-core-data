@@ -131,10 +131,29 @@ export interface FrontendResult {
 
 export interface FrontendRequest {
 	dialect: "typespec" | "spec-bundle";
-	resolution: Record<string, unknown>;
+	/**
+	 * Optional: the spec-bundle frontend reads it with optional chaining and
+	 * falls back to `bundleRoot` (`frontend/spec-bundle/frontend.mjs`), so a
+	 * request that carries only `bundleRoot` is valid (#226).
+	 */
+	resolution?: Record<string, unknown>;
 	entrypoint?: string;
 	limits?: Record<string, number>;
 	host?: unknown;
+	/**
+	 * The three members below are the spec-bundle dialect's, read straight off
+	 * the request by `frontend/spec-bundle/frontend.mjs`. They were absent from
+	 * this interface while the runtime required them, so every caller that
+	 * supplied them failed to typecheck (#226).
+	 */
+	/** The injected extraction producer (ADR-0006). Required by spec-bundle. */
+	lift?: (input: { bundleRoot: string; moduleRoots: readonly string[] }) => {
+		status: number;
+		diagnostics?: unknown;
+	};
+	/** Fallback when `resolution.root.packageRoot` is absent. */
+	bundleRoot?: string;
+	moduleRoots?: readonly string[];
 }
 
 export declare function runFrontend(

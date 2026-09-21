@@ -986,8 +986,12 @@ function generateDocument(ir: unknown) {
 		} as never,
 	) as {
 		state: string;
-		files: unknown[];
-		diagnostics: { code: string; message: string; blocking: boolean }[];
+		files: readonly unknown[];
+		diagnostics: readonly {
+			code: string;
+			message: string;
+			blocking: boolean;
+		}[];
 	};
 }
 

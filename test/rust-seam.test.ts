@@ -29,6 +29,22 @@ import {
 } from "../src/compiler/backends/seam.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 
+/**
+ * `seam.d.mts` does not declare `declaredUnimplemented`, even though
+ * `seam.mjs` exports it as the documented mechanism for registering a target
+ * this repository has not implemented (see the doc comment on
+ * `declaredUnimplemented` in `seam.mjs`: it is "exported rather than deleted"
+ * for exactly the registry-seam use below). `seam.d.mts` is out of scope for
+ * this file's fix, so this augmentation states what the function actually
+ * returns without touching it.
+ */
+declare module "../src/compiler/backends/seam.mjs" {
+	export function declaredUnimplemented(
+		target: string,
+		owner: string,
+	): import("../src/compiler/backends/seam.d.mts").BackendSelection;
+}
+
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 /**

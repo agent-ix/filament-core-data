@@ -99,6 +99,33 @@ type Manifest = {
 	diagnostics: { code: string; message: string; blocking?: boolean }[];
 };
 
+/**
+ * `generateTarget`'s declared options (`seam.d.mts`) do not name `produce`,
+ * even though `generateTarget` itself reads `options.produce` and forwards it
+ * to the backend (ADR-0006) — see the `produce` destructuring in
+ * `generateTarget` in `seam.mjs`. `seam.d.mts` is out of scope for this file's
+ * fix, so this states the extra option through a locally-typed intersection
+ * instead: building the options through a typed variable, rather than as an
+ * inline object literal, sidesteps the literal-only excess-property check
+ * without widening the type to `any` or lying about the shape `generateTarget`
+ * actually reads.
+ */
+type SeamOptionsWithProduce = NonNullable<
+	Parameters<typeof generateTarget>[1]
+> & {
+	produce?: (
+		documents: Record<string, unknown>,
+		profileId: string,
+		index?: Record<string, unknown>,
+	) => Record<string, string>;
+};
+
+function seamOptions(
+	options: SeamOptionsWithProduce,
+): NonNullable<Parameters<typeof generateTarget>[1]> {
+	return options;
+}
+
 /** A generation request over an accepted document, `2.0.0` unless one is named. */
 function pythonRequest(
 	backend: { identity: string; version: string },
@@ -136,6 +163,8 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 		for (const target of ["python-pydantic-v2", "python-dataclass"]) {
 			const entry = selectBackend(target);
 			expect(entry.implemented, `${target} is not implemented`).toBe(true);
+			if (entry.backend === null)
+				throw new Error(`unreachable: ${target} is implemented`);
 			expect(entry.backend.identity).toBe(pythonIdentity);
 			expect(entry.backend.target).toBe(target);
 		}
@@ -148,11 +177,14 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 
 	/** Traces: TC-1531; FR-136-AC-2. */
 	it("generates a package for the python-pydantic-v2 target", () => {
-		const manifest = generateTarget(pythonRequest(pythonPydanticBackend), {
-			target: "python-pydantic-v2",
-			host: host(),
-			produce: poetryProducer(),
-		}) as never as Manifest;
+		const manifest = generateTarget(
+			pythonRequest(pythonPydanticBackend),
+			seamOptions({
+				target: "python-pydantic-v2",
+				host: host(),
+				produce: poetryProducer(),
+			}),
+		) as never as Manifest;
 
 		expect(manifest.state).toBe("success");
 		expect(manifest.backend).toBe(pythonIdentity);
@@ -406,7 +438,7 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 		const golden =
 			"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json";
 		const schemas = jsonSchemaBackend.generate({ ir: readJson(golden) }) as {
-			files: { path: string; text: string }[];
+			files: readonly { path: string; text: string }[];
 		};
 		const versionSchema = schemas.files.find(
 			(file) => file.path === "ConfigVersion.json",
@@ -439,11 +471,14 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 
 	/** Traces: TC-1532; FR-136-AC-3. */
 	it("generates a package for the python-dataclass target under its own profile", () => {
-		const manifest = generateTarget(pythonRequest(pythonDataclassBackend), {
-			target: "python-dataclass",
-			host: host(),
-			produce: poetryProducer(),
-		}) as never as Manifest;
+		const manifest = generateTarget(
+			pythonRequest(pythonDataclassBackend),
+			seamOptions({
+				target: "python-dataclass",
+				host: host(),
+				produce: poetryProducer(),
+			}),
+		) as never as Manifest;
 
 		expect(manifest.state).toBe("success");
 		expect(manifest.files.length).toBeGreaterThan(0);
@@ -481,11 +516,14 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 
 	/** Traces: TC-1534; FR-136-AC-5. */
 	it("reports a producer that exits non-zero as a failed generation", () => {
-		const manifest = generateTarget(pythonRequest(pythonPydanticBackend), {
-			target: "python-pydantic-v2",
-			host: host(),
-			produce: poetryProducer({ command: ["false"] }),
-		}) as never as Manifest;
+		const manifest = generateTarget(
+			pythonRequest(pythonPydanticBackend),
+			seamOptions({
+				target: "python-pydantic-v2",
+				host: host(),
+				produce: poetryProducer({ command: ["false"] }),
+			}),
+		) as never as Manifest;
 
 		expect(manifest.state).toBe("invalid");
 		expect(manifest.files).toStrictEqual([]);
@@ -507,21 +545,24 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 	 */
 	it("hands the generator the json-schema target's own documents and names", () => {
 		const seen: Record<string, unknown>[] = [];
-		const manifest = generateTarget(pythonRequest(pythonPydanticBackend), {
-			target: "python-pydantic-v2",
-			host: host(),
-			produce: (documents: Record<string, unknown>) => {
-				seen.push(documents);
-				return { "__init__.py": "" };
-			},
-		}) as never as Manifest;
+		const manifest = generateTarget(
+			pythonRequest(pythonPydanticBackend),
+			seamOptions({
+				target: "python-pydantic-v2",
+				host: host(),
+				produce: (documents: Record<string, unknown>) => {
+					seen.push(documents);
+					return { "__init__.py": "" };
+				},
+			}),
+		) as never as Manifest;
 		expect(manifest.state).toBe("success");
 		expect(seen.length).toBe(1);
 
 		const lowered = jsonSchemaBackend.generate(
 			pythonRequest(pythonPydanticBackend),
 			{ host: host() },
-		) as { state: string; files: { path: string; text: string }[] };
+		) as { state: string; files: readonly { path: string; text: string }[] };
 		expect(lowered.state).toBe("success");
 
 		const expected = lowered.files.filter((f) => f.path !== "index.json");

@@ -380,7 +380,6 @@ function checkConstraintDecl(
 	surfaced: ValidationError[],
 	depth: number,
 ): candidate is ConstraintDecl {
-	const before = errors.length;
 	if (depth > MAX_VALIDATION_DEPTH) {
 		fail(
 			errors,
@@ -1635,7 +1634,6 @@ function checkEnumValuesConstraintValues(
 	surfaced: ValidationError[],
 	depth: number,
 ): candidate is EnumValuesConstraintValues {
-	const before = errors.length;
 	if (depth > MAX_VALIDATION_DEPTH) {
 		fail(
 			errors,
@@ -2081,7 +2079,6 @@ function checkExclusiveMaxConstraintValue(
 	surfaced: ValidationError[],
 	depth: number,
 ): candidate is ExclusiveMaxConstraintValue {
-	const before = errors.length;
 	if (depth > MAX_VALIDATION_DEPTH) {
 		fail(
 			errors,
@@ -2466,7 +2463,6 @@ function checkExclusiveMinConstraintValue(
 	surfaced: ValidationError[],
 	depth: number,
 ): candidate is ExclusiveMinConstraintValue {
-	const before = errors.length;
 	if (depth > MAX_VALIDATION_DEPTH) {
 		fail(
 			errors,
@@ -3703,7 +3699,6 @@ function checkMaxConstraintValue(
 	surfaced: ValidationError[],
 	depth: number,
 ): candidate is MaxConstraintValue {
-	const before = errors.length;
 	if (depth > MAX_VALIDATION_DEPTH) {
 		fail(
 			errors,
@@ -4365,7 +4360,6 @@ function checkMinConstraintValue(
 	surfaced: ValidationError[],
 	depth: number,
 ): candidate is MinConstraintValue {
-	const before = errors.length;
 	if (depth > MAX_VALIDATION_DEPTH) {
 		fail(
 			errors,
@@ -7454,7 +7448,6 @@ function checkTypeRefTarget(
 	surfaced: ValidationError[],
 	depth: number,
 ): candidate is TypeRefTarget {
-	const before = errors.length;
 	if (depth > MAX_VALIDATION_DEPTH) {
 		fail(
 			errors,
