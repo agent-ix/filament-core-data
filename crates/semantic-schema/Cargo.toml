@@ -1,9 +1,13 @@
-# Rust access to schema/semantic/v1/*.schema.json (PLAT de-vendoring program).
+# Rust access to schema/semantic/v1/*.schema.json and
+# packages/semantic-core/generated/json-schema/*.json (PLAT de-vendoring
+# program).
 #
-# quire-rs previously vendored a committed copy of these files. This crate
-# replaces that copy: it embeds the SAME files at compile time via
+# quire-rs previously vendored a committed copy of both families' files. This
+# crate replaces that copy: it embeds the SAME files at compile time via
 # `include_str!`, using paths relative to this crate that reach back into
-# `schema/semantic/v1/` rather than a second copy living under `src/`.
+# `schema/semantic/v1/` and `packages/semantic-core/generated/json-schema/`
+# rather than a second copy living under `src/`. semantic-core previously
+# reached npm (`@agent-ix/semantic-core`) but had no cargo route at all.
 #
 # A consumer pins this crate as a git dependency at a tag (the same pattern
 # `crates/extraction-frontend` already uses for its own `quire-rs` pin), e.g.:
@@ -22,7 +26,7 @@
 [package]
 name = "agent-ix-semantic-schema"
 version = "0.1.0"
-description = "Compile-time access to filament-core-data's published JSON Schema v1 contract for Rust consumers (e.g. quire-rs)."
+description = "Compile-time access to filament-core-data's published JSON Schema v1 contract and semantic-core's generated JSON Schema for Rust consumers (e.g. quire-rs)."
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true

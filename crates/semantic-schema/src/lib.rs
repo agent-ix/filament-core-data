@@ -1,10 +1,15 @@
-//! Compile-time embedded copies of `schema/semantic/v1/*.schema.json`.
+//! Compile-time embedded copies of `schema/semantic/v1/*.schema.json` and
+//! `packages/semantic-core/generated/json-schema/*.json`.
 //!
 //! Every constant below is `include_str!`-ed directly from this repository's
-//! own `schema/semantic/v1/` directory — the single canonical location. There
-//! is no second copy of these bytes anywhere in this workspace: a consumer
-//! that adds this crate as a git dependency (see `Cargo.toml`) gets the exact
+//! own tree — the single canonical location for each family. There is no
+//! second copy of these bytes anywhere in this workspace: a consumer that
+//! adds this crate as a git dependency (see `Cargo.toml`) gets the exact
 //! published contract, not a Rust-side transcription of it.
+//!
+//! `SCHEMAS` covers the filament-core-data v1 contract; `SEMANTIC_CORE_SCHEMAS`
+//! covers semantic-core's generated JSON Schema, which previously reached npm
+//! (`@agent-ix/semantic-core`) but had no cargo route at all.
 
 #![forbid(unsafe_code)]
 
@@ -93,6 +98,174 @@ pub fn by_name(name: &str) -> Option<&'static str> {
         .map(|(_, text)| *text)
 }
 
+/// `ClauseLanguage.json`.
+pub const SC_CLAUSE_LANGUAGE: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/ClauseLanguage.json");
+
+/// `ClauseRef.json`.
+pub const SC_CLAUSE_REF: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/ClauseRef.json");
+
+/// `ConstraintDecl.json`.
+pub const SC_CONSTRAINT_DECL: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/ConstraintDecl.json");
+
+/// `ConstraintKeyword.json`.
+pub const SC_CONSTRAINT_KEYWORD: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/ConstraintKeyword.json");
+
+/// `DecimalPolicy.json`.
+pub const SC_DECIMAL_POLICY: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/DecimalPolicy.json");
+
+/// `DefaultDecl.json`.
+pub const SC_DEFAULT_DECL: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/DefaultDecl.json");
+
+/// `DefaultKind.json`.
+pub const SC_DEFAULT_KIND: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/DefaultKind.json");
+
+/// `EdgeCategory.json`.
+pub const SC_EDGE_CATEGORY: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/EdgeCategory.json");
+
+/// `EnumValue.json`.
+pub const SC_ENUM_VALUE: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/EnumValue.json");
+
+/// `EnumValuesConstraint.json`.
+pub const SC_ENUM_VALUES_CONSTRAINT: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/EnumValuesConstraint.json");
+
+/// `ExclusiveMaxConstraint.json`.
+pub const SC_EXCLUSIVE_MAX_CONSTRAINT: &str = include_str!(
+    "../../../packages/semantic-core/generated/json-schema/ExclusiveMaxConstraint.json"
+);
+
+/// `ExclusiveMinConstraint.json`.
+pub const SC_EXCLUSIVE_MIN_CONSTRAINT: &str = include_str!(
+    "../../../packages/semantic-core/generated/json-schema/ExclusiveMinConstraint.json"
+);
+
+/// `FieldDecl.json`.
+pub const SC_FIELD_DECL: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/FieldDecl.json");
+
+/// `FormatConstraint.json`.
+pub const SC_FORMAT_CONSTRAINT: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/FormatConstraint.json");
+
+/// `Identifier.json`.
+pub const SC_IDENTIFIER: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/Identifier.json");
+
+/// `KernelScalar.json`.
+pub const SC_KERNEL_SCALAR: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/KernelScalar.json");
+
+/// `MaxConstraint.json`.
+pub const SC_MAX_CONSTRAINT: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/MaxConstraint.json");
+
+/// `MaxLengthConstraint.json`.
+pub const SC_MAX_LENGTH_CONSTRAINT: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/MaxLengthConstraint.json");
+
+/// `MinConstraint.json`.
+pub const SC_MIN_CONSTRAINT: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/MinConstraint.json");
+
+/// `MinLengthConstraint.json`.
+pub const SC_MIN_LENGTH_CONSTRAINT: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/MinLengthConstraint.json");
+
+/// `Multiplicity.json`.
+pub const SC_MULTIPLICITY: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/Multiplicity.json");
+
+/// `NonEmptyConstraint.json`.
+pub const SC_NON_EMPTY_CONSTRAINT: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/NonEmptyConstraint.json");
+
+/// `OperationDecl.json`.
+pub const SC_OPERATION_DECL: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/OperationDecl.json");
+
+/// `PatternConstraint.json`.
+pub const SC_PATTERN_CONSTRAINT: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/PatternConstraint.json");
+
+/// `RelationDecl.json`.
+pub const SC_RELATION_DECL: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/RelationDecl.json");
+
+/// `SemanticId.json`.
+pub const SC_SEMANTIC_ID: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/SemanticId.json");
+
+/// `SourceLocus.json`.
+pub const SC_SOURCE_LOCUS: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/SourceLocus.json");
+
+/// `TypeRef.json`.
+pub const SC_TYPE_REF: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/TypeRef.json");
+
+/// `UniqueConstraint.json`.
+pub const SC_UNIQUE_CONSTRAINT: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/UniqueConstraint.json");
+
+/// `UnitSymbol.json`.
+pub const SC_UNIT_SYMBOL: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/UnitSymbol.json");
+
+/// Every embedded semantic-core schema, keyed by its filename exactly as it
+/// appears under `packages/semantic-core/generated/json-schema/` — the same
+/// names `@agent-ix/semantic-core` publishes to npm. This is the cargo route
+/// those 30 documents previously had none of.
+pub const SEMANTIC_CORE_SCHEMAS: &[(&str, &str)] = &[
+    ("ClauseLanguage.json", SC_CLAUSE_LANGUAGE),
+    ("ClauseRef.json", SC_CLAUSE_REF),
+    ("ConstraintDecl.json", SC_CONSTRAINT_DECL),
+    ("ConstraintKeyword.json", SC_CONSTRAINT_KEYWORD),
+    ("DecimalPolicy.json", SC_DECIMAL_POLICY),
+    ("DefaultDecl.json", SC_DEFAULT_DECL),
+    ("DefaultKind.json", SC_DEFAULT_KIND),
+    ("EdgeCategory.json", SC_EDGE_CATEGORY),
+    ("EnumValue.json", SC_ENUM_VALUE),
+    ("EnumValuesConstraint.json", SC_ENUM_VALUES_CONSTRAINT),
+    ("ExclusiveMaxConstraint.json", SC_EXCLUSIVE_MAX_CONSTRAINT),
+    ("ExclusiveMinConstraint.json", SC_EXCLUSIVE_MIN_CONSTRAINT),
+    ("FieldDecl.json", SC_FIELD_DECL),
+    ("FormatConstraint.json", SC_FORMAT_CONSTRAINT),
+    ("Identifier.json", SC_IDENTIFIER),
+    ("KernelScalar.json", SC_KERNEL_SCALAR),
+    ("MaxConstraint.json", SC_MAX_CONSTRAINT),
+    ("MaxLengthConstraint.json", SC_MAX_LENGTH_CONSTRAINT),
+    ("MinConstraint.json", SC_MIN_CONSTRAINT),
+    ("MinLengthConstraint.json", SC_MIN_LENGTH_CONSTRAINT),
+    ("Multiplicity.json", SC_MULTIPLICITY),
+    ("NonEmptyConstraint.json", SC_NON_EMPTY_CONSTRAINT),
+    ("OperationDecl.json", SC_OPERATION_DECL),
+    ("PatternConstraint.json", SC_PATTERN_CONSTRAINT),
+    ("RelationDecl.json", SC_RELATION_DECL),
+    ("SemanticId.json", SC_SEMANTIC_ID),
+    ("SourceLocus.json", SC_SOURCE_LOCUS),
+    ("TypeRef.json", SC_TYPE_REF),
+    ("UniqueConstraint.json", SC_UNIQUE_CONSTRAINT),
+    ("UnitSymbol.json", SC_UNIT_SYMBOL),
+];
+
+/// Looks up an embedded semantic-core schema document by its filename (e.g.
+/// `"ClauseLanguage.json"`).
+pub fn semantic_core_by_name(name: &str) -> Option<&'static str> {
+    SEMANTIC_CORE_SCHEMAS
+        .iter()
+        .find(|(schema_name, _)| *schema_name == name)
+        .map(|(_, text)| *text)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -121,5 +294,30 @@ mod tests {
             Some(MODULE_MANIFEST)
         );
         assert_eq!(by_name("does-not-exist.schema.json"), None);
+    }
+
+    #[test]
+    fn every_embedded_semantic_core_schema_is_well_formed_json_with_a_matching_id() {
+        for (name, text) in SEMANTIC_CORE_SCHEMAS {
+            assert!(
+                text.contains("\"$id\""),
+                "{name} has no $id: {text_start}",
+                text_start = &text[..text.len().min(80)]
+            );
+            assert!(
+                text.contains("schemas.agent-ix.org/semantic-core/")
+                    && text.contains(&format!("/{name}\"")),
+                "{name}'s $id does not match its own filename"
+            );
+        }
+    }
+
+    #[test]
+    fn semantic_core_by_name_finds_a_known_type() {
+        assert_eq!(
+            semantic_core_by_name("ClauseLanguage.json"),
+            Some(SC_CLAUSE_LANGUAGE)
+        );
+        assert_eq!(semantic_core_by_name("does-not-exist.json"), None);
     }
 }
