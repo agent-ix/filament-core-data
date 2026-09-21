@@ -44,11 +44,15 @@ name: Schema Release
 # argument. (`poetry` still appears in the test and lint jobs below, for an
 # unrelated reason — see there.)
 
+# Dispatch only, like every other workflow here. NFR-038-AC-2 is explicit that
+# no workflow declares a `push:`, `pull_request:` or `schedule:` trigger, and
+# test/rust-ci-lane.test.ts asserts it over the whole directory. This workflow
+# shipped with a `push: tags:` trigger and was the only violator, which turned
+# that gate red for everything (#226).
+#
+# A tag therefore does not publish. Tags still mark what was released — they
+# are the record, not the trigger — and the version is named here explicitly.
 on:
-  push:
-    tags:
-      - "semantic-core-v*.*.*"
-      - "semantic-schema-v*.*.*"
   workflow_dispatch:
     inputs:
       package:
@@ -59,8 +63,8 @@ on:
           - semantic-schema
         required: true
       version:
-        description: "Version to publish (e.g. 0.3.0); defaults to the triggering tag"
-        required: false
+        description: "Version to publish (e.g. 0.3.0)"
+        required: true
 
 permissions:
   contents: read
@@ -134,17 +138,12 @@ jobs:
         run: |
           PKG="${{ inputs.package }}"
           VER="${{ inputs.version }}"
-          if [[ -z "$PKG" && "${GITHUB_REF:-}" == refs/tags/* ]]; then
-            TAG="${GITHUB_REF#refs/tags/}"
-            PKG="${TAG%-v*}"
-            VER="${TAG##*-v}"
-          fi
           case "$PKG" in
             semantic-core) DIR="packages/semantic-core" ;;
             semantic-schema) DIR="schema" ;;
             *) echo "::error::unknown or unresolved package '$PKG'"; exit 1 ;;
           esac
-          [[ -n "$VER" ]] || { echo "::error::no version resolved (pass a tag or the workflow_dispatch version input)"; exit 1; }
+          [[ -n "$VER" ]] || { echo "::error::no version given"; exit 1; }
           echo "package=$PKG" >> "$GITHUB_OUTPUT"
           echo "dir=$DIR" >> "$GITHUB_OUTPUT"
           echo "version=$VER" >> "$GITHUB_OUTPUT"

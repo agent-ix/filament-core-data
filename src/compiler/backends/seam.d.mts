@@ -87,6 +87,18 @@ export declare function selectBackend(
 	registry?: Map<string, BackendSelection>,
 ): BackendSelection;
 
+/**
+ * A registration for a declared target this repository has not built.
+ *
+ * Kept as a test seam: the unimplemented arm has to stay exercisable once every
+ * declared target is built, or it becomes unreachable (`seam.mjs`). Declared
+ * here because it is a real export the suite calls (#226).
+ */
+export declare function declaredUnimplemented(
+	target: string,
+	owner: string,
+): BackendSelection;
+
 export declare function isBackendImplemented(
 	target: unknown,
 	registry?: Map<string, BackendSelection>,
@@ -117,6 +129,19 @@ export declare function assertBackendContract(
 	outputRoot?: string,
 ): GenerationBackend;
 
+/**
+ * The injected out-of-process producer of ADR-0006.
+ *
+ * It travels the same route `format` does and for the same reason: an
+ * out-of-process effect is an argument the seam carries, so no module under
+ * `backends/python-v1/` learns that a process exists (`seam.mjs`).
+ */
+export type ProduceFunction = (
+	documents: Record<string, unknown>,
+	profileId: string,
+	index?: Record<string, unknown>,
+) => Record<string, string>;
+
 export declare function generateTarget(
 	request: unknown,
 	options?: {
@@ -124,5 +149,7 @@ export declare function generateTarget(
 		host?: CompilerFileHost;
 		format?: FormatFunction;
 		registry?: Map<string, BackendSelection>;
+		/** Passed straight through to `backend.generate` (`seam.mjs`). */
+		produce?: ProduceFunction;
 	},
 ): OutputManifest;

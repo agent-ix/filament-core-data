@@ -1,6 +1,6 @@
 {
-	"corpusVersion": "4.0.0",
-	"corpusDigest": "sha256:c7c6a720452ea99c6a69ded76abdecced3933863c98ba4cf77825c583c233d19",
+	"corpusVersion": "4.0.1",
+	"corpusDigest": "sha256:44293ccaa4ffc97f72e1b7f19c0c10e8b937535f2f721170ec3147a3afdffc80",
 	"totalCases": 115,
 	"registerRows": [
 		{
