@@ -1,15 +1,15 @@
 {
-  "source": "authored",
-  "case": "ambiguous",
-  "files": [
-    "spec/functional/FR-001-status.md",
-    "spec/functional/FR-002-status.md",
-    "spec/functional/FR-006-config-version-entity.md",
-    "spec/spec.md"
-  ],
-  "derived": [
-    "spec/functional/FR-006-config-version-entity.md is a byte copy of resolve/enumeration's FR-006."
-  ],
-  "edits": [],
-  "note": "FR-001 and FR-002 are both titled Status. The engine's FR-070 name match finds two artifacts for FR-006's `status | Status` cell and emits the error `semantic.ambiguous-type` at line 15, dropping the row and leaving FR-006's fields unavailable (row-errors). The frontend therefore raises ARTIFACT_NOT_LOWERED for FR-006 plus the wrapped ENGINE_DIAGNOSTIC, and produces no Resolution for the dropped row (decision D3, FR-092-AC-4; TC-1213)."
+	"source": "authored",
+	"case": "ambiguous",
+	"files": [
+		"spec/functional/FR-001-status.md",
+		"spec/functional/FR-002-status.md",
+		"spec/functional/FR-006-config-version-entity.md",
+		"spec/spec.md"
+	],
+	"derived": [
+		"spec/functional/FR-006-config-version-entity.md is a byte copy of resolve/enumeration's FR-006."
+	],
+	"edits": [],
+	"note": "FR-001 and FR-002 are both titled Status. The engine's FR-070 name match finds two artifacts for FR-006's `status | Status` cell and emits the error `semantic.ambiguous-type` at line 15, dropping the row and leaving FR-006's fields unavailable (row-errors). The frontend therefore raises ARTIFACT_NOT_LOWERED for FR-006 plus the wrapped ENGINE_DIAGNOSTIC, and produces no Resolution for the dropped row (decision D3, FR-092-AC-4; TC-1213)."
 }

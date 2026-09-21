@@ -146,10 +146,7 @@ function main(argv) {
 				})),
 			}),
 		],
-		[
-			"provenance.json",
-			serialize(jsonSchemaProvenance),
-		],
+		["provenance.json", serialize(jsonSchemaProvenance)],
 	];
 
 	// The TypeScript tree (FR-085). Generated through the backend issue #22

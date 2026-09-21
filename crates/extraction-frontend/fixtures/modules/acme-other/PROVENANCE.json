@@ -1,14 +1,11 @@
 {
-  "source": "authored",
-  "module": "acme-other",
-  "module_version": "0.1.0",
-  "paths": [
-    "manifest.yaml",
-    "schemas/Thing.json"
-  ],
-  "derived": [
-    "manifest.yaml and schemas/Thing.json copy fixtures/modules/objects-extra (module renamed, package acme/other, object type and export Thing, schema $id and digest recomputed)."
-  ],
-  "edits": [],
-  "note": "Authored for FR-092-AC-5 (TC-1214): a module whose semantic.package is acme/other and whose exports name Thing, so the engine's import table maps a `Thing` cell to ix://acme/other/type/Thing. Loaded beside the vendored business module for the negatives/IMPORT_UNSUPPORTED bundle."
+	"source": "authored",
+	"module": "acme-other",
+	"module_version": "0.1.0",
+	"paths": ["manifest.yaml", "schemas/Thing.json"],
+	"derived": [
+		"manifest.yaml and schemas/Thing.json copy fixtures/modules/objects-extra (module renamed, package acme/other, object type and export Thing, schema $id and digest recomputed)."
+	],
+	"edits": [],
+	"note": "Authored for FR-092-AC-5 (TC-1214): a module whose semantic.package is acme/other and whose exports name Thing, so the engine's import table maps a `Thing` cell to ix://acme/other/type/Thing. Loaded beside the vendored business module for the negatives/IMPORT_UNSUPPORTED bundle."
 }

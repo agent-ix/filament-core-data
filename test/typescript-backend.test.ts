@@ -932,9 +932,8 @@ describe("TC-1773 every construct kind and model member rendered by the TypeScri
 			// Traces: TC-1796; FR-141-AC-9. The operation descriptor keeps the
 			// clause ids of the same mixed list.
 			expect(
-				(
-					module.TYPE_OPERATIONS as Record<string, { pre: string[] }[]>
-				).OrderLifecycle[0].pre,
+				(module.TYPE_OPERATIONS as Record<string, { pre: string[] }[]>)
+					.OrderLifecycle[0].pre,
 			).toStrictEqual(["can_ship"]);
 			expect(
 				(module.POPULATIONS as { displayName: string }[]).map(

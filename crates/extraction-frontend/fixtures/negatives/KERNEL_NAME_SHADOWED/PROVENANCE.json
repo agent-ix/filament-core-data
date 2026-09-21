@@ -1,12 +1,12 @@
 {
-  "source": "authored",
-  "code": "KERNEL_NAME_SHADOWED",
-  "files": [
-    "spec/functional/FR-006-config-version-entity.md",
-    "spec/functional/FR-007-string.md",
-    "spec/spec.md"
-  ],
-  "derived": [],
-  "edits": [],
-  "note": "FR-007 is an entity titled `String`, a kernel scalar name. The engine resolves FR-006's `hash | String` cell to the kernel scalar before consulting the index, so FR-007 is unreferenceable by that name: the frontend raises one non-blocking KERNEL_NAME_SHADOWED warning at FR-007's frontmatter (line 1 column 1), the cell resolves KernelScalar, and the lift is not blocked (FR-092-AC-8; TC-1217)."
+	"source": "authored",
+	"code": "KERNEL_NAME_SHADOWED",
+	"files": [
+		"spec/functional/FR-006-config-version-entity.md",
+		"spec/functional/FR-007-string.md",
+		"spec/spec.md"
+	],
+	"derived": [],
+	"edits": [],
+	"note": "FR-007 is an entity titled `String`, a kernel scalar name. The engine resolves FR-006's `hash | String` cell to the kernel scalar before consulting the index, so FR-007 is unreferenceable by that name: the frontend raises one non-blocking KERNEL_NAME_SHADOWED warning at FR-007's frontmatter (line 1 column 1), the cell resolves KernelScalar, and the lift is not blocked (FR-092-AC-8; TC-1217)."
 }

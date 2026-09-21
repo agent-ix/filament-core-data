@@ -1,27 +1,27 @@
 {
-  "source": "authored",
-  "code": "UNKNOWN_EDGE_VERB",
-  "files": [
-    "modules.json",
-    "spec/functional/FR-005-config-overlay-entity.md",
-    "spec/functional/FR-006-config-version-entity.md",
-    "spec/spec.md"
-  ],
-  "derived": [
-    {
-      "fixture": "spec/functional/FR-005-config-overlay-entity.md",
-      "from": "../../config-version-table/spec/functional/FR-005-config-overlay-entity.md",
-      "edits": []
-    },
-    {
-      "fixture": "spec/functional/FR-006-config-version-entity.md",
-      "from": "../../config-version-table/spec/functional/FR-006-config-version-entity.md",
-      "edits": [
-        "frontmatter edge type references -> frobnicates",
-        "body reduced to the Description and a two-row Properties table; the Relationships list and the Invariants section dropped"
-      ]
-    }
-  ],
-  "edits": [],
-  "note": "Lifted under fixtures/modules/frobnicates ALONE, named by modules.json (FR-098 golden writer: `{\"roots\": [...]}` relative to the fixture inventory root, taking precedence over the default module pair): the entity object type lists frobnicates under allowed_links while no loaded edge_types declares it, so FR-006's frobnicates edge raises one blocking UNKNOWN_EDGE_VERB at FR-006 line 1 column 1 (FR-094-AC-4; TC-1234). Under the default spec-objects-business + edge-vocabulary pair the same bundle lifts clean, because that module's entity does not list frobnicates and an unlisted verb is skipped without a diagnostic (FR-094) — which is why the golden lift must load frobnicates alone (Task-136)."
+	"source": "authored",
+	"code": "UNKNOWN_EDGE_VERB",
+	"files": [
+		"modules.json",
+		"spec/functional/FR-005-config-overlay-entity.md",
+		"spec/functional/FR-006-config-version-entity.md",
+		"spec/spec.md"
+	],
+	"derived": [
+		{
+			"fixture": "spec/functional/FR-005-config-overlay-entity.md",
+			"from": "../../config-version-table/spec/functional/FR-005-config-overlay-entity.md",
+			"edits": []
+		},
+		{
+			"fixture": "spec/functional/FR-006-config-version-entity.md",
+			"from": "../../config-version-table/spec/functional/FR-006-config-version-entity.md",
+			"edits": [
+				"frontmatter edge type references -> frobnicates",
+				"body reduced to the Description and a two-row Properties table; the Relationships list and the Invariants section dropped"
+			]
+		}
+	],
+	"edits": [],
+	"note": "Lifted under fixtures/modules/frobnicates ALONE, named by modules.json (FR-098 golden writer: `{\"roots\": [...]}` relative to the fixture inventory root, taking precedence over the default module pair): the entity object type lists frobnicates under allowed_links while no loaded edge_types declares it, so FR-006's frobnicates edge raises one blocking UNKNOWN_EDGE_VERB at FR-006 line 1 column 1 (FR-094-AC-4; TC-1234). Under the default spec-objects-business + edge-vocabulary pair the same bundle lifts clean, because that module's entity does not list frobnicates and an unlisted verb is skipped without a diagnostic (FR-094) — which is why the golden lift must load frobnicates alone (Task-136)."
 }

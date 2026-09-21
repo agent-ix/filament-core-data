@@ -8,49 +8,37 @@
 			"path": "LICENSE",
 			"digest": "sha256:0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
 			"mediaType": "text/plain",
-			"semanticIdentities": [
-				"ix://agent-ix/conformance"
-			]
+			"semanticIdentities": ["ix://agent-ix/conformance"]
 		},
 		{
 			"path": "errors.ts",
 			"digest": "sha256:1af4878350ed6000160ee21f5d2522af0de0b7e2c5e9019a8d1203528b603011",
 			"mediaType": "text/typescript",
-			"semanticIdentities": [
-				"ix://agent-ix/conformance"
-			]
+			"semanticIdentities": ["ix://agent-ix/conformance"]
 		},
 		{
 			"path": "identity.ts",
 			"digest": "sha256:d4ae828465359bac8d5d5877dfb6984c6be7b83bfb50eeff0ba927eed40e8d00",
 			"mediaType": "text/typescript",
-			"semanticIdentities": [
-				"ix://agent-ix/conformance"
-			]
+			"semanticIdentities": ["ix://agent-ix/conformance"]
 		},
 		{
 			"path": "index.ts",
 			"digest": "sha256:e3e2d49de29ad982be62ffeadaea042f2afe524ac4814a48bd7b406e8ecb4549",
 			"mediaType": "text/typescript",
-			"semanticIdentities": [
-				"ix://agent-ix/conformance"
-			]
+			"semanticIdentities": ["ix://agent-ix/conformance"]
 		},
 		{
 			"path": "package.json",
 			"digest": "sha256:17090c9e377653603011ecc1617c533889aedb1241d35511d49fb4e7e1592f85",
 			"mediaType": "application/json",
-			"semanticIdentities": [
-				"ix://agent-ix/conformance"
-			]
+			"semanticIdentities": ["ix://agent-ix/conformance"]
 		},
 		{
 			"path": "provenance.ts",
 			"digest": "sha256:c54b05d2f3713f9608038fa6be1b696a6aa348306ee7ff0fe605f2323e194054",
 			"mediaType": "text/typescript",
-			"semanticIdentities": [
-				"ix://agent-ix/conformance"
-			]
+			"semanticIdentities": ["ix://agent-ix/conformance"]
 		},
 		{
 			"path": "types.ts",
@@ -73,9 +61,7 @@
 			"path": "validators.ts",
 			"digest": "sha256:3ce5c944c69ff45e50e3167b735b323bb2163552a0b8833c2315f86c51c47ac0",
 			"mediaType": "text/typescript",
-			"semanticIdentities": [
-				"ix://agent-ix/conformance"
-			]
+			"semanticIdentities": ["ix://agent-ix/conformance"]
 		}
 	],
 	"diagnostics": [

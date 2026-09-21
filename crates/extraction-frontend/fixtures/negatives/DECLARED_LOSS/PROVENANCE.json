@@ -1,11 +1,8 @@
 {
-  "source": "authored",
-  "code": "DECLARED_LOSS",
-  "files": [
-    "spec/spec.md",
-    "spec/functional/FR-001-blob.md"
-  ],
-  "derived": [],
-  "edits": [],
-  "note": "One `JsonObject` cell (the package-local scalar `any` type/JsonObject once, no loss) and one `*` collection (DECLARED_LOSS `required-collection-presence` at row line 20, info, non-blocking, naming its losses.json row) (FR-093-AC-7, FR-093-CON-3; TC-1226)."
+	"source": "authored",
+	"code": "DECLARED_LOSS",
+	"files": ["spec/spec.md", "spec/functional/FR-001-blob.md"],
+	"derived": [],
+	"edits": [],
+	"note": "One `JsonObject` cell (the package-local scalar `any` type/JsonObject once, no loss) and one `*` collection (DECLARED_LOSS `required-collection-presence` at row line 20, info, non-blocking, naming its losses.json row) (FR-093-AC-7, FR-093-CON-3; TC-1226)."
 }

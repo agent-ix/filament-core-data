@@ -1,32 +1,32 @@
 {
-  "source": "authored",
-  "code": "ENGINE_DIAGNOSTIC",
-  "files": [
-    "spec/functional/FR-005-config-overlay-entity.md",
-    "spec/functional/FR-006-config-version-entity.md",
-    "spec/spec.md"
-  ],
-  "derived": [
-    {
-      "fixture": "spec/spec.md",
-      "from": "../../config-version-table/spec/spec.md",
-      "edits": []
-    },
-    {
-      "fixture": "spec/functional/FR-005-config-overlay-entity.md",
-      "from": "../../config-version-table/spec/functional/FR-005-config-overlay-entity.md",
-      "edits": []
-    },
-    {
-      "fixture": "spec/functional/FR-006-config-version-entity.md",
-      "from": "../../config-version-table/spec/functional/FR-006-config-version-entity.md",
-      "edits": [
-        "the `immutable` invariant fence language ocl -> sysml, so the engine carries the clause unchecked and emits the advisory semantic.clause-language-unchecked at the fence's opening line",
-        "the `data | JsonObject` Properties row dropped and `and self.data = self.data@pre` removed from the invariant text, so the lift emits no DECLARED_LOSS and ENGINE_DIAGNOSTIC is the only code",
-        "the body `## Relationships` bullet list removed: under spec-objects-business 0.6.0 a `## Relationships` section is a `Name | Verb | Target | Multiplicity` table the engine extracts, and a bullet list is refused as semantic.feature-not-extractable"
-      ]
-    }
-  ],
-  "edits": [],
-  "note": "The one non-blocking ENGINE_DIAGNOSTIC-only bundle FR-098 lists: the engine's advisory semantic.clause-language-unchecked (sysml is a semantic-core ClauseLanguage the engine does not check) maps to one info, non-blocking ENGINE_DIAGNOSTIC at FR-006 line 33 column 1 (FR-096-AC-5), the clause is lowered with language sysml, and the document is written, so expected/ holds semantic-ir.json beside diagnostics.json. Every other engine diagnostic a committed file can provoke either accompanies a frontend code (unresolved-type advisory beside UNRESOLVED_TYPE_TOKEN, legacy-properties-form warning beside ARTIFACT_NOT_LOWERED) or blocks (an error)."
+	"source": "authored",
+	"code": "ENGINE_DIAGNOSTIC",
+	"files": [
+		"spec/functional/FR-005-config-overlay-entity.md",
+		"spec/functional/FR-006-config-version-entity.md",
+		"spec/spec.md"
+	],
+	"derived": [
+		{
+			"fixture": "spec/spec.md",
+			"from": "../../config-version-table/spec/spec.md",
+			"edits": []
+		},
+		{
+			"fixture": "spec/functional/FR-005-config-overlay-entity.md",
+			"from": "../../config-version-table/spec/functional/FR-005-config-overlay-entity.md",
+			"edits": []
+		},
+		{
+			"fixture": "spec/functional/FR-006-config-version-entity.md",
+			"from": "../../config-version-table/spec/functional/FR-006-config-version-entity.md",
+			"edits": [
+				"the `immutable` invariant fence language ocl -> sysml, so the engine carries the clause unchecked and emits the advisory semantic.clause-language-unchecked at the fence's opening line",
+				"the `data | JsonObject` Properties row dropped and `and self.data = self.data@pre` removed from the invariant text, so the lift emits no DECLARED_LOSS and ENGINE_DIAGNOSTIC is the only code",
+				"the body `## Relationships` bullet list removed: under spec-objects-business 0.6.0 a `## Relationships` section is a `Name | Verb | Target | Multiplicity` table the engine extracts, and a bullet list is refused as semantic.feature-not-extractable"
+			]
+		}
+	],
+	"edits": [],
+	"note": "The one non-blocking ENGINE_DIAGNOSTIC-only bundle FR-098 lists: the engine's advisory semantic.clause-language-unchecked (sysml is a semantic-core ClauseLanguage the engine does not check) maps to one info, non-blocking ENGINE_DIAGNOSTIC at FR-006 line 33 column 1 (FR-096-AC-5), the clause is lowered with language sysml, and the document is written, so expected/ holds semantic-ir.json beside diagnostics.json. Every other engine diagnostic a committed file can provoke either accompanies a frontend code (unresolved-type advisory beside UNRESOLVED_TYPE_TOKEN, legacy-properties-form warning beside ARTIFACT_NOT_LOWERED) or blocks (an error)."
 }

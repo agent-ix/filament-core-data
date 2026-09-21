@@ -190,9 +190,9 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		// per population — so it is counted here without expecting a schema
 		// file, not folded into `seen`.
 		const declaredByPopulation = new Set(
-			(
-				ir.populations as { kind?: { name?: string } }[] | undefined
-			)?.map((population) => population.kind?.name) ?? [],
+			(ir.populations as { kind?: { name?: string } }[] | undefined)?.map(
+				(population) => population.kind?.name,
+			) ?? [],
 		);
 		expect(
 			[...new Set([...seen, ...declaredByPopulation])].sort(),

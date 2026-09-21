@@ -29,7 +29,10 @@ function assert(condition: unknown, message: string): asserts condition {
 }
 
 function rejected(result: { readonly ok: boolean }, name: string): void {
-	assert(!result.ok, `${name} was accepted where the kernel grammar rejects it`);
+	assert(
+		!result.ok,
+		`${name} was accepted where the kernel grammar rejects it`,
+	);
 }
 
 /** Executes every FR-089 demonstration and returns its non-zero assertion count. */
@@ -55,7 +58,15 @@ export function run(): number {
 		ClauseRef | undefined,
 		ConstraintDecl | undefined,
 		KernelScalar | undefined,
-	] = [undefined, undefined, undefined, undefined, undefined, undefined, undefined];
+	] = [
+		undefined,
+		undefined,
+		undefined,
+		undefined,
+		undefined,
+		undefined,
+		undefined,
+	];
 	assert(imported.length === 7, "the required public types were not imported");
 
 	const positive = validateMultiplicity(PAR_0001.instance);
@@ -70,7 +81,10 @@ export function run(): number {
 		validateFieldDecl({ ...field, undeclared: 1 }),
 		"an undeclared member on a reject record",
 	);
-	rejected(validateFieldDecl({ name: "unitSymbol" }), "a missing required member");
+	rejected(
+		validateFieldDecl({ name: "unitSymbol" }),
+		"a missing required member",
+	);
 	rejected(validateKernelScalar("NotAKernelScalar"), "an unknown KernelScalar");
 	rejected(
 		validateConstraintDecl({ keyword: "notAKeyword" }),

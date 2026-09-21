@@ -1,11 +1,8 @@
 {
-  "source": "authored",
-  "code": "DUPLICATE_IDENTITY",
-  "files": [
-    "spec/spec.md",
-    "spec/functional/FR-001-note.md"
-  ],
-  "derived": [],
-  "edits": [],
-  "note": "FR-001's field `revision` and its own operation `revision` mint the same member identity (a field and an operation nest under their owning type's identity the same way, with no kind segment of their own — identity.rs). Fields lower before operations, so the frontend raises blocking DUPLICATE_IDENTITY at the operation's locus, with the field's locus in related."
+	"source": "authored",
+	"code": "DUPLICATE_IDENTITY",
+	"files": ["spec/spec.md", "spec/functional/FR-001-note.md"],
+	"derived": [],
+	"edits": [],
+	"note": "FR-001's field `revision` and its own operation `revision` mint the same member identity (a field and an operation nest under their owning type's identity the same way, with no kind segment of their own — identity.rs). Fields lower before operations, so the frontend raises blocking DUPLICATE_IDENTITY at the operation's locus, with the field's locus in related."
 }

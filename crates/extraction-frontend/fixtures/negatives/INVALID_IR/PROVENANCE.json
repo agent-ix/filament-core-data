@@ -1,12 +1,12 @@
 {
-  "source": "authored",
-  "code": "INVALID_IR",
-  "files": [
-    "spec/spec.md",
-    "spec/functional/FR-001-a.md",
-    "spec/functional/FR-002-b.md"
-  ],
-  "derived": [],
-  "edits": [],
-  "note": "Two entities whose frontmatter declares `A contains B` and `B contains A`. `contains` is a verb the entity object type lists under allowed_links and the vendored edge-vocabulary registry declares with `inverse: part_of`, so both relationships lower as composite; the frontend raises no diagnostic of its own, the document is schema-valid, and the reader's cross-field layer refuses it with COMPOSITE_CYCLE at the back edge, which the frontend wraps as one blocking INVALID_IR carrying the reader's diagnostic in causes[0] and writes no document (FR-097-AC-15; TC-1342; EC-144). The fault-injected schema case (a type without unknownPolicy) is test-constructed: see constructed.json. Lifted under spec-objects-business and edge-vocabulary."
+	"source": "authored",
+	"code": "INVALID_IR",
+	"files": [
+		"spec/spec.md",
+		"spec/functional/FR-001-a.md",
+		"spec/functional/FR-002-b.md"
+	],
+	"derived": [],
+	"edits": [],
+	"note": "Two entities whose frontmatter declares `A contains B` and `B contains A`. `contains` is a verb the entity object type lists under allowed_links and the vendored edge-vocabulary registry declares with `inverse: part_of`, so both relationships lower as composite; the frontend raises no diagnostic of its own, the document is schema-valid, and the reader's cross-field layer refuses it with COMPOSITE_CYCLE at the back edge, which the frontend wraps as one blocking INVALID_IR carrying the reader's diagnostic in causes[0] and writes no document (FR-097-AC-15; TC-1342; EC-144). The fault-injected schema case (a type without unknownPolicy) is test-constructed: see constructed.json. Lifted under spec-objects-business and edge-vocabulary."
 }

@@ -1,11 +1,8 @@
 {
-  "source": "authored",
-  "case": "constraints",
-  "files": [
-    "spec/spec.md",
-    "spec/functional/FR-001-audit.md"
-  ],
-  "derived": [],
-  "edits": [],
-  "note": "One entity carrying every FR-029 keyword the engine parses from a table cell: maxLength, pattern (`/^[a-z]+$/` \u2192 {regex, dialect: ecma-262}), enumValues (`a\\|b`, the pipe escaped for the table \u2192 {values: [a, b]}), format, min/max, nonEmpty and minLength; the TC-1224 operand shapes."
+	"source": "authored",
+	"case": "constraints",
+	"files": ["spec/spec.md", "spec/functional/FR-001-audit.md"],
+	"derived": [],
+	"edits": [],
+	"note": "One entity carrying every FR-029 keyword the engine parses from a table cell: maxLength, pattern (`/^[a-z]+$/` \u2192 {regex, dialect: ecma-262}), enumValues (`a\\|b`, the pipe escaped for the table \u2192 {values: [a, b]}), format, min/max, nonEmpty and minLength; the TC-1224 operand shapes."
 }

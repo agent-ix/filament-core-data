@@ -1,12 +1,12 @@
 {
-  "source": "authored",
-  "code": "DUPLICATE_TYPE_NAME",
-  "files": [
-    "spec/spec.md",
-    "spec/functional/FR-001-status.md",
-    "spec/functional/FR-002-status.md"
-  ],
-  "derived": [],
-  "edits": [],
-  "note": "Two entities titled `Status` and `status`: distinct type/ identities whose slugs are both `status`, so their field/ and constraint/ identities would collide (decision D8, FR-095-AC-14). The frontend raises blocking DUPLICATE_TYPE_NAME at the second document in path order (FR-002) naming both and mints no field/status-* identity twice (TC-1334, TC-1347)."
+	"source": "authored",
+	"code": "DUPLICATE_TYPE_NAME",
+	"files": [
+		"spec/spec.md",
+		"spec/functional/FR-001-status.md",
+		"spec/functional/FR-002-status.md"
+	],
+	"derived": [],
+	"edits": [],
+	"note": "Two entities titled `Status` and `status`: distinct type/ identities whose slugs are both `status`, so their field/ and constraint/ identities would collide (decision D8, FR-095-AC-14). The frontend raises blocking DUPLICATE_TYPE_NAME at the second document in path order (FR-002) naming both and mints no field/status-* identity twice (TC-1334, TC-1347)."
 }

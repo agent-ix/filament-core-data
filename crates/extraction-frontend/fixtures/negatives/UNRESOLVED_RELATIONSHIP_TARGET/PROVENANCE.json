@@ -1,29 +1,29 @@
 {
-  "source": "authored",
-  "code": "UNRESOLVED_RELATIONSHIP_TARGET",
-  "files": [
-    "spec/functional/FR-005-config-overlay-entity.md",
-    "spec/functional/FR-006-config-version-entity.md",
-    "spec/spec.md"
-  ],
-  "derived": [
-    {
-      "fixture": "spec/functional/FR-005-config-overlay-entity.md",
-      "from": "../../legacy/spec/functional/FR-006-config-version-entity.md",
-      "edits": [
-        "id FR-006 -> FR-005, title and H1 ConfigVersion -> ConfigOverlay; the legacy free-column table is kept so the artifact is legacy-form",
-        "the body `## Relationships` bullet list removed: under spec-objects-business 0.6.0 a `## Relationships` section is a `Name | Verb | Target | Multiplicity` table the engine extracts, and a bullet list is refused as semantic.feature-not-extractable"
-      ]
-    },
-    {
-      "fixture": "spec/functional/FR-006-config-version-entity.md",
-      "from": "../../config-version-table/spec/functional/FR-006-config-version-entity.md",
-      "edits": [
-        "frontmatter relationships: references Nonesuch and references FR-005",
-        "body reduced to the Description and a two-row Properties table"
-      ]
-    }
-  ],
-  "edits": [],
-  "note": "FR-006 declares two references edges: `Nonesuch` names no indexed artifact, and FR-005 is a legacy-form entity whose pass-one outcome is not a definition (non-blocking ARTIFACT_NOT_LOWERED). Each raises one blocking UNRESOLVED_RELATIONSHIP_TARGET at FR-006 line 1 column 1 naming its target (FR-094-AC-5; TC-1235). Lifted under spec-objects-business and edge-vocabulary."
+	"source": "authored",
+	"code": "UNRESOLVED_RELATIONSHIP_TARGET",
+	"files": [
+		"spec/functional/FR-005-config-overlay-entity.md",
+		"spec/functional/FR-006-config-version-entity.md",
+		"spec/spec.md"
+	],
+	"derived": [
+		{
+			"fixture": "spec/functional/FR-005-config-overlay-entity.md",
+			"from": "../../legacy/spec/functional/FR-006-config-version-entity.md",
+			"edits": [
+				"id FR-006 -> FR-005, title and H1 ConfigVersion -> ConfigOverlay; the legacy free-column table is kept so the artifact is legacy-form",
+				"the body `## Relationships` bullet list removed: under spec-objects-business 0.6.0 a `## Relationships` section is a `Name | Verb | Target | Multiplicity` table the engine extracts, and a bullet list is refused as semantic.feature-not-extractable"
+			]
+		},
+		{
+			"fixture": "spec/functional/FR-006-config-version-entity.md",
+			"from": "../../config-version-table/spec/functional/FR-006-config-version-entity.md",
+			"edits": [
+				"frontmatter relationships: references Nonesuch and references FR-005",
+				"body reduced to the Description and a two-row Properties table"
+			]
+		}
+	],
+	"edits": [],
+	"note": "FR-006 declares two references edges: `Nonesuch` names no indexed artifact, and FR-005 is a legacy-form entity whose pass-one outcome is not a definition (non-blocking ARTIFACT_NOT_LOWERED). Each raises one blocking UNRESOLVED_RELATIONSHIP_TARGET at FR-006 line 1 column 1 naming its target (FR-094-AC-5; TC-1235). Lifted under spec-objects-business and edge-vocabulary."
 }

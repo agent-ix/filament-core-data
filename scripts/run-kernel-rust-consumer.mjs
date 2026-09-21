@@ -19,8 +19,14 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const KERNEL = join(ROOT, "packages/semantic-kernel/rust");
 const CONSUMER = join(ROOT, "crates/kernel-consumer");
 const CRATE = "agent-ix-semantic-kernel-0.2.0";
-const GOLDEN = join(ROOT, "packages/semantic-kernel/parity/golden/PAR-0001.json");
-const CONSTRAINT_GOLDEN = join(ROOT, "packages/semantic-kernel/parity/golden/PAR-0027.json");
+const GOLDEN = join(
+	ROOT,
+	"packages/semantic-kernel/parity/golden/PAR-0001.json",
+);
+const CONSTRAINT_GOLDEN = join(
+	ROOT,
+	"packages/semantic-kernel/parity/golden/PAR-0027.json",
+);
 const CLOSURES = join(ROOT, "packages/semantic-kernel/examples/closures.json");
 
 function run(command, args, options) {
@@ -61,9 +67,13 @@ try {
 		throw new Error("the Rust consumer fixture diverged from golden PAR-0027");
 	}
 	const target = join(scratch, "target");
-	run("cargo", ["package", "--offline", "--no-verify", "--target-dir", target], {
-		cwd: KERNEL,
-	});
+	run(
+		"cargo",
+		["package", "--offline", "--no-verify", "--target-dir", target],
+		{
+			cwd: KERNEL,
+		},
+	);
 	const build = join(scratch, "build");
 	mkdirSync(build, { recursive: true });
 	run("tar", ["-xzf", join(target, "package", `${CRATE}.crate`), "-C", build]);
