@@ -74,7 +74,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      # Full history. This repo's changed-path gates resolve a commit's parent
+      # (`git rev-parse <sha>^`) and read blobs out of a historical base, so a
+      # shallow checkout does not make them lenient — it makes them throw. Four
+      # cases in conformance-corpus.test.ts died on
+      # `fatal: ambiguous argument '<sha>^'` the first time this job ran.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -93,6 +100,19 @@ jobs:
       # dies with exit 127 and skips the publish via `needs`.
       - run: pip install poetry
       - run: make install
+      # The Rust gates run `--offline --locked` by policy: `.cargo/config.toml`
+      # sets `offline = true` and FR-061-CON-1 forbids contacting a registry to
+      # resolve. That policy assumes a warm cache — `tc_1329_locked_offline_
+      # build_succeeds_from_a_warm_cache` says so by name — and a fresh runner
+      # has none, so `differential.mjs` could not build its Rust adapter and
+      # failed on the `quire-rs` git dependency.
+      #
+      # This is the one step that is allowed to reach the network, and it is
+      # deliberately outside the gates: it populates the cache and resolves
+      # nothing, because `--locked` refuses to move the lockfile. Every gate
+      # after it still runs offline, still against the pinned graph.
+      - name: Warm the cargo cache (the one online step; every gate stays offline)
+        run: CARGO_NET_OFFLINE=false cargo fetch --locked
       - run: make test-node
 
   lint:
