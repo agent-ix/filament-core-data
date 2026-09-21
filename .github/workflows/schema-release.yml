@@ -1,9 +1,13 @@
-name: Release
+name: Schema Release
 
 # Publishes this repo's npm packages: packages/semantic-core and schema (the
 # @agent-ix/semantic-schema payload). build-test.yml already deferred
-# publishing here (its header comment has said so since before this file
-# existed); this is that release.yml.
+# publishing to a same-purpose workflow; this is that workflow — named
+# schema-release.yml rather than the house convention's plain release.yml
+# because issue #6/FR-134 permanently retires that exact filename as the old
+# Avro-era release pipeline's path (test/legacy-avro-retirement.test.ts
+# asserts it does not exist, by name, and will keep asserting that after this
+# repo's Avro history is otherwise forgotten).
 #
 # Root package.json stays "private": true (correct for this monorepo root —
 # see agent-ix/filament-core-data#218's discussion) and is never published.

@@ -1,7 +1,10 @@
 name: CI
 
 # Shared test/lint/audit gate (no publish). Publishing only ever happens from
-# release.yml. Mirrors the agent-ix/nodejs-actions house pattern.
+# schema-release.yml (not "release.yml": issue #6/FR-134 permanently retires
+# that exact filename as the old Avro-era release pipeline's path — see
+# test/legacy-avro-retirement.test.ts). Mirrors the agent-ix/nodejs-actions
+# house pattern otherwise.
 
 on:
   workflow_dispatch:
