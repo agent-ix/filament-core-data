@@ -180,6 +180,33 @@
 		"code": "agent-ix.package.UNKNOWN_TARGET"
 	},
 	{
+		"id": "semantic-block-unknown-target",
+		"schema": "module-semantic-block.schema.json",
+		"base": "positive/module-semantic-block.json",
+		"set": {
+			"path": "targets.0",
+			"value": "go"
+		},
+		"code": "agent-ix.semantic-block.UNKNOWN_TARGET"
+	},
+	{
+		"id": "semantic-block-missing-contract-version",
+		"schema": "module-semantic-block.schema.json",
+		"base": "positive/module-semantic-block.json",
+		"remove": "contract_version",
+		"code": "agent-ix.semantic-block.MISSING_CONTRACT_VERSION"
+	},
+	{
+		"id": "semantic-block-install-policy-key",
+		"schema": "module-semantic-block.schema.json",
+		"base": "positive/module-semantic-block.json",
+		"set": {
+			"path": "compatibility_posture",
+			"value": "strict"
+		},
+		"code": "agent-ix.semantic-block.UNKNOWN_KEY"
+	},
+	{
 		"id": "ir-v2-field-without-multiplicity",
 		"schema": "semantic-ir.schema.json",
 		"base": "positive/semantic-ir-v2-constructs.json",

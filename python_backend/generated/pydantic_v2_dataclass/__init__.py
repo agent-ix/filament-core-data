@@ -11,9 +11,10 @@ from .compatibility_report_schema import AffectedConsumer, Change, ConsumerEvide
 from .compiler_request_schema import Backend, FilamentCompilerRequestV1, Limits, SupportedFeature
 from .consumer_policy_schema import FilamentSemanticConsumerPolicyV1, IdentityPlane, Mode
 from .mapping_schema import Base, ConflictPolicy, Correspondence, DecodePolicy, FilamentSemanticMappingV1, GetPutLaw, LateDataPolicy, Lifetime, Preservation, Purity, Transformation
+from .module_semantic_block_schema import FilamentModuleManifestSemanticBlockV1, Mapping
 from .output_manifest_schema import FilamentCompilerOutputManifestV1, File
 from .package_lock_schema import Canonicalization, ExcludedEnum, FilamentSemanticPackageLockV1, IncludedEnum
-from .package_manifest_schema import Capability, CompatibilityPosture, Export, Export1, FilamentSemanticPackageManifestV1, Import, Profile, SourceRoot, Visibility
+from .package_manifest_schema import Capability, CompatibilityPosture, Export2, FilamentSemanticPackageManifestV1, Import, Profile, SourceRoot, Visibility
 from .profile_schema import EditDirection, FilamentRepresentationProfileV1, MaterializationLifetime
 from .representation_schema import Avro, BestFitItem, Columnar, Delimited, EnumNumbersAdditionalProperty, FieldNumbersAdditionalProperty, FilamentRepresentationContractV1, Json, Kind2, Locus, Markdown, NonUs, Postgresql, Protobuf, ReservedName, ReservedNumber
 from .semantic_ir_schema import Category, Clause, ConnectionEnd, Constraint, Constraint1, Constraint2, Constraint3, Constraint4, Constraint5, Constraint6, Construct, ConstructDeclaration, ConstructKind, ContractItem, ContractItem1, ContractVersion, DefaultKind, Direction, Direction1, Extent, FieldModel, FilamentSemanticIrV1ContractVersion200, FlowDirection, Frame, Identity, IdentityList, InlineClause, Keyword, Keyword1, Keyword2, Keyword3, Keyword4, Keyword5, Members, Multiplicity, Occurrence, Operands, Operands1, Operands2, Operands3, Operands4, Operation, Population, Presence, ReferencesAdditionalProperty, ReferencesAdditionalPropertyItem, Relationship, RelationshipSourceEnd, RelationshipTargetEnd, Returns, Role, Rule, Scalar, Shape, Source, State, Step, StepKind, Term, Transition, TypeDefinition, Value, Variant
@@ -61,8 +62,7 @@ __all__ = [
     "EnumNumbersAdditionalProperty",
     "ExcludedEnum",
     "ExecutableGeneratorDependency",
-    "Export",
-    "Export1",
+    "Export2",
     "Extension",
     "Extent",
     "Family",
@@ -71,6 +71,7 @@ __all__ = [
     "FilamentCompilerOutputManifestV1",
     "FilamentCompilerRequestV1",
     "FilamentGeneratedTargetContractV1",
+    "FilamentModuleManifestSemanticBlockV1",
     "FilamentRepresentationContractV1",
     "FilamentRepresentationProfileV1",
     "FilamentSemanticCompatibilityReportV1",
@@ -105,6 +106,7 @@ __all__ = [
     "Limits",
     "Locus",
     "ManifestTarget",
+    "Mapping",
     "Markdown",
     "MaterializationLifetime",
     "Members",
