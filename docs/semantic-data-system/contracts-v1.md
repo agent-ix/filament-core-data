@@ -48,6 +48,7 @@ All identifiers below are rooted at
 | `common.schema.json` | SemVer, digests, identities, origins, extensions, diagnostics, and result states |
 | `semantic-ir.schema.json` | Source-independent IR envelope, definitions, occurrences, types, fields, constraints, roles, and recursion |
 | `package-manifest.schema.json` | Package identity/version, sources, imports, exports, named profiles, targets, and mappings |
+| `module-semantic-block.schema.json` | The filament module manifest's optional `semantic` block (quoin FR-070): contract version, semantic-core version, package identity, exports, imports, targets, and mappings, all by $ref to this contract's own $defs |
 | `package-lock.schema.json` | Exact transitive closure, content/source identities, canonicalization, and fingerprint |
 | `mapping.schema.json` | Correspondences plus typed codec/lens/projection/extraction/rendering/aggregation/enrichment/materialization behavior |
 | `profile.schema.json` | Authority, edit direction, round trip, unknown policy, omissions, enrichment, and lifetime |
