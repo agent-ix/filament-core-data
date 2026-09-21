@@ -28,6 +28,7 @@ types. They are reachable as `<module>.<Name>` and are excluded from
 `__all__` rather than silently shadowed.
 
 - `Authority` — profile_schema, representation_schema
+- `Export` — module_semantic_block_schema, package_manifest_schema
 - `Kind` — mapping_schema, representation_schema, semantic_ir_schema
 - `Package` — package_lock_schema, package_manifest_schema, semantic_ir_schema
 - `RoundTrip` — profile_schema, representation_schema

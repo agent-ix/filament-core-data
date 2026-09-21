@@ -7,6 +7,7 @@
 			"compiler-request.schema.json",
 			"consumer-policy.schema.json",
 			"mapping.schema.json",
+			"module-semantic-block.schema.json",
 			"output-manifest.schema.json",
 			"package-lock.schema.json",
 			"package-manifest.schema.json",
@@ -15,14 +16,14 @@
 			"semantic-ir.schema.json",
 			"target-contract.schema.json"
 		],
-		"inputDigest": "sha256:397e4f2f5ca0be43eb7b3560c1acc3a94dc766c6c653710e3f007608bc2a097a",
+		"inputDigest": "sha256:f53f9380d45eec67a24e6775d4fd11382cdc380a26aaea71056ac68892007528",
 		"preparation": []
 	},
 	"profile": {
 		"id": "msgspec_struct",
 		"digest": "sha256:c22081156b8894c95079b63d0e883ab929a208c3082f3ba779213d057e4f3278"
 	},
-	"toolchainFingerprint": "sha256:f84b69bc7a8aedbb42c8cca645de43f6e476a798dc3e7c7bea43b9d745fd107c",
+	"toolchainFingerprint": "sha256:6a1d93bde37fdf49326343385dd995c70658d718100d1aab9d484b6a3c1c1d83",
 	"generator": {
 		"distribution": "datamodel-code-generator",
 		"version": "0.76.0",
@@ -34,6 +35,7 @@
 		"Severity": ["common_schema", "target_contract_schema"],
 		"SourceLocus": ["common_schema", "mapping_schema"],
 		"Kind": ["mapping_schema", "representation_schema", "semantic_ir_schema"],
+		"Export": ["module_semantic_block_schema", "package_manifest_schema"],
 		"Package": [
 			"package_lock_schema",
 			"package_manifest_schema",
@@ -43,5 +45,5 @@
 		"RoundTrip": ["profile_schema", "representation_schema"]
 	},
 	"published": false,
-	"contentFingerprint": "sha256:24c8f4c14e203515e9d2e92f8255e1a25fa4a6e10897a7ead1e241e8f2e8c024"
+	"contentFingerprint": "sha256:03d307269a141278f2f728b5841aca8f3fb483ff813bf7794eb09e167f1190ec"
 }

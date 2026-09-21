@@ -29,7 +29,7 @@ class Capability(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
 
-class Export1(RootModel[str]):
+class Export2(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
 
@@ -38,7 +38,7 @@ class Import(BaseModel):
         extra='forbid',
     )
     capabilities: list[Capability]
-    exports: list[Export1]
+    exports: list[Export2]
     packageIdentity: common_schema.PackageIdentity
     versionConstraint: Annotated[str, Field(min_length=1)]
 
@@ -66,7 +66,7 @@ class Profile(BaseModel):
         extra='forbid',
     )
     compatibilityPosture: CompatibilityPosture
-    exports: list[Export1]
+    exports: list[Export2]
     mappings: list[common_schema.SemanticIdentity]
     name: Annotated[str, Field(min_length=1)]
     options: dict[str, Any]

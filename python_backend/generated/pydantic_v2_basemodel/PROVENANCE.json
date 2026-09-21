@@ -7,6 +7,7 @@
 			"compiler-request.schema.json",
 			"consumer-policy.schema.json",
 			"mapping.schema.json",
+			"module-semantic-block.schema.json",
 			"output-manifest.schema.json",
 			"package-lock.schema.json",
 			"package-manifest.schema.json",
@@ -15,14 +16,14 @@
 			"semantic-ir.schema.json",
 			"target-contract.schema.json"
 		],
-		"inputDigest": "sha256:397e4f2f5ca0be43eb7b3560c1acc3a94dc766c6c653710e3f007608bc2a097a",
+		"inputDigest": "sha256:f53f9380d45eec67a24e6775d4fd11382cdc380a26aaea71056ac68892007528",
 		"preparation": []
 	},
 	"profile": {
 		"id": "pydantic_v2_basemodel",
 		"digest": "sha256:de77a678b1815ffce78633025a657d40deea86bcec59ba28c35adf93a9112dd0"
 	},
-	"toolchainFingerprint": "sha256:0c92f9fb8f60f49327a4cc028ba53d236caa63045b59d05bd6c73bd86343a190",
+	"toolchainFingerprint": "sha256:2b4bb516541301ca090e3ff5a3af458dc9bdbe5602c8c50d076b3a619d788388",
 	"generator": {
 		"distribution": "datamodel-code-generator",
 		"version": "0.76.0",
@@ -34,6 +35,7 @@
 		"Severity": ["common_schema", "target_contract_schema"],
 		"SourceLocus": ["common_schema", "mapping_schema"],
 		"Kind": ["mapping_schema", "representation_schema", "semantic_ir_schema"],
+		"Export": ["module_semantic_block_schema", "package_manifest_schema"],
 		"Package": [
 			"package_lock_schema",
 			"package_manifest_schema",
@@ -43,5 +45,5 @@
 		"RoundTrip": ["profile_schema", "representation_schema"]
 	},
 	"published": false,
-	"contentFingerprint": "sha256:3eff9e63ad93a8a1845594aa83f54360e03b4b941dcb99df1ade89c81a57d04c"
+	"contentFingerprint": "sha256:aa9768ee8cbccfcd3aef743bed8c597106b9a2d6d6ea4ef2493343fc1f63abfc"
 }

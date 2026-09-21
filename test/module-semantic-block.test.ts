@@ -29,9 +29,7 @@ function buildAjv(): Ajv2020 {
 	for (const name of readdirSync(schemaRoot).filter((entry) =>
 		entry.endsWith(".schema.json"),
 	)) {
-		ajv.addSchema(
-			JSON.parse(readFileSync(resolve(schemaRoot, name), "utf8")),
-		);
+		ajv.addSchema(JSON.parse(readFileSync(resolve(schemaRoot, name), "utf8")));
 	}
 	return ajv;
 }
@@ -82,14 +80,15 @@ describe("PLAT-899 module manifest semantic block", () => {
 		expect(validate(bad)).toBe(false);
 	});
 
-	it.each(["compatibility_posture", "legacy_forms", "sweep_report"] as const)(
-		"rejects a block carrying quoin's install-policy key %s",
-		(key) => {
-			const validate = validator(buildAjv());
-			const bad = { ...knownGoodBlock, [key]: "strict" };
-			expect(validate(bad)).toBe(false);
-		},
-	);
+	it.each([
+		"compatibility_posture",
+		"legacy_forms",
+		"sweep_report",
+	] as const)("rejects a block carrying quoin's install-policy key %s", (key) => {
+		const validate = validator(buildAjv());
+		const bad = { ...knownGoodBlock, [key]: "strict" };
+		expect(validate(bad)).toBe(false);
+	});
 
 	it("resolves targets by $ref to fcd's own target/representationFormat $defs, never an inlined enum", () => {
 		const schema = JSON.parse(

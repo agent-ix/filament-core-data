@@ -6,20 +6,22 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 161,
-			"validatingTypes": 101,
+			"declaredTypes": 164,
+			"validatingTypes": 104,
 			"nonValidatingDeclarations": 60,
-			"exercisedTypes": 64,
-			"unexercisedValidatingTypes": 37,
+			"exercisedTypes": 65,
+			"unexercisedValidatingTypes": 39,
 			"constraintsExercised": 188,
-			"typesRejectingAnEmptyOrUndeclaredValue": 86,
+			"typesRejectingAnEmptyOrUndeclaredValue": 87,
 			"typesAcceptingAnything": [
 				"common_schema.FilamentSemanticContractCommonTypesV1",
 				"compatibility_report_schema.AffectedConsumer",
 				"compatibility_report_schema.RequiredGate",
 				"compiler_request_schema.SupportedFeature",
+				"module_semantic_block_schema.Export",
+				"module_semantic_block_schema.Mapping",
 				"package_manifest_schema.Capability",
-				"package_manifest_schema.Export1",
+				"package_manifest_schema.Export2",
 				"package_manifest_schema.SourceRoot",
 				"representation_schema.BestFitItem",
 				"representation_schema.NonUs",
@@ -250,6 +252,26 @@
 					"constraintsOnThisType": 14
 				},
 				{
+					"module": "module_semantic_block_schema",
+					"type": "Export",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "module_semantic_block_schema",
+					"type": "FilamentModuleManifestSemanticBlockV1",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "module_semantic_block_schema",
+					"type": "Mapping",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
 					"module": "output_manifest_schema",
 					"type": "FilamentCompilerOutputManifestV1",
 					"exercised": true,
@@ -305,7 +327,7 @@
 				},
 				{
 					"module": "package_manifest_schema",
-					"type": "Export1",
+					"type": "Export2",
 					"exercised": false,
 					"why": "no schema node carries this type's property set"
 				},
@@ -818,13 +840,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 164,
-			"validatingTypes": 75,
-			"nonValidatingDeclarations": 89,
-			"exercisedTypes": 55,
+			"declaredTypes": 167,
+			"validatingTypes": 76,
+			"nonValidatingDeclarations": 91,
+			"exercisedTypes": 56,
 			"unexercisedValidatingTypes": 20,
 			"constraintsExercised": 183,
-			"typesRejectingAnEmptyOrUndeclaredValue": 75,
+			"typesRejectingAnEmptyOrUndeclaredValue": 76,
 			"typesAcceptingAnything": [],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
 			"lost": ["constraints-array-unique"],
@@ -964,6 +986,14 @@
 					"acceptsAConformingValue": true,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 14
+				},
+				{
+					"module": "module_semantic_block_schema",
+					"type": "FilamentModuleManifestSemanticBlockV1",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "output_manifest_schema",
@@ -1474,13 +1504,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 164,
-			"validatingTypes": 75,
-			"nonValidatingDeclarations": 89,
+			"declaredTypes": 167,
+			"validatingTypes": 76,
+			"nonValidatingDeclarations": 91,
 			"exercisedTypes": 51,
-			"unexercisedValidatingTypes": 24,
+			"unexercisedValidatingTypes": 25,
 			"constraintsExercised": 183,
-			"typesRejectingAnEmptyOrUndeclaredValue": 75,
+			"typesRejectingAnEmptyOrUndeclaredValue": 76,
 			"typesAcceptingAnything": [],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
 			"lost": [
@@ -1627,6 +1657,14 @@
 					"acceptsAConformingValue": true,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 14
+				},
+				{
+					"module": "module_semantic_block_schema",
+					"type": "FilamentModuleManifestSemanticBlockV1",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "output_manifest_schema",
