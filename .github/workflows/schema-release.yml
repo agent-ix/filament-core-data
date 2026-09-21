@@ -139,24 +139,27 @@ jobs:
         shell: bash
         run: |
           set -e
+          # Manifests with a tracked lockfile: fetched in place under
+          # `--locked`, which populates the cache and resolves nothing.
           for manifest in \
             Cargo.toml \
-            packages/semantic-kernel/rust/Cargo.toml \
-            packages/semantic-kernel/parity/emitters/rust/Cargo.toml
+            packages/semantic-kernel/parity/emitters/rust/Cargo.toml \
+            spikes/typespec-feasibility/generated/custom/rust/Cargo.toml
           do
-            # `--locked` only where there is a lock to hold to.
-            # `packages/semantic-kernel/rust` tracks no `Cargo.lock`, so the
-            # flag there guards nothing and simply refuses to let cargo write
-            # the file it must write — `cannot create the lock file ... because
-            # --locked was passed`. Where a lockfile IS tracked, the flag is
-            # load-bearing and stays: it is what makes this step populate the
-            # cache without resolving anything.
-            locked=""
-            if [[ -f "$(dirname "$manifest")/Cargo.lock" ]]; then
-              locked="--locked"
-            fi
-            CARGO_NET_OFFLINE=false cargo fetch $locked --manifest-path "$manifest"
+            CARGO_NET_OFFLINE=false cargo fetch --locked --manifest-path "$manifest"
           done
+          # `packages/semantic-kernel/rust` tracks no lockfile — the kernel gate
+          # compares the directory against a fresh generation, so a lockfile
+          # appearing there is a failure. Fetching it in place writes one (the
+          # fifth dispatch failed nine tree gates on exactly that). It is
+          # fetched from a scratch copy instead: the dependencies land in the
+          # shared cargo cache, the tree is not touched.
+          scratch="$RUNNER_TEMP/kernel-fetch"
+          rm -rf "$scratch"
+          cp -r packages/semantic-kernel/rust "$scratch"
+          CARGO_NET_OFFLINE=false cargo fetch --manifest-path "$scratch/Cargo.toml"
+          rm -rf "$scratch"
+          git status --porcelain --untracked-files=all | tee /dev/stderr | (! grep -q .)
 
       # FR-040 compares the `relationship.category` enum against the categories
       # a real installed module declares, so the assertion is about agreement
