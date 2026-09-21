@@ -78,6 +78,9 @@ jobs:
         with:
           node-version: "22"
           cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
       - uses: agent-ix/nodejs-actions/setup-npmrc@main
         with:
           npm_registry_token: ${{ secrets.REGISTRY_TOKEN }}
@@ -93,6 +96,9 @@ jobs:
         with:
           node-version: "22"
           cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
       - uses: agent-ix/nodejs-actions/setup-npmrc@main
         with:
           npm_registry_token: ${{ secrets.REGISTRY_TOKEN }}
