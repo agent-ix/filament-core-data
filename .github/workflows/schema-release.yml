@@ -100,20 +100,68 @@ jobs:
       # dies with exit 127 and skips the publish via `needs`.
       - run: pip install poetry
       - run: make install
+      # `setup-npmrc` writes `.npmrc` into the repo root so pnpm can reach
+      # npm.ix. The gates that follow read `git status` and a changed-path set,
+      # and an untracked credential file in the root is neither permitted nor
+      # meant to be there — this repo's own rule is that no `.npmrc` lives in
+      # the tree. It has done its job once `make install` has run, so it goes
+      # before anything inspects the tree. Nothing after this point installs.
+      - name: Drop the credential file before the tree gates read the tree
+        run: rm -f .npmrc
+
       # The Rust gates run `--offline --locked` by policy: `.cargo/config.toml`
       # sets `offline = true` and FR-061-CON-1 forbids contacting a registry to
-      # resolve. That policy assumes a warm cache — `tc_1329_locked_offline_
-      # build_succeeds_from_a_warm_cache` says so by name — and a fresh runner
-      # has none, so `differential.mjs` could not build its Rust adapter and
-      # failed on the `quire-rs` git dependency.
+      # resolve. That policy assumes a warm cache — the extraction suite's
+      # `tc_1329_locked_offline_build_succeeds_from_a_warm_cache` says so by
+      # name — and a fresh runner has none.
       #
-      # This is the one step that is allowed to reach the network, and it is
+      # This is the one step allowed to reach the network, and it sits
       # deliberately outside the gates: it populates the cache and resolves
-      # nothing, because `--locked` refuses to move the lockfile. Every gate
-      # after it still runs offline, still against the pinned graph.
+      # nothing, because `--locked` refuses to move a lockfile. Every gate after
+      # it still runs offline, still against the pinned graph.
+      #
+      # Each manifest is fetched, not just the root: the five crates in
+      # `[workspace] exclude` carry their own lock files precisely so they stay
+      # out of the root resolve, which also means the root fetch does not cover
+      # them. The kernel parity emitter is one of them and was the second
+      # failure here.
       - name: Warm the cargo cache (the one online step; every gate stays offline)
-        run: CARGO_NET_OFFLINE=false cargo fetch --locked
+        run: |
+          set -e
+          for manifest in \
+            Cargo.toml \
+            crates/consumer-compile-time/Cargo.toml \
+            crates/consumer-runtime/Cargo.toml \
+            crates/kernel-consumer/Cargo.toml \
+            packages/semantic-kernel/rust/Cargo.toml \
+            packages/semantic-kernel/parity/emitters/rust/Cargo.toml
+          do
+            CARGO_NET_OFFLINE=false cargo fetch --locked --manifest-path "$manifest"
+          done
+
+      # FR-040 compares the `relationship.category` enum against the categories
+      # a real installed module declares, so the assertion is about agreement
+      # with the ecosystem rather than with a fixture this repo wrote. It reads
+      # `~/.ix/filament/modules/spec-artifacts-iso/manifest.yaml` and throws
+      # when it is absent, which is correct — a skipped comparison would be a
+      # vacuous pass.
+      #
+      # The module is installed from its published package rather than copied
+      # into this repo. It lands outside the tree, so nothing here tracks it.
+      - name: Install the spec-artifacts-iso module FR-040 measures against
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
+        run: |
+          set -e
+          dest="$HOME/.ix/filament/modules/spec-artifacts-iso"
+          mkdir -p "$dest"
+          tgz="$(npm pack @agent-ix/spec-artifacts-iso --silent)"
+          tar xzf "$tgz" --strip-components=1 -C "$dest"
+          rm -f "$tgz"
+          test -f "$dest/manifest.yaml"
+
       - run: make test-node
+
 
   lint:
     runs-on: ubuntu-latest
