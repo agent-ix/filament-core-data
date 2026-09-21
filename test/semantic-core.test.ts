@@ -610,6 +610,25 @@ function emittedSchemas(): Map<string, JsonObject> {
 	);
 }
 
+/**
+ * The annotation keywords the emitted schemas carry themselves.
+ *
+ * `x-agent-ix-semantic-id` was added to every emitted document by FR-137, which
+ * made kernel identity observable in the schema. It annotates; it constrains
+ * nothing, so it is declared with no schema of its own. Ajv's `strict: true`
+ * rejects a keyword it has never been told about, and these instances were
+ * never told, so every validation through them has failed since (#226).
+ *
+ * Declared rather than switching strict mode off: an undeclared keyword
+ * elsewhere is still a typo worth failing on.
+ */
+function declareAnnotations(ajv: Ajv2020): void {
+	ajv.addKeyword({
+		keyword: "x-agent-ix-semantic-id",
+		metaSchema: { type: "string" },
+	});
+}
+
 function grammarAjv(): Ajv2020 {
 	const ajv = new Ajv2020({
 		allErrors: true,
@@ -617,6 +636,7 @@ function grammarAjv(): Ajv2020 {
 		strictRequired: false,
 	});
 	addFormats(ajv);
+	declareAnnotations(ajv);
 	for (const schema of emittedSchemas().values()) ajv.addSchema(schema);
 	return ajv;
 }
@@ -866,7 +886,19 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 						`semantic-core/${semanticCoreVersion}/`,
 					),
 				);
-				expect(after, name).toEqual(schema);
+				// `x-agent-ix-semantic-id` is not the emitter's. FR-137 has
+				// `scripts/generate.mjs` add it after `tsp compile` returns,
+				// deterministically from the file's own name. This case drives the
+				// emitter directly, so the committed side carries the annotation and
+				// the scratch side never can — which made every comparison here fail,
+				// at whichever name sorted first (#226).
+				//
+				// Asserted rather than ignored: the annotation still has to be exactly
+				// the identity the generator mints, and the emitter's own output is
+				// then compared on equal terms.
+				const { "x-agent-ix-semantic-id": semanticId, ...emitted } = schema;
+				expect(semanticId, name).toBe(`ix://agent-ix/semantic-core/${name}`);
+				expect(after, name).toEqual(emitted);
 			}
 		} finally {
 			rmSync(dir, { recursive: true, force: true });
@@ -996,6 +1028,7 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 			strictRequired: false,
 		});
 		addFormats(ajv);
+		declareAnnotations(ajv);
 		const dir = resolve(root, "schema/semantic/v1");
 		for (const name of readdirSync(dir).filter((n) =>
 			n.endsWith(".schema.json"),
