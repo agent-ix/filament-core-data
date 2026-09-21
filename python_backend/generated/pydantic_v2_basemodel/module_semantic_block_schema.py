@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
@@ -23,8 +23,10 @@ class FilamentModuleManifestSemanticBlockV1(BaseModel):
         extra='forbid',
     )
     contract_version: Annotated[
-        common_schema.Semver,
-        Field(description='Semantic-module contract version this block conforms to.'),
+        Literal['1.0.0'],
+        Field(
+            description="Semantic-module contract version this block conforms to; 1.0.0 for quoin FR-070, like every other v1 contract's const contractVersion in this directory."
+        ),
     ]
     exports: Annotated[
         list[Export] | None,

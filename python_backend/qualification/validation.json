@@ -11,7 +11,7 @@
 			"nonValidatingDeclarations": 60,
 			"exercisedTypes": 65,
 			"unexercisedValidatingTypes": 39,
-			"constraintsExercised": 188,
+			"constraintsExercised": 189,
 			"typesRejectingAnEmptyOrUndeclaredValue": 87,
 			"typesAcceptingAnything": [
 				"common_schema.FilamentSemanticContractCommonTypesV1",
@@ -263,7 +263,7 @@
 					"exercised": true,
 					"acceptsAConformingValue": true,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "module_semantic_block_schema",
@@ -845,7 +845,7 @@
 			"nonValidatingDeclarations": 91,
 			"exercisedTypes": 56,
 			"unexercisedValidatingTypes": 20,
-			"constraintsExercised": 183,
+			"constraintsExercised": 184,
 			"typesRejectingAnEmptyOrUndeclaredValue": 76,
 			"typesAcceptingAnything": [],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
@@ -993,7 +993,7 @@
 					"exercised": true,
 					"acceptsAConformingValue": true,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "output_manifest_schema",
@@ -1509,7 +1509,7 @@
 			"nonValidatingDeclarations": 91,
 			"exercisedTypes": 51,
 			"unexercisedValidatingTypes": 25,
-			"constraintsExercised": 183,
+			"constraintsExercised": 184,
 			"typesRejectingAnEmptyOrUndeclaredValue": 76,
 			"typesAcceptingAnything": [],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
@@ -1664,7 +1664,7 @@
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "output_manifest_schema",

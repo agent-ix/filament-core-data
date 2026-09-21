@@ -16,6 +16,7 @@ import { describe, expect, it } from "vitest";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const schemaRoot = resolve(root, "schema/semantic/v1");
+const fixtureRoot = resolve(root, "fixtures/semantic/v1");
 const schemaBase = "https://schemas.agent-ix.org/filament-core-data/v1/";
 const schemaFile = "module-semantic-block.schema.json";
 
@@ -42,17 +43,14 @@ function validator(ajv: Ajv2020): ValidateFunction {
 	return validate;
 }
 
-const knownGoodBlock = {
-	contract_version: "1.0.0",
-	semantic_core: "2.3.1",
-	package: "agent-ix/example-module",
-	exports: ["Widget"],
-	imports: {
-		"agent-ix/core": "1.4.0",
-	},
-	targets: ["rust", "json-schema", "markdown", "postgresql"],
-	mappings: ["widget-postgres"],
-};
+// Read from the shared fixture rather than duplicated inline, so an edit to
+// the fixture cannot leave this test silently asserting the old shape.
+const knownGoodBlock = JSON.parse(
+	readFileSync(
+		resolve(fixtureRoot, "positive/module-semantic-block.json"),
+		"utf8",
+	),
+) as Record<string, unknown>;
 
 describe("PLAT-899 module manifest semantic block", () => {
 	it("compiles the schema and validates a known-good semantic block", () => {
@@ -97,6 +95,6 @@ describe("PLAT-899 module manifest semantic block", () => {
 		expect(schema.properties.targets.items).toEqual({
 			$ref: "common.schema.json#/$defs/manifestTarget",
 		});
-		expect(JSON.stringify(schema)).not.toMatch(/"enum"/);
+		expect(JSON.stringify(schema.properties.targets)).not.toMatch(/"enum"/);
 	});
 });

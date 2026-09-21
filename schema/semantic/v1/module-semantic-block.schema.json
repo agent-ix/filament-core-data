@@ -2,14 +2,14 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"$id": "https://schemas.agent-ix.org/filament-core-data/v1/module-semantic-block.schema.json",
 	"title": "Filament module manifest semantic block v1",
-	"description": "The optional `semantic` block of a filament module manifest (quoin FR-070): the fields a module declares to describe itself as a semantic-core package. Every field is fcd's own vocabulary, referenced by $ref rather than restated, so this block cannot skew from the target and package-identity definitions it draws on. Module install policy (compatibility posture, legacy-form handling, sweep reports) is quoin's, not fcd's, and is out of scope for this schema.",
+	"description": "The optional `semantic` block of a filament module manifest (quoin FR-070): the fields a module declares to describe itself as a semantic-core package. Every field is fcd's own vocabulary, referenced by $ref rather than restated, so this block cannot skew from the target and package-identity definitions it draws on. Module install policy (compatibility posture, legacy-form handling, sweep reports) is quoin's, not fcd's, and is out of scope for this schema. Property names are snake_case to mirror the module manifest's own on-disk keys, unlike this directory's camelCase package-manifest/mapping/profile documents.",
 	"type": "object",
 	"required": ["contract_version", "semantic_core", "package"],
 	"additionalProperties": false,
 	"properties": {
 		"contract_version": {
-			"$ref": "common.schema.json#/$defs/semver",
-			"description": "Semantic-module contract version this block conforms to."
+			"const": "1.0.0",
+			"description": "Semantic-module contract version this block conforms to; 1.0.0 for quoin FR-070, like every other v1 contract's const contractVersion in this directory."
 		},
 		"semantic_core": {
 			"$ref": "common.schema.json#/$defs/semver",

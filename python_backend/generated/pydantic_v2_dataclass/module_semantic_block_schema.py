@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import ConfigDict, Field
 from pydantic.dataclasses import dataclass
@@ -19,8 +19,10 @@ type Mapping = Annotated[str, Field(min_length=1)]
 @dataclass(config=ConfigDict(extra='forbid'))
 class FilamentModuleManifestSemanticBlockV1:
     contract_version: Annotated[
-        common_schema.Semver,
-        Field(description='Semantic-module contract version this block conforms to.'),
+        Literal['1.0.0'],
+        Field(
+            description="Semantic-module contract version this block conforms to; 1.0.0 for quoin FR-070, like every other v1 contract's const contractVersion in this directory."
+        ),
     ]
     package: Annotated[
         common_schema.PackageIdentity,
