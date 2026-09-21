@@ -361,5 +361,29 @@
 			"value": "Project"
 		},
 		"code": "agent-ix.semantic-ir.INVALID_IDENTITY"
+	},
+	{
+		"id": "module-manifest-missing-version",
+		"schema": "module-manifest.schema.json",
+		"base": "positive/module-manifest.json",
+		"remove": "version",
+		"code": "agent-ix.module-manifest.MISSING_VERSION"
+	},
+	{
+		"id": "module-manifest-unknown-key",
+		"schema": "module-manifest.schema.json",
+		"base": "positive/module-manifest.json",
+		"set": {
+			"path": "unknown_extra_key",
+			"value": "x"
+		},
+		"code": "agent-ix.module-manifest.UNKNOWN_KEY"
+	},
+	{
+		"id": "module-manifest-semantic-block-missing-package",
+		"schema": "module-manifest.schema.json",
+		"base": "positive/module-manifest.json",
+		"remove": "semantic.package",
+		"code": "agent-ix.module-manifest.MISSING_SEMANTIC_PACKAGE"
 	}
 ]

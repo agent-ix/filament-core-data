@@ -49,6 +49,7 @@ All identifiers below are rooted at
 | `semantic-ir.schema.json` | Source-independent IR envelope, definitions, occurrences, types, fields, constraints, roles, and recursion |
 | `package-manifest.schema.json` | Package identity/version, sources, imports, exports, named profiles, targets, and mappings |
 | `module-semantic-block.schema.json` | The filament module manifest's optional `semantic` block (quoin FR-070): contract version, semantic-core version, package identity, exports, imports, targets, and mappings, all by $ref to this contract's own $defs |
+| `module-manifest.schema.json` | The filament-core-service module manifest (FR-035): identity, navigation, dependencies, archetypes, object types, grammars, artifact types, doc kinds, state schemas, lint rules, the mergeable edge-type and role registries, and the optional `semantic` block. Moved here from agent-ix/filament-core-service; fcs consumes it as a published contract like any other consumer. Its `semantic` property is not yet expressed as a $ref to `module-semantic-block.schema.json` above — the two overlap in shape but unifying them is a separate, deliberate change, not something this move made |
 | `package-lock.schema.json` | Exact transitive closure, content/source identities, canonicalization, and fingerprint |
 | `mapping.schema.json` | Correspondences plus typed codec/lens/projection/extraction/rendering/aggregation/enrichment/materialization behavior |
 | `profile.schema.json` | Authority, edit direction, round trip, unknown policy, omissions, enrichment, and lifetime |

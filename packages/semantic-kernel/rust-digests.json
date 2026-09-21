@@ -8,7 +8,7 @@
 		"README.md": "sha256:b03ddd7f5fa5db6a5c599aa3e1b4cb48afd7433042465b873cac373d92ac25d7",
 		"src/identity.rs": "sha256:8970cc0d54739a55f596a3dde93a19eed9c3c8fea8316ecaaa55557752a30122",
 		"src/lib.rs": "sha256:3e34ec22576513f54b8d9282e417551203a88b0029877ec67b7f545381536827",
-		"src/provenance.rs": "sha256:554dfa49f2dbb25b1a173c8688a760797eb77c08c588948d498601bafeed12fd",
+		"src/provenance.rs": "sha256:335e6b6ddde3ffc85c8db22f42906378fb3bbf4421fcafe4a642f2e9d99821a1",
 		"src/support.rs": "sha256:3aee013db5d9dd98d42a4eb9ba6a642cb81724ec438972f76870522d2c8b5477",
 		"src/types.rs": "sha256:b27b086e12ccc51b5a600835fdb6104e1a94687c1f1d30f15bff674fd849eaf7",
 		"src/types/clause_language.rs": "sha256:737fc69f115b27bdb74d44e219ac5888cf81076ef855cde1220f5b00e192299b",
@@ -92,5 +92,5 @@
 		"src/types/unique_constraint_keyword.rs": "sha256:561d4331e7b28596d31bd1e99722a606bb480979122b3caef4ef6a8b1f4e0a83",
 		"src/types/unit_symbol.rs": "sha256:d06d1df6307e99430083deacea895ba45f8e3809d92d0a640995ec712a3236cf"
 	},
-	"crate": "sha256:095ada2d1de2fd20a157d8d7c90c424f30bc3ad79126312afa67cbe2ded7927e"
+	"crate": "sha256:4a2c73eaeaa4be1e05503fedc7f089cf5e04f3dd8c9bd1bac7de6f183f15377f"
 }

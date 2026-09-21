@@ -35,9 +35,9 @@
 		],
 		"inputDigest": "sha256:afe8ce4e9ac1be3d1b12cbf28dd4350f984f1f8c9e5c708a9e7344fbe834cdc3",
 		"bundle": {
-			"base": "https://schemas.agent-ix.org/semantic-core/0.2.0/",
-			"digest": "sha256:355ca2a693eb9345d296be8a1a4bea2f0951a76b4c5dde28c3d99364ffcfe5fa",
-			"semanticCoreVersion": "0.2.0"
+			"base": "https://schemas.agent-ix.org/semantic-core/0.3.0/",
+			"digest": "sha256:65b4e8d4c71a343e270618c9a8ca7e33687f10324ef5e9fe68d150056101c627",
+			"semanticCoreVersion": "0.3.0"
 		},
 		"localization": [
 			{
@@ -643,5 +643,5 @@
 			"types": ["ConstraintKeyword"]
 		}
 	],
-	"contentFingerprint": "sha256:f48db432b57d3bbcf2c6b9a56e0200a178c47731a22f8d381ce2bdf8db10ebc6"
+	"contentFingerprint": "sha256:ad8aaeeac0614abcdfdc658f1cdd34180e91339f0f0cff1115ddbf2a46828c2b"
 }

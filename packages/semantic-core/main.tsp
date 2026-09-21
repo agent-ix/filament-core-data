@@ -13,7 +13,7 @@ using TypeSpec.JsonSchema;
  * are enforced by the semantic-core reader (FR-031, "Grammar rules the reader
  * enforces").
  */
-@jsonSchema("https://schemas.agent-ix.org/semantic-core/0.2.0/")
+@jsonSchema("https://schemas.agent-ix.org/semantic-core/0.3.0/")
 namespace AgentIx.Semantic.Core;
 
 // ---------------------------------------------------------------------------

@@ -7,7 +7,7 @@
 			"runtimeValidation": "validating",
 			"verdict": "qualified-with-conditions",
 			"profileDigest": "sha256:de77a678b1815ffce78633025a657d40deea86bcec59ba28c35adf93a9112dd0",
-			"toolchainFingerprint": "sha256:f534f7d86b31b9b175ca6d7899dd24be87b616d068c4d6a9fbd97be3cec76c1d",
+			"toolchainFingerprint": "sha256:ad0b2665c0fcc933f14351b4e6f40f7381b1e61c5d11645dffffbe6986caa4cf",
 			"retained": [
 				"alias",
 				"closure-additional",
@@ -45,7 +45,7 @@
 				}
 			],
 			"publishedSetCensus": {
-				"sanctioned": 11,
+				"sanctioned": 17,
 				"degraded": 0,
 				"unattributed": 0
 			},
@@ -60,7 +60,7 @@
 			"runtimeValidation": "validating",
 			"verdict": "qualified-with-conditions",
 			"profileDigest": "sha256:70c15540cb34650f73491fefbc4f7518823a5a7f56733747e4b120d0aba1d7f7",
-			"toolchainFingerprint": "sha256:944b673f05bf9f08fd5129352c976b035df03700ed956ab3b7b4bd5bf781312a",
+			"toolchainFingerprint": "sha256:577a4a32e7c43c4106072d0d92d7338431c5425843681ba1f7d1453a9dbd7d57",
 			"retained": [
 				"alias",
 				"closure-additional",
@@ -98,7 +98,7 @@
 				}
 			],
 			"publishedSetCensus": {
-				"sanctioned": 10,
+				"sanctioned": 16,
 				"degraded": 0,
 				"unattributed": 0
 			},
@@ -113,7 +113,7 @@
 			"runtimeValidation": "static-only",
 			"verdict": "not-qualified",
 			"profileDigest": "sha256:8a9d9dbddb7ccce1e1a1e295ca8bcf329e9cc86c330929b94292efef12d2bcfb",
-			"toolchainFingerprint": "sha256:a0d08e2f538ca1b0333db1b18ca6b3513d3f24ec4b9d782d54a1e1d9875e0565",
+			"toolchainFingerprint": "sha256:e43570126a24f17324e68959338930951b1055e63f0fa6fbfd2f12ac6a215a84",
 			"retained": [
 				"const",
 				"default-non-nullable",
@@ -140,7 +140,7 @@
 			],
 			"conditions": [],
 			"publishedSetCensus": {
-				"sanctioned": 10,
+				"sanctioned": 16,
 				"degraded": 0,
 				"unattributed": 0
 			},
@@ -155,7 +155,7 @@
 			"runtimeValidation": "static-only",
 			"verdict": "not-qualified",
 			"profileDigest": "sha256:cffa91971f95f0c5d5cb78e86db3f22daaef8c6d25465a6de7437358c277ec3b",
-			"toolchainFingerprint": "sha256:8e420944b550b09584d906c44d1399dfe0ff0d485a37561ffc12aeca5c8dab57",
+			"toolchainFingerprint": "sha256:fef1265dad8844f9cce3833d2c1689b81101b4f391c649d890429ea10bd0982a",
 			"retained": [
 				"alias",
 				"closure-additional",
@@ -182,7 +182,7 @@
 			],
 			"conditions": [],
 			"publishedSetCensus": {
-				"sanctioned": 10,
+				"sanctioned": 16,
 				"degraded": 0,
 				"unattributed": 0
 			},
@@ -197,7 +197,7 @@
 			"runtimeValidation": "validating",
 			"verdict": "qualified-with-conditions",
 			"profileDigest": "sha256:c22081156b8894c95079b63d0e883ab929a208c3082f3ba779213d057e4f3278",
-			"toolchainFingerprint": "sha256:4347c18765b44ce36e079f71a9871f5f6bb8a748b5e26ca8430aeb20f611449a",
+			"toolchainFingerprint": "sha256:8651617b3ff7bf09f91b8d360a8ecfca9a1692b537b522b8184bd42605575be4",
 			"retained": [
 				"alias",
 				"const",
@@ -229,7 +229,7 @@
 				}
 			],
 			"publishedSetCensus": {
-				"sanctioned": 10,
+				"sanctioned": 16,
 				"degraded": 0,
 				"unattributed": 0
 			},

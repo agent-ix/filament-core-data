@@ -20,7 +20,7 @@
 		"version": "1.0.0",
 		"issue": "https://github.com/agent-ix/filament-core-data/issues/132"
 	},
-	"base": "https://schemas.agent-ix.org/semantic-core/0.2.0/",
+	"base": "https://schemas.agent-ix.org/semantic-core/0.3.0/",
 	"files": [
 		"ClauseLanguage.json",
 		"ClauseRef.json",
@@ -53,5 +53,5 @@
 		"UniqueConstraint.json",
 		"UnitSymbol.json"
 	],
-	"digest": "sha256:355ca2a693eb9345d296be8a1a4bea2f0951a76b4c5dde28c3d99364ffcfe5fa"
+	"digest": "sha256:65b4e8d4c71a343e270618c9a8ca7e33687f10324ef5e9fe68d150056101c627"
 }

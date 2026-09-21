@@ -7,6 +7,7 @@
 			"compiler-request.schema.json",
 			"consumer-policy.schema.json",
 			"mapping.schema.json",
+			"module-manifest.schema.json",
 			"module-semantic-block.schema.json",
 			"output-manifest.schema.json",
 			"package-lock.schema.json",
@@ -16,14 +17,25 @@
 			"semantic-ir.schema.json",
 			"target-contract.schema.json"
 		],
-		"inputDigest": "sha256:0aee5ba2899c4ff9d07f141ae70910c509b4dee099c5f1649c724f2371d2500d",
-		"preparation": []
+		"inputDigest": "sha256:c6f112b314d714e3f62eda867cac7a7adfee8573dd417352f6bac14aa55712f4",
+		"preparation": [
+			{
+				"rule": "enum-default-conflict-dropped",
+				"document": "module-manifest.schema.json",
+				"pointer": "/properties/semantic/properties/compatibility_posture"
+			},
+			{
+				"rule": "enum-default-conflict-dropped",
+				"document": "module-manifest.schema.json",
+				"pointer": "/properties/semantic/properties/legacy_forms"
+			}
+		]
 	},
 	"profile": {
 		"id": "pydantic_v2_dataclass",
 		"digest": "sha256:70c15540cb34650f73491fefbc4f7518823a5a7f56733747e4b120d0aba1d7f7"
 	},
-	"toolchainFingerprint": "sha256:944b673f05bf9f08fd5129352c976b035df03700ed956ab3b7b4bd5bf781312a",
+	"toolchainFingerprint": "sha256:577a4a32e7c43c4106072d0d92d7338431c5425843681ba1f7d1453a9dbd7d57",
 	"generator": {
 		"distribution": "datamodel-code-generator",
 		"version": "0.76.0",
@@ -32,10 +44,36 @@
 	},
 	"generatedSourceLicense": "AGPL-3.0-or-later",
 	"nameCollisions": {
-		"Severity": ["common_schema", "target_contract_schema"],
+		"Severity": [
+			"common_schema",
+			"module_manifest_schema",
+			"target_contract_schema"
+		],
 		"SourceLocus": ["common_schema", "mapping_schema"],
-		"Kind": ["mapping_schema", "representation_schema", "semantic_ir_schema"],
-		"Export": ["module_semantic_block_schema", "package_manifest_schema"],
+		"Target": ["common_schema", "module_manifest_schema"],
+		"Kind": [
+			"mapping_schema",
+			"module_manifest_schema",
+			"representation_schema",
+			"semantic_ir_schema"
+		],
+		"Category": ["module_manifest_schema", "semantic_ir_schema"],
+		"CompatibilityPosture": [
+			"module_manifest_schema",
+			"package_manifest_schema"
+		],
+		"Export": [
+			"module_manifest_schema",
+			"module_semantic_block_schema",
+			"package_manifest_schema"
+		],
+		"Mapping": ["module_manifest_schema", "module_semantic_block_schema"],
+		"Identity": ["module_manifest_schema", "semantic_ir_schema"],
+		"Members": ["module_manifest_schema", "semantic_ir_schema"],
+		"Rule": ["module_manifest_schema", "semantic_ir_schema"],
+		"Shape": ["module_manifest_schema", "semantic_ir_schema"],
+		"ConstructDeclaration": ["module_manifest_schema", "semantic_ir_schema"],
+		"Role": ["module_manifest_schema", "semantic_ir_schema"],
 		"Package": [
 			"package_lock_schema",
 			"package_manifest_schema",
@@ -45,5 +83,5 @@
 		"RoundTrip": ["profile_schema", "representation_schema"]
 	},
 	"published": false,
-	"contentFingerprint": "sha256:2aa20815ae508e8eb621462a051f78a2a6a1ee702cfe7b45955dc341f419cef4"
+	"contentFingerprint": "sha256:6a334db59889b775fa7b370ee72464120728806918719ecf44d3fd2b403e2e60"
 }

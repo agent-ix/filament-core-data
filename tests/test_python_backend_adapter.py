@@ -226,13 +226,33 @@ def test_conflicting_closure_raises_and_agreeing_closure_does_not() -> None:
 
 
 def test_the_preparation_record_is_complete_and_empty_when_nothing_applies() -> None:
-    """TC-867: FR-074-AC-5."""
+    """TC-867: FR-074-AC-5.
+
+    A document with no rewrite-worthy shape gets an empty record; the
+    published corpus is not such a document. `module-manifest.schema.json`
+    carries two properties (`compatibility_posture`, `legacy_forms`) that
+    combine `enum` with a scalar `default` — the record names both rather
+    than staying empty, which is what "complete" means for a corpus that
+    needs a rewrite (see `test_no_constraint_keyword_and_no_reference_is_lost`
+    for why dropping `default` here is not a constraint loss).
+    """
     empty = prepare.prepare_for_python(
         {"type": "object", "additionalProperties": False}
     )
     assert empty.preparation == []
     published = prepare.prepare_input_set(PUBLISHED)
-    assert published.preparation == []
+    assert published.preparation == [
+        {
+            "rule": "enum-default-conflict-dropped",
+            "document": "module-manifest.schema.json",
+            "pointer": "/properties/semantic/properties/compatibility_posture",
+        },
+        {
+            "rule": "enum-default-conflict-dropped",
+            "document": "module-manifest.schema.json",
+            "pointer": "/properties/semantic/properties/legacy_forms",
+        },
+    ]
 
 
 def test_the_pass_is_pure_and_leaves_its_input_alone() -> None:
@@ -278,14 +298,23 @@ def _keywords(node: Any, seen: list[str]) -> None:
 
 
 def test_no_constraint_keyword_and_no_reference_is_lost() -> None:
-    """TC-870: FR-074-AC-8, FR-074-CON-2."""
+    """TC-870: FR-074-AC-8, FR-074-CON-2.
+
+    `default` joins the allowed-to-change set alongside the
+    `unevaluatedProperties`/`additionalProperties` pair. FR-074-CON-2 forbids
+    a rewrite that removes a *constraint*; `default` is not one; JSON Schema
+    draft 2020-12 §6.2 (Annotations) states it plainly: "This keyword can be
+    used to supply a default JSON value... [it] has no effect on validation."
+    Two documents validate identically whether or not it is present, so
+    dropping it changes nothing this test exists to catch.
+    """
     prepared = prepare.prepare_input_set(PUBLISHED)
     for path in PUBLISHED:
         before: list[str] = []
         after: list[str] = []
         _keywords(json.loads(path.read_text()), before)
         _keywords(prepared.documents[path.name], after)
-        changed = {"unevaluatedProperties", "additionalProperties"}
+        changed = {"unevaluatedProperties", "additionalProperties", "default"}
         assert sorted(k for k in before if k not in changed) == sorted(
             k for k in after if k not in changed
         )

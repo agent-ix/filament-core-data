@@ -27,13 +27,13 @@ class Export:
 type Capability = Annotated[str, Field(min_length=1)]
 
 
-type Export2 = Annotated[str, Field(min_length=1)]
+type Export3 = Annotated[str, Field(min_length=1)]
 
 
 @dataclass(config=ConfigDict(extra='forbid'))
 class Import:
     capabilities: list[Capability]
-    exports: list[Export2]
+    exports: list[Export3]
     packageIdentity: common_schema.PackageIdentity
     versionConstraint: Annotated[str, Field(min_length=1)]
 
@@ -56,7 +56,7 @@ type SourceRoot = Annotated[str, Field(min_length=1)]
 @dataclass(config=ConfigDict(extra='forbid'))
 class Profile:
     compatibilityPosture: CompatibilityPosture
-    exports: list[Export2]
+    exports: list[Export3]
     mappings: list[common_schema.SemanticIdentity]
     name: Annotated[str, Field(min_length=1)]
     options: dict[str, Any]

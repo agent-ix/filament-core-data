@@ -6,27 +6,54 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 164,
-			"validatingTypes": 104,
-			"nonValidatingDeclarations": 60,
-			"exercisedTypes": 65,
-			"unexercisedValidatingTypes": 39,
-			"constraintsExercised": 189,
-			"typesRejectingAnEmptyOrUndeclaredValue": 87,
+			"declaredTypes": 210,
+			"validatingTypes": 140,
+			"nonValidatingDeclarations": 70,
+			"exercisedTypes": 72,
+			"unexercisedValidatingTypes": 68,
+			"constraintsExercised": 228,
+			"typesRejectingAnEmptyOrUndeclaredValue": 96,
 			"typesAcceptingAnything": [
 				"common_schema.FilamentSemanticContractCommonTypesV1",
+				"common_schema.ManifestTarget",
+				"common_schema.Origin",
+				"common_schema.PackageIdentity",
+				"common_schema.SemanticIdentity",
+				"common_schema.Semver",
+				"common_schema.Sha256",
 				"compatibility_report_schema.AffectedConsumer",
 				"compatibility_report_schema.RequiredGate",
 				"compiler_request_schema.SupportedFeature",
+				"module_manifest_schema.AllowedLink",
+				"module_manifest_schema.Column",
+				"module_manifest_schema.Defaults",
+				"module_manifest_schema.DocKind",
+				"module_manifest_schema.Example",
+				"module_manifest_schema.Export",
+				"module_manifest_schema.LintRuleEntry",
+				"module_manifest_schema.LintRulesRefItem",
+				"module_manifest_schema.Locator",
+				"module_manifest_schema.Locator1",
+				"module_manifest_schema.Mapping",
+				"module_manifest_schema.Pattern",
+				"module_manifest_schema.Reference",
+				"module_manifest_schema.Role",
+				"module_manifest_schema.Rule",
+				"module_manifest_schema.SectionPathItem",
+				"module_manifest_schema.StateSchemas",
 				"module_semantic_block_schema.Export",
 				"module_semantic_block_schema.Mapping",
 				"package_manifest_schema.Capability",
-				"package_manifest_schema.Export2",
+				"package_manifest_schema.Export3",
 				"package_manifest_schema.SourceRoot",
 				"representation_schema.BestFitItem",
 				"representation_schema.NonUs",
 				"representation_schema.ReservedName",
 				"representation_schema.ReservedNumber",
+				"semantic_ir_schema.Constraint",
+				"semantic_ir_schema.ContractItem",
+				"semantic_ir_schema.ContractItem1",
+				"semantic_ir_schema.IdentityList",
 				"semantic_ir_schema.ReferencesAdditionalPropertyItem",
 				"semantic_ir_schema.Role",
 				"semantic_ir_schema.Value",
@@ -68,18 +95,14 @@
 				{
 					"module": "common_schema",
 					"type": "ManifestTarget",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
 				},
 				{
 					"module": "common_schema",
 					"type": "Origin",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
 				},
 				{
 					"module": "common_schema",
@@ -100,34 +123,26 @@
 				{
 					"module": "common_schema",
 					"type": "PackageIdentity",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
 				},
 				{
 					"module": "common_schema",
 					"type": "SemanticIdentity",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
 				},
 				{
 					"module": "common_schema",
 					"type": "Semver",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
 				},
 				{
 					"module": "common_schema",
 					"type": "Sha256",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
 				},
 				{
 					"module": "common_schema",
@@ -252,6 +267,260 @@
 					"constraintsOnThisType": 14
 				},
 				{
+					"module": "module_manifest_schema",
+					"type": "AllowedLink",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "ArchetypeEntry",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "ArtifactTypeEntry",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "BodyExtraction",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Category",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Column",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "ConstructDeclaration",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "DataSchema",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Defaults",
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "DependsOnItem",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "DocKind",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "EdgeTypeEntry",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "EmitEdge",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Example",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Export",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "FilamentModuleManifest",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "GrammarEntry",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "IterateOver",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "LintRuleEntry",
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "LintRulesRefItem",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Locator",
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Locator1",
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "LocatorAssert",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "LocatorPrimitive",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Mapping",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Nav",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "ObjectTypeEntry",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Pattern",
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Reference",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Role",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "RoleEntry",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Rule",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "SectionPathItem",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Semantic",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 6
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "StateSchemas",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "YieldPattern",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
 					"module": "module_semantic_block_schema",
 					"type": "Export",
 					"exercised": false,
@@ -327,7 +596,7 @@
 				},
 				{
 					"module": "package_manifest_schema",
-					"type": "Export2",
+					"type": "Export3",
 					"exercised": false,
 					"why": "no schema node carries this type's property set"
 				},
@@ -485,9 +754,7 @@
 					"module": "semantic_ir_schema",
 					"type": "Constraint",
 					"exercised": false,
-					"acceptsAConformingValue": false,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
 				},
 				{
 					"module": "semantic_ir_schema",
@@ -564,18 +831,14 @@
 				{
 					"module": "semantic_ir_schema",
 					"type": "ContractItem",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
 				},
 				{
 					"module": "semantic_ir_schema",
 					"type": "ContractItem1",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
 				},
 				{
 					"module": "semantic_ir_schema",
@@ -604,10 +867,8 @@
 				{
 					"module": "semantic_ir_schema",
 					"type": "IdentityList",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
 				},
 				{
 					"module": "semantic_ir_schema",
@@ -840,14 +1101,18 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 167,
-			"validatingTypes": 76,
-			"nonValidatingDeclarations": 91,
-			"exercisedTypes": 56,
-			"unexercisedValidatingTypes": 20,
-			"constraintsExercised": 184,
-			"typesRejectingAnEmptyOrUndeclaredValue": 76,
-			"typesAcceptingAnything": [],
+			"declaredTypes": 214,
+			"validatingTypes": 98,
+			"nonValidatingDeclarations": 116,
+			"exercisedTypes": 72,
+			"unexercisedValidatingTypes": 26,
+			"constraintsExercised": 223,
+			"typesRejectingAnEmptyOrUndeclaredValue": 95,
+			"typesAcceptingAnything": [
+				"module_manifest_schema.Defaults",
+				"module_manifest_schema.LintRuleEntry",
+				"module_manifest_schema.Pattern"
+			],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
 			"lost": ["constraints-array-unique"],
 			"exercised": [
@@ -986,6 +1251,176 @@
 					"acceptsAConformingValue": true,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 14
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "ArchetypeEntry",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "ArtifactTypeEntry",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "BodyExtraction",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Category",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "ConstructDeclaration",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "DataSchema",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Defaults",
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "DependsOnItem",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "EdgeTypeEntry",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "EmitEdge",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "FilamentModuleManifest",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "GrammarEntry",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "IterateOver",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "LintRuleEntry",
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "LocatorAssert",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 5
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "LocatorPrimitive",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Nav",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "ObjectTypeEntry",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Pattern",
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "RoleEntry",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Semantic",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 6
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "YieldPattern",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
 				},
 				{
 					"module": "module_semantic_block_schema",
@@ -1504,14 +1939,21 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 167,
-			"validatingTypes": 76,
-			"nonValidatingDeclarations": 91,
-			"exercisedTypes": 51,
-			"unexercisedValidatingTypes": 25,
-			"constraintsExercised": 184,
-			"typesRejectingAnEmptyOrUndeclaredValue": 76,
-			"typesAcceptingAnything": [],
+			"declaredTypes": 214,
+			"validatingTypes": 98,
+			"nonValidatingDeclarations": 116,
+			"exercisedTypes": 63,
+			"unexercisedValidatingTypes": 35,
+			"constraintsExercised": 218,
+			"typesRejectingAnEmptyOrUndeclaredValue": 92,
+			"typesAcceptingAnything": [
+				"module_manifest_schema.Defaults",
+				"module_manifest_schema.LintRuleEntry",
+				"module_manifest_schema.LocatorAssert",
+				"module_manifest_schema.Nav",
+				"module_manifest_schema.Pattern",
+				"module_manifest_schema.YieldPattern"
+			],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
 			"lost": [
 				"closure-additional",
@@ -1657,6 +2099,170 @@
 					"acceptsAConformingValue": true,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 14
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "ArchetypeEntry",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "ArtifactTypeEntry",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "BodyExtraction",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Category",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "ConstructDeclaration",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "DataSchema",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Defaults",
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "DependsOnItem",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "EdgeTypeEntry",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "EmitEdge",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "FilamentModuleManifest",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 3
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "GrammarEntry",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "IterateOver",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "LintRuleEntry",
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "LocatorAssert",
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "LocatorPrimitive",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Nav",
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "ObjectTypeEntry",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Pattern",
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "RoleEntry",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "Semantic",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 6
+				},
+				{
+					"module": "module_manifest_schema",
+					"type": "YieldPattern",
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
 				},
 				{
 					"module": "module_semantic_block_schema",

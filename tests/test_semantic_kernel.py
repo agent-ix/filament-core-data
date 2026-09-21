@@ -67,13 +67,28 @@ PINNED_DIGESTS = {
         "sha256:bc280e0b9ca273e6b3f0d06c6790179639ac921933ed76172fec190ca87db33b"
     ),
     "python_backend/adapter": (
-        "sha256:13889607403535b12c52e9115a08ea5baac6c67c81ecb08108c2ce73b0b6e5a1"
+        # PLAT-899: prepare.py gained one narrow rewrite rule for the
+        # newly-moved module-manifest.schema.json — a property combining
+        # `enum` with a scalar `default` (`compatibility_posture`,
+        # `legacy_forms`) is not a constraint (`default` has no effect on
+        # validation; FR-074-CON-2 is unaffected), but the pinned generator
+        # renders it as a mypy-invalid assignment, so the pass drops it and
+        # records the drop as a `Rewrite` (test_python_backend_adapter.py).
+        "sha256:f9fdb9a5c6455b383e38dcd556765aee574669f2b7ed08aa4a4ca1ed3273768c"
     ),
     "python_backend/runner": (
         # fcd#193/#196: population's POPULATIONS mapping in constructs.py now
         # renders each population's single `extent` (closed/open) and its flat
         # member list, replacing the per-member {typeRef, extent} shape.
-        "sha256:3a9eca5cbae99303e68f52c88d78ea3f1dc9425c723a5ed8494fcd6472ccfc6e"
+        #
+        # PLAT-899: validate.py's `_exercise` now names a validating type
+        # unexercised, rather than scoring it as accepting anything, when no
+        # property is required and nothing else closes the type — a shape
+        # `module-manifest.schema.json` introduced (`Defaults`, `LintRuleEntry`,
+        # `Nav`, `LocatorAssert`, `YieldPattern`) that no profile's probe can
+        # demonstrate a rejection for (test_python_backend_qualification.py's
+        # third named reason, TC-929).
+        "sha256:7e85d9dbf20ebb92cc3e262f71f2376f0d3a60b7039231f3844f040488381868"
     ),
     "python_backend/qualification": (
         # fcd#199/#200: report.json and validation.json's per-profile
@@ -99,7 +114,12 @@ PINNED_DIGESTS = {
         # positive case exercising the new required-flags shape (case count
         # unchanged at 115; PRES-016 was replaced in place, not added
         # alongside a new case).
-        "sha256:5110ef30342a4ec678139ae59b4075c7ac8be68ad0cea4e7216035d2839963c4"
+        #
+        # PLAT-899: report.json and validation.json remeasured (`... .runner.
+        # qualify` and `... .runner.validate`) after module-manifest.schema.json
+        # moved in from filament-core-service and python_backend/generated was
+        # regenerated for it.
+        "sha256:4ac831f18d644fa857bdd64b312f2067733ad77a617713a8cdab3c5d8c8fb98d"
     ),
     "python_backend/generated": (
         # fcd#199/#200: regenerated (`poetry run python -m
@@ -109,7 +129,10 @@ PINNED_DIGESTS = {
         # required ordered/unique fields. Remeasured once more (confirmed
         # reproducible across 3 successive `emit` runs) after H4's
         # RelationshipSourceEnd/RelationshipTargetEnd split landed.
-        "sha256:cbb4530adcc77351244901f78c6051d3adc8138f1c8621895b84cebda14dc633"
+        #
+        # PLAT-899: regenerated again after module-manifest.schema.json moved
+        # in from filament-core-service (`... .runner.emit`).
+        "sha256:2dba932e1c7c801b4aecd7f52beef9eafe409996435a2627d10da7068cd8dbd8"
     ),
     "python_backend/profiles.json": (
         "sha256:3c6fc254a7c346c88b6ea91fdaeb7d3a3b55f8065b8a6ebc6ddab3a447547345"

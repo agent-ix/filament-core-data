@@ -1,6 +1,6 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schemas.agent-ix.org/semantic-core/0.2.0/Multiplicity.json",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.3.0/Multiplicity.json",
 	"type": "object",
 	"properties": {
 		"lower": {

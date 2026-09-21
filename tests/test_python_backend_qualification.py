@@ -414,6 +414,10 @@ def test_every_validating_type_is_exercised() -> None:
     reasons = {
         "no schema node carries this type's property set",
         "conforming value rejected",
+        (
+            "no property is required and nothing else closes the type, so no "
+            "undeclared-or-incomplete value exists for this profile to reject"
+        ),
     }
     for row in VALIDATION["profiles"]:
         if row["coverage"] != "runtime":

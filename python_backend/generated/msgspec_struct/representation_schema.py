@@ -39,7 +39,7 @@ class Columnar(Struct):
     types: dict[str, Any]
 
 
-class Kind2(Enum):
+class Kind3(Enum):
     csv = 'csv'
     tsv = 'tsv'
 
@@ -52,7 +52,7 @@ class Delimited(Struct):
     flatnessLimit: Annotated[int, Meta(ge=1)]
     headerIdentity: Annotated[str, Meta(min_length=1)]
     implicitTypeInference: bool
-    kind: Kind2
+    kind: Kind3
     nullToken: str
 
 

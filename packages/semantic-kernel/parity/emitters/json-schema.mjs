@@ -17,7 +17,7 @@ import Ajv2020 from "ajv/dist/2020.js";
 import { loadGolden, REPO_ROOT } from "../golden.mjs";
 import { unknownFateOf } from "../project.mjs";
 
-const BASE = "https://schemas.agent-ix.org/semantic-core/0.2.0/";
+const BASE = "https://schemas.agent-ix.org/semantic-core/0.3.0/";
 const INDEX = resolve(
 	REPO_ROOT,
 	"packages/semantic-kernel/json-schema/index.json",

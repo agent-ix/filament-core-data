@@ -1,13 +1,13 @@
 {
 	"$comment": "Issue #11, FR-088. An index over packages/semantic-core/generated/json-schema/, never a copy of it.",
-	"base": "https://schemas.agent-ix.org/semantic-core/0.2.0/",
-	"emissionDigest": "sha256:355ca2a693eb9345d296be8a1a4bea2f0951a76b4c5dde28c3d99364ffcfe5fa",
+	"base": "https://schemas.agent-ix.org/semantic-core/0.3.0/",
+	"emissionDigest": "sha256:65b4e8d4c71a343e270618c9a8ca7e33687f10324ef5e9fe68d150056101c627",
 	"x-agent-ix-provenance": {
 		"$comment": "Issue #11, FR-084. Generated, never hand-edited. The fingerprint is over the declared toolchain only: nothing the host observes enters it.",
 		"target": "json-schema",
-		"semanticCore": "0.2.0",
-		"emissionDigest": "sha256:355ca2a693eb9345d296be8a1a4bea2f0951a76b4c5dde28c3d99364ffcfe5fa",
-		"inputDigest": "sha256:5f0c855fb2caa920c2fe034def76853a760c721174e64128c40112aab0a15d39",
+		"semanticCore": "0.3.0",
+		"emissionDigest": "sha256:65b4e8d4c71a343e270618c9a8ca7e33687f10324ef5e9fe68d150056101c627",
+		"inputDigest": "sha256:81686313b976b232ff992c1b4882e8bbd69a407c3cff60cf42bd0e05661073cb",
 		"losses": [
 			{
 				"id": "unconstrained-value",
@@ -20,7 +20,7 @@
 				"construct": "OperationDecl.params"
 			}
 		],
-		"toolchainFingerprint": "sha256:ed684d57978c7732ac9f6c098bc399bdf7c92077e0ba4dabf9dc916d775475e6",
+		"toolchainFingerprint": "sha256:29cb8dc84c560335651a5020ed7d9ff6cb6810076974f062140fac8112bbfca2",
 		"published": false,
 		"publicationGate": {
 			"issue": "agent-ix/quoin#290",

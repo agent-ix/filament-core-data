@@ -1,0 +1,14 @@
+{
+	"name": "@agent-ix/semantic-schema",
+	"version": "0.1.0",
+	"description": "Published JSON Schema (draft 2020-12) documents for the filament-core-data semantic package contract v1 (schema/semantic/v1/), including the filament module manifest and its optional semantic block. Data-only: no build step, no runtime dependency.",
+	"license": "AGPL-3.0-or-later",
+	"files": [
+		"semantic/"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/agent-ix/filament-core-data.git",
+		"directory": "schema"
+	}
+}

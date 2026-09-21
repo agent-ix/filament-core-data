@@ -164,8 +164,30 @@ def _unconstrained(node: Any) -> bool:
     }
     if not meaningful:
         return True
+    # A node that carries no keyword of its own beyond routing to `oneOf`/
+    # `anyOf` places no obligation directly; whatever obligation exists lives
+    # in its branches. The generator renders such a field as a union, and one
+    # member of that union is permissive exactly when some branch is itself
+    # unconstrained — e.g. a `oneOf` alternative between a bare `{"type":
+    # "object", "not": {...}}` (an object that merely excludes one shape) and a
+    # fully-typed record. Recursing is sound rather than loosening: it defers
+    # to the same rules a standalone branch would already be judged by.
+    if meaningful == {"oneOf"} and isinstance(node.get("oneOf"), list):
+        return any(_unconstrained(branch) for branch in node["oneOf"])
+    if meaningful == {"anyOf"} and isinstance(node.get("anyOf"), list):
+        return any(_unconstrained(branch) for branch in node["anyOf"])
     if meaningful == {"type"} and node.get("type") == "object":
         return True
+    # A `Dict[str, X]` (an object whose only object-composing keyword is a
+    # schema-valued `additionalProperties`, with no `properties` of its own)
+    # is exactly as permissive as `X`. Deferring to `X`'s own verdict is the
+    # same recursion as the `oneOf`/`anyOf` case above, not a separate rule.
+    if (
+        node.get("type") == "object"
+        and meaningful == {"type", "additionalProperties"}
+        and isinstance(node.get("additionalProperties"), dict)
+    ):
+        return _unconstrained(node["additionalProperties"])
     if node.get("type") == "object" and not (
         meaningful
         & {
@@ -359,11 +381,33 @@ def inspect_generated(
         _module_name(name): (name, schema) for name, schema in documents.items()
     }
 
+    def schema_name(body: ast.AnnAssign) -> str:
+        # The generator suffixes a field with `_` and carries the schema's
+        # own property name in `Field(alias=...)` when the bare name would
+        # shadow something the class's own runtime exports — `construct`
+        # becomes `construct_` because `BaseModel.construct` already
+        # exists. The schema's property set never had the trailing `_`,
+        # so matching on the emitted attribute id alone loses every field
+        # renamed this way; the alias, when present, is the schema's name.
+        for node in ast.walk(body.annotation):
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id == "Field"
+            ):
+                for keyword in node.keywords:
+                    if keyword.arg == "alias" and isinstance(
+                        keyword.value, ast.Constant
+                    ) and isinstance(keyword.value.value, str):
+                        return keyword.value.value
+        assert isinstance(body.target, ast.Name)
+        return body.target.id
+
     def candidates_for(
         node: ast.ClassDef, attribute: str
     ) -> list[tuple[str, str, dict[str, Any]]]:
         names = {
-            body.target.id
+            schema_name(body)
             for body in node.body
             if isinstance(body, ast.AnnAssign) and isinstance(body.target, ast.Name)
         }
