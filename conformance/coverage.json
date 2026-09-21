@@ -324,9 +324,9 @@
 		{
 			"adapter": "python-backend",
 			"status": "available",
-			"matched": 0,
+			"matched": 115,
 			"unmet": 0,
-			"failed": 115
+			"failed": 0
 		},
 		{
 			"adapter": "rust-backend",
