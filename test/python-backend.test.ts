@@ -8,6 +8,7 @@
 
 import { execFileSync } from "node:child_process";
 import { readdirSync, readFileSync, statSync } from "node:fs";
+import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -324,15 +325,16 @@ describe("qualified Python generation route (issue #23)", () => {
 			const source = read(path);
 			expect(source, path).not.toContain(root);
 			if (host.length > 3) expect(source, path).not.toContain(host);
-			// The user name is matched where a host reading actually leaks it —
-			// a path segment or a `user@host` — not as a bare substring. GitHub's
-			// runner user is `runner`, an ordinary word this README uses for the
-			// differential runner, and a substring match reported that as a leak.
+			// The user name is matched where a host reading actually leaks it: in
+			// the home directory, or as `user@host`. Not as a bare substring or a
+			// path segment — GitHub's runner user is `runner`, which is an ordinary
+			// word ("the differential runner") and also a directory of this repo
+			// (`python_backend/runner/emit.py`), and both shapes reported those as
+			// leaks.
+			expect(source, path).not.toContain(homedir());
 			if (user.length > 3) {
 				const escaped = user.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-				expect(source, path).not.toMatch(
-					new RegExp(`[/\\\\]${escaped}(?:[/\\\\]|$)|\\b${escaped}@`, "m"),
-				);
+				expect(source, path).not.toMatch(new RegExp(`\\b${escaped}@`));
 			}
 		}
 		const toolchain = read("python_backend/toolchain.json");
