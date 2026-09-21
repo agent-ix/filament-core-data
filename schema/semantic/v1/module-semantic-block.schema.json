@@ -1,0 +1,59 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/filament-core-data/v1/module-semantic-block.schema.json",
+	"title": "Filament module manifest semantic block v1",
+	"description": "The optional `semantic` block of a filament module manifest (quoin FR-070): the fields a module declares to describe itself as a semantic-core package. Every field is fcd's own vocabulary, referenced by $ref rather than restated, so this block cannot skew from the target and package-identity definitions it draws on. Module install policy (compatibility posture, legacy-form handling, sweep reports) is quoin's, not fcd's, and is out of scope for this schema.",
+	"type": "object",
+	"required": ["contract_version", "semantic_core", "package"],
+	"additionalProperties": false,
+	"properties": {
+		"contract_version": {
+			"$ref": "common.schema.json#/$defs/semver",
+			"description": "Semantic-module contract version this block conforms to."
+		},
+		"semantic_core": {
+			"$ref": "common.schema.json#/$defs/semver",
+			"description": "Exact @agent-ix/semantic-core version the module compiles against."
+		},
+		"package": {
+			"$ref": "common.schema.json#/$defs/packageIdentity",
+			"description": "This module's own package identity in the semantic-core package graph."
+		},
+		"exports": {
+			"type": "array",
+			"items": {
+				"type": "string",
+				"minLength": 1
+			},
+			"uniqueItems": true,
+			"description": "Object-type names this module publishes as semantic types; each must also be declared in the manifest's object_types."
+		},
+		"imports": {
+			"type": "object",
+			"propertyNames": {
+				"$ref": "common.schema.json#/$defs/packageIdentity"
+			},
+			"additionalProperties": {
+				"$ref": "common.schema.json#/$defs/semver"
+			},
+			"description": "Imported semantic packages, keyed by package identity, pinned to the exact version this module compiles against."
+		},
+		"targets": {
+			"type": "array",
+			"items": {
+				"$ref": "common.schema.json#/$defs/manifestTarget"
+			},
+			"uniqueItems": true,
+			"description": "Generated targets and representation formats this module's semantic types compile to, drawn from fcd's own declared target registry. Always a $ref; never a locally inlined enum."
+		},
+		"mappings": {
+			"type": "array",
+			"items": {
+				"type": "string",
+				"minLength": 1
+			},
+			"uniqueItems": true,
+			"description": "Named representation mappings this module declares (quoin FR-071..073)."
+		}
+	}
+}
