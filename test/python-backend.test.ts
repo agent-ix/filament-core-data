@@ -324,7 +324,16 @@ describe("qualified Python generation route (issue #23)", () => {
 			const source = read(path);
 			expect(source, path).not.toContain(root);
 			if (host.length > 3) expect(source, path).not.toContain(host);
-			if (user.length > 3) expect(source, path).not.toContain(user);
+			// The user name is matched where a host reading actually leaks it —
+			// a path segment or a `user@host` — not as a bare substring. GitHub's
+			// runner user is `runner`, an ordinary word this README uses for the
+			// differential runner, and a substring match reported that as a leak.
+			if (user.length > 3) {
+				const escaped = user.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+				expect(source, path).not.toMatch(
+					new RegExp(`[/\\\\]${escaped}(?:[/\\\\]|$)|\\b${escaped}@`, "m"),
+				);
+			}
 		}
 		const toolchain = read("python_backend/toolchain.json");
 		expect(toolchain).toContain('"minor": "3.13"');
