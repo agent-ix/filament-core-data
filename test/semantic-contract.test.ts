@@ -548,6 +548,7 @@ describe("semantic package contract v1", () => {
 			"compiler-request.schema.json",
 			"consumer-policy.schema.json",
 			"mapping.schema.json",
+			"module-semantic-block.schema.json",
 			"output-manifest.schema.json",
 			"package-lock.schema.json",
 			"package-manifest.schema.json",
@@ -1296,6 +1297,10 @@ describe("semantic package contract v1", () => {
 			[
 				"package-manifest.schema.json",
 				readJson("positive/package-manifest.json"),
+			],
+			[
+				"module-semantic-block.schema.json",
+				readJson("positive/module-semantic-block.json"),
 			],
 			["package-lock.schema.json", readJson("positive/package-lock.json")],
 			["mapping.schema.json", readJson("positive/mapping.json")],
