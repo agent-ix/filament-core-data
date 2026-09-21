@@ -120,19 +120,26 @@ jobs:
       # nothing, because `--locked` refuses to move a lockfile. Every gate after
       # it still runs offline, still against the pinned graph.
       #
-      # Each manifest is fetched, not just the root: the five crates in
+      # Each manifest is fetched, not just the root: the crates in
       # `[workspace] exclude` carry their own lock files precisely so they stay
       # out of the root resolve, which also means the root fetch does not cover
-      # them. The kernel parity emitter is one of them and was the second
-      # failure here.
+      # them. The kernel parity emitter is one of them and failed here with the
+      # same offline-resolve error the root fetch had just fixed elsewhere.
+      #
+      # The three FR-061 consumer crates are excluded from this loop and must
+      # stay excluded. They declare a path dependency on
+      # `crates/agent-ix-conformance-<version>/`, which does not exist in the
+      # tree: FR-061 unpacks the crate artifact into a scratch directory and
+      # builds them there, deliberately, so that a build which only works in
+      # place is a failure rather than a convenience. Fetching them from the
+      # repo root asks cargo to read a manifest the gate has not created yet,
+      # and it exits 101. Their registry dependencies are the workspace's own
+      # and are already in the cache from the root fetch.
       - name: Warm the cargo cache (the one online step; every gate stays offline)
         run: |
           set -e
           for manifest in \
             Cargo.toml \
-            crates/consumer-compile-time/Cargo.toml \
-            crates/consumer-runtime/Cargo.toml \
-            crates/kernel-consumer/Cargo.toml \
             packages/semantic-kernel/rust/Cargo.toml \
             packages/semantic-kernel/parity/emitters/rust/Cargo.toml
           do
