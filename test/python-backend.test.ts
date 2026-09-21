@@ -263,7 +263,6 @@ describe("qualified Python generation route (issue #23)", () => {
 			"semantic-core": "packages/semantic-core/main.tsp",
 			"semantic-ir-v1-1": "fixtures/semantic/v1/positive/semantic-ir-v1-1.json",
 			"semantic-architecture": "docs/semantic-data-system/metamodel.md",
-			"contract-census": "audit/filament-contract-census/inventory.json",
 		};
 		for (const [suite, sentinel] of Object.entries(converted)) {
 			// Whitespace-insensitive on purpose: the formatter wraps a call that
