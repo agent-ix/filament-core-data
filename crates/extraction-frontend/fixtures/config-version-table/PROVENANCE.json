@@ -1,22 +1,22 @@
 {
-  "repository": "https://github.com/agent-ix/quire-rs",
-  "revision": "8b8020e",
-  "revision_full": "8b8020e665c61a11bc74f3f23b84617c80c0c442",
-  "paths": [
-    {
-      "source": "tests/fixtures/semantic/quoin/mapping/config-version.table.md",
-      "source_sha256": "b4c9f2f7db2b909a87bbbaf15b65407bd3cd8a190d81fef2e8e5eff5604405fe",
-      "fixture": "spec/functional/FR-006-config-version-entity.md"
-    }
-  ],
-  "edits": [
-    "FR-006 frontmatter: inserted `name: ConfigVersion` after `type: FR` so the `parent | ConfigVersion` Type cell resolves through BundleIndex::from_documents the way quire-rs's own config-version.expected.json resolves it (the engine indexes id, title and name; the title is `ConfigVersion Entity`).",
-    "FR-006 frontmatter: inserted `relationships: [{target: ix://agent-ix/config-service/FR-005, type: references}]` so FR-094 (Task-133) has one frontmatter edge to lower (decision D5); `references` is the verb the entity object type lists under allowed_links.",
-    "FR-006: the body `## Relationships` bullet list removed: under spec-objects-business 0.6.0 a `## Relationships` section is a `Name | Verb | Target | Multiplicity` table the engine extracts, and a bullet list is refused as semantic.feature-not-extractable; both forms remove the same four lines, so their spans still lower to identical bytes."
-  ],
-  "authored": [
-    "spec/spec.md: bundle identity org=agent-ix name=config-service (no upstream source).",
-    "spec/functional/FR-005-config-overlay-entity.md: typed-table ConfigOverlay entity with fields id (UUID, 1, identity) and name (String, 1, nonEmpty); the target of FR-006's edge."
-  ],
-  "note": "One bundle root per authored form (decision D7): config-version-table/ and config-version-fence/ hold the same relative path with the table and the sysml fence form respectively; never both in one bundle."
+	"repository": "https://github.com/agent-ix/quire-rs",
+	"revision": "8b8020e",
+	"revision_full": "8b8020e665c61a11bc74f3f23b84617c80c0c442",
+	"paths": [
+		{
+			"source": "tests/fixtures/semantic/quoin/mapping/config-version.table.md",
+			"source_sha256": "b4c9f2f7db2b909a87bbbaf15b65407bd3cd8a190d81fef2e8e5eff5604405fe",
+			"fixture": "spec/functional/FR-006-config-version-entity.md"
+		}
+	],
+	"edits": [
+		"FR-006 frontmatter: inserted `name: ConfigVersion` after `type: FR` so the `parent | ConfigVersion` Type cell resolves through BundleIndex::from_documents the way quire-rs's own config-version.expected.json resolves it (the engine indexes id, title and name; the title is `ConfigVersion Entity`).",
+		"FR-006 frontmatter: inserted `relationships: [{target: ix://agent-ix/config-service/FR-005, type: references}]` so FR-094 (Task-133) has one frontmatter edge to lower (decision D5); `references` is the verb the entity object type lists under allowed_links.",
+		"FR-006: the body `## Relationships` bullet list removed: under spec-objects-business 0.6.0 a `## Relationships` section is a `Name | Verb | Target | Multiplicity` table the engine extracts, and a bullet list is refused as semantic.feature-not-extractable; both forms remove the same four lines, so their spans still lower to identical bytes."
+	],
+	"authored": [
+		"spec/spec.md: bundle identity org=agent-ix name=config-service (no upstream source).",
+		"spec/functional/FR-005-config-overlay-entity.md: typed-table ConfigOverlay entity with fields id (UUID, 1, identity) and name (String, 1, nonEmpty); the target of FR-006's edge."
+	],
+	"note": "One bundle root per authored form (decision D7): config-version-table/ and config-version-fence/ hold the same relative path with the table and the sysml fence form respectively; never both in one bundle."
 }

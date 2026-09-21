@@ -1,12 +1,12 @@
 {
-  "source": "authored",
-  "case": "enumeration",
-  "files": [
-    "spec/functional/EN_001-status.md",
-    "spec/functional/FR-006-config-version-entity.md",
-    "spec/spec.md"
-  ],
-  "derived": [],
-  "edits": [],
-  "note": "EN_001 is an `object: enumeration` artifact titled Status with a `## Values` table (the business module's values_table locator). FR-006's `status | Status` cell resolves to ix://agent-ix/config-service/type/Status; the resolved artifact's frontmatter `object` is enumeration, so pass two returns Resolution::Enumeration(EN_001) and the typeRef is the enumeration's type/ identity (FR-092-AC-7; TC-1216). The sibling case resolve/entity-titled-status carries the same title under `object: entity`."
+	"source": "authored",
+	"case": "enumeration",
+	"files": [
+		"spec/functional/EN_001-status.md",
+		"spec/functional/FR-006-config-version-entity.md",
+		"spec/spec.md"
+	],
+	"derived": [],
+	"edits": [],
+	"note": "EN_001 is an `object: enumeration` artifact titled Status with a `## Values` table (the business module's values_table locator). FR-006's `status | Status` cell resolves to ix://agent-ix/config-service/type/Status; the resolved artifact's frontmatter `object` is enumeration, so pass two returns Resolution::Enumeration(EN_001) and the typeRef is the enumeration's type/ identity (FR-092-AC-7; TC-1216). The sibling case resolve/entity-titled-status carries the same title under `object: entity`."
 }

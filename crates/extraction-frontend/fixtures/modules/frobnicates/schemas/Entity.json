@@ -1,15 +1,15 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.agent-ix.org/agent-ix/frobnicates/0.1.0/Entity.json",
-  "type": "object",
-  "properties": {
-    "fields": {
-      "type": "array",
-      "items": {
-        "$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/FieldDecl.json"
-      },
-      "minItems": 1
-    }
-  },
-  "required": ["fields"]
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/agent-ix/frobnicates/0.1.0/Entity.json",
+	"type": "object",
+	"properties": {
+		"fields": {
+			"type": "array",
+			"items": {
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.1.0/FieldDecl.json"
+			},
+			"minItems": 1
+		}
+	},
+	"required": ["fields"]
 }

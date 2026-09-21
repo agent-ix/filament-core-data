@@ -1,25 +1,23 @@
 {
-  "source": "authored",
-  "code": "MODULE_REFUSED",
-  "files": [
-    "modules/spec-objects-business/manifest.yaml",
-    "spec/functional/FR-005-config-overlay-entity.md",
-    "spec/spec.md"
-  ],
-  "derived": [
-    {
-      "fixture": "spec/functional/FR-005-config-overlay-entity.md",
-      "from": "../../config-version-table/spec/functional/FR-005-config-overlay-entity.md",
-      "edits": []
-    },
-    {
-      "fixture": "modules/spec-objects-business/manifest.yaml",
-      "from": "../../modules/spec-objects-business/manifest.yaml",
-      "edits": [
-        "semantic.semantic_core: 0.1.0 -> 9.9.9"
-      ]
-    }
-  ],
-  "edits": [],
-  "note": "Bundle root plus modules/spec-objects-business/: the vendored 0.3.0 manifest with semantic.semantic_core 0.1.0 -> 9.9.9 (the only edit; schemas are not vendored because the engine refuses the block before resolving a schema). Loading refuses with MODULE_REFUSED carrying semantic.unsupported-semantic-core (FR-091-AC-3)."
+	"source": "authored",
+	"code": "MODULE_REFUSED",
+	"files": [
+		"modules/spec-objects-business/manifest.yaml",
+		"spec/functional/FR-005-config-overlay-entity.md",
+		"spec/spec.md"
+	],
+	"derived": [
+		{
+			"fixture": "spec/functional/FR-005-config-overlay-entity.md",
+			"from": "../../config-version-table/spec/functional/FR-005-config-overlay-entity.md",
+			"edits": []
+		},
+		{
+			"fixture": "modules/spec-objects-business/manifest.yaml",
+			"from": "../../modules/spec-objects-business/manifest.yaml",
+			"edits": ["semantic.semantic_core: 0.1.0 -> 9.9.9"]
+		}
+	],
+	"edits": [],
+	"note": "Bundle root plus modules/spec-objects-business/: the vendored 0.3.0 manifest with semantic.semantic_core 0.1.0 -> 9.9.9 (the only edit; schemas are not vendored because the engine refuses the block before resolving a schema). Loading refuses with MODULE_REFUSED carrying semantic.unsupported-semantic-core (FR-091-AC-3)."
 }

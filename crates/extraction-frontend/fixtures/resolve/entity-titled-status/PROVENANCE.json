@@ -1,14 +1,14 @@
 {
-  "source": "authored",
-  "case": "entity-titled-status",
-  "files": [
-    "spec/functional/FR-001-status.md",
-    "spec/functional/FR-006-config-version-entity.md",
-    "spec/spec.md"
-  ],
-  "derived": [
-    "spec/functional/FR-006-config-version-entity.md is a byte copy of resolve/enumeration's FR-006."
-  ],
-  "edits": [],
-  "note": "The counterpart of resolve/enumeration: the artifact titled Status is an `object: entity`, so the same `status | Status` cell classifies Resolution::Object(FR-001) (FR-092-AC-7; TC-1216)."
+	"source": "authored",
+	"case": "entity-titled-status",
+	"files": [
+		"spec/functional/FR-001-status.md",
+		"spec/functional/FR-006-config-version-entity.md",
+		"spec/spec.md"
+	],
+	"derived": [
+		"spec/functional/FR-006-config-version-entity.md is a byte copy of resolve/enumeration's FR-006."
+	],
+	"edits": [],
+	"note": "The counterpart of resolve/enumeration: the artifact titled Status is an `object: entity`, so the same `status | Status` cell classifies Resolution::Object(FR-001) (FR-092-AC-7; TC-1216)."
 }

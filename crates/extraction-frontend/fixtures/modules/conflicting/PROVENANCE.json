@@ -1,15 +1,12 @@
 {
-  "repository": "https://github.com/agent-ix/spec-objects-business",
-  "revision": "7b7b0bc",
-  "revision_full": "7b7b0bc62d16676b9a7dc81b57c833009966408d",
-  "derived_from": "../spec-objects-business (the vendored 0.7.0 module, byte-identical except the edits below)",
-  "paths": [
-    "manifest.yaml",
-    "schemas/*.json"
-  ],
-  "edits": [
-    "manifest.yaml semantic.compatibility_posture: strict -> declared-lossy (every extraction under this module reports lossy: true, so its lift differs from the vendored module's by construction)",
-    "manifest.yaml semantic.legacy_forms: warning -> error (a legacy-form document errors instead of warning)"
-  ],
-  "note": "The conflicting module of FR-091-AC-4 (decision D12): same module name and version as the vendored module so an ambient loader consulting HOME/.ix or QUIRE_MODULES would pick it up. A semantic block cannot drop a field (extraction reads only semantic_core, package, compatibility_posture and legacy_forms from it), so the observable conflict is the lossy posture; the test plants it under a temporary HOME and proves the explicit lift is unaffected and the explicit control differs."
+	"repository": "https://github.com/agent-ix/spec-objects-business",
+	"revision": "7b7b0bc",
+	"revision_full": "7b7b0bc62d16676b9a7dc81b57c833009966408d",
+	"derived_from": "../spec-objects-business (the vendored 0.7.0 module, byte-identical except the edits below)",
+	"paths": ["manifest.yaml", "schemas/*.json"],
+	"edits": [
+		"manifest.yaml semantic.compatibility_posture: strict -> declared-lossy (every extraction under this module reports lossy: true, so its lift differs from the vendored module's by construction)",
+		"manifest.yaml semantic.legacy_forms: warning -> error (a legacy-form document errors instead of warning)"
+	],
+	"note": "The conflicting module of FR-091-AC-4 (decision D12): same module name and version as the vendored module so an ambient loader consulting HOME/.ix or QUIRE_MODULES would pick it up. A semantic block cannot drop a field (extraction reads only semantic_core, package, compatibility_posture and legacy_forms from it), so the observable conflict is the lossy posture; the test plants it under a temporary HOME and proves the explicit lift is unaffected and the explicit control differs."
 }

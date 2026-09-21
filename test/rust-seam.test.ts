@@ -343,10 +343,9 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 					`kind: "${kind}",`,
 				);
 			} else {
-				expect(
-					identity,
-					`no POPULATIONS row bound to kind ${kind}`,
-				).toContain(`name: "${kind}",`);
+				expect(identity, `no POPULATIONS row bound to kind ${kind}`).toContain(
+					`name: "${kind}",`,
+				);
 			}
 		}
 		expect(identity).toContain("pub const POPULATIONS: &[PopulationMeta]");
@@ -709,13 +708,13 @@ describe("TC-1810 NATIVE_SCALARS agrees with kernel-scalars.json (R3, FR-032-AC-
 			resolve(root, "src/compiler/backends/rust-serde/mapping.mjs"),
 			"utf8",
 		);
-		const match = source.match(/const NATIVE_SCALARS = new Map\(\[([\s\S]*?)\]\);/);
+		const match = source.match(
+			/const NATIVE_SCALARS = new Map\(\[([\s\S]*?)\]\);/,
+		);
 		expect(match).not.toBeNull();
 		const pairs = Object.fromEntries(
 			Array.from(
-				(match as RegExpMatchArray)[1].matchAll(
-					/\["([^"]+)",\s*"([^"]+)"\]/g,
-				),
+				(match as RegExpMatchArray)[1].matchAll(/\["([^"]+)",\s*"([^"]+)"\]/g),
 			).map((entry) => [entry[1], entry[2]]),
 		);
 		const names = Object.keys(canonical.scalars);

@@ -1,27 +1,27 @@
 {
-  "source": "authored",
-  "case": "artifact-axis",
-  "files": [
-    "spec/functional/FR-005-config-overlay-entity.md",
-    "spec/functional/FR-006-config-version-entity.md",
-    "spec/spec.md"
-  ],
-  "derived": [
-    {
-      "fixture": "spec/functional/FR-005-config-overlay-entity.md",
-      "from": "../../config-version-table/spec/functional/FR-005-config-overlay-entity.md",
-      "edits": []
-    },
-    {
-      "fixture": "spec/functional/FR-006-config-version-entity.md",
-      "from": "../../config-version-table/spec/functional/FR-006-config-version-entity.md",
-      "edits": [
-        "frontmatter relationships replaced by traces_to US-002, implements StR-001, depends_on FR-005 (artifact-axis verbs the entity object type does not list)",
-        "Properties reduced to two rows; Invariants dropped",
-        "the body `## Relationships` bullet list removed: under spec-objects-business 0.6.0 a `## Relationships` section is a `Name | Verb | Target | Multiplicity` table the engine extracts, and a bullet list is refused as semantic.feature-not-extractable"
-      ]
-    }
-  ],
-  "edits": [],
-  "note": "The entity carries only artifact-axis frontmatter edges (two of them to targets that exist nowhere): the lift emits zero relationships and zero diagnostics about them. TC-1236 copies the bundle to a scratch directory and appends one references edge to FR-005 to prove exactly one relationship appears (FR-094-AC-6)."
+	"source": "authored",
+	"case": "artifact-axis",
+	"files": [
+		"spec/functional/FR-005-config-overlay-entity.md",
+		"spec/functional/FR-006-config-version-entity.md",
+		"spec/spec.md"
+	],
+	"derived": [
+		{
+			"fixture": "spec/functional/FR-005-config-overlay-entity.md",
+			"from": "../../config-version-table/spec/functional/FR-005-config-overlay-entity.md",
+			"edits": []
+		},
+		{
+			"fixture": "spec/functional/FR-006-config-version-entity.md",
+			"from": "../../config-version-table/spec/functional/FR-006-config-version-entity.md",
+			"edits": [
+				"frontmatter relationships replaced by traces_to US-002, implements StR-001, depends_on FR-005 (artifact-axis verbs the entity object type does not list)",
+				"Properties reduced to two rows; Invariants dropped",
+				"the body `## Relationships` bullet list removed: under spec-objects-business 0.6.0 a `## Relationships` section is a `Name | Verb | Target | Multiplicity` table the engine extracts, and a bullet list is refused as semantic.feature-not-extractable"
+			]
+		}
+	],
+	"edits": [],
+	"note": "The entity carries only artifact-axis frontmatter edges (two of them to targets that exist nowhere): the lift emits zero relationships and zero diagnostics about them. TC-1236 copies the bundle to a scratch directory and appends one references edge to FR-005 to prove exactly one relationship appears (FR-094-AC-6)."
 }

@@ -1,6 +1,6 @@
 {
-  "source": "constructed",
-  "code": "LIMIT_MAX_CLAUSE_BYTES",
-  "constructed_by": "crates/extraction-frontend/tests/limits.rs::tc_1305_each_limit_one_past_yields_one_blocking_limit_diagnostic_naming_the_file_value",
-  "note": "Exercised by a bundle the test constructs in a scratch directory from the value limits.json declares: one `## Invariants` ocl fence of maxClauseBytes + 1 bytes. No committed file expresses it (decision D14)."
+	"source": "constructed",
+	"code": "LIMIT_MAX_CLAUSE_BYTES",
+	"constructed_by": "crates/extraction-frontend/tests/limits.rs::tc_1305_each_limit_one_past_yields_one_blocking_limit_diagnostic_naming_the_file_value",
+	"note": "Exercised by a bundle the test constructs in a scratch directory from the value limits.json declares: one `## Invariants` ocl fence of maxClauseBytes + 1 bytes. No committed file expresses it (decision D14)."
 }

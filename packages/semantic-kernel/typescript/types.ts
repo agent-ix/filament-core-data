@@ -22,9 +22,31 @@ export interface ClauseRef {
 	readonly sourceSpan?: SourceLocus;
 }
 
-export type ConstraintDecl = EnumValuesConstraint | ExclusiveMaxConstraint | ExclusiveMinConstraint | FormatConstraint | MaxConstraint | MaxLengthConstraint | MinConstraint | MinLengthConstraint | NonEmptyConstraint | PatternConstraint | UniqueConstraint;
+export type ConstraintDecl =
+	| EnumValuesConstraint
+	| ExclusiveMaxConstraint
+	| ExclusiveMinConstraint
+	| FormatConstraint
+	| MaxConstraint
+	| MaxLengthConstraint
+	| MinConstraint
+	| MinLengthConstraint
+	| NonEmptyConstraint
+	| PatternConstraint
+	| UniqueConstraint;
 
-export type ConstraintKeyword = "enumValues" | "exclusiveMax" | "exclusiveMin" | "format" | "max" | "maxLength" | "min" | "minLength" | "nonEmpty" | "pattern" | "unique";
+export type ConstraintKeyword =
+	| "enumValues"
+	| "exclusiveMax"
+	| "exclusiveMin"
+	| "format"
+	| "max"
+	| "maxLength"
+	| "min"
+	| "minLength"
+	| "nonEmpty"
+	| "pattern"
+	| "unique";
 
 export interface DecimalPolicy {
 	readonly precision: DecimalPolicyPrecision;
@@ -50,7 +72,14 @@ export interface DefaultDeclValue {
 
 export type DefaultKind = "migration" | "representation" | "semantic";
 
-export type EdgeCategory = "behavioral" | "dataflow" | "dependency" | "governance" | "realization" | "structural" | "traceability";
+export type EdgeCategory =
+	| "behavioral"
+	| "dataflow"
+	| "dependency"
+	| "governance"
+	| "realization"
+	| "structural"
+	| "traceability";
 
 export interface EnumValue {
 	readonly doc?: EnumValueDoc;
@@ -66,7 +95,10 @@ export interface EnumValuesConstraint {
 
 export type EnumValuesConstraintKeyword = "enumValues";
 
-export type EnumValuesConstraintValues = EnumValuesConstraintValuesBoolean | EnumValuesConstraintValuesNumber | EnumValuesConstraintValuesString;
+export type EnumValuesConstraintValues =
+	| EnumValuesConstraintValuesBoolean
+	| EnumValuesConstraintValuesNumber
+	| EnumValuesConstraintValuesString;
 
 export type EnumValuesConstraintValuesBoolean = boolean;
 
@@ -81,7 +113,9 @@ export interface ExclusiveMaxConstraint {
 
 export type ExclusiveMaxConstraintKeyword = "exclusiveMax";
 
-export type ExclusiveMaxConstraintValue = ExclusiveMaxConstraintValueNumber | ExclusiveMaxConstraintValueString;
+export type ExclusiveMaxConstraintValue =
+	| ExclusiveMaxConstraintValueNumber
+	| ExclusiveMaxConstraintValueString;
 
 export type ExclusiveMaxConstraintValueNumber = number;
 
@@ -94,7 +128,9 @@ export interface ExclusiveMinConstraint {
 
 export type ExclusiveMinConstraintKeyword = "exclusiveMin";
 
-export type ExclusiveMinConstraintValue = ExclusiveMinConstraintValueNumber | ExclusiveMinConstraintValueString;
+export type ExclusiveMinConstraintValue =
+	| ExclusiveMinConstraintValueNumber
+	| ExclusiveMinConstraintValueString;
 
 export type ExclusiveMinConstraintValueNumber = number;
 
@@ -127,7 +163,16 @@ export type FormatConstraintName = string;
 
 export type Identifier = string;
 
-export type KernelScalar = "Boolean" | "Bytes" | "Decimal" | "Duration" | "Integer" | "JsonObject" | "String" | "Timestamp" | "UUID";
+export type KernelScalar =
+	| "Boolean"
+	| "Bytes"
+	| "Decimal"
+	| "Duration"
+	| "Integer"
+	| "JsonObject"
+	| "String"
+	| "Timestamp"
+	| "UUID";
 
 export interface MaxConstraint {
 	readonly keyword: MaxConstraintKeyword;
@@ -136,7 +181,9 @@ export interface MaxConstraint {
 
 export type MaxConstraintKeyword = "max";
 
-export type MaxConstraintValue = MaxConstraintValueNumber | MaxConstraintValueString;
+export type MaxConstraintValue =
+	| MaxConstraintValueNumber
+	| MaxConstraintValueString;
 
 export type MaxConstraintValueNumber = number;
 
@@ -158,7 +205,9 @@ export interface MinConstraint {
 
 export type MinConstraintKeyword = "min";
 
-export type MinConstraintValue = MinConstraintValueNumber | MinConstraintValueString;
+export type MinConstraintValue =
+	| MinConstraintValueNumber
+	| MinConstraintValueString;
 
 export type MinConstraintValueNumber = number;
 

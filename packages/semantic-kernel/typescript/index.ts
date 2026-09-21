@@ -91,9 +91,7 @@ export type {
 	UnitSymbol,
 } from "./types.js";
 
-export {
-	UNION_DISCRIMINANT,
-} from "./types.js";
+export { UNION_DISCRIMINANT } from "./types.js";
 
 export {
 	validateClauseLanguage,
@@ -224,6 +222,4 @@ export {
 	TYPE_VARIANTS,
 } from "./identity.js";
 
-export {
-	PROVENANCE,
-} from "./provenance.js";
+export { PROVENANCE } from "./provenance.js";
