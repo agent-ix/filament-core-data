@@ -139,26 +139,36 @@ jobs:
         shell: bash
         run: |
           set -e
-          # Manifests with a tracked lockfile: fetched in place under
-          # `--locked`, which populates the cache and resolves nothing.
+          # In place: manifests that resolve where they sit and track a
+          # lockfile. `--locked` populates the cache and resolves nothing.
           for manifest in \
             Cargo.toml \
-            packages/semantic-kernel/parity/emitters/rust/Cargo.toml \
-            spikes/typespec-feasibility/generated/custom/rust/Cargo.toml
+            packages/semantic-kernel/parity/emitters/rust/Cargo.toml
           do
             CARGO_NET_OFFLINE=false cargo fetch --locked --manifest-path "$manifest"
           done
-          # `packages/semantic-kernel/rust` tracks no lockfile — the kernel gate
-          # compares the directory against a fresh generation, so a lockfile
-          # appearing there is a failure. Fetching it in place writes one (the
-          # fifth dispatch failed nine tree gates on exactly that). It is
-          # fetched from a scratch copy instead: the dependencies land in the
-          # shared cargo cache, the tree is not touched.
-          scratch="$RUNNER_TEMP/kernel-fetch"
-          rm -rf "$scratch"
-          cp -r packages/semantic-kernel/rust "$scratch"
-          CARGO_NET_OFFLINE=false cargo fetch --manifest-path "$scratch/Cargo.toml"
-          rm -rf "$scratch"
+          # From a scratch copy: crates the gates themselves copy out of the
+          # tree before building, and which cannot be fetched where they sit.
+          #  - `packages/semantic-kernel/rust` tracks no lockfile, and the
+          #    kernel gate compares the directory against a fresh generation —
+          #    fetching in place writes a `Cargo.lock` there and fails it.
+          #  - `spikes/typespec-feasibility/generated/custom/rust` lies under
+          #    the root workspace without being a member, so cargo refuses it in
+          #    place ("believes it's in a workspace when it's not"). The test
+          #    that builds it copies it out first, for the same reason.
+          # Dependencies land in the shared cargo cache; the tree is untouched.
+          for dir in \
+            packages/semantic-kernel/rust \
+            spikes/typespec-feasibility/generated/custom/rust
+          do
+            scratch="$RUNNER_TEMP/cargo-fetch/$(basename "$dir")-$RANDOM"
+            mkdir -p "$(dirname "$scratch")"
+            cp -r "$dir" "$scratch"
+            locked=""
+            if [[ -f "$scratch/Cargo.lock" ]]; then locked="--locked"; fi
+            CARGO_NET_OFFLINE=false cargo fetch $locked --manifest-path "$scratch/Cargo.toml"
+          done
+          rm -rf "$RUNNER_TEMP/cargo-fetch"
           git status --porcelain --untracked-files=all | tee /dev/stderr | (! grep -q .)
 
       # FR-040 compares the `relationship.category` enum against the categories
