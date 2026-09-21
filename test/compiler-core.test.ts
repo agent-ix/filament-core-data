@@ -5586,6 +5586,13 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 			expect(changed).toContain("src/compiler/pipeline.mjs");
 			expect(changed).toContain("spec/tests.md");
 
+			const trackedAtHead = new Set(
+				git("ls-files")
+					.split("\n")
+					.map((line) => line.trim())
+					.filter((line) => line.length > 0),
+			);
+
 			let modified = 0;
 			let added = 0;
 			for (const path of changed) {
@@ -5593,6 +5600,14 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 				const there = resolve(worktree, path);
 				if (!existsSync(there)) {
 					added += 1;
+					continue;
+				}
+				// A path HEAD no longer tracks was removed by a later change, and
+				// that removal is that change's business. The subject of this
+				// rehearsal is the `base..tip` diff; treating a deliberate later
+				// deletion as a broken revert is the same annexing-later-work
+				// defect the range pinning above exists to close.
+				if (!trackedAtHead.has(path)) {
 					continue;
 				}
 				expect(existsSync(here), path).toBe(true);
