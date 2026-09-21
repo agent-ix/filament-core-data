@@ -26,6 +26,22 @@ import { changedPathsOf } from "./changed-paths.js";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const packageRoot = resolve(root, "packages/semantic-core");
 /**
+ * Read rather than hardcoded, so a republish (0.2.0 -> 0.3.0, PLAT-899) does
+ * not silently desync this file's literals from the package it tests against
+ * — that desync is exactly what made this suite fail the first time semantic-
+ * core's version moved.
+ */
+const semanticCoreVersion = (
+	JSON.parse(readFileSync(resolve(packageRoot, "package.json"), "utf8")) as {
+		version: string;
+	}
+).version;
+/** The "a model added at a new minor version" test's synthetic next step. */
+const nextMinorVersion = (() => {
+	const [major, minor] = semanticCoreVersion.split(".").map(Number);
+	return `${major}.${minor + 1}.0`;
+})();
+/**
  * Issue #35 (semantic-core L3 declaration grammar) matrix trace inventory:
  * TC-248, TC-249, TC-250, TC-251, TC-252, TC-253, TC-254, TC-255, TC-256,
  * TC-257, TC-258, TC-259, TC-260, TC-261, TC-262, TC-263, TC-264, TC-265,
@@ -607,7 +623,7 @@ function grammarAjv(): Ajv2020 {
 
 function validatesModel(ajv: Ajv2020, model: string, value: unknown): boolean {
 	const validate = ajv.getSchema(
-		`https://schemas.agent-ix.org/semantic-core/0.2.0/${model}.json`,
+		`https://schemas.agent-ix.org/semantic-core/${semanticCoreVersion}/${model}.json`,
 	);
 	if (!validate) throw new Error(`no emitted schema for ${model}`);
 	return validate(value) as boolean;
@@ -642,7 +658,7 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 		expect([...schemas.keys()].sort()).toEqual(expected);
 		for (const [name, schema] of schemas) {
 			expect(schema.$id, name).toBe(
-				`https://schemas.agent-ix.org/semantic-core/0.2.0/${name}.json`,
+				`https://schemas.agent-ix.org/semantic-core/${semanticCoreVersion}/${name}.json`,
 			);
 			expect(schema["x-agent-ix-semantic-id"], name).toBe(
 				`ix://agent-ix/semantic-core/${name}`,
@@ -810,13 +826,16 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 				JSON.parse(readFileSync(resolve(dir, "package.json"), "utf8")),
 				"manifest",
 			);
-			manifest.version = "0.3.0";
+			manifest.version = nextMinorVersion;
 			writeFileSync(
 				resolve(dir, "package.json"),
 				`${JSON.stringify(manifest, null, "\t")}\n`,
 			);
 			const source = readFileSync(resolve(dir, "main.tsp"), "utf8")
-				.replace("semantic-core/0.2.0/", "semantic-core/0.3.0/")
+				.replace(
+					`semantic-core/${semanticCoreVersion}/`,
+					`semantic-core/${nextMinorVersion}/`,
+				)
 				.concat(
 					"\n/** Added at 0.3.0. */\nmodel AddedDecl {\n  name: Identifier;\n}\n",
 				);
@@ -843,8 +862,8 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 			for (const [name, schema] of before) {
 				const after = JSON.parse(
 					readFileSync(resolve(scratch, `${name}.json`), "utf8").replaceAll(
-						"semantic-core/0.3.0/",
-						"semantic-core/0.2.0/",
+						`semantic-core/${nextMinorVersion}/`,
+						`semantic-core/${semanticCoreVersion}/`,
 					),
 				);
 				expect(after, name).toEqual(schema);
