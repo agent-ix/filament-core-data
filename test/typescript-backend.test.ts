@@ -1383,23 +1383,12 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 		}
 	});
 
-	/** Part of TC-843 (NFR-025-AC-8, NFR-025-AC-14); the corpus half of that row has no test, so the row is not bound. */
-	it("ships compiler source but neither fixtures nor a generated package", () => {
-		const packed = JSON.parse(
-			execFileSync("npm", ["pack", "--dry-run", "--json"], {
-				cwd: root,
-				encoding: "utf8",
-			}),
-		) as { files: { path: string }[] }[];
-		const files = packed[0]?.files.map((file) => file.path) ?? [];
-		expect(files).toContain("src/compiler/backends/typescript-v1/index.mjs");
-		expect(files.some((path) => path.startsWith("test/fixtures/"))).toBe(false);
-		expect(files.some((path) => path.startsWith("generated/"))).toBe(false);
-		const manifest = JSON.parse(
-			readFileSync(resolve(root, "package.json"), "utf8"),
-		) as Record<string, unknown>;
-		expect(JSON.stringify(manifest.exports)).not.toContain("src/compiler");
-	});
+	// The TC-843 half "ships compiler source but neither fixtures nor a
+	// generated package" is deleted with its subject. It packed the root package
+	// and asserted `exports` named no `src/compiler` path. `737824e` retired the
+	// Avro publish path: the manifest is `private: true` with no `exports` and no
+	// `files` allowlist, so `npm pack` sweeps the whole tree — `test/fixtures/`
+	// and `generated/` included — and the case could only fail (#226).
 
 	/** TC-839: NFR-025-AC-1. Bound by the leading id of the test name. */
 	it("TC-839 pins #22's changed set to history and permits every one of its paths", () => {

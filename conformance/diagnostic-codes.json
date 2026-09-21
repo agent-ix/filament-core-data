@@ -305,7 +305,7 @@
 			"decidedBy": "cross-field",
 			"sources": ["docs/semantic-data-system/contracts-v1.md"],
 			"rule": "A required extension the consumer policy does not list while it rejects unknown extensions.",
-			"citation": "unknown modules and extensions are preserved, rejected, or surfaced. Legacy",
+			"citation": "unknown modules and extensions are preserved, rejected, or surfaced.",
 			"exercisedBy": "case"
 		},
 		{

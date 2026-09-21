@@ -8,7 +8,7 @@
 
 import { execFileSync } from "node:child_process";
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { changedPathsOfCommits, changeRange } from "./changed-paths.js";
@@ -178,12 +178,11 @@ describe("qualified Python generation route (issue #23)", () => {
 		>;
 		expect(JSON.stringify(manifest)).not.toContain("python_backend");
 
-		const pyproject = read("pyproject.toml");
-		const include = pyproject.split("include = [")[1].split("]")[0];
-		expect(include).not.toContain("python_backend");
-		expect(pyproject).toContain(
-			'packages = [{ include = "agent_ix_core_data" }]',
-		);
+		// The `pyproject.toml` half is deleted with its subject. It asserted
+		// `packages = [{ include = "agent_ix_core_data" }]` — the Avro package
+		// `737824e` retired — and read an `include = [` list this manifest no
+		// longer has, so it crashed on `undefined.split`. The root project is
+		// `package-mode = false` and packages nothing (#226).
 	});
 
 	/** NFR-027-AC-6. */
@@ -298,9 +297,17 @@ describe("qualified Python generation route (issue #23)", () => {
 
 	/** NFR-027-AC-9. */
 	it("TC-942 adds no entry to any merged suite's permitted-path list", () => {
+		// `semantic-kernel.test.ts` is exempt, and only it. FR-087 (`d0332b8`)
+		// generates the kernel's Python packages through the qualified route, so
+		// that suite names `python_backend/kernel/`, `/adapter/`, `/runner/`,
+		// `/qualification/` and `/generated/` as its own subject. Issue #23's
+		// isolation freeze simply predates it. Named rather than pattern-matched,
+		// so every other suite is still held to it (#226).
+		const LATER_TICKET_OWNS = new Set(["semantic-kernel.test.ts"]);
 		for (const entry of readdirSync(resolve(root, "test"))) {
 			if (!entry.endsWith(".test.ts") || entry === "python-backend.test.ts")
 				continue;
+			if (LATER_TICKET_OWNS.has(entry)) continue;
 			const source = read(join("test", entry));
 			expect(source, entry).not.toContain("python_backend");
 			expect(source, entry).not.toContain("Plan-012");
@@ -392,20 +399,10 @@ describe("qualified Python generation route (issue #23)", () => {
 		}
 	});
 
-	/** FR-079-AC-8. */
-	it("TC-925 keeps every generated path out of the packed distribution", () => {
-		const packed = execFileSync("npm", ["pack", "--dry-run", "--json"], {
-			cwd: root,
-			encoding: "utf8",
-			maxBuffer: 64 * 1024 * 1024,
-		});
-		expect(packed).not.toContain("python_backend");
-		const listed = JSON.parse(packed) as { files: { path: string }[] }[];
-		expect(listed[0].files.length).toBeGreaterThan(0);
-		for (const entry of listed[0].files)
-			expect(
-				relative(root, resolve(root, entry.path)).startsWith("python_backend"),
-				entry.path,
-			).toBe(false);
-	});
+	// TC-925 ("keeps every generated path out of the packed distribution") is
+	// deleted with its subject. It ran `npm pack --dry-run` over the root
+	// package to prove no `python_backend` path reached the tarball. `737824e`
+	// retired the Avro publish path: the manifest is `private: true` with no
+	// `files` allowlist, so it publishes nothing and `npm pack` sweeps the whole
+	// tree. The case could only fail (#226).
 });

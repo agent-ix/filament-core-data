@@ -4252,14 +4252,12 @@ describe("compatibility (FR-051)", () => {
 		expect(read(resolve(compilerRoot, "family-map.mjs"))).toContain(
 			"family-map.json",
 		);
-		const shipped = readJson(resolve(root, "package.json")).files as string[];
-		expect(
-			shipped.some((glob) =>
-				"src/compiler/compat/family-map.json".startsWith(
-					glob.replace(/\/$/, ""),
-				),
-			),
-		).toBe(true);
+		// The `files` half is deleted with its subject. It proved the manifest's
+		// publish allowlist covered `src/compiler/compat/family-map.json`.
+		// `737824e` retired the Avro publish path and removed `files` along with
+		// `exports`, `main`, `module` and `types`; the root manifest is
+		// `private: true` and publishes nothing, so the read returned `undefined`
+		// and the case crashed on `.some` (#226).
 	});
 
 	/**
@@ -5272,9 +5270,11 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 			git("show", `${baseline()}:package.json`),
 		) as Json;
 		const now = readJson(resolve(root, "package.json"));
-		for (const key of ["exports", "main", "module", "types", "files"]) {
-			expect(now[key], key).toEqual(before[key]);
-		}
+		// The `exports`/`main`/`module`/`types`/`files` loop is deleted with its
+		// subject: `737824e` retired the Avro publish path and removed all five.
+		// The root manifest is `private: true`, so there is no published surface
+		// left for this change to disturb. The dependency set is still a real
+		// subject and is still frozen (#226).
 		expect(now.dependencies ?? null).toEqual(before.dependencies ?? null);
 	});
 
