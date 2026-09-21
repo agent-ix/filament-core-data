@@ -1,6 +1,6 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schemas.agent-ix.org/semantic-core/0.2.0/UnitSymbol.json",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.3.0/UnitSymbol.json",
 	"type": "string",
 	"pattern": "^[!-~]+$",
 	"description": "UCUM case-sensitive symbol charset: printable ASCII, no whitespace. Membership is a consumer concern (FR-034-AC-4).",

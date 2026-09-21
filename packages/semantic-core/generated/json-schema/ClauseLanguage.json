@@ -1,6 +1,6 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schemas.agent-ix.org/semantic-core/0.2.0/ClauseLanguage.json",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.3.0/ClauseLanguage.json",
 	"type": "string",
 	"pattern": "^(quire|ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$",
 	"description": "`quire` (checked by Quire), `ocl`, `sysml`, `fretish`, or a namespaced `<ns>:<name>` language (FR-028).",

@@ -23,12 +23,22 @@ types. They are reachable as `<module>.<Name>` and are excluded from
 `__all__` rather than silently shadowed.
 
 - `Authority` — profile_schema, representation_schema
-- `Export` — module_semantic_block_schema, package_manifest_schema
-- `Kind` — mapping_schema, representation_schema, semantic_ir_schema
+- `Category` — module_manifest_schema, semantic_ir_schema
+- `CompatibilityPosture` — module_manifest_schema, package_manifest_schema
+- `ConstructDeclaration` — module_manifest_schema, semantic_ir_schema
+- `Export` — module_manifest_schema, module_semantic_block_schema, package_manifest_schema
+- `Identity` — module_manifest_schema, semantic_ir_schema
+- `Kind` — mapping_schema, module_manifest_schema, representation_schema, semantic_ir_schema
+- `Mapping` — module_manifest_schema, module_semantic_block_schema
+- `Members` — module_manifest_schema, semantic_ir_schema
 - `Package` — package_lock_schema, package_manifest_schema, semantic_ir_schema
+- `Role` — module_manifest_schema, semantic_ir_schema
 - `RoundTrip` — profile_schema, representation_schema
-- `Severity` — common_schema, target_contract_schema
+- `Rule` — module_manifest_schema, semantic_ir_schema
+- `Severity` — common_schema, module_manifest_schema, target_contract_schema
+- `Shape` — module_manifest_schema, semantic_ir_schema
 - `SourceLocus` — common_schema, mapping_schema
+- `Target` — common_schema, module_manifest_schema
 
 ## Conditions this verdict depends on
 

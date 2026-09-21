@@ -1,9 +1,14 @@
 {
 	"name": "@agent-ix/semantic-core",
-	"version": "0.2.0",
-	"description": "Semantic-core L3 declaration grammar and kernel scalar library (TypeSpec source, AgentIx.Semantic.Core). Published to npm.ix for Wave 4 module consumption (#40); the public packages are filament-core-data#11.",
+	"version": "0.3.0",
+	"description": "Semantic-core L3 declaration grammar and kernel scalar library (TypeSpec source, AgentIx.Semantic.Core). Published to GitHub Packages (read through npm.ix) for Wave 4 module consumption (#40); the public packages are filament-core-data#11. 0.3.0 mints every x-agent-ix-semantic-id with no /type/ slot segment (agent-ix/filament-core-data#200) as a new version rather than mutating the published 0.2.0 tarball in place.",
 	"license": "AGPL-3.0-or-later",
 	"tspMain": "main.tsp",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/agent-ix/filament-core-data.git",
+		"directory": "packages/semantic-core"
+	},
 	"exports": {
 		".": {
 			"typespec": "./main.tsp"
@@ -16,9 +21,6 @@
 		"kernel-scalars.json",
 		"lowering.json"
 	],
-	"publishConfig": {
-		"registry": "http://npm.ix/"
-	},
 	"peerDependencies": {
 		"@typespec/compiler": "1.15.0",
 		"@typespec/json-schema": "1.15.0"

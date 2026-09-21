@@ -109,6 +109,20 @@ def _walk(node: Any, name: str, pointer: str, out: list[Rewrite]) -> Any:
         else:
             result[key] = copy.deepcopy(value)
 
+    if "enum" in result and "default" in result:
+        # Measured against the pinned 0.76.0 generator: a property that
+        # carries both `enum` and a scalar `default` emits a class attribute
+        # typed as the enum but assigned the raw default *string*, which
+        # mypy --strict correctly rejects as an incompatible assignment in
+        # every family (FR-080-AC-1). `default` is presentational — it does
+        # not change what value a document is valid against — so dropping it
+        # here changes nothing this pass validates; a property outside its
+        # schema's `required` list, which is the only place this combination
+        # occurs today, was already going to generate as `Optional[...] =
+        # None` regardless of the stated default.
+        result.pop("default")
+        out.append(Rewrite("enum-default-conflict-dropped", name, pointer))
+
     if "unevaluatedProperties" in result:
         rewritten = _closure_value(result.pop("unevaluatedProperties"))
         if "additionalProperties" in result:

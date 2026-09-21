@@ -318,6 +318,34 @@ def _exercise(
                 )
                 continue
 
+            required = set(node.get("required") or [])
+            closed = node.get("additionalProperties", True) is False
+            if not required and (profile_id == "msgspec_struct" or not closed):
+                # No property is required, so an empty object already conforms.
+                # A pydantic family can still separately reject an undeclared
+                # key when `additionalProperties: false` closes the type (that
+                # case falls through and is exercised below); `msgspec_struct`
+                # cannot, because its incompleteness probe only ever decodes
+                # `{}` and never separately poses an undeclared key. Where
+                # neither avenue exists, no value this loop could construct
+                # would demonstrate a rejection, so the type is named
+                # unexercised rather than scored as "accepts anything" for a
+                # shape the schema itself declares wide open (FR-080-AC-3).
+                unexercised += 1
+                outcomes.append(
+                    {
+                        "module": module_name,
+                        "type": name,
+                        "exercised": False,
+                        "why": (
+                            "no property is required and nothing else closes "
+                            "the type, so no undeclared-or-incomplete value "
+                            "exists for this profile to reject"
+                        ),
+                    }
+                )
+                continue
+
             value = _conforming(node, documents, home)
             constraints = sum(
                 1

@@ -25,12 +25,12 @@ class Export(Struct):
 type Capability = Annotated[str, Meta(min_length=1)]
 
 
-type Export2 = Annotated[str, Meta(min_length=1)]
+type Export3 = Annotated[str, Meta(min_length=1)]
 
 
 class Import(Struct):
     capabilities: list[Capability]
-    exports: list[Export2]
+    exports: list[Export3]
     packageIdentity: common_schema.PackageIdentity
     versionConstraint: Annotated[str, Meta(min_length=1)]
 
@@ -51,7 +51,7 @@ type SourceRoot = Annotated[str, Meta(min_length=1)]
 
 class Profile(Struct):
     compatibilityPosture: CompatibilityPosture
-    exports: list[Export2]
+    exports: list[Export3]
     mappings: list[common_schema.SemanticIdentity]
     name: Annotated[str, Meta(min_length=1)]
     options: dict[str, Any]

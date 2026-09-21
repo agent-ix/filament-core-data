@@ -1,13 +1,13 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schemas.agent-ix.org/semantic-core/0.2.0/FieldDecl.json",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.3.0/FieldDecl.json",
 	"type": "object",
 	"properties": {
 		"name": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.2.0/Identifier.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/Identifier.json"
 		},
 		"type": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.2.0/TypeRef.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/TypeRef.json"
 		},
 		"identity": {
 			"type": "boolean"
@@ -16,7 +16,7 @@
 			"type": "boolean"
 		},
 		"default": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.2.0/DefaultDecl.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/DefaultDecl.json"
 		},
 		"doc": {
 			"type": "string"
@@ -24,7 +24,7 @@
 		"constraints": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.2.0/ConstraintDecl.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/ConstraintDecl.json"
 			}
 		}
 	},

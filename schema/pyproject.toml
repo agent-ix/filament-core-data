@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "agent-ix-filament-core-schema"
+version = "0.1.0"
+description = "Published JSON Schema (draft 2020-12) documents for the filament-core-data semantic package contract v1 (schema/semantic/v1/), including the filament module manifest and its optional semantic block. Data-only: no runtime dependency."
+authors = ["Agent IX <agents@agent-ix.dev>"]
+license = "AGPL-3.0-or-later"
+packages = [{ include = "semantic" }]
+
+[tool.poetry.dependencies]
+python = ">=3.13,<3.14"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

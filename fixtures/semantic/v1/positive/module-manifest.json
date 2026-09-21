@@ -1,0 +1,99 @@
+{
+	"manifest_version": "1.0.0",
+	"name": "spec-objects-architecture",
+	"version": "1.4.0",
+	"description": "Architecture domain view objects for the spec editor ecosystem.",
+	"nav": {
+		"category": {
+			"slug": "architecture",
+			"label": "Architecture",
+			"icon": "layout",
+			"order": 3
+		}
+	},
+	"depends_on": [{ "name": "spec-artifacts-iso", "version_range": "^0.9.0" }],
+	"archetypes": [{ "kind": "spec", "name": "Architecture Spec" }],
+	"object_types": [
+		{
+			"name": "component",
+			"description": "A deployable or logical architectural component.",
+			"data_schema": { "type": "object" },
+			"roles": ["agent-ix:entity"],
+			"allowed_links": {
+				"depends_on": ["component", "agent-ix:entity"]
+			},
+			"construct": {
+				"identity": "identified",
+				"shape": "record",
+				"members": {
+					"id": "required",
+					"name": "required",
+					"description": "optional"
+				},
+				"references": {
+					"dependsOn": ["agent-ix:entity"]
+				},
+				"rules": ["no_self_reference"],
+				"meaning": "quire.meaning.entity",
+				"immutable": false
+			}
+		}
+	],
+	"grammars": [{ "name": "iso-spec-core", "version": "0.1.0" }],
+	"artifact_types": [
+		{
+			"name": "ARCH",
+			"grammar_ref": "iso-spec-core",
+			"frontmatter_schema_ref": "schemas/arch-frontmatter.schema.json",
+			"body_extraction": {
+				"yield_pattern": {
+					"match": {
+						"description": {
+							"from": "section_body",
+							"required": true,
+							"assert": { "level": 2 }
+						}
+					}
+				}
+			},
+			"defaults": { "id_pattern": "ARCH-{next:03d}" },
+			"allowed_links": ["depends_on"]
+		}
+	],
+	"doc_kinds": ["ARCH"],
+	"state_schemas": {
+		"component": {
+			"type": "object",
+			"properties": { "state": { "type": "string" } }
+		}
+	},
+	"lint_rules": [
+		{
+			"name": "component-has-description",
+			"description": "Every component object type declares a description.",
+			"severity": "warning",
+			"pattern": { "kind": "field-presence" }
+		}
+	],
+	"edge_types": {
+		"depends_on": {
+			"description": "Structural dependency between components.",
+			"category": "structural",
+			"inverse": "depended_on_by"
+		}
+	},
+	"roles": {
+		"agent-ix:entity": { "description": "A first-class domain entity." }
+	},
+	"semantic": {
+		"contract_version": "1.0.0",
+		"semantic_core": "0.3.0",
+		"package": "agent-ix/spec-objects-architecture",
+		"exports": ["component"],
+		"imports": {},
+		"targets": ["json-schema", "typescript"],
+		"mappings": ["default"],
+		"compatibility_posture": "additive",
+		"legacy_forms": "warning"
+	}
+}

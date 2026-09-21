@@ -1,0 +1,35 @@
+# Rust access to schema/semantic/v1/*.schema.json (PLAT de-vendoring program).
+#
+# quire-rs previously vendored a committed copy of these files. This crate
+# replaces that copy: it embeds the SAME files at compile time via
+# `include_str!`, using paths relative to this crate that reach back into
+# `schema/semantic/v1/` rather than a second copy living under `src/`.
+#
+# A consumer pins this crate as a git dependency at a tag (the same pattern
+# `crates/extraction-frontend` already uses for its own `quire-rs` pin), e.g.:
+#
+#   agent-ix-semantic-schema = { git = "https://github.com/agent-ix/filament-core-data", tag = "semantic-schema-v0.1.0" }
+#
+# A git dependency clones the whole repository, so the `include_str!` paths
+# below resolve under the consumer's build exactly as they do here — no
+# `build.rs`, no `cargo metadata` walk to find a sibling checkout (that
+# approach is fragile and was abandoned elsewhere for exactly that reason),
+# and no second copy of the schema bytes anywhere in this repository.
+#
+# `publish = false`: this is not published to crates.io (the issue #21 safety
+# gate governs crate publication in this workspace generally, and a git-tag
+# dependency needs no registry publish anyway).
+[package]
+name = "agent-ix-semantic-schema"
+version = "0.1.0"
+description = "Compile-time access to filament-core-data's published JSON Schema v1 contract for Rust consumers (e.g. quire-rs)."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
