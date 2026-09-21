@@ -84,6 +84,11 @@ jobs:
       - uses: agent-ix/nodejs-actions/setup-npmrc@main
         with:
           npm_registry_token: ${{ secrets.REGISTRY_TOKEN }}
+      # `make install` runs `poetry install`; setup-python provides the
+      # interpreter but not Poetry itself, so without this the job dies with
+      # exit 127 and skips both publish jobs via `needs`. Same `pip install`
+      # the publish-python-schema job below already uses.
+      - run: pip install poetry
       - run: make install
       - run: make test-node
 
@@ -102,6 +107,7 @@ jobs:
       - uses: agent-ix/nodejs-actions/setup-npmrc@main
         with:
           npm_registry_token: ${{ secrets.REGISTRY_TOKEN }}
+      - run: pip install poetry
       - run: make install
       - run: make lint-node
 
