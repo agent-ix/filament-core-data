@@ -1728,18 +1728,11 @@ describe("TC-626..410 coverage, thresholds, mutations, and the import API (FR-03
 		).toBe(true);
 	});
 
-	it("TC-633 package.json gains no exports or files entry for the corpus", () => {
-		const pkg = read(join(REPO, "package.json")) as {
-			exports: Record<string, unknown>;
-			files: string[];
-		};
-		expect(
-			Object.keys(pkg.exports).some((key) => key.includes("conformance")),
-		).toBe(false);
-		expect(pkg.files.some((entry) => entry.includes("conformance"))).toBe(
-			false,
-		);
-	});
+	// TC-633 ("package.json gains no exports or files entry for the corpus") is
+	// deleted with its subject. `737824e` retired the Avro publish path and
+	// removed `exports` and `files`; reading `Object.keys(pkg.exports)` on the
+	// `private: true` manifest throws. There is no publish surface for the corpus
+	// to leak into (#226).
 
 	it("TC-634 the coverage account is byte-identical from another working directory", () => {
 		const script = `
@@ -1953,20 +1946,31 @@ describe("TC-635..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		expect(["none", "required"]).toContain(declared.state);
 		expect(declared.rationale.length).toBeGreaterThan(0);
 
+		// The three `none` branches run against a locally declared `none`, not
+		// against whatever the committed manifest happens to declare. They read
+		// `manifest` directly until #200 flipped `predecessor.state` to
+		// `required` — at which point the first of them asserted the gate stays
+		// silent on an unreadable predecessor the manifest now demands, which is
+		// the exact defect the case exists to catch (#226).
+		const none = {
+			...structuredClone(manifest),
+			predecessor: { ...declared, state: "none" },
+		};
+
 		// Declared `none` with no predecessor readable: the comparison is
 		// legitimately not applicable.
-		expect(corpus.versioningFailures(undefined, manifest)).toEqual([]);
+		expect(corpus.versioningFailures(undefined, none)).toEqual([]);
 
 		// Declared `none` once a predecessor exists and is identical: the state on
 		// `main` the instant this corpus merges. Nothing has moved, so nothing is
 		// asserted and nothing is wrong.
-		expect(corpus.versioningFailures(manifest, manifest)).toEqual([]);
+		expect(corpus.versioningFailures(none, none)).toEqual([]);
 
 		// Declared `none` once a predecessor exists and the corpus has moved:
 		// stale, and it fails rather than quietly comparing nothing.
-		const moved = structuredClone(manifest) as { cases: unknown[] };
+		const moved = structuredClone(none) as { cases: unknown[] };
 		moved.cases.pop();
-		const appeared = corpus.versioningFailures(moved, manifest) as {
+		const appeared = corpus.versioningFailures(moved, none) as {
 			gate: string;
 			message: string;
 		}[];
@@ -2144,20 +2148,15 @@ describe("TC-635..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 				path,
 			);
 		}
-		// The tree half: whatever any diff says, the manifest names no corpus
-		// surface and no dependency.
+		// The tree half: whatever any diff says, the manifest names no dependency.
+		// Its `exports`/`files` clauses are deleted with their subject —
+		// `737824e` retired the Avro publish path and removed both keys, so
+		// `Object.keys(pkg.exports)` threw. The manifest is `private: true` and
+		// has no publish surface for the corpus to leak into (#226).
 		const pkg = read(join(REPO, "package.json")) as {
 			dependencies?: Json;
-			exports: Record<string, unknown>;
-			files: string[];
 		};
 		expect(pkg.dependencies).toBeUndefined();
-		expect(
-			Object.keys(pkg.exports).some((key) => key.includes("conformance")),
-		).toBe(false);
-		expect(pkg.files.some((entry) => entry.includes("conformance"))).toBe(
-			false,
-		);
 	});
 
 	it("TC-643 this issue alters no consumer, catalog pin, Avro contract, or release path", () => {

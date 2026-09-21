@@ -6,6 +6,14 @@ export interface ConstructDeclaration {
 	references: Map<string, readonly string[]>;
 	rules: readonly string[];
 	meaning: string;
+	/**
+	 * Every flag the vocabulary declares, spread onto the frozen declaration by
+	 * `readDeclaration` (`constructs.mjs`, `...flags`). One boolean per entry in
+	 * `CONSTRUCT_VOCABULARY.flags`, so the set is open at the type level and
+	 * closed at runtime by the vocabulary document. Declared because callers
+	 * index it by flag name while iterating that list (#226).
+	 */
+	readonly [flag: string]: unknown;
 }
 export declare const CONSTRUCT_VOCABULARY: {
 	identities: readonly string[];
@@ -17,6 +25,8 @@ export declare const CONSTRUCT_VOCABULARY: {
 		referenceItems?: readonly string[];
 	}[];
 	rules: readonly { name: string; member: string; presence: Presence }[];
+	/** Each entry becomes one boolean member of `ConstructDeclaration`. */
+	flags: readonly { name: string; default: boolean }[];
 };
 export declare const CORE_KINDS: readonly string[];
 export declare const SHAPE_RENDERINGS: Readonly<Record<string, string>>;
@@ -153,3 +163,13 @@ export declare function unenforcedMemberAdvisories(
 	owner: string;
 	blocking: boolean;
 }[];
+
+/**
+ * The rule `name` states, or `undefined` for a name the vocabulary omits.
+ *
+ * Indexed off `CONSTRUCT_VOCABULARY` rather than restated, so the rule shape
+ * has one declaration site (#226).
+ */
+export declare function ruleOf(
+	name: string,
+): (typeof CONSTRUCT_VOCABULARY)["rules"][number] | undefined;

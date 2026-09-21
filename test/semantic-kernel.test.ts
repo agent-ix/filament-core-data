@@ -26,6 +26,7 @@ import {
 	DEFAULT_PROFILE as RUST_PROFILE,
 } from "../src/compiler/backends/rust-serde/cli.mjs";
 import { generateRust } from "../src/compiler/backends/rust-serde/index.mjs";
+import type { GenerationRequest } from "../src/compiler/backends/seam.d.mts";
 import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import { DIAGNOSTIC_CODES } from "../src/compiler/diagnostics.mjs";
 import {
@@ -535,13 +536,30 @@ describe("TC-1031..1045 the closed loss register and provenance (FR-084)", () =>
 });
 
 describe("TC-1046..1060 the generated language trees (FR-085, FR-086)", () => {
-	const kernelRequest = (outputRoot: string) => ({
-		...read("fixtures/semantic/v1/positive/compiler-request.json"),
-		ir: read("packages/semantic-kernel/semantic-ir.json"),
-		profile: read("fixtures/semantic/v1/positive/profile.json"),
-		mappings: [],
-		outputRoot,
-	});
+	/**
+	 * `read()` returns `Record<string, unknown>`, so spreading it into an
+	 * object literal cannot carry named properties like `contractVersion`,
+	 * `lockFingerprint` or `limits` into the result's type — they are present
+	 * on the parsed fixture at runtime, just invisible to the type checker
+	 * through an untyped spread. Reading each member explicitly, with a narrow
+	 * cast from the `unknown` `read()` already declares, states the
+	 * `GenerationRequest` shape the fixture has always carried (#226).
+	 */
+	const kernelRequest = (outputRoot: string): GenerationRequest => {
+		const compilerRequest = read(
+			"fixtures/semantic/v1/positive/compiler-request.json",
+		);
+		return {
+			contractVersion: compilerRequest.contractVersion as string,
+			lockFingerprint: compilerRequest.lockFingerprint as string,
+			ir: read("packages/semantic-kernel/semantic-ir.json"),
+			profile: read("fixtures/semantic/v1/positive/profile.json"),
+			mappings: [],
+			backend: compilerRequest.backend as GenerationRequest["backend"],
+			outputRoot,
+			limits: compilerRequest.limits as GenerationRequest["limits"],
+		};
+	};
 
 	// TC-1046
 	it("generates the TypeScript kernel package with no diagnostics", () => {
@@ -556,8 +574,16 @@ describe("TC-1046..1060 the generated language trees (FR-085, FR-086)", () => {
 					options: {},
 				},
 			},
-			{ host: createHost({ readRoots: [root] }) },
-		) as { state: string; files: { path: string; text: string }[] };
+			{
+				host: createHost({ readRoots: [root] }),
+				// `GenerationBackend.generate`'s `format` is the seam's own
+				// injection point (FR-071); `typescript-v1/index.mjs` never reads
+				// `options.format` itself, so calling the backend directly (rather
+				// than through `generateTarget`, which supplies a default) needs an
+				// explicit identity formatter to satisfy the contract.
+				format: (text: string) => text,
+			},
+		) as { state: string; files: readonly { path: string; text: string }[] };
 		expect(result.state).toBe("success");
 		expect(result.files.map((f) => f.path).sort()).toContain("types.ts");
 	});

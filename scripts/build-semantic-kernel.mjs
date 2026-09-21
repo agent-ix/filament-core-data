@@ -37,6 +37,7 @@ import {
 	generateRust,
 	readLicense,
 } from "../src/compiler/backends/rust-serde/index.mjs";
+import { biomeFormatter } from "../src/compiler/backends/format.mjs";
 import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import {
 	checkKernelBundle,
@@ -184,8 +185,24 @@ function main(argv) {
 		process.exitCode = 1;
 		return;
 	}
+	// FR-071. `typescriptBackend.generate` is the pre-seam stage and does not
+	// format; the seam applies the injected formatter itself when it reconciles
+	// (`backends/seam.mjs`, `const text = format(file.text, file.path)`). This
+	// script bypasses the seam, so it must do the same thing here or it writes
+	// the kernel package raw.
+	//
+	// It did write it raw, and that made two gates mutually exclusive:
+	// `make semantic-kernel-check` compares this script's output against the
+	// committed tree, while `pnpm run lint` runs `biome format .` over that same
+	// tree. Only one could be green at a time. Formatting here is what
+	// `backends/format.mjs` means by the clean `biome format .` holding "by
+	// construction" (#223, #226).
+	const formatTypeScript = biomeFormatter();
 	for (const file of ts.files) {
-		artifacts.push([`typescript/${file.path}`, file.text]);
+		artifacts.push([
+			`typescript/${file.path}`,
+			formatTypeScript(file.text, file.path),
+		]);
 	}
 
 	// The Rust tree (FR-086). The request is the one `cli.mjs` builds for a

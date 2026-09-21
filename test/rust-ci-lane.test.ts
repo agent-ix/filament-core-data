@@ -86,7 +86,21 @@ describe("TC-1396..1402 the Rust gates are reachable (NFR-038)", () => {
 		);
 		expect(workflows).toContain("rust.yml");
 
+		// NFR-038-AC-2 governs the *gate lanes*: a suite must not run itself on a
+		// push, so nothing lands green by accident. `cla.yml` is not a gate lane —
+		// it is the CLA Assistant bot, which records a signature by replying to a
+		// pull request and to a comment on one. Those events are the whole of what
+		// it does, so it cannot be dispatch-driven and never could be.
+		//
+		// Exempted by name rather than by pattern, so a new workflow still has to
+		// comply: only this one file is excused, and adding another requires
+		// changing this line and saying why. It has failed this case since #213
+		// added it, which is one of the reasons `make test-node` was red (#226).
+		const EVENT_DRIVEN = new Set(["cla.yml"]);
+		expect(workflows).toContain("cla.yml");
+
 		for (const name of workflows) {
+			if (EVENT_DRIVEN.has(name)) continue;
 			const text = read(`${WORKFLOW_DIR}/${name}`);
 			const triggers = text.slice(text.indexOf("\non:"));
 			const head = triggers.split("\njobs:")[0];
@@ -102,7 +116,7 @@ describe("TC-1396..1402 the Rust gates are reachable (NFR-038)", () => {
 			);
 		}
 		console.log(
-			`TC-1397 measured: ${workflows.length} workflows, all workflow_dispatch only`,
+			`TC-1397 measured: ${workflows.length - EVENT_DRIVEN.size} of ${workflows.length} workflows dispatch-only; ${[...EVENT_DRIVEN].join(", ")} exempt as event-driven`,
 		);
 	});
 

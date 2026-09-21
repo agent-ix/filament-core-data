@@ -1,5 +1,5 @@
 {
-	"corpusVersion": "4.0.0",
+	"corpusVersion": "4.0.1",
 	"contractVersions": ["2.0.0"],
 	"canonicalForm": "agent-ix-conformance-jcs-v1",
 	"caseIdPattern": "^[A-Z][A-Z0-9]*(-[A-Z0-9]+)*-[0-9]{3}$",
@@ -650,7 +650,7 @@
 			"path": "conformance/cases/extension/EXT-001.json",
 			"family": "extension",
 			"class": "positive",
-			"digest": "sha256:2dbd136063c9cb18ccc85209e2d217358bdeca3bdd65c175099b82707b48fcd9",
+			"digest": "sha256:e54139e61a82130ef27eb3935a76c61149a2069cd425166eb5d7315c817c2ae6",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -658,7 +658,7 @@
 			"path": "conformance/cases/extension/EXT-002.json",
 			"family": "extension",
 			"class": "negative",
-			"digest": "sha256:dad3d0175d5bb9638e614a34fc80130d868a0328b96df8b833736235e4331a8c",
+			"digest": "sha256:a8dd969d68a6bdcf424968c0dd4496bbe4086be08ee735cb507f000fe13cdb07",
 			"expectedDigest": "sha256:1c942c8fe635e0d80175937f1ff223e8a36ce2ff581e5bb4f4d1c586561b4077"
 		},
 		{
@@ -666,7 +666,7 @@
 			"path": "conformance/cases/extension/EXT-003.json",
 			"family": "extension",
 			"class": "boundary",
-			"digest": "sha256:92f5654aac2e4b5ce6c83be35f1cb6c5af15b99e4fdcb8e1f52791bf30b93a96",
+			"digest": "sha256:495f38b97a520cc549d68bf7cbb86ffd4db82440a122614c8c8aaf3b5a1d90ae",
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		},
 		{
@@ -1286,5 +1286,5 @@
 			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
 		}
 	],
-	"corpusDigest": "sha256:c7c6a720452ea99c6a69ded76abdecced3933863c98ba4cf77825c583c233d19"
+	"corpusDigest": "sha256:44293ccaa4ffc97f72e1b7f19c0c10e8b937535f2f721170ec3147a3afdffc80"
 }

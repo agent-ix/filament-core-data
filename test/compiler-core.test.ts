@@ -23,6 +23,7 @@ import {
 	generateTarget,
 	registryWith,
 } from "../src/compiler/backends/seam.mjs";
+import type { BackendGeneration } from "../src/compiler/backends/seam.mjs";
 import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import {
 	ContractRefusalError,
@@ -125,6 +126,13 @@ const cases = resolve(fixtures, "cases");
 const cli = resolve(compilerRoot, "cli.mjs");
 
 type Json = Record<string, unknown>;
+
+/** One `document.types[]` entry from `lower.lowerBundle`'s success arm. */
+type LoweredType = {
+	displayName: string;
+	extensions: unknown;
+	variants: unknown;
+};
 
 function read(path: string): string {
 	return readFileSync(path, "utf8");
@@ -425,12 +433,15 @@ describe("frontend seam and dialect registry (FR-045)", () => {
 			package: { identity: "agent-ix/probe", version: "0.0.0" },
 			types: [],
 		};
-		const calls: { bundleRoot: string; moduleRoots: string[] }[] = [];
+		const calls: { bundleRoot: string; moduleRoots: readonly string[] }[] = [];
 		const result = await runFrontend({
 			dialect: "spec-bundle",
 			bundleRoot: "/probe/bundle",
 			moduleRoots: ["/probe/module"],
-			lift: (request: { bundleRoot: string; moduleRoots: string[] }) => {
+			lift: (request: {
+				bundleRoot: string;
+				moduleRoots: readonly string[];
+			}) => {
 				calls.push(request);
 				return {
 					status: 0,
@@ -843,7 +854,9 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 
 		// The payload level: a present empty collection is admitted and an
 		// absent required member is refused, through the rendered schema.
-		const rendered = jsonSchemaBackend.generate({ ir: result.ir as never });
+		const rendered = jsonSchemaBackend.generate({
+			ir: result.ir as never,
+		}) as BackendGeneration;
 		const schemas = rendered.files
 			.filter((one) => one.path.endsWith(".json") && one.path !== "index.json")
 			.map((one) => JSON.parse(one.text));
@@ -3699,7 +3712,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			expect(
 				(declaration as never as Record<string, unknown>)[flag.name],
 			).toStrictEqual({ type: "boolean" });
-			const read = readDeclaration({ ...bare }) as {
+			const read = readDeclaration({ ...bare }) as never as {
 				declaration: Record<string, unknown>;
 			};
 			expect(read.declaration[flag.name], flag.name).toBe(flag.default);
@@ -3785,9 +3798,11 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		// The generated declarations: the JSON Schema backend renders the two
 		// as different schemas.
 		const rendered = (document: typeof record) =>
-			jsonSchemaBackend
-				.generate({ ir: document as never })
-				.files.find((file) => file.path === "JsonObject.json")?.text;
+			(
+				jsonSchemaBackend.generate({
+					ir: document as never,
+				}) as BackendGeneration
+			).files.find((file) => file.path === "JsonObject.json")?.text;
 		expect(rendered(record)).toBeDefined();
 		expect(rendered(scalar)).toBeDefined();
 		expect(rendered(record)).not.toBe(rendered(scalar));
@@ -4237,14 +4252,12 @@ describe("compatibility (FR-051)", () => {
 		expect(read(resolve(compilerRoot, "family-map.mjs"))).toContain(
 			"family-map.json",
 		);
-		const shipped = readJson(resolve(root, "package.json")).files as string[];
-		expect(
-			shipped.some((glob) =>
-				"src/compiler/compat/family-map.json".startsWith(
-					glob.replace(/\/$/, ""),
-				),
-			),
-		).toBe(true);
+		// The `files` half is deleted with its subject. It proved the manifest's
+		// publish allowlist covered `src/compiler/compat/family-map.json`.
+		// `737824e` retired the Avro publish path and removed `files` along with
+		// `exports`, `main`, `module` and `types`; the root manifest is
+		// `private: true` and publishes nothing, so the read returned `undefined`
+		// and the case crashed on `.some` (#226).
 	});
 
 	/**
@@ -4428,6 +4441,27 @@ describe("compatibility (FR-051)", () => {
 				supertypes?: string[];
 				abstract?: boolean;
 				fields?: { identity: string; subsets?: string[]; redefines?: string }[];
+				operations?: {
+					identity: string;
+					name: string;
+					params: unknown[];
+					pre: string[];
+					post: string[];
+					returns: {
+						typeRef: string;
+						multiplicity: { lower: number; upper: number };
+						nullable: boolean;
+					};
+					frame: { modifies: string[]; creates: string[]; deletes: string[] };
+					origin: {
+						source: {
+							sourceIdentity: string;
+							path: string;
+							startLine: number;
+							startColumn: number;
+						};
+					};
+				}[];
 			}[];
 			populations: {
 				identity: string;
@@ -5236,9 +5270,11 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 			git("show", `${baseline()}:package.json`),
 		) as Json;
 		const now = readJson(resolve(root, "package.json"));
-		for (const key of ["exports", "main", "module", "types", "files"]) {
-			expect(now[key], key).toEqual(before[key]);
-		}
+		// The `exports`/`main`/`module`/`types`/`files` loop is deleted with its
+		// subject: `737824e` retired the Avro publish path and removed all five.
+		// The root manifest is `private: true`, so there is no published surface
+		// left for this change to disturb. The dependency set is still a real
+		// subject and is still frozen (#226).
 		expect(now.dependencies ?? null).toEqual(before.dependencies ?? null);
 	});
 
@@ -6174,9 +6210,9 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 			["Right.json", schema("Right")],
 		]);
 		expect(result.diagnostics).toBeUndefined();
-		const choice = result.document.types.find(
+		const choice = (result.document!.types as LoweredType[]).find(
 			(entry) => entry.displayName === "Choice",
-		);
+		)!;
 		expect(choice.extensions).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
@@ -6215,9 +6251,9 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 			],
 		]);
 		expect(result.diagnostics).toBeUndefined();
-		const value = result.document.types.find(
+		const value = (result.document!.types as LoweredType[]).find(
 			(entry) => entry.displayName === "ConstraintValue",
-		);
+		)!;
 		expect(value.extensions).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
@@ -6288,7 +6324,7 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 		note([
 			representability.decide("DefaultDecl.value").diagnostic,
 			representability.decide("OperationDecl.params").diagnostic,
-		] as readonly Diagnostic[]);
+		] as never as readonly Diagnostic[]);
 
 		for (const code of [
 			"agent-ix.compiler.KERNEL_INVENTORY_MISMATCH",

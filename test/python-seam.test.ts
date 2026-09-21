@@ -136,6 +136,8 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 		for (const target of ["python-pydantic-v2", "python-dataclass"]) {
 			const entry = selectBackend(target);
 			expect(entry.implemented, `${target} is not implemented`).toBe(true);
+			if (entry.backend === null)
+				throw new Error(`unreachable: ${target} is implemented`);
 			expect(entry.backend.identity).toBe(pythonIdentity);
 			expect(entry.backend.target).toBe(target);
 		}
@@ -406,7 +408,7 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 		const golden =
 			"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json";
 		const schemas = jsonSchemaBackend.generate({ ir: readJson(golden) }) as {
-			files: { path: string; text: string }[];
+			files: readonly { path: string; text: string }[];
 		};
 		const versionSchema = schemas.files.find(
 			(file) => file.path === "ConfigVersion.json",
@@ -521,7 +523,7 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 		const lowered = jsonSchemaBackend.generate(
 			pythonRequest(pythonPydanticBackend),
 			{ host: host() },
-		) as { state: string; files: { path: string; text: string }[] };
+		) as { state: string; files: readonly { path: string; text: string }[] };
 		expect(lowered.state).toBe("success");
 
 		const expected = lowered.files.filter((f) => f.path !== "index.json");

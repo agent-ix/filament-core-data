@@ -1112,13 +1112,20 @@ export function renderValidators(model) {
 				"}",
 			].join("\n"),
 		);
+		const bodyLines = body(model, entry);
+		// An untagged union returns from inside each branch (or from the final
+		// "no branch matched" failure) rather than falling through to a shared
+		// `errors.length === before` comparison, so its `before` snapshot is never
+		// read. Emitting it unconditionally left `noUnusedLocals` failing on
+		// exactly those checks, so it is emitted only where the body reads it.
+		const usesBefore = bodyLines.some((line) => /\bbefore\b/.test(line));
 		const checkBody = [
-			"\tconst before = errors.length;",
+			...(usesBefore ? ["\tconst before = errors.length;"] : []),
 			"\tif (depth > MAX_VALIDATION_DEPTH) {",
 			'\t\tfail(errors, pointer, CODES.DEPTH_LIMIT_EXCEEDED, "the value nests past the declared bound");',
 			"\t\treturn false;",
 			"\t}",
-			...body(model, entry),
+			...bodyLines,
 		].join("\n");
 		// `noUnusedParameters` is on for the generated package, and the five-part
 		// signature is uniform so the checks can call one another. A parameter this

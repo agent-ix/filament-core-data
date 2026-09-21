@@ -837,7 +837,6 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 		const manifest = readJson(resolve(root, "package.json")) as {
 			dependencies?: Json;
 			devDependencies: Record<string, string>;
-			exports: Json;
 		};
 		expect(manifest.dependencies).toBeUndefined();
 		for (const [name, version] of Object.entries(manifest.devDependencies)) {
@@ -856,7 +855,6 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 		for (const name of imported) {
 			expect(manifest.devDependencies, name).toHaveProperty(name);
 		}
-		expect(manifest.exports).not.toHaveProperty("./compiler");
 	});
 
 	/** Traces: TC-348; FR-041-CON-2. */
@@ -1553,54 +1551,21 @@ describe("determinism and non-disruption (NFR-017, NFR-018)", () => {
 			git("show", `${PROMOTION_BASE()}:package.json`),
 		) as Json;
 		const after = readJson(resolve(root, "package.json"));
-		for (const key of ["exports", "main", "module", "types", "files"]) {
-			expect(JSON.stringify(after[key]), key).toBe(JSON.stringify(before[key]));
-		}
+		// The `exports`/`main`/`module`/`types`/`files` half is gone with its
+		// subject: `737824e` retired the Avro publish path and removed all five
+		// from this manifest, which is `private: true` and publishes nothing. The
+		// dependency sets below are still real and still checked.
 		expect(after.dependencies).toEqual(before.dependencies);
 		const beforeDev = { ...(before.devDependencies as Json) };
 		delete beforeDev["@agent-ix/typespec-semantic-ir-emitter-spike"];
 		expect(after.devDependencies).toEqual(beforeDev);
 	});
 
-	/** Traces: TC-392; NFR-018-AC-3. */
-	it("confines the packed-file delta to src/compiler/", () => {
-		const files = (
-			readJson(resolve(root, "package.json")).files as string[]
-		).map((glob) => glob.replace(/\/$/, ""));
-		// Negative diff half, vacuous on an empty diff and therefore merge-safe:
-		// nothing the branch adds to the tarball sits outside src/compiler/.
-		const added = addedPaths().filter((path) =>
-			files.some((glob) => path === glob || path.startsWith(`${glob}/`)),
-		);
-		for (const path of added) {
-			expect(path.startsWith("src/compiler/"), path).toBe(true);
-		}
-		// Positive half, read from the tree rather than the diff: the packed-file
-		// set the `files` globs name really does contain the promoted emitter.
-		// `expect(added.length).toBeGreaterThan(0)` asserted the same thing about
-		// the branch diff and so could only pass before the squash merge.
-		const packed = files.flatMap((glob) => {
-			const absolute = resolve(root, glob);
-			if (!existsSync(absolute)) return [];
-			return statSync(absolute).isDirectory()
-				? walk(absolute).map((path) => `${glob}/${path}`)
-				: [glob];
-		});
-		for (const path of [
-			"src/compiler/index.mjs",
-			"src/compiler/cli.mjs",
-			"src/compiler/inventory.json",
-			"src/compiler/emitters/semantic-ir/index.mjs",
-			"src/compiler/emitters/semantic-ir/package.json",
-			"src/compiler/backends/rust.mjs",
-			"src/compiler/backends/typescript.mjs",
-			"src/compiler/backends/python-schema.mjs",
-		]) {
-			expect(packed, path).toContain(path);
-		}
-		expect(inventory.shipping).toContain("source only");
-		expect(inventory.shipping).toContain("issue #11");
-	});
+	// TC-392 / NFR-018-AC-3 ("confines the packed-file delta to src/compiler/")
+	// is deleted with its subject. It read `package.json`'s `files` globs to work
+	// out what the published tarball contains, and `737824e` retired the Avro
+	// publish path: this manifest is `private: true`, has no `files`, and packs
+	// nothing. The case could only ever crash on the absent field.
 
 	/** Traces: TC-395; NFR-018-AC-6. */
 	it("restores the pre-promotion tree exactly when the promotion is reverted", () => {

@@ -184,7 +184,6 @@ function checkMultiplicity(
 function checkField(
 	field: JsonObject,
 	path: string,
-	version: string,
 	types: Map<string, JsonObject>,
 	fields: Map<string, JsonObject>,
 	diagnostics: Diagnostic[],
@@ -306,7 +305,6 @@ function checkConstraint(
 function checkTypeDefinition(
 	definition: JsonObject,
 	path: string,
-	version: string,
 	types: Map<string, JsonObject>,
 	fields: Map<string, JsonObject>,
 	lockExports: Set<string>,
@@ -314,14 +312,7 @@ function checkTypeDefinition(
 ): void {
 	const isRecord = isEdgeKind(definition.kind);
 	for (const [index, field] of asArray(definition.fields).entries())
-		checkField(
-			field,
-			`${path}.fields.${index}`,
-			version,
-			types,
-			fields,
-			diagnostics,
-		);
+		checkField(field, `${path}.fields.${index}`, types, fields, diagnostics);
 	for (const [index, constraint] of asArray(definition.constraints).entries())
 		checkConstraint(
 			constraint,
@@ -440,7 +431,6 @@ function checkTypeDefinition(
 			checkField(
 				param,
 				`${path}.operations.${index}.params.${paramIndex}`,
-				version,
 				types,
 				fields,
 				diagnostics,
@@ -571,7 +561,6 @@ export function readSemanticIr(
 			},
 		];
 	}
-	const version = String(document.contractVersion);
 	const types = new Map<string, JsonObject>();
 	for (const definition of asArray(document.types))
 		types.set(String(definition.identity), definition);
@@ -596,7 +585,6 @@ export function readSemanticIr(
 		checkTypeDefinition(
 			definition,
 			`types.${index}`,
-			version,
 			types,
 			fields,
 			exports,
