@@ -192,7 +192,14 @@ jobs:
           rm -f "$tgz"
           test -f "$dest/manifest.yaml"
 
+      # The vitest main process sits at V8's default ~4 GB heap ceiling on this
+      # suite: the seventh dispatch completed, the eighth aborted with
+      # "Reached heap limit" (exit 134) after every test file it reached had
+      # passed. The runner has 16 GB. This raises the ceiling; it changes no
+      # test and no gate.
       - run: make test-node
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
 
 
   lint:
