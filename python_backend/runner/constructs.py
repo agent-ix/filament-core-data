@@ -227,10 +227,10 @@ class _Classes:
             "ix://quire/native/Timestamp": "datetime",
             "ix://quire/native/Duration": "timedelta",
             "ix://quire/native/Bytes": "bytes",
-            "ix://quire/native/JsonObject": "dict[str, object]",
+            "ix://quire/native/JsonObject": "Any",
         }.get(identity)
         if native is not None:
-            if native in {"UUID", "Decimal", "datetime", "timedelta"}:
+            if native in {"UUID", "Decimal", "datetime", "timedelta", "Any"}:
                 self.native_imports.add(native)
             return native
         found = self.by_identity.get(identity)
@@ -577,8 +577,13 @@ def render(
         lines.append("from uuid import UUID")
     if classes.native_imports:
         lines.append("")
+    typing_imports = set()
+    if "Any" in classes.native_imports:
+        typing_imports.add("Any")
     if any(line.endswith("(Protocol):") for line in body):
-        lines.extend(["from typing import Protocol", ""])
+        typing_imports.add("Protocol")
+    if typing_imports:
+        lines.extend([f"from typing import {', '.join(sorted(typing_imports))}", ""])
     if classes.imported:
         lines.extend(
             f"from .{module} import {name}" for module, name in sorted(classes.imported)

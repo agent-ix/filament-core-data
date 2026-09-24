@@ -587,6 +587,38 @@ def test_construct_tables_are_keyed_by_the_generated_class_name() -> None:
     assert "Order Repository" not in rendered
 
 
+def test_json_object_native_operation_exposes_any_value_annotation() -> None:
+    """TC-1784: FR-136-AC-12, FR-032 — JsonObject is any JSON value."""
+    any_value = {
+        "name": "value",
+        "typeRef": "ix://quire/native/JsonObject",
+        "presence": "required",
+        "multiplicity": {"lower": 1, "upper": 1},
+    }
+    documents = {
+        "Any-Repository.json": {
+            "title": "Any Repository",
+            "x-agent-ix-semantic-id": "ix://agent-ix/config/type/RP-002",
+            "x-agent-ix-kind": "repository",
+            "not": {},
+            "x-agent-ix-operations": [
+                {"name": "echo", "params": [any_value], "returns": any_value}
+            ],
+        }
+    }
+    rendered = constructs.render(documents, None, {})
+    assert rendered is not None
+    assert "from typing import Any, Protocol" in rendered
+    assert "def echo(self, value: Any) -> Any: ..." in rendered
+    namespace: dict[str, Any] = {"__name__": "generated_constructs"}
+    exec(compile(rendered, "constructs.py", "exec"), namespace)  # noqa: S102
+    from typing import get_type_hints  # noqa: PLC0415
+
+    hints = get_type_hints(namespace["AnyRepository"].echo)
+    assert hints["value"] is Any
+    assert hints["return"] is Any
+
+
 def test_construct_rendering_refuses_what_python_cannot_state() -> None:
     """TC-1784: FR-136-AC-12."""
     kind = {
